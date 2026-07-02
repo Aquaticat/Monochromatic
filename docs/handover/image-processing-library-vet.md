@@ -433,11 +433,30 @@ Upstream validation commands and outcomes:
     `ReferenceError: require is not defined in ES module scope` from `node_modules/yargs/yargs` under Node `v26.4.0`.
   - This is a modern-runtime validation finding against it, though it may pass under older Node.
 - `@napi-rs/image`
-  - Full upstream build/test not yet run.
-  - Scratch integration passed.
+  - Initial host build failed in `libaom-sys` because neither `yasm` nor `nasm` was installed.
+  - A bounded Podman validation image was built from Rust bookworm plus Node 24, CMake, `g++`, `make`,
+    `nasm`, Perl, `pkg-config`, and Python.
+  - First container retry failed because SELinux labeling denied reading the mounted Yarn release file.
+  - Retried with `--memory=2g --cpus=2 --userns=keep-id --security-opt label=disable`.
+  - Native `@napi-rs/image` release build then succeeded.
+  - Whole-monorepo `build:ts` failed on an unrelated TypeScript 6 diagnostic:
+    `packages/rollup-plugin/tsconfig.json` still uses deprecated `moduleResolution=node10`.
+  - Root AVA test command `node .yarn/releases/yarn-4.17.0.cjs test` passed after native build.
+  - Scratch integration also passed.
 - `imgkit`
-  - Full upstream build/test not yet run.
-  - Scratch integration passed.
+  - Initial host build failed in `turbojpeg-sys` because no NASM assembler was installed.
+  - Same bounded Podman image was used for retry.
+  - First container retry failed before validation because the copied npm symlink was broken and login shell handling
+    dropped Cargo from `PATH`.
+  - Retried with host Bun mounted directly, `sh -c`, and `--memory=2g --cpus=2 --userns=keep-id --security-opt label=disable`.
+  - Native build succeeded, `tsup` type and JS build succeeded, and `bun test test/local` ran.
+  - Result: two hundred eight tests passed, one failed, across ten files.
+  - The failing EXIF test was an unnamed `beforeAll` failure in `test/local/exif.test.ts`.
+    Its remote Wikimedia fixture returned HTTP 400 HTML, not a PNG:
+    status `400`, content type `text/html; charset=utf-8`, prefix `<!DOCTYPE html>`.
+  - Direct EXIF smoke validation with repo benchmark JPEG passed:
+    `writeExif`, `stripExif`, `toWebp`, `writeExif` on WebP, and metadata readback all worked.
+  - Scratch integration also passed.
 - `gm`
   - Full upstream test not run.
   - It requires GraphicsMagick or ImageMagick binaries.
@@ -454,13 +473,15 @@ For Node production pipeline plus broad ingest:
   comprehensive tests, and proven local integration.
   Its downside remains native/prebuilt dependency trust and source-build fallback complexity.
 - `@napi-rs/image` is the most serious direct alternative.
-  It has active maintenance and a broad native build matrix, but source audit found more unsafe/native codec surface
-  and a smaller public maturity record than `sharp`.
-  It needs full upstream validation before final ranking.
+  It has active maintenance, a broad native build matrix, passed scratch integration,
+  built successfully in the bounded container, and passed upstream AVA tests.
+  It still has a smaller public maturity record than `sharp`, and source audit found more direct Rust/native codec surface
+  for this repo to trust.
 - `imgkit` is interesting but should not outrank `sharp` for this repo yet.
   It is younger, Bun-heavy in tests, has a very broad feature API,
   and its async timeout note admits work continues in the background after timeout.
-  It needs full upstream validation before final ranking.
+  It built in the bounded container and passed direct EXIF smoke validation.
+  Its upstream local tests were one remote fixture failure short of green.
 - `rastermill` is auditable and agent-friendly, but it is not a broad standalone production replacement.
   Its internal mode inherits Photon limitations; its external mode shells out to native tools.
 - `jimp`, `image-js`, and `ImageScript` are not production broad-ingest replacements for `sharp`.
@@ -482,23 +503,19 @@ For modern browsers where Wasm is unavailable:
 
 ## Required next work
 
-Continue from task `Validate finalist builds`.
+Continue from task `Synthesize recommendation`.
 Do not restart from scratch unless needed.
 
-Next validation work:
+Remaining validation choices:
 
-- Run full upstream validation for `@napi-rs/image` if practical.
-  It uses Yarn 4 via `.yarn/releases/yarn-4.17.0.cjs` and Rust/NAPI builds.
-- Run full upstream validation for `imgkit` if practical.
-  It uses Bun and Rust/NAPI builds.
-- Decide whether to disqualify `gm` and `canvas` without full validation because they are not serious finalists
+- Treat `gm` and `canvas` as disqualified without full validation because they are not serious finalists
   for the stated package role.
-- Optionally validate `browser-image-compression` with `npm install --legacy-peer-deps` only if it remains a finalist.
-  Record that needing legacy peer resolution is itself a negative finding.
-- Optionally validate `compressorjs` on an older supported Node only if it remains a finalist.
-  Record Node 26 failure and vulnerability count either way.
+- Do not spend more time on `browser-image-compression` unless the user specifically wants a browser compressor.
+  Its `npm install` peer conflict is already a negative finding.
+- Do not spend more time on `compressorjs` unless the user specifically wants a browser compressor.
+  Its Node 26 Karma failure and install vulnerability count are already negative findings.
 
-After validation:
+For synthesis:
 
 - Produce a recommendation with two separate rankings:
   - Node production broad ingest.
