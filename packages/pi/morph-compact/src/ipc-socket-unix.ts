@@ -18,6 +18,17 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+//region Module logger
+
+/**
+ * Module logger tagged for morph-compact unix-socket IPC.
+ */
+const l = tagged({ tag: 'morph-compact:ipc-socket-unix', },);
+
+//endregion
+
 //region Constants
 
 /**
@@ -126,9 +137,12 @@ export function createOneShotSocketServer(
         await unlink(socketPath,);
       }
       catch (error: unknown) {
-        // Socket file may already be removed or never created; the bound
-        // `error` stays inspectable but is intentionally not surfaced: this
-        // low-level module has no reachable logger or pi UI channel.
+        // Socket file may already be removed or never created.
+        tagged({
+          tag: unlinkSocketFile.name,
+          l,
+        },)
+          .debug(`Socket file unlink failed: ${String(error,)}`,);
       }
     })();
   }

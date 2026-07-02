@@ -28,6 +28,9 @@
     "@earendil-works/pi-tui": "*",
     "typebox": "*"
   },
+  "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*"
+  },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "catalog:",
     "@earendil-works/pi-tui": "catalog:",

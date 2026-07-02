@@ -10,6 +10,7 @@
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   rm,
   unlink,
@@ -28,6 +29,15 @@ import {
   readFromUnixSocket,
 } from './ipc-socket-unix.ts';
 import { sendVisibleCompactContext, } from './visible-context.ts';
+
+//region Module logger
+
+/**
+ * Module logger tagged for morph-compact tiered IPC launch.
+ */
+const l = tagged({ tag: 'morph-compact:ipc-launch', },);
+
+//endregion
 
 //region Constants
 
@@ -104,8 +114,11 @@ export async function launchWithLargeContext({
   }
   catch (error: unknown) {
     // File tier failed (e.g. read-only /tmp); fall through to socket tier.
-    // The bound `error` stays inspectable but is intentionally not surfaced:
-    // this low-level module has no reachable logger or pi UI channel.
+    tagged({
+      tag: launchWithLargeContext.name,
+      l,
+    },)
+      .debug(`File tier failed, falling through to socket tier: ${String(error,)}`,);
   }
 
   // Tier 3: Unix domain socket
@@ -126,9 +139,12 @@ export async function launchWithLargeContext({
     return;
   }
   catch (error: unknown) {
-    // Socket tier failed; fall through to TCP tier. The bound `error` stays
-    // inspectable but is intentionally not surfaced: this low-level module
-    // has no reachable logger or pi UI channel.
+    // Socket tier failed; fall through to TCP tier.
+    tagged({
+      tag: launchWithLargeContext.name,
+      l,
+    },)
+      .debug(`Socket tier failed, falling through to TCP tier: ${String(error,)}`,);
   }
 
   // Tier 4: TCP localhost (zero filesystem dependency)
@@ -239,9 +255,12 @@ async function injectCompactContext(
       );
     }
     catch (error: unknown) {
-      // Best-effort cleanup (temp files in /tmp are ephemeral); the bound
-      // `error` stays inspectable but is intentionally not surfaced: this
-      // low-level module has no reachable logger or pi UI channel.
+      // Best-effort cleanup (temp files in /tmp are ephemeral).
+      tagged({
+        tag: injectCompactContext.name,
+        l,
+      },)
+        .debug(`Best-effort temp cleanup failed: ${String(error,)}`,);
     }
     return;
   }
@@ -265,9 +284,12 @@ async function injectCompactContext(
       await unlink(socketPath,);
     }
     catch (error: unknown) {
-      // Socket may already be removed by server cleanup; the bound `error`
-      // stays inspectable but is intentionally not surfaced: this low-level
-      // module has no reachable logger or pi UI channel.
+      // Socket may already be removed by server cleanup.
+      tagged({
+        tag: injectCompactContext.name,
+        l,
+      },)
+        .debug(`Socket unlink failed: ${String(error,)}`,);
     }
     return;
   }

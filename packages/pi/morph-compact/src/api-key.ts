@@ -9,6 +9,13 @@ import { readFile, } from 'node:fs/promises';
 import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/**
+ * Module logger tagged for Morph API key resolution.
+ */
+const l = tagged({ tag: 'morph-compact:api-key', },);
+
 /**
  * Path to pi's MCP configuration file.
  */
@@ -104,9 +111,12 @@ async function readKeyFromMcpConfig(): Promise<string | typeof NO_MORPH_KEY> {
   }
   catch (error: unknown) {
     // File doesn't exist, unreadable, or invalid JSON: not an error, so the
-    // absence of a Morph key is reported. The bound `error` stays inspectable
-    // but is intentionally not surfaced: this low-level module has no reachable
-    // logger or pi UI channel.
+    // absence of a Morph key is reported.
+    tagged({
+      tag: readKeyFromMcpConfig.name,
+      l,
+    },)
+      .debug(`Could not read Morph key from mcp.json: ${String(error,)}`,);
     return NO_MORPH_KEY;
   }
 }
