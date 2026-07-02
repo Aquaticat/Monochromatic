@@ -12,8 +12,12 @@
  * Flexbox only; CSS grid is not allowed in this package.
  */
 import {
+  cssCh,
   cssCommaList,
+  cssDvb,
+  cssMin,
   cssNum,
+  cssPercent,
   cssRem,
   cssVar,
   hCss as $,
@@ -69,6 +73,23 @@ const RESULTS_MAX_REM = 40;
 const INPUT_MIN_BLOCK_REM = 16;
 
 /**
+ * Input box minimum inline size in ch (user requirement: never narrower
+ * than 60ch, capped by the container on narrow viewports).
+ */
+const INPUT_MIN_CH = 60;
+
+/**
+ * Input box maximum inline size in ch (user requirement: never wider
+ * than 90ch).
+ */
+const INPUT_MAX_CH = 90;
+
+/**
+ * Full-length percentage.
+ */
+const FULL_PERCENT = 100;
+
+/**
  * Generates reset, body, page, masthead, and input-panel rules.
  *
  * @returns minified CSS string
@@ -113,7 +134,7 @@ export function renderLayoutStyles(): string {
       {
         rule: '.page',
         decls: {
-          'min-block-size': '100dvh',
+          'min-block-size': cssDvb(FULL_PERCENT,),
           display: 'flex',
           'flex-direction': 'column',
           gap: cssRem(SPACE,),
@@ -139,7 +160,7 @@ export function renderLayoutStyles(): string {
         rule: '.description',
         decls: {
           color: cssVar('color-muted',),
-          'max-inline-size': '60ch',
+          'max-inline-size': cssCh(INPUT_MIN_CH,),
           'margin-block-start': cssRem(1 / 4,),
         },
       },
@@ -164,8 +185,13 @@ export function renderLayoutStyles(): string {
           display: 'flex',
           'flex-direction': 'column',
           gap: cssRem(1 / 2,),
-          'min-inline-size': 'min(60ch, 100%)',
-          'max-inline-size': '90ch',
+          'min-inline-size': cssMin(
+            [
+              cssCh(INPUT_MIN_CH,),
+              cssPercent(FULL_PERCENT,),
+            ],
+          ),
+          'max-inline-size': cssCh(INPUT_MAX_CH,),
         },
       },
     ),
@@ -184,7 +210,7 @@ export function renderLayoutStyles(): string {
       {
         rule: '#wc-input',
         decls: {
-          'inline-size': '100%',
+          'inline-size': cssPercent(FULL_PERCENT,),
           'flex-grow': cssNum(1,),
           'min-block-size': cssRem(INPUT_MIN_BLOCK_REM,),
           'font-family': 'inherit',

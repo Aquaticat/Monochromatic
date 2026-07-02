@@ -12,7 +12,9 @@
  * border so even a minimum-count bar stays visible.
  */
 import {
+  cssCompounded,
   cssNum,
+  cssPercent,
   cssRem,
   cssVar,
   hCss as $,
@@ -54,6 +56,11 @@ const BAR_TRACK_REM = 7;
  * stable.
  */
 const ROW_INTRINSIC_REM = 2 + (1 / 4);
+
+/**
+ * Full-length percentage.
+ */
+const FULL_PERCENT = 100;
 
 /**
  * Generates results-panel, tiles, and frequency rules.
@@ -180,7 +187,12 @@ export function renderResultsStyles(): string {
         rule: '#frequency-body .frequency-row',
         decls: {
           'content-visibility': 'auto',
-          'contain-intrinsic-block-size': `auto ${cssRem(ROW_INTRINSIC_REM,)}`,
+          'contain-intrinsic-block-size': cssCompounded(
+            [
+              'auto',
+              cssRem(ROW_INTRINSIC_REM,),
+            ],
+          ),
         },
       },
     ),
@@ -223,7 +235,7 @@ export function renderResultsStyles(): string {
         rule: '.freq-bar',
         decls: {
           display: 'block',
-          'block-size': '100%',
+          'block-size': cssPercent(FULL_PERCENT,),
           'inline-size': cssVar('bar',),
           'min-inline-size': cssRem(1 / 4,),
           'background-color': cssVar('color-bar',),
