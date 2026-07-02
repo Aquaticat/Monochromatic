@@ -268,8 +268,6 @@ function updateResults(text: string,): void {
   );
 }
 
-updateResults('',);
-
 /**
  * Grows a textarea to fit its content: resets the scripted minimum so
  * the flex layout can reclaim space after deletions, then raises it to
@@ -299,6 +297,23 @@ function autoGrow({ input, }: Readonly<{ input: HTMLTextAreaElement; }>,): void 
 }
 
 /**
+ * Renders every result section from input's current value and re-grows
+ * input to fit it. Runs at startup and again on `pageshow` because
+ * browsers restore textarea values across reloads (F5) and
+ * back/forward navigations without firing `input`, at timings that
+ * vary by browser (often after inline scripts have run); re-reading
+ * the live value once the page has fully shown is the reliable hook.
+ *
+ * @param input - textarea whose current value drives the page
+ */
+function syncFromInput(
+  { input, }: Readonly<{ input: HTMLTextAreaElement; }>,
+): void {
+  autoGrow({ input, },);
+  updateResults(input.value,);
+}
+
+/**
  * Input textarea the user types or pastes text into.
  */
 const textarea = document.querySelector<HTMLTextAreaElement>('#wc-input',);
@@ -313,7 +328,14 @@ if (textarea !== null) {
   // to scroll; hiding it here (not in CSS) keeps content reachable if
   // scripting is unavailable.
   style.overflowY = 'hidden';
-  autoGrow({ input: textarea, },);
+  syncFromInput({ input: textarea, },);
+
+  window.addEventListener(
+    'pageshow',
+    function handlePageShow(): void {
+      syncFromInput({ input: textarea, },);
+    },
+  );
 
   /**
    * Container for the shared debounce timer handle, so the binding stays

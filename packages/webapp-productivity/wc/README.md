@@ -115,7 +115,12 @@ and the subsetted font from `public/inter.woff2`, then inlines HTML (via
 `dist/final/index.html` file. `src/stats/` holds the pure, framework-free
 tokenization and analysis logic (unit tested independently of the DOM);
 `src/client/main.ts` wires a debounced `input` listener on the textarea to
-that logic, writes results into the page, and auto-grows the textarea.
+that logic, writes results into the page, and auto-grows the textarea. It
+also recomputes from the textarea's live value at startup and on
+`pageshow`, because browsers restore textarea values across reloads (F5)
+and back/forward navigations without firing `input`, at timings that vary
+by browser; without the re-sync, restored text would sit in the box while
+every stat reads zero.
 
 Colors are CSS custom properties with light defaults, overridden inside a
 `prefers-color-scheme: dark` media query, so the page follows the OS theme
