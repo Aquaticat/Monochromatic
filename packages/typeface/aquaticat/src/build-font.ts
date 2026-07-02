@@ -15,7 +15,7 @@ import {
   resolve,
 } from 'node:path';
 
-import * as opentype from 'opentype.js';
+import opentype, { type Glyph, } from 'opentype.js';
 
 import {
   ASCENDER,
@@ -77,6 +77,7 @@ const svgContent = await readFile(
 const cells = parseSvg(svgContent,);
 console.log(`Parsed ${cells.length} glyph cells`,);
 
+/* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md */
 /**
  * Required .notdef glyph (empty placeholder for missing characters).
  */
@@ -86,7 +87,9 @@ const notdefGlyph = new opentype.Glyph({
   advanceWidth: SPACE_ADVANCE,
   path: new opentype.Path(),
 },);
+/* oxlint-enable import/no-named-as-default-member */
 
+/* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md */
 /**
  * Space character glyph (no visible path, just advance width).
  */
@@ -96,6 +99,7 @@ const spaceGlyph = new opentype.Glyph({
   advanceWidth: SPACE_ADVANCE,
   path: new opentype.Path(),
 },);
+/* oxlint-enable import/no-named-as-default-member */
 
 /**
  * Assembled letter glyphs from the parsed SVG cells.
@@ -104,7 +108,7 @@ const letterGlyphs = cells.flatMap(
   function buildGlyph(
     cell,
     cellIndex,
-  ): opentype.Glyph[] {
+  ): Glyph[] {
     /**
      * Unicode code point assigned to this cell position, or undefined for unused slots.
      */
@@ -135,10 +139,12 @@ const letterGlyphs = cells.flatMap(
      */
     const advanceWidth = (maxX - minX) + (2 * SIDE_BEARING);
 
+    /* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md */
     /**
      * OpenType path that collects every contour from this cell's SVG paths.
      */
     const path = new opentype.Path();
+    /* oxlint-enable import/no-named-as-default-member */
     cell.paths
       .forEach(function addCellPath(cellPath,) {
       /**
@@ -169,6 +175,7 @@ const letterGlyphs = cells.flatMap(
         .length}`,
     );
 
+    // oxlint-disable-next-line import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md
     return [new opentype.Glyph({
       name: letterName,
       unicode,
@@ -178,6 +185,7 @@ const letterGlyphs = cells.flatMap(
   },
 );
 
+/* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md */
 /**
  * Assembled OpenType font with all glyphs.
  */
@@ -193,6 +201,7 @@ const font = new opentype.Font({
     ...letterGlyphs,
   ],
 },);
+/* oxlint-enable import/no-named-as-default-member */
 
 await mkdir(
   distDir,

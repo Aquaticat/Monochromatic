@@ -41,4 +41,17 @@ declare module 'opentype.js' {
   /* oxlint-enable no-restricted-syntax/no-class, typescript/prefer-readonly-parameter-types */
 
   export function parse(buffer: ArrayBuffer,): Font;
+
+  /**
+   * `cjs-module-lexer` can't statically detect opentype.js's named exports off its UMD bundle,
+   * so `import * as opentype` leaves `opentype.Path`/`Glyph`/`Font` `undefined` at runtime.
+   * A default import resolves to `module.exports` itself, where those members do exist.
+   */
+  const opentype: {
+    Path: typeof Path;
+    Glyph: typeof Glyph;
+    Font: typeof Font;
+    parse: typeof parse;
+  };
+  export default opentype;
 }
