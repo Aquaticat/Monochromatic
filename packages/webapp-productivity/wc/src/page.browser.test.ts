@@ -167,25 +167,9 @@ async function shootFirstBar(
   page.on(
     'console',
     function collectConsoleError(message,): void {
-      /**
-       * Message body, filtered below for known noise.
-       */
-      const text = message.text();
-
-      if (message.type() !== 'error') {
-        return;
+      if (message.type() === 'error') {
+        pageErrors.push(message.text(),);
       }
-
-      // Firefox's font sanitizer flags the subsetted Inter's STAT
-      // table (invalid nameID after subsetting), discards that one
-      // table, and renders the font anyway; a known gap in the font
-      // subsetting step (see README known limitations), not a page
-      // failure.
-      if (text.includes('downloadable font:',)) {
-        return;
-      }
-
-      pageErrors.push(text,);
     },
   );
 

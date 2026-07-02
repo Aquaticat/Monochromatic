@@ -242,13 +242,20 @@ async function subsetInter(
   /**
    * SFNT subset. `layoutFeatures: '*'` retains every GSUB/GPOS layout
    * feature, so `font-variant-numeric: tabular-nums` (the `tnum` feature)
-   * keeps working in the subset.
+   * keeps working in the subset. STAT is dropped outright: hb-subset
+   * prunes the name records STAT's axis-value entries point at, and
+   * Firefox's font sanitizer flags the dangling nameIDs as console
+   * errors ("STAT: Invalid nameID") before discarding the table anyway;
+   * STAT is style-mapping metadata no browser renders from (fvar/gvar
+   * carry the variable axes), so shipping without it changes nothing
+   * but the noise.
    */
   const sfntSubset = await subset(
     sfntInput,
     {
       text,
       layoutFeatures: '*',
+      dropTables: ['STAT',],
     },
   );
 

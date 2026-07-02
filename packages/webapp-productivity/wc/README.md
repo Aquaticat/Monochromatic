@@ -91,14 +91,6 @@ requests after the page loads.
 - User text in scripts outside the embedded subset (the charset is page
   chrome plus printable ASCII) falls back to `system-ui`; only page
   chrome is guaranteed to render in Inter.
-- Firefox's font sanitizer logs console errors about the subsetted
-  Inter's STAT table ("Invalid nameID" then "Table discarded"): the
-  `hb-subset-wasm` step leaves a STAT entry pointing at a dropped name
-  record. Firefox discards only that table and renders the font fine,
-  so the impact is console noise; a clean fix in the subsetting step
-  (`src/subset-fonts.ts`) is a known gap, and
-  `src/page.browser.test.ts` filters these messages from its
-  no-console-errors assertion.
 
 ## Fonts
 
@@ -107,9 +99,13 @@ The full upstream Inter variable woff2 lives in `fonts-source/`
 `src/subset-fonts.ts`, which collects the charset from every `src/**/*.ts`
 file plus a printable-ASCII floor and an explicit figure space (U+2007),
 subsets via `hb-subset-wasm` (decode `wawoff2`, re-encode
-`woff2-encode-wasm`), and writes `public/inter.woff2`. That subset is
-committed, and `src/build.ts` inlines it into the final HTML as a base64
-data URI. Re-run `format:fonts` after adding non-ASCII page text (the
+`woff2-encode-wasm`), and writes `public/inter.woff2`. The STAT table is
+dropped during subsetting: hb-subset prunes the name records STAT's
+axis-value entries reference, Firefox's font sanitizer logged the
+dangling nameIDs as console errors before discarding the table anyway,
+and no browser renders from STAT (fvar/gvar carry the variable axes).
+That subset is committed, and `src/build.ts` inlines it into the final
+HTML as a base64 data URI. Re-run `format:fonts` after adding non-ASCII page text (the
 scan picks up literal characters, not escape sequences). Inter is
 licensed under the SIL OFL 1.1 (`LICENSES/OFL-1.1.txt`).
 
