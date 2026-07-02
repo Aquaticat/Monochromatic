@@ -3,14 +3,14 @@
  *
  * @example
  * ```bash
- * node packages/figma-parsers/kiwi/scripts/verify.ts
+ * node packages/figma-parsers/kiwi/src/verify.ts
  * ```
  */
 
 import {
   FIGMA_DOCUMENT_ABSENT,
   parseFigmaFile,
-} from '../src/index.ts';
+} from './index.ts';
 
 /**
  * Reference directory holding hand-curated Figma exports used as integration fixtures.
