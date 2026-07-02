@@ -51,7 +51,7 @@ const zipBuffer = await figmaToPenpot(figmaFile, 'output.penpot',);
 ## CLI
 
 ```sh
-node packages/figma-parsers/penpot/scripts/convert.ts input.fig [output.penpot]
+node packages/figma-parsers/penpot/src/convert.ts input.fig [output.penpot]
 ```
 
 ## Type mapping

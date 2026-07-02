@@ -2,7 +2,7 @@
 /**
  * CLI script to convert Figma export files to Penpot format.
  *
- * Usage: node scripts/convert.ts <input.fig|.deck|.jam> [output.penpot]
+ * Usage: node src/convert.ts <input.fig|.deck|.jam> [output.penpot]
  */
 
 import { writeFile, } from 'node:fs/promises';
@@ -16,7 +16,7 @@ import {
 import {
   convertFigmaToPenpot,
   serializePenpotZip,
-} from '../src/index.ts';
+} from './index.ts';
 
 /**
  * Figma export extensions whose output path is rewritten to `.penpot`.
@@ -65,7 +65,7 @@ const [inputPath, outputPath,] = process.argv
   .slice(2,);
 
 if (inputPath === undefined) {
-  console.error('Usage: node scripts/convert.ts <input.fig|.deck|.jam> [output.penpot]',);
+  console.error('Usage: node src/convert.ts <input.fig|.deck|.jam> [output.penpot]',);
   throw new Error('Missing input path',);
 }
 
