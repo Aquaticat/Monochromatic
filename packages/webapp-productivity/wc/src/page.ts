@@ -10,6 +10,7 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
+import { FAVICON_SIZE, } from './favicon.ts';
 import { renderStatsSection, } from './page-stats.ts';
 
 export {
@@ -209,8 +210,11 @@ function renderMasthead(): string {
  *
  * @param js - client-side JavaScript string
  *
+ * @param faviconSvgBase64 - base64-encoded SVG favicon markup, inlined
+ * as a data URI; engines that take vector icons pick it
+ *
  * @param faviconPngBase64 - base64-encoded PNG favicon bytes, inlined
- * as a data URI so the single-file output needs no companion icon file
+ * as a data URI; raster fallback for engines without SVG icon support
  *
  * @returns complete HTML document string
  *
@@ -219,6 +223,7 @@ function renderMasthead(): string {
  * const html = renderPage({
  *   css: 'body {}',
  *   js: 'console.log("ok")',
+ *   faviconSvgBase64: 'PHN2Zy…',
  *   faviconPngBase64: 'iVBORw0KGgo…',
  * });
  * ```
@@ -227,10 +232,12 @@ export function renderPage(
   {
     css,
     js,
+    faviconSvgBase64,
     faviconPngBase64,
   }: Readonly<{
     css: string;
     js: string;
+    faviconSvgBase64: string;
     faviconPngBase64: string;
   }>,
 ): string {
@@ -277,10 +284,26 @@ export function renderPage(
                 ),
                 h(
                   {
+                    // `sizes="any"` steers engines that support vector
+                    // icons (Chromium prefers a sized raster otherwise);
+                    // the PNG link below is the fallback for engines
+                    // that don't (e.g. Safari).
+                    tag: 'link',
+                    attrs: {
+                      rel: 'icon',
+                      type: 'image/svg+xml',
+                      sizes: 'any',
+                      href: `data:image/svg+xml;base64,${faviconSvgBase64}`,
+                    },
+                  },
+                ),
+                h(
+                  {
                     tag: 'link',
                     attrs: {
                       rel: 'icon',
                       type: 'image/png',
+                      sizes: `${FAVICON_SIZE}x${FAVICON_SIZE}`,
                       href: `data:image/png;base64,${faviconPngBase64}`,
                     },
                   },

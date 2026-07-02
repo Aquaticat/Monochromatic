@@ -1,62 +1,30 @@
 /**
- * Tests for the build-time favicon: the minimal PNG encoder and the
- * rasterized `w<` wordmark.
+ * Tests for the build-time favicon: the SVG `w<` wordmark and its
+ * sharp-rasterized PNG form.
  *
  * @module
  */
 
 import { Buffer, } from 'node:buffer';
-import { inflateSync, } from 'node:zlib';
 
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import sharp from 'sharp';
 
 import {
   FAVICON_SIZE,
   renderFaviconPngBase64,
+  renderFaviconSvg,
 } from './favicon.ts';
-import { encodePngRgb, } from './favicon-png.ts';
 
 /**
- * Byte offset of IHDR's width field inside a PNG file (8 signature
- * bytes, 4 length bytes, 4 type bytes).
+ * Stick count of the whole wordmark: the w's four strokes plus the
+ * chevron's two.
  */
-const IHDR_WIDTH_OFFSET = 16;
-
-/**
- * Byte offset of IHDR's height field: one uint32 past the width.
- */
-const IHDR_HEIGHT_OFFSET = IHDR_WIDTH_OFFSET + (2 + 2);
-
-/**
- * Byte offset of IHDR's bit-depth field: one uint32 past the height.
- */
-const IHDR_BIT_DEPTH_OFFSET = IHDR_HEIGHT_OFFSET + (2 + 2);
-
-/**
- * Byte offset of IHDR's color-type field, right after the bit depth.
- */
-const IHDR_COLOR_TYPE_OFFSET = IHDR_BIT_DEPTH_OFFSET + 1;
-
-/**
- * Eight-byte PNG signature in base64 (the standard prefix of every
- * base64-encoded PNG).
- */
-const PNG_SIGNATURE_BASE64 = 'iVBORw0KGgo=';
-
-/**
- * Channels per truecolor RGB pixel.
- */
-const RGB_CHANNELS = 2 + 1;
-
-/**
- * Byte count of a chunk's non-data framing (uint32 length, 4-byte
- * type, uint32 CRC).
- */
-const CHUNK_FRAMING_BYTES = (2 + 2) * (2 + 1);
+const STICK_COUNT = 6;
 
 /**
  * Grayscale byte every ground (background) sample must stay at or
@@ -71,222 +39,214 @@ const GROUND_BYTE_MAX = 10;
 const INK_BYTE_MIN = 200;
 
 /**
- * Parsed shape of a PNG produced by the encoder under test.
+ * Per-channel wiggle allowed on an "achromatic" pixel: rasterizer
+ * rounding may land antialiased channels one step apart.
  */
-type ParsedPng = Readonly<{
+const ACHROMATIC_TOLERANCE = 1;
+
+/**
+ * Decoded favicon raster: dimensions plus each pixel's gray value.
+ */
+type DecodedFavicon = Readonly<{
   /**
-   * IHDR width in pixels.
+   * Raster width in pixels.
    */
   width: number;
   /**
-   * IHDR height in pixels.
+   * Raster height in pixels.
    */
   height: number;
   /**
-   * IHDR bit depth.
+   * Gray value per pixel, rows top to bottom.
    */
-  bitDepth: number;
-  /**
-   * IHDR color type.
-   */
-  colorType: number;
-  /**
-   * Inflated scanline stream: per row, one filter byte then packed RGB.
-   */
-  raw: Buffer;
+  grays: readonly number[];
 }>;
 
 /**
- * Parses signature, IHDR fields, and the inflated IDAT stream out of a
- * PNG file, via linear chunk walking.
+ * Reads the gray byte of one hex color inside the SVG markup, right
+ * after a paint-attribute marker like `fill="#`.
  *
- * @param png - PNG file bytes
+ * @param svg - SVG markup searched
  *
- * @returns parsed dimensions, format fields, and raw scanlines
+ * @param marker - attribute prefix directly before the hex digits
  *
- * @throws Error when the signature is not PNG's
+ * @returns first channel byte of the hex color
+ *
+ * @throws Error when the marker is absent
  */
-function parsePng(png: Buffer,): ParsedPng {
-  /**
-   * Expected signature bytes.
-   */
-  const signature = Buffer.from(
-    PNG_SIGNATURE_BASE64,
-    'base64',
-  );
-
-  if (!png.subarray(
-    0,
-    signature.length,
-  )
-    .equals(signature,)
-  ) {
-    throw new Error('not a PNG: signature mismatch',);
+function channelByteAfter(
+  {
+    svg,
+    marker,
+  }: Readonly<{
+    svg: string;
+    marker: string;
+  }>,
+): number {
+  if (!svg.includes(marker,)) {
+    throw new Error(`marker ${marker} not found in SVG`,);
   }
 
   /**
-   * Collected IDAT payloads, concatenated before inflating; the chunk
-   * walk lives in a named IIFE so its cursor stays scoped to it.
+   * Index of the marker inside the markup.
    */
-  const idatParts = (function collectIdatParts(): Buffer[] {
-    /**
-     * IDAT payloads collected by the walk.
-     */
-    const parts: Buffer[] = [];
+  const markerIndex = svg.indexOf(marker,);
 
-    /**
-     * Chunk-walk cursor, starting past the signature.
-     */
-    let cursor = signature.length;
+  /**
+   * First two hex digits after the marker.
+   */
+  const hex = svg.slice(
+    markerIndex + marker.length,
+    markerIndex + marker.length + 2,
+  );
 
-    while (cursor < png.length) {
-      /**
-       * Payload length of the chunk at cursor.
-       */
-      const dataLength = png.readUInt32BE(cursor,);
-
-      /**
-       * Offset where the chunk's payload starts, past the length and
-       * type fields.
-       */
-      const dataStart = cursor + ((2 + 2) + (2 + 2));
-
-      /**
-       * Type of the chunk at cursor.
-       */
-      const type = png.toString(
-        'latin1',
-        cursor + (2 + 2),
-        dataStart,
-      );
-
-      if (type === 'IDAT') {
-        parts.push(png.subarray(
-          dataStart,
-          dataStart + dataLength,
-        ),);
-      }
-
-      cursor += CHUNK_FRAMING_BYTES + dataLength;
-    }
-
-    return parts;
-  })();
-
-  return {
-    width: png.readUInt32BE(IHDR_WIDTH_OFFSET,),
-    height: png.readUInt32BE(IHDR_HEIGHT_OFFSET,),
-    bitDepth: png.readUInt8(IHDR_BIT_DEPTH_OFFSET,),
-    colorType: png.readUInt8(IHDR_COLOR_TYPE_OFFSET,),
-    raw: inflateSync(Buffer.concat(idatParts,),),
-  };
+  return Number.parseInt(
+    hex,
+    16,
+  );
 }
 
 /**
- * Collects the packed RGB bytes of one parsed PNG, dropping each row's
- * leading filter byte.
+ * Renders the favicon PNG and decodes it back to raw pixels through
+ * sharp, asserting each pixel is achromatic (all channels within
+ * {@link ACHROMATIC_TOLERANCE} of the red channel) on the way.
  *
- * @param parsed - parsed PNG to read pixels from
- *
- * @returns packed RGB bytes, rows top to bottom
+ * @returns decoded dimensions and per-pixel grays
  */
-function packedPixels(parsed: ParsedPng,): Buffer {
+async function decodeFaviconGrays(): Promise<DecodedFavicon> {
   /**
-   * Byte count of one row of packed RGB pixels.
+   * Rendered favicon PNG bytes.
    */
-  const rowBytes = parsed.width * RGB_CHANNELS;
+  const png = Buffer.from(
+    await renderFaviconPngBase64(),
+    'base64',
+  );
 
   /**
-   * Row buffers with the filter byte stripped.
+   * Raw-pixel decoder for the rendered PNG.
    */
-  const rows = Array.from(
-    { length: parsed.height, },
-    function stripFilterByte(
+  const decoder = sharp(png,)
+    .raw();
+
+  /**
+   * Decoded pixel bytes plus raster metadata.
+   */
+  const { data, info, } = await decoder.toBuffer({ resolveWithObject: true, },);
+
+  /**
+   * Gray value of every pixel; collecting them asserts each pixel is
+   * achromatic on the way.
+   */
+  const grays = Array.from(
+    { length: info.width * info.height, },
+    function grayOfPixel(
       _unused,
-      row,
-    ): Buffer {
+      index,
+    ): number {
       /**
-       * Offset of this row's filter byte inside the raw stream.
+       * Offset of this pixel's R byte.
        */
-      const rowStart = row * (rowBytes + 1);
+      const offset = index * info.channels;
 
-      return parsed.raw.subarray(
-        rowStart + 1,
-        rowStart + 1 + rowBytes,
+      /**
+       * Red channel, the gray value under test.
+       */
+      const gray = data.readUInt8(offset,);
+
+      /**
+       * Green channel, compared against the red.
+       */
+      const green = data.readUInt8(offset + 1,);
+
+      /**
+       * Blue channel, compared against the red.
+       */
+      const blue = data.readUInt8(offset + 2,);
+
+      expect(Math.abs(green - gray,),).toBeLessThanOrEqual(
+        ACHROMATIC_TOLERANCE,
       );
+      expect(Math.abs(blue - gray,),).toBeLessThanOrEqual(
+        ACHROMATIC_TOLERANCE,
+      );
+
+      return gray;
     },
   );
 
-  return Buffer.concat(rows,);
+  return {
+    width: info.width,
+    height: info.height,
+    grays,
+  };
 }
 
 await describe({
   name: '',
   children: [
     describe({
-      name: encodePngRgb.name,
+      name: renderFaviconSvg.name,
       children: [
         it({
-          name: 'round-trips dimensions, format fields, and pixel bytes',
-          fn: async function roundTripsPixels(): Promise<void> {
+          name: 'declares a FAVICON_SIZE-square viewport',
+          fn: async function declaresViewport(): Promise<void> {
             /**
-             * Distinct fixture bytes for a 2x1 image.
+             * Rendered SVG markup.
              */
-            const pixels = Uint8Array.from(
-              [
-                1,
-                2,
-                10,
-                100,
-                200,
-                255,
-              ],
+            const svg = renderFaviconSvg();
+
+            expect(svg,).toContain('<svg xmlns="http://www.w3.org/2000/svg"',);
+            expect(svg,).toContain(`width="${FAVICON_SIZE}"`,);
+            expect(svg,).toContain(`height="${FAVICON_SIZE}"`,);
+            expect(svg,).toContain(
+              `viewBox="0 0 ${FAVICON_SIZE} ${FAVICON_SIZE}"`,
             );
-
-            /**
-             * Parsed form of the encoded fixture.
-             */
-            const parsed = parsePng(await encodePngRgb(
-              {
-                width: 2,
-                height: 1,
-                pixels,
-              },
-            ),);
-
-            expect(parsed.width,).toBe(2,);
-            expect(parsed.height,).toBe(1,);
-            expect(parsed.bitDepth,).toBe(2 * (2 * 2),);
-            expect(parsed.colorType,).toBe(2,);
-            expect([...packedPixels(parsed,),],).toEqual([...pixels,],);
           },
         },),
         it({
-          name: 'throws when the pixel byte count does not match the dimensions',
-          fn: async function throwsOnByteCountMismatch(): Promise<void> {
+          name: 'draws six round-capped sticks of one shared width',
+          fn: async function drawsSticks(): Promise<void> {
             /**
-             * Error thrown by the mismatched call, captured through a
-             * named IIFE so no `let` leaks into the test body.
+             * Rendered SVG markup.
              */
-            const caught = await (async function captureThrow(): Promise<unknown> {
-              try {
-                await encodePngRgb(
-                  {
-                    width: 2,
-                    height: 2,
-                    pixels: Uint8Array.from([0,],),
-                  },
-                );
+            const svg = renderFaviconSvg();
 
-                return undefined;
-              }
-              catch (error) {
-                return error;
-              }
-            })();
+            /**
+             * Move commands inside the path: one per stick spine.
+             */
+            const moveCommands = svg.split('M ',).length - 1;
 
-            expect(caught,).toBeInstanceOf(Error,);
-            expect((caught as Error).message,).toContain('expected',);
+            expect(moveCommands,).toBe(STICK_COUNT,);
+            expect(svg,).toContain('stroke-linecap="round"',);
+            expect(svg,).toContain('stroke-width="4.4"',);
+          },
+        },),
+        it({
+          name: 'inks near-white on a near-black ground',
+          fn: async function paintsPaletteStops(): Promise<void> {
+            /**
+             * Rendered SVG markup.
+             */
+            const svg = renderFaviconSvg();
+
+            expect(channelByteAfter(
+              {
+                svg,
+                marker: 'fill="#',
+              },
+            ),).toBeLessThanOrEqual(GROUND_BYTE_MAX,);
+            expect(channelByteAfter(
+              {
+                svg,
+                marker: 'stroke="#',
+              },
+            ),).toBeGreaterThanOrEqual(INK_BYTE_MIN,);
+          },
+        },),
+        it({
+          name: 'is deterministic across calls',
+          fn: async function svgIsDeterministic(): Promise<void> {
+            expect(renderFaviconSvg(),).toBe(renderFaviconSvg(),);
           },
         },),
       ],
@@ -295,77 +255,41 @@ await describe({
       name: renderFaviconPngBase64.name,
       children: [
         it({
-          name: 'renders a FAVICON_SIZE-square truecolor PNG',
-          fn: async function rendersSquarePng(): Promise<void> {
+          name: 'rasterizes to a FAVICON_SIZE-square image',
+          fn: async function rastersSquarePng(): Promise<void> {
             /**
-             * Rendered favicon PNG bytes.
+             * Decoded favicon raster.
              */
-            const png = Buffer.from(
-              await renderFaviconPngBase64(),
-              'base64',
-            );
+            const decoded = await decodeFaviconGrays();
 
-            /**
-             * Parsed favicon PNG.
-             */
-            const parsed = parsePng(png,);
-
-            expect(parsed.width,).toBe(FAVICON_SIZE,);
-            expect(parsed.height,).toBe(FAVICON_SIZE,);
-            expect(parsed.colorType,).toBe(2,);
+            expect(decoded.width,).toBe(FAVICON_SIZE,);
+            expect(decoded.height,).toBe(FAVICON_SIZE,);
           },
         },),
         it({
           name: 'draws achromatic ink on an achromatic near-black ground',
           fn: async function drawsGrayscaleWordmark(): Promise<void> {
             /**
-             * Rendered favicon PNG bytes.
+             * Decoded favicon raster; decoding already asserted every
+             * pixel is achromatic.
              */
-            const png = Buffer.from(
-              await renderFaviconPngBase64(),
-              'base64',
-            );
+            const decoded = await decodeFaviconGrays();
 
             /**
-             * Packed RGB bytes of the rendered favicon.
+             * Corner pixel: bare ground, since the wordmark is
+             * centered.
              */
-            const pixels = packedPixels(parsePng(png,),);
+            const [corner,] = decoded.grays;
 
-            /**
-             * Gray value of every pixel; collecting them asserts each
-             * pixel is achromatic (all three channels equal) on the way.
-             */
-            const grays = Array.from(
-              { length: pixels.length / RGB_CHANNELS, },
-              function grayOfPixel(
-                _unused,
-                index,
-              ): number {
-                /**
-                 * Offset of this pixel's R byte.
-                 */
-                const offset = index * RGB_CHANNELS;
-
-                /**
-                 * Red channel, the gray value under test.
-                 */
-                const gray = pixels.readUInt8(offset,);
-
-                expect(pixels.readUInt8(offset + 1,),).toBe(gray,);
-                expect(pixels.readUInt8(offset + 2,),).toBe(gray,);
-
-                return gray;
-              },
+            expect(corner,).toBeLessThanOrEqual(GROUND_BYTE_MAX,);
+            expect(Math.max(...decoded.grays,),).toBeGreaterThanOrEqual(
+              INK_BYTE_MIN,
             );
-
-            // Corner pixel is bare ground; the wordmark is centered.
-            expect(pixels.readUInt8(0,),).toBeLessThanOrEqual(GROUND_BYTE_MAX,);
-            expect(Math.max(...grays,),).toBeGreaterThanOrEqual(INK_BYTE_MIN,);
           },
         },),
         it({
           name: 'is deterministic across calls',
-          fn: async function isDeterministic(): Promise<void> {
+          fn: async function pngIsDeterministic(): Promise<void> {
             expect(await renderFaviconPngBase64(),).toBe(
               await renderFaviconPngBase64(),
             );

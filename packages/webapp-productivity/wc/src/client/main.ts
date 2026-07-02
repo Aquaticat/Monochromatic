@@ -8,7 +8,11 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-import { STAT_TILES, } from '../page.ts';
+// Imported from page-stats directly, never from ../page.ts: page.ts
+// imports the favicon generator, whose sharp/node imports must stay
+// out of this browser bundle's module graph (a leaked `node:` import
+// kills the whole inline module script on file://).
+import { STAT_TILES, } from '../page-stats.ts';
 import {
   analyzeText,
   computeFrequency,

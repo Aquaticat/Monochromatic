@@ -48,10 +48,15 @@ requests after the page loads.
   tracks are identical, so the bars fill the free width while their
   lengths stay comparable. Bars are native `<progress>` elements kept
   on the grayscale palette: the fill is the strong foreground stop and
-  the track is transparent, via `accent-color` plus a transparent
-  background in Firefox and via the `::-webkit-progress-*`
-  pseudo-elements in Chromium (which ignores near-white accents and
-  paints an opaque native track). The header row is visually hidden by
+  the track is transparent. Neither engine gets that from
+  `accent-color` alone (Chromium ignores near-white accents; Firefox
+  keeps its default blue fill regardless), so the fill is pinned on
+  `::-webkit-progress-value` and `::-moz-progress-bar`, the track is
+  cleared by a transparent background (Firefox) plus
+  `::-webkit-progress-bar` (Chromium), and Firefox's slightly
+  blue-tinted native border is removed; all of it pixel-verified in
+  both engines by `src/page.browser.test.ts` in the playwright
+  container. The header row is visually hidden by
   design (the columns are self-explanatory to sighted users) but stays
   in the accessibility tree for screen-reader column context, using the
   [inclusively-hidden] pattern; the decorative bar cell is
@@ -86,6 +91,14 @@ requests after the page loads.
 - User text in scripts outside the embedded subset (the charset is page
   chrome plus printable ASCII) falls back to `system-ui`; only page
   chrome is guaranteed to render in Inter.
+- Firefox's font sanitizer logs console errors about the subsetted
+  Inter's STAT table ("Invalid nameID" then "Table discarded"): the
+  `hb-subset-wasm` step leaves a STAT entry pointing at a dropped name
+  record. Firefox discards only that table and renders the font fine,
+  so the impact is console noise; a clean fix in the subsetting step
+  (`src/subset-fonts.ts`) is a known gap, and
+  `src/page.browser.test.ts` filters these messages from its
+  no-console-errors assertion.
 
 ## Fonts
 
@@ -145,12 +158,14 @@ placeholder row instead of an empty table.
 The build script reads pre-bundled client JS from `dist/client/main.js`
 and the subsetted font from `public/inter.woff2`, then inlines HTML (via
 `h-html`), CSS (via `h-css`), JS, the font, and the favicon into a single
-`dist/final/index.html` file. The favicon is a `w<` wordmark rasterized
-from first principles at build time (`src/favicon.ts`: no font, no
-canvas; every stick shares one length and width, the w's turns close at
-30 degrees and the chevron at 60, near-white ink on the near-black
-palette stop) and encoded by a minimal PNG writer (`src/favicon-png.ts`)
-into a data URI. `src/stats/` holds the pure, framework-free
+`dist/final/index.html` file. The favicon is a `w<` wordmark drawn from
+first principles at build time (`src/favicon.ts`: no font; every stick
+shares one length and width, the w's turns close at 30 degrees and the
+chevron at 60, near-white ink on the near-black palette stop) as an SVG
+document, which sharp rasterizes to a PNG so the raster can never drift
+from the vector; both ship as data-URI `<link rel="icon">` entries, the
+SVG (`sizes="any"`) for engines that take vector icons and the PNG as
+the fallback. `src/stats/` holds the pure, framework-free
 tokenization and analysis logic (unit tested independently of the DOM);
 `src/client/main.ts` wires a debounced `input` listener on the textarea to
 that logic, writes results into the page, and auto-grows the textarea. It

@@ -3044,6 +3044,9 @@ importers:
       hb-subset-wasm:
         specifier: 'catalog:'
         version: 0.4.0
+      sharp:
+        specifier: 'catalog:'
+        version: 0.35.2
       tiny-readdir-glob:
         specifier: 'catalog:'
         version: 2.0.0

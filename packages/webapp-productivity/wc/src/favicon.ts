@@ -1,18 +1,25 @@
 /**
- * Build-time favicon generator: rasterizes a `w<` wordmark from first
- * principles (no font, no canvas) into a truecolor PNG, inlined by
- * `./build.ts` as a data URI.
+ * Build-time favicon generator: derives the `w<` wordmark's stick
+ * spines from first principles (no font), emits them as an SVG
+ * document, and rasterizes that same SVG to a PNG through sharp, so
+ * the raster can never drift from the vector. `./build.ts` inlines
+ * both as data URIs: the SVG for engines that take vector icons, the
+ * PNG as the raster fallback.
  *
  * Geometry decree: every stick shares one length and one width; the
  * w's four sticks tilt so every turn closes at 30 degrees, and the
  * chevron's two sticks close at 60 degrees. Ink is `oklch(0.9 0 0)` on
- * an `oklch(0.1 0 0)` ground, matching the page's dark palette stops.
+ * an `oklch(0.1 0 0)` ground, matching the page's dark palette stops;
+ * both are spelled as hex in the SVG so librsvg (sharp's SVG
+ * rasterizer) and browsers paint identical bytes.
  */
-import { encodePngRgb, } from './favicon-png.ts';
+import { Buffer, } from 'node:buffer';
+
+import sharp from 'sharp';
 
 /**
  * Favicon edge length in pixels, exported so tests can assert the
- * encoded IHDR dimensions.
+ * SVG viewport and the rasterized dimensions.
  */
 export const FAVICON_SIZE: number = 64;
 
@@ -22,8 +29,8 @@ export const FAVICON_SIZE: number = 64;
 const STICK_LENGTH = 24;
 
 /**
- * Half the shared stick width in pixels (a sample within this distance
- * of a stick's spine is ink).
+ * Half the shared stick width in pixels; the SVG stroke width is twice
+ * this.
  */
 const STICK_HALF_WIDTH = 2.2;
 
@@ -90,10 +97,11 @@ const SRGB_GAMMA_OFFSET = 0.055;
 const SRGB_GAMMA = 2.4;
 
 /**
- * Supersamples per pixel axis; each pixel averages this squared many
- * coverage samples for antialiased stick edges.
+ * Decimal places kept for SVG coordinates; hundredths sit far below
+ * one raster pixel, and fixing the precision keeps the markup
+ * deterministic.
  */
-const SUBSAMPLES = 2 * 2;
+const SVG_COORD_DECIMALS = 2;
 
 /**
  * One line segment: a stick's spine from `(ax, ay)` to `(bx, by)`.
@@ -147,6 +155,53 @@ function achromaticLightnessToSrgbByte(lightness: number,): number {
     : (SRGB_GAMMA_SCALE * (luminance ** (1 / SRGB_GAMMA))) - SRGB_GAMMA_OFFSET;
 
   return Math.round(channel * 255,);
+}
+
+/**
+ * Converts an achromatic OKLCH lightness to a hex sRGB gray for SVG
+ * paint attributes.
+ *
+ * @param lightness - OKLCH lightness in 0 to 1
+ *
+ * @returns six-digit hex color, e.g. `#dedede`
+ */
+function lightnessToHexGray(lightness: number,): string {
+  /**
+   * Shared gray byte of all three channels.
+   */
+  const byte = achromaticLightnessToSrgbByte(lightness,);
+
+  /**
+   * Hex digits of the gray byte, before zero-padding.
+   */
+  const hexByte = byte.toString(16,);
+
+  /**
+   * Two-digit hex form of the gray byte.
+   */
+  const channel = hexByte.padStart(
+    2,
+    '0',
+  );
+
+  return `#${channel}${channel}${channel}`;
+}
+
+/**
+ * Formats one SVG coordinate: fixed decimal precision with trailing
+ * zeros dropped, so the markup stays compact and deterministic.
+ *
+ * @param value - coordinate in SVG user units
+ *
+ * @returns formatted coordinate string
+ */
+function svgNum(value: number,): string {
+  /**
+   * Fixed-precision form, possibly carrying trailing zeros.
+   */
+  const fixed = value.toFixed(SVG_COORD_DECIMALS,);
+
+  return String(Number(fixed,),);
 }
 
 /**
@@ -260,184 +315,63 @@ function buildGlyphSegments(): readonly Segment[] {
 }
 
 /**
- * Distance from a point to the nearest point on a segment's spine,
- * clamping the projection to the segment so stick ends get round caps.
+ * Renders the wordmark as a standalone SVG document: a ground rect
+ * under a single round-capped path holding all six stick spines as
+ * move/line subpaths (round caps match the round stick ends the
+ * geometry promises).
  *
- * @param x - sample x
+ * @returns SVG markup string
  *
- * @param y - sample y
- *
- * @param segment - stick spine measured against
- *
- * @returns distance in pixels
+ * @example
+ * ```ts
+ * const href = `data:image/svg+xml;base64,${
+ *   Buffer.from(renderFaviconSvg(),).toString('base64',)
+ * }`;
+ * ```
  */
-function distanceToSegment(
-  {
-    x,
-    y,
-    segment,
-  }: Readonly<{
-    x: number;
-    y: number;
-    segment: Segment;
-  }>,
-): number {
+export function renderFaviconSvg(): string {
   /**
-   * Spine run along x.
+   * Path data: one `M`/`L` subpath per stick spine.
    */
-  const dx = segment.bx - segment.ax;
+  const pathData = buildGlyphSegments()
+    .map(function segmentToSubpath(segment,): string {
+      return `M ${svgNum(segment.ax,)} ${svgNum(segment.ay,)}`
+        + ` L ${svgNum(segment.bx,)} ${svgNum(segment.by,)}`;
+    },)
+    .join(' ',);
 
   /**
-   * Spine run along y.
+   * Shared stroke width of every stick.
    */
-  const dy = segment.by - segment.ay;
+  const strokeWidth = svgNum(STICK_HALF_WIDTH * 2,);
 
   /**
-   * Unclamped projection parameter of the sample onto the spine.
+   * Root element open tag with an explicit raster size so sharp
+   * rasterizes at exactly {@link FAVICON_SIZE}.
    */
-  const projected = (((x - segment.ax) * dx) + ((y - segment.ay) * dy))
-    / ((dx * dx) + (dy * dy));
+  const svgOpen = `<svg xmlns="http://www.w3.org/2000/svg"`
+    + ` width="${FAVICON_SIZE}" height="${FAVICON_SIZE}"`
+    + ` viewBox="0 0 ${FAVICON_SIZE} ${FAVICON_SIZE}">`;
 
   /**
-   * Projection clamped into the segment.
+   * Ground rect covering the whole icon.
    */
-  const t = Math.min(
-    1,
-    Math.max(
-      0,
-      projected,
-    ),
-  );
+  const ground = `<rect width="${FAVICON_SIZE}" height="${FAVICON_SIZE}"`
+    + ` fill="${lightnessToHexGray(GROUND_LIGHTNESS,)}"/>`;
 
-  return Math.hypot(
-    x - (segment.ax + (t * dx)),
-    y - (segment.ay + (t * dy)),
-  );
+  /**
+   * The six sticks as one stroked path.
+   */
+  const sticks = `<path d="${pathData}" fill="none"`
+    + ` stroke="${lightnessToHexGray(INK_LIGHTNESS,)}"`
+    + ` stroke-width="${strokeWidth}" stroke-linecap="round"/>`;
+
+  return `${svgOpen}${ground}${sticks}</svg>`;
 }
 
 /**
- * Reports whether one supersample lands on ink: within
- * {@link STICK_HALF_WIDTH} of any stick spine.
- *
- * @param x - sample x
- *
- * @param y - sample y
- *
- * @param segments - stick spines to test against
- *
- * @returns true when the sample is ink
- */
-function sampleIsInk(
-  {
-    x,
-    y,
-    segments,
-  }: Readonly<{
-    x: number;
-    y: number;
-    segments: readonly Segment[];
-  }>,
-): boolean {
-  return segments.some(function withinStick(segment,): boolean {
-    return distanceToSegment(
-      {
-        x,
-        y,
-        segment,
-      },
-    ) <= STICK_HALF_WIDTH;
-  },);
-}
-
-/**
- * Rasterizes the wordmark into packed RGB bytes: per pixel, the ink
- * coverage over a {@link SUBSAMPLES}-squared grid blends the ink and
- * ground grays.
- *
- * @param segments - stick spines to draw
- *
- * @returns `FAVICON_SIZE * FAVICON_SIZE * 3` packed RGB bytes
- */
-function rasterize(
-  { segments, }: Readonly<{ segments: readonly Segment[]; }>,
-): Uint8Array {
-  /**
-   * Ink gray byte, from the near-white palette stop.
-   */
-  const inkByte = achromaticLightnessToSrgbByte(INK_LIGHTNESS,);
-
-  /**
-   * Ground gray byte, from the near-black palette stop.
-   */
-  const groundByte = achromaticLightnessToSrgbByte(GROUND_LIGHTNESS,);
-
-  /**
-   * Channels per packed RGB pixel.
-   */
-  const channels = 2 + 1;
-
-  /**
-   * Pixel count of the square icon.
-   */
-  const pixelCount = FAVICON_SIZE * FAVICON_SIZE;
-
-  /**
-   * Packed RGB output, rows top to bottom.
-   */
-  const pixels = new Uint8Array(pixelCount * channels,);
-
-  /**
-   * Total supersamples averaged per pixel.
-   */
-  const samplesPerPixel = SUBSAMPLES * SUBSAMPLES;
-
-  for (let pixelY = 0; pixelY < FAVICON_SIZE; pixelY += 1) {
-    for (let pixelX = 0; pixelX < FAVICON_SIZE; pixelX += 1) {
-      /**
-       * Ink hits among this pixel's supersamples.
-       */
-      let inkHits = 0;
-
-      for (let subY = 0; subY < SUBSAMPLES; subY += 1) {
-        for (let subX = 0; subX < SUBSAMPLES; subX += 1) {
-          if (
-            sampleIsInk(
-              {
-                x: pixelX + ((subX + (1 / 2)) / SUBSAMPLES),
-                y: pixelY + ((subY + (1 / 2)) / SUBSAMPLES),
-                segments,
-              },
-            )
-          ) {
-            inkHits += 1;
-          }
-        }
-      }
-
-      /**
-       * Gray byte blended by ink coverage.
-       */
-      const gray = Math.round(
-        groundByte + ((inkByte - groundByte) * (inkHits / samplesPerPixel)),
-      );
-
-      /**
-       * Offset of this pixel's R byte inside pixels.
-       */
-      const offset = ((pixelY * FAVICON_SIZE) + pixelX) * channels;
-
-      pixels[offset] = gray;
-      pixels[offset + 1] = gray;
-      pixels[offset + 2] = gray;
-    }
-  }
-
-  return pixels;
-}
-
-/**
- * Renders the complete favicon PNG, base64-encoded for inlining as a
- * data URI.
+ * Rasterizes the SVG wordmark ({@link renderFaviconSvg}) to a PNG
+ * through sharp, base64-encoded for inlining as a data URI.
  *
  * @returns base64 PNG bytes
  *
@@ -448,15 +382,16 @@ function rasterize(
  */
 export async function renderFaviconPngBase64(): Promise<string> {
   /**
+   * SVG bytes handed to sharp's rasterizer.
+   */
+  const svg = Buffer.from(renderFaviconSvg(),);
+
+  /**
    * Complete favicon PNG bytes.
    */
-  const png = await encodePngRgb(
-    {
-      width: FAVICON_SIZE,
-      height: FAVICON_SIZE,
-      pixels: rasterize({ segments: buildGlyphSegments(), },),
-    },
-  );
+  const png = await sharp(svg,)
+    .png()
+    .toBuffer();
 
   return png.toString('base64',);
 }

@@ -84,8 +84,8 @@ await describe({
          */
         const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 
-        // Firefox path: accent-colored fill on the element's own
-        // transparent background.
+        // Standards path plus Firefox's transparent track on the
+        // element's own background.
         expect(css,).toContain('accent-color:var(--color-fg-strong)',);
         expect(css,).toContain('background-color:transparent',);
         // Chromium path: it ignores near-white accents and paints an
@@ -95,6 +95,11 @@ await describe({
         );
         expect(css,).toContain(
           '.freq-bar::-webkit-progress-value{background-color:var(--color-fg-strong)}',
+        );
+        // Firefox path: accent-color leaves its progress fill at the
+        // default blue, so the moz fill pseudo is pinned too.
+        expect(css,).toContain(
+          '.freq-bar::-moz-progress-bar{background-color:var(--color-fg-strong)}',
         );
       },
     },),

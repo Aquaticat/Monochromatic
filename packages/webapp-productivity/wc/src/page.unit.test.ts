@@ -10,6 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { FAVICON_SIZE, } from './favicon.ts';
 import {
   FREQUENCY_COLUMN_LABELS,
   renderPage,
@@ -19,6 +20,11 @@ import {
  * Fixture base64 payload standing in for the favicon PNG bytes.
  */
 const FAVICON_FIXTURE_BASE64 = 'iVBORw0KGgo=';
+
+/**
+ * Fixture base64 payload standing in for the favicon SVG markup.
+ */
+const FAVICON_SVG_FIXTURE_BASE64 = 'PHN2Zy8+';
 
 /**
  * Renders the page from fixture CSS/JS/favicon inputs, the shared
@@ -31,6 +37,7 @@ function renderFixturePage(): string {
     {
       css: '',
       js: '',
+      faviconSvgBase64: FAVICON_SVG_FIXTURE_BASE64,
       faviconPngBase64: FAVICON_FIXTURE_BASE64,
     },
   );
@@ -49,6 +56,7 @@ await describe({
           {
             css: 'body{color:red}',
             js: 'console.log(1)',
+            faviconSvgBase64: FAVICON_SVG_FIXTURE_BASE64,
             faviconPngBase64: FAVICON_FIXTURE_BASE64,
           },
         );
@@ -71,16 +79,29 @@ await describe({
       },
     },),
     it({
-      name: 'inlines the favicon as a PNG data URI link',
-      fn: async function inlinesFaviconDataUri(): Promise<void> {
+      name: 'inlines the favicon as SVG and PNG data URI links, vector first',
+      fn: async function inlinesFaviconDataUris(): Promise<void> {
         /**
          * Complete document rendered from fixture inputs.
          */
         const html = renderFixturePage();
 
-        expect(html,).toContain(
-          `<link rel="icon" type="image/png" href="data:image/png;base64,${FAVICON_FIXTURE_BASE64}">`,
-        );
+        /**
+         * Vector icon link: `sizes="any"` so engines that support SVG
+         * icons prefer it.
+         */
+        const svgLink =
+          `<link rel="icon" type="image/svg+xml" sizes="any" href="data:image/svg+xml;base64,${FAVICON_SVG_FIXTURE_BASE64}">`;
+
+        /**
+         * Raster fallback link.
+         */
+        const pngLink =
+          `<link rel="icon" type="image/png" sizes="${FAVICON_SIZE}x${FAVICON_SIZE}" href="data:image/png;base64,${FAVICON_FIXTURE_BASE64}">`;
+
+        expect(html,).toContain(svgLink,);
+        expect(html,).toContain(pngLink,);
+        expect(html.indexOf(svgLink,),).toBeLessThan(html.indexOf(pngLink,),);
       },
     },),
     it({

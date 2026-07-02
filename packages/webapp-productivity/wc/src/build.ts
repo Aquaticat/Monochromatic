@@ -7,6 +7,7 @@
  * Requires `mise run build:js:client` to have run first so
  * `dist/client/main.js` exists.
  */
+import { Buffer, } from 'node:buffer';
 import {
   mkdir,
   readFile,
@@ -14,7 +15,10 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { renderFaviconPngBase64, } from './favicon.ts';
+import {
+  renderFaviconPngBase64,
+  renderFaviconSvg,
+} from './favicon.ts';
 import { renderPage, } from './page.ts';
 import { renderStyles, } from './styles.ts';
 
@@ -72,12 +76,19 @@ const js = await readFile(
 );
 
 /**
+ * Vector favicon markup, base64-encoded for inlining as a data URI
+ */
+const faviconSvgBase64 = Buffer.from(renderFaviconSvg(),)
+  .toString('base64',);
+
+/**
  * Complete self-contained HTML document, assembled by {@link renderPage}
  */
 const html = renderPage(
   {
     css,
     js,
+    faviconSvgBase64,
     faviconPngBase64: await renderFaviconPngBase64(),
   },
 );

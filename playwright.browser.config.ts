@@ -12,6 +12,7 @@ const config: PlaywrightTestConfig = defineConfig({
   testMatch: [
     'module/es/src/**/*.browser.test.ts',
     'module/logger/src/**/*.browser.test.ts',
+    'webapp-productivity/wc/src/**/*.browser.test.ts',
   ],
   fullyParallel: true,
   retries: process.env

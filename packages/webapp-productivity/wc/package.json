@@ -16,6 +16,7 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
     "hb-subset-wasm": "catalog:",
+    "sharp": "catalog:",
     "tiny-readdir-glob": "catalog:",
     "wawoff2": "catalog:",
     "woff2-encode-wasm": "catalog:"
