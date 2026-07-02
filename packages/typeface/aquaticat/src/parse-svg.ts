@@ -49,6 +49,8 @@ const ATTRIBUTE_ABSENT: unique symbol = Symbol('aquaticat/svg-attribute-not-pres
 
 /**
  * Extracts an XML attribute value by name from a raw attribute string.
+ * Accepts both double- and single-quoted values: the Figma-exported master
+ * strip SVG this parser reads uses single quotes throughout.
  *
  * @param attrs - raw XML attribute string to search
  *
@@ -59,6 +61,7 @@ const ATTRIBUTE_ABSENT: unique symbol = Symbol('aquaticat/svg-attribute-not-pres
  * @example
  * ```ts
  * attr({ attrs: 'fill="red" stroke="black"', name: 'fill' }); // 'red'
+ * attr({ attrs: "fill='red' stroke='black'", name: 'fill' }); // 'red'
  * ```
  */
 function attr({
@@ -68,34 +71,40 @@ function attr({
   readonly attrs: string;
   readonly name: string;
 },): string | typeof ATTRIBUTE_ABSENT {
-  /**
-   * Literal token to locate; the value starts immediately after this prefix.
-   */
-  const needle = `${name}="`;
-  /**
-   * Index of the first occurrence of `name="`; -1 when the attribute is absent.
-   */
-  const start = attrs.indexOf(needle,);
-  if (start === (-1))
-    return ATTRIBUTE_ABSENT;
-  /**
-   * First char of the value, just past the `"` opener.
-   */
-  const valueStart = start + needle
-    .length;
-  /**
-   * Closing-quote position bounded by value start; -1 when the SVG is malformed.
-   */
-  const valueEnd = attrs.indexOf(
+  for (const quote of [
     '"',
-    valueStart,
-  );
-  if (valueEnd === (-1))
-    return ATTRIBUTE_ABSENT;
-  return attrs.slice(
-    valueStart,
-    valueEnd,
-  );
+    '\'',
+  ] as const) {
+    /**
+     * Literal token to locate for this quote style; the value starts immediately after this prefix.
+     */
+    const needle = `${name}=${quote}`;
+    /**
+     * Index of the first occurrence of `name=<quote>`; -1 when this quote style is absent.
+     */
+    const start = attrs.indexOf(needle,);
+    if (start === (-1))
+      continue;
+    /**
+     * First char of the value, just past the quote opener.
+     */
+    const valueStart = start + needle
+      .length;
+    /**
+     * Closing-quote position bounded by value start; -1 when the SVG is malformed.
+     */
+    const valueEnd = attrs.indexOf(
+      quote,
+      valueStart,
+    );
+    if (valueEnd === (-1))
+      continue;
+    return attrs.slice(
+      valueStart,
+      valueEnd,
+    );
+  }
+  return ATTRIBUTE_ABSENT;
 }
 
 /**
