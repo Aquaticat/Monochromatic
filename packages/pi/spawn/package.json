@@ -30,6 +30,7 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"
   },

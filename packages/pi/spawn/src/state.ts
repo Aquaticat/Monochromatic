@@ -5,13 +5,15 @@
  */
 
 import {
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  renameSync,
-  writeFileSync,
-} from 'node:fs';
+  mkdir,
+  readdir,
+  readFile,
+  rename,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
+
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   byPidDir,
@@ -22,6 +24,15 @@ import {
   spawnStatePath,
   type SpawnState,
 } from './paths.ts';
+
+//region Module logger
+
+/**
+ * Module logger tagged for spawn-pi coordination-state IO.
+ */
+const l = tagged({ tag: 'pi-spawn:state', },);
+
+//endregion Module logger
 
 //region Sentinels
 
@@ -34,6 +45,16 @@ import {
  * ```
  */
 const NOTHING_TO_REPORT: unique symbol = Symbol('spawn-pi/nothing-to-report',);
+
+/**
+ * Sentinel returned by a per-candidate read for an entry that does not become a parent result.
+ *
+ * @example
+ * ```typescript
+ * if (candidate === SKIPPED_CHILD) return;
+ * ```
+ */
+const SKIPPED_CHILD: unique symbol = Symbol('spawn-pi/child-skipped-during-scan',);
 
 //endregion Sentinels
 
@@ -53,7 +74,7 @@ const NOTHING_TO_REPORT: unique symbol = Symbol('spawn-pi/nothing-to-report',);
  * writePidMapping({ pid: process.pid, mapping });
  * ```
  */
-function writePidMapping(
+async function writePidMapping(
   {
     pid,
     mapping,
@@ -63,16 +84,16 @@ function writePidMapping(
     readonly mapping: PidMapping;
     readonly env?: Environment;
   },
-): void {
+): Promise<void> {
   /**
    * Directory receiving PID mapping files.
    */
   const dir = byPidDir(env,);
-  mkdirSync(
+  await mkdir(
     dir,
     { recursive: true, },
   );
-  writeFileSync(
+  await writeFile(
     join(
       dir,
       String(pid,),
@@ -97,7 +118,7 @@ function writePidMapping(
  * writeInitialSpawnState({ state });
  * ```
  */
-function writeInitialSpawnState(
+async function writeInitialSpawnState(
   {
     state,
     env = process.env,
@@ -105,12 +126,12 @@ function writeInitialSpawnState(
     readonly state: SpawnState;
     readonly env?: Environment;
   },
-): void {
-  mkdirSync(
+): Promise<void> {
+  await mkdir(
     spawnsDir(env,),
     { recursive: true, },
   );
-  writeFileSync(
+  await writeFile(
     spawnStatePath({
       spawnId: state.spawnId,
       env,
@@ -135,7 +156,7 @@ function writeInitialSpawnState(
  * claimSpawn({ spawnId: 'abc', sessionId: 'child', sessionFile: '/tmp/s.jsonl' });
  * ```
  */
-function claimSpawn(
+async function claimSpawn(
   {
     spawnId,
     sessionId,
@@ -147,12 +168,12 @@ function claimSpawn(
     readonly sessionFile: string;
     readonly env?: Environment;
   },
-): void {
+): Promise<void> {
   try {
     /**
      * Raw state written by CLI before child launched.
      */
-    const raw = readFileSync(
+    const raw = await readFile(
       spawnStatePath({
         spawnId,
         env,
@@ -177,7 +198,7 @@ function claimSpawn(
       sessionId,
       sessionFile,
     };
-    writeFileSync(
+    await writeFile(
       spawnStatePath({
         spawnId,
         env,
@@ -185,8 +206,13 @@ function claimSpawn(
       JSON.stringify(updated,),
     );
   }
-  catch {
-    // Stale environment or consumed state file: no-op.
+  catch (error: unknown) {
+    // Stale environment or consumed state file: continue without claiming.
+    tagged({
+      tag: claimSpawn.name,
+      l,
+    },)
+      .debug(`Could not claim spawn state for ${spawnId}: ${String(error,)}`,);
   }
 }
 
@@ -206,7 +232,7 @@ function claimSpawn(
  * completeSpawn({ spawnId: 'abc', sessionId: 'child', lastMessage: 'done' });
  * ```
  */
-function completeSpawn(
+async function completeSpawn(
   {
     spawnId,
     sessionId,
@@ -218,12 +244,12 @@ function completeSpawn(
     readonly lastMessage: string;
     readonly env?: Environment;
   },
-): void {
+): Promise<void> {
   try {
     /**
      * Raw state claimed by child session.
      */
-    const raw = readFileSync(
+    const raw = await readFile(
       spawnStatePath({
         spawnId,
         env,
@@ -248,7 +274,7 @@ function completeSpawn(
       lastMessage,
       status: 'stopped',
     };
-    writeFileSync(
+    await writeFile(
       spawnStatePath({
         spawnId,
         env,
@@ -256,8 +282,13 @@ function completeSpawn(
       JSON.stringify(updated,),
     );
   }
-  catch {
-    // Missing or already-consumed spawn state: no-op.
+  catch (error: unknown) {
+    // Missing or already-consumed spawn state: continue without completing.
+    tagged({
+      tag: completeSpawn.name,
+      l,
+    },)
+      .debug(`Could not complete spawn state for ${spawnId}: ${String(error,)}`,);
   }
 }
 
@@ -309,11 +340,19 @@ function formatSpawnResult(state: SpawnState,): string {
  * readSpawnsDir();
  * ```
  */
-function readSpawnsDir(env: Environment = process.env,): readonly string[] | typeof NOTHING_TO_REPORT {
+async function readSpawnsDir(
+  env: Environment = process.env,
+): Promise<readonly string[] | typeof NOTHING_TO_REPORT> {
   try {
-    return readdirSync(spawnsDir(env,),);
+    return await readdir(spawnsDir(env,),);
   }
-  catch {
+  catch (error: unknown) {
+    // Absent spawn directory is the normal empty state.
+    tagged({
+      tag: readSpawnsDir.name,
+      l,
+    },)
+      .debug(`No spawn directory to read: ${String(error,)}`,);
     return NOTHING_TO_REPORT;
   }
 }
@@ -354,22 +393,119 @@ function spawnIdFromJsonFilename(filename: string,): string {
 }
 
 /**
- * Scans stopped children for a parent session and optionally consumes them.
+ * Reads one candidate spawn file, optionally consuming it, when it belongs to the target parent.
+ *
+ * @param filename - directory entry under active spawn state directory.
  *
  * @param parentSessionId - parent Pi session identifier to match.
  *
- * @param consume - whether matching JSON files should be renamed to reported markers.
+ * @param consume - whether matching JSON file is renamed to reported marker.
  *
  * @param env - {@link Environment} values controlling source directory.
  *
- * @returns formatted result text, or {@link NOTHING_TO_REPORT}.
+ * @returns formatted result for matching stopped child, or {@link SKIPPED_CHILD} when skipped.
  *
  * @example
  * ```typescript
- * checkCompletedChildren({ parentSessionId: 'parent', consume: true });
+ * await consumeMatchingChild({ filename: 'abc.json', parentSessionId: 'p', consume: true });
  * ```
  */
-function checkCompletedChildren(
+async function consumeMatchingChild(
+  {
+    filename,
+    parentSessionId,
+    consume,
+    env = process.env,
+  }: {
+    readonly filename: string;
+    readonly parentSessionId: string;
+    readonly consume: boolean;
+    readonly env?: Environment;
+  },
+): Promise<string | typeof SKIPPED_CHILD> {
+  if (!isSpawnJsonFilename(filename,))
+    return SKIPPED_CHILD;
+
+  /**
+   * Spawn identifier derived from filename.
+   */
+  const spawnId = spawnIdFromJsonFilename(filename,);
+  try {
+    /**
+     * Raw candidate state text.
+     */
+    const raw = await readFile(
+      spawnStatePath({
+        spawnId,
+        env,
+      },),
+      'utf8',
+    );
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted JSON file written by spawn-pi modules. */
+    /**
+     * Parsed candidate state used for parent and status filtering.
+     */
+    const state = JSON.parse(raw,) as SpawnState;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+
+    if ((state.parentSessionId !== parentSessionId) || (state.status !== 'stopped'))
+      return SKIPPED_CHILD;
+
+    if (consume) {
+      try {
+        await rename(
+          spawnStatePath({
+            spawnId,
+            env,
+          },),
+          reportedStatePath({
+            spawnId,
+            env,
+          },),
+        );
+      }
+      catch (error: unknown) {
+        // Lost the race to consume this child: skip without reporting it.
+        tagged({
+          tag: consumeMatchingChild.name,
+          l,
+        },)
+          .debug(`Could not consume spawn state for ${spawnId}: ${String(error,)}`,);
+        return SKIPPED_CHILD;
+      }
+    }
+
+    return formatSpawnResult(state,);
+  }
+  catch (error: unknown) {
+    // Unreadable or malformed candidate state: skip it.
+    tagged({
+      tag: consumeMatchingChild.name,
+      l,
+    },)
+      .debug(`Could not read spawn state for ${spawnId}: ${String(error,)}`,);
+    return SKIPPED_CHILD;
+  }
+}
+
+/**
+ * Scans the spawn directory concurrently for stopped children of a parent session and optionally
+ * consumes them.
+ *
+ * @param parentSessionId - parent Pi session identifier to match.
+ *
+ * @param consume - whether matching JSON files are renamed to reported markers.
+ *
+ * @param env - {@link Environment} values controlling source directory.
+ *
+ * @returns joined formatted results, or {@link NOTHING_TO_REPORT}.
+ *
+ * @example
+ * ```typescript
+ * await checkCompletedChildren({ parentSessionId: 'parent', consume: true });
+ * ```
+ */
+async function checkCompletedChildren(
   {
     parentSessionId,
     consume,
@@ -379,72 +515,34 @@ function checkCompletedChildren(
     readonly consume: boolean;
     readonly env?: Environment;
   },
-): string | typeof NOTHING_TO_REPORT {
+): Promise<string | typeof NOTHING_TO_REPORT> {
   /**
    * Directory entries under active spawn state directory.
    */
-  const entries = readSpawnsDir(env,);
+  const entries = await readSpawnsDir(env,);
   if (entries === NOTHING_TO_REPORT)
     return NOTHING_TO_REPORT;
 
   /**
-   * Formatted results for matching stopped children.
+   * Candidate results read concurrently, one slot per directory entry.
    */
-  const results: string[] = [];
+  const candidates = await Promise.all(entries.map(
+    function readCandidate(filename,): Promise<string | typeof SKIPPED_CHILD> {
+      return consumeMatchingChild({
+        filename,
+        parentSessionId,
+        consume,
+        env,
+      },);
+    },
+  ),);
 
-  for (const filename of entries) {
-    if (!isSpawnJsonFilename(filename,))
-      continue;
-
-    /**
-     * Spawn identifier derived from filename.
-     */
-    const spawnId = spawnIdFromJsonFilename(filename,);
-    try {
-      /**
-       * Raw candidate state text.
-       */
-      const raw = readFileSync(
-        spawnStatePath({
-          spawnId,
-          env,
-        },),
-        'utf8',
-      );
-      /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted JSON file written by spawn-pi modules. */
-      /**
-       * Parsed candidate state used for parent and status filtering.
-       */
-      const state = JSON.parse(raw,) as SpawnState;
-      /* oxlint-enable typescript/no-unsafe-type-assertion */
-
-      if ((state.parentSessionId !== parentSessionId) || (state.status !== 'stopped'))
-        continue;
-
-      if (consume) {
-        try {
-          renameSync(
-            spawnStatePath({
-              spawnId,
-              env,
-            },),
-            reportedStatePath({
-              spawnId,
-              env,
-            },),
-          );
-        }
-        catch {
-          continue;
-        }
-      }
-
-      results.push(formatSpawnResult(state,),);
-    }
-    catch {
-      continue;
-    }
-  }
+  /**
+   * Matching formatted results with skipped candidates removed.
+   */
+  const results = candidates.filter(function isPresent(result,): result is string {
+    return result !== SKIPPED_CHILD;
+  },);
 
   return results.length === 0
     ? NOTHING_TO_REPORT

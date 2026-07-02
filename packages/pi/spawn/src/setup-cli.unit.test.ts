@@ -81,7 +81,7 @@ await describe({
         it({
           name: 'returns a boolean for current PATH',
           fn: async function testCliIsOnPath() {
-            expect(typeof cliIsOnPath(),).toBe('boolean',);
+            expect(typeof await cliIsOnPath(),).toBe('boolean',);
           },
         },),
       ],
@@ -92,8 +92,8 @@ await describe({
         it({
           name: 'symlinks source cli into user local bin when command is absent',
           fn: async function testAutoSetupCli() {
-            using packageDir = tempDir({ prefix: 'spawn-pi-package-', },);
-            using homeDir = tempDir({ prefix: 'spawn-pi-home-', },);
+            await using packageDir = await tempDir({ prefix: 'spawn-pi-package-', },);
+            await using homeDir = await tempDir({ prefix: 'spawn-pi-home-', },);
             using _path = envVar({
               name: 'PATH',
               value: '/usr/bin:/bin',
@@ -126,7 +126,7 @@ await describe({
             /**
              * CLI setup result.
              */
-            const result = autoSetupCli({
+            const result = await autoSetupCli({
               extensionPath: join(
                 packageDir.path,
                 'src',

@@ -4,13 +4,14 @@
  * @module
  */
 
-import { spawnSync, } from 'node:child_process';
+import { execFile, } from 'node:child_process';
 import {
-  existsSync,
-  readFileSync,
-} from 'node:fs';
+  access,
+  readFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
+import { promisify, } from 'node:util';
 
 import type { ExtensionFactory, } from '@earendil-works/pi-coding-agent';
 
@@ -78,6 +79,59 @@ type SpawnPiExtensionModule = {
 
 //endregion Types
 
+//region Subprocess helpers
+
+/* oxlint-disable typescript/strict-void-return -- node:util.promisify intentionally accepts execFile even though execFile also returns a ChildProcess handle; this wrapper only consumes the promise result. */
+/**
+ * Promise-returning `execFile` used for inert CLI help checks.
+ */
+const execFileAsync = promisify(execFile,);
+/* oxlint-enable typescript/strict-void-return */
+
+/**
+ * Runs an inert CLI help invocation and throws with captured detail when it exits non-zero.
+ *
+ * @param command - executable to invoke.
+ *
+ * @param args - CLI arguments, expected to include an inert `--help`.
+ *
+ * @param label - description used in failure message.
+ *
+ * @throws when invocation exits non-zero or fails to spawn.
+ *
+ * @example
+ * ```typescript
+ * await runHelpOrThrow({ command: '/pkg/cli.mjs', args: ['--help'], label: 'spawn-pi --help' });
+ * ```
+ */
+async function runHelpOrThrow(
+  {
+    command,
+    args,
+    label,
+  }: {
+    readonly command: string;
+    readonly args: readonly string[];
+    readonly label: string;
+  },
+): Promise<void> {
+  try {
+    await execFileAsync(
+      command,
+      args,
+      { encoding: 'utf8', },
+    );
+  }
+  catch (error: unknown) {
+    throw new Error(
+      `${label} failed: ${String(error,)}`,
+      { cause: error, },
+    );
+  }
+}
+
+//endregion Subprocess helpers
+
 //region Verification
 
 /**
@@ -95,8 +149,8 @@ type SpawnPiExtensionModule = {
  */
 async function verifyBuiltSpawnPi(): Promise<string> {
   await verifyBuiltExtension();
-  verifyBuiltCli();
-  verifySourceCli();
+  await verifyBuiltCli();
+  await verifySourceCli();
 
   return 'spawn-pi verified: extension registrations, Node CLI artifact, source CLI help, and inert built CLI help';
 }
@@ -140,7 +194,7 @@ async function verifyBuiltExtension(): Promise<void> {
   /**
    * Temporary Pi agent directory for inert extension startup.
    */
-  using dir = tempDir({ prefix: 'spawn-pi-verify-', },);
+  await using dir = await tempDir({ prefix: 'spawn-pi-verify-', },);
   /**
    * Environment override routing extension state into temp directory.
    */
@@ -186,10 +240,10 @@ async function verifyBuiltExtension(): Promise<void> {
  *
  * @example
  * ```typescript
- * verifyBuiltCli();
+ * await verifyBuiltCli();
  * ```
  */
-function verifyBuiltCli(): void {
+async function verifyBuiltCli(): Promise<void> {
   /**
    * Absolute built CLI path.
    */
@@ -198,41 +252,31 @@ function verifyBuiltCli(): void {
     import.meta.url,
   ),);
 
-  if (!existsSync(builtCliPath,))
-    throw new Error(`missing built spawn-pi CLI: ${builtCliPath}`,);
+  try {
+    await access(builtCliPath,);
+  }
+  catch (error: unknown) {
+    throw new Error(
+      `missing built spawn-pi CLI: ${builtCliPath}`,
+      { cause: error, },
+    );
+  }
 
   /**
    * Built CLI source text for shebang verification.
    */
-  const builtCliText = readFileSync(
+  const builtCliText = await readFile(
     builtCliPath,
     'utf8',
   );
   if (!builtCliText.startsWith(EXPECTED_NODE_SHEBANG,))
     throw new Error('built spawn-pi CLI does not use Node shebang',);
 
-  /**
-   * Inert CLI help invocation result.
-   */
-  const helpResult = spawnSync(
-    builtCliPath,
-    [
-      '--help',
-    ],
-    {
-      encoding: 'utf8',
-    },
-  );
-
-  if (helpResult.status !== 0) {
-    throw new Error([
-      'spawn-pi --help failed',
-      `status: ${String(helpResult.status,)}`,
-      `error: ${String(helpResult.error,)}`,
-      `stdout: ${helpResult.stdout}`,
-      `stderr: ${helpResult.stderr}`,
-    ].join('\n',),);
-  }
+  await runHelpOrThrow({
+    command: builtCliPath,
+    args: ['--help',],
+    label: 'built spawn-pi --help',
+  },);
 }
 
 /**
@@ -242,10 +286,10 @@ function verifyBuiltCli(): void {
  *
  * @example
  * ```typescript
- * verifySourceCli();
+ * await verifySourceCli();
  * ```
  */
-function verifySourceCli(): void {
+async function verifySourceCli(): Promise<void> {
   /**
    * Absolute source CLI path.
    */
@@ -254,29 +298,14 @@ function verifySourceCli(): void {
     import.meta.url,
   ),);
 
-  /**
-   * Inert source CLI help invocation result.
-   */
-  const helpResult = spawnSync(
-    NODE_EXECUTABLE,
-    [
+  await runHelpOrThrow({
+    command: NODE_EXECUTABLE,
+    args: [
       sourceCliPath,
       '--help',
     ],
-    {
-      encoding: 'utf8',
-    },
-  );
-
-  if (helpResult.status !== 0) {
-    throw new Error([
-      'source spawn-pi --help failed under Node',
-      `status: ${String(helpResult.status,)}`,
-      `error: ${String(helpResult.error,)}`,
-      `stdout: ${helpResult.stdout}`,
-      `stderr: ${helpResult.stderr}`,
-    ].join('\n',),);
-  }
+    label: 'source spawn-pi --help under Node',
+  },);
 }
 
 /**

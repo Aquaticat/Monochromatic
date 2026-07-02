@@ -5,11 +5,13 @@
  */
 
 import {
-  readdirSync,
-  readFileSync,
-  statSync,
-} from 'node:fs';
+  readdir,
+  readFile,
+  stat,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
+
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   byPidDir,
@@ -17,6 +19,15 @@ import {
   type PidMapping,
 } from './paths.ts';
 import { splitWhitespace, } from './text-scan.ts';
+
+//region Module logger
+
+/**
+ * Module logger tagged for spawn-pi parent-session resolution.
+ */
+const l = tagged({ tag: 'pi-spawn:session-finder', },);
+
+//endregion Module logger
 
 //region Sentinels
 
@@ -46,12 +57,12 @@ const SESSION_NOT_FOUND: unique symbol = Symbol('spawn-pi/session-not-found',);
  * readParentPid(process.pid);
  * ```
  */
-function readParentPid(pid: number,): number | typeof SESSION_NOT_FOUND {
+async function readParentPid(pid: number,): Promise<number | typeof SESSION_NOT_FOUND> {
   try {
     /**
      * Status file contents for process.
      */
-    const statusContent = readFileSync(
+    const statusContent = await readFile(
       `/proc/${String(pid,)}/status`,
       'utf8',
     );
@@ -69,17 +80,22 @@ function readParentPid(pid: number,): number | typeof SESSION_NOT_FOUND {
     /**
      * Parsed parent process id from status line.
      */
-    const parentPid = Number.parseInt(
+    const parentPid = Math.trunc(Number(
       splitWhitespace(ppidLine,)[1]
         ?? '0',
-      10,
-    );
+    ),);
 
     return Number.isFinite(parentPid,)
       ? parentPid
       : SESSION_NOT_FOUND;
   }
-  catch {
+  catch (error: unknown) {
+    // Procfs status unavailable on this host: no parent to resolve.
+    tagged({
+      tag: readParentPid.name,
+      l,
+    },)
+      .debug(`Could not read parent pid for ${String(pid,)}: ${String(error,)}`,);
     return SESSION_NOT_FOUND;
   }
 }
@@ -99,10 +115,10 @@ function readParentPid(pid: number,): number | typeof SESSION_NOT_FOUND {
  *
  * @example
  * ```typescript
- * readPidMapping({ pid: process.pid });
+ * await readPidMapping({ pid: process.pid });
  * ```
  */
-function readPidMapping(
+async function readPidMapping(
   {
     pid,
     env = process.env,
@@ -110,7 +126,7 @@ function readPidMapping(
     readonly pid: number;
     readonly env?: Environment;
   },
-): PidMapping | typeof SESSION_NOT_FOUND {
+): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   try {
     /**
      * Mapping file path for candidate process id.
@@ -122,7 +138,7 @@ function readPidMapping(
     /**
      * Mapping file JSON text.
      */
-    const raw = readFileSync(
+    const raw = await readFile(
       pidFilePath,
       'utf8',
     );
@@ -134,7 +150,13 @@ function readPidMapping(
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return mapping;
   }
-  catch {
+  catch (error: unknown) {
+    // Absent or unreadable mapping file for this pid: no mapping.
+    tagged({
+      tag: readPidMapping.name,
+      l,
+    },)
+      .debug(`Could not read pid mapping for ${String(pid,)}: ${String(error,)}`,);
     return SESSION_NOT_FOUND;
   }
 }
@@ -150,10 +172,10 @@ function readPidMapping(
  *
  * @example
  * ```typescript
- * walkProcessTreeFrom({ pid: process.ppid });
+ * await walkProcessTreeFrom({ pid: process.ppid });
  * ```
  */
-function walkProcessTreeFrom(
+async function walkProcessTreeFrom(
   {
     pid,
     env = process.env,
@@ -161,12 +183,13 @@ function walkProcessTreeFrom(
     readonly pid: number;
     readonly env?: Environment;
   },
-): PidMapping | typeof SESSION_NOT_FOUND {
+): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   for (let currentPid = pid; currentPid > 1;) {
     /**
      * Mapping directly attached to current process id.
      */
-    const direct = readPidMapping({
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Ancestry walk is inherently sequential; each step reads the mapping for the pid resolved by the previous step.
+    const direct = await readPidMapping({
       pid: currentPid,
       env,
     },);
@@ -176,7 +199,8 @@ function walkProcessTreeFrom(
     /**
      * Parent process id for next step upward.
      */
-    const parentPid = readParentPid(currentPid,);
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Ancestry walk is inherently sequential; the next pid depends on this pid's procfs parent.
+    const parentPid = await readParentPid(currentPid,);
     if (parentPid === SESSION_NOT_FOUND)
       return SESSION_NOT_FOUND;
     currentPid = parentPid;
@@ -197,11 +221,97 @@ function walkProcessTreeFrom(
  * readByPidDir();
  * ```
  */
-function readByPidDir(env: Environment = process.env,): readonly string[] | typeof SESSION_NOT_FOUND {
+async function readByPidDir(
+  env: Environment = process.env,
+): Promise<readonly string[] | typeof SESSION_NOT_FOUND> {
   try {
-    return readdirSync(byPidDir(env,),);
+    return await readdir(byPidDir(env,),);
   }
-  catch {
+  catch (error: unknown) {
+    // Absent mapping directory means no parent session was ever registered.
+    tagged({
+      tag: readByPidDir.name,
+      l,
+    },)
+      .debug(`Could not read pid mapping directory: ${String(error,)}`,);
+    return SESSION_NOT_FOUND;
+  }
+}
+
+/**
+ * PID mapping paired with its file modification time for recency ordering.
+ */
+type MappingCandidate = {
+  /**
+   * Mapping parsed from a PID file.
+   */
+  readonly mapping: PidMapping;
+  /**
+   * Mapping file modification time in milliseconds.
+   */
+  readonly mtime: number;
+};
+
+/**
+ * Reads a single PID mapping file with its modification time.
+ *
+ * @param filename - mapping file name under PID mapping directory.
+ *
+ * @param env - {@link Environment} values controlling mapping directory.
+ *
+ * @returns {@link MappingCandidate}, or {@link SESSION_NOT_FOUND} when unreadable.
+ *
+ * @example
+ * ```typescript
+ * await readMappingCandidate({ filename: '123' });
+ * ```
+ */
+async function readMappingCandidate(
+  {
+    filename,
+    env = process.env,
+  }: {
+    readonly filename: string;
+    readonly env?: Environment;
+  },
+): Promise<MappingCandidate | typeof SESSION_NOT_FOUND> {
+  try {
+    /**
+     * Candidate mapping file path.
+     */
+    const filePath = join(
+      byPidDir(env,),
+      filename,
+    );
+    /**
+     * Candidate file stats carrying modification time.
+     */
+    const stats = await stat(filePath,);
+    /**
+     * Candidate JSON text.
+     */
+    const raw = await readFile(
+      filePath,
+      'utf8',
+    );
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted JSON file written by spawn-pi extension. */
+    /**
+     * Candidate mapping parsed from JSON.
+     */
+    const mapping = JSON.parse(raw,) as PidMapping;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    return {
+      mapping,
+      mtime: stats.mtimeMs,
+    };
+  }
+  catch (error: unknown) {
+    // Candidate vanished or was malformed between listing and read: skip it.
+    tagged({
+      tag: readMappingCandidate.name,
+      l,
+    },)
+      .debug(`Could not read mapping candidate ${filename}: ${String(error,)}`,);
     return SESSION_NOT_FOUND;
   }
 }
@@ -215,71 +325,47 @@ function readByPidDir(env: Environment = process.env,): readonly string[] | type
  *
  * @example
  * ```typescript
- * findByMostRecent();
+ * await findByMostRecent();
  * ```
  */
-function findByMostRecent(env: Environment = process.env,): PidMapping | typeof SESSION_NOT_FOUND {
+async function findByMostRecent(env: Environment = process.env,): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   /**
    * Mapping directory entries to inspect.
    */
-  const entries = readByPidDir(env,);
+  const entries = await readByPidDir(env,);
   if (entries === SESSION_NOT_FOUND)
     return SESSION_NOT_FOUND;
 
   /**
+   * Candidate mappings read concurrently, one slot per directory entry.
+   */
+  const candidates = await Promise.all(entries.map(
+    function readCandidate(filename,): Promise<MappingCandidate | typeof SESSION_NOT_FOUND> {
+      return readMappingCandidate({
+        filename,
+        env,
+      },);
+    },
+  ),);
+
+  /**
    * Newest mapping accumulator.
    */
-  type NewestMapping = {
-    readonly mapping: PidMapping;
-    readonly mtime: number;
-  } | typeof SESSION_NOT_FOUND;
+  type NewestMapping = MappingCandidate | typeof SESSION_NOT_FOUND;
 
   /**
    * Most recent readable mapping across all PID files.
    */
-  const newest = entries.reduce<NewestMapping>(
+  const newest = candidates.reduce<NewestMapping>(
     function pickNewer(
       current,
-      filename,
+      candidate,
     ): NewestMapping {
-      try {
-        /**
-         * Candidate mapping file path.
-         */
-        const filePath = join(
-          byPidDir(env,),
-          filename,
-        );
-        /**
-         * Candidate modification time used for ordering.
-         */
-        const mtime = statSync(filePath,)
-          .mtimeMs;
-        /**
-         * Candidate JSON text.
-         */
-        const raw = readFileSync(
-          filePath,
-          'utf8',
-        );
-        /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted JSON file written by spawn-pi extension. */
-        /**
-         * Candidate mapping parsed from JSON.
-         */
-        const mapping = JSON.parse(raw,) as PidMapping;
-        /* oxlint-enable typescript/no-unsafe-type-assertion */
-
-        if ((current === SESSION_NOT_FOUND) || (mtime > current.mtime)) {
-          return {
-            mapping,
-            mtime,
-          };
-        }
+      if (candidate === SESSION_NOT_FOUND)
         return current;
-      }
-      catch {
-        return current;
-      }
+      if ((current === SESSION_NOT_FOUND) || (candidate.mtime > current.mtime))
+        return candidate;
+      return current;
     },
     SESSION_NOT_FOUND,
   );
@@ -298,20 +384,22 @@ function findByMostRecent(env: Environment = process.env,): PidMapping | typeof 
  *
  * @example
  * ```typescript
- * findCallingSession();
+ * await findCallingSession();
  * ```
  */
-function findCallingSession(env: Environment = process.env,): PidMapping | typeof SESSION_NOT_FOUND {
+async function findCallingSession(
+  env: Environment = process.env,
+): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   /**
    * Precise process-tree result.
    */
-  const fromTree = walkProcessTreeFrom({
+  const fromTree = await walkProcessTreeFrom({
     pid: process.ppid,
     env,
   },);
 
   return fromTree === SESSION_NOT_FOUND
-    ? findByMostRecent(env,)
+    ? await findByMostRecent(env,)
     : fromTree;
 }
 

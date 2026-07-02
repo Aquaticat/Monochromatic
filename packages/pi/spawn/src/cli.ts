@@ -180,7 +180,7 @@ const spawnArgs = args.extraArguments === undefined
 /**
  * Resolved parent Pi session identity for this CLI invocation.
  */
-const identity = findCallingSession();
+const identity = await findCallingSession();
 
 if (identity === SESSION_NOT_FOUND) {
   console.error(SESSION_NOT_FOUND_WARNING,);
@@ -212,7 +212,7 @@ else {
     cwd,
   },);
 
-  writeInitialSpawnState({ state, },);
+  await writeInitialSpawnState({ state, },);
 
   /**
    * Terminal invocation used to open child Pi.

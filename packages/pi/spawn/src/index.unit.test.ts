@@ -118,7 +118,7 @@ await describe({
     it({
       name: 'session_start writes pid mapping, extension env, and child claim',
       fn: async function testSessionStart() {
-        using dir = tempDir({ prefix: 'spawn-pi-index-start-', },);
+        await using dir = await tempDir({ prefix: 'spawn-pi-index-start-', },);
         using _agentDir = envVar({
           name: 'PI_CODING_AGENT_DIR',
           value: dir.path,
@@ -132,7 +132,7 @@ await describe({
           value: CLEAR_ENV,
         },);
 
-        writeInitialSpawnState({ state: spawnStateFixture(), },);
+        await writeInitialSpawnState({ state: spawnStateFixture(), },);
         const harness = fakePiApi();
         spawnPi(harness.api,);
 
@@ -162,7 +162,7 @@ await describe({
     it({
       name: 'agent_end writes child completion into claimed spawn state',
       fn: async function testAgentEndCompletion() {
-        using dir = tempDir({ prefix: 'spawn-pi-index-end-', },);
+        await using dir = await tempDir({ prefix: 'spawn-pi-index-end-', },);
         using _agentDir = envVar({
           name: 'PI_CODING_AGENT_DIR',
           value: dir.path,
@@ -172,7 +172,7 @@ await describe({
           value: 'spawn-1',
         },);
 
-        writeInitialSpawnState({
+        await writeInitialSpawnState({
           state: spawnStateFixture({
             sessionId: 'child-session',
             sessionFile: '/tmp/child.jsonl',
@@ -211,7 +211,7 @@ await describe({
     it({
       name: 'deliverCompletedChildren sends completed child message and consumes state',
       fn: async function testDeliverCompletedChildren() {
-        using dir = tempDir({ prefix: 'spawn-pi-index-deliver-', },);
+        await using dir = await tempDir({ prefix: 'spawn-pi-index-deliver-', },);
         using _agentDir = envVar({
           name: 'PI_CODING_AGENT_DIR',
           value: dir.path,
@@ -221,7 +221,7 @@ await describe({
           value: CLEAR_ENV,
         },);
 
-        writeInitialSpawnState({
+        await writeInitialSpawnState({
           state: spawnStateFixture({
             sessionId: 'child-session',
             sessionFile: '/tmp/child.jsonl',
@@ -230,7 +230,7 @@ await describe({
           },),
         },);
         const harness = fakePiApi();
-        const delivered = deliverCompletedChildren({
+        const delivered = await deliverCompletedChildren({
           pi: harness.api,
           ctx: createExtensionContext({ sessionId: 'parent-session', },),
         },);

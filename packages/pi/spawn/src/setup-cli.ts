@@ -4,19 +4,38 @@
  * @module
  */
 
-import { execFileSync, } from 'node:child_process';
+import { execFile, } from 'node:child_process';
 import {
-  chmodSync,
-  mkdirSync,
-  symlinkSync,
-  unlinkSync,
-} from 'node:fs';
+  chmod,
+  mkdir,
+  symlink,
+  unlink,
+} from 'node:fs/promises';
 import {
   basename,
   dirname,
   join,
   resolve,
 } from 'node:path';
+import { promisify, } from 'node:util';
+
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+//region Module helpers
+
+/**
+ * Module logger tagged for spawn-pi CLI setup.
+ */
+const l = tagged({ tag: 'pi-spawn:setup-cli', },);
+
+/* oxlint-disable typescript/strict-void-return -- node:util.promisify intentionally accepts execFile even though execFile also returns a ChildProcess handle; this wrapper only consumes the promise result. */
+/**
+ * Promise-returning `execFile` used for inert command probing.
+ */
+const execFileAsync = promisify(execFile,);
+/* oxlint-enable typescript/strict-void-return */
+
+//endregion Module helpers
 
 //region Sentinels
 
@@ -169,22 +188,25 @@ function cliPathFromExtensionPath(extensionPath: string,): string {
  *
  * @example
  * ```typescript
- * if (cliIsOnPath()) return;
+ * if (await cliIsOnPath()) return;
  * ```
  */
-function cliIsOnPath(env: Readonly<NodeJS.ProcessEnv> = process.env,): boolean {
+async function cliIsOnPath(env: Readonly<NodeJS.ProcessEnv> = process.env,): Promise<boolean> {
   try {
-    execFileSync(
+    await execFileAsync(
       'which',
       ['spawn-pi',],
-      {
-        env: { ...env, },
-        stdio: 'ignore',
-      },
+      { env: { ...env, }, },
     );
     return true;
   }
-  catch {
+  catch (error: unknown) {
+    // Non-zero `which` exit means the command is not yet discoverable.
+    tagged({
+      tag: cliIsOnPath.name,
+      l,
+    },)
+      .debug(`spawn-pi not found on PATH: ${String(error,)}`,);
     return false;
   }
 }
@@ -200,10 +222,10 @@ function cliIsOnPath(env: Readonly<NodeJS.ProcessEnv> = process.env,): boolean {
  *
  * @example
  * ```typescript
- * autoSetupCli({ extensionPath: '/pkg/dist/final/node/index.mjs' });
+ * await autoSetupCli({ extensionPath: '/pkg/dist/final/node/index.mjs' });
  * ```
  */
-function autoSetupCli(
+async function autoSetupCli(
   {
     extensionPath,
     env = process.env,
@@ -211,8 +233,8 @@ function autoSetupCli(
     readonly extensionPath: string;
     readonly env?: Readonly<NodeJS.ProcessEnv>;
   },
-): string | typeof NO_CLI_SETUP_WARNING {
-  if (cliIsOnPath(env,))
+): Promise<string | typeof NO_CLI_SETUP_WARNING> {
+  if (await cliIsOnPath(env,))
     return NO_CLI_SETUP_WARNING;
 
   /**
@@ -237,7 +259,7 @@ function autoSetupCli(
   );
 
   try {
-    mkdirSync(
+    await mkdir(
       localBin,
       { recursive: true, },
     );
@@ -246,19 +268,24 @@ function autoSetupCli(
      * Unix executable permission bits.
      */
     const EXECUTABLE_PERMISSION = 0o755;
-    chmodSync(
+    await chmod(
       cliSource,
       EXECUTABLE_PERMISSION,
     );
 
     try {
-      unlinkSync(symlinkPath,);
+      await unlink(symlinkPath,);
     }
-    catch {
-      // Missing stale symlink is acceptable.
+    catch (error: unknown) {
+      // Missing stale symlink is acceptable; nothing to remove before re-linking.
+      tagged({
+        tag: autoSetupCli.name,
+        l,
+      },)
+        .debug(`No stale symlink to remove at ${symlinkPath}: ${String(error,)}`,);
     }
 
-    symlinkSync(
+    await symlink(
       cliSource,
       symlinkPath,
     );
@@ -275,7 +302,13 @@ function autoSetupCli(
         '  export PATH="$HOME/.local/bin:$PATH"',
       ].join('\n',);
   }
-  catch {
+  catch (error: unknown) {
+    // Symlink creation failed; surface a manual-setup warning instead.
+    tagged({
+      tag: autoSetupCli.name,
+      l,
+    },)
+      .debug(`Could not auto-setup spawn-pi CLI: ${String(error,)}`,);
     return [
       '[spawn-pi] Could not auto-setup spawn-pi CLI.',
       `Symlink target: ${cliSource}`,

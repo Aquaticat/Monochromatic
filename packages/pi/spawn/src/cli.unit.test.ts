@@ -178,7 +178,7 @@ await describe({
         it({
           name: 'warns and launches child Pi without result forwarding when no parent mapping exists',
           fn: async function testUnlinkedFallback() {
-            using dir = tempDir({ prefix: 'spawn-pi-cli-fallback-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-cli-fallback-', },);
 
             /**
              * Fake executable directory prepended to PATH.

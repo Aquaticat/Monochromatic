@@ -5,9 +5,9 @@
  */
 
 import {
-  mkdtempSync,
-  rmSync,
-} from 'node:fs';
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 import { tmpdir, } from 'node:os';
 
@@ -24,9 +24,9 @@ import { tmpdir, } from 'node:os';
 const CLEAR_ENV: unique symbol = Symbol('spawn pi test environment variable cleared',);
 
 /**
- * Disposable temporary directory handle.
+ * Async-disposable temporary directory handle.
  */
-type TempDirHandle = Disposable & {
+type TempDirHandle = AsyncDisposable & {
   /**
    * Temporary directory path.
    */
@@ -34,36 +34,36 @@ type TempDirHandle = Disposable & {
 };
 
 /**
- * Creates temporary directory removed on disposal.
+ * Creates temporary directory removed on async disposal.
  *
  * @param prefix - filename prefix under OS temp directory.
  *
- * @returns disposable temp directory handle.
+ * @returns async-disposable temp directory handle.
  *
  * @example
  * ```typescript
- * using dir = tempDir({ prefix: 'spawn-pi-' });
+ * await using dir = await tempDir({ prefix: 'spawn-pi-' });
  * ```
  */
-function tempDir(
+async function tempDir(
   {
     prefix,
   }: {
     readonly prefix: string;
   },
-): TempDirHandle {
+): Promise<TempDirHandle> {
   /**
    * Temporary directory path created for test.
    */
-  const dirPath = mkdtempSync(join(
+  const dirPath = await mkdtemp(join(
     tmpdir(),
     prefix,
   ),);
 
   return {
     path: dirPath,
-    [Symbol.dispose]() {
-      rmSync(
+    async [Symbol.asyncDispose]() {
+      await rm(
         dirPath,
         {
           recursive: true,

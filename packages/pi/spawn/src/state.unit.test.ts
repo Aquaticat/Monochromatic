@@ -104,13 +104,13 @@ await describe({
         it({
           name: 'writes mapping under by-pid directory',
           fn: async function testWritePidMapping() {
-            using dir = tempDir({ prefix: 'spawn-pi-state-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-state-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
             },);
 
-            writePidMapping({
+            await writePidMapping({
               pid: 123,
               mapping: {
                 sessionId: 'parent-session',
@@ -134,13 +134,13 @@ await describe({
         it({
           name: 'claims only unclaimed spawn state',
           fn: async function testClaimSpawn() {
-            using dir = tempDir({ prefix: 'spawn-pi-claim-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-claim-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
             },);
 
-            writeInitialSpawnState({
+            await writeInitialSpawnState({
               state: spawnStateFixture({
                 sessionId: '',
                 sessionFile: '',
@@ -148,7 +148,7 @@ await describe({
                 lastMessage: '',
               },),
             },);
-            claimSpawn({
+            await claimSpawn({
               spawnId: 'spawn-1',
               sessionId: 'child-session',
               sessionFile: '/tmp/child.jsonl',
@@ -166,19 +166,19 @@ await describe({
         it({
           name: 'marks owned spawn as stopped with last message',
           fn: async function testCompleteSpawn() {
-            using dir = tempDir({ prefix: 'spawn-pi-complete-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-complete-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
             },);
 
-            writeInitialSpawnState({
+            await writeInitialSpawnState({
               state: spawnStateFixture({
                 status: 'running',
                 lastMessage: '',
               },),
             },);
-            completeSpawn({
+            await completeSpawn({
               spawnId: 'spawn-1',
               sessionId: 'child-session',
               lastMessage: 'finished',
@@ -195,19 +195,19 @@ await describe({
         it({
           name: 'ignores completion from non-owner session',
           fn: async function testWrongOwnerComplete() {
-            using dir = tempDir({ prefix: 'spawn-pi-wrong-owner-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-wrong-owner-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
             },);
 
-            writeInitialSpawnState({
+            await writeInitialSpawnState({
               state: spawnStateFixture({
                 status: 'running',
                 lastMessage: '',
               },),
             },);
-            completeSpawn({
+            await completeSpawn({
               spawnId: 'spawn-1',
               sessionId: 'other-child',
               lastMessage: 'finished',
@@ -271,13 +271,13 @@ await describe({
         it({
           name: 'returns sentinel when no spawn directory exists',
           fn: async function testNoSpawnsDir() {
-            using dir = tempDir({ prefix: 'spawn-pi-empty-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-empty-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
             },);
 
-            expect(checkCompletedChildren({
+            expect(await checkCompletedChildren({
               parentSessionId: 'parent-session',
               consume: true,
             },),).toBe(NOTHING_TO_REPORT,);
@@ -286,7 +286,7 @@ await describe({
         it({
           name: 'filters by parent and stopped status before consuming matches',
           fn: async function testConsumeCompletedChildren() {
-            using dir = tempDir({ prefix: 'spawn-pi-consume-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-consume-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
@@ -315,7 +315,7 @@ await describe({
               },),),
             );
 
-            const result = checkCompletedChildren({
+            const result = await checkCompletedChildren({
               parentSessionId: 'parent-session',
               consume: true,
             },);

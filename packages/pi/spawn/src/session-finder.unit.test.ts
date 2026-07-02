@@ -72,7 +72,7 @@ await describe({
           name: 'returns a numeric parent pid for current process on procfs hosts',
           skip: process.platform !== 'linux',
           fn: async function testReadParentPid() {
-            expect(readParentPid(process.pid,),).not.toBe(SESSION_NOT_FOUND,);
+            expect(await readParentPid(process.pid,),).not.toBe(SESSION_NOT_FOUND,);
           },
         },),
       ],
@@ -83,13 +83,13 @@ await describe({
         it({
           name: 'reads mapping for pid file',
           fn: async function testReadPidMapping() {
-            using dir = tempDir({ prefix: 'spawn-pi-pid-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-pid-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
             },);
 
-            writePidMapping({
+            await writePidMapping({
               pid: 456,
               mapping: {
                 sessionId: 'session-456',
@@ -99,7 +99,7 @@ await describe({
               },
             },);
 
-            const mapping = readPidMapping({ pid: 456, },);
+            const mapping = await readPidMapping({ pid: 456, },);
             if (mapping === SESSION_NOT_FOUND)
               throw new Error('expected mapping for pid 456',);
             expect(mapping.sessionId,).toBe('session-456',);
@@ -108,13 +108,13 @@ await describe({
         it({
           name: 'returns sentinel for missing pid file',
           fn: async function testMissingPidMapping() {
-            using dir = tempDir({ prefix: 'spawn-pi-missing-pid-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-missing-pid-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
             },);
 
-            expect(readPidMapping({ pid: 999, },),).toBe(SESSION_NOT_FOUND,);
+            expect(await readPidMapping({ pid: 999, },),).toBe(SESSION_NOT_FOUND,);
           },
         },),
       ],
@@ -125,7 +125,7 @@ await describe({
         it({
           name: 'returns direct mapping before walking procfs',
           fn: async function testDirectWalkMapping() {
-            using dir = tempDir({ prefix: 'spawn-pi-walk-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-walk-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
@@ -136,7 +136,7 @@ await describe({
               sessionId: 'session-789',
             },);
 
-            const mapping = walkProcessTreeFrom({ pid: 789, },);
+            const mapping = await walkProcessTreeFrom({ pid: 789, },);
             if (mapping === SESSION_NOT_FOUND)
               throw new Error('expected direct process tree mapping',);
             expect(mapping.sessionId,).toBe('session-789',);
@@ -150,13 +150,13 @@ await describe({
         it({
           name: 'returns sentinel when mapping directory is absent',
           fn: async function testMissingByPidDir() {
-            using dir = tempDir({ prefix: 'spawn-pi-no-by-pid-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-no-by-pid-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
             },);
 
-            expect(readByPidDir(),).toBe(SESSION_NOT_FOUND,);
+            expect(await readByPidDir(),).toBe(SESSION_NOT_FOUND,);
           },
         },),
       ],
@@ -167,7 +167,7 @@ await describe({
         it({
           name: 'returns newest readable mapping',
           fn: async function testNewestMapping() {
-            using dir = tempDir({ prefix: 'spawn-pi-newest-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-newest-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
@@ -207,7 +207,7 @@ await describe({
               newerDate,
             );
 
-            const mapping = findByMostRecent();
+            const mapping = await findByMostRecent();
             if (mapping === SESSION_NOT_FOUND)
               throw new Error('expected newest mapping',);
             expect(mapping.sessionId,).toBe('newer-session',);
@@ -221,7 +221,7 @@ await describe({
         it({
           name: 'uses direct parent process mapping when available',
           fn: async function testFindCallingSession() {
-            using dir = tempDir({ prefix: 'spawn-pi-calling-', },);
+            await using dir = await tempDir({ prefix: 'spawn-pi-calling-', },);
             using _env = envVar({
               name: 'PI_CODING_AGENT_DIR',
               value: dir.path,
@@ -232,7 +232,7 @@ await describe({
               sessionId: 'parent-process-session',
             },);
 
-            const mapping = findCallingSession();
+            const mapping = await findCallingSession();
             if (mapping === SESSION_NOT_FOUND)
               throw new Error('expected calling session mapping',);
             expect(mapping.sessionId,).toBe('parent-process-session',);

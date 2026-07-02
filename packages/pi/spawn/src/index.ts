@@ -78,15 +78,15 @@ const monitorTimers = new WeakMap<ExtensionAPI, ReturnType<typeof setInterval>>(
 export default function spawnPi(pi: ExtensionAPI,): void {
   pi.on(
     'session_start',
-    function handleSessionStart(
+    async function handleSessionStart(
       _event,
       ctx,
-    ): void {
-      registerSession({
+    ): Promise<void> {
+      await registerSession({
         ctx,
         extensionPath: EXTENSION_PATH,
       },);
-      startCompletedChildMonitor({
+      await startCompletedChildMonitor({
         pi,
         ctx,
       },);
@@ -102,11 +102,11 @@ export default function spawnPi(pi: ExtensionAPI,): void {
 
   pi.on(
     'agent_end',
-    function handleAgentEnd(
+    async function handleAgentEnd(
       event,
       ctx,
-    ): void {
-      reportChildCompletion({
+    ): Promise<void> {
+      await reportChildCompletion({
         event,
         ctx,
       },);
@@ -132,7 +132,7 @@ export default function spawnPi(pi: ExtensionAPI,): void {
  * registerSession({ ctx, extensionPath: '/pkg/dist/final/node/index.mjs' });
  * ```
  */
-function registerSession(
+async function registerSession(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi ExtensionContext is an external mutable interface; spawn-pi only reads it.
   {
     ctx,
@@ -141,7 +141,7 @@ function registerSession(
     readonly ctx: Readonly<ExtensionContext>;
     readonly extensionPath: string;
   }>,
-): void {
+): Promise<void> {
   process.env[SPAWN_EXTENSION_PATH_ENV] = extensionPath;
 
   /**
@@ -158,7 +158,7 @@ function registerSession(
     .getSessionFile()
     ?? '';
 
-  writePidMapping({
+  await writePidMapping({
     pid: process.pid,
     mapping: {
       sessionId,
@@ -173,7 +173,7 @@ function registerSession(
    */
   const spawnId = process.env[SPAWN_ID_ENV];
   if (spawnId !== undefined) {
-    claimSpawn({
+    await claimSpawn({
       spawnId,
       sessionId,
       sessionFile,
@@ -186,7 +186,7 @@ function registerSession(
   /**
    * User-visible warning when CLI auto setup cannot fully complete.
    */
-  const cliWarning = autoSetupCli({ extensionPath, },);
+  const cliWarning = await autoSetupCli({ extensionPath, },);
   if (cliWarning !== NO_CLI_SETUP_WARNING) {
     ctx
       .ui
@@ -214,7 +214,7 @@ function registerSession(
  * reportChildCompletion({ event, ctx });
  * ```
  */
-function reportChildCompletion(
+async function reportChildCompletion(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi AgentEndEvent and ExtensionContext are external mutable interfaces; spawn-pi only reads them.
   {
     event,
@@ -223,7 +223,7 @@ function reportChildCompletion(
     readonly event: Readonly<AgentEndEvent>;
     readonly ctx: Readonly<ExtensionContext>;
   }>,
-): void {
+): Promise<void> {
   /**
    * Spawn identifier inherited by child Pi process.
    */
@@ -238,7 +238,7 @@ function reportChildCompletion(
     .sessionManager
     .getSessionId();
 
-  completeSpawn({
+  await completeSpawn({
     spawnId,
     sessionId,
     lastMessage: extractLastAssistantText(event.messages,),
@@ -274,10 +274,10 @@ type UnrefableTimer = ReturnType<typeof setInterval> & {
  *
  * @example
  * ```typescript
- * startCompletedChildMonitor({ pi, ctx });
+ * await startCompletedChildMonitor({ pi, ctx });
  * ```
  */
-function startCompletedChildMonitor(
+async function startCompletedChildMonitor(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi ExtensionAPI and ExtensionContext are external mutable interfaces; spawn-pi only reads them.
   {
     pi,
@@ -286,10 +286,10 @@ function startCompletedChildMonitor(
     readonly pi: Readonly<ExtensionAPI>;
     readonly ctx: Readonly<ExtensionContext>;
   }>,
-): void {
+): Promise<void> {
   stopCompletedChildMonitor({ pi, },);
 
-  deliverCompletedChildren({
+  await deliverCompletedChildren({
     pi,
     ctx,
   },);
@@ -299,7 +299,8 @@ function startCompletedChildMonitor(
    */
   const timer: UnrefableTimer = setInterval(
     function pollCompletedChildren(): void {
-      deliverCompletedChildren({
+      // Fire-and-forget poll; delivery resolves on its own microtask while the timer keeps running.
+      void deliverCompletedChildren({
         pi,
         ctx,
       },);
@@ -353,10 +354,10 @@ function stopCompletedChildMonitor(
  *
  * @example
  * ```typescript
- * deliverCompletedChildren({ pi, ctx });
+ * await deliverCompletedChildren({ pi, ctx });
  * ```
  */
-function deliverCompletedChildren(
+async function deliverCompletedChildren(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi ExtensionAPI and ExtensionContext are external mutable interfaces; spawn-pi only reads them.
   {
     pi,
@@ -365,7 +366,7 @@ function deliverCompletedChildren(
     readonly pi: Readonly<ExtensionAPI>;
     readonly ctx: Readonly<ExtensionContext>;
   }>,
-): boolean {
+): Promise<boolean> {
   /**
    * Parent session identifier whose children should be delivered.
    */
@@ -376,7 +377,7 @@ function deliverCompletedChildren(
   /**
    * Completed child result text consumed atomically from state directory.
    */
-  const context = checkCompletedChildren({
+  const context = await checkCompletedChildren({
     parentSessionId,
     consume: true,
   },);
