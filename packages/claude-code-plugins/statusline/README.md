@@ -291,7 +291,7 @@ Add to `~/.claude/settings.json`:
 {
   "statusLine": {
     "type": "command",
-    "command": "node /path/to/statusline.ts"
+    "command": "node /path/to/src/statusline.ts"
   },
   "spinnerVerbs": { "mode": "replace", "verbs": [""] },
   "spinnerTipsEnabled": false
