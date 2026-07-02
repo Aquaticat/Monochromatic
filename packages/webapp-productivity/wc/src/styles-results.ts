@@ -7,8 +7,10 @@
  * internal table boxes), keeping unbounded row counts cheap to render.
  * Number columns align purely through Inter's tabular numerals plus
  * figure-space padding done by the client script; no column widths are
- * managed in CSS. Each row's bar sits in a fixed-width end-of-row track
- * so bar lengths stay comparable across rows, and carries a
+ * managed in CSS. Each row's bar sits in an end-of-row track spanning
+ * the same fixed share of the row's inline size, so the tracks fill the
+ * free width while bar lengths stay comparable across rows, and carries
+ * a
  * full-contrast border (near-black on light, near-white on dark) so
  * even a minimum-count bar stays visible.
  */
@@ -52,12 +54,6 @@ const SMALL_TEXT_REM = THREE_QUARTERS;
 const VALUE_SIZE_REM = 1 + THREE_QUARTERS;
 
 /**
- * Fixed inline size in rem of every frequency bar track; equal tracks
- * keep bar lengths comparable across rows.
- */
-const BAR_TRACK_REM = 7;
-
-/**
  * Estimated frequency-row block size in rem for
  * `contain-intrinsic-block-size`, so skipped rows keep the scrollbar
  * stable.
@@ -75,6 +71,16 @@ const TILE_BASIS_REM = ((2 * 2) * 2)
  * Full-length percentage.
  */
 const FULL_PERCENT = 100;
+
+/**
+ * Share of each row's inline size given to the bar track, as a
+ * percentage flex-basis with no grow. A percentage basis resolves
+ * against the row, so every row's track is identical regardless of
+ * word length, keeping bar lengths comparable while the bars fill the
+ * row's free width (a track growing from each word's end would give
+ * the same `--bar` percentage a different rendered length per row).
+ */
+const BAR_TRACK_PERCENT = FULL_PERCENT * HALF;
 
 /**
  * Generates results-panel, tiles, and frequency rules.
@@ -235,7 +241,7 @@ export function renderResultsStyles(): string {
         decls: {
           'flex-grow': cssNum(0,),
           'flex-shrink': cssNum(0,),
-          'flex-basis': cssRem(BAR_TRACK_REM,),
+          'flex-basis': cssPercent(BAR_TRACK_PERCENT,),
           'align-self': 'center',
           'block-size': cssRem(HALF + EIGHTH,),
         },

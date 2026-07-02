@@ -38,9 +38,11 @@ requests after the page loads.
   row counts cheap) is ignored on internal table boxes like `tr`. Counts
   and percentages come first, padded with figure spaces (U+2007) so the
   columns align purely through tabular numerals, with no column-width
-  CSS. Each row ends in a fixed-width bar track (equal tracks keep bar
-  lengths comparable); bars carry a full-contrast border (near-black on
-  light, near-white on dark) so even the smallest bar stays visible.
+  CSS. Each row ends in a bar track spanning half the row; the share is
+  identical in every row, so bar lengths stay comparable while the bars
+  fill the row's free width. Bars carry a full-contrast border
+  (near-black on light, near-white on dark) so even the smallest bar
+  stays visible.
 
 ### Known limitations
 
