@@ -73,7 +73,7 @@ type RegisterPiLinkupOptions = {
  * { "packages": ["./packages/pi/linkup"] }
  * ```
  */
-export default function piLinkup(pi: ExtensionAPI,): void {
+export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
   /**
    * Logger tagged for extension startup.
    */
@@ -84,7 +84,7 @@ export default function piLinkup(pi: ExtensionAPI,): void {
   /**
    * Runtime config loaded from the global Pi extension config file.
    */
-  const config = loadLinkupConfig();
+  const config = await loadLinkupConfig();
   /**
    * Linkup HTTP client shared by the registered tools.
    */

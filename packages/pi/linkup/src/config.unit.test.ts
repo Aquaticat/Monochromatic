@@ -58,7 +58,7 @@ await describe({
         /**
          * Local value for config.
          */
-        const config = loadLinkupConfig({
+        const config = await loadLinkupConfig({
           home,
           env: {},
         },);
@@ -85,7 +85,7 @@ await describe({
         /**
          * Local value for config.
          */
-        const config = loadLinkupConfig({
+        const config = await loadLinkupConfig({
           home,
           env: {
             LINKUP_API_KEY: ENV_API_KEY,
@@ -113,7 +113,7 @@ await describe({
         /**
          * Local value for config.
          */
-        const config = loadLinkupConfig({
+        const config = await loadLinkupConfig({
           home,
           env: {},
         },);
@@ -140,7 +140,7 @@ await describe({
 
         let caught: unknown;
         try {
-          loadLinkupConfig({
+          await loadLinkupConfig({
             home,
             env: {},
           },);
@@ -171,7 +171,7 @@ await describe({
 
         let caught: unknown;
         try {
-          loadLinkupConfig({
+          await loadLinkupConfig({
             home,
             env: {},
           },);

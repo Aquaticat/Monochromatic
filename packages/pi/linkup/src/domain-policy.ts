@@ -589,8 +589,8 @@ function blockedEntryForPossiblyInvalidUrl(
       blocklist,
     },);
   }
-  catch {
-    l.warn(`skipping local blocklist filtering for unparsable Linkup result URL: ${url}`,);
+  catch (error: unknown) {
+    l.warn(`skipping local blocklist filtering for unparsable Linkup result URL: ${url}: ${String(error,)}`,);
     return { blocked: false, };
   }
 }

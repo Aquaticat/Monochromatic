@@ -4,6 +4,8 @@
  * @module
  */
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   ABORT_ERROR_NAME,
   AUTHORIZATION_HEADER,
@@ -18,6 +20,24 @@ import type {
   ExtractedLinkupErrorMessage,
   PostJsonOptions,
 } from './client-types.ts';
+
+/**
+ * Logger root for pi-linkup after removing the package log shim.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
+ * ```
+ */
+const linkupLogger = tagged({ tag: 'pi-linkup', },);
+
+/**
+ * Module logger.
+ */
+const l = tagged({
+  tag: 'client-http',
+  l: linkupLogger,
+},);
 
 //region Request helpers
 
@@ -269,6 +289,13 @@ function formatHttpError(
  * @returns extraction result
  */
 function extractLinkupErrorMessage(responseText: string,): ExtractedLinkupErrorMessage {
+  /**
+   * Logger tagged for this extraction call.
+   */
+  const innerL = tagged({
+    tag: extractLinkupErrorMessage.name,
+    l,
+  },);
   try {
     /**
      * Parsed error response.
@@ -289,7 +316,8 @@ function extractLinkupErrorMessage(responseText: string,): ExtractedLinkupErrorM
       message: error.message,
     };
   }
-  catch {
+  catch (error: unknown) {
+    innerL.debug(`ignoring unparsable Linkup error response body: ${String(error,)}`,);
     return { found: false, };
   }
 }

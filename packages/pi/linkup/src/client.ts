@@ -17,14 +17,11 @@ import {
 } from './client-constants.ts';
 import type {
   ClientRuntime,
-  FetchLike,
   FetchOptions,
   LinkupClient,
   LinkupClientOptions,
   LinkupFetchRequestBody,
   LinkupSearchRequestBody,
-  LinkupWebFetchInput,
-  LinkupWebSearchInput,
   SearchOptions,
 } from './client-types.ts';
 import { postJson, } from './client-http.ts';
@@ -199,8 +196,8 @@ export {
   DEFAULT_LINKUP_BASE_URL,
   LINKUP_FETCH_ENDPOINT,
   LINKUP_SEARCH_ENDPOINT,
-  createLinkupClient,
-};
+} from './client-constants.ts';
+export { createLinkupClient, };
 export type {
   FetchLike,
   FetchOptions,
@@ -211,4 +208,4 @@ export type {
   LinkupWebFetchInput,
   LinkupWebSearchInput,
   SearchOptions,
-};
+} from './client-types.ts';

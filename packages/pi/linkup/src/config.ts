@@ -4,7 +4,7 @@
  * @module
  */
 
-import { readFileSync, } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -198,7 +198,7 @@ const l = tagged({
  * loadLinkupConfig();
  * ```
  */
-function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): LinkupConfig {
+async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise<LinkupConfig> {
   /**
    * Local value for innerL.
    */
@@ -225,7 +225,7 @@ function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): LinkupConfig 
   /**
    * Local value for readResult.
    */
-  const readResult = readOptionalConfigJson({ configPath, },);
+  const readResult = await readOptionalConfigJson({ configPath, },);
   /**
    * Local value for configFile.
    */
@@ -294,12 +294,12 @@ function configPathForHome({ home, }: { readonly home: string; }): string {
  *
  * @throws when reading fails for a reason other than missing file or JSON parsing fails
  */
-function readOptionalConfigJson({ configPath, }: { readonly configPath: string; }): ConfigJsonReadResult {
+async function readOptionalConfigJson({ configPath, }: { readonly configPath: string; }): Promise<ConfigJsonReadResult> {
   try {
     /**
      * Local value for content.
      */
-    const content = readFileSync(
+    const content = await readFile(
       configPath,
       'utf8',
     );
