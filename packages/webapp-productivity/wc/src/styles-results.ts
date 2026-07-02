@@ -327,7 +327,7 @@ export function renderResultsStyles(): string {
 
     $(
       {
-        // Firefox's fallback fill: a UA blue (rgb(0 105 184)) once the
+        // Firefox's fallback fill: a UA blue (rgb(0 100 180)) once the
         // element carries an author background; this pseudo pins the
         // fill stop.
         rule: '.freq-bar::-moz-progress-bar',

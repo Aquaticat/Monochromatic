@@ -242,13 +242,16 @@ async function subsetInter(
   /**
    * SFNT subset. `layoutFeatures: '*'` retains every GSUB/GPOS layout
    * feature, so `font-variant-numeric: tabular-nums` (the `tnum` feature)
-   * keeps working in the subset. STAT is dropped outright: hb-subset
-   * prunes the name records STAT's axis-value entries point at, and
-   * Firefox's font sanitizer flags the dangling nameIDs as console
-   * errors ("STAT: Invalid nameID") before discarding the table anyway;
-   * STAT is style-mapping metadata no browser renders from (fvar/gvar
-   * carry the variable axes), so shipping without it changes nothing
-   * but the noise.
+   * keeps working in the subset. STAT is dropped outright:
+   * hb-subset-wasm compiles HarfBuzz with `HB_NO_STYLE`, which removes
+   * the subset planner's STAT name-ID closure while STAT itself still
+   * passes through, so the table's axis and axis-value entries end up
+   * pointing at pruned name records and Firefox's font sanitizer flags
+   * them as console errors ("STAT: Invalid nameID") before discarding
+   * the table anyway. STAT is style-mapping metadata no browser renders
+   * from (fvar/gvar carry the variable axes), so shipping without it
+   * changes nothing but the noise. Full trace and alternatives:
+   * docs/troubleshooting/hb-subset-stat-dangling-nameids.md.
    */
   const sfntSubset = await subset(
     sfntInput,

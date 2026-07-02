@@ -103,12 +103,15 @@ The full upstream Inter variable woff2 lives in `fonts-source/`
 file plus a printable-ASCII floor and an explicit figure space (U+2007),
 subsets via `hb-subset-wasm` (decode `wawoff2`, re-encode
 `woff2-encode-wasm`), and writes `public/inter.woff2`. The STAT table is
-dropped during subsetting: hb-subset prunes the name records STAT's
-axis-value entries reference, Firefox's font sanitizer logged the
-dangling nameIDs as console errors before discarding the table anyway,
-and no browser renders from STAT (fvar/gvar carry the variable axes).
-That subset is committed, and `src/build.ts` inlines it into the final
-HTML as a base64 data URI. Re-run `format:fonts` after adding non-ASCII page text (the
+dropped during subsetting: hb-subset-wasm's HarfBuzz build
+(`HB_NO_STYLE`) prunes the name records STAT's axis-value entries
+reference while passing STAT through, Firefox's font sanitizer logged
+the dangling nameIDs as console errors before discarding the table
+anyway, and no browser renders from STAT (fvar/gvar carry the variable
+axes); the full trace lives in
+`docs/troubleshooting/hb-subset-stat-dangling-nameids.md`. That subset
+is committed, and `src/build.ts` inlines it into the final HTML as a
+base64 data URI. Re-run `format:fonts` after adding non-ASCII page text (the
 scan picks up literal characters, not escape sequences). Inter is
 licensed under the SIL OFL 1.1 (`LICENSES/OFL-1.1.txt`).
 
