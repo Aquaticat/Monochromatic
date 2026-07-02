@@ -57,7 +57,6 @@ function parseRateLimitSnapshots({
   ];
 }
 
-export {
-  normalizeHeaders,
-  parseRateLimitSnapshots,
-};
+export { normalizeHeaders, } from './rate-limit-parse-helpers.ts';
+
+export { parseRateLimitSnapshots, };

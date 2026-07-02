@@ -6,6 +6,8 @@
  * @module
  */
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   PERCENT_BASE,
   SECONDS_PER_DAY,
@@ -28,6 +30,16 @@ import {
   type InvalidValue,
   type UnknownRecord,
 } from './rate-limit-parse-helpers.ts';
+
+/**
+ * Logger root for Synthetic quota header parsing.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l: syntheticQuotaHeadersLogger, },);
+ * ```
+ */
+const syntheticQuotaHeadersLogger = tagged({ tag: 'pi-statusline:synthetic-quota-headers', },);
 
 /**
  * Synthetic quotas response header name.
@@ -58,6 +70,13 @@ function parseSyntheticQuotasHeader(
   headers: Readonly<Record<string, string>>,
 ): UnknownRecord | InvalidValue {
   /**
+   * Function-scoped logger tagged by function name.
+   */
+  const log = tagged({
+    tag: parseSyntheticQuotasHeader.name,
+    l: syntheticQuotaHeadersLogger,
+  },);
+  /**
    * Raw quotas header JSON string.
    */
   const rawValue = headers[SYNTHETIC_QUOTAS_HEADER];
@@ -73,7 +92,14 @@ function parseSyntheticQuotasHeader(
       return INVALID_VALUE;
 
     return parsedValue;
-  } catch {
+  } catch (error: unknown) {
+    /**
+     * Rendered caught value; malformed quotas JSON is treated as a missing header.
+     */
+    const detail = Error.isError(error,)
+      ? error.message
+      : String(error,);
+    log.debug(`ignoring invalid quotas header JSON: ${detail}`,);
     return INVALID_VALUE;
   }
 }
