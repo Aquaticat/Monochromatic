@@ -1,8 +1,10 @@
 // The player window: a seek bar on top, a volume slider, and one combined
 // control row (left to right: an Open button, a three-state shuffle radio group
 // (Off / Within page / All), the transport buttons prev / play-pause / next, and
-// a "repeat track" checkbox; the custom radio and checkbox are drawn plain-HTML
-// style), then the scrolling queue area. A width breakpoint switches its shape:
+// a "repeat track" checkbox; the checkbox is the native std-widgets CheckBox and
+// the shuffle radio is a custom control styled to echo Fluent's radio, since Slint
+// ships no standalone RadioButton), then the scrolling queue area. A width
+// breakpoint switches its shape:
 // when the window has room the page-tab bar and selected-page track list sit side
 // by side as two INDEPENDENT scroll containers (each with its own Flickable and
 // scrollbar, so a long list never scrolls the tab bar away and vice versa); when
@@ -27,7 +29,7 @@
 // slider, while their human-readable "m:ss" forms arrive as separate string
 // properties formatted in Rust (Slint's number formatting is awkward).
 
-import { Button, Slider, HorizontalBox, VerticalBox, Palette } from "std-widgets.slint";
+import { Button, CheckBox, Slider, HorizontalBox, VerticalBox, Palette } from "std-widgets.slint";
 
 // One shared text size for every hand-drawn Text in this file, kept equal to the
 // Fluent std-widgets' body text so custom Text never sits a notch below the Button
@@ -66,27 +68,36 @@ component RadioButton inherits Rectangle {
     horizontal-stretch: 0;
 
     HorizontalLayout {
-        spacing: 6px;
+        spacing: 8px;
         alignment: start;
-        // the ring, centred vertically against the label
+        // The ring, centred vertically against the label. Styled to echo Fluent's
+        // own radio (widgets/fluent/radiogroup.slint): a 20px circle with a 1px
+        // stroke that, when selected, becomes an accent "donut", a 6px accent ring
+        // around a centre painted the window's background. Fluent's internal colours
+        // are not on the public Palette, so they map onto it here:
+        // control-strong-stroke -> border, control-alt-secondary -> control-background,
+        // state-secondary -> the window background. Keeps the radio consistent with
+        // the native CheckBox beside it.
         VerticalLayout {
             alignment: center;
             Rectangle {
-                width: 16px;
-                height: 16px;
+                width: 20px;
+                height: self.width;
                 border-radius: self.width / 2;
                 border-width: 1px;
-                border-color: Palette.border;
-                background: Palette.control-background;
-                // filled centre dot, shown only when selected; the OS accent
-                // colour via the system palette
+                border-color: ta.has-hover ? Palette.accent-background : Palette.border;
+                background: root.selected ? transparent : Palette.control-background;
+                animate border-color, background { duration: 150ms; }
                 Rectangle {
-                    x: (parent.width - self.width) / 2;
-                    y: (parent.height - self.height) / 2;
-                    width: 8px;
-                    height: 8px;
+                    width: parent.width;
+                    height: self.width;
                     border-radius: self.width / 2;
-                    background: root.selected ? Palette.accent-background : transparent;
+                    border-width: root.selected ? 6px : 0px;
+                    border-color: root.selected ? Palette.accent-background : transparent;
+                    background: root.selected
+                        ? (Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background)
+                        : transparent;
+                    animate border-width { duration: 150ms; }
                 }
             }
         }
@@ -97,65 +108,9 @@ component RadioButton inherits Rectangle {
             color: Palette.foreground;
         }
     }
-    TouchArea {
+    ta := TouchArea {
         clicked => {
             root.clicked();
-        }
-    }
-}
-
-// A checkbox drawn like a plain HTML <input type="checkbox">: a small square box
-// that fills with the system accent colour (Palette.accent-background) and shows
-// a tick when checked, with a label to its right. The whole row toggles. Same
-// Rectangle + HorizontalLayout + TouchArea structure as RadioButton. Used for
-// "Repeat track".
-component CheckBox inherits Rectangle {
-    in property <string> text;
-    in property <bool> checked;
-    callback toggled();
-    horizontal-stretch: 0;
-
-    HorizontalLayout {
-        spacing: 6px;
-        alignment: start;
-        VerticalLayout {
-            alignment: center;
-            Rectangle {
-                width: 16px;
-                height: 16px;
-                border-radius: 3px;
-                border-width: 1px;
-                border-color: Palette.border;
-                background: root.checked ? Palette.accent-background : Palette.control-background;
-                // the tick, drawn only when checked (the font has the glyph; the
-                // image ships google-noto plus the default sans). accent-foreground
-                // is the palette's matched on-accent ink, legible on the accent fill
-                // whichever way the system accent and light/dark land. font-size below
-                // is a glyph fitted to the fixed 16px box, deliberately NOT
-                // Typography.body: the box is a hardcoded 16px that does not grow with
-                // the text scale, so a body-sized tick would overflow it when the OS
-                // font is large. This is an icon size, not body text.
-                Text {
-                    width: parent.width;
-                    height: parent.height;
-                    text: root.checked ? "✓" : "";
-                    color: Palette.accent-foreground;
-                    font-size: 12px;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
-                }
-            }
-        }
-        Text {
-            text: root.text;
-            font-size: Typography.body-rem * 1rem;
-            vertical-alignment: center;
-            color: Palette.foreground;
-        }
-    }
-    TouchArea {
-        clicked => {
-            root.toggled();
         }
     }
 }
@@ -258,7 +213,12 @@ export component AppWindow inherits Window {
     // page; all spans the whole queue (the scope logic lives in Rust).
     in property <int> shuffle-mode: 0;
     // Whether "repeat track" is on (replay the current track on its natural end).
-    in property <bool> repeat-track: false;
+    // Two-way (`in-out`) for the same reason as `volume`/`position`: the native
+    // CheckBox flips its own `checked` with an imperative assignment on click
+    // (widgets/fluent/checkbox.slint), which would break a one-way binding (see
+    // docs/troubleshooting/slint-slider-binding-breaks-on-input.md); a two-way
+    // `<=>` alias survives that, so engine updates keep moving the checkbox.
+    in-out property <bool> repeat-track: false;
     in property <int> current-index: -1;
     in property <[string]> queue: [];
 
@@ -431,9 +391,11 @@ export component AppWindow inherits Window {
             }
             CheckBox {
                 text: "Repeat track";
-                checked: root.repeat-track;
+                // Native CheckBox owns its `checked` and flips it on click, so bind
+                // two-way; `toggled` then fires with the new value already in place.
+                checked <=> root.repeat-track;
                 toggled => {
-                    root.set-repeat-track(!root.repeat-track);
+                    root.set-repeat-track(root.repeat-track);
                 }
             }
         }
