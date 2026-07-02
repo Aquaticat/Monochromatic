@@ -7,10 +7,12 @@
  * internal table boxes), keeping unbounded row counts cheap to render.
  * Number columns align purely through Inter's tabular numerals plus
  * figure-space padding done by the client script; no column widths are
- * managed in CSS. Each row's bar sits in an end-of-row track spanning
- * the same fixed share of the row's inline size, so the tracks fill the
- * free width while bar lengths stay comparable across rows, and carries
- * a
+ * managed in CSS. The word cell is pinned to `--word-col`, the widest
+ * word's measured width (set by the client script on `.frequency`), and
+ * the bar track flex-grows into all remaining width; with the number
+ * cells equal through figure-space padding and the word cell fixed, the
+ * grown track is identical in every row, so the bars fill the free
+ * width while their lengths stay comparable. Each bar carries a
  * full-contrast border (near-black on light, near-white on dark) so
  * even a minimum-count bar stays visible.
  */
@@ -73,14 +75,11 @@ const TILE_BASIS_REM = ((2 * 2) * 2)
 const FULL_PERCENT = 100;
 
 /**
- * Share of each row's inline size given to the bar track, as a
- * percentage flex-basis with no grow. A percentage basis resolves
- * against the row, so every row's track is identical regardless of
- * word length, keeping bar lengths comparable while the bars fill the
- * row's free width (a track growing from each word's end would give
- * the same `--bar` percentage a different rendered length per row).
+ * Bar track minimum inline size in rem, a floor so bars stay legible
+ * when a long word column squeezes a narrow row; below it the word
+ * cell shrinks and wraps instead.
  */
-const BAR_TRACK_PERCENT = FULL_PERCENT * HALF;
+const BAR_TRACK_MIN_REM = 2 + 2;
 
 /**
  * Generates results-panel, tiles, and frequency rules.
@@ -227,8 +226,9 @@ export function renderResultsStyles(): string {
       {
         rule: '.freq-word',
         decls: {
-          'flex-grow': cssNum(1,),
+          'flex-grow': cssNum(0,),
           'flex-shrink': cssNum(1,),
+          'flex-basis': cssVar('word-col',),
           'min-inline-size': cssNum(0,),
           'overflow-wrap': 'anywhere',
         },
@@ -239,9 +239,10 @@ export function renderResultsStyles(): string {
       {
         rule: '.freq-bar-track',
         decls: {
-          'flex-grow': cssNum(0,),
+          'flex-grow': cssNum(1,),
           'flex-shrink': cssNum(0,),
-          'flex-basis': cssPercent(BAR_TRACK_PERCENT,),
+          'flex-basis': cssNum(0,),
+          'min-inline-size': cssRem(BAR_TRACK_MIN_REM,),
           'align-self': 'center',
           'block-size': cssRem(HALF + EIGHTH,),
         },

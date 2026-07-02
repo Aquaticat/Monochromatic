@@ -38,11 +38,13 @@ requests after the page loads.
   row counts cheap) is ignored on internal table boxes like `tr`. Counts
   and percentages come first, padded with figure spaces (U+2007) so the
   columns align purely through tabular numerals, with no column-width
-  CSS. Each row ends in a bar track spanning half the row; the share is
-  identical in every row, so bar lengths stay comparable while the bars
-  fill the row's free width. Bars carry a full-contrast border
-  (near-black on light, near-white on dark) so even the smallest bar
-  stays visible.
+  CSS. The word column is pinned to the widest word's measured width
+  (canvas `measureText` in one pass, no per-row layout reads, re-run
+  when font loading settles), and the bar track flex-grows into all
+  remaining width; with every other column equal across rows, the grown
+  tracks are identical, so the bars fill the free width while their
+  lengths stay comparable. Bars carry a full-contrast border (near-black
+  on light, near-white on dark) so even the smallest bar stays visible.
 
 ### Known limitations
 

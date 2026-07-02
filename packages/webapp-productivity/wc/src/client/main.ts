@@ -37,6 +37,32 @@ const FIGURE_SPACE = ' ';
 const countFormat = new Intl.NumberFormat('en-US',);
 
 /**
+ * Header label of the Frequency word column, included in word-column
+ * measurement so the column never renders narrower than its heading.
+ */
+const WORD_COLUMN_HEADER = 'Word';
+
+/**
+ * Slack in rem added to the measured word column, absorbing the small
+ * differences between canvas text measurement and DOM rendering
+ * (hinting, `font-variant-numeric` on digit-bearing words).
+ */
+const WORD_COLUMN_SLACK_REM = 1 / (2 * 2);
+
+/**
+ * Detached canvas backing the word-width measuring context.
+ */
+const measureCanvas = document.createElement('canvas',);
+
+/**
+ * 2D canvas context for measuring rendered word widths without
+ * touching DOM layout. Nullable per the platform API; where 2D
+ * contexts are unavailable the word column falls back to per-cell
+ * content sizing.
+ */
+const measureContext = measureCanvas.getContext('2d',);
+
+/**
  * Writes every {@link STAT_FIELDS} pairing from stats into its DOM
  * element, formatted with {@link countFormat}.
  *
@@ -195,9 +221,93 @@ function renderEmptyFrequencyRow(): string {
 }
 
 /**
+ * Measures the widest of words as rendered in reference's computed
+ * font, via canvas `measureText`, so unbounded row counts never force
+ * per-row DOM layout reads. The width sizes the shared word column:
+ * with the number columns already equal (figure-space padding) and the
+ * word column fixed, the flex-growing bar track comes out identical in
+ * every row, keeping bar lengths comparable.
+ *
+ * @param words - word column contents to measure
+ *
+ * @param reference - element whose computed font the words render in
+ *
+ * @param context - measuring canvas context, narrowed by caller
+ *
+ * @returns widest width in rem plus {@link WORD_COLUMN_SLACK_REM}
+ */
+function measureWordColumnRem(
+  {
+    words,
+    reference,
+    context,
+  }: Readonly<{
+    words: readonly string[];
+    reference: HTMLElement;
+    context: CanvasRenderingContext2D;
+  }>,
+): number {
+  /**
+   * Computed font parts of the element the words render inside.
+   */
+  const {
+    fontWeight,
+    fontSize,
+    fontFamily,
+  } = getComputedStyle(reference,);
+
+  context.font = `${fontWeight} ${fontSize} ${fontFamily}`;
+
+  /**
+   * Widest measured word width in CSS pixels.
+   */
+  const widestPx = words.reduce(
+    function widestSoFar(
+      max,
+      word,
+    ): number {
+      /**
+       * Measured metrics of word in the reference font.
+       */
+      const metrics = context.measureText(word,);
+
+      return Math.max(
+        max,
+        metrics.width,
+      );
+    },
+    0,
+  );
+
+  /**
+   * Root computed font-size string, always serialized in `px`.
+   */
+  const { fontSize: rootFontSize, } = getComputedStyle(
+    document.documentElement,
+  );
+
+  /**
+   * Index where the `px` unit starts inside the root font-size string.
+   */
+  const unitStart = rootFontSize.indexOf('px',);
+
+  /**
+   * Root font size in CSS pixels, for the px-to-rem conversion (rem
+   * keeps the column proportional if the root size changes).
+   */
+  const rootPx = Number(rootFontSize.slice(
+    0,
+    unitStart,
+  ),);
+
+  return (widestPx / rootPx) + WORD_COLUMN_SLACK_REM;
+}
+
+/**
  * Replaces the Frequency body rowgroup with rows for entries, via
  * {@link renderFrequencyRow}, or {@link renderEmptyFrequencyRow} when
- * entries is empty.
+ * entries is empty, and pins the shared `--word-col` custom property
+ * to the measured widest word so every row's bar track is equal.
  *
  * @param entries - frequency rows to render, sorted by count descending
  */
@@ -211,9 +321,53 @@ function renderFrequency(entries: readonly FrequencyEntry[],): void {
     return;
   }
 
+  /**
+   * Frequency table container carrying the shared word-column custom
+   * property (header and body word cells both read it).
+   */
+  const frequency = body.closest<HTMLElement>('.frequency',);
+
   if (entries.length === 0) {
     body.innerHTML = renderEmptyFrequencyRow();
+
+    if (frequency !== null) {
+      /**
+       * Container style, destructured so member access stays flat.
+       */
+      const { style, } = frequency;
+
+      style.removeProperty('--word-col',);
+    }
+
     return;
+  }
+
+  if ((frequency !== null) && (measureContext !== null)) {
+    /**
+     * Word column inline size in rem, from the widest rendered word.
+     */
+    const wordColumnRem = measureWordColumnRem(
+      {
+        words: [
+          ...entries.map(function pickWord(entry,): string {
+            return entry.word;
+          },),
+          WORD_COLUMN_HEADER,
+        ],
+        reference: frequency,
+        context: measureContext,
+      },
+    );
+
+    /**
+     * Container style, destructured so member access stays flat.
+     */
+    const { style, } = frequency;
+
+    style.setProperty(
+      '--word-col',
+      `${wordColumnRem}rem`,
+    );
   }
 
   /**
@@ -333,6 +487,21 @@ if (textarea !== null) {
   window.addEventListener(
     'pageshow',
     function handlePageShow(): void {
+      syncFromInput({ input: textarea, },);
+    },
+  );
+
+  /**
+   * Document font set, destructured so member access stays flat.
+   */
+  const { fonts, } = document;
+
+  // Word-column measurement runs against the fallback font until the
+  // embedded Inter finishes decoding; re-sync once font loading
+  // settles so the measured column matches the real rendering.
+  fonts.addEventListener(
+    'loadingdone',
+    function handleFontsLoaded(): void {
       syncFromInput({ input: textarea, },);
     },
   );
