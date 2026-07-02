@@ -127,7 +127,7 @@ export default async function advisor(
 
   pi.on(
     'before_agent_start',
-    function handleBeforeAgentStart(
+    async function handleBeforeAgentStart(
       event: ReadonlyDeep<BeforeAgentStartEvent>,
       ctx: ReadonlyDeep<ExtensionContext>,
     ) {
@@ -137,7 +137,7 @@ export default async function advisor(
       /**
        * Advisor guidance appended to the main model system prompt.
        */
-      const guidance = buildMainModelGuidance({
+      const guidance = await buildMainModelGuidance({
         ctx,
         config,
       },);
@@ -166,7 +166,7 @@ export default async function advisor(
  * buildMainModelGuidance({ ctx, config });
  * ```
  */
-function buildMainModelGuidance(
+async function buildMainModelGuidance(
   {
     ctx,
     config,
@@ -174,11 +174,11 @@ function buildMainModelGuidance(
     readonly ctx: ReadonlyDeep<ExtensionContext>;
     readonly config: Awaited<ReturnType<typeof loadMergedConfig>>;
   },
-): string {
+): Promise<string> {
   /**
    * Effective scoped model set.
    */
-  const scope = resolveEffectiveScope({
+  const scope = await resolveEffectiveScope({
     ctx,
     errorPrefix: 'advisor',
   },);

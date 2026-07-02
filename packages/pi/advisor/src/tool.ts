@@ -187,7 +187,7 @@ export async function runAdvisor(
   /**
    * Effective scoped model set.
    */
-  const scope = resolveEffectiveScope({
+  const scope = await resolveEffectiveScope({
     ctx,
     errorPrefix: 'advisor',
   },);

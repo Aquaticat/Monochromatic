@@ -187,7 +187,7 @@ export function syncAdvisorActiveTool(
  * const text = buildAdvisorStatus({ ctx, config, enabled: true });
  * ```
  */
-export function buildAdvisorStatus(
+export async function buildAdvisorStatus(
   {
     ctx,
     config,
@@ -197,11 +197,11 @@ export function buildAdvisorStatus(
     readonly config: AdvisorConfig;
     readonly enabled: boolean;
   },
-): string {
+): Promise<string> {
   /**
    * Effective model scope for status.
    */
-  const scope = resolveEffectiveScope({
+  const scope = await resolveEffectiveScope({
     ctx,
     errorPrefix: 'advisor',
   },);
@@ -335,7 +335,7 @@ async function handleAdvisorCommand(
     options
       .ctx
       .ui
-      .notify(buildAdvisorStatus({
+      .notify(await buildAdvisorStatus({
       ctx: options.ctx,
       config: options.getConfig(),
       enabled: options.state

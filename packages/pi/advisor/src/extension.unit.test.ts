@@ -226,7 +226,7 @@ await describe({
     it({
       name: 'lists scoped slugs and default model',
       fn: async () => {
-        const guidance = buildMainModelGuidance({
+        const guidance = await buildMainModelGuidance({
           ctx: extensionContext(),
           config: advisorConfig,
         },);
@@ -237,7 +237,7 @@ await describe({
     it({
       name: 'lists non-current default model when alternate remains',
       fn: async () => {
-        const guidance = buildMainModelGuidance({
+        const guidance = await buildMainModelGuidance({
           ctx: extensionContextWithCurrentMainModel(),
           config: advisorConfig,
         },);
@@ -254,7 +254,7 @@ await describe({
     it({
       name: 'reports enablement and scoped default',
       fn: async () => {
-        const status = buildAdvisorStatus({
+        const status = await buildAdvisorStatus({
           ctx: commandContext(),
           config: advisorConfig,
           enabled: true,
@@ -266,7 +266,7 @@ await describe({
     it({
       name: 'reports non-current default model when alternate remains',
       fn: async () => {
-        const status = buildAdvisorStatus({
+        const status = await buildAdvisorStatus({
           ctx: commandContextWithCurrentMainModel(),
           config: advisorConfig,
           enabled: true,
