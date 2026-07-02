@@ -1,4 +1,4 @@
-import { existsSync, } from 'node:fs';
+import type { Stats, } from 'node:fs';
 import {
   readFile,
   stat,
@@ -215,6 +215,89 @@ const URL =
     .IPINFO_TOKEN}`;
 
 /**
+ * Narrows an unknown caught value to {@link NodeJS.ErrnoException} so callers can
+ * branch on `error.code` without an unsafe `as` assertion (oxlint bans that cast).
+ *
+ * @param error - Caught value, which `try` lifts to `unknown`.
+ *
+ * @returns Whether value is an {@link Error} carrying a `code` property.
+ *
+ * @example
+ * ```ts
+ * if (isErrnoException(error,) && (error.code === 'ENOENT')) return ABSENT;
+ * ```
+ */
+function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
+  return Error.isError(error,)
+    && ('code' in error);
+}
+
+/**
+ * Sentinel for "the cache file does not exist". A unique `Symbol` rather than
+ * `null`/`undefined` so the absent case stays out of a `no-nullish-union`-banned union.
+ */
+const ABSENT: unique symbol = Symbol('cache file missing on disk',);
+
+/**
+ * Stats the cache file, collapsing a missing file to {@link ABSENT}; every other
+ * stat error propagates.
+ *
+ * @param path - Absolute path to stat.
+ *
+ * @returns File metadata, or {@link ABSENT} on `ENOENT`.
+ *
+ * @throws When the stat fails for any reason other than a missing file.
+ *
+ * @example
+ * ```ts
+ * const stats = await statIfExists(CACHE_FILE);
+ * ```
+ */
+async function statIfExists(path: string,): Promise<Stats | typeof ABSENT> {
+  try {
+    return await stat(path,);
+  }
+  catch (error) {
+    if (isErrnoException(error,)
+      && (error.code
+        === 'ENOENT'))
+      return ABSENT;
+    throw error;
+  }
+}
+
+/**
+ * Reads the cache file's UTF-8 contents, collapsing a missing file to {@link ABSENT};
+ * every other read error propagates.
+ *
+ * @param path - Absolute path to read.
+ *
+ * @returns File contents, or {@link ABSENT} on `ENOENT`.
+ *
+ * @throws When the read fails for any reason other than a missing file.
+ *
+ * @example
+ * ```ts
+ * const cached = await readTextIfExists(CACHE_FILE);
+ * ```
+ */
+async function readTextIfExists(path: string,): Promise<string | typeof ABSENT> {
+  try {
+    return await readFile(
+      path,
+      'utf8',
+    );
+  }
+  catch (error) {
+    if (isErrnoException(error,)
+      && (error.code
+        === 'ENOENT'))
+      return ABSENT;
+    throw error;
+  }
+}
+
+/**
  * Entry point invoked at module load: serves cached IPs when fresh, otherwise streams
  * ipinfo Lite dataset and writes comma-joined CIDRs matching target ASN.
  *
@@ -229,23 +312,23 @@ const URL =
  */
 async function run(): Promise<void> {
   // Check Cache
-  if (existsSync(CACHE_FILE,)) {
-    /**
-     * Cache file metadata used to compare mtime against {@link THIRTY_DAYS_MS}.
-     */
-    const stats = await stat(CACHE_FILE,);
-    if ((Date.now()
+  /**
+   * Cache file metadata used to compare mtime against {@link THIRTY_DAYS_MS},
+   * or {@link ABSENT} when no cache file exists yet.
+   */
+  const stats = await statIfExists(CACHE_FILE,);
+  if ((stats !== ABSENT)
+    && ((Date.now()
       - stats
-      .mtimeMs) < THIRTY_DAYS_MS) {
-      process.stdout
-        .write(
-        JSON.stringify({ ips: await readFile(
-          CACHE_FILE,
-          'utf8',
-        ), },),
-      );
-      return;
-    }
+        .mtimeMs) < THIRTY_DAYS_MS)) {
+    process.stdout
+      .write(
+      JSON.stringify({ ips: await readFile(
+        CACHE_FILE,
+        'utf8',
+      ), },),
+    );
+    return;
   }
 
   // Stream & Filter (Memory-only)
@@ -339,20 +422,24 @@ async function run(): Promise<void> {
     process.stdout
       .write(JSON.stringify({ ips: result, },),);
   }
-  catch {
-    // Fallback to expired cache if download fails
-    if (existsSync(CACHE_FILE,)) {
-      process.stdout
-        .write(
-        JSON.stringify({ ips: await readFile(
-          CACHE_FILE,
-          'utf8',
-        ), },),
+  catch (error) {
+    // Log why the live fetch failed before deciding whether a stale cache can cover it.
+    process.stderr
+      .write(`fetch_ips: live fetch failed, attempting cache fallback: ${String(error,)}\n`,);
+
+    // Fallback to expired cache if download fails.
+    /**
+     * Stale cache contents, or {@link ABSENT} when no cache exists to fall back to.
+     */
+    const cached = await readTextIfExists(CACHE_FILE,);
+    if (cached === ABSENT)
+      throw new Error(
+        'fetch failed and no cached fallback available',
+        { cause: error, },
       );
-    }
-    else {
-      throw new Error('fetch failed and no cached fallback available',);
-    }
+
+    process.stdout
+      .write(JSON.stringify({ ips: cached, },),);
   }
 }
 

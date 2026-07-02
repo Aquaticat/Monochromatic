@@ -1,4 +1,3 @@
-import { existsSync, } from 'node:fs';
 import {
   readFile,
   writeFile,
@@ -213,6 +212,61 @@ function assertHostname(hostname: string,): string {
 }
 
 /**
+ * Narrows an unknown caught value to {@link NodeJS.ErrnoException} so callers can
+ * branch on `error.code` without an unsafe `as` assertion (oxlint bans that cast).
+ *
+ * @param error - Caught value, which `try` lifts to `unknown`.
+ *
+ * @returns Whether value is an {@link Error} carrying a `code` property.
+ *
+ * @example
+ * ```ts
+ * if (isErrnoException(error,) && (error.code === 'ENOENT')) return ABSENT;
+ * ```
+ */
+function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
+  return Error.isError(error,)
+    && ('code' in error);
+}
+
+/**
+ * Sentinel for "the requested file does not exist". A unique `Symbol` rather than
+ * `null`/`undefined` so the absent case stays out of a `no-nullish-union`-banned union.
+ */
+const ABSENT: unique symbol = Symbol('cidr map file missing on disk',);
+
+/**
+ * Reads a file's UTF-8 contents, collapsing a missing file to {@link ABSENT};
+ * every other read error propagates.
+ *
+ * @param path - Absolute path to read.
+ *
+ * @returns File contents, or {@link ABSENT} on `ENOENT`.
+ *
+ * @throws When the read fails for any reason other than a missing file.
+ *
+ * @example
+ * ```ts
+ * const text = await readTextIfExists('/abs/cache_resolved_hosts.json');
+ * ```
+ */
+async function readTextIfExists(path: string,): Promise<string | typeof ABSENT> {
+  try {
+    return await readFile(
+      path,
+      'utf8',
+    );
+  }
+  catch (error) {
+    if (isErrnoException(error,)
+      && (error.code
+        === 'ENOENT'))
+      return ABSENT;
+    throw error;
+  }
+}
+
+/**
  * Reads a hostname-to-CIDR map file, returning an empty map when absent or malformed.
  *
  * @param path - Absolute path to a seed or cache JSON file.
@@ -225,16 +279,17 @@ function assertHostname(hostname: string,): string {
  * ```
  */
 async function loadCidrMap(path: string,): Promise<CidrsByHost> {
-  if (!existsSync(path,))
+  /**
+   * Raw file contents, or {@link ABSENT} when the seed/cache file does not exist yet.
+   */
+  const contents = await readTextIfExists(path,);
+  if (contents === ABSENT)
     return {};
 
   /**
    * Parsed file contents before runtime shape validation.
    */
-  const parsed: unknown = JSON.parse(await readFile(
-    path,
-    'utf8',
-  ),);
+  const parsed: unknown = JSON.parse(contents,);
 
   if (isCidrsByHost(parsed,))
     return parsed;
@@ -269,7 +324,11 @@ async function resolveAddressFamily({
 
     return await resolve6(hostname,);
   }
-  catch {
+  catch (error) {
+    // A host with only A records throws on the AAAA lookup (and vice versa); that
+    // absence is expected, so log the cause to stderr and treat the family as empty.
+    process.stderr
+      .write(`resolve_hosts: ${family} lookup for ${hostname} failed: ${String(error,)}\n`,);
     return [];
   }
 }

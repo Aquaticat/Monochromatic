@@ -142,7 +142,11 @@ async function resolveAddressFamily({
 
     return await resolve6(hostname,);
   }
-  catch {
+  catch (error) {
+    // A host with only A records throws on the AAAA lookup (and vice versa); that
+    // absence is expected, so log the cause to stderr and treat the family as empty.
+    process.stderr
+      .write(`resolve_storagebox_hosts: ${family} lookup for ${hostname} failed: ${String(error,)}\n`,);
     return [];
   }
 }
