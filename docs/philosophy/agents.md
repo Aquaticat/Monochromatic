@@ -737,6 +737,12 @@ The Rust `max-lines` rule (`monochromatic-rust-linter`) counts only code lines:
 The helper-shape allowlist suppresses the report when a function ends in `return <local-binding>`,
  which is why extracting such a helper is a clean remediation rather than a workaround.
 
+#### Variables and values: why VA6 stops at object-literal property values
+
+`no-magic-numbers` ships with `detectObjects: false` (`packages/config/oxlint/src/rules/style.ts`), so a numeric literal used directly as an object-literal property value is never flagged by the tool. Before this exemption, VA6's plain wording ("magic literals as named const") read as a blanket requirement, with nothing marking object-literal values as already covered by the tool's own default.
+
+Failure that produced this rule: a redesign of `packages/webapp-productivity/wc/src/styles-colors.ts` extracted five inline `l` channel values inside `cssOklch({...})` calls (e.g. `l: 0.16,`) into standalone named constants (`L_BLACK`, `L_NEAR_BLACK`, `L_MID`, `L_NEAR_WHITE`, `L_WHITE`), each referenced exactly once, on the assumption the linter required it. `detectObjects: false` had already exempted that exact pattern for months (since commit `3515cd5cb`), so the extraction served no lint-compliance purpose and added five single-use constants of pure ceremony. VA6 now spells out the exemption so a future session checks the tool's actual config before over-complying with the rule's plain-language reading.
+
 #### Security: why source escapes are not portable across a syntax boundary
 
 A Markdown `\<`,
@@ -782,6 +788,28 @@ And "done" means the resource was actually exercised, not that the code that wou
 
 Failure that produced this rule: given "my Android device is connected" plus a scope expansion to instrument every Rust crate with tracing, the on-device logcat verification was deferred behind the desktop, linter, terminal, forbidden-strings, and forbidden-regex crates and left for the final verification pass.
 By then the user, assuming the check was already done, had disconnected the phone.
+
+#### Documentation standards: why WR5 bans positional references
+
+Positional pointers ("above",
+ "below",
+ "the previous section",
+ "as noted earlier") go stale silently when content moves:
+ lines get reordered,
+ files split apart under MXL/MXR,
+ headings get renumbered,
+ or a doc gets promoted out of a package under DL1.
+A name-based reference (rule tag,
+ heading text,
+ file path,
+ symbol name,
+ dependency name) survives every one of those moves,
+ because it does not depend on where the referenced content currently sits.
+The rule reaches TSDoc and code comments,
+ not only markdown prose:
+ this is the exact failure fixed in `packages/desktop-app/terminal/Cargo.toml` and
+`packages/music-player/desktop-app/Cargo.toml`,
+ where "the slint dependency above" became "the slint dependency in this file".
 
 #### Before claiming inability: why one failed probe is not proof of absence (RPB)
 

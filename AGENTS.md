@@ -1278,8 +1278,10 @@ VA5:
 
 VA6:
  Magic literals as named `const` (exception:
- `-2` through `2`);
- for fractional values,
+ `-2` through `2`,
+ and numeric literals used as object-literal property values,
+ mirroring oxlint's `no-magic-numbers` `detectObjects: false`);
+ for fractional values needing a name anyway,
  compose from exempt range:
  `HALF = 1 / 2`,
  `QUARTER = HALF / 2`,
@@ -1536,6 +1538,21 @@ WR4:
  not a fixed count.
  Lists may use markers for structure;
  do not mention list length unless length is part of the claim.
+
+WR5:
+ Never reference by relative position ("above",
+ "below",
+ "earlier").
+ Refs go stale when content moves.
+ Name the thing directly:
+ tag,
+ heading,
+ path,
+ symbol,
+ dependency name.
+ Applies to prose,
+ TSDoc,
+ comments.
 
 #### Markdown syntax
 
