@@ -1,8 +1,13 @@
 /**
  * Light/dark color-scheme custom properties for the wc text-stats tool.
  *
- * Colors are CSS custom properties with light defaults, overridden inside a
- * `prefers-color-scheme: dark` block, so the page follows the OS theme
+ * The palette is strictly five opaque grayscale stops,
+ * `oklch(L 0 0)` for L in 0, 0.1, 0.5, 0.9, 1: no other lightness values,
+ * no alpha. Subtlety comes from adjacent stops (0.9 on 1 in light mode,
+ * 0 on 0.1 in dark mode) instead of translucency.
+ *
+ * Colors are CSS custom properties with light defaults, overridden inside
+ * a `prefers-color-scheme: dark` block, so the page follows the OS theme
  * automatically with no client-side toggle.
  */
 import {
@@ -12,110 +17,80 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Light-theme foreground (body text) color.
+ * Lightness of the black stop.
  */
-const LIGHT_FG = cssOklch(
+const L_BLACK = 0;
+
+/**
+ * Lightness of the near-black stop.
+ */
+const L_NEAR_BLACK = 0.1;
+
+/**
+ * Lightness of the mid-gray stop.
+ */
+const L_MID = 0.5;
+
+/**
+ * Lightness of the near-white stop.
+ */
+const L_NEAR_WHITE = 0.9;
+
+/**
+ * Lightness of the white stop.
+ */
+const L_WHITE = 1;
+
+/**
+ * Black stop: light-mode strong foreground, dark-mode surface.
+ */
+const STOP_BLACK = cssOklch(
   {
-    l: 0.15,
+    l: L_BLACK,
     c: 0,
     h: 0,
   },
 );
 
 /**
- * Light-theme background color.
+ * Near-black stop: light-mode body text, dark-mode background.
  */
-const LIGHT_BG = cssOklch(
+const STOP_NEAR_BLACK = cssOklch(
   {
-    l: 1,
+    l: L_NEAR_BLACK,
     c: 0,
     h: 0,
   },
 );
 
 /**
- * Light-theme muted text for descriptions and secondary labels.
+ * Mid-gray stop: muted text and strong borders in both modes.
  */
-const LIGHT_MUTED = cssOklch(
+const STOP_MID = cssOklch(
   {
-    l: 0.42,
+    l: L_MID,
     c: 0,
     h: 0,
   },
 );
 
 /**
- * Light-theme divider lines between frequency table rows.
+ * Near-white stop: light-mode surface, dark-mode body text.
  */
-const LIGHT_DIVIDER = cssOklch(
+const STOP_NEAR_WHITE = cssOklch(
   {
-    l: 0.85,
+    l: L_NEAR_WHITE,
     c: 0,
     h: 0,
   },
 );
 
 /**
- * Light-theme placeholder text color for the input textarea.
+ * White stop: light-mode background, dark-mode strong foreground.
  */
-const LIGHT_PLACEHOLDER = cssOklch(
+const STOP_WHITE = cssOklch(
   {
-    l: 0.6,
-    c: 0,
-    h: 0,
-  },
-);
-
-/**
- * Dark-theme foreground (body text) color.
- */
-const DARK_FG = cssOklch(
-  {
-    l: 0.92,
-    c: 0,
-    h: 0,
-  },
-);
-
-/**
- * Dark-theme background color.
- */
-const DARK_BG = cssOklch(
-  {
-    l: 0.16,
-    c: 0,
-    h: 0,
-  },
-);
-
-/**
- * Dark-theme muted text for descriptions and secondary labels.
- */
-const DARK_MUTED = cssOklch(
-  {
-    l: 0.65,
-    c: 0,
-    h: 0,
-  },
-);
-
-/**
- * Dark-theme divider lines between frequency table rows.
- */
-const DARK_DIVIDER = cssOklch(
-  {
-    l: 0.32,
-    c: 0,
-    h: 0,
-  },
-);
-
-/**
- * Dark-theme placeholder text color for the input textarea.
- */
-const DARK_PLACEHOLDER = cssOklch(
-  {
-    l: 0.55,
+    l: L_WHITE,
     c: 0,
     h: 0,
   },
@@ -123,8 +98,15 @@ const DARK_PLACEHOLDER = cssOklch(
 
 /**
  * Declares `:root`'s light-theme custom properties (the defaults) plus
- * `color-scheme: light dark` so native form controls (the textarea's
- * resize handle, scrollbars) also follow the OS theme.
+ * `color-scheme: light dark` so native form controls and scrollbars also
+ * follow the OS theme.
+ *
+ * Semantic roles: `bg` page background; `surface` tile fill one stop off
+ * `bg`; `fg` body text; `fg-strong` headline numbers and focus rings;
+ * `muted` secondary text on `bg` (never on `surface`, where the mid stop
+ * fails contrast); `border-subtle` hairlines one stop off `bg`;
+ * `border-strong` mid-stop borders (textarea, bar outlines); `bar`
+ * frequency-bar fill.
  *
  * @returns CSS rule string for the `:root` custom-property declarations
  *
@@ -144,11 +126,15 @@ export function renderRootColors(): string {
             'dark',
           ],
         ),
-        '--color-fg': LIGHT_FG,
-        '--color-bg': LIGHT_BG,
-        '--color-muted': LIGHT_MUTED,
-        '--color-divider': LIGHT_DIVIDER,
-        '--color-placeholder': LIGHT_PLACEHOLDER,
+        '--color-bg': STOP_WHITE,
+        '--color-surface': STOP_NEAR_WHITE,
+        '--color-fg': STOP_NEAR_BLACK,
+        '--color-fg-strong': STOP_BLACK,
+        '--color-muted': STOP_MID,
+        '--color-border-subtle': STOP_NEAR_WHITE,
+        '--color-border-strong': STOP_MID,
+        '--color-bar': STOP_NEAR_WHITE,
+        '--color-placeholder': STOP_MID,
       },
     },
   );
@@ -156,7 +142,8 @@ export function renderRootColors(): string {
 
 /**
  * Declares the `prefers-color-scheme: dark` override for every custom
- * property {@link renderRootColors} declares.
+ * property {@link renderRootColors} declares: the same five stops with
+ * roles mirrored (background near-black, surfaces black, text near-white).
  *
  * @returns CSS at-rule string for the dark-theme override
  *
@@ -175,11 +162,15 @@ export function renderDarkColors(): string {
           {
             rule: ':root',
             decls: {
-              '--color-fg': DARK_FG,
-              '--color-bg': DARK_BG,
-              '--color-muted': DARK_MUTED,
-              '--color-divider': DARK_DIVIDER,
-              '--color-placeholder': DARK_PLACEHOLDER,
+              '--color-bg': STOP_NEAR_BLACK,
+              '--color-surface': STOP_BLACK,
+              '--color-fg': STOP_NEAR_WHITE,
+              '--color-fg-strong': STOP_WHITE,
+              '--color-muted': STOP_MID,
+              '--color-border-subtle': STOP_BLACK,
+              '--color-border-strong': STOP_MID,
+              '--color-bar': STOP_BLACK,
+              '--color-placeholder': STOP_MID,
             },
           },
         ),
