@@ -57,7 +57,7 @@ const packageIndex = lazyOnce({ compute: buildIndex, },);
  *
  * @example
  * ```ts
- * import { packages } from './data/packages.ts';
+ * import { packages } from '../data/packages.ts';
  * registerPackages(packages);
  * ```
  */

@@ -18,13 +18,14 @@
  * - `--help` (tools that lack --version but exit 0 for --help)
  */
 
-import { p, } from '../src/package/p.ts';
+import type { PackageEntry, } from '../package/types.ts';
+import { p, } from '../package/p.ts';
 
 /**
  * Package entries with hand-maintained binary names and check flags that Repology cannot infer,
  * each built with {@link p}.
  */
-export const overrides = [
+export const overrides: readonly PackageEntry[] = [
   //region Binary name differs from effname
   p({
     bin: 'convert',

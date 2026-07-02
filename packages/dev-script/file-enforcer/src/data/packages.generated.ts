@@ -6,10 +6,11 @@
  * Entries: 9647
  */
 
-import { p, } from '../src/package/p.ts';
+import type { PackageEntry, } from '../package/types.ts';
+import { p, } from '../package/p.ts';
 
 /** Auto-generated package entries from Repology, keyed by effname. */
-export const generated = [
+export const generated: readonly PackageEntry[] = [
   p({ effname: '0ad', yes: ['apt', 'dnf', 'choco', 'scoop', 'pacman', 'zypper',], },),
   p({ effname: '0install',
     yes: [['apt', 'lib0install-solver-ocaml-dev',], ['dnf', 'ocaml-0install-solver',], [

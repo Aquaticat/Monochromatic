@@ -6,13 +6,14 @@
  *
  * @example
  * ```ts
- * import { packages } from '../data/packages.ts';
+ * import { packages } from './data/packages.ts';
  * import { registerPackages } from './package/ensure-package.ts';
  * registerPackages(packages);
  * ```
  */
 
-import { mergeOverrides, } from '../src/package/merge.ts';
+import type { PackageEntry, } from '../package/types.ts';
+import { mergeOverrides, } from '../package/merge.ts';
 import { generated, } from './packages.generated.ts';
 import { overrides, } from './packages.overrides.ts';
 
@@ -20,7 +21,7 @@ import { overrides, } from './packages.overrides.ts';
  * Complete package index combining generated Repology data with hand-maintained overrides,
  * produced by {@link mergeOverrides}.
  */
-export const packages = mergeOverrides({
+export const packages: readonly PackageEntry[] = mergeOverrides({
   generated,
   overrideEntries: overrides,
 },);

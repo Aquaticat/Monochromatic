@@ -51,6 +51,7 @@ const PKG_DIR = resolve(
  */
 const OUTPUT_PATH = resolve(
   PKG_DIR,
+  'src',
   'data',
   'packages.generated.ts',
 );
@@ -328,10 +329,11 @@ function generateTypeScript(projects: readonly RepologyProject[],): string {
     ` * Entries: ${projects.length}`,
     ' */',
     '',
-    "import { p, } from '../src/package/p.ts';",
+    "import type { PackageEntry, } from '../package/types.ts';",
+    "import { p, } from '../package/p.ts';",
     '',
     '/** Auto-generated package entries from Repology, keyed by effname. */',
-    'export const generated = [',
+    'export const generated: readonly PackageEntry[] = [',
   ];
 
   for (const project of projects) {
