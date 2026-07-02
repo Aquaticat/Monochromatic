@@ -38,6 +38,17 @@ mod ui_progress;
 /// ```
 mod ui_page;
 
+/// What:     `mod ui_font_scale;` loads the sibling `ui_font_scale.rs` module.
+/// Why:      The OS-font-tracking scale handler uses the generated `AppWindow`, so it
+///           belongs beside `main.rs`; splitting it out also keeps `main.rs` under the
+///           max-lines limit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiFontScale from "./ui_font_scale";
+/// ```
+mod ui_font_scale;
+
 /// What:     `#[cfg(test)] #[path = "ui_binding_tests.rs"] mod ui_binding_tests;` loads
 ///           the headless UI regression tests, compiled ONLY under `cargo test` /
 ///           `cargo nextest run`. `#[path]` names the sibling file explicitly because
@@ -1254,6 +1265,18 @@ fn main() -> Result<(), slint::PlatformError> {
     // const weak = new WeakRef(app);
     // ```
     let weak = app.as_weak();
+
+    // What:     `ui_font_scale::apply_os_font_scale(&app);` registers the callback that
+    //           scales every UI font to 0.9x the OS UI font once Slint's async portal
+    //           read lands the real value.
+    // Why:      Lives in a sibling module so `main.rs` stays under the max-lines limit;
+    //           see `ui_font_scale.rs` for the async-portal and binding-loop rationale.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // applyOsFontScale(app);
+    // ```
+    ui_font_scale::apply_os_font_scale(&app);
 
     // What:     `let launcher = Launcher::new();`. Construct the KDE taskbar-progress
     //           emitter (a cheap-to-clone session-bus handle, or a no-op without a

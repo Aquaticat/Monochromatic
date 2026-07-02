@@ -187,15 +187,26 @@ export component AppWindow inherits Window {
     preferred-width: 480px;
     preferred-height: 600px;
 
-    // Global type scale. Every font in the window is a rem multiple of this base:
-    // the hand-drawn Text (Typography.body-rem * 1rem) and the native widgets
-    // (Button / CheckBox / Slider), whose only font-size lever is rem. Pinning it
-    // here scales all of them uniformly. 12px is 10% below the ~13.3px desktop base
-    // this was tuned against (a 10pt UI font, 10 * 96 / 72), applying the requested
-    // 10% reduction. It must be absolute: a relative `0.9rem` here is a binding loop,
-    // because rem resolves against this very property. Pinning also means the size no
-    // longer tracks the OS UI-font preference (HiDPI display scaling still applies).
-    default-font-size: 12px;
+    // Global 10% type-scale reduction that still honours the OS UI-font setting.
+    // Every font is a rem multiple of the window default-font-size: the hand-drawn
+    // Text (Typography.body-rem * 1rem) and the native widgets (Button / CheckBox /
+    // Slider), whose only font-size lever is rem. Rust sets `base-font-size` to
+    // 0.9 * the OS font; `default-font-size` binds to it, and 0 falls back to the
+    // platform font, so nothing breaks before Rust runs. The OS font is not known at
+    // startup, because Slint reads it from the desktop portal asynchronously
+    // (i-slint-backend-winit xdg_desktop_settings.rs), so `os-font-size` (= 1rem, the
+    // resolved platform font while base is 0) changes once the portal responds, and
+    // `changed os-font-size` hands the real value to Rust, which applies the 0.9 a
+    // single time (guarded). A relative `default-font-size: 0.9rem` is a binding loop
+    // (rem resolves against this very property), which is why the scale is applied
+    // from Rust. See docs/troubleshooting/slint-rem-binding-loop.md.
+    in property <length> base-font-size;
+    default-font-size: root.base-font-size;
+    out property <length> os-font-size: 1rem;
+    callback probe-os-font(length);
+    changed os-font-size => {
+        root.probe-os-font(root.os-font-size);
+    }
 
     // Pure black under dark mode (OLED-friendly, maximum contrast) instead of the
     // style's near-black Palette.background; light mode keeps the adaptive default.
