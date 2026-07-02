@@ -54,5 +54,5 @@ export default function currentTimeContext(pi: ExtensionAPI,): void {
 
 export {
   CURRENT_TIME_CONTEXT_TYPE,
-  formatTimeContext,
 };
+export { formatTimeContext, } from './format-time-context.ts';
