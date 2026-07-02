@@ -402,6 +402,8 @@ Upstream validation commands and outcomes:
   - `npx playwright install --with-deps chromium` failed because this host lacks `apt-get`.
   - Retried `npx playwright install chromium && npm test`.
   - Result: success.
+  - Browser test `test/browser/fixture_resize_canvas.test.ts` directly exercises canvas resize with
+    `picaFactory({ features: ['js'] })`, so the browser no-Wasm canvas path was covered by upstream tests.
 - `sharp`
   - `npm install && npm test` failed at `tsd` because `tsd --files ./test/types/sharp.test-d.{cts,mts}`
     resolved package types oddly from the test file directory.
