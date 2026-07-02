@@ -1,40 +1,73 @@
 /**
- * Stats section markup for the wc text-stats tool: the label/id/field
- * mapping and the `<dl>` it renders into.
+ * Stats section markup for the wc text-stats tool: six paired stat tiles.
+ *
+ * Lines, words, sentences, and paragraphs each pair a headline count with
+ * a "longest" sub-stat; bytes and chars stand alone. The pairing halves
+ * the tile count and demotes the maxima to secondary lines instead of
+ * giving them equal billing with the counts.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { TextStats, } from './stats/index.ts';
 
 /**
- * One row of the Stats section: a display label paired with the DOM id and
- * {@link TextStats} field the client script writes that field's value to.
+ * Sub-stat of a tile: the "longest" line under the headline count.
  */
-export type StatRow = Readonly<{
+export type StatSub = Readonly<{
   /**
-   * Display label shown in the `<dt>`.
-   */
-  label: string;
-  /**
-   * DOM id the client script writes this stat's value to.
+   * DOM id the client script writes this sub-stat's value to.
    */
   id: string;
   /**
-   * {@link TextStats} field this row displays.
+   * {@link TextStats} field this sub-stat displays.
    */
   key: keyof TextStats;
+  /**
+   * Unit word rendered after the value, disambiguating what "longest"
+   * measures (max sentence length is in words, max paragraph length in
+   * sentences).
+   */
+  unit: string;
 }>;
 
 /**
- * Every Stats section row, in display order. Exported so the client script
- * can reuse the same label/id/{@link TextStats} field mapping instead of
+ * One stat tile: a display label, the DOM id and {@link TextStats} field
+ * of its headline count, and optionally a "longest" sub-stat.
+ */
+export type StatTile = Readonly<{
+  /**
+   * Display label shown above the headline count.
+   */
+  label: string;
+  /**
+   * DOM id the client script writes the headline count to.
+   */
+  id: string;
+  /**
+   * {@link TextStats} field the headline count displays.
+   */
+  key: keyof TextStats;
+  /**
+   * Optional "longest" sub-stat rendered under the headline count.
+   */
+  sub?: StatSub;
+}>;
+
+/**
+ * Every stat tile, in display order. Exported so the client script can
+ * reuse the same id/{@link TextStats} field mapping instead of
  * duplicating it.
  */
-export const STAT_ROWS: readonly StatRow[] = [
+export const STAT_TILES: readonly StatTile[] = [
   {
-    label: 'Bytes',
-    id: 'stat-bytes',
-    key: 'bytes',
+    label: 'Words',
+    id: 'stat-words',
+    key: 'words',
+    sub: {
+      id: 'stat-max-word-length',
+      key: 'maxWordLength',
+      unit: 'chars',
+    },
   },
   {
     label: 'Chars',
@@ -42,97 +75,150 @@ export const STAT_ROWS: readonly StatRow[] = [
     key: 'chars',
   },
   {
+    label: 'Bytes',
+    id: 'stat-bytes',
+    key: 'bytes',
+  },
+  {
     label: 'Lines',
     id: 'stat-lines',
     key: 'lines',
-  },
-  {
-    label: 'Max line length',
-    id: 'stat-max-line-length',
-    key: 'maxLineLength',
-  },
-  {
-    label: 'Words',
-    id: 'stat-words',
-    key: 'words',
-  },
-  {
-    label: 'Max word length',
-    id: 'stat-max-word-length',
-    key: 'maxWordLength',
+    sub: {
+      id: 'stat-max-line-length',
+      key: 'maxLineLength',
+      unit: 'chars',
+    },
   },
   {
     label: 'Sentences',
     id: 'stat-sentences',
     key: 'sentences',
-  },
-  {
-    label: 'Max sentence length',
-    id: 'stat-max-sentence-length',
-    key: 'maxSentenceLength',
+    sub: {
+      id: 'stat-max-sentence-length',
+      key: 'maxSentenceLength',
+      unit: 'words',
+    },
   },
   {
     label: 'Paragraphs',
     id: 'stat-paragraphs',
     key: 'paragraphs',
-  },
-  {
-    label: 'Max paragraph length',
-    id: 'stat-max-paragraph-length',
-    key: 'maxParagraphLength',
+    sub: {
+      id: 'stat-max-paragraph-length',
+      key: 'maxParagraphLength',
+      unit: 'sentences',
+    },
   },
 ];
 
 /**
- * Renders every {@link STAT_ROWS} entry as a `<div class="stat-row">`
- * wrapping a `<dt>`/`<dd>` pair, each value starting at `0` until the
- * client script computes real stats. Wrapped so each pair can lay itself
- * out with flexbox instead of a CSS grid.
- *
- * @returns HTML string for every stat row, in order
+ * Pairing of a DOM id with the {@link TextStats} field written to it,
+ * flattened from {@link STAT_TILES} (headline counts and sub-stats
+ * alike) so the client script can iterate one list.
  */
-function renderStatRows(): string {
+export type StatField = Readonly<{
   /**
-   * `<div class="stat-row">` HTML strings collected by one pass over
-   * {@link STAT_ROWS}.
+   * DOM id the client script writes this stat's value to.
    */
-  const rows: string[] = [];
+  id: string;
+  /**
+   * {@link TextStats} field this element displays.
+   */
+  key: keyof TextStats;
+}>;
 
-  for (const {
-    label,
-    id,
-  } of STAT_ROWS) {
-    rows.push(
+/**
+ * Every id/field pairing the client script writes, flattened from
+ * {@link STAT_TILES}.
+ */
+export const STAT_FIELDS: readonly StatField[] = STAT_TILES.flatMap(
+  function flattenTile(tile,): readonly StatField[] {
+    /**
+     * Headline count pairing present on every tile.
+     */
+    const headline: StatField = {
+      id: tile.id,
+      key: tile.key,
+    };
+
+    return tile.sub === undefined
+      ? [headline,]
+      : [
+        headline,
+        {
+          id: tile.sub.id,
+          key: tile.sub.key,
+        },
+      ];
+  },
+);
+
+/**
+ * Renders one {@link STAT_TILES} entry as a `<div class="tile">` wrapping
+ * a `<dt>` label and one or two `<dd>`s (headline count, optional
+ * "longest" sub-stat), each value starting at `0` until the client
+ * script computes real stats.
+ *
+ * @param tile - tile definition to render
+ *
+ * @returns HTML string for one tile
+ */
+function renderTile(tile: StatTile,): string {
+  /**
+   * `<dt>` label plus headline-count `<dd>` present on every tile.
+   */
+  const children = [
+    h(
+      {
+        tag: 'dt',
+        class: 'tile-label',
+        text: tile.label,
+      },
+    ),
+    h(
+      {
+        tag: 'dd',
+        class: 'tile-value',
+        attrs: { id: tile.id, },
+        text: '0',
+      },
+    ),
+  ];
+
+  if (tile.sub !== undefined) {
+    children.push(
       h(
         {
-          tag: 'div',
-          class: 'stat-row',
+          tag: 'dd',
+          class: 'tile-sub',
           children: [
+            'longest ',
             h(
               {
-                tag: 'dt',
-                text: label,
-              },
-            ),
-            h(
-              {
-                tag: 'dd',
-                attrs: { id, },
+                tag: 'span',
+                attrs: { id: tile.sub.id, },
                 text: '0',
               },
             ),
+            ` ${tile.sub.unit}`,
           ],
         },
       ),
     );
   }
 
-  return rows.join('',);
+  return h(
+    {
+      tag: 'div',
+      class: 'tile',
+      children,
+    },
+  );
 }
 
 /**
- * Renders the Stats section: a heading and the {@link STAT_ROWS} definition
- * list, via {@link renderStatRows}.
+ * Renders the Stats section: a heading and the {@link STAT_TILES}
+ * definition list laid out as flex-wrapped tiles, via {@link renderTile}.
  *
  * @returns HTML string for the Stats section
  *
@@ -145,6 +231,7 @@ export function renderStatsSection(): string {
   return h(
     {
       tag: 'section',
+      class: 'stats-section',
       children: [
         h(
           {
@@ -155,8 +242,9 @@ export function renderStatsSection(): string {
         h(
           {
             tag: 'dl',
-            attrs: { class: 'stats', },
-            html: renderStatRows(),
+            attrs: { class: 'tiles', },
+            html: STAT_TILES.map(renderTile,)
+              .join('',),
           },
         ),
       ],

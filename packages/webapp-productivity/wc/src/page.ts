@@ -2,28 +2,35 @@
  * HTML document structure for the wc text-stats tool.
  *
  * Uses h-html to produce a self-contained page with inlined CSS and
- * JavaScript: an input textarea, a Stats definition list (`./page-stats.ts`),
- * and a Frequency table, both populated live by the client script.
+ * JavaScript: a viewport-filling flex column holding a masthead, an input
+ * textarea, six stat tiles (`./page-stats.ts`), and a Frequency section
+ * marked up as flex rows with ARIA table roles so per-row
+ * `content-visibility: auto` works (`content-visibility` is ignored on
+ * internal table boxes like `tr`).
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { renderStatsSection, } from './page-stats.ts';
 
 export {
-  STAT_ROWS,
-  type StatRow,
+  STAT_FIELDS,
+  STAT_TILES,
+  type StatField,
+  type StatSub,
+  type StatTile,
 } from './page-stats.ts';
 
 /**
  * Renders the input panel: a label and a textarea the client script reads
- * text from.
+ * text from. The textarea flexes to fill the remaining viewport height
+ * and auto-grows with content via the client script.
  *
  * @returns HTML string for the input panel
  */
 function renderInputPanel(): string {
   return h(
     {
-      tag: 'div',
+      tag: 'section',
       attrs: { class: 'input-panel', },
       children: [
         h(
@@ -48,8 +55,59 @@ function renderInputPanel(): string {
 }
 
 /**
- * Renders the Frequency section: a heading and an empty table body the
- * client script fills with word-frequency rows.
+ * Renders the Frequency column-header row. The trailing bar column is
+ * decorative, so its header stays empty.
+ *
+ * @returns HTML string for the header row
+ */
+function renderFrequencyHead(): string {
+  return h(
+    {
+      tag: 'div',
+      class: 'frequency-row frequency-head',
+      attrs: { role: 'row', },
+      children: [
+        h(
+          {
+            tag: 'span',
+            class: 'freq-count',
+            attrs: { role: 'columnheader', },
+            text: 'Count',
+          },
+        ),
+        h(
+          {
+            tag: 'span',
+            class: 'freq-pct',
+            attrs: { role: 'columnheader', },
+            text: '%',
+          },
+        ),
+        h(
+          {
+            tag: 'span',
+            class: 'freq-word',
+            attrs: { role: 'columnheader', },
+            text: 'Word',
+          },
+        ),
+        h(
+          {
+            tag: 'span',
+            class: 'freq-bar-track',
+            attrs: { role: 'columnheader', },
+          },
+        ),
+      ],
+    },
+  );
+}
+
+/**
+ * Renders the Frequency section: a heading and an ARIA table (flex rows,
+ * not a native `<table>`, so per-row `content-visibility: auto` takes
+ * effect) whose body rowgroup the client script fills with
+ * word-frequency rows.
  *
  * @returns HTML string for the Frequency section
  */
@@ -57,6 +115,7 @@ function renderFrequencySection(): string {
   return h(
     {
       tag: 'section',
+      class: 'frequency-section',
       children: [
         h(
           {
@@ -66,45 +125,27 @@ function renderFrequencySection(): string {
         ),
         h(
           {
-            tag: 'table',
-            attrs: { class: 'frequency', },
+            tag: 'div',
+            class: 'frequency',
+            attrs: {
+              role: 'table',
+              'aria-label': 'Word frequency',
+            },
             children: [
               h(
                 {
-                  tag: 'thead',
-                  children: [
-                    h(
-                      {
-                        tag: 'tr',
-                        children: [
-                          h(
-                            {
-                              tag: 'th',
-                              text: 'Word',
-                            },
-                          ),
-                          h(
-                            {
-                              tag: 'th',
-                              text: 'Count',
-                            },
-                          ),
-                          h(
-                            {
-                              tag: 'th',
-                              text: '%',
-                            },
-                          ),
-                        ],
-                      },
-                    ),
-                  ],
+                  tag: 'div',
+                  attrs: { role: 'rowgroup', },
+                  children: [renderFrequencyHead(),],
                 },
               ),
               h(
                 {
-                  tag: 'tbody',
-                  attrs: { id: 'frequency-body', },
+                  tag: 'div',
+                  attrs: {
+                    id: 'frequency-body',
+                    role: 'rowgroup',
+                  },
                 },
               ),
             ],
@@ -116,9 +157,40 @@ function renderFrequencySection(): string {
 }
 
 /**
+ * Renders the masthead: the tool name and a one-line description.
+ *
+ * @returns HTML string for the masthead
+ */
+function renderMasthead(): string {
+  return h(
+    {
+      tag: 'header',
+      class: 'masthead',
+      children: [
+        h(
+          {
+            tag: 'h1',
+            text: 'wc',
+          },
+        ),
+        h(
+          {
+            tag: 'p',
+            attrs: { class: 'description', },
+            text:
+              'Byte, character, line, word, sentence, and paragraph statistics, plus word frequency, computed live in the browser as you type.',
+          },
+        ),
+      ],
+    },
+  );
+}
+
+/**
  * Renders the complete HTML document with all content inlined, combining
- * {@link renderInputPanel}, {@link renderStatsSection}
- * (`./page-stats.ts`), and {@link renderFrequencySection}.
+ * {@link renderMasthead}, {@link renderInputPanel},
+ * {@link renderStatsSection} (`./page-stats.ts`), and
+ * {@link renderFrequencySection}.
  *
  * @param css - CSS stylesheet string
  *
@@ -168,7 +240,7 @@ export function renderPage(
                 h(
                   {
                     tag: 'title',
-                    text: 'wc — text stats',
+                    text: 'wc: text stats',
                   },
                 ),
                 h(
@@ -186,31 +258,26 @@ export function renderPage(
               children: [
                 h(
                   {
-                    tag: 'h1',
-                    text: 'wc',
-                  },
-                ),
-                h(
-                  {
-                    tag: 'p',
-                    attrs: { class: 'description', },
-                    text:
-                      'Byte, character, line, word, sentence, and paragraph statistics, plus word frequency, computed live in the browser as you type.',
-                  },
-                ),
-                h(
-                  {
                     tag: 'div',
-                    attrs: { class: 'layout', },
+                    attrs: { class: 'page', },
                     children: [
-                      renderInputPanel(),
+                      renderMasthead(),
                       h(
                         {
                           tag: 'div',
-                          attrs: { class: 'results-panel', },
+                          attrs: { class: 'layout', },
                           children: [
-                            renderStatsSection(),
-                            renderFrequencySection(),
+                            renderInputPanel(),
+                            h(
+                              {
+                                tag: 'div',
+                                attrs: { class: 'results-panel', },
+                                children: [
+                                  renderStatsSection(),
+                                  renderFrequencySection(),
+                                ],
+                              },
+                            ),
                           ],
                         },
                       ),
