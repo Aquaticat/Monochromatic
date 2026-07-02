@@ -134,6 +134,11 @@ export type StatField = Readonly<{
 export const STAT_FIELDS: readonly StatField[] = STAT_TILES.flatMap(
   function flattenTile(tile,): readonly StatField[] {
     /**
+     * Optional sub-stat destructured once so member access stays flat.
+     */
+    const { sub, } = tile;
+
+    /**
      * Headline count pairing present on every tile.
      */
     const headline: StatField = {
@@ -141,13 +146,13 @@ export const STAT_FIELDS: readonly StatField[] = STAT_TILES.flatMap(
       key: tile.key,
     };
 
-    return tile.sub === undefined
+    return sub === undefined
       ? [headline,]
       : [
         headline,
         {
-          id: tile.sub.id,
-          key: tile.sub.key,
+          id: sub.id,
+          key: sub.key,
         },
       ];
   },
@@ -164,6 +169,11 @@ export const STAT_FIELDS: readonly StatField[] = STAT_TILES.flatMap(
  * @returns HTML string for one tile
  */
 function renderTile(tile: StatTile,): string {
+  /**
+   * Optional sub-stat destructured once so member access stays flat.
+   */
+  const { sub, } = tile;
+
   /**
    * `<dt>` label plus headline-count `<dd>` present on every tile.
    */
@@ -185,7 +195,7 @@ function renderTile(tile: StatTile,): string {
     ),
   ];
 
-  if (tile.sub !== undefined) {
+  if (sub !== undefined) {
     children.push(
       h(
         {
@@ -196,11 +206,11 @@ function renderTile(tile: StatTile,): string {
             h(
               {
                 tag: 'span',
-                attrs: { id: tile.sub.id, },
+                attrs: { id: sub.id, },
                 text: '0',
               },
             ),
-            ` ${tile.sub.unit}`,
+            ` ${sub.unit}`,
           ],
         },
       ),
@@ -243,7 +253,10 @@ export function renderStatsSection(): string {
           {
             tag: 'dl',
             attrs: { class: 'tiles', },
-            html: STAT_TILES.map(renderTile,)
+            html: STAT_TILES
+              .map(function renderOneTile(tile,): string {
+                return renderTile(tile,);
+              },)
               .join('',),
           },
         ),

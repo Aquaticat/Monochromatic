@@ -20,7 +20,13 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-import { HAIRLINE, } from './styles-layout.ts';
+import {
+  EIGHTH,
+  HAIRLINE,
+  HALF,
+  QUARTER,
+  THREE_QUARTERS,
+} from './styles-layout.ts';
 
 /**
  * Tile headline-number weight, heavier than body but below bold so the
@@ -37,12 +43,12 @@ const WEIGHT_HEADING = 600;
  * Small-text size in rem shared by tile labels, tile sub-stats, and the
  * frequency header row.
  */
-const SMALL_TEXT_REM = 3 / 4;
+const SMALL_TEXT_REM = THREE_QUARTERS;
 
 /**
  * Tile headline-number size in rem.
  */
-const VALUE_SIZE_REM = 1 + (3 / 4);
+const VALUE_SIZE_REM = 1 + THREE_QUARTERS;
 
 /**
  * Fixed inline size in rem of every frequency bar track; equal tracks
@@ -55,7 +61,14 @@ const BAR_TRACK_REM = 7;
  * `contain-intrinsic-block-size`, so skipped rows keep the scrollbar
  * stable.
  */
-const ROW_INTRINSIC_REM = 2 + (1 / 4);
+const ROW_INTRINSIC_REM = 2 + QUARTER;
+
+/**
+ * Tile preferred flex-basis in rem, sized so two to three tiles fit per
+ * row in the results column.
+ */
+const TILE_BASIS_REM = ((2 * 2) * 2)
+  + HALF;
 
 /**
  * Full-length percentage.
@@ -78,10 +91,10 @@ export function renderResultsStyles(): string {
       {
         rule: '.results-panel h2',
         decls: {
-          'font-size': cssRem(1 - (1 / 8),),
+          'font-size': cssRem(1 - EIGHTH,),
           'font-weight': cssNum(WEIGHT_HEADING,),
           color: cssVar('color-muted',),
-          'margin-block-end': cssRem(3 / 4,),
+          'margin-block-end': cssRem(THREE_QUARTERS,),
         },
       },
     ),
@@ -99,7 +112,7 @@ export function renderResultsStyles(): string {
         decls: {
           display: 'flex',
           'flex-wrap': 'wrap',
-          gap: cssRem(3 / 4,),
+          gap: cssRem(THREE_QUARTERS,),
         },
       },
     ),
@@ -110,14 +123,13 @@ export function renderResultsStyles(): string {
         decls: {
           'flex-grow': cssNum(1,),
           'flex-shrink': cssNum(1,),
-          'flex-basis': cssRem((2 * 2 * 2)
-            + (1 / 2),),
+          'flex-basis': cssRem(TILE_BASIS_REM,),
           display: 'flex',
           'flex-direction': 'column',
-          gap: cssRem(1 / 4,),
-          'padding-block': cssRem(1 - (1 / 8),),
+          gap: cssRem(QUARTER,),
+          'padding-block': cssRem(1 - EIGHTH,),
           'padding-inline': cssRem(1,),
-          'border-radius': cssRem(1 / 2,),
+          'border-radius': cssRem(HALF,),
           'background-color': cssVar('color-surface',),
         },
       },
@@ -136,7 +148,7 @@ export function renderResultsStyles(): string {
         decls: {
           'font-size': cssRem(VALUE_SIZE_REM,),
           'font-weight': cssNum(WEIGHT_VALUE,),
-          'line-height': cssNum(1 + (1 / 8),),
+          'line-height': cssNum(1 + EIGHTH,),
           color: cssVar('color-fg-strong',),
         },
       },
@@ -161,9 +173,9 @@ export function renderResultsStyles(): string {
         rule: '.frequency-row',
         decls: {
           display: 'flex',
-          gap: cssRem(3 / 4,),
+          gap: cssRem(THREE_QUARTERS,),
           'align-items': 'baseline',
-          'padding-block': cssRem(1 / 2,),
+          'padding-block': cssRem(HALF,),
           'border-block-end-width': cssRem(HAIRLINE,),
           'border-block-end-style': 'solid',
           'border-block-end-color': cssVar('color-border-subtle',),
@@ -224,8 +236,7 @@ export function renderResultsStyles(): string {
           'flex-shrink': cssNum(0,),
           'flex-basis': cssRem(BAR_TRACK_REM,),
           'align-self': 'center',
-          'block-size': cssRem(1 / 2
-            + (1 / 8),),
+          'block-size': cssRem(HALF + EIGHTH,),
         },
       },
     ),
@@ -237,13 +248,13 @@ export function renderResultsStyles(): string {
           display: 'block',
           'block-size': cssPercent(FULL_PERCENT,),
           'inline-size': cssVar('bar',),
-          'min-inline-size': cssRem(1 / 4,),
+          'min-inline-size': cssRem(QUARTER,),
           'background-color': cssVar('color-bar',),
           'border-width': cssRem(HAIRLINE,),
           'border-style': 'solid',
           'border-color': cssVar('color-border-strong',),
-          'border-start-end-radius': cssRem(1 / 4,),
-          'border-end-end-radius': cssRem(1 / 4,),
+          'border-start-end-radius': cssRem(QUARTER,),
+          'border-end-end-radius': cssRem(QUARTER,),
         },
       },
     ),

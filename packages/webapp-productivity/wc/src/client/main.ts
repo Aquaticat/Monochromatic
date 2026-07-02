@@ -230,7 +230,8 @@ function renderFrequency(entries: readonly FrequencyEntry[],): void {
   /**
    * Character width counts are padded to.
    */
-  const countWidth = String(top.count,).length;
+  const countWidth = String(top.count,)
+    .length;
 
   /**
    * Character width percentage strings are padded to.
@@ -270,31 +271,40 @@ function updateResults(text: string,): void {
 updateResults('',);
 
 /**
+ * Grows a textarea to fit its content: resets the scripted minimum so
+ * the flex layout can reclaim space after deletions, then raises it to
+ * the content's scroll height. The flex stretch keeps the
+ * viewport-filling floor, so short content never shrinks the box below
+ * the visible page remainder.
+ *
+ * @param input - textarea to grow
+ */
+function autoGrow({ input, }: Readonly<{ input: HTMLTextAreaElement; }>,): void {
+  /**
+   * Style declaration destructured once so member access stays flat.
+   */
+  const { style, } = input;
+
+  style.minBlockSize = '';
+  style.minBlockSize = `${input.scrollHeight}px`;
+}
+
+/**
  * Input textarea the user types or pastes text into.
  */
 const textarea = document.querySelector<HTMLTextAreaElement>('#wc-input',);
 
 if (textarea !== null) {
   /**
-   * Grows the textarea to fit its content: resets the scripted minimum
-   * so the flex layout can reclaim space after deletions, then raises
-   * it to the content's scroll height. The flex stretch keeps the
-   * viewport-filling floor, so short content never shrinks the box
-   * below the visible page remainder.
+   * Style declaration destructured once so member access stays flat.
    */
-  function autoGrow(): void {
-    if (textarea === null) {
-      return;
-    }
-    textarea.style.minBlockSize = '';
-    textarea.style.minBlockSize = `${textarea.scrollHeight}px`;
-  }
+  const { style, } = textarea;
 
   // Growth tracks content, so the inner scrollbar never has anything
   // to scroll; hiding it here (not in CSS) keeps content reachable if
   // scripting is unavailable.
-  textarea.style.overflowY = 'hidden';
-  autoGrow();
+  style.overflowY = 'hidden';
+  autoGrow({ input: textarea, },);
 
   /**
    * Container for the shared debounce timer handle, so the binding stays
@@ -305,7 +315,7 @@ if (textarea !== null) {
   textarea.addEventListener(
     'input',
     function handleInput(): void {
-      autoGrow();
+      autoGrow({ input: textarea, },);
       clearTimeout(timer.handle,);
       timer.handle = setTimeout(
         function updateAfterDebounce(): void {

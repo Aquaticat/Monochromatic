@@ -6,7 +6,10 @@
  * and input panel (`./styles-layout.ts`), and the tiles and Frequency
  * table (`./styles-results.ts`).
  */
-import { renderDarkColors, renderRootColors, } from './styles-colors.ts';
+import {
+  renderDarkColors,
+  renderRootColors,
+} from './styles-colors.ts';
 import { renderFontFace, } from './styles-font.ts';
 import { renderLayoutStyles, } from './styles-layout.ts';
 import { renderResultsStyles, } from './styles-results.ts';

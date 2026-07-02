@@ -12,34 +12,68 @@ import {
 
 import { renderStyles, } from './styles.ts';
 
+/**
+ * Fixture base64 payload standing in for the subsetted font bytes.
+ */
+const FONT_FIXTURE_BASE64 = 'AAEC';
+
 await describe({
   name: renderStyles.name,
   children: [
     it({
-      name: 'uses flexbox for the layout and stat rows, never CSS grid',
+      name: 'uses flexbox for the layout, tiles, and frequency rows, never CSS grid',
       fn: async function usesFlexboxNeverGrid(): Promise<void> {
         /**
          * Complete stylesheet string.
          */
-        const css = renderStyles();
+        const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 
         expect(css,).toContain('.layout{display:flex',);
-        expect(css,).toContain('.stat-row{display:flex',);
+        expect(css,).toContain('.tiles{display:flex',);
+        expect(css,).toContain('.frequency-row{display:flex',);
         expect(css,).not
           .toContain('display:grid',);
       },
     },),
     it({
-      name: 'includes the wide-viewport media query and the color palette',
+      name: 'embeds the font bytes as a woff2 data URI in an Inter font-face',
+      fn: async function embedsFontDataUri(): Promise<void> {
+        /**
+         * Complete stylesheet string.
+         */
+        const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
+
+        expect(css,).toContain('@font-face',);
+        expect(css,).toContain(
+          `url('data:font/woff2;base64,${FONT_FIXTURE_BASE64}')`,
+        );
+        expect(css,).toContain("font-family:'Inter'",);
+      },
+    },),
+    it({
+      name: 'includes the wide-viewport media query and the dark palette override',
       fn: async function includesMediaQueryAndPalette(): Promise<void> {
         /**
          * Complete stylesheet string.
          */
-        const css = renderStyles();
+        const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 
-        expect(css,).toContain('@media (min-width: 48rem)',);
+        expect(css,).toContain('@media (min-width: 64rem)',);
         expect(css,).toContain('--color-fg:',);
         expect(css,).toContain('@media (prefers-color-scheme: dark)',);
+      },
+    },),
+    it({
+      name: 'contains per-row rendering containment and tabular numerals for frequency',
+      fn: async function containsFrequencyRendering(): Promise<void> {
+        /**
+         * Complete stylesheet string.
+         */
+        const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
+
+        expect(css,).toContain('content-visibility:auto',);
+        expect(css,).toContain('contain-intrinsic-block-size:auto',);
+        expect(css,).toContain('font-variant-numeric:tabular-nums',);
       },
     },),
   ],

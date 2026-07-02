@@ -28,17 +28,38 @@ import {
  * side by side instead of stacked: the 60ch input minimum plus a usable
  * results column no longer fit below this.
  */
-export const WIDE_VIEWPORT_REM = 64;
+export const WIDE_VIEWPORT_REM: number = 64;
+
+/**
+ * One half, composed from the exempt literal range.
+ */
+export const HALF: number = 1 / 2;
+
+/**
+ * One quarter, composed from {@link HALF}.
+ */
+export const QUARTER: number = HALF / 2;
+
+/**
+ * One eighth, composed from {@link QUARTER}.
+ */
+export const EIGHTH: number = QUARTER / 2;
+
+/**
+ * Three quarters, composed from {@link HALF} and {@link QUARTER}.
+ */
+export const THREE_QUARTERS: number = HALF + QUARTER;
 
 /**
  * Base spacing unit (rem) the scaffold's paddings and gaps derive from.
  */
-const SPACE = 1 + (1 / 2);
+const SPACE = 1 + HALF;
 
 /**
- * Hairline border width in rem (one device pixel at default zoom).
+ * Hairline border width in rem (one device pixel at default zoom),
+ * composed from {@link EIGHTH}.
  */
-export const HAIRLINE = 1 / 16;
+export const HAIRLINE: number = EIGHTH / 2;
 
 /**
  * Masthead title weight.
@@ -125,7 +146,7 @@ export function renderLayoutStyles(): string {
           ),
           color: cssVar('color-fg',),
           'background-color': cssVar('color-bg',),
-          'line-height': cssNum(1 + (1 / 2),),
+          'line-height': cssNum(1 + HALF,),
         },
       },
     ),
@@ -148,9 +169,9 @@ export function renderLayoutStyles(): string {
       {
         rule: 'h1',
         decls: {
-          'font-size': cssRem(1 + (1 / 2),),
+          'font-size': cssRem(1 + HALF,),
           'font-weight': cssNum(WEIGHT_TITLE,),
-          'line-height': cssNum(1 + (1 / 4),),
+          'line-height': cssNum(1 + QUARTER,),
         },
       },
     ),
@@ -161,7 +182,7 @@ export function renderLayoutStyles(): string {
         decls: {
           color: cssVar('color-muted',),
           'max-inline-size': cssCh(INPUT_MIN_CH,),
-          'margin-block-start': cssRem(1 / 4,),
+          'margin-block-start': cssRem(QUARTER,),
         },
       },
     ),
@@ -184,7 +205,7 @@ export function renderLayoutStyles(): string {
         decls: {
           display: 'flex',
           'flex-direction': 'column',
-          gap: cssRem(1 / 2,),
+          gap: cssRem(HALF,),
           'min-inline-size': cssMin(
             [
               cssCh(INPUT_MIN_CH,),
@@ -200,7 +221,7 @@ export function renderLayoutStyles(): string {
       {
         rule: '.input-panel label',
         decls: {
-          'font-size': cssRem(1 - (1 / 8),),
+          'font-size': cssRem(1 - EIGHTH,),
           'font-weight': cssNum(WEIGHT_LABEL,),
         },
       },
@@ -221,9 +242,9 @@ export function renderLayoutStyles(): string {
           'border-width': cssRem(HAIRLINE,),
           'border-style': 'solid',
           'border-color': cssVar('color-border-strong',),
-          'border-radius': cssRem(1 / 2,),
-          'padding-block': cssRem(3 / 4,),
-          'padding-inline': cssRem(1 - (1 / 8),),
+          'border-radius': cssRem(HALF,),
+          'padding-block': cssRem(THREE_QUARTERS,),
+          'padding-inline': cssRem(1 - EIGHTH,),
           resize: 'none',
         },
       },
@@ -240,10 +261,10 @@ export function renderLayoutStyles(): string {
       {
         rule: '#wc-input:focus-visible',
         decls: {
-          'outline-width': cssRem(1 / 8,),
+          'outline-width': cssRem(EIGHTH,),
           'outline-style': 'solid',
           'outline-color': cssVar('color-fg-strong',),
-          'outline-offset': cssRem(1 / 8,),
+          'outline-offset': cssRem(EIGHTH,),
         },
       },
     ),
@@ -259,7 +280,7 @@ export function renderLayoutStyles(): string {
               decls: {
                 'flex-direction': 'row',
                 'justify-content': 'center',
-                gap: cssRem(SPACE + (1 / 2),),
+                gap: cssRem(SPACE + HALF,),
               },
             },
           ),
