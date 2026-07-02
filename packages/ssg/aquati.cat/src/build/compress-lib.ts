@@ -11,11 +11,11 @@
  * @see docs/decisions/zstd-cli-to-node-zlib.md for the engine, level, and threading evidence.
  */
 import {
-  existsSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 import { availableParallelism, } from 'node:os';
 import { extname, } from 'node:path';
 import zlib from 'node:zlib';
@@ -175,6 +175,39 @@ function asWorkerCount(
 //region Worker-count heuristic
 
 /**
+ * Reads /proc/cpuinfo, returning the {@link CORES_UNDETECTED} sentinel instead of
+ * throwing when it is missing or unreadable.
+ *
+ * Runs only on the main thread, so it stays clear of the file-header rule that
+ * keeps the tagged logger out of this worker-shared module: the rare read
+ * failure is surfaced with a plain `console` build diagnostic rather than the
+ * logger.
+ *
+ * @returns raw cpuinfo text, or {@link CORES_UNDETECTED} on any read failure
+ *
+ * @example
+ * ```ts
+ * const text = await readCpuinfo();
+ * ```
+ */
+async function readCpuinfo(): Promise<string | typeof CORES_UNDETECTED> {
+  try {
+    return await readFile(
+      '/proc/cpuinfo',
+      'utf8',
+    );
+  }
+  catch (error) {
+    console.warn(
+      `compress: /proc/cpuinfo unreadable; falling back to a parallelism-derived worker estimate (${
+        String(error,)
+      })`,
+    );
+    return CORES_UNDETECTED;
+  }
+}
+
+/**
  * Counts distinct physical CPU cores on Linux by parsing /proc/cpuinfo.
  *
  * Physical cores (distinct (physical id, core id) pairs) track the benchmark's
@@ -187,21 +220,19 @@ function asWorkerCount(
  *
  * @example
  * ```ts
- * const cores = physicalCoreCount(); // 8 on an 8-core / 16-thread host
+ * const cores = await physicalCoreCount(); // 8 on an 8-core / 16-thread host
  * ```
  */
-function physicalCoreCount(): PhysicalCores | typeof CORES_UNDETECTED {
+async function physicalCoreCount(): Promise<PhysicalCores | typeof CORES_UNDETECTED> {
   if (process.platform !== 'linux')
     return CORES_UNDETECTED;
-  if (!existsSync('/proc/cpuinfo',))
-    return CORES_UNDETECTED;
   /**
-   * Raw cpuinfo text; one blank-line-separated block per logical processor.
+   * Raw cpuinfo text; one blank-line-separated block per logical processor,
+   * or the sentinel when /proc/cpuinfo is missing or unreadable.
    */
-  const cpuinfo = readFileSync(
-    '/proc/cpuinfo',
-    'utf8',
-  );
+  const cpuinfo = await readCpuinfo();
+  if ((typeof cpuinfo) === 'symbol')
+    return CORES_UNDETECTED;
   /**
    * Distinct `<physical id>|<core id>` keys; one per physical core.
    */
@@ -259,12 +290,12 @@ function physicalCoreCount(): PhysicalCores | typeof CORES_UNDETECTED {
  *
  * @example
  * ```ts
- * const workers = resolveWorkerCount({ fileCount: 412, },); // 8 on an 8-core host
+ * const workers = await resolveWorkerCount({ fileCount: 412, },); // 8 on an 8-core host
  * ```
  */
-export function resolveWorkerCount(
+export async function resolveWorkerCount(
   { fileCount, }: { readonly fileCount: number; },
-): WorkerCount {
+): Promise<WorkerCount> {
   /**
    * Logical parallelism Node recommends; respects cgroup/CPU quotas.
    */
@@ -290,7 +321,7 @@ export function resolveWorkerCount(
   /**
    * Detected physical cores, or the {@link CORES_UNDETECTED} sentinel.
    */
-  const detected = physicalCoreCount();
+  const detected = await physicalCoreCount();
   /**
    * Pre-cap estimate: physical cores when known, else half the logical count.
    */

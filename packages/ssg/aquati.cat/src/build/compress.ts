@@ -7,7 +7,7 @@
  * so each worker calls synchronous zstdCompressSync. The main thread snapshots
  * the candidate set before spawning any worker, so no worker observes a `.zst`
  * being created mid-run; existing `.zst` files are excluded from candidates, and
- * symlinks are skipped via lstatSync so recursion can't escape dist/.
+ * symlinks are skipped via lstat so recursion can't escape dist/.
  *
  * This file is the self-referential worker entry: each worker re-runs it via
  * `new Worker(new URL(import.meta.url))` and takes the worker branch below. The
@@ -19,9 +19,9 @@
  */
 import { once, } from 'node:events';
 import {
-  lstatSync,
-  readdirSync,
-} from 'node:fs';
+  lstat,
+  readdir,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 import {
   isMainThread,
@@ -120,31 +120,51 @@ if (isMainThread) {
   },);
 
   /**
-   * Snapshot of compressible candidates: regular files under dist/, excluding
-   * existing `.zst` companions and symlinks, taken before any worker starts.
+   * Every entry under dist/, joined to a full path. `.zst` companions are
+   * filtered out before the (async) stat so no worker is spawned for them.
    */
-  const candidates = readdirSync(
+  const distPaths = (await readdir(
     DIST,
     {
       recursive: true,
       encoding: 'utf8',
     },
-  )
+  ))
     .map(function toDistPath(entry,) {
       return join(
         DIST,
         entry,
       );
     },)
-    .filter(function isCompressible(entryPath,) {
-      if (
-        entryPath
-          .toLowerCase()
-          .endsWith('.zst',)
-      )
-        return false;
-      return lstatSync(entryPath,)
-        .isFile();
+    .filter(function notZstCompanion(entryPath,) {
+      return !entryPath
+        .toLowerCase()
+        .endsWith('.zst',);
+    },);
+  /**
+   * Each non-`.zst` path paired with whether it is a regular file, resolved
+   * concurrently. `lstat` (not `stat`) keeps symlinks out so recursion can't
+   * escape dist/.
+   */
+  const markedPaths = await Promise.all(
+    distPaths.map(async function markRegularFile(entryPath,) {
+      return {
+        entryPath,
+        isRegularFile: (await lstat(entryPath,))
+          .isFile(),
+      };
+    },),
+  );
+  /**
+   * Snapshot of compressible candidates: regular files under dist/, excluding
+   * existing `.zst` companions and symlinks, taken before any worker starts.
+   */
+  const candidates = markedPaths
+    .filter(function keepRegularFiles(marked,) {
+      return marked.isRegularFile;
+    },)
+    .map(function toEntryPath(marked,) {
+      return marked.entryPath;
     },);
 
   if (candidates.length === 0) {
@@ -154,7 +174,7 @@ if (isMainThread) {
     /**
      * Worker count for this run, capped by parallelism and the candidate count.
      */
-    const workers = resolveWorkerCount({ fileCount: candidates.length, },);
+    const workers = await resolveWorkerCount({ fileCount: candidates.length, },);
     /**
      * Per-worker tallies collected once every worker resolves.
      */

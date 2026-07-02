@@ -39,7 +39,7 @@ type PagefindResultData = {
  */
 type PagefindResult = {
   readonly id: string;
-  data(): Promise<PagefindResultData>;
+  readonly data: () => Promise<PagefindResultData>;
 };
 
 /**
@@ -56,13 +56,13 @@ type PagefindSearchResponse = {
  * Loaded dynamically from `/pagefind/pagefind.js` at runtime.
  */
 type PagefindApi = {
-  init(): void;
-  search(query: string,): Promise<PagefindSearchResponse>;
-  debouncedSearch(
+  readonly init: () => void;
+  readonly search: (query: string,) => Promise<PagefindSearchResponse>;
+  readonly debouncedSearch: (
     query: string,
     options: Readonly<Record<string, unknown>>,
     debounceMs: number,
-  ): Promise<PagefindSearchResponse | null>;
+  ) => Promise<PagefindSearchResponse | null>;
 };
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 

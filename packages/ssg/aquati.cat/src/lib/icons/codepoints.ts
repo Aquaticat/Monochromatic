@@ -18,7 +18,7 @@
  * ICON_CODEPOINTS['info'] === '\ue88e';
  * ```
  */
-import { readFileSync, } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 import {
   dirname,
   join,
@@ -35,7 +35,7 @@ const HERE = import.meta.dirname;
 /**
  * Raw text contents of the upstream `codepoints` file.
  */
-const raw = readFileSync(
+const raw = await readFile(
   join(
     HERE,
     'material-symbols-outlined.codepoints',

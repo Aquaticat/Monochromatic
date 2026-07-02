@@ -19,6 +19,10 @@ import spawn, { type Result, } from 'nano-spawn';
 import {
   findMiseMonorepoRootCached,
 } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import type { Logger, } from './types.ts';
 
@@ -195,12 +199,18 @@ async function getGithubSlug(): Promise<string | typeof ABSENT> {
     /**
      * Regex capture extracting `owner/repo` from either supported URL form.
      */
-    const match = /github\.com[:/]([^/]+\/[^/.]+)(?:\.git)?$/u.exec(url,);
+    const match = /github\.com[:/](?<slug>[^/]+\/[^/.]+)(?:\.git)?$/u.exec(url,);
     /* oxlint-enable no-restricted-syntax/no-regex */
-    return match?.[1]
+    return match?.groups
+      ?.slug
       ?? ABSENT;
   }
-  catch {
+  catch (error) {
+    tagged({
+      tag: getGithubSlug.name,
+      l: logger,
+    },)
+      .debug(`origin remote not resolvable as a GitHub slug; treating as absent (${String(error,)})`,);
     return ABSENT;
   }
 }

@@ -123,7 +123,7 @@ const ASCII_PRINTABLE_MAX = 0x7E;
  * never variables, so this regex can enumerate the exact set of icons
  * in use. The match group is the bare icon name.
  */
-const ICON_CALL_REGEX = /\bicon\(\s*['"]([a-z][a-z0-9_]*)['"]\s*,?\s*\)/gu;
+const ICON_CALL_REGEX = /\bicon\(\s*['"](?<iconName>[a-z][a-z0-9_]*)['"]\s*,?\s*\)/gu;
 
 /**
  * Matches `/* ... *\/` block comments (non-greedy).
@@ -250,7 +250,8 @@ async function collectIconCodepoints(
       /**
        * Captured icon name from the regex group.
        */
-      const [, captured,] = match;
+      const captured = match.groups
+        ?.iconName;
       if (captured !== undefined)
         names.add(captured,);
     }
