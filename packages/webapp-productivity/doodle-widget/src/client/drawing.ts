@@ -305,7 +305,7 @@ export function startStroke(point: NormalizedPoint,): void {
  *   draw(segment);
  * ```
  */
-export const NO_SEGMENT: unique symbol = Symbol('doodle-widget/no-segment',);
+export const NO_SEGMENT: unique symbol = Symbol('doodle-widget/no-stroke-segment-without-active-gesture',);
 
 /**
  * Appends a point to the current stroke.

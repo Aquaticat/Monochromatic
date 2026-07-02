@@ -59,7 +59,8 @@ async function resolveRepoUrl(): Promise<string> {
       )
       : trimmed;
   }
-  catch {
+  catch (error) {
+    console.error(`[doodle-widget] git remote unavailable; using fallback repository URL: ${String(error,)}`,);
     return FALLBACK_REPO_URL;
   }
 }
@@ -117,7 +118,8 @@ async function resolveDirectory(packageDir: string,): Promise<string> {
 
     return directory;
   }
-  catch {
+  catch (error) {
+    console.error(`[doodle-widget] package.json unreadable or malformed; using fallback directory: ${String(error,)}`,);
     return FALLBACK_DIRECTORY;
   }
 }

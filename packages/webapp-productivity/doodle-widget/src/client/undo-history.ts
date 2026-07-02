@@ -24,7 +24,7 @@ const MAX_HISTORY_DEPTH = 50;
  *   restoreSnapshot(snapshot);
  * ```
  */
-export const NO_SNAPSHOT: unique symbol = Symbol('doodle-widget/no-snapshot',);
+export const NO_SNAPSHOT: unique symbol = Symbol('doodle-widget/no-snapshot-at-undo-history-boundary',);
 
 /**
  * Complete state snapshot for a single page.
