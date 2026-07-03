@@ -13,6 +13,8 @@ import {
   getModelIdLeaf,
   getThinkingDefaultForModel,
   isGptModelId,
+  isXhighAvailable,
+  type ThinkingLevelMapFragment,
 } from './model-policy.ts';
 
 //region Test cases
@@ -37,8 +39,22 @@ type GptCase = {
 type DefaultCase = {
   /** Input model id. */
   modelId: string;
+  /** Whether the model emits reasoning. */
+  reasoning?: boolean;
+  /** Provider thinking-level map fragment, when the model declares one. */
+  thinkingLevelMap?: ThinkingLevelMapFragment;
   /** Expected thinking default. */
   expected: 'high' | 'xhigh';
+};
+
+/** `xhigh` availability test case. */
+type XhighCase = {
+  /** Whether the model emits reasoning. */
+  reasoning?: boolean;
+  /** Provider thinking-level map fragment, when the model declares one. */
+  thinkingLevelMap?: ThinkingLevelMapFragment;
+  /** Expected `xhigh` availability. */
+  expected: boolean;
 };
 
 /** Cases covering bare, slash-prefixed, mixed-case, and non-GPT ids. */
@@ -59,15 +75,35 @@ const GPT_CASES: readonly GptCase[] = [
   { modelId: 'claude-sonnet-4-5', expected: false, },
 ];
 
-/** Cases covering target level mapping from GPT detection. */
+/** Cases covering target level mapping from GPT detection and xhigh support. */
 const DEFAULT_CASES: readonly DefaultCase[] = [
   { modelId: 'gpt-5.5', expected: 'xhigh', },
   { modelId: 'openai/gpt-5.4', expected: 'xhigh', },
-  { modelId: 'synthetic/hf:moonshotai/Kimi-K2.6', expected: 'high', },
-  { modelId: 'claude-sonnet-4-5', expected: 'high', },
+  { modelId: 'synthetic/hf:moonshotai/Kimi-K2.6', reasoning: true, expected: 'high', },
+  { modelId: 'claude-sonnet-4-5', reasoning: true, expected: 'high', },
+  { modelId: 'synthetic/hf:zai-org/GLM-5.2', reasoning: true, thinkingLevelMap: { xhigh: 'max', }, expected: 'xhigh', },
+  { modelId: 'synthetic/hf:zai-org/GLM-5.1', reasoning: true, thinkingLevelMap: { xhigh: null, }, expected: 'high', },
+  { modelId: 'some/non-reasoning', reasoning: false, thinkingLevelMap: { xhigh: 'max', }, expected: 'high', },
+];
+
+/** Cases covering `xhigh` availability across reasoning and map variations. */
+const XHIGH_CASES: readonly XhighCase[] = [
+  { reasoning: true, thinkingLevelMap: { xhigh: 'max', }, expected: true, },
+  { reasoning: true, thinkingLevelMap: { xhigh: 'high', }, expected: true, },
+  { reasoning: true, expected: false, },
+  { reasoning: true, thinkingLevelMap: { xhigh: null, }, expected: false, },
+  { reasoning: false, thinkingLevelMap: { xhigh: 'max', }, expected: false, },
+  { expected: false, },
 ];
 
 //endregion Test cases
+
+//region Test helpers
+
+/** Fixed id for capability-only cases where the id is irrelevant. */
+const CAPABILITY_TEST_MODEL_ID = 'any/model';
+
+//endregion Test helpers
 
 await describe({
   name: '',
@@ -106,7 +142,31 @@ await describe({
           fn: async function runDefaultCase() {
             expect(
               getThinkingDefaultForModel({
-                model: { id: testCase.modelId, },
+                model: {
+                  id: testCase.modelId,
+                  ...(testCase.reasoning !== undefined ? { reasoning: testCase.reasoning, } : {}),
+                  ...(testCase.thinkingLevelMap !== undefined ? { thinkingLevelMap: testCase.thinkingLevelMap, } : {}),
+                },
+              },),
+            )
+              .toBe(testCase.expected,);
+          },
+        },);
+      },),
+    },),
+    describe({
+      name: isXhighAvailable.name,
+      children: XHIGH_CASES.map(function createXhighCase(testCase,) {
+        return it({
+          name: `returns ${String(testCase.expected,)} for reasoning=${String(testCase.reasoning,)} xhigh=${String(testCase.thinkingLevelMap?.xhigh,)}`,
+          fn: async function runXhighCase() {
+            expect(
+              isXhighAvailable({
+                model: {
+                  id: CAPABILITY_TEST_MODEL_ID,
+                  ...(testCase.reasoning !== undefined ? { reasoning: testCase.reasoning, } : {}),
+                  ...(testCase.thinkingLevelMap !== undefined ? { thinkingLevelMap: testCase.thinkingLevelMap, } : {}),
+                },
               },),
             )
               .toBe(testCase.expected,);

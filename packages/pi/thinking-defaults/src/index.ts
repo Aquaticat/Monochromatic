@@ -1,7 +1,8 @@
 /**
  * Pi extension entry point for model-aware thinking defaults.
  *
- * GPT-shaped models use `xhigh`; every other selected model uses `high`.
+ * GPT-shaped models use `xhigh`; other selected models use `xhigh` when the
+ * model supports it and `high` otherwise.
  *
  * @module
  */

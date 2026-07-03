@@ -111,7 +111,7 @@ await describe({
         const harness = createThinkingHarness({ currentLevel: 'xhigh', },);
 
         const result = applyThinkingDefault({
-          model: { id: 'synthetic/hf:moonshotai/Kimi-K2.6', },
+          model: { id: 'synthetic/hf:moonshotai/Kimi-K2.6', reasoning: true, },
           getThinkingLevel: harness.getThinkingLevel,
           setThinkingLevel: harness.setThinkingLevel,
         },);
@@ -126,12 +126,50 @@ await describe({
         const harness = createThinkingHarness({ currentLevel: 'high', },);
 
         const result = applyThinkingDefault({
-          model: { id: 'claude-sonnet-4-5', },
+          model: { id: 'claude-sonnet-4-5', reasoning: true, },
           getThinkingLevel: harness.getThinkingLevel,
           setThinkingLevel: harness.setThinkingLevel,
         },);
 
         expect(result,).toEqual({ changed: false, target: 'high', },);
+        expect(harness.setCalls,).toHaveLength(0,);
+      },
+    },),
+    it({
+      name: 'sets xhigh for non-GPT model that supports xhigh when current level is high',
+      fn: async function testNonGptXhighAvailableChangesFromHigh() {
+        const harness = createThinkingHarness({ currentLevel: 'high', },);
+
+        const result = applyThinkingDefault({
+          model: {
+            id: 'synthetic/hf:zai-org/GLM-5.2',
+            reasoning: true,
+            thinkingLevelMap: { xhigh: 'max', },
+          },
+          getThinkingLevel: harness.getThinkingLevel,
+          setThinkingLevel: harness.setThinkingLevel,
+        },);
+
+        expect(result,).toEqual({ changed: true, target: 'xhigh', },);
+        expect(harness.setCalls,).toEqual(['xhigh',],);
+      },
+    },),
+    it({
+      name: 'does not set xhigh for non-GPT model that supports xhigh when already xhigh',
+      fn: async function testNonGptXhighAvailableAlreadyXhigh() {
+        const harness = createThinkingHarness({ currentLevel: 'xhigh', },);
+
+        const result = applyThinkingDefault({
+          model: {
+            id: 'synthetic/hf:zai-org/GLM-5.2',
+            reasoning: true,
+            thinkingLevelMap: { xhigh: 'max', },
+          },
+          getThinkingLevel: harness.getThinkingLevel,
+          setThinkingLevel: harness.setThinkingLevel,
+        },);
+
+        expect(result,).toEqual({ changed: false, target: 'xhigh', },);
         expect(harness.setCalls,).toHaveLength(0,);
       },
     },),

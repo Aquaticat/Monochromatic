@@ -6,20 +6,11 @@
 
 import {
   getThinkingDefaultForModel,
+  type ModelWithId,
   type ThinkingDefaultLevel,
 } from './model-policy.ts';
 
 //region Types
-
-/**
- * Minimal model shape needed to choose a thinking default.
- */
-type ModelWithId = {
-  /**
-   * Model identifier as passed through pi.
-   */
-  readonly id: string;
-};
 
 /**
  * Result returned after applying, or skipping, a thinking default.

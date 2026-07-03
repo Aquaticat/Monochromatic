@@ -14,7 +14,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import type { ThinkingDefaultLevel, } from './model-policy.ts';
+import type { ThinkingDefaultLevel, ThinkingLevelMapFragment, } from './model-policy.ts';
 
 //region Mock infrastructure
 
@@ -28,6 +28,10 @@ type RegistrationMap = Map<string, HandlerFn[]>;
 type TestModel = {
   /** Model identifier. */
   id: string;
+  /** Whether the model emits reasoning. */
+  reasoning?: boolean;
+  /** Provider thinking-level map fragment, when the model declares one. */
+  thinkingLevelMap?: ThinkingLevelMapFragment;
 };
 
 /** Minimal model-selection event shape used by entry-point tests. */
@@ -206,6 +210,38 @@ await describe({
         await handler(
           { type: 'session_start', reason: 'startup', } satisfies SessionStartEvent,
           createContext({ model: { id: 'gpt-5.5', }, },),
+        );
+
+        expect(setCalls,).toEqual(['xhigh',],);
+        expect(restoreCalls,).toEqual(['restore',],);
+      },
+    },),
+    it({
+      name: 'session_start applies xhigh for non-GPT model that supports xhigh',
+      fn: async function testSessionStartAppliesXhighForCapableNonGpt() {
+        const { api, registrations, setCalls, } = createMockApi({
+          currentLevel: 'high',
+        },);
+        /** Settings restoration calls after applying target defaults. */
+        const restoreCalls: string[] = [];
+        registerThinkingDefaults({
+          pi: api,
+          restoreDefaultThinkingLevel: async function restoreDefaultThinkingLevel(): Promise<boolean> {
+            restoreCalls.push('restore',);
+            return true;
+          },
+        },);
+        const handler = getHandler({ registrations, event: 'session_start', },);
+
+        await handler(
+          { type: 'session_start', reason: 'startup', } satisfies SessionStartEvent,
+          createContext({
+            model: {
+              id: 'synthetic/hf:zai-org/GLM-5.2',
+              reasoning: true,
+              thinkingLevelMap: { xhigh: 'max', },
+            },
+          },),
         );
 
         expect(setCalls,).toEqual(['xhigh',],);

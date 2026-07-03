@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic-dev/pi-thinking-defaults",
-  "description": "Model-aware thinking default extension for pi: GPT models use xhigh while other models use high",
+  "description": "Model-aware thinking default extension for pi: GPT models use xhigh, and other models use xhigh when supported and high otherwise",
   "type": "module",
   "private": true,
   "version": "0.0.1",

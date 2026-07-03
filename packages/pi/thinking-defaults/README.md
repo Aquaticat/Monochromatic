@@ -3,7 +3,8 @@
 Model-aware thinking default extension for pi.
 
 GPT-shaped models get `xhigh` thinking.
-Every other model gets `high` thinking.
+Non-GPT models get `xhigh` thinking when the model supports it,
+ and `high` thinking otherwise.
 
 ## Installation
 
@@ -33,35 +34,45 @@ The extension skips `pi.setThinkingLevel()` when the current level already match
 
 Pi persists `pi.setThinkingLevel()` calls to global `defaultThinkingLevel`.
 After each model-aware application,
- this extension rewrites the persisted scalar default back to `high`.
-That keeps non-GPT startup paths on the project-approved fallback while still allowing GPT sessions to run at `xhigh`.
+ this extension rewrites the persisted scalar default back to `high`,
+ the safe fallback for models that do not expose `xhigh`,
+ while still raising GPT and xhigh-capable sessions to `xhigh`.
 
 Pi clamps requested thinking levels to the selected model capabilities.
 A non-reasoning model can therefore display `off` even though this extension requested `high`.
 
-## GPT matching rule
+## Level selection
 
 A model is GPT-shaped when the final slash-delimited segment of its model id starts with `gpt-`,
 after lowercasing.
+GPT-shaped ids always resolve to `xhigh`.
+
+Non-GPT ids resolve to `xhigh` when the model supports it.
+Pi treats `xhigh` as opt-in:
+a model supports `xhigh` only when it declares `reasoning` and maps `xhigh` to a non-null value in its `thinkingLevelMap`,
+ so a missing `xhigh` entry means unsupported (unlike the other levels,
+ where a missing entry falls back to provider defaults).
+Models without that mapping resolve to `high`.
 
 Examples that resolve to `xhigh`:
 
-- `gpt-5.5`
-- `openai/gpt-5.4`
-- `GPT-5.5`
+- `gpt-5.5` (GPT-shaped)
+- `openai/gpt-5.4` (GPT-shaped)
+- `GPT-5.5` (GPT-shaped)
+- `synthetic/hf:zai-org/GLM-5.2` (non-GPT, declares `xhigh: "max"`)
 
 Examples that resolve to `high`:
 
-- `synthetic/hf:moonshotai/Kimi-K2.6`
-- `synthetic/hf:zai-org/GLM-5.1`
-- `claude-sonnet-4-5`
+- `synthetic/hf:moonshotai/Kimi-K2.6` (no `xhigh` mapping)
+- `synthetic/hf:zai-org/GLM-5.1` (no `xhigh` mapping)
+- `claude-sonnet-4-5` (no `xhigh` mapping)
 
 ## Source structure
 
 ```text
 src/
   index.ts                         # Extension entry point and pi event registration
-  model-policy.ts                  # Model id leaf extraction and thinking target selection
+  model-policy.ts                  # Model id leaf extraction, xhigh availability, and thinking target selection
   apply-thinking-default.ts        # Side-effect boundary around getThinkingLevel and setThinkingLevel
   global-settings.ts               # Restores persisted defaultThinkingLevel to high
   model-policy.unit.test.ts        # Pure policy tests
