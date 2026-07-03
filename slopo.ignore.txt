@@ -4,3 +4,9 @@
 # It changes when the code or that path changes, so the cluster re-surfaces.
 # Re-indexing from a different root shifts every path, changing the hashes.
 
+# no-sync provenance resolver chain (getNodeSync*Name across binding/member/provenance):
+# shared guard+sentinel skeleton is mandated by conventions (ST9 named params, TQ3/PP8
+# early-return, NOT_NODE_SYNC_CALLEE sentinel); each body resolves a distinct AST node
+# type. Structural idiom, not duplication.
+40d7339c9902
+
