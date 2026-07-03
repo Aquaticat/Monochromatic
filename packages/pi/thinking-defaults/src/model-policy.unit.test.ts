@@ -82,7 +82,7 @@ const DEFAULT_CASES: readonly DefaultCase[] = [
   { modelId: 'synthetic/hf:moonshotai/Kimi-K2.6', reasoning: true, expected: 'high', },
   { modelId: 'claude-sonnet-4-5', reasoning: true, expected: 'high', },
   { modelId: 'synthetic/hf:zai-org/GLM-5.2', reasoning: true, thinkingLevelMap: { xhigh: 'max', }, expected: 'xhigh', },
-  { modelId: 'synthetic/hf:zai-org/GLM-5.1', reasoning: true, thinkingLevelMap: { xhigh: null, }, expected: 'high', },
+  { modelId: 'some/xhigh-hidden', reasoning: true, thinkingLevelMap: { xhigh: null, }, expected: 'high', },
   { modelId: 'some/non-reasoning', reasoning: false, thinkingLevelMap: { xhigh: 'max', }, expected: 'high', },
 ];
 
