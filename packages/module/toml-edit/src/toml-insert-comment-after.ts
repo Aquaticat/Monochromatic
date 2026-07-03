@@ -9,6 +9,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';
 import { resolveByPath, } from './resolve.ts';
+import { withInsertion, } from './state.ts';
 import type {
   Insertion,
   TomlEditState,
@@ -79,14 +80,11 @@ export function tomlInsertCommentAfter(
     node,
   };
 
-  return {
-    ...edit,
-    insertions: [
-      ...edit.insertions,
-      {
-        anchor,
-        text,
-      },
-    ],
-  };
+  return withInsertion({
+    edit,
+    insertion: {
+      anchor,
+      text,
+    },
+  },);
 }
