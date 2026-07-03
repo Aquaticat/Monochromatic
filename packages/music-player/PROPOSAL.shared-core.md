@@ -8,7 +8,8 @@ both a Slint desktop app and a Jetpack Compose Android app.
 ## Status and audience
 
 Proposal and design document,
- dated 2026-06-21.
+ dated 2026-06-21,
+ refined 2026-07-03 with the slopo drift measurements.
  Not yet implemented.
 
 Written to be passed around inside and outside the team.
@@ -139,6 +140,60 @@ access.
  A later audit (`android-app/kotlin-rust-boundary.md`) reversed that and kept the pure logic
 in Kotlin for simplicity.
  This proposal returns to the original direction and pushes past it.
+
+## The drift is measured now
+
+Since this proposal was first written,
+the repository runs slopo,
+an embedding-based duplicate-code detector configured in `../../slopo.conf.yaml`,
+across the whole monorepo.
+It groups near-identical code into clusters and reports this player's duplication on every run,
+which turns the drift from a one-time observation into a standing, measured signal.
+
+The clusters for these two apps are kept visible on purpose.
+Every other by-design near-duplicate in the repo is dismissed in `../../slopo.ignore.txt`,
+but the music-player android and desktop pairs are deliberately left out of that list,
+so they keep surfacing in the report.
+A comment in that file records why and points back to this proposal:
+do not dismiss them until the Android core is rewritten in Rust and the divergence is gone.
+The detector keeps surfacing exactly the debt this proposal exists to remove.
+
+The clusters measured on 2026-07-03 fall into the same two tracks the staged plan already separates.
+
+- Same-language Rust,
+   re-implemented between `android-app/rust/src` and `desktop-app/src`.
+   This is the audio DSP core,
+   the stage-2 scope:
+   `decode`,
+   `opus`,
+   `error`,
+   `truepeak`,
+   the `engine` worker loop,
+   and the peak-cache service (`android-app/rust/src/service.rs` against
+  `desktop-app/src/peakcache_service.rs` and `desktop-app/src/peakcache_handle.rs`).
+   A shared crate can absorb these directly,
+   because both copies are already Rust.
+
+- Cross-language,
+   re-implemented between `android-app/app/src/main/kotlin/.../core` in Kotlin and
+  `desktop-app/src` in Rust.
+   This is the pure logic,
+   the stage-3 and stage-4 scope:
+   `Queue`,
+   `Pagination`,
+   `RelPath`,
+   `AudioExtensions`,
+   `Normalization`,
+   and `PlayerController`,
+   each paired with its `desktop-app/src` counterpart.
+   `Normalization.kt` still duplicates gain logic that already lives in the `truepeak-core` crate,
+   so even the one module where extraction has started has not retired its Kotlin copy.
+
+A cross-language pair cannot be de-duplicated by extracting a shared function,
+because the two copies are in different languages.
+Its only real remediation is this proposal's rewrite,
+not a shared helper,
+which is why those clusters stay visible in the report rather than being dismissed as by-design.
 
 ## Target architecture
 
