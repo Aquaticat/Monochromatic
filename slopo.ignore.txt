@@ -10,12 +10,22 @@
 # type. Structural idiom, not duplication.
 40d7339c9902
 
+# ── Deliberately NOT dismissed: music-player android/desktop drift ──
+# The android app (Kotlin, packages/music-player/android-app/app/src/main/kotlin/.../core)
+# and the desktop app (Rust, packages/music-player/desktop-app/src) carry parallel core
+# logic (Queue, Pagination, RelPath, AudioExtensions, Normalization, PlayerController) that
+# slopo flags as cross-language pairs. Those clusters are intentionally left OUT of this
+# ignore list so they keep surfacing in the report. The duplication is real and drifting;
+# it is tracked in packages/music-player/PROPOSAL.shared-core.md, whose plan is to rewrite
+# the Android core in Rust and delete the Kotlin copy. The visible clusters are the standing
+# reminder that the drift is still open. Do NOT dismiss them until Android is rewritten and
+# the Kotlin/Rust divergence is gone. (Cross-language code cannot share a function, so these
+# are not extract-a-helper candidates; the remediation is the rewrite, not an ignore entry.)
 
-# ── INTENTIONAL-VARIANT (39) ──
-# cross-language Kotlin/Rust port of advance()
-d0d33c95521c
-# cross-language trivial setters + delegating controller wrapper
-beadcae70670
+# ── INTENTIONAL-VARIANT (37) ──
+# Intentional sibling variants (sync/async, single/batch, get/set,
+# plain-vs-from constructors, mirror event handlers). Meant to mirror each
+# other and stay separate; merging would hurt clarity.
 # per-backend wrappers over shared ephemeralRun
 077c69c7387e
 # batch_sheng/batch_sheng2 SIMD-variant twins
@@ -91,33 +101,10 @@ f86019ca85c4
 # dispatchUnlink/dispatchUnlinkDir per-event handler bodies
 2cd591438071
 
-# ── PLATFORM-CFG (16) ──
-# Kotlin(android)/Rust(desktop) cross-language port, unshareable
-e82456aea2fc
-# Kotlin/Rust cross-language port
-97017b9a8e8a
-# Kotlin/Rust cross-language port
-d98a5d44d568
-# Kotlin/Rust cross-language port
-582ff2e4ff5a
-# Kotlin/Rust cross-language port
-8120e813a1dd
-# Kotlin/Rust cross-language port
-45b2043f5e66
-# Kotlin/Rust cross-language port
-fe5393441bef
-# Kotlin/Rust cross-language port
-2159cf1c849c
-# Kotlin/Rust cross-language port
-ef90b79c810a
-# Kotlin/Rust cross-language port
-f94e2d25dc40
-# Kotlin/Rust cross-language port
-ecaa57776b1a
-# Kotlin/Rust cross-language sample-clamp port
-a32c84d0db7f
-# Kotlin/Rust cross-language port
-3c3d0450144b
+# ── PLATFORM-CFG (3) ──
+# Platform variants that cannot share code. Per-arch #[cfg] SIMD dispatch,
+# per-OS thread-priority bodies, and per-init-system generators. (music-player
+# Kotlin/Rust ports are deliberately NOT here; see the drift note above.)
 # per-arch #[cfg] SIMD dispatch, sheng vs sheng2 tables
 774af5718fc1
 # systemd vs openrc cloud-init generators, per-init-system
@@ -126,6 +113,10 @@ a32c84d0db7f
 2204734b921f
 
 # ── STRUCTURAL-IDIOM (24) ──
+# Structural idioms mandated by conventions. Shared skeleton (oxlint createOnce
+# rule scaffolding, per-locale i18n grammar renderers, named-param guard shells)
+# where each body's actual logic differs. Not extractable without a false
+# abstraction. Same class as the no-sync provenance dismissal above.
 # wh-question renderers diverge per language (word order)
 74245e3a5aa4
 # sentence dispatcher/factory glue; signatures differ
@@ -176,6 +167,9 @@ fecf02e12177
 49faeda36551
 
 # ── COINCIDENTAL-SHAPE (6) ──
+# Coincidental shape matches. Units share only a signature/destructure shape or
+# an error-message idiom (some inflated by comment-padding) but do unrelated
+# things; no common logic to extract.
 # engine Drop differs per app (fields, unpark)
 06f97ee9881e
 # parse_repeat/parse_repeat_upper caller/callee, error idiom only
@@ -190,6 +184,8 @@ b2b5fbdd72ca
 71e0fbacc670
 
 # ── BOILERPLATE-TRIVIAL (27) ──
+# Trivial boilerplate fragments. One-line wrappers/forwarders, tiny fixer stubs,
+# From impls, cleanup fragments where extraction costs more than it saves.
 # one-line winit with_name idiom, two unrelated desktop apps
 c4fb43ee7346
 # one-line From impl (error.rs; dup kept via Display cluster)
@@ -246,6 +242,9 @@ ade697e59a53
 d2e4b2d0e74c
 
 # ── TEST-OR-GENERATED (18) ──
+# Test fixtures and generated code. Lint valid/invalid fixture pairs, fuzz
+# arbitraries, integration-test twins, and .js transpiled from a .ts sibling.
+# DRY does not apply.
 # production-vs-linter-test-fixture coincidence
 92551a107a36
 # lint fixture invalid/valid pair; duplication intentional
