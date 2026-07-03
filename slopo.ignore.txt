@@ -10,3 +10,275 @@
 # type. Structural idiom, not duplication.
 40d7339c9902
 
+
+# ── INTENTIONAL-VARIANT (39) ──
+# cross-language Kotlin/Rust port of advance()
+d0d33c95521c
+# cross-language trivial setters + delegating controller wrapper
+beadcae70670
+# per-backend wrappers over shared ephemeralRun
+077c69c7387e
+# batch_sheng/batch_sheng2 SIMD-variant twins
+94b83632c131
+# per-event handlers (touchstart/touchmove)
+557f0b010b7d
+# mirror rule handlers, opposite conditions/messageIds
+12247a2ce982
+# distinct AVX512 kernels: single-byte sheng vs pair sheng2
+6149c6c0eb01
+# per-variant closures already delegating to buildProbeLayer
+996a219a2125
+# healBackends/healBackendsSync sync/async twins
+0febcfcce0b1
+# sync/async predicate-judge twins
+da9bd3ad108f
+# sync/async queryBackend twins
+ae3904167a85
+# sibling or-throw guards, one per iterable kind
+86171faac417
+# sync/async readCssFile twins
+545417e9a2cc
+# withDeletion/withDeletions single/batch twins
+bd2cb25c7f99
+# mirror keydown/keyup handlers, opposite cursor
+6b92a096ad94
+# sheng vs sheng2 DFA strategies sharing NEON SIMD idiom
+de7cdbc1bb8e
+# sync/async delete twins (kv-store)
+1ae7fc42fca5
+# sync/async runPipe twins with unrolled steps
+f812ee0ffb9d
+# sync/async get twins (kv-store)
+af655970b410
+# empty/nonempty or-throw twins, opposite guards
+fa1605333de9
+# lazyOnce/lazyOnceAsync sync/async twins
+56d58f6a0666
+# scpPush/scpPull arg-builder twins differing by direction
+14bd3c29af49
+# isDescendable/isUnder complementary prefix predicates
+2637c16b8dd5
+# sync/async clear twins (kv-store)
+368f617a4815
+# sync/async queryAllBackends twins
+8d36d6c36764
+# embedAll/embedBatchAll single vs batch twins
+90b38967d0ae
+# before/after comment-insert twins already sharing withInsertion
+0a3fe2974abe
+# light/dark theme token twins; values are the design
+fa6da54027bc
+# pipe/pipeAsync sync/async twins
+0b330bab5c71
+# sync/async captureError twins (test fixtures)
+2da96a964eff
+# sibling exec/run VM tool handlers with try/catch wrapper
+48bbfdbe0228
+# numeric/bigint/number OrThrow sibling type guards
+5ca90fe6643d
+# toPushArgs/toPullArgs sibling arg constructors
+e726de9374e2
+# sync/async store.set twins, different concurrency mechanics
+7c7e75297340
+# canUndo/canRedo mirrored predicate pair
+f86019ca85c4
+# JNI entry points differing by one bool arg
+7d2c91d0e621
+# cssOklch vs cssOklchFrom plain-vs-from constructors
+20d60298b1a5
+# onUnlink/onUnlinkDir per-event handlers
+408ad85b3581
+# dispatchUnlink/dispatchUnlinkDir per-event handler bodies
+2cd591438071
+
+# ── PLATFORM-CFG (16) ──
+# Kotlin(android)/Rust(desktop) cross-language port, unshareable
+e82456aea2fc
+# Kotlin/Rust cross-language port
+97017b9a8e8a
+# Kotlin/Rust cross-language port
+d98a5d44d568
+# Kotlin/Rust cross-language port
+582ff2e4ff5a
+# Kotlin/Rust cross-language port
+8120e813a1dd
+# Kotlin/Rust cross-language port
+45b2043f5e66
+# Kotlin/Rust cross-language port
+fe5393441bef
+# Kotlin/Rust cross-language port
+2159cf1c849c
+# Kotlin/Rust cross-language port
+ef90b79c810a
+# Kotlin/Rust cross-language port
+f94e2d25dc40
+# Kotlin/Rust cross-language port
+ecaa57776b1a
+# Kotlin/Rust cross-language sample-clamp port
+a32c84d0db7f
+# Kotlin/Rust cross-language port
+3c3d0450144b
+# per-arch #[cfg] SIMD dispatch, sheng vs sheng2 tables
+774af5718fc1
+# systemd vs openrc cloud-init generators, per-init-system
+6870076b9d52
+# per-OS lower_current_thread_to_idle #[cfg] bodies
+2204734b921f
+
+# ── STRUCTURAL-IDIOM (24) ──
+# wh-question renderers diverge per language (word order)
+74245e3a5aa4
+# sentence dispatcher/factory glue; signatures differ
+e3b59b8b15e0
+# verb-phrase renderers diverge per language (morphology)
+44a6520a29f0
+# imperative renderers diverge per language
+3dfec41d51af
+# noun-phrase renderers diverge (articles vs classifiers)
+956015855bd6
+# adverbial renderers diverge (prepositions vs coverbs)
+c75765ed63f8
+# yes/no question renderers diverge per language
+3bbf8247514f
+# declarative renderers diverge per language
+50a4164162e0
+# per-locale wrapper binding locale to shared applyCapitalization
+dedd1df6fd49
+# possessive suffix differs per language grammar
+99389865edf8
+# verb non-finite forms differ per language grammar
+e589f7baad0a
+# per-rule createOnce factories over shared visitor abstraction
+e5040c0c882b
+# createOnce plugin skeleton, genuinely different rule logic
+851823c21ede
+# per-rule oxlint handlers; conditions differ, report shape shared
+d629555e4071
+# two message builders share dispatch shape only
+f6a1439c9bea
+# createOnce/createTsdocVisitor scaffolding; check logic differs
+db754d6e40b2
+# max-lines split of one AST dispatch; each branch unique
+3d37a1d3bf1f
+# distinct tsdoc param-validation rules sharing report shape
+9d43bf0506f8
+# shared 2-line entry guard; distinct verdict fallback strategies
+373b72527244
+# mutually-recursive AST walkers; distinct expr/variable logic
+5bab4aae8252
+# distinct node checks already calling shared checkTrailingComma
+f44552d24b90
+# grammar strategy dispatch; different return contracts
+85b2f1edd230
+# repo query shape; different SQL/row-types/mappers
+fecf02e12177
+# helper + its caller; shared glob error-message idiom only
+49faeda36551
+
+# ── COINCIDENTAL-SHAPE (6) ──
+# engine Drop differs per app (fields, unpark)
+06f97ee9881e
+# parse_repeat/parse_repeat_upper caller/callee, error idiom only
+b2b5fbdd72ca
+# two is_match_batch impls on different types, unrelated bodies
+162bbc9c40be
+# caller/callee date parse/read, shared error format only
+3403bdafd596
+# one wraps other with mapping; return-type shape only
+35e1f834e7ba
+# shell-out vs env-read; comment-padding inflated similarity
+71e0fbacc670
+
+# ── BOILERPLATE-TRIVIAL (27) ──
+# one-line winit with_name idiom, two unrelated desktop apps
+c4fb43ee7346
+# one-line From impl (error.rs; dup kept via Display cluster)
+a6b206750dfa
+# one-line From impl (error.rs)
+7955a5b92969
+# one-line From impl (error.rs)
+4ec7bac5bb77
+# fake-API sendMessage stub (whole fake kept as cluster 46)
+6dd0c99dc9cc
+# fake-API exec stub
+fe6d7fe9f8dd
+# fake-API registerTool stub
+4d20df38b887
+# rm-temp-dir asyncDispose fragment
+8b52bc167155
+# rm-temp-dir cleanup fragment
+74121aff1610
+# standard web-component super/attachShadow boilerplate
+b512c2aba1a4
+# one-line lowercase char-range predicate
+91259a9ffa26
+# dynamic browserslist import wrapper; returns differ
+022f91f8ad68
+# one-line bitset empty-check on distinct types
+18ef0c8866a6
+# thin getLastToken wrapper; divergent null handling
+a9b9864a9f45
+# one-line atomic-store setter across two audio backends
+f61a194a97b8
+# 3-line map-callback closure wrapping emitContentNode
+820dd3649ca0
+# one-line method wrappers delegating to shared send_and_wake
+2901bf6ac224
+# single-line table-engine closure
+2544f8ae243b
+# 4-line onEnd fragment (subsumed by onConnect cluster 151)
+13b8e5191149
+# one-line adapter closures (field vs method access)
+acb94d617328
+# error-subclass constructors each setting own name
+6fcaa43dcb64
+# thin sentinel-remapping wrapper over shared helper
+c85ed2ec3699
+# two tiny fixer stubs (leading vs trailing newline)
+9861a8a4c3f1
+# thin entry wrapper over recursive helper
+bd87c1e9baa4
+# 6-line onTimeout handler differing only in message, per-transport
+ade697e59a53
+# one-line cross-layer forwarders to different targets
+7f2dc5a1739a
+# tiny lint fixer stubs, different ranges/replacements
+d2e4b2d0e74c
+
+# ── TEST-OR-GENERATED (18) ──
+# production-vs-linter-test-fixture coincidence
+92551a107a36
+# lint fixture invalid/valid pair; duplication intentional
+7c9d2695d649
+# lint fixture invalid/valid pair
+b0196065aea0
+# oxlint rule test fixtures (valid/invalid cases)
+aa306f4ec14f
+# handover scratch scripts plus compiled .js
+464e0412bceb
+# bench harness closures (truepeak-core.bench)
+7fe737370a47
+# promise-sequence arrows in test-fixture data-sequences
+f53e01c91ffe
+# fuzz arbitrary build() generators (fuzz/ dir)
+71452b9e6249
+# .js transpiled output of its .ts sibling (handover)
+888bf10f6eeb
+# compiled .js mirrors its .ts source (docs/handover)
+985eba85bf7c
+# roundtrip test cases with intentional repeated setup
+4b5e22a51795
+# binary/text probe integration tests, repeated setup
+10bee6f517f9
+# one-line render closures in fuzz arbitrary generators
+b0bbd93e8689
+# regression fixture intentionally mirrors prod lock-owner writer
+9856e87a8637
+# sync/async/slow generator test fixtures
+70f0426bf31f
+# --version vs -V integration test twins
+14228be66665
+# fuzz Arbitrary impls with distinct generation bodies
+a406ea35fd1e
+# two Rust integration test cases
+fd9bbe66388e
