@@ -233,6 +233,53 @@ Result:
 - `fast` is sometimes worse, sometimes equal, and sometimes better on the same failure family.
 - A fixed `standard` to `fast` swap would trade one ranking failure mode for another.
 
+Exa comparison, checked with the same query set on 2026-07-04:
+
+```text
+Configuration: Exa `/search` with type `auto` and `fast`, `numResults: 10`,
+and the current Pi blocklist after dropping the invalid Exa entry `gov`.
+Linkup comparison used `/v1/search`, `depth: "standard"`, and the same valid blocklist.
+
+Query id: kcm-line
+exa-auto: 10 results, 0 Grokipedia-related, 10 selected KDE or Qt hosts
+exa-fast: 10 results, 0 Grokipedia-related, 10 selected KDE or Qt hosts
+linkup-standard: 0 results
+
+Query id: numlock-protected
+exa-auto: 10 results, 0 Grokipedia-related, 9 selected KDE or Qt hosts
+exa-fast: 10 results, 0 Grokipedia-related, 9 selected KDE or Qt hosts
+linkup-standard: 10 results, 10 Grokipedia-related before local host filtering
+
+Query id: bugsite-or
+exa-auto: 10 results, 0 Grokipedia-related, 10 selected KDE or Qt hosts
+exa-fast: 10 results, 0 Grokipedia-related, 10 selected KDE or Qt hosts
+linkup-standard: 10 results, 10 Grokipedia-related before local host filtering
+
+Query id: protected-module
+exa-auto: 10 results, 0 Grokipedia-related, 6 selected KDE or Qt hosts
+exa-fast: 10 results, 0 Grokipedia-related, 5 selected KDE or Qt hosts
+linkup-standard: 10 results, 10 Grokipedia-related before local host filtering
+
+Query id: qtbug
+exa-auto: 10 results, 0 Grokipedia-related, 6 selected KDE or Qt hosts
+exa-fast: 10 results, 0 Grokipedia-related, 6 selected KDE or Qt hosts
+linkup-standard: 10 results, 0 Grokipedia-related, 5 selected KDE or Qt hosts
+
+Query id: bazzite
+exa-auto: 10 results, 0 Grokipedia-related, 7 selected Bazzite or code-host results
+exa-fast: 10 results, 0 Grokipedia-related, 9 selected Bazzite or code-host results
+linkup-standard: 10 results, 0 Grokipedia-related, 8 selected Bazzite or code-host results
+```
+
+Exa result:
+
+- Exa was materially better on this failure set.
+- Exa had zero Grokipedia-related results across the sampled query set.
+- Exa respected the valid host blocklist in the sampled result URLs.
+- Exa rejects the existing bare `gov` blocklist entry with `Domain must include a top-level domain: gov`.
+  A migration must either remove that entry, represent it with a separate local suffix filter,
+  or keep local post-filtering for top-level-domain policies.
+
 Public duplicate or known-issue search:
 
 ```text
@@ -304,6 +351,13 @@ while `standard` returned GitHub code-search pages.
 For the `protected-module` query,
 `fast` had fewer Grokipedia-related results than `standard`,
 but it was not enough to justify making every Pi search use `fast`.
+
+### Passing the current blocklist directly to Exa
+
+Exa rejects the bare `gov` entry in the current Pi blocklist because its `excludeDomains` parameter requires entries
+with a top-level domain.
+A direct Exa migration needs a separate local filter for bare public-suffix policies,
+or the config schema needs to distinguish API-forwardable host filters from local-only suffix filters.
 
 ## Upstream filing artifact
 
