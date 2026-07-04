@@ -26,7 +26,7 @@ Use these when the matching work starts:
 - Fallback to Linkup must be logged and covered by tests.
 - Config should use a new canonical config file only.
 - Migrate the existing old config file instead of keeping `pi-linkup.json` as a fallback path.
-- Exa search mode is not final. The user challenged the earlier benchmark quality and asked for a broader benchmark.
+- `web_search` should use Exa `fast` by default.
 - `web_fetch` should be Linkup-first, despite `web_search` being Exa-first.
 
 ## Repository state at handover creation
@@ -75,8 +75,8 @@ Interpretation:
 - Both modes had no misses and no Grokipedia pollution.
 - `auto` remains Exa's documented recommended mode for most applications.
 - The benchmark is still a proxy, not a formal IR benchmark.
-- Current leaning is no longer settled. `fast` is reasonable if latency matters,
-  while `auto` is reasonable if following Exa's documented default matters more.
+- Decision: use Exa `fast` as the default `web_search` mode.
+  The corrected benchmark showed no measured quality penalty for `fast`.
 
 Notable benchmark cases:
 
@@ -205,5 +205,4 @@ After build and tests pass:
 
 ## Next immediate step
 
-Resolve the Exa search-mode default based on the broader benchmark,
-then start the package rename and implementation.
+Start the package rename and implementation.
