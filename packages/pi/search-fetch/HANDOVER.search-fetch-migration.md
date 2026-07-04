@@ -205,10 +205,11 @@ mise run //packages/pi/search-fetch:test:unit
 mise run //packages/pi/search-fetch:verify:extension
 ```
 
-Boundary check passed through the built Pi extension interface with the real migrated config:
+Boundary checks passed through the built Pi extension interface with the real migrated config:
 
 - `web_search` registered and returned `provider: "exa"`.
-- `web_fetch` registered and returned `provider: "linkup"`.
+- `web_fetch` registered and returned `provider: "linkup"` with normal environment.
+- `web_fetch` returned `provider: "exa"` with fallback metadata when `LINKUP_API_KEY` was cleared for the process.
 
 ## Next immediate step
 
