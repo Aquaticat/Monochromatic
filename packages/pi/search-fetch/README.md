@@ -1,15 +1,14 @@
-# Pi Linkup
+# Pi Search Fetch
 
-`@monochromatic-dev/pi-linkup` is a narrow Pi package for Linkup search and fetch.
+`@monochromatic-dev/pi-search-fetch` is a narrow Pi package for web search and page fetch.
 It registers only two model-callable tools:
 
-- `linkup_web_search`
-- `linkup_web_fetch`
+- `web_search`
+- `web_fetch`
 
-The package deliberately does not provide `linkup_web_answer`,
- balance commands,
-research tools,
- or per-call search-depth controls.
+The package deliberately does not provide web-answer,
+account-management,
+or per-call search-depth controls.
 
 ## Configuration
 
@@ -17,7 +16,8 @@ The extension reads one optional global config file:
 
 ```json
 {
-  "apiKey": "optional fallback",
+  "exaApiKey": "optional Exa fallback",
+  "linkupApiKey": "optional Linkup fallback",
   "blocklist": ["badwikipedia.invalid"]
 }
 ```
@@ -25,28 +25,41 @@ The extension reads one optional global config file:
 Config path:
 
 ```text
-~/.pi/agent/extensions/pi-linkup.json
+~/.pi/agent/extensions/pi-search-fetch.json
 ```
 
-`LINKUP_API_KEY` wins over `apiKey` in the config file.
-The blocklist is always global and is applied to every search request,
-every search result after Linkup responds,
-and every fetch attempt before Linkup is called.
+`EXA_API_KEY` wins over `exaApiKey` in the config file.
+`LINKUP_API_KEY` wins over `linkupApiKey` in the config file.
+The blocklist is always global and is applied locally after search results,
+before fetch attempts,
+and to provider-supported request filters where compatible.
+
+A one-time migration can convert the old `pi-linkup.json` shape into this file.
+Do not keep runtime fallback to the old config path after migration.
 
 ## Tool behavior
 
-`linkup_web_search` sends Linkup `POST /v1/search` requests with fixed behavior:
+`web_search` searches with Exa first when Exa credentials are configured.
+It falls back to Linkup when Exa credentials are missing or Exa fails.
+
+Exa search uses fixed behavior:
+
+- `type: "fast"`
+- `numResults: 10`
+- `excludeDomains` set to provider-compatible configured blocklist entries
+
+Linkup fallback search uses fixed behavior:
 
 - `depth: "standard"`
 - `outputType: "searchResults"`
 - `excludeDomains` set to the normalized global blocklist
 
 Legacy or unsupported keys such as `depth`,
- `limit`,
- `maxResults`,
+`limit`,
+`maxResults`,
 `excludeDomains`,
- `includeImages`,
- and `outputType` are ignored.
+`includeImages`,
+and `outputType` are ignored.
 The tool returns a warning text item before the response when that happens.
 
 When a search response is exactly `{ "results": [...] }`,
@@ -55,7 +68,10 @@ the tool returns the inner results array as JSONL,
 one result object per line.
 Other search response shapes are returned as JSON.
 
-`linkup_web_fetch` sends Linkup `POST /v1/fetch` requests with fixed behavior:
+`web_fetch` fetches through Linkup first to preserve rendered-page behavior.
+It may fall back to Exa contents when Linkup is unavailable and Exa credentials are configured.
+
+Linkup fetch uses fixed behavior:
 
 - `renderJs: true`
 - `extractImages: false`
@@ -77,9 +93,9 @@ the full response is written to a temporary file and the tool result names that 
 Run package-scoped tasks:
 
 ```bash
-mise run //packages/pi/linkup:build
-mise run //packages/pi/linkup:lint:types
-mise run //packages/pi/linkup:lint:oxlint
-mise run //packages/pi/linkup:test:unit
-mise run //packages/pi/linkup:verify:extension
+mise run //packages/pi/search-fetch:build
+mise run //packages/pi/search-fetch:lint:types
+mise run //packages/pi/search-fetch:lint:oxlint
+mise run //packages/pi/search-fetch:test:unit
+mise run //packages/pi/search-fetch:verify:extension
 ```

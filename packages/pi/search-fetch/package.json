@@ -1,13 +1,13 @@
 {
-  "name": "@monochromatic-dev/pi-linkup",
-  "description": "Narrow Linkup search and fetch extension for pi with global host blocklist enforcement",
+  "name": "@monochromatic-dev/pi-search-fetch",
+  "description": "Exa-first search and Linkup-first fetch extension for pi with global host blocklist enforcement",
   "type": "module",
   "private": true,
   "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/pi/linkup"
+    "directory": "packages/pi/search-fetch"
   },
   "exports": {
     ".": {
@@ -27,7 +27,9 @@
   "keywords": [
     "pi-package",
     "pi-extension",
-    "linkup"
+    "exa",
+    "linkup",
+    "search"
   ],
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",

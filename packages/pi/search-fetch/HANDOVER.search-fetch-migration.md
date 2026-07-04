@@ -29,13 +29,13 @@ Use these when the matching work starts:
 - `web_search` should use Exa `fast` by default.
 - `web_fetch` should be Linkup-first, despite `web_search` being Exa-first.
 
-## Repository state at handover creation
+## Repository state at latest update
 
-- Current package path is still `packages/pi/linkup/`.
-- Current package name is still `@monochromatic-dev/pi-linkup`.
-- Current public tools are still `linkup_web_search` and `linkup_web_fetch`.
-- Current global config file is still `~/.pi/agent/extensions/pi-linkup.json`.
-- Current implementation is still Linkup-only.
+- Package path has moved to `packages/pi/search-fetch/`.
+- Package metadata now names `@monochromatic-dev/pi-search-fetch`.
+- Public tool implementation still needs to be renamed from `linkup_web_*` to `web_*`.
+- Current global config loader still needs to move from `pi-linkup.json` to `pi-search-fetch.json`.
+- Provider implementation is still in progress.
 - Existing unrelated worktree change: `mise.lock`. Do not touch unless the task requires it.
 
 Relevant prior artifacts:
@@ -87,13 +87,13 @@ Notable benchmark cases:
 
 ## Implementation notes
 
-Likely package rename work:
+Package rename work:
 
-- Move `packages/pi/linkup/` to `packages/pi/search-fetch/`.
-- Rename package to `@monochromatic-dev/pi-search-fetch`.
-- Update package description, keywords, `USER_AGENT_VALUE`, logger tags, temp-file prefixes, tests, and docs.
-- Update root tooling references such as `mise.toml` entries that mention `packages/pi/linkup`.
-- Update workspace lockfile only if the package rename requires it.
+- Done: move `packages/pi/linkup/` to `packages/pi/search-fetch/`.
+- Done: rename package metadata to `@monochromatic-dev/pi-search-fetch`.
+- Pending: update `USER_AGENT_VALUE`, logger tags, temp-file prefixes, tests, and exported docs.
+- Pending: update generated root tooling references through file-enforcer instead of hand-editing `mise.toml`.
+- Pending: update workspace lockfile only if the package rename requires it.
 
 Likely config work:
 
@@ -181,16 +181,6 @@ mise run //packages/pi/search-fetch:lint:types
 mise run //packages/pi/search-fetch:lint:oxlint
 mise run //packages/pi/search-fetch:test:unit
 mise run //packages/pi/search-fetch:verify:extension
-```
-
-If the directory has not moved yet, use the current path temporarily:
-
-```sh
-mise run //packages/pi/linkup:build
-mise run //packages/pi/linkup:lint:types
-mise run //packages/pi/linkup:lint:oxlint
-mise run //packages/pi/linkup:test:unit
-mise run //packages/pi/linkup:verify:extension
 ```
 
 ## Pi rewiring notes
