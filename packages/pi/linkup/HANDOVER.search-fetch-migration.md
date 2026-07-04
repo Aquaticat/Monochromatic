@@ -27,6 +27,7 @@ Use these when the matching work starts:
 - Config should use a new canonical config file only.
 - Migrate the existing old config file instead of keeping `pi-linkup.json` as a fallback path.
 - Exa search mode is not final. The user challenged the earlier benchmark quality and asked for a broader benchmark.
+- `web_fetch` should be Linkup-first, despite `web_search` being Exa-first.
 
 ## Repository state at handover creation
 
@@ -131,13 +132,15 @@ Search behavior:
 - Map date fields to Exa published-date fields unless docs or tests show another field is better.
 - Keep result-count controls fixed unless the user explicitly asks for them.
 
-Fetch behavior still needs one more design decision:
+Fetch behavior decision:
 
+- `web_fetch` should be Linkup-first.
 - Exa `/contents` supports URL content extraction with `urls` and `text: true`.
 - Linkup `/fetch` currently uses `renderJs=true`, `extractImages=false`, and `includeRawHtml=false`.
 - Exa docs do not expose an equivalent `renderJs=true` knob in the fetched docs.
-- The next branch to grill is whether `web_fetch` should be Exa-first despite this semantic difference,
-  or Linkup-first until Exa fetch quality is tested.
+- The user chose Linkup-first fetch to preserve current rendering semantics.
+- If Linkup fetch is unavailable and Exa credentials exist, fallback to Exa `/contents` is still plausible,
+  but confirm or test before implementing that fallback branch.
 
 Output behavior:
 
@@ -203,5 +206,5 @@ After build and tests pass:
 
 ## Next immediate step
 
-Continue grilling the `web_fetch` provider semantics before editing implementation,
-unless the user asks to skip grilling and implement the Exa-first behavior directly.
+Resolve the Exa search-mode default based on the broader benchmark,
+then start the package rename and implementation.
