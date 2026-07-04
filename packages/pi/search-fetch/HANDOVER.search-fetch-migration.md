@@ -33,9 +33,10 @@ Use these when the matching work starts:
 
 - Package path has moved to `packages/pi/search-fetch/`.
 - Package metadata now names `@monochromatic-dev/pi-search-fetch`.
-- Public tool implementation still needs to be renamed from `linkup_web_*` to `web_*`.
-- Current global config loader still needs to move from `pi-linkup.json` to `pi-search-fetch.json`.
-- Provider implementation is still in progress.
+- Public tool implementation now registers `web_search` and `web_fetch` only.
+- Global config loader now uses `pi-search-fetch.json` and migrates legacy `pi-linkup.json`.
+- Provider implementation is in place:
+  Exa-first `web_search`, Linkup-first `web_fetch`, and fallback metadata in tool details.
 - Existing unrelated worktree change: `mise.lock`. Do not touch unless the task requires it.
 
 Relevant prior artifacts:
@@ -91,23 +92,19 @@ Package rename work:
 
 - Done: move `packages/pi/linkup/` to `packages/pi/search-fetch/`.
 - Done: rename package metadata to `@monochromatic-dev/pi-search-fetch`.
-- Pending: update `USER_AGENT_VALUE`, logger tags, temp-file prefixes, tests, and exported docs.
-- Pending: update generated root tooling references through file-enforcer instead of hand-editing `mise.toml`.
-- Pending: update workspace lockfile only if the package rename requires it.
+- Done: update `USER_AGENT_VALUE`, logger tags, temp-file prefixes, tests, and exported docs.
+- Done: update generated root tooling references through file-enforcer instead of hand-editing `mise.toml`.
+- Done: update workspace lockfile importer path only.
 
-Likely config work:
+Config work:
 
-- Canonical config path should become `~/.pi/agent/extensions/pi-search-fetch.json`.
-- Migrate current `pi-linkup.json` contents to the new file.
-- Do not leave runtime fallback to the old config path, because the user chose new file only.
-- Suggested config keys:
-  - `exaApiKey`
-  - `linkupApiKey`
-  - `blocklist`
-- Suggested env precedence:
-  - `EXA_API_KEY` over config `exaApiKey`
-  - `LINKUP_API_KEY` over config `linkupApiKey`
-- If migrating old `apiKey`, treat it as `linkupApiKey`.
+- Done: canonical config path is `~/.pi/agent/extensions/pi-search-fetch.json`.
+- Done: legacy `pi-linkup.json` migrates once into the new file.
+- Done: runtime does not keep using the old config path after migration.
+- Done: config keys are `exaApiKey`, `linkupApiKey`, and `blocklist`.
+- Done: `EXA_API_KEY` wins over config `exaApiKey`.
+- Done: `LINKUP_API_KEY` wins over config `linkupApiKey`.
+- Done: legacy `apiKey` migrates to `linkupApiKey`.
 - Do not write any API key into this handover or other docs.
 
 Blocklist caveat:
@@ -195,4 +192,4 @@ After build and tests pass:
 
 ## Next immediate step
 
-Start the package rename and implementation.
+Finish full verification, then rewire the active Pi installation.

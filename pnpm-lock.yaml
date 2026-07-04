@@ -2440,7 +2440,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
-  packages/pi/linkup:
+  packages/pi/search-fetch:
     dependencies:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
