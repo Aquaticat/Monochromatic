@@ -37,6 +37,9 @@ Use these when the matching work starts:
 - Global config loader now uses `pi-search-fetch.json` and migrates legacy `pi-linkup.json`.
 - Provider implementation is in place:
   Exa-first `web_search`, Linkup-first `web_fetch`, and fallback metadata in tool details.
+- Active Pi settings now point to `/var/home/user/Monochromatic/packages/pi/search-fetch`.
+- Active Pi config migrated to `~/.pi/agent/extensions/pi-search-fetch.json`.
+- Legacy active Pi config `~/.pi/agent/extensions/pi-linkup.json` was removed after migration.
 - Existing unrelated worktree change: `mise.lock`. Do not touch unless the task requires it.
 
 Relevant prior artifacts:
@@ -190,6 +193,25 @@ After build and tests pass:
 - Migrate the global config file to `pi-search-fetch.json`.
 - Verify a real Pi extension load registers `web_search` and `web_fetch`.
 
+## Final verification in this session
+
+Commands passed:
+
+```sh
+mise run //packages/pi/search-fetch:build
+mise run //packages/pi/search-fetch:lint:types
+mise run //packages/pi/search-fetch:lint:oxlint
+mise run //packages/pi/search-fetch:test:unit
+mise run //packages/pi/search-fetch:verify:extension
+```
+
+Boundary check passed through the built Pi extension interface with the real migrated config:
+
+- `web_search` registered and returned `provider: "exa"`.
+- `web_fetch` registered and returned `provider: "linkup"`.
+
 ## Next immediate step
 
-Finish full verification, then rewire the active Pi installation.
+No required implementation step remains for this migration.
+Future work can rename internal `Linkup*` compatibility type names if desired,
+but public tools and active Pi wiring are already provider-neutral.
