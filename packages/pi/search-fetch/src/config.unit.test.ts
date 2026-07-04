@@ -7,6 +7,7 @@
 import {
   mkdir,
   mkdtemp,
+  readFile,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -18,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   configPathForHome,
+  legacyConfigPathForHome,
   loadLinkupConfig,
 } from '../dist/final/node/index.mjs';
 
@@ -63,13 +65,14 @@ await describe({
           env: {},
         },);
 
-        expect(config.apiKey,).toBeUndefined();
+        expect(config.exaApiKey,).toBeUndefined();
+        expect(config.linkupApiKey,).toBeUndefined();
         expect(config.blocklist,).toEqual([],);
         expect(config.source.loaded,).toBe(false,);
       },
     },),
     it({
-      name: 'lets environment API key beat config API key',
+      name: 'lets environment API keys beat config API keys',
       fn: async () => {
         /**
          * Local value for home.
@@ -78,7 +81,8 @@ await describe({
         await writeConfig({
           home,
           value: {
-            apiKey: CONFIG_API_KEY,
+            exaApiKey: CONFIG_API_KEY,
+            linkupApiKey: CONFIG_API_KEY,
           },
         },);
 
@@ -88,21 +92,54 @@ await describe({
         const config = await loadLinkupConfig({
           home,
           env: {
+            EXA_API_KEY: ENV_API_KEY,
             LINKUP_API_KEY: ENV_API_KEY,
           },
         },);
 
-        expect(config.apiKey,).toBe(ENV_API_KEY,);
+        expect(config.exaApiKey,).toBe(ENV_API_KEY,);
+        expect(config.linkupApiKey,).toBe(ENV_API_KEY,);
       },
     },),
     it({
-      name: 'loads flat apiKey and blocklist config',
+      name: 'loads flat provider keys and blocklist config',
       fn: async () => {
         /**
          * Local value for home.
          */
         const home = await tempHome();
         await writeConfig({
+          home,
+          value: {
+            exaApiKey: CONFIG_API_KEY,
+            linkupApiKey: CONFIG_API_KEY,
+            blocklist: [BLOCKLIST_ENTRY,],
+          },
+        },);
+
+        /**
+         * Local value for config.
+         */
+        const config = await loadLinkupConfig({
+          home,
+          env: {},
+        },);
+
+        expect(config.exaApiKey,).toBe(CONFIG_API_KEY,);
+        expect(config.linkupApiKey,).toBe(CONFIG_API_KEY,);
+        expect(config.blocklist,).toEqual([BLOCKLIST_ENTRY,],);
+        expect(config.source.path,).toBe(configPathForHome({ home, },),);
+        expect(config.source.loaded,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'migrates legacy config into new config path',
+      fn: async () => {
+        /**
+         * Local value for home.
+         */
+        const home = await tempHome();
+        await writeLegacyConfig({
           home,
           value: {
             apiKey: CONFIG_API_KEY,
@@ -117,11 +154,17 @@ await describe({
           home,
           env: {},
         },);
+        /**
+         * Local value for migratedContent.
+         */
+        const migratedContent = JSON.parse(
+          await readFile(configPathForHome({ home, },), 'utf8',),
+        ) as Record<string, unknown>;
 
-        expect(config.apiKey,).toBe(CONFIG_API_KEY,);
+        expect(config.linkupApiKey,).toBe(CONFIG_API_KEY,);
         expect(config.blocklist,).toEqual([BLOCKLIST_ENTRY,],);
-        expect(config.source.path,).toBe(configPathForHome({ home, },),);
-        expect(config.source.loaded,).toBe(true,);
+        expect(config.source.migratedFrom,).toBe(legacyConfigPathForHome({ home, },),);
+        expect(migratedContent.linkupApiKey,).toBe(CONFIG_API_KEY,);
       },
     },),
     it({
@@ -223,6 +266,33 @@ async function writeConfig(
    * Local value for configPath.
    */
   const configPath = configPathForHome({ home, },);
+  await mkdir(dirname(configPath,), { recursive: true, },);
+  await writeFile(
+    configPath,
+    JSON.stringify(value,),
+  );
+}
+
+/**
+ * Write legacy Pi Linkup config under a temp home.
+ *
+ * @param home - temp home directory
+ *
+ * @param value - JSON-serializable config value
+ */
+async function writeLegacyConfig(
+  {
+    home,
+    value,
+  }: {
+    readonly home: string;
+    readonly value: unknown;
+  },
+): Promise<void> {
+  /**
+   * Local value for configPath.
+   */
+  const configPath = legacyConfigPathForHome({ home, },);
   await mkdir(dirname(configPath,), { recursive: true, },);
   await writeFile(
     configPath,

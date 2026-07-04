@@ -36,10 +36,16 @@ const CONFIG: LinkupConfig = {
  */
 const CLIENT: LinkupToolClient = {
   async search() {
-    return { results: [], };
+    return {
+      provider: 'exa',
+      response: { results: [], },
+    };
   },
   async fetch() {
-    return { markdown: 'ok', };
+    return {
+      provider: 'linkup',
+      response: { markdown: 'ok', },
+    };
   },
 };
 

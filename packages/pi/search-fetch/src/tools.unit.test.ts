@@ -36,7 +36,8 @@ const GOOD_RESULT_URL = 'https://example.com/good';
  * Fixed config fixture.
  */
 const CONFIG: LinkupConfig = {
-  apiKey: 'key',
+  exaApiKey: 'exa-key',
+  linkupApiKey: 'linkup-key',
   blocklist: [BLOCKED_HOST,],
   source: {
     path: '/home/test/.pi/agent/extensions/pi-search-fetch.json',
@@ -55,7 +56,7 @@ await describe({
   name: createLinkupTools.name,
   children: [
     it({
-      name: 'creates only linkup_web_search and linkup_web_fetch tools',
+      name: 'creates only web_search and web_fetch tools',
       fn: async () => {
         /**
          * Local value for mock.
@@ -118,7 +119,7 @@ await describe({
          */
         const warning = textContentAt({ result, index: 0, },);
         expect(warning,).toContain('depth, limit, maxResults',);
-        expect(warning,).toContain('depth="standard"',);
+        expect(warning,).toContain('Exa fast search first',);
         expect(mock.searchCalls,).toHaveLength(1,);
         /**
          * Local value for searchInput.
@@ -184,6 +185,7 @@ await describe({
           `https://${BLOCKED_HOST}/a`,
           `https://www.${BLOCKED_HOST}/b`,
         ],);
+        expect(result.details.provider,).toBe('exa',);
       },
     },),
     it({
@@ -404,11 +406,17 @@ function mockClient(
     client: {
       async search(options,) {
         searchCalls.push({ input: options.input, },);
-        return searchResponse;
+        return {
+          provider: 'exa',
+          response: searchResponse,
+        };
       },
       async fetch(options,) {
         fetchCalls.push({ input: options.input, },);
-        return fetchResponse;
+        return {
+          provider: 'linkup',
+          response: fetchResponse,
+        };
       },
     },
     searchCalls,
