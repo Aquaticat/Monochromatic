@@ -140,7 +140,7 @@ async function searchWithFallback(
     readonly options: SearchOptions;
   },
 ): Promise<ProviderResponse> {
-  if (hasCredential(runtime.exaApiKey,)) {
+  if ((runtime.exaApiKey !== undefined) && hasCredential({ value: runtime.exaApiKey, })) {
     try {
       return {
         provider: 'exa',
@@ -203,7 +203,7 @@ async function fetchWithFallback(
     readonly options: FetchOptions;
   },
 ): Promise<ProviderResponse> {
-  if (hasCredential(runtime.linkupApiKey,)) {
+  if ((runtime.linkupApiKey !== undefined) && hasCredential({ value: runtime.linkupApiKey, })) {
     try {
       return {
         provider: 'linkup',
@@ -365,9 +365,8 @@ function combinedFallbackError(
  *
  * @returns whether credential is configured
  */
-function hasCredential(value: string | undefined,): boolean {
-  return (value !== undefined)
-    && (value.trim() !== '');
+function hasCredential({ value, }: { readonly value: string; }): boolean {
+  return value.trim() !== '';
 }
 
 /**

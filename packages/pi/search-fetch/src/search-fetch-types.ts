@@ -8,8 +8,6 @@
 import type {
   FetchLike,
   FetchOptions,
-  LinkupWebFetchInput,
-  LinkupWebSearchInput,
   SearchOptions,
 } from './client.ts';
 
@@ -253,14 +251,16 @@ type ExaPostJsonOptions = {
 };
 
 export type {
+  LinkupWebFetchInput,
+  LinkupWebSearchInput,
+} from './client.ts';
+export type {
   ExaClient,
   ExaClientOptions,
   ExaClientRuntime,
   ExaContentsRequestBody,
   ExaPostJsonOptions,
   ExaSearchRequestBody,
-  LinkupWebFetchInput,
-  LinkupWebSearchInput,
   ProviderFallback,
   ProviderResponse,
   SearchFetchClient,

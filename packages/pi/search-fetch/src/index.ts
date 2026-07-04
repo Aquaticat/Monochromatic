@@ -145,10 +145,12 @@ function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
 
 export { createLinkupClient, } from './client.ts';
 export {
-  configPathForHome,
-  legacyConfigPathForHome,
   loadLinkupConfig,
 } from './config.ts';
+export {
+  configPathForHome,
+  legacyConfigPathForHome,
+} from './config-paths.ts';
 export {
   filterBlockedSearchResults,
   findBlockedHostMatch,

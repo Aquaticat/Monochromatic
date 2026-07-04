@@ -380,9 +380,9 @@ function mockFetch({ responses, }: { readonly responses: readonly MockResponse[]
   /**
    * Fetch implementation.
    */
-  const fetchImpl: FetchLike = async function fetchMock(input, init,) {
+  async function fetchImpl(input: RequestInfo | URL, init?: RequestInit,): Promise<Response> {
     calls.push({
-      url: String(input,),
+      url: fetchInputUrl(input,),
       init: init ?? {},
     },);
     /**
@@ -391,18 +391,33 @@ function mockFetch({ responses, }: { readonly responses: readonly MockResponse[]
     const response = responses[calls.length - 1];
     if (response === undefined)
       throw new Error('unexpected fetch call',);
-    return new Response(
-      JSON.stringify(response.body,),
+    return Response.json(
+      response.body,
       {
         status: response.status ?? 200,
         statusText: response.statusText ?? 'OK',
       },
     );
-  };
+  }
   return {
     fetchImpl,
     calls,
   };
+}
+
+/**
+ * Return URL text for fetch input.
+ *
+ * @param input - fetch input
+ *
+ * @returns URL text
+ */
+function fetchInputUrl(input: RequestInfo | URL,): string {
+  if ((typeof input) === 'string')
+    return input;
+  if (input instanceof URL)
+    return input.href;
+  return input.url;
 }
 
 /**

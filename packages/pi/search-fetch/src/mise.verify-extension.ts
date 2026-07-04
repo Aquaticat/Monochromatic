@@ -25,8 +25,8 @@ const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
  * Expected resource registrations from the extension entry point.
  */
 const EXPECTED_REGISTRATIONS = [
-  'tool:linkup_web_search',
-  'tool:linkup_web_fetch',
+  'tool:web_search',
+  'tool:web_fetch',
 ] as const;
 
 /**
