@@ -192,6 +192,47 @@ Tradeoff: Google-style operators are query text, not a documented Linkup filteri
 Prefer `excludeDomains` or local filtering when the caller controls the API body.
 ```
 
+Fast-depth comparison, checked with direct Linkup API calls on 2026-07-04:
+
+```text
+Query id: kcm-line
+Query: "kcm_keyboard/main.qml:57" "Kirigami.Action"
+fast: 10 results, 10 Grokipedia-related, 0 selected KDE or Qt hosts
+standard: 2 results, 0 Grokipedia-related, 2 selected KDE or Qt hosts
+
+Query id: numlock-protected
+Query: "Cannot install element 'NumLockState' into protected module 'org.kde.plasma.private.kcm_keyboard'"
+fast: 10 results, 6 Grokipedia-related, 4 selected KDE or Qt hosts
+standard: 10 results, 6 Grokipedia-related, 4 selected KDE or Qt hosts
+
+Query id: bugsite-or
+Query: site:bugs.kde.org "kcm_keyboard/main.qml:57:63" OR "configureLayoutsAction"
+fast: 10 results, 7 Grokipedia-related, 3 selected KDE or Qt hosts
+standard: 10 results, 7 Grokipedia-related, 3 selected KDE or Qt hosts
+
+Query id: protected-module
+Query: "Cannot install element" "org.kde.plasma.private.kcm_keyboard"
+fast: 10 results, 5 Grokipedia-related, 3 selected KDE or Qt hosts
+standard: 10 results, 8 Grokipedia-related, 1 selected KDE or Qt host
+
+Query id: qtbug
+Query: QTBUG-144092 Kirigami Cannot assign object of type Kirigami.Action Action_QMLTYPE_0
+fast: 10 results, 0 Grokipedia-related, 6 selected KDE or Qt hosts
+standard: 10 results, 0 Grokipedia-related, 5 selected KDE or Qt hosts
+standard ranked `Action QML Type | Kirigami` first, while fast ranked LinkedIn first.
+
+Query id: bazzite
+Query: Bazzite documentation update system ujust update
+fast: 10 results, 0 Grokipedia-related, 6 selected Bazzite or code-host results
+standard: 10 results, 0 Grokipedia-related, 6 selected Bazzite or code-host results
+```
+
+Result:
+
+- `fast` is not a reliable fix for the Grokipedia problem.
+- `fast` is sometimes worse, sometimes equal, and sometimes better on the same failure family.
+- A fixed `standard` to `fast` swap would trade one ranking failure mode for another.
+
 Public duplicate or known-issue search:
 
 ```text
@@ -253,6 +294,16 @@ or other third-party pages whose hosts are not blocked.
 Bare snippets such as `"Cannot install element" "org.kde.plasma.private.kcm_keyboard"` can fall into broad
 agentic retrieval.
 Constrain domains or add explicit source instructions for bug-tracker searches.
+
+### Switching the fixed depth to `fast`
+
+A direct `fast` versus `standard` comparison did not show `fast` is consistently better.
+For the exact `kcm_keyboard/main.qml:57` query,
+`fast` returned only Grokipedia-related results in the sampled top results,
+while `standard` returned GitHub code-search pages.
+For the `protected-module` query,
+`fast` had fewer Grokipedia-related results than `standard`,
+but it was not enough to justify making every Pi search use `fast`.
 
 ## Upstream filing artifact
 
