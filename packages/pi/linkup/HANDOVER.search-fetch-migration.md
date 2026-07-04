@@ -61,28 +61,27 @@ Measured fields:
 - latency
 - simple rank score
 
-Aggregate result:
+Aggregate result after correcting expected hosts for `mise.en.dev` and GitHub-hosted Vite docs:
 
-- `auto`: rank score 72, expected-source hits 94, misses 0, Grokipedia hits 0,
-  total sampled latency 23986 ms, wins 3 cases.
-- `fast`: rank score 66, expected-source hits 97, misses 1, Grokipedia hits 0,
-  total sampled latency 10183 ms, wins 2 cases.
+- `auto`: rank score 72, expected-source hits 104, misses 0, Grokipedia hits 0,
+  cache-warmed sampled latency 1815 ms, wins 1 case.
+- `fast`: rank score 72, expected-source hits 109, misses 0, Grokipedia hits 0,
+  cache-warmed sampled latency 1665 ms, wins 2 cases.
 
 Interpretation:
 
-- `fast` is much lower latency.
-- `auto` looked more reliable for first expected-source placement.
-- `auto` had no misses in this benchmark.
+- The corrected proxy benchmark does not show a quality penalty for `fast`.
+- `fast` had more expected-source hits in the corrected sample.
+- Both modes had no misses and no Grokipedia pollution.
+- `auto` remains Exa's documented recommended mode for most applications.
 - The benchmark is still a proxy, not a formal IR benchmark.
-- Current leaning is `auto` as the default for agent research,
-  but revisit this before hard-coding if fresh evidence changes the tradeoff.
+- Current leaning is no longer settled. `fast` is reasonable if latency matters,
+  while `auto` is reasonable if following Exa's documented default matters more.
 
 Notable benchmark cases:
 
-- `vite-library`: `auto` found `vite.dev` first.
-  `fast` returned GitHub Vite docs first and missed the expected host set.
-- `mise-tasks`: `auto` found `mise.jdx.dev` first.
-  `fast` ranked the expected host lower and surfaced `mise.en.dev` first.
+- `mise.en.dev` is live mise documentation and should count as an expected source.
+- GitHub-hosted Vite docs are source documentation and should not be treated as a miss by default.
 - `playwright-locators`: `fast` had more expected-host hits than `auto`.
 - `typebox-object`: `fast` had more expected-host hits than `auto`.
 
