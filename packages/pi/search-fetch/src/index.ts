@@ -1,8 +1,8 @@
 /**
- * Pi Linkup extension entry point.
+ * Pi Search Fetch extension entry point.
  *
- * Registers narrow Linkup search and fetch tools with global host blocklist
- * enforcement and no web-answer or account-management surfaces.
+ * Registers provider-neutral search and fetch tools with global host blocklist enforcement
+ * and no web-answer or account-management surfaces.
  *
  * @module
  */
@@ -10,38 +10,40 @@
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { createLinkupClient, } from './client.ts';
 import {
   loadLinkupConfig,
   type LinkupConfig,
 } from './config.ts';
+import {
+  createSearchFetchClient,
+} from './search-fetch-client.ts';
 import {
   createLinkupTools,
   type LinkupToolClient,
 } from './tools.ts';
 
 /**
- * Logger root for pi-linkup after removing the package log shim.
+ * Logger root for pi-search-fetch after removing the package log shim.
  *
  * @example
  * ```ts
- * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
+ * const rl = tagged({ tag: someFunction.name, l: searchFetchLogger, },);
  * ```
  */
-const linkupLogger = tagged({ tag: 'pi-linkup', },);
+const searchFetchLogger = tagged({ tag: 'pi-search-fetch', },);
 
 /**
  * Module logger.
  */
 const l = tagged({
   tag: 'index',
-  l: linkupLogger,
+  l: searchFetchLogger,
 },);
 
 //region Types
 
 /**
- * Options for registering Pi Linkup with injected dependencies.
+ * Options for registering Pi Search Fetch with injected dependencies.
  */
 type RegisterPiLinkupOptions = {
   /**
@@ -49,11 +51,11 @@ type RegisterPiLinkupOptions = {
    */
   readonly pi: ExtensionAPI;
   /**
-   * Loaded Linkup config.
+   * Loaded Search Fetch config.
    */
   readonly config: LinkupConfig;
   /**
-   * Linkup client used by tools.
+   * Provider-routing client used by tools.
    */
   readonly client: LinkupToolClient;
 };
@@ -63,14 +65,14 @@ type RegisterPiLinkupOptions = {
 //region Extension entry point
 
 /**
- * Pi Linkup extension factory.
+ * Pi Search Fetch extension factory.
  *
  * @param pi - Pi extension API
  *
  * @example
  * ```ts
  * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi/linkup"] }
+ * { "packages": ["./packages/pi/search-fetch"] }
  * ```
  */
 export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
@@ -86,10 +88,11 @@ export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
    */
   const config = await loadLinkupConfig();
   /**
-   * Linkup HTTP client shared by the registered tools.
+   * Provider-routing client shared by registered tools.
    */
-  const client = createLinkupClient({
-    ...(config.apiKey === undefined ? {} : { apiKey: config.apiKey, }),
+  const client = createSearchFetchClient({
+    ...(config.exaApiKey === undefined ? {} : { exaApiKey: config.exaApiKey, }),
+    ...(config.linkupApiKey === undefined ? {} : { linkupApiKey: config.linkupApiKey, }),
     blocklist: config.blocklist,
   },);
 
@@ -98,7 +101,7 @@ export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
     config,
     client,
   },);
-  innerL.debug(`pi-linkup extension loaded; blocklist entries=${String(
+  innerL.debug(`pi-search-fetch extension loaded; blocklist entries=${String(
     config
       .blocklist
       .length,
@@ -106,7 +109,7 @@ export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
 }
 
 /**
- * Register Pi Linkup tools using already-created dependencies.
+ * Register Pi Search Fetch tools using already-created dependencies.
  *
  * @param options - Pi API, config, and client
  *
@@ -124,7 +127,7 @@ function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
     l,
   },);
   /**
-   * Public Linkup tools.
+   * Public Search Fetch tools.
    */
   const tools = createLinkupTools({
     config: options.config,
@@ -134,7 +137,7 @@ function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
   tools.forEach(function registerTool(tool,) {
     options.pi
       .registerTool(tool,);
-    innerL.debug(`registered Linkup tool: ${tool.name}`,);
+    innerL.debug(`registered Search Fetch tool: ${tool.name}`,);
   },);
 }
 
@@ -143,6 +146,7 @@ function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
 export { createLinkupClient, } from './client.ts';
 export {
   configPathForHome,
+  legacyConfigPathForHome,
   loadLinkupConfig,
 } from './config.ts';
 export {
@@ -155,6 +159,13 @@ export {
   normalizeBlocklistEntry,
   normalizeHostForPolicy,
 } from './domain-policy.ts';
+export {
+  createExaClient,
+  exaForwardableBlocklist,
+} from './exa-client.ts';
+export {
+  createSearchFetchClient,
+} from './search-fetch-client.ts';
 export {
   createJsonContent,
   createLinkupToolOutput,
@@ -192,6 +203,19 @@ export type {
   BlocklistMatch,
   SearchResultFilterResult,
 } from './domain-policy.ts';
+export type {
+  ExaClient,
+  ExaClientOptions,
+  ExaContentsRequestBody,
+  ExaSearchRequestBody,
+} from './exa-client.ts';
+export type {
+  ProviderFallback,
+  ProviderResponse,
+  SearchFetchClient,
+  SearchFetchClientOptions,
+  SearchFetchProvider,
+} from './search-fetch-client.ts';
 export type {
   JsonContentResult,
   LinkupToolDetails,

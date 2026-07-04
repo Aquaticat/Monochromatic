@@ -1,30 +1,43 @@
 /**
- * Global Pi Linkup configuration loading.
+ * Global Pi Search Fetch configuration loading.
  *
  * @module
  */
 
-import { readFile, } from 'node:fs/promises';
+import {
+  mkdir,
+  readFile,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
 import { homedir, } from 'node:os';
-import { join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { normalizeBlocklist, } from './domain-policy.ts';
 
 /**
- * Logger root for pi-linkup after removing the package log shim.
+ * Logger root for pi-search-fetch after removing the package log shim.
  *
  * @example
  * ```ts
  * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
  * ```
  */
-const linkupLogger = tagged({ tag: 'pi-linkup', },);
+const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 //region Constants
 
 /**
- * Environment variable that wins over config-file API keys.
+ * Environment variable that wins over config-file Exa API keys.
+ */
+const EXA_API_KEY_ENV = 'EXA_API_KEY';
+
+/**
+ * Environment variable that wins over config-file Linkup API keys.
  */
 const LINKUP_API_KEY_ENV = 'LINKUP_API_KEY';
 
@@ -38,9 +51,19 @@ const PI_EXTENSION_CONFIG_DIR = join(
 );
 
 /**
- * Pi Linkup config filename.
+ * Pi Search Fetch config filename.
  */
-const PI_LINKUP_CONFIG_FILE = 'pi-linkup.json';
+const PI_LINKUP_CONFIG_FILE = 'pi-search-fetch.json';
+
+/**
+ * Legacy Pi Linkup config filename migrated once when present.
+ */
+const LEGACY_PI_LINKUP_CONFIG_FILE = 'pi-linkup.json';
+
+/**
+ * JSON indentation used when writing migrated config.
+ */
+const CONFIG_JSON_INDENT_SPACES = 2;
 
 /**
  * Node error code for missing files.
@@ -51,6 +74,15 @@ const FILE_NOT_FOUND_CODE = 'ENOENT';
  * Valid top-level config keys.
  */
 const CONFIG_KEYS = [
+  'exaApiKey',
+  'linkupApiKey',
+  'blocklist',
+] as const;
+
+/**
+ * Valid legacy top-level config keys.
+ */
+const LEGACY_CONFIG_KEYS = [
   'apiKey',
   'blocklist',
 ] as const;
@@ -60,18 +92,27 @@ const CONFIG_KEYS = [
  */
 const CONFIG_KEY_SET = new Set<string>(CONFIG_KEYS,);
 
+/**
+ * Valid legacy top-level config key lookup.
+ */
+const LEGACY_CONFIG_KEY_SET = new Set<string>(LEGACY_CONFIG_KEYS,);
+
 //endregion Constants
 
 //region Types
 
 /**
- * Loaded Pi Linkup config.
+ * Loaded Pi Search Fetch config.
  */
 type LinkupConfig = {
   /**
-   * Optional API key after environment and file precedence are applied.
+   * Optional Exa API key after environment and file precedence are applied.
    */
-  readonly apiKey?: string;
+  readonly exaApiKey?: string;
+  /**
+   * Optional Linkup API key after environment and file precedence are applied.
+   */
+  readonly linkupApiKey?: string;
   /**
    * Normalized global host suffix blocklist.
    */
@@ -83,7 +124,7 @@ type LinkupConfig = {
 };
 
 /**
- * Pi Linkup config source metadata.
+ * Pi Search Fetch config source metadata.
  */
 type LinkupConfigSource = {
   /**
@@ -94,10 +135,14 @@ type LinkupConfigSource = {
    * Whether config file existed and loaded successfully.
    */
   readonly loaded: boolean;
+  /**
+   * Legacy config path migrated into this source, when migration happened.
+   */
+  readonly migratedFrom?: string;
 };
 
 /**
- * Options for loading Pi Linkup config.
+ * Options for loading Pi Search Fetch config.
  */
 type LoadLinkupConfigOptions = {
   /**
@@ -115,7 +160,25 @@ type LoadLinkupConfigOptions = {
  */
 type ConfigFileShape = {
   /**
-   * Optional fallback API key from config file.
+   * Optional Exa API key from config file.
+   */
+  readonly exaApiKey?: string;
+  /**
+   * Optional Linkup API key from config file.
+   */
+  readonly linkupApiKey?: string;
+  /**
+   * Optional raw host suffix blocklist.
+   */
+  readonly blocklist?: readonly string[];
+};
+
+/**
+ * Parsed legacy config-file shape after schema validation.
+ */
+type LegacyConfigFileShape = {
+  /**
+   * Optional legacy Linkup API key from config file.
    */
   readonly apiKey?: string;
   /**
@@ -163,6 +226,29 @@ type ApiKeyResolution = {
 };
 
 /**
+ * Legacy migration result.
+ */
+type LegacyMigrationResult = {
+  /**
+   * Whether legacy config migrated.
+   */
+  readonly migrated: false;
+} | {
+  /**
+   * Whether legacy config migrated.
+   */
+  readonly migrated: true;
+  /**
+   * Migrated new config shape.
+   */
+  readonly value: ConfigFileShape;
+  /**
+   * Legacy config path consumed by migration.
+   */
+  readonly legacyPath: string;
+};
+
+/**
  * Error object with a Node system code.
  */
 type ErrorWithCode = Error & {
@@ -185,7 +271,7 @@ const l = tagged({
 //region Public API
 
 /**
- * Load Pi Linkup global config.
+ * Load Pi Search Fetch global config.
  *
  * @param options - optional environment and home overrides for tests
  *
@@ -223,9 +309,27 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
    */
   const configPath = configPathForHome({ home, },);
   /**
+   * Local value for initialReadResult.
+   */
+  const initialReadResult = await readOptionalConfigJson({ configPath, },);
+  /**
+   * Local value for migration.
+   */
+  const migration = initialReadResult.loaded
+    ? { migrated: false, } as const
+    : await migrateLegacyConfigIfPresent({
+      home,
+      configPath,
+    },);
+  /**
    * Local value for readResult.
    */
-  const readResult = await readOptionalConfigJson({ configPath, },);
+  const readResult: ConfigJsonReadResult = migration.migrated
+    ? {
+      loaded: true,
+      value: migration.value,
+    }
+    : initialReadResult;
   /**
    * Local value for configFile.
    */
@@ -243,26 +347,38 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
     configPath,
   },);
   /**
-   * Local value for apiKey.
+   * Local value for exaApiKey.
    */
-  const apiKey = resolveApiKey({
+  const exaApiKey = resolveApiKey({
     env,
-    ...(configFile.apiKey === undefined ? {} : { configApiKey: configFile.apiKey, }),
+    envKey: EXA_API_KEY_ENV,
+    ...(configFile.exaApiKey === undefined ? {} : { configApiKey: configFile.exaApiKey, }),
+  },);
+  /**
+   * Local value for linkupApiKey.
+   */
+  const linkupApiKey = resolveApiKey({
+    env,
+    envKey: LINKUP_API_KEY_ENV,
+    ...(configFile.linkupApiKey === undefined ? {} : { configApiKey: configFile.linkupApiKey, }),
   },);
 
-  innerL.debug(`loaded pi-linkup config from ${configPath}; present=${String(readResult.loaded,)}`,);
+  innerL.debug(`loaded pi-search-fetch config from ${configPath}; present=${String(readResult.loaded,)}`,
+  );
   return {
-    ...(apiKey.configured ? { apiKey: apiKey.value, } : {}),
+    ...(exaApiKey.configured ? { exaApiKey: exaApiKey.value, } : {}),
+    ...(linkupApiKey.configured ? { linkupApiKey: linkupApiKey.value, } : {}),
     blocklist,
     source: {
       path: configPath,
       loaded: readResult.loaded,
+      ...(migration.migrated ? { migratedFrom: migration.legacyPath, } : {}),
     },
   };
 }
 
 /**
- * Resolve global Pi Linkup config path for a home directory.
+ * Resolve global Pi Search Fetch config path for a home directory.
  *
  * @param home - home directory
  *
@@ -281,9 +397,103 @@ function configPathForHome({ home, }: { readonly home: string; }): string {
   );
 }
 
+/**
+ * Resolve legacy Pi Linkup config path for a home directory.
+ *
+ * @param home - home directory
+ *
+ * @returns absolute legacy config path
+ *
+ * @example
+ * ```ts
+ * legacyConfigPathForHome({ home: '/home/user' });
+ * ```
+ */
+function legacyConfigPathForHome({ home, }: { readonly home: string; }): string {
+  return join(
+    home,
+    PI_EXTENSION_CONFIG_DIR,
+    LEGACY_PI_LINKUP_CONFIG_FILE,
+  );
+}
+
 //endregion Public API
 
 //region File parsing
+
+/**
+ * Migrate legacy Pi Linkup config into the new Search Fetch config path when needed.
+ *
+ * @param home - home directory
+ *
+ * @param configPath - new config path
+ *
+ * @returns migration result
+ */
+async function migrateLegacyConfigIfPresent(
+  {
+    home,
+    configPath,
+  }: {
+    readonly home: string;
+    readonly configPath: string;
+  },
+): Promise<LegacyMigrationResult> {
+  /**
+   * Local value for legacyPath.
+   */
+  const legacyPath = legacyConfigPathForHome({ home, },);
+  /**
+   * Local value for legacyReadResult.
+   */
+  const legacyReadResult = await readOptionalConfigJson({ configPath: legacyPath, },);
+  if (!legacyReadResult.loaded)
+    return { migrated: false, };
+
+  /**
+   * Local value for legacyConfig.
+   */
+  const legacyConfig = validateLegacyConfigShape({
+    value: legacyReadResult.value,
+    configPath: legacyPath,
+  },);
+  /**
+   * Local value for migratedValue.
+   */
+  const migratedValue: ConfigFileShape = {
+    ...(legacyConfig.apiKey === undefined ? {} : { linkupApiKey: legacyConfig.apiKey, }),
+    ...(legacyConfig.blocklist === undefined ? {} : { blocklist: legacyConfig.blocklist, }),
+  };
+
+  await mkdir(dirname(configPath,), { recursive: true, },);
+  await writeFile(
+    configPath,
+    `${JSON.stringify(migratedValue, null, CONFIG_JSON_INDENT_SPACES,)}\n`,
+    'utf8',
+  );
+  await removeLegacyConfig({ legacyPath, },);
+  return {
+    migrated: true,
+    value: migratedValue,
+    legacyPath,
+  };
+}
+
+/**
+ * Remove migrated legacy config when it is still present.
+ *
+ * @param legacyPath - legacy config path
+ */
+async function removeLegacyConfig({ legacyPath, }: { readonly legacyPath: string; }): Promise<void> {
+  try {
+    await unlink(legacyPath,);
+  }
+  catch (error: unknown) {
+    if (isMissingFileError(error,))
+      return;
+    throw error;
+  }
+}
 
 /**
  * Read and parse optional config JSON.
@@ -425,6 +635,77 @@ function validateConfigShape(
    * Local destructured value.
    */
   const {
+    exaApiKey,
+    linkupApiKey,
+    blocklist,
+  } = value;
+  if ((exaApiKey !== undefined) && ((typeof exaApiKey) !== 'string'))
+    throw schemaError({
+      configPath,
+      reason: 'exaApiKey must be a string when present',
+    },);
+  if ((linkupApiKey !== undefined) && ((typeof linkupApiKey) !== 'string'))
+    throw schemaError({
+      configPath,
+      reason: 'linkupApiKey must be a string when present',
+    },);
+  if ((blocklist !== undefined) && (!isStringArray(blocklist,)))
+    throw schemaError({
+      configPath,
+      reason: 'blocklist must be an array of strings when present',
+    },);
+
+  return {
+    ...(exaApiKey === undefined ? {} : { exaApiKey, }),
+    ...(linkupApiKey === undefined ? {} : { linkupApiKey, }),
+    ...(blocklist === undefined ? {} : { blocklist, }),
+  };
+}
+
+/**
+ * Validate parsed legacy config-file shape.
+ *
+ * @param value - parsed JSON value
+ *
+ * @param configPath - config path used in diagnostics
+ *
+ * @returns legacy config-file shape
+ *
+ * @throws when value is not expected flat object
+ */
+function validateLegacyConfigShape(
+  {
+    value,
+    configPath,
+  }: {
+    readonly value: unknown;
+    readonly configPath: string;
+  },
+): LegacyConfigFileShape {
+  if (!isRecord(value,))
+    throw schemaError({
+      configPath,
+      reason: 'root value must be an object',
+    },);
+
+  /**
+   * Local value for extraKeys.
+   */
+  const extraKeys = Object
+    .keys(value,)
+    .filter(function isExtraKey(key,) {
+      return !LEGACY_CONFIG_KEY_SET.has(key,);
+    },);
+  if (extraKeys.length > 0)
+    throw schemaError({
+      configPath,
+      reason: `unsupported keys: ${extraKeys.join(', ',)}`,
+    },);
+
+  /**
+   * Local destructured value.
+   */
+  const {
     apiKey,
     blocklist,
   } = value;
@@ -539,6 +820,8 @@ function normalizeConfigBlocklist(
  *
  * @param env - environment values
  *
+ * @param envKey - environment key to check
+ *
  * @param configApiKey - optional config-file API key
  *
  * @returns effective API key resolution
@@ -546,16 +829,18 @@ function normalizeConfigBlocklist(
 function resolveApiKey(
   {
     env,
+    envKey,
     configApiKey,
   }: {
     readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly envKey: string;
     readonly configApiKey?: string;
   },
 ): ApiKeyResolution {
   /**
    * Local value for envApiKey.
    */
-  const envApiKey = env[LINKUP_API_KEY_ENV]
+  const envApiKey = env[envKey]
     ?.trim();
   if ((envApiKey !== undefined) && (envApiKey !== ''))
     return {
@@ -579,6 +864,7 @@ function resolveApiKey(
 
 export {
   configPathForHome,
+  legacyConfigPathForHome,
   loadLinkupConfig,
 };
 export type {

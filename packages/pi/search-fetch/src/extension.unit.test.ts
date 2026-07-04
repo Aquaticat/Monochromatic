@@ -1,5 +1,5 @@
 /**
- * Unit tests for Pi Linkup extension registration.
+ * Unit tests for Pi Search Fetch extension registration.
  *
  * @module
  */
@@ -26,7 +26,7 @@ import {
 const CONFIG: LinkupConfig = {
   blocklist: [],
   source: {
-    path: '/home/test/.pi/agent/extensions/pi-linkup.json',
+    path: '/home/test/.pi/agent/extensions/pi-search-fetch.json',
     loaded: false,
   },
 };

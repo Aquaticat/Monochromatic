@@ -1,5 +1,5 @@
 /**
- * Linkup HTTP client for Pi Linkup tools.
+ * Linkup HTTP client for Pi Search Fetch tools.
  *
  * @module
  */
@@ -27,14 +27,14 @@ import type {
 import { postJson, } from './client-http.ts';
 
 /**
- * Logger root for pi-linkup after removing the package log shim.
+ * Logger root for pi-search-fetch after removing the package log shim.
  *
  * @example
  * ```ts
  * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
  * ```
  */
-const linkupLogger = tagged({ tag: 'pi-linkup', },);
+const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 /**
  * Module logger.

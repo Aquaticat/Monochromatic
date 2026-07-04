@@ -24,10 +24,12 @@ import type {
   LinkupConfig,
 } from './config.ts';
 import type {
-  LinkupClient,
   LinkupWebFetchInput,
   LinkupWebSearchInput,
 } from './client.ts';
+import type {
+  SearchFetchClient,
+} from './search-fetch-client.ts';
 import {
   filterBlockedSearchResults,
   findBlockedUrlMatch,
@@ -39,26 +41,26 @@ import {
 } from './tool-output.ts';
 
 /**
- * Logger root for pi-linkup after removing the package log shim.
+ * Logger root for pi-search-fetch after removing the package log shim.
  *
  * @example
  * ```ts
  * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
  * ```
  */
-const linkupLogger = tagged({ tag: 'pi-linkup', },);
+const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 //region Constants
 
 /**
  * Public Linkup search tool name.
  */
-const LINKUP_WEB_SEARCH_TOOL_NAME = 'linkup_web_search' as const;
+const LINKUP_WEB_SEARCH_TOOL_NAME = 'web_search' as const;
 
 /**
  * Public Linkup fetch tool name.
  */
-const LINKUP_WEB_FETCH_TOOL_NAME = 'linkup_web_fetch' as const;
+const LINKUP_WEB_FETCH_TOOL_NAME = 'web_fetch' as const;
 
 /**
  * Supported search input keys.
@@ -80,12 +82,12 @@ const FETCH_SUPPORTED_KEYS = [
 /**
  * Search ignored-key fixed behavior text.
  */
-const SEARCH_FIXED_BEHAVIOR: string = 'This extension always uses depth="standard", outputType="searchResults", the configured global blocklist, and no per-search result-count controls.';
+const SEARCH_FIXED_BEHAVIOR: string = 'This extension uses Exa fast search first, Linkup standard search as fallback, the configured global blocklist, and no per-search result-count controls.';
 
 /**
  * Fetch ignored-key fixed behavior text.
  */
-const FETCH_FIXED_BEHAVIOR: string = 'This extension always uses renderJs=true, extractImages=false, and includeRawHtml=false.';
+const FETCH_FIXED_BEHAVIOR: string = 'This extension uses Linkup renderJs fetch first and may fall back to Exa contents.';
 
 //endregion Constants
 
@@ -121,19 +123,19 @@ const LinkupWebSearchParametersSchema: TObject<{
   toDate: TOptional<TString>;
 }> = typeObject({
   query: typeString({
-    description: 'Search query sent to Linkup as q. Be specific and include names, dates, versions, or locations when relevant.',
+    description: 'Search query sent to Exa first and Linkup fallback. Be specific and include names, dates, versions, or locations when relevant.',
   },),
   fromDate: typeOptional(typeString({
-    description: 'Optional ISO date forwarded to Linkup as fromDate.',
+    description: 'Optional ISO date forwarded to providers as a start date.',
   },),),
   includeDomains: typeOptional(typeArray(
     typeString(),
     {
-    description: 'Optional domain allow-list forwarded to Linkup as includeDomains.',
+    description: 'Optional domain allow-list forwarded to providers as includeDomains.',
   },
   ),),
   toDate: typeOptional(typeString({
-    description: 'Optional ISO date forwarded to Linkup as toDate.',
+    description: 'Optional ISO date forwarded to providers as an end date.',
   },),),
 },);
 
@@ -144,7 +146,7 @@ const LinkupWebFetchParametersSchema: TObject<{
   url: TString;
 }> = typeObject({
   url: typeString({
-    description: 'Absolute URL to fetch with Linkup.',
+    description: 'Absolute URL to fetch with Linkup first and Exa fallback.',
   },),
 },);
 
@@ -187,7 +189,7 @@ type LinkupWebFetchParams = {
 /**
  * Minimal client surface used by tool execution.
  */
-type LinkupToolClient = Pick<LinkupClient, 'search' | 'fetch'>;
+type LinkupToolClient = Pick<SearchFetchClient, 'search' | 'fetch'>;
 
 /**
  * Options for creating Linkup tools.
@@ -254,14 +256,14 @@ function createLinkupWebSearchTool(
 ): ToolDefinition<typeof LinkupWebSearchParametersSchema, LinkupToolDetails> {
   return defineTool({
     name: LINKUP_WEB_SEARCH_TOOL_NAME,
-    label: 'Linkup Web Search',
-    description: `Search the web with Linkup POST /v1/search. Always uses depth="standard", outputType="searchResults", and the configured global blocklist. Exact {"results":[...]} responses whose results are objects are returned as JSONL from the inner results array; other output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
-    promptSnippet: 'Search the web with Linkup using standard depth, searchResults output, and the global blocklist.',
+    label: 'Web Search',
+    description: `Search the web with Exa fast search first and Linkup standard search fallback. Uses the configured global blocklist. Exact {"results":[...]} responses whose results are objects are returned as JSONL from the inner results array; other output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
+    promptSnippet: 'Search the web with Exa fast search first, Linkup fallback, and the global blocklist.',
     promptGuidelines: [
-      'Use linkup_web_search to discover sources across the web before fetching a specific page.',
-      'linkup_web_search always uses depth="standard" and outputType="searchResults"; do not rely on fast, deep, web-answer, limit, or maxResults controls.',
-      'linkup_web_search applies the configured global blocklist to Linkup excludeDomains and locally removes blocked result hosts after Linkup responds.',
-      'linkup_web_search returns exact {"results":[...]} responses whose results are objects as one JSON object per line from the inner results array.',
+      'Use web_search to discover sources across the web before fetching a specific page.',
+      'web_search uses Exa type="fast" first and Linkup depth="standard" fallback; do not rely on deep, web-answer, limit, or maxResults controls.',
+      'web_search applies the configured global blocklist locally after providers respond.',
+      'web_search returns exact {"results":[...]} responses whose results are objects as one JSON object per line from the inner results array.',
     ],
     parameters: LinkupWebSearchParametersSchema,
     async execute(
@@ -295,7 +297,7 @@ function createLinkupWebSearchTool(
       onUpdate?.({
         content: [{
           type: 'text',
-          text: `Searching Linkup for: ${searchInput.query}`,
+          text: `Searching web for: ${searchInput.query}`,
         },],
         details: {
           linkupResponse: undefined,
@@ -308,9 +310,9 @@ function createLinkupWebSearchTool(
         innerL.warn(`ignoring search parameters: ${ignoredKeys.join(', ',)}`,);
 
       /**
-       * Untouched upstream Linkup response.
+       * Provider-tagged upstream response.
        */
-      const rawLinkupResponse = await options.client
+      const providerResponse = await options.client
         .search({
         input: searchInput,
         ...(signal === undefined ? {} : { signal, }),
@@ -319,7 +321,7 @@ function createLinkupWebSearchTool(
        * Local policy-filtered response.
        */
       const filtered = filterBlockedSearchResults({
-        response: rawLinkupResponse,
+        response: providerResponse.response,
         blocklist: options.config
           .blocklist,
       },);
@@ -332,6 +334,8 @@ function createLinkupWebSearchTool(
         fixedBehavior: SEARCH_FIXED_BEHAVIOR,
         renderResultsArrayAsJsonl: true,
         removedBlockedUrls: filtered.removedBlockedUrls,
+        provider: providerResponse.provider,
+        ...(providerResponse.fallback === undefined ? {} : { fallback: providerResponse.fallback, }),
       },);
     },
   },);
@@ -349,14 +353,14 @@ function createLinkupWebFetchTool(
 ): ToolDefinition<typeof LinkupWebFetchParametersSchema, LinkupToolDetails> {
   return defineTool({
     name: LINKUP_WEB_FETCH_TOOL_NAME,
-    label: 'Linkup Web Fetch',
-    description: `Fetch one page with Linkup POST /v1/fetch. Always uses renderJs=true, extractImages=false, and includeRawHtml=false. Blocked hosts throw before Linkup is called. Output is raw markdown when Linkup returns only a markdown field; otherwise JSON. Model-visible output may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
-    promptSnippet: 'Fetch a known URL with Linkup using renderJs=true and the global blocklist preflight.',
+    label: 'Web Fetch',
+    description: `Fetch one page with Linkup renderJs first and Exa contents fallback. Blocked hosts throw before providers are called. Output is raw markdown when Linkup returns only a markdown field; otherwise JSON. Model-visible output may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
+    promptSnippet: 'Fetch a known URL with Linkup renderJs first, Exa fallback, and the global blocklist preflight.',
     promptGuidelines: [
-      'Use linkup_web_fetch when the URL is already known and the goal is to read Linkup-fetched page content.',
-      'linkup_web_fetch always sends renderJs=true, extractImages=false, and includeRawHtml=false; unsupported fetch knobs are ignored with a warning.',
-      'linkup_web_fetch returns raw markdown when Linkup responds with only a markdown field; otherwise it returns JSON.',
-      'linkup_web_fetch refuses configured blocked hosts before any Linkup network request is made.',
+      'Use web_fetch when the URL is already known and the goal is to read page content.',
+      'web_fetch uses Linkup renderJs=true first and Exa contents fallback; unsupported fetch knobs are ignored with a warning.',
+      'web_fetch returns raw markdown when Linkup responds with only a markdown field; otherwise it returns JSON.',
+      'web_fetch refuses configured blocked hosts before any provider network request is made.',
     ],
     parameters: LinkupWebFetchParametersSchema,
     async execute(
@@ -396,12 +400,12 @@ function createLinkupWebFetchTool(
       },);
 
       if (blockedEntry.blocked)
-        throw new Error(`Blocked by pi-linkup blocklist: ${blockedEntry.entry}`,);
+        throw new Error(`Blocked by pi-search-fetch blocklist: ${blockedEntry.entry}`,);
 
       onUpdate?.({
         content: [{
           type: 'text',
-          text: `Fetching with Linkup: ${fetchInput.url}`,
+          text: `Fetching URL: ${fetchInput.url}`,
         },],
         details: {
           linkupResponse: undefined,
@@ -414,9 +418,9 @@ function createLinkupWebFetchTool(
         innerL.warn(`ignoring fetch parameters: ${ignoredKeys.join(', ',)}`,);
 
       /**
-       * Untouched upstream Linkup response.
+       * Provider-tagged upstream response.
        */
-      const rawLinkupResponse = await options.client
+      const providerResponse = await options.client
         .fetch({
         input: fetchInput,
         ...(signal === undefined ? {} : { signal, }),
@@ -424,10 +428,12 @@ function createLinkupWebFetchTool(
 
       return createLinkupToolOutput({
         toolName: LINKUP_WEB_FETCH_TOOL_NAME,
-        linkupResponse: rawLinkupResponse,
-        rawLinkupResponse,
+        linkupResponse: providerResponse.response,
+        rawLinkupResponse: providerResponse.response,
         ignoredKeys,
         fixedBehavior: FETCH_FIXED_BEHAVIOR,
+        provider: providerResponse.provider,
+        ...(providerResponse.fallback === undefined ? {} : { fallback: providerResponse.fallback, }),
       },);
     },
   },);

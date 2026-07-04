@@ -1,5 +1,5 @@
 /**
- * Verifies built Pi Linkup extension registers expected Pi resources.
+ * Verifies built Pi Search Fetch extension registers expected Pi resources.
  *
  * @module
  */
@@ -32,14 +32,14 @@ const EXPECTED_REGISTRATIONS = [
 /**
  * Temp home prefix for isolated config loading.
  */
-const TEMP_HOME_PREFIX = 'pi-linkup-verify-';
+const TEMP_HOME_PREFIX = 'pi-search-fetch-verify-';
 
 //endregion Constants
 
 //region Types
 
 /**
- * Built Pi Linkup extension module shape.
+ * Built Pi Search Fetch extension module shape.
  */
 type LinkupExtensionModule = {
   /**
@@ -75,7 +75,7 @@ async function verifyBuiltExtension(): Promise<string> {
    */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isLinkupExtensionModule(mod,))
-    throw new Error('built Pi Linkup extension does not export a default extension factory');
+    throw new Error('built Pi Search Fetch extension does not export a default extension factory');
 
   /**
    * Fake Pi API and its registration call log.
@@ -94,7 +94,7 @@ async function verifyBuiltExtension(): Promise<string> {
     return !registrations.includes(expected,);
   },);
   if (missing.length > 0)
-    throw new Error(`missing Pi Linkup registrations: ${missing.join(', ',)}`,);
+    throw new Error(`missing Pi Search Fetch registrations: ${missing.join(', ',)}`,);
 
   /**
    * Unexpected registrations observed.
@@ -103,13 +103,13 @@ async function verifyBuiltExtension(): Promise<string> {
     return !isExpectedRegistration(registration,);
   },);
   if (unexpected.length > 0)
-    throw new Error(`unexpected Pi Linkup registrations: ${unexpected.join(', ',)}`,);
+    throw new Error(`unexpected Pi Search Fetch registrations: ${unexpected.join(', ',)}`,);
 
-  return `Pi Linkup extension verified: ${registrations.join(', ',)}`;
+  return `Pi Search Fetch extension verified: ${registrations.join(', ',)}`;
 }
 
 /**
- * Detect built Pi Linkup extension module shape.
+ * Detect built Pi Search Fetch extension module shape.
  *
  * @param value - imported module namespace
  *

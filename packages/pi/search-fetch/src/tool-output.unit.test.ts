@@ -1,5 +1,5 @@
 /**
- * Unit tests for Pi Linkup tool output helpers.
+ * Unit tests for Pi Search Fetch tool output helpers.
  *
  * @module
  */

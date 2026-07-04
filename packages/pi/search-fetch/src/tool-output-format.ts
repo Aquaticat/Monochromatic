@@ -1,5 +1,5 @@
 /**
- * Model-visible response format helpers for Pi Linkup tool output.
+ * Model-visible response format helpers for Pi Search Fetch tool output.
  *
  * @module
  */

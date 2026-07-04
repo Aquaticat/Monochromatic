@@ -22,14 +22,14 @@ import type {
 } from './client-types.ts';
 
 /**
- * Logger root for pi-linkup after removing the package log shim.
+ * Logger root for pi-search-fetch after removing the package log shim.
  *
  * @example
  * ```ts
  * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
  * ```
  */
-const linkupLogger = tagged({ tag: 'pi-linkup', },);
+const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 /**
  * Module logger.
@@ -198,7 +198,7 @@ function apiKeyForEndpoint(
 ): string {
   if ((apiKey === undefined) || (apiKey.trim() === ''))
     throw new Error(
-      `Linkup ${endpoint} missing API key. Set LINKUP_API_KEY or apiKey in pi-linkup.json.`,
+      `Linkup ${endpoint} missing API key. Set LINKUP_API_KEY or linkupApiKey in pi-search-fetch.json.`,
     );
   return apiKey;
 }

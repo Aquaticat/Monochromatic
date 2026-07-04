@@ -1,5 +1,5 @@
 /**
- * Unit tests for Pi Linkup domain policy helpers.
+ * Unit tests for Pi Search Fetch domain policy helpers.
  *
  * @module
  */

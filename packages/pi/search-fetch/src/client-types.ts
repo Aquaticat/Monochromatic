@@ -13,7 +13,7 @@ import type {
 } from './client-constants.ts';
 
 /**
- * Model-facing search input supported by Pi Linkup.
+ * Model-facing search input supported by Pi Search Fetch.
  */
 type LinkupWebSearchInput = {
   /**
@@ -35,7 +35,7 @@ type LinkupWebSearchInput = {
 };
 
 /**
- * Model-facing fetch input supported by Pi Linkup.
+ * Model-facing fetch input supported by Pi Search Fetch.
  */
 type LinkupWebFetchInput = {
   /**

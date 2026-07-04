@@ -1,20 +1,20 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Host-suffix blocklist normalization and matching for Pi Linkup.
+ * Host-suffix blocklist normalization and matching for Pi Search Fetch.
  *
  * @module
  */
 
 /**
- * Logger root for pi-linkup after removing the package log shim.
+ * Logger root for pi-search-fetch after removing the package log shim.
  *
  * @example
  * ```ts
  * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
  * ```
  */
-const linkupLogger = tagged({ tag: 'pi-linkup', },);
+const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 //region Constants
 
@@ -457,7 +457,7 @@ function parsePolicyUrl(url: string,): URL {
       ? error.message
       : String(error,);
     throw new Error(
-      `Invalid URL for pi-linkup blocklist check: ${url}. ${detail}`,
+      `Invalid URL for pi-search-fetch blocklist check: ${url}. ${detail}`,
       { cause: error, },
     );
   }

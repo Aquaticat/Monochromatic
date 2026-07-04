@@ -1,5 +1,5 @@
 /**
- * Unit tests for Pi Linkup tool definitions.
+ * Unit tests for Pi Search Fetch tool definitions.
  *
  * @module
  */
@@ -39,7 +39,7 @@ const CONFIG: LinkupConfig = {
   apiKey: 'key',
   blocklist: [BLOCKED_HOST,],
   source: {
-    path: '/home/test/.pi/agent/extensions/pi-linkup.json',
+    path: '/home/test/.pi/agent/extensions/pi-search-fetch.json',
     loaded: true,
   },
 };
@@ -256,7 +256,7 @@ await describe({
         }
 
         expect(caught,).toBeInstanceOf(Error,);
-        expect((caught as Error).message,).toContain(`Blocked by pi-linkup blocklist: ${BLOCKED_HOST}`,);
+        expect((caught as Error).message,).toContain(`Blocked by pi-search-fetch blocklist: ${BLOCKED_HOST}`,);
         expect(mock.fetchCalls,).toHaveLength(0,);
       },
     },),

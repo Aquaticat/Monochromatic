@@ -1,5 +1,5 @@
 /**
- * Unit tests for Pi Linkup config loading.
+ * Unit tests for Pi Search Fetch config loading.
  *
  * @module
  */
@@ -150,7 +150,7 @@ await describe({
         }
 
         expect(caught,).toBeInstanceOf(Error,);
-        expect((caught as Error).message,).toContain('pi-linkup.json',);
+        expect((caught as Error).message,).toContain('pi-search-fetch.json',);
         expect((caught as Error).message,).toContain('parsing',);
         expect((caught as Error).message,).toContain(configPath,);
       },
@@ -181,7 +181,7 @@ await describe({
         }
 
         expect(caught,).toBeInstanceOf(Error,);
-        expect((caught as Error).message,).toContain('pi-linkup.json',);
+        expect((caught as Error).message,).toContain('pi-search-fetch.json',);
         expect((caught as Error).message,).toContain('blocklist normalization',);
         expect((caught as Error).message,).toContain(INVALID_BLOCKLIST_ENTRY,);
       },
@@ -199,12 +199,12 @@ await describe({
 async function tempHome(): Promise<string> {
   return mkdtemp(join(
     tmpdir(),
-    'pi-linkup-config-test-',
+    'pi-search-fetch-config-test-',
   ),);
 }
 
 /**
- * Write Pi Linkup config under a temp home.
+ * Write Pi Search Fetch config under a temp home.
  *
  * @param home - temp home directory
  *

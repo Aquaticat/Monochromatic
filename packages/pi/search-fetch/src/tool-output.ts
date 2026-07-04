@@ -1,5 +1,5 @@
 /**
- * Tool-result content helpers for Pi Linkup.
+ * Tool-result content helpers for Pi Search Fetch.
  *
  * @module
  */
@@ -22,24 +22,28 @@ import {
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import type {
+  ProviderFallback,
+  SearchFetchProvider,
+} from './search-fetch-client.ts';
 import { modelTextForLinkupResponse, } from './tool-output-format.ts';
 
 /**
- * Logger root for pi-linkup after removing the package log shim.
+ * Logger root for pi-search-fetch after removing the package log shim.
  *
  * @example
  * ```ts
  * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
  * ```
  */
-const linkupLogger = tagged({ tag: 'pi-linkup', },);
+const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 //region Constants
 
 /**
  * Prefix used for temp directories that hold full response output.
  */
-const TEMP_RESPONSE_DIR_PREFIX = 'pi-linkup-response-';
+const TEMP_RESPONSE_DIR_PREFIX = 'pi-search-fetch-response-';
 
 /**
  * Number of random bytes added to temp directory prefix.
@@ -88,9 +92,17 @@ type LinkupToolDetails = {
    */
   readonly linkupResponse: unknown;
   /**
-   * Untouched upstream Linkup response.
+   * Untouched upstream provider response.
    */
   readonly rawLinkupResponse: unknown;
+  /**
+   * Provider that produced response.
+   */
+  readonly provider?: SearchFetchProvider;
+  /**
+   * Fallback metadata when fallback provider produced response.
+   */
+  readonly fallback?: ProviderFallback;
   /**
    * Ignored compatibility keys, when supplied.
    */
@@ -176,13 +188,21 @@ type LinkupToolOutputOptions = {
    */
   readonly linkupResponse: unknown;
   /**
-   * Untouched upstream Linkup response object.
+   * Untouched upstream provider response object.
    */
   readonly rawLinkupResponse: unknown;
   /**
    * Ignored compatibility keys.
    */
   readonly ignoredKeys: readonly string[];
+  /**
+   * Provider that produced response.
+   */
+  readonly provider?: SearchFetchProvider;
+  /**
+   * Fallback metadata when fallback provider produced response.
+   */
+  readonly fallback?: ProviderFallback;
   /**
    * Fixed behavior explanation for ignored-key warning.
    */
@@ -264,6 +284,8 @@ async function createLinkupToolOutput(
     details: {
       linkupResponse: options.linkupResponse,
       rawLinkupResponse: options.rawLinkupResponse,
+      ...(options.provider === undefined ? {} : { provider: options.provider, }),
+      ...(options.fallback === undefined ? {} : { fallback: options.fallback, }),
       ...(options.ignoredKeys
         .length
         === 0 ? {} : { ignoredKeys: options.ignoredKeys, }),
