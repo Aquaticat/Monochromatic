@@ -110,11 +110,58 @@ async function writeSmokeFile(options: {
 const WORKSPACE_SCOPE_PREFIX = '@monochromatic-dev/';
 
 /**
+ * Returns whether one installed dependency declares a `./ts` export.
+ *
+ * Not every workspace package exposes source through a `./ts` subpath
+ * (config packages like config-tsdown do not), so the smoke must consult
+ * each dependency's own manifest instead of assuming the convention.
+ *
+ * @param options - Target package cwd and dependency name.
+ *
+ * @returns Whether `<name>/ts` is resolvable by exports.
+ *
+ * @example
+ * ```ts
+ * await hasTsExport({ packageCwd: '/work/packages/module/fs-path', name: '@monochromatic-dev/module-logger' });
+ * // true
+ * ```
+ */
+async function hasTsExport(options: {
+  readonly packageCwd: string;
+  readonly name: string;
+},): Promise<boolean> {
+  try {
+    /**
+     * Parsed dependency manifest resolved through the package's own
+     * node_modules so pnpm's isolated layout is honored.
+     */
+    const manifest = JSON.parse(await readFile(
+      join(
+        options.packageCwd,
+        'node_modules',
+        options.name,
+        'package.json',
+      ),
+      'utf8',
+    ),) as {
+      readonly exports?: Readonly<Record<string, unknown>>;
+    };
+    return (manifest.exports !== undefined)
+      && (manifest.exports['./ts'] !== undefined);
+  }
+  catch (error) {
+    console.warn(`[mutation-test] ts-export probe failed for ${options.name}: ${String(error,)}`,);
+    return false;
+  }
+}
+
+/**
  * Reads workspace `/ts` import specs declared by target package's manifest.
  *
  * Derived from `dependencies` plus `devDependencies` so the smoke only
  * exercises imports the package can actually resolve; a hardcoded spec list
- * fails packages that lack those specific dependencies.
+ * fails packages that lack those specific dependencies. Dependencies whose
+ * exports omit `./ts` are skipped rather than failing the smoke.
  *
  * @param packageCwd - Target package cwd inside `/work`.
  *
@@ -141,15 +188,41 @@ async function workspaceImportSpecs(packageCwd: string,): Promise<readonly strin
     readonly devDependencies?: Readonly<Record<string, string>>;
   };
 
-  return Object.keys({
+  /**
+   * Workspace-scoped dependency names from both dependency blocks.
+   */
+  const workspaceNames = Object.keys({
     ...manifest.dependencies,
     ...manifest.devDependencies,
   },)
     .filter(function isWorkspacePackage(name,): boolean {
       return name.startsWith(WORKSPACE_SCOPE_PREFIX,);
+    },);
+
+  /**
+   * Per-dependency `./ts` export availability, resolved concurrently.
+   */
+  const exportChecks = await Promise.all(workspaceNames.map(
+    async function checkTsExport(name,): Promise<readonly [
+      string,
+      boolean,
+    ]> {
+      return [
+        name,
+        await hasTsExport({
+          packageCwd,
+          name,
+        },),
+      ];
+    },
+  ),);
+
+  return exportChecks
+    .filter(function keepExported(entry,): boolean {
+      return entry[1];
     },)
-    .map(function toTsSpec(name,): string {
-      return `${name}/ts`;
+    .map(function toTsSpec(entry,): string {
+      return `${entry[0]}/ts`;
     },);
 }
 
