@@ -147,7 +147,7 @@ impl fmt::Display for CacheError {
 }
 
 /// What:     `impl std::error::Error for CacheError {}`. Opt into the std error trait.
-/// Why:      Participate in `?` and `Box<dyn Error>` interop.
+/// Why:      Participate in `?` propagation and generic std error reporting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

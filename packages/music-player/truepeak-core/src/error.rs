@@ -125,8 +125,8 @@ impl fmt::Display for TruePeakError {
 
 /// What:     `impl std::error::Error for TruePeakError {}`. An empty impl opting the
 ///           type into the standard error trait (default methods suffice).
-/// Why:      Lets `TruePeakError` participate in `?` propagation and `Box<dyn Error>`
-///           interop the way any std error does.
+/// Why:      Lets `TruePeakError` participate in `?` propagation and generic std
+///           error reporting the way any standard error does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

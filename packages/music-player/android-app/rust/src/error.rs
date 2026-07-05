@@ -308,9 +308,8 @@ impl fmt::Display for PlayerError {
 ///           "real" error implements. The body is empty `{}`, which means we accept
 ///           every default method the trait provides (notably we do NOT override
 ///           `source()`, so we expose no underlying cause chain).
-/// Why:      With this, `PlayerError` can be stored in a `Box<dyn Error>` and
-///           accepted by any caller that wants a generic standard error, and `?`
-///           can propagate it into such contexts.
+/// Why:      With this, `PlayerError` can be accepted by any caller that wants a
+///           generic standard error, and `?` can propagate it into such contexts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

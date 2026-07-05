@@ -248,7 +248,7 @@ impl fmt::Display for PlayerError {
 /// What:     `impl std::error::Error for PlayerError {}` marks the type as a STANDARD
 ///           error. The empty `{}` body accepts every default method (no custom
 ///           `source()` / cause chain).
-/// Why:      Lets `PlayerError` interoperate with `Box<dyn Error>` and `?` in callers
+/// Why:      Lets `PlayerError` interoperate with `anyhow::Error` and `?` in callers
 ///           that want a generic error.
 ///
 /// In TS you'd write (pseudocode):
