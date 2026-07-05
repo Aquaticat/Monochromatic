@@ -70,6 +70,17 @@ use clap::Parser;
 /// Imports gitignore-aware directory walker.
 use ignore::WalkBuilder;
 
+// What:     `use anyhow::Result;` imports `anyhow`'s one-parameter result alias.
+// Why:      Preserve the compatibility entry point's fallible shape without a
+//           string-only error channel.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type Result<T> = T; // failures throw Error objects
+// ```
+/// Imports application-level result alias for compatibility entry point.
+use anyhow::Result;
+
 // What:     `use crate::cli::Cli;` imports the clap-backed parser output from
 //           this crate. `crate::` means "from the root of this same crate".
 // Why:      The run loop receives already-validated command-line options.
@@ -100,8 +111,8 @@ use crate::diagnostic::{Diagnostic, Severity};
 use crate::rule::{all_rules, Rule};
 
 /// Parse real process arguments with clap, then run the linter.
-// What:     `pub fn run_cli_from_env() -> Result<i32, String>` preserves the old
-//           public entry-point shape. `Result<i32, String>` can still represent a
+// What:     `pub fn run_cli_from_env() -> Result<i32>` preserves the old
+//           public entry-point shape. `Result<i32>` can still represent a
 //           fatal setup error, though clap handles argument errors by printing and
 //           exiting before this function returns.
 // Why:      External callers that used `run_cli_from_env` keep compiling while the
@@ -111,7 +122,7 @@ use crate::rule::{all_rules, Rule};
 // ```ts
 // export function runCliFromEnv(): number { return runCli(parseArgs(process.argv)); }
 // ```
-pub fn run_cli_from_env() -> Result<i32, String> {
+pub fn run_cli_from_env() -> Result<i32> {
     // What:     `let cli = Cli::parse();` calls the clap-generated parser. `::` is
     //           Rust's namespace operator. `parse()` reads real process argv; on
     //           `--help`, `--version`, or invalid input, clap prints and exits the
