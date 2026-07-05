@@ -95,6 +95,20 @@ The result:
 The remaining spike simplifications are the synthetic pixel data and the single worker thread;
  a real build would read files from disk and could widen the worker pool.
 
+## Row context menu (Slint issue #12354 workaround)
+
+A directory row's `TouchArea` grabs the right-click before the wrapping `ContextMenuArea` sees it,
+ so the built-in menu never opens on a row.
+The row forwards its own right-press to `context-menu.show(...)`,
+ translating the click into the area's coordinate space,
+ and Rust records the clicked `(pane, row)` so a chosen command carries a deterministic identity
+ (shown in the HUD and logged).
+The dedicated Menu key opens the menu everywhere;
+ Slint wires `Shift+F10` only on Windows,
+ so the pane `FocusScope` adds it for cross-platform parity.
+Full diagnosis, source trace, and the coordinate maths are in
+ `docs/troubleshooting/slint-contextmenuarea-listview-rows.md`.
+
 ## Architecture
 
 - `src/strip.rs`:
@@ -119,6 +133,9 @@ The remaining spike simplifications are the synthetic pixel data and the single 
 - `src/model_sync.rs`:
    the incremental model-mutation mechanics (slide columns in/out, refresh rows in place, count residents),
  split from `controller.rs` for the line budget.
+- `src/menu.rs`:
+   the row context-menu handlers (activate a row, keyboard menu key, run a command),
+ the Rust half of the Slint issue `#12354` workaround.
 - `src/app.rs`:
    the backend install,
  callback wiring,
@@ -177,11 +194,16 @@ mise run //packages/desktop-app/file-manager:mcp
 The MCP server binds `127.0.0.1:9317`.
 The HUD strings are readable with `get_element_properties` on the `AppWindow::hud-a`,
  `AppWindow::hud-b`,
- and `AppWindow::hud-c` elements
-(the text arrives in the `accessibleLabel` field);
+ `AppWindow::hud-c`,
+ and `AppWindow::hud-d` elements
+(the text arrives in the `accessibleLabel` field;
+ `hud-d` is the last menu command plus the identity it targeted);
  the `h-slider`,
  `v-slider`,
- and `btn-*` elements drive scrolling and navigation.
+ and `btn-*` elements drive scrolling and navigation
+(`btn-menu` opens the context menu on the active pane).
+The row `TouchArea`s share the id `AppWindow::touch`;
+ `click_element` one with `button: "Right"` opens the row's context menu.
 
 ## Testing seams
 
