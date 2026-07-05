@@ -48,7 +48,7 @@ use crate::state::Compositor;
 /// ```ts
 /// const CLEAR_COLOR = [0.1, 0.1, 0.1, 1.0];
 /// ```
-const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
+pub const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
 
 /// Composite the hosted window into the nested framebuffer and present one frame.
 ///

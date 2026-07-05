@@ -37,6 +37,7 @@ use crate::{
     backend::{init_backend, OUTPUT_REFRESH_MHZ},
     child::{register_exit_poll, spawn_child},
     cli::Config,
+    control,
     handlers::xdg_shell::reconfigure_fullscreen,
     render::redraw,
     state::Compositor,
@@ -116,6 +117,14 @@ pub fn run(config: Config) -> Result<i32> {
             handle_winit_event(event, state);
         })
         .map_err(|err| anyhow::anyhow!("registering the winit source failed: {err}"))?;
+
+    // What:     `if let Some(socket_path) = &config.control_socket { control::start(
+    //           &loop_handle, socket_path)?; }`. When a control socket was requested, bind
+    //           it and spawn the control thread; `?` propagates a bind failure.
+    // Why:      Enable the screenshot/input/resize control API only when asked.
+    if let Some(socket_path) = &config.control_socket {
+        control::start(&loop_handle, socket_path)?;
+    }
 
     // What:     `register_exit_poll(&loop_handle);`. Insert the periodic child-exit poll.
     // Why:      Stop the loop when the hosted client exits.

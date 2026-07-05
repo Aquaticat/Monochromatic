@@ -33,6 +33,51 @@ pub mod backend;
 /// ```
 pub mod child;
 
+/// What:     `pub mod control;`. Declares the Unix-socket control API module.
+/// Why:      Parses control commands and runs them (screenshot, input, resize, quit).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as control from "./control";
+/// ```
+pub mod control;
+
+/// What:     `pub mod input;`. Declares the synthetic input-injection module.
+/// Why:      Turns click/key/type commands into seat events.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as input from "./input";
+/// ```
+pub mod input;
+
+/// What:     `pub mod keymap;`. Declares the US-layout keycode tables.
+/// Why:      Maps characters and key names to evdev keycodes; display-independent.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as keymap from "./keymap";
+/// ```
+pub mod keymap;
+
+/// What:     `pub mod protocol;`. Declares the control-protocol parsing module.
+/// Why:      Parses request lines and formats response lines; display-independent.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as protocol from "./protocol";
+/// ```
+pub mod protocol;
+
+/// What:     `pub mod screenshot;`. Declares the framebuffer-readback module.
+/// Why:      Renders a frame and encodes it as a PNG.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as screenshot from "./screenshot";
+/// ```
+pub mod screenshot;
+
 /// What:     `pub mod cli;`. Declares the argument-parsing module.
 /// Why:      Turns raw arguments into a validated `Config`; display-independent and
 ///           unit-tested.
