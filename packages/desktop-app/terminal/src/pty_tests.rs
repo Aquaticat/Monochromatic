@@ -25,9 +25,14 @@ use portable_pty::CommandBuilder;
 // What:     `use std::{...};` imports channels and timeouts for the test.
 // Why:      The test waits for output without blocking forever.
 use std::{sync::mpsc, time::Duration};
+// What:     `use anyhow::Result;` imports the same one-parameter error result
+//           alias the production PTY functions return.
+// Why:      The test can use `?` across PTY, channel, and UTF-8-adjacent helpers
+//           without naming one boxed trait-object error type.
+use anyhow::Result;
 
 #[test]
-fn spawns_command_and_reads_output() -> Result<(), Box<dyn std::error::Error>> {
+fn spawns_command_and_reads_output() -> Result<()> {
     let geometry = ViewportGeometry {
         cols: 20,
         rows: 4,

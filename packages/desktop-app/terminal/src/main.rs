@@ -15,6 +15,18 @@ mod stderr_filter;
 // ```
 slint::include_modules!();
 
+/// What:     `use anyhow::Result;` imports `anyhow`'s one-parameter
+///           application error result alias. Sibling typed results name their
+///           exact error type, for example `Result<T, slint::PlatformError>`.
+/// Why:      The binary and callbacks propagate several unrelated error types
+///           through one user-facing error channel.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Result<T> = T; // thrown Error objects carry failure details
+/// ```
+use anyhow::Result;
+
 /// What:     `use std::cell::RefCell;` imports a single-thread interior-mutability
 ///           wrapper. Sibling `Cell` handles `Copy` values only; `Mutex` is for
 ///           cross-thread mutation.
@@ -103,10 +115,10 @@ const MAX_SCROLLBACK_ROWS: usize = 10_000;
 /// Why:      Around 60Hz keeps prompt/output latency low without busy waiting.
 const OUTPUT_POLL_INTERVAL_MS: u64 = 16;
 
-/// What:     `fn install_backend() -> Result<(), slint::PlatformError>` builds and
-///           installs the explicit Slint platform backend.
+/// What:     `fn install_backend() -> Result<()>` builds and installs the explicit
+///           Slint platform backend, returning `anyhow::Error` on failure.
 /// Why:      The Wayland app id must be stamped before the window is created.
-fn install_backend() -> Result<(), slint::PlatformError> {
+fn install_backend() -> Result<()> {
     // What:     `if std::env::var_os("SLINT_MCP_PORT").is_some() { return Ok(()); }`
     //           bail out WITHOUT installing an explicit platform.
     // Why:      Slint 1.17's embedded MCP server (the `slint/mcp` feature activated by
@@ -220,14 +232,14 @@ fn apply_snapshot(app: &AppWindow, snapshot: TerminalSnapshot) {
     app.set_status(SharedString::from(status.as_str()));
 }
 
-/// What:     `fn refresh_from_scroll(...) -> Result<(), Box<dyn std::error::Error>>`
-///           handles one Slint pixel-scroll notification.
+/// What:     `fn refresh_from_scroll(...) -> Result<()>` handles one Slint
+///           pixel-scroll notification, returning `anyhow::Error` on failure.
 /// Why:      It keeps callback bodies short and testable by inspection.
 fn refresh_from_scroll(
     app: &AppWindow,
     engine: &Rc<RefCell<TerminalEngine>>,
     pixel_scroll: f32,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     // What:     `engine.borrow_mut()` takes a checked mutable borrow from `RefCell`.
     // Why:      The shared `Rc` engine can still be mutated inside callbacks.
     let mut engine = engine.borrow_mut();
@@ -246,8 +258,8 @@ fn refresh_from_scroll(
     Ok(())
 }
 
-/// What:     `fn refresh_from_resize(...) -> Result<(), Box<dyn Error>>` handles
-///           Slint viewport-size and cell-metric notifications.
+/// What:     `fn refresh_from_resize(...) -> Result<()>` handles Slint
+///           viewport-size and cell-metric notifications through `anyhow`.
 /// Why:      Resize support must use the same measured font metrics that Slint uses
 ///           for cell placement.
 fn refresh_from_resize(
@@ -258,7 +270,7 @@ fn refresh_from_resize(
     height_px: f32,
     cell_width_px: f32,
     cell_height_px: f32,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     let geometry = ViewportGeometry::from_pixels(
         width_px,
         height_px,
@@ -276,15 +288,15 @@ fn refresh_from_resize(
     Ok(())
 }
 
-/// What:     `fn refresh_from_pty_events(...) -> Result<(), Box<dyn Error>>` drains
-///           PTY reader events and refreshes the Slint model.
+/// What:     `fn refresh_from_pty_events(...) -> Result<()>` drains PTY reader
+///           events and refreshes the Slint model through `anyhow`.
 /// Why:      The background reader cannot touch `TerminalEngine`, so the UI thread
 ///           feeds Ghostty from this timer callback.
 fn refresh_from_pty_events(
     app: &AppWindow,
     engine: &Rc<RefCell<TerminalEngine>>,
     receiver: &mpsc::Receiver<PtyEvent>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     // What:     `let mut engine = engine.borrow_mut()` takes a checked mutable
     //           borrow of the UI-thread terminal engine.
     // Why:      Feeding PTY bytes mutates Ghostty state and render state.
@@ -355,15 +367,15 @@ fn refresh_from_pty_events(
     Ok(())
 }
 
-/// What:     `fn write_terminal_key(...) -> Result<(), Box<dyn Error>>` converts one
-///           Slint key callback into PTY bytes.
+/// What:     `fn write_terminal_key(...) -> Result<()>` converts one Slint key
+///           callback into PTY bytes through the `anyhow` error channel.
 /// Why:      Keyboard input should reach the spawned shell.
 fn write_terminal_key(
     pty: &Rc<RefCell<PtySession>>,
     key_text: SharedString,
     control: bool,
     alt: bool,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     // What:     `encode_terminal_key(...)` returns bytes or `None` for ignored keys.
     // Why:      Modifier-only and unknown non-printable events should not hit the shell.
     if let Some(bytes) = encode_terminal_key(key_text.as_str(), control, alt) {
@@ -377,19 +389,19 @@ fn write_terminal_key(
     Ok(())
 }
 
-/// What:     `fn log_callback_error(context: &str, error: Box<dyn std::error::Error>)`
-///           logs fallible callback work to stderr.
+/// What:     `fn log_callback_error(context: &str, error: anyhow::Error)` logs
+///           fallible callback work to stderr.
 /// Why:      Slint callbacks cannot return errors to the event loop.
-fn log_callback_error(context: &str, error: Box<dyn std::error::Error>) {
+fn log_callback_error(context: &str, error: anyhow::Error) {
     // What:     `tracing::error!(...)` emits a structured error event to the subscriber.
     // Why:      Prototype failures should be visible when launched from a terminal.
     tracing::error!(context, error = %error, "callback error");
 }
 
-/// What:     `fn main() -> Result<(), Box<dyn std::error::Error>>` is the binary
-///           entry point. Returning `Result` lets failures become process errors.
+/// What:     `fn main() -> Result<()>` is the binary entry point using `anyhow`.
+///           Returning `Result` lets failures become process errors.
 /// Why:      No manual `process.exit` style path is needed.
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     // Install the stderr tracing subscriber (RUST_LOG, default info) before backend setup.
     tracing_subscriber::fmt()
         .with_env_filter(

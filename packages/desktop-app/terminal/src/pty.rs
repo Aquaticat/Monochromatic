@@ -11,6 +11,17 @@ use std::{
     thread,
 };
 
+/// What:     `use anyhow::Result;` imports `anyhow`'s application error result
+///           alias. Sibling typed results name the exact error type.
+/// Why:      PTY setup can fail with several upstream error types, and callers only
+///           need one propagated diagnostic channel.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Result<T> = T; // failures throw Error objects
+/// ```
+use anyhow::Result;
+
 /// What:     `use portable_pty::{...};` imports the selected PTY abstraction.
 ///           `PtySize` describes terminal dimensions, `CommandBuilder` describes
 ///           the shell process, and `MasterPty` owns the read/write side.
@@ -122,14 +133,13 @@ pub struct PtySession {
 /// What:     `impl PtySession` defines methods on the live PTY session.
 /// Why:      Keep PTY creation and IO operations in one module.
 impl PtySession {
-    /// What:     `pub fn spawn_shell(...) -> Result<Self, Box<dyn std::error::Error>>`
-    ///           creates a shell PTY and returns it or a boxed error. `Self` means
-    ///           `PtySession`.
+    /// What:     `pub fn spawn_shell(...) -> Result<Self>` creates a shell PTY and
+    ///           returns it or an `anyhow::Error`. `Self` means `PtySession`.
     /// Why:      The binary should call one function to start an interactive shell.
     pub fn spawn_shell(
         geometry: ViewportGeometry,
         event_sender: Sender<PtyEvent>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self> {
         // What:     `let shell = default_shell_path()` reads the user's shell path.
         // Why:      A terminal should start the shell the user configured.
         let shell = default_shell_path();
@@ -149,14 +159,14 @@ impl PtySession {
         Self::spawn_command(geometry, command, event_sender)
     }
 
-    /// What:     `pub fn spawn_command(...) -> Result<Self, ...>` creates a PTY around
-    ///           an arbitrary command.
+    /// What:     `pub fn spawn_command(...) -> Result<Self>` creates a PTY around an
+    ///           arbitrary command using the shared `anyhow` error channel.
     /// Why:      Tests and future command-launch options need the same PTY wiring.
     pub fn spawn_command(
         geometry: ViewportGeometry,
         command: CommandBuilder,
         event_sender: Sender<PtyEvent>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self> {
         // What:     `native_pty_system()` selects the platform PTY implementation.
         // Why:      Linux, macOS, and Windows PTYs differ behind this API.
         let pty_system = native_pty_system();
@@ -184,10 +194,10 @@ impl PtySession {
         })
     }
 
-    /// What:     `pub fn resize(&self, geometry: ViewportGeometry) -> Result...` sends
-    ///           updated terminal size to the PTY master.
+    /// What:     `pub fn resize(&self, geometry: ViewportGeometry) -> Result<()>`
+    ///           sends updated terminal size to the PTY master through `anyhow`.
     /// Why:      Shells and full-screen apps need SIGWINCH and updated rows or cols.
-    pub fn resize(&self, geometry: ViewportGeometry) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn resize(&self, geometry: ViewportGeometry) -> Result<()> {
         // What:     `self.master.resize(...)` asks the OS PTY to update its winsize.
         // Why:      Child programs read this size and repaint to the new viewport.
         self.master.resize(pty_size_from_geometry(geometry))?;

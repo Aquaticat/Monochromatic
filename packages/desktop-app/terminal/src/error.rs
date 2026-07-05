@@ -43,8 +43,8 @@ pub enum TerminalError {
         ///           tuple variant: the owned upstream error value from the
         ///           libghostty-vt crate. `::` is Rust's path separator, naming the
         ///           `Error` type inside the `libghostty_vt` crate. Sibling shape would
-        ///           be a type-erased `Box<dyn std::error::Error>`.
-        /// Why:      Keep the concrete `libghostty_vt::Error` (not a `Box<dyn Error>`)
+        ///           be a type-erased `anyhow::Error`.
+        /// Why:      Keep the concrete `libghostty_vt::Error` (not `anyhow::Error`)
         ///           so the `source()` method can hand the real upstream error back to
         ///           reporters with its exact type intact.
         ///
@@ -58,7 +58,7 @@ pub enum TerminalError {
 
 /// What:     `impl fmt::Display for TerminalError` teaches Rust how to print the
 ///           error for humans. The sibling trait is `Debug`, generated above.
-/// Why:      `Box<dyn Error>` and `eprintln!` use this text.
+/// Why:      `anyhow::Error` and `eprintln!` use this text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,7 +101,7 @@ impl fmt::Display for TerminalError {
 
 /// What:     `impl std::error::Error for TerminalError` marks the enum as a real
 ///           Rust error type. The sibling trait is `Display`, implemented above.
-/// Why:      `main` can return `Box<dyn std::error::Error>` and still carry this.
+/// Why:      `main` can return `anyhow::Error` and still carry this source chain.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
