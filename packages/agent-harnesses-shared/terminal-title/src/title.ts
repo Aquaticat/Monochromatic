@@ -7,6 +7,7 @@
 import { truncate, } from './formatters.ts';
 import {
   FIELD_ABSENT,
+  TOOL_TITLE_ENTRY_ABSENT,
   type ToolArgs,
   type ToolTitleEntry,
   type ToolTitleRegistry,
@@ -20,10 +21,11 @@ import {
  * Looks up formatter entry for a tool name.
  *
  * @param registry - because each host owns its own tool-name vocabulary
+ *
  * @param toolName - because event adapters pass host-specific tool names
  *
  * @returns matching formatter entry,
- * or `undefined` for unknown tools
+ * or {@link TOOL_TITLE_ENTRY_ABSENT} for unknown tools
  *
  * @example
  * ```ts
@@ -38,17 +40,28 @@ function lookupToolTitleEntry(
     registry: ToolTitleRegistry;
     toolName: string;
   }>,
-): ToolTitleEntry | undefined {
-  return registry[toolName];
+): ToolTitleEntry | typeof TOOL_TITLE_ENTRY_ABSENT {
+  /**
+   * Registry value for requested tool name,
+   * or JavaScript `undefined` before conversion to the domain sentinel.
+   */
+  const entry = registry[toolName];
+  if (entry === undefined)
+    return TOOL_TITLE_ENTRY_ABSENT;
+  return entry;
 }
 
 /**
  * Formats a tool title using host registry and unknown-tool fallback.
  *
  * @param registry - because known tool names differ by harness
+ *
  * @param toolName - because event adapters extract tool identity from host events
+ *
  * @param args - because formatters sample display fields from tool input
+ *
  * @param tense - because pre and post events use different wording
+ *
  * @param unknownToolTitle - because hosts intentionally differ for unknown tools
  *
  * @returns formatted title body without host prefix
@@ -86,7 +99,7 @@ function formatToolTitle(
     registry,
     toolName,
   },);
-  if (entry === undefined)
+  if (entry === TOOL_TITLE_ENTRY_ABSENT)
     return unknownToolTitle({
       toolName,
       args,
@@ -113,7 +126,9 @@ function formatToolTitle(
  * Adds host prefix and enforces maximum terminal title length.
  *
  * @param prefix - because each host has its own visual marker
+ *
  * @param body - because event adapters produce host-specific title body text
+ *
  * @param maxLength - because terminal title length budget is host policy
  *
  * @returns prefixed and truncated terminal title

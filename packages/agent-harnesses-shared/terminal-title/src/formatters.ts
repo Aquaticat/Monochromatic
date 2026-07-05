@@ -34,6 +34,7 @@ const MAX_PATTERN_LENGTH = 30;
  * appending an ellipsis when truncation is required.
  *
  * @param value - because terminal titles should stay compact
+ *
  * @param maxLength - because caller owns context-specific title budget
  *
  * @returns original string when it fits,
@@ -86,6 +87,7 @@ function shortPath(filePath: string,): string {
  * Extracts a string field from untyped tool input.
  *
  * @param input - because tool inputs arrive through host event payloads
+ *
  * @param key - because each registry entry chooses one display-relevant field
  *
  * @returns field value when it is a string,
@@ -130,10 +132,12 @@ function stringField(
  * ```
  */
 function field(key: string,): (input: ToolArgs,) => string | typeof FIELD_ABSENT {
-  return (input: ToolArgs,): string | typeof FIELD_ABSENT => stringField({
-    input,
-    key,
-  },);
+  return function extractField(input: ToolArgs,): string | typeof FIELD_ABSENT {
+    return stringField({
+      input,
+      key,
+    },);
+  };
 }
 
 /**
@@ -156,7 +160,12 @@ function pathFormat(
   value: string,
   tense: ToolTitleTense,
 ) => string {
-  return (value: string, tense: ToolTitleTense,): string => `${labels[tense]} ${shortPath(value,)}`;
+  return function formatPath(
+    value: string,
+    tense: ToolTitleTense,
+  ): string {
+    return `${labels[tense]} ${shortPath(value,)}`;
+  };
 }
 
 /**
@@ -179,12 +188,17 @@ function quotedFormat(
   value: string,
   tense: ToolTitleTense,
 ) => string {
-  return (value: string, tense: ToolTitleTense,): string => `${labels[tense]} "${
-    truncate({
-      value,
-      maxLength: MAX_PATTERN_LENGTH,
-    },)
-  }"`;
+  return function formatQuoted(
+    value: string,
+    tense: ToolTitleTense,
+  ): string {
+    return `${labels[tense]} "${
+      truncate({
+        value,
+        maxLength: MAX_PATTERN_LENGTH,
+      },)
+    }"`;
+  };
 }
 
 //endregion Primitive formatters

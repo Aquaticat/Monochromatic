@@ -50,6 +50,7 @@ function isShellWhitespace(character: string,): boolean {
  * Finds the exclusive end offset of token starting at `at`.
  *
  * @param command - because token boundaries are found within this source string
+ *
  * @param at - because caller owns current scan cursor
  *
  * @returns first whitespace offset at or after `at`,
@@ -84,6 +85,7 @@ function findTokenEnd(
  * Skips shell-boundary whitespace from `at`.
  *
  * @param command - because whitespace is skipped within this source string
+ *
  * @param at - because caller owns current scan cursor
  *
  * @returns first non-whitespace offset at or after `at`,
@@ -115,24 +117,24 @@ function skipShellWhitespace(
 }
 
 /**
- * Strips leading shell command noise from display text.
+ * Finds the offset after all leading shell command noise.
  *
- * The stripper removes environment assignments such as `FOO=bar` and wrapper
+ * The scanner removes environment assignments such as `FOO=bar` and wrapper
  * command plus argument pairs such as `timeout 5`.
  * It is a single linear scan over leading tokens and preserves the historical
  * title behavior used by both terminal-title integrations.
  *
  * @param command - because Bash-like tool titles should emphasize meaningful work
  *
- * @returns command suffix after every recognized prefix is stripped
+ * @returns offset where meaningful command text begins
  *
  * @example
  * ```ts
- * stripCommandNoise('NODE_ENV=prod timeout 5 npm test');
- * // 'npm test'
+ * findCommandNoiseEnd('NODE_ENV=prod timeout 5 npm test');
+ * // 24
  * ```
  */
-function stripCommandNoise(command: string,): string {
+function findCommandNoiseEnd(command: string,): number {
   /**
    * Cursor advanced past every stripped prefix.
    */
@@ -194,7 +196,27 @@ function stripCommandNoise(command: string,): string {
       break;
     cursor = afterArgumentWhitespace;
   }
+  return cursor;
+}
 
+/**
+ * Strips leading shell command noise from display text.
+ *
+ * @param command - because Bash-like tool titles should emphasize meaningful work
+ *
+ * @returns command suffix after every recognized prefix is stripped
+ *
+ * @example
+ * ```ts
+ * stripCommandNoise('NODE_ENV=prod timeout 5 npm test');
+ * // 'npm test'
+ * ```
+ */
+function stripCommandNoise(command: string,): string {
+  /**
+   * Offset where meaningful command text begins.
+   */
+  const cursor = findCommandNoiseEnd(command,);
   if (cursor >= command.length)
     return '';
   return command.slice(cursor,);

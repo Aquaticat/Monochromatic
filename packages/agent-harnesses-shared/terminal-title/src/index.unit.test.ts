@@ -21,6 +21,7 @@ import {
   shortPath,
   stringField,
   stripCommandNoise,
+  TOOL_TITLE_ENTRY_ABSENT,
   truncate,
   type ToolTitleRegistry,
 } from '../dist/final/node/index.mjs';
@@ -273,9 +274,11 @@ await describe({
           },
         },),
         it({
-          name: 'returns undefined for unregistered tool',
+          name: 'returns absence sentinel for unregistered tool',
           fn: async () => {
-            expect(lookupToolTitleEntry({ registry: {}, toolName: 'Unknown', },),).toBeUndefined();
+            expect(lookupToolTitleEntry({ registry: {}, toolName: 'Unknown', },),).toBe(
+              TOOL_TITLE_ENTRY_ABSENT,
+            );
           },
         },),
       ],

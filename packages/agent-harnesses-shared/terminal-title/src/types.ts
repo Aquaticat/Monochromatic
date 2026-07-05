@@ -65,7 +65,7 @@ type TenseLabels = {
  * }
  * ```
  */
-const FIELD_ABSENT: unique symbol = Symbol('terminal-title/field-absent',);
+const FIELD_ABSENT: unique symbol = Symbol('terminal-title/display-field-string-is-absent',);
 
 /**
  * Compatibility alias for older pi terminal-title terminology.
@@ -78,6 +78,20 @@ const FIELD_ABSENT: unique symbol = Symbol('terminal-title/field-absent',);
  * ```
  */
 const NO_STRING_FIELD: typeof FIELD_ABSENT = FIELD_ABSENT;
+
+/**
+ * Sentinel returned when a registry has no entry for a tool name.
+ *
+ * @example
+ * ```ts
+ * if (lookupToolTitleEntry({ registry, toolName }) === TOOL_TITLE_ENTRY_ABSENT) {
+ *   return toolName;
+ * }
+ * ```
+ */
+const TOOL_TITLE_ENTRY_ABSENT: unique symbol = Symbol(
+  'terminal-title/tool-title-entry-absent-from-registry',
+);
 
 /**
  * Formatter entry for one known tool.
@@ -160,6 +174,7 @@ type UnknownToolTitleFormatter = (
 export {
   FIELD_ABSENT,
   NO_STRING_FIELD,
+  TOOL_TITLE_ENTRY_ABSENT,
 };
 
 export type {

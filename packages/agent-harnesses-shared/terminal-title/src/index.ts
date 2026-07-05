@@ -25,6 +25,7 @@
 export {
   FIELD_ABSENT,
   NO_STRING_FIELD,
+  TOOL_TITLE_ENTRY_ABSENT,
 } from './types.ts';
 export type {
   TenseLabels,
