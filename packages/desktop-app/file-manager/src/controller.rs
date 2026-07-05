@@ -7,10 +7,10 @@
 //! owns `viewport-x`; model mutations never touch it, so wheel/drag scrolling is
 //! free and smooth.
 
-/// What:     `use std::collections::HashMap;` imports a key/value map.
-/// Why:      Pane-to-column routing for decodes (the live-preview set lives in
-///           `model_sync.rs`).
-use std::collections::HashMap;
+/// What:     `use std::collections::{HashMap, HashSet};` imports a map and a set.
+/// Why:      Pane-to-column routing for decodes; a set of columns whose decode
+///           landed and await refresh once scrolling settles.
+use std::collections::{HashMap, HashSet};
 
 /// What:     `use std::rc::Rc;` imports single-thread reference counting.
 /// Why:      The instrumentation and the columns model are shared.
@@ -116,6 +116,11 @@ pub struct Controller {
     /// What:     `last_h_change: Instant` is when the horizontal offset last moved.
     /// Why:      The settle gate for decode refreshes.
     pub(crate) last_h_change: Instant,
+    /// What:     `pending_refresh: HashSet<usize>` holds columns whose decode landed
+    ///           but which have not been refreshed yet (drained mid-scroll).
+    /// Why:      Once scrolling settles, these columns refresh so the decoded preview
+    ///           replaces its placeholder.
+    pub(crate) pending_refresh: HashSet<usize>,
 }
 
 /// What:     `impl Controller` holds the state, constructor, and the
@@ -167,6 +172,7 @@ impl Controller {
             window: (0, 0),
             pane_column,
             last_h_change: Instant::now(),
+            pending_refresh: HashSet::new(),
         };
         // What:     `controller.refresh_totals();` fills the total-* counters.
         // Why:      HUD needs full-strip totals.
@@ -257,32 +263,44 @@ impl Controller {
     pub fn frame_tick(&mut self) {
         // What:     `let landed = self.preview_cache.drain_results();` collects the
         //           pane ids whose decode finished.
-        // Why:      Each maps to a column to refresh.
+        // Why:      Each owning column needs a refresh to show the bitmap.
         let landed = self.preview_cache.drain_results();
+        // What:     `for pane_id in landed { ... }` queues each landed decode's
+        //           owning column for refresh (even mid-scroll, so it is not lost).
+        // Why:      A decode drained during a scroll must still refresh on settle.
+        for pane_id in landed {
+            // What:     `let owner = self.pane_column.get(&pane_id).copied();` reads
+            //           the owning column; `.copied()` releases the map borrow.
+            // Why:      Release before the mutable-set insert.
+            let owner = self.pane_column.get(&pane_id).copied();
+            // What:     `if let Some(column_index) = owner { self.pending_refresh
+            //           .insert(column_index); }` queues the column.
+            // Why:      Flush it once scrolling settles.
+            if let Some(column_index) = owner {
+                self.pending_refresh.insert(column_index);
+            }
+        }
         // What:     `let settled = self.last_h_change.elapsed() >= Duration::
         //           from_millis(SCROLL_SETTLE_MS);` is true when not mid-scroll.
         // Why:      Avoid refreshing a column mid-scroll (churn).
         let settled = self.last_h_change.elapsed() >= Duration::from_millis(SCROLL_SETTLE_MS);
-        // What:     `if settled { for pane_id in landed { ... } }` refreshes the
-        //           owning column of each landed decode.
-        // Why:      Show the decoded preview once scrolling has settled.
-        if settled {
-            for pane_id in landed {
-                // What:     `let owner = self.pane_column.get(&pane_id).copied();`
-                //           looks up the owning column and `.copied()` copies the
-                //           `usize` out of the `Option<&usize>`, releasing the borrow.
-                // Why:      Release the map borrow before the `&mut self` refresh.
-                let owner = self.pane_column.get(&pane_id).copied();
-                // What:     `if let Some(column_index) = owner { self.refresh_column(
-                //           column_index); }` refreshes the owning column.
-                // Why:      Update just that column's row.
-                if let Some(column_index) = owner {
-                    self.refresh_column(column_index);
-                }
+        // What:     `if settled && !self.pending_refresh.is_empty() { ... }` flushes
+        //           the queued column refreshes.
+        // Why:      Show the decoded previews once the user has stopped scrolling.
+        if settled && !self.pending_refresh.is_empty() {
+            // What:     `let columns: Vec<usize> = self.pending_refresh.drain()
+            //           .collect();` empties the set into a vector, releasing its
+            //           borrow before the `&mut self` refreshes.
+            // Why:      Refresh each queued column.
+            let columns: Vec<usize> = self.pending_refresh.drain().collect();
+            // What:     `for column_index in columns { self.refresh_column(
+            //           column_index); }` refreshes each (in-window ones only).
+            // Why:      Replace the placeholders with decoded previews.
+            for column_index in columns {
+                self.refresh_column(column_index);
             }
         }
-        // What:     `self.sync_horizontal();` slides the window to the current
-        //           offset.
+        // What:     `self.sync_horizontal();` slides the window to the current offset.
         // Why:      Stream columns in/out as the Flickable scrolls.
         self.sync_horizontal();
         // What:     `self.after_change();` updates counts and evicts off-window
