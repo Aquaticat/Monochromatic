@@ -98,6 +98,17 @@ use std::path::PathBuf;
 #[cfg(unix)]
 use std::path::Path;
 
+/// What:     `use anyhow::Result;` imports `anyhow`'s one-parameter application
+///           result alias. Sibling typed results name exact error types like
+///           `slint::PlatformError`.
+/// Why:      Startup and event-loop failures share one user-facing error channel.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Result<T> = T; // failures throw Error objects
+/// ```
+use anyhow::Result;
+
 /// What:     `use std::rc::Rc;`. `Rc<T>` is a single-threaded shared-ownership
 ///           pointer (reference counted). Sibling: `Arc<T>` (atomic refcount, safe
 ///           to share across threads); `Box<T>` (single owner, no sharing).
@@ -1100,11 +1111,10 @@ fn music_dir() -> Option<PathBuf> {
         .filter(|p| p.is_dir())
 }
 
-/// What:     `fn main() -> Result<(), slint::PlatformError>`. The entry point. The
-///           return type `Result<(), E>` is the success-or-error enum: `Ok(())`
-///           (success with the unit value, like `void`) or `Err(PlatformError)`.
-///           Returning `Err` from `main` makes the process exit non-zero and prints
-///           the error.
+/// What:     `fn main() -> Result<()>`. The entry point. The return type is
+///           `anyhow`'s success-or-error enum: `Ok(())` (success with the unit
+///           value, like `void`) or `Err(anyhow::Error)`. Returning `Err` from
+///           `main` makes the process exit non-zero and prints the error.
 /// Why:      Propagate window/backend failure (e.g. no display server) as the exit
 ///           status, rather than panicking.
 ///
@@ -1112,7 +1122,7 @@ fn music_dir() -> Option<PathBuf> {
 /// ```ts
 /// async function main(): Promise<void> { ... } // throws on platform failure
 /// ```
-fn main() -> Result<(), slint::PlatformError> {
+fn main() -> Result<()> {
     // What:     `music_player::logging::init();`. Install the stderr tracing subscriber
     //           before anything else, so startup events have a sink. Idempotent.
     // Why:      Every `tracing` event from this crate and `truepeak-core` needs a sink;
@@ -1903,11 +1913,10 @@ fn main() -> Result<(), slint::PlatformError> {
         }
     }
 
-    // What:     `app.run()`. Show the window and run the event loop until it closes;
-    //           returns `Result<(), PlatformError>`. No trailing `;`, so this is the
-    //           tail expression returned from `main`. When it returns, `app` and
-    //           `engine` drop: the engine's `Drop` sends `Quit` and joins its thread,
-    //           tearing down PipeWire.
+    // What:     `app.run()?; Ok(())`. Show the window and run the event loop until
+    //           it closes; `?` converts any `PlatformError` into `anyhow::Error`.
+    //           When it returns, `app` and `engine` drop: the engine's `Drop` sends
+    //           `Quit` and joins its thread, tearing down PipeWire.
     // Why:      Hand control to Slint.
     // Gotcha:   Rust runs DESTRUCTORS (`Drop`) at end of scope deterministically;
     //           that is what cleanly stops the engine here, with no GC or manual
@@ -1915,7 +1924,9 @@ fn main() -> Result<(), slint::PlatformError> {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return app.run();
+    // await app.run();
+    // return;
     // ```
-    app.run()
+    app.run()?;
+    Ok(())
 }
