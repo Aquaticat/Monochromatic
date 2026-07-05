@@ -41,6 +41,7 @@ use crate::{
     handlers::xdg_shell::reconfigure_fullscreen,
     render::redraw,
     state::Compositor,
+    systemd::Isolation,
 };
 
 /// Build everything, spawn the hosted client, and run the event loop to completion.
@@ -66,7 +67,7 @@ pub fn run(config: Config) -> Result<i32> {
     //           against it. `.context(msg)?` turns a failure into a clean error.
     // Why:      The single event loop drives Wayland clients, winit, the child poll, and
     //           (later) the control socket.
-    let mut event_loop: EventLoop<Compositor> =
+    let mut event_loop: EventLoop<'static, Compositor> =
         EventLoop::try_new().context("creating the calloop event loop")?;
 
     // What:     `let display: Display<Compositor> = Display::new().context(...)?;`. Creates
@@ -130,10 +131,20 @@ pub fn run(config: Config) -> Result<i32> {
     // Why:      Stop the loop when the hosted client exits.
     register_exit_poll(&loop_handle);
 
-    // What:     `spawn_child(&mut state, &config.child_command)?;`. Launch the client
-    //           connected to our socket; `?` fails if the binary cannot be spawned.
-    // Why:      Start the one app the fixture hosts.
-    spawn_child(&mut state, &config.child_command)?;
+    // What:     `let isolation = Isolation { enabled: config.isolate, cpu_quota_percent:
+    //           config.app_cpu_quota, cpu_weight: config.app_cpu_weight };`. Assemble the
+    //           CPU-isolation settings from the parsed config.
+    // Why:      Passed to `spawn_child`, which isolates the app under systemd or degrades.
+    let isolation = Isolation {
+        enabled: config.isolate,
+        cpu_quota_percent: config.app_cpu_quota,
+        cpu_weight: config.app_cpu_weight,
+    };
+
+    // What:     `spawn_child(&mut state, &config.child_command, &isolation)?;`. Launch the
+    //           client connected to our socket; `?` fails if the binary cannot be spawned.
+    // Why:      Start the one app the fixture hosts, isolated when requested.
+    spawn_child(&mut state, &config.child_command, &isolation)?;
 
     // What:     `state.backend.window().request_redraw();`. Kick off the first frame.
     // Why:      Rendering is self-sustaining after the first request, but something has

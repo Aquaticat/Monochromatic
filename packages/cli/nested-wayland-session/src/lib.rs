@@ -42,6 +42,15 @@ pub mod child;
 /// ```
 pub mod control;
 
+/// What:     `pub mod encoder;`. Declares the frame-encoding + worker-pool module.
+/// Why:      Flips and encodes captured frames (PNG/BMP) on a parallel worker pool.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as encoder from "./encoder";
+/// ```
+pub mod encoder;
+
 /// What:     `pub mod input;`. Declares the synthetic input-injection module.
 /// Why:      Turns click/key/type commands into seat events.
 ///
@@ -106,6 +115,15 @@ pub mod handlers;
 /// ```
 pub mod render;
 
+/// What:     `pub mod recorder;`. Declares the 60fps frame-recorder module.
+/// Why:      Drives the steady, app-decoupled capture timer that feeds the encoder pool.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as recorder from "./recorder";
+/// ```
+pub mod recorder;
+
 /// What:     `pub mod state;`. Declares the central-state module.
 /// Why:      Defines `Compositor`, the value the event loop carries.
 ///
@@ -114,6 +132,15 @@ pub mod render;
 /// export * as state from "./state";
 /// ```
 pub mod state;
+
+/// What:     `pub mod systemd;`. Declares the systemd CPU-isolation module.
+/// Why:      Launches the hosted app in a resource-controlled scope (or degrades cleanly).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as systemd from "./systemd";
+/// ```
+pub mod systemd;
 
 /// What:     `pub use app::run;`. Re-export `run` at the crate root.
 /// Why:      The binary calls `nested_wayland_session::run` without knowing the module

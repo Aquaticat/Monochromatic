@@ -142,3 +142,29 @@ fn responses_format_to_wire_form() {
         "err bad thing"
     );
 }
+
+#[test]
+fn record_parses_dir_fps_format_and_stop() {
+    assert_eq!(
+        parse_command("record /tmp/frames"),
+        Ok(Command::Record {
+            dir: "/tmp/frames".into(),
+            fps: 60.0,
+            format: "png".to_string()
+        })
+    );
+    assert_eq!(
+        parse_command("record /tmp/f 30 bmp"),
+        Ok(Command::Record {
+            dir: "/tmp/f".into(),
+            fps: 30.0,
+            format: "bmp".to_string()
+        })
+    );
+    assert_eq!(parse_command("record stop"), Ok(Command::RecordStop));
+    // Missing directory, non-numeric fps, and extra tokens are rejected.
+    assert!(parse_command("record").is_err());
+    assert!(parse_command("record /tmp/f notanumber").is_err());
+    assert!(parse_command("record stop extra").is_err());
+    assert!(parse_command("record /tmp/f 60 png extra").is_err());
+}

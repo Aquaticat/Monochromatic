@@ -107,6 +107,25 @@ pub struct Config {
     /// What:     `pub height: i32`. Signed 32-bit integer to match Smithay geometry.
     /// Why:      Pairs with `width` for the initial output size.
     pub height: i32,
+
+    /// Whether to launch the hosted app inside a resource-controlled systemd scope.
+    ///
+    /// What:     `pub isolate: bool`. Set by `--isolate`.
+    /// Why:      Reserve CPU headroom for the 60fps capture pipeline so a greedy app cannot
+    ///           starve it; degrades to a direct launch when systemd is unavailable.
+    pub isolate: bool,
+
+    /// Optional hard CPU cap for the app, in percent of one core (`--app-cpu-quota`).
+    ///
+    /// What:     `pub app_cpu_quota: Option<u32>`. `800` means eight cores' worth.
+    /// Why:      Override the machine-sized default cap used when `--isolate` is set.
+    pub app_cpu_quota: Option<u32>,
+
+    /// Optional relative CPU share for the app (`--app-cpu-weight`, systemd 1..=10000).
+    ///
+    /// What:     `pub app_cpu_weight: Option<u32>`.
+    /// Why:      Override the default low weight that deprioritises the app under contention.
+    pub app_cpu_weight: Option<u32>,
 }
 
 /// Parse an argument list (excluding the program name) into a `Config`.
@@ -159,6 +178,18 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
     // let height = DEFAULT_HEIGHT;
     // ```
     let mut height = DEFAULT_HEIGHT;
+
+    // What:     `let mut isolate = false;`. Mutable flag, off by default.
+    // Why:      Set true by `--isolate`.
+    let mut isolate = false;
+
+    // What:     `let mut app_cpu_quota: Option<u32> = None;`. Optional CPU cap.
+    // Why:      Filled by `--app-cpu-quota`.
+    let mut app_cpu_quota: Option<u32> = None;
+
+    // What:     `let mut app_cpu_weight: Option<u32> = None;`. Optional CPU weight.
+    // Why:      Filled by `--app-cpu-weight`.
+    let mut app_cpu_weight: Option<u32> = None;
 
     // What:     `let mut index = 0usize;`. A mutable cursor into `args`. `0usize`
     //           writes the literal `0` as a `usize` (the pointer-wide unsigned int
@@ -322,6 +353,112 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
             continue;
         }
 
+        // What:     `if arg == "--isolate" { isolate = true; index += 1; continue; }`. A
+        //           valueless flag: it consumes only itself.
+        // Why:      Enable systemd CPU isolation of the hosted app.
+        if arg == "--isolate" {
+            isolate = true;
+            index += 1;
+            continue;
+        }
+
+        // What:     `if arg == "--app-cpu-quota" { ... }`. Reads the next token as a percent.
+        // Why:      Override the default app CPU cap.
+        if arg == "--app-cpu-quota" {
+            // What:     `let value = args.get(index + 1).context(...)?;`. Require the value.
+            // Why:      The flag needs a percentage argument.
+            let value = args
+                .get(index + 1)
+                .context("--app-cpu-quota requires a percent value")?;
+            // What:     `app_cpu_quota = Some(value.parse::<u32>().context(...)?);`. Parse it
+            //           as an unsigned integer and store it present.
+            // Why:      Record the requested cap.
+            app_cpu_quota = Some(
+                value
+                    .parse::<u32>()
+                    .context("--app-cpu-quota is not a number")?,
+            );
+            // What:     `index += 2; continue;`. Skip flag and value, keep scanning.
+            // Why:      Both tokens are consumed.
+            index += 2;
+            continue;
+        }
+
+        // What:     `if arg == "--app-cpu-weight" { ... }`. Reads the next token as a weight.
+        // Why:      Override the default app CPU weight.
+        if arg == "--app-cpu-weight" {
+            // What:     `let value = args.get(index + 1).context(...)?;`. Require the value.
+            // Why:      The flag needs a numeric argument.
+            let value = args
+                .get(index + 1)
+                .context("--app-cpu-weight requires a number")?;
+            // What:     `app_cpu_weight = Some(value.parse::<u32>().context(...)?);`. Parse
+            //           and store.
+            // Why:      Record the requested weight.
+            app_cpu_weight = Some(
+                value
+                    .parse::<u32>()
+                    .context("--app-cpu-weight is not a number")?,
+            );
+            // What:     `index += 2; continue;`. Skip flag and value.
+            // Why:      Both tokens are consumed.
+            index += 2;
+            continue;
+        }
+
+        // What:     `if arg == "--isolate" { isolate = true; index += 1; continue; }`. A
+        //           valueless flag: it consumes only itself.
+        // Why:      Enable systemd CPU isolation of the hosted app.
+        if arg == "--isolate" {
+            isolate = true;
+            index += 1;
+            continue;
+        }
+
+        // What:     `if arg == "--app-cpu-quota" { ... }`. Reads the next token as a percent.
+        // Why:      Override the default app CPU cap.
+        if arg == "--app-cpu-quota" {
+            // What:     `let value = args.get(index + 1).context(...)?;`. Require the value.
+            // Why:      The flag needs a percentage argument.
+            let value = args
+                .get(index + 1)
+                .context("--app-cpu-quota requires a percent value")?;
+            // What:     `app_cpu_quota = Some(value.parse::<u32>().context(...)?);`. Parse it
+            //           as an unsigned integer and store it present.
+            // Why:      Record the requested cap.
+            app_cpu_quota = Some(
+                value
+                    .parse::<u32>()
+                    .context("--app-cpu-quota is not a number")?,
+            );
+            // What:     `index += 2; continue;`. Skip flag and value, keep scanning.
+            // Why:      Both tokens are consumed.
+            index += 2;
+            continue;
+        }
+
+        // What:     `if arg == "--app-cpu-weight" { ... }`. Reads the next token as a weight.
+        // Why:      Override the default app CPU weight.
+        if arg == "--app-cpu-weight" {
+            // What:     `let value = args.get(index + 1).context(...)?;`. Require the value.
+            // Why:      The flag needs a numeric argument.
+            let value = args
+                .get(index + 1)
+                .context("--app-cpu-weight requires a number")?;
+            // What:     `app_cpu_weight = Some(value.parse::<u32>().context(...)?);`. Parse
+            //           and store.
+            // Why:      Record the requested weight.
+            app_cpu_weight = Some(
+                value
+                    .parse::<u32>()
+                    .context("--app-cpu-weight is not a number")?,
+            );
+            // What:     `index += 2; continue;`. Skip flag and value.
+            // Why:      Both tokens are consumed.
+            index += 2;
+            continue;
+        }
+
         // What:     `if arg.starts_with("--")`. `.starts_with(&str)` is a plain prefix
         //           test. Reaching here means an unrecognised `--flag`.
         // Why:      Reject unknown flags rather than silently treating them as the
@@ -367,7 +504,10 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
     if child_command.is_empty() {
         // What:     `bail!(...)`. Early-return usage error.
         // Why:      There is nothing to run.
-        bail!("no client command given; usage: [--socket PATH] [--size WxH] [--] COMMAND [ARG...]");
+        bail!(
+            "no client command given; usage: [--socket PATH] [--size WxH] [--isolate] \
+             [--app-cpu-quota PCT] [--app-cpu-weight N] [--] COMMAND [ARG...]"
+        );
     }
 
     // What:     `Ok(Config { ... })`. `Ok(...)` wraps the success value of a `Result`.
@@ -385,6 +525,9 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
         control_socket,
         width,
         height,
+        isolate,
+        app_cpu_quota,
+        app_cpu_weight,
     })
 }
 

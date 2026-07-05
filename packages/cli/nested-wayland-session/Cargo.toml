@@ -41,7 +41,19 @@ anyhow = "1"
 # In-process PNG encode for the screenshot readback. Pure-Rust, memory-safe
 # encoder (no libpng process), matching the music-player's in-process decode
 # rule. `default-features = false` + `png` keeps only the one codec we emit.
-image = { version = "0.25", default-features = false, features = ["png"] }
+# `png` is the default capture format; `bmp` is the near-zero-cost fallback for
+# sustained 60fps when PNG's deflate cannot keep up (raw pixels plus a header, so
+# encoding is essentially a memcpy, at the cost of large files). AVIF is
+# deliberately NOT enabled: its AV1 intra encode is far too CPU-heavy for
+# real-time 60fps on CPU, the opposite of what this mode needs.
+image = { version = "0.25", default-features = false, features = ["png", "bmp"] }
+
+# Multi-producer/multi-consumer channels for the 60fps capture pipeline: the
+# render thread pushes raw frames onto one queue that N encoder worker threads
+# drain in parallel. std's mpsc Receiver is single-consumer, so a shared work
+# queue needs crossbeam's MPMC channel. (These plain key = value deps MUST stay
+# ABOVE the `[dependencies.smithay]` sub-table below; see the note there.)
+crossbeam-channel = "0.5"
 
 # The logging facade plus its stderr subscriber, matching the sibling Rust apps.
 # tracing routes lifecycle events (client connect, toplevel map, control command,

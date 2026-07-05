@@ -39,7 +39,7 @@ use smithay::{
     input::{Seat, SeatState},
     output::Output,
     reexports::{
-        calloop::{generic::Generic, EventLoop, Interest, LoopSignal, Mode, PostAction},
+        calloop::{generic::Generic, EventLoop, Interest, LoopHandle, LoopSignal, Mode, PostAction},
         wayland_server::{
             backend::{ClientData, ClientId, DisconnectReason},
             Display, DisplayHandle,
@@ -211,6 +211,21 @@ pub struct Compositor {
     ///           exit status code.
     /// Why:      `main` propagates this as its own exit code.
     pub child_exit_code: Option<i32>,
+
+    /// The active 60fps frame recorder, if `record` is running.
+    ///
+    /// What:     `pub recorder: Option<crate::recorder::Recorder>`. `Some` while recording.
+    /// Why:      Holds the capture timer registration, encoder pool, and counters; taken
+    ///           out during each tick so the readback can borrow the rest of the state.
+    pub recorder: Option<crate::recorder::Recorder>,
+
+    /// A cloneable handle to the event loop, for registering the recorder's timer.
+    ///
+    /// What:     `pub loop_handle: LoopHandle<'static, Compositor>`. calloop's refcounted
+    ///           handle; storing it in the loop's own data is a supported calloop pattern.
+    /// Why:      The `record` control command (which only has `&mut Compositor`) needs it to
+    ///           insert the capture timer source.
+    pub loop_handle: LoopHandle<'static, Compositor>,
 }
 
 /// Owning bundle of the pieces the winit backend produces before the state exists.
@@ -265,7 +280,7 @@ impl Compositor {
     /// const state = Compositor.new(eventLoop, display, pieces);
     /// ```
     pub fn new(
-        event_loop: &mut EventLoop<Compositor>,
+        event_loop: &mut EventLoop<'static, Compositor>,
         display: Display<Compositor>,
         pieces: BackendPieces,
     ) -> Self {
@@ -370,6 +385,12 @@ impl Compositor {
         // Why:      Stored so child-exit / close handling can end the program.
         let loop_signal = event_loop.get_signal();
 
+        // What:     `let loop_handle = event_loop.handle();`. A cloneable registration
+        //           handle for the loop.
+        // Why:      Stored so the recorder can insert its capture timer from the control
+        //           handler (which only receives `&mut Compositor`).
+        let loop_handle = event_loop.handle();
+
         // What:     `Self { ... }`. Construct and return the state (tail expression).
         //           Shorthand fields reuse local names; the dmabuf pieces are unpacked
         //           from `pieces`.
@@ -401,6 +422,8 @@ impl Compositor {
             _dmabuf_feedback: pieces.dmabuf_feedback,
             child: None,
             child_exit_code: None,
+            recorder: None,
+            loop_handle,
         }
     }
 

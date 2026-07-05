@@ -5,15 +5,15 @@
 //! client exits. Child exit is detected by a periodic calloop timer that polls
 //! `try_wait`, which keeps everything on the event loop's single thread.
 
-/// What:     `use std::{process::Command, time::Duration};`. `Command` builds and spawns
-///           a child process; `Duration` is the poll interval.
-/// Why:      Needed to launch the client and schedule the exit poll.
+/// What:     `use std::time::Duration;`. `Duration` is the exit-poll interval. The child
+///           `Command` itself is built by the `systemd` module, so it is not named here.
+/// Why:      Needed to schedule the exit poll.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// // Command ~ Node's child_process.spawn builder; Duration ~ a ms count.
+/// // Duration ~ a ms count.
 /// ```
-use std::{process::Command, time::Duration};
+use std::time::Duration;
 
 /// What:     Grouped `use` of the calloop timer types and loop handle.
 /// Why:      `register_exit_poll` inserts a `Timer` source through the `LoopHandle`.
@@ -35,14 +35,16 @@ use anyhow::{Context, Result};
 /// Why:      Report spawn and exit events.
 use tracing::{info, warn};
 
-/// What:     `use crate::state::Compositor;`. Our state type.
-/// Why:      These functions read/write `state.child`, `state.socket_name`, etc.
+/// What:     `use crate::{state::Compositor, systemd::Isolation};`. Our state type and the
+///           CPU-isolation settings.
+/// Why:      `spawn_child` reads/writes state and builds the child command per the isolation
+///           settings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { Compositor } from "./state";
+/// import { Compositor } from "./state"; import { Isolation } from "./systemd";
 /// ```
-use crate::state::Compositor;
+use crate::{state::Compositor, systemd::Isolation};
 
 /// How often to poll the hosted child for exit.
 ///
@@ -74,21 +76,19 @@ const POLL_INTERVAL: Duration = Duration::from_millis(200);
 /// ```ts
 /// spawnChild(state, ["music-player", "fixtures"]);
 /// ```
-pub fn spawn_child(state: &mut Compositor, command: &[String]) -> Result<()> {
+pub fn spawn_child(state: &mut Compositor, command: &[String], isolation: &Isolation) -> Result<()> {
     // What:     `let program = &command[0];`. Borrow the first token (the executable).
     //           `parse_args` guarantees `command` is non-empty, so index 0 is safe.
-    // Why:      `Command::new` needs the program name.
+    // Why:      Names the program to launch and to report in messages.
     let program = &command[0];
 
-    // What:     `let mut cmd = Command::new(program);`. Start building the child process.
-    //           `mut` because we configure args and env on it next.
-    // Why:      Assemble the spawn specification.
-    let mut cmd = Command::new(program);
-
-    // What:     `cmd.args(&command[1..]);`. Append every token after the program as an
-    //           argument. `&command[1..]` is the tail slice.
-    // Why:      Pass the app its own arguments (e.g. folders to open).
-    cmd.args(&command[1..]);
+    // What:     `let mut cmd = crate::systemd::build_child_command(program, &command[1..],
+    //           isolation);`. Build the spawn command: either a `systemd-run --scope`
+    //           wrapper (when isolation is enabled and systemd is available) or the app
+    //           directly. `program` (a `&String`) coerces to the `&str` the helper takes.
+    // Why:      Centralise the isolate-or-degrade decision in one place; `mut` because we
+    //           set the Wayland environment on it next.
+    let mut cmd = crate::systemd::build_child_command(program, &command[1..], isolation);
 
     // What:     `cmd.env("WAYLAND_DISPLAY", &state.socket_name);`. Set the child's
     //           `WAYLAND_DISPLAY` to our listening socket. This sets it ONLY for the

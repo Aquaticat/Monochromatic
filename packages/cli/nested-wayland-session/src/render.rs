@@ -69,6 +69,17 @@ pub const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
 /// redraw(state); // called on each WinitEvent.Redraw
 /// ```
 pub fn redraw(state: &mut Compositor) {
+    // What:     `if state.recorder.is_some() { return; }`. Skip the live present while a
+    //           recording is running.
+    // Why:      During a 60fps recording the recorder's timer drives rendering + readback
+    //           (capture only, no `submit`), so suppressing the visible present avoids
+    //           double-rendering and keeps capture cadence off the parent's vsync. The
+    //           visible window is intentionally frozen while recording; `stop` requests a
+    //           redraw to unfreeze it.
+    if state.recorder.is_some() {
+        return;
+    }
+
     // What:     `let size = state.backend.window_size();`. The framebuffer size as
     //           `Size<i32, Physical>`.
     // Why:      The whole framebuffer is treated as damaged each frame (age 0).
@@ -127,6 +138,36 @@ pub fn redraw(state: &mut Compositor) {
     // Why:      Actually show the composited frame in the nested window.
     state.backend.submit(Some(&[damage])).unwrap();
 
+    // What:     `send_frame_callbacks(state);`. Tell the client its last frame was shown so
+    //           it draws the next one, and refresh space/popup bookkeeping.
+    // Why:      Shared with the recorder, which needs the same "keep the app animating" step.
+    send_frame_callbacks(state);
+
+    // What:     `let _ = state.display_handle.flush_clients();`. Flush queued protocol
+    //           events to all clients; `let _ =` discards the `Result` (a flush failure
+    //           just means a client disconnected).
+    // Why:      Deliver the frame callbacks and configures we just queued.
+    let _ = state.display_handle.flush_clients();
+
+    // What:     `state.backend.window().request_redraw();`. Ask winit to emit another
+    //           `Redraw` event.
+    // Why:      Keep the render loop going so the hosted app keeps animating.
+    state.backend.window().request_redraw();
+}
+
+/// Send frame callbacks to every mapped window and refresh space/popup bookkeeping.
+///
+/// What:     `pub fn send_frame_callbacks(state: &mut Compositor)`. Tells each window its
+///           last frame was presented (so it draws the next one), then refreshes the space
+///           and cleans up dead popups.
+/// Why:      Shared by the live redraw and the 60fps recorder: both must keep an animating
+///           client producing frames at the intended rate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function sendFrameCallbacks(state) { ... }
+/// ```
+pub fn send_frame_callbacks(state: &mut Compositor) {
     // What:     `let elapsed = state.start_time.elapsed();`. Time since program start.
     // Why:      Frame callbacks carry this timestamp to the client.
     let elapsed = state.start_time.elapsed();
@@ -139,10 +180,10 @@ pub fn redraw(state: &mut Compositor) {
     let output = state.output.clone();
 
     // What:     `state.space.elements().for_each(|window| { window.send_frame(&output,
-    //           elapsed, Some(Duration::ZERO), |_, _| Some(output.clone())); });`. For
-    //           each mapped window, send a frame callback. `Some(Duration::ZERO)` is the
-    //           throttle hint (draw as fast as possible); the inner closure `|_, _|
-    //           Some(output.clone())` tells Smithay which output each surface is on.
+    //           elapsed, Some(Duration::ZERO), |_, _| Some(output.clone())); });`. Send a
+    //           frame callback to each mapped window. `Some(Duration::ZERO)` is the throttle
+    //           hint (draw as fast as possible); the inner closure tells Smithay which
+    //           output each surface is on.
     // Why:      Tell the client "your last frame was shown; draw the next one".
     state.space.elements().for_each(|window| {
         window.send_frame(&output, elapsed, Some(Duration::ZERO), |_, _| {
@@ -157,15 +198,4 @@ pub fn redraw(state: &mut Compositor) {
     // What:     `state.popups.cleanup();`. Drop popups whose surfaces are gone.
     // Why:      Prevent stale popups from lingering.
     state.popups.cleanup();
-
-    // What:     `let _ = state.display_handle.flush_clients();`. Flush queued protocol
-    //           events to all clients; `let _ =` discards the `Result` (a flush failure
-    //           just means a client disconnected).
-    // Why:      Deliver the frame callbacks and configures we just queued.
-    let _ = state.display_handle.flush_clients();
-
-    // What:     `state.backend.window().request_redraw();`. Ask winit to emit another
-    //           `Redraw` event.
-    // Why:      Keep the render loop going so the hosted app keeps animating.
-    state.backend.window().request_redraw();
 }

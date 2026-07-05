@@ -49,9 +49,9 @@ use tracing::{info, warn};
 /// import { parseCommand, formatResponse, Command, Response } from "./protocol"; ...
 /// ```
 use crate::{
-    input, keymap,
+    encoder, input, keymap,
     protocol::{format_response, parse_command, Command, Response},
-    screenshot,
+    recorder, screenshot,
     state::Compositor,
 };
 
@@ -348,6 +348,37 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             // Why:      Change the nested screen size.
             resize(state, width, height);
             Response::Ok
+        }
+        Command::Record { dir, fps, format } => {
+            // What:     `match encoder::Format::parse(&format) { Ok(fmt) => ..., Err(message)
+            //           => Response::Err(message) }`. Validate the format name first.
+            // Why:      Reject an unknown format before touching the recorder.
+            match encoder::Format::parse(&format) {
+                Ok(fmt) => {
+                    // What:     `match recorder::start(state, dir, fps, fmt) { Ok(()) =>
+                    //           Response::Ok, Err(err) => Response::Err(format!("{err:#}")) }`.
+                    //           Start recording; map the outcome.
+                    // Why:      Begin the capture, reporting any setup failure.
+                    match recorder::start(state, dir, fps, fmt) {
+                        Ok(()) => Response::Ok,
+                        Err(err) => Response::Err(format!("{err:#}")),
+                    }
+                }
+                Err(message) => Response::Err(message),
+            }
+        }
+        Command::RecordStop => {
+            // What:     `match recorder::stop(state) { Some(stats) => Response::OkWith(...),
+            //           None => Response::Err("not recording") }`. Stop and report the
+            //           measured statistics as the response payload.
+            // Why:      Make the achieved fps / drop count observable to the caller.
+            match recorder::stop(state) {
+                Some(stats) => Response::OkWith(format!(
+                    "captured={} dropped={} failures={} seconds={:.3} fps={:.1}",
+                    stats.captured, stats.dropped, stats.failures, stats.seconds, stats.fps
+                )),
+                None => Response::Err("not recording".to_string()),
+            }
         }
         Command::Quit => {
             // What:     `state.loop_signal.stop();`. Stop the event loop.
