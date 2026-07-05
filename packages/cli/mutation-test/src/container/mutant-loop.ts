@@ -230,6 +230,9 @@ export async function runMutantLoop(options: {
 
       if (TAINTING_STATUSES.has(status,)) {
         rl.warn(`tainting status ${status} at position ${String(index + 1,)}; aborting remainder`,);
+        // Expected taint, not an infrastructure failure: the result is
+        // recorded and the unrun remainder reshards; anomaly stays empty
+        // so the host does not flag the run as infra-failed.
         return {
           results,
           unrun: options.manifest
@@ -238,7 +241,7 @@ export async function runMutantLoop(options: {
             .map(function toId(remaining,): string {
               return remaining.id;
             },),
-          anomaly: `mutant ${mutant.id} ended with ${status}`,
+          anomaly: '',
         };
       }
     }
