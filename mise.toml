@@ -709,6 +709,17 @@ run = """
 runPlaywright('playwright.browser.config.ts', ['--project=firefox'])
 """
 
+[tasks."test:browser:webkit"]
+hide = true
+description = "Run browser tests in WebKit"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
+shell = "node -e"
+run = """
+{{vars.parse_usage_args}}
+{{vars.run_playwright}}
+runPlaywright('playwright.browser.config.ts', ['--project=webkit'])
+"""
+
 [tasks."watch:test:unit"]
 hide = true
 description = "Run unit tests in watch mode"
