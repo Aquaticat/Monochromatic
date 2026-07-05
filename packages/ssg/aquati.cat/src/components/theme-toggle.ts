@@ -116,7 +116,10 @@ export function html(lang: Locale,): string {
         tag: 'label',
         attrs: {
           for: 'theme-toggle',
-          'aria-label': i18n.label(lang, 'themeToggle',),
+          'aria-label': i18n.label(
+            lang,
+            'themeToggle',
+          ),
         },
         children: [
           h({

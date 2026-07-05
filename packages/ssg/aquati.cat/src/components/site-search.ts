@@ -276,10 +276,16 @@ export function html(lang: Locale,): string {
             attrs: {
               type: 'search',
               id: 'search-input',
-              placeholder: i18n.label(lang, 'searchPlaceholder',),
+              placeholder: i18n.label(
+                lang,
+                'searchPlaceholder',
+              ),
               autocomplete: 'off',
               role: 'combobox',
-              'aria-label': i18n.label(lang, 'searchPlaceholder',),
+              'aria-label': i18n.label(
+                lang,
+                'searchPlaceholder',
+              ),
               'aria-controls': 'search-results',
               'aria-expanded': 'false',
               'aria-autocomplete': 'list',
@@ -297,7 +303,10 @@ export function html(lang: Locale,): string {
             attrs: {
               id: 'search-results',
               role: 'listbox',
-              'aria-label': i18n.label(lang, 'searchPlaceholder',),
+              'aria-label': i18n.label(
+                lang,
+                'searchPlaceholder',
+              ),
             },
             class: 'search-results',
           },),

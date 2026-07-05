@@ -139,7 +139,10 @@ export function html(
               },),
               h({
                 tag: 'span',
-                text: i18n.label(lang, 'siteName',),
+                text: i18n.label(
+                  lang,
+                  'siteName',
+                ),
               },),
             ],
           },),

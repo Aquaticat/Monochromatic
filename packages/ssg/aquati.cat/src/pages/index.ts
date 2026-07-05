@@ -42,7 +42,10 @@ export function indexPage(
       /**
        * Translated phrase before title-case fixup.
        */
-      const str = i18n.label(locale, 'chooseALang',);
+      const str = i18n.label(
+        locale,
+        'chooseALang',
+      );
       return str.charAt(0,)
         .toUpperCase()
         + str
@@ -80,7 +83,10 @@ export function indexPage(
     title,
     lang: 'en',
     content,
-    description: i18n.label('en', 'siteDescription',),
+    description: i18n.label(
+      'en',
+      'siteDescription',
+    ),
     canonicalUrl,
   },);
 }

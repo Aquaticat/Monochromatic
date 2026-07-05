@@ -57,9 +57,15 @@ export function generateLanguageRss(
     .at(0,);
 
   return generateRssFeed({
-    title: i18n.label(lang, 'siteName',),
+    title: i18n.label(
+      lang,
+      'siteName',
+    ),
     link: siteUrl,
-    description: i18n.label(lang, 'siteDescription',),
+    description: i18n.label(
+      lang,
+      'siteDescription',
+    ),
     language: lang,
     ...(lastBuildDate === undefined
       ? {}

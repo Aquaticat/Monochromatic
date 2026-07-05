@@ -73,7 +73,10 @@ export function headFragment(
   /**
    * Page title with site name suffix per the Capo.js title convention.
    */
-  const fullTitle = `${title} | ${i18n.label(lang, 'siteName',)}`;
+  const fullTitle = `${title} | ${i18n.label(
+    lang,
+    'siteName',
+  )}`;
   /**
    * Optional Open Graph article metadata, emitted only for post pages.
    */

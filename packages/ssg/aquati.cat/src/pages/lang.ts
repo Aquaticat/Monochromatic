@@ -45,7 +45,10 @@ export function langPage(
   /**
    * Page heading mirrors the site description for the language landing page.
    */
-  const title = i18n.label(lang, 'siteDescription',);
+  const title = i18n.label(
+    lang,
+    'siteDescription',
+  );
 
   /**
    * Main element tree composed before the page layout wraps it with `<head>` and friends.
@@ -68,7 +71,10 @@ export function langPage(
     title,
     lang,
     content,
-    description: i18n.label(lang, 'siteDescription',),
+    description: i18n.label(
+      lang,
+      'siteDescription',
+    ),
     canonicalUrl,
   },);
 }

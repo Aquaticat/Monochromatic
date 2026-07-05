@@ -77,7 +77,10 @@ export function tagPage(
     title,
     lang,
     content,
-    description: `${i18n.label(lang, 'siteDescription',)}: ${tag}`,
+    description: `${i18n.label(
+      lang,
+      'siteDescription',
+    )}: ${tag}`,
     canonicalUrl,
   },);
 }

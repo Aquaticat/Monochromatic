@@ -88,14 +88,20 @@ export function postPage(
         tag: 'aside',
         class: 'date',
         children: [
-          `${i18n.label(lang, 'published',)}: `,
+          `${i18n.label(
+            lang,
+            'published',
+          )}: `,
           prettyDate({
             date: post.data
               .published,
             lang,
           },),
           ' ',
-          `${i18n.label(lang, 'updated',)}: `,
+          `${i18n.label(
+            lang,
+            'updated',
+          )}: `,
           prettyDate({
             date: post.data
               .updated,
@@ -161,7 +167,10 @@ function postNotFoundPage(
   /**
    * Heading naming the missing-translation condition for the requested locale.
    */
-  const title = i18n.label(lang, 'postNotInLang',);
+  const title = i18n.label(
+    lang,
+    'postNotInLang',
+  );
 
   /**
    * Main element tree composed before the page layout wraps it with `<head>` and friends.
@@ -176,7 +185,10 @@ function postNotFoundPage(
       h({
         tag: 'p',
         children: [
-          `${i18n.label(lang, 'redirectingToLangChooser',)} `,
+          `${i18n.label(
+            lang,
+            'redirectingToLangChooser',
+          )} `,
           h({
             tag: 'a',
             attrs: { href: `/${name}`, },
@@ -191,7 +203,10 @@ function postNotFoundPage(
     title,
     lang,
     content,
-    description: i18n.label(lang, 'postNotInLang',),
+    description: i18n.label(
+      lang,
+      'postNotInLang',
+    ),
     canonicalUrl,
     currentName: name,
     availableInLangs,

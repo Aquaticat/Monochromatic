@@ -54,7 +54,11 @@ const zh = defineChineseLocale({
 /**
  * Supported locale codes; the literal union flows through every render call.
  */
-export const locales = ['ca', 'en', 'zh',] as const;
+export const locales = [
+  'ca',
+  'en',
+  'zh',
+] as const;
 
 /**
  * Supported locale code union derived from {@link locales}.
@@ -67,15 +71,19 @@ export type Locale = typeof locales[number];
 export const i18n = createI18n({
   locales,
   defaultLocale: 'en',
-  specs: { ca, en, zh, },
+  specs: {
+    ca,
+    en,
+    zh,
+  },
 },);
 
 /**
  * Type guard narrowing an arbitrary string to a supported {@link Locale}.
  */
-export const isLocale = i18n.isLocale;
+export const {isLocale} = i18n;
 
 /**
  * Asserts a string is a supported {@link Locale}, returning it narrowed or throwing.
  */
-export const assertLocale = i18n.assertLocale;
+export const {assertLocale} = i18n;

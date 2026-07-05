@@ -243,7 +243,10 @@ export function html(
         children: [
           h({
             tag: 'summary',
-            attrs: { 'aria-label': i18n.label(currentLang, 'langSwitcher',), },
+            attrs: { 'aria-label': i18n.label(
+              currentLang,
+              'langSwitcher',
+            ), },
             children: [
               h({
                 tag: 'span',
