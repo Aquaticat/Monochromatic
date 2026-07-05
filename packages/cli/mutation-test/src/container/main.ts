@@ -34,6 +34,7 @@ import {
   REPORT_MOUNT,
   WORK_MOUNT,
 } from '../mounts.ts';
+import { runBuildStep, } from './build-step.ts';
 import { runMutantLoop, } from './mutant-loop.ts';
 import {
   runTests,
@@ -205,9 +206,20 @@ export async function runShard(): Promise<void> {
     manifest.packagePath,
   );
   /**
+   * Baseline build materialising dist output and declarations before
+   * the type gate and the output-importing tests.
+   */
+  const baselineBuild = await runBuildStep({ packageCwd, },);
+  /**
    * Baseline type check, also warming the incremental build info.
    */
-  const baselineTsgo: TsgoOutcome = await tsgoCheck({ cwd: packageCwd, },);
+  const baselineTsgo: TsgoOutcome = baselineBuild.clean
+    ? await tsgoCheck({ cwd: packageCwd, },)
+    : {
+      clean: false,
+      durationMs: 0,
+      detail: baselineBuild.detail,
+    };
   /**
    * Baseline test run over the selected tests.
    */
@@ -219,7 +231,9 @@ export async function runShard(): Promise<void> {
   /**
    * Whether the unmutated package passes its own gates.
    */
-  const green = baselineTsgo.clean && (baselineTests.kind === 'passed');
+  const green = baselineBuild.clean
+    && baselineTsgo.clean
+    && (baselineTests.kind === 'passed');
 
   if (!green) {
     rl.error(

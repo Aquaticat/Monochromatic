@@ -21,6 +21,7 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { spliceReplacement, } from '../engine/splice.ts';
+import { runBuildStep, } from './build-step.ts';
 import { runTests, } from './test-run.ts';
 import { tsgoCheck, } from './tsgo-check.ts';
 import type { MutantStatus, } from '../engine/types.ts';
@@ -178,9 +179,21 @@ export async function runMutantLoop(options: {
       );
 
       /**
+       * Build verdict for the spliced mutant; tests exercise built
+       * output, so the build must precede them, and its declaration
+       * emit must precede the type gate.
+       */
+      const build = await runBuildStep({ packageCwd: options.packageCwd, },);
+      /**
        * Type-check verdict for the spliced mutant.
        */
-      const typeCheck = await tsgoCheck({ cwd: options.packageCwd, },);
+      const typeCheck = build.clean
+        ? await tsgoCheck({ cwd: options.packageCwd, },)
+        : {
+          clean: false,
+          durationMs: 0,
+          detail: build.detail,
+        };
       /**
        * Final status for this mutant.
        */
