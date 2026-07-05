@@ -2406,6 +2406,31 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
+  packages/pi-plugins/guardrail:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      ignore:
+        specifier: 'catalog:'
+        version: 7.0.5
+    devDependencies:
+      '@earendil-works/pi-coding-agent':
+        specifier: 'catalog:'
+        version: 0.80.3(zod@4.4.3)
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+
   packages/pi-plugins/morph-compact:
     dependencies:
       '@monochromatic-dev/module-logger':
