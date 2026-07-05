@@ -9,6 +9,7 @@ import {
   chunk,
   composeReshard,
   composeShards,
+  effectiveTimeoutMs,
   formatTerminalSummary,
   parseCliOptions,
   sanitizeShardTag,
@@ -234,6 +235,26 @@ await describe({
           fn: async () => {
             expect(sanitizeShardTag('src/io/glob.ts',),).toBe('src__io__glob.ts',);
             expect(sanitizeShardTag('a b/c',),).toBe('a_b__c',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: effectiveTimeoutMs.name,
+      children: [
+        it({
+          name: 'floors small baselines and scales large ones',
+          fn: async () => {
+            expect(effectiveTimeoutMs({
+              floorMs: 5_000,
+              factor: 3,
+              baselineMs: 900,
+            },),).toBe(5_000,);
+            expect(effectiveTimeoutMs({
+              floorMs: 5_000,
+              factor: 3,
+              baselineMs: 4_000,
+            },),).toBe(12_000,);
           },
         },),
       ],
