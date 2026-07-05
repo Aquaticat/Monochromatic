@@ -1,7 +1,9 @@
-# Plan: Slint file manager
+# Plan: file manager
 
 Status:
  accepted stack direction.
+ Product decisions resolved in a grilling session on 2026-07-05.
+ Spikes not run.
  Not built.
  Authored 2026-07-05.
 
@@ -9,13 +11,23 @@ Status:
 
 Build an infinite horizontal-scrolling file manager for desktop operating systems.
 The interaction model is Niri-like:
-the user moves through a horizontal strip of panes,
-and each pane renders a file list for one directory or search result.
+the user moves through a horizontal strip of columns,
+and each column stacks one or more panes vertically.
 
 The first supported desktop targets are Windows,
 macOS,
-and Linux.
+and Linux,
+with default-manager registration on all three.
 Electron and other bundled-browser stacks are out of scope for this project.
+
+The v1 audience is personal use on the author's machines,
+with distribution-shaped boundaries:
+the packaging and recovery layer stays a designed interface,
+but only the personal path is implemented,
+and signing,
+notarization,
+installers,
+and update channels are deferred.
 
 ## Source facts verified before this plan
 
@@ -24,6 +36,13 @@ Electron and other bundled-browser stacks are out of scope for this project.
   while default-file-manager behavior needs native integration per operating system.
 - The same handover records minimal Slint `cargo check` success on `m1` for macOS
   and `x13-win` for Windows.
+- This repo already ships two Slint desktop apps:
+  `packages/desktop-app/terminal` and `packages/music-player/desktop-app`,
+  both on Slint 1.17.0 with the explicit winit backend and femtovg renderer.
+  Their conventions (slint-build pipeline,
+  `directories` for per-user paths,
+  tracing for logs,
+  std-thread service patterns with isolated tokio runtimes) are the local prior art.
 - Slint desktop docs say Slint runs on Windows,
   macOS,
   and Linux distributions using Wayland or X-Windows,
@@ -36,22 +55,36 @@ Electron and other bundled-browser stacks are out of scope for this project.
 - Slint source at `/tmp/agent/slint-file-manager-assessment-20260705/internal/core/model/repeater.rs`
   implements `ListView` virtualization around `viewport-y`,
   so row virtualization is vertical.
-  Horizontal pane virtualization still needs a project-level design and prototype.
+  The two-dimensional column-strip virtualization this product needs has no Slint building block
+  and needs a project-level design and prototype.
 - Slint source at `/tmp/agent/slint-file-manager-assessment-20260705/internal/core/data_transfer.rs`
   stores plain text,
   images,
   and application-local `user_data`.
   It has a TODO for custom binary data providers and MIME types.
+- Slint source at `internal/backends/qt/qt_window.rs` implements `start_drag` with `QDrag` and `QMimeData`;
+  the winit backend has no `start_drag` implementation in the audited checkout.
 - Slint issue `#1967`,
   `better Drag 'n' Drop handling`,
   is still open.
   Current comments describe in-process drag and drop as almost complete,
   not complete native file-list drag and drop.
+- `crabnebula-dev/drag-rs`,
+  a crate for starting native drags from winit windows,
+  is badly maintained per the author's review.
+  Treat it as reference material for the native-adapter path,
+  never as a dependency.
 - Slint issue `#12354`,
   `ContextMenuArea: right-click on StandardTableView / ListView rows does not open menu`,
   is open and untriaged.
   Row context menus are a file-manager requirement,
   so this must be reproduced and worked around or fixed.
+- `dmtrKovalenko/fff` is an MIT-licensed Rust file-search SDK
+  with an embeddable `fff-core` crate,
+  v0.9.6 released 2026-06-21 and active pushes as of 2026-07-05.
+  It brings its own file watcher (`notify` 9.0.0-rc.3 plus a forked debouncer),
+  an on-disk LMDB index via `heed`,
+  and vendored libgit2 for ignore-awareness.
 - Alternative stack docs were checked before choosing Slint plus Rust:
   Qt,
   Flutter,
@@ -60,6 +93,76 @@ Electron and other bundled-browser stacks are out of scope for this project.
   Iced,
   and GPUI.
   The rejected alternatives and reasons are recorded in `docs/decisions/slint-file-manager-stack.md`.
+
+## Interaction model
+
+The strip is a sequence of columns;
+each column stacks panes vertically,
+matching Niri's column model.
+The layout is two-dimensional:
+horizontal position is lineage depth,
+vertical position within a column accumulates panes spawned from the previous column.
+
+Single-click on anything spawns its child representation in the next column,
+then auto-scrolls focus there:
+
+- single-click on a directory spawns a listing pane,
+- single-click on a file selects it and spawns a preview pane,
+- Enter and double-click on a file open it with the OS default application.
+
+Spawn rules:
+
+- Dedup first:
+  clicking an entry whose pane already exists focuses the existing pane instead of spawning.
+- A modifier (for example Ctrl+click) forces a fresh duplicate pane.
+- Preview panes are symmetric with directory panes:
+  each previewed file gets its own persistent pane,
+  dedup-and-focus on revisit,
+  explicit close.
+  Browsing many photos deliberately mints many panes;
+  culling (see spike gates) must keep that cheap.
+- Keyboard selection changes follow the same spawn and dedup rules as clicks.
+- A pane opened by the OS (default-manager launch paths) has no parent pane;
+  it spawns as a new column immediately right of the focused column,
+  after dedup.
+
+Lifecycle rules:
+
+- Panes die only on explicit close (Niri-style).
+- No automatic pruning and no pane-count caps;
+  pane identity (location,
+  selection,
+  scroll position) costs bytes,
+  and web browsers demonstrate thousands of tabs are fine.
+- Off-screen panes may evict content freely:
+  `DirectorySnapshot`s and decoded preview bitmaps drop and re-materialize on scroll-back;
+  identity never drops.
+- Bulk-close gestures (close column,
+  close everything right of here) are required early,
+  because spawn-on-descent accumulates panes as a side effect of browsing.
+
+Session rules:
+
+- The strip restores by default on launch:
+  pane locations,
+  order,
+  columns,
+  selection,
+  and scroll targets,
+  in a versioned on-disk format.
+- Restore cost must scale with the viewport,
+  not the strip:
+  snapshots and previews load lazily through the same bounded-window mechanism scrolling uses.
+- Missing or unreadable directories restore as error panes in place.
+
+Instance rules:
+
+- Single instance.
+  OS open requests route to the running instance over platform IPC
+  (Unix socket or D-Bus on Linux,
+  named pipe on Windows,
+  Apple Events on macOS)
+  and raise the window.
 
 ## Chosen architecture
 
@@ -85,12 +188,14 @@ It is a set of responsibility boundaries:
   directory reads,
   metadata enrichment,
   file watching,
-  search,
+  search (delegated to `fff-core`),
   previews,
   and cancellable background work.
 - **Rust platform integration layer**:
   default-folder-viewer registration,
   shell open paths,
+  single-instance IPC,
+  platform-native icon pipelines,
   notifications,
   system menus,
   package hooks,
@@ -101,10 +206,26 @@ It is a set of responsibility boundaries:
   user-visible repair commands,
   uninstall cleanup,
   and restore-to-system-default behavior.
+  Designed as an interface in v1;
+  only the personal-machine path is implemented.
 
-The initial package should live under the desktop-app family,
-for example `packages/desktop-app/slint-file-manager/`,
-unless implementation work discovers a better existing category.
+The package lives at `packages/desktop-app/file-manager/`,
+function-named and stack-agnostic like its sibling `packages/desktop-app/terminal`,
+because bundle identifiers and registry restore values baked in by the native spikes must survive a stack fallback.
+A product display name can be layered on later without moving anything.
+
+Concurrency:
+tokio and rayon are both trusted and may be used freely wherever they simplify our own code,
+for example rayon for parallel directory walks
+and tokio for watcher streams,
+cancellation,
+and the single-instance IPC server.
+Owned-code simplicity outranks runtime minimalism.
+
+File watching uses the same `notify` major that `fff` pins (9.x),
+so the dependency tree never carries two incompatible notify versions.
+Trash operations go through the `trash` crate,
+verified per OS at the user boundary.
 
 ## Slint usage rules
 
@@ -117,17 +238,27 @@ Use Slint `ListView` for vertical file lists when possible.
 Do not rely on `ScrollView` for long file lists,
 because `ListView` is the widget with documented visible-item instantiation.
 
-Do not assume Slint provides horizontal pane virtualization.
-The horizontal strip should be driven by Rust state that exposes only a bounded window of panes to Slint.
+Do not assume Slint provides column-strip virtualization.
+The strip needs bounded instantiation at three nesting levels:
+columns virtualize horizontally,
+panes within a column virtualize vertically,
+and each pane's `ListView` virtualizes its rows.
+Rust state exposes only a bounded window of columns and panes to Slint.
 The UI may render:
 
-- visible panes,
-- one prefetch pane before the viewport,
-- one prefetch pane after the viewport,
+- visible columns and panes,
+- one prefetch column before the viewport,
+- one prefetch column after the viewport,
 - lightweight placeholders for transition edges when needed.
 
-The exact pane budget is an implementation detail,
+The exact budget is an implementation detail,
 but it must be measured with instrumentation before the stack choice is considered validated.
+
+The backend is a cargo feature switch during spikes:
+winit is the lean default (in-repo prior art,
+AccessKit),
+and the Qt backend is measured alongside it in the drag and drop spike
+because it is the only backend with `start_drag` in the audited source.
 
 Avoid `StandardListView` for the main file list until issue `#12354` is understood.
 A custom `ListView` delegate gives more control over pointer events,
@@ -140,14 +271,19 @@ and drag handles.
 The application state layer should use explicit concepts instead of a single global app state object:
 
 - `PaneId`:
-  stable identity for one pane instance.
+  stable identity for one pane instance;
+  survives deliberate duplicates,
+  so it is never merely a location.
 - `PaneLocation`:
   directory path,
+  file preview,
   virtual search result,
   recent files view,
   or future non-directory source.
+  Locations are the dedup lookup key.
 - `DirectorySnapshot`:
-  immutable view of entries at one read generation.
+  immutable view of entries at one read generation;
+  evictable and re-readable.
 - `FileEntry`:
   name,
   path,
@@ -156,16 +292,19 @@ The application state layer should use explicit concepts instead of a single glo
   icon key,
   preview status,
   and capability flags.
+  The icon key indirection is what lets icon pipelines change without touching the model.
 - `SelectionState`:
   anchor,
   focused row,
   selected entry set,
   and range-selection mode.
 - `PaneStripState`:
-  ordered pane ids,
+  ordered columns,
+  panes per column,
   active pane id,
   scroll target,
-  and visible window.
+  and visible window;
+  serialized in a versioned format for session restore.
 - `FileOperation`:
   copy,
   move,
@@ -173,7 +312,18 @@ The application state layer should use explicit concepts instead of a single glo
   delete,
   trash,
   restore,
-  and conflict resolution.
+  and conflict resolution,
+  each recorded with enough state to derive its inverse.
+- `UndoStack`:
+  inverse-operation undo and redo at Dolphin parity:
+  rename undoes by renaming back,
+  move by moving back,
+  trash by restore,
+  copy by deleting the copy behind a confirmation.
+  Overwrites are never undoable in v1;
+  they always require explicit confirmation,
+  and the UI never claims recoverability it does not have.
+  Inverse-operation failure (target changed since) surfaces as an honest error state.
 - `PlatformRegistrationState`:
   current default-manager registration status,
   saved prior values,
@@ -187,7 +337,47 @@ sorting,
 filtering,
 and view refreshes deterministic.
 
+## Search
+
+Search ships in v1 and delegates its logic to `fff-core`:
+
+- search panes (fuzzy file search as a `PaneLocation`),
+- recent-files panes (candidate source: fff's frecency data;
+  confirm during implementation),
+- in-pane type-ahead filtering (fff's matcher over the current snapshot).
+
+Integration risks to track:
+
+- `fff` is pre-1.0 (0.9.x) and fast-moving;
+  a version bump can shift APIs under a v1 feature.
+- `fff` maintains its own watches and LMDB index;
+  our runtime layer and fff will both watch overlapping trees,
+  and index placement must follow per-user data directory conventions.
+
+## Icons and previews
+
+v1 renders platform-native icons plus image thumbnails:
+
+- icons come from each OS
+  (XDG icon theme on Linux,
+  `SHGetFileInfo` on Windows,
+  `NSWorkspace` on macOS),
+  behind the `FileEntry` icon-key indirection,
+  with caching and DPI variants per platform;
+- image thumbnails decode in-process with memory-safe Rust (`image` crate),
+  reusing the freedesktop thumbnail cache on Linux where present;
+- previewers never execute files;
+- richer previews (PDF,
+  video) are deferred.
+
 ## Native integration scope
+
+Registration is symmetric across Windows,
+macOS,
+and Linux in v1,
+including Win+E interception on Windows
+(a separate registration with its own saved restore value and revert,
+following the OneCommander precedent).
 
 Do not describe the feature as "replace Finder" or "replace Explorer" without subcases.
 The native integration layer must track observable launch paths separately:
@@ -202,7 +392,7 @@ The native integration layer must track observable launch paths separately:
 - uninstall and revert behavior.
 
 Windows work needs native code for Directory and Drive shell commands,
-Win+E handling if desired,
+Win+E handling,
 registry value backup,
 argument quoting,
 installer integration,
@@ -230,17 +420,36 @@ not against irreversible user defaults.
 Implementation should not start by building the full file manager.
 Run these spikes first and record results in this document or a follow-up planning note.
 
-### Horizontal pane virtualization spike
+Sequencing:
+one shared in-repo Slint prototype hosts the virtualization spike first
+(identity risk resolves before anything else),
+with the context-menu spike folded into the same app,
+then the drag and drop spike extends it with cargo-feature backend switching.
+The native default-manager probes are independent of Slint
+and run on `m1` and `x13-win` whenever convenient.
+Spike crates live in-repo,
+following the `desktop-app/terminal` prototype precedent,
+so results stay reproducible.
 
-Build a Slint plus Rust prototype with a horizontally scrollable pane strip.
-Each visible pane contains a `ListView` with a large model.
-Instrument the number of instantiated panes and row delegates.
+### Column-strip virtualization spike
+
+Build a Slint plus Rust prototype with the two-dimensional column strip:
+columns virtualize horizontally,
+panes within a column virtualize vertically,
+each visible pane contains a `ListView` with a large model,
+and preview panes hold decoded images.
+Instrument the number of instantiated columns,
+panes,
+and row delegates,
+plus decoded-image memory.
 
 Pass criteria:
 
-- off-screen panes are not fully instantiated,
+- off-screen columns and panes are not fully instantiated,
 - vertical row delegates remain bounded by viewport size,
-- memory stays bounded while jumping across far-apart pane positions,
+- memory stays bounded while jumping across far-apart strip positions,
+- browsing many image files mints many preview panes while decoded-image memory stays bounded by the viewport,
+  and evicted previews re-decode on scroll-back,
 - keyboard focus survives pane recycling,
 - prototype runs on Linux,
   macOS,
@@ -251,7 +460,9 @@ compare Qt and GPUI before continuing with Slint.
 
 ### File drag and drop spike
 
-Prototype file drag and drop in both directions:
+Prototype file drag and drop in both directions,
+on both the winit and Qt backends via a cargo feature switch,
+on all three operating systems:
 
 - drag files from the OS file manager into the Slint app,
 - drag files from the Slint app into the OS file manager,
@@ -264,8 +475,15 @@ Pass criteria:
 - internal drags carry structured app-local data,
 - copy and move actions are distinguishable.
 
+The backend comparison is part of the spike record:
+if only the Qt backend passes,
+that result feeds the fallback decision as evidence,
+not speculation.
+
 Failure action:
-either design a native adapter around Slint pointer events,
+either design a native adapter around Slint pointer events
+(hand-written per OS;
+`drag-rs` is reference material only),
 contribute upstream Slint file-list MIME support,
 or compare Qt before committing to Slint.
 
@@ -291,6 +509,7 @@ avoid affected Slint widgets or patch Slint before building production file-list
 
 Prototype registration and revert behavior on each operating system.
 Use the launch-path list in this plan as the test matrix.
+On Windows the matrix includes Win+E.
 
 Pass criteria:
 
@@ -307,12 +526,18 @@ or scope default-manager support to the operating systems whose prototypes pass.
 
 ## Implementation milestones
 
+Keyboard interaction is core in every milestone,
+not a final milestone:
+each feature ships keyboard-operable,
+because a file manager is keyboard-primary software.
+
 ### Foundation
 
-Create the Rust package,
+Create the Rust package at `packages/desktop-app/file-manager/`,
 Slint build pipeline,
 logging,
 settings storage,
+single-instance IPC,
 and a single empty window.
 Run the app on Linux,
 macOS,
@@ -324,18 +549,28 @@ Implement directory reads,
 metadata loading,
 error states,
 sort order,
-filtering,
+in-pane filtering,
 and refresh.
-Render one pane with a custom Slint `ListView` delegate.
+Render one pane with a custom Slint `ListView` delegate,
+keyboard-navigable.
 
 ### Pane strip
 
 Implement `PaneStripState`,
-pane creation,
+column layout,
+spawn and dedup rules,
 pane recycling,
 active-pane focus,
-and horizontal navigation.
-Keep the pane virtualization instrumentation in the codebase until the behavior is stable.
+horizontal and vertical navigation,
+bulk-close gestures,
+and session restore.
+Keep the virtualization instrumentation in the codebase until the behavior is stable.
+
+### Icons and previews
+
+Implement platform-native icon pipelines per OS behind the icon-key indirection,
+image thumbnail decoding,
+and preview panes with the pane-per-file lifecycle and eviction.
 
 ### Selection and commands
 
@@ -349,8 +584,10 @@ rename,
 trash,
 delete,
 copy,
-and move.
+move,
+and the inverse-operation undo stack.
 Destructive operations must use reversible fixtures in tests and clear confirmation paths in the UI.
+Overwrites always confirm and never claim undoability.
 
 ### File watching and async work
 
@@ -359,6 +596,14 @@ cancellable directory refreshes,
 preview jobs,
 and stale-result suppression.
 A slow directory read must not block pointer or keyboard interaction.
+
+### Search
+
+Integrate `fff-core`:
+search panes,
+recent-files panes,
+and index lifecycle,
+with cancellation and streaming results into the pane model.
 
 ### Drag and drop
 
@@ -378,30 +623,32 @@ Do not share behavior through stringly commands when a typed adapter can expose 
 ### Packaging
 
 Add platform packages only after the app launches and reads directories on each target.
-Packaging work includes macOS signing and notarization,
-Windows installer or MSIX decision,
-Linux desktop file and package format decisions,
-and update strategy.
+v1 implements only the personal-machine path;
+signing,
+notarization,
+installer or MSIX decisions,
+Linux package formats,
+and update strategy stay designed-but-deferred.
 
-### Accessibility and keyboard completeness
+### Assistive technology
 
 Add accessible roles,
 labels,
-focus traversal,
-keyboard equivalents,
 and screen-reader checks for panes,
 rows,
 menus,
 and dialogs.
-A file manager is keyboard-primary software;
-keyboard coverage is not polish.
+Keyboard coverage already shipped inside each milestone;
+this milestone covers the assistive-technology semantics on top of it.
 
 ## Testing and verification
 
 Use unit tests for pure Rust state transitions:
 pane graph,
+spawn and dedup rules,
 selection,
 sorting,
+undo stack,
 operation planning,
 and platform-registration state machines.
 
@@ -438,6 +685,7 @@ That is why Electron and Tauri are not the chosen stack.
 The Rust application must still treat filesystem operations as privileged:
 
 - previewers must not execute files,
+- image decoding stays in memory-safe Rust,
 - paths crossing syntax boundaries must be encoded for the destination grammar,
 - delete and overwrite operations need explicit command states,
 - background tasks must be cancellable,
@@ -448,11 +696,14 @@ The Rust application must still treat filesystem operations as privileged:
 
 Reopen the stack decision if any of these happen:
 
-- Slint cannot support bounded horizontal pane virtualization without rewriting major runtime pieces.
+- Slint cannot support bounded column-strip virtualization without rewriting major runtime pieces.
 - Slint cannot support native file-list drag and drop through a maintainable adapter or upstream patch.
 - Row context menus cannot be made reliable for the main file list.
 - Accessibility requirements require platform hooks Slint cannot expose.
 - Native default-manager integration dominates the project enough that Qt's mature platform layer outweighs Slint's smaller stack.
+- `fff` churn under the v1 search feature becomes unsustainable;
+  the fallback there is pinning plus vendoring,
+  not a stack change.
 
 The first fallback candidate is Qt.
 GPUI is the second fallback if custom pane rendering becomes more important than mature widgets.

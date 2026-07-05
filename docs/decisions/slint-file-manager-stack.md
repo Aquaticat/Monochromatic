@@ -4,7 +4,10 @@
 
 Accepted direction,
  2026-07-05.
-Implementation is gated by the spike criteria in `docs/planning/slint-file-manager.md`.
+Implementation is gated by the spike criteria in `docs/planning/file-manager.md`.
+Product decisions (pane model,
+scope,
+naming) were resolved in a grilling session on 2026-07-05 and recorded there.
 
 ## Context
 
@@ -96,7 +99,7 @@ The following risks can reopen the decision:
 - accessibility requirements require platform hooks Slint cannot expose,
 - default-manager integration dominates the project enough that Qt's mature platform layer is worth the heavier stack.
 
-The spike gates and failure actions are documented in `docs/planning/slint-file-manager.md`.
+The spike gates and failure actions are documented in `docs/planning/file-manager.md`.
 
 ## Rejected alternatives
 
@@ -259,7 +262,7 @@ though neither is preferred.
 
 ## Consequences
 
-- The first implementation path is `docs/planning/slint-file-manager.md`.
+- The first implementation path is `docs/planning/file-manager.md`.
 - Implementation should start with Slint plus Rust prototypes,
   not with a full file-manager build.
 - Qt remains the explicit fallback if Slint fails horizontal virtualization,
