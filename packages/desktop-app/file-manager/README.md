@@ -109,6 +109,25 @@ The dedicated Menu key opens the menu everywhere;
 Full diagnosis, source trace, and the coordinate maths are in
  `docs/troubleshooting/slint-contextmenuarea-listview-rows.md`.
 
+## Internal drag and drop (Slint 1.17.0 DragArea/DropArea)
+
+Each directory row is a `DragArea` whose payload is the row's app-local
+`(pane, row)` identity, packed by Rust into the transfer's `user_data`;
+each pane is a `DropArea` that reads the identity back on drop and records the
+source, target pane, and the negotiated move/copy action to the HUD and the log.
+The payload carries no text or image, so Slint keeps the drag in-window on every
+backend, which makes it deterministic to drive headlessly.
+A drag-mode button flips the allowed actions so a headless session can exercise
+both a move and a copy without injecting a modifier key.
+
+This is only the in-process half.
+Stock Slint 1.17.0 exposes no OS-native file drag-and-drop on any backend
+(no external file-drop delivery, no outbound file-list payload), so dragging
+files to and from the OS file manager needs a hand-written per-OS native adapter,
+deferred to the native-integration milestone.
+Full source trace, the backend comparison, and the upstream decision are in
+ `docs/troubleshooting/slint-drag-and-drop-file-lists.md`.
+
 ## Architecture
 
 - `src/strip.rs`:
@@ -136,6 +155,10 @@ Full diagnosis, source trace, and the coordinate maths are in
 - `src/menu.rs`:
    the row context-menu handlers (activate a row, keyboard menu key, run a command),
  the Rust half of the Slint issue `#12354` workaround.
+- `src/drag_drop.rs`:
+   the internal pane-to-pane drag-and-drop handlers (build a row's app-local
+ payload, accept a hovering drag, record a drop),
+ with unit tests in `src/drag_drop_tests.rs`.
 - `src/app.rs`:
    the backend install,
  callback wiring,
@@ -195,15 +218,22 @@ The MCP server binds `127.0.0.1:9317`.
 The HUD strings are readable with `get_element_properties` on the `AppWindow::hud-a`,
  `AppWindow::hud-b`,
  `AppWindow::hud-c`,
- and `AppWindow::hud-d` elements
+ `AppWindow::hud-d`,
+ and `AppWindow::hud-e` elements
 (the text arrives in the `accessibleLabel` field;
- `hud-d` is the last menu command plus the identity it targeted);
+ `hud-d` is the last menu command plus the identity it targeted,
+ and `hud-e` is the last drag-and-drop plus its source, target pane, and action);
  the `h-slider`,
  `v-slider`,
  and `btn-*` elements drive scrolling and navigation
-(`btn-menu` opens the context menu on the active pane).
+(`btn-menu` opens the context menu on the active pane,
+ `btn-dragcopy` toggles the drag action between move and copy).
 The row `TouchArea`s share the id `AppWindow::touch`;
  `click_element` one with `button: "Right"` opens the row's context menu.
+The row `DragArea`s share the id `AppWindow::drag` and the pane `DropArea`s share
+ `AppWindow::drop`;
+ `drag_element` from a row to another pane's position performs an internal
+ drag-and-drop that `hud-e` reports.
 
 ## Testing seams
 
