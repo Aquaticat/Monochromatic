@@ -154,6 +154,20 @@ pub use regex_syntax::{
 use std::fs;
 
 /// Imports dependencies used by this module.
+// What:     `use anyhow::{anyhow, Result};` imports `anyhow`'s error-construction
+//           macro and one-parameter application result alias. Sibling typed
+//           results name their exact error type.
+// Why:      Rule loading combines I/O, regex compile, and automaton-build errors
+//           into one user-facing diagnostic channel.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Error } from "std";
+// type Result<T> = T; // failures throw Error objects
+// ```
+use anyhow::{anyhow, Result};
+
+/// Imports dependencies used by this module.
 // What:     `use aho_corasick::AhoCorasick;` imports the multi-pattern
 //           literal-matcher type from the `aho-corasick` crate.
 //           AhoCorasick is `Send + Sync` (no interior mutex), uses SIMD
@@ -187,7 +201,7 @@ use aho_corasick::AhoCorasick;
 use rayon::prelude::*;
 
 /// Implements `load_ruleset`.
-// What:     `pub fn load_ruleset(path: &str) -> Result<RuleSet, String>`
+// What:     `pub fn load_ruleset(path: &str) -> Result<RuleSet>`
 //           reads the rules file at `path`, surfaces the I/O error
 //           with a friendly message if the read fails, and hands
 //           the contents to `load_ruleset_from_source`. The
@@ -205,7 +219,7 @@ use rayon::prelude::*;
 //   return loadRulesetFromSource(content, path);
 // }
 // ```
-pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
+pub fn load_ruleset(path: &str) -> Result<RuleSet> {
     // What:     `fs::read_to_string(path).map_err(|e| ...)?`. Slurp the
     //           rules file into an owned `String`. `?` propagates the
     //           formatted error early so the caller sees a friendly
@@ -220,7 +234,7 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     let timing = std::env::var("FORBIDDEN_STRINGS_DEBUG_TIMING").is_ok();
     let t_start = std::time::Instant::now();
     let content = fs::read_to_string(path)
-        .map_err(|e| format!("read rules {}: {}", path, e))?;
+        .map_err(|e| anyhow!("read rules {}: {}", path, e))?;
     if timing {
         let dt = std::time::Instant::now().duration_since(t_start).as_secs_f64() * 1000.0;
         // eprintln, not tracing: an opt-in per-phase timing report gated by
@@ -231,7 +245,7 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
 }
 
 /// Implements `load_ruleset_from_source`.
-// What:     `pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, String>`
+// What:     `pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet>`
 //           runs the loader pipeline (classify -> compile regex
 //           rules in parallel -> extract gating substrings -> build
 //           the AC indices -> build the residual shards) against an
@@ -250,7 +264,7 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
 //   /* classify, compile, build indices, return RuleSet */
 // }
 // ```
-pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, String> {
+pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet> {
     // What:     `let timing = std::env::var("FORBIDDEN_STRINGS_DEBUG_TIMING").is_ok();`
     //           reads an env var ONCE; subsequent phase boundaries log
     //           elapsed wall time when this is true. The closure
@@ -349,14 +363,11 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     }
 
     if literal_specs.is_empty() && regex_specs.is_empty() {
-        // What:     `Err("no rules loaded".to_string())`. `Err(...)` is
-        //           the failure variant of `Result`; the literal
-        //           `"no rules loaded"` is `&'static str` (a borrowed
-        //           slice of the binary's read-only string table).
-        //           `.to_string()` allocates a fresh OWNED `String`
-        //           copy. Sibling: `&str` would not satisfy the
-        //           function's `Result<_, String>` signature -- the
-        //           caller may keep the error past our stack frame.
+        // What:     `Err(anyhow!("no rules loaded"))`. `Err(...)` is
+        //           the failure variant of `Result`; `anyhow!(...)` builds
+        //           an owned dynamic error value from the literal text.
+        //           Sibling: returning `String` directly would lose standard
+        //           error chaining support.
         // Why:      Empty rules file is a configuration error; surface
         //           it instead of silently scanning nothing.
         //
@@ -364,7 +375,7 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
         // ```ts
         // throw new Error("no rules loaded");
         // ```
-        return Err("no rules loaded".to_string());
+        return Err(anyhow!("no rules loaded"));
     }
 
     // Phase 2a: parallel-compile the regex bucket. Each `Regex::new`
@@ -384,7 +395,7 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     // default 10 MiB cap. 256 MiB has room for any realistic
     // secret-detection pattern in practice; this is RAM, not disk,
     // so the cap is per-process and disposed when the scanner exits.
-    // What:     `regex_specs.par_iter().map(|(idx, src)| { ... }).collect::<Result<Vec<_>, _>>()?`.
+    // What:     `regex_specs.par_iter().map(|(idx, src)| { ... }).collect::<Result<Vec<_>>>()?`.
     //           Step by step:
     //           - `.par_iter()` borrows the vec as a parallel iterator
     //             (rayon work-stealing across cores).
@@ -392,8 +403,8 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     //             element. The closure params destructure the
     //             `&(usize, String)` tuple into `idx: &usize` and
     //             `src: &String`. The closure returns
-    //             `Result<RegexRule, String>` per element.
-    //           - `.collect::<Result<Vec<_>, _>>()` materializes back
+    //             `Result<RegexRule>` per element.
+    //           - `.collect::<Result<Vec<_>>>()` materializes back
     //             into a SINGLE `Result`: either `Ok(Vec<RegexRule>)`
     //             with every per-element success, OR the FIRST `Err`
     //             encountered (short-circuit). The turbofish `::<...>`
@@ -442,9 +453,9 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
         .map(|(idx, src)| {
             compile_rule_src(src)
                 .map(|re| RegexRule { idx: *idx, re })
-                .map_err(|e| format!("rule on line {} {}", idx, e))
+                .map_err(|e| anyhow!("rule on line {} {}", idx, e))
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Result<Vec<_>>>()?;
     phase("1 classify+regex_compile");
 
     // Phase 2b: extract a Vec of gating substrings from each regex rule
@@ -528,7 +539,7 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     let ac: Option<AhoCorasick> = if ac_patterns.is_empty() {
         None
     } else {
-        Some(AhoCorasick::new(&ac_patterns).map_err(|e| format!("ac build: {}", e))?)
+        Some(AhoCorasick::new(&ac_patterns).map_err(|e| anyhow!("ac build: {}", e))?)
     };
 
     // What:     `AhoCorasickBuilder::new().ascii_case_insensitive(true).build(&ac_patterns_ci)?`
@@ -554,7 +565,7 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
             aho_corasick::AhoCorasickBuilder::new()
                 .ascii_case_insensitive(true)
                 .build(&ac_patterns_ci)
-                .map_err(|e| format!("ac-ci build: {}", e))?,
+                .map_err(|e| anyhow!("ac-ci build: {}", e))?,
         )
     };
     phase("3 ac_build");
@@ -602,7 +613,7 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     // What:     `build_residual_shards(&residual_positions, &regex_specs)?`.
     //           Two BORROW arguments (`&...`) -- we lend the slices
     //           read-only, the callee doesn't take ownership. The `?`
-    //           operator unwraps the returned `Result<Vec<ResidualShard>, String>`:
+    //           operator unwraps the returned `Result<Vec<ResidualShard>>`:
     //           `Ok(v)` becomes the bound value, `Err(e)` early-returns
     //           from `load_ruleset` with that error.
     // Why:      Compute the sharded residual gates from the positions

@@ -3,12 +3,23 @@
 use resharp::Regex;
 
 /// Imports dependencies used by this module.
+// What:     `use anyhow::Result;` imports `anyhow`'s one-parameter result alias.
+// Why:      `build_residual_shards` preserves the loader's fallible API shape even
+//           though the current greedy implementation cannot fail.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type Result<T> = T; // failures throw Error objects
+// ```
+use anyhow::Result;
+
+/// Imports dependencies used by this module.
 use super::engine::{requires_resharp, CompiledRegex};
 /// Imports dependencies used by this module.
 use super::types::ResidualShard;
 
 /// Implements `build_residual_shards`.
-// What:     `pub fn build_residual_shards(positions, regex_specs) -> Result<Vec<ResidualShard>, String>`
+// What:     `pub fn build_residual_shards(positions, regex_specs) -> Result<Vec<ResidualShard>>`
 //           is the public entry point. Delegates to `greedy_combine`,
 //           which returns `Vec<ResidualShard>` infallibly: the recursion
 //           bottoms at `ResidualShard::Single`, and Single shards do not
@@ -17,7 +28,7 @@ use super::types::ResidualShard;
 //           for API compatibility with callers that already match on
 //           `load_ruleset`'s overall Result.
 // Why:      Wrapping the infallible inner work in an outer `Result` keeps
-//           `rules.rs::load_ruleset` unchanged.
+//           `rules.rs::load_ruleset` composition unchanged.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -29,7 +40,7 @@ use super::types::ResidualShard;
 pub fn build_residual_shards(
     positions: &[usize],
     regex_specs: &[(usize, String)],
-) -> Result<Vec<ResidualShard>, String> {
+) -> Result<Vec<ResidualShard>> {
     if positions.is_empty() {
         return Ok(Vec::new());
     }

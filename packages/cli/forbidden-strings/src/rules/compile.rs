@@ -14,6 +14,18 @@
 use resharp::Regex;
 
 /// Imports dependencies used by this module.
+// What:     `use anyhow::{anyhow, Result};` imports `anyhow`'s error-construction
+//           macro and one-parameter result alias.
+// Why:      Regex compilation merges pre-validator messages and upstream engine
+//           errors into one user-facing diagnostic channel.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type Result<T> = T; // failures throw Error objects
+// ```
+use anyhow::{anyhow, Result};
+
+/// Imports dependencies used by this module.
 // What:     `use std::panic::{catch_unwind, AssertUnwindSafe};` brings
 //           the panic-recovery primitives into scope for the
 //           compile-time wrap on `Regex::new`. Full primer at the
@@ -37,7 +49,7 @@ use resharp::Regex;
 //           panic aborts the scanner process during the parallel
 //           regex-compile phase, taking every other in-flight
 //           compile down with it. With `catch_unwind` the bad rule
-//           returns a normal `Err(String)` that the loader bubbles
+//           returns a normal `anyhow::Error` that the loader bubbles
 //           up to the user with the same `rule on line N (resharp): ...`
 //           prefix as every other compile failure.
 //
@@ -288,7 +300,7 @@ fn expand_unicode_whitespace(src: &str) -> String {
 }
 
 /// Implements `compile_rule_src`.
-// What:     `pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String>`
+// What:     `pub fn compile_rule_src(src: &str) -> Result<CompiledRegex>`
 //           is the single source of truth for the regex compile
 //           decision. It walks the routing classifier
 //           (`requires_resharp`), runs the lookaround-in-complement
@@ -315,7 +327,7 @@ fn expand_unicode_whitespace(src: &str) -> String {
 //   return compilePlainToCompiled(src);
 // }
 // ```
-pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
+pub fn compile_rule_src(src: &str) -> Result<CompiledRegex> {
     // What:     `if let Some(reason) = stacked_quantifier(src)` runs
     //           the structural pre-validator first. The detector flags
     //           two regex quantifier suffixes appearing back-to-back
@@ -348,7 +360,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     // if (reason) throw new Error(`(regex): ${reason}`);
     // ```
     if let Some(reason) = stacked_quantifier(src) {
-        return Err(format!("(regex): {}", reason));
+        return Err(anyhow!("(regex): {}", reason));
     }
     // What:     `if let Some(reason) = nested_grouped_quantifier(src)`
     //           catches the GROUPED form of multiplicative quantifier
@@ -377,7 +389,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     // ```
     if let Some(reason) = nested_grouped_quantifier(src) {
         tracing::warn!(rule = ?src, "pre-validator nested_grouped_quantifier rejected rule");
-        return Err(format!("(regex): {}", reason));
+        return Err(anyhow!("(regex): {}", reason));
     }
     // What:     `if requires_resharp(src) { ... } else { ... }` runs
     //           the cheap routing classifier first. Resharp-only
@@ -420,7 +432,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = nesting_depth(src) {
             tracing::warn!(rule = ?src, "pre-validator nesting_depth rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     `if let Some(reason) = lookaround_in_complement(src)`
         //           runs the resharp pre-flight guard. The function
@@ -442,7 +454,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = lookaround_in_complement(src) {
             tracing::warn!(rule = ?src, "pre-validator lookaround_in_complement rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     Two additional pre-validators for resharp panic /
         //           silent-corruption shapes the fuzzer discovered in
@@ -478,11 +490,11 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = intersection_with_lookbehind(src) {
             tracing::warn!(rule = ?src, "pre-validator intersection_with_lookbehind rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         if let Some(reason) = intersection_with_word_end_alternation(src) {
             tracing::warn!(rule = ?src, "pre-validator intersection_with_word_end_alternation rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     `lookaround_in_alternation_with_sibling` catches
         //           the shape `(a|(?![X]))(?!Y)` and variants -- an
@@ -512,7 +524,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = lookaround_in_alternation_with_sibling(src) {
             tracing::warn!(rule = ?src, "pre-validator lookaround_in_alternation_with_sibling rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     `complement_intersection_quantified_group` catches
         //           the shape `<prefix>~(\w)&(?:...)*` that causes
@@ -537,7 +549,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = complement_intersection_quantified_group(src) {
             tracing::warn!(rule = ?src, "pre-validator complement_intersection_quantified_group rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     `nested_lookahead_in_quantified_group` catches the
         //           shape `(?:(?:(?!X)){m,n}){p,q}` (and `(?:(?!X){m,n}){p,q}`)
@@ -564,7 +576,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = nested_lookahead_in_quantified_group(src) {
             tracing::warn!(rule = ?src, "pre-validator nested_lookahead_in_quantified_group rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     `quantified_lookahead_with_sibling_content` catches a
         //           second Bug F shape: `(?:(?!X)){m,n}<atom>` (a
@@ -596,7 +608,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = quantified_lookahead_with_sibling_content(src) {
             tracing::warn!(rule = ?src, "pre-validator quantified_lookahead_with_sibling_content rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     `nested_quantifier_after_wildcard` catches the
         //           depth-3 nested-quantifier-on-`_`-wildcard shape
@@ -620,7 +632,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = nested_quantifier_after_wildcard(src) {
             tracing::warn!(rule = ?src, "pre-validator nested_quantifier_after_wildcard rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     `nested_chain_in_lookaround_body` catches the
         //           depth-3 nested-quantifier shape sitting inside a
@@ -644,7 +656,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = nested_chain_in_lookaround_body(src) {
             tracing::warn!(rule = ?src, "pre-validator nested_chain_in_lookaround_body rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     `nested_complement` catches rule shapes containing
         //           one complement `~(...)` whose body contains another
@@ -671,7 +683,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // ```
         if let Some(reason) = nested_complement(src) {
             tracing::warn!(rule = ?src, "pre-validator nested_complement rejected rule");
-            return Err(format!("(resharp): {}", reason));
+            return Err(anyhow!("(resharp): {}", reason));
         }
         // What:     `Regex::new(src).map(CompiledRegex::Resharp).map_err(...)`.
         //           `Regex::new` is resharp's compile constructor;
@@ -710,7 +722,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //             + UnwindSafe`.
         //           - The nested `match caught` flattens the two-level
         //             `Result<Result<Regex, resharp::Error>, Box<dyn Any + Send>>`
-        //             into a single `Result<CompiledRegex, String>`:
+        //             into a single `Result<CompiledRegex>`:
         //             outer `Err` (panic) becomes `(resharp): panic
         //             during compile`, inner `Err` becomes the
         //             standard `(resharp): <error>` shape, inner `Ok`
@@ -735,18 +747,17 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         let caught = catch_unwind(AssertUnwindSafe(|| Regex::new(src)));
         return match caught {
             Ok(Ok(re)) => Ok(CompiledRegex::Resharp(re)),
-            Ok(Err(e)) => Err(format!("(resharp): {:?}", e)),
-            Err(_) => Err(
+            Ok(Err(e)) => Err(anyhow!("(resharp): {:?}", e)),
+            Err(_) => Err(anyhow!(
                 "(resharp): panic during compile (upstream resharp 0.5.x through 0.6.x bug). See docs/troubleshooting/resharp.md."
-                    .to_string()
-            ),
+            )),
         };
     }
     compile_plain_rule_to_compiled(src)
 }
 
 /// Implements `compile_plain_rule_to_compiled`.
-// What:     `fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex, String>`
+// What:     `fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex>`
 //           is the unicode-off / unicode-on fallback compile path
 //           for rules that did NOT route to resharp. Identical to
 //           the previous `compile_plain_rule` body, but returns a
@@ -761,7 +772,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
 // ```ts
 // function compilePlainToCompiled(src: string): CompiledRegex { ... }
 // ```
-fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex, String> {
+fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex> {
     // What:     `let src = &expand_unicode_whitespace(src);`. Rewrite
     //           the rule source so `\s` (free or in a class) matches
     //           Unicode whitespace UTF-8 byte sequences under the
@@ -846,5 +857,5 @@ fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex, String> {
         .dfa_size_limit(256 * 1024 * 1024)
         .build()
         .map(CompiledRegex::Plain)
-        .map_err(|e| format!("(regex): {:?}", e))
+        .map_err(|e| anyhow!("(regex): {:?}", e))
 }

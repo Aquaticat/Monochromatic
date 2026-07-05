@@ -233,7 +233,7 @@ fuzz_target!(|input: RuleAndContent| {
     let src = rule.render();
 
     // What:     `let compiled = match compile_rule_src(&src) { ... };`.
-    //           Pattern match on `Result<CompiledRegex, String>`.
+    //           Pattern match on `anyhow::Result<CompiledRegex>`.
     //           The `Err` arm returns early (`return;`) so libFuzzer
     //           does not count compile-failures as soundness
     //           violations -- those are uninteresting "bad syntax"

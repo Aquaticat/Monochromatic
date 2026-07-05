@@ -63,6 +63,18 @@ mod walk;
 pub mod fuzz_api;
 
 /// Imports dependencies used by this module.
+// What:     `use anyhow::Result;` imports `anyhow`'s one-parameter application
+//           result alias. Sibling typed results name their exact error type.
+// Why:      The CLI boundary keeps one catastrophic-error channel while ordinary
+//           scan findings continue to return numeric exit codes.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type Result<T> = T; // failures throw Error objects
+// ```
+use anyhow::Result;
+
+/// Imports dependencies used by this module.
 // What:     `use clap::Parser;` brings the parser trait into this module. Rust
 //           only lets trait methods such as `Cli::try_parse_from(...)` be called
 //           when the trait is in scope. `::` is Rust's namespace separator.
@@ -435,11 +447,11 @@ fn read_with_binary_check(path: &str) -> Result<Vec<u8>, std::io::Error> {
 }
 
 /// Run the scanner from real process arguments and environment values.
-// What:     `pub fn run_cli_from_env() -> Result<i32, String>` is the library
+// What:     `pub fn run_cli_from_env() -> Result<i32>` is the library
 //           entry point. It asks clap to parse `env::args()`, applies the
 //           `FORBIDDEN_STRINGS_RULES` fallback, loads the ruleset, runs the
 //           parallel scan, prints hits to stderr, and returns the exit code the
-//           OS should see. `Result<i32, String>` lets the binary thin wrapper
+//           OS should see. `Result<i32>` lets the binary thin wrapper
 //           decide how to report a catastrophic failure (the `Err` arm) versus a
 //           regular run (`Ok(0)` clean, `Ok(1)` violation, `Ok(2)` usage error
 //           already printed). Sibling shape considered: returning `ExitCode`
@@ -459,14 +471,14 @@ fn read_with_binary_check(path: &str) -> Result<Vec<u8>, std::io::Error> {
 // }
 // process.exit(await runCliFromEnv());
 // ```
-pub fn run_cli_from_env() -> Result<i32, String> {
+pub fn run_cli_from_env() -> Result<i32> {
     // What:     `Cli::try_parse_from(env::args())` calls the clap-generated parser.
     //           `::` is Rust's namespace operator. `env::args()` includes the
     //           program name at index 0, which clap expects so it can render usage.
     //           `match` extracts the success payload (`Ok(parsed_cli)`) or handles
     //           clap's display/error wrapper (`Err(parse_error)`).
     // Why:      Replace the handwritten argv loop with clap while preserving this
-    //           function's non-panicking `Result<i32, String>` boundary.
+    //           function's non-panicking `Result<i32>` boundary.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -480,8 +492,8 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             // What:     `if let Err(print_error) = parse_error.print() { ... }`
             //           is a one-arm pattern match over clap's attempt to write
             //           help, version, or parse errors to the right stream.
-            //           `print_error.to_string()` converts an IO error into the
-            //           owned `String` this function's `Err` arm carries.
+            //           `print_error.into()` converts an IO error into the
+            //           `anyhow::Error` this function's `Err` arm carries.
             // Why:      If clap cannot print, surface that catastrophic failure to
             //           `main` instead of silently returning a success code.
             //
@@ -491,7 +503,7 @@ pub fn run_cli_from_env() -> Result<i32, String> {
             // if (!printed.ok) throw new Error(String(printed.error));
             // ```
             if let Err(print_error) = parse_error.print() {
-                return Err(print_error.to_string());
+                return Err(print_error.into());
             }
 
             // What:     `return Ok(parse_error.exit_code());` converts clap's
@@ -574,14 +586,14 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //   all ? listFiles(".") : Promise.resolve(null),
     // ]);
     // ```
-    let (ruleset_result, listed_result): (Result<_, String>, Option<Result<Vec<String>, String>>) =
+    let (ruleset_result, listed_result): (Result<_>, Option<Result<Vec<String>>>) =
         rayon::join(
             || load_ruleset(&rules_path),
             || if all { Some(list_files(".")) } else { None },
         );
 
     // What:     `let ruleset = match ruleset_result { Ok(r) => r, Err(e) => { ...; return ... } };`
-    //           is a `match` expression destructuring a `Result<RuleSet, String>`.
+    //           is a `match` expression destructuring a `Result<RuleSet>`.
     //           `Ok(r)` binds the success payload to local `r` and
     //           "evaluates" the arm to that value; `Err(e)` binds the
     //           failure payload, prints it, and early-returns from
@@ -643,7 +655,7 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // What:     `if let Some(listed) = listed_result { match listed { ... } }`.
     //           One-arm pattern match: enter the block ONLY when
     //           `listed_result` is `Some`, binding the inner
-    //           `Result<Vec<String>, String>` to `listed`. Inside, a
+    //           `Result<Vec<String>>` to `listed`. Inside, a
     //           regular `match` extracts `Ok` (replace `files` with the
     //           walker's output) or `Err` (print, exit 2).
     // Why:      `listed_result` is `Some(...)` only when `--all` was
@@ -842,7 +854,7 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     //           This is an `if`-as-EXPRESSION (not statement) with no
     //           trailing `;`: its value becomes the function's return.
     //           `Ok(0)` and `Ok(1)` construct the success variant of
-    //           `Result<i32, String>` with the OS-exit code inside; the
+    //           `Result<i32>` with the OS-exit code inside; the
     //           bin wrapper converts to `ExitCode` for the actual exit.
     // Why:      No hits = clean exit; one or more hits = "violation"
     //           exit so CI marks the run as failed.

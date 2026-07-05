@@ -282,6 +282,7 @@ name = "forbidden-strings"
 version = "0.1.9"
 dependencies = [
  "aho-corasick",
+ "anyhow",
  "clap",
  "gix-hash",
  "gix-index",

@@ -36,7 +36,7 @@ use std::process::ExitCode;
 /// Implements `main`.
 // What:     `fn main() -> ExitCode` is the program entry point. It
 //           dispatches to `run_cli_from_env` and converts the
-//           returned `Result<i32, String>` into an `ExitCode`. The
+//           returned `Result<i32>` into an `ExitCode`. The
 //           `Err` arm prints the catastrophic error to stderr with
 //           a fixed `forbidden-strings:` prefix and exits 2; the
 //           lib never produces an `Err` today (every recoverable
@@ -54,7 +54,7 @@ use std::process::ExitCode;
 // ```
 fn main() -> ExitCode {
     // What:     `match run_cli_from_env() { Ok(code) => ..., Err(e) => ... }`
-    //           destructures the `Result<i32, String>`. `Ok(code)`
+    //           destructures the `Result<i32>`. `Ok(code)`
     //           binds the inner `i32` and the arm converts it to
     //           `ExitCode::from(code as u8)` -- the cast is safe in
     //           practice because every `Ok` arm in the lib returns

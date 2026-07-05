@@ -28,6 +28,18 @@ use ignore::WalkBuilder;
 use ignore::WalkState;
 
 /// Imports dependencies used by this module.
+// What:     `use anyhow::{anyhow, Result};` imports `anyhow`'s error-construction
+//           macro and result alias for the walker boundary.
+// Why:      The parallel collector can report lock poisoning through the same
+//           application error channel as rule loading.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type Result<T> = T; // failures throw Error objects
+// ```
+use anyhow::{anyhow, Result};
+
+/// Imports dependencies used by this module.
 // What:     `use std::sync::{Arc, Mutex};` imports two thread-safe
 //           wrappers from the standard library.
 //             - `Arc<T>` ("atomically reference-counted") is a heap-
@@ -135,14 +147,14 @@ fn detect_index_hash_kind(repo_root: &std::path::Path) -> gix_hash::Kind {
 }
 
 /// Implements `list_files`.
-// What:     `pub fn list_files(root: &str) -> Result<Vec<String>, String>`
+// What:     `pub fn list_files(root: &str) -> Result<Vec<String>>`
 //           walks the working tree starting at `root` and returns an
 //           owned vector of file paths (UTF-8). `pub` makes it visible
 //           to `main.rs`. The signature mirrors the prior
 //           `list_tracked_files` to keep the call site simple.
 // Why:      `--all` mode calls this once to get every scannable file.
-//           The `Result` shape lets us propagate walk errors as
-//           strings, matching the rest of the binary's error style.
+//           The `Result` shape lets us propagate walk errors through
+//           anyhow, matching the rest of the binary's error style.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -155,7 +167,7 @@ fn detect_index_hash_kind(repo_root: &std::path::Path) -> gix_hash::Kind {
 //     .map((e) => e.path);
 // }
 // ```
-pub fn list_files(root: &str) -> Result<Vec<String>, String> {
+pub fn list_files(root: &str) -> Result<Vec<String>> {
     // What:     `Arc::new(Mutex::new(Vec::new()))` allocates an empty
     //           `Vec<String>`, wraps it in a `Mutex`, then heap-
     //           allocates that mutex behind an atomically-refcounted
@@ -365,8 +377,8 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     // return out;
     // ```
     let mut files = match Arc::try_unwrap(files) {
-        Ok(m) => m.into_inner().map_err(|e| format!("walk poisoned: {}", e))?,
-        Err(arc) => arc.lock().map_err(|e| format!("walk poisoned: {}", e))?.clone(),
+        Ok(m) => m.into_inner().map_err(|e| anyhow!("walk poisoned: {}", e))?,
+        Err(arc) => arc.lock().map_err(|e| anyhow!("walk poisoned: {}", e))?.clone(),
     };
 
     // What:     Union with paths read from `.git/index` via `gix-index`
