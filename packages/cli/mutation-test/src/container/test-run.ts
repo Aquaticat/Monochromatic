@@ -71,7 +71,9 @@ async function runOneTest(options: {
     {
       cwd: options.cwd,
       detached: true,
-      stdio: 'ignore',
+      // Inherit so baseline failures land in the container log; mutant
+      // runs are noisy but the old tool streamed runner output too.
+      stdio: 'inherit',
     },
   );
   /**

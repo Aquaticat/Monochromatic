@@ -18,6 +18,14 @@ import spawn from 'nano-spawn';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { isRecord, } from '../is-record.ts';
+
+/**
+ * Cap on captured diagnostic text per failure, keeping shard reports
+ * readable when tsc emits hundreds of errors.
+ */
+const DIAGNOSTIC_TEXT_LIMIT = 4_000;
+
 /**
  * Module logger for container-side type checking.
  */
@@ -31,6 +39,39 @@ export type TsgoOutcome = {
   readonly durationMs: number;
   readonly detail: string;
 };
+
+/**
+ * Extracts compiler diagnostics from a spawn failure.
+ *
+ * nano-spawn attaches captured stdout/stderr to its error; without them
+ * a red-baseline report only says "exit code 1", which is undebuggable.
+ *
+ * @param error - Caught spawn error.
+ *
+ * @returns Combined diagnostic text, possibly empty.
+ *
+ * @example
+ * ```ts
+ * diagnosticsFromError(caught);
+ * ```
+ */
+export function diagnosticsFromError(error: unknown,): string {
+  if (!isRecord(error,))
+    return '';
+
+  return [
+    error.stdout,
+    error.stderr,
+  ]
+    .filter(function isText(value,): value is string {
+      return ((typeof value) === 'string') && (value !== '');
+    },)
+    .join('\n',)
+    .slice(
+      0,
+      DIAGNOSTIC_TEXT_LIMIT,
+    );
+}
 
 /**
  * Runs one incremental project check in the package directory.
@@ -84,7 +125,7 @@ export async function tsgoCheck(options: {
     return {
       clean: false,
       durationMs: performance.now() - startedAt,
-      detail: String(error,),
+      detail: `${String(error,)} ${diagnosticsFromError(error,)}`.trim(),
     };
   }
 }

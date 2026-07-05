@@ -12,7 +12,10 @@
  */
 
 import { createHash, } from 'node:crypto';
-import { readFile, } from 'node:fs/promises';
+import {
+  readdir,
+  readFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import spawn from 'nano-spawn';
@@ -50,7 +53,51 @@ const CONTAINER_IGNOREFILE = 'packages/cli/mutation-test/runtime/containerignore
 const TAG_HEX_LENGTH = 12;
 
 /**
+ * Recursively lists files under one directory, sorted for stable hashes.
+ *
+ * @param dir - Absolute directory.
+ *
+ * @returns Sorted absolute file paths.
+ *
+ * @example
+ * ```ts
+ * await listFilesSorted('/repo/packages/cli/mutation-test/src');
+ * ```
+ */
+async function listFilesSorted(dir: string,): Promise<readonly string[]> {
+  /**
+   * Directory entries at this level.
+   */
+  const entries = await readdir(
+    dir,
+    { withFileTypes: true, },
+  );
+  /**
+   * Files from this level and below.
+   */
+  const nested = await Promise.all(entries.map(
+    async function collect(entry,): Promise<readonly string[]> {
+      /**
+       * Absolute path of this entry.
+       */
+      const absolute = join(
+        dir,
+        entry.name,
+      );
+      return entry.isDirectory() ? await listFilesSorted(absolute,) : [absolute,];
+    },
+  ),);
+  return nested.flat()
+    .toSorted();
+}
+
+/**
  * Computes the image reference for the current repo state.
+ *
+ * The hash covers dependency identity (lockfile), build recipe
+ * (Containerfile plus ignore list), and this package's own sources,
+ * because containers execute the baked copy of that source; without the
+ * source hash a container-side change would silently reuse stale images.
  *
  * @param options - Repository root.
  *
@@ -70,17 +117,59 @@ export async function imageReference(options: {
    */
   const hash = createHash('sha256',);
   /**
+   * Source directories inside the container's execution closure; host
+   * orchestration changes must not force image rebuilds.
+   */
+  const containerSourceDirs = await Promise.all([
+    'packages/cli/mutation-test/src/container',
+    'packages/cli/mutation-test/src/engine',
+  ].map(async function list(dir,): Promise<readonly string[]> {
+    return await listFilesSorted(join(
+      options.repoRoot,
+      dir,
+    ),);
+  },),);
+  /**
+   * This package's container-executed source files, baked into the image.
+   */
+  const sourceFiles = [
+    ...containerSourceDirs.flat(),
+    join(
+      options.repoRoot,
+      'packages/cli/mutation-test/src/shard-schema.ts',
+    ),
+    join(
+      options.repoRoot,
+      'packages/cli/mutation-test/src/mounts.ts',
+    ),
+    join(
+      options.repoRoot,
+      'packages/cli/mutation-test/src/is-record.ts',
+    ),
+  ]
+    .filter(function keepRuntime(file,): boolean {
+      return !file.endsWith('.test.ts',);
+    },)
+    .toSorted();
+  /**
    * Rebuild-triggering input files, read concurrently.
    */
   const inputs = await Promise.all([
-    'pnpm-lock.yaml',
-    CONTAINERFILE,
-    CONTAINER_IGNOREFILE,
-  ].map(async function readInput(input,): Promise<Buffer> {
-    return await readFile(join(
+    join(
       options.repoRoot,
-      input,
-    ),);
+      'pnpm-lock.yaml',
+    ),
+    join(
+      options.repoRoot,
+      CONTAINERFILE,
+    ),
+    join(
+      options.repoRoot,
+      CONTAINER_IGNOREFILE,
+    ),
+    ...sourceFiles,
+  ].map(async function readInput(input,): Promise<Buffer> {
+    return await readFile(input,);
   },),);
 
   for (const content of inputs)
