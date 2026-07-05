@@ -476,6 +476,31 @@ importers:
         specifier: 'catalog:'
         version: 7.0.1-rc
 
+  packages/agent-harnesses-shared/shell-command-analyzer:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      unbash:
+        specifier: 'catalog:'
+        version: 4.0.2
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+
   packages/build-tool/css:
     dependencies:
       '@monochromatic-dev/module-fs-path':
@@ -611,6 +636,9 @@ importers:
 
   packages/claude-code-plugins/source:
     dependencies:
+      '@monochromatic-dev/agent-harnesses-shell-command-analyzer':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/shell-command-analyzer
       '@monochromatic-dev/claude-code-plugins-hook-types':
         specifier: workspace:*
         version: link:../hook-types
@@ -2346,6 +2374,9 @@ importers:
 
   packages/pi-plugins/auto-mode:
     dependencies:
+      '@monochromatic-dev/agent-harnesses-shell-command-analyzer':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/shell-command-analyzer
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -2355,9 +2386,6 @@ importers:
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
-      unbash:
-        specifier: 'catalog:'
-        version: 4.0.2
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@6.0.3)
@@ -2408,6 +2436,9 @@ importers:
 
   packages/pi-plugins/guardrail:
     dependencies:
+      '@monochromatic-dev/agent-harnesses-shell-command-analyzer':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/shell-command-analyzer
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
