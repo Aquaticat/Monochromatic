@@ -212,15 +212,16 @@ await describe({
       fn: async function testBashGuardToggle() {
         const config = testConfig();
         const matcher = createPathGuardMatcher(config.pathRules,);
-        expect(evaluateToolCall({
+        const decision = evaluateToolCall({
           event: toolEvent({ toolName: 'bash', input: { command: 'bun test', }, },),
           ctx: context(),
           config,
           pathMatcher: matcher,
-        },),).toEqual({
-          block: true,
-          reason: expect.stringContaining('Blocked: `bun test` invocations are banned',),
         },);
+        if (decision === GUARDRAIL_NOT_BLOCKED)
+          throw new Error('Expected bun test tool call to be blocked',);
+        expect(decision.block,).toBe(true,);
+        expect(decision.reason.includes('Blocked: `bun test` invocations are banned',),).toBe(true,);
         expect(evaluateToolCall({
           event: toolEvent({ toolName: 'bash', input: { command: 'bun test', }, },),
           ctx: context(),

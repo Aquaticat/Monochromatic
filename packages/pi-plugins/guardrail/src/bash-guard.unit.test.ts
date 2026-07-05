@@ -67,10 +67,10 @@ await describe({
           name: 'blocks Bash input invoking bun test',
           fn: async function testBlocksBunTestInput() {
             const decision = evaluateBashGuard({ command: 'bun test foo.unit.test.ts', },);
-            expect(decision,).toEqual({
-              block: true,
-              reason: expect.stringContaining('mise run //packages/<path>:test:unit',),
-            },);
+            if (decision === GUARDRAIL_NOT_BLOCKED)
+              throw new Error('Expected bun test input to be blocked',);
+            expect(decision.block,).toBe(true,);
+            expect(decision.reason.includes('mise run //packages/<path>:test:unit',),).toBe(true,);
           },
         },),
         it({
