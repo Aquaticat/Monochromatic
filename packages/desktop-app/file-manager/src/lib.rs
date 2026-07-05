@@ -115,6 +115,18 @@ pub mod controller;
 /// ```
 pub mod model_sync;
 
+/// What:     `pub mod menu;` exposes the third `impl Controller` block: the row
+///           context-menu handlers (activate a row, keyboard menu key, run a menu
+///           command) added for the context-menu spike.
+/// Why:      Split from `controller.rs` to keep each file under the line budget,
+///           and to keep the #12354 workaround plumbing in one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as menu from "./menu";
+/// ```
+pub mod menu;
+
 /// What:     `pub mod launcher;` exposes the Wayland app-id hook.
 /// Why:      The window must carry a stable app id for shell integration, like
 ///           the sibling desktop apps.

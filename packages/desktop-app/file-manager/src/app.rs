@@ -151,6 +151,17 @@ fn mirror_hud(app: &AppWindow, instrumentation: &Instrumentation) {
     //           mirrors the focus flag (a plain `bool`).
     // Why:      The focus-survival read-back.
     app.set_active_pane_focused(instrumentation.active_pane_focused.get());
+    // What:     Mirror the context-menu target so a keyboard-invoked menu (whose
+    //           target Rust sets) also highlights the right row; the mouse path sets
+    //           these directly in Slint for instant feedback, so both agree.
+    // Why:      The row highlight reads these two properties.
+    app.set_menu_target_pane_id(instrumentation.menu_target_pane_id.get());
+    app.set_menu_target_row(instrumentation.menu_target_row.get());
+    // What:     `app.set_last_menu(instrumentation.last_menu().into());` mirrors the
+    //           last command line; `.into()` converts the `String` to Slint's
+    //           `SharedString`.
+    // Why:      The HUD read-back that proves a command got the correct identity.
+    app.set_last_menu(instrumentation.last_menu().into());
 }
 
 /// What:     `pub fn run() -> Result<()>` is the whole-program entry the binary
@@ -295,6 +306,42 @@ pub fn run() -> Result<()> {
         // Why:      Store it in the instrumentation.
         move |focused| {
             controller.borrow().set_active_focus(focused);
+        }
+    });
+
+    // What:     Register the row-activate callback (left-click or right-click on a
+    //           directory row).
+    // Why:      Rust records the (pane, row) as the menu target; no model rebuild.
+    app.on_row_activate({
+        let controller = Rc::clone(&controller);
+        // What:     `move |pane_id, row_index| { ... }` receives the row identity.
+        // Why:      One handler for both click and right-click activation.
+        move |pane_id, row_index| {
+            controller.borrow_mut().on_row_activate(pane_id, row_index);
+        }
+    });
+
+    // What:     Register the keyboard menu-key callback.
+    // Why:      Rust sets the target to the active pane's active row before the
+    //           menu shows, so the keyboard path carries a deterministic identity.
+    app.on_menu_key({
+        let controller = Rc::clone(&controller);
+        // What:     `move || { ... }` carries no data; the target is Rust-side.
+        // Why:      The active pane and row already live in the controller.
+        move || {
+            controller.borrow_mut().on_menu_key();
+        }
+    });
+
+    // What:     Register the menu-command callback.
+    // Why:      Rust resolves the command against the current target and records it
+    //           for the HUD read-back.
+    app.on_menu_action({
+        let controller = Rc::clone(&controller);
+        // What:     `move |command| { ... }` receives the command string.
+        // Why:      One handler for every menu item.
+        move |command| {
+            controller.borrow().on_menu_action(command.as_str());
         }
     });
 

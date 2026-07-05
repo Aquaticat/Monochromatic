@@ -93,6 +93,17 @@ export component AppWindow inherits Window {
     // so the h-position slider and the Flickable stay in sync.
     in-out property <length> h-scroll-px: 0px;
 
+    // Row context-menu state. `last-menu` is the HUD read-back of the last menu
+    // command plus the (pane, row) identity it targeted, so a headless MCP session
+    // can confirm the command received the correct FileEntry identity. The
+    // `menu-target-*` pair is the currently targeted row, used to highlight it so
+    // the clicked/focused row is visibly deterministic; -1 means "no target".
+    // Rust is the source of truth (mirrored in on a timer); the mouse handlers
+    // also set the target directly for instant highlight with no timer lag.
+    in property <string> last-menu: "";
+    in-out property <int> menu-target-pane-id: -1;
+    in-out property <int> menu-target-row: -1;
+
     // Outbound actions.
     callback horizontal-scrolled(float);
     callback vertical-scrolled(float);
@@ -100,12 +111,20 @@ export component AppWindow inherits Window {
     callback column-built();
     callback pane-built();
     callback active-focus-changed(bool);
+    // A row was activated (left-clicked or right-clicked): Rust records it as the
+    // menu target so a following menu command carries this (pane-id, row) identity.
+    callback row-activate(int, int);
+    // The keyboard menu key was pressed on the active pane: Rust sets the menu
+    // target to the active pane's active row before the menu shows.
+    callback menu-key();
+    // A menu command was chosen; Rust resolves it against the current target.
+    callback menu-action(string);
 
     VerticalLayout {
         // Instrumentation HUD. Element ids (hud := ...) let the MCP server read
         // these strings back with get_element_properties.
         Rectangle {
-            height: 62px;
+            height: 82px;
             background: Palette.alternate-background;
             border-width: 1px;
             border-color: Palette.border;
@@ -129,6 +148,11 @@ export component AppWindow inherits Window {
                 hud-c := Text {
                     text: "active column/pane: " + root.active-column + "/" + root.active-pane
                         + "   focus: " + (root.active-pane-focused ? "yes" : "no");
+                    color: Palette.foreground;
+                    font-size: 13px;
+                }
+                hud-d := Text {
+                    text: "last menu: " + (root.last-menu == "" ? "(none)" : root.last-menu);
                     color: Palette.foreground;
                     font-size: 13px;
                 }
@@ -189,6 +213,17 @@ export component AppWindow inherits Window {
                     text: "close col";
                     clicked => { root.key-nav("Close"); }
                 }
+                // Drives the keyboard-menu path headless: set the target to the
+                // active pane's active row, then show the context menu. Mirrors the
+                // pane FocusScope's Menu-key/Shift+F10 handler so MCP can exercise
+                // the keyboard path without key injection.
+                btn-menu := Button {
+                    text: "menu key";
+                    clicked => {
+                        root.menu-key();
+                        context-menu.show({ x: 60px, y: 120px });
+                    }
+                }
             }
         }
 
@@ -210,110 +245,190 @@ export component AppWindow inherits Window {
                 accept
             }
 
-            strip-flick := Flickable {
-                viewport-width: root.strip-width-px;
-                viewport-height: self.height;
-                viewport-x <=> root.h-scroll-px;
-                changed viewport-x => {
-                    root.horizontal-scrolled((0px - self.viewport-x) / 1px);
+            // ContextMenuArea wraps the whole strip. Its built-in right-click path
+            // only fires on areas NOT covered by an inner TouchArea (Slint issue
+            // #12354: row TouchAreas grab the right press first), so directory rows
+            // must call `context-menu.show(...)` from their own pointer-event. This
+            // is that workaround; the empty pane background (no TouchArea) still
+            // opens this menu through the built-in path, which is the contrast that
+            // demonstrates the issue in this app.
+            context-menu := ContextMenuArea {
+                Menu {
+                    MenuItem {
+                        title: "Open";
+                        activated => { root.menu-action("Open"); }
+                    }
+                    MenuItem {
+                        title: "Rename";
+                        activated => { root.menu-action("Rename"); }
+                    }
+                    MenuItem {
+                        title: "Delete";
+                        activated => { root.menu-action("Delete"); }
+                    }
                 }
 
-                for col in root.columns: Rectangle {
-                    x: col.x-px;
-                    y: 0px;
-                    width: col.width-px;
-                    height: parent.height;
-                    background: col.is-active ? Palette.accent-background.with-alpha(0.08) : transparent;
-                    border-width: 1px;
-                    border-color: Palette.border;
-
-                    // Cross-check: Slint fires init once per instantiated column.
-                    // Over a scroll sweep this total grows with distance travelled
-                    // (recycling), NOT with the strip size (retention would).
-                    init => {
-                        root.column-built();
+                strip-flick := Flickable {
+                    viewport-width: root.strip-width-px;
+                    viewport-height: self.height;
+                    viewport-x <=> root.h-scroll-px;
+                    changed viewport-x => {
+                        root.horizontal-scrolled((0px - self.viewport-x) / 1px);
                     }
 
-                    // The column's panes are absolutely positioned by their
-                    // y-px minus this column's vertical scroll offset. Rust has
-                    // already windowed them, so only in-view panes are present.
-                    for pane in col.panes: Rectangle {
-                        x: 4px;
-                        y: pane.y-px - col.v-offset-px;
-                        width: parent.width - 8px;
-                        height: pane.height-px - 6px;
-                        background: Palette.control-background;
-                        border-width: pane.is-active ? 2px : 1px;
-                        border-color: pane.is-active ? Palette.accent-background : Palette.border;
+                    for col in root.columns: Rectangle {
+                        x: col.x-px;
+                        y: 0px;
+                        width: col.width-px;
+                        height: parent.height;
+                        background: col.is-active ? Palette.accent-background.with-alpha(0.08) : transparent;
+                        border-width: 1px;
+                        border-color: Palette.border;
 
+                        // Cross-check: Slint fires init once per instantiated column.
+                        // Over a scroll sweep this total grows with distance travelled
+                        // (recycling), NOT with the strip size (retention would).
                         init => {
-                            root.pane-built();
+                            root.column-built();
                         }
 
-                        // Pane-level FocusScope wrapping BOTH kinds. Focus
-                        // survival: when the active pane is (re)instantiated after
-                        // recycling, re-assert focus from Rust-held identity and
-                        // report the focus state back for the HUD. Wrapping both
-                        // kinds means the active pane keeps focus whether it is a
-                        // directory or a preview.
-                        pane-focus := FocusScope {
-                            width: parent.width;
-                            height: parent.height;
+                        // The column's panes are absolutely positioned by their
+                        // y-px minus this column's vertical scroll offset. Rust has
+                        // already windowed them, so only in-view panes are present.
+                        for pane in col.panes: Rectangle {
+                            x: 4px;
+                            y: pane.y-px - col.v-offset-px;
+                            width: parent.width - 8px;
+                            height: pane.height-px - 6px;
+                            background: Palette.control-background;
+                            border-width: pane.is-active ? 2px : 1px;
+                            border-color: pane.is-active ? Palette.accent-background : Palette.border;
+
                             init => {
-                                if pane.is-active {
-                                    self.focus();
-                                }
-                            }
-                            changed has-focus => {
-                                if pane.is-active {
-                                    root.active-focus-changed(self.has-focus);
-                                }
+                                root.pane-built();
                             }
 
-                            VerticalLayout {
-                                padding: 4px;
-                                spacing: 2px;
-                                Text {
-                                    text: pane.title;
-                                    color: Palette.foreground;
-                                    font-size: 12px;
-                                    overflow: elide;
+                            // Pane-level FocusScope wrapping BOTH kinds. Focus
+                            // survival: when the active pane is (re)instantiated after
+                            // recycling, re-assert focus from Rust-held identity and
+                            // report the focus state back for the HUD. Wrapping both
+                            // kinds means the active pane keeps focus whether it is a
+                            // directory or a preview.
+                            pane-focus := FocusScope {
+                                width: parent.width;
+                                height: parent.height;
+                                init => {
+                                    if pane.is-active {
+                                        self.focus();
+                                    }
+                                }
+                                changed has-focus => {
+                                    if pane.is-active {
+                                        root.active-focus-changed(self.has-focus);
+                                    }
+                                }
+                                // Keyboard context-menu paths. Slint's ContextMenuArea
+                                // wires the dedicated Menu key everywhere but Shift+F10
+                                // only on Windows (items.rs is_menu_key), and shows at
+                                // its own 0,0 corner. Handle both here for cross-platform
+                                // parity and to position the menu at the focused pane;
+                                // accept preempts the built-in so the menu shows once,
+                                // other keys reject and bubble to strip-focus for nav.
+                                key-pressed(event) => {
+                                    if (event.text == Key.Menu
+                                            || (event.text == Key.F10 && event.modifiers.shift)) {
+                                        root.menu-key();
+                                        context-menu.show({
+                                            x: self.absolute-position.x - context-menu.absolute-position.x + 20px,
+                                            y: self.absolute-position.y - context-menu.absolute-position.y + 20px,
+                                        });
+                                        return accept;
+                                    }
+                                    return reject;
                                 }
 
-                                // Directory pane (kind 0): a virtualizing ListView
-                                // over the custom row model. ListView instantiates
-                                // only visible row delegates, so row-data is pulled
-                                // sparsely from the huge model.
-                                if pane.kind == 0: ListView {
-                                    for row in pane.rows: Rectangle {
-                                        height: 22px;
-                                        background: touch.has-hover ? Palette.accent-background.with-alpha(0.12) : transparent;
-                                        touch := TouchArea {}
-                                        Text {
-                                            x: 6px;
-                                            text: row.label;
-                                            color: Palette.foreground;
-                                            font-size: 12px;
-                                            vertical-alignment: center;
+                                VerticalLayout {
+                                    padding: 4px;
+                                    spacing: 2px;
+                                    Text {
+                                        text: pane.title;
+                                        color: Palette.foreground;
+                                        font-size: 12px;
+                                        overflow: elide;
+                                    }
+
+                                    // Directory pane (kind 0): a virtualizing ListView
+                                    // over the custom row model. ListView instantiates
+                                    // only visible row delegates, so row-data is pulled
+                                    // sparsely from the huge model.
+                                    if pane.kind == 0: ListView {
+                                        for row in pane.rows: Rectangle {
+                                            height: 22px;
+                                            // Highlight the current menu target (the
+                                            // clicked or keyboard-focused row) so the
+                                            // deterministic target is visible; else the
+                                            // hover tint.
+                                            background: (root.menu-target-pane-id == pane.pane-id && root.menu-target-row == row.index)
+                                                ? Palette.accent-background.with-alpha(0.25)
+                                                : (touch.has-hover ? Palette.accent-background.with-alpha(0.12) : transparent);
+                                            touch := TouchArea {
+                                                // Left-click selects: record the row as
+                                                // the menu target (identity for a later
+                                                // keyboard menu) and move the highlight.
+                                                // Selection still works; this is the
+                                                // pre-existing click path now carrying id.
+                                                clicked => {
+                                                    root.row-activate(pane.pane-id, row.index);
+                                                    root.menu-target-pane-id = pane.pane-id;
+                                                    root.menu-target-row = row.index;
+                                                }
+                                                // Right-click is the #12354 workaround:
+                                                // the built-in ContextMenuArea never sees
+                                                // this press (this TouchArea grabs it), so
+                                                // forward it by recording identity and
+                                                // calling show() with the click position
+                                                // translated into the ContextMenuArea's
+                                                // space (the same absolute-position maths
+                                                // Slint's own listview.slint uses).
+                                                pointer-event(pe) => {
+                                                    if (pe.button == PointerEventButton.right
+                                                            && pe.kind == PointerEventKind.up) {
+                                                        root.row-activate(pane.pane-id, row.index);
+                                                        root.menu-target-pane-id = pane.pane-id;
+                                                        root.menu-target-row = row.index;
+                                                        context-menu.show({
+                                                            x: self.absolute-position.x + self.mouse-x - context-menu.absolute-position.x,
+                                                            y: self.absolute-position.y + self.mouse-y - context-menu.absolute-position.y,
+                                                        });
+                                                    }
+                                                }
+                                            }
+                                            Text {
+                                                x: 6px;
+                                                text: row.label;
+                                                color: Palette.foreground;
+                                                font-size: 12px;
+                                                vertical-alignment: center;
+                                            }
                                         }
                                     }
-                                }
 
-                                // Preview pane (kind 1): the decoded image when Rust
-                                // has it resident, else a placeholder telling the
-                                // reader the bitmap was evicted (identity survives).
-                                if pane.kind == 1: Rectangle {
-                                    Image {
-                                        source: pane.preview;
-                                        image-fit: contain;
-                                        width: parent.width;
-                                        height: parent.height;
-                                    }
-                                    if !pane.resident: Text {
-                                        text: "decoding…\n(off the UI thread)";
-                                        color: Palette.foreground;
-                                        horizontal-alignment: center;
-                                        vertical-alignment: center;
+                                    // Preview pane (kind 1): the decoded image when Rust
+                                    // has it resident, else a placeholder telling the
+                                    // reader the bitmap was evicted (identity survives).
+                                    if pane.kind == 1: Rectangle {
+                                        Image {
+                                            source: pane.preview;
+                                            image-fit: contain;
+                                            width: parent.width;
+                                            height: parent.height;
+                                        }
+                                        if !pane.resident: Text {
+                                            text: "decoding…\n(off the UI thread)";
+                                            color: Palette.foreground;
+                                            horizontal-alignment: center;
+                                            vertical-alignment: center;
+                                        }
                                     }
                                 }
                             }

@@ -96,6 +96,10 @@ pub struct Controller {
     /// What:     `active_pane: usize` is the focused pane index.
     /// Why:      Same at the pane level.
     pub(crate) active_pane: usize,
+    /// What:     `active_row: usize` is the active row within the active pane.
+    /// Why:      A left-click sets it; the keyboard menu key targets it, so the
+    ///           keyboard menu carries a deterministic (pane, row) identity.
+    pub(crate) active_row: usize,
     /// What:     `preview_cache: PreviewCache` owns the async decode lifecycle.
     /// Why:      Building preview panes requests decodes through it.
     pub(crate) preview_cache: PreviewCache,
@@ -166,6 +170,7 @@ impl Controller {
             viewport_h_px: DEFAULT_VIEWPORT_H_PX,
             active_column: 0,
             active_pane: 0,
+            active_row: 0,
             preview_cache,
             instrumentation,
             columns_model,
