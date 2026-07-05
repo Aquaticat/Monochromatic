@@ -61,7 +61,8 @@ const MAX_SINGLE_RETRIES = 1;
  *
  * @returns Final per-mutant results with provenance.
  *
- * @throws Error when a shard reports a red baseline (infra failure).
+ * @throws Error when a shard reports results for unknown mutant ids or
+ * mutants remain unresolved after all rounds.
  *
  * @example
  * ```ts
@@ -273,11 +274,30 @@ export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunO
       report,
     ] of reports.entries()) {
       if (!report.baseline
-        .green)
-        throw new Error(
-          `red baseline in shard ${report.shardId}: ${report.baseline
-            .detail}; unmutated package fails its own gates`,
-        );
+        .green) {
+        // Red baseline: this shard's selected tests fail unmutated, so no
+        // mutant verdict is possible; resharding would re-fail the same
+        // baseline forever. Finalise the shard's mutants as runtimeError
+        // and let the rest of the run proceed.
+        infraErrors.push(`${report.shardId}: red baseline (${report.baseline
+          .detail})`,);
+
+        for (const id of report.unrun) {
+          finals.set(
+            id,
+            {
+              mutant: entryOrThrow(id,)
+                .mutant,
+              status: 'runtimeError',
+              position: 1,
+              rerunCount: rerunCounts.get(id,) ?? 0,
+              confirmed: true,
+              detail: 'red baseline: selected tests fail on unmutated code',
+            },
+          );
+        }
+        continue;
+      }
 
       if (report.anomaly !== '')
         infraErrors.push(`${report.shardId}: ${report.anomaly}`,);
