@@ -28,6 +28,7 @@ import { pathToFileURL, } from 'node:url';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { isRecord, } from '../is-record.ts';
 import {
   MANIFEST_MOUNT,
   REPORT_MOUNT,
@@ -69,25 +70,6 @@ export const REPORT_FILE_NAME = 'shard-report.json';
  * warms tsbuildinfo, so per-mutant limits do not apply to it.
  */
 const BASELINE_TIMEOUT_MS = 600_000;
-
-/**
- * Returns whether a value is a non-null, non-array object record.
- *
- * @param value - Candidate value.
- *
- * @returns Whether value is a JSON-like record.
- *
- * @example
- * ```ts
- * isRecord({});
- * // true
- * ```
- */
-function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return (value !== null)
-    && ((typeof value) === 'object')
-    && (!Array.isArray(value,));
-}
 
 /**
  * Returns whether a parsed JSON value has the shard manifest shape.

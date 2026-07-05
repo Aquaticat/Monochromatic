@@ -887,6 +887,9 @@ importers:
       oxc-parser:
         specifier: 'catalog:'
         version: 0.138.0
+      p-limit:
+        specifier: 'catalog:'
+        version: 7.3.0
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*

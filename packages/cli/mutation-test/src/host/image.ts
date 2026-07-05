@@ -1,0 +1,177 @@
+/**
+ * Runtime image identity and build.
+ *
+ * The image bakes the whole repository with a frozen pnpm install; its
+ * tag derives from the lockfile and Containerfile contents so dependency
+ * or runtime changes rebuild while unrelated edits reuse the cache.
+ *
+ * @example
+ * ```ts
+ * const image = await ensureRuntimeImage({ repoRoot, skipImageBuild: false });
+ * ```
+ */
+
+import { createHash, } from 'node:crypto';
+import { readFile, } from 'node:fs/promises';
+import { join, } from 'node:path';
+
+import spawn from 'nano-spawn';
+
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/**
+ * Module logger for host-side image management.
+ */
+const l = tagged({ tag: 'mutation-test', },);
+
+/**
+ * Local image repository name for the mutation runtime.
+ */
+const IMAGE_REPOSITORY = 'localhost/mutation-test-runtime';
+
+/**
+ * Containerfile path relative to the repo root.
+ */
+const CONTAINERFILE = 'packages/cli/mutation-test/runtime/Containerfile';
+
+/**
+ * Tag hash length keeping references short yet distinct.
+ */
+const TAG_HEX_LENGTH = 12;
+
+/**
+ * Computes the image reference for the current repo state.
+ *
+ * @param options - Repository root.
+ *
+ * @returns Image reference including content-derived tag.
+ *
+ * @example
+ * ```ts
+ * await imageReference({ repoRoot });
+ * // 'localhost/mutation-test-runtime:3fc9...'
+ * ```
+ */
+export async function imageReference(options: {
+  readonly repoRoot: string;
+},): Promise<string> {
+  /**
+   * Content hash over inputs that must trigger a rebuild.
+   */
+  const hash = createHash('sha256',);
+  /**
+   * Rebuild-triggering input files, read concurrently.
+   */
+  const inputs = await Promise.all([
+    'pnpm-lock.yaml',
+    CONTAINERFILE,
+  ].map(async function readInput(input,): Promise<Buffer> {
+    return await readFile(join(
+      options.repoRoot,
+      input,
+    ),);
+  },),);
+
+  for (const content of inputs)
+    hash.update(content,);
+
+  return `${IMAGE_REPOSITORY}:${hash.digest('hex',)
+    .slice(
+      0,
+      TAG_HEX_LENGTH,
+    )}`;
+}
+
+/**
+ * Returns whether an image reference exists locally.
+ *
+ * @param reference - Image reference to probe.
+ *
+ * @returns Whether podman knows the image.
+ *
+ * @example
+ * ```ts
+ * await imageExists('localhost/mutation-test-runtime:abc');
+ * ```
+ */
+async function imageExists(reference: string,): Promise<boolean> {
+  try {
+    await spawn(
+      'podman',
+      [
+        'image',
+        'exists',
+        reference,
+      ],
+    );
+    return true;
+  }
+  catch (error) {
+    tagged({
+      tag: imageExists.name,
+      l,
+    },)
+      .debug(`image probe negative for ${reference}: ${String(error,)}`,);
+    return false;
+  }
+}
+
+/**
+ * Ensures the runtime image exists, building it when needed.
+ *
+ * @param options - Repository root and build-skip toggle.
+ *
+ * @returns Usable image reference.
+ *
+ * @throws Error when skipping the build but no image exists.
+ *
+ * @example
+ * ```ts
+ * const image = await ensureRuntimeImage({ repoRoot, skipImageBuild: false });
+ * ```
+ */
+export async function ensureRuntimeImage(options: {
+  readonly repoRoot: string;
+  readonly skipImageBuild: boolean;
+},): Promise<string> {
+  /**
+   * Logger scoped to image resolution.
+   */
+  const rl = tagged({
+    tag: ensureRuntimeImage.name,
+    l,
+  },);
+  /**
+   * Content-derived image reference for the current repo state.
+   */
+  const reference = await imageReference({ repoRoot: options.repoRoot, },);
+
+  if (await imageExists(reference,)) {
+    rl.info(`reusing image ${reference}`,);
+    return reference;
+  }
+
+  if (options.skipImageBuild)
+    throw new Error(`image ${reference} missing and --skip-image-build was set`,);
+
+  rl.info(`building image ${reference}`,);
+  await spawn(
+    'podman',
+    [
+      'build',
+      '--file',
+      join(
+        options.repoRoot,
+        CONTAINERFILE,
+      ),
+      '--tag',
+      reference,
+      options.repoRoot,
+    ],
+    {
+      stdout: 'inherit',
+      stderr: 'inherit',
+    },
+  );
+  return reference;
+}
