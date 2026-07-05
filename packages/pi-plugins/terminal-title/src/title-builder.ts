@@ -12,6 +12,7 @@ import {
   prefixedTitle,
   type ToolArgs,
   type ToolTitleTense,
+  type UnknownToolTitleFormatter,
 } from '@monochromatic-dev/module-terminal-title/ts';
 import { TOOL_TITLES, } from './tool-titles.ts';
 
@@ -37,6 +38,30 @@ type HandledEventType =
   | 'session_shutdown'
   | 'agent_end'
   | 'before_agent_start';
+
+/**
+ * Builds generic pi text for custom or MCP tools absent from the registry.
+ *
+ * @param toolName - because pi custom tool names should stay visible to users
+ *
+ * @param tense - because start and end events need different verbs
+ *
+ * @returns tense-aware fallback title body
+ *
+ * @example
+ * ```ts
+ * titleForUnknownTool({ toolName: 'mcp__weather', args: {}, tense: 'pre' });
+ * // 'Running mcp__weather'
+ * ```
+ */
+function titleForUnknownTool(
+  {
+    toolName,
+    tense,
+  }: Parameters<UnknownToolTitleFormatter>[0],
+): string {
+  return `${tense === 'pre' ? 'Running' : 'Ran'} ${toolName}`;
+}
 
 /**
  * Builds a terminal title for a tool execution event.
@@ -77,10 +102,7 @@ function titleForTool(
     toolName,
     args,
     tense,
-    unknownToolTitle: ({
-      toolName: unknownToolName,
-      tense: unknownToolTense,
-    },) => `${unknownToolTense === 'pre' ? 'Running' : 'Ran'} ${unknownToolName}`,
+    unknownToolTitle: titleForUnknownTool,
   },);
 }
 
