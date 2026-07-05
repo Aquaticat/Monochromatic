@@ -87,3 +87,6 @@ hide = true
 extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
+
+[tasks."test:unit"]
+extends = "test:unit"
