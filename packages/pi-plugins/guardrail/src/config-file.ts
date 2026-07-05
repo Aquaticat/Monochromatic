@@ -51,7 +51,7 @@ type ErrorWithCode = Error & {
  *
  * @param path - absolute file path
  *
- * @returns UTF-8 file contents
+ * @returns UTF-8 file contents as a Promise
  *
  * @example
  * ```typescript

@@ -10,6 +10,7 @@ import type {
   NormalizedConfigFile,
   PathRule,
 } from './types.ts';
+import { isRecord, } from './value.ts';
 
 //region Public API
 
@@ -246,19 +247,6 @@ function recordToPathRules(
         message,
       };
     },);
-}
-
-/**
- * Returns whether value is a non-array object record.
- *
- * @param value - value to inspect
- *
- * @returns whether value can be treated as a JSON object record
- */
-function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return (value !== null)
-    && ((typeof value) === 'object')
-    && (!Array.isArray(value,));
 }
 
 //endregion Path rule normalization

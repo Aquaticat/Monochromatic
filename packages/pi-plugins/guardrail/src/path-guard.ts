@@ -39,11 +39,25 @@ const PATH_RULE_NOT_FOUND: unique symbol = Symbol('pi-guardrail/path-rule-not-fo
  */
 type PathGuardMatcher = {
   /**
-   * Ordered rules used to build the matcher.
+   * Ignore package matcher for final gitignore state.
    */
-  readonly rules: readonly PathRule[];
+  readonly ignore: Ignore;
   /**
-   * Ignore package matcher with each rule marked by its index.
+   * Per-rule matchers used to select custom refusal message without rebuilding matchers per call.
+   */
+  readonly ruleMatchers: readonly PathRuleMatcher[];
+};
+
+/**
+ * One path rule paired with its prebuilt matcher.
+ */
+type PathRuleMatcher = {
+  /**
+   * Path rule carrying refusal message.
+   */
+  readonly rule: PathRule;
+  /**
+   * Matcher containing only this rule's pattern.
    */
   readonly ignore: Ignore;
 };
@@ -73,8 +87,8 @@ type EvaluatePathGuardOptions = {
 /**
  * Builds an `ignore` matcher from ordered path rules.
  *
- * Uses `mark` values to recover rule provenance for debugging while the matcher
- * itself supplies the final gitignore ignored/unignored decision.
+ * Builds one matcher for final gitignore state and one matcher per rule for
+ * refusal-message selection.
  *
  * @param rules - ordered protected-path rules
  *
@@ -93,20 +107,26 @@ function createPathGuardMatcher(rules: readonly PathRule[],): PathGuardMatcher {
     function addRule(
       matcher,
       rule,
-      index,
     ): Ignore {
-      matcher.add({
-        pattern: rule.pattern,
-        mark: String(index,),
-      },);
+      matcher.add(rule.pattern,);
       return matcher;
     },
     ignore({ ignorecase: false, }),
   );
+  /**
+   * Per-rule matchers built once so blocked tool calls do not allocate matchers per rule.
+   */
+  const ruleMatchers = rules.map(function buildRuleMatcher(rule,): PathRuleMatcher {
+    return {
+      rule,
+      ignore: ignore({ ignorecase: false, })
+        .add(rule.pattern,),
+    };
+  },);
 
   return {
-    rules,
     ignore: ig,
+    ruleMatchers,
   };
 }
 
@@ -166,7 +186,7 @@ function evaluatePathGuard(
    * Last positive rule matching this path, used only for refusal message selection.
    */
   const rule = findLastMatchingMessageRule({
-    rules: matcher.rules,
+    ruleMatchers: matcher.ruleMatchers,
     relativePath,
   },);
   if (rule === PATH_RULE_NOT_FOUND)
@@ -186,7 +206,7 @@ function evaluatePathGuard(
  * user rules can override built-in messages without reimplementing gitignore
  * matching.
  *
- * @param rules - ordered path rules
+ * @param ruleMatchers - ordered path rule matchers
  *
  * @param relativePath - normalized project-relative path
  *
@@ -194,27 +214,31 @@ function evaluatePathGuard(
  *
  * @example
  * ```typescript
- * findLastMatchingMessageRule({ rules, relativePath: 'pnpm-lock.yaml' });
+ * findLastMatchingMessageRule({ ruleMatchers, relativePath: 'pnpm-lock.yaml' });
  * ```
  */
 function findLastMatchingMessageRule(
   {
-    rules,
+    ruleMatchers,
     relativePath,
   }: {
-    readonly rules: readonly PathRule[];
+    readonly ruleMatchers: readonly PathRuleMatcher[];
     readonly relativePath: string;
   },
 ): PathRule | typeof PATH_RULE_NOT_FOUND {
-  return rules
+  /**
+   * Last per-rule matcher whose pattern ignores the target path.
+   */
+  const match = ruleMatchers
     .toReversed()
-    .find(function ruleMatchesPath(rule,): boolean {
-      return ignore({ ignorecase: false, })
-        .add(rule.pattern,)
+    .find(function ruleMatchesPath(ruleMatcher,): boolean {
+      return ruleMatcher.ignore
         .test(relativePath,)
         .ignored;
-    },)
-    ?? PATH_RULE_NOT_FOUND;
+    },);
+  if (match === undefined)
+    return PATH_RULE_NOT_FOUND;
+  return match.rule;
 }
 
 //endregion Guard evaluation

@@ -53,20 +53,6 @@ type GuardrailConfig = {
 };
 
 /**
- * Advanced object config shape accepted by `pi-guardrail.json`.
- */
-type GuardrailObjectConfigFile = {
-  /**
-   * Optional protected-path rule map keyed by gitignore-style pattern.
-   */
-  readonly pathRules?: Record<string, string>;
-  /**
-   * Optional override for the default `bun test` Bash guard.
-   */
-  readonly blockBunTest?: boolean;
-};
-
-/**
  * Normalized config file content before built-in defaults are merged.
  */
 type NormalizedConfigFile = {
@@ -125,7 +111,6 @@ export type {
   GuardrailConfig,
   GuardrailDecision,
   GuardrailConfigSource,
-  GuardrailObjectConfigFile,
   NormalizedConfigFile,
   PathRule,
 };

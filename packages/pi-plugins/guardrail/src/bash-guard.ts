@@ -13,6 +13,7 @@ import {
   isWhitespace,
   isWordChar,
 } from './text-scan.ts';
+import { isRecord, } from './value.ts';
 
 //region Segment scanning
 
@@ -175,19 +176,6 @@ function evaluateBashGuard(input: unknown,): GuardrailDecision {
     block: true,
     reason: BUN_TEST_BLOCK_REASON,
   };
-}
-
-/**
- * Returns whether value is a non-array object record.
- *
- * @param value - value to inspect
- *
- * @returns whether value can expose a command field
- */
-function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return (value !== null)
-    && ((typeof value) === 'object')
-    && (!Array.isArray(value,));
 }
 
 //endregion Bash guard evaluation

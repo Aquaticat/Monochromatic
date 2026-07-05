@@ -93,12 +93,14 @@ src/
   index.ts                         # Extension entry point and tool_call registration
   bash-guard.ts                    # Regex-free `bun test` shell-segment detection
   path-guard.ts                    # `ignore`-backed protected-path matching
+  path-normalize.ts                # Tool path extraction and cwd-relative normalization
   config.ts                        # Global config loader orchestration
   config-file.ts                   # Optional JSON config reading
   config-normalize.ts              # Config shape validation and normalization
   config-paths.ts                  # Global config path helper
   constants.ts                     # Built-in rules and messages
   text-scan.ts                     # Character predicates for Bash scanning
+  value.ts                         # Shared value-shape helpers
   types.ts                         # Shared config and decision types
   *.unit.test.ts                   # Unit tests
   mise.verify-extension.ts         # Built extension smoke verification
