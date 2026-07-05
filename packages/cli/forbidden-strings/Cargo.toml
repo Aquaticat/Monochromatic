@@ -42,6 +42,9 @@ path = "src/main.rs"
 fuzzing = []
 
 [dependencies]
+# `anyhow` carries application-level errors while preserving their display text for
+# CLI stderr output and tests.
+anyhow = "1"
 aho-corasick = "1"
 # The logging facade and its subscriber. tracing routes the compiler's rule-rejection
 # warnings and the CLI's top-level errors as structured events to stderr via

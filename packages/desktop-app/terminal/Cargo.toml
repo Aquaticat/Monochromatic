@@ -18,6 +18,8 @@ name = "monochromatic-terminal"
 path = "src/main.rs"
 
 [dependencies]
+# `anyhow` carries application-level errors for the terminal binary and PTY adapter.
+anyhow = "1"
 # Same Slint release family as packages/music-player/desktop-app so both desktop
 # prototypes share Flickable smooth wheel and touch scrolling. The explicit winit
 # backend lets the app stamp its Wayland app id before the window is created. The

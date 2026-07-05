@@ -29,6 +29,8 @@ name = "rust-linter"
 path = "src/main.rs"
 
 [dependencies]
+# `anyhow` carries application-level setup errors for the compatibility entry point.
+anyhow = "1"
 # `clap` owns argv parsing, generated help/version output, and validation for the
 # rust-linter binary. The derive feature keeps the command shape declared beside
 # the parsed `Cli` struct.

@@ -18,6 +18,8 @@ name = "music-player"
 path = "src/main.rs"
 
 [dependencies]
+# `anyhow` carries application-level startup and Slint event-loop errors.
+anyhow = "1"
 # Slint 1.17.0 is the first crates.io release with Flickable mouse-wheel
 # animation (slint-ui/slint#11338, fixing #11312), so this package no longer
 # needs the former master-revision pin. Keep slint, i-slint-backend-winit, and
