@@ -23,6 +23,9 @@ use std::sync::{Arc, Mutex, mpsc};
 /// Imports thread spawning for the decode workers.
 use std::thread;
 
+/// Imports `anyhow` helpers for application-level error returns.
+use anyhow::{anyhow, bail, Context, Result};
+
 /// Imports serde derive and JSON for the per-track output rows.
 use serde::Serialize;
 /// Imports the shared meter, the one true-peak measurement.
@@ -59,7 +62,7 @@ struct TrackMetrics {
 }
 
 /// Read the sample rate, channel count, and duration of a file via ffprobe.
-fn probe_spec(path: &Path) -> Result<(u32, u16, f64), Box<dyn std::error::Error>> {
+fn probe_spec(path: &Path) -> Result<(u32, u16, f64)> {
     // Ask ffprobe for the first audio stream's rate and channels and the container duration.
     let output = Command::new("ffprobe")
         .args([
@@ -82,13 +85,13 @@ fn decode_and_bin(
     path: &Path,
     channels: u16,
     bin_frames: u64,
-) -> Result<(f32, Vec<f32>, u64), Box<dyn std::error::Error>> {
+) -> Result<(f32, Vec<f32>, u64)> {
     // Spawn ffmpeg to emit native-rate interleaved f32 little-endian on stdout.
     let mut child = Command::new("ffmpeg")
         .args(["-v", "error", "-i"]).arg(path)
         .args(["-f", "f32le", "-"])
         .stdout(Stdio::piped()).stderr(Stdio::null()).spawn()?;
-    let mut stdout = child.stdout.take().ok_or("ffmpeg stdout missing")?;
+    let mut stdout = child.stdout.take().context("ffmpeg stdout missing")?;
 
     let samples_per_bin = (bin_frames * u64::from(channels)) as usize;
     let mut meter = TruePeakMeter::new(usize::from(channels));
@@ -135,10 +138,10 @@ fn decode_and_bin(
 }
 
 /// Measure one track end to end (probe, decode, bin) into a `TrackMetrics`.
-fn measure(path: &Path, bin_seconds: f64) -> Result<TrackMetrics, Box<dyn std::error::Error>> {
+fn measure(path: &Path, bin_seconds: f64) -> Result<TrackMetrics> {
     let (rate, channels, _container_duration) = probe_spec(path)?;
     if rate == 0 || channels == 0 {
-        return Err("missing rate or channels".into());
+        bail!("missing rate or channels");
     }
     let bin_frames = ((bin_seconds * f64::from(rate)) as u64).max(1);
     let (full_peak, bin_peaks, decoded_frames) = decode_and_bin(path, channels, bin_frames)?;
@@ -155,7 +158,7 @@ fn measure(path: &Path, bin_seconds: f64) -> Result<TrackMetrics, Box<dyn std::e
 }
 
 /// Recursively collect audio files under a root, sorted for determinism.
-fn collect_audio_files(root: &Path) -> Result<Vec<PathBuf>, Box<dyn std::error::Error>> {
+fn collect_audio_files(root: &Path) -> Result<Vec<PathBuf>> {
     // Depth-first walk with an explicit stack (no recursion over the directory tree depth).
     let mut pending = vec![root.to_path_buf()];
     let mut files = Vec::new();
@@ -186,7 +189,7 @@ fn is_audio(path: &Path) -> bool {
 }
 
 /// Entry point: walk the root, decode in parallel, and write the JSONL corpus.
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     // Send tracing events (including truepeak-core's) to stderr; the JSONL report is stdout.
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -196,15 +199,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_writer(std::io::stderr)
         .init();
     let args: Vec<String> = env::args().collect();
-    let root = PathBuf::from(args.get(1).ok_or("usage: collect <root> <out.jsonl> [bin_seconds] [workers]")?);
-    let out_path = PathBuf::from(args.get(2).ok_or("usage: collect <root> <out.jsonl> [bin_seconds] [workers]")?);
+    let root = PathBuf::from(args.get(1).context("usage: collect <root> <out.jsonl> [bin_seconds] [workers]")?);
+    let out_path = PathBuf::from(args.get(2).context("usage: collect <root> <out.jsonl> [bin_seconds] [workers]")?);
     let bin_seconds = args.get(3).and_then(|v| v.parse().ok()).unwrap_or(DEFAULT_BIN_SECONDS);
     let workers = args.get(4).and_then(|v| v.parse().ok()).unwrap_or(DEFAULT_WORKERS);
 
     let files = collect_audio_files(&root)?;
     let total = files.len();
     let queue = Arc::new(Mutex::new(VecDeque::from(files)));
-    let (sender, receiver) = mpsc::channel::<Result<TrackMetrics, String>>();
+    let (sender, receiver) = mpsc::channel::<Result<TrackMetrics>>();
     // Each worker pops a path, measures it, and sends the result or an error string.
     for _ in 0..workers {
         let queue = Arc::clone(&queue);
@@ -214,7 +217,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let path = queue.lock().expect("queue poisoned").pop_front();
                 let Some(path) = path else { break };
                 let message = measure(&path, bin_seconds)
-                    .map_err(|error| format!("{}: {error}", path.to_string_lossy()));
+                    .map_err(|error| anyhow!("{}: {error}", path.to_string_lossy()));
                 if sender.send(message).is_err() {
                     break;
                 }

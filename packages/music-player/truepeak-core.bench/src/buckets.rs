@@ -21,6 +21,8 @@ use std::io::{BufRead, BufReader};
 /// Imports the borrowed path type for side-file locations.
 use std::path::Path;
 
+/// Imports `anyhow` helpers for application-level error returns.
+use anyhow::{Context, Result};
 /// Imports serde's derive so side-file rows parse straight from each JSON line.
 use serde::Deserialize;
 /// Imports the shared dB conversion, the policy, and the engine's bucket types.
@@ -87,7 +89,7 @@ fn bucket_probe(policy: &Policy, bucket: Bucket, bones_present: bool) -> BucketP
 ///
 /// What: joins tags-full.jsonl rows to buckets. Why: bucket assignment must be
 /// reproducible from committed side files, never from path text heuristics.
-pub fn load_buckets(path: &Path) -> Result<HashMap<String, Bucket>, Box<dyn std::error::Error>> {
+pub fn load_buckets(path: &Path) -> Result<HashMap<String, Bucket>> {
     // Stream rows and reduce each to its bucket.
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -125,7 +127,7 @@ fn bucket_from_extension(path: &str) -> Bucket {
 ///
 /// What: keeps only each profile's `top` largest byte slots (the policy's
 /// `bones_top_slots`). Why: the probe needs the slot indices, not the raw profile.
-pub fn load_bones(path: &Path, top: usize) -> Result<HashMap<String, Vec<usize>>, Box<dyn std::error::Error>> {
+pub fn load_bones(path: &Path, top: usize) -> Result<HashMap<String, Vec<usize>>> {
     // Stream rows, sort slot indices by byte count, keep the top few.
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -243,12 +245,12 @@ pub fn report_buckets(
     full_secs: f64,
     target_secs: f64,
     args: &[String],
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     // The side files are the non-flag arguments after the corpus path, in order.
     let side: Vec<&String> = args.iter().skip(2).filter(|arg| !arg.starts_with("--")).collect();
     let tags_path = side
         .first()
-        .ok_or("usage: truepeak-core-bench <corpus> <tags-full.jsonl> [flac-profiles.jsonl] --buckets")?;
+        .context("usage: truepeak-core-bench <corpus> <tags-full.jsonl> [flac-profiles.jsonl] --buckets")?;
     let buckets = load_buckets(Path::new(tags_path))?;
     let policy = truepeak_core::default_policy();
     let bones = match side.get(1) {

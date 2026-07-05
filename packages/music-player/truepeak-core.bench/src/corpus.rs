@@ -13,6 +13,8 @@ use std::io::{BufRead, BufReader};
 /// Imports the borrowed path type for the corpus location.
 use std::path::Path;
 
+/// Imports `anyhow`'s application-level result alias.
+use anyhow::Result;
 /// Imports serde's derive so the record parses straight from each JSON line.
 use serde::Deserialize;
 
@@ -47,7 +49,7 @@ fn one_second() -> f64 {
 ///
 /// What: opens the file, streams lines, and parses each into a `Track`. Why: the search
 /// needs every track in memory once, but the file is too large to read as one string.
-pub fn load_tracks(path: &Path) -> Result<Vec<Track>, Box<dyn std::error::Error>> {
+pub fn load_tracks(path: &Path) -> Result<Vec<Track>> {
     // Open the corpus file; a missing file is a hard error the caller surfaces.
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -80,7 +82,7 @@ struct MetaRow {
 /// What: a path is "safe" when it is lossless or carries a yt-dlp provenance tag, since
 /// the corpus never has a violator in either class. Why: the policy can apply a smaller
 /// margin to safe provenance, lowering the average too-quiet error.
-pub fn load_safe_paths(path: &Path) -> Result<HashSet<String>, Box<dyn std::error::Error>> {
+pub fn load_safe_paths(path: &Path) -> Result<HashSet<String>> {
     // Read each metadata row and keep the safe paths.
     let file = File::open(path)?;
     let reader = BufReader::new(file);

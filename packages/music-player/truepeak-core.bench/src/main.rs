@@ -22,6 +22,8 @@ mod buckets;
 /// The quarter-measure answer's probe: even pass one plus frontier zoom.
 mod zoom;
 
+/// Imports `anyhow` helpers for application-level error returns.
+use anyhow::{Context, Result};
 /// Imports the process argument reader.
 use std::env;
 /// Imports the borrowed path type for the corpus location.
@@ -81,7 +83,7 @@ fn report_proportional(
     full_secs: f64,
     target_secs: f64,
     args: &[String],
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     let policy = truepeak_core::default_policy();
     // The optional metadata argument (a non-flag after the corpus path) enables the safe split.
     let safe: HashSet<String> = match args.iter().skip(2).find(|arg| !arg.starts_with("--")) {
@@ -145,7 +147,7 @@ fn report_zoom(
     full_secs: f64,
     target_secs: f64,
     args: &[String],
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     let policy = truepeak_core::default_policy();
     // The optional metadata argument (a non-flag after the corpus path) enables the split.
     let safe: HashSet<String> = match args.iter().skip(2).find(|arg| !arg.starts_with("--")) {
@@ -202,7 +204,7 @@ fn report_zoom(
 }
 
 /// Entry point: load the corpus, compute the target, search, and print the report.
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     // Send tracing events (including truepeak-core's) to stderr; the report is stdout.
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -214,7 +216,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     let corpus_path = args
         .get(1)
-        .ok_or("usage: truepeak-core-bench <tracks.jsonl>")?;
+        .context("usage: truepeak-core-bench <tracks.jsonl>")?;
 
     let tracks = load_tracks(Path::new(corpus_path))?;
     let full_secs: f64 = tracks.iter().map(|track| track.duration_secs).sum();
