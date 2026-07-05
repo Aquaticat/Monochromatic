@@ -40,3 +40,18 @@ export {
   isEstreeNode,
   walk,
 } from './engine/walk.ts';
+export { effectiveTimeoutMs, } from './container/mutant-loop.ts';
+export {
+  SHARD_SCHEMA_VERSION,
+  type ShardBaseline,
+  type ShardManifest,
+  type ShardMutantResult,
+  type ShardReport,
+} from './shard-schema.ts';
+export {
+  BAKED_ENTRYPOINT,
+  MANIFEST_MOUNT,
+  REPORT_MOUNT,
+  SOURCE_MOUNT,
+  WORK_MOUNT,
+} from './mounts.ts';
