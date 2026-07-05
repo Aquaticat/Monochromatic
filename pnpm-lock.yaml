@@ -461,6 +461,24 @@ importers:
         specifier: 'catalog:'
         version: 7.0.1-rc
 
+  packages/agent-harnesses-shared/current-time-context:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+
   packages/build-tool/css:
     dependencies:
       '@monochromatic-dev/module-fs-path':
@@ -601,7 +619,7 @@ importers:
         version: link:../hook-types
       '@monochromatic-dev/module-current-time-context':
         specifier: workspace:*
-        version: link:../../module/current-time-context
+        version: link:../../agent-harnesses-shared/current-time-context
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -2307,37 +2325,6 @@ importers:
         specifier: 'catalog:'
         version: 5.7.0
 
-  packages/pi-shared/model-selection:
-    dependencies:
-      type-fest:
-        specifier: 'catalog:'
-        version: 5.7.0
-      valibot:
-        specifier: 'catalog:'
-        version: 1.4.2(typescript@6.0.3)
-      zeptomatch:
-        specifier: 'catalog:'
-        version: 2.1.0
-    devDependencies:
-      '@earendil-works/pi-ai':
-        specifier: 'catalog:'
-        version: 0.80.3(zod@4.4.3)
-      '@earendil-works/pi-coding-agent':
-        specifier: 'catalog:'
-        version: 0.80.3(zod@4.4.3)
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.1.0
-
   packages/pi-plugins/advisor:
     dependencies:
       '@monochromatic-dev/module-logger':
@@ -2422,7 +2409,7 @@ importers:
     dependencies:
       '@monochromatic-dev/module-current-time-context':
         specifier: workspace:*
-        version: link:../../module/current-time-context
+        version: link:../../agent-harnesses-shared/current-time-context
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -2583,6 +2570,37 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
+  packages/pi-shared/model-selection:
+    dependencies:
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.7.0
+      valibot:
+        specifier: 'catalog:'
+        version: 1.4.2(typescript@6.0.3)
+      zeptomatch:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@earendil-works/pi-ai':
+        specifier: 'catalog:'
+        version: 0.80.3(zod@4.4.3)
+      '@earendil-works/pi-coding-agent':
+        specifier: 'catalog:'
+        version: 0.80.3(zod@4.4.3)
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+
   packages/rolldown-plugins/import-attributes:
     dependencies:
       rolldown:
@@ -2668,6 +2686,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
+      '@monochromatic-dev/module-i18n-compose':
+        specifier: workspace:*
+        version: link:../../module/i18n-compose
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger

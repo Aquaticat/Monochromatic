@@ -2,9 +2,10 @@
 
 Status:
  decided roadmap,
- ready to execute.
-No package moves have landed yet;
-this revision records the decisions and their sequencing.
+ partially executing.
+The `current-time-context` shared formatter path move has landed under
+`packages/agent-harnesses-shared/current-time-context`.
+Remaining package moves are recorded as decisions and sequencing.
 
 This plan explains how to apply the Rush-style two-level category model to this monorepo,
 then records the decided package-set rebalances and their sequencing.
@@ -45,6 +46,8 @@ The plan recommends these near-term moves;
 the decision state section gives each one a status and a first action.
 
 - Keep `packages/claude-code-plugins/*` as the template for a healthy product or host cluster.
+- Keep `packages/agent-harnesses-shared/*` for utilities shared by multiple agent harnesses;
+  `current-time-context` lives there now.
 - Add a shared native core to `packages/music-player/*`,
    starting with `truepeak`.
 - Build a `packages/mvm/*` product cluster:
@@ -66,9 +69,9 @@ the decision state section gives each one a status and a first action.
 
 ## Decision state
 
-Every package set below is a near-term go.
-This session documents the roadmap;
-no moves have landed yet.
+Most package sets below are a near-term go.
+The `agent-harnesses-shared/current-time-context` move has landed;
+remaining entries document the roadmap.
 
 - `claude-code-plugins`:
   keep as-is;
@@ -301,6 +304,9 @@ Product,
   reusable Pi-extension infrastructure (currently only `model-selection`);
   a deliberate extension-versus-infrastructure boundary,
   kept separate from `pi`.
+- `agent-harnesses-shared`:
+  utilities shared by multiple agent harness hosts;
+  category name follows the shared suffix convention for cross-host agent infrastructure.
 - `figma-parsers`:
   domain pipeline that parses Figma export formats and converts them to Penpot.
 - `webapp-productivity`:
@@ -328,7 +334,7 @@ Artifact-type and utility categories:
   `mcp/mvm` leaves for the `mvm` cluster per this plan,
   leaving shared `mcp/stdio`.
 - `module`:
-  broad bucket of host-neutral general-purpose TypeScript utilities.
+  broad bucket of host-neutral general-purpose TypeScript utilities not owned by an agent-harness shared category.
 - `config`:
   host-neutral tool presets,
    for example TypeScript,
@@ -1315,30 +1321,32 @@ Only add `fixtures` if shared fixtures need an independent workspace boundary.
 Current relevant roots:
 
 ```text
-packages/module/current-time-context/
+packages/agent-harnesses-shared/current-time-context/
 packages/pi-plugins/current-time-context/
 packages/claude-code-plugins/source/
 ```
 
-`packages/module/current-time-context/README.md` says the module exists because Claude Code hooks and Pi extensions
-inject the same coarse local time context.
-The Pi extension consumes the neutral module.
+`packages/agent-harnesses-shared/current-time-context/README.md` says the package exists because Claude Code
+hooks and Pi extensions inject the same coarse local time context.
+The Pi extension consumes the shared package.
 Claude Code plugin logic lives in the Claude Code plugin source cluster.
 
 #### Recommendation
 
-Keep the neutral module in `module/current-time-context`.
-It is host-neutral and shared across at least two host systems.
+Keep the shared formatter in `agent-harnesses-shared/current-time-context`.
+It is host-neutral but specifically shared across agent harness hosts,
+so the shared suffix convention is more discoverable than the broad `module` bucket.
 Keep host adapters in their host categories:
 
 ```text
-packages/module/current-time-context/
+packages/agent-harnesses-shared/current-time-context/
 packages/pi-plugins/current-time-context/
 packages/claude-code-plugins/source/
 ```
 
 Do not create a `current-time-context` product category unless it grows beyond a tiny formatter plus host adapters.
-This is a good example of a dependency edge that should not force a product cluster.
+This category captures the expected family of many shared agent-harness utilities without treating one formatter as
+its own product.
 
 The same holds for other concepts that appear once per host.
 `statusline` and `terminal-title` each exist under both `pi/` and `claude-code-plugins/`,
@@ -1346,7 +1354,7 @@ and `spawn` appears as `pi/spawn` and `claude-code-plugins/claude-spawn`.
 They share a concept but no code,
  and they bind to different host APIs,
 so each stays under its host cluster.
-Extract a neutral `module/` package only if real shared logic emerges,
+Extract an `agent-harnesses-shared/` package only if real shared agent-harness logic emerges,
 as it did for `current-time-context`.
 
 ### Broad utility categories
