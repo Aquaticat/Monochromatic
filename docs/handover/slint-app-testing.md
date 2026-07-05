@@ -82,20 +82,42 @@ engine/model data); use Seam 2's `take_screenshot` for real-data snapshots.
 ## Live GPU render (optional): nested niri
 
 The default headless path renders with the software renderer. To exercise the real GPU/winit render path off your
-main workspace, run the same `mcp` build inside a nested niri compositor (the chosen live path). niri is not installed
-here and ships source-only (no prebuilt binary; building it needs Wayland/libinput/libseat/libgbm dev headers), so
-install it first.
+main workspace, run the same `mcp` build inside a nested niri compositor. niri is installed on this Bazzite host through
+rpm-ostree live apply:
 
-1. Install **niri** (from source or your distro; it must be on `PATH`).
-2. From inside your Wayland session, launch niri nested: `niri` (opens a niri window).
-3. Inside that niri instance, run the app with the GPU backend (skip headless) and the MCP port:
-   `SLINT_BACKEND= mise run //packages/music-player/desktop-app:mcp -- fixtures`
-   (empty `SLINT_BACKEND` lets Slint pick the winit backend; `SLINT_MCP_PORT` still starts the server).
-4. Capture with `niri msg action screenshot` (saves a PNG) or drive `take_screenshot` over MCP as usual.
+```bash
+rpm-ostree install --apply-live --assumeyes --idempotent niri
+```
+
+Do not install niri with `mise install cargo:niri@latest`: that installs upstream's sentinel crate, not a runnable
+compositor. Details and the source trace live in `docs/troubleshooting/niri-mise-cargo-install.md`.
+Issue #272 tracks replacing this dependency with a repo-owned minimal nested Wayland session tailored to GUI tests.
+
+1. Launch niri nested from the live Wayland session and run the app inside it with the GPU backend:
+
+   ```bash
+   mkdir --parents target/niri-gpu-test/xdg-config target/niri-gpu-test/xdg-cache target/niri-gpu-test/xdg-data
+   : > target/niri-gpu-test/empty.kdl
+   XDG_CONFIG_HOME="$PWD/target/niri-gpu-test/xdg-config" \
+     XDG_CACHE_HOME="$PWD/target/niri-gpu-test/xdg-cache" \
+     XDG_DATA_HOME="$PWD/target/niri-gpu-test/xdg-data" \
+     NIRI_CONFIG="$PWD/target/niri-gpu-test/empty.kdl" \
+     SLINT_BACKEND= SLINT_MCP_PORT=9315 \
+     niri -- mise run //packages/music-player/desktop-app:mcp -- fixtures
+   ```
+
+2. Capture the nested compositor output with niri IPC, using the `NIRI_SOCKET` printed by niri:
+
+   ```bash
+   NIRI_SOCKET=/run/user/1000/niri.wayland-1.<pid>.sock \
+     niri msg action screenshot-screen --show-pointer false --path "$PWD/target/niri-gpu-test/niri-screen.png"
+   ```
+
+3. Drive and capture app internals through Slint MCP as usual. Empty `SLINT_BACKEND` lets Slint pick the winit backend,
+   while `SLINT_MCP_PORT` still starts the embedded MCP server for `take_screenshot`, property reads, and input.
 
 Installed fallback: `cage` (a single-app nested wlroots compositor) can host the app similarly
-(`cage -- <binary>`); its wlr-screencopy surface is capturable by wlroots screenshot tools if one is installed
-(`grim` is not installed here).
+(`cage -- <binary>`); its wlr-screencopy surface is capturable by wlroots screenshot tools if one is installed.
 
 ## Prerequisites and notes
 
