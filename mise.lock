@@ -930,7 +930,7 @@ version = "5.3.0"
 backend = "npm:typescript-language-server"
 
 [[tools."npm:wrangler"]]
-version = "4.106.0"
+version = "4.107.0"
 backend = "npm:wrangler"
 
 [[tools.opentofu]]
@@ -982,7 +982,7 @@ checksum = "sha256:34ddbab9eb07a72ea5cf36d98d97ce1931242cb89693cbf5dce06d65ba37d
 url = "https://github.com/opentofu/opentofu/releases/download/v1.12.3/tofu_1.12.3_windows_amd64.tar.gz"
 
 [[tools."pipx:slopo"]]
-version = "0.2.0"
+version = "0.3.0"
 backend = "pipx:slopo"
 
 [[tools.pkl]]
