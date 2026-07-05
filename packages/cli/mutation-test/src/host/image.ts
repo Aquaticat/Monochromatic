@@ -35,6 +35,16 @@ const IMAGE_REPOSITORY = 'localhost/mutation-test-runtime';
 const CONTAINERFILE = 'packages/cli/mutation-test/runtime/Containerfile';
 
 /**
+ * Build-context ignore file path relative to the repo root.
+ *
+ * Building from the repo root without it sweeps node_modules, .git, and
+ * dist into the context (multi-GB layer commit, measured 36 minute
+ * upload before failing); the ignore list mirrors the work-tree rsync
+ * excludes.
+ */
+const CONTAINER_IGNOREFILE = 'packages/cli/mutation-test/runtime/containerignore';
+
+/**
  * Tag hash length keeping references short yet distinct.
  */
 const TAG_HEX_LENGTH = 12;
@@ -65,6 +75,7 @@ export async function imageReference(options: {
   const inputs = await Promise.all([
     'pnpm-lock.yaml',
     CONTAINERFILE,
+    CONTAINER_IGNOREFILE,
   ].map(async function readInput(input,): Promise<Buffer> {
     return await readFile(join(
       options.repoRoot,
@@ -163,6 +174,11 @@ export async function ensureRuntimeImage(options: {
       join(
         options.repoRoot,
         CONTAINERFILE,
+      ),
+      '--ignorefile',
+      join(
+        options.repoRoot,
+        CONTAINER_IGNOREFILE,
       ),
       '--tag',
       reference,
