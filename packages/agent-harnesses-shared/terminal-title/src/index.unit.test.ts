@@ -17,6 +17,7 @@ import {
   shellCommandTitleEntry,
   staticTitleEntry,
   textTitleEntry,
+  TOOL_TITLE_ENTRY_MISSING,
   type ToolTitleRegistry,
 } from './index.ts';
 
@@ -120,7 +121,9 @@ await describe({
     it({
       name: 'does not resolve inherited object properties',
       fn: async () => {
-        expect(lookupToolTitleEntry({ registry: {}, toolName: '__proto__', },),).toBe(undefined,);
+        expect(lookupToolTitleEntry({ registry: {}, toolName: '__proto__', },),).toBe(
+          TOOL_TITLE_ENTRY_MISSING,
+        );
       },
     },),
   ],

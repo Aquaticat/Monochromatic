@@ -13,6 +13,11 @@ import {
 //region Path constants
 
 /**
+ * Sentinel for absolute paths that cannot be displayed relative to cwd.
+ */
+const CWD_RELATIVE_PATH_MISSING: unique symbol = Symbol('terminal-title/cwd-relative-path-missing',);
+
+/**
  * POSIX path separator accepted in tool payload paths.
  */
 const POSIX_PATH_SEPARATOR: string = '/';
@@ -204,7 +209,7 @@ function relativePathFromCwd(
     filePath: string;
     cwd: string;
   }>,
-): string | undefined {
+): string | typeof CWD_RELATIVE_PATH_MISSING {
   /**
    * Node-computed relative path from cwd to file path.
    */
@@ -213,7 +218,7 @@ function relativePathFromCwd(
     filePath,
   );
   if (!isInsideCwdRelativePath(relativePath,))
-    return undefined;
+    return CWD_RELATIVE_PATH_MISSING;
   if (relativePath === '')
     return basename(filePath,);
   return trimCurrentDirectoryPrefix(relativePath,);
@@ -257,7 +262,7 @@ function terminalTitlePath(
       filePath,
       cwd,
     },);
-    if (cwdRelativePath !== undefined)
+    if (((typeof cwdRelativePath) === 'string'))
       return cwdRelativePath;
   }
   return fallbackAbsolutePath(filePath,);

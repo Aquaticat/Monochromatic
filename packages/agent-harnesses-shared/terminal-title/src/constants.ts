@@ -47,17 +47,17 @@ const MAX_TERMINAL_TITLE_UTF8_BYTES: number = GHOSTTY_IGNORED_TITLE_UTF8_BYTES -
 /**
  * First Unicode control-picture code point, corresponding to U+0000.
  */
-const CONTROL_PICTURE_BASE_CODE_POINT: number = 0x2400;
+const CONTROL_PICTURE_BASE_CODE_POINT: number = 0x24_00;
 
 /**
  * ASCII control range end, inclusive.
  */
-const C0_CONTROL_MAX_CODE_POINT: number = 0x001F;
+const C0_CONTROL_MAX_CODE_POINT: number = 0x00_1F;
 
 /**
  * ASCII delete code point.
  */
-const DELETE_CONTROL_CODE_POINT: number = 0x007F;
+const DELETE_CONTROL_CODE_POINT: number = 0x00_7F;
 
 /**
  * Unicode control picture for ASCII delete.
@@ -67,12 +67,12 @@ const DELETE_CONTROL_PICTURE: string = '␡';
 /**
  * C1 control range start, inclusive.
  */
-const C1_CONTROL_MIN_CODE_POINT: number = 0x0080;
+const C1_CONTROL_MIN_CODE_POINT: number = 0x00_80;
 
 /**
  * C1 control range end, inclusive.
  */
-const C1_CONTROL_MAX_CODE_POINT: number = 0x009F;
+const C1_CONTROL_MAX_CODE_POINT: number = 0x00_9F;
 
 /**
  * Replacement used for C1 controls, which do not have Unicode control pictures.

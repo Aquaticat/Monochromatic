@@ -60,8 +60,8 @@ await describe({
          * Payload with visible replacement that exceeds tiny budget.
          */
         const result = safeTerminalTitlePayload({
-          value: '\u001Babc',
-          maxBytes: 5,
+          value: '\u001Babcdef',
+          maxBytes: 6,
         },);
         expect(result,).toBe('␛…',);
       },

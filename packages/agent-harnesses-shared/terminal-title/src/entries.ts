@@ -144,14 +144,23 @@ function pathTitleEntry(
 ): FieldToolTitleEntry {
   return fieldTitleEntry({
     field,
-    fallback: missingValueFallback({ labels, noun, },),
-    format({ value, tense, context, },): string {
+    fallback: missingValueFallback({
+      labels,
+      noun,
+    },),
+    format({
+      value,
+      tense,
+      context,
+    },): string {
       return lifecycleValueTitle({
         labels,
-        value: terminalTitlePath({
-          filePath: value,
-          cwd: context.cwd,
-        },),
+        value: context.cwd === undefined
+          ? terminalTitlePath({ filePath: value, },)
+          : terminalTitlePath({
+            filePath: value,
+            cwd: context.cwd,
+          },),
         tense,
       },);
     },
@@ -188,7 +197,10 @@ function textTitleEntry(
   return fieldTitleEntry({
     field,
     fallback,
-    format({ value, tense, },): string {
+    format({
+      value,
+      tense,
+    },): string {
       return lifecycleValueTitle({
         labels,
         value,
@@ -226,8 +238,14 @@ function shellCommandTitleEntry(
   };
   return fieldTitleEntry({
     field,
-    fallback: missingValueFallback({ labels, noun: 'command', },),
-    format({ value, tense, },): string {
+    fallback: missingValueFallback({
+      labels,
+      noun: 'command',
+    },),
+    format({
+      value,
+      tense,
+    },): string {
       return lifecycleValueTitle({
         labels,
         value: terminalTitleCommand(value,),

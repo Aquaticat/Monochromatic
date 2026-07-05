@@ -4,6 +4,7 @@
  * @module
  */
 
+import { TOOL_TITLE_ENTRY_MISSING, } from './sentinels.ts';
 import {
   formatKnownToolTitle,
   lookupToolTitleEntry,
@@ -92,7 +93,7 @@ function buildToolTitle(
     registry,
     toolName,
   },);
-  if (entry === undefined) {
+  if (((typeof entry) === 'symbol') && (entry === TOOL_TITLE_ENTRY_MISSING)) {
     return unknownToolTitle({
       toolName,
       input,
@@ -188,6 +189,13 @@ function buildToolTerminalTitle(
     unknownToolTitle?: UnknownToolTitleFormatter;
   }>,
 ): string {
+  /**
+   * Optional arguments only included when present to satisfy exact optional property types.
+   */
+  const optionalBuildArgs = {
+    ...(context === undefined ? {} : { context, }),
+    ...(unknownToolTitle === undefined ? {} : { unknownToolTitle, }),
+  };
   return buildTerminalTitle({
     prefix,
     body: buildToolTitle({
@@ -195,8 +203,7 @@ function buildToolTerminalTitle(
       toolName,
       input,
       tense,
-      context,
-      unknownToolTitle,
+      ...optionalBuildArgs,
     },),
   },);
 }

@@ -9,6 +9,11 @@ import type { ShellCommandInfo, } from '@monochromatic-dev/agent-harnesses-shell
 //region Token model
 
 /**
+ * Sentinel returned when wrapper arguments do not contain a wrapped command.
+ */
+const COMMAND_TOKENS_MISSING: unique symbol = Symbol('terminal-title/command-tokens-missing',);
+
+/**
  * Parsed command token sequence used for title summarization.
  */
 type CommandTokens = {
@@ -85,13 +90,13 @@ function wrappedTokensFromArgs(
     args: readonly string[];
     cursor: number;
   }>,
-): CommandTokens | undefined {
+): CommandTokens | typeof COMMAND_TOKENS_MISSING {
   /**
    * Wrapped command name.
    */
   const name = args[cursor];
   if (name === undefined)
-    return undefined;
+    return COMMAND_TOKENS_MISSING;
   return {
     name,
     args: args.slice(cursor + 1,),
@@ -101,6 +106,7 @@ function wrappedTokensFromArgs(
 //endregion Token model
 
 export {
+  COMMAND_TOKENS_MISSING,
   commandTokensFromInfo,
   formatCommandTokens,
   wrappedTokensFromArgs,

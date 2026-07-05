@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { TOOL_TITLE_TEXT_MISSING, } from './sentinels.ts';
+
 //region Shared title shapes
 
 /**
@@ -215,9 +217,9 @@ type WholeInputToolTitleEntry = {
   readonly fallback: TenseLabels;
 
   /**
-   * Formatter returning title text or undefined to use fallback.
+   * Formatter returning title text or sentinel to use fallback.
    */
-  readonly format: (input: ToolTitleWholeInputFormatInput,) => string | undefined;
+  readonly format: (input: ToolTitleWholeInputFormatInput,) => string | typeof TOOL_TITLE_TEXT_MISSING;
 };
 
 /**

@@ -23,6 +23,11 @@
 
 //region Types
 
+export {
+  TOOL_TITLE_ENTRY_MISSING,
+  TOOL_TITLE_FIELD_MISSING,
+  TOOL_TITLE_TEXT_MISSING,
+} from './sentinels.ts';
 export type {
   FieldToolTitleEntry,
   StaticToolTitleEntry,

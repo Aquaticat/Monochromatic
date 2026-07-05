@@ -4,6 +4,11 @@
  * @module
  */
 
+import {
+  TOOL_TITLE_ENTRY_MISSING,
+  TOOL_TITLE_FIELD_MISSING,
+  TOOL_TITLE_TEXT_MISSING,
+} from './sentinels.ts';
 import type {
   ToolTitleContext,
   ToolTitleEntry,
@@ -36,10 +41,13 @@ function lookupToolTitleEntry(
     registry: ToolTitleRegistry;
     toolName: string;
   }>,
-): ToolTitleEntry | undefined {
-  if (!Object.hasOwn(registry, toolName,))
-    return undefined;
-  return registry[toolName];
+): ToolTitleEntry | typeof TOOL_TITLE_ENTRY_MISSING {
+  if (!Object.hasOwn(
+    registry,
+    toolName,
+  ))
+    return TOOL_TITLE_ENTRY_MISSING;
+  return registry[toolName] ?? TOOL_TITLE_ENTRY_MISSING;
 }
 
 //endregion Registry lookup
@@ -69,14 +77,14 @@ function stringField(
     input: ToolTitleInput;
     field: string;
   }>,
-): string | undefined {
+): string | typeof TOOL_TITLE_FIELD_MISSING {
   /**
    * Candidate field value.
    */
   const value = input[field];
   if ((typeof value) === 'string')
     return value;
-  return undefined;
+  return TOOL_TITLE_FIELD_MISSING;
 }
 
 //endregion Field extraction
@@ -124,7 +132,7 @@ function formatKnownToolTitle(
       input,
       field: entry.field,
     },);
-    if (value === undefined)
+    if (((typeof value) === 'symbol') && (value === TOOL_TITLE_FIELD_MISSING))
       return entry.fallback[tense];
     return entry.format({
       value,
@@ -141,8 +149,9 @@ function formatKnownToolTitle(
     tense,
     context,
   },);
-  return formatted
-    ?? entry.fallback[tense];
+  if (((typeof formatted) === 'symbol') && (formatted === TOOL_TITLE_TEXT_MISSING))
+    return entry.fallback[tense];
+  return formatted;
 }
 
 //endregion Entry resolution
