@@ -23,7 +23,9 @@ import {
 /**
  * Build one node work item.
  *
- * @param params - node and execution context
+ * @param node - node to enqueue
+ *
+ * @param context - execution context inherited by node
  *
  * @returns node work item with no inherited redirects
  *
@@ -52,7 +54,9 @@ function nodeWorkItem(
 /**
  * Build node work items in source order.
  *
- * @param params - nodes and execution context
+ * @param nodes - nodes to enqueue
+ *
+ * @param context - execution context inherited by nodes
  *
  * @returns work items in source order
  *
@@ -81,7 +85,9 @@ function nodeWorkItems(
 /**
  * Build statement work items in source order.
  *
- * @param params - statements and execution context
+ * @param statements - statements to enqueue
+ *
+ * @param context - execution context inherited by statements
  *
  * @returns work items in source order
  *
@@ -110,7 +116,9 @@ function statementWorkItems(
 /**
  * Build one word work item.
  *
- * @param params - word and execution context
+ * @param word - word to enqueue
+ *
+ * @param context - execution context inherited by word
  *
  * @returns singleton word work item list
  *
@@ -138,7 +146,9 @@ function wordWorkItems(
 /**
  * Build word work items in source order.
  *
- * @param params - words and execution context
+ * @param words - words to enqueue
+ *
+ * @param context - execution context inherited by words
  *
  * @returns work items in source order
  *
@@ -167,7 +177,9 @@ function wordsWorkItems(
 /**
  * Build nested word items from parameter expansion.
  *
- * @param params - parameter expansion and execution context
+ * @param part - parameter expansion part
+ *
+ * @param context - execution context inherited by nested words
  *
  * @returns word work items in source order
  *
@@ -230,7 +242,9 @@ function parameterWordItems(
 /**
  * Build assignment value word items.
  *
- * @param params - assignments and execution context
+ * @param assignments - assignment prefixes to scan
+ *
+ * @param context - execution context inherited by assignment words
  *
  * @returns word work items in source order
  *
@@ -267,7 +281,9 @@ function assignmentWordItems(
 /**
  * Build work items for words attached to redirects.
  *
- * @param params - redirects and execution context
+ * @param redirects - redirects whose words should be scanned
+ *
+ * @param context - execution context inherited by redirect words
  *
  * @returns word work items in source order
  *
@@ -306,7 +322,9 @@ function redirectWordItems(
 /**
  * Build redirect-only work item.
  *
- * @param params - redirects and execution context
+ * @param redirects - redirects to surface after child commands
+ *
+ * @param context - execution context inherited by redirect item
  *
  * @returns singleton redirect item when redirects exist
  *
@@ -336,7 +354,11 @@ function redirectWorkItems(
 /**
  * Build work items for words attached to command.
  *
- * @param params - command, inherited redirects, and execution context
+ * @param command - command whose words should be scanned
+ *
+ * @param redirects - inherited redirects to scan with command redirects
+ *
+ * @param context - execution context inherited by command words
  *
  * @returns word work items in source order
  *
@@ -384,7 +406,9 @@ function commandWordItems(
 /**
  * Build words and body commands from case statement.
  *
- * @param params - case node and execution context
+ * @param node - case node to scan
+ *
+ * @param context - execution context inherited by case items
  *
  * @returns work items in source order
  *

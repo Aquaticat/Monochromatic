@@ -4,10 +4,7 @@
  * @module
  */
 
-import {
-  parse,
-  type Script as UnbashScript,
-} from 'unbash';
+import { parse, } from 'unbash';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   looksLikePath,
@@ -15,27 +12,11 @@ import {
 } from './refs.ts';
 import type {
   ShellCommandAnalysis,
-  ShellCommandInfo,
   ShellParseError,
 } from './types.ts';
-import {
-  EXECUTED_CONTEXT,
-  type CommandCollection,
-  type ParsedUnbashScript,
-  type TraversalFlags,
-  type VisitResult,
-  type WorkItem,
-} from './internal-types.ts';
+import type { ParsedUnbashScript, } from './internal-types.ts';
 import { parseErrorsFromScript, } from './nested.ts';
-import {
-  visitArithmetic,
-  visitNode,
-  visitParts,
-  visitRedirectsItem,
-  visitTest,
-  visitWord,
-} from './visitors.ts';
-import { statementWorkItems, } from './work-items.ts';
+import { collectCommandInfoFromScript, } from './collect.ts';
 
 //region Logging
 
@@ -134,205 +115,14 @@ function tryParseScript(
 
 //endregion Parse helpers
 
-//region Collection helpers
-
-/**
- * Combine two traversal flag objects with boolean OR semantics.
- *
- * @param params - left and right flags to merge
- *
- * @returns merged flags
- *
- * @example
- * ```ts
- * mergeFlags({ left, right });
- * ```
- */
-function mergeFlags(
-  {
-    left,
-    right,
-  }: {
-    readonly left: TraversalFlags;
-    readonly right: TraversalFlags;
-  },
-): TraversalFlags {
-  return {
-    isPipeline: left.isPipeline || right.isPipeline,
-    hasBackground: left.hasBackground || right.hasBackground,
-    hasCommandSubstitution: left.hasCommandSubstitution || right.hasCommandSubstitution,
-    hasProcessSubstitution: left.hasProcessSubstitution || right.hasProcessSubstitution,
-  };
-}
-
-/**
- * Visit one queued work item.
- *
- * @param params - work item and pre-scanned parameter refs
- *
- * @returns visit result for item
- *
- * @example
- * ```ts
- * visitWorkItem({ item, paramRefs: [] });
- * ```
- */
-function visitWorkItem(
-  {
-    item,
-    paramRefs,
-  }: {
-    readonly item: WorkItem;
-    readonly paramRefs: readonly string[];
-  },
-): VisitResult {
-  if (item.kind === 'node') {
-    return visitNode({
-      node: item.node,
-      redirects: item.redirects,
-      paramRefs,
-      context: item.context,
-    },);
-  }
-  if (item.kind === 'word') {
-    return visitWord({
-      word: item.word,
-      context: item.context,
-    },);
-  }
-  if (item.kind === 'parts') {
-    return visitParts({
-      parts: item.parts,
-      context: item.context,
-    },);
-  }
-  if (item.kind === 'arithmetic') {
-    return visitArithmetic({
-      expression: item.expression,
-      context: item.context,
-    },);
-  }
-  if (item.kind === 'test') {
-    return visitTest({
-      expression: item.expression,
-      context: item.context,
-    },);
-  }
-  return visitRedirectsWorkItem({
-    item,
-    paramRefs,
-  },);
-}
-
-/**
- * Visit queued redirect work item.
- *
- * @param params - redirect work item and pre-scanned parameter refs
- *
- * @returns visit result for item
- *
- * @example
- * ```ts
- * visitRedirectsWorkItem({ item, paramRefs: [] });
- * ```
- */
-function visitRedirectsWorkItem(
-  {
-    item,
-    paramRefs,
-  }: {
-    readonly item: Extract<WorkItem, { readonly kind: 'redirects'; }>;
-    readonly paramRefs: readonly string[];
-  },
-): VisitResult {
-  return visitRedirectsItem({
-    redirects: item.redirects,
-    paramRefs,
-    context: item.context,
-  },);
-}
-
-/**
- * Convert parsed `unbash` script to command collection.
- *
- * @param params - parsed script and pre-scanned parameter refs
- *
- * @returns command collection for guardrail signal checks
- *
- * @example
- * ```ts
- * collectCommandInfoFromScript({ script, paramRefs: [] });
- * ```
- */
-function collectCommandInfoFromScript(
-  {
-    script,
-    paramRefs,
-  }: {
-    readonly script: UnbashScript;
-    readonly paramRefs: readonly string[];
-  },
-): CommandCollection {
-  /**
-   * Parsed command records accumulated in traversal order.
-   */
-  const commands: ShellCommandInfo[] = [];
-  /**
-   * Nested parse errors accumulated in traversal order.
-   */
-  const parseErrors: ShellParseError[] = [];
-  /**
-   * Mutable traversal flags.
-   */
-  let flags: TraversalFlags = {
-    isPipeline: false,
-    hasBackground: false,
-    hasCommandSubstitution: false,
-    hasProcessSubstitution: false,
-  };
-  /**
-   * LIFO work stack seeded with top-level statements.
-   */
-  const stack: WorkItem[] = statementWorkItems({
-    statements: script.commands,
-    context: EXECUTED_CONTEXT,
-  },)
-    .toReversed();
-
-  for (let item = stack.pop(); item !== undefined; item = stack.pop()) {
-    /**
-     * Result emitted by current traversal item.
-     */
-    const result = visitWorkItem({
-      item,
-      paramRefs,
-    },);
-    commands.push(...result.commands,);
-    parseErrors.push(...result.parseErrors,);
-    flags = mergeFlags({
-      left: flags,
-      right: result.flags,
-    },);
-    for (const workItem of result.workItems
-      .toReversed())
-      stack.push(workItem,);
-  }
-
-  return {
-    commands,
-    flags,
-    parseErrors,
-  };
-}
-
-//endregion Collection helpers
-
 //region Public API
 
 /**
  * Build empty analysis for parse failure.
  *
- * @param params - parse diagnostics and raw parameter refs
+ * @param parseErrors - parser diagnostics from failed parse
+ *
+ * @param paramRefs - parameter references pre-scanned from raw source text
  *
  * @returns failed analysis preserving raw parameter references
  *

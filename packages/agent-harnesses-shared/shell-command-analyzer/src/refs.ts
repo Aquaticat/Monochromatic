@@ -46,11 +46,61 @@ function isIdentifierContinue(c: string,): boolean {
 //region Param reference extraction
 
 /**
+ * Sentinel returned when no identifier starts at requested offset.
+ */
+const IDENTIFIER_NOT_FOUND: unique symbol = Symbol('shell identifier not found at requested offset',);
+
+/**
+ * Identifier read result.
+ */
+type IdentifierRead = {
+  /**
+   * Identifier text.
+   */
+  readonly name: string;
+  /**
+   * Offset immediately after identifier.
+   */
+  readonly next: number;
+};
+
+/**
+ * Find end offset for identifier that starts at `start`.
+ *
+ * @param source - source text to scan
+ *
+ * @param start - offset where identifier starts
+ *
+ * @returns first offset after identifier continuation run
+ *
+ * @example
+ * ```ts
+ * identifierEnd({ source: 'API_KEY}', start: 0 });
+ * ```
+ */
+function identifierEnd(
+  {
+    source,
+    start,
+  }: {
+    readonly source: string;
+    readonly start: number;
+  },
+): number {
+  for (let cursor = start + 1;; cursor += 1) {
+    if (!isIdentifierContinue(source.charAt(cursor,),))
+      return cursor;
+  }
+}
+
+/**
  * Read identifier from `source` starting at `start`.
  *
- * @param params - source text and start offset
+ * @param source - source text to scan
  *
- * @returns identifier text plus next offset, or undefined when no identifier starts there
+ * @param start - offset where identifier may start
+ *
+ * @returns identifier text plus next offset, or sentinel when no identifier starts there
  *
  * @example
  * ```ts
@@ -65,19 +115,17 @@ function readIdentifier(
     readonly source: string;
     readonly start: number;
   },
-): {
-  readonly name: string;
-  readonly next: number
-} | undefined {
+): IdentifierRead | typeof IDENTIFIER_NOT_FOUND {
   if (!isIdentifierStart(source.charAt(start,),))
-    return undefined;
+    return IDENTIFIER_NOT_FOUND;
 
   /**
    * Cursor advanced across identifier continuation characters.
    */
-  let cursor = start + 1;
-  while (isIdentifierContinue(source.charAt(cursor,),))
-    cursor += 1;
+  const cursor = identifierEnd({
+    source,
+    start,
+  },);
 
   return {
     name: source.slice(
@@ -127,7 +175,7 @@ function extractParamRefs(command: string,): string[] {
         source: command,
         start: cursor + '${'.length,
       },);
-      if ((braced !== undefined) && (command.charAt(braced.next,) === '}')) {
+      if ((braced !== IDENTIFIER_NOT_FOUND) && (command.charAt(braced.next,) === '}')) {
         refs.add(braced.name,);
         cursor = braced.next;
       }
@@ -140,7 +188,7 @@ function extractParamRefs(command: string,): string[] {
       source: command,
       start: cursor + '$'.length,
     },);
-    if (simple !== undefined) {
+    if (simple !== IDENTIFIER_NOT_FOUND) {
       refs.add(simple.name,);
       cursor = simple.next - 1;
     }

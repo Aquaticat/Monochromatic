@@ -135,6 +135,7 @@ await describe({
         it({
           name: 'extracts simple and braced parameter refs',
           fn: async function testParamRefs() {
+            // oxlint-disable-next-line no-template-curly-in-string -- Test string contains literal shell parameter syntax.
             expect(extractParamRefs('curl $API_KEY ${TOKEN}',),).toEqual(['API_KEY', 'TOKEN',],);
           },
         },),

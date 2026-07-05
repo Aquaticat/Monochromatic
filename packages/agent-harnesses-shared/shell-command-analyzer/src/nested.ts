@@ -147,7 +147,9 @@ function scriptFromExpansion(
 /**
  * Build script work from command, process, or arithmetic command expansion.
  *
- * @param params - expansion node and execution context
+ * @param expansion - expansion node containing nested shell source
+ *
+ * @param context - execution context inherited by nested commands
  *
  * @returns statement work, feature flags, and nested parse diagnostics
  *

@@ -83,7 +83,9 @@ function isNumericDescriptor(target: string,): boolean {
 /**
  * Classify redirect target kind.
  *
- * @param params - redirect operator and target text
+ * @param operator - redirect operator
+ *
+ * @param target - redirect target text, when present
  *
  * @returns redirect kind used by callers
  *
@@ -98,7 +100,7 @@ function redirectKind(
     target,
   }: {
     readonly operator: UnbashRedirectOperator;
-    readonly target: string | undefined;
+    readonly target?: string;
   },
 ): ShellRedirectKind {
   if ((operator === '<<') || (operator === '<<-'))
@@ -114,7 +116,9 @@ function redirectKind(
 /**
  * Whether redirect writes to a file-like target.
  *
- * @param params - redirect operator and kind
+ * @param operator - redirect operator
+ *
+ * @param kind - redirect target classification
  *
  * @returns whether redirect writes file content
  *
@@ -141,7 +145,9 @@ function redirectWritesFile(
 /**
  * Whether redirect reads from a file-like target.
  *
- * @param params - redirect operator and kind
+ * @param operator - redirect operator
+ *
+ * @param kind - redirect target classification
  *
  * @returns whether redirect reads file content
  *
@@ -188,7 +194,7 @@ function redirectToInfo(redirect: UnbashRedirect,): ShellRedirect {
    */
   const kind = redirectKind({
     operator: redirect.operator,
-    target,
+    ...(target === undefined ? {} : { target, }),
   },);
 
   return {
@@ -305,7 +311,13 @@ function assignmentToEnvAssignment(assignment: UnbashAssignmentPrefix,): ShellEn
 /**
  * Convert one simple command node to analyzer command info.
  *
- * @param params - command node, inherited redirects, references, and context
+ * @param command - simple command node to convert
+ *
+ * @param inheritedRedirects - redirects inherited from wrapping statements
+ *
+ * @param paramRefs - parameter references pre-scanned from raw source text
+ *
+ * @param context - execution context inherited by command
  *
  * @returns command info used by guardrail signal checks
  *
@@ -334,7 +346,9 @@ function commandToInfo(
     ...command.redirects,
     ...inheritedRedirects,
   ]
-    .map(redirectToInfo,);
+    .map(function mapRedirectToInfo(redirect,): ShellRedirect {
+      return redirectToInfo(redirect,);
+    },);
 
   return {
     name: command.name
@@ -354,7 +368,11 @@ function commandToInfo(
 /**
  * Emit synthetic command for redirects attached to compound syntax.
  *
- * @param params - redirects, references, and context
+ * @param redirects - redirects attached to compound syntax
+ *
+ * @param paramRefs - parameter references pre-scanned from raw source text
+ *
+ * @param context - execution context inherited by redirect command
  *
  * @returns command info carrying redirect targets only
  *
@@ -377,7 +395,9 @@ function redirectOnlyCommand(
   /**
    * Converted redirects from compound syntax.
    */
-  const convertedRedirects = redirects.map(redirectToInfo,);
+  const convertedRedirects = redirects.map(function mapRedirectToInfo(redirect,): ShellRedirect {
+    return redirectToInfo(redirect,);
+  },);
   return {
     name: '',
     envAssignments: [],
