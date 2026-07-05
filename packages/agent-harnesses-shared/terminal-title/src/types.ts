@@ -77,7 +77,7 @@ const FIELD_ABSENT: unique symbol = Symbol('terminal-title/field-absent',);
  * NO_STRING_FIELD === FIELD_ABSENT;
  * ```
  */
-const NO_STRING_FIELD = FIELD_ABSENT;
+const NO_STRING_FIELD: typeof FIELD_ABSENT = FIELD_ABSENT;
 
 /**
  * Formatter entry for one known tool.
