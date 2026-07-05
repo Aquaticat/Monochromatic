@@ -39,10 +39,7 @@ import {
   matchUserCommands,
   shouldFlag,
 } from './signals.ts';
-import type {
-  BashAnalysis,
-  SignalContext,
-} from './types.ts';
+import type { SignalContext, } from './types.ts';
 
 /** Default signal context for tests. */
 const DEFAULT_CTX: SignalContext = {
@@ -841,13 +838,7 @@ await describe({
     it({
       name: 'flags unparseable commands',
       fn: async () => {
-        const analysis: BashAnalysis = {
-          parsed: false,
-          commands: [],
-          isPipeline: false,
-          allFiles: [],
-          allParamRefs: [],
-        };
+        const analysis = analyzeBashCommand('echo "$SECRET_VAR',);
         expect(await bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
