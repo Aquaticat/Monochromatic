@@ -1,5 +1,5 @@
 /**
- * Shared types for converting `unbash` AST nodes to auto-mode command info.
+ * Internal traversal types for shell command analyzer.
  *
  * @module
  */
@@ -10,13 +10,16 @@ import type {
   Node as UnbashNode,
   ParseError as UnbashParseError,
   Redirect as UnbashRedirect,
-  RedirectOperator as UnbashRedirectOperator,
   Script as UnbashScript,
   TestExpression as UnbashTestExpression,
   Word as UnbashWord,
   WordPart as UnbashWordPart,
 } from 'unbash';
-import type { CommandInfo, } from './types.ts';
+import type {
+  ShellCommandContext,
+  ShellCommandInfo,
+  ShellParseError,
+} from './types.ts';
 
 /**
  * `unbash` script plus tolerant parser diagnostics.
@@ -49,6 +52,10 @@ type NodeWorkItem = {
    * Redirects inherited from wrapping statement nodes.
    */
   readonly redirects: readonly UnbashRedirect[];
+  /**
+   * Execution context inherited by child commands.
+   */
+  readonly context: ShellCommandContext;
 };
 
 /**
@@ -63,6 +70,10 @@ type WordWorkItem = {
    * Word whose parts may contain nested scripts.
    */
   readonly word: UnbashWord;
+  /**
+   * Execution context inherited by expansions inside word.
+   */
+  readonly context: ShellCommandContext;
 };
 
 /**
@@ -77,6 +88,10 @@ type PartsWorkItem = {
    * Parts to scan for nested scripts and words.
    */
   readonly parts: readonly TraversablePart[];
+  /**
+   * Execution context inherited by expansions inside parts.
+   */
+  readonly context: ShellCommandContext;
 };
 
 /**
@@ -91,6 +106,10 @@ type ArithmeticWorkItem = {
    * Expression that may contain command expansion.
    */
   readonly expression: UnbashArithmeticExpression;
+  /**
+   * Execution context inherited by expansions inside expression.
+   */
+  readonly context: ShellCommandContext;
 };
 
 /**
@@ -105,6 +124,10 @@ type TestWorkItem = {
    * Expression whose operands may contain command expansion.
    */
   readonly expression: UnbashTestExpression;
+  /**
+   * Execution context inherited by expansions inside expression.
+   */
+  readonly context: ShellCommandContext;
 };
 
 /**
@@ -119,6 +142,10 @@ type RedirectsWorkItem = {
    * Redirects to surface as path signals.
    */
   readonly redirects: readonly UnbashRedirect[];
+  /**
+   * Execution context inherited by redirect words.
+   */
+  readonly context: ShellCommandContext;
 };
 
 /**
@@ -133,21 +160,25 @@ type WorkItem =
   | RedirectsWorkItem;
 
 /**
- * Command collection returned to the public parser wrapper.
+ * Boolean feature flags gathered while walking AST.
  */
-type CommandCollection = {
+type TraversalFlags = {
   /**
-   * Parsed command records.
-   */
-  readonly commands: readonly CommandInfo[];
-  /**
-   * Whether parsed syntax contains a pipeline.
+   * Whether a pipeline operator appears.
    */
   readonly isPipeline: boolean;
   /**
-   * Whether nested parsing reported errors.
+   * Whether any statement is backgrounded.
    */
-  readonly hasParseErrors: boolean;
+  readonly hasBackground: boolean;
+  /**
+   * Whether command substitution appears.
+   */
+  readonly hasCommandSubstitution: boolean;
+  /**
+   * Whether process substitution appears.
+   */
+  readonly hasProcessSubstitution: boolean;
 };
 
 /**
@@ -157,19 +188,37 @@ type VisitResult = {
   /**
    * Commands emitted by this work item.
    */
-  readonly commands: readonly CommandInfo[];
+  readonly commands: readonly ShellCommandInfo[];
   /**
    * Child work items to process in source order.
    */
   readonly workItems: readonly WorkItem[];
   /**
-   * Whether this work item saw a pipeline operator.
+   * Feature flags emitted by this work item.
    */
-  readonly isPipeline: boolean;
+  readonly flags: TraversalFlags;
   /**
-   * Whether this work item saw parser diagnostics.
+   * Parse errors emitted by nested parsing.
    */
-  readonly hasParseErrors: boolean;
+  readonly parseErrors: readonly ShellParseError[];
+};
+
+/**
+ * Command collection returned to public parser wrapper.
+ */
+type CommandCollection = {
+  /**
+   * Parsed command records.
+   */
+  readonly commands: readonly ShellCommandInfo[];
+  /**
+   * Feature flags gathered while walking AST.
+   */
+  readonly flags: TraversalFlags;
+  /**
+   * Parse errors emitted by nested parsing.
+   */
+  readonly parseErrors: readonly ShellParseError[];
 };
 
 /**
@@ -178,9 +227,24 @@ type VisitResult = {
 const NO_SCRIPT: unique symbol = Symbol('nested script payload absent from unbash command',);
 
 /**
+ * Context for commands executed by script evaluation.
+ */
+const EXECUTED_CONTEXT: ShellCommandContext = { kind: 'executed', };
+
+/**
  * Empty redirects singleton used for child work items.
  */
 const EMPTY_REDIRECTS: readonly UnbashRedirect[] = [];
+
+/**
+ * Empty traversal flags singleton.
+ */
+const EMPTY_FLAGS: TraversalFlags = {
+  isPipeline: false,
+  hasBackground: false,
+  hasCommandSubstitution: false,
+  hasProcessSubstitution: false,
+};
 
 /**
  * Empty visit result for leaf work items.
@@ -188,34 +252,21 @@ const EMPTY_REDIRECTS: readonly UnbashRedirect[] = [];
 const EMPTY_VISIT_RESULT: VisitResult = {
   commands: [],
   workItems: [],
-  isPipeline: false,
-  hasParseErrors: false,
+  flags: EMPTY_FLAGS,
+  parseErrors: [],
 };
 
-/**
- * Redirect operators whose targets are files or file descriptors.
- */
-const FILE_REDIRECT_OPERATORS: ReadonlySet<UnbashRedirectOperator> = new Set<UnbashRedirectOperator>([
-  '>',
-  '>>',
-  '<',
-  '<>',
-  '<&',
-  '>&',
-  '>|',
-  '&>',
-  '&>>',
-],);
-
 export {
+  EMPTY_FLAGS,
   EMPTY_REDIRECTS,
   EMPTY_VISIT_RESULT,
-  FILE_REDIRECT_OPERATORS,
+  EXECUTED_CONTEXT,
   NO_SCRIPT,
 };
 export type {
   CommandCollection,
   ParsedUnbashScript,
+  TraversalFlags,
   TraversablePart,
   VisitResult,
   WorkItem,

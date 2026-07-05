@@ -4,49 +4,26 @@
  * @module
  */
 
+import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shell-command-analyzer/ts';
 import { BUN_TEST_BLOCK_REASON, } from './constants.ts';
 import {
   GUARDRAIL_NOT_BLOCKED,
   type GuardrailDecision,
 } from './types.ts';
-import {
-  isWhitespace,
-  isWordChar,
-} from './text-scan.ts';
 import { isRecord, } from './value.ts';
 
-//region Segment scanning
+//region Parsed command predicates
 
 /**
- * Detects shell command separators that introduce a new command segment.
+ * Checks whether a shell command contains an executed `bun test` invocation.
  *
- * @param c - one-character string to inspect
- *
- * @returns whether character is a command boundary
- *
- * @example
- * ```typescript
- * isCommandBoundary(';'); // true
- * ```
- */
-function isCommandBoundary(c: string,): boolean {
-  return (c === '\n')
-    || (c === ';')
-    || (c === '|')
-    || (c === '&')
-    || (c === '(');
-}
-
-/**
- * Checks whether a shell command contains a segment-leading `bun test` invocation.
- *
- * Matches start-of-command and post-separator `bun test` segments, while leaving
- * quoted prose like `echo "bun test"` alone because the phrase is not at a
- * command-segment boundary.
+ * Uses the shared `unbash` analyzer so quoted prose, escaped characters,
+ * nested command substitutions, and function definitions are classified by
+ * shell grammar instead of text boundaries.
  *
  * @param command - shell command from pi Bash tool input
  *
- * @returns whether command invokes `bun test`
+ * @returns whether command executes `bun test`
  *
  * @example
  * ```typescript
@@ -56,96 +33,19 @@ function isCommandBoundary(c: string,): boolean {
  */
 function invokesBunTest(command: string,): boolean {
   /**
-   * Literal executable token detected at a segment head.
+   * Parsed shell command analysis.
    */
-  const bunToken = 'bun';
-  /**
-   * Literal subcommand token detected after `bun`.
-   */
-  const testToken = 'test';
-
-  /**
-   * Advances over whitespace from a candidate offset.
-   *
-   * @param idx - start offset
-   *
-   * @returns first non-whitespace offset at or after `idx`
-   */
-  function skipWhitespace(idx: number,): number {
-    /**
-     * Cursor advanced across a whitespace run.
-     */
-    let cursorIndex = idx;
-    while ((cursorIndex < command.length) && isWhitespace(command.charAt(cursorIndex,),))
-      cursorIndex += 1;
-    return cursorIndex;
-  }
-
-  /**
-   * Checks whether a candidate segment starts with `bun test`.
-   *
-   * @param segmentStart - offset immediately after a shell boundary
-   *
-   * @returns whether candidate segment begins with `bun test`
-   */
-  function matchesAt(segmentStart: number,): boolean {
-    /**
-     * Offset where `bun` would begin after leading segment whitespace.
-     */
-    const bunStart = skipWhitespace(segmentStart,);
-    if (!command.startsWith(
-      bunToken,
-      bunStart,
-    )) {
-      return false;
-    }
-
-    /**
-     * Offset immediately after candidate `bun` token.
-     */
-    const afterBun = bunStart + bunToken.length;
-    if ((afterBun >= command.length) || (!isWhitespace(command.charAt(afterBun,),)))
-      return false;
-
-    /**
-     * Offset where `test` would begin after whitespace following `bun`.
-     */
-    const testStart = skipWhitespace(afterBun,);
-    if (!command.startsWith(
-      testToken,
-      testStart,
-    )) {
-      return false;
-    }
-
-    /**
-     * Offset immediately after candidate `test` token.
-     */
-    const afterTest = testStart + testToken.length;
-    return (afterTest >= command.length)
-      || (!isWordChar(command.charAt(afterTest,),));
-  }
-
-  /**
-   * Checks every separator boundary after command start.
-   *
-   * @returns whether any later command segment starts with `bun test`
-   */
-  function hasBoundaryMatch(): boolean {
-    for (let index = 0; index < command.length; index += 1) {
-      if (isCommandBoundary(command.charAt(index,),)
-        && matchesAt(index + 1,)) {
-        return true;
-      }
-    }
+  const analysis = analyzeShellCommand(command,);
+  if (!analysis.parsed)
     return false;
-  }
 
-  return matchesAt(0,)
-    || hasBoundaryMatch();
+  return analysis.executedCommands.some(function commandIsBunTest(info,): boolean {
+    return (info.name === 'bun')
+      && (info.args[0] === 'test');
+  },);
 }
 
-//endregion Segment scanning
+//endregion Parsed command predicates
 
 //region Bash guard evaluation
 

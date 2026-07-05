@@ -1,22 +1,14 @@
 /**
- * Command validation predicates for the Bash output filter hook.
- *
- * Provides allowlist and denylist checks that determine whether a Bash command
- * should be piped through the output filter. Implemented as named predicate
- * functions rather than regex arrays so each check stays inspectable and
- * stays out of the `no-restricted-syntax/no-regex` rule.
+ * Command validation predicates for Bash output filter hook.
  *
  * @module
  */
 
 import {
-  containsAnyOfWordBounded,
-  containsWordBoundedPhrase,
-  isAlphaNum,
-  isWhitespace,
-  PHRASE_NOT_FOUND,
-  splitWhitespace,
-} from '../../lib/text-scan.ts';
+  analyzeShellCommand,
+  type ShellCommandAnalysis,
+  type ShellCommandInfo,
+} from '@monochromatic-dev/agent-harnesses-shell-command-analyzer/ts';
 
 //region Allowlist
 
@@ -26,67 +18,70 @@ import {
 const ALLOW_LEADING_PUNCT = '_/.~"\'-';
 
 /**
- * Whether `cmd` starts with an allowlisted leading character: alphanumeric,
- * underscore, slash, dot, tilde, quote, or hyphen. Mirrors the original
- * regex `/^[a-zA-Z0-9_/.~"'-]/`.
+ * Whether character is ASCII alphanumeric.
  *
- * @param cmd - full Bash command string
+ * @param c - one-character string to inspect
  *
- * @returns whether the leading char is allowlisted
+ * @returns whether character is alphanumeric
  *
  * @example
  * ```ts
- * startsWithSafeChar('git status'); // true
- * startsWithSafeChar('!history');   // false
+ * isAlphaNum('a');
  * ```
  */
-function startsWithSafeChar(cmd: string,): boolean {
-  if (cmd.length
-    === 0)
-    return false;
-  /**
-   * Leading char to test against the allow-list set.
-   */
-  const c = cmd.charAt(0,);
-  return isAlphaNum(c,)
-    || ALLOW_LEADING_PUNCT
-    .includes(c,);
+function isAlphaNum(c: string,): boolean {
+  return ((c >= 'A') && (c <= 'Z'))
+    || ((c >= 'a') && (c <= 'z'))
+    || ((c >= '0') && (c <= '9'));
 }
 
 /**
- * Predicates a command must satisfy at least one of to be allowed through the filter.
- */
-const ALLOW_PREDICATES: readonly ((cmd: string,) => boolean)[] = [
-  startsWithSafeChar,
-];
-
-/**
- * Whether a command looks like a normal text command that is safe to pipe.
+ * Whether `command` starts with an allowlisted leading character.
  *
- * @param command - full Bash command string from the tool input
+ * @param command - full Bash command string
  *
- * @returns `true` if the command matches any allowlist predicate
+ * @returns whether leading char is allowlisted
  *
  * @example
  * ```ts
- * isAllowed('git status'); // true
- * isAllowed('!special'); // false
+ * startsWithSafeChar('git status');
+ * ```
+ */
+function startsWithSafeChar(command: string,): boolean {
+  if (command.length === 0)
+    return false;
+  /**
+   * Leading char to test against allow-list set.
+   */
+  const c = command.charAt(0,);
+  return isAlphaNum(c,)
+    || ALLOW_LEADING_PUNCT.includes(c,);
+}
+
+/**
+ * Whether command looks like normal text command that is safe to pipe.
+ *
+ * @param command - full Bash command string from tool input
+ *
+ * @returns `true` if command matches allowlist predicate
+ *
+ * @example
+ * ```ts
+ * isAllowed('git status');
  * ```
  */
 function isAllowed(command: string,): boolean {
-  return ALLOW_PREDICATES.some(function predicateTest(predicate,) {
-    return predicate(command,);
-  },);
+  return startsWithSafeChar(command,);
 }
 
-//endregion
+//endregion Allowlist
 
-//region Denylist predicates
+//region Denylist helpers
 
 /**
- * Binary-handling tools whose output would be mangled by the filter pipeline.
+ * Binary-handling tools whose output would be mangled by filter pipeline.
  */
-const BINARY_TOOL_NAMES: readonly string[] = [
+const BINARY_TOOL_NAMES: ReadonlySet<string> = new Set([
   'xxd',
   'hexdump',
   'od',
@@ -99,178 +94,18 @@ const BINARY_TOOL_NAMES: readonly string[] = [
   'bzip2',
   'xz',
   'zstd',
-];
+],);
 
 /**
- * Whether `cmd` invokes a binary-handling tool whose output should not be
- * piped through the filter. Mirrors `\b(xxd|hexdump|...)\b`.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether a binary tool is invoked
- *
- * @example
- * ```ts
- * hasBinaryTool('xxd file.bin'); // true
- * hasBinaryTool('git status');   // false
- * ```
+ * Detachment wrapper utilities that take child off controlling terminal.
  */
-function hasBinaryTool(cmd: string,): boolean {
-  return containsAnyOfWordBounded({
-    haystack: cmd,
-    phrases: BINARY_TOOL_NAMES,
-  },)
-    !== PHRASE_NOT_FOUND;
-}
-
-/**
- * Whether `cmd` contains a file redirect (`> foo`, `>foo`, `2> foo`) but not
- * descriptor redirects like `2>&1`. Mirrors the original `>\s*[^\s|&;]`.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether a file redirect is present
- *
- * @example
- * ```ts
- * hasFileRedirect('cat > out.txt'); // true
- * hasFileRedirect('cmd 2>&1');      // false
- * ```
- */
-function hasFileRedirect(cmd: string,): boolean {
-  // Walk each `>` in order (monotonic `indexOf`, no rescan of earlier text).
-  // For each, skip optional whitespace and test the next char; a redirect to a
-  // real target (not `|`, `&`, `;`, or whitespace) marks a file redirect.
-  for (
-    let gtIdx = cmd.indexOf(
-      '>',
-      0,
-    );
-    gtIdx !== (-1);
-    gtIdx = cmd.indexOf(
-      '>',
-      gtIdx + 1,
-    )
-  ) {
-    /**
-     * Position of the candidate destination char, advanced past whitespace after `>`.
-     */
-    let afterWs = gtIdx + 1;
-    while ((afterWs < cmd
-      .length) && isWhitespace(cmd.charAt(afterWs,),)) {
-      afterWs += 1;
-    }
-    if (afterWs < cmd
-      .length) {
-      /**
-       * Char immediately following the optional whitespace; classified below.
-       */
-      const next = cmd.charAt(afterWs,);
-      if ((next !== '|') && (next !== '&')
-        && (next !== ';')
-        && (!isWhitespace(next,)))
-        return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Whether `cmd` invokes the bash-output-filter helper script itself. Used to
- * avoid recursively piping the filter through itself. Mirrors
- * `\bfilter\.(mjs|ts)\b`.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether `filter.mjs` or `filter.ts` is invoked
- *
- * @example
- * ```ts
- * invokesFilterScript('node ./filter.mjs'); // true
- * invokesFilterScript('bun ./other.ts');   // false
- * ```
- */
-function invokesFilterScript(cmd: string,): boolean {
-  return containsWordBoundedPhrase({
-    haystack: cmd,
-    phrase: 'filter.mjs',
-  },)
-    || containsWordBoundedPhrase({
-    haystack: cmd,
-    phrase: 'filter.ts',
-  },);
-}
-
-/**
- * Marker emitted by the filter to indicate end-of-filter execution.
- */
-const BOF_MARKER = '___BOF_EC:';
-
-/**
- * Whether `cmd` carries the end-of-filter marker. Mirrors `___BOF_EC:`.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether the marker is present
- *
- * @example
- * ```ts
- * hasBofMarker('echo ___BOF_EC:0'); // true
- * ```
- */
-function hasBofMarker(cmd: string,): boolean {
-  return cmd.includes(BOF_MARKER,);
-}
-
-/**
- * Whether `cmd` ends with `&` (with optional trailing whitespace), marking it
- * as a background command. Mirrors `&\s*$`.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether the command ends with a background op
- *
- * @example
- * ```ts
- * endsWithBackgroundOp('npm start &'); // true
- * endsWithBackgroundOp('cmd && cmd2'); // false
- * ```
- */
-function endsWithBackgroundOp(cmd: string,): boolean {
-  return cmd.trimEnd()
-    .endsWith('&',);
-}
-
-/**
- * Detachment wrapper utilities that take their child off the controlling terminal.
- */
-const DETACH_WRAPPER_NAMES: readonly string[] = [
+const DETACH_WRAPPER_NAMES: ReadonlySet<string> = new Set([
   'nohup',
   'setsid',
-];
+],);
 
 /**
- * Whether `cmd` runs `nohup` or `setsid`. Mirrors `\b(nohup|setsid)\b`.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether a detachment wrapper is present
- *
- * @example
- * ```ts
- * hasDetachWrapper('nohup ./long-running &'); // true
- * ```
- */
-function hasDetachWrapper(cmd: string,): boolean {
-  return containsAnyOfWordBounded({
-    haystack: cmd,
-    phrases: DETACH_WRAPPER_NAMES,
-  },)
-    !== PHRASE_NOT_FOUND;
-}
-
-/**
- * Container runtimes whose `exec`/`run` subcommands may attach a TTY.
+ * Container runtimes whose `exec` and `run` subcommands may attach TTY.
  */
 const CONTAINER_RUNTIMES: ReadonlySet<string> = new Set([
   'docker',
@@ -286,372 +121,287 @@ const CONTAINER_TTY_SUBCOMMANDS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Whether `token` is a CLI flag of the form `-[a-z]*[it]`: starts with `-`,
- * any number of lowercase letters, ending in `i` or `t`. Examples: `-i`,
- * `-t`, `-it`, `-ti`, `-rmit`, `-rmt`.
- *
- * @param token - whitespace-separated token from a command
- *
- * @returns whether `token` is a TTY-style flag
- *
- * @example
- * ```ts
- * isTtyFlag('-it'); // true
- * isTtyFlag('--it'); // false (extra leading dash makes body start with '-')
- * isTtyFlag('-Q'); // false (uppercase)
- * ```
+ * Shell builtins that change shell state in ways filter cannot follow.
  */
-function isTtyFlag(token: string,): boolean {
-  /**
-   * Minimum length: leading dash plus at least one body character.
-   */
-  const MIN_FLAG_LENGTH = 2;
-  if ((!token.startsWith('-',)) || (token.length
-    < MIN_FLAG_LENGTH))
-    return false;
-  /**
-   * Body after the leading dash; all chars must be lowercase letters.
-   */
-  const body = token.slice(1,);
-  for (const c of body) {
-    if ((c < 'a') || (c > 'z'))
-      return false;
-  }
-  /**
-   * Final char of the body must be `i` or `t`.
-   */
-  const last = body.at(-1,)
-    ?? '';
-  return (last === 'i') || (last === 't');
-}
-
-/**
- * Whether `cmd` invokes a container runtime (`docker` / `podman`) with an
- * `exec` / `run` subcommand and a later TTY flag. Mirrors
- * `\b(docker|podman)\s+(exec|run)\b.*-[a-z]*[it]`. Tokenises the command;
- * does not match container invocations buried inside punctuation like
- * `(docker exec ...)` because shells rarely produce that shape.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether a TTY-attached container invocation is present
- *
- * @example
- * ```ts
- * hasTtyContainerInvoke('docker exec -it ctr sh'); // true
- * hasTtyContainerInvoke('docker pull ubuntu');     // false
- * ```
- */
-function hasTtyContainerInvoke(cmd: string,): boolean {
-  /**
-   * Whitespace-separated tokens of the command.
-   */
-  const tokens = splitWhitespace(cmd,);
-  // Scan adjacent token pairs for `(runtime, subcommand)`; on a hit, look for a
-  // later TTY flag among the remaining tokens.
-  for (let cursorIndex = 0; (cursorIndex + 1) < tokens
-    .length; cursorIndex += 1) {
-    /**
-     * Candidate container runtime token.
-     */
-    const runtime = tokens[cursorIndex]
-      ?? '';
-    /**
-     * Candidate subcommand token immediately following the runtime.
-     */
-    const sub = tokens[cursorIndex + 1]
-      ?? '';
-    if (CONTAINER_RUNTIMES.has(runtime,)
-      && CONTAINER_TTY_SUBCOMMANDS
-      .has(sub,)) {
-      for (const t of tokens.slice(cursorIndex + 2,)) {
-        if (isTtyFlag(t,))
-          return true;
-      }
-    }
-  }
-  return false;
-}
-
-/**
- * Whether `cmd` invokes `bun build`. Mirrors `\bbun\s+build\b` using a
- * token walk so any whitespace between `bun` and `build` is normalised.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether `bun build` is invoked as adjacent tokens
- *
- * @example
- * ```ts
- * hasBunBuild('bun build --watch'); // true
- * hasBunBuild('bun run build');     // false
- * ```
- */
-function hasBunBuild(cmd: string,): boolean {
-  /**
-   * Whitespace-separated tokens of the command.
-   */
-  const tokens = splitWhitespace(cmd,);
-  // Scan adjacent token pairs for `bun` immediately followed by `build`.
-  for (let cursorIndex = 0; (cursorIndex + 1) < tokens
-    .length; cursorIndex += 1) {
-    if ((tokens[cursorIndex]
-      === 'bun') && (tokens[cursorIndex + 1]
-        === 'build'))
-      return true;
-  }
-  return false;
-}
-
-/**
- * Whether `cmd` uses command-substitution syntax `$(...)`. Mirrors `\$\(`.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether `$(` appears in `cmd`
- *
- * @example
- * ```ts
- * hasDollarParen('echo $(date)'); // true
- * ```
- */
-function hasDollarParen(cmd: string,): boolean {
-  return cmd.includes('$(',);
-}
-
-/**
- * Whether `cmd` contains a balanced backtick command-substitution pair with
- * at least one non-backtick character inside. Mirrors the legacy regex
- * matching one backtick, one or more non-backtick characters, then another
- * backtick.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether a backtick-bounded substitution is present
- *
- * @example
- * ```ts
- * hasBacktickPair('echo `date`'); // true
- * hasBacktickPair('a `` b');      // false (empty content)
- * ```
- */
-function hasBacktickPair(cmd: string,): boolean {
-  /**
-   * Index of the opening backtick, or `-1` when absent.
-   */
-  const first = cmd.indexOf('`',);
-  if (first === (-1))
-    return false;
-  /**
-   * Index of the closing backtick, or `-1` when unmatched.
-   */
-  const second = cmd.indexOf(
-    '`',
-    first + 1,
-  );
-  if (second === (-1))
-    return false;
-  return second > (first + 1);
-}
-
-/**
- * Whether `cmd` uses process-substitution syntax `<(...)` or `>(...)`.
- * Mirrors `[<>]\(`.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether process substitution appears in `cmd`
- *
- * @example
- * ```ts
- * hasProcessSubstitution('diff <(a) <(b)'); // true
- * ```
- */
-function hasProcessSubstitution(cmd: string,): boolean {
-  return cmd.includes('<(',)
-    || cmd
-    .includes('>(',);
-}
-
-/**
- * Whether `cmd` opens a heredoc (`<<EOF`, `<<-EOF`, `<<<word`). Mirrors
- * `<<[<-]?\s*\S`.
- *
- * @param cmd - full Bash command string
- *
- * @returns whether a heredoc opener appears
- *
- * @example
- * ```ts
- * hasHeredoc('cat <<EOF');   // true
- * hasHeredoc('cat <<<word'); // true
- * hasHeredoc('cat << ');     // false (no body)
- * ```
- */
-function hasHeredoc(cmd: string,): boolean {
-  /**
-   * Length of the base `<<` opener; characters consumed before any variant marker.
-   */
-  const OPENER_LENGTH = '<<'.length;
-  // Walk each `<<` opener in order; skip an optional `<`/`-` variant marker and
-  // any whitespace, then require a non-whitespace body char.
-  for (
-    let cursorIndex = cmd.indexOf(
-      '<<',
-      0,
-    );
-    cursorIndex !== (-1);
-    cursorIndex = cmd.indexOf(
-      '<<',
-      cursorIndex + 1,
-    )
-  ) {
-    /**
-     * Char after the `<<`; may indicate `<<<` or `<<-` variants.
-     */
-    const afterOpener = cmd.charAt(cursorIndex + OPENER_LENGTH,);
-    /**
-     * Cursor past the optional variant marker.
-     */
-    const afterMarker = ((afterOpener === '<') || (afterOpener === '-'))
-      ? (cursorIndex + OPENER_LENGTH
-        + 1)
-      : (cursorIndex + OPENER_LENGTH);
-    /**
-     * Position of the candidate body char, advanced past whitespace after the marker.
-     */
-    let afterWs = afterMarker;
-    while ((afterWs < cmd
-      .length) && isWhitespace(cmd.charAt(afterWs,),)) {
-      afterWs += 1;
-    }
-    if ((afterWs < cmd
-      .length) && (!isWhitespace(cmd.charAt(afterWs,),)))
-      return true;
-  }
-  return false;
-}
-
-/**
- * Shell built-ins that change shell state in ways the filter cannot follow.
- */
-const STATE_BUILTIN_NAMES: readonly string[] = [
+const STATE_BUILTIN_NAMES: ReadonlySet<string> = new Set([
   'cd',
   'pushd',
   'popd',
   'export',
   'unset',
   'source',
-];
+  '.',
+],);
 
 /**
- * Whether `cmd` invokes a state-changing shell built-in. Mirrors
- * `\b(cd|pushd|popd|export|unset|source)\b`.
+ * Marker emitted by filter to indicate end-of-filter execution.
+ */
+const BOF_MARKER = '___BOF_EC:';
+
+/**
+ * Filter script basenames that must not be recursively piped.
+ */
+const FILTER_SCRIPT_NAMES: ReadonlySet<string> = new Set([
+  'filter.mjs',
+  'filter.ts',
+],);
+
+/**
+ * Whether token names one of the filter scripts.
  *
- * @param cmd - full Bash command string
+ * @param token - parsed command word
  *
- * @returns whether a state-changing built-in appears
+ * @returns whether token is filter script path or basename
  *
  * @example
  * ```ts
- * hasStateBuiltin('cd /tmp');       // true
- * hasStateBuiltin('mkdir foo');     // false
+ * isFilterScriptToken('./filter.mjs');
  * ```
  */
-function hasStateBuiltin(cmd: string,): boolean {
-  return containsAnyOfWordBounded({
-    haystack: cmd,
-    phrases: STATE_BUILTIN_NAMES,
-  },)
-    !== PHRASE_NOT_FOUND;
+function isFilterScriptToken(token: string,): boolean {
+  for (const scriptName of FILTER_SCRIPT_NAMES) {
+    if (token === scriptName)
+      return true;
+    if (token.endsWith(`/${scriptName}`,))
+      return true;
+  }
+  return false;
 }
 
 /**
- * Whether `cmd` is the dot-source shorthand `. file`. Mirrors `^\.\s`.
+ * Command name plus argument words.
  *
- * @param cmd - full Bash command string
+ * @param command - parsed command info
  *
- * @returns whether the command starts with `. ` (dot + whitespace)
+ * @returns command words in source order
  *
  * @example
  * ```ts
- * isSourceShorthand('. ./env.sh'); // true
- * isSourceShorthand('./run.sh');   // false
+ * commandWords(command);
  * ```
  */
-function isSourceShorthand(cmd: string,): boolean {
+function commandWords(command: ShellCommandInfo,): readonly string[] {
+  return [
+    command.name,
+    ...command.args,
+  ];
+}
+
+/**
+ * Whether token is short CLI flag containing `i` or `t`.
+ *
+ * @param token - parsed command argument
+ *
+ * @returns whether token is TTY-style short flag
+ *
+ * @example
+ * ```ts
+ * isTtyFlag('-it');
+ * ```
+ */
+function isTtyFlag(token: string,): boolean {
+  if ((!token.startsWith('-',)) || (token.startsWith('--',)))
+    return false;
   /**
-   * Minimum length: dot plus whitespace.
+   * Flag body after leading dash.
    */
-  const MIN_LENGTH = 2;
-  return (cmd.length
-    >= MIN_LENGTH)
-    && cmd
-    .startsWith('.',)
-    && isWhitespace(cmd.charAt(1,),);
+  const body = token.slice(1,);
+  if (body.length === 0)
+    return false;
+  for (const c of body) {
+    if ((c < 'a') || (c > 'z'))
+      return false;
+  }
+  return body.includes('i',)
+    || body.includes('t',);
 }
 
 /**
- * Whether `cmd` invokes `eval`. Mirrors `\beval\b`.
+ * Whether parsed command invokes container runtime with TTY flag.
  *
- * @param cmd - full Bash command string
+ * @param command - parsed command info
  *
- * @returns whether `eval` is invoked
+ * @returns whether command attaches container TTY
  *
  * @example
  * ```ts
- * hasEval('eval "$cmd"');  // true
- * hasEval('evaluate');     // false (word boundary excludes embedded matches)
+ * commandHasTtyContainerInvoke(command);
  * ```
  */
-function hasEval(cmd: string,): boolean {
-  return containsWordBoundedPhrase({
-    haystack: cmd,
-    phrase: 'eval',
+function commandHasTtyContainerInvoke(command: ShellCommandInfo,): boolean {
+  if (!CONTAINER_RUNTIMES.has(command.name,))
+    return false;
+  /**
+   * Container subcommand after runtime name.
+   */
+  const subcommand = command.args[0]
+    ?? '';
+  if (!CONTAINER_TTY_SUBCOMMANDS.has(subcommand,))
+    return false;
+  return command.args.slice(1,)
+    .some(isTtyFlag,);
+}
+
+/**
+ * Whether parsed command has output file redirect.
+ *
+ * @param command - parsed command info
+ *
+ * @returns whether command writes to redirected file target
+ *
+ * @example
+ * ```ts
+ * commandHasOutputRedirect(command);
+ * ```
+ */
+function commandHasOutputRedirect(command: ShellCommandInfo,): boolean {
+  return command.redirects.some(function redirectWritesFile(redirect,): boolean {
+    return redirect.writesFile;
   },);
 }
 
 /**
- * Predicates whose match marks the command as unsafe to pipe through the filter.
- */
-const SKIP_PREDICATES: readonly ((cmd: string,) => boolean)[] = [
-  hasBinaryTool,
-  hasFileRedirect,
-  invokesFilterScript,
-  hasBofMarker,
-  endsWithBackgroundOp,
-  hasDetachWrapper,
-  hasTtyContainerInvoke,
-  hasBunBuild,
-  hasDollarParen,
-  hasBacktickPair,
-  hasProcessSubstitution,
-  hasHeredoc,
-  hasStateBuiltin,
-  isSourceShorthand,
-  hasEval,
-];
-
-/**
- * Whether a command should be skipped (not piped through the filter).
+ * Whether parsed command invokes `bun build` directly.
  *
- * @param command - full Bash command string from the tool input
+ * @param command - parsed command info
  *
- * @returns `true` if the command matches any denylist predicate
+ * @returns whether command is `bun build`
  *
  * @example
  * ```ts
- * shouldSkip('xxd file.bin'); // true (binary tool denylisted)
- * shouldSkip('git status'); // false
+ * commandIsBunBuild(command);
+ * ```
+ */
+function commandIsBunBuild(command: ShellCommandInfo,): boolean {
+  return (command.name === 'bun')
+    && (command.args[0] === 'build');
+}
+
+/**
+ * Whether parsed command invokes filter helper script.
+ *
+ * @param command - parsed command info
+ *
+ * @returns whether command words reference filter script
+ *
+ * @example
+ * ```ts
+ * commandInvokesFilterScript(command);
+ * ```
+ */
+function commandInvokesFilterScript(command: ShellCommandInfo,): boolean {
+  return commandWords(command,)
+    .some(isFilterScriptToken,);
+}
+
+/**
+ * Whether parsed command invokes a state-changing builtin.
+ *
+ * @param command - parsed command info
+ *
+ * @returns whether command changes shell state
+ *
+ * @example
+ * ```ts
+ * commandIsStateBuiltin(command);
+ * ```
+ */
+function commandIsStateBuiltin(command: ShellCommandInfo,): boolean {
+  return STATE_BUILTIN_NAMES.has(command.name,);
+}
+
+/**
+ * Whether parsed command invokes a binary-handling tool.
+ *
+ * @param command - parsed command info
+ *
+ * @returns whether command output should not be piped through text filter
+ *
+ * @example
+ * ```ts
+ * commandIsBinaryTool(command);
+ * ```
+ */
+function commandIsBinaryTool(command: ShellCommandInfo,): boolean {
+  return BINARY_TOOL_NAMES.has(command.name,);
+}
+
+/**
+ * Whether parsed command invokes a detachment wrapper.
+ *
+ * @param command - parsed command info
+ *
+ * @returns whether command detaches from terminal
+ *
+ * @example
+ * ```ts
+ * commandIsDetachWrapper(command);
+ * ```
+ */
+function commandIsDetachWrapper(command: ShellCommandInfo,): boolean {
+  return DETACH_WRAPPER_NAMES.has(command.name,);
+}
+
+//endregion Denylist helpers
+
+//region Public denylist
+
+/**
+ * Whether parsed analysis has any command-level skip reason.
+ *
+ * @param analysis - parsed command analysis
+ *
+ * @returns whether command should not be piped through filter
+ *
+ * @example
+ * ```ts
+ * analysisHasCommandSkip(analysis);
+ * ```
+ */
+function analysisHasCommandSkip(analysis: ShellCommandAnalysis,): boolean {
+  return analysis.commands.some(function commandShouldSkip(command,): boolean {
+    return commandIsBinaryTool(command,)
+      || commandHasOutputRedirect(command,)
+      || commandInvokesFilterScript(command,)
+      || commandIsDetachWrapper(command,)
+      || commandHasTtyContainerInvoke(command,)
+      || commandIsBunBuild(command,)
+      || commandIsStateBuiltin(command,)
+      || (command.name === 'eval');
+  },);
+}
+
+/**
+ * Whether command should be skipped instead of piped through filter.
+ *
+ * @param command - full Bash command string from tool input
+ *
+ * @returns `true` if command matches any denylist predicate
+ *
+ * @example
+ * ```ts
+ * shouldSkip('xxd file.bin');
  * ```
  */
 function shouldSkip(command: string,): boolean {
-  return SKIP_PREDICATES.some(function predicateTest(predicate,) {
-    return predicate(command,);
-  },);
+  if (command.includes(BOF_MARKER,))
+    return true;
+
+  /**
+   * Parsed shell command analysis from shared analyzer.
+   */
+  const analysis = analyzeShellCommand(command,);
+  if (!analysis.parsed)
+    return true;
+
+  return analysis.hasBackground
+    || analysis.hasCommandSubstitution
+    || analysis.hasProcessSubstitution
+    || analysis.hasHeredoc
+    || analysisHasCommandSkip(analysis,);
 }
 
-//endregion
+//endregion Public denylist
 
 export {
   isAllowed,

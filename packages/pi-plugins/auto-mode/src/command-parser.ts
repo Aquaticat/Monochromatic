@@ -1,233 +1,29 @@
 /**
- * Bash command analysis using `unbash` plus targeted extraction.
+ * Bash command analysis wrapper for auto-mode.
  *
- * Uses `unbash` (ISC, v3.0.0) for quote-aware Bash AST parsing while
- * preserving the existing `BashAnalysis` signal shape.
+ * Delegates to shared `unbash`-backed shell command analyzer while preserving
+ * the auto-mode-local function name used by existing signal code and tests.
  *
  * @module
  */
 
-import {
-  parse,
-  type ParseError as UnbashParseError,
-  type Script as UnbashScript,
-} from 'unbash';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import {
-  extractParamRefs,
-  looksLikePath,
-} from './command-refs.ts';
-import { collectCommandInfoFromScript, } from './unbash-command-info.ts';
-import type {
-  BashAnalysis,
-} from './types.ts';
-
-//region Logging
+import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shell-command-analyzer/ts';
+import type { BashAnalysis, } from './types.ts';
 
 /**
- * Logger root for auto-mode after removing the package log shim.
+ * Parse Bash command and extract structured signals.
  *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
- */
-const parentLogger = tagged({ tag: 'auto-mode', },);
-
-/**
- * Tagged logger for the command-parser module.
- */
-const moduleLogger = tagged({
-  tag: 'command-parser',
-  l: parentLogger,
-},);
-
-//endregion Logging
-
-//region Public API
-
-/**
- * Parse a bash command and extract structured signals.
+ * @param command - raw bash command string
  *
- * Parses the script with {@link tryParseScript} and converts the AST with
- * {@link collectCommandInfoFromScript}. On parse failure, returns
- * `parsed: false` with partial results from the pre-scan step.
- *
- * @param cmd - the raw bash command string
- *
- * @returns structured analysis of the command
+ * @returns structured analysis of command
  *
  * @example
  * ```typescript
- * const analysis = analyzeBashCommand("curl $API_KEY | jq .name > out.txt");
- * // analysis.isPipeline === true
+ * analyzeBashCommand('curl $API_KEY | jq .name > out.txt');
  * ```
  */
-function analyzeBashCommand(
-  cmd: string,
-): BashAnalysis {
-  /**
-   * Fallback result spread into early returns when `unbash` reports malformed input.
-   */
-  const empty: BashAnalysis = {
-    parsed: false,
-    commands: [],
-    isPipeline: false,
-    allFiles: [],
-    allParamRefs: [],
-  };
-
-  /**
-   * Param references harvested via regex before parsing so the catch-branch still surfaces them.
-   */
-  const preScanRefs = extractParamRefs(cmd,);
-
-  /**
-   * Parsed `unbash` script; `ok` is false when syntax diagnostics or throws occur.
-   */
-  const parsed = tryParseScript(cmd,);
-  if (!parsed.ok) {
-    return {
-      ...empty,
-      allParamRefs: preScanRefs,
-    };
-  }
-
-  /**
-   * Command records derived from the `unbash` AST.
-   */
-  const collection = collectCommandInfoFromScript({
-    script: parsed.script,
-    paramRefs: preScanRefs,
-  },);
-  if (collection.hasParseErrors) {
-    return {
-      ...empty,
-      allParamRefs: preScanRefs,
-    };
-  }
-
-  /**
-   * Parsed command records in source order.
-   */
-  const { commands, } = collection;
-
-  /**
-   * Union of every path-shaped argument and every redirect target across all commands, in source order.
-   */
-  const allFiles = commands.flatMap(
-    function collectFiles(command,) {
-      return [
-        ...command.envAssignments
-          .map(
-            function assignmentValue(assignment,) {
-              return assignment.value;
-            },
-          )
-          .filter(
-            function assignmentValueLooksLikePath(value,) {
-              return looksLikePath(value,);
-            },
-          ),
-        ...command.args
-          .filter(
-            function argLooksLikePath(arg,) {
-              return looksLikePath(arg,);
-            },
-          ),
-        ...command.redirectTargets,
-      ];
-    },
-  );
-  /**
-   * Deduplicated param references aggregated across all commands; falls back to the pre-scan set below.
-   */
-  const allParamRefs = [...new Set(
-    commands.flatMap(
-      function collectRefs(command,) {
-        return command.paramRefs;
-      },
-    ),
-  ),];
-
-  if ((allParamRefs.length
-    === 0) && (preScanRefs.length
-      > 0))
-    allParamRefs.push(...preScanRefs,);
-
-  return {
-    parsed: true,
-    commands,
-    isPipeline: collection.isPipeline,
-    allFiles,
-    allParamRefs,
-  };
+function analyzeBashCommand(command: string,): BashAnalysis {
+  return analyzeShellCommand(command,);
 }
-
-//endregion
-
-//region Internal
-
-/**
- * `unbash` parse result shape with tolerant parser diagnostics attached.
- */
-type ParsedUnbashScript = UnbashScript & {
-  /**
-   * Recoverable parser diagnostics emitted for malformed shell syntax.
-   */
-  readonly errors?: readonly UnbashParseError[];
-};
-
-/**
- * Run `unbash.parse` and convert syntax diagnostics to a discriminated result.
- *
- * `unbash` is tolerant and reports malformed input through `errors` instead
- * of throwing. The guardrail treats either diagnostics or unexpected throws as
- * parse failure so bash signals can conservatively block the command.
- *
- * @param cmd - raw bash command string forwarded to `unbash.parse`
- *
- * @returns `{ ok: true, script }` on success, or `{ ok: false }` on parse failure
- *
- * @example
- * ```typescript
- * const parsed = tryParseScript('echo hi');
- * const script = parsed.ok ? parsed.script : undefined;
- * ```
- */
-function tryParseScript(
-  cmd: string,
-): {
-  ok: true;
-  script: ParsedUnbashScript;
-} | { ok: false } {
-  try {
-    /**
-     * Parsed script with optional tolerant diagnostics.
-     */
-    const script = parse(cmd,) as ParsedUnbashScript;
-    if ((script.errors
-      ?.length
-      ?? 0) > 0)
-      return { ok: false, };
-    return {
-      ok: true,
-      script,
-    };
-  }
-  catch (error) {
-    /**
-     * Sub-logger tagged with this function name so the handled parse failure stays traceable.
-     */
-    const innerL = tagged({
-      tag: tryParseScript.name,
-      l: moduleLogger,
-    },);
-    innerL.debug(`unbash parse threw for command: ${String(error,)}`,);
-    return { ok: false, };
-  }
-}
-
-//endregion
 
 export { analyzeBashCommand, };

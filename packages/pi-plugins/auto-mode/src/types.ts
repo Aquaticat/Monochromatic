@@ -17,6 +17,11 @@ import type {
   BudgetModelOverride,
   BudgetModelStrategy,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import type {
+  ShellCommandAnalysis,
+  ShellCommandInfo,
+  ShellEnvAssignment,
+} from '@monochromatic-dev/agent-harnesses-shell-command-analyzer/ts';
 
 //region Custom entry types
 
@@ -319,70 +324,19 @@ type SignalContext = {
 /**
  * Environment assignment prefix parsed before shell command name.
  */
-type EnvAssignment = {
-  /**
-   * Variable name receiving assignment.
-   */
-  readonly name: string;
-  /**
-   * Value text after `=`, after shell word parsing.
-   */
-  readonly value: string;
-};
+type EnvAssignment = ShellEnvAssignment;
 
 /**
  * Parsed shell command used by bash signal checks.
  */
-type CommandInfo = {
-  /**
-   * Command name (e.g. "rm", "sudo").
-   */
-  readonly name: string;
-  /**
-   * Environment assignments that prefix command invocation.
-   */
-  readonly envAssignments: readonly EnvAssignment[];
-  /**
-   * Positional arguments and flags.
-   */
-  readonly args: readonly string[];
-  /**
-   * Redirect targets (files after > or >>).
-   */
-  readonly redirectTargets: readonly string[];
-  /**
-   * Pre-scanned variable references from the raw command.
-   */
-  readonly paramRefs: readonly string[];
-};
+type CommandInfo = ShellCommandInfo;
 
 /**
  * Result of analyzing a bash command string.
  *
  * Produced by {@link analyzeBashCommand} in command-parser.ts.
  */
-type BashAnalysis = {
-  /**
-   * Whether the command could be parsed.
-   */
-  readonly parsed: boolean;
-  /**
-   * Individual commands in the pipeline.
-   */
-  readonly commands: readonly CommandInfo[];
-  /**
-   * Whether the command is a pipeline (uses |).
-   */
-  readonly isPipeline: boolean;
-  /**
-   * All environment variable references across commands.
-   */
-  readonly allParamRefs: readonly string[];
-  /**
-   * All file-like arguments across commands.
-   */
-  readonly allFiles: readonly string[];
-};
+type BashAnalysis = ShellCommandAnalysis;
 
 //endregion
 
