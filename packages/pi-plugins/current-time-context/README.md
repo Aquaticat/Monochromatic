@@ -13,7 +13,7 @@ The extension adds one hidden custom message before every agent turn:
 Install the extension into pi from the repository root:
 
 ```sh
-pi install ./packages/pi/current-time-context
+pi install ./packages/pi-plugins/current-time-context
 ```
 
 ## Quick test
@@ -21,7 +21,7 @@ pi install ./packages/pi/current-time-context
 Load the TypeScript entry point directly while developing:
 
 ```sh
-pi -e ./packages/pi/current-time-context/src/index.ts
+pi -e ./packages/pi-plugins/current-time-context/src/index.ts
 ```
 
 A normal prompt then receives hidden context for the current local hour and minute.
@@ -48,8 +48,8 @@ That keeps the context coarse and avoids unrelated temporal detail.
 Run package validation from the repository root:
 
 ```sh
-mise run //packages/pi/current-time-context:build
-mise run //packages/pi/current-time-context:test:unit
-mise run //packages/pi/current-time-context:lint
-mise run //packages/pi/current-time-context:verify:extension
+mise run //packages/pi-plugins/current-time-context:build
+mise run //packages/pi-plugins/current-time-context:test:unit
+mise run //packages/pi-plugins/current-time-context:lint
+mise run //packages/pi-plugins/current-time-context:verify:extension
 ```

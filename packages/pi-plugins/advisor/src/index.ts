@@ -59,7 +59,7 @@ const l = tagged({
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi/advisor"] }
+ * { "packages": ["./packages/pi-plugins/advisor"] }
  * ```
  */
 export default async function advisor(

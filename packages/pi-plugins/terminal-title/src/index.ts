@@ -12,7 +12,7 @@
  * ```typescript
  * // Auto-discovered from ~/.pi/agent/extensions/terminal-title/index.ts
  * // or loaded via pi install / pi -e
- * pi -e ./packages/pi/terminal-title/src/index.ts
+ * pi -e ./packages/pi-plugins/terminal-title/src/index.ts
  * ```
  *
  * @module
@@ -120,7 +120,7 @@ function toolArgsFromUnknown(args: unknown,): Readonly<Record<string, unknown>> 
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi/terminal-title"] }
+ * { "packages": ["./packages/pi-plugins/terminal-title"] }
  * ```
  */
 export default function terminalTitle(pi: ExtensionAPI,): void {

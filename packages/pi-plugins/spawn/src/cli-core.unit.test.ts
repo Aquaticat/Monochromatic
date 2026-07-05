@@ -21,7 +21,7 @@ const IDENTITY: PidMapping = {
   sessionId: 'parent-session',
   sessionFile: '/tmp/parent.jsonl',
   cwd: '/repo',
-  extensionPath: '/repo/packages/pi/spawn/dist/final/node/index.mjs',
+  extensionPath: '/repo/packages/pi-plugins/spawn/dist/final/node/index.mjs',
 };
 
 await describe({
@@ -59,7 +59,7 @@ await describe({
           fn: async function testExtensionArgs() {
             expect(extensionArguments({ identity: IDENTITY, },),).toEqual([
               '--extension',
-              '/repo/packages/pi/spawn/dist/final/node/index.mjs',
+              '/repo/packages/pi-plugins/spawn/dist/final/node/index.mjs',
             ],);
           },
         },),
@@ -97,7 +97,7 @@ await describe({
             },),).toEqual([
               'pi',
               '--extension',
-              '/repo/packages/pi/spawn/dist/final/node/index.mjs',
+              '/repo/packages/pi-plugins/spawn/dist/final/node/index.mjs',
               '--model',
               'openai/gpt-5.1',
               '--thinking',
@@ -143,7 +143,7 @@ await describe({
                 '--',
                 'pi',
                 '--extension',
-                '/repo/packages/pi/spawn/dist/final/node/index.mjs',
+                '/repo/packages/pi-plugins/spawn/dist/final/node/index.mjs',
                 'do work',
               ],
             },);

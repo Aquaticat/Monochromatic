@@ -79,8 +79,8 @@ These are verified against the source,
     stated twice) names the wrong library.
    The repo standardized on valibot (`src/lib/content.ts:21,162`;
     the `config-schemas.ts` convention
-   in `packages/pi/advisor`,
-    `packages/pi/auto-mode`,
+   in `packages/pi-plugins/advisor`,
+    `packages/pi-plugins/auto-mode`,
     `packages/webapp-productivity/rss`;
    `docs/migration/zod-to-valibot.md`).
     zod is not a dependency.

@@ -24,21 +24,21 @@ the Morph MCP server is already configured.
 ### Global (recommended)
 
 ```sh
-pi install ./packages/pi/morph-compact
+pi install ./packages/pi-plugins/morph-compact
 ```
 
 Or add to `~/.pi/agent/settings.json`:
 
 ```json
 {
-  "packages": ["./packages/pi/morph-compact"]
+  "packages": ["./packages/pi-plugins/morph-compact"]
 }
 ```
 
 ### Quick test
 
 ```sh
-pi -e ./packages/pi/morph-compact/src/index.ts
+pi -e ./packages/pi-plugins/morph-compact/src/index.ts
 ```
 
 ## How it works

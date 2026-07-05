@@ -62,14 +62,14 @@ Add the package to Pi settings:
 
 ```json
 {
-  "packages": ["./packages/pi/statusline"]
+  "packages": ["./packages/pi-plugins/statusline"]
 }
 ```
 
 For local testing without installation:
 
 ```bash
-pi --extension ./packages/pi/statusline/src/index.ts
+pi --extension ./packages/pi-plugins/statusline/src/index.ts
 ```
 
 ## Scope

@@ -31,13 +31,13 @@ Use these when the matching work starts:
 
 ## Repository state at latest update
 
-- Package path has moved to `packages/pi/search-fetch/`.
+- Package path has moved to `packages/pi-plugins/search-fetch/`.
 - Package metadata now names `@monochromatic-dev/pi-search-fetch`.
 - Public tool implementation now registers `web_search` and `web_fetch` only.
 - Global config loader now uses `pi-search-fetch.json` and migrates legacy `pi-linkup.json`.
 - Provider implementation is in place:
   Exa-first `web_search`, Linkup-first `web_fetch`, and fallback metadata in tool details.
-- Active Pi settings now point to `/var/home/user/Monochromatic/packages/pi/search-fetch`.
+- Active Pi settings now point to `/var/home/user/Monochromatic/packages/pi-plugins/search-fetch`.
 - Active Pi config migrated to `~/.pi/agent/extensions/pi-search-fetch.json`.
 - Legacy active Pi config `~/.pi/agent/extensions/pi-linkup.json` was removed after migration.
 - Existing unrelated worktree change: `mise.lock`. Do not touch unless the task requires it.
@@ -93,7 +93,7 @@ Notable benchmark cases:
 
 Package rename work:
 
-- Done: move `packages/pi/linkup/` to `packages/pi/search-fetch/`.
+- Done: move `packages/pi-plugins/linkup/` to `packages/pi-plugins/search-fetch/`.
 - Done: rename package metadata to `@monochromatic-dev/pi-search-fetch`.
 - Done: update `USER_AGENT_VALUE`, logger tags, temp-file prefixes, tests, and exported docs.
 - Done: update generated root tooling references through file-enforcer instead of hand-editing `mise.toml`.
@@ -176,11 +176,11 @@ After implementation, run package-scoped tasks through mise, not raw tools.
 Use the renamed package path once the directory moves:
 
 ```sh
-mise run //packages/pi/search-fetch:build
-mise run //packages/pi/search-fetch:lint:types
-mise run //packages/pi/search-fetch:lint:oxlint
-mise run //packages/pi/search-fetch:test:unit
-mise run //packages/pi/search-fetch:verify:extension
+mise run //packages/pi-plugins/search-fetch:build
+mise run //packages/pi-plugins/search-fetch:lint:types
+mise run //packages/pi-plugins/search-fetch:lint:oxlint
+mise run //packages/pi-plugins/search-fetch:test:unit
+mise run //packages/pi-plugins/search-fetch:verify:extension
 ```
 
 ## Pi rewiring notes
@@ -198,11 +198,11 @@ After build and tests pass:
 Commands passed:
 
 ```sh
-mise run //packages/pi/search-fetch:build
-mise run //packages/pi/search-fetch:lint:types
-mise run //packages/pi/search-fetch:lint:oxlint
-mise run //packages/pi/search-fetch:test:unit
-mise run //packages/pi/search-fetch:verify:extension
+mise run //packages/pi-plugins/search-fetch:build
+mise run //packages/pi-plugins/search-fetch:lint:types
+mise run //packages/pi-plugins/search-fetch:lint:oxlint
+mise run //packages/pi-plugins/search-fetch:test:unit
+mise run //packages/pi-plugins/search-fetch:verify:extension
 ```
 
 Boundary checks passed through the built Pi extension interface with the real migrated config:

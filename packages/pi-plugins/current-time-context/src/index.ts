@@ -32,7 +32,7 @@ const CURRENT_TIME_CONTEXT_TYPE = 'current-time-context';
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi/current-time-context"] }
+ * { "packages": ["./packages/pi-plugins/current-time-context"] }
  * ```
  */
 export default function currentTimeContext(pi: ExtensionAPI,): void {

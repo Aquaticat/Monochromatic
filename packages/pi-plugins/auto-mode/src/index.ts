@@ -111,7 +111,7 @@ type SkillPromptEvent = {
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
- * // { "packages": ["./packages/pi/auto-mode"] }
+ * // { "packages": ["./packages/pi-plugins/auto-mode"] }
  * ```
  */
 export default async function autoMode(

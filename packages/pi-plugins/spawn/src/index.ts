@@ -72,7 +72,7 @@ const monitorTimers = new WeakMap<ExtensionAPI, ReturnType<typeof setInterval>>(
  *
  * @example
  * ```json
- * { "packages": ["./packages/pi/spawn"] }
+ * { "packages": ["./packages/pi-plugins/spawn"] }
  * ```
  */
 export default function spawnPi(pi: ExtensionAPI,): void {

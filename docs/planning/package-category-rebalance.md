@@ -867,7 +867,7 @@ Decide for each whether it is:
 Current active roots:
 
 ```text
-packages/pi/
+packages/pi-plugins/
   advisor/
   auto-mode/
   current-time-context/
@@ -885,9 +885,9 @@ packages/pi-shared/
 infrastructure and not a Pi extension itself.
 Current measured consumers are:
 
-- `packages/pi/advisor`
-- `packages/pi/auto-mode`
-- `packages/pi/thinking-defaults`
+- `packages/pi-plugins/advisor`
+- `packages/pi-plugins/auto-mode`
+- `packages/pi-plugins/thinking-defaults`
 
 #### Recommendation
 
@@ -900,7 +900,7 @@ must be intended for at least two Pi packages,
 and must expose APIs that make sense outside one extension command,
  renderer,
  or config surface.
-Actual Pi extensions stay under `packages/pi/`.
+Actual Pi extensions stay under `packages/pi-plugins/`.
 
 The boundary is by kind,
  not by consumer count.
@@ -1316,7 +1316,7 @@ Current relevant roots:
 
 ```text
 packages/module/current-time-context/
-packages/pi/current-time-context/
+packages/pi-plugins/current-time-context/
 packages/claude-code-plugins/source/
 ```
 
@@ -1333,7 +1333,7 @@ Keep host adapters in their host categories:
 
 ```text
 packages/module/current-time-context/
-packages/pi/current-time-context/
+packages/pi-plugins/current-time-context/
 packages/claude-code-plugins/source/
 ```
 

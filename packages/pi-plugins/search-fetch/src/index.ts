@@ -72,7 +72,7 @@ type RegisterPiLinkupOptions = {
  * @example
  * ```ts
  * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi/search-fetch"] }
+ * { "packages": ["./packages/pi-plugins/search-fetch"] }
  * ```
  */
 export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {

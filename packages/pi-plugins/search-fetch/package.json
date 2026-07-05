@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/pi/search-fetch"
+    "directory": "packages/pi-plugins/search-fetch"
   },
   "exports": {
     ".": {

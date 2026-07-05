@@ -13,7 +13,7 @@ Add this package to global pi settings at `~/.pi/agent/settings.json`:
 ```json
 {
   "packages": [
-    "/var/home/user/Monochromatic/packages/pi/thinking-defaults"
+    "/var/home/user/Monochromatic/packages/pi-plugins/thinking-defaults"
   ],
   "defaultThinkingLevel": "high"
 }
@@ -86,8 +86,8 @@ src/
 Run package validation from the repository root:
 
 ```sh
-mise run //packages/pi/thinking-defaults:build
-mise run //packages/pi/thinking-defaults:test:unit
-mise run //packages/pi/thinking-defaults:lint
-mise run //packages/pi/thinking-defaults:verify:extension
+mise run //packages/pi-plugins/thinking-defaults:build
+mise run //packages/pi-plugins/thinking-defaults:test:unit
+mise run //packages/pi-plugins/thinking-defaults:lint
+mise run //packages/pi-plugins/thinking-defaults:verify:extension
 ```

@@ -137,7 +137,7 @@ export function registerThinkingDefaults(
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
- * // { "packages": ["./packages/pi/thinking-defaults"] }
+ * // { "packages": ["./packages/pi-plugins/thinking-defaults"] }
  * ```
  */
 export default function thinkingDefaults(pi: ExtensionAPI,): void {

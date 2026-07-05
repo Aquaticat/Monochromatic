@@ -420,7 +420,7 @@ importers:
         version: link:packages/module/image-diff
       '@monochromatic-dev/pi-spawn':
         specifier: workspace:*
-        version: link:packages/pi/spawn
+        version: link:packages/pi-plugins/spawn
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.72.0
@@ -2338,7 +2338,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
-  packages/pi/advisor:
+  packages/pi-plugins/advisor:
     dependencies:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
@@ -2378,7 +2378,7 @@ importers:
         specifier: 'catalog:'
         version: 1.3.3
 
-  packages/pi/auto-mode:
+  packages/pi-plugins/auto-mode:
     dependencies:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
@@ -2418,7 +2418,7 @@ importers:
         specifier: 'catalog:'
         version: 1.3.3
 
-  packages/pi/current-time-context:
+  packages/pi-plugins/current-time-context:
     dependencies:
       '@monochromatic-dev/module-current-time-context':
         specifier: workspace:*
@@ -2440,7 +2440,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
-  packages/pi/morph-compact:
+  packages/pi-plugins/morph-compact:
     dependencies:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
@@ -2468,7 +2468,7 @@ importers:
         specifier: 'catalog:'
         version: 5.7.0
 
-  packages/pi/search-fetch:
+  packages/pi-plugins/search-fetch:
     dependencies:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
@@ -2493,7 +2493,7 @@ importers:
         specifier: 'catalog:'
         version: 1.3.3
 
-  packages/pi/spawn:
+  packages/pi-plugins/spawn:
     dependencies:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
@@ -2521,7 +2521,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
-  packages/pi/statusline:
+  packages/pi-plugins/statusline:
     dependencies:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
@@ -2543,7 +2543,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
-  packages/pi/terminal-title:
+  packages/pi-plugins/terminal-title:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -2561,7 +2561,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
-  packages/pi/thinking-defaults:
+  packages/pi-plugins/thinking-defaults:
     dependencies:
       '@monochromatic-dev/pi-shared-model-selection':
         specifier: workspace:*

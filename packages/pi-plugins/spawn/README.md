@@ -16,7 +16,7 @@ back into the parent Pi session.
 From this workspace:
 
 ```bash
-pi install ./packages/pi/spawn
+pi install ./packages/pi-plugins/spawn
 ```
 
 The repository root depends on this package as a workspace dev dependency,
@@ -26,7 +26,7 @@ links `spawn-pi` into `node_modules/.bin` for normal repo shells.
 For local development without installing:
 
 ```bash
-pi -e ./packages/pi/spawn/src/index.ts
+pi -e ./packages/pi-plugins/spawn/src/index.ts
 ```
 
 When the extension starts in an interactive Pi session,
@@ -148,8 +148,8 @@ then delivers the formatted result as a `spawn-pi` custom message with `triggerT
 ## Development
 
 ```bash
-mise run //packages/pi/spawn:build
-mise run //packages/pi/spawn:test:unit
-mise run //packages/pi/spawn:lint
-mise run //packages/pi/spawn:verify:extension
+mise run //packages/pi-plugins/spawn:build
+mise run //packages/pi-plugins/spawn:test:unit
+mise run //packages/pi-plugins/spawn:lint
+mise run //packages/pi-plugins/spawn:verify:extension
 ```

@@ -8,7 +8,7 @@ not a pi extension itself.
 and expose APIs that make sense outside one extension command,
  renderer,
  or config surface.
-Actual pi extensions stay under `packages/pi/`.
+Actual pi extensions stay under `packages/pi-plugins/`.
 
 ## Export tiers
 

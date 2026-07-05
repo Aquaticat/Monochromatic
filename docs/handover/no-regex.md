@@ -94,9 +94,9 @@ All pass with 0 warnings,
 - `//packages/module/test`
 - `//packages/module/toml-edit`
 - `//packages/module/zip-writer`
-- `//packages/pi/auto-mode`
-- `//packages/pi/morph-compact`
-- `//packages/pi/terminal-title`
+- `//packages/pi-plugins/auto-mode`
+- `//packages/pi-plugins/morph-compact`
+- `//packages/pi-plugins/terminal-title`
 - `//packages/rolldown-plugins/import-attributes`
 
 Plus everything previously cleared (listed in earlier handover sections
@@ -362,14 +362,14 @@ unless the user asks otherwise.
   (user-typed CLI regex source).
 - `packages/module/es/src/types/t object/t regexp/...` (entire
   regex-tooling subtree).
-- `packages/pi/auto-mode/src/constants.ts` (secret-detection patterns;
+- `packages/pi-plugins/auto-mode/src/constants.ts` (secret-detection patterns;
   block disable around the content-signal region).
-- `packages/pi/auto-mode/src/budget-model-version.ts` (model-id
+- `packages/pi-plugins/auto-mode/src/budget-model-version.ts` (model-id
   tokeniser;
    block disable).
-- `packages/pi/auto-mode/src/config.ts:compilePatterns` (user-supplied
+- `packages/pi-plugins/auto-mode/src/config.ts:compilePatterns` (user-supplied
   config patterns).
-- `packages/pi/terminal-title/src/formatter-utils.ts:COMMAND_NOISE_RE`
+- `packages/pi-plugins/terminal-title/src/formatter-utils.ts:COMMAND_NOISE_RE`
   (negative lookahead disambiguating `--foo=bar` from `FOO=bar`).
 - `packages/dev-script/inference-canary-viewer` (the `\p{Upper}`/
   `\p{Lower}` Unicode property classes have no string-API equivalent).

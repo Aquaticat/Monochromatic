@@ -26,7 +26,7 @@ type UnbashPackageSpecifier = {
  *
  * These names come from `unbash/src/types.ts` in the audited `unbash@3.0.0`
  * source and from the exact `Unbash*` parameter annotations under
- * `packages/pi/auto-mode/src/unbash-command-info*.ts`. tsgolint first checks
+ * `packages/pi-plugins/auto-mode/src/unbash-command-info*.ts`. tsgolint first checks
  * alias or symbol names in `internal/utils/type_matches_specifier.go` before it
  * checks package origin, and `prefer_readonly_parameter_types.go` recurses
  * through union members after an allow-list miss. Exact parameters such as

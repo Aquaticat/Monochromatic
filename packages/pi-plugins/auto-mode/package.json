@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/pi/auto-mode"
+    "directory": "packages/pi-plugins/auto-mode"
   },
   "exports": {
     ".": {

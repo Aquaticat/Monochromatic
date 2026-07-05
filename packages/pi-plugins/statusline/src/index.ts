@@ -152,7 +152,7 @@ function clearStatus({
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi/statusline"] }
+ * { "packages": ["./packages/pi-plugins/statusline"] }
  * ```
  */
 export default function statusline(pi: ExtensionAPI,): void {

@@ -93,9 +93,9 @@ the full response is written to a temporary file and the tool result names that 
 Run package-scoped tasks:
 
 ```bash
-mise run //packages/pi/search-fetch:build
-mise run //packages/pi/search-fetch:lint:types
-mise run //packages/pi/search-fetch:lint:oxlint
-mise run //packages/pi/search-fetch:test:unit
-mise run //packages/pi/search-fetch:verify:extension
+mise run //packages/pi-plugins/search-fetch:build
+mise run //packages/pi-plugins/search-fetch:lint:types
+mise run //packages/pi-plugins/search-fetch:lint:oxlint
+mise run //packages/pi-plugins/search-fetch:test:unit
+mise run //packages/pi-plugins/search-fetch:verify:extension
 ```

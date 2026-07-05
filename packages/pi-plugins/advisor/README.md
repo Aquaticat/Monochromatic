@@ -16,12 +16,12 @@ Build the package,
 
 ```json
 {
-  "packages": ["./packages/pi/advisor"]
+  "packages": ["./packages/pi-plugins/advisor"]
 }
 ```
 
 ```bash
-pi -e ./packages/pi/advisor/src/index.ts
+pi -e ./packages/pi-plugins/advisor/src/index.ts
 ```
 
 ## Tool usage

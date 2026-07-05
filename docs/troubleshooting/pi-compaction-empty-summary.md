@@ -180,13 +180,13 @@ conversation tokens are minimal.
 ## Verified workaround
 
 The Morph Compact extension
-(`packages/pi/morph-compact/`) returns `{ cancel: true }`
+(`packages/pi-plugins/morph-compact/`) returns `{ cancel: true }`
 from its `session_before_compact` handler when
 `messagesToSummarize` is empty and no `previousSummary`
 exists:
 
 ```ts
-// packages/pi/morph-compact/src/index.ts
+// packages/pi-plugins/morph-compact/src/index.ts
 const hasMessages = messagesToSummarize.length > 0
   || turnPrefixMessages.length > 0;
 if (!hasMessages && previousSummary === undefined) {

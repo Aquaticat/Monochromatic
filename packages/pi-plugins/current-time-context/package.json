@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/pi/current-time-context"
+    "directory": "packages/pi-plugins/current-time-context"
   },
   "exports": {
     ".": {

@@ -10,21 +10,21 @@ Terminal tab title extension for pi:
 ### Global (recommended)
 
 ```sh
-pi install ./packages/pi/terminal-title
+pi install ./packages/pi-plugins/terminal-title
 ```
 
 Or add to `~/.pi/agent/settings.json`:
 
 ```json
 {
-  "packages": ["./packages/pi/terminal-title"]
+  "packages": ["./packages/pi-plugins/terminal-title"]
 }
 ```
 
 ### Quick test
 
 ```sh
-pi -e ./packages/pi/terminal-title/src/index.ts
+pi -e ./packages/pi-plugins/terminal-title/src/index.ts
 ```
 
 ## How it works
