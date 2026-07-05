@@ -2,7 +2,7 @@
 
 Status:
  package implementation landed;
- `ssg-test` migration (Phase 6) pending.
+ `ssg-test` migration (Phase 6) landed.
  See "Implementation status" below for what shipped and "Footguns encountered" for traps the next contributor should sidestep.
 
 This plan supersedes the earlier brainstorm for `PLANNING.module-i18n-compose.md`.
@@ -38,7 +38,12 @@ Phases 1 through 5 plus Phase 7 (cleanup and docs) landed under `packages/module
  The package type-checks,
  lints with zero errors and zero warnings,
  and all tests pass.
- Phase 6 (`ssg-test` migration) was deferred to a follow-up session at the user's request.
+ Phase 6 (`ssg-test` migration) has since landed:
+ `packages/ssg/aquati.cat` renders every static UI label through this package via an app-local
+ `src/i18n/index.ts`,
+ the generated `typesafe-i18n` files plus the `build:i18n` generator task and devDependency are removed,
+ the cache pipeline glob covers `src/i18n`,
+ and the package's build, unit tests, type-check, and lint all pass.
 
 What shipped (file layout,
  not the plan's flat `locales/{ca,en,zh}.ts`):
