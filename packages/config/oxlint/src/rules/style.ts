@@ -106,6 +106,9 @@ export const styleRules: DummyRuleMap = {
   // Named callbacks in fixed property slots, such as test harness `fn`, keep useful stack traces.
   'eslint/func-name-matching': 'off',
 
+  // Uppercase factory and JSX-style component function names are common in this codebase.
+  'eslint/new-cap': 'off',
+
   // Switch statements are banned; switch-case-braces is moot.
   'unicorn/switch-case-braces': 'off',
 

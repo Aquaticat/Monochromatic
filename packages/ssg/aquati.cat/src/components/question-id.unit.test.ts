@@ -14,12 +14,12 @@ import { fingerprint32, } from 'farmhashjs';
 import type { SafeHtml, } from '../lib/jsx-to-html.ts';
 
 import {
-  QuestionCheckbox as renderQuestionCheckbox,
+  QuestionCheckbox,
   css as checkboxCss,
   type QuestionOption as CheckboxOption,
 } from './question-checkbox.ts';
 import {
-  QuestionRadio as renderQuestionRadio,
+  QuestionRadio,
   css as radioCss,
   type QuestionOption as RadioOption,
 } from './question-radio.ts';
@@ -261,7 +261,7 @@ function expectedQuestionId(question: HashableQuestion,): string {
  *
  * @example
  * ```ts
- * captureRenderError(() => renderQuestionRadio({ scenario: 'x', options: [] }));
+ * captureRenderError(() => QuestionRadio({ scenario: 'x', options: [] }));
  * ```
  */
 function captureRenderError(render: () => SafeHtml,): Error {
@@ -301,7 +301,7 @@ await describe({
         /**
          * Rendered radio question HTML.
          */
-        const { html, } = renderQuestionRadio({
+        const { html, } = QuestionRadio({
           scenario: RADIO_SCENARIO,
           options: RADIO_OPTIONS,
         },);
@@ -323,7 +323,7 @@ await describe({
         /**
          * Rendered checkbox question HTML.
          */
-        const { html, } = renderQuestionCheckbox({
+        const { html, } = QuestionCheckbox({
           scenario: CHECKBOX_SCENARIO,
           options: CHECKBOX_OPTIONS,
         },);
@@ -345,14 +345,14 @@ await describe({
         /**
          * Original checkbox question HTML.
          */
-        const { html: originalHtml, } = renderQuestionCheckbox({
+        const { html: originalHtml, } = QuestionCheckbox({
           scenario: CHECKBOX_SCENARIO,
           options: CHECKBOX_OPTIONS,
         },);
         /**
          * Checkbox question HTML after explanation-only edits.
          */
-        const { html: rewrittenHtml, } = renderQuestionCheckbox({
+        const { html: rewrittenHtml, } = QuestionCheckbox({
           scenario: CHECKBOX_SCENARIO,
           options: CHECKBOX_OPTIONS_WITH_REWRITTEN_EXPLANATIONS,
         },);
@@ -368,7 +368,7 @@ await describe({
          * Error for a radio question with too few options.
          */
         const tooFewError = captureRenderError(function renderTooFewRadioOptions(): SafeHtml {
-          return renderQuestionRadio({
+          return QuestionRadio({
             scenario: RADIO_SCENARIO,
             options: TOO_FEW_RADIO_OPTIONS,
           },);
@@ -377,7 +377,7 @@ await describe({
          * Error for a radio question without exactly one correct option.
          */
         const noCorrectError = captureRenderError(function renderNoCorrectRadioOptions(): SafeHtml {
-          return renderQuestionRadio({
+          return QuestionRadio({
             scenario: RADIO_SCENARIO,
             options: NO_CORRECT_RADIO_OPTIONS,
           },);
@@ -394,7 +394,7 @@ await describe({
          * Error for a checkbox question with too few options.
          */
         const tooFewError = captureRenderError(function renderTooFewCheckboxOptions(): SafeHtml {
-          return renderQuestionCheckbox({
+          return QuestionCheckbox({
             scenario: CHECKBOX_SCENARIO,
             options: TOO_FEW_CHECKBOX_OPTIONS,
           },);
@@ -403,7 +403,7 @@ await describe({
          * Error for a checkbox question without any correct options.
          */
         const noCorrectError = captureRenderError(function renderNoCorrectCheckboxOptions(): SafeHtml {
-          return renderQuestionCheckbox({
+          return QuestionCheckbox({
             scenario: CHECKBOX_SCENARIO,
             options: NO_CORRECT_CHECKBOX_OPTIONS,
           },);

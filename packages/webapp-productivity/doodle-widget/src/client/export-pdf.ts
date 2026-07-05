@@ -134,7 +134,6 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
    */
   const pageH = ch * PX_TO_PT;
 
-  /* oxlint-disable new-cap -- jsPDF uses lowercase constructor by convention */
   /**
    * PDF document built with one orientation guess so portrait and landscape inputs both fit.
    */
@@ -146,7 +145,6 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
       pageH,
     ],
   },);
-  /* oxlint-enable new-cap */
   //endregion PDF document setup
 
   //region Render each page

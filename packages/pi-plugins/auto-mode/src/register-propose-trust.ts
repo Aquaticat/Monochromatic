@@ -77,7 +77,6 @@ const trustRuleParameterSchema = Type.String({
 /**
  * Optional trust-rule rationale parameter schema.
  */
-// oxlint-disable-next-line new-cap -- typebox API naming convention
 const trustReasonParameterSchema = Type.Optional(
   Type.String({
     description: "Only if the rule isn't self-explanatory. Don't repeat the rule.",

@@ -88,11 +88,11 @@ export async function renderMdx(body: string,): Promise<string> {
     },
   );
 
-  /* oxlint-disable new-cap, no-unsafe-type-assertion -- `MDXContent` is named by `@mdx-js/mdx` evaluate (we don't control the name); its return type is the library's untyped component value, so the assertion narrows it to the runtime-known `SafeHtml` shape produced by our JSX runtime. */
+  /* oxlint-disable no-unsafe-type-assertion -- `MDXContent` returns the library's untyped component value, so the assertion narrows it to the runtime-known `SafeHtml` shape produced by our JSX runtime. */
   /**
    * Invocation of the evaluated MDX component produces the {@link SafeHtml} payload consumed by callers.
    */
   const result = MDXContent({},) as SafeHtml;
-  /* oxlint-enable new-cap, no-unsafe-type-assertion */
+  /* oxlint-enable no-unsafe-type-assertion */
   return result.html;
 }

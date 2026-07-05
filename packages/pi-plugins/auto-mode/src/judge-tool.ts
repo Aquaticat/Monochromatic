@@ -27,7 +27,6 @@ const VERDICT_VALUES = [
 /**
  * Schema for the verdict string enum.
  */
-// oxlint-disable-next-line new-cap -- pi-ai API naming convention
 const VerdictEnum = StringEnum(VERDICT_VALUES,);
 
 /**
