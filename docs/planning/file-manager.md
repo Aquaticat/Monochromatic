@@ -7,8 +7,12 @@ Status:
  see `packages/desktop-app/file-manager/` and the spike result below.
  Row context-menu spike built and passed on Linux (2026-07-05);
  see the context-menu spike result below.
- Drag-and-drop and native default-manager spikes not yet run.
- Virtualization spike not yet run on macOS or Windows.
+ Drag-and-drop spike built on Linux (2026-07-05):
+ internal pane-to-pane drag passes;
+ OS-native file drag-and-drop is not available in stock Slint on any backend and
+ needs a per-OS native adapter (see the drag-and-drop spike result below).
+ Native default-manager spike not yet run.
+ Virtualization and context-menu spikes not yet run on macOS or Windows.
  Authored 2026-07-05.
 
 ## Goal
@@ -556,6 +560,73 @@ either design a native adapter around Slint pointer events
 `drag-rs` is reference material only),
 contribute upstream Slint file-list MIME support,
 or compare Qt before committing to Slint.
+
+#### Result: internal drag passes, OS file drag-and-drop unavailable (2026-07-05)
+
+Folded into the same prototype (`packages/desktop-app/file-manager/`).
+Full source trace, verification, and the upstream do-not-file decision are in
+`docs/troubleshooting/slint-drag-and-drop-file-lists.md`.
+
+- Prototype path:
+  `packages/desktop-app/file-manager/`
+  (`src/drag_drop.rs`, `ui/app.slint` `DragArea`/`DropArea`, `src/drag_drop_tests.rs`).
+- Operating systems tested:
+  Linux only (winit backend, headless MCP);
+  macOS `m1` and Windows `x13-win` still pending, riding along with the
+  virtualization spike's cross-platform pass.
+- Steps run:
+  a row is dragged to a different pane through the embedded Slint MCP server's
+  `drag_element`, and the recorded identity plus action are read back on the HUD
+  (`AppWindow::hud-e`) and the log.
+
+Pass criteria, split:
+
+- internal drags carry structured app-local data:
+  PASSED.
+  A dragged row packs its `(pane, row)` identity into the transfer's `user_data`;
+  the target pane reads it back on drop.
+  A move drag logs
+  `source_pane_id=0 source_row=0 target_pane_id=1 action="move"`;
+  a left-click still selects without dropping, so the drag wrap leaves selection
+  intact.
+- copy and move actions are distinguishable:
+  PASSED.
+  A drag-mode toggle (standing in for the copy modifier) flips the drop to
+  `action="copy"`.
+- external drops expose file paths or file URLs to Rust:
+  FAILED (blocked by Slint).
+  Stock Slint 1.17.0 wires no external file-drop delivery on any backend.
+- outbound drags advertise OS-native file-list payloads:
+  FAILED (blocked by Slint).
+  Slint 1.17.0 has no native drag path at all;
+  the post-1.17.0 Qt `start_drag` advertises only text and image, never a
+  file-list.
+
+Backend comparison (the spike record):
+the winit-vs-Qt choice does NOT resolve file drag-and-drop.
+Released 1.17.0 core invokes no backend native-drag hook, so drag is in-process
+on both backends.
+Even in post-1.17.0 code, the Qt backend's `start_drag` and drop bridge carry
+only text and image (never `setUrls`/`hasUrls`), and the winit backend has no
+native drag-and-drop at all.
+So switching to Qt buys no file drag-and-drop;
+this is evidence from the audited Slint source, not speculation.
+The Qt backend was not built here (Slint's Qt backend needs `qmake`, which is
+absent;
+Qt runtime libs are present but the dev tooling is not), and building it would
+not change the conclusion because Qt carries no file-list.
+
+Chosen action:
+continue with Slint;
+no fallback triggered.
+The internal `DragArea`/`DropArea` drag is the seed for the plan's
+"internal pane-to-pane drag first" milestone.
+OS inbound and outbound file drag-and-drop take the plan's failure action, a
+hand-written per-OS native adapter (winit `DroppedFile`/`HoveredFile` inbound;
+`QMimeData::setUrls` / `NSPasteboard` / `IDataObject` / XDND `text/uri-list`
+outbound), deferred to the native-integration milestone at the consumer boundary.
+Upstream issue `#1967` already documents both gaps in the maintainers' own words,
+so nothing was filed.
 
 ### Row context menu spike
 
