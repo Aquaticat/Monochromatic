@@ -8,10 +8,11 @@
 ///           models, and the UI-thread timer.
 use std::rc::Rc;
 
-/// What:     `use std::time::Instant;` imports a monotonic clock reading (sibling:
-///           `SystemTime`, the wall clock, which can jump backward).
-/// Why:      Timing a publish needs a monotonic start point.
-use std::time::Instant;
+/// What:     `use std::time::{Duration, Instant};` imports a monotonic clock
+///           reading and a time span (siblings: `SystemTime`, the wall clock).
+/// Why:      Timing a publish and measuring how long since the last horizontal
+///           scroll both need these.
+use std::time::{Duration, Instant};
 
 /// What:     `use anyhow::Result;` imports the one-parameter error result alias.
 /// Why:      Publishing can fail on a preview decode; handlers propagate it.
@@ -62,6 +63,13 @@ const DEFAULT_VIEWPORT_W_PX: f32 = 1100.0;
 ///           height (window minus HUD and control bars).
 /// Why:      Publishing needs a viewport height from the first frame.
 const DEFAULT_VIEWPORT_H_PX: f32 = 600.0;
+
+/// What:     `const SCROLL_SETTLE_MS: u64 = 90;` is how long after the last
+///           horizontal scroll the view is considered settled.
+/// Why:      While actively scrolling, a landed decode must NOT force a full
+///           rebuild (that is churn); its image appears at the next window shift
+///           or once scrolling settles.
+const SCROLL_SETTLE_MS: u64 = 90;
 
 /// What:     `#[derive(Clone, Copy, PartialEq, Eq)]` auto-generates copy and
 ///           equality for the struct below. `struct Signature` captures everything
@@ -138,6 +146,10 @@ pub struct Controller {
     /// Why:      `reconcile` compares against it to skip rebuilds when nothing that
     ///           affects the model changed.
     last_signature: Option<Signature>,
+    /// What:     `last_h_change: Instant` is when the horizontal offset last moved.
+    /// Why:      `frame_tick` uses it to tell "actively scrolling" from "settled",
+    ///           so decode landings do not force a rebuild mid-scroll.
+    last_h_change: Instant,
 }
 
 /// What:     `impl Controller` attaches the constructor and handlers.
@@ -182,6 +194,7 @@ impl Controller {
             preview_cache,
             instrumentation,
             last_signature: None,
+            last_h_change: Instant::now(),
         };
         // What:     `controller.refresh_totals();` fills the total-* counters.
         // Why:      The HUD needs the full-strip totals from the first frame.
@@ -312,6 +325,10 @@ impl Controller {
         //           offset.
         // Why:      Never scroll before the first column; no rebuild here.
         self.h_offset_px = offset_px.max(0.0);
+        // What:     `self.last_h_change = Instant::now();` marks the scroll time.
+        // Why:      Lets `frame_tick` suppress decode-forced rebuilds while the
+        //           user is actively scrolling.
+        self.last_h_change = Instant::now();
     }
 
     /// What:     `fn column_window(&self) -> (usize, usize)` computes the in-window
@@ -388,12 +405,19 @@ impl Controller {
         // What:     `let landed = self.preview_cache.drain_results();` collects ready
         //           bitmaps and returns how many landed.
         // Why:      A landed decode changes a pane image without changing the
-        //           signature, so it forces a rebuild.
+        //           signature, so it would need a forced rebuild to show.
         let landed = self.preview_cache.drain_results();
-        // What:     `self.reconcile(landed > 0)` rebuilds if decodes landed or the
-        //           window changed; tail expression.
-        // Why:      One reconcile per tick handles both cases.
-        self.reconcile(landed > 0)
+        // What:     `let settled = self.last_h_change.elapsed() >= Duration::
+        //           from_millis(SCROLL_SETTLE_MS);` is true when the user is not
+        //           mid-horizontal-scroll.
+        // Why:      Only force a decode-driven rebuild once scrolling has settled;
+        //           mid-scroll, decoded previews appear at the next window shift.
+        let settled = self.last_h_change.elapsed() >= Duration::from_millis(SCROLL_SETTLE_MS);
+        // What:     `self.reconcile(landed > 0 && settled)` forces a rebuild only
+        //           for landed decodes while settled; otherwise it rebuilds only on
+        //           a window change. Tail expression.
+        // Why:      Keep decode work from churning the model during active scroll.
+        self.reconcile(landed > 0 && settled)
     }
 
     /// What:     `pub fn on_vertical_scroll(&mut self, percent: f32) ->
