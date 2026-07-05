@@ -1,0 +1,317 @@
+// Column-strip virtualization spike UI.
+//
+// The interaction model is Niri-like: a horizontal strip of columns, each
+// column stacking one or more panes vertically. The whole point of this spike
+// is that Slint has no built-in two-dimensional strip virtualization, so Rust
+// does the windowing: it holds the FULL strip as cheap identity but publishes
+// only a BOUNDED WINDOW (visible columns plus one prefetch column each side, and
+// within each column only the visible panes plus one prefetch pane each side) to
+// the models below. Slint's `for` instantiates exactly one element per model
+// row, so publishing a small window is what keeps instantiation bounded.
+//
+// Everything comes IN from Rust as properties; every user action goes OUT as a
+// callback. No windowing logic lives here.
+//
+// The row list inside a directory pane is a std-widgets `ListView`, the one
+// widget Slint documents as instantiating only visible items; its model is a
+// custom Rust `Model` that counts `row_data` access, so row virtualization is
+// measured, not assumed.
+
+import { ListView, Slider, Button, Palette } from "std-widgets.slint";
+
+// One directory row. Rust's custom row model generates these on demand; the
+// label is synthetic ("entry 000123") so a pane can advertise a huge row count
+// without allocating every row up front.
+struct RowView {
+    label: string,
+    index: int,
+}
+
+// One pane inside a column. `kind` is 0 for a directory listing (shows `rows` in
+// a ListView) or 1 for a file preview (shows the decoded `preview` image).
+// `rows` is only populated for directory panes; `preview` only for preview panes
+// that are currently in-window (Rust decodes on entry, drops on exit).
+struct PaneView {
+    pane-id: int,
+    kind: int,
+    title: string,
+    y-px: length,
+    height-px: length,
+    is-active: bool,
+    rows: [RowView],
+    row-total: int,
+    preview: image,
+    resident: bool,
+}
+
+// One column in the strip. `x-px` is its absolute position inside the strip's
+// horizontal content; `panes` holds only the vertically-windowed panes for this
+// column; `v-offset-px` is this column's own vertical scroll (Niri scrolls the
+// focused column), applied here so windowed panes land in the viewport.
+struct ColumnView {
+    strip-index: int,
+    x-px: length,
+    width-px: length,
+    is-active: bool,
+    panes: [PaneView],
+    column-height-px: length,
+    v-offset-px: length,
+}
+
+export component AppWindow inherits Window {
+    title: "Monochromatic File Manager (virtualization spike)";
+    preferred-width: 1100px;
+    preferred-height: 720px;
+    background: Palette.background;
+    forward-focus: strip-focus;
+
+    // Strip geometry and the bounded columns window (all IN from Rust).
+    in property <[ColumnView]> columns: [];
+    in property <length> strip-width-px: 1000px;
+    in property <length> column-width-px: 320px;
+
+    // Instrumentation, all IN from Rust. `total-*` count the full strip; the
+    // `resident-*` count only what Rust published into the window; the `*-builds`
+    // are Slint-side init counters (see the `init =>` callbacks below) that
+    // cross-check Slint actually instantiates the window, not the whole strip.
+    in property <int> total-columns: 0;
+    in property <int> resident-columns: 0;
+    in property <int> total-panes: 0;
+    in property <int> resident-panes: 0;
+    in property <int> live-row-delegates: 0;
+    in property <int> total-rows-addressable: 0;
+    in property <int> decoded-image-kib: 0;
+    in property <int> decode-count: 0;
+    in property <int> column-builds: 0;
+    in property <int> pane-builds: 0;
+    in property <int> active-column: 0;
+    in property <int> active-pane: 0;
+    in property <bool> active-pane-focused: false;
+
+    // Horizontal scroll position in pixels (positive = scrolled right). Two-way
+    // so the h-position slider and the Flickable stay in sync.
+    in-out property <length> h-scroll-px: 0px;
+
+    // Outbound actions.
+    callback horizontal-scrolled(float);
+    callback vertical-scrolled(float);
+    callback key-nav(string);
+    callback column-built();
+    callback pane-built();
+    callback active-focus-changed(bool);
+
+    VerticalLayout {
+        // Instrumentation HUD. Element ids (hud := ...) let the MCP server read
+        // these strings back with get_element_properties.
+        Rectangle {
+            height: 62px;
+            background: Palette.alternate-background;
+            border-width: 1px;
+            border-color: Palette.border;
+            VerticalLayout {
+                padding: 6px;
+                spacing: 2px;
+                hud-a := Text {
+                    text: "columns resident/total: " + root.resident-columns + "/" + root.total-columns
+                        + "   panes resident/total: " + root.resident-panes + "/" + root.total-panes
+                        + "   builds col/pane: " + root.column-builds + "/" + root.pane-builds;
+                    color: Palette.foreground;
+                    font-size: 13px;
+                }
+                hud-b := Text {
+                    text: "rows materialized: " + root.live-row-delegates + " of " + root.total-rows-addressable + " addressable"
+                        + "   decoded images: " + root.decoded-image-kib + " KiB resident, " + root.decode-count + " decodes";
+                    color: Palette.foreground;
+                    font-size: 13px;
+                }
+                hud-c := Text {
+                    text: "active column/pane: " + root.active-column + "/" + root.active-pane
+                        + "   active-pane-focused: " + (root.active-pane-focused ? "yes" : "no");
+                    color: Palette.foreground;
+                    font-size: 13px;
+                }
+            }
+        }
+
+        // MCP-drivable controls: two sliders (horizontal strip position, active
+        // column vertical position) plus buttons that map to the keyboard nav.
+        // set_element_value on a slider or click_element on a button lets a
+        // headless MCP session drive the strip with no key injection.
+        Rectangle {
+            height: 40px;
+            background: Palette.alternate-background;
+            HorizontalLayout {
+                padding: 6px;
+                spacing: 8px;
+                h-slider := Slider {
+                    minimum: 0;
+                    maximum: 100;
+                    value: 0;
+                    // Drive the Flickable, not the callback directly: setting
+                    // h-scroll-px (two-way bound to viewport-x) moves the strip,
+                    // whose `changed viewport-x` then fires horizontal-scrolled
+                    // with the resulting pixel offset. viewport-x is <= 0, so the
+                    // fraction is negated. This is the MCP-drivable horizontal
+                    // path (set_element_value on this slider).
+                    changed(v) => {
+                        root.h-scroll-px = 0px - (v / 100 * (root.strip-width-px - root.width));
+                    }
+                }
+                v-slider := Slider {
+                    minimum: 0;
+                    maximum: 100;
+                    value: 0;
+                    changed(v) => {
+                        root.vertical-scrolled(v);
+                    }
+                }
+                Button {
+                    text: "◀";
+                    clicked => { root.key-nav("Left"); }
+                }
+                Button {
+                    text: "▶";
+                    clicked => { root.key-nav("Right"); }
+                }
+                Button {
+                    text: "▲";
+                    clicked => { root.key-nav("Up"); }
+                }
+                Button {
+                    text: "▼";
+                    clicked => { root.key-nav("Down"); }
+                }
+                Button {
+                    text: "close col";
+                    clicked => { root.key-nav("Close"); }
+                }
+            }
+        }
+
+        // The strip itself. A FocusScope wraps a horizontal Flickable so real
+        // keyboard input works when the app runs live (arrows nav, PageUp/Down
+        // scroll the active column). The Flickable owns horizontal pixel scroll
+        // over the FULL strip width, but only the windowed columns exist inside.
+        strip-focus := FocusScope {
+            key-pressed(event) => {
+                if event.text == Key.LeftArrow {
+                    root.key-nav("Left");
+                } else if event.text == Key.RightArrow {
+                    root.key-nav("Right");
+                } else if event.text == Key.UpArrow {
+                    root.key-nav("Up");
+                } else if event.text == Key.DownArrow {
+                    root.key-nav("Down");
+                }
+                accept
+            }
+
+            strip-flick := Flickable {
+                viewport-width: root.strip-width-px;
+                viewport-height: self.height;
+                viewport-x <=> root.h-scroll-px;
+                changed viewport-x => {
+                    root.horizontal-scrolled((0px - self.viewport-x) / 1px);
+                }
+
+                for col in root.columns: Rectangle {
+                    x: col.x-px;
+                    y: 0px;
+                    width: col.width-px;
+                    height: parent.height;
+                    background: col.is-active ? Palette.accent-background.with-alpha(0.08) : transparent;
+                    border-width: 1px;
+                    border-color: Palette.border;
+
+                    // Cross-check: Slint fires init once per instantiated column.
+                    // Over a scroll sweep this total grows with distance travelled
+                    // (recycling), NOT with the strip size (retention would).
+                    init => {
+                        root.column-built();
+                    }
+
+                    // The column's panes are absolutely positioned by their
+                    // y-px minus this column's vertical scroll offset. Rust has
+                    // already windowed them, so only in-view panes are present.
+                    for pane in col.panes: Rectangle {
+                        x: 4px;
+                        y: pane.y-px - col.v-offset-px;
+                        width: parent.width - 8px;
+                        height: pane.height-px - 6px;
+                        background: Palette.control-background;
+                        border-width: pane.is-active ? 2px : 1px;
+                        border-color: pane.is-active ? Palette.accent-background : Palette.border;
+
+                        init => {
+                            root.pane-built();
+                        }
+
+                        VerticalLayout {
+                            padding: 4px;
+                            spacing: 2px;
+                            Text {
+                                text: pane.title;
+                                color: Palette.foreground;
+                                font-size: 12px;
+                                overflow: elide;
+                            }
+
+                            // Directory pane (kind 0): a virtualizing ListView
+                            // over the custom row model. ListView instantiates
+                            // only visible row delegates, so row-data is pulled
+                            // sparsely from the huge model.
+                            if pane.kind == 0: ListView {
+                                for row in pane.rows: Rectangle {
+                                    height: 22px;
+                                    background: touch.has-hover ? Palette.accent-background.with-alpha(0.12) : transparent;
+                                    touch := TouchArea {}
+                                    Text {
+                                        x: 6px;
+                                        text: row.label;
+                                        color: Palette.foreground;
+                                        font-size: 12px;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+
+                            // Preview pane (kind 1): the decoded image when Rust
+                            // has it resident, else a placeholder telling the
+                            // reader the bitmap was evicted (identity survives).
+                            if pane.kind == 1: Rectangle {
+                                fs := FocusScope {
+                                    // Focus survival: when the active pane is
+                                    // (re)instantiated after recycling, re-assert
+                                    // focus from Rust-held identity and report the
+                                    // focus state back for the HUD.
+                                    init => {
+                                        if pane.is-active {
+                                            self.focus();
+                                        }
+                                    }
+                                    changed has-focus => {
+                                        if pane.is-active {
+                                            root.active-focus-changed(self.has-focus);
+                                        }
+                                    }
+                                    Image {
+                                        source: pane.preview;
+                                        image-fit: contain;
+                                        width: parent.width;
+                                        height: parent.height;
+                                    }
+                                }
+                                if !pane.resident: Text {
+                                    text: "preview evicted\n(re-decodes on scroll-back)";
+                                    color: Palette.foreground;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,50 @@
+[package]
+name = "file-manager"
+version = "0.1.0"
+edition = "2024"
+license = "LGPL-3.0-or-later"
+publish = false
+description = "Slint desktop file-manager prototype: column-strip virtualization spike."
+
+[lints.clippy]
+disallowed_methods = "deny"
+
+[lib]
+name = "file_manager"
+path = "src/lib.rs"
+
+[[bin]]
+name = "monochromatic-file-manager"
+path = "src/main.rs"
+
+[dependencies]
+# `anyhow` carries application-level errors for the binary and Slint callbacks,
+# matching packages/desktop-app/terminal. Sibling crates parse each error type
+# separately; the file manager wants one user-facing error channel here.
+anyhow = "1"
+# Same Slint release family (1.17.x) as the sibling desktop apps so all three
+# prototypes share the same Flickable/ListView runtime and markup compiler. The
+# explicit winit backend lets the app stamp its Wayland app id before window
+# creation. "1.17.0" is Cargo's default caret requirement (">=1.17.0, <2.0.0"),
+# not an exact pin (unlike pnpm, a bare Cargo version is already a caret range).
+i-slint-backend-winit = "1.17.0"
+# In-process image decoding for preview panes. Memory-safe pure-Rust decoders
+# (no libjpeg/ffmpeg process), matching the plan's "image thumbnails decode
+# in-process with memory-safe Rust (image crate)" rule. Default features cover
+# the common formats the spike generates (PNG here).
+image = "0.25"
+# Must match the `slint` release family used by i-slint-backend-winit and the
+# slint-build build-dependency, because the markup compiler and runtime are
+# versioned together.
+slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+# The logging facade and its stderr subscriber, matching the sibling apps.
+# tracing routes callback-error diagnostics as structured events; the subscriber
+# installs the stderr sink (RUST_LOG, default info).
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[build-dependencies]
+# Must match the `slint` release family above; the Slint markup compiler and
+# runtime are versioned together. "1.17.0" is Cargo's default caret requirement,
+# not an exact pin.
+slint-build = "1.17.0"

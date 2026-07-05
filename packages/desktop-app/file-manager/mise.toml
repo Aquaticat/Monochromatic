@@ -1,0 +1,91 @@
+# Cargo work runs directly on the host. Unlike packages/desktop-app/terminal,
+# this prototype has no Zig/Ghostty native toolchain, so it needs only the Slint
+# renderer's system libraries (fontconfig + freetype), which are present on the
+# host. There is therefore no container fallback here.
+#
+# Testing seams mirror the sibling Slint apps and docs/handover/slint-app-testing.md:
+#   - test        : cargo nextest, including in-process ElementHandle UI tests
+#   - lint:slint  : slint-viewer --check (static markup compile)
+#   - screenshot  : slint-viewer --screenshot (default-property snapshot)
+#   - mcp         : build --features slint/mcp and run HEADLESS with the embedded
+#                   Slint MCP server so an agent can drive/inspect the UI and read
+#                   the virtualization instrumentation out-properties.
+
+[env]
+# The UI uses Slint's experimental language surface (FlexboxLayout), matching the
+# sibling apps; it must be enabled for both the markup compiler and the runtime.
+SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
+
+[tasks.build]
+description = "Release build"
+run = "cargo build --release"
+
+[tasks."build:debug"]
+description = "Debug build"
+run = "cargo build"
+
+[tasks.lint]
+description = "cargo check"
+run = "cargo check"
+
+[tasks."lint:clippy"]
+description = "Run clippy with warnings denied"
+run = "cargo clippy --release -- --deny warnings"
+
+[tasks."format:clippy"]
+description = "Apply clippy's machine-applicable suggestions in place"
+run = "cargo clippy --fix --allow-dirty --allow-staged"
+
+[tasks."lint:rust"]
+description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
+run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
+
+[tasks.test]
+description = "cargo nextest run (unit tests + in-process ElementHandle UI tests)"
+run = "cargo nextest run --release"
+
+[tasks."lint:slint"]
+description = "Type-check ui/app.slint with slint-viewer --check (compiles markup, opens no window)"
+run = "slint-viewer --check ui/app.slint"
+
+[tasks.screenshot]
+description = "Render ui/app.slint to target/app.slint.png HEADLESS (default property values)"
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { mkdirSync } = await import('node:fs')
+mkdirSync('target', { recursive: true })
+execFileSync('slint-viewer', ['--screenshot', 'target/app.slint.png', 'ui/app.slint'], { stdio: 'inherit', env: { ...process.env, SLINT_BACKEND: 'software' } })
+console.error('rendered ui/app.slint -> target/app.slint.png')
+"""
+
+[tasks.mcp]
+description = "Build --features slint/mcp (debug) and run HEADLESS with the embedded Slint MCP server on SLINT_MCP_PORT (default 9317) so an agent can drive/inspect the UI and read instrumentation"
+# Same embedded-MCP path as the sibling apps (see docs/handover/slint-app-testing.md
+# and docs/troubleshooting/slint-embedded-mcp-server.md). `mcp` is command-line only
+# (never in Cargo.toml [features]); SLINT_EMIT_DEBUG_INFO=1 makes element ids survive;
+# SLINT_BACKEND=headless renders offscreen. install_backend() early-returns when
+# SLINT_MCP_PORT is set, so Slint creates the backend itself and starts the MCP server.
+# State is isolated under target/mcp-xdg. Port 9317 keeps it distinct from the music
+# player's 9315 and the terminal's 9316.
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { mkdirSync } = await import('node:fs')
+const { join } = await import('node:path')
+process.env.SLINT_EMIT_DEBUG_INFO = '1'
+process.env.SLINT_MCP_PORT = process.env.SLINT_MCP_PORT ?? '9317'
+process.env.SLINT_BACKEND = process.env.SLINT_BACKEND ?? 'headless'
+const xdgRoot = join(process.cwd(), 'target', 'mcp-xdg')
+for (const sub of ['config', 'cache', 'data']) { mkdirSync(join(xdgRoot, sub), { recursive: true }) }
+process.env.XDG_CONFIG_HOME = join(xdgRoot, 'config')
+process.env.XDG_CACHE_HOME = join(xdgRoot, 'cache')
+process.env.XDG_DATA_HOME = join(xdgRoot, 'data')
+execFileSync('cargo', ['build', '--features', 'slint/mcp'], { stdio: 'inherit' })
+console.error(`monochromatic-file-manager MCP server: http://127.0.0.1:${process.env.SLINT_MCP_PORT}/mcp (backend=${process.env.SLINT_BACKEND || 'default'})`)
+execFileSync('./target/debug/monochromatic-file-manager', [], { stdio: 'inherit' })
+"""
+
+[tasks.run]
+description = "Release build, then run the GUI on the host Wayland/X session (winit backend)"
+run = ["cargo build --release", "./target/release/monochromatic-file-manager"]
