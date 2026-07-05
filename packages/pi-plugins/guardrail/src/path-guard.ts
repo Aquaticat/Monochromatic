@@ -5,12 +5,11 @@
  */
 
 import ignore, { type Ignore, } from 'ignore';
-import {
-  relative,
-  resolve,
-  sep,
-} from 'node:path';
 
+import {
+  extractToolPath,
+  normalizeToolPath,
+} from './path-normalize.ts';
 import type {
   GuardrailBlockDecision,
   PathRule,
@@ -57,8 +56,8 @@ type EvaluatePathGuardOptions = {
 /**
  * Builds an `ignore` matcher from ordered path rules.
  *
- * Uses `mark` values to recover the exact final positive rule after
- * `ignore().test(path)`, avoiding a hand-written gitignore matcher.
+ * Uses `mark` values to recover rule provenance for debugging while the matcher
+ * itself supplies the final gitignore ignored/unignored decision.
  *
  * @param rules - ordered protected-path rules
  *
@@ -132,31 +131,20 @@ function evaluatePathGuard(
     return undefined;
 
   /**
-   * Ignore package match result, including marked final rule.
+   * Ignore package match result for final gitignore state.
    */
   const testResult = matcher.ignore
     .test(relativePath,);
-  if ((!testResult.ignored) || (testResult.rule === undefined))
+  if (!testResult.ignored)
     return undefined;
 
   /**
-   * Mark assigned in {@link createPathGuardMatcher}; identifies message source.
+   * Last positive rule matching this path, used only for refusal message selection.
    */
-  const mark = testResult.rule.mark;
-  if (mark === undefined)
-    return undefined;
-
-  /**
-   * Numeric path-rule index decoded from ignore rule mark.
-   */
-  const ruleIndex = Number(mark,);
-  if (!Number.isInteger(ruleIndex,))
-    return undefined;
-
-  /**
-   * Matched rule carrying custom refusal message.
-   */
-  const rule = matcher.rules[ruleIndex];
+  const rule = findLastMatchingMessageRule({
+    rules: matcher.rules,
+    relativePath,
+  },);
   if (rule === undefined)
     return undefined;
 
@@ -166,115 +154,51 @@ function evaluatePathGuard(
   };
 }
 
-//endregion Guard evaluation
-
-//region Path normalization
-
 /**
- * Extracts `path` from external pi edit/write input.
+ * Finds the last path rule whose own gitignore pattern matches a relative path.
  *
- * @param input - unknown tool input
+ * The full matcher decides whether the final state is ignored. This helper is
+ * only for selecting the message after a positive final state, so duplicate
+ * user rules can override built-in messages without reimplementing gitignore
+ * matching.
  *
- * @returns string path when present
+ * @param rules - ordered path rules
+ *
+ * @param relativePath - normalized project-relative path
+ *
+ * @returns matching rule that should provide refusal message
  *
  * @example
  * ```typescript
- * extractToolPath({ path: 'pnpm-lock.yaml' });
+ * findLastMatchingMessageRule({ rules, relativePath: 'pnpm-lock.yaml' });
  * ```
  */
-function extractToolPath(input: unknown,): string | undefined {
-  if (!isRecord(input,))
-    return undefined;
-  /**
-   * Raw path candidate from tool input.
-   */
-  const path = input.path;
-  return ((typeof path) === 'string')
-    ? path
-    : undefined;
-}
-
-/**
- * Normalizes pi tool paths to relative POSIX pathnames accepted by `ignore`.
- *
- * Built-in tools strip a leading `@` before resolving; this guard mirrors that
- * behavior so model-produced file references and plain paths match identically.
- * Paths outside `cwd` are left unguarded because global gitignore-style rules
- * are evaluated relative to the active project root.
- *
- * @param cwd - pi current working directory
- *
- * @param rawPath - raw path from tool input
- *
- * @returns relative POSIX path under cwd, or `undefined` for outside/empty paths
- *
- * @example
- * ```typescript
- * normalizeToolPath({ cwd: '/repo', rawPath: '/repo/pnpm-lock.yaml' });
- * ```
- */
-function normalizeToolPath(
+function findLastMatchingMessageRule(
   {
-    cwd,
-    rawPath,
+    rules,
+    relativePath,
   }: {
-    readonly cwd: string;
-    readonly rawPath: string;
+    readonly rules: readonly PathRule[];
+    readonly relativePath: string;
   },
-): string | undefined {
-  /**
-   * Path after mirroring pi built-in file-reference normalization.
-   */
-  const unprefixedPath = rawPath.startsWith('@',)
-    ? rawPath.slice(1,)
-    : rawPath;
-  if (unprefixedPath.length === 0)
-    return undefined;
-
-  /**
-   * Absolute target path resolved against pi cwd.
-   */
-  const absolutePath = resolve(
-    cwd,
-    unprefixedPath,
-  );
-  /**
-   * Relative target path from pi cwd.
-   */
-  const relativePath = relative(
-    cwd,
-    absolutePath,
-  );
-  if ((relativePath.length === 0)
-    || (relativePath === '..')
-    || relativePath.startsWith(`..${sep}`,)) {
-    return undefined;
-  }
-
-  return relativePath
-    .split(sep,)
-    .join('/',);
+): PathRule | undefined {
+  return rules
+    .toReversed()
+    .find(function ruleMatchesPath(rule,): boolean {
+      return ignore({ ignorecase: false, })
+        .add(rule.pattern,)
+        .test(relativePath,)
+        .ignored;
+    },);
 }
 
-/**
- * Returns whether value is a non-array object record.
- *
- * @param value - value to inspect
- *
- * @returns whether value can expose a path field
- */
-function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return (value !== null)
-    && ((typeof value) === 'object')
-    && (!Array.isArray(value,));
-}
-
-//endregion Path normalization
+//endregion Guard evaluation
 
 export {
   createPathGuardMatcher,
   evaluatePathGuard,
   extractToolPath,
+  findLastMatchingMessageRule,
   normalizeToolPath,
 };
 export type {
