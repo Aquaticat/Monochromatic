@@ -9,10 +9,10 @@ import {
   inputTitleEntry,
   pathTitleEntry,
   textTitleEntry,
+  TOOL_TITLE_TEXT_MISSING,
   type ToolTitleEntry,
   type ToolTitleInput,
 } from '@monochromatic-dev/module-terminal-title/ts';
-import type { BuiltInToolName, } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 
 //region AskUserQuestion helpers
 
@@ -30,7 +30,30 @@ import type { BuiltInToolName, } from '@monochromatic-dev/claude-code-plugins-ho
  * ```
  */
 function hasQuestionField(value: object,): value is { readonly question: unknown } {
-  return Object.hasOwn(value, 'question',);
+  return Object.hasOwn(
+    value,
+    'question',
+  );
+}
+
+/**
+ * Checks whether title formatter result is text-missing sentinel.
+ *
+ * @param value - because formatter result can be title text or sentinel
+ *
+ * @returns whether value is text-missing sentinel
+ *
+ * @example
+ * ```ts
+ * isToolTitleTextMissing(TOOL_TITLE_TEXT_MISSING);
+ * // true
+ * ```
+ */
+function isToolTitleTextMissing(
+  value: string | typeof TOOL_TITLE_TEXT_MISSING,
+): value is typeof TOOL_TITLE_TEXT_MISSING {
+  return ((typeof value) === 'symbol')
+    && (value === TOOL_TITLE_TEXT_MISSING);
 }
 
 /**
@@ -38,7 +61,7 @@ function hasQuestionField(value: object,): value is { readonly question: unknown
  *
  * @param input - because AskUserQuestion nests text inside questions array
  *
- * @returns first question string or undefined when input shape is absent
+ * @returns first question string or text-missing sentinel when input shape is absent
  *
  * @example
  * ```ts
@@ -46,28 +69,32 @@ function hasQuestionField(value: object,): value is { readonly question: unknown
  * // 'Continue?'
  * ```
  */
-function firstQuestionText(input: ToolTitleInput,): string | undefined {
+function firstQuestionText(input: ToolTitleInput,): string | typeof TOOL_TITLE_TEXT_MISSING {
   /**
    * Candidate questions value from tool input.
    */
   const { questions, } = input;
   if (!Array.isArray(questions,))
-    return undefined;
+    return TOOL_TITLE_TEXT_MISSING;
+  /**
+   * Questions narrowed to unknown entries before destructuring.
+   */
+  const unknownQuestions: readonly unknown[] = questions;
   /**
    * First question candidate.
    */
-  const first = questions[0];
+  const [first,] = unknownQuestions;
   if ((first === null) || ((typeof first) !== 'object'))
-    return undefined;
+    return TOOL_TITLE_TEXT_MISSING;
   if (!hasQuestionField(first,))
-    return undefined;
+    return TOOL_TITLE_TEXT_MISSING;
   /**
    * Question text from first question object.
    */
   const { question, } = first;
   if ((typeof question) === 'string')
     return question;
-  return undefined;
+  return TOOL_TITLE_TEXT_MISSING;
 }
 
 //endregion AskUserQuestion helpers
@@ -88,64 +115,112 @@ function firstQuestionText(input: ToolTitleInput,): string | undefined {
  * ```
  */
 function webFetchValue(url: string,): string {
-  try {
-    return new URL(url,).hostname;
-  }
-  catch {
+  if (!URL.canParse(url,))
     return 'URL';
-  }
+  return new URL(url,).hostname;
 }
 
 //endregion URL helpers
 
 /**
+ * Built-in tool names held in the search registry segment.
+ */
+type SearchToolTitleName =
+  | 'WebSearch'
+  | 'AskUserQuestion'
+  | 'WebFetch'
+  | 'NotebookEdit'
+  | 'LSP'
+  | 'Skill'
+  | 'ToolSearch';
+
+/**
  * Title entries for search, web, notebook, LSP, skill, and discovery tools.
  */
-const SEARCH_TOOL_TITLES = {
+const SEARCH_TOOL_TITLES: Record<SearchToolTitleName, ToolTitleEntry> = {
   WebSearch: textTitleEntry({
     field: 'query',
-    labels: { pre: 'Searching web for', post: 'Searched web for', },
-    fallback: { pre: 'Searching web', post: 'Searched web', },
+    labels: {
+      pre: 'Searching web for',
+      post: 'Searched web for',
+    },
+    fallback: {
+      pre: 'Searching web',
+      post: 'Searched web',
+    },
   },),
   AskUserQuestion: inputTitleEntry({
-    fallback: { pre: 'Asking question', post: 'Asked question', },
-    format({ input, tense, }): string | undefined {
+    fallback: {
+      pre: 'Asking question',
+      post: 'Asked question',
+    },
+    format({
+      input,
+      tense,
+    }): string | typeof TOOL_TITLE_TEXT_MISSING {
       /**
        * First question text from nested input.
        */
       const question = firstQuestionText(input,);
-      if (question === undefined)
-        return undefined;
+      if (isToolTitleTextMissing(question,))
+        return TOOL_TITLE_TEXT_MISSING;
       return `${tense === 'pre' ? 'Asking' : 'Asked'}: ${question}`;
     },
   },),
   WebFetch: fieldTitleEntry({
     field: 'url',
-    fallback: { pre: 'Fetching URL', post: 'Fetched URL', },
-    format({ value, tense, }): string {
+    fallback: {
+      pre: 'Fetching URL',
+      post: 'Fetched URL',
+    },
+    format({
+      value,
+      tense,
+    }): string {
       return `${tense === 'pre' ? 'Fetching' : 'Fetched'} ${webFetchValue(value,)}`;
     },
   },),
   NotebookEdit: pathTitleEntry({
     field: 'notebook_path',
-    labels: { pre: 'Editing notebook', post: 'Edited notebook', },
+    labels: {
+      pre: 'Editing notebook',
+      post: 'Edited notebook',
+    },
     noun: 'notebook',
   },),
   LSP: textTitleEntry({
     field: 'operation',
-    labels: { pre: 'Running LSP', post: 'Finished LSP', },
-    fallback: { pre: 'Running LSP query', post: 'Finished LSP query', },
+    labels: {
+      pre: 'Running LSP',
+      post: 'Finished LSP',
+    },
+    fallback: {
+      pre: 'Running LSP query',
+      post: 'Finished LSP query',
+    },
   },),
   Skill: textTitleEntry({
     field: 'skill',
-    labels: { pre: 'Running skill', post: 'Finished skill', },
-    fallback: { pre: 'Running skill', post: 'Finished skill', },
+    labels: {
+      pre: 'Running skill',
+      post: 'Finished skill',
+    },
+    fallback: {
+      pre: 'Running skill',
+      post: 'Finished skill',
+    },
   },),
   ToolSearch: textTitleEntry({
     field: 'query',
-    labels: { pre: 'Discovering tools for', post: 'Discovered tools for', },
-    fallback: { pre: 'Discovering tools', post: 'Discovered tools', },
+    labels: {
+      pre: 'Discovering tools for',
+      post: 'Discovered tools for',
+    },
+    fallback: {
+      pre: 'Discovering tools',
+      post: 'Discovered tools',
+    },
   },),
-} satisfies Partial<Record<BuiltInToolName, ToolTitleEntry>>;
+};
 
 export { SEARCH_TOOL_TITLES, };

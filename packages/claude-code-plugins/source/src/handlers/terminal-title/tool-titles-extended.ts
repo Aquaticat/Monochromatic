@@ -10,12 +10,28 @@ import {
   textTitleEntry,
   type ToolTitleEntry,
 } from '@monochromatic-dev/module-terminal-title/ts';
-import type { BuiltInToolName, } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
+
+/**
+ * Built-in tool names held in the extended registry segment.
+ */
+type ExtendedToolTitleName =
+  | 'EnterPlanMode'
+  | 'ExitPlanMode'
+  | 'EnterWorktree'
+  | 'TaskCreate'
+  | 'TaskGet'
+  | 'TaskList'
+  | 'TaskOutput'
+  | 'TaskStop'
+  | 'TaskUpdate'
+  | 'CronCreate'
+  | 'CronDelete'
+  | 'CronList';
 
 /**
  * Title entries for plan mode, worktree, task, and cron tools.
  */
-const EXTENDED_TOOL_TITLES = {
+const EXTENDED_TOOL_TITLES: Record<ExtendedToolTitleName, ToolTitleEntry> = {
   EnterPlanMode: staticTitleEntry({
     pre: 'Entering plan mode',
     post: 'Entered plan mode',
@@ -26,18 +42,36 @@ const EXTENDED_TOOL_TITLES = {
   },),
   EnterWorktree: textTitleEntry({
     field: 'name',
-    labels: { pre: 'Creating worktree', post: 'Created worktree', },
-    fallback: { pre: 'Creating worktree', post: 'Created worktree', },
+    labels: {
+      pre: 'Creating worktree',
+      post: 'Created worktree',
+    },
+    fallback: {
+      pre: 'Creating worktree',
+      post: 'Created worktree',
+    },
   },),
   TaskCreate: textTitleEntry({
     field: 'subject',
-    labels: { pre: 'Creating task', post: 'Created task', },
-    fallback: { pre: 'Creating task', post: 'Created task', },
+    labels: {
+      pre: 'Creating task',
+      post: 'Created task',
+    },
+    fallback: {
+      pre: 'Creating task',
+      post: 'Created task',
+    },
   },),
   TaskGet: fieldTitleEntry({
     field: 'taskId',
-    fallback: { pre: 'Getting task', post: 'Got task', },
-    format({ value, tense, }): string {
+    fallback: {
+      pre: 'Getting task',
+      post: 'Got task',
+    },
+    format({
+      value,
+      tense,
+    }): string {
       return `${tense === 'pre' ? 'Getting' : 'Got'} task #${value}`;
     },
   },),
@@ -47,34 +81,64 @@ const EXTENDED_TOOL_TITLES = {
   },),
   TaskOutput: fieldTitleEntry({
     field: 'task_id',
-    fallback: { pre: 'Reading task output', post: 'Read task output', },
-    format({ value, tense, }): string {
+    fallback: {
+      pre: 'Reading task output',
+      post: 'Read task output',
+    },
+    format({
+      value,
+      tense,
+    }): string {
       return `${tense === 'pre' ? 'Reading' : 'Read'} task output #${value}`;
     },
   },),
   TaskStop: fieldTitleEntry({
     field: 'task_id',
-    fallback: { pre: 'Stopping task', post: 'Stopped task', },
-    format({ value, tense, }): string {
+    fallback: {
+      pre: 'Stopping task',
+      post: 'Stopped task',
+    },
+    format({
+      value,
+      tense,
+    }): string {
       return `${tense === 'pre' ? 'Stopping' : 'Stopped'} task #${value}`;
     },
   },),
   TaskUpdate: fieldTitleEntry({
     field: 'taskId',
-    fallback: { pre: 'Updating task', post: 'Updated task', },
-    format({ value, tense, }): string {
+    fallback: {
+      pre: 'Updating task',
+      post: 'Updated task',
+    },
+    format({
+      value,
+      tense,
+    }): string {
       return `${tense === 'pre' ? 'Updating' : 'Updated'} task #${value}`;
     },
   },),
   CronCreate: textTitleEntry({
     field: 'prompt',
-    labels: { pre: 'Scheduling cron', post: 'Scheduled cron', },
-    fallback: { pre: 'Scheduling cron', post: 'Scheduled cron', },
+    labels: {
+      pre: 'Scheduling cron',
+      post: 'Scheduled cron',
+    },
+    fallback: {
+      pre: 'Scheduling cron',
+      post: 'Scheduled cron',
+    },
   },),
   CronDelete: fieldTitleEntry({
     field: 'id',
-    fallback: { pre: 'Deleting cron', post: 'Deleted cron', },
-    format({ value, tense, }): string {
+    fallback: {
+      pre: 'Deleting cron',
+      post: 'Deleted cron',
+    },
+    format({
+      value,
+      tense,
+    }): string {
       return `${tense === 'pre' ? 'Deleting' : 'Deleted'} cron #${value}`;
     },
   },),
@@ -82,6 +146,6 @@ const EXTENDED_TOOL_TITLES = {
     pre: 'Listing cron jobs',
     post: 'Listed cron jobs',
   },),
-} satisfies Partial<Record<BuiltInToolName, ToolTitleEntry>>;
+};
 
 export { EXTENDED_TOOL_TITLES, };

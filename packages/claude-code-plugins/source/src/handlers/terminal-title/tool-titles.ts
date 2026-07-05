@@ -17,50 +17,82 @@ import { EXTENDED_TOOL_TITLES, } from './tool-titles-extended.ts';
 import { SEARCH_TOOL_TITLES, } from './tool-titles-search.ts';
 
 /**
+ * Built-in tool names held in the core registry segment.
+ */
+type CoreToolTitleName = 'Bash' | 'Read' | 'Edit' | 'Write' | 'Grep' | 'Glob' | 'Agent';
+
+/**
  * Core Claude Code tool title entries for file, search, and agent tools.
  */
-const CORE_TOOL_TITLES = {
+const CORE_TOOL_TITLES: Record<CoreToolTitleName, ToolTitleEntry> = {
   Bash: shellCommandTitleEntry({ field: 'command', },),
   Read: pathTitleEntry({
     field: 'file_path',
-    labels: { pre: 'Reading', post: 'Read', },
+    labels: {
+      pre: 'Reading',
+      post: 'Read',
+    },
     noun: 'file',
   },),
   Edit: pathTitleEntry({
     field: 'file_path',
-    labels: { pre: 'Editing', post: 'Edited', },
+    labels: {
+      pre: 'Editing',
+      post: 'Edited',
+    },
     noun: 'file',
   },),
   Write: pathTitleEntry({
     field: 'file_path',
-    labels: { pre: 'Writing', post: 'Wrote', },
+    labels: {
+      pre: 'Writing',
+      post: 'Wrote',
+    },
     noun: 'file',
   },),
   Grep: textTitleEntry({
     field: 'pattern',
-    labels: { pre: 'Searching for', post: 'Searched for', },
-    fallback: { pre: 'Searching', post: 'Searched', },
+    labels: {
+      pre: 'Searching for',
+      post: 'Searched for',
+    },
+    fallback: {
+      pre: 'Searching',
+      post: 'Searched',
+    },
   },),
   Glob: textTitleEntry({
     field: 'pattern',
-    labels: { pre: 'Finding', post: 'Found', },
-    fallback: { pre: 'Finding files', post: 'Found files', },
+    labels: {
+      pre: 'Finding',
+      post: 'Found',
+    },
+    fallback: {
+      pre: 'Finding files',
+      post: 'Found files',
+    },
   },),
   Agent: textTitleEntry({
     field: 'description',
-    labels: { pre: 'Running agent', post: 'Finished agent', },
-    fallback: { pre: 'Running agent', post: 'Finished agent', },
+    labels: {
+      pre: 'Running agent',
+      post: 'Finished agent',
+    },
+    fallback: {
+      pre: 'Running agent',
+      post: 'Finished agent',
+    },
   },),
-} satisfies Partial<Record<BuiltInToolName, ToolTitleEntry>>;
+};
 
 /**
  * Complete built-in Claude Code tool title registry.
  */
-const TOOL_TITLES = {
+const TOOL_TITLES: Record<BuiltInToolName, ToolTitleEntry> = {
   ...CORE_TOOL_TITLES,
   ...SEARCH_TOOL_TITLES,
   ...EXTENDED_TOOL_TITLES,
-} satisfies Record<BuiltInToolName, ToolTitleEntry>;
+};
 
 export type { ToolTitleEntry, } from '@monochromatic-dev/module-terminal-title/ts';
 

@@ -79,7 +79,9 @@ await describe({
     it({
       name: 'renames prompt titles with lifecycle wording',
       fn: async () => {
-        expect(terminalTitleForEvent(userPromptSubmitEvent('Refactor auth',),),).toBe(
+        expect(
+          terminalTitleForEvent(userPromptSubmitEvent('Refactor auth',),),
+        ).toBe(
           '✳ Received prompt: Refactor auth',
         );
       },
@@ -87,7 +89,9 @@ await describe({
     it({
       name: 'uses smart relative path in tool titles',
       fn: async () => {
-        expect(terminalTitleForEvent(readPreToolUseEvent('/repo/src/index.ts',),),).toBe(
+        expect(
+          terminalTitleForEvent(readPreToolUseEvent('/repo/src/index.ts',),),
+        ).toBe(
           '✳ Reading src/index.ts',
         );
       },
@@ -95,7 +99,9 @@ await describe({
     it({
       name: 'uses meaningful command suffix in bash titles',
       fn: async () => {
-        expect(terminalTitleForEvent(bashPreToolUseEvent('env timeout 10 npm test',),),).toBe(
+        expect(
+          terminalTitleForEvent(bashPreToolUseEvent('env timeout 10 npm test',),),
+        ).toBe(
           '✳ Running npm test',
         );
       },
@@ -103,7 +109,9 @@ await describe({
     it({
       name: 'sanitizes OSC-breaking controls in prompt titles',
       fn: async () => {
-        expect(terminalTitleForEvent(userPromptSubmitEvent('Fix\u001Bauth\u0007bug',),),).toBe(
+        expect(
+          terminalTitleForEvent(userPromptSubmitEvent('Fix\u001Bauth\u0007bug',),),
+        ).toBe(
           '✳ Received prompt: Fix␛auth␇bug',
         );
       },

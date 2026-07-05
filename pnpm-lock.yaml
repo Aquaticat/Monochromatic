@@ -649,6 +649,9 @@ importers:
       '@monochromatic-dev/module-current-time-context':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/current-time-context
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@monochromatic-dev/module-terminal-title':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/terminal-title

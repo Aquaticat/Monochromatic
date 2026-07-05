@@ -9,6 +9,7 @@ import {
   safeTerminalTitlePayload,
   terminalTitlePath,
 } from '@monochromatic-dev/module-terminal-title/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 import { open, } from 'node:fs/promises';
 
@@ -17,6 +18,23 @@ import {
   type WriterOutput,
 } from '../../runtime/handler-runtime.ts';
 import { TOOL_TITLES, } from './tool-titles.ts';
+
+//region Logging
+
+/**
+ * Logger root for terminal-title handler.
+ */
+const parentLogger = tagged({ tag: 'claude-terminal-title', },);
+
+/**
+ * Module logger for terminal-title handler.
+ */
+const moduleLogger = tagged({
+  tag: 'handler',
+  l: parentLogger,
+},);
+
+//endregion Logging
 
 /**
  * Prefix prepended to every terminal title to identify Claude Code activity.
@@ -76,7 +94,9 @@ function titleForTool(event: ReadonlyDeep<PreToolUseInput | PostToolUseInput>,):
  *
  * @returns notification title body
  */
-function notificationTitle(event: Extract<HookInput, { hook_event_name: 'Notification' }>,): string {
+function notificationTitle(
+  event: ReadonlyDeep<Extract<HookInput, { hook_event_name: 'Notification' }>>,
+): string {
   return `Notified: ${event.title ?? event.message}`;
 }
 
@@ -112,7 +132,10 @@ function titleForEvent(hookEvent: ReadonlyDeep<HookInput>,): string {
     return `Started session: ${hookEvent.source}`;
   if (hookEvent.hook_event_name === 'InstructionsLoaded') {
     return `Loaded instructions: ${
-      terminalTitlePath({ filePath: hookEvent.file_path, cwd: hookEvent.cwd, },)
+      terminalTitlePath({
+        filePath: hookEvent.file_path,
+        cwd: hookEvent.cwd,
+      },)
     }`;
   }
   if (hookEvent.hook_event_name === 'UserPromptSubmit')
@@ -163,8 +186,8 @@ async function setTerminalTitlePayload(titlePayload: string,): Promise<void> {
     );
     await tty.write(`${OSC_TITLE_SEQUENCE_PREFIX}${titlePayload}${OSC_STRING_TERMINATOR}`,);
   }
-  catch {
-    /* /dev/tty unavailable: running inside sandbox or non-interactive context. */
+  catch (error: unknown) {
+    moduleLogger.debug(`terminal title tty write skipped: ${String(error,)}`,);
   }
 }
 
@@ -179,6 +202,11 @@ type TerminalTitleOutput = void;
  * @param event - parsed hook event from Claude Code
  *
  * @returns prefixed title payload text safe to place inside an OSC 0 sequence
+ *
+ * @example
+ * ```ts
+ * terminalTitleForEvent({ hook_event_name: 'Stop', session_id: 's', transcript_path: 't', cwd: '.' });
+ * ```
  */
 function terminalTitleForEvent(event: ReadonlyDeep<HookInput>,): string {
   return safeTerminalTitlePayload({
@@ -195,6 +223,11 @@ function terminalTitleForEvent(event: ReadonlyDeep<HookInput>,): string {
  * @param event - parsed hook event from Claude Code
  *
  * @returns nothing; title is set as side effect via `/dev/tty`
+ *
+ * @example
+ * ```ts
+ * await terminalTitleHandler(event);
+ * ```
  */
 async function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): Promise<TerminalTitleOutput> {
   await setTerminalTitlePayload(terminalTitleForEvent(event,),);
@@ -210,6 +243,11 @@ async function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): Promise<Te
  * @param raw - JSON payload from Claude Code stdin
  *
  * @returns parsed hook event union
+ *
+ * @example
+ * ```ts
+ * terminalTitleParser('{"hook_event_name":"Stop"}');
+ * ```
  */
 function terminalTitleParser(raw: string,): HookInput {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
@@ -222,6 +260,11 @@ function terminalTitleParser(raw: string,): HookInput {
  * @param _output - ignored handler result
  *
  * @returns sentinel instructing runtime to emit no stdout bytes
+ *
+ * @example
+ * ```ts
+ * terminalTitleWriter();
+ * ```
  */
 function terminalTitleWriter(_output: TerminalTitleOutput,): WriterOutput {
   return NO_STDOUT;
