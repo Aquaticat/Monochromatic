@@ -186,11 +186,11 @@ Els escenaris següents són els que solen fer ensopegar la gent.
     },
     {
       label: <>Una altra cosa</>,
-      explanation: <>Cap element HTML únic pot alhora navegar a un URL i disparar una acció que no navega. Necessites de debò un element d'enllaç i un element de botó: la pregunta és com disposar-los perquè no es nin.</>,
+      explanation: <>Cap element HTML únic pot alhora navegar a un URL i disparar una acció que no navega. Necessites de debò un element d'enllaç i un element de botó: la pregunta és com disposar-los perquè no estiguin niats.</>,
     },
     {
       label: <>Depèn</>,
-      explanation: <>La regla de no-nidació és universal: és una regla de l'especificació HTML, no una tria d'estil. La solució stretched-link funciona en qualsevol disseny de targeta, per tant la resposta no depèn del context.</>,
+      explanation: <>La regla de no niar és universal: és una regla de l'especificació HTML, no una tria d'estil. La solució stretched-link funciona en qualsevol disseny de targeta, per tant, la resposta no depèn del context.</>,
     },
   ]}
 />
@@ -290,7 +290,7 @@ Els escenaris següents són els que solen fer ensopegar la gent.
     {
       label: <>Tots dos (com a elements separats)</>,
       correct: true,
-      explanation: <>Un únic element HTML no pot fer dues feines diferents alhora; no pots ser destinació i commutador al mateix temps. Divideix-los en dos controls un al costat de l'altre: el text "Productes" com a <code>{`<a href="/products">`}</code>, i un petit botó <code>{`<button>`}</code> separat amb una doble fletxa al costat per expandir el submenú. Dóna al botó de la doble fletxa <code>{`aria-expanded="false"`}</code> (canvia'l a <code>"true"</code> amb JavaScript quan el submenú estigui obert) perquè els lectors de pantalla anunciïn el seu estat. GOV.UK i la ARIA Authoring Practices Guide ho recomanen.</>,
+      explanation: <>Un únic element HTML no pot fer dues feines diferents alhora; no pots ser destinació i commutador al mateix temps. Divideix-los en dos controls un al costat de l'altre: el text "Productes" com a <code>{`<a href="/products">`}</code>, i un petit botó <code>{`<button>`}</code> separat amb una fletxa al costat per expandir el submenú. Dóna al botó de la fletxa <code>{`aria-expanded="false"`}</code> (canvia'l a <code>"true"</code> amb JavaScript quan el submenú estigui obert) perquè els lectors de pantalla anunciïn el seu estat. GOV.UK i l'ARIA Authoring Practices Guide ho recomanen.</>,
     },
     {
       label: <>Una altra cosa</>,
@@ -339,7 +339,7 @@ Els escenaris següents són els que solen fer ensopegar la gent.
     },
     {
       label: <>Botó</>,
-      explanation: <>Encertat només si el canvi d'idioma és purament al costat del client sense canvi d'URL; la pàgina es manté al mateix URL però el text es torna a renderitzar en un altre idioma. Moltes aplicacions d'una sola pàgina ho fan sense suport d'URL, cosa que significa que els usuaris no poden compartir ni desar com a adreça d'interès un idioma concret. Un error habitual.</>,
+      explanation: <>Encertat només si el canvi d'idioma és purament del costat del client sense canvi d'URL; la pàgina es manté al mateix URL però el text es torna a renderitzar en un altre idioma. Moltes aplicacions d'una sola pàgina ho fan sense suport d'URL, cosa que significa que els usuaris no poden compartir ni desar com a adreça d'interès un idioma concret. Un error habitual.</>,
     },
     {
       label: <>Tots dos (com a elements separats)</>,
@@ -352,7 +352,7 @@ Els escenaris següents són els que solen fer ensopegar la gent.
     {
       label: <>Depèn</>,
       correct: true,
-      explanation: <>L'element correcte depèn de com s'implementi el canvi d'idioma. URL per idioma com <code>/fr</code> → enllaços (perquè l'usuari els pugui compartir i desar com a adreces d'interès). Estat al costat del client sense canvi d'URL → botons (o un <code>{`<select>`}</code>). Moltes SPA escullen la segona via sense afegir mai suport d'URL, cosa que fa que les versions localitzades no es puguin compartir; val la pena comprovar-ho abans de triar.</>,
+      explanation: <>L'element correcte depèn de com s'implementi el canvi d'idioma. URL per idioma com <code>/fr</code> → enllaços (perquè l'usuari els pugui compartir i desar com a adreces d'interès). Estat del costat del client sense canvi d'URL → botons (o un <code>{`<select>`}</code>). Moltes SPA escullen la segona via sense afegir mai suport d'URL, cosa que fa que les versions localitzades no es puguin compartir; val la pena comprovar-ho abans de triar.</>,
     },
   ]}
 />
@@ -367,7 +367,7 @@ Els escenaris següents són els que solen fer ensopegar la gent.
     {
       label: <>Botó</>,
       correct: true,
-      explanation: <>Una acció destructiva hauria d'enviar una sol·licitud <code>DELETE</code> (el mètode HTTP la feina del qual és eliminar un recurs) o una sol·licitud <code>POST</code>. Posa el botó dins d'un <code>{`<form method="post">`}</code>, o dispara la sol·licitud des de JavaScript. El flux típic: l'usuari clica el botó → apareix un diàleg de confirmació que pregunta "Esteu segur?" → l'usuari confirma → s'envia la sol·licitud <code>DELETE</code>. Mantén la confirmació en un diàleg de la mateixa pàgina; enviar l'usuari a una pàgina <code>/confirm-delete</code> separada només per preguntar "esteu segur?" és fricció innecessària.</>,
+      explanation: <>Una acció destructiva hauria d'enviar una sol·licitud <code>DELETE</code> (el mètode HTTP la feina del qual és eliminar un recurs) o una sol·licitud <code>POST</code>. Posa el botó dins d'un <code>{`<form method="post">`}</code>, o dispara la sol·licitud des de JavaScript. El flux típic: l'usuari clica el botó → apareix un diàleg de confirmació que pregunta "Estàs segur?" → l'usuari confirma → s'envia la sol·licitud <code>DELETE</code>. Mantén la confirmació en un diàleg de la mateixa pàgina; enviar l'usuari a una pàgina <code>/confirm-delete</code> separada només per preguntar "estàs segur?" és fricció innecessària.</>,
     },
     {
       label: <>Tots dos (com a elements separats)</>,
