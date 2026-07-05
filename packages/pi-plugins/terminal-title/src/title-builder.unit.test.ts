@@ -401,6 +401,7 @@ await describe({
             },);
             expect(result.length <= MAX_TITLE_LENGTH,).toBe(true,);
             expect(result.startsWith(TITLE_PREFIX,),).toBe(true,);
+            expect(result,).toBe(`${TITLE_PREFIX} ${'a'.repeat(57,)}…`,);
           },
         },),
         it({
