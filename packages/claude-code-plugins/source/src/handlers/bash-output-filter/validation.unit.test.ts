@@ -57,9 +57,9 @@ await describe({
           },
         },),
         it({
-          name: 'does not skip a bare > followed by a pipe',
+          name: 'skips malformed redirect syntax conservatively',
           fn: async () => {
-            expect(shouldSkip('printf hi > | wc',),).toBe(false,);
+            expect(shouldSkip('printf hi > | wc',),).toBe(true,);
           },
         },),
       ],
@@ -87,9 +87,9 @@ await describe({
           },
         },),
         it({
-          name: 'does not skip a << with no body',
+          name: 'skips malformed heredoc syntax conservatively',
           fn: async () => {
-            expect(shouldSkip('runner << ',),).toBe(false,);
+            expect(shouldSkip('runner << ',),).toBe(true,);
           },
         },),
       ],
