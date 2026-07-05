@@ -297,7 +297,11 @@ const { execFileSync, spawn } = await import('node:child_process')
 const { once } = await import('node:events')
 const prefix = `${process.env.MISE_TASK_NAME}:`
 const depth = prefix.split(':').length
-const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8' }))
+// `mise tasks --all --hidden --json` is intentionally large in this monorepo;
+// raise execFileSync's default 1 MiB stdout cap so package fanout keeps working
+// as the task graph grows.
+const MISE_TASKS_JSON_MAX_BUFFER = 16 * 1024 * 1024
+const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8', maxBuffer: MISE_TASKS_JSON_MAX_BUFFER }))
 const children = tasks.map((task) => task.name).filter((name) => name.startsWith(prefix) && name.split(':').length === depth)
 if (children.length === 0) { throw new Error(`no child tasks for ${process.env.MISE_TASK_NAME}`) }
 const processes = children.map((name) => spawn('mise', ['run', name], { stdio: 'inherit' }))
@@ -325,7 +329,11 @@ const { once } = await import('node:events')
 const { availableParallelism } = await import('node:os')
 const taskName = process.env.MISE_TASK_NAME ?? ''
 const suffix = process.env.FANOUT_TASK ?? (taskName.startsWith('//:') ? taskName.slice(3) : taskName)
-const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8' }))
+// `mise tasks --all --hidden --json` is intentionally large in this monorepo;
+// raise execFileSync's default 1 MiB stdout cap so package fanout keeps working
+// as the task graph grows.
+const MISE_TASKS_JSON_MAX_BUFFER = 16 * 1024 * 1024
+const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8', maxBuffer: MISE_TASKS_JSON_MAX_BUFFER }))
 const targets = tasks.map((task) => task.name).filter((name) => name.startsWith('//packages/') && name.slice(name.indexOf(':') + 1) === suffix)
 if (targets.length === 0) { throw new Error(`no package tasks matched ${suffix}`) }
 const limit = suffix.startsWith('watch') ? targets.length : Math.max(1, Math.min(availableParallelism(), targets.length))
@@ -1127,6 +1135,7 @@ _.path = [
   "packages/pi-plugins/spawn/node_modules/.bin",
   "packages/pi-plugins/search-fetch/node_modules/.bin",
   "packages/pi-plugins/morph-compact/node_modules/.bin",
+  "packages/pi-plugins/guardrail/node_modules/.bin",
   "packages/pi-plugins/current-time-context/node_modules/.bin",
   "packages/pi-plugins/auto-mode/node_modules/.bin",
   "packages/pi-plugins/advisor/node_modules/.bin",
