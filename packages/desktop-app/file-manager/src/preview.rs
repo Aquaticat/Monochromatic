@@ -16,6 +16,17 @@
 /// ```
 use std::collections::{HashMap, HashSet};
 
+/// What:     `use std::collections::hash_map::Entry;` imports the map's entry
+///           enum, whose `Vacant`/`Occupied` variants let one lookup both test
+///           for and fill a slot.
+/// Why:      The one-hash-lookup way to insert only when a key is missing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no direct equivalent; TS uses map.has(k) then map.set(k, v)
+/// ```
+use std::collections::hash_map::Entry;
+
 /// What:     `use std::io::Cursor;` wraps an in-memory buffer so it looks like a
 ///           seekable file to the PNG encoder (sibling: a real `File`).
 /// Why:      `DynamicImage::write_to` needs a `Write + Seek` target; a `Cursor`
@@ -293,11 +304,19 @@ impl PreviewCache {
     /// imageFor(paneId, seed): Image { ... }
     /// ```
     pub fn image_for(&mut self, pane_id: u64, seed: u32) -> Result<Image> {
-        // What:     `if !self.encoded.contains_key(&pane_id) { ... }` lazily builds
-        //           and stores the identity PNG on first sight. `&pane_id` lends
-        //           the key to the lookup.
+        // What:     `if let Entry::Vacant(slot) = self.encoded.entry(pane_id) { ... }`
+        //           lazily builds and stores the identity PNG on first sight.
+        //           `.entry(pane_id)` returns an `Entry` enum; the `Vacant`
+        //           variant means no value is stored yet, and `slot` is a handle
+        //           that can fill it. Using the entry API (instead of a
+        //           `contains_key` + `insert` pair) does one hash lookup.
         // Why:      Encode once per pane, then reuse.
-        if !self.encoded.contains_key(&pane_id) {
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (!this.encoded.has(paneId)) this.encoded.set(paneId, encodePng(syntheticRgba(seed)));
+        // ```
+        if let Entry::Vacant(slot) = self.encoded.entry(pane_id) {
             // What:     `let raw = synthetic_rgba(seed);` makes the pixels.
             // Why:      Source data for the one-time encode.
             let raw = synthetic_rgba(seed);
@@ -305,9 +324,9 @@ impl PreviewCache {
             //           propagates any error.
             // Why:      Store the compact identity bytes.
             let png = encode_png(&raw)?;
-            // What:     `self.encoded.insert(pane_id, png);` stores the bytes.
+            // What:     `slot.insert(png);` fills the vacant entry with the bytes.
             // Why:      Identity now resident and cheap.
-            self.encoded.insert(pane_id, png);
+            slot.insert(png);
         }
         // What:     `if let Some(decoded) = self.decoded.get(&pane_id) { return
         //           Ok(decoded.image.clone()); }`. `if let Some(...)` matches the

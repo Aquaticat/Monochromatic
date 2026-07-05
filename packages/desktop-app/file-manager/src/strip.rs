@@ -73,11 +73,19 @@ pub const PANE_GAP_PX: f32 = 6.0;
 pub enum PaneKind {
     /// What:     `Directory { row_total: usize }` is the directory-listing variant.
     /// Why:      A directory pane advertises a huge row count without storing rows.
-    Directory { row_total: usize },
+    Directory {
+        /// What:     `row_total: usize` is how many rows the listing would have.
+        /// Why:      Advertised to `ListView` while the rows stay unmaterialized.
+        row_total: usize,
+    },
     /// What:     `Preview { seed: u32 }` is the file-preview variant.
     /// Why:      A preview pane remembers only a colour seed; the bitmap is decoded
     ///           lazily.
-    Preview { seed: u32 },
+    Preview {
+        /// What:     `seed: u32` chooses the synthetic image's colours.
+        /// Why:      Distinct pixels per pane without storing any bitmap.
+        seed: u32,
+    },
 }
 
 /// What:     `pub struct Pane` is a record with a stable `id` (a `u64`, sibling
@@ -255,11 +263,13 @@ pub fn synthetic_strip() -> Strip {
         //           next pseudo-random value.
         // Why:      Fresh randomness for this column's shape.
         state = next_lcg(state);
-        // What:     `let tall = column_index % 7 == 0;` marks every seventh
-        //           column as "tall". `%` is remainder; `==` is equality.
+        // What:     `let tall = column_index.is_multiple_of(7);` marks every
+        //           seventh column as "tall". `.is_multiple_of(7)` returns true
+        //           when the index divides evenly by 7 (the modern spelling of
+        //           `column_index % 7 == 0`).
         // Why:      Tall columns exceed the viewport height, so vertical
         //           windowing has something to prune.
-        let tall = column_index % 7 == 0;
+        let tall = column_index.is_multiple_of(7);
         // What:     `let pane_count = if tall { ... } else { ... };` picks a pane
         //           count. `(state >> 16) as usize % N` takes some LCG bits,
         //           narrows them to `usize`, and maps into a range.
@@ -279,10 +289,11 @@ pub fn synthetic_strip() -> Strip {
             // What:     Advance the LCG again for this pane's traits.
             // Why:      Independent randomness per pane.
             state = next_lcg(state);
-            // What:     `let is_preview = (state >> 20) % 4 == 0;` makes about one
-            //           pane in four a preview.
+            // What:     `let is_preview = (state >> 20).is_multiple_of(4);` makes
+            //           about one pane in four a preview. `>>` shifts LCG bits
+            //           down; `.is_multiple_of(4)` is `... % 4 == 0`.
             // Why:      Mix directory and preview panes so both paths are tested.
-            let is_preview = (state >> 20) % 4 == 0;
+            let is_preview = (state >> 20).is_multiple_of(4);
             // What:     `let kind = if is_preview { ... } else { ... };` builds the
             //           variant. `PaneKind::Preview { seed: ... }` and
             //           `PaneKind::Directory { row_total: ... }` are the tagged
@@ -300,11 +311,12 @@ pub fn synthetic_strip() -> Strip {
                 // Why:      The seed drives the synthetic image colour.
                 PaneKind::Preview { seed: (state >> 8) as u32 }
             } else {
-                // What:     `let huge = (column_index + pane_index) % 11 == 0;`
-                //           marks roughly every eleventh directory pane as giant.
+                // What:     `let huge = (column_index + pane_index)
+                //           .is_multiple_of(11);` marks roughly every eleventh
+                //           directory pane as giant (`... % 11 == 0`).
                 // Why:      A few 100k-row panes make the virtualization headline
                 //           number dramatic.
-                let huge = (column_index + pane_index) % 11 == 0;
+                let huge = (column_index + pane_index).is_multiple_of(11);
                 // What:     `let row_total = if huge { 100_000 } else { 50 + ... };`
                 //           picks the advertised row count.
                 // Why:      Most panes are moderate; a few are enormous.
