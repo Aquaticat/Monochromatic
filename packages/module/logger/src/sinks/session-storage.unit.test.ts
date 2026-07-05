@@ -4,7 +4,97 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { createSessionStorageSink, } from './session-storage.ts';
+import { detectSessionStorageQuotaChars, } from './session-storage-quota.ts';
 import type { LogRecord, } from '../types.ts';
+
+/**
+ * Swaps `globalThis.sessionStorage` for `fake`, restoring the real backend when
+ * the returned guard leaves `using` scope, so a fake never leaks into a later
+ * test in the serial suite.
+ *
+ * @param fake - Storage stand-in to install for the duration of the scope.
+ *
+ * @returns Disposable that restores the original `sessionStorage` on exit.
+ */
+function installFakeStorage(fake: Storage,): Disposable {
+  const original = globalThis.sessionStorage;
+  globalThis.sessionStorage = fake;
+  return {
+    [Symbol.dispose](): void {
+      globalThis.sessionStorage = original;
+    },
+  };
+}
+
+/**
+ * Builds an in-memory `Storage` stand-in that rejects a `setItem` once stored
+ * value lengths would exceed `byteBudget`, throwing the same
+ * `QuotaExceededError` a real backend raises. Records every `removeItem` under
+ * `removed` so a test can assert exactly which keys the sink evicted.
+ *
+ * @param byteBudget - Total value length the store accepts before overflowing.
+ *
+ * @returns Storage stand-in exposing the evicted-key log as `removed`.
+ */
+function createQuotaStorage(byteBudget: number,): Storage & { readonly removed: string[]; } {
+  const store = new Map<string, string>();
+  const removed: string[] = [];
+  const used = { bytes: 0, };
+  return {
+    removed,
+    clear(): void {
+      store.clear();
+      used.bytes = 0;
+    },
+    getItem(key: string,) {
+      return store.get(key,) ?? null;
+    },
+    setItem(key: string, value: string,): void {
+      const priorLength = store.get(key,)?.length ?? 0;
+      const nextBytes = (used.bytes - priorLength) + value.length;
+      if (nextBytes > byteBudget)
+        throw new DOMException('exceeded the quota', 'QuotaExceededError',);
+      store.set(key, value,);
+      used.bytes = nextBytes;
+    },
+    removeItem(key: string,): void {
+      removed.push(key,);
+      const priorLength = store.get(key,)?.length ?? 0;
+      if (store.delete(key,))
+        used.bytes -= priorLength;
+    },
+  } as unknown as Storage & { readonly removed: string[]; };
+}
+
+/**
+ * Builds an in-memory `Storage` stand-in whose first `setItem` succeeds and
+ * every later one throws a non-quota error, so a test can prove the sink does
+ * not evict for failures other than a quota overflow. Records `removeItem`
+ * calls under `removed`.
+ *
+ * @returns Storage stand-in exposing the evicted-key log as `removed`.
+ */
+function createFlakyStorage(): Storage & { readonly removed: string[]; } {
+  const store = new Map<string, string>();
+  const removed: string[] = [];
+  const calls = { setItem: 0, };
+  return {
+    removed,
+    getItem(key: string,) {
+      return store.get(key,) ?? null;
+    },
+    setItem(key: string, value: string,): void {
+      calls.setItem += 1;
+      if (calls.setItem > 1)
+        throw new Error('sessionStorage disabled mid-session',);
+      store.set(key, value,);
+    },
+    removeItem(key: string,): void {
+      removed.push(key,);
+      store.delete(key,);
+    },
+  } as unknown as Storage & { readonly removed: string[]; };
+}
 
 // Node exposes an in-memory Web Storage `sessionStorage` (on by default in the
 // v26 the test runner uses), so the sink genuinely works under node and this
@@ -63,6 +153,152 @@ await describe({
         expect(globalThis.sessionStorage
           .getItem('monochromatic.log.1',),)
           .toBe(JSON.stringify(second,),);
+      },
+    },),
+
+    it({
+      name: 'keeps only its newest entries against the real backend, evicting oldest as it writes',
+      fn: async () => {
+        globalThis.sessionStorage
+          .clear();
+        const sink = createSessionStorageSink();
+        await sink.verify();
+
+        // Each record's message is about a megabyte; twelve of them exceed the
+        // half-quota cap several times over, so the sink evicts oldest-first and
+        // the earliest slot is gone while the newest survives.
+        const bulk = 'x'.repeat(1_024 * 1_024,);
+        const writeCount = 12;
+        await Promise.all(
+          Array.from(
+            { length: writeCount, },
+            function writeBulk(_unused, index,) {
+              return sink.write({ level: 'info', message: bulk, timestamp: index, },);
+            },
+          ),
+        );
+
+        // The newest slot always lands; the very first was reclaimed long ago.
+        expect(
+          globalThis.sessionStorage
+            .getItem(`monochromatic.log.${writeCount - 1}`,) !== null,
+        )
+          .toBe(true,);
+        expect(
+          globalThis.sessionStorage
+            .getItem('monochromatic.log.0',) !== null,
+        )
+          .toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'caps its own footprint at half the runtime quota, proactively evicting oldest',
+      fn: async () => {
+        /**
+         * Half the detected runtime quota: the footprint ceiling the sink enforces.
+         */
+        const capChars = detectSessionStorageQuotaChars() / 2;
+        // A fake store far larger than the cap, so only the proactive half-quota
+        // cap (never a real overflow) drives the eviction under test.
+        const fake = createQuotaStorage(capChars * 10,);
+        using _restore = installFakeStorage(fake,);
+        const sink = createSessionStorageSink();
+
+        // Each record is about 40% of the cap: two fit under half the quota, but
+        // the third would breach it, so the oldest is dropped first.
+        const chunk = 'y'.repeat(Math.floor(capChars * 0.4,),);
+        await sink.write({ level: 'info', message: chunk, timestamp: 0, },);
+        await sink.write({ level: 'info', message: chunk, timestamp: 1, },);
+        await sink.write({ level: 'info', message: chunk, timestamp: 2, },);
+
+        // Exactly the oldest slot was proactively reclaimed; the two newest stay.
+        expect(fake.removed
+          .join(',',),)
+          .toBe('monochromatic.log.0',);
+        expect(
+          globalThis.sessionStorage
+            .getItem('monochromatic.log.0',) !== null,
+        )
+          .toBe(false,);
+        expect(
+          globalThis.sessionStorage
+            .getItem('monochromatic.log.2',) !== null,
+        )
+          .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'leaves foreign entries intact and drops the write when it has never written',
+      fn: async () => {
+        // A tiny fake quota already filled by another origin consumer's key, so
+        // the sink's first-ever write cannot fit.
+        const fake = createQuotaStorage(64,);
+        using _restore = installFakeStorage(fake,);
+        globalThis.sessionStorage
+          .setItem('foreign', 'F'.repeat(64,),);
+
+        const sink = createSessionStorageSink();
+        await sink.write({ level: 'info', message: 'hello', timestamp: 0, },);
+
+        // Never having landed a write, the sink must not reclaim foreign data.
+        expect(fake.removed.length,)
+          .toBe(0,);
+        expect(
+          globalThis.sessionStorage
+            .getItem('foreign',) !== null,
+        )
+          .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'evicts every owned entry then gives up for a record larger than the quota',
+      fn: async () => {
+        const budget = 512;
+        const fake = createQuotaStorage(budget,);
+        using _restore = installFakeStorage(fake,);
+        const sink = createSessionStorageSink();
+
+        // Two small records fit within budget.
+        await sink.write({ level: 'info', message: 'a', timestamp: 0, },);
+        await sink.write({ level: 'info', message: 'b', timestamp: 1, },);
+
+        // A record larger than the whole budget can never fit; the write must
+        // evict both owned entries, then report and return rather than loop.
+        await sink.write({ level: 'info', message: 'Z'.repeat(budget * 2,), timestamp: 2, },);
+
+        expect(fake.removed
+          .join(',',),)
+          .toBe('monochromatic.log.0,monochromatic.log.1',);
+        expect(
+          globalThis.sessionStorage
+            .getItem('monochromatic.log.2',) !== null,
+        )
+          .toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'does not evict on a non-quota write failure',
+      fn: async () => {
+        const fake = createFlakyStorage();
+        using _restore = installFakeStorage(fake,);
+        const sink = createSessionStorageSink();
+
+        // First write lands; the second fails with a non-quota error.
+        await sink.write({ level: 'info', message: 'one', timestamp: 0, },);
+        await sink.write({ level: 'info', message: 'two', timestamp: 1, },);
+
+        // A non-quota failure is reported without touching earlier entries.
+        expect(fake.removed.length,)
+          .toBe(0,);
+        expect(
+          globalThis.sessionStorage
+            .getItem('monochromatic.log.0',) !== null,
+        )
+          .toBe(true,);
       },
     },),
   ],

@@ -106,9 +106,14 @@ still being verified are replayed to that sink when it becomes available.
    appends JSONL records to Origin Private File System;
   keeps a `FileSystemWritableFileStream` open for the session
 - **sessionStorage**:
-   browser only;
+   available wherever `globalThis.sessionStorage` exists (browsers, Node, Deno);
    stores JSONL records under `monochromatic.log.{n}` keys
-  with an auto-incrementing counter
+  with an auto-incrementing counter;
+   caps its own footprint at half the runtime's default sessionStorage quota
+  (a measured per-runtime heuristic: 5 MiB on Node and the browser engines,
+  10 MiB on Deno),
+   evicting its oldest records first and reclaiming further space reactively
+  if the real store still overflows
 - **noop**:
    discards all records;
    a stand-in that disables logging without removing log calls
