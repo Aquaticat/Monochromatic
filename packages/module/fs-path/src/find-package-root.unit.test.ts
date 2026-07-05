@@ -17,8 +17,8 @@ import {
 import {
   findPackageRoot,
   findPackageRootCached,
-} from './find-package-root.ts';
-import { isAbsolute, } from './index.ts';
+  isAbsolute,
+} from '@monochromatic-dev/module-fs-path';
 
 /** Name in this package's own `package.json`; used as the walk target. */
 const OWN_PACKAGE_NAME = '@monochromatic-dev/module-fs-path';

@@ -31,8 +31,8 @@ import {
   findMiseMonorepoRootCached,
   findPnpmWorkspaceRoot,
   findPnpmWorkspaceRootCached,
-} from './find-monorepo-root.ts';
-import { isAbsolute, } from './index.ts';
+  isAbsolute,
+} from '@monochromatic-dev/module-fs-path';
 
 //region Fixture helpers
 

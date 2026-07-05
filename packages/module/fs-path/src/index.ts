@@ -27,6 +27,12 @@ export {
   ensureFile,
   ensurePath,
 } from './ensure.ts';
+export {
+  dirnameFallback,
+  joinFallback,
+  normalize,
+  resolveFallback,
+} from './fallbacks.ts';
 /* oxlint-disable import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMiseMonorepoRoot runs */
 export {
   findGitRepoRoot,

@@ -15,22 +15,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  dirnameFallback,
-  joinFallback,
-  normalize,
-  resolveFallback,
-} from './fallbacks.ts';
-import {
   dirname,
+  dirnameFallback,
   isAbsolute,
   join,
+  joinFallback,
+  normalize,
   resolve,
+  resolveFallback,
   sep,
-} from '@monochromatic-dev/module-fs-path';
-import {
   trimLeadingSlash,
   trimTrailingSlash,
-} from './trim.ts';
+} from '@monochromatic-dev/module-fs-path';
 
 await describe({
   name: 'path-ops',
