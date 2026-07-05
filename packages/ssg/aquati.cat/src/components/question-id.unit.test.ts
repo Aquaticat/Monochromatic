@@ -14,12 +14,12 @@ import { fingerprint32, } from 'farmhashjs';
 import type { SafeHtml, } from '../lib/jsx-to-html.ts';
 
 import {
-  QuestionCheckbox,
+  QuestionCheckbox as renderQuestionCheckbox,
   css as checkboxCss,
   type QuestionOption as CheckboxOption,
 } from './question-checkbox.ts';
 import {
-  QuestionRadio,
+  QuestionRadio as renderQuestionRadio,
   css as radioCss,
   type QuestionOption as RadioOption,
 } from './question-radio.ts';
@@ -261,23 +261,23 @@ function expectedQuestionId(question: HashableQuestion,): string {
  *
  * @example
  * ```ts
- * captureRenderError(() => QuestionRadio({ scenario: 'x', options: [] }));
+ * captureRenderError(() => renderQuestionRadio({ scenario: 'x', options: [] }));
  * ```
  */
 function captureRenderError(render: () => SafeHtml,): Error {
   /**
-   * Error thrown by the render call.
+   * Value thrown by the render call, or the returned HTML if no error occurred.
    */
-  let caught: unknown;
+  const caught = (function catchRenderError(): unknown {
+    try {
+      return render();
+    }
+    catch (error) {
+      return error;
+    }
+  })();
 
-  try {
-    render();
-  }
-  catch (error) {
-    caught = error;
-  }
-
-  if (caught instanceof Error)
+  if (Error.isError(caught,))
     return caught;
 
   throw new Error('Expected component render to throw an Error instance.',);
@@ -301,10 +301,10 @@ await describe({
         /**
          * Rendered radio question HTML.
          */
-        const html = QuestionRadio({
+        const { html, } = renderQuestionRadio({
           scenario: RADIO_SCENARIO,
           options: RADIO_OPTIONS,
-        },).html;
+        },);
 
         expect(html,).toContain(`name="q-${expectedId}"`,);
         expect(html,).toContain(`id="q-${expectedId}-0"`,);
@@ -323,10 +323,10 @@ await describe({
         /**
          * Rendered checkbox question HTML.
          */
-        const html = QuestionCheckbox({
+        const { html, } = renderQuestionCheckbox({
           scenario: CHECKBOX_SCENARIO,
           options: CHECKBOX_OPTIONS,
-        },).html;
+        },);
 
         expect(html,).toContain(`name="q-${expectedId}"`,);
         expect(html,).toContain(`id="q-${expectedId}-0"`,);
@@ -345,17 +345,17 @@ await describe({
         /**
          * Original checkbox question HTML.
          */
-        const originalHtml = QuestionCheckbox({
+        const { html: originalHtml, } = renderQuestionCheckbox({
           scenario: CHECKBOX_SCENARIO,
           options: CHECKBOX_OPTIONS,
-        },).html;
+        },);
         /**
          * Checkbox question HTML after explanation-only edits.
          */
-        const rewrittenHtml = QuestionCheckbox({
+        const { html: rewrittenHtml, } = renderQuestionCheckbox({
           scenario: CHECKBOX_SCENARIO,
           options: CHECKBOX_OPTIONS_WITH_REWRITTEN_EXPLANATIONS,
-        },).html;
+        },);
 
         expect(originalHtml,).toContain(`name="q-${expectedId}"`,);
         expect(rewrittenHtml,).toContain(`name="q-${expectedId}"`,);
@@ -368,7 +368,7 @@ await describe({
          * Error for a radio question with too few options.
          */
         const tooFewError = captureRenderError(function renderTooFewRadioOptions(): SafeHtml {
-          return QuestionRadio({
+          return renderQuestionRadio({
             scenario: RADIO_SCENARIO,
             options: TOO_FEW_RADIO_OPTIONS,
           },);
@@ -377,7 +377,7 @@ await describe({
          * Error for a radio question without exactly one correct option.
          */
         const noCorrectError = captureRenderError(function renderNoCorrectRadioOptions(): SafeHtml {
-          return QuestionRadio({
+          return renderQuestionRadio({
             scenario: RADIO_SCENARIO,
             options: NO_CORRECT_RADIO_OPTIONS,
           },);
@@ -394,7 +394,7 @@ await describe({
          * Error for a checkbox question with too few options.
          */
         const tooFewError = captureRenderError(function renderTooFewCheckboxOptions(): SafeHtml {
-          return QuestionCheckbox({
+          return renderQuestionCheckbox({
             scenario: CHECKBOX_SCENARIO,
             options: TOO_FEW_CHECKBOX_OPTIONS,
           },);
@@ -403,7 +403,7 @@ await describe({
          * Error for a checkbox question without any correct options.
          */
         const noCorrectError = captureRenderError(function renderNoCorrectCheckboxOptions(): SafeHtml {
-          return QuestionCheckbox({
+          return renderQuestionCheckbox({
             scenario: CHECKBOX_SCENARIO,
             options: NO_CORRECT_CHECKBOX_OPTIONS,
           },);
