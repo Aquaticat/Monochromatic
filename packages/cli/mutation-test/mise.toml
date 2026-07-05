@@ -37,7 +37,7 @@ extends = "test:unit"
 
 [tasks.'test:integration']
 description = "Run the built CLI against the fixture package in real podman containers and assert report expectations"
-run = "node src/integration-check.ts"
+run = "node packages/cli/mutation-test/src/integration-check.ts"
 dir = "{{config_root}}/../../.."
 
 [tasks.buildAndTest]
