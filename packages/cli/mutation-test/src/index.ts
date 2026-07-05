@@ -1,13 +1,42 @@
 /**
  * Library surface of the oxc-based container-native mutation tester.
  *
- * Exports grow as engine, container runner, and host orchestrator land;
- * see README for the architecture and the design record link.
- *
  * @example
  * ```ts
- * import * as mutationTest from '@monochromatic-dev/cli-mutation-test/ts';
+ * import { enumerateMutants } from '@monochromatic-dev/cli-mutation-test/ts';
  * ```
  */
 
-export {};
+export {
+  enumerateMutants,
+  type EnumerationResult,
+  type IgnoredMutant,
+} from './engine/enumerate.ts';
+export {
+  lineStarts,
+  positionAt,
+} from './engine/lines.ts';
+export { mutantId, } from './engine/mutant-id.ts';
+export { findOperatorToken, } from './engine/operator-token.ts';
+export {
+  allOperators,
+  type OperatorFn,
+} from './engine/operators/index.ts';
+export { spliceReplacement, } from './engine/splice.ts';
+export {
+  suppressionReason,
+  suppressionRules,
+  type OxcComment,
+  type SuppressionRule,
+} from './engine/suppression.ts';
+export type {
+  EstreeNode,
+  Mutant,
+  MutantStatus,
+  OperatorName,
+  Replacement,
+} from './engine/types.ts';
+export {
+  isEstreeNode,
+  walk,
+} from './engine/walk.ts';
