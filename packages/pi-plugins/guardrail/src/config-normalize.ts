@@ -114,11 +114,11 @@ function normalizeAdvancedConfig(
    * Optional blockBunTest scalar.
    */
   const blockBunTestValue = value.blockBunTest;
-  assertOptionalBoolean({
-    value: blockBunTestValue,
-    configPath,
-    fieldName: 'blockBunTest',
-  },);
+  if ((blockBunTestValue !== undefined) && ((typeof blockBunTestValue) !== 'boolean')) {
+    throw new Error(
+      `${basename(configPath,)} field blockBunTest must be boolean when present`,
+    );
+  }
 
   /**
    * Optional advanced path rule map.
@@ -141,9 +141,12 @@ function normalizeAdvancedConfig(
       fieldName: 'pathRules',
     },);
 
+  if (blockBunTestValue === undefined)
+    return { pathRules, };
+
   return {
     pathRules,
-    ...(blockBunTestValue === undefined ? {} : { blockBunTest: blockBunTestValue, }),
+    blockBunTest: blockBunTestValue,
   };
 }
 
@@ -181,33 +184,6 @@ function assertOnlyAdvancedKeys(
   if (unknownKeys.length > 0) {
     throw new Error(
       `${basename(configPath,)} has unknown advanced config keys: ${unknownKeys.join(', ',)}`,
-    );
-  }
-}
-
-/**
- * Throws when optional field is present and not boolean.
- *
- * @param value - field value
- *
- * @param configPath - config path used in diagnostics
- *
- * @param fieldName - field name used in diagnostics
- */
-function assertOptionalBoolean(
-  {
-    value,
-    configPath,
-    fieldName,
-  }: {
-    readonly value: unknown;
-    readonly configPath: string;
-    readonly fieldName: string;
-  },
-): asserts value is boolean | undefined {
-  if ((value !== undefined) && ((typeof value) !== 'boolean')) {
-    throw new Error(
-      `${basename(configPath,)} field ${fieldName} must be boolean when present`,
     );
   }
 }
