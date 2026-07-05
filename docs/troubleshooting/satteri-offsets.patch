@@ -1,0 +1,90 @@
+diff --git a/crates/satteri-arena/src/line_index.rs b/crates/satteri-arena/src/line_index.rs
+index 0add588..301dbfc 100644
+--- a/crates/satteri-arena/src/line_index.rs
++++ b/crates/satteri-arena/src/line_index.rs
+@@ -2,10 +2,10 @@
+ /// 0-based code-point offsets.
+ ///
+ /// Built once from the source text; lookups are O(log n) via binary search.
+-/// Columns and offsets are counted as Unicode code points (matching the
+-/// CommonMark `position` convention used by remark/micromark), not bytes —
+-/// necessary for multi-byte chars to land at the positions the reference
+-/// parsers report.
++/// Columns and offsets are counted as UTF-16 code units (matching the
++/// `position` convention remark/micromark actually use: indices into the JS
++/// source string), not bytes and not code points — necessary for multi-byte
++/// and astral chars to land at the positions the reference parsers report.
+ pub struct LineIndex<'a> {
+     source: &'a [u8],
+     /// `line_offsets[i]` is the byte offset where line `i+1` starts.
+@@ -57,7 +57,7 @@ impl<'a> LineIndex<'a> {
+             cp_count += if is_ascii {
+                 line.len() as u32
+             } else {
+-                code_point_count_bytes(line)
++                utf16_unit_count_bytes(line)
+             };
+             offsets.push(nl_idx as u32 + 1);
+             cp_offsets.push(cp_count);
+@@ -101,7 +101,7 @@ impl LineIndexCursor<'_, '_> {
+         let col = if self.index.all_ascii || self.index.line_is_ascii[idx] {
+             offset - line_start + 1
+         } else {
+-            code_point_count_bytes(&self.index.source[line_start as usize..offset as usize]) + 1
++            utf16_unit_count_bytes(&self.index.source[line_start as usize..offset as usize]) + 1
+         };
+         (idx as u32 + 1, col)
+     }
+@@ -121,7 +121,7 @@ impl LineIndexCursor<'_, '_> {
+             line_cp + (byte_offset - line_start)
+         } else {
+             line_cp
+-                + code_point_count_bytes(
++                + utf16_unit_count_bytes(
+                     &self.index.source[line_start as usize..byte_offset as usize],
+                 )
+         }
+@@ -149,11 +149,19 @@ impl LineIndexCursor<'_, '_> {
+ 
+ /// Count Unicode code points in a byte slice. UTF-8 continuation bytes
+ /// match `0b10xxxxxx`; every other byte starts a code point.
+-fn code_point_count_bytes(bytes: &[u8]) -> u32 {
++/// Count UTF-16 code units in a UTF-8 byte slice: one per code point, plus an
++/// extra for each 4-byte (supplementary-plane) sequence, which encodes as a
++/// surrogate pair. remark/micromark report `position` offsets and columns as
++/// UTF-16 code-unit indices into the JS source string, so this is the unit
++/// Sätteri must match; counting code points diverges on astral characters.
++fn utf16_unit_count_bytes(bytes: &[u8]) -> u32 {
+     let mut count: u32 = 0;
+     for &b in bytes {
+         if (b & 0xC0) != 0x80 {
+             count += 1;
++            if b >= 0xF0 {
++                count += 1;
++            }
+         }
+     }
+     count
+@@ -227,8 +235,21 @@ mod tests {
+         assert_eq!(c.offset_to_line_col(0), (1, 1)); // a
+         assert_eq!(c.offset_to_line_col(2), (1, 3)); // c
+         assert_eq!(c.offset_to_line_col(4), (2, 1)); // x
+-        assert_eq!(c.offset_to_line_col(9), (2, 3)); // y (🪐 is 4 bytes, 1 cp)
++        assert_eq!(c.offset_to_line_col(9), (2, 4)); // y (🪐 is 4 bytes = 2 UTF-16 units)
+         assert_eq!(c.offset_to_line_col(11), (3, 1)); // d
+         assert_eq!(c.offset_to_line_col(13), (3, 3)); // f
+     }
++
++    #[test]
++    fn astral_offset_and_column_are_utf16() {
++        // 🪐 (U+1FA90) is 4 UTF-8 bytes and one code point, but two UTF-16 code
++        // units (a surrogate pair). remark reports the `b` after it at offset 3
++        // and column 4, not offset/column 2. Pre-fix (code-point counting) this
++        // returned 2; post-fix it must return the UTF-16 values.
++        let idx = LineIndex::from_source("🪐b");
++        let mut c = idx.cursor();
++        // `b` starts at byte 4 (🪐 is 4 bytes).
++        assert_eq!(c.byte_to_cp_offset(4), 2); // UTF-16 offset of `b`
++        assert_eq!(c.offset_to_line_col(4), (1, 3)); // UTF-16 column of `b`
++    }
+ }
