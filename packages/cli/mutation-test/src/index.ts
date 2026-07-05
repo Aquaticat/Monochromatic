@@ -42,6 +42,35 @@ export {
 } from './engine/walk.ts';
 export { effectiveTimeoutMs, } from './container/mutant-loop.ts';
 export {
+  parseCliOptions,
+  type CliOptions,
+} from './host/cli-options.ts';
+export {
+  chunk,
+  composeReshard,
+  composeShards,
+  type MutantGroup,
+} from './host/shards.ts';
+export { sanitizeShardTag, } from './host/shard-tag.ts';
+export {
+  selectSources,
+  selectTests,
+  stemsRelated,
+} from './host/selection.ts';
+export {
+  buildRunReport,
+  formatTerminalSummary,
+  RUN_REPORT_SCHEMA_VERSION,
+  type RunMutantRecord,
+  type RunReport,
+  type RunTotals,
+} from './host/report.ts';
+export type {
+  FinalMutantResult,
+  OrchestrateOptions,
+  RunOutcome,
+} from './host/orchestrate-types.ts';
+export {
   SHARD_SCHEMA_VERSION,
   type ShardBaseline,
   type ShardManifest,
