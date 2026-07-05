@@ -57,10 +57,16 @@ Update this file whenever a milestone lands or a decision changes.
       deterministic ids, work-stack walker, 15 families, mutation-test-disable-next-line/-file
       directives. Unit tests pass, oxlint 0/0, types clean. fs-path enumeration: 523 mutants
       vs Stryker 439 (superset; empty.ts exact match 41=41).
-- [ ] Container-side shard runner: worktree, baseline (tests green + tsgo clean), per-mutant loop, shard report.
-- [ ] Host orchestrator: CLI, selection, sharding, bounded podman spawns, bisection re-runs, confirmation, aggregation.
-- [ ] Runtime image moved/adapted; root `mise.toml` PATH updated.
-- [ ] Fixture package + end-to-end integration test.
+- [x] Container-side shard runner (worktree port, baseline gates, per-mutant loop with
+      process-group kill and await-using restore, taint semantics).
+- [x] Host orchestrator (selection incl. integration-test default, sharding, bisection re-runs,
+      always-on confirmation, red baseline fails only its shard, test-less files short-circuit
+      to confirmed survivors, native report without score, CLI with dry-run).
+- [x] Runtime image module (content-hash tag over pnpm-lock + Containerfile, podman build reuse);
+      root `mise.toml` PATH update folded into the deletion task.
+- [x] Fixture sidecar `packages/cli/mutation-test.fixture` (naming rule: fixture packages live in
+      the same category under the same name plus `.fixture` suffix, NOT packages/test-fixture/)
+      plus `test:integration` mise task asserting kill/survive/short-circuit expectations.
 - [ ] Verification: new tool on `async-time`, parity comparison vs reference, tsgo cost re-measured.
 - [ ] Old package deleted, catalog purged, lockfile regenerated via pnpm, troubleshooting docs reviewed.
 - [ ] Issue 247 closed with summary comment.

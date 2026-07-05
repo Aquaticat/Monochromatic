@@ -35,9 +35,52 @@ Each mutant is checked with `tsgo --noEmit --incremental --project` inside the
 shard container (warm `.tsbuildinfo` from the baseline check); non-compiling
 mutants are reported as compileError and skip test execution.
 
-## Status
+## Usage
 
-Under construction; design record:
+```bash
+# Full run against one package (report JSON lands beside the cwd by default)
+mutation-test --package packages/module/fs-path
+
+# Enumerate mutants and selected tests without any containers
+mutation-test --package packages/module/fs-path --dry-run
+
+# Narrow to specific source files (positional, package-relative)
+mutation-test --package packages/module/fs-path src/trim.ts
+```
+
+Flags: `--full-suite` (every unit test instead of stem-related selection),
+`--shard-size` (default 16), `--containers` (concurrent shard containers,
+default 2), `--memory`/`--cpus`/`--pids-limit`/`--work-tmpfs-size`/
+`--session-timeout-seconds` (per-container caps), `--timeout-ms` (per-mutant
+floor) and `--timeout-factor` (multiple of baseline test time),
+`--selinux-relabel`, `--skip-image-build`, `--report <file>`.
+
+Test selection: `<stem>.unit.test.ts` plus dot-sidecars
+(`<stem>.regression.unit.test.ts`) plus package-level
+`src/integration.unit.test.ts` when present. Files no test selects skip
+containers entirely; their mutants report as confirmed survivors.
+
+## Suppression
+
+```ts
+// mutation-test-disable-next-line string, boolean -- filler noise
+export const label = 'exact copy matters here';
+```
+
+`mutation-test-disable-next-line [families] [-- reason]` suppresses the next
+line; `mutation-test-disable-file [families] [-- reason]` suppresses the whole
+file. Bare directives suppress every family; unknown family names throw at
+enumeration. Suppressed mutants land in the report's `ignored` bucket with
+their reasons.
+
+Families: arithmetic, equality, logical, conditional, boolean, string, unary,
+update, array, object, optional-chaining, block, method, arrow, regex.
+The regex family is a reduced-scope token mutator (quantifier swaps, anchor
+drops, escape-class negations), not a weapon-regex port.
+
+## Design record
+
 <https://github.com/Aquaticat/Monochromatic/issues/247#issuecomment-4887670850>
 (one correction: oxc-parser JS bindings return UTF-16 string offsets, so the
 splicer works on JS string slices, not Buffers).
+Integration expectations live in `packages/cli/mutation-test.fixture`.
