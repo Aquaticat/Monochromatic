@@ -498,11 +498,28 @@ PASSED on Linux.
   resolved as a product decision during the spike to move every column at once
   through one shared vertical offset (the tallest column sets the range),
   rather than scrolling only the focused column.
+- Horizontal scroll smoothness:
+  the first cut rebuilt the whole columns model on every scroll event, which
+  stuttered on slow scroll, showed stale frames on fast scroll, and (once the
+  rebuild moved to a frame timer) capped a mousewheel gesture at the first column
+  because replacing the model mid-scroll fought the Flickable's own viewport-x.
+  The fix is a persistent Slint `VecModel` mutated incrementally through
+  `Repeater`/`ModelNotify`:
+  a horizontal scroll slides only the delta columns in and out (insert/remove),
+  vertical scroll and active changes rewrite in-window rows in place
+  (`set_row_data`),
+  and a landed decode refreshes only its owning column.
+  The model is set on the window once and never replaced,
+  so the Flickable's scroll is never disturbed.
+  Column build churn dropped from thousands of rebuilds per session to about a
+  dozen, and the author confirmed horizontal scrolling is smooth and holds far
+  positions.
 - Chosen action:
   continue with Slint;
   no fallback triggered.
   The background-decode worker built here is the spike-scale seed of the
-  file-watching-and-async milestone's cancellable preview jobs.
+  file-watching-and-async milestone's cancellable preview jobs,
+  and the incremental-model approach is the pattern the production strip should use.
 - Not covered by this spike:
   the context-menu spike was not folded in yet,
   and the drag-and-drop and native default-manager spikes are still pending.

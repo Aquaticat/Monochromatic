@@ -63,6 +63,23 @@ Vertical scrolling moves every column at once through one shared vertical offset
 Keyboard focus on the active pane survives pane recycling:
  the active pane re-asserts focus from Rust-held identity when it is re-instantiated after scrolling out and back.
 
+## Smooth horizontal scrolling: one persistent model, mutated incrementally
+
+The columns are one persistent Slint `VecModel` that is set on the window once and
+never replaced.
+Every change mutates it through `Repeater`/`ModelNotify` instead of rebuilding it:
+
+- a horizontal scroll slides only the delta columns in and out (`insert`/`remove`),
+ so staying columns and their `ListView`s are never rebuilt;
+- vertical scroll and active changes rewrite the in-window rows in place (`set_row_data`);
+- a landed decode refreshes only its owning column, flushed once scrolling settles.
+
+Because the model is never replaced, the `Flickable`'s scroll position is never
+disturbed, so mousewheel and drag scroll the full strip freely and hold far
+positions.
+Replacing the whole model on each scroll event (the first attempt) both churned
+the `Repeater` and fought the `Flickable`'s own scroll, capping the gesture.
+
 ## Preview decode is off the UI thread
 
 Preview decode is the one per-scroll cost heavy enough to drop a frame,
@@ -95,9 +112,12 @@ The remaining spike simplifications are the synthetic pixel data and the single 
 - `src/decode_worker.rs`:
    the background decode thread and its request/result message types.
 - `src/view.rs`:
-   the publish step that turns the strip plus scroll state into the bounded `ColumnView` models.
+   the per-column view builder (one `ColumnView` with its own panes model).
 - `src/controller.rs`:
-   the mutable app state and the scroll/keyboard handlers.
+   the mutable app state, the persistent columns model, and the scroll/keyboard handlers.
+- `src/model_sync.rs`:
+   the incremental model-mutation mechanics (slide columns in/out, refresh rows in place, count residents),
+ split from `controller.rs` for the line budget.
 - `src/app.rs`:
    the backend install,
  callback wiring,
