@@ -67,7 +67,13 @@ Update this file whenever a milestone lands or a decision changes.
 - [x] Fixture sidecar `packages/cli/mutation-test.fixture` (naming rule: fixture packages live in
       the same category under the same name plus `.fixture` suffix, NOT packages/test-fixture/)
       plus `test:integration` mise task asserting kill/survive/short-circuit expectations.
-- [ ] Verification: new tool on `async-time`, parity comparison vs reference, tsgo cost re-measured.
+- [x] Verification on `fs-path` (not async-time): end-to-end run green (14 killed / 470 survived /
+      2 timeout / 37 compileError / 0 runtimeError, 17 shards, 0 infra). Parity vs Stryker reference:
+      find-package-root killed 9=9, survivors 3=3 with identical lines; enumeration superset per file;
+      find-monorepo-root newly covered (old tool red-baselined it). Known divergence: test-less files
+      short-circuit to survivors without tsgo, where Stryker's checker still classified compileErrors.
+      Fixes landed en route: containerignore (context bloat + sops secrets), source-aware image hash,
+      diagnosable baselines, .git marker in work tree, timeout taint not an infra failure.
 - [ ] Old package deleted, catalog purged, lockfile regenerated via pnpm, troubleshooting docs reviewed.
 - [ ] Issue 247 closed with summary comment.
 
@@ -91,6 +97,19 @@ Update this file whenever a milestone lands or a decision changes.
   stops the loop; remainder goes to `unrun`.
 - New package's engine exports live in `packages/cli/mutation-test/src/index.ts`; container code
   must import via relative paths (same package), not the package name, to run from baked source.
+
+## Late design pivot: in-container build per mutant (user directive)
+
+- Repo convention (user-confirmed): tests always test built output, except Rust; source-importing
+  tests are defects to fix (fs-path's were fixed as part of this work).
+- Consequence: the container mutant loop is splice -> `mise run build` (missing task = skip,
+  failure = compileError) -> tsgo whole-project check -> selected tests. Baseline builds once.
+  The build also materialises dist declarations, which fixes TS2307 red baselines from
+  package self-reference imports without any tsconfig surgery.
+- The old tool never built in-container, so its runs on output-importing packages could not
+  kill mutants at all; parity comparisons must account for that.
+- Watchouts: /work mise configs are untrusted in the image (set MISE_TRUSTED_CONFIG_PATHS
+  or equivalent); network=none so mise must never fetch tools (they are preinstalled in /mise).
 
 ## Gotchas for future sessions
 
