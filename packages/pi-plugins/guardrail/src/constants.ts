@@ -86,7 +86,7 @@ const DEFAULT_PATH_RULES: readonly PathRule[] = [
  * return { block: true, reason: BUN_TEST_BLOCK_REASON };
  * ```
  */
-const BUN_TEST_BLOCK_REASON = [
+const BUN_TEST_BLOCK_REASON: string = [
   'Blocked: `bun test` invocations are banned in this repo.',
   'The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of module import,',
   "so `bun test <file>` reports `0 pass / 0 fail` even when every test passed (the harness's `PASS`",
