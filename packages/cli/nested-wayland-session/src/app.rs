@@ -5,14 +5,14 @@
 //! subsystem (backend, state, child, rendering, per-event handling) lives in its own
 //! module, and this file only connects them and owns the event loop.
 
-// What:     Grouped `use` of the winit event enum, the output mode / damage tracker, the
-//           event loop, and the display.
-// Why:      `run` and `handle_winit_event` reference these.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { WinitEvent, Mode, OutputDamageTracker, EventLoop, Display } from "smithay";
-// ```
+/// What:     Grouped `use` of the winit event enum, the output mode / damage tracker, the
+///           event loop, and the display.
+/// Why:      `run` and `handle_winit_event` reference these.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { WinitEvent, Mode, OutputDamageTracker, EventLoop, Display } from "smithay";
+/// ```
 use smithay::{
     backend::{renderer::damage::OutputDamageTracker, renderer::ImportMemWl, winit::WinitEvent},
     output::Mode,
@@ -22,17 +22,17 @@ use smithay::{
     },
 };
 
-// What:     `use anyhow::{Context, Result};`. Error helpers.
-// Why:      `run` returns `Result<i32>` and annotates setup failures.
+/// What:     `use anyhow::{Context, Result};`. Error helpers.
+/// Why:      `run` returns `Result<i32>` and annotates setup failures.
 use anyhow::{Context, Result};
 
-// What:     Grouped `use` of our own modules' items.
-// Why:      `run` calls into backend, child, state, and the xdg-shell reconfigure.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { initBackend } from "./backend"; import { spawnChild, ... } from "./child"; ...
-// ```
+/// What:     Grouped `use` of our own modules' items.
+/// Why:      `run` calls into backend, child, state, and the xdg-shell reconfigure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { initBackend } from "./backend"; import { spawnChild, ... } from "./child"; ...
+/// ```
 use crate::{
     backend::{init_backend, OUTPUT_REFRESH_MHZ},
     child::{register_exit_poll, spawn_child},

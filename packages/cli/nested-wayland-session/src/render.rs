@@ -4,36 +4,36 @@
 //! (the one hosted window) into it with Smithay's `render_output` helper, submits the
 //! frame, and sends frame-callbacks so the client draws its next frame.
 
-// What:     `use std::time::Duration;`. A span of time.
-// Why:      Frame callbacks report elapsed time; `Duration::ZERO` is the throttle hint.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Duration ~ a millisecond count.
-// ```
+/// What:     `use std::time::Duration;`. A span of time.
+/// Why:      Frame callbacks report elapsed time; `Duration::ZERO` is the throttle hint.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Duration ~ a millisecond count.
+/// ```
 use std::time::Duration;
 
-// What:     Grouped `use` of the render-element type, the GLES renderer, the
-//           `render_output` helper, and the `Rectangle` geometry type.
-// Why:      Everything `redraw` references.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { WaylandSurfaceRenderElement, GlesRenderer, renderOutput, Rectangle } from "smithay";
-// ```
+/// What:     Grouped `use` of the render-element type, the GLES renderer, the
+///           `render_output` helper, and the `Rectangle` geometry type.
+/// Why:      Everything `redraw` references.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { WaylandSurfaceRenderElement, GlesRenderer, renderOutput, Rectangle } from "smithay";
+/// ```
 use smithay::{
     backend::renderer::{element::surface::WaylandSurfaceRenderElement, gles::GlesRenderer},
     desktop::space::render_output,
     utils::Rectangle,
 };
 
-// What:     `use crate::state::Compositor;`. Our state type.
-// Why:      `redraw` operates on `&mut Compositor`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Compositor } from "./state";
-// ```
+/// What:     `use crate::state::Compositor;`. Our state type.
+/// Why:      `redraw` operates on `&mut Compositor`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Compositor } from "./state";
+/// ```
 use crate::state::Compositor;
 
 /// Dark grey clear colour (RGBA, 0..=1) behind the hosted window.

@@ -5,14 +5,14 @@
 //! configures the window fullscreen and gives it keyboard focus, and the
 //! move/resize/grab requests are deliberately ignored.
 
-// What:     Grouped `use` of the xdg-shell types, popup helpers, the toplevel state
-//           enum, focus/serial utilities, and the delegate macro.
-// Why:      Everything the handler and the two free functions below reference.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { XdgShellHandler, ToplevelSurface, ... } from "smithay";
-// ```
+/// What:     Grouped `use` of the xdg-shell types, popup helpers, the toplevel state
+///           enum, focus/serial utilities, and the delegate macro.
+/// Why:      Everything the handler and the two free functions below reference.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { XdgShellHandler, ToplevelSurface, ... } from "smithay";
+/// ```
 use smithay::{
     delegate_xdg_shell,
     desktop::{
@@ -33,13 +33,13 @@ use smithay::{
     },
 };
 
-// What:     `use crate::state::Compositor;`. Our state type.
-// Why:      The handler is `impl XdgShellHandler for Compositor`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Compositor } from "../state";
-// ```
+/// What:     `use crate::state::Compositor;`. Our state type.
+/// Why:      The handler is `impl XdgShellHandler for Compositor`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Compositor } from "../state";
+/// ```
 use crate::state::Compositor;
 
 /// Configure one toplevel to fill the output: set fullscreen + activated + the

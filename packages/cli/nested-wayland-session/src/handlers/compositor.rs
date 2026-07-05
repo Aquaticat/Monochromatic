@@ -1,13 +1,13 @@
 //! wl_compositor and wl_shm handlers: surface commits and shared-memory buffers.
 
-// What:     Grouped `use` of the compositor/shm handler traits, the buffer handler,
-//           the on-commit helper, and the delegate macros.
-// Why:      Bring in everything the two impls below reference.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { CompositorHandler, ShmHandler, ... } from "smithay";
-// ```
+/// What:     Grouped `use` of the compositor/shm handler traits, the buffer handler,
+///           the on-commit helper, and the delegate macros.
+/// Why:      Bring in everything the two impls below reference.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { CompositorHandler, ShmHandler, ... } from "smithay";
+/// ```
 use smithay::{
     backend::renderer::utils::on_commit_buffer_handler,
     delegate_compositor, delegate_shm,
@@ -24,13 +24,13 @@ use smithay::{
     },
 };
 
-// What:     `use crate::state::{ClientState, Compositor};`. Pull in our state types.
-// Why:      The impls are for `Compositor`, and one method reaches per-client state.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { ClientState, Compositor } from "../state";
-// ```
+/// What:     `use crate::state::{ClientState, Compositor};`. Pull in our state types.
+/// Why:      The impls are for `Compositor`, and one method reaches per-client state.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ClientState, Compositor } from "../state";
+/// ```
 use crate::state::{ClientState, Compositor};
 
 /// Implement the wl_compositor handler (surface lifecycle and commits).

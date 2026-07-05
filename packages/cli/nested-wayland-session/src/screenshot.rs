@@ -4,20 +4,20 @@
 //! the current frame into it, copies the framebuffer to CPU memory with the renderer's
 //! `ExportMem` primitive, and encodes the pixels as a PNG with the `image` crate.
 
-// What:     `use std::path::Path;`. Borrowed filesystem path.
-// Why:      `capture` writes to a caller-provided path.
+/// What:     `use std::path::Path;`. Borrowed filesystem path.
+/// Why:      `capture` writes to a caller-provided path.
 use std::path::Path;
 
-// What:     Grouped `use` of the dmabuf `Fourcc` format tag, the render-element and
-//           renderer types, the `ExportMem` readback trait, `render_output`, and the
-//           `Rectangle` geometry.
-// Why:      Everything `capture` references. `ExportMem` is the trait that adds
-//           `copy_framebuffer` / `map_texture` to the renderer.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Fourcc, WaylandSurfaceRenderElement, GlesRenderer, ExportMem, renderOutput, Rectangle } from "smithay";
-// ```
+/// What:     Grouped `use` of the dmabuf `Fourcc` format tag, the render-element and
+///           renderer types, the `ExportMem` readback trait, `render_output`, and the
+///           `Rectangle` geometry.
+/// Why:      Everything `capture` references. `ExportMem` is the trait that adds
+///           `copy_framebuffer` / `map_texture` to the renderer.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Fourcc, WaylandSurfaceRenderElement, GlesRenderer, ExportMem, renderOutput, Rectangle } from "smithay";
+/// ```
 use smithay::{
     backend::{
         allocator::Fourcc,
@@ -27,19 +27,19 @@ use smithay::{
     utils::{Buffer, Rectangle},
 };
 
-// What:     `use anyhow::{Context, Result};`. Error helpers.
-// Why:      `capture` returns `Result` and annotates each fallible step.
+/// What:     `use anyhow::{Context, Result};`. Error helpers.
+/// Why:      `capture` returns `Result` and annotates each fallible step.
 use anyhow::{Context, Result};
 
-// What:     `use crate::{render::CLEAR_COLOR, state::Compositor};`. Reuse the shared clear
-//           colour and operate on the state.
-// Why:      Screenshots composite with the same background as the live frame.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { CLEAR_COLOR } from "./render";
-// import { Compositor } from "./state";
-// ```
+/// What:     `use crate::{render::CLEAR_COLOR, state::Compositor};`. Reuse the shared clear
+///           colour and operate on the state.
+/// Why:      Screenshots composite with the same background as the live frame.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { CLEAR_COLOR } from "./render";
+/// import { Compositor } from "./state";
+/// ```
 use crate::{render::CLEAR_COLOR, state::Compositor};
 
 /// Number of bytes per pixel in the read-back `Abgr8888` framebuffer.

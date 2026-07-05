@@ -5,29 +5,29 @@
 //! handler imports each such buffer into the winit backend's GLES renderer so it can
 //! be composited, which is the entire reason the fixture runs a real GPU renderer.
 
-// What:     Grouped `use` of the dmabuf types, the `ImportDma` trait, and the delegate
-//           macro. `Dmabuf` is the imported buffer; `DmabufGlobal`/`DmabufState`/
-//           `ImportNotifier` are the protocol plumbing; `ImportDma` is the trait that
-//           adds `import_dmabuf` to the renderer; `delegate_dmabuf!` wires dispatch.
-// Why:      Everything the handler impl references.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { DmabufHandler, ImportDma, ... } from "smithay";
-// ```
+/// What:     Grouped `use` of the dmabuf types, the `ImportDma` trait, and the delegate
+///           macro. `Dmabuf` is the imported buffer; `DmabufGlobal`/`DmabufState`/
+///           `ImportNotifier` are the protocol plumbing; `ImportDma` is the trait that
+///           adds `import_dmabuf` to the renderer; `delegate_dmabuf!` wires dispatch.
+/// Why:      Everything the handler impl references.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { DmabufHandler, ImportDma, ... } from "smithay";
+/// ```
 use smithay::{
     backend::{allocator::dmabuf::Dmabuf, renderer::ImportDma},
     delegate_dmabuf,
     wayland::dmabuf::{DmabufGlobal, DmabufHandler, DmabufState, ImportNotifier},
 };
 
-// What:     `use crate::state::Compositor;`. Our state type.
-// Why:      The handler is `impl DmabufHandler for Compositor`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Compositor } from "../state";
-// ```
+/// What:     `use crate::state::Compositor;`. Our state type.
+/// Why:      The handler is `impl DmabufHandler for Compositor`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Compositor } from "../state";
+/// ```
 use crate::state::Compositor;
 
 /// Implement the dmabuf import handler.

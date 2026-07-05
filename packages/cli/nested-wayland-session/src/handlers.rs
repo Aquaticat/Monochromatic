@@ -33,13 +33,13 @@ pub mod xdg_shell;
 /// ```
 pub mod dmabuf;
 
-// What:     Grouped `use` of the seat, output, data-device, and delegate items.
-// Why:      Bring the traits and macros the impls below need into scope.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { SeatHandler, OutputHandler, ... } from "smithay";
-// ```
+/// What:     Grouped `use` of the seat, output, data-device, and delegate items.
+/// Why:      Bring the traits and macros the impls below need into scope.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { SeatHandler, OutputHandler, ... } from "smithay";
+/// ```
 use smithay::{
     delegate_data_device, delegate_output, delegate_seat,
     input::{Seat, SeatHandler, SeatState},
@@ -56,13 +56,13 @@ use smithay::{
     },
 };
 
-// What:     `use crate::state::Compositor;`. `crate::` is "this crate's root".
-// Why:      All the handler impls are `impl Trait for Compositor`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Compositor } from "../state";
-// ```
+/// What:     `use crate::state::Compositor;`. `crate::` is "this crate's root".
+/// Why:      All the handler impls are `impl Trait for Compositor`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Compositor } from "../state";
+/// ```
 use crate::state::Compositor;
 
 /// Implement the seat (input focus) handler for the compositor.

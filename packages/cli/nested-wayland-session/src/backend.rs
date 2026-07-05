@@ -7,14 +7,14 @@
 //! we can advertise dmabuf v4 modifier feedback (falling back to v3), and bind the
 //! EGL display for Mesa's legacy hardware-acceleration path.
 
-// What:     Grouped `use` of the renderer traits, EGL device query, winit backend,
-//           output types, transform, dmabuf types, and the display handle.
-// Why:      Everything `init_backend` references.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { GlesRenderer, EGLDevice, winit, Output, ... } from "smithay";
-// ```
+/// What:     Grouped `use` of the renderer traits, EGL device query, winit backend,
+///           output types, transform, dmabuf types, and the display handle.
+/// Why:      Everything `init_backend` references.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { GlesRenderer, EGLDevice, winit, Output, ... } from "smithay";
+/// ```
 use smithay::{
     backend::{
         egl::EGLDevice,
@@ -30,29 +30,29 @@ use smithay::{
     wayland::dmabuf::{DmabufFeedbackBuilder, DmabufState},
 };
 
-// What:     `use anyhow::{Context, Result};`. Error helpers.
-// Why:      `init_backend` returns `Result` and attaches context to winit failures.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // throw/rethrow-with-message helpers
-// ```
+/// What:     `use anyhow::{Context, Result};`. Error helpers.
+/// Why:      `init_backend` returns `Result` and attaches context to winit failures.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // throw/rethrow-with-message helpers
+/// ```
 use anyhow::{Context, Result};
 
-// What:     `use tracing::{info, warn};`. Structured log macros.
-// Why:      Report the chosen dmabuf version and hardware-acceleration status.
+/// What:     `use tracing::{info, warn};`. Structured log macros.
+/// Why:      Report the chosen dmabuf version and hardware-acceleration status.
 use tracing::{info, warn};
 
-// What:     `use crate::{cli::Config, state::BackendPieces};`. Our config input and the
-//           carrier struct for the built pieces.
-// Why:      `init_backend` reads the requested size from `Config` and returns
-//           `BackendPieces`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Config } from "./cli";
-// import { BackendPieces } from "./state";
-// ```
+/// What:     `use crate::{cli::Config, state::BackendPieces};`. Our config input and the
+///           carrier struct for the built pieces.
+/// Why:      `init_backend` reads the requested size from `Config` and returns
+///           `BackendPieces`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Config } from "./cli";
+/// import { BackendPieces } from "./state";
+/// ```
 use crate::{cli::Config, state::BackendPieces};
 
 /// Milli-hertz refresh rate reported for the nested output (60.000 Hz).

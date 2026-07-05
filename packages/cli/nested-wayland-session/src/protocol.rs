@@ -5,13 +5,13 @@
 //! parsing and formatting with no Wayland types, so it is unit-tested directly,
 //! including adversarial inputs (the tests live in `protocol_tests.rs`).
 
-// What:     `use std::path::PathBuf;`. Owned filesystem path.
-// Why:      A screenshot request carries an owned destination path.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // path ~ string
-// ```
+/// What:     `use std::path::PathBuf;`. Owned filesystem path.
+/// Why:      A screenshot request carries an owned destination path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // path ~ string
+/// ```
 use std::path::PathBuf;
 
 /// Which pointer button a click uses.
@@ -36,6 +36,11 @@ pub enum PointerButton {
     Middle,
 }
 
+/// Button-to-evdev-code mapping for pointer buttons.
+///
+/// What:     `impl PointerButton { ... }`. One method turning the enum into the raw
+///           `BTN_*` code.
+/// Why:      Keep the code mapping beside the button enum.
 impl PointerButton {
     /// Map the button to its Linux evdev button code.
     ///
@@ -106,7 +111,10 @@ pub enum Command {
     /// Liveness check.
     Ping,
     /// Capture the current frame to a PNG at the given path.
-    Screenshot(PathBuf),
+    Screenshot(
+        /// Destination PNG path.
+        PathBuf,
+    ),
     /// Click at a logical point with a button.
     Click {
         /// Logical x coordinate.
@@ -124,7 +132,10 @@ pub enum Command {
         action: KeyAction,
     },
     /// Type a run of text as individual key taps.
-    Type(String),
+    Type(
+        /// Text to type verbatim.
+        String,
+    ),
     /// Resize the nested screen.
     Resize {
         /// New width in pixels.
@@ -151,9 +162,15 @@ pub enum Response {
     /// Success, no payload.
     Ok,
     /// Success with a text payload.
-    OkWith(String),
+    OkWith(
+        /// Payload text.
+        String,
+    ),
     /// Failure with a message.
-    Err(String),
+    Err(
+        /// Error message.
+        String,
+    ),
 }
 
 /// Format a response as its single wire line (no trailing newline).

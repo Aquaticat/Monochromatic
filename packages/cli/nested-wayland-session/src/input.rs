@@ -5,14 +5,14 @@
 //! events reach only the hosted client. Coordinates are logical; keys are evdev codes
 //! (translated to the xkb keycode system by adding the 8-offset winit also applies).
 
-// What:     Grouped `use` of the input state enums, keyboard focus/keycode types, the
-//           pointer event structs, and the coordinate/serial utilities.
-// Why:      Everything the injection functions reference.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { ButtonState, KeyState, Keycode, MotionEvent, ButtonEvent, ... } from "smithay";
-// ```
+/// What:     Grouped `use` of the input state enums, keyboard focus/keycode types, the
+///           pointer event structs, and the coordinate/serial utilities.
+/// Why:      Everything the injection functions reference.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { ButtonState, KeyState, Keycode, MotionEvent, ButtonEvent, ... } from "smithay";
+/// ```
 use smithay::{
     backend::input::{ButtonState, KeyState},
     input::{
@@ -22,16 +22,16 @@ use smithay::{
     utils::{Logical, Point, SERIAL_COUNTER},
 };
 
-// What:     `use crate::{keymap, protocol::{KeyAction, PointerButton}, state::Compositor};`.
-// Why:      Injection reads the keymap tables and the protocol's button/action enums,
-//           and operates on the compositor state.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as keymap from "./keymap";
-// import { KeyAction, PointerButton } from "./protocol";
-// import { Compositor } from "./state";
-// ```
+/// What:     `use crate::{keymap, protocol::{KeyAction, PointerButton}, state::Compositor};`.
+/// Why:      Injection reads the keymap tables and the protocol's button/action enums,
+///           and operates on the compositor state.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as keymap from "./keymap";
+/// import { KeyAction, PointerButton } from "./protocol";
+/// import { Compositor } from "./state";
+/// ```
 use crate::{
     keymap,
     protocol::{KeyAction, PointerButton},

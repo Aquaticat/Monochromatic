@@ -6,15 +6,15 @@
 //! writes it back. Executing on the main thread is required because screenshot readback
 //! and input injection must touch the GL context and seat, which live there.
 
-// What:     Grouped `use` of the blocking I/O traits, the Unix socket types, paths, the
-//           one-shot reply channel, and threads.
-// Why:      The control thread reads lines and writes responses; the reply channel bridges
-//           back from the main thread.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import net from "node:net"; // and a promise to await the main thread's reply
-// ```
+/// What:     Grouped `use` of the blocking I/O traits, the Unix socket types, paths, the
+///           one-shot reply channel, and threads.
+/// Why:      The control thread reads lines and writes responses; the reply channel bridges
+///           back from the main thread.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import net from "node:net"; // and a promise to await the main thread's reply
+/// ```
 use std::{
     io::{BufRead, BufReader, Write},
     os::unix::net::{UnixListener, UnixStream},
@@ -22,9 +22,9 @@ use std::{
     sync::mpsc::{sync_channel, SyncSender},
 };
 
-// What:     Grouped `use` of the calloop channel (cross-thread source) and loop handle,
-//           plus winit's `PhysicalSize` for the resize request.
-// Why:      Register the channel as an event source and request a window resize.
+/// What:     Grouped `use` of the calloop channel (cross-thread source) and loop handle,
+///           plus winit's `PhysicalSize` for the resize request.
+/// Why:      Register the channel as an event source and request a window resize.
 use smithay::reexports::{
     calloop::{
         channel::{channel, Event, Sender},
@@ -33,21 +33,21 @@ use smithay::reexports::{
     winit::dpi::PhysicalSize,
 };
 
-// What:     `use anyhow::{Context, Result};`. Error helpers.
-// Why:      Socket binding and thread spawning return `Result`.
+/// What:     `use anyhow::{Context, Result};`. Error helpers.
+/// Why:      Socket binding and thread spawning return `Result`.
 use anyhow::{Context, Result};
 
-// What:     `use tracing::{info, warn};`. Structured log macros.
-// Why:      Report listening, accept errors, and connection errors.
+/// What:     `use tracing::{info, warn};`. Structured log macros.
+/// Why:      Report listening, accept errors, and connection errors.
 use tracing::{info, warn};
 
-// What:     Grouped `use` of the protocol, input, keymap, screenshot, and state items.
-// Why:      `execute` dispatches parsed commands into these subsystems.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { parseCommand, formatResponse, Command, Response } from "./protocol"; ...
-// ```
+/// What:     Grouped `use` of the protocol, input, keymap, screenshot, and state items.
+/// Why:      `execute` dispatches parsed commands into these subsystems.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { parseCommand, formatResponse, Command, Response } from "./protocol"; ...
+/// ```
 use crate::{
     input, keymap,
     protocol::{format_response, parse_command, Command, Response},

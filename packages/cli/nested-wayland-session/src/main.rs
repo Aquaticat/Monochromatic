@@ -4,33 +4,33 @@
 //! arguments, run the compositor, and translate the hosted client's exit code into
 //! the process exit code. All real work lives in the library crate.
 
-// What:     `use std::process::ExitCode;`. `ExitCode` is the type `main` can return to
-//           set the process exit status (sibling: returning `()` always exits 0).
-// Why:      The fixture propagates the hosted app's exit code, so `main` returns one.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // ExitCode ~ the number you pass to process.exit(code).
-// ```
+/// What:     `use std::process::ExitCode;`. `ExitCode` is the type `main` can return to
+///           set the process exit status (sibling: returning `()` always exits 0).
+/// Why:      The fixture propagates the hosted app's exit code, so `main` returns one.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // ExitCode ~ the number you pass to process.exit(code).
+/// ```
 use std::process::ExitCode;
 
-// What:     `use anyhow::{Context, Result};`. Error helpers; `Result` is
-//           `anyhow::Result`.
-// Why:      `main` returns `Result` so any error prints and exits non-zero.
+/// What:     `use anyhow::{Context, Result};`. Error helpers; `Result` is
+///           `anyhow::Result`.
+/// Why:      `main` returns `Result` so any error prints and exits non-zero.
 use anyhow::{Context, Result};
 
-// What:     `use nested_wayland_session::{parse_args, run};`. Import the library's
-//           public entry points. `nested_wayland_session` is this crate's library name.
-// Why:      The binary is a thin shell over these.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { parseArgs, run } from "nested_wayland_session";
-// ```
+/// What:     `use nested_wayland_session::{parse_args, run};`. Import the library's
+///           public entry points. `nested_wayland_session` is this crate's library name.
+/// Why:      The binary is a thin shell over these.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { parseArgs, run } from "nested_wayland_session";
+/// ```
 use nested_wayland_session::{parse_args, run};
 
-// What:     `use tracing_subscriber::EnvFilter;`. The env-driven log-level filter.
-// Why:      Configures which log events print, from `RUST_LOG`.
+/// What:     `use tracing_subscriber::EnvFilter;`. The env-driven log-level filter.
+/// Why:      Configures which log events print, from `RUST_LOG`.
 use tracing_subscriber::EnvFilter;
 
 /// Process entry: set up logging, parse arguments, run, and return the exit code.

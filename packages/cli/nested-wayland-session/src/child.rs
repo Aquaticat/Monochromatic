@@ -5,43 +5,43 @@
 //! client exits. Child exit is detected by a periodic calloop timer that polls
 //! `try_wait`, which keeps everything on the event loop's single thread.
 
-// What:     `use std::{process::Command, time::Duration};`. `Command` builds and spawns
-//           a child process; `Duration` is the poll interval.
-// Why:      Needed to launch the client and schedule the exit poll.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Command ~ Node's child_process.spawn builder; Duration ~ a ms count.
-// ```
+/// What:     `use std::{process::Command, time::Duration};`. `Command` builds and spawns
+///           a child process; `Duration` is the poll interval.
+/// Why:      Needed to launch the client and schedule the exit poll.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Command ~ Node's child_process.spawn builder; Duration ~ a ms count.
+/// ```
 use std::{process::Command, time::Duration};
 
-// What:     Grouped `use` of the calloop timer types and loop handle.
-// Why:      `register_exit_poll` inserts a `Timer` source through the `LoopHandle`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Timer, TimeoutAction, LoopHandle } from "smithay/calloop";
-// ```
+/// What:     Grouped `use` of the calloop timer types and loop handle.
+/// Why:      `register_exit_poll` inserts a `Timer` source through the `LoopHandle`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Timer, TimeoutAction, LoopHandle } from "smithay/calloop";
+/// ```
 use smithay::reexports::calloop::{
     timer::{TimeoutAction, Timer},
     LoopHandle,
 };
 
-// What:     `use anyhow::{Context, Result};`. Error helpers.
-// Why:      `spawn_child` returns `Result` and annotates spawn failures.
+/// What:     `use anyhow::{Context, Result};`. Error helpers.
+/// Why:      `spawn_child` returns `Result` and annotates spawn failures.
 use anyhow::{Context, Result};
 
-// What:     `use tracing::{info, warn};`. Structured log macros.
-// Why:      Report spawn and exit events.
+/// What:     `use tracing::{info, warn};`. Structured log macros.
+/// Why:      Report spawn and exit events.
 use tracing::{info, warn};
 
-// What:     `use crate::state::Compositor;`. Our state type.
-// Why:      These functions read/write `state.child`, `state.socket_name`, etc.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Compositor } from "./state";
-// ```
+/// What:     `use crate::state::Compositor;`. Our state type.
+/// Why:      These functions read/write `state.child`, `state.socket_name`, etc.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Compositor } from "./state";
+/// ```
 use crate::state::Compositor;
 
 /// How often to poll the hosted child for exit.

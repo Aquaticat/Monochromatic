@@ -4,32 +4,32 @@
 //! can be unit-tested on any machine without opening a window. It turns the raw
 //! process arguments into a validated `Config` the rest of the program consumes.
 
-// What:     `use std::path::PathBuf;`. `PathBuf` is an OWNED, growable filesystem
-//           path (the owned sibling of the borrowed `&Path`, the same way
-//           `String` is the owned sibling of `&str`).
-// Why:      The optional control-socket location is stored owned in `Config`,
-//           which outlives the argument slice it was parsed from, so a borrowed
-//           `&Path` would dangle.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // TS has no owned/borrowed split; a path is just a string.
-// ```
+/// What:     `use std::path::PathBuf;`. `PathBuf` is an OWNED, growable filesystem
+///           path (the owned sibling of the borrowed `&Path`, the same way
+///           `String` is the owned sibling of `&str`).
+/// Why:      The optional control-socket location is stored owned in `Config`,
+///           which outlives the argument slice it was parsed from, so a borrowed
+///           `&Path` would dangle.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // TS has no owned/borrowed split; a path is just a string.
+/// ```
 use std::path::PathBuf;
 
-// What:     `use anyhow::{bail, Context, Result};`. `anyhow` is the application
-//           error library. `Result` here is `anyhow::Result<T>`, an alias for
-//           `std::result::Result<T, anyhow::Error>` (one boxed, displayable error
-//           type). `bail!(...)` is a macro that returns early with a formatted
-//           error. `Context` adds the `.context(...)` method to attach a message
-//           to an error.
-// Why:      Argument parsing reports human-readable failures ("bad --size") up to
-//           `main`, which prints them; a fixture wants one simple error channel.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Roughly: throw new Error(msg) for bail!, and wrap-and-rethrow for context.
-// ```
+/// What:     `use anyhow::{bail, Context, Result};`. `anyhow` is the application
+///           error library. `Result` here is `anyhow::Result<T>`, an alias for
+///           `std::result::Result<T, anyhow::Error>` (one boxed, displayable error
+///           type). `bail!(...)` is a macro that returns early with a formatted
+///           error. `Context` adds the `.context(...)` method to attach a message
+///           to an error.
+/// Why:      Argument parsing reports human-readable failures ("bad --size") up to
+///           `main`, which prints them; a fixture wants one simple error channel.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // Roughly: throw new Error(msg) for bail!, and wrap-and-rethrow for context.
+/// ```
 use anyhow::{bail, Context, Result};
 
 /// Default nested-screen width in physical pixels when `--size` is omitted.

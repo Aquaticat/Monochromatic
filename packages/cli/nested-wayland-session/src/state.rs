@@ -7,31 +7,31 @@
 //! big owning struct like this; the per-protocol behaviour is split into the
 //! `handlers` module.
 
-// What:     `use std::{ffi::OsString, process::Child, sync::Arc};`. Three std types:
-//             - `OsString`: an owned, OS-native string (bytes the OS uses for names;
-//               sibling: the UTF-8 `String`). Wayland socket names come back as this.
-//             - `Child`: a handle to a spawned OS process (from `std::process`).
-//             - `Arc<T>`: an Atomically Reference-Counted shared owner of a heap
-//               value (thread-safe sibling of the single-threaded `Rc<T>`; both
-//               unlike `Box<T>`, which is a single owner).
-// Why:      The socket name is stored owned; the hosted app is a `Child`; new
-//           Wayland clients are inserted behind an `Arc` because wayland-server
-//           shares client data across threads.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // OsString ~ string; Child ~ a Node ChildProcess handle; Arc<T> ~ a shared ref.
-// ```
+/// What:     `use std::{ffi::OsString, process::Child, sync::Arc};`. Three std types:
+///             - `OsString`: an owned, OS-native string (bytes the OS uses for names;
+///               sibling: the UTF-8 `String`). Wayland socket names come back as this.
+///             - `Child`: a handle to a spawned OS process (from `std::process`).
+///             - `Arc<T>`: an Atomically Reference-Counted shared owner of a heap
+///               value (thread-safe sibling of the single-threaded `Rc<T>`; both
+///               unlike `Box<T>`, which is a single owner).
+/// Why:      The socket name is stored owned; the hosted app is a `Child`; new
+///           Wayland clients are inserted behind an `Arc` because wayland-server
+///           shares client data across threads.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // OsString ~ string; Child ~ a Node ChildProcess handle; Arc<T> ~ a shared ref.
+/// ```
 use std::{ffi::OsString, process::Child, sync::Arc};
 
-// What:     A grouped `use` of Smithay items. Each path names a type used below; the
-//           braces just avoid repeating the common `smithay::...` prefix.
-// Why:      Bring the compositor building blocks into scope.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Space, Window, Seat, ... } from "smithay";
-// ```
+/// What:     A grouped `use` of Smithay items. Each path names a type used below; the
+///           braces just avoid repeating the common `smithay::...` prefix.
+/// Why:      Bring the compositor building blocks into scope.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { Space, Window, Seat, ... } from "smithay";
+/// ```
 use smithay::{
     backend::renderer::{damage::OutputDamageTracker, gles::GlesRenderer},
     backend::winit::WinitGraphicsBackend,
@@ -238,6 +238,11 @@ pub struct BackendPieces {
     pub dmabuf_feedback: Option<DmabufFeedback>,
 }
 
+/// Constructors and helpers for the compositor state.
+///
+/// What:     `impl Compositor { ... }`. The inherent method block: construction, the
+///           Wayland listener setup, and surface hit-testing.
+/// Why:      Group the state's own (non-trait) behaviour.
 impl Compositor {
     /// Build the full compositor state from an event loop, a display, and the
     /// already-initialised winit/dmabuf backend pieces.
