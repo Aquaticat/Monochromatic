@@ -110,7 +110,7 @@ Example:
 {
   "enabled": true,
   "timeoutMs": 120000,
-  "maxAdvisorOutputTokens": 4096,
+  "maxAdvisorOutputTokens": 16384,
   "includePriorAdvisorResults": true,
   "systemPrompt": "Focus on test coverage gaps and incorrect assumptions."
 }

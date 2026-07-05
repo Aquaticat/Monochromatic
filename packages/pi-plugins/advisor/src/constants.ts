@@ -38,7 +38,7 @@ export const DEFAULT_CONTEXT_OVERHEAD_TOKENS = 256;
 /**
  * Default maximum output tokens requested from the advisor model.
  */
-export const DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS = 4_096;
+export const DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS = 16_384;
 
 /**
  * Character-to-token divisor matching pi's compaction estimate.
