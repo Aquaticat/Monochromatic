@@ -488,19 +488,21 @@ PASSED on Linux.
   with decode count rising on scroll-back (re-decode confirmed);
   keyboard focus on the active pane survives pane recycling.
 - Smoothness:
-  pure windowing cost per scroll step is 11 to 36 microseconds,
+  preview decode was moved off the UI thread to a background worker during the spike,
+  so publish is now pure windowing at 8 to 16 microseconds per scroll step,
   constant regardless of the 14400-pane strip size,
-  which is the smoothness lever.
-  The only content-scaling cost is synchronous preview decode on the UI thread
-  (about 0.7 ms per newly-revealed preview in release);
-  a hard jump revealing a full screen of previews at once peaked at one 14.2 ms frame.
+  with no decode time in the publish path and no dropped frame on a hard jump.
+  An earlier synchronous-decode version peaked at one 14.2 ms frame on a hard jump;
+  backgrounding the decode removed it.
+- Vertical scrolling:
+  resolved as a product decision during the spike to move every column at once
+  through one shared vertical offset (the tallest column sets the range),
+  rather than scrolling only the focused column.
 - Chosen action:
   continue with Slint;
   no fallback triggered.
-  Move preview decode to a cancellable background job in the
-  file-watching-and-async milestone so even the hard-jump frame stays under budget;
-  this is a milestone item,
-  not a stack-change trigger.
+  The background-decode worker built here is the spike-scale seed of the
+  file-watching-and-async milestone's cancellable preview jobs.
 - Not covered by this spike:
   the context-menu spike was not folded in yet,
   and the drag-and-drop and native default-manager spikes are still pending.

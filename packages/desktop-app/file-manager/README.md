@@ -50,22 +50,32 @@ Driven headless through the embedded MCP server on a release build,
  bounded by the viewport,
 - decode count rising on scroll-back,
  confirming re-decode after eviction,
-- pure windowing cost per scroll step:
-   11 to 36 microseconds,
+- publish cost per scroll step (windowing only):
+   8 to 16 microseconds,
  constant regardless of strip size,
-- worst-case single publish:
-   14.2 milliseconds,
- entirely synchronous preview decode on a hard jump that revealed a full screen of previews.
+- preview decode runs off the UI thread on a background worker,
+ so publish never includes decode time and a hard jump across many preview panes stays under one frame.
+
+Vertical scrolling moves every column at once through one shared vertical offset:
+ the tallest column sets the scroll range,
+ and shorter columns scroll off the top when the shared offset passes their content.
 
 Keyboard focus on the active pane survives pane recycling:
  the active pane re-asserts focus from Rust-held identity when it is re-instantiated after scrolling out and back.
 
-## Known limitation
+## Preview decode is off the UI thread
 
-Preview decode runs synchronously on the UI thread in this spike.
-The plan moves it to a cancellable background job in the file-watching-and-async milestone;
- until then a hard jump across many preview panes at once can cost one long frame.
-The windowing itself is never the bottleneck.
+Preview decode is the one per-scroll cost heavy enough to drop a frame,
+ so it runs on a dedicated worker thread (`src/decode_worker.rs`).
+When a preview enters the window the cache sends a decode request and shows a "decoding" placeholder;
+ a 30 ms timer drains finished RGBA bytes and wraps them into Slint images on the UI thread (a cheap copy);
+ previews that scroll out before their decode lands stop being tracked.
+The result:
+ publish is pure windowing (single-digit microseconds),
+ and the earlier synchronous-decode frame is gone.
+
+The remaining spike simplifications are the synthetic pixel data and the single worker thread;
+ a real build would read files from disk and could widen the worker pool.
 
 ## Architecture
 
@@ -80,8 +90,10 @@ The windowing itself is never the bottleneck.
    the custom Slint `Model` that generates rows lazily and records access,
  so `ListView` virtualization is measured.
 - `src/preview.rs`:
-   the decode/eviction cache with resident-byte accounting,
+   the async decode/eviction cache with resident-byte accounting,
  with unit tests in `src/preview_tests.rs`.
+- `src/decode_worker.rs`:
+   the background decode thread and its request/result message types.
 - `src/view.rs`:
    the publish step that turns the strip plus scroll state into the bounded `ColumnView` models.
 - `src/controller.rs`:
