@@ -6,22 +6,23 @@ import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shell-c
 import type { ReadonlyDeep, } from 'type-fest';
 
 /**
- * Whether the given Bash command executes `bun test`.
+ * Whether the given Bash command contains `bun test` anywhere in parsed shell syntax.
  *
  * Uses the shared `unbash` analyzer so quoted prose, escaped characters,
  * nested command substitutions, and function definitions are classified by
- * shell grammar instead of text boundaries.
+ * shell grammar instead of text boundaries. Function bodies stay visible so
+ * `f(){ bun test; }; f` cannot hide the banned invocation behind a shell name.
  *
  * @param command - Shell command from Bash tool input
  *
- * @returns `true` when `bun test` would execute as a command
+ * @returns `true` when `bun test` appears as a parsed command
  *
  * @example
  * ```ts
  * invokesBunTest('bun test foo.ts');             // true
  * invokesBunTest('cd x && bun test');            // true
  * invokesBunTest('echo "bun test"');             // false
- * invokesBunTest('f(){ bun test; }');            // false
+ * invokesBunTest('f(){ bun test; }');            // true
  * ```
  */
 function invokesBunTest(command: string,): boolean {
@@ -32,7 +33,7 @@ function invokesBunTest(command: string,): boolean {
   if (!analysis.parsed)
     return false;
 
-  return analysis.executedCommands
+  return analysis.commands
     .some(function commandIsBunTest(info,): boolean {
     return (info.name === 'bun')
       && (info.args[0] === 'test');

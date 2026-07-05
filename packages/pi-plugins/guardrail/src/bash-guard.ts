@@ -15,15 +15,16 @@ import { isRecord, } from './value.ts';
 //region Parsed command predicates
 
 /**
- * Checks whether a shell command contains an executed `bun test` invocation.
+ * Checks whether a shell command contains a `bun test` command anywhere in parsed shell syntax.
  *
  * Uses the shared `unbash` analyzer so quoted prose, escaped characters,
  * nested command substitutions, and function definitions are classified by
- * shell grammar instead of text boundaries.
+ * shell grammar instead of text boundaries. Function bodies stay visible so
+ * `f(){ bun test; }; f` cannot hide the banned invocation behind a shell name.
  *
  * @param command - shell command from pi Bash tool input
  *
- * @returns whether command executes `bun test`
+ * @returns whether command contains `bun test`
  *
  * @example
  * ```typescript
@@ -39,7 +40,7 @@ function invokesBunTest(command: string,): boolean {
   if (!analysis.parsed)
     return false;
 
-  return analysis.executedCommands
+  return analysis.commands
     .some(function commandIsBunTest(info,): boolean {
     return (info.name === 'bun')
       && (info.args[0] === 'test');

@@ -40,6 +40,12 @@ await describe({
           },
         },),
         it({
+          name: 'blocks bun test hidden inside function body',
+          fn: async function testBunTestInFunctionBody() {
+            expect(invokesBunTest('f(){ bun test; }; f',),).toBe(true,);
+          },
+        },),
+        it({
           name: 'allows prose containing bun test inside echo',
           fn: async function testEchoAllowsBunTestText() {
             expect(invokesBunTest('echo "use bun test here"',),).toBe(false,);
