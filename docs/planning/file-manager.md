@@ -514,6 +514,8 @@ PASSED on Linux.
   Column build churn dropped from thousands of rebuilds per session to about a
   dozen, and the author confirmed horizontal scrolling is smooth and holds far
   positions.
+  The Slint source trace and the rejected approaches are recorded in
+  `docs/troubleshooting/slint-flickable-windowed-model-scroll.md`.
 - Chosen action:
   continue with Slint;
   no fallback triggered.
