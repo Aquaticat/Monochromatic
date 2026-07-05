@@ -128,7 +128,8 @@ Custom/MCP tools that are not in the registry display generically:
 ```text
 src/
   index.ts           # Extension entry point, event handlers
-  title-builder.ts   # titleForEvent(), titleForTool(): maps events to titles
+  title-builder.ts   # titleForEvent(), titleForTool(): maps pi events to titles
   tool-titles.ts     # Tool name → formatter registry (pi tool names)
-  formatter-utils.ts # truncate, shortPath, field, pathFormat, quotedFormat, shortCommand
+
+Shared formatter helpers live in `@monochromatic-dev/module-terminal-title`.
 ```

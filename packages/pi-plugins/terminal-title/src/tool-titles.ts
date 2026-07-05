@@ -18,7 +18,7 @@ import {
   quotedFormat,
   shortCommand,
   type ToolTitleEntry as FormatterToolTitleEntry,
-} from './formatter-utils.ts';
+} from '@monochromatic-dev/module-terminal-title/ts';
 
 /**
  * Tool title entries for all pi built-in tools. Each entry specifies how to
@@ -110,4 +110,4 @@ const TOOL_TITLES: Record<string, FormatterToolTitleEntry> = {
 
 export { TOOL_TITLES, };
 
-export type { ToolTitleEntry, } from './formatter-utils.ts';
+export type { ToolTitleEntry, } from '@monochromatic-dev/module-terminal-title/ts';

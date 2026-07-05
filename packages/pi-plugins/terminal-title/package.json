@@ -23,6 +23,9 @@
     "dist/final",
     "src"
   ],
+  "dependencies": {
+    "@monochromatic-dev/module-terminal-title": "workspace:*"
+  },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
     "typebox": "*"

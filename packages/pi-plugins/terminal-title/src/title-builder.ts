@@ -8,10 +8,11 @@
  */
 
 import {
-  NO_STRING_FIELD,
-  truncate,
+  formatToolTitle,
+  prefixedTitle,
   type ToolArgs,
-} from './formatter-utils.ts';
+  type ToolTitleTense,
+} from '@monochromatic-dev/module-terminal-title/ts';
 import { TOOL_TITLES, } from './tool-titles.ts';
 
 /**
@@ -42,11 +43,8 @@ type HandledEventType =
  *
  * Looks up the tool name in the {@link TOOL_TITLES} registry. If found,
  * extracts a display value from the tool input and formats it with the
- * appropriate tense, falling back to the tool name itself when extraction
- * returns {@link NO_STRING_FIELD} or the tool is not registered.
- *
- * For custom/MCP tools not in the registry, displays the raw tool name
- * with tense-appropriate wording.
+ * appropriate tense. For custom/MCP tools not in the registry,
+ * displays the raw tool name with tense-appropriate wording.
  *
  * @param toolName - pi tool name (e.g. `"bash"`, `"read"`, or a custom name)
  *
@@ -71,33 +69,19 @@ function titleForTool(
   }: Readonly<{
     toolName: string;
     args: ToolArgs;
-    tense: 'pre' | 'post';
+    tense: ToolTitleTense;
   }>,
 ): string {
-  /**
-   * Lookup entry for the tool; `undefined` triggers the generic Running/Ran fallback below.
-   */
-  const entry = TOOL_TITLES[toolName];
-  if (entry !== undefined) {
-    /**
-     * Extracted display value (e.g. command, file path) sampled from the tool's arg record; {@link NO_STRING_FIELD} when the field is missing.
-     */
-    const value = entry.extract(args,);
-    if (value !== NO_STRING_FIELD) {
-      return entry.format(
-        value,
-        tense,
-      );
-    }
-    return entry.fallback[tense];
-  }
-
-  /**
-   * Tense-appropriate verb for the generic fallback used by tools without a dedicated entry.
-   */
-  // Custom/MCP tool fallback
-  const verb = tense === 'pre' ? 'Running' : 'Ran';
-  return `${verb} ${toolName}`;
+  return formatToolTitle({
+    registry: TOOL_TITLES,
+    toolName,
+    args,
+    tense,
+    unknownToolTitle: ({
+      toolName: unknownToolName,
+      tense: unknownToolTense,
+    },) => `${unknownToolTense === 'pre' ? 'Running' : 'Ran'} ${unknownToolName}`,
+  },);
 }
 
 /**
@@ -137,17 +121,8 @@ const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string
     return 'Stopped';
   },
   before_agent_start(data,) {
-    /**
-     * Pending user prompt sourced from the event; empty string when absent so truncate stays defined.
-     */
-    const prompt = data.prompt
+    return data.prompt
       ?? '';
-    return truncate({
-      value: prompt,
-      maxLength: MAX_TITLE_LENGTH - TITLE_PREFIX
-        .length
-        - 1,
-    },);
   },
 };
 
@@ -171,13 +146,13 @@ type EventData = {
  * - `session_start` → "Session \{reason\}"
  * - `session_shutdown` → "Session ended"
  * - `agent_end` → "Stopped"
- * - `before_agent_start` → user prompt text (truncated)
+ * - `before_agent_start` → user prompt text
  *
  * @param eventType - the `type` field from the pi event
  *
  * @param data - event-specific data (toolName, args, reason, prompt, etc.)
  *
- * @returns final title string with prefix, {@link truncate}d to {@link MAX_TITLE_LENGTH}
+ * @returns final title string with prefix, truncated to {@link MAX_TITLE_LENGTH}
  *
  * @example
  * ```ts
@@ -208,12 +183,9 @@ function titleForEvent(
    * Event-specific body text (e.g. tool description, session reason) before the title prefix.
    */
   const body = builder(data,);
-  /**
-   * Prefixed title before truncation; the truncate call below enforces the terminal-friendly cap.
-   */
-  const title = `${TITLE_PREFIX} ${body}`;
-  return truncate({
-    value: title,
+  return prefixedTitle({
+    prefix: TITLE_PREFIX,
+    body,
     maxLength: MAX_TITLE_LENGTH,
   },);
 }
