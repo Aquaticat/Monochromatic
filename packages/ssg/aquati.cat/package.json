@@ -11,7 +11,7 @@
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
-    "@sindresorhus/fnv1a": "catalog:",
+    "farmhashjs": "catalog:",
     "feedsmith": "catalog:",
     "yaml": "catalog:",
     "nano-spawn": "catalog:",

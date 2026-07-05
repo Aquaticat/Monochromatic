@@ -30,7 +30,7 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-import fnv1a from '@sindresorhus/fnv1a';
+import { fingerprint32, } from 'farmhashjs';
 
 import {
   jsx,
@@ -88,7 +88,7 @@ type QuestionProps = {
 const HEX_DIGITS_32 = 8;
 
 /**
- * Hex radix for BigInt.prototype.toString.
+ * Hex radix for Number.prototype.toString.
  */
 const HEX_RADIX = 16;
 
@@ -126,9 +126,8 @@ function deriveQuestionId(props: QuestionProps,): string {
       === true ? '1' : '0'
     );
   }
-  return fnv1a(
+  return fingerprint32(
     parts.join('\u0000',),
-    { size: 32, },
   )
     .toString(HEX_RADIX,)
     .padStart(
