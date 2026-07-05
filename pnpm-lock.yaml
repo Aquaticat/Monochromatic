@@ -484,6 +484,10 @@ importers:
         version: 7.0.1-rc
 
   packages/agent-harnesses-shared/terminal-title:
+    dependencies:
+      '@monochromatic-dev/agent-harnesses-shell-command-analyzer':
+        specifier: workspace:*
+        version: link:../shell-command-analyzer
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -894,6 +898,18 @@ importers:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+
+  packages/cli/mutation-test.fixture:
+    devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
