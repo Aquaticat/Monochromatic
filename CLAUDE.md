@@ -1795,21 +1795,10 @@ DM2:
  Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`.
 
 LFW:
- Never hand-edit package-manager lockfiles (`pnpm-lock.yaml`,
- `Cargo.lock`,
- `mise.lock`,
- etc.) to reflect dependency,
- package-path,
- or version changes.
+ Never hand-edit lockfiles.
 Regenerate them with the owning package manager or repo task,
- inspect the generated diff,
- and report unrelated pre-existing drift instead of silently crafting lockfile hunks by hand.
-Cue:
- about to edit a lockfile block directly after moving,
- renaming,
- adding,
- or removing a package;
- restore it and run the package-manager command instead.
+ then inspect generated diffs.
+Report unrelated drift separately.
 
 ### Adding new packages
 
