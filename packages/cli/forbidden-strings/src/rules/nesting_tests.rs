@@ -220,7 +220,7 @@ fn compile_rule_src_rejects_deeply_nested_complement() {
     match compile_rule_src(&src) {
         Ok(_) => panic!("expected deeply nested complement to be rejected"),
         Err(reason) => assert!(
-            reason.contains("(resharp):") && reason.contains("nests groups"),
+            reason.to_string().contains("(resharp):") && reason.to_string().contains("nests groups"),
             "expected a nesting-depth rejection, got {reason:?}",
         ),
     }

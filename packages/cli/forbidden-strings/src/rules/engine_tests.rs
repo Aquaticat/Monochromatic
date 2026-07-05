@@ -948,7 +948,7 @@ fn compile_rule_src_rejects_fuzz_slow_unit_fast() {
         Err(e) => e,
     };
     assert!(
-        err.contains("stacked quantifier"),
+        err.to_string().contains("stacked quantifier"),
         "expected `stacked quantifier` in error, got {err:?}",
     );
     // 100 ms is generous; the pre-validator should run in
@@ -1275,7 +1275,7 @@ fn compile_rule_src_rejects_alt_lookaround_sibling_shape() {
         Err(e) => e,
     };
     assert!(
-        err.contains("alternation") && err.contains("lookaround"),
+        err.to_string().contains("alternation") && err.to_string().contains("lookaround"),
         "expected error mentioning `alternation` and `lookaround`, got {err:?}",
     );
     assert!(
@@ -1312,7 +1312,7 @@ fn compile_rule_src_rejects_grouped_fuzz_slow_unit_fast() {
         Err(e) => e,
     };
     assert!(
-        err.contains("nested grouped quantifier"),
+        err.to_string().contains("nested grouped quantifier"),
         "expected `nested grouped quantifier` in error, got {err:?}",
     );
     // 100 ms is generous; the pre-validator should run in microseconds.
@@ -1431,7 +1431,7 @@ fn compile_rule_src_rejects_bug_f_shape_fast() {
         Err(e) => e,
     };
     assert!(
-        err.contains("lookahead") && err.contains("overflow"),
+        err.to_string().contains("lookahead") && err.to_string().contains("overflow"),
         "expected error mentioning `lookahead` and `overflow`, got {err:?}",
     );
     assert!(
@@ -1556,7 +1556,7 @@ fn compile_rule_src_rejects_bug_f_trailing_shape_fast() {
         Err(e) => e,
     };
     assert!(
-        err.contains("lookahead") && err.contains("overflow"),
+        err.to_string().contains("lookahead") && err.to_string().contains("overflow"),
         "expected error mentioning `lookahead` and `overflow`, got {err:?}",
     );
     assert!(
@@ -1663,7 +1663,7 @@ fn compile_rule_src_rejects_wildcard_chain_slow_shape_fast() {
         Err(e) => e,
     };
     assert!(
-        err.contains("wildcard") && err.contains("_"),
+        err.to_string().contains("wildcard") && err.to_string().contains("_"),
         "expected error mentioning `wildcard` and `_`, got {err:?}",
     );
     assert!(
@@ -1771,7 +1771,7 @@ fn compile_rule_src_rejects_lookaround_chain_slow_shape_fast() {
         Err(e) => e,
     };
     assert!(
-        err.contains("lookaround"),
+        err.to_string().contains("lookaround"),
         "expected error mentioning `lookaround`, got {err:?}",
     );
     assert!(
@@ -1864,7 +1864,7 @@ fn compile_rule_src_rejects_nested_complement_timeout_shape_fast() {
         Err(e) => e,
     };
     assert!(
-        err.contains("complement"),
+        err.to_string().contains("complement"),
         "expected error mentioning `complement`, got {err:?}",
     );
     assert!(
