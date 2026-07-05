@@ -320,6 +320,7 @@ name = "forbidden-strings"
 version = "0.1.9"
 dependencies = [
  "aho-corasick",
+ "anyhow",
  "clap",
  "gix-hash",
  "gix-index",
@@ -336,6 +337,7 @@ dependencies = [
 name = "forbidden-strings-fuzz"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "arbitrary",
  "forbidden-strings",
  "libfuzzer-sys",
