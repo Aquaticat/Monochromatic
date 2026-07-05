@@ -60,11 +60,12 @@ use crate::strip::COLUMN_WIDTH_PX;
 /// Why:      Fast enough to feel live, slow enough not to churn.
 const HUD_REFRESH_MS: u64 = 150;
 
-/// What:     `const DECODE_POLL_MS: u64 = 30;` is the background-decode drain
-///           interval.
-/// Why:      A short poll so decoded previews pop in promptly without the UI ever
-///           blocking on the decode itself.
-const DECODE_POLL_MS: u64 = 30;
+/// What:     `const FRAME_TICK_MS: u64 = 16;` is the per-frame reconcile interval
+///           (about 60 Hz).
+/// Why:      One timer collects finished decodes and applies horizontal window
+///           shifts off the render frame, so scrolling never rebuilds the model
+///           from inside the Flickable's own change callback.
+const FRAME_TICK_MS: u64 = 16;
 
 /// What:     `fn install_backend() -> Result<()>` builds and installs the explicit
 ///           winit backend with the app-id hook, unless the embedded MCP server
@@ -205,10 +206,15 @@ pub fn run() -> Result<()> {
     // Why:      The HUD timer mirrors from it.
     let instrumentation = controller.borrow().instrumentation();
 
-    // What:     `let initial_model = controller.borrow_mut().publish()?;` builds the
-    //           first bounded model. The `RefMut` is released at the `;`.
+    // What:     `let initial_model = controller.borrow_mut().reconcile(true)?
+    //           .expect(...);` force-builds the first model; `.expect` unwraps the
+    //           `Some` a forced reconcile always returns. The `RefMut` releases at
+    //           the `;`.
     // Why:      The window needs columns before its first frame.
-    let initial_model = controller.borrow_mut().publish()?;
+    let initial_model = controller
+        .borrow_mut()
+        .reconcile(true)?
+        .expect("a forced reconcile always builds a model");
     // What:     `app.set_columns(initial_model);` hands the model to the window.
     // Why:      Render the initial window.
     app.set_columns(initial_model);
@@ -220,36 +226,21 @@ pub fn run() -> Result<()> {
     // Why:      The UI positions and sizes columns by it.
     app.set_column_width_px(COLUMN_WIDTH_PX);
 
-    // What:     `let weak_h = app.as_weak();` makes a non-owning window handle for
-    //           the horizontal-scroll closure. A weak handle avoids a reference
-    //           cycle keeping the window alive forever.
-    // Why:      The closure needs the window but must not own it.
-    let weak_h = app.as_weak();
     // What:     `app.on_horizontal_scrolled({ ... });` registers the callback.
-    //           The block moves a controller clone into the closure.
-    // Why:      Flickable pixel scrolls republish the column window.
+    // Why:      The Flickable reports pixel offsets continuously as it animates; we
+    //           only STORE the offset here. The frame timer reconciles the model
+    //           when the offset crosses into a different column window, so a smooth
+    //           scroll within one window rebuilds nothing and never swaps the model
+    //           mid-render.
     app.on_horizontal_scrolled({
         let controller = Rc::clone(&controller);
-        // What:     `move |offset_px| { ... }` is a closure taking the pixel
-        //           offset; `move` captures `controller` and `weak_h` by value.
+        // What:     `move |offset_px| { ... }` captures the controller by value.
         // Why:      Slint owns the callback, so it must own its captures.
         move |offset_px| {
-            // What:     `if let Some(app) = weak_h.upgrade() { ... }` turns the weak
-            //           handle back into a strong one if the window still exists.
-            // Why:      The callback may outlive the window.
-            if let Some(app) = weak_h.upgrade() {
-                // What:     `let result = controller.borrow_mut().on_horizontal_scroll(offset_px);`
-                //           runs the handler; the `RefMut` is released at the `;`.
-                // Why:      Bind first so no borrow is held during the match.
-                let result = controller.borrow_mut().on_horizontal_scroll(offset_px);
-                // What:     `match result { Ok(model) => ..., Err(error) => ... }`
-                //           applies the new model or logs the error.
-                // Why:      Callbacks cannot return errors.
-                match result {
-                    Ok(model) => app.set_columns(model),
-                    Err(error) => log_callback_error("horizontal scroll", error),
-                }
-            }
+            // What:     `controller.borrow_mut().set_h_offset(offset_px);` records
+            //           the offset without rebuilding.
+            // Why:      Cheap: no allocation or repeater churn on the render frame.
+            controller.borrow_mut().set_h_offset(offset_px);
         }
     });
 
@@ -264,7 +255,8 @@ pub fn run() -> Result<()> {
                 // Why:      Release the borrow before touching the window.
                 let result = controller.borrow_mut().on_vertical_scroll(percent);
                 match result {
-                    Ok(model) => app.set_columns(model),
+                    Ok(Some(model)) => app.set_columns(model),
+                    Ok(None) => (),
                     Err(error) => log_callback_error("vertical scroll", error),
                 }
             }
@@ -286,13 +278,17 @@ pub fn run() -> Result<()> {
                 // Why:      Release the borrow before re-borrowing below.
                 let result = controller.borrow_mut().on_key_nav(key.as_str());
                 match result {
-                    // What:     On success, set the model, then sync the Flickable
-                    //           to the (possibly moved) horizontal offset.
-                    //           `0.0 - controller.borrow().h_offset_px()` negates it
-                    //           because Slint's viewport-x is <= 0.
-                    // Why:      Keyboard navigation must move the visible window.
-                    Ok(model) => {
-                        app.set_columns(model);
+                    // What:     On success, set the model if one was rebuilt, then
+                    //           sync the Flickable to the (possibly moved) horizontal
+                    //           offset. `0.0 - controller.borrow().h_offset_px()`
+                    //           negates it because Slint's viewport-x is <= 0.
+                    // Why:      Keyboard navigation must move the visible window; the
+                    //           viewport-x change then feeds set_h_offset for the
+                    //           frame timer.
+                    Ok(model_option) => {
+                        if let Some(model) = model_option {
+                            app.set_columns(model);
+                        }
                         app.set_h_scroll_px(0.0 - controller.borrow().h_offset_px());
                     }
                     Err(error) => log_callback_error("key nav", error),
@@ -359,33 +355,33 @@ pub fn run() -> Result<()> {
         }
     });
 
-    // What:     `let decode_timer = Timer::default();` creates a second repeating
-    //           timer for draining finished background decodes.
-    // Why:      Collect decoded previews and republish so they appear.
-    let decode_timer = Timer::default();
-    // What:     `let weak_decode = app.as_weak();` is its non-owning handle.
+    // What:     `let frame_timer = Timer::default();` creates the per-frame timer.
+    // Why:      It collects finished decodes and applies horizontal window shifts,
+    //           both off the render frame and only when something changed.
+    let frame_timer = Timer::default();
+    // What:     `let weak_frame = app.as_weak();` is its non-owning handle.
     // Why:      The timer must not keep the window alive.
-    let weak_decode = app.as_weak();
-    // What:     `decode_timer.start(TimerMode::Repeated, Duration::from_millis(
-    //           DECODE_POLL_MS), { ... })` starts the drain poll.
-    // Why:      Turn background decode results into visible previews promptly.
-    decode_timer.start(TimerMode::Repeated, Duration::from_millis(DECODE_POLL_MS), {
+    let weak_frame = app.as_weak();
+    // What:     `frame_timer.start(TimerMode::Repeated, Duration::from_millis(
+    //           FRAME_TICK_MS), { ... })` starts the per-frame reconcile.
+    // Why:      Turn decode results and scroll shifts into at most one rebuild/tick.
+    frame_timer.start(TimerMode::Repeated, Duration::from_millis(FRAME_TICK_MS), {
         let controller = Rc::clone(&controller);
         move || {
-            if let Some(app) = weak_decode.upgrade() {
-                // What:     `let result = controller.borrow_mut().poll_decodes();`
-                //           drains and maybe republishes; the `RefMut` releases at
+            if let Some(app) = weak_frame.upgrade() {
+                // What:     `let result = controller.borrow_mut().frame_tick();`
+                //           drains decodes then reconciles; the `RefMut` releases at
                 //           the `;`.
                 // Why:      Bind first so no borrow is held during the match.
-                let result = controller.borrow_mut().poll_decodes();
+                let result = controller.borrow_mut().frame_tick();
                 // What:     `match result { Ok(Some(model)) => ..., Ok(None) => (),
-                //           Err(error) => ... }` applies a republish only when
-                //           previews landed. `()` is the do-nothing unit value.
-                // Why:      Avoid needless work when nothing decoded.
+                //           Err(error) => ... }` applies a rebuild only when one
+                //           happened. `()` is the do-nothing unit value.
+                // Why:      Most ticks rebuild nothing (no window change, no decode).
                 match result {
                     Ok(Some(model)) => app.set_columns(model),
                     Ok(None) => (),
-                    Err(error) => log_callback_error("decode poll", error),
+                    Err(error) => log_callback_error("frame tick", error),
                 }
             }
         }
@@ -395,10 +391,10 @@ pub fn run() -> Result<()> {
     //           window closes; `?` propagates a platform error.
     // Why:      Drive the UI.
     app.run()?;
-    // What:     `hud_timer.stop();` and `decode_timer.stop();` halt both timers.
+    // What:     `hud_timer.stop();` and `frame_timer.stop();` halt both timers.
     // Why:      Clean shutdown.
     hud_timer.stop();
-    decode_timer.stop();
+    frame_timer.stop();
     // What:     `Ok(())` returns success; tail expression.
     // Why:      The program ran and exited cleanly.
     Ok(())

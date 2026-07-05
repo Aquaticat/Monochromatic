@@ -40,13 +40,18 @@ use crate::strip::{column_pitch_px, pane_pitch_px, synthetic_strip, PaneKind, St
 
 /// What:     `use crate::view::{build_columns_model, PublishInput};` imports the
 ///           publish function and its input struct.
-/// Why:      `publish` calls it.
+/// Why:      `build_model` calls it.
 use crate::view::{build_columns_model, PublishInput};
 
-/// What:     `pub const PREFETCH: usize = 1;` is the extra column/pane instantiated
-///           on each side of the viewport.
-/// Why:      One prefetch item keeps scrolling smooth without growing the window.
-pub const PREFETCH: usize = 1;
+/// What:     `use crate::window::visible_range;` imports the bounded-window fn.
+/// Why:      `column_window` computes the horizontal window signature with it.
+use crate::window::visible_range;
+
+/// What:     `pub const PREFETCH: usize = 2;` is the extra columns/panes
+///           instantiated on each side of the viewport.
+/// Why:      Two prefetch columns give a buffer so a fast horizontal scroll never
+///           exposes an un-built column before the next frame's reconcile.
+pub const PREFETCH: usize = 2;
 
 /// What:     `const DEFAULT_VIEWPORT_W_PX: f32 = 1100.0;` is the assumed strip
 ///           width before the window reports its real size.
@@ -57,6 +62,40 @@ const DEFAULT_VIEWPORT_W_PX: f32 = 1100.0;
 ///           height (window minus HUD and control bars).
 /// Why:      Publishing needs a viewport height from the first frame.
 const DEFAULT_VIEWPORT_H_PX: f32 = 600.0;
+
+/// What:     `#[derive(Clone, Copy, PartialEq, Eq)]` auto-generates copy and
+///           equality for the struct below. `struct Signature` captures everything
+///           that changes which elements the model must contain.
+/// Why:      Comparing the current signature to the last published one tells us
+///           whether a rebuild is needed; a pure sub-column scroll leaves it equal,
+///           so most scroll frames rebuild nothing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Signature = { start; end; vBits; activeColumn; activePane; stripLen };
+/// ```
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Signature {
+    /// What:     `start: usize` is the first in-window column index.
+    /// Why:      A horizontal shift changes it.
+    start: usize,
+    /// What:     `end: usize` is one past the last in-window column index.
+    /// Why:      A horizontal shift changes it.
+    end: usize,
+    /// What:     `v_bits: u32` is the vertical offset's exact bit pattern (`f32`
+    ///           reinterpreted as `u32` so it can be compared for equality).
+    /// Why:      A vertical scroll changes the pane windows of every column.
+    v_bits: u32,
+    /// What:     `active_column: usize` is the focused column index.
+    /// Why:      Changing focus changes an is-active flag.
+    active_column: usize,
+    /// What:     `active_pane: usize` is the focused pane index.
+    /// Why:      Same at the pane level.
+    active_pane: usize,
+    /// What:     `strip_len: usize` is the column count.
+    /// Why:      Closing a column changes it.
+    strip_len: usize,
+}
 
 /// What:     `pub struct Controller` holds all mutable app state.
 /// Why:      One owner keeps the strip, scroll, active identity, cache, and
@@ -94,6 +133,11 @@ pub struct Controller {
     /// What:     `instrumentation: Rc<Instrumentation>` is the shared counters.
     /// Why:      Written on publish, read by the HUD timer.
     instrumentation: Rc<Instrumentation>,
+    /// What:     `last_signature: Option<Signature>` is the signature of the model
+    ///           currently published, or `None` before the first build.
+    /// Why:      `reconcile` compares against it to skip rebuilds when nothing that
+    ///           affects the model changed.
+    last_signature: Option<Signature>,
 }
 
 /// What:     `impl Controller` attaches the constructor and handlers.
@@ -137,6 +181,7 @@ impl Controller {
             active_pane: 0,
             preview_cache,
             instrumentation,
+            last_signature: None,
         };
         // What:     `controller.refresh_totals();` fills the total-* counters.
         // Why:      The HUD needs the full-strip totals from the first frame.
@@ -195,12 +240,12 @@ impl Controller {
         self.instrumentation.active_pane_focused.set(focused);
     }
 
-    /// What:     `pub fn publish(&mut self) -> Result<ModelRc<ColumnView>>` builds
-    ///           the current bounded model. `&mut self` because the preview cache
-    ///           and counters mutate.
-    /// Why:      Every handler ends by publishing; the app also calls it for the
-    ///           first frame and on resize.
-    pub fn publish(&mut self) -> Result<ModelRc<ColumnView>> {
+    /// What:     `fn build_model(&mut self) -> Result<ModelRc<ColumnView>>` builds
+    ///           the current bounded model unconditionally. `&mut self` because the
+    ///           preview cache and counters mutate.
+    /// Why:      `reconcile` calls it only when the visible window actually changed,
+    ///           so this never runs once per scroll pixel.
+    fn build_model(&mut self) -> Result<ModelRc<ColumnView>> {
         // What:     `self.instrumentation.active_column.set(self.active_column);`
         //           mirrors the active column index.
         // Why:      HUD shows it.
@@ -257,62 +302,127 @@ impl Controller {
         Ok(model)
     }
 
-    /// What:     `pub fn on_horizontal_scroll(&mut self, offset_px: f32) ->
-    ///           Result<ModelRc<ColumnView>>` handles a horizontal scroll.
-    /// Why:      The Flickable reports pixel offsets here.
-    pub fn on_horizontal_scroll(&mut self, offset_px: f32) -> Result<ModelRc<ColumnView>> {
+    /// What:     `pub fn set_h_offset(&mut self, offset_px: f32)` records the
+    ///           horizontal scroll offset. It does NOT rebuild the model.
+    /// Why:      The Flickable reports pixel offsets continuously; storing the
+    ///           offset is cheap, and the frame timer's `reconcile` rebuilds only
+    ///           when the offset actually crosses into a different column window.
+    pub fn set_h_offset(&mut self, offset_px: f32) {
         // What:     `self.h_offset_px = offset_px.max(0.0);` stores the clamped
         //           offset.
-        // Why:      Never scroll before the first column.
+        // Why:      Never scroll before the first column; no rebuild here.
         self.h_offset_px = offset_px.max(0.0);
-        // What:     `self.publish()` republishes; tail expression.
-        // Why:      Reflect the new horizontal window.
-        self.publish()
+    }
+
+    /// What:     `fn column_window(&self) -> (usize, usize)` computes the in-window
+    ///           column index range from the current horizontal offset.
+    /// Why:      Both the signature and the model build must agree on the window.
+    fn column_window(&self) -> (usize, usize) {
+        // What:     `let range = visible_range(...)` windows the columns.
+        // Why:      Reuse the shared bounded-window maths.
+        let range = visible_range(
+            self.h_offset_px,
+            self.viewport_w_px,
+            column_pitch_px(),
+            self.strip.columns.len(),
+            PREFETCH,
+        );
+        // What:     `(range.start, range.end)` is the returned tuple; tail.
+        // Why:      Hand back the range endpoints.
+        (range.start, range.end)
+    }
+
+    /// What:     `fn signature(&self) -> Signature` snapshots everything that
+    ///           decides the model's contents.
+    /// Why:      `reconcile` compares it against the last published signature.
+    fn signature(&self) -> Signature {
+        // What:     `let (start, end) = self.column_window();` reads the window.
+        // Why:      The horizontal part of the signature.
+        let (start, end) = self.column_window();
+        // What:     `Signature { ... v_bits: self.v_offset_px.to_bits(), ... }`
+        //           builds the snapshot; `.to_bits()` reinterprets the `f32` as a
+        //           `u32` so it compares exactly. Tail expression.
+        // Why:      Capture window, vertical offset, active identity, and strip len.
+        Signature {
+            start,
+            end,
+            v_bits: self.v_offset_px.to_bits(),
+            active_column: self.active_column,
+            active_pane: self.active_pane,
+            strip_len: self.strip.columns.len(),
+        }
+    }
+
+    /// What:     `pub fn reconcile(&mut self, force: bool) ->
+    ///           Result<Option<ModelRc<ColumnView>>>` rebuilds the model only when
+    ///           the signature changed (or `force` is set). `Some(model)` means a
+    ///           rebuild happened; `None` means nothing changed.
+    /// Why:      This is what makes smooth scrolling cheap: a sub-column scroll
+    ///           leaves the signature equal, so no rebuild and no element churn.
+    pub fn reconcile(&mut self, force: bool) -> Result<Option<ModelRc<ColumnView>>> {
+        // What:     `let sig = self.signature();` snapshots the current state.
+        // Why:      Compare it to the last published one.
+        let sig = self.signature();
+        // What:     `if !force && self.last_signature == Some(sig) { return
+        //           Ok(None); }`. `Some(sig)` wraps it for the equality check.
+        // Why:      Skip the rebuild when nothing that affects the model changed.
+        if !force && self.last_signature == Some(sig) {
+            return Ok(None);
+        }
+        // What:     `let model = self.build_model()?;` does the actual build.
+        // Why:      The window or contents changed, so rebuild.
+        let model = self.build_model()?;
+        // What:     `self.last_signature = Some(sig);` records what we just built.
+        // Why:      The next reconcile compares against it.
+        self.last_signature = Some(sig);
+        // What:     `Ok(Some(model))` returns the fresh model; tail expression.
+        // Why:      The caller assigns it to the window.
+        Ok(Some(model))
+    }
+
+    /// What:     `pub fn frame_tick(&mut self) -> Result<Option<ModelRc<ColumnView>>>`
+    ///           is the per-frame work: collect finished decodes, then reconcile.
+    /// Why:      One timer both shows decoded previews and applies horizontal
+    ///           window shifts, off the render frame, at most one rebuild per tick.
+    pub fn frame_tick(&mut self) -> Result<Option<ModelRc<ColumnView>>> {
+        // What:     `let landed = self.preview_cache.drain_results();` collects ready
+        //           bitmaps and returns how many landed.
+        // Why:      A landed decode changes a pane image without changing the
+        //           signature, so it forces a rebuild.
+        let landed = self.preview_cache.drain_results();
+        // What:     `self.reconcile(landed > 0)` rebuilds if decodes landed or the
+        //           window changed; tail expression.
+        // Why:      One reconcile per tick handles both cases.
+        self.reconcile(landed > 0)
     }
 
     /// What:     `pub fn on_vertical_scroll(&mut self, percent: f32) ->
-    ///           Result<ModelRc<ColumnView>>` handles the active column's vertical
+    ///           Result<Option<ModelRc<ColumnView>>>` handles the shared vertical
     ///           scroll, given a 0..100 percentage from the slider.
-    /// Why:      Vertical scroll is Rust-driven, so a percentage is unambiguous.
-    pub fn on_vertical_scroll(&mut self, percent: f32) -> Result<ModelRc<ColumnView>> {
+    /// Why:      Vertical scroll is discrete (slider-driven), so it reconciles
+    ///           immediately; the changed offset makes the signature differ.
+    pub fn on_vertical_scroll(&mut self, percent: f32) -> Result<Option<ModelRc<ColumnView>>> {
         // What:     `self.v_offset_px = (percent / 100.0) * self.max_v_offset();`
         //           sets the single global offset from the percentage.
         // Why:      Move every column's panes together, proportionally.
         self.v_offset_px = (percent / 100.0) * self.max_v_offset();
-        // What:     `self.publish()` republishes; tail expression.
+        // What:     `self.reconcile(false)` rebuilds because the vertical offset
+        //           changed; tail expression.
         // Why:      Reflect the new vertical window across all columns.
-        self.publish()
-    }
-
-    /// What:     `pub fn poll_decodes(&mut self) -> Result<Option<ModelRc<ColumnView>>>`
-    ///           collects any finished background decodes and republishes if some
-    ///           landed. `Option` is `Some(model)` when a republish happened.
-    /// Why:      The app polls this on a timer so newly-decoded previews appear.
-    pub fn poll_decodes(&mut self) -> Result<Option<ModelRc<ColumnView>>> {
-        // What:     `let landed = self.preview_cache.drain_results();` collects ready
-        //           bitmaps and returns how many landed.
-        // Why:      Only republish when something changed.
-        let landed = self.preview_cache.drain_results();
-        // What:     `if landed > 0 { Ok(Some(self.publish()?)) } else { Ok(None) }`
-        //           republishes on new bitmaps, else reports nothing to do.
-        // Why:      Show the decoded previews without a needless republish.
-        if landed > 0 {
-            Ok(Some(self.publish()?))
-        } else {
-            Ok(None)
-        }
+        self.reconcile(false)
     }
 
     /// What:     `pub fn on_key_nav(&mut self, key: &str) ->
-    ///           Result<ModelRc<ColumnView>>` handles a navigation command.
+    ///           Result<Option<ModelRc<ColumnView>>>` handles a navigation command.
     /// Why:      Arrow keys and the on-screen buttons both route here.
-    pub fn on_key_nav(&mut self, key: &str) -> Result<ModelRc<ColumnView>> {
+    pub fn on_key_nav(&mut self, key: &str) -> Result<Option<ModelRc<ColumnView>>> {
         // What:     `self.apply_key_nav(key);` mutates active/scroll state.
-        // Why:      Separate the state change from the publish.
+        // Why:      Separate the state change from the reconcile.
         self.apply_key_nav(key);
-        // What:     `self.publish()` republishes; tail expression.
+        // What:     `self.reconcile(false)` rebuilds if the navigation changed the
+        //           window or active identity; tail expression.
         // Why:      Reflect the navigation.
-        self.publish()
+        self.reconcile(false)
     }
 
     /// What:     `fn apply_key_nav(&mut self, key: &str)` maps a command string to
