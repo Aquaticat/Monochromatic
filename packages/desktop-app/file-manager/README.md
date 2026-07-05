@@ -50,9 +50,10 @@ Driven headless through the embedded MCP server on a release build,
  bounded by the viewport,
 - decode count rising on scroll-back,
  confirming re-decode after eviction,
-- publish cost per scroll step (windowing only):
-   8 to 16 microseconds,
- constant regardless of strip size,
+- column build churn:
+   about a dozen column builds across a whole scroll session,
+ because only the delta columns are built as the window slides,
+ not the whole model on every event,
 - preview decode runs off the UI thread on a background worker,
  so publish never includes decode time and a hard jump across many preview panes stays under one frame.
 

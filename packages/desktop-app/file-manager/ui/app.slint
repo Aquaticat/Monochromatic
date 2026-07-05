@@ -88,9 +88,6 @@ export component AppWindow inherits Window {
     in property <int> active-column: 0;
     in property <int> active-pane: 0;
     in property <bool> active-pane-focused: false;
-    in property <int> last-publish-us: 0;
-    in property <int> max-publish-us: 0;
-    in property <int> last-decode-us: 0;
 
     // Horizontal scroll position in pixels (positive = scrolled right). Two-way
     // so the h-position slider and the Flickable stay in sync.
@@ -131,9 +128,7 @@ export component AppWindow inherits Window {
                 }
                 hud-c := Text {
                     text: "active column/pane: " + root.active-column + "/" + root.active-pane
-                        + "   focus: " + (root.active-pane-focused ? "yes" : "no")
-                        + "   publish " + root.last-publish-us + "us = windowing " + (root.last-publish-us - root.last-decode-us)
-                        + "us + decode " + root.last-decode-us + "us (max " + root.max-publish-us + "us)";
+                        + "   focus: " + (root.active-pane-focused ? "yes" : "no");
                     color: Palette.foreground;
                     font-size: 13px;
                 }

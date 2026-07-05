@@ -147,12 +147,6 @@ fn mirror_hud(app: &AppWindow, instrumentation: &Instrumentation) {
     app.set_pane_builds(instrumentation.pane_builds.get() as i32);
     app.set_active_column(instrumentation.active_column.get() as i32);
     app.set_active_pane(instrumentation.active_pane.get() as i32);
-    // What:     Mirror the last and worst-case publish times plus the decode
-    //           portion (all microseconds).
-    // Why:      The smoothness read-back, split into windowing vs decode.
-    app.set_last_publish_us(instrumentation.last_publish_us.get() as i32);
-    app.set_max_publish_us(instrumentation.max_publish_us.get() as i32);
-    app.set_last_decode_us(instrumentation.last_decode_us.get() as i32);
     // What:     `app.set_active_pane_focused(instrumentation.active_pane_focused.get());`
     //           mirrors the focus flag (a plain `bool`).
     // Why:      The focus-survival read-back.
