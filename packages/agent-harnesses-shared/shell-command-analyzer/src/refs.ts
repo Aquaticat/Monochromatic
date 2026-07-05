@@ -65,7 +65,10 @@ function readIdentifier(
     readonly source: string;
     readonly start: number;
   },
-): { readonly name: string; readonly next: number; } | undefined {
+): {
+  readonly name: string;
+  readonly next: number
+} | undefined {
   if (!isIdentifierStart(source.charAt(start,),))
     return undefined;
 

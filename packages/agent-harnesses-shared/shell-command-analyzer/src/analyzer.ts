@@ -9,8 +9,15 @@ import {
   type Script as UnbashScript,
 } from 'unbash';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { looksLikePath, extractParamRefs, } from './refs.ts';
-import type { ShellCommandAnalysis, ShellCommandInfo, ShellParseError, } from './types.ts';
+import {
+  looksLikePath,
+  extractParamRefs,
+} from './refs.ts';
+import type {
+  ShellCommandAnalysis,
+  ShellCommandInfo,
+  ShellParseError,
+} from './types.ts';
 import {
   EXECUTED_CONTEXT,
   type CommandCollection,
@@ -82,7 +89,13 @@ function thrownParseError(error: unknown,): ShellParseError {
  */
 function tryParseScript(
   command: string,
-): { readonly ok: true; readonly script: ParsedUnbashScript; } | { readonly ok: false; readonly parseErrors: readonly ShellParseError[]; } {
+): {
+  readonly ok: true;
+  readonly script: ParsedUnbashScript
+} | {
+  readonly ok: false;
+  readonly parseErrors: readonly ShellParseError[]
+} {
   try {
     /**
      * Parsed script with optional tolerant diagnostics.
@@ -300,7 +313,8 @@ function collectCommandInfoFromScript(
       left: flags,
       right: result.flags,
     },);
-    for (const workItem of result.workItems.toReversed())
+    for (const workItem of result.workItems
+      .toReversed())
       stack.push(workItem,);
   }
 
@@ -387,7 +401,9 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
     script: parsed.script,
     paramRefs: preScanRefs,
   },);
-  if (collection.parseErrors.length > 0) {
+  if (collection.parseErrors
+    .length
+    > 0) {
     return failedAnalysis({
       parseErrors: collection.parseErrors,
       paramRefs: preScanRefs,
@@ -397,19 +413,26 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
   /**
    * Commands evaluated outside function bodies.
    */
-  const executedCommands = collection.commands.filter(function isExecutedCommand(info,): boolean {
-    return info.context.kind === 'executed';
+  const executedCommands = collection.commands
+    .filter(function isExecutedCommand(info,): boolean {
+    return info.context
+      .kind
+      === 'executed';
   },);
   /**
    * Commands stored inside function bodies.
    */
-  const functionDefinitionCommands = collection.commands.filter(function isFunctionDefinitionCommand(info,): boolean {
-    return info.context.kind === 'functionDefinition';
+  const functionDefinitionCommands = collection.commands
+    .filter(function isFunctionDefinitionCommand(info,): boolean {
+    return info.context
+      .kind
+      === 'functionDefinition';
   },);
   /**
    * File-like command arguments and redirect targets.
    */
-  const allFiles = collection.commands.flatMap(function collectFiles(info,): string[] {
+  const allFiles = collection.commands
+    .flatMap(function collectFiles(info,): string[] {
     return [
       ...info.envAssignments
         .map(function assignmentValue(assignment,): string {
@@ -418,7 +441,8 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
         .filter(function assignmentValueLooksLikePath(value,): boolean {
           return looksLikePath(value,);
         },),
-      ...info.args.filter(function argLooksLikePath(arg,): boolean {
+      ...info.args
+        .filter(function argLooksLikePath(arg,): boolean {
         return looksLikePath(arg,);
       },),
       ...info.redirectTargets,
@@ -428,7 +452,8 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
    * Deduplicated parameter references aggregated across command records.
    */
   const allParamRefs = [...new Set(
-    collection.commands.flatMap(function collectRefs(info,): readonly string[] {
+    collection.commands
+      .flatMap(function collectRefs(info,): readonly string[] {
       return info.paramRefs;
     },),
   ),];
@@ -441,12 +466,18 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
     commands: collection.commands,
     executedCommands,
     functionDefinitionCommands,
-    isPipeline: collection.flags.isPipeline,
-    hasBackground: collection.flags.hasBackground,
-    hasCommandSubstitution: collection.flags.hasCommandSubstitution,
-    hasProcessSubstitution: collection.flags.hasProcessSubstitution,
-    hasHeredoc: collection.commands.some(function commandHasHeredoc(info,): boolean {
-      return info.redirects.some(function redirectIsHeredoc(redirect,): boolean {
+    isPipeline: collection.flags
+      .isPipeline,
+    hasBackground: collection.flags
+      .hasBackground,
+    hasCommandSubstitution: collection.flags
+      .hasCommandSubstitution,
+    hasProcessSubstitution: collection.flags
+      .hasProcessSubstitution,
+    hasHeredoc: collection.commands
+      .some(function commandHasHeredoc(info,): boolean {
+      return info.redirects
+        .some(function redirectIsHeredoc(redirect,): boolean {
         return (redirect.kind === 'heredoc') || (redirect.kind === 'hereString');
       },);
     },),

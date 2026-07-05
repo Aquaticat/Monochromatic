@@ -105,7 +105,8 @@ function redirectKind(
     return 'heredoc';
   if (operator === '<<<')
     return 'hereString';
-  if (DESCRIPTOR_OPERATORS.has(operator,) && (target !== undefined) && isNumericDescriptor(target,))
+  if (DESCRIPTOR_OPERATORS.has(operator,) && (target !== undefined)
+    && isNumericDescriptor(target,))
     return 'fileDescriptor';
   return 'file';
 }

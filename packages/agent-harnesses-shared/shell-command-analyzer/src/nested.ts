@@ -12,7 +12,10 @@ import {
   type Script as UnbashScript,
 } from 'unbash';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ShellCommandContext, ShellParseError, } from './types.ts';
+import type {
+  ShellCommandContext,
+  ShellParseError,
+} from './types.ts';
 import {
   EMPTY_VISIT_RESULT,
   NO_SCRIPT,
@@ -96,7 +99,10 @@ function scriptFromExpansion(
     | UnbashArithmeticCommandExpansion
     | UnbashCommandExpansionPart
     | UnbashProcessSubstitutionPart,
-): { readonly script: ParsedUnbashScript; readonly parseErrors: readonly ShellParseError[]; } | typeof NO_SCRIPT {
+): {
+  readonly script: ParsedUnbashScript;
+  readonly parseErrors: readonly ShellParseError[]
+} | typeof NO_SCRIPT {
   if (expansion.script !== undefined) {
     return {
       script: expansion.script as ParsedUnbashScript,
@@ -179,7 +185,8 @@ function visitExpansion(
   return {
     ...EMPTY_VISIT_RESULT,
     workItems: statementWorkItems({
-      statements: nested.script.commands,
+      statements: nested.script
+        .commands,
       context,
     },),
     flags: {

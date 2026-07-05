@@ -196,13 +196,17 @@ function parameterWordItems(
       ? []
       : [
         ...wordWorkItems({
-          word: part.slice.offset,
+          word: part.slice
+            .offset,
           context,
         },),
-        ...(part.slice.length === undefined
+        ...(part.slice
+          .length
+          === undefined
           ? []
           : wordWorkItems({
-            word: part.slice.length,
+            word: part.slice
+              .length,
             context,
           })),
       ]),
@@ -210,11 +214,13 @@ function parameterWordItems(
       ? []
       : [
         ...wordWorkItems({
-          word: part.replace.pattern,
+          word: part.replace
+            .pattern,
           context,
         },),
         ...wordWorkItems({
-          word: part.replace.replacement,
+          word: part.replace
+            .replacement,
           context,
         },),
       ]),

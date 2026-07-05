@@ -13,7 +13,10 @@ import type {
   Word as UnbashWord,
   WordPart as UnbashWordPart,
 } from 'unbash';
-import { commandToInfo, redirectOnlyCommand, } from './convert.ts';
+import {
+  commandToInfo,
+  redirectOnlyCommand,
+} from './convert.ts';
 import type { ShellCommandContext, } from './types.ts';
 import {
   EMPTY_REDIRECTS,
@@ -165,10 +168,12 @@ function visitParts(
       isPipeline: false,
       hasBackground: false,
       hasCommandSubstitution: results.some(function resultHasCommandSubstitution(result,): boolean {
-        return result.flags.hasCommandSubstitution;
+        return result.flags
+          .hasCommandSubstitution;
       },),
       hasProcessSubstitution: results.some(function resultHasProcessSubstitution(result,): boolean {
-        return result.flags.hasProcessSubstitution;
+        return result.flags
+          .hasProcessSubstitution;
       },),
     },
     parseErrors: results.flatMap(function resultParseErrors(result,): VisitResult['parseErrors'] {
@@ -464,7 +469,8 @@ function visitRemainingAfterCase(
           context,
         }]),
         ...statementWorkItems({
-          statements: node.body.commands,
+          statements: node.body
+            .commands,
           context,
         },),
         ...redirectWorkItems({
@@ -544,7 +550,8 @@ function visitRemainingNode(
      */
     const functionContext: ShellCommandContext = {
       kind: 'functionDefinition',
-      functionName: node.name.value,
+      functionName: node.name
+        .value,
     };
     return {
       ...EMPTY_VISIT_RESULT,
@@ -571,7 +578,8 @@ function visitRemainingNode(
       ...EMPTY_VISIT_RESULT,
       workItems: [
         ...statementWorkItems({
-          statements: node.body.commands,
+          statements: node.body
+            .commands,
           context,
         },),
         ...redirectWorkItems({
@@ -687,7 +695,9 @@ function visitNode(
       ...EMPTY_VISIT_RESULT,
       flags: {
         ...EMPTY_VISIT_RESULT.flags,
-        isPipeline: node.operators.length > 0,
+        isPipeline: node.operators
+          .length
+          > 0,
       },
       workItems: [
         ...nodeWorkItems({
@@ -721,11 +731,13 @@ function visitNode(
       ...EMPTY_VISIT_RESULT,
       workItems: [
         ...statementWorkItems({
-          statements: node.clause.commands,
+          statements: node.clause
+            .commands,
           context,
         },),
         ...statementWorkItems({
-          statements: node.then.commands,
+          statements: node.then
+            .commands,
           context,
         },),
         ...(node.else === undefined ? [] : [{
@@ -754,7 +766,8 @@ function visitNode(
           context,
         },),
         ...statementWorkItems({
-          statements: node.body.commands,
+          statements: node.body
+            .commands,
           context,
         },),
         ...redirectWorkItems({
@@ -769,11 +782,13 @@ function visitNode(
       ...EMPTY_VISIT_RESULT,
       workItems: [
         ...statementWorkItems({
-          statements: node.clause.commands,
+          statements: node.clause
+            .commands,
           context,
         },),
         ...statementWorkItems({
-          statements: node.body.commands,
+          statements: node.body
+            .commands,
           context,
         },),
         ...redirectWorkItems({
