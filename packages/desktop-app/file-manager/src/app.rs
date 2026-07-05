@@ -115,16 +115,6 @@ fn install_backend() -> Result<()> {
     Ok(())
 }
 
-/// What:     `fn log_callback_error(context: &str, error: anyhow::Error)` logs a
-///           failed callback to stderr.
-/// Why:      Slint callbacks cannot return errors to the event loop.
-fn log_callback_error(context: &str, error: anyhow::Error) {
-    // What:     `tracing::error!(...)` emits a structured error event; `%error`
-    //           formats the error via its `Display`.
-    // Why:      Prototype failures should be visible when launched from a terminal.
-    tracing::error!(context, error = %error, "callback error");
-}
-
 /// What:     `fn mirror_hud(app: &AppWindow, instrumentation: &Instrumentation)`
 ///           copies every counter into the window's HUD properties.
 /// Why:      The instrumentation is the source of truth; the HUD is a mirror.
@@ -206,18 +196,12 @@ pub fn run() -> Result<()> {
     // Why:      The HUD timer mirrors from it.
     let instrumentation = controller.borrow().instrumentation();
 
-    // What:     `let initial_model = controller.borrow_mut().reconcile(true)?
-    //           .expect(...);` force-builds the first model; `.expect` unwraps the
-    //           `Some` a forced reconcile always returns. The `RefMut` releases at
-    //           the `;`.
-    // Why:      The window needs columns before its first frame.
-    let initial_model = controller
-        .borrow_mut()
-        .reconcile(true)?
-        .expect("a forced reconcile always builds a model");
-    // What:     `app.set_columns(initial_model);` hands the model to the window.
-    // Why:      Render the initial window.
-    app.set_columns(initial_model);
+    // What:     `app.set_columns(controller.borrow().columns_model_rc());` installs
+    //           the persistent columns model on the window ONCE.
+    // Why:      From now on Rust mutates that model in place (insert/remove/
+    //           row-changed); it is never replaced, so the Flickable's scroll
+    //           position is never disturbed.
+    app.set_columns(controller.borrow().columns_model_rc());
     // What:     `app.set_strip_width_px(controller.borrow().strip_width_px());`
     //           sets the Flickable's full content width.
     // Why:      Horizontal scrolling spans the whole strip.
@@ -244,22 +228,17 @@ pub fn run() -> Result<()> {
         }
     });
 
-    // What:     Register the vertical-scroll callback (active column, 0..100%).
-    // Why:      The vertical slider republishes the active column's pane window.
-    let weak_v = app.as_weak();
+    // What:     Register the vertical-scroll callback (0..100% of the shared range).
+    // Why:      Vertical scroll rewrites every in-window column's panes in place.
     app.on_vertical_scrolled({
         let controller = Rc::clone(&controller);
+        // What:     `move |percent| { ... }` captures the controller by value.
+        // Why:      Slint owns the callback.
         move |percent| {
-            if let Some(app) = weak_v.upgrade() {
-                // What:     Same bind-then-match pattern as horizontal scroll.
-                // Why:      Release the borrow before touching the window.
-                let result = controller.borrow_mut().on_vertical_scroll(percent);
-                match result {
-                    Ok(Some(model)) => app.set_columns(model),
-                    Ok(None) => (),
-                    Err(error) => log_callback_error("vertical scroll", error),
-                }
-            }
+            // What:     `controller.borrow_mut().on_vertical_scroll(percent);` mutates
+            //           the persistent model in place; no swap, no Flickable touch.
+            // Why:      Vertical scroll moves every column together.
+            controller.borrow_mut().on_vertical_scroll(percent);
         }
     });
 
@@ -272,27 +251,17 @@ pub fn run() -> Result<()> {
         // Why:      One handler for all navigation commands.
         move |key| {
             if let Some(app) = weak_k.upgrade() {
-                // What:     `let result = controller.borrow_mut().on_key_nav(key.as_str());`
-                //           runs the handler; `.as_str()` borrows the SharedString
-                //           as a `&str`. The `RefMut` releases at the `;`.
-                // Why:      Release the borrow before re-borrowing below.
-                let result = controller.borrow_mut().on_key_nav(key.as_str());
-                match result {
-                    // What:     On success, set the model if one was rebuilt, then
-                    //           sync the Flickable to the (possibly moved) horizontal
-                    //           offset. `0.0 - controller.borrow().h_offset_px()`
-                    //           negates it because Slint's viewport-x is <= 0.
-                    // Why:      Keyboard navigation must move the visible window; the
-                    //           viewport-x change then feeds set_h_offset for the
-                    //           frame timer.
-                    Ok(model_option) => {
-                        if let Some(model) = model_option {
-                            app.set_columns(model);
-                        }
-                        app.set_h_scroll_px(0.0 - controller.borrow().h_offset_px());
-                    }
-                    Err(error) => log_callback_error("key nav", error),
-                }
+                // What:     `controller.borrow_mut().on_key_nav(key.as_str());` mutates
+                //           the model in place; `.as_str()` borrows the SharedString.
+                //           The `RefMut` releases at the `;`.
+                // Why:      Navigation reconciles the model without a swap.
+                controller.borrow_mut().on_key_nav(key.as_str());
+                // What:     `app.set_h_scroll_px(0.0 - controller.borrow().h_offset_px());`
+                //           moves the Flickable to the (possibly moved) offset;
+                //           viewport-x is <= 0, so it is negated.
+                // Why:      Keyboard navigation must move the visible window; the
+                //           resulting viewport-x change feeds set_h_offset.
+                app.set_h_scroll_px(0.0 - controller.borrow().h_offset_px());
             }
         }
     });
@@ -368,21 +337,14 @@ pub fn run() -> Result<()> {
     frame_timer.start(TimerMode::Repeated, Duration::from_millis(FRAME_TICK_MS), {
         let controller = Rc::clone(&controller);
         move || {
-            if let Some(app) = weak_frame.upgrade() {
-                // What:     `let result = controller.borrow_mut().frame_tick();`
-                //           drains decodes then reconciles; the `RefMut` releases at
-                //           the `;`.
-                // Why:      Bind first so no borrow is held during the match.
-                let result = controller.borrow_mut().frame_tick();
-                // What:     `match result { Ok(Some(model)) => ..., Ok(None) => (),
-                //           Err(error) => ... }` applies a rebuild only when one
-                //           happened. `()` is the do-nothing unit value.
-                // Why:      Most ticks rebuild nothing (no window change, no decode).
-                match result {
-                    Ok(Some(model)) => app.set_columns(model),
-                    Ok(None) => (),
-                    Err(error) => log_callback_error("frame tick", error),
-                }
+            // What:     `if weak_frame.upgrade().is_some() { ... }` runs only while the
+            //           window still exists.
+            // Why:      Skip work during teardown.
+            if weak_frame.upgrade().is_some() {
+                // What:     `controller.borrow_mut().frame_tick();` drains decodes and
+                //           slides the window, mutating the persistent model in place.
+                // Why:      No model swap, so the Flickable's scroll is untouched.
+                controller.borrow_mut().frame_tick();
             }
         }
     });

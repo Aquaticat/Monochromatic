@@ -300,22 +300,22 @@ impl PreviewCache {
         None
     }
 
-    /// What:     `pub fn drain_results(&mut self) -> usize` collects every finished
-    ///           decode waiting in the channel and makes each resident, returning
-    ///           how many landed.
-    /// Why:      A per-frame poll turns background results into displayable images.
+    /// What:     `pub fn drain_results(&mut self) -> Vec<u64>` collects every
+    ///           finished decode waiting in the channel, makes each resident, and
+    ///           returns the pane ids that landed.
+    /// Why:      The controller refreshes exactly the columns owning those panes,
+    ///           so a decode updates one column, not the whole model.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// drainResults(): number { /* while (msg = tryRecv()) { ... } */ }
+    /// drainResults(): number[] { /* while (msg = tryRecv()) { ... } */ }
     /// ```
-    pub fn drain_results(&mut self) -> usize {
-        // What:     `let mut count: usize = 0;` counts results landed this drain.
-        // Why:      The caller republishes only when something arrived.
-        let mut count: usize = 0;
+    pub fn drain_results(&mut self) -> Vec<u64> {
+        // What:     `let mut landed: Vec<u64> = Vec::new();` collects landed ids.
+        // Why:      The caller refreshes the owning columns.
+        let mut landed: Vec<u64> = Vec::new();
         // What:     `while let Ok(result) = self.result_rx.try_recv() { ... }` pulls
-        //           results without blocking; `try_recv` returns `Err` when the
-        //           queue is empty, ending the loop.
+        //           results without blocking; `try_recv` returns `Err` when empty.
         // Why:      Drain everything ready, but never wait.
         while let Ok(result) = self.result_rx.try_recv() {
             // What:     `self.pending.remove(&result.pane_id);` clears the in-flight
@@ -329,10 +329,9 @@ impl PreviewCache {
             //           result.height);` wraps the bytes into a Slint image (cheap).
             // Why:      Make it displayable.
             let image = raw_to_image(&result.raw, result.width, result.height);
-            // What:     `if let Some(old) = self.decoded.insert(result.pane_id,
-            //           DecodedPreview { image, bytes }) { self.resident_bytes -=
-            //           old.bytes; }`. `insert` returns any previous value.
-            // Why:      Replace and reclaim bytes if one somehow already existed.
+            // What:     `if let Some(old) = self.decoded.insert(...) { ... }` stores
+            //           the bitmap and reclaims bytes if one already existed.
+            // Why:      Keep the resident total exact.
             if let Some(old) = self
                 .decoded
                 .insert(result.pane_id, DecodedPreview { image, bytes })
@@ -348,19 +347,19 @@ impl PreviewCache {
             self.instrumentation
                 .decode_count
                 .set(self.instrumentation.decode_count.get() + 1);
-            // What:     `count += 1;` counts this landed result.
-            // Why:      Report the total.
-            count += 1;
+            // What:     `landed.push(result.pane_id);` records the landed pane.
+            // Why:      Return it to the caller.
+            landed.push(result.pane_id);
         }
-        // What:     `if count > 0 { ... }` mirrors the changed totals once per drain.
+        // What:     `if !landed.is_empty() { ... }` mirrors the changed totals once.
         // Why:      Avoid touching the counters when nothing landed.
-        if count > 0 {
+        if !landed.is_empty() {
             self.instrumentation.decoded_image_bytes.set(self.resident_bytes);
             self.instrumentation.pending_decodes.set(self.pending.len());
         }
-        // What:     `count` is the returned tail.
-        // Why:      The caller republishes if it is non-zero.
-        count
+        // What:     `landed` is the returned tail.
+        // Why:      The caller refreshes the owning columns.
+        landed
     }
 
     /// What:     `pub fn retain_only(&mut self, live: &HashSet<u64>)` drops every

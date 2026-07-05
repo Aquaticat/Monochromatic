@@ -105,6 +105,16 @@ pub mod view;
 /// ```
 pub mod controller;
 
+/// What:     `pub mod model_sync;` exposes the second `impl Controller` block that
+///           mutates the persistent columns model (slide, refresh, count).
+/// Why:      Split from `controller.rs` to keep each file under the line budget.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as modelSync from "./model_sync";
+/// ```
+pub mod model_sync;
+
 /// What:     `pub mod launcher;` exposes the Wayland app-id hook.
 /// Why:      The window must carry a stable app id for shell integration, like
 ///           the sibling desktop apps.
