@@ -32,12 +32,12 @@ const TITLE_PREFIX = '✳';
 /**
  * OSC sequence prefix for setting terminal title text.
  */
-const OSC_TITLE_SEQUENCE_PREFIX = '\x1b]0;';
+const OSC_TITLE_SEQUENCE_PREFIX = '\u001B]0;';
 
 /**
  * OSC string terminator used after terminal title payload text.
  */
-const OSC_STRING_TERMINATOR = '\x07';
+const OSC_STRING_TERMINATOR = '\u0007';
 
 /**
  * Builds Claude Code text for tools absent from the known registry.

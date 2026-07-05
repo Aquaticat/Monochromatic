@@ -50,8 +50,10 @@ await describe({
     it({
       name: 'keeps existing short title behavior',
       fn: async () => {
-        expect(terminalTitleForEvent(userPromptSubmitEvent('Refactor auth',),),)
-          .toBe('✳ Refactor auth',);
+        const title = terminalTitleForEvent(
+          userPromptSubmitEvent('Refactor auth',),
+        );
+        expect(title,).toBe('✳ Refactor auth',);
       },
     },),
     it({

@@ -67,22 +67,28 @@ function truncate(
    */
   const bodyMaxLength = maxLength - TITLE_TRUNCATION_MARKER.length;
   /**
-   * Unicode code-point chunks preserved from the original string.
+   * Mutable prefix collection state kept inside one binding for lint-safe accumulation.
    */
-  const chunks: string[] = [];
-  /**
-   * JavaScript string length already assigned to {@link chunks}.
-   */
-  let lengthUsed = 0;
+  const prefixState: {
+    chunks: string[];
+    lengthUsed: number;
+  } = {
+    chunks: [],
+    lengthUsed: 0,
+  };
 
   for (const chunk of value) {
-    if (lengthUsed + chunk.length > bodyMaxLength)
+    /**
+     * JavaScript string length after accepting this Unicode code point.
+     */
+    const nextLength = prefixState.lengthUsed + chunk.length;
+    if (nextLength > bodyMaxLength)
       break;
-    chunks.push(chunk,);
-    lengthUsed += chunk.length;
+    prefixState.chunks.push(chunk,);
+    prefixState.lengthUsed = nextLength;
   }
 
-  return `${chunks.join('',)}${TITLE_TRUNCATION_MARKER}`;
+  return `${prefixState.chunks.join('',)}${TITLE_TRUNCATION_MARKER}`;
 }
 
 /**

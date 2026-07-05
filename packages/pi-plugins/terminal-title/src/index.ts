@@ -127,7 +127,10 @@ function setTerminalTitle(
     title: string;
   }>,
 ): void {
-  ctx.ui.setTitle(truncateTerminalTitlePayload({ value: title, },),);
+  ctx.ui
+    .setTitle(
+      truncateTerminalTitlePayload({ value: title, },),
+    );
 }
 
 //endregion Terminal title output

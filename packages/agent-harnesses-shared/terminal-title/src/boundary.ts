@@ -65,7 +65,9 @@ const TITLE_TRUNCATION_MARKER_UTF8_BYTES: number = TERMINAL_TITLE_TEXT_ENCODER
  * ```
  */
 function terminalTitleUtf8ByteLength(value: string,): number {
-  return TERMINAL_TITLE_TEXT_ENCODER.encode(value,).byteLength;
+  return TERMINAL_TITLE_TEXT_ENCODER
+    .encode(value,)
+    .byteLength;
 }
 
 /**
@@ -111,29 +113,35 @@ function truncateTerminalTitlePayload(
     ? maxBytes - TITLE_TRUNCATION_MARKER_UTF8_BYTES
     : maxBytes;
   /**
-   * Code-point chunks preserved from the original title payload.
+   * Mutable prefix collection state kept inside one binding for lint-safe accumulation.
    */
-  const chunks: string[] = [];
-  /**
-   * UTF-8 bytes already assigned to {@link chunks}.
-   */
-  let bytesUsed = 0;
+  const prefixState: {
+    bytesUsed: number;
+    chunks: string[];
+  } = {
+    bytesUsed: 0,
+    chunks: [],
+  };
 
   for (const chunk of value) {
     /**
      * UTF-8 bytes needed by this Unicode code point.
      */
     const chunkBytes = terminalTitleUtf8ByteLength(chunk,);
-    if (bytesUsed + chunkBytes > contentMaxBytes)
+    /**
+     * UTF-8 bytes after accepting this Unicode code point.
+     */
+    const nextBytes = prefixState.bytesUsed + chunkBytes;
+    if (nextBytes > contentMaxBytes)
       break;
-    chunks.push(chunk,);
-    bytesUsed += chunkBytes;
+    prefixState.chunks.push(chunk,);
+    prefixState.bytesUsed = nextBytes;
   }
 
   /**
    * Truncated payload body before appending an optional ellipsis.
    */
-  const body = chunks.join('',);
+  const body = prefixState.chunks.join('',);
   if (markerFits)
     return `${body}${TITLE_TRUNCATION_MARKER}`;
   return body;
