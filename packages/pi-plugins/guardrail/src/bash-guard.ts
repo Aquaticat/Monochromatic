@@ -39,7 +39,8 @@ function invokesBunTest(command: string,): boolean {
   if (!analysis.parsed)
     return false;
 
-  return analysis.executedCommands.some(function commandIsBunTest(info,): boolean {
+  return analysis.executedCommands
+    .some(function commandIsBunTest(info,): boolean {
     return (info.name === 'bun')
       && (info.args[0] === 'test');
   },);

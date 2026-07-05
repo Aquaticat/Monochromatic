@@ -238,8 +238,11 @@ function commandHasTtyContainerInvoke(command: ShellCommandInfo,): boolean {
     ?? '';
   if (!CONTAINER_TTY_SUBCOMMANDS.has(subcommand,))
     return false;
-  return command.args.slice(1,)
-    .some(isTtyFlag,);
+  return command.args
+    .slice(1,)
+    .some(function argIsTtyFlag(arg,): boolean {
+      return isTtyFlag(arg,);
+    },);
 }
 
 /**
@@ -255,7 +258,8 @@ function commandHasTtyContainerInvoke(command: ShellCommandInfo,): boolean {
  * ```
  */
 function commandHasOutputRedirect(command: ShellCommandInfo,): boolean {
-  return command.redirects.some(function redirectWritesFile(redirect,): boolean {
+  return command.redirects
+    .some(function redirectWritesFile(redirect,): boolean {
     return redirect.writesFile;
   },);
 }
@@ -291,7 +295,9 @@ function commandIsBunBuild(command: ShellCommandInfo,): boolean {
  */
 function commandInvokesFilterScript(command: ShellCommandInfo,): boolean {
   return commandWords(command,)
-    .some(isFilterScriptToken,);
+    .some(function commandWordIsFilterScript(token,): boolean {
+      return isFilterScriptToken(token,);
+    },);
 }
 
 /**
@@ -359,7 +365,8 @@ function commandIsDetachWrapper(command: ShellCommandInfo,): boolean {
  * ```
  */
 function analysisHasCommandSkip(analysis: ShellCommandAnalysis,): boolean {
-  return analysis.commands.some(function commandShouldSkip(command,): boolean {
+  return analysis.commands
+    .some(function commandShouldSkip(command,): boolean {
     return commandIsBinaryTool(command,)
       || commandHasOutputRedirect(command,)
       || commandInvokesFilterScript(command,)
