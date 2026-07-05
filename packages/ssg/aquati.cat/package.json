@@ -42,7 +42,6 @@
     "@types/node": "catalog:",
     "@types/hast": "catalog:",
     "tsdown": "catalog:",
-    "typesafe-i18n": "catalog:",
     "typescript": "catalog:"
   }
 }

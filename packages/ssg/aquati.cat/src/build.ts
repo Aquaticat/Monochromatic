@@ -74,7 +74,7 @@ const CONTENT_DIR = 'src/content';
  * Glob matching all pipeline source files for cache invalidation.
  * Changes to any matched file invalidate all cached content entries.
  */
-const PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts';
+const PIPELINE_GLOB = 'src/{lib,components,client,i18n}/**/*.ts';
 
 //region Build orchestration: loads content, processes MDX, generates pages and assets
 

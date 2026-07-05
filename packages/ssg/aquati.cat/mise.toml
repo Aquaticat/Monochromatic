@@ -2,7 +2,7 @@
 description = "Build SSG pipeline: clean, i18n + client JS, then site, then postprocess (pagefind + fingerprint), compress"
 run = [
   { tasks = ["build:clean"] },
-  { tasks = ["build:i18n", "build:js:client"] },
+  { tasks = ["build:js:client"] },
   { tasks = ["build:site"] },
   { tasks = ["build:postprocess"] },
   { tasks = ["build:compress"] },
@@ -11,10 +11,6 @@ run = [
 [tasks."build:clean"]
 description = "Remove dist/ before rebuild so stale artifacts (e.g. logs or editor state accidentally written with cwd=dist) never get packaged by build:compress"
 run = "rm -rf dist"
-
-[tasks."build:i18n"]
-description = "Generate typesafe-i18n types from locale files"
-run = "typesafe-i18n --no-watch"
 
 [tasks."build:js:client"]
 extends = "build:js:client"

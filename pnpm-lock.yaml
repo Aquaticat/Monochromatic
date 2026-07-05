@@ -286,9 +286,6 @@ catalogs:
     typebox:
       specifier: '>=1.3.3'
       version: 1.3.3
-    typesafe-i18n:
-      specifier: '>=5.27.1'
-      version: 5.27.1
     typescript:
       specifier: 7.0.1-rc
       version: 7.0.1-rc
@@ -2762,9 +2759,6 @@ importers:
       tsdown:
         specifier: 'catalog:'
         version: 0.22.3(typescript@7.0.1-rc)
-      typesafe-i18n:
-        specifier: 'catalog:'
-        version: 5.27.1(typescript@7.0.1-rc)
       typescript:
         specifier: 'catalog:'
         version: 7.0.1-rc
@@ -6096,12 +6090,6 @@ packages:
   typed-rest-client@2.3.1:
     resolution: {integrity: sha512-k4kX5Up6qA68D0Cby2AK+6+vM5k3qTxe+/3FqhnHRExjY5cfbOnzjQZbP/LXleF8hVoDvDqxlgk9KK83HoBZlQ==, tarball: https://registry.npmjs.org/typed-rest-client/-/typed-rest-client-2.3.1.tgz}
     engines: {node: '>= 16.0.0'}
-
-  typesafe-i18n@5.27.1:
-    resolution: {integrity: sha512-749uWo2ZXETT//kWjVYPm8QPYR8xLh8G0wLfoAyCAtAmysX67uCaAyLjAjAWojL6fuJpE5B6yIjwvO9orXzUPg==, tarball: https://registry.npmjs.org/typesafe-i18n/-/typesafe-i18n-5.27.1.tgz}
-    hasBin: true
-    peerDependencies:
-      typescript: '>=3.5.1'
 
   typescript@6.0.3:
     resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==, tarball: https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz}
@@ -9709,10 +9697,6 @@ snapshots:
       qs: 6.15.3
       tunnel: 0.0.6
       underscore: 1.13.8
-
-  typesafe-i18n@5.27.1(typescript@7.0.1-rc):
-    dependencies:
-      typescript: 7.0.1-rc
 
   typescript@6.0.3: {}
 
