@@ -93,7 +93,7 @@ Do not install niri with `mise install cargo:niri@latest`: that installs upstrea
 compositor. Details and the source trace live in `docs/troubleshooting/niri-mise-cargo-install.md`.
 Issue #272 tracks replacing this dependency with a repo-owned minimal nested Wayland session tailored to GUI tests.
 
-1. Launch niri nested from the live Wayland session and run the app inside it with the GPU backend:
+1. Launch niri nested from the live Wayland session:
 
    ```bash
    mkdir --parents target/niri-gpu-test/xdg-config target/niri-gpu-test/xdg-cache target/niri-gpu-test/xdg-data
@@ -102,18 +102,27 @@ Issue #272 tracks replacing this dependency with a repo-owned minimal nested Way
      XDG_CACHE_HOME="$PWD/target/niri-gpu-test/xdg-cache" \
      XDG_DATA_HOME="$PWD/target/niri-gpu-test/xdg-data" \
      NIRI_CONFIG="$PWD/target/niri-gpu-test/empty.kdl" \
-     SLINT_BACKEND= SLINT_MCP_PORT=9315 \
-     niri -- mise run //packages/music-player/desktop-app:mcp -- fixtures
+     niri
    ```
 
-2. Capture the nested compositor output with niri IPC, using the `NIRI_SOCKET` printed by niri:
+2. In a second shell, run the app as a nested Wayland client with the GPU backend. Use the `WAYLAND_DISPLAY` and
+   `NIRI_SOCKET` values printed by niri:
+
+   ```bash
+   WAYLAND_DISPLAY=wayland-1 \
+     NIRI_SOCKET=/run/user/1000/niri.wayland-1.<pid>.sock \
+     SLINT_BACKEND= SLINT_MCP_PORT=9315 \
+     mise run //packages/music-player/desktop-app:mcp -- fixtures
+   ```
+
+3. Capture the nested compositor output with niri IPC:
 
    ```bash
    NIRI_SOCKET=/run/user/1000/niri.wayland-1.<pid>.sock \
      niri msg action screenshot-screen --show-pointer false --path "$PWD/target/niri-gpu-test/niri-screen.png"
    ```
 
-3. Drive and capture app internals through Slint MCP as usual. Empty `SLINT_BACKEND` lets Slint pick the winit backend,
+4. Drive and capture app internals through Slint MCP as usual. Empty `SLINT_BACKEND` lets Slint pick the winit backend,
    while `SLINT_MCP_PORT` still starts the embedded MCP server for `take_screenshot`, property reads, and input.
 
 Installed fallback: `cage` (a single-app nested wlroots compositor) can host the app similarly
