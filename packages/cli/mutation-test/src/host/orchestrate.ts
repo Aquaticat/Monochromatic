@@ -21,8 +21,8 @@ import { enumeratePackage, } from './enumerate-package.ts';
 import { ensureRuntimeImage, } from './image.ts';
 import { runOneShard, } from './run-one-shard.ts';
 import {
+  composeReshard,
   composeShards,
-  type MutantGroup,
 } from './shards.ts';
 import type { Mutant, } from '../engine/types.ts';
 import type {
@@ -80,9 +80,19 @@ export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunO
    * Enumerated per-file groups and suppression-ignored mutants.
    */
   const {
-    groups,
+    groups: allGroups,
     ignored,
   } = await enumeratePackage(options,);
+  /**
+   * Groups whose selected-test set can actually kill mutants; test-less
+   * files short-circuit below instead of burning containers on mutants
+   * nothing can detect.
+   */
+  const groups = allGroups.filter(function hasTests(group,): boolean {
+    return group.tests
+      .length
+      > 0;
+  },);
   /**
    * Mutant lookup by id for reshard rounds.
    */
@@ -137,6 +147,27 @@ export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunO
    * Total shard containers launched.
    */
   const counters = { shards: 0, };
+
+  for (const group of allGroups) {
+    if (group.tests
+      .length
+      > 0)
+      continue;
+
+    for (const mutant of group.mutants) {
+      finals.set(
+        mutant.id,
+        {
+          mutant,
+          status: 'survived',
+          position: 1,
+          rerunCount: 0,
+          confirmed: true,
+          detail: 'no tests select this file; mutant trivially survives',
+        },
+      );
+    }
+  }
 
   /**
    * Fetches one mutant entry, throwing on unknown ids.
@@ -281,68 +312,6 @@ export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunO
     return needsReshard;
   }
 
-  /**
-   * Builds manifests for one set of reshard ids at a given size.
-   *
-   * @param options2 - Ids to reshard and the shard size.
-   *
-   * @returns Manifests grouped per source file.
-   */
-  function reshardManifests(options2: {
-    readonly ids: readonly string[];
-    readonly size: number;
-  },): readonly ShardManifest[] {
-    /**
-     * Reshard groups keyed by source file.
-     */
-    const byFile = new Map<string, {
-      readonly mutants: Mutant[];
-      readonly tests: readonly string[];
-    }>();
-
-    for (const id of options2.ids) {
-      /**
-       * Lookup entry for this reshard id.
-       */
-      const entry = entryOrThrow(id,);
-      /**
-       * Existing bucket for this mutant's file.
-       */
-      const bucket = byFile.get(entry.mutant
-        .file,);
-
-      if (bucket === undefined)
-        byFile.set(
-          entry.mutant
-            .file,
-          {
-            mutants: [entry.mutant,],
-            tests: entry.tests,
-          },
-        );
-      else
-        bucket.mutants
-          .push(entry.mutant,);
-    }
-
-    return composeShards({
-      groups: [...byFile.entries(),]
-        .map(function toGroup(entry,): MutantGroup {
-          return {
-            file: entry[0],
-            mutants: entry[1]
-              .mutants,
-            tests: entry[1]
-              .tests,
-          };
-        },),
-      shardSize: options2.size,
-      timeoutFloorMs: options.timeoutFloorMs,
-      timeoutFactor: options.timeoutFactor,
-      packagePath: options.packagePath,
-    },);
-  }
-
   /* oxlint-disable no-await-in-loop */
   // Rounds are inherently sequential: each consumes the previous round's
   // taint fallout. Parallelism lives inside runRound via the p-limit gate.
@@ -377,7 +346,11 @@ export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunO
         1,
         Math.floor(round.size / 2,),
       );
-      round.manifests = reshardManifests({
+      round.manifests = composeReshard({
+        entryOf: entryOrThrow,
+        timeoutFloorMs: options.timeoutFloorMs,
+        timeoutFactor: options.timeoutFactor,
+        packagePath: options.packagePath,
         ids,
         size: round.size,
       },);
@@ -409,7 +382,11 @@ export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunO
       while (confirmation.ids
         .length
         > 0) {
-        confirmation.ids = [...await runRound(reshardManifests({
+        confirmation.ids = [...await runRound(composeReshard({
+        entryOf: entryOrThrow,
+        timeoutFloorMs: options.timeoutFloorMs,
+        timeoutFactor: options.timeoutFactor,
+        packagePath: options.packagePath,
           ids: confirmation.ids,
           size: 1,
         },),),];

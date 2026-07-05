@@ -105,3 +105,78 @@ export function composeShards(options: {
         },);
     },);
 }
+
+/**
+ * Rebuilds manifests for a set of mutant ids at a given shard size,
+ * regrouping by source file; used for taint resharding and confirmation.
+ *
+ * @param options - Ids, size, lookup, timeouts, and package identity.
+ *
+ * @returns Manifests grouped per source file.
+ *
+ * @example
+ * ```ts
+ * composeReshard({ ids, size: 1, entryOf, timeoutFloorMs: 5000, timeoutFactor: 3, packagePath });
+ * ```
+ */
+export function composeReshard(options: {
+  readonly ids: readonly string[];
+  readonly size: number;
+  readonly entryOf: (id: string,) => {
+    readonly mutant: Mutant;
+    readonly tests: readonly string[];
+  };
+  readonly timeoutFloorMs: number;
+  readonly timeoutFactor: number;
+  readonly packagePath: string;
+},): readonly ShardManifest[] {
+  /**
+   * Reshard groups keyed by source file.
+   */
+  const byFile = new Map<string, {
+    readonly mutants: Mutant[];
+    readonly tests: readonly string[];
+  }>();
+
+  for (const id of options.ids) {
+    /**
+     * Lookup entry for this reshard id.
+     */
+    const entry = options.entryOf(id,);
+    /**
+     * Existing bucket for this mutant's file.
+     */
+    const bucket = byFile.get(entry.mutant
+      .file,);
+
+    if (bucket === undefined)
+      byFile.set(
+        entry.mutant
+          .file,
+        {
+          mutants: [entry.mutant,],
+          tests: entry.tests,
+        },
+      );
+    else
+      bucket.mutants
+        .push(entry.mutant,);
+  }
+
+  return composeShards({
+    groups: [...byFile.entries(),]
+      .map(function toGroup(entry,): MutantGroup {
+        return {
+          file: entry[0],
+          mutants: entry[1]
+            .mutants,
+          tests: entry[1]
+            .tests,
+        };
+      },),
+    shardSize: options.size,
+    timeoutFloorMs: options.timeoutFloorMs,
+    timeoutFactor: options.timeoutFactor,
+    packagePath: options.packagePath,
+  },);
+}

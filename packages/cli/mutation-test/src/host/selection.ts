@@ -241,19 +241,31 @@ export async function selectTests(options: {
       '.ts',
       '',
     );
-  return unitTests
-    .filter(function related(file,): boolean {
-      /**
-       * Bare test file name without directories.
-       */
-      const testName = file
-        .split('/',)
-        .at(-1,)
-        ?? file;
-      return stemsRelated({
-        sourceStem,
-        testName,
-      },);
-    },)
+  /**
+   * Package-level integration test included for every source file when
+   * present, mirroring the old tool's default selection.
+   */
+  const integrationTests = unitTests.filter(function isIntegration(file,): boolean {
+    return file === 'src/integration.unit.test.ts';
+  },);
+  return [
+    ...new Set([
+      ...unitTests
+        .filter(function related(file,): boolean {
+          /**
+           * Bare test file name without directories.
+           */
+          const testName = file
+            .split('/',)
+            .at(-1,)
+            ?? file;
+          return stemsRelated({
+            sourceStem,
+            testName,
+          },);
+        },),
+      ...integrationTests,
+    ],),
+  ]
     .toSorted();
 }
