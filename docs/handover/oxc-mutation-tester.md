@@ -29,8 +29,12 @@ Update this file whenever a milestone lands or a decision changes.
   and fanotify failed on the dev host.
 - No mutation score anywhere. Native versioned JSON report: statuses killed/survived/timeout/compileError/runtimeError,
   per-mutant provenance (shard id, position, rerun count, confirmed flag). Exit 0 unless infra failure.
-- Mutant enumeration happens host-side with `oxc-parser`; containers receive a byte-span manifest
-  and never need oxc. Splice on Buffers (oxc spans are UTF-8 byte offsets, JS strings are UTF-16).
+- Mutant enumeration happens host-side with `oxc-parser`; containers receive a span manifest
+  and never need oxc.
+- CORRECTION to the posted plan (probe-verified, oxc-parser 0.138.0): the JS bindings return
+  UTF-16 string offsets, not UTF-8 byte offsets. `source.slice(start, end)` is exact, including past
+  astral characters; Buffer.subarray at those offsets is WRONG. Splice on JS strings, never Buffers.
+  Mention this when closing the issue so the plan comment's Buffer claim doesn't mislead.
 - Operators: port semantics of the ~15 Stryker mutator families as parity spec, fresh implementation.
 - Deleting with Stryker: all `@stryker-mutator/*`, the whole `@babel` subtree, and the `typescript6`
   (`catalog:classic`) alias whose only consumer is Stryker's checker.
