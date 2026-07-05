@@ -10,6 +10,7 @@
 import {
   mkdir,
   mkdtemp,
+  readFile,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -104,7 +105,59 @@ async function writeSmokeFile(options: {
 }
 
 /**
+ * Workspace dependency prefix identifying internal packages in a manifest.
+ */
+const WORKSPACE_SCOPE_PREFIX = '@monochromatic-dev/';
+
+/**
+ * Reads workspace `/ts` import specs declared by target package's manifest.
+ *
+ * Derived from `dependencies` plus `devDependencies` so the smoke only
+ * exercises imports the package can actually resolve; a hardcoded spec list
+ * fails packages that lack those specific dependencies.
+ *
+ * @param packageCwd - Target package cwd inside `/work`.
+ *
+ * @returns Workspace import specs ending in `/ts`, possibly empty.
+ *
+ * @example
+ * ```ts
+ * await workspaceImportSpecs('/work/packages/module/fs-path');
+ * // ['@monochromatic-dev/module-logger/ts', ...]
+ * ```
+ */
+async function workspaceImportSpecs(packageCwd: string,): Promise<readonly string[]> {
+  /**
+   * Parsed target package manifest.
+   */
+  const manifest = JSON.parse(await readFile(
+    join(
+      packageCwd,
+      'package.json',
+    ),
+    'utf8',
+  ),) as {
+    readonly dependencies?: Readonly<Record<string, string>>;
+    readonly devDependencies?: Readonly<Record<string, string>>;
+  };
+
+  return Object.keys({
+    ...manifest.dependencies,
+    ...manifest.devDependencies,
+  },)
+    .filter(function isWorkspacePackage(name,): boolean {
+      return name.startsWith(WORKSPACE_SCOPE_PREFIX,);
+    },)
+    .map(function toTsSpec(name,): string {
+      return `${name}/ts`;
+    },);
+}
+
+/**
  * Proves workspace `/ts` imports resolve to real source paths outside node_modules.
+ *
+ * Specs come from target package's own manifest; packages without workspace
+ * dependencies skip this smoke instead of failing on imports they never had.
  *
  * @param packageCwd - Target package cwd inside `/work`.
  *
@@ -115,13 +168,21 @@ async function writeSmokeFile(options: {
  */
 export async function workspaceImportSmoke(packageCwd: string,): Promise<void> {
   /**
+   * Workspace import specs declared by target package.
+   */
+  const specs = await workspaceImportSpecs(packageCwd,);
+
+  if (specs.length === 0)
+    return;
+
+  /**
    * Package-relative workspace import smoke file.
    */
   const smokeFile = await writeSmokeFile({
     packageCwd,
     name: 'workspace-import-smoke.ts',
     content: `import { realpathSync } from 'node:fs';
-const specs = ['@monochromatic-dev/module-test/ts', '@monochromatic-dev/module-logger/ts'];
+const specs = ${JSON.stringify(specs,)};
 for (const spec of specs) {
   const resolved = import.meta.resolve(spec);
   const real = realpathSync(new URL(resolved));
