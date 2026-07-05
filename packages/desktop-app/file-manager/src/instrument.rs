@@ -126,6 +126,14 @@ pub struct Instrumentation {
     /// Why:      The read-back that proves a menu command received the correct
     ///           (pane, row) identity.
     pub last_menu: RefCell<String>,
+    /// What:     `pub last_drop: RefCell<String>` is the last completed drag-and-drop
+    ///           formatted for the HUD: the source (pane, row) the drag carried, the
+    ///           target pane it landed on, and the negotiated action (move/copy).
+    ///           `RefCell` (not `Cell`) because `String` is not `Copy`.
+    /// Why:      The read-back that proves an internal drag carried the correct
+    ///           app-local identity across to the drop target, and that copy and
+    ///           move are distinguishable.
+    pub last_drop: RefCell<String>,
 }
 
 /// What:     `impl Instrumentation` attaches constructor and helper methods.
@@ -167,6 +175,7 @@ impl Instrumentation {
             menu_target_pane_id: Cell::new(-1),
             menu_target_row: Cell::new(-1),
             last_menu: RefCell::new(String::new()),
+            last_drop: RefCell::new(String::new()),
         }
     }
 
@@ -247,6 +256,37 @@ impl Instrumentation {
         //           `String`; tail expression.
         // Why:      Return an owned copy without keeping the borrow.
         self.last_menu.borrow().clone()
+    }
+
+    /// What:     `pub fn set_last_drop(&self, text: String)` records the formatted
+    ///           last-drop string. It takes an OWNED `String` (not `&str`) because
+    ///           the `RefCell` stores an owned value.
+    /// Why:      The HUD mirrors this exact string as the drag-and-drop read-back.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// setLastDrop(text: string) { this.lastDrop = text; }
+    /// ```
+    pub fn set_last_drop(&self, text: String) {
+        // What:     `*self.last_drop.borrow_mut() = text;` takes a checked mutable
+        //           borrow and overwrites the stored `String` through the deref.
+        // Why:      Replace the previous drop line with the new one.
+        *self.last_drop.borrow_mut() = text;
+    }
+
+    /// What:     `pub fn last_drop(&self) -> String` returns a clone of the stored
+    ///           last-drop string.
+    /// Why:      The HUD mirror needs an owned copy to hand to Slint.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// lastDrop(): string { return this.lastDrop; }
+    /// ```
+    pub fn last_drop(&self) -> String {
+        // What:     `self.last_drop.borrow().clone()` read-borrows and clones the
+        //           `String`; tail expression.
+        // Why:      Return an owned copy without keeping the borrow.
+        self.last_drop.borrow().clone()
     }
 
     /// What:     `pub fn materialized_count(&self) -> usize` returns how many

@@ -127,6 +127,18 @@ pub mod model_sync;
 /// ```
 pub mod menu;
 
+/// What:     `pub mod drag_drop;` exposes the fourth `impl Controller` block plus
+///           the two stateless drag callbacks: the internal pane-to-pane
+///           drag-and-drop handlers added for the drag-and-drop spike.
+/// Why:      Split from `controller.rs` to keep each file under the line budget,
+///           and to keep the in-window `DragArea`/`DropArea` plumbing in one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as dragDrop from "./drag_drop";
+/// ```
+pub mod drag_drop;
+
 /// What:     `pub mod launcher;` exposes the Wayland app-id hook.
 /// Why:      The window must carry a stable app id for shell integration, like
 ///           the sibling desktop apps.

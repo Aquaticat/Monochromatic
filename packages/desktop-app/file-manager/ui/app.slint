@@ -104,6 +104,16 @@ export component AppWindow inherits Window {
     in-out property <int> menu-target-pane-id: -1;
     in-out property <int> menu-target-row: -1;
 
+    // Drag-and-drop read-back and mode. `last-drop` is the HUD read-back of the last
+    // completed internal drag (source identity, target pane, action), so a headless
+    // MCP session can confirm the drag carried the correct identity and the action.
+    // `drag-force-copy` stands in for the copy modifier a live user would hold: when
+    // true a row's DragArea allows only copy (so the proposed action is copy),
+    // otherwise it allows move (proposed action move), which lets a headless drag
+    // exercise both actions with a button instead of injecting a modifier key.
+    in property <string> last-drop: "";
+    in-out property <bool> drag-force-copy: false;
+
     // Outbound actions.
     callback horizontal-scrolled(float);
     callback vertical-scrolled(float);
@@ -120,11 +130,22 @@ export component AppWindow inherits Window {
     // A menu command was chosen; Rust resolves it against the current target.
     callback menu-action(string);
 
+    // Internal drag-and-drop (the drag-and-drop spike). Slint's in-process
+    // DragArea/DropArea carry an opaque `data-transfer`; these three callbacks are
+    // the host-language bridge to its app-local payload. `make-drag-data` packs a
+    // row's (pane, row) identity into the payload when a drag begins; `pane-can-drop`
+    // accepts a hovering drag of one of our rows; `pane-dropped` records the
+    // completed drop (source identity, target pane, action) for the HUD and log.
+    // All are `pure` where they must be usable inside a property binding.
+    pure callback make-drag-data(int, int) -> data-transfer;
+    pure callback pane-can-drop(DropEvent, int) -> DragAction;
+    callback pane-dropped(DropEvent, int) -> DragAction;
+
     VerticalLayout {
         // Instrumentation HUD. Element ids (hud := ...) let the MCP server read
         // these strings back with get_element_properties.
         Rectangle {
-            height: 82px;
+            height: 102px;
             background: Palette.alternate-background;
             border-width: 1px;
             border-color: Palette.border;
@@ -153,6 +174,12 @@ export component AppWindow inherits Window {
                 }
                 hud-d := Text {
                     text: "last menu: " + (root.last-menu == "" ? "(none)" : root.last-menu);
+                    color: Palette.foreground;
+                    font-size: 13px;
+                }
+                hud-e := Text {
+                    text: "last drop: " + (root.last-drop == "" ? "(none)" : root.last-drop)
+                        + "   drag mode: " + (root.drag-force-copy ? "copy" : "move");
                     color: Palette.foreground;
                     font-size: 13px;
                 }
@@ -222,6 +249,17 @@ export component AppWindow inherits Window {
                     clicked => {
                         root.menu-key();
                         context-menu.show({ x: 60px, y: 120px });
+                    }
+                }
+                // Flips the drag action a following drop will negotiate: with copy
+                // mode off a row's DragArea allows move (proposed action move), with
+                // it on the DragArea allows only copy (proposed action copy). Lets a
+                // headless MCP session drive both a move drop and a copy drop through
+                // drag_element, standing in for the copy modifier a live user holds.
+                btn-dragcopy := Button {
+                    text: root.drag-force-copy ? "drag: copy" : "drag: move";
+                    clicked => {
+                        root.drag-force-copy = !root.drag-force-copy;
                     }
                 }
             }
@@ -301,12 +339,32 @@ export component AppWindow inherits Window {
                             width: parent.width - 8px;
                             height: pane.height-px - 6px;
                             background: Palette.control-background;
-                            border-width: pane.is-active ? 2px : 1px;
-                            border-color: pane.is-active ? Palette.accent-background : Palette.border;
+                            // A hovering accepted drag (`drop.has-drag`) highlights the
+                            // pane as the drop target, alongside the active-pane border.
+                            border-width: (pane.is-active || drop.has-drag) ? 2px : 1px;
+                            border-color: drop.has-drag
+                                ? Palette.accent-background
+                                : (pane.is-active ? Palette.accent-background : Palette.border);
 
                             init => {
                                 root.pane-built();
                             }
+
+                            // DropArea wraps the whole pane, so a row dragged from any
+                            // pane can be dropped here. Slint routes DnD DragMove/Drop
+                            // past the row TouchAreas and the ListView's Flickable (both
+                            // ForwardAndIgnore them), so a drop over the rows still
+                            // reaches this DropArea. can-drop accepts a hovering drag of
+                            // one of our rows; dropped records (source, target, action)
+                            // through Rust. has-drag drives the pane border highlight
+                            // above. Its single child is the pane FocusScope below.
+                            drop := DropArea {
+                                can-drop(event) => {
+                                    return root.pane-can-drop(event, pane.pane-id);
+                                }
+                                dropped(event) => {
+                                    return root.pane-dropped(event, pane.pane-id);
+                                }
 
                             // Pane-level FocusScope wrapping BOTH kinds. Focus
                             // survival: when the active pane is (re)instantiated after
@@ -371,44 +429,60 @@ export component AppWindow inherits Window {
                                             background: (root.menu-target-pane-id == pane.pane-id && root.menu-target-row == row.index)
                                                 ? Palette.accent-background.with-alpha(0.25)
                                                 : (touch.has-hover ? Palette.accent-background.with-alpha(0.12) : transparent);
-                                            touch := TouchArea {
-                                                // Left-click selects: record the row as
-                                                // the menu target (identity for a later
-                                                // keyboard menu) and move the highlight.
-                                                // Selection still works; this is the
-                                                // pre-existing click path now carrying id.
-                                                clicked => {
-                                                    root.row-activate(pane.pane-id, row.index);
-                                                    root.menu-target-pane-id = pane.pane-id;
-                                                    root.menu-target-row = row.index;
-                                                }
-                                                // Right-click is the #12354 workaround:
-                                                // the built-in ContextMenuArea never sees
-                                                // this press (this TouchArea grabs it), so
-                                                // forward it by recording identity and
-                                                // calling show() with the click position
-                                                // translated into the ContextMenuArea's
-                                                // space (the same absolute-position maths
-                                                // Slint's own listview.slint uses).
-                                                pointer-event(pe) => {
-                                                    if (pe.button == PointerEventButton.right
-                                                            && pe.kind == PointerEventKind.up) {
+                                            // DragArea makes the row draggable to another
+                                            // pane. `data` is the row's app-local (pane,
+                                            // row) identity, packed by Rust; the payload
+                                            // carries no text or image, so Slint keeps the
+                                            // drag in-window (never a native OS drag) on
+                                            // every backend. A click does not start a drag,
+                                            // so the inner TouchArea stays interactive for
+                                            // selection and the right-click menu.
+                                            // allow-move/allow-copy pick the proposed
+                                            // action: copy-only in copy mode, else move.
+                                            drag := DragArea {
+                                                data: root.make-drag-data(pane.pane-id, row.index);
+                                                allow-copy: true;
+                                                allow-move: !root.drag-force-copy;
+                                                opacity: self.dragging ? 0.5 : 1.0;
+                                                touch := TouchArea {
+                                                    // Left-click selects: record the row as
+                                                    // the menu target (identity for a later
+                                                    // keyboard menu) and move the highlight.
+                                                    // Selection still works; this is the
+                                                    // pre-existing click path now carrying id.
+                                                    clicked => {
                                                         root.row-activate(pane.pane-id, row.index);
                                                         root.menu-target-pane-id = pane.pane-id;
                                                         root.menu-target-row = row.index;
-                                                        context-menu.show({
-                                                            x: self.absolute-position.x + self.mouse-x - context-menu.absolute-position.x,
-                                                            y: self.absolute-position.y + self.mouse-y - context-menu.absolute-position.y,
-                                                        });
+                                                    }
+                                                    // Right-click is the #12354 workaround:
+                                                    // the built-in ContextMenuArea never sees
+                                                    // this press (this TouchArea grabs it), so
+                                                    // forward it by recording identity and
+                                                    // calling show() with the click position
+                                                    // translated into the ContextMenuArea's
+                                                    // space (the same absolute-position maths
+                                                    // Slint's own listview.slint uses).
+                                                    pointer-event(pe) => {
+                                                        if (pe.button == PointerEventButton.right
+                                                                && pe.kind == PointerEventKind.up) {
+                                                            root.row-activate(pane.pane-id, row.index);
+                                                            root.menu-target-pane-id = pane.pane-id;
+                                                            root.menu-target-row = row.index;
+                                                            context-menu.show({
+                                                                x: self.absolute-position.x + self.mouse-x - context-menu.absolute-position.x,
+                                                                y: self.absolute-position.y + self.mouse-y - context-menu.absolute-position.y,
+                                                            });
+                                                        }
                                                     }
                                                 }
-                                            }
-                                            Text {
-                                                x: 6px;
-                                                text: row.label;
-                                                color: Palette.foreground;
-                                                font-size: 12px;
-                                                vertical-alignment: center;
+                                                Text {
+                                                    x: 6px;
+                                                    text: row.label;
+                                                    color: Palette.foreground;
+                                                    font-size: 12px;
+                                                    vertical-alignment: center;
+                                                }
                                             }
                                         }
                                     }
@@ -431,6 +505,7 @@ export component AppWindow inherits Window {
                                         }
                                     }
                                 }
+                            }
                             }
                         }
                     }

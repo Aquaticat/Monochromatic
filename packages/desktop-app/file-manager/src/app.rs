@@ -43,6 +43,11 @@ use crate::AppWindow;
 /// Why:      Callbacks delegate to it.
 use crate::controller::Controller;
 
+/// What:     `use crate::drag_drop;` imports the drag-and-drop module holding the
+///           two stateless drag callbacks (`make_drag_data`, `pane_can_drop`).
+/// Why:      The DnD callbacks are registered from `run` below.
+use crate::drag_drop;
+
 /// What:     `use crate::instrument::Instrumentation;` imports the shared counters.
 /// Why:      The HUD mirror reads them.
 use crate::instrument::Instrumentation;
@@ -162,6 +167,11 @@ fn mirror_hud(app: &AppWindow, instrumentation: &Instrumentation) {
     //           `SharedString`.
     // Why:      The HUD read-back that proves a command got the correct identity.
     app.set_last_menu(instrumentation.last_menu().into());
+    // What:     `app.set_last_drop(instrumentation.last_drop().into());` mirrors the
+    //           last drag-and-drop line the same way.
+    // Why:      The HUD read-back that proves a drop carried the correct identity and
+    //           records the negotiated move/copy action.
+    app.set_last_drop(instrumentation.last_drop().into());
 }
 
 /// What:     `pub fn run() -> Result<()>` is the whole-program entry the binary
@@ -343,6 +353,36 @@ pub fn run() -> Result<()> {
         move |command| {
             controller.borrow().on_menu_action(command.as_str());
         }
+    });
+
+    // What:     Register the drag-payload builder by passing the free function
+    //           `drag_drop::make_drag_data` directly (it already has the
+    //           `(i32, i32) -> DataTransfer` shape the callback wants, so no wrapping
+    //           closure). No controller capture: it is stateless, safe to call while
+    //           Slint evaluates the `DragArea.data` binding (which must not borrow the
+    //           shared `Controller`).
+    // Why:      A dragged row needs its (pane, row) identity packed into the transfer.
+    app.on_make_drag_data(drag_drop::make_drag_data);
+
+    // What:     Register the drop-accept test. `move |event, _target_pane_id|
+    //           drag_drop::pane_can_drop(&event)` returns the action to negotiate, or
+    //           `None` to reject. `&event` lends the event read-only; the target id is
+    //           unused here (accepting any of our own rows).
+    // Why:      The DropArea asks this on every drag-move to decide the drop cursor.
+    app.on_pane_can_drop(|event, _target_pane_id| drag_drop::pane_can_drop(&event));
+
+    // What:     Register the drop handler. It captures the controller (a drop records
+    //           through the shared instrumentation), and `move |event, target_pane_id|
+    //           controller.borrow().on_pane_dropped(&event, target_pane_id)` records
+    //           the completed drop and returns the performed action.
+    // Why:      The read-back that proves the drag carried the correct identity across
+    //           to the target and that move and copy are distinguishable.
+    app.on_pane_dropped({
+        let controller = Rc::clone(&controller);
+        // What:     `move |event, target_pane_id| { ... }` receives the drop event and
+        //           the pane it landed on.
+        // Why:      One handler for a drop onto any pane.
+        move |event, target_pane_id| controller.borrow().on_pane_dropped(&event, target_pane_id)
     });
 
     // What:     `let hud_timer = Timer::default();` creates a repeating timer.
