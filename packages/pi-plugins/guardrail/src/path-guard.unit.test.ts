@@ -13,10 +13,18 @@ import {
 import {
   createPathGuardMatcher,
   evaluatePathGuard,
+} from './path-guard.ts';
+import {
   extractToolPath,
   normalizeToolPath,
-} from './path-guard.ts';
-import type { PathRule, } from './types.ts';
+  TOOL_PATH_NOT_FOUND,
+  TOOL_PATH_NOT_MATCHABLE,
+} from './path-normalize.ts';
+import {
+  GUARDRAIL_NOT_BLOCKED,
+  type GuardrailDecision,
+  type PathRule,
+} from './types.ts';
 
 /**
  * Project root used by path normalization tests.
@@ -53,7 +61,7 @@ function decisionForPath(
     readonly path: string;
     readonly rules: readonly PathRule[];
   },
-) {
+): GuardrailDecision {
   return evaluatePathGuard({
     input: { path, },
     cwd: CWD,
@@ -71,8 +79,8 @@ await describe({
           name: 'extracts string path only',
           fn: async function testExtractPath() {
             expect(extractToolPath({ path: 'a', },),).toBe('a',);
-            expect(extractToolPath({ path: 1, },),).toBe(undefined,);
-            expect(extractToolPath(undefined,),).toBe(undefined,);
+            expect(extractToolPath({ path: 1, },),).toBe(TOOL_PATH_NOT_FOUND,);
+            expect(extractToolPath(undefined,),).toBe(TOOL_PATH_NOT_FOUND,);
           },
         },),
         it({
@@ -87,8 +95,8 @@ await describe({
         it({
           name: 'ignores empty and outside-cwd paths',
           fn: async function testOutsidePath() {
-            expect(normalizeToolPath({ cwd: CWD, rawPath: '', },),).toBe(undefined,);
-            expect(normalizeToolPath({ cwd: CWD, rawPath: '../pnpm-lock.yaml', },),).toBe(undefined,);
+            expect(normalizeToolPath({ cwd: CWD, rawPath: '', },),).toBe(TOOL_PATH_NOT_MATCHABLE,);
+            expect(normalizeToolPath({ cwd: CWD, rawPath: '../pnpm-lock.yaml', },),).toBe(TOOL_PATH_NOT_MATCHABLE,);
           },
         },),
       ],
@@ -99,10 +107,16 @@ await describe({
         it({
           name: 'blocks basename pattern at root and nested paths',
           fn: async function testGitignoreBasenamePattern() {
-            expect(decisionForPath({ path: 'pnpm-lock.yaml', rules: [PNPM_RULE,], },)?.reason,)
-              .toBe('run pnpm install',);
-            expect(decisionForPath({ path: 'packages/a/pnpm-lock.yaml', rules: [PNPM_RULE,], },)?.reason,)
-              .toBe('run pnpm install',);
+            expect(decisionForPath({ path: 'pnpm-lock.yaml', rules: [PNPM_RULE,], },),)
+              .toEqual({
+                block: true,
+                reason: 'run pnpm install',
+              },);
+            expect(decisionForPath({ path: 'packages/a/pnpm-lock.yaml', rules: [PNPM_RULE,], },),)
+              .toEqual({
+                block: true,
+                reason: 'run pnpm install',
+              },);
           },
         },),
         it({
@@ -118,7 +132,10 @@ await describe({
                 },
               ],
             },);
-            expect(decision?.reason,).toBe('custom message',);
+            expect(decision,).toEqual({
+              block: true,
+              reason: 'custom message',
+            },);
           },
         },),
         it({
@@ -134,15 +151,17 @@ await describe({
                 },
               ],
             },);
-            expect(decision,).toBe(undefined,);
+            expect(decision,).toBe(GUARDRAIL_NOT_BLOCKED,);
           },
         },),
         it({
           name: 'allows non-matching and malformed tool inputs',
           fn: async function testAllowsNonMatchingInputs() {
             const matcher = createPathGuardMatcher([PNPM_RULE,],);
-            expect(evaluatePathGuard({ input: { path: 'package.json', }, cwd: CWD, matcher, },),).toBe(undefined,);
-            expect(evaluatePathGuard({ input: { path: 1, }, cwd: CWD, matcher, },),).toBe(undefined,);
+            expect(evaluatePathGuard({ input: { path: 'package.json', }, cwd: CWD, matcher, },),)
+              .toBe(GUARDRAIL_NOT_BLOCKED,);
+            expect(evaluatePathGuard({ input: { path: 1, }, cwd: CWD, matcher, },),)
+              .toBe(GUARDRAIL_NOT_BLOCKED,);
           },
         },),
       ],

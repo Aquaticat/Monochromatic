@@ -13,6 +13,7 @@ import {
   evaluateBashGuard,
   invokesBunTest,
 } from './bash-guard.ts';
+import { GUARDRAIL_NOT_BLOCKED, } from './types.ts';
 
 await describe({
   name: 'bash guard',
@@ -66,15 +67,17 @@ await describe({
           name: 'blocks Bash input invoking bun test',
           fn: async function testBlocksBunTestInput() {
             const decision = evaluateBashGuard({ command: 'bun test foo.unit.test.ts', },);
-            expect(decision?.block,).toBe(true,);
-            expect(decision?.reason.includes('mise run //packages/<path>:test:unit',),).toBe(true,);
+            expect(decision,).toEqual({
+              block: true,
+              reason: expect.stringContaining('mise run //packages/<path>:test:unit',),
+            },);
           },
         },),
         it({
           name: 'allows non-object and non-string inputs',
           fn: async function testAllowsMalformedInput() {
-            expect(evaluateBashGuard(undefined,),).toBe(undefined,);
-            expect(evaluateBashGuard({ command: 1, },),).toBe(undefined,);
+            expect(evaluateBashGuard(undefined,),).toBe(GUARDRAIL_NOT_BLOCKED,);
+            expect(evaluateBashGuard({ command: 1, },),).toBe(GUARDRAIL_NOT_BLOCKED,);
           },
         },),
       ],

@@ -32,10 +32,6 @@ type LoadGuardrailConfigOptions = {
    */
   readonly home?: string;
   /**
-   * Environment override for tests.
-   */
-  readonly env?: Readonly<Record<string, string | undefined>>;
-  /**
    * Config reader dependency for tests.
    */
   readonly readConfigFile?: (path: string) => Promise<string>;
@@ -65,15 +61,15 @@ async function loadGuardrailConfig(
   options: LoadGuardrailConfigOptions = {},
 ): Promise<GuardrailConfig> {
   /**
-   * Environment read for HOME when `home` option is absent.
+   * HOME environment value read separately for chain formatting.
    */
-  const env = options.env
-    ?? process.env;
+  const processHome = process.env
+    .HOME;
   /**
    * Home directory used for global config lookup.
    */
   const home = options.home
-    ?? env.HOME
+    ?? processHome
     ?? homedir();
   /**
    * Config path in the pi global extension config directory.

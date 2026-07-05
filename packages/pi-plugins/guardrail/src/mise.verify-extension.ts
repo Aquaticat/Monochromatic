@@ -76,6 +76,9 @@ async function verifyBuiltExtension(): Promise<string> {
     tmpdir(),
     'pi-guardrail-home-',
   ),);
+  /**
+   * Environment override forcing config lookup into the temporary HOME.
+   */
   using _home = envVar({
     name: 'HOME',
     value: home,
@@ -263,7 +266,10 @@ function envVar(
   return {
     [Symbol.dispose]() {
       if (previous === undefined)
-        delete process.env[name];
+        Reflect.deleteProperty(
+          process.env,
+          name,
+        );
       else
         process.env[name] = previous;
     },

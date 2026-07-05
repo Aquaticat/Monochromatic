@@ -95,6 +95,11 @@ function isAdvancedConfigObject(value: Readonly<Record<string, unknown>>,): bool
  * @param configPath - config path used in diagnostics
  *
  * @returns normalized config
+ *
+ * @example
+ * ```typescript
+ * normalizeAdvancedConfig({ value: { blockBunTest: false }, configPath });
+ * ```
  */
 function normalizeAdvancedConfig(
   {
@@ -202,6 +207,11 @@ function assertOnlyAdvancedKeys(
  * @param fieldName - human-readable field name used in errors
  *
  * @returns path rules preserving JSON insertion order
+ *
+ * @example
+ * ```typescript
+ * recordToPathRules({ value: { 'pnpm-lock.yaml': 'run pnpm install' }, configPath, fieldName: 'pathRules' });
+ * ```
  */
 function recordToPathRules(
   {

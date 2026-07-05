@@ -5,7 +5,10 @@
  */
 
 import { BUN_TEST_BLOCK_REASON, } from './constants.ts';
-import type { GuardrailBlockDecision, } from './types.ts';
+import {
+  GUARDRAIL_NOT_BLOCKED,
+  type GuardrailDecision,
+} from './types.ts';
 import {
   isWhitespace,
   isWordChar,
@@ -124,16 +127,21 @@ function invokesBunTest(command: string,): boolean {
 
   /**
    * Checks every separator boundary after command start.
+   *
+   * @returns whether any later command segment starts with `bun test`
    */
-  const hasBoundaryMatch = Array
-    .from(command,)
-    .some(function hasMatchAfterBoundary(_c, index,): boolean {
-      return isCommandBoundary(command.charAt(index,),)
-        && matchesAt(index + 1,);
-    },);
+  function hasBoundaryMatch(): boolean {
+    for (let index = 0; index < command.length; index += 1) {
+      if (isCommandBoundary(command.charAt(index,),)
+        && matchesAt(index + 1,)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   return matchesAt(0,)
-    || hasBoundaryMatch;
+    || hasBoundaryMatch();
 }
 
 //endregion Segment scanning
@@ -152,16 +160,16 @@ function invokesBunTest(command: string,): boolean {
  * evaluateBashGuard({ command: 'bun test' });
  * ```
  */
-function evaluateBashGuard(input: unknown,): GuardrailBlockDecision | undefined {
+function evaluateBashGuard(input: unknown,): GuardrailDecision {
   if (!isRecord(input,))
-    return undefined;
+    return GUARDRAIL_NOT_BLOCKED;
 
   /**
    * Command candidate read defensively from external tool input.
    */
   const { command, } = input;
   if (((typeof command) !== 'string') || (!invokesBunTest(command,)))
-    return undefined;
+    return GUARDRAIL_NOT_BLOCKED;
 
   return {
     block: true,

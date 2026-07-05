@@ -9,11 +9,28 @@ import ignore, { type Ignore, } from 'ignore';
 import {
   extractToolPath,
   normalizeToolPath,
+  TOOL_PATH_NOT_FOUND,
+  TOOL_PATH_NOT_MATCHABLE,
 } from './path-normalize.ts';
-import type {
-  GuardrailBlockDecision,
-  PathRule,
+import {
+  GUARDRAIL_NOT_BLOCKED,
+  type GuardrailDecision,
+  type PathRule,
 } from './types.ts';
+
+//region Sentinels
+
+/**
+ * Sentinel returned when no path rule provides a refusal message.
+ *
+ * @example
+ * ```typescript
+ * if (rule === PATH_RULE_NOT_FOUND) return GUARDRAIL_NOT_BLOCKED;
+ * ```
+ */
+const PATH_RULE_NOT_FOUND: unique symbol = Symbol('pi-guardrail/path-rule-not-found',);
+
+//endregion Sentinels
 
 //region Types
 
@@ -72,13 +89,20 @@ function createPathGuardMatcher(rules: readonly PathRule[],): PathGuardMatcher {
   /**
    * Ignore matcher with all patterns installed in order.
    */
-  const ig = rules.reduce(function addRule(matcher, rule, index,): Ignore {
-    matcher.add({
-      pattern: rule.pattern,
-      mark: String(index,),
-    },);
-    return matcher;
-  }, ignore({ ignorecase: false, }),);
+  const ig = rules.reduce(
+    function addRule(
+      matcher,
+      rule,
+      index,
+    ): Ignore {
+      matcher.add({
+        pattern: rule.pattern,
+        mark: String(index,),
+      },);
+      return matcher;
+    },
+    ignore({ ignorecase: false, }),
+  );
 
   return {
     rules,
@@ -99,7 +123,7 @@ function createPathGuardMatcher(rules: readonly PathRule[],): PathGuardMatcher {
  *
  * @param matcher - compiled gitignore-style matcher
  *
- * @returns block decision for matching protected paths, otherwise `undefined`
+ * @returns block decision for matching protected paths, otherwise {@link GUARDRAIL_NOT_BLOCKED}
  *
  * @example
  * ```typescript
@@ -112,13 +136,13 @@ function evaluatePathGuard(
     cwd,
     matcher,
   }: EvaluatePathGuardOptions,
-): GuardrailBlockDecision | undefined {
+): GuardrailDecision {
   /**
    * Tool target path extracted from external input.
    */
   const rawPath = extractToolPath(input,);
-  if (rawPath === undefined)
-    return undefined;
+  if (rawPath === TOOL_PATH_NOT_FOUND)
+    return GUARDRAIL_NOT_BLOCKED;
 
   /**
    * Path normalized for gitignore-style matching.
@@ -127,8 +151,8 @@ function evaluatePathGuard(
     cwd,
     rawPath,
   },);
-  if (relativePath === undefined)
-    return undefined;
+  if (relativePath === TOOL_PATH_NOT_MATCHABLE)
+    return GUARDRAIL_NOT_BLOCKED;
 
   /**
    * Ignore package match result for final gitignore state.
@@ -136,7 +160,7 @@ function evaluatePathGuard(
   const testResult = matcher.ignore
     .test(relativePath,);
   if (!testResult.ignored)
-    return undefined;
+    return GUARDRAIL_NOT_BLOCKED;
 
   /**
    * Last positive rule matching this path, used only for refusal message selection.
@@ -145,8 +169,8 @@ function evaluatePathGuard(
     rules: matcher.rules,
     relativePath,
   },);
-  if (rule === undefined)
-    return undefined;
+  if (rule === PATH_RULE_NOT_FOUND)
+    return GUARDRAIL_NOT_BLOCKED;
 
   return {
     block: true,
@@ -181,7 +205,7 @@ function findLastMatchingMessageRule(
     readonly rules: readonly PathRule[];
     readonly relativePath: string;
   },
-): PathRule | undefined {
+): PathRule | typeof PATH_RULE_NOT_FOUND {
   return rules
     .toReversed()
     .find(function ruleMatchesPath(rule,): boolean {
@@ -189,7 +213,8 @@ function findLastMatchingMessageRule(
         .add(rule.pattern,)
         .test(relativePath,)
         .ignored;
-    },);
+    },)
+    ?? PATH_RULE_NOT_FOUND;
 }
 
 //endregion Guard evaluation
@@ -197,9 +222,8 @@ function findLastMatchingMessageRule(
 export {
   createPathGuardMatcher,
   evaluatePathGuard,
-  extractToolPath,
   findLastMatchingMessageRule,
-  normalizeToolPath,
+  PATH_RULE_NOT_FOUND,
 };
 export type {
   EvaluatePathGuardOptions,

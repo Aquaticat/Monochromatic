@@ -58,7 +58,7 @@ type ErrorWithCode = Error & {
  * await defaultReadConfigFile('/home/user/.pi/agent/extensions/pi-guardrail.json');
  * ```
  */
-async function defaultReadConfigFile(path: string,): Promise<string> {
+function defaultReadConfigFile(path: string,): Promise<string> {
   return readFile(
     path,
     'utf8',
@@ -116,6 +116,11 @@ async function readOptionalConfigJson(
  * @param configPath - config file path used in diagnostics
  *
  * @returns parsed JSON value
+ *
+ * @example
+ * ```typescript
+ * parseConfigJson({ content: '{}', configPath: '/tmp/pi-guardrail.json' });
+ * ```
  */
 function parseConfigJson(
   {

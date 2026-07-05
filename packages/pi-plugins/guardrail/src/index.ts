@@ -20,9 +20,11 @@ import {
   createPathGuardMatcher,
   evaluatePathGuard,
 } from './path-guard.ts';
-import type {
-  GuardrailBlockDecision,
-  GuardrailConfig,
+import {
+  GUARDRAIL_NOT_BLOCKED,
+  type GuardrailBlockDecision,
+  type GuardrailConfig,
+  type GuardrailDecision,
 } from './types.ts';
 
 //region Logger
@@ -93,16 +95,38 @@ async function registerGuardrail(
    */
   const pathMatcher = createPathGuardMatcher(config.pathRules,);
 
-  innerL.debug(
-    `loaded guardrail config from ${config.source.path}; present=${String(config.source.loaded,)}; rules=${String(config.pathRules.length,)}; blockBunTest=${String(config.blockBunTest,)}`,
-  );
+  /**
+   * Config source path used in the startup diagnostic.
+   */
+  const sourcePath = config.source
+    .path;
+  /**
+   * Config source presence used in the startup diagnostic.
+   */
+  const sourceLoaded = config.source
+    .loaded;
+  /**
+   * Number of path rules active after defaults and config merge.
+   */
+  const pathRuleCount = config.pathRules
+    .length;
+  /**
+   * Bash guard toggle used in the startup diagnostic.
+   */
+  const { blockBunTest, } = config;
+  innerL.debug([
+    `loaded guardrail config from ${sourcePath}`,
+    `present=${String(sourceLoaded,)}`,
+    `rules=${String(pathRuleCount,)}`,
+    `blockBunTest=${String(blockBunTest,)}`,
+  ].join('; ',),);
 
   pi.on(
     'tool_call',
     function handleToolCall(
       event: ToolCallEvent,
       ctx: ExtensionContext,
-    ): GuardrailBlockDecision | undefined {
+    ) {
       /**
        * Decision from the first guardrail matching this tool call.
        */
@@ -112,17 +136,18 @@ async function registerGuardrail(
         config,
         pathMatcher,
       },);
-      if (decision === undefined)
+      if (decision === GUARDRAIL_NOT_BLOCKED)
         return undefined;
 
       innerL.warn(
         `blocked ${event.toolName} tool call: ${decision.reason}`,
       );
       if (ctx.hasUI) {
-        ctx.ui.notify(
-          decision.reason,
-          'warning',
-        );
+        ctx.ui
+          .notify(
+            decision.reason,
+            'warning',
+          );
       }
       return decision;
     },
@@ -158,7 +183,7 @@ export default async function piGuardrail(pi: ExtensionAPI,): Promise<void> {
  *
  * @param pathMatcher - compiled path matcher
  *
- * @returns block decision when a guardrail matches, otherwise `undefined`
+ * @returns block decision when a guardrail matches, otherwise {@link GUARDRAIL_NOT_BLOCKED}
  *
  * @example
  * ```typescript
@@ -166,7 +191,6 @@ export default async function piGuardrail(pi: ExtensionAPI,): Promise<void> {
  * ```
  */
 function evaluateToolCall(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- pi event/context types are external mutable interfaces; guardrail reads only.
   {
     event,
     ctx,
@@ -178,12 +202,12 @@ function evaluateToolCall(
     readonly config: GuardrailConfig;
     readonly pathMatcher: ReturnType<typeof createPathGuardMatcher>;
   },
-): GuardrailBlockDecision | undefined {
+): GuardrailDecision {
   if ((event.toolName === 'bash') && config.blockBunTest)
     return evaluateBashGuard(event.input,);
 
   if ((event.toolName !== 'edit') && (event.toolName !== 'write'))
-    return undefined;
+    return GUARDRAIL_NOT_BLOCKED;
 
   return evaluatePathGuard({
     input: event.input,

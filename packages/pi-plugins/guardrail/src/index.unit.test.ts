@@ -19,7 +19,10 @@ import {
   evaluateToolCall,
   registerGuardrail,
 } from './index.ts';
-import type { GuardrailConfig, } from './types.ts';
+import {
+  GUARDRAIL_NOT_BLOCKED,
+  type GuardrailConfig,
+} from './types.ts';
 
 /**
  * Minimal event handler signature captured by the mock API.
@@ -189,13 +192,19 @@ await describe({
           ctx: context(),
           config,
           pathMatcher: matcher,
-        },)?.reason,).toBe('run pnpm install',);
+        },),).toEqual({
+          block: true,
+          reason: 'run pnpm install',
+        },);
         expect(evaluateToolCall({
           event: toolEvent({ toolName: 'write', input: { path: 'packages/a/pnpm-lock.yaml', }, },),
           ctx: context(),
           config,
           pathMatcher: matcher,
-        },)?.reason,).toBe('run pnpm install',);
+        },),).toEqual({
+          block: true,
+          reason: 'run pnpm install',
+        },);
       },
     },),
     it({
@@ -208,7 +217,10 @@ await describe({
           ctx: context(),
           config,
           pathMatcher: matcher,
-        },)?.block,).toBe(true,);
+        },),).toEqual({
+          block: true,
+          reason: expect.stringContaining('Blocked: `bun test` invocations are banned',),
+        },);
         expect(evaluateToolCall({
           event: toolEvent({ toolName: 'bash', input: { command: 'bun test', }, },),
           ctx: context(),
@@ -217,7 +229,7 @@ await describe({
             blockBunTest: false,
           },
           pathMatcher: matcher,
-        },),).toBe(undefined,);
+        },),).toBe(GUARDRAIL_NOT_BLOCKED,);
       },
     },),
     it({
@@ -230,13 +242,13 @@ await describe({
           ctx: context(),
           config,
           pathMatcher: matcher,
-        },),).toBe(undefined,);
+        },),).toBe(GUARDRAIL_NOT_BLOCKED,);
         expect(evaluateToolCall({
           event: toolEvent({ toolName: 'edit', input: { path: 'package.json', }, },),
           ctx: context(),
           config,
           pathMatcher: matcher,
-        },),).toBe(undefined,);
+        },),).toBe(GUARDRAIL_NOT_BLOCKED,);
       },
     },),
     it({

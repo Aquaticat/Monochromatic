@@ -10,6 +10,30 @@ import {
   sep,
 } from 'node:path';
 
+//region Sentinels
+
+/**
+ * Sentinel returned when tool input lacks a usable path.
+ *
+ * @example
+ * ```typescript
+ * if (path === TOOL_PATH_NOT_FOUND) return GUARDRAIL_NOT_BLOCKED;
+ * ```
+ */
+const TOOL_PATH_NOT_FOUND: unique symbol = Symbol('pi-guardrail/tool-path-not-found',);
+
+/**
+ * Sentinel returned when a path cannot be matched relative to cwd.
+ *
+ * @example
+ * ```typescript
+ * if (path === TOOL_PATH_NOT_MATCHABLE) return GUARDRAIL_NOT_BLOCKED;
+ * ```
+ */
+const TOOL_PATH_NOT_MATCHABLE: unique symbol = Symbol('pi-guardrail/tool-path-not-matchable',);
+
+//endregion Sentinels
+
 //region Path normalization
 
 /**
@@ -17,23 +41,23 @@ import {
  *
  * @param input - unknown tool input
  *
- * @returns string path when present
+ * @returns string path when present, otherwise {@link TOOL_PATH_NOT_FOUND}
  *
  * @example
  * ```typescript
  * extractToolPath({ path: 'pnpm-lock.yaml' });
  * ```
  */
-function extractToolPath(input: unknown,): string | undefined {
+function extractToolPath(input: unknown,): string | typeof TOOL_PATH_NOT_FOUND {
   if (!isRecord(input,))
-    return undefined;
+    return TOOL_PATH_NOT_FOUND;
   /**
    * Raw path candidate from tool input.
    */
-  const path = input.path;
+  const { path, } = input;
   return ((typeof path) === 'string')
     ? path
-    : undefined;
+    : TOOL_PATH_NOT_FOUND;
 }
 
 /**
@@ -48,7 +72,7 @@ function extractToolPath(input: unknown,): string | undefined {
  *
  * @param rawPath - raw path from tool input
  *
- * @returns relative POSIX path under cwd, or `undefined` for outside/empty paths
+ * @returns relative POSIX path under cwd, or {@link TOOL_PATH_NOT_MATCHABLE} for outside/empty paths
  *
  * @example
  * ```typescript
@@ -63,7 +87,7 @@ function normalizeToolPath(
     readonly cwd: string;
     readonly rawPath: string;
   },
-): string | undefined {
+): string | typeof TOOL_PATH_NOT_MATCHABLE {
   /**
    * Path after mirroring pi built-in file-reference normalization.
    */
@@ -71,7 +95,7 @@ function normalizeToolPath(
     ? rawPath.slice(1,)
     : rawPath;
   if (unprefixedPath.length === 0)
-    return undefined;
+    return TOOL_PATH_NOT_MATCHABLE;
 
   /**
    * Absolute target path resolved against pi cwd.
@@ -90,7 +114,7 @@ function normalizeToolPath(
   if ((relativePath.length === 0)
     || (relativePath === '..')
     || relativePath.startsWith(`..${sep}`,)) {
-    return undefined;
+    return TOOL_PATH_NOT_MATCHABLE;
   }
 
   return relativePath
@@ -116,4 +140,6 @@ function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
 export {
   extractToolPath,
   normalizeToolPath,
+  TOOL_PATH_NOT_FOUND,
+  TOOL_PATH_NOT_MATCHABLE,
 };

@@ -82,27 +82,19 @@ type NormalizedConfigFile = {
 
 //endregion Configuration types
 
-//region Tool input types
+//region Guardrail decision types
 
 /**
- * Minimal file-mutation tool input shape used by pi `edit` and `write`.
+ * Sentinel returned when a guardrail allows a tool call.
+ *
+ * @example
+ * ```typescript
+ * if (decision === GUARDRAIL_NOT_BLOCKED) return undefined;
+ * ```
  */
-type FileMutationToolInput = {
-  /**
-   * Target file path passed to pi file-mutation tools.
-   */
-  readonly path?: unknown;
-};
-
-/**
- * Minimal Bash tool input shape used by pi `bash`.
- */
-type BashToolInput = {
-  /**
-   * Shell command passed to pi's Bash tool.
-   */
-  readonly command?: unknown;
-};
+const GUARDRAIL_NOT_BLOCKED: unique symbol = Symbol(
+  'pi guardrail tool call not blocked by any rule',
+);
 
 /**
  * Tool-call block decision returned from guardrail checks.
@@ -118,13 +110,20 @@ type GuardrailBlockDecision = {
   readonly reason: string;
 };
 
-//endregion Tool input types
+/**
+ * Internal guardrail decision that avoids nullish absence modeling.
+ */
+type GuardrailDecision = GuardrailBlockDecision | typeof GUARDRAIL_NOT_BLOCKED;
 
+//endregion Guardrail decision types
+
+export {
+  GUARDRAIL_NOT_BLOCKED,
+};
 export type {
-  BashToolInput,
-  FileMutationToolInput,
   GuardrailBlockDecision,
   GuardrailConfig,
+  GuardrailDecision,
   GuardrailConfigSource,
   GuardrailObjectConfigFile,
   NormalizedConfigFile,

@@ -74,7 +74,9 @@ await describe({
         },);
         expect(config.source.loaded,).toBe(false,);
         expect(config.blockBunTest,).toBe(true,);
-        expect(config.pathRules.map(function pattern(rule,) { return rule.pattern; },),)
+        expect(config.pathRules.map(function pattern(rule,) {
+          return rule.pattern;
+        },),)
           .toEqual(['pnpm-lock.yaml',],);
       },
     },),
@@ -88,7 +90,9 @@ await describe({
           },),),
         },);
         expect(config.source.loaded,).toBe(true,);
-        expect(config.pathRules.map(function pattern(rule,) { return rule.pattern; },),)
+        expect(config.pathRules.map(function pattern(rule,) {
+          return rule.pattern;
+        },),)
           .toEqual([
             'pnpm-lock.yaml',
             'package-lock.json',
