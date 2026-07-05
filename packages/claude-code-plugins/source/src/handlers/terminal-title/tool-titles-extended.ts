@@ -1,183 +1,87 @@
 /**
- * Extended tool title entries for plan mode, worktrees, tasks, and cron tools.
- *
- * Separated from the core registry to stay within the max-lines budget.
+ * Claude Code title entries for plan mode, worktrees, tasks, and cron tools.
  *
  * @module
  */
 
 import {
-  field,
-  FIELD_ABSENT,
-  MAX_PATTERN_LENGTH,
+  fieldTitleEntry,
+  staticTitleEntry,
+  textTitleEntry,
   type ToolTitleEntry,
-  truncate,
 } from '@monochromatic-dev/module-terminal-title/ts';
+import type { BuiltInToolName, } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 
 /**
- * Throws when a formatter is called for an entry whose extractor never returns
- * text. The fallback path should handle these entries before formatting.
+ * Title entries for plan mode, worktree, task, and cron tools.
  */
-function absentFieldFormatter(): never {
-  throw new Error('terminal-title formatter called for absent field entry',);
-}
-
-/**
- * Title entries for plan mode, worktree, task, and cron tools. Merged into the
- * main {@link TOOL_TITLES} registry by `tool-titles.ts`.
- */
-const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
-  EnterPlanMode: {
-    extract() {
-      return FIELD_ABSENT;
+const EXTENDED_TOOL_TITLES = {
+  EnterPlanMode: staticTitleEntry({
+    pre: 'Entering plan mode',
+    post: 'Entered plan mode',
+  },),
+  ExitPlanMode: staticTitleEntry({
+    pre: 'Exiting plan mode',
+    post: 'Exited plan mode',
+  },),
+  EnterWorktree: textTitleEntry({
+    field: 'name',
+    labels: { pre: 'Creating worktree', post: 'Created worktree', },
+    fallback: { pre: 'Creating worktree', post: 'Created worktree', },
+  },),
+  TaskCreate: textTitleEntry({
+    field: 'subject',
+    labels: { pre: 'Creating task', post: 'Created task', },
+    fallback: { pre: 'Creating task', post: 'Created task', },
+  },),
+  TaskGet: fieldTitleEntry({
+    field: 'taskId',
+    fallback: { pre: 'Getting task', post: 'Got task', },
+    format({ value, tense, }): string {
+      return `${tense === 'pre' ? 'Getting' : 'Got'} task #${value}`;
     },
-    format: absentFieldFormatter,
-    fallback: {
-      pre: 'Entering plan mode',
-      post: 'In plan mode',
+  },),
+  TaskList: staticTitleEntry({
+    pre: 'Listing tasks',
+    post: 'Listed tasks',
+  },),
+  TaskOutput: fieldTitleEntry({
+    field: 'task_id',
+    fallback: { pre: 'Reading task output', post: 'Read task output', },
+    format({ value, tense, }): string {
+      return `${tense === 'pre' ? 'Reading' : 'Read'} task output #${value}`;
     },
-  },
-  ExitPlanMode: {
-    extract() {
-      return FIELD_ABSENT;
+  },),
+  TaskStop: fieldTitleEntry({
+    field: 'task_id',
+    fallback: { pre: 'Stopping task', post: 'Stopped task', },
+    format({ value, tense, }): string {
+      return `${tense === 'pre' ? 'Stopping' : 'Stopped'} task #${value}`;
     },
-    format: absentFieldFormatter,
-    fallback: {
-      pre: 'Exiting plan mode',
-      post: 'Exited plan mode',
+  },),
+  TaskUpdate: fieldTitleEntry({
+    field: 'taskId',
+    fallback: { pre: 'Updating task', post: 'Updated task', },
+    format({ value, tense, }): string {
+      return `${tense === 'pre' ? 'Updating' : 'Updated'} task #${value}`;
     },
-  },
-  EnterWorktree: {
-    extract: field('name',),
-    format(
-      v,
-      tense,
-    ) {
-      return `${tense === 'pre' ? 'Creating' : 'Created'} worktree: ${v}`;
+  },),
+  CronCreate: textTitleEntry({
+    field: 'prompt',
+    labels: { pre: 'Scheduling cron', post: 'Scheduled cron', },
+    fallback: { pre: 'Scheduling cron', post: 'Scheduled cron', },
+  },),
+  CronDelete: fieldTitleEntry({
+    field: 'id',
+    fallback: { pre: 'Deleting cron', post: 'Deleted cron', },
+    format({ value, tense, }): string {
+      return `${tense === 'pre' ? 'Deleting' : 'Deleted'} cron #${value}`;
     },
-    fallback: {
-      pre: 'Creating worktree',
-      post: 'Created worktree',
-    },
-  },
-  TaskCreate: {
-    extract: field('subject',),
-    format(
-      v,
-      tense,
-    ) {
-      return `${tense === 'pre' ? 'Creating' : 'Created'} task: ${
-        truncate({
-          value: v,
-          maxLength: MAX_PATTERN_LENGTH,
-        },)
-      }`;
-    },
-    fallback: {
-      pre: 'Creating task',
-      post: 'Created task',
-    },
-  },
-  TaskGet: {
-    extract: field('taskId',),
-    format(v,) {
-      return `Task #${v}`;
-    },
-    fallback: {
-      pre: 'Getting task',
-      post: 'Got task',
-    },
-  },
-  TaskList: {
-    extract() {
-      return FIELD_ABSENT;
-    },
-    format: absentFieldFormatter,
-    fallback: {
-      pre: 'Listing tasks',
-      post: 'Listed tasks',
-    },
-  },
-  TaskOutput: {
-    extract: field('task_id',),
-    format(
-      v,
-      tense,
-    ) {
-      return `${tense === 'pre' ? 'Reading' : 'Read'} task output #${v}`;
-    },
-    fallback: {
-      pre: 'Reading task output',
-      post: 'Read task output',
-    },
-  },
-  TaskStop: {
-    extract: field('task_id',),
-    format(
-      v,
-      tense,
-    ) {
-      return `${tense === 'pre' ? 'Stopping' : 'Stopped'} task #${v}`;
-    },
-    fallback: {
-      pre: 'Stopping task',
-      post: 'Stopped task',
-    },
-  },
-  TaskUpdate: {
-    extract: field('taskId',),
-    format(
-      v,
-      tense,
-    ) {
-      return `${tense === 'pre' ? 'Updating' : 'Updated'} task #${v}`;
-    },
-    fallback: {
-      pre: 'Updating task',
-      post: 'Updated task',
-    },
-  },
-  CronCreate: {
-    extract: field('prompt',),
-    format(
-      v,
-      tense,
-    ) {
-      return `${tense === 'pre' ? 'Scheduling' : 'Scheduled'}: ${
-        truncate({
-          value: v,
-          maxLength: MAX_PATTERN_LENGTH,
-        },)
-      }`;
-    },
-    fallback: {
-      pre: 'Scheduling cron',
-      post: 'Scheduled cron',
-    },
-  },
-  CronDelete: {
-    extract: field('id',),
-    format(
-      v,
-      tense,
-    ) {
-      return `${tense === 'pre' ? 'Deleting' : 'Deleted'} cron #${v}`;
-    },
-    fallback: {
-      pre: 'Deleting cron',
-      post: 'Deleted cron',
-    },
-  },
-  CronList: {
-    extract() {
-      return FIELD_ABSENT;
-    },
-    format: absentFieldFormatter,
-    fallback: {
-      pre: 'Listing cron jobs',
-      post: 'Listed cron jobs',
-    },
-  },
-};
+  },),
+  CronList: staticTitleEntry({
+    pre: 'Listing cron jobs',
+    post: 'Listed cron jobs',
+  },),
+} satisfies Partial<Record<BuiltInToolName, ToolTitleEntry>>;
 
 export { EXTENDED_TOOL_TITLES, };

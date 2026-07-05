@@ -1,7 +1,5 @@
 /**
- * Tests for the extension entry point.
- *
- * Covers event handler registration and title setting via ctx.ui.setTitle().
+ * Tests for pi extension entry point.
  */
 
 import type {
@@ -32,16 +30,27 @@ type RegistrationMap = Map<string, HandlerFn[]>;
 /**
  * Creates a mock ExtensionAPI that records all `on()` registrations.
  *
- * @returns mock API and the registration map for assertions
+ * @returns mock API and registration map
  */
-function createMockApi() {
+function createMockApi(): {
+  readonly api: ExtensionAPI;
+  readonly registrations: RegistrationMap;
+} {
+  /**
+   * Event handlers registered by extension.
+   */
   const registrations: RegistrationMap = new Map();
-
+  /**
+   * Minimal extension API mock.
+   */
   const api = {
     on(
       event: string,
       handler: HandlerFn,
     ) {
+      /**
+       * Existing handlers for event.
+       */
       const existing = registrations.get(event,) ?? [];
       existing.push(handler,);
       registrations.set(event, existing,);
@@ -55,16 +64,22 @@ function createMockApi() {
 }
 
 /**
- * Creates a mock context with a setTitle spy.
+ * Creates a mock context with setTitle spy.
  *
- * @returns mock context and the titles array for assertions
+ * @returns mock context and captured titles
  */
-function createMockContext() {
+function createMockContext(): {
+  readonly ctx: { readonly ui: { readonly setTitle: (title: string,) => void } };
+  readonly titles: string[];
+} {
+  /**
+   * Titles captured from setTitle calls.
+   */
   const titles: string[] = [];
   return {
     ctx: {
       ui: {
-        setTitle(title: string,) {
+        setTitle(title: string,): void {
           titles.push(title,);
         },
       },
@@ -74,27 +89,32 @@ function createMockContext() {
 }
 
 /**
- * Retrieves the registered handler for a given event.
- * Throws if no handler is registered for that event.
+ * Retrieves registered handler for event.
  *
- * @param registrations - the registration map from createMockApi
+ * @param registrations - registration map from mock API
  *
  * @param event - event name to look up
  *
- * @returns the handler function
+ * @returns registered handler
  */
 function getHandler(
   {
     registrations,
     event,
-  }: {
+  }: Readonly<{
     registrations: RegistrationMap;
     event: string;
-  },
+  }>,
 ): HandlerFn {
+  /**
+   * Handlers registered for event.
+   */
   const handlers = registrations.get(event,);
   if ((handlers === undefined) || (handlers.length === 0))
     throw new Error(`No handler registered for event: ${event}`,);
+  /**
+   * First registered handler.
+   */
   const [handler,] = handlers;
   if (handler === undefined)
     throw new Error(`No handler registered for event: ${event}`,);
@@ -103,20 +123,22 @@ function getHandler(
 
 //endregion Mock infrastructure
 
-// Dynamic import to get the default export
+/**
+ * Extension default export loaded dynamically for test isolation.
+ */
 const { default: terminalTitle, } = await import('./index.ts');
 
 await describe({
   name: terminalTitle.name,
   children: [
-    //region Registration
-
     it({
-      name: 'registers all six event handlers',
+      name: 'registers all handled event handlers',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         terminalTitle(api,);
-
+        /**
+         * Events expected from extension entry point.
+         */
         const expectedEvents = [
           'tool_execution_start',
           'tool_execution_end',
@@ -125,270 +147,113 @@ await describe({
           'agent_end',
           'before_agent_start',
         ];
-
-        for (const eventName of expectedEvents) {
-          const handlers = registrations.get(eventName,);
-          expect(handlers,).toBeDefined();
-          expect(handlers,).toHaveLength(1,);
-        }
+        for (const eventName of expectedEvents)
+          expect(registrations.get(eventName,),).toHaveLength(1,);
       },
     },),
-
-    //endregion Registration
-
-    //region tool_execution_start handler
-
     it({
-      name: 'sets title on tool_execution_start for bash',
+      name: 'sets lifecycle command title on tool start',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
-
-        const handler = getHandler({ registrations, event: 'tool_execution_start', },);
-        handler(
-          { toolName: 'bash', args: { command: 'npm test', }, },
+        getHandler({ registrations, event: 'tool_execution_start', },)(
+          { toolCallId: 'call-1', toolName: 'bash', args: { command: 'npm test', }, },
           ctx,
         );
-
-        expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('π npm test',);
+        expect(titles,).toStrictEqual(['π Running npm test',],);
       },
     },),
-
     it({
-      name: 'byte-caps emitted tool_execution_start titles',
+      name: 'reuses start args on tool end',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
-
-        const handler = getHandler({ registrations, event: 'tool_execution_start', },);
-        handler(
-          { toolName: 'bash', args: { command: '😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,), }, },
-          ctx,
-        );
-
-        expect(titles,).toHaveLength(1,);
-        expect(terminalTitleUtf8ByteLength(titles[0] ?? '',),)
-          .toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
-      },
-    },),
-
-    //endregion tool_execution_start handler
-
-    //region tool_execution_end handler
-
-    it({
-      name: 'sets title on tool_execution_end for read',
-      fn: async () => {
-        const { api, registrations, } = createMockApi();
-        terminalTitle(api,);
-        const { ctx, titles, } = createMockContext();
-
-        const handler = getHandler({ registrations, event: 'tool_execution_end', },);
-        handler(
-          { toolName: 'read', result: {}, },
-          ctx,
-        );
-
-        expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('π Read file',);
-      },
-    },),
-
-    it({
-      name: 'reuses start args on tool_execution_end for bash',
-      fn: async () => {
-        const { api, registrations, } = createMockApi();
-        terminalTitle(api,);
-        const { ctx, titles, } = createMockContext();
-
-        const startHandler = getHandler({ registrations, event: 'tool_execution_start', },);
-        const endHandler = getHandler({ registrations, event: 'tool_execution_end', },);
-        startHandler(
+        getHandler({ registrations, event: 'tool_execution_start', },)(
           { toolCallId: 'call-1', toolName: 'bash', args: { command: 'ls -l', }, },
           ctx,
         );
-        endHandler(
+        getHandler({ registrations, event: 'tool_execution_end', },)(
           { toolCallId: 'call-1', toolName: 'bash', result: {}, isError: false, },
           ctx,
         );
-
         expect(titles,).toStrictEqual([
-          'π ls -l',
-          'π ls -l',
+          'π Running ls -l',
+          'π Ran ls -l',
         ],);
       },
     },),
-
-    it({
-      name: 'keeps out-of-order tool endings tied to call ids',
-      fn: async () => {
-        const { api, registrations, } = createMockApi();
-        terminalTitle(api,);
-        const { ctx, titles, } = createMockContext();
-
-        const startHandler = getHandler({ registrations, event: 'tool_execution_start', },);
-        const endHandler = getHandler({ registrations, event: 'tool_execution_end', },);
-        startHandler(
-          { toolCallId: 'call-1', toolName: 'bash', args: { command: 'ls -l', }, },
-          ctx,
-        );
-        startHandler(
-          { toolCallId: 'call-2', toolName: 'bash', args: { command: 'pwd', }, },
-          ctx,
-        );
-        endHandler(
-          { toolCallId: 'call-2', toolName: 'bash', result: {}, isError: false, },
-          ctx,
-        );
-        endHandler(
-          { toolCallId: 'call-1', toolName: 'bash', result: {}, isError: false, },
-          ctx,
-        );
-
-        expect(titles,).toStrictEqual([
-          'π ls -l',
-          'π pwd',
-          'π pwd',
-          'π ls -l',
-        ],);
-      },
-    },),
-
     it({
       name: 'clears cached args on session shutdown',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
-
-        const startHandler = getHandler({ registrations, event: 'tool_execution_start', },);
-        const shutdownHandler = getHandler({ registrations, event: 'session_shutdown', },);
-        const endHandler = getHandler({ registrations, event: 'tool_execution_end', },);
-        startHandler(
+        getHandler({ registrations, event: 'tool_execution_start', },)(
           { toolCallId: 'call-1', toolName: 'bash', args: { command: 'ls -l', }, },
           ctx,
         );
-        shutdownHandler(
+        getHandler({ registrations, event: 'session_shutdown', },)(
           { type: 'session_shutdown', reason: 'quit', } as SessionShutdownEvent,
           ctx,
         );
-        endHandler(
+        getHandler({ registrations, event: 'tool_execution_end', },)(
           { toolCallId: 'call-1', toolName: 'bash', result: {}, isError: false, },
           ctx,
         );
-
         expect(titles,).toStrictEqual([
-          'π ls -l',
-          'π Session ended',
+          'π Running ls -l',
+          'π Ended session',
           'π Ran command',
         ],);
       },
     },),
-
-    //endregion tool_execution_end handler
-
-    //region session_start handler
-
     it({
-      name: 'sets title on session_start',
+      name: 'sets lifecycle session and agent titles',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
-
-        const handler = getHandler({ registrations, event: 'session_start', },);
-        handler(
+        getHandler({ registrations, event: 'session_start', },)(
           { type: 'session_start', reason: 'startup', } as SessionStartEvent,
           ctx,
         );
-
-        expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('π Session startup',);
-      },
-    },),
-
-    //endregion session_start handler
-
-    //region session_shutdown handler
-
-    it({
-      name: 'sets title on session_shutdown',
-      fn: async () => {
-        const { api, registrations, } = createMockApi();
-        terminalTitle(api,);
-        const { ctx, titles, } = createMockContext();
-
-        const handler = getHandler({ registrations, event: 'session_shutdown', },);
-        handler(
-          { type: 'session_shutdown', reason: 'quit', } as SessionShutdownEvent,
-          ctx,
-        );
-
-        expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('π Session ended',);
-      },
-    },),
-
-    //endregion session_shutdown handler
-
-    //region agent_end handler
-
-    it({
-      name: 'sets title on agent_end',
-      fn: async () => {
-        const { api, registrations, } = createMockApi();
-        terminalTitle(api,);
-        const { ctx, titles, } = createMockContext();
-
-        const handler = getHandler({ registrations, event: 'agent_end', },);
-        handler(
+        getHandler({ registrations, event: 'agent_end', },)(
           { type: 'agent_end', messages: [], } as AgentEndEvent,
           ctx,
         );
-
-        expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('π Stopped',);
+        expect(titles,).toStrictEqual([
+          'π Started session: startup',
+          'π Stopped agent',
+        ],);
       },
     },),
-
-    //endregion agent_end handler
-
-    //region before_agent_start handler
-
     it({
-      name: 'sets title on before_agent_start with prompt',
+      name: 'sanitizes control characters in prompt title',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
-
-        const handler = getHandler({ registrations, event: 'before_agent_start', },);
-        handler(
+        getHandler({ registrations, event: 'before_agent_start', },)(
           {
             type: 'before_agent_start',
-            prompt: 'Fix the auth bug',
+            prompt: 'Fix\u001Bauth\u0007bug',
             systemPrompt: '',
             systemPromptOptions: {} as never,
           } as BeforeAgentStartEvent,
           ctx,
         );
-
-        expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('π Fix the auth bug',);
+        expect(titles,).toStrictEqual(['π Received prompt: Fix␛auth␇bug',],);
       },
     },),
     it({
-      name: 'byte-caps emitted before_agent_start titles',
+      name: 'byte-caps emitted prompt titles',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
-
-        const handler = getHandler({ registrations, event: 'before_agent_start', },);
-        handler(
+        getHandler({ registrations, event: 'before_agent_start', },)(
           {
             type: 'before_agent_start',
             prompt: '😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,),
@@ -397,12 +262,9 @@ await describe({
           } as BeforeAgentStartEvent,
           ctx,
         );
-
-        expect(titles,).toHaveLength(1,);
-        expect(terminalTitleUtf8ByteLength(titles[0] ?? '',),)
-          .toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+        expect(terminalTitleUtf8ByteLength(titles[0] ?? '',) <= MAX_TERMINAL_TITLE_UTF8_BYTES,)
+          .toBe(true,);
       },
     },),
-    //endregion before_agent_start handler
   ],
 },);

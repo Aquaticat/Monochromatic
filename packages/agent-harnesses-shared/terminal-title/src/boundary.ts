@@ -1,39 +1,25 @@
 /**
- * UTF-8 output-boundary helpers for terminal title payloads.
+ * Safe terminal title payload construction.
  *
- * Ghostty ignores title changes whose payload is 256 bytes or longer,
- * so terminal-title integrations cap title text before the OSC sequence is built.
+ * Terminal title payload text crosses into OSC control syntax in some hosts,
+ * so this module sanitizes control characters before applying UTF-8 byte caps.
  *
  * @module
  */
 
-import { TITLE_TRUNCATION_MARKER, } from './constants.ts';
+import {
+  C0_CONTROL_MAX_CODE_POINT,
+  C1_CONTROL_MAX_CODE_POINT,
+  C1_CONTROL_MIN_CODE_POINT,
+  C1_CONTROL_REPLACEMENT,
+  CONTROL_PICTURE_BASE_CODE_POINT,
+  DELETE_CONTROL_CODE_POINT,
+  DELETE_CONTROL_PICTURE,
+  MAX_TERMINAL_TITLE_UTF8_BYTES,
+  TITLE_TRUNCATION_MARKER,
+} from './constants.ts';
 
-//region Constants
-
-/**
- * Ghostty's current normal app title buffer size in UTF-8 bytes.
- * Title payloads at this byte length or larger are ignored by Ghostty.
- *
- * @example
- * ```ts
- * GHOSTTY_IGNORED_TITLE_UTF8_BYTES;
- * // 256
- * ```
- */
-const GHOSTTY_IGNORED_TITLE_UTF8_BYTES: number = 256;
-
-/**
- * Maximum UTF-8 byte length for terminal title payload text sent by this repo.
- * Kept below Ghostty's reject threshold so title updates do not go stale.
- *
- * @example
- * ```ts
- * MAX_TERMINAL_TITLE_UTF8_BYTES;
- * // 255
- * ```
- */
-const MAX_TERMINAL_TITLE_UTF8_BYTES: number = GHOSTTY_IGNORED_TITLE_UTF8_BYTES - 1;
+//region Encoder
 
 /**
  * Encoder used to measure JavaScript strings as emitted UTF-8 bytes.
@@ -47,14 +33,14 @@ const TITLE_TRUNCATION_MARKER_UTF8_BYTES: number = TERMINAL_TITLE_TEXT_ENCODER
   .encode(TITLE_TRUNCATION_MARKER,)
   .byteLength;
 
-//endregion Constants
+//endregion Encoder
 
 //region Byte helpers
 
 /**
  * Measures UTF-8 bytes that would be emitted for terminal title text.
  *
- * @param value - because Ghostty applies byte-counted title limits
+ * @param value - because terminal limits are byte-counted
  *
  * @returns UTF-8 byte count for `value`
  *
@@ -71,30 +57,26 @@ function terminalTitleUtf8ByteLength(value: string,): number {
 }
 
 /**
- * Truncates terminal title payload text to a UTF-8 byte budget.
- * Iterates by Unicode code point so truncation never splits surrogate pairs.
- * The ellipsis is appended only when it fits inside the same byte budget.
+ * Truncates already-sanitized payload text to a UTF-8 byte budget.
  *
- * @param value - because only title payload text should be byte-capped,
- * not surrounding OSC escape bytes
+ * @param value - because only title payload text should be byte-capped
  *
- * @param maxBytes - because different terminals or tests may need narrower budgets
+ * @param maxBytes - because tests and terminals may use different budgets
  *
- * @returns title payload text whose UTF-8 encoding fits within `maxBytes`
+ * @returns payload prefix whose UTF-8 bytes fit within `maxBytes`
  *
  * @example
  * ```ts
- * truncateTerminalTitlePayload({ value: 'a'.repeat(256) });
- * // 'aaaa...…' within MAX_TERMINAL_TITLE_UTF8_BYTES
+ * truncateUtf8Payload({ value: 'a'.repeat(256), maxBytes: 255 });
  * ```
  */
-function truncateTerminalTitlePayload(
+function truncateUtf8Payload(
   {
     value,
-    maxBytes = MAX_TERMINAL_TITLE_UTF8_BYTES,
+    maxBytes,
   }: Readonly<{
     value: string;
-    maxBytes?: number;
+    maxBytes: number;
   }>,
 ): string {
   if (maxBytes <= 0)
@@ -103,11 +85,11 @@ function truncateTerminalTitlePayload(
     return value;
 
   /**
-   * Whether the ellipsis can be included without exceeding the byte budget.
+   * Whether truncation marker fits inside the requested byte budget.
    */
   const markerFits = TITLE_TRUNCATION_MARKER_UTF8_BYTES <= maxBytes;
   /**
-   * Bytes available for title content before the optional ellipsis marker.
+   * Content byte budget after reserving space for marker.
    */
   const contentMaxBytes = markerFits
     ? maxBytes - TITLE_TRUNCATION_MARKER_UTF8_BYTES
@@ -125,11 +107,11 @@ function truncateTerminalTitlePayload(
 
   for (const chunk of value) {
     /**
-     * UTF-8 bytes needed by this Unicode code point.
+     * UTF-8 bytes required by current Unicode code point.
      */
     const chunkBytes = terminalTitleUtf8ByteLength(chunk,);
     /**
-     * UTF-8 bytes after accepting this Unicode code point.
+     * UTF-8 bytes after accepting current Unicode code point.
      */
     const nextBytes = prefixState.bytesUsed + chunkBytes;
     if (nextBytes > contentMaxBytes)
@@ -140,7 +122,7 @@ function truncateTerminalTitlePayload(
   }
 
   /**
-   * Truncated payload body before appending an optional ellipsis.
+   * Payload body that fits before optional marker.
    */
   const body = prefixState.chunks
     .join('',);
@@ -151,9 +133,125 @@ function truncateTerminalTitlePayload(
 
 //endregion Byte helpers
 
+//region Control sanitizing
+
+/**
+ * Converts a code point to visible terminal-title text.
+ *
+ * @param codePoint - because terminal controls must not cross the OSC payload seam
+ *
+ * @returns printable representation for control code points
+ *
+ * @example
+ * ```ts
+ * controlReplacement(0x001B);
+ * // '␛'
+ * ```
+ */
+function controlReplacement(codePoint: number,): string {
+  if (codePoint <= C0_CONTROL_MAX_CODE_POINT) {
+    return String.fromCodePoint(
+      CONTROL_PICTURE_BASE_CODE_POINT + codePoint,
+    );
+  }
+  if (codePoint === DELETE_CONTROL_CODE_POINT)
+    return DELETE_CONTROL_PICTURE;
+  return C1_CONTROL_REPLACEMENT;
+}
+
+/**
+ * Checks whether a code point is unsafe in terminal title payload text.
+ *
+ * @param codePoint - because OSC payload text must not contain terminal controls
+ *
+ * @returns whether `codePoint` is C0, delete, or C1 control text
+ *
+ * @example
+ * ```ts
+ * isTerminalTitleControl(0x0007);
+ * // true
+ * ```
+ */
+function isTerminalTitleControl(codePoint: number,): boolean {
+  if (codePoint <= C0_CONTROL_MAX_CODE_POINT)
+    return true;
+  if (codePoint === DELETE_CONTROL_CODE_POINT)
+    return true;
+  return (codePoint >= C1_CONTROL_MIN_CODE_POINT)
+    && (codePoint <= C1_CONTROL_MAX_CODE_POINT);
+}
+
+/**
+ * Replaces OSC-breaking controls with visible printable tokens.
+ *
+ * @param value - because tool names, paths, commands, and prompts can cross into OSC syntax
+ *
+ * @returns printable title text with controls made visible
+ *
+ * @example
+ * ```ts
+ * sanitizeTerminalTitleText('a\u001Bb');
+ * // 'a␛b'
+ * ```
+ */
+function sanitizeTerminalTitleText(value: string,): string {
+  /**
+   * Printable output chunks accumulated in source order.
+   */
+  const chunks: string[] = [];
+  for (const chunk of value) {
+    /**
+     * Code point for current Unicode chunk.
+     */
+    const codePoint = chunk.codePointAt(0,);
+    if (codePoint === undefined)
+      throw new Error('terminal title sanitizer saw an empty string chunk',);
+    chunks.push(
+      isTerminalTitleControl(codePoint,)
+        ? controlReplacement(codePoint,)
+        : chunk,
+    );
+  }
+  return chunks.join('',);
+}
+
+//endregion Control sanitizing
+
+//region Public payload API
+
+/**
+ * Builds terminal-safe payload text by sanitizing controls and enforcing byte cap.
+ *
+ * @param value - because raw title text may contain OSC delimiters or exceed terminal byte budgets
+ *
+ * @param maxBytes - because tests and terminals may need alternate byte budgets
+ *
+ * @returns printable terminal title payload text within `maxBytes`
+ *
+ * @example
+ * ```ts
+ * safeTerminalTitlePayload({ value: 'hello\u0007'.repeat(100) });
+ * ```
+ */
+function safeTerminalTitlePayload(
+  {
+    value,
+    maxBytes = MAX_TERMINAL_TITLE_UTF8_BYTES,
+  }: Readonly<{
+    value: string;
+    maxBytes?: number;
+  }>,
+): string {
+  return truncateUtf8Payload({
+    value: sanitizeTerminalTitleText(value,),
+    maxBytes,
+  },);
+}
+
+//endregion Public payload API
+
 export {
-  GHOSTTY_IGNORED_TITLE_UTF8_BYTES,
-  MAX_TERMINAL_TITLE_UTF8_BYTES,
+  safeTerminalTitlePayload,
+  sanitizeTerminalTitleText,
   terminalTitleUtf8ByteLength,
-  truncateTerminalTitlePayload,
 };

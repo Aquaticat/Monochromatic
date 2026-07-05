@@ -1,16 +1,13 @@
 /**
- * Shared terminal title types and sentinel values.
+ * Terminal title engine types.
  *
  * @module
  */
 
-//region Tool title shapes
+//region Shared title shapes
 
 /**
- * Tool title tense used by agent harnesses around a tool call lifecycle.
- *
- * `pre` describes work while it is running.
- * `post` describes work after it completes.
+ * Tool title tense used around agent harness tool lifecycles.
  *
  * @example
  * ```ts
@@ -20,20 +17,17 @@
 type ToolTitleTense = 'pre' | 'post';
 
 /**
- * Read-only tool input bag sampled by title extractors.
- *
- * Tool schemas differ across harnesses and custom tool providers,
- * so shared extractors treat inputs as unknown string-keyed records.
+ * Read-only tool input bag sampled by title entries.
  *
  * @example
  * ```ts
- * const args: ToolArgs = { path: '/tmp/example.ts' };
+ * const input: ToolTitleInput = { path: '/tmp/example.ts' };
  * ```
  */
-type ToolArgs = Readonly<Record<string, unknown>>;
+type ToolTitleInput = Readonly<Record<string, unknown>>;
 
 /**
- * Labels used by tense-aware formatters.
+ * Labels used by lifecycle-aware title entries.
  *
  * @example
  * ```ts
@@ -53,97 +47,208 @@ type TenseLabels = {
 };
 
 /**
- * Sentinel returned when an extractor cannot find display text.
- *
- * A unique symbol keeps an empty string distinct from absence.
- * Consumers compare by identity and then use the entry fallback text.
+ * Context supplied by host adapters while formatting titles.
  *
  * @example
  * ```ts
- * if (entry.extract(args) === FIELD_ABSENT) {
- *   return entry.fallback.pre;
- * }
+ * const context: ToolTitleContext = { cwd: '/workspace' };
  * ```
  */
-const FIELD_ABSENT: unique symbol = Symbol('terminal-title/display-field-string-is-absent',);
+type ToolTitleContext = {
+  /**
+   * Current working directory for smart relative path titles when host exposes it.
+   */
+  readonly cwd?: string;
+};
+
+//endregion Shared title shapes
+
+//region Entry formatter inputs
 
 /**
- * Compatibility alias for older pi terminal-title terminology.
- *
- * New shared code should prefer {@link FIELD_ABSENT}.
+ * Input passed to field-based title formatters.
  *
  * @example
  * ```ts
- * NO_STRING_FIELD === FIELD_ABSENT;
+ * const input: ToolTitleFieldFormatInput = {
+ *   context: {},
+ *   input: {},
+ *   tense: 'pre',
+ *   value: 'index.ts',
+ * };
  * ```
  */
-const NO_STRING_FIELD: typeof FIELD_ABSENT = FIELD_ABSENT;
+type ToolTitleFieldFormatInput = {
+  /**
+   * Extracted field value.
+   */
+  readonly value: string;
+
+  /**
+   * Complete tool input for formatters needing additional context.
+   */
+  readonly input: ToolTitleInput;
+
+  /**
+   * Requested lifecycle tense.
+   */
+  readonly tense: ToolTitleTense;
+
+  /**
+   * Host-supplied title context.
+   */
+  readonly context: ToolTitleContext;
+};
 
 /**
- * Sentinel returned when a registry has no entry for a tool name.
+ * Input passed to whole-input title formatters.
  *
  * @example
  * ```ts
- * if (lookupToolTitleEntry({ registry, toolName }) === TOOL_TITLE_ENTRY_ABSENT) {
- *   return toolName;
- * }
+ * const input: ToolTitleWholeInputFormatInput = {
+ *   context: {},
+ *   input: { questions: [] },
+ *   tense: 'post',
+ * };
  * ```
  */
-const TOOL_TITLE_ENTRY_ABSENT: unique symbol = Symbol(
-  'terminal-title/tool-title-entry-absent-from-registry',
-);
+type ToolTitleWholeInputFormatInput = {
+  /**
+   * Complete tool input for entry-specific extraction.
+   */
+  readonly input: ToolTitleInput;
+
+  /**
+   * Requested lifecycle tense.
+   */
+  readonly tense: ToolTitleTense;
+
+  /**
+   * Host-supplied title context.
+   */
+  readonly context: ToolTitleContext;
+};
+
+//endregion Entry formatter inputs
+
+//region Entry model
 
 /**
- * Formatter entry for one known tool.
+ * Tool title entry that always resolves to lifecycle labels.
  *
- * The extractor reads a display-relevant string from tool input.
- * The formatter applies tense-specific wording.
- * The fallback supplies text when the extractor returns {@link FIELD_ABSENT}.
+ * @example
+ * ```ts
+ * const entry: StaticToolTitleEntry = {
+ *   kind: 'static',
+ *   title: { pre: 'Listing tasks', post: 'Listed tasks' },
+ * };
+ * ```
+ */
+type StaticToolTitleEntry = {
+  /**
+   * Discriminant for static title entries.
+   */
+  readonly kind: 'static';
+
+  /**
+   * Lifecycle-specific title body.
+   */
+  readonly title: TenseLabels;
+};
+
+/**
+ * Tool title entry that formats one named string field.
+ *
+ * @example
+ * ```ts
+ * const entry: FieldToolTitleEntry = {
+ *   kind: 'field',
+ *   field: 'path',
+ *   fallback: { pre: 'Reading file', post: 'Read file' },
+ *   format: ({ value }) => value,
+ * };
+ * ```
+ */
+type FieldToolTitleEntry = {
+  /**
+   * Discriminant for field-based title entries.
+   */
+  readonly kind: 'field';
+
+  /**
+   * String field read from raw tool input.
+   */
+  readonly field: string;
+
+  /**
+   * Lifecycle-specific fallback when field is absent or non-string.
+   */
+  readonly fallback: TenseLabels;
+
+  /**
+   * Formatter for extracted field text.
+   */
+  readonly format: (input: ToolTitleFieldFormatInput,) => string;
+};
+
+/**
+ * Tool title entry that inspects complete tool input.
+ *
+ * @example
+ * ```ts
+ * const entry: WholeInputToolTitleEntry = {
+ *   kind: 'input',
+ *   fallback: { pre: 'Asking question', post: 'Asked question' },
+ *   format: ({ input }) => String(input.question),
+ * };
+ * ```
+ */
+type WholeInputToolTitleEntry = {
+  /**
+   * Discriminant for whole-input title entries.
+   */
+  readonly kind: 'input';
+
+  /**
+   * Lifecycle-specific fallback when formatter cannot produce text.
+   */
+  readonly fallback: TenseLabels;
+
+  /**
+   * Formatter returning title text or undefined to use fallback.
+   */
+  readonly format: (input: ToolTitleWholeInputFormatInput,) => string | undefined;
+};
+
+/**
+ * Terminal title entry for one known host tool.
  *
  * @example
  * ```ts
  * const entry: ToolTitleEntry = {
- *   extract: field('path'),
- *   format: pathFormat({ pre: 'Reading', post: 'Read' }),
- *   fallback: { pre: 'Reading file', post: 'Read file' },
+ *   kind: 'static',
+ *   title: { pre: 'Stopping', post: 'Stopped' },
  * };
  * ```
  */
-type ToolTitleEntry = {
-  /**
-   * Extracts display text from raw tool input.
-   */
-  readonly extract: (input: ToolArgs,) => string | typeof FIELD_ABSENT;
-
-  /**
-   * Formats extracted display text for requested tense.
-   */
-  readonly format: (
-    value: string,
-    tense: ToolTitleTense,
-  ) => string;
-
-  /**
-   * Text used when extraction returns {@link FIELD_ABSENT}.
-   */
-  readonly fallback: TenseLabels;
-};
+type ToolTitleEntry = StaticToolTitleEntry | FieldToolTitleEntry | WholeInputToolTitleEntry;
 
 /**
- * Registry mapping host tool names to formatter entries.
+ * Registry mapping host tool names to title entries.
  *
  * @example
  * ```ts
- * const registry: ToolTitleRegistry = { Bash: bashEntry };
+ * const registry: ToolTitleRegistry = { Bash: shellCommandTitleEntry({ field: 'command' }) };
  * ```
  */
 type ToolTitleRegistry = Readonly<Record<string, ToolTitleEntry>>;
 
+//endregion Entry model
+
+//region Unknown tool fallback
+
 /**
- * Callback used when a host sees a tool that is not in its registry.
- *
- * pi uses tense-aware generic text,
- * while Claude Code preserves the raw unknown tool name.
+ * Callback used when a host sees a tool that is absent from its registry.
  *
  * @example
  * ```ts
@@ -153,35 +258,40 @@ type ToolTitleRegistry = Readonly<Record<string, ToolTitleEntry>>;
 type UnknownToolTitleFormatter = (
   input: Readonly<{
     /**
-     * Host-specific tool name from the event.
+     * Host-specific tool name from event payload.
      */
     toolName: string;
 
     /**
-     * Tool input arguments supplied with the event.
+     * Tool input arguments supplied with event payload.
      */
-    args: ToolArgs;
+    input: ToolTitleInput;
 
     /**
-     * Tense requested by the host event.
+     * Tense requested by host event.
      */
     tense: ToolTitleTense;
+
+    /**
+     * Host-supplied title context.
+     */
+    context: ToolTitleContext;
   }>,
 ) => string;
 
-//endregion Tool title shapes
-
-export {
-  FIELD_ABSENT,
-  NO_STRING_FIELD,
-  TOOL_TITLE_ENTRY_ABSENT,
-};
+//endregion Unknown tool fallback
 
 export type {
+  FieldToolTitleEntry,
+  StaticToolTitleEntry,
   TenseLabels,
-  ToolArgs,
+  ToolTitleContext,
   ToolTitleEntry,
+  ToolTitleFieldFormatInput,
+  ToolTitleInput,
   ToolTitleRegistry,
   ToolTitleTense,
+  ToolTitleWholeInputFormatInput,
   UnknownToolTitleFormatter,
+  WholeInputToolTitleEntry,
 };

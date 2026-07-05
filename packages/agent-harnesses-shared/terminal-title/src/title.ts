@@ -1,55 +1,50 @@
 /**
- * Shared registry lookup and prefixed title construction.
+ * Terminal title engine.
  *
  * @module
  */
 
-import { truncate, } from './formatters.ts';
 import {
-  FIELD_ABSENT,
-  TOOL_TITLE_ENTRY_ABSENT,
-  type ToolArgs,
-  type ToolTitleEntry,
-  type ToolTitleRegistry,
-  type ToolTitleTense,
-  type UnknownToolTitleFormatter,
+  formatKnownToolTitle,
+  lookupToolTitleEntry,
+} from './title-resolution.ts';
+import type {
+  ToolTitleContext,
+  ToolTitleInput,
+  ToolTitleRegistry,
+  ToolTitleTense,
+  UnknownToolTitleFormatter,
 } from './types.ts';
 
-//region Registry lookup
+//region Unknown tools
 
 /**
- * Looks up formatter entry for a tool name.
+ * Generic unknown-tool fallback using lifecycle verbs.
  *
- * @param registry - because each host owns its own tool-name vocabulary
+ * @param toolName - because raw unknown tool identity should remain visible
  *
- * @param toolName - because event adapters pass host-specific tool names
+ * @param tense - because running and completed unknown tools need distinct wording
  *
- * @returns matching formatter entry,
- * or {@link TOOL_TITLE_ENTRY_ABSENT} for unknown tools
+ * @returns generic unknown-tool title body
  *
  * @example
  * ```ts
- * lookupToolTitleEntry({ registry: TOOL_TITLES, toolName: 'Read' });
+ * genericUnknownToolTitle({ toolName: 'mcp__weather', input: {}, tense: 'pre', context: {} });
+ * // 'Running mcp__weather'
  * ```
  */
-function lookupToolTitleEntry(
+function genericUnknownToolTitle(
   {
-    registry,
     toolName,
-  }: Readonly<{
-    registry: ToolTitleRegistry;
-    toolName: string;
-  }>,
-): ToolTitleEntry | typeof TOOL_TITLE_ENTRY_ABSENT {
-  /**
-   * Registry value for requested tool name,
-   * or JavaScript `undefined` before conversion to the domain sentinel.
-   */
-  const entry = registry[toolName];
-  if (entry === undefined)
-    return TOOL_TITLE_ENTRY_ABSENT;
-  return entry;
+    tense,
+  }: Parameters<UnknownToolTitleFormatter>[0],
+): string {
+  return `${tense === 'pre' ? 'Running' : 'Ran'} ${toolName}`;
 }
+
+//endregion Unknown tools
+
+//region Tool title API
 
 /**
  * Formats a tool title using host registry and unknown-tool fallback.
@@ -58,38 +53,36 @@ function lookupToolTitleEntry(
  *
  * @param toolName - because event adapters extract tool identity from host events
  *
- * @param args - because formatters sample display fields from tool input
+ * @param input - because formatters sample display fields from tool payloads
  *
  * @param tense - because pre and post events use different wording
  *
- * @param unknownToolTitle - because hosts intentionally differ for unknown tools
+ * @param context - because hosts may supply cwd or related formatting context
+ *
+ * @param unknownToolTitle - because hosts may override generic unknown-tool behavior
  *
  * @returns formatted title body without host prefix
  *
  * @example
  * ```ts
- * formatToolTitle({
- *   registry: TOOL_TITLES,
- *   toolName: 'Read',
- *   args: { file_path: '/tmp/a.ts' },
- *   tense: 'pre',
- *   unknownToolTitle: ({ toolName }) => toolName,
- * });
+ * buildToolTitle({ registry, toolName: 'Read', input: { path: 'a.ts' }, tense: 'pre' });
  * ```
  */
-function formatToolTitle(
+function buildToolTitle(
   {
     registry,
     toolName,
-    args,
+    input,
     tense,
-    unknownToolTitle,
+    context = {},
+    unknownToolTitle = genericUnknownToolTitle,
   }: Readonly<{
     registry: ToolTitleRegistry;
     toolName: string;
-    args: ToolArgs;
+    input: ToolTitleInput;
     tense: ToolTitleTense;
-    unknownToolTitle: UnknownToolTitleFormatter;
+    context?: ToolTitleContext;
+    unknownToolTitle?: UnknownToolTitleFormatter;
   }>,
 ): string {
   /**
@@ -99,67 +92,120 @@ function formatToolTitle(
     registry,
     toolName,
   },);
-  if (entry === TOOL_TITLE_ENTRY_ABSENT)
+  if (entry === undefined) {
     return unknownToolTitle({
       toolName,
-      args,
+      input,
       tense,
+      context,
     },);
-
-  /**
-   * Display value extracted from tool input.
-   */
-  const value = entry.extract(args,);
-  if (value === FIELD_ABSENT)
-    return entry.fallback[tense];
-  return entry.format(
-    value,
+  }
+  return formatKnownToolTitle({
+    entry,
+    input,
     tense,
-  );
+    context,
+  },);
 }
 
-//endregion Registry lookup
+//endregion Tool title API
 
-//region Title construction
+//region Prefixing API
 
 /**
- * Adds host prefix and enforces maximum terminal title length.
+ * Adds host prefix to terminal title body.
  *
  * @param prefix - because each host has its own visual marker
  *
  * @param body - because event adapters produce host-specific title body text
  *
- * @param maxLength - because terminal title length budget is host policy
- *
- * @returns prefixed and truncated terminal title
+ * @returns prefixed terminal title text before output-boundary sanitizing
  *
  * @example
  * ```ts
- * prefixedTitle({ prefix: 'π', body: 'Reading index.ts', maxLength: 60 });
- * // 'π Reading index.ts'
+ * buildTerminalTitle({ prefix: 'π', body: 'Reading src/index.ts' });
+ * // 'π Reading src/index.ts'
  * ```
  */
-function prefixedTitle(
+function buildTerminalTitle(
   {
     prefix,
     body,
-    maxLength,
   }: Readonly<{
     prefix: string;
     body: string;
-    maxLength: number;
   }>,
 ): string {
-  return truncate({
-    value: `${prefix} ${body}`,
-    maxLength,
+  /**
+   * Body text without leading or trailing whitespace.
+   */
+  const cleanBody = body.trim();
+  if (cleanBody.length === 0)
+    return prefix;
+  return `${prefix} ${cleanBody}`;
+}
+
+/**
+ * Formats and prefixes a tool title in one call.
+ *
+ * @param prefix - because host identity belongs at title front
+ *
+ * @param registry - because known tool names differ by harness
+ *
+ * @param toolName - because event adapters extract tool identity from host events
+ *
+ * @param input - because title entries inspect tool payloads
+ *
+ * @param tense - because tool lifecycle selects title voice
+ *
+ * @param context - because host adapters may provide cwd
+ *
+ * @param unknownToolTitle - because unknown-tool behavior can be customized
+ *
+ * @returns prefixed terminal title text before output-boundary sanitizing
+ *
+ * @example
+ * ```ts
+ * buildToolTerminalTitle({ prefix: 'π', registry, toolName: 'bash', input: { command: 'npm test' }, tense: 'pre' });
+ * ```
+ */
+function buildToolTerminalTitle(
+  {
+    prefix,
+    registry,
+    toolName,
+    input,
+    tense,
+    context,
+    unknownToolTitle,
+  }: Readonly<{
+    prefix: string;
+    registry: ToolTitleRegistry;
+    toolName: string;
+    input: ToolTitleInput;
+    tense: ToolTitleTense;
+    context?: ToolTitleContext;
+    unknownToolTitle?: UnknownToolTitleFormatter;
+  }>,
+): string {
+  return buildTerminalTitle({
+    prefix,
+    body: buildToolTitle({
+      registry,
+      toolName,
+      input,
+      tense,
+      context,
+      unknownToolTitle,
+    },),
   },);
 }
 
-//endregion Title construction
+//endregion Prefixing API
 
 export {
-  formatToolTitle,
-  lookupToolTitleEntry,
-  prefixedTitle,
+  buildTerminalTitle,
+  buildToolTerminalTitle,
+  buildToolTitle,
+  genericUnknownToolTitle,
 };

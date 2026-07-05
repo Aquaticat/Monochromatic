@@ -118,16 +118,17 @@ and existing short-title behavior.
 
 ### Cap final title payload text to 255 UTF-8 bytes
 
-Use `truncateTerminalTitlePayload()` from `@monochromatic-dev/module-terminal-title/ts`
+Use `safeTerminalTitlePayload()` from `@monochromatic-dev/module-terminal-title/ts`
 at the final terminal-title output boundary:
 
 ```ts
-import { truncateTerminalTitlePayload } from '@monochromatic-dev/module-terminal-title/ts';
+import { safeTerminalTitlePayload } from '@monochromatic-dev/module-terminal-title/ts';
 
-const payload = truncateTerminalTitlePayload({ value: title });
+const payload = safeTerminalTitlePayload({ value: title });
 ```
 
-The helper uses `TextEncoder` for UTF-8 byte measurement,
+The helper replaces OSC-breaking controls with visible control pictures,
+uses `TextEncoder` for UTF-8 byte measurement,
 iterates with `for...of` so surrogate pairs are not split,
 and appends `…` only when the ellipsis fits inside the byte budget.
 

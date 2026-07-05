@@ -24,8 +24,10 @@ import type {
   ExtensionAPI,
   SessionShutdownEvent,
   SessionStartEvent,
+  ToolExecutionEndEvent,
+  ToolExecutionStartEvent,
 } from '@earendil-works/pi-coding-agent';
-import { truncateTerminalTitlePayload, } from '@monochromatic-dev/module-terminal-title/ts';
+import { safeTerminalTitlePayload, } from '@monochromatic-dev/module-terminal-title/ts';
 import { titleForEvent, } from './title-builder.ts';
 
 /**
@@ -40,23 +42,6 @@ type TitleContext = {
   readonly ui: {
     readonly setTitle: (title: string,) => void;
   };
-};
-
-/**
- * Minimal tool execution start event shape used by this extension.
- */
-type ToolExecutionStartEvent = {
-  readonly toolCallId?: string;
-  readonly toolName: string;
-  readonly args?: unknown;
-};
-
-/**
- * Minimal tool execution end event shape used by this extension.
- */
-type ToolExecutionEndEvent = {
-  readonly toolCallId?: string;
-  readonly toolName: string;
 };
 
 //region Tool argument helpers
@@ -105,9 +90,9 @@ function toolArgsFromUnknown(args: unknown,): Readonly<Record<string, unknown>> 
 //region Terminal title output
 
 /**
- * Sends byte-capped title text through pi's terminal title API.
- * The byte cap is applied at this output boundary so terminals such as Ghostty
- * do not ignore long title payloads and leave stale text visible.
+ * Sends safe title payload text through pi's terminal title API.
+ * Control sanitizing and byte capping happen at this output boundary so OSC
+ * controls cannot leak and terminals such as Ghostty do not leave stale titles.
  *
  * @param ctx - because pi owns the UI title side effect
  *
@@ -129,7 +114,7 @@ function setTerminalTitle(
 ): void {
   ctx.ui
     .setTitle(
-      truncateTerminalTitlePayload({ value: title, },),
+      safeTerminalTitlePayload({ value: title, },),
     );
 }
 
@@ -175,12 +160,10 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
        * Event arguments normalized to a string-keyed record so the title builder can sample fields by name.
        */
       const args = toolArgsFromUnknown(event.args,);
-      if (event.toolCallId !== undefined) {
-        toolArgsByCallId.set(
-          event.toolCallId,
-          args,
-        );
-      }
+      toolArgsByCallId.set(
+        event.toolCallId,
+        args,
+      );
       setTerminalTitle({
         ctx,
         title: titleForEvent({
@@ -202,16 +185,13 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       /**
        * Original args recovered from the start event because pi's end event omits them.
        */
-      const cachedArgs = event.toolCallId === undefined
-        ? undefined
-        : toolArgsByCallId.get(event.toolCallId,);
+      const cachedArgs = toolArgsByCallId.get(event.toolCallId,);
       /**
        * Completion title args from start-event cache, or empty fallback when no matching start exists.
        */
       const args = cachedArgs
         ?? EMPTY_TOOL_ARGS;
-      if (event.toolCallId !== undefined)
-        toolArgsByCallId.delete(event.toolCallId,);
+      toolArgsByCallId.delete(event.toolCallId,);
       setTerminalTitle({
         ctx,
         title: titleForEvent({

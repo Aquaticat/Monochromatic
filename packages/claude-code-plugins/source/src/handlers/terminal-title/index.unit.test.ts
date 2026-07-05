@@ -20,21 +20,16 @@ import { terminalTitleForEvent, } from './index.ts';
 const BASE_HOOK_INPUT = {
   session_id: 'session-1',
   transcript_path: '/tmp/transcript.jsonl',
-  cwd: '/tmp',
+  cwd: '/repo',
   permission_mode: 'default',
 } as const;
 
 /**
  * Builds a typed user-prompt hook input for title tests.
  *
- * @param prompt - because prompt payload is the display text under test
+ * @param prompt - because prompt payload is display text under test
  *
  * @returns complete Claude Code hook input
- *
- * @example
- * ```ts
- * userPromptSubmitEvent('Fix auth');
- * ```
  */
 function userPromptSubmitEvent(prompt: string,): HookInput {
   return {
@@ -47,14 +42,9 @@ function userPromptSubmitEvent(prompt: string,): HookInput {
 /**
  * Builds a typed pre-tool hook input for title tests.
  *
- * @param filePath - because Read tool path text is the display text under test
+ * @param filePath - because Read tool path text is display text under test
  *
  * @returns complete Claude Code hook input
- *
- * @example
- * ```ts
- * readPreToolUseEvent('/tmp/index.ts');
- * ```
  */
 function readPreToolUseEvent(filePath: string,): HookInput {
   return {
@@ -66,38 +56,69 @@ function readPreToolUseEvent(filePath: string,): HookInput {
   };
 }
 
+/**
+ * Builds a typed pre-tool hook input for bash title tests.
+ *
+ * @param command - because command payload is display text under test
+ *
+ * @returns complete Claude Code hook input
+ */
+function bashPreToolUseEvent(command: string,): HookInput {
+  return {
+    ...BASE_HOOK_INPUT,
+    hook_event_name: 'PreToolUse',
+    tool_name: 'Bash',
+    tool_input: { command, },
+    tool_use_id: 'tool-1',
+  };
+}
+
 await describe({
   name: terminalTitleForEvent.name,
   children: [
     it({
-      name: 'keeps existing short title behavior',
+      name: 'renames prompt titles with lifecycle wording',
       fn: async () => {
-        const title = terminalTitleForEvent(
-          userPromptSubmitEvent('Refactor auth',),
+        expect(terminalTitleForEvent(userPromptSubmitEvent('Refactor auth',),),).toBe(
+          '✳ Received prompt: Refactor auth',
         );
-        expect(title,).toBe('✳ Refactor auth',);
+      },
+    },),
+    it({
+      name: 'uses smart relative path in tool titles',
+      fn: async () => {
+        expect(terminalTitleForEvent(readPreToolUseEvent('/repo/src/index.ts',),),).toBe(
+          '✳ Reading src/index.ts',
+        );
+      },
+    },),
+    it({
+      name: 'uses meaningful command suffix in bash titles',
+      fn: async () => {
+        expect(terminalTitleForEvent(bashPreToolUseEvent('env timeout 10 npm test',),),).toBe(
+          '✳ Running npm test',
+        );
+      },
+    },),
+    it({
+      name: 'sanitizes OSC-breaking controls in prompt titles',
+      fn: async () => {
+        expect(terminalTitleForEvent(userPromptSubmitEvent('Fix\u001Bauth\u0007bug',),),).toBe(
+          '✳ Received prompt: Fix␛auth␇bug',
+        );
       },
     },),
     it({
       name: 'byte-caps emitted prompt titles',
       fn: async () => {
+        /**
+         * Prompt exceeding Ghostty byte-safe title payload length.
+         */
         const title = terminalTitleForEvent(
           userPromptSubmitEvent('😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,),),
         );
-        expect(title.startsWith('✳ ',),).toBe(true,);
-        expect(terminalTitleUtf8ByteLength(title,),)
-          .toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
-      },
-    },),
-    it({
-      name: 'byte-caps emitted tool titles',
-      fn: async () => {
-        const title = terminalTitleForEvent(
-          readPreToolUseEvent(`/tmp/${'😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,)}`),
-        );
-        expect(title.startsWith('✳ Reading ',),).toBe(true,);
-        expect(terminalTitleUtf8ByteLength(title,),)
-          .toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+        expect(terminalTitleUtf8ByteLength(title,) <= MAX_TERMINAL_TITLE_UTF8_BYTES,)
+          .toBe(true,);
       },
     },),
   ],

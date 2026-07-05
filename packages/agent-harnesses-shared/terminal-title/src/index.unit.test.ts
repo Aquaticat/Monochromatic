@@ -1,5 +1,5 @@
 /**
- * Tests for shared terminal title formatting helpers.
+ * Tests for terminal title engine entries and registry lookup.
  */
 
 import {
@@ -8,466 +8,199 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  field,
-  FIELD_ABSENT,
-  formatToolTitle,
+  buildTerminalTitle,
+  buildToolTerminalTitle,
+  buildToolTitle,
+  genericUnknownToolTitle,
   lookupToolTitleEntry,
-  MAX_PATTERN_LENGTH,
-  MAX_TERMINAL_TITLE_UTF8_BYTES,
-  NO_STRING_FIELD,
-  pathFormat,
-  prefixedTitle,
-  quotedFormat,
-  shortCommand,
-  shortPath,
-  stringField,
-  stripCommandNoise,
-  terminalTitleUtf8ByteLength,
-  TOOL_TITLE_ENTRY_ABSENT,
-  truncate,
-  truncateTerminalTitlePayload,
+  pathTitleEntry,
+  shellCommandTitleEntry,
+  staticTitleEntry,
+  textTitleEntry,
   type ToolTitleRegistry,
-} from '../dist/final/node/index.mjs';
+} from './index.ts';
 
 await describe({
-  name: '',
+  name: buildToolTitle.name,
   children: [
-    //region Primitive formatting
-
-    describe({
-      name: truncate.name,
-      children: [
-        it({
-          name: 'returns original string when within limit',
-          fn: async () => {
-            expect(truncate({ value: 'hello', maxLength: 10, },),).toBe('hello',);
-          },
-        },),
-        it({
-          name: 'returns original string when exactly at limit',
-          fn: async () => {
-            expect(truncate({ value: 'hello', maxLength: 5, },),).toBe('hello',);
-          },
-        },),
-        it({
-          name: 'truncates with ellipsis when over limit',
-          fn: async () => {
-            expect(truncate({ value: 'hello world', maxLength: 6, },),).toBe('hello…',);
-          },
-        },),
-        it({
-          name: 'does not split surrogate pairs',
-          fn: async () => {
-            expect(truncate({ value: 'abc😀def', maxLength: 5, },),).toBe('abc…',);
-          },
-        },),
-      ],
+    it({
+      name: 'formats static entries by lifecycle tense',
+      fn: async () => {
+        /**
+         * Registry with one static no-input title entry.
+         */
+        const registry: ToolTitleRegistry = {
+          TaskList: staticTitleEntry({ pre: 'Listing tasks', post: 'Listed tasks', },),
+        };
+        expect(buildToolTitle({ registry, toolName: 'TaskList', input: {}, tense: 'post', },),).toBe(
+          'Listed tasks',
+        );
+      },
     },),
-
-    describe({
-      name: shortPath.name,
-      children: [
-        it({
-          name: 'extracts filename from absolute path',
-          fn: async () => {
-            expect(shortPath('/home/user/src/index.ts',),).toBe('index.ts',);
-          },
-        },),
-        it({
-          name: 'extracts filename from relative path',
-          fn: async () => {
-            expect(shortPath('./src/config.json',),).toBe('config.json',);
-          },
-        },),
-        it({
-          name: 'returns input when no separator exists',
-          fn: async () => {
-            expect(shortPath('README.md',),).toBe('README.md',);
-          },
-        },),
-      ],
+    it({
+      name: 'formats path entries with smart relative path',
+      fn: async () => {
+        /**
+         * Registry with one path title entry.
+         */
+        const registry: ToolTitleRegistry = {
+          Read: pathTitleEntry({
+            field: 'file_path',
+            labels: { pre: 'Reading', post: 'Read', },
+            noun: 'file',
+          },),
+        };
+        expect(
+          buildToolTitle({
+            registry,
+            toolName: 'Read',
+            input: { file_path: '/repo/src/index.ts', },
+            tense: 'pre',
+            context: { cwd: '/repo', },
+          },),
+        ).toBe('Reading src/index.ts',);
+      },
     },),
-
-    //endregion Primitive formatting
-
-    //region UTF-8 output boundary
-
-    describe({
-      name: truncateTerminalTitlePayload.name,
-      children: [
-        it({
-          name: 'keeps existing short title text unchanged',
-          fn: async () => {
-            const title = 'π Reading index.ts';
-            expect(truncateTerminalTitlePayload({ value: title, },),).toBe(title,);
-          },
-        },),
-        it({
-          name: 'keeps exactly safe ASCII byte length unchanged',
-          fn: async () => {
-            const title = 'a'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,);
-            const result = truncateTerminalTitlePayload({ value: title, },);
-            expect(result,).toBe(title,);
-            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
-          },
-        },),
-        it({
-          name: 'caps ASCII over the terminal byte limit',
-          fn: async () => {
-            const unsafeAsciiTitle = 'a'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
-            const result = truncateTerminalTitlePayload({ value: unsafeAsciiTitle, },);
-            const markerByteLength = terminalTitleUtf8ByteLength('…',);
-            expect(result,).toBe(`${'a'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES - markerByteLength,)}…`,);
-            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
-          },
-        },),
-        it({
-          name: 'keeps exactly safe multi-byte BMP text unchanged',
-          fn: async () => {
-            const bmpCharacter = '界';
-            const bmpByteLength = terminalTitleUtf8ByteLength(bmpCharacter,);
-            const safeBmpCount = MAX_TERMINAL_TITLE_UTF8_BYTES / bmpByteLength;
-            const title = bmpCharacter.repeat(safeBmpCount,);
-            const result = truncateTerminalTitlePayload({ value: title, },);
-            expect(result,).toBe(title,);
-            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
-          },
-        },),
-        it({
-          name: 'caps unsafe multi-byte BMP text by bytes',
-          fn: async () => {
-            const bmpCharacter = '界';
-            const bmpByteLength = terminalTitleUtf8ByteLength(bmpCharacter,);
-            const safeBmpCount = MAX_TERMINAL_TITLE_UTF8_BYTES / bmpByteLength;
-            const unsafeBmpTitle = bmpCharacter.repeat(safeBmpCount + 1,);
-            const result = truncateTerminalTitlePayload({ value: unsafeBmpTitle, },);
-            expect(result,).toBe(`${bmpCharacter.repeat(safeBmpCount - 1,)}…`,);
-            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
-          },
-        },),
-        it({
-          name: 'caps emoji without breaking surrogate pairs',
-          fn: async () => {
-            const emoji = '😀';
-            const emojiByteLength = terminalTitleUtf8ByteLength(emoji,);
-            const unsafeEmojiCount = Math.floor(MAX_TERMINAL_TITLE_UTF8_BYTES / emojiByteLength,) + 1;
-            const safeEmojiCountBeforeMarker = Math.floor(
-              (MAX_TERMINAL_TITLE_UTF8_BYTES - terminalTitleUtf8ByteLength('…',)) / emojiByteLength,
-            );
-            const result = truncateTerminalTitlePayload({ value: emoji.repeat(unsafeEmojiCount,), },);
-            expect(result,).toBe(`${emoji.repeat(safeEmojiCountBeforeMarker,)}…`,);
-            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
-          },
-        },),
-        it({
-          name: 'omits ellipsis when marker cannot fit',
-          fn: async () => {
-            const tinyByteBudget = 2;
-            const result = truncateTerminalTitlePayload({ value: 'abcdef', maxBytes: tinyByteBudget, },);
-            expect(result,).toBe('ab',);
-            expect(terminalTitleUtf8ByteLength(result,),).toBe(tinyByteBudget,);
-          },
-        },),
-      ],
+    it({
+      name: 'uses fallback when field entry has no string value',
+      fn: async () => {
+        /**
+         * Registry with one text title entry.
+         */
+        const registry: ToolTitleRegistry = {
+          Grep: textTitleEntry({
+            field: 'pattern',
+            labels: { pre: 'Searching for', post: 'Searched for', },
+            fallback: { pre: 'Searching', post: 'Searched', },
+          },),
+        };
+        expect(buildToolTitle({ registry, toolName: 'Grep', input: {}, tense: 'pre', },),).toBe(
+          'Searching',
+        );
+      },
     },),
-
-    //endregion UTF-8 output boundary
-
-    //region Field extraction
-
-    describe({
-      name: stringField.name,
-      children: [
-        it({
-          name: 'returns string value when present',
-          fn: async () => {
-            expect(stringField({ input: { path: '/foo.ts', }, key: 'path', },),).toBe('/foo.ts',);
-          },
-        },),
-        it({
-          name: 'returns FIELD_ABSENT for missing key',
-          fn: async () => {
-            expect(stringField({ input: { path: '/foo.ts', }, key: 'missing', },),).toBe(FIELD_ABSENT,);
-          },
-        },),
-        it({
-          name: 'returns FIELD_ABSENT for non-string value',
-          fn: async () => {
-            expect(stringField({ input: { count: 42, }, key: 'count', },),).toBe(FIELD_ABSENT,);
-          },
-        },),
-        it({
-          name: 'keeps the pi absence alias identical',
-          fn: async () => {
-            expect(NO_STRING_FIELD,).toBe(FIELD_ABSENT,);
-          },
-        },),
-      ],
+    it({
+      name: 'formats shell command entries with lifecycle verbs',
+      fn: async () => {
+        /**
+         * Registry with one shell command title entry.
+         */
+        const registry: ToolTitleRegistry = {
+          Bash: shellCommandTitleEntry({ field: 'command', },),
+        };
+        expect(
+          buildToolTitle({
+            registry,
+            toolName: 'Bash',
+            input: { command: 'env timeout 10 npm test', },
+            tense: 'pre',
+          },),
+        ).toBe('Running npm test',);
+      },
     },),
-
-    describe({
-      name: field.name,
-      children: [
-        it({
-          name: 'creates extractor for named field',
-          fn: async () => {
-            const extractPath = field('path',);
-            expect(extractPath({ path: '/foo.ts', },),).toBe('/foo.ts',);
-          },
-        },),
-        it({
-          name: 'returns FIELD_ABSENT when field is absent',
-          fn: async () => {
-            const extractPath = field('path',);
-            expect(extractPath({ other: 'value', },),).toBe(FIELD_ABSENT,);
-          },
-        },),
-      ],
+    it({
+      name: 'uses generic unknown-tool lifecycle fallback',
+      fn: async () => {
+        expect(
+          buildToolTitle({
+            registry: {},
+            toolName: 'mcp__weather',
+            input: {},
+            tense: 'post',
+          },),
+        ).toBe('Ran mcp__weather',);
+      },
     },),
+  ],
+},);
 
-    //endregion Field extraction
-
-    //region Formatter builders
-
-    describe({
-      name: pathFormat.name,
-      children: [
-        it({
-          name: 'formats present tense with short path',
-          fn: async () => {
-            const formatPath = pathFormat({ pre: 'Reading', post: 'Read', },);
-            expect(formatPath('/home/user/src/index.ts', 'pre',),).toBe('Reading index.ts',);
-          },
-        },),
-        it({
-          name: 'formats past tense with short path',
-          fn: async () => {
-            const formatPath = pathFormat({ pre: 'Editing', post: 'Edited', },);
-            expect(formatPath('/app/config.json', 'post',),).toBe('Edited config.json',);
-          },
-        },),
-      ],
+await describe({
+  name: lookupToolTitleEntry.name,
+  children: [
+    it({
+      name: 'does not resolve inherited object properties',
+      fn: async () => {
+        expect(lookupToolTitleEntry({ registry: {}, toolName: '__proto__', },),).toBe(undefined,);
+      },
     },),
+  ],
+},);
 
-    describe({
-      name: quotedFormat.name,
-      children: [
-        it({
-          name: 'formats present tense with quotes',
-          fn: async () => {
-            const formatQuoted = quotedFormat({ pre: 'Searching', post: 'Searched', },);
-            expect(formatQuoted('TODO', 'pre',),).toBe('Searching "TODO"',);
-          },
-        },),
-        it({
-          name: 'truncates long values to MAX_PATTERN_LENGTH',
-          fn: async () => {
-            const formatQuoted = quotedFormat({ pre: 'Finding', post: 'Found', },);
-            const longPattern = 'a'.repeat(MAX_PATTERN_LENGTH + 10,);
-            const result = formatQuoted(longPattern, 'post',);
-            const quotedValue = result.slice(
-              result.indexOf('"',) + 1,
-              result.lastIndexOf('"',),
-            );
-            expect(quotedValue.length <= MAX_PATTERN_LENGTH,).toBe(true,);
-          },
-        },),
-      ],
+await describe({
+  name: buildTerminalTitle.name,
+  children: [
+    it({
+      name: 'prefixes non-empty body',
+      fn: async () => {
+        expect(buildTerminalTitle({ prefix: 'π', body: 'Reading src/index.ts', },),).toBe(
+          'π Reading src/index.ts',
+        );
+      },
     },),
-
-    //endregion Formatter builders
-
-    //region Command shortening
-
-    describe({
-      name: shortCommand.name,
-      children: [
-        it({
-          name: 'leaves plain command untouched',
-          fn: async () => {
-            expect(shortCommand('ls -la',),).toBe('ls -la',);
-          },
-        },),
-        it({
-          name: 'strips env-var assignment',
-          fn: async () => {
-            expect(shortCommand('NODE_ENV=prod ls',),).toBe('ls',);
-          },
-        },),
-        it({
-          name: 'strips empty env-var assignment',
-          fn: async () => {
-            expect(shortCommand('FOO= ls -la',),).toBe('ls -la',);
-          },
-        },),
-        it({
-          name: 'strips wrapper command and argument token',
-          fn: async () => {
-            expect(shortCommand('timeout 5 ls',),).toBe('ls',);
-          },
-        },),
-        it({
-          name: 'matches legacy chained env wrapper behavior',
-          fn: async () => {
-            expect(shortCommand('NODE_ENV=prod env timeout 5 ls -la',),).toBe('5 ls -la',);
-          },
-        },),
-        it({
-          name: 'does not strip leading dash token',
-          fn: async () => {
-            expect(shortCommand('-x=1 ls',),).toBe('-x=1 ls',);
-          },
-        },),
-        it({
-          name: 'returns wrapper verbatim when it has no argument',
-          fn: async () => {
-            expect(shortCommand('timeout',),).toBe('timeout',);
-          },
-        },),
-        it({
-          name: 'strips many chained env prefixes with a linear scan',
-          fn: async () => {
-            expect(shortCommand(`${'A=1 '.repeat(100_000,)}cmd`,),).toBe('cmd',);
-          },
-        },),
-      ],
+    it({
+      name: 'keeps only prefix for empty body',
+      fn: async () => {
+        expect(buildTerminalTitle({ prefix: 'π', body: '', },),).toBe('π',);
+      },
     },),
-
-    describe({
-      name: stripCommandNoise.name,
-      children: [
-        it({
-          name: 'supports pi legacy timeout title behavior',
-          fn: async () => {
-            expect(stripCommandNoise('env timeout 10 npm test',),).toBe('10 npm test',);
-          },
-        },),
-      ],
+    it({
+      name: 'does not display-cap long titles',
+      fn: async () => {
+        /**
+         * Long body that used to exceed display-length caps.
+         */
+        const body = 'a'.repeat(200,);
+        expect(buildTerminalTitle({ prefix: 'π', body, },),).toBe(`π ${body}`,);
+      },
     },),
+  ],
+},);
 
-    //endregion Command shortening
-
-    //region Registry formatting
-
-    describe({
-      name: lookupToolTitleEntry.name,
-      children: [
-        it({
-          name: 'returns entry for registered tool',
-          fn: async () => {
-            const registry: ToolTitleRegistry = {
-              Read: {
-                extract: field('file_path',),
-                format: pathFormat({ pre: 'Reading', post: 'Read', },),
-                fallback: { pre: 'Reading file', post: 'Read file', },
-              },
-            };
-            expect(lookupToolTitleEntry({ registry, toolName: 'Read', },),).toBe(registry.Read,);
-          },
-        },),
-        it({
-          name: 'returns absence sentinel for unregistered tool',
-          fn: async () => {
-            expect(lookupToolTitleEntry({ registry: {}, toolName: 'Unknown', },),).toBe(
-              TOOL_TITLE_ENTRY_ABSENT,
-            );
-          },
-        },),
-      ],
+await describe({
+  name: buildToolTerminalTitle.name,
+  children: [
+    it({
+      name: 'formats and prefixes tool titles',
+      fn: async () => {
+        /**
+         * Registry with one path title entry.
+         */
+        const registry: ToolTitleRegistry = {
+          Read: pathTitleEntry({
+            field: 'file_path',
+            labels: { pre: 'Reading', post: 'Read', },
+            noun: 'file',
+          },),
+        };
+        expect(
+          buildToolTerminalTitle({
+            prefix: '✳',
+            registry,
+            toolName: 'Read',
+            input: { file_path: 'src/index.ts', },
+            tense: 'pre',
+          },),
+        ).toBe('✳ Reading src/index.ts',);
+      },
     },),
+  ],
+},);
 
-    describe({
-      name: formatToolTitle.name,
-      children: [
-        it({
-          name: 'formats registered tool with extracted value',
-          fn: async () => {
-            const registry: ToolTitleRegistry = {
-              Read: {
-                extract: field('file_path',),
-                format: pathFormat({ pre: 'Reading', post: 'Read', },),
-                fallback: { pre: 'Reading file', post: 'Read file', },
-              },
-            };
-            expect(
-              formatToolTitle({
-                registry,
-                toolName: 'Read',
-                args: { file_path: '/tmp/index.ts', },
-                tense: 'pre',
-                unknownToolTitle: ({ toolName, }) => toolName,
-              },),
-            ).toBe('Reading index.ts',);
-          },
-        },),
-        it({
-          name: 'uses tense fallback when extractor returns FIELD_ABSENT',
-          fn: async () => {
-            const registry: ToolTitleRegistry = {
-              Read: {
-                extract: field('file_path',),
-                format: pathFormat({ pre: 'Reading', post: 'Read', },),
-                fallback: { pre: 'Reading file', post: 'Read file', },
-              },
-            };
-            expect(
-              formatToolTitle({
-                registry,
-                toolName: 'Read',
-                args: {},
-                tense: 'post',
-                unknownToolTitle: ({ toolName, }) => toolName,
-              },),
-            ).toBe('Read file',);
-          },
-        },),
-        it({
-          name: 'delegates unknown tools to host fallback',
-          fn: async () => {
-            expect(
-              formatToolTitle({
-                registry: {},
-                toolName: 'mcp__weather',
-                args: { city: 'Tokyo', },
-                tense: 'pre',
-                unknownToolTitle: ({ toolName, tense, }) => `${tense}:${toolName}`,
-              },),
-            ).toBe('pre:mcp__weather',);
-          },
-        },),
-      ],
+await describe({
+  name: genericUnknownToolTitle.name,
+  children: [
+    it({
+      name: 'uses running verb for unknown pre-tool title',
+      fn: async () => {
+        expect(
+          genericUnknownToolTitle({
+            toolName: 'custom',
+            input: {},
+            tense: 'pre',
+            context: {},
+          },),
+        ).toBe('Running custom',);
+      },
     },),
-
-    //endregion Registry formatting
-
-    //region Prefixing
-
-    describe({
-      name: prefixedTitle.name,
-      children: [
-        it({
-          name: 'adds prefix before title body',
-          fn: async () => {
-            expect(prefixedTitle({ prefix: 'π', body: 'Reading index.ts', maxLength: 60, },),).toBe(
-              'π Reading index.ts',
-            );
-          },
-        },),
-        it({
-          name: 'truncates after prefixing',
-          fn: async () => {
-            const result = prefixedTitle({
-              prefix: '✳',
-              body: 'a'.repeat(200,),
-              maxLength: 60,
-            },);
-            expect(result.length <= 60,).toBe(true,);
-            expect(result.startsWith('✳ ',),).toBe(true,);
-          },
-        },),
-      ],
-    },),
-
-    //endregion Prefixing
   ],
 },);

@@ -1,9 +1,9 @@
 # pi-terminal-title
 
 Terminal tab title extension for pi:
- shows current tool,
- session state,
- and user prompt in the terminal window title.
+shows current tool,
+session state,
+and user prompt in the terminal window title.
 
 ## Installation
 
@@ -29,101 +29,41 @@ pi -e ./packages/pi-plugins/terminal-title/src/index.ts
 
 ## How it works
 
-Subscribes to pi agent lifecycle events and updates the terminal window/tab title via `ctx.ui.setTitle()`.
- Titles use a `π` prefix,
-are display-capped at 60 JavaScript string characters,
+The extension subscribes to pi agent lifecycle events and updates the terminal window/tab title via
+`ctx.ui.setTitle()`.
+Titles use a `π` prefix,
+replace OSC-breaking controls with visible tokens,
 and are byte-capped below Ghostty's 256-byte UTF-8 title reject threshold before `ctx.ui.setTitle()`.
+There is no separate display-character cap.
 
-**Event → title mapping:
-**
+## Event title examples
 
-<table>
-<thead>
-<tr>
-<th>Event</th>
-<th>Title example</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>`tool_execution_start`</td>
-<td>`π Reading index.ts`</td>
-</tr>
-<tr>
-<td>`tool_execution_end`</td>
-<td>`π Read index.ts`</td>
-</tr>
-<tr>
-<td>`session_start`</td>
-<td>`π Session startup`</td>
-</tr>
-<tr>
-<td>`session_shutdown`</td>
-<td>`π Session ended`</td>
-</tr>
-<tr>
-<td>`agent_end`</td>
-<td>`π Stopped`</td>
-</tr>
-<tr>
-<td>`before_agent_start`</td>
-<td>`π Refactor the auth module`</td>
-</tr>
-</tbody>
-</table>
+- `tool_execution_start`: `π Reading src/index.ts`
+- `tool_execution_end`: `π Read src/index.ts`
+- `session_start`: `π Started session: startup`
+- `session_shutdown`: `π Ended session`
+- `agent_end`: `π Stopped agent`
+- `before_agent_start`: `π Received prompt: Refactor the auth module`
 
-**Tool registry:
-**
+## Tool title examples
 
-<table>
-<thead>
-<tr>
-<th>Tool</th>
-<th>Pre title</th>
-<th>Post title</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>`bash`</td>
-<td>`π npm test`</td>
-<td>`π npm test`</td>
-</tr>
-<tr>
-<td>`read`</td>
-<td>`π Reading index.ts`</td>
-<td>`π Read index.ts`</td>
-</tr>
-<tr>
-<td>`edit`</td>
-<td>`π Editing config.ts`</td>
-<td>`π Edited config.ts`</td>
-</tr>
-<tr>
-<td>`write`</td>
-<td>`π Writing output.ts`</td>
-<td>`π Wrote output.ts`</td>
-</tr>
-<tr>
-<td>`grep`</td>
-<td>`π Searching "TODO"`</td>
-<td>`π Searched "TODO"`</td>
-</tr>
-<tr>
-<td>`find`</td>
-<td>`π Finding "*.ts"`</td>
-<td>`π Found "*.ts"`</td>
-</tr>
-<tr>
-<td>`ls`</td>
-<td>`π Listing src`</td>
-<td>`π Listed src`</td>
-</tr>
-</tbody>
-</table>
+- `bash`: `π Running npm test` while running,
+  `π Ran npm test` after completion.
+- `read`: `π Reading src/index.ts` while running,
+  `π Read src/index.ts` after completion.
+- `edit`: `π Editing src/config.ts` while running,
+  `π Edited src/config.ts` after completion.
+- `write`: `π Writing dist/output.ts` while running,
+  `π Wrote dist/output.ts` after completion.
+- `grep`: `π Searching for TODO` while running,
+  `π Searched for TODO` after completion.
+- `find`: `π Finding *.ts` while running,
+  `π Found *.ts` after completion.
+- `ls`: `π Listing src` while running,
+  `π Listed src` after completion.
 
-Custom/MCP tools that are not in the registry display generically:
-`π Running mcp__weather` / `π Ran mcp__weather`
+Custom and MCP tools that are not in the registry display generically:
+`π Running mcp__weather` while running and `π Ran mcp__weather` after completion.
 
 ## Source structure
 
@@ -131,7 +71,7 @@ Custom/MCP tools that are not in the registry display generically:
 src/
   index.ts           # Extension entry point, event handlers
   title-builder.ts   # titleForEvent(), titleForTool(): maps pi events to titles
-  tool-titles.ts     # Tool name → formatter registry (pi tool names)
-
-Shared formatter helpers live in `@monochromatic-dev/module-terminal-title`.
+  tool-titles.ts     # Tool name to title-entry registry using pi tool names
 ```
+
+Shared terminal-title engine helpers live in `@monochromatic-dev/module-terminal-title`.

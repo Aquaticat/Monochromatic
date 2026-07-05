@@ -39,7 +39,7 @@ const VERIFY_COMMAND = 'ls -l';
 /**
  * Expected terminal title after command completion.
  */
-const EXPECTED_TITLE = 'π ls -l';
+const EXPECTED_TITLE = 'π Ran ls -l';
 
 //endregion Constants
 

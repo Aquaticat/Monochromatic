@@ -2,34 +2,26 @@
  * Terminal title builder for pi events.
  *
  * Produces human-readable terminal tab titles from pi extension events
- * using the tool-title registry and tense-aware formatting.
+ * using shared terminal-title engine entries.
  *
  * @module
  */
 
 import {
-  formatToolTitle,
-  prefixedTitle,
-  type ToolArgs,
+  buildTerminalTitle,
+  buildToolTitle,
+  type ToolTitleInput,
   type ToolTitleTense,
-  type UnknownToolTitleFormatter,
 } from '@monochromatic-dev/module-terminal-title/ts';
 import { TOOL_TITLES, } from './tool-titles.ts';
 
 /**
- * Prefix prepended to every terminal title for visual identification.
+ * Prefix prepended to every terminal title for pi visual identification.
  */
 const TITLE_PREFIX = 'π';
 
 /**
- * Maximum total title length including prefix.
- */
-const MAX_TITLE_LENGTH = 60;
-
-/**
  * Union of pi extension events that this extension handles.
- *
- * Uses the `type` discriminant from pi's event system.
  */
 type HandledEventType =
   | 'tool_execution_start'
@@ -40,50 +32,47 @@ type HandledEventType =
   | 'before_agent_start';
 
 /**
- * Builds generic pi text for custom or MCP tools absent from the registry.
- *
- * @param toolName - because pi custom tool names should stay visible to users
- *
- * @param tense - because start and end events need different verbs
- *
- * @returns tense-aware fallback title body
- *
- * @example
- * ```ts
- * titleForUnknownTool({ toolName: 'mcp__weather', args: {}, tense: 'pre' });
- * // 'Running mcp__weather'
- * ```
+ * Data bag for event-specific fields passed to title builders.
  */
-function titleForUnknownTool(
-  {
-    toolName,
-    tense,
-  }: Parameters<UnknownToolTitleFormatter>[0],
-): string {
-  return `${tense === 'pre' ? 'Running' : 'Ran'} ${toolName}`;
-}
+type EventData = {
+  /**
+   * Tool name for tool execution events.
+   */
+  readonly toolName?: string;
+
+  /**
+   * Tool input arguments for tool execution events.
+   */
+  readonly args?: ToolTitleInput;
+
+  /**
+   * Session start reason from pi.
+   */
+  readonly reason?: string;
+
+  /**
+   * User prompt text before agent start.
+   */
+  readonly prompt?: string;
+};
+
+//region Tool titles
 
 /**
- * Builds a terminal title for a tool execution event.
+ * Builds a terminal title body for a pi tool execution event.
  *
- * Looks up the tool name in the {@link TOOL_TITLES} registry. If found,
- * extracts a display value from the tool input and formats it with the
- * appropriate tense. For custom/MCP tools not in the registry,
- * displays the raw tool name with tense-appropriate wording.
+ * @param toolName - because pi built-ins and custom tools use string names
  *
- * @param toolName - pi tool name (e.g. `"bash"`, `"read"`, or a custom name)
+ * @param args - because title entries inspect tool input fields
  *
- * @param args - tool input arguments as a record
+ * @param tense - because start and end events use different lifecycle verbs
  *
- * @param tense - `"pre"` for start, `"post"` for end
- *
- * @returns formatted title string (without prefix)
+ * @returns formatted title body without prefix
  *
  * @example
  * ```ts
- * titleForTool({ toolName: 'bash', args: { command: 'npm test' }, tense: 'pre' }) // 'npm test'
- * titleForTool({ toolName: 'read', args: { path: '/home/user/index.ts' }, tense: 'pre' }) // 'Reading index.ts'
- * titleForTool({ toolName: 'mcp__weather', args: { city: 'Tokyo' }, tense: 'pre' }) // 'Running mcp__weather'
+ * titleForTool({ toolName: 'bash', args: { command: 'npm test' }, tense: 'pre' });
+ * // 'Running npm test'
  * ```
  */
 function titleForTool(
@@ -93,99 +82,123 @@ function titleForTool(
     tense,
   }: Readonly<{
     toolName: string;
-    args: ToolArgs;
+    args: ToolTitleInput;
     tense: ToolTitleTense;
   }>,
 ): string {
-  return formatToolTitle({
+  return buildToolTitle({
     registry: TOOL_TITLES,
     toolName,
-    args,
+    input: args,
     tense,
-    unknownToolTitle: titleForUnknownTool,
+  },);
+}
+
+//endregion Tool titles
+
+//region Event title bodies
+
+/**
+ * Builds title body for tool start event data.
+ *
+ * @param data - because pi event adapter normalizes event payloads into this shape
+ *
+ * @returns title body without prefix
+ */
+function toolStartBody(data: EventData,): string {
+  return titleForTool({
+    toolName: data.toolName
+      ?? 'unknown',
+    args: data.args
+      ?? {},
+    tense: 'pre',
   },);
 }
 
 /**
- * Maps event types to their title body strings.
+ * Builds title body for tool end event data.
  *
- * Each key matches a {@link HandledEventType}; the function produces
- * the body text (before prefix) for that event, delegating to
- * {@link titleForTool} for the tool execution events.
+ * @param data - because pi completion events use post tense
+ *
+ * @returns title body without prefix
  */
-const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string> = {
-  tool_execution_start(data,) {
-    return titleForTool({
-      toolName: data.toolName
-        ?? 'unknown',
-      args: data.args
-        ?? {},
-      tense: 'pre',
-    },);
-  },
-  tool_execution_end(data,) {
-    return titleForTool({
-      toolName: data.toolName
-        ?? 'unknown',
-      args: data.args
-        ?? {},
-      tense: 'post',
-    },);
-  },
-  session_start(data,) {
-    return `Session ${data.reason
-      ?? 'started'}`;
-  },
-  session_shutdown() {
-    return 'Session ended';
-  },
-  agent_end() {
-    return 'Stopped';
-  },
-  before_agent_start(data,) {
-    return data.prompt
-      ?? '';
-  },
-};
+function toolEndBody(data: EventData,): string {
+  return titleForTool({
+    toolName: data.toolName
+      ?? 'unknown',
+    args: data.args
+      ?? {},
+    tense: 'post',
+  },);
+}
 
 /**
- * Data bag for event-specific fields passed to title builders.
+ * Builds title body for session start event data.
+ *
+ * @param data - because pi supplies session start reason when available
+ *
+ * @returns title body without prefix
  */
-type EventData = {
-  readonly toolName?: string;
-  readonly args?: ToolArgs;
-  readonly reason?: string;
-  readonly prompt?: string;
+function sessionStartBody(data: EventData,): string {
+  /**
+   * Session reason text shown after lifecycle verb.
+   */
+  const reason = data.reason
+    ?? 'started';
+  return `Started session: ${reason}`;
+}
+
+/**
+ * Builds title body for before-agent-start event data.
+ *
+ * @param data - because prompt text is the activity context
+ *
+ * @returns title body without prefix
+ */
+function promptBody(data: EventData,): string {
+  /**
+   * Prompt text shown after lifecycle verb.
+   */
+  const prompt = data.prompt
+    ?? '';
+  if (prompt.length === 0)
+    return 'Received prompt';
+  return `Received prompt: ${prompt}`;
+}
+
+/**
+ * Maps event types to their title body builders.
+ */
+const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string> = {
+  tool_execution_start: toolStartBody,
+  tool_execution_end: toolEndBody,
+  session_start: sessionStartBody,
+  session_shutdown() {
+    return 'Ended session';
+  },
+  agent_end() {
+    return 'Stopped agent';
+  },
+  before_agent_start: promptBody,
 };
+
+//endregion Event title bodies
+
+//region Event title API
 
 /**
  * Builds a terminal title from a pi extension event.
  *
- * Maps each handled event type to its title logic via the
- * {@link EVENT_BODY_BUILDERS} record lookup:
- * - `tool_execution_start` → look up tool, use `pre` tense
- * - `tool_execution_end` → look up tool, use `post` tense
- * - `session_start` → "Session \{reason\}"
- * - `session_shutdown` → "Session ended"
- * - `agent_end` → "Stopped"
- * - `before_agent_start` → user prompt text
+ * @param eventType - discriminant for handled pi event
  *
- * @param eventType - the `type` field from the pi event
+ * @param data - event-specific data such as tool name, args, reason, or prompt
  *
- * @param data - event-specific data (toolName, args, reason, prompt, etc.)
- *
- * @returns final title string with prefix, truncated to {@link MAX_TITLE_LENGTH}
+ * @returns final title string with prefix before payload-boundary sanitizing
  *
  * @example
  * ```ts
- * titleForEvent({
- *   eventType: 'tool_execution_start',
- *   data: { toolName: 'bash', args: { command: 'npm test' } },
- * })
- * // 'π npm test'
- *
- * titleForEvent({ eventType: 'session_start', data: { reason: 'startup' } })
- * // 'π Session startup'
+ * titleForEvent({ eventType: 'tool_execution_start', data: { toolName: 'bash', args: { command: 'npm test' } } });
+ * // 'π Running npm test'
  * ```
  */
 function titleForEvent(
@@ -198,22 +211,18 @@ function titleForEvent(
   }>,
 ): string {
   /**
-   * Body-text builder selected by event type; produces the user-visible payload before the prefix.
+   * Event-specific body builder selected by event type.
    */
   const builder = EVENT_BODY_BUILDERS[eventType];
-  /**
-   * Event-specific body text (e.g. tool description, session reason) before the title prefix.
-   */
-  const body = builder(data,);
-  return prefixedTitle({
+  return buildTerminalTitle({
     prefix: TITLE_PREFIX,
-    body,
-    maxLength: MAX_TITLE_LENGTH,
+    body: builder(data,),
   },);
 }
 
+//endregion Event title API
+
 export {
-  MAX_TITLE_LENGTH,
   TITLE_PREFIX,
   titleForEvent,
   titleForTool,

@@ -1,118 +1,66 @@
 /**
- * Tool title mapping for terminal tab display.
+ * Claude Code tool title registry.
  *
- * Maps Claude Code tool names to human-readable title formatters with
- * tense-aware labels (present for PreToolUse, past for PostToolUse).
+ * Maps Claude Code tool names to shared terminal-title entries.
  *
  * @module
  */
 
 import {
-  field,
-  pathFormat,
-  quotedFormat,
-  shortCommand,
+  pathTitleEntry,
+  shellCommandTitleEntry,
+  textTitleEntry,
   type ToolTitleEntry,
 } from '@monochromatic-dev/module-terminal-title/ts';
+import type { BuiltInToolName, } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import { EXTENDED_TOOL_TITLES, } from './tool-titles-extended.ts';
 import { SEARCH_TOOL_TITLES, } from './tool-titles-search.ts';
 
 /**
- * Core tool title entries for file, search, and agent tools. Combined with
- * {@link EXTENDED_TOOL_TITLES} and {@link SEARCH_TOOL_TITLES} to form the full
- * {@link TOOL_TITLES} registry.
+ * Core Claude Code tool title entries for file, search, and agent tools.
  */
-const CORE_TOOL_TITLES: Record<string, ToolTitleEntry> = {
-  Bash: {
-    extract: field('command',),
-    format(v,) {
-      return shortCommand(v,);
-    },
-    fallback: {
-      pre: 'Running command',
-      post: 'Ran command',
-    },
-  },
-  Read: {
-    extract: field('file_path',),
-    format: pathFormat({
-      pre: 'Reading',
-      post: 'Read',
-    },),
-    fallback: {
-      pre: 'Reading file',
-      post: 'Read file',
-    },
-  },
-  Edit: {
-    extract: field('file_path',),
-    format: pathFormat({
-      pre: 'Editing',
-      post: 'Edited',
-    },),
-    fallback: {
-      pre: 'Editing file',
-      post: 'Edited file',
-    },
-  },
-  Write: {
-    extract: field('file_path',),
-    format: pathFormat({
-      pre: 'Writing',
-      post: 'Wrote',
-    },),
-    fallback: {
-      pre: 'Writing file',
-      post: 'Wrote file',
-    },
-  },
-  Grep: {
-    extract: field('pattern',),
-    format: quotedFormat({
-      pre: 'Searching',
-      post: 'Searched',
-    },),
-    fallback: {
-      pre: 'Searching',
-      post: 'Searched',
-    },
-  },
-  Glob: {
-    extract: field('pattern',),
-    format: quotedFormat({
-      pre: 'Finding',
-      post: 'Found',
-    },),
-    fallback: {
-      pre: 'Finding files',
-      post: 'Found files',
-    },
-  },
-  Agent: {
-    extract: field('description',),
-    format(
-      v,
-      tense,
-    ) {
-      return `${tense === 'pre' ? 'Agent' : 'Agent done'}: ${v}`;
-    },
-    fallback: {
-      pre: 'Agent working',
-      post: 'Agent done',
-    },
-  },
-};
+const CORE_TOOL_TITLES = {
+  Bash: shellCommandTitleEntry({ field: 'command', },),
+  Read: pathTitleEntry({
+    field: 'file_path',
+    labels: { pre: 'Reading', post: 'Read', },
+    noun: 'file',
+  },),
+  Edit: pathTitleEntry({
+    field: 'file_path',
+    labels: { pre: 'Editing', post: 'Edited', },
+    noun: 'file',
+  },),
+  Write: pathTitleEntry({
+    field: 'file_path',
+    labels: { pre: 'Writing', post: 'Wrote', },
+    noun: 'file',
+  },),
+  Grep: textTitleEntry({
+    field: 'pattern',
+    labels: { pre: 'Searching for', post: 'Searched for', },
+    fallback: { pre: 'Searching', post: 'Searched', },
+  },),
+  Glob: textTitleEntry({
+    field: 'pattern',
+    labels: { pre: 'Finding', post: 'Found', },
+    fallback: { pre: 'Finding files', post: 'Found files', },
+  },),
+  Agent: textTitleEntry({
+    field: 'description',
+    labels: { pre: 'Running agent', post: 'Finished agent', },
+    fallback: { pre: 'Running agent', post: 'Finished agent', },
+  },),
+} satisfies Partial<Record<BuiltInToolName, ToolTitleEntry>>;
 
 /**
- * Maps tool names to their title formatting rules. Each entry specifies how to
- * extract a display string from `tool_input`, how to format it per tense, and
- * fallbacks.
+ * Complete built-in Claude Code tool title registry.
  */
-const TOOL_TITLES: Record<string, ToolTitleEntry> = {
+const TOOL_TITLES = {
   ...CORE_TOOL_TITLES,
   ...SEARCH_TOOL_TITLES,
   ...EXTENDED_TOOL_TITLES,
-};
+} satisfies Record<BuiltInToolName, ToolTitleEntry>;
 
 export type { ToolTitleEntry, } from '@monochromatic-dev/module-terminal-title/ts';
 

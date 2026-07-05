@@ -1,19 +1,20 @@
 /**
- * Shared terminal title formatting helpers for agent harness integrations.
+ * Shared terminal title engine for agent harness integrations.
  *
- * Host-specific packages keep event mapping,
- * tool-name registries,
- * prefixes,
- * and terminal side effects.
- * This package owns reusable title formatting primitives.
+ * Host-specific packages keep event mapping and side effects.
+ * This package owns title entry semantics,
+ * command and path display,
+ * registry lookup,
+ * prefix construction,
+ * control sanitizing,
+ * and terminal byte safety.
  *
  * @example
  * ```ts
  * import {
- *   field,
- *   formatToolTitle,
- *   pathFormat,
- *   prefixedTitle,
+ *   buildToolTerminalTitle,
+ *   pathTitleEntry,
+ *   safeTerminalTitlePayload,
  * } from '@monochromatic-dev/module-terminal-title';
  * ```
  *
@@ -22,62 +23,68 @@
 
 //region Types
 
-export {
-  FIELD_ABSENT,
-  NO_STRING_FIELD,
-  TOOL_TITLE_ENTRY_ABSENT,
-} from './types.ts';
 export type {
+  FieldToolTitleEntry,
+  StaticToolTitleEntry,
   TenseLabels,
-  ToolArgs,
+  ToolTitleContext,
   ToolTitleEntry,
+  ToolTitleFieldFormatInput,
+  ToolTitleInput,
   ToolTitleRegistry,
   ToolTitleTense,
+  ToolTitleWholeInputFormatInput,
   UnknownToolTitleFormatter,
+  WholeInputToolTitleEntry,
 } from './types.ts';
 
 //endregion Types
 
-//region Output boundary
+//region Payload safety
 
 export {
   GHOSTTY_IGNORED_TITLE_UTF8_BYTES,
   MAX_TERMINAL_TITLE_UTF8_BYTES,
+} from './constants.ts';
+export {
+  safeTerminalTitlePayload,
+  sanitizeTerminalTitleText,
   terminalTitleUtf8ByteLength,
-  truncateTerminalTitlePayload,
 } from './boundary.ts';
 
-//endregion Output boundary
+//endregion Payload safety
 
-//region Formatting
+//region Formatting helpers
 
-export {
-  field,
-  MAX_PATTERN_LENGTH,
-  pathFormat,
-  quotedFormat,
-  shortPath,
-  stringField,
-  truncate,
-} from './formatters.ts';
+export { terminalTitleCommand, } from './command.ts';
+export { terminalTitlePath, } from './path.ts';
 
-//endregion Formatting
+//endregion Formatting helpers
 
-//region Commands
+//region Title entries
 
 export {
-  shortCommand,
-  stripCommandNoise,
-} from './command.ts';
+  fieldTitleEntry,
+  inputTitleEntry,
+  pathTitleEntry,
+  shellCommandTitleEntry,
+  staticTitleEntry,
+  textTitleEntry,
+} from './entries.ts';
 
-//endregion Commands
+//endregion Title entries
 
-//region Titles
+//region Title engine
 
 export {
-  formatToolTitle,
-  lookupToolTitleEntry,
-  prefixedTitle,
+  buildTerminalTitle,
+  buildToolTerminalTitle,
+  buildToolTitle,
+  genericUnknownToolTitle,
 } from './title.ts';
+export {
+  lookupToolTitleEntry,
+  stringField,
+} from './title-resolution.ts';
 
-//endregion Titles
+//endregion Title engine

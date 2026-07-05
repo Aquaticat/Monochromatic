@@ -1,23 +1,20 @@
 # terminal-title
 
-Shared terminal title formatting helpers for agent harness integrations.
+Shared terminal title engine for agent harness integrations.
 
 ## Purpose
 
-This package contains the host-neutral pieces of terminal title rendering:
-truncation,
-path shortening,
-field extraction,
-tense-aware formatter entries,
-shell command shortening,
-prefix application,
-UTF-8 byte caps at terminal output boundaries,
-and registry lookup.
+This package owns host-neutral terminal title invariants:
+control-character sanitizing,
+UTF-8 byte caps,
+smart path display,
+shell command summaries,
+lifecycle-aware tool title entries,
+safe registry lookup,
+unknown-tool fallback,
+and prefix assembly.
 
-Host packages keep their own event adapters,
-tool registries,
-prefixes,
-and side effects.
+Host packages keep event adapters and side effects.
 For example,
 pi still calls `ctx.ui.setTitle()`,
 while Claude Code still writes OSC 0 sequences through its hook CLI.
@@ -26,25 +23,60 @@ while Claude Code still writes OSC 0 sequences through its hook CLI.
 
 ```ts
 import {
-  field,
-  formatToolTitle,
-  pathFormat,
-  prefixedTitle,
-  quotedFormat,
-  shortCommand,
-  truncateTerminalTitlePayload,
+  buildToolTerminalTitle,
+  pathTitleEntry,
+  safeTerminalTitlePayload,
+  shellCommandTitleEntry,
 } from '@monochromatic-dev/module-terminal-title';
 ```
 
 Source imports are also available for workspace packages:
 
 ```ts
-import { formatToolTitle } from '@monochromatic-dev/module-terminal-title/ts';
+import { buildToolTitle } from '@monochromatic-dev/module-terminal-title/ts';
 ```
 
-## Terminal byte cap
+## Engine shape
 
-Terminal output boundaries should call `truncateTerminalTitlePayload()` on the final title payload text
+```ts
+import {
+  buildToolTerminalTitle,
+  pathTitleEntry,
+  shellCommandTitleEntry,
+  type ToolTitleRegistry,
+} from '@monochromatic-dev/module-terminal-title/ts';
+
+const registry: ToolTitleRegistry = {
+  bash: shellCommandTitleEntry({ field: 'command' }),
+  read: pathTitleEntry({
+    field: 'path',
+    labels: { pre: 'Reading', post: 'Read' },
+    noun: 'file',
+  }),
+};
+
+const title = buildToolTerminalTitle({
+  prefix: 'π',
+  registry,
+  toolName: 'read',
+  input: { path: '/repo/src/index.ts' },
+  tense: 'pre',
+  context: { cwd: '/repo' },
+});
+// 'π Reading src/index.ts'
+```
+
+## Terminal payload safety
+
+Terminal output boundaries should call `safeTerminalTitlePayload()` on final title payload text
 before handing it to a host API or wrapping it in an OSC title sequence.
-The default cap is 255 UTF-8 bytes,
-which stays below Ghostty's current 256-byte reject threshold for title payloads.
+The helper replaces OSC-breaking controls with visible control pictures,
+then caps payload text to 255 UTF-8 bytes by default.
+
+```ts
+import { safeTerminalTitlePayload } from '@monochromatic-dev/module-terminal-title/ts';
+
+const payload = safeTerminalTitlePayload({ value: title });
+```
+
+The byte cap stays below Ghostty's current 256-byte reject threshold for title payloads.

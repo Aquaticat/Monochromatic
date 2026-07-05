@@ -11,10 +11,11 @@
       "types": "./dist/final/node/index.d.mts",
       "default": "./dist/final/node/index.mjs"
     },
-    "./ts": "./src/index.ts",
-    "./ts/*": "./src/*"
+    "./ts": "./src/index.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@monochromatic-dev/agent-harnesses-shell-command-analyzer": "workspace:*"
+  },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
