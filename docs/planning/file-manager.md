@@ -3,8 +3,10 @@
 Status:
  accepted stack direction.
  Product decisions resolved in a grilling session on 2026-07-05.
- Spikes not run.
- Not built.
+ Column-strip virtualization spike built and passed on Linux (2026-07-05);
+ see `packages/desktop-app/file-manager/` and the spike result below.
+ Context-menu, drag-and-drop, and native default-manager spikes not yet run.
+ Virtualization spike not yet run on macOS or Windows.
  Authored 2026-07-05.
 
 ## Goal
@@ -457,6 +459,51 @@ Pass criteria:
 
 Failure action:
 compare Qt and GPUI before continuing with Slint.
+
+Result (2026-07-05):
+PASSED on Linux.
+
+- Prototype path:
+  `packages/desktop-app/file-manager/`
+  (function-named package,
+  built as the plan's designated home rather than a throwaway crate).
+- Operating systems tested:
+  Linux only (Wayland, winit backend, femtovg renderer);
+  macOS `m1` and Windows `x13-win` still pending.
+- Steps run:
+  a synthetic strip of 1200 columns,
+  about 14400 panes,
+  and about 121 million addressable rows was driven headless through the
+  embedded Slint MCP server (release build) and live on the host GPU.
+  Horizontal and vertical scrolling,
+  far jumps across the strip,
+  keyboard navigation,
+  and column close were exercised while reading the instrumentation HUD.
+- Observed numbers:
+  columns instantiated 5 to 7 of 1200;
+  panes instantiated 17 to 28 of about 14400;
+  distinct rows materialized under 2000 of about 121 million;
+  decoded image memory 1.5 to 4.2 MiB resident,
+  bounded by the viewport,
+  with decode count rising on scroll-back (re-decode confirmed);
+  keyboard focus on the active pane survives pane recycling.
+- Smoothness:
+  pure windowing cost per scroll step is 11 to 36 microseconds,
+  constant regardless of the 14400-pane strip size,
+  which is the smoothness lever.
+  The only content-scaling cost is synchronous preview decode on the UI thread
+  (about 0.7 ms per newly-revealed preview in release);
+  a hard jump revealing a full screen of previews at once peaked at one 14.2 ms frame.
+- Chosen action:
+  continue with Slint;
+  no fallback triggered.
+  Move preview decode to a cancellable background job in the
+  file-watching-and-async milestone so even the hard-jump frame stays under budget;
+  this is a milestone item,
+  not a stack-change trigger.
+- Not covered by this spike:
+  the context-menu spike was not folded in yet,
+  and the drag-and-drop and native default-manager spikes are still pending.
 
 ### File drag and drop spike
 
