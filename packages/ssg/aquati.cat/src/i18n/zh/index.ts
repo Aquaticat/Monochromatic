@@ -1,7 +1,7 @@
-import type { Translation, } from '../i18n-types.ts';
+import type { Label, } from '../labels-types.ts';
 
 /**
- * Chinese translations.
+ * Chinese label table.
  */
 const zh = {
   siteName: 'Aquaticat',
@@ -16,6 +16,6 @@ const zh = {
   langSwitcher: '切换语言',
   published: '发布',
   updated: '更新',
-} satisfies Translation;
+} satisfies Record<Label, string>;
 
 export default zh;

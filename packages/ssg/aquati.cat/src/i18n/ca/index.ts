@@ -1,7 +1,7 @@
-import type { Translation, } from '../i18n-types.ts';
+import type { Label, } from '../labels-types.ts';
 
 /**
- * Catalan translations.
+ * Catalan label table.
  */
 const ca = {
   siteName: 'Aquaticat',
@@ -16,6 +16,6 @@ const ca = {
   langSwitcher: 'Canvia d\'idioma',
   published: 'Publicat',
   updated: 'Actualitzat',
-} satisfies Translation;
+} satisfies Record<Label, string>;
 
 export default ca;

@@ -9,6 +9,7 @@
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
+    "@monochromatic-dev/module-i18n-compose": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "farmhashjs": "catalog:",

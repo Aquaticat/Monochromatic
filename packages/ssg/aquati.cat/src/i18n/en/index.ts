@@ -1,7 +1,7 @@
-import type { BaseTranslation, } from '../i18n-types.ts';
+import type { Label, } from '../labels-types.ts';
 
 /**
- * English (base locale) translations.
+ * English (base locale) label table.
  */
 const en = {
   siteName: 'Aquaticat',
@@ -16,6 +16,6 @@ const en = {
   langSwitcher: 'Switch language',
   published: 'Published',
   updated: 'Updated',
-} satisfies BaseTranslation;
+} satisfies Record<Label, string>;
 
 export default en;
