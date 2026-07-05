@@ -7,6 +7,10 @@
 description = "List all fuzz targets"
 run = "cargo fuzz list --fuzz-dir ."
 
+[tasks.lint]
+description = "cargo check for the shared generator library and artifact decoder helper"
+run = "cargo check --lib --bin decode_artifact"
+
 [tasks.build]
 description = "Build all fuzz targets (AddressSanitizer instrumented)"
 # `--target x86_64-unknown-linux-gnu` is load-bearing: cargo-fuzz defaults to

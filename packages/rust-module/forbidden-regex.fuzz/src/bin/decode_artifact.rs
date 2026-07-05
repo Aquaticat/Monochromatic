@@ -4,11 +4,20 @@
 //        understand a finding we need to see the actual pattern, not the raw bytes.
 
 use arbitrary::{Arbitrary, Unstructured};
+// What:     `use anyhow::{Context, Result};` imports helpers for adding messages to
+//           fallible operations and returning one application error type.
+// Why:      The decoder should report missing arguments or unreadable artifacts
+//           without panicking.
+use anyhow::{Context, Result};
 use forbidden_regex_fuzz::generators::PatternAndContent;
 
-fn main() {
-    let path = std::env::args().nth(1).expect("usage: decode_artifact <artifact-path>");
-    let bytes = std::fs::read(&path).expect("read artifact");
+fn main() -> Result<()> {
+    // What:     `context(...)` converts a missing CLI argument into an `anyhow` error.
+    // Why:      The user needs a usage message instead of an `expect` panic.
+    let path = std::env::args().nth(1).context("usage: decode_artifact <artifact-path>")?;
+    // What:     `with_context(...)` adds the artifact path to any read error.
+    // Why:      A failing run should name the file that could not be decoded.
+    let bytes = std::fs::read(&path).with_context(|| format!("read artifact {path}"))?;
     // libfuzzer-sys feeds the whole input via arbitrary_take_rest; match that here.
     let unstructured = Unstructured::new(&bytes);
     // println (not tracing): decode_artifact is a one-shot reproducer decoder; its stdout
@@ -23,4 +32,5 @@ fn main() {
         }
         Err(error) => println!("decode failed: {error:?}"),
     }
+    Ok(())
 }
