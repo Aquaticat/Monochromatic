@@ -13,7 +13,7 @@ import {
   quotedFormat,
   shortCommand,
   type ToolTitleEntry,
-} from './formatter-utils.ts';
+} from '@monochromatic-dev/module-terminal-title/ts';
 import { EXTENDED_TOOL_TITLES, } from './tool-titles-extended.ts';
 import { SEARCH_TOOL_TITLES, } from './tool-titles-search.ts';
 
@@ -114,8 +114,6 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
   ...EXTENDED_TOOL_TITLES,
 };
 
-export type { ToolTitleEntry, } from './formatter-utils.ts';
-
-export { truncate, } from './formatter-utils.ts';
+export type { ToolTitleEntry, } from '@monochromatic-dev/module-terminal-title/ts';
 
 export { TOOL_TITLES, };

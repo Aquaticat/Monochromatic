@@ -3,19 +3,19 @@ import type {
   PostToolUseInput,
   PreToolUseInput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
+import {
+  formatToolTitle,
+  prefixedTitle,
+  shortPath,
+} from '@monochromatic-dev/module-terminal-title/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 import { open, } from 'node:fs/promises';
-import { basename, } from 'node:path';
 
 import {
   NO_STDOUT,
   type WriterOutput,
 } from '../../runtime/handler-runtime.ts';
-import { FIELD_ABSENT, } from './formatter-utils.ts';
-import {
-  TOOL_TITLES,
-  truncate,
-} from './tool-titles.ts';
+import { TOOL_TITLES, } from './tool-titles.ts';
 
 /**
  * Maximum length for the title string before truncation.
@@ -49,33 +49,13 @@ function titleForTool(event: ReadonlyDeep<PreToolUseInput | PostToolUseInput>,):
    */
   const tense = event.hook_event_name
     === 'PreToolUse' ? 'pre' : 'post';
-  /**
-   * Per-tool formatter entry; `undefined` when no specific formatter is registered.
-   */
-  const entry = TOOL_TITLES[toolName];
-  if (entry === undefined)
-    return toolName;
-  /**
-   * Extracted target value (path, command, etc.); `FIELD_ABSENT` falls back to a generic title.
-   */
-  const value = entry.extract(input,);
-  if (value === FIELD_ABSENT)
-    return entry.fallback[tense];
-  return entry.format(
-    value,
+  return formatToolTitle({
+    registry: TOOL_TITLES,
+    toolName,
+    args: input,
     tense,
-  );
-}
-
-/**
- * Filename portion of an absolute or relative path.
- *
- * @param filePath - path to shorten
- *
- * @returns last path segment
- */
-function shortPath(filePath: string,): string {
-  return basename(filePath,);
+    unknownToolTitle: ({ toolName: unknownToolName, },) => unknownToolName,
+  },);
 }
 
 /**
@@ -193,8 +173,9 @@ async function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): Promise<Te
    * Title text derived from the event before prefixing and truncation.
    */
   const title = titleForEvent(event,);
-  await setTerminalTitle(truncate({
-    value: `${TITLE_PREFIX} ${title}`,
+  await setTerminalTitle(prefixedTitle({
+    prefix: TITLE_PREFIX,
+    body: title,
     maxLength: MAX_TITLE_LENGTH,
   },),);
 }

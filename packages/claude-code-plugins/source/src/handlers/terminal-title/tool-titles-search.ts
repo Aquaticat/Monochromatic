@@ -14,7 +14,7 @@ import {
   quotedFormat,
   type ToolTitleEntry,
   truncate,
-} from './formatter-utils.ts';
+} from '@monochromatic-dev/module-terminal-title/ts';
 
 /**
  * Title entries for search, web, notebook, LSP, skill, and discovery tools.

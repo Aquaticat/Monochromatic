@@ -12,7 +12,7 @@ import {
   MAX_PATTERN_LENGTH,
   type ToolTitleEntry,
   truncate,
-} from './formatter-utils.ts';
+} from '@monochromatic-dev/module-terminal-title/ts';
 
 /**
  * Throws when a formatter is called for an entry whose extractor never returns
