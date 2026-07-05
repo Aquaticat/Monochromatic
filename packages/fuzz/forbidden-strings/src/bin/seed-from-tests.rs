@@ -20,6 +20,11 @@
 // ```
 
 use sha2::{Digest, Sha256};
+// What:     `use anyhow::{anyhow, Result};` imports `anyhow`'s error-construction
+//           macro and application result alias for this helper binary.
+// Why:      The seeder combines file I/O, git command, and guard errors into one
+//           user-facing failure channel.
+use anyhow::{anyhow, Result};
 use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -62,7 +67,7 @@ const TARGETS: &[&str] = &[
     "fuzz_literal_roundtrip",
 ];
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     // What:     `verify_local_file_ignored()?` runs the guard.
     //           Question-mark propagates the error up to `main`'s
     //           `Result` return, causing a non-zero exit with the
@@ -82,7 +87,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for rel in TEST_FILES {
         let path = PathBuf::from(rel);
         let bytes = fs::read(&path)
-            .map_err(|e| format!("failed to read {}: {}", path.display(), e))?;
+            .map_err(|e| anyhow!("failed to read {}: {}", path.display(), e))?;
         for lit in extract_string_literals(&bytes) {
             seen.insert(lit);
         }
@@ -120,7 +125,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-// What:     `fn verify_local_file_ignored() -> Result<(), Box<dyn std::error::Error>>`.
+// What:     `fn verify_local_file_ignored() -> Result<()>`.
 //           Runs `git check-ignore -v <path>` on the local deny-
 //           list. `git check-ignore` exits 0 when the path IS
 //           ignored, 1 when it isn't. We need exit 0.
@@ -128,7 +133,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 //           read this path, a future TEST_FILES edit could
 //           accidentally include it. The guard makes that change
 //           visible at run-time.
-fn verify_local_file_ignored() -> Result<(), Box<dyn std::error::Error>> {
+fn verify_local_file_ignored() -> Result<()> {
     let local = Path::new(FORBIDDEN_LOCAL);
     if !local.exists() {
         // eprintln, not tracing: dev-tool status output for the person running the seeder.
@@ -144,15 +149,14 @@ fn verify_local_file_ignored() -> Result<(), Box<dyn std::error::Error>> {
         .arg(local)
         .output()?;
     if !out.status.success() {
-        return Err(format!(
+        return Err(anyhow!(
             "{} is NOT git-ignored; aborting seeder to avoid leaking secrets.\n\
              git check-ignore stdout: {}\n\
              git check-ignore stderr: {}",
             local.display(),
             String::from_utf8_lossy(&out.stdout),
             String::from_utf8_lossy(&out.stderr),
-        )
-        .into());
+        ));
     }
     // eprintln, not tracing: dev-tool status output for the person running the seeder.
     eprintln!("verified {} is git-ignored", local.display());
