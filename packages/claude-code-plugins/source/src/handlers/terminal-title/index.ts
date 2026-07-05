@@ -7,6 +7,7 @@ import {
   formatToolTitle,
   prefixedTitle,
   shortPath,
+  truncateTerminalTitlePayload,
   type UnknownToolTitleFormatter,
 } from '@monochromatic-dev/module-terminal-title/ts';
 import type { ReadonlyDeep, } from 'type-fest';
@@ -27,6 +28,16 @@ const MAX_TITLE_LENGTH = 60;
  * Prefix prepended to every terminal title to identify Claude Code activity.
  */
 const TITLE_PREFIX = '✳';
+
+/**
+ * OSC sequence prefix for setting terminal title text.
+ */
+const OSC_TITLE_SEQUENCE_PREFIX = '\x1b]0;';
+
+/**
+ * OSC string terminator used after terminal title payload text.
+ */
+const OSC_STRING_TERMINATOR = '\x07';
 
 /**
  * Builds Claude Code text for tools absent from the known registry.
@@ -165,7 +176,11 @@ async function setTerminalTitle(title: string,): Promise<void> {
       '/dev/tty',
       'w',
     );
-    await tty.write(`]0;${title}`,);
+    /**
+     * UTF-8 byte-capped payload text placed between complete OSC delimiters.
+     */
+    const titlePayload = truncateTerminalTitlePayload({ value: title, },);
+    await tty.write(`${OSC_TITLE_SEQUENCE_PREFIX}${titlePayload}${OSC_STRING_TERMINATOR}`,);
   }
   catch (_error: unknown) {
     /* /dev/tty unavailable: running inside sandbox or non-interactive context. */
@@ -180,9 +195,38 @@ async function setTerminalTitle(title: string,): Promise<void> {
 type TerminalTitleOutput = void;
 
 /**
- * Builds the title from any hook event via {@link titleForEvent}, truncates
- * it to {@link MAX_TITLE_LENGTH}, and writes the OSC 0 escape sequence via
- * {@link setTerminalTitle} to `/dev/tty`. Side-effecting; returns nothing.
+ * Builds final title payload text for a Claude Code hook event.
+ * Applies the existing display-length cap first,
+ * then applies the UTF-8 byte cap required by terminal output boundaries.
+ *
+ * @param event - parsed {@link HookInput} event from Claude Code
+ *
+ * @returns prefixed title payload text safe to place inside an OSC 0 sequence
+ *
+ * @example
+ * ```ts
+ * terminalTitleForEvent({ hook_event_name: 'Stop', session_id: 's', transcript_path: 't', cwd: '.' });
+ * // '✳ Stopped'
+ * ```
+ */
+function terminalTitleForEvent(event: ReadonlyDeep<HookInput>,): string {
+  /**
+   * Title text derived from the event before prefixing and truncation.
+   */
+  const title = titleForEvent(event,);
+  return truncateTerminalTitlePayload({
+    value: prefixedTitle({
+      prefix: TITLE_PREFIX,
+      body: title,
+      maxLength: MAX_TITLE_LENGTH,
+    },),
+  },);
+}
+
+/**
+ * Builds the title from any hook event via {@link terminalTitleForEvent} and
+ * writes the OSC 0 escape sequence via {@link setTerminalTitle} to `/dev/tty`.
+ * Side-effecting; returns nothing.
  *
  * @param event - parsed {@link HookInput} event from Claude Code
  *
@@ -194,15 +238,7 @@ type TerminalTitleOutput = void;
  * ```
  */
 async function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): Promise<TerminalTitleOutput> {
-  /**
-   * Title text derived from the event before prefixing and truncation.
-   */
-  const title = titleForEvent(event,);
-  await setTerminalTitle(prefixedTitle({
-    prefix: TITLE_PREFIX,
-    body: title,
-    maxLength: MAX_TITLE_LENGTH,
-  },),);
+  await setTerminalTitle(terminalTitleForEvent(event,),);
 }
 
 /**
@@ -245,6 +281,7 @@ function terminalTitleWriter(_output: TerminalTitleOutput,): WriterOutput {
 export type { TerminalTitleOutput, };
 
 export {
+  terminalTitleForEvent,
   terminalTitleHandler,
   terminalTitleParser,
   terminalTitleWriter,

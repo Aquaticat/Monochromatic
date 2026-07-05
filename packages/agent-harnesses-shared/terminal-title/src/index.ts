@@ -38,6 +38,17 @@ export type {
 
 //endregion Types
 
+//region Output boundary
+
+export {
+  GHOSTTY_IGNORED_TITLE_UTF8_BYTES,
+  MAX_TERMINAL_TITLE_UTF8_BYTES,
+  terminalTitleUtf8ByteLength,
+  truncateTerminalTitlePayload,
+} from './boundary.ts';
+
+//endregion Output boundary
+
 //region Formatting
 
 export {

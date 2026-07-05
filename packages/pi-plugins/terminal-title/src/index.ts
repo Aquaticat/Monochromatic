@@ -25,6 +25,7 @@ import type {
   SessionShutdownEvent,
   SessionStartEvent,
 } from '@earendil-works/pi-coding-agent';
+import { truncateTerminalTitlePayload, } from '@monochromatic-dev/module-terminal-title/ts';
 import { titleForEvent, } from './title-builder.ts';
 
 /**
@@ -101,6 +102,36 @@ function toolArgsFromUnknown(args: unknown,): Readonly<Record<string, unknown>> 
 
 //endregion Tool argument helpers
 
+//region Terminal title output
+
+/**
+ * Sends byte-capped title text through pi's terminal title API.
+ * The byte cap is applied at this output boundary so terminals such as Ghostty
+ * do not ignore long title payloads and leave stale text visible.
+ *
+ * @param ctx - because pi owns the UI title side effect
+ *
+ * @param title - because callers build host-specific display text first
+ *
+ * @example
+ * ```ts
+ * setTerminalTitle({ ctx, title: 'π Reading index.ts' });
+ * ```
+ */
+function setTerminalTitle(
+  {
+    ctx,
+    title,
+  }: Readonly<{
+    ctx: TitleContext;
+    title: string;
+  }>,
+): void {
+  ctx.ui.setTitle(truncateTerminalTitlePayload({ value: title, },),);
+}
+
+//endregion Terminal title output
+
 //region Extension entry point
 
 /**
@@ -147,16 +178,16 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
           args,
         );
       }
-      ctx.ui
-        .setTitle(
-        titleForEvent({
+      setTerminalTitle({
+        ctx,
+        title: titleForEvent({
           eventType: 'tool_execution_start',
           data: {
             toolName: event.toolName,
             args,
           },
         },),
-      );
+      },);
     },
   );
   pi.on(
@@ -178,16 +209,16 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
         ?? EMPTY_TOOL_ARGS;
       if (event.toolCallId !== undefined)
         toolArgsByCallId.delete(event.toolCallId,);
-      ctx.ui
-        .setTitle(
-        titleForEvent({
+      setTerminalTitle({
+        ctx,
+        title: titleForEvent({
           eventType: 'tool_execution_end',
           data: {
             toolName: event.toolName,
             args,
           },
         },),
-      );
+      },);
     },
   );
   pi.on(
@@ -197,15 +228,15 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       ctx: TitleContext,
     ) {
       toolArgsByCallId.clear();
-      ctx.ui
-        .setTitle(
-        titleForEvent({
+      setTerminalTitle({
+        ctx,
+        title: titleForEvent({
           eventType: 'session_start',
           data: {
             reason: event.reason,
           },
         },),
-      );
+      },);
     },
   );
   pi.on(
@@ -215,13 +246,13 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       ctx: TitleContext,
     ) {
       toolArgsByCallId.clear();
-      ctx.ui
-        .setTitle(
-        titleForEvent({
+      setTerminalTitle({
+        ctx,
+        title: titleForEvent({
           eventType: 'session_shutdown',
           data: {},
         },),
-      );
+      },);
     },
   );
   pi.on(
@@ -231,13 +262,13 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       ctx: TitleContext,
     ) {
       toolArgsByCallId.clear();
-      ctx.ui
-        .setTitle(
-        titleForEvent({
+      setTerminalTitle({
+        ctx,
+        title: titleForEvent({
           eventType: 'agent_end',
           data: {},
         },),
-      );
+      },);
     },
   );
   pi.on(
@@ -246,15 +277,15 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       event: Readonly<Pick<BeforeAgentStartEvent, 'prompt'>>,
       ctx: TitleContext,
     ) {
-      ctx.ui
-        .setTitle(
-        titleForEvent({
+      setTerminalTitle({
+        ctx,
+        title: titleForEvent({
           eventType: 'before_agent_start',
           data: {
             prompt: event.prompt,
           },
         },),
-      );
+      },);
     },
   );
 }

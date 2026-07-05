@@ -16,6 +16,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import {
+  MAX_TERMINAL_TITLE_UTF8_BYTES,
+  terminalTitleUtf8ByteLength,
+} from '@monochromatic-dev/module-terminal-title/ts';
 
 //region Mock infrastructure
 
@@ -355,6 +359,29 @@ await describe({
 
         expect(titles,).toHaveLength(1,);
         expect(titles[0],).toBe('π Fix the auth bug',);
+      },
+    },),
+    it({
+      name: 'byte-caps emitted before_agent_start titles',
+      fn: async () => {
+        const { api, registrations, } = createMockApi();
+        terminalTitle(api,);
+        const { ctx, titles, } = createMockContext();
+
+        const handler = getHandler({ registrations, event: 'before_agent_start', },);
+        handler(
+          {
+            type: 'before_agent_start',
+            prompt: '😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,),
+            systemPrompt: '',
+            systemPromptOptions: {} as never,
+          } as BeforeAgentStartEvent,
+          ctx,
+        );
+
+        expect(titles,).toHaveLength(1,);
+        expect(terminalTitleUtf8ByteLength(titles[0] ?? '',),)
+          .toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
       },
     },),
     //endregion before_agent_start handler

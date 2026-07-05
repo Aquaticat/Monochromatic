@@ -30,7 +30,9 @@ pi -e ./packages/pi-plugins/terminal-title/src/index.ts
 ## How it works
 
 Subscribes to pi agent lifecycle events and updates the terminal window/tab title via `ctx.ui.setTitle()`.
- Titles use a `π` prefix and are capped at 60 characters.
+ Titles use a `π` prefix,
+are display-capped at 60 JavaScript string characters,
+and are byte-capped below Ghostty's 256-byte UTF-8 title reject threshold before `ctx.ui.setTitle()`.
 
 **Event → title mapping:
 **

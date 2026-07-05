@@ -157,6 +157,7 @@ Ptyxis,
 
 The hook receives JSON on stdin from Claude Code,
 extracts a descriptive summary based on the tool and its input,
+byte-caps the final title payload below Ghostty's 256-byte UTF-8 title reject threshold,
 and writes `\x1b]0;title\x07` directly to `/dev/tty`.
 
 Hooks run outside the sandbox,

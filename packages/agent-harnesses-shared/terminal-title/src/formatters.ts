@@ -6,6 +6,7 @@
 
 import { basename, } from 'node:path';
 
+import { TITLE_TRUNCATION_MARKER, } from './constants.ts';
 import {
   FIELD_ABSENT,
   type TenseLabels,
@@ -58,12 +59,30 @@ function truncate(
   if (value.length
     <= maxLength)
     return value;
-  return `${
-    value.slice(
-      0,
-      maxLength - 1,
-    )
-  }…`;
+  if (maxLength <= 0)
+    return '';
+
+  /**
+   * JavaScript string-length budget left before appending the truncation marker.
+   */
+  const bodyMaxLength = maxLength - TITLE_TRUNCATION_MARKER.length;
+  /**
+   * Unicode code-point chunks preserved from the original string.
+   */
+  const chunks: string[] = [];
+  /**
+   * JavaScript string length already assigned to {@link chunks}.
+   */
+  let lengthUsed = 0;
+
+  for (const chunk of value) {
+    if (lengthUsed + chunk.length > bodyMaxLength)
+      break;
+    chunks.push(chunk,);
+    lengthUsed += chunk.length;
+  }
+
+  return `${chunks.join('',)}${TITLE_TRUNCATION_MARKER}`;
 }
 
 /**

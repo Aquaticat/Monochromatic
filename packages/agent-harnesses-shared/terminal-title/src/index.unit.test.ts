@@ -13,6 +13,7 @@ import {
   formatToolTitle,
   lookupToolTitleEntry,
   MAX_PATTERN_LENGTH,
+  MAX_TERMINAL_TITLE_UTF8_BYTES,
   NO_STRING_FIELD,
   pathFormat,
   prefixedTitle,
@@ -21,8 +22,10 @@ import {
   shortPath,
   stringField,
   stripCommandNoise,
+  terminalTitleUtf8ByteLength,
   TOOL_TITLE_ENTRY_ABSENT,
   truncate,
+  truncateTerminalTitlePayload,
   type ToolTitleRegistry,
 } from '../dist/final/node/index.mjs';
 
@@ -50,6 +53,12 @@ await describe({
           name: 'truncates with ellipsis when over limit',
           fn: async () => {
             expect(truncate({ value: 'hello world', maxLength: 6, },),).toBe('hello…',);
+          },
+        },),
+        it({
+          name: 'does not split surrogate pairs',
+          fn: async () => {
+            expect(truncate({ value: 'abc😀def', maxLength: 5, },),).toBe('abc…',);
           },
         },),
       ],
@@ -80,6 +89,89 @@ await describe({
     },),
 
     //endregion Primitive formatting
+
+    //region UTF-8 output boundary
+
+    describe({
+      name: truncateTerminalTitlePayload.name,
+      children: [
+        it({
+          name: 'keeps existing short title text unchanged',
+          fn: async () => {
+            const title = 'π Reading index.ts';
+            expect(truncateTerminalTitlePayload({ value: title, },),).toBe(title,);
+          },
+        },),
+        it({
+          name: 'keeps exactly safe ASCII byte length unchanged',
+          fn: async () => {
+            const title = 'a'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,);
+            const result = truncateTerminalTitlePayload({ value: title, },);
+            expect(result,).toBe(title,);
+            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
+          },
+        },),
+        it({
+          name: 'caps ASCII over the terminal byte limit',
+          fn: async () => {
+            const unsafeAsciiTitle = 'a'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+            const result = truncateTerminalTitlePayload({ value: unsafeAsciiTitle, },);
+            const markerByteLength = terminalTitleUtf8ByteLength('…',);
+            expect(result,).toBe(`${'a'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES - markerByteLength,)}…`,);
+            expect(terminalTitleUtf8ByteLength(result,),).toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+          },
+        },),
+        it({
+          name: 'keeps exactly safe multi-byte BMP text unchanged',
+          fn: async () => {
+            const bmpCharacter = '界';
+            const bmpByteLength = terminalTitleUtf8ByteLength(bmpCharacter,);
+            const safeBmpCount = MAX_TERMINAL_TITLE_UTF8_BYTES / bmpByteLength;
+            const title = bmpCharacter.repeat(safeBmpCount,);
+            const result = truncateTerminalTitlePayload({ value: title, },);
+            expect(result,).toBe(title,);
+            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
+          },
+        },),
+        it({
+          name: 'caps unsafe multi-byte BMP text by bytes',
+          fn: async () => {
+            const bmpCharacter = '界';
+            const bmpByteLength = terminalTitleUtf8ByteLength(bmpCharacter,);
+            const safeBmpCount = MAX_TERMINAL_TITLE_UTF8_BYTES / bmpByteLength;
+            const unsafeBmpTitle = bmpCharacter.repeat(safeBmpCount + 1,);
+            const result = truncateTerminalTitlePayload({ value: unsafeBmpTitle, },);
+            expect(result,).toBe(`${bmpCharacter.repeat(safeBmpCount - 1,)}…`,);
+            expect(terminalTitleUtf8ByteLength(result,),).toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+          },
+        },),
+        it({
+          name: 'caps emoji without breaking surrogate pairs',
+          fn: async () => {
+            const emoji = '😀';
+            const emojiByteLength = terminalTitleUtf8ByteLength(emoji,);
+            const unsafeEmojiCount = Math.floor(MAX_TERMINAL_TITLE_UTF8_BYTES / emojiByteLength,) + 1;
+            const safeEmojiCountBeforeMarker = Math.floor(
+              (MAX_TERMINAL_TITLE_UTF8_BYTES - terminalTitleUtf8ByteLength('…',)) / emojiByteLength,
+            );
+            const result = truncateTerminalTitlePayload({ value: emoji.repeat(unsafeEmojiCount,), },);
+            expect(result,).toBe(`${emoji.repeat(safeEmojiCountBeforeMarker,)}…`,);
+            expect(terminalTitleUtf8ByteLength(result,),).toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+          },
+        },),
+        it({
+          name: 'omits ellipsis when marker cannot fit',
+          fn: async () => {
+            const tinyByteBudget = 2;
+            expect(
+              truncateTerminalTitlePayload({ value: 'abcdef', maxBytes: tinyByteBudget, },),
+            ).toBe('ab',);
+          },
+        },),
+      ],
+    },),
+
+    //endregion UTF-8 output boundary
 
     //region Field extraction
 
