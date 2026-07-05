@@ -10,12 +10,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { loadAllLocales, } from '../i18n/i18n-util.sync.ts';
-
 import type { Post, } from './content.ts';
 import { generateLanguageRss, } from './rss.ts';
-
-loadAllLocales();
 
 /**
  * Older publication date that must not become item pubDate.

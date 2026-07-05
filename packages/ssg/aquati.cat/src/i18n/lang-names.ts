@@ -1,7 +1,7 @@
 /**
  * Native names (autonyms) for each supported locale.
  *
- * Unlike the typesafe-i18n translation dictionaries, these strings
+ * Unlike the localized label tables, these strings
  * are intentionally constant across renders: the value for `ca`
  * is always "Català" regardless of which locale is currently being
  * rendered, so a reader on the English landing page sees the Catalan
@@ -14,12 +14,12 @@
  * LANG_NAMES.ca; // 'Català'
  * ```
  */
-import type { Locales, } from './i18n-types.ts';
+import type { Locale, } from './index.ts';
 
 /**
  * Autonym for each supported locale; never translated.
  */
-export const LANG_NAMES: Record<Locales, string> = {
+export const LANG_NAMES: Record<Locale, string> = {
   ca: 'Català',
   en: 'English',
   zh: '中文',

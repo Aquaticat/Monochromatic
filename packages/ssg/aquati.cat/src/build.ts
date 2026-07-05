@@ -23,7 +23,6 @@ import {
 import { generateAssets, } from './build/assets.ts';
 import { ensureFavicons, } from './build/favicon.ts';
 import { generatePages, } from './build/pages.ts';
-import { loadAllLocales, } from './i18n/i18n-util.sync.ts';
 import {
   buildManifest,
   CACHE_MISS,
@@ -52,8 +51,6 @@ import { renderMdx, } from './lib/markdown.ts';
 export {}; // module boundary marker
 
 await initPromise;
-
-loadAllLocales();
 
 /**
  * Tagged logger for the build pipeline.
@@ -315,7 +312,7 @@ l.info(`processed ${posts.length
 const byLang = groupByLang(posts,);
 
 /**
- * Valid locale codes present in the loaded content; map keys are already `Locales`.
+ * Valid locale codes present in the loaded content; map keys are already `Locale`.
  */
 const validLangs = [...byLang.keys(),];
 

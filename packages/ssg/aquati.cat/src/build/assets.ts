@@ -16,7 +16,7 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import readdir from 'tiny-readdir-glob';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
+import type { Locale, } from '../i18n/index.ts';
 
 import type { Post, } from '../lib/content.ts';
 import { generateLanguageRss, } from '../lib/rss.ts';
@@ -112,8 +112,8 @@ export async function generateAssets(
   }: {
     readonly siteUrl: string;
     readonly contentDir: string;
-    readonly byLang: ReadonlyMap<Locales, readonly Post[]>;
-    readonly validLangs: readonly Locales[];
+    readonly byLang: ReadonlyMap<Locale, readonly Post[]>;
+    readonly validLangs: readonly Locale[];
     readonly l: Logger;
   },
 ): Promise<void> {

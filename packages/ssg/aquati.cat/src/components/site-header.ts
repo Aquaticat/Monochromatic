@@ -13,8 +13,10 @@ import {
   hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
-import { i18nObject, } from '../i18n/i18n-util.ts';
+import {
+  i18n,
+  type Locale,
+} from '../i18n/index.ts';
 import {
   BORDER_WIDTH_REM,
   GAP,
@@ -111,15 +113,11 @@ export function html(
     currentName,
     availableInLangs,
   }: {
-    readonly lang: Locales;
+    readonly lang: Locale;
     readonly currentName?: string;
-    readonly availableInLangs?: readonly Locales[];
+    readonly availableInLangs?: readonly Locale[];
   },
 ): string {
-  /**
-   * Locale-bound translator reused for every header label across this render.
-   */
-  const t = i18nObject(lang,);
   return h({
     tag: 'site-header',
     attrs: { 'data-is': '', },
@@ -141,7 +139,7 @@ export function html(
               },),
               h({
                 tag: 'span',
-                text: t.siteName(),
+                text: i18n.label(lang, 'siteName',),
               },),
             ],
           },),
@@ -153,8 +151,8 @@ export function html(
                 ...(currentName !== undefined ? { currentName, } : {}),
                 ...(availableInLangs !== undefined ? { availableInLangs, } : {}),
               },),
-              themeToggleHtml(t,),
-              siteSearchHtml(t,),
+              themeToggleHtml(lang,),
+              siteSearchHtml(lang,),
             ],
           },),
         ],

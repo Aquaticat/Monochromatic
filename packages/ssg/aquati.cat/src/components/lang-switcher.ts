@@ -22,11 +22,11 @@ import {
   hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
 import {
-  i18nObject,
+  i18n,
   locales,
-} from '../i18n/i18n-util.ts';
+  type Locale,
+} from '../i18n/index.ts';
 import { LANG_NAMES, } from '../i18n/lang-names.ts';
 import { icon, } from '../lib/icons/icon.ts';
 import {
@@ -188,9 +188,9 @@ function resolveHref(
     currentName,
     availableInLangs,
   }: {
-    readonly targetLang: Locales;
+    readonly targetLang: Locale;
     readonly currentName?: string;
-    readonly availableInLangs?: readonly Locales[];
+    readonly availableInLangs?: readonly Locale[];
   },
 ): string {
   if (currentName !== undefined) {
@@ -229,15 +229,11 @@ export function html(
     currentName,
     availableInLangs,
   }: {
-    readonly currentLang: Locales;
+    readonly currentLang: Locale;
     readonly currentName?: string;
-    readonly availableInLangs?: readonly Locales[];
+    readonly availableInLangs?: readonly Locale[];
   },
 ): string {
-  /**
-   * Locale-bound translator for the switcher's aria-label and menu item text.
-   */
-  const t = i18nObject(currentLang,);
   return h({
     tag: 'lang-switcher',
     attrs: { 'data-is': '', },
@@ -247,7 +243,7 @@ export function html(
         children: [
           h({
             tag: 'summary',
-            attrs: { 'aria-label': t.langSwitcher(), },
+            attrs: { 'aria-label': i18n.label(currentLang, 'langSwitcher',), },
             children: [
               h({
                 tag: 'span',

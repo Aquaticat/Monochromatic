@@ -7,8 +7,10 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
-import { i18nObject, } from '../i18n/i18n-util.ts';
+import {
+  i18n,
+  type Locale,
+} from '../i18n/index.ts';
 
 /**
  * Git-derived article dates exposed as Open Graph metadata on post pages.
@@ -62,20 +64,16 @@ export function headFragment(
     articleDates,
   }: {
     readonly title: string;
-    readonly lang: Locales;
+    readonly lang: Locale;
     readonly description: string;
     readonly canonicalUrl: string;
     readonly articleDates?: ArticleDates;
   },
 ): string {
   /**
-   * Locale-bound translator captured once for siteName plus any further translated strings.
-   */
-  const t = i18nObject(lang,);
-  /**
    * Page title with site name suffix per the Capo.js title convention.
    */
-  const fullTitle = `${title} | ${t.siteName()}`;
+  const fullTitle = `${title} | ${i18n.label(lang, 'siteName',)}`;
   /**
    * Optional Open Graph article metadata, emitted only for post pages.
    */

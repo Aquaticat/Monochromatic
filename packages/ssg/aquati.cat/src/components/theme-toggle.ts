@@ -18,7 +18,10 @@ import {
   hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { TranslationFunctions, } from '../i18n/i18n-types.ts';
+import {
+  i18n,
+  type Locale,
+} from '../i18n/index.ts';
 import { icon, } from '../lib/icons/icon.ts';
 import { BORDER_WIDTH_REM, } from '../styles/constants.ts';
 
@@ -88,16 +91,16 @@ export function css(): string {
 /**
  * Renders the theme toggle as a `<theme-toggle>` custom element.
  *
- * @param t - translation functions for the aria-label
+ * @param lang - locale code resolving the aria-label
  *
  * @returns HTML string for the theme toggle
  *
  * @example
  * ```ts
- * const markup = html(t);
+ * const markup = html('en');
  * ```
  */
-export function html(t: Readonly<TranslationFunctions>,): string {
+export function html(lang: Locale,): string {
   return h({
     tag: 'theme-toggle',
     attrs: { 'data-is': '', },
@@ -113,7 +116,7 @@ export function html(t: Readonly<TranslationFunctions>,): string {
         tag: 'label',
         attrs: {
           for: 'theme-toggle',
-          'aria-label': t.themeToggle(),
+          'aria-label': i18n.label(lang, 'themeToggle',),
         },
         children: [
           h({

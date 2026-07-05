@@ -10,12 +10,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { loadAllLocales, } from '../i18n/i18n-util.sync.ts';
 import type { Post, } from '../lib/content.ts';
 
 import { postPage, } from './post.ts';
-
-loadAllLocales();
 
 /**
  * Git-derived publication date used by the post fixture.

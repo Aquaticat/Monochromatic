@@ -21,8 +21,10 @@ import readdir from 'tiny-readdir-glob';
 import * as v from 'valibot';
 import { parse as parseYaml, } from 'yaml';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
-import { isLocale, } from '../i18n/i18n-util.ts';
+import {
+  isLocale,
+  type Locale,
+} from '../i18n/index.ts';
 
 import { sha256, } from './cache-hash.ts';
 import {
@@ -262,7 +264,7 @@ export type LoadedPost = {
   /**
    * Two-letter language code derived from parent directory name, validated against known locales.
    */
-  readonly lang: Locales;
+  readonly lang: Locale;
   /**
    * Post slug derived from filename without extension.
    */
@@ -300,7 +302,7 @@ export type Post = {
   /**
    * Two-letter language code derived from parent directory name, validated against known locales.
    */
-  readonly lang: Locales;
+  readonly lang: Locale;
   /**
    * Post slug derived from filename without extension.
    */
@@ -391,7 +393,7 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
         filePath,
       },);
       /**
-       * Locale segment of the file path before narrowing to the {@link Locales} type.
+       * Locale segment of the file path before narrowing to the {@link Locale} type.
        */
       const rawLang = basename(dirname(filePath,),);
       if (!isLocale(rawLang,)) {
@@ -402,7 +404,7 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
       /**
        * Narrowed locale used as the post `lang`.
        */
-      const lang: Locales = rawLang;
+      const lang: Locale = rawLang;
       /**
        * Slug name derived from the filename minus the `.mdx` extension.
        */

@@ -6,8 +6,10 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
-import { isLocale, } from '../i18n/i18n-util.ts';
+import {
+  isLocale,
+  type Locale,
+} from '../i18n/index.ts';
 
 import type { Post, } from '../lib/content.ts';
 import { pageLayout, } from '../templates/layout.ts';
@@ -79,7 +81,7 @@ export function namePage(
   /**
    * Resolved page locale used for head meta plus the lang switcher.
    */
-  const lang: Locales = (firstPost !== undefined) && isLocale(firstPost.lang,)
+  const lang: Locale = (firstPost !== undefined) && isLocale(firstPost.lang,)
     ? firstPost.lang
     : 'en';
 
@@ -92,9 +94,9 @@ export function namePage(
     : name;
 
   /**
-   * Locales in which this slug actually has a translation.
+   * Locale in which this slug actually has a translation.
    */
-  const availableInLangs: readonly Locales[] = posts.map(function pickLang(p,) {
+  const availableInLangs: readonly Locale[] = posts.map(function pickLang(p,) {
     return p.lang;
   },);
 

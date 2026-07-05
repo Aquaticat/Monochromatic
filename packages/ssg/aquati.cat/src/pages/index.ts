@@ -6,9 +6,9 @@
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
-  i18nObject,
+  i18n,
   locales,
-} from '../i18n/i18n-util.ts';
+} from '../i18n/index.ts';
 import { pageLayout, } from '../templates/layout.ts';
 
 /**
@@ -35,10 +35,6 @@ export function indexPage(
   },
 ): string {
   /**
-   * English-locale translator used for the document-level meta strings on the language picker.
-   */
-  const t = i18nObject('en',);
-  /**
    * Page title composed from all language translations of "choose a language".
    */
   const title = locales
@@ -46,8 +42,7 @@ export function indexPage(
       /**
        * Translated phrase before title-case fixup.
        */
-      const str = i18nObject(locale,)
-        .chooseALang();
+      const str = i18n.label(locale, 'chooseALang',);
       return str.charAt(0,)
         .toUpperCase()
         + str
@@ -85,7 +80,7 @@ export function indexPage(
     title,
     lang: 'en',
     content,
-    description: t.siteDescription(),
+    description: i18n.label('en', 'siteDescription',),
     canonicalUrl,
   },);
 }

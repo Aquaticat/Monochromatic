@@ -5,8 +5,10 @@
  */
 import { generateRssFeed, } from 'feedsmith';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
-import { i18nObject, } from '../i18n/i18n-util.ts';
+import {
+  i18n,
+  type Locale,
+} from '../i18n/index.ts';
 
 import type { Post, } from './content.ts';
 
@@ -32,15 +34,11 @@ export function generateLanguageRss(
     posts,
     siteUrl,
   }: {
-    readonly lang: Locales;
+    readonly lang: Locale;
     readonly posts: readonly Post[];
     readonly siteUrl: string;
   },
 ): string {
-  /**
-   * Locale-bound translator captured once so siteName and siteDescription resolve in the same locale.
-   */
-  const t = i18nObject(lang,);
   /**
    * Newest git-derived update date across this locale's posts, used as the feed build date.
    */
@@ -59,9 +57,9 @@ export function generateLanguageRss(
     .at(0,);
 
   return generateRssFeed({
-    title: t.siteName(),
+    title: i18n.label(lang, 'siteName',),
     link: siteUrl,
-    description: t.siteDescription(),
+    description: i18n.label(lang, 'siteDescription',),
     language: lang,
     ...(lastBuildDate === undefined
       ? {}

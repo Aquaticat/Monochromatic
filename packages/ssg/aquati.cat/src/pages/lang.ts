@@ -6,8 +6,10 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
-import { i18nObject, } from '../i18n/i18n-util.ts';
+import {
+  i18n,
+  type Locale,
+} from '../i18n/index.ts';
 
 import { html as postListHtml, } from '../components/post-list.ts';
 import type { Post, } from '../lib/content.ts';
@@ -35,19 +37,15 @@ export function langPage(
     posts,
     canonicalUrl,
   }: {
-    readonly lang: Locales;
+    readonly lang: Locale;
     readonly posts: readonly Post[];
     readonly canonicalUrl: string;
   },
 ): string {
   /**
-   * Locale-bound translator reused for both `<h1>` and head meta strings.
-   */
-  const t = i18nObject(lang,);
-  /**
    * Page heading mirrors the site description for the language landing page.
    */
-  const title = t.siteDescription();
+  const title = i18n.label(lang, 'siteDescription',);
 
   /**
    * Main element tree composed before the page layout wraps it with `<head>` and friends.
@@ -70,7 +68,7 @@ export function langPage(
     title,
     lang,
     content,
-    description: t.siteDescription(),
+    description: i18n.label(lang, 'siteDescription',),
     canonicalUrl,
   },);
 }

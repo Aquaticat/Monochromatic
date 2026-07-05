@@ -23,7 +23,10 @@ import {
   hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { TranslationFunctions, } from '../i18n/i18n-types.ts';
+import {
+  i18n,
+  type Locale,
+} from '../i18n/index.ts';
 import { icon, } from '../lib/icons/icon.ts';
 import {
   BORDER_WIDTH_REM,
@@ -251,16 +254,16 @@ export function css(): string {
  * overlaid via absolute positioning, and an empty `<ul>` for Pagefind
  * results populated client-side.
  *
- * @param t - translation functions for localized placeholder text
+ * @param lang - locale code resolving the placeholder text
  *
  * @returns HTML string for the search widget
  *
  * @example
  * ```ts
- * const markup = html(t);
+ * const markup = html('en');
  * ```
  */
-export function html(t: Readonly<TranslationFunctions>,): string {
+export function html(lang: Locale,): string {
   return h({
     tag: 'site-search',
     attrs: { 'data-is': '', },
@@ -273,10 +276,10 @@ export function html(t: Readonly<TranslationFunctions>,): string {
             attrs: {
               type: 'search',
               id: 'search-input',
-              placeholder: t.searchPlaceholder(),
+              placeholder: i18n.label(lang, 'searchPlaceholder',),
               autocomplete: 'off',
               role: 'combobox',
-              'aria-label': t.searchPlaceholder(),
+              'aria-label': i18n.label(lang, 'searchPlaceholder',),
               'aria-controls': 'search-results',
               'aria-expanded': 'false',
               'aria-autocomplete': 'list',
@@ -294,7 +297,7 @@ export function html(t: Readonly<TranslationFunctions>,): string {
             attrs: {
               id: 'search-results',
               role: 'listbox',
-              'aria-label': t.searchPlaceholder(),
+              'aria-label': i18n.label(lang, 'searchPlaceholder',),
             },
             class: 'search-results',
           },),

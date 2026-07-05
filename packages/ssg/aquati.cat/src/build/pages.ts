@@ -6,7 +6,7 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
+import type { Locale, } from '../i18n/index.ts';
 
 import {
   groupByName,
@@ -53,8 +53,8 @@ export async function generatePages(
     readonly posts: readonly Post[];
     readonly renderedContent: ReadonlyMap<string, string>;
     readonly siteUrl: string;
-    readonly byLang: ReadonlyMap<Locales, readonly Post[]>;
-    readonly validLangs: readonly Locales[];
+    readonly byLang: ReadonlyMap<Locale, readonly Post[]>;
+    readonly validLangs: readonly Locale[];
     readonly l: Logger;
   },
 ): Promise<void> {
@@ -75,9 +75,9 @@ export async function generatePages(
   const names = Object.keys(byName,);
 
   /**
-   * Locales each post slug has a translation in.
+   * Locale each post slug has a translation in.
    */
-  const availableLangsByName: Record<string, readonly Locales[]> = Object
+  const availableLangsByName: Record<string, readonly Locale[]> = Object
     .fromEntries(
       Object.entries(byName,)
         .map(function pickAvailable([name, namePosts,],) {

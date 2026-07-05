@@ -7,8 +7,10 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
-import { i18nObject, } from '../i18n/i18n-util.ts';
+import {
+  i18n,
+  type Locale,
+} from '../i18n/index.ts';
 
 import type { Post, } from '../lib/content.ts';
 import { pageLayout, } from '../templates/layout.ts';
@@ -55,11 +57,11 @@ export function postPage(
     availableInLangs,
   }: {
     readonly post?: Post;
-    readonly lang: Locales;
+    readonly lang: Locale;
     readonly name: string;
     readonly renderedHtml?: string;
     readonly canonicalUrl: string;
-    readonly availableInLangs: readonly Locales[];
+    readonly availableInLangs: readonly Locale[];
   },
 ): string {
   if ((post === undefined) || (renderedHtml === undefined)) {
@@ -70,11 +72,6 @@ export function postPage(
       availableInLangs,
     },);
   }
-
-  /**
-   * Locale-bound translator used for post date labels.
-   */
-  const t = i18nObject(lang,);
 
   /**
    * Main element tree composed before the page layout wraps it with `<head>` and friends.
@@ -91,14 +88,14 @@ export function postPage(
         tag: 'aside',
         class: 'date',
         children: [
-          `${t.published()}: `,
+          `${i18n.label(lang, 'published',)}: `,
           prettyDate({
             date: post.data
               .published,
             lang,
           },),
           ' ',
-          `${t.updated()}: `,
+          `${i18n.label(lang, 'updated',)}: `,
           prettyDate({
             date: post.data
               .updated,
@@ -155,20 +152,16 @@ function postNotFoundPage(
     canonicalUrl,
     availableInLangs,
   }: {
-    readonly lang: Locales;
+    readonly lang: Locale;
     readonly name: string;
     readonly canonicalUrl: string;
-    readonly availableInLangs: readonly Locales[];
+    readonly availableInLangs: readonly Locale[];
   },
 ): string {
   /**
-   * Locale-bound translator reused for fallback page strings.
-   */
-  const t = i18nObject(lang,);
-  /**
    * Heading naming the missing-translation condition for the requested locale.
    */
-  const title = t.postNotInLang();
+  const title = i18n.label(lang, 'postNotInLang',);
 
   /**
    * Main element tree composed before the page layout wraps it with `<head>` and friends.
@@ -183,7 +176,7 @@ function postNotFoundPage(
       h({
         tag: 'p',
         children: [
-          `${t.redirectingToLangChooser()} `,
+          `${i18n.label(lang, 'redirectingToLangChooser',)} `,
           h({
             tag: 'a',
             attrs: { href: `/${name}`, },
@@ -198,7 +191,7 @@ function postNotFoundPage(
     title,
     lang,
     content,
-    description: t.postNotInLang(),
+    description: i18n.label(lang, 'postNotInLang',),
     canonicalUrl,
     currentName: name,
     availableInLangs,

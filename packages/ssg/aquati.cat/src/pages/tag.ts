@@ -6,8 +6,10 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { Locales, } from '../i18n/i18n-types.ts';
-import { i18nObject, } from '../i18n/i18n-util.ts';
+import {
+  i18n,
+  type Locale,
+} from '../i18n/index.ts';
 
 import { html as postListHtml, } from '../components/post-list.ts';
 import type { Post, } from '../lib/content.ts';
@@ -44,15 +46,11 @@ export function tagPage(
     canonicalUrl,
   }: {
     readonly tag: string;
-    readonly lang: Locales;
+    readonly lang: Locale;
     readonly posts: readonly Post[];
     readonly canonicalUrl: string;
   },
 ): string {
-  /**
-   * Locale-bound translator reused for head meta strings on the tag page.
-   */
-  const t = i18nObject(lang,);
   /**
    * Hash-prefixed tag label rendered as the page heading.
    */
@@ -79,7 +77,7 @@ export function tagPage(
     title,
     lang,
     content,
-    description: `${t.siteDescription()}: ${tag}`,
+    description: `${i18n.label(lang, 'siteDescription',)}: ${tag}`,
     canonicalUrl,
   },);
 }

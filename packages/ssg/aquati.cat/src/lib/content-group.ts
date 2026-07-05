@@ -6,7 +6,7 @@
  */
 // File justification: 104 lines; grouping functions share the same type
 // and patterns; splitting by-lang/by-name from by-tag would break cohesion.
-import type { Locales, } from '../i18n/i18n-types.ts';
+import type { Locale, } from '../i18n/index.ts';
 
 import type { Post, } from './content.ts';
 
@@ -25,7 +25,7 @@ import type { Post, } from './content.ts';
  * // Map { 'en' => [...], 'fr' => [...] }
  * ```
  */
-export function groupByLang(posts: readonly Post[],): ReadonlyMap<Locales, Post[]> {
+export function groupByLang(posts: readonly Post[],): ReadonlyMap<Locale, Post[]> {
   return Map.groupBy(
     posts,
     function byLang(post,) {
@@ -133,7 +133,7 @@ export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
  */
 export function groupByLangThenTag(
   posts: readonly Post[],
-): ReadonlyMap<Locales, Record<string, Post[]>> {
+): ReadonlyMap<Locale, Record<string, Post[]>> {
   /**
    * Stage one of the two-level grouping; second-level tag grouping happens per language to avoid empty buckets.
    */

@@ -10,7 +10,7 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { html as pageContentHtml, } from '../components/page-content.ts';
 import { html as siteFooterHtml, } from '../components/site-footer.ts';
 import { html as siteHeaderHtml, } from '../components/site-header.ts';
-import type { Locales, } from '../i18n/i18n-types.ts';
+import type { Locale, } from '../i18n/index.ts';
 
 import {
   headFragment,
@@ -67,13 +67,13 @@ export function pageLayout(
     articleDates,
   }: {
     readonly title: string;
-    readonly lang: Locales;
+    readonly lang: Locale;
     readonly content: string;
     readonly description: string;
     readonly canonicalUrl: string;
     readonly searchable?: boolean;
     readonly currentName?: string;
-    readonly availableInLangs?: readonly Locales[];
+    readonly availableInLangs?: readonly Locale[];
     readonly articleDates?: ArticleDates;
   },
 ): string {
