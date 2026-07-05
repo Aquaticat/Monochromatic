@@ -183,10 +183,10 @@ Pros:
 mature desktop UI framework,
 strong Windows and macOS support,
 XAML tooling,
-and a complete .NET app model.
+and a complete dotnet app model.
 
 Cons:
-requires a .NET and C# stack,
+requires a dotnet and C# stack,
 Linux desktop support targets X11 directly while Wayland is in private preview,
 and Rust integration would become foreign-function work.
 
@@ -240,7 +240,7 @@ but the project goal explicitly avoids a browser or WebView UI layer for the pri
 4. Flutter,
    viable but pulls the product into Dart and platform channels.
 5. Avalonia,
-   viable for .NET but not Rust-aligned.
+   viable for dotnet but not Rust-aligned.
 6. Iced,
    Rust-native but experimental.
 7. Tauri,
