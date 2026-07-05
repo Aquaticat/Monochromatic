@@ -65,6 +65,27 @@ Update this file whenever a milestone lands or a decision changes.
 - [ ] Old package deleted, catalog purged, lockfile regenerated via pnpm, troubleshooting docs reviewed.
 - [ ] Issue 247 closed with summary comment.
 
+## Container runner design notes (task in progress)
+
+- Mount conventions to keep (from old `container-args.ts`): `/src-ro` read-only repo,
+  `/work` writable tmpfs worktree, `/out` report mount, whole repo baked at `/baked`,
+  container entry runs from baked source with plain node.
+- Worktree mechanics: adapt old `container-worktree.ts` mostly as-is (rsync `/src-ro/` to `/work/`
+  with node_modules excludes, then recreate root and per-package node_modules symlink farms
+  from `/baked`); this is proven infrastructure, not Stryker-shaped.
+- Shard manifest (host writes, container reads via mounted file): schemaVersion, packagePath,
+  mutants (id/file/start/end/replacement), selected tests, timeout floor + factor.
+- Shard report (container writes to `/out`): schemaVersion, shardId, baseline timings and result,
+  per-mutant results (id, status, position, durationMs, detail), `unrun` id list for taint-aborted
+  remainder, optional anomaly description.
+- Per-mutant loop: splice file in `/work` (string offsets), run `tsgo --noEmit --incremental
+  --project <pkg tsconfig>` (nonzero = compileError, skip tests), else run each selected test via
+  `node <file>` with process-group kill on timeout (timeout = max(floor, factor x baseline test ms)),
+  restore original file bytes, record result. First anomaly (timeout/spawn failure/restore failure)
+  stops the loop; remainder goes to `unrun`.
+- New package's engine exports live in `packages/cli/mutation-test/src/index.ts`; container code
+  must import via relative paths (same package), not the package name, to run from baked source.
+
 ## Gotchas for future sessions
 
 - The reference run must happen while the old tool still works; do not delete `packages/dev-script/mutation-test`
