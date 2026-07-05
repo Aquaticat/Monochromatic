@@ -10,11 +10,12 @@
 import type { EstreeNode, } from './types.ts';
 
 /**
- * Work-stack entry pairing a node with its structural parent.
+ * Work-stack entry pairing a node with its structural parent; the root
+ * entry carries no parent.
  */
 type WalkEntry = {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
 };
 
 /**
@@ -60,10 +61,7 @@ export function walk(options: {
   /**
    * Remaining nodes to visit with their parents.
    */
-  const stack: WalkEntry[] = [{
-    node: options.root,
-    parent: undefined,
-  },];
+  const stack: WalkEntry[] = [{ node: options.root, },];
 
   while (stack.length > 0) {
     /**

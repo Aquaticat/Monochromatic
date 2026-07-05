@@ -34,14 +34,19 @@ export function spliceReplacement(options: {
   readonly text: string;
 },): string {
   if ((options.start < 0)
-    || (options.end > options.source.length)
+    || (options.end
+      > options.source
+      .length)
     || (options.start > options.end))
     throw new Error(
-      `replacement span ${String(options.start,)}..${String(options.end,)} out of bounds for source of length ${String(options.source.length,)}`,
+      `replacement span ${String(options.start,)}..${String(options.end,)} out of bounds for source of length ${String(options.source
+        .length,)}`,
     );
 
-  return `${options.source.slice(
+  return `${options.source
+    .slice(
     0,
     options.start,
-  )}${options.text}${options.source.slice(options.end,)}`;
+  )}${options.text}${options.source
+    .slice(options.end,)}`;
 }

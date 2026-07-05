@@ -57,31 +57,44 @@ const TOKEN_SWAPS: Readonly<Record<string, string>> = {
  */
 export function regexReplacements(options: {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
   readonly source: string;
 },): readonly Replacement[] {
-  if (options.node.type !== 'Literal')
+  if (options.node
+    .type
+    !== 'Literal')
     return [];
 
   /**
    * Regex descriptor present only on regex literals.
    */
-  const regex = options.node.regex as {
-    readonly pattern?: string;
-    readonly flags?: string;
-  } | undefined;
+  const { regex, } = options.node;
 
-  if ((regex === undefined) || ((typeof regex.pattern) !== 'string'))
+  if ((regex === null)
+    || ((typeof regex) !== 'object')
+    || (!('pattern' in regex)))
+    return [];
+
+  /**
+   * Raw pattern property before narrowing.
+   */
+  const rawPattern: unknown = regex.pattern;
+
+  if ((typeof rawPattern) !== 'string')
     return [];
 
   /**
    * Original pattern text under mutation.
    */
-  const pattern = regex.pattern as string;
+  const pattern = rawPattern;
+  /**
+   * Raw flags property before narrowing.
+   */
+  const rawFlags: unknown = 'flags' in regex ? regex.flags : '';
   /**
    * Regex flags preserved across mutations.
    */
-  const flags = regex.flags ?? '';
+  const flags = (typeof rawFlags) === 'string' ? rawFlags : '';
   /**
    * Collected replacements, one per mutated pattern variant.
    */
@@ -109,8 +122,10 @@ export function regexReplacements(options: {
 
       if (negated !== undefined)
         replacements.push({
-          start: options.node.start,
-          end: options.node.end,
+          start: options.node
+            .start,
+          end: options.node
+            .end,
           text: `/${pattern.slice(
             0,
             cursor + 1,
@@ -119,7 +134,7 @@ export function regexReplacements(options: {
           description: `negated \\${escaped} escape class`,
         },);
 
-      cursor = cursor + 2;
+      cursor += 2;
       continue;
     }
 
@@ -130,8 +145,10 @@ export function regexReplacements(options: {
 
     if (swap !== undefined)
       replacements.push({
-        start: options.node.start,
-        end: options.node.end,
+        start: options.node
+          .start,
+        end: options.node
+          .end,
         text: `/${pattern.slice(
           0,
           cursor,
@@ -142,7 +159,7 @@ export function regexReplacements(options: {
           : `swapped ${character} with ${swap}`,
       },);
 
-    cursor = cursor + 1;
+    cursor += 1;
   }
 
   return replacements;

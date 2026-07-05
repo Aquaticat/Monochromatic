@@ -44,32 +44,43 @@ const UPDATE_SWAPS: Readonly<Record<string, string>> = {
  */
 export function unaryUpdateReplacements(options: {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
   readonly source: string;
 },): readonly Replacement[] {
-  if (options.node.type === 'UnaryExpression') {
+  if (options.node
+    .type
+    === 'UnaryExpression') {
     /**
      * Argument expression text reused by swap and drop variants.
      */
-    const argumentText = options.source.slice(
+    const argumentText = options.source
+      .slice(
       childNode({
         node: options.node,
         key: 'argument',
-      },).start,
+      },)
+        .start,
       childNode({
         node: options.node,
         key: 'argument',
-      },).end,
+      },)
+        .end,
     );
     /**
      * Unary operator token declared by the expression.
      */
-    const token = options.node.operator as string;
+    const token = (typeof options.node
+      .operator) === 'string'
+      ? options.node
+        .operator
+      : '';
 
     if (token === '~')
       return [{
-        start: options.node.start,
-        end: options.node.end,
+        start: options.node
+          .start,
+        end: options.node
+          .end,
         text: argumentText,
         operator: 'unary',
         description: 'removed ~ operator',
@@ -84,19 +95,27 @@ export function unaryUpdateReplacements(options: {
       return [];
 
     return [{
-      start: options.node.start,
-      end: options.node.end,
+      start: options.node
+        .start,
+      end: options.node
+        .end,
       text: `${swapped}${argumentText}`,
       operator: 'unary',
       description: `swapped unary ${token} with ${swapped}`,
     },];
   }
 
-  if (options.node.type === 'UpdateExpression') {
+  if (options.node
+    .type
+    === 'UpdateExpression') {
     /**
      * Update operator token declared by the expression.
      */
-    const token = options.node.operator as string;
+    const token = (typeof options.node
+      .operator) === 'string'
+      ? options.node
+        .operator
+      : '';
     /**
      * Swapped update operator for this token.
      */
@@ -108,21 +127,28 @@ export function unaryUpdateReplacements(options: {
     /**
      * Updated variable expression text.
      */
-    const argumentText = options.source.slice(
+    const argumentText = options.source
+      .slice(
       childNode({
         node: options.node,
         key: 'argument',
-      },).start,
+      },)
+        .start,
       childNode({
         node: options.node,
         key: 'argument',
-      },).end,
+      },)
+        .end,
     );
 
     return [{
-      start: options.node.start,
-      end: options.node.end,
-      text: options.node.prefix === true
+      start: options.node
+        .start,
+      end: options.node
+        .end,
+      text: options.node
+        .prefix
+        === true
         ? `${swapped}${argumentText}`
         : `${argumentText}${swapped}`,
       operator: 'update',

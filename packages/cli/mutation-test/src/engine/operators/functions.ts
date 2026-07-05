@@ -31,30 +31,42 @@ import type {
  */
 export function functionReplacements(options: {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
   readonly source: string;
 },): readonly Replacement[] {
-  if (options.node.type === 'BlockStatement') {
+  if (options.node
+    .type
+    === 'BlockStatement') {
     /**
      * Whether the block holds any statements.
      */
-    const hasBody = Array.isArray(options.node.body,)
-      && (options.node.body.length > 0);
+    const hasBody = Array.isArray(options.node
+      .body,)
+      && (options.node
+        .body
+        .length
+        > 0);
 
     if (!hasBody)
       return [];
 
     return [{
-      start: options.node.start,
-      end: options.node.end,
+      start: options.node
+        .start,
+      end: options.node
+        .end,
       text: '{}',
       operator: 'block',
       description: 'emptied block',
     },];
   }
 
-  if ((options.node.type === 'ArrowFunctionExpression')
-    && (options.node.expression === true)) {
+  if ((options.node
+    .type
+    === 'ArrowFunctionExpression')
+    && (options.node
+      .expression
+      === true)) {
     /**
      * Expression body of the arrow function.
      */

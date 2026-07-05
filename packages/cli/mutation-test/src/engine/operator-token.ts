@@ -33,6 +33,7 @@ export function findOperatorToken(options: {
   readonly to: number;
   readonly token: string;
 },): number {
+  return (function scanTrivia(): number {
   /**
    * Scan cursor advancing through trivia between operands.
    */
@@ -42,7 +43,8 @@ export function findOperatorToken(options: {
     /**
      * Two-character lookahead classifying comment openers.
      */
-    const pair = options.source.slice(
+    const pair = options.source
+      .slice(
       cursor,
       cursor + 2,
     );
@@ -51,11 +53,12 @@ export function findOperatorToken(options: {
       /**
        * End of line comment, bounded by scan range.
        */
-      const lineEnd = options.source.indexOf(
+      const lineEnd = options.source
+        .indexOf(
         '\n',
         cursor,
       );
-      cursor = lineEnd === -1 ? options.to : lineEnd + 1;
+      cursor = lineEnd === (-1) ? options.to : lineEnd + 1;
       continue;
     }
 
@@ -63,28 +66,31 @@ export function findOperatorToken(options: {
       /**
        * End of block comment, bounded by scan range.
        */
-      const blockEnd = options.source.indexOf(
+      const blockEnd = options.source
+        .indexOf(
         '*/',
         cursor + 2,
       );
 
-      if (blockEnd === -1)
+      if (blockEnd === (-1))
         throw new Error(`unterminated block comment at offset ${String(cursor,)}`,);
 
       cursor = blockEnd + 2;
       continue;
     }
 
-    if (options.source.startsWith(
+    if (options.source
+      .startsWith(
       options.token,
       cursor,
     ))
       return cursor;
 
-    cursor = cursor + 1;
+    cursor += 1;
   }
 
   throw new Error(
     `operator token ${options.token} not found between offsets ${String(options.from,)} and ${String(options.to,)}`,
   );
+  })();
 }

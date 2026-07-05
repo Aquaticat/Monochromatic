@@ -12,4 +12,6 @@
  * ```
  */
 
+export {};
+
 throw new Error('mutation-test: not implemented yet; see packages/cli/mutation-test/README.md',);

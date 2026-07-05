@@ -23,25 +23,27 @@
  * ```
  */
 export function lineStarts(source: string,): readonly number[] {
-  /**
-   * Accumulated line start offsets.
-   */
-  const starts: number[] = [0,];
-  /**
-   * UTF-16 offset of the next newline; spreading source into code points
-   * would drift offsets after astral characters.
-   */
-  let newlineAt = source.indexOf('\n',);
+  return (function scanNewlines(): readonly number[] {
+    /**
+     * Accumulated line start offsets.
+     */
+    const starts: number[] = [0,];
+    /**
+     * UTF-16 offset of the next newline; spreading source into code points
+     * would drift offsets after astral characters.
+     */
+    let newlineAt = source.indexOf('\n',);
 
-  while (newlineAt !== -1) {
-    starts.push(newlineAt + 1,);
-    newlineAt = source.indexOf(
-      '\n',
-      newlineAt + 1,
-    );
-  }
+    while (newlineAt !== (-1)) {
+      starts.push(newlineAt + 1,);
+      newlineAt = source.indexOf(
+        '\n',
+        newlineAt + 1,
+      );
+    }
 
-  return starts;
+    return starts;
+  })();
 }
 
 /**
@@ -68,28 +70,45 @@ export function positionAt(options: {
   readonly column: number;
 } {
   /**
-   * Inclusive lower search bound.
+   * Index of the line containing the offset, by binary search.
    */
-  let low = 0;
-  /**
-   * Inclusive upper search bound.
-   */
-  let high = options.table.length - 1;
-
-  while (low < high) {
+  const lineIndex = (function searchLine(): number {
     /**
-     * Midpoint candidate line index.
+     * Inclusive lower search bound.
      */
-    const mid = Math.ceil((low + high) / 2,);
+    let low = 0;
+    /**
+     * Inclusive upper search bound.
+     */
+    let high = options.table
+      .length
+      - 1;
 
-    if (options.table[mid] === undefined || options.table[mid] > options.offset)
-      high = mid - 1;
-    else
-      low = mid;
-  }
+    while (low < high) {
+      /**
+       * Midpoint candidate line index.
+       */
+      const mid = Math.ceil((low + high) / 2,);
+      /**
+       * Line start offset at the midpoint candidate.
+       */
+      const midStart = options.table[mid];
+
+      if ((midStart === undefined) || (midStart > options.offset))
+        high = mid - 1;
+      else
+        low = mid;
+    }
+
+    return low;
+  })();
+  /**
+   * Start offset of the containing line.
+   */
+  const lineStart = options.table[lineIndex] ?? 0;
 
   return {
-    line: low + 1,
-    column: options.offset - (options.table[low] ?? 0),
+    line: lineIndex + 1,
+    column: options.offset - lineStart,
   };
 }

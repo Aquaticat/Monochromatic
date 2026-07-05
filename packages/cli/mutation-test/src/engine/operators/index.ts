@@ -25,7 +25,7 @@ import type {
  */
 export type OperatorFn = (options: {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
   readonly source: string;
 },) => readonly Replacement[];
 

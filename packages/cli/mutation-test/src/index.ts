@@ -24,7 +24,7 @@ export {
 } from './engine/operators/index.ts';
 export { spliceReplacement, } from './engine/splice.ts';
 export {
-  suppressionReason,
+  matchingSuppressions,
   suppressionRules,
   type OxcComment,
   type SuppressionRule,

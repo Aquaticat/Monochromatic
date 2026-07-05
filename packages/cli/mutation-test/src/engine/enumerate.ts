@@ -18,13 +18,15 @@ import {
 import { mutantId, } from './mutant-id.ts';
 import { allOperators, } from './operators/index.ts';
 import {
-  suppressionReason,
+  matchingSuppressions,
   suppressionRules,
   type OxcComment,
 } from './suppression.ts';
-import { walk, } from './walk.ts';
+import {
+  isEstreeNode,
+  walk,
+} from './walk.ts';
 import type {
-  EstreeNode,
   Mutant,
   Replacement,
 } from './types.ts';
@@ -67,29 +69,42 @@ function toMutant(options: {
    */
   const position = positionAt({
     table: options.table,
-    offset: options.replacement.start,
+    offset: options.replacement
+      .start,
   },);
 
   return {
     id: mutantId({
       file: options.file,
-      start: options.replacement.start,
-      end: options.replacement.end,
-      operator: options.replacement.operator,
-      replacement: options.replacement.text,
+      start: options.replacement
+        .start,
+      end: options.replacement
+        .end,
+      operator: options.replacement
+        .operator,
+      replacement: options.replacement
+        .text,
     },),
     file: options.file,
-    start: options.replacement.start,
-    end: options.replacement.end,
+    start: options.replacement
+      .start,
+    end: options.replacement
+      .end,
     line: position.line,
     column: position.column,
-    operator: options.replacement.operator,
-    original: options.source.slice(
-      options.replacement.start,
-      options.replacement.end,
+    operator: options.replacement
+      .operator,
+    original: options.source
+      .slice(
+      options.replacement
+        .start,
+      options.replacement
+        .end,
     ),
-    replacement: options.replacement.text,
-    description: options.replacement.description,
+    replacement: options.replacement
+      .text,
+    description: options.replacement
+      .description,
   };
 }
 
@@ -123,7 +138,9 @@ export function enumerateMutants(options: {
     options.source,
   );
 
-  if (parsed.errors.length > 0)
+  if (parsed.errors
+    .length
+    > 0)
     throw new Error(
       `parse of ${options.file} failed: ${parsed.errors
         .map(function toMessage(error,): string {
@@ -148,13 +165,21 @@ export function enumerateMutants(options: {
    */
   const collected: Replacement[] = [];
 
+  /**
+   * Program root validated as a walkable node.
+   */
+  const {program} = parsed;
+
+  if (!isEstreeNode(program,))
+    throw new Error(`parse of ${options.file} produced no walkable program node`,);
+
   walk({
-    root: parsed.program as unknown as EstreeNode,
+    root: program,
     visit: function visitNode(entry,): void {
       for (const operator of allOperators) {
         collected.push(...operator({
           node: entry.node,
-          parent: entry.parent,
+          ...(entry.parent === undefined ? {} : { parent: entry.parent, }),
           source: options.source,
         },),);
       }
@@ -176,7 +201,10 @@ export function enumerateMutants(options: {
     },),)
       .values(),
   ]
-    .sort(function bySpan(a, b,): number {
+    .toSorted(function bySpan(
+      a,
+      b,
+    ): number {
       return (a.start - b.start)
         || (a.end - b.end)
         || (a.text < b.text ? -1 : 1);
@@ -202,20 +230,24 @@ export function enumerateMutants(options: {
       table,
     },);
     /**
-     * Suppression reason covering this mutant, when any rule matches.
+     * Suppression rules covering this mutant, empty when runnable.
      */
-    const reason = suppressionReason({
+    const matches = matchingSuppressions({
       rules,
       line: mutant.line,
       operator: mutant.operator,
     },);
+    /**
+     * Highest-priority covering rule, when any.
+     */
+    const [match,] = matches;
 
-    if (reason === undefined)
+    if (match === undefined)
       mutants.push(mutant,);
     else
       ignored.push({
         ...mutant,
-        reason,
+        reason: match.reason,
       },);
   }
 

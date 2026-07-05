@@ -11,7 +11,10 @@
  * ```
  */
 
-import { maybeChildNode, } from '../node-access.ts';
+import {
+  childNode,
+  hasChildNode,
+} from '../node-access.ts';
 import type {
   EstreeNode,
   Replacement,
@@ -65,7 +68,8 @@ function forceBoolean(options: {
   readonly end: number;
   readonly texts: readonly string[];
 },): readonly Replacement[] {
-  return options.texts.map(function toReplacement(text,): Replacement {
+  return options.texts
+    .map(function toReplacement(text,): Replacement {
     return {
       start: options.start,
       end: options.end,
@@ -90,43 +94,68 @@ function forceBoolean(options: {
  */
 export function conditionalReplacements(options: {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
   readonly source: string;
 },): readonly Replacement[] {
-  if ((options.node.type === 'BinaryExpression')
-    && COMPARISON_TOKENS.has(options.node.operator as string,))
+  /**
+   * Operator token for expression nodes, absent on statements.
+   */
+  const token = options.node
+    .operator;
+  /**
+   * Operator token narrowed to text for set membership checks.
+   */
+  const tokenText = (typeof token) === 'string' ? token : '';
+
+  if ((options.node
+    .type
+    === 'BinaryExpression')
+    && COMPARISON_TOKENS.has(tokenText,))
     return forceBoolean({
-      start: options.node.start,
-      end: options.node.end,
+      start: options.node
+        .start,
+      end: options.node
+        .end,
       texts: [
         'true',
         'false',
       ],
     },);
 
-  if ((options.node.type === 'LogicalExpression')
-    && LOGICAL_TOKENS.has(options.node.operator as string,))
+  if ((options.node
+    .type
+    === 'LogicalExpression')
+    && LOGICAL_TOKENS.has(tokenText,))
     return forceBoolean({
-      start: options.node.start,
-      end: options.node.end,
+      start: options.node
+        .start,
+      end: options.node
+        .end,
       texts: [
         'true',
         'false',
       ],
     },);
 
-  if ((options.node.type === 'IfStatement')
-    || (options.node.type === 'ConditionalExpression')) {
+  if ((options.node
+    .type
+    === 'IfStatement')
+    || (options.node
+      .type
+      === 'ConditionalExpression')) {
+    if (!hasChildNode({
+      node: options.node,
+      key: 'test',
+    },))
+      return [];
+
     /**
      * Condition expression under the statement or ternary.
      */
-    const test = maybeChildNode({
+    const test = childNode({
       node: options.node,
       key: 'test',
     },);
-
-    if (test === undefined)
-      return [];
 
     return forceBoolean({
       start: test.start,
@@ -138,17 +167,21 @@ export function conditionalReplacements(options: {
     },);
   }
 
-  if (LOOP_TYPES.has(options.node.type,)) {
+  if (LOOP_TYPES.has(options.node
+    .type,)) {
+    if (!hasChildNode({
+      node: options.node,
+      key: 'test',
+    },))
+      return [];
+
     /**
      * Loop condition expression; `for (;;)` has none.
      */
-    const test = maybeChildNode({
+    const test = childNode({
       node: options.node,
       key: 'test',
     },);
-
-    if (test === undefined)
-      return [];
 
     return forceBoolean({
       start: test.start,

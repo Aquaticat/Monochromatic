@@ -70,23 +70,31 @@ function optionalRemoval(options: {
    */
   const scanFrom = childNode({
     node: options.node,
-    key: options.node.type === 'CallExpression' ? 'callee' : 'object',
-  },).end;
+    key: options.node
+      .type
+      === 'CallExpression' ? 'callee' : 'object',
+  },)
+    .end;
   /**
    * Start offset of the `?.` token.
    */
   const tokenStart = findOperatorToken({
     source: options.source,
     from: scanFrom,
-    to: options.node.end,
+    to: options.node
+      .end,
     token: '?.',
   },);
   /**
    * Whether plain `.` must replace the token; computed members and calls
    * drop it entirely.
    */
-  const needsDot = (options.node.type === 'MemberExpression')
-    && (options.node.computed !== true);
+  const needsDot = (options.node
+    .type
+    === 'MemberExpression')
+    && (options.node
+      .computed
+      !== true);
 
   return {
     start: tokenStart,
@@ -111,7 +119,7 @@ function optionalRemoval(options: {
  */
 export function chainMethodReplacements(options: {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
   readonly source: string;
 },): readonly Replacement[] {
   /**
@@ -119,15 +127,23 @@ export function chainMethodReplacements(options: {
    */
   const replacements: Replacement[] = [];
 
-  if (((options.node.type === 'MemberExpression')
-    || (options.node.type === 'CallExpression'))
-    && (options.node.optional === true))
+  if (((options.node
+    .type
+    === 'MemberExpression')
+    || (options.node
+      .type
+      === 'CallExpression'))
+    && (options.node
+      .optional
+      === true))
     replacements.push(optionalRemoval({
       node: options.node,
       source: options.source,
     },),);
 
-  if (options.node.type === 'CallExpression') {
+  if (options.node
+    .type
+    === 'CallExpression') {
     /**
      * Callee expression, a member expression for method calls.
      */
@@ -148,7 +164,7 @@ export function chainMethodReplacements(options: {
       /**
        * Called method name.
        */
-      const name = property.name;
+      const {name} = property;
 
       if ((typeof name) === 'string') {
         /**
@@ -174,9 +190,12 @@ export function chainMethodReplacements(options: {
             key: 'object',
           },);
           replacements.push({
-            start: options.node.start,
-            end: options.node.end,
-            text: options.source.slice(
+            start: options.node
+              .start,
+            end: options.node
+              .end,
+            text: options.source
+              .slice(
               object.start,
               object.end,
             ),

@@ -54,13 +54,30 @@ const FAMILY_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Returns whether a directive token names a known operator family.
+ *
+ * @param name - Candidate family name from a directive.
+ *
+ * @returns Whether name is an operator family.
+ *
+ * @example
+ * ```ts
+ * isFamilyName('string');
+ * // true
+ * ```
+ */
+function isFamilyName(name: string,): name is OperatorName {
+  return FAMILY_NAMES.has(name,);
+}
+
+/**
  * One parsed suppression rule.
  *
- * `line` is the source line the rule suppresses (undefined for file-wide
+ * `line` is the source line the rule suppresses (absent for file-wide
  * rules); an empty `families` set means every family.
  */
 export type SuppressionRule = {
-  readonly line: number | undefined;
+  readonly line?: number;
   readonly families: ReadonlySet<OperatorName>;
   readonly reason: string;
 };
@@ -99,14 +116,14 @@ function parseDirectiveTail(tail: string,): {
   /**
    * Family list text before the reason separator.
    */
-  const familiesText = (separatorAt === -1 ? tail : tail.slice(
+  const familiesText = (separatorAt === (-1) ? tail : tail.slice(
     0,
     separatorAt,
   )).trim();
   /**
    * Reason text after the separator.
    */
-  const reason = separatorAt === -1 ? '' : tail.slice(separatorAt + 2,)
+  const reason = separatorAt === (-1) ? '' : tail.slice(separatorAt + 2,)
     .trim();
   /**
    * Declared family names, empty when the directive suppresses all.
@@ -118,15 +135,20 @@ function parseDirectiveTail(tail: string,): {
         return name.trim();
       },);
 
-  for (const family of families) {
-    if (!FAMILY_NAMES.has(family,))
+  /**
+   * Family names validated against the known operator families.
+   */
+  const validated = families.map(function toFamily(family,): OperatorName {
+    if (!isFamilyName(family,))
       throw new Error(
         `unknown mutation family ${family} in suppression comment; known: ${[...FAMILY_NAMES,].join(', ',)}`,
       );
-  }
+
+    return family;
+  },);
 
   return {
-    families: new Set(families as readonly OperatorName[],),
+    families: new Set(validated,),
     reason,
   };
 }
@@ -149,11 +171,13 @@ export function suppressionRules(options: {
   readonly comments: readonly OxcComment[];
   readonly table: readonly number[];
 },): readonly SuppressionRule[] {
-  return options.comments.flatMap(function toRules(comment,): readonly SuppressionRule[] {
+  return options.comments
+    .flatMap(function toRules(comment,): readonly SuppressionRule[] {
     /**
      * Comment text without leading whitespace.
      */
-    const text = comment.value.trim();
+    const text = comment.value
+      .trim();
 
     if (text.startsWith(NEXT_LINE_DIRECTIVE,)) {
       /**
@@ -164,7 +188,9 @@ export function suppressionRules(options: {
         line: positionAt({
           table: options.table,
           offset: comment.start,
-        },).line + 1,
+        },)
+          .line
+          + 1,
         families: tail.families,
         reason: tail.reason,
       },];
@@ -176,7 +202,6 @@ export function suppressionRules(options: {
        */
       const tail = parseDirectiveTail(text.slice(FILE_DIRECTIVE.length,),);
       return [{
-        line: undefined,
         families: tail.families,
         reason: tail.reason,
       },];
@@ -187,31 +212,34 @@ export function suppressionRules(options: {
 }
 
 /**
- * Finds the suppression reason covering one mutant, if any.
+ * Finds every suppression rule covering one mutant.
+ *
+ * Returns matches instead of a nullable reason so absence stays a plain
+ * empty array at call sites.
  *
  * @param options - Parsed rules plus the mutant's line and family.
  *
- * @returns Reason text (possibly empty) when suppressed, undefined otherwise.
+ * @returns Matching rules, empty when the mutant is not suppressed.
  *
  * @example
  * ```ts
- * suppressionReason({ rules, line: 4, operator: 'string' });
+ * matchingSuppressions({ rules, line: 4, operator: 'string' });
  * ```
  */
-export function suppressionReason(options: {
+export function matchingSuppressions(options: {
   readonly rules: readonly SuppressionRule[];
   readonly line: number;
   readonly operator: OperatorName;
-},): string | undefined {
-  /**
-   * First rule matching the mutant's line and family.
-   */
-  const match = options.rules.find(function matches(rule,): boolean {
+},): readonly SuppressionRule[] {
+  return options.rules
+    .filter(function matches(rule,): boolean {
     if ((rule.line !== undefined) && (rule.line !== options.line))
       return false;
 
-    return (rule.families.size === 0) || rule.families.has(options.operator,);
+    return (rule.families
+      .size
+      === 0)
+      || rule.families
+      .has(options.operator,);
   },);
-
-  return match === undefined ? undefined : match.reason;
 }

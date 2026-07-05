@@ -38,30 +38,30 @@ export function childNode(options: {
   const value = options.node[options.key];
 
   if (!isEstreeNode(value,))
-    throw new Error(`expected ${options.node.type}.${options.key} to be a node`,);
+    throw new Error(`expected ${options.node
+      .type}.${options.key} to be a node`,);
 
   return value;
 }
 
 /**
- * Reads one optional child node property.
+ * Returns whether one child property holds a node.
+ *
+ * Pairs with {@link childNode} for optional children: guard with this,
+ * then read with childNode, keeping absence handling at the call site.
  *
  * @param options - Parent node and child property key.
  *
- * @returns Child node, or undefined when absent or not a node.
+ * @returns Whether property is an ESTree node.
  *
  * @example
  * ```ts
- * maybeChildNode({ node: forStatement, key: 'test' });
+ * hasChildNode({ node: forStatement, key: 'test' });
  * ```
  */
-export function maybeChildNode(options: {
+export function hasChildNode(options: {
   readonly node: EstreeNode;
   readonly key: string;
-},): EstreeNode | undefined {
-  /**
-   * Raw child property value before shape validation.
-   */
-  const value = options.node[options.key];
-  return isEstreeNode(value,) ? value : undefined;
+},): boolean {
+  return isEstreeNode(options.node[options.key],);
 }

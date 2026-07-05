@@ -29,6 +29,10 @@ Update this file whenever a milestone lands or a decision changes.
   and fanotify failed on the dev host.
 - No mutation score anywhere. Native versioned JSON report: statuses killed/survived/timeout/compileError/runtimeError,
   per-mutant provenance (shard id, position, rerun count, confirmed flag). Exit 0 unless infra failure.
+- Suppression support is a must-have (user request mid-session): comment directives
+  `mutation-test-disable-next-line [families] [-- reason]` and `mutation-test-disable-file`,
+  validated family names, suppressed mutants reported in an `ignored` bucket with reasons
+  (partially reverses the earlier drop-Ignored decision).
 - Mutant enumeration happens host-side with `oxc-parser`; containers receive a span manifest
   and never need oxc.
 - CORRECTION to the posted plan (probe-verified, oxc-parser 0.138.0): the JS bindings return
@@ -41,10 +45,18 @@ Update this file whenever a milestone lands or a decision changes.
 
 ## Checklist
 
-- [ ] Stryker reference run on `packages/module/async-time` captured to scratchpad (must precede deletion).
-- [ ] oxc-parser probed (span semantics verified) and added to pnpm catalog.
-- [ ] Package scaffolded per AP1-AP5.
-- [ ] Engine: types, operators, Buffer splicer, deterministic ids, manifest; unit tests incl. multibyte.
+- [x] Stryker reference run captured: `packages/module/fs-path` (NOT async-time: old tool needs
+      module-logger+module-test deps). Reports for 7 of 8 files in scratchpad
+      `stryker-reference-fs-path/` (totals: 9 killed / 319 survived / 2 timeout / 109 compileError);
+      `find-monorepo-root.ts` has environment-dependent tests that fail in-container (red baseline),
+      so no tool can reference it. Two old-tool preflight fixes landed on the way (commits
+      a28b34e41, 862e4ac66).
+- [x] oxc-parser probed (UTF-16 spans confirmed) and added to pnpm catalog.
+- [x] Package scaffolded per AP1-AP5 (commit 88a611826).
+- [x] Engine complete with suppression must-have (user request): string-slice splicer,
+      deterministic ids, work-stack walker, 15 families, mutation-test-disable-next-line/-file
+      directives. Unit tests pass, oxlint 0/0, types clean. fs-path enumeration: 523 mutants
+      vs Stryker 439 (superset; empty.ts exact match 41=41).
 - [ ] Container-side shard runner: worktree, baseline (tests green + tsgo clean), per-mutant loop, shard report.
 - [ ] Host orchestrator: CLI, selection, sharding, bounded podman spawns, bisection re-runs, confirmation, aggregation.
 - [ ] Runtime image moved/adapted; root `mise.toml` PATH updated.

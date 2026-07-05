@@ -93,17 +93,21 @@ function tokenSwap(options: {
     from: childNode({
       node: options.node,
       key: 'left',
-    },).end,
+    },)
+      .end,
     to: childNode({
       node: options.node,
       key: 'right',
-    },).start,
+    },)
+      .start,
     token: options.currentToken,
   },);
 
   return {
     start: tokenStart,
-    end: tokenStart + options.currentToken.length,
+    end: tokenStart
+      + options.currentToken
+      .length,
     text: options.newToken,
     operator: options.operator,
     description: `swapped ${options.currentToken} with ${options.newToken}`,
@@ -124,18 +128,21 @@ function tokenSwap(options: {
  */
 export function binaryOperatorReplacements(options: {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
   readonly source: string;
 },): readonly Replacement[] {
   /**
    * Operator token declared by the expression node.
    */
-  const token = options.node.operator;
+  const token = options.node
+    .operator;
 
   if ((typeof token) !== 'string')
     return [];
 
-  if (options.node.type === 'BinaryExpression') {
+  if (options.node
+    .type
+    === 'BinaryExpression') {
     /**
      * Arithmetic swap for this token, when applicable.
      */
@@ -169,7 +176,9 @@ export function binaryOperatorReplacements(options: {
     return [];
   }
 
-  if (options.node.type === 'LogicalExpression') {
+  if (options.node
+    .type
+    === 'LogicalExpression') {
     /**
      * Logical swap for this token, when applicable.
      */

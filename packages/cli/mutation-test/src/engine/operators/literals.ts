@@ -48,21 +48,31 @@ const PROTECTED_STRING_PARENTS: ReadonlySet<string> = new Set([
  */
 function isProtectedString(options: {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
 },): boolean {
   if (options.parent === undefined)
     return false;
 
-  if (PROTECTED_STRING_PARENTS.has(options.parent.type,))
+  if (PROTECTED_STRING_PARENTS.has(options.parent
+    .type,))
     return true;
 
-  if ((options.parent.type === 'Property')
-    && (options.parent.key === options.node)
-    && (options.parent.computed !== true))
+  if ((options.parent
+    .type
+    === 'Property')
+    && (options.parent
+      .key
+      === options.node)
+    && (options.parent
+      .computed
+      !== true))
     return true;
 
-  return (options.parent.type === 'ExpressionStatement')
-    && ((typeof options.parent.directive) === 'string');
+  return (options.parent
+    .type
+    === 'ExpressionStatement')
+    && ((typeof options.parent
+      .directive) === 'string');
 }
 
 /**
@@ -84,38 +94,51 @@ function isProtectedString(options: {
  */
 export function literalReplacements(options: {
   readonly node: EstreeNode;
-  readonly parent: EstreeNode | undefined;
+  readonly parent?: EstreeNode;
   readonly source: string;
 },): readonly Replacement[] {
-  if ((options.node.type === 'UnaryExpression')
-    && (options.node.operator === '!'))
+  if ((options.node
+    .type
+    === 'UnaryExpression')
+    && (options.node
+      .operator
+      === '!'))
     return [{
-      start: options.node.start,
-      end: options.node.end,
-      text: options.source.slice(
+      start: options.node
+        .start,
+      end: options.node
+        .end,
+      text: options.source
+        .slice(
         childNode({
           node: options.node,
           key: 'argument',
-        },).start,
+        },)
+          .start,
         childNode({
           node: options.node,
           key: 'argument',
-        },).end,
+        },)
+          .end,
       ),
       operator: 'boolean',
       description: 'removed ! negation',
     },];
 
-  if (options.node.type === 'Literal') {
+  if (options.node
+    .type
+    === 'Literal') {
     /**
      * Runtime literal value discriminating boolean, string, and regex.
      */
-    const value = options.node.value;
+    const {value} = options.node;
 
     if ((typeof value) === 'boolean')
       return [{
-        start: options.node.start,
-        end: options.node.end,
+        start: options.node
+          .start,
+        end: options.node
+          .end,
         text: value ? 'false' : 'true',
         operator: 'boolean',
         description: `swapped ${String(value,)} with ${String(!value,)}`,
@@ -124,11 +147,13 @@ export function literalReplacements(options: {
     if (((typeof value) === 'string')
       && (!isProtectedString({
         node: options.node,
-        parent: options.parent,
+        ...(options.parent === undefined ? {} : { parent: options.parent, }),
       },)))
       return [{
-        start: options.node.start,
-        end: options.node.end,
+        start: options.node
+          .start,
+        end: options.node
+          .end,
         text: value === '' ? `'${FILLER_TEXT}'` : "''",
         operator: 'string',
         description: value === ''
@@ -139,16 +164,25 @@ export function literalReplacements(options: {
     return [];
   }
 
-  if ((options.node.type === 'TemplateLiteral')
-    && (options.parent?.type !== 'TaggedTemplateExpression')) {
+  if ((options.node
+    .type
+    === 'TemplateLiteral')
+    && (options.parent
+      ?.type
+      !== 'TaggedTemplateExpression')) {
     /**
      * Whether the template already produces an empty string.
      */
-    const isEmpty = options.node.end - options.node.start === 2;
+    const isEmpty = (options.node
+      .end
+      - options.node
+      .start) === 2;
 
     return [{
-      start: options.node.start,
-      end: options.node.end,
+      start: options.node
+        .start,
+      end: options.node
+        .end,
       text: isEmpty ? `\`${FILLER_TEXT}\`` : '``',
       operator: 'string',
       description: isEmpty
