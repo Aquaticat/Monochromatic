@@ -5,7 +5,9 @@ Status:
  Product decisions resolved in a grilling session on 2026-07-05.
  Column-strip virtualization spike built and passed on Linux (2026-07-05);
  see `packages/desktop-app/file-manager/` and the spike result below.
- Context-menu, drag-and-drop, and native default-manager spikes not yet run.
+ Row context-menu spike built and passed on Linux (2026-07-05);
+ see the context-menu spike result below.
+ Drag-and-drop and native default-manager spikes not yet run.
  Virtualization spike not yet run on macOS or Windows.
  Authored 2026-07-05.
 
@@ -572,6 +574,46 @@ Pass criteria:
 
 Failure action:
 avoid affected Slint widgets or patch Slint before building production file-list interactions.
+
+#### Result: passed on Linux (2026-07-05)
+
+Folded into the same prototype (`packages/desktop-app/file-manager/`) on the
+custom `ListView` row delegate, not `StandardTableView`.
+Issue `#12354` reproduces exactly as filed:
+the row's own `TouchArea` grabs the right-press, so the wrapping
+`ContextMenuArea` never opens on a row.
+Source-traced into Slint `1.17.0` and recorded with the workaround in
+`docs/troubleshooting/slint-contextmenuarea-listview-rows.md`.
+
+The verified workaround is to forward the right-press from the row's
+`pointer-event` to `context-menu.show(...)`, translating the click into the
+area's coordinate space with the same `absolute-position` maths Slint's own
+`listview.slint` uses.
+Rust records the (pane, row) the click targeted so a chosen command carries a
+deterministic identity, mirrored to the HUD and logged.
+
+Pass criteria, each met and driven headless through the embedded MCP server:
+
+- opens for mouse and keyboard paths:
+ a right-click on a row opens the menu (screenshot), and both the keyboard menu
+ key (`Key.Menu`) and the MCP-drivable menu button open it;
+ the built-in only wires `Shift+F10` on Windows, so the prototype adds it in the
+ pane `FocusScope` for cross-platform parity,
+- focused and clicked row deterministic:
+ the right-clicked row highlights as the target, matching the menu position,
+- commands receive the correct identity:
+ activating `Open`/`Rename`/`Delete` logs and shows the exact (pane, row) the
+ click targeted (for example right-clicking `dir #20` row 0 logs
+ `pane_id=20 row=0`);
+ the keyboard path targets the active pane's active row,
+- selection and drag intact:
+ a left-click still selects the row (and records it) without opening the menu,
+ and the right-button branch is additive, so left-button press/drag is unchanged.
+
+Long-press is Android-only in Slint's `ContextMenu` item, so it is not a desktop
+path here.
+The spike does not yet re-run on macOS or Windows;
+that rides along with the virtualization spike's cross-platform pass.
 
 ### Native default-manager spike
 
