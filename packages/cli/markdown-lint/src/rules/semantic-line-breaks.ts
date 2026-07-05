@@ -21,6 +21,15 @@ import { walk, } from '../walk.ts';
 const ID = 'semantic-line-breaks';
 
 /**
+ * Characters of source past a text node examined for a break that the parser
+ * placed just outside the node. Only inter-node whitespace and one following
+ * character are ever needed, so a small bound keeps the per-node lookahead O(1)
+ * rather than slicing to the paragraph's end (quadratic on emphasis-dense
+ * paragraphs).
+ */
+const TRAILING_LOOKAHEAD = 256;
+
+/**
  * Ancestor node types whose `text` descendants are not prose to break: headings
  * (single-line), tables, links and images (and their references), reference
  * definitions, raw HTML, and footnotes. A text node under any of these is left
@@ -165,9 +174,29 @@ function checkSemanticLineBreaks({
       source,
     },);
     /**
-     * Text node's start offset.
+     * Text node's start and end offsets.
      */
-    const { start: startOffset, } = offsetsOf(node,);
+    const {
+      start: startOffset,
+      end: endOffset,
+    } = offsetsOf(node,);
+    /**
+     * Paragraph's end offset, the far bound of the trailing lookahead.
+     */
+    const { end: paragraphEnd, } = offsetsOf(paragraph,);
+    /**
+     * Source between this text node's end and the paragraph's end. A break-point
+     * at the node boundary then sees a newline the parser placed just past the
+     * node rather than inside it, keeping the rule independent of where a parser
+     * ends a text node.
+     */
+    const trailing = source.slice(
+      endOffset,
+      Math.min(
+        paragraphEnd,
+        endOffset + TRAILING_LOOKAHEAD,
+      ),
+    );
     /**
      * Continuation prefix for this paragraph's block.
      */
@@ -177,6 +206,7 @@ function checkSemanticLineBreaks({
     },);
     for (const offset of breakOffsets({
       slice,
+      trailing,
       isParagraphTail,
     },)) {
       /**

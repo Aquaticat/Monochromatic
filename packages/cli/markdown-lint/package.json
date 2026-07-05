@@ -11,14 +11,7 @@
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "ignore": "catalog:",
-    "mdast-util-from-markdown": "catalog:",
-    "mdast-util-frontmatter": "catalog:",
-    "mdast-util-gfm": "catalog:",
-    "mdast-util-mdx": "catalog:",
-    "mdast-util-to-string": "catalog:",
-    "micromark-extension-frontmatter": "catalog:",
-    "micromark-extension-gfm": "catalog:",
-    "micromark-extension-mdxjs": "catalog:"
+    "satteri": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

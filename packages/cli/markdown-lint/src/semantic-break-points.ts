@@ -167,6 +167,57 @@ function withinAbbreviation({
 }
 
 /**
+ * Forward-scan outcome for a stretch of text: an existing line break, further
+ * content, or the text exhausted with only whitespace seen.
+ */
+type ScanResult = 'broken' | 'content' | 'exhausted';
+
+/**
+ * Parameters for {@link scanForward}.
+ */
+type ScanForwardParams = {
+  /**
+   * Text to scan.
+   */
+  readonly text: string;
+  /**
+   * Index to start scanning from.
+   */
+  readonly from: number;
+};
+
+/**
+ * Scan `text` forward from `from`, skipping spaces and tabs: `broken` at the
+ * first newline, `content` at the first other character, `exhausted` when only
+ * whitespace remained to the end.
+ *
+ * @param text - text to scan
+ *
+ * @param from - index to start scanning from
+ *
+ * @returns break, content, or exhausted classification
+ */
+function scanForward({
+  text,
+  from,
+}: ScanForwardParams,): ScanResult {
+  for (let cursor = from; cursor < text.length; cursor += 1) {
+    /**
+     * Character under the forward cursor.
+     */
+    const ch = text[cursor] ?? '';
+    if ((ch === ' ') || (ch === '\t')) {
+      continue;
+    }
+    if (ch === '\n') {
+      return 'broken';
+    }
+    return 'content';
+  }
+  return 'exhausted';
+}
+
+/**
  * Parameters for {@link followStatus}.
  */
 type FollowStatusParams = {
@@ -178,36 +229,57 @@ type FollowStatusParams = {
    * Index just past the break-point character.
    */
   readonly afterIndex: number;
+  /**
+   * Source immediately after the text node, consulted only when the node's own
+   * slice is exhausted. A newline that a parser places just past the node
+   * boundary (rather than inside the node) then still reads as an existing
+   * break, making the classification independent of where a parser ends a text
+   * node.
+   */
+  readonly trailing: string;
 };
 
 /**
  * Classify what follows a break-point character: an existing line break, the
- * tail of the text (only whitespace remains), or further content.
+ * tail of the prose (only whitespace remains, in the node and the source just
+ * past it), or further content. The trailing source is scanned only after the
+ * node's own slice is exhausted, so a break-point at the node boundary sees the
+ * real next character rather than falsely reading as the node's tail.
  *
  * @param slice - text being scanned
  *
  * @param afterIndex - index just past the break-point character
+ *
+ * @param trailing - source immediately after the node, for boundary lookahead
  *
  * @returns `broken`, `tail`, or `content`
  */
 function followStatus({
   slice,
   afterIndex,
+  trailing,
 }: FollowStatusParams,): 'broken' | 'tail' | 'content' {
-  for (let cursor = afterIndex; cursor < slice.length; cursor += 1) {
-    /**
-     * Character under the forward cursor.
-     */
-    const ch = slice[cursor] ?? '';
-    if ((ch === ' ') || (ch === '\t')) {
-      continue;
-    }
-    if (ch === '\n') {
-      return 'broken';
-    }
-    return 'content';
+  /**
+   * Outcome from the node's own slice.
+   */
+  const inSlice = scanForward({
+    text: slice,
+    from: afterIndex,
+  },);
+  if (inSlice !== 'exhausted') {
+    return inSlice;
   }
-  return 'tail';
+  /**
+   * Outcome from the source just past the node, reached only when the slice
+   * held nothing but whitespace after the break-point.
+   */
+  const inTrailing = scanForward({
+    text: trailing,
+    from: 0,
+  },);
+  return inTrailing === 'exhausted'
+    ? 'tail'
+    : inTrailing;
 }
 
 /**
@@ -218,6 +290,11 @@ export type BreakOffsetsParams = {
    * Source text of one prose `text` node.
    */
   readonly slice: string;
+  /**
+   * Source immediately after the text node (up to the paragraph's end),
+   * consulted for boundary lookahead when a break-point sits at the slice end.
+   */
+  readonly trailing: string;
   /**
    * Whether this text node is the last child of its paragraph, so a trailing
    * break-point (nothing but whitespace after it) is the paragraph's final
@@ -234,17 +311,20 @@ export type BreakOffsetsParams = {
  *
  * @param slice - source text of one prose text node
  *
+ * @param trailing - source just past the node, for boundary lookahead
+ *
  * @param isParagraphTail - whether the node is its paragraph's last child
  *
  * @returns insertion offsets within the slice, ascending
  *
  * @example
  * ```ts
- * breakOffsets({ slice: 'a, b. c', isParagraphTail: true }); // [2, 5]
+ * breakOffsets({ slice: 'a, b. c', trailing: '', isParagraphTail: true }); // [2, 5]
  * ```
  */
 export function breakOffsets({
   slice,
+  trailing,
   isParagraphTail,
 }: BreakOffsetsParams,): readonly number[] {
   /**
@@ -269,6 +349,7 @@ export function breakOffsets({
     const status = followStatus({
       slice,
       afterIndex: index + 1,
+      trailing,
     },);
     if (status === 'broken') {
       continue;

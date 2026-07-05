@@ -2,13 +2,20 @@
 
 A purpose-built Markdown and MDX linter with localized autofixes,
 replacing `markdownlint-cli2`.
-It parses to mdast (the Markdown abstract syntax tree) and writes every rule against that one tree.
+It parses Markdown and MDX with Sätteri (a Rust engine) to mdast (the Markdown abstract syntax tree)
+and writes every rule against that one tree.
 Fixes are localized source edits at known offsets,
 never a parse-then-stringify round trip,
 so untouched spans stay byte-for-byte identical.
 
-It runs under Node and executes its TypeScript source directly,
+It runs under Node and executes its own TypeScript source directly,
 so there is no build-before-lint step.
+Sätteri ships a prebuilt native binary (per platform, with a WASI fallback),
+so the linter now carries that one native dependency.
+Sätteri reports node offsets as code points;
+they are corrected to UTF-16 code units before the offset-based fixer runs,
+so edits land correctly on documents with emoji or other astral characters
+(see `docs/troubleshooting/satteri-offsets.md`).
 
 ## Why it exists
 

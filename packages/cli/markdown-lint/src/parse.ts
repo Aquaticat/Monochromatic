@@ -1,18 +1,25 @@
-import { fromMarkdown, } from 'mdast-util-from-markdown';
-import { frontmatterFromMarkdown, } from 'mdast-util-frontmatter';
-import { gfmFromMarkdown, } from 'mdast-util-gfm';
-import { mdxFromMarkdown, } from 'mdast-util-mdx';
-import { frontmatter, } from 'micromark-extension-frontmatter';
-import { gfm, } from 'micromark-extension-gfm';
-import { mdxjs, } from 'micromark-extension-mdxjs';
 import type { Root, } from 'mdast';
+import {
+  markdownToMdast,
+  mdxToMdast,
+} from 'satteri';
+
+import {
+  correctAstralOffsets,
+  hasAstralCodePoints,
+} from './correct-astral-offsets.ts';
 
 /**
- * Frontmatter kind recognized before any rule runs. Only YAML (`---`) appears
- * in this corpus, configured explicitly so a leading block is skipped rather
- * than misparsed as a thematic break plus paragraph.
+ * Sätteri feature flags matching the previous parser: GFM (tables for
+ * `no-pipe-tables`, autolink literals for MD034) and frontmatter (YAML/TOML)
+ * both on. Both default to on; set explicitly so a future default change does
+ * not silently alter what the rules see. MDX is selected by the entry point,
+ * not a flag.
  */
-const FRONTMATTER_MATTER = 'yaml';
+const FEATURES = {
+  gfm: true,
+  frontmatter: true,
+};
 
 /**
  * Parameters for {@link parse}.
@@ -23,24 +30,25 @@ export type ParseParams = {
    */
   readonly source: string;
   /**
-   * Whether to enable the MDX extensions, so `import`, JSX, and `{expr}` parse
-   * as first-class MDX nodes instead of being misread as paragraphs or HTML.
+   * Whether to parse as MDX, so `import`, JSX, and `{expr}` parse as
+   * first-class MDX nodes instead of being misread as paragraphs or HTML.
    */
   readonly mdx: boolean;
 };
 
 /**
  * Parse Markdown or MDX source into an mdast tree, the single representation
- * every rule reads. GFM is always on (tables for `no-pipe-tables`, autolink
- * literals for MD034); frontmatter is always recognized and skipped before
- * rules run; MDX extensions are added only for `.mdx` so standard `.md` is not
- * burdened with JSX parsing.
+ * every rule reads. Sätteri parses in Rust and materializes a standard
+ * `mdast.Root`; its node offsets are code points, so they are corrected to
+ * UTF-16 code units (what the source-offset fixer and remark expect) whenever
+ * the source holds an astral character. GFM and frontmatter are always on; MDX
+ * uses the MDX entry point so standard `.md` is not burdened with JSX parsing.
  *
  * @param source - on-disk source, frontmatter included, never pre-stripped
  *
- * @param mdx - whether to enable the MDX extensions
+ * @param mdx - whether to parse as MDX
  *
- * @returns mdast root node
+ * @returns mdast root node with UTF-16 offsets
  *
  * @example
  * ```ts
@@ -52,28 +60,25 @@ export function parse({
   mdx,
 }: ParseParams,): Root {
   /**
-   * micromark (syntax-level) extensions. MDX is appended only when requested.
+   * Materialized tree from Sätteri, with code-point offsets. Typed as the
+   * mdast node union until narrowed to the root below.
    */
-  const extensions = [
-    gfm(),
-    frontmatter(FRONTMATTER_MATTER,),
-  ];
-  /**
-   * mdast (tree-construction) extensions, paired one-to-one with `extensions`.
-   */
-  const mdastExtensions = [
-    gfmFromMarkdown(),
-    frontmatterFromMarkdown(FRONTMATTER_MATTER,),
-  ];
-  if (mdx) {
-    extensions.push(mdxjs(),);
-    mdastExtensions.push(...mdxFromMarkdown(),);
+  const node = mdx
+    ? mdxToMdast(
+      source,
+      { features: FEATURES, },
+    )
+    : markdownToMdast(
+      source,
+      { features: FEATURES, },
+    );
+  if (node.type !== 'root') {
+    throw new Error(`Expected a root node from the parser, got "${node.type}".`,);
   }
-  return fromMarkdown(
-    source,
-    {
-    extensions,
-    mdastExtensions,
-  },
-  );
+  return hasAstralCodePoints(source,)
+    ? correctAstralOffsets({
+      tree: node,
+      source,
+    },)
+    : node;
 }
