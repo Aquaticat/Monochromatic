@@ -156,6 +156,25 @@ await describe({
       },
     },),
 
+    it({
+      name: 'byte-caps emitted tool_execution_start titles',
+      fn: async () => {
+        const { api, registrations, } = createMockApi();
+        terminalTitle(api,);
+        const { ctx, titles, } = createMockContext();
+
+        const handler = getHandler({ registrations, event: 'tool_execution_start', },);
+        handler(
+          { toolName: 'bash', args: { command: '😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,), }, },
+          ctx,
+        );
+
+        expect(titles,).toHaveLength(1,);
+        expect(terminalTitleUtf8ByteLength(titles[0] ?? '',),)
+          .toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+      },
+    },),
+
     //endregion tool_execution_start handler
 
     //region tool_execution_end handler

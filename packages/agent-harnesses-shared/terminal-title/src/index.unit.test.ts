@@ -118,7 +118,7 @@ await describe({
             const result = truncateTerminalTitlePayload({ value: unsafeAsciiTitle, },);
             const markerByteLength = terminalTitleUtf8ByteLength('…',);
             expect(result,).toBe(`${'a'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES - markerByteLength,)}…`,);
-            expect(terminalTitleUtf8ByteLength(result,),).toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
           },
         },),
         it({
@@ -142,7 +142,7 @@ await describe({
             const unsafeBmpTitle = bmpCharacter.repeat(safeBmpCount + 1,);
             const result = truncateTerminalTitlePayload({ value: unsafeBmpTitle, },);
             expect(result,).toBe(`${bmpCharacter.repeat(safeBmpCount - 1,)}…`,);
-            expect(terminalTitleUtf8ByteLength(result,),).toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
           },
         },),
         it({
@@ -156,16 +156,16 @@ await describe({
             );
             const result = truncateTerminalTitlePayload({ value: emoji.repeat(unsafeEmojiCount,), },);
             expect(result,).toBe(`${emoji.repeat(safeEmojiCountBeforeMarker,)}…`,);
-            expect(terminalTitleUtf8ByteLength(result,),).toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+            expect(terminalTitleUtf8ByteLength(result,),).toBe(MAX_TERMINAL_TITLE_UTF8_BYTES,);
           },
         },),
         it({
           name: 'omits ellipsis when marker cannot fit',
           fn: async () => {
             const tinyByteBudget = 2;
-            expect(
-              truncateTerminalTitlePayload({ value: 'abcdef', maxBytes: tinyByteBudget, },),
-            ).toBe('ab',);
+            const result = truncateTerminalTitlePayload({ value: 'abcdef', maxBytes: tinyByteBudget, },);
+            expect(result,).toBe('ab',);
+            expect(terminalTitleUtf8ByteLength(result,),).toBe(tinyByteBudget,);
           },
         },),
       ],

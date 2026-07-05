@@ -44,6 +44,28 @@ function userPromptSubmitEvent(prompt: string,): HookInput {
   };
 }
 
+/**
+ * Builds a typed pre-tool hook input for title tests.
+ *
+ * @param filePath - because Read tool path text is the display text under test
+ *
+ * @returns complete Claude Code hook input
+ *
+ * @example
+ * ```ts
+ * readPreToolUseEvent('/tmp/index.ts');
+ * ```
+ */
+function readPreToolUseEvent(filePath: string,): HookInput {
+  return {
+    ...BASE_HOOK_INPUT,
+    hook_event_name: 'PreToolUse',
+    tool_name: 'Read',
+    tool_input: { file_path: filePath, },
+    tool_use_id: 'tool-1',
+  };
+}
+
 await describe({
   name: terminalTitleForEvent.name,
   children: [
@@ -63,6 +85,17 @@ await describe({
           userPromptSubmitEvent('😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,),),
         );
         expect(title.startsWith('✳ ',),).toBe(true,);
+        expect(terminalTitleUtf8ByteLength(title,),)
+          .toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
+      },
+    },),
+    it({
+      name: 'byte-caps emitted tool titles',
+      fn: async () => {
+        const title = terminalTitleForEvent(
+          readPreToolUseEvent(`/tmp/${'😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,)}`),
+        );
+        expect(title.startsWith('✳ Reading ',),).toBe(true,);
         expect(terminalTitleUtf8ByteLength(title,),)
           .toBeLessThan(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
       },
