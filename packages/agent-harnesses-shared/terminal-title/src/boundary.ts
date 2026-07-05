@@ -21,7 +21,7 @@ import { TITLE_TRUNCATION_MARKER, } from './constants.ts';
  * // 256
  * ```
  */
-const GHOSTTY_IGNORED_TITLE_UTF8_BYTES = 256;
+const GHOSTTY_IGNORED_TITLE_UTF8_BYTES: number = 256;
 
 /**
  * Maximum UTF-8 byte length for terminal title payload text sent by this repo.
@@ -33,17 +33,17 @@ const GHOSTTY_IGNORED_TITLE_UTF8_BYTES = 256;
  * // 255
  * ```
  */
-const MAX_TERMINAL_TITLE_UTF8_BYTES = GHOSTTY_IGNORED_TITLE_UTF8_BYTES - 1;
+const MAX_TERMINAL_TITLE_UTF8_BYTES: number = GHOSTTY_IGNORED_TITLE_UTF8_BYTES - 1;
 
 /**
  * Encoder used to measure JavaScript strings as emitted UTF-8 bytes.
  */
-const TERMINAL_TITLE_TEXT_ENCODER = new TextEncoder();
+const TERMINAL_TITLE_TEXT_ENCODER: TextEncoder = new TextEncoder();
 
 /**
  * UTF-8 byte length of {@link TITLE_TRUNCATION_MARKER}.
  */
-const TITLE_TRUNCATION_MARKER_UTF8_BYTES = TERMINAL_TITLE_TEXT_ENCODER
+const TITLE_TRUNCATION_MARKER_UTF8_BYTES: number = TERMINAL_TITLE_TEXT_ENCODER
   .encode(TITLE_TRUNCATION_MARKER,)
   .byteLength;
 

@@ -13,6 +13,6 @@
  * // 'prefix…'
  * ```
  */
-const TITLE_TRUNCATION_MARKER = '…';
+const TITLE_TRUNCATION_MARKER: string = '…';
 
 export { TITLE_TRUNCATION_MARKER, };
