@@ -7,6 +7,7 @@ import {
   formatToolTitle,
   prefixedTitle,
   shortPath,
+  type UnknownToolTitleFormatter,
 } from '@monochromatic-dev/module-terminal-title/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 import { open, } from 'node:fs/promises';
@@ -26,6 +27,30 @@ const MAX_TITLE_LENGTH = 60;
  * Prefix prepended to every terminal title to identify Claude Code activity.
  */
 const TITLE_PREFIX = '✳';
+
+/**
+ * Builds Claude Code text for tools absent from the known registry.
+ *
+ * Claude Code historically displayed the raw unknown tool name,
+ * without adding a tense-aware generic verb.
+ *
+ * @param toolName - because unknown tool names should remain visible unchanged
+ *
+ * @returns raw tool name for terminal title body
+ *
+ * @example
+ * ```ts
+ * titleForUnknownTool({ toolName: 'mcp__weather', args: {}, tense: 'pre' });
+ * // 'mcp__weather'
+ * ```
+ */
+function titleForUnknownTool(
+  {
+    toolName,
+  }: Parameters<UnknownToolTitleFormatter>[0],
+): string {
+  return toolName;
+}
 
 /**
  * Builds a human-readable title string from a tool-use event by looking up the
@@ -54,7 +79,7 @@ function titleForTool(event: ReadonlyDeep<PreToolUseInput | PostToolUseInput>,):
     toolName,
     args: input,
     tense,
-    unknownToolTitle: ({ toolName: unknownToolName, },) => unknownToolName,
+    unknownToolTitle: titleForUnknownTool,
   },);
 }
 
