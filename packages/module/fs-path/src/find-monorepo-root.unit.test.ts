@@ -100,6 +100,52 @@ async function createRootFixture({
 }
 
 /**
+ * Creates a mise monorepo root fixture.
+ *
+ * @returns disposable mise monorepo fixture
+ *
+ * @example
+ * ```ts
+ * await using fixture = await createMiseMonorepoFixture();
+ * ```
+ */
+async function createMiseMonorepoFixture(): Promise<RootFixture> {
+  /** Fixture root that receives monorepo `mise.toml`. */
+  const fixture = await createRootFixture({ prefix: 'fs-path-mise-', },);
+  await writeFile(
+    nodeJoin(
+      fixture.root,
+      'mise.toml',
+    ),
+    '# test fixture\n\n[monorepo]\n',
+  );
+  return fixture;
+}
+
+/**
+ * Creates a mise config fixture without monorepo marker.
+ *
+ * @returns disposable non-monorepo mise fixture
+ *
+ * @example
+ * ```ts
+ * await using fixture = await createNonMonorepoMiseFixture();
+ * ```
+ */
+async function createNonMonorepoMiseFixture(): Promise<RootFixture> {
+  /** Fixture root that receives non-monorepo `mise.toml`. */
+  const fixture = await createRootFixture({ prefix: 'fs-path-non-monorepo-mise-', },);
+  await writeFile(
+    nodeJoin(
+      fixture.root,
+      'mise.toml',
+    ),
+    '[tools]\nnode = "latest"\n',
+  );
+  return fixture;
+}
+
+/**
  * Creates a Git root fixture with directory or gitfile marker.
  *
  * @param markerKind - marker shape to create at fixture root
@@ -194,6 +240,36 @@ await describe({
         /** Root discovered from current process directory. */
         const root = await findMiseMonorepoRoot();
         expect(isAbsolute(root,),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'finds a temp mise monorepo root with [monorepo] marker',
+      fn: async () => {
+        /** Temporary mise monorepo fixture. */
+        await using fixture = await createMiseMonorepoFixture();
+        /** Mise monorepo root discovered from nested fixture child. */
+        const root = await findMiseMonorepoRoot({ cwd: fixture.nested, },);
+        expect(root,).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'throws when mise.toml lacks [monorepo] marker',
+      fails: true,
+      fn: async () => {
+        /** Temporary mise config fixture without monorepo marker. */
+        await using fixture = await createNonMonorepoMiseFixture();
+        await findMiseMonorepoRoot({ cwd: fixture.nested, },);
+      },
+    },),
+    it({
+      name: 'throws when no mise.toml is found walking up',
+      fails: true,
+      fn: async () => {
+        /** Temporary fixture without mise marker. */
+        await using fixture = await createMarkerlessFixture({
+          prefix: 'fs-path-missing-mise-',
+        },);
+        await findMiseMonorepoRoot({ cwd: fixture.nested, },);
       },
     },),
     it({
