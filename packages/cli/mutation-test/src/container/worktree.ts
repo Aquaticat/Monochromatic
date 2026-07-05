@@ -275,6 +275,10 @@ async function symlinkWorkspacePackageNodeModules(): Promise<void> {
 /**
  * Prepares the full work tree: source rsync plus dependency farms.
  *
+ * Also materialises an empty `.git` directory marker: the work tree is
+ * a copy of a git repository, and package tests may legitimately assume
+ * an upward repo marker exists (fs-path's findGitRepoRoot does).
+ *
  * @example
  * ```ts
  * await prepareWorkTree();
@@ -284,4 +288,11 @@ export async function prepareWorkTree(): Promise<void> {
   await rsyncSourceToWorkTree();
   await recreateRootNodeModules();
   await symlinkWorkspacePackageNodeModules();
+  await mkdir(
+    join(
+      WORK_MOUNT,
+      '.git',
+    ),
+    { recursive: true, },
+  );
 }
