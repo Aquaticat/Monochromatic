@@ -82,6 +82,7 @@ export component AppWindow inherits Window {
     in property <int> total-rows-addressable: 0;
     in property <int> decoded-image-kib: 0;
     in property <int> decode-count: 0;
+    in property <int> pending-decodes: 0;
     in property <int> column-builds: 0;
     in property <int> pane-builds: 0;
     in property <int> active-column: 0;
@@ -123,7 +124,8 @@ export component AppWindow inherits Window {
                 }
                 hud-b := Text {
                     text: "rows materialized: " + root.live-row-delegates + " of " + root.total-rows-addressable + " addressable"
-                        + "   decoded images: " + root.decoded-image-kib + " KiB resident, " + root.decode-count + " decodes";
+                        + "   decoded images: " + root.decoded-image-kib + " KiB resident, " + root.decode-count + " decodes, "
+                        + root.pending-decodes + " decoding";
                     color: Palette.foreground;
                     font-size: 13px;
                 }
@@ -313,7 +315,7 @@ export component AppWindow inherits Window {
                                         height: parent.height;
                                     }
                                     if !pane.resident: Text {
-                                        text: "preview evicted\n(re-decodes on scroll-back)";
+                                        text: "decoding…\n(off the UI thread)";
                                         color: Palette.foreground;
                                         horizontal-alignment: center;
                                         vertical-alignment: center;

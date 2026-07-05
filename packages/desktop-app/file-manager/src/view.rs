@@ -74,12 +74,10 @@ pub struct PublishInput<'a> {
     /// What:     `pub viewport_h_px: f32` is the visible strip height.
     /// Why:      Pane window size within each column.
     pub viewport_h_px: f32,
-    /// What:     `pub v_offsets: &'a [f32]` borrows the per-column vertical scroll
-    ///           offsets (one per column). `&[f32]` is a borrowed slice (sibling:
-    ///           owned `Vec<f32>`).
-    /// Why:      Each column scrolls its panes independently (Niri scrolls the
-    ///           focused column).
-    pub v_offsets: &'a [f32],
+    /// What:     `pub v_offset_px: f32` is the single vertical scroll offset applied
+    ///           to every column.
+    /// Why:      Vertical scrolling moves the whole strip at once, not one column.
+    pub v_offset_px: f32,
     /// What:     `pub active_column: usize` is the focused column index.
     /// Why:      Marks the active column and pane for focus.
     pub active_column: usize,
@@ -139,10 +137,10 @@ pub fn build_columns_model(input: PublishInput) -> Result<ModelRc<ColumnView>> {
         //           column at this index read-only.
         // Why:      Read its panes without copying.
         let column = &input.strip.columns[column_index];
-        // What:     `let v_offset = input.v_offsets[column_index];` reads this
-        //           column's vertical scroll offset.
-        // Why:      Drives the pane window and the UI's y placement.
-        let v_offset = input.v_offsets[column_index];
+        // What:     `let v_offset = input.v_offset_px;` uses the single global
+        //           vertical offset for this column.
+        // Why:      Every column scrolls together, so they share one offset.
+        let v_offset = input.v_offset_px;
         // What:     `let pane_window = visible_range(...)` computes the in-window
         //           panes for this column from its vertical offset.
         // Why:      Only these panes get published.
@@ -315,17 +313,23 @@ fn build_pane_view(build: BuildPane) -> Result<PaneView> {
             //           pane as in-window so its bitmap is retained.
             // Why:      Eviction keeps only ids in this set.
             build.live_previews.insert(build.pane_id);
-            // What:     `let image = build.preview_cache.image_for(build.pane_id,
-            //           *seed)?;` decodes (or reuses) the bitmap; `?` propagates a
-            //           decode error.
-            // Why:      Produce the displayable image.
-            let image = build.preview_cache.image_for(build.pane_id, *seed)?;
+            // What:     `let image = build.preview_cache.request_preview(build
+            //           .pane_id, *seed);` returns `Some(image)` if already decoded,
+            //           else `None` after queuing a background decode.
+            // Why:      Never block the publish on decoding; a placeholder shows
+            //           until the worker delivers the bitmap.
+            let image = build.preview_cache.request_preview(build.pane_id, *seed);
+            // What:     `let resident = image.is_some();` records whether the bitmap
+            //           is ready. `.is_some()` tests the `Option`.
+            // Why:      The UI shows a placeholder while it is not yet resident.
+            let resident = image.is_some();
             // What:     `let rows = ModelRc::new(VecModel::from(Vec::<RowView>::new()));`
             //           is an empty row model; a preview pane has no rows.
             // Why:      The generated struct still needs a `rows` value.
             let rows = ModelRc::new(VecModel::from(Vec::<RowView>::new()));
             // What:     `Ok(PaneView { ... })` builds the preview view. `kind: 1`
-            //           tags it as a preview; `resident: true`; `row_total: 0`.
+            //           tags it as a preview; `image.unwrap_or_default()` yields the
+            //           decoded image or an empty one; `resident` reflects readiness.
             // Why:      Hand back a preview pane view.
             Ok(PaneView {
                 pane_id: build.pane_id as i32,
@@ -336,8 +340,8 @@ fn build_pane_view(build: BuildPane) -> Result<PaneView> {
                 is_active: build.is_active,
                 rows,
                 row_total: 0,
-                preview: image,
-                resident: true,
+                preview: image.unwrap_or_default(),
+                resident,
             })
         }
     }

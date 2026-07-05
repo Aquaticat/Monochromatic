@@ -1,10 +1,9 @@
 // What:     Unit tests for `preview.rs`, pulled in by
 //           `#[cfg(test)] #[path = "preview_tests.rs"] mod tests;` at the bottom
 //           of `preview.rs`. Reaches the parent items via `use super::*`.
-// Why:      Cover the decode round-trip and the resident-byte accounting.
+// Why:      Cover the decode round-trip and the async request/drain/evict cycle.
 
-// What:     `use super::*;` glob-imports the parent `preview` module's items
-//           (`PreviewCache`, `decode_to_image`, the constants, and so on).
+// What:     `use super::*;` glob-imports the parent `preview` module's items.
 // Why:      Tests call them directly.
 use super::*;
 
@@ -13,28 +12,29 @@ use super::*;
 // Why:      Build the "which previews stay" sets.
 use std::collections::HashSet;
 
+// What:     `use std::thread;` imports thread sleeping.
+// Why:      The decode runs on a worker thread; tests wait briefly for results.
+use std::thread;
+
+// What:     `use std::time::Duration;` imports a time span type.
+// Why:      The wait loop sleeps between drains.
+use std::time::Duration;
+
 // What:     `const DECODED_BYTES: usize = (PREVIEW_W * PREVIEW_H * 4) as usize;`
-//           is the expected decoded size of one preview (`as usize` narrows the
-//           `u32` product).
+//           is the expected decoded size of one preview.
 // Why:      Assert byte accounting against a named expected value.
 const DECODED_BYTES: usize = (PREVIEW_W * PREVIEW_H * 4) as usize;
 
 // What:     `fn fresh_cache() -> (Rc<Instrumentation>, PreviewCache)` builds a new
-//           instrumentation handle and a cache sharing it, returning both.
+//           instrumentation handle and a cache (which starts a worker) sharing it.
 // Why:      Every test needs the counters to read back and the cache to drive.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function freshCache(): [Instrumentation, PreviewCache] { ... }
-// ```
 fn fresh_cache() -> (Rc<Instrumentation>, PreviewCache) {
-    // What:     `let instrumentation = Rc::new(Instrumentation::new());` wraps a
-    //           fresh counter set in a shared pointer.
+    // What:     `let instrumentation = Rc::new(Instrumentation::new());` wraps fresh
+    //           counters in a shared pointer.
     // Why:      The cache and the test both hold it.
     let instrumentation = Rc::new(Instrumentation::new());
-    // What:     `let cache = PreviewCache::new(Rc::clone(&instrumentation));`
-    //           builds the cache; `Rc::clone` bumps the refcount so both keep a
-    //           handle to the same counters.
+    // What:     `let cache = PreviewCache::new(Rc::clone(&instrumentation));` builds
+    //           the cache and spawns its background worker.
     // Why:      The cache mutates counters the test then reads.
     let cache = PreviewCache::new(Rc::clone(&instrumentation));
     // What:     `(instrumentation, cache)` is the returned tuple; tail expression.
@@ -42,48 +42,102 @@ fn fresh_cache() -> (Rc<Instrumentation>, PreviewCache) {
     (instrumentation, cache)
 }
 
-// What:     `#[test]` marks the decode round-trip test.
-// Why:      Confirm synth -> encode -> decode yields the expected byte size.
+// What:     `fn drain_until(cache: &mut PreviewCache, want_bytes: usize)` drains the
+//           result channel repeatedly, sleeping briefly, until resident bytes reach
+//           `want_bytes` or a timeout panics.
+// Why:      The worker decodes asynchronously, so tests poll for the result.
+fn drain_until(cache: &mut PreviewCache, want_bytes: usize) {
+    // What:     `for _ in 0..400 { ... }` bounds the wait at 400 tries (~2 seconds).
+    // Why:      Never hang a test if a decode is lost.
+    for _ in 0..400 {
+        // What:     `cache.drain_results();` collects any ready decodes.
+        // Why:      Move finished bitmaps into the resident set.
+        cache.drain_results();
+        // What:     `if cache.resident_bytes() >= want_bytes { return; }` stops once
+        //           enough has landed.
+        // Why:      The decode(s) we asked for are resident.
+        if cache.resident_bytes() >= want_bytes {
+            return;
+        }
+        // What:     `thread::sleep(Duration::from_millis(5));` waits between drains.
+        // Why:      Give the worker thread time to decode.
+        thread::sleep(Duration::from_millis(5));
+    }
+    // What:     `panic!(...)` fails the test if the decode never landed.
+    // Why:      Surface a lost or hung decode instead of a silent stall.
+    panic!(
+        "decodes did not land: resident {} want {}",
+        cache.resident_bytes(),
+        want_bytes
+    );
+}
+
+// What:     `#[test]` on the decode round-trip.
+// Why:      Confirm synth -> encode -> decode_to_raw yields the expected bytes.
 #[test]
-fn decode_round_trips_expected_bytes() {
+fn decode_to_raw_round_trips_expected_bytes() {
     // What:     `let raw = synthetic_rgba(42);` makes pixels for seed 42.
     // Why:      Source data.
     let raw = synthetic_rgba(42);
-    // What:     `let png = encode_png(&raw).expect("encode");`. `.expect(...)`
-    //           unwraps the `Ok` or panics with the message (failing the test).
-    // Why:      Encoding synthetic data must succeed.
+    // What:     `let png = encode_png(&raw).expect("encode");` compresses them.
+    // Why:      Produce the bytes to decode.
     let png = encode_png(&raw).expect("encode");
-    // What:     `let (_image, byte_len) = decode_to_image(&png).expect("decode");`
-    //           decodes and destructures; `_image` discards the image (the
-    //           leading `_` silences the unused warning).
-    // Why:      We only assert the byte size here.
-    let (_image, byte_len) = decode_to_image(&png).expect("decode");
-    // What:     `assert_eq!(byte_len, DECODED_BYTES);` checks the decoded size.
+    // What:     `let (rgba, width, height) = decode_to_raw(&png).expect("decode");`
+    //           decodes and destructures the tuple.
+    // Why:      Assert size and dimensions.
+    let (rgba, width, height) = decode_to_raw(&png).expect("decode");
+    // What:     `assert_eq!(rgba.len(), DECODED_BYTES);` checks the byte size.
     // Why:      Round-trip must preserve dimensions.
-    assert_eq!(byte_len, DECODED_BYTES);
+    assert_eq!(rgba.len(), DECODED_BYTES);
+    // What:     `assert_eq!(width, PREVIEW_W);` and the next line check dimensions.
+    // Why:      Confirm the decoded shape.
+    assert_eq!(width, PREVIEW_W);
+    assert_eq!(height, PREVIEW_H);
+}
+
+// What:     `#[test]` proving a requested preview becomes resident after draining.
+// Why:      The async request/drain path must deliver a decoded bitmap.
+#[test]
+fn request_then_drain_makes_resident() {
+    // What:     Fresh cache and its counters.
+    // Why:      Isolated state.
+    let (instr, mut cache) = fresh_cache();
+    // What:     `assert!(cache.request_preview(1, 100).is_none());` checks the first
+    //           request returns a placeholder (not yet decoded).
+    // Why:      The publish never blocks; the image is not ready synchronously.
+    assert!(cache.request_preview(1, 100).is_none());
+    // What:     `drain_until(&mut cache, DECODED_BYTES);` waits for the decode.
+    // Why:      Let the worker finish and collect the result.
+    drain_until(&mut cache, DECODED_BYTES);
+    // What:     `assert!(cache.request_preview(1, 100).is_some());` now returns the
+    //           resident image.
+    // Why:      After draining, the bitmap is available.
+    assert!(cache.request_preview(1, 100).is_some());
+    // What:     `assert_eq!(cache.resident_bytes(), DECODED_BYTES);`.
+    // Why:      Exactly one bitmap resident.
+    assert_eq!(cache.resident_bytes(), DECODED_BYTES);
+    // What:     `assert_eq!(instr.decode_count.get(), 1);` reads the shared counter.
+    // Why:      Exactly one decode happened.
+    assert_eq!(instr.decode_count.get(), 1);
 }
 
 // What:     `#[test]` on the eviction-frees-bytes path.
 // Why:      Resident bytes must fall when previews leave the window.
 #[test]
 fn eviction_frees_resident_bytes() {
-    // What:     `let (instr, mut cache) = fresh_cache();`. `mut cache` because the
-    //           cache methods take `&mut self`.
+    // What:     Fresh cache; the counters are unused here so bind with `_`.
     // Why:      Drive decode then eviction.
-    let (instr, mut cache) = fresh_cache();
-    // What:     `cache.image_for(1, 100).expect("decode 1");` decodes pane 1.
-    // Why:      Make one bitmap resident.
-    cache.image_for(1, 100).expect("decode 1");
-    // What:     `cache.image_for(2, 200).expect("decode 2");` decodes pane 2.
-    // Why:      Two resident bitmaps now.
-    cache.image_for(2, 200).expect("decode 2");
+    let (_instr, mut cache) = fresh_cache();
+    // What:     Request two previews.
+    // Why:      Queue two background decodes.
+    cache.request_preview(1, 100);
+    cache.request_preview(2, 200);
+    // What:     Wait for both to land.
+    // Why:      Both bitmaps resident now.
+    drain_until(&mut cache, 2 * DECODED_BYTES);
     // What:     `assert_eq!(cache.resident_bytes(), 2 * DECODED_BYTES);`.
-    // Why:      Both bitmaps counted.
+    // Why:      Both counted.
     assert_eq!(cache.resident_bytes(), 2 * DECODED_BYTES);
-    // What:     `assert_eq!(instr.decode_count.get(), 2);` reads the shared
-    //           counter; `.get()` reads a `Cell`.
-    // Why:      Exactly two decodes happened.
-    assert_eq!(instr.decode_count.get(), 2);
     // What:     `let mut live: HashSet<u64> = HashSet::new(); live.insert(1);`
     //           builds the set holding only pane 1.
     // Why:      Simulate pane 2 scrolling out of the window.
@@ -93,7 +147,7 @@ fn eviction_frees_resident_bytes() {
     // Why:      Drop pane 2's bitmap.
     cache.retain_only(&live);
     // What:     `assert_eq!(cache.resident_bytes(), DECODED_BYTES);`.
-    // Why:      Only pane 1 remains resident.
+    // Why:      Only pane 1 remains.
     assert_eq!(cache.resident_bytes(), DECODED_BYTES);
     // What:     `cache.retain_only(&HashSet::new());` evicts all.
     // Why:      Nothing in-window now.
@@ -107,12 +161,13 @@ fn eviction_frees_resident_bytes() {
 // Why:      A preview that left and returned must decode again, not persist.
 #[test]
 fn scroll_back_redecodes() {
-    // What:     Fresh cache and its counters.
+    // What:     Fresh cache and counters.
     // Why:      Isolated state.
     let (instr, mut cache) = fresh_cache();
-    // What:     Decode pane 7 once.
+    // What:     Request pane 7 and wait for it.
     // Why:      First materialization.
-    cache.image_for(7, 7).expect("decode first");
+    cache.request_preview(7, 7);
+    drain_until(&mut cache, DECODED_BYTES);
     // What:     `assert_eq!(instr.decode_count.get(), 1);`.
     // Why:      One decode so far.
     assert_eq!(instr.decode_count.get(), 1);
@@ -122,9 +177,10 @@ fn scroll_back_redecodes() {
     // What:     `assert_eq!(cache.resident_bytes(), 0);`.
     // Why:      Bitmap dropped.
     assert_eq!(cache.resident_bytes(), 0);
-    // What:     Ask for pane 7 again.
+    // What:     Request pane 7 again and wait.
     // Why:      Pane 7 scrolls back into the window.
-    cache.image_for(7, 7).expect("decode second");
+    cache.request_preview(7, 7);
+    drain_until(&mut cache, DECODED_BYTES);
     // What:     `assert_eq!(instr.decode_count.get(), 2);`.
     // Why:      A second decode proves re-materialization.
     assert_eq!(instr.decode_count.get(), 2);
@@ -134,19 +190,24 @@ fn scroll_back_redecodes() {
 }
 
 // What:     `#[test]` proving a resident preview is reused, not re-decoded.
-// Why:      Repeated republishes must not thrash the decoder.
+// Why:      Repeated publishes must not re-queue an already-decoded preview.
 #[test]
 fn resident_preview_reused_without_redecode() {
     // What:     Fresh cache and counters.
     // Why:      Isolated state.
     let (instr, mut cache) = fresh_cache();
-    // What:     Decode pane 3.
+    // What:     Request pane 3 and wait for it.
     // Why:      Make it resident.
-    cache.image_for(3, 3).expect("decode once");
-    // What:     Ask again while still resident.
+    cache.request_preview(3, 3);
+    drain_until(&mut cache, DECODED_BYTES);
+    // What:     `cache.request_preview(3, 3);` while resident returns the cached
+    //           image and queues no new decode.
     // Why:      Simulate a republish that keeps pane 3 in-window.
-    cache.image_for(3, 3).expect("reuse");
+    cache.request_preview(3, 3);
+    // What:     `cache.drain_results();` drains any stray results (none expected).
+    // Why:      Ensure no second decode sneaked in.
+    cache.drain_results();
     // What:     `assert_eq!(instr.decode_count.get(), 1);`.
-    // Why:      Only one decode; the second call reused the cached bitmap.
+    // Why:      Only one decode; the second request reused the cached bitmap.
     assert_eq!(instr.decode_count.get(), 1);
 }

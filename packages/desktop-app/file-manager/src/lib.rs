@@ -73,6 +73,17 @@ pub mod rowmodel;
 /// ```
 pub mod preview;
 
+/// What:     `pub mod decode_worker;` exposes the background preview-decode worker
+///           thread and its request/result message types.
+/// Why:      Decoding runs off the UI thread so a burst of newly-visible previews
+///           never drops a frame.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as decodeWorker from "./decode_worker";
+/// ```
+pub mod decode_worker;
+
 /// What:     `pub mod view;` exposes the publish step that builds the bounded
 ///           `ColumnView`/`PaneView`/`RowView` models Slint renders.
 /// Why:      It is the seam between Rust identity state and Slint's models.

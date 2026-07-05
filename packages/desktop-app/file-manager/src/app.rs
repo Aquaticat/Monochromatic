@@ -60,6 +60,12 @@ use crate::strip::COLUMN_WIDTH_PX;
 /// Why:      Fast enough to feel live, slow enough not to churn.
 const HUD_REFRESH_MS: u64 = 150;
 
+/// What:     `const DECODE_POLL_MS: u64 = 30;` is the background-decode drain
+///           interval.
+/// Why:      A short poll so decoded previews pop in promptly without the UI ever
+///           blocking on the decode itself.
+const DECODE_POLL_MS: u64 = 30;
+
 /// What:     `fn install_backend() -> Result<()>` builds and installs the explicit
 ///           winit backend with the app-id hook, unless the embedded MCP server
 ///           is active.
@@ -143,6 +149,9 @@ fn mirror_hud(app: &AppWindow, instrumentation: &Instrumentation) {
     // Why:      The HUD reads KiB.
     app.set_decoded_image_kib((instrumentation.decoded_image_bytes.get() / 1024) as i32);
     app.set_decode_count(instrumentation.decode_count.get() as i32);
+    // What:     Mirror the count of in-flight background decodes.
+    // Why:      HUD gauge showing the decode queue draining off the UI thread.
+    app.set_pending_decodes(instrumentation.pending_decodes.get() as i32);
     app.set_column_builds(instrumentation.column_builds.get() as i32);
     app.set_pane_builds(instrumentation.pane_builds.get() as i32);
     app.set_active_column(instrumentation.active_column.get() as i32);
@@ -350,13 +359,46 @@ pub fn run() -> Result<()> {
         }
     });
 
+    // What:     `let decode_timer = Timer::default();` creates a second repeating
+    //           timer for draining finished background decodes.
+    // Why:      Collect decoded previews and republish so they appear.
+    let decode_timer = Timer::default();
+    // What:     `let weak_decode = app.as_weak();` is its non-owning handle.
+    // Why:      The timer must not keep the window alive.
+    let weak_decode = app.as_weak();
+    // What:     `decode_timer.start(TimerMode::Repeated, Duration::from_millis(
+    //           DECODE_POLL_MS), { ... })` starts the drain poll.
+    // Why:      Turn background decode results into visible previews promptly.
+    decode_timer.start(TimerMode::Repeated, Duration::from_millis(DECODE_POLL_MS), {
+        let controller = Rc::clone(&controller);
+        move || {
+            if let Some(app) = weak_decode.upgrade() {
+                // What:     `let result = controller.borrow_mut().poll_decodes();`
+                //           drains and maybe republishes; the `RefMut` releases at
+                //           the `;`.
+                // Why:      Bind first so no borrow is held during the match.
+                let result = controller.borrow_mut().poll_decodes();
+                // What:     `match result { Ok(Some(model)) => ..., Ok(None) => (),
+                //           Err(error) => ... }` applies a republish only when
+                //           previews landed. `()` is the do-nothing unit value.
+                // Why:      Avoid needless work when nothing decoded.
+                match result {
+                    Ok(Some(model)) => app.set_columns(model),
+                    Ok(None) => (),
+                    Err(error) => log_callback_error("decode poll", error),
+                }
+            }
+        }
+    });
+
     // What:     `app.run()?;` enters the Slint event loop and blocks until the
     //           window closes; `?` propagates a platform error.
     // Why:      Drive the UI.
     app.run()?;
-    // What:     `hud_timer.stop();` halts the timer after the loop ends.
+    // What:     `hud_timer.stop();` and `decode_timer.stop();` halt both timers.
     // Why:      Clean shutdown.
     hud_timer.stop();
+    decode_timer.stop();
     // What:     `Ok(())` returns success; tail expression.
     // Why:      The program ran and exited cleanly.
     Ok(())

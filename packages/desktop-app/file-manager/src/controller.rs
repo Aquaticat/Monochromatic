@@ -65,9 +65,14 @@ pub struct Controller {
     /// What:     `strip: Strip` is the full column-of-panes identity.
     /// Why:      The source every publish windows over.
     strip: Strip,
-    /// What:     `v_offsets: Vec<f32>` is one vertical scroll offset per column.
-    /// Why:      Niri scrolls the focused column independently.
-    v_offsets: Vec<f32>,
+    /// What:     `v_offset_px: f32` is the single vertical scroll offset applied to
+    ///           every column.
+    /// Why:      Vertical scrolling moves the whole strip at once.
+    v_offset_px: f32,
+    /// What:     `max_column_height_px: f32` is the tallest column's content height.
+    /// Why:      The vertical scroll range spans it, so every column can reach its
+    ///           bottom; recomputed when the strip changes.
+    max_column_height_px: f32,
     /// What:     `h_offset_px: f32` is the horizontal scroll offset (positive).
     /// Why:      Drives the column window.
     h_offset_px: f32,
@@ -110,11 +115,10 @@ impl Controller {
         // What:     `let strip = synthetic_strip();` builds the big test strip.
         // Why:      The thing being virtualized.
         let strip = synthetic_strip();
-        // What:     `let v_offsets = vec![0.0; strip.columns.len()];` makes a
-        //           per-column offset vector of zeros. `vec![value; n]` repeats
-        //           `value` `n` times.
-        // Why:      Every column starts scrolled to its top.
-        let v_offsets = vec![0.0; strip.columns.len()];
+        // What:     `let max_column_height_px = compute_max_column_height(&strip);`
+        //           finds the tallest column's content height.
+        // Why:      The global vertical scroll range spans it.
+        let max_column_height_px = compute_max_column_height(&strip);
         // What:     `let preview_cache = PreviewCache::new(Rc::clone(&instrumentation));`
         //           builds the cache sharing the counters.
         // Why:      The cache reports decoded bytes and decode count.
@@ -124,7 +128,8 @@ impl Controller {
         // Why:      Build the initial controller.
         let controller = Self {
             strip,
-            v_offsets,
+            v_offset_px: 0.0,
+            max_column_height_px,
             h_offset_px: 0.0,
             viewport_w_px: DEFAULT_VIEWPORT_W_PX,
             viewport_h_px: DEFAULT_VIEWPORT_H_PX,
@@ -212,7 +217,7 @@ impl Controller {
             h_offset_px: self.h_offset_px,
             viewport_w_px: self.viewport_w_px,
             viewport_h_px: self.viewport_h_px,
-            v_offsets: &self.v_offsets,
+            v_offset_px: self.v_offset_px,
             active_column: self.active_column,
             active_pane: self.active_pane,
             prefetch: PREFETCH,
@@ -270,20 +275,32 @@ impl Controller {
     ///           scroll, given a 0..100 percentage from the slider.
     /// Why:      Vertical scroll is Rust-driven, so a percentage is unambiguous.
     pub fn on_vertical_scroll(&mut self, percent: f32) -> Result<ModelRc<ColumnView>> {
-        // What:     `let column_index = self.active_column;` names the target.
-        // Why:      Vertical scroll moves the focused column.
-        let column_index = self.active_column;
-        // What:     `let max_scroll = (self.strip.columns[column_index].height_px()
-        //           - self.viewport_h_px).max(0.0);` is the scroll range.
-        // Why:      Percent maps into this range.
-        let max_scroll = (self.strip.columns[column_index].height_px() - self.viewport_h_px).max(0.0);
-        // What:     `self.v_offsets[column_index] = (percent / 100.0) * max_scroll;`
-        //           sets the offset from the percentage.
-        // Why:      Move the column's panes proportionally.
-        self.v_offsets[column_index] = (percent / 100.0) * max_scroll;
+        // What:     `self.v_offset_px = (percent / 100.0) * self.max_v_offset();`
+        //           sets the single global offset from the percentage.
+        // Why:      Move every column's panes together, proportionally.
+        self.v_offset_px = (percent / 100.0) * self.max_v_offset();
         // What:     `self.publish()` republishes; tail expression.
-        // Why:      Reflect the new vertical window.
+        // Why:      Reflect the new vertical window across all columns.
         self.publish()
+    }
+
+    /// What:     `pub fn poll_decodes(&mut self) -> Result<Option<ModelRc<ColumnView>>>`
+    ///           collects any finished background decodes and republishes if some
+    ///           landed. `Option` is `Some(model)` when a republish happened.
+    /// Why:      The app polls this on a timer so newly-decoded previews appear.
+    pub fn poll_decodes(&mut self) -> Result<Option<ModelRc<ColumnView>>> {
+        // What:     `let landed = self.preview_cache.drain_results();` collects ready
+        //           bitmaps and returns how many landed.
+        // Why:      Only republish when something changed.
+        let landed = self.preview_cache.drain_results();
+        // What:     `if landed > 0 { Ok(Some(self.publish()?)) } else { Ok(None) }`
+        //           republishes on new bitmaps, else reports nothing to do.
+        // Why:      Show the decoded previews without a needless republish.
+        if landed > 0 {
+            Ok(Some(self.publish()?))
+        } else {
+            Ok(None)
+        }
     }
 
     /// What:     `pub fn on_key_nav(&mut self, key: &str) ->
@@ -374,14 +391,11 @@ impl Controller {
         // What:     `self.active_pane = target;` stores it.
         // Why:      Focus moved.
         self.active_pane = target;
-        // What:     `let max_scroll = (self.strip.columns[column_index].height_px()
-        //           - self.viewport_h_px).max(0.0);` is the vertical range.
-        // Why:      Clamp the offset.
-        let max_scroll = (self.strip.columns[column_index].height_px() - self.viewport_h_px).max(0.0);
-        // What:     `self.v_offsets[column_index] = (target as f32 * pane_pitch_px())
-        //           .min(max_scroll);` aligns the pane to the column top.
-        // Why:      Bring the active pane into view.
-        self.v_offsets[column_index] = (target as f32 * pane_pitch_px()).min(max_scroll);
+        // What:     `self.v_offset_px = (target as f32 * pane_pitch_px())
+        //           .min(self.max_v_offset());` aligns the active pane to the top of
+        //           the shared vertical viewport.
+        // Why:      Bring the active pane into view; the whole strip scrolls with it.
+        self.v_offset_px = (target as f32 * pane_pitch_px()).min(self.max_v_offset());
     }
 
     /// What:     `fn close_active_column(&mut self)` removes the active column,
@@ -403,10 +417,6 @@ impl Controller {
         // Why:      The column is gone; its panes lose existence (identity dropped
         //           only on explicit close).
         self.strip.columns.remove(column_index);
-        // What:     `self.v_offsets.remove(column_index);` drops the matching
-        //           offset so the vectors stay index-aligned.
-        // Why:      Keep per-column offsets in step with columns.
-        self.v_offsets.remove(column_index);
         // What:     `if self.active_column >= self.strip.columns.len() { ... }`
         //           clamps the active column after removal.
         // Why:      Closing the last column moves focus to the new last one.
@@ -423,6 +433,14 @@ impl Controller {
         // What:     `self.refresh_totals();` recomputes the total-* counters.
         // Why:      The strip shrank, so totals changed.
         self.refresh_totals();
+        // What:     `self.max_column_height_px = compute_max_column_height(&self.strip);`
+        //           recomputes the tallest column after removal.
+        // Why:      The removed column may have been the tallest.
+        self.max_column_height_px = compute_max_column_height(&self.strip);
+        // What:     `self.v_offset_px = self.v_offset_px.min(self.max_v_offset());`
+        //           reins the vertical scroll into the new range.
+        // Why:      A shorter strip may have a smaller vertical range.
+        self.v_offset_px = self.v_offset_px.min(self.max_v_offset());
     }
 
     /// What:     `fn clamp_active_pane(&mut self)` keeps the active pane index in
@@ -450,6 +468,15 @@ impl Controller {
         // What:     `(self.strip_width_px() - self.viewport_w_px).max(0.0)`; tail.
         // Why:      Content width minus the viewport is the scroll range.
         (self.strip_width_px() - self.viewport_w_px).max(0.0)
+    }
+
+    /// What:     `fn max_v_offset(&self) -> f32` is the largest valid vertical
+    ///           offset: the tallest column's height minus the viewport.
+    /// Why:      Vertical scroll and pane navigation clamp to it.
+    fn max_v_offset(&self) -> f32 {
+        // What:     `(self.max_column_height_px - self.viewport_h_px).max(0.0)`; tail.
+        // Why:      The tallest column's height minus the viewport is the range.
+        (self.max_column_height_px - self.viewport_h_px).max(0.0)
     }
 
     /// What:     `fn refresh_totals(&self)` recomputes the full-strip counters.
@@ -491,6 +518,28 @@ impl Controller {
         // Why:      HUD denominator for the row-virtualization headline.
         self.instrumentation.total_rows_addressable.set(rows);
     }
+}
+
+/// What:     `fn compute_max_column_height(strip: &Strip) -> f32` finds the tallest
+///           column's content height.
+/// Why:      The global vertical scroll range spans it; recomputed on strip change.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function computeMaxColumnHeight(strip): number { return Math.max(0, ...strip.columns.map(c => c.heightPx())); }
+/// ```
+fn compute_max_column_height(strip: &Strip) -> f32 {
+    // What:     `strip.columns.iter().map(|column| column.height_px()).fold(0.0,
+    //           f32::max)` maps each column to its height and folds them with the
+    //           max function. `|column| ...` is a closure; `f32::max` is a function
+    //           value passed to `fold`.
+    // Why:      The largest column height is the shared vertical range. Tail
+    //           expression, so it is returned.
+    strip
+        .columns
+        .iter()
+        .map(|column| column.height_px())
+        .fold(0.0, f32::max)
 }
 
 /// What:     `impl Default for Controller` provides `Controller::default()`.

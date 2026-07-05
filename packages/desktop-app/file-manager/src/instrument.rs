@@ -83,6 +83,11 @@ pub struct Instrumentation {
     /// What:     `pub decode_count: Cell<u64>` counts decodes performed.
     /// Why:      Rising after scroll-back proves previews re-decode, not persist.
     pub decode_count: Cell<u64>,
+    /// What:     `pub pending_decodes: Cell<usize>` counts previews whose decode is
+    ///           in flight on the background worker (requested, not yet delivered).
+    /// Why:      Shows the decode is off the UI thread; the queue drains without
+    ///           blocking scrolling.
+    pub pending_decodes: Cell<usize>,
     /// What:     `pub column_builds: Cell<u64>` counts Slint column `init` fires.
     /// Why:      Cross-checks Slint instantiates the window, and that the total
     ///           grows with scroll distance (recycling), not with strip size.
@@ -152,6 +157,7 @@ impl Instrumentation {
             total_rows_addressable: Cell::new(0),
             decoded_image_bytes: Cell::new(0),
             decode_count: Cell::new(0),
+            pending_decodes: Cell::new(0),
             column_builds: Cell::new(0),
             pane_builds: Cell::new(0),
             last_publish_us: Cell::new(0),
