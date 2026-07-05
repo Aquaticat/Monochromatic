@@ -24,8 +24,6 @@ import type {
   ExtensionAPI,
   SessionShutdownEvent,
   SessionStartEvent,
-  ToolExecutionEndEvent,
-  ToolExecutionStartEvent,
 } from '@earendil-works/pi-coding-agent';
 import { safeTerminalTitlePayload, } from '@monochromatic-dev/module-terminal-title/ts';
 import { titleForEvent, } from './title-builder.ts';
@@ -42,6 +40,51 @@ type TitleContext = {
   readonly ui: {
     readonly setTitle: (title: string,) => void;
   };
+};
+
+/**
+ * Minimal tool execution start event shape verified against pi 0.80.3 internal declarations.
+ */
+type ToolExecutionStartEvent = {
+  /**
+   * Event discriminant.
+   */
+  readonly type: 'tool_execution_start';
+
+  /**
+   * Stable pi tool call identifier.
+   */
+  readonly toolCallId: string;
+
+  /**
+   * pi tool name.
+   */
+  readonly toolName: string;
+
+  /**
+   * Raw tool arguments from pi.
+   */
+  readonly args: unknown;
+};
+
+/**
+ * Minimal tool execution end event shape verified against pi 0.80.3 internal declarations.
+ */
+type ToolExecutionEndEvent = {
+  /**
+   * Event discriminant.
+   */
+  readonly type: 'tool_execution_end';
+
+  /**
+   * Stable pi tool call identifier.
+   */
+  readonly toolCallId: string;
+
+  /**
+   * pi tool name.
+   */
+  readonly toolName: string;
 };
 
 //region Tool argument helpers

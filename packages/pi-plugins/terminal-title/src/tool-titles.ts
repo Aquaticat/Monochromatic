@@ -24,32 +24,56 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
   bash: shellCommandTitleEntry({ field: 'command', },),
   read: pathTitleEntry({
     field: 'path',
-    labels: { pre: 'Reading', post: 'Read', },
+    labels: {
+      pre: 'Reading',
+      post: 'Read',
+    },
     noun: 'file',
   },),
   edit: pathTitleEntry({
     field: 'path',
-    labels: { pre: 'Editing', post: 'Edited', },
+    labels: {
+      pre: 'Editing',
+      post: 'Edited',
+    },
     noun: 'file',
   },),
   write: pathTitleEntry({
     field: 'path',
-    labels: { pre: 'Writing', post: 'Wrote', },
+    labels: {
+      pre: 'Writing',
+      post: 'Wrote',
+    },
     noun: 'file',
   },),
   grep: textTitleEntry({
     field: 'pattern',
-    labels: { pre: 'Searching for', post: 'Searched for', },
-    fallback: { pre: 'Searching', post: 'Searched', },
+    labels: {
+      pre: 'Searching for',
+      post: 'Searched for',
+    },
+    fallback: {
+      pre: 'Searching',
+      post: 'Searched',
+    },
   },),
   find: textTitleEntry({
     field: 'pattern',
-    labels: { pre: 'Finding', post: 'Found', },
-    fallback: { pre: 'Finding files', post: 'Found files', },
+    labels: {
+      pre: 'Finding',
+      post: 'Found',
+    },
+    fallback: {
+      pre: 'Finding files',
+      post: 'Found files',
+    },
   },),
   ls: pathTitleEntry({
     field: 'path',
-    labels: { pre: 'Listing', post: 'Listed', },
+    labels: {
+      pre: 'Listing',
+      post: 'Listed',
+    },
     noun: 'directory',
   },),
 };
