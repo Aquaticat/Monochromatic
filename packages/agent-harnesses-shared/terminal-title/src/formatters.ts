@@ -84,11 +84,17 @@ function truncate(
     const nextLength = prefixState.lengthUsed + chunk.length;
     if (nextLength > bodyMaxLength)
       break;
-    prefixState.chunks.push(chunk,);
+    prefixState.chunks
+      .push(chunk,);
     prefixState.lengthUsed = nextLength;
   }
 
-  return `${prefixState.chunks.join('',)}${TITLE_TRUNCATION_MARKER}`;
+  /**
+   * Truncated body before appending the marker.
+   */
+  const body = prefixState.chunks
+    .join('',);
+  return `${body}${TITLE_TRUNCATION_MARKER}`;
 }
 
 /**

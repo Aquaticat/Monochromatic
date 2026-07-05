@@ -134,14 +134,16 @@ function truncateTerminalTitlePayload(
     const nextBytes = prefixState.bytesUsed + chunkBytes;
     if (nextBytes > contentMaxBytes)
       break;
-    prefixState.chunks.push(chunk,);
+    prefixState.chunks
+      .push(chunk,);
     prefixState.bytesUsed = nextBytes;
   }
 
   /**
    * Truncated payload body before appending an optional ellipsis.
    */
-  const body = prefixState.chunks.join('',);
+  const body = prefixState.chunks
+    .join('',);
   if (markerFits)
     return `${body}${TITLE_TRUNCATION_MARKER}`;
   return body;
