@@ -26,13 +26,13 @@ catalogs:
       specifier: '>=9.3.5'
       version: 9.3.5
     '@earendil-works/pi-ai':
-      specifier: '>=0.80.2'
+      specifier: '>=0.80.3'
       version: 0.80.3
     '@earendil-works/pi-coding-agent':
-      specifier: '>=0.80.2'
+      specifier: '>=0.80.3'
       version: 0.80.3
     '@earendil-works/pi-tui':
-      specifier: '>=0.80.2'
+      specifier: '>=0.80.3'
       version: 0.80.3
     '@lezer/common':
       specifier: '>=1.5.2'
@@ -82,9 +82,6 @@ catalogs:
     '@playwright/test':
       specifier: '>=1.61.1'
       version: 1.61.1
-    '@sindresorhus/fnv1a':
-      specifier: '>=3.1.0'
-      version: 3.1.0
     '@stryker-mutator/core':
       specifier: '>=9.6.1'
       version: 9.6.1
@@ -110,10 +107,10 @@ catalogs:
       specifier: '>=4.0.4'
       version: 4.0.4
     '@types/node':
-      specifier: '>=26.0.1'
+      specifier: '>=26.1.0'
       version: 26.1.0
     '@types/sinon':
-      specifier: '>=21.0.1'
+      specifier: '>=22.0.0'
       version: 22.0.0
     '@types/sinon-chai':
       specifier: '>=4.0.0'
@@ -148,6 +145,9 @@ catalogs:
     expect-type:
       specifier: '>=1.4.0'
       version: 1.4.0
+    farmhashjs:
+      specifier: '>=1.0.1'
+      version: 1.0.1
     fast-check:
       specifier: '>=4.8.0'
       version: 4.8.0
@@ -161,7 +161,7 @@ catalogs:
       specifier: '>=2.0.1-rc.22'
       version: 2.0.1-rc.22
     happy-opfs:
-      specifier: '>=2.0.3'
+      specifier: '>=2.1.0'
       version: 2.1.0
     hb-subset-wasm:
       specifier: '>=0.4.0'
@@ -224,7 +224,7 @@ catalogs:
       specifier: '>=7.3.0'
       version: 7.3.0
     picomatch:
-      specifier: '>=4.0.4'
+      specifier: '>=4.0.5'
       version: 4.0.5
     postcss-html:
       specifier: '>=1.8.1'
@@ -245,10 +245,10 @@ catalogs:
       specifier: '>=2.1.0'
       version: 2.1.0
     rolldown:
-      specifier: '>=1.1.3'
+      specifier: '>=1.1.4'
       version: 1.1.4
     sharp:
-      specifier: '>=0.35.2'
+      specifier: '>=0.35.3'
       version: 0.35.3
     sinon:
       specifier: '>=22.0.0'
@@ -284,7 +284,7 @@ catalogs:
       specifier: '>=5.7.0'
       version: 5.7.0
     typebox:
-      specifier: '>=1.3.2'
+      specifier: '>=1.3.3'
       version: 1.3.3
     typesafe-i18n:
       specifier: '>=5.27.1'
@@ -315,7 +315,7 @@ catalogs:
       version: 2.1.0
 
 overrides:
-  '@anthropic-ai/sdk': '>=0.107.0'
+  '@anthropic-ai/sdk': '>=0.109.1'
   '@earendil-works/pi-ai>@aws-sdk/client-bedrock-runtime': '-'
   '@earendil-works/pi-ai>@google/genai': '-'
   '@earendil-works/pi-ai>@mistralai/mistralai': '-'
@@ -2088,7 +2088,7 @@ importers:
   packages/module/token-count:
     dependencies:
       '@anthropic-ai/sdk':
-        specifier: '>=0.107.0'
+        specifier: '>=0.109.1'
         version: 0.109.1(zod@4.4.3)
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
@@ -2440,31 +2440,6 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
-  packages/pi/search-fetch:
-    dependencies:
-      '@monochromatic-dev/module-logger':
-        specifier: workspace:*
-        version: link:../../module/logger
-    devDependencies:
-      '@earendil-works/pi-coding-agent':
-        specifier: 'catalog:'
-        version: 0.80.3(zod@4.4.3)
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.1.0
-      typebox:
-        specifier: 'catalog:'
-        version: 1.3.3
-
   packages/pi/morph-compact:
     dependencies:
       '@monochromatic-dev/module-logger':
@@ -2492,6 +2467,31 @@ importers:
       type-fest:
         specifier: 'catalog:'
         version: 5.7.0
+
+  packages/pi/search-fetch:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+    devDependencies:
+      '@earendil-works/pi-coding-agent':
+        specifier: 'catalog:'
+        version: 0.80.3(zod@4.4.3)
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+      typebox:
+        specifier: 'catalog:'
+        version: 1.3.3
 
   packages/pi/spawn:
     dependencies:
@@ -2674,9 +2674,9 @@ importers:
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../../module/or-throw
-      '@sindresorhus/fnv1a':
+      farmhashjs:
         specifier: 'catalog:'
-        version: 3.1.0
+        version: 1.0.1
       feedsmith:
         specifier: 'catalog:'
         version: 3.0.0-next.6
@@ -4117,10 +4117,6 @@ packages:
   '@silvia-odwyer/photon-node@0.3.4':
     resolution: {integrity: sha512-bnly4BKB3KDTFxrUIcgCLbaeVVS8lrAkri1pEzskpmxu9MdfGQTy8b8EgcD83ywD3RPMsIulY8xJH5Awa+t9fA==, tarball: https://registry.npmjs.org/@silvia-odwyer/photon-node/-/photon-node-0.3.4.tgz}
 
-  '@sindresorhus/fnv1a@3.1.0':
-    resolution: {integrity: sha512-KV321z5m/0nuAg83W1dPLy85HpHDk7Sdi4fJbwvacWsEhAh+rZUW4ZfGcXmUIvjZg4ss2bcwNlRhJ7GBEUG08w==, tarball: https://registry.npmjs.org/@sindresorhus/fnv1a/-/fnv1a-3.1.0.tgz}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-
   '@sindresorhus/merge-streams@4.0.0':
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==, tarball: https://registry.npmjs.org/@sindresorhus/merge-streams/-/merge-streams-4.0.0.tgz}
     engines: {node: '>=18'}
@@ -4819,6 +4815,10 @@ packages:
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==, tarball: https://registry.npmjs.org/extend/-/extend-3.0.2.tgz}
+
+  farmhashjs@1.0.1:
+    resolution: {integrity: sha512-xqkt5No1ejw8OFi1o1R88trBTraB5aAqKox3nLiwNoINoVPNaZqFL95XlWsBOZNx1LgNopPg0OUxX940tzEh0w==, tarball: https://registry.npmjs.org/farmhashjs/-/farmhashjs-1.0.1.tgz}
+    engines: {node: '>=16'}
 
   fast-check@4.8.0:
     resolution: {integrity: sha512-GOJ158CUMnN6cSahsv4+ExARvIDuzzinFjkp0E9WtiBa5zcVeLozVkWaE4IzFcc+Y48Wp1EDlUZsXRyAztQcSg==, tarball: https://registry.npmjs.org/fast-check/-/fast-check-4.8.0.tgz}
@@ -7359,8 +7359,6 @@ snapshots:
 
   '@silvia-odwyer/photon-node@0.3.4': {}
 
-  '@sindresorhus/fnv1a@3.1.0': {}
-
   '@sindresorhus/merge-streams@4.0.0': {}
 
   '@sinonjs/commons@3.0.1':
@@ -8017,6 +8015,8 @@ snapshots:
   expect-type@1.4.0: {}
 
   extend@3.0.2: {}
+
+  farmhashjs@1.0.1: {}
 
   fast-check@4.8.0:
     dependencies:
