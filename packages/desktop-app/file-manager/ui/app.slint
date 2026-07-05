@@ -87,6 +87,9 @@ export component AppWindow inherits Window {
     in property <int> active-column: 0;
     in property <int> active-pane: 0;
     in property <bool> active-pane-focused: false;
+    in property <int> last-publish-us: 0;
+    in property <int> max-publish-us: 0;
+    in property <int> last-decode-us: 0;
 
     // Horizontal scroll position in pixels (positive = scrolled right). Two-way
     // so the h-position slider and the Flickable stay in sync.
@@ -126,7 +129,9 @@ export component AppWindow inherits Window {
                 }
                 hud-c := Text {
                     text: "active column/pane: " + root.active-column + "/" + root.active-pane
-                        + "   active-pane-focused: " + (root.active-pane-focused ? "yes" : "no");
+                        + "   focus: " + (root.active-pane-focused ? "yes" : "no")
+                        + "   publish " + root.last-publish-us + "us = windowing " + (root.last-publish-us - root.last-decode-us)
+                        + "us + decode " + root.last-decode-us + "us (max " + root.max-publish-us + "us)";
                     color: Palette.foreground;
                     font-size: 13px;
                 }
@@ -165,23 +170,25 @@ export component AppWindow inherits Window {
                         root.vertical-scrolled(v);
                     }
                 }
-                Button {
+                // Element ids (btn-left := ...) let the MCP server drive keyboard
+                // navigation with click_element in headless tests.
+                btn-left := Button {
                     text: "◀";
                     clicked => { root.key-nav("Left"); }
                 }
-                Button {
+                btn-right := Button {
                     text: "▶";
                     clicked => { root.key-nav("Right"); }
                 }
-                Button {
+                btn-up := Button {
                     text: "▲";
                     clicked => { root.key-nav("Up"); }
                 }
-                Button {
+                btn-down := Button {
                     text: "▼";
                     clicked => { root.key-nav("Down"); }
                 }
-                Button {
+                btn-close := Button {
                     text: "close col";
                     clicked => { root.key-nav("Close"); }
                 }
@@ -246,66 +253,71 @@ export component AppWindow inherits Window {
                             root.pane-built();
                         }
 
-                        VerticalLayout {
-                            padding: 4px;
-                            spacing: 2px;
-                            Text {
-                                text: pane.title;
-                                color: Palette.foreground;
-                                font-size: 12px;
-                                overflow: elide;
+                        // Pane-level FocusScope wrapping BOTH kinds. Focus
+                        // survival: when the active pane is (re)instantiated after
+                        // recycling, re-assert focus from Rust-held identity and
+                        // report the focus state back for the HUD. Wrapping both
+                        // kinds means the active pane keeps focus whether it is a
+                        // directory or a preview.
+                        pane-focus := FocusScope {
+                            width: parent.width;
+                            height: parent.height;
+                            init => {
+                                if pane.is-active {
+                                    self.focus();
+                                }
                             }
-
-                            // Directory pane (kind 0): a virtualizing ListView
-                            // over the custom row model. ListView instantiates
-                            // only visible row delegates, so row-data is pulled
-                            // sparsely from the huge model.
-                            if pane.kind == 0: ListView {
-                                for row in pane.rows: Rectangle {
-                                    height: 22px;
-                                    background: touch.has-hover ? Palette.accent-background.with-alpha(0.12) : transparent;
-                                    touch := TouchArea {}
-                                    Text {
-                                        x: 6px;
-                                        text: row.label;
-                                        color: Palette.foreground;
-                                        font-size: 12px;
-                                        vertical-alignment: center;
-                                    }
+                            changed has-focus => {
+                                if pane.is-active {
+                                    root.active-focus-changed(self.has-focus);
                                 }
                             }
 
-                            // Preview pane (kind 1): the decoded image when Rust
-                            // has it resident, else a placeholder telling the
-                            // reader the bitmap was evicted (identity survives).
-                            if pane.kind == 1: Rectangle {
-                                fs := FocusScope {
-                                    // Focus survival: when the active pane is
-                                    // (re)instantiated after recycling, re-assert
-                                    // focus from Rust-held identity and report the
-                                    // focus state back for the HUD.
-                                    init => {
-                                        if pane.is-active {
-                                            self.focus();
+                            VerticalLayout {
+                                padding: 4px;
+                                spacing: 2px;
+                                Text {
+                                    text: pane.title;
+                                    color: Palette.foreground;
+                                    font-size: 12px;
+                                    overflow: elide;
+                                }
+
+                                // Directory pane (kind 0): a virtualizing ListView
+                                // over the custom row model. ListView instantiates
+                                // only visible row delegates, so row-data is pulled
+                                // sparsely from the huge model.
+                                if pane.kind == 0: ListView {
+                                    for row in pane.rows: Rectangle {
+                                        height: 22px;
+                                        background: touch.has-hover ? Palette.accent-background.with-alpha(0.12) : transparent;
+                                        touch := TouchArea {}
+                                        Text {
+                                            x: 6px;
+                                            text: row.label;
+                                            color: Palette.foreground;
+                                            font-size: 12px;
+                                            vertical-alignment: center;
                                         }
                                     }
-                                    changed has-focus => {
-                                        if pane.is-active {
-                                            root.active-focus-changed(self.has-focus);
-                                        }
-                                    }
+                                }
+
+                                // Preview pane (kind 1): the decoded image when Rust
+                                // has it resident, else a placeholder telling the
+                                // reader the bitmap was evicted (identity survives).
+                                if pane.kind == 1: Rectangle {
                                     Image {
                                         source: pane.preview;
                                         image-fit: contain;
                                         width: parent.width;
                                         height: parent.height;
                                     }
-                                }
-                                if !pane.resident: Text {
-                                    text: "preview evicted\n(re-decodes on scroll-back)";
-                                    color: Palette.foreground;
-                                    horizontal-alignment: center;
-                                    vertical-alignment: center;
+                                    if !pane.resident: Text {
+                                        text: "preview evicted\n(re-decodes on scroll-back)";
+                                        color: Palette.foreground;
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
                                 }
                             }
                         }

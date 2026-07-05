@@ -90,6 +90,21 @@ pub struct Instrumentation {
     /// What:     `pub pane_builds: Cell<u64>` counts Slint pane `init` fires.
     /// Why:      Same recycling cross-check at the pane level.
     pub pane_builds: Cell<u64>,
+    /// What:     `pub last_publish_us: Cell<u64>` is how many microseconds the last
+    ///           publish took (windowing plus model build plus any preview decode).
+    /// Why:      Per-action cost: smoothness means this stays small and roughly
+    ///           constant no matter how far across the strip you jump.
+    pub last_publish_us: Cell<u64>,
+    /// What:     `pub max_publish_us: Cell<u64>` is the largest publish time seen.
+    /// Why:      Catches worst-case hitches, such as a publish that had to decode a
+    ///           newly-visible preview on the UI thread.
+    pub max_publish_us: Cell<u64>,
+    /// What:     `pub last_decode_us: Cell<u64>` is how many of the last publish's
+    ///           microseconds were spent decoding newly-visible previews.
+    /// Why:      Separates the cheap windowing cost from the expensive synchronous
+    ///           decode, which a later milestone moves to a background job; the
+    ///           windowing cost (publish minus this) is the true smoothness metric.
+    pub last_decode_us: Cell<u64>,
     /// What:     `pub active_column: Cell<usize>` is the focused column index.
     /// Why:      Keyboard navigation and the focus-survival check track it.
     pub active_column: Cell<usize>,
@@ -139,6 +154,9 @@ impl Instrumentation {
             decode_count: Cell::new(0),
             column_builds: Cell::new(0),
             pane_builds: Cell::new(0),
+            last_publish_us: Cell::new(0),
+            max_publish_us: Cell::new(0),
+            last_decode_us: Cell::new(0),
             active_column: Cell::new(0),
             active_pane: Cell::new(0),
             active_pane_focused: Cell::new(false),

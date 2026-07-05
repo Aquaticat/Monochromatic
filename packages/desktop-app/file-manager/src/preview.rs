@@ -48,6 +48,11 @@ use std::io::Cursor;
 /// ```
 use std::rc::Rc;
 
+/// What:     `use std::time::Instant;` imports a monotonic clock reading (sibling
+///           `SystemTime`, the wall clock).
+/// Why:      Timing each decode to attribute its cost.
+use std::time::Instant;
+
 /// What:     `use anyhow::{Context, Result};` imports the one-parameter error
 ///           result alias and the `.context(...)` adaptor that attaches a message
 ///           to an error or a `None`.
@@ -350,10 +355,22 @@ impl PreviewCache {
             .encoded
             .get(&pane_id)
             .context("encoded preview missing after ensure")?;
+        // What:     `let decode_start = Instant::now();` reads a monotonic clock
+        //           before the decode.
+        // Why:      Attribute the decode cost separately from the windowing cost.
+        let decode_start = Instant::now();
         // What:     `let (image, byte_len) = decode_to_image(png_bytes)?;` decodes
         //           and destructures the returned tuple.
         // Why:      Produce the resident bitmap and learn its size.
         let (image, byte_len) = decode_to_image(png_bytes)?;
+        // What:     `self.instrumentation.last_decode_us.set(self.instrumentation
+        //           .last_decode_us.get() + decode_start.elapsed().as_micros() as
+        //           u64);` adds this decode's microseconds to the per-publish
+        //           accumulator (the controller zeroes it before each publish).
+        // Why:      Track how much of a publish was synchronous decode.
+        self.instrumentation.last_decode_us.set(
+            self.instrumentation.last_decode_us.get() + decode_start.elapsed().as_micros() as u64,
+        );
         // What:     `self.resident_bytes += byte_len;` grows the resident total.
         // Why:      Account for the new bitmap.
         self.resident_bytes += byte_len;

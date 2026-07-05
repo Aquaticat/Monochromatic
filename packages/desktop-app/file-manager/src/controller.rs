@@ -8,6 +8,11 @@
 ///           models, and the UI-thread timer.
 use std::rc::Rc;
 
+/// What:     `use std::time::Instant;` imports a monotonic clock reading (sibling:
+///           `SystemTime`, the wall clock, which can jump backward).
+/// Why:      Timing a publish needs a monotonic start point.
+use std::time::Instant;
+
 /// What:     `use anyhow::Result;` imports the one-parameter error result alias.
 /// Why:      Publishing can fail on a preview decode; handlers propagate it.
 use anyhow::Result;
@@ -214,10 +219,37 @@ impl Controller {
             preview_cache: &mut self.preview_cache,
             instrumentation: &self.instrumentation,
         };
-        // What:     `build_columns_model(input)` is the tail expression returning
-        //           the `Result<ModelRc<ColumnView>>`.
-        // Why:      Hand the published model to the caller.
-        build_columns_model(input)
+        // What:     `self.instrumentation.last_decode_us.set(0);` zeroes the
+        //           per-publish decode accumulator before the build; the preview
+        //           cache adds to it for each decode this publish performs.
+        // Why:      Separate the decode cost from the windowing cost.
+        self.instrumentation.last_decode_us.set(0);
+        // What:     `let start = Instant::now();` reads a monotonic clock before
+        //           the publish work.
+        // Why:      Time how long one publish takes, for the smoothness metric.
+        let start = Instant::now();
+        // What:     `let model = build_columns_model(input)?;` does the windowing,
+        //           model build, and any preview decode; `?` propagates a decode
+        //           error.
+        // Why:      This is the per-action work whose cost must stay bounded.
+        let model = build_columns_model(input)?;
+        // What:     `let elapsed_us = start.elapsed().as_micros() as u64;` measures
+        //           the elapsed span in microseconds; `as u64` narrows the `u128`.
+        // Why:      Record it in the counters.
+        let elapsed_us = start.elapsed().as_micros() as u64;
+        // What:     `self.instrumentation.last_publish_us.set(elapsed_us);` stores
+        //           the latest publish time.
+        // Why:      HUD shows the per-action cost.
+        self.instrumentation.last_publish_us.set(elapsed_us);
+        // What:     `if elapsed_us > self.instrumentation.max_publish_us.get() { ... }`
+        //           updates the running maximum.
+        // Why:      Surface the worst-case hitch.
+        if elapsed_us > self.instrumentation.max_publish_us.get() {
+            self.instrumentation.max_publish_us.set(elapsed_us);
+        }
+        // What:     `Ok(model)` returns the published model; tail expression.
+        // Why:      Hand it to the caller.
+        Ok(model)
     }
 
     /// What:     `pub fn on_horizontal_scroll(&mut self, offset_px: f32) ->

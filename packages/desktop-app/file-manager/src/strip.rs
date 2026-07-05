@@ -5,17 +5,18 @@
 //! The heavy content (decoded images, materialized rows) is produced lazily and
 //! only for the bounded window, elsewhere.
 
-/// What:     `pub const COLUMN_COUNT: usize = 500;`. `usize` is the unsigned
+/// What:     `pub const COLUMN_COUNT: usize = 1200;`. `usize` is the unsigned
 ///           pointer-width integer Rust uses for counts and indices (siblings:
 ///           `u32`, `u64`, `i32`, `i64`).
-/// Why:      A strip large enough that eager instantiation would be obviously
-///           expensive, so the windowing win is visible.
+/// Why:      With the pane-count mix below this yields well over 10000 panes, the
+///           smoothness target: eager instantiation of that many would be
+///           obviously expensive, so the windowing win is visible.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const COLUMN_COUNT = 500;
+/// const COLUMN_COUNT = 1200;
 /// ```
-pub const COLUMN_COUNT: usize = 500;
+pub const COLUMN_COUNT: usize = 1200;
 
 /// What:     `pub const COLUMN_WIDTH_PX: f32 = 320.0;`. `f32` is a 32-bit float
 ///           (sibling: `f64`), chosen because Slint's `length` maps to `f32`.
@@ -263,21 +264,23 @@ pub fn synthetic_strip() -> Strip {
         //           next pseudo-random value.
         // Why:      Fresh randomness for this column's shape.
         state = next_lcg(state);
-        // What:     `let tall = column_index.is_multiple_of(7);` marks every
-        //           seventh column as "tall". `.is_multiple_of(7)` returns true
-        //           when the index divides evenly by 7 (the modern spelling of
-        //           `column_index % 7 == 0`).
+        // What:     `let tall = column_index.is_multiple_of(3);` marks every third
+        //           column as "tall". `.is_multiple_of(3)` returns true when the
+        //           index divides evenly by 3 (the modern spelling of
+        //           `column_index % 3 == 0`).
         // Why:      Tall columns exceed the viewport height, so vertical
-        //           windowing has something to prune.
-        let tall = column_index.is_multiple_of(7);
+        //           windowing has something to prune; making a third of the
+        //           columns tall pushes the total pane count past 10000.
+        let tall = column_index.is_multiple_of(3);
         // What:     `let pane_count = if tall { ... } else { ... };` picks a pane
         //           count. `(state >> 16) as usize % N` takes some LCG bits,
         //           narrows them to `usize`, and maps into a range.
-        // Why:      Tall columns get 12..=27 panes; ordinary columns get 1..=4.
+        // Why:      Tall columns get 12..=39 panes; ordinary columns get 2..=8;
+        //           roughly 400 * ~26 + 800 * ~5 is about 14000 panes total.
         let pane_count = if tall {
-            12 + (state >> 16) as usize % 16
+            12 + (state >> 16) as usize % 28
         } else {
-            1 + (state >> 16) as usize % 4
+            2 + (state >> 16) as usize % 7
         };
         // What:     `let mut panes: Vec<Pane> = Vec::new();` starts this column's
         //           owned pane list.
