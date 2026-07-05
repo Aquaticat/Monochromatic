@@ -480,6 +480,24 @@ importers:
         specifier: 'catalog:'
         version: 7.0.1-rc
 
+  packages/agent-harnesses-shared/terminal-title:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+
   packages/build-tool/css:
     dependencies:
       '@monochromatic-dev/module-fs-path':
@@ -624,6 +642,9 @@ importers:
       '@monochromatic-dev/module-current-time-context':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/current-time-context
+      '@monochromatic-dev/module-terminal-title':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/terminal-title
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -2524,6 +2545,10 @@ importers:
         version: 26.1.0
 
   packages/pi-plugins/terminal-title:
+    dependencies:
+      '@monochromatic-dev/module-terminal-title':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/terminal-title
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
