@@ -760,7 +760,11 @@ if (args.length === 0) {
   const parts = first.split('/')
   if (parts.length >= 3 && parts[0] === 'packages') {
     const buildTask = `//${parts.slice(0, 3).join('/')}:build`
-    const allTasks = JSON.parse(execFileSync('mise', ['tasks', 'ls', '--all', '--json'], { encoding: 'utf8' }))
+    // `mise tasks --all --json` is intentionally large in this monorepo;
+    // raise execFileSync's default 1 MiB stdout cap so package lookup keeps working
+    // as the task graph grows.
+    const MISE_TASKS_JSON_MAX_BUFFER = 16 * 1024 * 1024
+    const allTasks = JSON.parse(execFileSync('mise', ['tasks', 'ls', '--all', '--json'], { encoding: 'utf8', maxBuffer: MISE_TASKS_JSON_MAX_BUFFER }))
     if (allTasks.some((task) => task.name === buildTask)) {
       try { execFileSync('mise', ['run', buildTask], { stdio: 'inherit' }) } catch { /* tolerate build failure, still run tests */ }
     }
@@ -924,7 +928,11 @@ execFileSync('mise', ['run', 'prepare:pnpm'], { stdio: 'inherit' })
 const prefix = `${process.env.MISE_TASK_NAME}:`
 const depth = prefix.split(':').length
 const pnpmTask = `${prefix}pnpm`
-const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8' }))
+// `mise tasks --all --hidden --json` is intentionally large in this monorepo;
+// raise execFileSync's default 1 MiB stdout cap so prepare fanout keeps working
+// as the task graph grows.
+const MISE_TASKS_JSON_MAX_BUFFER = 16 * 1024 * 1024
+const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8', maxBuffer: MISE_TASKS_JSON_MAX_BUFFER }))
 const children = tasks.map((task) => task.name).filter((name) => name.startsWith(prefix) && name.split(':').length === depth && name !== pnpmTask)
 const processes = children.map((name) => spawn('mise', ['run', name], { stdio: 'inherit' }))
 const exits = await Promise.all(processes.map((proc) => once(proc, 'exit')))
