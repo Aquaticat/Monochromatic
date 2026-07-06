@@ -18,9 +18,33 @@ updated as work proceeds.
   ~14400 mixed panes (previews and small lists) scrolls diagonally at a steady ~60 fps, as long
   as thumbnail decode is off the render path (synchronous per-frame decode drops it to ~4 fps).
   Linux-first; macOS and Windows are second-class.
-- Decision: not final. It reduces to Linux-cleanliness (GTK4) vs cross-platform-native
-  (Qt, with the exit crash and perf tuning). Awaiting the GTK fps number and the user's
-  call.
+- Decision: not final, and the criterion has been narrowed. Styling, macOS/Windows native
+  feel, and packaging are explicitly NOT deciding factors (they are solvable, and complexity
+  is not a blocker). The deciding factor is developer experience: how nice each toolkit is to
+  work with. Gate: build and run both spikes on macOS (`m1`) and Windows (`x13-win`) first,
+  then choose on developer experience. The Windows machine is currently off, so this is paused.
+
+## Decision criteria (corrected)
+
+What does NOT decide it: styling and native look (out of scope; we style until it aligns);
+which toolkit has a flagship file manager (both do, Nautilus is GTK and Dolphin is Qt);
+macOS/Windows foreign look and packaging (solvable, complexity is not a blocker); raw
+cross-platform reach (both reach all three targets).
+
+What DOES decide it: developer experience, how nice each is to work with, plus passing the
+macOS and Windows build-and-run gate.
+
+Developer-experience read (from building both spikes hands-on, preliminary):
+
+- GTK4 (gtk4-rs): mature bindings (0.11, stable API), pure Rust, idiomatic (builder pattern
+  and closures), UI in Rust with no separate markup language, no C++ shim. The spike was about
+  90 lines and mostly worked first try. Nicer to work with so far.
+- Qt (cxx-qt): pre-1.0 (0.9.1) with an API that churns across 0.x bumps; the UI lives in QML
+  (a separate markup and JS language, a Rust/QML split); a hand-written C++ shim was needed
+  just to route Qt's logging off-thread; the bridge macro forbids doc comments on extern
+  blocks and has other sharp edges. More powerful cross-platform, but more friction.
+
+This read is preliminary and must be confirmed by actually building each on macOS and Windows.
 
 ## Verified findings per toolkit
 
@@ -56,8 +80,10 @@ updated as work proceeds.
 - Non-blocking logging is done: `tracing` on a `tracing-appender` NonBlocking writer, plus
   a `qInstallMessageHandler` C++ shim routing Qt's own logs into the same off-thread sink
   (`src/qt_log.rs`, `src/qt_log.cpp`).
-- Strong point: first-class native on macOS and Windows. Weak points: pre-1.0 cxx-qt API
-  churn, DIY macOS/Windows Qt bundling, the teardown crash.
+- Cross-platform native feel is first-class, but that is not a deciding factor here (styling
+  is out of scope). What counts against Qt on the deciding axis (developer experience): pre-1.0
+  cxx-qt API churn, the UI split into QML (a separate markup and JS language), a hand-written
+  C++ shim needed just to route logging, and the bridge-macro sharp edges.
 
 ### GTK4 (gtk4-rs) — cleanest so far
 
@@ -75,8 +101,9 @@ updated as work proceeds.
     render path; naive synchronous per-frame decode drops it to ~4 fps. Clean teardown (rc 0)
     throughout, unlike Qt (no `reuseItems`-style teardown crash).
 - Owns nothing: no fork, no hand-rolled protocol, no accepted crash.
-- Rationale it works: GNOME Files (Nautilus) is GTK4, so file-manager-scale DnD, columns,
-  and huge directories are its home turf.
+- Correction: "Nautilus is GTK4" is not a differentiator over Qt, since Dolphin (a flagship
+  Qt file manager) shows Qt is equally proven for this use case. Both are battle-tested; this
+  is dropped as a reason.
 - Not yet done: outbound drag (`GtkDragSource`); a real off-thread thumbnail decoder (the
   benchmark caches; the app needs a worker plus eviction like `preview.rs`); macOS and Windows
   (GTK there is second-class).
@@ -99,14 +126,16 @@ updated as work proceeds.
 
 ## Open items and next steps
 
-- Measure GTK4 fast-scroll fps with image thumbnails (current task); update the status
-  table above with the honest number.
-- If GTK4 holds up: build the real column-strip file manager in GTK4 (GtkColumnView or
-  nested lists), wire outbound drag (`GtkDragSource`) and clipboard, then test on macOS and
-  Windows.
-- If Qt is chosen instead: build the Rust `QAbstractListModel` app (M1), apply the
-  `process::exit` clean-exit, and accept the cross-platform bundling work.
-- Either way: verify inbound and outbound DnD on macOS (`m1`) and Windows (`x13-win`).
+- PAUSED HERE (decision gate): build and run BOTH spikes on macOS (`m1`) and Windows
+  (`x13-win`), judging the developer experience of getting each toolkit built and running on
+  each. The Windows machine is currently off, so this is paused; macOS (`m1`) can be probed
+  when resumed.
+- Then decide GTK4 vs Qt on developer experience (not styling or cross-platform polish).
+- After choosing, build the real column/pane UI. For GTK, a `GtkColumnView` or nested lists
+  with an off-thread thumbnail decoder plus eviction (like `preview.rs`), and wire outbound
+  `GtkDragSource` and clipboard. For Qt, the Rust `QAbstractListModel` app (M1) with the
+  `process::exit` clean-exit and DnD wired in.
+- Either way, verify inbound and outbound DnD on macOS and Windows.
 
 ## How to run the spikes
 
