@@ -14,5 +14,7 @@ fn main() {
     // requires linking Qt Network on macOS, so declare it here for cross-platform builds.
     .qt_module("Network")
     .files(["src/cxxqt_object.rs"])
+    // Hand-written C++ shim installing the Qt -> tracing message handler (src/qt_log.cpp).
+    .cpp_file("src/qt_log.cpp")
     .build();
 }

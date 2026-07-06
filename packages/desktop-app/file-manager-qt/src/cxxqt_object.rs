@@ -64,10 +64,10 @@ impl Default for AppBridgeRust {
 /// What: the invokable behavior of the `AppBridge` QObject.
 /// Why: methods here are callable from QML through the bridge declared above.
 impl qobject::AppBridge {
-    /// What: print a QML-provided message to stdout.
-    /// Why: smallest observable proof that a QML->Rust invokable call succeeds; replaced by
-    ///      real logging (tracing) once the backend logic is ported.
+    /// What: log a QML-provided message through the non-blocking tracing pipeline.
+    /// Why: proves a QML->Rust invokable call succeeds, and routes it through the same
+    ///      off-thread logging the whole app uses, so it never blocks a frame.
     pub fn log_from_qml(&self, message: &QString) {
-        println!("[AppBridge] QML says: {message}");
+        tracing::info!(target: "app_bridge", message = %message, "logFromQml invoked from QML");
     }
 }

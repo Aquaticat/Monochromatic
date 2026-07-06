@@ -23,6 +23,14 @@ cxx-qt = "0.9.1"
 # `full` pulls the complete cxx-qt-lib type surface (QString, QUrl, QList, the
 # QAbstractItemModel base, etc.) the file-manager model and drop handlers need.
 cxx-qt-lib = { version = "0.9.1", features = ["full"] }
+# Non-blocking logging. The app logs extensively (repo LOG rule), so logging must never
+# stall the UI/render thread: tracing on the hot path only enqueues, and tracing-appender's
+# NonBlocking writer drains to stderr on a dedicated thread. A qInstallMessageHandler bridge
+# (see src/qt_log.cpp) routes Qt's own qDebug/qCDebug into the same off-thread sink, so
+# Qt-internal logs cannot block a frame either. Never enable QSG_RENDER_TIMING in production.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
 
 [build-dependencies]
 # `link_qt_object_files` links the QML module's generated object files (the qrc
