@@ -1,0 +1,262 @@
+name: nested-wayland-session-publish
+
+# Mirrors cargo-publish.yml (the forbidden-strings pipeline): on a Cargo.toml
+# version bump merged to main, publish the crate to crates.io via Trusted
+# Publishing, build attested release binaries, and cut a GitHub release with all
+# archives. Two crate-specific differences from cargo-publish.yml:
+#   1. This is a Wayland compositor, so it is LINUX-ONLY. There are no macOS or
+#      Windows targets (Smithay's winit-Wayland/EGL/xkb stack does not build
+#      there), and no musl targets (it links system libwayland-server /
+#      libxkbcommon / libdrm, which do not link cleanly against musl).
+#   2. It links those system libraries at build time, so every job that compiles
+#      first installs the -dev packages.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run (package + verify, no crates.io upload, no GH release, no attestation)'
+        type: boolean
+        default: true
+  push:
+    branches: ['main']
+    paths:
+    - 'packages/cli/nested-wayland-session/Cargo.toml'
+
+permissions:
+  contents: read
+
+# Serialize runs so a second version bump landing while a publish is still
+# uploading does not race the first.
+concurrency:
+  group: nested-wayland-session-publish
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.detect.outputs.should_publish }}
+      version: ${{ steps.detect.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 2
+
+    - name: Detect version bump
+      id: detect
+      env:
+        BEFORE_SHA: ${{ github.event.before }}
+        EVENT_NAME: ${{ github.event_name }}
+      run: |
+        set -euo pipefail
+        cargo_toml='packages/cli/nested-wayland-session/Cargo.toml'
+        after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
+        before=''
+        if [ -n "${BEFORE_SHA:-}" ] \
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ] \
+          && git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
+          before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+        fi
+        printf 'before=%s\nafter=%s\n' "$before" "$after"
+        if [ -z "$after" ]; then
+          echo 'No version found in Cargo.toml; refusing to publish.' >&2
+          exit 1
+        fi
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ] || [ "$before" != "$after" ]; then
+          {
+            echo "should_publish=true"
+            echo "version=$after"
+          } >> "$GITHUB_OUTPUT"
+        else
+          echo "should_publish=false" >> "$GITHUB_OUTPUT"
+        fi
+
+  publish-crate:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_publish == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Install system libraries the crate links
+      # Ubuntu equivalents of the Fedora -devel packages in the package's
+      # Containerfile: libwayland (use_system_lib), libxkbcommon (linked, not
+      # dlopened), libdrm (backend_drm), EGL headers, and clang/libclang for any
+      # bindgen in the drm-sys / wayland-sys graph.
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          pkg-config \
+          libwayland-dev libxkbcommon-dev libdrm-dev libegl-dev \
+          clang libclang-dev
+
+    - name: Set up mise (skip auto-install of all tools)
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      with:
+        install: false
+        cache: true
+
+    - name: Install only the tools this workflow needs
+      run: mise install rust
+
+    - name: Cache cargo registry + build
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          packages/cli/nested-wayland-session/target
+        key: nested-wayland-session-publish-${{ runner.os }}-${{ hashFiles('packages/cli/nested-wayland-session/Cargo.lock') }}
+
+    # `cargo package` verifies by compiling the packaged crate and leaves the
+    # .crate at target/package/. We attest THOSE bytes, then upload with
+    # `cargo publish --no-verify` which reuses the existing .crate without
+    # re-packaging or deleting it. Same reasoning as cargo-publish.yml.
+    - name: Build .crate package (verifies by compile)
+      working-directory: packages/cli/nested-wayland-session
+      run: mise exec rust -- cargo package
+
+    - name: Attest .crate provenance
+      if: ${{ !inputs.dry-run }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: 'packages/cli/nested-wayland-session/target/package/monochromatic-nested-wayland-session-${{ needs.detect.outputs.version }}.crate'
+
+    - name: Authenticate with crates.io (Trusted Publishing)
+      if: ${{ !inputs.dry-run }}
+      id: auth
+      uses: rust-lang/crates-io-auth-action@bbd81622f20ce9e2dd9622e3218b975523e45bbe
+
+    - name: Publish (dry run)
+      if: ${{ inputs.dry-run }}
+      working-directory: packages/cli/nested-wayland-session
+      run: mise exec rust -- cargo publish --dry-run --no-verify
+
+    - name: Publish
+      if: ${{ !inputs.dry-run }}
+      working-directory: packages/cli/nested-wayland-session
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+      run: mise exec rust -- cargo publish --no-verify
+
+  build-binary:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - target: x86_64-unknown-linux-gnu
+          runner: ubuntu-latest
+        - target: aarch64-unknown-linux-gnu
+          runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Install system libraries the crate links
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          pkg-config \
+          libwayland-dev libxkbcommon-dev libdrm-dev libegl-dev \
+          clang libclang-dev
+
+    - name: Add rust target
+      shell: bash
+      run: rustup target add ${{ matrix.target }}
+
+    - name: Build binary
+      shell: bash
+      working-directory: packages/cli/nested-wayland-session
+      run: cargo build --release --target ${{ matrix.target }}
+
+    - name: Package binary archive
+      id: pkg
+      shell: bash
+      env:
+        VERSION: ${{ needs.detect.outputs.version }}
+        TARGET: ${{ matrix.target }}
+      run: |
+        set -euo pipefail
+        bin='monochromatic-nested-wayland-session'
+        stage_dir="monochromatic-nested-wayland-session-${VERSION}-${TARGET}"
+        mkdir -p "dist/${stage_dir}"
+        cp "packages/cli/nested-wayland-session/target/${TARGET}/release/${bin}" "dist/${stage_dir}/"
+        # README is decoration; ship the binary even if it moves or is renamed.
+        if [ -f packages/cli/nested-wayland-session/README.md ]; then
+          cp packages/cli/nested-wayland-session/README.md "dist/${stage_dir}/"
+        fi
+        archive="${stage_dir}.tar.gz"
+        (cd dist && tar czf "${archive}" "${stage_dir}")
+        archive_path="dist/${archive}"
+        echo "archive_path=${archive_path}" >> "$GITHUB_OUTPUT"
+        echo "archive_name=${archive}" >> "$GITHUB_OUTPUT"
+        ls -la dist/
+
+    - name: Attest binary provenance
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg.outputs.archive_path }}
+
+    - name: Upload archive as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: bin-${{ matrix.target }}
+        path: ${{ steps.pkg.outputs.archive_path }}
+        if-no-files-found: error
+        retention-days: 7
+
+  # Immutable releases (repo setting) means `gh release create` must include
+  # every asset at creation time; wait for the matrix, collect all archives,
+  # then create the release in one shot. The tag / asset names follow
+  # cargo-binstall's default templates ({name}-v{version} tag,
+  # {name}-{version}-{target}.tar.gz asset, {name}-{version}-{target}/{bin}
+  # inside), so `cargo binstall monochromatic-nested-wayland-session` just works
+  # with no [package.metadata.binstall] needed, matching forbidden-strings.
+  create-release:
+    needs: [detect, build-binary]
+    if: ${{ needs.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+    - name: Download all binary archives
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: bin-*
+        path: assets
+        merge-multiple: true
+
+    - name: Create GitHub release with all archives
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.detect.outputs.version }}
+        SHA: ${{ github.sha }}
+        REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        tag="monochromatic-nested-wayland-session-v${VERSION}"
+        ls -la assets/
+        gh release create "$tag" assets/* \
+          --repo "$REPO" \
+          --title "nested-wayland-session v${VERSION}" \
+          --notes "monochromatic-nested-wayland-session v${VERSION}. crates.io: https://crates.io/crates/monochromatic-nested-wayland-session/${VERSION}. Linux only (x86_64 and aarch64 gnu)." \
+          --target "$SHA"
