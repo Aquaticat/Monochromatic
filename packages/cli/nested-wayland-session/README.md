@@ -103,6 +103,13 @@ one response line: `ok`, `ok <data>`, or `err <message>`.
 - `type TEXT` types the rest of the line as individual key taps (US layout; characters
   off that layout are skipped).
 - `resize WIDTH HEIGHT` requests a new nested-screen size.
+- `drop-file PATH [X Y]` originates a compositor-side drag carrying `PATH` as a
+  `text/uri-list` and drops it onto the hosted app (defaulting to the window centre),
+  exercising the app's own inbound file-drop path. The compositor is the drag source, so
+  no second app (file manager) is needed. The drop completes asynchronously: the command
+  returns `ok` once the drag is under way, the button releases after a short dwell (so the
+  app can `accept` and choose an action, the round-trips a real drag needs), and the app
+  then reads the `file://PATH` payload. Use a `screenshot` afterwards to observe the result.
 - `record DIR [FPS] [FORMAT]` starts recording a frame sequence into `DIR` at `FPS` frames
   per second (default `60`) in `FORMAT` (`png` default, or `bmp`). See
   [60fps recording](#60fps-recording).
