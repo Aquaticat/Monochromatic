@@ -74,8 +74,8 @@ Update this file whenever a milestone lands or a decision changes.
       short-circuit to survivors without tsgo, where Stryker's checker still classified compileErrors.
       Fixes landed en route: containerignore (context bloat + sops secrets), source-aware image hash,
       diagnosable baselines, .git marker in work tree, timeout taint not an infra failure.
-- [ ] Old package deleted, catalog purged, lockfile regenerated via pnpm, troubleshooting docs reviewed.
-- [ ] Issue 247 closed with summary comment.
+- [x] Old package deleted; Stryker catalog entries, typescript6 alias, qs override, mise PATH entry purged; file-enforcer dead dep dropped; file-enforcer and jsonc-edit test:mutation tasks repointed to the new CLI; both Stryker troubleshooting docs deleted (described the removed system). Lockfile: stryker/typescript6 gone, @babel down to 7 unrelated leaf packages.
+- [x] Issue 247 closed with summary comment.
 
 ## Container runner design notes (task in progress)
 
