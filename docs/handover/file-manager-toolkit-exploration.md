@@ -14,8 +14,10 @@ updated as work proceeds.
   teardown, accepted as an on-exit crash. Native DnD proven at the framework level, not
   yet wired into our spike. First-class on macOS and Windows.
 - GTK4 (gtk4-rs): native Wayland window, native inbound DnD from Dolphin, virtualized
-  list, and clean teardown, all verified end to end, owning nothing. Fast-scroll 60 fps is
-  being measured now. Linux-first; macOS and Windows are second-class.
+  list, and clean teardown, all verified end to end, owning nothing. The faithful 2D grid of
+  ~14400 mixed panes (previews and small lists) scrolls diagonally at a steady ~60 fps, as long
+  as thumbnail decode is off the render path (synchronous per-frame decode drops it to ~4 fps).
+  Linux-first; macOS and Windows are second-class.
 - Decision: not final. It reduces to Linux-cleanliness (GTK4) vs cross-platform-native
   (Qt, with the exit crash and perf tuning). Awaiting the GTK fps number and the user's
   call.
@@ -68,11 +70,16 @@ updated as work proceeds.
   - Native inbound DnD: a real Dolphin drop of `~/Downloads/hello.txt` landed via a stock
     `GtkDropTarget` (`GdkFileList` over `wl_data_device`), logged as `inbound file drop`.
   - Non-blocking `tracing`, same as the Qt spike.
+  - Fast scroll: the diagonal 2D grid of ~14400 mixed panes (previews and small lists,
+    `src/main.rs` under FMGTK_BENCH) holds a steady ~60 fps with thumbnails decoded off the
+    render path; naive synchronous per-frame decode drops it to ~4 fps. Clean teardown (rc 0)
+    throughout, unlike Qt (no `reuseItems`-style teardown crash).
 - Owns nothing: no fork, no hand-rolled protocol, no accepted crash.
 - Rationale it works: GNOME Files (Nautilus) is GTK4, so file-manager-scale DnD, columns,
   and huge directories are its home turf.
-- Not yet done: fast-scroll 60 fps measurement (in progress, image-thumbnail benchmark);
-  outbound drag; macOS and Windows (GTK there is second-class).
+- Not yet done: outbound drag (`GtkDragSource`); a real off-thread thumbnail decoder (the
+  benchmark caches; the app needs a worker plus eviction like `preview.rs`); macOS and Windows
+  (GTK there is second-class).
 
 ## Branches and worktrees
 
