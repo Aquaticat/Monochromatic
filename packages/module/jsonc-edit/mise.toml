@@ -41,11 +41,11 @@ run = ["mise run build", "mise run test:unit"]
 # in jsonc-edit.conformance.
 
 [tasks."test:mutation"]
-description = "Run container-isolated Stryker mutation tests"
+description = "Run container-isolated oxc mutation tests"
 usage = 'arg "[args]" var=#true help="Optional mutation-test flags and package-relative source files"'
 shell = "node -e"
 run = """
 {{vars.dispatch_workspace_node}}
 const args = (process.env.usage_args ?? '').trim().split(' ').filter(Boolean)
-runWorkspaceNode('packages/dev-script/mutation-test', 'index', ['--package', 'packages/module/jsonc-edit', ...args])
+runWorkspaceNode('packages/cli/mutation-test', 'cli', ['--package', 'packages/module/jsonc-edit', ...args])
 """

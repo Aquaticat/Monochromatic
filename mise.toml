@@ -1160,7 +1160,6 @@ _.path = [
   "packages/pi-plugins/advisor/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
   "packages/mcp/mvm/node_modules/.bin",
-  "packages/dev-script/mutation-test/node_modules/.bin",
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
   "packages/dev-script/catalog-tighten/node_modules/.bin",

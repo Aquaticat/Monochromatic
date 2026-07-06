@@ -40,8 +40,6 @@ catalog:
   '@optique/run': '>=1.1.1'
   '@oxlint/plugins': '>=1.72.0'
   '@playwright/test': '>=1.61.1'
-  '@stryker-mutator/core': '>=9.6.1'
-  '@stryker-mutator/typescript-checker': '>=9.6.1'
   '@total-typescript/ts-reset': '>=0.6.1'
   '@tursodatabase/database': '>=0.6.1'
   '@types/chai': '>=5.2.3'
@@ -148,12 +146,6 @@ catalog:
   'zeptomatch': '>=2.1.0'
 catalogMode: strict
 
-catalogs:
-  # Classic TypeScript 6 compiler that re-exports the legacy programmatic compiler
-  # API (dropped from typescript@7 until 7.1). Consumed only by tooling that imports
-  # the `typescript` module, e.g. @stryker-mutator/typescript-checker. Binary: tsc6.
-  classic:
-    'typescript': 'npm:@typescript/typescript6@^6.0.0'
 dedupeDirectDeps: true
 hoist: false
 hoistWorkspacePackages: false
@@ -287,12 +279,6 @@ overrides:
   # See docs/decisions/proper-lockfile-removal.md and
   # docs/troubleshooting/dependencies.md.
   'proper-lockfile': 'link:packages/shim/proper-lockfile'
-  # Patch GHSA-q8mj-m7cp-5q26 / CVE-2026-8723: qs@<=6.15.1 crashes with
-  # TypeError on null/undefined entries in comma-format arrays when
-  # encodeValuesOnly is set. Only transitive consumer is
-  # @stryker-mutator/core > typed-rest-client (`qs: ^6.9.4`); patch-level
-  # bump is range-compatible.
-  'qs': '>=6.15.2'
   # Substitute readable-stream@3 (winston, winston-transport) and
   # readable-stream@4 (isomorphic-git) with a single workspace shim that
   # re-exports node:stream. Both upstream versions are userland mirrors of

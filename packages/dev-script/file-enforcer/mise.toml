@@ -55,11 +55,11 @@ for (const file of files) {
 """
 
 [tasks."test:mutation"]
-description = "Run container-isolated Stryker mutation tests"
+description = "Run container-isolated oxc mutation tests"
 usage = 'arg "[args]" var=#true help="Optional mutation-test flags and package-relative source files"'
 shell = "node -e"
 run = """
 {{vars.dispatch_workspace_node}}
 const args = (process.env.usage_args ?? '').trim().split(' ').filter(Boolean)
-runWorkspaceNode('packages/dev-script/mutation-test', 'index', ['--package', 'packages/dev-script/file-enforcer', ...args])
+runWorkspaceNode('packages/cli/mutation-test', 'cli', ['--package', 'packages/dev-script/file-enforcer', ...args])
 """
