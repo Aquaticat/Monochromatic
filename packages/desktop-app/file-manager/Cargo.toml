@@ -43,6 +43,22 @@ slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
+# Native Wayland drag-and-drop, Linux only. winit 0.30 (which the Slint winit
+# backend wraps) has no Wayland drag-and-drop at all, so the file manager drives
+# the `wl_data_device` protocol itself on winit's own Wayland connection. Versions
+# match what winit 0.30 already pulls, so Cargo unifies to a single compiled
+# `wayland-client`/`wayland-backend` and the foreign display is genuinely shared:
+#   - smithay-client-toolkit 0.19.2 gives the data-device, seat, and registry
+#     helpers (the `calloop` feature adds the event-loop integration for the
+#     dedicated drag-and-drop thread);
+#   - wayland-client 0.31 gives the Connection/EventQueue and core DnD objects;
+#   - wayland-backend 0.3 with `client_system` gives `Backend::from_foreign_display`,
+#     which wraps winit's `*mut wl_display` without opening a second connection.
+[target.'cfg(target_os = "linux")'.dependencies]
+smithay-client-toolkit = { version = "0.19.2", default-features = false, features = ["calloop"] }
+wayland-client = "0.31"
+wayland-backend = { version = "0.3", features = ["client_system"] }
+
 [build-dependencies]
 # Must match the `slint` release family above; the Slint markup compiler and
 # runtime are versioned together. "1.17.0" is Cargo's default caret requirement,

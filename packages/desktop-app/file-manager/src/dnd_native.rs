@@ -153,3 +153,33 @@ pub fn log_backend(window: &slint::Window) {
     // Why:      Confirms, at startup, which DnD path will run.
     tracing::info!(backend, "native DnD: window backend detected");
 }
+
+/// What:     `pub fn start(window: &slint::Window)` starts the native drag-and-drop
+///           adapter for whichever backend the window runs on. On Wayland it spawns
+///           the `wl_data_device` thread; other backends are not wired yet.
+/// Why:      Single entry point the app calls once the window is realized.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function start(window: SlintWindow): void { ... }
+/// ```
+pub fn start(window: &slint::Window) {
+    // What:     `log_backend(window);` records which backend is active first.
+    // Why:      The log should always name the backend, wired or not.
+    log_backend(window);
+    // What:     `#[cfg(target_os = "linux")] { ... }` compiles this block only on
+    //           Linux, the one OS whose Wayland path needs the hand-written adapter.
+    // Why:      `dnd_wayland` and its Wayland crates only exist on Linux.
+    #[cfg(target_os = "linux")]
+    {
+        // What:     `if let Some(handles) = wayland_handles(window) { ... } else {...}`
+        //           starts the Wayland adapter when on Wayland, else notes the gap.
+        // Why:      Only Wayland windows drive `wl_data_device`; X11 (and later macOS
+        //           and Windows) use different inbound/outbound paths.
+        if let Some(handles) = wayland_handles(window) {
+            crate::dnd_wayland::start(handles.display);
+        } else {
+            tracing::info!("native DnD: not a Wayland window, wl_data_device adapter skipped");
+        }
+    }
+}

@@ -223,7 +223,7 @@ pub fn run() -> Result<()> {
         //           the window still exists.
         // Why:      Skip if the window closed during the delay.
         if let Some(app) = weak_dnd.upgrade() {
-            crate::dnd_native::log_backend(app.window());
+            crate::dnd_native::start(app.window());
         }
     });
     // What:     `let controller = Rc::new(RefCell::new(Controller::new()));` shares

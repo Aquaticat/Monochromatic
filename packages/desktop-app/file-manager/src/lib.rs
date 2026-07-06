@@ -153,6 +153,19 @@ pub mod drag_drop;
 /// ```
 pub mod dnd_native;
 
+/// What:     `#[cfg(target_os = "linux")] pub mod dnd_wayland;` exposes the native
+///           Wayland `wl_data_device` drag-and-drop adapter, compiled only on Linux.
+/// Why:      winit 0.30 has no Wayland drag-and-drop, so on Linux the app drives the
+///           protocol itself on winit's own connection; the module and its Wayland
+///           crates are Linux-only.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as dndWayland from "./dnd_wayland"; // linux only
+/// ```
+#[cfg(target_os = "linux")]
+pub mod dnd_wayland;
+
 /// What:     `pub mod launcher;` exposes the Wayland app-id hook.
 /// Why:      The window must carry a stable app id for shell integration, like
 ///           the sibling desktop apps.
