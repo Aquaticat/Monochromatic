@@ -113,35 +113,91 @@ Committed:
   `MONOCHROMATIC_FM_NO_NATIVE_DND` escape hatch added. Parsing split into
   `dnd_wayland_parse`.
 
-Fix applied after `51b79e537` (uncommitted at time of writing):
-the data device must be created in `SeatHandler::new_capability`, NOT `new_seat`
-(`new_seat` does not fire for a seat already present at startup, so the device was
-never bound). With the fix, startup logs `data device bound on shared seat`.
+- `dd6f05319` fix: create the data device in `SeatHandler::new_capability`, NOT
+  `new_seat` (`new_seat` does not fire for a seat already present at startup, so the
+  device was never bound). Startup now logs `data device bound on shared seat`.
+- `0cbd72f2e` diagnostics: log the drag `enter` (with offered mime types),
+  accept/not-accept, `leave`, and `drop_performed`.
 
-What "doesn't really work" meant (user report): dragging `hello.txt` from dolphin
-onto a pane did nothing, because inbound was not implemented yet. That is what the
-inbound milestone addresses. The co-bound pointer does NOT disturb the app
-(confirmed: same behavior with `MONOCHROMATIC_FM_NO_NATIVE_DND=1`).
+### OPEN PROBLEM: inbound drop from dolphin does not register
 
-Next action: user drags a file from dolphin onto the app; confirm the path shows in
-`hud-f` and the log line `native DnD: inbound drop received`. Then build OUTBOUND.
+After the `new_capability` fix, dragging `hello.txt` from dolphin onto the app
+STILL does nothing (user: "Still doesn't work"), and the handlers were silent, so
+it is unknown whether the drag even reaches the co-bound `wl_data_device`. The
+`0cbd72f2e` diagnostics were added to answer that but have not been observed yet
+(the manual test loop was too unreliable to get a clean signal, which is why the
+approach changed to automated testing, below).
 
-## Milestones
+Leading hypothesis: unlike the co-bound `wl_pointer` (which the compositor
+broadcasts to every pointer the client bound, VALIDATED), the compositor may not
+deliver drag `enter`/`drop` to a co-bound `wl_data_device` the same way, or dolphin
+under kwin routes the drag differently. This must be confirmed from the enter/drop
+diagnostics under a controlled, scripted drag.
 
-1. Serial probe (co-bound pointer receives presses + serials) — code written,
-   awaiting run verification.
-2. Outbound: `create_drag_and_drop_source` + `start_drag` with the press serial,
-   advertise a real temp file's `text/uri-list`; drag into dolphin, confirm a file
-   copies. Needs a calloop command channel (UI thread to DnD thread) and the
-   `DataSourceHandler` send/finish/cancelled handlers.
-3. Inbound: `DataDeviceHandler` enter/motion/drop + `DragOffer` receive; read the
-   `text/uri-list` pipe non-blocking; deliver paths to the UI (HUD + log).
-4. Wire the Slint UI: a row drag triggers the native outbound drag; dropped paths
-   surface in a HUD line.
-5. macOS (`ssh m1`): outbound `NSDraggingSource`/`NSPasteboard` file URLs via
-   objc2, inbound via winit `on_winit_window_event` + `DroppedFile`.
-6. Windows (`ssh x13-win`): outbound `DoDragDrop`/`IDataObject` `CF_HDROP` via the
-   `windows` crate, inbound via winit `DroppedFile`.
+Note: `MONOCHROMATIC_FM_NO_NATIVE_DND=1` disables the whole native adapter, and the
+app behaves the same, so the adapter is not breaking anything; the inbound drop
+just is not arriving/handled.
+
+## Next session: automate DnD testing in the nested compositor (decided with user)
+
+Manual drags on the real kwin desktop gave no clean signal. The plan (user's
+direction) is to make DnD testing automatic in `packages/cli/nested-wayland-session`
+(a Smithay-based nested compositor that already hosts one app, injects input via its
+own seat over a Unix-socket control API, and screenshots).
+
+Key finding that shapes this: **Smithay 0.7.0 has server-originated drag-and-drop**,
+so the compositor can BE the drag peer and no second app (dolphin) is needed:
+
+- `smithay::wayland::selection::data_device::start_dnd(dh, seat, data, serial,
+  pointer_start_data, touch_start_data, metadata: SourceMetadata)` starts a
+  compositor-originated drag. `SourceMetadata` carries the mime types (set
+  `text/uri-list`) and dnd action.
+- `ServerDndGrabHandler` (trait) handles the server source's `send`/`finished`, so
+  the compositor writes the `file:///path` uri-list when the hosted app requests it.
+- `ClientDndGrabHandler` handles a drag the hosted app STARTS (for the outbound
+  test), so the compositor can observe and complete it.
+- `set_data_device_focus` / `request_data_device_client_selection` are also present.
+
+Plan for the nested compositor (`src/state.rs` already binds `DataDeviceState`):
+
+1. Add control commands (extend `src/protocol.rs` parse + the handler):
+   - `drop-file PATH [X Y]`: the compositor `start_dnd`s a server source advertising
+     `text/uri-list` = `file://PATH`, grabs the pointer, moves it over the hosted
+     app (at X,Y or centre), and releases. Implement `ServerDndGrabHandler::send` to
+     write the uri-list. This exercises the app's INBOUND path.
+   - `drag X1 Y1 X2 Y2 [button]`: a press-move-release the app can turn into an
+     outbound drag; `ClientDndGrabHandler` + reading the offered data verifies the
+     app's OUTBOUND path.
+2. Build the nested compositor in its Fedora container
+   (`mise run //packages/cli/nested-wayland-session:build`; host lacks
+   `wayland-server` dev headers, so it uses podman/Containerfile).
+3. Run it hosting `monochromatic-file-manager`, script `drop-file /tmp/hello.txt`,
+   `screenshot`, and read `hud-f` / the app log for `native DnD: inbound drop
+   received` and the path. This finally gives a deterministic inbound test, and will
+   show (via the app's enter/drop diagnostics) why the dolphin drag did not register.
+4. If server-originated `start_dnd` cannot reproduce a real cross-client drag well
+   enough, fall back to hosting dolphin side-by-side (the user authorized this):
+   that needs a two-tile layout + pointer routing by x-position in the compositor.
+
+Only after the inbound test passes deterministically: build the app's OUTBOUND drag
+(reuse the co-bound pointer's captured `latest_serial` +
+`create_drag_and_drop_source`/`start_drag` + the `DataSourceHandler` send/finish
+stubs already present in `dnd_wayland.rs`), then macOS and Windows.
+
+Smithay clone for reference (throwaway): `/tmp/agent/smithay-dnd-0.7.0`.
+
+## Remaining milestones
+
+1. Automated inbound test in the nested compositor (above); diagnose why the real
+   dolphin drag did not register.
+2. App OUTBOUND drag: `create_drag_and_drop_source` + `start_drag(latest_serial)` +
+   fill the `DataSourceHandler` send/finish/cancelled stubs; verify (drop onto the
+   compositor's server target, or dolphin).
+3. macOS (`ssh m1`): outbound `NSDraggingSource`/`NSPasteboard` file URLs via objc2;
+   inbound via winit `on_winit_window_event` + `DroppedFile` (winit HAS DnD on
+   macOS, unlike Wayland).
+4. Windows (`ssh x13-win`): outbound `DoDragDrop`/`IDataObject` `CF_HDROP` via the
+   `windows` crate; inbound via winit `DroppedFile`.
 
 ## Key files and commands
 
