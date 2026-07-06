@@ -114,6 +114,11 @@ export component AppWindow inherits Window {
     in property <string> last-drop: "";
     in-out property <bool> drag-force-copy: false;
 
+    // Native inbound drag-and-drop read-back: the file paths of the most recent drop
+    // from the OS file manager (via the Wayland wl_data_device adapter). Empty until
+    // the first external drop lands.
+    in property <string> last-inbound-drop: "";
+
     // Outbound actions.
     callback horizontal-scrolled(float);
     callback vertical-scrolled(float);
@@ -145,7 +150,7 @@ export component AppWindow inherits Window {
         // Instrumentation HUD. Element ids (hud := ...) let the MCP server read
         // these strings back with get_element_properties.
         Rectangle {
-            height: 102px;
+            height: 122px;
             background: Palette.alternate-background;
             border-width: 1px;
             border-color: Palette.border;
@@ -180,6 +185,12 @@ export component AppWindow inherits Window {
                 hud-e := Text {
                     text: "last drop: " + (root.last-drop == "" ? "(none)" : root.last-drop)
                         + "   drag mode: " + (root.drag-force-copy ? "copy" : "move");
+                    color: Palette.foreground;
+                    font-size: 13px;
+                }
+                hud-f := Text {
+                    text: "last inbound drop (from OS): "
+                        + (root.last-inbound-drop == "" ? "(none yet: drag a file from your file manager onto a pane)" : root.last-inbound-drop);
                     color: Palette.foreground;
                     font-size: 13px;
                 }
@@ -421,7 +432,10 @@ export component AppWindow inherits Window {
                                     // sparsely from the huge model.
                                     if pane.kind == 0: ListView {
                                         for row in pane.rows: Rectangle {
-                                            height: 22px;
+                                            // Taller than the label so the centered
+                                            // text has breathing room above and below,
+                                            // giving visible padding between entries.
+                                            height: 30px;
                                             // Highlight the current menu target (the
                                             // clicked or keyboard-focused row) so the
                                             // deterministic target is visible; else the

@@ -166,6 +166,13 @@ pub mod dnd_native;
 #[cfg(target_os = "linux")]
 pub mod dnd_wayland;
 
+/// What:     `#[cfg(target_os = "linux")] mod dnd_wayland_parse;` holds the pure
+///           `text/uri-list` parsing split out of `dnd_wayland` for the line budget.
+/// Why:      Keep `dnd_wayland` under the max-lines limit; the parsing is unit-tested
+///           on its own.
+#[cfg(target_os = "linux")]
+mod dnd_wayland_parse;
+
 /// What:     `pub mod launcher;` exposes the Wayland app-id hook.
 /// Why:      The window must carry a stable app id for shell integration, like
 ///           the sibling desktop apps.

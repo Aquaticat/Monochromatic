@@ -223,7 +223,31 @@ pub fn run() -> Result<()> {
         //           the window still exists.
         // Why:      Skip if the window closed during the delay.
         if let Some(app) = weak_dnd.upgrade() {
-            crate::dnd_native::start(app.window());
+            // What:     `let weak_drop = app.as_weak();` is a non-owning handle the
+            //           drop callback uses to reach the window from the DnD thread.
+            // Why:      The callback runs off the UI thread and must marshal back.
+            let weak_drop = app.as_weak();
+            // What:     `crate::dnd_native::start(app.window(), move |paths| { ... })`
+            //           starts the adapter with a callback that mirrors an inbound
+            //           file drop into the HUD.
+            // Why:      Dropping a file from the OS file manager should be visible.
+            crate::dnd_native::start(app.window(), move |paths| {
+                // What:     `let joined = ...` renders the dropped paths as one line,
+                //           or a placeholder when the drop carried nothing usable.
+                // Why:      The HUD shows a single readable string.
+                let joined = if paths.is_empty() {
+                    "(no file paths)".to_owned()
+                } else {
+                    paths.join(", ")
+                };
+                // What:     `weak_drop.upgrade_in_event_loop(move |app| { ... })` posts
+                //           the update onto the Slint event loop from this worker
+                //           thread; the closure runs on the UI thread.
+                // Why:      Slint properties may only be touched on the UI thread.
+                let _ = weak_drop.upgrade_in_event_loop(move |app| {
+                    app.set_last_inbound_drop(joined.into());
+                });
+            });
         }
     });
     // What:     `let controller = Rc::new(RefCell::new(Controller::new()));` shares

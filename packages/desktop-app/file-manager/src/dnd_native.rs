@@ -154,19 +154,39 @@ pub fn log_backend(window: &slint::Window) {
     tracing::info!(backend, "native DnD: window backend detected");
 }
 
-/// What:     `pub fn start(window: &slint::Window)` starts the native drag-and-drop
-///           adapter for whichever backend the window runs on. On Wayland it spawns
-///           the `wl_data_device` thread; other backends are not wired yet.
-/// Why:      Single entry point the app calls once the window is realized.
+/// What:     `pub fn start<F>(window: &slint::Window, on_drop: F)` starts the native
+///           drag-and-drop adapter for whichever backend the window runs on. On
+///           Wayland it spawns the `wl_data_device` thread; other backends are not
+///           wired yet. `F: Fn(Vec<String>) + Send + 'static` is the callback invoked
+///           (off the UI thread) with the paths of an inbound file drop.
+/// Why:      Single entry point the app calls once the window is realized; the
+///           callback lets the app surface dropped paths without this module knowing
+///           the UI.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function start(window: SlintWindow): void { ... }
+/// function start(window: SlintWindow, onDrop: (paths: string[]) => void): void { ... }
 /// ```
-pub fn start(window: &slint::Window) {
+pub fn start<F>(window: &slint::Window, on_drop: F)
+where
+    F: Fn(Vec<String>) + Send + 'static,
+{
     // What:     `log_backend(window);` records which backend is active first.
     // Why:      The log should always name the backend, wired or not.
     log_backend(window);
+    // What:     `if std::env::var_os("MONOCHROMATIC_FM_NO_NATIVE_DND").is_some() {
+    //           ...; return; }` bails before starting any native adapter when the
+    //           guard env var is set. `var_os` returns an `Option`; `.is_some()`
+    //           tests presence.
+    // Why:      An escape hatch to run the app WITHOUT the native drag-and-drop
+    //           thread, to isolate whether that thread disturbs the app.
+    if std::env::var_os("MONOCHROMATIC_FM_NO_NATIVE_DND").is_some() {
+        tracing::info!("native DnD: disabled via MONOCHROMATIC_FM_NO_NATIVE_DND");
+        // What:     `let _ = &on_drop;` marks the callback used on the disabled path.
+        // Why:      Avoid an unused-variable warning when the adapter is skipped.
+        let _ = &on_drop;
+        return;
+    }
     // What:     `#[cfg(target_os = "linux")] { ... }` compiles this block only on
     //           Linux, the one OS whose Wayland path needs the hand-written adapter.
     // Why:      `dnd_wayland` and its Wayland crates only exist on Linux.
@@ -177,9 +197,16 @@ pub fn start(window: &slint::Window) {
         // Why:      Only Wayland windows drive `wl_data_device`; X11 (and later macOS
         //           and Windows) use different inbound/outbound paths.
         if let Some(handles) = wayland_handles(window) {
-            crate::dnd_wayland::start(handles.display);
+            crate::dnd_wayland::start(handles.display, on_drop);
         } else {
             tracing::info!("native DnD: not a Wayland window, wl_data_device adapter skipped");
         }
+    }
+    // What:     `#[cfg(not(target_os = "linux"))] { let _ = on_drop; }` consumes the
+    //           callback on non-Linux, where no adapter uses it yet.
+    // Why:      Keep the signature cross-platform without an unused-variable warning.
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = on_drop;
     }
 }
