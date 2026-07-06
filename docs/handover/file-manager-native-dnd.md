@@ -95,24 +95,36 @@ template.
 - The user is present and can perform a real drag by hand when scripted input is
   impractical.
 
-## Current state (2026-07-05)
+## Current state (2026-07-06)
 
 Committed:
 
-- `227...`-era baseline plus the in-process drag-and-drop spike (`drag_drop.rs`)
-  and its troubleshooting doc.
-- `63f72cc81` native DnD foundation: `dnd_native.rs` extracts the Wayland
-  handles; verified on a real Wayland session (`backend=wayland`).
+- Baseline plus the in-process drag-and-drop spike (`drag_drop.rs`) and its
+  troubleshooting doc.
+- `63f72cc81` native DnD foundation: `dnd_native.rs` extracts the Wayland handles;
+  verified on a real Wayland session (`backend=wayland`).
+- `0540a43a3` milestone 1 (serial probe): shares winit's connection on a dedicated
+  thread, co-binds a `wl_pointer`. VALIDATED: the co-bound pointer receives real
+  left-button presses with serials (the one flagged risk is resolved, so the
+  shared-connection approach is sound).
+- `51b79e537` inbound file drop: the `wl_data_device` adapter accepts a dragged
+  `text/uri-list`, reads it off the receive pipe on drop, parses `file://` URIs to
+  paths, and reports them to a HUD line (`hud-f`) via a callback. Row padding and a
+  `MONOCHROMATIC_FM_NO_NATIVE_DND` escape hatch added. Parsing split into
+  `dnd_wayland_parse`.
 
-In progress (not yet committed):
+Fix applied after `51b79e537` (uncommitted at time of writing):
+the data device must be created in `SeatHandler::new_capability`, NOT `new_seat`
+(`new_seat` does not fire for a seat already present at startup, so the device was
+never bound). With the fix, startup logs `data device bound on shared seat`.
 
-- `dnd_wayland.rs` milestone 1: share winit's connection on a dedicated thread,
-  co-bind a `wl_pointer`, log left-button press serials. Cargo deps added
-  (Linux-gated). Wired: `dnd_native::start` (called from the app's single-shot
-  timer) spawns it on Wayland.
-- Next action: compile, run, click the window, and confirm the thread logs
-  `co-bound pointer saw a left-button press (serial captured)`. That is the
-  make-or-break for the whole approach.
+What "doesn't really work" meant (user report): dragging `hello.txt` from dolphin
+onto a pane did nothing, because inbound was not implemented yet. That is what the
+inbound milestone addresses. The co-bound pointer does NOT disturb the app
+(confirmed: same behavior with `MONOCHROMATIC_FM_NO_NATIVE_DND=1`).
+
+Next action: user drags a file from dolphin onto the app; confirm the path shows in
+`hud-f` and the log line `native DnD: inbound drop received`. Then build OUTBOUND.
 
 ## Milestones
 

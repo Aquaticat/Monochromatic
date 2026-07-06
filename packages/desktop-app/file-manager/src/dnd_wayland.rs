@@ -302,19 +302,17 @@ impl SeatHandler for State {
         &mut self.seat_state
     }
 
-    /// What:     `fn new_seat(...)` fires when a seat appears; create its data device.
-    /// Why:      Inbound drags are delivered on the seat's data device.
-    fn new_seat(&mut self, _conn: &Connection, qh: &QueueHandle<Self>, seat: WlSeat) {
-        // What:     `if self.data_device.is_none() { ... }` creates the device once.
-        // Why:      One window means one seat of interest.
-        if self.data_device.is_none() {
-            self.data_device = Some(self.data_device_manager_state.get_data_device(qh, &seat));
-            tracing::info!("native DnD: data device bound on shared seat");
-        }
-    }
+    /// What:     `fn new_seat(...)` fires only for a seat that appears AFTER startup;
+    ///           nothing to do (the data device is created on the first capability).
+    /// Why:      For a seat already present at startup this does not fire, so the
+    ///           device and pointer are set up in `new_capability` instead.
+    fn new_seat(&mut self, _: &Connection, _: &QueueHandle<Self>, _: WlSeat) {}
 
-    /// What:     `fn new_capability(...)` co-binds a pointer when announced.
-    /// Why:      The pointer supplies the press serial for a future outbound drag.
+    /// What:     `fn new_capability(...)` creates the seat's data device on the first
+    ///           capability, then co-binds a pointer on the pointer capability.
+    /// Why:      `new_capability` fires for a pre-existing seat (unlike `new_seat`),
+    ///           so it is the reliable place to bind both the data device (for drops)
+    ///           and the pointer (for the future outbound drag's press serial).
     fn new_capability(
         &mut self,
         _conn: &Connection,
@@ -322,8 +320,15 @@ impl SeatHandler for State {
         seat: WlSeat,
         capability: Capability,
     ) {
+        // What:     `if self.data_device.is_none() { ... }` creates the data device
+        //           once, on the first capability seen for the seat.
+        // Why:      Inbound drags are delivered on this device; one window, one seat.
+        if self.data_device.is_none() {
+            self.data_device = Some(self.data_device_manager_state.get_data_device(qh, &seat));
+            tracing::info!("native DnD: data device bound on shared seat");
+        }
         // What:     Bind the first pointer, once.
-        // Why:      One pointer is enough; avoid duplicates.
+        // Why:      One pointer is enough for the press serial; avoid duplicates.
         if capability == Capability::Pointer && self.pointer.is_none() {
             match self.seat_state.get_pointer(qh, &seat) {
                 Ok(pointer) => self.pointer = Some(pointer),
