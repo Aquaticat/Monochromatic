@@ -6,8 +6,9 @@ needs, see [qt-qml-listview-fast-scroll-recycling.md](qt-qml-listview-fast-scrol
 crashes with SIGSEGV on application teardown. The run itself is fine at a steady 60 fps;
 the segfault happens only on shutdown, inside Qt's reusable-delegate pool drain.
 
-This doc is being kept live while the fix (present in Qt 6.12) is built and tested;
-sections marked "pending build" are updated when that completes.
+Resolution: the crash is on exit only and is accepted (or avoided with a one-line clean
+exit); Qt 6.12 does not fix it (the change there is a pure refactor), and the project does
+not want to own a Qt patch. Details below.
 
 ## Symptom
 
@@ -131,48 +132,95 @@ QT_QPA_PLATFORM=offscreen QT_FORCE_STDERR_LOGGING=1 \
   /usr/lib64/qt6/bin/qml strip-virtualization.qml   # -> Segmentation fault (rc 139) on exit
 ```
 
-- Crash-threshold catalog (all headless, `QT_QPA_PLATFORM=offscreen`):
-  - Clean teardown, `rc=0`: single `ListView` + `reuseItems` + 100000 rows (`min1.qml`).
-  - Clean teardown, `rc=0`: 2-level columns-of-row-lists + `reuseItems` (`min2.qml`).
-  - SIGSEGV, `rc=139`: 3-level columns to panes to rows with async `Loader`-wrapped
-    nested ListViews + `reuseItems` (the full harness).
-  - Clean teardown, `rc=0`, with `reuseItems: false`: no crash, but fast-scroll fps
-    stutters to 32 to 35 (fails the 60 fps requirement).
+- Crash-threshold catalog (headless, `QT_QPA_PLATFORM=offscreen`, deterministic over 5
+  runs each; repro files in `packages/desktop-app/file-manager-qt/bench/`):
+  - Clean, `rc=0`: 1-level single `ListView` + `reuseItems` + 100000 rows (`min1.qml`).
+  - Clean, `rc=0`: 2-level plain columns-of-row-lists + `reuseItems` (`min2.qml`).
+  - SIGSEGV, `rc=139`: 2-level, mixed column types (row `ListView` vs preview, by
+    visibility, no `Loader`) (`min2img.qml`).
+  - SIGSEGV, `rc=139`: 2-level with the inner `ListView` in a `Loader`, both
+    `asynchronous: true` (`min2loader.qml`) and `asynchronous: false`
+    (`min2syncloader.qml`).
+  - SIGSEGV, `rc=139`: 3-level plain columns to panes to rows, no `Loader`
+    (`min3plain.qml`).
+  - SIGSEGV, `rc=139`: the full harness (3-level with async `Loader`s).
+  - Clean, `rc=0`, with `reuseItems: false`: no crash, but fast scroll drops to 32 to 35 fps.
+- Trigger summary: the crash fires from any `Loader` (sync or async) wrapping a nested
+  `reuseItems` `ListView`, from three or more nested levels, or even from a mixed 2-level
+  layout. Only the simplest uniform 1- and 2-level cases are clean, and that boundary is
+  fragile (the near-identical `min2img.qml` already crashes), so there is no robust
+  structural way to keep `reuseItems` and avoid the crash.
 
-## The fix is upstream in Qt 6.12
+## Qt 6.12 does not fix it: the crash-site change is a pure refactor
 
-The crash-site code changed between v6.11.1 and 6.12. In `destroyObjectLater`, v6.11.1's
+The crash-site code changed between v6.11.1 and 6.12, but the change is behaviorally
+identical, so it is not a fix. In `destroyObjectLater`, v6.11.1 calls
 
 ```cpp
 data->ownContext->clearContext();
 ```
 
-is replaced in tag `v6.12.0-beta1` (and `dev`) by
+and 6.12 (tag `v6.12.0-beta1`, and `dev`) calls
 
 ```cpp
 data->ownContext->emitDestruction();
 data->ownContext->clearExpressions();
 ```
 
-`emitDestruction()` exists in 6.11.1, but `clearExpressions()` does not: it is a new
-`QQmlContextData` method introduced with a 6.12 teardown refactor (the dev commit
-"QtQml: Split ~QQmlContextData() into smaller parts"). So this is not a one-line 6.11.1
-backport; it rides that refactor. Whether 6.12 actually removes the crash is being
-confirmed by building 6.12 and running the same headless repro (pending build).
+Reading the `QQmlContextData` implementations shows these are the same operation.
+v6.11.1's `clearContext()` is exactly `emitDestruction()` followed by the
+expression-clearing loop:
 
-## Verified workarounds
+```cpp
+// 6.11.1 src/qml/qml/qqmlcontextdata.cpp
+void QQmlContextData::clearContext()
+{
+    emitDestruction();
+    QQmlJavaScriptExpression *expression = m_expressions;
+    while (expression) {
+        // ... setContext(nullptr) ...
+    }
+    m_expressions = nullptr;
+}
+```
 
-- Flatten the structure (verified, `rc=0`). A plain 2-level column view (a horizontal
-  `ListView` of columns, each column a single vertical row `ListView`), with
-  `reuseItems` on both and no async `Loader` wrapping, keeps recycling performance and
-  tears down cleanly. Tradeoff: pane-type selection (image preview vs directory list)
-  cannot use a naive async `Loader`; use a `DelegateChooser`, or a single delegate that
-  holds both an `Image` and a row list and toggles visibility. Whether that avoids the
-  crash with mixed pane types is still to be confirmed.
-- Disable `reuseItems` (verified, `rc=0`). No crash, but fast-scroll fps stutters to 32
-  to 35. Tradeoff: fails the 60 fps requirement, so not viable on its own.
-- Update to Qt 6.12 (pending build). The teardown code is changed there; confirmation
-  pending the build test above.
+6.12 merely split that body into two named methods, `emitDestruction()` and
+`clearExpressions()` (the "Split ~QQmlContextData() into smaller parts" refactor), and
+`destroyObjectLater` calls them separately. 6.12's `clearExpressions()` is byte-identical
+to the loop inside 6.11.1's `clearContext()`, and `destroyCacheItem` and
+`~QQmlDelegateModelPrivate` are byte-identical between the two versions. The
+use-after-free root cause (the pool holds delegate items whose `m_object` is already
+freed during nested teardown) is untouched.
+
+Conclusion: updating to Qt 6.12 does not fix this crash. The reading of the crash-site
+implementations is conclusive, so the multi-hour 6.12 build was not run. If a later `dev`
+change alters the pool or teardown ownership (rather than just this refactor),
+re-evaluate against that commit.
+
+## Resolution: accept the on-exit crash, or exit clean without owning a Qt patch
+
+The crash is purely on teardown, after the event loop exits; the running app is stable at
+60 fps. The decision is to accept it and not own a Qt patch, since updating to 6.12 does
+not fix it and a forked or backported Qt is more surface to own over time.
+
+- Accept the crash on exit (chosen). The process is already shutting down. Save any
+  persistent state (window geometry, settings) explicitly before quit, not in a Qt/QML
+  teardown handler, so nothing user-facing depends on the teardown completing.
+- Optional clean exit without a Qt patch. After `app.exec()` returns, terminate before the
+  QML engine is destroyed so Qt's teardown never runs. In the Rust `main`,
+  `std::process::exit(0)` after `exec()` skips the Drop of the `QGuiApplication` and
+  `QQmlApplicationEngine` locals, giving `rc=0`. Flush anything that must persist (logs,
+  settings) first, because destructors are skipped. This is a consumer-side one-liner, not
+  a Qt patch, so it adds no maintenance surface. Apply it when the real nested UI lands;
+  the current minimal window does not hit the bug.
+
+Confirmed not reliable:
+
+- Staying at two plain levels: `min2.qml` is clean but the near-identical `min2img.qml`
+  crashes, so the boundary is too fragile to depend on.
+- `reuseItems: false`: removes the crash but drops fast scroll to 32 to 35 fps.
+- Updating to Qt 6.12: pure refactor, no behavior change (see above).
+- Forking or backporting Qt: rejected because of the ongoing ownership.
 
 ## What does not work
 
@@ -183,22 +231,35 @@ confirmed by building 6.12 and running the same headless repro (pending build).
 
 ## Upstream filing decision
 
-Pending the 6.12 build test. Preliminary read of the six constraints:
+`.out-of-scope/` checked: no Qt or QML exemption, so upstream tracking would be in scope.
 
-- Constraint 1 (upstream's fault): yes, the fault is entirely inside Qt's
-  `QQmlReusableDelegateModelItemsPool::drain` teardown path; no app C++ is in the trace.
-- Constraint 2 (can upstream fix it): yes, and it appears they already did, via the
-  `QQmlContextData` teardown split in 6.12.
-- Constraints 3 to 5: to be filled after confirming the 6.12 behavior and searching
-  `bugreports.qt.io` for an existing report of this exact backtrace.
-- Constraint 6 (minimal fix prototype): the upstream change is identified; a local
-  prototype/backport is blocked on the new `clearExpressions()` method, so the prototype
-  is the 6.12 build itself. Result pending.
+Duplicate search (`bugreports.qt.io`, web and tracker): the delegate-model and ListView
+teardown-crash family is well-reported, for example QTBUG-29727 ("ListView contains all
+items as children even destructed ones", SIGSEGV), QTBUG-58255 (SIGSEGV in
+`QQmlDelegateModelPrivate::object`), QTBUG-50992 ("Object destroyed during incubation"),
+and QTBUG-65225. None is the exact nested-`reuseItems`-on-teardown variant reproduced
+here, but the class is clearly known upstream.
 
-If the 6.12 build removes the crash, the outcome is "already fixed upstream in 6.12; no
-new issue; update or backport," and this section records that rather than a new-issue
-draft. `bugreports.qt.io` duplicate search and the `.out-of-scope/` check are done
-before any filing.
+Six-constraint check:
+
+1. Upstream's fault: yes, entirely inside `QQmlReusableDelegateModelItemsPool::drain`; no
+   app code is in the trace.
+2. Can upstream fix it: yes, it is a teardown-ownership fix, not an algebraic-core limit.
+3. Supporting the use case: `reuseItems` is a documented, supported feature, and nesting
+   is not documented as unsupported.
+4. Would they welcome it: Qt takes reports at `bugreports.qt.io` and patches via Gerrit;
+   not investigated in depth because filing is not being pursued.
+5. Will they fix it: the family has open reports and no won't-fix signal.
+6. Minimal fix prototype: not done. The real fix is in Qt's pool-teardown ownership;
+   prototyping it needs a qtdeclarative build, a local backport was explicitly rejected
+   (ownership), and 6.12 does not fix it, so there is no minimal patch to attach.
+
+Decision: do not file a new issue now. The crash is accepted on exit, the bug family is
+already well-reported upstream, and the project does not want to own a fix. This is
+recorded rather than filed, per the do-not-file-by-default policy. If that changes, the
+minimal reproductions (`min2img.qml`, `min2loader.qml`) plus the root-cause trace above
+are ready to attach to a new report, or as a comment on the closest existing issue if one
+proves to be the same bug.
 
 ## Related
 
