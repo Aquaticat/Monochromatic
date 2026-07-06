@@ -72,6 +72,14 @@ const HUD_REFRESH_MS: u64 = 150;
 ///           from inside the Flickable's own change callback.
 const FRAME_TICK_MS: u64 = 16;
 
+/// What:     `const WINDOW_READY_DELAY_MS: u64 = 100;` is how long after the event
+///           loop starts to wait before touching the winit window. `u64` is what
+///           `Duration::from_millis` takes.
+/// Why:      `with_winit_window` only succeeds once the loop is active, so the
+///           backend log (and later the native drag-and-drop adapter) defers this
+///           long past `run()` for the window to be realized.
+const WINDOW_READY_DELAY_MS: u64 = 100;
+
 /// What:     `fn install_backend() -> Result<()>` builds and installs the explicit
 ///           winit backend with the app-id hook, unless the embedded MCP server
 ///           is active.
@@ -201,6 +209,23 @@ pub fn run() -> Result<()> {
     //           propagates a platform error.
     // Why:      The window hosts the strip.
     let app = AppWindow::new()?;
+    // What:     A single-shot timer logs the windowing backend shortly after the
+    //           event loop starts. `Timer::single_shot(delay, callback)` runs the
+    //           callback once, `delay` after the loop begins; `weak_dnd` is a
+    //           non-owning handle so the timer never keeps the window alive.
+    // Why:      The winit window (and its raw handles) only exists once the event
+    //           loop is active, so `with_winit_window` returns nothing if called at
+    //           construction; deferring past loop start is where the native
+    //           drag-and-drop adapter will also attach.
+    let weak_dnd = app.as_weak();
+    Timer::single_shot(Duration::from_millis(WINDOW_READY_DELAY_MS), move || {
+        // What:     `if let Some(app) = weak_dnd.upgrade() { ... }` runs only while
+        //           the window still exists.
+        // Why:      Skip if the window closed during the delay.
+        if let Some(app) = weak_dnd.upgrade() {
+            crate::dnd_native::log_backend(app.window());
+        }
+    });
     // What:     `let controller = Rc::new(RefCell::new(Controller::new()));` shares
     //           one mutable controller across every callback.
     // Why:      Callbacks run at different times but mutate one state.

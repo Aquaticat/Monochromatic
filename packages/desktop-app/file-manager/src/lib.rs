@@ -139,6 +139,20 @@ pub mod menu;
 /// ```
 pub mod drag_drop;
 
+/// What:     `pub mod dnd_native;` exposes the native (OS-level) drag-and-drop
+///           foundation: extracting the raw platform window handles from the Slint
+///           window so per-OS adapters can drive the platform's own drag protocol
+///           (Wayland `wl_data_device`, and later macOS/Windows/X11).
+/// Why:      Slint's in-process `DragArea`/`DropArea` cannot cross the application
+///           boundary, so real file drag-and-drop needs native adapters that start
+///           from these handles.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as dndNative from "./dnd_native";
+/// ```
+pub mod dnd_native;
+
 /// What:     `pub mod launcher;` exposes the Wayland app-id hook.
 /// Why:      The window must carry a stable app id for shell integration, like
 ///           the sibling desktop apps.
