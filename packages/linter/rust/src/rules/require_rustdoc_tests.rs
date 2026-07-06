@@ -389,3 +389,71 @@ fn macros_are_never_flagged() {
     // Why:      Confirm macros are excluded regardless of position.
     assert!(item.is_empty(), "macros must never be flagged: {item:?}");
 }
+
+// What:     `#[test] fn cxx_qt_files_exempt_use_and_trait_impl_methods() { ... }`. In
+//           a file that references cxx-qt, `use` imports and trait-impl associated
+//           items carry no rustdoc requirement.
+// Why:      cxx-qt bridge companion code needs plumbing imports and trait impls
+//           (`impl Default`, ...) that the macro and traits demand; requiring docs
+//           there is redundant, matching rustc's `missing_docs` (which exempts both).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("exempts use + trait-impl methods in cxx-qt files", () => { ... });
+// ```
+#[test]
+fn cxx_qt_files_exempt_use_and_trait_impl_methods() {
+    // What:     A cxx-qt file (the `use cxx_qt_lib::QString;` supplies the `cxx_qt_lib`
+    //           IDENT that marks it) whose only items are that `use` and a trait-impl
+    //           `fn default`; the struct, impl block, and file all carry docs.
+    // Why:      The `use` and the trait-impl method are exempt, so the file is clean.
+    let source = "//! f\nuse cxx_qt_lib::QString;\n/// s\nstruct S;\n/// i\nimpl Default for S {\n    fn default() -> Self {\n        S\n    }\n}\n";
+
+    // What:     `let found = run_rule(source, "src/x.rs");`. Run over a non-exempt path.
+    // Why:      Capture whatever the rule reports.
+    let found = run_rule(source, "src/x.rs");
+
+    // What:     `assert!(found.is_empty(), ...)`. Nothing flagged.
+    // Why:      cxx-qt detection dropped the `use` and the trait-impl method.
+    assert!(found.is_empty(), "cxx-qt file must exempt use + trait-impl method: {found:?}");
+}
+
+// What:     `#[test] fn cxx_qt_carveout_is_narrow() { ... }`. The exemption applies
+//           ONLY to `use`/trait-impl items and ONLY in cxx-qt files.
+// Why:      Guard against over-broad relaxation: inherent-impl methods in a cxx-qt
+//           file, and `use`/trait-impl methods in a non-cxx-qt file, stay required.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("keeps the cxx-qt carve-out narrow", () => { ... });
+// ```
+#[test]
+fn cxx_qt_carveout_is_narrow() {
+    // What:     A cxx-qt file (`use cxx_qt::bridge;` marks it) with a documented
+    //           inherent impl whose method is undocumented.
+    // Why:      Inherent-impl methods are NOT exempt, so exactly the method is flagged;
+    //           the `use` is dropped by the cxx-qt carve-out.
+    let inherent = item_findings(
+        "use cxx_qt::bridge;\n/// s\nstruct S;\n/// i\nimpl S {\n    fn m(&self) {}\n}\n",
+        "src/x.rs",
+    );
+    assert_eq!(inherent.len(), 1, "cxx-qt inherent-impl method still flagged: {inherent:?}");
+
+    // What:     A NON-cxx-qt file with a bare `use`.
+    // Why:      Without a cxx-qt marker the maximal policy holds, so the `use` is flagged.
+    let plain_use = item_findings("use std::fmt;\n", "src/x.rs");
+    assert_eq!(plain_use.len(), 1, "non-cxx-qt use still flagged: {plain_use:?}");
+
+    // What:     A NON-cxx-qt file with a documented struct + trait impl whose method is
+    //           undocumented.
+    // Why:      Without a cxx-qt marker the trait-impl method is still flagged.
+    let plain_trait_impl = item_findings(
+        "/// s\nstruct S;\n/// i\nimpl Default for S {\n    fn default() -> Self {\n        S\n    }\n}\n",
+        "src/x.rs",
+    );
+    assert_eq!(
+        plain_trait_impl.len(),
+        1,
+        "non-cxx-qt trait-impl method still flagged: {plain_trait_impl:?}",
+    );
+}
