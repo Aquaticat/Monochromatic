@@ -74,15 +74,84 @@ compositor-integrated widget toolkits with first-class drag-and-drop:
   under a compositor that delivers drags correctly (verified via the Smithay
   nested compositor's `drop-file` command in `packages/cli/nested-wayland-session`).
 
-Toolkit matrix (native Wayland OS file drag-and-drop, without hand-rolling
-`wl_data_device`):
+## Full framework survey: native Wayland OS file drag-and-drop
 
-- Slint: no (winit).
-- Bevy: no (winit).
-- Iced: no (winit).
-- egui: no (winit).
-- GTK4 (`gtk4-rs`): yes (native).
-- Qt (`cxx-qt`): yes (native).
+The determinant is the windowing/rendering engine, not the framework's language
+or branding. Every framework with working native-Wayland cross-application file
+drag-and-drop (without hand-rolling `wl_data_device`) sits on one of exactly
+three engines: GTK/GDK, Qt/QtWayland, or FLTK's own Wayland backend. Everything
+else sits on winit (no Wayland DnD at all), on Chromium (native Wayland runs,
+but file drops from KDE's Dolphin are broken), or is X11-only (reaches Wayland
+only through XWayland, which the pure-Wayland constraint forbids). This was
+surveyed across the Rust, webview, and JVM/.NET ecosystems; verdicts are from
+engine source, official docs, and issue trackers, not a live per-framework drop
+test.
+
+### Have it: GTK/GDK engine
+
+- GTK4 (C, PyGObject, Vala): `GtkDropTarget` receives a `GdkFileList`; GDK
+  implements DnD on `wl_data_device` in `gdkdnd-wayland.c`. Proven by Nautilus,
+  a native Wayland GTK4 file manager.
+- gtk4-rs and relm4 (Rust): bind `GtkDropTarget`/`GtkDragSource` unchanged; a
+  real Nautilus-to-app Wayland drop is documented in ghostty#11175.
+- wxWidgets (wxGTK backend): `wxFileDropTarget` accepts file-manager drops; a
+  copy vs move fidelity bug on GTK3 Wayland is wx#17864, but the drop works.
+- Flutter desktop (GTK embedder): native Wayland via a GTK subsurface
+  (flutter/engine#20629); file DnD via `super_drag_and_drop` or `desktop_drop`,
+  both GTK drag-dest. Still GTK3 with rough edges; verify on the KWin session.
+- WebKitGTK webviews (Tauri v2, Wails, Neutralino, Dioxus desktop): all render
+  through WebKitGTK, which is GTK, so file DnD rides GDK's Wayland backend.
+  Dioxus desktop specifically uses `tao`+`wry` (GTK on Linux), not winit, so it
+  is not part of the winit gap despite being a Rust GUI framework.
+
+### Have it: Qt / QtWayland engine
+
+- Qt C++, PySide6, PyQt6: `QWaylandDrag` (a `QPlatformDrag` over the data-device
+  protocol); receive via QML `DropArea`/`drop.urls` or `QMimeData::urls()`.
+  Proven by Dolphin, itself a Qt app on KWin Wayland.
+- cxx-qt and qmetaobject (Rust): thin bindings over the same Qt DnD.
+
+### Have it: FLTK's own Wayland backend
+
+- fltk-rs with the `use-wayland` feature (FLTK 1.4+): native Wayland
+  `wl_data_device` in `fl_wayland_clipboard_dnd.cxx`, surfaced as
+  `Event::DndEnter` then `Event::Paste` with `app::event_text()`. Default
+  fltk-rs is X11-only; the feature flag is required.
+
+### Native Wayland, but no inbound cross-app file drop
+
+- makepad (Rust, its own Wayland backend): implements clipboard and internal
+  within-app drag only; its `wl_data_device` handler ignores inbound
+  `Enter`/`Drop`. A near-miss, not usable for receiving a file from Dolphin.
+
+### winit family: no Wayland DnD at all (winit#1881)
+
+- Slint, Bevy, Iced, egui/eframe, floem (the floem-winit fork has no Wayland
+  data-device module), xilem/masonry (glazier is deprecated, the stack is
+  winit). All inherit winit#1881.
+
+### Chromium / Ozone: native Wayland, but Dolphin drops broken
+
+- Electron (native Wayland default since 38.2, roughly September 2025) and NW.js
+  (opt-in via `--ozone-platform=wayland`). Native Wayland runs, but OS file
+  drops from KDE's Dolphin into Chromium are broken (KDE#484018, REOPENED;
+  Chromium#399587146), and internal DnD can freeze the app on Plasma 6
+  (electron#49907). Disqualified for the exact KWin-plus-Dolphin scenario
+  despite nominal Wayland support. Notably, the mirror of this app's Slint fight
+  (the exact "Drop never fires on KDE Plasma 6 Wayland" signature) was hit and
+  fixed in the WebKitGTK path: Tauri#11282, fixed by wry#1408, shipped in wry
+  0.47.0 / Tauri 2.1.0, so Tauri v2 needs to be at least 2.1.0.
+
+### X11 / XWayland-only: disqualified by the pure-Wayland constraint
+
+- Compose Multiplatform (Skiko binds X11 directly, skiko#28), stock OpenJDK
+  Swing/AWT and JavaFX (X11 only; the Wakefield pure-Wayland toolkit is still a
+  prototype branch), Avalonia (X11-only in releases, native Wayland in preview
+  with DnD unresolved), and .NET MAUI (no official Linux at all). All reach
+  Wayland only through XWayland.
+- Nuance: JetBrains Runtime now ships a native Wayland AWT (WLToolkit, default
+  in 2026.1) with drag-and-drop, but Skiko/Compose does not ride it yet and
+  file-manager drops on it are unverified.
 
 ## Verified workarounds
 
