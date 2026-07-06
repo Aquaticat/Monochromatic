@@ -226,6 +226,16 @@ pub struct Compositor {
     /// Why:      The `record` control command (which only has `&mut Compositor`) needs it to
     ///           insert the capture timer source.
     pub loop_handle: LoopHandle<'static, Compositor>,
+
+    /// The `text/uri-list` bytes an in-flight `drop-file` drag will hand the app.
+    ///
+    /// What:     `pub pending_dnd_uri_list: Option<Vec<u8>>`. `Some(bytes)` while a
+    ///           compositor-originated drag is being driven toward the hosted app; `None`
+    ///           otherwise. Sibling shapes: a `String` would force UTF-8, but the wire
+    ///           format is raw bytes written to the client's receive fd.
+    /// Why:      `ServerDndGrabHandler::send` (called when the app requests the drag data)
+    ///           has only `&mut Compositor`, so the payload must be reachable from state.
+    pub pending_dnd_uri_list: Option<Vec<u8>>,
 }
 
 /// Owning bundle of the pieces the winit backend produces before the state exists.
@@ -424,6 +434,7 @@ impl Compositor {
             child_exit_code: None,
             recorder: None,
             loop_handle,
+            pending_dnd_uri_list: None,
         }
     }
 

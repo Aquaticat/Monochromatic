@@ -49,7 +49,7 @@ use tracing::{info, warn};
 /// import { parseCommand, formatResponse, Command, Response } from "./protocol"; ...
 /// ```
 use crate::{
-    encoder, input, keymap,
+    dnd, encoder, input, keymap,
     protocol::{format_response, parse_command, Command, Response},
     recorder, screenshot,
     state::Compositor,
@@ -348,6 +348,18 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             // Why:      Change the nested screen size.
             resize(state, width, height);
             Response::Ok
+        }
+        Command::DropFile { path, x, y } => {
+            // What:     `match dnd::drop_file(state, &path, x, y) { Ok(()) => Response::Ok,
+            //           Err(err) => Response::Err(format!("{err:#}")) }`. Originate the
+            //           compositor-side drag; map the outcome. `{err:#}` renders the anyhow
+            //           context chain.
+            // Why:      Report a drop-file setup failure (missing file, unmapped app) with its
+            //           cause; the drop itself completes asynchronously on the release timer.
+            match dnd::drop_file(state, &path, x, y) {
+                Ok(()) => Response::Ok,
+                Err(err) => Response::Err(format!("{err:#}")),
+            }
         }
         Command::Record { dir, fps, format } => {
             // What:     `match encoder::Format::parse(&format) { Ok(fmt) => ..., Err(message)

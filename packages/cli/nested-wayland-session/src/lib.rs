@@ -42,6 +42,16 @@ pub mod child;
 /// ```
 pub mod control;
 
+/// What:     `pub mod dnd;`. Declares the compositor-originated drag-and-drop module.
+/// Why:      Drives a server-side `text/uri-list` drag toward the hosted app so the app's
+///           INBOUND file-drop path can be tested deterministically without a file manager.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as dnd from "./dnd";
+/// ```
+pub mod dnd;
+
 /// What:     `pub mod encoder;`. Declares the frame-encoding + worker-pool module.
 /// Why:      Flips and encodes captured frames (PNG/BMP) on a parallel worker pool.
 ///

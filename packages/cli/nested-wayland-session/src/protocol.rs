@@ -104,6 +104,7 @@ pub enum KeyAction {
 ///   | { kind: "key"; name: string; action: KeyAction }
 ///   | { kind: "type"; text: string }
 ///   | { kind: "resize"; width: number; height: number }
+///   | { kind: "dropFile"; path: string; x?: number; y?: number }
 ///   | { kind: "quit" };
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -142,6 +143,15 @@ pub enum Command {
         width: i32,
         /// New height in pixels.
         height: i32,
+    },
+    /// Originate a compositor-side file drag toward the hosted app (inbound DnD test).
+    DropFile {
+        /// File to advertise to the app as a `text/uri-list` drop.
+        path: PathBuf,
+        /// Optional drop x in logical coordinates (defaults to the window centre).
+        x: Option<f64>,
+        /// Optional drop y in logical coordinates (defaults to the window centre).
+        y: Option<f64>,
     },
     /// Start recording frames at a steady rate into a directory.
     Record {
@@ -290,6 +300,7 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         "click" => parse_click(&mut tokens),
         "key" => parse_key(&mut tokens),
         "resize" => parse_resize(&mut tokens),
+        "drop-file" => parse_drop_file(&mut tokens),
         "record" => parse_record(&mut tokens),
         other => Err(format!("unknown command: {other}")),
     }
@@ -439,6 +450,71 @@ fn parse_resize(tokens: &mut std::str::SplitWhitespace) -> Result<Command, Strin
     // What:     `Ok(Command::Resize { width, height })`. Build the command.
     // Why:      Return the parsed resize.
     Ok(Command::Resize { width, height })
+}
+
+/// Parse the arguments of a `drop-file` command (`<path> [x y]`).
+///
+/// What:     `fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) ->
+///           Result<Command, String>`. The first token is the file path; two optional
+///           trailing tokens are the drop x and y. The path is a single whitespace-free
+///           token (unlike `screenshot`, because x/y follow it), which is enough for a
+///           test fixture dropping paths like `/tmp/hello.txt`.
+/// Why:      Isolate the drop-file grammar; both coordinates or neither.
+fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
+    // What:     `let path = PathBuf::from(tokens.next().ok_or_else(...)?);`. Require the
+    //           first token and wrap it as an owned path.
+    // Why:      There is nothing to drag without a source file.
+    let path = PathBuf::from(
+        tokens
+            .next()
+            .ok_or_else(|| "drop-file requires a path".to_string())?,
+    );
+
+    // What:     `let x = parse_opt_f64(tokens.next(), "drop-file x")?;`. Parse the optional
+    //           x coordinate: `None` when absent, else a parsed `f64` (error on garbage).
+    // Why:      The drop point x, defaulted later to the window centre when absent.
+    let x = parse_opt_f64(tokens.next(), "drop-file x")?;
+
+    // What:     `let y = parse_opt_f64(tokens.next(), "drop-file y")?;`. Same for y.
+    // Why:      The drop point y.
+    let y = parse_opt_f64(tokens.next(), "drop-file y")?;
+
+    // What:     `if x.is_some() != y.is_some() { return Err(...); }`. `!=` on two bools is
+    //           XOR: true only when exactly one coordinate was given.
+    // Why:      A lone x (or y) is ambiguous; require both or neither.
+    if x.is_some() != y.is_some() {
+        return Err("drop-file needs both x and y or neither".to_string());
+    }
+
+    // What:     `if tokens.next().is_some() { return Err(...); }`. Reject extra tokens.
+    // Why:      `drop-file` takes at most path, x, y.
+    if tokens.next().is_some() {
+        return Err("drop-file takes at most a path, x, and y".to_string());
+    }
+
+    // What:     `Ok(Command::DropFile { path, x, y })`. Build the command (tail expression).
+    // Why:      Return the parsed drop-file request.
+    Ok(Command::DropFile { path, x, y })
+}
+
+/// Parse an optional-and-may-be-absent token as `f64`, with a field name for errors.
+///
+/// What:     `fn parse_opt_f64(token: Option<&str>, field: &str) -> Result<Option<f64>,
+///           String>`. Unlike `parse_f64`, a missing token is `Ok(None)` (not an error);
+///           only a present-but-non-numeric token errors.
+/// Why:      `drop-file` coordinates are optional, so absence is valid.
+fn parse_opt_f64(token: Option<&str>, field: &str) -> Result<Option<f64>, String> {
+    // What:     `match token { None => Ok(None), Some(text) => Ok(Some(text.parse::<f64>()
+    //           .map_err(...)?)) }`. Map absence to `None`; parse a present token, mapping a
+    //           parse failure to a message, then rewrap as `Some`. Tail expression.
+    // Why:      Distinguish "not given" (fine) from "given but not a number" (error).
+    match token {
+        None => Ok(None),
+        Some(text) => Ok(Some(
+            text.parse::<f64>()
+                .map_err(|_| format!("{field} is not a number"))?,
+        )),
+    }
 }
 
 /// Parse an optional token as `f64`, with a field name for errors.

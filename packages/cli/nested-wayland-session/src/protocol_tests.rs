@@ -131,6 +131,42 @@ fn resize_validates_dimensions() {
 }
 
 #[test]
+fn drop_file_parses_path_and_optional_coordinates() {
+    // Path only: coordinates default to None (window centre chosen at run time).
+    assert_eq!(
+        parse_command("drop-file /tmp/hello.txt"),
+        Ok(Command::DropFile {
+            path: "/tmp/hello.txt".into(),
+            x: None,
+            y: None
+        })
+    );
+    // Path plus both coordinates.
+    assert_eq!(
+        parse_command("drop-file /tmp/hello.txt 100 40"),
+        Ok(Command::DropFile {
+            path: "/tmp/hello.txt".into(),
+            x: Some(100.0),
+            y: Some(40.0)
+        })
+    );
+    // Traversal tokens in the path are preserved verbatim; the caller owns the target.
+    assert_eq!(
+        parse_command("drop-file ../../etc/passwd"),
+        Ok(Command::DropFile {
+            path: "../../etc/passwd".into(),
+            x: None,
+            y: None
+        })
+    );
+    // Missing path, a lone coordinate, a non-numeric coordinate, and extra tokens error.
+    assert!(parse_command("drop-file").is_err());
+    assert!(parse_command("drop-file /tmp/a 100").is_err());
+    assert!(parse_command("drop-file /tmp/a x y").is_err());
+    assert!(parse_command("drop-file /tmp/a 1 2 3").is_err());
+}
+
+#[test]
 fn responses_format_to_wire_form() {
     assert_eq!(format_response(&Response::Ok), "ok");
     assert_eq!(

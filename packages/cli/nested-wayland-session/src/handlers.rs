@@ -56,6 +56,22 @@ use smithay::{
     },
 };
 
+/// What:     Grouped `use` of a file wrapper, the write trait, and an owned file
+///           descriptor.
+/// Why:      `ServerDndGrabHandler::send` writes the pending uri-list bytes into the fd the
+///           app handed us. `OwnedFd` is an owning file descriptor (closing it on drop
+///           signals EOF to the app's reader); `File::from(fd)` gives it `Write`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // fs.writeSync(fd, bytes); then close(fd).
+/// ```
+use std::{fs::File, io::Write, os::fd::OwnedFd};
+
+/// What:     `use tracing::{info, warn};`. Structured log macros.
+/// Why:      Trace the server-drag hooks (drop, data request, finish, cancel).
+use tracing::{info, warn};
+
 /// What:     `use crate::state::Compositor;`. `crate::` is "this crate's root".
 /// Why:      All the handler impls are `impl Trait for Compositor`.
 ///
@@ -175,10 +191,77 @@ impl DataDeviceHandler for Compositor {
 /// Why:      Required by the data-device delegate; defaults suffice for a fixture.
 impl ClientDndGrabHandler for Compositor {}
 
-/// What:     `impl ServerDndGrabHandler for Compositor {}`. Empty impl for
-///           server-initiated drag-and-drop.
-/// Why:      Same as above; defaults suffice.
-impl ServerDndGrabHandler for Compositor {}
+/// Implement server-initiated drag-and-drop so the compositor can BE the drag source.
+///
+/// What:     `impl ServerDndGrabHandler for Compositor`. Overrides the hooks Smithay's
+///           server DnD grab calls: `send` (the app requests the drag data), `dropped`,
+///           `finished`, and `cancelled`.
+/// Why:      The `drop-file` control command (via `crate::dnd`) drives a compositor-side
+///           drag toward the hosted app; these hooks deliver the `text/uri-list` payload and
+///           trace the outcome, making the inbound-drop path testable without a file manager.
+impl ServerDndGrabHandler for Compositor {
+    /// What:     `fn send(&mut self, mime_type: String, fd: OwnedFd, _seat: Seat<Self>)`. The
+    ///           app requested the drag data for `mime_type` on the receive `fd`; the seat is
+    ///           unused.
+    /// Why:      Write the pending uri-list bytes so the app's inbound reader receives them.
+    fn send(&mut self, mime_type: String, fd: OwnedFd, _seat: Seat<Self>) {
+        // What:     `info!(...)`. Note which mime type the app asked for.
+        // Why:      Confirm the app reached the receive step of the drop.
+        info!("drop-file: app requested drag data for mime {mime_type}");
+
+        // What:     `let Some(bytes) = self.pending_dnd_uri_list.clone() else { warn!; return;
+        //           };`. Take a copy of the pending payload; bail (with a warning) if none is
+        //           set. `.clone()` copies the small `Vec<u8>`.
+        // Why:      Never write stale or absent data.
+        let Some(bytes) = self.pending_dnd_uri_list.clone() else {
+            warn!("drop-file: app requested data but no uri-list is pending");
+            return;
+        };
+
+        // What:     `let mut file = File::from(fd);`. Wrap the owned fd in a `File` so it has
+        //           `Write`. Dropping `file` at scope end closes the fd.
+        // Why:      Writing then closing signals end-of-data to the app's reader.
+        let mut file = File::from(fd);
+
+        // What:     `if let Err(err) = file.write_all(&bytes) { warn!(...); }`. Write the whole
+        //           payload; log a failure. `&bytes` lends the buffer read-only.
+        // Why:      The uri-list is tiny (one path), well under the pipe buffer, so one
+        //           `write_all` suffices; a broken pipe is worth logging.
+        if let Err(err) = file.write_all(&bytes) {
+            warn!("drop-file: writing the uri-list to the app failed: {err}");
+        }
+    }
+
+    /// What:     `fn dropped(&mut self, _seat: Seat<Self>)`. The drag was released over the
+    ///           app (a validated drop).
+    /// Why:      Marks that the app accepted the offer and the drop is proceeding.
+    fn dropped(&mut self, _seat: Seat<Self>) {
+        // What:     `info!(...)`. Log the validated drop.
+        // Why:      Distinguish a real drop from a cancellation.
+        info!("drop-file: server drag dropped onto the app (accepted)");
+    }
+
+    /// What:     `fn finished(&mut self, _seat: Seat<Self>)`. The app finished with the offer.
+    /// Why:      Clear the pending payload now that the transfer is complete.
+    fn finished(&mut self, _seat: Seat<Self>) {
+        // What:     `info!(...)` then `self.pending_dnd_uri_list = None;`. Log and clear.
+        // Why:      Release the payload so a later drag starts clean.
+        info!("drop-file: app finished the drag; clearing the pending uri-list");
+        self.pending_dnd_uri_list = None;
+    }
+
+    /// What:     `fn cancelled(&mut self, _seat: Seat<Self>)`. The drag ended without a
+    ///           validated drop (the app did not accept a mime type or choose an action).
+    /// Why:      Surface the failure loudly (this is the exact symptom being diagnosed) and
+    ///           clear the payload.
+    fn cancelled(&mut self, _seat: Seat<Self>) {
+        // What:     `warn!(...)` then clear. A cancellation is the "drop did not register"
+        //           case.
+        // Why:      Make an unaccepted drop obvious in the log.
+        warn!("drop-file: server drag cancelled (app did not accept a valid drop)");
+        self.pending_dnd_uri_list = None;
+    }
+}
 
 // What:     `delegate_data_device!(Compositor);`. Generates the data-device dispatch glue.
 // Why:      Wire `wl_data_device_manager` to our handler.
