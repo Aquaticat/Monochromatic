@@ -1,0 +1,102 @@
+diff --git a/internal/backends/winit/clipboard.rs b/internal/backends/winit/clipboard.rs
+index c29e29b..de21733 100644
+--- a/internal/backends/winit/clipboard.rs
++++ b/internal/backends/winit/clipboard.rs
+@@ -20,6 +20,7 @@ pub fn select_clipboard(
+ 
+ pub fn create_clipboard(
+     _display_handle: &winit::raw_window_handle::DisplayHandle<'_>,
++    enabled: bool,
+ ) -> ClipboardPair {
+     // Provide a truly silent no-op clipboard context, as copypasta's NoopClipboard spams stdout with
+     // println.
+@@ -39,6 +40,13 @@ fn set_contents(
+         }
+     }
+ 
++    // When the application opts out of the backend clipboard, provide silent no-op
++    // contexts and bind nothing (no wl_data_device / X11 selection owner), leaving the
++    // application free to manage its own data device.
++    if !enabled {
++        return (Box::new(SilentClipboardContext), Box::new(SilentClipboardContext));
++    }
++
+     cfg_if::cfg_if! {
+         if #[cfg(all(
+             unix,
+diff --git a/internal/backends/winit/lib.rs b/internal/backends/winit/lib.rs
+index 37b428c..716d5be 100644
+--- a/internal/backends/winit/lib.rs
++++ b/internal/backends/winit/lib.rs
+@@ -263,6 +263,8 @@ pub struct BackendBuilder {
+     #[cfg(target_family = "wasm")]
+     spawn_event_loop: bool,
+     custom_application_handler: Option<Box<dyn CustomApplicationHandler>>,
++    /// Whether the backend provides the system clipboard. Enabled by default.
++    clipboard_enabled: bool,
+ }
+ 
+ impl BackendBuilder {
+@@ -344,6 +346,24 @@ pub fn with_custom_application_handler(
+         self
+     }
+ 
++    /// Configures whether the backend provides the system clipboard. Enabled by default.
++    ///
++    /// On Wayland and X11 the backend binds a clipboard `wl_data_device` (or X11
++    /// selection owner) at construction. Set this to `false` if the application manages
++    /// the platform clipboard, or the data device, itself.
++    ///
++    /// This is needed for an application that drives `wl_data_device` directly, for
++    /// example to implement drag-and-drop (which the winit backend does not provide):
++    /// some compositors (KWin, verified with Plasma 6.7) deliver a drag to only the
++    /// first `wl_data_device` a client binds, so the backend's own clipboard device must
++    /// not take that slot. When disabled, clipboard reads return empty and writes are
++    /// ignored, leaving the application free to bind and manage its own data device.
++    #[must_use]
++    pub fn with_clipboard(mut self, enable: bool) -> Self {
++        self.clipboard_enabled = enable;
++        self
++    }
++
+     /// Builds the backend with the parameters configured previously. Set the resulting backend
+     /// with `slint::platform::set_platform()`:
+     ///
+@@ -376,6 +396,7 @@ pub fn build(self) -> Result<Backend, PlatformError> {
+             self.renderer_name,
+             self.requested_graphics_api.clone(),
+             self.allow_fallback,
++            self.clipboard_enabled,
+         )?);
+ 
+         Ok(Backend {
+@@ -421,11 +442,13 @@ pub(crate) struct SharedBackendData {
+ }
+ 
+ impl SharedBackendData {
++    #[cfg_attr(target_arch = "wasm32", allow(unused_variables))]
+     fn new(
+         mut builder: EventLoopBuilder,
+         renderer_name: Option<String>,
+         requested_graphics_api: Option<RequestedGraphicsAPI>,
+         allow_fallback: bool,
++        clipboard_enabled: bool,
+     ) -> Result<Self, PlatformError> {
+         #[cfg(not(target_arch = "wasm32"))]
+         use raw_window_handle::HasDisplayHandle;
+@@ -487,6 +510,7 @@ fn new(
+             &event_loop
+                 .display_handle()
+                 .map_err(|display_err| PlatformError::OtherError(display_err.into()))?,
++            clipboard_enabled,
+         );
+         Ok(Self {
+             allow_fallback,
+@@ -676,6 +700,7 @@ pub fn builder() -> BackendBuilder {
+             #[cfg(target_family = "wasm")]
+             spawn_event_loop: false,
+             custom_application_handler: None,
++            clipboard_enabled: true,
+         }
+     }
+ }

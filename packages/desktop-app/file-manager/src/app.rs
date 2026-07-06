@@ -95,10 +95,17 @@ fn install_backend() -> Result<()> {
         return Ok(());
     }
     // What:     `let mut builder = Backend::builder().with_window_attributes_hook(
-    //           launcher::set_window_app_id);` starts a backend builder with the
-    //           app-id hook installed.
-    // Why:      The hook runs at native window creation.
-    let mut builder = Backend::builder().with_window_attributes_hook(launcher::set_window_app_id);
+    //           launcher::set_window_app_id).with_clipboard(false);` starts a backend
+    //           builder with the app-id hook installed and the backend's own clipboard
+    //           data device disabled.
+    // Why:      The hook runs at native window creation. `with_clipboard(false)` (from our
+    //           Slint fork, see the `[patch.crates-io]` note in Cargo.toml) stops the winit
+    //           backend binding a clipboard `wl_data_device`; otherwise KWin delivers inbound
+    //           drags to that first device instead of our drag-and-drop device
+    //           (docs/troubleshooting/kwin-drag-only-first-data-device.md).
+    let mut builder = Backend::builder()
+        .with_window_attributes_hook(launcher::set_window_app_id)
+        .with_clipboard(false);
     // What:     `let force_software = std::env::var("SLINT_BACKEND").map(|value|
     //           value.contains("software")).unwrap_or(false);`. `.map(...)` runs a
     //           closure on the `Ok` value; `.unwrap_or(false)` treats a missing

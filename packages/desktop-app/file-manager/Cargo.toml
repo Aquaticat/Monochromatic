@@ -64,3 +64,18 @@ wayland-backend = { version = "0.3", features = ["client_system"] }
 # runtime are versioned together. "1.17.0" is Cargo's default caret requirement,
 # not an exact pin.
 slint-build = "1.17.0"
+
+# Temporary: consume our Slint fork that adds `BackendBuilder::with_clipboard(bool)`.
+# The winit backend binds a clipboard `wl_data_device` at construction, and KWin
+# delivers a drag to only the FIRST data device a client binds, so that clipboard
+# device takes the slot ahead of our own drag-and-drop device and inbound file drops
+# never arrive (see docs/troubleshooting/kwin-drag-only-first-data-device.md). With
+# `with_clipboard(false)` (called in `install_backend`), the backend binds no clipboard
+# device, leaving ours as the only one. Branch is based on the v1.17.0 tag so it stays
+# compatible with the rest of the Slint family; the whole family resolves from this one
+# monorepo (path deps) and stays internally consistent. Change is pushed for upstream as
+# slint-winit-clipboard-toggle.patch; drop this patch once it lands in a Slint release.
+[patch.crates-io]
+slint = { git = "https://github.com/Aquaticat/slint.git", branch = "feat/winit-backend-clipboard-toggle" }
+i-slint-backend-winit = { git = "https://github.com/Aquaticat/slint.git", branch = "feat/winit-backend-clipboard-toggle" }
+slint-build = { git = "https://github.com/Aquaticat/slint.git", branch = "feat/winit-backend-clipboard-toggle" }

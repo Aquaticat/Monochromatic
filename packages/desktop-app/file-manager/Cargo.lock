@@ -834,8 +834,7 @@ dependencies = [
 [[package]]
 name = "const-field-offset"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9713489fbc45a2d113f58d17448c73115d533ed27fd2f2d0e5e5c69663eaf19b"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "const-field-offset-macro",
  "field-offset",
@@ -844,8 +843,7 @@ dependencies = [
 [[package]]
 name = "const-field-offset-macro"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b5dc851b7ea80cc4f69aa28632385ffd3e0f88014d53db3f2e5a781896ca783"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1823,8 +1821,7 @@ checksum = "48ce8546b993eaf241d69ded33b1be6d205dd9857ec879d9d18bd05d3676e144"
 [[package]]
 name = "i-slint-backend-linuxkms"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54e6cb54b264cac4aa4968d6b5d4f4240a89ae8d9153659391ac57b6e4757a9f"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "bytemuck",
  "calloop 0.14.4",
@@ -1846,8 +1843,7 @@ dependencies = [
 [[package]]
 name = "i-slint-backend-selector"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74e252fd16064a10f7a0f105fef01b634cc6b6bebb0331f2cdc6da94e15d326d"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "cfg-if",
  "cfg_aliases",
@@ -1863,8 +1859,7 @@ dependencies = [
 [[package]]
 name = "i-slint-backend-testing"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afd45731b1c4b973357f18dd6e4f95811ba496c73b56f21363d6c05af0dc2d0d"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "cfg_aliases",
  "i-slint-common",
@@ -1876,8 +1871,7 @@ dependencies = [
 [[package]]
 name = "i-slint-backend-winit"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a66940b16cbc6f6fc14363c8dd220497b503946146408907ecf071fdd6794973"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -1923,8 +1917,7 @@ dependencies = [
 [[package]]
 name = "i-slint-common"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4be292acd6d591cf376f2338786b0c95faddb79fdbce4ff89f840daf2d7bac4"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "derive_more",
  "fontique",
@@ -1940,8 +1933,7 @@ dependencies = [
 [[package]]
 name = "i-slint-compiler"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "290c2247e87d3653b9b7c3bc1cbe19647b2f93a4b99a40aae6a7140717700d37"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "annotate-snippets",
  "by_address",
@@ -1973,8 +1965,7 @@ dependencies = [
 [[package]]
 name = "i-slint-core"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b7d306bc9d6fe1d1fd5e775837ec1fa1e41d1c8063789181b7de631bd5db41c"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "async-channel",
  "auto_enums",
@@ -2026,8 +2017,7 @@ dependencies = [
 [[package]]
 name = "i-slint-core-macros"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e66e7fc31239ceba98646825614df8148abc30f8326296c4d762008cc22ddff"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "quote",
  "serde_json",
@@ -2037,8 +2027,7 @@ dependencies = [
 [[package]]
 name = "i-slint-renderer-femtovg"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1a430c5adbd652119a5d37673b424ce3516903e192d73848919153e503c6d4d"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "cfg-if",
  "const-field-offset",
@@ -2059,8 +2048,7 @@ dependencies = [
 [[package]]
 name = "i-slint-renderer-skia"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1c8e1e1351ed5d3b40211b5a6e5a8597cd541726f94b880ed71693bdbe519c4"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "bytemuck",
  "cfg-if",
@@ -2096,8 +2084,7 @@ dependencies = [
 [[package]]
 name = "i-slint-renderer-software"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5b4d1e212e5eed5a2ea7b7c693f152e6a50df84e2305060de13557e4b864d18"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "bytemuck",
  "clru",
@@ -4324,8 +4311,7 @@ checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
 [[package]]
 name = "slint"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a54a407d1a0cbaa71d830ae7c236064b171368ea18db3b51ea3f2ce3f19519ee"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "const-field-offset",
  "i-slint-backend-selector",
@@ -4345,8 +4331,7 @@ dependencies = [
 [[package]]
 name = "slint-build"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc34415cacfde72e062d7e9c2bdd764429f5946870647c9f605fb7066a82015c"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "derive_more",
  "fontique",
@@ -4358,8 +4343,7 @@ dependencies = [
 [[package]]
 name = "slint-macros"
 version = "1.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b74e0f959111e906199c743a3d7d59926f9d47823b462f6e6555bf8777275749"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "i-slint-compiler",
  "proc-macro2",
@@ -5134,8 +5118,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vtable"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ea953f65593feb5287b022b83c35046d1ff49c7417b6f5851a079d8a231fe31"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "const-field-offset",
  "portable-atomic",
@@ -5146,8 +5129,7 @@ dependencies = [
 [[package]]
 name = "vtable-macro"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "482a37f9777480673d3a99c80ac2edc69f92382230440946855fa27ebc47cba6"
+source = "git+https://github.com/Aquaticat/slint.git?branch=feat%2Fwinit-backend-clipboard-toggle#38c78d29f6205878b43be8e3a69d200113a85f2d"
 dependencies = [
  "proc-macro2",
  "quote",
