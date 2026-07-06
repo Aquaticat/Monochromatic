@@ -95,6 +95,49 @@ template.
 - The user is present and can perform a real drag by hand when scripted input is
   impractical.
 
+## RESOLVED (final): inbound DnD works on real KWin
+
+Dragging `hello.txt` from Dolphin onto the file manager now works on the real KWin
+6.7.1 Wayland desktop, verified end to end (`drag entered` -> `accepted` ->
+`drop_performed` -> `inbound drop received count=1`, with KWin entering our own
+`wl_data_device`). Commit `20a33cde9`.
+
+Root cause (fully diagnosed with protocol traces, see
+`docs/troubleshooting/kwin-drag-only-first-data-device.md`): the app bound TWO
+`wl_data_device`s on one connection, Slint's clipboard device (via
+`copypasta`/`smithay-clipboard`) first and our DnD adapter's second, and KWin
+delivers a drag to only the FIRST data device a client binds
+(`dropHandlerForSurface` returns `.first()`, KWin `seat.cpp`, their own TODO). So
+KWin sent every drag to the clipboard device, which ignores drags, and our device
+never heard about it. Every earlier hypothesis (seat-proxy routing, a
+`calloop-wayland-source` read race) was refuted by `WAYLAND_DEBUG`. The Smithay
+nested compositor could not reproduce it because Smithay delivers to ALL of a
+client's data devices, which is why the automated `drop-file` test passed while the
+real Dolphin drag failed.
+
+Fix: our Slint fork adds `BackendBuilder::with_clipboard(bool)`; the file manager
+calls `.with_clipboard(false)` so the winit backend binds NO clipboard data device,
+leaving ours as the only one (hence KWin's first). Now only one `get_data_device`
+appears at startup, and the drag lands on it.
+
+- Fork branch: `Aquaticat/slint` `feat/winit-backend-clipboard-toggle` (based on the
+  `v1.17.0` tag). Patch artifact:
+  `docs/troubleshooting/slint-winit-clipboard-toggle.patch`.
+- Consumed via `[patch.crates-io]` in the file manager's `Cargo.toml` (the whole
+  Slint family resolves from that one monorepo, builds and lints clean).
+- Maintenance note: drop the `[patch.crates-io]` once `with_clipboard` (or an
+  equivalent) ships in an upstream Slint release. The change is prepared for upstream
+  (branch pushed); opening the PR to `slint-ui/slint` is pending the user's go-ahead.
+- The `with_clipboard(false)` opt-out means Slint's built-in clipboard is off. The
+  spike has no text-input widgets, so nothing regresses today; when the app needs
+  text editing, route clipboard through the app's own data device (or restore Slint's
+  once upstream can deliver drags to a second device).
+
+Toolkit note (`docs/troubleshooting/winit-toolkits-no-wayland-drag-and-drop.md`): the
+hand-rolled `wl_data_device` adapter is inherent to EVERY winit-based toolkit (Slint,
+Bevy, Iced, egui all lack Wayland DnD, winit#1881), not Slint-specific. Only native
+toolkits (GTK4 via `gtk4-rs`, Qt) avoid it. Bevy would not have helped.
+
 ## Current state (2026-07-06)
 
 Committed:

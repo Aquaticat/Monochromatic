@@ -175,14 +175,20 @@ printf 'drop-file /tmp/hello.txt\n'   | socat - UNIX-CONNECT:/tmp/nws.sock  # ok
 
 ## Verified workarounds
 
-- **Single data device for both clipboard and drag-and-drop (chosen).** Make the
-  app own exactly one `wl_data_device` that handles clipboard selection and DnD,
-  and stop Slint's `copypasta` from binding a second one, so KWin's "first
-  device" is the app's own. Tradeoff: the app must provide its own clipboard
-  integration to Slint (a custom clipboard path), rather than relying on Slint's
-  built-in `copypasta`. This is robust across compositors and removes the
-  two-devices condition entirely. Implementation tracked in the file-manager
-  native-DnD handover.
+- **Disable the toolkit's clipboard data device so the app's DnD device is the
+  only one (chosen, verified on KWin 6.7.1).** Stop Slint's `copypasta` from
+  binding its clipboard `wl_data_device`, so the app's own DnD device is the only
+  one and thus KWin's "first". Implemented by a Slint fork that adds
+  `BackendBuilder::with_clipboard(bool)`; the file manager calls
+  `.with_clipboard(false)` (fork branch `Aquaticat/slint`
+  `feat/winit-backend-clipboard-toggle` off the `v1.17.0` tag, consumed via
+  `[patch.crates-io]`; patch: `slint-winit-clipboard-toggle.patch`). Verified end
+  to end: a real Dolphin drag now reaches the app (`inbound drop received
+  count=1`), and only one `get_data_device` appears at startup. Tradeoff: Slint's
+  built-in clipboard is off while disabled; the spike has no text input, so nothing
+  regresses. A fuller variant routes clipboard through the app's single data device
+  too, avoiding any clipboard loss; not needed yet. Robust across compositors and
+  removes the two-devices condition entirely.
 
 - **Bind the app's data device first (rejected as fragile).** If the app's device
   registered before Slint's clipboard, KWin's `first()` would pick it. Rejected:
