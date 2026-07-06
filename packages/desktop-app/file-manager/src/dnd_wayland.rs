@@ -401,14 +401,22 @@ impl DataDeviceHandler for State {
         // What:     Get the in-flight drag offer, or bail if this is our own drag.
         // Why:      Only external drags carry a uri-list to accept.
         let Some(offer) = self.data_device.as_ref().and_then(|dd| dd.data().drag_offer()) else {
+            tracing::info!("native DnD: drag enter but no drag offer");
             return;
         };
+        // What:     Log the offered mime types (diagnostic).
+        // Why:      Confirm the compositor delivered the drag and what it advertises.
+        let mimes = offer.with_mime_types(|list| format!("{list:?}"));
+        tracing::info!(%mimes, "native DnD: drag entered");
         // What:     `if offers_uri_list(&offer) { ... }` accepts only when a file list
         //           is on offer.
         // Why:      Reject drags that are not files.
         if offers_uri_list(&offer) {
             offer.accept_mime_type(offer.serial, Some(URI_LIST.to_string()));
             offer.set_actions(DndAction::Copy, DndAction::Copy);
+            tracing::info!("native DnD: accepted text/uri-list drag");
+        } else {
+            tracing::info!("native DnD: drag has no text/uri-list, not accepted");
         }
     }
 
@@ -416,9 +424,11 @@ impl DataDeviceHandler for State {
     /// Why:      Pane-level drop targeting is a later refinement.
     fn motion(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &WlDataDevice, _: f64, _: f64) {}
 
-    /// What:     `fn leave(...)` fires when the drag leaves; nothing to undo.
-    /// Why:      No per-drag visual state is held yet.
-    fn leave(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &WlDataDevice) {}
+    /// What:     `fn leave(...)` fires when the drag leaves; log it (diagnostic).
+    /// Why:      Distinguish "drag left without dropping" from "no enter at all".
+    fn leave(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &WlDataDevice) {
+        tracing::info!("native DnD: drag left");
+    }
 
     /// What:     `fn selection(...)` fires for a clipboard offer; ignored (this is
     ///           drag-and-drop, not clipboard).
@@ -434,9 +444,13 @@ impl DataDeviceHandler for State {
         _qh: &QueueHandle<Self>,
         _device: &WlDataDevice,
     ) {
+        // What:     Log that a drop fired (diagnostic).
+        // Why:      Confirm the release-over-window path reaches this handler.
+        tracing::info!("native DnD: drop_performed fired");
         // What:     Get the drag offer, or bail (an internal drop has none here).
         // Why:      Only an external drop carries a uri-list to read.
         let Some(offer) = self.data_device.as_ref().and_then(|dd| dd.data().drag_offer()) else {
+            tracing::info!("native DnD: drop but no drag offer");
             return;
         };
         // What:     Bail if it did not offer a file list.
