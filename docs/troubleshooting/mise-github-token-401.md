@@ -1,8 +1,9 @@
-# mise 2026.5.15 uses current MISE_GITHUB_TOKEN and gets 401 when GitHub rejects it
+# mise uses current MISE_GITHUB_TOKEN and gets 401 when GitHub rejects it
 
 This note records a local diagnosis from 2026-06-05 against mise 2026.5.15
 (`v2026.5.15`,
- upstream commit `53cd329af53b04c68ac68f3d3b7cba1e4feeda37`).
+ upstream commit `53cd329af53b04c68ac68f3d3b7cba1e4feeda37`),
+plus a 2026-07-06 recurrence against mise 2026.6.13.
 The failure was not a mise cache problem.
  mise used the token present in the
 current process environment,
@@ -22,6 +23,12 @@ The same terminal can show that mise resolved a GitHub token from the environmen
 
 ```text
 github.com: ghp_…<redacted> (source: MISE_GITHUB_TOKEN)
+```
+
+The same root cause can block `mise self-update` before a release download starts:
+
+```text
+mise ERROR NetworkError: api request failed with status: 401 - for: "https://api.github.com/repos/jdx/mise/releases/latest"
 ```
 
 ## Root cause
@@ -241,6 +248,22 @@ mise WARN  Remote versions cannot be fetched: HTTP status client error (401 Unau
 mise WARN  No versions found for aws
 ```
 
+On 2026-07-06,
+ mise 2026.6.13 showed the same source selection and failed `self-update`
+with the release lookup 401,
+ while an unauthenticated probe of the same public endpoint returned `200`:
+
+```text
+$ mise token github
+github.com: ghp_…<redacted> (source: MISE_GITHUB_TOKEN)
+
+$ curl --silent --show-error --output /dev/null --write-out '%{http_code}\n' https://api.github.com/repos/jdx/mise/releases/latest
+200
+
+$ mise self-update
+mise ERROR NetworkError: api request failed with status: 401 - for: "https://api.github.com/repos/jdx/mise/releases/latest"
+```
+
 A direct GitHub API probe with the same environment token also returned `401`:
 
 ```bash
@@ -295,7 +318,7 @@ watchers,
  and background services keep their old inherited
 environment until restarted or explicitly updated.
 
-### Remove the rejected token for a one-off public lookup
+### Remove the rejected token for a one-off public lookup or self-update
 
 For public repositories,
  unset the token variables for a single command:
@@ -305,11 +328,29 @@ env --unset=MISE_GITHUB_TOKEN --unset=GITHUB_API_TOKEN --unset=GITHUB_TOKEN \
   mise ls-remote aws
 ```
 
+For `self-update`,
+ the same one-off unsetting avoids sending the rejected token to the public
+mise release API:
+
+```bash
+env --unset=MISE_GITHUB_TOKEN --unset=GITHUB_API_TOKEN --unset=GITHUB_TOKEN \
+  mise self-update 2026.7.0 --yes --no-plugins
+```
+
+Observed on 2026-07-06:
+ the command updated `/var/home/user/.local/bin/mise` from 2026.6.13 to
+2026.7.0.
+ A subsequent `mise install github:yt-dlp/yt-dlp@latest` verified GitHub
+artifact attestations for `yt-dlp@2026.07.04` successfully.
+
 Tradeoff:
  this falls back to unauthenticated access or lower-priority credential
 sources.
  It can hit GitHub's lower unauthenticated rate limit and will not work
 for private repositories that need the rotated token.
+ Passing `--no-plugins`
+narrows the update to mise itself;
+ omit it only when plugin auto-update is intended too.
 
 ### Verify acceptance with GitHub, not just mise resolution
 
