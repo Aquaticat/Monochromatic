@@ -1,0 +1,160 @@
+diff --git a/src/wayland/seat.cpp b/src/wayland/seat.cpp
+index 095ca86..a05726e 100644
+--- a/src/wayland/seat.cpp
++++ b/src/wayland/seat.cpp
+@@ -195,13 +195,23 @@ void SeatInterface::endDrag()
+ 
+     QObject::disconnect(d->drag.dragSourceDestroyConnection);
+ 
+-    AbstractDropHandler *dragTargetDevice = d->drag.target.data();
++    bool hasTarget = false;
++    for (const auto &target : std::as_const(d->drag.targets)) {
++        if (target) {
++            hasTarget = true;
++            break;
++        }
++    }
+     AbstractDataSource *dragSource = d->drag.source;
+ 
+     if (dragSource) {
+-        if (dragTargetDevice && dragSource->isAccepted() && dragSource->selectedDndAction() != DnDAction::None) {
++        if (hasTarget && dragSource->isAccepted() && dragSource->selectedDndAction() != DnDAction::None) {
+             Q_EMIT dragDropped();
+-            dragTargetDevice->drop();
++            for (const auto &target : std::as_const(d->drag.targets)) {
++                if (target) {
++                    target->drop();
++                }
++            }
+             dragSource->dropPerformed();
+         } else {
+             dragSource->dropPerformed();
+@@ -209,8 +219,10 @@ void SeatInterface::endDrag()
+         }
+     }
+ 
+-    if (dragTargetDevice) {
+-        dragTargetDevice->updateDragTarget(nullptr, QPointF(), 0);
++    for (const auto &target : std::as_const(d->drag.targets)) {
++        if (target) {
++            target->updateDragTarget(nullptr, QPointF(), 0);
++        }
+     }
+ 
+     d->drag = {};
+@@ -227,9 +239,10 @@ void SeatInterface::cancelDrag()
+     if (d->drag.source) {
+         d->drag.source->dndCancelled();
+     }
+-    if (d->drag.target) {
+-        d->drag.target->updateDragTarget(nullptr, QPointF(), 0);
+-        d->drag.target = nullptr;
++    for (const auto &target : std::as_const(d->drag.targets)) {
++        if (target) {
++            target->updateDragTarget(nullptr, QPointF(), 0);
++        }
+     }
+     d->drag = {};
+     Q_EMIT dragEnded();
+@@ -472,22 +485,38 @@ void SeatInterface::setDragTarget(AbstractDropHandler *dropTarget,
+         return;
+     }
+     const quint32 serial = d->display->nextSerial();
+-    if (d->drag.target) {
+-        d->drag.target->updateDragTarget(nullptr, QPointF(), serial);
++    for (const auto &target : std::as_const(d->drag.targets)) {
++        if (target) {
++            target->updateDragTarget(nullptr, QPointF(), serial);
++        }
+     }
+ 
+-    // TODO: technically we can have multiple data devices
+-    // and we should send the drag to all of them, but that seems overly complicated
+-    // in practice so far the only case for multiple data devices is for clipboard overriding
+-    d->drag.target = dropTarget;
++    // Deliver the drag to every one of the target surface client's data devices, not
++    // just the first: a client may bind wl_data_device more than once (for example a
++    // separate device for clipboard and for drag-and-drop), and delivering only to the
++    // first silently drops the drag for the others. Fall back to the passed handler
++    // (e.g. the Xwayland drop handler) when the surface has no wl_data_device.
++    d->drag.targets.clear();
++    const QList<DataDeviceInterface *> devices = d->dataDevicesForSurface(surface);
++    if (!devices.isEmpty()) {
++        for (DataDeviceInterface *device : devices) {
++            d->drag.targets.append(device);
++        }
++    } else if (dropTarget) {
++        d->drag.targets.append(dropTarget);
++    }
+ 
+-    if (d->drag.target) {
++    if (!d->drag.targets.isEmpty()) {
+         d->drag.surface = surface;
+         d->drag.transformation = inputTransformation;
+         if (d->dragInhibitsPointer(d->globalPointer.focus.surface)) {
+             notifyPointerLeave();
+         }
+-        d->drag.target->updateDragTarget(surface, globalPosition, serial);
++        for (const auto &target : std::as_const(d->drag.targets)) {
++            if (target) {
++                target->updateDragTarget(surface, globalPosition, serial);
++            }
++        }
+     } else {
+         d->drag.surface = nullptr;
+     }
+@@ -501,8 +530,10 @@ QPointF SeatInterface::dragPosition() const
+ void SeatInterface::notifyDragMotion(const QPointF &position)
+ {
+     d->drag.position = position;
+-    if (d->drag.target) {
+-        d->drag.target->motion(position);
++    for (const auto &target : std::as_const(d->drag.targets)) {
++        if (target) {
++            target->motion(position);
++        }
+     }
+     Q_EMIT dragMoved(position);
+ }
+@@ -1293,14 +1324,20 @@ bool SeatInterfacePrivate::startDrag(Drag::Mode mode, AbstractDataSource *dragSo
+     }
+     drag.dragIcon = dragIcon;
+ 
+-    if (!dataDevicesForSurface(originSurface).isEmpty()) {
+-        drag.target = dataDevicesForSurface(originSurface)[0];
++    const QList<DataDeviceInterface *> originDevices = dataDevicesForSurface(originSurface);
++    for (DataDeviceInterface *device : originDevices) {
++        drag.targets.append(device);
+     }
+-    if (drag.target) {
++    if (!drag.targets.isEmpty()) {
+         if (dragInhibitsPointer(originSurface)) {
+             q->notifyPointerLeave();
+         }
+-        drag.target->updateDragTarget(originSurface, drag.position, display->nextSerial());
++        const quint32 serial = display->nextSerial();
++        for (const auto &target : std::as_const(drag.targets)) {
++            if (target) {
++                target->updateDragTarget(originSurface, drag.position, serial);
++            }
++        }
+     }
+     Q_EMIT q->dragStarted();
+     return true;
+diff --git a/src/wayland/seat_p.h b/src/wayland/seat_p.h
+index ae664f3..f17ba19 100644
+--- a/src/wayland/seat_p.h
++++ b/src/wayland/seat_p.h
+@@ -135,7 +135,11 @@ public:
+         Mode mode = Mode::None;
+         AbstractDataSource *source = nullptr;
+         QPointer<SurfaceInterface> surface;
+-        QPointer<AbstractDropHandler> target;
++        // A client may bind wl_data_device more than once (e.g. one device for
++        // clipboard and a separate one for drag-and-drop). Track every drop handler
++        // of the target surface's client, not just the first, so the drag reaches
++        // all of them.
++        QList<QPointer<AbstractDropHandler>> targets;
+         QPointer<DragAndDropIcon> dragIcon;
+         QPointF position;
+         QMatrix4x4 transformation;
