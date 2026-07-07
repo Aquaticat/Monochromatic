@@ -96,6 +96,40 @@ function createFlakyStorage(): Storage & { readonly removed: string[]; } {
   } as unknown as Storage & { readonly removed: string[]; };
 }
 
+/**
+ * Captures `console.warn` output, restoring the real method when the returned
+ * guard leaves `using` scope, so a test can count the sink's give-up reports.
+ *
+ * @returns Disposable exposing captured warn lines as `calls`.
+ */
+function spyConsoleWarn(): Disposable & { readonly calls: string[]; } {
+  const original = console.warn;
+  const calls: string[] = [];
+  console.warn = (...args: unknown[]): void => {
+    calls.push(args.map(String,)
+      .join(' ',),);
+  };
+  return {
+    calls,
+    [Symbol.dispose](): void {
+      console.warn = original;
+    },
+  };
+}
+
+/**
+ * Counts captured warn lines that are the sessionStorage sink's give-up report.
+ *
+ * @param calls - Captured `console.warn` lines from {@link spyConsoleWarn}.
+ *
+ * @returns How many lines report a sink write failure.
+ */
+function sinkFailureCount(calls: readonly string[],): number {
+  return calls.filter(function isSinkFailure(line,) {
+    return line.includes('sessionStorage sink record write failed',);
+  },).length;
+}
+
 // Node exposes an in-memory Web Storage `sessionStorage` (on by default in the
 // v26 the test runner uses), so the sink genuinely works under node and this
 // file exercises the available path directly: verify round-trips and writes
@@ -299,6 +333,57 @@ await describe({
             .getItem('monochromatic.log.0',) !== null,
         )
           .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'reports an unrecoverable write only once, not once per record',
+      fn: async () => {
+        // A store that rejects every write and holds nothing of the sink's own,
+        // so each write reaches the give-up path.
+        const fake = createQuotaStorage(0,);
+        using _restore = installFakeStorage(fake,);
+        using warn = spyConsoleWarn();
+        const sink = createSessionStorageSink();
+
+        await sink.write({ level: 'info', message: 'one', timestamp: 0, },);
+        await sink.write({ level: 'info', message: 'two', timestamp: 1, },);
+        await sink.write({ level: 'info', message: 'three', timestamp: 2, },);
+
+        // Three failing writes, a single console report rather than a flood.
+        expect(sinkFailureCount(warn.calls,),)
+          .toBe(1,);
+      },
+    },),
+
+    it({
+      name: 're-arms the give-up report after a write next succeeds',
+      fn: async () => {
+        // Budget fits one small record; an oversized record can never fit even
+        // after evicting the small one, so it reaches the give-up path.
+        const fake = createQuotaStorage(200,);
+        using _restore = installFakeStorage(fake,);
+        using warn = spyConsoleWarn();
+        const sink = createSessionStorageSink();
+        /**
+         * Record larger than the whole budget; unwritable even after eviction.
+         */
+        const oversized = {
+          level: 'info' as const,
+          message: 'Z'.repeat(1_000,),
+          timestamp: 0,
+        };
+
+        await sink.write({ level: 'info', message: 'a', timestamp: 0, },);
+        await sink.write(oversized,);
+        await sink.write(oversized,);
+        await sink.write({ level: 'info', message: 'b', timestamp: 1, },);
+        await sink.write(oversized,);
+
+        // First give-up reports; its repeat is suppressed; the landed 'b' write
+        // re-arms a single report for the next failure.
+        expect(sinkFailureCount(warn.calls,),)
+          .toBe(2,);
       },
     },),
   ],

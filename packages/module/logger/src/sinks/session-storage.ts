@@ -143,15 +143,21 @@ export function createSessionStorageSink(): Sink {
    * succeeded and an owned entry remains" guard that keeps eviction from ever
    * touching another origin consumer's keys. `usedChars` tracks the code units
    * this sink currently occupies so the half-quota cap needs no re-summing.
+   * `reportedFailure` gates the give-up diagnostic to once per failure episode:
+   * a persistently full store (another writer owning the space) would otherwise
+   * emit one `console.warn` per log call, so the flag stays set until a write
+   * next lands, which re-arms a single report for the next episode.
    */
   const state: {
     lineCounter: number;
     oldestIndex: number;
     usedChars: number;
+    reportedFailure: boolean;
   } = {
     lineCounter: 0,
     oldestIndex: 0,
     usedChars: 0,
+    reportedFailure: false,
   };
 
   /**
@@ -236,6 +242,8 @@ export function createSessionStorageSink(): Sink {
         );
         state.lineCounter++;
         state.usedChars += recordChars;
+        // A landed write re-arms a single give-up report for the next episode.
+        state.reportedFailure = false;
         return Promise.resolve();
       }
       catch (error: unknown) {
@@ -243,10 +251,15 @@ export function createSessionStorageSink(): Sink {
           evictOldest();
           continue;
         }
-        reportLoggerInternalError({
-          context: 'sessionStorage sink record write failed',
-          error,
-        },);
+        // Report once per failure episode, not once per unwritable record, so a
+        // persistently full store does not flood the console every log call.
+        if (!state.reportedFailure) {
+          reportLoggerInternalError({
+            context: 'sessionStorage sink record write failed (repeats suppressed until a write next succeeds)',
+            error,
+          },);
+          state.reportedFailure = true;
+        }
         return Promise.resolve();
       }
     }
