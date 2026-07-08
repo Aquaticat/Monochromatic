@@ -92,6 +92,14 @@ const IGNORED_RECEIVER_NAMES = [
 ] as const;
 
 /**
+ * Callback wrapper names allowed because this repo owns their arity-capping semantics.
+ */
+const ALLOWED_CALLBACK_WRAPPER_NAMES = [
+  'unary',
+  'binary',
+] as const;
+
+/**
  * Sentinel returned when a call expression has no ordinary callback argument.
  */
 const NO_CALLBACK_ARGUMENT: unique symbol = Symbol('array callback argument absent or spread');
@@ -190,6 +198,26 @@ function isIgnoredReceiverName({ name, }: { readonly name: string; },): boolean 
 function isArrayCallbackMethod({ name, }: { readonly name: string; },): boolean {
   return ARRAY_CALLBACK_METHODS.some(
     function isArrayCallbackMethodCandidate(candidate,): boolean {
+      return candidate === name;
+    },
+  );
+}
+
+/**
+ * Reports whether `name` is an allowed arity wrapper callee.
+ *
+ * @param name - Identifier name supplied as callback wrapper callee.
+ *
+ * @returns Whether callee is a known arity wrapper.
+ *
+ * @example
+ * ```ts
+ * isAllowedCallbackWrapperName({ name: 'unary' });
+ * ```
+ */
+function isAllowedCallbackWrapperName({ name, }: { readonly name: string; },): boolean {
+  return ALLOWED_CALLBACK_WRAPPER_NAMES.some(
+    function isAllowedCallbackWrapperCandidate(candidate,): boolean {
       return candidate === name;
     },
   );
@@ -355,12 +383,49 @@ function isRelevantArrayCallbackCall(
 //region Callback classification
 
 /**
+ * Reports whether call expression is an allowed explicit arity wrapper.
+ *
+ * @param call - Callback-position call expression being inspected.
+ *
+ * @returns Whether call is a known single-argument arity wrapper call.
+ *
+ * @example
+ * ```ts
+ * isAllowedCallbackWrapperCall({ call: unary(callback) });
+ * ```
+ */
+function isAllowedCallbackWrapperCall(
+  { call, }: { readonly call: ESTree.CallExpression; },
+): boolean {
+  /**
+   * Arguments supplied to the wrapper call.
+   */
+  const callArguments = call.arguments;
+  if (callArguments.length !== 1)
+    return false;
+  /**
+   * Sole argument supplied to the wrapper call.
+   */
+  const [argument,] = callArguments;
+  if (argument === undefined)
+    return false;
+  if (argument.type === 'SpreadElement')
+    return false;
+  /**
+   * Wrapper callee with transparent wrappers removed.
+   */
+  const callee = unwrapExpression({ expression: call.callee, },);
+  if (callee.type !== 'Identifier')
+    return false;
+  return isAllowedCallbackWrapperName({ name: callee.name, },);
+}
+
+/**
  * Reports whether callback expression is a direct reference needing wrapping.
  *
- * Call expressions are deliberately accepted as wrapper boundaries. Helpers such
- * as `unary(isBig,)` create wrappers with explicit arity, and this syntactic rule
- * does not try to prove which wrapper callees preserve arity. Reporting all call
- * expressions would reintroduce the false positive this project rule replaces.
+ * Call expressions are reported unless they are allowlisted explicit arity
+ * wrappers. This syntactic rule does not inspect the wrapped function's declared
+ * arity or prove arbitrary wrapper behavior.
  *
  * @param callback - First argument supplied to an array iterator method.
  *
@@ -397,7 +462,7 @@ function shouldReportCallback(
     return shouldReportCallback({ callback: lastExpression, },);
   }
   if (expression.type === 'CallExpression')
-    return false;
+    return !isAllowedCallbackWrapperCall({ call: expression, },);
   if (expression.type === 'MemberExpression')
     return true;
   return (expression.type === 'YieldExpression')
@@ -416,7 +481,8 @@ function shouldReportCallback(
  *
  * This project-owned replacement for `unicorn/no-array-callback-reference`
  * keeps the arity-footgun guard for bare references such as `items.map(fn,)`
- * while allowing explicit wrapper calls such as `items.findIndex(unary(fn,),)`.
+ * while allowing explicit unary()/binary() wrapper calls such as
+ * `items.findIndex(unary(fn,),)`.
  *
  * @example
  * ```ts

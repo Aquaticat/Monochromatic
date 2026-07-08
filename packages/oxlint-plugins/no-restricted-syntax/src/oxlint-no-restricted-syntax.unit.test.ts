@@ -414,6 +414,23 @@ await describe({
       ],
     },),
     describe({
+      name: 'no-array-callback-reference forms',
+      children: [
+        it({
+          name: 'reports direct references and unknown wrapper call expressions',
+          fn: async () => {
+            const diagnostics = await lint('invalid/no-array-callback-reference.ts',);
+            const arrayCallbackReference = diagnostics.filter(
+              function isArrayCallbackReference(diagnostic,): boolean {
+                return diagnostic.code === 'no-restricted-syntax(no-array-callback-reference)';
+              },
+            );
+            expect(arrayCallbackReference.length,).toBe(3,);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: 'no-immediate-mutation forms',
       children: [
         it({

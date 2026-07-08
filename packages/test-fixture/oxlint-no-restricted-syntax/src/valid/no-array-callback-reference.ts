@@ -9,17 +9,38 @@ function unary<TArgument, TReturn>(
   };
 }
 
+function binary<TFirstArgument, TSecondArgument, TReturn>(
+  fn: (firstArgument: TFirstArgument, secondArgument: TSecondArgument,) => TReturn,
+): (firstArgument: TFirstArgument, secondArgument: TSecondArgument,) => TReturn {
+  return function binaryWrapper(
+    firstArgument: TFirstArgument,
+    secondArgument: TSecondArgument,
+  ): TReturn {
+    return fn(
+      firstArgument,
+      secondArgument,
+    );
+  };
+}
+
 function isBig(value: number,): boolean {
   return value > 1;
 }
 
 const wrapped = [1, 2, 3,].findIndex(unary(isBig,),);
+const binaryWrapped = [1, 2, 3,].map(binary(function renderWithIndex(
+  value: number,
+  index: number,
+): string {
+  return `${index}:${value}`;
+},),);
 const inline = [1, 2, 3,].findIndex(function probeC(value: number,): boolean {
   return isBig(value,);
 },);
 const builtin = ['1', '2', '3',].map(Number,);
 
 void wrapped;
+void binaryWrapped;
 void inline;
 void builtin;
 

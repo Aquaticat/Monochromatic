@@ -181,9 +181,9 @@ the shapes this workspace needs:
  member references,
  conditional and sequence
 expressions containing direct references,
- callback-position call expressions as wrapper boundaries,
+ `unary(...)` and `binary(...)` callback-position calls as explicit arity wrappers,
  and the common non-array receiver allowlist.
- It does not prove a wrapper callee's arity behavior.
+ It does not inspect the wrapped function's declared arity or accept arbitrary wrapper calls.
 
 ### Use an inline named function expression
 
@@ -314,6 +314,9 @@ This is a local policy mismatch, not a demonstrated upstream bug. The current he
 an arrow wrapper, and the current source intentionally reports ordinary call expressions.
 
 Potential feature request if upstream wants it:
-Add an option that allows selected wrapper calls, for example unary(...) and binary(...), while
-keeping bare identifiers and member expressions reportable.
+Add an option that allows selected wrapper calls,
+for example unary(...) and binary(...),
+while keeping bare identifiers,
+member expressions,
+and arbitrary wrapper calls reportable.
 ~~~
