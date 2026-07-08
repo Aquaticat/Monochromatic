@@ -6,11 +6,16 @@ import {
 
 import {
   PLAIN_RATE_LIMIT_STYLE,
+  formatProjectionMarker,
   formatRateLimitSegment,
   formatRateLimitStatus,
   formatRelativeTime,
+  identityStyle,
+  isNonEmptySegment,
   projectUsagePercent,
   rateLimitSeverity,
+  remainingPercent,
+  styleBySeverity,
   type RateLimitSnapshot,
   type RateLimitStyle,
 } from './index.ts';
@@ -158,6 +163,56 @@ await describe({
       ],
     },),
     describe({
+      name: formatProjectionMarker.name,
+      children: [
+        it({
+          name: 'floors projected percentage marker',
+          fn: async function testProjectionMarker(): Promise<void> {
+            expect(formatProjectionMarker(0,),).toBe('→0%',);
+            expect(formatProjectionMarker(101.9,),).toBe('→101%',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: remainingPercent.name,
+      children: [
+        it({
+          name: 'computes remaining capacity and clamps overuse to zero',
+          fn: async function testRemainingPercent(): Promise<void> {
+            /**
+             * Snapshot whose provider reports credit above full capacity.
+             */
+            const overCredit = snapshot({
+              label: 'over-credit',
+              usedPercent: -5,
+              resetOffsetMs: HOUR_MS,
+            },);
+            /**
+             * Snapshot with ordinary partial usage.
+             */
+            const partial = snapshot({
+              label: 'partial',
+              usedPercent: 35,
+              resetOffsetMs: HOUR_MS,
+            },);
+            /**
+             * Snapshot whose provider reports usage past full capacity.
+             */
+            const overused = snapshot({
+              label: 'overused',
+              usedPercent: 140,
+              resetOffsetMs: HOUR_MS,
+            },);
+
+            expect(remainingPercent(overCredit,),).toBe(105,);
+            expect(remainingPercent(partial,),).toBe(65,);
+            expect(remainingPercent(overused,),).toBe(0,);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: rateLimitSeverity.name,
       children: [
         it({
@@ -167,6 +222,55 @@ await describe({
             expect(rateLimitSeverity({ remaining: 25, projectedPercent: 0, },),).toBe('yellow',);
             expect(rateLimitSeverity({ remaining: 10, projectedPercent: 0, },),).toBe('red',);
             expect(rateLimitSeverity({ remaining: 80, projectedPercent: 101, },),).toBe('red',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: styleBySeverity.name,
+      children: [
+        it({
+          name: 'selects matching style callback for every severity',
+          fn: async function testStyleBySeverity(): Promise<void> {
+            expect(styleBySeverity({
+              text: 'ok',
+              severity: 'green',
+              style: ANGLE_STYLE,
+            },),).toBe('<green>ok</green>',);
+            expect(styleBySeverity({
+              text: 'warn',
+              severity: 'yellow',
+              style: ANGLE_STYLE,
+            },),).toBe('<yellow>warn</yellow>',);
+            expect(styleBySeverity({
+              text: 'bad',
+              severity: 'red',
+              style: ANGLE_STYLE,
+            },),).toBe('<red>bad</red>',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: identityStyle.name,
+      children: [
+        it({
+          name: 'returns style text unchanged',
+          fn: async function testIdentityStyle(): Promise<void> {
+            expect(identityStyle('plain',),).toBe('plain',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: isNonEmptySegment.name,
+      children: [
+        it({
+          name: 'keeps only non-empty segments',
+          fn: async function testIsNonEmptySegment(): Promise<void> {
+            expect(['', 'visible',].filter(function keepSegment(segment,): boolean {
+              return isNonEmptySegment(segment,);
+            },),).toStrictEqual(['visible',],);
           },
         },),
       ],
