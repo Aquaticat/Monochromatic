@@ -1,245 +1,52 @@
-# File manager
+# file-manager
 
-A Slint plus Rust desktop file-manager prototype.
+Native cross-platform file manager. The interaction model is Niri-like: an infinite horizontal
+strip of columns, each column stacking panes vertically. Horizontal position is lineage depth;
+vertical position accumulates the panes spawned from the previous column. Single-click spawns a
+child pane in the next column and focuses it (a directory spawns a listing pane; a file spawns a
+preview pane); Enter or double-click opens a file with the OS default. Panes are deduplicated by
+location and die only on explicit close.
 
-This package currently holds the first spike from the file-manager plan
-(`docs/planning/file-manager.md`):
- the column-strip virtualization spike.
-It is function-named and stack-agnostic,
- like its sibling `packages/desktop-app/terminal`,
-so a product name and the remaining milestones can layer on without moving anything.
+The full product specification is `docs/planning/file-manager.md`. This package reclaims the
+canonical, function-named `packages/desktop-app/file-manager/` path from an earlier Slint
+prototype; the toolkit is now GTK4 (gtk4-rs), chosen for native Wayland drag-and-drop on a pure
+KWin session (see `docs/handover/file-manager-toolkit-exploration.md` for the decision and
+`docs/handover/file-manager-gtk-build.md` for live build state).
 
-## What the spike proves
+## Why GTK4
 
-The interaction model is Niri-like:
- a horizontal strip of columns,
- each column stacking one or more panes vertically.
-Slint has no built-in two-dimensional strip virtualization,
- so Rust does the windowing:
- it keeps the full strip as cheap identity but publishes only a bounded window to Slint.
+Native OS drag-and-drop on a pure Wayland session (no XWayland) is a hard constraint. GTK4's GDK
+implements drag-and-drop over `wl_data_device`; the winit-based stacks (Slint, and friends) do
+not, and would need a hand-maintained protocol adapter plus a toolkit fork. GTK4 also renders on
+the GPU, tears down cleanly on every platform, and keeps the UI in Rust with no separate markup
+language.
 
-The bounded window is,
- at each of three nesting levels:
+## Status
 
-- columns virtualize horizontally (visible columns plus one prefetch column each side),
-- panes within a column virtualize vertically (visible panes plus one prefetch pane each side),
-- each directory pane's rows virtualize through a Slint `ListView` over a custom lazy row model.
+Under active construction (the interactive shell). Built: the application foundation (native
+Wayland window). In progress per `docs/handover/file-manager-gtk-build.md`: the domain model and
+filesystem reads, the fixed-canvas column strip with spawn/dedup/focus and keyboard navigation,
+off-thread thumbnail decoding with a bounded evicting cache, and drag-and-drop in both directions.
+Deferred: session-restore persistence, single-instance IPC, search, file operations with undo,
+native default-manager registration, and packaging.
 
-Preview panes decode their image with the memory-safe `image` crate on window entry,
- drop the decoded bitmap on window exit,
- and re-decode on scroll-back.
-The compressed identity stays resident;
- only the decoded bitmap is evicted.
+## Build and run
 
-## Measured results
+Run on the host with mise (Cargo builds against the system GTK 4.22 via pkg-config):
 
-The synthetic strip is 1200 columns,
- about 14400 panes,
- and about 121 million addressable rows.
-Driven headless through the embedded MCP server on a release build,
- the instrumentation HUD reported:
-
-- columns instantiated:
-   5 to 7 of 1200,
-- panes instantiated:
-   17 to 28 of about 14400,
-- distinct rows materialized:
-   under 2000 of about 121 million,
-- decoded image memory resident:
-   1.5 to 4.2 MiB,
- bounded by the viewport,
-- decode count rising on scroll-back,
- confirming re-decode after eviction,
-- column build churn:
-   about a dozen column builds across a whole scroll session,
- because only the delta columns are built as the window slides,
- not the whole model on every event,
-- preview decode runs off the UI thread on a background worker,
- so publish never includes decode time and a hard jump across many preview panes stays under one frame.
-
-Vertical scrolling moves every column at once through one shared vertical offset:
- the tallest column sets the scroll range,
- and shorter columns scroll off the top when the shared offset passes their content.
-
-Keyboard focus on the active pane survives pane recycling:
- the active pane re-asserts focus from Rust-held identity when it is re-instantiated after scrolling out and back.
-
-## Smooth horizontal scrolling: one persistent model, mutated incrementally
-
-The columns are one persistent Slint `VecModel` that is set on the window once and
-never replaced.
-Every change mutates it through `Repeater`/`ModelNotify` instead of rebuilding it:
-
-- a horizontal scroll slides only the delta columns in and out (`insert`/`remove`),
- so staying columns and their `ListView`s are never rebuilt;
-- vertical scroll and active changes rewrite the in-window rows in place (`set_row_data`);
-- a landed decode refreshes only its owning column, flushed once scrolling settles.
-
-Because the model is never replaced, the `Flickable`'s scroll position is never
-disturbed, so mousewheel and drag scroll the full strip freely and hold far
-positions.
-Replacing the whole model on each scroll event (the first attempt) both churned
-the `Repeater` and fought the `Flickable`'s own scroll, capping the gesture.
-
-## Preview decode is off the UI thread
-
-Preview decode is the one per-scroll cost heavy enough to drop a frame,
- so it runs on a dedicated worker thread (`src/decode_worker.rs`).
-When a preview enters the window the cache sends a decode request and shows a "decoding" placeholder;
- a 30 ms timer drains finished RGBA bytes and wraps them into Slint images on the UI thread (a cheap copy);
- previews that scroll out before their decode lands stop being tracked.
-The result:
- publish is pure windowing (single-digit microseconds),
- and the earlier synchronous-decode frame is gone.
-
-The remaining spike simplifications are the synthetic pixel data and the single worker thread;
- a real build would read files from disk and could widen the worker pool.
-
-## Row context menu (Slint issue #12354 workaround)
-
-A directory row's `TouchArea` grabs the right-click before the wrapping `ContextMenuArea` sees it,
- so the built-in menu never opens on a row.
-The row forwards its own right-press to `context-menu.show(...)`,
- translating the click into the area's coordinate space,
- and Rust records the clicked `(pane, row)` so a chosen command carries a deterministic identity
- (shown in the HUD and logged).
-The dedicated Menu key opens the menu everywhere;
- Slint wires `Shift+F10` only on Windows,
- so the pane `FocusScope` adds it for cross-platform parity.
-Full diagnosis, source trace, and the coordinate maths are in
- `docs/troubleshooting/slint-contextmenuarea-listview-rows.md`.
-
-## Internal drag and drop (Slint 1.17.0 DragArea/DropArea)
-
-Each directory row is a `DragArea` whose payload is the row's app-local
-`(pane, row)` identity, packed by Rust into the transfer's `user_data`;
-each pane is a `DropArea` that reads the identity back on drop and records the
-source, target pane, and the negotiated move/copy action to the HUD and the log.
-The payload carries no text or image, so Slint keeps the drag in-window on every
-backend, which makes it deterministic to drive headlessly.
-A drag-mode button flips the allowed actions so a headless session can exercise
-both a move and a copy without injecting a modifier key.
-
-This is only the in-process half.
-Stock Slint 1.17.0 exposes no OS-native file drag-and-drop on any backend
-(no external file-drop delivery, no outbound file-list payload), so dragging
-files to and from the OS file manager needs a hand-written per-OS native adapter,
-deferred to the native-integration milestone.
-Full source trace, the backend comparison, and the upstream decision are in
- `docs/troubleshooting/slint-drag-and-drop-file-lists.md`.
-
-## Architecture
-
-- `src/strip.rs`:
-   the full strip identity (columns of panes) and the deterministic synthetic builder.
-- `src/window.rs`:
-   the pure bounded-window computation shared by columns and panes,
- with unit tests in `src/window_tests.rs`.
-- `src/instrument.rs`:
-   the shared instrumentation counters the HUD mirrors.
-- `src/rowmodel.rs`:
-   the custom Slint `Model` that generates rows lazily and records access,
- so `ListView` virtualization is measured.
-- `src/preview.rs`:
-   the async decode/eviction cache with resident-byte accounting,
- with unit tests in `src/preview_tests.rs`.
-- `src/decode_worker.rs`:
-   the background decode thread and its request/result message types.
-- `src/view.rs`:
-   the per-column view builder (one `ColumnView` with its own panes model).
-- `src/controller.rs`:
-   the mutable app state, the persistent columns model, and the scroll/keyboard handlers.
-- `src/model_sync.rs`:
-   the incremental model-mutation mechanics (slide columns in/out, refresh rows in place, count residents),
- split from `controller.rs` for the line budget.
-- `src/menu.rs`:
-   the row context-menu handlers (activate a row, keyboard menu key, run a command),
- the Rust half of the Slint issue `#12354` workaround.
-- `src/drag_drop.rs`:
-   the internal pane-to-pane drag-and-drop handlers (build a row's app-local
- payload, accept a hovering drag, record a drop),
- with unit tests in `src/drag_drop_tests.rs`.
-- `src/app.rs`:
-   the backend install,
- callback wiring,
- and HUD-mirror timer.
-- `src/launcher.rs`:
-   the Wayland app-id hook.
-- `src/main.rs`:
-   the thin binary that calls `file_manager::app::run`.
-- `ui/app.slint`:
-   the strip UI,
- the instrumentation HUD,
- and the MCP-drivable sliders and buttons.
-
-## Commands
-
-Cargo work runs on the host;
- the Slint renderer needs only fontconfig and freetype,
- which are present,
- so there is no build container.
-
-Compile-check,
- lint,
- and test:
-
-```bash
-# packages/desktop-app/file-manager
-mise run //packages/desktop-app/file-manager:lint
-mise run //packages/desktop-app/file-manager:lint:rust
-mise run //packages/desktop-app/file-manager:lint:clippy
-mise run //packages/desktop-app/file-manager:test
-```
-
-Static markup check and a default-state snapshot:
-
-```bash
-# packages/desktop-app/file-manager
-mise run //packages/desktop-app/file-manager:lint:slint
-mise run //packages/desktop-app/file-manager:screenshot
-```
-
-Run the GUI on the host Wayland or X session:
-
-```bash
-# packages/desktop-app/file-manager
+```sh
+# debug build, then run on native Wayland (GDK_BACKEND=wayland, never XWayland)
 mise run //packages/desktop-app/file-manager:run
 ```
 
-Drive and inspect the running app headless through the embedded Slint MCP server
-(see `docs/handover/slint-app-testing.md`):
+Other tasks: `build` (release), `lint` (cargo check), `lint:clippy` (clippy, warnings denied),
+`lint:rust` (max-lines + require-rustdoc), `test` (cargo nextest).
 
-```bash
-# packages/desktop-app/file-manager
-mise run //packages/desktop-app/file-manager:mcp
-```
+## Platform notes
 
-The MCP server binds `127.0.0.1:9317`.
-The HUD strings are readable with `get_element_properties` on the `AppWindow::hud-a`,
- `AppWindow::hud-b`,
- `AppWindow::hud-c`,
- `AppWindow::hud-d`,
- and `AppWindow::hud-e` elements
-(the text arrives in the `accessibleLabel` field;
- `hud-d` is the last menu command plus the identity it targeted,
- and `hud-e` is the last drag-and-drop plus its source, target pane, and action);
- the `h-slider`,
- `v-slider`,
- and `btn-*` elements drive scrolling and navigation
-(`btn-menu` opens the context menu on the active pane,
- `btn-dragcopy` toggles the drag action between move and copy).
-The row `TouchArea`s share the id `AppWindow::touch`;
- `click_element` one with `button: "Right"` opens the row's context menu.
-The row `DragArea`s share the id `AppWindow::drag` and the pane `DropArea`s share
- `AppWindow::drop`;
- `drag_element` from a row to another pane's position performs an internal
- drag-and-drop that `hud-e` reports.
-
-## Testing seams
-
-This package wires the same Slint testing seams as the sibling desktop apps:
-
-- in-process behavior tests under `cargo nextest` (the `test` task),
-- the embedded MCP server for live headless driving (the `mcp` task),
-- `slint-viewer --check` and `--screenshot` (the `lint:slint` and `screenshot` tasks),
-- the nested-niri live-GPU render path for a real GPU pass off the main workspace.
+- Linux (primary): native Wayland window and drag-and-drop, no workarounds.
+- Windows: GTK builds via gvsbuild; the app sets `GDK_DEBUG=dcomp` in-process so the GL renderer
+  uses the GPU, and outbound file drag uses a native Win32 OLE shim (GDK's Win32 drag source does
+  not deliver files to Explorer).
+- macOS: inbound drops recover the path with a URI-unescape (GDK's Quartz backend percent-encodes
+  the URI scheme colon), and outbound file drag uses a native AppKit shim.

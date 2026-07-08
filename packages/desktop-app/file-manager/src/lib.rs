@@ -1,195 +1,89 @@
-//! Library root for the Slint file-manager column-strip virtualization spike.
+//! Library entry point for the Monochromatic file manager.
 //!
-//! The binary owns only process setup. This library owns the full strip state,
-//! the bounded-window computation, the instrumentation, the custom row model,
-//! the preview decode/eviction cache, the view-publish step, and the controller
-//! that wires user actions to republishes. Keeping this in the library lets the
-//! windowing math and preview accounting be unit-tested without opening a window.
+//! The product is a Niri-like infinite horizontal strip of columns, each column stacking panes
+//! vertically (see docs/planning/file-manager.md for the full interaction model, and
+//! docs/handover/file-manager-gtk-build.md for build state). `run` installs non-blocking
+//! logging, creates the GTK `Application`, and drives its event loop; `main.rs` is a thin bin
+//! over it so the plain-Rust domain modules stay unit-testable without spinning up GTK.
 
-// What:     `slint::include_modules!()` is a macro call (the `!` marks a macro,
-//           not a function). At compile time it pastes in the Rust code Slint's
-//           build script generated from `ui/app.slint`: the `AppWindow`
-//           component plus the generated structs `ColumnView`, `PaneView`, and
-//           `RowView`. Placing it in the library root (not the binary, unlike
-//           the sibling terminal app) makes those generated types reachable as
-//           `crate::ColumnView` from the view-builder module below.
-// Why:      The view-builder constructs `ColumnView`/`PaneView`/`RowView` values
-//           in library code, so the generated types must live in the library.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { AppWindow, ColumnView, PaneView, RowView } from "./app.slint.generated";
-// ```
-slint::include_modules!();
+/// What: the shared-constants module (application id, default geometry, env var names).
+/// Why: one source of truth for magic values used across the shell modules.
+mod constants;
+/// What: the top-level window construction module.
+/// Why: keeps window assembly out of `run`, each file under the max-lines budget.
+mod window;
 
-/// What:     `pub mod strip;` declares the `strip` module from `src/strip.rs`
-///           and makes it public to the binary and tests.
-/// Why:      It holds the full strip identity (columns of panes) and the
-///           synthetic strip builder the spike renders.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as strip from "./strip";
-/// ```
-pub mod strip;
+/// What: imports the GTK application-extension traits (`connect_activate`, `run`, `quit`).
+/// Why: `run` drives an `Application` through those trait methods, which live in the prelude.
+use gtk4::prelude::*;
+/// What: imports the GTK `Application` type and the `glib` module (`ExitCode`, timers).
+/// Why: `run` constructs an `Application` and returns the `glib::ExitCode` GTK yields.
+use gtk4::{Application, glib};
 
-/// What:     `pub mod window;` exposes the bounded-window computation.
-/// Why:      Turning a scroll offset into a visible-plus-prefetch index range is
-///           pure logic with unit tests, shared by columns and panes.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as window from "./window";
-/// ```
-pub mod window;
+/// What: imports the tracing subscriber's env-filter type.
+/// Why: log verbosity is driven by `RUST_LOG`, defaulting to `info` when it is unset.
+use tracing_subscriber::EnvFilter;
 
-/// What:     `pub mod instrument;` exposes the shared instrumentation counters.
-/// Why:      The whole spike is a measurement, so the counters are a first-class
-///           module read by the HUD.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as instrument from "./instrument";
-/// ```
-pub mod instrument;
+/// What: imports the application-id constant and the self-quit env var name.
+/// Why: the `Application` is identified by `APP_ID`; `QUIT_MS_ENV` drives unattended runs.
+use crate::constants::{APP_ID, QUIT_MS_ENV};
 
-/// What:     `pub mod rowmodel;` exposes the custom Slint row model.
-/// Why:      A lazy model that counts `row_data` access is what proves the
-///           `ListView` only materializes visible rows.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as rowmodel from "./rowmodel";
-/// ```
-pub mod rowmodel;
+/// What: install non-blocking tracing, build the GTK application, and run its event loop.
+/// Why: the `Application` owns the GDK backend; `run` blocks until the last window closes. The
+///      tracing writer guard is held for the whole run so a slow stderr never blocks the UI
+///      thread. Returns GTK's process exit code for `main` to propagate.
+pub fn run() -> glib::ExitCode {
+    let (writer, _guard) = tracing_appender::non_blocking(std::io::stderr());
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
+        .with_writer(writer)
+        .init();
+    enable_windows_gpu_rendering();
+    tracing::info!("monochromatic file manager starting");
 
-/// What:     `pub mod preview;` exposes the preview decode/eviction cache.
-/// Why:      Decoding on window entry and dropping on exit, with byte
-///           accounting, is the memory-bound half of the spike.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as preview from "./preview";
-/// ```
-pub mod preview;
+    let app = Application::builder().application_id(APP_ID).build();
+    app.connect_activate(|app| {
+        window::build_window(app);
+        schedule_self_quit(app);
+    });
+    app.run()
+}
 
-/// What:     `pub mod decode_worker;` exposes the background preview-decode worker
-///           thread and its request/result message types.
-/// Why:      Decoding runs off the UI thread so a burst of newly-visible previews
-///           never drops a frame.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as decodeWorker from "./decode_worker";
-/// ```
-pub mod decode_worker;
+/// What: on Windows, opt into DirectComposition so GTK's GL renderer runs on the GPU.
+/// Why: gvsbuild patches DirectComposition to opt-in and GTK's GL renderer hard-requires a
+///      DComp device; without it GTK falls back to the Cairo software renderer at 3-6 fps (see
+///      docs/troubleshooting/gtk4-windows-gvsbuild-directcomposition.md). Set before GDK init,
+///      and only when unset so an explicit `GDK_DEBUG` from the environment still wins.
+#[cfg(windows)]
+fn enable_windows_gpu_rendering() {
+    if std::env::var_os("GDK_DEBUG").is_none() {
+        // SAFETY: called at startup before GTK/GDK initialization while still single-threaded,
+        // so no other thread can be reading the environment concurrently.
+        unsafe {
+            std::env::set_var("GDK_DEBUG", "dcomp");
+        }
+        tracing::info!("set GDK_DEBUG=dcomp for GPU rendering on Windows");
+    }
+}
 
-/// What:     `pub mod view;` exposes the publish step that builds the bounded
-///           `ColumnView`/`PaneView`/`RowView` models Slint renders.
-/// Why:      It is the seam between Rust identity state and Slint's models.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as view from "./view";
-/// ```
-pub mod view;
+/// What: no-op stand-in for the Windows GPU-rendering opt-in on other platforms.
+/// Why: keeps `run` platform-agnostic; the Wayland and Quartz backends need no such flag.
+#[cfg(not(windows))]
+fn enable_windows_gpu_rendering() {}
 
-/// What:     `pub mod controller;` exposes the mutable app state plus the
-///           handlers for scroll, keyboard navigation, and republish.
-/// Why:      It owns the strip, scroll offsets, active identity, preview cache,
-///           and instrumentation between user actions.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as controller from "./controller";
-/// ```
-pub mod controller;
-
-/// What:     `pub mod model_sync;` exposes the second `impl Controller` block that
-///           mutates the persistent columns model (slide, refresh, count).
-/// Why:      Split from `controller.rs` to keep each file under the line budget.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as modelSync from "./model_sync";
-/// ```
-pub mod model_sync;
-
-/// What:     `pub mod menu;` exposes the third `impl Controller` block: the row
-///           context-menu handlers (activate a row, keyboard menu key, run a menu
-///           command) added for the context-menu spike.
-/// Why:      Split from `controller.rs` to keep each file under the line budget,
-///           and to keep the #12354 workaround plumbing in one place.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as menu from "./menu";
-/// ```
-pub mod menu;
-
-/// What:     `pub mod drag_drop;` exposes the fourth `impl Controller` block plus
-///           the two stateless drag callbacks: the internal pane-to-pane
-///           drag-and-drop handlers added for the drag-and-drop spike.
-/// Why:      Split from `controller.rs` to keep each file under the line budget,
-///           and to keep the in-window `DragArea`/`DropArea` plumbing in one place.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as dragDrop from "./drag_drop";
-/// ```
-pub mod drag_drop;
-
-/// What:     `pub mod dnd_native;` exposes the native (OS-level) drag-and-drop
-///           foundation: extracting the raw platform window handles from the Slint
-///           window so per-OS adapters can drive the platform's own drag protocol
-///           (Wayland `wl_data_device`, and later macOS/Windows/X11).
-/// Why:      Slint's in-process `DragArea`/`DropArea` cannot cross the application
-///           boundary, so real file drag-and-drop needs native adapters that start
-///           from these handles.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as dndNative from "./dnd_native";
-/// ```
-pub mod dnd_native;
-
-/// What:     `#[cfg(target_os = "linux")] pub mod dnd_wayland;` exposes the native
-///           Wayland `wl_data_device` drag-and-drop adapter, compiled only on Linux.
-/// Why:      winit 0.30 has no Wayland drag-and-drop, so on Linux the app drives the
-///           protocol itself on winit's own connection; the module and its Wayland
-///           crates are Linux-only.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as dndWayland from "./dnd_wayland"; // linux only
-/// ```
-#[cfg(target_os = "linux")]
-pub mod dnd_wayland;
-
-/// What:     `#[cfg(target_os = "linux")] mod dnd_wayland_parse;` holds the pure
-///           `text/uri-list` parsing split out of `dnd_wayland` for the line budget.
-/// Why:      Keep `dnd_wayland` under the max-lines limit; the parsing is unit-tested
-///           on its own.
-#[cfg(target_os = "linux")]
-mod dnd_wayland_parse;
-
-/// What:     `pub mod launcher;` exposes the Wayland app-id hook.
-/// Why:      The window must carry a stable app id for shell integration, like
-///           the sibling desktop apps.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as launcher from "./launcher";
-/// ```
-pub mod launcher;
-
-/// What:     `pub mod app;` exposes `run()`, the whole-program entry the binary
-///           calls.
-/// Why:      Keeping the Slint wiring in the library keeps the binary thin and
-///           lets in-process UI tests construct the window.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// export * as app from "./app";
-/// ```
-pub mod app;
+/// What: if `FM_QUIT_MS` holds a millisecond count, quit `app` after that delay.
+/// Why: an unattended verification run opens the window, proves it renders, then exits itself.
+///      An absent or unparsable value leaves the app running normally until the window closes.
+fn schedule_self_quit(app: &Application) {
+    let Some(raw) = std::env::var_os(QUIT_MS_ENV) else {
+        return;
+    };
+    let Some(ms) = raw.to_str().and_then(|value| value.parse::<u64>().ok()) else {
+        return;
+    };
+    let app = app.clone();
+    glib::timeout_add_local_once(std::time::Duration::from_millis(ms), move || {
+        tracing::info!(ms, "self-quit timer elapsed, quitting");
+        app.quit();
+    });
+}

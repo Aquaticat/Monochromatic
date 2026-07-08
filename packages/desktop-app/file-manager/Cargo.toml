@@ -4,11 +4,10 @@ version = "0.1.0"
 edition = "2024"
 license = "LGPL-3.0-or-later"
 publish = false
-description = "Slint desktop file-manager prototype: column-strip virtualization spike."
+description = "Native cross-platform file manager: a Niri-like horizontal strip of columns on GTK4, with native Wayland drag-and-drop. Supersedes the Slint prototype (stack decision 2026-07-08; see docs/handover/file-manager-toolkit-exploration.md)."
 
-[lints.clippy]
-disallowed_methods = "deny"
-
+# Lib+bin split so the plain-Rust domain model (model/fs) unit-tests without spinning up GTK,
+# matching the sibling desktop apps. The bin is a thin wrapper over the library `run`.
 [lib]
 name = "file_manager"
 path = "src/lib.rs"
@@ -18,64 +17,12 @@ name = "monochromatic-file-manager"
 path = "src/main.rs"
 
 [dependencies]
-# `anyhow` carries application-level errors for the binary and Slint callbacks,
-# matching packages/desktop-app/terminal. Sibling crates parse each error type
-# separately; the file manager wants one user-facing error channel here.
-anyhow = "1"
-# Same Slint release family (1.17.x) as the sibling desktop apps so all three
-# prototypes share the same Flickable/ListView runtime and markup compiler. The
-# explicit winit backend lets the app stamp its Wayland app id before window
-# creation. "1.17.0" is Cargo's default caret requirement (">=1.17.0, <2.0.0"),
-# not an exact pin (unlike pnpm, a bare Cargo version is already a caret range).
-i-slint-backend-winit = "1.17.0"
-# In-process image decoding for preview panes. Memory-safe pure-Rust decoders
-# (no libjpeg/ffmpeg process), matching the plan's "image thumbnails decode
-# in-process with memory-safe Rust (image crate)" rule. Default features cover
-# the common formats the spike generates (PNG here).
-image = "0.25"
-# Must match the `slint` release family used by i-slint-backend-winit and the
-# slint-build build-dependency, because the markup compiler and runtime are
-# versioned together.
-slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
-# The logging facade and its stderr subscriber, matching the sibling apps.
-# tracing routes callback-error diagnostics as structured events; the subscriber
-# installs the stderr sink (RUST_LOG, default info).
+# gtk4-rs over system GTK 4.22. GtkListView virtualizes long file lists; GtkDropTarget/GtkDragSource
+# give native Wayland drag-and-drop (the capability the winit/Slint stack lacked). The `v4_10`
+# feature exposes APIs up to GTK 4.10, including `gdk::FileList` (added in 4.6) for the file drop.
+gtk4 = { version = "0.11", features = ["v4_10"] }
+# Non-blocking logging: `tracing` on the hot path enqueues to a dedicated writer thread so logging
+# never stalls the UI thread (same pattern as the Qt spike).
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-
-# Native Wayland drag-and-drop, Linux only. winit 0.30 (which the Slint winit
-# backend wraps) has no Wayland drag-and-drop at all, so the file manager drives
-# the `wl_data_device` protocol itself on winit's own Wayland connection. Versions
-# match what winit 0.30 already pulls, so Cargo unifies to a single compiled
-# `wayland-client`/`wayland-backend` and the foreign display is genuinely shared:
-#   - smithay-client-toolkit 0.19.2 gives the data-device, seat, and registry
-#     helpers (the `calloop` feature adds the event-loop integration for the
-#     dedicated drag-and-drop thread);
-#   - wayland-client 0.31 gives the Connection/EventQueue and core DnD objects;
-#   - wayland-backend 0.3 with `client_system` gives `Backend::from_foreign_display`,
-#     which wraps winit's `*mut wl_display` without opening a second connection.
-[target.'cfg(target_os = "linux")'.dependencies]
-smithay-client-toolkit = { version = "0.19.2", default-features = false, features = ["calloop"] }
-wayland-client = "0.31"
-wayland-backend = { version = "0.3", features = ["client_system"] }
-
-[build-dependencies]
-# Must match the `slint` release family above; the Slint markup compiler and
-# runtime are versioned together. "1.17.0" is Cargo's default caret requirement,
-# not an exact pin.
-slint-build = "1.17.0"
-
-# Temporary: consume our Slint fork that adds `BackendBuilder::with_clipboard(bool)`.
-# The winit backend binds a clipboard `wl_data_device` at construction, and KWin
-# delivers a drag to only the FIRST data device a client binds, so that clipboard
-# device takes the slot ahead of our own drag-and-drop device and inbound file drops
-# never arrive (see docs/troubleshooting/kwin-drag-only-first-data-device.md). With
-# `with_clipboard(false)` (called in `install_backend`), the backend binds no clipboard
-# device, leaving ours as the only one. Branch is based on the v1.17.0 tag so it stays
-# compatible with the rest of the Slint family; the whole family resolves from this one
-# monorepo (path deps) and stays internally consistent. Change is pushed for upstream as
-# slint-winit-clipboard-toggle.patch; drop this patch once it lands in a Slint release.
-[patch.crates-io]
-slint = { git = "https://github.com/Aquaticat/slint.git", branch = "feat/winit-backend-clipboard-toggle" }
-i-slint-backend-winit = { git = "https://github.com/Aquaticat/slint.git", branch = "feat/winit-backend-clipboard-toggle" }
-slint-build = { git = "https://github.com/Aquaticat/slint.git", branch = "feat/winit-backend-clipboard-toggle" }
+tracing-appender = "0.2"
