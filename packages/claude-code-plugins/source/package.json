@@ -28,6 +28,7 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
+    "@monochromatic-dev/agent-harnesses-shared-session-discovery": "workspace:*",
     "@monochromatic-dev/agent-harnesses-shared-text-scan": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
     "@monochromatic-dev/module-current-time-context": "workspace:*",

@@ -672,6 +672,9 @@ importers:
 
   packages/claude-code-plugins/source:
     dependencies:
+      '@monochromatic-dev/agent-harnesses-shared-session-discovery':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/session-discovery
       '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/shell-command-analyzer
@@ -2556,6 +2559,9 @@ importers:
 
   packages/pi-plugins/spawn:
     dependencies:
+      '@monochromatic-dev/agent-harnesses-shared-session-discovery':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/session-discovery
       '@monochromatic-dev/agent-harnesses-shared-text-scan':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/text-scan

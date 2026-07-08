@@ -15,34 +15,86 @@
 import { join, } from 'node:path';
 
 /**
+ * Environment lookup object accepted by path helpers.
+ */
+type Environment = Readonly<NodeJS.ProcessEnv>;
+
+/**
+ * Resolves root directory for all spawn coordination files.
+ *
+ * @param env - environment values to inspect
+ *
+ * @returns spawn coordination root directory
+ *
+ * @example
+ * ```ts
+ * spawnResultsDir({ HOME: '/home/me' });
+ * ```
+ */
+function spawnResultsDir(env: Environment = process.env,): string {
+  return join(
+    env.HOME
+      ?? '/tmp',
+    '.claude',
+    'spawn-results',
+  );
+}
+
+/**
+ * Resolves directory for PID-to-session-identity mapping files.
+ *
+ * @param env - environment values to inspect
+ *
+ * @returns PID mapping directory path
+ *
+ * @example
+ * ```ts
+ * byPidDir({ HOME: '/home/me' });
+ * ```
+ */
+function byPidDir(env: Environment = process.env,): string {
+  return join(
+    spawnResultsDir(env,),
+    '.by-pid',
+  );
+}
+
+/**
+ * Resolves directory for spawn state files.
+ *
+ * @param env - environment values to inspect
+ *
+ * @returns spawn state directory path
+ *
+ * @example
+ * ```ts
+ * spawnsDir({ HOME: '/home/me' });
+ * ```
+ */
+function spawnsDir(env: Environment = process.env,): string {
+  return join(
+    spawnResultsDir(env,),
+    'spawns',
+  );
+}
+
+/**
  * Root directory for all spawn coordination files.
  */
-const SPAWN_RESULTS_DIR: string = join(
-  process.env
-    .HOME
-    ?? '/tmp',
-  '.claude',
-  'spawn-results',
-);
+const SPAWN_RESULTS_DIR: string = spawnResultsDir();
 
 /**
  * Directory for PID-to-session-identity mapping files.
  * Written by SessionStart hook, read by CLI tool.
  */
-const BY_PID_DIR: string = join(
-  SPAWN_RESULTS_DIR,
-  '.by-pid',
-);
+const BY_PID_DIR: string = byPidDir();
 
 /**
  * Directory for spawn state files.
  * Created by SessionStart hook, updated by Stop and SessionEnd hooks,
  * read and renamed by the inject check.
  */
-const SPAWNS_DIR: string = join(
-  SPAWN_RESULTS_DIR,
-  'spawns',
-);
+const SPAWNS_DIR: string = spawnsDir();
 
 /**
  * JSON structure for PID-to-session mapping files in `.by-pid/`.
@@ -89,12 +141,16 @@ type SpawnState = {
 };
 
 export {
+  byPidDir,
   BY_PID_DIR,
+  spawnResultsDir,
   SPAWN_RESULTS_DIR,
+  spawnsDir,
   SPAWNS_DIR,
 };
 
 export type {
+  Environment,
   PidMapping,
   SpawnState,
 };

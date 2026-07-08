@@ -30,6 +30,7 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "dependencies": {
+    "@monochromatic-dev/agent-harnesses-shared-session-discovery": "workspace:*",
     "@monochromatic-dev/agent-harnesses-shared-text-scan": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@optique/core": "catalog:",
