@@ -1,10 +1,9 @@
 # Plan: DRY `pi-plugins` and `claude-code-plugins`
 
 Status:
- open.
- Plan only;
- no extraction started.
- Awaiting approval before any code change.
+ plan complete, grilled, and all decisions resolved.
+ Execution deferred to a later session per user instruction.
+ Sequencing is E2b, E1, E2a, E3 with per-sub-step commits.
 
 ## Goal
 
@@ -184,57 +183,104 @@ Steps:
    rebuild and replay baseline fixtures for byte-equal stdout.
 5. Commit each migration separately, tree green at every commit.
 
-Optional:
-extract the shared deny prose into a constant in the same package only if both
-hosts want identical wording.
-The deny output shape stays host-specific.
-This is secondary and not required for E1 to ship.
+Optional in the original plan, now decided:
+the deny prose is byte-identical across both hosts (the same seven-line string
+in `packages/pi-plugins/guardrail/src/constants.ts` as `BUN_TEST_BLOCK_REASON`
+and in `packages/claude-code-plugins/source/src/handlers/guardrail.ts` as
+`BUN_TEST_DENY_OUTPUT.permissionDecisionReason`). Dedup it.
+Co-locate the reason with the predicate that detects the violation:
+export a `BUN_TEST_BAN_REASON` constant from
+`agent-harnesses-shell-command-analyzer` alongside `invokesBunTest`.
+Both guardrails import the predicate and the reason as a pair.
+Each host still wraps the reason in its own protocol-specific deny shape
+(`{ block, reason }` for pi; `PreToolUseOutput.hookSpecificOutput.permissionDecision`
+for claude); only the reason string is shared.
+The Agent-resume deny (claude only) and path-guard message (pi only) stay
+host-specific since they have no counterpart.
 
 Net:
-removes one verbatim duplicate with no new package.
+removes one verbatim duplicate plus one byte-identical prose duplicate with no
+new package.
 
 ### E2: lift spawn session-discovery and text-scan primitives
 
 Highest payoff.
 Two related lifts.
 
-#### E2a: `agent-harnesses-shared/spawn-session-finder`
+### E2a: `agent-harnesses-shared/session-discovery`
 
-Extract the procfs-walk, PID-mapping, newest-candidate mechanism from both
-`session-finder.ts` files into a new shared package, generic over the
-`PidMapping` payload shape.
-The host supplies the mapping field reader and the session-path resolver;
-the shared package owns the process-tree walk, PID-dir reads, and
-newest-candidate selection.
+Decision:
+extract, with a generic interface.
+Name:
+`session-discovery`, not `spawn-session-finder`, because the concept is
+"resolve the calling agent session," which spawn consumes but does not own.
 
-Substantial enough to justify its own package (roughly 700 lines of
-near-duplicated mechanism across the two sides).
+The mechanism (procfs parent walk, `.by-pid/` directory scan, newest-mtime
+fallback, tree-then-fallback composition) is deep and identical across both
+hosts; the payload and config are host-specific and shallow. That is the
+codebase-design deep-module shape: shared deep mechanism, host supplies shallow
+adapters.
+
+Generic interface:
+
+```ts
+// packages/agent-harnesses-shared/session-discovery
+async function findCallingSession<TMapping>(
+  opts: {
+    readonly byPidDir: string;                       // host resolves from its own paths/env
+    readonly parseMapping: (raw: string) => TMapping; // host owns the JSON shape
+    readonly startPid: number;                       // usually process.ppid
+  },
+): Promise<TMapping | typeof SESSION_NOT_FOUND>
+```
+
+The shared package owns `readParentPid`, the process-tree walk, `readByPidDir`,
+the newest-candidate scan, and the tree-then-fallback composition.
+Each host keeps a `paths.ts` that resolves `byPidDir` (pi injects `env`; claude
+reads `process.env.HOME`) and a `PidMapping` type that the shared package is
+generic over. Only `sessionId` is common to both; host-specific fields stay in the
+host `PidMapping`.
+
+Reconcile the four divergences found during verification:
+1. Control flow: pi walks iteratively, claude recurses. Both are bounded and
+   defensible under AGENTS.md ITR. Pick one in the shared package; iterative
+   avoids recursion-over-flat-array concerns.
+2. Read concurrency: adopt claude's `Promise.all([stat, readFile])` for the
+   newest-candidate scan; strictly faster than pi's sequential read.
+3. Config injection: adopt pi's `env`-injection pattern for testability (aligns
+   with throwaway fixtures under THR).
+4. `PidMapping` shape: only `sessionId` shared; the generic parameter handles
+   the rest.
 
 Steps follow the additive-first discipline:
-add shared package with tests;
-migrate `packages/pi-plugins/spawn/src/session-finder.ts` to a host adapter;
+add `packages/agent-harnesses-shared/session-discovery` with tests, generic
+over `TMapping`;
+migrate `packages/pi-plugins/spawn/src/session-finder.ts` to a host adapter
+that resolves `byPidDir` and supplies the pi `PidMapping` parser;
 migrate
 `packages/claude-code-plugins/source/src/handlers/claude-spawn/session-finder.ts`
-to a host adapter;
+to a host adapter the same way;
 replay byte-equal fixtures on the claude side.
+Delete each host's local copies of the shared functions once migrated.
 
-#### E2b: `text-scan` placement decision
+#### E2b: text-scan placement
 
-`text-scan` is general regex-free text scanning, not agent-harness-specific.
-Two placement options:
+Decision:
+land in `packages/agent-harnesses-shared/text-scan` as a holding place.
+Every current consumer is an agent-harness plugin, and
+`docs/planning/package-category-rebalance.md` keeps `packages/module/*` for
+general-purpose TypeScript utilities with wider stewardship, so the holding place
+keeps the DRY change scoped to the effort that discovered the duplication.
 
-- `packages/agent-harnesses-shared/text-scan`:
-  keeps it with the other harness-shared utilities;
-  current consumers are only the two harness clusters.
-- `packages/module/text-scan`:
-  the broad utility bucket that `package-category-rebalance.md` explicitly
-  preserves for general TypeScript utilities;
-  stewardship broadens beyond agent harnesses.
-
-Recommend `agent-harnesses-shared/text-scan` for now because every current
-consumer is a harness plugin and the rebalance doc keeps `module/` for
-general-purpose utilities with wider stewardship.
-Revisit if non-harness consumers appear.
+`text-scan` is too generic a name for a `packages/module/*` package, so the
+long-term home is not one `module/text-scan` package.
+Tracked in GitHub issue #276:
+split the primitives into purposeful `packages/module/` packages organized by
+concern (character classification, token splitting, word-boundary phrase
+lookup, delimiter-range stripping), migrate consumers, then delete
+`agent-harnesses-shared/text-scan`.
+Act on #276 once a non-harness consumer appears or once the generic name starts
+hiding distinct concepts.
 
 Lift the claude superset (535 lines) into the shared package;
 `packages/pi-plugins/spawn/src/text-scan.ts` (85-line subset) becomes a re-export
@@ -243,30 +289,44 @@ or is deleted in favor of direct imports of `isWhitespace` and
 The claude `source/src/lib/text-scan.ts` internal import path changes to the
 shared package; its five handler consumers update accordingly.
 
-### E3: statusline projected-overrun kernel (needs design first)
+### E3: statusline projected-overrun kernel
 
-Gate on a design decision, then extract.
-Do not extract before the projection model is aligned.
+Gate dropped.
+Originally gated on a design decision because the plan claimed the projection
+arithmetic had diverged. Verification disproved that:
+`packages/pi-plugins/statusline/src/usage-warning.ts` explicitly states it
+"mirrors the Claude Code statusline projection: recover elapsed window time
+as `windowSeconds - secondsUntilReset`." The pi model is the claude model plus
+two generalizations: `sampledAtMs` (sampling instant explicit, not always
+`Date.now()`) and an optional `paceScale` (for providers like Synthetic that
+regenerate credits on a different cadence). The models are already aligned; pi
+is the superset.
 
-Design question:
-adopt the pi model (pace and sampled-at time, decoupled from render time) or
-the claude model (elapsed derived from `resets_at` and `now` at render time)
-as the canonical shared shape?
-pi is the more general model (sampling time explicit, pace scale explicit);
-claude is simpler but couples to wall-clock `now` at format time.
+Adopt pi's `RateLimitSnapshot` (`usedPercent`, `windowSeconds`, `resetAtMs`,
+`sampledAtMs`, `paceScale`) as the canonical shared shape. Claude is a strict
+special case (`sampledAtMs = Date.now()`, `paceScale = 1`).
 
-After the model is chosen, extract into `agent-harnesses-shared/`:
+Lift into `agent-harnesses-shared/usage-projection`:
 the projected-overrun computation, the `->N%` marker rendering, the
-relative-time formatter, and the threshold constants.
-pi header parsers and claude JSON tier readers stay host-specific and both
-call the shared projector.
+relative-time formatter, and the threshold constants
+(`MIN_USAGE_FOR_PROJECTION`, `PROJECTED_OVERRUN_THRESHOLD`,
+`RATE_LIMIT_THRESHOLD`, `CAUTION_THRESHOLD`, `CRITICAL_THRESHOLD`).
+Claude's `formatRateLimit` becomes a caller of the shared projector with
+`sampledAtMs = now` and `paceScale = 1`; pi's `usage-warning.ts` already uses the
+shared shape directly.
+
+Host-specific parts stay put:
+pi's HTTP-header parsers (`anthropic-rate-limit-headers.ts`,
+`codex-rate-limit-headers.ts`, `synthetic-quota-headers.ts`,
+`rate-limit-headers.ts`) that build snapshots from the `after_provider_response`
+event, and claude's JSON `rate_limits.five_hour` and `rate_limits.seven_day` tier
+reader that builds snapshots from the statusline JSON. Both feed the shared
+projector.
 
 Sizing:
-if the shared kernel is small after alignment, fold it into an existing shared
-package rather than creating a new one (same principle as E1).
-If it is substantial, a dedicated `agent-harnesses-shared/statusline-projection`
-package is justified.
-Decide placement after the design lands.
+a dedicated `agent-harnesses-shared/usage-projection` package is justified
+(projection model, marker, formatter, and threshold set are substantial enough
+not to fold into `shell-command-analyzer`).
 
 ## What stays in host clusters
 
@@ -284,19 +344,58 @@ Decide placement after the design lands.
 
 ## Sequencing
 
-1. E1 (smallest, re-proves the pattern, no new package).
-2. E2a then E2b (biggest payoff; E2a unblocks deleting the largest duplicate,
-   E2b removes the text-scan fork).
-3. E3 (design decision first, then extraction).
+Execution order:
+E2b, then E1, then E2a, then E3.
+E2b first because it is the lowest-risk utility lift with no protocol coupling,
+and it unblocks E2a whose `session-finder` imports `splitWhitespace` from
+text-scan. E1 next (smallest, re-proves the pattern). E2a after its text-scan
+dependency is shared. E3 last (smallest payoff).
 
-Each step is independently shippable and leaves the tree green.
+Commit granularity:
+per sub-step (add shared module; migrate pi consumer; migrate claude consumer;
+delete old duplicate), each leaving the tree green. This matches the GCE rule
+(commit eagerly at the earliest checkpoint) and the additive-first discipline
+from `docs/planning/extract-refactor-guardrail.md`.
+
+Each step is independently shippable.
+
+## Execution constraints
+
+From repo rules, for whoever executes this plan in a later session:
+
+- Every verification run against disposable fixtures, never real coordination
+  state. `session-finder` reads real procfs and real
+  `~/.pi/agent/spawn-results/.by-pid/` or `~/.claude/spawn-results/.by-pid/`
+  coordination files; tests must use `mktemp -d` plus a fake `byPidDir`, not a
+  real home. See AGENTS.md THR.
+- Each migrated plugin verified the way its host exercises it:
+  pi side via `pi -e` extension load or the unit-test `pi-test-harness`;
+  claude side via the byte-equal stdout fixture replay documented in
+  `packages/claude-code-plugins/README.md`. See AGENTS.md VUB and VB2.
+- Each new shared package satisfies all lint rules: `require-tsdoc`, max-lines
+  (split, not compress), and `no-restricted-syntax/no-regex` that motivated
+  `text-scan`. See AGENTS.md LN1 and MXL.
+- Each new shared package gets `README.md`, passes linting with zero errors, and
+  has tests covering every exported code path before declared done.
+  See AGENTS.md PKG and TCV.
 
 ## Open decisions
 
-- E2b placement:
-  `agent-harnesses-shared/text-scan` versus `packages/module/text-scan`.
-- E3 canonical projection model:
-  pace and sampled-at (pi) versus derived-elapsed (claude).
-- E3 placement:
-  dedicated package versus fold into an existing one, decided after the design.
-- Whether to extract the shared deny prose in E1 or leave wording per host.
+All resolved during grilling:
+
+- E1:
+  fold `invokesBunTest` plus the byte-identical ban prose (as `BUN_TEST_BAN_REASON`)
+  into the existing `agent-harnesses-shell-command-analyzer`. No new package.
+- E2a:
+  extract as `agent-harnesses-shared/session-discovery`, generic over the
+  host `PidMapping`; adopt pi's env-injection and claude's `Promise.all`
+  stat-plus-read concurrency; iterative tree walk.
+- E2b:
+  land in `agent-harnesses-shared/text-scan` as a holding place; long-term split
+  into purposeful `packages/module/` packages tracked in GitHub issue #276.
+- E3:
+  drop the design gate; adopt pi's `RateLimitSnapshot` as canonical
+  (claude is the special case with `sampledAtMs = Date.now()`, `paceScale = 1`);
+  extract as `agent-harnesses-shared/usage-projection`.
+- Sequencing:
+  E2b, E1, E2a, E3 with per-sub-step commits.
