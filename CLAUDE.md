@@ -1007,7 +1007,14 @@ RDC:
  item-position macro calls,
  the file itself;
  public AND private,
- no trait-impl carve-out (unlike Rust's public-only `missing_docs`).
+ no trait-impl carve-out (unlike Rust's public-only `missing_docs`),
+ except in files referencing cxx-qt:
+ when a `cxx_qt`/`cxx_qt_lib` identifier is present (`#[cxx_qt::bridge]`,
+ `use cxx_qt_lib::...`),
+ `use` imports and trait-impl associated items are exempt in that file,
+ because bridge companion code needs plumbing imports and trait impls (`impl Default`, etc.) the macro/traits demand;
+ rustc's `missing_docs` exempts both,
+ and the relaxation is scoped to cxx-qt files so the rest of the repo keeps the maximal policy.
  Run via root `lint:rust`.
  `tests/`,
  `*_tests.rs`,

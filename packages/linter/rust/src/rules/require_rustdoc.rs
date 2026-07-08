@@ -46,31 +46,34 @@ use crate::diagnostic::{Diagnostic, Severity};
 /// Imports rule trait implemented by this rule.
 use crate::rule::Rule;
 
-// What:     `use ra_ap_syntax::ast::DocCommentIter;` imports rust-analyzer's
-//           iterator over an item's doc comments.
-// Why:      `DocCommentIter::from_syntax_node(node)` is how we ask "does this item
-//           carry a `///` / `//!` / `/** */` doc comment?" without the
-//           `#[cfg(test)]`-only `doc_comment_text` helper.
+// What:     `use ra_ap_syntax::ast::{DocCommentIter, Impl};`. `DocCommentIter` is
+//           rust-analyzer's iterator over an item's doc comments; `Impl` is the
+//           typed AST view of an `impl` block.
+// Why:      `DocCommentIter::from_syntax_node(node)` answers "does this item carry a
+//           `///` / `//!` / `/** */` doc comment?"; `Impl` lets the trait-impl
+//           carve-out ask `impl_.trait_().is_some()` (true only for `impl T for U`).
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { DocCommentIter } from "<rust-parser>/ast";
+// import { DocCommentIter, Impl } from "<rust-parser>/ast";
 // ```
-/// Imports rust-analyzer doc-comment iterator.
-use ra_ap_syntax::ast::DocCommentIter;
+/// Imports rust-analyzer doc-comment iterator and typed `impl` view.
+use ra_ap_syntax::ast::{DocCommentIter, Impl};
 
-// What:     `use ra_ap_syntax::{SyntaxKind, SyntaxNode};`. `SyntaxKind` is the big
-//           enum naming every node/token kind (FN, STRUCT, USE, ...). `SyntaxNode`
-//           is a reference-counted handle to one node of the parsed tree.
-// Why:      We match each node's `kind()` against the set that must be documented,
-//           and pass `&SyntaxNode` to the small helpers below.
+// What:     `use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode};`.
+//           `SyntaxKind` names every node/token kind (FN, STRUCT, USE, ...);
+//           `SyntaxNode` is a handle to one tree node; `NodeOrToken` is the
+//           node-or-token enum yielded by `descendants_with_tokens()`; `AstNode` is
+//           the trait whose `cast` turns a `SyntaxNode` into a typed AST view.
+// Why:      We match each node's `kind()`, scan tokens for a `cxx_qt` identifier, and
+//           cast an `impl` node to `Impl` (which needs `AstNode` in scope).
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { SyntaxKind, SyntaxNode } from "<rust-parser>";
+// import { AstNode, NodeOrToken, SyntaxKind, SyntaxNode } from "<rust-parser>";
 // ```
-/// Imports syntax node and kind types used by AST checks.
-use ra_ap_syntax::{SyntaxKind, SyntaxNode};
+/// Imports syntax node, kind, node-or-token, and the AST cast trait.
+use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode};
 
 // What:     `use std::path::Path;` imports the borrowed-path type.
 // Why:      The exemption check takes a `&Path`; we build one from the path string.
@@ -148,16 +151,90 @@ fn kind_is_documented(kind: SyntaxKind) -> bool {
     KIND_LABELS.iter().any(|pair| pair.0 == kind)
 }
 
-// What:     `fn requires_rustdoc(node: &SyntaxNode) -> bool`. The overall predicate
-//           deciding whether a node must carry a doc comment.
-// Why:      Keep the walk in `check` simple: one call per node says yes or no.
+// What:     `fn file_uses_cxx_qt(root: &SyntaxNode) -> bool`. Scans the file's tokens
+//           for an identifier `cxx_qt` or `cxx_qt_lib`.
+// Why:      cxx-qt bridge files carry `#[cxx_qt::bridge]` and import cxx-qt-lib types,
+//           both of which surface `cxx_qt`/`cxx_qt_lib` as IDENT tokens. When one is
+//           present, the rule relaxes on `use` and trait-impl items (see
+//           `requires_rustdoc`), because that companion code is plumbing the macro
+//           and trait impls require, not hand-written API. Matching IDENT tokens (not
+//           raw text) means a `cxx_qt` inside a comment or string never counts.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function requiresRustdoc(node: SyntaxNode): boolean { /* ... */ }
+// function fileUsesCxxQt(root: SyntaxNode): boolean {
+//   return [...root.descendantsWithTokens()].some(
+//     el => el.isToken && el.kind === "ident" && ["cxx_qt", "cxx_qt_lib"].includes(el.text));
+// }
 // ```
-/// Return whether a syntax node must carry rustdoc.
-fn requires_rustdoc(node: &SyntaxNode) -> bool {
+/// Return whether the file references cxx-qt (an IDENT `cxx_qt`/`cxx_qt_lib`).
+fn file_uses_cxx_qt(root: &SyntaxNode) -> bool {
+    // What:     `root.descendants_with_tokens().any(|element| match element { ... })`.
+    //           Walks every node AND leaf token; `.any` stops at the first match. The
+    //           `Token` arm keeps only IDENT tokens whose text is one of the two crate
+    //           idents; the `Node` arm ignores inner nodes.
+    // Why:      One allocation-free pass; non-IDENT tokens (comments, strings) can
+    //           never match, so the detection is not fooled by text in a doc comment.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return [...root.descendantsWithTokens()].some(el => el.isToken && el.kind === "ident" && ...);
+    // ```
+    root.descendants_with_tokens().any(|element| match element {
+        NodeOrToken::Token(token) => {
+            token.kind() == SyntaxKind::IDENT && matches!(token.text(), "cxx_qt" | "cxx_qt_lib")
+        }
+        NodeOrToken::Node(_) => false,
+    })
+}
+
+// What:     `fn is_trait_impl_assoc_item(node: &SyntaxNode) -> bool`. Answers whether
+//           the node is an associated item (method/const/type) of a TRAIT impl, i.e.
+//           lives directly inside an `impl Trait for Type { ... }` block.
+// Why:      The cxx-qt carve-out exempts trait-impl items (like `impl Default`'s
+//           `fn default`), matching rustc's own `missing_docs`, which never requires
+//           docs on trait-impl items. Inherent-impl items (`impl Type { ... }`) and
+//           trait DEFINITIONS stay required, so this must tell them apart: a trait
+//           impl is an `Impl` whose `trait_()` is present (the `for Trait` clause).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function isTraitImplAssocItem(node: SyntaxNode): boolean {
+//   const list = node.parent;
+//   if (list?.kind !== "assoc_item_list") return false;
+//   return Impl.cast(list.parent)?.trait !== undefined;
+// }
+// ```
+/// Return whether the node is an associated item of a trait `impl` block.
+fn is_trait_impl_assoc_item(node: &SyntaxNode) -> bool {
+    // What:     Climb `node -> ASSOC_ITEM_LIST -> IMPL`, cast the impl to the typed
+    //           `Impl`, and check it has a `for Trait` clause via `trait_().is_some()`.
+    // Why:      Only items whose grandparent is a trait impl are exempted; anything
+    //           else (inherent impl, trait definition, free item) yields false.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return Impl.cast(node.parent?.kind === "assoc_item_list" ? node.parent.parent : undefined)?.trait !== undefined;
+    // ```
+    node.parent()
+        .filter(|parent| parent.kind() == SyntaxKind::ASSOC_ITEM_LIST)
+        .and_then(|list| list.parent())
+        .and_then(Impl::cast)
+        .is_some_and(|impl_block| impl_block.trait_().is_some())
+}
+
+// What:     `fn requires_rustdoc(node: &SyntaxNode, uses_cxx_qt: bool) -> bool`. The
+//           overall predicate deciding whether a node must carry a doc comment;
+//           `uses_cxx_qt` says the enclosing file references cxx-qt.
+// Why:      Keep the walk in `check` simple: one call per node says yes or no. The
+//           flag lets the cxx-qt carve-out drop `use` and trait-impl items.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function requiresRustdoc(node: SyntaxNode, usesCxxQt: boolean): boolean { /* ... */ }
+// ```
+/// Return whether a syntax node must carry rustdoc (`uses_cxx_qt` relaxes cxx-qt files).
+fn requires_rustdoc(node: &SyntaxNode, uses_cxx_qt: bool) -> bool {
     // What:     `let kind = node.kind();`. The node's `SyntaxKind`.
     // Why:      Both gates below branch on it.
     //
@@ -176,6 +253,23 @@ fn requires_rustdoc(node: &SyntaxNode) -> bool {
     // if (!kindIsDocumented(kind)) return false;
     // ```
     if !kind_is_documented(kind) {
+        return false;
+    }
+
+    // What:     `if uses_cxx_qt && (kind == SyntaxKind::USE ||
+    //           is_trait_impl_assoc_item(node)) { return false; }`. In a file that
+    //           references cxx-qt, skip `use` imports and trait-impl associated items.
+    // Why:      cxx-qt bridge companion code needs plumbing imports (`use
+    //           cxx_qt_lib::QString;`) and trait impls (`impl Default`, ...) that would
+    //           otherwise demand redundant docs; rustc's own `missing_docs` never
+    //           requires docs on either. Scoping the relaxation to cxx-qt files keeps
+    //           the maximal policy everywhere else.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (usesCxxQt && (kind === "use" || isTraitImplAssocItem(node))) return false;
+    // ```
+    if uses_cxx_qt && (kind == SyntaxKind::USE || is_trait_impl_assoc_item(node)) {
         return false;
     }
 
@@ -402,6 +496,18 @@ impl Rule for RequireRustdoc {
             return;
         }
 
+        // What:     `let uses_cxx_qt = file_uses_cxx_qt(context.syntax_node());`.
+        //           Detect once whether this file references cxx-qt. `syntax_node()`
+        //           already returns `&SyntaxNode`, so no extra `&` is needed.
+        // Why:      The per-node predicate relaxes `use`/trait-impl items only in
+        //           cxx-qt files; compute it once rather than rescanning per node.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const usesCxxQt = fileUsesCxxQt(ctx.syntaxNode());
+        // ```
+        let uses_cxx_qt = file_uses_cxx_qt(context.syntax_node());
+
         // What:     `for node in context.syntax_node().descendants()`. `.descendants
         //           ()` yields every node of the parsed tree, INCLUDING the root
         //           `SOURCE_FILE` itself, each as an owned `SyntaxNode`. (It yields
@@ -415,15 +521,17 @@ impl Rule for RequireRustdoc {
         // for (const node of ctx.syntaxNode().descendants()) { /* ... */ }
         // ```
         for node in context.syntax_node().descendants() {
-            // What:     `if !requires_rustdoc(&node) { continue; }`. `&node` lends
-            //           the node read-only. Skip nodes that need no docs.
-            // Why:      Only the listed item kinds are subject to the rule.
+            // What:     `if !requires_rustdoc(&node, uses_cxx_qt) { continue; }`.
+            //           `&node` lends the node read-only; `uses_cxx_qt` carries the
+            //           per-file cxx-qt flag. Skip nodes that need no docs.
+            // Why:      Only the listed item kinds are subject to the rule, minus the
+            //           cxx-qt carve-out for `use`/trait-impl items.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // if (!requiresRustdoc(node)) continue;
+            // if (!requiresRustdoc(node, usesCxxQt)) continue;
             // ```
-            if !requires_rustdoc(&node) {
+            if !requires_rustdoc(&node, uses_cxx_qt) {
                 continue;
             }
 
