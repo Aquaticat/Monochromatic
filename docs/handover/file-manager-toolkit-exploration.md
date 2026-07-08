@@ -258,6 +258,15 @@ cache; keep the pan path allocation-free. One scaling boundary: realize-all work
 (~2000 populated) is bounded; if the board grows an order of magnitude, move to 2D virtualization
 or per-pane texture tiles.
 
+Native DnD on Windows (both directions verified): inbound (Explorer -> GTK) works through the
+stock `GtkDropTarget` (`GdkFileList`) over GDK's Win32 OLE backend. Outbound (GTK -> Explorer)
+does NOT work through GTK: GDK's Win32 drag source leaves the file-to-"Shell IDList Array"
+conversion unimplemented, so Explorer rejects the drop. The resolution is a small native Win32
+OLE drag source in Rust (the `windows` crate: a shell `IDataObject` via `BHID_DataObject` plus
+`SHDoDragDrop`), triggered from a `GtkGestureDrag`; with it, dragging a file to an Explorer folder
+copies it (`effect=1`). Windows-only; Wayland and macOS use the native `GtkDragSource`. Detail and
+a verified reference implementation in `docs/troubleshooting/gtk4-windows-outbound-file-drag.md`.
+
 Verdict: Windows passes the perf gate (locked 60 for the real workload), which confirms GTK4
 across the fleet. This does not re-open the toolkit choice; GTK4 stands, and it remains the only
 option satisfying the Wayland DnD constraint (winit-based stacks, including the `vector-design`
@@ -291,11 +300,13 @@ engine stack, have no Wayland DnD).
 - Build the real GTK column/pane UI: `GtkColumnView` or nested lists, an off-thread thumbnail
   decoder with eviction (like `preview.rs`, not the benchmark's decode-everything cache), and
   wire outbound `GtkDragSource` plus clipboard. Inbound `GtkDropTarget` is already proven.
-- Windows (`x13-win`): build/run and perf are done and passed (locked 60 on the real
-  sparse-board workload; see "Windows (x13-win) results"). Remaining Windows work is DnD
-  verification. Note the `GDK_DEBUG=dcomp` requirement for GPU rendering, and set it in-process
-  on Windows in the real app.
-- Verify inbound and outbound DnD on macOS and Windows for the GTK app.
+- Windows (`x13-win`): build/run, perf, and native DnD (both directions) are done and passed
+  (locked 60 on the real sparse-board workload; inbound via stock `GtkDropTarget`; outbound via a
+  native Win32 OLE shim, since GTK's own drag source cannot deliver files to Explorer). In the
+  real app on Windows: set `GDK_DEBUG=dcomp` in-process for GPU rendering, and port the OLE drag
+  shim from `docs/troubleshooting/gtk4-windows-outbound-file-drag.md`.
+- Verify inbound and outbound DnD on macOS for the GTK app (Windows is done; macOS DnD, where
+  GtkDragSource/GtkDropTarget should both work natively via the Cocoa backend, is still pending).
 - The Qt spike, its troubleshooting docs, and the cxx-qt linter carve-out can stay as recorded
   evidence; no further Qt spike work is planned.
 
