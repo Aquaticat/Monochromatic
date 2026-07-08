@@ -291,7 +291,7 @@ This is a one-directional relocation of Claude's broader text-scanning library,
 not a symmetric merge of equal duplicate files:
 `packages/pi-plugins/spawn/src/text-scan.ts` is an 85-line subset that only needs
 `isWhitespace` and `splitWhitespace`.
-The Pi file becomes a re-export or is deleted in favor of direct imports from the
+Delete the Pi file after migrating its two call sites to direct imports from the
 shared package.
 The claude `source/src/lib/text-scan.ts` internal import path changes to the
 shared package; its nine source-file consumers update accordingly.
