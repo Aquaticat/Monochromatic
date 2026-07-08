@@ -2528,6 +2528,9 @@ importers:
 
   packages/pi-plugins/spawn:
     dependencies:
+      '@monochromatic-dev/agent-harnesses-shared-text-scan':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/text-scan
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger

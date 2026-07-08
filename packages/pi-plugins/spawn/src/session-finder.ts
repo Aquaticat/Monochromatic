@@ -18,7 +18,7 @@ import {
   type Environment,
   type PidMapping,
 } from './paths.ts';
-import { splitWhitespace, } from './text-scan.ts';
+import { splitWhitespace, } from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
 
 //region Module logger
 
