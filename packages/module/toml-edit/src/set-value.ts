@@ -52,15 +52,20 @@ function isPrefix(
 }
 
 /**
- * Clean AST node backing `value`, or `undefined` when synthetic.
+ * Existing-node argument for {@link buildValueFromInput}: present only when the
+ * current value is clean, so an equal re-set preserves its raw spelling.
  *
- * @returns The retained parse-time node, or `undefined`.
+ * @returns An object with `existing` set, or empty.
  */
-function cleanNodeOf(value: ValueNode,): AST.TOMLNode | undefined {
-  return value.origin
+function existingArg(value: ValueNode,): { readonly existing?: AST.TOMLNode; } {
+  /**
+   * Retained parse-time node when clean; narrowed to a const so the spread type is exact.
+   */
+  const node = value.origin
     .kind
     === 'clean' ? value.origin
     .astNode : undefined;
+  return node === undefined ? {} : { existing: node, };
 }
 
 /**
@@ -201,7 +206,7 @@ function replaceInKeyValue(
       value: buildValueFromInput({
         input: value,
         options,
-        ...(cleanNodeOf(kv.value,) === undefined ? {} : { existing: cleanNodeOf(kv.value,), }),
+        ...existingArg(kv.value,),
       },),
     };
   }
@@ -268,7 +273,7 @@ function replaceInValue(
       ? buildValueFromInput({
         input,
         options,
-        ...(cleanNodeOf(element,) === undefined ? {} : { existing: cleanNodeOf(element,), }),
+        ...existingArg(element,),
       },)
       : replaceInValue({
         value: element,
@@ -341,7 +346,7 @@ function replaceInInlineTable(
         value: buildValueFromInput({
           input,
           options,
-          ...(cleanNodeOf(entry.value,) === undefined ? {} : { existing: cleanNodeOf(entry.value,), }),
+          ...existingArg(entry.value,),
         },),
       }
       : descendInlineEntry({

@@ -4,32 +4,32 @@
  * @module
  */
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
+import type {
+  Block,
+  KeyValueNode,
+} from './document.ts';
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';
-import { resolveByPath, } from './resolve.ts';
-import { withInsertion, } from './state.ts';
 import type {
-  Insertion,
   TomlEditState,
   TomlPath,
 } from './types.ts';
 
 /**
+ * Sentinel for "the target key-value was not found".
+ */
+const NOT_FOUND: unique symbol = Symbol('toml-edit/insert-after-not-found',);
+
+/**
  * Append a same-line inline `# <comment>` after the value at `path`.
- *
- * The comment is stored as a pending {@link Insertion} and emitted at
- * {@link tomlStringify} time. It is placed right after the node's end on the
- * same source line, before the newline.
  *
  * @returns A fresh {@link TomlEditState} reflecting the change.
  *
- * @throws {@link TomlPathNotFoundError} when `path` does not exist.
+ * @throws {@link TomlPathNotFoundError} when `path` does not name a key-value.
  *
  * @example
  * ```ts
- * tomlInsertCommentAfter({ edit, path: ['version',], comment: ' bumped', },);
+ * tomlInsertCommentAfter({ edit, path: ['version'], comment: ' bumped', },);
  * ```
  */
 export function tomlInsertCommentAfter(
@@ -44,47 +44,133 @@ export function tomlInsertCommentAfter(
   },
 ): TomlEditState {
   /**
-   * Path lookup so missing keys throw before any state change.
+   * Blocks with the trailing comment set on the target key-value.
    */
-  const resolved = resolveByPath({
-    edit,
+  const updated = setTrailing({
+    blocks: edit.blocks,
     path,
+    append: `  # ${comment}`,
   },);
-  if ((resolved.kind
-    === 'missing') || (resolved.kind
-      === 'top-level')) {
+  if (updated === NOT_FOUND) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
   }
-
-  /**
-   * Use the last AoT element so the comment lands next to the entry the caller named.
-   */
-  const node = resolved.kind
-    === 'array-of-tables'
-    ? nonNullishOrThrow(resolved.nodes
-      .at(-1,),)
-    : resolved.node;
-
-  /**
-   * Two-space prefix matches the prevailing style for trailing comments.
-   */
-  const text = `  # ${comment}`;
-
-  /**
-   * Anchor records placement so the emitter can splice in source order.
-   */
-  const anchor: Insertion['anchor'] = {
-    position: 'same-line-after',
-    node,
+  return {
+    ...edit,
+    blocks: updated,
   };
+}
 
-  return withInsertion({
-    edit,
-    insertion: {
-      anchor,
-      text,
-    },
-  },);
+/**
+ * Set `append` as the trailing comment on the key-value named by `path`.
+ *
+ * @returns Fresh blocks, or {@link NOT_FOUND}.
+ */
+function setTrailing(
+  {
+    blocks,
+    path,
+    append,
+  }: {
+    readonly blocks: readonly Block[];
+    readonly path: TomlPath;
+    readonly append: string;
+  },
+): readonly Block[] | typeof NOT_FOUND {
+  for (const [index, block,] of blocks.entries()) {
+    if ((block.kind
+      === 'keyvalue')
+      && segmentsEqual({
+        segs: block.keySegments,
+        path,
+      },)) {
+      /**
+       * Key-value carrying the inserted trailing comment.
+       */
+      const updated: KeyValueNode = {
+        ...block,
+        trailingCommentAppend: append,
+      };
+      return blocks.with(
+        index,
+        updated,
+      );
+    }
+    if ((block.kind
+      === 'table')
+      && (block.tableKind
+        === 'standard')
+      && strictPrefix({
+        header: block.headerSegments,
+        path,
+      },)) {
+      /**
+       * Body after recursing with the header-relative path.
+       */
+      const newBody = setTrailing({
+        blocks: block.body,
+        path: path.slice(block.headerSegments
+          .length,),
+        append,
+      },);
+      if (newBody !== NOT_FOUND)
+        return blocks.with(
+          index,
+          {
+            ...block,
+            body: newBody,
+          },
+        );
+    }
+  }
+  return NOT_FOUND;
+}
+
+/**
+ * True when `segs` equals `path` segment-wise.
+ *
+ * @returns Resulting boolean.
+ */
+function segmentsEqual(
+  {
+    segs,
+    path,
+  }: {
+    readonly segs: readonly (string | number)[];
+    readonly path: TomlPath;
+  },
+): boolean {
+  return (segs.length
+    === path.length)
+    && segs.every(function eq(
+      seg,
+      i,
+    ) {
+      return seg === path[i];
+    },);
+}
+
+/**
+ * True when `header` is a strict prefix of `path`.
+ *
+ * @returns Resulting boolean.
+ */
+function strictPrefix(
+  {
+    header,
+    path,
+  }: {
+    readonly header: readonly (string | number)[];
+    readonly path: TomlPath;
+  },
+): boolean {
+  return (header.length
+    < path.length)
+    && header.every(function eq(
+      seg,
+      i,
+    ) {
+      return seg === path[i];
+    },);
 }

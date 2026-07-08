@@ -122,6 +122,7 @@ export type KeyValueNode = {
   readonly valueRange?: Span;
   readonly commentsBefore: readonly string[];
   readonly commentAfter?: string;
+  readonly trailingCommentAppend?: string;
 };
 
 /**
@@ -134,7 +135,7 @@ export type KeyValueNode = {
 export type TableNode = {
   readonly kind: 'table';
   readonly tableKind: 'standard' | 'array';
-  readonly headerSegments: readonly string[];
+  readonly headerSegments: readonly (string | number)[];
   readonly aotIndex?: number;
   readonly headerOrigin: Origin;
   readonly body: readonly Block[];

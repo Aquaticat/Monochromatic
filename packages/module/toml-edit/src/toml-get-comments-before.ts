@@ -6,10 +6,11 @@
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { attachedCommentsFor, } from './comments.ts';
-import { effectiveAt, } from './effective-value.ts';
+import { attachedCommentsAt, } from './comments.ts';
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';
+import { locateBlock, } from './resolve-block.ts';
+import { NOT_LOCATED, } from './resolve-document.ts';
 import type {
   TomlComment,
   TomlEditState,
@@ -17,19 +18,16 @@ import type {
 } from './types.ts';
 
 /**
- * The contiguous block of `Block` comments immediately preceding the node
- * at `path`, found via {@link attachedCommentsFor}, with no blank line
- * between any pair. A comment separated from the node by a blank line is
- * NOT attached.
+ * The contiguous block of comments immediately preceding the entry at `path`,
+ * with no blank line between any pair. A comment separated by a blank line is
+ * not attached; a created (synthetic) entry has no source comments.
  *
  * @returns Computed result (`readonly TomlComment[]`).
  *
- * @throws {@link TomlPathNotFoundError} when `path` does not exist or was deleted.
+ * @throws {@link TomlPathNotFoundError} when `path` does not exist.
  *
  * @example
  * ```toml
- * # not attached: blank line below
- *
  * # attached
  * key = 1
  * ```
@@ -44,31 +42,62 @@ export function tomlGetCommentsBefore(
   },
 ): readonly TomlComment[] {
   /**
-   * Effective resolution accounts for pending edits and deletes.
+   * Entry block at the path; its clean start offset anchors the comment scan.
    */
-  const result = effectiveAt({
-    edit,
+  const located = locateBlock({
+    blocks: edit.blocks,
     path,
   },);
-  if ((result.kind
-    === 'missing') || (result.kind
-      === 'deleted')) {
+  if (located === NOT_LOCATED) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
   }
-  if (result.kind
-    === 'pending-value')
-    return [];
   /**
-   * First AoT element is the one a preceding comment block would attach to in source.
+   * Clean start offset of the entry, or `null` when the entry is synthetic.
    */
-  const node = result.kind
-    === 'array-of-tables'
-    ? nonNullishOrThrow(result.nodes[0],)
-    : result.node;
-  return attachedCommentsFor({
-    node,
-    edit,
+  const start = startOf({ located, },);
+  if (start === null)
+    return [];
+  return attachedCommentsAt({
+    comments: edit.comments,
+    source: edit.source,
+    at: start,
   },);
+}
+
+/**
+ * Clean start offset for a located entry, or `null` when synthetic.
+ *
+ * @returns Computed offset or `null`.
+ */
+function startOf(
+  { located, }: { readonly located: ReturnType<typeof locateBlock>; },
+): number | null {
+  if (located === NOT_LOCATED)
+    return null;
+  if (located.kind
+    === 'kv')
+    return located.kv
+      .origin
+      .kind
+      === 'clean' ? located.kv
+      .origin
+      .range[0] : null;
+  if (located.kind
+    === 'table')
+    return located.table
+      .headerOrigin
+      .kind
+      === 'clean' ? located.table
+      .headerOrigin
+      .range[0] : null;
+  /**
+   * First array-of-tables instance is where a preceding block attaches.
+   */
+  const first = nonNullishOrThrow(located.tables[0],);
+  return first.headerOrigin
+    .kind
+    === 'clean' ? first.headerOrigin
+    .range[0] : null;
 }

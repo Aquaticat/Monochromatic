@@ -8,10 +8,10 @@
  * - `'splice'` preserves the original bytes for unmutated regions (default).
  * - `'canonical'` rebuilds text from the AST with consistent formatting.
  *
- * Mutating functions return a fresh state; the AST and source are shared by
- * reference. Read functions consult pending deltas first, the parse-time AST
- * second, so branching on a state and querying it after a `tomlSet` reflects
- * the pending value.
+ * The state is one editable document tree; every mutating function returns a
+ * fresh tree sharing unchanged nodes by reference. Reads, writes, and emit all
+ * operate on that single always-current tree, so a value queried after a
+ * `tomlSet` reflects the change and serialization stays consistent with reads.
  *
  * @example
  * Round-trip a file unchanged (splice mode, byte-identical):
@@ -29,11 +29,8 @@
  */
 
 export type {
-  AnchorKind,
   CanonicalOptions,
   CanonicalOptionsOverride,
-  Edit,
-  Insertion,
   TomlComment,
   TomlEditMode,
   TomlEditOptions,
@@ -122,6 +119,6 @@ export { emitStringValue as _emitStringValue, } from './emit-value-string.ts';
 /**
  * {@inheritDoc _encodeKey}
  */
-export { spliceEmit as _spliceEmit, } from './splice.ts';
+export { emitDocument as _emitDocument, } from './emit-document.ts';
 
 //endregion Unstable fuzzing seams

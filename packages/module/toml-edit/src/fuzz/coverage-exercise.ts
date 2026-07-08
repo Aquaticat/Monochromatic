@@ -17,7 +17,7 @@ import {
   _emitStringValue,
   _encodeKey,
   _jsValueToTomlText,
-  _spliceEmit,
+  _emitDocument,
   type CanonicalOptions,
   parseTomlEdit,
   type TomlEditState,
@@ -219,7 +219,7 @@ export function exerciseValidSource({ source, }: { readonly source: string; },):
   if (splice.ok) {
     attempt({
       thunk: function emitAndStringify() {
-        _spliceEmit({ edit: splice.edit, },);
+        _emitDocument({ edit: splice.edit, },);
         tomlStringify({ edit: splice.edit, },);
       },
     },);

@@ -10,16 +10,14 @@
  * @module
  */
 
-import type {
-  CanonicalOptions,
-  ValueNode,
-} from './document.ts';
+import type { ValueNode, } from './document.ts';
 import {
   assembleArrayParts,
   assembleInlineTableParts,
   emitContentNode,
 } from './emit-value.ts';
 import { encodeKey, } from './keys.ts';
+import type { CanonicalOptions, } from './types.ts';
 import { jsValueToTomlText, } from './values.ts';
 
 /**

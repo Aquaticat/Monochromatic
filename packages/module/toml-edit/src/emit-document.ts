@@ -126,6 +126,29 @@ function emitKeyValue(
     readonly edit: TomlEditState;
   },
 ): string {
+  return appendTrailing({
+    base: emitKeyValueBase({
+      kv,
+      edit,
+    },),
+    append: kv.trailingCommentAppend,
+  },);
+}
+
+/**
+ * Emit the key-value line without any inserted trailing comment.
+ *
+ * @returns Computed string.
+ */
+function emitKeyValueBase(
+  {
+    kv,
+    edit,
+  }: {
+    readonly kv: KeyValueNode;
+    readonly edit: TomlEditState;
+  },
+): string {
   if (kv.origin
     .kind
     === 'synthetic')
@@ -174,6 +197,30 @@ function emitKeyValue(
       depth: 0,
     },)
   }${suffix}`;
+}
+
+/**
+ * Splice an inserted trailing comment before the line's final newline.
+ *
+ * @returns Computed string.
+ */
+function appendTrailing(
+  {
+    base,
+    append,
+  }: {
+    readonly base: string;
+    readonly append: string | undefined;
+  },
+): string {
+  if (append === undefined)
+    return base;
+  if (base.endsWith('\n',))
+    return `${base.slice(
+      0,
+      -1,
+    )}${append}\n`;
+  return `${base}${append}`;
 }
 
 /**
