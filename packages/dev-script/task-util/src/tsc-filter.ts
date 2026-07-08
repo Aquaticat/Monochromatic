@@ -66,6 +66,19 @@ const SINGLE_THREADED_ENV = 'TSC_SINGLE_THREADED';
 const SINGLE_THREADED_FLAG = '--singleThreaded';
 
 /**
+ * TypeScript build-mode flags that must remain first in the forwarded argv.
+ *
+ * @example
+ * ```bash
+ * tsc --build --singleThreaded
+ * ```
+ */
+const BUILD_MODE_FLAGS = new Set([
+  '--build',
+  '-b',
+],);
+
+/**
  * Environment values that intentionally opt out of single-threaded injection.
  *
  * @example
@@ -141,6 +154,43 @@ function isSingleThreadedEnvEnabled(envValue: string,): boolean {
 }
 
 /**
+ * Injects TypeScript's single-threaded flag while preserving build-mode argv rules.
+ *
+ * TypeScript requires `--build` to be the first command-line argument, so build-mode
+ * runs receive `--singleThreaded` immediately after the build flag.
+ *
+ * @param args - arguments that will be forwarded to `tsc`
+ *
+ * @returns arguments with `--singleThreaded` inserted at a tsc-valid position
+ *
+ * @example
+ * ```ts
+ * injectSingleThreadedFlag(['--build', '--noEmit']);
+ * // ['--build', '--singleThreaded', '--noEmit']
+ * ```
+ */
+function injectSingleThreadedFlag(args: readonly string[],): readonly string[] {
+  /**
+   * First forwarded argument, or an empty sentinel when no argument exists.
+   */
+  const firstArg = args[0]
+    ?? '';
+
+  if (BUILD_MODE_FLAGS.has(firstArg,)) {
+    return [
+      firstArg,
+      SINGLE_THREADED_FLAG,
+      ...args.slice(1,),
+    ];
+  }
+
+  return [
+    SINGLE_THREADED_FLAG,
+    ...args,
+  ];
+}
+
+/**
  * Builds arguments forwarded to TypeScript.
  *
  * Defaults to `--build` when no CLI arguments are present, and injects
@@ -159,7 +209,7 @@ function isSingleThreadedEnvEnabled(envValue: string,): boolean {
  *   cliArgs: ['--build'],
  *   singleThreadedEnv: '1',
  * });
- * // ['--singleThreaded', '--build']
+ * // ['--build', '--singleThreaded']
  * ```
  */
 export function buildTscArgs({
@@ -182,10 +232,7 @@ export function buildTscArgs({
     || hasExplicitSingleThreadedFlag(baseArgs,))
     return baseArgs;
 
-  return [
-    SINGLE_THREADED_FLAG,
-    ...baseArgs,
-  ];
+  return injectSingleThreadedFlag(baseArgs,);
 }
 
 //endregion Argument construction

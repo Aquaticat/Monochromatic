@@ -42,12 +42,26 @@ await describe({
           },
         },),
         it({
-          name: 'injects singleThreaded when root fanout env is set',
+          name: 'injects singleThreaded after build for root fanout env',
           fn: async () => {
             expect(buildTscArgs({
               cliArgs: ['--build',],
               singleThreadedEnv: '1',
-            },),).toEqual(['--singleThreaded', '--build',],);
+            },),).toEqual(['--build', '--singleThreaded',],);
+          },
+        },),
+        it({
+          name: 'injects singleThreaded before non-build arguments',
+          fn: async () => {
+            expect(buildTscArgs({
+              cliArgs: ['--noEmit', '--project', 'tsconfig.json',],
+              singleThreadedEnv: '1',
+            },),).toEqual([
+              '--singleThreaded',
+              '--noEmit',
+              '--project',
+              'tsconfig.json',
+            ],);
           },
         },),
         it({
