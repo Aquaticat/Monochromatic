@@ -355,6 +355,8 @@ not to fold into `shell-command-analyzer`).
 
 Execution order:
 E2b, then E1, then E2a, then E3.
+Do not implement any code until all open design decisions in this plan have been
+finished through the grilling session.
 E2b first because it is the lowest-risk utility lift with no protocol coupling,
 and it unblocks E2a whose `session-finder` imports `splitWhitespace` from
 text-scan. E1 next (smallest, re-proves the pattern). E2a after its text-scan
