@@ -13,7 +13,7 @@ import {
   isAlphaNum,
   isDigit,
   isWordChar,
-} from '../../lib/text-scan.ts';
+} from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
 
 //region File-path predicate
 

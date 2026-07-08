@@ -14,7 +14,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { splitWhitespace, } from '../../lib/text-scan.ts';
+import { splitWhitespace, } from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
 import {
   BY_PID_DIR,
   type PidMapping,

@@ -37,7 +37,7 @@ import {
   findCallingSession,
   SESSION_NOT_FOUND,
 } from '../handlers/claude-spawn/session-finder.ts';
-import { splitWhitespace, } from '../lib/text-scan.ts';
+import { splitWhitespace, } from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
 
 /**
  * Optique parser for the spawn-claude CLI.
