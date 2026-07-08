@@ -198,3 +198,15 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   application priority; confirmed. Open requirement: the clicked PARENT must stay fully in view and
   not jump when a child spawns (the user suggests "detach columns" = independent per-column vertical
   scroll); clarifying exact behavior before that scroll refactor.
+- 2026-07-08: Detached-column strip, STAGE 1 (structure + independent scroll). Confirmed model with
+  the user: each column scrolls vertically on its own, but a parent is tethered inside its children
+  block's vertical span (top never above the block top, bottom never below the block bottom), and the
+  columns scroll together at the tether boundary; also minimize partially-clipped panes. Stage 1
+  re-architected `strip.rs` from one shared `GtkFixed` canvas to per-column vertical `ScrolledWindow`s
+  (each over a `Fixed`, scrollbar hidden via `External` policy) inside one horizontal outer
+  `ScrolledWindow`; panes placed at `row_y(row)` within their column; every column shares one content
+  height so equal offsets align rows. Extracted scroll/reveal into `scroll.rs` (reveal reveals the
+  column in the outer horizontal + the row in the column). Note: this session gives GtkApplication no
+  D-Bus single-instance lock, so relaunches pile up windows -- always kill before relaunch. Confirmed
+  live: one window, tree layout intact, each column wheel-scrolls independently. STAGE 2 next: the
+  parent-within-children tether coupling; STAGE 3: snap to keep panes fully visible.

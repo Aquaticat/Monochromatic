@@ -1,14 +1,15 @@
-//! Fixed-canvas pane strip: panes at fixed `(column, slot)` positions on a `GtkFixed`, panned via
-//! a `ScrolledWindow`.
+//! Detached-column pane strip: each lineage column is its own vertically-scrolling region, laid
+//! out left-to-right inside one horizontally-scrolling outer viewport.
 //!
-//! Empty cells hold no widget, and a pan re-composites cached render nodes rather than re-running
-//! virtualization or layout (the perf architecture from the toolkit handover: nested virtualized
-//! lists collapse under a pan, fixed-position panes hold 60 fps). The `PaneStripState` machine owns
-//! the Niri spawn/dedup/close rules; this module renders it and drives it from row activations.
+//! A pane sits in its column's canvas at `row * ROW_STRIDE`; every column shares the same content
+//! height, so equal vertical offsets align a child with its parent's row. Columns scroll
+//! independently (stage 1); a later stage tethers each parent inside its children block and snaps
+//! offsets so few panes are partially clipped. The `PaneStripState` machine owns the tree and the
+//! spawn/dedup/close rules; this module renders it and drives it from row activations.
 
 /// What: imports the interior-mutability cells used for shared, closure-captured state.
-/// Why: GTK signal closures are `'static`, so the model and widget map live behind `RefCell`, and
-///      the read generation behind `Cell`, inside a single `Rc`.
+/// Why: GTK signal closures are `'static`, so the model, widget map, and columns live behind
+///      `RefCell`, and counters behind `Cell`, inside a single `Rc`.
 use std::cell::{Cell, RefCell};
 /// What: imports the hash-map container.
 /// Why: the strip tracks one widget per live `PaneId` for reconcile.
@@ -20,12 +21,12 @@ use std::path::Path;
 /// Why: the controller shares one `StripInner` with the row-activation closures via `Weak`.
 use std::rc::Rc;
 
-/// What: imports the GTK widget-extension traits (fixed put/move, scroll adjustments, upcast).
-/// Why: the canvas places panes and scrolls to reveal them through prelude trait methods.
+/// What: imports the GTK widget-extension traits (box append, fixed put/move, scroll adjustments).
+/// Why: columns are assembled and scrolled through prelude trait methods.
 use gtk4::prelude::*;
-/// What: imports the concrete GTK types the canvas is built from.
+/// What: imports the concrete GTK types the strip is built from.
 /// Why: named explicitly so construction reads without a glob import.
-use gtk4::{Adjustment, Fixed, Label, ScrolledWindow, Widget, glib};
+use gtk4::{Box as GtkBox, Fixed, Label, Orientation, PolicyType, ScrolledWindow, Widget};
 
 /// What: imports the pane-geometry constants.
 /// Why: pane placement is computed from a single source of truth.
@@ -43,25 +44,30 @@ use crate::thumbs::{Thumbnails, is_image};
 /// Why: spawning maps an activated `FileEntry` to a `PaneLocation` keyed by `PaneId`.
 use crate::types::{FileEntry, PaneId, PaneLocation};
 
-/// What: how many timed passes to retry revealing a spawned pane before giving up.
-/// Why: the scrollable bounds settle a layout pass (a frame or two) after a column is added; the
-///      retry bounds itself so it always terminates even if the pane can never fully fit.
-const MAX_REVEAL_ATTEMPTS: u32 = 20;
+/// What: imports the row-to-pixel mapping and the reveal-on-spawn helper.
+/// Why: reconcile places panes with `row_y`; a spawn reveals the new pane in its column.
+use crate::scroll::{row_y, scroll_to_pane};
 
-/// What: milliseconds between reveal retries.
-/// Why: a real delay yields to the frame clock and layout between attempts so the scrollable bounds
-///      actually update; an idle-only retry can spin through every attempt before layout runs.
-const REVEAL_INTERVAL_MS: u64 = 8;
+/// What: one column's widgets: its vertical scroller and the canvas panes are placed on.
+/// Why: each column scrolls independently, so it owns its own `ScrolledWindow` over a `Fixed`.
+pub(crate) struct ColumnView {
+    /// Vertical scroller for this column (horizontal scrollbar off, vertical scrollbar hidden).
+    pub(crate) scroller: ScrolledWindow,
+    /// Canvas holding this column's pane widgets at `row * ROW_STRIDE`.
+    fixed: Fixed,
+}
 
-/// What: shared strip state captured by GTK closures: the canvas, the scroller, the model, the
-///       per-pane widget map, and the monotonic read generation.
+/// What: shared strip state captured by GTK closures: the outer scroller, the columns box, the
+///       per-column views, the model, the widget map, and counters.
 /// Why: one `Rc<StripInner>` is held by the controller and weakly by each pane's activation
 ///      closure, so a click can mutate the model and reconcile the canvas.
 pub(crate) struct StripInner {
-    /// The fixed canvas panes are placed on.
-    fixed: Fixed,
-    /// The scroller that pans the canvas.
-    pub(crate) scrolled: ScrolledWindow,
+    /// The outer horizontal scroller holding the columns box.
+    pub(crate) outer: ScrolledWindow,
+    /// Horizontal box of per-column scrollers.
+    columns_box: GtkBox,
+    /// One view per column (index = column depth).
+    pub(crate) columns: RefCell<Vec<ColumnView>>,
     /// The pane-strip state machine.
     pub(crate) state: RefCell<PaneStripState>,
     /// One widget per live pane, for reconcile and removal.
@@ -75,29 +81,32 @@ pub(crate) struct StripInner {
 }
 
 /// What: owning handle to a built strip; keeps `StripInner` alive for the window's lifetime.
-/// Why: the activation closures hold only a `Weak`, so this strong handle must outlive the window
-///      (the window keeps it via a destroy-time capture) or spawning would silently stop working.
+/// Why: the activation closures hold only a `Weak`, so this strong handle must outlive the window,
+///      or spawning would silently stop working.
 pub struct StripController {
     /// The shared inner state.
     inner: Rc<StripInner>,
 }
 
 /// What: the strip's public surface: construct-and-render, root-widget accessor, and the
-///       verification-only autospawn helper.
+///       verification-only autospawn/autopreview helpers.
 /// Why: callers build a strip, place its widget, and keep the handle alive; the rest reads state.
 impl StripController {
     /// What: build a strip rooted at `root`, render its root pane, and return the controller.
-    /// Why: the root directory opens in column 0; reconcile places its widget on the canvas.
+    /// Why: the root directory opens in column 0; reconcile creates that column and places its pane.
     pub fn new(root: &Path) -> Self {
-        let fixed = Fixed::new();
-        let scrolled = ScrolledWindow::builder()
-            .child(&fixed)
+        let columns_box = GtkBox::new(Orientation::Horizontal, PANE_GAP);
+        let outer = ScrolledWindow::builder()
+            .child(&columns_box)
+            .hscrollbar_policy(PolicyType::Automatic)
+            .vscrollbar_policy(PolicyType::Never)
             .vexpand(true)
             .hexpand(true)
             .build();
         let inner = Rc::new(StripInner {
-            fixed,
-            scrolled,
+            outer,
+            columns_box,
+            columns: RefCell::new(Vec::new()),
             state: RefCell::new(PaneStripState::new()),
             widgets: RefCell::new(HashMap::new()),
             generation: Cell::new(0),
@@ -114,22 +123,17 @@ impl StripController {
     }
 
     /// What: the root widget to place in the window.
-    /// Why: the window holds the scroller; a clone bumps the GTK refcount so both can hold it.
+    /// Why: the window holds the outer scroller; a clone bumps the GTK refcount so both can hold it.
     pub fn widget(&self) -> Widget {
-        self.inner.scrolled.clone().upcast::<Widget>()
+        self.inner.outer.clone().upcast::<Widget>()
     }
 
-    /// What: programmatically spawn the first sub-directory's child pane from the root.
-    /// Why: exercises the real activation -> spawn -> reconcile path for unattended verification,
-    ///      without synthesizing a click; gated behind the autospawn env var by the caller.
+    /// What: programmatically spawn the first sub-directory's child pane from the root, then close it.
+    /// Why: exercises the real activation -> spawn -> reconcile -> close path for unattended
+    ///      verification; gated behind the autospawn env var by the caller.
     pub fn autospawn_first_dir_for_test(&self) {
         let inner = &self.inner;
-        let Some(root_id) = inner.state.borrow().active() else {
-            return;
-        };
-        let Some(PaneLocation::Directory(path)) =
-            inner.state.borrow().pane(root_id).map(|pane| pane.location.clone())
-        else {
+        let Some((root_id, path)) = root_directory(inner) else {
             return;
         };
         let generation = next_generation(inner);
@@ -147,12 +151,7 @@ impl StripController {
     ///      unattended verification; gated behind the autopreview env var by the caller.
     pub fn autopreview_first_image_for_test(&self) {
         let inner = &self.inner;
-        let Some(root_id) = inner.state.borrow().active() else {
-            return;
-        };
-        let Some(PaneLocation::Directory(path)) =
-            inner.state.borrow().pane(root_id).map(|pane| pane.location.clone())
-        else {
+        let Some((root_id, path)) = root_directory(inner) else {
             return;
         };
         let generation = next_generation(inner);
@@ -169,6 +168,17 @@ impl StripController {
     }
 }
 
+/// What: the active root pane's id and directory path, if the active pane is a directory.
+/// Why: shared setup for the autospawn/autopreview test helpers.
+fn root_directory(inner: &Rc<StripInner>) -> Option<(PaneId, std::path::PathBuf)> {
+    let state = inner.state.borrow();
+    let id = state.active()?;
+    match state.pane(id).map(|pane| pane.location.clone()) {
+        Some(PaneLocation::Directory(path)) => Some((id, path)),
+        _ => None,
+    }
+}
+
 /// What: mint and record the next directory-read generation.
 /// Why: a newer read supersedes a stale snapshot; the counter only ever increases.
 fn next_generation(inner: &Rc<StripInner>) -> u64 {
@@ -177,39 +187,52 @@ fn next_generation(inner: &Rc<StripInner>) -> u64 {
     generation
 }
 
-/// What: the canvas position (in pixels) of the pane at `column`, `slot`.
-/// Why: columns tile horizontally (lineage depth), slots stack vertically within a column.
-fn position(column: usize, slot: usize) -> (i32, i32) {
-    let x = column as i32 * (PANE_WIDTH + PANE_GAP);
-    let y = slot as i32 * (PANE_HEIGHT + PANE_GAP);
-    (x, y)
-}
-
-/// What: map every live pane to its `(column, row)` grid position.
-/// Why: reconcile needs both which panes exist and where each one goes; each pane already carries
-///      its own position, so this is a direct projection.
-fn column_slots(state: &PaneStripState) -> HashMap<PaneId, (usize, usize)> {
-    state
+/// What: bring the columns and pane widgets into agreement with the model.
+/// Why: one idempotent pass after any state change: ensure a view per column, drop closed panes,
+///      place each live pane in its column at its row, and give every column the same content
+///      height so the scroll coordinate spaces line up.
+fn reconcile(inner: &Rc<StripInner>) {
+    let column_count = inner.state.borrow().column_count();
+    ensure_columns(inner, column_count);
+    let live: HashMap<PaneId, (usize, usize)> = inner
+        .state
+        .borrow()
         .panes()
         .map(|pane| (pane.id, (pane.column, pane.row)))
-        .collect()
+        .collect();
+    remove_stale(inner, &live);
+    for (&id, &(column, row)) in &live {
+        ensure_pane_widget(inner, id, column, row);
+    }
+    set_content_height(inner, &live);
 }
 
-/// What: bring the canvas widgets into agreement with the model: drop panes that are gone, then
-///       place or move every live pane to its grid position.
-/// Why: one idempotent pass after any state change keeps the fixed canvas correct without tracking
-///      diffs by hand.
-fn reconcile(inner: &Rc<StripInner>) {
-    let live = column_slots(&inner.state.borrow());
-    remove_stale(inner, &live);
-    for (&id, &(column, slot)) in &live {
-        let (x, y) = position(column, slot);
-        ensure_pane_widget(inner, id, x, y);
+/// What: grow or shrink the column views to exactly `count`.
+/// Why: descending adds columns and bulk-close removes them; each new column is a hidden-scrollbar
+///      vertical scroller over a fixed canvas, appended to the horizontal columns box.
+fn ensure_columns(inner: &Rc<StripInner>, count: usize) {
+    let mut columns = inner.columns.borrow_mut();
+    while columns.len() < count {
+        let fixed = Fixed::new();
+        let scroller = ScrolledWindow::builder()
+            .child(&fixed)
+            .hscrollbar_policy(PolicyType::Never)
+            .vscrollbar_policy(PolicyType::External)
+            .width_request(PANE_WIDTH)
+            .vexpand(true)
+            .build();
+        inner.columns_box.append(&scroller);
+        columns.push(ColumnView { scroller, fixed });
+    }
+    while columns.len() > count {
+        if let Some(view) = columns.pop() {
+            inner.columns_box.remove(&view.scroller);
+        }
     }
 }
 
-/// What: remove canvas widgets for panes no longer in the model.
-/// Why: a closed pane's widget must leave the fixed canvas and the widget map.
+/// What: remove pane widgets for panes no longer in the model.
+/// Why: a closed pane's widget must leave its column canvas and the widget map.
 fn remove_stale(inner: &Rc<StripInner>, live: &HashMap<PaneId, (usize, usize)>) {
     let stale: Vec<PaneId> = inner
         .widgets
@@ -218,32 +241,54 @@ fn remove_stale(inner: &Rc<StripInner>, live: &HashMap<PaneId, (usize, usize)>) 
         .copied()
         .filter(|id| !live.contains_key(id))
         .collect();
+    let columns = inner.columns.borrow();
     for id in stale {
-        if let Some(widget) = inner.widgets.borrow_mut().remove(&id) {
-            inner.fixed.remove(&widget);
+        if let Some(widget) = inner.widgets.borrow_mut().remove(&id)
+            && let Some(fixed) = widget.parent().and_downcast::<Fixed>()
+        {
+            let _ = &columns;
+            fixed.remove(&widget);
         }
     }
 }
 
-/// What: ensure the pane `id` has a widget at `(x, y)`: move an existing one, or build and place a
-///       new one sized to the fixed pane box.
-/// Why: reconcile calls this per live pane; a fixed size bounds each pane's list so an outer pan
-///      never re-virtualizes it.
-fn ensure_pane_widget(inner: &Rc<StripInner>, id: PaneId, x: i32, y: i32) {
+/// What: ensure pane `id` has a widget in column `column` at `row`: move an existing one or build
+///       and place a new one sized to the pane box.
+/// Why: a pane's column never changes, so it stays in one column's canvas; only its row moves as
+///      the tree re-lays-out.
+fn ensure_pane_widget(inner: &Rc<StripInner>, id: PaneId, column: usize, row: usize) {
     let existing = inner.widgets.borrow().get(&id).cloned();
+    let columns = inner.columns.borrow();
+    let Some(view) = columns.get(column) else {
+        return;
+    };
     if let Some(widget) = existing {
-        inner.fixed.move_(&widget, f64::from(x), f64::from(y));
+        view.fixed.move_(&widget, 0.0, row_y(row));
         return;
     }
+    drop(columns);
     let widget = build_pane_widget(inner, id);
     widget.set_size_request(PANE_WIDTH, PANE_HEIGHT);
-    inner.fixed.put(&widget, f64::from(x), f64::from(y));
+    if let Some(view) = inner.columns.borrow().get(column) {
+        view.fixed.put(&widget, 0.0, row_y(row));
+    }
     inner.widgets.borrow_mut().insert(id, widget);
 }
 
+/// What: give every column canvas the same height (one stride past the deepest row).
+/// Why: a shared content height means equal vertical offsets map to the same on-screen row, which
+///      the alignment and the later tether both rely on.
+fn set_content_height(inner: &Rc<StripInner>, live: &HashMap<PaneId, (usize, usize)>) {
+    let max_row = live.values().map(|&(_, row)| row).max().unwrap_or(0);
+    let height = (row_y(max_row) + f64::from(PANE_HEIGHT)) as i32;
+    for view in inner.columns.borrow().iter() {
+        view.fixed.set_size_request(PANE_WIDTH, height);
+    }
+}
+
 /// What: build the widget for pane `id` from its location.
-/// Why: a directory location becomes a listing pane wired to spawn; a preview location is a
-///      placeholder until the thumbnail milestone; a missing pane degrades to a label.
+/// Why: a directory becomes a listing pane wired to spawn; a preview becomes a thumbnail pane; a
+///      missing pane degrades to a label.
 fn build_pane_widget(inner: &Rc<StripInner>, id: PaneId) -> Widget {
     let location = inner.state.borrow().pane(id).map(|pane| pane.location.clone());
     match location {
@@ -327,71 +372,10 @@ fn spawn_from(
     spawned
 }
 
-/// What: close pane `id` and reconcile the canvas so its widget leaves.
+/// What: close pane `id` and reconcile so its widget leaves and the tree re-lays-out.
 /// Why: explicit close is the only way a pane dies; reconcile's `remove_stale` drops the widget.
 fn close_pane(inner: &Rc<StripInner>, id: PaneId) {
     inner.state.borrow_mut().close(id);
     reconcile(inner);
     tracing::info!(closed = id.0, panes = inner.state.borrow().len(), "closed pane");
-}
-
-/// What: scroll the canvas so pane `id` is fully visible, then move focus there.
-/// Why: a newly added column grows the canvas asynchronously, so the scroll adjustments' bounds
-///      update only on a later layout pass; a single attempt clamps against stale bounds and stops
-///      short of the new pane. Retry across idles until it is fully revealed (or the budget runs
-///      out), then grab focus, so the widget is allocated by the time focus lands.
-fn scroll_to_pane(inner: &Rc<StripInner>, id: PaneId) {
-    let Some(&(column, slot)) = column_slots(&inner.state.borrow()).get(&id) else {
-        return;
-    };
-    let (x, y) = position(column, slot);
-    let hadjustment = inner.scrolled.hadjustment();
-    let vadjustment = inner.scrolled.vadjustment();
-    let pane = inner.widgets.borrow().get(&id).cloned();
-    let attempts = Cell::new(0u32);
-    glib::timeout_add_local(
-        std::time::Duration::from_millis(REVEAL_INTERVAL_MS),
-        move || {
-            let horizontal = reveal(&hadjustment, f64::from(x), f64::from(PANE_WIDTH));
-            let vertical = reveal(&vadjustment, f64::from(y), f64::from(PANE_HEIGHT));
-            attempts.set(attempts.get() + 1);
-            if (horizontal && vertical) || attempts.get() >= MAX_REVEAL_ATTEMPTS {
-                tracing::debug!(
-                    pane = id.0,
-                    attempts = attempts.get(),
-                    revealed = horizontal && vertical,
-                    v_value = vadjustment.value(),
-                    v_upper = vadjustment.upper(),
-                    v_page = vadjustment.page_size(),
-                    "scroll-to-pane settled"
-                );
-                if let Some(pane) = &pane {
-                    pane.grab_focus();
-                }
-                return glib::ControlFlow::Break;
-            }
-            glib::ControlFlow::Continue
-        },
-    );
-}
-
-/// What: scroll `adj` so `[start, start + extent)` is fully within the visible page; return whether
-///       it now is.
-/// Why: the caller retries until this returns true, because the scrollable bounds update a layout
-///      pass after a new column is added, and a stale `upper` clamps the value short of the target.
-fn reveal(adj: &Adjustment, start: f64, extent: f64) -> bool {
-    let page = adj.page_size();
-    let value = adj.value();
-    if start >= value && start + extent <= value + page {
-        return true;
-    }
-    let max = (adj.upper() - page).max(0.0);
-    let target = if start < value {
-        start
-    } else {
-        start + extent - page
-    };
-    adj.set_value(target.clamp(0.0, max));
-    let settled = adj.value();
-    start >= settled && start + extent <= settled + page
 }

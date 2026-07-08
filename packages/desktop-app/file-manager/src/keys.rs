@@ -40,7 +40,7 @@ pub(crate) fn install_column_nav(inner: &Rc<StripInner>) {
             _ => glib::Propagation::Proceed,
         }
     });
-    inner.scrolled.add_controller(keys);
+    inner.outer.add_controller(keys);
 }
 
 /// What: move keyboard focus to the first pane of the column `delta` away, if it exists, and record

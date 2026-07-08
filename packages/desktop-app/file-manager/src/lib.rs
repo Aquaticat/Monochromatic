@@ -21,6 +21,9 @@ mod strip;
 /// What: keyboard column navigation for the strip.
 /// Why: Left/Right move focus between columns; split out to keep `strip.rs` under max-lines.
 mod keys;
+/// What: scrolling and reveal for the detached-column strip.
+/// Why: reveal-on-spawn plus the shared row mapping; hosts the tether/snap coupling next.
+mod scroll;
 /// What: the application stylesheet (black background).
 /// Why: applies a low-glare theme override once at startup.
 mod style;

@@ -1,0 +1,107 @@
+//! Scrolling for the detached-column strip.
+//!
+//! Reveals a spawned pane in its own column (vertically) and in the outer horizontal viewport, and
+//! provides the shared row-to-pixel mapping. The parent-tether coupling and full-pane snapping will
+//! build on this module.
+
+/// What: imports the single-slot cell.
+/// Why: the reveal retry counts its attempts in a `Cell` captured by the timer closure.
+use std::cell::Cell;
+/// What: imports the reference-counted pointer.
+/// Why: the reveal timer holds the strip's inner state.
+use std::rc::Rc;
+
+/// What: imports the GTK adjustment/widget extension traits.
+/// Why: revealing sets scroll-adjustment values and grabs focus via prelude traits.
+use gtk4::prelude::*;
+/// What: imports the scroll-adjustment type and the glib module.
+/// Why: `reveal` operates on an `Adjustment`; the retry runs on a `glib` timer.
+use gtk4::{Adjustment, glib};
+
+/// What: imports the pane-geometry constants.
+/// Why: the row-to-pixel stride and reveal extents come from a single source of truth.
+use crate::constants::{PANE_GAP, PANE_HEIGHT, PANE_WIDTH};
+/// What: imports the strip's shared inner state.
+/// Why: scrolling reads the model, the outer scroller, the columns, and the widget map.
+use crate::strip::StripInner;
+/// What: imports the pane identity type.
+/// Why: the reveal targets a pane by id.
+use crate::types::PaneId;
+
+/// What: how many timed passes to retry revealing a spawned pane before giving up.
+/// Why: scroll bounds settle a layout pass after content changes; the retry bounds itself so it
+///      always terminates even if the pane can never fully fit.
+const MAX_REVEAL_ATTEMPTS: u32 = 20;
+
+/// What: milliseconds between reveal retries.
+/// Why: a real delay yields to the frame clock and layout between attempts so the scroll bounds
+///      actually update; an idle-only retry can spin through every attempt before layout runs.
+const REVEAL_INTERVAL_MS: u64 = 8;
+
+/// What: the vertical pixel offset of `row` within a column's canvas.
+/// Why: rows tile down each column at a fixed stride shared by every column, so equal offsets align.
+pub(crate) fn row_y(row: usize) -> f64 {
+    row as f64 * f64::from(PANE_HEIGHT + PANE_GAP)
+}
+
+/// What: scroll pane `id` into view: its column horizontally in the outer scroller, and its row
+///       vertically in that column, retried until fully visible, then move focus there.
+/// Why: a newly added column and its content settle a layout pass after reconcile, so a single
+///      attempt clamps against stale bounds; a timed retry lets layout run in between.
+pub(crate) fn scroll_to_pane(inner: &Rc<StripInner>, id: PaneId) {
+    let Some((column, row)) = inner
+        .state
+        .borrow()
+        .pane(id)
+        .map(|pane| (pane.column, pane.row))
+    else {
+        return;
+    };
+    let outer_h = inner.outer.hadjustment();
+    let column_x = column as f64 * f64::from(PANE_WIDTH + PANE_GAP);
+    let column_view = inner
+        .columns
+        .borrow()
+        .get(column)
+        .map(|view| view.scroller.clone());
+    let pane = inner.widgets.borrow().get(&id).cloned();
+    let attempts = Cell::new(0u32);
+    glib::timeout_add_local(
+        std::time::Duration::from_millis(REVEAL_INTERVAL_MS),
+        move || {
+            let horizontal = reveal(&outer_h, column_x, f64::from(PANE_WIDTH));
+            let vertical = column_view
+                .as_ref()
+                .is_none_or(|view| reveal(&view.vadjustment(), row_y(row), f64::from(PANE_HEIGHT)));
+            attempts.set(attempts.get() + 1);
+            if (horizontal && vertical) || attempts.get() >= MAX_REVEAL_ATTEMPTS {
+                if let Some(pane) = &pane {
+                    pane.grab_focus();
+                }
+                return glib::ControlFlow::Break;
+            }
+            glib::ControlFlow::Continue
+        },
+    );
+}
+
+/// What: scroll `adj` so `[start, start + extent)` is fully within the visible page; return whether
+///       it now is.
+/// Why: the caller retries until this returns true, because scroll bounds update a layout pass after
+///      content changes, and a stale `upper` clamps the value short of the target.
+fn reveal(adj: &Adjustment, start: f64, extent: f64) -> bool {
+    let page = adj.page_size();
+    let value = adj.value();
+    if start >= value && start + extent <= value + page {
+        return true;
+    }
+    let max = (adj.upper() - page).max(0.0);
+    let target = if start < value {
+        start
+    } else {
+        start + extent - page
+    };
+    adj.set_value(target.clamp(0.0, max));
+    let settled = adj.value();
+    start >= settled && start + extent <= settled + page
+}
