@@ -82,3 +82,13 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   dedup-and-focus, Ctrl-duplicate, close-clears-dedup, bulk close-column/close-right-of. lint:rust +
   lint:clippy rc=0 (calibration: the linter also requires rustdoc on tuple fields; clippy prefers a
   let-chain over a nested `if`). Next: directory-listing pane rendering a real directory (#43).
+- 2026-07-08: Checkpoint 3 (directory-listing pane, #43) DONE. `pane.rs`: `build_listing_pane` builds
+  a virtualized `GtkListView` over a `DirectorySnapshot` (`gio::ListStore` of `BoxedAnyObject`-wrapped
+  `FileEntry`; `SignalListItemFactory` setup/bind; each row = themed icon by kind + name label) under
+  a header showing the directory path. `window.rs` now reads `$HOME` (fallback cwd) via
+  `fs::read_directory` and shows the listing pane, or an honest error label on failure. Verified: it
+  listed real `$HOME` with `entries=108` (matches `ls -1A | wc -l`), presented the window, zero GTK
+  errors, clean exit. A full-screen screenshot was intentionally skipped (it would capture personal
+  desktop content, and single-window capture is not reliably targetable here); verification is the
+  entry-count match plus the clean render log. Next: fixed-canvas pane strip + spawn/dedup/focus +
+  keyboard (#44).

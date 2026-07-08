@@ -12,6 +12,9 @@ mod constants;
 /// What: the top-level window construction module.
 /// Why: keeps window assembly out of `run`, each file under the max-lines budget.
 mod window;
+/// What: the directory-listing pane widget.
+/// Why: renders a `DirectorySnapshot` as a virtualized icon+name list.
+mod pane;
 
 /// What: the core domain types (ids, entries, locations, snapshots).
 /// Why: plain-Rust model shared across the shell; public so it unit-tests without GTK.
