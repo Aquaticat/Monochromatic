@@ -21,6 +21,17 @@ mod strip;
 /// What: the off-thread thumbnail decoder and bounded texture cache.
 /// Why: preview panes decode images on a worker thread and cache them with LRU eviction.
 mod thumbs;
+/// What: the file drag-and-drop wiring (inbound drop target, outbound drag source/shims).
+/// Why: native inbound over `GdkFileList`; outbound native on Wayland, shims on Windows/macOS.
+mod dnd;
+/// What: the Windows-only native OLE outbound-drag shim.
+/// Why: GDK's Win32 drag source cannot deliver files to Explorer.
+#[cfg(windows)]
+mod win_drag;
+/// What: the macOS-only native AppKit outbound-drag shim.
+/// Why: GDK's Quartz drag source cannot deliver files to Finder.
+#[cfg(target_os = "macos")]
+mod mac_drag;
 
 /// What: the core domain types (ids, entries, locations, snapshots).
 /// Why: plain-Rust model shared across the shell; public so it unit-tests without GTK.

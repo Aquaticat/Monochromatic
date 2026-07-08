@@ -132,3 +132,20 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   height=256 cache_bytes=262144` (= 256*256*4), clean exit -> decode ran off-thread, texture built +
   cached with exact byte accounting, `Picture` updated. Full browse-many-images eviction is trusted
   from the LRU logic (only one thumbnail here, well under the cap). Next: DnD wiring (#46).
+- 2026-07-08: Checkpoint 6 (DnD wiring, #46) DONE. `Cargo.toml`: target-gated `windows` 0.58 + `objc2`
+  0.6 shim deps (compiled only on their OS). `dnd.rs`: inbound `install_drop_target` attaches a
+  `GtkDropTarget` (`GdkFileList`, copy) to the window, logging each dropped file's recovered path +
+  uri (`recover_path` falls back to `glib::Uri::unescape_string` for the macOS scheme-colon encoding).
+  Outbound `install_file_drag` is cfg-branched: Wayland -> `GtkDragSource` with a `text/uri-list`
+  content provider; windows -> `GtkGestureDrag` -> `win_drag::start_file_drag` (OLE shim); macos ->
+  `GtkGestureDrag` -> `mac_drag::start_file_drag` (AppKit shim). `win_drag.rs` + `mac_drag.rs` ported
+  verbatim from the verified troubleshooting-doc/scratchpad references, with rustdoc added on their
+  `use`s/`impl` so the linter (which parses all `.rs` regardless of cfg) passes. Wired: the window
+  gets the drop target; a preview pane's body (Picture / icon box) gets the outbound drag.
+  Build/lint:rust (checks the win/mac files too)/clippy/test all green; ran clean with DnD installed
+  (no errors, clean exit). Live drag verification (real Dolphin <-> app) is MANUAL: headless cannot
+  synthesize a Wayland drag gesture, and these are the exact `GtkDropTarget`/`GtkDragSource` APIs the
+  spike already verified with real Dolphin. Outbound is currently from preview panes (single-file, no
+  click/virtualization conflict); dragging listing ROWS out is a documented refinement (needs
+  drag-vs-activate arbitration + per-row path tracking). macOS/Windows shim at-boundary verification
+  rides the m1/x13-win pass. Next: #47 final at-boundary verification + README/package completeness.

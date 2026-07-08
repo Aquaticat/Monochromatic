@@ -169,6 +169,7 @@ fn build_preview_body(thumbs: &Thumbnails, path: &Path) -> Widget {
         picture.set_vexpand(true);
         picture.set_hexpand(true);
         thumbs.request(path, &picture);
+        crate::dnd::install_file_drag(&picture, path);
         return picture.upcast::<Widget>();
     }
     let body = GtkBox::new(Orientation::Vertical, 0);
@@ -178,6 +179,7 @@ fn build_preview_body(thumbs: &Thumbnails, path: &Path) -> Widget {
     icon.set_vexpand(true);
     body.append(&icon);
     body.append(&Label::new(path.file_name().and_then(|name| name.to_str())));
+    crate::dnd::install_file_drag(&body, path);
     body.upcast::<Widget>()
 }
 
