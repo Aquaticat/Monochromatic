@@ -328,31 +328,38 @@ shared package.
 The claude `source/src/lib/text-scan.ts` internal import path changes to the
 shared package; its nine source-file consumers update accordingly.
 
-### E3: statusline projected-overrun kernel
+### E3: statusline unified rate-limit formatter
 
-Gate dropped.
-Originally gated on a design decision because the plan claimed the projection
-arithmetic had diverged. Verification disproved that:
-`packages/pi-plugins/statusline/src/usage-warning.ts` explicitly states it
-"mirrors the Claude Code statusline projection: recover elapsed window time
-as `windowSeconds - secondsUntilReset`." The pi model is the claude model plus
-two generalizations: `sampledAtMs` (sampling instant explicit, not always
-`Date.now()`) and an optional `paceScale` (for providers like Synthetic that
-regenerate credits on a different cadence). The models are already aligned; pi
-is the superset.
+Decision:
+extract the full rate-limit segment formatter, not only the projection helper,
+and unify both hosts on the Claude statusline policy.
+Both hosts render a rate-limit segment when remaining capacity is at or below
+50 percent or when projected end-of-window usage exceeds 100 percent.
+Severity is green above 25 percent remaining, yellow from 10 to 25 percent
+remaining, and red at 10 percent remaining or below or for any projected
+overrun.
+This intentionally changes Pi statusline behavior: it will no longer be
+projection-only.
 
-Adopt pi's `RateLimitSnapshot` (`usedPercent`, `windowSeconds`, `resetAtMs`,
-`sampledAtMs`, `paceScale`) as the canonical shared shape. Claude is a strict
-special case (`sampledAtMs = Date.now()`, `paceScale = 1`).
+Before sharing code, make `packages/claude-code-plugins/statusline` a real
+workspace package named `@monochromatic-dev/claude-code-plugins-statusline` with
+`package.json`, `mise.toml`, unit tests, and the existing README explanation that
+Claude Code plugins cannot contribute a main `statusLine` setting.
+It remains installed through user-scope Claude settings, not through
+`.claude-plugin/plugin.json`.
 
-Lift into `agent-harnesses-shared/usage-projection`:
-the projected-overrun computation, the `->N%` marker rendering, the
-relative-time formatter, and the threshold constants
-(`MIN_USAGE_FOR_PROJECTION`, `PROJECTED_OVERRUN_THRESHOLD`,
-`RATE_LIMIT_THRESHOLD`, `CAUTION_THRESHOLD`, `CRITICAL_THRESHOLD`).
-Claude's `formatRateLimit` becomes a caller of the shared projector with
-`sampledAtMs = now` and `paceScale = 1`; pi's `usage-warning.ts` already uses the
-shared shape directly.
+Lift into `packages/agent-harnesses-shared/usage-projection` as
+`@monochromatic-dev/agent-harnesses-shared-usage-projection`:
+`RateLimitSnapshot`, the unified rate-limit segment formatter, projected-overrun
+computation, the `→N%` marker rendering, relative-time formatting, severity
+selection, and threshold constants.
+Use `snapshot.sampledAtMs` for burn-rate projection and an explicit
+`renderedAtMs` formatter option for relative reset text.
+Keep `paceScale` so providers such as Synthetic can normalize fractional quota
+regeneration.
+The shared formatter accepts style callbacks for green, yellow, red, and
+overflow/severity rendering so Pi and Claude keep host-specific color output
+while sharing policy and text assembly.
 
 Host-specific parts stay put:
 pi's HTTP-header parsers (`anthropic-rate-limit-headers.ts`,
@@ -360,12 +367,12 @@ pi's HTTP-header parsers (`anthropic-rate-limit-headers.ts`,
 `rate-limit-headers.ts`) that build snapshots from the `after_provider_response`
 event, and claude's JSON `rate_limits.five_hour` and `rate_limits.seven_day` tier
 reader that builds snapshots from the statusline JSON. Both feed the shared
-projector.
+formatter.
 
 Sizing:
 a dedicated `agent-harnesses-shared/usage-projection` package is justified
-(projection model, marker, formatter, and threshold set are substantial enough
-not to fold into `shell-command-analyzer`).
+because the projection model, formatter, marker, severity policy, style seam, and
+threshold set are substantial enough not to fold into another shared package.
 
 ## What stays in host clusters
 
@@ -389,8 +396,9 @@ Do not implement any code until all open design decisions in this plan have been
 finished through the grilling session.
 E2b first because it is the lowest-risk utility lift with no protocol coupling,
 and it unblocks E2a whose `session-finder` imports `splitWhitespace` from
-text-scan. E1 next (smallest, re-proves the pattern). E2a after its text-scan
-dependency is shared. E3 last (smallest payoff).
+text-scan. E1 next (smallest logic extraction after its package rename,
+re-proves the pattern). E2a after its text-scan dependency is shared. E3 last
+because it now changes Pi statusline policy and packageizes Claude statusline.
 
 Commit granularity:
 per sub-step (add shared module; migrate pi consumer; migrate claude consumer;
@@ -425,18 +433,28 @@ From repo rules, for whoever executes this plan in a later session:
 All resolved during grilling:
 
 - E1:
-  fold `invokesBunTest` plus the byte-identical ban prose (as `BUN_TEST_BAN_REASON`)
-  into the existing `agent-harnesses-shell-command-analyzer`. No new package.
+  first rename the existing package to
+  `@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer`, then fold
+  `invokesBunTest` plus the byte-identical ban prose (as `BUN_TEST_BAN_REASON`)
+  into it.
 - E2a:
-  extract as `agent-harnesses-shared/session-discovery`, generic over the
-  host `PidMapping`; adopt pi's env-injection and claude's `Promise.all`
-  stat-plus-read concurrency; iterative tree walk.
+  extract as `agent-harnesses-shared/session-discovery` with package name
+  `@monochromatic-dev/agent-harnesses-shared-session-discovery`, generic over the
+  host `PidMapping`; adopt pi's env-injection, claude's `Promise.all`
+  stat-plus-read concurrency, iterative tree walk, injectable fake-IO seams, and
+  adapter plus CLI-oriented verification.
 - E2b:
-  land in `agent-harnesses-shared/text-scan` as a holding place; long-term split
-  into purposeful `packages/module/` packages tracked in GitHub issue #276.
+  land in `agent-harnesses-shared/text-scan` with package name
+  `@monochromatic-dev/agent-harnesses-shared-text-scan` as a neutral holding
+  package; lift the Claude superset; delete Pi's local `text-scan.ts` after
+  direct imports; long-term split into purposeful `packages/module/` packages
+  tracked in GitHub issue #276.
 - E3:
-  drop the design gate; adopt pi's `RateLimitSnapshot` as canonical
-  (claude is the special case with `sampledAtMs = Date.now()`, `paceScale = 1`);
-  extract as `agent-harnesses-shared/usage-projection`.
+  make `packages/claude-code-plugins/statusline` a real package named
+  `@monochromatic-dev/claude-code-plugins-statusline`; extract the unified full
+  formatter as `@monochromatic-dev/agent-harnesses-shared-usage-projection`;
+  adopt the Claude remaining-capacity-or-projection policy for both hosts;
+  use separate sample and render times plus host style callbacks.
 - Sequencing:
-  E2b, E1, E2a, E3 with per-sub-step commits.
+  finish grilling all decisions before code execution; then implement E2b, E1,
+  E2a, and E3 with per-sub-step commits.
