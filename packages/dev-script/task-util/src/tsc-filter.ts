@@ -38,6 +38,151 @@ import {
 
 import spawn from 'nano-spawn';
 
+//region Argument construction
+
+/**
+ * Environment variable that asks `task-tsc` to pass TypeScript's `--singleThreaded` flag.
+ *
+ * Root mise fanout tasks set this at the outer orchestration boundary so package-local
+ * `lint:types` tasks do not multiply TypeScript 7 worker pools under mise's own
+ * package-level parallelism. Direct package-local invocations leave it unset.
+ *
+ * @example
+ * ```toml
+ * [tasks.lint.env]
+ * TSC_SINGLE_THREADED = "1"
+ * ```
+ */
+const SINGLE_THREADED_ENV = 'TSC_SINGLE_THREADED';
+
+/**
+ * TypeScript 7 flag that disables compiler-internal parallelism.
+ *
+ * @example
+ * ```bash
+ * tsc --singleThreaded --build
+ * ```
+ */
+const SINGLE_THREADED_FLAG = '--singleThreaded';
+
+/**
+ * Environment values that intentionally opt out of single-threaded injection.
+ *
+ * @example
+ * ```bash
+ * TSC_SINGLE_THREADED=false task-tsc --build
+ * ```
+ */
+const DISABLED_SINGLE_THREADED_VALUES = new Set([
+  '0',
+  'false',
+  'no',
+  'off',
+],);
+
+/**
+ * Default TypeScript arguments used when `task-tsc` receives no CLI arguments.
+ *
+ * @example
+ * ```bash
+ * task-tsc
+ * # forwards: tsc --build
+ * ```
+ */
+const DEFAULT_TSC_ARGS = ['--build',] as const;
+
+/**
+ * Tests whether caller arguments already decide TypeScript's single-threaded mode.
+ *
+ * @param args - arguments that will be forwarded to `tsc`
+ *
+ * @returns whether `--singleThreaded` already appears in flag or assignment form
+ *
+ * @example
+ * ```ts
+ * hasExplicitSingleThreadedFlag(['--singleThreaded', '--build']);
+ * // true
+ * ```
+ */
+function hasExplicitSingleThreadedFlag(args: readonly string[],): boolean {
+  return args.some(function isSingleThreadedFlag(arg,): boolean {
+    return (arg === SINGLE_THREADED_FLAG)
+      || arg.startsWith(`${SINGLE_THREADED_FLAG}=`,);
+  },);
+}
+
+/**
+ * Tests whether the environment requests TypeScript single-threaded mode.
+ *
+ * @param envValue - raw `TSC_SINGLE_THREADED` value
+ *
+ * @returns whether the value should cause flag injection
+ *
+ * @example
+ * ```ts
+ * isSingleThreadedEnvEnabled('1');
+ * // true
+ * isSingleThreadedEnvEnabled('false');
+ * // false
+ * ```
+ */
+function isSingleThreadedEnvEnabled(envValue: string | undefined,): boolean {
+  return (envValue !== undefined)
+    && (envValue.trim()
+      .length
+      > 0)
+    && !DISABLED_SINGLE_THREADED_VALUES.has(envValue.trim()
+      .toLowerCase(),);
+}
+
+/**
+ * Builds arguments forwarded to TypeScript.
+ *
+ * Defaults to `--build` when no CLI arguments are present, and injects
+ * `--singleThreaded` when `TSC_SINGLE_THREADED` is enabled unless the caller
+ * already supplied the flag explicitly.
+ *
+ * @param cliArgs - wrapper CLI arguments after the executable path
+ * @param env - environment map used to read `TSC_SINGLE_THREADED`
+ *
+ * @returns final arguments to pass to `tsc`
+ *
+ * @example
+ * ```ts
+ * buildTscArgs({
+ *   cliArgs: ['--build'],
+ *   env: { TSC_SINGLE_THREADED: '1' },
+ * });
+ * // ['--singleThreaded', '--build']
+ * ```
+ */
+export function buildTscArgs({
+  cliArgs,
+  env,
+}: {
+  readonly cliArgs: readonly string[];
+  readonly env: Readonly<Record<string, string | undefined>>;
+},): readonly string[] {
+  /**
+   * Caller arguments or the wrapper default, copied so returned arrays are independent.
+   */
+  const baseArgs = cliArgs.length
+    > 0
+    ? [...cliArgs,]
+    : [...DEFAULT_TSC_ARGS,];
+
+  if (!isSingleThreadedEnvEnabled(env[SINGLE_THREADED_ENV],)
+    || hasExplicitSingleThreadedFlag(baseArgs,))
+    return baseArgs;
+
+  return [
+    SINGLE_THREADED_FLAG,
+    ...baseArgs,
+  ];
+}
+
+//endregion Argument construction
+
 //region Incremental cache cleanup
 
 /**
@@ -442,14 +587,13 @@ export function filterTscOutput(output: string,): {
  */
 async function main(): Promise<void> {
   /**
-   * Arguments forwarded to tsc, defaulting to `--build` when none are provided.
+   * Arguments forwarded to tsc, with wrapper defaults and root-fanout controls applied.
    */
-  const tscArgs = process.argv
-    .length
-    > 2
-    ? process.argv
-      .slice(2,)
-    : ['--build',];
+  const tscArgs = buildTscArgs({
+    cliArgs: process.argv
+      .slice(2,),
+    env: process.env,
+  },);
 
   // tsc #2666: stale .tsbuildinfo causes false negatives; clean before each build
   await removeStaleBuildInfo();

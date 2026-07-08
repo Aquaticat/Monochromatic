@@ -140,6 +140,18 @@ task-tsc --noEmit -p tsconfig.json
 task-tsc
 ```
 
+**`TSC_SINGLE_THREADED` requests TypeScript single-threaded mode.
+**
+When set to a truthy value,
+the wrapper injects `--singleThreaded` unless the caller already passed it.
+The root `mise run lint` fanout sets this env var beside `OXLINT_THREADS`,
+so package-local `lint:types` tasks do not stack TypeScript 7 worker pools on top
+of mise's package-level parallelism.
+Values `0`,
+`false`,
+`no`,
+and `off` opt out.
+
 See `TROUBLESHOOTING.typescript.md` section
 "JSR packages ship `.ts` source files that `skipLibCheck` cannot skip"
 for the full root cause analysis.

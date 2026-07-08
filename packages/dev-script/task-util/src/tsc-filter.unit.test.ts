@@ -5,6 +5,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  buildTscArgs,
   filterTscOutput,
   isContinuationLine,
   isDiagnosticLine,
@@ -21,6 +22,56 @@ const SCAN_OCCURRENCES = 50_000;
 await describe({
   name: '',
   children: [
+    describe({
+      name: buildTscArgs.name,
+      children: [
+        it({
+          name: 'defaults to build when no arguments are supplied',
+          fn: async () => {
+            expect(buildTscArgs({
+              cliArgs: [],
+              env: {},
+            },),).toEqual(['--build',],);
+          },
+        },),
+        it({
+          name: 'preserves direct package-local arguments when env is absent',
+          fn: async () => {
+            expect(buildTscArgs({
+              cliArgs: ['--build', '--noEmit',],
+              env: {},
+            },),).toEqual(['--build', '--noEmit',],);
+          },
+        },),
+        it({
+          name: 'injects singleThreaded when root fanout env is set',
+          fn: async () => {
+            expect(buildTscArgs({
+              cliArgs: ['--build',],
+              env: { TSC_SINGLE_THREADED: '1', },
+            },),).toEqual(['--singleThreaded', '--build',],);
+          },
+        },),
+        it({
+          name: 'does not duplicate an explicit singleThreaded flag',
+          fn: async () => {
+            expect(buildTscArgs({
+              cliArgs: ['--singleThreaded', '--build',],
+              env: { TSC_SINGLE_THREADED: '1', },
+            },),).toEqual(['--singleThreaded', '--build',],);
+          },
+        },),
+        it({
+          name: 'treats false env values as opt out',
+          fn: async () => {
+            expect(buildTscArgs({
+              cliArgs: ['--build',],
+              env: { TSC_SINGLE_THREADED: 'false', },
+            },),).toEqual(['--build',],);
+          },
+        },),
+      ],
+    },),
     describe({
       name: isDiagnosticLine.name,
       children: [
