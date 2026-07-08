@@ -268,6 +268,8 @@ Delete each host's local copies of the shared functions once migrated.
 Decision:
 land in `packages/agent-harnesses-shared/text-scan` as a holding place.
 The package name is `@monochromatic-dev/agent-harnesses-shared-text-scan`.
+It builds as a neutral TypeScript package because the implementation is pure
+string scanning with no Node APIs.
 The existing `@monochromatic-dev/agent-harnesses-shell-command-analyzer` name is
 not a naming precedent to copy here; its missing `shared` segment is a separate
 cleanup.
