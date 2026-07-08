@@ -6,6 +6,10 @@
 
 export { analyzeShellCommand, } from './analyzer.ts';
 export {
+  BUN_TEST_BAN_REASON,
+  invokesBunTest,
+} from './bun-test.ts';
+export {
   extractParamRefs,
   looksLikePath,
 } from './refs.ts';
