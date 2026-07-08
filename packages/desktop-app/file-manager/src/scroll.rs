@@ -85,6 +85,63 @@ pub(crate) fn scroll_to_pane(inner: &Rc<StripInner>, id: PaneId) {
     );
 }
 
+/// What: pixel slack per adjacent column pair: how far the child column may scroll below the parent
+///       column before a parent would leave its children block.
+/// Why: the tether clamps the relative offset to `[0, slack]`. Slack is the tightest (minimum) over
+///      the parents in the left column, each allowing `(deepest child row - parent row)` of float; a
+///      pair with no constraining parent stays unbounded (`INFINITY`).
+fn column_slacks(inner: &Rc<StripInner>) -> Vec<f64> {
+    let state = inner.state.borrow();
+    let pairs = state.column_count().saturating_sub(1);
+    let mut slacks = vec![f64::INFINITY; pairs];
+    for parent in state.panes() {
+        let deepest = state
+            .panes()
+            .filter(|pane| pane.parent == Some(parent.id))
+            .map(|pane| pane.row)
+            .max();
+        if let Some(deepest_row) = deepest
+            && parent.column < slacks.len()
+        {
+            let slack = row_y(deepest_row) - row_y(parent.row);
+            slacks[parent.column] = slacks[parent.column].min(slack);
+        }
+    }
+    slacks
+}
+
+/// What: hold the parent-within-children tether after column `initiator` scrolled, coupling the
+///       columns on either side so no parent leaves its children block.
+/// Why: columns scroll independently within slack; at the tether boundary they move together. The
+///      initiator keeps its own value while neighbors clamp outward (right: the child column stays
+///      in `[parent, parent + slack]`; left: the parent column stays in `[child - slack, child]`),
+///      guarded against the re-entrant `value-changed` the clamps themselves fire.
+pub(crate) fn enforce_tether(inner: &Rc<StripInner>, initiator: usize) {
+    if inner.tethering.replace(true) {
+        return;
+    }
+    let slacks = column_slacks(inner);
+    let columns = inner.columns.borrow();
+    let pairs = slacks.len().min(columns.len().saturating_sub(1));
+    for pair in initiator..pairs {
+        let base = columns[pair].scroller.vadjustment().value();
+        let child = columns[pair + 1].scroller.vadjustment();
+        let clamped = child.value().clamp(base, base + slacks[pair]);
+        if (clamped - child.value()).abs() > f64::EPSILON {
+            child.set_value(clamped);
+        }
+    }
+    for pair in (0..initiator.min(pairs)).rev() {
+        let base = columns[pair + 1].scroller.vadjustment().value();
+        let parent = columns[pair].scroller.vadjustment();
+        let clamped = parent.value().clamp(base - slacks[pair], base);
+        if (clamped - parent.value()).abs() > f64::EPSILON {
+            parent.set_value(clamped);
+        }
+    }
+    inner.tethering.set(false);
+}
+
 /// What: scroll `adj` so `[start, start + extent)` is fully within the visible page; return whether
 ///       it now is.
 /// Why: the caller retries until this returns true, because scroll bounds update a layout pass after

@@ -78,6 +78,8 @@ pub(crate) struct StripInner {
     pub(crate) focused_column: Cell<usize>,
     /// Off-thread thumbnail decoder + bounded cache, shared by preview panes.
     thumbs: Thumbnails,
+    /// Re-entrancy guard: true while the tether is adjusting neighbor columns' scroll offsets.
+    pub(crate) tethering: Cell<bool>,
 }
 
 /// What: owning handle to a built strip; keeps `StripInner` alive for the window's lifetime.
@@ -112,6 +114,7 @@ impl StripController {
             generation: Cell::new(0),
             focused_column: Cell::new(0),
             thumbs: Thumbnails::start(),
+            tethering: Cell::new(false),
         });
         inner
             .state
@@ -213,6 +216,7 @@ fn reconcile(inner: &Rc<StripInner>) {
 fn ensure_columns(inner: &Rc<StripInner>, count: usize) {
     let mut columns = inner.columns.borrow_mut();
     while columns.len() < count {
+        let index = columns.len();
         let fixed = Fixed::new();
         let scroller = ScrolledWindow::builder()
             .child(&fixed)
@@ -221,6 +225,12 @@ fn ensure_columns(inner: &Rc<StripInner>, count: usize) {
             .width_request(PANE_WIDTH)
             .vexpand(true)
             .build();
+        let weak = Rc::downgrade(inner);
+        scroller.vadjustment().connect_value_changed(move |_| {
+            if let Some(inner) = weak.upgrade() {
+                crate::scroll::enforce_tether(&inner, index);
+            }
+        });
         inner.columns_box.append(&scroller);
         columns.push(ColumnView { scroller, fixed });
     }

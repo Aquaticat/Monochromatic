@@ -210,3 +210,13 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   D-Bus single-instance lock, so relaunches pile up windows -- always kill before relaunch. Confirmed
   live: one window, tree layout intact, each column wheel-scrolls independently. STAGE 2 next: the
   parent-within-children tether coupling; STAGE 3: snap to keep panes fully visible.
+- 2026-07-08: Detached-column strip, STAGE 2 (tether) DONE. Each column's vadjustment
+  `value-changed` calls `scroll.rs` `enforce_tether(initiator)`: with the initiator column's scroll
+  fixed, neighbors clamp outward so the relative offset (child column minus parent column) stays in
+  `[0, slack]`, where slack per pair = min over the left column's parents of `(deepest child row -
+  parent row) * ROW_STRIDE`. The right pass keeps the child column in `[parent, parent+slack]`; the
+  left pass keeps the parent column in `[child-slack, child]`; a re-entrancy guard
+  (`StripInner.tethering`) ignores the `value-changed` the clamps themselves fire. Confirmed live: a
+  child column can't scroll its contents above the parent, and the columns couple at the boundary.
+  STAGE 3 next: snap offsets so as few panes as possible are partially clipped (the user sees a pane
+  land not-fully-in-viewport on scroll-down).
