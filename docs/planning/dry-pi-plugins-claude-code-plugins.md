@@ -162,26 +162,36 @@ through the new entry, require byte-equal stdout).
 
 ### E1: fold `invokesBunTest` into `shell-command-analyzer`
 
-This adds no new package.
+This adds no new package, but first renames the existing package to fix its
+known naming mistake.
+The path stays `packages/agent-harnesses-shared/shell-command-analyzer`; the
+package name becomes
+`@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer`.
 `invokesBunTest` is a predicate over `analyzeShellCommand` output, so it belongs
-alongside `extractParamRefs` and `looksLikePath` in the existing
-`packages/agent-harnesses-shared/shell-command-analyzer` package, which is
-already a dependency of both guardrails.
+alongside `extractParamRefs` and `looksLikePath` in that existing shared package,
+which is already a dependency of both guardrails.
 
 Steps:
 
-1. Add `invokesBunTest(command)` to
-   `packages/agent-harnesses-shared/shell-command-analyzer/src/`,
-   exported from its `src/index.ts`, with its unit test.
-2. Commit as a standalone, verified, green-tree addition.
-3. Migrate `packages/pi-plugins/guardrail/src/bash-guard.ts` to import
-   `invokesBunTest` from the shared package; delete the local copy.
+1. Rename the package in
+   `packages/agent-harnesses-shared/shell-command-analyzer/package.json` and all
+   workspace dependency/import sites from
+   `@monochromatic-dev/agent-harnesses-shell-command-analyzer` to
+   `@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer`.
+   Run the affected package type checks and commit the pure rename separately.
+2. Add `invokesBunTest(command)` and `BUN_TEST_BAN_REASON` to
+   `packages/agent-harnesses-shared/shell-command-analyzer/src/`, exported from
+   its `src/index.ts`, with unit tests.
+3. Commit as a standalone, verified, green-tree addition.
+4. Migrate `packages/pi-plugins/guardrail/src/bash-guard.ts` to import
+   `invokesBunTest` and `BUN_TEST_BAN_REASON` from the shared package; delete
+   the local predicate and local ban-reason constant.
    Run `mise run //packages/pi-plugins/guardrail:lint:types` and the guardrail
    tests.
-4. Migrate
+5. Migrate
    `packages/claude-code-plugins/source/src/handlers/guardrail.ts` the same way;
    rebuild and replay baseline fixtures for byte-equal stdout.
-5. Commit each migration separately, tree green at every commit.
+6. Commit each migration separately, tree green at every commit.
 
 Optional in the original plan, now decided:
 the deny prose is byte-identical across both hosts (the same seven-line string
@@ -190,7 +200,8 @@ and in `packages/claude-code-plugins/source/src/handlers/guardrail.ts` as
 `BUN_TEST_DENY_OUTPUT.permissionDecisionReason`). Dedup it.
 Co-locate the reason with the predicate that detects the violation:
 export a `BUN_TEST_BAN_REASON` constant from
-`agent-harnesses-shell-command-analyzer` alongside `invokesBunTest`.
+`@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer` alongside
+`invokesBunTest`.
 Both guardrails import the predicate and the reason as a pair.
 Each host still wraps the reason in its own protocol-specific deny shape
 (`{ block, reason }` for pi; `PreToolUseOutput.hookSpecificOutput.permissionDecision`
