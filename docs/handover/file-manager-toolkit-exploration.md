@@ -207,6 +207,15 @@ The Qt teardown crash on macOS (decisive): the `qml` strip benchmark, which uses
 as on Linux, but on macOS it is a user-visible "quit unexpectedly" dialog, which the user ruled
 unacceptable. Detail in `docs/troubleshooting/qt-qml-reuseitems-teardown-segfault.md`.
 
+GTK native DnD on macOS (verified on m1 over RustDesk; the drags reach the app, so this is GTK
+handling, not remote input): inbound (Finder -> GTK) is received by the stock `GtkDropTarget`, but
+`g_file_get_path` returns None because GDK's macOS backend percent-encodes the URI scheme colon
+(`file%3A///...`); the full path is present and recovered by unescaping the URI, so inbound is
+workable and it is not a permission/TCC issue. Outbound (GTK -> Finder) is rejected even with a
+correctly-encoded `text/uri-list`, so it needs a native `objc2` drag-source shim
+(`NSFilePromiseProvider`), analogous to the Windows OLE shim. Detail in
+`docs/troubleshooting/gtk4-macos-file-dnd.md`.
+
 ## Windows (x13-win) results
 
 Machine: the ThinkPad X13 (full specs in "Test machines"), driven over RustDesk. GTK4 builds,
@@ -305,8 +314,11 @@ engine stack, have no Wayland DnD).
   native Win32 OLE shim, since GTK's own drag source cannot deliver files to Explorer). In the
   real app on Windows: set `GDK_DEBUG=dcomp` in-process for GPU rendering, and port the OLE drag
   shim from `docs/troubleshooting/gtk4-windows-outbound-file-drag.md`.
-- Verify inbound and outbound DnD on macOS for the GTK app (Windows is done; macOS DnD, where
-  GtkDragSource/GtkDropTarget should both work natively via the Cocoa backend, is still pending).
+- macOS DnD is characterized (see "macOS (m1) results" and
+  `docs/troubleshooting/gtk4-macos-file-dnd.md`): inbound works with an in-app URI-unescape (GDK's
+  macOS backend encodes the URI scheme colon); outbound is rejected by Finder even with a correct
+  `text/uri-list` and needs a native `objc2` drag-source shim. Both are work items for the real
+  app, not blockers, and the earlier assumption that macOS DnD "just works via Cocoa" was wrong.
 - The Qt spike, its troubleshooting docs, and the cxx-qt linter carve-out can stay as recorded
   evidence; no further Qt spike work is planned.
 
