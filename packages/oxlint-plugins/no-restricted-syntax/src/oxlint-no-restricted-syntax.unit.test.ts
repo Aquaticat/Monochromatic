@@ -244,6 +244,7 @@ async function fixGeneratedSource(
  */
 const SUBSTANTIVE_RULES = [
   'no-arrow-function',
+  'no-array-callback-reference',
   'no-class',
   'no-enum',
   'no-for-in',
@@ -369,6 +370,15 @@ await describe({
           fn: async () => {
             const diagnostics = await lint(
               'valid/no-sync.ts',
+            );
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'no-array-callback-reference accepts explicit arity wrapper calls',
+          fn: async () => {
+            const diagnostics = await lint(
+              'valid/no-array-callback-reference.ts',
             );
             expect(diagnostics,).toEqual([],);
           },

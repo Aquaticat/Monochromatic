@@ -12,6 +12,7 @@
   ],
   "rules": {
     "no-restricted-syntax/no-arrow-function": "error",
+    "no-restricted-syntax/no-array-callback-reference": "error",
     "no-restricted-syntax/no-class": "error",
     "no-restricted-syntax/no-enum": "error",
     "no-restricted-syntax/no-for-in": "error",

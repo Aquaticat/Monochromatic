@@ -40,7 +40,6 @@ await describe({
             };
 
             /** Parsed values through unary wrapper. */
-            // oxlint-disable-next-line unicorn/no-array-callback-reference -- direct iterator callback usage is behavior under test for arity wrapper
             const parsed = ['10', '10', '10',].map(unary(parseWithObservedRadix,),);
 
             expect(parsed,).toEqual([10, 10, 10,],);
@@ -88,7 +87,6 @@ await describe({
             };
 
             /** Rendered values through binary wrapper. */
-            // oxlint-disable-next-line unicorn/no-array-callback-reference -- direct iterator callback usage is behavior under test for arity wrapper
             const rendered = ['a', 'b',].map(binary(renderWithObservedCollection,),);
 
             expect(rendered,).toEqual(['0:a', '1:b',],);

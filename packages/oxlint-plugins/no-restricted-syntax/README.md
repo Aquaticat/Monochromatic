@@ -11,6 +11,8 @@ This plugin provides individual rules for each banned syntax pattern instead.
 
 - **no-arrow-function**:
    bans arrow functions in favor of named function declarations/expressions
+- **no-array-callback-reference**:
+   bans direct callback references in array iterator methods while allowing explicit arity wrapper calls
 - **no-class**:
    bans class declarations and expressions in favor of composition-oriented objects and functions
 - **no-enum**:

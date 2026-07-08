@@ -109,6 +109,13 @@ export const restrictionRules: DummyRuleMap = {
   // Callbacks still need a name: items.map(function getValue(item) { return item.value; }).
   'no-restricted-syntax/no-arrow-function': 'error',
 
+  // Upstream unicorn/no-array-callback-reference reports wrapper calls such as
+  // items.findIndex(unary(isBig,)), even though the wrapper fixes the arity
+  // footgun. The project rule keeps direct-reference reports while accepting
+  // explicit wrapper calls.
+  'unicorn/no-array-callback-reference': 'off',
+  'no-restricted-syntax/no-array-callback-reference': 'warn',
+
   // All .catch() calls are banned. Use try/catch with async/await.
   'no-restricted-syntax/no-promise-catch': 'error',
 
