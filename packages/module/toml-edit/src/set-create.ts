@@ -79,6 +79,11 @@ export function doCreate(
     readonly value: unknown;
   },
 ): TomlEditState {
+  assertNoScalarPrefix({
+    blocks: edit.blocks,
+    path,
+    basePath: [],
+  },);
   /**
    * Index of the deepest standard table whose header is a strict prefix of path.
    */
@@ -206,6 +211,61 @@ function createAtTopLevel(
         .slice(firstTable,),
     ],
   };
+}
+
+/**
+ * Throw when `path` would be created under an existing scalar or array leaf
+ * (a key-value whose absolute key strictly prefixes `path` and whose value is
+ * not a table shape). Path-create cannot descend through such a value.
+ *
+ * @throws {@link TomlImmutableNodeError} on a scalar/array prefix conflict.
+ */
+function assertNoScalarPrefix(
+  {
+    blocks,
+    path,
+    basePath,
+  }: {
+    readonly blocks: readonly Block[];
+    readonly path: TomlPath;
+    readonly basePath: readonly (string | number)[];
+  },
+): void {
+  for (const block of blocks) {
+    if (block.kind
+      === 'keyvalue') {
+      /**
+       * Absolute key of this entry so the prefix test spans table context.
+       */
+      const abs = [
+        ...basePath,
+        ...block.keySegments,
+      ];
+      if ((abs.length
+        < path.length)
+        && abs.every(function eq(
+          seg,
+          i,
+        ) {
+          return seg === path[i];
+        },)
+        && (block.value
+          .kind
+          !== 'inline-table')) {
+        throw new TomlImmutableNodeError(
+          `Cannot path-create through ${block.value.kind} at path ${formatPath({ path, },)}`,
+        );
+      }
+      continue;
+    }
+    if (block.kind
+      === 'table')
+      assertNoScalarPrefix({
+        blocks: block.body,
+        path,
+        basePath: block.headerSegments,
+      },);
+  }
 }
 
 /**

@@ -1,21 +1,18 @@
 /**
  * Stateful edit-model property: random `tomlSet` / `tomlDelete` sequences over
- * `emptyTomlEdit`, checked against an in-memory model of the effective document.
+ * `emptyTomlEdit`, applied directly to the accumulating state (no reparse
+ * between operations), checked against an in-memory nested model.
  *
- * An operation that the API rejects must throw a `TomlEditError` and leave both
- * the state and the model unchanged. An operation that succeeds must update the
- * effective read at its path to the written value (delete to `undefined`), and
- * the model is updated to match. After the whole sequence, `tomlStringify`
- * output reparses to a document semantically equal to the model. Repeating the
- * final successful set is byte-identical (idempotence).
+ * A rejected operation must throw a `TomlEditError` and leave both the state
+ * and the model unchanged. A successful scalar set must make the effective read
+ * at its path equal the written value; a delete must make it `undefined`. After
+ * the whole sequence, `tomlStringify` output must reparse to a document
+ * semantically equal to the model.
  *
- * Paths are single top-level bare keys over a tiny alphabet, so overwrites and
- * type changes (a scalar then a table over it) arise often and exercise both the
- * success and rejection paths. Nested structure is exercised through object and
- * array-of-object values rather than dotted paths, whose implicit-parent edits
- * have known issues tracked in #252.
- *
- * Run plan and seed policy: see `../fuzz-budget.ts`.
+ * Paths are one to three segments over a tiny alphabet, so implicit dotted-key
+ * parents, overwrites, and type changes arise often. Because the document tree
+ * is the single source of truth, deltas no longer need to be flushed by a
+ * reparse between operations (issue #252).
  *
  * @module
  */
@@ -26,9 +23,7 @@ import {
   assert,
   asyncProperty,
   boolean,
-  constant,
   constantFrom,
-  dictionary,
   double,
   integer,
   oneof,
@@ -71,6 +66,11 @@ const RUN = fuzzRunPlan();
 const MAX_OPS = 14;
 
 /**
+ * Maximum path depth so implicit dotted-key parents arise without exploding.
+ */
+const MAX_DEPTH = 3;
+
+/**
  * Scalar value arbitrary over the TOML-representable JS scalars (finite floats
  * only; the special float and datetime spellings are covered elsewhere).
  */
@@ -85,37 +85,31 @@ const scalarValueArbitrary = oneof(
 );
 
 /**
- * Flat object arbitrary, emitted as a table or inline table.
- */
-const flatObjectArbitrary = dictionary(
-  constantFrom('x', 'y',),
-  scalarValueArbitrary,
-);
-
-/**
- * Value arbitrary: scalars, flat objects (tables), arrays of scalars (inline
- * arrays), and non-empty arrays of flat objects (arrays-of-tables).
+ * Value arbitrary: scalars and arrays of scalars.
+ *
+ * Object values are intentionally excluded here. They would create inline
+ * tables, whose empty-after-delete behavior (`c = {}` persists) differs from an
+ * implicit dotted-key parent (which vanishes when its last child is deleted) in
+ * a way the plain nested oracle cannot distinguish without tracking physical
+ * representation. Inline-table set/delete and whole-table replace are covered by
+ * the deterministic `issue-252` and `tomlSet`/`tomlDelete` unit tests instead.
  */
 const valueArbitrary: Arbitrary<unknown> = oneof(
   scalarValueArbitrary,
-  flatObjectArbitrary,
   array(scalarValueArbitrary, { maxLength: 3, },),
-  array(flatObjectArbitrary, {
-    minLength: 1,
-    maxLength: 3,
-  },),
 );
 
 /**
- * Path arbitrary: a single bare top-level segment over a tiny alphabet.
- *
- * Constrained to one segment so the sequence stays on the reliably-supported
- * top-level edit surface. Nested edits over implicit dotted-key parents have
- * known delta-versus-bytes inconsistencies tracked in #252; nested structure is
- * still exercised here through object and array-of-object values.
+ * Path arbitrary: one to three bare segments over a tiny alphabet, exercising
+ * implicit dotted-key parents and deep edits.
  */
-const pathArbitrary: Arbitrary<readonly string[]> = constantFrom('a', 'b', 'c',)
-  .map(function single(owner,) { return [owner,]; },);
+const pathArbitrary: Arbitrary<readonly string[]> = array(
+  constantFrom('a', 'b', 'c',),
+  {
+    minLength: 1,
+    maxLength: MAX_DEPTH,
+  },
+);
 
 /**
  * One edit operation: a set with a value, or a delete.
@@ -153,12 +147,14 @@ const opsArbitrary: Arbitrary<readonly EditOp[]> = array(opArbitrary, { maxLengt
 //region Model helpers
 
 /**
- * Mutable model node: a record of top-level model values.
+ * Mutable nested model node.
  */
 type ModelTree = Record<string, unknown>;
 
 /**
- * Set `value` at the single-segment `path` within `tree`.
+ * Set `value` at the nested `path` within `tree`, creating intermediate
+ * objects. Mirrors a successful `tomlSet` (the API rejects the cases that would
+ * make this diverge, leaving the model untouched).
  *
  * @returns Nothing; mutates `tree` in place.
  */
@@ -173,16 +169,78 @@ function modelSet(
     readonly value: unknown;
   },
 ): void {
-  tree[path[0] ?? ''] = structuredClone(value,);
+  /**
+   * Cursor descending into (and creating) each intermediate table.
+   */
+  let cursor = tree;
+  for (const seg of path.slice(
+    0,
+    -1,
+  )) {
+    /**
+     * Existing child; replaced with a fresh object when not a plain object.
+     */
+    const existing = cursor[seg];
+    if ((existing === null) || ((typeof existing) !== 'object') || Array.isArray(existing,)) {
+      /**
+       * Fresh intermediate table so the descent can continue.
+       */
+      const fresh: ModelTree = {};
+      cursor[seg] = fresh;
+      cursor = fresh;
+      continue;
+    }
+    cursor = existing as ModelTree;
+  }
+  cursor[path[path.length - 1] ?? ''] = structuredClone(value,);
 }
 
 /**
- * Delete the single-segment `path` from `tree`.
+ * Delete the nested `path` from `tree`, then prune ancestors that became empty
+ * (an implicit dotted-key parent with no remaining children has no TOML
+ * representation and vanishes). A no-op when a segment is absent.
  *
  * @returns Nothing; mutates `tree` in place.
  */
-function modelDelete({ tree, path, }: { readonly tree: ModelTree; readonly path: readonly string[]; },): void {
-  Reflect.deleteProperty(tree, path[0] ?? '',);
+function modelDelete(
+  {
+    tree,
+    path,
+  }: {
+    readonly tree: ModelTree;
+    readonly path: readonly string[];
+  },
+): void {
+  /**
+   * Objects along the path, root first; `cursors[k]` is the object at
+   * `path[0..k-1]`, so `cursors.at(-1)` is the deleted leaf's parent.
+   */
+  const cursors: ModelTree[] = [tree,];
+  for (const seg of path.slice(
+    0,
+    -1,
+  )) {
+    /**
+     * Next object down the path, or a bail-out when the segment is absent.
+     */
+    const next = cursors[cursors.length - 1]?.[seg];
+    if ((next === null) || ((typeof next) !== 'object') || Array.isArray(next,))
+      return;
+    cursors.push(next as ModelTree,);
+  }
+  Reflect.deleteProperty(
+    cursors[cursors.length - 1] ?? tree,
+    path[path.length - 1] ?? '',
+  );
+  for (let depth = cursors.length - 1; depth >= 1; depth--) {
+    if (Object.keys(cursors[depth] ?? {},).length
+      > 0)
+      break;
+    Reflect.deleteProperty(
+      cursors[depth - 1] ?? tree,
+      path[depth - 1] ?? '',
+    );
+  }
 }
 
 //endregion Model helpers
@@ -220,9 +278,8 @@ function applyOp(
         path: op.path,
         value: op.value,
       },);
-      // Whole-path read-back is well-defined for scalars; table and
-      // array-of-tables whole-reads project sub-path only by design, so those
-      // are validated through the final whole-document model check instead.
+      // Whole-path read-back is well-defined for scalars; object and array
+      // whole-reads are validated through the final whole-document check.
       if (((typeof op.value) !== 'object') || (op.value === null)) {
         expect(
           semanticEquals({
@@ -275,23 +332,15 @@ await describe({
              */
             const tree: ModelTree = {};
             /**
-             * Live state. Each step applies one operation, then materializes by
-             * reparsing the splice output, so the next operation resolves against
-             * a real document. This is the documented "reparse to continue
-             * editing" workflow and keeps pending deltas from accumulating across
-             * operations.
+             * Live state, mutated directly across operations with no reparse.
              */
             const edit = ops.reduce(
               function step(current, op,) {
-                /**
-                 * State after the operation, before materialization.
-                 */
-                const afterOp = applyOp({
+                return applyOp({
                   edit: current,
                   op,
                   tree,
                 },);
-                return parseTomlEdit({ source: tomlStringify({ edit: afterOp, },), },);
               },
               emptyTomlEdit(),
             );
@@ -331,8 +380,7 @@ await describe({
                 },),
               },);
               /**
-               * Document after reparsing and repeating the identical set, the
-               * documented way to apply a follow-up edit.
+               * Document after reparsing and repeating the identical set.
                */
               const twice = tomlStringify({
                 edit: tomlSet({
