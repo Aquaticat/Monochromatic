@@ -104,3 +104,15 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   hold only a `Weak`, so no reference cycle). Verified via `FM_AUTOSPAWN`: spawn -> `panes=2
   columns=2`, then close -> `panes=1`, presented, clean exit. Remaining for #44: Ctrl+click
   force-duplicate and Left/Right keyboard column focus.
+- 2026-07-08: Checkpoint 4b (#44 DONE): Ctrl force-duplicate + keyboard column navigation. `pane.rs`:
+  `install_force_duplicate_tracking` wires a capture-phase `GestureClick` + an `EventControllerKey`
+  feeding a shared `Cell<bool>`; `connect_activate` reads-and-clears it and passes `force_dup` to
+  `on_activate` (now `Fn(&FileEntry, bool)`); arrow keys only move selection, so browsing never spawns.
+  `strip.rs`: `spawn_from` takes `force_duplicate` -> `model.spawn_child`; tracks `focused_column`;
+  `install_column_nav` adds a capture-phase key controller on the scroller mapping Left/Right to
+  `focus_relative_column` (grab_focus the adjacent column's first pane), leaving Up/Down to the
+  focused list; a spawn grabs focus to the new pane in `scroll_to_pane`'s idle callback.
+  Build/lint/test green; autospawn spawn+close unchanged (`panes 2 -> 1`), clean exit. The modifier
+  and arrow paths compile and lint; their full boundary check (real Ctrl+click / Left-Right) is manual
+  (headless input can't target the window precisely), but the spawn/dedup/force-duplicate/close LOGIC
+  is unit-tested. Next: off-thread thumbnails + evicting cache + preview panes (#45).

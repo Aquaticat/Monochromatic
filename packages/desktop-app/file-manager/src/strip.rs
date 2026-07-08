@@ -23,9 +23,14 @@ use std::rc::Rc;
 /// What: imports the GTK widget-extension traits (fixed put/move, scroll adjustments, upcast).
 /// Why: the canvas places panes and scrolls to reveal them through prelude trait methods.
 use gtk4::prelude::*;
+/// What: imports the key-symbol type used for column navigation.
+/// Why: the strip intercepts Left/Right to move keyboard focus between columns.
+use gtk4::gdk::Key;
 /// What: imports the concrete GTK types the canvas is built from.
 /// Why: named explicitly so construction reads without a glob import.
-use gtk4::{Adjustment, Fixed, Label, ScrolledWindow, Widget, glib};
+use gtk4::{
+    Adjustment, EventControllerKey, Fixed, Label, PropagationPhase, ScrolledWindow, Widget, glib,
+};
 
 /// What: imports the pane-geometry constants.
 /// Why: pane placement is computed from a single source of truth.
@@ -55,6 +60,8 @@ struct StripInner {
     widgets: RefCell<HashMap<PaneId, Widget>>,
     /// Monotonic directory-read generation.
     generation: Cell<u64>,
+    /// Column whose pane last received focus, for Left/Right keyboard navigation.
+    focused_column: Cell<usize>,
 }
 
 /// What: owning handle to a built strip; keeps `StripInner` alive for the window's lifetime.
@@ -84,12 +91,14 @@ impl StripController {
             state: RefCell::new(PaneStripState::new()),
             widgets: RefCell::new(HashMap::new()),
             generation: Cell::new(0),
+            focused_column: Cell::new(0),
         });
         inner
             .state
             .borrow_mut()
             .open_root(PaneLocation::Directory(root.to_path_buf()));
         reconcile(&inner);
+        install_column_nav(&inner);
         Self { inner }
     }
 
@@ -117,7 +126,7 @@ impl StripController {
             return;
         };
         if let Some(entry) = snapshot.entries.iter().find(|entry| entry.path.is_dir()) {
-            let child = spawn_from(inner, root_id, entry);
+            let child = spawn_from(inner, root_id, entry, false);
             close_pane(inner, child);
         }
     }
@@ -220,9 +229,9 @@ fn build_directory_pane(inner: &Rc<StripInner>, id: PaneId, path: &Path) -> Widg
             let close_weak = Rc::downgrade(inner);
             build_listing_pane(
                 &snapshot,
-                move |entry| {
+                move |entry, force_dup| {
                     if let Some(inner) = spawn_weak.upgrade() {
-                        spawn_from(&inner, id, entry);
+                        spawn_from(&inner, id, entry, force_dup);
                     }
                 },
                 move || {
@@ -247,16 +256,27 @@ fn build_preview_placeholder(path: &Path) -> Widget {
 }
 
 /// What: spawn a child pane from `source` for the activated `entry`, reconcile, reveal it, and
-///       return the new pane id.
+///       return the new pane id; `force_duplicate` skips dedup to mint a fresh pane.
 /// Why: a directory (following symlinks) spawns a listing, anything else a preview; dedup-and-focus
-///      lives in the model, so a revisit focuses the existing pane instead of adding a second.
-fn spawn_from(inner: &Rc<StripInner>, source: PaneId, entry: &FileEntry) -> PaneId {
+///      lives in the model, so a revisit focuses the existing pane unless Ctrl forced a duplicate.
+fn spawn_from(
+    inner: &Rc<StripInner>,
+    source: PaneId,
+    entry: &FileEntry,
+    force_duplicate: bool,
+) -> PaneId {
     let location = if entry.path.is_dir() {
         PaneLocation::Directory(entry.path.clone())
     } else {
         PaneLocation::Preview(entry.path.clone())
     };
-    let spawned = inner.state.borrow_mut().spawn_child(source, location, false);
+    let spawned = inner
+        .state
+        .borrow_mut()
+        .spawn_child(source, location, force_duplicate);
+    if let Some(column) = inner.state.borrow().pane(spawned).map(|pane| pane.column) {
+        inner.focused_column.set(column);
+    }
     reconcile(inner);
     scroll_to_pane(inner, spawned);
     tracing::info!(
@@ -286,10 +306,62 @@ fn scroll_to_pane(inner: &Rc<StripInner>, id: PaneId) {
     };
     let (x, y) = position(column, slot);
     let scrolled = inner.scrolled.clone();
+    let pane = inner.widgets.borrow().get(&id).cloned();
     glib::idle_add_local_once(move || {
         reveal(&scrolled.hadjustment(), f64::from(x), f64::from(PANE_WIDTH));
         reveal(&scrolled.vadjustment(), f64::from(y), f64::from(PANE_HEIGHT));
+        if let Some(pane) = pane {
+            pane.grab_focus();
+        }
     });
+}
+
+/// What: install a capture-phase key controller on the scroller that moves keyboard focus between
+///       columns on Left/Right.
+/// Why: horizontal navigation is keyboard-primary; capture phase intercepts Left/Right before the
+///      focused list, leaving its Up/Down row navigation untouched.
+fn install_column_nav(inner: &Rc<StripInner>) {
+    let keys = EventControllerKey::new();
+    keys.set_propagation_phase(PropagationPhase::Capture);
+    let weak = Rc::downgrade(inner);
+    keys.connect_key_pressed(move |_, key, _, _| {
+        let Some(inner) = weak.upgrade() else {
+            return glib::Propagation::Proceed;
+        };
+        match key {
+            Key::Left => focus_relative_column(&inner, -1),
+            Key::Right => focus_relative_column(&inner, 1),
+            _ => glib::Propagation::Proceed,
+        }
+    });
+    inner.scrolled.add_controller(keys);
+}
+
+/// What: move keyboard focus to the first pane of the column `delta` away, if it exists, and record
+///       it as the focused column.
+/// Why: Left/Right walk the lineage; an out-of-range move is ignored and the key passes through.
+fn focus_relative_column(inner: &Rc<StripInner>, delta: i32) -> glib::Propagation {
+    let target = inner.focused_column.get() as i32 + delta;
+    let columns = inner.state.borrow().columns().len() as i32;
+    if target < 0 || target >= columns {
+        return glib::Propagation::Proceed;
+    }
+    let target = target as usize;
+    let first = inner
+        .state
+        .borrow()
+        .columns()
+        .get(target)
+        .and_then(|column| column.first().copied());
+    let Some(id) = first else {
+        return glib::Propagation::Proceed;
+    };
+    let Some(widget) = inner.widgets.borrow().get(&id).cloned() else {
+        return glib::Propagation::Proceed;
+    };
+    widget.grab_focus();
+    inner.focused_column.set(target);
+    glib::Propagation::Stop
 }
 
 /// What: adjust `adj` so the range `[start, start + extent)` is within the visible page.
