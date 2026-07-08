@@ -688,6 +688,8 @@ index against their local rule file.
    Across files,
    ordering is
   rayon-scheduler-determined and stable on a given input but not alphabetic.
+  Callers that need deterministic cross-file reports should pipe the diagnostic output
+  into `sort` in their own wrapper instead of expecting a tool-level sorted-output mode.
 
 Exit codes:
 

@@ -90,7 +90,7 @@ issue map:
    related #158 (reused)
 - Items 26 to 27 (CI fuzz-smoke plus advisory scan):
    #227
-- Item 29 (deterministic output plus perf guard):
+- Item 29 (caller-side sorting plus perf guard):
    #228
 - Items 6,
    19,
@@ -565,12 +565,13 @@ or,
      whether
     commit messages are scanned,
      whether a path-exclude list is needed).
-29. Add a deterministic output mode and a performance-regression guard.
+29. Document caller-side sorting and add a performance-regression guard.
      Cross-file hit ordering
     is rayon-scheduler-determined (stable on a given input but not sorted),
      which makes CI
     snapshot-diffing awkward;
-     offer a sorted-output mode.
+     callers that need deterministic reports should pipe the diagnostic output into `sort`
+    in their own wrapper instead of adding a sorted-output mode to the tool.
      Separately,
      the numbers in `PERF.md` are
     maintained by hand with no automated guard,
