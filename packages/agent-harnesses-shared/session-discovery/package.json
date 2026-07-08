@@ -1,0 +1,42 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/agent-harnesses-shared-session-discovery",
+  "description": "Shared process-tree and PID-directory session discovery for agent harness spawners.",
+  "type": "module",
+  "version": "0.0.1",
+  "private": false,
+  "module": "dist/final/node/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "dependencies": {
+    "@monochromatic-dev/agent-harnesses-shared-text-scan": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "files": [
+    "dist/final",
+    "src",
+    "LICENSES"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/agent-harnesses-shared/session-discovery"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
