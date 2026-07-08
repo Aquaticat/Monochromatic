@@ -38,6 +38,11 @@ const MAX_REVEAL_ATTEMPTS: u32 = 20;
 ///      actually update; an idle-only retry can spin through every attempt before layout runs.
 const REVEAL_INTERVAL_MS: u64 = 8;
 
+/// What: milliseconds of scroll quiet before the columns snap to whole-pane positions.
+/// Why: snapping mid-scroll would fight the gesture; a short debounce snaps only once the user
+///      stops, so few panes end up partially clipped and a live gesture is never disturbed.
+const SNAP_DELAY_MS: u64 = 120;
+
 /// What: the vertical pixel offset of `row` within a column's canvas.
 /// Why: rows tile down each column at a fixed stride shared by every column, so equal offsets align.
 pub(crate) fn row_y(row: usize) -> f64 {
@@ -137,6 +142,61 @@ pub(crate) fn enforce_tether(inner: &Rc<StripInner>, initiator: usize) {
         let clamped = parent.value().clamp(base - slacks[pair], base);
         if (clamped - parent.value()).abs() > f64::EPSILON {
             parent.set_value(clamped);
+        }
+    }
+    tracing::debug!(
+        initiator,
+        offsets = ?columns
+            .iter()
+            .map(|view| view.scroller.vadjustment().value() as i64)
+            .collect::<Vec<_>>(),
+        "tether pass"
+    );
+    inner.tethering.set(false);
+    schedule_snap(inner);
+}
+
+/// What: after a debounce, snap every column's scroll to whole-pane positions.
+/// Why: bumps a scroll epoch and, if no further scroll arrives within the delay, snaps once, so a
+///      pane rarely lands partially clipped while a live gesture is never disturbed.
+fn schedule_snap(inner: &Rc<StripInner>) {
+    let epoch = inner.scroll_epoch.get().wrapping_add(1);
+    inner.scroll_epoch.set(epoch);
+    let weak = Rc::downgrade(inner);
+    glib::timeout_add_local_once(std::time::Duration::from_millis(SNAP_DELAY_MS), move || {
+        if let Some(inner) = weak.upgrade()
+            && inner.scroll_epoch.get() == epoch
+        {
+            snap_columns(&inner);
+        }
+    });
+}
+
+/// What: snap each column's vertical offset to its own nearest pane-height boundary.
+/// Why: aligning pane tops to the viewport top tiles whole panes from the top so only the bottom
+///      pane per column can be partial. Each column snaps independently and keeps its own scroll
+///      position (rounded), which preserves cross-column alignment (all panes sit at stride
+///      multiples) without re-anchoring on the left column, so a down-scrolled column is never
+///      dragged back to the top. Guarded so the fired `value-changed` does not recurse.
+fn snap_columns(inner: &Rc<StripInner>) {
+    if inner.tethering.replace(true) {
+        return;
+    }
+    let stride = f64::from(PANE_HEIGHT + PANE_GAP);
+    for view in inner.columns.borrow().iter() {
+        let adj = view.scroller.vadjustment();
+        let max = (adj.upper() - adj.page_size()).max(0.0);
+        let snapped = ((adj.value() / stride).round() * stride).clamp(0.0, max);
+        if (snapped - adj.value()).abs() > f64::EPSILON {
+            tracing::debug!(
+                before = adj.value() as i64,
+                after = snapped as i64,
+                max = max as i64,
+                page = adj.page_size() as i64,
+                upper = adj.upper() as i64,
+                "snap column"
+            );
+            adj.set_value(snapped);
         }
     }
     inner.tethering.set(false);

@@ -54,3 +54,8 @@ pub(crate) const START_DIR_ENV: &str = "FM_START_DIR";
 ///       start directory at startup.
 /// Why: exercises the off-thread decode + cache path end to end for unattended verification.
 pub(crate) const AUTOPREVIEW_ENV: &str = "FM_AUTOPREVIEW";
+
+/// What: environment variable that, when set, tints each structural layer (columns, panes, headers,
+///       list areas) a distinct hue.
+/// Why: a debugging aid so the layout and scroll layers can be named precisely; off in normal use.
+pub(crate) const DEBUG_TINT_ENV: &str = "FM_DEBUG_TINT";

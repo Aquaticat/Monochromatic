@@ -1,4 +1,4 @@
-//! Application stylesheet.
+//! Application stylesheet, plus an opt-in debug tint.
 
 /// What: imports the default-display accessor type.
 /// Why: the stylesheet is attached to the display so every window inherits it.
@@ -9,13 +9,38 @@ use gtk4::{
     CssProvider, STYLE_PROVIDER_PRIORITY_APPLICATION, style_context_add_provider_for_display,
 };
 
+/// What: imports the debug-tint env-var name.
+/// Why: the debug stylesheet is loaded only when that variable is set.
+use crate::constants::DEBUG_TINT_ENV;
+
 /// What: the app stylesheet: a pure-black background across the window and its views.
 /// Why: black is easier on the eyes than the theme's dark grey; row selection and text keep the
 ///      theme's colors so highlighting and readability are unaffected.
 const APP_CSS: &str =
     "window, scrolledwindow, viewport, listview, .view { background-color: #000000; }";
 
-/// What: load the app stylesheet onto the default display so every window picks it up.
+/// What: the debug stylesheet: distinct hues per structural layer (columns cycle four hues, panes
+///       get a border, headers and list areas get their own tints).
+/// Why: lets the layout and scroll layers be named precisely while debugging; loaded only under the
+///      debug-tint env var, at a priority above the base sheet.
+const DEBUG_CSS: &str = "
+.fm-column:nth-child(4n+1) { background-color: rgba(255,64,64,0.12); }
+.fm-column:nth-child(4n+2) { background-color: rgba(64,200,64,0.12); }
+.fm-column:nth-child(4n+3) { background-color: rgba(64,140,255,0.12); }
+.fm-column:nth-child(4n+4) { background-color: rgba(230,190,64,0.12); }
+.fm-canvas { background-color: rgba(255,120,0,0.10); }
+.fm-pane { border: 2px solid #ff5ec4; }
+.fm-header { background-color: rgba(180,64,255,0.35); }
+.fm-list,
+.fm-list > viewport,
+.fm-list listview,
+.fm-list .view {
+  background-color: rgba(64,255,220,0.12);
+  border: 1px dashed #40e0d0;
+}
+";
+
+/// What: load the app stylesheet onto the default display, plus the debug tint when its env is set.
 /// Why: installed once at startup (the display exists only after GTK init); a missing display is
 ///      logged and skipped rather than panicking.
 pub(crate) fn install() {
@@ -26,4 +51,14 @@ pub(crate) fn install() {
     let provider = CssProvider::new();
     provider.load_from_data(APP_CSS);
     style_context_add_provider_for_display(&display, &provider, STYLE_PROVIDER_PRIORITY_APPLICATION);
+    if std::env::var_os(DEBUG_TINT_ENV).is_some() {
+        let debug = CssProvider::new();
+        debug.load_from_data(DEBUG_CSS);
+        style_context_add_provider_for_display(
+            &display,
+            &debug,
+            STYLE_PROVIDER_PRIORITY_APPLICATION + 1,
+        );
+        tracing::info!("debug tint enabled");
+    }
 }

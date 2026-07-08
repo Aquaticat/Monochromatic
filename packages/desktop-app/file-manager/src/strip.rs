@@ -80,6 +80,9 @@ pub(crate) struct StripInner {
     thumbs: Thumbnails,
     /// Re-entrancy guard: true while the tether is adjusting neighbor columns' scroll offsets.
     pub(crate) tethering: Cell<bool>,
+    /// Scroll epoch for debouncing the on-settle snap; bumped on each scroll so only the last one
+    /// fires the snap.
+    pub(crate) scroll_epoch: Cell<u64>,
 }
 
 /// What: owning handle to a built strip; keeps `StripInner` alive for the window's lifetime.
@@ -115,6 +118,7 @@ impl StripController {
             focused_column: Cell::new(0),
             thumbs: Thumbnails::start(),
             tethering: Cell::new(false),
+            scroll_epoch: Cell::new(0),
         });
         inner
             .state
@@ -225,6 +229,8 @@ fn ensure_columns(inner: &Rc<StripInner>, count: usize) {
             .width_request(PANE_WIDTH)
             .vexpand(true)
             .build();
+        scroller.add_css_class("fm-column");
+        fixed.add_css_class("fm-canvas");
         let weak = Rc::downgrade(inner);
         scroller.vadjustment().connect_value_changed(move |_| {
             if let Some(inner) = weak.upgrade() {

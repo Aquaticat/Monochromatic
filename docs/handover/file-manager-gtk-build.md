@@ -220,3 +220,31 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   child column can't scroll its contents above the parent, and the columns couple at the boundary.
   STAGE 3 next: snap offsets so as few panes as possible are partially clipped (the user sees a pane
   land not-fully-in-viewport on scroll-down).
+- 2026-07-08: STAGE 3 (snap) is WIP and PAUSED for the day (session got long; the exact requirement
+  wording outran a confident implementation). State:
+  - `scroll.rs` `snap_columns` (debounced `SNAP_DELAY_MS` after the last scroll, via a
+    `scroll_epoch`): rounds each column's vertical offset to its own nearest pane-height boundary,
+    clamped to `[0, max]`, INDEPENDENTLY (an earlier version folded the tether in and dragged
+    down-scrolled columns back to the top; that was fixed to independent rounding).
+  - OPEN BUG: the user reports "scroll the rightmost column down to the end, it snaps back to the
+    beginning soon after." Not yet root-caused. Debug offset logging is IN (`tracing::debug!`
+    "tether pass" with per-column offsets, and "snap column" before/after/max/page/upper) -- reproduce
+    with `RUST_LOG=file_manager=debug` and read the offsets to see which column resets and whether
+    `max`/`upper` are as expected.
+  - Likely-relevant facts to check next time: (a) there are TWO vertical scrolls -- the COLUMN scroll
+    (moves whole panes; the tether+snap act here) and each pane's FILE-LIST scroll (independent,
+    untouched); wheel routing between them may confuse which one moves. (b) every column's canvas is
+    sized to the GLOBAL max content height (`set_content_height`) so equal offsets align rows, which
+    means a short column can scroll DOWN into empty space below its panes -- reconsider whether that
+    is desired. (c) panes are `PANE_HEIGHT=520` tall, so only ~1.7 fit per viewport -> at least one
+    pane is always partly clipped; a smaller `PANE_HEIGHT` may make the snap moot.
+  - UNRESOLVED REQUIREMENT: "tint each pane's available scroll region" / what exactly the snap should
+    do -- the phrasing wasn't fully understood this session; clarify before more snap changes.
+  - DEBUG SCAFFOLDING (gated, safe to keep or delete): `FM_DEBUG_TINT=1` loads `style.rs` `DEBUG_CSS`
+    tinting `.fm-column` (per-column hue by `nth-child`), `.fm-canvas` (orange, the scrollable
+    canvas), `.fm-pane` (pink border), `.fm-header` (purple), `.fm-list` (teal, the file-list scroll
+    area). Widgets carry those classes (`strip.rs` columns; `pane.rs` container/header/list).
+  - RESUME: `pkill -9 -f /monochromatic-file-manager` (this session has no D-Bus single-instance
+    lock, so kill before relaunch), rebuild, run with `FM_DEBUG_TINT=1 RUST_LOG=file_manager=debug`,
+    reproduce the snap-back, read the offset log. Committed up to STAGE 2 (tether) as working; STAGE 3
+    (snap) + debug scaffolding committed as WIP.

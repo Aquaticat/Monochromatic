@@ -78,7 +78,9 @@ where
         .vexpand(true)
         .hexpand(true)
         .build();
+    scrolled.add_css_class("fm-list");
     let container = GtkBox::new(Orientation::Vertical, 0);
+    container.add_css_class("fm-pane");
     container.append(&build_pane_header(&snapshot.path.display().to_string(), on_close));
     container.append(&scrolled);
     container
@@ -140,6 +142,7 @@ where
     close.set_has_frame(false);
     close.connect_clicked(move |_| on_close());
     let header = GtkBox::new(Orientation::Horizontal, ROW_SPACING);
+    header.add_css_class("fm-header");
     header.append(&title);
     header.append(&close);
     header
@@ -154,6 +157,7 @@ where
     C: Fn() + 'static,
 {
     let container = GtkBox::new(Orientation::Vertical, 0);
+    container.add_css_class("fm-pane");
     container.append(&build_pane_header(&path.display().to_string(), on_close));
     container.append(&build_preview_body(thumbs, path));
     container
