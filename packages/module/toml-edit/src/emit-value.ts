@@ -272,7 +272,7 @@ export function emitArrayWithSkipPath(
  *
  * @returns Computed string.
  */
-function assembleArrayParts(
+export function assembleArrayParts(
   {
     parts,
     options,
@@ -454,7 +454,7 @@ function emitInlineTableBodyParts(
  *
  * @returns Computed string.
  */
-function assembleInlineTableParts(
+export function assembleInlineTableParts(
   {
     parts,
   }: {

@@ -4,20 +4,15 @@
  * @module
  */
 
-import { canonicalEmit, } from './canonical.ts';
-import { spliceEmit, } from './splice.ts';
+import { emitDocument, } from './emit-document.ts';
 import type { TomlEditState, } from './types.ts';
 
 /**
- * Emit the current state as TOML text, dispatching to {@link spliceEmit} or
- * {@link canonicalEmit} per `edit.mode`.
+ * Emit the current state as TOML text by walking its block tree.
  *
- * In splice mode, returns the source verbatim for unmutated regions plus
- * canonical re-emission of mutated nodes; with zero deltas the result is
- * byte-identical to the original source.
- *
- * In canonical mode, walks the AST plus deltas and produces text formatted
- * per `state.canonical`.
+ * Clean (unmutated) nodes emit their original bytes verbatim, so a parsed
+ * document with no edits is byte-identical to its source. Mutated nodes render
+ * canonically per `edit.canonical`.
  *
  * @param edit - The state to emit.
  *
@@ -30,8 +25,5 @@ import type { TomlEditState, } from './types.ts';
  * ```
  */
 export function tomlStringify({ edit, }: { readonly edit: TomlEditState; },): string {
-  if (edit.mode
-    === 'splice')
-    return spliceEmit({ edit, },);
-  return canonicalEmit({ edit, },);
+  return emitDocument({ edit, },);
 }
