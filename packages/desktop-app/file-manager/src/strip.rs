@@ -23,14 +23,9 @@ use std::rc::Rc;
 /// What: imports the GTK widget-extension traits (fixed put/move, scroll adjustments, upcast).
 /// Why: the canvas places panes and scrolls to reveal them through prelude trait methods.
 use gtk4::prelude::*;
-/// What: imports the key-symbol type used for column navigation.
-/// Why: the strip intercepts Left/Right to move keyboard focus between columns.
-use gtk4::gdk::Key;
 /// What: imports the concrete GTK types the canvas is built from.
 /// Why: named explicitly so construction reads without a glob import.
-use gtk4::{
-    Adjustment, EventControllerKey, Fixed, Label, PropagationPhase, ScrolledWindow, Widget, glib,
-};
+use gtk4::{Adjustment, Fixed, Label, ScrolledWindow, Widget, glib};
 
 /// What: imports the pane-geometry constants.
 /// Why: pane placement is computed from a single source of truth.
@@ -48,23 +43,33 @@ use crate::thumbs::{Thumbnails, is_image};
 /// Why: spawning maps an activated `FileEntry` to a `PaneLocation` keyed by `PaneId`.
 use crate::types::{FileEntry, PaneId, PaneLocation};
 
+/// What: how many timed passes to retry revealing a spawned pane before giving up.
+/// Why: the scrollable bounds settle a layout pass (a frame or two) after a column is added; the
+///      retry bounds itself so it always terminates even if the pane can never fully fit.
+const MAX_REVEAL_ATTEMPTS: u32 = 20;
+
+/// What: milliseconds between reveal retries.
+/// Why: a real delay yields to the frame clock and layout between attempts so the scrollable bounds
+///      actually update; an idle-only retry can spin through every attempt before layout runs.
+const REVEAL_INTERVAL_MS: u64 = 8;
+
 /// What: shared strip state captured by GTK closures: the canvas, the scroller, the model, the
 ///       per-pane widget map, and the monotonic read generation.
 /// Why: one `Rc<StripInner>` is held by the controller and weakly by each pane's activation
 ///      closure, so a click can mutate the model and reconcile the canvas.
-struct StripInner {
+pub(crate) struct StripInner {
     /// The fixed canvas panes are placed on.
     fixed: Fixed,
     /// The scroller that pans the canvas.
-    scrolled: ScrolledWindow,
+    pub(crate) scrolled: ScrolledWindow,
     /// The pane-strip state machine.
-    state: RefCell<PaneStripState>,
+    pub(crate) state: RefCell<PaneStripState>,
     /// One widget per live pane, for reconcile and removal.
-    widgets: RefCell<HashMap<PaneId, Widget>>,
+    pub(crate) widgets: RefCell<HashMap<PaneId, Widget>>,
     /// Monotonic directory-read generation.
     generation: Cell<u64>,
     /// Column whose pane last received focus, for Left/Right keyboard navigation.
-    focused_column: Cell<usize>,
+    pub(crate) focused_column: Cell<usize>,
     /// Off-thread thumbnail decoder + bounded cache, shared by preview panes.
     thumbs: Thumbnails,
 }
@@ -104,7 +109,7 @@ impl StripController {
             .borrow_mut()
             .open_root(PaneLocation::Directory(root.to_path_buf()));
         reconcile(&inner);
-        install_column_nav(&inner);
+        crate::keys::install_column_nav(&inner);
         Self { inner }
     }
 
@@ -316,6 +321,7 @@ fn spawn_from(
     tracing::info!(
         source = source.0,
         spawned = spawned.0,
+        entry = %entry.path.display(),
         panes = inner.state.borrow().len(),
         columns = inner.state.borrow().columns().len(),
         "spawned child pane"
@@ -331,81 +337,63 @@ fn close_pane(inner: &Rc<StripInner>, id: PaneId) {
     tracing::info!(closed = id.0, panes = inner.state.borrow().len(), "closed pane");
 }
 
-/// What: scroll the canvas so pane `id` is visible, deferred to idle so layout has settled.
-/// Why: the scroll adjustments' bounds update on layout; setting them on the next idle tick avoids
-///      clamping against stale bounds right after reconcile.
+/// What: scroll the canvas so pane `id` is fully visible, then move focus there.
+/// Why: a newly added column grows the canvas asynchronously, so the scroll adjustments' bounds
+///      update only on a later layout pass; a single attempt clamps against stale bounds and stops
+///      short of the new pane. Retry across idles until it is fully revealed (or the budget runs
+///      out), then grab focus, so the widget is allocated by the time focus lands.
 fn scroll_to_pane(inner: &Rc<StripInner>, id: PaneId) {
     let Some(&(column, slot)) = column_slots(&inner.state.borrow()).get(&id) else {
         return;
     };
     let (x, y) = position(column, slot);
-    let scrolled = inner.scrolled.clone();
+    let hadjustment = inner.scrolled.hadjustment();
+    let vadjustment = inner.scrolled.vadjustment();
     let pane = inner.widgets.borrow().get(&id).cloned();
-    glib::idle_add_local_once(move || {
-        reveal(&scrolled.hadjustment(), f64::from(x), f64::from(PANE_WIDTH));
-        reveal(&scrolled.vadjustment(), f64::from(y), f64::from(PANE_HEIGHT));
-        if let Some(pane) = pane {
-            pane.grab_focus();
-        }
-    });
+    let attempts = Cell::new(0u32);
+    glib::timeout_add_local(
+        std::time::Duration::from_millis(REVEAL_INTERVAL_MS),
+        move || {
+            let horizontal = reveal(&hadjustment, f64::from(x), f64::from(PANE_WIDTH));
+            let vertical = reveal(&vadjustment, f64::from(y), f64::from(PANE_HEIGHT));
+            attempts.set(attempts.get() + 1);
+            if (horizontal && vertical) || attempts.get() >= MAX_REVEAL_ATTEMPTS {
+                tracing::debug!(
+                    pane = id.0,
+                    attempts = attempts.get(),
+                    revealed = horizontal && vertical,
+                    v_value = vadjustment.value(),
+                    v_upper = vadjustment.upper(),
+                    v_page = vadjustment.page_size(),
+                    "scroll-to-pane settled"
+                );
+                if let Some(pane) = &pane {
+                    pane.grab_focus();
+                }
+                return glib::ControlFlow::Break;
+            }
+            glib::ControlFlow::Continue
+        },
+    );
 }
 
-/// What: install a capture-phase key controller on the scroller that moves keyboard focus between
-///       columns on Left/Right.
-/// Why: horizontal navigation is keyboard-primary; capture phase intercepts Left/Right before the
-///      focused list, leaving its Up/Down row navigation untouched.
-fn install_column_nav(inner: &Rc<StripInner>) {
-    let keys = EventControllerKey::new();
-    keys.set_propagation_phase(PropagationPhase::Capture);
-    let weak = Rc::downgrade(inner);
-    keys.connect_key_pressed(move |_, key, _, _| {
-        let Some(inner) = weak.upgrade() else {
-            return glib::Propagation::Proceed;
-        };
-        match key {
-            Key::Left => focus_relative_column(&inner, -1),
-            Key::Right => focus_relative_column(&inner, 1),
-            _ => glib::Propagation::Proceed,
-        }
-    });
-    inner.scrolled.add_controller(keys);
-}
-
-/// What: move keyboard focus to the first pane of the column `delta` away, if it exists, and record
-///       it as the focused column.
-/// Why: Left/Right walk the lineage; an out-of-range move is ignored and the key passes through.
-fn focus_relative_column(inner: &Rc<StripInner>, delta: i32) -> glib::Propagation {
-    let target = inner.focused_column.get() as i32 + delta;
-    let columns = inner.state.borrow().columns().len() as i32;
-    if target < 0 || target >= columns {
-        return glib::Propagation::Proceed;
-    }
-    let target = target as usize;
-    let first = inner
-        .state
-        .borrow()
-        .columns()
-        .get(target)
-        .and_then(|column| column.first().copied());
-    let Some(id) = first else {
-        return glib::Propagation::Proceed;
-    };
-    let Some(widget) = inner.widgets.borrow().get(&id).cloned() else {
-        return glib::Propagation::Proceed;
-    };
-    widget.grab_focus();
-    inner.focused_column.set(target);
-    glib::Propagation::Stop
-}
-
-/// What: adjust `adj` so the range `[start, start + extent)` is within the visible page.
-/// Why: scroll only as far as needed to reveal the pane, clamped to the scrollable bounds.
-fn reveal(adj: &Adjustment, start: f64, extent: f64) {
+/// What: scroll `adj` so `[start, start + extent)` is fully within the visible page; return whether
+///       it now is.
+/// Why: the caller retries until this returns true, because the scrollable bounds update a layout
+///      pass after a new column is added, and a stale `upper` clamps the value short of the target.
+fn reveal(adj: &Adjustment, start: f64, extent: f64) -> bool {
     let page = adj.page_size();
-    if start < adj.value() {
-        adj.set_value(start);
-    } else if start + extent > adj.value() + page {
-        let target = start + extent - page;
-        adj.set_value(target.clamp(0.0, (adj.upper() - page).max(0.0)));
+    let value = adj.value();
+    if start >= value && start + extent <= value + page {
+        return true;
     }
+    let max = (adj.upper() - page).max(0.0);
+    let target = if start < value {
+        start
+    } else {
+        start + extent - page
+    };
+    adj.set_value(target.clamp(0.0, max));
+    let settled = adj.value();
+    start >= settled && start + extent <= settled + page
 }

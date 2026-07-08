@@ -18,6 +18,9 @@ mod pane;
 /// What: the fixed-canvas pane strip and its controller.
 /// Why: places panes at fixed positions and drives spawn/dedup on row activation.
 mod strip;
+/// What: keyboard column navigation for the strip.
+/// Why: Left/Right move focus between columns; split out to keep `strip.rs` under max-lines.
+mod keys;
 /// What: the off-thread thumbnail decoder and bounded texture cache.
 /// Why: preview panes decode images on a worker thread and cache them with LRU eviction.
 mod thumbs;

@@ -178,3 +178,13 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   native default-manager registration, packaging/signing, the AT semantics milestone, dragging listing
   ROWS out (needs drag-vs-activate arbitration + per-row path tracking; outbound is preview-pane-only
   today), and drop-INTO-a-directory as a real file operation (inbound currently accepts + logs).
+- 2026-07-08: Live-test fix (auto-scroll). Hands-on testing surfaced that a spawned pane did not
+  scroll fully into view, and a stacked sibling looked "off by one" (the scroll revealed the pane
+  ABOVE the new one). Root cause: the idle-based reveal retry spun through every attempt before GTK
+  ran layout, so it clamped against stale scroll bounds. Fix (`strip.rs`): retry on an 8 ms timer
+  (`REVEAL_INTERVAL_MS`) so the frame clock runs layout between attempts and the adjustment `upper`
+  is current; `reveal` now returns whether the pane is fully visible so the retry stops on success.
+  Also extracted the Left/Right column nav to a new `keys.rs` (made `StripInner` `pub(crate)`) to
+  keep `strip.rs` under max-lines, and added the spawned entry path to the spawn log. Confirmed live:
+  `revealed=true` on the first timed attempt with `v_value` 0/252/784 against `v_upper` 800/1052/1584
+  for slots 0/1/2; `entry=` matches the clicked folder, so click->spawn had no real off-by-one.
