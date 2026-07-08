@@ -10,19 +10,61 @@ updated as work proceeds.
 
 - Slint (winit): rejected for this app. No native Wayland DnD; needs a hand-rolled
   `wl_data_device` adapter plus a Slint fork. Painful, and we would own both.
-- Qt (cxx-qt): works, but `reuseItems` (required for 60 fps fast scroll) segfaults on
-  teardown, accepted as an on-exit crash. Native DnD proven at the framework level, not
-  yet wired into our spike. First-class on macOS and Windows.
-- GTK4 (gtk4-rs): native Wayland window, native inbound DnD from Dolphin, virtualized
-  list, and clean teardown, all verified end to end, owning nothing. The faithful 2D grid of
-  ~14400 mixed panes (previews and small lists) scrolls diagonally at a steady ~60 fps, as long
+- DECISION (2026-07-08): GTK4 (gtk4-rs) is chosen; Qt (cxx-qt) is out. GTK meets both tiered
+  perf targets (60+ fps on the Linux box, 30+ fps on the fanless M1 Air), teardown is clean on
+  every platform, and it is the nicer toolkit to work with. Qt is out because its `reuseItems`
+  teardown segfault (and `reuseItems` is required for fast scroll) surfaces as a user-visible
+  "quit unexpectedly" CrashReporter dialog on macOS (unacceptable, unlike Linux where it exits
+  silently), and it missed the 30-fps M1 bar. Decided on Linux + macOS evidence plus the crash;
+  Windows is a later verification step for GTK, not a re-opening of the choice.
+- Perf targets (set by the user): 60+ fps on the most-performant machine (this Linux box), and
+  30+ fps on the weakest (the fanless M1 Air). Not a flat 60-everywhere bar.
+- Qt (cxx-qt): rejected. `reuseItems` (required for 60 fps fast scroll) segfaults on teardown;
+  on Linux that was a silent on-exit crash we accepted, but on macOS it raises a CrashReporter
+  dialog. Verified on m1: `EXC_BAD_ACCESS`/`SIGSEGV` (`KERN_INVALID_ADDRESS at 0x8`) in
+  `QQmlReusableDelegateModelItemsPool::drain` during engine teardown, with a `.ips` crash
+  report written (see `docs/troubleshooting/qt-qml-reuseitems-teardown-segfault.md`). Perf on
+  the M1 Air (over RustDesk) oscillated 29-61 fps, dipping below the 30-fps bar. It does build
+  and run (native Cocoa window, Rust bridge round-trips), but needs a per-OS `QMAKE` path, the
+  Wayland QPA pin dropped, a C++ logging shim, and carries pre-1.0 API churn.
+- GTK4 (gtk4-rs): chosen. Native Wayland window, native inbound DnD from Dolphin, virtualized
+  list, clean teardown (rc 0, no crash dialog on any platform), all verified, owning nothing.
+  Perf meets the targets: steady ~60 fps on the Linux box, and steady ~30-38 fps on the M1 Air
+  even under RustDesk's screen-capture penalty (a real local number would be higher), as long
   as thumbnail decode is off the render path (synchronous per-frame decode drops it to ~4 fps).
-  Linux-first; macOS and Windows are second-class.
-- Decision: not final, and the criterion has been narrowed. Styling, macOS/Windows native
-  feel, and packaging are explicitly NOT deciding factors (they are solvable, and complexity
-  is not a blocker). The deciding factor is developer experience: how nice each toolkit is to
-  work with. Gate: build and run both spikes on macOS (`m1`) and Windows (`x13-win`) first,
-  then choose on developer experience. The Windows machine is currently off, so this is paused.
+  On macOS it builds and runs zero-config (no per-OS env), native Cocoa window with the
+  virtualized list. Windows not yet verified.
+
+## Test machines (full specs)
+
+All perf numbers in this doc were produced on these two machines. The tiered targets map to
+them: 60+ fps on the Linux desktop (most performant), 30+ fps on the M1 Air (weakest).
+
+Linux (primary, this KWin machine; perf target 60+ fps):
+
+- CPU: AMD Ryzen 7 8700F, 8 cores / 16 threads, boost to ~5.05 GHz.
+- GPU: AMD Radeon RX 7600-class (Navi 33, RDNA3 discrete).
+- RAM: 64 GB.
+- OS: Bazzite 44.20260629 (Kinoite, Fedora 44 atomic / rpm-ostree), kernel
+  `7.0.9-ogc3.2.fc44.x86_64`.
+- Desktop: KDE Plasma 6.7.1, KWin 6.7.1, Wayland session (no XWayland).
+- Display: quad 4K, all four outputs (DP-3, HDMI-A-2, HDMI-A-1, DP-2) at 3840x2160@60 Hz, a
+  heavy compositor load that the RX 7600-class GPU still drove at 60 fps in the benchmark.
+  Measured on the local session (no remote-desktop overhead).
+
+macOS (`ssh m1`; perf target 30+ fps):
+
+- Model: MacBook Air (`MacBookAir10,1`), Apple M1, fanless.
+- CPU: Apple M1, 8 cores (4 performance + 4 efficiency).
+- GPU: Apple M1 7-core (base M1 Air), Metal 4.
+- RAM: 16 GB.
+- Storage: internal SSD 228 GiB (99 GiB free), fragile, so build writes were offloaded to the
+  external MacData APFS volume (477 GiB, 222 GiB free) via `CARGO_HOME`, `CARGO_TARGET_DIR`,
+  `HOMEBREW_CACHE`; only Homebrew's prefix installs (unavoidable) touched the internal SSD.
+- OS: macOS 26.5.2 (build 25F84), Darwin 25.5.0.
+- Display: built-in Retina 2560x1600 @ 60 Hz. Measured over a RustDesk remote-desktop session,
+  whose screen-capture depresses fps (a real local number would be higher); both toolkits ran
+  under this same penalty, so the head-to-head stays fair.
 
 ## Decision criteria (corrected)
 
@@ -32,7 +74,9 @@ macOS/Windows foreign look and packaging (solvable, complexity is not a blocker)
 cross-platform reach (both reach all three targets).
 
 What DOES decide it: developer experience, how nice each is to work with, plus passing the
-macOS and Windows build-and-run gate.
+build-and-run gate. Two more factors surfaced during the macOS gate and became decisive: the
+teardown-crash behavior (silent on Linux, a user-visible crash dialog on macOS) and the tiered
+perf targets (60+ on Linux, 30+ on the M1 Air).
 
 Developer-experience read (from building both spikes hands-on, preliminary):
 
@@ -105,8 +149,43 @@ This read is preliminary and must be confirmed by actually building each on macO
   Qt file manager) shows Qt is equally proven for this use case. Both are battle-tested; this
   is dropped as a reason.
 - Not yet done: outbound drag (`GtkDragSource`); a real off-thread thumbnail decoder (the
-  benchmark caches; the app needs a worker plus eviction like `preview.rs`); macOS and Windows
-  (GTK there is second-class).
+  benchmark caches; the app needs a worker plus eviction like `preview.rs`); macOS build-and-run
+  is now done (see below), Windows still pending.
+
+## macOS (m1) results
+
+Machine: the MacBook Air M1 (full specs in "Test machines"; fanless, weakest in the fleet),
+viewed over RustDesk, with all heavy build writes offloaded to the MacData APFS volume.
+
+Build-and-run developer experience:
+
+- GTK4: `brew install gtk4`, then `cargo build`, 43 s first build, zero config, zero env vars,
+  zero warnings. Ran the binary directly; native Cocoa window with the virtualized list
+  rendered (screenshot). GTK auto-selected the Quartz backend (no Wayland involved on macOS).
+- Qt: `brew install qt` (6.11.1), then `cargo build`, 1 m 34 s first build, but required
+  `QMAKE=/opt/homebrew/opt/qt/bin/qmake` (macOS names it `qmake`, Linux `qmake6`, so the
+  package's hardcoded `QMAKE=/usr/bin/qmake6` does not port), plus one benign linker warning
+  (`duplicate -rpath ignored`); build.rs runs qmake/moc and compiles the C++ shim. Ran the
+  binary directly (no `QT_QPA_PLATFORM=wayland`, which is Linux-only); native Cocoa window with
+  the Rust-backed greeting rendered, proving the Rust/QML bridge round-trips.
+
+Perf (diagonal fast scroll of the ~14400-pane grid with the shared 256-image 384x256 pool,
+16 s runs, over RustDesk; the RustDesk screen-capture depresses both toolkits equally, so these
+are a lower bound and the head-to-head stays fair):
+
+- GTK4: debug ~30-38 fps; release + `caffeinate` also ~30-38 fps (release did not lift it,
+  so the ceiling is the environment, not Rust debug overhead). Steady, always at or above the
+  30-fps M1 bar. Clean teardown (`rc 0`) every run.
+- Qt (`qml` runtime): oscillated 29-61 fps, briefly touching 60 (so the panel can present at 60
+  with RustDesk connected) but dipping to 29 under image load, below the 30-fps bar.
+
+The Qt teardown crash on macOS (decisive): the `qml` strip benchmark, which uses nested
+`reuseItems` ListViews, crashed on exit and macOS wrote a CrashReporter `.ips` report
+(`EXC_BAD_ACCESS`/`SIGSEGV`, `KERN_INVALID_ADDRESS at 0x8`, top frames
+`QQmlDelegateModelItem::destroyObjectLater` -> `destroyCacheItem` ->
+`QQmlReusableDelegateModelItemsPool::drain` -> `~QQmlDelegateModelPrivate`). Same use-after-free
+as on Linux, but on macOS it is a user-visible "quit unexpectedly" dialog, which the user ruled
+unacceptable. Detail in `docs/troubleshooting/qt-qml-reuseitems-teardown-segfault.md`.
 
 ## Branches and worktrees
 
@@ -120,22 +199,27 @@ This read is preliminary and must be confirmed by actually building each on macO
 ## Key decisions made
 
 - Leave Slint (its winit base cannot do Wayland DnD without a fork we own).
-- Do not fork or backport Qt for the teardown crash; accept the on-exit crash instead.
+- Choose GTK4 (gtk4-rs); reject Qt (cxx-qt). See the DECISION bullet in "Status at a glance"
+  and the "macOS (m1) results" section for the full evidence.
+- Qt was rejected because its required `reuseItems` teardown crash is a user-visible crash
+  dialog on macOS, and it missed the 30-fps M1 bar; the earlier "accept the on-exit crash"
+  stance held only on Linux and does not survive macOS.
 - Log off-thread in both spikes (tracing NonBlocking; Qt logs bridged in).
-- Toolchains layered live via `rpm-ostree install --apply-live` (Qt6 devel; gtk4-devel).
+- Toolchains layered live via `rpm-ostree install --apply-live` (Qt6 devel; gtk4-devel) on
+  Linux; `brew install gtk4` / `brew install qt` on macOS.
 
 ## Open items and next steps
 
-- PAUSED HERE (decision gate): build and run BOTH spikes on macOS (`m1`) and Windows
-  (`x13-win`), judging the developer experience of getting each toolkit built and running on
-  each. The Windows machine is currently off, so this is paused; macOS (`m1`) can be probed
-  when resumed.
-- Then decide GTK4 vs Qt on developer experience (not styling or cross-platform polish).
-- After choosing, build the real column/pane UI. For GTK, a `GtkColumnView` or nested lists
-  with an off-thread thumbnail decoder plus eviction (like `preview.rs`), and wire outbound
-  `GtkDragSource` and clipboard. For Qt, the Rust `QAbstractListModel` app (M1) with the
-  `process::exit` clean-exit and DnD wired in.
-- Either way, verify inbound and outbound DnD on macOS and Windows.
+- DECISION MADE: GTK4. No further toolkit comparison is needed; Windows is now a verification
+  step for GTK, not a re-open of the choice.
+- Build the real GTK column/pane UI: `GtkColumnView` or nested lists, an off-thread thumbnail
+  decoder with eviction (like `preview.rs`, not the benchmark's decode-everything cache), and
+  wire outbound `GtkDragSource` plus clipboard. Inbound `GtkDropTarget` is already proven.
+- Windows (`x13-win`, currently off): build and run the GTK spike there and confirm it clears
+  the perf target for that machine; this is the remaining hardware gap.
+- Verify inbound and outbound DnD on macOS and Windows for the GTK app.
+- The Qt spike, its troubleshooting docs, and the cxx-qt linter carve-out can stay as recorded
+  evidence; no further Qt spike work is planned.
 
 ## How to run the spikes
 
