@@ -126,13 +126,18 @@ function hasExplicitSingleThreadedFlag(args: readonly string[],): boolean {
  * // false
  * ```
  */
-function isSingleThreadedEnvEnabled(envValue: string | undefined,): boolean {
-  return (envValue !== undefined)
-    && (envValue.trim()
-      .length
-      > 0)
-    && !DISABLED_SINGLE_THREADED_VALUES.has(envValue.trim()
-      .toLowerCase(),);
+function isSingleThreadedEnvEnabled(envValue: string,): boolean {
+  /**
+   * Trimmed, case-normalized environment value used for boolean-like opt-out checks.
+   */
+  const normalizedValue = envValue.trim()
+    .toLowerCase();
+
+  if (normalizedValue.length
+    === 0)
+    return false;
+
+  return !DISABLED_SINGLE_THREADED_VALUES.has(normalizedValue,);
 }
 
 /**
@@ -143,7 +148,8 @@ function isSingleThreadedEnvEnabled(envValue: string | undefined,): boolean {
  * already supplied the flag explicitly.
  *
  * @param cliArgs - wrapper CLI arguments after the executable path
- * @param env - environment map used to read `TSC_SINGLE_THREADED`
+ *
+ * @param singleThreadedEnv - raw `TSC_SINGLE_THREADED` value, omitted when unset
  *
  * @returns final arguments to pass to `tsc`
  *
@@ -151,17 +157,17 @@ function isSingleThreadedEnvEnabled(envValue: string | undefined,): boolean {
  * ```ts
  * buildTscArgs({
  *   cliArgs: ['--build'],
- *   env: { TSC_SINGLE_THREADED: '1' },
+ *   singleThreadedEnv: '1',
  * });
  * // ['--singleThreaded', '--build']
  * ```
  */
 export function buildTscArgs({
   cliArgs,
-  env,
+  singleThreadedEnv,
 }: {
   readonly cliArgs: readonly string[];
-  readonly env: Readonly<Record<string, string | undefined>>;
+  readonly singleThreadedEnv?: string;
 },): readonly string[] {
   /**
    * Caller arguments or the wrapper default, copied so returned arrays are independent.
@@ -171,7 +177,8 @@ export function buildTscArgs({
     ? [...cliArgs,]
     : [...DEFAULT_TSC_ARGS,];
 
-  if (!isSingleThreadedEnvEnabled(env[SINGLE_THREADED_ENV],)
+  if ((singleThreadedEnv === undefined)
+    || (!isSingleThreadedEnvEnabled(singleThreadedEnv,))
     || hasExplicitSingleThreadedFlag(baseArgs,))
     return baseArgs;
 
@@ -587,12 +594,19 @@ export function filterTscOutput(output: string,): {
  */
 async function main(): Promise<void> {
   /**
+   * Raw single-threaded env request inherited from root mise fanout, when present.
+   */
+  const singleThreadedEnv = process.env[SINGLE_THREADED_ENV];
+
+  /**
    * Arguments forwarded to tsc, with wrapper defaults and root-fanout controls applied.
    */
   const tscArgs = buildTscArgs({
     cliArgs: process.argv
       .slice(2,),
-    env: process.env,
+    ...((singleThreadedEnv === undefined)
+      ? {}
+      : { singleThreadedEnv, }),
   },);
 
   // tsc #2666: stale .tsbuildinfo causes false negatives; clean before each build

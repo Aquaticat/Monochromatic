@@ -30,7 +30,6 @@ await describe({
           fn: async () => {
             expect(buildTscArgs({
               cliArgs: [],
-              env: {},
             },),).toEqual(['--build',],);
           },
         },),
@@ -39,7 +38,6 @@ await describe({
           fn: async () => {
             expect(buildTscArgs({
               cliArgs: ['--build', '--noEmit',],
-              env: {},
             },),).toEqual(['--build', '--noEmit',],);
           },
         },),
@@ -48,7 +46,7 @@ await describe({
           fn: async () => {
             expect(buildTscArgs({
               cliArgs: ['--build',],
-              env: { TSC_SINGLE_THREADED: '1', },
+              singleThreadedEnv: '1',
             },),).toEqual(['--singleThreaded', '--build',],);
           },
         },),
@@ -57,7 +55,7 @@ await describe({
           fn: async () => {
             expect(buildTscArgs({
               cliArgs: ['--singleThreaded', '--build',],
-              env: { TSC_SINGLE_THREADED: '1', },
+              singleThreadedEnv: '1',
             },),).toEqual(['--singleThreaded', '--build',],);
           },
         },),
@@ -66,7 +64,7 @@ await describe({
           fn: async () => {
             expect(buildTscArgs({
               cliArgs: ['--build',],
-              env: { TSC_SINGLE_THREADED: 'false', },
+              singleThreadedEnv: 'false',
             },),).toEqual(['--build',],);
           },
         },),
