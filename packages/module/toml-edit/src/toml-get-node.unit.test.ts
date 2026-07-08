@@ -43,19 +43,21 @@ await describe({
     },),
 
     it({
-      name: 'returns the parse-time AST node even after a pending tomlSet',
+      name: 'throws for an edited path (no parse-time node after tomlSet)',
       fn: async () => {
-        const e0 = parseTomlEdit({ source: 'foo = "old"\n', },);
+        const e0 = parseTomlEdit({ source: 'foo = "old"\nbar = 1\n', },);
         const { tomlSet, } = await import('./toml-set.ts');
         const e1 = tomlSet({ edit: e0, path: ['foo',], value: 'new', },);
-        const node = tomlGetNode({ edit: e1, path: ['foo',], },);
-        if (Array.isArray(node,))
-          throw new Error('expected single node',);
-        if ((!('type' in node)) || (node.type !== 'TOMLValue'))
-          throw new Error('expected TOMLValue',);
-        if (node.kind !== 'string')
-          throw new Error('expected string kind',);
-        expect(node.value,).toBe('old',);
+        // The edited value is synthetic, so it no longer maps to a parse-time node.
+        expect(function lookup() {
+          tomlGetNode({ edit: e1, path: ['foo',], },);
+        },)
+          .toThrow(TomlPathNotFoundError,);
+        // An unedited sibling still resolves to its parse-time node.
+        const bar = tomlGetNode({ edit: e1, path: ['bar',], },);
+        if (Array.isArray(bar,) || (!('type' in bar)) || (bar.type !== 'TOMLValue'))
+          throw new Error('expected TOMLValue for the unedited sibling',);
+        expect(bar.value,).toBe(1,);
       },
     },),
   ],

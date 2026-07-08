@@ -13,7 +13,7 @@
  *   asserts the raw spelling directly.
  * - `_emitStringValue`: re-emitting a parsed string node preserves its value
  *   across the escaping boundary.
- * - `_spliceEmit`: with no deltas, output is byte-identical to the source.
+ * - `_emitDocument`: with no edits, output is byte-identical to the source.
  *
  * Run plan and seed policy: see `../fuzz-budget.ts`.
  *
@@ -39,7 +39,7 @@ import {
   _emitStringValue,
   _encodeKey,
   _jsValueToTomlText,
-  _spliceEmit,
+  _emitDocument,
   emptyTomlEdit,
   parseTomlEdit,
   tomlGetNode,
@@ -343,12 +343,12 @@ await describe({
     },),
 
     it({
-      name: '_spliceEmit with no deltas is byte-identical to the source',
+      name: '_emitDocument with no edits is byte-identical to the source',
       timeout: RUN.timeout,
       fn: async () => {
         await assert(
           asyncProperty(documentArbitrary, async function identity(source,) {
-            expect(_spliceEmit({ edit: parseTomlEdit({ source, },), },),).toBe(source,);
+            expect(_emitDocument({ edit: parseTomlEdit({ source, },), },),).toBe(source,);
           },),
           RUN.params,
         );

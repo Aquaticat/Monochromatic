@@ -406,8 +406,7 @@ await describe({
     },),
 
     it({
-      name:
-        'effective whole-AOT read after replace is undefined (parent-path projection is sub-path only)',
+      name: 'whole-AOT read after replace returns the new instances',
       fn: async () => {
         const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
         const e1 = tomlSet({
@@ -418,7 +417,12 @@ await describe({
             { y: 8, },
           ],
         },);
-        expect(tomlGetValue({ edit: e1, path: ['foo',], },),).toBe(undefined,);
+        // The single always-current tree reads the parent path consistently
+        // with what tomlStringify emits (no sub-path-only projection limit).
+        expect(tomlGetValue({ edit: e1, path: ['foo',], },),).toEqual([
+          { y: 7, },
+          { y: 8, },
+        ],);
       },
     },),
 

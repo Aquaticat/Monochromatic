@@ -60,12 +60,18 @@ await describe({
     },),
 
     it({
-      name: 'returns the parse-time source slice even after a pending tomlSet',
+      name: 'throws for an edited path (no clean source slice after tomlSet)',
       fn: async () => {
-        const e0 = parseTomlEdit({ source: "key = 'literal'\n", },);
+        const e0 = parseTomlEdit({ source: "key = 'literal'\nother = 1\n", },);
         const { tomlSet, } = await import('./toml-set.ts');
         const e1 = tomlSet({ edit: e0, path: ['key',], value: 'new', },);
-        expect(tomlGetRaw({ edit: e1, path: ['key',], },),).toBe("'literal'",);
+        // The edited value is synthetic, so no original bytes back it.
+        expect(function lookup() {
+          tomlGetRaw({ edit: e1, path: ['key',], },);
+        },)
+          .toThrow(TomlPathNotFoundError,);
+        // An unedited sibling still returns its parse-time bytes.
+        expect(tomlGetRaw({ edit: e1, path: ['other',], },),).toBe('1',);
       },
     },),
   ],
