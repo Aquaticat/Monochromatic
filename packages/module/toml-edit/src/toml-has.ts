@@ -4,7 +4,11 @@
  * @module
  */
 
-import { effectiveAt, } from './effective-value.ts';
+import {
+  materializeDocument,
+  MISSING,
+  navigate,
+} from './document-materialize.ts';
 import type {
   TomlEditState,
   TomlPath,
@@ -12,8 +16,7 @@ import type {
 
 /**
  * True when `path` resolves to an existing key, value, table, or
- * array-of-tables in the effective state (parse-time AST plus pending
- * deltas), per {@link effectiveAt}.
+ * array-of-tables in the current document.
  *
  * @returns Resulting boolean.
  *
@@ -31,14 +34,8 @@ export function tomlHas(
     readonly path: TomlPath;
   },
 ): boolean {
-  /**
-   * Effective resolution so pending deletes show as absent.
-   */
-  const result = effectiveAt({
-    edit,
+  return navigate({
+    root: materializeDocument({ edit, },),
     path,
-  },);
-  return (result.kind
-    !== 'missing') && (result.kind
-      !== 'deleted');
+  },) !== MISSING;
 }

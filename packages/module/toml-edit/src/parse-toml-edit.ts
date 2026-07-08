@@ -11,6 +11,7 @@ import {
   parseTOML,
 } from 'toml-eslint-parser';
 
+import { buildBlocks, } from './build-document.ts';
 import { TomlEditError, } from './errors.ts';
 import {
   DEFAULT_CANONICAL_OPTIONS,
@@ -182,7 +183,7 @@ export function parseTomlEdit(
    */
   const normalizedSource = normalizeNewlines({ source, },);
   /**
-   * Single parse so the AST is captured once and shared across the state's lifetime.
+   * Single parse so the block tree is built once from the parse-time AST.
    */
   const program = safeParse({
     source: normalizedSource,
@@ -191,10 +192,11 @@ export function parseTomlEdit(
 
   return {
     source: normalizedSource,
-    program,
-    edits: new Map(),
-    insertions: [],
-    deletions: new Set(),
+    blocks: buildBlocks({
+      source: normalizedSource,
+      program,
+    },),
+    comments: program.comments,
     mode,
     canonical: Object.freeze({
       ...DEFAULT_CANONICAL_OPTIONS,

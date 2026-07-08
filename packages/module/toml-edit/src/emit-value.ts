@@ -271,8 +271,13 @@ export function emitArrayWithSkipPath(
  * Shared array-text assembly used by {@link emitArray} and {@link emitArrayWithoutIndex}.
  *
  * @returns Computed string.
+ *
+ * @example
+ * ```ts
+ * assembleArrayParts({ parts: ['1', '2'], options, depth: 0, },); // '[ 1, 2, ]'
+ * ```
  */
-function assembleArrayParts(
+export function assembleArrayParts(
   {
     parts,
     options,
@@ -453,8 +458,13 @@ function emitInlineTableBodyParts(
  * Wrap the rendered parts in `{ ... }` with the canonical comma layout.
  *
  * @returns Computed string.
+ *
+ * @example
+ * ```ts
+ * assembleInlineTableParts({ parts: ['a = 1'], },); // '{ a = 1, }'
+ * ```
  */
-function assembleInlineTableParts(
+export function assembleInlineTableParts(
   {
     parts,
   }: {

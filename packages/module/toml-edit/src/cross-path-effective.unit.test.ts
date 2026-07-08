@@ -15,7 +15,6 @@ import {
 import { emptyTomlEdit, } from './empty-toml-edit.ts';
 import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlDelete, } from './toml-delete.ts';
-import { tomlGetNode, } from './toml-get-node.ts';
 import { tomlGetValue, } from './toml-get-value.ts';
 import { tomlSet, } from './toml-set.ts';
 
@@ -62,16 +61,12 @@ await describe({
     },),
 
     it({
-      name: 'tomlGetNode after a pending Case C edit returns the parse-time node',
+      name: 'inline-table Case C extension is readable at the parent path',
       fn: async () => {
         const e0 = parseTomlEdit({ source: 'foo = {}\n', },);
         const e1 = tomlSet({ edit: e0, path: ['foo', 'x',], value: 1, },);
-        const node = tomlGetNode({ edit: e1, path: ['foo',], },);
-        if (Array.isArray(node,))
-          throw new Error('expected single node',);
-        if ((!('type' in node)) || (node.type !== 'TOMLInlineTable'))
-          throw new Error('expected inline table',);
-        expect(node.body,).toEqual([],);
+        // The edited inline table is now the current value; reads reflect it.
+        expect(tomlGetValue({ edit: e1, path: ['foo',], },),).toEqual({ x: 1, },);
       },
     },),
 

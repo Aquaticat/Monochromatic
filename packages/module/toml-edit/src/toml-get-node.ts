@@ -8,29 +8,26 @@ import type { AST, } from 'toml-eslint-parser';
 
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';
-import { resolveByPath, } from './resolve.ts';
+import {
+  locateValueNode,
+  NOT_LOCATED,
+} from './resolve-document.ts';
 import type {
   TomlEditState,
   TomlPath,
 } from './types.ts';
 
 /**
- * Return the parse-time AST `TOMLContentNode` (or wrapped value) at `path`.
+ * Return the parse-time AST node at `path`.
  *
- * Power-user escape hatch. This routes through {@link resolveByPath} directly and
- * does NOT consult pending deltas: a {@link tomlSet} on a path does not change
- * what `tomlGetNode` returns for that path (the AST is immutable, so the
- * node's `range` and content remain accurate for `edit.source`). Use
- * {@link tomlGetValue} when you need a value that reflects pending edits.
+ * Power-user escape hatch: it returns the retained AST node of a clean
+ * (unmutated) node. A path created or edited by a mutation has no parse-time
+ * node, so {@link TomlPathNotFoundError} is thrown; {@link tomlGetValue} returns
+ * the current value instead.
  *
- * For paths created by {@link tomlSet} that did not exist at parse time, there
- * is no AST node; {@link TomlPathNotFoundError} is thrown. {@link tomlStringify} and
- * reparse to materialise an AST node for such paths.
+ * @returns Computed result (`AST.TOMLContentNode | AST.TOMLTable | readonly AST.TOMLTable[]`).
  *
- * @returns Computed result (`AST.TOMLContentNode | AST.TOMLTable | AST.TOMLTopLevelTable | readonly AST.TOMLTable[]`).
- *
- * @throws {@link TomlPathNotFoundError} when `path` was not present in the parse-time
- *         source.
+ * @throws {@link TomlPathNotFoundError} when `path` has no clean parse-time node.
  *
  * @example
  * ```ts
@@ -45,34 +42,123 @@ export function tomlGetNode(
     readonly edit: TomlEditState;
     readonly path: TomlPath;
   },
-): AST.TOMLContentNode | AST.TOMLTable | AST.TOMLTopLevelTable
-  | readonly AST.TOMLTable[]
-{
+): AST.TOMLContentNode | AST.TOMLTable | readonly AST.TOMLTable[] {
   /**
-   * Direct AST lookup so callers can branch on the resolution kind.
+   * Structural location so a clean node's retained AST node can surface.
    */
-  const result = resolveByPath({
-    edit,
+  const located = locateValueNode({
+    blocks: edit.blocks,
     path,
   },);
-  if (result.kind
-    === 'missing') {
-    throw new TomlPathNotFoundError(
-      `Path ${formatPath({ path, },)} not found in parse-time AST`,
-    );
+  if (located === NOT_LOCATED)
+    throw notFound({ path, },);
+  if (located.kind
+    === 'value') {
+    if (located.value
+      .origin
+      .kind
+      === 'clean')
+      return asContentNode({
+        node: located.value
+          .origin
+          .astNode,
+        path,
+      },);
+    throw notFound({ path, },);
   }
-  if (result.kind
-    === 'keyvalue')
-    return result.node
-      .value;
-  if ((result.kind
-    === 'value')
-    || (result.kind
-      === 'table')
-    || (result.kind
-      === 'top-level'))
+  if (located.kind
+    === 'table') {
+    if (located.table
+      .headerOrigin
+      .kind
+      === 'clean')
+      return asTable({
+        node: located.table
+          .headerOrigin
+          .astNode,
+        path,
+      },);
+    throw notFound({ path, },);
+  }
+  return located.tables
+    .map(function each(t,) {
+    if (t.headerOrigin
+      .kind
+      !== 'clean')
+      throw notFound({ path, },);
+    return asTable({
+      node: t.headerOrigin
+        .astNode,
+      path,
+    },);
+  },);
+}
+
+/**
+ * Narrow a retained parse-time node to a {@link AST.TOMLContentNode}, throwing
+ * when the node kind does not match (rather than asserting the type).
+ *
+ * @param node - Retained parse-time node whose `.type` is checked at runtime.
+ *
+ * @param path - Requested path, used only to build the not-found error.
+ *
+ * @returns Content node (value, array, or inline table).
+ *
+ * @throws {@link TomlPathNotFoundError} when `node` is not a content node.
+ */
+function asContentNode(
   {
-    return result.node;
-  }
-  return result.nodes;
+    node,
+    path,
+  }: {
+    readonly node: AST.TOMLNode;
+    readonly path: TomlPath;
+  },
+): AST.TOMLContentNode {
+  if ((node.type
+    === 'TOMLValue')
+    || (node.type
+      === 'TOMLArray')
+    || (node.type
+      === 'TOMLInlineTable'))
+    return node;
+  throw notFound({ path, },);
+}
+
+/**
+ * Narrow a retained parse-time node to a {@link AST.TOMLTable}, throwing when the
+ * node kind does not match (rather than asserting the type).
+ *
+ * @param node - Retained parse-time node whose `.type` is checked at runtime.
+ *
+ * @param path - Requested path, used only to build the not-found error.
+ *
+ * @returns Table node.
+ *
+ * @throws {@link TomlPathNotFoundError} when `node` is not a table.
+ */
+function asTable(
+  {
+    node,
+    path,
+  }: {
+    readonly node: AST.TOMLNode;
+    readonly path: TomlPath;
+  },
+): AST.TOMLTable {
+  if (node.type
+    === 'TOMLTable')
+    return node;
+  throw notFound({ path, },);
+}
+
+/**
+ * Build the not-found error for `path`.
+ *
+ * @returns Error to throw.
+ */
+function notFound({ path, }: { readonly path: TomlPath; },): TomlPathNotFoundError {
+  return new TomlPathNotFoundError(
+    `Path ${formatPath({ path, },)} has no parse-time AST node`,
+  );
 }

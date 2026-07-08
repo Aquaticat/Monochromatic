@@ -4,24 +4,22 @@
  * @module
  */
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
+import type { Block, } from './document.ts';
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';
-import { resolveByPath, } from './resolve.ts';
-import { withInsertion, } from './state.ts';
 import type {
-  Insertion,
   TomlEditState,
   TomlPath,
 } from './types.ts';
 
 /**
- * Insert one or more `#`-prefixed lines just before the node at `path`.
- *
- * The new comment lines are stored as a pending {@link Insertion} and emitted at
- * {@link tomlStringify} time. They do not show up in {@link tomlGetComments} until the
- * output is reparsed.
+ * Sentinel for "the target block was not found".
+ */
+const NOT_FOUND: unique symbol = Symbol('toml-edit/insert-before-not-found',);
+
+/**
+ * Insert `#`-prefixed comment lines as a filler block just before the entry
+ * at `path`.
  *
  * @returns A fresh {@link TomlEditState} reflecting the change.
  *
@@ -29,8 +27,7 @@ import type {
  *
  * @example
  * ```ts
- * tomlInsertCommentBefore({ edit, path: ['version',], comment: ' bumped', },);
- * tomlInsertCommentBefore({ edit, path: ['tools',], comment: [' line one', ' line two',], },);
+ * tomlInsertCommentBefore({ edit, path: ['version'], comment: ' bumped', },);
  * ```
  */
 export function tomlInsertCommentBefore(
@@ -45,65 +42,149 @@ export function tomlInsertCommentBefore(
   },
 ): TomlEditState {
   /**
-   * Path lookup so missing keys throw before any state change.
+   * Comment lines rendered as their own physical lines.
    */
-  const resolved = resolveByPath({
-    edit,
-    path,
-  },);
-  if ((resolved.kind
-    === 'missing') || (resolved.kind
-      === 'top-level')) {
-    throw new TomlPathNotFoundError(
-      `Path ${formatPath({ path, },)} not found`,
-    );
-  }
-
-  /**
-   * Normalised to an array so a single string and a multi-line list share the join path.
-   */
-  const lines = toLines({ comment, },);
-  /**
-   * Each line gets the `# ` prefix and a newline so it stands as its own physical line.
-   */
-  const text = lines
+  const text = ((typeof comment) === 'string' ? [comment,] : comment)
     .map(function withHash(line,) {
       return `# ${line}\n`;
     },)
     .join('',);
-
   /**
-   * Anchor records placement so the emitter can splice in source order.
+   * Blocks with a filler spliced before the target, or the not-found sentinel.
    */
-  const anchor: Insertion['anchor'] = resolved.kind
-    === 'array-of-tables'
-    ? {
-      position: 'before-node',
-      node: nonNullishOrThrow(resolved.nodes[0],),
-    }
-    : {
-      position: 'before-node',
-      node: resolved.node,
-    };
-
-  return withInsertion({
-    edit,
-    insertion: {
-      anchor,
-      text,
-    },
+  const inserted = insertFillerBefore({
+    blocks: edit.blocks,
+    path,
+    text,
   },);
+  if (inserted === NOT_FOUND) {
+    throw new TomlPathNotFoundError(
+      `Path ${formatPath({ path, },)} not found`,
+    );
+  }
+  return {
+    ...edit,
+    blocks: inserted,
+  };
 }
 
 /**
- * Normalise the `comment` arg to a readonly array of lines.
+ * Splice a filler block before the entry named by `path`.
  *
- * @returns Computed result (`readonly string[]`).
+ * @returns Fresh blocks, or {@link NOT_FOUND}.
  */
-function toLines(
-  { comment, }: { readonly comment: string | readonly string[]; },
-): readonly string[] {
-  if ((typeof comment) === 'string')
-    return [comment,];
-  return comment;
+function insertFillerBefore(
+  {
+    blocks,
+    path,
+    text,
+  }: {
+    readonly blocks: readonly Block[];
+    readonly path: TomlPath;
+    readonly text: string;
+  },
+): readonly Block[] | typeof NOT_FOUND {
+  for (const [index, block,] of blocks.entries()) {
+    if (matchesExact({
+      block,
+      path,
+    },))
+      return [
+        ...blocks.slice(
+          0,
+          index,
+        ),
+        {
+          kind: 'filler',
+          text,
+        },
+        ...blocks.slice(index,),
+      ];
+    if ((block.kind
+      === 'table')
+      && (block.tableKind
+        === 'standard')
+      && strictPrefix({
+        header: block.headerSegments,
+        path,
+      },)) {
+      /**
+       * Body after recursing with the header-relative path.
+       */
+      const newBody = insertFillerBefore({
+        blocks: block.body,
+        path: path.slice(block.headerSegments
+          .length,),
+        text,
+      },);
+      if (newBody !== NOT_FOUND)
+        return blocks.with(
+          index,
+          {
+            ...block,
+            body: newBody,
+          },
+        );
+    }
+  }
+  return NOT_FOUND;
+}
+
+/**
+ * True when a block's key/header exactly names `path`.
+ *
+ * @returns Resulting boolean.
+ */
+function matchesExact(
+  {
+    block,
+    path,
+  }: {
+    readonly block: Block;
+    readonly path: TomlPath;
+  },
+): boolean {
+  /**
+   * The block's own key segments, or `null` for a filler.
+   */
+  const segs = block.kind
+    === 'keyvalue'
+    ? block.keySegments
+    : block.kind
+        === 'table'
+      ? block.headerSegments
+      : null;
+  return (segs !== null)
+    && (segs.length
+      === path.length)
+    && segs.every(function eq(
+      seg,
+      i,
+    ) {
+      return seg === path[i];
+    },);
+}
+
+/**
+ * True when `header` is a strict prefix of `path`.
+ *
+ * @returns Resulting boolean.
+ */
+function strictPrefix(
+  {
+    header,
+    path,
+  }: {
+    readonly header: readonly (string | number)[];
+    readonly path: TomlPath;
+  },
+): boolean {
+  return (header.length
+    < path.length)
+    && header.every(function eq(
+      seg,
+      i,
+    ) {
+      return seg === path[i];
+    },);
 }

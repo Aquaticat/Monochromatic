@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { isAttachedGap, } from './comments.ts';
+import { isAttachedGap, } from './build-comments.ts';
 import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlGetCommentAfter, } from './toml-get-comment-after.ts';
 import { tomlGetCommentsBefore, } from './toml-get-comments-before.ts';

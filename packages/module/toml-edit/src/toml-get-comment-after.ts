@@ -6,10 +6,11 @@
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { trailingInlineCommentFor, } from './comments.ts';
-import { effectiveAt, } from './effective-value.ts';
+import { trailingCommentAt, } from './comments.ts';
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';
+import { locateBlock, } from './resolve-block.ts';
+import { NOT_LOCATED, } from './resolve-document.ts';
 import type {
   TomlComment,
   TomlEditState,
@@ -17,16 +18,11 @@ import type {
 } from './types.ts';
 
 /**
- * The same-line trailing inline comment for the node at `path`, found via
- * {@link trailingInlineCommentFor}.
+ * The same-line trailing comment for the entry at `path`.
  *
- * A comment is "trailing" when its `range[0]` is strictly after the node's
- * end and on the same source line (no newline between).
+ * @returns Object whose `comment` field is the trailing comment, or absent.
  *
- * @returns Object whose `comment` field is the trailing comment, or is
- *          absent when the node has no same-line trailing comment.
- *
- * @throws {@link TomlPathNotFoundError} when `path` does not exist or was deleted.
+ * @throws {@link TomlPathNotFoundError} when `path` does not exist.
  *
  * @example
  * ```toml
@@ -43,32 +39,71 @@ export function tomlGetCommentAfter(
   },
 ): { readonly comment?: TomlComment; } {
   /**
-   * Effective resolution accounts for pending edits and deletes.
+   * Entry block at the path; its clean end offset anchors the trailing scan.
    */
-  const result = effectiveAt({
-    edit,
+  const located = locateBlock({
+    blocks: edit.blocks,
     path,
   },);
-  if ((result.kind
-    === 'missing') || (result.kind
-      === 'deleted')) {
+  if (located === NOT_LOCATED) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
   }
-  if (result.kind
-    === 'pending-value')
-    return {};
   /**
-   * Last AoT element is the one a trailing comment would attach to in source.
+   * Clean end offset after which a same-line comment attaches, or `-1`.
    */
-  const node = result.kind
-    === 'array-of-tables'
-    ? nonNullishOrThrow(result.nodes
-      .at(-1,),)
-    : result.node;
-  return trailingInlineCommentFor({
-    node,
-    edit,
+  const from = endOf({ located, },);
+  if (from === (-1))
+    return {};
+  return trailingCommentAt({
+    comments: edit.comments,
+    source: edit.source,
+    from,
   },);
+}
+
+/**
+ * Clean end offset for a located entry, or `-1` when synthetic.
+ *
+ * Char offsets are non-negative, so `-1` unambiguously signals "no clean source
+ * position" without a nullish union.
+ *
+ * @param located - Located block whose clean end offset anchors the scan.
+ *
+ * @returns Clean end offset, or `-1` when synthetic.
+ *
+ * @example
+ * ```ts
+ * endOf({ located: locateBlock({ blocks, path, },), },);
+ * ```
+ */
+function endOf(
+  { located, }: { readonly located: ReturnType<typeof locateBlock>; },
+): number {
+  if (located === NOT_LOCATED)
+    return -1;
+  if (located.kind
+    === 'kv')
+    return located.kv
+      .valueRange
+      === undefined ? -1 : located.kv
+        .valueRange[1];
+  if (located.kind
+    === 'table')
+    return located.table
+      .headerOrigin
+      .kind
+      === 'clean' ? located.table
+        .headerOrigin
+        .range[1] : -1;
+  /**
+   * Last array-of-tables instance is where a trailing comment attaches.
+   */
+  const last = nonNullishOrThrow(located.tables
+    .at(-1,),);
+  return last.headerOrigin
+    .kind
+    === 'clean' ? last.headerOrigin
+      .range[1] : -1;
 }

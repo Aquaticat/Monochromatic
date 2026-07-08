@@ -1,15 +1,17 @@
 /**
  * Shared types for `@monochromatic-dev/module-toml-edit`.
  *
- * The state is immutable; the AST (from toml-eslint-parser) and the source
- * string are shared by reference across every derived state. Mutations
- * accumulate as entries in `edits`, `insertions`, and `deletions`, applied at
- * emit time.
+ * The state is an immutable editable document tree ({@link TomlEditState}); the
+ * LF-normalized `source` string is retained for verbatim emission of clean
+ * spans. Every mutating function returns a fresh state with a new `blocks`
+ * tree, sharing unchanged nodes by reference.
  *
  * @module
  */
 
 import type { AST, } from 'toml-eslint-parser';
+
+import type { Block, } from './document.ts';
 
 /**
  * Path into a TOML document.
@@ -27,12 +29,11 @@ export type TomlPath = readonly (string | number)[];
 /**
  * Fidelity mode.
  *
- * `'splice'`: original bytes are kept verbatim for unmutated regions; only
- * delta-marked nodes are re-emitted.
+ * `'splice'`: original bytes are kept verbatim for unmutated nodes; only
+ * mutated nodes re-emit canonically.
  *
- * `'canonical'`: every byte is produced by walking the AST. Supports a
- * synthesized fresh AST (no source) and produces output that matches the
- * configured {@link CanonicalOptions}.
+ * `'canonical'`: every node is rendered from structure, ignoring original
+ * source ranges.
  */
 export type TomlEditMode = 'splice' | 'canonical';
 
@@ -117,82 +118,17 @@ export type TomlEmptyOptions = {
 };
 
 /**
- * A pending textual replacement on an AST node.
+ * Immutable editable document state.
  *
- * `replace-value`: when keyed on a `TOMLKeyValue`, replaces just the value
- * bytes (`node.value.range`), preserving leading whitespace, `=`, and the
- * trailing inline comment. When keyed on a non-keyvalue node
- * (`TOMLArray`, `TOMLInlineTable`, etc.), replaces the node's entire
- * `range`. The fallthrough in {@link valueRangeOf} handles the
- * difference at emit time.
- *
- * `replace-keyvalue`: replaces the entire key-value line.
- *
- * `jsValue` carries the original JS input so that effective reads
- * ({@link tomlGetValue} on the same edit or a branched edit) reflect the pending
- * value without parsing the emitted `newText`.
- */
-export type Edit =
-  | {
-    readonly kind: 'replace-value';
-    readonly newText: string;
-    readonly jsValue: unknown;
-  }
-  | {
-    readonly kind: 'replace-keyvalue';
-    readonly newText: string;
-    readonly jsValue: unknown;
-  };
-
-/**
- * Where a pending {@link Insertion} should land at emit time.
- */
-export type AnchorKind =
-  | 'eof'
-  | {
-    readonly position: 'after-node';
-    readonly node: AST.TOMLNode;
-  }
-  | {
-    readonly position: 'before-node';
-    readonly node: AST.TOMLNode;
-  }
-  | {
-    readonly position: 'same-line-after';
-    readonly node: AST.TOMLNode;
-  }
-  | {
-    readonly position: 'inside-table';
-    readonly table: AST.TOMLTable | AST.TOMLTopLevelTable;
-    readonly atEnd: true;
-  };
-
-/**
- * A pending insertion of fresh TOML text at a resolved position.
- *
- * `path` and `jsValue` are populated when the insertion came from
- * {@link tomlSet} so that effective reads see the new value before reparse.
- */
-export type Insertion = {
-  readonly anchor: AnchorKind;
-  readonly text: string;
-  readonly path?: TomlPath;
-  readonly jsValue?: unknown;
-};
-
-/**
- * Immutable edit state.
- *
- * Returned by {@link parseTomlEdit}, {@link emptyTomlEdit}, and every mutating function.
- * The `program` AST and the `source` string are shared by reference;
- * `edits`, `insertions`, `deletions`, and the outer object are immutable.
+ * Returned by {@link parseTomlEdit}, {@link emptyTomlEdit}, and every mutating
+ * function. `source` is the LF-normalized parse input, shared by reference and
+ * never mutated; `blocks` is the ordered top-level block list, functionally
+ * updated on every mutation.
  */
 export type TomlEditState = {
   readonly source: string;
-  readonly program: AST.TOMLProgram;
-  readonly edits: ReadonlyMap<AST.TOMLNode, Edit>;
-  readonly insertions: readonly Insertion[];
-  readonly deletions: ReadonlySet<AST.TOMLNode>;
+  readonly blocks: readonly Block[];
+  readonly comments: readonly TomlComment[];
   readonly headerComment?: string;
   readonly mode: TomlEditMode;
   readonly canonical: Readonly<CanonicalOptions>;

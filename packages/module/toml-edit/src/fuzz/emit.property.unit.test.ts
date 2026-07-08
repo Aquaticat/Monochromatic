@@ -13,7 +13,7 @@
  *   asserts the raw spelling directly.
  * - `_emitStringValue`: re-emitting a parsed string node preserves its value
  *   across the escaping boundary.
- * - `_spliceEmit`: with no deltas, output is byte-identical to the source.
+ * - `_emitDocument`: with no edits, output is byte-identical to the source.
  *
  * Run plan and seed policy: see `../fuzz-budget.ts`.
  *
@@ -24,6 +24,7 @@ import {
   assert,
   asyncProperty,
   constantFrom,
+  type JsonValue,
   jsonValue,
   oneof,
   string,
@@ -39,7 +40,7 @@ import {
   _emitStringValue,
   _encodeKey,
   _jsValueToTomlText,
-  _spliceEmit,
+  _emitDocument,
   emptyTomlEdit,
   parseTomlEdit,
   tomlGetNode,
@@ -121,6 +122,59 @@ const keyNameArbitrary = oneof(
     'é€',
   ),
 );
+
+/**
+ * Prototype-shadowing key names that cannot faithfully round-trip through the
+ * external `getStaticTOMLValue` oracle used by {@link projectProbe}: it decodes
+ * tables into plain objects by assignment, so a `__proto__` key sets the
+ * prototype instead of an own property (and `constructor` / `prototype` shadow
+ * inherited members). The package's own reader handles these correctly (see
+ * value-materialize.ts prototype safety, exercised by the unit tests); they are
+ * excluded from the round-trip arbitrary only so the oracle comparison stays
+ * fair, without weakening the assertion.
+ */
+const PROTOTYPE_KEYS: ReadonlySet<string> = new Set([
+  '__proto__',
+  'constructor',
+  'prototype',
+],);
+
+/**
+ * Recursively drop prototype-shadowing keys from a generated JSON value.
+ * Structural walk over the JSON tree (objects and arrays).
+ *
+ * @returns Same value with any prototype-shadowing keys removed.
+ */
+function stripPrototypeKeys(value: JsonValue,): JsonValue {
+  if (Array.isArray(value,)) {
+    return value.map(function eachElement(child,) {
+      return stripPrototypeKeys(child,);
+    },);
+  }
+  if ((value !== null) && ((typeof value) === 'object')) {
+    return Object.fromEntries(
+      Object.entries(value,)
+        .filter(function keep([key,],): boolean {
+          return !PROTOTYPE_KEYS.has(key,);
+        },)
+        .map(function recurse([key, child,],): readonly [string, JsonValue,] {
+          return [
+            key,
+            stripPrototypeKeys(child ?? null,),
+          ];
+        },),
+    );
+  }
+  return value;
+}
+
+/**
+ * JSON arbitrary with prototype-shadowing keys removed, feeding the
+ * `_jsValueToTomlText` round-trip property.
+ */
+const protoSafeJsonValue = jsonValue().map(function sanitize(value,) {
+  return stripPrototypeKeys(value,);
+},);
 
 /**
  * Basic-string content arbitrary stressing the escaping boundary.
@@ -251,7 +305,7 @@ await describe({
       timeout: RUN.timeout,
       fn: async () => {
         await assert(
-          asyncProperty(jsonValue(), async function roundTrip(input,) {
+          asyncProperty(protoSafeJsonValue, async function roundTrip(input,) {
             /**
              * Encoded text, or a skip marker when a null member is rejected.
              */
@@ -343,12 +397,12 @@ await describe({
     },),
 
     it({
-      name: '_spliceEmit with no deltas is byte-identical to the source',
+      name: '_emitDocument with no edits is byte-identical to the source',
       timeout: RUN.timeout,
       fn: async () => {
         await assert(
           asyncProperty(documentArbitrary, async function identity(source,) {
-            expect(_spliceEmit({ edit: parseTomlEdit({ source, },), },),).toBe(source,);
+            expect(_emitDocument({ edit: parseTomlEdit({ source, },), },),).toBe(source,);
           },),
           RUN.params,
         );

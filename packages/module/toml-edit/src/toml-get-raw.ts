@@ -11,30 +11,27 @@ import {
   TomlSpliceUnavailableError,
 } from './errors.ts';
 import { formatPath, } from './path.ts';
-import { resolveByPath, } from './resolve.ts';
+import {
+  locateValueNode,
+  NOT_LOCATED,
+} from './resolve-document.ts';
 import type {
   TomlEditState,
   TomlPath,
 } from './types.ts';
 
 /**
- * Return the substring of the original source that spelled the value at
- * `path`. For round-trip-sensitive consumers that want to diff values
- * without canonical reformatting.
+ * Return the original source substring that spelled the value at `path`.
  *
- * Routes through {@link resolveByPath} directly and does NOT consult pending
- * deltas: a {@link tomlSet} on a path does not change what `tomlGetRaw` returns
- * for that path. The slice always reflects the parse-time bytes from
- * `edit.source`.
+ * Returns the parse-time bytes of a clean (unmutated) node, so round-trip-
+ * sensitive callers can diff without canonical reformatting. A path created or
+ * edited by a mutation has no source bytes and throws.
  *
  * @returns Computed string.
  *
- * @throws {@link TomlSpliceUnavailableError} when the state is in canonical mode
- *         (no source bytes to slice from).
+ * @throws {@link TomlSpliceUnavailableError} when the state is in canonical mode.
  *
- * @throws {@link TomlPathNotFoundError} when the path was not present in the
- *         parse-time source. Paths newly created by {@link tomlSet} are not
- *         resolvable here until you {@link tomlStringify} and reparse.
+ * @throws {@link TomlPathNotFoundError} when `path` has no clean source slice.
  *
  * @example
  * ```ts
@@ -57,63 +54,79 @@ export function tomlGetRaw(
     );
   }
   /**
-   * Direct AST lookup so the slice maps to parse-time source bytes.
+   * Structural location so a clean node's source range can be sliced.
    */
-  const result = resolveByPath({
-    edit,
+  const located = locateValueNode({
+    blocks: edit.blocks,
     path,
   },);
-  if (result.kind
-    === 'missing') {
-    throw new TomlPathNotFoundError(
-      `Path ${formatPath({ path, },)} not found in parse-time source`,
-    );
-  }
-  if (result.kind
-    === 'keyvalue') {
-    return edit.source
-      .slice(
-      result.node
-        .value
-        .range[0],
-      result.node
-        .value
-        .range[1],
-    );
-  }
-  if (result.kind
+  if (located === NOT_LOCATED)
+    throw notFound({ path, },);
+  if (located.kind
     === 'value') {
+    if (located.value
+      .origin
+      .kind
+      !== 'clean')
+      throw notFound({ path, },);
     return edit.source
       .slice(
-      result.node
+      located.value
+        .origin
         .range[0],
-      result.node
+      located.value
+        .origin
         .range[1],
     );
   }
-  if ((result.kind
-    === 'table') || (result.kind
-      === 'top-level')) {
+  if (located.kind
+    === 'table') {
+    if (located.table
+      .headerOrigin
+      .kind
+      !== 'clean')
+      throw notFound({ path, },);
     return edit.source
       .slice(
-      result.node
+      located.table
+        .headerOrigin
         .range[0],
-      result.node
+      located.table
+        .headerOrigin
         .range[1],
     );
   }
   /**
-   * Span the slice over the first and last AoT element so every entry is captured.
+   * First AoT instance header so the slice starts at the collection's top.
    */
-  const first = nonNullishOrThrow(result.nodes[0],);
+  const first = nonNullishOrThrow(located.tables[0],);
   /**
-   * Pair with `first` to cover the full AoT extent in source order.
+   * Last AoT instance header so the slice spans every instance.
    */
-  const last = nonNullishOrThrow(result.nodes
+  const last = nonNullishOrThrow(located.tables
     .at(-1,),);
+  if ((first.headerOrigin
+    .kind
+    !== 'clean') || (last.headerOrigin
+      .kind
+      !== 'clean'))
+    throw notFound({ path, },);
   return edit.source
     .slice(
-    first.range[0],
-    last.range[1],
+    first.headerOrigin
+      .range[0],
+    last.headerOrigin
+      .range[1],
+  );
+}
+
+/**
+ * Build the not-found error for `path`.
+ *
+ * @returns Error to throw.
+ */
+function notFound({ path, }: { readonly path: TomlPath; },): TomlPathNotFoundError {
+  return new TomlPathNotFoundError(
+    `Path ${formatPath({ path, },)} has no clean source slice`,
   );
 }
