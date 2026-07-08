@@ -2,43 +2,11 @@ import type {
   PreToolUseInput,
   PreToolUseOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
-import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
+import {
+  BUN_TEST_BAN_REASON,
+  invokesBunTest,
+} from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
 import type { ReadonlyDeep, } from 'type-fest';
-
-/**
- * Whether the given Bash command contains `bun test` anywhere in parsed shell syntax.
- *
- * Uses the shared `unbash` analyzer so quoted prose, escaped characters,
- * nested command substitutions, and function definitions are classified by
- * shell grammar instead of text boundaries. Function bodies stay visible so
- * `f(){ bun test; }; f` cannot hide the banned invocation behind a shell name.
- *
- * @param command - Shell command from Bash tool input
- *
- * @returns `true` when `bun test` appears as a parsed command
- *
- * @example
- * ```ts
- * invokesBunTest('bun test foo.ts');             // true
- * invokesBunTest('cd x && bun test');            // true
- * invokesBunTest('echo "bun test"');             // false
- * invokesBunTest('f(){ bun test; }');            // true
- * ```
- */
-function invokesBunTest(command: string,): boolean {
-  /**
-   * Parsed shell command analysis.
-   */
-  const analysis = analyzeShellCommand(command,);
-  if (!analysis.parsed)
-    return false;
-
-  return analysis.commands
-    .some(function commandIsBunTest(info,): boolean {
-    return (info.name === 'bun')
-      && (info.args[0] === 'test');
-  },);
-}
 
 /**
  * Output returned by the guardrail handler.
@@ -56,16 +24,7 @@ const BUN_TEST_DENY_OUTPUT: GuardrailOutput = {
   hookSpecificOutput: {
     hookEventName: 'PreToolUse',
     permissionDecision: 'deny',
-    permissionDecisionReason: [
-      'Blocked: `bun test` invocations are banned in this repo.',
-      'The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of module import,',
-      "so `bun test <file>` reports `0 pass / 0 fail` even when every test passed (the harness's `PASS`",
-      "log lines are not measured by bun's test runner).",
-      'Use `mise run //packages/<path>:test:unit` instead. When no such task exists, add one to the',
-      "target package's `mise.toml` first. For ad-hoc single-file runs use `node <file>` directly",
-      '(no `test` subcommand).',
-    ]
-      .join(' ',),
+    permissionDecisionReason: BUN_TEST_BAN_REASON,
   },
 };
 
