@@ -1,0 +1,23 @@
+[package]
+name = "file-manager-gtk"
+version = "0.1.0"
+edition = "2024"
+license = "LGPL-3.0-or-later"
+publish = false
+description = "GTK4 desktop file-manager spike: native Wayland DnD + virtualized list, compared against the Slint and Qt spikes."
+
+[[bin]]
+name = "monochromatic-file-manager-gtk"
+path = "src/main.rs"
+
+[dependencies]
+# gtk4-rs bindings over the system GTK 4.22. GtkListView virtualizes large models, and
+# GtkDropTarget/GtkDragSource give native Wayland drag-and-drop (the capability winit/Slint
+# lack), because GDK implements DnD on wl_data_device. The `v4_10` feature exposes APIs up to
+# GTK 4.10, including `gdk::FileList` (added in 4.6) used by the file DropTarget.
+gtk4 = { version = "0.11", features = ["v4_10"] }
+# Non-blocking logging, matching the Qt spike: tracing on the hot path enqueues to a
+# dedicated writer thread so logging never stalls the UI thread.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"

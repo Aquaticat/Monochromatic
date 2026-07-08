@@ -1,0 +1,46 @@
+# Cargo work runs on the host, like the sibling desktop apps. Builds against the system
+# GTK 4.22 (gtk4-devel layered via rpm-ostree); pkg-config locates it automatically, so no
+# QMAKE-style env is needed (unlike the Qt spike).
+
+[tasks.build]
+description = "Release build"
+run = "cargo build --release"
+
+[tasks."build:debug"]
+description = "Debug build"
+run = "cargo build"
+
+[tasks.lint]
+description = "cargo check"
+run = "cargo check"
+
+[tasks."lint:clippy"]
+description = "Run clippy with warnings denied"
+run = "cargo clippy --release -- --deny warnings"
+
+[tasks."format:clippy"]
+description = "Apply clippy's machine-applicable suggestions in place"
+run = "cargo clippy --fix --allow-dirty --allow-staged"
+
+[tasks."lint:rust"]
+description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
+run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
+
+[tasks.test]
+description = "cargo nextest run"
+run = "cargo nextest run --release"
+
+# Debug build, then run the GUI. GTK auto-selects the native Wayland GDK backend in a
+# Wayland session; GDK_BACKEND=wayland forces it (never XWayland) so DnD is exercised over
+# real Wayland.
+[tasks.run]
+description = "Debug build, then run the GUI on native Wayland (GDK_BACKEND=wayland)"
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+execFileSync('cargo', ['build'], { stdio: 'inherit' })
+execFileSync('./target/debug/monochromatic-file-manager-gtk', [], {
+  stdio: 'inherit',
+  env: { ...process.env, GDK_BACKEND: 'wayland' },
+})
+"""
