@@ -494,6 +494,24 @@ importers:
         specifier: 'catalog:'
         version: 7.0.1-rc
 
+  packages/agent-harnesses-shared/text-scan:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+
   packages/build-tool/css:
     dependencies:
       '@monochromatic-dev/module-fs-path':
