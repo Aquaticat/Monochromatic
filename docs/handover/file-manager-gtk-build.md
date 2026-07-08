@@ -248,3 +248,11 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
     lock, so kill before relaunch), rebuild, run with `FM_DEBUG_TINT=1 RUST_LOG=file_manager=debug`,
     reproduce the snap-back, read the offset log. Committed up to STAGE 2 (tether) as working; STAGE 3
     (snap) + debug scaffolding committed as WIP.
+- 2026-07-08: Session paused (touch grass). Regression noted before pausing: adding
+  `.fm-canvas { background-color: ... }` to `DEBUG_CSS` (tinting the scrollable `GtkFixed` inside each
+  column) made the whole window render PURE BLACK -- all the other debug tints vanished too, so a
+  background on the scroll-content `GtkFixed` appears to break `DEBUG_CSS` (likely it overdraws or
+  trips CSS loading). REVERTED that one line, so the committed debug tint (columns / panes / headers /
+  file-list areas) is back to the known-good version the user saw working. Do NOT re-add a background
+  on `.fm-canvas` without first checking why it blacks the window out. Everything else stands; resume
+  the snap (STAGE 3) with a fresh head.
