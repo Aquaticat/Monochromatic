@@ -14,25 +14,62 @@ fn preview(path: &str) -> PaneLocation {
     PaneLocation::Preview(PathBuf::from(path))
 }
 
+fn panes_in_column(strip: &PaneStripState, column: usize) -> usize {
+    strip.panes().filter(|pane| pane.column == column).count()
+}
+
 #[test]
 fn open_root_places_pane_in_column_zero_and_focuses() {
     let mut strip = PaneStripState::new();
     let root = strip.open_root(dir("/home"));
     assert_eq!(strip.len(), 1);
     assert_eq!(strip.active(), Some(root));
-    assert_eq!(strip.pane(root).expect("root pane").column, 0);
-    assert_eq!(strip.columns()[0], vec![root]);
+    let pane = strip.pane(root).expect("root pane");
+    assert_eq!((pane.column, pane.row), (0, 0));
+    assert_eq!(strip.first_pane_in_column(0), Some(root));
 }
 
 #[test]
-fn spawn_child_opens_next_column_and_focuses_child() {
+fn spawn_child_opens_next_column_aligned_to_parent_row() {
     let mut strip = PaneStripState::new();
     let root = strip.open_root(dir("/home"));
     let child = strip.spawn_child(root, dir("/home/docs"), false);
     assert_ne!(root, child);
-    assert_eq!(strip.pane(child).expect("child pane").column, 1);
+    let pane = strip.pane(child).expect("child pane");
+    // one column right, same row as the parent (aligned, reads straight across)
+    assert_eq!((pane.column, pane.row), (1, 0));
     assert_eq!(strip.active(), Some(child));
     assert_eq!(strip.len(), 2);
+}
+
+#[test]
+fn child_aligns_with_parent_row_and_siblings_stack_downward() {
+    let mut strip = PaneStripState::new();
+    let root = strip.open_root(dir("/home"));
+    let first = strip.spawn_child(root, dir("/home/a"), false);
+    let second = strip.spawn_child(root, dir("/home/b"), false);
+    // siblings of the root stack: first at row 0, second pushed to row 1
+    assert_eq!((strip.pane(first).unwrap().column, strip.pane(first).unwrap().row), (1, 0));
+    assert_eq!((strip.pane(second).unwrap().column, strip.pane(second).unwrap().row), (1, 1));
+    // a child of `second` (row 1) aligns with it at row 1, not the top of the next column
+    let grandchild = strip.spawn_child(second, dir("/home/b/c"), false);
+    assert_eq!((strip.pane(grandchild).unwrap().column, strip.pane(grandchild).unwrap().row), (2, 1));
+}
+
+#[test]
+fn a_later_sibling_is_pushed_below_a_grown_subtree() {
+    let mut strip = PaneStripState::new();
+    let root = strip.open_root(dir("/home"));
+    let a = strip.spawn_child(root, dir("/home/a"), false);
+    let b = strip.spawn_child(root, dir("/home/b"), false);
+    let c = strip.spawn_child(root, dir("/home/c"), false);
+    // grow b's subtree to two rows
+    strip.spawn_child(b, dir("/home/b/x"), false);
+    strip.spawn_child(b, dir("/home/b/y"), false);
+    // a is a leaf at row 0; b's subtree occupies rows 1..2; c is pushed down to row 3
+    assert_eq!(strip.pane(a).unwrap().row, 0);
+    assert_eq!(strip.pane(b).unwrap().row, 1);
+    assert_eq!(strip.pane(c).unwrap().row, 3);
 }
 
 #[test]
@@ -76,10 +113,10 @@ fn close_column_removes_all_panes_in_it() {
     let root = strip.open_root(dir("/home"));
     strip.spawn_child(root, dir("/home/a"), false);
     strip.spawn_child(root, dir("/home/b"), false);
-    assert_eq!(strip.columns()[1].len(), 2);
+    assert_eq!(panes_in_column(&strip, 1), 2);
     strip.close_column(1);
     assert_eq!(strip.len(), 1);
-    assert!(strip.columns()[1].is_empty());
+    assert_eq!(panes_in_column(&strip, 1), 0);
 }
 
 #[test]

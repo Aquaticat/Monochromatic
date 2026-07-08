@@ -188,3 +188,13 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   keep `strip.rs` under max-lines, and added the spawned entry path to the spawn log. Confirmed live:
   `revealed=true` on the first timed attempt with `v_value` 0/252/784 against `v_upper` 800/1052/1584
   for slots 0/1/2; `entry=` matches the clicked folder, so click->spawn had no real off-by-one.
+- 2026-07-08: Live-test UX pass. (1) Row alignment: replaced the "append to column" pane model with
+  an explicit pane TREE (each pane has a `parent`) laid out by an iterative pre-order tidy layout
+  (`model.rs` `relayout`): a node's row = the next free leaf-row when the walk enters it, so a child
+  aligns to its parent's row and a later sibling starts below the previous sibling's whole subtree.
+  Every spawn/close re-lays-out and `reconcile` repositions existing panes as subtrees grow. Confirmed
+  live (the `.dbus` case: a sibling pushes below a grown subtree) and by 13 model tests (added
+  alignment + sibling-pushdown). (2) Black background: `style.rs` installs a `#000` `CssProvider` at
+  application priority; confirmed. Open requirement: the clicked PARENT must stay fully in view and
+  not jump when a child spawns (the user suggests "detach columns" = independent per-column vertical
+  scroll); clarifying exact behavior before that scroll refactor.

@@ -21,6 +21,9 @@ mod strip;
 /// What: keyboard column navigation for the strip.
 /// Why: Left/Right move focus between columns; split out to keep `strip.rs` under max-lines.
 mod keys;
+/// What: the application stylesheet (black background).
+/// Why: applies a low-glare theme override once at startup.
+mod style;
 /// What: the off-thread thumbnail decoder and bounded texture cache.
 /// Why: preview panes decode images on a worker thread and cache them with LRU eviction.
 mod thumbs;
@@ -89,6 +92,7 @@ pub fn run() -> glib::ExitCode {
     // of `build_window` and spawning would stop working.
     let controllers = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
     app.connect_activate(move |app| {
+        style::install();
         controllers.borrow_mut().push(window::build_window(app));
         schedule_self_quit(app);
     });

@@ -48,17 +48,12 @@ pub(crate) fn install_column_nav(inner: &Rc<StripInner>) {
 /// Why: Left/Right walk the lineage; an out-of-range move is ignored and the key passes through.
 fn focus_relative_column(inner: &Rc<StripInner>, delta: i32) -> glib::Propagation {
     let target = inner.focused_column.get() as i32 + delta;
-    let columns = inner.state.borrow().columns().len() as i32;
+    let columns = inner.state.borrow().column_count() as i32;
     if target < 0 || target >= columns {
         return glib::Propagation::Proceed;
     }
     let target = target as usize;
-    let first = inner
-        .state
-        .borrow()
-        .columns()
-        .get(target)
-        .and_then(|column| column.first().copied());
+    let first = inner.state.borrow().first_pane_in_column(target);
     let Some(id) = first else {
         return glib::Propagation::Proceed;
     };

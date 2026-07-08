@@ -185,16 +185,14 @@ fn position(column: usize, slot: usize) -> (i32, i32) {
     (x, y)
 }
 
-/// What: map every live pane to its `(column, slot)` grid position.
-/// Why: reconcile needs both which panes exist and where each one goes.
+/// What: map every live pane to its `(column, row)` grid position.
+/// Why: reconcile needs both which panes exist and where each one goes; each pane already carries
+///      its own position, so this is a direct projection.
 fn column_slots(state: &PaneStripState) -> HashMap<PaneId, (usize, usize)> {
-    let mut slots = HashMap::new();
-    for (column, ids) in state.columns().iter().enumerate() {
-        for (slot, &id) in ids.iter().enumerate() {
-            slots.insert(id, (column, slot));
-        }
-    }
-    slots
+    state
+        .panes()
+        .map(|pane| (pane.id, (pane.column, pane.row)))
+        .collect()
 }
 
 /// What: bring the canvas widgets into agreement with the model: drop panes that are gone, then
@@ -323,7 +321,7 @@ fn spawn_from(
         spawned = spawned.0,
         entry = %entry.path.display(),
         panes = inner.state.borrow().len(),
-        columns = inner.state.borrow().columns().len(),
+        columns = inner.state.borrow().column_count(),
         "spawned child pane"
     );
     spawned
