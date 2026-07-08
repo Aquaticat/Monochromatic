@@ -8,9 +8,9 @@
 /// Why: the key controller holds a `Weak<StripInner>` and upgrades it per key press.
 use std::rc::Rc;
 
-/// What: imports the GTK widget-extension traits (`add_controller`, `grab_focus`).
-/// Why: the controller is added to the scroller and moves focus to a pane via prelude traits.
-use gtk4::prelude::*;
+/// What: imports the event-controller extension trait.
+/// Why: the key controller needs capture-phase propagation.
+use gtk4::prelude::EventControllerExt;
 /// What: imports the key-symbol type.
 /// Why: the handler matches Left/Right.
 use gtk4::gdk::Key;
@@ -19,7 +19,7 @@ use gtk4::gdk::Key;
 use gtk4::{EventControllerKey, PropagationPhase, glib};
 
 /// What: imports the strip's shared inner state.
-/// Why: navigation reads the columns and widgets and updates the focused-column tracker.
+/// Why: navigation reads the pane model and asks the layout adapter to move focus.
 use crate::strip::StripInner;
 
 /// What: install a capture-phase key controller on the scroller that moves keyboard focus between
@@ -40,14 +40,14 @@ pub(crate) fn install_column_nav(inner: &Rc<StripInner>) {
             _ => glib::Propagation::Proceed,
         }
     });
-    inner.outer.add_controller(keys);
+    inner.layout.add_column_key_controller(keys);
 }
 
 /// What: move keyboard focus to the first pane of the column `delta` away, if it exists, and record
 ///       it as the focused column.
 /// Why: Left/Right walk the lineage; an out-of-range move is ignored and the key passes through.
 fn focus_relative_column(inner: &Rc<StripInner>, delta: i32) -> glib::Propagation {
-    let target = inner.focused_column.get() as i32 + delta;
+    let target = inner.layout.focused_column() as i32 + delta;
     let columns = inner.state.borrow().column_count() as i32;
     if target < 0 || target >= columns {
         return glib::Propagation::Proceed;
@@ -57,10 +57,9 @@ fn focus_relative_column(inner: &Rc<StripInner>, delta: i32) -> glib::Propagatio
     let Some(id) = first else {
         return glib::Propagation::Proceed;
     };
-    let Some(widget) = inner.widgets.borrow().get(&id).cloned() else {
+    if !inner.layout.focus_widget(id) {
         return glib::Propagation::Proceed;
-    };
-    widget.grab_focus();
-    inner.focused_column.set(target);
+    }
+    inner.layout.set_focused_column(target);
     glib::Propagation::Stop
 }

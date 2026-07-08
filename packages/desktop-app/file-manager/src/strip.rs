@@ -1,124 +1,78 @@
-//! Detached-column pane strip: each lineage column is its own vertically-scrolling region, laid
-//! out left-to-right inside one horizontally-scrolling outer viewport.
+//! Pane-strip controller: mutates the pane model and delegates GTK layout to `layout.rs`.
 //!
-//! A pane sits in its column's canvas at `row * ROW_STRIDE`; every column shares the same content
-//! height, so equal vertical offsets align a child with its parent's row. Columns scroll
-//! independently (stage 1); a later stage tethers each parent inside its children block and snaps
-//! offsets so few panes are partially clipped. The `PaneStripState` machine owns the tree and the
-//! spawn/dedup/close rules; this module renders it and drives it from row activations.
+//! The controller owns the pure `PaneStripState`, directory-read generation, and thumbnail service.
+//! It turns row activations into model mutations, then hands a placement snapshot to `StripLayout`.
+//! All GTK scroller, canvas, reveal, tether, and snap mechanics live behind that layout interface.
 
-/// What: imports the interior-mutability cells used for shared, closure-captured state.
-/// Why: GTK signal closures are `'static`, so the model, widget map, and columns live behind
-///      `RefCell`, and counters behind `Cell`, inside a single `Rc`.
+/// What: imports the single-slot cell used for the directory-read generation.
+/// Why: directory panes get monotonically increasing snapshot generations.
 use std::cell::{Cell, RefCell};
-/// What: imports the hash-map container.
-/// Why: the strip tracks one widget per live `PaneId` for reconcile.
-use std::collections::HashMap;
 /// What: imports the borrowed path type.
 /// Why: the root pane and directory reads take paths by reference.
 use std::path::Path;
-/// What: imports the reference-counted pointer and its weak companion.
-/// Why: the controller shares one `StripInner` with the row-activation closures via `Weak`.
+/// What: imports the reference-counted pointer.
+/// Why: the controller shares one `StripInner` with row-activation closures via `Weak` handles.
 use std::rc::Rc;
 
-/// What: imports the GTK widget-extension traits (box append, fixed put/move, scroll adjustments).
-/// Why: columns are assembled and scrolled through prelude trait methods.
+/// What: imports the GTK widget-extension traits.
+/// Why: pane builders upcast their concrete widgets to `Widget`.
 use gtk4::prelude::*;
-/// What: imports the concrete GTK types the strip is built from.
-/// Why: named explicitly so construction reads without a glob import.
-use gtk4::{Box as GtkBox, Fixed, Label, Orientation, PolicyType, ScrolledWindow, Widget};
+/// What: imports concrete GTK fallback widget types.
+/// Why: a missing pane or failed directory read degrades to a label widget.
+use gtk4::{Label, Widget};
 
-/// What: imports the pane-geometry constants.
-/// Why: pane placement is computed from a single source of truth.
-use crate::constants::{PANE_GAP, PANE_HEIGHT, PANE_WIDTH};
+/// What: imports the layout adapter and its placement snapshot type.
+/// Why: this controller delegates GTK reconciliation and scrolling to a deep layout module.
+use crate::layout::{PanePlacement, StripLayout};
 /// What: imports the pane-strip state machine.
-/// Why: this module renders and mutates it.
+/// Why: this module mutates spawn/dedup/close state and reads pane locations.
 use crate::model::PaneStripState;
-/// What: imports the listing-pane and shared-header builders.
-/// Why: a directory pane is a listing pane; a preview pane reuses the shared header.
+/// What: imports listing and preview pane builders.
+/// Why: a directory pane is a listing pane; a preview pane renders a thumbnail or typed icon.
 use crate::pane::{build_listing_pane, build_preview_pane};
-/// What: imports the thumbnail service and the image-detection helper.
+/// What: imports thumbnail service and image-detection helper.
 /// Why: preview panes need the service; autopreview branches on `is_image`.
 use crate::thumbs::{Thumbnails, is_image};
-/// What: imports the entry, id, and location domain types.
-/// Why: spawning maps an activated `FileEntry` to a `PaneLocation` keyed by `PaneId`.
+/// What: imports entry, id, and location domain types.
+/// Why: activating an entry maps it to a `PaneLocation` and returns a stable `PaneId`.
 use crate::types::{FileEntry, PaneId, PaneLocation};
 
-/// What: imports the row-to-pixel mapping and the reveal-on-spawn helper.
-/// Why: reconcile places panes with `row_y`; a spawn reveals the new pane in its column.
-use crate::scroll::{row_y, scroll_to_pane};
-
-/// What: one column's widgets: its vertical scroller and the canvas panes are placed on.
-/// Why: each column scrolls independently, so it owns its own `ScrolledWindow` over a `Fixed`.
-pub(crate) struct ColumnView {
-    /// Vertical scroller for this column (horizontal scrollbar off, vertical scrollbar hidden).
-    pub(crate) scroller: ScrolledWindow,
-    /// Canvas holding this column's pane widgets at `row * ROW_STRIDE`.
-    fixed: Fixed,
-}
-
-/// What: shared strip state captured by GTK closures: the outer scroller, the columns box, the
-///       per-column views, the model, the widget map, and counters.
-/// Why: one `Rc<StripInner>` is held by the controller and weakly by each pane's activation
-///      closure, so a click can mutate the model and reconcile the canvas.
+/// What: shared controller state captured by GTK closures.
+/// Why: row activation needs to mutate the model, reconcile the layout, and scroll to the result;
+///      closures hold weak references so they never keep the strip alive accidentally.
 pub(crate) struct StripInner {
-    /// The outer horizontal scroller holding the columns box.
-    pub(crate) outer: ScrolledWindow,
-    /// Horizontal box of per-column scrollers.
-    columns_box: GtkBox,
-    /// One view per column (index = column depth).
-    pub(crate) columns: RefCell<Vec<ColumnView>>,
+    /// Deep GTK layout adapter for pane placement and scrolling.
+    pub(crate) layout: Rc<StripLayout>,
     /// The pane-strip state machine.
     pub(crate) state: RefCell<PaneStripState>,
-    /// One widget per live pane, for reconcile and removal.
-    pub(crate) widgets: RefCell<HashMap<PaneId, Widget>>,
     /// Monotonic directory-read generation.
     generation: Cell<u64>,
-    /// Column whose pane last received focus, for Left/Right keyboard navigation.
-    pub(crate) focused_column: Cell<usize>,
-    /// Off-thread thumbnail decoder + bounded cache, shared by preview panes.
+    /// Off-thread thumbnail decoder plus bounded cache, shared by preview panes.
     thumbs: Thumbnails,
-    /// Re-entrancy guard: true while the tether is adjusting neighbor columns' scroll offsets.
-    pub(crate) tethering: Cell<bool>,
-    /// Scroll epoch for debouncing the on-settle snap; bumped on each scroll so only the last one
-    /// fires the snap.
-    pub(crate) scroll_epoch: Cell<u64>,
 }
 
-/// What: owning handle to a built strip; keeps `StripInner` alive for the window's lifetime.
-/// Why: the activation closures hold only a `Weak`, so this strong handle must outlive the window,
-///      or spawning would silently stop working.
+/// What: owning handle to a built strip.
+/// Why: the activation closures hold only `Weak<StripInner>`, so this strong handle must outlive
+///      the window or spawning would silently stop working.
 pub struct StripController {
     /// The shared inner state.
     inner: Rc<StripInner>,
 }
 
-/// What: the strip's public surface: construct-and-render, root-widget accessor, and the
-///       verification-only autospawn/autopreview helpers.
-/// Why: callers build a strip, place its widget, and keep the handle alive; the rest reads state.
+/// What: public surface for constructing the strip, exposing its root widget, and driving
+///       verification hooks.
+/// Why: callers build a strip, place its widget, and keep the handle alive; all interaction flows
+///      through the controller.
 impl StripController {
     /// What: build a strip rooted at `root`, render its root pane, and return the controller.
-    /// Why: the root directory opens in column 0; reconcile creates that column and places its pane.
+    /// Why: the root directory opens in column 0; reconciliation creates the first column and pane.
     pub fn new(root: &Path) -> Self {
-        let columns_box = GtkBox::new(Orientation::Horizontal, PANE_GAP);
-        let outer = ScrolledWindow::builder()
-            .child(&columns_box)
-            .hscrollbar_policy(PolicyType::Automatic)
-            .vscrollbar_policy(PolicyType::Never)
-            .vexpand(true)
-            .hexpand(true)
-            .build();
+        let layout = StripLayout::new();
         let inner = Rc::new(StripInner {
-            outer,
-            columns_box,
-            columns: RefCell::new(Vec::new()),
+            layout,
             state: RefCell::new(PaneStripState::new()),
-            widgets: RefCell::new(HashMap::new()),
             generation: Cell::new(0),
-            focused_column: Cell::new(0),
             thumbs: Thumbnails::start(),
-            tethering: Cell::new(false),
-            scroll_epoch: Cell::new(0),
         });
         inner
             .state
@@ -129,10 +83,10 @@ impl StripController {
         Self { inner }
     }
 
-    /// What: the root widget to place in the window.
-    /// Why: the window holds the outer scroller; a clone bumps the GTK refcount so both can hold it.
+    /// What: clone the root widget to place in the window.
+    /// Why: the concrete GTK root lives behind `StripLayout` so callers do not depend on it.
     pub fn widget(&self) -> Widget {
-        self.inner.outer.clone().upcast::<Widget>()
+        self.inner.layout.widget()
     }
 
     /// What: programmatically spawn the first sub-directory's child pane from the root, then close it.
@@ -187,119 +141,30 @@ fn root_directory(inner: &Rc<StripInner>) -> Option<(PaneId, std::path::PathBuf)
 }
 
 /// What: mint and record the next directory-read generation.
-/// Why: a newer read supersedes a stale snapshot; the counter only ever increases.
+/// Why: newer reads supersede stale snapshots; the counter only increases.
 fn next_generation(inner: &Rc<StripInner>) -> u64 {
     let generation = inner.generation.get() + 1;
     inner.generation.set(generation);
     generation
 }
 
-/// What: bring the columns and pane widgets into agreement with the model.
-/// Why: one idempotent pass after any state change: ensure a view per column, drop closed panes,
-///      place each live pane in its column at its row, and give every column the same content
-///      height so the scroll coordinate spaces line up.
+/// What: reconcile layout to the current pane-state snapshot.
+/// Why: after any model mutation, GTK placement updates through one narrow `StripLayout` interface.
 fn reconcile(inner: &Rc<StripInner>) {
-    let column_count = inner.state.borrow().column_count();
-    ensure_columns(inner, column_count);
-    let live: HashMap<PaneId, (usize, usize)> = inner
+    let placements = inner
         .state
         .borrow()
         .panes()
-        .map(|pane| (pane.id, (pane.column, pane.row)))
+        .map(|pane| PanePlacement {
+            id: pane.id,
+            column: pane.column,
+            row: pane.row,
+            parent: pane.parent,
+        })
         .collect();
-    remove_stale(inner, &live);
-    for (&id, &(column, row)) in &live {
-        ensure_pane_widget(inner, id, column, row);
-    }
-    set_content_height(inner, &live);
-}
-
-/// What: grow or shrink the column views to exactly `count`.
-/// Why: descending adds columns and bulk-close removes them; each new column is a hidden-scrollbar
-///      vertical scroller over a fixed canvas, appended to the horizontal columns box.
-fn ensure_columns(inner: &Rc<StripInner>, count: usize) {
-    let mut columns = inner.columns.borrow_mut();
-    while columns.len() < count {
-        let index = columns.len();
-        let fixed = Fixed::new();
-        let scroller = ScrolledWindow::builder()
-            .child(&fixed)
-            .hscrollbar_policy(PolicyType::Never)
-            .vscrollbar_policy(PolicyType::External)
-            .width_request(PANE_WIDTH)
-            .vexpand(true)
-            .build();
-        scroller.add_css_class("fm-column");
-        fixed.add_css_class("fm-canvas");
-        let weak = Rc::downgrade(inner);
-        scroller.vadjustment().connect_value_changed(move |_| {
-            if let Some(inner) = weak.upgrade() {
-                crate::scroll::enforce_tether(&inner, index);
-            }
-        });
-        inner.columns_box.append(&scroller);
-        columns.push(ColumnView { scroller, fixed });
-    }
-    while columns.len() > count {
-        if let Some(view) = columns.pop() {
-            inner.columns_box.remove(&view.scroller);
-        }
-    }
-}
-
-/// What: remove pane widgets for panes no longer in the model.
-/// Why: a closed pane's widget must leave its column canvas and the widget map.
-fn remove_stale(inner: &Rc<StripInner>, live: &HashMap<PaneId, (usize, usize)>) {
-    let stale: Vec<PaneId> = inner
-        .widgets
-        .borrow()
-        .keys()
-        .copied()
-        .filter(|id| !live.contains_key(id))
-        .collect();
-    let columns = inner.columns.borrow();
-    for id in stale {
-        if let Some(widget) = inner.widgets.borrow_mut().remove(&id)
-            && let Some(fixed) = widget.parent().and_downcast::<Fixed>()
-        {
-            let _ = &columns;
-            fixed.remove(&widget);
-        }
-    }
-}
-
-/// What: ensure pane `id` has a widget in column `column` at `row`: move an existing one or build
-///       and place a new one sized to the pane box.
-/// Why: a pane's column never changes, so it stays in one column's canvas; only its row moves as
-///      the tree re-lays-out.
-fn ensure_pane_widget(inner: &Rc<StripInner>, id: PaneId, column: usize, row: usize) {
-    let existing = inner.widgets.borrow().get(&id).cloned();
-    let columns = inner.columns.borrow();
-    let Some(view) = columns.get(column) else {
-        return;
-    };
-    if let Some(widget) = existing {
-        view.fixed.move_(&widget, 0.0, row_y(row));
-        return;
-    }
-    drop(columns);
-    let widget = build_pane_widget(inner, id);
-    widget.set_size_request(PANE_WIDTH, PANE_HEIGHT);
-    if let Some(view) = inner.columns.borrow().get(column) {
-        view.fixed.put(&widget, 0.0, row_y(row));
-    }
-    inner.widgets.borrow_mut().insert(id, widget);
-}
-
-/// What: give every column canvas the same height (one stride past the deepest row).
-/// Why: a shared content height means equal vertical offsets map to the same on-screen row, which
-///      the alignment and the later tether both rely on.
-fn set_content_height(inner: &Rc<StripInner>, live: &HashMap<PaneId, (usize, usize)>) {
-    let max_row = live.values().map(|&(_, row)| row).max().unwrap_or(0);
-    let height = (row_y(max_row) + f64::from(PANE_HEIGHT)) as i32;
-    for view in inner.columns.borrow().iter() {
-        view.fixed.set_size_request(PANE_WIDTH, height);
-    }
+    inner
+        .layout
+        .reconcile(placements, |id| build_pane_widget(inner, id));
 }
 
 /// What: build the widget for pane `id` from its location.
@@ -373,10 +238,10 @@ fn spawn_from(
         .borrow_mut()
         .spawn_child(source, location, force_duplicate);
     if let Some(column) = inner.state.borrow().pane(spawned).map(|pane| pane.column) {
-        inner.focused_column.set(column);
+        inner.layout.set_focused_column(column);
     }
     reconcile(inner);
-    scroll_to_pane(inner, spawned);
+    inner.layout.scroll_to_pane(spawned);
     tracing::info!(
         source = source.0,
         spawned = spawned.0,
@@ -389,7 +254,7 @@ fn spawn_from(
 }
 
 /// What: close pane `id` and reconcile so its widget leaves and the tree re-lays-out.
-/// Why: explicit close is the only way a pane dies; reconcile's `remove_stale` drops the widget.
+/// Why: explicit close is the only way a pane dies; layout reconciliation drops the widget.
 fn close_pane(inner: &Rc<StripInner>, id: PaneId) {
     inner.state.borrow_mut().close(id);
     reconcile(inner);

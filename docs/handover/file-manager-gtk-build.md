@@ -259,3 +259,11 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   stylesheet; if the sheet is being dropped wholesale, split `.fm-canvas` into its own provider to
   isolate it, or move the tint onto a child overlay instead of the Fixed. Everything else stands;
   resume the snap (STAGE 3) with a fresh head.
+- 2026-07-08: Layout seam refactor. `strip.rs` now owns only the controller duties: mutate
+  `PaneStripState`, build pane widgets, and hand `PanePlacement` snapshots to `layout.rs`.
+  New `layout.rs` owns the GTK strip adapter: outer horizontal scroller, per-column vertical
+  scrollers, `GtkFixed` canvases, widget map, focused-column state, and reconciliation. The former
+  `scroll.rs` logic moved under `layout/scroll.rs`, still private to the layout seam, so reveal,
+  tether, and snap no longer reach through `StripInner` for model or widget fields. This preserves
+  current behavior while making the remaining snap bug a layout-adapter problem instead of a
+  controller-plus-scroll cross-cutting problem.
