@@ -1,83 +1,84 @@
 /**
- * {@link tomlSet}: write a value at a path, returning a fresh state with the
- * pending edit recorded.
+ * {@link tomlSet}: write a value at a path, returning a fresh state.
  *
- * AST-mutation invariant: this module never modifies AST internals.
- * All changes are recorded as entries in `edits` (for existing nodes) or
- * `insertions` (for path-create) and resolved positionally at emit time.
- *
- * Path-create dispatch (when {@link resolveByPath} returns `kind: 'missing'`)
- * lives in `./path-create.ts`; the table-replace and the in-place
- * primitive replacement paths live here.
+ * Resolves the path against the current block tree and dispatches:
+ * replace an existing value; wholesale-replace an array-of-tables; replace a
+ * standard table's or the top-level body; replace an implicit dotted-key parent
+ * (issue #252); or create a fresh dotted key-value. All paths are pure: the new
+ * state shares unchanged nodes by reference.
  *
  * @module
  */
 
-import type { AST, } from 'toml-eslint-parser';
-
-import { TomlTypeError, } from './errors.ts';
-import { doPathCreate, } from './path-create.ts';
-import { formatPath, } from './path.ts';
-import { resolveByPath, } from './resolve.ts';
-import { withEditOn, } from './state.ts';
+import type { Block, } from './document.ts';
 import {
-  doAotReplace,
-  describeNonObject,
-} from './toml-set-aot.ts';
+  TomlImmutableNodeError,
+  TomlTypeError,
+} from './errors.ts';
+import { formatPath, } from './path.ts';
+import { doAotReplace, } from './set-aot.ts';
+import { doCreate, } from './set-create.ts';
+import {
+  doImplicitReplace,
+  doTableReplace,
+  doTopLevelReplace,
+  isImplicitConstituent,
+} from './set-replace.ts';
+import {
+  NOT_SET,
+  replaceExistingValue,
+} from './set-value.ts';
 import type {
-  AnchorKind,
-  Insertion,
   TomlEditState,
   TomlPath,
 } from './types.ts';
-import {
-  encodeKey,
-  isPlainObject,
-  jsValueToTomlText,
-} from './values.ts';
 
 /**
- * Set the value at `path`. Returns a fresh {@link TomlEditState}.
+ * True when `block` is a table of `tableKind` whose header exactly names `path`.
  *
- * Behaviour by what `path` resolves to:
+ * @returns Resulting boolean.
+ */
+function headerEquals(
+  {
+    block,
+    path,
+    tableKind,
+  }: {
+    readonly block: Block;
+    readonly path: TomlPath;
+    readonly tableKind: 'standard' | 'array';
+  },
+): boolean {
+  return (block.kind
+    === 'table')
+    && (block.tableKind
+      === tableKind)
+    && (block.headerSegments
+      .length
+      === path.length)
+    && block.headerSegments
+      .every(function eq(
+      seg,
+      i,
+    ) {
+      return seg === path[i];
+    },);
+}
+
+/**
+ * Set `value` at `path`, returning a fresh {@link TomlEditState}.
  *
- * - Existing key-value or array element: the value bytes are replaced
- *   canonically (preserving style for unchanged primitives; see
- *   `values.ts` for preservation rules).
- * - Existing `[foo]` table or top-level: the body's key-values are
- *   cleared and the JS object's entries are inserted in `Object.entries`
- *   order. Sub-tables (`[foo.sub]`) are preserved. The JS value must be
- *   a plain object; arrays, scalars, and `Date` throw {@link TomlTypeError}.
- * - Existing array-of-tables collection (multiple `[[foo]]` blocks):
- *   replaces with one `[[foo]]` block per element of the supplied JS
- *   array. The JS value must be an array of plain objects (use `[]` to
- *   clear all instances). Numeric, string, or object values throw
- *   {@link TomlTypeError}.
- * - Existing sibling-tables collection (the path matches multiple
- *   `[a.b]` / `[a.c]` standard tables under an implicit parent):
- *   rejected; not the same shape as a true array-of-tables. Set per
- *   sub-table instead.
- * - Missing path: a fresh entry is created. Dotted-key insertions check
- *   for sibling-table or inline-table collisions and throw
- *   {@link TomlImmutableNodeError} when the result would not re-parse.
+ * @returns Fresh {@link TomlEditState}.
  *
- * @returns A fresh {@link TomlEditState} reflecting the change.
+ * @throws {@link TomlTypeError} when `value` is `null`/`undefined`, or when an
+ *         object is required (table/implicit replace) but not supplied.
  *
- * @throws {@link TomlTypeError} for `null`, `undefined`, a non-object value when
- *         replacing a table body, or a non-array value (or array with a
- *         non-plain-object element) when replacing an array-of-tables.
- *
- * @throws {@link TomlImmutableNodeError} for sibling-tables wholesale
- *         replacement, numeric segments inside the missing tail of the
- *         path, path-create through a scalar or `TOMLArray`, or any
- *         sibling-table / inline-table key collision.
+ * @throws {@link TomlImmutableNodeError} when the path names multiple sibling
+ *         standard tables under an implicit parent (set per sub-table instead).
  *
  * @example
  * ```ts
- * const e1 = tomlSet({ edit, path: ['tools', 'bun',], value: 'latest', },);
- * const e2 = tomlSet({ edit, path: ['foo',], value: { x: 1, y: 2 } as const, },);
- * const e3 = tomlSet({ edit, path: ['a','b','c',], value: 42, },);
- * const e4 = tomlSet({ edit, path: ['fruits',], value: [{ name: 'apple', }, { name: 'pear', },], },);
+ * const e1 = tomlSet({ edit: e0, path: ['tools', 'bun'], value: 'latest', },);
  * ```
  */
 export function tomlSet(
@@ -98,213 +99,100 @@ export function tomlSet(
   }
 
   /**
-   * Direct AST lookup so the setter can branch on the resolution kind.
+   * Fresh blocks when the path addressed an existing value; else the sentinel.
    */
-  const resolved = resolveByPath({
-    edit,
+  const replaced = replaceExistingValue({
+    blocks: edit.blocks,
     path,
+    value,
+    options: edit.canonical,
   },);
+  if (replaced !== NOT_SET)
+    return {
+      ...edit,
+      blocks: replaced,
+    };
 
-  if (resolved.kind
-    === 'keyvalue') {
-    /**
-     * Encoded replacement text for an existing key-value's value.
-     */
-    const newText = jsValueToTomlText({
-      input: value,
-      options: edit.canonical,
-      existing: {
-        node: resolved.node
-          .value,
-      },
-    },);
-    return withEditOn({
-      edit,
-      node: resolved.node,
-      delta: {
-        kind: 'replace-value',
-        newText,
-        jsValue: value,
-      },
-    },);
-  }
-
-  if (resolved.kind
-    === 'value') {
-    /**
-     * Encoded replacement text for an array element or inline-table value.
-     */
-    const newText = jsValueToTomlText({
-      input: value,
-      options: edit.canonical,
-      existing: { node: resolved.node, },
-    },);
-    return withEditOn({
-      edit,
-      node: resolved.node,
-      delta: {
-        kind: 'replace-value',
-        newText,
-        jsValue: value,
-      },
-    },);
-  }
-
-  if (resolved.kind
-    === 'array-of-tables') {
+  if (edit.blocks
+    .some(function isAot(b,) {
+      return headerEquals({
+        block: b,
+        path,
+        tableKind: 'array',
+      },);
+    },))
     return doAotReplace({
       edit,
       path,
       value,
-      nodes: resolved.nodes,
     },);
+
+  /**
+   * Index of a standard table whose header exactly names the path.
+   */
+  const stdIndex = edit.blocks
+    .findIndex(function isStd(b,) {
+    return headerEquals({
+      block: b,
+      path,
+      tableKind: 'standard',
+    },);
+  },);
+  if (stdIndex !== (-1)) {
+    /**
+     * The standard table whose body is replaced.
+     */
+    const table = edit.blocks[stdIndex];
+    if ((table !== undefined) && (table.kind
+      === 'table'))
+      return doTableReplace({
+        edit,
+        tableIndex: stdIndex,
+        table,
+        path,
+        value,
+      },);
   }
 
-  if ((resolved.kind
-    === 'table') || (resolved.kind
-      === 'top-level')) {
-    return doTableReplace({
+  if (path.length
+    === 0)
+    return doTopLevelReplace({
+      edit,
+      value,
+    },);
+
+  /**
+   * Constituent entries of an implicit parent at this path, if any.
+   */
+  const constituents = edit.blocks
+    .filter(function isConst(b,) {
+    return isImplicitConstituent({
+      block: b,
+      path,
+    },);
+  },);
+  if (constituents.length
+    > 0) {
+    if (constituents.some(function isTable(b,) {
+      return b.kind
+        === 'table';
+    },)) {
+      throw new TomlImmutableNodeError(
+        `tomlSet on the sibling tables at ${
+          formatPath({ path, },)
+        } is not supported; set per sub-table instead`,
+      );
+    }
+    return doImplicitReplace({
       edit,
       path,
       value,
-      container: resolved.node,
     },);
   }
 
-  return doPathCreate({
+  return doCreate({
     edit,
     path,
     value,
-    resolved,
   },);
 }
-
-/**
- * Replace the key-values inside an existing `TOMLTable` or
- * `TOMLTopLevelTable` with the entries of the given JS object.
- *
- * @returns A fresh {@link TomlEditState} reflecting the change.
- *
- * @throws {@link TomlTypeError} when `value` is not a plain object.
- */
-function doTableReplace(
-  {
-    edit,
-    path,
-    value,
-    container,
-  }: {
-    readonly edit: TomlEditState;
-    readonly path: TomlPath;
-    readonly value: unknown;
-    readonly container: AST.TOMLTable | AST.TOMLTopLevelTable;
-  },
-): TomlEditState {
-  if (!isPlainObject(value,)) {
-    throw new TomlTypeError(
-      `tomlSet at ${
-        formatPath({ path, },)
-      } requires a plain object to replace a table body; got ${
-        describeNonObject({ value, },)
-      }`,
-    );
-  }
-
-  /**
-   * Existing body key-values so they can be marked for deletion.
-   */
-  const bodyKvs = container.body
-    .filter(function isKv(child,): child is AST.TOMLKeyValue {
-    return child.type
-      === 'TOMLKeyValue';
-  },);
-
-  /**
-   * Anchor placing new insertions inside the table body.
-   */
-  const anchor: AnchorKind = anchorForTableReplace({ container, },);
-
-  /**
-   * One {@link Insertion} per replacement entry so the splice engine can emit them in order.
-   */
-  const newInsertions: Insertion[] = Object
-    .entries(value,)
-    .map(function each([k, v,],) {
-    /**
-     * Encoded `key = value\n` line.
-     */
-    const text = `${encodeKey({ key: k, },)} = ${
-      jsValueToTomlText({
-        input: v,
-        options: edit.canonical,
-      },)
-    }\n`;
-    return {
-      anchor,
-      text,
-      path: [
-        ...path,
-        k,
-      ],
-      jsValue: v,
-    };
-  },);
-
-  return {
-    ...edit,
-    deletions: new Set([
-      ...edit.deletions,
-      ...bodyKvs,
-    ],),
-    insertions: [
-      ...edit.insertions,
-      ...newInsertions,
-    ],
-  };
-}
-
-/**
- * Resolve the anchor for a table-replace insertion.
- *
- * - `TOMLTable`: `inside-table` at end. Tables can hold only key-values
- *   in their body so this lands the new entries correctly.
- * - `TOMLTopLevelTable`: `before-node` of the first sibling `TOMLTable`,
- *   if any (so the new entries land between the old top-level KVs and
- *   the first table header). Else `eof`.
- *
- * @returns Computed result ({@link AnchorKind}).
- */
-function anchorForTableReplace(
-  {
-    container,
-  }: {
-    readonly container: AST.TOMLTable | AST.TOMLTopLevelTable;
-  },
-): AnchorKind {
-  if (container.type
-    === 'TOMLTable') {
-    return {
-      position: 'inside-table',
-      table: container,
-      atEnd: true,
-    };
-  }
-  /**
-   * First `[foo]` header after the top-level body so insertions land before it.
-   */
-  const firstTable = container.body
-    .find(
-    function isTable(child,): child is AST.TOMLTable {
-      return child.type
-        === 'TOMLTable';
-    },
-  );
-  if (firstTable !== undefined) {
-    return {
-      position: 'before-node',
-      node: firstTable,
-    };
-  }
-  return 'eof';
-}
-

@@ -196,6 +196,7 @@ export function parseTomlEdit(
       source: normalizedSource,
       program,
     },),
+    comments: program.comments,
     mode,
     canonical: Object.freeze({
       ...DEFAULT_CANONICAL_OPTIONS,

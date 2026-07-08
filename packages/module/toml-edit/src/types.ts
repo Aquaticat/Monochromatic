@@ -128,6 +128,7 @@ export type TomlEmptyOptions = {
 export type TomlEditState = {
   readonly source: string;
   readonly blocks: readonly Block[];
+  readonly comments: readonly TomlComment[];
   readonly headerComment?: string;
   readonly mode: TomlEditMode;
   readonly canonical: Readonly<CanonicalOptions>;
