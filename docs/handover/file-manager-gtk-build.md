@@ -71,4 +71,14 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   every `use` for missing rustdoc (the retired spike never passed it) — code here documents each
   `use`. Verified: debug build clean (30s); `lint:rust` and `lint:clippy` both rc=0; ran the binary
   on native Wayland (`WAYLAND_DISPLAY=wayland-0`) -> `presented top-level window`, self-quit, exit 0.
-  Next: domain model + filesystem reads (#42).
+- 2026-07-08: Checkpoint 2 (domain model + fs reads, #42) DONE. Pure, GTK-free, unit-tested.
+  `types.rs` (`PaneId`, `EntryKind`, `PaneLocation`, `FileEntry`, `DirectorySnapshot`), `fs.rs`
+  (`read_directory` -> sorted `DirectorySnapshot`; dirs-first case-insensitive sort; best-effort
+  per-entry metadata; a bad single entry is skipped with a warning, only a failed dir-open
+  propagates), `model.rs` (`PaneStripState`: `open_root`/`spawn_child` with dedup + force-duplicate,
+  `focus`, `close`/`close_column`/`close_right_of`, `columns`/`active` accessors). Modules are `pub`
+  so they unit-test without GTK and avoid `dead_code` on fields not yet rendered. 11 tests
+  (`fs_tests.rs`, `model_tests.rs`, both linter-exempt) cover sort, read+metadata, missing-dir error,
+  dedup-and-focus, Ctrl-duplicate, close-clears-dedup, bulk close-column/close-right-of. lint:rust +
+  lint:clippy rc=0 (calibration: the linter also requires rustdoc on tuple fields; clippy prefers a
+  let-chain over a nested `if`). Next: directory-listing pane rendering a real directory (#43).

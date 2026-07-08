@@ -13,6 +13,25 @@ mod constants;
 /// Why: keeps window assembly out of `run`, each file under the max-lines budget.
 mod window;
 
+/// What: the core domain types (ids, entries, locations, snapshots).
+/// Why: plain-Rust model shared across the shell; public so it unit-tests without GTK.
+pub mod types;
+/// What: filesystem reads producing sorted directory snapshots.
+/// Why: isolates I/O so it is testable against throwaway directories.
+pub mod fs;
+/// What: the pane-strip state machine (spawn/dedup/focus/close).
+/// Why: the Niri interaction rules live here, tested independently of GTK.
+pub mod model;
+
+/// What: unit tests for the filesystem reads.
+/// Why: compiled only under test; kept in an exempt `_tests.rs` sibling.
+#[cfg(test)]
+mod fs_tests;
+/// What: unit tests for the pane-strip state machine.
+/// Why: compiled only under test; kept in an exempt `_tests.rs` sibling.
+#[cfg(test)]
+mod model_tests;
+
 /// What: imports the GTK application-extension traits (`connect_activate`, `run`, `quit`).
 /// Why: `run` drives an `Application` through those trait methods, which live in the prelude.
 use gtk4::prelude::*;
