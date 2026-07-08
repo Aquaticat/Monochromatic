@@ -78,29 +78,9 @@ const DEFAULT_PATH_RULES: readonly PathRule[] = [
   },
 ] as const;
 
-/**
- * Refusal returned when Bash invokes `bun test`.
- *
- * @example
- * ```typescript
- * return { block: true, reason: BUN_TEST_BLOCK_REASON };
- * ```
- */
-const BUN_TEST_BLOCK_REASON: string = [
-  'Blocked: `bun test` invocations are banned in this repo.',
-  'The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of module import,',
-  "so `bun test <file>` reports `0 pass / 0 fail` even when every test passed (the harness's `PASS`",
-  "log lines are not measured by bun's test runner).",
-  'Use `mise run //packages/<path>:test:unit` instead. When no such task exists, add one to the',
-  "target package's `mise.toml` first. For ad-hoc single-file runs use `node <file>` directly",
-  '(no `test` subcommand).',
-]
-  .join(' ',);
-
 //endregion Guardrail defaults
 
 export {
-  BUN_TEST_BLOCK_REASON,
   DEFAULT_BLOCK_BUN_TEST,
   DEFAULT_PATH_RULES,
   FILE_NOT_FOUND_CODE,

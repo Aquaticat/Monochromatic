@@ -4,50 +4,15 @@
  * @module
  */
 
-import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
-import { BUN_TEST_BLOCK_REASON, } from './constants.ts';
+import {
+  BUN_TEST_BAN_REASON,
+  invokesBunTest,
+} from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
 import {
   GUARDRAIL_NOT_BLOCKED,
   type GuardrailDecision,
 } from './types.ts';
 import { isRecord, } from './value.ts';
-
-//region Parsed command predicates
-
-/**
- * Checks whether a shell command contains a `bun test` command anywhere in parsed shell syntax.
- *
- * Uses the shared `unbash` analyzer so quoted prose, escaped characters,
- * nested command substitutions, and function definitions are classified by
- * shell grammar instead of text boundaries. Function bodies stay visible so
- * `f(){ bun test; }; f` cannot hide the banned invocation behind a shell name.
- *
- * @param command - shell command from pi Bash tool input
- *
- * @returns whether command contains `bun test`
- *
- * @example
- * ```typescript
- * invokesBunTest('cd x && bun test'); // true
- * invokesBunTest('echo "bun test"'); // false
- * ```
- */
-function invokesBunTest(command: string,): boolean {
-  /**
-   * Parsed shell command analysis.
-   */
-  const analysis = analyzeShellCommand(command,);
-  if (!analysis.parsed)
-    return false;
-
-  return analysis.commands
-    .some(function commandIsBunTest(info,): boolean {
-    return (info.name === 'bun')
-      && (info.args[0] === 'test');
-  },);
-}
-
-//endregion Parsed command predicates
 
 //region Bash guard evaluation
 
@@ -76,13 +41,10 @@ function evaluateBashGuard(input: unknown,): GuardrailDecision {
 
   return {
     block: true,
-    reason: BUN_TEST_BLOCK_REASON,
+    reason: BUN_TEST_BAN_REASON,
   };
 }
 
 //endregion Bash guard evaluation
 
-export {
-  evaluateBashGuard,
-  invokesBunTest,
-};
+export { evaluateBashGuard, };
