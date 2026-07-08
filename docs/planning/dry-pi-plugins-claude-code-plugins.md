@@ -286,8 +286,11 @@ migrate `packages/pi-plugins/spawn/src/session-finder.ts` to a host adapter
 that resolves `byPidDir` and supplies the pi `PidMapping` parser;
 migrate
 `packages/claude-code-plugins/source/src/handlers/claude-spawn/session-finder.ts`
-to a host adapter the same way;
-replay byte-equal fixtures on the claude side.
+to a host adapter the same way.
+Verify E2a with shared fake-IO tests, Pi host-adapter tests, Claude host-adapter
+tests with fake `byPidDir`, and a `spawn-claude` CLI fixture where practical.
+The generic Claude hook byte-equal fixture method remains required for hook
+handler migrations, but it is not enough for the CLI session-discovery path.
 Delete each host's local copies of the shared functions once migrated.
 
 #### E2b: text-scan placement
