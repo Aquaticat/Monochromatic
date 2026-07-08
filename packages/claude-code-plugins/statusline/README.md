@@ -1,41 +1,42 @@
 # statusline
 
-Claude Code status line showing a context-aware activity word,
- model name,
+Claude Code status line package showing model name,
  effort level,
-context window token usage,
- and API rate limit warnings.
+ context window token usage,
+ API rate limit warnings,
+ and a context-aware activity word.
 
 ## What it displays
 
-An activity word extracted from conversation context,
-followed by model info and a fixed-width token counter.
-Rate limit indicators appear only when approaching limits.
+Model info appears first,
+followed by a fixed-width token counter,
+rate limit indicators when approaching limits,
+and an activity word extracted from conversation context.
 
 **Normal usage** (rate limits comfortable):
 
 ```text
-Searching    Opus     51,045/1,000,000
+Opus     51,045/1,000,000    Searching
 ```
 
 **Approaching a limit** (session window at 72% used,
  28% remaining):
 
 ```text
-Refactoring    Opus     51,045/1,000,000    28% left (1h23m)
+Opus     51,045/1,000,000    28% left (1h23m)    Refactoring
 ```
 
 **Both tiers constrained**:
 
 ```text
-Compiling    Opus     51,045/1,000,000    28% left (1h23m) · 12% left (3d2h)
+Opus     51,045/1,000,000    28% left (1h23m) · 12% left (3d2h)    Compiling
 ```
 
 **Projected to exceed** (60% used in the first 2h of a 5h window;
  remaining looks fine but burn rate extrapolates to 150%):
 
 ```text
-Refactoring    Opus     51,045/1,000,000    40% left →150% (3h)
+Opus     51,045/1,000,000    40% left →150% (3h)    Refactoring
 ```
 
 The `→150%` marker shows the extrapolated end-of-window usage.
@@ -145,7 +146,7 @@ The model family name (Opus,
 Version and context size are stripped when they match the current defaults:
 
 - **Opus**:
-   latest 4.6,
+   latest 4.8,
    default 1M context
 - **Sonnet**:
    latest 4.6,
@@ -276,27 +277,26 @@ This is built into Claude Code itself and cannot be configured from the script s
 
 ## Runtime
 
-Uses `node:fs`,
- `node:fs/promises`,
- and `node:stream/consumers` only.
-No Bun-specific APIs:
- use Node by default,
- and the script remains portable to Deno-compatible APIs.
+The package builds a Node CLI at `dist/final/node/statusline.mjs`.
+Runtime code uses Node standard-library APIs only and has no Bun dependency.
 
 ## Installation
 
-Add to `~/.claude/settings.json`:
+Build the package with `mise run //packages/claude-code-plugins/statusline:build`,
+then add the built command to `~/.claude/settings.json`:
 
 ```json
 {
   "statusLine": {
     "type": "command",
-    "command": "node /path/to/src/statusline.ts"
+    "command": "node /path/to/packages/claude-code-plugins/statusline/dist/final/node/statusline.mjs"
   },
   "spinnerVerbs": { "mode": "replace", "verbs": [""] },
   "spinnerTipsEnabled": false
 }
 ```
+
+The package also exposes a private workspace bin named `claude-code-statusline`.
 
 ### Why this is not a Claude Code plugin
 

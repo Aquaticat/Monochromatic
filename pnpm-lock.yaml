@@ -731,6 +731,28 @@ importers:
         specifier: 'catalog:'
         version: 26.1.0
 
+  packages/claude-code-plugins/statusline:
+    dependencies:
+      '@monochromatic-dev/agent-harnesses-shared-usage-projection':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/usage-projection
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+
   packages/claude-code-plugins/stop-reminders:
     dependencies:
       '@monochromatic-dev/claude-code-plugins-source':
