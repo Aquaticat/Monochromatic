@@ -170,9 +170,9 @@ impl StripLayout {
         });
     }
 
-    /// What: snap each column's vertical offset to its nearest pane-height boundary.
-    /// Why: aligning pane tops to the viewport top means only the bottom pane should be partial per
-    ///      column, and each column keeps its own rounded offset.
+    /// What: snap each column's vertical offset to the nearest reachable pane-height boundary.
+    /// Why: aligning pane tops to the viewport top is ideal, but a short scroll range's bottom can
+    ///      be between snap rows, so bottom itself must be a candidate instead of rounding to top.
     fn snap_columns(&self) {
         if self.tethering.replace(true) {
             return;
@@ -181,7 +181,7 @@ impl StripLayout {
         for view in self.columns.borrow().iter() {
             let adj = view.scroller.vadjustment();
             let max = (adj.upper() - adj.page_size()).max(0.0);
-            let snapped = ((adj.value() / stride).round() * stride).clamp(0.0, max);
+            let snapped = nearest_snap(adj.value(), max, stride);
             if (snapped - adj.value()).abs() > f64::EPSILON {
                 tracing::debug!(
                     before = adj.value() as i64,
@@ -195,6 +195,20 @@ impl StripLayout {
             }
         }
         self.tethering.set(false);
+    }
+}
+
+/// What: choose the closest snap target after clamping both neighboring row boundaries to the
+///       reachable scroll range.
+/// Why: rounding first and clamping after maps a short range like `0..252` to `0` even when the user
+///      reached the bottom; treating `max` as the clamped upper candidate preserves bottom scroll.
+fn nearest_snap(value: f64, max: f64, stride: f64) -> f64 {
+    let lower = ((value / stride).floor() * stride).clamp(0.0, max);
+    let upper = ((value / stride).ceil() * stride).clamp(0.0, max);
+    if (value - lower).abs() <= (upper - value).abs() {
+        lower
+    } else {
+        upper
     }
 }
 

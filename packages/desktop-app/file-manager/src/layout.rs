@@ -245,12 +245,17 @@ impl StripLayout {
         self.widgets.borrow_mut().insert(placement.id, widget);
     }
 
-    /// What: give every column canvas the same height.
-    /// Why: equal vertical offsets then map to the same global row coordinate in each column.
+    /// What: size each column canvas to that column's deepest pane row.
+    /// Why: columns keep the shared row coordinate for alignment, but a short column should not
+    ///      gain blank scroll range just because a different column has deeper rows.
     fn set_content_height(&self, live: &HashMap<PaneId, (usize, usize)>) {
-        let max_row = live.values().map(|&(_, row)| row).max().unwrap_or(0);
-        let height = (scroll::row_y(max_row) + f64::from(PANE_HEIGHT)) as i32;
-        for view in self.columns.borrow().iter() {
+        for (index, view) in self.columns.borrow().iter().enumerate() {
+            let max_row = live
+                .values()
+                .filter_map(|&(column, row)| (column == index).then_some(row))
+                .max()
+                .unwrap_or(0);
+            let height = (scroll::row_y(max_row) + f64::from(PANE_HEIGHT)) as i32;
             view.fixed.set_size_request(PANE_WIDTH, height);
         }
     }

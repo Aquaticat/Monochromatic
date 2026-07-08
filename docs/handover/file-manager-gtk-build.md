@@ -267,3 +267,11 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   tether, and snap no longer reach through `StripInner` for model or widget fields. This preserves
   current behavior while making the remaining snap bug a layout-adapter problem instead of a
   controller-plus-scroll cross-cutting problem.
+- 2026-07-08: Tinted live-debug fix. User screenshot showed two separate problems: short columns
+  inherited another column's deeper content height, producing huge tinted blank scroll regions, and
+  snapping rounded `252 / 532` to row 0 before clamping, so a short `0..252` scroll range always
+  snapped back to the top. Fix: `layout.rs` now sizes each column canvas to that column's deepest
+  pane row (while keeping global row coordinates for pane placement), and `layout/scroll.rs`
+  chooses the nearest reachable snap candidate by clamping both neighboring row-boundaries first, so
+  bottom-of-range is a valid snap point. Verified lint/check/clippy/tests; reopened tinted debug run
+  for live user verification.
