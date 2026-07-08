@@ -282,12 +282,15 @@ lookup, delimiter-range stripping), migrate consumers, then delete
 Act on #276 once a non-harness consumer appears or once the generic name starts
 hiding distinct concepts.
 
-Lift the claude superset (535 lines) into the shared package;
-`packages/pi-plugins/spawn/src/text-scan.ts` (85-line subset) becomes a re-export
-or is deleted in favor of direct imports of `isWhitespace` and
-`splitWhitespace` from the shared package.
+Lift the claude superset (535 lines) into the shared package.
+This is a one-directional relocation of Claude's broader text-scanning library,
+not a symmetric merge of equal duplicate files:
+`packages/pi-plugins/spawn/src/text-scan.ts` is an 85-line subset that only needs
+`isWhitespace` and `splitWhitespace`.
+The Pi file becomes a re-export or is deleted in favor of direct imports from the
+shared package.
 The claude `source/src/lib/text-scan.ts` internal import path changes to the
-shared package; its five handler consumers update accordingly.
+shared package; its nine source-file consumers update accordingly.
 
 ### E3: statusline projected-overrun kernel
 
