@@ -92,3 +92,15 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   desktop content, and single-window capture is not reliably targetable here); verification is the
   entry-count match plus the clean render log. Next: fixed-canvas pane strip + spawn/dedup/focus +
   keyboard (#44).
+- 2026-07-08: Checkpoint 4a (fixed-canvas strip + spawn/dedup + close, part of #44) DONE.
+  `constants.rs` adds `PANE_WIDTH/HEIGHT/GAP` + `FM_AUTOSPAWN`. `strip.rs`: `StripController` over a
+  `GtkFixed` inside a `ScrolledWindow`; panes at `(column*(W+GAP), slot*(H+GAP))`, empty cells = no
+  widget; `reconcile()` = `remove_stale` + `ensure_pane_widget` (move existing / build+put new, sized
+  to the fixed pane box); `spawn_from` maps an activated `FileEntry` to Directory/Preview, calls
+  `model.spawn_child` (dedup + column+1), reconciles, idle-defers a scroll-to-reveal, returns the new
+  id; `close_pane` closes + reconciles. `pane.rs`: `single_click_activate` + `connect_activate` ->
+  `on_activate`; header = ellipsized path label + a `window-close-symbolic` button -> `on_close`.
+  `window.rs` returns the controller; `lib.rs` holds controllers for the app lifetime (pane closures
+  hold only a `Weak`, so no reference cycle). Verified via `FM_AUTOSPAWN`: spawn -> `panes=2
+  columns=2`, then close -> `panes=1`, presented, clean exit. Remaining for #44: Ctrl+click
+  force-duplicate and Left/Right keyboard column focus.

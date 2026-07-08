@@ -15,6 +15,9 @@ mod window;
 /// What: the directory-listing pane widget.
 /// Why: renders a `DirectorySnapshot` as a virtualized icon+name list.
 mod pane;
+/// What: the fixed-canvas pane strip and its controller.
+/// Why: places panes at fixed positions and drives spawn/dedup on row activation.
+mod strip;
 
 /// What: the core domain types (ids, entries, locations, snapshots).
 /// Why: plain-Rust model shared across the shell; public so it unit-tests without GTK.
@@ -64,8 +67,12 @@ pub fn run() -> glib::ExitCode {
     tracing::info!("monochromatic file manager starting");
 
     let app = Application::builder().application_id(APP_ID).build();
-    app.connect_activate(|app| {
-        window::build_window(app);
+    // Keep each window's strip controller alive for the app's lifetime; the pane activation
+    // closures hold only a weak reference, so without this the strip state would drop at the end
+    // of `build_window` and spawning would stop working.
+    let controllers = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    app.connect_activate(move |app| {
+        controllers.borrow_mut().push(window::build_window(app));
         schedule_self_quit(app);
     });
     app.run()
