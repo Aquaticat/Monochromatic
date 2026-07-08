@@ -10,7 +10,10 @@
  * @module
  */
 
-import { parseTomlEdit, } from '@monochromatic-dev/module-toml-edit';
+import {
+  parseTOML,
+  parseTomlEdit,
+} from '@monochromatic-dev/module-toml-edit';
 
 import {
   failAdapter,
@@ -113,14 +116,19 @@ function parseToTree(
   readonly message: string
 } {
   try {
+    // Validate through the package (rejects invalid TOML incl. a bare CR, and
+    // applies the version rules) before walking the AST for the tagged tree.
+    parseTomlEdit({
+      source,
+      ...versionOption(),
+    },);
     return {
       ok: true,
       tree: documentToTagged({
-        program: parseTomlEdit({
+        program: parseTOML(
           source,
-          ...versionOption(),
-        },)
-          .program,
+          versionOption(),
+        ),
       },),
     };
   }

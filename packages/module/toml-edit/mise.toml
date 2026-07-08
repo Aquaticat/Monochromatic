@@ -103,10 +103,12 @@ const decoder = `${process.cwd()}/src/conformance/decode.ts`
 const encoder = `${process.cwd()}/src/conformance/encode.ts`
 for (const version of ['1.0', '1.1']) {
   console.log(`toml-test conformance: TOML ${version}`)
+  // toml-test's `test` flags are -decoder/-encoder/-toml/-timeout/-v/-run/-json/-script;
+  // it has no color flag, so any extra token is rejected as a positional argument.
   execFileSync('mise', [...runner, 'test',
     `-decoder=node ${decoder} ${version}`,
     `-encoder=node ${encoder} ${version}`,
-    `-toml=${version}`, '-color', 'never'],
+    `-toml=${version}`],
     { stdio: 'inherit', env })
 }
 console.log('toml-test conformance: all decoder, encoder, and invalid cases passed for 1.0 and 1.1')
