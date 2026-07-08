@@ -61,7 +61,19 @@ function styleFromContext(ctx: ExtensionContext,): UsageWarningStyle {
   const { theme, } = ctx.ui;
 
   return {
-    overflow: function overflow(text: string,): string {
+    green: function green(text: string,): string {
+      return theme.fg(
+        'success',
+        text,
+      );
+    },
+    yellow: function yellow(text: string,): string {
+      return theme.fg(
+        'warning',
+        text,
+      );
+    },
+    red: function red(text: string,): string {
       return theme.fg(
         'error',
         text,

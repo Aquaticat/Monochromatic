@@ -202,13 +202,13 @@ async function verifyBuiltExtension(): Promise<string> {
    * Captured footer status text.
    */
   const status = statuses.get(EXPECTED_STATUS_KEY,);
-  if (status !== 'anthropic tokens <error>→120%</error> (40s)') {
+  if (status !== 'anthropic tokens <error>60% left →120%</error> (40s)') {
     throw new Error(
       `unexpected pi-statusline status: ${String(status,)}`,
     );
   }
 
-  return 'pi-statusline extension verified: event:after_provider_response, anthropic tokens →120% (40s)';
+  return 'pi-statusline extension verified: event:after_provider_response, anthropic tokens 60% left →120% (40s)';
 }
 
 //endregion Verification

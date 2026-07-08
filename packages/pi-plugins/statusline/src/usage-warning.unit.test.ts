@@ -84,8 +84,14 @@ function firstSnapshot(headers: Readonly<Record<string, string>>,): RateLimitSna
 }
 
 const ANGLE_STYLE: UsageWarningStyle = {
-  overflow: function overflow(text: string,): string {
-    return `<error>${text}</error>`;
+  green: function green(text: string,): string {
+    return `<green>${text}</green>`;
+  },
+  yellow: function yellow(text: string,): string {
+    return `<yellow>${text}</yellow>`;
+  },
+  red: function red(text: string,): string {
+    return `<red>${text}</red>`;
   },
 };
 
@@ -268,8 +274,8 @@ await describe({
       name: formatUsageWarningSegment.name,
       children: [
         it({
-          name: 'hides low remaining capacity when projection stays within the window',
-          fn: async function testLowRemainingHidden() {
+          name: 'formats low remaining capacity when projection stays within the window',
+          fn: async function testLowRemainingWarning() {
             const snapshot = firstSnapshot(
               tokenHeaders({ limit: 100, remaining: 20, resetOffsetMs: 10 * SECOND_MS, },),
             );
@@ -278,7 +284,7 @@ await describe({
               snapshot,
               nowMs: NOW_MS,
               style: PLAIN_USAGE_WARNING_STYLE,
-            },),).toBe('',);
+            },),).toBe('anthropic tokens 20% left (10s)',);
           },
         },),
         it({
@@ -292,7 +298,7 @@ await describe({
               snapshot,
               nowMs: NOW_MS,
               style: ANGLE_STYLE,
-            },),).toBe('anthropic tokens <error>→120%</error> (40s)',);
+            },),).toBe('anthropic tokens <red>60% left →120%</red> (40s)',);
           },
         },),
       ],
@@ -313,7 +319,7 @@ await describe({
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
 
-            expect(current.statusText,).toBe('codex 5h →150% (4h)',);
+            expect(current.statusText,).toBe('codex 5h 70% left →150% (4h)',);
           },
         },),
         it({
@@ -333,7 +339,7 @@ await describe({
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
 
-            expect(current.statusText,).toBe('synthetic search →120% (30m)',);
+            expect(current.statusText,).toBe('synthetic search 40% left →120% (30m)',);
           },
         },),
         it({
@@ -353,7 +359,7 @@ await describe({
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
 
-            expect(current.statusText,).toBe('synthetic week →840% (20h)',);
+            expect(current.statusText,).toBe('synthetic week 80% left →840% (20h)',);
           },
         },),
         it({
@@ -368,14 +374,14 @@ await describe({
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
 
-            expect(current.statusText,).toBe('anthropic tokens →120% (40s) · codex 5h →150% (4h)',);
+            expect(current.statusText,).toBe('anthropic tokens 60% left →120% (40s) · codex 5h 70% left →150% (4h)',);
           },
         },),
         it({
           name: 'returns empty status text when no projected overflow exists',
           fn: async function testEmptyStatus() {
             const current = formatUsageWarningStatus({
-              headers: tokenHeaders({ limit: 100, remaining: 20, resetOffsetMs: 10 * SECOND_MS, },),
+              headers: tokenHeaders({ limit: 100, remaining: 80, resetOffsetMs: 10 * SECOND_MS, },),
               nowMs: NOW_MS,
               style: PLAIN_USAGE_WARNING_STYLE,
             },);

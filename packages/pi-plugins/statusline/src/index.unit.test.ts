@@ -85,7 +85,7 @@ await describe({
             ctx,
           );
 
-          expect(statuses.get(STATUS_KEY,),).toBe('anthropic tokens <error>→120%</error> (40s)',);
+          expect(statuses.get(STATUS_KEY,),).toBe('anthropic tokens <error>60% left →120%</error> (40s)',);
         },);
       },
     },),
@@ -106,7 +106,7 @@ await describe({
           );
           await handler(
             createAfterProviderResponseEvent(
-              tokenHeaders({ limit: 100, remaining: 20, resetOffsetMs: 10 * SECOND_MS, },),
+              tokenHeaders({ limit: 100, remaining: 80, resetOffsetMs: 10 * SECOND_MS, },),
             ),
             ctx,
           );

@@ -2611,6 +2611,9 @@ importers:
 
   packages/pi-plugins/statusline:
     dependencies:
+      '@monochromatic-dev/agent-harnesses-shared-usage-projection':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/usage-projection
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
