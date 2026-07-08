@@ -23,12 +23,19 @@ language.
 
 ## Status
 
-Under active construction (the interactive shell). Built: the application foundation (native
-Wayland window). In progress per `docs/handover/file-manager-gtk-build.md`: the domain model and
-filesystem reads, the fixed-canvas column strip with spawn/dedup/focus and keyboard navigation,
-off-thread thumbnail decoding with a bounded evicting cache, and drag-and-drop in both directions.
-Deferred: session-restore persistence, single-instance IPC, search, file operations with undo,
-native default-manager registration, and packaging.
+The interactive shell is built and verified on Linux: a native Wayland window listing a real
+directory; the fixed-canvas column strip that spawns a deduplicated child pane on single-click or
+Enter (Ctrl forces a duplicate), with a per-pane close button and Left/Right column keyboard
+navigation; off-thread image thumbnail decoding into a byte-bounded evicting cache for preview
+panes; and file drag-and-drop (a native inbound drop target, native outbound drag on Wayland, with
+Windows OLE and macOS AppKit shims for outbound elsewhere). See
+`docs/handover/file-manager-gtk-build.md` for the build log and exactly what is verified versus
+still manual.
+
+Deferred (designed, not yet built): session-restore persistence, single-instance IPC, `fff-core`
+search, file operations with an inverse-operation undo stack, native default-manager registration,
+packaging, assistive-technology semantics, dragging file-list rows out, and dropping into a
+directory as a real copy or move.
 
 ## Build and run
 

@@ -41,13 +41,19 @@ it); Ctrl+click forces a duplicate; keyboard selection follows the same rules. P
 explicit close; off-screen panes evict content (snapshots, decoded bitmaps) but never identity;
 bulk-close gestures early. Keyboard-primary throughout.
 
-## Module map (target)
+## Module map (as built)
 
-`packages/desktop-app/file-manager/src/`: `main.rs`+`lib.rs` (bootstrap, tracing, GDK_DEBUG=dcomp on
-Windows), `model.rs`/`types.rs`/`constants.rs` (domain), `fs.rs` (reads/metadata/sort), `strip.rs`
-(fixed-canvas board), `pane.rs` (listing + preview variants), `spawn.rs` (spawn/dedup/focus),
-`thumbs.rs` (off-thread decode + evicting cache), `dnd.rs` (+ `win_drag.rs`, `mac_drag.rs`),
-`keys.rs` (keyboard nav).
+`packages/desktop-app/file-manager/src/`: `main.rs` (thin bin) + `lib.rs` (bootstrap, tracing,
+`GDK_DEBUG=dcomp` on Windows, module wiring, controllers kept alive for the app lifetime);
+`constants.rs`, `types.rs` (domain data), `model.rs` (`PaneStripState` spawn/dedup/close state
+machine), `fs.rs` (reads/metadata/sort); `window.rs` (top-level window + inbound drop target);
+`strip.rs` (fixed-canvas board, `reconcile`, spawn/close glue, scroll-to-reveal, Left/Right column
+keyboard nav); `pane.rs` (listing pane with single-click-activate + Ctrl-duplicate tracking + close
+button, plus the preview-pane builders); `thumbs.rs` (off-thread decode + byte-bounded evicting
+texture cache); `dnd.rs` (inbound drop target + cfg-branched outbound drag); `win_drag.rs` (cfg
+windows, OLE shim), `mac_drag.rs` (cfg macos, AppKit shim). Tests: `fs_tests.rs`, `model_tests.rs`
+(linter-exempt). Spawn/dedup/focus and keyboard nav were folded into `strip.rs`/`pane.rs` rather than
+separate `spawn.rs`/`keys.rs`.
 
 ## How to build / run
 
@@ -149,3 +155,26 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   click/virtualization conflict); dragging listing ROWS out is a documented refinement (needs
   drag-vs-activate arbitration + per-row path tracking). macOS/Windows shim at-boundary verification
   rides the m1/x13-win pass. Next: #47 final at-boundary verification + README/package completeness.
+- 2026-07-08: Checkpoint 7 (#47, first-pass verification + completeness) DONE. The interactive shell
+  is complete on Linux. Final green sweep: `lint`, `lint:rust`, `lint:clippy`, `test` (11) all rc=0;
+  15 source files. Release artifact (`build`) verified at the boundary: (A) real `$HOME` autospawn ->
+  `spawned panes=2 columns=2` then `closed panes=1`, presented, exit 0; (B) `/usr/share/pixmaps`
+  autopreview -> off-thread `thumbnail ready 256x256 cache_bytes=262144`, presented, exit 0. Package
+  completeness (PKG): `README.md` present, zero lint errors, unit tests cover the pure exported paths
+  (model spawn/dedup/close, fs read+sort); GTK-coupled paths (strip reconcile, thumbnail decode/cache,
+  DnD install) are runtime-verified via the autospawn/autopreview hooks and clean-run logs.
+
+  What is verified automatically vs still manual:
+  - Automatic (at boundary, this machine): build/lint/test; native Wayland window; real-directory
+    listing (108-entry `$HOME` match); spawn -> next-column child + dedup+close reconcile;
+    off-thread thumbnail decode + cache byte accounting; clean teardown (exit 0) on every run.
+  - Manual (needs a human / another machine): live Ctrl+click duplicate, Left/Right column focus, and
+    real Dolphin <-> app drag-and-drop (headless can't synthesize Wayland pointer/drag input); and the
+    Windows OLE + macOS AppKit outbound shims (compiled behind cfg + linter-clean here, at-boundary
+    on the x13-win/m1 pass).
+
+  Deferred (designed, not built this pass): session-restore persistence, single-instance IPC,
+  fff-core search, the full FileOperation/UndoStack (copy/move/rename/trash/delete + inverse undo),
+  native default-manager registration, packaging/signing, the AT semantics milestone, dragging listing
+  ROWS out (needs drag-vs-activate arbitration + per-row path tracking; outbound is preview-pane-only
+  today), and drop-INTO-a-directory as a real file operation (inbound currently accepts + logs).
