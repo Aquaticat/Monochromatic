@@ -474,7 +474,7 @@ importers:
 
   packages/agent-harnesses-shared/terminal-title:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shell-command-analyzer':
+      '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
         specifier: workspace:*
         version: link:../shell-command-analyzer
     devDependencies:
@@ -647,12 +647,12 @@ importers:
 
   packages/claude-code-plugins/source:
     dependencies:
+      '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
+        specifier: workspace:*
+        version: link:../../agent-harnesses-shared/shell-command-analyzer
       '@monochromatic-dev/agent-harnesses-shared-text-scan':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/text-scan
-      '@monochromatic-dev/agent-harnesses-shell-command-analyzer':
-        specifier: workspace:*
-        version: link:../../agent-harnesses-shared/shell-command-analyzer
       '@monochromatic-dev/claude-code-plugins-hook-types':
         specifier: workspace:*
         version: link:../hook-types
@@ -2388,7 +2388,7 @@ importers:
 
   packages/pi-plugins/auto-mode:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shell-command-analyzer':
+      '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/shell-command-analyzer
       '@monochromatic-dev/module-logger':
@@ -2450,7 +2450,7 @@ importers:
 
   packages/pi-plugins/guardrail:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shell-command-analyzer':
+      '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/shell-command-analyzer
       '@monochromatic-dev/module-logger':

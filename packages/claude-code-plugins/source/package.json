@@ -33,7 +33,7 @@
     "@monochromatic-dev/module-current-time-context": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-terminal-title": "workspace:*",
-    "@monochromatic-dev/agent-harnesses-shell-command-analyzer": "workspace:*",
+    "@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",
     "type-fest": "catalog:"

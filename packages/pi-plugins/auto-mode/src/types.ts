@@ -21,7 +21,7 @@ import type {
   ShellCommandAnalysis,
   ShellCommandInfo,
   ShellEnvAssignment,
-} from '@monochromatic-dev/agent-harnesses-shell-command-analyzer/ts';
+} from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
 
 //region Custom entry types
 

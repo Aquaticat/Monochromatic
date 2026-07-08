@@ -61,7 +61,7 @@ shared packages, each consumed by both clusters:
   the same `formatTimeContext`).
   DRY complete.
 - `agent-harnesses-shared/shell-command-analyzer`
-  (`@monochromatic-dev/agent-harnesses-shell-command-analyzer`):
+  (`@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer`):
   consumed by `packages/pi-plugins/guardrail`,
   `packages/pi-plugins/auto-mode`, and
   `packages/claude-code-plugins/source` (guardrail).
@@ -300,9 +300,8 @@ land in `packages/agent-harnesses-shared/text-scan` as a holding place.
 The package name is `@monochromatic-dev/agent-harnesses-shared-text-scan`.
 It builds as a neutral TypeScript package because the implementation is pure
 string scanning with no Node APIs.
-The existing `@monochromatic-dev/agent-harnesses-shell-command-analyzer` name is
-not a naming precedent to copy here; its missing `shared` segment is a separate
-cleanup.
+The corrected shell-command-analyzer package name includes the `shared` segment;
+do not copy its former missing-`shared` name.
 Every current consumer is an agent-harness plugin, and
 `docs/planning/package-category-rebalance.md` keeps `packages/module/*` for
 general-purpose TypeScript utilities with wider stewardship, so the holding place

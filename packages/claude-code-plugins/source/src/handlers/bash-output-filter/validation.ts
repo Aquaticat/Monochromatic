@@ -8,7 +8,7 @@ import {
   analyzeShellCommand,
   type ShellCommandAnalysis,
   type ShellCommandInfo,
-} from '@monochromatic-dev/agent-harnesses-shell-command-analyzer/ts';
+} from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
 
 //region Allowlist
 

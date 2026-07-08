@@ -2,7 +2,7 @@ import type {
   PreToolUseInput,
   PreToolUseOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
-import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shell-command-analyzer/ts';
+import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 
 /**

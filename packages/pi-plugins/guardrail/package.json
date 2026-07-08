@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/agent-harnesses-shell-command-analyzer": "workspace:*",
+    "@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer": "workspace:*",
     "ignore": "catalog:"
   },
   "devDependencies": {

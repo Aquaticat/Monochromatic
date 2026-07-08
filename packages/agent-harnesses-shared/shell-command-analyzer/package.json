@@ -1,6 +1,6 @@
 {
   "license": "LGPL-3.0-or-later",
-  "name": "@monochromatic-dev/agent-harnesses-shell-command-analyzer",
+  "name": "@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer",
   "description": "Shared unbash-backed shell command analyzer for agent harness guardrails.",
   "type": "module",
   "version": "0.0.1",

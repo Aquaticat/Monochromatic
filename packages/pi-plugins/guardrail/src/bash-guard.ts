@@ -4,7 +4,7 @@
  * @module
  */
 
-import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shell-command-analyzer/ts';
+import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
 import { BUN_TEST_BLOCK_REASON, } from './constants.ts';
 import {
   GUARDRAIL_NOT_BLOCKED,

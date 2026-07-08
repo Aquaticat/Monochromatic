@@ -14,7 +14,7 @@
     "./ts": "./src/index.ts"
   },
   "dependencies": {
-    "@monochromatic-dev/agent-harnesses-shell-command-analyzer": "workspace:*"
+    "@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
