@@ -1,0 +1,108 @@
+:root {
+  --color-app-background: hsl(222deg 47% 11%);
+  --color-card-background: hsl(217deg 33% 17%);
+  --color-card-border: hsl(215deg 25% 27%);
+  --color-focus: hsl(196deg 100% 70%);
+  --color-text: hsl(210deg 40% 98%);
+  --color-text-muted: hsl(215deg 20% 72%);
+  --color-button-background: hsl(196deg 100% 40%);
+  --color-button-background-active: hsl(196deg 100% 34%);
+  --color-button-text: hsl(210deg 40% 98%);
+  --color-card-shadow: hsl(222deg 47% 4% / 40%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-block-size: 100vh;
+  margin-block: 0;
+  margin-inline: 0;
+  color: var(--color-text);
+  background-color: var(--color-app-background);
+  font-family: system-ui, sans-serif;
+}
+
+.app-shell {
+  min-block-size: 100vh;
+  display: grid;
+  place-items: center;
+  padding-block: 2rem;
+  padding-inline: 2rem;
+}
+
+.counter-card {
+  inline-size: min(100%, 34rem);
+  display: grid;
+  gap: 1.25rem;
+  padding-block: 2rem;
+  padding-inline: 2rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-card-border);
+  border-radius: 1.5rem;
+  background-color: var(--color-card-background);
+  box-shadow: 0 1.5rem 4rem var(--color-card-shadow);
+  text-align: start;
+}
+
+.eyebrow {
+  margin-block: 0;
+  margin-inline: 0;
+  color: var(--color-focus);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin-block: 0;
+  margin-inline: 0;
+  font-size: clamp(2rem, 8vw, 4rem);
+  line-height: 1;
+}
+
+.description {
+  margin-block: 0;
+  margin-inline: 0;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.counter-value {
+  color: var(--color-text);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.increment-button {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  justify-self: start;
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-button-background);
+  border-radius: 999rem;
+  color: var(--color-button-text);
+  background-color: var(--color-button-background);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  line-height: inherit;
+}
+
+.increment-button:hover {
+  background-color: var(--color-button-background-active);
+}
+
+.increment-button:focus-visible {
+  outline-width: 0.1875rem;
+  outline-style: solid;
+  outline-color: var(--color-focus);
+  outline-offset: 0.25rem;
+}
