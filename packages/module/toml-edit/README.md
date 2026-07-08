@@ -149,20 +149,18 @@ If full canonical re-formatting of parsed source is required (e.g. enforce inden
  reparse the splice output through `emptyTomlEdit()` + setters,
  or open an issue.
 
-### `tomlGetNode` and `tomlGetRaw` are parse-time views
+### `tomlGetNode` and `tomlGetRaw` are clean-node views
 
-Both bypass pending deltas.
- After `tomlSet({ edit, path, value: 'new' })`:
+Both return the parse-time AST node or source bytes of a node that is still
+clean (unmutated) in the current document tree.
+ After `tomlSet({ edit, path, value: 'new' })` on an existing path:
 
-- `tomlGetValue({ edit, path })` returns `'new'` (delta-aware,
-   with cross-path projection for sub-path reads).
-- `tomlGetNode({ edit, path })` returns the parse-time AST node,
-   whose `value` still reads the pre-edit content.
-  This is by design under the immutability invariant:
-   the AST is shared by reference and never mutated;
-   `node.range` correctly indexes into `edit.source`,
-   which is also never mutated.
-- `tomlGetRaw({ edit, path })` returns the parse-time source slice (the pre-edit bytes).
+- `tomlGetValue({ edit, path })` returns `'new'` (it reads the current tree).
+- `tomlGetNode({ edit, path })` throws `TomlPathNotFoundError`:
+   the edited value is now synthetic and has no parse-time AST node.
+   An unedited sibling path still returns its clean node.
+- `tomlGetRaw({ edit, path })` likewise throws for the edited path (no clean
+   source bytes back it), and returns the original slice for unedited paths.
 
 For paths created by `tomlSet` that did not exist at parse time,
  neither function can return a node or bytes;
@@ -175,7 +173,7 @@ The package re-exports a few internal encoders and emitters with an underscore p
  `_jsValueToTomlText`,
  `_emitContentNode`,
  `_emitStringValue`,
- and `_spliceEmit`.
+ and `_emitDocument`.
 
 These carry no compatibility promise.
 They exist for observability and the property-based fuzz suite,
