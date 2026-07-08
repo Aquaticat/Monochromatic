@@ -267,6 +267,10 @@ Delete each host's local copies of the shared functions once migrated.
 
 Decision:
 land in `packages/agent-harnesses-shared/text-scan` as a holding place.
+The package name is `@monochromatic-dev/agent-harnesses-shared-text-scan`.
+The existing `@monochromatic-dev/agent-harnesses-shell-command-analyzer` name is
+not a naming precedent to copy here; its missing `shared` segment is a separate
+cleanup.
 Every current consumer is an agent-harness plugin, and
 `docs/planning/package-category-rebalance.md` keeps `packages/module/*` for
 general-purpose TypeScript utilities with wider stewardship, so the holding place
