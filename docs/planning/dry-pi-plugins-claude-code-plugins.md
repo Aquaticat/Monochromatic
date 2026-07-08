@@ -1,9 +1,8 @@
 # Plan: DRY `pi-plugins` and `claude-code-plugins`
 
 Status:
- plan complete, grilled, and all decisions resolved.
- Execution deferred to a later session per user instruction.
- Sequencing is E2b, E1, E2a, E3 with per-sub-step commits.
+ plan complete, grilled, all decisions resolved, and implementation executed.
+ Sequencing completed as E2b, E1, E2a, E3 with per-sub-step commits.
 
 ## Goal
 

@@ -1,31 +1,37 @@
 # pi-statusline
 
-Pi extension that adds one footer status:
- projected provider usage overflow warnings.
+Pi extension that adds one footer status for provider usage pressure.
 
-It ports only the projected-overflow warning behavior from `packages/claude-code-plugins/statusline`.
-Comfortable usage and low remaining capacity render nothing.
+It uses the shared usage-projection formatter also used by
+`packages/claude-code-plugins/statusline`:
+warnings render when remaining capacity is low or projected burn rate exceeds the window.
 
 ## What it displays
 
-No projected overflow renders nothing.
+Comfortable usage with sustainable burn rate renders nothing.
 No news is good news.
 
-Projected overflow renders the extrapolated end-of-window usage:
+Low remaining capacity renders remaining percentage and reset time:
 
 ```text
-codex 5h →150% (4h)
+codex 5h 18% left (4h)
+```
+
+Projected overflow appends the extrapolated end-of-window usage:
+
+```text
+codex 5h 60% left →150% (4h)
 ```
 
 The `→150%` marker means current used percentage,
- elapsed window time,
- and reset time imply that
+elapsed window time,
+and reset time imply that
 continued burn rate will exceed available capacity before the limiter replenishes.
 
-Multiple overflowing windows are joined with a centered dot:
+Multiple constrained windows are joined with a centered dot:
 
 ```text
-anthropic tokens →120% (40s) · synthetic search →120% (30m)
+anthropic tokens 60% left →120% (40s) · synthetic search 8% left (30m)
 ```
 
 ## Supported sources
@@ -50,11 +56,15 @@ For Synthetic.
 new,
  that means `rollingFiveHourLimit` and legacy `subscription` data are ignored because
 `@aliou/pi-synthetic` does not model them as pace-projectable windows.
-It does not show status for low remaining capacity by itself.
 
 ## Colors
 
-Projected overflow uses Pi theme `error` color.
+Provider usage pressure uses Pi theme colors:
+
+- `success` when more than 25% remains.
+- `warning` when 10% to 25% remains.
+- `error` when 10% or less remains,
+  or when projection exceeds 100%.
 
 ## Installation
 
