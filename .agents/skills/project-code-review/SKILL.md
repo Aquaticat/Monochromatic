@@ -1,6 +1,6 @@
 ---
-name: code-review
-description: Review code
+name: project-code-review
+description: Review code according to project standards
 ---
 
 # Code review
