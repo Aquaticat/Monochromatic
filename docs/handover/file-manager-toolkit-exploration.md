@@ -33,7 +33,9 @@ updated as work proceeds.
   even under RustDesk's screen-capture penalty (a real local number would be higher), as long
   as thumbnail decode is off the render path (synchronous per-frame decode drops it to ~4 fps).
   On macOS it builds and runs zero-config (no per-OS env), native Cocoa window with the
-  virtualized list. Windows not yet verified.
+  virtualized list. On Windows it builds via gvsbuild and GPU-renders once DirectComposition is
+  enabled (`GDK_DEBUG=dcomp`), holding a locked 60 fps on the real sparse-board workload on the
+  x13-win (see "Windows (x13-win) results").
 
 ## Test machines (full specs)
 
@@ -65,6 +67,23 @@ macOS (`ssh m1`; perf target 30+ fps):
 - Display: built-in Retina 2560x1600 @ 60 Hz. Measured over a RustDesk remote-desktop session,
   whose screen-capture depresses fps (a real local number would be higher); both toolkits ran
   under this same penalty, so the head-to-head stays fair.
+
+Windows (`ssh x13-win`; no prior fps target, sits between the Linux box and the M1 Air):
+
+- Model: Lenovo ThinkPad X13.
+- CPU: AMD Ryzen 7 PRO 7840U, 8 cores / 16 threads (Zen 4).
+- GPU: AMD Radeon 780M (RDNA3 integrated); Vulkan 1.4.349, AMD proprietary driver 26.6.1;
+  display driver 32.0.31019.2002.
+- RAM: 32 GB (30.6 GB visible).
+- OS: Windows 10 21H2, build 19044.7417.
+- Toolchain: Rust nightly `x86_64-pc-windows-msvc`, Visual Studio Community 2026 (gvsbuild needs
+  `--vs-ver vs2026`), gvsbuild 2026.6.0 building GTK 4.22.4 from source, MSYS2 for gvsbuild's
+  unix helper tools, Python 3.12 via mise. The app runs from a self-contained bundle (exe plus
+  44 GTK DLLs plus glib schemas in one directory, no PATH needed).
+- Display: physical display on at 1920x1200; measured over RustDesk. A WebGL/WebGPU browser GPU
+  benchmark on the same box over the same RustDesk connection sustained 65 fps (WebGL) and 86 fps
+  (WebGPU), 1%-low 36/49, so RustDesk does not depress a well-behaved GPU app; bench dips here
+  are the app's own cost, not the remote path.
 
 ## Decision criteria (corrected)
 
@@ -149,8 +168,9 @@ This read is preliminary and must be confirmed by actually building each on macO
   Qt file manager) shows Qt is equally proven for this use case. Both are battle-tested; this
   is dropped as a reason.
 - Not yet done: outbound drag (`GtkDragSource`); a real off-thread thumbnail decoder (the
-  benchmark caches; the app needs a worker plus eviction like `preview.rs`); macOS build-and-run
-  is now done (see below), Windows still pending.
+  benchmark caches; the app needs a worker plus eviction like `preview.rs`). macOS and Windows
+  build-and-run plus perf are now done (see the "macOS (m1) results" and "Windows (x13-win)
+  results" sections); native DnD verification on macOS and Windows is still pending.
 
 ## macOS (m1) results
 
@@ -187,6 +207,62 @@ The Qt teardown crash on macOS (decisive): the `qml` strip benchmark, which uses
 as on Linux, but on macOS it is a user-visible "quit unexpectedly" dialog, which the user ruled
 unacceptable. Detail in `docs/troubleshooting/qt-qml-reuseitems-teardown-segfault.md`.
 
+## Windows (x13-win) results
+
+Machine: the ThinkPad X13 (full specs in "Test machines"), driven over RustDesk. GTK4 builds,
+runs, and GPU-renders natively on Windows, and holds a locked 60 fps on the real UX workload.
+
+Build-and-run developer experience:
+
+- The toolchain is a one-time setup: MSYS2 (gvsbuild's helper tools), Python via mise, gvsbuild
+  2026.6.0 building GTK 4.22.4 with `--vs-ver vs2026` (gvsbuild defaults to VS 2022 and skips
+  VS 2026 otherwise). The GTK source build took ~21 min on this 8-core part; the Rust crate then
+  built against it with zero source changes (same `main.rs` and `Cargo.toml` as Linux and
+  macOS), 1 m 24 s release.
+- The app is shippable as a self-contained folder: exe plus the 44 GTK DLLs plus glib schemas in
+  one directory, no external PATH. Verified it loads standalone.
+
+The DirectComposition gotcha (cost hours, worth recording): gvsbuild ships a patch
+(`0001-remove-direct-composition.patch`) that turns GTK's DirectComposition from a default-on
+feature into an opt-in debug flag, and GTK's GL renderer hard-requires a DirectComposition
+device. Without opting in, GL fails to realize ("OpenGL requires Direct Composition") and GTK
+falls back to the Cairo software renderer, which rasterizes the whole scene at 3-6 fps. gvsbuild
+also builds GTK with Vulkan disabled (`-Dvulkan=disabled`), so there is no Vulkan renderer to
+fall back to. The fix is one env var, `GDK_DEBUG=dcomp`, which enables the DirectComposition
+device and lets the GL renderer run on the GPU. Full detail and evidence in
+`docs/troubleshooting/gtk4-windows-gvsbuild-directcomposition.md`.
+
+Perf (diagonal pan, over RustDesk, `GDK_DEBUG=dcomp`):
+
+- The GPU is not the limit: uncapped (`GDK_DEBUG=dcomp,no-vsync`) the 780M peaked at 68 fps for
+  the heaviest scene, and the browser GPU benchmark hit 86. Software fallback was never taken
+  with dcomp on (zero `GSK_DEBUG=fallback` lines). Textures were not the limit either: a
+  text-only run was slower than the mixed run, since a text pane's Pango layout costs more than
+  an image pane's single cached quad.
+- The bottleneck under load is CPU per-frame widget work (item realize/bind plus Pango layout),
+  and it scales with the number of populated panes animating at once. A single scrolling pane
+  holds a locked 60; a dense grid with every cell populated and all columns scrolling at once
+  (~72 populated panes in view) collapses to 3-37. That dense case is a synthetic worst case.
+- The real UX (a sparse 100x100 board, ~20% of cells populated, ~2000 panes split 50/50 image
+  and text, panned diagonally) holds a locked 60-61 fps, p99 frame time ~16.7 ms, after a
+  one-second first-paint warmup. This is the number that reflects the product.
+
+Why the sparse board hits 60 while the dense grid does not, and the architecture lesson: the
+winning structure places the populated panes at fixed positions on a canvas (empty cells are no
+widget), so a pan does not re-run virtualization or relayout; GTK caches each pane's render node
+and the pan just re-composites those cached quads on the GPU. That is the `docs/decisions/
+vector-design.md` tile principle realized inside GTK. For the real UI (see "Open items"): build
+the pane board as fixed-position panes on a canvas rather than nested virtualized `ListView`s
+(which churn widgets during a pan); decode thumbnails off-thread into a bounded, evicting texture
+cache; keep the pan path allocation-free. One scaling boundary: realize-all works because 100x100
+(~2000 populated) is bounded; if the board grows an order of magnitude, move to 2D virtualization
+or per-pane texture tiles.
+
+Verdict: Windows passes the perf gate (locked 60 for the real workload), which confirms GTK4
+across the fleet. This does not re-open the toolkit choice; GTK4 stands, and it remains the only
+option satisfying the Wayland DnD constraint (winit-based stacks, including the `vector-design`
+engine stack, have no Wayland DnD).
+
 ## Branches and worktrees
 
 - `feat/file-manager-qt` at `/var/home/user/worktrees/file-manager-qt`: the Qt spike, the
@@ -215,8 +291,10 @@ unacceptable. Detail in `docs/troubleshooting/qt-qml-reuseitems-teardown-segfaul
 - Build the real GTK column/pane UI: `GtkColumnView` or nested lists, an off-thread thumbnail
   decoder with eviction (like `preview.rs`, not the benchmark's decode-everything cache), and
   wire outbound `GtkDragSource` plus clipboard. Inbound `GtkDropTarget` is already proven.
-- Windows (`x13-win`, currently off): build and run the GTK spike there and confirm it clears
-  the perf target for that machine; this is the remaining hardware gap.
+- Windows (`x13-win`): build/run and perf are done and passed (locked 60 on the real
+  sparse-board workload; see "Windows (x13-win) results"). Remaining Windows work is DnD
+  verification. Note the `GDK_DEBUG=dcomp` requirement for GPU rendering, and set it in-process
+  on Windows in the real app.
 - Verify inbound and outbound DnD on macOS and Windows for the GTK app.
 - The Qt spike, its troubleshooting docs, and the cxx-qt linter carve-out can stay as recorded
   evidence; no further Qt spike work is planned.
