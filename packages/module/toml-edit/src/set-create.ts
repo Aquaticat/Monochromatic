@@ -253,7 +253,8 @@ function assertNoScalarPrefix(
           .kind
           !== 'inline-table')) {
         throw new TomlImmutableNodeError(
-          `Cannot path-create through ${block.value.kind} at path ${formatPath({ path, },)}`,
+          `Cannot path-create through ${block.value
+            .kind} at path ${formatPath({ path, },)}`,
         );
       }
       continue;
@@ -311,8 +312,10 @@ function deepestTableIndex(
       /**
        * Current best header length so the longest (deepest) prefix wins.
        */
-      const bestLen = (best === (-1)) || (blocks[best] === undefined) || (blocks[best]?.kind
-        !== 'table')
+      const bestLen = (best === (-1)) || (blocks[best] === undefined)
+        || (blocks[best]
+          ?.kind
+          !== 'table')
         ? -1
         : (blocks[best] as Extract<Block, { kind: 'table'; }>).headerSegments
           .length;

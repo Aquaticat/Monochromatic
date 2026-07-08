@@ -70,10 +70,19 @@ export function attachedCommentsAt(
       cursorPos,
     ),))
       break;
+    /**
+     * Start offset of this attached comment; the cursor retreats to it next.
+     */
+    const [commentStart,] = comment.range;
     collected.push(comment,);
-    cursorPos = comment.range[0];
+    cursorPos = commentStart;
   }
-  return collected.toReversed();
+  /**
+   * Nearest-first collection reversed to source order; returned as the binding
+   * so this build-via-mutation helper satisfies the no-function-root-let shape.
+   */
+  const ordered = collected.toReversed();
+  return ordered;
 }
 
 /**

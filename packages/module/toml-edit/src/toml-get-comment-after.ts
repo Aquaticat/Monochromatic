@@ -51,10 +51,10 @@ export function tomlGetCommentAfter(
     );
   }
   /**
-   * Clean end offset after which a same-line comment attaches, or `null`.
+   * Clean end offset after which a same-line comment attaches, or `-1`.
    */
   const from = endOf({ located, },);
-  if (from === null)
+  if (from === (-1))
     return {};
   return trailingCommentAt({
     comments: edit.comments,
@@ -64,28 +64,39 @@ export function tomlGetCommentAfter(
 }
 
 /**
- * Clean end offset for a located entry, or `null` when synthetic.
+ * Clean end offset for a located entry, or `-1` when synthetic.
  *
- * @returns Computed offset or `null`.
+ * Char offsets are non-negative, so `-1` unambiguously signals "no clean source
+ * position" without a nullish union.
+ *
+ * @param located - Located block whose clean end offset anchors the scan.
+ *
+ * @returns Clean end offset, or `-1` when synthetic.
+ *
+ * @example
+ * ```ts
+ * endOf({ located: locateBlock({ blocks, path, },), },);
+ * ```
  */
 function endOf(
   { located, }: { readonly located: ReturnType<typeof locateBlock>; },
-): number | null {
+): number {
   if (located === NOT_LOCATED)
-    return null;
+    return -1;
   if (located.kind
     === 'kv')
     return located.kv
-      .valueRange === undefined ? null : located.kv
-      .valueRange[1];
+      .valueRange
+      === undefined ? -1 : located.kv
+        .valueRange[1];
   if (located.kind
     === 'table')
     return located.table
       .headerOrigin
       .kind
       === 'clean' ? located.table
-      .headerOrigin
-      .range[1] : null;
+        .headerOrigin
+        .range[1] : -1;
   /**
    * Last array-of-tables instance is where a trailing comment attaches.
    */
@@ -94,5 +105,5 @@ function endOf(
   return last.headerOrigin
     .kind
     === 'clean' ? last.headerOrigin
-    .range[1] : null;
+      .range[1] : -1;
 }

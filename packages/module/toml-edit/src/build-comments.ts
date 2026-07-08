@@ -52,6 +52,9 @@ export function lineEndAfter(
  * Whitespace-only gap containing exactly one newline (single line break, no
  * blank line), the shape that keeps a preceding comment "attached".
  *
+ * @param gap - Source slice between a comment's end and the following node;
+ *   a lone newline (and nothing else non-blank) keeps the comment attached.
+ *
  * @returns Whether the gap attaches.
  *
  * @example
@@ -62,20 +65,32 @@ export function lineEndAfter(
  */
 export function isAttachedGap(gap: string,): boolean {
   /**
-   * Running newline count; a second one (a blank line) breaks attachment.
+   * Newline count via split, avoiding a string spread; a single one keeps
+   * attachment (a blank line, i.e. two newlines, breaks it).
    */
-  let newlineCount = 0;
-  for (const char of gap) {
-    if (char === '\n') {
-      if (newlineCount >= 1)
-        return false;
-      newlineCount += 1;
-      continue;
-    }
-    if ((char !== ' ') && (char !== '\t'))
-      return false;
-  }
-  return newlineCount === 1;
+  const newlineCount = gap.split('\n',)
+    .length
+    - 1;
+  /**
+   * Gap with every whitespace char stripped; empty means whitespace-only, so
+   * any leftover char (a non-blank token between the comment and the node)
+   * breaks attachment.
+   */
+  const withoutWhitespace = gap
+    .replaceAll(
+    ' ',
+    '',
+  )
+    .replaceAll(
+    '\t',
+    '',
+  )
+    .replaceAll(
+    '\n',
+    '',
+  );
+  return (withoutWhitespace === '')
+    && (newlineCount === 1);
 }
 
 /**
@@ -135,20 +150,30 @@ export function attachedCommentValues(
       cursorPos,
     ),))
       break;
+    /**
+     * Start offset of this attached comment; the cursor retreats to it next.
+     */
+    const [commentStart,] = comment.range;
     collected.push(comment.value,);
-    cursorPos = comment.range[0];
+    cursorPos = commentStart;
   }
-  return collected.toReversed();
+  /**
+   * Nearest-first collection reversed to source order; returned as the binding
+   * so this build-via-mutation helper satisfies the no-function-root-let shape.
+   */
+  const ordered = collected.toReversed();
+  return ordered;
 }
 
 /**
  * Trailing same-line comment value after `from`, if any.
  *
- * @returns Comment value, or `undefined` when there is none on the line.
+ * @returns Object whose `value` field is the trailing comment value, or absent
+ *          when there is no same-line comment.
  *
  * @example
  * ```ts
- * trailingCommentValue({ comments, source, from: kv.value.range[1], },); // ' note'
+ * trailingCommentValue({ comments, source, from: kv.value.range[1], },); // { value: ' note' }
  * ```
  */
 export function trailingCommentValue(
@@ -161,7 +186,7 @@ export function trailingCommentValue(
     readonly source: string;
     readonly from: number;
   },
-): string | undefined {
+): { readonly value?: string; } {
   /**
    * End of the current line; the trailing comment must start before it.
    */
@@ -181,5 +206,5 @@ export function trailingCommentValue(
       > from) && (c.range[0]
         < limit);
   },);
-  return match?.value;
+  return match === undefined ? {} : { value: match.value, };
 }

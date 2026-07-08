@@ -12,6 +12,10 @@ import type {
   KeyValueNode,
   TableNode,
 } from './document.ts';
+import {
+  isStrictPrefix,
+  segmentsEqual,
+} from './path-prefix.ts';
 import { NOT_LOCATED, } from './resolve-document.ts';
 import type { TomlPath, } from './types.ts';
 
@@ -19,47 +23,18 @@ import type { TomlPath, } from './types.ts';
  * A located entry block.
  */
 export type LocatedBlock =
-  | { readonly kind: 'kv'; readonly kv: KeyValueNode; }
-  | { readonly kind: 'table'; readonly table: TableNode; }
-  | { readonly kind: 'aot'; readonly tables: readonly TableNode[]; };
-
-/**
- * True when `a` equals `b` segment-wise (same length).
- *
- * @returns Resulting boolean.
- */
-function segmentsEqual(
-  a: readonly (string | number)[],
-  b: TomlPath,
-): boolean {
-  return (a.length
-    === b.length)
-    && a.every(function eq(
-      seg,
-      i,
-    ) {
-      return seg === b[i];
-    },);
-}
-
-/**
- * True when `a` is a strict prefix of `b`.
- *
- * @returns Resulting boolean.
- */
-function isStrictPrefix(
-  a: readonly (string | number)[],
-  b: TomlPath,
-): boolean {
-  return (a.length
-    < b.length)
-    && a.every(function eq(
-      seg,
-      i,
-    ) {
-      return seg === b[i];
-    },);
-}
+  | {
+    readonly kind: 'kv';
+    readonly kv: KeyValueNode
+  }
+  | {
+    readonly kind: 'table';
+    readonly table: TableNode
+  }
+  | {
+    readonly kind: 'aot';
+    readonly tables: readonly TableNode[]
+  };
 
 /**
  * Locate the entry block named by `path`.
@@ -86,10 +61,10 @@ export function locateBlock(
   const kv = blocks.find(function isKv(b,): b is KeyValueNode {
     return (b.kind
       === 'keyvalue')
-      && segmentsEqual(
-        b.keySegments,
-        path,
-      );
+      && segmentsEqual({
+        left: b.keySegments,
+        right: path,
+      },);
   },);
   if (kv !== undefined)
     return {
@@ -102,10 +77,10 @@ export function locateBlock(
   const exact = blocks.filter(function isExact(b,): b is TableNode {
     return (b.kind
       === 'table')
-      && segmentsEqual(
-        b.headerSegments,
-        path,
-      );
+      && segmentsEqual({
+        left: b.headerSegments,
+        right: path,
+      },);
   },);
   if (exact.length
     > 0) {
@@ -132,10 +107,10 @@ export function locateBlock(
       === 'table')
       && (b.tableKind
         === 'standard')
-      && isStrictPrefix(
-        b.headerSegments,
+      && isStrictPrefix({
+        candidate: b.headerSegments,
         path,
-      );
+      },);
   },);
   if (parent !== undefined)
     return locateBlock({

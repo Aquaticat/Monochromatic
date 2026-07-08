@@ -59,7 +59,7 @@ function entryBlocks(
     prefix,
     options,
   }: {
-    readonly value: Record<string, unknown>;
+    readonly value: Readonly<Record<string, unknown>>;
     readonly prefix: readonly string[];
     readonly options: TomlEditState['canonical'];
   },
@@ -83,6 +83,11 @@ function entryBlocks(
  * @returns Fresh {@link TomlEditState}.
  *
  * @throws {@link TomlTypeError} when `value` is not a plain object.
+ *
+ * @example
+ * ```ts
+ * doTableReplace({ edit, tableIndex: 0, table, path: ['t'], value: { a: 1, }, },);
+ * ```
  */
 export function doTableReplace(
   {
@@ -130,6 +135,11 @@ export function doTableReplace(
  * @returns Fresh {@link TomlEditState}.
  *
  * @throws {@link TomlTypeError} when `value` is not a plain object.
+ *
+ * @example
+ * ```ts
+ * doTopLevelReplace({ edit, value: { title: 'x', }, },);
+ * ```
  */
 export function doTopLevelReplace(
   {
@@ -173,6 +183,11 @@ export function doTopLevelReplace(
  * top-level key-value or table whose absolute key strictly extends `path`).
  *
  * @returns Resulting boolean.
+ *
+ * @example
+ * ```ts
+ * isImplicitConstituent({ block, path: ['a'], },);
+ * ```
  */
 export function isImplicitConstituent(
   {
@@ -212,6 +227,11 @@ export function isImplicitConstituent(
  * @returns Fresh {@link TomlEditState}.
  *
  * @throws {@link TomlTypeError} when `value` is not a plain object.
+ *
+ * @example
+ * ```ts
+ * doImplicitReplace({ edit, path: ['a'], value: { b: 1, }, },);
+ * ```
  */
 export function doImplicitReplace(
   {
@@ -234,9 +254,7 @@ export function doImplicitReplace(
   /**
    * String-form prefix so the new dotted keys extend the parent path.
    */
-  const prefix = path.map(function asString(seg,) {
-    return String(seg,);
-  },);
+  const prefix = path.map(String,);
   /**
    * Blocks with the implicit parent's constituents removed.
    */

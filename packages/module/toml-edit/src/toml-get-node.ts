@@ -58,9 +58,12 @@ export function tomlGetNode(
       .origin
       .kind
       === 'clean')
-      return located.value
-        .origin
-        .astNode as AST.TOMLContentNode;
+      return asContentNode({
+        node: located.value
+          .origin
+          .astNode,
+        path,
+      },);
     throw notFound({ path, },);
   }
   if (located.kind
@@ -69,9 +72,12 @@ export function tomlGetNode(
       .headerOrigin
       .kind
       === 'clean')
-      return located.table
-        .headerOrigin
-        .astNode as AST.TOMLTable;
+      return asTable({
+        node: located.table
+          .headerOrigin
+          .astNode,
+        path,
+      },);
     throw notFound({ path, },);
   }
   return located.tables
@@ -80,9 +86,70 @@ export function tomlGetNode(
       .kind
       !== 'clean')
       throw notFound({ path, },);
-    return t.headerOrigin
-      .astNode as AST.TOMLTable;
+    return asTable({
+      node: t.headerOrigin
+        .astNode,
+      path,
+    },);
   },);
+}
+
+/**
+ * Narrow a retained parse-time node to a {@link AST.TOMLContentNode}, throwing
+ * when the node kind does not match (rather than asserting the type).
+ *
+ * @param node - Retained parse-time node whose `.type` is checked at runtime.
+ *
+ * @param path - Requested path, used only to build the not-found error.
+ *
+ * @returns Content node (value, array, or inline table).
+ *
+ * @throws {@link TomlPathNotFoundError} when `node` is not a content node.
+ */
+function asContentNode(
+  {
+    node,
+    path,
+  }: {
+    readonly node: AST.TOMLNode;
+    readonly path: TomlPath;
+  },
+): AST.TOMLContentNode {
+  if ((node.type
+    === 'TOMLValue')
+    || (node.type
+      === 'TOMLArray')
+    || (node.type
+      === 'TOMLInlineTable'))
+    return node;
+  throw notFound({ path, },);
+}
+
+/**
+ * Narrow a retained parse-time node to a {@link AST.TOMLTable}, throwing when the
+ * node kind does not match (rather than asserting the type).
+ *
+ * @param node - Retained parse-time node whose `.type` is checked at runtime.
+ *
+ * @param path - Requested path, used only to build the not-found error.
+ *
+ * @returns Table node.
+ *
+ * @throws {@link TomlPathNotFoundError} when `node` is not a table.
+ */
+function asTable(
+  {
+    node,
+    path,
+  }: {
+    readonly node: AST.TOMLNode;
+    readonly path: TomlPath;
+  },
+): AST.TOMLTable {
+  if (node.type
+    === 'TOMLTable')
+    return node;
+  throw notFound({ path, },);
 }
 
 /**

@@ -152,6 +152,44 @@ const opsArbitrary: Arbitrary<readonly EditOp[]> = array(opArbitrary, { maxLengt
 type ModelTree = Record<string, unknown>;
 
 /**
+ * Descend (creating) the intermediate tables named by `segments`, returning the
+ * container the final segment should be written into.
+ *
+ * @returns Deepest intermediate table.
+ */
+function descendModel(
+  {
+    tree,
+    segments,
+  }: {
+    readonly tree: ModelTree;
+    readonly segments: readonly string[];
+  },
+): ModelTree {
+  /**
+   * Cursor descending into (and creating) each intermediate table.
+   */
+  let cursor = tree;
+  for (const seg of segments) {
+    /**
+     * Existing child; replaced with a fresh object when not a plain object.
+     */
+    const existing = cursor[seg];
+    if ((existing === null) || ((typeof existing) !== 'object') || Array.isArray(existing,)) {
+      /**
+       * Fresh intermediate table so the descent can continue.
+       */
+      const fresh: ModelTree = {};
+      cursor[seg] = fresh;
+      cursor = fresh;
+      continue;
+    }
+    cursor = existing as ModelTree;
+  }
+  return cursor;
+}
+
+/**
  * Set `value` at the nested `path` within `tree`, creating intermediate
  * objects. Mirrors a successful `tomlSet` (the API rejects the cases that would
  * make this diverge, leaving the model untouched).
@@ -170,29 +208,16 @@ function modelSet(
   },
 ): void {
   /**
-   * Cursor descending into (and creating) each intermediate table.
+   * Container the final segment is written into.
    */
-  let cursor = tree;
-  for (const seg of path.slice(
-    0,
-    -1,
-  )) {
-    /**
-     * Existing child; replaced with a fresh object when not a plain object.
-     */
-    const existing = cursor[seg];
-    if ((existing === null) || ((typeof existing) !== 'object') || Array.isArray(existing,)) {
-      /**
-       * Fresh intermediate table so the descent can continue.
-       */
-      const fresh: ModelTree = {};
-      cursor[seg] = fresh;
-      cursor = fresh;
-      continue;
-    }
-    cursor = existing as ModelTree;
-  }
-  cursor[path[path.length - 1] ?? ''] = structuredClone(value,);
+  const parent = descendModel({
+    tree,
+    segments: path.slice(
+      0,
+      -1,
+    ),
+  },);
+  parent[path.at(-1) ?? ''] = structuredClone(value,);
 }
 
 /**
@@ -223,14 +248,14 @@ function modelDelete(
     /**
      * Next object down the path, or a bail-out when the segment is absent.
      */
-    const next = cursors[cursors.length - 1]?.[seg];
+    const next = cursors.at(-1)?.[seg];
     if ((next === null) || ((typeof next) !== 'object') || Array.isArray(next,))
       return;
     cursors.push(next as ModelTree,);
   }
   Reflect.deleteProperty(
-    cursors[cursors.length - 1] ?? tree,
-    path[path.length - 1] ?? '',
+    cursors.at(-1) ?? tree,
+    path.at(-1) ?? '',
   );
   for (let depth = cursors.length - 1; depth >= 1; depth--) {
     if (Object.keys(cursors[depth] ?? {},).length

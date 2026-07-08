@@ -54,10 +54,10 @@ export function tomlGetCommentsBefore(
     );
   }
   /**
-   * Clean start offset of the entry, or `null` when the entry is synthetic.
+   * Clean start offset of the entry, or `-1` when the entry is synthetic.
    */
   const start = startOf({ located, },);
-  if (start === null)
+  if (start === (-1))
     return [];
   return attachedCommentsAt({
     comments: edit.comments,
@@ -67,31 +67,41 @@ export function tomlGetCommentsBefore(
 }
 
 /**
- * Clean start offset for a located entry, or `null` when synthetic.
+ * Clean start offset for a located entry, or `-1` when synthetic.
  *
- * @returns Computed offset or `null`.
+ * Char offsets are non-negative, so `-1` unambiguously signals "no clean source
+ * position" without a nullish union.
+ *
+ * @param located - Located block whose clean start offset anchors the scan.
+ *
+ * @returns Clean start offset, or `-1` when synthetic.
+ *
+ * @example
+ * ```ts
+ * startOf({ located: locateBlock({ blocks, path, },), },);
+ * ```
  */
 function startOf(
   { located, }: { readonly located: ReturnType<typeof locateBlock>; },
-): number | null {
+): number {
   if (located === NOT_LOCATED)
-    return null;
+    return -1;
   if (located.kind
     === 'kv')
     return located.kv
       .origin
       .kind
       === 'clean' ? located.kv
-      .origin
-      .range[0] : null;
+        .origin
+        .range[0] : -1;
   if (located.kind
     === 'table')
     return located.table
       .headerOrigin
       .kind
       === 'clean' ? located.table
-      .headerOrigin
-      .range[0] : null;
+        .headerOrigin
+        .range[0] : -1;
   /**
    * First array-of-tables instance is where a preceding block attaches.
    */
@@ -99,5 +109,5 @@ function startOf(
   return first.headerOrigin
     .kind
     === 'clean' ? first.headerOrigin
-    .range[0] : null;
+      .range[0] : -1;
 }

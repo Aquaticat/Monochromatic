@@ -55,9 +55,7 @@ export function doAotReplace(
   /**
    * Header segments as strings so each new instance shares one header spelling.
    */
-  const header = path.map(function asString(seg,) {
-    return String(seg,);
-  },);
+  const header = path.map(String,);
   /**
    * One synthetic `[[header]]` block per array element.
    */
@@ -118,8 +116,17 @@ function spliceInstances(
 ): readonly Block[] {
   /**
    * True when a block is an existing array instance at the header path.
+   *
+   * @param block - Block tested for being an `[[header]]` instance.
+   *
+   * @returns Whether `block` is an array table whose header matches.
+   *
+   * @example
+   * ```ts
+   * isInstance(blocks[0],);
+   * ```
    */
-  const isInstance = function isInstance(block: Block,): boolean {
+  function isInstance(block: Block,): boolean {
     return (block.kind
       === 'table')
       && (block.tableKind
@@ -128,17 +135,19 @@ function spliceInstances(
         .length
         === header.length)
       && block.headerSegments
-        .every(function eq(
+      .every(function eq(
         seg,
         i,
       ) {
         return seg === header[i];
       },);
-  };
+  }
   /**
    * First existing-instance index so the replacements land in the same place.
    */
-  const firstIdx = blocks.findIndex(isInstance,);
+  const firstIdx = blocks.findIndex(function atInstance(b,) {
+    return isInstance(b,);
+  },);
   /**
    * Blocks with the old instances removed.
    */

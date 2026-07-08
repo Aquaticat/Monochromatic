@@ -11,8 +11,6 @@
  * @module
  */
 
-import type { AST, } from 'toml-eslint-parser';
-
 import type {
   KeyValueNode,
   ScalarKind,
@@ -24,7 +22,10 @@ import {
   isPlainObject,
   isWrappedInput,
 } from './value-encoders.ts';
-import { jsValueToTomlText, } from './values.ts';
+import {
+  type ExistingNode,
+  jsValueToTomlText,
+} from './values.ts';
 
 /**
  * Build a synthetic value node for `input`.
@@ -46,7 +47,7 @@ export function buildValueFromInput(
   }: {
     readonly input: unknown;
     readonly options: CanonicalOptions;
-    readonly existing?: AST.TOMLNode;
+    readonly existing?: ExistingNode;
   },
 ): ValueNode {
   if ((input === null) || (input === undefined)) {
@@ -58,9 +59,11 @@ export function buildValueFromInput(
     /**
      * Parse-time element nodes so per-element raw spelling survives an equal re-set.
      */
-    const elementExistings = (existing !== undefined) && (existing.type
+    const elementExistings = (existing !== undefined) && (existing.node
+      .type
       === 'TOMLArray')
-      ? existing.elements
+      ? existing.node
+        .elements
       : null;
     return {
       kind: 'array',
@@ -71,9 +74,9 @@ export function buildValueFromInput(
         return buildValueFromInput({
           input: el,
           options,
-          ...(elementExistings === null || elementExistings[i] === undefined
+          ...((elementExistings === null) || (elementExistings[i] === undefined)
             ? {}
-            : { existing: elementExistings[i], }),
+            : { existing: { node: elementExistings[i], }, }),
         },);
       },),
       origin: { kind: 'synthetic', },
@@ -105,7 +108,7 @@ export function buildValueFromInput(
     renderText: jsValueToTomlText({
       input,
       options,
-      ...(existing === undefined ? {} : { existing: { node: existing, }, }),
+      ...(existing === undefined ? {} : { existing, }),
     },),
     origin: { kind: 'synthetic', },
   };

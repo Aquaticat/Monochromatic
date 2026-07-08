@@ -167,7 +167,7 @@ function buildKeyValue(
   /**
    * Trailing same-line comment value, carried for reads and synthetic rendering.
    */
-  const commentAfter = trailingCommentValue({
+  const { value: commentAfter, } = trailingCommentValue({
     comments,
     source,
     from: kv.value
@@ -247,7 +247,7 @@ function buildTable(
   /**
    * Trailing same-line comment after the header's closing bracket.
    */
-  const commentAfter = trailingCommentValue({
+  const { value: commentAfter, } = trailingCommentValue({
     comments,
     source,
     from: table.key
@@ -263,10 +263,19 @@ function buildTable(
    */
   const resolved = table.resolvedKey;
   /**
-   * Array-of-tables instance index, when this is an `[[foo]]` header.
+   * Trailing resolved segment; for an `[[foo]]` header it is the numeric index.
    */
-  const aotIndex = isArray ? (resolved[resolved.length
-    - 1] as number) : undefined;
+  const lastResolved = resolved.at(-1,);
+  /**
+   * Array-of-tables instance index, when this is an `[[foo]]` header. A numeric
+   * check narrows without an unsafe assertion (an array header's final resolved
+   * segment is always the numeric instance index).
+   */
+  const aotIndex = (isArray && ((typeof lastResolved) === 'number')) ? lastResolved : undefined;
+  /**
+   * Table node; `headerOrigin.range` is the whole header line and `body` is the
+   * recursively-tiled section body.
+   */
   const node: TableNode = {
     kind: 'table',
     tableKind: table.kind,
@@ -306,13 +315,15 @@ function buildTable(
 /**
  * End offset of the last built body entry (non-empty list precondition).
  *
+ * @param built - Body entries whose final span end bounds the table section;
+ *   called only when non-empty, so the last entry decides the span.
+ *
  * @returns Last entry's end offset.
  */
 function nonNullEnd(built: readonly Built[],): number {
   /**
    * Last entry so the table span reaches its final body line.
    */
-  const last = built[built.length
-    - 1];
+  const last = built.at(-1);
   return last === undefined ? 0 : last.end;
 }

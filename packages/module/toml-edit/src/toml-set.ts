@@ -24,10 +24,8 @@ import {
   doTopLevelReplace,
   isImplicitConstituent,
 } from './set-replace.ts';
-import {
-  NOT_SET,
-  replaceExistingValue,
-} from './set-value.ts';
+import { NOT_SET, } from './set-value-inline.ts';
+import { replaceExistingValue, } from './set-value.ts';
 import type {
   TomlEditState,
   TomlPath,
@@ -57,7 +55,7 @@ function headerEquals(
       .length
       === path.length)
     && block.headerSegments
-      .every(function eq(
+    .every(function eq(
       seg,
       i,
     ) {

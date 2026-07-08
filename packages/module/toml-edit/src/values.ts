@@ -32,7 +32,7 @@ export { isPlainObject, } from './value-encoders.ts';
  * `prefer-readonly-parameter-types` allow-list); nesting it keeps the alias
  * intact and the parameter readonly.
  */
-type ExistingNode = {
+export type ExistingNode = {
   readonly node: AST.TOMLNode;
 };
 

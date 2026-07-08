@@ -11,36 +11,20 @@
  * @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type {
   Block,
   KeyValueNode,
   ValueNode,
 } from './document.ts';
+import { isPrefix, } from './path-prefix.ts';
 import type { TomlPath, } from './types.ts';
 
 /**
  * Sentinel for "nothing removed at this path".
  */
-export const NOT_REMOVED: unique symbol = Symbol('toml-edit/not-removed',);
-
-/**
- * True when `a` is a prefix of `b` (equality allowed).
- *
- * @returns Resulting boolean.
- */
-function isPrefix(
-  a: readonly (string | number)[],
-  b: TomlPath,
-): boolean {
-  return (a.length
-    <= b.length)
-    && a.every(function eq(
-      seg,
-      i,
-    ) {
-      return seg === b[i];
-    },);
-}
+export const NOT_REMOVED: unique symbol = Symbol('toml-edit/delete-no-existing-value-target',);
 
 /**
  * Remove the value or entry at `path` within `blocks`.
@@ -135,10 +119,10 @@ function descendTableBody(
   if ((table.tableKind
     === 'array') && (path[headerLen] !== table.aotIndex))
     return NOT_REMOVED;
-  if (!isPrefix(
-    table.headerSegments,
+  if ((!isPrefix({
+    candidate: table.headerSegments,
     path,
-  ) || (path.length
+  },)) || (path.length
     <= bodyStart))
     return NOT_REMOVED;
   return removeAtPath({
@@ -162,10 +146,10 @@ function removeFromKeyValue(
     readonly path: TomlPath;
   },
 ): KeyValueNode | 'drop' | typeof NOT_REMOVED {
-  if (!isPrefix(
-    kv.keySegments,
+  if (!isPrefix({
+    candidate: kv.keySegments,
     path,
-  ))
+  },))
     return NOT_REMOVED;
   if (kv.keySegments
     .length
@@ -207,7 +191,8 @@ function removeInValue(
   const [head, ...tail] = rest;
   if ((value.kind
     === 'array') && ((typeof head) === 'number')) {
-    if ((head < 0) || (head >= value.elements
+    if ((head < 0) || (head
+      >= value.elements
       .length))
       return NOT_REMOVED;
     if (tail.length
@@ -225,10 +210,11 @@ function removeInValue(
       };
     }
     /**
-     * Element after removing the deeper target.
+     * Element after removing the deeper target; the bounds check above proves
+     * the index is in range, so the slot is a present value node.
      */
     const newEl = removeInValue({
-      value: value.elements[head] as ValueNode,
+      value: nonNullishOrThrow(value.elements[head],),
       rest: tail,
     },);
     if (newEl === NOT_REMOVED)
@@ -268,10 +254,10 @@ function removeFromInlineTable(
 ): ValueNode | typeof NOT_REMOVED {
   for (const [j, entry,] of value.entries
     .entries()) {
-    if (!isPrefix(
-      entry.keySegments,
-      rest,
-    ))
+    if (!isPrefix({
+      candidate: entry.keySegments,
+      path: rest,
+    },))
       continue;
     if (entry.keySegments
       .length

@@ -52,10 +52,10 @@ export function emitDocument({ edit, }: { readonly edit: TomlEditState; },): str
   if (
     (edit.source
       === '')
-    && edit.canonical
+      && edit.canonical
       .trailingNewline
-    && (result !== '')
-    && (!result.endsWith('\n',))
+      && (result !== '')
+      && (!result.endsWith('\n',))
   )
     return `${result}\n`;
   return result;
@@ -131,7 +131,9 @@ function emitKeyValue(
       kv,
       edit,
     },),
-    append: kv.trailingCommentAppend,
+    ...(kv.trailingCommentAppend === undefined
+      ? {}
+      : { append: kv.trailingCommentAppend, }),
   },);
 }
 
@@ -210,7 +212,7 @@ function appendTrailing(
     append,
   }: {
     readonly base: string;
-    readonly append: string | undefined;
+    readonly append?: string;
   },
 ): string {
   if (append === undefined)

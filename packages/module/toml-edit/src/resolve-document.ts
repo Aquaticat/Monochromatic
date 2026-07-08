@@ -25,14 +25,23 @@ import type { TomlPath, } from './types.ts';
  * `aot`: the path names one or more array-of-tables `[[foo]]` instances.
  */
 export type Located =
-  | { readonly kind: 'value'; readonly value: ValueNode; }
-  | { readonly kind: 'table'; readonly table: TableNode; }
-  | { readonly kind: 'aot'; readonly tables: readonly TableNode[]; };
+  | {
+    readonly kind: 'value';
+    readonly value: ValueNode
+  }
+  | {
+    readonly kind: 'table';
+    readonly table: TableNode
+  }
+  | {
+    readonly kind: 'aot';
+    readonly tables: readonly TableNode[]
+  };
 
 /**
  * Sentinel for "no structural location at this path".
  */
-export const NOT_LOCATED: unique symbol = Symbol('toml-edit/not-located',);
+export const NOT_LOCATED: unique symbol = Symbol('toml-edit/resolve-block-not-located',);
 
 /**
  * Locate the value node (or table) that `path` addresses in `blocks`.
@@ -94,7 +103,10 @@ function matchKeyValue(
     readonly blocks: readonly Block[];
     readonly path: TomlPath;
   },
-): { readonly kv: KeyValueNode; readonly matched: number; } | typeof NOT_LOCATED {
+): {
+  readonly kv: KeyValueNode;
+  readonly matched: number
+} | typeof NOT_LOCATED {
   for (const block of blocks) {
     if (block.kind
       !== 'keyvalue')
@@ -147,7 +159,7 @@ function matchTables(
         .length
         === path.length)
       && b.headerSegments
-        .every(function eq(
+      .every(function eq(
         seg,
         i,
       ) {
@@ -183,7 +195,7 @@ function matchTables(
         .length
         < path.length)
       && b.headerSegments
-        .every(function eq(
+      .every(function eq(
         seg,
         i,
       ) {

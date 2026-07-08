@@ -41,7 +41,7 @@ function isExactTable(
       .length
       === path.length)
     && block.headerSegments
-      .every(function eq(
+    .every(function eq(
       seg,
       i,
     ) {
