@@ -222,9 +222,11 @@ Two related lifts.
 
 Decision:
 extract, with a generic interface.
-Name:
+Path name:
 `session-discovery`, not `spawn-session-finder`, because the concept is
 "resolve the calling agent session," which spawn consumes but does not own.
+Package name:
+`@monochromatic-dev/agent-harnesses-shared-session-discovery`.
 
 The mechanism (procfs parent walk, `.by-pid/` directory scan, newest-mtime
 fallback, tree-then-fallback composition) is deep and identical across both
