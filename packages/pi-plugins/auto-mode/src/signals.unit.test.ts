@@ -112,9 +112,9 @@ await describe({
       fn: async () => {
         expect(
           await pathSignals({
-            filePath: '/var/home/user/Monochromatic/.agents/skills/code-review/SKILL.md',
+            filePath: '/var/home/user/Monochromatic/.agents/skills/project-code-review/SKILL.md',
             ctx: DEFAULT_CTX,
-            allowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/code-review',],
+            allowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/project-code-review',],
           },),
         )
           .toBe(false,);
