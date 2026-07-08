@@ -129,10 +129,15 @@ the first argument is an `Expression::CallExpression`,
 The replacement rule is covered by fixtures in
 `packages/test-fixture/oxlint-no-restricted-syntax/src/`:
 
-- `invalid/no-array-callback-reference.ts` keeps the direct-reference failures:
-  `findIndex(isBig,)` and `filter(probe.isBig,)`.
+- `invalid/no-array-callback-reference.ts` keeps the unsafe cases:
+  multi-parameter `findIndex(hasIndexFootgun,)`,
+  multi-parameter `filter(probe.hasIndexFootgun,)`,
+  and unknown wrapper call `some(makePredicate(isBig,),)`.
 - `valid/no-array-callback-reference.ts` proves the requested clean cases:
+  direct unary `findIndex(isBig,)`,
+  member unary `findIndex(probe.isBig,)`,
   `findIndex(unary(isBig,),)`,
+  `map(binary(...),)`,
    an inline named `function probeC(...)`,
    and `map(Number,)`.
 
@@ -177,13 +182,11 @@ Tradeoff:
 `unicorn/no-array-callback-reference` will not automatically apply.
  The project rule copies only
 the shapes this workspace needs:
- direct identifiers,
- member references,
- conditional and sequence
-expressions containing direct references,
+ direct identifiers and local object-literal member references with statically-known unary arity,
+ conditional and sequence expressions containing direct references,
  `unary(...)` and `binary(...)` callback-position calls as explicit arity wrappers,
  and the common non-array receiver allowlist.
- It does not inspect the wrapped function's declared arity or accept arbitrary wrapper calls.
+ It does not inspect imported function declarations or arbitrary wrapper call return values.
 
 ### Use an inline named function expression
 

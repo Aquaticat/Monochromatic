@@ -10,6 +10,7 @@ import {
   getStaticMemberName,
   NO_STATIC_MEMBER_NAME,
 } from './ast-shared.ts';
+import { isKnownUnaryFunctionExpression, } from './no-array-callback-reference.arity.ts';
 
 //region Constants
 
@@ -424,8 +425,10 @@ function isAllowedCallbackWrapperCall(
  * Reports whether callback expression is a direct reference needing wrapping.
  *
  * Call expressions are reported unless they are allowlisted explicit arity
- * wrappers. This syntactic rule does not inspect the wrapped function's declared
- * arity or prove arbitrary wrapper behavior.
+ * wrappers. Identifier and local object-member references short-circuit when
+ * their resolved function declaration has exactly one non-rest parameter.
+ *
+ * @param context - Oxlint rule context.
  *
  * @param callback - First argument supplied to an array iterator method.
  *
@@ -433,21 +436,38 @@ function isAllowedCallbackWrapperCall(
  *
  * @example
  * ```ts
- * shouldReportCallback({ callback: firstArgument });
+ * shouldReportCallback({ context, callback: firstArgument });
  * ```
  */
 function shouldReportCallback(
-  { callback, }: { readonly callback: ESTree.Expression; },
+  {
+    context,
+    callback,
+  }: {
+    readonly context: Context;
+    readonly callback: ESTree.Expression;
+  },
 ): boolean {
   /**
    * Callback expression with transparent wrappers removed.
    */
   const expression = unwrapExpression({ expression: callback, },);
+  if (isKnownUnaryFunctionExpression({
+    context,
+    expression,
+  },))
+    return false;
   if (expression.type === 'Identifier')
     return !isAllowedBuiltinCallback({ name: expression.name, },);
   if (expression.type === 'ConditionalExpression')
-    return shouldReportCallback({ callback: expression.consequent, },)
-      || shouldReportCallback({ callback: expression.alternate, },);
+    return shouldReportCallback({
+      context,
+      callback: expression.consequent,
+    },)
+      || shouldReportCallback({
+        context,
+        callback: expression.alternate,
+      },);
   if (expression.type === 'SequenceExpression') {
     /**
      * Expressions inside sequence expression.
@@ -459,7 +479,10 @@ function shouldReportCallback(
     const lastExpression = expressions.at(-1,);
     if (lastExpression === undefined)
       return false;
-    return shouldReportCallback({ callback: lastExpression, },);
+    return shouldReportCallback({
+      context,
+      callback: lastExpression,
+    },);
   }
   if (expression.type === 'CallExpression')
     return !isAllowedCallbackWrapperCall({ call: expression, },);
@@ -480,9 +503,9 @@ function shouldReportCallback(
  * Flags direct callback references passed to array iterator methods.
  *
  * This project-owned replacement for `unicorn/no-array-callback-reference`
- * keeps the arity-footgun guard for bare references such as `items.map(fn,)`
- * while allowing explicit unary()/binary() wrapper calls such as
- * `items.findIndex(unary(fn,),)`.
+ * keeps the arity-footgun guard for multi-argument bare references such as
+ * `items.map(fn,)` while allowing statically-known unary callbacks and explicit
+ * unary()/binary() wrapper calls such as `items.findIndex(unary(fn,),)`.
  *
  * @example
  * ```ts
@@ -498,7 +521,7 @@ export const noArrayCallbackReference: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      [MESSAGE_ID]: 'Avoid passing a function reference directly to iterator methods. Use an inline named function expression, or wrap an existing reference with unary()/binary() to make callback arity explicit.',
+      [MESSAGE_ID]: 'Avoid passing a multi-argument or unknown-arity function reference directly to iterator methods. Use a known unary function, an inline named function expression, or unary()/binary() to make callback arity explicit.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -512,7 +535,10 @@ export const noArrayCallbackReference: CreateOnceRule = {
         const callback = firstExpressionArgument({ call: node, },);
         if (callback === NO_CALLBACK_ARGUMENT)
           return;
-        if (!shouldReportCallback({ callback, },))
+        if (!shouldReportCallback({
+          context,
+          callback,
+        },))
           return;
         context.report({
           node: callback,

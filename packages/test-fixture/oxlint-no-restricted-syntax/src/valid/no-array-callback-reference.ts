@@ -27,6 +27,7 @@ function isBig(value: number,): boolean {
   return value > 1;
 }
 
+const directUnary = [1, 2, 3,].findIndex(isBig,);
 const wrapped = [1, 2, 3,].findIndex(unary(isBig,),);
 const binaryWrapped = [1, 2, 3,].map(binary(function renderWithIndex(
   value: number,
@@ -37,11 +38,17 @@ const binaryWrapped = [1, 2, 3,].map(binary(function renderWithIndex(
 const inline = [1, 2, 3,].findIndex(function probeC(value: number,): boolean {
   return isBig(value,);
 },);
+const probe = {
+  isBig,
+};
+const memberUnary = [1, 2, 3,].findIndex(probe.isBig,);
 const builtin = ['1', '2', '3',].map(Number,);
 
+void directUnary;
 void wrapped;
 void binaryWrapped;
 void inline;
+void memberUnary;
 void builtin;
 
 export {};

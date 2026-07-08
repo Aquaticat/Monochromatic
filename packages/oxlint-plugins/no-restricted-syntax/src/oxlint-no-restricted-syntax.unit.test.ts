@@ -375,7 +375,7 @@ await describe({
           },
         },),
         it({
-          name: 'no-array-callback-reference accepts explicit arity wrapper calls',
+          name: 'no-array-callback-reference accepts known unary callbacks and arity wrappers',
           fn: async () => {
             const diagnostics = await lint(
               'valid/no-array-callback-reference.ts',
