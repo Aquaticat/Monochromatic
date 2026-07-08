@@ -12,6 +12,9 @@ use std::cell::Cell;
 /// What: imports the reference-counted pointer.
 /// Why: that shared Ctrl flag is held by three closures on the same pane.
 use std::rc::Rc;
+/// What: imports the borrowed path type.
+/// Why: a preview pane takes the previewed file path by reference.
+use std::path::Path;
 
 /// What: imports the GTK widget-extension traits (builders, controllers, list/box helpers).
 /// Why: the pane adds event controllers and presents a scrolled list, all via prelude traits.
@@ -32,9 +35,13 @@ use gtk4::pango::EllipsizeMode;
 /// Why: named explicitly so construction reads without a glob import.
 use gtk4::{
     Box as GtkBox, Button, EventControllerKey, GestureClick, Image, Label, ListItem, ListView,
-    Orientation, PropagationPhase, ScrolledWindow, SignalListItemFactory, SingleSelection,
+    Orientation, Picture, PropagationPhase, ScrolledWindow, SignalListItemFactory, SingleSelection,
+    Widget,
 };
 
+/// What: imports the thumbnail service and image-detection helper.
+/// Why: a preview pane requests an off-thread thumbnail for image files.
+use crate::thumbs::{Thumbnails, is_image};
 /// What: imports the snapshot, entry, and kind domain types.
 /// Why: the pane renders a `DirectorySnapshot` of `FileEntry` rows, choosing an icon per `EntryKind`.
 use crate::types::{DirectorySnapshot, EntryKind, FileEntry};
@@ -42,6 +49,10 @@ use crate::types::{DirectorySnapshot, EntryKind, FileEntry};
 /// What: horizontal gap in pixels between a row's icon and its name label (and header items).
 /// Why: named so the one spacing value is not a bare magic literal.
 const ROW_SPACING: i32 = 6;
+
+/// What: pixel size of the fallback icon shown for a non-image preview pane.
+/// Why: a large themed glyph stands in until richer previews (video, PDF) arrive.
+const PREVIEW_ICON_SIZE: i32 = 96;
 
 /// What: build a directory-listing pane from `snapshot`, calling `on_activate(entry, force_dup)`
 ///       when a row is single-clicked or Enter-activated (`force_dup` true when Ctrl was held), and
@@ -68,7 +79,7 @@ where
         .hexpand(true)
         .build();
     let container = GtkBox::new(Orientation::Vertical, 0);
-    container.append(&build_header(&snapshot.path.display().to_string(), on_close));
+    container.append(&build_pane_header(&snapshot.path.display().to_string(), on_close));
     container.append(&scrolled);
     container
 }
@@ -112,10 +123,10 @@ where
     });
 }
 
-/// What: build the pane header: the directory path (ellipsized) beside a close button.
+/// What: build a pane header: the pane's title path (ellipsized) beside a close button.
 /// Why: the close button is the explicit-close lifecycle trigger; the title expands so the button
-///      sits at the pane's right edge.
-fn build_header<C>(path: &str, on_close: C) -> GtkBox
+///      sits at the pane's right edge. Shared by listing panes and preview panes.
+pub(crate) fn build_pane_header<C>(path: &str, on_close: C) -> GtkBox
 where
     C: Fn() + 'static,
 {
@@ -132,6 +143,42 @@ where
     header.append(&title);
     header.append(&close);
     header
+}
+
+/// What: build a preview pane for `path`: a header (path + close) over a thumbnail (images) or a
+///       typed icon (other files), decoding off-thread through `thumbs`.
+/// Why: images get a real decoded preview from the bounded cache; other files get a cheap OS-icon
+///      stand-in. `on_close` closes the pane.
+pub(crate) fn build_preview_pane<C>(thumbs: &Thumbnails, path: &Path, on_close: C) -> GtkBox
+where
+    C: Fn() + 'static,
+{
+    let container = GtkBox::new(Orientation::Vertical, 0);
+    container.append(&build_pane_header(&path.display().to_string(), on_close));
+    container.append(&build_preview_body(thumbs, path));
+    container
+}
+
+/// What: build a preview pane's body: an off-thread thumbnail `Picture` for an image, or a large
+///       typed icon plus filename for any other file.
+/// Why: only images request a decode; the request deduplicates and caches, so revisiting is cheap.
+fn build_preview_body(thumbs: &Thumbnails, path: &Path) -> Widget {
+    if is_image(path) {
+        let picture = Picture::new();
+        picture.set_can_shrink(true);
+        picture.set_vexpand(true);
+        picture.set_hexpand(true);
+        thumbs.request(path, &picture);
+        return picture.upcast::<Widget>();
+    }
+    let body = GtkBox::new(Orientation::Vertical, 0);
+    body.set_vexpand(true);
+    let icon = Image::from_icon_name("text-x-generic");
+    icon.set_pixel_size(PREVIEW_ICON_SIZE);
+    icon.set_vexpand(true);
+    body.append(&icon);
+    body.append(&Label::new(path.file_name().and_then(|name| name.to_str())));
+    body.upcast::<Widget>()
 }
 
 /// What: build the factory that creates and binds one row (icon + name label).

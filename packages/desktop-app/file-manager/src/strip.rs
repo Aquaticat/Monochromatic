@@ -38,9 +38,12 @@ use crate::constants::{PANE_GAP, PANE_HEIGHT, PANE_WIDTH};
 /// What: imports the pane-strip state machine.
 /// Why: this module renders and mutates it.
 use crate::model::PaneStripState;
-/// What: imports the listing-pane builder.
-/// Why: each directory pane widget is a listing pane wired to spawn on row activation.
-use crate::pane::build_listing_pane;
+/// What: imports the listing-pane and shared-header builders.
+/// Why: a directory pane is a listing pane; a preview pane reuses the shared header.
+use crate::pane::{build_listing_pane, build_preview_pane};
+/// What: imports the thumbnail service and the image-detection helper.
+/// Why: preview panes need the service; autopreview branches on `is_image`.
+use crate::thumbs::{Thumbnails, is_image};
 /// What: imports the entry, id, and location domain types.
 /// Why: spawning maps an activated `FileEntry` to a `PaneLocation` keyed by `PaneId`.
 use crate::types::{FileEntry, PaneId, PaneLocation};
@@ -62,6 +65,8 @@ struct StripInner {
     generation: Cell<u64>,
     /// Column whose pane last received focus, for Left/Right keyboard navigation.
     focused_column: Cell<usize>,
+    /// Off-thread thumbnail decoder + bounded cache, shared by preview panes.
+    thumbs: Thumbnails,
 }
 
 /// What: owning handle to a built strip; keeps `StripInner` alive for the window's lifetime.
@@ -92,6 +97,7 @@ impl StripController {
             widgets: RefCell::new(HashMap::new()),
             generation: Cell::new(0),
             focused_column: Cell::new(0),
+            thumbs: Thumbnails::start(),
         });
         inner
             .state
@@ -128,6 +134,32 @@ impl StripController {
         if let Some(entry) = snapshot.entries.iter().find(|entry| entry.path.is_dir()) {
             let child = spawn_from(inner, root_id, entry, false);
             close_pane(inner, child);
+        }
+    }
+
+    /// What: programmatically spawn a preview pane for the first image file in the start directory.
+    /// Why: exercises the real activation -> preview -> off-thread decode -> cache path for
+    ///      unattended verification; gated behind the autopreview env var by the caller.
+    pub fn autopreview_first_image_for_test(&self) {
+        let inner = &self.inner;
+        let Some(root_id) = inner.state.borrow().active() else {
+            return;
+        };
+        let Some(PaneLocation::Directory(path)) =
+            inner.state.borrow().pane(root_id).map(|pane| pane.location.clone())
+        else {
+            return;
+        };
+        let generation = next_generation(inner);
+        let Ok(snapshot) = crate::fs::read_directory(&path, generation) else {
+            return;
+        };
+        if let Some(entry) = snapshot
+            .entries
+            .iter()
+            .find(|entry| !entry.path.is_dir() && is_image(&entry.path))
+        {
+            spawn_from(inner, root_id, entry, false);
         }
     }
 }
@@ -213,7 +245,15 @@ fn build_pane_widget(inner: &Rc<StripInner>, id: PaneId) -> Widget {
     let location = inner.state.borrow().pane(id).map(|pane| pane.location.clone());
     match location {
         Some(PaneLocation::Directory(path)) => build_directory_pane(inner, id, &path),
-        Some(PaneLocation::Preview(path)) => build_preview_placeholder(&path),
+        Some(PaneLocation::Preview(path)) => {
+            let close_weak = Rc::downgrade(inner);
+            build_preview_pane(&inner.thumbs, &path, move || {
+                if let Some(inner) = close_weak.upgrade() {
+                    close_pane(&inner, id);
+                }
+            })
+            .upcast::<Widget>()
+        }
         None => Label::new(Some("(missing pane)")).upcast::<Widget>(),
     }
 }
@@ -247,12 +287,6 @@ fn build_directory_pane(inner: &Rc<StripInner>, id: PaneId, path: &Path) -> Widg
             Label::new(Some(&format!("Cannot read {}: {error}", path.display()))).upcast::<Widget>()
         }
     }
-}
-
-/// What: build the temporary preview-pane placeholder for `path`.
-/// Why: the thumbnail milestone replaces this with a real off-thread decoded preview.
-fn build_preview_placeholder(path: &Path) -> Widget {
-    Label::new(Some(&format!("preview: {}", path.display()))).upcast::<Widget>()
 }
 
 /// What: spawn a child pane from `source` for the activated `entry`, reconcile, reveal it, and

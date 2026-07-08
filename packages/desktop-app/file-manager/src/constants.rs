@@ -36,3 +36,21 @@ pub(crate) const PANE_HEIGHT: i32 = 520;
 /// What: gap in pixels between adjacent panes on the canvas.
 /// Why: separates columns and stacked panes without overlap; named so it is not a magic literal.
 pub(crate) const PANE_GAP: i32 = 12;
+
+/// What: maximum edge length in pixels a decoded thumbnail is scaled to fit within.
+/// Why: bounds decode work and texture memory; a preview does not need the full-resolution image.
+pub(crate) const THUMB_SIZE: u32 = 256;
+
+/// What: soft cap in bytes on the total size of cached thumbnail textures.
+/// Why: the cache evicts the least-recently-used entries to stay under this, so browsing many
+///      images keeps decoded memory bounded (evicted previews re-decode on scroll-back).
+pub(crate) const THUMB_CACHE_BYTES: usize = 64 * 1024 * 1024;
+
+/// What: environment variable overriding the directory the app opens on.
+/// Why: lets a verification run point the app at a fixture directory of known contents.
+pub(crate) const START_DIR_ENV: &str = "FM_START_DIR";
+
+/// What: environment variable that, when set, spawns a preview pane for the first image file in the
+///       start directory at startup.
+/// Why: exercises the off-thread decode + cache path end to end for unattended verification.
+pub(crate) const AUTOPREVIEW_ENV: &str = "FM_AUTOPREVIEW";

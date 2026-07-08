@@ -26,3 +26,10 @@ gtk4 = { version = "0.11", features = ["v4_10"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-appender = "0.2"
+# In-process image decoding for preview thumbnails. Memory-safe pure-Rust decoders (no libjpeg/
+# ffmpeg subprocess), matching the plan's "image thumbnails decode in-process with memory-safe Rust".
+# Decoding runs on a worker thread, never the render path.
+image = "0.25"
+# Worker->main-thread delivery of decoded pixels. glib removed `MainContext::channel`, so the
+# gtk4-rs idiom is an async-channel drained by `glib::spawn_future_local` on the main context.
+async-channel = "2"

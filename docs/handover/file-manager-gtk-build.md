@@ -116,3 +116,19 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   and arrow paths compile and lint; their full boundary check (real Ctrl+click / Left-Right) is manual
   (headless input can't target the window precisely), but the spawn/dedup/force-duplicate/close LOGIC
   is unit-tested. Next: off-thread thumbnails + evicting cache + preview panes (#45).
+- 2026-07-08: Checkpoint 5 (off-thread thumbnails + evicting cache + preview panes, #45) DONE. Deps:
+  `image` 0.25 (decode) + `async-channel` 2 (worker->main delivery, since glib removed
+  `MainContext::channel`). `thumbs.rs`: `Thumbnails::start` spawns a decode worker thread
+  (`image::open` -> `thumbnail(THUMB_SIZE)` -> RGBA) that delivers `(path, Option<Decoded>)` over an
+  async channel drained by `glib::spawn_future_local` on the main context; `deliver` builds a
+  `MemoryTexture`, inserts into a byte-bounded LRU (`evict_to_budget` keeps the total under
+  `THUMB_CACHE_BYTES` = 64 MB), and fulfils every waiting `Picture`; `request` deduplicates concurrent
+  requests per path and serves cache hits immediately (`touch` bumps the LRU tick). `is_image` gates
+  by extension. `pane.rs`: `build_preview_pane` (header + close) over `build_preview_body` (image ->
+  off-thread `Picture`, else a large themed icon + name); the preview builders live here to keep
+  `strip.rs` under max-lines (split when it hit 312). `strip.rs`'s Preview arm calls it with a close
+  closure; `StripInner` owns the `Thumbnails`. Verified via `FM_START_DIR=/usr/share/pixmaps
+  FM_AUTOPREVIEW`: preview spawned (`panes=2`), `thumbnail ready path=.../cupsprinter.png width=256
+  height=256 cache_bytes=262144` (= 256*256*4), clean exit -> decode ran off-thread, texture built +
+  cached with exact byte accounting, `Picture` updated. Full browse-many-images eviction is trusted
+  from the LRU logic (only one thumbnail here, well under the cap). Next: DnD wiring (#46).
