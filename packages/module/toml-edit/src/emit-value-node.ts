@@ -55,10 +55,11 @@ export function renderValueNode(
   }
   if (value.kind
     === 'scalar') {
-    return jsValueToTomlText({
-      input: value.jsValue,
-      options,
-    },);
+    return value.renderText
+      ?? jsValueToTomlText({
+        input: value.jsValue,
+        options,
+      },);
   }
   if (value.kind
     === 'array') {

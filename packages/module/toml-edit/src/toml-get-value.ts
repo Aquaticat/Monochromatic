@@ -4,24 +4,23 @@
  * @module
  */
 
-import { getStaticTOMLValue, } from 'toml-eslint-parser';
-
-import { effectiveAt, } from './effective-value.ts';
+import {
+  materializeDocument,
+  MISSING,
+  navigate,
+} from './document-materialize.ts';
 import type {
   TomlEditState,
   TomlPath,
 } from './types.ts';
 
 /**
- * The effective JS value at `path`, or `undefined` if the path does not
- * exist (or was deleted by a pending {@link tomlDelete}).
+ * The JS value at `path`, or `undefined` when the path does not exist.
  *
- * Routes through {@link effectiveAt} so a {@link tomlSet} on the same state (or a
- * branched state) is reflected immediately.
- *
- * For tables and inline tables, returns the table's nested object.
- * For arrays and array-of-tables, returns the array of values.
- * For primitives, returns the JS primitive.
+ * Walks the current document tree and materializes the addressed node, so the
+ * result always agrees with {@link tomlStringify}; tables and inline tables
+ * return nested objects, arrays and array-of-tables return arrays, primitives
+ * return the JS primitive.
  *
  * @returns Computed result (`unknown`).
  *
@@ -40,32 +39,11 @@ export function tomlGetValue(
   },
 ): unknown {
   /**
-   * Effective resolution accounts for pending edits and deletes.
+   * Materialized value at the path; the missing sentinel maps to `undefined`.
    */
-  const result = effectiveAt({
-    edit,
+  const result = navigate({
+    root: materializeDocument({ edit, },),
     path,
   },);
-  if ((result.kind
-    === 'missing') || (result.kind
-      === 'deleted'))
-    return undefined;
-  if (result.kind
-    === 'pending-value')
-    return result.value;
-  if (result.kind
-    === 'keyvalue')
-    return getStaticTOMLValue(result.node
-      .value,);
-  if (result.kind
-    === 'value')
-    return getStaticTOMLValue(result.node,);
-  if ((result.kind
-    === 'table') || (result.kind
-      === 'top-level'))
-    return getStaticTOMLValue(result.node,);
-  return result.nodes
-    .map(function each(t,) {
-    return getStaticTOMLValue(t,);
-  },);
+  return result === MISSING ? undefined : result;
 }

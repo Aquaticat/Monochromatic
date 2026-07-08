@@ -67,14 +67,20 @@ export type ScalarKind =
   | 'local-time';
 
 /**
- * A primitive value leaf. `jsValue` is the materialized JS value (per
- * `getStaticTOMLValue` semantics) used by reads and by canonical rendering.
+ * A primitive value leaf.
+ *
+ * `jsValue` is the materialized plain JS value (per `getStaticTOMLValue`
+ * semantics) used by reads. A clean scalar renders through its AST node
+ * (preserving raw spelling); a synthetic scalar renders from `renderText`,
+ * precomputed at creation via `jsValueToTomlText` so wrapped inputs (forced
+ * integer/float, datetimes) keep their intended spelling.
  */
 export type ScalarNode = {
   readonly kind: 'scalar';
   readonly tomlKind: ScalarKind;
   readonly jsValue: unknown;
   readonly origin: Origin;
+  readonly renderText?: string;
 };
 
 /**
