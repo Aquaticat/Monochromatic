@@ -236,17 +236,29 @@ Generic interface:
 
 ```ts
 // packages/agent-harnesses-shared/session-discovery
+type SessionDiscoveryIo = {
+  readonly readParentPid?: (pid: number) => Promise<number | typeof SESSION_NOT_FOUND>;
+  readonly readDir?: (path: string) => Promise<readonly string[]>;
+  readonly readFile?: (path: string) => Promise<string>;
+  readonly statFile?: (path: string) => Promise<{ readonly mtimeMs: number }>;
+};
+
 async function findCallingSession<TMapping>(
   opts: {
-    readonly byPidDir: string;                       // host resolves from its own paths/env
+    readonly byPidDir: string;                        // host resolves from its own paths/env
+    readonly io?: SessionDiscoveryIo;                 // tests inject fake procfs/filesystem seams
     readonly parseMapping: (raw: string) => TMapping; // host owns the JSON shape
-    readonly startPid: number;                       // usually process.ppid
+    readonly startPid: number;                        // usually process.ppid
   },
 ): Promise<TMapping | typeof SESSION_NOT_FOUND>
 ```
 
-The shared package owns `readParentPid`, the process-tree walk, `readByPidDir`,
-the newest-candidate scan, and the tree-then-fallback composition.
+The shared package owns the default procfs parent-PID reader, the process-tree
+walk, the `.by-pid` directory read, the newest-candidate scan, and the
+ tree-then-fallback composition.
+Production callers omit `io`; tests inject fake parent-PID and filesystem readers
+so every branch runs against throwaway fixtures instead of real procfs or real
+coordination state.
 Each host keeps a `paths.ts` that resolves `byPidDir` (pi injects `env`; claude
 reads `process.env.HOME`) and a `PidMapping` type that the shared package is
 generic over. Only `sessionId` is common to both; host-specific fields stay in the
@@ -260,7 +272,9 @@ Reconcile the four divergences found during verification:
    newest-candidate scan; strictly faster than pi's sequential read.
 3. Config injection: adopt pi's `env`-injection pattern for testability (aligns
    with throwaway fixtures under THR).
-4. `PidMapping` shape: only `sessionId` shared; the generic parameter handles
+4. IO seams: expose optional `io` dependencies so unit tests fake procfs parent
+   links and mapping files without touching real host coordination state.
+5. `PidMapping` shape: only `sessionId` shared; the generic parameter handles
    the rest.
 
 Steps follow the additive-first discipline:
