@@ -104,8 +104,8 @@ pub(crate) fn wrap(child: &impl IsA<Widget>, region: DebugRegion, detail: Option
         return child.as_ref().clone();
     }
     let overlay = Overlay::new();
-    overlay.set_hexpand(true);
-    overlay.set_vexpand(true);
+    overlay.set_hexpand(child.as_ref().hexpands());
+    overlay.set_vexpand(child.as_ref().vexpands());
     overlay.set_child(Some(child));
     overlay.add_css_class("fm-debug-overlay");
     overlay.add_overlay(&badge(region, detail));
