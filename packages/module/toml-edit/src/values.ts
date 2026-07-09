@@ -369,4 +369,3 @@ function encodeInlineTable(
   return `{ ${parts.join(', ',)}${parts.length
     === 0 ? '' : ', '}}`;
 }
-

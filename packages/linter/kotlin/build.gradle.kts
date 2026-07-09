@@ -82,4 +82,3 @@ tasks.register<JavaExec>("detektCheck") {
         },
     )
 }
-

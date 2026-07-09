@@ -314,4 +314,3 @@ export function parseCliOptions(argv: readonly string[],): CliOptions {
     reportFile: state.reportFile,
   };
 }
-
