@@ -171,10 +171,40 @@ impl StripLayout {
         (bottom - self.viewport_height()).max(0.0)
     }
 
-    /// What: compute `placement`'s content y-coordinate after hierarchical sticky offsets.
-    /// Why: every pane reacts to its own sibling lane and ancestor lanes after the app scrolls.
+    /// What: compute `placement`'s content y-coordinate after sticky offsets and rail clamps.
+    /// Why: every pane reacts to app scroll, but it must never leave any green `Y6L` rail it belongs
+    ///      to.
     pub(super) fn visual_y_for_pane(&self, placement: PanePlacement) -> f64 {
-        scroll::row_y(placement.row) + self.effective_offset_for_pane(placement.id)
+        let desired = scroll::row_y(placement.row) + self.effective_offset_for_pane(placement.id);
+        let Some((min_y, max_y)) = self.allowed_y_for_pane(placement) else {
+            return desired;
+        };
+        desired.clamp(min_y, max_y)
+    }
+
+    /// What: compute vertical bounds shared by every green rail containing `placement`.
+    /// Why: a pane can be both a child in one lane and the parent of another; both rails constrain it.
+    fn allowed_y_for_pane(&self, placement: PanePlacement) -> Option<(f64, f64)> {
+        let placements = self.placements.borrow().clone();
+        let groups = direct_child_groups(&placements);
+        let mut min_y: Option<f64> = None;
+        let mut max_y: Option<f64> = None;
+        for (parent, children) in groups {
+            let contains = parent == placement.id
+                || children.iter().any(|child| child.id == placement.id);
+            if !contains {
+                continue;
+            }
+            let Some(parent_placement) = placement_by_id(&placements, parent) else {
+                continue;
+            };
+            let top = scroll::row_y(parent_placement.row);
+            let bottom = lane_base_bottom(parent_placement, &children) - f64::from(PANE_HEIGHT);
+            min_y = Some(min_y.map_or(top, |current| current.max(top)));
+            max_y = Some(max_y.map_or(bottom, |current| current.min(bottom)));
+        }
+        let (min_y, max_y) = (min_y?, max_y?);
+        Some((min_y, max_y.max(min_y)))
     }
 
     /// What: compute all lane offsets affecting `id`.

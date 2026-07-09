@@ -291,7 +291,9 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   inside one horizontal+vertical outer `ScrolledWindow`; per-column vertical `ScrolledWindow`s were
   removed. `layout/lane.rs` owns lane sticky offsets driven by the outer vertical adjustment,
   hierarchical offset application, vertical reveal, and rounded green `Y6L` overlays. `Y6L` boxes
-  are fixed rails in app-layout coordinates; only panes receive sticky offsets inside those rails.
+  are fixed rails in app-layout coordinates; only panes receive sticky offsets inside those rails,
+  and every pane is clamped to every `Y6L` rail it belongs to so it never extends outside a green
+  box.
   `layout/scroll.rs` now only handles horizontal reveal and the shared row-pixel helper.
   `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create fake debug
   geometry.
