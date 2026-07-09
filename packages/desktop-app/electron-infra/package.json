@@ -12,7 +12,7 @@
       "default": "./dist/final/node/index.mjs"
     },
     "./ts": "./src/index.ts",
-    "./ts/*": "./src/*"
+    "./ts/*": "./src/*.ts"
   },
   "dependencies": {
     "@electron/packager": "catalog:",

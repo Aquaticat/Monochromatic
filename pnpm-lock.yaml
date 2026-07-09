@@ -1216,6 +1216,9 @@ importers:
         specifier: workspace:*
         version: link:../../module/logger
     devDependencies:
+      '@electron/packager':
+        specifier: 'catalog:'
+        version: 20.0.2
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript

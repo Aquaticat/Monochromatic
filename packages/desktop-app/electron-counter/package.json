@@ -14,6 +14,7 @@
     "@monochromatic-dev/module-logger": "workspace:*"
   },
   "devDependencies": {
+    "@electron/packager": "catalog:",
     "@monochromatic-dev/desktop-app-electron-infra": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",

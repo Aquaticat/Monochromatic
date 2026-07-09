@@ -12,7 +12,7 @@
  * ```
  */
 
-import { runWaylandElectronBoundaryTest, } from '@monochromatic-dev/desktop-app-electron-infra/ts';
+import { runWaylandElectronBoundaryTest, } from '@monochromatic-dev/desktop-app-electron-infra/ts/wayland-test';
 
 /**
  * Environment variable consumed by the Electron app's main process.
