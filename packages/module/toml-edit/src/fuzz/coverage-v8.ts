@@ -390,4 +390,3 @@ export function fileCoverageFrom(
 }
 
 //endregion Bitmap painting and line projection
-

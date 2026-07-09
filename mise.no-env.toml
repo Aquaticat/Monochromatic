@@ -172,8 +172,9 @@ hcloud = "latest"
 "npm:pagefind" = "latest"
 betterleaks = "latest"
 
-# Git hook runner
-hk = "latest"
+# Git hook runner. Pinned with hk.pkl's Pkl package because staged-byte
+# handling is version-sensitive; upgrade both together after fixture verification.
+hk = "1.50.0"
 # Pkl: hk's config language
 pkl = "latest"
 

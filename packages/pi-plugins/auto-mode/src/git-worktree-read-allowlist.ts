@@ -539,4 +539,3 @@ export async function linkedWorktreeReadAllowlistedDirs({
     return [];
   }
 }
-
