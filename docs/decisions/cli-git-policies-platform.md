@@ -105,11 +105,13 @@ The surface is narrow on purpose.
 Policies are the configurable,
  toggleable,
  distributable lint surface,
- and only two kinds qualify:
+ and only three kinds qualify:
 validators,
- which reject or pass a command,
- and content scanners,
- which scan files and reject on a hit.
+ which reject or pass a command;
+content scanners,
+ which scan files and reject on a hit;
+and content normalizers,
+ which check or canonically rewrite selected file content.
 
 The command transformers (atomic-push,
  commit-only,
@@ -143,19 +145,27 @@ Every existing and migrated behavior classifies as one of:
 - Plugin and repo-local policies (this repo configures them):
    forbidden-strings,
    wrapping the separately built,
-  SLSA-attested binary,
-   and forbidden-root-context,
+  SLSA-attested binary;
+   forbidden-root-context,
    a small first-party validator for the repo's root-CONTEXT.
-  md rule.
+  md rule;
+   and final-newline,
+   a content normalizer with exact-byte exclusions.
 
-A policy declares its kind (validator or content scanner),
+A policy declares its kind (validator,
+ content scanner,
+ or content normalizer),
  the subcommands it applies to,
  its trigger points
 (pre-forward,
  post-commit before auto-push,
- or on push),
+ on push,
+ or direct check/fix),
  its default severity,
  and its warn-safety.
+A content normalizer additionally declares its fix mode,
+file selection,
+and exclusions.
 The detailed API contract,
  including the exact context object passed to a policy,
  is deferred to an
@@ -486,6 +496,36 @@ a legitimate push,
 forbidden-root-context is a pre-forward validator (path-based,
  rejecting staging or committing a root `CONTEXT.md`).
 
+## Final-newline normalization semantics
+
+final-newline migrates from hk as a content normalizer,
+not as a command transformer.
+For selected non-empty text files,
+check mode requires exactly one final LF and fix mode removes a final LF run before appending one LF.
+Binary-looking and empty files remain unchanged.
+
+The repo-local exclusions migrate as part of policy parity:
+
+- `packages/fuzz/forbidden-strings/corpus/**`,
+  because fuzz input bytes are test data.
+- `packages/test-fixture/toml-edit/src/**`,
+  because missing final LF can be parser input under test.
+- `**/dist/final/node/**`,
+  because tsdown output intentionally keeps its producer-native missing final LF and saves one byte per file.
+  The measured tracked baseline contains 18 such files and saves 18 bytes.
+
+Pre-forward fix mode must transform the exact would-be-committed content without staging unrelated worktree bytes.
+Partially staged files are the decisive parity case:
+unstaged edits must survive the commit transaction,
+and the committed blob alone must receive required canonicalization.
+The implementation must not achieve this by adding the whole worktree file to the index.
+
+Push and direct check modes are read-only.
+A direct fix surface must provide the current `hk fix --all --step final-newline --no-stage` capability,
+so a caller can normalize the worktree and inspect explicit path groups without bulk staging.
+The implementation spec decides the API and transaction mechanism,
+but cannot weaken these semantics or the exact exclusions.
+
 ## Escape hatches and a behavior change
 
 The escape-hatch parsing already exists and is parser-based,
@@ -514,24 +554,32 @@ That is a behavior change from the hk era and the docs must state it,
 
 CI already runs forbidden-strings directly via the SLSA-attested binary;
 the old `mise exec -- hk check` step was removed because it forced mise to install unrelated tools.
-CI stays independent of the wrapper and remains the authoritative gate everywhere.
-The `cli-git` policy wraps the same binary for local fast feedback;
- it does not replace the CI gate.
+CI stays independent of the wrapper.
+The forbidden-strings `cli-git` policy wraps the same binary for local fast feedback;
+it does not replace the CI gate.
+
+final-newline is temporarily local-only while hk owns it.
+Do not reintroduce generic hk execution in CI.
+Before hk retirement,
+add an independent final-newline check that invokes the migrated policy's direct checker without loading unrelated
+root tooling and honors all three exclusion families.
 
 ## Alternatives considered
 
 Sequencing was the first live fork.
 
 - Decouple and retire hk now (rejected).
-  Fold the two checks into the existing pipeline as first-party modules immediately and grow the platform after.
+  Fold the three hk-managed behaviors into the existing pipeline as first-party modules immediately and grow the
+  platform after.
   Lands the supply-chain win sooner and matches the repo's commit-early lean.
   Rejected for a single coherent landing,
    since nothing ships this session anyway.
 - Parallel-run both (rejected).
-  Keep hk running the checks alongside cli-git until proven.
-  Rejected because CI is already authoritative,
-   so the margin is low-value while it double-scans and keeps
-  hk and pkl around.
+  Keep hk running the managed behaviors alongside cli-git until proven.
+  Rejected because forbidden-strings already has an authoritative CI gate,
+  while final-newline needs parity fixtures and an independent checker rather than two local normalizers touching
+  the same content.
+  Parallel operation would keep hk and pkl without adding a distinct evidence layer.
 - Platform-first (chosen).
   The accepted cost:
    hk,
@@ -564,12 +612,15 @@ The three forks the external review surfaced resolved as:
 
 Do not retire hk and pkl until all of these hold:
 
-- The platform is implemented and the two checks run on it.
-- The migrated checks have parity tests proving each old hk trigger path is covered,
-   and they pass.
+- The platform is implemented and all three hk-managed behaviors run on it.
+- The migrated validators,
+  scanner,
+  and normalizer have parity tests proving each old hk trigger path is covered,
+  including partial staging and all final-newline exclusions,
+  and they pass.
 - Agreed performance gates exist (exact budgets belong in the implementation spec) and pass.
 - The docs explain the `--no-verify` behavior change.
-- CI remains independent and green.
+- Independent CI checks for forbidden-strings and final-newline are green.
 - An idempotent cleanup exists for the per-machine hk Git config.
 
 Then perform the removal:
@@ -588,9 +639,14 @@ Then perform the removal:
 Migration order within the platform:
  forbidden-root-context first,
  because it is smaller and proves the
-validator shape,
- then forbidden-strings,
- which proves the content-scanner shape and the dual trigger semantics.
+validator shape;
+ forbidden-strings next,
+ which proves the content-scanner shape and dual trigger semantics;
+ then final-newline,
+ which proves content normalization,
+exact-byte exclusions,
+direct check/fix surfaces,
+and partial-staging safety.
 
 ## Supply-chain note
 
@@ -637,9 +693,20 @@ The platform's own plugin supply chain is governed by the consumer's lockfile pi
   otherwise),
    extracted from and fixing editord's seed `resolve-fs-id.ts`.
 - `hk.pkl`:
-   the current hk config (forbidden-root-context and forbidden-strings on pre-commit,
-   pre-push,
-   check).
+   the current hk config,
+   with final-newline on pre-commit,
+  pre-push,
+  check,
+  and fix;
+  forbidden-root-context on pre-commit,
+  pre-push,
+  and check;
+  and forbidden-strings definitions retained but temporarily disabled during refactoring.
+- `docs/planning/final-newline-normalization.md` and `docs/troubleshooting/tsdown-final-newline.md`:
+   current normalization semantics,
+  exact-byte exclusions,
+  partial-staging evidence,
+  and tsdown's compact-output exception.
 - `.github/workflows/forbidden-strings.yml`:
    the CI gate,
    already off hk.

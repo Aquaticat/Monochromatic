@@ -13,8 +13,10 @@ The result depends on the output path through the toolchain:
 
 - Minified JavaScript with `minify.codegen: true` ends with zero LF bytes.
 - Declarations emitted by `dts: true` end with zero LF bytes whether JavaScript is minified or not.
-- Unminified JavaScript ends with one LF in the verified fixture, but that does not repair declarations.
-- Adding `footer: '\n'` to a minified build makes both files end with two LF bytes, not one.
+- Unminified JavaScript ends with one LF in the verified fixture,
+   but that does not repair declarations.
+- Adding `footer: '\n'` to a minified build makes both files end with two LF bytes,
+   not one.
 
 This repository commits generated Node output.
 The behavior was initially treated as rebuild drift,
@@ -24,12 +26,16 @@ then accepted as an intentional compact-output policy that saves one byte per ge
 
 The source trace uses these exact releases:
 
-- `rolldown/tsdown` tag `v0.22.4`, commit `434cfb3f563addffb88882b128b7a390f3434e94`.
-- `rolldown/rolldown` tag `v1.1.5`, commit `f09947ab017d6df74299f691853dcfc4f4f0f86e`.
-- `sxzz/rolldown-plugin-dts` tag `v0.27.1`, commit
+- `rolldown/tsdown` tag `v0.22.4`,
+   commit `434cfb3f563addffb88882b128b7a390f3434e94`.
+- `rolldown/rolldown` tag `v1.1.5`,
+   commit `f09947ab017d6df74299f691853dcfc4f4f0f86e`.
+- `sxzz/rolldown-plugin-dts` tag `v0.27.1`,
+   commit
   `f2d002e954a9b8cc14610ca6bc80548323043d22`.
 
-First, tsdown delegates a non-watch build to Rolldown and receives already-written output.
+First,
+ tsdown delegates a non-watch build to Rolldown and receives already-written output.
 `rolldown/tsdown` `src/build.ts:167-175` contains:
 
 ```ts
@@ -45,7 +51,8 @@ if (watch) {
 }
 ```
 
-Second, Rolldown's convenience `build` API writes by default.
+Second,
+ Rolldown's convenience `build` API writes by default.
 `rolldown/rolldown` `packages/rolldown/src/api/build.ts:58-68` contains:
 
 ```ts
@@ -62,7 +69,8 @@ if (Array.isArray(options)) {
     }
 ```
 
-Third, Rolldown joins generated sources with LF only between sources.
+Third,
+ Rolldown joins generated sources with LF only between sources.
 It does not append an LF after the final source.
 `rolldown/rolldown` `crates/rolldown_sourcemap/src/source_joiner.rs:41-62` contains:
 
@@ -93,7 +101,8 @@ This explains both JavaScript outcomes.
 An unminified generator result that already carries an LF keeps it.
 A minified result without one gets no LF from `SourceJoiner`.
 It also explains the rejected footer workaround:
-`footer: '\n'` becomes another source, so Rolldown inserts one separator LF before the footer's own LF.
+`footer: '\n'` becomes another source,
+ so Rolldown inserts one separator LF before the footer's own LF.
 
 Declarations have a separate generator but the same pass-through behavior.
 `rolldown-plugin-dts` `src/fake-js.ts:1-5` imports its parser and printer:
@@ -129,7 +138,8 @@ return {
 The verified printer output had no final LF.
 Neither the plugin return nor Rolldown's join step adds one.
 
-Finally, Rolldown writes chunk bytes without a final-newline transformation.
+Finally,
+ Rolldown writes chunk bytes without a final-newline transformation.
 `rolldown/rolldown` `crates/rolldown/src/bundle/bundle.rs:216-223` contains:
 
 ```rust
@@ -140,7 +150,9 @@ self
 ```
 
 An earlier idea was that tsdown itself removed a final LF after Rolldown wrote the files.
-The call chain disproves that reading: tsdown delegates writing to `rolldownBuild`, and Rolldown writes each chunk's
+The call chain disproves that reading:
+ tsdown delegates writing to `rolldownBuild`,
+ and Rolldown writes each chunk's
 existing bytes unchanged.
 
 ## Verification
@@ -234,7 +246,8 @@ export default [
 ```
 
 Run from this repository root.
-The existing package supplies a working TypeScript project for declaration generation; the entry itself remains the
+The existing package supplies a working TypeScript project for declaration generation;
+ the entry itself remains the
 single-line scratch fixture:
 
 ```sh
@@ -306,7 +319,9 @@ idempotent writes,
 and multi-entry completion coordination before it was removed in favor of compact output.
 
 This hook is supported by tsdown's documented lifecycle.
-`rolldown/tsdown` `src/build.ts:306-317` invokes it after copy, executable processing, and completion work:
+`rolldown/tsdown` `src/build.ts:306-317` invokes it after copy,
+ executable processing,
+ and completion work:
 
 ```ts
 async function postBuild() {
@@ -325,11 +340,13 @@ Tradeoffs:
 
 - Every build performs a recursive directory scan and reads owned JavaScript and declaration outputs.
 - Canonicalization adds one byte to each currently tracked non-empty artifact.
-- A suffix allowlist can exclude source maps and copied assets, but then those bytes remain producer-owned.
+- A suffix allowlist can exclude source maps and copied assets,
+   but then those bytes remain producer-owned.
 - A per-entry tsdown config array invokes `build:done` for each config.
   Shared output directories therefore need a completion gate to avoid duplicate scans and concurrent writes.
 - Filesystem failures should fail the build rather than leave partially normalized output.
-- This is a consumer-side canonicalization policy, not a claim that upstream output is invalid.
+- This is a consumer-side canonicalization policy,
+   not a claim that upstream output is invalid.
 
 The prototype normalized a repeated build of the two-entry `bash-output-filter` package once and produced no
 newline-only drift.
@@ -340,16 +357,19 @@ The current repository intentionally chooses the opposite byte policy and does n
 ### Add `footer: '\n'`
 
 The fixture produced two final LF bytes in both minified JavaScript and declarations.
-Rolldown inserts one LF between the generated chunk and footer, then preserves the footer's own LF.
+Rolldown inserts one LF between the generated chunk and footer,
+ then preserves the footer's own LF.
 
 ### Disable minifier code generation
 
 `minify.codegen: false` produced one final LF in JavaScript but still produced zero in declarations.
-It also changes JavaScript formatting, so it is not a final-newline-only correction.
+It also changes JavaScript formatting,
+ so it is not a final-newline-only correction.
 
 ### Disable minification
 
-Unminified JavaScript happened to carry one final LF, while its declaration still carried zero.
+Unminified JavaScript happened to carry one final LF,
+ while its declaration still carried zero.
 Disabling minification changes artifact size and formatting without solving every output path.
 
 ### Edit committed output only
@@ -363,7 +383,9 @@ the correct response is instead to keep producer output and exclude its director
 ### Run the same postprocessor independently for every entry
 
 `perEntryNodeConfig` builds entries as separate configs sharing one output directory.
-An initial hook ran once per entry, scanned the same files twice, and logged the same four rewrites twice.
+An initial hook ran once per entry,
+ scanned the same files twice,
+ and logged the same four rewrites twice.
 A shared completion gate now runs normalization after the final entry completion and resets for watch-mode rebuilds.
 
 ## Upstream filing decision
@@ -373,37 +395,54 @@ The only tsdown mention is the unrelated TypeScript project-reference discussion
 `.out-of-scope/typescript-project-references.md`.
 
 Searches covered open and closed issues and pull requests in `rolldown/tsdown` for `final newline`,
-`trailing newline`, `EOF newline`, and `footer newline`.
+`trailing newline`,
+ `EOF newline`,
+ and `footer newline`.
 No matching report exists.
 Pull request [#932](https://github.com/rolldown/tsdown/pull/932) matched a broad trailing-newline search but concerns
-shim banner placement, not final output bytes.
+shim banner placement,
+ not final output bytes.
 
 The six filing constraints resolve as follows:
 
-1. **Is it really upstream's fault?** No.
-   tsdown and Rolldown document JavaScript and declaration generation, but no reviewed source promises exactly one
+1. **Is it really upstream's fault?
+   ** No.
+   tsdown and Rolldown document JavaScript and declaration generation,
+    but no reviewed source promises exactly one
    final LF.
    The observed bytes are consistent with Rolldown preserving generator output.
-2. **Can upstream fix it?** Yes.
-   A canonicalization option could live in tsdown post-processing, or Rolldown could add an explicit output policy.
+2. **Can upstream fix it?
+   ** Yes.
+   A canonicalization option could live in tsdown post-processing,
+    or Rolldown could add an explicit output policy.
    A global Rolldown change would need to account for consumers that rely on exact output bytes.
-3. **Are they supporting this use case?** Partly.
-   The README explicitly supports library bundles and declaration generation, and the hook documentation supports
+3. **Are they supporting this use case?
+   ** Partly.
+   The README explicitly supports library bundles and declaration generation,
+    and the hook documentation supports
    post-processing.
    Exact final-LF canonicalization is not documented.
-4. **Would the repo welcome our contribution?** Yes, with conditions.
+4. **Would the repo welcome our contribution?
+   ** Yes,
+    with conditions.
    `.github/ISSUE_TEMPLATE/bug_report.yml` accepts bug reports only with a minimal reproduction.
    `.github/PULL_REQUEST_TEMPLATE.md` asks contributors to avoid duplicate work and include regression tests.
    It permits AI-generated core code only after careful human line-by-line review and requires that fact to be
    checked in the template.
    No policy banning AI-assisted issue reports was found.
    The linked `sxzz/contribute` guide asks contributors to discuss features first and use Conventional Commits.
-5. **Will they likely fix it?** Unknown, with no active rejection.
-   `v0.22.4` is the latest release, tracker searches found no decision, and recent `src/build.ts` history concerns
+5. **Will they likely fix it?
+   ** Unknown,
+    with no active rejection.
+   `v0.22.4` is the latest release,
+    tracker searches found no decision,
+    and recent `src/build.ts` history concerns
    config dependency tracking rather than byte endings.
    No documented non-goal or maintainer rejection was found.
-6. **Have we prototyped a minimal fix compatible with their architecture?** No upstream patch.
-   Constraints 1 and 3 do not hold, so the automatic upstream prototype gate does not trigger.
+6. **Have we prototyped a minimal fix compatible with their architecture?
+   ** No upstream patch.
+   Constraints 1 and 3 do not hold,
+    so the automatic upstream prototype gate does not trigger.
    The verified `build:done` consumer workaround proves the documented extension point is available,
    but this repository intentionally keeps the smaller producer-native output instead.
 
