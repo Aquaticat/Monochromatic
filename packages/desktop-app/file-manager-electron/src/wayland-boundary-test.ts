@@ -98,10 +98,13 @@ async function createFixtureTree(): Promise<FixtureTree> {
     'beta',
   );
 
-  await mkdir(join(
+  await mkdir(
+    join(
     alphaPath,
     'nested-one',
-  ), { recursive: true, },);
+  ),
+    { recursive: true, },
+  );
   await mkdir(
     betaPath,
     { recursive: true, },
@@ -148,6 +151,9 @@ async function createFixtureTree(): Promise<FixtureTree> {
  * ```
  */
 async function runFileManagerWaylandBoundaryTest(): Promise<void> {
+  /**
+   * Throwaway fixture tree removed when the test scope ends.
+   */
   await using fixture = await createFixtureTree();
 
   // The nested compositor and /usr/bin/env inherit this process's environment,

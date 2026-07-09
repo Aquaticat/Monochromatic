@@ -51,7 +51,7 @@ export const PANE_GAP = 12;
  * console.log(ROW_STRIDE);
  * ```
  */
-export const ROW_STRIDE = PANE_HEIGHT + PANE_GAP;
+export const ROW_STRIDE: number = PANE_HEIGHT + PANE_GAP;
 
 /**
  * Initial top-level window width in pixels.
@@ -61,7 +61,7 @@ export const ROW_STRIDE = PANE_HEIGHT + PANE_GAP;
  * console.log(DEFAULT_WINDOW_WIDTH);
  * ```
  */
-export const DEFAULT_WINDOW_WIDTH = 1280;
+export const DEFAULT_WINDOW_WIDTH = 1_280;
 
 /**
  * Initial top-level window height in pixels.

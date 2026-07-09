@@ -27,8 +27,6 @@ import {
   app,
   BrowserWindow,
   ipcMain,
-  type IpcMainEvent,
-  type IpcMainInvokeEvent,
 } from 'electron';
 import { tagged, } from '@monochromatic-dev/module-logger';
 
@@ -193,32 +191,41 @@ function confinePath({ path, }: { readonly path: string; },): string {
    */
   const resolved = resolve(path,);
 
-  if ((resolved !== rootDirectory) && !resolved.startsWith(`${rootDirectory}${sep}`,))
+  if ((resolved !== rootDirectory) && (!resolved.startsWith(`${rootDirectory}${sep}`,)))
     throw new ListingOutsideRootError({ path, },);
 
   return resolved;
 }
 
 /**
- * Classifies one `readdir` dirent into a bridge entry kind, checking symlinks
- * first because a symlink also answers the directory probe on some platforms.
+ * Classifies one `readdir` dirent probe into a bridge entry kind, checking
+ * symlinks first because a symlink also answers the directory probe on some
+ * platforms.
  *
- * @param dirent - Directory entry from `readdir`.
+ * @param directory - Whether the dirent answered the directory probe.
+ *
+ * @param symlink - Whether the dirent answered the symlink probe.
  *
  * @returns Bridge entry kind.
  *
  * @example
  * ```ts
- * kindOfDirent({ dirent: { isSymbolicLink: () => false, isDirectory: () => true } as never });
+ * kindOfDirent({ directory: true, symlink: false });
  * ```
  */
 function kindOfDirent(
-  { dirent, }: { readonly dirent: { isDirectory: () => boolean; isSymbolicLink: () => boolean; }; },
+  {
+    directory,
+    symlink,
+  }: {
+    readonly directory: boolean;
+    readonly symlink: boolean;
+  },
 ): BridgeEntryKind {
-  if (dirent.isSymbolicLink())
+  if (symlink)
     return 'symlink';
 
-  if (dirent.isDirectory())
+  if (directory)
     return 'directory';
 
   return 'file';
@@ -255,7 +262,10 @@ async function listDirectory({ path, }: { readonly path: string; },): Promise<re
   return sortBridgeEntries({
     entries: dirents.map(function toBridgeEntry(dirent,): BridgeFileEntry {
       return {
-        kind: kindOfDirent({ dirent, },),
+        kind: kindOfDirent({
+          directory: dirent.isDirectory(),
+          symlink: dirent.isSymbolicLink(),
+        },),
         name: dirent.name,
         path: join(
           confined,
@@ -276,13 +286,14 @@ async function listDirectory({ path, }: { readonly path: string; },): Promise<re
  *
  * @example
  * ```ts
- * isShallowScalarRecord({ value: { count: 1 } });
+ * isShallowScalarRecord({ count: 1 });
  * ```
  */
 function isShallowScalarRecord(
-  { value, }: { readonly value: unknown; },
+  value: unknown,
 ): value is Readonly<Record<string, string | number | boolean>> {
-  if (((typeof value) !== 'object') || (value === null) || Array.isArray(value,))
+  if (((typeof value) !== 'object') || (value === null)
+    || Array.isArray(value,))
     return false;
 
   return Object.values(value,)
@@ -348,7 +359,7 @@ async function writeObservedState(
 function observeStateFromEvent({ payload, }: { readonly payload: unknown; },): void {
   void (async function observeStateTask(): Promise<void> {
     try {
-      if (!isShallowScalarRecord({ value: payload, },))
+      if (!isShallowScalarRecord(payload,))
         throw new Error('Renderer state report was not a shallow scalar record.',);
 
       await writeObservedState({ state: payload, },);
@@ -377,7 +388,7 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     LIST_DIRECTORY_CHANNEL,
     async function handleListDirectory(
-      _event: IpcMainInvokeEvent,
+      _event: unknown,
       path: unknown,
     ): Promise<readonly BridgeFileEntry[]> {
       if ((typeof path) !== 'string')
@@ -389,7 +400,7 @@ function registerIpcHandlers(): void {
   ipcMain.on(
     REPORT_STATE_CHANNEL,
     function handleReportState(
-      _event: IpcMainEvent,
+      _event: unknown,
       payload: unknown,
     ): void {
       observeStateFromEvent({ payload, },);

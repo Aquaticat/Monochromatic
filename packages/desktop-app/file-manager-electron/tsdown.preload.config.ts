@@ -14,6 +14,8 @@ import {
  */
 const preloadConfig: UserConfig = defineConfig({
   entry: ['./src/preload.ts',],
+  // Shares dist/app with the main-process bundle; cleaning would delete main.mjs.
+  clean: false,
   dts: false,
   fixedExtension: true,
   format: 'cjs',

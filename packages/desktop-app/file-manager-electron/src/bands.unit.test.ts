@@ -107,8 +107,8 @@ await describe({
               id: root.id,
               strip: root.strip,
             },);
-            expect(pane === undefined,).toBe(false,);
-            if (pane === undefined)
+            expect((typeof pane) === 'symbol',).toBe(false,);
+            if ((typeof pane) === 'symbol')
               return;
 
             expect(railHeightPx({
@@ -126,7 +126,7 @@ await describe({
              */
             const root = strip.panes
               .find(function isRoot(pane,): boolean {
-                return pane.parent === null;
+                return pane.parent === undefined;
               },);
             expect(root === undefined,).toBe(false,);
             if (root === undefined)
@@ -137,7 +137,7 @@ await describe({
             expect(railHeightPx({
               pane: root,
               panes: strip.panes,
-            },),).toBe(3 * rowStride + paneHeight,);
+            },),).toBe((3 * rowStride) + paneHeight,);
           },
         },),
         it({
@@ -177,13 +177,14 @@ await describe({
           name: 'places bands at their global grid offsets via margins',
           fn: async () => {
             const strip = grownStrip();
+            // Columns: root, root's children, and b's grandchildren.
             const layouts = computeColumnLayouts({ panes: strip.panes, },);
-            expect(layouts.length,).toBe(2,);
+            expect(layouts.length,).toBe(3,);
 
             /**
              * Column 1 rails: a (row 0), b (row 1), c (row 3).
              */
-            const columnOne = layouts[1];
+            const [, columnOne,] = layouts;
             expect(columnOne === undefined,).toBe(false,);
             if (columnOne === undefined)
               return;
@@ -198,7 +199,7 @@ await describe({
             expect(columnOne.rails[1]?.railHeightPx,).toBe(rowStride + paneHeight,);
             // c: starts at row 3, below b's two-row rail.
             expect(columnOne.rails[2]?.marginTopPx,).toBe(
-              3 * rowStride - (rowStride + (rowStride + paneHeight)),
+              (3 * rowStride) - (rowStride + (rowStride + paneHeight)),
             );
           },
         },),

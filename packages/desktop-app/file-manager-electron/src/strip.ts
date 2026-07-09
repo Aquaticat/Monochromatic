@@ -8,6 +8,9 @@
  * depth and `row` is assigned by a tidy tree layout so a child aligns to its
  * parent's row and a sibling starts below the previous sibling's whole subtree.
  *
+ * Types live in `strip-types.ts` and read-only queries in `strip-query.ts`;
+ * both are re-exported here so consumers import one module.
+ *
  * @example
  * ```ts
  * const opened = openRoot({ strip: createStrip(), location: directoryLocation({ path: '/home' }) });
@@ -16,326 +19,56 @@
  * @packageDocumentation
  */
 
-/**
- * Brand key that keeps pane identifiers from mixing with plain numbers.
- */
-declare const paneIdBrand: unique symbol;
+import {
+  canonicalPaneFor,
+  paneById,
+} from './strip-query.js';
+import type {
+  Pane,
+  PaneId,
+  PaneLocation,
+  Strip,
+} from './strip-types.js';
+
+// Re-export the domain types, sentinels, and constructors so consumers and
+// tests import one module for the whole model surface.
+export type {
+  Pane,
+  PaneId,
+  PaneLocation,
+  PaneLocationKind,
+  Strip,
+} from './strip-types.js';
+export {
+  createStrip,
+  directoryLocation,
+  NO_CANONICAL_PANE,
+  PANE_NOT_FOUND,
+  previewLocation,
+} from './strip-types.js';
+export {
+  canonicalPaneFor,
+  columnCount,
+  firstPaneInColumn,
+  paneById,
+} from './strip-query.js';
 
 /**
- * Stable identity for one pane instance, a branded monotonic counter value.
+ * Whether a pane lays out as a root: it has no parent link, or its recorded
+ * parent is no longer live (closing a parent orphans its children).
  *
- * @example
- * ```ts
- * const opened = openRoot({ strip: createStrip(), location: directoryLocation({ path: '/home' }) });
- * console.log(opened.id);
- * ```
- */
-export type PaneId = number & { readonly [paneIdBrand]: never; };
-
-/**
- * Classification of what a pane shows; `directory` panes list entries and
- * `preview` panes show a single file.
- *
- * @example
- * ```ts
- * const kind: PaneLocationKind = 'directory';
- * ```
- */
-export type PaneLocationKind = 'directory' | 'preview';
-
-/**
- * What a pane shows; also the dedup lookup key.
- *
- * @example
- * ```ts
- * const location: PaneLocation = { kind: 'directory', path: '/home' };
- * ```
- */
-export type PaneLocation = {
-  readonly kind: PaneLocationKind;
-  readonly path: string;
-};
-
-/**
- * One pane in the strip: identity, location, grid position, and parent link.
- *
- * @example
- * ```ts
- * const opened = openRoot({ strip: createStrip(), location: directoryLocation({ path: '/home' }) });
- * console.log(paneById({ strip: opened.strip, id: opened.id },)?.column);
- * ```
- */
-export type Pane = {
-  readonly id: PaneId;
-  readonly location: PaneLocation;
-
-  /**
-   * Zero-based column index (lineage depth); a child sits one column right of
-   * its parent.
-   */
-  readonly column: number;
-
-  /**
-   * Zero-based row index (vertical slot), assigned by the tidy tree layout.
-   */
-  readonly row: number;
-
-  /**
-   * Parent pane, or `null` for a root (or an orphan whose parent was closed).
-   */
-  readonly parent: PaneId | null;
-
-  /**
-   * Whether this pane is the canonical dedup holder for its location; forced
-   * duplicates are never registered, so a revisit focuses the canonical pane.
-   */
-  readonly registeredForDedup: boolean;
-};
-
-/**
- * The whole strip: every live pane, the focused pane, and the id counter.
- *
- * @example
- * ```ts
- * const strip = createStrip();
- * console.log(strip.panes.length);
- * ```
- */
-export type Strip = {
-  /**
-   * Next id to mint; increments so ids are never reused and encode spawn order.
-   */
-  readonly nextId: number;
-  readonly panes: readonly Pane[];
-
-  /**
-   * The focused pane, if any; cleared when that pane is closed.
-   */
-  readonly active: PaneId | null;
-};
-
-/**
- * Builds a directory pane location.
- *
- * @param path - Absolute directory path the pane lists.
- *
- * @returns Directory location value.
- *
- * @example
- * ```ts
- * directoryLocation({ path: '/home' });
- * ```
- */
-export function directoryLocation({ path, }: { readonly path: string; },): PaneLocation {
-  return {
-    kind: 'directory',
-    path,
-  };
-}
-
-/**
- * Builds a file-preview pane location.
- *
- * @param path - Absolute file path the pane previews.
- *
- * @returns Preview location value.
- *
- * @example
- * ```ts
- * previewLocation({ path: '/home/photo.png' });
- * ```
- */
-export function previewLocation({ path, }: { readonly path: string; },): PaneLocation {
-  return {
-    kind: 'preview',
-    path,
-  };
-}
-
-/**
- * Builds an empty strip; a fresh session starts with no panes.
- *
- * @returns Strip with no panes and no focus.
- *
- * @example
- * ```ts
- * const strip = createStrip();
- * ```
- */
-export function createStrip(): Strip {
-  return {
-    active: null,
-    nextId: 0,
-    panes: [],
-  };
-}
-
-/**
- * Checks whether two locations are the same dedup key.
- *
- * @param left - First location.
- *
- * @param right - Second location.
- *
- * @returns Whether kind and path both match.
- *
- * @example
- * ```ts
- * sameLocation({ left: { kind: 'directory', path: '/a' }, right: { kind: 'preview', path: '/a' } });
- * ```
- */
-function sameLocation(
-  {
-    left,
-    right,
-  }: {
-    readonly left: PaneLocation;
-    readonly right: PaneLocation;
-  },
-): boolean {
-  return (left.kind === right.kind) && (left.path === right.path);
-}
-
-/**
- * Finds the canonical dedup pane for a location, if one is registered.
- *
- * @param location - Location to look up.
- *
- * @param strip - Strip to search.
- *
- * @returns Canonical pane id, or `null` when no registered pane shows this location.
- *
- * @example
- * ```ts
- * canonicalPaneFor({ strip: createStrip(), location: directoryLocation({ path: '/home' }) });
- * ```
- */
-function canonicalPaneFor(
-  {
-    location,
-    strip,
-  }: {
-    readonly location: PaneLocation;
-    readonly strip: Strip;
-  },
-): PaneId | null {
-  /**
-   * Registered pane whose location equals the lookup key, when present.
-   */
-  const canonical = strip.panes
-    .find(function isCanonicalHolder(pane,): boolean {
-      return pane.registeredForDedup && sameLocation({
-        left: pane.location,
-        right: location,
-      },);
-    },);
-
-  return canonical?.id ?? null;
-}
-
-/**
- * Looks up a pane by id.
- *
- * @param id - Pane identity to find.
- *
- * @param strip - Strip to search.
- *
- * @returns Matching pane, or `undefined` when the id is not live.
- *
- * @example
- * ```ts
- * paneById({ strip: createStrip(), id: 0 as never });
- * ```
- */
-export function paneById(
-  {
-    id,
-    strip,
-  }: {
-    readonly id: PaneId;
-    readonly strip: Strip;
-  },
-): Pane | undefined {
-  return strip.panes
-    .find(function matchesId(pane,): boolean {
-      return pane.id === id;
-    },);
-}
-
-/**
- * Number of columns spanned (one past the highest column index), or zero when empty.
- *
- * @param strip - Strip to measure.
- *
- * @returns Column count.
- *
- * @example
- * ```ts
- * columnCount({ strip: createStrip() });
- * ```
- */
-export function columnCount({ strip, }: { readonly strip: Strip; },): number {
-  return strip.panes
-    .reduce(function widest(count, pane,): number {
-      return Math.max(
-        count,
-        pane.column + 1,
-      );
-    }, 0,);
-}
-
-/**
- * The top-most (lowest-row) pane in a column, if any; keyboard Left/Right
- * navigation lands on it.
- *
- * @param column - Column index to search.
- *
- * @param strip - Strip to search.
- *
- * @returns Top pane of the column, or `undefined` for an empty column.
- *
- * @example
- * ```ts
- * firstPaneInColumn({ strip: createStrip(), column: 0 });
- * ```
- */
-export function firstPaneInColumn(
-  {
-    column,
-    strip,
-  }: {
-    readonly column: number;
-    readonly strip: Strip;
-  },
-): Pane | undefined {
-  return strip.panes
-    .filter(function inColumn(pane,): boolean {
-      return pane.column === column;
-    },)
-    .reduce(function topMost(top: Pane | undefined, pane,): Pane {
-      return ((top === undefined) || (pane.row < top.row))
-        ? pane
-        : top;
-    }, undefined,);
-}
-
-/**
- * A pane's parent when that parent is still live, else `null` so the pane
- * lays out as a root; closing a parent orphans its children instead of
- * deleting them.
- *
- * @param pane - Pane whose effective parent is needed.
+ * @param pane - Pane to classify.
  *
  * @param panes - Live panes to check parenthood against.
  *
- * @returns Live parent id or `null`.
+ * @returns Whether the pane is an effective root.
  *
  * @example
  * ```ts
- * effectiveParent({ pane: { parent: null } as never, panes: [] });
+ * isEffectiveRoot({ pane: strip.panes[0], panes: strip.panes });
  * ```
  */
-function effectiveParent(
+function isEffectiveRoot(
   {
     pane,
     panes,
@@ -343,55 +76,127 @@ function effectiveParent(
     readonly pane: Pane;
     readonly panes: readonly Pane[];
   },
-): PaneId | null {
-  if (pane.parent === null)
-    return null;
+): boolean {
+  if (pane.parent === undefined)
+    return true;
 
-  /**
-   * Whether the recorded parent id still names a live pane.
-   */
-  const parentAlive = panes.some(function isParent(candidate,): boolean {
+  return !panes.some(function isParent(candidate,): boolean {
     return candidate.id === pane.parent;
   },);
-
-  return parentAlive
-    ? pane.parent
-    : null;
 }
 
 /**
- * Sibling panes under one parent (or the roots for `null`), in spawn order.
+ * Effective roots in spawn order.
  *
  * @param panes - Live panes to group.
  *
- * @param parent - Parent id, or `null` for roots.
+ * @returns Ordered effective roots.
+ *
+ * @example
+ * ```ts
+ * orderedRoots({ panes: [] });
+ * ```
+ */
+function orderedRoots({ panes, }: { readonly panes: readonly Pane[]; },): readonly Pane[] {
+  return panes
+    .filter(function rootLike(pane,): boolean {
+      return isEffectiveRoot({
+        pane,
+        panes,
+      },);
+    },)
+    .toSorted(function bySpawnOrder(
+      left,
+      right,
+    ): number {
+      return left.id - right.id;
+    },);
+}
+
+/**
+ * Live direct children of one live parent, in spawn order.
+ *
+ * @param panes - Live panes to group.
+ *
+ * @param parent - Live parent pane id.
  *
  * @returns Ordered children of the parent.
  *
  * @example
  * ```ts
- * orderedChildren({ panes: [], parent: null });
+ * orderedChildrenOf({ panes: [], parent: 0 });
  * ```
  */
-function orderedChildren(
+function orderedChildrenOf(
   {
     panes,
     parent,
   }: {
     readonly panes: readonly Pane[];
-    readonly parent: PaneId | null;
+    readonly parent: PaneId;
   },
 ): readonly Pane[] {
   return panes
     .filter(function underParent(pane,): boolean {
-      return effectiveParent({
-        pane,
-        panes,
-      },) === parent;
+      return pane.parent === parent;
     },)
-    .toSorted(function bySpawnOrder(left, right,): number {
+    .toSorted(function bySpawnOrder(
+      left,
+      right,
+    ): number {
       return left.id - right.id;
     },);
+}
+
+/**
+ * Rebuilds one pane with its assigned row, keeping the parent link only while
+ * that parent is live, so orphans become roots.
+ *
+ * @param pane - Pane before the rebuild.
+ *
+ * @param panes - Live panes to check parenthood against.
+ *
+ * @param row - Row assigned by the tidy layout.
+ *
+ * @returns Rebuilt pane.
+ *
+ * @example
+ * ```ts
+ * withLiveParent({ pane: strip.panes[0], panes: strip.panes, row: 0 });
+ * ```
+ */
+function withLiveParent(
+  {
+    pane,
+    panes,
+    row,
+  }: {
+    readonly pane: Pane;
+    readonly panes: readonly Pane[];
+    readonly row: number;
+  },
+): Pane {
+  /**
+   * Rebuilt pane without any parent link.
+   */
+  const base: Pane = {
+    column: pane.column,
+    id: pane.id,
+    location: pane.location,
+    registeredForDedup: pane.registeredForDedup,
+    row,
+  };
+
+  if (isEffectiveRoot({
+    pane,
+    panes,
+  },) || (pane.parent === undefined))
+    return base;
+
+  return {
+    ...base,
+    parent: pane.parent,
+  };
 }
 
 /**
@@ -424,13 +229,8 @@ function relayout({ panes, }: { readonly panes: readonly Pane[]; },): readonly P
   /**
    * Explicit pre-order work stack seeded with the roots, top of stack last.
    */
-  const stack: Pane[] = [
-    ...orderedChildren({
-      panes,
-      parent: null,
-    },),
-  ]
-    .reverse();
+  const stack: Pane[] = [...orderedRoots({ panes, },),]
+    .toReversed();
 
   while (stack.length > 0) {
     /**
@@ -449,7 +249,7 @@ function relayout({ panes, }: { readonly panes: readonly Pane[]; },): readonly P
     /**
      * Direct children of the entered pane, visited before later siblings.
      */
-    const children = orderedChildren({
+    const children = orderedChildrenOf({
       panes,
       parent: pane.id,
     },);
@@ -457,18 +257,15 @@ function relayout({ panes, }: { readonly panes: readonly Pane[]; },): readonly P
     if (children.length === 0)
       cursor.nextRow += 1;
 
-    stack.push(...[...children,].reverse(),);
+    stack.push(...[...children,].toReversed(),);
   }
 
   return panes.map(function withAssignedRow(pane,): Pane {
-    return {
-      ...pane,
-      parent: effectiveParent({
-        pane,
-        panes,
-      },),
+    return withLiveParent({
+      pane,
+      panes,
       row: rows.get(pane.id,) ?? 0,
-    };
+    },);
   },);
 }
 
@@ -479,7 +276,7 @@ function relayout({ panes, }: { readonly panes: readonly Pane[]; },): readonly P
  *
  * @param location - What the pane shows.
  *
- * @param parent - Parent id, or `null` for a root.
+ * @param parent - Parent id; omitted for a root.
  *
  * @param registerDedup - Whether the pane becomes the canonical dedup holder.
  *
@@ -489,7 +286,7 @@ function relayout({ panes, }: { readonly panes: readonly Pane[]; },): readonly P
  *
  * @example
  * ```ts
- * insertPane({ strip: createStrip(), location: directoryLocation({ path: '/home' }), column: 0, parent: null, registerDedup: true });
+ * insertPane({ strip: createStrip(), location: directoryLocation({ path: '/home' }), column: 0, registerDedup: true });
  * ```
  */
 function insertPane(
@@ -502,7 +299,7 @@ function insertPane(
   }: {
     readonly column: number;
     readonly location: PaneLocation;
-    readonly parent: PaneId | null;
+    readonly parent?: PaneId;
     readonly registerDedup: boolean;
     readonly strip: Strip;
   },
@@ -513,7 +310,7 @@ function insertPane(
   /**
    * Fresh never-reused identity encoding spawn order.
    */
-  const id = strip.nextId as PaneId;
+  const id: PaneId = strip.nextId;
 
   /**
    * New pane before the tidy layout assigns its row.
@@ -522,9 +319,11 @@ function insertPane(
     column,
     id,
     location,
-    parent,
     registeredForDedup: registerDedup,
     row: 0,
+    ...((parent === undefined)
+      ? {}
+      : { parent, }),
   };
 
   return {
@@ -570,14 +369,15 @@ export function openRoot(
   readonly strip: Strip;
 } {
   /**
-   * Canonical pane already showing this location, when registered.
+   * Canonical pane already showing this location, or the not-registered
+   * sentinel.
    */
   const existing = canonicalPaneFor({
     location,
     strip,
   },);
 
-  if (existing !== null)
+  if ((typeof existing) !== 'symbol')
     return {
       id: existing,
       strip: {
@@ -589,7 +389,6 @@ export function openRoot(
   return insertPane({
     column: 0,
     location,
-    parent: null,
     registerDedup: true,
     strip,
   },);
@@ -633,14 +432,15 @@ export function spawnChild(
 } {
   if (!forceDuplicate) {
     /**
-     * Canonical pane already showing this location, when registered.
+     * Canonical pane already showing this location, or the not-registered
+     * sentinel.
      */
     const existing = canonicalPaneFor({
       location,
       strip,
     },);
 
-    if (existing !== null)
+    if ((typeof existing) !== 'symbol')
       return {
         id: existing,
         strip: {
@@ -651,12 +451,19 @@ export function spawnChild(
   }
 
   /**
-   * Column of the spawning parent, defaulting to a root when the id is stale.
+   * Spawning parent's pane, or the not-found sentinel for a stale id.
    */
-  const parentColumn = paneById({
+  const parentPane = paneById({
     id: parent,
     strip,
-  },)?.column ?? -1;
+  },);
+
+  /**
+   * Column of the spawning parent, defaulting to a root when the id is stale.
+   */
+  const parentColumn = ((typeof parentPane) === 'symbol')
+    ? -1
+    : parentPane.column;
 
   return insertPane({
     column: parentColumn + 1,
@@ -691,10 +498,10 @@ export function focusPane(
     readonly strip: Strip;
   },
 ): Strip {
-  if (paneById({
+  if ((typeof paneById({
     id,
     strip,
-  },) === undefined)
+  },)) === 'symbol')
     return strip;
 
   return {
@@ -705,7 +512,8 @@ export function focusPane(
 
 /**
  * Closes one pane and re-lays-out: the layout closes the gap and any children
- * of the closed pane become roots (no automatic pruning).
+ * of the closed pane become roots (no automatic pruning). Focus clears when
+ * the focused pane closes.
  *
  * @param id - Pane to close.
  *
@@ -737,10 +545,10 @@ export function closePane(
     },);
 
   return {
-    active: (strip.active === id)
-      ? null
-      : strip.active,
     nextId: strip.nextId,
     panes: relayout({ panes: survivors, },),
+    ...(((strip.active === undefined) || (strip.active === id))
+      ? {}
+      : { active: strip.active, }),
   };
 }

@@ -60,21 +60,23 @@ export function compareBridgeEntries(
     readonly right: BridgeFileEntry;
   },
 ): number {
-  if (isDirectoryEntry({ entry: left, },) && !isDirectoryEntry({ entry: right, },))
+  if (isDirectoryEntry({ entry: left, },) && (!isDirectoryEntry({ entry: right, },)))
     return -1;
 
-  if (!isDirectoryEntry({ entry: left, },) && isDirectoryEntry({ entry: right, },))
+  if ((!isDirectoryEntry({ entry: left, },)) && isDirectoryEntry({ entry: right, },))
     return 1;
 
   /**
    * Case-folded names compared by plain code-unit order.
    */
-  const leftName = left.name.toLowerCase();
+  const leftName = left.name
+    .toLowerCase();
 
   /**
    * Case-folded counterpart of the right entry's name.
    */
-  const rightName = right.name.toLowerCase();
+  const rightName = right.name
+    .toLowerCase();
 
   if (leftName < rightName)
     return -1;
@@ -100,7 +102,10 @@ export function compareBridgeEntries(
 export function sortBridgeEntries(
   { entries, }: { readonly entries: readonly BridgeFileEntry[]; },
 ): readonly BridgeFileEntry[] {
-  return entries.toSorted(function byGroupThenName(left, right,): number {
+  return entries.toSorted(function byGroupThenName(
+    left,
+    right,
+  ): number {
     return compareBridgeEntries({
       left,
       right,

@@ -3,7 +3,8 @@
  *
  * Bundled to CommonJS because Electron's sandboxed preload runtime does not
  * load ESM; the renderer itself stays a browser ES module and only sees the
- * `contextBridge`-exposed surface.
+ * `contextBridge`-exposed surface. IPC results are runtime-validated here so
+ * the renderer never consumes an unchecked shape.
  *
  * @example
  * ```ts
@@ -17,6 +18,7 @@ import {
 } from 'electron';
 
 import type {
+  BridgeEntryKind,
   BridgeFileEntry,
   FileManagerBridge,
   ObservedStripState,
@@ -28,17 +30,111 @@ import {
 } from './ipc-channels.js';
 
 /**
+ * Checks whether a value is one of the three bridge entry kinds.
+ *
+ * @param value - Kind candidate from an IPC payload.
+ *
+ * @returns Whether the value names a bridge entry kind.
+ *
+ * @example
+ * ```ts
+ * isBridgeEntryKind('directory');
+ * ```
+ */
+function isBridgeEntryKind(value: unknown,): value is BridgeEntryKind {
+  return (value === 'directory') || (value === 'file')
+    || (value === 'symlink');
+}
+
+/**
+ * Checks whether a value is one listing entry.
+ *
+ * @param value - Entry candidate from an IPC payload.
+ *
+ * @returns Whether the value is a well-formed bridge entry.
+ *
+ * @example
+ * ```ts
+ * isBridgeFileEntry({ kind: 'file', name: 'a', path: '/a' });
+ * ```
+ */
+function isBridgeFileEntry(value: unknown,): value is BridgeFileEntry {
+  return ((typeof value) === 'object')
+    && (value !== null)
+    && ('kind' in value)
+    && isBridgeEntryKind(value.kind,)
+    && ('name' in value)
+    && (((typeof value.name)) === 'string')
+    && ('path' in value)
+    && (((typeof value.path)) === 'string');
+}
+
+/**
+ * Parses the main process's directory-listing reply.
+ *
+ * @param value - Raw IPC reply.
+ *
+ * @returns Validated listing entries.
+ *
+ * @throws Error when the reply is not an array of bridge entries.
+ *
+ * @example
+ * ```ts
+ * parseListingReply({ value: [] });
+ * ```
+ */
+function parseListingReply({ value, }: { readonly value: unknown; },): readonly BridgeFileEntry[] {
+  if ((!Array.isArray(value,)) || (!value.every(function isEntry(entry,): boolean {
+    return isBridgeFileEntry(entry,);
+  },)))
+    throw new Error('Directory-listing IPC reply was not an array of entries.',);
+
+  return value.filter(isBridgeFileEntry,);
+}
+
+/**
+ * Parses the main process's initial-root reply.
+ *
+ * @param value - Raw IPC reply.
+ *
+ * @returns Validated root directory path.
+ *
+ * @throws Error when the reply is not a string.
+ *
+ * @example
+ * ```ts
+ * parseRootReply({ value: '/home' });
+ * ```
+ */
+function parseRootReply({ value, }: { readonly value: unknown; },): string {
+  if ((typeof value) !== 'string')
+    throw new Error('Initial-root IPC reply was not a string.',);
+
+  return value;
+}
+
+/**
  * Bridge implementation forwarded over IPC to the main process.
  */
 const bridge: FileManagerBridge = {
   initialRoot: async function initialRoot(): Promise<string> {
-    return await (ipcRenderer.invoke(INITIAL_ROOT_CHANNEL,) as Promise<string>);
+    /**
+     * Raw reply before shape validation.
+     */
+    const reply: unknown = await ipcRenderer.invoke(INITIAL_ROOT_CHANNEL,);
+
+    return parseRootReply({ value: reply, },);
   },
   listDirectory: async function listDirectory(path: string,): Promise<readonly BridgeFileEntry[]> {
-    return await (ipcRenderer.invoke(
+    /**
+     * Raw reply before shape validation.
+     */
+    const reply: unknown = await ipcRenderer.invoke(
       LIST_DIRECTORY_CHANNEL,
       path,
-    ) as Promise<readonly BridgeFileEntry[]>);
+    );
+
+    return parseListingReply({ value: reply, },);
   },
   reportState: function reportState(state: ObservedStripState,): void {
     ipcRenderer.send(

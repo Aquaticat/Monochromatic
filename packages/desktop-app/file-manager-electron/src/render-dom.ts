@@ -17,12 +17,12 @@
 
 import { computeColumnLayouts, } from './bands.js';
 import type { BridgeFileEntry, } from './bridge-types.js';
-import type {
-  Pane,
-  PaneId,
-  Strip,
+import {
+  paneById,
+  type Pane,
+  type PaneId,
+  type Strip,
 } from './strip.js';
-import { paneById, } from './strip.js';
 
 /**
  * Mutable renderer-side stores keyed by pane identity.
@@ -174,7 +174,9 @@ function buildPaneElement(
    * Sticky pane container.
    */
   const section = document.createElement('section',);
-  section.className = (pane.location.kind === 'directory')
+  section.className = (pane.location
+    .kind
+    === 'directory')
     ? 'pane'
     : 'pane pane-preview';
   section.dataset
@@ -197,7 +199,8 @@ function buildPaneElement(
    */
   const title = document.createElement('span',);
   title.className = 'pane-title';
-  title.textContent = basenameOf({ path: pane.location.path, },);
+  title.textContent = basenameOf({ path: pane.location
+    .path, },);
   header.append(title,);
 
   /**
@@ -221,7 +224,9 @@ function buildPaneElement(
   header.append(close,);
   section.append(header,);
 
-  if (pane.location.kind === 'directory') {
+  if (pane.location
+    .kind
+    === 'directory') {
     /**
      * Listing body filled once the directory listing arrives.
      */
@@ -235,13 +240,15 @@ function buildPaneElement(
      */
     const preview = document.createElement('p',);
     preview.className = 'pane-preview-body';
-    preview.textContent = pane.location.path;
+    preview.textContent = pane.location
+      .path;
     section.append(preview,);
   }
 
   return section;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `stores: RendererStores` is the renderer's mutable-by-design element/listing cache, mutated via `.set`/`.delete` during reconciliation; threading it immutably would defeat the cache (same class as the injected memoization cache in packages/rolldown-plugins/import-attributes/src/scan-importer.ts). */
 /**
  * Fills a directory pane's list body from its fetched listing, once.
  *
@@ -274,9 +281,11 @@ function fillPaneListing(
   /**
    * List body element of the pane, absent for preview panes.
    */
-  const list = paneElement.querySelector('.pane-list',);
+  const list = paneElement.querySelector<HTMLUListElement>('.pane-list',);
 
-  if (!(list instanceof HTMLUListElement) || (list.dataset.filled === '1'))
+  if ((!(list instanceof HTMLUListElement)) || (list.dataset
+    .filled
+    === '1'))
     return;
 
   /**
@@ -290,7 +299,10 @@ function fillPaneListing(
 
   list.dataset
     .filled = '1';
-  entries.forEach(function appendEntry(entry, index,): void {
+  entries.forEach(function appendEntry(
+    entry,
+    index,
+  ): void {
     /**
      * One listing row.
      */
@@ -344,10 +356,14 @@ function updateSelectionHighlight(
    * Selected entry index of this pane, defaulting to the first entry.
    */
   const selected = stores.selections
-    .get(pane.id,) ?? 0;
+    .get(pane.id,)
+    ?? 0;
 
-  paneElement.querySelectorAll('.entry',)
-    .forEach(function highlightEntry(entry, index,): void {
+  paneElement.querySelectorAll<HTMLElement>('.entry',)
+    .forEach(function highlightEntry(
+      entry,
+      index,
+    ): void {
       entry.classList
         .toggle(
         'selected',
@@ -392,7 +408,9 @@ export function renderStrip(
    */
   const layouts = computeColumnLayouts({ panes: strip.panes, },);
 
-  while (stores.columnElements.length < layouts.length) {
+  while (stores.columnElements
+    .length
+    < layouts.length) {
     /**
      * New column container appended at the right edge.
      */
@@ -403,7 +421,9 @@ export function renderStrip(
       .push(column,);
   }
 
-  while (stores.columnElements.length > layouts.length)
+  while (stores.columnElements
+    .length
+    > layouts.length)
     stores.columnElements
       .pop()
       ?.remove();
@@ -454,14 +474,15 @@ export function renderStrip(
           strip,
         },);
 
-        if (pane === undefined)
+        if ((typeof pane) === 'symbol')
           return;
 
         /**
          * Existing rail wrapper, or a fresh one holding a new pane element.
          */
         const railElement = stores.railElements
-          .get(rail.id,) ?? (function createRail(): HTMLElement {
+          .get(rail.id,)
+          ?? (function createRail(): HTMLElement {
           /**
            * New rail wrapper the pane sticks within.
            */
@@ -523,3 +544,4 @@ export function renderStrip(
       },);
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

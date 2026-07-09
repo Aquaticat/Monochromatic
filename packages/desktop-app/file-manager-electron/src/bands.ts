@@ -113,12 +113,18 @@ function deepestDirectChildRow(
     .filter(function isDirectChild(pane,): boolean {
       return pane.parent === id;
     },)
-    .reduce(function deepest(deepestRow, child,): number {
+    .reduce(
+      function deepest(
+        deepestRow,
+        child,
+      ): number {
       return Math.max(
         deepestRow,
         child.row,
       );
-    }, row,);
+    },
+      row,
+    );
 }
 
 /**
@@ -154,8 +160,8 @@ export function railHeightPx(
     row: pane.row,
   },);
 
-  return rowY({ row: bottomRow, },)
-    + PANE_HEIGHT
+  return (rowY({ row: bottomRow, },)
+    + PANE_HEIGHT)
     - rowY({ row: pane.row, },);
 }
 
@@ -181,16 +187,25 @@ export function computeColumnLayouts(
   /**
    * Highest column index in the snapshot, or -1 for an empty strip.
    */
-  const lastColumn = panes.reduce(function widest(widestColumn, pane,): number {
+  const lastColumn = panes.reduce(
+    function widest(
+      widestColumn,
+      pane,
+    ): number {
     return Math.max(
       widestColumn,
       pane.column,
     );
-  }, -1,);
+  },
+    -1,
+  );
 
   return Array.from(
     { length: lastColumn + 1, },
-    function buildColumn(_unused, column,): ColumnLayout {
+    function buildColumn(
+      _unused,
+      column,
+    ): ColumnLayout {
       /**
        * Panes of this column ordered top to bottom.
        */
@@ -198,7 +213,10 @@ export function computeColumnLayouts(
         .filter(function inColumn(pane,): boolean {
           return pane.column === column;
         },)
-        .toSorted(function byRow(left, right,): number {
+        .toSorted(function byRow(
+          left,
+          right,
+        ): number {
           return left.row - right.row;
         },);
 

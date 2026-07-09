@@ -26,7 +26,32 @@ import {
   paneById,
   previewLocation,
   spawnChild,
+  type Pane,
+  type PaneId,
+  type Strip,
 } from '../dist/app/strip.js';
+
+/**
+ * Looks a pane up and fails the calling test when it is not live.
+ */
+function mustFind(
+  {
+    id,
+    strip,
+  }: {
+    readonly id: PaneId;
+    readonly strip: Strip;
+  },
+): Pane {
+  const pane = paneById({
+    id,
+    strip,
+  },);
+  if ((typeof pane) === 'symbol')
+    throw new Error(`Pane ${id} is not live`,);
+
+  return pane;
+}
 
 await describe({
   name: '',
@@ -43,16 +68,21 @@ await describe({
             },);
             expect(opened.strip.panes.length,).toBe(1,);
             expect(opened.strip.active,).toBe(opened.id,);
-            const pane = paneById({
+            const pane = mustFind({
               id: opened.id,
               strip: opened.strip,
             },);
-            expect(pane?.column,).toBe(0,);
-            expect(pane?.row,).toBe(0,);
-            expect(firstPaneInColumn({
+            expect(pane.column,).toBe(0,);
+            expect(pane.row,).toBe(0,);
+            const top = firstPaneInColumn({
               column: 0,
               strip: opened.strip,
-            },)?.id,).toBe(opened.id,);
+            },);
+            expect((typeof top) === 'symbol',).toBe(false,);
+            if ((typeof top) === 'symbol')
+              return;
+
+            expect(top.id,).toBe(opened.id,);
           },
         },),
         it({
@@ -62,13 +92,9 @@ await describe({
               location: directoryLocation({ path: '/home', },),
               strip: createStrip(),
             },);
-            const unfocused = focusPane({
-              id: first.id,
-              strip: first.strip,
-            },);
             const again = openRoot({
               location: directoryLocation({ path: '/home', },),
-              strip: unfocused,
+              strip: first.strip,
             },);
             expect(again.id,).toBe(first.id,);
             expect(again.strip.panes.length,).toBe(1,);
@@ -93,12 +119,12 @@ await describe({
               strip: root.strip,
             },);
             expect(child.id === root.id,).toBe(false,);
-            const pane = paneById({
+            const pane = mustFind({
               id: child.id,
               strip: child.strip,
             },);
-            expect(pane?.column,).toBe(1,);
-            expect(pane?.row,).toBe(0,);
+            expect(pane.column,).toBe(1,);
+            expect(pane.row,).toBe(0,);
             expect(child.strip.active,).toBe(child.id,);
             expect(child.strip.panes.length,).toBe(2,);
           },
@@ -122,26 +148,26 @@ await describe({
               parent: root.id,
               strip: first.strip,
             },);
-            expect(paneById({
+            expect(mustFind({
               id: first.id,
               strip: second.strip,
-            },)?.row,).toBe(0,);
-            expect(paneById({
+            },).row,).toBe(0,);
+            expect(mustFind({
               id: second.id,
               strip: second.strip,
-            },)?.row,).toBe(1,);
+            },).row,).toBe(1,);
             const grandchild = spawnChild({
               forceDuplicate: false,
               location: directoryLocation({ path: '/home/b/c', },),
               parent: second.id,
               strip: second.strip,
             },);
-            const pane = paneById({
+            const pane = mustFind({
               id: grandchild.id,
               strip: grandchild.strip,
             },);
-            expect(pane?.column,).toBe(2,);
-            expect(pane?.row,).toBe(1,);
+            expect(pane.column,).toBe(2,);
+            expect(pane.row,).toBe(1,);
           },
         },),
         it({
@@ -181,18 +207,18 @@ await describe({
               parent: b.id,
               strip: bx.strip,
             },);
-            expect(paneById({
+            expect(mustFind({
               id: a.id,
               strip: by.strip,
-            },)?.row,).toBe(0,);
-            expect(paneById({
+            },).row,).toBe(0,);
+            expect(mustFind({
               id: b.id,
               strip: by.strip,
-            },)?.row,).toBe(1,);
-            expect(paneById({
+            },).row,).toBe(1,);
+            expect(mustFind({
               id: c.id,
               strip: by.strip,
-            },)?.row,).toBe(3,);
+            },).row,).toBe(3,);
           },
         },),
         it({
@@ -292,10 +318,10 @@ await describe({
               strip: child.strip,
             },);
             expect(closed.panes.length,).toBe(1,);
-            expect(paneById({
+            expect(typeof paneById({
               id: child.id,
               strip: closed,
-            },),).toBe(undefined,);
+            },),).toBe('symbol',);
             const respawned = spawnChild({
               forceDuplicate: false,
               location: directoryLocation({ path: '/home/docs', },),
@@ -323,12 +349,12 @@ await describe({
               id: root.id,
               strip: child.strip,
             },);
-            const orphan = paneById({
+            const orphan = mustFind({
               id: child.id,
               strip: closed,
             },);
-            expect(orphan?.parent,).toBe(null,);
-            expect(orphan?.row,).toBe(0,);
+            expect(orphan.parent,).toBe(undefined,);
+            expect(orphan.row,).toBe(0,);
             expect(closed.panes.length,).toBe(1,);
           },
         },),
@@ -343,7 +369,7 @@ await describe({
               id: root.id,
               strip: root.strip,
             },);
-            expect(closed.active,).toBe(null,);
+            expect(closed.active,).toBe(undefined,);
           },
         },),
       ],
@@ -388,7 +414,7 @@ await describe({
               id: root.id,
               strip: closed,
             },);
-            expect(refocused.active,).toBe(null,);
+            expect(refocused.active,).toBe(undefined,);
           },
         },),
       ],
