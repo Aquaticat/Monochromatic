@@ -36,22 +36,6 @@ pub(super) struct LaneRect {
     pub(super) height: f64,
 }
 
-/// What: rectangle helpers for hit-testing and ranking.
-/// Why: keep bounds math named instead of open-coded at each caller.
-impl LaneRect {
-    /// What: report whether point `x, y` sits inside the rectangle.
-    /// Why: lane hit-testing chooses among visible rectangles under the pointer.
-    pub(super) fn contains(&self, x: f64, y: f64) -> bool {
-        x >= self.x && x <= self.x + self.width && y >= self.y && y <= self.y + self.height
-    }
-
-    /// What: rectangle area in square pixels.
-    /// Why: overlapping lanes choose the smallest area under the pointer.
-    pub(super) fn area(&self) -> f64 {
-        self.width * self.height
-    }
-}
-
 /// What: compute direct-child groups keyed by their parent pane id.
 /// Why: every parent with children owns one lane.
 pub(super) fn direct_child_groups(

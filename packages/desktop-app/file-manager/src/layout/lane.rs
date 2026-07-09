@@ -1,17 +1,15 @@
 //! Lane-owned vertical scrolling for the pane strip.
 //!
-//! Full columns are static canvases. Vertical wheel input chooses the smallest visible lane under the
-//! pointer, where a lane is one parent pane plus its direct children, and adjusts that lane's offset.
-//! Offsets are hierarchical: scrolling a parent lane carries descendant lanes with it, while
-//! scrolling a nested lane moves that parent and its descendants relative to the outer lane.
+//! Full columns are static canvases. App-level vertical wheel input advances every sibling-group
+//! lane independently, where a lane is one parent pane plus its direct children. Each lane clamps to
+//! its own green-box bounds, so shorter sibling groups stop while deeper groups keep moving.
 
 /// What: imports the reference-counted pointer.
 /// Why: GTK scroll-controller closures hold weak references to `StripLayout`.
 use std::rc::Rc;
 
 /// What: imports GTK event-controller and widget traits.
-/// Why: lane scrolling reads event positions, installs controllers, moves fixed children, and places
-///      debug overlays.
+/// Why: lane scrolling installs controllers, moves fixed children, and places debug overlays.
 use gtk4::prelude::*;
 /// What: imports concrete GTK types used by lane scrolling and debug overlay positioning.
 /// Why: lane hit-testing owns a scroll controller and debug rails need explicit alignment.
@@ -45,28 +43,23 @@ use geometry::{
 /// What: lane scrolling and debug-lane methods on the layout adapter.
 /// Why: vertical scroll ownership lives here rather than in static column canvases.
 impl StripLayout {
-    /// What: install capture-phase wheel handling on the outer scroller.
-    /// Why: lane groups own vertical wheel input before inner list scrollers can consume it.
+    /// What: install capture-phase vertical wheel handling on the outer scroller.
+    /// Why: the app owns vertical lane scrolling before inner list scrollers can consume it.
     pub(super) fn install_lane_scroll(self: &Rc<Self>) {
         let scroll = EventControllerScroll::new(EventControllerScrollFlags::VERTICAL);
         scroll.set_propagation_phase(PropagationPhase::Capture);
         let weak = Rc::downgrade(self);
-        scroll.connect_scroll(move |controller, _dx, dy| {
+        scroll.connect_scroll(move |_, _, dy| {
             let Some(layout) = weak.upgrade() else {
                 return glib::Propagation::Proceed;
             };
             if dy.abs() <= f64::EPSILON {
                 return glib::Propagation::Proceed;
             }
-            let Some((x, y)) = controller.current_event().and_then(|event| event.position()) else {
-                return glib::Propagation::Proceed;
-            };
-            let content_x = x + layout.outer.hadjustment().value();
-            let Some(parent) = layout.smallest_lane_at(content_x, y) else {
-                return glib::Propagation::Proceed;
-            };
-            layout.scroll_lane(parent, scroll_pixels(dy));
-            glib::Propagation::Stop
+            if layout.scroll_all_lanes(scroll_pixels(dy)) {
+                return glib::Propagation::Stop;
+            }
+            glib::Propagation::Proceed
         });
         self.outer.add_controller(scroll);
     }
@@ -168,49 +161,31 @@ impl StripLayout {
         settled >= 0.0 && settled + f64::from(PANE_HEIGHT) <= page
     }
 
-    /// What: move one lane by `delta` pixels and schedule snap after the scroll quiets.
-    /// Why: wheel input changes only the smallest lane under the pointer.
-    fn scroll_lane(self: &Rc<Self>, parent: PaneId, delta: f64) {
+    /// What: move every sibling-group lane by `delta` pixels and schedule snap after quiet.
+    /// Why: vertical wheel input belongs to the whole app; each lane independently clamps to its own
+    ///      green-box limit.
+    fn scroll_all_lanes(self: &Rc<Self>, delta: f64) -> bool {
         let placements = self.placements.borrow().clone();
         let groups = direct_child_groups(&placements);
-        let Some(children) = groups.get(&parent) else {
-            return;
-        };
-        let Some(parent_placement) = placement_by_id(&placements, parent) else {
-            return;
-        };
-        let max = self.lane_max_offset(parent_placement, children);
-        let current = self.lane_offsets.borrow().get(&parent).copied().unwrap_or(0.0);
-        let next = (current + delta).clamp(0.0, max);
-        self.lane_offsets.borrow_mut().insert(parent, next);
+        if groups.is_empty() {
+            return false;
+        }
+        let updates: Vec<(PaneId, f64)> = groups
+            .iter()
+            .filter_map(|(parent, children)| {
+                let parent_placement = placement_by_id(&placements, *parent)?;
+                let max = self.lane_max_offset(parent_placement, children);
+                let current = self.lane_offsets.borrow().get(parent).copied().unwrap_or(0.0);
+                Some((*parent, (current + delta).clamp(0.0, max)))
+            })
+            .collect();
+        for (parent, next) in updates {
+            self.lane_offsets.borrow_mut().insert(parent, next);
+        }
         self.position_all_widgets();
         self.refresh_child_lanes();
         self.schedule_lane_snap();
-    }
-
-    /// What: find the smallest visible lane rectangle containing `x, y`.
-    /// Why: nested lanes overlap; precise scrolling chooses the smallest lane under the pointer.
-    fn smallest_lane_at(&self, x: f64, y: f64) -> Option<PaneId> {
-        let placements = self.placements.borrow().clone();
-        let groups = direct_child_groups(&placements);
-        let mut best: Option<(PaneId, f64, usize)> = None;
-        for (parent, children) in groups {
-            let Some(parent_placement) = placement_by_id(&placements, parent) else {
-                continue;
-            };
-            let rect = self.lane_rect(parent_placement, &children);
-            if !rect.contains(x, y) {
-                continue;
-            }
-            let area = rect.area();
-            let depth = parent_placement.column;
-            if best.is_none_or(|(_, best_area, best_depth)| {
-                area < best_area || (area == best_area && depth > best_depth)
-            }) {
-                best = Some((parent, area, depth));
-            }
-        }
-        best.map(|(parent, _, _)| parent)
+        true
     }
 
     /// What: choose the maximum scroll offset for a lane.

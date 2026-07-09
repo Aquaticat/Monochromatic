@@ -283,12 +283,13 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   intentionally disabled while lane behavior is the focus. Immediate-child lanes are explicit
   debug-only rounded green boxes keyed by parent pane id and labeled with parent, column span, child
   count, and row extent. Verified lint/check/rust-lint/clippy/tests before reopening.
-- 2026-07-09: Lane-owned scrolling. User clarified that full columns should not be scrollers:
-  vertical wheel/trackpad input belongs to lane groups, where a lane is a parent plus direct
-  children, and overlapping lanes choose the smallest lane under the pointer. `layout.rs` now uses
+- 2026-07-09: App-owned lane scrolling. User clarified that full columns should not be scrollers,
+  and refined the scroll model after a hit-test version made some states unscrollable: vertical
+  wheel/trackpad input belongs to the whole app, while each sibling-group lane independently clamps
+  to its own green-box limit. A lane is still a parent plus direct children. `layout.rs` now uses
   static per-column `GtkFixed` canvases inside one horizontal `ScrolledWindow`; per-column vertical
-  `ScrolledWindow`s were removed. `layout/lane.rs` owns lane offsets, capture-phase scroll
-  hit-testing, hierarchical offset application, lane snapping, vertical reveal, and rounded green
-  `Y6L` overlays. `layout/scroll.rs` now only handles horizontal reveal and the shared row-pixel
-  helper. `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create fake debug
-  geometry.
+  `ScrolledWindow`s were removed. `layout/lane.rs` owns lane offsets, capture-phase app-level
+  vertical scrolling, hierarchical offset application, lane snapping, vertical reveal, and rounded
+  green `Y6L` overlays. `layout/scroll.rs` now only handles horizontal reveal and the shared
+  row-pixel helper. `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create
+  fake debug geometry.
