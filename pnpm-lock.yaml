@@ -1238,6 +1238,34 @@ importers:
         specifier: 'catalog:'
         version: 7.0.1-rc
 
+  packages/desktop-app/electron-infra:
+    dependencies:
+      '@electron/packager':
+        specifier: 'catalog:'
+        version: 20.0.2
+      electron:
+        specifier: 'catalog:'
+        version: 43.1.0
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.3(typescript@7.0.1-rc)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+
   packages/desktop-daemon/hall-monitor:
     dependencies:
       '@monochromatic-dev/module-const':
