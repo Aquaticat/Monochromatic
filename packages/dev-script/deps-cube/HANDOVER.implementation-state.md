@@ -442,8 +442,10 @@ Done:
    `packages/module/pnpm-workspace-catalog` owns YAML parsing,
    validation,
    prototype-safe maps,
-   and located-file discovery. `src/catalog.ts` adapts its raw default-plus-named entries into the
-   resolved `CatalogEntry` shape; alias decoder remains exported as `decodeAlias`.
+   and located-file discovery.
+   `src/catalog.ts` adapts its raw default-plus-named entries into the
+   resolved `CatalogEntry` shape;
+   alias decoder remains exported as `decodeAlias`.
 - ~~Task 4 (cache)~~:
    `src/cache.ts` exports `createCache({ rootDir? })`.
    JSON file per (name,
