@@ -153,6 +153,8 @@ hoist: false
 hoistWorkspacePackages: false
 lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@earendil-works/pi-*'
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 nodeLinker: isolated
