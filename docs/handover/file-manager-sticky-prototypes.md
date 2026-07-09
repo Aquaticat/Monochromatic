@@ -63,20 +63,34 @@ Update this file whenever a work unit lands so the context survives auto-compact
     paths fail (`path must be shorter than SUN_LEN`), use `/tmp/agent/...`.
     Also `pkill -f <pattern>` matches the invoking shell's own command line and kills it.
 
-## Remaining work in this session (user instructions)
+## Landed since the last update
 
-- Write troubleshooting docs for EVERY footgun above (user: "Document every potential footgun.
-  We have unlimited time."), following `.claude/skills/troubleshooting-doc` (required sections,
-  GTK source trace with file:line citations, verification harnesses, upstream-filing decision
-  with 6-constraint walk, `.out-of-scope/` check, duplicate search before any filing).
-- Reference the troubleshooting docs from `docs/audit/file-manager-sticky-flow.md`.
-- Expand the audit doc to be fully self-contained (no other doc needed to understand the
-  layout), with diagrams (ASCII in code blocks, SVG/mermaid/HTML as useful).
-  User authorized making it a self-contained HTML if that presents better; current plan:
-  keep the canonical `.md` self-contained AND add a self-contained interactive
-  `docs/audit/file-manager-sticky-flow.html` companion (live sticky demo), verified with
-  agent-browser (console clean, interactions exercised) per repo rule VB5.
-- Keep this handover updated after each landed unit; commit eagerly with scoped pathspecs.
+- Nine troubleshooting docs committed (docs/troubleshooting/: gtk4-label-ellipsize-natural-width,
+  gtk4-listview-keyboard-activation, gtk4-cssprovider-load-from-data-deprecation,
+  serde-json-macro-clippy-disallowed-unwrap, nested-wayland-gui-test-footguns,
+  tsdown-shared-outdir-clean, typescript-isolated-declarations-computed-const,
+  electron-sandboxed-preload-cjs, electron-nested-wayland-shutdown-broken-pipe), all with
+  source-cited root causes; GTK citations pinned to mirror commit 904b21fb235a.
+- IMPORTANT correction: the canvas-stretch root cause is GtkLabel's documented
+  ellipsize-natural-width behavior, NOT hexpand propagation.
+  Proven via a minimal probe (set_hexpand(false) works), a clean-worktree reproduction
+  (stretch persists with the flag), and a max-width-chars isolation (stretch gone).
+  layout.rs's comment is corrected; the commit message of
+  "fix(file-manager-gtk-sticky): one absolute canvas so panes align with bands" still
+  misattributes the mechanism and needs a commit comment on GitHub after push (repo rule: no
+  amending).
+- `docs/audit/file-manager-sticky-flow.md` rewritten fully self-contained with ASCII diagrams
+  and footgun references; lint-clean.
+- `docs/audit/file-manager-sticky-flow.html` companion: self-contained live sticky demo
+  (same architecture at miniature scale, tidy-tree rows computed in-page), SVG diagrams,
+  rails toggle, spawn/reset buttons, live rootPinned/overlapCount readout.
+  Verified with agent-browser: console clean; scroll to 200 pins root (offset 0); scroll to
+  450 releases root (offset −66 = 384−450) while gamma pins (offset 0); spawn adds pane 7;
+  reset restores 9 panes and scroll 0; toggle flips the rails class both ways.
+
+## Remaining
+
+- Nothing pending in this effort; keep this handover updated if new work starts.
 
 ## Investigation assets
 
