@@ -16,38 +16,52 @@ import { normalizeGeneratedTextOutputs, } from './final-newline.ts';
 const target = await browserslistTargets({ runtime: 'node', },);
 
 /**
- * Tsdown lifecycle hook that canonicalizes emitted Node text artifacts after
- * JavaScript and declaration generation have both completed.
+ * Tsdown lifecycle hooks that canonicalize emitted Node text artifacts.
  *
  * Tsdown's own logger is the build host's user-facing output channel, so this
  * integration reports only actual rewrites and leaves compliant builds quiet.
  *
- * @param context - Completed tsdown build context carrying resolved output path and logger.
- *
  * @example
  * ```ts
- * await normalizeNodeBuildOutputs(context);
+ * console.log(Object.keys(nodeOutputHooks));
  * ```
  */
-const normalizeNodeBuildOutputs: TsdownHooks['build:done'] = async function normalizeNodeBuildOutputs(
-  { options, },
-): Promise<void> {
+const nodeOutputHooks = {
   /**
-   * Absolute Node output directory resolved from package build cwd.
+   * Canonicalizes JavaScript and declaration output after generation completes.
+   *
+   * @param options - Resolved output path and host logger from completed build.
+   *
+   * @example
+   * ```ts
+   * await nodeOutputHooks['build:done'](context);
+   * ```
    */
-  const outputDir = resolve(options.cwd, options.outDir,);
-  /**
-   * Relative generated artifact paths whose final LF changed.
-   */
-  const normalizedPaths = await normalizeGeneratedTextOutputs({ outputDir, },);
+  'build:done': async function normalizeNodeBuildOutputs(
+    { options, },
+  ): Promise<void> {
+    /**
+     * Absolute Node output directory resolved from package build cwd.
+     */
+    const outputDir = resolve(
+      options.cwd,
+      options.outDir,
+    );
+    /**
+     * Relative generated artifact paths whose final LF changed.
+     */
+    const normalizedPaths = await normalizeGeneratedTextOutputs({ outputDir, },);
 
-  if (normalizedPaths.length === 0)
-    return;
+    if (normalizedPaths.length === 0)
+      return;
 
-  options.logger.info(
-    `Normalized final LF in ${String(normalizedPaths.length,)} Node output file(s).`,
-  );
-};
+    options
+      .logger
+      .info(
+        `Normalized final LF in ${String(normalizedPaths.length,)} Node output file(s).`,
+      );
+  },
+} satisfies Pick<TsdownHooks, 'build:done'>;
 
 /**
  * Shared tsdown options for Node.js platform builds, without an entry.
@@ -92,9 +106,7 @@ const baseOptions: UserConfig = {
   report: false,
   outDir: 'dist/final/node',
   fixedExtension: true,
-  hooks: {
-    'build:done': normalizeNodeBuildOutputs,
-  },
+  hooks: nodeOutputHooks,
 };
 
 /**

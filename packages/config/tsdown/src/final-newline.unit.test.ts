@@ -85,7 +85,7 @@ await describe({
         function toNormalizationTest(fixture,) {
           return it({
             name: fixture.name,
-            fn: function verifiesNormalizationCase(): void {
+            fn: async function verifiesNormalizationCase(): Promise<void> {
               expect(normalizeFinalLf(fixture.input,),).toBe(fixture.expected,);
             },
           },);

@@ -8,6 +8,28 @@ import { join, } from 'node:path';
 //region Final-LF content normalization
 
 /**
+ * Finds cursor just after last byte that is not part of final LF run.
+ *
+ * @param content - Generated text whose final LF run is being located.
+ *
+ * @returns Content length with final LF bytes excluded.
+ *
+ * @example
+ * ```ts
+ * finalLfStart('content\n\n');
+ * // 7
+ * ```
+ */
+function finalLfStart(content: string,): number {
+  for (let index = content.length - 1; index >= 0; index -= 1) {
+    if (content.charAt(index,) !== '\n')
+      return index + 1;
+  }
+
+  return 0;
+}
+
+/**
  * Canonicalizes non-empty text to exactly one final LF while preserving every
  * byte before the final LF run.
  *
@@ -31,15 +53,15 @@ export function normalizeFinalLf(content: string,): string {
   /**
    * Cursor just after last byte that is not part of final LF run.
    */
-  let contentEnd = content.length;
-
-  while ((contentEnd > 0) && (content.charAt(contentEnd - 1,) === '\n'))
-    contentEnd -= 1;
+  const contentEnd = finalLfStart(content,);
 
   if (contentEnd === (content.length - 1))
     return content;
 
-  return `${content.slice(0, contentEnd,)}\n`;
+  return `${content.slice(
+    0,
+    contentEnd,
+  )}\n`;
 }
 
 //endregion Final-LF content normalization
@@ -89,12 +111,23 @@ function isGeneratedNodeTextOutput(relativePath: string,): boolean {
 }
 
 /**
+ * Sentinel returned when generated output already has canonical ending.
+ *
+ * @example
+ * ```ts
+ * typeof OUTPUT_UNCHANGED === 'symbol';
+ * ```
+ */
+const OUTPUT_UNCHANGED: unique symbol = Symbol('generated output ending unchanged',);
+
+/**
  * Normalizes one generated output when necessary.
  *
  * @param outputDir - Absolute output directory containing generated file.
+ *
  * @param relativePath - File path relative to output directory.
  *
- * @returns Relative path when file changed, otherwise undefined.
+ * @returns Relative path when file changed, otherwise unchanged sentinel.
  *
  * @example
  * ```ts
@@ -112,42 +145,54 @@ async function normalizeGeneratedTextOutput(
     readonly outputDir: string;
     readonly relativePath: string;
   },
-): Promise<string | undefined> {
+): Promise<string | typeof OUTPUT_UNCHANGED> {
   /**
    * Absolute generated output path used for filesystem reads and writes.
    */
-  const outputPath = join(outputDir, relativePath,);
+  const outputPath = join(
+    outputDir,
+    relativePath,
+  );
   /**
    * Generated text before canonicalization.
    */
-  const content = await readFile(outputPath, 'utf8',);
+  const content = await readFile(
+    outputPath,
+    'utf8',
+  );
   /**
    * Generated text after final-LF canonicalization.
    */
   const normalizedContent = normalizeFinalLf(content,);
 
   if (normalizedContent === content)
-    return undefined;
+    return OUTPUT_UNCHANGED;
 
-  await writeFile(outputPath, normalizedContent, 'utf8',);
+  await writeFile(
+    outputPath,
+    normalizedContent,
+    'utf8',
+  );
   return relativePath;
 }
 
 /**
- * Narrows optional normalized path to path that changed.
+ * Narrows normalization result to path that changed.
  *
- * @param relativePath - Optional relative output path from one normalization.
+ * @param relativePath - Changed relative path or unchanged sentinel.
  *
  * @returns Whether value is changed output path.
  *
  * @example
  * ```ts
- * ['index.mjs', undefined].filter(isNormalizedPath);
+ * ['index.mjs', OUTPUT_UNCHANGED].filter(isNormalizedPath);
  * // ['index.mjs']
  * ```
  */
-function isNormalizedPath(relativePath: string | undefined,): relativePath is string {
-  return relativePath !== undefined;
+function isNormalizedPath(
+  relativePath: string | typeof OUTPUT_UNCHANGED,
+): relativePath is string {
+  return (typeof relativePath) === 'string';
 }
 
 /**
@@ -171,15 +216,23 @@ export async function normalizeGeneratedTextOutputs(
   /**
    * Relative generated text paths selected from recursive output walk.
    */
-  const relativePaths = (await Array.fromAsync(glob('**/*', { cwd: outputDir, },),))
+  const relativePaths = (await Array.fromAsync(glob(
+    '**/*',
+    { cwd: outputDir, },
+  ),))
     .filter(isGeneratedNodeTextOutput,)
     .toSorted();
   /**
-   * Optional changed path from every independently normalized output.
+   * Changed path or sentinel from every independently normalized output.
    */
   const normalizedPaths = await Promise.all(relativePaths.map(
-    async function normalizeRelativePath(relativePath,): Promise<string | undefined> {
-      return normalizeGeneratedTextOutput({ outputDir, relativePath, },);
+    function normalizeRelativePath(
+      relativePath,
+    ): Promise<string | typeof OUTPUT_UNCHANGED> {
+      return normalizeGeneratedTextOutput({
+        outputDir,
+        relativePath,
+      },);
     },
   ),);
 
