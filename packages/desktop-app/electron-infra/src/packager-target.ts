@@ -9,7 +9,7 @@
 
 import { packager, } from '@electron/packager';
 
-import { type DistributionTarget, } from './distribution-targets.ts';
+import { type DistributionTarget, } from './distribution-targets.js';
 
 /**
  * Inputs required to package one Electron distribution target.

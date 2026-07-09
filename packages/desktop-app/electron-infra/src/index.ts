@@ -13,32 +13,32 @@ export {
   writeJsonFileAtomically,
   type JsonObject,
   type JsonScalar,
-} from './atomic-json.ts';
+} from './atomic-json.js';
 export {
   distributeElectronApp,
   selectDistributionTargets,
   type ElectronAppDistributionOptions,
-} from './distribute.ts';
+} from './distribute.js';
 export {
   parseElectronDistributionArgs,
   type DistributionCliOptions,
-} from './distribution-args.ts';
+} from './distribution-args.js';
 export {
   DISTRIBUTION_TARGETS,
   targetKey,
   type DistributionArch,
   type DistributionPlatform,
   type DistributionTarget,
-} from './distribution-targets.ts';
-export { readElectronVersion, } from './electron-version.ts';
+} from './distribution-targets.js';
+export { readElectronVersion, } from './electron-version.js';
 export {
   stageElectronApp,
   type ElectronAppStageOptions,
   type StaticAssetMapping,
-} from './stage.ts';
-export { type ExpectedObservedState, } from './wayland-state.ts';
+} from './stage.js';
+export { type ExpectedObservedState, } from './wayland-state.js';
 export {
   runWaylandElectronBoundaryTest,
   type WaylandBoundaryStep,
   type WaylandElectronBoundaryTestOptions,
-} from './wayland-test.ts';
+} from './wayland-test.js';

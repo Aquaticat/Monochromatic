@@ -13,11 +13,11 @@ import { setTimeout as wait, } from 'node:timers/promises';
 import {
   type JsonObject,
   type JsonScalar,
-} from './atomic-json.ts';
+} from './atomic-json.js';
 import {
   pollIntervalMs,
   stateReadyDeadlineMs,
-} from './wayland-constants.ts';
+} from './wayland-constants.js';
 
 /**
  * Sentinel for an observed state file that has not been written yet.
@@ -53,7 +53,7 @@ export type ExpectedObservedState = JsonObject;
  * isJsonScalar({ value: 1 });
  * ```
  */
-function isJsonScalar({ value, }: { readonly value: unknown; },): value is JsonScalar {
+function isJsonScalar(value: unknown,): value is JsonScalar {
   return ((typeof value) === 'string')
     || ((typeof value) === 'number')
     || ((typeof value) === 'boolean');
@@ -88,7 +88,7 @@ function parseObservedState({ value, }: { readonly value: unknown; },): JsonObje
 
   Object.entries(state,)
     .forEach(function assertScalarStateEntry([key, entryValue,],): void {
-      if (!isJsonScalar({ value: entryValue, },))
+      if (!isJsonScalar(entryValue,))
         throw new Error(`Observed boundary-test state entry ${key} must be a string, number, or boolean.`,);
     },);
 

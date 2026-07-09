@@ -18,7 +18,7 @@ import { join, } from 'node:path';
 import {
   readRootPackageMetadata,
   type StagedPackageMetadata,
-} from './package-metadata.ts';
+} from './package-metadata.js';
 
 /**
  * Static file copy mapping from source tree into staged app.

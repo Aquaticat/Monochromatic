@@ -24,7 +24,7 @@ import {
   nestedScreenSize,
   shutdownDeadlineMs,
   type WaylandBoundaryFixture,
-} from './wayland-constants.ts';
+} from './wayland-constants.js';
 
 /**
  * CommonJS require rooted at this tool so the Electron binary path can be read.

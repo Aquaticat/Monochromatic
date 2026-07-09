@@ -12,7 +12,7 @@ import { writeFile, } from 'node:fs/promises';
 import {
   targetKey,
   type DistributionTarget,
-} from './distribution-targets.ts';
+} from './distribution-targets.js';
 
 /**
  * Writes a machine-readable manifest for dry-run and completed distribution runs.

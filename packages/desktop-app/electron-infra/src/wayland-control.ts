@@ -15,7 +15,7 @@ import { setTimeout as wait, } from 'node:timers/promises';
 import {
   controlResponseDeadlineMs,
   pollIntervalMs,
-} from './wayland-constants.ts';
+} from './wayland-constants.js';
 
 /**
  * Asserts that a required executable or directory exists before spawning.

@@ -25,11 +25,11 @@ import {
   DISTRIBUTION_TARGETS,
   targetKey,
   type DistributionTarget,
-} from './distribution-targets.ts';
-import { readElectronVersion, } from './electron-version.ts';
-import { writeDistributionManifest, } from './distribution-manifest.ts';
-import { readRootPackageMetadata, } from './package-metadata.ts';
-import { packageTarget, } from './packager-target.ts';
+} from './distribution-targets.js';
+import { readElectronVersion, } from './electron-version.js';
+import { writeDistributionManifest, } from './distribution-manifest.js';
+import { readRootPackageMetadata, } from './package-metadata.js';
+import { packageTarget, } from './packager-target.js';
 
 /**
  * Options for distributing a staged Electron app.

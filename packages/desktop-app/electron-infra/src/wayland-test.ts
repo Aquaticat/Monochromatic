@@ -13,24 +13,24 @@
 
 import { join, } from 'node:path';
 
-import { type ExpectedObservedState, } from './wayland-state.ts';
+import { type ExpectedObservedState, } from './wayland-state.js';
 import {
   defaultAppDir,
   defaultNestedWaylandBinary,
   defaultRepoRoot,
   socketReadyDeadlineMs,
-} from './wayland-constants.ts';
+} from './wayland-constants.js';
 import {
   assertPathAccessible,
   expectOkControlCommand,
   waitForPath,
-} from './wayland-control.ts';
+} from './wayland-control.js';
 import {
   createWaylandFixture,
   spawnNestedWaylandElectron,
   waitForSuccessfulExit,
-} from './wayland-process.ts';
-import { waitForObservedState, } from './wayland-state.ts';
+} from './wayland-process.js';
+import { waitForObservedState, } from './wayland-state.js';
 
 /**
  * One expected state checkpoint, optionally preceded by compositor commands.
