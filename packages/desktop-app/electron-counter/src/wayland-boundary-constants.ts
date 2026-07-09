@@ -153,6 +153,16 @@ export const socketReadyDeadlineMs = 10_000;
 export const stateReadyDeadlineMs = 10_000;
 
 /**
+ * Deadline for one compositor control-socket command, in milliseconds.
+ *
+ * @example
+ * ```ts
+ * console.log(controlResponseDeadlineMs);
+ * ```
+ */
+export const controlResponseDeadlineMs = 10_000;
+
+/**
  * Deadline for hosted app shutdown after `quit`, in milliseconds.
  *
  * @example
@@ -190,4 +200,9 @@ export type WaylandBoundaryFixture = {
   readonly root: string;
   readonly socketPath: string;
   readonly statePath: string;
+
+  /**
+   * Removes temporary fixture files at end of boundary-test scope.
+   */
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
 };

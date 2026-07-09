@@ -21,10 +21,7 @@
     "outDir": "${configDir}/dist/app",
     "rootDir": "${configDir}/src",
     "sourceMap": true,
-    "types": [
-      "node",
-      "electron"
-    ],
+    "types": [],
     "verbatimModuleSyntax": true
   }
 }

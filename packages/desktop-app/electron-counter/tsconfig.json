@@ -2,8 +2,7 @@
   "extends": "@monochromatic-dev/config-typescript/dom",
   "compilerOptions": {
     "types": [
-      "node",
-      "electron"
+      "node"
     ]
   }
 }

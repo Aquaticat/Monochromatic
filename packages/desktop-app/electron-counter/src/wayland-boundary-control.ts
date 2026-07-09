@@ -14,7 +14,10 @@ import { access, } from 'node:fs/promises';
 import { createConnection, } from 'node:net';
 import { setTimeout as wait, } from 'node:timers/promises';
 
-import { pollIntervalMs, } from './wayland-boundary-constants.js';
+import {
+  controlResponseDeadlineMs,
+  pollIntervalMs,
+} from './wayland-boundary-constants.js';
 
 /**
  * Asserts that a required executable or directory exists before spawning.
@@ -144,20 +147,38 @@ export async function sendControlCommand(
    */
   const client = createConnection(socketPath,);
   client.setEncoding('utf8',);
-  await once(
-    client,
-    'connect',
-  );
-  client.write(`${command}\n`,);
+
   /**
-   * Event payload from the line-oriented control protocol.
+   * Abort signal bounding connect and response waits.
    */
-  const responseEvent = await once(
-    client,
-    'data',
-  );
-  client.end();
-  return parseSocketResponse({ value: responseEvent[0], },);
+  const signal = AbortSignal.timeout(controlResponseDeadlineMs,);
+
+  try {
+    await once(
+      client,
+      'connect',
+      { signal, },
+    );
+    client.write(`${command}\n`,);
+
+    /**
+     * Event payload from the line-oriented control protocol.
+     */
+    const responseEvent = await once(
+      client,
+      'data',
+      { signal, },
+    );
+    client.end();
+    return parseSocketResponse({ value: responseEvent[0], },);
+  }
+  catch (error: unknown) {
+    client.destroy();
+    throw new Error(
+      `Timed out or failed while sending control command: ${command}`,
+      { cause: error, },
+    );
+  }
 }
 
 /**

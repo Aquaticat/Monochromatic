@@ -135,7 +135,7 @@ async function runWaylandBoundaryTest(): Promise<void> {
   /**
    * Temp fixture shared by nested compositor and control client.
    */
-  const fixture = await createFixture();
+  await using fixture = await createFixture();
 
   /**
    * Nested compositor process hosting Electron.

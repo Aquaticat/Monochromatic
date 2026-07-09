@@ -10,7 +10,10 @@
  */
 
 import { once, } from 'node:events';
-import { mkdtemp, } from 'node:fs/promises';
+import {
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
 import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 import {
@@ -104,6 +107,15 @@ export async function createFixture(): Promise<WaylandBoundaryFixture> {
       root,
       'state.json',
     ),
+    [Symbol.asyncDispose]: async function removeFixture(): Promise<void> {
+      await rm(
+        root,
+        {
+          force: true,
+          recursive: true,
+        },
+      );
+    },
   };
 }
 

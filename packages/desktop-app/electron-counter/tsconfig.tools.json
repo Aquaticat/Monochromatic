@@ -21,8 +21,7 @@
     "rootDir": "${configDir}/src",
     "sourceMap": true,
     "types": [
-      "node",
-      "electron"
+      "node"
     ],
     "verbatimModuleSyntax": true
   }
