@@ -528,6 +528,9 @@ The interim hk pre-commit surface is therefore read-only:
 it keeps `stash = "git"` so the check sees staged bytes,
 but does not set `fix = true`.
 Auto-fix remains on the explicit `fix` surface until a verified hk release fixes the merge or cli-git replaces it.
+That surface does not enable stashing:
+it normalizes full worktree files,
+and `--no-stage` preserves index blobs without entering hk's faulty staged-prefix merge.
 
 Push and direct check modes are read-only.
 A direct fix surface must provide the current `hk fix --all --step final-newline --no-stage` capability,

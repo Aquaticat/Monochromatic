@@ -317,7 +317,10 @@ A future cli-git policy and independent CI checker remain the durable destinatio
 - Pre-commit newline enforcement is read-only until the hk partial-staging merge bug is fixed in a verified release.
 - hk 1.50.0's fixer can insert a blank boundary line when it adds the staged file's missing final LF at the exact
   point where an unstaged tail begins.
-  This configuration avoids the bug by using auto-fix only on the explicit `fix` surface;
+  This configuration avoids the bug by keeping pre-commit read-only and reserving auto-fix for the unstashed,
+  no-stage worktree surface.
+  An exact-byte fixture verified that explicit fixing normalizes a partially staged worktree while preserving its
+  staged blob;
   the future cli-git normalizer must preserve both index and worktree bytes exactly.
 - Generated license normalization stays attached to file-enforcer's canonical source.
 - Tsdown's `dist/final/node` tree is a deliberate compact-output exception;

@@ -208,6 +208,15 @@ The explicit command remains:
 hk fix --all --step final-newline --no-stage
 ```
 
+Unlike pre-commit,
+the `fix` hook does not enable stashing.
+It normalizes the full worktree file instead of isolating and merging a staged prefix;
+`--no-stage` leaves the index blob untouched.
+An exact-byte fixture staged `staged`,
+left `staged\nunstaged` in the worktree,
+and produced `staged\nunstaged\n` without changing the staged blob.
+This path therefore does not enter the faulty stash merge.
+
 Tradeoff:
 contributors must inspect and stage corrected files before retrying the commit.
 That friction is preferred over silent worktree mutation.
@@ -233,11 +242,13 @@ The mutation is silent and can become part of a later commit.
 At hk 1.50.0,
 `patch-file` is an alias of the Git stash behavior and reaches the same merge code.
 
-### Use `stash = "none"`
+### Use `stash = "none"` for pre-commit auto-fix
 
 The fixer then runs against worktree content rather than an isolated staged snapshot.
-It can stage or rewrite unstaged content,
-which defeats partial staging.
+A pre-commit auto-fixer can rewrite unstaged content,
+which defeats staged-only commit semantics.
+The explicit no-stage fix intentionally has different semantics:
+it normalizes the worktree and leaves the index untouched.
 
 ### Assert only the worktree prefix and suffix
 
