@@ -1,11 +1,12 @@
 amends "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Config.pkl"
 import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Builtins.pkl"
 
-// Normalizes ordinary text while preserving exact-byte fuzz and parser inputs.
-// Batching is required for full-tree runs to stay below the OS argument-size limit.
+// Normalizes ordinary text while preserving exact-byte inputs and intentionally
+// newline-free tsdown outputs. Batching keeps full-tree runs below argument limits.
 local finalNewline = (Builtins.newlines) {
   batch = true
   exclude = List(
+    "**/dist/final/node/**",
     "packages/fuzz/forbidden-strings/corpus/**",
     "packages/test-fixture/toml-edit/src/**",
   )
