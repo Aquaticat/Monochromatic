@@ -2,8 +2,8 @@
  * End-user boundary test for the Electron counter under pure Wayland.
  *
  * The test hosts Electron inside this repo's nested Wayland compositor,
- * launches the app with `DISPLAY` unset, clicks the rendered button through the
- * compositor control socket, and waits for the main process to mirror renderer
+ * launches the app with `DISPLAY` unset, activates the rendered button through
+ * compositor keyboard input, and waits for the main process to mirror renderer
  * state into a JSON file.
  *
  * @example
@@ -16,8 +16,6 @@ import { join, } from 'node:path';
 
 import {
   appDir,
-  buttonClickX,
-  buttonClickY,
   nestedWaylandBinary,
   socketReadyDeadlineMs,
 } from './wayland-boundary-constants.js';
@@ -52,7 +50,7 @@ function assertLinuxWaylandHost(): void {
 }
 
 /**
- * Clicks the counter button and waits for the renderer state update.
+ * Activates the counter button and waits for the renderer state update.
  *
  * @param socketPath - Nested compositor control socket path.
  *
@@ -60,10 +58,10 @@ function assertLinuxWaylandHost(): void {
  *
  * @example
  * ```ts
- * await clickCounterAndWait({ socketPath: '/tmp/nws.sock', statePath: '/tmp/state.json' });
+ * await activateCounterAndWait({ socketPath: '/tmp/nws.sock', statePath: '/tmp/state.json' });
  * ```
  */
-async function clickCounterAndWait(
+async function activateCounterAndWait(
   {
     socketPath,
     statePath,
@@ -74,7 +72,11 @@ async function clickCounterAndWait(
 ): Promise<void> {
   await expectOkControlCommand({
     socketPath,
-    command: `click ${buttonClickX} ${buttonClickY} left`,
+    command: 'key tab',
+  },);
+  await expectOkControlCommand({
+    socketPath,
+    command: 'key space',
   },);
   await waitForObservedCount({
     statePath,
@@ -155,7 +157,7 @@ async function runWaylandBoundaryTest(): Promise<void> {
       statePath: fixture.statePath,
       expectedCount: 0,
     },);
-    await clickCounterAndWait({
+    await activateCounterAndWait({
       socketPath: fixture.socketPath,
       statePath: fixture.statePath,
     },);

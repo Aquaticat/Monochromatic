@@ -103,26 +103,6 @@ export const statePathEnvironmentVariable = 'MONOCHROMATIC_ELECTRON_COUNTER_STAT
 export const nestedScreenSize = '800x600';
 
 /**
- * X coordinate hitting the rendered increment button at `800x600`.
- *
- * @example
- * ```ts
- * console.log(buttonClickX);
- * ```
- */
-export const buttonClickX = 250;
-
-/**
- * Y coordinate hitting the rendered increment button at `800x600`.
- *
- * @example
- * ```ts
- * console.log(buttonClickY);
- * ```
- */
-export const buttonClickY = 425;
-
-/**
  * Polling interval for socket and state readiness checks, in milliseconds.
  *
  * @example

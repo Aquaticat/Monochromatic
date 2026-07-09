@@ -23,7 +23,7 @@ A minimal Electron app proving this repo can ship a no-Vite, fully ESM and TypeS
 The Wayland boundary test runs the app inside
 `packages/cli/nested-wayland-session` instead of an external compositor such as cage or niri.
 The hosted Electron command is launched through `/usr/bin/env --unset=DISPLAY`, with `XDG_SESSION_TYPE=wayland`.
-The app must draw into the nested Wayland compositor, accept a synthetic click, update the counter, and write the observed state file.
+The app must draw into the nested Wayland compositor, accept synthetic keyboard input, update the counter, and write the observed state file.
 
 ## Distribution target matrix
 
