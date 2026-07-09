@@ -1,16 +1,4 @@
-amends "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Builtins.pkl"
-
-// Normalizes ordinary text while preserving exact-byte inputs and intentionally
-// newline-free tsdown outputs. Batching keeps full-tree runs below argument limits.
-local finalNewline = (Builtins.newlines) {
-  batch = true
-  exclude = List(
-    "**/dist/final/node/**",
-    "packages/fuzz/forbidden-strings/corpus/**",
-    "packages/test-fixture/toml-edit/src/**",
-  )
-}
+amends "package://github.com/jdx/hk/releases/download/v1.44.3/hk@1.44.3#/Config.pkl"
 
 local binPath = "packages/cli/forbidden-strings/target/release/forbidden-strings"
 
@@ -33,10 +21,7 @@ local forbiddenRootContext = new Step {
 
 hooks {
   ["pre-commit"] {
-    fix = true
-    stash = "git"
     steps {
-      ["final-newline"] = finalNewline
       ["forbidden-root-context"] = forbiddenRootContext
       // Temporarily disabled for refactoring.
       // ["forbidden-strings"] = forbiddenStrings
@@ -44,7 +29,6 @@ hooks {
   }
   ["pre-push"] {
     steps {
-      ["final-newline"] = finalNewline
       ["forbidden-root-context"] = forbiddenRootContext
       // Temporarily disabled for refactoring.
       // ["forbidden-strings"] = forbiddenStrings
@@ -52,16 +36,9 @@ hooks {
   }
   ["check"] {
     steps {
-      ["final-newline"] = finalNewline
       ["forbidden-root-context"] = forbiddenRootContext
       // Temporarily disabled for refactoring.
       // ["forbidden-strings"] = forbiddenStrings
-    }
-  }
-  ["fix"] {
-    fix = true
-    steps {
-      ["final-newline"] = finalNewline
     }
   }
 }
