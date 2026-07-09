@@ -5,9 +5,10 @@
 //! (scroller, one absolute canvas, widget map, reveal retries) and delegates every position
 //! decision to the pure `band` module: on each scroll change it re-places every pane at
 //! `band::positions(placements, scroll)` and nothing else. A single `GtkFixed` canvas holds every
-//! pane at absolute `(column * stride, sticky_y)` coordinates, so hexpand propagation from pane
-//! bodies can stretch the canvas without displacing anything (per-column canvases would shift
-//! their neighbors' origins when stretched).
+//! pane at absolute `(column * stride, sticky_y)` coordinates, so inflated natural sizes cannot
+//! displace anything (per-column canvases were stretched off the grid by pane-header labels whose
+//! ellipsized text still requests full width as natural size; see
+//! docs/troubleshooting/gtk4-label-ellipsize-natural-width.md).
 
 /// What: imports cells for closure-captured GTK state.
 /// Why: focus state and the scroll callback mutate from signal handlers.
