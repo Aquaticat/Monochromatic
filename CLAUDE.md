@@ -732,6 +732,12 @@ Skip filter for one command:
 
 WCD:
  Pin target dir explicitly for every shell command.
+The harness Bash tool has no `cwd` field and silently ignores an unsupported one;
+never pass `cwd` to it.
+Use a command's native `-C`/`--cwd`,
+or begin with `cd -- <absolute path> &&` when no native option exists.
+Before a write or commit intended for an alternate worktree,
+verify `pwd` and `git rev-parse --show-toplevel` in that same shell body and abort unless both equal the intended path.
 
 ### Long-form flags
 
