@@ -134,7 +134,11 @@ The earlier phase-gated aggregation model was replaced.
 - Warning findings do not stop execution.
 - `--cli-git-keep-going` continues later policies after an error finding,
   but Git still does not run if any error remains.
-- Engine and plugin failures always block.
+- `--cli-git-keep-going` never continues after an engine,
+  plugin,
+  patch,
+  or transaction failure.
+  Those failures stop immediately with exit code `2`.
 - Cli-git does not infer policy independence or parallelize policies.
   A plugin that needs parallel checks composes them inside one policy,
   for example with `Promise.all`.
@@ -489,7 +493,7 @@ Major unresolved branches:
   and no-stage verification.
 - Complete read-only and mixed Git command classifier.
 - Complete temporary-index transaction prototype and crash journal.
-- Exact global-pass behavior when an early policy has an unfixable error and `--cli-git-keep-going` is present.
+- Exact global-pass behavior when an early policy has an unfixable finding and later policies would auto-fix the tree.
 - Trust record schema,
   account-derived platform paths,
   permissions,
