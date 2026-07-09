@@ -11,7 +11,10 @@
  * ```
  */
 
-import { writeFile, } from 'node:fs/promises';
+import {
+  rename,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -146,14 +149,23 @@ async function writeObservedCounterState({ count, }: { readonly count: number; }
   if (statePath === undefined)
     return;
 
+  /**
+   * Unique temp path used so state readers never observe a truncated JSON file.
+   */
+  const tempStatePath = `${statePath}.${process.pid}.${Date.now()}.tmp`;
+
   await writeFile(
-    statePath,
+    tempStatePath,
     `${JSON.stringify(
       { count, },
       null,
       2,
     )}\n`,
     'utf8',
+  );
+  await rename(
+    tempStatePath,
+    statePath,
   );
 }
 
