@@ -19,8 +19,9 @@ while preserving binary files and text-shaped test data whose exact bytes are pa
 
 The user-facing outcomes are:
 
-- Editing a normal text file and committing it produces exactly one final LF.
-- A partially staged file keeps its unstaged edits while the staged version is normalized.
+- Committing a normal text file with an invalid ending is rejected before commit.
+- An explicit hk fix canonicalizes the worktree without bulk staging.
+- A partially staged file keeps its staged and unstaged bytes exactly when a newline check rejects it.
 - A repository-wide check reports any in-scope violation without modifying files.
 - Generated license copies remain canonical after their normal producer runs.
 - Tsdown Node outputs remain byte-identical to producer output and outside newline enforcement.
@@ -137,30 +138,33 @@ so the exemption saves 18 bytes in the measured baseline.
 
 ### Pre-commit
 
-Add `finalNewline` to the existing `pre-commit` hook and set:
+Add `finalNewline` to the existing `pre-commit` hook in read-only mode and keep:
 
 ```pkl
-fix = true
 stash = "git"
 ```
 
-Fix mode makes normalization automatic.
-Git stashing is essential for partial staging:
+Git stashing is essential for checking staged bytes instead of a partially staged file's worktree version:
 hk temporarily removes unstaged edits,
-normalizes and stages the selected content,
+runs the check against staged content,
 then reapplies the unstaged patch.
 
-Actual disposable-repository commits with hk 1.47.0 and 1.50.0 verified that:
+Pre-commit auto-fix is intentionally disabled.
+A verified hk 1.50.0 edge case duplicates the boundary LF when staged content lacks final LF and an unstaged tail
+begins at that exact boundary.
+`docs/troubleshooting/hk-partial-staging-final-newline.md` records the source trace and upstream-compatible fix.
+Until that fix ships in a verified hk release,
+read-only rejection is the only safe pre-commit behavior.
 
-- A missing final LF became one LF in the committed blob.
-- Multiple final LF bytes became one LF in the committed blob.
-- A NUL-containing binary stayed byte-identical.
-- Excluded paths stayed byte-identical.
-- A file with invalid staged content plus a separate unstaged line committed only the normalized staged content.
-- The unstaged line returned to the worktree after the commit.
-  When that unstaged edit appended at the same missing-LF boundary,
-  hk 1.50.0 inserted one extra blank line between fixed staged content and the restored tail;
-  `docs/troubleshooting/hk-partial-staging-final-newline.md` records the exact-byte limitation.
+An actual disposable-repository commit verified that:
+
+- Missing and multiple final LF bytes reject the commit without changing `HEAD`.
+- The invalid staged blobs remain byte-identical after rejection.
+- A partially staged worktree remains byte-identical after rejection.
+- The explicit fix normalizes worktree files while leaving staged blobs unchanged.
+- After explicitly staging corrected bytes,
+  a real commit succeeds.
+- A NUL-containing binary and all three excluded path families stay byte-identical.
 
 ### Pre-push and explicit check
 
@@ -269,10 +273,11 @@ That platform is designed but not built.
 Current ranking:
 
 1. hk builtin.
-   It already implements the exact transformation,
-   has verified partial-staging behavior,
+   It implements the exact transformation for explicit fixes,
+   checks staged bytes safely with `stash = "git"`,
    and adds no dependency.
-   Its cost is future migration and local hook installation.
+   Its pre-commit fixer is disabled because hk 1.50.0 can alter a partially staged worktree at an EOF-tail boundary.
+   Its other costs are future migration and local hook installation.
 2. Future cli-git policy.
    It is the durable architectural home and avoids a separate hook installation,
    but implementing the platform plus safe staged-blob rewriting would expand this newline task substantially.
@@ -301,10 +306,11 @@ A future cli-git policy and independent CI checker remain the durable destinatio
 - Only LF runs are collapsed.
   The existing `.gitattributes` policy remains responsible for CRLF-to-LF normalization.
 - The local hook is temporary infrastructure because hk is scheduled for retirement.
-- hk 1.50.0 preserves an unstaged tail but can insert a blank boundary line when a fixer adds the staged file's
-  missing final LF at the exact point where the unstaged tail begins.
-  The committed blob remains correct;
-  the future cli-git normalizer must avoid this worktree-only merge artifact.
+- Pre-commit newline enforcement is read-only until the hk partial-staging merge bug is fixed in a verified release.
+- hk 1.50.0's fixer can insert a blank boundary line when it adds the staged file's missing final LF at the exact
+  point where an unstaged tail begins.
+  This configuration avoids the bug by using auto-fix only on the explicit `fix` surface;
+  the future cli-git normalizer must preserve both index and worktree bytes exactly.
 - Generated license normalization stays attached to file-enforcer's canonical source.
 - Tsdown's `dist/final/node` tree is a deliberate compact-output exception;
   paths moved outside that boundary become subject to normal enforcement.
@@ -335,8 +341,9 @@ Implementation updates:
 The work is complete only when all of these hold:
 
 - `hk.pkl` evaluates with the pinned hk executable and Pkl package version.
-- An actual Git commit proves missing and multiple final LF cases are normalized.
-- The same commit fixture proves partial unstaged edits are restored.
+- An actual Git commit fixture proves missing and multiple final LF cases are rejected without mutation.
+- The same fixture proves partial staged and unstaged bytes are restored exactly.
+- An explicit no-stage fix followed by explicit staging proves corrected content commits successfully.
 - Binary and excluded fixture hashes remain unchanged.
 - `hk check --all --step final-newline` passes.
 - A fresh tracked-file scan reports no in-scope non-empty text violations.

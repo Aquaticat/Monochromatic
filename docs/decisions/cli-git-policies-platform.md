@@ -524,6 +524,11 @@ when staged content lacks final LF and an unstaged tail starts at that boundary,
 hk restores the text with an extra blank line.
 `docs/troubleshooting/hk-partial-staging-final-newline.md` records the exact bytes and upstream-compatible prototype.
 
+The interim hk pre-commit surface is therefore read-only:
+it keeps `stash = "git"` so the check sees staged bytes,
+but does not set `fix = true`.
+Auto-fix remains on the explicit `fix` surface until a verified hk release fixes the merge or cli-git replaces it.
+
 Push and direct check modes are read-only.
 A direct fix surface must provide the current `hk fix --all --step final-newline --no-stage` capability,
 so a caller can normalize the worktree and inspect explicit path groups without bulk staging.

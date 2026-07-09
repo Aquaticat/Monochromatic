@@ -1,0 +1,69 @@
+diff --git a/src/git.rs b/src/git.rs
+index 7b04d97..28df60e 100644
+--- a/src/git.rs
++++ b/src/git.rs
+@@ -1264,6 +1264,11 @@ impl Git {
+                             // If w == i (no tail), tail is empty; otherwise append tail to fixer
+                             let mut combined = f.to_string();
+                             if !tail.is_empty() {
++                                let tail = if f.ends_with('\n') {
++                                    tail.strip_prefix('\n').unwrap_or(tail)
++                                } else {
++                                    tail
++                                };
+                                 combined.push_str(tail);
+                             }
+                             merged = combined;
+diff --git a/test/fix_preserves_unstaged_newline.bats b/test/fix_preserves_unstaged_newline.bats
+index e3f7717..9455a05 100644
+--- a/test/fix_preserves_unstaged_newline.bats
++++ b/test/fix_preserves_unstaged_newline.bats
+@@ -204,6 +204,48 @@ PY'
+     assert_output --partial "formatted"
+ }
+ 
++@test "fix avoids duplicate separator when fixer adds missing final newline" {
++    cat <<PKL > hk.pkl
++amends "$PKL_PATH/Config.pkl"
++hooks {
++  ["fix"] {
++    fix = true
++    stash = "git"
++    steps = new Mapping<String, Step> {
++      ["formatter"] {
++        glob = "missing-newline.txt"
++        stage = "missing-newline.txt"
++        fix = "printf 'staged\\n' > missing-newline.txt"
++      }
++    }
++  }
++}
++PKL
++    git add hk.pkl
++    git -c commit.gpgsign=false commit -m "init hk"
++    hk install
++
++    printf 'base\n' > missing-newline.txt
++    git add missing-newline.txt
++    git -c commit.gpgsign=false commit -m "base"
++
++    printf 'staged' > missing-newline.txt
++    git add missing-newline.txt
++    printf 'staged\nunstaged\n' > missing-newline.txt
++
++    run hk fix -v
++    assert_success
++
++    run python3 - <<'PY'
++import pathlib
++import subprocess
++
++assert subprocess.check_output(["git", "show", ":missing-newline.txt"]) == b"staged\n"
++assert pathlib.Path("missing-newline.txt").read_bytes() == b"staged\nunstaged\n"
++PY
++    assert_success
++}
++
+ @test "fix preserves exact trailing newlines when only unstaged has extra newlines" {
+     # This test specifically targets the .read() bug that strips trailing newlines
+     cat <<PKL > hk.pkl
