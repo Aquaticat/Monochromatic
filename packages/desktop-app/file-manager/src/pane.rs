@@ -39,6 +39,9 @@ use gtk4::{
     Widget,
 };
 
+/// What: imports debug-tint helpers.
+/// Why: debug runs need visible screenshot labels on pane subregions.
+use crate::debug_tint;
 /// What: imports the thumbnail service and image-detection helper.
 /// Why: a preview pane requests an off-thread thumbnail for image files.
 use crate::thumbs::{Thumbnails, is_image};
@@ -79,10 +82,16 @@ where
         .hexpand(true)
         .build();
     scrolled.add_css_class("fm-list");
+    debug_tint::tag(&scrolled, debug_tint::L5V_LIST_VIEWPORT, None);
     let container = GtkBox::new(Orientation::Vertical, 0);
     container.add_css_class("fm-pane");
+    debug_tint::tag(&container, debug_tint::P4N_PANE_SHELL, None);
     container.append(&build_pane_header(&snapshot.path.display().to_string(), on_close));
-    container.append(&scrolled);
+    container.append(&debug_tint::wrap(
+        &scrolled,
+        debug_tint::L5V_LIST_VIEWPORT,
+        Some("entry scroller"),
+    ));
     container
 }
 
@@ -144,6 +153,7 @@ where
     let header = GtkBox::new(Orientation::Horizontal, ROW_SPACING);
     header.add_css_class("fm-header");
     header.append(&title);
+    debug_tint::append_badge(&header, debug_tint::H7D_PANE_HEADER, Some("title plus close"));
     header.append(&close);
     header
 }
@@ -174,7 +184,11 @@ fn build_preview_body(thumbs: &Thumbnails, path: &Path) -> Widget {
         picture.set_hexpand(true);
         thumbs.request(path, &picture);
         crate::dnd::install_file_drag(&picture, path);
-        return picture.upcast::<Widget>();
+        return debug_tint::wrap(
+            &picture,
+            debug_tint::B6P_PREVIEW_BODY,
+            Some("image preview"),
+        );
     }
     let body = GtkBox::new(Orientation::Vertical, 0);
     body.set_vexpand(true);
@@ -184,7 +198,7 @@ fn build_preview_body(thumbs: &Thumbnails, path: &Path) -> Widget {
     body.append(&icon);
     body.append(&Label::new(path.file_name().and_then(|name| name.to_str())));
     crate::dnd::install_file_drag(&body, path);
-    body.upcast::<Widget>()
+    debug_tint::wrap(&body, debug_tint::B6P_PREVIEW_BODY, Some("fallback preview"))
 }
 
 /// What: build the factory that creates and binds one row (icon + name label).
@@ -195,8 +209,11 @@ fn build_row_factory() -> SignalListItemFactory {
     factory.connect_setup(|_, item| {
         let item = item.downcast_ref::<ListItem>().expect("list item");
         let row = GtkBox::new(Orientation::Horizontal, ROW_SPACING);
+        row.add_css_class("fm-row");
+        debug_tint::tag(&row, debug_tint::R2I_REALIZED_ROW, None);
         row.append(&Image::new());
         row.append(&Label::builder().xalign(0.0).build());
+        debug_tint::append_badge(&row, debug_tint::R2I_REALIZED_ROW, Some("virtualized entry"));
         item.set_child(Some(&row));
     });
     factory.connect_bind(|_, item| {
@@ -205,7 +222,10 @@ fn build_row_factory() -> SignalListItemFactory {
         let entry = boxed.borrow::<FileEntry>();
         let row = item.child().and_downcast::<GtkBox>().expect("row box");
         let icon = row.first_child().and_downcast::<Image>().expect("row icon");
-        let label = row.last_child().and_downcast::<Label>().expect("row label");
+        let label = icon
+            .next_sibling()
+            .and_downcast::<Label>()
+            .expect("row label");
         icon.set_icon_name(Some(icon_name(entry.kind)));
         label.set_text(&entry.name);
     });

@@ -275,3 +275,12 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   chooses the nearest reachable snap candidate by clamping both neighboring row-boundaries first, so
   bottom-of-range is a valid snap point. Verified lint/check/clippy/tests; reopened tinted debug run
   for live user verification.
+- 2026-07-08: Labeled debug tint pass. User clarified that the green pane bodies were misleading and
+  asked for every debug-relevant region to be tinted/labeled with visible descriptions plus short
+  codes. Added `debug_tint.rs` and visible screenshot labels: `Q8O` outer horizontal strip scroller,
+  `C8L` column vertical scroll viewport, `V6C` column fixed scroll canvas, `Y6L` immediate-child
+  shared lane, `P4N` fixed-height pane shell, `H7D` pane header bar, `L5V` directory list viewport,
+  `B6P` preview body, and `R2I` realized directory row. Removed the green list/body fill; list
+  viewport is now outlined instead. Immediate-child lanes are explicit debug-only `GtkFixed` rails
+  keyed by parent pane id and labeled with parent, column, child count, and row extent. Verified
+  lint/check/rust-lint/clippy/tests before reopening.

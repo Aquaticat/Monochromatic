@@ -24,6 +24,9 @@ mod strip;
 /// What: keyboard column navigation for the strip.
 /// Why: Left/Right move focus between columns; split out to keep `strip.rs` under max-lines.
 mod keys;
+/// What: debug-only tint labels and overlay wrappers.
+/// Why: layout screenshots need stable three-character codes naming each visible region.
+mod debug_tint;
 /// What: the application stylesheet (black background).
 /// Why: applies a low-glare theme override once at startup.
 mod style;

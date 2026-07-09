@@ -19,24 +19,30 @@ use crate::constants::DEBUG_TINT_ENV;
 const APP_CSS: &str =
     "window, scrolledwindow, viewport, listview, .view { background-color: #000000; }";
 
-/// What: the debug stylesheet: distinct hues per structural layer (columns cycle four hues, panes
-///       get a border, headers and list areas get their own tints).
-/// Why: lets the layout and scroll layers be named precisely while debugging; loaded only under the
-///      debug-tint env var, at a priority above the base sheet.
+/// What: the debug stylesheet: distinct hues, outlines, and readable labels per structural layer.
+/// Why: debug tint should name every region in screenshots without implying that blank pane bodies
+///      are scroll-travel areas.
 const DEBUG_CSS: &str = "
-.fm-column:nth-child(4n+1) { background-color: rgba(255,64,64,0.12); }
-.fm-column:nth-child(4n+2) { background-color: rgba(64,200,64,0.12); }
-.fm-column:nth-child(4n+3) { background-color: rgba(64,140,255,0.12); }
-.fm-column:nth-child(4n+4) { background-color: rgba(230,190,64,0.12); }
+.fm-column-root:nth-child(4n+1), .fm-column:nth-child(4n+1) { background-color: rgba(255,64,64,0.12); }
+.fm-column-root:nth-child(4n+2), .fm-column:nth-child(4n+2) { background-color: rgba(64,200,64,0.12); }
+.fm-column-root:nth-child(4n+3), .fm-column:nth-child(4n+3) { background-color: rgba(64,140,255,0.12); }
+.fm-column-root:nth-child(4n+4), .fm-column:nth-child(4n+4) { background-color: rgba(230,190,64,0.12); }
 .fm-canvas { background-color: rgba(255,120,0,0.10); }
 .fm-pane { border: 2px solid #ff5ec4; }
 .fm-header { background-color: rgba(180,64,255,0.35); }
-.fm-list,
-.fm-list > viewport,
-.fm-list listview,
-.fm-list .view {
-  background-color: rgba(64,255,220,0.12);
-  border: 1px dashed #40e0d0;
+.fm-list { border: 1px dashed #40e0d0; }
+.fm-row { border-bottom: 1px dotted rgba(255,255,255,0.30); }
+.fm-debug-overlay { border: 1px solid rgba(255,255,255,0.20); }
+.fm-debug-lane {
+  background-color: rgba(255,245,64,0.10);
+  border: 2px dashed #f5e642;
+}
+.fm-debug-badge {
+  background-color: rgba(0,0,0,0.82);
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 11px;
+  padding: 2px 4px;
 }
 ";
 
