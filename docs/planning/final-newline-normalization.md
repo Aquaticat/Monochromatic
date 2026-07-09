@@ -207,10 +207,8 @@ It will:
 - Scan backward over final LF bytes without a regular expression.
 - Skip writing when content already has exactly one final LF.
 - Preserve all bytes before the final LF run.
-- Log entry,
-  skip,
-  normalization,
-  and error paths through a tagged logger.
+- Report actual rewrites through tsdown's user-facing build logger.
+- Leave compliant builds quiet and propagate filesystem errors so tsdown fails the build.
 
 The helper will be separate from `index.node.ts`
 so the pure byte-normalization rule and filesystem behavior can be tested directly.
