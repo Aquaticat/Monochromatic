@@ -2,15 +2,23 @@
 
 ## Status
 
-Approved for implementation,
+Implemented and verified on 2026-07-09,
 with tsdown Node output explicitly exempted during implementation.
 
-The repository will canonicalize every in-scope,
-non-empty text file to exactly one trailing LF before commit,
+The repository canonicalizes every in-scope,
+non-empty text file to exactly one trailing LF,
 except exact-byte fixtures and files under `**/dist/final/node/**`.
 Tsdown outputs keep their producer-native missing final LF to save one byte per generated file.
-Git will continue to track actual bytes;
-it will not be configured to hide newline-only changes.
+Git continues to track actual bytes;
+it is not configured to hide newline-only changes.
+
+The final tracked-file scan inspected 7,074 paths and found zero in-scope violations:
+5,446 compliant text files,
+67 binary or non-UTF-8 files,
+and 1,561 excluded paths.
+The obsolete empty placeholder is gone.
+Pre-commit enforcement is read-only because hk 1.50.0's auto-fixer has a documented partial-staging merge bug;
+explicit no-stage fixing remains available.
 
 ## Goal
 
