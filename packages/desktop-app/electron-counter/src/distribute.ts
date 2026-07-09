@@ -7,8 +7,10 @@
  * ```
  */
 
-import { parseElectronDistributionArgs, } from '@monochromatic-dev/desktop-app-electron-infra/ts/distribution-args';
-import { distributeElectronApp, } from '@monochromatic-dev/desktop-app-electron-infra/ts/distribute';
+import {
+  distributeElectronApp,
+  parseElectronDistributionArgs,
+} from '@monochromatic-dev/desktop-app-electron-infra/ts';
 
 /**
  * Stable Electron application bundle identifier.
@@ -50,7 +52,8 @@ const executableName = 'monochromatic-electron-counter';
  */
 async function distributeElectronCounter(): Promise<void> {
   await distributeElectronApp({
-    ...parseElectronDistributionArgs({ argv: process.argv.slice(2,), },),
+    ...parseElectronDistributionArgs({ argv: process.argv
+      .slice(2,), },),
     appBundleId,
     appCategoryType,
     appCopyright: 'Copyright Monochromatic contributors',
