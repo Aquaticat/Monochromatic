@@ -2,9 +2,9 @@
 //!
 //! The product model only says that a pane has a `(column, row)` placement and an optional parent.
 //! This module hides every GTK detail needed to render that placement graph: the outer horizontal
-//! scroller, static per-column fixed canvases, pane-widget map, lane-owned vertical scrolling,
-//! reveal retries, lane hit-testing, and quiet-period snapping. `strip.rs` now only mutates the pane
-//! model and asks this adapter to reconcile a placement snapshot.
+//! scroller, static per-column fixed canvases, pane-widget map, app-owned vertical scrolling, lane
+//! sticky offsets, and reveal retries. `strip.rs` now only mutates the pane model and asks this
+//! adapter to reconcile a placement snapshot.
 
 /// What: imports cells for closure-captured GTK state.
 /// Why: focus state and scroll epochs mutate from signal handlers.
@@ -35,9 +35,9 @@ use crate::debug_tint;
 /// Why: widget maps and placement snapshots are keyed by `PaneId`.
 use crate::types::PaneId;
 
-/// What: lane-owned scroll, hit-testing, and debug-lane implementation for `StripLayout`.
-/// Why: keeps the layout interface file under the max-lines budget while making lanes the vertical
-///      scroll unit.
+/// What: app-owned vertical scroll sync and debug-lane implementation for `StripLayout`.
+/// Why: keeps the layout interface file under the max-lines budget while making lanes react to the
+///      whole-app scroll.
 mod lane;
 /// What: horizontal reveal and row-coordinate helpers for `StripLayout`.
 /// Why: spawn still needs horizontal reveal even after vertical scrolling moved to lanes.
@@ -68,7 +68,7 @@ struct ColumnView {
 
 /// What: deep layout module for the pane strip.
 /// Why: callers only provide pane placements and widget builders; this implementation owns GTK
-///      canvases, focus bookkeeping, lane scrolling, reveal, and snap behavior.
+///      canvases, focus bookkeeping, app scroll, lane sticky offsets, and reveal behavior.
 pub(crate) struct StripLayout {
     /// Outer horizontal scroller holding all columns.
     outer: ScrolledWindow,
@@ -85,19 +85,17 @@ pub(crate) struct StripLayout {
     lane_offsets: RefCell<HashMap<PaneId, f64>>,
     /// Debug child-lane overlay widgets by parent pane id.
     lanes: RefCell<HashMap<PaneId, Widget>>,
-    /// Latest placement snapshot, used by reveal and lane hit-testing without borrowing the model.
+    /// Latest placement snapshot, used by reveal and lane sync without borrowing the model.
     placements: RefCell<Vec<PanePlacement>>,
     /// Column whose pane last received focus, used by Left/Right keyboard navigation.
     focused_column: Cell<usize>,
-    /// Scroll epoch for debouncing quiet-period lane snapping.
-    scroll_epoch: Cell<u64>,
 }
 
 /// What: public interface for constructing, reconciling, focusing, and scrolling the strip layout.
 /// Why: keeps GTK layout policy behind a narrow seam so `strip.rs` remains a model/controller layer.
 impl StripLayout {
     /// What: build the GTK layout adapter and return it behind `Rc`.
-    /// Why: lane scroll signals need weak references back to the adapter.
+    /// Why: app-scroll sync needs weak references back to the adapter.
     pub(crate) fn new() -> Rc<Self> {
         let columns_box = GtkBox::new(Orientation::Horizontal, crate::constants::PANE_GAP);
         let strip_overlay = Overlay::new();
@@ -105,7 +103,7 @@ impl StripLayout {
         let outer = ScrolledWindow::builder()
             .child(&strip_overlay)
             .hscrollbar_policy(PolicyType::Automatic)
-            .vscrollbar_policy(PolicyType::Never)
+            .vscrollbar_policy(PolicyType::Automatic)
             .vexpand(true)
             .hexpand(true)
             .build();
@@ -119,9 +117,8 @@ impl StripLayout {
             lanes: RefCell::new(HashMap::new()),
             placements: RefCell::new(Vec::new()),
             focused_column: Cell::new(0),
-            scroll_epoch: Cell::new(0),
         });
-        layout.install_lane_scroll();
+        layout.install_app_scroll_sync();
         layout
     }
 

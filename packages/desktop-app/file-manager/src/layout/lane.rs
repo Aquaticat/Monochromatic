@@ -1,22 +1,22 @@
 //! Lane-owned vertical scrolling for the pane strip.
 //!
-//! Full columns are static canvases. App-level vertical wheel input advances every sibling-group
-//! lane independently, where a lane is one parent pane plus its direct children. Each lane clamps to
-//! its own green-box bounds, so shorter sibling groups stop while deeper groups keep moving.
+//! Full columns are static canvases. The outer scroller owns vertical wheel input for the whole app.
+//! Each sibling-group lane, one parent pane plus its direct children, reacts to that global app
+//! scroll and independently applies a bounded sticky offset inside its green-box range.
 
 /// What: imports the reference-counted pointer.
-/// Why: GTK scroll-controller closures hold weak references to `StripLayout`.
+/// Why: GTK adjustment callbacks hold weak references to `StripLayout`.
 use std::rc::Rc;
 
-/// What: imports GTK event-controller and widget traits.
-/// Why: lane scrolling installs controllers, moves fixed children, and places debug overlays.
+/// What: imports GTK widget traits.
+/// Why: lane sync moves fixed children and places debug overlays.
 use gtk4::prelude::*;
-/// What: imports concrete GTK types used by lane scrolling and debug overlay positioning.
-/// Why: lane hit-testing owns a scroll controller and debug rails need explicit alignment.
-use gtk4::{Align, EventControllerScroll, EventControllerScrollFlags, PropagationPhase, glib};
+/// What: imports concrete GTK alignment type used by debug overlay positioning.
+/// Why: debug rails need explicit alignment inside the strip overlay.
+use gtk4::Align;
 
 /// What: imports pane and viewport geometry constants.
-/// Why: lane boxes, hit-tests, clamping, and snapping share the same pixel grid.
+/// Why: lane boxes, sticky offsets, and clamping share the same pixel grid.
 use crate::constants::{DEFAULT_HEIGHT, PANE_GAP, PANE_HEIGHT, PANE_WIDTH};
 /// What: imports debug-tint helpers.
 /// Why: debug mode draws rounded green lane boxes with labels.
@@ -30,38 +30,26 @@ use crate::types::PaneId;
 use super::{PanePlacement, StripLayout, scroll};
 
 /// What: lane geometry helpers.
-/// Why: grouping, rectangles, scroll conversion, and snapping are pure calculations split out to
-///      keep this file under the max-lines budget.
+/// Why: grouping, rectangles, and lane dimensions are pure calculations split out to keep this file
+///      under the max-lines budget.
 mod geometry;
 /// What: imports lane geometry helper functions and rectangle type.
-/// Why: lane scrolling uses these helpers while keeping GTK-specific code in this file.
-use geometry::{
-    LaneRect, direct_child_groups, lane_base_bottom, lane_width, nearest_snap, placement_by_id,
-    scroll_pixels,
-};
+/// Why: app-scroll sync uses these helpers while keeping GTK-specific code in this file.
+use geometry::{LaneRect, direct_child_groups, lane_base_bottom, lane_width, placement_by_id};
 
-/// What: lane scrolling and debug-lane methods on the layout adapter.
-/// Why: vertical scroll ownership lives here rather than in static column canvases.
+/// What: app-scroll sync and debug-lane methods on the layout adapter.
+/// Why: vertical scroll ownership belongs to the whole app, while lane offsets react here.
 impl StripLayout {
-    /// What: install capture-phase vertical wheel handling on the outer scroller.
-    /// Why: the app owns vertical lane scrolling before inner list scrollers can consume it.
-    pub(super) fn install_lane_scroll(self: &Rc<Self>) {
-        let scroll = EventControllerScroll::new(EventControllerScrollFlags::VERTICAL);
-        scroll.set_propagation_phase(PropagationPhase::Capture);
+    /// What: sync lane offsets whenever the whole-app vertical scroller moves.
+    /// Why: wheel input should scroll the entire app first; lanes then independently try to remain
+    ///      visible within their green-box limits.
+    pub(super) fn install_app_scroll_sync(self: &Rc<Self>) {
         let weak = Rc::downgrade(self);
-        scroll.connect_scroll(move |_, _, dy| {
-            let Some(layout) = weak.upgrade() else {
-                return glib::Propagation::Proceed;
-            };
-            if dy.abs() <= f64::EPSILON {
-                return glib::Propagation::Proceed;
+        self.outer.vadjustment().connect_value_changed(move |_| {
+            if let Some(layout) = weak.upgrade() {
+                layout.sync_lane_offsets_to_app_scroll();
             }
-            if layout.scroll_all_lanes(scroll_pixels(dy)) {
-                return glib::Propagation::Stop;
-            }
-            glib::Propagation::Proceed
         });
-        self.outer.add_controller(scroll);
     }
 
     /// What: prune stale lane offsets and clamp live offsets to their current scroll ranges.
@@ -86,10 +74,11 @@ impl StripLayout {
         for (parent, value) in updates {
             self.lane_offsets.borrow_mut().insert(parent, value);
         }
+        self.sync_lane_offsets_to_app_scroll();
     }
 
     /// What: move every pane widget to its lane-offset-adjusted visual row.
-    /// Why: columns are static canvases, so lane scroll is implemented by moving the panes.
+    /// Why: columns are static canvases, so lane sticky offsets are implemented by moving panes.
     pub(super) fn position_all_widgets(&self) {
         let placements = self.placements.borrow().clone();
         for placement in &placements {
@@ -129,54 +118,43 @@ impl StripLayout {
         }
     }
 
-    /// What: reveal `placement` vertically by adjusting its parent lane, returning whether visible.
-    /// Why: spawning a child should bring that child into view even though columns no longer scroll.
+    /// What: reveal `placement` vertically by adjusting the whole-app vertical scroller.
+    /// Why: spawning a child should bring that child into view while lanes react to app scroll.
     pub(super) fn reveal_lane_member(&self, placement: PanePlacement) -> bool {
-        let placements = self.placements.borrow().clone();
-        let groups = direct_child_groups(&placements);
-        let parent = placement.parent.unwrap_or(placement.id);
-        let Some(children) = groups.get(&parent) else {
-            return true;
-        };
-        let Some(parent_placement) = placement_by_id(&placements, parent) else {
-            return true;
-        };
-        let current = self.lane_offsets.borrow().get(&parent).copied().unwrap_or(0.0);
+        let adj = self.outer.vadjustment();
+        let page = adj.page_size();
+        let value = adj.value();
         let start = self.visual_y_for_pane(placement);
-        let page = self.viewport_height();
-        let target = if start < 0.0 {
-            current + start
-        } else if start + f64::from(PANE_HEIGHT) > page {
-            current + start + f64::from(PANE_HEIGHT) - page
+        if start >= value && start + f64::from(PANE_HEIGHT) <= value + page {
+            return true;
+        }
+        let max = (adj.upper() - page).max(0.0);
+        let target = if start < value {
+            start
         } else {
-            current
+            start + f64::from(PANE_HEIGHT) - page
         };
-        let max = self.lane_max_offset(parent_placement, children);
-        self.lane_offsets
-            .borrow_mut()
-            .insert(parent, target.clamp(0.0, max));
-        self.position_all_widgets();
-        self.refresh_child_lanes();
-        let settled = self.visual_y_for_pane(placement);
-        settled >= 0.0 && settled + f64::from(PANE_HEIGHT) <= page
+        adj.set_value(target.clamp(0.0, max));
+        self.sync_lane_offsets_to_app_scroll();
+        let settled = adj.value();
+        let start = self.visual_y_for_pane(placement);
+        start >= settled && start + f64::from(PANE_HEIGHT) <= settled + page
     }
 
-    /// What: move every sibling-group lane by `delta` pixels and schedule snap after quiet.
-    /// Why: vertical wheel input belongs to the whole app; each lane independently clamps to its own
-    ///      green-box limit.
-    fn scroll_all_lanes(self: &Rc<Self>, delta: f64) -> bool {
+    /// What: recompute every sibling-group lane offset from the whole-app vertical scroll.
+    /// Why: the app scrolls first; each green-box lane then applies its own bounded sticky offset so
+    ///      it tries to stay visible without preventing the app scroll.
+    fn sync_lane_offsets_to_app_scroll(&self) {
         let placements = self.placements.borrow().clone();
         let groups = direct_child_groups(&placements);
-        if groups.is_empty() {
-            return false;
-        }
+        let scroll = self.outer.vadjustment().value();
         let updates: Vec<(PaneId, f64)> = groups
             .iter()
             .filter_map(|(parent, children)| {
                 let parent_placement = placement_by_id(&placements, *parent)?;
                 let max = self.lane_max_offset(parent_placement, children);
-                let current = self.lane_offsets.borrow().get(parent).copied().unwrap_or(0.0);
-                Some((*parent, (current + delta).clamp(0.0, max)))
+                let top = scroll::row_y(parent_placement.row);
+                Some((*parent, (scroll - top).clamp(0.0, max)))
             })
             .collect();
         for (parent, next) in updates {
@@ -184,8 +162,6 @@ impl StripLayout {
         }
         self.position_all_widgets();
         self.refresh_child_lanes();
-        self.schedule_lane_snap();
-        true
     }
 
     /// What: choose the maximum scroll offset for a lane.
@@ -195,14 +171,14 @@ impl StripLayout {
         (bottom - self.viewport_height()).max(0.0)
     }
 
-    /// What: compute `placement`'s visual y-coordinate after hierarchical lane offsets.
-    /// Why: every pane moves with its own lane and ancestor lanes.
+    /// What: compute `placement`'s content y-coordinate after hierarchical sticky offsets.
+    /// Why: every pane reacts to its own sibling lane and ancestor lanes after the app scrolls.
     pub(super) fn visual_y_for_pane(&self, placement: PanePlacement) -> f64 {
-        scroll::row_y(placement.row) - self.effective_offset_for_pane(placement.id)
+        scroll::row_y(placement.row) + self.effective_offset_for_pane(placement.id)
     }
 
     /// What: compute all lane offsets affecting `id`.
-    /// Why: a pane scrolls with every ancestor lane plus its own lane when it is a parent.
+    /// Why: a pane reacts to every ancestor lane plus its own lane when it is a parent.
     fn effective_offset_for_pane(&self, id: PaneId) -> f64 {
         let placements = self.placements.borrow();
         let offsets = self.lane_offsets.borrow();
@@ -219,7 +195,7 @@ impl StripLayout {
     }
 
     /// What: compute a lane's visible rectangle.
-    /// Why: hit-testing and debug drawing need the same geometry.
+    /// Why: debug drawing needs the same geometry used by lane sticky offsets.
     fn lane_rect(&self, parent: PanePlacement, children: &[PanePlacement]) -> LaneRect {
         let end_column = children
             .iter()
@@ -228,7 +204,7 @@ impl StripLayout {
             .unwrap_or(parent.column);
         let column_span = end_column - parent.column + 1;
         let x = parent.column as f64 * f64::from(PANE_WIDTH + PANE_GAP);
-        let y = scroll::row_y(parent.row) - self.effective_offset_for_pane(parent.id);
+        let y = scroll::row_y(parent.row) + self.effective_offset_for_pane(parent.id);
         let width = lane_width(column_span);
         let height = lane_base_bottom(parent, children) - scroll::row_y(parent.row);
         LaneRect {
@@ -278,44 +254,6 @@ impl StripLayout {
         self.lanes.borrow_mut().insert(parent.id, lane);
     }
 
-    /// What: schedule a quiet-period snap after the latest lane scroll event.
-    /// Why: an epoch makes only the final timer after a burst perform the snap.
-    fn schedule_lane_snap(self: &Rc<Self>) {
-        let epoch = self.scroll_epoch.get().wrapping_add(1);
-        self.scroll_epoch.set(epoch);
-        let weak = Rc::downgrade(self);
-        glib::timeout_add_local_once(std::time::Duration::from_millis(SNAP_DELAY_MS), move || {
-            if let Some(layout) = weak.upgrade()
-                && layout.scroll_epoch.get() == epoch
-            {
-                layout.snap_lanes();
-            }
-        });
-    }
-
-    /// What: snap every lane offset to the nearest reachable row boundary.
-    /// Why: lane-owned scrolling should settle on the same row grid the panes are placed on.
-    fn snap_lanes(&self) {
-        let placements = self.placements.borrow().clone();
-        let groups = direct_child_groups(&placements);
-        let mut updates = Vec::new();
-        for (parent, value) in self.lane_offsets.borrow().iter() {
-            let Some(parent_placement) = placement_by_id(&placements, *parent) else {
-                continue;
-            };
-            let Some(children) = groups.get(parent) else {
-                continue;
-            };
-            let max = self.lane_max_offset(parent_placement, children);
-            updates.push((*parent, nearest_snap(*value, max)));
-        }
-        for (parent, value) in updates {
-            self.lane_offsets.borrow_mut().insert(parent, value);
-        }
-        self.position_all_widgets();
-        self.refresh_child_lanes();
-    }
-
     /// What: visible viewport height in pixels.
     /// Why: lane max offsets and reveal behavior clamp against the actual window, with startup
     ///      fallback before GTK has allocated a height.
@@ -327,7 +265,3 @@ impl StripLayout {
         f64::from(DEFAULT_HEIGHT)
     }
 }
-
-/// What: milliseconds of scroll quiet before lane offsets snap to whole-pane positions.
-/// Why: snapping during a gesture fights the user; a debounce snaps after the gesture settles.
-const SNAP_DELAY_MS: u64 = 120;

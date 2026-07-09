@@ -16,8 +16,8 @@ mod window;
 /// Why: renders a `DirectorySnapshot` as a virtualized icon+name list.
 mod pane;
 /// What: deep GTK layout adapter for the detached-column pane strip.
-/// Why: centralizes horizontal scroll, static canvases, lane scrolling, reveal, and snap behind one
-///      interface.
+/// Why: centralizes horizontal scroll, static canvases, app vertical scroll, lane sticky offsets,
+///      and reveal behind one interface.
 mod layout;
 /// What: the pane-strip controller.
 /// Why: mutates the pane model and delegates GTK placement/scrolling to `layout`.

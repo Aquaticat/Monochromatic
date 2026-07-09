@@ -284,12 +284,13 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   debug-only rounded green boxes keyed by parent pane id and labeled with parent, column span, child
   count, and row extent. Verified lint/check/rust-lint/clippy/tests before reopening.
 - 2026-07-09: App-owned lane scrolling. User clarified that full columns should not be scrollers,
-  and refined the scroll model after a hit-test version made some states unscrollable: vertical
-  wheel/trackpad input belongs to the whole app, while each sibling-group lane independently clamps
-  to its own green-box limit. A lane is still a parent plus direct children. `layout.rs` now uses
-  static per-column `GtkFixed` canvases inside one horizontal `ScrolledWindow`; per-column vertical
-  `ScrolledWindow`s were removed. `layout/lane.rs` owns lane offsets, capture-phase app-level
-  vertical scrolling, hierarchical offset application, lane snapping, vertical reveal, and rounded
-  green `Y6L` overlays. `layout/scroll.rs` now only handles horizontal reveal and the shared
-  row-pixel helper. `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create
-  fake debug geometry.
+  and refined the scroll model after earlier lane-capture versions made some states unscrollable and
+  swallowed wheel events: vertical wheel/trackpad input belongs to the whole app first, while each
+  sibling-group lane independently tries to stay visible within its own green-box limit. A lane is
+  still a parent plus direct children. `layout.rs` now uses static per-column `GtkFixed` canvases
+  inside one horizontal+vertical outer `ScrolledWindow`; per-column vertical `ScrolledWindow`s were
+  removed. `layout/lane.rs` owns lane sticky offsets driven by the outer vertical adjustment,
+  hierarchical offset application, vertical reveal, and rounded green `Y6L` overlays.
+  `layout/scroll.rs` now only handles horizontal reveal and the shared row-pixel helper.
+  `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create fake debug
+  geometry.

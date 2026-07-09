@@ -2,8 +2,8 @@
 //!
 //! The controller owns the pure `PaneStripState`, directory-read generation, and thumbnail service.
 //! It turns row activations into model mutations, then hands a placement snapshot to `StripLayout`.
-//! Horizontal reveal, static canvases, lane-owned vertical scrolling, and snap mechanics live behind
-//! that layout interface.
+//! Horizontal reveal, static canvases, app-owned vertical scrolling, and lane sticky offsets live
+//! behind that layout interface.
 
 /// What: imports the single-slot cell used for the directory-read generation.
 /// Why: directory panes get monotonically increasing snapshot generations.
