@@ -32,7 +32,7 @@ run = "tsdown --config tsdown.tools.config.ts"
 
 [tasks."build:stage"]
 description = "Copy static assets and write the staged app package manifest"
-run = "node dist/tools/build-stage.js"
+run = "node dist/tools/build-stage.mjs"
 
 [tasks.lint]
 description = "Run package linters"
@@ -59,7 +59,7 @@ description = "Run the Electron app inside this repo's nested Wayland compositor
 run = [
   "mise run build",
   "mise run //packages/cli/nested-wayland-session:build",
-  "node dist/tools/wayland-boundary-test.js",
+  "node dist/tools/wayland-boundary-test.mjs",
 ]
 
 [tasks.test]
@@ -81,12 +81,12 @@ run = [
 description = "Build x64 and arm64 Electron bundles for Linux, Windows, and macOS"
 run = [
   "mise run build",
-  "node dist/tools/distribute.js",
+  "node dist/tools/distribute.mjs",
 ]
 
 [tasks."distribute:dry-run"]
 description = "Print the distribution target matrix without downloading Electron zips"
 run = [
   "mise run build",
-  "node dist/tools/distribute.js --dry-run",
+  "node dist/tools/distribute.mjs --dry-run",
 ]
