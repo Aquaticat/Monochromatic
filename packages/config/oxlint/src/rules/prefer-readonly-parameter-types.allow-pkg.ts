@@ -281,15 +281,26 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
   },
   {
     // Buffer and the `NodeJS.*` namespace are declared in @types/node,
-    // not the TypeScript standard lib.
+    // not the TypeScript standard lib. ChildProcess is an EventEmitter-owned
+    // handle with mutable process-control methods; callers cannot make the
+    // upstream type readonly without losing the real Node API boundary.
     from: "package",
     package: "@types/node",
     name: [
       "Buffer",
+      "ChildProcess",
       "ProcessEnv",
       "ReadableStream",
       "WritableStream"
     ],
+  },
+  {
+    // Electron event payloads are host-owned objects surfaced by Electron's
+    // event emitter contract. App code observes them but does not control the
+    // upstream mutability annotations.
+    from: "package",
+    package: "electron",
+    name: ["Event"],
   },
   {
     from: "package",
