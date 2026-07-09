@@ -2,7 +2,6 @@
   "extends": "@monochromatic-dev/config-typescript/dom",
   "include": [
     "${configDir}/src/counter.ts",
-    "${configDir}/src/distribution-targets.ts",
     "${configDir}/src/renderer.ts"
   ],
   "compilerOptions": {

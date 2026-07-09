@@ -9,7 +9,7 @@ A minimal Electron app proving this repo can ship a no-Vite, fully ESM and TypeS
 - No preload script, no `nodeIntegration`, and renderer sandboxing stays enabled.
 - Linux launch forces Chromium's Ozone Wayland backend and the automated test unsets `DISPLAY`,
   so an XWayland fallback cannot make the test pass.
-- Distribution bundles are generated with `@electron/packager`, not Vite or Forge.
+- Distribution bundles are generated with shared `@monochromatic-dev/desktop-app-electron-infra` helpers around `@electron/packager`, not Vite or Forge.
 
 ## Tasks
 
@@ -20,7 +20,7 @@ A minimal Electron app proving this repo can ship a no-Vite, fully ESM and TypeS
 
 ## Pure Wayland verification
 
-The Wayland boundary test runs the app inside
+The Wayland boundary test uses shared `@monochromatic-dev/desktop-app-electron-infra` helpers to run the app inside
 `packages/cli/nested-wayland-session` instead of an external compositor such as cage or niri.
 The hosted Electron command is launched through `/usr/bin/env --unset=DISPLAY`, with `XDG_SESSION_TYPE=wayland`.
 The app must draw into the nested Wayland compositor, accept synthetic keyboard input, update the counter, and write the observed state file.
