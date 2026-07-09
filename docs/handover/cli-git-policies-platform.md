@@ -371,11 +371,14 @@ or another mode not yet reproduced transactionally:
 
 ### Multipass convergence
 
-- Apply fix patches and rerun the same policy until stable.
-- Use an eight-pass cap,
+- Within one pass,
+  policies run in settled order and later policies see patches applied by earlier policies.
+- If any policy changes the candidate tree,
+  the next pass restarts from the first core policy.
+- Use an eight-pass cap for the complete policy sequence,
   matching the repository Oxlint wrapper.
-- Hash the temporary candidate tree as the convergence oracle.
-- Detect non-adjacent repeated tree hashes as cycles.
+- Hash the temporary candidate tree after each complete pass as the convergence oracle.
+- Detect non-adjacent repeated tree hashes as cross-policy cycles.
 - A stable candidate with remaining error findings is exit code `1`.
 - A cycle or cap reached while still changing is exit code `2`.
 
@@ -483,8 +486,7 @@ Major unresolved branches:
   and no-stage verification.
 - Complete read-only and mixed Git command classifier.
 - Complete temporary-index transaction prototype and crash journal.
-- Whether later policies see earlier policies' applied fixes is implied by sequential execution but should be stated and
-  tested explicitly.
+- Exact global-pass behavior when an early policy has an unfixable error and `--cli-git-keep-going` is present.
 - Trust record schema,
   account-derived platform paths,
   permissions,
