@@ -574,7 +574,11 @@ source-cited root cause,
    `pkill -f` self-matching):
   [nested-wayland-gui-test-footguns](../troubleshooting/nested-wayland-gui-test-footguns.md).
 - On the Electron side:
-   two tsdown configs sharing one outDir delete each other's output
+   pointing a second tsdown config at an outDir another config owns lets each run's default
+  clean delete the other's output;
+   self-inflicted,
+   since the repo's one-`dist/`-subdir-per-config convention exists to prevent exactly this,
+   and the preload bundle now builds into its own `dist/preload`
   ([tsdown-shared-outdir-clean](../troubleshooting/tsdown-shared-outdir-clean.md)),
   sandboxed preloads must be CommonJS
   ([electron-sandboxed-preload-cjs](../troubleshooting/electron-sandboxed-preload-cjs.md)),

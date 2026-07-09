@@ -14,8 +14,6 @@ import {
  */
 const preloadConfig: UserConfig = defineConfig({
   entry: ['./src/preload.ts',],
-  // Shares dist/app with the main-process bundle; cleaning would delete main.mjs.
-  clean: false,
   dts: false,
   fixedExtension: true,
   format: 'cjs',
@@ -24,7 +22,9 @@ const preloadConfig: UserConfig = defineConfig({
     compress: false,
     mangle: false,
   },
-  outDir: 'dist/app',
+  // Own subdir per bundling config, so tsdown's default clean (whole outDir)
+  // can never delete a sibling config's output; build:stage assembles dist/app.
+  outDir: 'dist/preload',
   platform: 'node',
   report: false,
   target: 'node22',

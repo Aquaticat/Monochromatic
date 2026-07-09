@@ -7,6 +7,9 @@
  * ```
  */
 
+import { cp, } from 'node:fs/promises';
+import { join, } from 'node:path';
+
 import { stageElectronApp, } from '@monochromatic-dev/desktop-app-electron-infra/ts/stage';
 
 /**
@@ -25,6 +28,23 @@ async function stageFileManagerApp(): Promise<void> {
       'styles.css',
     ],
   },);
+
+  // The preload bundle builds into its own dist/preload subdir so tsdown's
+  // default clean never deletes the main bundle; staging assembles dist/app.
+  await cp(
+    join(
+      process.cwd(),
+      'dist',
+      'preload',
+      'preload.cjs',
+    ),
+    join(
+      process.cwd(),
+      'dist',
+      'app',
+      'preload.cjs',
+    ),
+  );
 }
 
 await stageFileManagerApp();

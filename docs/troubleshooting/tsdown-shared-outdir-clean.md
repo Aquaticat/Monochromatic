@@ -1,4 +1,4 @@
-# tsdown 0.22: two configs writing to one outDir delete each other's output, because clean defaults to true and resolves to the whole outDir
+# tsdown 0.22: pointing two configs at one outDir lets each run's default clean delete the other's output; self-inflicted here, and the reason this repo gives every bundling config its own `dist/` subdir
 
 When a package builds two bundles into the same directory with two tsdown configs (here:
 Electron main process ESM and sandboxed preload CJS,
@@ -8,6 +8,17 @@ default clean pass removes the first run's artifacts.
 The build reports success;
  the missing file is only discovered when the app fails to start or
 a later stage misses an input.
+
+This is not a tsdown defect.
+The repo's existing convention of one `dist/` subdir per bundling config
+(`dist/app`,
+ `dist/tools`,
+ `dist/final` in the electron packages) exists precisely to keep each
+config's clean scope disjoint;
+ the collision happened because
+`packages/desktop-app/file-manager-electron`'s preload config was pointed at `dist/app`,
+which the main-process config already owns,
+ instead of getting its own subdir.
 
 Found while building `packages/desktop-app/file-manager-electron`:
  the preload build printed
@@ -29,7 +40,11 @@ outDir.
 
 ## Root cause
 
-tsdown resolves `clean` to `true` by default and expands `true` to the whole outDir.
+Two layers,
+ and the actionable one is ours.
+
+The mechanical layer:
+ tsdown resolves `clean` to `true` by default and expands `true` to the whole outDir.
 From the installed package (tsdown 0.22.4 read from the pnpm store;
  behavior observed
 identically under 0.22.3,
@@ -53,38 +68,61 @@ Each tsdown invocation knows only its own config,
  so a sibling config's artifacts in the same
 outDir are indistinguishable from stale output.
 
+The causal layer:
+ the repo already structures electron packages so this cannot happen.
+`dist/app` is the staged runtime directory with several producers by design
+(the main-bundle tsdown config,
+ the renderer `tsc` emit,
+ and the `build:stage` copy step),
+ but only ONE of those producers cleans:
+ the main-bundle tsdown config,
+ which runs first,
+ immediately after the package's explicit `build:clean` task,
+ so its clean is a no-op on an already-empty directory.
+Every other tsdown config gets its own subdir (`dist/tools` for package tools,
+ and now `dist/preload` for the preload bundle),
+ so each config's default clean only ever touches artifacts that config itself produced.
+Pointing the preload config at `dist/app` broke that invariant;
+ the deletion followed from documented option behavior.
+
 ## Verification
 
 Environment:
  tsdown 0.22.3 at build time (catalog `>=0.22.3`),
- two configs:
+ configs
 `tsdown.main.config.ts` (esm,
- `outDir: 'dist/app'`) and `tsdown.preload.config.ts`
-(cjs,
- same outDir).
+ `outDir: 'dist/app'`) and `tsdown.preload.config.ts` (cjs).
 
-- Both configs default clean:
+- Preload config pointed at `dist/app` with both configs on default clean:
    running main then preload leaves only `preload.cjs`;
   `dist/app/main.mjs` is gone (the symptom log above).
-- With `clean: false` in the preload config:
-   both artifacts present after the sequence;
-   the
-  package's `build:clean` mise task owns directory hygiene instead.
-  Verified by every green `mise run //packages/desktop-app/file-manager-electron:build` since.
+- Preload config on its own `outDir: 'dist/preload'` with default clean (the shipped fix):
+   `mise run //packages/desktop-app/file-manager-electron:build:js:preload` alone prints
+  `Cleaning 1 files` scoped to `dist/preload` and `dist/app/main.mjs` survives;
+   the full package `test` task (unit suites plus the nested-Wayland boundary test) exits 0.
 
 ## Verified workarounds
 
-- Set `clean: false` on every config after the first one writing into a shared outDir,
-   and do
-  directory cleaning once,
-   up front (this package's `build:clean` task).
+- The shipped fix,
+   matching the repo convention:
+   give the second config its own subdir (`outDir: 'dist/preload'`),
+   keep default clean,
+   and let the package's `build:stage` step copy `preload.cjs` into the staged
+  `dist/app` directory (`src/build-stage.ts`),
+   with `build:clean` also removing `dist/preload`.
   Tradeoff:
-   stale files from renamed entries linger until the explicit clean step runs;
-  acceptable because the mise `build` task always runs `build:clean` first.
-- Alternative not used:
-   separate outDirs per config plus a copy/stage step.
+   one extra copy in the stage step and the bundle existing twice on disk;
+   in exchange every config's clean scope is disjoint and rebuild order stops mattering.
+- The first-shipped,
+   since-replaced patch:
+   `clean: false` on every config after the first one writing into a shared outDir,
+   with directory hygiene owned by the up-front `build:clean` task.
   Tradeoff:
-   an extra stage and doubled artifacts.
+   stale files from renamed entries linger until the explicit clean step runs,
+   and the trap stays armed:
+   any future config pointed at the shared directory with default clean,
+   or a reordering that runs the cleaning config later,
+   re-breaks silently.
 
 ## What does not work
 
@@ -103,8 +141,8 @@ Environment:
     `clean: true` defaulting to the config's own outDir is
    reasonable,
     documented option behavior,
-    and the multi-config-one-outDir arrangement is
-   ours.
+    and the multi-config-one-outDir arrangement violated this repo's own
+   one-subdir-per-config convention.
 2. Can upstream fix it?
     Conceivably (e.g. cleaning only files the config would emit),
     but that
@@ -121,7 +159,7 @@ Environment:
     Nothing to fix.
 6. Prototyped minimal fix?
     Not applicable;
-    one-line consumer-side option recorded above.
+    the consumer-side arrangement recorded above removes the collision.
 
 Decision:
  nothing to file.

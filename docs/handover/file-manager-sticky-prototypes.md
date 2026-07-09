@@ -53,7 +53,11 @@ Update this file whenever a work unit lands so the context survives auto-compact
 6. nested-wayland-session drops keystrokes sent before the client maps its surface;
    fix: app mirrors a `ready` fact gated on GTK `connect_map`, tests wait for it.
 7. tsdown: two configs sharing one `outDir`; the second run's default clean deletes the
-   first's output (preload build deleted `main.mjs`); fix `clean: false` on the second config.
+   first's output (preload build deleted `main.mjs`). Self-inflicted (user confirmation):
+   the repo's one-`dist/`-subdir-per-config convention exists to prevent exactly this.
+   Fix now shipped: preload builds to its own `dist/preload` with default clean and
+   `build:stage` copies `preload.cjs` into `dist/app`; the earlier `clean: false` patch is
+   replaced and demoted to a rejected workaround in the troubleshooting doc.
 8. tsc `isolatedDeclarations`: exported computed const needs explicit type annotation (TS9010).
 9. Electron sandboxed preload must be CommonJS (bundled as `.cjs` via its own tsdown config).
 10. Electron under the nested compositor prints
@@ -90,7 +94,9 @@ Update this file whenever a work unit lands so the context survives auto-compact
 
 ## Remaining
 
-- Nothing pending in this effort; keep this handover updated if new work starts.
+- Post the GitHub commit comment on `6238b2b25` (hexpand misattribution); auto-push is
+  enabled per the user, so post as soon as the correcting context is committed and pushed.
+- Keep this handover updated if new work starts.
 
 ## Investigation assets
 
