@@ -147,7 +147,6 @@ where
     let header = GtkBox::new(Orientation::Horizontal, ROW_SPACING);
     header.add_css_class("fm-header");
     header.append(&title);
-    debug_tint::append_badge(&header, debug_tint::H7D_PANE_HEADER, Some("title plus close"));
     header.append(&close);
     header
 }

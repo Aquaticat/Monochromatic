@@ -33,13 +33,6 @@ pub(crate) struct DebugRegion {
     pub(crate) description: &'static str,
 }
 
-/// What: outer horizontal strip scroller region.
-/// Why: names the root viewport that scrolls columns left and right.
-pub(crate) const Q8O_OUTER_STRIP: DebugRegion = DebugRegion {
-    code: "Q8O",
-    description: "outer horizontal strip scroller",
-};
-
 /// What: per-column vertical scroller region.
 /// Why: names the viewport whose adjustment moves pane groups vertically.
 pub(crate) const C8L_COLUMN_SCROLL: DebugRegion = DebugRegion {
@@ -59,13 +52,6 @@ pub(crate) const V6C_COLUMN_CANVAS: DebugRegion = DebugRegion {
 pub(crate) const Y6L_CHILD_LANE: DebugRegion = DebugRegion {
     code: "Y6L",
     description: "immediate-child shared lane",
-};
-
-/// What: pane header region.
-/// Why: names the non-scrolling title and close-button bar for a pane.
-pub(crate) const H7D_PANE_HEADER: DebugRegion = DebugRegion {
-    code: "H7D",
-    description: "pane header bar",
 };
 
 /// What: preview-body region.
@@ -104,20 +90,6 @@ pub(crate) fn wrap(child: &impl IsA<Widget>, region: DebugRegion, detail: Option
     overlay.add_overlay(&badge(region, detail));
     tag(&overlay, region, detail);
     overlay.upcast::<Widget>()
-}
-
-/// What: append a visible badge to `container` when debug tinting is active.
-/// Why: boxes such as headers can label themselves without an extra overlay wrapper.
-pub(crate) fn append_badge(
-    container: &GtkBox,
-    region: DebugRegion,
-    detail: Option<&str>,
-) {
-    if !enabled() {
-        return;
-    }
-    container.append(&inline_badge(region, detail));
-    tag(container, region, detail);
 }
 
 /// What: build a fixed-size abstract lane overlay.

@@ -126,8 +126,7 @@ impl StripLayout {
     /// What: clone the root GTK widget for insertion into the window.
     /// Why: callers should not know the root happens to be a `GtkScrolledWindow`.
     pub(crate) fn widget(&self) -> Widget {
-        let detail = format!("columns={}", self.columns.borrow().len());
-        debug_tint::wrap(&self.outer, debug_tint::Q8O_OUTER_STRIP, Some(&detail))
+        self.outer.clone().upcast::<Widget>()
     }
 
     /// What: attach a key controller to the layout's root scroller.
