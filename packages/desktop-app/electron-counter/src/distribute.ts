@@ -11,7 +11,10 @@
  * ```
  */
 
-import { rm, } from 'node:fs/promises';
+import {
+  mkdir,
+  rm,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { packager, } from '@electron/packager';
@@ -206,6 +209,10 @@ async function distributeElectronCounter(
       recursive: true,
       force: true,
     },
+  );
+  await mkdir(
+    distributionDir,
+    { recursive: true, },
   );
   await writeDistributionManifest({
     electronVersion,
