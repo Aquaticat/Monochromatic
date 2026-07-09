@@ -158,6 +158,9 @@ Actual disposable-repository commits with hk 1.47.0 and 1.50.0 verified that:
 - Excluded paths stayed byte-identical.
 - A file with invalid staged content plus a separate unstaged line committed only the normalized staged content.
 - The unstaged line returned to the worktree after the commit.
+  When that unstaged edit appended at the same missing-LF boundary,
+  hk 1.50.0 inserted one extra blank line between fixed staged content and the restored tail;
+  `docs/troubleshooting/hk-partial-staging-final-newline.md` records the exact-byte limitation.
 
 ### Pre-push and explicit check
 
@@ -298,6 +301,10 @@ A future cli-git policy and independent CI checker remain the durable destinatio
 - Only LF runs are collapsed.
   The existing `.gitattributes` policy remains responsible for CRLF-to-LF normalization.
 - The local hook is temporary infrastructure because hk is scheduled for retirement.
+- hk 1.50.0 preserves an unstaged tail but can insert a blank boundary line when a fixer adds the staged file's
+  missing final LF at the exact point where the unstaged tail begins.
+  The committed blob remains correct;
+  the future cli-git normalizer must avoid this worktree-only merge artifact.
 - Generated license normalization stays attached to file-enforcer's canonical source.
 - Tsdown's `dist/final/node` tree is a deliberate compact-output exception;
   paths moved outside that boundary become subject to normal enforcement.
@@ -308,6 +315,11 @@ Implementation updates:
 
 - `docs/decisions/cli-git-policies-platform.md`:
   record the interim third hk behavior and migration obligation.
+- `docs/troubleshooting/hk-partial-staging-final-newline.md`:
+  record hk 1.50.0's partial-staging boundary merge,
+  exact-byte reproduction,
+  consumer limitation,
+  and upstream prototype.
 - `docs/troubleshooting/tsdown-final-newline.md`:
   record the tsdown 0.22.4 byte endings,
   source trace,

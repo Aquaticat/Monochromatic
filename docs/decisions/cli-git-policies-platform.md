@@ -519,6 +519,10 @@ Partially staged files are the decisive parity case:
 unstaged edits must survive the commit transaction,
 and the committed blob alone must receive required canonicalization.
 The implementation must not achieve this by adding the whole worktree file to the index.
+It also must not copy hk 1.50.0's duplicate-separator edge:
+when staged content lacks final LF and an unstaged tail starts at that boundary,
+hk restores the text with an extra blank line.
+`docs/troubleshooting/hk-partial-staging-final-newline.md` records the exact bytes and upstream-compatible prototype.
 
 Push and direct check modes are read-only.
 A direct fix surface must provide the current `hk fix --all --step final-newline --no-stage` capability,
@@ -702,10 +706,12 @@ The platform's own plugin supply chain is governed by the consumer's lockfile pi
   pre-push,
   and check;
   and forbidden-strings definitions retained but temporarily disabled during refactoring.
-- `docs/planning/final-newline-normalization.md` and `docs/troubleshooting/tsdown-final-newline.md`:
+- `docs/planning/final-newline-normalization.md`,
+   `docs/troubleshooting/hk-partial-staging-final-newline.md`,
+  and `docs/troubleshooting/tsdown-final-newline.md`:
    current normalization semantics,
   exact-byte exclusions,
-  partial-staging evidence,
+  partial-staging evidence and known boundary merge,
   and tsdown's compact-output exception.
 - `.github/workflows/forbidden-strings.yml`:
    the CI gate,
