@@ -36,9 +36,9 @@ export {
   type ElectronAppStageOptions,
   type StaticAssetMapping,
 } from './stage.ts';
+export { type ExpectedObservedState, } from './wayland-state.ts';
 export {
   runWaylandElectronBoundaryTest,
-  type ExpectedObservedState,
   type WaylandBoundaryStep,
   type WaylandElectronBoundaryTestOptions,
 } from './wayland-test.ts';
