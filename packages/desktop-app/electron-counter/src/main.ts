@@ -322,9 +322,50 @@ function installAppLifecycleHandlers(): void {
   );
 }
 
+/**
+ * Logs a failure from initial app startup.
+ *
+ * @param error - Caught startup error.
+ *
+ * @example
+ * ```ts
+ * logStartupError({ error: new Error('boom') });
+ * ```
+ */
+function logStartupError({ error, }: { readonly error: unknown; },): void {
+  mainLogger.error(
+    `Failed to start Electron counter app: ${stringifyError({ error, },)}`,
+  );
+}
+
+/**
+ * Starts Electron asynchronously without blocking ESM module evaluation.
+ *
+ * Electron emits `ready` after the main module finishes evaluating, so a
+ * top-level `await app.whenReady()` deadlocks startup under Electron's ESM
+ * loader.
+ *
+ * @example
+ * ```ts
+ * startElectronCounterApp();
+ * ```
+ */
+function startElectronCounterApp(): void {
+  void (async function startElectronCounterAppTask(): Promise<void> {
+    try {
+      mainLogger.info('Waiting for Electron app readiness.',);
+      await app.whenReady();
+      mainLogger.info('Electron app is ready.',);
+      await createMainWindow();
+    }
+    catch (error: unknown) {
+      logStartupError({ error, },);
+      app.quit();
+    }
+  })();
+}
+
 configureLinuxWayland();
 app.enableSandbox();
 installAppLifecycleHandlers();
-mainLogger.info('Waiting for Electron app readiness.',);
-await app.whenReady();
-await createMainWindow();
+startElectronCounterApp();
