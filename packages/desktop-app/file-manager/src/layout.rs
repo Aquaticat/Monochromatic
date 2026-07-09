@@ -273,13 +273,7 @@ impl StripLayout {
             return;
         }
         drop(columns);
-        let pane = build_widget(placement.id);
-        pane.set_size_request(PANE_WIDTH, PANE_HEIGHT);
-        let detail = format!(
-            "pane={} column={} row={}",
-            placement.id.0, placement.column, placement.row
-        );
-        let widget = debug_tint::wrap(&pane, debug_tint::P4N_PANE_SHELL, Some(&detail));
+        let widget = build_widget(placement.id);
         widget.set_size_request(PANE_WIDTH, PANE_HEIGHT);
         if let Some(view) = self.columns.borrow().get(placement.column) {
             view.fixed.put(&widget, 0.0, scroll::row_y(placement.row));

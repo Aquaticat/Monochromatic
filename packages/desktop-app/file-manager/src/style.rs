@@ -28,7 +28,6 @@ const DEBUG_CSS: &str = "
 .fm-column-root:nth-child(4n+3), .fm-column:nth-child(4n+3) { background-color: rgba(64,140,255,0.12); }
 .fm-column-root:nth-child(4n+4), .fm-column:nth-child(4n+4) { background-color: rgba(230,190,64,0.12); }
 .fm-canvas { background-color: rgba(255,120,0,0.10); }
-.fm-pane { border: 2px solid #ff5ec4; }
 .fm-header { background-color: rgba(180,64,255,0.35); }
 .fm-debug-overlay { border: 1px solid rgba(255,255,255,0.20); }
 .fm-debug-lane {

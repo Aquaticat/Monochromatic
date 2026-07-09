@@ -61,13 +61,6 @@ pub(crate) const Y6L_CHILD_LANE: DebugRegion = DebugRegion {
     description: "immediate-child shared lane",
 };
 
-/// What: pane shell region.
-/// Why: names the fixed-height card positioned on the column canvas.
-pub(crate) const P4N_PANE_SHELL: DebugRegion = DebugRegion {
-    code: "P4N",
-    description: "fixed-height pane shell",
-};
-
 /// What: pane header region.
 /// Why: names the non-scrolling title and close-button bar for a pane.
 pub(crate) const H7D_PANE_HEADER: DebugRegion = DebugRegion {

@@ -84,7 +84,6 @@ where
     scrolled.add_css_class("fm-list");
     let container = GtkBox::new(Orientation::Vertical, 0);
     container.add_css_class("fm-pane");
-    debug_tint::tag(&container, debug_tint::P4N_PANE_SHELL, None);
     container.append(&build_pane_header(&snapshot.path.display().to_string(), on_close));
     container.append(&scrolled);
     container

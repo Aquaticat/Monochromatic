@@ -279,9 +279,9 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   asked for every debug-relevant region to be tinted/labeled with visible descriptions plus short
   codes. Added `debug_tint.rs` and visible screenshot labels: `Q8O` outer horizontal strip scroller,
   `C8L` column vertical scroll viewport, `V6C` column fixed scroll canvas, `Y6L` immediate-child
-  shared lane, `P4N` fixed-height pane shell, `H7D` pane header bar, and `B6P` preview body. Removed
-  the green list/body fill; list viewport and realized-row labels are intentionally disabled while
-  lane and scroll-region behavior is the focus. Immediate-child lanes are explicit debug-only
+  shared lane, `H7D` pane header bar, and `B6P` preview body. Removed the green list/body fill; list
+  viewport, realized-row, and pane-shell labels are intentionally disabled while lane and
+  scroll-region behavior is the focus. Immediate-child lanes are explicit debug-only
   `GtkFixed` rails keyed by parent pane id and labeled with parent, column, child count, and row
   extent. Verified lint/check/rust-lint/clippy/tests before reopening.
 - 2026-07-09: Debug overlay sizing fix. User screenshot showed green hand-drawn rectangles that
