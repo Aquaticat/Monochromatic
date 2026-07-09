@@ -94,9 +94,9 @@ Update this file whenever a work unit lands so the context survives auto-compact
 
 ## Remaining
 
-- Post the GitHub commit comment on `6238b2b25` (hexpand misattribution); auto-push is
-  enabled per the user, so post as soon as the correcting context is committed and pushed.
-- Keep this handover updated if new work starts.
+- Nothing pending in this effort; keep this handover updated if new work starts.
+- Done: the correcting GitHub commit comment on `6238b2b25` (hexpand misattribution) is
+  posted (commitcomment-191869973); auto-push made the supporting commits reachable first.
 
 ## Investigation assets
 
