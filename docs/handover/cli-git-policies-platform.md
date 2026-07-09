@@ -373,6 +373,9 @@ or another mode not yet reproduced transactionally:
 
 - Within one pass,
   policies run in settled order and later policies see patches applied by earlier policies.
+- An error finding whose patch applies cleanly is provisional:
+  it does not block that pass,
+  and a later global pass must prove the finding disappeared.
 - If any policy changes the candidate tree,
   the next pass restarts from the first core policy.
 - Use an eight-pass cap for the complete policy sequence,
