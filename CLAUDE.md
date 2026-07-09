@@ -440,6 +440,18 @@ Trigger phrases for assumption form:
  "for a project like this...",
  "in a typical setup...".
 
+QGR:
+ Grilling or interview mode does not justify rubber-stamp questions.
+When one answer follows from settled user decisions and alternatives would contradict them,
+adopt and record it without asking.
+Ask only while at least two viable paths remain and the choice depends on the user's non-measurable preference or
+authority.
+Cue:
+ about to present a recommended option that prior decisions already determine;
+skip the questionnaire,
+state the inference,
+continue to the next real fork.
+
 ### Present options with pros, cons, and a personal ranking
 
 OPT:

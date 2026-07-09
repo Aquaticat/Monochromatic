@@ -316,6 +316,8 @@ There is no detected-CI auto-trust path and no separate expected-hash environmen
 ## Settled finding and process contract
 
 - Policy findings use stable JSONL only.
+- Autofix passes buffer findings internally and emit only the final stable pass to the public JSONL stream.
+  Intermediate findings are provisional and never appear as authoritative output.
 - There is no separate prose,
   JSON-array,
   or SARIF policy formatter.
@@ -468,7 +470,10 @@ Unless later grilling changes them:
 
 ## Open design questions
 
-Continue grilling one question at a time.
+Continue grilling one question at a time,
+but do not burn a question on a recommendation already determined by settled user choices.
+Adopt and record those implications directly.
+Ask only when at least two viable paths remain and the choice depends on user preference or authority.
 Do not ask the user for facts that source or disposable fixtures can establish.
 
 Major unresolved branches:
