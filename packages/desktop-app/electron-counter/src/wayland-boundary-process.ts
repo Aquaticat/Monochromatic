@@ -84,7 +84,9 @@ function electronBinaryPath(): string {
  * ```
  */
 export async function createFixture(): Promise<WaylandBoundaryFixture> {
-  /** Temporary root directory for this test run. */
+  /**
+   * Temporary root directory for this test run.
+   */
   const root = await mkdtemp(
     join(
       boundaryFixtureRootParent,
@@ -120,7 +122,9 @@ export async function createFixture(): Promise<WaylandBoundaryFixture> {
 export function spawnNestedWaylandSession(
   { fixture, }: { readonly fixture: WaylandBoundaryFixture; },
 ): ChildProcess {
-  /** Electron executable provided by the installed Electron package. */
+  /**
+   * Electron executable provided by the installed Electron package.
+   */
   const electron = electronBinaryPath();
 
   return spawn(
@@ -175,6 +179,56 @@ function formatExitStatus(
 }
 
 /**
+ * Checks whether a value is an indexable unknown array.
+ *
+ * @param value - Value to check.
+ *
+ * @returns Whether value is an array of unknown entries.
+ *
+ * @example
+ * ```ts
+ * isReadonlyUnknownArray([0]);
+ * ```
+ */
+function isReadonlyUnknownArray(value: unknown,): value is readonly unknown[] {
+  return Array.isArray(value,);
+}
+
+/**
+ * Parses Node's child-process `exit` event payload.
+ *
+ * @param value - Raw payload returned by `events.once`.
+ *
+ * @returns Raw exit status values.
+ *
+ * @throws Error when event payload is unexpectedly shaped.
+ *
+ * @example
+ * ```ts
+ * parseExitEvent({ value: [0, undefined] });
+ * ```
+ */
+function parseExitEvent(
+  { value, }: { readonly value: unknown; },
+): {
+  readonly code: unknown;
+  readonly signal: unknown
+} {
+  if (!isReadonlyUnknownArray(value,))
+    throw new Error('Child-process exit event payload was not an array.',);
+
+  /**
+   * Raw exit code and signal payloads from Node's `exit` event.
+   */
+  const [code, signal,] = value;
+
+  return {
+    code,
+    signal,
+  };
+}
+
+/**
  * Waits for a child process to exit successfully.
  *
  * @param child - Process to observe.
@@ -187,7 +241,9 @@ function formatExitStatus(
 export async function waitForSuccessfulExit(
   { child, }: { readonly child: ChildProcess; },
 ): Promise<void> {
-  /** Timeout that terminates the child if quit does not complete. */
+  /**
+   * Timeout that terminates the child if quit does not complete.
+   */
   const timeout = setTimeout(
     function killHungChild(): void {
       child.kill('SIGTERM',);
@@ -195,18 +251,22 @@ export async function waitForSuccessfulExit(
     shutdownDeadlineMs,
   );
 
-  /** Exit event payload from the child process. */
+  /**
+   * Raw exit event payload from the child process.
+   */
   const exit = await once(
     child,
     'exit',
   );
   clearTimeout(timeout,);
 
-  /** Raw exit code payload from Node's `exit` event. */
-  const code = exit[0];
-
-  /** Raw exit signal payload from Node's `exit` event. */
-  const signal = exit[1];
+  /**
+   * Parsed exit status values.
+   */
+  const {
+    code,
+    signal,
+  } = parseExitEvent({ value: exit, },);
 
   if (code !== 0)
     throw new Error(`Nested Wayland session exited with ${formatExitStatus({

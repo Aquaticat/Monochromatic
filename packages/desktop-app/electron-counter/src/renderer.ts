@@ -35,46 +35,65 @@ type CounterElements = {
 };
 
 /**
- * Mutable renderer-local counter state isolated behind methods.
+ * Renderer-local counter state API.
  *
  * @example
  * ```ts
- * const state = new CounterState();
- * console.log(state.current);
+ * const state = createCounterState();
+ * console.log(state.current());
  * ```
  */
-class CounterState {
-  /** Current count held by the renderer session. */
-  #count = INITIAL_COUNT;
-
+type CounterState = {
   /**
-   * Current renderer count.
+   * Reads current renderer count.
    *
-   * @returns Count before the next increment.
+   * @returns Count before next increment.
    *
    * @example
    * ```ts
-   * new CounterState().current;
+   * createCounterState().current();
    * ```
    */
-  public get current(): number {
-    return this.#count;
-  }
+  readonly current: () => number;
 
   /**
-   * Increments local state and returns the new value.
+   * Increments local state and returns new value.
    *
    * @returns Incremented count.
    *
    * @example
    * ```ts
-   * new CounterState().increment();
+   * createCounterState().increment();
    * ```
    */
-  public increment(): number {
-    this.#count = incrementCount({ current: this.#count, },);
-    return this.#count;
-  }
+  readonly increment: () => number;
+};
+
+/**
+ * Creates mutable renderer state isolated behind functions.
+ *
+ * @returns Renderer-local counter state API.
+ *
+ * @example
+ * ```ts
+ * const state = createCounterState();
+ * ```
+ */
+function createCounterState(): CounterState {
+  /**
+   * Mutable holder scoped to this renderer session.
+   */
+  const countState = { value: INITIAL_COUNT, };
+
+  return {
+    current: function current(): number {
+      return countState.value;
+    },
+    increment: function increment(): number {
+      countState.value = incrementCount({ current: countState.value, },);
+      return countState.value;
+    },
+  };
 }
 
 /**
@@ -127,7 +146,9 @@ function getElementByIdAs<const ElementType extends HTMLElement>(
     readonly id: string;
   },
 ): ElementType {
-  /** Element found in static markup before runtime type narrowing. */
+  /**
+   * Element found in static markup before runtime type narrowing.
+   */
   const element = document.querySelector<ElementType>(`#${id}`,);
 
   if (!(element instanceof constructor))
@@ -180,10 +201,14 @@ function updateRenderedCount(
     readonly elements: CounterElements;
   },
 ): void {
-  /** Human-readable counter label shared by visible and accessible text. */
+  /**
+   * Human-readable counter label shared by visible and accessible text.
+   */
   const countText = formatCount({ count, },);
-  elements.countOutput.value = countText;
-  elements.incrementButton.setAttribute(
+  elements.countOutput
+    .value = countText;
+  elements.incrementButton
+    .setAttribute(
     'aria-label',
     `Increment counter from ${count}`,
   );
@@ -199,18 +224,23 @@ function updateRenderedCount(
  * ```
  */
 function renderCounterApp(): void {
-  /** DOM elements controlled by the renderer. */
+  /**
+   * DOM elements controlled by the renderer.
+   */
   const elements = getCounterElements();
 
-  /** Renderer-local state holder. */
-  const state = new CounterState();
+  /**
+   * Renderer-local state holder.
+   */
+  const state = createCounterState();
 
   updateRenderedCount({
     elements,
-    count: state.current,
+    count: state.current(),
   },);
 
-  elements.incrementButton.addEventListener(
+  elements.incrementButton
+    .addEventListener(
     'click',
     function incrementFromClick(): void {
       updateRenderedCount({

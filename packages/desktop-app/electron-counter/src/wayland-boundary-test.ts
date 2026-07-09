@@ -45,7 +45,9 @@ function assertLinuxWaylandHost(): void {
   if (process.platform !== 'linux')
     throw new Error('Pure Wayland boundary test only runs on Linux.',);
 
-  if (process.env.WAYLAND_DISPLAY === undefined)
+  if (process.env
+    .WAYLAND_DISPLAY
+    === undefined)
     throw new Error('Pure Wayland boundary test requires a parent Wayland session.',);
 }
 
@@ -130,10 +132,14 @@ async function runWaylandBoundaryTest(): Promise<void> {
     label: 'nested Wayland compositor binary',
   },);
 
-  /** Temp fixture shared by nested compositor and control client. */
+  /**
+   * Temp fixture shared by nested compositor and control client.
+   */
   const fixture = await createFixture();
 
-  /** Nested compositor process hosting Electron. */
+  /**
+   * Nested compositor process hosting Electron.
+   */
   const child = spawnNestedWaylandSession({ fixture, },);
 
   try {

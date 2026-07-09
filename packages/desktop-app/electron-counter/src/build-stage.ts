@@ -181,7 +181,7 @@ async function copyLicenseTexts(): Promise<void> {
     if (
       Error.isError(error,)
       && ('code' in error)
-      && (error.code === 'ENOENT')
+        && (error.code === 'ENOENT')
     )
       return;
 

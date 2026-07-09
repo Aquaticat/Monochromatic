@@ -71,7 +71,9 @@ export async function waitForPath(
     readonly path: string;
   },
 ): Promise<void> {
-  /** Absolute timestamp when waiting must fail. */
+  /**
+   * Absolute timestamp when waiting must fail.
+   */
   const deadline = Date.now() + deadlineMs;
 
   while (Date.now() < deadline) {
@@ -108,7 +110,7 @@ export async function waitForPath(
  * ```
  */
 function parseSocketResponse({ value, }: { readonly value: unknown; },): string {
-  if (typeof value !== 'string')
+  if ((typeof value) !== 'string')
     throw new Error('Nested Wayland control socket returned a non-string response.',);
 
   return value.trim();
@@ -137,7 +139,9 @@ export async function sendControlCommand(
     readonly socketPath: string;
   },
 ): Promise<string> {
-  /** Connected Unix socket client for one control command. */
+  /**
+   * Connected Unix socket client for one control command.
+   */
   const client = createConnection(socketPath,);
   client.setEncoding('utf8',);
   await once(
@@ -145,7 +149,9 @@ export async function sendControlCommand(
     'connect',
   );
   client.write(`${command}\n`,);
-  /** Event payload from the line-oriented control protocol. */
+  /**
+   * Event payload from the line-oriented control protocol.
+   */
   const responseEvent = await once(
     client,
     'data',
@@ -175,7 +181,9 @@ export async function expectOkControlCommand(
     readonly socketPath: string;
   },
 ): Promise<void> {
-  /** Response returned by the compositor. */
+  /**
+   * Response returned by the compositor.
+   */
   const response = await sendControlCommand({
     command,
     socketPath,

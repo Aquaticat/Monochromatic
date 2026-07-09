@@ -48,7 +48,7 @@ function parseObservedCounterState({ value, }: { readonly value: unknown; },): O
   if (
     ((typeof value) !== 'object')
     || (value === null)
-    || (!('count' in value))
+      || (!('count' in value))
   )
     throw new Error('Observed counter state did not contain a count.',);
 
@@ -92,7 +92,7 @@ async function readObservedState(
     if (
       Error.isError(error,)
       && ('code' in error)
-      && (error.code === 'ENOENT')
+        && (error.code === 'ENOENT')
     )
       return OBSERVED_COUNTER_STATE_ABSENT;
 
@@ -133,7 +133,7 @@ export async function waitForObservedCount(
     // oxlint-disable-next-line eslint/no-await-in-loop -- sequential polling must read the latest state file before sleeping.
     const state = await readObservedState({ statePath, },);
 
-    if (state !== OBSERVED_COUNTER_STATE_ABSENT && state.count === expectedCount)
+    if ((state !== OBSERVED_COUNTER_STATE_ABSENT) && (state.count === expectedCount))
       return;
 
     // oxlint-disable-next-line eslint/no-await-in-loop -- sequential polling must delay between state reads.

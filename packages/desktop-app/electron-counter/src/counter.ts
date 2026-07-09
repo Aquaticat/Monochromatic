@@ -52,7 +52,7 @@ const TITLE_COUNT_SEPARATOR = ' :: count=';
  * ```
  */
 export const UNPARSEABLE_DOCUMENT_TITLE: unique symbol = Symbol(
-  'document title is not a Monochromatic Electron counter title',
+  'Renderer page did not publish a parseable count suffix for Monochromatic counter',
 );
 
 /**

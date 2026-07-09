@@ -37,6 +37,7 @@ run = "node dist/tools/build-stage.js"
 [tasks.lint]
 description = "Run package linters"
 run = [
+  "mise run build",
   "mise run lint:types",
   "mise run lint:oxlint",
 ]

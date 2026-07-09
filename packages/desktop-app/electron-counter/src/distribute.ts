@@ -225,5 +225,6 @@ async function distributeElectronCounter(
 }
 
 await distributeElectronCounter(parseDistributionArgs({
-  argv: process.argv.slice(2,),
+  argv: process.argv
+    .slice(2,),
 },),);

@@ -23,7 +23,7 @@ export type DistributionOptions = {
 };
 
 /**
- * Internal immutable state for CLI argument parsing.
+ * Internal mutable accumulator for CLI argument parsing.
  *
  * @example
  * ```ts
@@ -34,8 +34,10 @@ export type DistributionOptions = {
  * };
  * ```
  */
-type DistributionArgState = DistributionOptions & {
-  readonly expectTargetValue: boolean;
+type DistributionArgState = {
+  dryRun: boolean;
+  expectTargetValue: boolean;
+  selectedTargetKeys: string[];
 };
 
 /**
@@ -54,40 +56,34 @@ export function parseDistributionArgs(
   { argv, }: { readonly argv: readonly string[]; },
 ): DistributionOptions {
   /**
-   * Parsed argument state after scanning every token.
+   * Parsed argument state mutated by the single CLI scan.
    */
-  const state = argv.reduce(function reduceDistributionArgState(
-    currentState: DistributionArgState,
-    token: string,
-  ): DistributionArgState {
-    if (currentState.expectTargetValue)
-      return {
-        dryRun: currentState.dryRun,
-        expectTargetValue: false,
-        selectedTargetKeys: [
-          ...currentState.selectedTargetKeys,
-          token,
-        ],
-      };
-
-    if (token === '--dry-run')
-      return {
-        ...currentState,
-        dryRun: true,
-      };
-
-    if (token === '--target')
-      return {
-        ...currentState,
-        expectTargetValue: true,
-      };
-
-    throw new Error(`Unknown distribution argument: ${String(token,)}`,
-    );
-  }, {
+  const state: DistributionArgState = {
     dryRun: false,
     expectTargetValue: false,
     selectedTargetKeys: [],
+  };
+
+  argv.forEach(function readDistributionArg(token,): void {
+    if (state.expectTargetValue) {
+      state.expectTargetValue = false;
+      state.selectedTargetKeys
+        .push(token,);
+      return;
+    }
+
+    if (token === '--dry-run') {
+      state.dryRun = true;
+      return;
+    }
+
+    if (token === '--target') {
+      state.expectTargetValue = true;
+      return;
+    }
+
+    throw new Error(`Unknown distribution argument: ${token}`,
+    );
   },);
 
   if (state.expectTargetValue)

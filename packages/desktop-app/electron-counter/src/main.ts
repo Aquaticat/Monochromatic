@@ -112,15 +112,18 @@ function configureLinuxWayland(): void {
     return;
   }
 
-  app.commandLine.appendSwitch(
+  app.commandLine
+    .appendSwitch(
     'ozone-platform',
     'wayland',
   );
-  app.commandLine.appendSwitch(
+  app.commandLine
+    .appendSwitch(
     'enable-features',
     'WaylandWindowDecorations',
   );
-  process.env.XDG_SESSION_TYPE = 'wayland';
+  process.env
+    .XDG_SESSION_TYPE = 'wayland';
   mainLogger.info('Forced Chromium Ozone platform to Wayland for Linux.',);
 }
 
@@ -227,7 +230,8 @@ async function createMainWindow(): Promise<BrowserWindow> {
     width: mainWindowWidth,
   },);
 
-  mainWindow.webContents.on(
+  mainWindow.webContents
+    .on(
     'page-title-updated',
     function handlePageTitleUpdated(
       _event: unknown,
@@ -237,11 +241,13 @@ async function createMainWindow(): Promise<BrowserWindow> {
     },
   );
 
-  mainWindow.webContents.on(
+  mainWindow.webContents
+    .on(
     'did-finish-load',
     function handleDidFinishLoad(): void {
       observeCounterTitleFromEvent({
-        title: mainWindow.webContents.getTitle(),
+        title: mainWindow.webContents
+          .getTitle(),
       },);
     },
   );
@@ -308,7 +314,9 @@ function installAppLifecycleHandlers(): void {
     'activate',
     function handleActivate(): void {
       mainLogger.info('App activated.',);
-      if (BrowserWindow.getAllWindows().length === 0)
+      if (BrowserWindow.getAllWindows()
+        .length
+        === 0)
         createMainWindowForActivation();
     },
   );
