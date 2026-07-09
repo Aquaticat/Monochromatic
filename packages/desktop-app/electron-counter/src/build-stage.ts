@@ -101,16 +101,21 @@ function parseRootPackageMetadata({ value, }: { readonly value: unknown; },): Ro
   )
     throw new Error('Package manifest name, productName, and version must be strings.',);
 
-  return {
-    description: typeof manifest.description === 'string'
-      ? manifest.description
-      : undefined,
-    license: typeof manifest.license === 'string'
-      ? manifest.license
-      : undefined,
+  /** Required package metadata shared by root and staged manifests. */
+  const metadata: RootPackageMetadata = {
     name: manifest.name,
     productName: manifest.productName,
     version: manifest.version,
+  };
+
+  return {
+    ...metadata,
+    ...(typeof manifest.description === 'string'
+      ? { description: manifest.description, }
+      : {}),
+    ...(typeof manifest.license === 'string'
+      ? { license: manifest.license, }
+      : {}),
   };
 }
 

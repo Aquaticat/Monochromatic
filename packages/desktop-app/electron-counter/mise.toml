@@ -2,8 +2,8 @@
 description = "Build the no-Vite ESM Electron app stage"
 run = [
   "mise run build:clean",
-  "mise run build:ts:app",
   "mise run build:js:main",
+  "mise run build:ts:app",
   "mise run build:ts:tools",
   "mise run build:stage",
 ]
