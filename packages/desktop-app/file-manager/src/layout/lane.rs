@@ -194,8 +194,9 @@ impl StripLayout {
         total
     }
 
-    /// What: compute a lane's visible rectangle.
-    /// Why: debug drawing needs the same geometry used by lane sticky offsets.
+    /// What: compute a lane's fixed app-layout rectangle.
+    /// Why: green boxes are rails in the broader layout; panes may stick inside them, but the boxes
+    ///      themselves must not receive sticky offsets.
     fn lane_rect(&self, parent: PanePlacement, children: &[PanePlacement]) -> LaneRect {
         let end_column = children
             .iter()
@@ -204,7 +205,7 @@ impl StripLayout {
             .unwrap_or(parent.column);
         let column_span = end_column - parent.column + 1;
         let x = parent.column as f64 * f64::from(PANE_WIDTH + PANE_GAP);
-        let y = scroll::row_y(parent.row) + self.effective_offset_for_pane(parent.id);
+        let y = scroll::row_y(parent.row);
         let width = lane_width(column_span);
         let height = lane_base_bottom(parent, children) - scroll::row_y(parent.row);
         LaneRect {

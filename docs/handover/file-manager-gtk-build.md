@@ -290,7 +290,8 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   still a parent plus direct children. `layout.rs` now uses static per-column `GtkFixed` canvases
   inside one horizontal+vertical outer `ScrolledWindow`; per-column vertical `ScrolledWindow`s were
   removed. `layout/lane.rs` owns lane sticky offsets driven by the outer vertical adjustment,
-  hierarchical offset application, vertical reveal, and rounded green `Y6L` overlays.
+  hierarchical offset application, vertical reveal, and rounded green `Y6L` overlays. `Y6L` boxes
+  are fixed rails in app-layout coordinates; only panes receive sticky offsets inside those rails.
   `layout/scroll.rs` now only handles horizontal reveal and the shared row-pixel helper.
   `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create fake debug
   geometry.
