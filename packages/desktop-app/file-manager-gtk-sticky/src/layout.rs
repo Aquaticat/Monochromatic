@@ -2,9 +2,12 @@
 //!
 //! The original's `layout.rs` plus `layout/lane.rs` own per-lane offsets, chain accumulation, rail
 //! clamping, relaxation passes, and reveal machinery. This adapter keeps only the GTK plumbing
-//! (scroller, static canvases, widget map, reveal retries) and delegates every position decision
-//! to the pure `band` module: on each scroll change it re-places every pane at
-//! `band::sticky_y(band, scroll)` and nothing else.
+//! (scroller, one absolute canvas, widget map, reveal retries) and delegates every position
+//! decision to the pure `band` module: on each scroll change it re-places every pane at
+//! `band::positions(placements, scroll)` and nothing else. A single `GtkFixed` canvas holds every
+//! pane at absolute `(column * stride, sticky_y)` coordinates, so hexpand propagation from pane
+//! bodies can stretch the canvas without displacing anything (per-column canvases would shift
+//! their neighbors' origins when stretched).
 
 /// What: imports cells for closure-captured GTK state.
 /// Why: focus state and the scroll callback mutate from signal handlers.
@@ -21,16 +24,15 @@ use std::rc::Rc;
 ///      methods.
 use gtk4::prelude::*;
 /// What: imports concrete GTK layout and event-controller types plus glib timers.
-/// Why: the strip is built from an outer scroller, overlay, horizontal box, fixed canvases, and
-///      key controllers; reveal retries use glib timers.
+/// Why: the strip is built from an outer scroller, overlay, one fixed canvas, and key
+///      controllers; reveal retries use glib timers.
 use gtk4::{
     Adjustment, Align, Box as GtkBox, EventControllerKey, Fixed, Orientation, Overlay, PolicyType,
     ScrolledWindow, Widget, glib,
 };
 
 /// What: imports the pure band math and its placement snapshot type.
-/// Why: every pane position is `sticky_y(band_for(placement), scroll)`; the adapter computes none
-///      of it itself.
+/// Why: every pane position is one `band::positions` call; the adapter computes none of it itself.
 use crate::band::{self, Placement};
 /// What: imports pane geometry constants and the debug-tint env name.
 /// Why: canvas sizing and reveal extents share the pane grid; rails draw only in debug runs.
@@ -56,12 +58,10 @@ const REVEAL_INTERVAL_MS: u64 = 8;
 pub(crate) struct StickyLayout {
     /// Outer scroller owning both axes for the whole app.
     outer: ScrolledWindow,
-    /// Overlay whose main child is the column strip and whose overlay children are debug rails.
+    /// Overlay whose main child is the canvas and whose overlay children are debug rails.
     strip_overlay: Overlay,
-    /// Horizontal box containing static per-column fixed canvases.
-    columns_box: GtkBox,
-    /// Static per-column fixed canvases.
-    columns: RefCell<Vec<Fixed>>,
+    /// One absolute canvas holding every pane at `(column * stride, sticky_y)`.
+    canvas: Fixed,
     /// Pane widget map by stable pane id.
     widgets: RefCell<HashMap<PaneId, Widget>>,
     /// Latest placement snapshot, used by positioning and reveal without borrowing the model.
@@ -81,9 +81,10 @@ impl StickyLayout {
     /// What: build the GTK layout adapter and return it behind `Rc`.
     /// Why: the scroll handler needs a weak reference back to the adapter.
     pub(crate) fn new() -> Rc<Self> {
-        let columns_box = GtkBox::new(Orientation::Horizontal, PANE_GAP);
+        let canvas = Fixed::new();
+        canvas.add_css_class("fm-canvas");
         let strip_overlay = Overlay::new();
-        strip_overlay.set_child(Some(&columns_box));
+        strip_overlay.set_child(Some(&canvas));
         let outer = ScrolledWindow::builder()
             .child(&strip_overlay)
             .hscrollbar_policy(PolicyType::Automatic)
@@ -94,8 +95,7 @@ impl StickyLayout {
         let layout = Rc::new(Self {
             outer,
             strip_overlay,
-            columns_box,
-            columns: RefCell::new(Vec::new()),
+            canvas,
             widgets: RefCell::new(HashMap::new()),
             placements: RefCell::new(Vec::new()),
             rails: RefCell::new(Vec::new()),
@@ -161,51 +161,26 @@ impl StickyLayout {
     }
 
     /// What: reconcile GTK widgets to `placements`, building missing panes through `build_widget`.
-    /// Why: one idempotent pass after each model mutation grows/shrinks columns, removes stale
-    ///      widgets, creates missing widgets, sizes canvases, and re-places every pane.
+    /// Why: one idempotent pass after each model mutation removes stale widgets, creates missing
+    ///      widgets, sizes the canvas, and re-places every pane.
     pub(crate) fn reconcile(
         self: &Rc<Self>,
         placements: Vec<Placement>,
         mut build_widget: impl FnMut(PaneId) -> Widget,
     ) {
         self.placements.replace(placements.clone());
-        let column_count = placements
-            .iter()
-            .map(|placement| placement.column + 1)
-            .max()
-            .unwrap_or(0);
-        self.ensure_columns(column_count);
         let live: Vec<PaneId> = placements.iter().map(|placement| placement.id).collect();
         self.remove_stale(&live);
         for placement in &placements {
             self.ensure_pane_widget(placement, &mut build_widget);
         }
-        self.set_content_heights(&placements);
+        self.set_content_size(&placements);
         self.position_all();
         self.refresh_rails();
     }
 
-    /// What: grow or shrink the static column canvases to exactly `count`.
-    /// Why: descending adds columns and closes remove them.
-    fn ensure_columns(&self, count: usize) {
-        let mut columns = self.columns.borrow_mut();
-        while columns.len() < count {
-            let fixed = Fixed::new();
-            fixed.set_width_request(PANE_WIDTH);
-            fixed.set_vexpand(true);
-            fixed.add_css_class("fm-canvas");
-            self.columns_box.append(&fixed);
-            columns.push(fixed);
-        }
-        while columns.len() > count {
-            if let Some(fixed) = columns.pop() {
-                self.columns_box.remove(&fixed);
-            }
-        }
-    }
-
     /// What: remove pane widgets whose ids no longer appear in `live`.
-    /// Why: closed panes must leave their column canvas and the widget map.
+    /// Why: closed panes must leave the canvas and the widget map.
     fn remove_stale(&self, live: &[PaneId]) {
         let stale: Vec<PaneId> = self
             .widgets
@@ -215,15 +190,13 @@ impl StickyLayout {
             .filter(|id| !live.contains(id))
             .collect();
         for id in stale {
-            if let Some(widget) = self.widgets.borrow_mut().remove(&id)
-                && let Some(fixed) = widget.parent().and_downcast::<Fixed>()
-            {
-                fixed.remove(&widget);
+            if let Some(widget) = self.widgets.borrow_mut().remove(&id) {
+                self.canvas.remove(&widget);
             }
         }
     }
 
-    /// What: ensure `placement.id` has a widget in its target column.
+    /// What: ensure `placement.id` has a widget on the canvas.
     /// Why: missing widgets are built and inserted; positioning happens in one later pass.
     fn ensure_pane_widget(
         &self,
@@ -235,41 +208,33 @@ impl StickyLayout {
         }
         let widget = build_widget(placement.id);
         widget.set_size_request(PANE_WIDTH, PANE_HEIGHT);
-        if let Some(fixed) = self.columns.borrow().get(placement.column) {
-            fixed.put(&widget, 0.0, 0.0);
-        }
+        self.canvas
+            .put(&widget, column_x(placement.column), band::row_y(placement.row));
         self.widgets.borrow_mut().insert(placement.id, widget);
     }
 
-    /// What: size each static column canvas to that column's deepest pane row.
-    /// Why: columns keep the shared row coordinate for alignment; the scroll range follows the
-    ///      tallest canvas.
-    fn set_content_heights(&self, placements: &[Placement]) {
-        for (index, fixed) in self.columns.borrow().iter().enumerate() {
-            let max_row = placements
-                .iter()
-                .filter_map(|placement| (placement.column == index).then_some(placement.row))
-                .max()
-                .unwrap_or(0);
-            let height = (band::row_y(max_row) + f64::from(PANE_HEIGHT)) as i32;
-            fixed.set_size_request(PANE_WIDTH, height);
-        }
+    /// What: size the canvas to the whole pane grid.
+    /// Why: the scroller's ranges on both axes follow the canvas's requested size.
+    fn set_content_size(&self, placements: &[Placement]) {
+        let max_column = placements.iter().map(|placement| placement.column).max();
+        let max_row = placements.iter().map(|placement| placement.row).max();
+        let (Some(max_column), Some(max_row)) = (max_column, max_row) else {
+            self.canvas.set_size_request(0, 0);
+            return;
+        };
+        let width = (column_x(max_column) as i32) + PANE_WIDTH;
+        let height = (band::row_y(max_row) as i32) + PANE_HEIGHT;
+        self.canvas.set_size_request(width, height);
     }
 
     /// What: re-place every pane at its sticky position for the current scroll.
-    /// Why: the whole positioning policy is one pure call per pane; no offsets, no solver.
+    /// Why: the whole positioning policy is one pure call; no offsets, no solver.
     fn position_all(&self) {
         let placements = self.placements.borrow().clone();
         let scroll = self.vertical_scroll();
-        for (id, _, y) in band::positions(&placements, scroll) {
-            let Some(widget) = self.widgets.borrow().get(&id).cloned() else {
-                continue;
-            };
-            let Some(placement) = placements.iter().find(|placement| placement.id == id) else {
-                continue;
-            };
-            if let Some(fixed) = self.columns.borrow().get(placement.column) {
-                fixed.move_(&widget, 0.0, y);
+        for (id, x, y) in band::positions(&placements, scroll) {
+            if let Some(widget) = self.widgets.borrow().get(&id) {
+                self.canvas.move_(widget, x, y);
             }
         }
     }
@@ -292,7 +257,7 @@ impl StickyLayout {
             rail.set_size_request(PANE_WIDTH, band.height as i32);
             rail.set_halign(Align::Start);
             rail.set_valign(Align::Start);
-            rail.set_margin_start((placement.column as i32) * (PANE_WIDTH + PANE_GAP));
+            rail.set_margin_start(column_x(placement.column) as i32);
             rail.set_margin_top(band.top as i32);
             self.strip_overlay.add_overlay(&rail);
             self.strip_overlay.set_measure_overlay(&rail, false);
@@ -323,9 +288,11 @@ impl StickyLayout {
                 let Some(layout) = weak.upgrade() else {
                     return glib::ControlFlow::Break;
                 };
-                let column_x = placement.column as f64 * f64::from(PANE_WIDTH + PANE_GAP);
-                let horizontal =
-                    reveal(&layout.outer.hadjustment(), column_x, f64::from(PANE_WIDTH));
+                let horizontal = reveal(
+                    &layout.outer.hadjustment(),
+                    column_x(placement.column),
+                    f64::from(PANE_WIDTH),
+                );
                 let vertical = reveal(
                     &layout.outer.vadjustment(),
                     band::row_y(placement.row),
@@ -342,6 +309,12 @@ impl StickyLayout {
             },
         );
     }
+}
+
+/// What: horizontal pixel offset of `column` within the pane grid.
+/// Why: panes tile across the strip at a fixed stride shared with the pure band math.
+fn column_x(column: usize) -> f64 {
+    column as f64 * f64::from(PANE_WIDTH + PANE_GAP)
 }
 
 /// What: scroll `adj` so `[start, start + extent)` is fully visible, returning whether it is.
