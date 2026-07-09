@@ -2,9 +2,7 @@ diff --git a/src/git.rs b/src/git.rs
 index 7b04d97..28df60e 100644
 --- a/src/git.rs
 +++ b/src/git.rs
-@@ -1264,6 +1264,11 @@ impl Git {
-                             // If w == i (no tail), tail is empty; otherwise append tail to fixer
-                             let mut combined = f.to_string();
+@@ -1266,2 +1266,7 @@ impl Git {
                              if !tail.is_empty() {
 +                                let tail = if f.ends_with('\n') {
 +                                    tail.strip_prefix('\n').unwrap_or(tail)
@@ -12,16 +10,13 @@ index 7b04d97..28df60e 100644
 +                                    tail
 +                                };
                                  combined.push_str(tail);
-                             }
-                             merged = combined;
 diff --git a/test/fix_preserves_unstaged_newline.bats b/test/fix_preserves_unstaged_newline.bats
-index e3f7717..9455a05 100644
+index e3f7717..63e7f4d 100644
 --- a/test/fix_preserves_unstaged_newline.bats
 +++ b/test/fix_preserves_unstaged_newline.bats
-@@ -204,6 +204,48 @@ PY'
-     assert_output --partial "formatted"
+@@ -252 +252,43 @@ PKL
  }
- 
++
 +@test "fix avoids duplicate separator when fixer adds missing final newline" {
 +    cat <<PKL > hk.pkl
 +amends "$PKL_PATH/Config.pkl"
@@ -63,7 +58,3 @@ index e3f7717..9455a05 100644
 +PY
 +    assert_success
 +}
-+
- @test "fix preserves exact trailing newlines when only unstaged has extra newlines" {
-     # This test specifically targets the .read() bug that strips trailing newlines
-     cat <<PKL > hk.pkl
