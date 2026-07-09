@@ -73,7 +73,7 @@ const cpuFamilyCount = 2;
  * console.log(DISTRIBUTION_TARGET_COUNT);
  * ```
  */
-export const DISTRIBUTION_TARGET_COUNT = platformFamilyCount * cpuFamilyCount;
+export const DISTRIBUTION_TARGET_COUNT: number = platformFamilyCount * cpuFamilyCount;
 
 /**
  * Bundles the app for Linux, Windows, and macOS on x64 and arm64.
@@ -83,14 +83,14 @@ export const DISTRIBUTION_TARGET_COUNT = platformFamilyCount * cpuFamilyCount;
  * console.log(DISTRIBUTION_TARGETS.length === DISTRIBUTION_TARGET_COUNT);
  * ```
  */
-export const DISTRIBUTION_TARGETS = [
+export const DISTRIBUTION_TARGETS: readonly DistributionTarget[] = [
   { platform: 'linux', arch: 'x64', },
   { platform: 'linux', arch: 'arm64', },
   { platform: 'win32', arch: 'x64', },
   { platform: 'win32', arch: 'arm64', },
   { platform: 'darwin', arch: 'x64', },
   { platform: 'darwin', arch: 'arm64', },
-] as const satisfies readonly DistributionTarget[];
+] as const;
 
 /**
  * Returns a stable key for a distribution target.
