@@ -102,6 +102,16 @@ One policy can combine all three behaviors.
 
 The exact TypeScript types remain open.
 
+### Config composition
+
+Cli-git does not merge shared and local config layers.
+`defineConfig` receives one final config object and is only a typed identity helper.
+A consumer that wants inheritance performs an ordered deep merge in ordinary JavaScript before calling
+`defineConfig`,
+using `deepmerge-ts` or its own explicit merge logic.
+The merge library and its array or collection semantics remain consumer dependencies and visible source code;
+they are not cli-git runtime behavior.
+
 ### Policy registration and defaults
 
 Plugins use an Oxlint-style consumer-chosen namespace map:
