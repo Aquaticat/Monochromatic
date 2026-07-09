@@ -33,11 +33,10 @@
     "@luma.gl/engine": "catalog:",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
-    "find-up": "catalog:",
+    "@monochromatic-dev/module-pnpm-workspace-catalog": "workspace:*",
     "nano-spawn": "catalog:",
     "p-limit": "catalog:",
-    "rolldown": "catalog:",
-    "yaml": "catalog:"
+    "rolldown": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

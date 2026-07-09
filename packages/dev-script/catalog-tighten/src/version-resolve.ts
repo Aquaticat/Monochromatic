@@ -18,6 +18,10 @@ import {
 } from 'node:path';
 
 import {
+  isValidPackageName,
+} from '@monochromatic-dev/module-pnpm-workspace-catalog/ts';
+
+import {
   readVersionFromPnp,
 } from './version-pnp.ts';
 import {
@@ -59,6 +63,8 @@ export function resolveNpmNames(
    * Length of the `npm:` prefix
    */
   const NPM_PREFIX_LENGTH = 4;
+  if (!isValidPackageName(catalogKey,))
+    return [];
   if (catalogValue.startsWith('npm:',)) {
     /**
      * Catalog value with the `npm:` prefix stripped, leaving `<target>@<range>` or `<target>` for further parsing.
@@ -78,7 +84,10 @@ export function resolveNpmNames(
         lastAt,
       )
       : withoutNpm;
-    // Key first (installed under alias name), then registry target as fallback
+    // Key first (installed under alias name), then registry target as fallback.
+    // Invalid targets are never joined into a filesystem path.
+    if (!isValidPackageName(aliasTarget,))
+      return [catalogKey,];
     if (aliasTarget !== catalogKey) {
       return [
         catalogKey,

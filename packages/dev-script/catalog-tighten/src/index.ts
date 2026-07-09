@@ -26,6 +26,10 @@ import {
 } from 'node:path';
 
 import {
+  parseCatalogFromYaml,
+} from '@monochromatic-dev/module-pnpm-workspace-catalog/ts';
+
+import {
   isStrictlyGreater,
   NO_INSTALLED_VERSION,
   NOT_A_RANGE,
@@ -37,9 +41,6 @@ import {
 import {
   readModulesDir,
 } from './settings.ts';
-import {
-  parseCatalogFromYaml,
-} from './yaml-parse.ts';
 import {
   rewriteCatalogRanges,
 } from './yaml-rewrite.ts';
@@ -207,7 +208,11 @@ async function pathExists(path: string,): Promise<boolean> {
 /**
  * Workspace catalog mapping package names to version ranges.
  */
-const catalog = parseCatalogFromYaml(workspaceYamlContent,);
+const parsedCatalog = parseCatalogFromYaml(workspaceYamlContent,);
+/**
+ * Default catalog entries; named catalogs are intentionally outside tighten's scope.
+ */
+const catalog = parsedCatalog.defaultCatalog;
 if (Object.keys(catalog,)
   .length
   === 0) {

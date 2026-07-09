@@ -10,8 +10,8 @@
     "@types/node": "catalog:"
   },
   "dependencies": {
-    "nano-spawn": "catalog:",
-    "yaml": "catalog:"
+    "@monochromatic-dev/module-pnpm-workspace-catalog": "workspace:*",
+    "nano-spawn": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

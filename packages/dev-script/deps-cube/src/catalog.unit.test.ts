@@ -25,10 +25,10 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
-  type CatalogEntry,
   decodeAlias,
   readCatalog,
-} from './catalog.ts';
+  type CatalogEntry,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Allocates a fresh temp directory and returns it with an
@@ -91,6 +91,24 @@ await describe({
           npmName: 'somepkg',
           range: '*',
         },);
+      },
+    },),
+
+    it({
+      name: 'decodeAlias rejects traversal-shaped alias targets',
+      fn: async () => {
+        /**
+         * Captured failure from an alias target that could escape node_modules.
+         */
+        let caught: unknown;
+        try {
+          decodeAlias({ key: 'alias', value: 'npm:../../outside@1.0.0', },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(Error,);
+        expect(String(caught,),).toContain('Invalid npm alias target',);
       },
     },),
     //endregion decodeAlias

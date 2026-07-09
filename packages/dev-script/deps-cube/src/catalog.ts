@@ -1,10 +1,10 @@
 /**
- * Parses `pnpm-workspace.yaml` to extract every catalog entry, normalising
- * aliased entries (`npm:<name>@<range>`) so downstream probes see the real
- * npm package name.
+ * Adapts the shared pnpm workspace catalog reader to deps-cube's resolved
+ * entry shape.
  *
- * Handles both the default `catalog:` block and any named `catalogs.<name>:`
- * blocks; pnpm supports both syntaxes in the same workspace file.
+ * The shared reader preserves raw catalog values and supports both default and
+ * named blocks. deps-cube resolves `npm:` aliases locally because its probes
+ * need the actual registry package name.
  *
  * @example
  * ```ts
@@ -16,66 +16,77 @@
  * ```
  */
 
-import { readFile, } from 'node:fs/promises';
-
-import { findUp, } from 'find-up';
-import { parse as parseYaml, } from 'yaml';
-
-//region Types
+import {
+  flattenCatalogEntries,
+  isValidPackageName,
+  readCatalogFile,
+  type CatalogEntry as RawCatalogEntry,
+} from '@monochromatic-dev/module-pnpm-workspace-catalog/ts';//region Types
 
 /**
  * Single resolved catalog entry from `pnpm-workspace.yaml`.
  */
 export type CatalogEntry = {
   /**
-   * Key as written in the catalog (may be an alias when `range` starts with `npm:`).
+   * Key as written in the catalog, which may differ from `npmName` for an alias.
    */
   readonly catalogKey: string;
   /**
-   * Actual npm package name to query the registry with.
+   * Actual npm package name used by registry probes.
    */
   readonly npmName: string;
   /**
-   * Version range string (semver, exact, `*`, or just the trailing part of `npm:<name>@<range>`).
+   * Version range or selector after alias decoding.
    */
   readonly range: string;
   /**
-   * Name of the named catalog this entry came from; absent for the default `catalog:` block.
+   * Name of the named catalog this entry came from, omitted for the default block.
    */
   readonly catalogName?: string;
 };
 
-/**
- * Shape of the relevant portion of `pnpm-workspace.yaml` after YAML parsing.
- */
-type WorkspaceYaml = {
-  catalog?: Record<string, string>;
-  catalogs?: Record<string, Record<string, string>>;
-};
-
 //endregion Types
 
-//region Helpers
+//region Alias decoding
+
+/**
+ * Thrown when an `npm:` alias target is not a safe npm package name.
+ */
+class InvalidCatalogAliasError extends Error {
+  /**
+   * @param catalogValue - raw alias value that was rejected
+   *
+   * @param target - extracted alias target
+   */
+  constructor(
+    {
+      catalogValue,
+      target,
+    }: {
+      readonly catalogValue: string;
+      readonly target: string;
+    },
+  ) {
+    super(`Invalid npm alias target ${JSON.stringify(target,)} in ${JSON.stringify(catalogValue,)}`,);
+    this.name = 'InvalidCatalogAliasError';
+  }
+}
 
 /**
  * Decodes a catalog value, handling `npm:<name>@<range>` aliases.
  *
- * Aliases let a catalog key (often a shorter or scoped name) point at a
- * differently-named npm package. The registry query needs the real package
- * name, not the alias.
+ * @param key - catalog key
  *
- * @param key - Catalog key as written in `pnpm-workspace.yaml`.
+ * @param value - raw catalog value
  *
- * @param value - Catalog value (range or `npm:<name>@<range>` form).
- *
- * @returns Decoded `{ npmName, range }` pair.
+ * @returns actual npm name and range for downstream probes
  *
  * @example
  * ```ts
  * decodeAlias({ key: 'local-alias', value: 'npm:aliased-target\@0.8.0' });
- * // → { npmName: 'aliased-target', range: '0.8.0' }
+ * // { npmName: 'aliased-target', range: '0.8.0' }
  * decodeAlias({ key: 'preact', value: '^10.26.0' });
- * // → { npmName: 'preact', range: '^10.26.0' }
+ * // { npmName: 'preact', range: '^10.26.0' }
  * ```
  */
 export function decodeAlias(
@@ -96,168 +107,98 @@ export function decodeAlias(
       range: value,
     };
   }
+
   /**
-   * Catalog value after the `npm:` alias prefix; still contains the optional `@<range>` suffix.
+   * Alias body after removing the `npm:` marker.
    */
   const remainder = value.slice('npm:'.length,);
   /**
-   * Position of the version-separating `@`; `lastIndexOf` skips the scope-leading `@`.
+   * Final at-sign separating an optional selector from the target package name.
    */
   const atIndex = remainder.lastIndexOf('@',);
-  // No '@' or only the scope-leading '@' (index 0) means no range; entire
-  // remainder is the aliased package name.
-  if (atIndex <= 0) {
-    return {
-      npmName: remainder,
-      range: '*',
-    };
-  }
-  return {
-    npmName: remainder.slice(
+  /**
+   * Alias target package name before the optional selector suffix.
+   */
+  const npmName = atIndex <= 0
+    ? remainder
+    : remainder.slice(
       0,
       atIndex,
-    ),
-    range: remainder.slice(atIndex + 1,),
+    );
+  if (!isValidPackageName(npmName,)) {
+    throw new InvalidCatalogAliasError({
+      catalogValue: value,
+      target: npmName,
+    },);
+  }
+  return {
+    npmName,
+    range: atIndex <= 0 ? '*' : remainder.slice(atIndex + 1,),
   };
 }
 
-/**
- * Flattens a `Record<key, value>` catalog block into resolved entries,
- * resolving each value via {@link decodeAlias}.
- *
- * @param block - Parsed catalog block (default or named).
- *
- * @param catalogName - Optional name of the named catalog; omitted for the default block.
- *
- * @returns Array of {@link CatalogEntry} for every key/value in the block.
- */
-function entriesFromBlock(
-  {
-    block,
-    catalogName,
-  }: {
-    readonly block: Readonly<Record<string, string>>;
-    readonly catalogName?: string;
-  },
-): readonly CatalogEntry[] {
-  return Object.entries(block,)
-    .map(function toEntry([key, value,],): CatalogEntry {
-      /**
-       * Real npm package name plus version range, with `npm:` aliases resolved.
-       */
-      const {
-        npmName,
-        range,
-      } = decodeAlias({
-        key,
-        value,
-      },);
-      // Spread the key only when present so `undefined` never lands in the optional slot.
-      return {
-        catalogKey: key,
-        npmName,
-        range,
-        ...(catalogName === undefined ? {} : { catalogName, }),
-      };
-    },);
-}
+//endregion Alias decoding
 
-//endregion Helpers
-
-//region Public API
+//region Public reader
 
 /**
- * Locates and parses `pnpm-workspace.yaml`, returning every catalog entry
- * from the default `catalog:` block plus any `catalogs.<name>:` blocks,
- * flattening each via {@link entriesFromBlock}.
+ * Locates and parses `pnpm-workspace.yaml`, returning resolved entries from
+ * the default catalog and every named catalog.
  *
- * @param startDir - Directory to start the upward search from. Defaults to `process.cwd()`.
+ * @param startDir - optional starting directory for workspace discovery
  *
- * @returns Array of normalised catalog entries, one per package per (named-or-default) catalog.
+ * @returns resolved catalog entries in default-then-named order
  *
- * @throws When `pnpm-workspace.yaml` cannot be located or contains no catalog blocks.
+ * @throws Error when the workspace file is missing or contains no entries
  *
  * @example
  * ```ts
  * const entries = await readCatalog();
- * for (const entry of entries) {
- *   console.info(entry.catalogKey, entry.npmName, entry.range);
- * }
+ * console.info(entries.length);
  * ```
  */
 export async function readCatalog(
   { startDir, }: { readonly startDir?: string; } = {},
 ): Promise<readonly CatalogEntry[]> {
   /**
-   * Absolute path to the nearest `pnpm-workspace.yaml` walked up from `startDir`.
+   * Located workspace file, using the default cwd search when no start directory was supplied.
    */
-  const workspaceYamlPath = await findUp(
-    'pnpm-workspace.yaml',
-    startDir === undefined ? undefined : { cwd: startDir, },
-  );
-  if (workspaceYamlPath === undefined) {
-    throw new Error(
-      `Could not locate pnpm-workspace.yaml by walking up from ${
-        startDir ?? process
-          .cwd()
-      }`,
-    );
+  const workspace = startDir === undefined
+    ? await readCatalogFile()
+    : await readCatalogFile({ startDir, },);
+  /**
+   * Raw entries from both default and named blocks before alias decoding.
+   */
+  const rawEntries = flattenCatalogEntries({
+    document: workspace.catalogs,
+    includeNamedCatalogs: true,
+  },);
+  if (rawEntries.length
+    === 0) {
+    throw new Error(`No catalog or catalogs entries found in ${workspace.path}`,);
   }
 
   /**
-   * UTF-8 text of the workspace file; fed to the YAML parser.
+   * Resolved entries consumed by deps-cube's registry and install probes.
    */
-  const raw = await readFile(
-    workspaceYamlPath,
-    'utf8',
-  );
-  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- YAML parse is `unknown`; pnpm-workspace.yaml shape is fixed. */
-  /**
-   * Parsed workspace document, narrowed to the catalog-bearing subset.
-   */
-  const parsed = parseYaml(raw,) as WorkspaceYaml;
-  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-
-  /**
-   * Default `catalog:` block; empty object preserves the rest of the pipeline when absent.
-   */
-  const defaultBlock = parsed.catalog
-    ?? {};
-  /**
-   * Named `catalogs.*` blocks keyed by catalog name; empty object when the file has only the default catalog.
-   */
-  const namedBlocks = parsed.catalogs
-    ?? {};
-
-  /**
-   * Flattened entries from the default block, each tagged without a `catalogName`.
-   */
-  const defaultEntries = entriesFromBlock({ block: defaultBlock, },);
-  /**
-   * Flattened entries from every named block, each tagged with its `catalogName`.
-   */
-  const namedEntries = Object.entries(namedBlocks,)
-    .flatMap(
-    function expandNamed([catalogName, block,],) {
-      return entriesFromBlock({
-        block,
-        catalogName,
-      },);
-    },
-  );
-
-  /**
-   * Union of default and named entries returned to callers.
-   */
-  const combined = [
-    ...defaultEntries,
-    ...namedEntries,
-  ];
-  if (combined.length
-    === 0)
-    throw new Error(`No catalog or catalogs entries found in ${workspaceYamlPath}`,);
-
-  return combined;
+  return rawEntries.map(function resolveEntry(entry: RawCatalogEntry,): CatalogEntry {
+    /**
+     * Alias-decoded npm package name and selector.
+     */
+    const {
+      npmName,
+      range,
+    } = decodeAlias({
+      key: entry.catalogKey,
+      value: entry.catalogValue,
+    },);
+    return {
+      catalogKey: entry.catalogKey,
+      npmName,
+      range,
+      ...(entry.catalogName === undefined ? {} : { catalogName: entry.catalogName, }),
+    };
+  },);
 }
 
-//endregion Public API
+//endregion Public reader

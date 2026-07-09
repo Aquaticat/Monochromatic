@@ -1,10 +1,5 @@
 /**
- * Unit tests for the npm package-name validator.
- *
- * Pins the grammar the issue #195 guard relies on: an optional `@scope/`
- * prefix plus a name, each segment starting lowercase-alphanumeric and
- * continuing with `[a-z0-9._-]`. Real catalog keys must pass; crafted keys
- * (`__proto__`), malformed shapes, and uppercase must fail.
+ * Unit tests for the built npm package-name validator.
  *
  * @module
  */
@@ -17,9 +12,11 @@ import {
 
 import {
   isValidPackageName,
-} from './package-name.ts';
+} from '../dist/final/node/index.mjs';
 
-/** Real catalog keys that must validate. */
+/**
+ * Valid package names used by the workspace catalog.
+ */
 const VALID_NAMES: readonly string[] = [
   'oxlint',
   'opentype.js',
@@ -29,7 +26,9 @@ const VALID_NAMES: readonly string[] = [
   '@total-typescript/ts-reset',
 ];
 
-/** Crafted or malformed keys that must be rejected. */
+/**
+ * Crafted or malformed names that must never become catalog keys.
+ */
 const INVALID_NAMES: readonly string[] = [
   '__proto__',
   '',
@@ -42,14 +41,14 @@ const INVALID_NAMES: readonly string[] = [
   '_leading-underscore',
   'Upper',
   'has space',
-  '# TypeScript 7 RC native compiler (binary',
 ];
 
 await describe({
-  name: 'package-name',
+  name: isValidPackageName.name,
   children: [
-    //region valid names
-    ...VALID_NAMES.map(function validCase(name,) {
+    //region Valid names
+
+    ...VALID_NAMES.map(function buildValidCase(name,): ReturnType<typeof it> {
       return it({
         name: `accepts ${name}`,
         fn: async () => {
@@ -57,10 +56,12 @@ await describe({
         },
       },);
     },),
-    //endregion valid names
 
-    //region invalid names
-    ...INVALID_NAMES.map(function invalidCase(name,) {
+    //endregion Valid names
+
+    //region Invalid names
+
+    ...INVALID_NAMES.map(function buildInvalidCase(name,): ReturnType<typeof it> {
       return it({
         name: `rejects ${JSON.stringify(name,)}`,
         fn: async () => {
@@ -68,6 +69,7 @@ await describe({
         },
       },);
     },),
-    //endregion invalid names
+
+    //endregion Invalid names
   ],
 },);

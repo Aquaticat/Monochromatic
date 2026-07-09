@@ -97,10 +97,35 @@ function lineKey(line: string,): string | typeof NO_KEY {
 }
 
 /**
- * Rewrites every tightened entry's value in `content`, preserving formatting.
- * Walks lines, matches each by its (unquoted) key against `results`, and on a
- * match replaces the first occurrence of the old value with the new one,
- * leaving the surrounding quotes and spacing untouched.
+ * Extracts a top-level YAML key, ignoring indented catalog entries.
+ *
+ * @param line - one raw line from the workspace file
+ *
+ * @returns top-level key, or {@link NO_KEY}
+ *
+ * @example
+ * ```ts
+ * topLevelLineKey('catalog:') // "catalog"
+ * topLevelLineKey('  foo: \">=1.0.0\"') // NO_KEY
+ * ```
+ */
+function topLevelLineKey(line: string,): string | typeof NO_KEY {
+  /**
+   * Trimmed line used to distinguish blank and comment lines from YAML keys.
+   */
+  const trimmed = line.trim();
+  if ((trimmed === '') || trimmed.startsWith('#'))
+    return NO_KEY;
+  if (line.startsWith(' ') || line.startsWith('\t'))
+    return NO_KEY;
+  return lineKey(line,);
+}
+
+/**
+ * Rewrites every tightened entry's value in the default `catalog:` block,
+ * preserving formatting. Named `catalogs:` blocks are left untouched even when
+ * they repeat a default catalog key. On a match, only the first occurrence of
+ * the old value is replaced, leaving surrounding quotes and spacing untouched.
  *
  * @param content - raw `pnpm-workspace.yaml` text
  *
@@ -125,29 +150,61 @@ export function rewriteCatalogRanges(
     readonly results: readonly TightenedRange[];
   },
 ): string {
-  return content
-    .split('\n',)
-    .map(function rewriteLine(line,): string {
+  /**
+   * Rewritten content produced by the stateful line walk.
+   */
+  const rewritten = (function rewriteLines(): string {
+    /**
+     * Source lines traversed once for block detection and replacement.
+     */
+    const sourceLines = content.split('\n',);
+    /**
+     * Whether the current line is inside the explicit default catalog block.
+     */
+    let inDefaultCatalog = false;
+    /**
+     * Rewritten lines accumulated in source order.
+     */
+    const rewrittenLines: string[] = [];
+
+    for (const line of sourceLines) {
       /**
-       * Key parsed from this line; `NO_KEY` for non-entry lines, which pass through unchanged.
+       * Top-level key used to enter or leave the default catalog block.
+       */
+      const topLevelKey = topLevelLineKey(line,);
+      if (topLevelKey !== NO_KEY)
+        inDefaultCatalog = topLevelKey === 'catalog';
+
+      if (!inDefaultCatalog) {
+        rewrittenLines.push(line,);
+        continue;
+      }
+
+      /**
+       * Catalog key parsed from the current line; comments and headers pass through.
        */
       const key = lineKey(line,);
-      if (key === NO_KEY)
-        return line;
+      if (key === NO_KEY) {
+        rewrittenLines.push(line,);
+        continue;
+      }
       /**
        * Tightened entry whose key matches this line, if any.
        */
       const result = results.find(function matchesKey(candidate,): boolean {
         return candidate.name === key;
       },);
-      if (result === undefined)
-        return line;
-      return line.replace(
-        result.oldRange,
-        result.newRange,
-      );
-    },)
-    .join('\n',);
+      rewrittenLines.push(result === undefined
+        ? line
+        : line.replace(
+          result.oldRange,
+          result.newRange,
+        ),);
+    }
+
+    return rewrittenLines.join('\n',);
+  })();
+  return rewritten;
 }
 
 //endregion Catalog rewrite

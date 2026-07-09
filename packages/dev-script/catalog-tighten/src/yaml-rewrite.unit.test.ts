@@ -48,7 +48,10 @@ await describe({
       name: 'rewrites a double-quoted entry, preserving the double quotes',
       fn: async () => {
         /** Double-quoted shape; quote style must round-trip unchanged. */
-        const content = '  "foo": ">=1.0.0"';
+        const content = [
+          'catalog:',
+          '  "foo": ">=1.0.0"',
+        ].join('\n',);
         expect(rewriteCatalogRanges({
           content,
           results: [{
@@ -56,7 +59,10 @@ await describe({
             oldRange: '>=1.0.0',
             newRange: '>=1.1.0',
           },],
-        },),).toBe('  "foo": ">=1.1.0"',);
+        },),).toBe([
+          'catalog:',
+          '  "foo": ">=1.1.0"',
+        ].join('\n',),);
       },
     },),
 
@@ -64,7 +70,10 @@ await describe({
       name: 'replaces the full value of an npm: aliased entry',
       fn: async () => {
         /** Aliased entry: the whole `npm:<target>@<range>` value is the replacement unit. */
-        const content = '  \'zod\': \'npm:@jsr/zod__zod@>=4.1.8\'';
+        const content = [
+          'catalog:',
+          '  \'zod\': \'npm:@jsr/zod__zod@>=4.1.8\'',
+        ].join('\n',);
         expect(rewriteCatalogRanges({
           content,
           results: [{
@@ -72,7 +81,10 @@ await describe({
             oldRange: 'npm:@jsr/zod__zod@>=4.1.8',
             newRange: 'npm:@jsr/zod__zod@>=4.4.0',
           },],
-        },),).toBe('  \'zod\': \'npm:@jsr/zod__zod@>=4.4.0\'',);
+        },),).toBe([
+          'catalog:',
+          '  \'zod\': \'npm:@jsr/zod__zod@>=4.4.0\'',
+        ].join('\n',),);
       },
     },),
 
@@ -80,7 +92,10 @@ await describe({
       name: 'preserves a trailing comment on the entry line',
       fn: async () => {
         /** Trailing inline comment must survive a value rewrite. */
-        const content = '  foo: ">=1.0.0" # keep me';
+        const content = [
+          'catalog:',
+          '  foo: ">=1.0.0" # keep me',
+        ].join('\n',);
         expect(rewriteCatalogRanges({
           content,
           results: [{
@@ -88,7 +103,10 @@ await describe({
             oldRange: '>=1.0.0',
             newRange: '>=1.1.0',
           },],
-        },),).toBe('  foo: ">=1.1.0" # keep me',);
+        },),).toBe([
+          'catalog:',
+          '  foo: ">=1.1.0" # keep me',
+        ].join('\n',),);
       },
     },),
 
@@ -115,6 +133,76 @@ await describe({
           '  \'foo\': \'>=1.0.0\'',
           '  \'bar\': \'>=2.1.0\'',
         ].join('\n',),);
+      },
+    },),
+
+    it({
+      name: 'rewrites only the default catalog when a named block repeats the key',
+      fn: async () => {
+        /** Default and named entries deliberately share both key and old value. */
+        const content = [
+          'catalog:',
+          '  foo: ">=1.0.0"',
+          'catalogs:',
+          '  legacy:',
+          '    foo: ">=1.0.0"',
+        ].join('\n',);
+        expect(rewriteCatalogRanges({
+          content,
+          results: [{
+            name: 'foo',
+            oldRange: '>=1.0.0',
+            newRange: '>=1.1.0',
+          },],
+        },),).toBe([
+          'catalog:',
+          '  foo: ">=1.1.0"',
+          'catalogs:',
+          '  legacy:',
+          '    foo: ">=1.0.0"',
+        ].join('\n',),);
+      },
+    },),
+
+    it({
+      name: 'keeps rewriting after a zero-indented comment containing a colon',
+      fn: async () => {
+        /** A top-level comment must not terminate the default catalog state. */
+        const content = [
+          'catalog:',
+          '  foo: ">=1.0.0"',
+          '# migration: keep pinned',
+          '  bar: ">=2.0.0"',
+        ].join('\n',);
+        expect(rewriteCatalogRanges({
+          content,
+          results: [{
+            name: 'bar',
+            oldRange: '>=2.0.0',
+            newRange: '>=2.1.0',
+          },],
+        },),).toBe([
+          'catalog:',
+          '  foo: ">=1.0.0"',
+          '# migration: keep pinned',
+          '  bar: ">=2.1.0"',
+        ].join('\n',),);
+      },
+    },),
+
+    it({
+      name: 'leaves content without a default catalog header unchanged',
+      fn: async () => {
+        /** Unscoped YAML content must not be mistaken for the default catalog. */
+        const content = '  foo: ">=1.0.0"';
+        expect(rewriteCatalogRanges({
+          content,
+          results: [{
+            name: 'foo',
+            oldRange: '>=1.0.0',
+            newRange: '>=1.1.0',
+          },],
+        },),).toBe(content,);
       },
     },),
   ],

@@ -19,11 +19,14 @@ in containers and passes (isolated and hoisted with hoist on/off, pnp, and the s
 regression). All work is committed and pushed to `main`.
 
 The four deferred-manager issues are filed: Bun (#260), Yarn Berry (#261), Deno (#262), vlt (#263).
-Next sessions pick those up; nothing else is in flight here.
+The catalog reader consolidation (#264) is now complete;
+next sessions pick up the manager-specific issues.
 
 ## Progress
 
-- Done: yaml-library reader; string-scan name validator + `Object.create(null)` map (#195);
+- Done: shared `@monochromatic-dev/module-pnpm-workspace-catalog` reader;
+  yaml-library parsing;
+  string-scan name validator + `Object.create(null)` maps (#195);
   on-disk resolver (root + workspace `node_modules`, exports-bypassing), Bun-store scan removed;
   surgical single-quote-preserving write-back; no-install guard; clear error on a missing
   `pnpm-workspace.yaml`; README rewrite; host unit tests.
@@ -55,10 +58,12 @@ Next sessions pick those up; nothing else is in flight here.
 
 #258 is three defects, not one:
 
-1.  Parse (`packages/dev-script/catalog-tighten/src/yaml-parse.ts`):
-    `unquote()` strips only double quotes,
-    but `pnpm-workspace.yaml` now uses single quotes (`'oxlint': '>=1.71.0'`),
-    so keys and values keep literal quotes and every lookup fails.
+1.  Parse (`packages/module/pnpm-workspace-catalog/src/parse.ts`):
+    the shared YAML parser handles single quotes,
+    double quotes,
+    comments,
+    default catalogs,
+    and named catalogs while retaining raw values for callers that need them.
 2.  Resolve (`packages/dev-script/catalog-tighten/src/version-resolve.ts`,
     `packages/dev-script/catalog-tighten/src/version-read.ts`):
     even after the quote fix, 122 of 134 entries still miss.
@@ -172,12 +177,13 @@ The layouts that break any `node_modules`-reading strategy: Yarn Berry PnP and D
 - Fixture workspace shape and how pnpm settings are applied per container combo.
 - pnpm pnp reader: exact PnP-API call sequence.
 - Commit slicing for the pnpm work (committing to `main`, eagerly).
-- Default catalog only: named `catalogs:` are out of scope for the fix
-  (the one named entry here, `classic.typescript`, is a `^` range and is skipped anyway).
+- `catalog-tighten` remains default-catalog-only; `deps-cube` explicitly opts into named
+  catalogs through the shared raw-entry flattener.
 
 ## Key files
 
-- `packages/dev-script/catalog-tighten/src/yaml-parse.ts`: catalog parser (#258 defect 1, #195).
+- `packages/module/pnpm-workspace-catalog/src/parse.ts`: shared catalog parser and #195 hardening.
+- `packages/module/pnpm-workspace-catalog/src/read.ts`: located-file reader retaining raw content.
 - `packages/dev-script/catalog-tighten/src/version-resolve.ts`: installed-version resolution (#258 defect 2).
 - `packages/dev-script/catalog-tighten/src/version-read.ts`: store scan to be removed.
 - `packages/dev-script/catalog-tighten/src/index.ts`: top-level run and write-back (#258 defect 3).

@@ -430,18 +430,20 @@ Done:
    `@deck.gl/layers`,
    `string-dedent`,
    `@monochromatic-dev/module-es`,
-   `find-up`,
+   `@monochromatic-dev/module-pnpm-workspace-catalog`,
    `nano-spawn`,
-   `p-limit`,
-   `yaml`),
+   `p-limit`),
    `mise.toml`,
    `tsconfig.json`,
    `README.md`.
 - ~~Task 2 (catalog entry)~~:
    `pnpm-workspace.yaml` carries `@deck.gl/core: '>=9.3.2'` and `@deck.gl/layers: '>=9.3.2'`.
 - ~~Task 3 (catalog parser)~~:
-   `src/catalog.ts` exports `readCatalog({ startDir? })` parsing both default `catalog:` block and named `catalogs.<name>:` blocks;
-   alias decoder exported as `decodeAlias`.
+   `packages/module/pnpm-workspace-catalog` owns YAML parsing,
+   validation,
+   prototype-safe maps,
+   and located-file discovery. `src/catalog.ts` adapts its raw default-plus-named entries into the
+   resolved `CatalogEntry` shape; alias decoder remains exported as `decodeAlias`.
 - ~~Task 4 (cache)~~:
    `src/cache.ts` exports `createCache({ rootDir? })`.
    JSON file per (name,
@@ -864,7 +866,7 @@ packages/dev-script/deps-cube/
 ├── tsconfig.json
 ├── src/
 │   ├── cache.ts                 ← JSON file cache, per-key TTL, atomic writes
-│   ├── catalog.ts               ← pnpm-workspace.yaml parser + alias decode
+│   ├── catalog.ts               ← shared-reader adapter + alias decode
 │   ├── cli.ts                   ← #!/usr/bin/env node; readCatalog → probeAll → renderHtml → writeFile
 │   ├── css.d.ts                 ← ambient `declare module '*.css'` shim for text imports
 │   ├── deck-accessors.ts        ← per-probe pure accessors (position/color/radius/shape)
