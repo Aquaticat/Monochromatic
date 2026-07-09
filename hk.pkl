@@ -33,7 +33,8 @@ local forbiddenRootContext = new Step {
 
 hooks {
   ["pre-commit"] {
-    fix = true
+    // Keep unstaged edits out of staged-byte checks. Auto-fix is intentionally
+    // disabled; hk 1.50.0 can duplicate the LF at an unstaged tail boundary.
     stash = "git"
     steps {
       ["final-newline"] = finalNewline
