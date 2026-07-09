@@ -4,6 +4,9 @@
 //! Each sibling-group lane, one parent pane plus its direct children, reacts to that global app
 //! scroll and independently applies a bounded sticky offset inside its green-box range.
 
+/// What: imports the hash-map container.
+/// Why: resolved pane positions are keyed by stable `PaneId`.
+use std::collections::HashMap;
 /// What: imports the reference-counted pointer.
 /// Why: GTK adjustment callbacks hold weak references to `StripLayout`.
 use std::rc::Rc;
@@ -77,17 +80,23 @@ impl StripLayout {
         self.sync_lane_offsets_to_app_scroll();
     }
 
-    /// What: move every pane widget to its lane-offset-adjusted visual row.
-    /// Why: columns are static canvases, so lane sticky offsets are implemented by moving panes.
+    /// What: move every pane widget to its resolved non-overlapping visual row.
+    /// Why: columns are static canvases, so lane sticky offsets are implemented by moving panes while
+    ///      preserving row order and rail bounds.
     pub(super) fn position_all_widgets(&self) {
         let placements = self.placements.borrow().clone();
+        let positions = self.resolved_y_positions(&placements);
         for placement in &placements {
             let widget = self.widgets.borrow().get(&placement.id).cloned();
             let Some(widget) = widget else {
                 continue;
             };
+            let y = positions
+                .get(&placement.id)
+                .copied()
+                .unwrap_or_else(|| self.desired_y_for_pane(*placement));
             if let Some(view) = self.columns.borrow().get(placement.column) {
-                view.fixed.move_(&widget, 0.0, self.visual_y_for_pane(*placement));
+                view.fixed.move_(&widget, 0.0, y);
             }
         }
     }
@@ -171,35 +180,94 @@ impl StripLayout {
         (bottom - self.viewport_height()).max(0.0)
     }
 
-    /// What: compute `placement`'s content y-coordinate after sticky offsets and rail clamps.
-    /// Why: every pane reacts to app scroll, but it must never leave any green `Y6L` rail it belongs
-    ///      to.
+    /// What: compute `placement`'s resolved content y-coordinate.
+    /// Why: reveal code needs the same non-overlap and rail-bound position used by rendering.
     pub(super) fn visual_y_for_pane(&self, placement: PanePlacement) -> f64 {
-        let desired = scroll::row_y(placement.row) + self.effective_offset_for_pane(placement.id);
-        let Some((min_y, max_y)) = self.allowed_y_for_pane(placement) else {
-            return desired;
-        };
-        desired.clamp(min_y, max_y)
+        let placements = self.placements.borrow().clone();
+        self.resolved_y_positions(&placements)
+            .get(&placement.id)
+            .copied()
+            .unwrap_or_else(|| self.desired_y_for_pane(placement))
+    }
+
+    /// What: resolve all pane y positions without overlap inside every green rail.
+    /// Why: individual clamping can collapse siblings onto one boundary; resolving per column keeps
+    ///      the row stack ordered while respecting each pane's rail interval.
+    fn resolved_y_positions(&self, placements: &[PanePlacement]) -> HashMap<PaneId, f64> {
+        let groups = direct_child_groups(placements);
+        let mut columns: HashMap<usize, Vec<PanePlacement>> = HashMap::new();
+        for placement in placements {
+            columns.entry(placement.column).or_default().push(*placement);
+        }
+        let mut positions = HashMap::new();
+        for (_, mut column) in columns {
+            column.sort_by_key(|placement| (placement.row, placement.id.0));
+            let resolved = self.resolve_column_positions(&column, placements, &groups);
+            for (id, y) in resolved {
+                positions.insert(id, y);
+            }
+        }
+        positions
+    }
+
+    /// What: resolve one column's pane positions with forward/backward spacing passes.
+    /// Why: preserving `PANE_HEIGHT + PANE_GAP` spacing prevents overlap while clamping to rail
+    ///      intervals keeps panes inside their green boxes.
+    fn resolve_column_positions(
+        &self,
+        column: &[PanePlacement],
+        placements: &[PanePlacement],
+        groups: &HashMap<PaneId, Vec<PanePlacement>>,
+    ) -> Vec<(PaneId, f64)> {
+        let stride = f64::from(PANE_HEIGHT + PANE_GAP);
+        let mut rows: Vec<(PaneId, f64, f64, f64)> = column
+            .iter()
+            .map(|placement| {
+                let (min_y, max_y) = self
+                    .allowed_y_for_pane_in(*placement, placements, groups)
+                    .unwrap_or((f64::NEG_INFINITY, f64::INFINITY));
+                let y = self.desired_y_for_pane(*placement).clamp(min_y, max_y);
+                (placement.id, y, min_y, max_y)
+            })
+            .collect();
+        for index in 1..rows.len() {
+            let floor = rows[index - 1].1 + stride;
+            rows[index].1 = rows[index].1.max(floor).min(rows[index].3);
+        }
+        for index in (0..rows.len().saturating_sub(1)).rev() {
+            let ceiling = rows[index + 1].1 - stride;
+            rows[index].1 = rows[index].1.min(ceiling).max(rows[index].2);
+        }
+        rows.into_iter().map(|(id, y, _, _)| (id, y)).collect()
+    }
+
+    /// What: compute desired sticky content y before rail and overlap constraints.
+    /// Why: resolved layout starts from the sticky target, then constrains it.
+    fn desired_y_for_pane(&self, placement: PanePlacement) -> f64 {
+        scroll::row_y(placement.row) + self.effective_offset_for_pane(placement.id)
     }
 
     /// What: compute vertical bounds shared by every green rail containing `placement`.
     /// Why: a pane can be both a child in one lane and the parent of another; both rails constrain it.
-    fn allowed_y_for_pane(&self, placement: PanePlacement) -> Option<(f64, f64)> {
-        let placements = self.placements.borrow().clone();
-        let groups = direct_child_groups(&placements);
+    fn allowed_y_for_pane_in(
+        &self,
+        placement: PanePlacement,
+        placements: &[PanePlacement],
+        groups: &HashMap<PaneId, Vec<PanePlacement>>,
+    ) -> Option<(f64, f64)> {
         let mut min_y: Option<f64> = None;
         let mut max_y: Option<f64> = None;
         for (parent, children) in groups {
-            let contains = parent == placement.id
+            let contains = *parent == placement.id
                 || children.iter().any(|child| child.id == placement.id);
             if !contains {
                 continue;
             }
-            let Some(parent_placement) = placement_by_id(&placements, parent) else {
+            let Some(parent_placement) = placement_by_id(placements, *parent) else {
                 continue;
             };
             let top = scroll::row_y(parent_placement.row);
-            let bottom = lane_base_bottom(parent_placement, &children) - f64::from(PANE_HEIGHT);
+            let bottom = lane_base_bottom(parent_placement, children) - f64::from(PANE_HEIGHT);
             min_y = Some(min_y.map_or(top, |current| current.max(top)));
             max_y = Some(max_y.map_or(bottom, |current| current.min(bottom)));
         }
