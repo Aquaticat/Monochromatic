@@ -1163,6 +1163,8 @@ _.path = [
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
   "packages/dev-script/catalog-tighten/node_modules/.bin",
+  "packages/desktop-app/electron-infra/node_modules/.bin",
+  "packages/desktop-app/electron-counter/node_modules/.bin",
   "packages/config/stylelint/node_modules/.bin",
   "packages/claude-code-plugins/terminal-title/node_modules/.bin",
   "packages/claude-code-plugins/stop-reminders/node_modules/.bin",
