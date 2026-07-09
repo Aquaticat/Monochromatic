@@ -157,7 +157,24 @@ The earlier phase-gated aggregation model was replaced.
   A plugin that needs parallel checks composes them inside one policy,
   for example with `Promise.all`.
 
-## Settled management command surface
+## Settled distribution and management surface
+
+### Distribution
+
+`@monochromatic-dev/cli-git` becomes a public npm package instead of remaining private.
+The first distributable is the Node package only;
+standalone native executables are out of the first platform release.
+The package installs the shadowing `git` bin and includes the runtime needed for trusted TypeScript config bundling.
+External non-mise users install the npm package and put its bin directory before real Git on `PATH`.
+
+Node support range,
+`publishConfig`,
+provenance workflow,
+package contents,
+installation documentation,
+and end-user PATH verification remain implementation work.
+
+### Management commands
 
 Cli-git intercepts a namespaced Git subcommand rather than installing a second executable:
 
