@@ -1,15 +1,53 @@
+import { resolve, } from 'node:path';
+
 import {
   defineConfig,
+  type TsdownHooks,
   type UserConfig,
 } from 'tsdown';
 
 import { browserslistTargets, } from './browserslist-targets.ts';
+import { normalizeGeneratedTextOutputs, } from './final-newline.ts';
 
 /**
  * Resolved Browserslist targets shared by Node builds, via
  * {@link browserslistTargets}.
  */
 const target = await browserslistTargets({ runtime: 'node', },);
+
+/**
+ * Tsdown lifecycle hook that canonicalizes emitted Node text artifacts after
+ * JavaScript and declaration generation have both completed.
+ *
+ * Tsdown's own logger is the build host's user-facing output channel, so this
+ * integration reports only actual rewrites and leaves compliant builds quiet.
+ *
+ * @param context - Completed tsdown build context carrying resolved output path and logger.
+ *
+ * @example
+ * ```ts
+ * await normalizeNodeBuildOutputs(context);
+ * ```
+ */
+const normalizeNodeBuildOutputs: TsdownHooks['build:done'] = async function normalizeNodeBuildOutputs(
+  { options, },
+): Promise<void> {
+  /**
+   * Absolute Node output directory resolved from package build cwd.
+   */
+  const outputDir = resolve(options.cwd, options.outDir,);
+  /**
+   * Relative generated artifact paths whose final LF changed.
+   */
+  const normalizedPaths = await normalizeGeneratedTextOutputs({ outputDir, },);
+
+  if (normalizedPaths.length === 0)
+    return;
+
+  options.logger.info(
+    `Normalized final LF in ${String(normalizedPaths.length,)} Node output file(s).`,
+  );
+};
 
 /**
  * Shared tsdown options for Node.js platform builds, without an entry.
@@ -54,6 +92,9 @@ const baseOptions: UserConfig = {
   report: false,
   outDir: 'dist/final/node',
   fixedExtension: true,
+  hooks: {
+    'build:done': normalizeNodeBuildOutputs,
+  },
 };
 
 /**
