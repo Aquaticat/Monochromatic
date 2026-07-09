@@ -300,3 +300,7 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   `layout/scroll.rs` now only handles horizontal reveal and the shared row-pixel helper.
   `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create fake debug
   geometry.
+- 2026-07-09: Layout approved. Human verification on the live `file-manager-lane-tint` run approved
+  the app-owned vertical scroll model with static columns, fixed `Y6L` rails, non-overlapping panes,
+  and root-pane stickiness. Treat this layout behavior as the accepted baseline for the next file
+  manager iteration.
