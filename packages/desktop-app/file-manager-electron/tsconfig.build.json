@@ -1,0 +1,31 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/dom",
+  "include": [
+    "${configDir}/src/constants.ts",
+    "${configDir}/src/strip.ts",
+    "${configDir}/src/bands.ts",
+    "${configDir}/src/bridge-types.ts",
+    "${configDir}/src/listing-sort.ts",
+    "${configDir}/src/render-dom.ts",
+    "${configDir}/src/renderer.ts"
+  ],
+  "compilerOptions": {
+    "allowImportingTsExtensions": false,
+    "composite": false,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "erasableSyntaxOnly": true,
+    "isolatedDeclarations": true,
+    "listEmittedFiles": false,
+    "module": "node20",
+    "moduleResolution": "node16",
+    "noEmit": false,
+    "noEmitOnError": true,
+    "outDir": "${configDir}/dist/app",
+    "rootDir": "${configDir}/src",
+    "sourceMap": true,
+    "types": [],
+    "verbatimModuleSyntax": true
+  }
+}

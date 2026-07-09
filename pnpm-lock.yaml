@@ -1269,6 +1269,34 @@ importers:
         specifier: 'catalog:'
         version: 7.0.1-rc
 
+  packages/desktop-app/file-manager-electron:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/desktop-app-electron-infra':
+        specifier: workspace:*
+        version: link:../electron-infra
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
+      electron:
+        specifier: 'catalog:'
+        version: 43.1.0
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.3(typescript@7.0.1-rc)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+
   packages/desktop-daemon/hall-monitor:
     dependencies:
       '@monochromatic-dev/module-const':
