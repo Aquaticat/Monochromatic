@@ -294,8 +294,9 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   are fixed rails in app-layout coordinates; only panes receive sticky offsets inside those rails.
   Pane positioning resolves per column with forward/backward spacing passes, so panes keep
   `PANE_HEIGHT + PANE_GAP` separation while staying inside every `Y6L` rail they belong to. Lane
-  offsets apply to descendants only, not to the parent pane that owns the lane, preventing parent
-  panes with their own children from double-moving into siblings.
+  offsets apply through the parent lane for non-root panes; root panes have no parent lane, so they
+  use their own root lane. This prevents parent panes with their own children from double-moving into
+  siblings while still letting the root stick inside its root rail.
   `layout/scroll.rs` now only handles horizontal reveal and the shared row-pixel helper.
   `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create fake debug
   geometry.
