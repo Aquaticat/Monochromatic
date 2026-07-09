@@ -96,9 +96,9 @@ At hk 1.50.0,
 The implementation will align the executable and Pkl package at hk 1.50.0.
 The current state is version-skewed:
 `hk.pkl` imports 1.44.3,
-`mise.lock` resolves 1.47.0,
+while `mise.lock` contains a legacy backend-keyed 1.47.0 entry plus the active short-name 1.50.0 entry,
 and the planning environment activated 1.50.0.
-A hook that mutates staged content should not depend on unrecorded version drift.
+A hook that mutates staged content should not depend on an older Pkl package than its active executable.
 
 The configured step will be equivalent to:
 
