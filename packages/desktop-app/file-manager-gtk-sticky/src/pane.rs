@@ -67,8 +67,15 @@ where
         store.append(&BoxedAnyObject::new(entry.clone()));
     }
     let selection = SingleSelection::new(Some(store));
+    let has_rows = selection.n_items() > 0;
     let list = ListView::new(Some(selection), Some(build_row_factory()));
     list.set_single_click_activate(true);
+    if has_rows {
+        // Initialize the keyboard cursor on the first row; without this GTK leaves the cursor
+        // unset until the first arrow key, so a bare Enter would activate nothing even though
+        // the row renders as selected.
+        list.scroll_to(0, gtk4::ListScrollFlags::FOCUS | gtk4::ListScrollFlags::SELECT, None);
+    }
     install_force_duplicate_tracking(&list, on_activate);
 
     let scrolled = ScrolledWindow::builder()
@@ -138,6 +145,10 @@ where
         .build();
     let close = Button::from_icon_name("window-close-symbolic");
     close.set_has_frame(false);
+    // Keep the button pointer-only: were it focusable, initial keyboard focus would land on it
+    // (it is the pane's first focusable child) and Enter would close the pane instead of
+    // activating the selected list row.
+    close.set_focusable(false);
     close.connect_clicked(move |_| on_close());
     let header = GtkBox::new(Orientation::Horizontal, ROW_SPACING);
     header.add_css_class("fm-header");

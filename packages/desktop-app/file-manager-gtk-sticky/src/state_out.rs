@@ -40,6 +40,9 @@ pub(crate) struct ObservedInputs {
     pub(crate) pane_count: usize,
     /// Latest placement snapshot.
     pub(crate) placements: Vec<Placement>,
+    /// Whether the top-level window has mapped; boundary tests must not send keys before this,
+    /// because a keystroke delivered before the surface exists is silently dropped.
+    pub(crate) ready: bool,
     /// Current app vertical scroll offset.
     pub(crate) scroll: f64,
 }
@@ -59,7 +62,7 @@ pub(crate) fn write_observed_state(inputs: &ObservedInputs) {
         Value::from(band::overlap_count(&inputs.placements, inputs.scroll)),
     );
     snapshot.insert("paneCount".into(), Value::from(inputs.pane_count));
-    snapshot.insert("ready".into(), Value::from(true));
+    snapshot.insert("ready".into(), Value::from(inputs.ready));
     snapshot.insert(
         "rootPinned".into(),
         Value::from(band::root_pinned(&inputs.placements, inputs.scroll)),

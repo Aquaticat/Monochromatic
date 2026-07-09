@@ -20,8 +20,10 @@ path = "src/main.rs"
 # The original app's crate: this variant reuses its public pane-strip model, filesystem reads, and
 # domain types verbatim, so the two apps differ ONLY in the layout engine the audit doc compares.
 file-manager = { path = "../file-manager" }
-# gtk4-rs over system GTK 4.22, same feature level as the original.
-gtk4 = { version = "0.11", features = ["v4_10"] }
+# gtk4-rs over system GTK 4.22. One step above the original's v4_10 feature level: v4_12 adds
+# `ListView::scroll_to`, used to initialize each list's keyboard cursor so the first Enter
+# activates the selected row (keyboard parity with the Electron prototype's boundary test).
+gtk4 = { version = "0.11", features = ["v4_12"] }
 # Non-blocking logging, same pattern as the original.
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

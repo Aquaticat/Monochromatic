@@ -33,6 +33,7 @@ pub(crate) fn build_window(app: &Application) -> StripController {
         .default_height(DEFAULT_HEIGHT)
         .child(&controller.widget())
         .build();
+    controller.wire_window_map(&window);
     window.present();
     tracing::info!(path = %start.display(), "presented top-level window");
     controller

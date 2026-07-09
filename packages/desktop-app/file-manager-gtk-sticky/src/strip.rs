@@ -52,6 +52,9 @@ pub(crate) struct StripInner {
     pub(crate) state: RefCell<PaneStripState>,
     /// Monotonic directory-read generation.
     generation: Cell<u64>,
+    /// Whether the top-level window has mapped; mirrored as the observed `ready` fact so boundary
+    /// tests never send keys to a surface that does not exist yet.
+    mapped: Cell<bool>,
 }
 
 /// What: owning handle to a built strip.
@@ -74,6 +77,7 @@ impl StripController {
             layout,
             state: RefCell::new(PaneStripState::new()),
             generation: Cell::new(0),
+            mapped: Cell::new(false),
         });
         let root_id = inner
             .state
@@ -95,6 +99,19 @@ impl StripController {
     /// Why: the concrete GTK root lives behind `StickyLayout` so callers do not depend on it.
     pub fn widget(&self) -> Widget {
         self.inner.layout.widget()
+    }
+
+    /// What: mark the observed state ready once `window` maps, and mirror state at that moment.
+    /// Why: the compositor drops keystrokes sent before the surface exists, so boundary tests
+    ///      gate their first key on the observed `ready` fact flipping true.
+    pub(crate) fn wire_window_map(&self, window: &gtk4::ApplicationWindow) {
+        let weak = Rc::downgrade(&self.inner);
+        window.connect_map(move |_| {
+            if let Some(inner) = weak.upgrade() {
+                inner.mapped.set(true);
+                write_state(&inner);
+            }
+        });
     }
 }
 
@@ -170,6 +187,7 @@ fn write_state(inner: &Rc<StripInner>) {
         column_count: state.column_count(),
         pane_count: state.len(),
         placements: placements_of(inner),
+        ready: inner.mapped.get(),
         scroll: inner.layout.vertical_scroll(),
     };
     drop(state);
