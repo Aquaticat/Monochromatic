@@ -2,11 +2,14 @@
 
 ## Status
 
-Approved for implementation.
+Approved for implementation,
+with tsdown Node output explicitly exempted during implementation.
 
 The repository will canonicalize every in-scope,
-non-empty text file to exactly one trailing LF before commit.
-Git will continue to track that canonical byte;
+non-empty text file to exactly one trailing LF before commit,
+except exact-byte fixtures and files under `**/dist/final/node/**`.
+Tsdown outputs keep their producer-native missing final LF to save one byte per generated file.
+Git will continue to track actual bytes;
 it will not be configured to hide newline-only changes.
 
 ## Goal
@@ -19,7 +22,8 @@ The user-facing outcomes are:
 - Editing a normal text file and committing it produces exactly one final LF.
 - A partially staged file keeps its unstaged edits while the staged version is normalized.
 - A repository-wide check reports any in-scope violation without modifying files.
-- Generated license copies and built plugin artifacts remain canonical after their normal producers run.
+- Generated license copies remain canonical after their normal producer runs.
+- Tsdown Node outputs remain byte-identical to producer output and outside newline enforcement.
 - Fuzz corpora and parser fixtures remain byte-identical.
 
 ## Current state and measured scope
@@ -40,7 +44,8 @@ The violations split by ownership:
 - 123 copies of `GPL-3.0-or-later.txt`.
   `file-enforcer.config.ts` copies package-local license texts verbatim from the canonical root source.
 - 18 tracked outputs under `packages/claude-code-plugins/*/dist/final/node/`.
-  Tsdown 0.22.4 currently emits these JavaScript and declaration files without a final LF.
+  Tsdown 0.22.4 emits these JavaScript and declaration files without a final LF;
+  the implementation amendment reclassified them as intentional compact-output exemptions.
 - 10 ordinary source or configuration files.
 
 The sole empty file is `test/file.txt`.
@@ -106,6 +111,7 @@ The configured step will be equivalent to:
 local finalNewline = (Builtins.newlines) {
   batch = true
   exclude = List(
+    "**/dist/final/node/**",
     "packages/fuzz/forbidden-strings/corpus/**",
     "packages/test-fixture/toml-edit/src/**",
   )
@@ -117,9 +123,15 @@ not an optimization.
 The full-tree prototype without it reached the operating system's argument-size limit.
 The batched prototype split the tree into bounded invocations and completed.
 
-The exclusions are deliberately narrow.
+The fixture exclusions are deliberately narrow.
 A generic `**/corpus/**` exclusion would silently exempt future corpora that may contain ordinary text.
 A broad `packages/test-fixture/**` exclusion would exempt source and metadata that are not byte-sensitive.
+
+The output exclusion is intentionally directory-wide.
+The shared tsdown Node config owns `dist/final/node`,
+and every file beneath that producer boundary keeps producer-native bytes.
+The current 18 tracked outputs all omit the final LF,
+so the exemption saves 18 bytes in the measured baseline.
 
 ## Hook behavior
 
@@ -178,7 +190,8 @@ The explicit step selection avoids coupling this policy's verification to unrela
 ## Generated-file ownership
 
 A one-time normalization commit is insufficient when a generator recreates the old ending.
-Each generated family must be fixed at its source.
+Each generated family therefore needs an explicit ownership decision:
+canonicalize at its source or exclude the producer boundary.
 
 ### License copies
 
@@ -193,40 +206,27 @@ they need no content change.
 ### Tsdown Node outputs
 
 Tsdown 0.22.4 with the current minifier emits the tracked `.mjs` and `.d.mts` files with no final LF.
-Adding `footer: '\n'` is not a valid fix:
-the prototype emitted two final LF bytes because Rolldown inserts its own separator around footer content.
-Disabling minified code generation fixed JavaScript but not declaration output,
-and it changed output formatting beyond this policy's scope.
+That producer-native result is now intentional:
+every generated file saves the otherwise mandatory final-LF byte.
+The shared `**/dist/final/node/**` hk exclusion applies to pre-commit,
+pre-push,
+explicit check,
+and explicit fix surfaces.
 
-Add a focused post-build normalizer to `packages/config/tsdown/src/` and register it through the shared Node config's
-`build:done` hook.
-It will:
+No tsdown post-build normalizer is installed.
+The shared Node config remains byte-transparent,
+and rebuilding the eight affected plugin packages restores all 18 tracked files to zero final LF bytes.
+A real commit containing those 18 files verified that the pre-commit hook omitted the newline step for them.
 
-- Visit emitted JavaScript and declaration files under the resolved Node output directory.
-- Leave empty generated files empty.
-- Scan backward over final LF bytes without a regular expression.
-- Skip writing when content already has exactly one final LF.
-- Preserve all bytes before the final LF run.
-- Report actual rewrites through tsdown's user-facing build logger.
-- Leave compliant builds quiet and propagate filesystem errors so tsdown fails the build.
+Rejected normalization techniques remain useful evidence:
 
-The helper will be separate from `index.node.ts`
-so the pure byte-normalization rule and filesystem behavior can be tested directly.
-The hook must also work for `perEntryNodeConfig`,
-where multiple builds share one output directory,
-and in watch mode,
-where `build:done` runs after each rebuild.
-
-Tests will cover:
-
-- Missing final LF.
-- Exactly one final LF.
-- Multiple final LF bytes.
-- Empty content.
-- Interior blank lines preserved.
-- Generated extension inclusion and non-generated asset exclusion.
-- Idempotence across repeated normalization.
-- A representative tsdown build producing one final LF in both `.mjs` and `.d.mts` outputs.
+- `footer: '\n'` emitted two final LF bytes because Rolldown inserts a separator before footer content.
+- Disabling minified code generation fixed JavaScript but not declarations and changed output formatting.
+- A `build:done` normalizer worked,
+  including multi-entry coordination,
+  but its reads,
+  writes,
+  and added output byte conflict with the compact-output decision.
 
 ## Baseline cleanup
 
@@ -234,8 +234,10 @@ After hook and generator changes are in place:
 
 1. Delete `test/file.txt`.
 2. Normalize the canonical GPL source and run file-enforcer.
-3. Rebuild every tracked Claude Code plugin Node artifact through its package mise task.
-4. Run the newline fixer with `--no-stage` to catch the remaining ordinary files.
+3. Rebuild every tracked Claude Code plugin Node artifact through its package mise task,
+   preserving producer-native missing final LF bytes.
+4. Run the newline fixer with `--no-stage` to catch the remaining ordinary files;
+   the output-directory exclusion keeps rebuilt artifacts untouched.
 5. Inspect the complete diff.
 6. Confirm no excluded corpus or TOML parser fixture changed.
 7. Stage explicit path groups and commit checkpoints according to repository policy.
@@ -296,8 +298,9 @@ A future cli-git policy and independent CI checker remain the durable destinatio
 - Only LF runs are collapsed.
   The existing `.gitattributes` policy remains responsible for CRLF-to-LF normalization.
 - The local hook is temporary infrastructure because hk is scheduled for retirement.
-- Generated-file normalization must stay attached to every producer;
-  post hoc cleanup alone cannot prevent rebuild drift.
+- Generated license normalization stays attached to file-enforcer's canonical source.
+- Tsdown's `dist/final/node` tree is a deliberate compact-output exception;
+  paths moved outside that boundary become subject to normal enforcement.
 
 ## Documentation
 
@@ -306,11 +309,11 @@ Implementation updates:
 - `docs/decisions/cli-git-policies-platform.md`:
   record the interim third hk behavior and migration obligation.
 - `docs/troubleshooting/tsdown-final-newline.md`:
-  record the tsdown 0.22.4 symptom,
+  record the tsdown 0.22.4 byte endings,
   source trace,
   reproduction,
-  rejected footer and codegen approaches,
-  verified post-build workaround,
+  rejected normalization approaches,
+  compact-output exception,
   and upstream-filing decision.
 - This plan:
   update status and any measured details that change during implementation.
@@ -325,13 +328,15 @@ The work is complete only when all of these hold:
 - Binary and excluded fixture hashes remain unchanged.
 - `hk check --all --step final-newline` passes.
 - A fresh tracked-file scan reports no in-scope non-empty text violations.
-- Fuzz corpus and TOML fixture paths have no diff.
+- Fuzz corpus,
+  TOML fixture,
+  and `dist/final/node` paths have no fixer-induced diff.
 - File-enforcer regeneration is idempotent after the canonical GPL change.
-- Rebuilding tracked plugin artifacts produces exactly one LF in JavaScript and declarations.
-- Repeating the representative build produces no newline-only drift.
-- Config-tsdown lint,
-  type checking,
-  and unit tests pass with zero warnings or errors.
+- Rebuilding tracked plugin artifacts produces zero final LF bytes in all 18 tracked JavaScript and declaration files.
+- The rebuilt files save one byte each and remain unchanged by pre-commit,
+  explicit check,
+  and explicit fix surfaces.
+- Config-tsdown lint and type checking pass with zero warnings or errors.
 - The representative plugin build and end-user executable invocation pass.
 - The plan,
   decision,
