@@ -22,7 +22,10 @@ use std::rc::Rc;
 use gtk4::prelude::*;
 /// What: imports concrete GTK layout and event-controller types.
 /// Why: the strip is built from scrollers, boxes, fixed canvases, widgets, and key controllers.
-use gtk4::{Box as GtkBox, EventControllerKey, Fixed, Orientation, PolicyType, ScrolledWindow, Widget};
+use gtk4::{
+    Align, Box as GtkBox, EventControllerKey, Fixed, Orientation, Overlay, PolicyType,
+    ScrolledWindow, Widget,
+};
 
 /// What: imports pane geometry constants.
 /// Why: every placement and scroll calculation uses one pane-size source of truth.
@@ -69,6 +72,9 @@ struct ColumnView {
 pub(crate) struct StripLayout {
     /// Outer horizontal scroller holding all columns.
     outer: ScrolledWindow,
+    /// Overlay whose main child is the horizontal strip content and whose overlay children are
+    /// debug-only cross-column lane rectangles.
+    strip_overlay: Overlay,
     /// Horizontal box containing per-column vertical scrollers.
     columns_box: GtkBox,
     /// Column views by column index.
@@ -94,8 +100,10 @@ impl StripLayout {
     /// Why: per-column scroll signals need weak references back to the adapter.
     pub(crate) fn new() -> Rc<Self> {
         let columns_box = GtkBox::new(Orientation::Horizontal, PANE_GAP);
+        let strip_overlay = Overlay::new();
+        strip_overlay.set_child(Some(&columns_box));
         let outer = ScrolledWindow::builder()
-            .child(&columns_box)
+            .child(&strip_overlay)
             .hscrollbar_policy(PolicyType::Automatic)
             .vscrollbar_policy(PolicyType::Never)
             .vexpand(true)
@@ -103,6 +111,7 @@ impl StripLayout {
             .build();
         Rc::new(Self {
             outer,
+            strip_overlay,
             columns_box,
             columns: RefCell::new(Vec::new()),
             widgets: RefCell::new(HashMap::new()),
@@ -293,18 +302,18 @@ impl StripLayout {
         }
     }
 
-    /// What: rebuild debug rails for immediate-child pane groups.
-    /// Why: lanes are abstract scroll-debug regions, not production widgets, so recreating them on
-    ///      each reconcile keeps labels accurate and keeps production runs unchanged.
+    /// What: rebuild debug rails for every parent plus its immediate children.
+    /// Why: the desired lane is a cross-column rectangle around the parent pane, child panes, and
+    ///      empty grid slots between them, not a real GTK widget boundary.
     fn reconcile_child_lanes(&self, placements: &[PanePlacement]) {
-        for (_, lane) in self.lanes.borrow_mut().drain() {
-            if let Some(fixed) = lane.parent().and_downcast::<Fixed>() {
-                fixed.remove(&lane);
-            }
-        }
+        self.clear_child_lanes();
         if !debug_tint::enabled() {
             return;
         }
+        let by_id: HashMap<PaneId, PanePlacement> = placements
+            .iter()
+            .map(|placement| (placement.id, *placement))
+            .collect();
         let mut groups: HashMap<PaneId, Vec<PanePlacement>> = HashMap::new();
         for placement in placements {
             if let Some(parent) = placement.parent {
@@ -312,35 +321,83 @@ impl StripLayout {
             }
         }
         for (parent, children) in groups {
-            self.add_child_lane(parent, &children);
+            if let Some(parent_placement) = by_id.get(&parent) {
+                self.add_child_lane(*parent_placement, &children);
+            }
         }
     }
 
-    /// What: draw one immediate-child lane for `parent` across all its child panes.
-    /// Why: this labels the shared scroll rail the user described: siblings keep their spacing as a
-    ///      group while the lane moves within the column viewport.
-    fn add_child_lane(&self, parent: PaneId, children: &[PanePlacement]) {
+    /// What: clear every debug child-lane overlay.
+    /// Why: lane geometry depends on placement and current scroll offsets, so redraw is simpler and
+    ///      less error-prone than incremental geometry updates.
+    pub(super) fn clear_child_lanes(&self) {
+        for (_, lane) in self.lanes.borrow_mut().drain() {
+            self.strip_overlay.remove_overlay(&lane);
+        }
+    }
+
+    /// What: redraw debug child-lane overlays from the latest placement snapshot.
+    /// Why: lane rectangles live over the visible column viewports, so scroll changes require moving
+    ///      them even when pane placements have not changed.
+    pub(super) fn refresh_child_lanes(&self) {
+        let placements = self.placements.borrow().clone();
+        self.reconcile_child_lanes(&placements);
+    }
+
+    /// What: draw one immediate-child lane around `parent` and its direct child panes.
+    /// Why: a parent-child lane spans from the parent column through the child column and from the
+    ///      parent row down to the deepest child bottom, including empty grid cells in that span.
+    fn add_child_lane(&self, parent: PanePlacement, children: &[PanePlacement]) {
         let Some(first) = children.first() else {
             return;
         };
-        let max_row = children.iter().map(|child| child.row).max().unwrap_or(first.row);
-        let height = (scroll::row_y(max_row) + f64::from(PANE_HEIGHT)) as i32;
+        let end_column = children
+            .iter()
+            .map(|child| child.column)
+            .max()
+            .unwrap_or(first.column);
+        let max_child_row = children
+            .iter()
+            .map(|child| child.row)
+            .max()
+            .unwrap_or(parent.row);
+        let top = scroll::row_y(parent.row);
+        let bottom = children.iter().fold(
+            top + f64::from(PANE_HEIGHT),
+            |current, child| current.max(scroll::row_y(child.row) + f64::from(PANE_HEIGHT)),
+        );
+        let column_span = end_column - parent.column + 1;
+        let width = (column_span as i32 * PANE_WIDTH) + ((column_span - 1) as i32 * PANE_GAP);
+        let height = (bottom - top) as i32;
+        let x = parent.column as i32 * (PANE_WIDTH + PANE_GAP);
+        let scroll_offset = self
+            .columns
+            .borrow()
+            .get(parent.column)
+            .map(|view| view.scroller.vadjustment().value())
+            .unwrap_or(0.0);
+        let y = top - scroll_offset;
         let detail = format!(
-            "parent={} column={} children={} rows=0..{}",
-            parent.0,
-            first.column,
-            children.len(),
-            max_row
+            "parent={} columns={}..{} rows={}..{} children={}",
+            parent.id.0,
+            parent.column,
+            end_column,
+            parent.row,
+            max_child_row,
+            children.len()
         );
         let lane = debug_tint::lane(
             debug_tint::Y6L_CHILD_LANE,
             Some(&detail),
-            PANE_WIDTH,
+            width,
             height,
         );
-        if let Some(view) = self.columns.borrow().get(first.column) {
-            view.fixed.put(&lane, 0.0, 0.0);
-            self.lanes.borrow_mut().insert(parent, lane);
-        }
+        lane.set_halign(Align::Start);
+        lane.set_valign(Align::Start);
+        lane.set_margin_start(x);
+        lane.set_margin_top(y as i32);
+        self.strip_overlay.add_overlay(&lane);
+        self.strip_overlay.set_measure_overlay(&lane, false);
+        self.lanes.borrow_mut().insert(parent.id, lane);
     }
 }

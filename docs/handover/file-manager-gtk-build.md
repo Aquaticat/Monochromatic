@@ -284,7 +284,10 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   lane and scroll-region behavior is the focus. Immediate-child lanes are explicit debug-only
   `GtkFixed` rails keyed by parent pane id and labeled with parent, column, child count, and row
   extent. Verified lint/check/rust-lint/clippy/tests before reopening.
-- 2026-07-09: Debug overlay sizing fix. User screenshot showed green `V6C` canvas regions wider
-  than pane shells. Cause was `debug_tint::wrap` forcing every `GtkOverlay` to `hexpand`/`vexpand`,
-  so column wrappers expanded in the horizontal box and created fake empty canvas area. Fix: overlay
-  wrappers now mirror the wrapped child's existing expand flags instead of adding expansion.
+- 2026-07-09: Debug overlay sizing fix. User screenshot showed green hand-drawn rectangles that
+  should have been rendered by the app itself, not `V6C` canvas regions. The lane rule is now:
+  for every pane that has direct children, draw one rounded green `Y6L` box spanning from the
+  parent column through the child column, from the parent row to the deepest direct child's bottom,
+  including empty grid cells inside that rectangle. No root lane is drawn. `debug_tint::wrap` also
+  mirrors the wrapped child's expand flags instead of forcing expansion, so wrappers do not create
+  fake debug geometry.

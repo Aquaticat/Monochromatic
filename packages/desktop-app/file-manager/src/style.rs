@@ -32,8 +32,9 @@ const DEBUG_CSS: &str = "
 .fm-header { background-color: rgba(180,64,255,0.35); }
 .fm-debug-overlay { border: 1px solid rgba(255,255,255,0.20); }
 .fm-debug-lane {
-  background-color: rgba(255,245,64,0.10);
-  border: 2px dashed #f5e642;
+  background-color: rgba(40,255,120,0.08);
+  border: 3px solid #28ff78;
+  border-radius: 12px;
 }
 .fm-debug-badge {
   background-color: rgba(0,0,0,0.82);

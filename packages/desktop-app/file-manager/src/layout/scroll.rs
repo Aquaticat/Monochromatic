@@ -124,6 +124,7 @@ impl StripLayout {
             "tether pass"
         );
         self.tethering.set(false);
+        self.refresh_child_lanes();
         self.schedule_snap();
     }
 
@@ -195,6 +196,7 @@ impl StripLayout {
             }
         }
         self.tethering.set(false);
+        self.refresh_child_lanes();
     }
 }
 
