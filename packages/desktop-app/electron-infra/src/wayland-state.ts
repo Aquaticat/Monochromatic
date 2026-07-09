@@ -10,9 +10,9 @@
 import { readFile, } from 'node:fs/promises';
 import { setTimeout as wait, } from 'node:timers/promises';
 
-import {
-  type JsonObject,
-  type JsonScalar,
+import type {
+  JsonObject,
+  JsonScalar,
 } from './atomic-json.js';
 import {
   pollIntervalMs,
@@ -50,13 +50,31 @@ export type ExpectedObservedState = JsonObject;
  *
  * @example
  * ```ts
- * isJsonScalar({ value: 1 });
+ * isJsonScalar(1);
  * ```
  */
 function isJsonScalar(value: unknown,): value is JsonScalar {
   return ((typeof value) === 'string')
     || ((typeof value) === 'number')
     || ((typeof value) === 'boolean');
+}
+
+/**
+ * Checks whether a value can be read as a string-keyed unknown record.
+ *
+ * @param value - Value to check.
+ *
+ * @returns Whether value is a non-array object.
+ *
+ * @example
+ * ```ts
+ * isReadonlyUnknownRecord({ count: 1 });
+ * ```
+ */
+function isReadonlyUnknownRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
+  return ((typeof value) === 'object')
+    && (value !== null)
+    && (!Array.isArray(value,));
 }
 
 /**
@@ -74,25 +92,23 @@ function isJsonScalar(value: unknown,): value is JsonScalar {
  * ```
  */
 function parseObservedState({ value, }: { readonly value: unknown; },): JsonObject {
-  if (
-    ((typeof value) !== 'object')
-    || (value === null)
-    || Array.isArray(value,)
-  )
+  if (!isReadonlyUnknownRecord(value,))
     throw new Error('Observed boundary-test state must be a shallow object.',);
 
   /**
-   * State after structural narrowing.
+   * State reconstructed after scalar validation.
    */
-  const state = value as Readonly<Record<string, unknown>>;
+  const state: Record<string, JsonScalar> = {};
 
-  Object.entries(state,)
+  Object.entries(value,)
     .forEach(function assertScalarStateEntry([key, entryValue,],): void {
       if (!isJsonScalar(entryValue,))
         throw new Error(`Observed boundary-test state entry ${key} must be a string, number, or boolean.`,);
+
+      state[key] = entryValue;
     },);
 
-  return state as JsonObject;
+  return state;
 }
 
 /**
@@ -124,7 +140,7 @@ async function readObservedState(
     if (
       Error.isError(error,)
       && ('code' in error)
-      && (error.code === 'ENOENT')
+        && (error.code === 'ENOENT')
     )
       return OBSERVED_STATE_ABSENT;
 
@@ -194,7 +210,7 @@ export async function waitForObservedState(
     // oxlint-disable-next-line eslint/no-await-in-loop -- sequential polling must read latest state before sleeping.
     const state = await readObservedState({ statePath, },);
 
-    if (state !== OBSERVED_STATE_ABSENT && stateMatches({
+    if ((state !== OBSERVED_STATE_ABSENT) && stateMatches({
       expected,
       observed: state,
     },))

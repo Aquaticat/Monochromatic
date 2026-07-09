@@ -13,7 +13,6 @@
 
 import { join, } from 'node:path';
 
-import { type ExpectedObservedState, } from './wayland-state.js';
 import {
   defaultAppDir,
   defaultNestedWaylandBinary,
@@ -30,7 +29,10 @@ import {
   spawnNestedWaylandElectron,
   waitForSuccessfulExit,
 } from './wayland-process.js';
-import { waitForObservedState, } from './wayland-state.js';
+import {
+  waitForObservedState,
+  type ExpectedObservedState,
+} from './wayland-state.js';
 
 /**
  * One expected state checkpoint, optionally preceded by compositor commands.
@@ -79,10 +81,14 @@ function assertLinuxWaylandHost(): void {
   if (process.platform !== 'linux')
     throw new Error('Pure Wayland boundary test only runs on Linux.',);
 
-  if (process.env.WAYLAND_DISPLAY === undefined)
+  if (process.env
+    .WAYLAND_DISPLAY
+    === undefined)
     throw new Error('Pure Wayland boundary test requires a parent Wayland session.',);
 
-  if (process.env.XDG_RUNTIME_DIR === undefined)
+  if (process.env
+    .XDG_RUNTIME_DIR
+    === undefined)
     throw new Error('Pure Wayland boundary test requires XDG_RUNTIME_DIR.',);
 }
 
