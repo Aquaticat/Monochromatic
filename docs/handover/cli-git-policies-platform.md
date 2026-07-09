@@ -95,6 +95,10 @@ One policy can combine all three behaviors.
 - A thrown exception or incomplete policy run is an engine failure and always blocks.
 - Option-bearing policies use Valibot schemas directly for runtime validation.
 - Invalid config or invalid policy options are engine failures.
+- One unified policy context exposes cheap parsed command facts directly and expensive Git-derived inputs through lazy
+  async methods.
+- Lazy Git queries are memoized only for one candidate-tree version.
+  Applying a patch invalidates tree-dependent memoized data before the next policy runs.
 
 The exact TypeScript types remain open.
 
@@ -482,7 +486,7 @@ Major unresolved branches:
   plugin,
   finding,
   patch,
-  context,
+  lazy context-method,
   trigger,
   and config TypeScript APIs.
 - Exact default severities and warn-safety metadata for every built-in and migrated policy.
