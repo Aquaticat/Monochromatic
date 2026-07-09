@@ -14,6 +14,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  createBuildCompletionGate,
   normalizeFinalLf,
   normalizeGeneratedTextOutputs,
 } from './final-newline.ts';
@@ -91,6 +92,32 @@ await describe({
           },);
         },
       ),
+    },),
+    describe({
+      name: createBuildCompletionGate.name,
+      children: [
+        it({
+          name: 'opens after every complete build group',
+          fn: async function coordinatesRepeatedBuildGroups(): Promise<void> {
+            /**
+             * Gate representing two parallel entries in shared output directory.
+             */
+            const isFinalBuild = createBuildCompletionGate({ expectedBuildCount: 2, },);
+
+            expect([
+              isFinalBuild(),
+              isFinalBuild(),
+              isFinalBuild(),
+              isFinalBuild(),
+            ],).toEqual([
+              false,
+              true,
+              false,
+              true,
+            ],);
+          },
+        },),
+      ],
     },),
     describe({
       name: normalizeGeneratedTextOutputs.name,

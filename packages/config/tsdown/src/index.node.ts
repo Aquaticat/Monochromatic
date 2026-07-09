@@ -7,7 +7,10 @@ import {
 } from 'tsdown';
 
 import { browserslistTargets, } from './browserslist-targets.ts';
-import { normalizeGeneratedTextOutputs, } from './final-newline.ts';
+import {
+  createBuildCompletionGate,
+  normalizeGeneratedTextOutputs,
+} from './final-newline.ts';
 
 /**
  * Resolved Browserslist targets shared by Node builds, via
@@ -16,52 +19,70 @@ import { normalizeGeneratedTextOutputs, } from './final-newline.ts';
 const target = await browserslistTargets({ runtime: 'node', },);
 
 /**
- * Tsdown lifecycle hooks that canonicalize emitted Node text artifacts.
+ * Creates tsdown lifecycle hooks that canonicalize emitted Node text artifacts.
  *
  * Tsdown's own logger is the build host's user-facing output channel, so this
  * integration reports only actual rewrites and leaves compliant builds quiet.
+ * Multi-entry configs share one completion gate and scan their shared output
+ * directory once, after every parallel entry build completes.
+ *
+ * @param expectedBuildCount - Parallel entry builds sharing output directory.
+ *
+ * @returns Build hook group with final-LF post-processing.
  *
  * @example
  * ```ts
- * console.log(Object.keys(nodeOutputHooks));
+ * const hooks = createNodeOutputHooks({ expectedBuildCount: 2 });
  * ```
  */
-const nodeOutputHooks = {
+function createNodeOutputHooks(
+  { expectedBuildCount, }: { readonly expectedBuildCount: number; },
+): Pick<TsdownHooks, 'build:done'> {
   /**
-   * Canonicalizes JavaScript and declaration output after generation completes.
-   *
-   * @param options - Resolved output path and host logger from completed build.
-   *
-   * @example
-   * ```ts
-   * await nodeOutputHooks['build:done'](context);
-   * ```
+   * Shared gate that opens after whole config group finishes one build cycle.
    */
-  'build:done': async function normalizeNodeBuildOutputs(
-    { options, },
-  ): Promise<void> {
-    /**
-     * Absolute Node output directory resolved from package build cwd.
-     */
-    const outputDir = resolve(
-      options.cwd,
-      options.outDir,
-    );
-    /**
-     * Relative generated artifact paths whose final LF changed.
-     */
-    const normalizedPaths = await normalizeGeneratedTextOutputs({ outputDir, },);
+  const isFinalBuild = createBuildCompletionGate({ expectedBuildCount, },);
 
-    if (normalizedPaths.length === 0)
-      return;
+  return {
+    /**
+     * Canonicalizes JavaScript and declaration output after generation completes.
+     *
+     * @param options - Resolved output path and host logger from completed build.
+     *
+     * @example
+     * ```ts
+     * await hooks['build:done'](context);
+     * ```
+     */
+    'build:done': async function normalizeNodeBuildOutputs(
+      { options, },
+    ): Promise<void> {
+      if (!isFinalBuild())
+        return;
 
-    options
-      .logger
-      .info(
-        `Normalized final LF in ${String(normalizedPaths.length,)} Node output file(s).`,
+      /**
+       * Absolute Node output directory resolved from package build cwd.
+       */
+      const outputDir = resolve(
+        options.cwd,
+        options.outDir,
       );
-  },
-} satisfies Pick<TsdownHooks, 'build:done'>;
+      /**
+       * Relative generated artifact paths whose final LF changed.
+       */
+      const normalizedPaths = await normalizeGeneratedTextOutputs({ outputDir, },);
+
+      if (normalizedPaths.length === 0)
+        return;
+
+      options
+        .logger
+        .info(
+          `Normalized final LF in ${String(normalizedPaths.length,)} Node output file(s).`,
+        );
+    },
+  };
+}
 
 /**
  * Shared tsdown options for Node.js platform builds, without an entry.
@@ -106,7 +127,7 @@ const baseOptions: UserConfig = {
   report: false,
   outDir: 'dist/final/node',
   fixedExtension: true,
-  hooks: nodeOutputHooks,
+  hooks: createNodeOutputHooks({ expectedBuildCount: 1, }),
 };
 
 /**
@@ -153,10 +174,16 @@ export default _default_1;
  * ```
  */
 export function perEntryNodeConfig(entries: readonly string[],): UserConfig[] {
+  /**
+   * Shared hooks wait for every parallel entry before scanning shared output.
+   */
+  const hooks = createNodeOutputHooks({ expectedBuildCount: entries.length, },);
+
   return defineConfig(entries.map(function toSingleEntryConfig(entry: string,): UserConfig {
     return {
       ...baseOptions,
       entry: [entry,],
+      hooks,
     };
   },),);
 }

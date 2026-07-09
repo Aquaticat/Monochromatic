@@ -66,6 +66,61 @@ export function normalizeFinalLf(content: string,): string {
 
 //endregion Final-LF content normalization
 
+//region Build completion coordination
+
+/**
+ * Creates reusable gate that opens after expected number of builds complete.
+ *
+ * Gate resets after opening so watch-mode rebuilds follow same coordination.
+ * Expected build count comes from trusted config cardinality and must be
+ * positive whenever returned gate can be called.
+ *
+ * @param expectedBuildCount - Build completions required before opening gate.
+ *
+ * @returns Callback that records one completion and reports whether gate opens.
+ *
+ * @example
+ * ```ts
+ * const isFinalBuild = createBuildCompletionGate({ expectedBuildCount: 2 });
+ * isFinalBuild();
+ * // false
+ * isFinalBuild();
+ * // true
+ * ```
+ */
+export function createBuildCompletionGate(
+  { expectedBuildCount, }: { readonly expectedBuildCount: number; },
+): () => boolean {
+  /**
+   * Mutable lifecycle state isolated to one tsdown config group.
+   */
+  const state = { remainingBuildCount: expectedBuildCount, };
+
+  /**
+   * Records completed build and opens gate once whole config group finishes.
+   *
+   * @returns Whether caller completed current build group.
+   *
+   * @example
+   * ```ts
+   * recordBuildCompletion();
+   * ```
+   */
+  function recordBuildCompletion(): boolean {
+    if (state.remainingBuildCount > 1) {
+      state.remainingBuildCount -= 1;
+      return false;
+    }
+
+    state.remainingBuildCount = expectedBuildCount;
+    return true;
+  }
+
+  return recordBuildCompletion;
+}
+
+//endregion Build completion coordination
+
 //region Generated Node output discovery
 
 /**
