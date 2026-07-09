@@ -23,10 +23,10 @@ const APP_CSS: &str =
 /// Why: debug tint should name every region in screenshots without implying that blank pane bodies
 ///      are scroll-travel areas.
 const DEBUG_CSS: &str = "
-.fm-column-root:nth-child(4n+1), .fm-column:nth-child(4n+1) { background-color: rgba(255,64,64,0.12); }
-.fm-column-root:nth-child(4n+2), .fm-column:nth-child(4n+2) { background-color: rgba(64,200,64,0.12); }
-.fm-column-root:nth-child(4n+3), .fm-column:nth-child(4n+3) { background-color: rgba(64,140,255,0.12); }
-.fm-column-root:nth-child(4n+4), .fm-column:nth-child(4n+4) { background-color: rgba(230,190,64,0.12); }
+.fm-column-root:nth-child(4n+1) { background-color: rgba(255,64,64,0.12); }
+.fm-column-root:nth-child(4n+2) { background-color: rgba(64,200,64,0.12); }
+.fm-column-root:nth-child(4n+3) { background-color: rgba(64,140,255,0.12); }
+.fm-column-root:nth-child(4n+4) { background-color: rgba(230,190,64,0.12); }
 .fm-canvas { background-color: rgba(255,120,0,0.10); }
 .fm-debug-overlay { border: 1px solid rgba(255,255,255,0.20); }
 .fm-debug-lane {

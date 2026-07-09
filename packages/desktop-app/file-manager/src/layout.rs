@@ -1,44 +1,46 @@
 //! Deep GTK layout adapter for the pane strip.
 //!
 //! The product model only says that a pane has a `(column, row)` placement and an optional parent.
-//! This module hides every GTK detail needed to render and scroll that placement graph: the outer
-//! horizontal scroller, per-column vertical scrollers, fixed canvases, pane-widget map, reveal
-//! retries, parent-child tethering, and quiet-period snapping. `strip.rs` now only mutates the pane
+//! This module hides every GTK detail needed to render that placement graph: the outer horizontal
+//! scroller, static per-column fixed canvases, pane-widget map, lane-owned vertical scrolling,
+//! reveal retries, lane hit-testing, and quiet-period snapping. `strip.rs` now only mutates the pane
 //! model and asks this adapter to reconcile a placement snapshot.
 
 /// What: imports cells for closure-captured GTK state.
-/// Why: column views, pane widgets, scroll epochs, and focus state mutate from signal handlers.
+/// Why: focus state and scroll epochs mutate from signal handlers.
 use std::cell::{Cell, RefCell};
 /// What: imports the hash-map container.
-/// Why: pane widgets are keyed by stable `PaneId` during reconciliation.
+/// Why: pane widgets, lane offsets, and debug lane widgets are keyed by stable `PaneId`.
 use std::collections::HashMap;
 /// What: imports the reference-counted pointer.
 /// Why: GTK signal closures hold weak references to the shared layout adapter.
 use std::rc::Rc;
 
 /// What: imports GTK widget-extension traits.
-/// Why: layout construction, controller installation, focus, fixed positioning, and adjustments use
+/// Why: layout construction, controller installation, focus, fixed positioning, and overlays use
 ///      prelude methods.
 use gtk4::prelude::*;
 /// What: imports concrete GTK layout and event-controller types.
-/// Why: the strip is built from scrollers, boxes, fixed canvases, widgets, and key controllers.
-use gtk4::{
-    Align, Box as GtkBox, EventControllerKey, Fixed, Orientation, Overlay, PolicyType,
-    ScrolledWindow, Widget,
-};
+/// Why: the strip is built from an outer scroller, overlay, horizontal box, fixed canvases, widgets,
+///      and key controllers.
+use gtk4::{Box as GtkBox, EventControllerKey, Fixed, Orientation, Overlay, PolicyType, ScrolledWindow, Widget};
 
 /// What: imports pane geometry constants.
-/// Why: every placement and scroll calculation uses one pane-size source of truth.
-use crate::constants::{PANE_GAP, PANE_HEIGHT, PANE_WIDTH};
+/// Why: every placement and lane calculation uses one pane-size source of truth.
+use crate::constants::{PANE_HEIGHT, PANE_WIDTH};
 /// What: imports debug-tint helpers.
-/// Why: debug mode draws labeled overlays for every scroll and lane region.
+/// Why: debug mode draws labeled overlays for scroll-region and lane debugging.
 use crate::debug_tint;
 /// What: imports the stable pane identity type.
 /// Why: widget maps and placement snapshots are keyed by `PaneId`.
 use crate::types::PaneId;
 
-/// What: scroll/reveal/tether implementation for `StripLayout`.
-/// Why: keeps the layout interface file under the max-lines budget while preserving one layout seam.
+/// What: lane-owned scroll, hit-testing, and debug-lane implementation for `StripLayout`.
+/// Why: keeps the layout interface file under the max-lines budget while making lanes the vertical
+///      scroll unit.
+mod lane;
+/// What: horizontal reveal and row-coordinate helpers for `StripLayout`.
+/// Why: spawn still needs horizontal reveal even after vertical scrolling moved to lanes.
 mod scroll;
 
 /// What: immutable placement snapshot for one pane.
@@ -55,41 +57,39 @@ pub(crate) struct PanePlacement {
     pub(crate) parent: Option<PaneId>,
 }
 
-/// What: one column's GTK widgets.
-/// Why: each column owns its own vertical scroller over a fixed canvas.
+/// What: one static column's GTK widgets.
+/// Why: columns are no longer scrollers; they are fixed canvases that lane offsets move panes across.
 struct ColumnView {
     /// Root widget inserted into the horizontal column box.
     root: Widget,
-    /// Vertical scroller for this column.
-    scroller: ScrolledWindow,
-    /// Fixed canvas holding pane widgets at `row * ROW_STRIDE`.
+    /// Fixed canvas holding pane widgets at lane-offset-adjusted row positions.
     fixed: Fixed,
 }
 
 /// What: deep layout module for the pane strip.
 /// Why: callers only provide pane placements and widget builders; this implementation owns GTK
-///      scrollers, fixed canvases, focus bookkeeping, reveal, tether, and snap behavior.
+///      canvases, focus bookkeeping, lane scrolling, reveal, and snap behavior.
 pub(crate) struct StripLayout {
     /// Outer horizontal scroller holding all columns.
     outer: ScrolledWindow,
     /// Overlay whose main child is the horizontal strip content and whose overlay children are
     /// debug-only cross-column lane rectangles.
     strip_overlay: Overlay,
-    /// Horizontal box containing per-column vertical scrollers.
+    /// Horizontal box containing static per-column fixed canvases.
     columns_box: GtkBox,
-    /// Column views by column index.
+    /// Static column views by column index.
     columns: RefCell<Vec<ColumnView>>,
     /// Pane widget map by stable pane id.
     widgets: RefCell<HashMap<PaneId, Widget>>,
-    /// Debug child-lane overlays by parent pane id.
+    /// Vertical scroll offset by lane parent pane id.
+    lane_offsets: RefCell<HashMap<PaneId, f64>>,
+    /// Debug child-lane overlay widgets by parent pane id.
     lanes: RefCell<HashMap<PaneId, Widget>>,
-    /// Latest placement snapshot, used by reveal and tether without borrowing the pane model.
+    /// Latest placement snapshot, used by reveal and lane hit-testing without borrowing the model.
     placements: RefCell<Vec<PanePlacement>>,
     /// Column whose pane last received focus, used by Left/Right keyboard navigation.
     focused_column: Cell<usize>,
-    /// Re-entrancy guard while tether or snap code adjusts scroll offsets.
-    tethering: Cell<bool>,
-    /// Scroll epoch for debouncing quiet-period snapping.
+    /// Scroll epoch for debouncing quiet-period lane snapping.
     scroll_epoch: Cell<u64>,
 }
 
@@ -97,9 +97,9 @@ pub(crate) struct StripLayout {
 /// Why: keeps GTK layout policy behind a narrow seam so `strip.rs` remains a model/controller layer.
 impl StripLayout {
     /// What: build the GTK layout adapter and return it behind `Rc`.
-    /// Why: per-column scroll signals need weak references back to the adapter.
+    /// Why: lane scroll signals need weak references back to the adapter.
     pub(crate) fn new() -> Rc<Self> {
-        let columns_box = GtkBox::new(Orientation::Horizontal, PANE_GAP);
+        let columns_box = GtkBox::new(Orientation::Horizontal, crate::constants::PANE_GAP);
         let strip_overlay = Overlay::new();
         strip_overlay.set_child(Some(&columns_box));
         let outer = ScrolledWindow::builder()
@@ -109,18 +109,20 @@ impl StripLayout {
             .vexpand(true)
             .hexpand(true)
             .build();
-        Rc::new(Self {
+        let layout = Rc::new(Self {
             outer,
             strip_overlay,
             columns_box,
             columns: RefCell::new(Vec::new()),
             widgets: RefCell::new(HashMap::new()),
+            lane_offsets: RefCell::new(HashMap::new()),
             lanes: RefCell::new(HashMap::new()),
             placements: RefCell::new(Vec::new()),
             focused_column: Cell::new(0),
-            tethering: Cell::new(false),
             scroll_epoch: Cell::new(0),
-        })
+        });
+        layout.install_lane_scroll();
+        layout
     }
 
     /// What: clone the root GTK widget for insertion into the window.
@@ -157,10 +159,10 @@ impl StripLayout {
         true
     }
 
-    /// What: reconcile GTK widgets to `placements`, building missing pane widgets through
-    ///       `build_widget`.
+    /// What: reconcile GTK widgets to `placements`, building missing panes through `build_widget`.
     /// Why: one idempotent pass after each model mutation grows/shrinks columns, removes stale
-    ///      widgets, creates missing widgets, moves live widgets, and equalizes content height.
+    ///      widgets, creates missing widgets, clamps lane offsets, positions live widgets, and
+    ///      redraws debug lanes.
     pub(crate) fn reconcile(
         self: &Rc<Self>,
         placements: Vec<PanePlacement>,
@@ -182,51 +184,32 @@ impl StripLayout {
             self.ensure_pane_widget(placement, &mut build_widget);
         }
         self.set_content_height(&live);
-        self.reconcile_child_lanes(&placements);
+        self.prune_lane_offsets();
+        self.position_all_widgets();
+        self.refresh_child_lanes();
     }
 
-    /// What: grow or shrink the column views to exactly `count`.
-    /// Why: descending adds columns and bulk-close removes them; each new column owns a hidden
-    ///      vertical scroller over a fixed pane canvas.
+    /// What: grow or shrink the static column views to exactly `count`.
+    /// Why: descending adds columns and bulk-close removes them; each column owns a fixed pane canvas
+    ///      but no vertical scroller.
     fn ensure_columns(self: &Rc<Self>, count: usize) {
         let mut columns = self.columns.borrow_mut();
         while columns.len() < count {
             let index = columns.len();
             let fixed = Fixed::new();
+            fixed.set_width_request(PANE_WIDTH);
+            fixed.set_vexpand(true);
             fixed.add_css_class("fm-canvas");
             let canvas_detail = format!("column={index}");
-            let canvas = debug_tint::wrap(
+            let root = debug_tint::wrap(
                 &fixed,
                 debug_tint::V6C_COLUMN_CANVAS,
                 Some(&canvas_detail),
             );
-            let scroller = ScrolledWindow::builder()
-                .child(&canvas)
-                .hscrollbar_policy(PolicyType::Never)
-                .vscrollbar_policy(PolicyType::External)
-                .width_request(PANE_WIDTH)
-                .vexpand(true)
-                .build();
-            scroller.add_css_class("fm-column");
-            let column_detail = format!("column={index}");
-            let root = debug_tint::wrap(
-                &scroller,
-                debug_tint::C8L_COLUMN_SCROLL,
-                Some(&column_detail),
-            );
+            root.set_width_request(PANE_WIDTH);
             root.add_css_class("fm-column-root");
-            let weak = Rc::downgrade(self);
-            scroller.vadjustment().connect_value_changed(move |_| {
-                if let Some(layout) = weak.upgrade() {
-                    layout.enforce_tether(index);
-                }
-            });
             self.columns_box.append(&root);
-            columns.push(ColumnView {
-                root,
-                scroller,
-                fixed,
-            });
+            columns.push(ColumnView { root, fixed });
         }
         while columns.len() > count {
             if let Some(view) = columns.pop() {
@@ -254,35 +237,28 @@ impl StripLayout {
         }
     }
 
-    /// What: ensure `placement.id` has a widget at its target column and row.
-    /// Why: existing widgets move; missing widgets are built and inserted at a deterministic fixed
-    ///      canvas coordinate.
+    /// What: ensure `placement.id` has a widget in its target column.
+    /// Why: missing widgets are built and inserted; lane positioning happens in one later pass so
+    ///      existing and new widgets use the same offset calculation.
     fn ensure_pane_widget(
         &self,
         placement: &PanePlacement,
         build_widget: &mut impl FnMut(PaneId) -> Widget,
     ) {
-        let existing = self.widgets.borrow().get(&placement.id).cloned();
-        let columns = self.columns.borrow();
-        let Some(view) = columns.get(placement.column) else {
-            return;
-        };
-        if let Some(widget) = existing {
-            view.fixed.move_(&widget, 0.0, scroll::row_y(placement.row));
+        if self.widgets.borrow().contains_key(&placement.id) {
             return;
         }
-        drop(columns);
         let widget = build_widget(placement.id);
         widget.set_size_request(PANE_WIDTH, PANE_HEIGHT);
         if let Some(view) = self.columns.borrow().get(placement.column) {
-            view.fixed.put(&widget, 0.0, scroll::row_y(placement.row));
+            view.fixed.put(&widget, 0.0, 0.0);
         }
         self.widgets.borrow_mut().insert(placement.id, widget);
     }
 
-    /// What: size each column canvas to that column's deepest pane row.
-    /// Why: columns keep the shared row coordinate for alignment, but a short column should not
-    ///      gain blank scroll range just because a different column has deeper rows.
+    /// What: size each static column canvas to that column's deepest pane row.
+    /// Why: columns keep the shared row coordinate for alignment without adding vertical scroll
+    ///      state of their own.
     fn set_content_height(&self, live: &HashMap<PaneId, (usize, usize)>) {
         for (index, view) in self.columns.borrow().iter().enumerate() {
             let max_row = live
@@ -293,104 +269,5 @@ impl StripLayout {
             let height = (scroll::row_y(max_row) + f64::from(PANE_HEIGHT)) as i32;
             view.fixed.set_size_request(PANE_WIDTH, height);
         }
-    }
-
-    /// What: rebuild debug rails for every parent plus its immediate children.
-    /// Why: the desired lane is a cross-column rectangle around the parent pane, child panes, and
-    ///      empty grid slots between them, not a real GTK widget boundary.
-    fn reconcile_child_lanes(&self, placements: &[PanePlacement]) {
-        self.clear_child_lanes();
-        if !debug_tint::enabled() {
-            return;
-        }
-        let by_id: HashMap<PaneId, PanePlacement> = placements
-            .iter()
-            .map(|placement| (placement.id, *placement))
-            .collect();
-        let mut groups: HashMap<PaneId, Vec<PanePlacement>> = HashMap::new();
-        for placement in placements {
-            if let Some(parent) = placement.parent {
-                groups.entry(parent).or_default().push(*placement);
-            }
-        }
-        for (parent, children) in groups {
-            if let Some(parent_placement) = by_id.get(&parent) {
-                self.add_child_lane(*parent_placement, &children);
-            }
-        }
-    }
-
-    /// What: clear every debug child-lane overlay.
-    /// Why: lane geometry depends on placement and current scroll offsets, so redraw is simpler and
-    ///      less error-prone than incremental geometry updates.
-    pub(super) fn clear_child_lanes(&self) {
-        for (_, lane) in self.lanes.borrow_mut().drain() {
-            self.strip_overlay.remove_overlay(&lane);
-        }
-    }
-
-    /// What: redraw debug child-lane overlays from the latest placement snapshot.
-    /// Why: lane rectangles live over the visible column viewports, so scroll changes require moving
-    ///      them even when pane placements have not changed.
-    pub(super) fn refresh_child_lanes(&self) {
-        let placements = self.placements.borrow().clone();
-        self.reconcile_child_lanes(&placements);
-    }
-
-    /// What: draw one immediate-child lane around `parent` and its direct child panes.
-    /// Why: a parent-child lane spans from the parent column through the child column and from the
-    ///      parent row down to the deepest child bottom, including empty grid cells in that span.
-    fn add_child_lane(&self, parent: PanePlacement, children: &[PanePlacement]) {
-        let Some(first) = children.first() else {
-            return;
-        };
-        let end_column = children
-            .iter()
-            .map(|child| child.column)
-            .max()
-            .unwrap_or(first.column);
-        let max_child_row = children
-            .iter()
-            .map(|child| child.row)
-            .max()
-            .unwrap_or(parent.row);
-        let top = scroll::row_y(parent.row);
-        let bottom = children.iter().fold(
-            top + f64::from(PANE_HEIGHT),
-            |current, child| current.max(scroll::row_y(child.row) + f64::from(PANE_HEIGHT)),
-        );
-        let column_span = end_column - parent.column + 1;
-        let width = (column_span as i32 * PANE_WIDTH) + ((column_span - 1) as i32 * PANE_GAP);
-        let height = (bottom - top) as i32;
-        let x = parent.column as i32 * (PANE_WIDTH + PANE_GAP);
-        let scroll_offset = self
-            .columns
-            .borrow()
-            .get(parent.column)
-            .map(|view| view.scroller.vadjustment().value())
-            .unwrap_or(0.0);
-        let y = top - scroll_offset;
-        let detail = format!(
-            "parent={} columns={}..{} rows={}..{} children={}",
-            parent.id.0,
-            parent.column,
-            end_column,
-            parent.row,
-            max_child_row,
-            children.len()
-        );
-        let lane = debug_tint::lane(
-            debug_tint::Y6L_CHILD_LANE,
-            Some(&detail),
-            width,
-            height,
-        );
-        lane.set_halign(Align::Start);
-        lane.set_valign(Align::Start);
-        lane.set_margin_start(x);
-        lane.set_margin_top(y as i32);
-        self.strip_overlay.add_overlay(&lane);
-        self.strip_overlay.set_measure_overlay(&lane, false);
-        self.lanes.borrow_mut().insert(parent.id, lane);
     }
 }

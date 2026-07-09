@@ -277,17 +277,18 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   for live user verification.
 - 2026-07-08: Labeled debug tint pass. User clarified that the green pane bodies were misleading and
   asked for every debug-relevant region to be tinted/labeled with visible descriptions plus short
-  codes. Added `debug_tint.rs` and visible screenshot labels: `Q8O` outer horizontal strip scroller,
-  `C8L` column vertical scroll viewport, `V6C` column fixed scroll canvas, `Y6L` immediate-child
-  shared lane, and `B6P` preview body. Removed the green list/body fill; outer-strip, header,
-  list-viewport, realized-row, and pane-shell labels are intentionally disabled while lane and
-  scroll-region behavior is the focus. Immediate-child lanes are explicit debug-only
-  `GtkFixed` rails keyed by parent pane id and labeled with parent, column, child count, and row
-  extent. Verified lint/check/rust-lint/clippy/tests before reopening.
-- 2026-07-09: Debug overlay sizing fix. User screenshot showed green hand-drawn rectangles that
-  should have been rendered by the app itself, not `V6C` canvas regions. The lane rule is now:
-  for every pane that has direct children, draw one rounded green `Y6L` box spanning from the
-  parent column through the child column, from the parent row to the deepest direct child's bottom,
-  including empty grid cells inside that rectangle. No root lane is drawn. `debug_tint::wrap` also
-  mirrors the wrapped child's expand flags instead of forcing expansion, so wrappers do not create
-  fake debug geometry.
+  codes. Added `debug_tint.rs`; currently enabled visible labels are `V6C` column fixed pane canvas,
+  `Y6L` immediate-child shared lane, and `B6P` preview body. Removed the green list/body fill;
+  outer-strip, column-scroller, header, list-viewport, realized-row, and pane-shell labels are
+  intentionally disabled while lane behavior is the focus. Immediate-child lanes are explicit
+  debug-only rounded green boxes keyed by parent pane id and labeled with parent, column span, child
+  count, and row extent. Verified lint/check/rust-lint/clippy/tests before reopening.
+- 2026-07-09: Lane-owned scrolling. User clarified that full columns should not be scrollers:
+  vertical wheel/trackpad input belongs to lane groups, where a lane is a parent plus direct
+  children, and overlapping lanes choose the smallest lane under the pointer. `layout.rs` now uses
+  static per-column `GtkFixed` canvases inside one horizontal `ScrolledWindow`; per-column vertical
+  `ScrolledWindow`s were removed. `layout/lane.rs` owns lane offsets, capture-phase scroll
+  hit-testing, hierarchical offset application, lane snapping, vertical reveal, and rounded green
+  `Y6L` overlays. `layout/scroll.rs` now only handles horizontal reveal and the shared row-pixel
+  helper. `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create fake debug
+  geometry.

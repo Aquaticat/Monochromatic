@@ -33,18 +33,11 @@ pub(crate) struct DebugRegion {
     pub(crate) description: &'static str,
 }
 
-/// What: per-column vertical scroller region.
-/// Why: names the viewport whose adjustment moves pane groups vertically.
-pub(crate) const C8L_COLUMN_SCROLL: DebugRegion = DebugRegion {
-    code: "C8L",
-    description: "column vertical scroll viewport",
-};
-
-/// What: fixed canvas region inside a column scroller.
-/// Why: names the scrollable content surface where pane widgets are positioned by row.
+/// What: fixed canvas region inside a static column.
+/// Why: names the content surface where pane widgets are positioned by row and lane offset.
 pub(crate) const V6C_COLUMN_CANVAS: DebugRegion = DebugRegion {
     code: "V6C",
-    description: "column fixed scroll canvas",
+    description: "column fixed pane canvas",
 };
 
 /// What: immediate-child lane overlay region.
@@ -77,7 +70,7 @@ pub(crate) fn tag(widget: &impl IsA<Widget>, region: DebugRegion, detail: Option
 }
 
 /// What: wrap `child` in a `GtkOverlay` with a top-left badge when debug tinting is active.
-/// Why: scrollers and panes can carry labels without consuming layout space or changing child size.
+/// Why: debug regions can carry labels without consuming layout space or changing child size.
 pub(crate) fn wrap(child: &impl IsA<Widget>, region: DebugRegion, detail: Option<&str>) -> Widget {
     if !enabled() {
         return child.as_ref().clone();
