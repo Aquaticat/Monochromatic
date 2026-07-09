@@ -30,8 +30,6 @@ const DEBUG_CSS: &str = "
 .fm-canvas { background-color: rgba(255,120,0,0.10); }
 .fm-pane { border: 2px solid #ff5ec4; }
 .fm-header { background-color: rgba(180,64,255,0.35); }
-.fm-list { border: 1px dashed #40e0d0; }
-.fm-row { border-bottom: 1px dotted rgba(255,255,255,0.30); }
 .fm-debug-overlay { border: 1px solid rgba(255,255,255,0.20); }
 .fm-debug-lane {
   background-color: rgba(255,245,64,0.10);

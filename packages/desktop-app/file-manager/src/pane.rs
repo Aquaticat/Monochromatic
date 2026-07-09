@@ -82,16 +82,11 @@ where
         .hexpand(true)
         .build();
     scrolled.add_css_class("fm-list");
-    debug_tint::tag(&scrolled, debug_tint::L5V_LIST_VIEWPORT, None);
     let container = GtkBox::new(Orientation::Vertical, 0);
     container.add_css_class("fm-pane");
     debug_tint::tag(&container, debug_tint::P4N_PANE_SHELL, None);
     container.append(&build_pane_header(&snapshot.path.display().to_string(), on_close));
-    container.append(&debug_tint::wrap(
-        &scrolled,
-        debug_tint::L5V_LIST_VIEWPORT,
-        Some("entry scroller"),
-    ));
+    container.append(&scrolled);
     container
 }
 
@@ -209,11 +204,8 @@ fn build_row_factory() -> SignalListItemFactory {
     factory.connect_setup(|_, item| {
         let item = item.downcast_ref::<ListItem>().expect("list item");
         let row = GtkBox::new(Orientation::Horizontal, ROW_SPACING);
-        row.add_css_class("fm-row");
-        debug_tint::tag(&row, debug_tint::R2I_REALIZED_ROW, None);
         row.append(&Image::new());
         row.append(&Label::builder().xalign(0.0).build());
-        debug_tint::append_badge(&row, debug_tint::R2I_REALIZED_ROW, Some("virtualized entry"));
         item.set_child(Some(&row));
     });
     factory.connect_bind(|_, item| {

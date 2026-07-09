@@ -75,25 +75,11 @@ pub(crate) const H7D_PANE_HEADER: DebugRegion = DebugRegion {
     description: "pane header bar",
 };
 
-/// What: directory-list viewport region.
-/// Why: names the inner scroller that scrolls entries within one fixed-height pane.
-pub(crate) const L5V_LIST_VIEWPORT: DebugRegion = DebugRegion {
-    code: "L5V",
-    description: "directory list viewport",
-};
-
 /// What: preview-body region.
 /// Why: names the non-directory preview area inside a pane shell.
 pub(crate) const B6P_PREVIEW_BODY: DebugRegion = DebugRegion {
     code: "B6P",
     description: "preview pane body",
-};
-
-/// What: realized directory-row region.
-/// Why: names virtualized list rows that GTK has currently materialized.
-pub(crate) const R2I_REALIZED_ROW: DebugRegion = DebugRegion {
-    code: "R2I",
-    description: "realized directory row",
 };
 
 /// What: report whether debug tinting is active for this process.
