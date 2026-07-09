@@ -293,7 +293,9 @@ require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
   hierarchical offset application, vertical reveal, and rounded green `Y6L` overlays. `Y6L` boxes
   are fixed rails in app-layout coordinates; only panes receive sticky offsets inside those rails.
   Pane positioning resolves per column with forward/backward spacing passes, so panes keep
-  `PANE_HEIGHT + PANE_GAP` separation while staying inside every `Y6L` rail they belong to.
+  `PANE_HEIGHT + PANE_GAP` separation while staying inside every `Y6L` rail they belong to. Lane
+  offsets apply to descendants only, not to the parent pane that owns the lane, preventing parent
+  panes with their own children from double-moving into siblings.
   `layout/scroll.rs` now only handles horizontal reveal and the shared row-pixel helper.
   `debug_tint::wrap` mirrors wrapped-child expand flags so wrappers do not create fake debug
   geometry.

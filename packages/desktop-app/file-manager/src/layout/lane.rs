@@ -275,13 +275,16 @@ impl StripLayout {
         Some((min_y, max_y.max(min_y)))
     }
 
-    /// What: compute all lane offsets affecting `id`.
-    /// Why: a pane reacts to every ancestor lane plus its own lane when it is a parent.
+    /// What: compute ancestor lane offsets affecting `id`.
+    /// Why: a lane offset moves that parent pane's descendants, not the parent pane itself.
     fn effective_offset_for_pane(&self, id: PaneId) -> f64 {
         let placements = self.placements.borrow();
         let offsets = self.lane_offsets.borrow();
         let mut total = 0.0;
-        let mut current = Some(id);
+        let mut current = placements
+            .iter()
+            .find(|placement| placement.id == id)
+            .and_then(|placement| placement.parent);
         while let Some(pane_id) = current {
             total += offsets.get(&pane_id).copied().unwrap_or(0.0);
             current = placements
