@@ -296,7 +296,10 @@ export async function waitForSuccessfulExit(
   /**
    * Parsed exit status values.
    */
-  const { code, signal, } = parseExitEvent({ value: exit, },);
+  const {
+    code,
+    signal,
+  } = parseExitEvent({ value: exit, },);
 
   if (code !== 0)
     throw new Error(`Nested Wayland session exited with ${formatExitStatus({

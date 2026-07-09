@@ -119,7 +119,8 @@ await describe({
           'utf8',
         ),).toBe('<!doctype html>\n',);
 
-        expect(JSON.parse(await readFile(
+        expect(
+          JSON.parse(await readFile(
           join(
             fixture.packageRoot,
             'dist',
@@ -127,7 +128,8 @@ await describe({
             'package.json',
           ),
           'utf8',
-        ),),).toEqual({
+        ),),
+        ).toEqual({
           name: 'fixture-electron-app',
           productName: 'Fixture Electron App',
           version: '1.2.3',

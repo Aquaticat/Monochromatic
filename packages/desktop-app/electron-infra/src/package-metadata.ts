@@ -59,9 +59,9 @@ export function parseRootPackageMetadata(
   if (
     ((typeof value) !== 'object')
     || (value === null)
-    || (!('name' in value))
-    || (!('productName' in value))
-    || (!('version' in value))
+      || (!('name' in value))
+      || (!('productName' in value))
+      || (!('version' in value))
   )
     throw new Error('Package manifest is missing name, productName, or version.',);
 
@@ -79,7 +79,7 @@ export function parseRootPackageMetadata(
   if (
     ((typeof manifest.name) !== 'string')
     || ((typeof manifest.productName) !== 'string')
-    || ((typeof manifest.version) !== 'string')
+      || ((typeof manifest.version) !== 'string')
   )
     throw new Error('Package manifest name, productName, and version must be strings.',);
 

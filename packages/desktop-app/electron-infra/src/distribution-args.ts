@@ -63,7 +63,8 @@ export function parseElectronDistributionArgs(
   argv.forEach(function readDistributionArg(token,): void {
     if (state.expectTargetValue) {
       state.expectTargetValue = false;
-      state.selectedTargetKeys.push(token,);
+      state.selectedTargetKeys
+        .push(token,);
       return;
     }
 

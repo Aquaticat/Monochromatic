@@ -49,7 +49,7 @@ function parseElectronPackageMetadata(
   if (
     ((typeof value) !== 'object')
     || (value === null)
-    || (!('version' in value))
+      || (!('version' in value))
   )
     throw new Error('electron/package.json did not expose a version.',);
 
@@ -77,5 +77,6 @@ function parseElectronPackageMetadata(
 export function readElectronVersion(): string {
   return parseElectronPackageMetadata({
     value: require('electron/package.json',) as unknown,
-  },).version;
+  },)
+    .version;
 }
