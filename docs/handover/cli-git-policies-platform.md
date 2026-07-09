@@ -140,9 +140,18 @@ export default defineConfig({
 
 The earlier phase-gated aggregation model was replaced.
 
+Each policy pass uses this staged order:
+
+1. Built-in configurable safety policies run in fixed core order.
+2. Fixed command transformers derive the forwarded command.
+3. Plugin policies run in namespace registration order and each plugin's policy declaration order.
+
+Core policies can inspect raw and semantic command facts.
+Plugin policies receive both raw and transformed command facts and predict candidate content from the transformed
+command.
+Fixed transforms must be idempotent because a changed candidate tree restarts the whole pass.
+
 - Policies execute sequentially.
-- Built-ins run first in a fixed core order.
-- Plugins follow namespace registration order and each plugin's policy declaration order.
 - Severity and option overrides do not reorder policies.
 - The engine stops at the first remaining error-severity finding by default.
 - Warning findings do not stop execution.
@@ -231,6 +240,9 @@ Ordinary Git commands never build an untrusted TypeScript config.
 - Bare package imports,
   including repo-local workspace package imports,
   do not participate in invalidation.
+- An explicit repeat `git cli-git trust` always rebuilds TypeScript and is the refresh path for excluded package
+  imports.
+  A changed cached bundle hash is disclosed before replacement even when tracked source hashes are unchanged.
 - Trust prints a warning when TypeScript config is not self-contained.
 - Exact treatment of absolute imports,
   dynamic imports,
