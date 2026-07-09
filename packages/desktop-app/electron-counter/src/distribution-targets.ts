@@ -84,12 +84,30 @@ export const DISTRIBUTION_TARGET_COUNT: number = platformFamilyCount * cpuFamily
  * ```
  */
 export const DISTRIBUTION_TARGETS: readonly DistributionTarget[] = [
-  { platform: 'linux', arch: 'x64', },
-  { platform: 'linux', arch: 'arm64', },
-  { platform: 'win32', arch: 'x64', },
-  { platform: 'win32', arch: 'arm64', },
-  { platform: 'darwin', arch: 'x64', },
-  { platform: 'darwin', arch: 'arm64', },
+  {
+    platform: 'linux',
+    arch: 'x64',
+  },
+  {
+    platform: 'linux',
+    arch: 'arm64',
+  },
+  {
+    platform: 'win32',
+    arch: 'x64',
+  },
+  {
+    platform: 'win32',
+    arch: 'arm64',
+  },
+  {
+    platform: 'darwin',
+    arch: 'x64',
+  },
+  {
+    platform: 'darwin',
+    arch: 'arm64',
+  },
 ] as const;
 
 /**

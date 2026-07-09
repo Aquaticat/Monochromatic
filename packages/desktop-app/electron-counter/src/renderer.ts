@@ -35,6 +35,49 @@ type CounterElements = {
 };
 
 /**
+ * Mutable renderer-local counter state isolated behind methods.
+ *
+ * @example
+ * ```ts
+ * const state = new CounterState();
+ * console.log(state.current);
+ * ```
+ */
+class CounterState {
+  /** Current count held by the renderer session. */
+  #count = INITIAL_COUNT;
+
+  /**
+   * Current renderer count.
+   *
+   * @returns Count before the next increment.
+   *
+   * @example
+   * ```ts
+   * new CounterState().current;
+   * ```
+   */
+  public get current(): number {
+    return this.#count;
+  }
+
+  /**
+   * Increments local state and returns the new value.
+   *
+   * @returns Incremented count.
+   *
+   * @example
+   * ```ts
+   * new CounterState().increment();
+   * ```
+   */
+  public increment(): number {
+    this.#count = incrementCount({ current: this.#count, },);
+    return this.#count;
+  }
+}
+
+/**
  * Error thrown when expected static markup is missing or has an unexpected tag.
  *
  * @example
@@ -55,7 +98,7 @@ class MissingCounterElementError extends Error {
    */
   public constructor({ id, }: { readonly id: string; },) {
     super(`Missing Electron counter element: ${id}`);
-    this.name = MissingCounterElementError.name;
+    this.name = 'MissingCounterElementError';
   }
 }
 
@@ -80,12 +123,12 @@ function getElementByIdAs<const ElementType extends HTMLElement>(
     id,
     constructor,
   }: {
-    readonly constructor: { new(): ElementType; };
+    readonly constructor: new() => ElementType;
     readonly id: string;
   },
 ): ElementType {
   /** Element found in static markup before runtime type narrowing. */
-  const element = document.getElementById(id,);
+  const element = document.querySelector<ElementType>(`#${id}`,);
 
   if (!(element instanceof constructor))
     throw new MissingCounterElementError({ id, },);
@@ -159,15 +202,23 @@ function renderCounterApp(): void {
   /** DOM elements controlled by the renderer. */
   const elements = getCounterElements();
 
-  /** Mutable renderer-local count state. */
-  let count = INITIAL_COUNT;
+  /** Renderer-local state holder. */
+  const state = new CounterState();
 
-  updateRenderedCount({ elements, count, },);
-
-  elements.incrementButton.addEventListener('click', function incrementFromClick(): void {
-    count = incrementCount({ current: count, },);
-    updateRenderedCount({ elements, count, },);
+  updateRenderedCount({
+    elements,
+    count: state.current,
   },);
+
+  elements.incrementButton.addEventListener(
+    'click',
+    function incrementFromClick(): void {
+      updateRenderedCount({
+        elements,
+        count: state.increment(),
+      },);
+    },
+  );
 }
 
 renderCounterApp();

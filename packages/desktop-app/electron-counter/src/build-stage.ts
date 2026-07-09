@@ -12,25 +12,43 @@
  */
 
 import {
+  access,
   cp,
   mkdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
-import { existsSync, } from 'node:fs';
 import { join, } from 'node:path';
 
-/** Package directory used as task working directory. */
+/**
+ * Package directory used as task working directory.
+ */
 const packageRoot = process.cwd();
 
-/** Source directory containing static renderer assets. */
-const sourceRoot = join(packageRoot, 'src',);
+/**
+ * Source directory containing static renderer assets.
+ */
+const sourceRoot = join(
+  packageRoot,
+  'src',
+);
 
-/** Staged Electron app directory consumed by Electron and Packager. */
-const appOutDir = join(packageRoot, 'dist', 'app',);
+/**
+ * Staged Electron app directory consumed by Electron and Packager.
+ */
+const appOutDir = join(
+  packageRoot,
+  'dist',
+  'app',
+);
 
-/** Package-local license directory managed by file-enforcer. */
-const licenseDir = join(packageRoot, 'LICENSES',);
+/**
+ * Package-local license directory managed by file-enforcer.
+ */
+const licenseDir = join(
+  packageRoot,
+  'LICENSES',
+);
 
 /**
  * Minimal package metadata read from this workspace package's root manifest.
@@ -77,15 +95,17 @@ type StagedPackageMetadata = RootPackageMetadata & {
  */
 function parseRootPackageMetadata({ value, }: { readonly value: unknown; },): RootPackageMetadata {
   if (
-    typeof value !== 'object'
-    || value === null
-    || !('name' in value)
-    || !('productName' in value)
-    || !('version' in value)
+    ((typeof value) !== 'object')
+    || (value === null)
+      || (!('name' in value))
+      || (!('productName' in value))
+      || (!('version' in value))
   )
     throw new Error('Package manifest is missing name, productName, or version.',);
 
-  /** Manifest after structural checks have proven required keys exist. */
+  /**
+   * Manifest after structural checks have proven required keys exist.
+   */
   const manifest = value as {
     readonly description?: unknown;
     readonly license?: unknown;
@@ -95,13 +115,15 @@ function parseRootPackageMetadata({ value, }: { readonly value: unknown; },): Ro
   };
 
   if (
-    typeof manifest.name !== 'string'
-    || typeof manifest.productName !== 'string'
-    || typeof manifest.version !== 'string'
+    ((typeof manifest.name) !== 'string')
+    || ((typeof manifest.productName) !== 'string')
+      || ((typeof manifest.version) !== 'string')
   )
     throw new Error('Package manifest name, productName, and version must be strings.',);
 
-  /** Required package metadata shared by root and staged manifests. */
+  /**
+   * Required package metadata shared by root and staged manifests.
+   */
   const metadata: RootPackageMetadata = {
     name: manifest.name,
     productName: manifest.productName,
@@ -110,10 +132,10 @@ function parseRootPackageMetadata({ value, }: { readonly value: unknown; },): Ro
 
   return {
     ...metadata,
-    ...(typeof manifest.description === 'string'
+    ...((typeof manifest.description) === 'string'
       ? { description: manifest.description, }
       : {}),
-    ...(typeof manifest.license === 'string'
+    ...((typeof manifest.license) === 'string'
       ? { license: manifest.license, }
       : {}),
   };
@@ -130,8 +152,16 @@ function parseRootPackageMetadata({ value, }: { readonly value: unknown; },): Ro
  * ```
  */
 async function readRootPackageMetadata(): Promise<RootPackageMetadata> {
-  /** Raw package manifest text. */
-  const manifestText = await readFile(join(packageRoot, 'package.json',), 'utf8',);
+  /**
+   * Raw package manifest text.
+   */
+  const manifestText = await readFile(
+    join(
+      packageRoot,
+      'package.json',
+    ),
+    'utf8',
+  );
   return parseRootPackageMetadata({ value: JSON.parse(manifestText,), },);
 }
 
@@ -144,12 +174,26 @@ async function readRootPackageMetadata(): Promise<RootPackageMetadata> {
  * ```
  */
 async function copyLicenseTexts(): Promise<void> {
-  if (!existsSync(licenseDir,))
-    return;
+  try {
+    await access(licenseDir,);
+  }
+  catch (error: unknown) {
+    if (
+      Error.isError(error,)
+      && ('code' in error)
+      && (error.code === 'ENOENT')
+    )
+      return;
+
+    throw error;
+  }
 
   await cp(
     licenseDir,
-    join(appOutDir, 'LICENSES',),
+    join(
+      appOutDir,
+      'LICENSES',
+    ),
     {
       force: true,
       recursive: true,
@@ -166,15 +210,40 @@ async function copyLicenseTexts(): Promise<void> {
  * ```
  */
 async function stageElectronApp(): Promise<void> {
-  await mkdir(appOutDir, { recursive: true, },);
-  await cp(join(sourceRoot, 'index.html',), join(appOutDir, 'index.html',),);
-  await cp(join(sourceRoot, 'styles.css',), join(appOutDir, 'styles.css',),);
+  await mkdir(
+    appOutDir,
+    { recursive: true, },
+  );
+  await cp(
+    join(
+      sourceRoot,
+      'index.html',
+    ),
+    join(
+      appOutDir,
+      'index.html',
+    ),
+  );
+  await cp(
+    join(
+      sourceRoot,
+      'styles.css',
+    ),
+    join(
+      appOutDir,
+      'styles.css',
+    ),
+  );
   await copyLicenseTexts();
 
-  /** Root package metadata that should survive into the staged runtime manifest. */
+  /**
+   * Root package metadata that should survive into the staged runtime manifest.
+   */
   const rootMetadata = await readRootPackageMetadata();
 
-  /** Runtime manifest consumed by Electron inside the staged app directory. */
+  /**
+   * Runtime manifest consumed by Electron inside the staged app directory.
+   */
   const stagedMetadata: StagedPackageMetadata = {
     ...rootMetadata,
     main: 'main.mjs',
@@ -182,8 +251,15 @@ async function stageElectronApp(): Promise<void> {
   };
 
   await writeFile(
-    join(appOutDir, 'package.json',),
-    `${JSON.stringify(stagedMetadata, null, 2,)}\n`,
+    join(
+      appOutDir,
+      'package.json',
+    ),
+    `${JSON.stringify(
+      stagedMetadata,
+      null,
+      2,
+    )}\n`,
     'utf8',
   );
 }

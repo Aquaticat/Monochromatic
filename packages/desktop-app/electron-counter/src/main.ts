@@ -17,13 +17,13 @@ import { join, } from 'node:path';
 import {
   app,
   BrowserWindow,
-  type Event,
 } from 'electron';
 import { tagged, } from '@monochromatic-dev/module-logger';
 
 import {
   APP_TITLE_PREFIX,
   parseDocumentTitle,
+  UNPARSEABLE_DOCUMENT_TITLE,
 } from './counter.js';
 
 /**
@@ -74,7 +74,10 @@ const mainLogger = tagged({ tag: 'electron-counter-main', },);
  * console.log(rendererHtmlPath);
  * ```
  */
-const rendererHtmlPath = join(import.meta.dirname, 'index.html',);
+const rendererHtmlPath = join(
+  import.meta.dirname,
+  'index.html',
+);
 
 /**
  * Converts an unknown caught value to a loggable string.
@@ -89,7 +92,7 @@ const rendererHtmlPath = join(import.meta.dirname, 'index.html',);
  * ```
  */
 function stringifyError({ error, }: { readonly error: unknown; },): string {
-  if (error instanceof Error)
+  if (Error.isError(error,))
     return error.stack ?? error.message;
 
   return String(error,);
@@ -109,8 +112,14 @@ function configureLinuxWayland(): void {
     return;
   }
 
-  app.commandLine.appendSwitch('ozone-platform', 'wayland',);
-  app.commandLine.appendSwitch('enable-features', 'WaylandWindowDecorations',);
+  app.commandLine.appendSwitch(
+    'ozone-platform',
+    'wayland',
+  );
+  app.commandLine.appendSwitch(
+    'enable-features',
+    'WaylandWindowDecorations',
+  );
   process.env.XDG_SESSION_TYPE = 'wayland';
   mainLogger.info('Forced Chromium Ozone platform to Wayland for Linux.',);
 }
@@ -126,7 +135,9 @@ function configureLinuxWayland(): void {
  * ```
  */
 async function writeObservedCounterState({ count, }: { readonly count: number; },): Promise<void> {
-  /** Optional state path used only by automated boundary tests. */
+  /**
+   * Optional state path used only by automated boundary tests.
+   */
   const statePath = process.env[statePathEnvironmentVariable];
 
   if (statePath === undefined)
@@ -134,7 +145,11 @@ async function writeObservedCounterState({ count, }: { readonly count: number; }
 
   await writeFile(
     statePath,
-    `${JSON.stringify({ count, }, null, 2,)}\n`,
+    `${JSON.stringify(
+      { count, },
+      null,
+      2,
+    )}\n`,
     'utf8',
   );
 }
@@ -150,10 +165,12 @@ async function writeObservedCounterState({ count, }: { readonly count: number; }
  * ```
  */
 async function observeCounterTitle({ title, }: { readonly title: string; },): Promise<void> {
-  /** Parsed count from this app's title convention. */
+  /**
+   * Parsed count from this app's title convention.
+   */
   const count = parseDocumentTitle({ title, },);
 
-  if (count === undefined)
+  if (count === UNPARSEABLE_DOCUMENT_TITLE)
     return;
 
   mainLogger.info(`Observed renderer counter value ${count}.`,);
@@ -177,7 +194,8 @@ function observeCounterTitleFromEvent({ title, }: { readonly title: string; },):
       await observeCounterTitle({ title, },);
     }
     catch (error: unknown) {
-      mainLogger.error(`Failed to observe renderer title: ${stringifyError({ error, },)}`,
+      mainLogger.error(
+        `Failed to observe renderer title: ${stringifyError({ error, },)}`,
       );
     }
   })();
@@ -195,7 +213,9 @@ function observeCounterTitleFromEvent({ title, }: { readonly title: string; },):
  */
 async function createMainWindow(): Promise<BrowserWindow> {
   mainLogger.info('Creating main window.',);
-  /** BrowserWindow hosting the sandboxed renderer. */
+  /**
+   * BrowserWindow hosting the sandboxed renderer.
+   */
   const mainWindow = new BrowserWindow({
     height: mainWindowHeight,
     title: APP_TITLE_PREFIX,
@@ -209,7 +229,10 @@ async function createMainWindow(): Promise<BrowserWindow> {
 
   mainWindow.webContents.on(
     'page-title-updated',
-    function handlePageTitleUpdated(_event: Event, title: string,): void {
+    function handlePageTitleUpdated(
+      _event: unknown,
+      title: string,
+    ): void {
       observeCounterTitleFromEvent({ title, },);
     },
   );
@@ -217,13 +240,50 @@ async function createMainWindow(): Promise<BrowserWindow> {
   mainWindow.webContents.on(
     'did-finish-load',
     function handleDidFinishLoad(): void {
-      observeCounterTitleFromEvent({ title: mainWindow.webContents.getTitle(), },);
+      observeCounterTitleFromEvent({
+        title: mainWindow.webContents.getTitle(),
+      },);
     },
   );
 
   await mainWindow.loadFile(rendererHtmlPath,);
   mainLogger.info('Renderer loaded.',);
   return mainWindow;
+}
+
+/**
+ * Logs a failure from an app activation path that Electron does not await.
+ *
+ * @param error - Caught activation error.
+ *
+ * @example
+ * ```ts
+ * logActivationCreateError({ error: new Error('boom') });
+ * ```
+ */
+function logActivationCreateError({ error, }: { readonly error: unknown; },): void {
+  mainLogger.error(
+    `Failed to create activated main window: ${stringifyError({ error, },)}`,
+  );
+}
+
+/**
+ * Creates a replacement main window when the app is activated with none open.
+ *
+ * @example
+ * ```ts
+ * createMainWindowForActivation();
+ * ```
+ */
+function createMainWindowForActivation(): void {
+  void (async function createActivatedMainWindow(): Promise<void> {
+    try {
+      await createMainWindow();
+    }
+    catch (error: unknown) {
+      logActivationCreateError({ error, },);
+    }
+  })();
 }
 
 /**
@@ -235,25 +295,23 @@ async function createMainWindow(): Promise<BrowserWindow> {
  * ```
  */
 function installAppLifecycleHandlers(): void {
-  app.on('window-all-closed', function handleWindowAllClosed(): void {
-    mainLogger.info('All windows closed.',);
-    if (process.platform !== 'darwin')
-      app.quit();
-  },);
+  app.on(
+    'window-all-closed',
+    function handleWindowAllClosed(): void {
+      mainLogger.info('All windows closed.',);
+      if (process.platform !== 'darwin')
+        app.quit();
+    },
+  );
 
-  app.on('activate', function handleActivate(): void {
-    mainLogger.info('App activated.',);
-    if (BrowserWindow.getAllWindows().length === 0)
-      void (async function createActivatedMainWindow(): Promise<void> {
-        try {
-          await createMainWindow();
-        }
-        catch (error: unknown) {
-          mainLogger.error(`Failed to create activated main window: ${stringifyError({ error, },)}`,
-          );
-        }
-      })();
-  },);
+  app.on(
+    'activate',
+    function handleActivate(): void {
+      mainLogger.info('App activated.',);
+      if (BrowserWindow.getAllWindows().length === 0)
+        createMainWindowForActivation();
+    },
+  );
 }
 
 configureLinuxWayland();

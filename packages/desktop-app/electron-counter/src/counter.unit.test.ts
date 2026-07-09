@@ -20,6 +20,7 @@ import {
   incrementCount,
   INITIAL_COUNT,
   parseDocumentTitle,
+  UNPARSEABLE_DOCUMENT_TITLE,
 } from '../dist/app/counter.js';
 
 /** Count value used for visible-label formatting. */
@@ -83,21 +84,23 @@ await describe({
         it({
           name: 'ignores unrelated title prefixes',
           fn: async () => {
-            expect(parseDocumentTitle({ title: 'Other :: count=1', },),).toBeUndefined();
+            expect(parseDocumentTitle({ title: 'Other :: count=1', },),).toBe(
+              UNPARSEABLE_DOCUMENT_TITLE,
+            );
           },
         },),
         it({
           name: 'ignores missing count suffix',
           fn: async () => {
             expect(parseDocumentTitle({ title: `${APP_TITLE_PREFIX} :: count=`, },),)
-              .toBeUndefined();
+              .toBe(UNPARSEABLE_DOCUMENT_TITLE,);
           },
         },),
         it({
           name: 'ignores nonnumeric count suffix',
           fn: async () => {
             expect(parseDocumentTitle({ title: `${APP_TITLE_PREFIX} :: count=nan`, },),)
-              .toBeUndefined();
+              .toBe(UNPARSEABLE_DOCUMENT_TITLE,);
           },
         },),
       ],
