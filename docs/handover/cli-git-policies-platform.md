@@ -386,7 +386,12 @@ There is no detected-CI auto-trust path and no separate expected-hash environmen
     plugin,
     transaction,
     or engine failure.
-- A forwarded real Git command preserves real Git's exit code.
+- A forwarded real Git command normally preserves real Git's exit code.
+- Exception:
+  a post-commit policy or engine failure after Git created the commit returns exit code `2`,
+  blocks auto-push,
+  and does not roll back the commit.
+  Its JSONL event must state that the commit landed and include the new commit OID so callers do not retry blindly.
 
 The JSONL schema and schema-version field remain open.
 
@@ -440,8 +445,10 @@ or another mode not yet reproduced transactionally:
   the next pass restarts from the first core policy.
 - Use an eight-pass cap for the complete policy sequence,
   matching the repository Oxlint wrapper.
-- Hash the temporary candidate tree after each complete pass as the convergence oracle.
-- Detect non-adjacent repeated tree hashes as cross-policy cycles.
+- Compare complete candidate file bytes after each pass instead of hashing them.
+- Detect stability by exact ordered path-and-byte equality with the preceding state.
+- Detect cross-policy cycles by exact equality with any non-adjacent candidate state retained within the eight-pass
+  run.
 - A stable candidate with remaining error findings is exit code `1`.
 - A cycle or cap reached while still changing is exit code `2`.
 
