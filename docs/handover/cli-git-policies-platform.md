@@ -258,16 +258,19 @@ The complete read-only and mixed-command grammar remains open and needs source-b
 
 ### Trust consent
 
-Before asking for consent,
-`git cli-git trust` prints all relevant facts:
+Trust uses two stages because recursive-child intent lives inside arbitrary config code and cannot be discovered safely
+before authorizing that code.
+
+Before the first consent prompt,
+`git cli-git trust` prints every fact available without executing config:
 
 - config path and format;
 - filesystem ID;
 - source hash;
 - cached bundle hash for TypeScript;
-- recursive-child-trust status;
 - non-self-contained TypeScript imports or equivalent warning;
-- explicit arbitrary-code authority.
+- explicit arbitrary-code authority;
+- notice that recursive-child intent will be evaluated only after root execution is authorized.
 
 The warning must state that config and bundled plugins run with user permissions and may:
 
@@ -277,10 +280,17 @@ The warning must state that config and bundled plugins run with user permissions
 - automatically modify Git content;
 - behave incorrectly despite cli-git's transaction safeguards.
 
-After the full disclosure:
+Local use then asks `Trust this config? [y/N]`.
+The root approval stays in-memory until config execution and validation succeed;
+a thrown or invalid config leaves no persistent trust record.
 
-- local use asks `Trust this config? [y/N]`;
-- `git cli-git trust --yes` prints the same disclosure and skips input for explicit CI use.
+After successful authorized execution:
+
+- no child-trust declaration completes root trust with no second prompt;
+- a child-trust declaration prints the exact recursive root and descendant authority,
+  then asks for separate consent before recording the recursive marker.
+
+`git cli-git trust --yes` prints both disclosures when applicable and skips both input reads for explicit CI use.
 
 ### Untrusted and changed artifacts
 
@@ -324,8 +334,9 @@ Exact canonical encoding and decoder-error behavior still need tests.
 Recursive trust is config-declared,
 matching mise's monorepo-root model rather than making every trust command recursive.
 
-- Trusting such a root warns before consent that descendant authority will be recorded.
-- The root declaration waives separate first approval for descendant configs.
+- A root declaration triggers the second trust-consent stage after root config execution and validation.
+- The second disclosure warns before consent that descendant authority will be recorded and names the exact root.
+- The root declaration waives separate first approval for descendant configs only after that second consent.
 - First descendant encounter auto-enrolls that descendant's current hash.
 - Later descendant changes block for re-trust.
 - Trust records track provenance.
