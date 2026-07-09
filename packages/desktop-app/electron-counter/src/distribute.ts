@@ -7,10 +7,8 @@
  * ```
  */
 
-import {
-  distributeElectronApp,
-  parseElectronDistributionArgs,
-} from '@monochromatic-dev/desktop-app-electron-infra/ts';
+import { parseElectronDistributionArgs, } from '@monochromatic-dev/desktop-app-electron-infra/ts/distribution-args';
+import { distributeElectronApp, } from '@monochromatic-dev/desktop-app-electron-infra/ts/distribute';
 
 /**
  * Stable Electron application bundle identifier.

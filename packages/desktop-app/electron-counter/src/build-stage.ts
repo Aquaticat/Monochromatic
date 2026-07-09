@@ -7,7 +7,7 @@
  * ```
  */
 
-import { stageElectronApp, } from '@monochromatic-dev/desktop-app-electron-infra/ts';
+import { stageElectronApp, } from '@monochromatic-dev/desktop-app-electron-infra/ts/stage';
 
 /**
  * Stages this package's no-Vite Electron app output.

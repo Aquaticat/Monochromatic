@@ -31,10 +31,7 @@ const toolConfig: UserConfig = defineConfig({
   target: 'node22',
   deps: {
     alwaysBundle: ['@monochromatic-dev/**',],
-    neverBundle: [
-      '@electron/packager',
-      'electron',
-    ],
+    neverBundle: ['electron',],
   },
 });
 
