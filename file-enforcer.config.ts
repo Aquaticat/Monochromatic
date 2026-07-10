@@ -1235,6 +1235,24 @@ ${await cat(['./AGENTS.md',],)}`,
     )}`,
   },),
 
+  ...await Promise.all([
+    'errors.ts',
+    'index.ts',
+    'materialize-candidates.ts',
+    'scan-candidates.ts',
+    'scanner-output.ts',
+  ].map(async function mirrorForbiddenStringsPolicy(fileName,) {
+    return overwrite({
+      dest: `./packages/git-policies/cli/src/optional/forbidden-strings/${fileName}`,
+      content: `// Generated from \`packages/git-policies/forbidden-strings/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
+        `./packages/git-policies/forbidden-strings/src/${fileName}`,
+      ],)).replace(
+        '@monochromatic-dev/git-policy-api/ts',
+        '../../api/index.ts',
+      )}`,
+    },);
+  },),),
+
   generatePackageLicenseTexts(),
 
   generateResolvedBrowserslistTargets(),

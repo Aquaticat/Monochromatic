@@ -29,6 +29,16 @@ export type {
   PolicySetting,
 } from './api/config-types.ts';
 export {
+  ForbiddenStringsPluginError,
+  forbiddenStringsPlugin,
+  forbiddenStringsPolicy,
+  parseScannerOutput,
+  scanCandidates,
+} from './optional/forbidden-strings/index.ts';
+export type {
+  ForbiddenStringsPolicyOptions,
+} from './optional/forbidden-strings/index.ts';
+export {
   forbiddenRootContext,
   hasForbiddenRootContext,
   repositoryPolicyPlugin,
