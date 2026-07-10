@@ -520,6 +520,19 @@ Rules:
   and `status` never execute live repository config during preflight.
 - `fix` changes selected worktree files and verifies every real index blob is unchanged.
 
+`status` emits one compact `trust-status` object with `configPresent`,
+`trusted`,
+`unchanged`,
+and a stable reason:
+`no-config`,
+`untrusted`,
+`trusted`,
+`changed`,
+`corrupt`,
+or `typescript-unsupported`.
+It inspects exact trust state without executing live config.
+This schema supersedes the temporary built-in policy inventory from the first policy-engine slice.
+
 ## Lifecycle
 
 ### Pre-forward
@@ -765,6 +778,8 @@ AppData,
 or repository environment variables.
 Failure to resolve the account home is a trust failure.
 Tests inject the complete registry root through an internal adapter unavailable from config or production environment.
+The account-derived or injected root must be lexically identical to its native real path;
+any symlink or junction in its ancestor chain fails closed.
 
 ### Reversible record path
 
@@ -845,13 +860,40 @@ On POSIX:
 
 - registry and record directories are mode `0700`;
 - metadata and snapshots are mode `0600`;
-- unexpected group or other permission bits fail closed.
+- every registry-owned directory and file belongs to current effective account;
+- unexpected ownership or group or other permission bits fail closed.
 
 On Windows,
-the registry adapter applies and verifies an ACL limited to the current account and system administrators.
+the registry adapter disables inheritance and applies an ACL limited to the current account and system administrators
+to every registry directory,
+metadata file,
+and snapshot.
+Every read independently verifies the protected ACL and required principals.
 Failure to apply or verify protection fails closed.
 
+### MJS self-containment
+
+MJS preflight decodes strict UTF-8 and parses ECMAScript module syntax without execution.
+Static imports,
+re-exports,
+and literal dynamic imports may name only Node built-ins.
+Local paths,
+package names,
+computed dynamic imports,
+and additional artifact assets are rejected.
+These checks constrain declared artifact module edges,
+not ambient authority after consent:
+trusted code can still use Node built-ins such as filesystem,
+module,
+or process APIs to access live state.
+
 ### Exact comparison and execution
+
+MJS candidate capture opens the canonical config with no-follow semantics before resolving filesystem identity.
+Same-handle metadata before and after reading,
+final live-path device and inode agreement,
+and exact byte length bind the identity observation to the opened source object.
+Degraded filesystem identity remains explicit in the trust disclosure rather than writing logger text into JSONL event streams.
 
 Strict MJS trust compares live entry bytes to the stored executable snapshot.
 Strict TypeScript trust compares every tracked live source byte sequence to its stored source snapshot and does not

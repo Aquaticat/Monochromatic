@@ -4,7 +4,7 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #344 are complete and closed.
-Trust issue #345 is the next unblocked implementation slice.
+Trust issue #345 is implemented locally and awaits Windows ACL workflow evidence and final independent review before closure.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -793,6 +793,117 @@ Unless later grilling changes them:
   logger isolation,
   and review corrections.
 
+### Issue #345 single-artifact MJS trust
+
+- Added Git 2.54-aware config-loading classification:
+  known inspection commands skip config;
+  `branch` and `tag` inspect positional,
+  listing,
+  mutation,
+  clustered-short,
+  and inline long-option forms;
+  unknown and ambiguous commands load config.
+- Added repository-root config discovery with MJS precedence,
+  chained Git `-C` handling,
+  regular-file and symlink rejection,
+  and explicit TypeScript deferral to #347.
+- Added strict MJS UTF-8 and Acorn syntax validation.
+  Static imports,
+  re-exports,
+  and literal dynamic imports accept only Node built-ins;
+  local,
+  package,
+  computed dynamic,
+  and extra artifact module edges fail before consent.
+- Added runtime-authoritative config,
+  plugin,
+  policy,
+  severity,
+  and Valibot option validation.
+  Trusted plugin policy definitions run through the existing deterministic policy registry and direct-check path.
+- Added OS-account-derived registry roots independent of repository environment variables.
+  Complete filesystem-ID and canonical-path identities use reversible unpadded base64url components without hashes.
+- Added no-follow candidate capture that opens the source before filesystem identity resolution,
+  compares same-handle metadata before and after reading,
+  requires final live-path device and inode agreement,
+  and reports degraded identity in consent rather than contaminating JSONL stderr.
+- Added private schema-version-one records,
+  exact source snapshots,
+  exclusive per-key lock directories,
+  fsync,
+  validated temporary directories,
+  atomic rename,
+  rollback,
+  exact untrust,
+  and fail-closed handling for malformed,
+  interrupted,
+  concurrent,
+  changed,
+  throwing,
+  or unsafe records.
+- Added canonical registry ancestry checks,
+  POSIX account ownership and mode verification,
+  and protected Windows ACL application and read-time verification for directories and files.
+- Added informed consent with path,
+  filesystem identity and stability,
+  exact snapshot state,
+  retained built-ins,
+  and full-account authority.
+  Root candidate code is not executed before affirmative consent;
+  `--yes` supports explicit noninteractive CI use.
+- Added trust,
+  untrust,
+  and trust-status management output.
+  First config-loading use blocks with exit `2` without execution;
+  unchanged commands execute the private stored snapshot;
+  exact changed bytes block until re-trust.
+- Unit and subprocess coverage exercises classification,
+  discovery,
+  self-containment,
+  pre-consent non-execution,
+  exact lifecycle,
+  direct plugin findings,
+  concurrent writers,
+  interrupted candidates,
+  registry ancestry and record symlinks,
+  unsafe permissions,
+  changed bytes,
+  and management exits.
+- `mise run //packages/cli/git:test:built:trust` builds the unpublished tarball and passed in a bounded disposable
+  Node container.
+  It installs the package's actual shadowing `git` bin and verifies pure JSONL first-use and changed-byte failures,
+  trust disclosure,
+  status,
+  stored plugin execution,
+  read-only bypass,
+  and untrust.
+- Cli-git formatting,
+  types,
+  unit tests,
+  build,
+  npm packing,
+  module-fs-id formatting,
+  types,
+  and unit tests pass locally.
+- Independent review found assigned-long-option bypass,
+  filesystem-identity ordering,
+  registry-ancestor,
+  Windows ACL,
+  degraded-warning,
+  built-test maintenance,
+  and status-documentation gaps.
+  Commits after the review corrected the actionable boundaries and added regression evidence.
+- Commits `af5e0a8bb`,
+  `ff2d4831a`,
+  `30efc0e2c`,
+  and `7bcd00a55` contain the initial runtime,
+  lifecycle tests,
+  storage containment hardening,
+  and reviewed boundary fixes.
+- Recursive trust remains #346;
+  TypeScript trust remains #347;
+  actual npm publication remains deferred in #358.
+
 ### Issue #342 filesystem identity
 
 - Added `@monochromatic-dev/module-fs-id` with source-qualified colon-free IDs,
@@ -861,8 +972,11 @@ Dependency-ordered implementation slices:
 - [#344](https://github.com/Aquaticat/Monochromatic/issues/344),
   completed:
   ran `require-root` through the packaged JSONL engine with Optique management commands and built consumer evidence.
-- [#345](https://github.com/Aquaticat/Monochromatic/issues/345):
-  trust and execute one stored MJS plugin snapshot.
+- [#345](https://github.com/Aquaticat/Monochromatic/issues/345),
+  verification in progress:
+  trust and execute one stored MJS plugin snapshot;
+  local and packed-bin checks pass,
+  with Windows ACL workflow evidence and final review remaining before closure.
 - [#346](https://github.com/Aquaticat/Monochromatic/issues/346):
   add recursive snapshot trust and cascading revocation.
 - [#347](https://github.com/Aquaticat/Monochromatic/issues/347):

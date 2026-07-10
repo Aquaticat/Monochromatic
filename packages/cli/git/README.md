@@ -79,8 +79,9 @@ Validated policy settings support `off`,
 `warn`,
 and `error`;
 configuring warn-unsafe `require-root` as `warn` also produces a configuration warning.
-Trusted repository config discovery and execution is intentionally added by the trust implementation slices,
-so the current shadow executable uses the built-in default.
+Repository-root `cli-git.config.mjs` can register namespaced plugin policies after exact-snapshot trust.
+Only `require-root` has migrated from the legacy rule pipeline in this transitional slice;
+plugin policies join it in declaration order when trusted config is active.
 
 Policy findings and engine failures are compact LF-terminated JSONL.
 Forwarded wrapper invocations write events to stderr;
@@ -96,16 +97,99 @@ and sequence values start at zero for every invocation.
 Use the namespaced Optique management commands:
 
 ```sh
+git cli-git trust
+git cli-git trust --yes
+git cli-git untrust
 git cli-git status
 git cli-git check --all
 git cli-git check --policy require-root -- path/to/file
 ```
 
+`status` reports whether repository config is absent,
+untrusted,
+trusted and unchanged,
+changed,
+corrupt,
+or deferred TypeScript.
+It does not execute live repository config.
+This trust-status schema supersedes the temporary built-in policy inventory emitted by the first policy-engine slice.
+
 Direct check requires exactly one scope source:
 `--all` or at least one pathspec following `--`.
-The first engine slice accepts only the `require-root` policy filter.
+Policy filters accept registered built-in and trusted plugin IDs.
 Git global options remain before the namespace,
 for example `git -C /repo cli-git check --all`.
+
+## Exact MJS trust
+
+Discovery is bounded to the effective repository root.
+`cli-git.config.mjs` takes precedence over `cli-git.config.ts`,
+and either path must be a regular non-symlink file.
+Known inspection-only Git commands skip config loading.
+`branch` and `tag` use argument-aware classification;
+unknown or ambiguous commands take the config-loading path and therefore block on untrusted config.
+
+First config-loading use exits `2` without executing repository code and points to `git cli-git trust`.
+Trust validates UTF-8,
+JavaScript syntax,
+and module edges before consent.
+Static and dynamic import syntax may name only Node built-ins;
+local files,
+packages,
+computed dynamic imports,
+and extra artifact assets are rejected.
+A self-contained MJS file may export raw config data,
+or a consumer build may bundle authoring helpers and plugin code into that one artifact.
+
+Before prompting,
+trust prints the canonical path,
+complete filesystem identity and stability,
+exact snapshot state and byte count,
+retained Node built-ins,
+and arbitrary-code authority.
+`--yes` is explicit noninteractive consent for CI.
+Without `--yes`,
+noninteractive input declines with exit `2`.
+Trusted code is not sandboxed:
+it runs with full account file,
+process,
+network,
+and Git authority after consent.
+
+The registry root comes from the operating-system account database rather than `HOME`,
+XDG,
+or AppData environment overrides.
+Record keys reversibly encode the complete filesystem identity and canonical config path without hashing.
+Registry directories and files reject symlinks,
+unsafe ownership,
+unsafe POSIX modes,
+and unsafe Windows ACLs.
+Candidate writes use an exclusive per-key lock,
+private temporary directory,
+fsync,
+validated rename,
+and rollback on incomplete replacement.
+
+Every config-loading command captures the live file through a no-follow handle,
+binds filesystem identity to that opened object,
+compares exact live bytes with the stored snapshot,
+and executes only the private stored copy.
+Changed bytes exit `2` until explicit re-trust.
+`untrust` removes only the exact identity record.
+Recursive trust and TypeScript trust remain deferred to issues #346 and #347.
+
+The maintained packed-bin integration check builds the unpublished tarball,
+installs its shadowing `git` executable in a bounded disposable container,
+and exercises untrusted blocking,
+trust,
+status,
+stored plugin checks,
+changed bytes,
+and untrust:
+
+```sh
+mise run //packages/cli/git:test:built:trust
+```
 
 `--no-enforce-require-root` bypasses the policy for one forwarded invocation and is stripped before real Git runs.
 The token is recognized only in flag position before Git's `--` pathspec separator;

@@ -268,6 +268,7 @@ An empty filter means every enabled policy.
 `trust`,
 `untrust`,
 and `status` inspect or recover trust without first executing repository config.
+`status` reports stable exact-trust state rather than executing config to inventory policies.
 `check` and `fix` load only trusted config.
 Ordinary Git commands continue to invoke the resolved real Git executable by absolute path.
 
@@ -284,6 +285,10 @@ Keeping both files is valid;
 MJS wins.
 
 A consumer-built MJS artifact must be self-contained except for Node built-in imports.
+Static imports,
+re-exports,
+and literal dynamic imports may name only Node built-ins;
+computed dynamic imports and additional artifact assets are rejected.
 Consumer source may import cli-git authoring helpers and plugins,
 but those imports must be bundled into the runtime artifact.
 A directly hand-written artifact exports raw validated data or inlines helpers.
@@ -334,7 +339,9 @@ or candidate-state comparisons.
 The trust identity is the complete pair of filesystem ID and canonical config path.
 The registry path uses reversible encoding of that complete identity rather than a digest.
 Trust records keep validated metadata and exact snapshot files in one per-key directory.
-After a successful comparison,
+MJS capture opens the no-follow source handle before filesystem identity resolution,
+then requires same-handle metadata and final live-path device and inode agreement.
+After a successful exact-byte comparison,
 cli-git executes the stored MJS snapshot or stored TypeScript bundle,
 not the live entry file that was compared.
 This closes the entry-file compare-then-swap window.
@@ -347,8 +354,9 @@ XDG,
 or AppData environment variables.
 Tests inject a registry root through internal adapters.
 Registry replacement is atomic,
-uses safe permissions,
-and rejects symlink substitution.
+rejects symlinks and junctions in registry ancestry,
+requires current-account ownership and private POSIX modes,
+and applies and verifies protected Windows ACLs on directories and files.
 
 First execution always requires explicit trust.
 A later covered byte change blocks until re-trust unless that exact path is in relaxed mode.

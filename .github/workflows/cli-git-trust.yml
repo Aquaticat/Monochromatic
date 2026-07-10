@@ -1,0 +1,44 @@
+name: cli-git trust host evidence
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+    - 'packages/cli/git/**'
+    - 'packages/module/fs-id/**'
+    - '.github/workflows/cli-git-trust.yml'
+  push:
+    branches: ['main']
+    paths:
+    - 'packages/cli/git/**'
+    - 'packages/module/fs-id/**'
+    - '.github/workflows/cli-git-trust.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  windows-acl:
+    name: Windows trust ACL
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Set up Node
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+      with:
+        node-version: 26.5.0
+        package-manager-cache: false
+
+    # Match the pnpm major and current workspace install used to generate pnpm-lock.yaml.
+    - name: Set up pnpm
+      run: npm install --global pnpm@11.10.0
+
+    - name: Install cli-git dependency closure
+      run: pnpm install --frozen-lockfile --filter @monochromatic-dev/cli-git...
+
+    - name: Verify protected file ACL and tamper rejection
+      run: node packages/cli/git/src/trust/windows-acl.host-evidence.ts
