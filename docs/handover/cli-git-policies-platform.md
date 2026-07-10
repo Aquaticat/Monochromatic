@@ -3,8 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #350 are complete and closed.
-Autofix transaction issue #351 is implemented locally and undergoing final documentation and review.
+Issues #280 and #341 through #351 are complete and closed.
+Transaction recovery and exhaustive-mode issue #352 is the active dependency-ordered slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1304,10 +1304,15 @@ Unless later grilling changes them:
   type checks,
   build,
   full unit suite,
-  and packed shadow-bin runs `proc_4` and `proc_5` pass.
-  Final documentation lint,
-  final packed rerun `proc_6` after review corrections,
-  and independent closure review remain.
+  and packed shadow-bin runs `proc_4`,
+  `proc_5`,
+  and `proc_6` pass.
+- Independent final review found no remaining #351 blocker and confirmed durable recovery,
+  exhaustive modes,
+  signal,
+  filesystem-error,
+  and concurrent-writer recovery remain #352 scope.
+- Issue #351 was closed after every acceptance criterion and evidence gate passed.
   Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity
