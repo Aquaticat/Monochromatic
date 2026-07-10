@@ -355,6 +355,8 @@ Two related closed issues exist:
 
 Neither needs a new comment for this incident.
 Release 0.27.4 already contains the generator-selection mechanism needed by this repository.
+A local maintenance issue tracks eventual removal of the compatibility pin:
+[#359](https://github.com/Aquaticat/Monochromatic/issues/359).
 
 1. **Upstream responsibility**
    Yes for 0.27.2.
@@ -390,10 +392,16 @@ Release 0.27.4 already contains the generator-selection mechanism needed by this
 
 ### Upstream filing artifact
 
-Nothing to add.
-Upstream already released the required option,
+No new upstream issue or comment is warranted:
+upstream already released the required option,
 and the related issue threads do not need another reproduction after the released fix passed the real consumer.
-Do not file a new issue or comment.
+
+The local tracking issue is [#359](https://github.com/Aquaticat/Monochromatic/issues/359).
+It records the separate maintenance action:
+remove the exact override after tsdown raises its dependency floor or a fresh dependency graph independently resolves a
+compatible release without it.
+The exact release-age exception may be removed once 0.27.4 naturally clears the age gate;
+that does not by itself authorize removing the override.
 
 ## References
 
