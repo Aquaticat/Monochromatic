@@ -3,8 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #345 are complete and closed.
-Recursive trust issue #346 is implemented and undergoing final closure verification.
+Issues #280 and #341 through #346 are complete and closed.
+TypeScript trust issue #347 is the next unblocked implementation slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -998,6 +998,7 @@ Unless later grilling changes them:
   mounted packed-bin fixtures,
   review corrections,
   and contract documentation.
+  Issue #346 was closed after every acceptance criterion and evidence gate passed.
   TypeScript trust remains #347;
   actual npm publication remains deferred in #358.
 
