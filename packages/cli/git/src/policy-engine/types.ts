@@ -100,10 +100,6 @@ export type PolicyEngineResult = Readonly<{
    */
   events: readonly PolicyEvent[];
   /**
-   * Unsafe warning configuration diagnostics.
-   */
-  configWarnings: readonly string[];
-  /**
    * Settled cli-git exit code.
    */
   exitCode: 0 | 1 | 2;

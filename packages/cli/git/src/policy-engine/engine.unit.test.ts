@@ -42,6 +42,21 @@ const LIFECYCLE_POLICY: RuntimePolicyDefinition = {
     return Promise.reject(new Error('escaped lifecycle policy executed',),);
   },
 };
+/** Policy proving later invocation stages can observe earlier escape controls. */
+const ESCAPE_OBSERVER_POLICY: RuntimePolicyDefinition = {
+  name: 'escape-observer',
+  defaultSeverity: 'error',
+  warnSafe: false,
+  triggers: INVOCABLE_TRIGGERS,
+  check: function observeEscapedPolicy({ context, }) {
+    if (context.command.escapedPolicyIds.has('lifecycle-policy',))
+      return Promise.resolve([],);
+    return Promise.resolve([{
+      code: 'escape-state-missing',
+      message: 'Invocation-wide escape state was not retained.',
+    },],);
+  },
+};
 /** Policy that violates engine exception contract. */
 const THROWING_POLICY: RuntimePolicyDefinition = {
   name: 'throwing-policy',
@@ -87,9 +102,8 @@ await describe({
         expect(offResult.exitCode,).toBe(0,);
         expect(warnResult.exitCode,).toBe(0,);
         expect(warnResult.events[0]?.type,).toBe('finding',);
-        expect(warnResult.configWarnings,).toEqual([
-          'Policy require-root is warn-unsafe but configured as warn.',
-        ],);
+        expect(warnResult.events[1]?.type,).toBe('configuration-warning',);
+        expect(warnResult.events[1]?.policyId,).toBe('require-root',);
       },
     },),
     it({
@@ -133,7 +147,8 @@ await describe({
         expect(addEvent?.type,).toBe('finding',);
         if (addEvent?.type === 'finding')
           expect(addEvent.severity,).toBe('warn',);
-        expect(addWarn.configWarnings,).toContain('Policy add-explicit is warn-unsafe but configured as warn.',);
+        expect(addWarn.events[1]?.type,).toBe('configuration-warning',);
+        expect(addWarn.events[1]?.policyId,).toBe('add-explicit',);
         /** Warn-safe branch policy finding. */
         const branchWarn = await runPolicyEngine({
           args: ['branch', 'policy-topic',],
@@ -142,7 +157,7 @@ await describe({
         },);
         expect(branchWarn.shouldForward,).toBe(true,);
         expect(branchWarn.events[0]?.policyId,).toBe('branch-worktree-only',);
-        expect(branchWarn.configWarnings,).toEqual([],);
+        expect(branchWarn.events.length,).toBe(1,);
         /** Persistently disabled linked policy. */
         const linkedOff = await runPolicyEngine({
           args: ['clean', '-fd',],
@@ -195,7 +210,7 @@ await describe({
           return runPolicyEngine({
             args: ['--no-enforce-lifecycle-policy', 'status',],
             trigger,
-            registeredPolicies: [LIFECYCLE_POLICY,],
+            registeredPolicies: [LIFECYCLE_POLICY, ESCAPE_OBSERVER_POLICY,],
           },);
         },),);
         results.forEach(function assertSkipped(result,) {

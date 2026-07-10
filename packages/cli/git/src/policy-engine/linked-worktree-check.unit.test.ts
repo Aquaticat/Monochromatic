@@ -432,6 +432,16 @@ await describe({
           mkdir(sentinels.objects,),
           mkdir(sentinels.refs,),
         ],);
+        /** Allowed policy path for ignored-only dry-run clean. */
+        const allowedArgs = [
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '--dry-run',
+          '-d',
+          '-X',
+        ] as const;
+        expect(await linkedWorktreeOnly(allowedArgs,),).toBe(allowedArgs,);
         /** Allowed dry-run exercises real Git without mutation. */
         await runRealGit({ cwd: tempDirectory.path, args: ['clean', '--dry-run', '-d', '-X',], },);
         await Promise.all(sentinelPaths.map(function sentinelRemains(path,) {

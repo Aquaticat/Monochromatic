@@ -247,10 +247,6 @@ else try {
     if (renderedEvents !== '')
       process.stderr
         .write(renderedEvents,);
-    policyResult.configWarnings
-      .forEach(function emitConfigWarning(warning,) {
-      console.error(`cli-git: ${warning}`,);
-    },);
     if (!policyResult.shouldForward) {
       if (policyResult.exitCode === 0)
         throw new TypeError('Non-forwarding policy result cannot use exit code 0.',);

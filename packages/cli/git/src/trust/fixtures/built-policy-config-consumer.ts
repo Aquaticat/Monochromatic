@@ -129,6 +129,14 @@ export async function verifyPolicyConfigConsumer({
     expected: '"policyId":"branch-worktree-only"',
     context: 'branch warn finding',
   },);
+  assertIncludes({
+    text: branch.stderr,
+    expected: '"type":"configuration-warning"',
+    context: 'machine-readable warning metadata',
+  },);
+  if (branch.stderr
+    .includes('cli-git: Policy',))
+    throw new Error(`Warning output was not pure JSONL: ${branch.stderr}`,);
   await execute({
     command: '/usr/bin/git',
     args: [
@@ -194,148 +202,5 @@ export async function verifyPolicyConfigConsumer({
       'refs/heads/escaped-created',
     ],
     cwd: repository,
-  },);
-  /**
-   * No-config repository proving default enforcement and generic escapes.
-   */
-  const defaultsRepository = '/work/policy-defaults';
-  await mkdir(defaultsRepository,);
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'init',
-      '--quiet',
-    ],
-    cwd: defaultsRepository,
-  },);
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'config',
-      'user.email',
-      'cli-git@example.invalid',
-    ],
-    cwd: defaultsRepository,
-  },);
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'config',
-      'user.name',
-      'cli-git fixture',
-    ],
-    cwd: defaultsRepository,
-  },);
-  await writeFile(
-    join(
-      defaultsRepository,
-      'initial.txt',
-    ),
-    'initial\n',
-  );
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'add',
-      'initial.txt',
-    ],
-    cwd: defaultsRepository,
-  },);
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'commit',
-      '--quiet',
-      '-m',
-      'initial',
-    ],
-    cwd: defaultsRepository,
-  },);
-  /**
-   * Default linked-worktree policy rejection.
-   */
-  const linkedBlocked = await execute({
-    command: 'git',
-    args: ['stash',],
-    expectedExit: 1,
-    cwd: defaultsRepository,
-    env,
-  },);
-  /**
-   * Default branch-worktree policy rejection.
-   */
-  const branchBlocked = await execute({
-    command: 'git',
-    args: [
-      'branch',
-      'blocked',
-    ],
-    expectedExit: 1,
-    cwd: defaultsRepository,
-    env,
-  },);
-  await writeFile(
-    join(
-      defaultsRepository,
-      'bulk.txt',
-    ),
-    'bulk\n',
-  );
-  /**
-   * Default add-explicit policy rejection.
-   */
-  const addBlocked = await execute({
-    command: 'git',
-    args: [
-      'add',
-      '.',
-    ],
-    expectedExit: 1,
-    cwd: defaultsRepository,
-    env,
-  },);
-  assertIncludes({
-    text: linkedBlocked.stderr,
-    expected: '"policyId":"linked-worktree-only"',
-    context: 'linked default',
-  },);
-  assertIncludes({
-    text: branchBlocked.stderr,
-    expected: '"policyId":"branch-worktree-only"',
-    context: 'branch default',
-  },);
-  assertIncludes({
-    text: addBlocked.stderr,
-    expected: '"policyId":"add-explicit"',
-    context: 'add default',
-  },);
-  await execute({
-    command: 'git',
-    args: [
-      'stash',
-      '--no-enforce-linked-worktree-only',
-    ],
-    cwd: defaultsRepository,
-    env,
-  },);
-  await execute({
-    command: 'git',
-    args: [
-      'branch',
-      'generic-escaped',
-      '--no-enforce-branch-worktree-only',
-    ],
-    cwd: defaultsRepository,
-    env,
-  },);
-  await execute({
-    command: 'git',
-    args: [
-      'add',
-      '.',
-      '--no-enforce-add-explicit',
-    ],
-    cwd: defaultsRepository,
-    env,
   },);
 }

@@ -116,6 +116,45 @@ export type EngineFailureEvent = Readonly<{
 }>;
 
 /**
+ * Non-blocking warning about unsafe severity configuration.
+ *
+ * @example
+ * ```ts
+ * const event: ConfigurationWarningEvent = { schemaVersion: 1, sequence: 0, type: 'configuration-warning', trigger: 'pre-forward', policyId: 'add-explicit', code: 'warn-unsafe', message: 'Policy is warn-unsafe.' };
+ * ```
+ */
+export type ConfigurationWarningEvent = Readonly<{
+  /**
+   * Schema version.
+   */
+  schemaVersion: 1;
+  /**
+   * Invocation-local sequence.
+   */
+  sequence: number;
+  /**
+   * Event discriminator.
+   */
+  type: 'configuration-warning';
+  /**
+   * Lifecycle trigger.
+   */
+  trigger: PolicyTrigger;
+  /**
+   * Policy with unsafe warning severity.
+   */
+  policyId: string;
+  /**
+   * Stable warning code.
+   */
+  code: 'warn-unsafe';
+  /**
+   * Human-readable warning.
+   */
+  message: string;
+}>;
+
+/**
  * Policy event supported by first engine slice.
  *
  * @example
@@ -123,7 +162,7 @@ export type EngineFailureEvent = Readonly<{
  * const events: readonly PolicyEvent[] = [];
  * ```
  */
-export type PolicyEvent = FindingEvent | EngineFailureEvent;
+export type PolicyEvent = ConfigurationWarningEvent | FindingEvent | EngineFailureEvent;
 
 /**
  * Creates finding event while copying retained fields.
@@ -183,6 +222,42 @@ export function createFindingEvent({
         },
       }),
     fix,
+  };
+}
+
+/**
+ * Creates machine-readable unsafe-severity warning.
+ *
+ * @param sequence - invocation-local event order
+ *
+ * @param trigger - lifecycle point being checked
+ *
+ * @param policyId - warn-unsafe policy identifier
+ *
+ * @returns immutable warning event
+ *
+ * @example
+ * ```ts
+ * createConfigurationWarningEvent({ sequence: 0, trigger: 'pre-forward', policyId: 'add-explicit' });
+ * ```
+ */
+export function createConfigurationWarningEvent({
+  sequence,
+  trigger,
+  policyId,
+}: Readonly<{
+  sequence: number;
+  trigger: PolicyTrigger;
+  policyId: string;
+}>,): ConfigurationWarningEvent {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    sequence,
+    type: 'configuration-warning',
+    trigger,
+    policyId,
+    code: 'warn-unsafe',
+    message: `Policy ${policyId} is warn-unsafe but configured as warn.`,
   };
 }
 

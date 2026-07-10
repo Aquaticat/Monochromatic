@@ -14,6 +14,7 @@ import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { BUILT_IN_POLICIES, } from './built-ins.ts';
 import { parsePolicyControls, } from './controls.ts';
 import {
+  createConfigurationWarningEvent,
   createEngineFailureEvent,
   createFindingEvent,
   type PolicyEvent,
@@ -57,14 +58,18 @@ const ENGINE_CONFIG_SCHEMA = v.looseObject({
  *
  * @param transformedArgs - wrapper controls removed before real Git
  *
+ * @param escapedPolicyIds - invocation-wide skipped policy identifiers
+ *
  * @returns initial candidate-state context
  */
 function createPolicyContext({
   rawArgs,
   transformedArgs,
+  escapedPolicyIds,
 }: Readonly<{
   rawArgs: readonly string[];
-  transformedArgs: readonly string[]
+  transformedArgs: readonly string[];
+  escapedPolicyIds: ReadonlySet<string>;
 }>,): PolicyContext {
   /**
    * Parsed command location and effective directory.
@@ -86,7 +91,7 @@ function createPolicyContext({
       subcommand,
       effectiveCwd,
       repositoryRoot: effectiveCwd,
-      escapedPolicyIds: new Set(),
+      escapedPolicyIds,
     },
     git: EMPTY_LAZY_GIT_FACTS,
     signal: new AbortController().signal,
@@ -167,7 +172,6 @@ export async function runPolicyEngine({
         code: 'config-invalid',
         message: 'Built-in policy configuration is invalid.',
       },),],
-      configWarnings: [],
       exitCode: 2,
       shouldForward: false,
     };
@@ -206,7 +210,6 @@ export async function runPolicyEngine({
         code: 'config-invalid',
         message: `Unknown built-in policy ID: ${unknownId}`,
       },),],
-      configWarnings: [],
       exitCode: 2,
       shouldForward: false,
     };
@@ -222,16 +225,12 @@ export async function runPolicyEngine({
   const context = createPolicyContext({
     rawArgs: args,
     transformedArgs: controls.args,
+    escapedPolicyIds: controls.escapedPolicyIds,
   },);
   /**
    * Settled events buffered until policy checks finish.
    */
   const events: PolicyEvent[] = [];
-  /**
-   * Non-blocking unsafe severity diagnostics.
-   */
-  const configWarnings: string[] = [];
-
   for (const policy of registeredPolicies) {
     if (!policy.triggers
       .includes(trigger,))
@@ -250,8 +249,10 @@ export async function runPolicyEngine({
       ?? policy.defaultSeverity;
     if (severity === 'off')
       continue;
-    if ((severity === 'warn') && (!policy.warnSafe))
-      configWarnings.push(`Policy ${policy.name} is warn-unsafe but configured as warn.`,);
+    /**
+     * Whether selected warning severity weakens enforcement.
+     */
+    const warnUnsafe = (severity === 'warn') && (!policy.warnSafe);
 
     try {
       /**
@@ -283,6 +284,12 @@ export async function runPolicyEngine({
           fix: finding.patch === undefined ? 'none' : 'available',
         },);
       },),);
+      if (warnUnsafe)
+        events.push(createConfigurationWarningEvent({
+          sequence: events.length,
+          trigger,
+          policyId: policy.name,
+        },),);
       if ((severity === 'error') && (findings.length > 0)
         && (!controls.keepGoing))
         break;
@@ -303,7 +310,6 @@ export async function runPolicyEngine({
         args: controls.args,
         escapedPolicyIds: controls.escapedPolicyIds,
         events,
-        configWarnings,
         exitCode: 2,
         shouldForward: false,
       };
@@ -320,7 +326,6 @@ export async function runPolicyEngine({
     args: controls.args,
     escapedPolicyIds: controls.escapedPolicyIds,
     events,
-    configWarnings,
     exitCode: hasError ? 1 : 0,
     shouldForward: !hasError,
   };
