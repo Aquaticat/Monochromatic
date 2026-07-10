@@ -330,19 +330,6 @@ CK2:
  Do it,
  or label recall-from-training.
 
-VFG:
- Candidate upstream fix:
- before creating a reproducer,
- patch,
- or prototype for an external failure,
- verify installed version does not already contain candidate fix and candidate
- matches observed failure's version,
- signal/stack,
- and inputs.
- A reproducer failing only on pre-fix source proves upstream history,
- not current incident;
- record it as excluded and collect missing incident evidence instead.
-
 CK3:
  Estimated difficulty of fix you haven't built?
  Drop estimate.
