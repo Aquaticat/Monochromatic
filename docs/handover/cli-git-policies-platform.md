@@ -3,10 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #341,
-#342,
-and #343 are complete and closed.
-The Git-root blocker #280 is the next unblocked implementation slice before engine issue #344.
+Issues #280 and #341 through #343 are complete and closed.
+Engine issue #344 is the next unblocked implementation slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -642,6 +640,44 @@ Unless later grilling changes them:
 
 ## Implementation checkpoints
 
+### Issue #280 validated Git roots
+
+- Reproduced fs-path and cli-git disagreement with Git through deterministic empty-directory,
+  malformed-gitfile,
+  and unusable-target fixtures before applying the fix.
+- Added shared Git administrative validation for regular and symbolic HEAD,
+  SHA-1 and SHA-256 detached IDs,
+  objects,
+  refs,
+  relative gitfile targets,
+  linked-worktree `commondir`,
+  regular-file checks,
+  and NUL rejection.
+- Invalid nearer `.git` entries are skipped so a valid outer root remains discoverable.
+- Added typed `GitRepositoryRootNotFoundError` and made cli-git consume the shared finder instead of independent
+  `find-up` existence checks.
+- Fs-path build,
+  full tests,
+  type lint,
+  and zero-warning Oxlint pass.
+  Cli-git build,
+  all unit and integration tests,
+  type lint,
+  and zero-warning Oxlint pass.
+- A disposable built-wrapper fixture verified native Git 2.54.0 handling for an invalid ancestor and cli-git handling
+  for real normal,
+  linked-worktree,
+  linked subdirectory,
+  and submodule roots.
+- Commits `cdf023791`,
+  `3c848a747`,
+  `1499ed61e`,
+  and `8609616c8` contain implementation,
+  adversarial coverage,
+  symbolic HEAD parity,
+  and source-backed troubleshooting evidence.
+- Independent final review reported no required corrections.
+
 ### Issue #343 package and authoring API
 
 - Split executable startup into `src/bin.ts` and made the package-root `src/index.ts` a side-effect-free authoring API.
@@ -755,7 +791,7 @@ Dependency-ordered implementation slices:
   prepared and externally verified the npm tarball boundary and side-effect-free public API without publishing.
 - [#344](https://github.com/Aquaticat/Monochromatic/issues/344):
   run a built-in policy through the packaged JSONL engine;
-  existing #280 is an explicit blocker for valid Git-root detection.
+  former Git-root blocker #280 is complete.
 - [#345](https://github.com/Aquaticat/Monochromatic/issues/345):
   trust and execute one stored MJS plugin snapshot.
 - [#346](https://github.com/Aquaticat/Monochromatic/issues/346):
