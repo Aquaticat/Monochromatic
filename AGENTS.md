@@ -675,6 +675,22 @@ process truly remaining after producing useful output:
 Reserve external timeout wrappers for commands whose behavior is being tested,
  or with known unbounded runtime + no narrower kill mechanism.
 
+NXR:
+ Bash tool returns `No result provided`,
+ Pi session drops,
+ or another transport-level failure occurs while child command may have run:
+ never repeat same synchronous command.
+First inspect managed processes + OS process table for survivors,
+ then inspect logs or output artifacts.
+A rerun uses process tool with captured logs + completion alert,
+ or narrower bounded execution;
+never recreate same transport failure blindly.
+Cue:
+ about to rerun unchanged Bash command after missing result or session restart;
+ stop,
+ inspect,
+ change execution path.
+
 RGP:
  Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
 
