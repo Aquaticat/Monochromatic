@@ -60,7 +60,10 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
     // a deeply readonly equivalent without losing assignability to Valibot.
     from: "package",
     package: "valibot",
-    name: ["GenericSchema"],
+    name: [
+      "BaseSchema",
+      "GenericSchema"
+    ],
   },
   {
     from: "package",
