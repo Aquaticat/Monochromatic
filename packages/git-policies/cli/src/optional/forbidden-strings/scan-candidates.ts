@@ -4,6 +4,12 @@
  *
  * @module
  */
+import {
+  isAbsolute,
+  relative,
+  resolve,
+  sep,
+} from 'node:path';
 import type {
   CandidateFile,
   PolicyFinding,
@@ -12,6 +18,88 @@ import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 import { ForbiddenStringsPluginError, } from './errors.ts';
 import { materializeCandidates, } from './materialize-candidates.ts';
 import { parseScannerOutput, } from './scanner-output.ts';
+
+/**
+ * Repository paths skipped by scanner `--all` to prevent canonical source self-matches.
+ */
+const SCANNER_SELF_MATCH_PATHS: ReadonlySet<string> = new Set([
+  'packages/cli/forbidden-strings/data/betterleaks-default-config.toml',
+  'packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts',
+  'forbidden-strings.local.example.txt',
+  'packages/cli/forbidden-strings/src/rules/algebra_tests.rs',
+],);
+/**
+ * Domain sentinel for configured rules path outside candidate repository.
+ */
+const RULES_PATH_OUTSIDE_REPOSITORY: unique symbol = Symbol('configured forbidden-strings rules path is outside repository',);
+
+/**
+ * Resolves configured rules file to repository-relative Git path when it is inside repository.
+ *
+ * @param repositoryRoot - scanner cwd controlling rules-file precedence
+ *
+ * @returns repository-relative configured rules path or domain sentinel for external path
+ *
+ * @example
+ * ```ts
+ * configuredRulesCandidatePath('/repo');
+ * ```
+ */
+function configuredRulesCandidatePath(repositoryRoot: string,): string | typeof RULES_PATH_OUTSIDE_REPOSITORY {
+  /**
+   * Scanner rules source selected through existing environment precedence.
+   */
+  const configuredPath = process.env
+    .FORBIDDEN_STRINGS_RULES
+    ?? 'forbidden-strings.local.txt';
+  /**
+   * Lexical path from repository root to selected rules file.
+   */
+  const candidatePath = relative(
+    repositoryRoot,
+    resolve(
+      repositoryRoot,
+      configuredPath,
+    ),
+  );
+  if ((candidatePath.length === 0) || isAbsolute(candidatePath,)
+    || (candidatePath === '..')
+    || candidatePath.startsWith(`..${sep}`,))
+    return RULES_PATH_OUTSIDE_REPOSITORY;
+  return candidatePath.split(sep,)
+    .join('/',);
+}
+
+/**
+ * Applies scanner `--all` path semantics before explicit temporary-file scanning.
+ *
+ * @param repositoryRoot - scanner cwd controlling path-anchored exclusions
+ *
+ * @param candidates - exact policy candidates
+ *
+ * @returns candidates scanner walker would retain
+ *
+ * @example
+ * ```ts
+ * scannerEligibleCandidates({ repositoryRoot: '/repo', candidates: [] });
+ * ```
+ */
+function scannerEligibleCandidates({
+  repositoryRoot,
+  candidates,
+}: Readonly<{
+  repositoryRoot: string;
+  candidates: readonly CandidateFile[];
+}>,): readonly CandidateFile[] {
+  /**
+   * Configured rules path excluded alongside canonical generated sources.
+   */
+  const rulesPath = configuredRulesCandidatePath(repositoryRoot,);
+  return candidates.filter(function scannerWouldVisit(candidate,): boolean {
+    return (candidate.path !== rulesPath)
+      && (!SCANNER_SELF_MATCH_PATHS.has(candidate.path,));
+  },);
+}
 
 /**
  * Runs external scanner over exact candidate bytes.
@@ -45,7 +133,10 @@ export async function scanCandidates({
   /**
    * Disposable exact scanner inputs.
    */
-  await using materialized = await materializeCandidates(candidates,);
+  await using materialized = await materializeCandidates(scannerEligibleCandidates({
+    repositoryRoot,
+    candidates,
+  },),);
   if (materialized.paths
     .length
     === 0)

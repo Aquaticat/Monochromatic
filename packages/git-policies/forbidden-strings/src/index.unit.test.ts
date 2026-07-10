@@ -197,6 +197,48 @@ await describe({
       },
     },),
     it({
+      name: 'preserves scanner walker exclusions for materialized candidates',
+      fn: async function testScannerWalkerExclusions() {
+        await using directory = await createTestDirectory();
+        /** Scanner requiring exactly two retained candidate arguments. */
+        const scanner = await writeScanner({
+          directory: directory.path,
+          body: `if (process.argv.length !== 4) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
+        },);
+        /** Paths scanner excludes only at canonical repository locations. */
+        const excludedPaths = [
+          'forbidden-strings.local.txt',
+          'forbidden-strings.local.example.txt',
+          'packages/cli/forbidden-strings/data/betterleaks-default-config.toml',
+          'packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts',
+          'packages/cli/forbidden-strings/src/rules/algebra_tests.rs',
+        ] as const;
+        /** Candidates whose bytes must remain unread. */
+        const excludedCandidates = excludedPaths.map(function excludedCandidate(path,): CandidateFile {
+          return {
+            ...candidate(path,),
+            bytes: function rejectExcludedRead(): Promise<Uint8Array> {
+              throw new Error(`Scanner-excluded candidate was read: ${path}`,);
+            },
+          };
+        },);
+        /** Same basename outside canonical location must remain scannable. */
+        const retainedCandidates = [
+          candidate('nested/forbidden-strings.local.example.txt',),
+          candidate('src/value.ts',),
+        ];
+        expect(await scanCandidates({
+          executable: scanner,
+          repositoryRoot: directory.path,
+          candidates: [
+            ...excludedCandidates,
+            ...retainedCandidates,
+          ],
+          signal: new AbortController().signal,
+        },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'classifies missing executable and scanner status separately',
       fn: async function testProcessFailures() {
         await using directory = await createTestDirectory();
