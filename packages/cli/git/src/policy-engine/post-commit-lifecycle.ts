@@ -19,6 +19,38 @@ import { runPolicyEngine, } from './engine.ts';
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
+ * Injectable post-commit dependencies for deterministic failure tests.
+ */
+export type PostCommitLifecycleDependencies = Readonly<{
+  /**
+   * Exact landed OID resolver.
+   */
+  resolveLandedCommitOid: typeof resolveLandedCommitOid;
+  /**
+   * Canonical repository root resolver.
+   */
+  resolvePostCommitRepositoryRoot: typeof resolvePostCommitRepositoryRoot;
+  /**
+   * Landed tree fact builder.
+   */
+  createPostCommitGitFacts: typeof createPostCommitGitFacts;
+  /**
+   * Policy engine entry point.
+   */
+  runPolicyEngine: typeof runPolicyEngine;
+}>;
+
+/**
+ * Canonical production post-commit dependencies.
+ */
+export const POST_COMMIT_LIFECYCLE_DEPENDENCIES: PostCommitLifecycleDependencies = {
+  resolveLandedCommitOid,
+  resolvePostCommitRepositoryRoot,
+  createPostCommitGitFacts,
+  runPolicyEngine,
+};
+
+/**
  * Post-commit gate outcome.
  */
 export type PostCommitLifecycleResult = Readonly<{
@@ -54,6 +86,8 @@ export type PostCommitLifecycleResult = Readonly<{
  *
  * @param policyOptions - trusted validated policy options
  *
+ * @param dependencies - injectable landed-state and engine dependencies
+ *
  * @returns settled backup gate with explicit landed state
  *
  * @example
@@ -69,6 +103,7 @@ export async function runPostCommitLifecycle({
   policySeverities = {},
   registeredPolicies = BUILT_IN_POLICIES,
   policyOptions = new Map(),
+  dependencies = POST_COMMIT_LIFECYCLE_DEPENDENCIES,
 }: Readonly<{
   rawArgs: readonly string[];
   transformedArgs: readonly string[];
@@ -77,11 +112,12 @@ export async function runPostCommitLifecycle({
   policySeverities?: Readonly<Record<string, PolicySeverity>>;
   registeredPolicies?: readonly RuntimePolicyDefinition[];
   policyOptions?: ReadonlyMap<string, unknown>;
+  dependencies?: PostCommitLifecycleDependencies;
 }>,): Promise<PostCommitLifecycleResult> {
   /**
    * Exact post-spawn commit identity resolved before fallible policy setup.
    */
-  const oid = await resolveLandedCommitOid({
+  const oid = await dependencies.resolveLandedCommitOid({
     gitPath,
     cwd,
   },);
@@ -89,18 +125,18 @@ export async function runPostCommitLifecycle({
     /**
      * Canonical repository root for landed policy context.
      */
-    const repositoryRoot = await resolvePostCommitRepositoryRoot({
+    const repositoryRoot = await dependencies.resolvePostCommitRepositoryRoot({
       gitPath,
       cwd,
     },);
     /**
      * Settled post-commit engine decision.
      */
-    const result = await runPolicyEngine({
+    const result = await dependencies.runPolicyEngine({
       args: rawArgs,
       transformedArgs,
       trigger: 'post-commit',
-      gitFacts: createPostCommitGitFacts({
+      gitFacts: dependencies.createPostCommitGitFacts({
         gitPath,
         cwd,
         landedOid: oid,

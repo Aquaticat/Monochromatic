@@ -12,7 +12,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
 import { resolveGit, } from '../resolve-git.ts';
-import { runPostCommitLifecycle, } from './post-commit-lifecycle.ts';
+import {
+  POST_COMMIT_LIFECYCLE_DEPENDENCIES,
+  runPostCommitLifecycle,
+} from './post-commit-lifecycle.ts';
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /** Absolute real Git executable. */
@@ -135,7 +138,7 @@ await describe({
           type: 'commit-landed',
           oid: result.oid,
           outcome: 'post-commit-blocked',
-          message: `Commit ${result.oid} remains local; post-commit policy blocked automatic backup.`,
+          message: `Commit ${result.oid} remains local; post-commit gate blocked automatic backup.`,
         },);
       },
     },),
@@ -174,6 +177,41 @@ await describe({
         expect(result.events.map(function eventType(event,) {
           return event.type;
         },),).toEqual(['engine-failure', 'commit-landed',],);
+      },
+    },),
+    it({
+      name: 'renders setup failure with known landed commit',
+      fn: async function testSetupFailure() {
+        await using repository = await createRepository();
+        /** Setup failure after landed OID resolution. */
+        const result = await runPostCommitLifecycle({
+          rawArgs: ['commit', 'landed.txt',],
+          transformedArgs: ['commit', '-o', 'landed.txt',],
+          gitPath: realGitPath,
+          cwd: repository.path,
+          dependencies: {
+            ...POST_COMMIT_LIFECYCLE_DEPENDENCIES,
+            resolvePostCommitRepositoryRoot: function failRootResolution() {
+              return Promise.reject(new Error('injected root failure',),);
+            },
+          },
+        },);
+        expect(result.blocked,).toBe(true,);
+        expect(result.events,).toEqual([{
+          schemaVersion: 1,
+          sequence: 0,
+          type: 'engine-failure',
+          code: 'content-unavailable',
+          message: 'injected root failure',
+          trigger: 'post-commit',
+        }, {
+          schemaVersion: 1,
+          sequence: 1,
+          type: 'commit-landed',
+          oid: result.oid,
+          outcome: 'post-commit-blocked',
+          message: `Commit ${result.oid} remains local; post-commit gate blocked automatic backup.`,
+        },],);
       },
     },),
     it({

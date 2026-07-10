@@ -336,7 +336,7 @@ export function createCommitLandedEvent({
     type: 'commit-landed',
     oid,
     outcome: 'post-commit-blocked',
-    message: `Commit ${oid} remains local; post-commit policy blocked automatic backup.`,
+    message: `Commit ${oid} remains local; post-commit gate blocked automatic backup.`,
   };
 }
 
