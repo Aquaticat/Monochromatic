@@ -406,9 +406,10 @@ The rewrite must preserve these current requirements explicitly:
 - hard constraint fit precedes stack familiarity;
 - existing tools precede a custom implementation;
 - discovery names at least two concrete alternatives with evidence-backed exit or ranking reasons;
-  when saturation finds fewer,
-  including zero,
-  the report records every exhausted source class and returns the no-survivor terminal result instead;
+  when saturation finds one,
+  the report records every exhausted source class and continues with that survivor;
+  when saturation finds zero,
+  the report returns the no-survivor terminal result;
 - a dependency replacement receives incumbent-depth parity checks for transitive dependencies,
   source behavior,
   native or Wasm provenance,
@@ -519,21 +520,30 @@ For each decision:
    and newly discovered survivors.
 9. For paginated sources,
    continue until two consecutive complete pages add no plausible cheap-screen survivor or
-   the provider reports exhaustion;
-   record any provider cap that prevents exhaustion.
+   the provider reports exhaustion.
+   A provider cap before either condition marks the source class blocked,
+   not saturated;
+   switch to an uncapped API or independent source,
+   and block recommendation if no replacement can complete that class.
 10. Execute every predeclared query in every required source class.
-    New taxonomy discovered during search may append a query only when the ledger records
-    the triggering evidence before execution.
-11. A source class is saturated only after its complete schedule and page rule finish.
+11. After the initial schedule,
+    collect every new taxonomy term recorded in the ledger,
+    append one de-duplicated expansion round,
+    and freeze the schedule.
+    Terms found during the expansion round are recorded but do not recursively append queries.
+12. A source class is saturated only after its frozen schedule and page rule finish.
     Discovery is saturated only when every required source class is saturated.
-12. Record an explicit saturated-no-survivor result when every candidate fails cheap hard gates.
+13. Record an explicit saturated-single-survivor result when exactly one candidate passes cheap hard gates.
+14. Record an explicit saturated-no-survivor result only when every candidate fails cheap hard gates.
 
 Do not make npm and GitHub the universal discovery sources;
 use category-appropriate registries and source hosts.
 Do not truncate or negatively filter the candidate search before recording what the filter would hide.
 At least two alternatives must receive concrete exit or ranking reasons.
-If saturation finds fewer,
-report every source class and query family checked rather than inventing candidates.
+If saturation finds one,
+report every source class and query family checked and continue with that survivor.
+If saturation finds zero,
+report the same evidence and return the no-survivor terminal result.
 
 ### Evidence record
 
@@ -679,7 +689,7 @@ Use this sequence:
 7. Promote plausible hard-gate survivors to serious alternatives.
 8. As soon as the substantial threshold is crossed,
    create or reopen the matching vet report before further evidence work;
-   if saturation produced no survivor,
+   if saturation produced no survivor or required discovery remains blocked,
    create the report with a snapshot of completed context,
    discovery,
    and hard-gate screening,
@@ -761,6 +771,10 @@ Apply overlay gates cumulatively:
 
 The skill must define explicit terminal behavior:
 
+- a required discovery source remains blocked after alternate enumeration paths are exhausted:
+  snapshot the query ledger in the vet report,
+  declare discovery incomplete,
+  and recommend none;
 - no serious alternative survives cheap hard gates:
   finish the vet report with every exit,
   recommend none,
@@ -774,6 +788,10 @@ The skill must define explicit terminal behavior:
 - sensitivity changes the ordering:
   gather evidence or ask the one outcome-changing preference,
   then refreeze and rerun the baseline plus the complete sensitivity matrix before recommending;
+  if the rerun remains unstable,
+  evidence cannot resolve it,
+  or the user declines the preference,
+  finish the report with conditional rankings and recommend none;
 - exact scores tie or no soft criteria apply:
   ask the unresolved preference needed for a fully sorted ranking;
 - a compatible vet report has concurrent edits:
@@ -786,7 +804,19 @@ The skill must define explicit terminal behavior:
 ### Vet-report and decision schemas
 
 A vet report uses `docs/audit/<subject>-vet-YYYY-MM-DD.md`,
-with a stable kebab-case subject and the date the audit began.
+with a cross-platform-safe subject slug and the date the audit began.
+Build the slug by scanning the Unicode NFC subject:
+preserve ASCII letters and digits in lowercase,
+replace each run of every other code point with one hyphen,
+trim leading and trailing hyphens,
+use `technology` when nothing remains,
+prefix `tech-`,
+and cap the result at 48 ASCII characters before trimming a final hyphen.
+The fixed prefix and alphabet avoid Windows reserved names,
+separators,
+trailing dots,
+and trailing spaces.
+
 Build a compatibility fingerprint from canonical sorted values for decision scope,
 hard constraints,
 deployment,
@@ -796,21 +826,37 @@ base categories,
 and overlays.
 Store the full SHA-256 fingerprint in report metadata.
 
-Canonical fingerprint input is UTF-8 JSON with no insignificant whitespace and this fixed schema:
+Fingerprint input uses this fixed typed schema before canonicalization:
 
-- `schemaVersion` is numeric 1;
-- `subject` and `scope` are Unicode NFC strings with outer whitespace removed and internal whitespace preserved;
-- `hardConstraints`,
-  `baseCategories`,
-  `overlays`,
-  and trust-boundary entries are de-duplicated and sorted by Unicode code point;
-- deployment is an object whose keys are recursively sorted by Unicode code point;
-- incumbent is either an object with normalized `name` and `version` strings or JSON `null`;
+- `schemaVersion` is integer 1;
+- `subject`,
+  `scope`,
+  hard constraints,
+  deployment strings,
+  trust-boundary strings,
+  incumbent strings,
+  base categories,
+  and overlays are Unicode NFC;
+- `subject` and `scope` have outer whitespace removed while internal whitespace is preserved;
+- set-valued arrays are de-duplicated and sorted by raw UTF-16 code-unit order;
+- ordered arrays retain source order;
+- deployment object keys are recursively sorted by raw UTF-16 code-unit order;
+- incumbent is either an object with required `name` and `version` strings or JSON `null`;
 - absent optional scalar values are JSON `null`;
-- empty strings remain empty strings and are not converted to null;
-- arrays whose order carries meaning retain that order only when the schema names them as ordered.
+- empty strings remain empty strings;
+- duplicate object keys,
+  lone surrogates,
+  non-finite numbers,
+  and values outside I-JSON fail fingerprint construction.
 
-Hash those exact UTF-8 bytes with SHA-256.
+Serialize this preprocessed value with the
+[RFC 8785 JSON Canonicalization Scheme](https://www.rfc-editor.org/rfc/rfc8785),
+which defines recursive object ordering,
+JSON escaping,
+primitive and number serialization,
+array order,
+and UTF-8 generation.
+Hash the exact RFC 8785 output bytes with SHA-256.
 Search every matching subject report.
 A report is compatible only when its full fingerprint matches.
 If several compatible reports exist,
@@ -821,7 +867,11 @@ start the context qualifier with the first eight fingerprint characters.
 If that path exists with a different full fingerprint,
 extend the qualifier four characters at a time until unique,
 up to the full 64 characters.
-A full-hash path with different metadata is corruption and blocks the report write.
+A full-hash path whose stored compatibility fingerprint differs is corruption and blocks the report write.
+Mutable metadata such as status,
+last-updated date,
+owner,
+and skill revision does not participate in this collision check.
 This makes selection and collisions deterministic without interpreting prose titles.
 
 The report begins with:
@@ -853,8 +903,32 @@ cons,
 ranking,
 and recommendation or terminal no-recommendation result.
 Before every report edit,
-check the scoped path for concurrent changes;
-never overwrite another session's edits.
+use an atomic report-write protocol:
+
+1. Derive a lock key from the absolute report path and atomically create a private lock under
+   `/tmp/agent/technology-vet-locks/` with create-new semantics.
+2. Record session ID,
+   process ID,
+   start time,
+   report path,
+   and pre-edit report SHA-256 in the lock.
+3. After acquiring the lock,
+   rerun report selection because another session may have created a compatible report.
+4. For a new report,
+   create the final path with create-new semantics;
+   an existing path restarts selection.
+5. For an update,
+   write a sibling temporary file,
+   re-read the report SHA-256,
+   abort if it differs from the lock's pre-edit hash,
+   then atomically rename the temporary file.
+6. Release the lock only after durable write completion.
+7. Treat a lock as stale only when its process is absent and its recorded start is more than 30 minutes old;
+   if either fact cannot be established,
+   block and report the owner instead of deleting the lock.
+
+This protocol coordinates choosing-technology sessions and detects ordinary external edits before replacement.
+Never overwrite another session's edits.
 
 An adoption decision records:
 
@@ -1167,13 +1241,14 @@ Do not restart grilling unless implementation evidence exposes a new non-measura
   and complete it before recommendation.
 - Create a new dated report only when merging materially incompatible decision context would obscure
   the evidence trail.
-- Define the substantial threshold as either:
+- Define the substantial threshold as any of:
   promotion of a serious alternative using external source,
   vendor,
   maintenance,
   clone,
   or execution evidence;
-  or completed external discovery and hard-gate screening that leaves no serious alternative.
+  completed external discovery and hard-gate screening that leaves no serious alternative;
+  or a required external discovery source remaining blocked after alternate enumeration paths are exhausted.
 - When the no-survivor branch crosses the threshold,
   create the report with a snapshot of already completed phases and finish its terminal result.
 - Treat the vet report as permitted process documentation,
@@ -1244,8 +1319,8 @@ Each fixture contains:
   terminal result,
   and prohibited actions;
 - fresh-session transcript;
-- resulting vet-report diff;
-- assertion results and reviewer verdict.
+- immutable in-memory report and decision event sequence plus final captured content;
+- deterministic assertion results and reviewer verdict.
 
 Implement the fixture driver as a normal Node package at `packages/dev-script/agent-skill-fixture/` with
 `README.md`,
@@ -1255,7 +1330,11 @@ unit tests,
 and a `test:fixtures` task.
 Use Pi SDK `createAgentSession()` with:
 
-- `SessionManager.inMemory()` and `SettingsManager.inMemory()`;
+- `SessionManager.inMemory()`;
+- `SettingsManager.inMemory()` with compaction and automatic retries disabled;
+- one exact provider,
+  model identifier,
+  and thinking level pinned in fixture configuration with fallback forbidden;
 - a temporary `AuthStorage` plus `ModelRegistry.inMemory()`;
 - only one runtime provider credential supplied to `AuthStorage.setRuntimeApiKey()`;
 - `DefaultResourceLoader` configured with `noExtensions`,
@@ -1278,6 +1357,14 @@ Use Pi SDK `createAgentSession()` with:
   or model-callable network tool.
 
 The trusted driver spawns the SDK worker with an explicit environment allowlist and a temporary home directory.
+It subscribes to turn events,
+aborts after eight turns,
+and terminates the worker after 10 minutes.
+A timeout,
+abort,
+model fallback,
+automatic retry,
+or compaction event fails the fixture.
 Only the provider transport receives the runtime inference credential;
 the model has no tool that can read process environment or filesystem state.
 Fixture report and decision tools append immutable in-memory events and cannot write files.
@@ -1292,16 +1379,27 @@ architecture,
 Node version,
 Pi version,
 skill SHA-256,
+exact model configuration,
+turn count,
+elapsed time,
 and assertion results into fixture JSON.
 This captures baseline-to-final behavior without Git diffs,
 untracked files,
 ignored files,
 or committed changes.
 
-Run `mise run //packages/dev-script/agent-skill-fixture:test:fixtures` independently on
+Run every fixture three times with the pinned model through
+`mise run //packages/dev-script/agent-skill-fixture:test:fixtures` independently on
 Linux x64,
 macOS arm64,
 and Windows x64.
+Assertions compare normalized lifecycle states,
+gate results,
+tool-event schemas,
+score arithmetic,
+terminal outcomes,
+and rankings across repetitions and hosts;
+they do not compare prose byte-for-byte.
 The browser-overlay fixture carries synthetic Chromium,
 Firefox,
 and WebKit results plus the repository browser baseline and fails when the agent omits any required browser.
@@ -1312,12 +1410,26 @@ nonzero harness exit,
 unexpected tool request,
 or failed assertion keeps Phase 6 incomplete.
 
-Run a separate read-only reviewer subagent with the captured fixture JSON and expected assertions.
+Run a separate reviewer through the same SDK harness with a different pinned model family,
+`noTools: "all"`,
+no skills,
+no context files,
+no extensions,
+in-memory session and settings,
+and only captured fixture JSON plus expected assertions in its prompt.
 The reviewer emits one result per assertion plus a final PASS or FAIL.
-A fixture passes only when the SDK harness and independent reviewer both pass.
+A missing distinct reviewer model blocks validation.
+A fixture passes only when all three repetitions on all required hosts,
+deterministic assertions,
+cross-host normalized comparison,
+and independent reviewer pass.
 
 Cover at least these cases:
 
+- predeclared discovery schedule reaching saturation with two survivors;
+- provider-cap discovery branch failing closed;
+- one-survivor saturation continuing to finalist validation;
+- zero-survivor saturation creating and completing a terminal report;
 - managed database with universal SaaS inspection,
   residency hard gate,
   irrelevant findings receiving no score,
@@ -1341,9 +1453,21 @@ Cover at least these cases:
   causing candidate failure and a no-recommendation result when no survivor remains;
 - zero applicable soft criteria;
 - exact score tie requiring a preference;
+- first sensitivity matrix changing order,
+  predefined preference answer,
+  refrozen score,
+  and complete second sensitivity matrix;
+- unresolved post-preference instability returning no recommendation;
+- RFC 8785 fingerprint golden bytes,
+  Unicode normalization,
+  slug safety,
+  eight-character collision,
+  four-character extension,
+  full-hash corruption,
+  and mutable metadata exclusion;
 - compatible vet report reuse;
 - incompatible same-day report receiving a context qualifier;
-- concurrent report edit blocking overwrite;
+- concurrent create and update races exercising atomic lock and compare-before-replace behavior;
 - evaluation producing only the authorized vet-report mutation;
 - adoption producing a decision-record update only after a separate action request.
 
@@ -1362,10 +1486,21 @@ and results against this plan and the troubleshooting-doc benchmark.
 
 - Edit task source in `mise.no-env.toml`,
   not generated `mise.toml`.
+- Extend `mirrorSkills` to maintain
+  `.claude/skills/.agents-mirror-manifest.json` and `.factory/skills/.agents-mirror-manifest.json`.
+- Each manifest maps every canonical repo-relative Markdown path to its SHA-256 and contains no destination-only path.
+- Before synchronization,
+  remove only destination paths listed in the prior manifest that no longer exist canonically;
+  never prune an unlisted destination-only path.
 - Add a `verify:skill-mirrors` task with inline `node -e` logic.
+- Require each manifest's path set and hashes to equal the current canonical set.
 - Compare every canonical `.agents/skills/*/*.md` file byte-for-byte with both
   `.claude/skills/*/*.md` and `.factory/skills/*/*.md`.
-- Fail when any canonical source lacks a destination counterpart or differs in content.
+- Fail when any canonical source lacks a destination counterpart,
+  differs in content,
+  or has a stale,
+  missing,
+  or unexpected manifest entry.
 - Ignore destination-only files because `.claude/skills/` and `.factory/skills/` also contain separately owned skills,
   currently including `code-review` and `research-drafting`.
   Those destination-only paths remain authoritative and directly editable in their own directory unless
@@ -1374,14 +1509,23 @@ and results against this plan and the troubleshooting-doc benchmark.
 - Keep `file-enforcer.config.ts` and its `mirrorSkills` function as the normal mirror generator.
 - Permit manual byte-for-byte synchronization from `.agents/skills/` into either mirror directory when
   immediate synchronization is useful.
+  Manual additions,
+  renames,
+  or deletions must update the relevant ownership manifest;
+  deletion is permitted only for a path present in the prior manifest.
 - Never edit a destination counterpart of a canonical `.agents/skills/` file independently;
   this prohibition does not apply to destination-only skills.
 - After either path,
   run `mise run verify:skill-mirrors`.
 - Regenerate `mise.toml` through `mise run prepare:pnpm:others:files` when task source changes.
 - In a disposable worktree,
-  verify a modified mirror fails `mise run verify:skill-mirrors`,
-  then regenerate and verify the task passes.
+  verify content drift,
+  a missing counterpart,
+  a canonical rename that leaves an owned stale destination,
+  and a stale manifest hash each fail `mise run verify:skill-mirrors`.
+- Regenerate and verify the task prunes only the manifest-owned stale path,
+  preserves destination-only skills,
+  and passes.
 - Confirm every counterpart of a canonical `.agents/skills/` file remains an ignored derived output and
   `.agents/skills/` remains authoritative for that mirrored set.
 - Confirm destination-only skills remain outside the mirror task's ownership and retain
@@ -1582,17 +1726,18 @@ Decision:
 automatically write a vet report for every substantial technology evaluation.
 The user selected this on 2026-07-09 to meet the troubleshooting-doc durable-artifact standard.
 
-The report lives at `docs/audit/<topic>-vet-<date>.md` and records the exact choosing-technology skill revision.
-The substantial threshold is crossed when either:
+The report lives at `docs/audit/<subject>-vet-YYYY-MM-DD.md` and records the exact choosing-technology skill revision.
+The substantial threshold is crossed when any of:
 
 - an evaluation promotes at least one serious alternative using external source,
   vendor,
   maintenance,
   clone,
   or execution evidence;
-- external discovery and hard-gate screening reach saturation with no surviving serious alternative.
+- external discovery and hard-gate screening reach saturation with no surviving serious alternative;
+- a required external discovery source remains blocked after alternate enumeration paths are exhausted.
 
-The no-survivor branch creates the report with an initial snapshot of the context,
+The no-survivor or blocked-discovery branch creates the report with an initial snapshot of the context,
 discovery ledger,
 queries,
 and hard-gate exits,
@@ -2241,9 +2386,9 @@ Lifecycle:
 2. Reuse only a report with the same full fingerprint;
    if several match,
    select greatest `last-updated` date and then lexicographically smallest repo-relative path.
-3. As soon as either substantial-evaluation threshold from Decision 3 is crossed,
+3. As soon as any substantial-evaluation threshold from Decision 3 is crossed,
    create or reopen that report.
-   If saturation leaves no survivor,
+   If saturation leaves no survivor or required discovery remains blocked,
    snapshot the already completed context,
    discovery,
    queries,
