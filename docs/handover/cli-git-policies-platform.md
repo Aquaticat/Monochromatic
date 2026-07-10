@@ -1463,6 +1463,27 @@ Unless later grilling changes them:
 - Issues #354 through #357 remain dependency-ordered after #353.
   Npm publication remains indefinitely deferred in #358.
 
+### Issue #354 forbidden-strings policy decisions
+
+- The policy lives in a separate private package under `packages/git-policies/forbidden-strings/`.
+  It does not broaden `@monochromatic-dev/git-policy-repository`.
+- Scanner resolution defaults to the `forbidden-strings` executable on `PATH`.
+  Policy options may override the executable path;
+  invocation always uses an argument array without shell interpolation.
+- The scanner runs with repository root as cwd,
+  so its existing rules precedence remains `--rules`,
+  `FORBIDDEN_STRINGS_RULES`,
+  then root `forbidden-strings.local.txt`.
+- Manual-push facts query authoritative remote OIDs with `git ls-remote`.
+  Push dry-run output and cached tracking refs are not policy ground truth.
+- A content-bearing update whose remote range cannot be established fails closed with engine exit `2`.
+  A pure deletion has no content range and does not fail merely for lacking one.
+- An unreadable plugin-owned scanner temporary file is `plugin-threw`,
+  not a policy finding or candidate-setup `content-unavailable` event.
+- The policy defaults to error and is warn-unsafe.
+- The existing scanner source and independent forbidden-strings CI remain separate;
+  this slice wraps the binary rather than modifying its matching engine.
+
 ### Issue #342 filesystem identity
 
 - Added `@monochromatic-dev/module-fs-id` with source-qualified colon-free IDs,
