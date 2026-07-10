@@ -2,6 +2,11 @@
 
 Status:
 draft under grill-me review.
+Decision 1 is resolved;
+file organization,
+artifact policy,
+unknown evidence,
+and full-validation scope remain open.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -539,10 +544,43 @@ The improvement is complete only when:
 
 ### Decision 1: operating model
 
-Open.
-Choose whether the skill should be exhaustive for every discovered candidate,
-exhaustive only for relevant gates and promoted finalists,
-or explicitly budgeted by the user.
+Decision:
+use a risk-gated exhaustive workflow.
+The user selected this on 2026-07-09.
+
+Every applicable gate remains mandatory,
+but expensive source and runtime validation follows candidate promotion.
+A candidate receives deeper work only while it can still win.
+A hard failure records an exit and stops further work unless a close comparison needs more evidence.
+
+Pros:
+
+- preserves the troubleshooting-doc standard that incomplete gates stay visible and cannot silently pass;
+- prevents irrelevant candidates from consuming full source,
+build,
+and runtime audits;
+- reduces exposure to third-party execution without reducing scrutiny of finalists;
+- makes stopping behavior reproducible rather than discretionary.
+
+Cons:
+
+- requires precise serious-alternative and finalist definitions;
+- requires agents to record promotion and exit decisions;
+- can still be substantial when several candidates remain genuinely competitive.
+
+Rejected alternative:
+always exhaustive.
+It offers uniform maximum scrutiny,
+but spends the same effort on candidates that already cannot satisfy the job.
+
+Rejected alternative:
+user-budgeted tiers.
+It offers an explicit speed-versus-depth tradeoff,
+but makes recommendation quality optional and can fall below the benchmark skill's completion standard.
+
+Ranking:
+risk-gated exhaustive beats always exhaustive because it preserves every relevant gate while removing work that cannot change the decision.
+Always exhaustive beats user-budgeted tiers because a skill-level quality floor should not disappear when a shallow tier is selected.
 
 ### Decision 2: file organization
 
