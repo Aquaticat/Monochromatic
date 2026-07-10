@@ -339,8 +339,9 @@ or candidate-state comparisons.
 The trust identity is the complete pair of filesystem ID and canonical config path.
 The registry path uses reversible encoding of that complete identity rather than a digest.
 Trust records keep validated metadata and exact snapshot files in one per-key directory.
-MJS capture opens the no-follow source handle before filesystem identity resolution,
-then requires same-handle metadata and final live-path device and inode agreement.
+MJS capture opens the no-follow source handle before filesystem identity resolution.
+Linux resolves identity through that process descriptor;
+other hosts require same-handle metadata and final live-path device and inode agreement around path-based resolution.
 After a successful exact-byte comparison,
 cli-git executes the stored MJS snapshot or stored TypeScript bundle,
 not the live entry file that was compared.

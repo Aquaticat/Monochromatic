@@ -4,7 +4,11 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #344 are complete and closed.
-Trust issue #345 is implemented locally and awaits Windows ACL workflow evidence and final independent review before closure.
+Trust issue #345 is implemented and all local,
+packed-bin,
+Windows ACL,
+and final independent review gates pass.
+Issue closure and handover finalization are the remaining administrative steps.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -823,10 +827,10 @@ Unless later grilling changes them:
   Trusted plugin policy definitions run through the existing deterministic policy registry and direct-check path.
 - Added OS-account-derived registry roots independent of repository environment variables.
   Complete filesystem-ID and canonical-path identities use reversible unpadded base64url components without hashes.
-- Added no-follow candidate capture that opens the source before filesystem identity resolution,
-  compares same-handle metadata before and after reading,
-  requires final live-path device and inode agreement,
-  and reports degraded identity in consent rather than contaminating JSONL stderr.
+- Added no-follow candidate capture that opens the source before filesystem identity resolution.
+  Linux identity resolution uses the open process descriptor;
+  other hosts bracket path-based resolution with same-handle metadata and final live-path device and inode agreement.
+  Degraded and failed identity diagnostics stay caller-owned rather than contaminating JSONL stderr.
 - Added private schema-version-one records,
   exact source snapshots,
   exclusive per-key lock directories,
@@ -884,7 +888,13 @@ Unless later grilling changes them:
   npm packing,
   module-fs-id formatting,
   types,
+  build,
   and unit tests pass locally.
+- Maintained packed-bin task passed after final runtime corrections with `built-trust-consumer-ok`.
+- Windows ACL workflow run
+  [29072787369](https://github.com/Aquaticat/Monochromatic/actions/runs/29072787369)
+  passed protected directory and file ACL application plus deliberate broad-ACL tamper rejection,
+  emitting `windows-trust-acl-ok`.
 - Independent review found assigned-long-option bypass,
   filesystem-identity ordering,
   registry-ancestor,
@@ -896,10 +906,20 @@ Unless later grilling changes them:
 - Commits `af5e0a8bb`,
   `ff2d4831a`,
   `30efc0e2c`,
-  and `7bcd00a55` contain the initial runtime,
+  `7bcd00a55`,
+  `521b667eb`,
+  and `3c46a4b82` contain the initial runtime,
   lifecycle tests,
   storage containment hardening,
-  and reviewed boundary fixes.
+  reviewed boundary fixes,
+  contract and workflow evidence,
+  handle-backed Linux identity,
+  pre-return lock cleanup,
+  caller-owned filesystem diagnostics,
+  and the verified Windows ACL repair.
+- Final independent closure review found no remaining actionable repo-controlled correctness or security blocker.
+  Privileged non-Linux mount-swap concerns are outside the checked-out-repository threat model and are documented by
+  the guarded path-based identity behavior.
 - Recursive trust remains #346;
   TypeScript trust remains #347;
   actual npm publication remains deferred in #358.
@@ -973,10 +993,12 @@ Dependency-ordered implementation slices:
   completed:
   ran `require-root` through the packaged JSONL engine with Optique management commands and built consumer evidence.
 - [#345](https://github.com/Aquaticat/Monochromatic/issues/345),
-  verification in progress:
+  implementation complete with closure pending:
   trust and execute one stored MJS plugin snapshot;
-  local and packed-bin checks pass,
-  with Windows ACL workflow evidence and final review remaining before closure.
+  local,
+  packed-bin,
+  Windows ACL,
+  and final independent review gates pass.
 - [#346](https://github.com/Aquaticat/Monochromatic/issues/346):
   add recursive snapshot trust and cascading revocation.
 - [#347](https://github.com/Aquaticat/Monochromatic/issues/347):

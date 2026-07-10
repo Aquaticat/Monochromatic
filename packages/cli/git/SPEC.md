@@ -890,9 +890,13 @@ or process APIs to access live state.
 ### Exact comparison and execution
 
 MJS candidate capture opens the canonical config with no-follow semantics before resolving filesystem identity.
-Same-handle metadata before and after reading,
+On Linux,
+identity resolution targets `/proc/<pid>/fd/<fd>` without resolving that descriptor link first,
+so mount identity comes from the opened object.
+On hosts without a process-addressable descriptor path,
+identity resolution remains path-based but is bracketed by same-handle metadata before and after reading,
 final live-path device and inode agreement,
-and exact byte length bind the identity observation to the opened source object.
+and exact byte length.
 Degraded filesystem identity remains explicit in the trust disclosure rather than writing logger text into JSONL event streams.
 
 Strict MJS trust compares live entry bytes to the stored executable snapshot.

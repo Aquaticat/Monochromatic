@@ -170,10 +170,11 @@ fsync,
 validated rename,
 and rollback on incomplete replacement.
 
-Every config-loading command captures the live file through a no-follow handle,
-binds filesystem identity to that opened object,
-compares exact live bytes with the stored snapshot,
-and executes only the private stored copy.
+Every config-loading command captures the live file through a no-follow handle.
+Linux resolves filesystem identity through the open process descriptor;
+other hosts bracket path-based identity resolution with same-handle metadata and final live-path device and inode
+agreement.
+The command then compares exact live bytes with the stored snapshot and executes only the private stored copy.
 Changed bytes exit `2` until explicit re-trust.
 `untrust` removes only the exact identity record.
 Recursive trust and TypeScript trust remain deferred to issues #346 and #347.
