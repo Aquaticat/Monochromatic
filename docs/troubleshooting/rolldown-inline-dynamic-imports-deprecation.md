@@ -22,7 +22,8 @@ This matters for cli-git trust because build diagnostics must not contaminate it
 ## Root cause
 
 Tsdown 0.22.4 merges consumer `outputOptions` into its Rolldown output configuration.
-At tag `v0.22.4`, commit `434cfb3f563addffb88882b128b7a390f3434e94`,
+At tag `v0.22.4`,
+commit `434cfb3f563addffb88882b128b7a390f3434e94`,
 `src/features/rolldown.ts:302-321` contains:
 
 ```ts
@@ -39,7 +40,8 @@ return outputOptions
 ```
 
 Rolldown 1.1.5 then interprets the deprecated alias.
-At tag `v1.1.5`, commit `f09947ab017d6df74299f691853dcfc4f4f0f86e`,
+At tag `v1.1.5`,
+commit `f09947ab017d6df74299f691853dcfc4f4f0f86e`,
 `packages/rolldown/src/utils/bindingify-output-options.ts:208-246` contains:
 
 ```ts
@@ -164,20 +166,25 @@ Searches across open and closed Rolldown issues and pull requests for
 
 The six constraints resolve as follows:
 
-1. **Is it really upstream's fault?** No.
+1. **Is it really upstream's fault?
+   ** No.
    This is an intentional,
    tested deprecation with a precise replacement.
-2. **Can upstream fix it?** Not applicable as a defect.
+2. **Can upstream fix it?
+   ** Not applicable as a defect.
    Removing the warning would defeat the documented migration.
-3. **Are they supporting this use case?** Yes.
+3. **Are they supporting this use case?
+   ** Yes.
    Rolldown supports single-bundle dynamic imports through `codeSplitting: false`,
    and tsdown exposes Rolldown `outputOptions`.
-4. **Would the repo welcome our contribution?** The Rolldown `CONTRIBUTING.md` links its public contribution guide;
+4. **Would the repo welcome our contribution?
+   ** The Rolldown `CONTRIBUTING.md` links its public contribution guide;
    no repository policy inspected for this diagnosis prohibited outside contributions.
    This does not override constraint 1.
-5. **Will they likely fix it?** No fix is warranted because current behavior is deliberate and covered by an upstream
-   test.
-6. **Have we prototyped a minimal fix compatible with their architecture?** No upstream patch is appropriate.
+5. **Will they likely fix it?
+   ** No fix is warranted because current behavior is deliberate and covered by an upstream test.
+6. **Have we prototyped a minimal fix compatible with their architecture?
+   ** No upstream patch is appropriate.
    The verified consumer-side option migration is the complete fix.
 
 Nothing should be filed upstream.

@@ -298,7 +298,8 @@ For TypeScript source,
 `git cli-git trust` invokes tsdown's public build interface with config discovery disabled,
 Node ESM output,
 every package forced into the bundle,
-and inline dynamic imports.
+and Rolldown `codeSplitting: false`.
+Rolldown 1.1.5 maps that current option to internal inline dynamic imports without the deprecated option's stderr warning.
 Trust accepts exactly one JavaScript output chunk,
 no unresolved non-Node imports,
 and no extra assets.

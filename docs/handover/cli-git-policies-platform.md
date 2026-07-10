@@ -4,7 +4,7 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #346 are complete and closed.
-TypeScript trust issue #347 is the next unblocked implementation slice.
+TypeScript trust issue #347 is implemented and undergoing final closure verification.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1001,6 +1001,89 @@ Unless later grilling changes them:
   Issue #346 was closed after every acceptance criterion and evidence gate passed.
   TypeScript trust remains #347;
   actual npm publication remains deferred in #358.
+
+### Issue #347 TypeScript bundle trust
+
+- Added MJS-precedence fallback discovery for root `cli-git.config.ts` to the trust runtime.
+- Every explicit trust invokes tsdown's public `build()` API with config discovery disabled,
+  Node ESM,
+  package bundling,
+  declaration and source-map output disabled,
+  writes disabled,
+  private output state,
+  and Rolldown `codeSplitting: false`.
+  Rolldown 1.1.5 source and tests prove that current option sets internal inline dynamic imports;
+  `docs/troubleshooting/rolldown-inline-dynamic-imports-deprecation.md` records the source trace and reproducible warning.
+- The build accepts exactly one JavaScript entry chunk and rejects extra outputs,
+  unresolved non-Node module edges,
+  computed dynamic imports,
+  source escapes,
+  and native modules.
+  Literal local and bare-package dynamic imports are inlined;
+  package assets are accepted only when contained in the sole JavaScript bundle.
+- A source-capture Rolldown plugin supplies exact no-follow bytes for the entry and resolved relative local graph.
+  Bare package imports are bundled but excluded from invalidation and disclosed before consent.
+  The entry identity and every tracked source are re-captured after complete build output and must still match exact bytes,
+  metadata,
+  and identity.
+- Root approval executes and validates only the private stored candidate bundle.
+  Persistent records include every exact source snapshot plus one immutable executable bundle;
+  failed builds and validation leave no record.
+  Repeated explicit trust always rebuilds and discloses bundle-byte state.
+- Strict loading compares all tracked source bytes and executes only the stored bundle.
+  Recursive TypeScript roots and descendants use the same stored-bundle model;
+  authorizing roots are revalidated again immediately before descendant installation.
+- Added exact `CLI_GIT_NO_PARANOID` comma and percent grammar.
+  `%25` and `%2C` are the only escapes;
+  malformed entries and current-path filesystem mismatches use separate JSONL warning codes and never waive first trust.
+- Relaxed MJS paths use source size and mtime as private replacement signals.
+  Relaxed TypeScript paths rebuild after any tracked metadata change,
+  require the rebuilt identity to equal the authorized identity,
+  validate before atomic replacement,
+  and retain the prior record on failure.
+- Disposable tests cover local graph changes,
+  literal and computed dynamic imports,
+  bare package imports,
+  package assets,
+  native modules,
+  source symlink escapes,
+  stored execution after package removal,
+  recursive roots and descendants,
+  changed authorizers during enrollment,
+  invalid builds,
+  exact relaxed grammar,
+  rollback,
+  and cache races.
+- The maintained packed-bin container verifies TypeScript first-use blocking,
+  trust disclosures,
+  bare package and relative source bundling,
+  stored policy execution,
+  strict invalidation,
+  relaxed rebuild,
+  malformed-entry JSONL,
+  process-level rebuild contention,
+  retry,
+  and untrust through the actual shadowing `git` executable.
+  The final task emitted `built-trust-consumer-ok`.
+- Independent review identified recursive-authorizer,
+  mount-identity,
+  final-graph,
+  dynamic-package,
+  warning-code,
+  documentation,
+  and packed-race gaps.
+  Commit `4c99836ae` addresses the actionable findings;
+  final independent review found no remaining concrete correctness or security blocker after the packed task passed.
+- Commits `16e2de74d`,
+  `e99f3ebb6`,
+  `2007c8ec4`,
+  `4c99836ae`,
+  and `d4df86973` contain the initial builder,
+  relaxed refresh,
+  packed verification,
+  reviewed race fixes,
+  and external option diagnosis.
+  Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity
 

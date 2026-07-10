@@ -1037,7 +1037,8 @@ Invoke tsdown's public `build()` interface with:
 - ESM format;
 - one output chunk;
 - all packages forced into the bundle;
-- inline dynamic imports;
+- Rolldown `codeSplitting: false`,
+  the current nondeprecated option that sets internal `inlineDynamicImports: true`;
 - declarations disabled for runtime config;
 - clean disabled outside the private build directory.
 
@@ -1054,6 +1055,18 @@ Modules outside the repository root,
 symlink escapes,
 and missing graph entries fail trust.
 Bare package modules are bundled but excluded from source invalidation and produce a trust warning.
+After bundle generation completes,
+re-capture the entry identity and every tracked source;
+identity,
+exact bytes,
+size,
+and mtime must still match build inputs before trust can proceed.
+
+Relaxed-entry parser warnings use distinct stable codes for malformed entries and current-path filesystem-identity
+mismatches.
+A TypeScript rebuild that bundles package imports emits `typescript-package-import-not-invalidated`.
+Concurrent relaxed rebuilds may serialize successfully or one may fail closed on the per-record writer lock;
+a later invocation must load the complete winning record without repair.
 
 ## Transaction protocol
 

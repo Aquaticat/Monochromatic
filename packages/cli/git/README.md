@@ -194,8 +194,31 @@ Separately explicit descendant trust survives outer-root removal.
 Untrusting a nested recursive root also revokes outer recursive roots that authorize it and discloses every affected root
 before mutation.
 If a root config was deleted,
-`untrust` recovers its sole record from the canonical repository root.
-TypeScript trust remains deferred to issue #347.
+`untrust` recovers its stored records from the canonical repository root.
+
+When root `cli-git.config.mjs` is absent,
+cli-git discovers `cli-git.config.ts`.
+Explicit trust calls tsdown's public API with config discovery disabled,
+Node ESM output,
+all packages forced into one bundle,
+and Rolldown `codeSplitting: false` (the current nondeprecated spelling that inlines dynamic imports).
+It accepts one JavaScript chunk only,
+captures the entry and every statically resolved relative local source through stable no-follow reads,
+and rechecks the complete graph after build completion.
+Bare package code is bundled but excluded from automatic invalidation,
+so trust names each such package warning.
+Strict commands compare every tracked source's exact bytes and execute only the private stored bundle.
+
+`CLI_GIT_NO_PARANOID` relaxes only exact identities that were already trusted.
+Its comma-separated entries use `<filesystem-id>:<canonical-path>`;
+encode percent as `%25` and comma as `%2C` (case-insensitive on input).
+Malformed entries and current-path entries with another filesystem identity emit JSONL warnings and retain strict mode.
+For an exact relaxed MJS path,
+source size or mtime changes trigger private snapshot validation and replacement.
+For an exact relaxed TypeScript path,
+tracked source size or mtime changes trigger a private rebuild and replacement.
+Refresh failure blocks with exit `2` and retains the previous record;
+metadata signals never waive first trust.
 
 The maintained packed-bin integration check builds the unpublished tarball,
 installs its shadowing `git` executable in a bounded disposable container,
