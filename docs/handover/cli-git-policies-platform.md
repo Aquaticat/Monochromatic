@@ -1550,13 +1550,24 @@ Unless later grilling changes them:
   This is a baseline rather than a budget;
   raw samples live in `packages/git-policies/cli/perf/forbidden-strings-2026-07-10.json`,
   while #356 remains responsible for cross-platform budgets and enforcement.
+- The latest hosted forbidden-strings workflow at pre-integration `origin/main` revision `ef179a737` failed on one
+  credential-shaped patch-context line and credential-shaped literals in the concurrently landed forbidden-regex tests.
+  Commits `c35e012b6` and `a8baa6024` preserve the tests' runtime bytes and patch applicability while removing those
+  source-level matches.
+  The exact pull-request workflow composition,
+  baseline plus shared appendix against every `origin/main...HEAD` changed file,
+  then passed locally for all 20 changed paths.
+  A full-tree run with the active repository rules also passed with no findings.
+  A hosted success still requires an authorized push because external mutation is not implied by local completion.
 - Key implementation checkpoints are `b9dc927ef`,
   `a5918a490`,
   `bacfe57b1`,
   `54b316aae`,
   `df7e6dec0`,
   `18d7940c3`,
-  and `6eccb3064`.
+  `6eccb3064`,
+  `c35e012b6`,
+  and `a8baa6024`.
 
 ### Issue #342 filesystem identity
 

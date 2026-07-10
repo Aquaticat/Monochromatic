@@ -95,8 +95,8 @@ Experiment binary:
 Both scanned `/var/home/user/Monochromatic` with
 `forbidden-strings.local.example.txt`.
  The `--all` runs used
-`--ignore-failure` because rule 404 already fires on
-`docs/troubleshooting/mise-env-redacted-values.patch` in the main worktree.
+`--ignore-failure` because rule 404 fired on
+`docs/troubleshooting/mise-env-redacted-values.patch` at that revision.
 
 Experiment summary:
  migrating every regex rule to resharp and using resharp's
