@@ -3,9 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #348 are complete and closed.
-Fixed-transform staging issue #349 is implemented locally and undergoing final packed verification and review.
-Automatic-push lifecycle issue #350 is the next dependency-ordered slice after #349 closes.
+Issues #280 and #341 through #349 are complete and closed.
+Automatic-push lifecycle issue #350 is the next unblocked dependency-ordered slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1171,11 +1170,23 @@ Unless later grilling changes them:
   explicit user override,
   and uncorrupted porcelain output.
 - Commit `c410b3a11` contains the initial staged engine and structured core findings;
-  commit `906338dce` contains pass-stability and packed plugin evidence.
-- Final packed-bin,
+  commits `906338dce` and `175172e8d` contain pass stability,
+  packed plugin facts,
   exact real-Git argv capture,
-  documentation,
-  and independent closure review remain in progress at this checkpoint.
+  native status behavior,
+  and unexpected-transform failure evidence.
+  Commit `afb4d7c0f` records the contract and handover.
+- Formatting,
+  types,
+  build,
+  the full unit suite,
+  selected Markdown lint,
+  and packed npm shadow-bin run `proc_19` passed.
+- Independent final review found no remaining source or test blocker after exact argv,
+  status,
+  failure,
+  and JSONL contract corrections.
+- Issue #349 was closed after every acceptance criterion and evidence gate passed.
   Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity
