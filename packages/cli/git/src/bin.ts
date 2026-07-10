@@ -7,6 +7,7 @@ import { parseGlobalOptions, } from './parse-global-options.ts';
 import { runManagementCommand, } from './management.ts';
 import { parseCommitRegion, } from './parsers/commit.ts';
 import { runPolicyEngine, } from './policy-engine/engine.ts';
+import { runPostCommitLifecycle, } from './policy-engine/post-commit-lifecycle.ts';
 import {
   createEngineFailureEvent,
   renderPolicyEvents,
@@ -296,11 +297,43 @@ else try {
     && (!parseCommitRegion(postSubcommand,)
       .isDryRun);
 
-  if (committed)
+  if (committed) {
+    /**
+     * Post-commit policy gate against landed commit ground truth.
+     */
+    const postCommitResult = await runPostCommitLifecycle({
+      rawArgs,
+      transformedArgs: processedArgs,
+      gitPath,
+      cwd: effectiveCwd,
+      ...(runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT
+        ? {}
+        : {
+          policySeverities: runtimeResolution.loaded
+            .validated
+            .policySeverities,
+          registeredPolicies: runtimeResolution.loaded
+            .validated
+            .registeredPolicies,
+          policyOptions: runtimeResolution.loaded
+            .validated
+            .policyOptions,
+        }),
+    },);
+    /**
+     * Settled post-commit JSONL including explicit landed state when blocked.
+     */
+    const renderedPostCommitEvents = renderPolicyEvents(postCommitResult.events,);
+    if (renderedPostCommitEvents !== '')
+      process.stderr
+        .write(renderedPostCommitEvents,);
+    if (postCommitResult.blocked)
+      throw new PolicyDecisionError(2,);
     await autoPush({
       gitPath,
       cwd: effectiveCwd,
     },);
+  }
 
   /**
    * True when this invocation asks git for its version, in any of the supported forms (subcommand, global flag, with or without `-C` chaining).

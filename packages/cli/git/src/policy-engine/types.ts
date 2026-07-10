@@ -4,6 +4,7 @@
  * @module
  */
 import type { GenericSchema, } from 'valibot';
+import type { LazyPolicyGitFacts, } from '../api/context-types.ts';
 import type {
   PolicyContext,
   PolicyFinding,
@@ -65,7 +66,19 @@ export type RunPolicyEngineOptions = Readonly<{
   /**
    * Lifecycle trigger.
    */
-  trigger: 'pre-forward' | 'direct-check';
+  trigger: PolicyTrigger;
+  /**
+   * Final transformed arguments retained for later lifecycle stages.
+   */
+  transformedArgs?: readonly string[];
+  /**
+   * Lifecycle-specific Git facts.
+   */
+  gitFacts?: LazyPolicyGitFacts;
+  /**
+   * Canonical repository root when already resolved.
+   */
+  repositoryRoot?: string;
   /**
    * Persistent built-in settings.
    */

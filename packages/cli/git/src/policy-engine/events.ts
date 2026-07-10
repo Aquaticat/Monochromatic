@@ -97,6 +97,7 @@ export type EngineFailureEvent = Readonly<{
    */
   code:
     | 'config-invalid'
+    | 'content-unavailable'
     | 'core-incomplete'
     | 'policy-incomplete'
     | 'config-untrusted'
@@ -114,6 +115,45 @@ export type EngineFailureEvent = Readonly<{
    * Responsible policy ID.
    */
   policyId?: string;
+}>;
+
+/**
+ * Landed commit retained after post-commit gate blocks backup.
+ *
+ * @example
+ * ```ts
+ * const event: CommitLandedEvent = { schemaVersion: 1, sequence: 1, type: 'commit-landed', oid: 'abc', outcome: 'post-commit-blocked', message: 'Commit remains local.' };
+ * ```
+ */
+export type CommitLandedEvent = Readonly<{
+  /**
+   * Schema version.
+   */
+  schemaVersion: 1;
+  /**
+   * Invocation-local sequence.
+   */
+  sequence: number;
+  /**
+   * Event discriminator.
+   */
+  type: 'commit-landed';
+  /**
+   * Policy identifier is absent for landed-state event.
+   */
+  policyId?: never;
+  /**
+   * Exact landed commit object ID.
+   */
+  oid: string;
+  /**
+   * Stable blocked-backup outcome.
+   */
+  outcome: 'post-commit-blocked';
+  /**
+   * Explicit retry-safe state explanation.
+   */
+  message: string;
 }>;
 
 /**
@@ -206,7 +246,7 @@ export type ConfigurationWarningEvent = Readonly<{
  * const events: readonly PolicyEvent[] = [];
  * ```
  */
-export type PolicyEvent = ConfigurationWarningEvent | CoreFindingEvent | FindingEvent | EngineFailureEvent;
+export type PolicyEvent = CommitLandedEvent | ConfigurationWarningEvent | CoreFindingEvent | FindingEvent | EngineFailureEvent;
 
 /**
  * Creates finding event while copying retained fields.
@@ -266,6 +306,37 @@ export function createFindingEvent({
         },
       }),
     fix,
+  };
+}
+
+/**
+ * Creates explicit landed-commit outcome after blocked backup.
+ *
+ * @param sequence - invocation-local event order
+ *
+ * @param oid - exact landed commit object ID
+ *
+ * @returns immutable landed-commit event
+ *
+ * @example
+ * ```ts
+ * createCommitLandedEvent({ sequence: 1, oid: 'abc' });
+ * ```
+ */
+export function createCommitLandedEvent({
+  sequence,
+  oid,
+}: Readonly<{
+  sequence: number;
+  oid: string;
+}>,): CommitLandedEvent {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    sequence,
+    type: 'commit-landed',
+    oid,
+    outcome: 'post-commit-blocked',
+    message: `Commit ${oid} remains local; post-commit policy blocked automatic backup.`,
   };
 }
 

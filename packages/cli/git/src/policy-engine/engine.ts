@@ -62,6 +62,10 @@ const ENGINE_CONFIG_SCHEMA = v.looseObject({
  *
  * @param trigger - active lifecycle point
  *
+ * @param gitFacts - lifecycle-specific lazy Git facts
+ *
+ * @param repositoryRoot - canonical repository root override
+ *
  * @returns initial candidate-state context
  */
 function createPolicyContext({
@@ -69,11 +73,15 @@ function createPolicyContext({
   transformedArgs,
   escapedPolicyIds,
   trigger,
+  gitFacts,
+  repositoryRoot,
 }: Readonly<{
   rawArgs: readonly string[];
   transformedArgs: readonly string[];
   escapedPolicyIds: ReadonlySet<string>;
   trigger: PolicyTrigger;
+  gitFacts: LazyPolicyGitFacts;
+  repositoryRoot?: string;
 }>,): PolicyContext {
   /**
    * Parsed command location and effective directory.
@@ -94,10 +102,10 @@ function createPolicyContext({
       transformedArgs,
       subcommand,
       effectiveCwd,
-      repositoryRoot: effectiveCwd,
+      repositoryRoot: repositoryRoot ?? effectiveCwd,
       escapedPolicyIds,
     },
-    git: EMPTY_LAZY_GIT_FACTS,
+    git: gitFacts,
     signal: new AbortController().signal,
   };
 }
@@ -109,6 +117,12 @@ function createPolicyContext({
  * @param args - exact wrapper arguments
  *
  * @param trigger - lifecycle point being checked
+ *
+ * @param transformedArgs - final command facts for later lifecycle stages
+ *
+ * @param gitFacts - lifecycle-specific lazy Git facts
+ *
+ * @param repositoryRoot - canonical repository root override
  *
  * @param config - persistent built-in settings
  *
@@ -128,6 +142,9 @@ function createPolicyContext({
 export async function runPolicyEngine({
   args,
   trigger,
+  transformedArgs,
+  gitFacts = EMPTY_LAZY_GIT_FACTS,
+  repositoryRoot,
   config = {},
   selectedPolicyIds,
   registeredPolicies = BUILT_IN_POLICIES,
@@ -141,6 +158,10 @@ export async function runPolicyEngine({
     registeredPolicies,
   },);
   /**
+   * Final transformed state supplied by later lifecycle or control-clean raw state.
+   */
+  const initialTransformedArgs = transformedArgs ?? controls.args;
+  /**
    * Runtime-authoritative built-in configuration parse.
    */
   const parsedConfig = v.safeParse(
@@ -149,7 +170,7 @@ export async function runPolicyEngine({
   );
   if (!parsedConfig.success) {
     return {
-      args: controls.args,
+      args: initialTransformedArgs,
       escapedPolicyIds: controls.escapedPolicyIds,
       events: [createEngineFailureEvent({
         sequence: 0,
@@ -187,7 +208,7 @@ export async function runPolicyEngine({
   },);
   if (unknownId !== undefined) {
     return {
-      args: controls.args,
+      args: initialTransformedArgs,
       escapedPolicyIds: controls.escapedPolicyIds,
       events: [createEngineFailureEvent({
         sequence: 0,
@@ -231,6 +252,8 @@ export async function runPolicyEngine({
       transformedArgs: controls.args,
       escapedPolicyIds: controls.escapedPolicyIds,
       trigger,
+      gitFacts,
+      ...(repositoryRoot === undefined ? {} : { repositoryRoot, }),
     },),
     trigger,
     severities: parsedConfig.output
@@ -243,7 +266,7 @@ export async function runPolicyEngine({
   },);
   if ((!builtInStage.complete) || builtInStage.stopped) {
     return {
-      args: controls.args,
+      args: initialTransformedArgs,
       escapedPolicyIds: controls.escapedPolicyIds,
       events: builtInStage.events,
       exitCode: builtInStage.complete ? 1 : 2,
@@ -255,13 +278,13 @@ export async function runPolicyEngine({
    */
   const fixedStage = trigger === 'pre-forward'
     ? await applyFixedTransforms({
-      args: controls.args,
+      args: initialTransformedArgs,
       rawArgs: args,
       sequence: builtInStage.events
         .length,
     },)
     : {
-      args: controls.args,
+      args: initialTransformedArgs,
       events: [],
       complete: true,
     };
@@ -298,6 +321,8 @@ export async function runPolicyEngine({
       transformedArgs: fixedStage.args,
       escapedPolicyIds: controls.escapedPolicyIds,
       trigger,
+      gitFacts,
+      ...(repositoryRoot === undefined ? {} : { repositoryRoot, }),
     },),
     trigger,
     severities: parsedConfig.output
