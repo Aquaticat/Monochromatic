@@ -3,9 +3,14 @@
  */
 import {
   mkdir,
+  readFile,
   readdir,
   writeFile,
 } from 'node:fs/promises';
+import {
+  createRequire,
+  isBuiltin,
+} from 'node:module';
 import {
   delimiter,
   join,
@@ -23,6 +28,57 @@ import { verifyPolicyDefaultConsumer, } from './built-policy-default-consumer.ts
 import { verifyRecursiveConsumer, } from './built-recursive-consumer.ts';
 import { verifyRepositoryPluginConsumer, } from './built-repository-plugin-consumer.ts';
 import { verifyTypeScriptConsumer, } from './built-typescript-consumer.ts';
+
+/**
+ * Dynamic-import target retained by packed artifact.
+ */
+type DynamicImportTarget = Readonly<{
+  /** Whether import target is static text or computed syntax. */
+  kind: 'literal' | 'computed';
+  /** Module specifier or exact computed expression source. */
+  value: string;
+}>;
+
+/**
+ * Collects dynamic import targets from bounded Acorn syntax tree.
+ *
+ * @param value - syntax node, child collection, or scalar
+ *
+ * @param source - complete artifact source
+ *
+ * @returns dynamic import targets in source order
+ */
+function dynamicImportTargets({
+  value,
+  source,
+}: Readonly<{
+  value: unknown;
+  source: string;
+}>,): readonly DynamicImportTarget[] {
+  if (Array.isArray(value,))
+    return value.flatMap(function collectChild(child,) {
+      return dynamicImportTargets({ value: child, source, },);
+    },);
+  if (((typeof value) !== 'object') || (value === null))
+    return [];
+  if (('type' in value) && (value.type === 'ImportExpression')) {
+    if ((!('source' in value)) || ((typeof value.source) !== 'object') || (value.source === null))
+      throw new Error('packed artifact dynamic import has no syntax source',);
+    if (('value' in value.source) && ((typeof value.source.value) === 'string'))
+      return [{ kind: 'literal', value: value.source.value, },];
+    if ((!('start' in value.source)) || ((typeof value.source.start) !== 'number')
+      || (!('end' in value.source)) || ((typeof value.source.end) !== 'number'))
+      throw new Error('packed artifact computed import has no source range',);
+    return [{
+      kind: 'computed',
+      value: source.slice(value.source.start, value.source.end,),
+    },];
+  }
+  return Object.values(value,)
+    .flatMap(function collectProperty(child,) {
+      return dynamicImportTargets({ value: child, source, },);
+    },);
+}
 
 await execute({
   command: 'apt-get',
@@ -73,6 +129,54 @@ const expectedArtifactFiles = [
 ];
 if (JSON.stringify(artifactFiles,) !== JSON.stringify(expectedArtifactFiles,))
   throw new Error(`packed cli-git artifact files mismatch: ${artifactFiles.join(', ')}`,);
+/**
+ * Packed executable source used for syntax-boundary audit.
+ */
+const artifactSource = await readFile(
+  '/work/node_modules/@monochromatic-dev/cli-git/dist/final/node/index.mjs',
+  'utf8',
+);
+/**
+ * Acorn parser resolved from packed cli-git runtime dependencies.
+ */
+const { parse, } = createRequire('/work/package.json',)('acorn') as typeof import('acorn');
+/**
+ * Complete packed artifact syntax tree.
+ */
+const artifactSyntax: unknown = parse(
+  artifactSource,
+  {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    allowHashBang: true,
+  },
+);
+/**
+ * Dynamic imports permitted only at documented library and trusted-ESM boundaries.
+ */
+const retainedDynamicImports = dynamicImportTargets({
+  value: artifactSyntax,
+  source: artifactSource,
+},);
+if (retainedDynamicImports.some(function hasNonBuiltinLiteral(target,) {
+  return (target.kind === 'literal') && (!isBuiltin(target.value,));
+},))
+  throw new Error(`packed artifact retained non-builtin literal dynamic import: ${JSON.stringify(retainedDynamicImports,)}`,);
+/**
+ * Known computed imports: cross-runtime path library and exact stored-MJS execution.
+ */
+const permittedComputedImports: ReadonlySet<string> = new Set([
+  'nodePathSpecifier',
+  'executableUrl.href',
+],);
+if (retainedDynamicImports.some(function hasUnknownComputedImport(target,) {
+  return (target.kind === 'computed') && (!permittedComputedImports.has(target.value,));
+},))
+  throw new Error(`packed artifact retained unknown computed dynamic import: ${JSON.stringify(retainedDynamicImports,)}`,);
+if (!retainedDynamicImports.some(function hasStoredMjsImport(target,) {
+  return (target.kind === 'computed') && (target.value === 'executableUrl.href');
+},))
+  throw new Error('packed artifact omitted exact stored-MJS execution import',);
 /**
  * Installed packages in private workspace scope.
  */
