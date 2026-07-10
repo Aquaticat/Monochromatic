@@ -369,7 +369,7 @@ await describe({
           fix: 'none',
         },);
         expect(error.exitCode,).toBe(1,);
-        expect(error.stderr,).toBe(`${expectedEvent}\n`,);
+        expect(error.stderr,).toBe(expectedEvent,);
         expect(error.stdout,).toBe('',);
       },
     },),
@@ -408,7 +408,7 @@ await describe({
             severity: 'error',
             warnSafe: false,
           },],
-        },)}\n`,);
+        },)}`,);
         /** Built-in direct-check failure. */
         const checkError = requireSubprocessError(await catchWrapperError({
           cwd: subdirectoryPath,
