@@ -242,7 +242,7 @@ Ordinary Git commands never build an untrusted TypeScript config.
   do not participate in invalidation.
 - An explicit repeat `git cli-git trust` always rebuilds TypeScript and is the refresh path for excluded package
   imports.
-  A changed cached bundle hash is disclosed before replacement even when tracked source hashes are unchanged.
+  Changed cached bundle bytes are disclosed before replacement even when tracked source bytes are unchanged.
 - Trust prints a warning when TypeScript config is not self-contained.
 - Exact treatment of absolute imports,
   dynamic imports,
@@ -278,8 +278,8 @@ Before the first consent prompt,
 
 - config path and format;
 - filesystem ID;
-- source hash;
-- cached bundle hash for TypeScript;
+- exact source-snapshot status and changed path list on re-trust;
+- exact cached-bundle snapshot status for TypeScript;
 - non-self-contained TypeScript imports or equivalent warning;
 - explicit arbitrary-code authority;
 - notice that recursive-child intent will be evaluated only after root execution is authorized.
@@ -306,14 +306,19 @@ After successful authorized execution:
 
 ### Untrusted and changed artifacts
 
-- Default posture is content-hashed.
+- Default posture uses exact stored byte snapshots,
+  not cryptographic content hashes.
+- Consumer-built MJS stores and compares the complete artifact bytes.
+- Cli-git-built TypeScript stores and compares every tracked entry or relative-local-module file plus the cached bundle
+  bytes.
 - First execution blocks until explicit trust.
-- A later covered source or artifact change blocks until re-trust.
+- A later covered source or artifact byte change blocks until re-trust.
 - Trust and plugin failures are exit code `2`.
 
 ### Registry
 
-- Trust records are per-user and stored as one record file per trust key.
+- Trust records are per-user and stored as one record directory per trust key,
+  containing validated metadata and exact snapshot files.
 - Production registry location derives from the OS account home,
   not `HOME`,
   XDG,
@@ -327,8 +332,9 @@ After successful authorized execution:
   symlink handling,
   and crash recovery remain open.
 
-The underlying trust identity remains the pair of filesystem ID and artifact path,
-with content hashes under the default posture.
+The underlying trust identity remains the pair of filesystem ID and canonical artifact path.
+Cli-git does not hash that key or trusted content;
+registry path mapping and exact byte comparisons must preserve the complete identity.
 `@monochromatic-dev/module-fs-id` remains a prerequisite.
 
 ### No-paranoid relaxation syntax
@@ -349,8 +355,8 @@ matching mise's monorepo-root model rather than making every trust command recur
 - A root declaration triggers the second trust-consent stage after root config execution and validation.
 - The second disclosure warns before consent that descendant authority will be recorded and names the exact root.
 - The root declaration waives separate first approval for descendant configs only after that second consent.
-- First descendant encounter auto-enrolls that descendant's current hash.
-- Later descendant changes block for re-trust.
+- First descendant encounter auto-enrolls exact snapshots of that descendant's covered files.
+- Later descendant byte changes block for re-trust.
 - Trust records track provenance.
 - Untrusting a recursive root revokes only descendant records inherited from that root.
 - Descendants explicitly trusted separately remain trusted.
@@ -365,7 +371,7 @@ External consumers use an explicit CI step:
 git cli-git trust --yes
 ```
 
-There is no detected-CI auto-trust path and no separate expected-hash environment bypass.
+There is no detected-CI auto-trust path and no separate expected-snapshot environment bypass.
 
 ## Settled finding and process contract
 
@@ -518,8 +524,11 @@ Unless later grilling changes them:
   - final-newline.
 - Forbidden-strings scans predicted commit content before forwarding,
   committed ground truth before auto-push,
-  and manual push ranges when determinable.
-- Undeterminable manual push ranges fail open locally with a warning.
+  and manual push ranges.
+- The source decision's derived fail-open rule for an indeterminate content-bearing manual push range is superseded.
+  An enabled scanner that cannot determine required content has not completed its policy run,
+  so it blocks with engine exit code `2`.
+- A pure ref deletion carries no content and does not fail merely for lacking a content range.
 - CI remains authoritative and independent of the wrapper.
 - Final-newline exclusions and exact-byte semantics remain those in the source decision.
 - Platform-first sequencing remains in force.
