@@ -3,9 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #349 are complete and closed.
-Automatic-push lifecycle issue #350 is implemented locally and undergoing final verification and review.
-Autofix transaction issue #351 is the next dependency-ordered slice after #350 closes.
+Issues #280 and #341 through #350 are complete and closed.
+Autofix transaction issue #351 is the next unblocked dependency-ordered slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1228,10 +1227,17 @@ Unless later grilling changes them:
   lifecycle gate,
   packed routing matrix,
   and setup-failure correction.
-- Packed run `proc_21` and the full unit suite passed;
-  final documentation,
-  final packed rerun after setup-failure correction,
-  and independent closure review remain.
+- Formatting,
+  types,
+  build,
+  the full unit suite,
+  selected Markdown lint,
+  and packed npm shadow-bin run `proc_22` passed after the setup-failure correction.
+- Independent final review found no remaining blocker and scoped escape evidence to implemented pre-forward,
+  direct-check,
+  and post-commit stages.
+- Commit `494a56ca3` records the final contract and verification handover.
+- Issue #350 was closed after every acceptance criterion and evidence gate passed.
   Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity
