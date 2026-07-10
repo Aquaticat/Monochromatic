@@ -92,8 +92,8 @@ and bounded temporary-file materialization.
 Measurements retained 64 file lanes:
 eight lanes missed the ceiling on overlay storage,
 while 128 lanes increased storage contention.
-The accepted tmpfs run stayed at most 1,051.905 ms below direct Git's paired baseline,
-leaving 948.095 ms of measured headroom.
+The accepted tmpfs run added at most 1,051.905 ms relative to paired direct Git,
+leaving 948.095 ms below the 2,000 ms ceiling.
 
 Raw samples are stored in
 `packages/git-policies/cli/perf/manual-push-latency-2026-07-10.json`.
