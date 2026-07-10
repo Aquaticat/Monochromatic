@@ -5,8 +5,11 @@ plan complete and grilled.
 All 13 decisions are resolved;
 the user confirmed shared understanding on 2026-07-09.
 Independent audit findings are incorporated.
-Final reviewer and Advisor audits passed against commit `0551184a6` on 2026-07-09.
-The plan is ready for a separate implementation request.
+Final reviewer and Advisor planning audits passed against commit `0551184a6` on 2026-07-09.
+Implementation is now authorized.
+During implementation,
+the user clarified that the selected model in the active Pi session must execute scenario validation;
+the separate SDK harness design is removed.
 This document specifies future implementation but does not authorize skill or policy changes without
 a separate action request.
 
@@ -1302,12 +1305,25 @@ Do not restart grilling unless implementation evidence exposes a new non-measura
 - Accept that this exceeds the generic skill-authoring guide's suggested size;
   the user chose single-file coherence over progressive disclosure for this high-stakes workflow.
 
-### Phase 6: verify with isolated scenario fixtures
+### Phase 6: validate scenarios with the selected Pi model
 
-Record fixture specifications and results in `docs/audit/choosing-technology-skill-validation.md`.
+Use the model currently selected in the active Pi session for all implementation and scenario walkthroughs.
+Do not create a separate SDK harness,
+pin alternate worker models,
+or delegate scenario execution to another model.
+Advisor and reviewer models may audit the completed work,
+but they do not execute it.
+
+Record scenario specifications and results in `docs/audit/choosing-technology-skill-validation.md`.
 This is validation evidence,
 not a second source of skill rules.
-Each fixture contains:
+Record the active model identifier,
+thinking level,
+skill SHA-256,
+and policy revision once at the start.
+
+For each scenario,
+record:
 
 - exact synthetic user prompt;
 - complete synthetic evidence bundle;
@@ -1319,169 +1335,65 @@ Each fixture contains:
   report writes,
   terminal result,
   and prohibited actions;
-- fresh-session transcript;
-- immutable in-memory report and decision event sequence plus final captured content;
-- deterministic assertion results and reviewer verdict.
+- the selected model's step-by-step application of the rewritten skill;
+- resulting report content or scoped report diff when the scenario exercises writes;
+- one assertion result per expected behavior;
+- final PASS or FAIL.
 
-Implement the fixture driver as a normal Node package at `packages/dev-script/agent-skill-fixture/` with
-`README.md`,
-`package.json`,
-`mise.toml`,
-unit tests,
-and a `test:fixtures` task.
-Use Pi SDK `createAgentSession()` with:
-
-- `SessionManager.inMemory()`;
-- `SettingsManager.inMemory()` with compaction and automatic retries disabled;
-- one exact provider,
-  model identifier,
-  and thinking level pinned in fixture configuration with fallback forbidden;
-- a temporary `AuthStorage` plus `ModelRegistry.inMemory()`;
-- only one runtime provider credential supplied to `AuthStorage.setRuntimeApiKey()`;
-- `DefaultResourceLoader` configured with `noExtensions`,
-  `noPromptTemplates`,
-  `noThemes`,
-  `noContextFiles`,
-  and `noSkills`;
-- `skillsOverride` returning only the exact choosing-technology skill under test;
-- `agentsFilesOverride` returning only the exact policy fixture;
-- a `tools` allowlist containing only in-memory fixture tools for report write,
-  decision write,
-  and predefined preference answers;
-- no read,
-  write,
-  edit,
-  bash,
-  web,
-  MCP,
-  extension,
-  or model-callable network tool.
-
-The trusted driver spawns the SDK worker with an explicit environment allowlist and a temporary home directory.
-It subscribes to turn events,
-aborts after eight turns,
-and terminates the worker after 10 minutes.
-A timeout,
-abort,
-model fallback,
-automatic retry,
-or compaction event fails the fixture.
-Only the provider transport receives the runtime inference credential;
-the model has no tool that can read process environment or filesystem state.
-Fixture report and decision tools append immutable in-memory events and cannot write files.
-After `session.prompt()` completes,
-the trusted driver serializes messages,
-tool calls,
-report events,
-decision events,
-model identifier,
-OS,
-architecture,
-Node version,
-Pi version,
-skill SHA-256,
-exact model configuration,
-turn count,
-elapsed time,
-and assertion results into fixture JSON.
-This captures baseline-to-final behavior without Git diffs,
-untracked files,
-ignored files,
-or committed changes.
-
-Run every fixture three times with the pinned model through
-`mise run //packages/dev-script/agent-skill-fixture:test:fixtures` independently on
-Linux x64,
+Run report-write scenarios in disposable linked worktrees so simulated vet reports,
+locks,
+and decision records cannot alter the primary checkout.
+Use synthetic evidence rather than live vendors,
+registries,
+credentials,
+or third-party execution.
+Platform and browser scenarios validate routing to Linux x64,
 macOS arm64,
-and Windows x64.
-Assertions compare normalized lifecycle states,
-gate results,
-tool-event schemas,
-score arithmetic,
-terminal outcomes,
-and rankings across repetitions and hosts;
-they do not compare prose byte-for-byte.
-The browser-overlay fixture carries synthetic Chromium,
-Firefox,
-and WebKit results plus the repository browser baseline and fails when the agent omits any required browser.
-Merge the three host JSON results into the validation artifact.
-A missing host result,
-missing required browser,
-nonzero harness exit,
-unexpected tool request,
-or failed assertion keeps Phase 6 incomplete.
-
-Run a separate reviewer through the same SDK harness with a different pinned model family,
-`noTools: "all"`,
-no skills,
-no context files,
-no extensions,
-in-memory session and settings,
-and only captured fixture JSON plus expected assertions in its prompt.
-The reviewer emits one result per assertion plus a final PASS or FAIL.
-A missing distinct reviewer model blocks validation.
-A fixture passes only when all three repetitions on all required hosts,
-deterministic assertions,
-cross-host normalized comparison,
-and independent reviewer pass.
+Windows x64,
+and the repository browser baseline;
+they do not require the platform-neutral Markdown skill itself to run on separate machines.
 
 Cover at least these cases:
 
-- predeclared discovery schedule reaching saturation with two survivors;
-- provider-cap discovery branch failing closed;
+- predeclared discovery reaching saturation with two survivors;
+- provider-cap discovery failing closed;
 - one-survivor saturation continuing to finalist validation;
 - zero-survivor saturation creating and completing a terminal report;
-- managed database with universal SaaS inspection,
-  residency hard gate,
+- managed SaaS with universal risk inspection,
+  a residency hard gate,
   irrelevant findings receiving no score,
   and an outcome-changing weight sensitivity question;
-- pure TypeScript dependency replacement with incumbent-depth parity and keeping the incumbent as a valid winner;
-- native or Wasm candidate with valid provenance and an execution manifest;
-- native prebuilt candidate failing source-to-artifact mapping;
-- credential-handling open-source agent plugin receiving human-auditability scoring;
-- proprietary high-trust plugin failing inspectability;
-- proprietary local tool passing only through the explicit open-source exception;
-- license hard failure;
-- security hard failure;
-- multi-platform and browser-baseline overlays routing to Linux x64,
-  macOS arm64,
-  Windows x64,
-  and relevant browser validation;
-- tiny repository with no tracker activity remaining low-signal while other maintenance evidence is scored;
-- every hard-gate survivor receiving equal-depth finalist validation despite weak preliminary soft evidence;
+- pure TypeScript replacement parity with keeping the incumbent as a valid winner;
+- native or Wasm provenance success and prebuilt provenance failure;
+- open-source high-trust plugin human-auditability scoring and proprietary high-trust rejection;
+- proprietary local tool passing only through the open-source exception;
+- license and security hard failures;
+- multi-platform and browser-baseline overlay routing;
+- tiny repository tracker activity remaining low-signal while other maintenance evidence is scored;
+- every hard-gate survivor receiving equal-depth finalist validation;
 - relevant upstream failure proven outside the claimed and consumed surface;
-- relevant suite unavailable,
-  causing candidate failure and a no-recommendation result when no survivor remains;
-- zero applicable soft criteria;
-- exact score tie requiring a preference;
-- first sensitivity matrix changing order,
-  predefined preference answer,
-  refrozen score,
-  and complete second sensitivity matrix;
-- unresolved post-preference instability returning no recommendation;
-- RFC 8785 fingerprint golden bytes,
-  Unicode normalization,
+- unavailable relevant validation producing no recommendation when no survivor remains;
+- zero applicable soft criteria and an exact score tie;
+- sensitivity changing order,
+  resolved preference,
+  full rerun,
+  and unresolved instability returning no recommendation;
+- RFC 8785 fingerprint bytes,
+  normalization,
   slug safety,
-  eight-character collision,
-  four-character extension,
-  full-hash corruption,
+  collision extension,
+  corruption,
   and mutable metadata exclusion;
-- compatible vet report reuse;
-- incompatible same-day report receiving a context qualifier;
-- concurrent create and update races exercising atomic lock and compare-before-replace behavior;
-- evaluation producing only the authorized vet-report mutation;
-- adoption producing a decision-record update only after a separate action request.
+- compatible report reuse,
+  incompatible same-day report creation,
+  and concurrent write blocking;
+- evaluation mutating only the authorized vet report;
+- adoption updating a decision record only after a separate action request.
 
-Verify universal SaaS inspection as applicable work even when findings receive no score.
-Verify every terminal outcome,
-complete ranking,
-evidence record,
-execution manifest,
-report field,
-and adoption boundary.
-Use an independent reviewer to compare the rewritten skill,
-fixtures,
-and results against this plan and the troubleshooting-doc benchmark.
+Fix every failed scenario before proceeding.
+Then use independent read-only reviewer and Advisor passes to compare the rewritten skill,
+scenario evidence,
+and validation document against this plan and the troubleshooting-doc benchmark.
 
 ### Phase 7: synchronize and guard mirrors
 
@@ -1545,7 +1457,7 @@ and results against this plan and the troubleshooting-doc benchmark.
   policy exception,
   and final checklist end to end.
 - Use an independent reviewer to audit every plan requirement and all 13 grilled decisions.
-- Do not declare implementation complete while any fixture,
+- Do not declare implementation complete while any scenario,
   lint,
   mirror check,
   or independent review fails.
@@ -1620,14 +1532,14 @@ The improvement is complete only when:
   exit,
   rollback,
   and revisit fields;
-- isolated scenario fixtures pass execution and independent-review assertions for every route and terminal state;
+- selected-model scenario walkthroughs pass every assertion for every route and terminal state;
 - the inline synthetic example reaches an evidence-complete recommendation without time-sensitive real-world claims;
 - Markdown lint passes for every changed document;
 - `verify:skill-mirrors` fails a mismatch fixture and passes regenerated byte-identical mirrors;
 - an independent review finds no contradiction between body,
   example,
   checklist,
-  fixtures,
+  scenario evidence,
   and policy exception;
 - the result meets or exceeds troubleshooting-doc's trigger clarity,
   source trace,
