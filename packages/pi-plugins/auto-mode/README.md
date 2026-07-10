@@ -84,11 +84,24 @@ which are translated to a `Verdict` by `parseVerdict`.
 
 Retry path:
  if the model finishes without calling `render_verdict`,
-`callJudge` retries once without tools and asks for direct JSON.
- The retry
-uses the same safety context,
- then parses the retry response with
+`callJudge` retries without tools and asks for direct JSON.
+ If that direct JSON
+attempt returns no text,
+ it makes one final direct JSON attempt.
+ These attempts
+use the same safety context,
+ then parse the retry response with
 `extractJsonVerdict`.
+
+Model fallback:
+ if the selected judge model still fails after its transport attempts,
+auto-mode excludes that model,
+ selects one distinct authenticated model with the configured strategy,
+and runs the complete judge attempt again.
+ A configured model override is the first choice,
+but automatic selection supplies the fallback after that override fails.
+ If fallback selection or its complete attempt also fails,
+auto-mode asks the user as before.
 
 Compatibility fallback:
  `collectToolCall` can still parse first-pass text
@@ -191,8 +204,8 @@ the loader,
  and the judge-model selector.
 Automatic judge selection first keeps the configured major-version families,
 then ranks candidates by local speed-name heuristic:
-`highspeed` or `high-speed` > `fast` > `flash` or `spark` > `turbo` > `nano` >
-`mini` > `haiku` > `lite` or `light` > no signal.
+`highspeed` or `high-speed` > `fast` > `luna` > `flash` or `spark` > `terra` >
+`turbo` > `nano` > `mini` > `haiku` > `lite` or `light` > no signal.
 When no speed signal separates candidates,
  selection falls back to input cost and version.
 

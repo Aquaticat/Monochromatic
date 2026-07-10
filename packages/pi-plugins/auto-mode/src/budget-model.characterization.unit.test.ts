@@ -281,6 +281,47 @@ await describe({
       },
     },),
     it({
+      name: 'excludes failed model when selecting fallback',
+      fn: async function testFailedModelExclusion() {
+        const budgetModel = await findBudgetModel({
+          ctx: contextFixture({
+            authenticatedSlugs: [
+              slugFor(sameProviderBudgetModel,),
+              slugFor(sameProviderFastModel,),
+            ],
+          },),
+          options: {
+            strategy: 'same-provider',
+            majorVersions: MAJOR_VERSIONS,
+          },
+          excludedModelSlugs: [slugFor(sameProviderFastModel,),],
+        },);
+
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(sameProviderBudgetModel,),);
+      },
+    },),
+    it({
+      name: 'falls back from failed configured override to automatic selection',
+      fn: async function testFailedOverrideFallback() {
+        const budgetModel = await findBudgetModel({
+          ctx: contextFixture({
+            authenticatedSlugs: [
+              slugFor(sameProviderBudgetModel,),
+              slugFor(sameProviderFastModel,),
+            ],
+          },),
+          options: {
+            modelOverride: slugFor(sameProviderFastModel,),
+            strategy: 'same-provider',
+            majorVersions: MAJOR_VERSIONS,
+          },
+          excludedModelSlugs: [slugFor(sameProviderFastModel,),],
+        },);
+
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(sameProviderBudgetModel,),);
+      },
+    },),
+    it({
       name: 'keeps any-provider model choice for fixed fixtures',
       fn: async function testAnyProviderSelection() {
         const budgetModel = await findBudgetModel({

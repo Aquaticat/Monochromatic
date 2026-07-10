@@ -10,6 +10,7 @@ import type {
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
+  budgetModelSlug,
   NoBudgetModelError,
   resolveBudgetModelOverride,
   selectBudgetModel,
@@ -135,6 +136,8 @@ function assertModelApiList(
  *
  * @param options - optional budget-model configuration
  *
+ * @param excludedModelSlugs - models whose completed attempts must not be selected again
+ *
  * @throws {@link NoBudgetModelError} if no suitable model is found
  *
  * @returns budget model with auth credentials
@@ -148,39 +151,60 @@ async function findBudgetModel(
   {
     ctx,
     options,
+    excludedModelSlugs = [],
   }: {
     readonly ctx: ExtensionContext;
     readonly options?: BudgetModelOptions;
+    readonly excludedModelSlugs?: readonly string[];
   },
 ): Promise<BudgetModel> {
   /**
    * Options with defaults applied so strategy branches read fields unconditionally.
    */
   const opts: BudgetModelOptions = options ?? { ...JUDGE_MODEL_DEFAULTS, };
+  /**
+   * Canonical slugs excluded after earlier judge attempts exhausted their retries.
+   */
+  const excludedSlugs = new Set(excludedModelSlugs,);
 
   if (opts.modelOverride
     !== undefined) {
-    return await resolveBudgetModelOverride({
-      override: opts.modelOverride,
-      findModel(
-        {
-          provider,
-          modelId,
+    /**
+     * Canonical-looking configured override slug used to skip a failed pinned
+     * model without resolving its auth again.
+     */
+    const configuredOverrideSlug = (typeof opts.modelOverride) === 'string'
+      ? opts.modelOverride
+      : opts.modelOverride.model;
+    if (!excludedSlugs.has(configuredOverrideSlug,)) {
+      /**
+       * Configured override remains first choice, but an override that already
+       * failed gives way to automatic selection for fallback.
+       */
+      const overrideModel = await resolveBudgetModelOverride({
+        override: opts.modelOverride,
+        findModel(
+          {
+            provider,
+            modelId,
+          },
+        ) {
+          return findBudgetOverrideModel({
+            ctx,
+            provider,
+            modelId,
+          },);
         },
-      ) {
-        return findBudgetOverrideModel({
-          ctx,
-          provider,
-          modelId,
-        },);
-      },
-      async resolveAuth({ model, },) {
-        return await resolveBudgetAuth({
-          ctx,
-          model,
-        },);
-      },
-    },);
+        async resolveAuth({ model, },) {
+          return await resolveBudgetAuth({
+            ctx,
+            model,
+          },);
+        },
+      },);
+      if (!excludedSlugs.has(budgetModelSlug(overrideModel.model,),))
+        return overrideModel;
+    }
   }
 
   if ((ctx.model
@@ -204,9 +228,12 @@ async function findBudgetModel(
     .getAll();
   assertModelApiList(rawAllModels,);
   /**
-   * Registry models after runtime shape validation.
+   * Registry models after runtime shape validation, excluding models whose
+   * completed judge attempts already failed.
    */
-  const allModels = rawAllModels;
+  const allModels = rawAllModels.filter(function modelHasNotFailed(model,) {
+    return !excludedSlugs.has(budgetModelSlug(model,),);
+  },);
 
   return await selectBudgetModel<Model<Api>>({
     activeModel,

@@ -19,6 +19,11 @@ const HIGH_SPEED_SCORE = 100;
 const FAST_SCORE = 90;
 
 /**
+ * Score for OpenAI Luna models.
+ */
+const LUNA_SCORE = 85;
+
+/**
  * Score for models whose name says flash.
  */
 const FLASH_SCORE = 80;
@@ -27,6 +32,11 @@ const FLASH_SCORE = 80;
  * Score for models whose name says spark.
  */
 const SPARK_SCORE = FLASH_SCORE;
+
+/**
+ * Score for OpenAI Terra models.
+ */
+const TERRA_SCORE = 75;
 
 /**
  * Score for models whose name says turbo.
@@ -171,10 +181,14 @@ function speedSignalScore(
     return HIGH_SPEED_SCORE;
   if (signal === 'fast')
     return FAST_SCORE;
+  if (signal === 'luna')
+    return LUNA_SCORE;
   if (signal === 'flash')
     return FLASH_SCORE;
   if (signal === 'spark')
     return SPARK_SCORE;
+  if (signal === 'terra')
+    return TERRA_SCORE;
   if (signal === 'turbo')
     return TURBO_SCORE;
   if (signal === 'nano')

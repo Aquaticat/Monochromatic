@@ -22,6 +22,7 @@ import {
   getReusableApproval,
   getTrustDirectives,
 } from './context.ts';
+import { callJudgeWithFallback, } from './judge-fallback.ts';
 import { callJudge, } from './judge.ts';
 import { formatModelBlockReason, } from './model-feedback.ts';
 import type { MergedConfig, } from './signals.ts';
@@ -246,16 +247,28 @@ async function evaluate(
     /**
      * Structured verdict from the judge: `approve`/`deny`/`ask` plus rationale and guidance.
      */
-    const verdict = await callJudge({
-      model: judge.model,
-      auth: judge.auth,
-      action,
-      cwd: ctx.cwd,
-      recentContext,
-      trustDirectives,
-      timeoutMs: config.judgeTimeoutMs,
-      systemPrompt,
-      batchContext,
+    const verdict = await callJudgeWithFallback({
+      firstJudge: judge,
+      async resolveFallbackJudge({ failedModelSlug, },) {
+        return resolveJudgeModel({
+          ctx,
+          config,
+          excludedModelSlugs: [failedModelSlug,],
+        },);
+      },
+      async callJudgeAttempt({ judge: selectedJudge, },) {
+        return callJudge({
+          model: selectedJudge.model,
+          auth: selectedJudge.auth,
+          action,
+          cwd: ctx.cwd,
+          recentContext,
+          trustDirectives,
+          timeoutMs: config.judgeTimeoutMs,
+          systemPrompt,
+          batchContext,
+        },);
+      },
     },);
 
     if (verdict.verdict
@@ -340,15 +353,19 @@ async function evaluate(
  *
  * @param config - the merged runtime config
  *
+ * @param excludedModelSlugs - judge models whose completed attempts already failed
+ *
  * @returns a budget model with auth credentials
  */
 async function resolveJudgeModel(
   {
     ctx,
     config,
+    excludedModelSlugs = [],
   }: {
     readonly ctx: ExtensionContext;
     readonly config: MergedConfig;
+    readonly excludedModelSlugs?: readonly string[];
   },
 ): Promise<BudgetModel> {
   /**
@@ -358,6 +375,7 @@ async function resolveJudgeModel(
   return findBudgetModel({
     ctx,
     options: toBudgetModelOptions(config,),
+    excludedModelSlugs,
   },);
 }
 
