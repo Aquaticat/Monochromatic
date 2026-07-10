@@ -84,7 +84,25 @@ absolute path.
   preserving current behavior.
 - `warn` is considered safe metadata-wise;
   configuring it does not emit an additional dangerous-warning diagnostic.
-- It keeps its per-invocation escape hatch unless a later question revises escape-hatch details.
+- Its per-invocation escape hatch skips the policy for the complete invocation lifecycle,
+  including findings,
+  fixes,
+  post-commit checks,
+  and auto-push gating.
+
+Warn-safety metadata follows consequence:
+
+- warn-unsafe:
+  `require-root`,
+  `add-explicit`,
+  `linked-worktree-only`,
+  and `forbidden-strings`;
+- warn-safe:
+  `branch-worktree-only`,
+  `forbidden-root-context`,
+  and `final-newline`.
+
+An unsafe `warn` remains a valid explicit configuration but emits a configuration warning.
 
 ### Unified Oxlint-style policy shape
 
@@ -215,7 +233,11 @@ git cli-git untrust
 git cli-git status
 ```
 
-The exact complete subcommand list and Optique grammar remain open.
+Management commands use Optique.
+Direct `check` and `fix` require exactly one scope source:
+`--all` or Git pathspecs after `--`.
+A repeatable policy filter narrows the otherwise complete enabled policy set.
+The exact option names beyond the settled surface remain implementation work.
 Management commands do not load repo config before performing trust recovery or inspection.
 
 The real Git executable continues to be invoked by its resolved absolute path for forwarded commands.
@@ -393,8 +415,8 @@ Exact canonical encoding and decoder-error behavior still need tests.
 
 ### Recursive root trust
 
-Recursive trust is config-declared,
-matching mise's monorepo-root model rather than making every trust command recursive.
+Recursive trust is declared as `trust: { children: true }`,
+matching mise's config-declared monorepo-root model rather than making every trust command recursive.
 
 - A root declaration triggers the second trust-consent stage after root config execution and validation.
 - The second disclosure warns before consent that descendant authority will be recorded and names the exact root.
@@ -458,7 +480,9 @@ The JSONL schema and schema-version field remain open.
 
 ### Patch ownership
 
-- A fixable finding returns unified Git patch bytes.
+- A fixable finding returns unified Git patch bytes for exactly its located path and against the candidate bytes the
+  context supplied.
+- A composed policy returns multiple findings for multiple paths rather than one cross-path patch.
 - The plugin does not choose or write a patch path.
 - Cli-git writes patch bytes into a private temporary `.patch` file,
   applies it,
@@ -501,13 +525,19 @@ or another mode not yet reproduced transactionally:
   it does not block that pass,
   and a later global pass must prove the finding disappeared.
 - If any policy changes the candidate tree,
-  the next pass restarts from the first core policy.
+  every finding from that pass is provisional and the next pass restarts from the first core policy.
+- Without keep-going,
+  an unpatched error stops the current pass before later policies run.
+- With keep-going,
+  later patches may change the candidate and cause a restart;
+  only findings from the final unchanged pass can block or emit.
 - Use an eight-pass cap for the complete policy sequence,
   matching the repository Oxlint wrapper.
-- Compare complete candidate file bytes after each pass instead of hashing them.
+- Store each pass candidate in private temporary storage and compare complete file bytes instead of hashing them.
 - Detect stability by exact ordered path-and-byte equality with the preceding state.
-- Detect cross-policy cycles by exact equality with any non-adjacent candidate state retained within the eight-pass
-  run.
+- Detect cross-policy cycles by streaming exact comparisons against non-adjacent candidate states retained only for the
+  eight-pass run;
+  do not retain duplicate complete snapshots in process memory.
 - A stable candidate with remaining error findings is exit code `1`.
 - A cycle or cap reached while still changing is exit code `2`.
 
@@ -608,9 +638,6 @@ Major unresolved branches:
   lazy context-method,
   trigger,
   and config TypeScript APIs.
-- Exact default severities and warn-safety metadata for every built-in and migrated policy.
-- Exact escape-hatch interaction with unified policies and automatic fixes.
-- Whether `--cli-git-keep-going` continues after engine failures or only after finding failures.
 - Exact JSONL schema,
   schema versioning,
   ordering,
@@ -621,13 +648,12 @@ Major unresolved branches:
   and no-stage verification.
 - Complete read-only and mixed Git command classifier.
 - Complete temporary-index transaction prototype and crash journal.
-- Exact global-pass behavior when an early policy has an unfixable finding and later policies would auto-fix the tree.
 - Trust record schema,
   account-derived platform paths,
   permissions,
   canonical paths,
   symlinks,
-  and nested recursive roots.
+  and recursive-root revocation transactions.
 - `CLI_GIT_NO_PARANOID` encoder and parser edge cases.
 - `@monochromatic-dev/module-fs-id` implementation choices and real macOS/Windows verification.
 - Tsdown API integration,
@@ -635,7 +661,6 @@ Major unresolved branches:
   cache layout,
   immutable artifact loading,
   and self-contained import validation.
-- Config-declared recursive trust property name and nested-root precedence.
 - Performance budgets and benchmark fixtures.
 - Exact forbidden-strings push-range computation and failed-range JSONL diagnostic.
 - Migration parity matrix for every hk trigger and final-newline exclusion.
