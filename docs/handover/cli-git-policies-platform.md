@@ -174,6 +174,15 @@ Fixed transforms must be idempotent because a changed candidate tree restarts th
 The first distributable is the Node package only;
 standalone native executables are out of the first platform release.
 The package installs the shadowing `git` bin and includes the runtime needed for trusted TypeScript config bundling.
+The same package exposes side-effect-free public config and plugin API entry points,
+including `defineConfig`,
+`definePlugin`,
+`definePolicy`,
+Valibot-backed option helpers,
+and public types.
+Importing an API entry point must never execute bin startup code.
+Third-party plugins peer-depend on the compatible `@monochromatic-dev/cli-git` API version;
+there is no separate API or types package.
 External non-mise users install the npm package and put its bin directory before real Git on `PATH`.
 
 Node support range,
