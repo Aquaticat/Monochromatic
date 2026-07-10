@@ -8,6 +8,7 @@ import {
   rename,
   rm,
   symlink,
+  utimes,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -230,6 +231,92 @@ await describe({
           trusted: false,
           reason: 'changed',
         },);
+      },
+    },),
+    it({
+      name: 'relaxed unchanged metadata executes stored MJS snapshot',
+      fn: async function testRelaxedMetadataHit() {
+        /** Equal-length safe and throwing source bytes. */
+        const safeSource = 'export default {};\n';
+        const changedSource = 'throw new Error();\n';
+        expect(safeSource.length,).toBe(changedSource.length,);
+        await using fixture = await createTrustFixture(safeSource,);
+        /** Stable exact metadata timestamp. */
+        const fixedTime = new Date('2026-07-10T00:00:00.000Z',);
+        await utimes(fixture.configPath, fixedTime, fixedTime,);
+        const discovered = await fixtureConfig(fixture,);
+        const trusted = await trustMjs({
+          discovered,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: trustAdapters([],),
+        },);
+        await writeFile(fixture.configPath, changedSource,);
+        await utimes(fixture.configPath, fixedTime, fixedTime,);
+        /** Exact relaxed identity entry. */
+        const relaxedValue = `${trusted.record.identity.filesystemId}:${trusted.record.identity.canonicalConfigPath}`;
+        const loaded = await loadTrustedConfig({
+          discovered,
+          registryRoot: fixture.registryRoot,
+          relaxedValue,
+        },);
+        expect(loaded.record.recordedAt,).toBe(trusted.record.recordedAt,);
+      },
+    },),
+    it({
+      name: 'relaxed changed metadata validates and replaces MJS snapshot',
+      fn: async function testRelaxedMetadataRefresh() {
+        await using fixture = await createTrustFixture('export default {};\n',);
+        const discovered = await fixtureConfig(fixture,);
+        const trusted = await trustMjs({
+          discovered,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: trustAdapters([],),
+        },);
+        await writeFile(fixture.configPath, 'export default { policies: {} };\n',);
+        /** Exact relaxed identity entry. */
+        const relaxedValue = `${trusted.record.identity.filesystemId}:${trusted.record.identity.canonicalConfigPath}`;
+        const refreshed = await loadTrustedConfig({
+          discovered,
+          registryRoot: fixture.registryRoot,
+          relaxedValue,
+        },);
+        expect(refreshed.record.recordedAt === trusted.record.recordedAt,).toBe(false,);
+        expect((await inspectTrust({ discovered, registryRoot: fixture.registryRoot, },)).reason,).toBe('trusted',);
+      },
+    },),
+    it({
+      name: 'malformed relaxed entry warns and retains strict block',
+      fn: async function testMalformedRelaxedEntry() {
+        await using fixture = await createTrustFixture('export default {};\n',);
+        const discovered = await fixtureConfig(fixture,);
+        await trustMjs({
+          discovered,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: trustAdapters([],),
+        },);
+        await writeFile(fixture.configPath, 'export default { policies: {} };\n',);
+        /** Captured prominent parser warnings. */
+        const warnings: string[] = [];
+        const failure = await (async function captureMalformedFailure(): Promise<unknown> {
+          try {
+            return await loadTrustedConfig({
+              discovered,
+              registryRoot: fixture.registryRoot,
+              relaxedValue: 'bad%20entry',
+              warn: function warn(message,) { warnings.push(message,); },
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(warnings,).toHaveLength(1,);
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('config-changed',);
       },
     },),
     it({

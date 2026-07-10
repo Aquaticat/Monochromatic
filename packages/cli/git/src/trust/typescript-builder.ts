@@ -422,6 +422,7 @@ export async function buildTypeScriptCandidate({
     clean: false,
     dts: false,
     sourcemap: false,
+    treeshake: false,
     fixedExtension: true,
     logLevel: 'silent',
     deps: {

@@ -120,6 +120,19 @@ export default {
       },
     },),
     it({
+      name: 'inlines literal dynamic local import into one bundle',
+      fn: async function testLiteralDynamicImport() {
+        await using fixture = await createFixture(`export default {\n  plugins: {\n    dynamic: {\n      name: 'dynamic',\n      policies: [{\n        name: 'load',\n        defaultSeverity: 'off',\n        warnSafe: true,\n        triggers: ['direct-check'],\n        check: async () => { const loaded = await import('./dynamic.ts'); return loaded.findings; },\n      }],\n    },\n  },\n};\n`,);
+        await writeFile(join(fixture.repository, 'dynamic.ts',), 'export const findings = [];\n',);
+        const candidate = await buildTypeScriptCandidate({
+          discovered: fixture.discovered,
+          buildDirectory: fixture.buildDirectory,
+        },);
+        expect(candidate.sources,).toHaveLength(2,);
+        expect(new TextDecoder().decode(candidate.executableBytes,),).not.toContain("import('./dynamic",);
+      },
+    },),
+    it({
       name: 'rejects computed dynamic imports left outside bundle graph',
       fn: async function testComputedDynamicImport() {
         await using fixture = await createFixture(`const target = './policy.ts';
@@ -146,6 +159,36 @@ export default { policies: object({}) };
         },);
         expect(candidate.barePackageImports,).toContain('valibot',);
         expect(candidate.sources,).toHaveLength(1,);
+      },
+    },),
+    it({
+      name: 'contains package asset within sole JavaScript bundle',
+      fn: async function testPackageAsset() {
+        await using fixture = await createFixture(`import value from 'asset-package';\nexport default { trust: { children: Boolean(value) } };\n`,);
+        /** Disposable package with non-JavaScript asset edge. */
+        const packageDirectory = join(fixture.repository, 'node_modules', 'asset-package',);
+        await mkdir(packageDirectory, { recursive: true, },);
+        await writeFile(join(packageDirectory, 'package.json',), '{"name":"asset-package","type":"module","exports":"./index.js"}\n',);
+        await writeFile(join(packageDirectory, 'index.js',), `import text from './asset.txt';\nexport default text;\n`,);
+        await writeFile(join(packageDirectory, 'asset.txt',), 'asset\n',);
+        const candidate = await buildTypeScriptCandidate({
+          discovered: fixture.discovered,
+          buildDirectory: fixture.buildDirectory,
+        },);
+        expect(candidate.sources,).toHaveLength(1,);
+        expect(candidate.barePackageImports,).toContain('asset-package',);
+      },
+    },),
+    it({
+      name: 'rejects native package module from executable bundle',
+      fn: async function testNativeModule() {
+        await using fixture = await createFixture(`import native from 'native-package';\nexport default { trust: { children: Boolean(native) } };\n`,);
+        /** Disposable package resolving to native binary. */
+        const packageDirectory = join(fixture.repository, 'node_modules', 'native-package',);
+        await mkdir(packageDirectory, { recursive: true, },);
+        await writeFile(join(packageDirectory, 'package.json',), '{"name":"native-package","exports":"./addon.node"}\n',);
+        await writeFile(join(packageDirectory, 'addon.node',), new Uint8Array([0, 1, 2,]),);
+        expect(await captureBuildFailure(fixture,),).toBeInstanceOf(Error,);
       },
     },),
     it({

@@ -30,6 +30,7 @@ import {
   inspectTrust,
   loadTrustedConfig,
   trustMjs,
+  trustTypeScript,
   untrustConfig,
   untrustRepository,
 } from './trust-service.ts';
@@ -250,6 +251,63 @@ await describe({
         expect(failure,).toBeInstanceOf(TrustedConfigError,);
         if (failure instanceof TrustedConfigError)
           expect(failure.code,).toBe('config-changed',);
+      },
+    },),
+    it({
+      name: 'TypeScript recursive root authorizes descendant only while exact',
+      fn: async function testTypeScriptRecursiveRoot() {
+        await using fixture = await createFixture();
+        await rm(join(fixture.outer, 'cli-git.config.mjs',),);
+        await writeFile(join(fixture.outer, 'recursive.ts',), 'export const recursive: boolean = true;\n',);
+        await writeFile(join(fixture.outer, 'cli-git.config.ts',), `import { recursive } from './recursive.ts';\nexport default { trust: { children: recursive } };\n`,);
+        const outer = await discoverFixture(fixture.outer,);
+        await trustTypeScript({
+          discovered: outer,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: consentAdapters({ answers: [], disclosures: [], },),
+        },);
+        const nested = await discoverFixture(fixture.nested,);
+        await loadTrustedConfig({ discovered: nested, registryRoot: fixture.registryRoot, },);
+        await writeFile(join(fixture.outer, 'recursive.ts',), 'export const recursive: boolean = false;\n',);
+        const sibling = await discoverFixture(fixture.sibling,);
+        const failure = await (async function captureChangedRoot(): Promise<unknown> {
+          try {
+            return await loadTrustedConfig({ discovered: sibling, registryRoot: fixture.registryRoot, },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+      },
+    },),
+    it({
+      name: 'auto-enrolls TypeScript descendant stored bundle',
+      fn: async function testTypeScriptDescendant() {
+        await using fixture = await createFixture();
+        /** Recursive MJS outer authority. */
+        const outer = await discoverFixture(fixture.outer,);
+        await trustMjs({ discovered: outer, registryRoot: fixture.registryRoot, yes: true, adapters: consentAdapters({ answers: [], disclosures: [], },), },);
+        /** Replace nested MJS with TypeScript config and relative source. */
+        await rm(join(fixture.nested, 'cli-git.config.mjs',),);
+        await writeFile(join(fixture.nested, 'value.ts',), 'export const enabled: boolean = false;\n',);
+        await writeFile(join(fixture.nested, 'cli-git.config.ts',), `import { enabled } from './value.ts';\nexport default { trust: { children: enabled } };\n`,);
+        const nested = await discoverFixture(fixture.nested,);
+        expect(nested.format,).toBe('typescript',);
+        const loaded = await loadTrustedConfig({ discovered: nested, registryRoot: fixture.registryRoot, },);
+        expect(loaded.record.format,).toBe('typescript',);
+        expect(loaded.record.sources,).toHaveLength(2,);
+        await writeFile(join(fixture.nested, 'value.ts',), 'export const enabled: boolean = true;\n',);
+        const failure = await (async function captureChangedTypeScript(): Promise<unknown> {
+          try {
+            return await loadTrustedConfig({ discovered: nested, registryRoot: fixture.registryRoot, },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
       },
     },),
     it({

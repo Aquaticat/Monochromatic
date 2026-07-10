@@ -17,6 +17,8 @@ import { listTrustRecords, } from './registry-catalog.ts';
 import { recordDirectory, } from './registry-path.ts';
 import { isMissingPath, } from './registry-io.ts';
 import { loadRecord, } from './registry-storage.ts';
+import { loadRelaxedConfig, } from './relaxed-loader.ts';
+import { relaxedPathMatches, } from './relaxed-paths.ts';
 import {
   autoEnrollRecursiveConfig,
   RECURSIVE_TRUST_ABSENT,
@@ -142,6 +144,20 @@ function omitUntrustDisclosure(text: string,): void {
 }
 
 /**
+ * Emits stable prominent relaxed-mode warning JSONL.
+ *
+ * @param message - safe warning text
+ */
+function emitTrustWarning(message: string,): void {
+  console.error(JSON.stringify({
+    schemaVersion: 1,
+    type: 'trust-warning',
+    code: 'relaxed-entry-ignored',
+    message,
+  },),);
+}
+
+/**
  * Loads exact trusted record or auto-enrolls authorized descendant.
  *
  * @param discovered - canonical discovered config
@@ -158,15 +174,28 @@ function omitUntrustDisclosure(text: string,): void {
 export async function loadTrustedConfig({
   discovered,
   registryRoot,
+  relaxedValue = process.env
+    .CLI_GIT_NO_PARANOID,
+  warn = emitTrustWarning,
 }: Readonly<{
   discovered: DiscoveredConfig;
   registryRoot: string;
+  relaxedValue?: string;
+  warn?: (message: string,) => void;
 }>,): Promise<LoadedTrustedConfig> {
   await recoverProvenanceTransactions({ registryRoot, },);
   /**
    * Fresh live candidate compared with exact stored bytes.
    */
   const candidate = await captureTrustCandidate(discovered,);
+  /**
+   * Exact environment grammar match, never an initial trust grant.
+   */
+  const relaxed = relaxedPathMatches({
+    ...relaxedValue === undefined ? {} : { raw: relaxedValue, },
+    identity: candidate.identity,
+    warn,
+  },);
   try {
     /**
      * Validated exact-identity record.
@@ -182,6 +211,16 @@ export async function loadTrustedConfig({
       registryRoot,
       identity: candidate.identity,
     },);
+    if (relaxed) {
+      return await loadRelaxedConfig({
+        registryRoot,
+        recordDirectory: directory,
+        candidate,
+        record,
+        recordedAt: new Date().toISOString(),
+        warn,
+      },);
+    }
     return record.format === 'mjs'
       ? await loadStrictMjs({
         recordDirectory: directory,

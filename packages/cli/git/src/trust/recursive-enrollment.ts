@@ -59,18 +59,20 @@ async function enrollMjs({
       .configPath,
   },);
   /**
-   * Disposable private validation record.
+   * Runtime-validated config after disposable validation lock releases.
    */
-  await using validationRecord = await prepareMjsRecord({
-    registryRoot,
-    candidate,
-    recordedAt,
-    authorizingRoots,
-  },);
-  /**
-   * Runtime-validated config before installation.
-   */
-  const validated = await executeStoredConfig(validationRecord.executablePath,);
+  const validated = await (async function validateMjsCandidate(): Promise<ValidatedConfig> {
+    /**
+     * Disposable private validation record.
+     */
+    await using validationRecord = await prepareMjsRecord({
+      registryRoot,
+      candidate,
+      recordedAt,
+      authorizingRoots,
+    },);
+    return await executeStoredConfig(validationRecord.executablePath,);
+  })();
   /**
    * Final exact descendant record.
    */

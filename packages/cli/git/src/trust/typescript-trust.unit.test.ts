@@ -185,6 +185,87 @@ export default {
       },
     },),
     it({
+      name: 'relaxed tracked metadata change rebuilds without consent',
+      fn: async function testRelaxedRebuild() {
+        await using fixture = await createFixture(`import { value } from './value.ts';\nexport default { trust: { children: value } };\n`,);
+        /** Tracked relative source. */
+        const valuePath = join(fixture.repository, 'value.ts',);
+        await writeFile(valuePath, 'export const value: boolean = false;\n',);
+        const trusted = await trustTypeScript({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: adapters([],),
+        },);
+        await writeFile(valuePath, 'export const value: boolean = true;\n',);
+        /** Exact relaxed identity entry. */
+        const relaxedValue = `${trusted.record.identity.filesystemId}:${trusted.record.identity.canonicalConfigPath}`;
+        const rebuilt = await loadTrustedConfig({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+          relaxedValue,
+        },);
+        expect(rebuilt.validated.recursiveChildren,).toBe(true,);
+        expect((await inspectTrust({ discovered: fixture.discovered, registryRoot: fixture.registryRoot, },)).reason,)
+          .toBe('trusted',);
+      },
+    },),
+    it({
+      name: 'relaxed rebuild failure retains previous exact record',
+      fn: async function testRelaxedFailureRollback() {
+        await using fixture = await createFixture('export default {};\n',);
+        const trusted = await trustTypeScript({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: adapters([],),
+        },);
+        await writeFile(fixture.configPath, `const target = './missing.ts';\nawait import(target);\nexport default {};\n`,);
+        /** Exact relaxed identity entry. */
+        const relaxedValue = `${trusted.record.identity.filesystemId}:${trusted.record.identity.canonicalConfigPath}`;
+        const failure = await (async function captureRelaxedFailure(): Promise<unknown> {
+          try {
+            return await loadTrustedConfig({
+              discovered: fixture.discovered,
+              registryRoot: fixture.registryRoot,
+              relaxedValue,
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(Error,);
+        await writeFile(fixture.configPath, 'export default {};\n',);
+        expect((await loadTrustedConfig({ discovered: fixture.discovered, registryRoot: fixture.registryRoot, })).record.recordedAt,)
+          .toBe(trusted.record.recordedAt,);
+      },
+    },),
+    it({
+      name: 'concurrent relaxed rebuilds leave one valid exact record',
+      fn: async function testRelaxedRebuildRace() {
+        await using fixture = await createFixture('export default {};\n',);
+        const trusted = await trustTypeScript({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: adapters([],),
+        },);
+        await writeFile(fixture.configPath, 'export default { policies: {} };\n',);
+        /** Exact relaxed identity entry. */
+        const relaxedValue = `${trusted.record.identity.filesystemId}:${trusted.record.identity.canonicalConfigPath}`;
+        const results = await Promise.allSettled([
+          loadTrustedConfig({ discovered: fixture.discovered, registryRoot: fixture.registryRoot, relaxedValue, }),
+          loadTrustedConfig({ discovered: fixture.discovered, registryRoot: fixture.registryRoot, relaxedValue, }),
+        ],);
+        expect(results.some(function succeeded(result,) {
+          return result.status === 'fulfilled';
+        },),).toBe(true,);
+        expect((await loadTrustedConfig({ discovered: fixture.discovered, registryRoot: fixture.registryRoot, })).record.format,)
+          .toBe('typescript',);
+      },
+    },),
+    it({
       name: 'leaves no record when build is invalid',
       fn: async function testFailedBuild() {
         await using fixture = await createFixture(`const target = './policy.ts';\nawait import(target);\nexport default {};\n`,);
