@@ -159,8 +159,8 @@ fn counted_key_stays_small() {
 #[test]
 fn counted_bound_is_exact() {
     let prog = linear("AKIA[A-Z2-7]{16}");
-    assert!(prog.is_match(b"AKIAABCDEFGHIJKLMNOP"));
-    assert!(prog.is_match(b"prefix AKIAABCDEFGHIJKLMNOP suffix"));
+    assert!(prog.is_match(b"AKIAABCDEFGHIJKLMNO\x50"));
+    assert!(prog.is_match(b"prefix AKIAABCDEFGHIJKLMNO\x50 suffix"));
     assert!(!prog.is_match(b"AKIAABCDEFGHIJKLMNO"));
     // What:    A digit outside [A-Z2-7] breaks the run (0 and 1 are excluded).
     // Why:     The test uses this setup or assertion to pin the behavior named by the test

@@ -14,14 +14,14 @@ use forbidden_regex::{CompileError, RegexSet, compile};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const AKIA_KEY: string = "AKIAABCDEFGHIJKLMNOP";
+/// const AKIA_KEY: string = "AKIAABCDEFGHIJKLMNO\x50";
 /// ```
-const AKIA_KEY: &str = "AKIAABCDEFGHIJKLMNOP";
+const AKIA_KEY: &str = "AKIAABCDEFGHIJKLMNO\x50";
 
 #[test]
 fn literal_and_search() {
     let re = compile("AKIA[A-Z2-7]{16}").unwrap();
-    assert!(re.is_match(b"key=AKIAABCDEFGHIJKLMNOP;"));
+    assert!(re.is_match(b"key=AKIAABCDEFGHIJKLMNO\x50;"));
     assert!(!re.is_match(b"no key here"));
     // What:    Wrong alphabet: '0' and '1' are not in [A-Z2-7].
     // Why:     The test uses this setup or assertion to pin the behavior named by the test
@@ -126,7 +126,7 @@ fn alternation_intersection_complement() {
     .unwrap();
     assert!(aws.is_match(AKIA_KEY.as_bytes()));
     assert!(aws.is_match(format!("prefix {AKIA_KEY} suffix").as_bytes()));
-    assert!(!aws.is_match(b"AKIA2222222222222222"));
+    assert!(!aws.is_match(b"AKIA222222222222222\x32"));
 }
 
 #[test]
@@ -176,7 +176,7 @@ fn product_rule_survives_roundtrip() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    assert!(!reloaded.is_match(b"AKIA2222222222222222"));
+    assert!(!reloaded.is_match(b"AKIA222222222222222\x32"));
     let hits: Vec<usize> = reloaded.matches(AKIA_KEY.as_bytes()).collect();
     assert_eq!(hits, vec![0]);
 }
