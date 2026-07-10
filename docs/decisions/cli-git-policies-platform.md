@@ -555,9 +555,9 @@ composition,
 conflict blocking,
 failed hooks,
 and exact real-state preservation.
-Interactive,
-patch,
-and include selection modes use read-only checks and block only when correction is required.
+Interactive and patch selection runs once through native Git against the copied private index;
+include selection stages into that private index.
+Policies inspect the exact chosen candidate read-only and block only when correction is required.
 Plugins never mutate the real index or worktree through the policy interface.
 Cli-git holds the real index lock,
 uses private indexes,
@@ -580,6 +580,7 @@ Before ref advancement,
 a durable no-follow journal records exact original and prepared indexes,
 expected parent and tree identities,
 owner PID,
+a private nonce-bearing reflog action,
 and real-index filesystem/device/inode identity.
 Startup recovery runs before trusted config,
 installs or recognizes exact prepared state after interruption,

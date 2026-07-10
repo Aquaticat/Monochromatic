@@ -137,15 +137,16 @@ The completed index is installed atomically only after real Git succeeds,
 so policy failures,
 patch conflicts,
 and failed commit hooks leave real index and worktree bytes unchanged by cli-git.
-Interactive,
-patch,
-and include selections remain read-only:
-canonical candidates proceed through real Git,
+Interactive and patch selection runs once through native Git against the copied private index;
+include selection stages into that same private index.
+Policies inspect the exact chosen private candidate without applying automatic patches:
+canonical candidates commit the settled private index,
 while a required correction blocks with direct-fix guidance.
 Unmerged indexes block automatic correction.
 
 A durable no-follow transaction directory retains exact original and prepared index snapshots,
 expected parent and tree identities,
+a private nonce-bearing reflog action,
 and the owned real-index lock identity before reference advancement.
 Every later wrapper invocation recovers before trusted config execution,
 installs or recognizes the exact prepared index after an interrupted landed commit,

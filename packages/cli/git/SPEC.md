@@ -1136,11 +1136,11 @@ unstaged-tail preservation,
 unrelated staged preservation,
 and failure rollback.
 
-Interactive,
-patch,
-and include selection modes receive read-only policy checks:
-canonical content proceeds through real Git,
-while a proposed automatic patch blocks with direct-fix guidance.
+Interactive and patch selection runs through native Git once against the copied private index;
+include selection stages into that private index.
+Policies receive the exact chosen candidate but cannot apply automatic patches:
+canonical content commits the settled private index,
+while a proposed patch blocks with direct-fix guidance.
 Unmerged indexes block automatic correction.
 The implementation uses a transaction directory outside the worktree with:
 
@@ -1204,8 +1204,12 @@ It never silently guesses after unrelated ref or index changes.
 A prepared journal records expected parent OIDs,
 intended tree,
 exact original and prepared index snapshots,
+a private nonce-bearing `GIT_REFLOG_ACTION`,
 real-index filesystem/device/inode identity,
 and owner PID before real Git can advance the ref.
+When interruption happens before the exact landed-OID marker,
+recovery requires current OID and the nonce-bearing action in the latest `HEAD` reflog entry;
+missing or later reflog movement fails closed.
 Recovery runs before trusted repository config,
 refuses active owners and unsafe or replaced filesystem artifacts,
 and preserves conflicting evidence after unrelated ref or index movement.

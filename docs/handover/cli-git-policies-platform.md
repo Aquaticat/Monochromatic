@@ -1326,11 +1326,11 @@ Unless later grilling changes them:
   and merge,
   cherry-pick,
   or revert conclusions.
-- Interactive,
-  patch,
-  and include selection modes receive read-only policy checks;
-  canonical candidates forward unchanged,
-  while required corrections return direct-fix guidance without changing real state.
+- Interactive and patch selection runs once through native Git against the copied private index;
+  include selection stages into that private index.
+  Policies inspect exact chosen candidates read-only,
+  commit canonical private state without replaying selection,
+  and return direct-fix guidance when correction is required.
 - Automatic correction rejects unmerged indexes with exact path diagnostics.
 - Durable prepared journals retain original,
   commit,
@@ -1338,6 +1338,7 @@ Unless later grilling changes them:
   expected parent OIDs,
   intended tree,
   owner PID,
+  a private nonce-bearing `GIT_REFLOG_ACTION`,
   and real-index filesystem/device/inode identity before ref advancement.
 - Recovery runs before trusted config and distinguishes pre-ref cleanup,
   post-ref installation,
@@ -1354,14 +1355,27 @@ Unless later grilling changes them:
   conflicting ref movement,
   symlink rejection,
   and signal cleanup.
-- Core checkpoint `41a48556f` contains the expanded transaction and adversarial fixture implementation.
+- Recovery consumes artifacts through no-follow descriptors,
+  revalidates the owned lock before path replacement,
+  and requires current OID plus the private nonce in the latest `HEAD` reflog entry when interruption precedes the
+  exact landed-OID marker.
+- Checkpoints `41a48556f`,
+  `c5b217ae3`,
+  `bbfe7e8fd`,
+  `8c7e378c9`,
+  `07405c2e4`,
+  and `19c333622` contain expanded modes,
+  adversarial fixtures,
+  no-follow recovery,
+  reflog attribution,
+  exact native selection,
+  and patch-grammar hardening.
 - Formatting,
   type checking,
   build,
-  and packed shadow-bin runs `proc_9`,
-  `proc_11`,
-  and `proc_12` pass;
-  the final all-suite evidence and independent closure review are recorded with the closure checkpoint.
+  full unit tests,
+  and packed shadow-bin runs through `proc_2` pass;
+  the final packed rerun and independent closure review are recorded with the closure checkpoint.
 - Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity
