@@ -3,9 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #347 are complete and closed.
-Command-safeguard migration issue #348 is implemented locally and awaiting final packed verification and closure.
-Fixed-transform staging issue #349 is the next dependency-ordered slice after #348 closes.
+Issues #280 and #341 through #348 are complete and closed.
+Fixed-transform staging issue #349 is the next unblocked dependency-ordered slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1121,11 +1120,28 @@ Unless later grilling changes them:
   `4d6601f03`,
   `4e619ed82`,
   `0d6a61b38`,
-  and `01cfcd12e` contain the engine migration,
+  `01cfcd12e`,
+  `e4eef7bff`,
+  `6cde57dae`,
+  `fff4e02a0`,
+  `acb1f0590`,
+  and `0595293f9` contain the engine migration,
   trusted registry correction,
   old-rule retirement,
-  and packed consumer fixture work.
-- Final packed-bin and independent closure evidence are still pending at this checkpoint.
+  packed consumer coverage,
+  machine-readable warning correction,
+  and final sentinel evidence.
+- Formatting,
+  type checks,
+  the full unit suite,
+  selected Markdown lint,
+  and the packed npm shadow-bin consumer passed.
+  The final packed run was `proc_17`.
+- Independent review found and then verified corrections for ad hoc warning output,
+  missing escape context,
+  and checker-only sentinel coverage.
+  Its final closure pass found no remaining concrete blocker.
+- Issue #348 was closed after every acceptance criterion and evidence gate passed.
   Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity
