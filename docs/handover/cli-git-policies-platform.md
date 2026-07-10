@@ -974,7 +974,30 @@ Unless later grilling changes them:
   integration-fixture,
   and documentation gaps.
   Commit `f4bb63b99` addresses those findings.
-- Commits `53b262593` and `f421486be` contain the initial recursive runtime and mounted packed-bin fixture.
+  A follow-up review found duplicate mount-replacement identities and transaction-directory substitution gaps;
+  commit `bf37063ed` revokes every same-root identity and validates the journal directory during creation,
+  recovery,
+  and settlement.
+  Final independent review found no remaining concrete #346 acceptance blocker.
+- Final cli-git formatting,
+  type checks,
+  unit tests,
+  build,
+  npm packing,
+  selected documentation lint,
+  and the maintained packed-bin trust task pass.
+  The final packed task emitted `built-trust-consumer-ok` after mount replacement,
+  absent-config multi-identity untrust,
+  process-level enrollment and revocation contention,
+  and cascade verification.
+- Commits `53b262593`,
+  `f421486be`,
+  `f4bb63b99`,
+  `6255bd205`,
+  and `bf37063ed` contain the recursive runtime,
+  mounted packed-bin fixtures,
+  review corrections,
+  and contract documentation.
   TypeScript trust remains #347;
   actual npm publication remains deferred in #358.
 
