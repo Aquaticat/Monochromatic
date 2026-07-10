@@ -70,6 +70,31 @@ async function resolveValidGitRoot(cwd: string,): Promise<string | typeof VALID_
 }
 
 /**
+ * Expected require-root policy violation.
+ *
+ * @example
+ * ```ts
+ * throw new RequireRootViolationError('not at repository root');
+ * ```
+ */
+export class RequireRootViolationError extends Error {
+  /**
+   * Creates policy violation error used by legacy wrapper adapter.
+   *
+   * @param message - complete user-facing finding message
+   *
+   * @example
+   * ```ts
+   * new RequireRootViolationError('not at root');
+   * ```
+   */
+  public constructor(message: string,) {
+    super(message,);
+    this.name = 'RequireRootViolationError';
+  }
+}
+
+/**
  * Enforces that, when the effective working directory (computed by
  * {@link parseGlobalOptions} after applying pre-subcommand `-C <path>`
  * chaining) lives inside a git repository, it is the root of that repository
@@ -150,7 +175,7 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
   }
 
   if (repoRoot !== effectiveCwd) {
-    throw new Error(
+    throw new RequireRootViolationError(
       `cli-git: not at the root of the git repository. `
         + `Repo root is ${repoRoot} but effective cwd is ${effectiveCwd}. `
         + `Tip: cd to ${repoRoot} or pass -C ${repoRoot} before the subcommand.`,

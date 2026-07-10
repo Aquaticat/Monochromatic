@@ -4,14 +4,16 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
+import { runManagementCommand, } from './management.ts';
 import { parseCommitRegion, } from './parsers/commit.ts';
+import { runPolicyEngine, } from './policy-engine/engine.ts';
+import { renderPolicyEvents, } from './policy-engine/events.ts';
 import { resolveGit, } from './resolve-git.ts';
 import { addExplicit, } from './rules/add-explicit.ts';
 import { atomicPush, } from './rules/atomic-push.ts';
 import { branchWorktreeOnly, } from './rules/branch-worktree-only.ts';
 import { commitOnly, } from './rules/commit-only.ts';
 import { linkedWorktreeOnly, } from './rules/linked-worktree-only.ts';
-import { requireRoot, } from './rules/require-root.ts';
 import {
   hasExplicitStatusHintsOverride,
   statusHintsOff,
@@ -89,14 +91,13 @@ const STATUS_MACHINE_READABLE_FLAGS: ReadonlySet<string> = new Set([
 
 /**
  * Rules applied in sequence. Each rule may transform args or throw to reject.
- * Order matters: {@link requireRoot} runs first (fail fast),
- * {@link linkedWorktreeOnly} enforcement catches guarded state-changing
+ * Order matters: unified require-root policy runs before this pipeline,
+ * then {@link linkedWorktreeOnly} catches guarded state-changing
  * worktree forms, then arg transforms run.
  */
 const RULES: readonly ((
   args: readonly string[],
 ) => readonly string[] | Promise<readonly string[]>)[] = [
-  requireRoot,
   linkedWorktreeOnly,
   branchWorktreeOnly,
   addExplicit,
@@ -109,7 +110,34 @@ const RULES: readonly ((
 
 //region Execution: resolve real git, apply rules, spawn
 
-try {
+/** Expected non-zero policy decision after buffered events were emitted. */
+class PolicyDecisionError extends Error {
+  /** Settled cli-git exit code. */
+  public readonly exitCode: 1 | 2;
+
+  /**
+   * Creates control-flow error that cannot be confused with engine exceptions.
+   *
+   * @param exitCode - settled policy decision
+   */
+  public constructor(exitCode: 1 | 2,) {
+    super('policy decision blocked real Git',);
+    this.name = 'PolicyDecisionError';
+    this.exitCode = exitCode;
+  }
+}
+
+/** Layout used to intercept namespaced management command before Git forwarding. */
+const managementLayout = parseGlobalOptions(rawArgs,);
+/** Whether wrapper owns this invocation as a management command. */
+const isManagementCommand = rawArgs[managementLayout.subcommandIndex] === 'cli-git';
+
+if (isManagementCommand) {
+  process.exitCode = await runManagementCommand(
+    rawArgs.slice(managementLayout.subcommandIndex + 1,),
+  );
+}
+else try {
   /**
    * Layout of `rawArgs` consulted before the rules run so short-circuit flags can be detected on the user's literal input.
    */
@@ -128,6 +156,21 @@ try {
     return SHORT_CIRCUIT_FLAGS.has(arg,);
   },);
 
+  /** Stable require-root policy result before legacy transforms. */
+  const policyResult = willShortCircuit
+    ? undefined
+    : await runPolicyEngine({ args: rawArgs, trigger: 'pre-forward', },);
+  if (policyResult !== undefined) {
+    const renderedEvents = renderPolicyEvents(policyResult.events,);
+    if (renderedEvents !== '')
+      process.stderr.write(renderedEvents,);
+    policyResult.configWarnings.forEach(function emitConfigWarning(warning,) {
+      console.error(`cli-git: ${warning}`,);
+    },);
+    if (!policyResult.shouldForward)
+      throw new PolicyDecisionError(policyResult.exitCode as 1 | 2,);
+  }
+
   /**
    * Final arguments after all rules have been applied; rules are skipped when git will short-circuit so the wrapper does not corrupt the invocation.
    */
@@ -140,7 +183,7 @@ try {
       ) {
         return rule(await accumulatedArgs,);
       },
-      Promise.resolve(rawArgs,),
+      Promise.resolve(policyResult?.args ?? rawArgs,),
     );
 
   if (willShortCircuit)
@@ -251,7 +294,9 @@ try {
   }
 }
 catch (error) {
-  if (error instanceof SubprocessError)
+  if (error instanceof PolicyDecisionError)
+    process.exitCode = error.exitCode;
+  else if (error instanceof SubprocessError)
     process.exitCode = error.exitCode
       ?? 1;
   else if (Error.isError(error,)) {
