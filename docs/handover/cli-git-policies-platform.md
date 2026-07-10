@@ -460,9 +460,12 @@ There is no detected-CI auto-trust path and no separate expected-snapshot enviro
 - Wrapper-mode findings go to stderr so real Git stdout remains intact.
 - Direct `git cli-git check` and `fix` findings go to stdout.
 - Exit meanings when real Git was not run:
-  - `0`: success or warning findings only;
-  - `1`: one or more error-severity findings;
-  - `2`: trust,
+  - `0`:
+     success or warning findings only;
+  - `1`:
+     one or more error-severity findings;
+  - `2`:
+     trust,
     config,
     plugin,
     transaction,
