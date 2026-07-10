@@ -27,6 +27,21 @@ const SECOND_POLICY: RuntimePolicyDefinition = {
     return Promise.resolve([{ code: 'second', message: 'second finding', },],);
   },
 };
+/** Lifecycle triggers currently invocable through first policy-engine slice. */
+const INVOCABLE_TRIGGERS = [
+  'pre-forward',
+  'direct-check',
+] as const;
+/** Policy that must never execute when escaped across lifecycle triggers. */
+const LIFECYCLE_POLICY: RuntimePolicyDefinition = {
+  name: 'lifecycle-policy',
+  defaultSeverity: 'error',
+  warnSafe: false,
+  triggers: INVOCABLE_TRIGGERS,
+  check: function rejectUnexpectedLifecycleExecution() {
+    return Promise.reject(new Error('escaped lifecycle policy executed',),);
+  },
+};
 /** Policy that violates engine exception contract. */
 const THROWING_POLICY: RuntimePolicyDefinition = {
   name: 'throwing-policy',
@@ -170,6 +185,25 @@ await describe({
         },);
         expect(cleanValue.args,).toContain('--no-enforce-worktree',);
         expect(cleanValue.escapedPolicyIds.has('linked-worktree-only',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'retains escaped policy for complete invocation lifecycle',
+      fn: async function testFullLifecycleEscape() {
+        /** Results from every supported lifecycle trigger. */
+        const results = await Promise.all(INVOCABLE_TRIGGERS.map(async function runEscapedTrigger(trigger,) {
+          return runPolicyEngine({
+            args: ['--no-enforce-lifecycle-policy', 'status',],
+            trigger,
+            registeredPolicies: [LIFECYCLE_POLICY,],
+          },);
+        },),);
+        results.forEach(function assertSkipped(result,) {
+          expect(result.events,).toEqual([],);
+          expect(result.args,).toEqual(['status',],);
+          expect(result.escapedPolicyIds.has('lifecycle-policy',),).toBe(true,);
+          expect(result.shouldForward,).toBe(true,);
+        },);
       },
     },),
     it({
