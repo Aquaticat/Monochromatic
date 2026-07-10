@@ -176,8 +176,26 @@ other hosts bracket path-based identity resolution with same-handle metadata and
 agreement.
 The command then compares exact live bytes with the stored snapshot and executes only the private stored copy.
 Changed bytes exit `2` until explicit re-trust.
-`untrust` removes only the exact identity record.
-Recursive trust and TypeScript trust remain deferred to issues #346 and #347.
+
+A config that validates with `trust: { children: true }` triggers a second disclosure and consent stage.
+The disclosure names the exact repository root and states that recursive authority intentionally crosses filesystem
+boundaries,
+including current and future mounted volumes.
+The first encounter with a strict descendant captures and validates exact bytes in private state,
+records every unchanged recursive root that authorizes it,
+and installs a stored executable snapshot without another prompt.
+A filesystem replacement cannot reuse the prior record:
+the changed filesystem identity requires a fresh exact auto-enrollment while an unchanged recursive root still
+authorizes the path.
+Changed descendant bytes block until explicit re-trust.
+
+`untrust` removes inherited descendant authority through a recoverable registry transaction.
+Separately explicit descendant trust survives outer-root removal.
+Untrusting a nested recursive root also revokes outer recursive roots that authorize it and discloses every affected root
+before mutation.
+If a root config was deleted,
+`untrust` recovers its sole record from the canonical repository root.
+TypeScript trust remains deferred to issue #347.
 
 The maintained packed-bin integration check builds the unpublished tarball,
 installs its shadowing `git` executable in a bounded disposable container,
@@ -186,7 +204,11 @@ trust,
 status,
 stored plugin checks,
 changed bytes,
-and untrust:
+two-stage recursive consent,
+cross-filesystem enrollment,
+mount replacement,
+concurrent enrollment and revocation,
+and cascading untrust:
 
 ```sh
 mise run //packages/cli/git:test:built:trust

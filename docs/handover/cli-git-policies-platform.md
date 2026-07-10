@@ -4,7 +4,7 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #345 are complete and closed.
-Recursive trust issue #346 is the next unblocked implementation slice.
+Recursive trust issue #346 is implemented and undergoing final closure verification.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -918,6 +918,63 @@ Unless later grilling changes them:
   the guarded path-based identity behavior.
 - Issue #345 was closed after all acceptance criteria and evidence gates passed.
 - Recursive trust remains #346;
+  TypeScript trust remains #347;
+  actual npm publication remains deferred in #358.
+
+### Issue #346 recursive snapshot trust
+
+- Added two-stage consent for `trust: { children: true }`.
+  Root execution and runtime validation happen in disposable private state before persistence.
+  Declining the second stage installs ordinary explicit trust;
+  `--yes` prints and accepts both disclosures.
+- Recursive authority intentionally crosses filesystem boundaries beneath the exact canonical repository root.
+  Descendant enrollment records exact bytes,
+  stored executable snapshots,
+  and every currently authorizing recursive root without another prompt.
+- Each recursive root must still match its trusted filesystem identity and exact stored bytes before it can authorize a
+  new descendant.
+  Changed,
+  deleted,
+  and mount-replaced roots fail closed.
+- Explicit descendant trust adds a self-authorizer that survives outer-root removal.
+  Auto-enrolled nested recursive roots remain bounded by outer provenance and do not require another consent stage.
+- Added cascading revocation that removes inherited authority,
+  preserves independent self-authorizers,
+  and revokes outer roots plus affected sibling authority when a nested recursive root is untrusted.
+  Every affected recursive root is disclosed before mutation.
+- Added config-deletion recovery:
+  `untrust` can find the sole stored record from the canonical repository root without executing missing code.
+- Added registry-wide enrollment and revocation serialization,
+  deterministic per-record locks,
+  no-follow private transaction journals,
+  parent and journal-directory fsync,
+  idempotent recovery,
+  and fail-closed symbolic-link and non-file rejection.
+- Added disposable unit fixtures for declined consent,
+  invalid and changed roots,
+  exact descendant changes,
+  nested roots,
+  siblings,
+  deleted-root recovery,
+  interrupted journals,
+  journal symlinks,
+  concurrent enrollment and revocation,
+  and independent explicit descendants.
+- Extended the maintained packed-bin container with a mounted tmpfs descendant.
+  It verifies cross-filesystem inheritance,
+  mount replacement at the same canonical path,
+  fresh exact enrollment after replacement,
+  process-level enrollment and revocation contention,
+  and final cascade cleanup through the published-shape shadowing `git` executable.
+  The completed task emitted `built-trust-consumer-ok`.
+- Independent review identified stale changed-root authorization,
+  transaction durability,
+  config-deletion revocation,
+  journal-link safety,
+  integration-fixture,
+  and documentation gaps.
+  Commit `f4bb63b99` addresses those findings.
+- Commits `53b262593` and `f421486be` contain the initial recursive runtime and mounted packed-bin fixture.
   TypeScript trust remains #347;
   actual npm publication remains deferred in #358.
 

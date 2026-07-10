@@ -945,12 +945,25 @@ A recursive root authorizes config paths whose canonical repository roots are st
 canonical root.
 The path test is component-aware,
 not string-prefix matching.
-Filesystem identity does not restrict inheritance.
+Filesystem identity does not restrict inheritance:
+recursive authority intentionally covers same-filesystem and mounted-volume descendants.
+Before authorizing a new enrollment,
+every covering recursive root must retain its exact trusted identity and bytes.
+A missing,
+changed,
+or mount-replaced root cannot authorize new records.
 
 First descendant encounter builds or validates config in private state,
 stores exact snapshots,
 and records every currently authorizing recursive root.
 It does not prompt.
+An auto-enrolled descendant may itself retain `recursiveChildren: true` without another prompt because its authority stays
+inside an already consented outer subtree;
+removing that inherited outer authority cascades through the nested root.
+A mount replacement at the same canonical path has a different filesystem identity and cannot reuse the previous
+record.
+If an unchanged outer root still authorizes the path,
+the replacement receives a new exact auto-enrollment.
 Later byte changes fail closed and require explicit trust.
 
 Explicitly trusting a descendant adds an independent self-authorizer that survives outer-root removal.
@@ -966,7 +979,16 @@ For `untrust`:
 5. Acquire deterministic registry locks in encoded identity byte order.
 6. Write the complete new provenance state privately.
 7. Atomically install every new record or removal journal.
-8. Recover interrupted transactions before any later trust operation.
+8. Fsync changed record parents and the private journal directory before transaction completion.
+9. Recover interrupted transactions before any later trust operation.
+
+Journals use no-follow private-file validation and reject symbolic links,
+non-files,
+unsafe ownership,
+unsafe modes,
+and unsafe Windows ACLs.
+When the target config was deleted,
+`untrust` resolves the canonical repository root and revokes its sole matching stored record without executing code.
 
 A descendant with an independent explicit authorizer remains installed after inherited authorizers are removed.
 

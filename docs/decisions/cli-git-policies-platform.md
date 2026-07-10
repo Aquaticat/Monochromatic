@@ -435,7 +435,10 @@ Authority intentionally crosses filesystem and mount boundaries,
 including future mounts beneath the root.
 The disclosure states that consequence.
 
-First descendant encounter auto-enrolls and stores exact snapshots without another prompt.
+First descendant encounter verifies each authorizing root still has its trusted identity and exact bytes,
+then auto-enrolls and stores an exact descendant snapshot without another prompt.
+A mount replacement cannot reuse a prior filesystem-identity record;
+it receives a fresh snapshot only while an unchanged recursive root still authorizes that path.
 Later descendant byte changes block.
 Records preserve authorizing-root provenance.
 Untrusting a recursive root removes records inherited only from that root.
