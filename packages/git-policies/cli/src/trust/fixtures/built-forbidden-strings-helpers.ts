@@ -130,14 +130,14 @@ export async function initializeForbiddenRepository({
     cwd: repository,
   },);
   await writeFile(
-    `${repository}/cli-git.config.mjs`,
-    `import { forbiddenStringsPlugin } from '@monochromatic-dev/cli-git';
-export default {
+    `${repository}/cli-git.config.ts`,
+    `import { defineConfig, forbiddenStringsPlugin } from '@monochromatic-dev/cli-git/ts';
+export default defineConfig({
   plugins: { security: forbiddenStringsPlugin },
   policies: {
     'security/forbidden-strings': ['${severity}', { executable: '${executable}' }],
   },
-};
+},);
 `,
   );
   await writeFile(
@@ -148,7 +148,7 @@ export default {
     command: '/usr/bin/git',
     args: [
       'add',
-      'cli-git.config.mjs',
+      'cli-git.config.ts',
       'baseline.txt',
     ],
     cwd: repository,
