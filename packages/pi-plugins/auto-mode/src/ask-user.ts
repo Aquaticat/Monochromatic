@@ -195,6 +195,7 @@ async function askUser(
     approvalFingerprint,
     explanation,
     reflectExplanationOnDeny = false,
+    notificationInvoker,
   }: {
     readonly pi: ExtensionAPI;
     readonly ctx: ExtensionContext;
