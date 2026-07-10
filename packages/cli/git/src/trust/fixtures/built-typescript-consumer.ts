@@ -218,6 +218,104 @@ export default {
     expected: 'relaxed TypeScript ran',
     context: 'relaxed rebuilt policy',
   },);
+  await writeFile(
+    policyPath,
+    `export const message: string = 'raced TypeScript ran';\n`,
+  );
+  /**
+   * Independent packed-bin relaxed rebuild race.
+   */
+  const raceResults = await Promise.all([
+    execute({
+      command: 'git',
+      args: [
+        'cli-git',
+        'check',
+        '--policy',
+        'typescript/deny',
+        '--all',
+      ],
+      expectedExit: [
+        1,
+        2,
+      ],
+      cwd: repository,
+      env: relaxedEnv,
+    },),
+    execute({
+      command: 'git',
+      args: [
+        'cli-git',
+        'check',
+        '--policy',
+        'typescript/deny',
+        '--all',
+      ],
+      expectedExit: [
+        1,
+        2,
+      ],
+      cwd: repository,
+      env: relaxedEnv,
+    },),
+  ],);
+  if (!raceResults.some(function ranRebuilt(result,) {
+    return result.stdout
+      .includes('raced TypeScript ran',);
+  },))
+    throw new Error('Concurrent relaxed rebuild produced no usable stored bundle.',);
+  /**
+   * Retry after contention deterministically loads valid record.
+   */
+  const afterRace = await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'check',
+      '--policy',
+      'typescript/deny',
+      '--all',
+    ],
+    expectedExit: 1,
+    cwd: repository,
+    env,
+  },);
+  assertIncludes({
+    text: afterRace.stdout,
+    expected: 'raced TypeScript ran',
+    context: 'post-race stored bundle',
+  },);
+  await writeFile(
+    policyPath,
+    `export const message: string = 'malformed entry blocked';\n`,
+  );
+  /**
+   * Malformed relaxation warns in pure JSONL and retains strict block.
+   */
+  const malformed = await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'check',
+      '--all',
+    ],
+    expectedExit: 2,
+    cwd: repository,
+    env: {
+      ...env,
+      CLI_GIT_NO_PARANOID: 'bad%20entry',
+    },
+  },);
+  assertJsonl({
+    text: malformed.stderr,
+    expectedCode: 'relaxed-entry-malformed',
+    context: 'malformed relaxed warning',
+  },);
+  assertIncludes({
+    text: malformed.stdout,
+    expected: '"code":"config-changed"',
+    context: 'malformed strict block',
+  },);
   /**
    * Final exact cleanup.
    */

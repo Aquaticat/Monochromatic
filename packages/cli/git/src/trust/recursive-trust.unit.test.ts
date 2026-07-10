@@ -311,6 +311,27 @@ await describe({
       },
     },),
     it({
+      name: 'revalidates recursive root after descendant bundle execution',
+      fn: async function testRootChangesDuringEnrollment() {
+        await using fixture = await createFixture();
+        const outer = await discoverFixture(fixture.outer,);
+        await trustMjs({ discovered: outer, registryRoot: fixture.registryRoot, yes: true, adapters: consentAdapters({ answers: [], disclosures: [], },), },);
+        await rm(join(fixture.nested, 'cli-git.config.mjs',),);
+        await writeFile(join(fixture.nested, 'cli-git.config.ts',), `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(outer.configPath,)}, 'export default {};\\n');\nexport default {};\n`,);
+        const nested = await discoverFixture(fixture.nested,);
+        const failure = await (async function captureMidEnrollmentChange(): Promise<unknown> {
+          try {
+            return await loadTrustedConfig({ discovered: nested, registryRoot: fixture.registryRoot, },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(Error,);
+        expect((await inspectTrust({ discovered: nested, registryRoot: fixture.registryRoot, },)).reason,).toBe('untrusted',);
+      },
+    },),
+    it({
       name: 'rejects enrollment when recursive root bytes changed',
       fn: async function testChangedRootCannotAuthorize() {
         await using fixture = await createFixture();

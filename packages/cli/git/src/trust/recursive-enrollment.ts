@@ -7,7 +7,10 @@ import type { ValidatedConfig, } from './config-validation.ts';
 import type { DiscoveredConfig, } from './config-discovery.ts';
 import { createPrivateBuildDirectory, } from './explicit-typescript-trust.ts';
 import { validateMjs, } from './mjs-validator.ts';
-import { listTrustRecords, } from './registry-catalog.ts';
+import {
+  listTrustRecords,
+  trustIdentityKey,
+} from './registry-catalog.ts';
 import { acquireRecursiveRegistryLock, } from './registry-recursive-lock.ts';
 import { prepareMjsRecord, } from './registry-storage.ts';
 import { prepareTypeScriptRecord, } from './registry-typescript-storage.ts';
@@ -28,6 +31,56 @@ import type {
  * No recursive root authorizes candidate.
  */
 export const RECURSIVE_TRUST_ABSENT: unique symbol = Symbol('no RECURSIVE_ROOT authorizes candidate config',);
+
+/**
+ * Revalidates exact recursive roots immediately before installation.
+ *
+ * @param registryRoot - complete registry root
+ *
+ * @param repositoryRoot - descendant repository root
+ *
+ * @param expected - identities that authorized candidate build
+ */
+async function assertAuthorizersCurrent({
+  registryRoot,
+  repositoryRoot,
+  expected,
+}: Readonly<{
+  registryRoot: string;
+  repositoryRoot: string;
+  expected: readonly TrustIdentity[];
+}>,): Promise<void> {
+  /**
+   * Fresh complete registry catalog.
+   */
+  const entries = await listTrustRecords({ registryRoot, },);
+  /**
+   * Fresh unchanged covering roots.
+   */
+  const current = canonicalAuthorizers(await activeRecursiveAuthorizers({
+    entries,
+    repositoryRoot,
+  },));
+  /**
+   * Deterministic exact provenance keys.
+   */
+  const currentKeys = current.map(function currentKey(identity,) {
+    return trustIdentityKey(identity,);
+  },);
+  /**
+   * Expected provenance keys from initial authorization.
+   */
+  const expectedKeys = expected.map(function expectedKey(identity,) {
+    return trustIdentityKey(identity,);
+  },);
+  if ((currentKeys.length !== expectedKeys.length)
+    || currentKeys.some(function keyChanged(
+      key,
+      index,
+    ) { return key !== expectedKeys[index]; },)) {
+    throw new Error('Recursive trust authorizers changed during descendant enrollment.',);
+  }
+}
 
 /**
  * Validates and installs one MJS descendant.
@@ -73,6 +126,12 @@ async function enrollMjs({
     },);
     return await executeStoredConfig(validationRecord.executablePath,);
   })();
+  await assertAuthorizersCurrent({
+    registryRoot,
+    repositoryRoot: candidate.discovered
+      .repositoryRoot,
+    expected: authorizingRoots,
+  },);
   /**
    * Final exact descendant record.
    */
@@ -169,6 +228,11 @@ async function enrollTypeScript({
     candidate,
     authorizingRoots,
     recordedAt,
+  },);
+  await assertAuthorizersCurrent({
+    registryRoot,
+    repositoryRoot: discovered.repositoryRoot,
+    expected: authorizingRoots,
   },);
   /**
    * Final exact source and bundle record.

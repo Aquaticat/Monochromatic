@@ -35,6 +35,7 @@ import {
   untrustConfig,
 } from './trust-service.ts';
 import { captureTrustCandidate, } from './candidate.ts';
+import type { TrustWarning, } from './types.ts';
 
 /** Real Git binary for disposable fixtures. */
 const REAL_GIT = await resolveGit();
@@ -299,14 +300,14 @@ await describe({
         },);
         await writeFile(fixture.configPath, 'export default { policies: {} };\n',);
         /** Captured prominent parser warnings. */
-        const warnings: string[] = [];
+        const warnings: TrustWarning[] = [];
         const failure = await (async function captureMalformedFailure(): Promise<unknown> {
           try {
             return await loadTrustedConfig({
               discovered,
               registryRoot: fixture.registryRoot,
               relaxedValue: 'bad%20entry',
-              warn: function warn(message,) { warnings.push(message,); },
+              warn: function warn(warning,) { warnings.push(warning,); },
             },);
           }
           catch (error: unknown) {

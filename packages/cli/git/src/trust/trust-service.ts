@@ -35,6 +35,7 @@ import type {
   TrustConsentAdapters,
   TrustRecord,
   TrustStatus,
+  TrustWarning,
 } from './types.ts';
 
 export { trustMjs, } from './explicit-trust.ts';
@@ -146,14 +147,14 @@ function omitUntrustDisclosure(text: string,): void {
 /**
  * Emits stable prominent relaxed-mode warning JSONL.
  *
- * @param message - safe warning text
+ * @param warning - stable safe warning
  */
-function emitTrustWarning(message: string,): void {
+function emitTrustWarning(warning: TrustWarning,): void {
   console.error(JSON.stringify({
     schemaVersion: 1,
     type: 'trust-warning',
-    code: 'relaxed-entry-ignored',
-    message,
+    code: warning.code,
+    message: warning.message,
   },),);
 }
 
@@ -181,7 +182,7 @@ export async function loadTrustedConfig({
   discovered: DiscoveredConfig;
   registryRoot: string;
   relaxedValue?: string;
-  warn?: (message: string,) => void;
+  warn?: (warning: TrustWarning,) => void;
 }>,): Promise<LoadedTrustedConfig> {
   await recoverProvenanceTransactions({ registryRoot, },);
   /**

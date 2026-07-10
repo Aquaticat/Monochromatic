@@ -161,6 +161,26 @@ export type TypeScriptTrustCandidate = Readonly<{
   barePackageImports: readonly string[];
 }>;
 /**
+ * Stable trust warning code.
+ */
+export type TrustWarningCode =
+  | 'relaxed-entry-malformed'
+  | 'relaxed-entry-filesystem-mismatch'
+  | 'typescript-package-import-not-invalidated';
+/**
+ * Prominent trust warning event.
+ */
+export type TrustWarning = Readonly<{
+  /**
+   * Stable warning code.
+   */
+  code: TrustWarningCode;
+  /**
+   * Safe human-readable warning.
+   */
+  message: string;
+}>;
+/**
  * Trust consent and output adapters.
  */
 export type TrustConsentAdapters = Readonly<{

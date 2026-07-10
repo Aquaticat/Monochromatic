@@ -6,7 +6,10 @@ import {
   normalize,
 } from 'node:path';
 import { isFsId, } from '@monochromatic-dev/module-fs-id/ts';
-import type { TrustIdentity, } from './types.ts';
+import type {
+  TrustIdentity,
+  TrustWarning,
+} from './types.ts';
 
 /**
  * Percent plus two hexadecimal digits.
@@ -71,7 +74,7 @@ function entryMatches({
 }: Readonly<{
   entry: string;
   identity: TrustIdentity;
-  warn: (message: string,) => void;
+  warn: (warning: TrustWarning,) => void;
 }>,): boolean {
   /**
    * First identity/path separator.
@@ -79,7 +82,10 @@ function entryMatches({
   const separator = entry.indexOf(':',);
   if ((separator <= 0) || (separator === (entry.length
     - 1))) {
-    warn(`CLI_GIT_NO_PARANOID entry is malformed and ignored: ${entry}`,);
+    warn({
+      code: 'relaxed-entry-malformed',
+      message: `CLI_GIT_NO_PARANOID entry is malformed and ignored: ${entry}`,
+    },);
     return false;
   }
   /**
@@ -95,13 +101,19 @@ function entryMatches({
   const canonicalPath = entry.slice(separator + 1,);
   if ((!isFsId(filesystemId,)) || (!isAbsolute(canonicalPath,))
     || (normalize(canonicalPath,) !== canonicalPath)) {
-    warn(`CLI_GIT_NO_PARANOID entry is malformed and ignored: ${entry}`,);
+    warn({
+      code: 'relaxed-entry-malformed',
+      message: `CLI_GIT_NO_PARANOID entry is malformed and ignored: ${entry}`,
+    },);
     return false;
   }
   if (canonicalPath !== identity.canonicalConfigPath)
     return false;
   if (filesystemId !== identity.filesystemId) {
-    warn(`CLI_GIT_NO_PARANOID entry names current path with a different filesystem identity and is ignored: ${entry}`,);
+    warn({
+      code: 'relaxed-entry-filesystem-mismatch',
+      message: `CLI_GIT_NO_PARANOID entry names current path with a different filesystem identity and is ignored: ${entry}`,
+    },);
     return false;
   }
   return true;
@@ -130,7 +142,7 @@ export function relaxedPathMatches({
 }: Readonly<{
   raw?: string;
   identity: TrustIdentity;
-  warn: (message: string,) => void;
+  warn: (warning: TrustWarning,) => void;
 }>,): boolean {
   if ((raw === undefined) || (raw.length === 0))
     return false;
@@ -144,7 +156,10 @@ export function relaxedPathMatches({
       },);
     }
     catch (error: unknown) {
-      warn(`CLI_GIT_NO_PARANOID entry is malformed and ignored: ${rawEntry} (${String(error,)})`,);
+      warn({
+        code: 'relaxed-entry-malformed',
+        message: `CLI_GIT_NO_PARANOID entry is malformed and ignored: ${rawEntry} (${String(error,)})`,
+      },);
       return false;
     }
   },);

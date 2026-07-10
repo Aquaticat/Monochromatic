@@ -3,7 +3,7 @@
  */
 import {
   executeStoredConfig,
-  type TrustedConfigError,
+  TrustedConfigError,
 } from './config-loader.ts';
 import { validateMjs, } from './mjs-validator.ts';
 import { captureTrustSource, } from './candidate.ts';
@@ -15,6 +15,7 @@ import type {
   LoadedTrustedConfig,
   TrustCandidate,
   TrustRecord,
+  TrustWarning,
 } from './types.ts';
 
 /**
@@ -176,7 +177,7 @@ async function loadRelaxedTypeScript({
   candidate: TrustCandidate;
   record: TrustRecord;
   recordedAt: string;
-  warn: (message: string,) => void;
+  warn: (warning: TrustWarning,) => void;
 }>,): Promise<LoadedTrustedConfig> {
   if (await typeScriptMetadataUnchanged({
     candidate,
@@ -197,9 +198,27 @@ async function loadRelaxedTypeScript({
     discovered: candidate.discovered,
     buildDirectory: buildDirectory.path,
   },);
+  if ((rebuilt.entry
+    .identity
+    .filesystemId
+    !== candidate.identity
+    .filesystemId)
+    || (rebuilt.entry
+      .identity
+      .canonicalConfigPath
+      !== candidate.identity
+      .canonicalConfigPath)) {
+    throw new TrustedConfigError(
+      'config-changed',
+      'TypeScript config filesystem identity changed during relaxed rebuild.',
+    );
+  }
   rebuilt.barePackageImports
     .forEach(function warnPackage(specifier,) {
-    warn(`Relaxed TypeScript rebuild bundles bare package outside automatic invalidation: ${specifier}`,);
+    warn({
+      code: 'typescript-package-import-not-invalidated',
+      message: `Relaxed TypeScript rebuild bundles bare package outside automatic invalidation: ${specifier}`,
+    },);
   },);
   /**
    * Private replacement validated before atomic commit.
@@ -259,7 +278,7 @@ export async function loadRelaxedConfig({
   candidate: TrustCandidate;
   record: TrustRecord;
   recordedAt: string;
-  warn: (message: string,) => void;
+  warn: (warning: TrustWarning,) => void;
 }>,): Promise<LoadedTrustedConfig> {
   return record.format === 'mjs'
     ? await loadRelaxedMjs({

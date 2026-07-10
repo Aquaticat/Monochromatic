@@ -16,8 +16,10 @@ import {
   captureTrustSource,
   TrustCandidateError,
 } from './candidate.ts';
+import { exactBytesEqual, } from './config-loader.ts';
 import type { DiscoveredConfig, } from './config-discovery.ts';
 import { validateMjs, } from './mjs-validator.ts';
+import { assertLiteralDynamicImports, } from './typescript-syntax-validation.ts';
 import type {
   CapturedTrustSource,
   TypeScriptTrustCandidate,
@@ -88,69 +90,6 @@ function assertRepositorySource({
   if ((localPath === '') || ((!localPath.startsWith('..',)) && (!isAbsolute(localPath,))))
     return;
   throw new TypeScriptBuildError(`Relative TypeScript source escaped repository root: ${sourcePath}`,);
-}
-
-/**
- * Reports whether unknown value is syntax-node-shaped record.
- *
- * @param value - unknown syntax value
- *
- * @returns whether value can expose named fields
- */
-function isSyntaxRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return ((typeof value) === 'object') && (value !== null);
-}
-
-/**
- * Reports whether syntax node is computed dynamic import.
- *
- * @param node - ESTree-compatible syntax node
- *
- * @returns whether import source is not string literal
- */
-function isComputedDynamicImport(node: Readonly<Record<string, unknown>>,): boolean {
-  if (node.type !== 'ImportExpression')
-    return false;
-  /**
-   * Dynamic import source node.
-   */
-  const {source} = node;
-  return ((typeof source) !== 'object') || (source === null)
-    || (!('value' in source))
-    || ((typeof source.value) !== 'string');
-}
-
-/**
- * Rejects computed dynamic imports in tracked TypeScript syntax tree.
- *
- * @param syntax - ESTree-compatible Rolldown syntax tree
- */
-function assertLiteralDynamicImports(syntax: unknown,): void {
-  /**
-   * Bounded structural work stack.
-   */
-  const pending: unknown[] = [syntax,];
-  while (pending.length > 0) {
-    /**
-     * Next structural value.
-     */
-    const value = pending.pop();
-    if (value === undefined)
-      continue;
-    if (Array.isArray(value,)) {
-      pending.push(...(value as readonly unknown[]),);
-      continue;
-    }
-    if (!isSyntaxRecord(value,))
-      continue;
-    /**
-     * Read-only syntax node fields.
-     */
-    const node = value;
-    if (isComputedDynamicImport(node,))
-      throw new TypeScriptBuildError('Dynamic TypeScript imports must use literal specifiers.',);
-    pending.push(...Object.values(node,),);
-  }
 }
 
 /**
@@ -475,6 +414,51 @@ export async function buildTypeScriptCandidate({
     if (!moduleIds.has(source.canonicalPath,))
       throw new TypeScriptBuildError(`Tracked TypeScript source is absent from output metadata: ${source.canonicalPath}`,);
   },);
+  /**
+   * Entry identity and bytes re-captured after build completion.
+   */
+  const finalEntry = await captureTrustCandidate(discovered,);
+  if ((finalEntry.identity
+    .filesystemId
+    !== entry.identity
+    .filesystemId)
+    || (finalEntry.identity
+      .canonicalConfigPath
+      !== entry.identity
+      .canonicalConfigPath)
+    || (finalEntry.size !== entry.size)
+    || (finalEntry.mtimeNanoseconds !== entry.mtimeNanoseconds)
+    || (!exactBytesEqual({
+      left: finalEntry.bytes,
+      right: entry.bytes,
+    }))) {
+    throw new TypeScriptBuildError('TypeScript entry identity or bytes changed during bundle generation.',);
+  }
+  /**
+   * Every tracked source re-captured after complete output generation.
+   */
+  const finalSources = await Promise.all(sources.map(function recaptureSource(source,) {
+    return captureTrustSource(source.canonicalPath,);
+  },),);
+  if (sources.some(function sourceChanged(
+    source,
+    index,
+  ) {
+    /**
+     * Final corresponding source snapshot.
+     */
+    const finalSource = finalSources[index];
+    return (finalSource === undefined)
+      || (finalSource.canonicalPath !== source.canonicalPath)
+      || (finalSource.size !== source.size)
+      || (finalSource.mtimeNanoseconds !== source.mtimeNanoseconds)
+      || (!exactBytesEqual({
+        left: finalSource.bytes,
+        right: source.bytes,
+      }));
+  },)) {
+    throw new TypeScriptBuildError('Tracked TypeScript source graph changed during bundle generation.',);
+  }
   return {
     entry,
     sources,

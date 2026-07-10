@@ -133,6 +133,21 @@ export default {
       },
     },),
     it({
+      name: 'inlines literal dynamic bare package into sole bundle',
+      fn: async function testLiteralDynamicPackage() {
+        await using fixture = await createFixture(`export default {\n  plugins: {\n    dynamic: {\n      name: 'dynamic',\n      policies: [{\n        name: 'load',\n        defaultSeverity: 'off',\n        warnSafe: true,\n        triggers: ['direct-check'],\n        check: async () => { await import('valibot'); return []; },\n      }],\n    },\n  },\n};\n`,);
+        /** Workspace dependency tree exposed to disposable fixture. */
+        const workspaceNodeModules = await realpath(join(import.meta.dirname, '../../node_modules',),);
+        await symlink(workspaceNodeModules, join(fixture.repository, 'node_modules',), 'dir',);
+        const candidate = await buildTypeScriptCandidate({
+          discovered: fixture.discovered,
+          buildDirectory: fixture.buildDirectory,
+        },);
+        expect(candidate.barePackageImports,).toContain('valibot',);
+        expect(new TextDecoder().decode(candidate.executableBytes,),).not.toContain("import('valibot')",);
+      },
+    },),
+    it({
       name: 'rejects computed dynamic imports left outside bundle graph',
       fn: async function testComputedDynamicImport() {
         await using fixture = await createFixture(`const target = './policy.ts';
@@ -187,6 +202,18 @@ export default { policies: object({}) };
         const packageDirectory = join(fixture.repository, 'node_modules', 'native-package',);
         await mkdir(packageDirectory, { recursive: true, },);
         await writeFile(join(packageDirectory, 'package.json',), '{"name":"native-package","exports":"./addon.node"}\n',);
+        await writeFile(join(packageDirectory, 'addon.node',), new Uint8Array([0, 1, 2,]),);
+        expect(await captureBuildFailure(fixture,),).toBeInstanceOf(Error,);
+      },
+    },),
+    it({
+      name: 'rejects dynamically imported native package module',
+      fn: async function testDynamicNativeModule() {
+        await using fixture = await createFixture(`export default {\n  plugins: {\n    native: {\n      name: 'native',\n      policies: [{\n        name: 'load',\n        defaultSeverity: 'off',\n        warnSafe: true,\n        triggers: ['direct-check'],\n        check: async () => { await import('dynamic-native-package'); return []; },\n      }],\n    },\n  },\n};\n`,);
+        /** Disposable package resolving to native binary. */
+        const packageDirectory = join(fixture.repository, 'node_modules', 'dynamic-native-package',);
+        await mkdir(packageDirectory, { recursive: true, },);
+        await writeFile(join(packageDirectory, 'package.json',), '{"name":"dynamic-native-package","exports":"./addon.node"}\n',);
         await writeFile(join(packageDirectory, 'addon.node',), new Uint8Array([0, 1, 2,]),);
         expect(await captureBuildFailure(fixture,),).toBeInstanceOf(Error,);
       },
