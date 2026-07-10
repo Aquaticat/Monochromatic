@@ -187,6 +187,7 @@ function sourceCapturePlugin({
         return {
           ...resolved,
           id: sourcePath,
+          moduleSideEffects: 'no-treeshake',
         };
       }
       if (isAbsolute(source,))
