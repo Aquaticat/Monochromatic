@@ -79,9 +79,10 @@ execute('/usr/bin/git', ['remote', 'set-url', 'origin', wrappedRemote], { cwd: w
 execute('rm', ['--force', `${wrappedRepository}/tsconfig.json`]);
 await mkdir(`${wrappedRepository}/packages/cli/forbidden-strings/target/release`, { recursive: true });
 execute('ln', ['--symbolic', '/fixture/forbidden-strings', `${wrappedRepository}/packages/cli/forbidden-strings/target/release/forbidden-strings`]);
+const absentRule = `MANUAL_PUSH_LATENCY_${String(Date.now())}_${String(process.pid)}`;
 await writeFile(
   `${wrappedRepository}/forbidden-strings.local.txt`,
-  'MANUAL_PUSH_LATENCY_SENTINEL_ABSENT_7B61C9\n',
+  `${absentRule}\n`,
 );
 execute(packageBin, ['cli-git', 'trust', '--yes'], { cwd: wrappedRepository });
 
