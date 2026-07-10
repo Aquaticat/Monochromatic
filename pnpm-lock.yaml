@@ -1703,6 +1703,31 @@ importers:
         specifier: 'catalog:'
         version: 2.1.0
 
+  packages/git-policies/forbidden-strings:
+    dependencies:
+      '@monochromatic-dev/git-policy-api':
+        specifier: workspace:*
+        version: link:../api
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+      valibot:
+        specifier: 'catalog:'
+        version: 1.4.2(typescript@7.0.1-rc)
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
   packages/git-policies/repository:
     dependencies:
       '@monochromatic-dev/git-policy-api':
