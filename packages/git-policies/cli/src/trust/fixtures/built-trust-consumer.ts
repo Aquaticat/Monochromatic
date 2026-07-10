@@ -3,6 +3,7 @@
  */
 import {
   mkdir,
+  readdir,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -57,6 +58,37 @@ await execute({
     '/fixture/cli.tgz',
   ],
   cwd: '/work',
+},);
+/** Packed JavaScript and declaration artifact names. */
+const artifactFiles = (await readdir('/work/node_modules/@monochromatic-dev/cli-git/dist/final/node',))
+  .toSorted();
+/** Exact files permitted in packed runtime artifact directory. */
+const expectedArtifactFiles = [
+  'index.d.mts',
+  'index.mjs',
+];
+if (JSON.stringify(artifactFiles,) !== JSON.stringify(expectedArtifactFiles,))
+  throw new Error(`packed cli-git artifact files mismatch: ${artifactFiles.join(', ')}`,);
+/** Installed packages in private workspace scope. */
+const scopedPackages = (await readdir('/work/node_modules/@monochromatic-dev',))
+  .toSorted();
+if (JSON.stringify(scopedPackages,) !== JSON.stringify(['cli-git',],))
+  throw new Error(`packed cli-git retained private workspace packages: ${scopedPackages.join(', ')}`,);
+/** Package-root import proving policy export and inert executable boundary. */
+const packageImport = await execute({
+  command: 'node',
+  args: [
+    '--input-type=module',
+    '--eval',
+    `import { repositoryPolicyPlugin } from '@monochromatic-dev/cli-git';
+console.log(JSON.stringify({ name: repositoryPolicyPlugin.name, exitCode: process.exitCode ?? null }));`,
+  ],
+  cwd: '/work',
+},);
+assertIncludes({
+  text: packageImport.stdout,
+  expected: '{"name":"repository","exitCode":null}',
+  context: 'packed package-root import',
 },);
 /**
  * Disposable Git repository.
