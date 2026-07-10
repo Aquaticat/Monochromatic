@@ -3,9 +3,9 @@
  */
 import type { PolicyFinding, } from '../api/policy-types.ts';
 import {
-  addExplicit,
+  checkAddExplicit,
   AddExplicitViolationError,
-} from '../rules/add-explicit.ts';
+} from './add-explicit-check.ts';
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
@@ -21,9 +21,9 @@ export const addExplicitPolicy: RuntimePolicyDefinition = {
   defaultSeverity: 'error',
   warnSafe: false,
   triggers: ['pre-forward',],
-  check: function checkAddExplicit({ context, }): Promise<readonly PolicyFinding[]> {
+  check: function runAddExplicitPolicy({ context, }): Promise<readonly PolicyFinding[]> {
     try {
-      addExplicit(context.command
+      checkAddExplicit(context.command
         .transformedArgs,);
       return Promise.resolve([],);
     }

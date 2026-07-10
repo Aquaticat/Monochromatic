@@ -3,9 +3,9 @@
  */
 import type { PolicyFinding, } from '../api/policy-types.ts';
 import {
-  linkedWorktreeOnly,
+  checkLinkedWorktree,
   LinkedWorktreeViolationError,
-} from '../rules/linked-worktree-only.ts';
+} from './linked-worktree-check.ts';
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
@@ -21,9 +21,9 @@ export const linkedWorktreePolicy: RuntimePolicyDefinition = {
   defaultSeverity: 'error',
   warnSafe: false,
   triggers: ['pre-forward',],
-  check: async function checkLinkedWorktree({ context, }): Promise<readonly PolicyFinding[]> {
+  check: async function runLinkedWorktreePolicy({ context, }): Promise<readonly PolicyFinding[]> {
     try {
-      await linkedWorktreeOnly(context.command
+      await checkLinkedWorktree(context.command
         .transformedArgs,);
       return [];
     }

@@ -3,9 +3,9 @@
  */
 import type { PolicyFinding, } from '../api/policy-types.ts';
 import {
-  branchWorktreeOnly,
+  checkBranchWorktree,
   BranchWorktreeViolationError,
-} from '../rules/branch-worktree-only.ts';
+} from './branch-worktree-check.ts';
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
@@ -21,9 +21,9 @@ export const branchWorktreePolicy: RuntimePolicyDefinition = {
   defaultSeverity: 'error',
   warnSafe: true,
   triggers: ['pre-forward',],
-  check: async function checkBranchWorktree({ context, }): Promise<readonly PolicyFinding[]> {
+  check: async function runBranchWorktreePolicy({ context, }): Promise<readonly PolicyFinding[]> {
     try {
-      await branchWorktreeOnly(context.command
+      await checkBranchWorktree(context.command
         .transformedArgs,);
       return [];
     }
