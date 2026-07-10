@@ -112,12 +112,39 @@ All containerized validation runs used a 2 GB memory cap and 2 CPU cap.
 - Compare code volume, runtime dependencies, architecture shape, security-code concentration, and rendering or generated-code surface.
 - Keep the final ranking and rejection reasons in this handover until a decision document is created after user selection.
 
+## Maintenance signals
+
+GitHub API snapshots used repository metadata and issue or pull-request activity for the 12 months ending 2026-07-09. The issue query used a 100-item page cap.
+
+- `nicobailon/pi-subagents`: 2,478 stars, 339 forks, 100 returned issue items, 82 with OWNER, MEMBER, or COLLABORATOR comments, and 24 with labels or assignees. The current pull-request page returned 100 items, 64 merged and 51 with maintainer author associations.
+- `mjakl/pi-subagent`: 68 stars, 3 issue items, 2 with maintainer comments, and 5 pull requests. GitHub source declares `3.0.0`, while npm reports `2.1.0`, so installation source must be pinned explicitly.
+- `jwu/pi-subagents`: 0 stars, no recent issue items, and one pull request. The source and npm versions both report `2.1.0`.
+- `@e9n/pi-subagent`: the containing `espennilsen/pi` repository has 111 stars and 2 open issues, but the extension itself has no separate repository activity surface.
+- `@the-forge-flow/sub-agents-pi`: 0 stars, no recent issue items, and 12 pull requests. The package is current at `0.2.4`, but its Pi peer packages are deprecated `@mariozechner` names.
+- `pi-multiagent`: 16 stars, 5 issue items, 3 with labels or assignees, and 9 pull requests. Its public source and package versions align at `0.9.8`.
+- `pi-crew`: 34 stars, 29 issue items, 20 with maintainer comments, 12 with labels or assignees, and 6 pull requests. It has the strongest public self-audit documentation but also the largest source surface.
+
+## Synthesis
+
+No existing candidate is a clean pass on all hard requirements. The most important unresolved integration gap is a real interactive Pi `0.80.6` run proving complete live event visibility, selected-child interruption, independent per-child deadlines, descendant cleanup, and read-only enforcement against ambient extensions.
+
+Personal ranking by fit for the stated requirements and auditability:
+
+1. A minimal custom extension, unvalidated until implemented. Use a single explicit child descriptor with `id`, `systemPrompt`, `task`, `tools`, `cwd`, and `timeoutMs`; capture every JSONL child event; show a scrollable complete transcript; expose selected-child and all-child interruption; use `--no-extensions` unless explicitly granted; preserve an explicit read-only profile.
+2. `nicobailon/pi-subagents`, the closest existing implementation. It needs per-task timeout fields and a clean current-Pi integration proof; its measured 39,712 production code lines are a substantial audit surface.
+3. `@the-forge-flow/sub-agents-pi`, the clearest small reference. Its measured 1,421 production code lines and selected-child TUI kill are attractive, but it needs a timeout field, complete live history, current `@earendil-works` imports, and a fixed coverage dependency.
+4. `pi-multiagent`, strong authority and raw-event foundations, but its live UI summarizes activity and its timeout is shared per step rather than individually specified.
+5. `pi-crew`, broad dashboard and transcript features, but its measured 76,740 production code lines and explicit not-hardened warning make it a poor auditability fit.
+6. `jwu/pi-subagents`, measured 1,800 code lines with 111 passing tests and expanded tool logs, but no user control action or per-child timeout.
+7. `@e9n/pi-subagent`, measured 2,541 code lines with full message capture and pool kill internals, but no tests, no adequate operator UI, and settings-level timeout only.
+8. `mjakl/pi-subagent`, measured 37 passing tests and a small surface, but no timeout or operator control action.
+9. The official Pi subagent example and `cmf/pi-subagent` remain reference or low-signal implementations, not viable hard-filter finalists.
+
+Do not create a decision document until the user selects whether to patch an existing extension or implement the custom design. If the user selects one, write the rejected alternatives and exact pinned source version under `docs/decisions/`.
+
 ## Continuation checklist
 
-1. Search Pi docs, npm, and GitHub for meaningful open-source subagent extensions and orchestration examples.
-2. Separate true alternatives from generic agent prompts, external launchers, and unrelated spawn tools.
-3. Clone finalists and serious alternatives under `/tmp/agent/`.
-4. Audit source, tests, CI, dependencies, maintenance, and security boundaries.
-5. Run bounded validation and integration probes.
-6. Update this file after each evidence phase so context compaction preserves the investigation state.
-7. Write `docs/decisions/<project>.md` after the user selects an option.
+1. Preserve this synthesis during any context compaction.
+2. If the user requests implementation, prototype the custom event contract in a disposable path before editing the main worktree.
+3. Exercise the real Pi integration boundary before adopting any candidate.
+4. Write `docs/decisions/<project>.md` after the user selects an option.
