@@ -119,6 +119,48 @@ export type TrustCandidate = Readonly<{
   filesystemStabilityReason?: string;
 }>;
 /**
+ * Exact captured TypeScript source.
+ */
+export type CapturedTrustSource = Readonly<{
+  /**
+   * Canonical live source path.
+   */
+  canonicalPath: string;
+  /**
+   * Exact bytes supplied to builder.
+   */
+  bytes: Uint8Array;
+  /**
+   * Decimal byte length.
+   */
+  size: string;
+  /**
+   * Decimal nanosecond modification time.
+   */
+  mtimeNanoseconds: string;
+}>;
+/**
+ * Complete TypeScript bundle candidate before persistence.
+ */
+export type TypeScriptTrustCandidate = Readonly<{
+  /**
+   * Entry candidate carrying filesystem identity.
+   */
+  entry: TrustCandidate;
+  /**
+   * Canonically ordered exact local source graph.
+   */
+  sources: readonly CapturedTrustSource[];
+  /**
+   * One immutable Node ESM bundle.
+   */
+  executableBytes: Uint8Array;
+  /**
+   * Bare package specifiers excluded from invalidation.
+   */
+  barePackageImports: readonly string[];
+}>;
+/**
  * Trust consent and output adapters.
  */
 export type TrustConsentAdapters = Readonly<{

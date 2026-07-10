@@ -1,15 +1,14 @@
 /**
  * Recursive trust authorizer discovery and descendant enrollment. @module
  */
-import { captureTrustCandidate, } from './candidate.ts';
 import {
-  executeStoredConfig,
+  captureTrustCandidate,
+  captureTrustSource,
+} from './candidate.ts';
+import {
   exactBytesEqual,
   TrustedConfigError,
 } from './config-loader.ts';
-import type { ValidatedConfig, } from './config-validation.ts';
-import type { DiscoveredConfig, } from './config-discovery.ts';
-import { validateMjs, } from './mjs-validator.ts';
 import {
   isStrictRepositoryDescendant,
   listTrustRecords,
@@ -17,19 +16,11 @@ import {
   type TrustCatalogEntry,
 } from './registry-catalog.ts';
 import { readPrivateFile, } from './record-validation.ts';
-import { acquireRecursiveRegistryLock, } from './registry-recursive-lock.ts';
-import { prepareMjsRecord, } from './registry-storage.ts';
 import { recoverProvenanceTransactions, } from './registry-transaction.ts';
 import type {
-  LoadedTrustedConfig,
   TrustCandidate,
   TrustIdentity,
 } from './types.ts';
-
-/**
- * No recursive root authorizes candidate.
- */
-export const RECURSIVE_TRUST_ABSENT: unique symbol = Symbol('no RECURSIVE_ROOT authorizes candidate config',);
 
 /**
  * Deduplicates identities and sorts canonical path then filesystem ID.
@@ -72,13 +63,6 @@ export function canonicalAuthorizers(identities: readonly TrustIdentity[],): rea
  * @returns unchanged authorizer identity
  */
 async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<TrustIdentity> {
-  if (entry.record
-    .format
-    !== 'mjs')
-    throw new TrustedConfigError(
-      'trust-failed',
-      'TypeScript recursive trust requires issue #347.',
-    );
   /**
    * Fresh exact root candidate or stable changed-root failure.
    */
@@ -90,7 +74,8 @@ async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<T
           .canonicalConfigPath,
         repositoryRoot: entry.record
           .repositoryRoot,
-        format: 'mjs',
+        format: entry.record
+          .format,
       },);
     }
     catch (error: unknown) {
@@ -103,16 +88,38 @@ async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<T
     }
   })();
   /**
-   * Exact stored recursive-root snapshot.
+   * Exact source agreement for each record format.
    */
-  const snapshot = await readPrivateFile(`${entry.directory}/${entry.record
-    .executableSnapshotFile}`,);
-  if ((trustIdentityKey(candidate.identity,) !== trustIdentityKey(entry.record
-    .identity,))
-    || (!exactBytesEqual({
+  const sourcesUnchanged = entry.record
+    .format
+    === 'mjs'
+    ? exactBytesEqual({
       left: candidate.bytes,
-      right: snapshot,
-    }))) {
+      right: await readPrivateFile(`${entry.directory}/${entry.record
+        .executableSnapshotFile}`,),
+    },)
+    : (await Promise.all(entry.record
+      .sources
+      .map(async function sourceUnchanged(source,) {
+      /**
+       * Exact live tracked source bytes.
+       */
+      const liveBytes = source.canonicalPath
+        === candidate.discovered
+        .configPath
+        ? candidate.bytes
+        : (await captureTrustSource(source.canonicalPath,)).bytes;
+      /**
+       * Exact private tracked source snapshot.
+       */
+      const snapshot = await readPrivateFile(`${entry.directory}/${source.snapshotFile}`,);
+      return exactBytesEqual({
+        left: liveBytes,
+        right: snapshot,
+      });
+    },),)).every(function sourceMatches(matches,) { return matches; },);
+  if ((trustIdentityKey(candidate.identity,) !== trustIdentityKey(entry.record
+    .identity,)) || (!sourcesUnchanged)) {
     throw new TrustedConfigError(
       'config-changed',
       `Recursive root bytes changed: ${entry.record
@@ -131,8 +138,13 @@ async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<T
  * @param repositoryRoot - candidate descendant root
  *
  * @returns exact active authorizer identities
+ *
+ * @example
+ * ```ts
+ * await activeRecursiveAuthorizers({ entries, repositoryRoot });
+ * ```
  */
-async function activeRecursiveAuthorizers({
+export async function activeRecursiveAuthorizers({
   entries,
   repositoryRoot,
 }: Readonly<{
@@ -188,119 +200,4 @@ export async function explicitAuthorizers({
         .repositoryRoot,
     },),
   ],);
-}
-
-/**
- * Executes candidate from temporary private state without persistence.
- *
- * @param registryRoot - complete private registry root
- *
- * @param candidate - exact descendant candidate
- *
- * @param authorizingRoots - inherited roots
- *
- * @param recordedAt - audit timestamp
- *
- * @returns runtime-validated config
- */
-async function validatePrivateCandidate({
-  registryRoot,
-  candidate,
-  authorizingRoots,
-  recordedAt,
-}: Readonly<{
-  registryRoot: string;
-  candidate: TrustCandidate;
-  authorizingRoots: readonly TrustIdentity[];
-  recordedAt: string;
-}>,): Promise<ValidatedConfig> {
-  /**
-   * Disposable private validation record.
-   */
-  await using prepared = await prepareMjsRecord({
-    registryRoot,
-    candidate,
-    recordedAt,
-    authorizingRoots,
-  },);
-  return await executeStoredConfig(prepared.executablePath,);
-}
-
-/**
- * Auto-enrolls exact descendant under every current recursive root.
- *
- * @param discovered - canonical descendant config
- *
- * @param registryRoot - complete private registry root
- *
- * @param recordedAt - audit timestamp
- *
- * @returns loaded config or absence when no root authorizes it
- *
- * @example
- * ```ts
- * await autoEnrollRecursiveConfig({ discovered, registryRoot, recordedAt });
- * ```
- */
-export async function autoEnrollRecursiveConfig({
-  discovered,
-  registryRoot,
-  recordedAt,
-}: Readonly<{
-  discovered: DiscoveredConfig;
-  registryRoot: string;
-  recordedAt: string;
-}>,): Promise<LoadedTrustedConfig | typeof RECURSIVE_TRUST_ABSENT> {
-  if (discovered.format !== 'mjs')
-    return RECURSIVE_TRUST_ABSENT;
-  /**
-   * Registry-wide lock serializes descendant enrollment and revocation.
-   */
-  await using recursiveLock = await acquireRecursiveRegistryLock({ registryRoot, },);
-  await recoverProvenanceTransactions({ registryRoot, },);
-  /**
-   * Exact live descendant candidate.
-   */
-  const candidate = await captureTrustCandidate(discovered,);
-  validateMjs({
-    bytes: candidate.bytes,
-    sourceName: discovered.configPath,
-  },);
-  /**
-   * Every currently installed record.
-   */
-  const entries = await listTrustRecords({ registryRoot, },);
-  /**
-   * Every recursive root covering descendant across filesystems.
-   */
-  const authorizingRoots = canonicalAuthorizers(await activeRecursiveAuthorizers({
-    entries,
-    repositoryRoot: discovered.repositoryRoot,
-  },),);
-  if (authorizingRoots.length === 0)
-    return RECURSIVE_TRUST_ABSENT;
-  /**
-   * Config validated from private candidate before record installation.
-   */
-  const validated = await validatePrivateCandidate({
-    registryRoot,
-    candidate,
-    authorizingRoots,
-    recordedAt,
-  },);
-  /**
-   * Final exact descendant record with inherited provenance.
-   */
-  await using prepared = await prepareMjsRecord({
-    registryRoot,
-    candidate,
-    recordedAt,
-    recursiveChildren: validated.recursiveChildren,
-    authorizingRoots,
-  },);
-  await prepared.commit();
-  return {
-    validated,
-    record: prepared.record,
-  };
 }

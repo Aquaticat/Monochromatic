@@ -12,7 +12,7 @@ import {
 } from './config-discovery.ts';
 import {
   inspectTrust,
-  trustMjs,
+  trustConfig,
   untrustConfig,
   untrustRepository,
 } from './trust-service.ts';
@@ -197,7 +197,7 @@ export async function runTrustManagement({
       },),);
       return 0;
     }
-    await trustMjs({
+    await trustConfig({
       discovered,
       registryRoot: effectiveRegistryRoot,
       yes: action.yes === true,

@@ -1,10 +1,14 @@
 /**
  * Trusted config loading, inspection, and recursive revocation. @module
  */
-import { captureTrustCandidate, } from './candidate.ts';
+import {
+  captureTrustCandidate,
+  captureTrustSource,
+} from './candidate.ts';
 import {
   exactBytesEqual,
   loadStrictMjs,
+  loadStrictTypeScript,
   TrustedConfigError,
 } from './config-loader.ts';
 import type { DiscoveredConfig, } from './config-discovery.ts';
@@ -16,20 +20,117 @@ import { loadRecord, } from './registry-storage.ts';
 import {
   autoEnrollRecursiveConfig,
   RECURSIVE_TRUST_ABSENT,
-} from './recursive-trust.ts';
+} from './recursive-enrollment.ts';
 import {
   revokeRecursiveTrust,
   type RecursiveUntrustResult,
 } from './recursive-revocation.ts';
 import { recoverProvenanceTransactions, } from './registry-transaction.ts';
+import { trustMjs as explicitMjsTrust, } from './explicit-trust.ts';
+import { trustTypeScript as explicitTypeScriptTrust, } from './explicit-typescript-trust.ts';
 import type {
   LoadedTrustedConfig,
   TrustConsentAdapters,
+  TrustRecord,
   TrustStatus,
 } from './types.ts';
 
 export { trustMjs, } from './explicit-trust.ts';
+export { trustTypeScript, } from './explicit-typescript-trust.ts';
 export type { TrustConsentAdapters, } from './types.ts';
+
+/**
+ * Explicitly trusts discovered MJS or TypeScript configuration.
+ *
+ * @param discovered - canonical discovered config
+ *
+ * @param registryRoot - injected or account-derived root
+ *
+ * @param yes - explicit noninteractive approval
+ *
+ * @param adapters - consent effects
+ *
+ * @returns installed trusted config
+ *
+ * @example
+ * ```ts
+ * await trustConfig({ discovered, registryRoot, yes: true, adapters });
+ * ```
+ */
+export async function trustConfig({
+  discovered,
+  registryRoot,
+  yes,
+  adapters,
+}: Readonly<{
+  discovered: DiscoveredConfig;
+  registryRoot: string;
+  yes: boolean;
+  adapters: TrustConsentAdapters;
+}>,): Promise<LoadedTrustedConfig> {
+  return discovered.format === 'mjs'
+    ? await explicitMjsTrust({
+      discovered,
+      registryRoot,
+      yes,
+      adapters,
+    },)
+    : await explicitTypeScriptTrust({
+      discovered,
+      registryRoot,
+      yes,
+      adapters,
+    },);
+}
+
+/**
+ * Compares every tracked TypeScript source without execution.
+ *
+ * @param recordDirectoryPath - exact record directory
+ *
+ * @param candidateBytes - exact live entry bytes
+ *
+ * @param configPath - canonical entry path
+ *
+ * @param record - validated TypeScript record
+ *
+ * @returns whether every tracked source exactly matches
+ */
+async function typeScriptSourcesUnchanged({
+  recordDirectoryPath,
+  candidateBytes,
+  configPath,
+  record,
+}: Readonly<{
+  recordDirectoryPath: string;
+  candidateBytes: Uint8Array;
+  configPath: string;
+  record: TrustRecord;
+}>,): Promise<boolean> {
+  /**
+   * Per-source exact comparisons.
+   */
+  const comparisons = await Promise.all(record.sources
+    .map(async function compareSource(source,) {
+    /**
+     * Exact live source bytes.
+     */
+    const liveBytes = source.canonicalPath === configPath
+      ? candidateBytes
+      : (await captureTrustSource(source.canonicalPath,)).bytes;
+    /**
+     * Exact private source snapshot.
+     */
+    const storedBytes = await readPrivateFile(`${recordDirectoryPath}/${source.snapshotFile}`,);
+    return exactBytesEqual({
+      left: liveBytes,
+      right: storedBytes,
+    });
+  },),);
+  return comparisons.every(function unchanged(value,) {
+    return value;
+  },);
+}
 
 /**
  * Ignores optional recursive untrust disclosure.
@@ -81,11 +182,17 @@ export async function loadTrustedConfig({
       registryRoot,
       identity: candidate.identity,
     },);
-    return await loadStrictMjs({
-      recordDirectory: directory,
-      candidate,
-      record,
-    },);
+    return record.format === 'mjs'
+      ? await loadStrictMjs({
+        recordDirectory: directory,
+        candidate,
+        record,
+      },)
+      : await loadStrictTypeScript({
+        recordDirectory: directory,
+        candidate,
+        record,
+      },);
   }
   catch (error: unknown) {
     if (!isMissingPath(error,)) {
@@ -135,15 +242,6 @@ export async function inspectTrust({
   discovered: DiscoveredConfig;
   registryRoot: string;
 }>,): Promise<TrustStatus> {
-  if (discovered.format !== 'mjs') {
-    return {
-      configPresent: true,
-      trusted: false,
-      unchanged: false,
-      configPath: discovered.configPath,
-      reason: 'typescript-unsupported',
-    };
-  }
   /**
    * Fresh live candidate inspected without execution.
    */
@@ -165,16 +263,19 @@ export async function inspectTrust({
       identity: candidate.identity,
     },);
     /**
-     * Exact stored executable bytes.
+     * Exact strict source equality without stored execution.
      */
-    const snapshotBytes = await readPrivateFile(`${directory}/${record.executableSnapshotFile}`,);
-    /**
-     * Live-to-stored byte equality.
-     */
-    const unchanged = exactBytesEqual({
-      left: candidate.bytes,
-      right: snapshotBytes,
-    },);
+    const unchanged = record.format === 'mjs'
+      ? exactBytesEqual({
+        left: candidate.bytes,
+        right: await readPrivateFile(`${directory}/${record.executableSnapshotFile}`,),
+      },)
+      : await typeScriptSourcesUnchanged({
+        recordDirectoryPath: directory,
+        candidateBytes: candidate.bytes,
+        configPath: discovered.configPath,
+        record,
+      },);
     return {
       configPresent: true,
       trusted: unchanged,

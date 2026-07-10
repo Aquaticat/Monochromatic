@@ -1,0 +1,483 @@
+/**
+ * Private tsdown TypeScript trust candidate builder. @module
+ */
+import { isBuiltin, } from 'node:module';
+import {
+  isAbsolute,
+  relative,
+} from 'node:path';
+import { realpath, } from 'node:fs/promises';
+import {
+  build,
+  type Rolldown,
+} from 'tsdown';
+import {
+  captureTrustCandidate,
+  captureTrustSource,
+  TrustCandidateError,
+} from './candidate.ts';
+import type { DiscoveredConfig, } from './config-discovery.ts';
+import { validateMjs, } from './mjs-validator.ts';
+import type {
+  CapturedTrustSource,
+  TypeScriptTrustCandidate,
+} from './types.ts';
+
+/**
+ * TypeScript trust build failure.
+ */
+export class TypeScriptBuildError extends Error {
+  /**
+   * Creates stable TypeScript build failure.
+   *
+   * @param message - safe failure explanation
+   *
+   * @param options - optional cause
+   */
+  public constructor(
+    message: string,
+    options?: Readonly<ErrorOptions>,
+  ) {
+    super(
+      message,
+      options,
+    );
+    this.name = 'TypeScriptBuildError';
+  }
+}
+
+/**
+ * Removes Rolldown query suffix from resolved module ID.
+ *
+ * @param id - resolved module ID
+ *
+ * @returns filesystem portion
+ */
+function modulePath(id: string,): string {
+  /**
+   * First query delimiter.
+   */
+  const queryIndex = id.indexOf('?',);
+  return queryIndex === (-1) ? id : id.slice(
+    0,
+    queryIndex,
+  );
+}
+
+/**
+ * Asserts canonical path remains inside repository root.
+ *
+ * @param repositoryRoot - canonical root
+ *
+ * @param sourcePath - canonical source path
+ */
+function assertRepositorySource({
+  repositoryRoot,
+  sourcePath,
+}: Readonly<{
+  repositoryRoot: string;
+  sourcePath: string;
+}>,): void {
+  /**
+   * Component-aware relative path.
+   */
+  const localPath = relative(
+    repositoryRoot,
+    sourcePath,
+  );
+  if ((localPath === '') || ((!localPath.startsWith('..',)) && (!isAbsolute(localPath,))))
+    return;
+  throw new TypeScriptBuildError(`Relative TypeScript source escaped repository root: ${sourcePath}`,);
+}
+
+/**
+ * Reports whether unknown value is syntax-node-shaped record.
+ *
+ * @param value - unknown syntax value
+ *
+ * @returns whether value can expose named fields
+ */
+function isSyntaxRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
+  return ((typeof value) === 'object') && (value !== null);
+}
+
+/**
+ * Reports whether syntax node is computed dynamic import.
+ *
+ * @param node - ESTree-compatible syntax node
+ *
+ * @returns whether import source is not string literal
+ */
+function isComputedDynamicImport(node: Readonly<Record<string, unknown>>,): boolean {
+  if (node.type !== 'ImportExpression')
+    return false;
+  /**
+   * Dynamic import source node.
+   */
+  const {source} = node;
+  return ((typeof source) !== 'object') || (source === null)
+    || (!('value' in source))
+    || ((typeof source.value) !== 'string');
+}
+
+/**
+ * Rejects computed dynamic imports in tracked TypeScript syntax tree.
+ *
+ * @param syntax - ESTree-compatible Rolldown syntax tree
+ */
+function assertLiteralDynamicImports(syntax: unknown,): void {
+  /**
+   * Bounded structural work stack.
+   */
+  const pending: unknown[] = [syntax,];
+  while (pending.length > 0) {
+    /**
+     * Next structural value.
+     */
+    const value = pending.pop();
+    if (value === undefined)
+      continue;
+    if (Array.isArray(value,)) {
+      pending.push(...(value as readonly unknown[]),);
+      continue;
+    }
+    if (!isSyntaxRecord(value,))
+      continue;
+    /**
+     * Read-only syntax node fields.
+     */
+    const node = value;
+    if (isComputedDynamicImport(node,))
+      throw new TypeScriptBuildError('Dynamic TypeScript imports must use literal specifiers.',);
+    pending.push(...Object.values(node,),);
+  }
+}
+
+/**
+ * Source-capture plugin plus build-local observations.
+ */
+type SourceCaptureState = Readonly<{
+  /**
+   * Source-capturing Rolldown plugin.
+   */
+  plugin: Rolldown.Plugin;
+  /**
+   * Exact captured source map.
+   */
+  capturedSources: ReadonlyMap<string, CapturedTrustSource>;
+  /**
+   * Bare package warning set.
+   */
+  bareImports: ReadonlySet<string>;
+}>;
+
+/**
+ * Forces every bare package into immutable bundle.
+ *
+ * @returns always true
+ */
+function bundleEveryPackage(): true {
+  return true;
+}
+
+/**
+ * Creates source-capturing Rolldown plugin.
+ *
+ * @param discovered - canonical TypeScript entry
+ *
+ * @param entrySource - exact entry snapshot
+ *
+ * @returns source-capturing plugin and immutable observations
+ */
+function sourceCapturePlugin({
+  discovered,
+  entrySource,
+}: Readonly<{
+  discovered: DiscoveredConfig;
+  entrySource: CapturedTrustSource;
+}>,): SourceCaptureState {
+  /**
+   * Paths whose bytes belong to invalidation graph.
+   */
+  const trackedPaths = new Set<string>([entrySource.canonicalPath,],);
+  /**
+   * Exact build-local sources keyed by canonical path.
+   */
+  const capturedSources = new Map<string, CapturedTrustSource>();
+  /**
+   * Bare package imports originating in tracked sources.
+   */
+  const bareImports = new Set<string>();
+  /**
+   * Source-capturing plugin.
+   */
+  const plugin: Rolldown.Plugin = {
+    name: 'cli-git-trust-source-capture',
+    async resolveId(
+      source,
+      importer,
+    ) {
+      if ((importer === undefined) || isBuiltin(source,))
+        return null;
+      /**
+       * Canonical importing module when filesystem-backed.
+       */
+      const importerPath = modulePath(importer,);
+      if (!trackedPaths.has(importerPath,))
+        return null;
+      if (source.startsWith('.',)) {
+        /**
+         * Rolldown-resolved local target.
+         */
+        const resolved = await this.resolve(
+          source,
+          importer,
+          { skipSelf: true, },
+        );
+        if ((resolved === null) || ((resolved.external !== undefined) && (resolved.external !== false)))
+          throw new TypeScriptBuildError(`Relative TypeScript import did not resolve into bundle: ${source}`,);
+        /**
+         * Canonical local source target.
+         */
+        const sourcePath = await realpath(modulePath(resolved.id,),);
+        assertRepositorySource({
+          repositoryRoot: discovered.repositoryRoot,
+          sourcePath,
+        },);
+        trackedPaths.add(sourcePath,);
+        return {
+          ...resolved,
+          id: sourcePath,
+        };
+      }
+      if (isAbsolute(source,))
+        throw new TypeScriptBuildError(`Absolute TypeScript import is outside tracked graph: ${source}`,);
+      bareImports.add(source,);
+      return null;
+    },
+    async load(id,) {
+      /**
+       * Filesystem-backed path without query.
+       */
+      const sourcePath = modulePath(id,);
+      if (!trackedPaths.has(sourcePath,))
+        return null;
+      /**
+       * Exact captured bytes supplied directly to Rolldown.
+       */
+      const captured = sourcePath === entrySource.canonicalPath
+        ? entrySource
+        : await captureTrustSource(sourcePath,);
+      capturedSources.set(
+        captured.canonicalPath,
+        captured,
+      );
+      try {
+        /**
+         * Strict source text supplied to Rolldown.
+         */
+        const sourceText = new TextDecoder(
+          'utf-8',
+          { fatal: true, },
+        ).decode(captured.bytes,);
+        assertLiteralDynamicImports(this.parse(
+          sourceText,
+          {
+          lang: sourcePath.endsWith('.tsx',) ? 'tsx' : 'ts',
+          sourceType: 'module',
+          astType: 'ts',
+        },
+        ),);
+        return sourceText;
+      }
+      catch (error: unknown) {
+        throw new TypeScriptBuildError(
+          `Tracked TypeScript source is not strict UTF-8: ${sourcePath}`,
+          { cause: error, },
+        );
+      }
+    },
+  };
+  return {
+    plugin,
+    capturedSources,
+    bareImports,
+  };
+}
+
+/**
+ * Immutable output fields needed by trust validation.
+ */
+type TypeScriptBuildOutput = Readonly<{
+  /**
+   * Output discriminator.
+   */
+  type: 'asset';
+}> | Readonly<{
+  /**
+   * Output discriminator.
+   */
+  type: 'chunk';
+  /**
+   * Whether output is static entry.
+   */
+  isEntry: boolean;
+  /**
+   * Generated JavaScript.
+   */
+  code: string;
+  /**
+   * Generated output name.
+   */
+  fileName: string;
+}>;
+
+/**
+ * Selects and validates exactly one generated JavaScript chunk.
+ *
+ * @param chunks - complete tsdown output
+ *
+ * @returns immutable executable bytes
+ */
+function executableBytes({
+  chunks,
+}: Readonly<{
+  chunks: readonly TypeScriptBuildOutput[];
+}>,): Uint8Array {
+  if (chunks.length !== 1)
+    throw new TypeScriptBuildError(`TypeScript trust build produced ${String(chunks.length,)} outputs instead of one.`,);
+  /**
+   * Sole required output.
+   */
+  const [output,] = chunks;
+  if ((output === undefined) || (output.type !== 'chunk')
+    || (!output.isEntry))
+    throw new TypeScriptBuildError('TypeScript trust build did not produce one JavaScript entry chunk.',);
+  /**
+   * Exact generated Node ESM bytes.
+   */
+  const bytes = new TextEncoder().encode(output.code,);
+  validateMjs({
+    bytes,
+    sourceName: output.fileName,
+  },);
+  return bytes;
+}
+
+/**
+ * Builds one immutable TypeScript config candidate through public tsdown API.
+ *
+ * @param discovered - canonical TypeScript config
+ *
+ * @param buildDirectory - disposable private output directory
+ *
+ * @returns exact sources, bundle, identity, and package warnings
+ *
+ * @example
+ * ```ts
+ * await buildTypeScriptCandidate({ discovered, buildDirectory: '/tmp/private-build' });
+ * ```
+ */
+export async function buildTypeScriptCandidate({
+  discovered,
+  buildDirectory,
+}: Readonly<{
+  discovered: DiscoveredConfig;
+  buildDirectory: string;
+}>,): Promise<TypeScriptTrustCandidate> {
+  if (discovered.format !== 'typescript')
+    throw new TrustCandidateError('TypeScript builder requires cli-git.config.ts.',);
+  /**
+   * Entry identity and exact bytes captured before build.
+   */
+  const entry = await captureTrustCandidate(discovered,);
+  /**
+   * Entry source projected into complete source graph.
+   */
+  const entrySource: CapturedTrustSource = {
+    canonicalPath: entry.discovered
+      .configPath,
+    bytes: entry.bytes,
+    size: entry.size,
+    mtimeNanoseconds: entry.mtimeNanoseconds,
+  };
+  /**
+   * Source-capture plugin plus immutable build observations.
+   */
+  const sourceCapture = sourceCapturePlugin({
+    discovered,
+    entrySource,
+  },);
+  /**
+   * Build outputs with native external-memory cleanup.
+   */
+  const outputs = await build({
+    config: false,
+    cwd: discovered.repositoryRoot,
+    entry: discovered.configPath,
+    platform: 'node',
+    format: 'esm',
+    outDir: buildDirectory,
+    write: false,
+    clean: false,
+    dts: false,
+    sourcemap: false,
+    fixedExtension: true,
+    logLevel: 'silent',
+    deps: {
+      alwaysBundle: bundleEveryPackage,
+      onlyBundle: false,
+    },
+    outputOptions: { codeSplitting: false, },
+    plugins: [sourceCapture.plugin,],
+  },);
+  /**
+   * Registered external-memory cleanup for every format output.
+   */
+  await using outputCleanup = new AsyncDisposableStack();
+  outputs.forEach(function registerOutput(output,) {
+    outputCleanup.use(output,);
+  },);
+  if (outputs.length !== 1)
+    throw new TypeScriptBuildError(`TypeScript trust build produced ${String(outputs.length,)} format bundles.`,);
+  /**
+   * Sole format bundle.
+   */
+  const [bundle,] = outputs;
+  if (bundle === undefined)
+    throw new TypeScriptBuildError('TypeScript trust build returned no bundle.',);
+  /**
+   * Canonically ordered complete exact source graph.
+   */
+  const sources = [...sourceCapture.capturedSources
+    .values(),]
+    .toSorted(function byCanonicalPath(
+      left,
+      right,
+    ) {
+      return left.canonicalPath
+        .localeCompare(right.canonicalPath,);
+    },);
+  if (!sources.some(function isEntry(source,) {
+    return source.canonicalPath === discovered.configPath;
+  },))
+    throw new TypeScriptBuildError('TypeScript trust build omitted entry from captured source graph.',);
+  /**
+   * Output module IDs prove every tracked source participated.
+   */
+  const moduleIds = new Set(bundle.chunks
+    .flatMap(function outputModuleIds(chunk,) {
+    return chunk.type === 'chunk' ? chunk.moduleIds
+      .map(modulePath,) : [];
+  },),);
+  sources.forEach(function assertIncluded(source,) {
+    if (!moduleIds.has(source.canonicalPath,))
+      throw new TypeScriptBuildError(`Tracked TypeScript source is absent from output metadata: ${source.canonicalPath}`,);
+  },);
+  return {
+    entry,
+    sources,
+    executableBytes: executableBytes({ chunks: bundle.chunks, }),
+    barePackageImports: [...sourceCapture.bareImports,].toSorted(),
+  };
+}

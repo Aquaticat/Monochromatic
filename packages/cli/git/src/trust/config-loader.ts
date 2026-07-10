@@ -10,6 +10,7 @@ import {
   validateConfig,
   type ValidatedConfig,
 } from './config-validation.ts';
+import { captureTrustSource, } from './candidate.ts';
 import { validateMjs, } from './mjs-validator.ts';
 import { readPrivateFile, } from './record-validation.ts';
 import type {
@@ -232,6 +233,113 @@ export async function loadStrictMjs({
    * Runtime-authoritative config imported from stored path.
    */
   const validated = await executeStoredConfig(snapshotPath,);
+  return {
+    validated,
+    record,
+  };
+}
+
+/**
+ * Verifies every tracked TypeScript source and executes stored bundle.
+ *
+ * @param recordDirectory - exact record directory
+ *
+ * @param candidate - freshly captured live entry
+ *
+ * @param record - validated TypeScript record
+ *
+ * @returns loaded trusted config
+ *
+ * @example
+ * ```ts
+ * await loadStrictTypeScript({ recordDirectory, candidate, record });
+ * ```
+ */
+export async function loadStrictTypeScript({
+  recordDirectory,
+  candidate,
+  record,
+}: Readonly<{
+  recordDirectory: string;
+  candidate: TrustCandidate;
+  record: TrustRecord;
+}>,): Promise<LoadedTrustedConfig> {
+  if ((record.format !== 'typescript')
+    || (record.identity
+      .filesystemId
+      !== candidate.identity
+      .filesystemId)
+    || (record.identity
+      .canonicalConfigPath
+      !== candidate.identity
+      .canonicalConfigPath)
+    || (record.repositoryRoot
+      !== candidate.discovered
+      .repositoryRoot)
+    || (!record.sources
+      .some(function entrySource(source,) {
+      return source.canonicalPath
+        === candidate.discovered
+        .configPath;
+    },))) {
+    throw new TrustedConfigError(
+      'trust-failed',
+      'TypeScript trust record identity or entry metadata does not match candidate.',
+    );
+  }
+  /**
+   * Exact comparison result for every tracked source.
+   */
+  const sourceMatches = await Promise.all(record.sources
+    .map(async function sourceMatchesSnapshot(source,) {
+    try {
+      /**
+       * Fresh exact live source bytes.
+       */
+      const liveBytes = source.canonicalPath
+        === candidate.discovered
+        .configPath
+        ? candidate.bytes
+        : (await captureTrustSource(source.canonicalPath,)).bytes;
+      /**
+       * Exact private source snapshot bytes.
+       */
+      const storedBytes = await readPrivateFile(join(
+        recordDirectory,
+        source.snapshotFile,
+      ),);
+      return exactBytesEqual({
+        left: liveBytes,
+        right: storedBytes,
+      });
+    }
+    catch (error: unknown) {
+      throw new TrustedConfigError(
+        'config-changed',
+        `Tracked TypeScript source is unavailable or changed: ${source.canonicalPath}`,
+        { cause: error, },
+      );
+    }
+  },),);
+  if (sourceMatches.some(function changed(matches,) {
+    return !matches;
+  },)) {
+    throw new TrustedConfigError(
+      'config-changed',
+      'Tracked TypeScript source bytes changed; run `git cli-git trust` to rebuild and review the bundle.',
+    );
+  }
+  /**
+   * Private executable bundle path.
+   */
+  const executablePath = join(
+    recordDirectory,
+    record.executableSnapshotFile,
+  );
+  /**
+   * Runtime-authoritative config imported only from stored bundle.
+   */
+  const validated = await executeStoredConfig(executablePath,);
   return {
     validated,
     record,
