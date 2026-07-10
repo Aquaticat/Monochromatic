@@ -1,8 +1,10 @@
 import {
+  access,
   chmod,
   mkdir,
   mkdtemp,
   readFile,
+  rename,
   rm,
   symlink,
   writeFile,
@@ -227,6 +229,46 @@ await describe({
       },
     },),
     it({
+      name: 'does not execute candidate before declined consent',
+      fn: async function testDeclinedConsent() {
+        /** Side-effect marker outside repository config. */
+        const marker = join(tmpdir(), `cli-git-preconsent-${String(Date.now(),)}.txt`,);
+        /** Candidate whose top-level evaluation would create marker. */
+        const source = `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(marker,)}, 'executed');\nexport default {};\n`;
+        await using fixture = await createTrustFixture(source,);
+        /** Canonical discovered config. */
+        const discovered = await fixtureConfig(fixture,);
+        /** Declined trust failure. */
+        const failure = await (async function captureDeclineFailure(): Promise<unknown> {
+          try {
+            return await trustMjs({
+              discovered,
+              registryRoot: fixture.registryRoot,
+              yes: false,
+              adapters: trustAdapters([],),
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        /** Marker existence after declined trust. */
+        const markerExists = await (async function probeMarker(): Promise<boolean> {
+          try {
+            await access(marker,);
+            return true;
+          }
+          catch (error: unknown) {
+            if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+              return false;
+            throw error;
+          }
+        })();
+        expect(markerExists,).toBe(false,);
+      },
+    },),
+    it({
       name: 'rejects non-self-contained config before consent',
       fn: async function testPreConsentRejection() {
         await using fixture = await createTrustFixture("import './local.mjs'; export default {};\n",);
@@ -343,6 +385,13 @@ await describe({
         await chmod(join(directory, 'record.json',), 0o644,);
         expect(await inspectTrust({ discovered, registryRoot: fixture.registryRoot, },),).toMatchObject({ reason: 'corrupt', },);
         await chmod(join(directory, 'record.json',), 0o600,);
+        /** Real registry moved behind a root-level symbolic link. */
+        const movedRegistry = `${fixture.registryRoot}-moved`;
+        await rename(fixture.registryRoot, movedRegistry,);
+        await symlink(movedRegistry, fixture.registryRoot, 'dir',);
+        expect(await inspectTrust({ discovered, registryRoot: fixture.registryRoot, },),).toMatchObject({ reason: 'corrupt', },);
+        await rm(fixture.registryRoot,);
+        await rename(movedRegistry, fixture.registryRoot,);
         /** Original record bytes preserved across symlink substitution. */
         const recordBytes = await readFile(join(directory, 'record.json',),);
         await rm(directory, { recursive: true, force: true, },);

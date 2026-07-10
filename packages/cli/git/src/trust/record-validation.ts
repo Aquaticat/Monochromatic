@@ -232,6 +232,8 @@ export async function readPrivateFile(path: string,): Promise<Uint8Array> {
   const metadata = await handle.stat();
   if (!metadata.isFile())
     throw new TrustRecordError(`Trust file is not regular: ${path}`,);
+  if ((process.platform !== 'win32') && (process.getuid?.() !== metadata.uid))
+    throw new TrustRecordError(`Trust file is not owned by current account: ${path}`,);
   assertPrivateMode({
     mode: metadata.mode,
     label: path,

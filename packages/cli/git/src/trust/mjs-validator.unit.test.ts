@@ -49,12 +49,20 @@ await describe({
       },
     },),
     it({
-      name: 'permits deliberate dynamic loading as trusted authority',
+      name: 'permits dynamic built-ins but rejects dynamic extra assets',
       fn: async function testDynamicImport() {
         expect(validateMjs({
+          bytes: encode("export default { load: () => import('node:fs') };",),
+          sourceName: 'dynamic-builtin.mjs',
+        },).nodeBuiltins,).toEqual(['node:fs',],);
+        expect(() => validateMjs({
           bytes: encode("export default { load: () => import('./live.mjs') };",),
-          sourceName: 'dynamic.mjs',
-        },).nodeBuiltins,).toEqual([],);
+          sourceName: 'dynamic-local.mjs',
+        },),).toThrow(MjsValidationError,);
+        expect(() => validateMjs({
+          bytes: encode('export default { load: target => import(target) };',),
+          sourceName: 'dynamic-computed.mjs',
+        },),).toThrow(MjsValidationError,);
       },
     },),
     it({

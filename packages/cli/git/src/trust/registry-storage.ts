@@ -319,7 +319,10 @@ export async function prepareMjsRecord({
       /**
        * Replacement state used for rollback without function-root mutable binding.
        */
-      const replacement = { backupCreated: false, };
+      const replacement = {
+        backupCreated: false,
+        candidateInstalled: false,
+      };
       try {
         /**
          * Existing record directory metadata before exchange.
@@ -344,12 +347,13 @@ export async function prepareMjsRecord({
           temporaryDirectory,
           finalDirectory,
         );
-        state.committed = true;
+        replacement.candidateInstalled = true;
         await syncDirectory(parentDirectory,);
         await readRecord({
           registryRoot,
           directory: finalDirectory,
         },);
+        state.committed = true;
         if (replacement.backupCreated)
           await rm(
             backupDirectory,
@@ -361,7 +365,16 @@ export async function prepareMjsRecord({
         await releaseLock();
       }
       catch (error: unknown) {
-        if (replacement.backupCreated && (!state.committed))
+        if ((!state.committed) && replacement.candidateInstalled) {
+          await rm(
+            finalDirectory,
+            {
+              recursive: true,
+              force: true,
+            },
+          );
+        }
+        if ((!state.committed) && replacement.backupCreated)
           await rename(
             backupDirectory,
             finalDirectory,

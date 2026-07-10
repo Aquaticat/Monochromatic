@@ -73,9 +73,34 @@ function staticModuleSpecifier(node: StaticNodeInput,): string | typeof STATIC_M
 }
 
 /**
- * Validates syntax and static dependency self-containment without execution.
+ * Collects literal dynamic-import targets from bounded Acorn syntax tree.
  *
- * Dynamic loading remains trusted code authority and is not treated as a static bundle edge.
+ * @param value - syntax node, child collection, or scalar
+ *
+ * @returns literal dynamic-import targets in source order
+ */
+function dynamicModuleSpecifiers(value: unknown,): readonly string[] {
+  if (Array.isArray(value,))
+    return value.flatMap(dynamicModuleSpecifiers,);
+  if (((typeof value) !== 'object') || (value === null))
+    return [];
+  if (('type' in value) && (value.type === 'ImportExpression')) {
+    if ((!('source' in value))
+      || ((typeof value.source) !== 'object')
+      || (value.source === null)
+      || (!('value' in value.source))
+      || ((typeof value.source
+        .value) !== 'string'))
+      throw new MjsValidationError('Dynamic imports must use literal Node built-in specifiers.',);
+    return [value.source
+      .value,];
+  }
+  return Object.values(value,)
+    .flatMap(dynamicModuleSpecifiers,);
+}
+
+/**
+ * Validates syntax and dependency self-containment without execution.
  *
  * @param bytes - exact candidate MJS bytes
  *
@@ -142,6 +167,15 @@ export function validateMjs({
     if (!isBuiltin(specifier,)) {
       throw new MjsValidationError(
         `Configuration must be self-contained; static import is not a Node built-in: ${specifier}`,
+      );
+    }
+    nodeBuiltins.add(specifier,);
+  },);
+  dynamicModuleSpecifiers(program,)
+    .forEach(function inspectDynamicImport(specifier,) {
+    if (!isBuiltin(specifier,)) {
+      throw new MjsValidationError(
+        `Configuration must be self-contained; dynamic import is not a Node built-in: ${specifier}`,
       );
     }
     nodeBuiltins.add(specifier,);

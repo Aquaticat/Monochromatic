@@ -158,6 +158,8 @@ export async function ensureRegistryRoot(registryRoot: string,): Promise<void> {
   const metadata = await lstat(registryRoot,);
   if ((!metadata.isDirectory()) || metadata.isSymbolicLink())
     throw new TrustStorageError('Trust registry root is not a safe directory.',);
+  if ((process.platform !== 'win32') && (process.getuid?.() !== metadata.uid))
+    throw new TrustStorageError('Trust registry root is not owned by current account.',);
   await protectPath({
     path: registryRoot,
     directory: true,
@@ -204,18 +206,21 @@ export async function assertSafeRegistryDirectory({
   /**
    * Every ancestor path from root toward target.
    */
-  const paths = segments.map(function ancestorPath(
-    _segment,
-    index,
-  ) {
-    return join(
-      registryRoot,
-      ...segments.slice(
-        0,
-        index + 1,
-      ),
-    );
-  },);
+  const paths = [
+    registryRoot,
+    ...segments.map(function ancestorPath(
+      _segment,
+      index,
+    ) {
+      return join(
+        registryRoot,
+        ...segments.slice(
+          0,
+          index + 1,
+        ),
+      );
+    },),
+  ];
   /**
    * Metadata for each registry-owned ancestor.
    */
@@ -234,6 +239,8 @@ export async function assertSafeRegistryDirectory({
       throw new TrustStorageError(`Unsafe trust registry component: ${path}`,);
     if ((process.platform !== 'win32') && ((metadata.mode & NON_OWNER_PERMISSION_MASK) !== 0))
       throw new TrustStorageError(`Unsafe trust registry permissions: ${path}`,);
+    if ((process.platform !== 'win32') && (process.getuid?.() !== metadata.uid))
+      throw new TrustStorageError(`Trust registry component is not owned by current account: ${path}`,);
   },);
 }
 
