@@ -301,6 +301,47 @@ return [{ code: 'observe', message: updates.map(update => update.remoteOid).join
       },
     },),
     it({
+      name: 'reports authoritative destination during force update',
+      fn: async function testForceUpdate() {
+        await using fixture = await createFixture();
+        await installPolicy({
+          fixture,
+          checkBody: `const updates = await context.git.pushUpdates();
+return [{ code: 'force', message: updates.map(update => update.remoteOid).join(',') }];`,
+        },);
+        await nanoSpawn(REAL_GIT, ['push', '--quiet', 'origin', 'HEAD:refs/heads/main',], {
+          cwd: fixture.repository,
+        },);
+        await writeFile(join(fixture.repository, 'remote-newer.txt',), 'newer\n',);
+        await nanoSpawn(REAL_GIT, ['add', 'remote-newer.txt',], { cwd: fixture.repository, },);
+        await nanoSpawn(REAL_GIT, ['commit', '--quiet', '-m', 'remote newer',], {
+          cwd: fixture.repository,
+        },);
+        await nanoSpawn(REAL_GIT, ['push', '--quiet', 'origin', 'HEAD:refs/heads/main',], {
+          cwd: fixture.repository,
+        },);
+        /** Destination state before force attempt. */
+        const remoteOid = (await nanoSpawn(REAL_GIT, ['rev-parse', 'HEAD',], {
+          cwd: fixture.repository,
+        },)).stdout;
+        await nanoSpawn(REAL_GIT, ['reset', '--hard', '--quiet', 'HEAD^',], {
+          cwd: fixture.repository,
+        },);
+        await runWrapper({
+          fixture,
+          args: ['cli-git', 'trust', '--yes',],
+        },);
+        const failure = await captureFailure({
+          fixture,
+          args: ['push', '--force', 'origin', 'HEAD:refs/heads/main',],
+        },);
+        expect(failure.stderr,).toContain(remoteOid,);
+        expect((await nanoSpawn(REAL_GIT, ['rev-parse', 'refs/heads/main',], {
+          cwd: fixture.remote,
+        },)).stdout,).toBe(remoteOid,);
+      },
+    },),
+    it({
       name: 'materializes annotated tag, tree, and blob targets',
       fn: async function testNonCommitTargets() {
         await using fixture = await createFixture();
