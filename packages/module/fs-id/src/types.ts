@@ -97,6 +97,36 @@ export type FsIdResolverAdapters = {
     readonly path: string;
     readonly reason: string;
   }) => void;
+  /**
+   * Reports diagnostic branch detail when caller enables logging.
+   */
+  readonly debug?: (input: {
+    /**
+     * Function-boundary logger tag.
+     */
+    readonly tag: string;
+    /**
+     * Complete diagnostic message.
+     */
+    readonly message: string;
+  }) => void;
+  /**
+   * Reports resolution failure before it is rethrown.
+   */
+  readonly reportError?: (input: {
+    /**
+     * Function-boundary logger tag.
+     */
+    readonly tag: string;
+    /**
+     * Complete failure context.
+     */
+    readonly message: string;
+    /**
+     * Underlying resolution failure.
+     */
+    readonly error: unknown;
+  }) => void;
 };
 
 /**

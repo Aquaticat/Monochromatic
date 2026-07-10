@@ -74,14 +74,6 @@ async function runCommand({
   readonly args: readonly string[];
 },): Promise<string> {
   /**
-   * Function-scoped logger.
-   */
-  const rl = tagged({
-    tag: runCommand.name,
-    l,
-  },);
-  rl.debug(`running ${command} ${args.join(' ',)}`,);
-  /**
    * Successful command result.
    */
   const { stdout, } = await nanoSpawn(
@@ -138,6 +130,63 @@ function warnDegraded({
 }
 
 /**
+ * Reports production resolution failure through tagged logger.
+ *
+ * @param tag - function-boundary logger tag
+ *
+ * @param message - complete failure context
+ *
+ * @param error - underlying failure
+ */
+function reportResolutionError({
+  tag,
+  message,
+  error,
+}: Readonly<{
+  tag: string;
+  message: string;
+  error: unknown;
+}>,): void {
+  tagged({
+    tag,
+    l,
+  },)
+    .error(`${message}: ${String(error,)}`,);
+}
+
+/**
+ * Reports production branch detail through tagged logger.
+ *
+ * @param tag - function-boundary logger tag
+ *
+ * @param message - complete branch detail
+ */
+function reportResolutionDebug({
+  tag,
+  message,
+}: Readonly<{
+  tag: string;
+  message: string;
+}>,): void {
+  tagged({
+    tag,
+    l,
+  },)
+    .debug(message,);
+}
+
+/**
+ * Preserves special handle-backed path without resolving its link target.
+ *
+ * @param path - process file-descriptor path
+ *
+ * @returns unchanged path
+ */
+function preserveHandlePath({ path, }: { readonly path: string; },): Promise<string> {
+  return Promise.resolve(path,);
+}
+
+/**
  * Production adapters using current host operating-system facilities.
  *
  * @example
@@ -151,6 +200,8 @@ const productionAdapters: FsIdResolverAdapters = {
   run: runCommand,
   deviceNumber: readDeviceNumber,
   warn: warnDegraded,
+  debug: reportResolutionDebug,
+  reportError: reportResolutionError,
 };
 
 /**
@@ -244,8 +295,12 @@ export function createFsIdResolver({
       }
       return resolution;
     }
-    catch (error) {
-      l.error(`filesystem identity resolution failed for ${canonicalPath}: ${String(error,)}`,);
+    catch (error: unknown) {
+      adapters.reportError?.({
+        tag: resolveCanonicalPath.name,
+        message: `filesystem identity resolution failed for ${canonicalPath}`,
+        error,
+      },);
       throw error;
     }
   };
@@ -262,12 +317,40 @@ export function createFsIdResolver({
 const defaultResolver = createFsIdResolver({ adapters: productionAdapters, },);
 
 /**
+ * Production resolver for special handle-backed targets.
+ */
+const handleTargetResolver = createFsIdResolver({
+  adapters: {
+    ...productionAdapters,
+    canonicalizePath: preserveHandlePath,
+  },
+},);
+
+/**
  * Production resolver that leaves degraded reporting to its caller.
  */
 const callerReportedResolver = createFsIdResolver({
   adapters: {
-    ...productionAdapters,
+    platform: productionAdapters.platform,
+    canonicalizePath: productionAdapters.canonicalizePath,
+    run: productionAdapters.run,
+    deviceNumber: productionAdapters.deviceNumber,
     warn: function deferDegradedWarning(input,): void {
+      void input;
+    },
+  },
+},);
+
+/**
+ * Handle-backed resolver that leaves all reporting to its caller.
+ */
+const callerReportedHandleTargetResolver = createFsIdResolver({
+  adapters: {
+    platform: productionAdapters.platform,
+    canonicalizePath: preserveHandlePath,
+    run: productionAdapters.run,
+    deviceNumber: productionAdapters.deviceNumber,
+    warn: function deferHandleDegradedWarning(input,): void {
       void input;
     },
   },
@@ -278,7 +361,9 @@ const callerReportedResolver = createFsIdResolver({
  *
  * @param path - Existing path whose containing filesystem is identified
  *
- * @param emitDegradedWarning - whether module logger reports runtime-only fallback
+ * @param emitDiagnostics - whether module logger reports degraded and failed resolution
+ *
+ * @param preserveTargetPath - whether special handle-backed path bypasses realpath
  *
  * @returns Stable preferred or explicitly caller-reported degraded identity
  *
@@ -291,12 +376,19 @@ const callerReportedResolver = createFsIdResolver({
  */
 export function resolveFsId({
   path,
-  emitDegradedWarning = true,
+  emitDiagnostics = true,
+  preserveTargetPath = false,
 }: {
   readonly path: string;
-  readonly emitDegradedWarning?: boolean;
+  readonly emitDiagnostics?: boolean;
+  readonly preserveTargetPath?: boolean;
 }): Promise<FsIdResolution> {
-  return emitDegradedWarning
+  if (preserveTargetPath) {
+    return emitDiagnostics
+      ? handleTargetResolver({ path, },)
+      : callerReportedHandleTargetResolver({ path, },);
+  }
+  return emitDiagnostics
     ? defaultResolver({ path, },)
     : callerReportedResolver({ path, },);
 }

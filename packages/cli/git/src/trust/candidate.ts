@@ -28,6 +28,37 @@ export class TrustCandidateError extends Error {
 }
 
 /**
+ * Selects handle-backed identity target where operating system exposes one.
+ *
+ * @param configPath - canonical live config path
+ *
+ * @param fileDescriptor - opened source descriptor
+ *
+ * @returns identity target and whether resolver must preserve its spelling
+ */
+function filesystemIdentityTarget({
+  configPath,
+  fileDescriptor,
+}: Readonly<{
+  configPath: string;
+  fileDescriptor: number;
+}>,): Readonly<{
+  path: string;
+  preserveTargetPath: boolean;
+}> {
+  if (process.platform === 'linux') {
+    return {
+      path: `/proc/${String(process.pid,)}/fd/${String(fileDescriptor,)}`,
+      preserveTargetPath: true,
+    };
+  }
+  return {
+    path: configPath,
+    preserveTargetPath: false,
+  };
+}
+
+/**
  * Captures exact bytes and same-handle metadata from non-symlink source.
  *
  * @param discovered - canonical configuration location
@@ -64,11 +95,19 @@ export async function captureTrustCandidate(discovered: DiscoveredConfig,): Prom
    */
   const bytes = await handle.readFile();
   /**
+   * Handle-backed identity target where host provides process descriptor paths.
+   */
+  const identityTarget = filesystemIdentityTarget({
+    configPath: discovered.configPath,
+    fileDescriptor: handle.fd,
+  },);
+  /**
    * Fresh source-qualified filesystem identity without logger stream pollution.
    */
   const filesystem = await resolveFsId({
-    path: discovered.configPath,
-    emitDegradedWarning: false,
+    path: identityTarget.path,
+    emitDiagnostics: false,
+    preserveTargetPath: identityTarget.preserveTargetPath,
   },);
   /**
    * Same-handle metadata after byte capture and identity resolution.

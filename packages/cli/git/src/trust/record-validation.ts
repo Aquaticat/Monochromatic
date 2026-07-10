@@ -216,7 +216,10 @@ function assertPrivateMode({
  * ```
  */
 export async function readPrivateFile(path: string,): Promise<Uint8Array> {
-  await assertPrivatePathProtection({ path, },);
+  await assertPrivatePathProtection({
+    path,
+    directory: false,
+  },);
   /**
    * No-follow handle for exact private file.
    */
@@ -267,7 +270,10 @@ export async function readRecord({
   /**
    * Final record directory metadata.
    */
-  await assertPrivatePathProtection({ path: directory, },);
+  await assertPrivatePathProtection({
+    path: directory,
+    directory: true,
+  },);
   /**
    * Final record directory metadata.
    */

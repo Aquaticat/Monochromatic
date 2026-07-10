@@ -34,9 +34,9 @@ const NON_OWNER_PERMISSION_MASK = 0o077;
  * Windows ACL script using account and built-in administrators SIDs.
  */
 const WINDOWS_ACL_SCRIPT = String.raw`
-$target = $args[0]
-$isDirectory = $args[1] -eq 'true'
-$acl = Get-Acl -LiteralPath $target
+$target = $env:CLI_GIT_ACL_TARGET
+$isDirectory = $env:CLI_GIT_ACL_DIRECTORY -eq 'true'
+$acl = if ($isDirectory) { [System.IO.Directory]::GetAccessControl($target) } else { [System.IO.File]::GetAccessControl($target) }
 $acl.SetAccessRuleProtection($true, $false)
 foreach ($existingRule in @($acl.Access)) { [void]$acl.RemoveAccessRuleSpecific($existingRule) }
 $userSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User
@@ -48,14 +48,15 @@ $userRule = New-Object System.Security.AccessControl.FileSystemAccessRule($userS
 $adminsRule = New-Object System.Security.AccessControl.FileSystemAccessRule($adminsSid, 'FullControl', $inheritance, $propagation, $type)
 $acl.AddAccessRule($userRule)
 $acl.AddAccessRule($adminsRule)
-Set-Acl -LiteralPath $target -AclObject $acl
+if ($isDirectory) { [System.IO.Directory]::SetAccessControl($target, $acl) } else { [System.IO.File]::SetAccessControl($target, $acl) }
 `;
 /**
  * Windows ACL verification without modifying target.
  */
 const WINDOWS_ACL_VERIFY_SCRIPT = String.raw`
-$target = $args[0]
-$acl = Get-Acl -LiteralPath $target
+$target = $env:CLI_GIT_ACL_TARGET
+$isDirectory = $env:CLI_GIT_ACL_DIRECTORY -eq 'true'
+$acl = if ($isDirectory) { [System.IO.Directory]::GetAccessControl($target) } else { [System.IO.File]::GetAccessControl($target) }
 if (-not $acl.AreAccessRulesProtected) { throw 'Registry ACL inheritance is not protected.' }
 $userSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 $adminsSid = 'S-1-5-32-544'
@@ -116,15 +117,19 @@ export function isMissingPath(error: unknown,): boolean {
  *
  * @param path - registry directory or private file
  *
+ * @param directory - whether target is a directory
+ *
  * @example
  * ```ts
- * await assertPrivatePathProtection({ path: 'C:\\private\\record.json' });
+ * await assertPrivatePathProtection({ path: 'C:\\private\\record.json', directory: false });
  * ```
  */
 export async function assertPrivatePathProtection({
   path,
+  directory,
 }: Readonly<{
   path: string;
+  directory: boolean;
 }>,): Promise<void> {
   if (process.platform !== 'win32')
     return;
@@ -137,9 +142,14 @@ export async function assertPrivatePathProtection({
         '-NonInteractive',
         '-Command',
         WINDOWS_ACL_VERIFY_SCRIPT,
-        path,
       ],
-      { windowsHide: true, },
+      {
+        windowsHide: true,
+        env: {
+          CLI_GIT_ACL_TARGET: path,
+          CLI_GIT_ACL_DIRECTORY: String(directory,),
+        },
+      },
     );
   }
   catch (error: unknown) {
@@ -178,12 +188,19 @@ export async function protectPath({
         '-NonInteractive',
         '-Command',
         WINDOWS_ACL_SCRIPT,
-        path,
-        String(directory,),
       ],
-      { windowsHide: true, },
+      {
+        windowsHide: true,
+        env: {
+          CLI_GIT_ACL_TARGET: path,
+          CLI_GIT_ACL_DIRECTORY: String(directory,),
+        },
+      },
     );
-    await assertPrivatePathProtection({ path, },);
+    await assertPrivatePathProtection({
+      path,
+      directory,
+    },);
     return;
   }
   await chmod(
@@ -330,7 +347,10 @@ export async function assertSafeRegistryDirectory({
       throw new TrustStorageError(`Trust registry component is not owned by current account: ${path}`,);
   },);
   await Promise.all(paths.map(function verifyPathProtection(path,) {
-    return assertPrivatePathProtection({ path, },);
+    return assertPrivatePathProtection({
+      path,
+      directory: true,
+    },);
   },),);
 }
 

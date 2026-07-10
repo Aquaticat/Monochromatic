@@ -4,8 +4,6 @@
  * @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
-
 import { FsIdResolutionError, } from './errors.ts';
 import {
   createFsId,
@@ -19,16 +17,6 @@ import type {
   FsIdResolution,
   FsIdResolverAdapters,
 } from './types.ts';
-
-/**
- * Package logger root.
- *
- * @example
- * ```ts
- * l.debug('resolving');
- * ```
- */
-const l = tagged({ tag: 'module-fs-id', },);
 
 /**
  * Formats unknown caught value without discarding it.
@@ -144,8 +132,7 @@ function requiredPayload({
   try {
     return normalizeIdentityPayload(output,);
   }
-  catch (error) {
-    l.error(`${source} returned unsafe filesystem identity: ${caughtMessage(error,)}`,);
+  catch (error: unknown) {
     throw new FsIdResolutionError(
       `${source} returned no valid filesystem identity`,
       { cause: error, },
@@ -176,13 +163,6 @@ export async function resolveLinuxFsId({
   readonly path: string;
   readonly adapters: FsIdResolverAdapters;
 },): Promise<FsIdResolution> {
-  /**
-   * Function-scoped logger.
-   */
-  const rl = tagged({
-    tag: resolveLinuxFsId.name,
-    l,
-  },);
   try {
     /**
      * Preferred UUID command output.
@@ -200,14 +180,20 @@ export async function resolveLinuxFsId({
      * Parsed UUID or absent sentinel.
      */
     const uuid = parseFindmntUuid(output,);
-    rl.debug(`resolved stable filesystem UUID for ${path}`,);
+    adapters.debug?.({
+      tag: resolveLinuxFsId.name,
+      message: `resolved stable filesystem UUID for ${path}`,
+    },);
     return stableResolution({
       source: 'fs-uuid',
       payload: uuid,
     },);
   }
   catch (preferredError) {
-    rl.debug(`findmnt UUID unavailable for ${path}: ${caughtMessage(preferredError,)}`,);
+    adapters.debug?.({
+      tag: resolveLinuxFsId.name,
+      message: `findmnt UUID unavailable for ${path}: ${caughtMessage(preferredError,)}`,
+    },);
     try {
       /**
        * Degraded GNU stat output.
@@ -230,7 +216,11 @@ export async function resolveLinuxFsId({
       },);
     }
     catch (fallbackError) {
-      rl.error(`stat f_fsid failed for ${path}: ${caughtMessage(fallbackError,)}`,);
+      adapters.reportError?.({
+        tag: resolveLinuxFsId.name,
+        message: `stat f_fsid failed for ${path}`,
+        error: fallbackError,
+      },);
       throw new FsIdResolutionError(
         `unable to resolve Linux filesystem identity for ${path}`,
         { cause: fallbackError, },
@@ -262,13 +252,6 @@ export async function resolveDarwinFsId({
   readonly path: string;
   readonly adapters: FsIdResolverAdapters;
 },): Promise<FsIdResolution> {
-  /**
-   * Function-scoped logger.
-   */
-  const rl = tagged({
-    tag: resolveDarwinFsId.name,
-    l,
-  },);
   try {
     /**
      * Portable mount report used to identify device accepted by diskutil.
@@ -299,14 +282,20 @@ export async function resolveDarwinFsId({
      * Parsed UUID from plist.
      */
     const uuid = parseDiskutilVolumeUuid(output,);
-    rl.debug(`resolved stable Volume UUID for ${path}`,);
+    adapters.debug?.({
+      tag: resolveDarwinFsId.name,
+      message: `resolved stable Volume UUID for ${path}`,
+    },);
     return stableResolution({
       source: 'volume-uuid',
       payload: uuid,
     },);
   }
   catch (preferredError) {
-    rl.debug(`diskutil UUID unavailable for ${path}: ${caughtMessage(preferredError,)}`,);
+    adapters.debug?.({
+      tag: resolveDarwinFsId.name,
+      message: `diskutil UUID unavailable for ${path}: ${caughtMessage(preferredError,)}`,
+    },);
     try {
       /**
        * Degraded BSD stat device output.
@@ -329,7 +318,11 @@ export async function resolveDarwinFsId({
       },);
     }
     catch (fallbackError) {
-      rl.error(`stat device number failed for ${path}: ${caughtMessage(fallbackError,)}`,);
+      adapters.reportError?.({
+        tag: resolveDarwinFsId.name,
+        message: `stat device number failed for ${path}`,
+        error: fallbackError,
+      },);
       throw new FsIdResolutionError(
         `unable to resolve macOS filesystem identity for ${path}`,
         { cause: fallbackError, },
@@ -361,13 +354,6 @@ export async function resolveWindowsFsId({
   readonly path: string;
   readonly adapters: FsIdResolverAdapters;
 },): Promise<FsIdResolution> {
-  /**
-   * Function-scoped logger.
-   */
-  const rl = tagged({
-    tag: resolveWindowsFsId.name,
-    l,
-  },);
   try {
     /**
      * Validated drive root safe for fixed PowerShell query text.
@@ -397,14 +383,20 @@ export async function resolveWindowsFsId({
      * Safe normalized volume serial.
      */
     const payload = normalizeIdentityPayload(output,);
-    rl.debug(`resolved stable volume serial for ${path}`,);
+    adapters.debug?.({
+      tag: resolveWindowsFsId.name,
+      message: `resolved stable volume serial for ${path}`,
+    },);
     return stableResolution({
       source: 'volume-serial',
       payload,
     },);
   }
   catch (preferredError) {
-    rl.debug(`volume serial unavailable for ${path}: ${caughtMessage(preferredError,)}`,);
+    adapters.debug?.({
+      tag: resolveWindowsFsId.name,
+      message: `volume serial unavailable for ${path}: ${caughtMessage(preferredError,)}`,
+    },);
     try {
       /**
        * Runtime device identity from Node stat.
@@ -426,7 +418,11 @@ export async function resolveWindowsFsId({
       },);
     }
     catch (fallbackError) {
-      rl.error(`runtime device number failed for ${path}: ${caughtMessage(fallbackError,)}`,);
+      adapters.reportError?.({
+        tag: resolveWindowsFsId.name,
+        message: `runtime device number failed for ${path}`,
+        error: fallbackError,
+      },);
       throw new FsIdResolutionError(
         `unable to resolve Windows filesystem identity for ${path}`,
         { cause: fallbackError, },

@@ -22,6 +22,7 @@ import { resolveGit, } from '../resolve-git.ts';
 import { discoverConfig, CONFIG_ABSENT, } from './config-discovery.ts';
 import { TrustedConfigError, } from './config-loader.ts';
 import { recordDirectory, } from './registry-path.ts';
+import { prepareMjsRecord, } from './registry-storage.ts';
 import {
   resolveRuntimeConfig,
   RUNTIME_CONFIG_ABSENT,
@@ -337,6 +338,36 @@ await describe({
         await trustMjs({ discovered, registryRoot: fixture.registryRoot, yes: true, adapters: trustAdapters([],), },);
         expect(await untrustConfig({ discovered, registryRoot: fixture.registryRoot, },),).toBe(true,);
         expect(await untrustConfig({ discovered, registryRoot: fixture.registryRoot, },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'releases writer lock after preparation failure',
+      fn: async function testPreparationCleanup() {
+        await using fixture = await createTrustFixture();
+        /** Canonical discovered config. */
+        const discovered = await fixtureConfig(fixture,);
+        /** Exact candidate used for direct storage preparation. */
+        const candidate = await captureTrustCandidate(discovered,);
+        /** Invalid-record preparation failure after lock acquisition. */
+        const failure = await (async function capturePreparationFailure(): Promise<unknown> {
+          try {
+            return await prepareMjsRecord({
+              registryRoot: fixture.registryRoot,
+              candidate,
+              recordedAt: 'not-a-timestamp',
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(Error,);
+        await using prepared = await prepareMjsRecord({
+          registryRoot: fixture.registryRoot,
+          candidate,
+          recordedAt: '2026-07-10T00:00:00.000Z',
+        },);
+        expect(prepared.record.identity,).toEqual(candidate.identity,);
       },
     },),
     it({

@@ -5,9 +5,7 @@
  */
 import { randomUUID, } from 'node:crypto';
 import {
-  lstat,
   mkdir,
-  rename,
   rm,
 } from 'node:fs/promises';
 import {
@@ -16,20 +14,22 @@ import {
 } from 'node:path';
 import {
   readPrivateFile,
-  readRecord,
   validateTrustRecord,
 } from './record-validation.ts';
 import {
   assertSafeRegistryDirectory,
   DIRECTORY_MODE,
   ensureRegistryRoot,
-  isMissingPath,
   protectPath,
   syncDirectory,
   TrustStorageError,
   writePrivateFile,
 } from './registry-io.ts';
 import { recordDirectory, } from './registry-path.ts';
+import {
+  createPreparedTrustRecord,
+  type PreparedTrustRecord,
+} from './registry-prepared-record.ts';
 import type {
   TrustCandidate,
   TrustRecord,
@@ -42,27 +42,7 @@ const MJS_SNAPSHOT_FILE = 'snapshots/config.mjs';
 
 export { TrustStorageError, } from './registry-io.ts';
 
-/**
- * Prepared private record awaiting validated installation.
- */
-export type PreparedTrustRecord = Readonly<{
-  /**
-   * Candidate record metadata.
-   */
-  record: TrustRecord;
-  /**
-   * Executable path inside private candidate directory.
-   */
-  executablePath: string;
-  /**
-   * Atomically installs validated candidate.
-   */
-  commit: () => Promise<void>;
-  /**
-   * Removes private state and releases writer lock.
-   */
-  [Symbol.asyncDispose]: () => Promise<void>;
-}>;
+export type { PreparedTrustRecord, } from './registry-prepared-record.ts';
 
 /**
  * Reads and validates private candidate metadata before installation.
@@ -217,16 +197,16 @@ export async function prepareMjsRecord({
       { cause: error, },
     );
   }
-  await protectPath({
-    path: lockDirectory,
-    directory: true,
-  },);
-
   /**
    * Private complete candidate sibling.
    */
   const temporaryDirectory = `${finalDirectory}.tmp-${randomUUID()}`;
-  await mkdir(
+  try {
+    await protectPath({
+      path: lockDirectory,
+      directory: true,
+    },);
+    await mkdir(
     join(
       temporaryDirectory,
       'snapshots',
@@ -281,123 +261,56 @@ export async function prepareMjsRecord({
    * Reopened and runtime-validated candidate metadata.
    */
   const validatedRecord = await validateCandidateDirectory(temporaryDirectory,);
-  /**
-   * Mutable lifecycle isolated behind disposable object.
-   */
-  const state = {
-    committed: false,
-    lockReleased: false,
-  };
-
-  /**
-   * Releases writer lock once.
-   */
-  async function releaseLock(): Promise<void> {
-    if (state.lockReleased)
-      return;
-    await rm(
-      lockDirectory,
-      {
-        recursive: true,
-        force: true,
-      },
-    );
-    state.lockReleased = true;
-  }
-
-  return {
-    record: validatedRecord,
-    executablePath: join(
+    return createPreparedTrustRecord({
+      record: validatedRecord,
+      executablePath: join(
+        temporaryDirectory,
+        validatedRecord.executableSnapshotFile,
+      ),
+      registryRoot,
+      finalDirectory,
       temporaryDirectory,
-      validatedRecord.executableSnapshotFile,
-    ),
-    commit: async function commitPreparedRecord(): Promise<void> {
-      /**
-       * Sibling holding replaced record until candidate validates in final location.
-       */
-      const backupDirectory = `${finalDirectory}.old-${randomUUID()}`;
-      /**
-       * Replacement state used for rollback without function-root mutable binding.
-       */
-      const replacement = {
-        backupCreated: false,
-        candidateInstalled: false,
-      };
-      try {
-        /**
-         * Existing record directory metadata before exchange.
-         */
-        const currentMetadata = await lstat(finalDirectory,);
-        if ((!currentMetadata.isDirectory()) || currentMetadata.isSymbolicLink())
-          throw new TrustStorageError('Existing trust record directory is unsafe.',);
-        await rename(
-          finalDirectory,
-          backupDirectory,
-        );
-        replacement.backupCreated = true;
-      }
-      catch (error: unknown) {
-        if (!isMissingPath(error,)) {
-          await releaseLock();
-          throw error;
-        }
-      }
-      try {
-        await rename(
-          temporaryDirectory,
-          finalDirectory,
-        );
-        replacement.candidateInstalled = true;
-        await syncDirectory(parentDirectory,);
-        await readRecord({
-          registryRoot,
-          directory: finalDirectory,
-        },);
-        state.committed = true;
-        if (replacement.backupCreated)
-          await rm(
-            backupDirectory,
-            {
-              recursive: true,
-              force: true,
-            },
-          );
-        await releaseLock();
-      }
-      catch (error: unknown) {
-        if ((!state.committed) && replacement.candidateInstalled) {
-          await rm(
-            finalDirectory,
-            {
-              recursive: true,
-              force: true,
-            },
-          );
-        }
-        if ((!state.committed) && replacement.backupCreated)
-          await rename(
-            backupDirectory,
-            finalDirectory,
-          );
-        await releaseLock();
-        throw new TrustStorageError(
-          'Unable to install trust record atomically.',
-          { cause: error, },
-        );
-      }
-    },
-    async [Symbol.asyncDispose](): Promise<void> {
-      if (!state.committed)
-        await rm(
-          temporaryDirectory,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
-      await releaseLock();
-    },
-  };
+      parentDirectory,
+      lockDirectory,
+    },);
+  }
+  catch (error: unknown) {
+    /**
+     * Every pre-return private artifact cleanup result.
+     */
+    const cleanupResults = await Promise.allSettled([
+      rm(
+        temporaryDirectory,
+        {
+          recursive: true,
+          force: true,
+        },
+      ),
+      rm(
+        lockDirectory,
+        {
+          recursive: true,
+          force: true,
+        },
+      ),
+    ],);
+    /**
+     * Cleanup failures retained in preparation error.
+     */
+    const cleanupFailures = cleanupResults
+      .filter(function isCleanupFailure(result,) {
+        return result.status === 'rejected';
+      },)
+      .map(function cleanupFailureReason(result,) {
+        return String(result.reason,);
+      },);
+    throw new TrustStorageError(
+      cleanupFailures.length === 0
+        ? 'Unable to prepare private trust record.'
+        : `Unable to prepare private trust record; cleanup also failed: ${cleanupFailures.join('; ',)}`,
+      { cause: error, },
+    );
+  }
 }
 
 export {
