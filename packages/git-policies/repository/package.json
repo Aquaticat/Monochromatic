@@ -16,6 +16,7 @@
   "files": [
     "dist/final",
     "src",
+    "LICENSES",
     "README.md"
   ],
   "dependencies": {
