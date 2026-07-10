@@ -282,6 +282,20 @@ issue that does not satisfy all six is treated as a publicity incident.
    argument,
     or tests against a nontrivial set does not count.
 
+### Candidate-fix applicability gate
+
+Before applying the auto-prototype requirement to a known upstream issue,
+verify candidate fix is absent from installed source,
+and candidate issue's version,
+signal/stack,
+and inputs match observed failure.
+A reproduction that fails only on pre-fix source proves upstream history,
+not current incident.
+Treat it as an excluded hypothesis:
+record it in "What does not work",
+do not create or keep its patch,
+and collect missing incident evidence instead.
+
 ### Auto-prototype when constraints 1-5 hold or sorta-hold
 
 When constraints 1-5 are all "yes" or "yes-with-a-soft-yes" (e.g. #5
