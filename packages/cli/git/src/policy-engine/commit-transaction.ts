@@ -3,7 +3,11 @@
  *
  * @module
  */
-import { readFile, } from 'node:fs/promises';
+import {
+  copyFile,
+  readFile,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parseCommitRegion, } from '../parsers/commit.ts';
 import { createEngineFailureEvent, } from './events.ts';
@@ -17,6 +21,7 @@ import {
   initializeCommitIndex,
   installExplicitPostIndex,
 } from './commit-transaction-index.ts';
+import { containsExactSnapshot, } from './commit-transaction-snapshots.ts';
 import { createCommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 import { runPolicyEngine, } from './engine.ts';
 import { resolveLandedCommitOid, } from './post-commit-facts.ts';
@@ -62,32 +67,6 @@ export type CommitTransactionPolicyOptions = Omit<
   RunPolicyEngineOptions,
   'args' | 'trigger' | 'gitFacts' | 'candidateVersion' | 'repositoryRoot'
 >;
-
-/**
- * Compares exact candidate-state bytes.
- *
- * @param left - prior bytes
- *
- * @param right - current bytes
- *
- * @returns whether lengths and every byte match
- */
-function bytesEqual({
-  left,
-  right,
-}: Readonly<{
-  left: Uint8Array;
-  right: Uint8Array;
-}>,): boolean {
-  if (left.byteLength !== right.byteLength)
-    return false;
-  return left.every(function sameByte(
-    value,
-    index,
-  ) {
-    return value === right[index];
-  },);
-}
 
 /**
  * Produces engine failure retaining transformed command facts.
@@ -232,9 +211,20 @@ export async function runCommitTransaction({
       indexPath: workspace.commitIndexPath,
     },);
   /**
-   * Exact previously visited private-index states.
+   * Initial exact private candidate-state snapshot.
    */
-  const visited: Uint8Array[] = [new Uint8Array(await readFile(workspace.commitIndexPath,),),];
+  const initialSnapshot = join(
+    workspace.directory,
+    'candidate-0.index',
+  );
+  await copyFile(
+    workspace.commitIndexPath,
+    initialSnapshot,
+  );
+  /**
+   * Ordered private paths for previously visited exact states.
+   */
+  const visited: string[] = [initialSnapshot,];
   /**
    * Latest policy pass, initialized before convergence loop.
    */
@@ -321,11 +311,10 @@ export async function runCommitTransaction({
      */
     // oxlint-disable-next-line no-await-in-loop -- Exact state is captured after each bounded changed pass.
     const current = new Uint8Array(await readFile(workspace.commitIndexPath,),);
-    if (visited.some(function isCycle(prior,) {
-      return bytesEqual({
-        left: prior,
-        right: current,
-      },);
+    // oxlint-disable-next-line no-await-in-loop -- Cycle detection streams prior exact snapshots after each bounded change.
+    if (await containsExactSnapshot({
+      snapshotPaths: visited,
+      current,
     },))
       return {
         policyResult: transactionFailure({
@@ -334,7 +323,19 @@ export async function runCommitTransaction({
         },),
         committed: false,
       };
-    visited.push(current,);
+    /**
+     * Private exact snapshot for current changed pass.
+     */
+    const snapshotPath = join(
+      workspace.directory,
+      `candidate-${String(changedPasses + 1,)}.index`,
+    );
+    // oxlint-disable-next-line no-await-in-loop -- Each bounded changed pass persists one exact comparison snapshot.
+    await copyFile(
+      workspace.commitIndexPath,
+      snapshotPath,
+    );
+    visited.push(snapshotPath,);
     changedPasses += 1;
     // oxlint-disable-next-line no-await-in-loop -- Whole ordered engine restarts after each bounded exact change.
     pass = await runPolicyEngine({

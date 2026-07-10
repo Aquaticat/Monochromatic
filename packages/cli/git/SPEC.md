@@ -1112,8 +1112,25 @@ a later invocation must load the complete winning record without repair.
 
 ## Transaction protocol
 
-Production commit autofix remains gated on disposable prototype evidence.
-The implementation uses a transaction directory outside the worktree with:
+The first production tracer supports normal explicit-path commits and explicit `--no-only` index commits.
+It holds the real index lock,
+constructs candidate facts from a private index,
+validates one-target ordinary text patches,
+applies them sequentially through `git apply --cached --3way`,
+and restarts the whole ordered policy sequence after exact candidate changes.
+Only the final unchanged pass emits findings.
+Policy exceptions,
+patch conflicts,
+and failed Git hooks discard private state without changing real index or worktree bytes.
+Packed shadow-bin fixtures prove both modes,
+non-overlapping composition,
+overlap blocking,
+unstaged-tail preservation,
+unrelated staged preservation,
+and failure rollback.
+
+Exhaustive mode support and durable recovery are dependency-ordered follow-up slices.
+The complete target implementation uses a transaction directory outside the worktree with:
 
 - original index snapshot;
 - private commit index;

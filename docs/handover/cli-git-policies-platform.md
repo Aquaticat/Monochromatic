@@ -4,8 +4,7 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #350 are complete and closed.
-Autofix transaction issue #351 is in progress;
-commit `e19c7340a` exposes parsed explicit commit pathspecs for the private-index transaction seam.
+Autofix transaction issue #351 is implemented locally and undergoing final documentation and review.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1239,6 +1238,65 @@ Unless later grilling changes them:
   and post-commit stages.
 - Commit `494a56ca3` records the final contract and verification handover.
 - Issue #350 was closed after every acceptance criterion and evidence gate passed.
+  Actual npm publication remains deferred in #358.
+
+### Issue #351 private-index autofix tracer
+
+- Added arity-aware explicit commit pathspec extraction;
+  wrapper escape flags and option values cannot become transaction paths.
+- Policy results retain ordered patch proposals and accept monotonic candidate versions.
+- Added locked disposable transaction workspaces outside the worktree,
+  private commit and post-commit indexes,
+  lazy exact candidate bytes,
+  and atomic real-index installation only after successful Git commit.
+- Explicit-path mode builds from `HEAD` plus selected worktree paths,
+  removes internal only/pathspec arguments before private-index commit,
+  and reconciles only selected landed entries into the original index copy.
+- Explicit `--no-only` mode patches a complete copy of the real index and installs the resulting index after success.
+- Patch proposals must bind exact opaque target ID and path;
+  destination-grammar validation rejects extra targets,
+  mismatched headers,
+  line-delimiter injection,
+  renames,
+  copies,
+  mode changes,
+  and binary directives.
+- Patches apply sequentially with real `git apply --cached --3way` against `GIT_INDEX_FILE`;
+  overlap conflicts remain private and return `content-unavailable`.
+- Any exact index change restarts the full ordered engine;
+  provisional events are discarded,
+  only the final unchanged pass emits,
+  eight changed passes cap convergence,
+  and prior exact states stream from private snapshots for cycle detection.
+- Packed fixtures cover explicit-path and copied-index commits,
+  selected canonical blobs,
+  unrelated staged content,
+  unstaged worktree tails,
+  non-overlapping composition,
+  overlapping conflict,
+  policy exception,
+  failed pre-commit hook,
+  and exact real index/worktree/ref preservation.
+- Commits `e19c7340a`,
+  `e07102aad`,
+  `7e40e109c`,
+  `f15c4cea8`,
+  `8389a156b`,
+  `75179dc49`,
+  and `ab30eb84a` contain the parser seam,
+  patch retention,
+  private-index primitives,
+  convergent integration,
+  boundary hardening,
+  and evidence.
+- Formatting,
+  type checks,
+  build,
+  full unit suite,
+  and packed shadow-bin run `proc_4` pass.
+  Final documentation lint,
+  final packed rerun after snapshot streaming,
+  and independent closure review remain.
   Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity

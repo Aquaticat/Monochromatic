@@ -106,6 +106,33 @@ or engine failure.
 Events are buffered until the pass settles,
 and sequence values start at zero for every invocation.
 
+### Commit autofix transaction
+
+For normal explicit-path commits and explicit `--no-only` index commits,
+trusted pre-forward policies receive lazy candidate bytes from a locked private Git index.
+A fixable finding returns one `git-unified` patch bound to the candidate's opaque target ID and repository path.
+Cli-git validates that the patch contains exactly one matching ordinary text target,
+writes the bytes to a private file,
+and invokes real Git as `git apply --cached --3way` with `GIT_INDEX_FILE` pointing only at private state.
+Policies cannot select an undeclared target or mutate the real index or worktree.
+
+Any changed private index restarts the complete ordered policy sequence with a higher candidate version.
+Provisional findings remain buffered;
+only the final unchanged pass is rendered.
+Exact repeated private-index bytes are a cycle,
+and eight changed passes is the convergence limit.
+Non-overlapping proposals compose sequentially;
+a conflict blocks with exit `2` while its unmerged state remains private.
+
+Explicit-path mode builds the intended tree from `HEAD` plus selected worktree paths,
+then reconciles only those landed entries into a copy of the original index.
+Explicit `--no-only` mode patches a copy of the complete real index.
+The completed index is installed atomically only after real Git succeeds,
+so policy failures,
+patch conflicts,
+and failed commit hooks leave real index and worktree bytes unchanged by cli-git.
+Broader commit modes and durable recovery of the post-ref-update installation gap remain separate dependency-ordered slices.
+
 Use the namespaced Optique management commands:
 
 ```sh

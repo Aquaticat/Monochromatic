@@ -538,7 +538,16 @@ Only final stable-pass findings are emitted.
 
 ## Transactional commit gate
 
-The transaction implementation must be proven in disposable repositories before production use.
+The first production tracer is proven through packed shadow-bin disposable repositories for explicit-path and explicit
+`--no-only` commits.
+It covers exact lazy candidates,
+private three-way patch application,
+whole-sequence restart,
+composition,
+conflict blocking,
+failed hooks,
+and real-state preservation.
+Exhaustive commit modes and durable crash recovery remain dependency-ordered follow-up slices.
 Plugins never mutate the real index or worktree through the policy interface.
 Cli-git holds the real index lock,
 uses private indexes,
