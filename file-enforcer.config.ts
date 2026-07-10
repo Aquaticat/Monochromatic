@@ -1,6 +1,8 @@
+import { createHash, } from 'node:crypto';
 import {
   glob,
   lstat,
+  readFile,
   unlink,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -14,6 +16,7 @@ import {
   overwriteEach,
   overwriteIfNotExists,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
+import type { GlobResults, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
 import type browserslist from 'browserslist';
 
@@ -123,6 +126,51 @@ const LGPL_3_OR_LATER_TEXT_IDS = [
  * ```
  */
 const ABSENT_PATH_ERROR_CODE = 'ENOENT';
+
+/**
+ * Canonical repo-relative prefix owned by the agent-skill mirror generator.
+ *
+ * @example
+ * ```ts
+ * console.log(SKILL_MIRROR_CANONICAL_PREFIX);
+ * ```
+ */
+const SKILL_MIRROR_CANONICAL_PREFIX = '.agents/skills/';
+
+/**
+ * Legacy skill roots receiving byte-identical canonical Markdown files.
+ *
+ * @example
+ * ```ts
+ * console.log(SKILL_MIRROR_DESTINATION_ROOTS);
+ * ```
+ */
+const SKILL_MIRROR_DESTINATION_ROOTS = [
+  './.claude/skills',
+  './.factory/skills',
+] as const;
+
+/**
+ * Ownership manifest filename stored in each legacy skill root.
+ *
+ * @example
+ * ```ts
+ * console.log(SKILL_MIRROR_MANIFEST_FILENAME);
+ * ```
+ */
+const SKILL_MIRROR_MANIFEST_FILENAME = '.agents-mirror-manifest.json';
+
+/**
+ * Canonical skill path to SHA-256 mapping owned by one mirror destination.
+ *
+ * @example
+ * ```ts
+ * const manifest: SkillMirrorManifest = {
+ *   '.agents/skills/example/SKILL.md': 'hash',
+ * };
+ * ```
+ */
+type SkillMirrorManifest = Readonly<Record<string, string>>;
 
 /**
  * Error object shape used by Node filesystem APIs when a system code is present.
@@ -697,24 +745,341 @@ async function generateResolvedBrowserslistTargets(): Promise<void> {
 }
 
 /**
- * Mirrors canonical skills from .agents/skills/ to .factory/skills/ and .claude/skills/
- * for legacy consumers.
+ * Signals malformed mirror ownership data before any owned destination can be removed.
+ *
+ * @example
+ * ```ts
+ * throw new SkillMirrorManifestError({
+ *   manifestPath: './.claude/skills/.agents-mirror-manifest.json',
+ *   reason: 'unexpected path',
+ * });
+ * ```
+ */
+class SkillMirrorManifestError extends Error {
+  /**
+   * Builds a mirror-manifest failure naming the unsafe source.
+   *
+   * @param manifestPath - manifest whose ownership data failed validation.
+   *
+   * @param reason - evidence explaining why synchronization cannot continue.
+   *
+   * @example
+   * ```ts
+   * new SkillMirrorManifestError({ manifestPath: 'manifest.json', reason: 'invalid JSON', });
+   * ```
+   */
+  public constructor(
+    {
+      manifestPath,
+      reason,
+    }: {
+      readonly manifestPath: string;
+      readonly reason: string;
+    },
+  ) {
+    super(`Invalid skill mirror manifest ${manifestPath}: ${reason}`,);
+    this.name = SkillMirrorManifestError.name;
+  }
+}
+
+/**
+ * Removes file-enforcer's optional leading current-directory marker.
+ *
+ * @param filePath - path emitted by canonical skill glob.
+ *
+ * @returns Repo-relative path without leading `./`.
+ *
+ * @example
+ * ```ts
+ * canonicalSkillPath({ filePath: './.agents/skills/example/SKILL.md' });
+ * ```
+ */
+function canonicalSkillPath({ filePath, }: { readonly filePath: string; }): string {
+  return filePath.startsWith('./',)
+    ? filePath.slice(2,)
+    : filePath;
+}
+
+/**
+ * Returns whether a manifest key names exactly one canonical skill Markdown file.
+ *
+ * @param filePath - repo-relative manifest key.
+ *
+ * @returns Whether path is safe to map under a mirror destination.
+ *
+ * @example
+ * ```ts
+ * isCanonicalSkillPath({ filePath: '.agents/skills/example/SKILL.md' });
+ * ```
+ */
+function isCanonicalSkillPath({ filePath, }: { readonly filePath: string; }): boolean {
+  /**
+   * Path segments checked without filesystem resolution so traversal cannot escape destination root.
+   */
+  const segments = filePath.split('/',);
+  return segments.length === 4
+    && segments[0] === '.agents'
+    && segments[1] === 'skills'
+    && segments[2] !== ''
+    && segments[2] !== '.'
+    && segments[2] !== '..'
+    && segments[3]?.endsWith('.md',) === true
+    && !filePath.includes('\\',);
+}
+
+/**
+ * Narrows parsed JSON to a safe canonical skill ownership manifest.
+ *
+ * @param value - parsed JSON value.
+ *
+ * @param manifestPath - source path used in validation errors.
+ *
+ * @example
+ * ```ts
+ * assertSkillMirrorManifest({ value: {}, manifestPath: 'manifest.json', });
+ * ```
+ */
+function assertSkillMirrorManifest(
+  {
+    value,
+    manifestPath,
+  }: {
+    readonly value: unknown;
+    readonly manifestPath: string;
+  },
+): asserts value is SkillMirrorManifest {
+  if (value === null
+    || (typeof value) !== 'object'
+    || Array.isArray(value,))
+    throw new SkillMirrorManifestError({ manifestPath, reason: 'expected a JSON object', },);
+
+  for (const key of Reflect.ownKeys(value,)) {
+    if ((typeof key) !== 'string'
+      || !isCanonicalSkillPath({ filePath: key, })
+      || (typeof Reflect.get(value, key,)) !== 'string')
+      throw new SkillMirrorManifestError({
+        manifestPath,
+        reason: `unsafe ownership entry ${String(key,)}`,
+      },);
+  }
+}
+
+/**
+ * Reads and validates a prior mirror manifest,
+ * returning no owned paths when destination has never been synchronized.
+ *
+ * @param manifestPath - destination ownership-manifest path.
+ *
+ * @returns Valid prior canonical-path mapping.
+ *
+ * @throws {@link SkillMirrorManifestError} when existing manifest is malformed.
+ *
+ * @example
+ * ```ts
+ * await readSkillMirrorManifest({ manifestPath: './.claude/skills/.agents-mirror-manifest.json', });
+ * ```
+ */
+async function readSkillMirrorManifest(
+  { manifestPath, }: { readonly manifestPath: string; },
+): Promise<SkillMirrorManifest> {
+  /**
+   * Existing manifest text read before any stale destination is removed.
+   */
+  let content: string;
+  try {
+    content = await readFile(manifestPath, 'utf8',);
+  }
+  catch (readError: unknown) {
+    if (errorHasCode({ error: readError, code: ABSENT_PATH_ERROR_CODE, },))
+      return {};
+
+    throw readError;
+  }
+
+  /**
+   * Parsed ownership value validated before use as deletion authority.
+   */
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content,) as unknown;
+  }
+  catch (parseError: unknown) {
+    throw new SkillMirrorManifestError({
+      manifestPath,
+      reason: `invalid JSON: ${String(parseError,)}`,
+    },);
+  }
+  assertSkillMirrorManifest({ value: parsed, manifestPath, },);
+  return parsed;
+}
+
+/**
+ * Hashes canonical Markdown content for deterministic mirror ownership.
+ *
+ * @param content - exact canonical UTF-8 text.
+ *
+ * @returns Lowercase SHA-256 digest.
+ *
+ * @example
+ * ```ts
+ * hashSkillContent({ content: '# Skill\n', });
+ * ```
+ */
+function hashSkillContent({ content, }: { readonly content: string; }): string {
+  return createHash('sha256',)
+    .update(content, 'utf8',)
+    .digest('hex',);
+}
+
+/**
+ * Maps one canonical path beneath a legacy mirror root after path validation.
+ *
+ * @param canonicalPath - validated canonical repo-relative path.
+ *
+ * @param destinationRoot - mirror root receiving canonical suffix.
+ *
+ * @returns Destination counterpart path.
+ *
+ * @throws {@link SkillMirrorManifestError} when canonical path is unsafe.
+ *
+ * @example
+ * ```ts
+ * mirrorDestinationPath({
+ *   canonicalPath: '.agents/skills/example/SKILL.md',
+ *   destinationRoot: './.claude/skills',
+ * });
+ * ```
+ */
+function mirrorDestinationPath(
+  {
+    canonicalPath,
+    destinationRoot,
+  }: {
+    readonly canonicalPath: string;
+    readonly destinationRoot: string;
+  },
+): string {
+  if (!isCanonicalSkillPath({ filePath: canonicalPath, }))
+    throw new SkillMirrorManifestError({
+      manifestPath: `${destinationRoot}/${SKILL_MIRROR_MANIFEST_FILENAME}`,
+      reason: `unsafe canonical path ${canonicalPath}`,
+    },);
+
+  return `${destinationRoot}/${canonicalPath.slice(SKILL_MIRROR_CANONICAL_PREFIX.length,)}`;
+}
+
+/**
+ * Synchronizes one mirror root,
+ * pruning only paths owned by its valid prior manifest.
+ *
+ * @param destinationRoot - legacy root receiving canonical files and ownership manifest.
+ *
+ * @param skills - canonical file-enforcer glob results.
+ *
+ * @param manifest - current canonical path and hash mapping.
+ *
+ * @example
+ * ```ts
+ * await mirrorSkillsToDestination({ destinationRoot, skills, manifest, });
+ * ```
+ */
+async function mirrorSkillsToDestination(
+  {
+    destinationRoot,
+    skills,
+    manifest,
+  }: {
+    readonly destinationRoot: string;
+    readonly skills: GlobResults;
+    readonly manifest: SkillMirrorManifest;
+  },
+): Promise<void> {
+  /**
+   * Ownership manifest colocated with mirrored skills.
+   */
+  const manifestPath = `${destinationRoot}/${SKILL_MIRROR_MANIFEST_FILENAME}`;
+  /**
+   * Prior ownership controls the only destination paths eligible for pruning.
+   */
+  const priorManifest = await readSkillMirrorManifest({ manifestPath, },);
+  /**
+   * Current canonical path set used to find removed owned counterparts.
+   */
+  const canonicalPaths = new Set(Object.keys(manifest,),);
+
+  await Promise.all(Object.keys(priorManifest,)
+    .filter(function isRemovedCanonicalPath(canonicalPath,): boolean {
+      return !canonicalPaths.has(canonicalPath,);
+    },)
+    .map(async function removeOwnedStaleMirror(canonicalPath,): Promise<void> {
+      await unlinkIfExists({
+        filePath: mirrorDestinationPath({ canonicalPath, destinationRoot, }),
+      },);
+    },),);
+
+  await overwriteEach({
+    destGlob: `${destinationRoot}/*/*.md`,
+    files: skills,
+  },);
+  await overwrite({
+    dest: manifestPath,
+    content: `${JSON.stringify(manifest, null, 2,)}\n`,
+  },);
+}
+
+/**
+ * Mirrors canonical skills from .agents/skills/ to .factory/skills/ and .claude/skills/,
+ * with manifests limiting stale deletion to paths the prior synchronization owned.
+ *
+ * @example
+ * ```ts
+ * await mirrorSkills();
+ * ```
  */
 async function mirrorSkills(): Promise<void> {
   /**
-   * Concatenated SKILL.md contents from the canonical .agents/skills tree, mirrored verbatim to legacy consumer dirs.
+   * Canonical Markdown contents mirrored verbatim to each legacy consumer root.
    */
   const skills = await cat('./.agents/skills/*/*.md',);
-  await Promise.all([
-    overwriteEach({
-      destGlob: './.factory/skills/*/*.md',
-      files: skills,
-    },),
-    overwriteEach({
-      destGlob: './.claude/skills/*/*.md',
-      files: skills,
-    },),
-  ],);
+  /**
+   * Canonical files ordered by raw path before JSON construction.
+   */
+  const orderedSkills = [...skills,].sort(function compareSkillPaths(left, right,): number {
+    /**
+     * Normalized left path used for deterministic code-unit ordering.
+     */
+    const leftPath = canonicalSkillPath({ filePath: left.path, },);
+    /**
+     * Normalized right path used for deterministic code-unit ordering.
+     */
+    const rightPath = canonicalSkillPath({ filePath: right.path, },);
+    if (leftPath < rightPath)
+      return -1;
+    if (leftPath > rightPath)
+      return 1;
+    return 0;
+  },);
+  /**
+   * Current ownership mapping excludes every destination-only skill by construction.
+   */
+  const manifest: SkillMirrorManifest = Object.fromEntries(orderedSkills.map(
+    function toManifestEntry(skill,): readonly [string, string] {
+      return [
+        canonicalSkillPath({ filePath: skill.path, },),
+        hashSkillContent({ content: skill.content, },),
+      ];
+    },
+  ),);
+
+  await Promise.all(SKILL_MIRROR_DESTINATION_ROOTS.map(
+    async function syncDestination(destinationRoot,): Promise<void> {
+      await mirrorSkillsToDestination({
+        destinationRoot,
+        skills,
+        manifest,
+      },);
+    },
+  ),);
 }
 
 /**

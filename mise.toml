@@ -913,6 +913,57 @@ run = "node packages/cli/markdown-lint/src/cli.ts --fix"
 description = "Comprehensive validation: format, build, test (runs sequentially)"
 run = ["mise run format", "mise run build", "mise run test"]
 
+[tasks."verify:skill-mirrors"]
+description = "Verify canonical agent skills, ownership manifests, and legacy mirrors are byte-identical"
+shell = "node -e"
+run = """
+const { createHash } = require('node:crypto')
+const { globSync, readFileSync } = require('node:fs')
+const { sep } = require('node:path')
+const canonicalPrefix = '.agents/skills/'
+const destinationRoots = ['.claude/skills', '.factory/skills']
+const manifestFilename = '.agents-mirror-manifest.json'
+const normalizePath = (filePath) => {
+  const normalized = filePath.split(sep).join('/')
+  return normalized.startsWith('./') ? normalized.slice(2) : normalized
+}
+const hash = (content) => createHash('sha256').update(content).digest('hex')
+const canonicalPaths = globSync('.agents/skills/*/*.md')
+  .map(normalizePath)
+  .sort()
+const canonicalEntries = canonicalPaths.map((canonicalPath) => [
+  canonicalPath,
+  readFileSync(canonicalPath),
+])
+const canonical = new Map(canonicalEntries)
+for (const destinationRoot of destinationRoots) {
+  const manifestPath = `${destinationRoot}/${manifestFilename}`
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  if (manifest === null || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    throw new Error(`${manifestPath} must contain a JSON object`)
+  }
+  const manifestPaths = Object.keys(manifest).sort()
+  const missingManifestPaths = canonicalPaths.filter((canonicalPath) => !manifestPaths.includes(canonicalPath))
+  const unexpectedManifestPaths = manifestPaths.filter((manifestPathEntry) => !canonical.has(manifestPathEntry))
+  if (missingManifestPaths.length > 0 || unexpectedManifestPaths.length > 0) {
+    throw new Error(`${manifestPath} path mismatch; missing: ${missingManifestPaths.join(', ') || 'none'}; unexpected: ${unexpectedManifestPaths.join(', ') || 'none'}`)
+  }
+  for (const canonicalPath of canonicalPaths) {
+    const canonicalContent = canonical.get(canonicalPath)
+    const expectedHash = hash(canonicalContent)
+    if (manifest[canonicalPath] !== expectedHash) {
+      throw new Error(`${manifestPath} has stale hash for ${canonicalPath}`)
+    }
+    const destinationPath = `${destinationRoot}/${canonicalPath.slice(canonicalPrefix.length)}`
+    const destinationContent = readFileSync(destinationPath)
+    if (!canonicalContent.equals(destinationContent)) {
+      throw new Error(`${destinationPath} differs from ${canonicalPath}`)
+    }
+  }
+}
+console.log(`Verified ${canonicalPaths.length} canonical skill mirrors in ${destinationRoots.length} destinations.`)
+"""
+
 #endregion Validation and Check Tasks
 
 #region Preparation Tasks
@@ -965,8 +1016,8 @@ description = "Approve build scripts for native dependencies"
 run = "pnpm approve-builds sharp"
 
 [tasks."prepare:pnpm:others:files"]
-description = "Sync file-enforcer managed files"
-run = "node file-enforcer.config.ts"
+description = "Sync file-enforcer managed files and verify canonical skill mirrors"
+run = ["node file-enforcer.config.ts", "mise run verify:skill-mirrors"]
 
 [tasks."prepare:playwright"]
 description = "Build Playwright container image via podman"
@@ -1146,7 +1197,9 @@ _.path = [
   "packages/webapp-productivity/wc/node_modules/.bin",
   "packages/webapp-productivity/done-postcss/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
+  "packages/stub/throwing/node_modules/.bin",
   "packages/ssg/aquati.cat/node_modules/.bin",
+  "packages/shim/proper-lockfile/node_modules/.bin",
   "packages/rolldown-plugins/import-attributes/node_modules/.bin",
   "packages/pi-shared/model-selection/node_modules/.bin",
   "packages/pi-plugins/thinking-defaults/node_modules/.bin",
@@ -1161,6 +1214,7 @@ _.path = [
   "packages/pi-plugins/advisor/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
   "packages/module/pnpm-workspace-catalog/node_modules/.bin",
+  "packages/module/image-diff/node_modules/.bin",
   "packages/mcp/mvm/node_modules/.bin",
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
@@ -1168,6 +1222,9 @@ _.path = [
   "packages/desktop-app/electron-infra/node_modules/.bin",
   "packages/desktop-app/electron-counter/node_modules/.bin",
   "packages/config/stylelint/node_modules/.bin",
+  "packages/config/oxlint/node_modules/.bin",
+  "packages/cli/git-clone-size/node_modules/.bin",
+  "packages/cli/git/node_modules/.bin",
   "packages/claude-code-plugins/terminal-title/node_modules/.bin",
   "packages/claude-code-plugins/stop-reminders/node_modules/.bin",
   "packages/claude-code-plugins/session-start-housekeeping/node_modules/.bin",
