@@ -6,10 +6,8 @@ import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
 import { runManagementCommand, } from './management.ts';
 import { parseCommitRegion, } from './parsers/commit.ts';
-import {
-  COMMIT_TRANSACTION_NOT_APPLICABLE,
-  runCommitTransaction,
-} from './policy-engine/commit-transaction.ts';
+import { COMMIT_TRANSACTION_NOT_APPLICABLE, } from './policy-engine/commit-transaction.ts';
+import { runCommitTransactionBoundary, } from './policy-engine/commit-transaction-boundary.ts';
 import {
   CommitTransactionRecoveryError,
   recoverCommitTransaction,
@@ -249,7 +247,7 @@ try {
    */
   const commitTransaction = willShortCircuit
     ? COMMIT_TRANSACTION_NOT_APPLICABLE
-    : await runCommitTransaction({
+    : await runCommitTransactionBoundary({
       args: rawArgs,
       gitPath,
       policyOptions,

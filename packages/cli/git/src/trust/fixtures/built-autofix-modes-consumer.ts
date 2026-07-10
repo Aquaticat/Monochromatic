@@ -105,6 +105,39 @@ export async function verifyAutofixModes({
   },);
 
   /**
+   * Standard-input pathspec source is captured exactly once privately.
+   */
+  await writeFile(
+    `${repository}/selected.txt`,
+    'bad\n',
+  );
+  await writeFile(
+    `${repository}/stdin-pathspec.txt`,
+    'stdin pathspec\n',
+  );
+  await execute({
+    command: 'git',
+    args: [
+      'commit',
+      '--quiet',
+      '-m',
+      'stdin pathspec autofix',
+      '--pathspec-from-file=-',
+    ],
+    cwd: repository,
+    env,
+    input: 'selected.txt\nstdin-pathspec.txt\n',
+  },);
+  assertFixtureEqual({
+    actual: await gitText({
+      repository,
+      revision: 'HEAD:selected.txt',
+    },),
+    expected: 'good\n',
+    context: 'stdin pathspec canonical blob',
+  },);
+
+  /**
    * Deletion and selected untracked path coexist with canonical patch.
    */
   await writeFile(

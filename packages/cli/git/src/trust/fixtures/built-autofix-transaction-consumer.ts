@@ -12,6 +12,7 @@ import { writeAutofixConfig, } from './built-autofix-config.ts';
 import { execute, } from './built-consumer-helpers.ts';
 import { verifyAutofixConcurrency, } from './built-autofix-concurrency-consumer.ts';
 import { verifyAutofixFailures, } from './built-autofix-failure-consumer.ts';
+import { verifyAutofixFilesystemFailure, } from './built-autofix-filesystem-consumer.ts';
 import { verifyAutofixHistoryModes, } from './built-autofix-history-modes-consumer.ts';
 import { verifyAutofixModes, } from './built-autofix-modes-consumer.ts';
 import { verifyAutofixRecovery, } from './built-autofix-recovery-consumer.ts';
@@ -321,6 +322,10 @@ writeFileSync('.git/private-hook-seen', value);
     env,
   },);
   await verifyAutofixFailures({
+    repository,
+    env,
+  },);
+  await verifyAutofixFilesystemFailure({
     repository,
     env,
   },);
