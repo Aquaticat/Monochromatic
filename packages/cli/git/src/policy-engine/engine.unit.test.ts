@@ -75,6 +75,26 @@ const TRANSFORM_OBSERVER_POLICY: RuntimePolicyDefinition = {
     },],);
   },
 };
+/** Policy exposing candidate version and ordered patch proposal. */
+const PATCH_POLICY: RuntimePolicyDefinition = {
+  name: 'fixture/patch',
+  defaultSeverity: 'error',
+  warnSafe: false,
+  triggers: ['pre-forward',],
+  check: function proposePatch({ context, }) {
+    return Promise.resolve([{
+      code: `version-${String(context.candidateVersion,)}`,
+      message: 'fixture patch',
+      path: 'file.txt',
+      patch: {
+        kind: 'git-unified',
+        targetId: 'target',
+        path: 'file.txt',
+        bytes: new TextEncoder().encode('patch',),
+      },
+    },],);
+  },
+};
 /** Policy that violates engine exception contract. */
 const THROWING_POLICY: RuntimePolicyDefinition = {
   name: 'throwing-policy',
@@ -302,6 +322,22 @@ await describe({
           'advice.statusHints=false',
           'status',
         ],);
+      },
+    },),
+    it({
+      name: 'retains ordered patches and candidate version',
+      fn: async function testPatchPassFacts() {
+        /** Candidate-aware provisional pass. */
+        const result = await runPolicyEngine({
+          args: ['commit', '--no-only', '-m', 'message',],
+          trigger: 'pre-forward',
+          candidateVersion: 2,
+          registeredPolicies: [PATCH_POLICY,],
+        },);
+        expect(result.patches,).toHaveLength(1,);
+        expect(result.patches[0]?.targetId,).toBe('target',);
+        expect(result.events[0]?.type === 'finding' ? result.events[0].code : '',)
+          .toBe('fixture/patch/version-2',);
       },
     },),
     it({
