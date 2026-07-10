@@ -177,6 +177,7 @@ export async function runPolicyEngine({
         code: 'config-invalid',
         message: 'Built-in policy configuration is invalid.',
       },),],
+      patches: [],
       exitCode: 2,
       shouldForward: false,
     };
@@ -215,6 +216,7 @@ export async function runPolicyEngine({
         code: 'config-invalid',
         message: `Unknown built-in policy ID: ${unknownId}`,
       },),],
+      patches: [],
       exitCode: 2,
       shouldForward: false,
     };
@@ -269,6 +271,7 @@ export async function runPolicyEngine({
       args: initialTransformedArgs,
       escapedPolicyIds: controls.escapedPolicyIds,
       events: builtInStage.events,
+      patches: builtInStage.patches,
       exitCode: builtInStage.complete ? 1 : 2,
       shouldForward: false,
     };
@@ -307,6 +310,7 @@ export async function runPolicyEngine({
       args: fixedStage.args,
       escapedPolicyIds: controls.escapedPolicyIds,
       events: stagedEvents,
+      patches: builtInStage.patches,
       exitCode: fixedStage.complete ? 1 : 2,
       shouldForward: false,
     };
@@ -345,6 +349,10 @@ export async function runPolicyEngine({
       args: fixedStage.args,
       escapedPolicyIds: controls.escapedPolicyIds,
       events,
+      patches: [
+        ...builtInStage.patches,
+        ...pluginStage.patches,
+      ],
       exitCode: 2,
       shouldForward: false,
     };
@@ -360,6 +368,10 @@ export async function runPolicyEngine({
     args: fixedStage.args,
     escapedPolicyIds: controls.escapedPolicyIds,
     events,
+    patches: [
+      ...builtInStage.patches,
+      ...pluginStage.patches,
+    ],
     exitCode: hasError ? 1 : 0,
     shouldForward: !hasError,
   };

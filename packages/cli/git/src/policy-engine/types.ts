@@ -8,6 +8,7 @@ import type { LazyPolicyGitFacts, } from '../api/context-types.ts';
 import type {
   PolicyContext,
   PolicyFinding,
+  PolicyPatch,
   PolicySeverity,
   PolicyTrigger,
 } from '../api/policy-types.ts';
@@ -112,6 +113,10 @@ export type PolicyEngineResult = Readonly<{
    * Stable ordered events.
    */
   events: readonly PolicyEvent[];
+  /**
+   * Ordered engine-owned patch proposals from current pass.
+   */
+  patches: readonly PolicyPatch[];
   /**
    * Settled cli-git exit code.
    */

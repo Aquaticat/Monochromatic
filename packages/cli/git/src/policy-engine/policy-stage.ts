@@ -6,6 +6,7 @@
 import type {
   PolicyContext,
   PolicyFinding,
+  PolicyPatch,
   PolicySeverity,
   PolicyTrigger,
 } from '../api/policy-types.ts';
@@ -33,6 +34,10 @@ export type PolicyStageResult = Readonly<{
    * Whether an error finding requested an early stop.
    */
   stopped: boolean;
+  /**
+   * Ordered engine-owned patches proposed by findings.
+   */
+  patches: readonly PolicyPatch[];
 }>;
 
 /**
@@ -109,6 +114,10 @@ export async function runPolicyStage({
    * Stage-local buffered events.
    */
   const events: PolicyEvent[] = [];
+  /**
+   * Stage-local ordered patch proposals.
+   */
+  const patches: PolicyPatch[] = [];
   for (const policy of policies) {
     if (!policy.triggers
       .includes(trigger,))
@@ -138,6 +147,9 @@ export async function runPolicyStage({
       },);
       if (!findingsAreValid(findings,))
         throw new TypeError(`Policy ${policy.name} returned an invalid finding.`,);
+      patches.push(...findings.flatMap(function extractPatch(finding,) {
+        return finding.patch === undefined ? [] : [finding.patch,];
+      },),);
       events.push(...findings.map(function toFindingEvent(
         finding,
         findingIndex,
@@ -167,6 +179,7 @@ export async function runPolicyStage({
           events,
           complete: true,
           stopped: true,
+          patches,
         };
     }
     catch (error: unknown) {
@@ -181,6 +194,7 @@ export async function runPolicyStage({
         events,
         complete: false,
         stopped: true,
+        patches,
       };
     }
   }
@@ -188,6 +202,7 @@ export async function runPolicyStage({
     events,
     complete: true,
     stopped: false,
+    patches,
   };
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
