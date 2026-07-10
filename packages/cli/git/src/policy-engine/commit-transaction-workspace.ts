@@ -5,6 +5,7 @@
  */
 import { resolveFsId, } from '@monochromatic-dev/module-fs-id/ts';
 import {
+  lstat,
   mkdir,
   open,
   readFile,
@@ -118,6 +119,50 @@ function resolveGitPath({
     cwd,
     reportedPath,
   );
+}
+
+/**
+ * Revalidates exact owned lock name before path-based replacement.
+ *
+ * @param lockPath - owned lock pathname
+ *
+ * @param lockFsId - original filesystem identity
+ *
+ * @param lockDevice - original device identity
+ *
+ * @param lockInode - original inode identity
+ */
+async function assertWorkspaceLockIdentity({
+  lockPath,
+  lockFsId,
+  lockDevice,
+  lockInode,
+}: Readonly<{
+  lockPath: string;
+  lockFsId: string;
+  lockDevice: string;
+  lockInode: string;
+}>,): Promise<void> {
+  /**
+   * Current non-followed lock metadata.
+   */
+  const metadata = await lstat(
+    lockPath,
+    { bigint: true, },
+  );
+  /**
+   * Current lock filesystem identity.
+   */
+  const filesystem = await resolveFsId({
+    path: lockPath,
+    emitDiagnostics: false,
+  },);
+  if ((!metadata.isFile())
+    || metadata.isSymbolicLink()
+    || (filesystem.value !== lockFsId)
+    || (String(metadata.dev,) !== lockDevice)
+    || (String(metadata.ino,) !== lockInode))
+    throw new TypeError(`Commit transaction index lock identity changed: ${lockPath}`,);
 }
 
 /**
@@ -278,8 +323,20 @@ export async function createCommitTransactionWorkspace({
        * Exact intended index bytes.
        */
       const bytes = await readFile(sourcePath,);
+      await assertWorkspaceLockIdentity({
+        lockPath,
+        lockFsId: lockFilesystem.value,
+        lockDevice: String(lockMetadata.dev,),
+        lockInode: String(lockMetadata.ino,),
+      },);
       await lockHandle.writeFile(bytes,);
       await lockHandle.sync();
+      await assertWorkspaceLockIdentity({
+        lockPath,
+        lockFsId: lockFilesystem.value,
+        lockDevice: String(lockMetadata.dev,),
+        lockInode: String(lockMetadata.ino,),
+      },);
       await lockHandle.close();
       closed.add('closed',);
       await rename(

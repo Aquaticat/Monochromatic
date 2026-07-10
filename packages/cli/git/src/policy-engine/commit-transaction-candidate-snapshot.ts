@@ -3,6 +3,7 @@
  *
  * @module
  */
+import { constants, } from 'node:fs';
 import { open, } from 'node:fs/promises';
 import type { LazyPolicyGitFacts, } from '../api/context-types.ts';
 
@@ -162,14 +163,14 @@ export async function snapshotFilesEqual({
    */
   await using left = await open(
     leftPath,
-    'r',
+    constants.O_RDONLY | constants.O_NOFOLLOW,
   );
   /**
    * Current snapshot input.
    */
   await using right = await open(
     rightPath,
-    'r',
+    constants.O_RDONLY | constants.O_NOFOLLOW,
   );
   /**
    * Reusable prior-state buffer.

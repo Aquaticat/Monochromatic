@@ -6,25 +6,23 @@
 import {
   access,
   lstat,
-  open,
-  readFile,
   realpath,
-  rename,
   rm,
 } from 'node:fs/promises';
 import {
-  dirname,
   isAbsolute,
   join,
   resolve,
 } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
-import {
-  isMissingPath,
-  syncDirectory,
-} from '../trust/registry-io.ts';
+import { isMissingPath, } from '../trust/registry-io.ts';
 import { snapshotFilesEqual, } from './commit-transaction-candidate-snapshot.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import {
+  installRecoveredIndex,
+  readRegularRecoveryFile,
+  removeRecoveryArtifacts,
+} from './commit-transaction-recovery-files.ts';
 import {
   INDEX_INSTALLED_FILENAME,
   REF_UPDATED_FILENAME,
@@ -99,89 +97,6 @@ function processIsAlive(pid: number,): boolean {
       return false;
     throw error;
   }
-}
-
-/**
- * Rejects symbolic-link or non-regular recovery artifact.
- *
- * @param path - required private recovery file
- */
-async function assertRegularRecoveryFile(path: string,): Promise<void> {
-  /**
-   * Non-followed recovery artifact metadata.
-   */
-  const metadata = await lstat(path,);
-  if ((!metadata.isFile()) || metadata.isSymbolicLink())
-    throw new CommitTransactionRecoveryError(`Unsafe transaction recovery file: ${path}`,);
-}
-
-/**
- * Installs prepared post-index through exact owned lock.
- *
- * @param lockPath - verified lock path
- *
- * @param realIndexPath - journal real index path
- *
- * @param postIndexPath - prepared exact post index
- */
-async function installRecoveredIndex({
-  lockPath,
-  realIndexPath,
-  postIndexPath,
-}: Readonly<{
-  lockPath: string;
-  realIndexPath: string;
-  postIndexPath: string;
-}>,): Promise<void> {
-  /**
-   * Exact intended post-index bytes.
-   */
-  const bytes = await readFile(postIndexPath,);
-  /**
-   * Existing verified owned lock handle.
-   */
-  await using lock = await open(
-    lockPath,
-    'r+',
-  );
-  await lock.truncate(0,);
-  await lock.writeFile(bytes,);
-  await lock.sync();
-  await lock.close();
-  await rename(
-    lockPath,
-    realIndexPath,
-  );
-  await syncDirectory(dirname(realIndexPath,),);
-}
-
-/**
- * Removes completed recovery artifacts durably.
- *
- * @param directory - exact transaction directory
- *
- * @param lockPath - optional owned lock path
- */
-async function removeRecoveryArtifacts({
-  directory,
-  lockPath,
-}: Readonly<{
-  directory: string;
-  lockPath?: string;
-}>,): Promise<void> {
-  if (lockPath !== undefined)
-    await rm(
-      lockPath,
-      { force: true, },
-    );
-  await rm(
-    directory,
-    {
-      recursive: true,
-      force: true,
-    },
-  );
-  await syncDirectory(dirname(directory,),);
 }
 
 /**
@@ -288,16 +203,11 @@ export async function recoverCommitTransaction({
     pathExists(postIndexPath,),
   ],)).every(Boolean,))
     throw new CommitTransactionRecoveryError(`Incomplete transaction recovery artifacts: ${directory}`,);
-  await Promise.all([
-    assertRegularRecoveryFile(journalPath,),
-    assertRegularRecoveryFile(originalIndexPath,),
-    assertRegularRecoveryFile(postIndexPath,),
-  ],);
   /**
-   * Prepared journal.
+   * Prepared journal read through no-follow descriptor.
    */
   const journal = parsePreparedJournal(
-    new Uint8Array(await readFile(journalPath,),),
+    await readRegularRecoveryFile(journalPath,),
   );
   if ((journal.ownerPid !== process.pid) && processIsAlive(journal.ownerPid,))
     throw new CommitTransactionRecoveryError(`Transaction owner process ${String(journal.ownerPid,)} is still active: ${directory}`,);
@@ -394,7 +304,7 @@ export async function recoverCommitTransaction({
      * Validated durable landed marker.
      */
     const marker = parseRefUpdated(
-      new Uint8Array(await readFile(markerPath,),),
+      await readRegularRecoveryFile(markerPath,),
     );
     if (marker.landedOid !== currentHead.oid)
       throw new CommitTransactionRecoveryError(`Current HEAD differs from journal landed OID; recovery retained at ${directory}`,);
@@ -433,6 +343,7 @@ export async function recoverCommitTransaction({
     lockPath,
     realIndexPath,
     postIndexPath,
+    journal,
   },);
   await removeRecoveryArtifacts({ directory, },);
   return 'index-installed';
