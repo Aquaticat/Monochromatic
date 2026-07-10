@@ -360,6 +360,8 @@ export function createPrivateIndexFacts({
  *
  * @param patch - engine-owned patch
  *
+ * @param candidateRevision - exact candidate blob revision
+ *
  * @param ordinal - stable patch ordinal
  *
  * @throws CommitTransactionGitError for invalid or conflicting patch
@@ -374,15 +376,20 @@ export async function applyPrivatePatch({
   gitPath,
   cwd,
   patch,
+  candidateRevision,
   ordinal,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
   gitPath: string;
   cwd: string;
   patch: PolicyPatch;
+  candidateRevision: GitObjectId;
   ordinal: number;
 }>,): Promise<void> {
-  validatePolicyPatch(patch,);
+  validatePolicyPatch({
+    patch,
+    expectedRevision: candidateRevision,
+  },);
   /**
    * Private patch file.
    */
@@ -434,19 +441,38 @@ export async function listChangedIndexPaths({
   indexPath: string;
 }>,): Promise<readonly string[]> {
   /**
-   * NUL-delimited changed paths.
+   * Optional existing parent commit.
+   */
+  const head = await runTransactionGit({
+    gitPath,
+    cwd,
+    args: [
+      'rev-parse',
+      '--verify',
+      'HEAD^{commit}',
+    ],
+    allowFailure: true,
+  },);
+  /**
+   * NUL-delimited changed or unborn-index paths.
    */
   const output = await runTransactionGit({
     gitPath,
     cwd,
     indexPath,
-    args: [
-      'diff',
-      '--cached',
-      '--name-only',
-      '-z',
-      'HEAD',
-    ],
+    args: head.exitCode === 0
+      ? [
+        'diff',
+        '--cached',
+        '--name-only',
+        '-z',
+        'HEAD',
+      ]
+      : [
+        'ls-files',
+        '--cached',
+        '-z',
+      ],
   },);
   return DECODER.decode(output.stdout,)
     .split('\0',)

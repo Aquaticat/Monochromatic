@@ -329,12 +329,13 @@ await describe({
       fn: async function testPatchPassFacts() {
         /** Candidate-aware provisional pass. */
         const result = await runPolicyEngine({
-          args: ['commit', '--no-only', '-m', 'message',],
+          args: ['--cli-git-keep-going', 'commit', '--no-only', '-m', 'message',],
           trigger: 'pre-forward',
           candidateVersion: 2,
-          registeredPolicies: [PATCH_POLICY,],
+          registeredPolicies: [PATCH_POLICY, THROWING_POLICY,],
         },);
         expect(result.patches,).toHaveLength(1,);
+        expect(result.events,).toHaveLength(1,);
         expect(result.patches[0]?.targetId,).toBe('target',);
         expect(result.events[0]?.type === 'finding' ? result.events[0].code : '',)
           .toBe('fixture/patch/version-2',);

@@ -3,7 +3,10 @@
  *
  * @module
  */
-import type { PolicyPatch, } from '../api/policy-types.ts';
+import type {
+  GitObjectId,
+  PolicyPatch,
+} from '../api/policy-types.ts';
 
 /**
  * Strict patch decoder.
@@ -31,14 +34,22 @@ const FORBIDDEN_PATCH_PREFIXES: readonly string[] = [
  *
  * @param patch - untrusted policy patch proposal
  *
+ * @param expectedRevision - exact candidate blob revision
+ *
  * @throws TypeError for path injection or unsupported directives
  *
  * @example
  * ```ts
- * validatePolicyPatch(patch);
+ * validatePolicyPatch({ patch, expectedRevision: 'abc' });
  * ```
  */
-export function validatePolicyPatch(patch: PolicyPatch,): void {
+export function validatePolicyPatch({
+  patch,
+  expectedRevision,
+}: Readonly<{
+  patch: PolicyPatch;
+  expectedRevision: GitObjectId;
+}>,): void {
   if (patch.path
     .includes('\n',)
     || patch.path
@@ -62,6 +73,16 @@ export function validatePolicyPatch(patch: PolicyPatch,): void {
   const lines = PATCH_DECODER.decode(patch.bytes,)
     .split('\n',);
   /**
+   * Required candidate-base index header prefix.
+   */
+  const requiredIndexPrefix = `index ${expectedRevision}..`;
+  /**
+   * Index header lines supplied by policy.
+   */
+  const indexHeaders = lines.filter(function indexHeader(line,) {
+    return line.startsWith('index ',);
+  },);
+  /**
    * Header counts proving exactly one declared target.
    */
   const requiredCounts = [
@@ -75,8 +96,15 @@ export function validatePolicyPatch(patch: PolicyPatch,): void {
       },)
         .length;
     },);
+  /**
+   * Sole index header when structurally present.
+   */
+  const [indexHeader,] = indexHeaders;
   if ((lines[0] !== requiredHeader)
     || requiredCounts.some(function isNotOne(count,) { return count !== 1; },)
+    || (indexHeaders.length !== 1)
+    || (indexHeader === undefined)
+    || (!indexHeader.startsWith(requiredIndexPrefix,))
     || lines.some(function mismatchedPathDirective(line,) {
       return (line.startsWith('diff --git ',) && (line !== requiredHeader))
         || (line.startsWith('--- ',) && (line !== requiredOldHeader))

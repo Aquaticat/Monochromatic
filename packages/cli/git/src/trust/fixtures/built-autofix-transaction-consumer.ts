@@ -5,6 +5,7 @@
  */
 import {
   readFile,
+  rm,
   writeFile,
 } from 'node:fs/promises';
 import { writeAutofixConfig, } from './built-autofix-config.ts';
@@ -14,6 +15,11 @@ import {
   assertFixtureEqual,
   initializePostCommitRepository,
 } from './built-post-commit-helpers.ts';
+
+/**
+ * Executable private hook mode.
+ */
+const EXECUTABLE_MODE = 0o700;
 
 /**
  * Resolves exact Git object or index text.
@@ -123,18 +129,44 @@ export async function verifyAutofixTransactionConsumer({ env, }: Readonly<{
     ],
     cwd: repository,
   },);
+  /**
+   * Hook proving inherited Git commands observe patched private index.
+   */
+  const hookPath = `${repository}/.git/hooks/pre-commit`;
+  await writeFile(
+    hookPath,
+    `#!/usr/bin/env node
+const { execFileSync } = require('node:child_process');
+const { writeFileSync } = require('node:fs');
+const value = execFileSync('/usr/bin/git', ['show', ':selected.txt'], { encoding: 'utf8' });
+if (value !== 'good\\n') throw new Error('hook did not observe patched private index');
+writeFileSync('.git/private-hook-seen', value);
+`,
+    { mode: EXECUTABLE_MODE, },
+  );
   await execute({
     command: 'git',
     args: [
+      '-C',
+      repository,
       'commit',
       '--quiet',
       '-m',
       'explicit autofix',
-      'selected.txt',
+      'selected.*',
     ],
-    cwd: repository,
+    cwd: '/work',
     env,
   },);
+  assertFixtureEqual({
+    actual: await readFile(
+      `${repository}/.git/private-hook-seen`,
+      'utf8',
+    ),
+    expected: 'good\n',
+    context: 'private index hook view',
+  },);
+  await rm(hookPath,);
   assertFixtureEqual({
     actual: await readGitText({
       repository,

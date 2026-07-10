@@ -203,13 +203,11 @@ export async function runCommitTransaction({
   /**
    * Candidate paths selected by commit semantics.
    */
-  const candidatePaths = mode === 'explicit-path'
-    ? region.pathspecs
-    : await listChangedIndexPaths({
-      gitPath,
-      cwd: layout.effectiveCwd,
-      indexPath: workspace.commitIndexPath,
-    },);
+  const candidatePaths = await listChangedIndexPaths({
+    gitPath,
+    cwd: layout.effectiveCwd,
+    indexPath: workspace.commitIndexPath,
+  },);
   /**
    * Initial exact private candidate-state snapshot.
    */
@@ -276,13 +274,18 @@ export async function runCommitTransaction({
       .candidates();
     for (const [ordinal, patch,] of pass.patches
       .entries()) {
-      if (!candidates.some(function matches(candidate,) {
-        return (candidate.targetId === patch.targetId) && (candidate.path === patch.path);
-      },))
+      /**
+       * Exact candidate bound by opaque ID and declared path.
+       */
+      const candidate = candidates.find(function matches(currentCandidate,) {
+        return (currentCandidate.targetId === patch.targetId)
+          && (currentCandidate.path === patch.path);
+      },);
+      if ((candidate === undefined) || ((typeof candidate.revision) === 'symbol'))
         return {
           policyResult: transactionFailure({
             previous: pass,
-            message: `Patch target is stale or undeclared: ${patch.path}`,
+            message: `Patch target is stale, undeclared, or mutable: ${patch.path}`,
           },),
           committed: false,
         };
@@ -293,6 +296,7 @@ export async function runCommitTransaction({
           gitPath,
           cwd: layout.effectiveCwd,
           patch,
+          candidateRevision: candidate.revision,
           ordinal,
         },);
       }
@@ -385,7 +389,7 @@ export async function runCommitTransaction({
       workspace,
       gitPath,
       cwd: layout.effectiveCwd,
-      pathspecs: region.pathspecs,
+      pathspecs: candidatePaths,
       landedOid,
     },)
     : workspace.installIndex(workspace.commitIndexPath,));

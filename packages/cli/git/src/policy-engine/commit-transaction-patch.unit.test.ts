@@ -48,7 +48,10 @@ await describe({
       name: 'accepts one declared ordinary text target',
       fn: async function testValidPatch(): Promise<void> {
         expect(function validate(): void {
-          validatePolicyPatch(createPatch({ text: VALID_PATCH, }),);
+          validatePolicyPatch({
+            patch: createPatch({ text: VALID_PATCH, }),
+            expectedRevision: '1111111',
+          },);
         },).not.toThrow();
       },
     },),
@@ -59,6 +62,10 @@ await describe({
 --- a/other.txt
 +++ b/other.txt
 `,
+      },
+      {
+        name: 'stale index base',
+        text: VALID_PATCH.replace('index 1111111..', 'index aaaaaaa..',),
       },
       {
         name: 'mismatched old path',
@@ -77,7 +84,10 @@ await describe({
         name: `rejects ${fixture.name}`,
         fn: async function testInvalidPatch(): Promise<void> {
           expect(function validate(): void {
-            validatePolicyPatch(createPatch({ text: fixture.text, }),);
+            validatePolicyPatch({
+              patch: createPatch({ text: fixture.text, }),
+              expectedRevision: '1111111',
+            },);
           },).toThrow();
         },
       },);
@@ -86,7 +96,10 @@ await describe({
       name: 'rejects line delimiter in declared path',
       fn: async function testPathDelimiter(): Promise<void> {
         expect(function validate(): void {
-          validatePolicyPatch(createPatch({ path: 'file.txt\nother.txt', text: VALID_PATCH, }),);
+          validatePolicyPatch({
+            patch: createPatch({ path: 'file.txt\nother.txt', text: VALID_PATCH, }),
+            expectedRevision: '1111111',
+          },);
         },).toThrow();
       },
     },),

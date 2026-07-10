@@ -270,7 +270,8 @@ export async function runPolicyEngine({
     keepGoing: controls.keepGoing,
     sequence: 0,
   },);
-  if ((!builtInStage.complete) || builtInStage.stopped) {
+  if ((!builtInStage.complete) || builtInStage.stopped
+    || builtInStage.patchProposed) {
     return {
       args: initialTransformedArgs,
       escapedPolicyIds: controls.escapedPolicyIds,
@@ -369,6 +370,12 @@ export async function runPolicyEngine({
     return (event.type === 'core-finding')
       || ((event.type === 'finding') && (event.severity === 'error'));
   },);
+  /**
+   * Whether provisional pass requires candidate mutation before forwarding.
+   */
+  const hasPatchProposal = pluginStage.patches
+    .length
+    > 0;
   return {
     args: fixedStage.args,
     escapedPolicyIds: controls.escapedPolicyIds,
@@ -377,8 +384,8 @@ export async function runPolicyEngine({
       ...builtInStage.patches,
       ...pluginStage.patches,
     ],
-    exitCode: hasError ? 1 : 0,
-    shouldForward: !hasError,
+    exitCode: (hasError || hasPatchProposal) ? 1 : 0,
+    shouldForward: (!hasError) && (!hasPatchProposal),
   };
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

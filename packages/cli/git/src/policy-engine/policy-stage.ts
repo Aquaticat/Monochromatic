@@ -38,6 +38,10 @@ export type PolicyStageResult = Readonly<{
    * Ordered engine-owned patches proposed by findings.
    */
   patches: readonly PolicyPatch[];
+  /**
+   * Whether current policy proposed a patch and ended provisional pass.
+   */
+  patchProposed: boolean;
 }>;
 
 /**
@@ -147,9 +151,13 @@ export async function runPolicyStage({
       },);
       if (!findingsAreValid(findings,))
         throw new TypeError(`Policy ${policy.name} returned an invalid finding.`,);
-      patches.push(...findings.flatMap(function extractPatch(finding,) {
+      /**
+       * Current policy patch proposals requiring whole-sequence restart.
+       */
+      const proposedPatches = findings.flatMap(function extractPatch(finding,) {
         return finding.patch === undefined ? [] : [finding.patch,];
-      },),);
+      },);
+      patches.push(...proposedPatches,);
       events.push(...findings.map(function toFindingEvent(
         finding,
         findingIndex,
@@ -173,6 +181,14 @@ export async function runPolicyStage({
           trigger,
           policyId: policy.name,
         },),);
+      if (proposedPatches.length > 0)
+        return {
+          events,
+          complete: true,
+          stopped: false,
+          patches,
+          patchProposed: true,
+        };
       if ((severity === 'error') && (findings.length > 0)
         && (!keepGoing))
         return {
@@ -180,6 +196,7 @@ export async function runPolicyStage({
           complete: true,
           stopped: true,
           patches,
+          patchProposed: false,
         };
     }
     catch (error: unknown) {
@@ -195,6 +212,7 @@ export async function runPolicyStage({
         complete: false,
         stopped: true,
         patches,
+        patchProposed: false,
       };
     }
   }
@@ -203,6 +221,7 @@ export async function runPolicyStage({
     complete: true,
     stopped: false,
     patches,
+    patchProposed: false,
   };
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
