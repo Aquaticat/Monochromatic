@@ -145,6 +145,13 @@ The estimate uses Tokei code lines so comments and blank lines do not distort co
 - Existing local `packages/pi-plugins/spawn`: 1,659 production and 1,236 test code lines.
   Its documentation-heavy project style occupies 3,424 physical production lines, which is a
   useful warning that physical line count will be materially higher than code-only count.
+- Local `packages/cli/mutation-test` plus its fixture: 4,718 current code lines excluding
+  licenses. Its initial implementation series added 9,603 physical lines across 63 files in 18
+  commits on 2026-07-05. The commits span 17:43:39 to 19:57:40, although commit timestamps do not
+  measure the full work interval. The user reports completing the framework in under 16 hours
+  with AI assistance. That establishes local observed throughput above 295 code lines or 600
+  physical lines per hour for a framework that includes parser operators, container
+  orchestration, timeout handling, taint-aware retries, CLI behavior, tests, and fixtures.
 
 This is a planning estimate for a hard-filter-complete implementation, not an observed size.
 Production is estimated at 2,800 to 4,000 code lines:
@@ -171,18 +178,24 @@ The resulting adoption-ready package is estimated at 6,300 to 9,500 code lines, 
 fixtures. A thin demonstration could be smaller, but it would not prove the hard filters and is
 not the relevant adoption estimate.
 
-Estimated implementation effort for one engineer familiar with Pi is 18 to 28 focused
-engineer-days:
+The previous conventional estimate of 18 to 28 engineer-days is rejected as inconsistent with
+this repository's measured AI-assisted delivery rate. Scaling the projected 6,300 to 9,500 code
+lines from the under-16-hour mutation-framework anchor gives a straight-line upper estimate of
+approximately 21 to 33 hours. The planning range is 24 to 40 focused AI-assisted hours, with a
+32-hour point estimate. This is 3 to 5 focused 8-hour days and retains margin for interactive TUI
+and child-process integration risk:
 
-- Contract, threat model, and capability profiles: 1 to 2 days.
-- Child protocol, event persistence, and result assembly: 4 to 5 days.
-- Concurrency, independent deadlines, cancellation, escalation, and cleanup: 4 to 6 days.
-- Complete transcript UI and interruption controls: 3 to 5 days.
-- Read-only enforcement and adversarial tests: 2 to 3 days.
-- Pi boundary harness, packaging, documentation, and review fixes: 4 to 7 days.
+- Contract, threat model, and capability profiles: 2 to 3 hours.
+- Child protocol, event persistence, and result assembly: 5 to 7 hours.
+- Concurrency, independent deadlines, cancellation, escalation, and cleanup: 5 to 8 hours.
+- Complete transcript UI and interruption controls: 5 to 8 hours.
+- Read-only enforcement and adversarial tests: 3 to 5 hours.
+- Pi boundary harness, packaging, documentation, and review fixes: 4 to 9 hours.
 
-The estimate assumes Linux process-group cleanup, Pi `0.80.6`, Node, no inherited child
-extensions by default, and read-only defined as an explicit tool allowlist with ambient extensions
+The estimate assumes the same engineer, AI-assisted workflow, repository familiarity, and quality
+bar demonstrated by the mutation framework. It also assumes Linux process-group cleanup, Pi
+`0.80.6`, Node, no inherited child extensions by default, and read-only defined as an explicit
+tool allowlist with ambient extensions
 disabled. Cross-platform descendant cleanup, an operating-system sandbox, persistent transcript
 search, or upstream compatibility across multiple Pi versions are outside the range. Reusing
 local spawn-plugin code may reduce effort, but no reduction is credited until its interfaces are
