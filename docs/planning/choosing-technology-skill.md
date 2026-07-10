@@ -13,8 +13,13 @@ documentation,
 reports,
 and Markdown artifacts may and should be written directly in the main worktree.
 The separate SDK harness and narrow vet-report-only exception are removed.
-This document specifies future implementation but does not authorize skill or policy changes without
-a separate action request.
+Implementation progress:
+
+- Phase 2 documentation policy completed on 2026-07-09;
+- skill rewrite,
+  mirror guard,
+  scenario validation,
+  and final audit remain.
 
 ## Goal
 

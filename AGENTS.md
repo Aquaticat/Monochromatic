@@ -835,9 +835,10 @@ VRB:
  "propose",
  "spot-check",
  "estimate") request deliberation.
-Deliverable is answer;
- don't also apply fixes answer implies,
- nor touch main worktree to investigate (see IWT).
+Deliverable is answer + any requested/required documentation,
+ report,
+ or Markdown artifact;
+ don't also apply fixes answer implies.
 Action verbs ("fix",
  "implement",
  "apply",
@@ -849,17 +850,22 @@ Action verbs ("fix",
  "refactor") authorize action.
 
 IWT:
- Decision/investigation verbs (VRB) forbid every change to main worktree,
- not only the fixes answer implies:
- no scratch files,
+ Decision/investigation verbs (VRB) forbid non-document changes to main worktree:
  no instrumentation/debug edits to real source,
- no throwaway tests dropped beside real code,
+ no throwaway tests beside real code,
  no dep installs,
  builds,
- or formatter/lint autofixes there.
+ formatter/lint autofixes,
+ config,
+ generated-output,
+ or other implementation mutations there.
+Documentation,
+ reports,
+ and Markdown artifacts may + should be created/updated directly in main worktree;
+ managed Markdown still edited through its source + generator.
 Reproducing,
  experimenting,
- or running anything that writes files happens in a forked worktree:
+ or running anything else that writes files happens in a forked worktree:
  `git worktree add <path> HEAD`,
  then install deps,
  build,
@@ -867,15 +873,14 @@ Reproducing,
  run freely inside it,
  remove it after (`git worktree remove`).
 That fork + its dep installs + its builds/runs are local-only work needing no permission (PX3),
- even when the parent task is investigate-only.
-This is stricter than THR (which governs where mutating verification runs):
- under a decision verb the main worktree stays byte-for-byte unchanged,
- destructive or not.
+ even when parent task investigate-only.
+This is stricter than THR (which governs where mutating verification runs),
+ except documentation/report/Markdown artifacts above.
 Cue:
  about to write,
  edit,
  instrument,
- or `pnpm install` into the main worktree while the task verb only asked you to investigate,
+ or `pnpm install` non-document state in main worktree while task verb only asked investigate,
  evaluate,
  assess,
  review,
@@ -885,7 +890,7 @@ Cue:
  spot-check,
  estimate,
  or propose;
- fork a worktree instead.
+ fork worktree instead.
 
 AUT:
  Holds in Auto Mode:
