@@ -262,6 +262,8 @@ The real Git executable continues to be invoked by its resolved absolute path fo
 
 `cli-git.config.mjs` must be self-contained except for Node built-in imports.
 All local and package JavaScript is expected to be bundled into the artifact.
+Imports from the cli-git authoring API or plugin packages exist in consumer source only and must be bundled away;
+a directly hand-written MJS artifact instead exports raw validated data or inlines its helpers.
 The artifact contract is reproducibility guidance,
 not a sandbox:
 trusted code can use Node APIs to access files,
@@ -414,7 +416,10 @@ Percent escaping protects comma and percent characters.
 Entries split on the first decoded colon because filesystem IDs are colon-free and Windows paths may contain later
 colons.
 
-Malformed or suspicious entries remain subject to the warning behavior in the source decision.
+Malformed or suspicious entries emit a prominent warning,
+are ignored,
+and leave the affected path under strict snapshot behavior.
+They do not waive first trust.
 Exact canonical encoding and decoder-error behavior still need tests.
 
 ### Recursive root trust
@@ -683,8 +688,9 @@ Deferred issue:
   and deferred indefinitely pending an explicit maintainer resume decision.
 
 Existing #139 remains relevant to packaged CLI shebang behavior.
-Existing #143 and #160 are explicitly handled by the retirement slice rather than silently left as contradictory hk
-expansion work.
+Existing #143 and #160 now have tracker comments,
+no longer carry `ready-for-agent`,
+and remain open under `needs-triage` for explicit final disposition in #357 rather than contradictory hk expansion.
 
 ## Implementation sequence
 
