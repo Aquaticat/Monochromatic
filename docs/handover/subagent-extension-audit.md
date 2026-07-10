@@ -31,6 +31,50 @@ Evaluate open-source Pi extensions and a minimal custom design for subagent orch
 - Integration validation: pending.
 - Recommendation: pending.
 
+## Screened candidate set
+
+Meaningful open-source candidates found through GitHub and npm searches:
+
+- `nicobailon/pi-subagents`, npm `0.34.0`, package.json declares MIT, cloned at
+  `/tmp/agent/nicobailon-pi-subagents-20260709`.
+- `mjakl/pi-subagent`, npm `2.1.0`, MIT, cloned at `/tmp/agent/mjakl-pi-subagent-20260709`.
+- `jwu/pi-subagents`, npm `2.1.0`, MIT, cloned at `/tmp/agent/jwu-pi-subagents-20260709`.
+- `@e9n/pi-subagent` from `espennilsen/pi`, npm `0.1.0`, MIT, cloned at
+  `/tmp/agent/espennilsen-pi-20260709`.
+- `@the-forge-flow/sub-agents-pi`, npm `0.2.4`, MIT, cloned at
+  `/tmp/agent/monsieurbarti-sub-agents-pi-20260709`.
+- `pi-multiagent`, npm `0.9.8`, MIT, cloned at `/tmp/agent/tiziano-pi-multiagent-20260709`.
+- `pi-crew`, npm `0.9.29`, MIT, cloned at `/tmp/agent/baphuongna-pi-crew-20260709`.
+- `cmf/pi-subagent` was screened out from finalist depth: its repository has two commits, no
+  release, no stars, and no declared license in the GitHub metadata.
+
+## Hard-filter evidence so far
+
+- `nicobailon/pi-subagents` has explicit TUI rendering, child tool-call progress, transcript
+  views, fleet status, interrupt and stop actions, and per-run `timeoutMs` in
+  `src/extension/schemas.ts`, `src/extension/tool-description.ts`, and
+  `src/runs/background/async-execution.ts`. Its parallel task schema currently exposes no
+  per-task timeout field, so this remains a possible mismatch with the per-subagent timeout
+  requirement.
+- `jwu/pi-subagents` renders live tool calls in `extensions/subagent-render.ts` and aborts the
+  child on the parent signal in `extensions/subagent-executor.ts`, but the inspected tool schema
+  has no subagent timeout or user-facing control action.
+- `@e9n/pi-subagent` captures full child messages and has abort-aware one-shot execution plus
+  pool kill operations in `extensions/pi-subagent/src/runner.ts`, `rpc-agent.ts`, `pool.ts`, and
+  `tool.ts`. Its timeout is a settings-level value, not yet verified as a parent-set per-child
+  value.
+- `pi-multiagent` has an operator widget, raw event inspection, cancel control, per-step
+  `timeoutSecondsPerStep`, and detailed child event handling. Its own skill says normal live
+  assistant and tool activity is not all parent-visible by default, so it needs careful testing
+  against the complete-observability requirement.
+- `@the-forge-flow/sub-agents-pi` explicitly advertises live tool-call streaming, full transcript
+  expansion, an interruptible TUI panel, and per-call tool allowlists in its README and source.
+  Its current package surface does not show a parent-set timeout parameter.
+- `pi-crew` has a rich dashboard, transcript viewer, cancellation, and a large test suite, but
+  its README states that the project is mostly AI-developed and not hardened. The cloned source
+  is also materially larger than the other candidates and its timeout controls need to be
+  separated from global run, no-output, and workflow-step settings.
+
 ## Evidence rules
 
 - Do not recommend a candidate from metadata alone.
