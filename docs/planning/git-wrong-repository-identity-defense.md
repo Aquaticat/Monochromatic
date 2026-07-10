@@ -288,21 +288,33 @@ and batches of existing commits.
 
 ### Layer E: make the server authoritative
 
-Change classic branch protection for `main` only after local layers pass their disposable fixtures:
+Create one active branch ruleset with:
 
-- keep required signed commits enabled;
-- enable administrator enforcement;
-- disable force pushes;
-- keep branch deletion disabled.
+- target `branch`;
+- `~ALL` branch inclusion and no exclusions;
+- no bypass actors;
+- `required_signatures`;
+- `non_fast_forward`.
+
+GitHub's ruleset API documents `~ALL` as the all-branches condition,
+`required_signatures` as requiring verified commits,
+and `non_fast_forward` as preventing force pushes.
+Unlike current classic protection for `main`,
+the ruleset closes administrator bypass and protects topic-branch publication as well as default-branch history.
+
+Keep classic `main` protection active during rollout.
+After the all-branch ruleset passes remote fixtures,
+enable administrator enforcement and disable force pushes in classic protection too.
+The duplicate `main` controls are intentional defense in depth and preserve the existing deletion and status-check settings.
 
 Do not add a bypass actor for identity or signature enforcement.
 This is the final boundary for clients that skip hooks,
 invoke a different Git binary,
 or pass `--no-verify`.
 
-A later migration from classic protection to one consolidated ruleset is reasonable,
-but it is not required for this incident.
-Changing the two existing classic-protection fields has less migration risk and is easier to roll back independently.
+Investigate a companion all-tag ruleset in the remote fixture.
+Keep it only if GitHub demonstrably checks commit signatures reachable from tag updates without breaking signed release-tag workflows.
+Do not claim tag publication is protected until that behavior is verified with a real temporary tag.
 
 ## Observability and repair
 
@@ -416,13 +428,21 @@ Accepted pushes must update only the requested refs.
 
 ### GitHub protection fixture
 
-Verify server behavior against a temporary protected branch carrying the same policy before changing `main`:
+First create the proposed branch ruleset with a temporary branch-name condition.
+Verify:
 
 - an owner push containing an unverified commit is rejected;
 - an owner force push is rejected;
 - an owner push containing a valid signed commit succeeds.
 
-Remove the temporary branch after the API state and remote behavior are recorded.
+Run a separate temporary tag-ruleset experiment:
+
+- push an unsigned tag pointing to a verified commit;
+- push a signed tag pointing to a verified commit;
+- attempt to introduce an unverified commit only through a tag.
+
+The experiment determines whether a companion tag rule protects commit publication or only tag-object policy.
+Remove temporary refs and rulesets after API state and remote behavior are recorded.
 Do not test rejection by pushing a bad commit to `main`.
 
 ## Rollout sequence
@@ -441,11 +461,12 @@ Do not test rejection by pushing a bad commit to `main`.
    build,
    and end-user wrapper and hook verification through mise tasks.
 10. Verify a normal signed checkpoint commit remains local until the post-commit verifier succeeds.
-11. Test the proposed GitHub policy on a temporary protected branch.
-12. Enable administrator enforcement and disable force pushes on `main`.
-13. Query GitHub protection through the API and verify the exact final fields.
-14. Confirm subsequent pushed commits report GitHub verification reason `valid`.
-15. Update this plan's status and measured results.
+11. Test the proposed all-branch ruleset and tag behavior with temporary refs.
+12. Activate the verified all-branch ruleset with no bypass actors.
+13. Enable administrator enforcement and disable force pushes in classic `main` protection.
+14. Query GitHub rulesets and classic protection through the API and verify the exact final fields.
+15. Confirm subsequent pushed commits report GitHub verification reason `valid`.
+16. Update this plan's status and measured results.
 
 Commit each repository change at the earliest scoped checkpoint.
 Stage only explicit task paths so concurrent changes are never swept into a commit.
@@ -513,8 +534,10 @@ The work is complete only when:
 - a created bad commit cannot reach the wrapper's auto-push path;
 - pre-push rejects every fixture containing an untrusted identity or unverifiable commit;
 - valid signed commits still commit and push through user-facing commands;
-- `main` protection enforces signatures for administrators and forbids force pushes;
+- every branch requires verified signatures and rejects non-fast-forward updates with no bypass actors;
+- classic `main` protection also enforces signatures for administrators and forbids force pushes;
 - an owner cannot publish an unverified fixture commit to a temporary protected branch;
+- tag-publication behavior is tested and either protected by a verified tag ruleset or recorded as a residual limitation;
 - package linting and type checks report zero errors or warnings;
 - every exported policy branch has a passing test;
 - documentation matches installed configuration and observed behavior;
@@ -538,3 +561,7 @@ The work is complete only when:
   <https://github.com/jdx/hk/pull/825>
 - GitHub commit signature verification:
   <https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification>
+- GitHub repository rules API:
+  <https://docs.github.com/en/rest/repos/rules>
+- GitHub ruleset behavior:
+  <https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets>
