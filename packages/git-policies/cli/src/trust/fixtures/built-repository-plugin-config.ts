@@ -35,8 +35,10 @@ export function repositoryPluginConfigSource(severity: RepositoryPolicySeverity,
   const policies = severity === 'default'
     ? ''
     : `\n  policies: { 'mono/forbidden-root-context': '${severity}' },`;
-  return `import { defineConfig } from '@monochromatic-dev/cli-git/ts';
-import { repositoryPolicyPlugin } from '@monochromatic-dev/git-policy-repository/ts';
+  return `import {
+  defineConfig,
+  repositoryPolicyPlugin,
+} from '@monochromatic-dev/cli-git';
 
 export default defineConfig({
   plugins: { mono: repositoryPolicyPlugin },${policies}

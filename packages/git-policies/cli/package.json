@@ -31,6 +31,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/git-policy-repository": "workspace:*",
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-fs-id": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",

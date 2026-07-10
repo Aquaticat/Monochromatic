@@ -12,6 +12,8 @@ the wrapper resolves and forwards to the next real Git executable.
 
 The package is prepared for npm distribution,
 but registry publication is deliberately deferred to issue #358.
+The tarball contains one `dist/final/node/index.mjs` artifact.
+That self-contained static bundle is both the executable and the inert package-root import.
 
 ## Policy authoring API
 
@@ -70,6 +72,31 @@ output.
 missing object IDs,
 and direct operations without a Git subcommand.
 It is an in-process unique symbol and is never serialized to JSONL.
+
+## Shipped optional policies
+
+Repo-owned policies ship in the same package-root MJS artifact but remain disabled until trusted config registers them.
+The current optional export is `repositoryPolicyPlugin`.
+
+```ts
+import {
+  defineConfig,
+  repositoryPolicyPlugin,
+} from '@monochromatic-dev/cli-git';
+
+export default defineConfig({
+  plugins: {
+    mono: repositoryPolicyPlugin,
+  },
+  policies: {
+    'mono/forbidden-root-context': 'error',
+  },
+});
+```
+
+Importing the package does not register this plugin,
+load repository config,
+or start the executable.
 
 ## Policy engine and management
 

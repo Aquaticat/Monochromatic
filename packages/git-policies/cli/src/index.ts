@@ -28,6 +28,11 @@ export type {
   PluginMap,
   PolicySetting,
 } from './api/config-types.ts';
+export {
+  forbiddenRootContext,
+  hasForbiddenRootContext,
+  repositoryPolicyPlugin,
+} from '@monochromatic-dev/git-policy-repository/ts';
 export type {
   ActivePolicySeverity,
   CandidateChange,

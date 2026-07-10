@@ -14,9 +14,9 @@ import {
  */
 const config: UserConfig = defineConfig({
   ...base,
-  entry: {
-    index: './src/index.ts',
-    bin: './src/bin.ts',
+  entry: ['./src/index.ts',],
+  outputOptions: {
+    codeSplitting: false,
   },
 },);
 

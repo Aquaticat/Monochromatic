@@ -10,7 +10,7 @@ import {
   type PluginDefinition,
   type PolicyDefinition,
   type PolicyFinding,
-} from '@monochromatic-dev/cli-git/ts';
+} from '@monochromatic-dev/git-policy-api/ts';
 
 /**
  * Candidate fields needed by root-context path decision.

@@ -31,8 +31,8 @@ const PACKAGE_NAME_SHIM_CONTENT = `#!/bin/sh
 
 /** Shell script marker emitted by pnpm command shims for this monorepo package. */
 const BUNDLED_ENTRY_SHIM_CONTENT = `#!/bin/sh
-exec node "$basedir/../../packages/git-policies/cli/dist/final/node/bin.mjs" "$@"
-# cmd-shim-target=/var/home/user/Monochromatic/packages/git-policies/cli/dist/final/node/bin.mjs
+exec node "$basedir/../../packages/git-policies/cli/dist/final/node/index.mjs" "$@"
+# cmd-shim-target=/var/home/user/Monochromatic/packages/git-policies/cli/dist/final/node/index.mjs
 `;
 
 /** Shell script that stands in for the real system git binary. */

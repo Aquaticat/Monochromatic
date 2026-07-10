@@ -34,7 +34,7 @@ const WRAPPER_PATH = join(
   'dist',
   'final',
   'node',
-  'bin.mjs',
+  'index.mjs',
 );
 
 /** Executable mode for disposable Node-based Git capture fixture. */

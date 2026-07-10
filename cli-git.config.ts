@@ -3,8 +3,10 @@
  *
  * @module
  */
-import { defineConfig, } from '@monochromatic-dev/cli-git/ts';
-import { repositoryPolicyPlugin, } from '@monochromatic-dev/git-policy-repository/ts';
+import {
+  defineConfig,
+  repositoryPolicyPlugin,
+} from '@monochromatic-dev/cli-git/ts';
 
 /**
  * Exact trusted repository policy configuration.

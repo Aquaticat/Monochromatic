@@ -20,7 +20,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@monochromatic-dev/cli-git": "workspace:*"
+    "@monochromatic-dev/git-policy-api": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
