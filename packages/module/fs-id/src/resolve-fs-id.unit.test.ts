@@ -242,6 +242,7 @@ await describe({
         const fixture = createFixture({
           platform: 'darwin',
           commandResults: [
+            'Filesystem 1024-blocks Used Available Capacity Mounted on\n/dev/disk3s1 10 5 5 50% /\n',
             '<?xml version="1.0"?><plist><dict><key>VolumeUUID</key><string>ABCD-1234</string></dict></plist>',
           ],
         },);
@@ -250,10 +251,10 @@ await describe({
          */
         const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: '/repo', },);
         expect(result,).toEqual({ value: 'volume-uuid_abcd-1234', stable: true, source: 'volume-uuid', },);
-        expect(fixture.commands[0],).toEqual({
-          command: 'diskutil',
-          args: ['info', '-plist', '/repo',],
-        },);
+        expect(fixture.commands,).toEqual([
+          { command: 'df', args: ['-P', '/repo',], },
+          { command: 'diskutil', args: ['info', '-plist', '/dev/disk3s1',], },
+        ],);
       },
     },),
     it({
@@ -262,14 +263,21 @@ await describe({
         /**
          * macOS fallback fixture.
          */
-        const fixture = createFixture({ platform: 'darwin', commandResults: ['No UUID\n', '2049\n',], },);
+        const fixture = createFixture({
+          platform: 'darwin',
+          commandResults: [
+            'Filesystem Mounted on\n/dev/disk3s1 /\n',
+            '<plist><dict></dict></plist>',
+            '2049\n',
+          ],
+        },);
         /**
          * Degraded identity.
          */
         const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: '/repo', },);
         expect(result.value,).toBe('device-number_2049',);
         expect(result.stable,).toBe(false,);
-        expect(fixture.commands[1],).toEqual({ command: 'stat', args: ['-f', '%d', '/repo',], },);
+        expect(fixture.commands[2],).toEqual({ command: 'stat', args: ['-f', '%d', '/repo',], },);
         expect(fixture.warnings,).toHaveLength(1,);
       },
     },),
@@ -350,6 +358,31 @@ await describe({
         expect(result.value,).toBe('device-number_99',);
         expect(result.stable,).toBe(false,);
         expect(fixture.warnings,).toHaveLength(1,);
+      },
+    },),
+    it({
+      name: 'rejects zero Windows device fallback that cannot distinguish volumes',
+      fn: async () => {
+        /**
+         * Unusable Windows device fixture.
+         */
+        const fixture = createFixture({
+          platform: 'win32',
+          commandResults: [new Error('preferred',),],
+          deviceResults: ['0',],
+        },);
+        /**
+         * Captured unusable fallback.
+         */
+        let caught: unknown;
+        try {
+          await createFsIdResolver({ adapters: fixture.adapters, })({ path: 'C:\\repo', },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(FsIdResolutionError,);
+        expect(fixture.warnings,).toHaveLength(0,);
       },
     },),
     it({

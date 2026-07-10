@@ -30,6 +30,16 @@ const MAX_PAYLOAD_LENGTH = 512;
 const SAFE_PAYLOAD_CHARACTERS = 'abcdefghijklmnopqrstuvwxyz0123456789-.';
 
 /**
+ * ASCII characters accepted in macOS device-node paths.
+ *
+ * @example
+ * ```ts
+ * SAFE_DEVICE_CHARACTERS.includes('/');
+ * ```
+ */
+const SAFE_DEVICE_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/_-.';
+
+/**
  * ASCII whitespace that terminates a Windows serial token.
  *
  * @example
@@ -221,6 +231,80 @@ export function createFsId({
  */
 export function parseFindmntUuid(output: string,): string {
   return normalizeIdentityPayload(output,);
+}
+
+/**
+ * Checks device path against ASCII command-argument grammar.
+ *
+ * @param device - Device path candidate
+ *
+ * @returns Whether every code unit is allowed ASCII
+ *
+ * @example
+ * ```ts
+ * isSafeDevicePath('/dev/disk3s1'); // true
+ * ```
+ */
+function isSafeDevicePath(device: string,): boolean {
+  for (let index = 0; index < device.length; index += 1) {
+    if (!SAFE_DEVICE_CHARACTERS.includes(device.charAt(index,),))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * Parses mounted device node from POSIX `df -P` output.
+ *
+ * @param output - Captured portable-format filesystem report
+ *
+ * @returns Device node safe for `diskutil info`
+ *
+ * @throws when output has no safe `/dev/` row
+ *
+ * @example
+ * ```ts
+ * parseDfDevice('Filesystem 1024-blocks Used Available Capacity Mounted on\n/dev/disk3s1 1 1 0 100% /');
+ * ```
+ */
+export function parseDfDevice(output: string,): string {
+  /**
+   * Nonempty rows in source order.
+   */
+  const lines = output.split('\n',)
+    .filter(function lineHasContent(line,): boolean {
+      return line.trim()
+        .length
+        > 0;
+    },);
+  for (const line of lines.toReversed()) {
+    /**
+     * Trimmed data row.
+     */
+    const trimmed = line.trim();
+    /**
+     * First field endpoint.
+     */
+    const whitespaceIndex = (function findWhitespace(): number {
+      for (let index = 0; index < trimmed.length; index += 1) {
+        if ((trimmed.charAt(index,) === ' ') || (trimmed.charAt(index,) === '\t'))
+          return index;
+      }
+      return trimmed.length;
+    })();
+    /**
+     * Filesystem device field.
+     */
+    const device = trimmed.slice(
+      0,
+      whitespaceIndex,
+    );
+    if (!device.startsWith('/dev/',))
+      continue;
+    if (isSafeDevicePath(device,))
+      return device;
+  }
+  throw new TypeError('df returned no safe mounted device node',);
 }
 
 /**

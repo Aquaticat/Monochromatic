@@ -14,6 +14,7 @@ import { promisify, } from 'node:util';
 import {
   createFsId,
   normalizeIdentityPayload,
+  parseDfDevice,
   parseDiskutilVolumeUuid,
   parseFindmntUuid,
   windowsDriveRoot,
@@ -108,14 +109,28 @@ async function preferredHostResolution(): Promise<FsIdResolution> {
   }
   if (host === 'darwin') {
     /**
-     * macOS preferred Volume UUID output.
+     * Portable mount report used to identify diskutil device.
+     */
+    const mountOutput = await commandOutput({
+      command: 'df',
+      args: [
+        '-P',
+        target,
+      ],
+    },);
+    /**
+     * Mounted device node.
+     */
+    const device = parseDfDevice(mountOutput,);
+    /**
+     * macOS preferred structured Volume UUID output.
      */
     const output = await commandOutput({
       command: 'diskutil',
       args: [
         'info',
         '-plist',
-        target,
+        device,
       ],
     },);
     return {
@@ -165,25 +180,112 @@ async function preferredHostResolution(): Promise<FsIdResolution> {
 }
 
 /**
+ * Resolves explicit degraded identity on current real host.
+ *
+ * @returns Unstable host resolution
+ *
+ * @throws when runtime identity is absent or unusable
+ *
+ * @example
+ * ```ts
+ * await degradedHostResolution();
+ * ```
+ */
+async function degradedHostResolution(): Promise<FsIdResolution> {
+  /**
+   * Existing checkout path on runner volume.
+   */
+  const target = resolve(process.cwd(),);
+  /**
+   * Current Node platform.
+   */
+  const host = platform();
+  if (host === 'linux') {
+    /**
+     * Linux runtime f_fsid output.
+     */
+    const output = await commandOutput({
+      command: 'stat',
+      args: [
+        '--file-system',
+        '--format=%i',
+        target,
+      ],
+    },);
+    return {
+      value: createFsId({
+        source: 'f-fsid',
+        payload: normalizeIdentityPayload(output,),
+      },),
+      stable: false,
+      source: 'f-fsid',
+      reason: 'real-host degraded evidence',
+    };
+  }
+  if (host === 'darwin') {
+    /**
+     * macOS runtime device number output.
+     */
+    const output = await commandOutput({
+      command: 'stat',
+      args: [
+        '-f',
+        '%d',
+        target,
+      ],
+    },);
+    return {
+      value: createFsId({
+        source: 'device-number',
+        payload: normalizeIdentityPayload(output,),
+      },),
+      stable: false,
+      source: 'device-number',
+      reason: 'real-host degraded evidence',
+    };
+  }
+  if (host === 'win32') {
+    /**
+     * Windows runtime device number.
+     */
+    const device = (await stat(
+      target,
+      { bigint: true, },
+    )).dev
+      .toString();
+    if (device === '0')
+      throw new Error('Windows runtime device number is zero',);
+    return {
+      value: createFsId({
+        source: 'device-number',
+        payload: device,
+      },),
+      stable: false,
+      source: 'device-number',
+      reason: 'real-host degraded evidence',
+    };
+  }
+  throw new Error(`unsupported host evidence platform: ${host}`,);
+}
+
+/**
  * Real-host preferred result.
  */
-const result = await preferredHostResolution();
-if (result.value
+const preferred = await preferredHostResolution();
+/**
+ * Real-host degraded result.
+ */
+const degraded = await degradedHostResolution();
+if (preferred.value
+  .includes(':',)
+  || degraded.value
   .includes(':',))
   throw new Error('real-host identity contains forbidden colon',);
-/**
- * Real host runtime device number recorded as degraded-path evidence.
- */
-const runtimeDeviceNumber = (await stat(
-  process.cwd(),
-  { bigint: true, },
-)).dev
-  .toString();
 console.log(JSON.stringify({
   platform: platform(),
-  source: result.source,
-  stable: result.stable,
+  preferredSource: preferred.source,
+  preferredStable: preferred.stable,
+  degradedSource: degraded.source,
+  degradedStable: degraded.stable,
   colonFree: true,
-  runtimeDeviceNumber,
-  runtimeDeviceUsable: runtimeDeviceNumber !== '0',
 },),);

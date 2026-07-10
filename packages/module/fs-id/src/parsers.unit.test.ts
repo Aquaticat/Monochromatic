@@ -5,9 +5,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  createFsId,
+  assertFsId,
   isFsId,
+} from '../dist/final/node/index.mjs';
+import {
+  createFsId,
   normalizeIdentityPayload,
+  parseDfDevice,
   parseDiskutilVolumeUuid,
   parseFindmntUuid,
   parseVolumeSerial,
@@ -100,6 +104,18 @@ await describe({
       ],
     },),
     describe({
+      name: assertFsId.name,
+      children: [
+        it({
+          name: 'narrows valid generated identity and rejects invalid value',
+          fn: async () => {
+            expect(() => assertFsId('fs-uuid_abcd',),).not.toThrow();
+            expect(() => assertFsId('fs-uuid_a:b',),).toThrow(TypeError,);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: isFsId.name,
       children: [
         it({
@@ -138,6 +154,27 @@ await describe({
           name: 'rejects absent UUID marker',
           fn: async () => {
             expect(() => parseFindmntUuid('-\n',),).toThrow(TypeError,);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: parseDfDevice.name,
+      children: [
+        it({
+          name: 'parses device field independent of localized headers and mount spaces',
+          fn: async () => {
+            expect(parseDfDevice(
+              'Système 1024-blocs Utilisé Disponible Capacité Monté sur\n'
+                + '/dev/disk3s1 10 5 5 50% /Volumes/Name With Spaces\n',
+            ),).toBe('/dev/disk3s1',);
+          },
+        },),
+        it({
+          name: 'rejects absent non-device and unsafe device rows',
+          fn: async () => {
+            expect(() => parseDfDevice('Filesystem Mounted on\noverlay /\n',),).toThrow(TypeError,);
+            expect(() => parseDfDevice('Header\n/dev/disk;bad 1 1 0 /\n',),).toThrow(TypeError,);
           },
         },),
       ],

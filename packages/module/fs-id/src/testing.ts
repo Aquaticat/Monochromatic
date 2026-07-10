@@ -10,6 +10,7 @@ export {
   createFsId,
   isFsId,
   normalizeIdentityPayload,
+  parseDfDevice,
   parseDiskutilVolumeUuid,
   parseFindmntUuid,
   parseVolumeSerial,

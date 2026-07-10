@@ -10,6 +10,7 @@ import { FsIdResolutionError, } from './errors.ts';
 import {
   createFsId,
   normalizeIdentityPayload,
+  parseDfDevice,
   parseDiskutilVolumeUuid,
   parseFindmntUuid,
   windowsDriveRoot,
@@ -270,18 +271,32 @@ export async function resolveDarwinFsId({
   },);
   try {
     /**
-     * Preferred diskutil output.
+     * Portable mount report used to identify device accepted by diskutil.
+     */
+    const mountOutput = await adapters.run({
+      command: 'df',
+      args: [
+        '-P',
+        path,
+      ],
+    },);
+    /**
+     * Mounted device node from invariant first data field.
+     */
+    const device = parseDfDevice(mountOutput,);
+    /**
+     * Preferred structured diskutil output.
      */
     const output = await adapters.run({
       command: 'diskutil',
       args: [
         'info',
         '-plist',
-        path,
+        device,
       ],
     },);
     /**
-     * Parsed UUID or absent sentinel.
+     * Parsed UUID from plist.
      */
     const uuid = parseDiskutilVolumeUuid(output,);
     rl.debug(`resolved stable Volume UUID for ${path}`,);
