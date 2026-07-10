@@ -75,6 +75,32 @@ Meaningful open-source candidates found through GitHub and npm searches:
   is also materially larger than the other candidates and its timeout controls need to be
   separated from global run, no-output, and workflow-step settings.
 
+## Validation probes
+
+All containerized validation runs used a 2 GB memory cap and 2 CPU cap.
+
+- `mjakl/pi-subagent`: `npm install --no-package-lock && npm test` passed all 37 tests.
+  Its test suite does not cover the missing UI control or timeout features.
+- `@the-forge-flow/sub-agents-pi`: `npm install --no-package-lock && npm test` passed 136 tests
+  across 12 files. `npm run test:coverage` fails because `@vitest/coverage-v8` is not declared.
+  Installation reported six dependency vulnerabilities and deprecated `@mariozechner` Pi peers.
+- `nicobailon/pi-subagents`: with Git available, 1081 of 1082 tests passed. The repeated failure is
+  `test/unit/watchdog-lsp-diagnostics.test.ts`, malformed language-server JSON, with `write EPIPE`
+  from `src/watchdog/lsp-diagnostics.ts:318`. A first run without Git had 30 environment-driven
+  failures; those disappeared after Git was installed in the disposable container.
+- `@e9n/pi-subagent`: typecheck passed and its `node --test` command found zero tests. Installation
+  reported one high-severity vulnerability.
+- `pi-multiagent`: install without a frozen lockfile added 110 packages, then stopped because pnpm
+  ignored build scripts for `@google/genai`, `koffi`, and `protobufjs` pending approval. The clone
+  has no `pnpm-lock.yaml`, so the repository's frozen-lockfile validation path is not runnable as
+  checked out.
+- `pi-crew`: the full test command reached 5991 tests, with 5987 passing, 3 skipped, and one
+  failure in `test/unit/settings-store-cov.test.ts` where a root container could write a path the
+  test expected to reject. Treat this result as an environment-sensitive failure, not proof of a
+  production defect, but the full command was not green.
+- `jwu/pi-subagents`: validation remains pending because the Bun container image reference was
+  rejected by Podman's non-interactive short-name policy before tests ran.
+
 ## Evidence rules
 
 - Do not recommend a candidate from metadata alone.
