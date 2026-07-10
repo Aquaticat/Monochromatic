@@ -15,7 +15,8 @@ Found 1 violation:
 This is not a signing failure.
 All 69 unique commits created on 2026-07-09 and reachable through repository refs or reflogs contain an SSH
 `gpgsig` header.
-The affected commits are signed, but GitHub cannot associate their committer email with a user.
+The affected commits are signed,
+ but GitHub cannot associate their committer email with a user.
 
 The GitHub API shows the verification boundary:
 
@@ -56,7 +57,8 @@ It neither disables commit signing nor explains GitHub's `no_user` result.
 ### A fixture command ran in the main repository
 
 Pi session `019f4890-fbdd-7998-bf0d-e090acb9ad30` recorded the triggering Bash call at
-2026-07-09 21:48:15.338Z, or 17:48:15 EDT.
+2026-07-09 21:48:15.338Z,
+ or 17:48:15 EDT.
 The call intended to use a disposable fixture directory:
 
 ```json
@@ -68,7 +70,8 @@ The call intended to use a disposable fixture directory:
 ```
 
 The command did not contain `cd` or a command-native `-C` option.
-The `cwd` field was unsupported and had no effect, so the shell stayed in `/var/home/user/Monochromatic`.
+The `cwd` field was unsupported and had no effect,
+ so the shell stayed in `/var/home/user/Monochromatic`.
 The command's first output line disclosed the wrong target immediately:
 
 ```text
@@ -77,18 +80,27 @@ Reinitialized existing Git repository in /var/home/user/Monochromatic/.git/
 
 The unscoped `git config` commands therefore wrote repository-local values.
 Git's current `git-config` documentation states that writes target the repository-local configuration by default.
-The `.git/config` modification timestamp is `2026-07-09 17:48:20.651256678 -0400`, one second before the first
+The `.git/config` modification timestamp is `2026-07-09 17:48:20.651256678 -0400`,
+ one second before the first
 fixture-identity commit.
 
 The same accidental command created commit `c16e5245` in the main repository.
-The next commit, `8fd72562`, reverted the fixture files, but Git configuration is not part of a commit tree.
-Reverting tracked files could not revert `.git/config`, so the fixture identity remained active for later commits.
+The next commit,
+ `8fd72562`,
+ reverted the fixture files,
+ but Git configuration is not part of a commit tree.
+Reverting tracked files could not revert `.git/config`,
+ so the fixture identity remained active for later commits.
 
 ### Pi validates and then drops the unknown field
 
-The source trace uses `earendil-works/pi` tag `v0.80.6`, commit
+The source trace uses `earendil-works/pi` tag `v0.80.6`,
+ commit
 `2b3fda9921b5590f285165287bd442a25817f17b`.
-The clone was created under a private `/tmp/agent/` directory, and its origin, tag, and commit were verified before
+The clone was created under a private `/tmp/agent/` directory,
+ and its origin,
+ tag,
+ and commit were verified before
 inspection.
 
 The built-in Bash schema has only `command` and `timeout`.
@@ -102,7 +114,8 @@ const bashSchema = Type.Object({
 ```
 
 This object schema does not set `additionalProperties: false`.
-Pi's general validator clones and converts arguments, then returns them whenever the schema validator accepts them.
+Pi's general validator clones and converts arguments,
+ then returns them whenever the schema validator accepts them.
 `packages/ai/src/utils/validation.ts:278-299` contains:
 
 ```ts
@@ -179,7 +192,8 @@ No user was associated with the `committer` email address in the commit.
 ```
 
 That exactly matches `fixture@example.invalid`.
-Git still used the configured SSH key and added a valid-looking `gpgsig` object header, but GitHub could not associate
+Git still used the configured SSH key and added a valid-looking `gpgsig` object header,
+ but GitHub could not associate
 that commit identity with the account that owns the signing key.
 The immediately preceding `an@aquati.cat` commit verifies as `valid` with the same key.
 
@@ -187,13 +201,23 @@ The immediately preceding `an@aquati.cat` commit verifies as `valid` with the sa
 
 ### Versions and artifacts
 
-- Pi coding agent: `0.80.6`, tag `v0.80.6`, commit `2b3fda9921b5590f285165287bd442a25817f17b`.
-- Git: `2.54.0`.
-- OpenSSH: `10.2p1`.
-- Repository-local configuration modification: 2026-07-09 17:48:20 EDT.
-- First affected commit: `c16e52451097299b02ca1e7b62d4a2ce5f2a90da` at 17:48:21 EDT.
-- Affected commits currently reachable through refs or reflogs: 36.
-- Unique commits created since local midnight: 69 signed, 0 unsigned.
+- Pi coding agent:
+   `0.80.6`,
+   tag `v0.80.6`,
+   commit `2b3fda9921b5590f285165287bd442a25817f17b`.
+- Git:
+   `2.54.0`.
+- OpenSSH:
+   `10.2p1`.
+- Repository-local configuration modification:
+   2026-07-09 17:48:20 EDT.
+- First affected commit:
+   `c16e52451097299b02ca1e7b62d4a2ce5f2a90da` at 17:48:21 EDT.
+- Affected commits currently reachable through refs or reflogs:
+   36.
+- Unique commits created since local midnight:
+   69 signed,
+   0 unsigned.
 
 ### Signature-presence harness
 
@@ -222,7 +246,8 @@ signature_absent=0
 ### Automatic-signing harness
 
 A disposable repository inherited the current global Git configuration.
-Its first commit used the global identity, and its second commit used the contaminated local identity.
+Its first commit used the global identity,
+ and its second commit used the contaminated local identity.
 Both contained SSH signatures:
 
 ```text
@@ -234,7 +259,8 @@ raw_signature=present
 ```
 
 This falsifies both an automatic-signing disablement and an SSH-agent signing failure.
-With `commit.gpgSign=true`, the installed Git and SSH backend still sign successfully.
+With `commit.gpgSign=true`,
+ the installed Git and SSH backend still sign successfully.
 
 ### Local-verification harness
 
@@ -255,7 +281,9 @@ Good "git" signature for an@aquati.cat with ED25519 key
 ### Patterns that work cleanly
 
 - A Bash command that begins with `cd -- <absolute-path> &&` runs in that directory.
-- A command using a native directory option, such as `git -C <path>`, targets that path.
+- A command using a native directory option,
+   such as `git -C <path>`,
+   targets that path.
 - A commit with the global `Aquaticat <an@aquati.cat>` identity contains a signature and verifies on GitHub.
 - `git verify-commit` validates an SSH signature when `gpg.ssh.allowedSignersFile` points to a matching trust file.
 - Unsetting the repository-local fixture identity restores the global identity in a disposable repository and leaves
@@ -286,7 +314,10 @@ configuration and that the next commit still contains an SSH signature.
 
 Tradeoff:
 this repairs future commits only.
-Existing commit objects retain their recorded names, emails, hashes, and GitHub verification records.
+Existing commit objects retain their recorded names,
+ emails,
+ hashes,
+ and GitHub verification records.
 
 ### Pin every mutating Bash command inside its command text
 
@@ -302,7 +333,8 @@ fi
 # Mutating commands follow only after both checks pass.
 ```
 
-For Git-only operations, prefer the command-native form:
+For Git-only operations,
+ prefer the command-native form:
 
 ```bash
 git -C /absolute/fixture/path status --short
@@ -310,14 +342,16 @@ git -C /absolute/fixture/path status --short
 
 Tradeoff:
 callers must include the guard in every mutating shell body.
-Pi's built-in Bash call still has one session-level directory, so this is command composition rather than a per-call
+Pi's built-in Bash call still has one session-level directory,
+ so this is command composition rather than a per-call
 API field.
 
 This repository added the same rule to `AGENTS.md` immediately after the incident in commit `b3ffcfb26`.
 
 ### Configure local SSH verification separately
 
-Create an allowed-signers file containing a trusted principal and public key, then point
+Create an allowed-signers file containing a trusted principal and public key,
+ then point
 `gpg.ssh.allowedSignersFile` at it.
 A disposable file verified the current key with:
 
@@ -333,34 +367,52 @@ The trust file must be updated when principals or signing keys rotate.
 ### Treat historical repair as a coordinated history rewrite
 
 Changing the identity in an existing commit changes the commit object and every descendant hash.
-Repairing the 36 affected commits therefore requires rewriting, re-signing, and force-updating already-pushed history.
+Repairing the 36 affected commits therefore requires rewriting,
+ re-signing,
+ and force-updating already-pushed history.
 
 Tradeoff:
-this disrupts branches, open worktrees, links, and any downstream clones based on the existing hashes.
+this disrupts branches,
+ open worktrees,
+ links,
+ and any downstream clones based on the existing hashes.
 Do not perform it as an incidental signing-config fix.
 It requires explicit authorization and coordination.
 
 ## What does not work
 
-- **Rotating or replacing the SSH signing key.**
-  The commits already contain signatures, and the same key verifies on the last good commit.
+- **Rotating or replacing the SSH signing key.
+  **
+  The commits already contain signatures,
+   and the same key verifies on the last good commit.
   Key rotation does not repair the fixture committer email.
-- **Setting `commit.gpgSign` again.**
-  The effective value is already `true`, and all 69 sampled commits are signed.
-- **Adding only `gpg.ssh.allowedSignersFile`.**
-  This fixes local trust evaluation, not GitHub's `no_user` attribution.
-- **Reverting the fixture commit.**
-  Git commits track trees and metadata, not `.git/config`.
+- **Setting `commit.gpgSign` again.
+  **
+  The effective value is already `true`,
+   and all 69 sampled commits are signed.
+- **Adding only `gpg.ssh.allowedSignersFile`.
+  **
+  This fixes local trust evaluation,
+   not GitHub's `no_user` attribution.
+- **Reverting the fixture commit.
+  **
+  Git commits track trees and metadata,
+   not `.git/config`.
   Commit `8fd72562` reverted files but left the local identity active.
-- **Pushing the same commits again.**
-  Commit objects are immutable, and GitHub's persistent verification record is tied to each commit object.
-- **Relying on the unsupported `cwd` argument.**
+- **Pushing the same commits again.
+  **
+  Commit objects are immutable,
+   and GitHub's persistent verification record is tied to each commit object.
+- **Relying on the unsupported `cwd` argument.
+  **
   Pi 0.80.6 retains it during validation and drops it during Bash execution.
 
 ## Upstream filing decision
 
 No matching exemption exists under this repository's `.out-of-scope/` directory.
-Searches covered open and closed issues and pull requests for `bash cwd`, `additionalProperties`, and unknown tool
+Searches covered open and closed issues and pull requests for `bash cwd`,
+ `additionalProperties`,
+ and unknown tool
 arguments.
 The exact duplicate is
 [earendil-works/pi#5904](https://github.com/earendil-works/pi/issues/5904),
@@ -369,27 +421,46 @@ The thread and all comments were read.
 
 The six filing constraints resolve as follows:
 
-1. **Is it really upstream's fault?** No as a feature request, and only partly as a diagnostic-quality issue.
+1. **Is it really upstream's fault?
+   ** No as a feature request,
+    and only partly as a diagnostic-quality issue.
    The agent supplied a field absent from the advertised Bash schema.
-   Pi's permissive schema and destructuring make that mistake silent, but a maintainer states in #5904 that `cwd` is
+   Pi's permissive schema and destructuring make that mistake silent,
+    but a maintainer states in #5904 that `cwd` is
    intentionally not a valid Bash parameter.
-2. **Can upstream fix it?** Yes technically.
-   Pi could reject unknown top-level fields, strip them with an explicit warning, or add a per-call directory field.
+2. **Can upstream fix it?
+   ** Yes technically.
+   Pi could reject unknown top-level fields,
+    strip them with an explicit warning,
+    or add a per-call directory field.
    Technical possibility does not override the maintainers' intentional API boundary.
-3. **Are they supporting this use case?** No.
+3. **Are they supporting this use case?
+   ** No.
    The maintainer explicitly rejected per-call `cwd` as a valid parameter.
    The original reporter withdrew the request.
-4. **Would the repo welcome our contribution?** No for this generated artifact.
+4. **Would the repo welcome our contribution?
+   ** No for this generated artifact.
    `CONTRIBUTING.md` requires issue text in the contributor's own voice and says not to use an LLM to generate it.
    Recent maintainer responses also reject AI-generated tracker comments.
-5. **Will they likely fix it?** No based on direct signal.
-   Issue #5904 is closed as `not planned`, received the `no-action` label, and records the API choice as intentional.
-6. **Have we prototyped a minimal fix compatible with their architecture?** No.
-   The automatic prototype gate does not trigger because constraints 1, 3, 4, and 5 fail.
-   A local runtime probe is sufficient to verify the existing behavior; changing a third-party clone would not produce a
+5. **Will they likely fix it?
+   ** No based on direct signal.
+   Issue #5904 is closed as `not planned`,
+    received the `no-action` label,
+    and records the API choice as intentional.
+6. **Have we prototyped a minimal fix compatible with their architecture?
+   ** No.
+   The automatic prototype gate does not trigger because constraints 1,
+    3,
+    4,
+    and 5 fail.
+   A local runtime probe is sufficient to verify the existing behavior;
+    changing a third-party clone would not produce a
    welcome contribution.
 
 Nothing should be posted upstream.
 The duplicate already documents the same schema and execution mismatch.
-This incident adds a downstream consequence, Git identity contamination, but it does not change the maintainers'
-intentional API decision, and an AI-generated additive comment would violate their contribution policy.
+This incident adds a downstream consequence,
+ Git identity contamination,
+ but it does not change the maintainers'
+intentional API decision,
+ and an AI-generated additive comment would violate their contribution policy.
