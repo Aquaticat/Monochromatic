@@ -2,8 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 through 3 are resolved;
-unknown evidence and full-validation scope remain open.
+Decisions 1 through 4 are resolved;
+SaaS layer policy and full-validation scope remain open.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -167,9 +167,10 @@ The improved skill must classify the subject first and mark every gate as:
 
 - applicable;
 - not applicable with reason;
-- blocked by missing evidence;
 - passed;
-- failed.
+- failed because the evidence or candidate does not meet the gate;
+- low-signal,
+  only for soft observational criteria where absence does not establish health or failure.
 
 Human auditability is a risk modifier,
 not a product category.
@@ -195,15 +196,17 @@ The improved skill needs explicit promotion and exit criteria:
 - source and maintenance depth increases only as a candidate advances;
 - a recorded hard failure stops further work unless evidence is needed to compare a close tradeoff.
 
-### High: evidence quality and uncertainty are underspecified
+### High: evidence quality and failure semantics are underspecified
 
 The SaaS section names reviews,
 layoff trackers,
 and aggregators,
 but does not rank source authority,
 require dates,
-record counterevidence,
-or distinguish missing evidence from a failed gate.
+or record counterevidence.
+It currently requires a 24-month layoffs window at
+`.agents/skills/choosing-technology/SKILL.md:108` and a 12-month outage window at line 121,
+which the user identified as outside the intended audit contract.
 The sentence that any failed layer makes a vendor worse also treats unrelated facts as equally decisive.
 
 Each decision-relevant claim should record:
@@ -213,12 +216,25 @@ Each decision-relevant claim should record:
 - primary evidence where available;
 - independent corroboration where material;
 - counterevidence;
-- confidence;
-- hard constraint or weighted risk;
+- hard constraint,
+  weighted risk,
+  or soft observational signal;
 - pass,
   fail,
-  unknown,
-  or not-applicable status.
+  not-applicable,
+  or low-signal status.
+
+Critical evidence does not receive a neutral unknown state.
+An uninspectable high-trust plugin,
+unknown build provenance,
+or native artifact without source-to-binary verification exits the candidate funnel.
+NDA-only material does not satisfy a public evidence gate.
+Soft evidence can be low-signal:
+a tiny repository with no issues or pull requests is judged through releases,
+commits,
+ownership,
+source,
+and relevant tests rather than treated as healthy or failed from tracker silence.
 
 Reviews and aggregators are discovery or corroboration sources,
 not substitutes for official terms,
@@ -267,7 +283,7 @@ The improved skill needs one output contract:
 - per-finalist hard-constraint status;
 - per-finalist pros,
   cons,
-  unknowns,
+  evidence limits,
   and evidence;
 - complete ranking with the reason for each adjacent ordering;
 - recommendation confidence and blocked checks;
@@ -336,7 +352,9 @@ Use this sequence:
 2. Ask one context-fork preference only when it changes the candidate set.
 3. Classify the subject and activate applicable gates.
 4. Discover candidates broadly enough to avoid anchoring.
-5. Apply hard constraints and record exits.
+5. Apply hard constraints and critical evidence gates;
+   record unavailable critical evidence as a failed exit,
+   not a neutral unknown.
 6. Promote plausible survivors to serious alternatives.
 7. Run category-specific evidence checks.
 8. Promote candidates that could still win to finalists.
@@ -426,7 +444,7 @@ It never silently becomes a pass.
 Use grill-me to settle:
 
 - exhaustive-by-relevance versus always-exhaustive or user-budgeted depth;
-- treatment of unknown vendor evidence;
+- SaaS layer policy and evidence windows;
 - exact definition of full relevant validation.
 
 Update this plan after each answer.
@@ -447,7 +465,13 @@ Do not edit the skill during grilling.
 ### Phase 3: make evidence and safety executable
 
 - Add source hierarchy and claim-record requirements.
-- Add dated evidence and counterevidence handling.
+- Add dated evidence and counterevidence handling without fixed 12-month or 24-month windows unless a specific risk justifies one.
+- Make unavailable critical evidence a failed gate rather than a neutral ranking state.
+- Reserve low-signal for soft observational criteria such as tracker activity in a tiny repository.
+- Disqualify uninspectable high-trust code,
+  unverifiable native artifacts,
+  and unknown build provenance.
+- Do not accept NDA-only evidence as satisfying a public audit gate.
 - Define maintenance sampling without relying on issue count.
 - Add licensing,
   provenance,
@@ -471,7 +495,7 @@ Do not edit the skill during grilling.
   not authorization to adopt a dependency or service.
 - Require pros,
   cons,
-  unknowns,
+  evidence limits,
   and fully sorted ranking for live options.
 - Replace the dated SaaS example with an evidence-complete synthetic example or canonical repository artifact.
 - Key the final checklist to named workflow gates.
@@ -504,7 +528,8 @@ Dry-run the rewritten skill against at least these synthetic prompts:
 - choose a credential-handling agent plugin;
 - evaluate an incumbent where keeping it is a valid outcome;
 - answer an evaluation request that does not authorize adoption;
-- handle a candidate whose public evidence is missing;
+- reject a candidate whose critical provenance or safety evidence is unavailable;
+- retain a tiny repository with no tracker activity as low-signal when other relevant gates pass;
 - stop auditing a candidate after a decisive hard failure.
 
 For each fixture,
@@ -514,7 +539,8 @@ verify:
 - only applicable gates activate;
 - no recommendation appears before required finalist checks;
 - no irrelevant exhaustive work is required;
-- unknown evidence remains unknown;
+- unavailable critical evidence causes a recorded exit;
+- absent soft tracker evidence remains low-signal and relevance-gated;
 - alternatives receive pros,
   cons,
   and complete ranking;
@@ -549,7 +575,7 @@ The improvement is complete only when:
 - every recommendation contains evidence status,
   pros,
   cons,
-  unknowns,
+  evidence limits,
   and a full ranking;
 - substantial evaluations automatically receive a vet report recording the governing skill revision;
 - evaluation requests do not cause unauthorized product,
@@ -698,16 +724,85 @@ Ranking:
 automatic vet reports beat conditional reports because durability should follow measurable research depth rather than whether someone remembered to request a file.
 Conditional reports beat inline-only evidence because they preserve at least the evaluations most likely to outlive one session.
 
-### Decision 4: unknown evidence
+### Decision 4: critical evidence gaps
 
-Open after Decision 3.
-Choose how missing vendor or package evidence affects ranking:
-conservative penalty,
-neutral unknown,
-or category-specific rule.
+Decision:
+critical evidence gaps disqualify;
+only soft observational evidence can be low-signal and relevance-gated.
+The user established this on 2026-07-09.
 
-### Decision 5: full relevant validation
+The skill must not carry an unverified candidate through ranking when any of these remain unknown:
+
+- source and behavior of a high-trust plugin;
+- source-to-binary mapping,
+  checksums,
+  or equivalent provenance for native artifacts;
+- build provenance;
+- any hard constraint;
+- any safety boundary needed for the proposed use.
+
+A proprietary high-trust plugin,
+native package with unverifiable prebuilt binaries,
+or candidate with unknown build provenance exits immediately.
+NDA-only evidence does not satisfy a public audit gate.
+
+Soft observational evidence receives different treatment.
+A tiny repository with no issues or pull requests is not automatically healthy or failed.
+The audit uses releases,
+commits,
+ownership concentration,
+source,
+tests,
+and the candidate's actual risk surface,
+then labels tracker responsiveness low-signal.
+
+The user has Linux x64,
+macOS arm64,
+and Windows x64 machines.
+The validation design should use those targets when relevant rather than inventing an unavailable-hardware exception for common desktop platforms.
+
+Pros:
+
+- prevents opaque candidates from competing with verifiable candidates;
+- turns provenance and execution safety into actual gates;
+- avoids treating the absence of tracker traffic as proof about a tiny project's health;
+- keeps low-signal semantics narrow and explainable.
+
+Cons:
+
+- excludes otherwise feature-rich proprietary or opaque candidates categorically;
+- requires clear separation between critical evidence and soft observational signals;
+- platform-specific claims outside the available machine set may still need a different candidate or reproducible third-party evidence.
+
+Rejected alternative:
+universal penalty for every evidence gap.
+It is conservative,
+but falsely equates missing tracker activity with missing build provenance.
+
+Rejected alternative:
+neutral unknowns that do not affect ranking.
+It avoids inferring failure from absence,
+but would let candidates with unresolved safety or provenance compete with verified candidates.
+
+Ranking:
+critical-fail plus soft-low-signal beats a universal penalty because it is stricter where evidence is load-bearing and more accurate where evidence is merely observational.
+A universal penalty beats neutral unknowns because unresolved critical risk must affect the decision.
+
+### Decision 5: SaaS evidence layers
 
 Open after Decision 4.
+Decide whether the current layoffs,
+reviews,
+outages,
+funding,
+signup-friction,
+and security layers remain mandatory gates,
+become relevance-weighted signals,
+or are replaced by a different vendor-risk contract.
+The current fixed 24-month and 12-month windows are not part of the intended policy and should be removed.
+
+### Decision 6: full relevant validation
+
+Open after Decision 5.
 Define when upstream's full suite is mandatory and when a bounded,
 consumer-focused validation plus documented omissions is sufficient.
