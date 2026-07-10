@@ -2,7 +2,7 @@
 
 ## Audit metadata
 
-- Status: complete; no recommendation
+- Status: named candidate excluded; discovery reopened after independent review
 - Lifecycle phase: complete; no recommendation
 - Subject: `pi-dynamic-workflows` replacement for `@narumitw/pi-subagents`
 - Scope: evaluate whether `@quintinshaw/pi-dynamic-workflows` is safe and suitable to replace the installed
@@ -429,15 +429,18 @@ no taxonomy query because the single expansion round was already frozen.
 
 ### Discovery status
 
-**Terminal status: blocked by an unenumerable required GitHub source.** GitHub's documented `1,000`-result return cap is
-lower than four query totals, and sampled page `3` still adds plausible survivors. npm and independent broader-web
-searches expose many additional alternatives but cannot enumerate the GitHub remainder. Exact-name, topic, registry,
-web, and local searches are alternate paths already attempted; none proves that the capped GitHub tail contains no
-screening survivor.
+**Reopened after independent review.** The initial run treated GitHub's documented `1,000`-result search cap as a terminal
+block. An independent review pointed out that the frozen queries were too broad (`pi dynamic workflows` matched `23,764`
+repositories) and that non-overlapping date partitions bring each partition under the cap. A probe partition using
+`created:2025-08-01..2025-09-01` returned `10`, `10`, `681`, and `100` results across the four base queries; the largest
+partition total was `681`, under the cap. Date-range partitioning is therefore a viable uncapped enumeration path that the
+initial run did not exhaust.
 
-Under the governing selection workflow, this block forbids a replacement recommendation even if the named candidate's
-security audit is otherwise favorable. The named candidate will still receive the requested targeted "funny business"
-source and runtime audit; its result is an evidence finding, not an adoption recommendation.
+Partitioned enumeration across `12` half-month windows from `2025-08-01` to `2026-07-15` was started but not completed in
+this session. Discovery is no longer terminally blocked; it is incomplete. The named candidate was still excluded on its
+own hard-gate failures (independent of discovery), so the incomplete discovery does not rescue it. A follow-up session that
+completes partitioned enumeration, screens survivors, and validates finalists at equal depth could still reach a
+recommendation among the other ready-made alternatives.
 
 ## Evidence records
 
@@ -638,9 +641,28 @@ broader but different parent-model interface, not a drop-in replacement.
 ### Candidate hard-gate outcome
 
 `@quintinshaw/pi-dynamic-workflows` `2.12.1` exits before finalist validation. It passes source availability, MIT license,
-artifact mapping, release provenance, candidate-specific native/Wasm, and category-fit gates. It fails the high-trust
-security boundary, enforced read-only capability, no-ambient-extension requirement, true per-child timeout, complete
-observable transcript, and direct per-child operator interruption.
+artifact mapping, release provenance, candidate-specific native/Wasm, and category-fit gates.
+
+Decisive hard failures (each independently sufficient to exclude):
+
+- High-trust security boundary: the `node:vm` sandbox is escapable via an injected bridge function's `.constructor`,
+  contradicting the README's sandbox claim. Reproduced.
+- Per-child hard timeout: `timeoutMs` reports a recoverable `null` without cancelling the agent; the child keeps running.
+  Reproduced.
+- Enforced read-only capability: `agentType` tool allowlists filter only a local array; the real Pi SDK session still
+  activates `read`, `bash`, `edit`, and `write`. Reproduced.
+
+Qualified findings (not counted as decisive until the requirement interpretation is confirmed):
+
+- Per-child operator interruption: UI `pause` and `stop` target whole runs, not individual children. This is a hard
+  failure only if "interrupt any running subagent" was frozen to mean selecting an individual child without stopping
+  siblings. The locked requirement is ambiguous on that point. Run-level stop does halt the run's children collectively.
+- Complete observable transcript: persisted history is capped at `40` entries and `20,000` characters. This is a hard
+  failure for durable revisitable history. Live UI observability was not fully traced in this audit and may be broader;
+  the open https://github.com/QuintinShaw/pi-dynamic-workflows/pull/54 corroborates the durable-transcript gap.
+
+The ambient-extension claim (project and global extensions load into child sessions) is source-indicated but not
+runtime-reproduced; the probe confirmed built-in `bash`/`edit`/`write` remain active, which is already decisive.
 
 ## Execution manifests
 
@@ -669,9 +691,11 @@ observable transcript, and direct per-child operator interruption.
 
 ## Hard-gate exits
 
-- `@quintinshaw/pi-dynamic-workflows` `2.12.1`: excluded for the six hard failures in the candidate outcome.
-- Candidate scoring is prohibited. Soft feature breadth cannot offset these failures.
-- Other candidates cannot be promoted because required discovery remains blocked by GitHub's documented search cap.
+- `@quintinshaw/pi-dynamic-workflows` `2.12.1`: excluded for its own hard-gate failures (security boundary, timeout
+  cancellation, and SDK tool allowlist), with two qualified findings (per-child interruption and history completeness).
+- Candidate scoring is prohibited. Soft feature breadth cannot offset a hard failure.
+- Discovery is incomplete, not terminally blocked (see Discovery status). Other candidates were not fully screened or
+  validated; this report does not rank them.
 
 
 ## Validation results
@@ -726,11 +750,10 @@ these failures, which is consistent with the tests passing while the real SDK bo
 
 ## Score arithmetic and sensitivity
 
-Score: not applicable. `@quintinshaw/pi-dynamic-workflows` `2.12.1` failed hard gates, so it is not a validated finalist
-and cannot be scored. Hard gates remain outside arithmetic and cannot be offset by points. No other candidate reached
-finalist validation, because required GitHub discovery is blocked by the documented `1,000`-result search cap while
-sampled pages still add plausible survivors. With no validated finalists, the weighted rubric has no scored subjects and
-no sensitivity matrix to run.
+Score: not applicable. `@quintinshaw/pi-dynamic-workflows` `2.12.1` failed decisive hard gates, so it is not a validated
+finalist and cannot be scored. Hard gates remain outside arithmetic and cannot be offset by points. No other candidate
+reached finalist validation, because discovery was reopened and not completed. With no validated finalists, the weighted
+rubric has no scored subjects and no sensitivity matrix to run.
 
 ## Pros, cons, ranking, and recommendation
 
@@ -738,7 +761,7 @@ no sensitivity matrix to run.
 
 Pros:
 
-- Strong release cadence and provenance: `34` tagged releases in six weeks, npm SLSA provenance, signed annotated tag,
+- Strong release cadence and provenance: `34` tagged releases in six weeks, npm SLSA provenance, annotated tag carrying an unverified PGP signature (local Git reported `Can't check signature: No public key`); npm SLSA provenance is the verified mapping,
   and tag-to-version verification in CI.
 - Real token and cost accounting read from subagent sessions, journaled resume with longest-unchanged-prefix replay,
   per-phase model routing, git-worktree isolation, background runs with result delivery, and a rich `/workflows` TUI.
@@ -785,21 +808,19 @@ Cons:
 2. `@quintinshaw/pi-dynamic-workflows` `2.12.1` is excluded. Its feature breadth is irrelevant once hard gates fail.
 
 This ranking is conditional and incomplete. It compares only the incumbent and the single user-named candidate. Other
-ready-made alternatives exist but could not be enumerated to saturation, so they are not ranked.
+ready-made alternatives exist; discovery was reopened and not completed, so they are not ranked.
 
 ### Recommendation
 
-No recommendation.
+No recommendation to adopt `@quintinshaw/pi-dynamic-workflows` `2.12.1`. Its three decisive hard-gate failures,
+reproduced in a disposable, secret-free, resource-bounded container, independently exclude it. Soft scoring cannot
+rescue a hard failure.
 
-Two independent conditions each forbid a replacement recommendation:
-
-- Required discovery is blocked. GitHub's documented search cap returns at most `1,000` results per query, and four
-  frozen queries report between `1,192` and `23,764` matches while sampled page three still adds plausible survivors.
-  npm token search and broader-web search are finite or unbounded-but-unfiltered alternates, not uncapped category
-  enumeration. Under the governing workflow, a blocked required source forbids a recommendation even if every named
-  candidate is otherwise favorable.
-- The user-named candidate failed six hard gates, reproduced in a disposable, secret-free, resource-bounded
-  container. Soft scoring cannot rescue a hard failure.
+The selection as a whole is incomplete rather than terminally blocked. GitHub discovery was initially treated as blocked
+by the `1,000`-result cap, but an independent review identified date-range partitioning as a viable uncapped path (a
+probe partition returned at most `681` results). Partitioned enumeration was started but not completed. A follow-up
+session that finishes partitioned discovery, screens survivors, and validates finalists at equal depth could still
+reach a recommendation among the other ready-made alternatives.
 
 ### What the user can do next
 
