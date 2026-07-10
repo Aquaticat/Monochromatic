@@ -148,7 +148,9 @@ function parsePathPayload({
    * Path payload without Git-ignored trailing line endings.
    */
   const path = trimTrailingLineEndings(content.slice(prefix.length,),);
-  return path === '' ? ABSENT : path;
+  if ((path === '') || path.includes('\0',))
+    return ABSENT;
+  return path;
 }
 
 /**

@@ -451,6 +451,21 @@ await describe({
       },
     },),
     it({
+      name: 'skips invalid nearer marker and finds valid outer root',
+      fn: async () => {
+        /** Temporary valid root with invalid child marker. */
+        await using fixture = await createGitFixture({ markerKind: 'directory', },);
+        await mkdir(nodeJoin(
+          fixture.root,
+          'child',
+          '.git',
+        ),);
+        /** Outer valid root discovered after invalid child is skipped. */
+        const root = await findGitRepoRoot({ cwd: fixture.nested, },);
+        expect(root,).toBe(fixture.root,);
+      },
+    },),
+    it({
       name: 'finds a temp Git root with .git file marker',
       fn: async () => {
         /** Temporary Git fixture using gitfile marker. */
@@ -495,6 +510,22 @@ await describe({
             '.git',
           ),
           'not-a-gitdir: target\n',
+        );
+        await findGitRepoRoot({ cwd: fixture.nested, },);
+      },
+    },),
+    it({
+      name: 'rejects gitfile target containing NUL',
+      fails: true,
+      fn: async () => {
+        /** Temporary fixture with NUL-delimited gitfile target. */
+        await using fixture = await createRootFixture({ prefix: 'fs-path-nul-gitdir-', },);
+        await writeFile(
+          nodeJoin(
+            fixture.root,
+            '.git',
+          ),
+          'gitdir: target\0suffix\n',
         );
         await findGitRepoRoot({ cwd: fixture.nested, },);
       },
