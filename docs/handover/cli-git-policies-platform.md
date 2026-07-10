@@ -13,6 +13,14 @@ this handover is the current source for those revisions until the decision and i
 
 The user requested that this handover be kept current as grilling continues.
 
+Concurrent worktree state:
+`pnpm-lock.yaml` became modified by external work after the handover commits began.
+Do not edit,
+stage,
+stash,
+restore,
+or otherwise disturb it as part of this plan.
+
 ## Original implementation objective
 
 Turn `packages/cli/git` into a standalone pluggable Git policy platform,
@@ -185,7 +193,10 @@ Third-party plugins peer-depend on the compatible `@monochromatic-dev/cli-git` A
 there is no separate API or types package.
 External non-mise users install the npm package and put its bin directory before real Git on `PATH`.
 
-Node support range,
+The initial Node engine range must satisfy the shipped tsdown version;
+tsdown 0.22.4 declares `^22.18.0 || >=24.11.0`.
+Re-verify that constraint at implementation time.
+
 `publishConfig`,
 provenance workflow,
 package contents,
@@ -239,7 +250,11 @@ Ordinary Git commands never build an untrusted TypeScript config.
 A previously trusted path explicitly relaxed through `CLI_GIT_NO_PARANOID` is the exception described below.
 
 - Use tsdown with Node platform targeting.
-- Attempt to bundle every import into a self-contained cached artifact.
+- Call tsdown's public `build()` API with config-file discovery disabled,
+  Node ESM output,
+  every package forced into the bundle,
+  and Rolldown inline dynamic imports.
+- Accept exactly one JavaScript output chunk with no unresolved non-Node imports or extra assets.
 - A failed or incomplete bundle aborts trust.
 - The trusted cache executes an immutable bundle,
   not live source modules.
@@ -260,12 +275,19 @@ A previously trusted path explicitly relaxed through `CLI_GIT_NO_PARANOID` is th
   not trust checks;
   rebuild failure blocks with exit code `2`.
 - Package-only changes still require explicit trust refresh because package imports are outside tracked invalidation.
-- Trust prints a warning when TypeScript config is not self-contained.
-- Exact treatment of absolute imports,
-  dynamic imports,
-  package assets,
+- Trust prints a warning when TypeScript source uses bare package imports excluded from automatic invalidation,
+  even though their current JavaScript is bundled into the cached artifact.
+- Tsdown source was inspected at commit `b89bc3f7bd6615158fb77dfacbe103546a4b722e`,
+  package version 0.22.4,
+  under `/tmp/agent/tsdown-cli-git-20260709`.
+  Its public `build()` returns output bundles;
+  `deps.alwaysBundle` can force dependencies;
+  config discovery can be disabled;
+  and tsdown does not expose an esbuild-style metafile option.
+- Exact local-module graph extraction from Rolldown output chunks,
+  absolute imports,
   native modules,
-  and tsdown metadata remains open.
+  and package assets still require a disposable integration prototype.
 
 ## Settled config-loading boundary
 
@@ -385,10 +407,14 @@ matching mise's monorepo-root model rather than making every trust command recur
 - First descendant encounter auto-enrolls exact snapshots of that descendant's covered files.
 - Later descendant byte changes block for re-trust.
 - Trust records track provenance.
-- Untrusting a recursive root revokes only descendant records inherited from that root.
+- Untrusting a recursive root revokes descendant records inherited from that root.
+- Untrusting a nested recursive root also revokes every outer recursive root that currently authorizes that nested path.
+  This intentionally removes inherited authority from sibling subtrees too and avoids persistent deny-boundary state.
+- Before revocation,
+  `git cli-git untrust` lists every affected recursive root.
 - Descendants explicitly trusted separately remain trusted.
 
-The config property name and behavior for nested recursive roots remain open.
+The config property name remains open.
 
 ### CI
 
