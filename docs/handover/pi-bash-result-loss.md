@@ -11,8 +11,7 @@ Cli-git issue `#353` may resume after `#34` closes.
 
 The durable diagnosis is
 `docs/troubleshooting/pi-bash-output-spool-write-failure.md`.
-Its companion source patch is
-`docs/troubleshooting/pi-bash-output-spool-write-failure.patch`.
+The applied dependency patch and companion source patch were removed at the user's request.
 
 ## Established cause
 
@@ -42,26 +41,14 @@ Three concurrent overflowing commands therefore showed `No result provided` toge
 `packages/coding-agent/src/core/bash-executor.ts` independently duplicated the same unguarded pattern for direct
 `!` Bash and RPC execution.
 
-## Installed fix
+## Removed local fix
 
-The workspace carries a pnpm patch at:
+The workspace runs unpatched Pi `0.80.6`.
+The user removed the per-user `/tmp` quota,
+then requested removal of both the pnpm dependency patch and the retained source patch.
+The durable local mitigation is a writable disk-backed `TMPDIR` if temporary-file limits return.
 
-```text
-patches/@earendil-works__pi-coding-agent@0.80.6.patch
-```
-
-The patch now:
-
-- installs a persistent spill-stream error listener at creation time;
-- records the first persistence failure and stops additional writes;
-- preserves and returns the bounded in-memory tail;
-- awaits guarded stream finalization in success and cancellation paths;
-- reports `Full output unavailable` to model context;
-- returns `fullOutputError` from direct Bash execution;
-- uses `OutputAccumulator` instead of a duplicate direct-executor spooler;
-- renders the persistence failure as an interactive warning status.
-
-Implementation checkpoints are:
+Historical prototype checkpoints are:
 
 - `d0c388a16`,
    ordinary Bash stream hardening;
@@ -103,7 +90,7 @@ The deterministic external harness is:
 
 It points `TMPDIR` at a regular file and starts three overflowing Bash tools plus three direct executors.
 Unpatched `0.80.6` exited `1` before stdout.
-The installed patch returned all results,
+The removed prototype returned all results,
 retained each output tail,
 and reported `ENOTDIR` as `fullOutputError` or a direct warning.
 
@@ -170,15 +157,10 @@ and post-quota spill files were removed.
 
 ## Resume point
 
-Resume cli-git issue `#353`:
-
-1.  Verify commit push status through the latest Pi documentation checkpoint.
-2.  Run the packed npm-tarball and shadow-bin repository-plugin fixture.
-3.  Complete issue `#353` documentation and independent acceptance review.
-4.  Push,
-    close `#353`,
-    then continue dependency-ordered issues `#354` through `#357`.
-5.  Keep npm publication issue `#358` deferred until a maintainer explicitly resumes it.
+Cli-git issue `#353` is closed.
+Issue `#354` is paused at its policy-design questions until Pi restarts and the structured question tool is available.
+Continue dependency-ordered issues `#354` through `#357` afterward.
+Keep npm publication issue `#358` deferred until a maintainer explicitly resumes it.
 
 Issue `#360`,
 which replaces the faulty third-party goal extension,

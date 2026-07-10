@@ -149,9 +149,11 @@ Node: v26.5.0
 libuv: 1.52.1
 ```
 
-The source prototype is
-[`pi-bash-output-spool-write-failure.patch`](pi-bash-output-spool-write-failure.patch).
-The installed patch is `patches/@earendil-works__pi-coding-agent@0.80.6.patch`.
+The verified prototype is preserved in commits `d0c388a16`,
+`92f8d209c`,
+and `91ac69a42`.
+The user later requested removal of both the applied dependency patch and the retained source patch.
+The workspace therefore runs unpatched Pi `0.80.6`.
 
 ### Reproduction harness
 
@@ -177,7 +179,7 @@ The unpatched `0.80.6` process exited `1` before writing stdout:
 }
 ```
 
-The patched installed package exited `0`.
+The temporary patched prototype exited `0`.
 All three tool results retained `51,412` text bytes and `fullOutputError`.
 All three direct results retained `51,382` text bytes and a persistence warning.
 `ENOTDIR` differs from the incident's `EDQUOT`,
@@ -213,7 +215,7 @@ Unpatched `0.80.6` works when output remains below the truncation threshold,
 when overflow persistence succeeds,
 and when the exact cli-git unit command runs below the `/tmp` quota.
 
-The local patch works for three concurrent overflowing agent tools,
+The removed prototype worked for three concurrent overflowing agent tools,
 three concurrent direct executors,
 interactive `!` Bash with an invalid spill path,
 and existing successful-spill behavior.
@@ -246,13 +248,11 @@ match limits,
 or a disk-backed output file when searching `~/.pi/agent/sessions`.
 The tradeoff is that a bound search can omit matches and must be widened deliberately.
 
-### Keep the consumer patch until upstream behavior changes
+### Run unpatched after removing the quota
 
-The pnpm patch catches creation and write errors,
-returns the retained tail,
-and renders `Full output unavailable` instead of terminating Pi.
-The complete overflow output is still lost when persistence fails,
-but the bounded tail remains available.
+The user removed the per-user `/tmp` quota and requested removal of every local Pi patch artifact.
+The original concurrent workload then completed with successful overflow persistence.
+The tradeoff is that unpatched Pi can still lose results or terminate if another spill-file write fails.
 
 ## What does not work
 
@@ -268,21 +268,15 @@ but the bounded tail remains available.
 - Repeating the same synchronous command after result loss destroys diagnostic context.
   Follow `NXR` in `AGENTS.md` instead.
 
-## Local fix
+## Removed prototype
 
-`OutputAccumulator` now installs a durable error listener as soon as the stream exists,
-records the first persistence error,
-stops spill writes,
-and preserves the bounded tail.
-`closeTempFile()` settles on both `finish` and `error` without rethrowing the persistence failure.
+The retired prototype installed a durable stream error listener,
+preserved the bounded tail,
+settled finalization without rethrowing persistence errors,
+and rendered `Full output unavailable` in context and the TUI.
+It is historical evidence only and is not present in the active workspace.
 
-The ordinary Bash tool appends a warning to model context when full output is unavailable.
-The direct executor returns both a compatible output warning and `fullOutputError` metadata.
-Interactive mode renders that metadata as a warning status,
-so streamed output stays unchanged while the user still sees the failure.
-Cancellation paths use the same guarded finalization.
-
-The implementation checkpoints are:
+The historical implementation checkpoints are:
 
 - `d0c388a16`,
    which guarded `OutputAccumulator` and ordinary Bash.
