@@ -4,6 +4,7 @@
  * @module
  */
 import {
+  chmod,
   mkdir,
   mkdtemp,
   rm,
@@ -20,6 +21,10 @@ import nanoSpawn, {
   type Result,
   SubprocessError,
 } from 'nano-spawn';
+import {
+  ManualPushProbeError,
+  probeManualPushUpdates,
+} from './policy-engine/manual-push-probe.ts';
 
 /** Real Git fixture executable. */
 const REAL_GIT = '/usr/bin/git';
@@ -396,6 +401,69 @@ return [{ code: 'objects', message: candidates.map(candidate => candidate.path).
           fixture,
           ref: 'refs/heads/main',
         },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'rejects destination state changed after negotiation',
+      fn: async function testStaleDestination() {
+        await using fixture = await createFixture();
+        /** Fake Git executable that invokes private hook then reports changed destination. */
+        const fakeGit = join(fixture.repository, 'fake-git.mjs',);
+        /** Destination value advertised during negotiation. */
+        const advertisedOid = '1111111111111111111111111111111111111111';
+        /** Destination value observed by ls-remote. */
+        const authoritativeOid = '2222222222222222222222222222222222222222';
+        await writeFile(fakeGit, `#!${process.execPath}
+import { spawnSync } from 'node:child_process';
+const args = process.argv.slice(2);
+if (args[0] === 'ls-remote') {
+  process.stdout.write('${authoritativeOid}\\trefs/heads/main\\n');
+} else {
+  const setting = args.find(argument => argument.startsWith('core.hooksPath='));
+  if (setting === undefined) throw new Error('missing hooks path');
+  const hook = setting.slice('core.hooksPath='.length) + '/pre-push';
+  const result = spawnSync(hook, ['origin', 'mock://remote'], {
+    env: process.env,
+    input: 'refs/heads/main 3333333333333333333333333333333333333333 refs/heads/main ${advertisedOid}\\n',
+    encoding: 'utf8',
+  });
+  process.exitCode = result.status ?? 1;
+  process.stderr.write(result.stderr ?? '');
+}
+`,);
+        await chmod(fakeGit, 0o755,);
+        try {
+          await probeManualPushUpdates({
+            gitPath: fakeGit,
+            cwd: fixture.repository,
+            args: ['push', 'origin', 'HEAD:refs/heads/main',],
+          },);
+        }
+        catch (error: unknown) {
+          expect(error,).toBeInstanceOf(ManualPushProbeError,);
+          expect(String(error,),).toContain('Remote ref changed during manual-push discovery',);
+          return;
+        }
+        throw new Error('Expected stale destination rejection.',);
+      },
+    },),
+    it({
+      name: 'routes indeterminate probe failure as infrastructure error',
+      fn: async function testIndeterminateProbe() {
+        await using fixture = await createFixture();
+        await installPolicy({
+          fixture,
+          checkBody: 'return [];',
+        },);
+        await nanoSpawn(REAL_GIT, ['remote', 'set-url', 'origin', join(fixture.repository, 'missing.git',),], {
+          cwd: fixture.repository,
+        },);
+        const failure = await captureFailure({
+          fixture,
+          args: ['push', 'origin', 'HEAD:refs/heads/main',],
+        },);
+        expect(failure.exitCode,).toBe(2,);
+        expect(failure.stderr,).toContain('manual-push-probe-failed',);
       },
     },),
     it({
