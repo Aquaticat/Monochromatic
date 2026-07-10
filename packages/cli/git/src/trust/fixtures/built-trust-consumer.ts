@@ -55,6 +55,7 @@ await execute({
     'install',
     '--ignore-scripts',
     '/fixture/cli.tgz',
+    '/fixture/repository-plugin.tgz',
   ],
   cwd: '/work',
 },);
