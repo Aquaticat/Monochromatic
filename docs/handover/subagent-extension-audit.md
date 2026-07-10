@@ -132,6 +132,62 @@ GitHub API snapshots used repository metadata and issue or pull-request activity
 - `pi-multiagent`: 16 stars, 5 issue items, 3 with labels or assignees, and 9 pull requests. Its public source and package versions align at `0.9.8`.
 - `pi-crew`: 34 stars, 29 issue items, 20 with maintainer comments, 12 with labels or assignees, and 6 pull requests. It has the strongest public self-audit documentation but also the largest source surface.
 
+## Custom extension size and effort estimate
+
+The estimate uses Tokei code lines so comments and blank lines do not distort comparisons. Measured baselines are:
+
+- Official Pi subagent example: 995 production code lines. It is a reference implementation,
+  not a hard-filter-complete operator experience.
+- `@the-forge-flow/sub-agents-pi`: 1,421 production and 1,773 test code lines. It lacks
+  per-child timeout and complete live history.
+- `jwu/pi-subagents`: 1,800 production and 2,311 test code lines. It lacks targeted operator
+  interruption and per-child timeout.
+- Existing local `packages/pi-plugins/spawn`: 1,659 production and 1,236 test code lines.
+  Its documentation-heavy project style occupies 3,424 physical production lines, which is a
+  useful warning that physical line count will be materially higher than code-only count.
+
+This is a planning estimate for a hard-filter-complete implementation, not an observed size.
+Production is estimated at 2,800 to 4,000 code lines:
+
+- Public tool schema, child descriptors, capability profiles, and validation: 300 to 450.
+- Strict JSONL child protocol, spawn configuration, event capture, and error translation:
+  550 to 800.
+- Foreground, parallel, and background lifecycle state, individual deadlines, process-tree
+  cancellation, escalation, reaping, and race handling: 700 to 1,050.
+- Complete event store, ordering, transcript formatting, and parent-facing result assembly:
+  400 to 650.
+- Scrollable TUI, child selection, status, error display, and per-child or all-child controls:
+  650 to 800.
+- Integration glue and logging not naturally included in those modules: 200 to 250.
+
+Tests and fixtures are estimated at 3,500 to 5,500 code lines. This includes unit tests for every
+exported branch plus a PTY or fake-Pi harness and real Pi boundary tests for complete event
+ordering, independent deadlines, selected-child interruption, descendant cleanup, background
+jobs, malformed JSONL, read-only profiles, repeated interruption, and spawn or exit races. Package
+configuration, README content, and operator documentation add roughly 300 to 600 physical lines.
+
+The resulting adoption-ready package is estimated at 6,300 to 9,500 code lines, or approximately
+10,000 to 15,000 physical lines after this repository's required TSDoc, logging, spacing, and test
+fixtures. A thin demonstration could be smaller, but it would not prove the hard filters and is
+not the relevant adoption estimate.
+
+Estimated implementation effort for one engineer familiar with Pi is 18 to 28 focused
+engineer-days:
+
+- Contract, threat model, and capability profiles: 1 to 2 days.
+- Child protocol, event persistence, and result assembly: 4 to 5 days.
+- Concurrency, independent deadlines, cancellation, escalation, and cleanup: 4 to 6 days.
+- Complete transcript UI and interruption controls: 3 to 5 days.
+- Read-only enforcement and adversarial tests: 2 to 3 days.
+- Pi boundary harness, packaging, documentation, and review fixes: 4 to 7 days.
+
+The estimate assumes Linux process-group cleanup, Pi `0.80.6`, Node, no inherited child
+extensions by default, and read-only defined as an explicit tool allowlist with ambient extensions
+disabled. Cross-platform descendant cleanup, an operating-system sandbox, persistent transcript
+search, or upstream compatibility across multiple Pi versions are outside the range. Reusing
+local spawn-plugin code may reduce effort, but no reduction is credited until its interfaces are
+shown to fit strict JSONL event capture and interactive lifecycle control.
+
 ## Synthesis
 
 No existing candidate is a clean pass on all hard requirements. The most important unresolved integration gap is a real interactive Pi `0.80.6` run proving complete live event visibility, selected-child interruption, independent per-child deadlines, descendant cleanup, and read-only enforcement against ambient extensions.
