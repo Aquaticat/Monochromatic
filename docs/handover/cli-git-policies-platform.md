@@ -1589,11 +1589,15 @@ Unless later grilling changes them:
   sources as findings.
   The wrapper blocked the push and left remote `main` unchanged.
   Commit `298876aeb` filters the configured rules file and four canonical self-match sources before materialization while
-  retaining unrelated nested basename candidates;
-  focused unit,
+  retaining unrelated nested basename candidates.
+  Focused unit,
   type,
   Oxlint,
-  and cli-git build checks pass.
+  cli-git build,
+  and packed trust checks pass.
+  After refreshing the exact stored TypeScript config bundle,
+  an unescaped real wrapper push advanced `main` to `bd27bdd10`;
+  hosted full-tree workflow [29131221984](https://github.com/Aquaticat/Monochromatic/actions/runs/29131221984) passed.
 - Key implementation checkpoints are `b9dc927ef`,
   `a5918a490`,
   `bacfe57b1`,
