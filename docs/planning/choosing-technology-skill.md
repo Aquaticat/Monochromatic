@@ -2,8 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 through 4 are resolved;
-SaaS layer policy and full-validation scope remain open.
+Decisions 1 through 5 are resolved;
+scoring method and full-validation scope remain open.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -204,10 +204,13 @@ and aggregators,
 but does not rank source authority,
 require dates,
 or record counterevidence.
-It currently requires a 24-month layoffs window at
-`.agents/skills/choosing-technology/SKILL.md:108` and a 12-month outage window at line 121,
-which the user identified as outside the intended audit contract.
-The sentence that any failed layer makes a vendor worse also treats unrelated facts as equally decisive.
+It requires a 24-month layoffs window at
+`.agents/skills/choosing-technology/SKILL.md:108` and a 12-month outage window at line 121.
+The user confirmed those windows should remain,
+but the current sentence that any failed layer makes a vendor worse does not distinguish a hard failure from a relevance-gated score reduction.
+The current domains also omit direct risks such as terms stability,
+data portability,
+and exit cost.
 
 Each decision-relevant claim should record:
 
@@ -222,7 +225,9 @@ Each decision-relevant claim should record:
 - pass,
   fail,
   not-applicable,
-  or low-signal status.
+  low-signal,
+  or scored-concern status;
+- score effect for every relevance-gated concern.
 
 Critical evidence does not receive a neutral unknown state.
 An uninspectable high-trust plugin,
@@ -278,14 +283,16 @@ It also contains dated vendor and price claims that can become stale.
 The improved skill needs one output contract:
 
 - decision and scope;
+- hard-gate results separated from relevance-gated scores;
 - known context and unresolved preferences;
 - candidate funnel with exit reasons;
 - per-finalist hard-constraint status;
 - per-finalist pros,
   cons,
   evidence limits,
-  and evidence;
-- complete ranking with the reason for each adjacent ordering;
+  evidence,
+  and score breakdown;
+- complete ranking with the reason for each adjacent ordering and every score difference that affected it;
 - recommendation confidence and blocked checks;
 - vet-report path and governing skill revision;
 - adoption status;
@@ -376,7 +383,8 @@ Use this sequence:
 
 Keep distinct check sets for:
 
-- managed service or SaaS;
+- managed service or SaaS,
+  retaining the 24-month layoffs and 12-month outage windows while adding direct operational risks;
 - open-source library,
   framework,
   build tool,
@@ -444,7 +452,7 @@ It never silently becomes a pass.
 Use grill-me to settle:
 
 - exhaustive-by-relevance versus always-exhaustive or user-budgeted depth;
-- SaaS layer policy and evidence windows;
+- scoring method for relevance-gated concerns;
 - exact definition of full relevant validation.
 
 Update this plan after each answer.
@@ -465,7 +473,17 @@ Do not edit the skill during grilling.
 ### Phase 3: make evidence and safety executable
 
 - Add source hierarchy and claim-record requirements.
-- Add dated evidence and counterevidence handling without fixed 12-month or 24-month windows unless a specific risk justifies one.
+- Retain the current 24-month layoffs and 12-month outage windows.
+- Add direct vendor risks:
+  terms and pricing stability,
+  account enforcement and appeal,
+  security and privacy,
+  availability and support,
+  data portability and deletion,
+  lock-in and exit cost,
+  ownership and business continuity,
+  API deprecation,
+  and geography or compliance where relevant.
 - Make unavailable critical evidence a failed gate rather than a neutral ranking state.
 - Reserve low-signal for soft observational criteria such as tracker activity in a tiny repository.
 - Disqualify uninspectable high-trust code,
@@ -496,7 +514,9 @@ Do not edit the skill during grilling.
 - Require pros,
   cons,
   evidence limits,
+  score breakdown,
   and fully sorted ranking for live options.
+- Require every scored concern to show why it is relevant and how it changed the ordering.
 - Replace the dated SaaS example with an evidence-complete synthetic example or canonical repository artifact.
 - Key the final checklist to named workflow gates.
 - Require generated audit artifacts to record the skill revision.
@@ -543,6 +563,7 @@ verify:
 - absent soft tracker evidence remains low-signal and relevance-gated;
 - alternatives receive pros,
   cons,
+  score breakdowns,
   and complete ranking;
 - recommendation writes only the required vet report and does not mutate product,
   dependency,
@@ -572,10 +593,11 @@ The improvement is complete only when:
   and high-trust cases activate the correct gates;
 - candidate promotion and stopping rules prevent both shallow anchoring and unbounded audits;
 - every executed third-party command has a reviewed manifest and disposable boundary;
-- every recommendation contains evidence status,
+- every recommendation separates non-compensable gates from relevance-gated scores and contains evidence status,
   pros,
   cons,
   evidence limits,
+  score breakdown,
   and a full ranking;
 - substantial evaluations automatically receive a vet report recording the governing skill revision;
 - evaluation requests do not cause unauthorized product,
@@ -790,19 +812,97 @@ A universal penalty beats neutral unknowns because unresolved critical risk must
 
 ### Decision 5: SaaS evidence layers
 
-Open after Decision 4.
-Decide whether the current layoffs,
-reviews,
-outages,
-funding,
-signup-friction,
-and security layers remain mandatory gates,
-become relevance-weighted signals,
-or are replaced by a different vendor-risk contract.
-The current fixed 24-month and 12-month windows are not part of the intended policy and should be removed.
+Decision:
+keep the current six vendor domains and fixed windows,
+add direct operational risks,
+and make softer concerns relevance-gated score reductions rather than automatic disqualifiers.
+The user selected this on 2026-07-09.
 
-### Decision 6: full relevant validation
+Retain:
+
+- layoffs and headcount over 24 months;
+- customer reviews;
+- outages over 12 months;
+- funding,
+ownership,
+and business model;
+- signup friction;
+- security and abuse history.
+
+Add:
+
+- terms and pricing stability;
+- account suspension,
+enforcement,
+and appeal behavior;
+- security,
+privacy,
+data use,
+and compliance where relevant;
+- availability,
+SLA,
+and support behavior;
+- data export,
+portability,
+retention,
+and deletion;
+- lock-in,
+migration path,
+and exit cost;
+- ownership changes and business continuity;
+- API deprecation and compatibility policy;
+- geography and access restrictions where relevant.
+
+Hard constraints,
+critical provenance,
+and safety remain non-compensable gates.
+Softer findings lower a candidate's score only when the audit explains their relevance to the proposed use.
+A lower score lowers ranking;
+it does not by itself disqualify a candidate.
+
+Pros:
+
+- preserves early-warning evidence from layoffs,
+funding,
+reviews,
+and outage history;
+- adds direct contractual and operational evidence;
+- prevents one soft concern from masquerading as a hard technical failure;
+- makes ranking effects explicit.
+
+Cons:
+
+- expands an already substantial vendor audit;
+- requires a scoring method that avoids hidden weights and false precision;
+- review sites,
+layoff trackers,
+and funding reports remain weaker sources than direct terms and observed behavior;
+- overlapping domains must be deduplicated so one incident is not counted several times.
+
+Rejected alternative:
+direct risks only.
+It prioritizes stronger evidence,
+but drops softer early-warning signals the user wants retained.
+
+Rejected alternative:
+make every current domain a mandatory gate.
+It is mechanically strict,
+but would disqualify candidates for soft concerns that should instead affect comparative rank.
+
+Ranking:
+the combined hard-gate plus relevance-scored model beats direct-risks-only because it preserves useful early-warning evidence without turning it into an automatic veto.
+Direct-risks-only beats six mandatory gates because direct contractual and operational evidence is more decision-relevant than treating every proxy as fatal.
+
+### Decision 6: scoring method
 
 Open after Decision 5.
+Choose whether relevance-gated concerns use an explicit weighted numeric rubric,
+an ordinal risk rubric,
+or narrative pairwise comparison.
+Hard-gate failures cannot be offset by any score.
+
+### Decision 7: full relevant validation
+
+Open after Decision 6.
 Define when upstream's full suite is mandatory and when a bounded,
 consumer-focused validation plus documented omissions is sufficient.
