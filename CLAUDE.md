@@ -35,7 +35,7 @@ ORG:
  declare done) matching section holds every applicable rule.
 Cross-cutting reference (workspace conventions,
  enforcement mechanisms,
- agent skills) sits at end.
+ agent skills) lives in "Architecture decisions" + "Agent skills" sections.
 Rationale,
  mechanisms,
  examples:
@@ -103,21 +103,17 @@ Embedded questions ("month?
  check docs.
  Never deflect with "genuinely unknown.
 "
-
-IA1:
- Prompt phrased as observation,
+Prompt phrased as observation,
  report,
  bare question usually implies action;
  infer action,
  don't answer only surface.
-Branch on how determined inference is:
- one clear reading -> act like explicit request (see "Proactivity calibration");
+One clear reading -> act like explicit request (see "Proactivity calibration");
  several valid interpretations -> confirm which before acting (see "Measure-vs-ask").
-Missing fact is neither:
- research it,
- don't ask (HON);
- trigger to ask is ambiguous intent,
- not knowledge gap.
+Trigger to ask is ambiguous intent,
+ never knowledge gap:
+ research gaps,
+ don't ask.
 Cue:
  about to answer surface when one reading implies action,
  or act on inferred meaning when more than one reading valid.
@@ -311,11 +307,8 @@ PRE:
  run this checklist.
 
 CK1:
- Quantitative claim (size,
- speed,
- complexity,
- count) without measuring?
- Measure or rephrase as guess;
+ Quantitative claim without measuring?
+ QJ1;
  unbuilt-fix difficulty/duration is claim to drop,
  not label (CK3).
 
@@ -329,25 +322,12 @@ CK3:
  Drop estimate.
 
 CK5:
- Assumed measurable fact about user's environment (codebase size,
- deps,
- build time,
- file contents,
- whether tool/feature used,
- whether conf/`AGENTS.md` already covers it) or working pattern (commit cadence,
- hours,
- defect rate,
- concurrent sessions)?
- Measure it (see "Measure-vs-ask");
- categorical dismissals one `rg`/`find`/conf-read away (`AGENTS.md` counts).
- Cite result inline;
- if wrong,
- fold option back in.
+ Assumed measurable fact about user's environment or working pattern?
+ QF1.
 
 CK6:
- Assumed non-measurable preference (which approach,
- what they value)?
- Ask.
+ Assumed non-measurable preference?
+ ASK.
 
 CK7:
  Confident factual claim about your environment,
@@ -382,7 +362,7 @@ CKB:
  Never run same-session self-review,
  local "advisor" skill,
  magic `Advisor pass: ...` ritual;
- self-review not independent evidence (see `docs/agent-self-review.md`).
+ self-review not independent evidence (see `docs/agents/self-review.md`).
  User-correction phrases ("demonstrably false",
  "you missed",
  "didn't you",
@@ -403,12 +383,18 @@ QF1:
  test count,
  perf numbers,
  conf values,
- file contents.
+ file contents,
+ whether tool/feature used,
+ whether conf/`AGENTS.md` already covers it.
 Also user's working pattern in repo artifacts:
  commit cadence,
  working hours,
  defect-recovery rate,
  concurrent-session evidence.
+Categorical dismissals one `rg`/`find`/conf-read away (`AGENTS.md` counts);
+ cite result inline;
+ if wrong,
+ fold option back in.
 
 QJ1:
  Run measurement yourself;
@@ -442,14 +428,13 @@ MA3:
  Three failure directions:
  asking what you could measure (lazy);
 assuming what you should ask (confidently wrong);
-asking permission for already-authorized step ("want me to also check X?
-" when user pushing for thoroughness).
+asking permission for already-authorized step (PX2).
 Trigger phrases for assumption form:
  "for a project like this...",
  "in a typical setup...".
 
 QGR:
- Grilling or interview mode does not justify rubber-stamp questions.
+ Grilling or interview mode does not justify rubber-stamp questions (PX2).
 When one answer follows from settled user decisions and alternatives would contradict them,
 adopt and record it without asking.
 Ask only while at least two viable paths remain and the choice depends on the user's non-measurable preference or
@@ -720,22 +705,13 @@ RGP:
  Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
 
 CLN:
- Clone package git repositories into a private agent scratch root whenever investigating source code.
-Before first use,
- inspect the candidate root filesystem with `findmnt --noheadings --output FSTYPE <path>`;
-never clone into tmpfs or another RAM-backed filesystem.
-Use disk-backed `${HOME}/temp/agent/` when `/tmp` is tmpfs,
-and otherwise use `/tmp/agent/`.
-Create the selected root with private permissions:
-`mkdir --parents <root>; chmod 700 <root>`.
-Use `gh repo clone <repo> <root>/<descriptive-name>-<date-or-random> -- --depth 1` instead of `git clone`
-unless commit history part of investigation;
+ Investigating package source code:
+ clone its git repository into disk-backed scratch root `${HOME}/temp/agent/`;
+ `mkdir --parents` first.
+Use `gh repo clone <repo> ${HOME}/temp/agent/<descriptive-name>-<date-or-random> -- --depth 1`,
+ not `git clone`,
+ unless commit history part of investigation;
 `gh` handles authentication + fork remotes automatically.
-Auto-mode allows structured `read` tool access to existing non-secret files under the selected root;
-writes,
- bash commands,
- secret-looking paths,
- symlink escapes still go through guardrail.
 
 BOP:
  Never treat `~` in Bash tool output as literal tilde;
@@ -838,6 +814,55 @@ catastrophic command must not appear in instructions to other agents,
 Verifying a guardrail:
  use moderately dangerous commands (e.g. `sudo apt-get install`).
 
+### Essential commands
+
+CM1:
+ Identify target package + task before running tests;
+ never reflexively use repo-root `mise run test` for narrow package work.
+
+CM2:
+ Mise tasks use mise's platform default shell (`sh -c -o errexit` on unix,
+ `cmd /c` on Windows) for single bare commands.
+ Sequence with the array `run` form (`run = ["a", "b"]`),
+ which mise runs in order and fails fast;
+ never `;`-chaining (sh-only),
+ nor `mise run a ::: b` inline sugar.
+ Override `shell = "node -e"` only for logic or non-portable bodies.
+
+CM3:
+ All builds + tasks use `mise run`.
+ Never run `pnpm exec` or direct package scripts.
+ Never invoke raw tools (`tsc`,
+ `tsdown`,
+ `bun test`,
+ `oxlint`,
+ etc.) directly;
+ use corresponding mise task.
+ When no suitable task exists,
+ add one to target package's `mise.toml` first,
+ unless another rule (e.g. CM4) carves out direct call (running test file with `node <file>`).
+
+CM4:
+ Never substitute `bun test` for missing mise task;
+ it misreports under `@monochromatic-dev/module-test` harness.
+ Use `mise run //packages/<path>:test:unit`,
+ or run file directly with `node <file>` if no task exists.
+
+CM5:
+ Read `mise.toml` files in root + package directories for available commands.
+ Run task in specific package with `mise run //packages/path:task` (not `mise run --cd`).
+
+CM6:
+ Run `mise run //packages/<path>:lint:types` manually after editing TypeScript;
+ no automated type-check yet.
+
+WC2:
+ Some root-level files (e.g. `CLAUDE.md`) generated by file-enforcer.
+ Before editing any root config file,
+ check `file-enforcer.config.ts` for managed-output status;
+ if so,
+ edit source + run file-enforcer.
+
 ## Before editing code
 
 ### Match action scope to the request verb
@@ -930,6 +955,11 @@ ANN:
  gitignore entry.
 Unsure:
  propose concrete edit + location.
+
+EC4:
+ Never implement features that won't achieve intended effect.
+If tool/command doesn't support requested functionality,
+ explain that instead of creating non-functional code.
 
 ### Cross-runtime and scripts
 
@@ -1280,11 +1310,11 @@ TQ2:
  Export immediately at declaration;
  avoid `Object.assign` for extending typed objects.
 
-XPT:
- Exporting small helpers through package API for built-artifact tests allowed.
-
 TQ3:
  Throw + return early.
+
+XPT:
+ Exporting small helpers through package API for built-artifact tests allowed.
 
 #### Type system
 
@@ -1425,6 +1455,58 @@ RG3:
  If no useful justification exists,
  don't use regex.
 
+### Third-party libraries
+
+TP1:
+ Undefined method error:
+ retrieve docs immediately.
+
+TP2:
+ Check actual type definitions before using APIs.
+
+TP3:
+ Note CLI command patterns across examples;
+ test simplest case first.
+
+### Dependency management
+
+DM1:
+ Use `workspace:*` for internal dependencies.
+
+DM2:
+ Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`.
+
+LFW:
+ Never hand-edit lockfiles.
+Regenerate them with the owning package manager or repo task,
+ then inspect generated diffs.
+Report unrelated drift separately.
+
+### Adding new packages
+
+AP1:
+ Create directory under the appropriate category in `packages/`.
+
+AP2:
+ Add `mise.toml` with task definitions mirroring sibling packages.
+
+AP3:
+ Configure `package.json` with workspace dependencies.
+
+AP4:
+ CLI packages with `bin` entry:
+ add `#!/usr/bin/env node` shebang as first line of entry point;
+ without it,
+ Unix falls back to `/bin/sh` + script hangs/errors.
+ Use `#!/usr/bin/env bun` only in an explicitly documented Bun island;
+ normal CLI bins default to Node.
+
+AP5:
+ Packages with client-side bundling:
+ add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`,
+ `build:js:client` mise task,
+ `@monochromatic-dev/config-tsdown` as devDependency.
+
 ## Before declaring work complete
 
 ### Package completeness
@@ -1541,21 +1623,6 @@ Applies to agent prompts,
  README guidance,
  CI scripts,
  any artifact future sessions will follow.
-
-## When investigating problems
-
-### Third-party libraries
-
-TP1:
- Undefined method error:
- retrieve docs immediately.
-
-TP2:
- Check actual type definitions before using APIs.
-
-TP3:
- Note CLI command patterns across examples;
- test simplest case first.
 
 ## When committing or documenting
 
@@ -1724,11 +1791,6 @@ Never `git restore`,
 Only touch task-scope files;
  unrelated change blocks necessary edit -> acknowledge it + ask before changing/reverting.
 
-EC4:
- Never implement features that won't achieve intended effect.
-If tool/command doesn't support requested functionality,
- explain that instead of creating non-functional code.
-
 ### Git commit guidelines
 
 GCE:
@@ -1848,94 +1910,6 @@ Cue:
  about to end PR body or commit message with attribution marker;
  cut it.
 
-### Dependency management
-
-DM1:
- Use `workspace:*` for internal dependencies.
-
-DM2:
- Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`.
-
-LFW:
- Never hand-edit lockfiles.
-Regenerate them with the owning package manager or repo task,
- then inspect generated diffs.
-Report unrelated drift separately.
-
-### Adding new packages
-
-AP1:
- Create directory under the appropriate category in `packages/`.
-
-AP2:
- Add `mise.toml` with task definitions mirroring sibling packages.
-
-AP3:
- Configure `package.json` with workspace dependencies.
-
-AP4:
- CLI packages with `bin` entry:
- add `#!/usr/bin/env node` shebang as first line of entry point;
- without it,
- Unix falls back to `/bin/sh` + script hangs/errors.
- Use `#!/usr/bin/env bun` only in an explicitly documented Bun island;
- normal CLI bins default to Node.
-
-AP5:
- Packages with client-side bundling:
- add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`,
- `build:js:client` mise task,
- `@monochromatic-dev/config-tsdown` as devDependency.
-
-### Essential commands
-
-CM1:
- Identify target package + task before running tests;
- never reflexively use repo-root `mise run test` for narrow package work.
-
-CM2:
- Mise tasks use mise's platform default shell (`sh -c -o errexit` on unix,
- `cmd /c` on Windows) for single bare commands.
- Sequence with the array `run` form (`run = ["a", "b"]`),
- which mise runs in order and fails fast;
- never `;`-chaining (sh-only),
- nor `mise run a ::: b` inline sugar.
- Override `shell = "node -e"` only for logic or non-portable bodies.
-
-CM3:
- All builds + tasks use `mise run`.
- Never run `pnpm exec` or direct package scripts.
- Never invoke raw tools (`tsc`,
- `tsdown`,
- `bun test`,
- `oxlint`,
- etc.) directly;
- use corresponding mise task.
- When no suitable task exists,
- add one to target package's `mise.toml` first,
- unless another rule (e.g. CM4) carves out direct call (running test file with `node <file>`).
-
-CM4:
- Never substitute `bun test` for missing mise task;
- it misreports under `@monochromatic-dev/module-test` harness.
- Use `mise run //packages/<path>:test:unit`,
- or run file directly with `node <file>` if no task exists.
-
-CM5:
- Read `mise.toml` files in root + package directories for available commands.
- Run task in specific package with `mise run //packages/path:task` (not `mise run --cd`).
-
-CM6:
- Run `mise run //packages/<path>:lint:types` manually after editing TypeScript;
- no automated type-check yet.
-
-WC2:
- Some root-level files (e.g. `CLAUDE.md`) generated by file-enforcer.
- Before editing any root config file,
- check `file-enforcer.config.ts` for managed-output status;
- if so,
- edit source + run file-enforcer.
-
 ## Architecture decisions
 
 AD1:
@@ -1965,7 +1939,7 @@ SK1:
 
 SK2:
  **Triage labels**:
- five canonical roles with default label strings.
+ canonical roles with default label strings.
  See `docs/agents/triage-labels.md`.
 
 SK3:

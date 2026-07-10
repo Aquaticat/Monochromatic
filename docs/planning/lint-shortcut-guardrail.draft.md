@@ -126,7 +126,7 @@ Perf is not an objection:
     and not hookable.
 
 That residual is review territory.
-Per the repo's anti-self-review rule (`docs/agent-self-review.md`),
+Per the repo's anti-self-review rule (`docs/agents/self-review.md`),
 it must be an independent model on the diff,
  not a same-session self-review.
 The prose principle stays for the residual;

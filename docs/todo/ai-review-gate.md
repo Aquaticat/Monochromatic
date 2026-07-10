@@ -69,9 +69,8 @@ Second,
 There is a difference between the AI that wrote the code checking its own work,
  and a separate reviewer
 looking with fresh eyes.
- Your own repo rules (`docs/agent-self-review.md`,
- and the CKB rule in AGENTS.
-md)
+ Your own repo rules (`docs/agents/self-review.md`,
+ and the CKB rule in `AGENTS.md`)
 say self-review is not real evidence.
  So a separate engine is worth more as a gate than the same model
 re-reading its own diff.
