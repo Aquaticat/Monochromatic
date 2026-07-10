@@ -712,7 +712,7 @@ The build targets `x86_64-pc-windows-msvc` and links with LLVM's `lld-link.exe` 
 - `cargo-nextest` for the `test` task (the repo installs it as a mise tool,
    so `mise run ...:test` finds it).
 
-mise runs task logic through `node -e` on Windows too (a per-task `shell = "node -e"`),
+mise runs task logic through node eval on Windows too (a per-task `shell = "node --input-type=module-typescript -e"`),
  so the
 `mise run //packages/music-player/desktop-app:...` commands below work unchanged.
  If the GPU OpenGL path

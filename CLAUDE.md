@@ -827,7 +827,7 @@ CM2:
  which mise runs in order and fails fast;
  never `;`-chaining (sh-only),
  nor `mise run a ::: b` inline sugar.
- Override `shell = "node -e"` only for logic or non-portable bodies.
+ Override `shell = "node --input-type=module-typescript -e"` (SCR) only for logic or non-portable bodies.
 
 CM3:
  All builds + tasks use `mise run`.
@@ -968,10 +968,9 @@ XRT:
 
 SCR:
  Never write bash/powershell scripts.
- Put mise task logic inline in a `node -e` body (set `shell = "node -e"` on the task;
- `node -e` strips TS annotations,
- runs ESM dynamic imports,
- supports top-level await),
+ Put mise task logic inline in a node eval body,
+ setting `shell = "node --input-type=module-typescript -e"` on the task:
+ explicit input type keeps TS stripping + top-level await working even when Node module-syntax detection is off;
  or move it into a package's normal bin invoked as a command-runner.
  Never create `mise.<action>.ts` files.
 

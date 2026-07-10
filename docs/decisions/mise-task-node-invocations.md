@@ -148,6 +148,11 @@ The marginal,
 - The `node -e` plus `runWorkspaceNode` shape stays.
    New dispatch tasks should keep
   using it rather than hand-rolling a collapse.
+- Since 2026-07-10 the task shells spell the eval as
+  `shell = "node --input-type=module-typescript -e"`;
+   bare `node -e` relied on Node module-syntax detection for top-level `await`,
+   which some environments disable
+  (see `docs/troubleshooting/node-eval-module-detection.md`).
 - Other remaining `node -e` usage is load-bearing and intentionally untouched:
   `fanout` (depth-filtered parallel `mise run` orchestration),
    the test runners
