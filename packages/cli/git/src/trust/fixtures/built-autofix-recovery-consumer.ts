@@ -5,8 +5,6 @@
  */
 import {
   access,
-  cp,
-  link,
   readFile,
   rm,
   writeFile,
@@ -20,6 +18,7 @@ import {
   resolveFixtureOid,
 } from './built-post-commit-helpers.ts';
 import {
+  verifyConflictingRecoveryReflog,
   verifyReplacedRecoveryLock,
   verifyUnsafeRecoveryDirectory,
 } from './built-autofix-recovery-adversarial.ts';
@@ -272,23 +271,6 @@ export async function verifyAutofixRecovery({
     lockPath,
     env,
   },);
-  /**
-   * Saved recovery state used to prove same-OID external reflog movement.
-   */
-  const savedTransaction = `${transactionDirectory}.saved`;
-  /**
-   * Hard link retaining exact owned lock inode after first recovery.
-   */
-  const savedLock = `${lockPath}.saved`;
-  await cp(
-    transactionDirectory,
-    savedTransaction,
-    { recursive: true, },
-  );
-  await link(
-    lockPath,
-    savedLock,
-  );
   await execute({
     command: 'git',
     args: [
@@ -322,59 +304,15 @@ export async function verifyAutofixRecovery({
     context: 'commit-created recovered worktree',
   },);
 
-  await cp(
-    savedTransaction,
+  await verifyConflictingRecoveryReflog({
+    repository,
     transactionDirectory,
-    { recursive: true, },
-  );
-  await link(
-    savedLock,
     lockPath,
-  );
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'update-ref',
-      'HEAD',
-      postRefLandedHead,
-      postRefLandedHead,
-    ],
-    cwd: repository,
-    env: {
-      ...env,
-      GIT_REFLOG_ACTION: 'external movement',
-    },
-  },);
-  /**
-   * Same-OID movement without private nonce remains a recovery conflict.
-   */
-  const conflictedRecovery = await execute({
-    command: 'git',
-    args: [
-      'status',
-      '--short',
-    ],
-    expectedExit: 2,
-    cwd: repository,
+    postHookPath,
+    killingHookSource: KILL_WRAPPER_SOURCE,
+    waitForOrphan,
     env,
   },);
-  assertIncludes({
-    text: conflictedRecovery.stderr,
-    expected: 'Current HEAD reflog does not identify prepared transaction',
-    context: 'same-OID external movement recovery conflict',
-  },);
-  if (!(await pathExists(transactionDirectory,)))
-    throw new Error('conflicting recovery discarded journal',);
-  await rm(
-    transactionDirectory,
-    { recursive: true, },
-  );
-  await rm(
-    savedTransaction,
-    { recursive: true, },
-  );
-  await rm(lockPath,);
-  await rm(savedLock,);
 
   await verifyUnsafeRecoveryDirectory({
     repository,

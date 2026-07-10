@@ -79,6 +79,8 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
     || (!('ownerPid' in value))
     || ((typeof value.ownerPid) !== 'number')
     || (!Number.isSafeInteger(value.ownerPid,))
+    || (!('ownerIdentity' in value))
+    || ((typeof value.ownerIdentity) !== 'string')
     || (!('state' in value))
     || (value.state !== 'prepared')
     || (!('repositoryRoot' in value))
@@ -104,6 +106,18 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
       .every(function stringPath(path,) { return (typeof path) === 'string'; },))
     || (!('intendedTreeOid' in value))
     || ((typeof value.intendedTreeOid) !== 'string')
+    || (!('directoryDevice' in value))
+    || ((typeof value.directoryDevice) !== 'string')
+    || (!('directoryInode' in value))
+    || ((typeof value.directoryInode) !== 'string')
+    || (!('originalIndexDevice' in value))
+    || ((typeof value.originalIndexDevice) !== 'string')
+    || (!('originalIndexInode' in value))
+    || ((typeof value.originalIndexInode) !== 'string')
+    || (!('postIndexDevice' in value))
+    || ((typeof value.postIndexDevice) !== 'string')
+    || (!('postIndexInode' in value))
+    || ((typeof value.postIndexInode) !== 'string')
     || (!('lockFsId' in value))
     || ((typeof value.lockFsId) !== 'string')
     || (!('lockDevice' in value))
@@ -118,6 +132,7 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
   return {
     version: 1,
     ownerPid: value.ownerPid,
+    ownerIdentity: value.ownerIdentity,
     state: 'prepared',
     repositoryRoot: value.repositoryRoot,
     realIndexPath: value.realIndexPath,
@@ -133,6 +148,12 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
       return (typeof path) === 'string';
     },),
     intendedTreeOid: value.intendedTreeOid,
+    directoryDevice: value.directoryDevice,
+    directoryInode: value.directoryInode,
+    originalIndexDevice: value.originalIndexDevice,
+    originalIndexInode: value.originalIndexInode,
+    postIndexDevice: value.postIndexDevice,
+    postIndexInode: value.postIndexInode,
     lockFsId: value.lockFsId,
     lockDevice: value.lockDevice,
     lockInode: value.lockInode,

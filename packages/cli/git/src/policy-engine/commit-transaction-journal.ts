@@ -4,6 +4,7 @@
  * @module
  */
 import {
+  lstat,
   open,
   realpath,
 } from 'node:fs/promises';
@@ -13,6 +14,10 @@ import {
   writePrivateFile,
 } from '../trust/registry-io.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import {
+  PROCESS_IDENTITY_ABSENT,
+  resolveProcessBirthIdentity,
+} from './commit-transaction-process-identity.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
@@ -58,6 +63,10 @@ export type PreparedTransactionJournal = Readonly<{
    */
   ownerPid: number;
   /**
+   * Exact process-birth identity paired with owner PID.
+   */
+  ownerIdentity: string;
+  /**
    * Prepared phase discriminator.
    */
   state: 'prepared';
@@ -93,6 +102,30 @@ export type PreparedTransactionJournal = Readonly<{
    * Exact intended Git tree OID.
    */
   intendedTreeOid: string;
+  /**
+   * Transaction directory device identity.
+   */
+  directoryDevice: string;
+  /**
+   * Transaction directory inode identity.
+   */
+  directoryInode: string;
+  /**
+   * Exact original-index artifact device identity.
+   */
+  originalIndexDevice: string;
+  /**
+   * Exact original-index artifact inode identity.
+   */
+  originalIndexInode: string;
+  /**
+   * Exact post-index artifact device identity.
+   */
+  postIndexDevice: string;
+  /**
+   * Exact post-index artifact inode identity.
+   */
+  postIndexInode: string;
   /**
    * Filesystem identity containing owned lock.
    */
@@ -313,11 +346,38 @@ export async function prepareTransactionJournal({
       ...mergeHeads,
     ];
   /**
+   * Exact prepared artifact identities.
+   */
+  const [directoryMetadata, originalIndexMetadata, postIndexMetadata,] = await Promise.all([
+    lstat(
+      workspace.directory,
+      { bigint: true, },
+    ),
+    lstat(
+      workspace.originalIndexPath,
+      { bigint: true, },
+    ),
+    lstat(
+      workspace.postIndexPath,
+      { bigint: true, },
+    ),
+  ],);
+  /**
+   * Current wrapper process-birth identity.
+   */
+  const ownerIdentity = await resolveProcessBirthIdentity(process.pid,);
+  if ((typeof ownerIdentity) === 'symbol') {
+    if (ownerIdentity !== PROCESS_IDENTITY_ABSENT)
+      throw new TypeError('Unknown transaction owner process identity state.',);
+    throw new TypeError('Current transaction owner process identity is unavailable.',);
+  }
+  /**
    * Durable prepared metadata.
    */
   const journal: PreparedTransactionJournal = {
     version: JOURNAL_VERSION,
     ownerPid: process.pid,
+    ownerIdentity,
     state: 'prepared',
     repositoryRoot,
     realIndexPath: workspace.realIndexPath,
@@ -327,6 +387,12 @@ export async function prepareTransactionJournal({
     mode,
     selectedPaths,
     intendedTreeOid,
+    directoryDevice: String(directoryMetadata.dev,),
+    directoryInode: String(directoryMetadata.ino,),
+    originalIndexDevice: String(originalIndexMetadata.dev,),
+    originalIndexInode: String(originalIndexMetadata.ino,),
+    postIndexDevice: String(postIndexMetadata.dev,),
+    postIndexInode: String(postIndexMetadata.ino,),
     lockFsId: workspace.lockFsId,
     lockDevice: workspace.lockDevice,
     lockInode: workspace.lockInode,

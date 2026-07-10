@@ -9,8 +9,12 @@ import {
   rename,
   rm,
 } from 'node:fs/promises';
-import { dirname, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 import { syncDirectory, } from '../trust/registry-io.ts';
+import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
 import type { PreparedTransactionJournal, } from './commit-transaction-journal.ts';
 import {
   assertOwnedLock,
@@ -98,11 +102,29 @@ export async function installRecoveredIndex({
     journal,
     lockPath,
   },);
+  /**
+   * Private owner-preserving installation name.
+   */
+  const installPath = join(
+    dirname(postIndexPath,),
+    'install.index',
+  );
+  await createOwnedFileLink({
+    sourcePath: lockPath,
+    linkedPath: installPath,
+    expectedDevice: journal.lockDevice,
+    expectedInode: journal.lockInode,
+  },);
   await lock.close();
   await rename(
-    lockPath,
+    installPath,
     realIndexPath,
   );
+  await assertOwnedLock({
+    journal,
+    lockPath,
+  },);
+  await rm(lockPath,);
   await syncDirectory(dirname(realIndexPath,),);
 }
 

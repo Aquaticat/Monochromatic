@@ -26,6 +26,7 @@ import {
   syncDirectory,
 } from '../trust/registry-io.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
 
 /**
  * Private file mode restricted to current account.
@@ -343,14 +344,34 @@ export async function createCommitTransactionWorkspace({
         lockDevice: String(lockMetadata.dev,),
         lockInode: String(lockMetadata.ino,),
       },);
+      /**
+       * Private owner-preserving installation name.
+       */
+      const installPath = join(
+        directory,
+        'install.index',
+      );
+      await createOwnedFileLink({
+        sourcePath: lockPath,
+        linkedPath: installPath,
+        expectedDevice: String(lockMetadata.dev,),
+        expectedInode: String(lockMetadata.ino,),
+      },);
       await lockHandle.close();
       closed.add('closed',);
       await rename(
-        lockPath,
+        installPath,
         realIndexPath,
       );
-      await syncDirectory(dirname(realIndexPath,),);
       installed.add('installed',);
+      await assertWorkspaceLockIdentity({
+        lockPath,
+        lockFsId: lockFilesystem.value,
+        lockDevice: String(lockMetadata.dev,),
+        lockInode: String(lockMetadata.ino,),
+      },);
+      await rm(lockPath,);
+      await syncDirectory(dirname(realIndexPath,),);
     },
     [Symbol.asyncDispose]: async function disposeWorkspace(): Promise<void> {
       if ((closed.size === 0) && (installed.size === 0)) {

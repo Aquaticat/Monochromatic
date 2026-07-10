@@ -18,6 +18,11 @@ import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { isMissingPath, } from '../trust/registry-io.ts';
 import { snapshotFilesEqual, } from './commit-transaction-candidate-snapshot.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
+import {
+  PROCESS_IDENTITY_ABSENT,
+  resolveProcessBirthIdentity,
+} from './commit-transaction-process-identity.ts';
 import {
   installRecoveredIndex,
   readRegularRecoveryFile,
@@ -174,7 +179,10 @@ export async function recoverCommitTransaction({
   /**
    * Non-followed transaction directory metadata.
    */
-  const directoryMetadata = await lstat(directory,);
+  const directoryMetadata = await lstat(
+    directory,
+    { bigint: true, },
+  );
   if ((!directoryMetadata.isDirectory()) || directoryMetadata.isSymbolicLink())
     throw new CommitTransactionRecoveryError(`Unsafe transaction recovery directory: ${directory}`,);
   /**
@@ -210,8 +218,50 @@ export async function recoverCommitTransaction({
   const journal = parsePreparedJournal(
     await readRegularRecoveryFile(journalPath,),
   );
-  if ((journal.ownerPid !== process.pid) && processIsAlive(journal.ownerPid,))
-    throw new CommitTransactionRecoveryError(`Transaction owner process ${String(journal.ownerPid,)} is still active: ${directory}`,);
+  if ((String(directoryMetadata.dev,) !== journal.directoryDevice)
+    || (String(directoryMetadata.ino,) !== journal.directoryInode))
+    throw new CommitTransactionRecoveryError(`Transaction directory identity changed: ${directory}`,);
+  /**
+   * Owner-preserving stable original-index path.
+   */
+  const stableOriginalIndexPath = join(
+    directory,
+    'original.recovery',
+  );
+  /**
+   * Owner-preserving stable post-index path.
+   */
+  const stablePostIndexPath = join(
+    directory,
+    'post.recovery',
+  );
+  await Promise.all([
+    createOwnedFileLink({
+      sourcePath: originalIndexPath,
+      linkedPath: stableOriginalIndexPath,
+      expectedDevice: journal.originalIndexDevice,
+      expectedInode: journal.originalIndexInode,
+    },),
+    createOwnedFileLink({
+      sourcePath: postIndexPath,
+      linkedPath: stablePostIndexPath,
+      expectedDevice: journal.postIndexDevice,
+      expectedInode: journal.postIndexInode,
+    },),
+  ],);
+  if (processIsAlive(journal.ownerPid,)) {
+    /**
+     * Current process birth identity for recorded PID.
+     */
+    const currentOwnerIdentity = await resolveProcessBirthIdentity(journal.ownerPid,);
+    if ((typeof currentOwnerIdentity) === 'symbol') {
+      if (currentOwnerIdentity !== PROCESS_IDENTITY_ABSENT)
+        throw new CommitTransactionRecoveryError('Unknown transaction owner identity state.',);
+      throw new CommitTransactionRecoveryError(`Transaction owner identity is unavailable for active PID ${String(journal.ownerPid,)}: ${directory}`,);
+    }
+    if (currentOwnerIdentity === journal.ownerIdentity)
+      throw new CommitTransactionRecoveryError(`Transaction owner process ${String(journal.ownerPid,)} is still active: ${directory}`,);
+  }
   /**
    * Canonical current repository root.
    */
@@ -261,14 +311,14 @@ export async function recoverCommitTransaction({
    * Whether real index remains exact original bytes.
    */
   const realIsOriginal = await snapshotFilesEqual({
-    leftPath: originalIndexPath,
+    leftPath: stableOriginalIndexPath,
     rightPath: realIndexPath,
   },);
   /**
    * Whether real index already contains intended bytes.
    */
   const realIsIntended = await snapshotFilesEqual({
-    leftPath: postIndexPath,
+    leftPath: stablePostIndexPath,
     rightPath: realIndexPath,
   },);
   /**
@@ -351,7 +401,7 @@ export async function recoverCommitTransaction({
   await installRecoveredIndex({
     lockPath,
     realIndexPath,
-    postIndexPath,
+    postIndexPath: stablePostIndexPath,
     journal,
   },);
   await removeRecoveryArtifacts({ directory, },);
