@@ -15,7 +15,7 @@ import type { CandidateFile, } from '@monochromatic-dev/git-policy-api/ts';
 /**
  * Maximum simultaneous candidate reads and temporary-file writes.
  */
-const MATERIALIZATION_CONCURRENCY = 64;
+const MATERIALIZATION_CONCURRENCY = 128;
 
 /**
  * Returns scanner-equivalent candidate identity.
