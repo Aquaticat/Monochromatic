@@ -10,8 +10,13 @@ import {
 } from 'node:fs/promises';
 import { writeAutofixConfig, } from './built-autofix-config.ts';
 import { execute, } from './built-consumer-helpers.ts';
+import { verifyAutofixConcurrency, } from './built-autofix-concurrency-consumer.ts';
 import { verifyAutofixFailures, } from './built-autofix-failure-consumer.ts';
+import { verifyAutofixHistoryModes, } from './built-autofix-history-modes-consumer.ts';
+import { verifyAutofixModes, } from './built-autofix-modes-consumer.ts';
 import { verifyAutofixRecovery, } from './built-autofix-recovery-consumer.ts';
+import { verifyAutofixSequencers, } from './built-autofix-sequencer-consumer.ts';
+import { verifyAutofixUnmerged, } from './built-autofix-unmerged-consumer.ts';
 import {
   assertFixtureEqual,
   initializePostCommitRepository,
@@ -295,6 +300,26 @@ writeFileSync('.git/private-hook-seen', value);
     context: 'composed companion blob',
   },);
 
+  await verifyAutofixModes({
+    repository,
+    env,
+  },);
+  await verifyAutofixHistoryModes({
+    repository,
+    env,
+  },);
+  await verifyAutofixUnmerged({
+    repository,
+    env,
+  },);
+  await verifyAutofixSequencers({
+    repository,
+    env,
+  },);
+  await verifyAutofixConcurrency({
+    repository,
+    env,
+  },);
   await verifyAutofixFailures({
     repository,
     env,

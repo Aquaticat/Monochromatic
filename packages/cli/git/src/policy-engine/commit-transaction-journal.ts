@@ -74,6 +74,10 @@ export type PreparedTransactionJournal = Readonly<{
    */
   originalHead: OriginalHead;
   /**
+   * Exact ordered parents expected on landed commit.
+   */
+  expectedParentOids: readonly string[];
+  /**
    * Commit selection mode.
    */
   mode: 'explicit-path' | 'index';
@@ -204,6 +208,8 @@ export async function resolveCurrentHead({
  *
  * @param mode - commit transaction mode
  *
+ * @param amend - whether commit replaces current HEAD
+ *
  * @param selectedPaths - concrete selected paths
  *
  * @param intendedTreeOid - exact intended tree
@@ -220,6 +226,7 @@ export async function prepareTransactionJournal({
   gitPath,
   cwd,
   mode,
+  amend,
   selectedPaths,
   intendedTreeOid,
 }: Readonly<{
@@ -227,6 +234,7 @@ export async function prepareTransactionJournal({
   gitPath: string;
   cwd: string;
   mode: 'explicit-path' | 'index';
+  amend: boolean;
   selectedPaths: readonly string[];
   intendedTreeOid: string;
 }>,): Promise<PreparedTransactionJournal> {
@@ -243,6 +251,64 @@ export async function prepareTransactionJournal({
   },)).stdout,)
     .trim(),);
   /**
+   * Exact original HEAD state.
+   */
+  const originalHead = await resolveCurrentHead({
+    gitPath,
+    cwd,
+  },);
+  /**
+   * Existing current commit parent identities.
+   */
+  const currentParents = originalHead.kind === 'absent'
+    ? []
+    : DECODER.decode((await runTransactionGit({
+      gitPath,
+      cwd,
+      args: [
+        'rev-list',
+        '--parents',
+        '--max-count=1',
+        originalHead.oid,
+      ],
+    },)).stdout,)
+      .trim()
+      .split(' ',)
+      .slice(1,);
+  /**
+   * Optional merge parent identity.
+   */
+  const mergeResult = await runTransactionGit({
+    gitPath,
+    cwd,
+    args: [
+      'rev-parse',
+      '--verify',
+      'MERGE_HEAD',
+    ],
+    allowFailure: true,
+  },);
+  /**
+   * Existing merge parent identities when concluding merge.
+   */
+  const mergeHeads = mergeResult.exitCode === 0
+    ? DECODER.decode(mergeResult.stdout,)
+      .trim()
+      .split('\n',)
+      .filter(function nonempty(oid,) {
+      return oid.length > 0;
+    },)
+    : [];
+  /**
+   * Exact parents expected from selected commit mode.
+   */
+  const expectedParentOids = amend
+    ? currentParents
+    : [
+      ...(originalHead.kind === 'oid' ? [originalHead.oid,] : []),
+      ...mergeHeads,
+    ];
+  /**
    * Durable prepared metadata.
    */
   const journal: PreparedTransactionJournal = {
@@ -251,10 +317,8 @@ export async function prepareTransactionJournal({
     state: 'prepared',
     repositoryRoot,
     realIndexPath: workspace.realIndexPath,
-    originalHead: await resolveCurrentHead({
-      gitPath,
-      cwd,
-    },),
+    originalHead,
+    expectedParentOids,
     mode,
     selectedPaths,
     intendedTreeOid,

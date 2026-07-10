@@ -7,9 +7,13 @@ import {
   access,
   readFile,
   rm,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
-import { execute, } from './built-consumer-helpers.ts';
+import {
+  assertIncludes,
+  execute,
+} from './built-consumer-helpers.ts';
 import {
   assertFixtureEqual,
   resolveFixtureOid,
@@ -258,6 +262,62 @@ export async function verifyAutofixRecovery({
     throw new Error('post-ref interruption did not create commit',);
   if ((!(await pathExists(transactionDirectory,))) || (!(await pathExists(lockPath,))))
     throw new Error('post-ref interruption did not retain recovery artifacts',);
+  /**
+   * External commit deliberately moves ref away from journaled landed result.
+   */
+  const externalOid = (await execute({
+    command: '/usr/bin/git',
+    args: [
+      'commit-tree',
+      'HEAD^{tree}',
+      '-p',
+      'HEAD',
+      '-m',
+      'external movement',
+    ],
+    cwd: repository,
+  },)).stdout
+    .trim();
+  await execute({
+    command: '/usr/bin/git',
+    args: [
+      'update-ref',
+      'HEAD',
+      externalOid,
+      postRefLandedHead,
+    ],
+    cwd: repository,
+  },);
+  /**
+   * Conflicting movement fails closed without deleting recovery state.
+   */
+  const conflictedRecovery = await execute({
+    command: 'git',
+    args: [
+      'status',
+      '--short',
+    ],
+    expectedExit: 2,
+    cwd: repository,
+    env,
+  },);
+  assertIncludes({
+    text: conflictedRecovery.stderr,
+    expected: '"code":"content-unavailable"',
+    context: 'external movement recovery conflict',
+  },);
+  if (!(await pathExists(transactionDirectory,)))
+    throw new Error('conflicting recovery discarded journal',);
+  await execute({
+    command: '/usr/bin/git',
+    args: [
+      'update-ref',
+      'HEAD',
+      postRefLandedHead,
+      externalOid,
+    ],
+    cwd: repository,
+  },);
   await execute({
     command: 'git',
     args: [
@@ -290,4 +350,32 @@ export async function verifyAutofixRecovery({
     expected: 'bad\n',
     context: 'commit-created recovered worktree',
   },);
+
+  /**
+   * Symlinked recovery directory fails closed before reading target content.
+   */
+  await symlink(
+    '/tmp',
+    transactionDirectory,
+    'dir',
+  );
+  /**
+   * Symlinked directory rejection.
+   */
+  const symlinked = await execute({
+    command: 'git',
+    args: [
+      'status',
+      '--short',
+    ],
+    expectedExit: 2,
+    cwd: repository,
+    env,
+  },);
+  assertIncludes({
+    text: symlinked.stderr,
+    expected: 'Unsafe transaction recovery directory',
+    context: 'symlinked recovery directory',
+  },);
+  await rm(transactionDirectory,);
 }

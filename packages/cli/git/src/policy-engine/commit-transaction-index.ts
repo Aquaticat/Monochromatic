@@ -17,6 +17,37 @@ const DECODER = new TextDecoder(
 );
 
 /**
+ * Builds Git-native path selection arguments.
+ *
+ * @param pathspecs - direct pathspec tokens
+ *
+ * @param pathspecFile - optional file source
+ *
+ * @param pathspecFileNul - whether source uses NUL delimiters
+ *
+ * @returns exact git add selection arguments
+ */
+function selectionArguments({
+  pathspecs,
+  pathspecFile,
+  pathspecFileNul,
+}: Readonly<{
+  pathspecs: readonly string[];
+  pathspecFile?: string;
+  pathspecFileNul: boolean;
+}>,): readonly string[] {
+  return pathspecFile === undefined
+    ? [
+      '--',
+      ...pathspecs,
+    ]
+    : [
+      `--pathspec-from-file=${pathspecFile}`,
+      ...(pathspecFileNul ? ['--pathspec-file-nul',] : []),
+    ];
+}
+
+/**
  * Copies or builds private commit index and snapshots original index.
  *
  * @param workspace - owned transaction workspace
@@ -29,9 +60,15 @@ const DECODER = new TextDecoder(
  *
  * @param pathspecs - engine-selected explicit paths
  *
+ * @param pathspecFile - optional pathspec source file
+ *
+ * @param pathspecFileNul - whether source uses NUL delimiters
+ *
+ * @param stageIntoIndex - whether copied index receives selected worktree state
+ *
  * @example
  * ```ts
- * await initializeCommitIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', pathspecs: [] });
+ * await initializeCommitIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', pathspecs: [], pathspecFileNul: false });
  * ```
  */
 export async function initializeCommitIndex({
@@ -40,12 +77,18 @@ export async function initializeCommitIndex({
   cwd,
   mode,
   pathspecs,
+  pathspecFile,
+  pathspecFileNul,
+  stageIntoIndex = false,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
   gitPath: string;
   cwd: string;
   mode: 'explicit-path' | 'index';
   pathspecs: readonly string[];
+  pathspecFile?: string;
+  pathspecFileNul: boolean;
+  stageIntoIndex?: boolean;
 }>,): Promise<void> {
   await copyFile(
     workspace.realIndexPath,
@@ -56,36 +99,39 @@ export async function initializeCommitIndex({
       workspace.originalIndexPath,
       workspace.commitIndexPath,
     );
-    return;
+    if (!stageIntoIndex)
+      return;
   }
-  /**
-   * Optional parent tree for unborn-repository compatibility.
-   */
-  const head = await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'rev-parse',
-      '--verify',
-      'HEAD^{tree}',
-    ],
-    allowFailure: true,
-  },);
-  await runTransactionGit({
-    gitPath,
-    cwd,
-    indexPath: workspace.commitIndexPath,
-    args: head.exitCode === 0
-      ? [
-        'read-tree',
-        DECODER.decode(head.stdout,)
-          .trim(),
-      ]
-      : [
-        'read-tree',
-        '--empty',
+  else {
+    /**
+     * Optional parent tree for unborn-repository compatibility.
+     */
+    const head = await runTransactionGit({
+      gitPath,
+      cwd,
+      args: [
+        'rev-parse',
+        '--verify',
+        'HEAD^{tree}',
       ],
-  },);
+      allowFailure: true,
+    },);
+    await runTransactionGit({
+      gitPath,
+      cwd,
+      indexPath: workspace.commitIndexPath,
+      args: head.exitCode === 0
+        ? [
+          'read-tree',
+          DECODER.decode(head.stdout,)
+            .trim(),
+        ]
+        : [
+          'read-tree',
+          '--empty',
+        ],
+    },);
+  }
   await runTransactionGit({
     gitPath,
     cwd,
@@ -93,8 +139,11 @@ export async function initializeCommitIndex({
     args: [
       'add',
       '--all',
-      '--',
-      ...pathspecs,
+      ...selectionArguments({
+        pathspecs,
+        ...(pathspecFile === undefined ? {} : { pathspecFile, }),
+        pathspecFileNul,
+      },),
     ],
   },);
 }

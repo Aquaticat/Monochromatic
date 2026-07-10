@@ -6,16 +6,16 @@
 import { join, } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parseCommitRegion, } from '../parsers/commit.ts';
-import { createEngineFailureEvent, } from './events.ts';
 import {
   containsExactCandidateSnapshot,
   writeCandidateSnapshot,
 } from './commit-transaction-candidate-snapshot.ts';
 import {
-  applyPrivatePatch,
   createPrivateIndexFacts,
   listChangedIndexPaths,
-} from './commit-transaction-git.ts';
+  listUnmergedIndexPaths,
+} from './commit-transaction-candidates.ts';
+import { applyPrivatePatch, } from './commit-transaction-git.ts';
 import {
   initializeCommitIndex,
   preparePostIndex,
@@ -23,6 +23,15 @@ import {
 } from './commit-transaction-index.ts';
 import { executePreparedCommit, } from './commit-transaction-finalize.ts';
 import { prepareTransactionJournal, } from './commit-transaction-journal.ts';
+import {
+  initialTransactionFailure,
+  transactionFailure,
+} from './commit-transaction-results.ts';
+import {
+  hasSequencerConclusion,
+  materializePathspecFile,
+  privateExplicitCommitArgs,
+} from './commit-transaction-selection.ts';
 import { createCommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 import { runPolicyEngine, } from './engine.ts';
 import type {
@@ -38,13 +47,6 @@ export const COMMIT_TRANSACTION_NOT_APPLICABLE: unique symbol = Symbol('commit t
  * Maximum changed passes before convergence failure.
  */
 const MAXIMUM_CHANGED_PASSES = 8;
-/**
- * Internal and explicit only-mode tokens removed for private explicit index.
- */
-const ONLY_MODE_TOKENS: ReadonlySet<string> = new Set([
-  '-o',
-  '--only',
-],);
 
 /**
  * Transaction result before shared post-commit lifecycle.
@@ -67,73 +69,6 @@ export type CommitTransactionPolicyOptions = Omit<
   RunPolicyEngineOptions,
   'args' | 'trigger' | 'gitFacts' | 'candidateVersion' | 'repositoryRoot'
 >;
-
-/**
- * Produces engine failure retaining transformed command facts.
- *
- * @param previous - latest policy pass
- *
- * @param message - transaction failure description
- *
- * @returns blocking engine result
- */
-function transactionFailure({
-  previous,
-  message,
-}: Readonly<{
-  previous: PolicyEngineResult;
-  message: string;
-}>,): PolicyEngineResult {
-  return {
-    args: previous.args,
-    escapedPolicyIds: previous.escapedPolicyIds,
-    events: [createEngineFailureEvent({
-      sequence: 0,
-      code: 'content-unavailable',
-      message,
-      trigger: 'pre-forward',
-    },),],
-    patches: [],
-    exitCode: 2,
-    shouldForward: false,
-  };
-}
-
-/**
- * Removes selected pathspecs and only flag after private explicit tree exists.
- *
- * @param args - transformed Git arguments
- *
- * @param pathspecs - parsed selected paths
- *
- * @returns private-index commit arguments
- */
-function privateExplicitCommitArgs({
-  args,
-  pathspecs,
-}: Readonly<{
-  args: readonly string[];
-  pathspecs: readonly string[];
-}>,): readonly string[] {
-  /**
-   * Mutable local command copy used only to remove known token positions.
-   */
-  const retained = [...args,];
-  for (const pathspec of [...pathspecs,].toReversed()) {
-    /**
-     * Last matching token, where ordinary commit pathspecs occur after option values.
-     */
-    const index = retained.lastIndexOf(pathspec,);
-    if (index !== (-1))
-      retained.splice(
-        index,
-        1,
-      );
-  }
-  return retained.filter(function retainToken(token,) {
-    return (token !== '--') && (!ONLY_MODE_TOKENS.has(token,));
-  },);
-}
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; transaction reads but never mutates them. */
 /**
@@ -172,18 +107,34 @@ export async function runCommitTransaction({
    */
   const region = parseCommitRegion(args.slice(layout.subcommandIndex + 1,),);
   if (region.isDryRun
-    || region.hasAllFlag
-    || region.hasIncludeFlag
-    || region.hasPathspecFromFile
-    || region.hasAmendFlag)
+    || region.hasAllFlag)
     return COMMIT_TRANSACTION_NOT_APPLICABLE;
+  /**
+   * Whether pathless commit concludes repository operation.
+   */
+  const concludesSequencer = await hasSequencerConclusion({
+    gitPath,
+    cwd: layout.effectiveCwd,
+  },);
+  /**
+   * Whether selection UI remains read-only for automatic fixes.
+   */
+  const readOnlySelection = region.hasIncludeFlag
+    || region.hasInteractiveFlag
+    || region.hasPatchFlag;
   /**
    * Supported private-index mode.
    */
-  const mode = region.hasNoOnlyFlag ? 'index' : 'explicit-path';
+  const mode = region.hasNoOnlyFlag
+      || concludesSequencer
+    || readOnlySelection
+    || ((region.hasAllowEmptyFlag || region.hasAmendFlag) && (!region.hasPathspec))
+    ? 'index'
+    : 'explicit-path';
   if ((mode === 'explicit-path') && (region.pathspecs
     .length
-    === 0))
+    === 0)
+    && (!region.hasPathspecFromFile))
     return COMMIT_TRANSACTION_NOT_APPLICABLE;
 
   /**
@@ -193,13 +144,40 @@ export async function runCommitTransaction({
     gitPath,
     cwd: layout.effectiveCwd,
   },);
+  /**
+   * Pathspec file materialized once when Git names standard input.
+   */
+  const pathspecFile = await materializePathspecFile({
+    workspace,
+    effectiveCwd: layout.effectiveCwd,
+    ...(region.pathspecFile === undefined ? {} : { source: region.pathspecFile, }),
+  },);
   await initializeCommitIndex({
     workspace,
     gitPath,
     cwd: layout.effectiveCwd,
     mode,
     pathspecs: region.pathspecs,
+    ...((typeof pathspecFile) === 'symbol' ? {} : { pathspecFile, }),
+    pathspecFileNul: region.hasPathspecFileNul,
+    stageIntoIndex: readOnlySelection,
   },);
+  /**
+   * Unmerged paths unsafe for automatic candidate rewriting.
+   */
+  const unmergedPaths = await listUnmergedIndexPaths({
+    gitPath,
+    cwd: layout.effectiveCwd,
+    indexPath: workspace.commitIndexPath,
+  },);
+  if (unmergedPaths.length > 0)
+    return {
+      policyResult: initialTransactionFailure({
+        args,
+        message: `Automatic commit fixes do not support unmerged index paths: ${unmergedPaths.join(', ',)}`,
+      },),
+      committed: false,
+    };
   /**
    * Candidate paths selected by commit semantics.
    */
@@ -244,6 +222,13 @@ export async function runCommitTransaction({
     candidateVersion: 0,
     repositoryRoot: layout.effectiveCwd,
   },);
+  if (readOnlySelection && (pass.patches
+    .length
+    > 0))
+    return {
+      policyResult: pass,
+      committed: false,
+    };
   /**
    * Number of passes that changed private candidate bytes.
    */
@@ -388,6 +373,7 @@ export async function runCommitTransaction({
     gitPath,
     cwd: layout.effectiveCwd,
     mode,
+    amend: region.hasAmendFlag,
     selectedPaths: candidatePaths,
     intendedTreeOid,
   },);

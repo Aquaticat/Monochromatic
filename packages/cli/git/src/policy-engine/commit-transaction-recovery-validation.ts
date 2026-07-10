@@ -88,6 +88,10 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
     || (!('originalHead' in value))
     || ((typeof value.originalHead) !== 'object')
     || (value.originalHead === null)
+    || (!('expectedParentOids' in value))
+    || (!Array.isArray(value.expectedParentOids))
+    || (!value.expectedParentOids
+      .every(function stringOid(oid,) { return (typeof oid) === 'string'; },))
     || (!('mode' in value))
     || ((value.mode !== 'explicit-path') && (value.mode !== 'index'))
     || (!('selectedPaths' in value))
@@ -114,6 +118,10 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
     repositoryRoot: value.repositoryRoot,
     realIndexPath: value.realIndexPath,
     originalHead,
+    expectedParentOids: value.expectedParentOids
+      .filter(function stringOid(oid,): oid is string {
+      return (typeof oid) === 'string';
+    },),
     mode: value.mode,
     selectedPaths: value.selectedPaths
       .filter(function stringPath(path,): path is string {
@@ -284,15 +292,18 @@ export async function assertLandedCommit({
   },)).stdout,)
     .trim()
     .split(' ',);
-  if (journal.originalHead
-    .kind
-    === 'absent') {
-    if (commitAndParents.length !== 1)
-      throw new CommitTransactionRecoveryError('Recovered initial commit unexpectedly has a parent.',);
-    return;
-  }
-  if ((commitAndParents.length !== 2) || (commitAndParents[1]
-    !== journal.originalHead
-    .oid))
-    throw new CommitTransactionRecoveryError('Recovered commit parent differs from prepared original HEAD.',);
+  /**
+   * Ordered landed parent identities.
+   */
+  const landedParents = commitAndParents.slice(1,);
+  if ((landedParents.length
+    !== journal.expectedParentOids
+    .length)
+    || (!landedParents.every(function parentMatches(
+      parent,
+      index,
+    ) {
+      return parent === journal.expectedParentOids[index];
+    },)))
+    throw new CommitTransactionRecoveryError('Recovered commit parents differ from prepared transaction.',);
 }

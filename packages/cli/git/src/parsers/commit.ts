@@ -61,6 +61,11 @@ const commitRegionParser = object({
     '-i',
     ...INCLUDE_ALIASES,
   ),),
+  interactiveFlags: multiple(flag('--interactive',),),
+  patchFlags: multiple(flag(
+    '-p',
+    '--patch',
+  ),),
   amendFlags: multiple(flag('--amend',),),
   allowEmptyFlags: multiple(flag('--allow-empty',),),
   dryRunFlags: multiple(flag(...DRY_RUN_COMMIT_ALIASES,),),
@@ -133,6 +138,7 @@ const commitRegionParser = object({
     '--pathspec-from-file',
     string(),
   ),),
+  pathspecFileNulFlags: multiple(flag('--pathspec-file-nul',),),
   escape: multiple(flag(COMMIT_ESCAPE_HATCH,),),
   positionals: multiple(
     argument(string(),),
@@ -166,6 +172,14 @@ export type CommitRegion = {
    */
   readonly hasIncludeFlag: boolean;
   /**
+   * Whether argv requests interactive selection.
+   */
+  readonly hasInteractiveFlag: boolean;
+  /**
+   * Whether argv requests patch selection.
+   */
+  readonly hasPatchFlag: boolean;
+  /**
    * Whether argv is a dry run that records no commit: `--dry-run` or any of
    * the output-format flags git documents as implying it (`--short`,
    * `--porcelain`, `--long`, `-z`/`--null`), in any accepted abbreviation.
@@ -187,6 +201,14 @@ export type CommitRegion = {
    * Whether argv asks git to read pathspecs from file or stdin.
    */
   readonly hasPathspecFromFile: boolean;
+  /**
+   * Exact pathspec source spelling when present.
+   */
+  readonly pathspecFile?: string;
+  /**
+   * Whether pathspec file uses NUL delimiters.
+   */
+  readonly hasPathspecFileNul: boolean;
   /**
    * Whether argv includes at least one positional pathspec (before or after `--`).
    */
@@ -259,11 +281,14 @@ export function parseCommitRegion(
       hasExplicitOnlyFlag: false,
       hasNoOnlyFlag: false,
       hasIncludeFlag: false,
+      hasInteractiveFlag: false,
+      hasPatchFlag: false,
       isDryRun: false,
       hasPathlessAllowedFlag: false,
       hasAmendFlag: false,
       hasAllowEmptyFlag: false,
       hasPathspecFromFile: false,
+      hasPathspecFileNul: false,
       hasPathspec: false,
       hasEscapeHatch: false,
       pathspecs: [],
@@ -320,6 +345,12 @@ export function parseCommitRegion(
     hasIncludeFlag: value.includeFlags
       .length
       > 0,
+    hasInteractiveFlag: value.interactiveFlags
+      .length
+      > 0,
+    hasPatchFlag: value.patchFlags
+      .length
+      > 0,
     isDryRun: dryRunCount > 0,
     hasPathlessAllowedFlag: pathlessAllowedCount > 0,
     hasAmendFlag: value.amendFlags
@@ -330,6 +361,10 @@ export function parseCommitRegion(
       > 0,
     hasPathspecFromFile: value.pathspecFromFile
       !== undefined,
+    ...(value.pathspecFromFile === undefined ? {} : { pathspecFile: value.pathspecFromFile, }),
+    hasPathspecFileNul: value.pathspecFileNulFlags
+      .length
+      > 0,
     hasPathspec,
     hasEscapeHatch: value.escape
       .length

@@ -312,7 +312,9 @@ export function makeCommitOnly({
         || region
         .hasPathspecFromFile
         || region
-        .hasPathlessAllowedFlag;
+        .hasPathlessAllowedFlag
+        || region.hasInteractiveFlag
+        || region.hasPatchFlag;
 
       if (!hasPathspecSource) {
         /**
@@ -346,9 +348,10 @@ export function makeCommitOnly({
       return args;
     }
 
-    if (region.hasIncludeFlag) {
+    if (region.hasIncludeFlag || region.hasInteractiveFlag
+      || region.hasPatchFlag) {
       rl.debug(
-        '-i/--include present; git forbids combining it with --only, skipping injection',
+        'interactive/include selection present; git forbids or owns only semantics, skipping injection',
       );
       return args;
     }

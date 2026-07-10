@@ -5,6 +5,7 @@
  */
 import {
   access,
+  lstat,
   open,
   readFile,
   realpath,
@@ -98,6 +99,20 @@ function processIsAlive(pid: number,): boolean {
       return false;
     throw error;
   }
+}
+
+/**
+ * Rejects symbolic-link or non-regular recovery artifact.
+ *
+ * @param path - required private recovery file
+ */
+async function assertRegularRecoveryFile(path: string,): Promise<void> {
+  /**
+   * Non-followed recovery artifact metadata.
+   */
+  const metadata = await lstat(path,);
+  if ((!metadata.isFile()) || metadata.isSymbolicLink())
+    throw new CommitTransactionRecoveryError(`Unsafe transaction recovery file: ${path}`,);
 }
 
 /**
@@ -241,6 +256,12 @@ export async function recoverCommitTransaction({
   if (!(await pathExists(directory,)))
     return 'none';
   /**
+   * Non-followed transaction directory metadata.
+   */
+  const directoryMetadata = await lstat(directory,);
+  if ((!directoryMetadata.isDirectory()) || directoryMetadata.isSymbolicLink())
+    throw new CommitTransactionRecoveryError(`Unsafe transaction recovery directory: ${directory}`,);
+  /**
    * Required prepared journal path.
    */
   const journalPath = join(
@@ -267,6 +288,11 @@ export async function recoverCommitTransaction({
     pathExists(postIndexPath,),
   ],)).every(Boolean,))
     throw new CommitTransactionRecoveryError(`Incomplete transaction recovery artifacts: ${directory}`,);
+  await Promise.all([
+    assertRegularRecoveryFile(journalPath,),
+    assertRegularRecoveryFile(originalIndexPath,),
+    assertRegularRecoveryFile(postIndexPath,),
+  ],);
   /**
    * Prepared journal.
    */

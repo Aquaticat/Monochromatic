@@ -11,13 +11,7 @@ import {
   arrayBuffer,
   text,
 } from 'node:stream/consumers';
-import {
-  ABSENT_GIT_VALUE,
-  type LazyPolicyGitFacts,
-} from '../api/context-types.ts';
 import type {
-  CandidateFile,
-  CandidateFileMode,
   GitObjectId,
   PolicyPatch,
 } from '../api/policy-types.ts';
@@ -25,26 +19,9 @@ import { validatePolicyPatch, } from './commit-transaction-patch.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
- * Strict Git metadata decoder.
- */
-const DECODER = new TextDecoder(
-  'utf-8',
-  { fatal: true, },
-);
-/**
  * Private patch file mode.
  */
 const PRIVATE_FILE_MODE = 0o600;
-/**
- * Git index mode mapping.
- */
-const INDEX_MODES: Readonly<Record<string, CandidateFileMode>> = {
-  '100644': 'regular',
-  '100755': 'executable',
-  '120000': 'symlink',
-  '160000': 'submodule',
-};
-
 /**
  * Private Git operation failure.
  */
@@ -77,24 +54,6 @@ export type GitOutput = Readonly<{
    */
   exitCode: number;
 }>;
-
-/**
- * Returns absent landed commit before commit execution.
- *
- * @returns explicit absence sentinel
- */
-function absentLandedCommit(): Promise<typeof ABSENT_GIT_VALUE> {
-  return Promise.resolve(ABSENT_GIT_VALUE,);
-}
-
-/**
- * Returns no push updates during commit checks.
- *
- * @returns empty update list
- */
-function emptyPushUpdates(): Promise<readonly never[]> {
-  return Promise.resolve([],);
-}
 
 /**
  * Runs real Git against optional private index.
@@ -210,146 +169,6 @@ export async function runTransactionGit({
 }
 
 /**
- * Loads one index candidate.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param indexPath - private index
- *
- * @param path - repository path
- *
- * @returns immutable lazy candidate
- */
-async function loadIndexCandidate({
-  gitPath,
-  cwd,
-  indexPath,
-  path,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  indexPath: string;
-  path: string;
-}>,): Promise<CandidateFile> {
-  /**
-   * Stage-zero index metadata.
-   */
-  const metadata = DECODER.decode((await runTransactionGit({
-    gitPath,
-    cwd,
-    indexPath,
-    args: [
-      'ls-files',
-      '--stage',
-      '--',
-      path,
-    ],
-  },)).stdout,)
-    .trim();
-  /**
-   * Metadata/path separator.
-   */
-  const tab = metadata.indexOf('\t',);
-  /**
-   * Metadata fields before path.
-   */
-  const parts = (tab === (-1) ? metadata : metadata.slice(
-    0,
-    tab,
-  )).split(' ',);
-  /**
-   * Git mode and object ID.
-   */
-  const [modeText, oid, stage,] = parts;
-  if ((modeText === undefined) || (oid === undefined)
-    || (stage !== '0'))
-    throw new CommitTransactionGitError(`Private index entry is unavailable for ${path}`,);
-  /**
-   * Policy mode.
-   */
-  const mode = INDEX_MODES[modeText];
-  if (mode === undefined)
-    throw new CommitTransactionGitError(`Unsupported private index mode ${modeText} for ${path}`,);
-  return {
-    targetId: `pre-commit:${oid}:${path}`,
-    path,
-    revision: oid,
-    mode,
-    change: 'modified',
-    bytes: async function loadIndexBytes(): Promise<Uint8Array> {
-      return (await runTransactionGit({
-        gitPath,
-        cwd,
-        indexPath,
-        args: [
-          'show',
-          `:${path}`,
-        ],
-      },)).stdout;
-    },
-  };
-}
-
-/**
- * Creates lazy facts backed by current private index bytes.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param indexPath - private index
- *
- * @param paths - candidate paths
- *
- * @returns policy Git facts
- *
- * @example
- * ```ts
- * createPrivateIndexFacts({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index', paths: ['a'] });
- * ```
- */
-export function createPrivateIndexFacts({
-  gitPath,
-  cwd,
-  indexPath,
-  paths,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  indexPath: string;
-  paths: readonly string[];
-}>,): LazyPolicyGitFacts {
-  return {
-    candidates: function candidates(): Promise<readonly CandidateFile[]> {
-      return Promise.all(paths.map(function loadPath(path,) {
-        return loadIndexCandidate({
-          gitPath,
-          cwd,
-          indexPath,
-          path,
-        },);
-      },),);
-    },
-    headOid: async function headOid(): Promise<GitObjectId> {
-      return DECODER.decode((await runTransactionGit({
-        gitPath,
-        cwd,
-        args: [
-          'rev-parse',
-          '--verify',
-          'HEAD^{commit}',
-        ],
-      },)).stdout,)
-        .trim();
-    },
-    landedCommitOid: absentLandedCommit,
-    pushUpdates: emptyPushUpdates,
-  };
-}
-
-/**
  * Applies one validated patch to private index.
  *
  * @param workspace - transaction workspace
@@ -412,71 +231,5 @@ export async function applyPrivatePatch({
       '--3way',
       patchPath,
     ],
-  },);
-}
-
-/**
- * Returns staged paths from private index relative to HEAD.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - repository directory
- *
- * @param indexPath - private index
- *
- * @returns repository paths
- *
- * @example
- * ```ts
- * await listChangedIndexPaths({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index' });
- * ```
- */
-export async function listChangedIndexPaths({
-  gitPath,
-  cwd,
-  indexPath,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  indexPath: string;
-}>,): Promise<readonly string[]> {
-  /**
-   * Optional existing parent commit.
-   */
-  const head = await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'rev-parse',
-      '--verify',
-      'HEAD^{commit}',
-    ],
-    allowFailure: true,
-  },);
-  /**
-   * NUL-delimited changed or unborn-index paths.
-   */
-  const output = await runTransactionGit({
-    gitPath,
-    cwd,
-    indexPath,
-    args: head.exitCode === 0
-      ? [
-        'diff',
-        '--cached',
-        '--name-only',
-        '-z',
-        'HEAD',
-      ]
-      : [
-        'ls-files',
-        '--cached',
-        '-z',
-      ],
-  },);
-  return DECODER.decode(output.stdout,)
-    .split('\0',)
-    .filter(function nonempty(path,) {
-    return path.length > 0;
   },);
 }
