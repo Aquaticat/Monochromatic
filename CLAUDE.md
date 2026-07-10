@@ -103,6 +103,8 @@ Embedded questions ("month?
  check docs.
  Never deflect with "genuinely unknown.
 "
+Do not call an unpublished package change a compatibility break unless measured internal consumers depend on the behavior;
+describe it as a pre-release design change instead.
 Prompt phrased as observation,
  report,
  bare question usually implies action;

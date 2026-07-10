@@ -45,9 +45,12 @@ or start the executable.
 The public cli-git tarball contains exactly one MJS artifact.
 That artifact exports authoring declarations and optional repo-owned policies,
 and is also the executable named by the `git` bin entry.
-It uses static imports only and must not emit shared chunks,
+Cli-git's own module graph uses static imports and must not emit shared chunks,
 secondary MJS entries,
-or dynamic imports.
+or package-relative dynamic imports.
+Bundled library implementations may retain their dynamic imports.
+Exact stored MJS configuration execution may use one computed dynamic import so top-level `await` remains supported.
+Neither exemption may emit another artifact or load an untrusted package-relative target.
 Direct-invocation detection calls CLI startup only when Node executes the artifact as the program entry.
 Importing it as a module remains side-effect free.
 

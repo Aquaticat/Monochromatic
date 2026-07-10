@@ -249,6 +249,9 @@ The public tarball contains every runtime needed by those exports except explici
 such as the `forbidden-strings` scanner.
 The same MJS artifact is both the side-effect-free import target and the executable bin;
 CLI startup runs only when Node invokes that artifact directly.
+Cli-git's own module graph has no package-relative dynamic imports or secondary chunks.
+Dynamic imports retained by bundled libraries are exempt.
+The exact stored-MJS execution boundary may retain one computed dynamic import to support top-level `await`.
 
 Third-party plugins peer-depend on a compatible cli-git package version.
 Private workspace runtime helpers are bundled into the Node artifact rather than left as unresolved registry

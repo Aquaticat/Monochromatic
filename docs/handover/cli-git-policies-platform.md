@@ -1471,7 +1471,9 @@ Unless later grilling changes them:
 - Repo-owned policy source packages are statically bundled into cli-git's single public MJS artifact and exported from
   `@monochromatic-dev/cli-git`.
   The same artifact is the executable bin and the side-effect-free import target.
-  It contains no dynamic imports or secondary chunks.
+  It contains no secondary chunks or cli-git-owned package-relative dynamic imports.
+  Dynamic imports retained inside bundled libraries are exempt.
+  The computed import that executes an exact stored MJS config is exempt so top-level `await` remains supported.
   Importing it does not enable shipped policies;
   trusted consumer config must register each plugin explicitly.
 - Scanner resolution defaults to the `forbidden-strings` executable on `PATH`.
