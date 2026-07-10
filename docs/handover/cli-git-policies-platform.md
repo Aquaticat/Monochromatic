@@ -317,8 +317,13 @@ After successful authorized execution:
 - Default posture uses exact stored byte snapshots,
   not cryptographic content hashes.
 - Consumer-built MJS stores and compares the complete artifact bytes.
+  After an exact match,
+  cli-git executes the stored snapshot copy rather than the live file,
+  closing the compare-then-swap window.
 - Cli-git-built TypeScript stores and compares every tracked entry or relative-local-module file plus the cached bundle
-  bytes.
+  bytes and executes the stored cached bundle.
+- Recursively auto-enrolled child configs also execute their stored snapshot or cached bundle,
+  never a live file that was merely compared.
 - First execution blocks until explicit trust.
 - A later covered source or artifact byte change blocks until re-trust.
 - Trust and plugin failures are exit code `2`.
@@ -363,6 +368,11 @@ matching mise's monorepo-root model rather than making every trust command recur
 - A root declaration triggers the second trust-consent stage after root config execution and validation.
 - The second disclosure warns before consent that descendant authority will be recorded and names the exact root.
 - The root declaration waives separate first approval for descendant configs only after that second consent.
+- Recursive path authority intentionally crosses filesystem and mount boundaries without another prompt.
+  The disclosure states that descendants on current or future mounted volumes inherit authority and that mount swaps can
+  introduce newly authorized child configs.
+- Descendant filesystem IDs are still recorded for exact identity and revocation provenance,
+  but a new child filesystem does not require separate consent.
 - First descendant encounter auto-enrolls exact snapshots of that descendant's covered files.
 - Later descendant byte changes block for re-trust.
 - Trust records track provenance.
