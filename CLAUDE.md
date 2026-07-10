@@ -730,14 +730,18 @@ RGP:
  Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
 
 CLN:
- Clone package's git repo under `/tmp/agent/` whenever investigating src code.
+ Clone package git repositories into a private agent scratch root whenever investigating source code.
 Before first use,
- ensure root exists with private permissions:
-`mkdir --parents /tmp/agent; chmod 700 /tmp/agent`.
-Use `gh repo clone <repo> /tmp/agent/<descriptive-name>-<date-or-random> -- --depth 1` instead of `git clone`
+ inspect the candidate root filesystem with `findmnt --noheadings --output FSTYPE <path>`;
+never clone into tmpfs or another RAM-backed filesystem.
+Use disk-backed `${HOME}/temp/agent/` when `/tmp` is tmpfs,
+and otherwise use `/tmp/agent/`.
+Create the selected root with private permissions:
+`mkdir --parents <root>; chmod 700 <root>`.
+Use `gh repo clone <repo> <root>/<descriptive-name>-<date-or-random> -- --depth 1` instead of `git clone`
 unless commit history part of investigation;
 `gh` handles authentication + fork remotes automatically.
-Auto-mode allows structured `read` tool access to existing non-secret files under `/tmp/agent`;
+Auto-mode allows structured `read` tool access to existing non-secret files under the selected root;
 writes,
  bash commands,
  secret-looking paths,
