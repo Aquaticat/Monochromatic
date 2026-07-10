@@ -9,7 +9,7 @@
 
 [vars]
 # Bootstrap-safe cargo dispatch for this package, interpolated into the cargo tasks
-# (each sets `shell = "node -e"`).
+# (each sets `shell = "node --input-type=module-typescript -e"`).
 # - hostOk: `cargo` on PATH and pkg-config resolves the compositor's link-time
 #   libraries (wayland-server for use_system_lib, xkbcommon for the keyboard, libdrm
 #   for the dmabuf render-node query). When all are present the task runs cargo
@@ -40,7 +40,7 @@ run = "podman build -t localhost/monochromatic/nested-wayland-session -f Contain
 
 [tasks.build]
 description = "Release build (host if dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['build', '--release'])
@@ -48,7 +48,7 @@ runCargo(['build', '--release'])
 
 [tasks."build:debug"]
 description = "Debug build (host if dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['build'])
@@ -56,7 +56,7 @@ runCargo(['build'])
 
 [tasks.lint]
 description = "cargo check, no codegen (host if dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['check'])
@@ -64,7 +64,7 @@ runCargo(['check'])
 
 [tasks."lint:clippy"]
 description = "Run clippy with warnings denied (host if dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['clippy', '--release', '--', '-D', 'warnings'])
@@ -74,7 +74,7 @@ runCargo(['clippy', '--release', '--', '-D', 'warnings'])
 description = "Apply clippy's machine-applicable suggestions in place (host if dev libs present, else container)"
 # --allow-no-vcs is harmless on the host and required in the container, where only the
 # package dir is bind-mounted so the repo-root .git is not visible.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs'])
@@ -88,7 +88,7 @@ run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]
 description = "cargo nextest run (host if dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['nextest', 'run'])
@@ -96,7 +96,7 @@ runCargo(['nextest', 'run'])
 
 [tasks.package]
 description = "Build the crates.io package tarball (container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['package'])
@@ -104,7 +104,7 @@ runCargo(['package'])
 
 [tasks."build:container"]
 description = "Force the release build inside the container regardless of host libraries"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 containerCargo(['build', '--release'])
@@ -112,7 +112,7 @@ containerCargo(['build', '--release'])
 
 [tasks."lint:clippy:container"]
 description = "Force clippy inside the container (the stable reference lint)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
@@ -120,7 +120,7 @@ containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
 
 [tasks."test:container"]
 description = "Force the tests inside the container"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 containerCargo(['nextest', 'run'])
@@ -140,7 +140,7 @@ description = "Build, then run the compositor on the host Wayland session. Pass:
 usage = '''
 arg "[args]" var=#true help="Compositor arguments, then the client command to host"
 '''
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 const { execFileSync } = await import('node:child_process')

@@ -18,7 +18,7 @@ description = "Run *.property.unit.test.ts as a longer fast-check campaign under
 usage = '''
 flag "--runs <n>" help="fast-check runs per property (default 5000)"
 '''
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { glob } = await import('node:fs/promises')
@@ -39,7 +39,7 @@ description = "Deterministic V8 covered-function reachability gate over the json
 usage = '''
 flag "--write" help="Refreeze the committed baseline instead of checking against it"
 '''
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { mkdtempSync, rmSync } = await import('node:fs')

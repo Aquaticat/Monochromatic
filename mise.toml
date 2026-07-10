@@ -49,7 +49,7 @@ ripgrep = "latest"
 "cargo:cargo-fuzz" = "0.13.2"
 
 # Primary runtime
-# Runs mise task logic (tasks set shell = "node -e") and the packages that
+# Runs mise task logic (tasks set shell = "node --input-type=module-typescript -e") and the packages that
 # depend on Node APIs.
 node = "latest"
 
@@ -265,7 +265,7 @@ task.disable_spec_from_run_scripts = true
 # No global shell override: mise uses its platform defaults (sh -c -o errexit on
 # unix, cmd /c on Windows). Trivial single-command bodies and array `run` runners
 # work under both. Bodies needing logic, structured data, or non-portable syntax
-# declare `shell = "node -e"` per task (node -e strips TS, runs ESM imports, and
+# declare `shell = "node --input-type=module-typescript -e"` per task (node -e strips TS, runs ESM imports, and
 # supports top-level await).
 
 [settings.pipx]
@@ -290,7 +290,7 @@ monorepo_root = "{{config_root}}"
 # if any child failed. No `:::` separator or other mise-specific inline sugar:
 # each child is an ordinary shelled `mise run`, and Node owns the concurrency.
 # Interpolated into the fanout task templates, each of which sets
-# `shell = "node -e"`. Runtime depth filtering is still required because the
+# `shell = "node --input-type=module-typescript -e"`. Runtime depth filtering is still required because the
 # native `[{ tasks = ["prefix:*"] }]` glob matches all descendants, since mise
 # treats `:` as a regular character in `*` globs.
 fanout = """
@@ -323,7 +323,7 @@ if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.jo
 # native glob. A bounded worker pool (availableParallelism) keeps ~90 package
 # linter subtrees from spawning at once; `watch:*` fans out unbounded so every
 # long-running watcher starts and stays alive. Interpolated into the
-# cross-package fanout tasks, each of which sets `shell = "node -e"`.
+# cross-package fanout tasks, each of which sets `shell = "node --input-type=module-typescript -e"`.
 fanout_packages = """
 const { execFileSync, spawn } = await import('node:child_process')
 const { once } = await import('node:events')
@@ -357,7 +357,7 @@ if (failed.length > 0) { throw new Error(`package fanout failed: ${failed.join('
 # dispatches a package entry; ensureOxlintConfig builds the root oxlint config on
 # fresh trees and rebuilds it when any bundled oxlint config or plugin package is
 # newer than the sidecar outputs. Interpolated into the dispatcher tasks (root and
-# per-package), each of which sets `shell = "node -e"`. Its imported bindings are
+# per-package), each of which sets `shell = "node --input-type=module-typescript -e"`. Its imported bindings are
 # reused by any inline follow-up in those bodies, so the follow-up must not
 # reimport them.
 dispatch_workspace_node = """
@@ -456,7 +456,7 @@ const parseUsageArgs = (raw) => {
 """
 # Runs a list of test files as `node [nodeArgs] <file>` subprocesses, bounded to
 # availableParallelism() at a time, and throws listing any that exited non-zero.
-# Interpolated into the test tasks; each sets `shell = "node -e"`.
+# Interpolated into the test tasks; each sets `shell = "node --input-type=module-typescript -e"`.
 run_test_files = """
 const { spawn } = await import('node:child_process')
 const { once } = await import('node:events')
@@ -494,11 +494,11 @@ const runPlaywright = (config, extraFlags = []) => {
 """
 
 [task_templates.build]
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."build:js"]
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."build:js:browser"]
@@ -511,11 +511,11 @@ run = "tsdown --config tsdown.client.config.ts"
 run = "tsdown --config tsdown.node.config.ts"
 
 [task_templates."watch:build"]
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."watch:build:js"]
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."watch:build:js:browser"]
@@ -528,7 +528,7 @@ run = "tsdown --watch --config tsdown.client.config.ts"
 run = "tsdown --watch --config tsdown.node.config.ts"
 
 [task_templates.test]
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."test:unit"]
@@ -537,7 +537,7 @@ usage = """
 flag "--all" help="Include /deprecated/ and *.expensive.* files; cannot be combined with file paths"
 arg "[args]" var=#true help="Test file paths to run (when provided, only those files run); cannot be combined with --all"
 """
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 {{vars.run_test_files}}
@@ -564,16 +564,16 @@ await runTestFiles(files, [])
 """
 
 [task_templates."watch:test"]
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates.lint]
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."lint:oxlint"]
 description = "Lint with Oxlint"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
 ensureOxlintConfig()
@@ -582,7 +582,7 @@ runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-awa
 
 [task_templates."format:oxlint"]
 description = "Auto-fix this package with Oxlint using its package-local tsconfig"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
 ensureOxlintConfig()
@@ -591,7 +591,7 @@ runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-awa
 
 [task_templates."lint:types"]
 description = "TypeScript"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
 runWorkspaceNode('packages/dev-script/task-util', 'tsc-filter', ['--build'])
@@ -602,7 +602,7 @@ description = "Type check in watch mode"
 run = "tsc --watch"
 
 [task_templates.prepare]
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 #region tasks
@@ -615,7 +615,7 @@ run = "{{vars.fanout}}"
 [tasks.try]
 description = "Run a task, tolerating failures"
 usage = 'arg "task" help="Task name to run with failure tolerance"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 // Deliberately tolerant: the child's stderr is inherited (so its failure is
@@ -629,12 +629,12 @@ try { execFileSync('mise', ['run', process.env.usage_task], { stdio: 'inherit' }
 
 [tasks.build]
 description = "Build all packages, fanout to every package's 'build' task"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout_packages}}"
 
 [tasks."watch:build"]
 description = "Build all packages in watch mode, fanout to every package's 'watch:build' task"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout_packages}}"
 
 #endregion Build Tasks
@@ -647,7 +647,7 @@ run = "{{vars.fanout_packages}}"
 description = "Run all tests, or pass args to filter unit tests"
 alias = "t"
 usage = 'arg "[args]" var=#true help="Test file paths (when provided, only unit tests run)"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 {{vars.run_test_files}}
@@ -670,7 +670,7 @@ extends = "test:unit"
 hide = true
 description = "Run browser tests with Playwright in podman"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 {{vars.run_playwright}}
@@ -681,7 +681,7 @@ runPlaywright('playwright.browser.config.ts')
 hide = true
 description = "Run e2e tests with Playwright in podman"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 {{vars.run_playwright}}
@@ -692,7 +692,7 @@ runPlaywright('playwright.e2e.config.ts')
 hide = true
 description = "Run browser tests in Chromium"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 {{vars.run_playwright}}
@@ -703,7 +703,7 @@ runPlaywright('playwright.browser.config.ts', ['--project=chromium'])
 hide = true
 description = "Run browser tests in Firefox"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 {{vars.run_playwright}}
@@ -714,7 +714,7 @@ runPlaywright('playwright.browser.config.ts', ['--project=firefox'])
 hide = true
 description = "Run browser tests in WebKit"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 {{vars.run_playwright}}
@@ -725,7 +725,7 @@ runPlaywright('playwright.browser.config.ts', ['--project=webkit'])
 hide = true
 description = "Run unit tests in watch mode"
 usage = 'arg "[args]" var=#true help="Test file paths to watch"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 const { spawn } = await import('node:child_process')
@@ -757,7 +757,7 @@ run = "docker build --progress=plain ."
 description = "Build then test; with args, builds only the containing package instead of the entire monorepo"
 alias = "bt"
 usage = 'arg "[args]" var=#true help="Test file paths"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 {{vars.run_test_files}}
@@ -804,7 +804,7 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 # too would invoke each package's lint:rust / lint:detekt twice.
 [tasks."lint"]
 description = "Lint"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = [
   "{{vars.fanout_packages}}",
   { tasks = ["lint:dprint", "lint:stylelint", "lint:markdown"] },
@@ -822,7 +822,7 @@ run = "dprint check --list-different"
 hide = true
 description = "Lint CSS with Stylelint, optionally restricted to specific files or globs"
 usage = 'arg "[args]" var=#true help="File paths or globs (when provided, only those are linted)"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 const { execFileSync } = await import('node:child_process')
@@ -851,7 +851,7 @@ description = "Enforce the code-line budget and required rustdoc on .rs via mono
 # runs the rust-linter (max-lines + require-rustdoc) over only that package's Rust
 # source, mirroring `lint:detekt`'s per-package fanout. Pre-existing over-budget
 # files keep this red until they are split; tracked in issue #235.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout_packages}}"
 
 [tasks."lint:detekt"]
@@ -862,7 +862,7 @@ description = "Enforce KDoc on Kotlin via the custom detekt rule set (kotlin-lin
 # scans only that package's Kotlin source root. detekt-cli is not gitignore-aware, so
 # a single scan over packages/ would walk ~200k node_modules/build files to find ~50
 # .kt; per-package scans keep the input tiny.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout_packages}}"
 
 #endregion Linting Tasks
@@ -891,7 +891,7 @@ run = 'stylelint --fix --ignore-path .gitignore "**/*.{css,astro,html}"'
 [tasks."format:oxlint"]
 hide = true
 description = "Auto-fix each package with Oxlint using package-local tsconfig"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout_packages}}"
 
 # Applies cli-markdown-lint autofixes (e.g. no-pipe-tables converting pipe
@@ -915,7 +915,7 @@ run = ["mise run format", "mise run build", "mise run test"]
 
 [tasks."verify:skill-mirrors"]
 description = "Verify canonical agent skills, ownership manifests, and legacy mirrors are byte-identical"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { createHash } = require('node:crypto')
 const { globSync, readFileSync } = require('node:fs')
@@ -979,7 +979,7 @@ run = ["mise install", "mise upgrade"]
 
 [tasks.prepare]
 description = "Prepare environment: pnpm install, then fan out the prepare:* children (file sync, Playwright container, Android SDK, etc.). EXPENSIVE on a fresh clone: it auto-runs prepare:android (~2.9 GB Android SDK + NDK) and prepare:playwright (a podman image build) for every developer regardless of which packages they touch; this cost is intended and tolerated. Each child is idempotent, so reruns are cheap."
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 # Deliberate variant of the vars.fanout pattern, NOT a reuse: prepare:pnpm must run
 # first and complete (children need node_modules) before the remaining prepare:*
 # children fan out in parallel, and pnpm is excluded from that parallel set. The
@@ -1021,7 +1021,7 @@ run = ["node file-enforcer.config.ts", "mise run verify:skill-mirrors"]
 
 [tasks."prepare:playwright"]
 description = "Build Playwright container image via podman"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
 runWorkspaceNode('packages/dev-script/task-util', 'depends', ['--sources', 'sh:echo Infinity', '--outputs', 'sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity', '--', 'podman', 'build', '-t', 'monochromatic-playwright', '-f', 'playwright.Dockerfile', '.'])
@@ -1036,7 +1036,7 @@ runWorkspaceNode('packages/dev-script/task-util', 'depends', ['--sources', 'sh:e
 # (a triple-double-quoted body would have TOML pre-expand them and break the JS).
 [tasks."prepare:android"]
 description = "Install the Android SDK components packages/music-player/android-app needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android (devices) and x86_64-linux-android (emulators) rustup targets. EXPENSIVE: ~2.9 GB on disk (the NDK alone is ~2.4 GB), and the `prepare` umbrella auto-runs it for every developer, not just Android ones; this cost is intended and tolerated. Idempotent: a no-op once provisioned."
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = '''
 const { existsSync, readdirSync } = require("node:fs");
 const { join } = require("node:path");
@@ -1095,7 +1095,7 @@ run = ["mise run try -- prepare", "mise run try -- build"]
 
 [tasks.start]
 description = "Start development servers"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 # TODO: Add package-specific start tasks here
@@ -1166,7 +1166,7 @@ run = "node packages/dev-script/page-weight/src/index.ts"
 
 [tasks."fix:reinstall"]
 description = "Clean reinstall to work around registry or resolution issues"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { rmSync } = await import('node:fs')
 const { execFileSync } = await import('node:child_process')
@@ -1197,9 +1197,7 @@ _.path = [
   "packages/webapp-productivity/wc/node_modules/.bin",
   "packages/webapp-productivity/done-postcss/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
-  "packages/stub/throwing/node_modules/.bin",
   "packages/ssg/aquati.cat/node_modules/.bin",
-  "packages/shim/proper-lockfile/node_modules/.bin",
   "packages/rolldown-plugins/import-attributes/node_modules/.bin",
   "packages/pi-shared/model-selection/node_modules/.bin",
   "packages/pi-plugins/thinking-defaults/node_modules/.bin",
@@ -1214,16 +1212,14 @@ _.path = [
   "packages/pi-plugins/advisor/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
   "packages/module/pnpm-workspace-catalog/node_modules/.bin",
-  "packages/module/image-diff/node_modules/.bin",
   "packages/mcp/mvm/node_modules/.bin",
+  "packages/git-policies/repository/node_modules/.bin",
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
   "packages/desktop-app/file-manager-electron/node_modules/.bin",
   "packages/desktop-app/electron-infra/node_modules/.bin",
   "packages/desktop-app/electron-counter/node_modules/.bin",
   "packages/config/stylelint/node_modules/.bin",
-  "packages/config/oxlint/node_modules/.bin",
-  "packages/cli/git-clone-size/node_modules/.bin",
   "packages/cli/git/node_modules/.bin",
   "packages/claude-code-plugins/terminal-title/node_modules/.bin",
   "packages/claude-code-plugins/stop-reminders/node_modules/.bin",

@@ -26,7 +26,7 @@ LIBCLANG_PATH = "/usr/lib64"
 
 [vars]
 # Bootstrap-safe cargo dispatch for this package. Interpolated into the cargo
-# tasks, each of which sets `shell = "node -e"`.
+# tasks, each of which sets `shell = "node --input-type=module-typescript -e"`.
 # - hostOk: cargo + zig on PATH and pkg-config resolves the Slint font libraries.
 # - hostEnv(): host-only env for the native cargo branch. BINDGEN_EXTRA_CLANG_ARGS
 #   points bindgen (libghostty-vt-sys) at the clang resource dir (globbed so an
@@ -66,7 +66,7 @@ run = "podman build --tag localhost/monochromatic/terminal --file Containerfile 
 
 [tasks.build]
 description = "Release build (host if Zig + dev libs present, else container), then stage runtime shared libraries"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['build', '--release'])
@@ -75,7 +75,7 @@ execFileSync('mise', ['run', '//packages/desktop-app/terminal:stage:runtime-libs
 
 [tasks."build:debug"]
 description = "Debug build (host if Zig + dev libs present, else container), then stage runtime shared libraries"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['build'])
@@ -84,7 +84,7 @@ execFileSync('mise', ['run', '//packages/desktop-app/terminal:stage:runtime-libs
 
 [tasks."stage:runtime-libs:release"]
 description = "Copy release libghostty-vt shared libraries into the binary rpath directory"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { globSync, mkdirSync, copyFileSync } = await import('node:fs')
 const { join } = await import('node:path')
@@ -100,7 +100,7 @@ for (const name of ['libghostty-vt.so', 'libghostty-vt.so.0', 'libghostty-vt.so.
 
 [tasks."stage:runtime-libs:debug"]
 description = "Copy debug libghostty-vt shared libraries into the binary rpath directory"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { globSync, mkdirSync, copyFileSync } = await import('node:fs')
 const { join } = await import('node:path')
@@ -116,7 +116,7 @@ for (const name of ['libghostty-vt.so', 'libghostty-vt.so.0', 'libghostty-vt.so.
 
 [tasks.lint]
 description = "cargo check (host if Zig + dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['check'])
@@ -124,7 +124,7 @@ runCargo(['check'])
 
 [tasks."lint:clippy"]
 description = "Run clippy with warnings denied (host if Zig + dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['clippy', '--release', '--', '--deny', 'warnings'])
@@ -135,7 +135,7 @@ description = "Apply clippy's machine-applicable suggestions in place (host if Z
 # --allow-no-vcs is harmless on the host (the repo .git is visible) and required
 # in the container, where only the package dir is bind-mounted at /work so the
 # repo-root .git is not visible and cargo fix would otherwise refuse to run.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs'])
@@ -147,7 +147,7 @@ run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]
 description = "cargo nextest run (host if Zig + dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['nextest', 'run', '--release'])
@@ -161,7 +161,7 @@ description = "Build --features slint/mcp (debug), stage libs, and run HEADLESS 
 # renders offscreen. install_backend() early-returns when SLINT_MCP_PORT is set, so
 # Slint creates the backend itself and starts the MCP server. State is isolated under
 # target/mcp-xdg. Port 9316 keeps it distinct from the music player's 9315.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 const { mkdirSync, copyFileSync } = await import('node:fs')
@@ -194,7 +194,7 @@ run = "slint-viewer --check ui/app.slint"
 
 [tasks.screenshot]
 description = "Render ui/app.slint to target/app.slint.png HEADLESS (slint-viewer --screenshot, default property values, no window) for a quick static-layout snapshot"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { mkdirSync } = await import('node:fs')
@@ -205,7 +205,7 @@ console.error('rendered ui/app.slint -> target/app.slint.png')
 
 [tasks."build:container"]
 description = "Release build forced inside the container, then stage runtime libraries (asserts the container path)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 containerCargo(['build', '--release'])
@@ -214,7 +214,7 @@ execFileSync('mise', ['run', '//packages/desktop-app/terminal:stage:runtime-libs
 
 [tasks."lint:clippy:container"]
 description = "clippy with warnings denied forced inside the container"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 containerCargo(['clippy', '--release', '--', '--deny', 'warnings'])
@@ -222,7 +222,7 @@ containerCargo(['clippy', '--release', '--', '--deny', 'warnings'])
 
 [tasks."test:container"]
 description = "cargo nextest run forced inside the container"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 containerCargo(['nextest', 'run', '--release'])
@@ -232,7 +232,7 @@ containerCargo(['nextest', 'run', '--release'])
 description = "Assert the container build/clippy/test path works even when the host has Zig and the dev libs"
 # Aborts on the first failing step (execFileSync throws) so a broken container
 # path fails the task rather than being masked by a later passing step.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 execFileSync('mise', ['run', 'image'], { stdio: 'inherit' })
@@ -243,7 +243,7 @@ containerCargo(['nextest', 'run', '--release'])
 
 [tasks.run]
 description = "Build (host if Zig + dev libs present, else container), install desktop metadata and runtime libraries, then run the GUI on the host"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 const { mkdirSync, copyFileSync } = await import('node:fs')

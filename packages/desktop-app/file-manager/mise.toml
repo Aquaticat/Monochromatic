@@ -35,7 +35,7 @@ run = "cargo nextest run --release"
 # session; GDK_BACKEND=wayland forces it (never XWayland) so DnD is exercised over real Wayland.
 [tasks.run]
 description = "Debug build, then run the GUI on native Wayland (GDK_BACKEND=wayland)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 execFileSync('cargo', ['build'], { stdio: 'inherit' })

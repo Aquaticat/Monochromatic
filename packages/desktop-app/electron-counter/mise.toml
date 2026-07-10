@@ -10,7 +10,7 @@ run = [
 
 [tasks."build:clean"]
 description = "Remove generated app, tool, and distribution outputs"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { rmSync } = await import('node:fs')
 for (const path of ['dist/app', 'dist/tools', 'dist/distribution']) {

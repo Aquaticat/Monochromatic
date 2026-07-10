@@ -44,7 +44,7 @@ run = ["mise run build", "mise run test:unit"]
 # you do not have to export it. Provisions and then destroys real, billed servers.
 [tasks.'test:hetzner']
 description = "Run the live, BILLED Hetzner provisioning test (token auto-read from packages/config/tofu/hetzner.auto.tfvars)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { readFileSync } = await import('node:fs')
 const { execFileSync } = await import('node:child_process')

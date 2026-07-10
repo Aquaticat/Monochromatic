@@ -21,7 +21,7 @@ run = "node src/build.ts"
 
 [tasks."build:site:clean"]
 description = "Build static site from scratch (no cache)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { rmSync } = await import('node:fs')
 const { execFileSync } = await import('node:child_process')

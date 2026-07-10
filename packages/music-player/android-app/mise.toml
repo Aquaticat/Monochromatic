@@ -24,7 +24,7 @@
 [tasks."build:native"]
 description = "Cross-compile the native engine .so for both 64-bit ABIs (arm64-v8a for real devices, x86_64 for emulators; 16KB-aligned via the NDK 29 linker default, API 26 floor) into app/src/main/jniLibs. Derives and exports ANDROID_NDK_HOME from the mise-provisioned $ANDROID_HOME/ndk (run prepare:android once)."
 dir = "{{config_root}}/rust"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = '''
 const { existsSync, readdirSync, readFileSync, rmSync } = require("node:fs");
 const { join } = require("node:path");
@@ -132,7 +132,7 @@ run = "./gradlew :app:installDebug --no-daemon --console=plain"
 description = "Build the debug-signed release APK, install it on every attached device, and launch it on each of them."
 dir = "{{config_root}}"
 depends = ["build:release"]
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync } = require("node:child_process");
 const { join } = require("node:path");

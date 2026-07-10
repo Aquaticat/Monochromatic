@@ -32,7 +32,7 @@ usage = '''
 arg "[args]" var=#true help="Paths to lint and flags such as --max 300"
 '''
 # usage_args arrives shell-escaped; parseUsageArgs recovers the argument vector.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 const { execFileSync } = await import('node:child_process')

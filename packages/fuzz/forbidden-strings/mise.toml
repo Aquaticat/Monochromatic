@@ -40,7 +40,7 @@ run = "cargo fuzz build --fuzz-dir . --sanitizer address --target x86_64-unknown
 [tasks.smoke]
 description = "Run every fuzz target for 30s with the dictionary as a smoke test (AddressSanitizer instrumented)"
 # `--target x86_64-unknown-linux-gnu` and `--sanitizer address` rationale: see build.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const targets = execFileSync('cargo', ['fuzz', 'list', '--fuzz-dir', '.'], { encoding: 'utf8' }).split('\\n').map((line) => line.trim()).filter(Boolean)
@@ -74,7 +74,7 @@ arg "[args]" var=#true help="libFuzzer flags (-flag=v) and/or input paths to rep
 # before `--` (cargo-fuzz CORPUS slot, suppressing the default corpus);
 # flags go after `--`. With no input, `...$inputs` is empty and the
 # command is unchanged (continuous fuzzing over the default corpus).
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 const { execFileSync } = await import('node:child_process')

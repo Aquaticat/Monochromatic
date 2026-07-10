@@ -44,7 +44,7 @@ SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 
 [vars]
 # Bootstrap-safe cargo dispatch for this package. Interpolated into the cargo
-# tasks, each of which sets `shell = "node -e"`.
+# tasks, each of which sets `shell = "node --input-type=module-typescript -e"`.
 # - On macOS/Windows (process.platform !== 'linux') runCargo builds natively with
 #   no host env and no container (a Linux container cannot produce those binaries;
 #   cpal is the audio backend there).
@@ -94,7 +94,7 @@ run = "podman build -t localhost/monochromatic/music-player -f Containerfile ."
 
 [tasks.build]
 description = "Release build (macOS/Windows native, else Linux host if dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['build', '--release'])
@@ -102,7 +102,7 @@ runCargo(['build', '--release'])
 
 [tasks."build:debug"]
 description = "Debug build (macOS/Windows native, else Linux host if dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['build'])
@@ -110,7 +110,7 @@ runCargo(['build'])
 
 [tasks.lint]
 description = "cargo check, no codegen (macOS/Windows native, else Linux host if dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['check'])
@@ -118,7 +118,7 @@ runCargo(['check'])
 
 [tasks."lint:clippy"]
 description = "Run clippy with warnings denied (macOS/Windows native, else Linux host if dev libs present, else container)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['clippy', '--release', '--', '-D', 'warnings'])
@@ -129,7 +129,7 @@ description = "Apply clippy's machine-applicable suggestions in place (host if d
 # --allow-no-vcs is harmless on the host (the repo .git is visible) and required
 # in the container, where only the package dir is bind-mounted at /work so the
 # repo-root .git is not visible and cargo fix would otherwise refuse to run.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs'])
@@ -151,7 +151,7 @@ description = "cargo nextest run (macOS/Windows native, else Linux host if dev l
 # the generated UI so src/ui_binding_tests.rs's ElementHandle locators work; the
 # testing crate refuses to run without it. It is set here (not in [env]) so the
 # size-optimized production build/run binaries stay free of the extra metadata.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 process.env.SLINT_EMIT_DEBUG_INFO = '1'
@@ -178,7 +178,7 @@ arg "[args]" var=#true help="File or folder paths to enqueue (loaded PAUSED)"
 #   nested under niri for a GPU render off your main workspace.
 # The app loads PAUSED (no --start-playing), so nothing plays until an MCP client
 # clicks the transport; drive volume down first if a test must exercise playback.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 {{vars.parse_usage_args}}
@@ -216,7 +216,7 @@ description = "Render ui/app.slint to target/app.slint.png HEADLESS (slint-viewe
 # pins the software renderer for a deterministic frame. This renders the MARKUP with
 # default property values only (no engine/model data); drive the running app via the
 # `mcp` task's take_screenshot for real-data snapshots.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { mkdirSync } = await import('node:fs')
@@ -227,7 +227,7 @@ console.error('rendered ui/app.slint -> target/app.slint.png')
 
 [tasks."build:container"]
 description = "Release build forced inside the container (asserts the container path)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 containerCargo(['build', '--release'])
@@ -235,7 +235,7 @@ containerCargo(['build', '--release'])
 
 [tasks."lint:clippy:container"]
 description = "clippy with warnings denied forced inside the container"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
@@ -245,7 +245,7 @@ containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
 description = "cargo nextest run forced inside the container"
 # SLINT_EMIT_DEBUG_INFO=1 as in the host `test` task: the ElementHandle UI tests
 # need element ids in the generated UI. containerCargo forwards it via `-e`.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 process.env.SLINT_EMIT_DEBUG_INFO = '1'
@@ -256,7 +256,7 @@ containerCargo(['nextest', 'run', '--release'])
 description = "Assert the container build/clippy/test path works even when the host has the dev libs"
 # Aborts on the first failing step (execFileSync throws) so a broken container
 # path fails the task rather than being masked by a later passing step.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 execFileSync('mise', ['run', 'image'], { stdio: 'inherit' })
@@ -292,7 +292,7 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # target/release, so the binary is copied to ~/.local/bin to exercise the SAME
 # binary the launcher resolves. When HOME is unset, both installs are skipped and
 # the freshly built target/release copy is run instead.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 {{vars.parse_usage_args}}
@@ -327,7 +327,7 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # incremental, no LTO/strip) and runs target/debug/music-player directly. It does
 # NOT copy into ~/.local/bin or install the .desktop, so the installed release
 # binary the launcher resolves is left untouched.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 {{vars.parse_usage_args}}
@@ -342,7 +342,7 @@ description = "Generate tiny per-codec audio fixtures with host ffmpeg (run once
 # Runs on the host: ffmpeg is present there. 0.3s 440Hz stereo sine per codec.
 # 48000 Hz is used because libopus only accepts a fixed set of input rates
 # (8000/12000/16000/24000/48000); 48000 is the safe common rate.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const specs = [
@@ -373,7 +373,7 @@ description = "Regenerate the macOS .icns + Windows .ico from assets/icon.svg (r
 # run). rsvg-convert renders the SVG to PNG at each size; png2icns packs the macOS
 # set, icotool packs the Windows set. The PNGs are throwaway (under dist/,
 # gitignored); the committed outputs are assets/music-player.{icns,ico}.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { mkdirSync } = await import('node:fs')
@@ -407,7 +407,7 @@ description = "Assemble dist/Music Player.app around the macOS Mach-O (synced fr
 # Runs on Linux. MP_MACOS_BINARY (default dist/music-player) is the Mach-O built
 # on the Mac. Info.plist is a template: __MP_VERSION__ is replaced with the
 # Cargo.toml version; assets/music-player.icns is the committed bundle icon.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { existsSync, rmSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, chmodSync } = await import('node:fs')
 const bin = process.env.MP_MACOS_BINARY ?? 'dist/music-player'
@@ -432,7 +432,7 @@ description = "Sign dist/Music Player.app with rcodesign (Developer ID from env,
 # MP_MACOS_P12_PASSWORD_FILE), signed --for-notarization (hardened runtime +
 # secure timestamp). Test path (env unset): a throwaway self-signed cert under
 # dist/selfsign, neutral subject; such a build will NOT pass Gatekeeper.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { existsSync, mkdirSync } = await import('node:fs')
@@ -460,7 +460,7 @@ description = "Submit dist/Music Player.app to Apple notary and staple the ticke
 # Requires MP_ASC_API_KEY_JSON (an App Store Connect API key encoded by
 # `rcodesign encode-app-store-connect-api-key`). The .app must already be signed
 # with a real Developer ID (sign:macos with MP_MACOS_P12).
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { existsSync } = await import('node:fs')
@@ -478,7 +478,7 @@ description = "Authenticode-sign dist/music-player.exe in the sign container (or
 # OV cert over PKCS#11 (MP_WIN_PKCS11_MODULE / _CERT / _KEY) with an RFC3161
 # timestamp (MP_WIN_TIMESTAMP_URL, default Certum). Test path: a throwaway
 # self-signed .pfx under dist/selfsign; SmartScreen will not trust it.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { existsSync, mkdirSync } = await import('node:fs')
@@ -510,7 +510,7 @@ description = "Self-signed end-to-end check of the signing pipeline (needs dist/
 # Exercises bundle:macos + sign:macos (self-signed) and sign:windows (self-signed)
 # so the mechanics are proven on Linux without any real credentials. The artifacts
 # produced are NOT distributable.
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 console.log('== macOS: bundle + self-signed sign + verify ==')

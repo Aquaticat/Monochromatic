@@ -27,7 +27,7 @@ extends = "format:oxlint"
 
 [tasks."lint:oxlint:fix"]
 description = "Auto-fix this package with Oxlint (type-aware)"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
 ensureOxlintConfig()

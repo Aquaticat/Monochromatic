@@ -8,7 +8,7 @@ run = [
 
 [tasks."test:storagebox-resolver"]
 description = "Smoke-test Storage Box hostname resolver without network access"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const result = JSON.parse(execFileSync('node', ['src/resolve_storagebox_hosts.ts'], { input: '{"hostnames":""}', encoding: 'utf8' }))
@@ -21,7 +21,7 @@ if (!wildcardFailed) { throw new Error('expected wildcard hostname resolution to
 [tasks."test:storagebox-resolver:network"]
 description = "Resolve a real Storage Box hostname through DNS"
 usage = 'arg "host" help="Concrete your-storagebox.de hostname to resolve"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const host = process.env.usage_host
@@ -31,7 +31,7 @@ if (result.ips === '') { throw new Error(`expected resolved ips for ${host}`) }
 
 [tasks."test:hosts-resolver"]
 description = "Smoke-test service hostname resolver without network access"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const result = JSON.parse(execFileSync('node', ['src/resolve_hosts.ts'], { input: '{"hostnames":""}', encoding: 'utf8' }))
@@ -44,7 +44,7 @@ if (!wildcardFailed) { throw new Error('expected wildcard hostname resolution to
 [tasks."test:hosts-resolver:network"]
 description = "Resolve a real service hostname through DNS"
 usage = 'arg "host" default="nginx.org" help="Hostname to resolve"'
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const host = process.env.usage_host
@@ -54,7 +54,7 @@ if (!result[host]) { throw new Error(`expected resolved ips for ${host}`) }
 
 [tasks."test:external-caches"]
 description = "Smoke-test OpenTofu external helpers against local cache files when present"
-shell = "node -e"
+shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const { existsSync, readFileSync } = await import('node:fs')
