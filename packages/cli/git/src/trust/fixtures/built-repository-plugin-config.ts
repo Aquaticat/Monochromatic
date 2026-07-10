@@ -30,32 +30,11 @@ export function repositoryPluginConfigSource(severity: RepositoryPolicySeverity,
   const policies = severity === 'default'
     ? ''
     : `\n  policies: { 'mono/forbidden-root-context': '${severity}' },`;
-  return `import {
-  defineConfig,
-  definePlugin,
-  definePolicy,
-} from '@monochromatic-dev/cli-git';
+  return `import { defineConfig } from '@monochromatic-dev/cli-git/ts';
+import { repositoryPolicyPlugin } from '@monochromatic-dev/git-policy-repository/ts';
 
-const policy = definePolicy({
-  name: 'forbidden-root-context',
-  defaultSeverity: 'error',
-  warnSafe: true,
-  triggers: ['pre-forward', 'direct-check'],
-  check: async ({ context }) => {
-    const candidates = await context.git.candidates();
-    return candidates.some(({ path, change }) => path === 'CONTEXT.md' && change !== 'deleted')
-      ? [{
-          code: 'root-context-forbidden',
-          message: 'Root CONTEXT.md is forbidden; read source code directly.',
-          path: 'CONTEXT.md',
-        }]
-      : [];
-  },
-});
-
-const plugin = definePlugin({ name: 'repository', policies: [policy] });
 export default defineConfig({
-  plugins: { mono: plugin },${policies}
+  plugins: { mono: repositoryPolicyPlugin },${policies}
 });
 `;
 }
