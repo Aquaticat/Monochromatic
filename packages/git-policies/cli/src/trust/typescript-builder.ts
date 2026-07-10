@@ -19,6 +19,7 @@ import {
 import { exactBytesEqual, } from './config-loader.ts';
 import type { DiscoveredConfig, } from './config-discovery.ts';
 import { validateMjs, } from './mjs-validator.ts';
+import { TypeScriptBuildError, } from './typescript-build-error.ts';
 import { assertLiteralDynamicImports, } from './typescript-syntax-validation.ts';
 import type {
   CapturedTrustSource,
@@ -34,29 +35,6 @@ const CLI_GIT_PACKAGE_IMPORT = '@monochromatic-dev/cli-git';
  * Source export used to avoid rebundling cli-git's complete executable artifact.
  */
 const CLI_GIT_SOURCE_IMPORT = '@monochromatic-dev/cli-git/ts';
-
-/**
- * TypeScript trust build failure.
- */
-export class TypeScriptBuildError extends Error {
-  /**
-   * Creates stable TypeScript build failure.
-   *
-   * @param message - safe failure explanation
-   *
-   * @param options - optional cause
-   */
-  public constructor(
-    message: string,
-    options?: Readonly<ErrorOptions>,
-  ) {
-    super(
-      message,
-      options,
-    );
-    this.name = 'TypeScriptBuildError';
-  }
-}
 
 /**
  * Removes Rolldown query suffix from resolved module ID.
