@@ -17,12 +17,7 @@ import {
   resolveRuntimeConfig,
   RUNTIME_CONFIG_ABSENT,
 } from './trust/runtime-config.ts';
-import { atomicPush, } from './rules/atomic-push.ts';
-import { commitOnly, } from './rules/commit-only.ts';
-import {
-  hasExplicitStatusHintsOverride,
-  statusHintsOff,
-} from './rules/status-hints-off.ts';
+import { hasExplicitStatusHintsOverride, } from './rules/status-hints-off.ts';
 
 /**
  * Logger root for cli-git after removing the package log shim.
@@ -93,18 +88,6 @@ const STATUS_MACHINE_READABLE_FLAGS: ReadonlySet<string> = new Set([
   '--short',
   '-z',
 ],);
-
-/**
- * Rules applied in sequence. Each rule may transform args or throw to reject.
- * Unified configurable built-ins run before this fixed transform pipeline.
- */
-const RULES: readonly ((
-  args: readonly string[],
-) => readonly string[] | Promise<readonly string[]>)[] = [
-  atomicPush,
-  commitOnly,
-  statusHintsOff,
-];
 
 //endregion Rule pipeline
 
@@ -255,22 +238,12 @@ else try {
   }
 
   /**
-   * Final arguments after all rules have been applied; rules are skipped when git will short-circuit so the wrapper does not corrupt the invocation.
+   * Final arguments after staged policy execution and fixed transforms.
    */
-  const processedArgs = willShortCircuit
-    ? rawArgs
-    : await RULES.reduce(
-      async function applyRule(
-        accumulatedArgs,
-        rule,
-      ) {
-        return rule(await accumulatedArgs,);
-      },
-      Promise.resolve(policyResult?.args ?? rawArgs,),
-    );
+  const processedArgs = policyResult?.args ?? rawArgs;
 
   if (willShortCircuit)
-    rl.debug('pre-subcommand short-circuit flag present, skipping rules pipeline',);
+    rl.debug('pre-subcommand short-circuit flag present, skipping policy pipeline',);
 
   rl.debug(`final args: [${processedArgs.join(', ',)}]`,);
 

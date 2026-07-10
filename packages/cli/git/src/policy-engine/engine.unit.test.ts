@@ -57,6 +57,24 @@ const ESCAPE_OBSERVER_POLICY: RuntimePolicyDefinition = {
     },],);
   },
 };
+/** Plugin proving raw and fixed transformed command views. */
+const TRANSFORM_OBSERVER_POLICY: RuntimePolicyDefinition = {
+  name: 'fixture/transform-observer',
+  defaultSeverity: 'error',
+  warnSafe: false,
+  triggers: ['pre-forward',],
+  check: function observeTransformViews({ context, }) {
+    const rawMatches = context.command.rawArgs.join('\0',) === ['push', 'origin', 'main',].join('\0',);
+    const transformedMatches = context.command.transformedArgs.join('\0',)
+      === ['push', '--atomic', 'origin', 'main',].join('\0',);
+    if (rawMatches && transformedMatches)
+      return Promise.resolve([],);
+    return Promise.resolve([{
+      code: 'command-view-mismatch',
+      message: 'Plugin did not receive stable raw and transformed command views.',
+    },],);
+  },
+};
 /** Policy that violates engine exception contract. */
 const THROWING_POLICY: RuntimePolicyDefinition = {
   name: 'throwing-policy',
@@ -78,6 +96,7 @@ await describe({
         const result = await runPolicyEngine({ args: ['status',], trigger: 'pre-forward', },);
         expect(result.exitCode,).toBe(1,);
         expect(result.shouldForward,).toBe(false,);
+        expect(result.args,).toEqual(['status',],);
         expect(result.events[0]?.type,).toBe('finding',);
         expect(result.events[0]?.sequence,).toBe(0,);
         expect(renderPolicyEvents(result.events,).endsWith('\n',),).toBe(true,);
@@ -125,7 +144,11 @@ await describe({
           trigger: 'pre-forward',
         },);
         expect(escapedResult.events,).toEqual([],);
-        expect(escapedResult.args,).toEqual(['status',],);
+        expect(escapedResult.args,).toEqual([
+          '-c',
+          'advice.statusHints=false',
+          'status',
+        ],);
         expect(pathspecResult.exitCode,).toBe(1,);
         expect(valueResult.exitCode,).toBe(1,);
         expect(valueResult.args,).toEqual(['commit', '-m', '--no-enforce-require-root',],);
@@ -203,6 +226,20 @@ await describe({
       },
     },),
     it({
+      name: 'stages fixed transforms before plugin command facts',
+      fn: async function testPluginTransformFacts() {
+        /** Plugin-only staged engine result. */
+        const result = await runPolicyEngine({
+          args: ['push', 'origin', 'main',],
+          trigger: 'pre-forward',
+          registeredPolicies: [TRANSFORM_OBSERVER_POLICY,],
+        },);
+        expect(result.events,).toEqual([],);
+        expect(result.args,).toEqual(['push', '--atomic', 'origin', 'main',],);
+        expect(result.shouldForward,).toBe(true,);
+      },
+    },),
+    it({
       name: 'retains escaped policy for complete invocation lifecycle',
       fn: async function testFullLifecycleEscape() {
         /** Results from every supported lifecycle trigger. */
@@ -215,10 +252,16 @@ await describe({
         },),);
         results.forEach(function assertSkipped(result,) {
           expect(result.events,).toEqual([],);
-          expect(result.args,).toEqual(['status',],);
           expect(result.escapedPolicyIds.has('lifecycle-policy',),).toBe(true,);
           expect(result.shouldForward,).toBe(true,);
         },);
+        const [preForwardResult, directCheckResult,] = results;
+        expect(preForwardResult?.args,).toEqual([
+          '-c',
+          'advice.statusHints=false',
+          'status',
+        ],);
+        expect(directCheckResult?.args,).toEqual(['status',],);
       },
     },),
     it({
@@ -254,7 +297,11 @@ await describe({
         expect(continuedResult.events.map(function eventCode(event,) {
           return event.type === 'finding' ? event.code : event.type;
         },),).toEqual(['first-policy/first', 'second-policy/second',],);
-        expect(continuedResult.args,).toEqual(['status',],);
+        expect(continuedResult.args,).toEqual([
+          '-c',
+          'advice.statusHints=false',
+          'status',
+        ],);
       },
     },),
     it({

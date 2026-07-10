@@ -8,17 +8,17 @@ import {
 } from '../api/context-types.ts';
 import type {
   PolicyContext,
-  PolicyFinding,
+  PolicyTrigger,
 } from '../api/policy-types.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { BUILT_IN_POLICIES, } from './built-ins.ts';
 import { parsePolicyControls, } from './controls.ts';
 import {
-  createConfigurationWarningEvent,
   createEngineFailureEvent,
-  createFindingEvent,
   type PolicyEvent,
 } from './events.ts';
+import { applyFixedTransforms, } from './fixed-transforms.ts';
+import { runPolicyStage, } from './policy-stage.ts';
 import type {
   PolicyEngineResult,
   RunPolicyEngineOptions,
@@ -60,16 +60,20 @@ const ENGINE_CONFIG_SCHEMA = v.looseObject({
  *
  * @param escapedPolicyIds - invocation-wide skipped policy identifiers
  *
+ * @param trigger - active lifecycle point
+ *
  * @returns initial candidate-state context
  */
 function createPolicyContext({
   rawArgs,
   transformedArgs,
   escapedPolicyIds,
+  trigger,
 }: Readonly<{
   rawArgs: readonly string[];
   transformedArgs: readonly string[];
   escapedPolicyIds: ReadonlySet<string>;
+  trigger: PolicyTrigger;
 }>,): PolicyContext {
   /**
    * Parsed command location and effective directory.
@@ -84,7 +88,7 @@ function createPolicyContext({
   const subcommand = transformedArgs[subcommandIndex] ?? ABSENT_GIT_VALUE;
   return {
     candidateVersion: 0,
-    trigger: 'pre-forward',
+    trigger,
     command: {
       rawArgs,
       transformedArgs,
@@ -96,26 +100,6 @@ function createPolicyContext({
     git: EMPTY_LAZY_GIT_FACTS,
     signal: new AbortController().signal,
   };
-}
-
-/**
- * Confirms returned policy findings have first-slice runtime shape.
- *
- * @param findings - untrusted policy return value
- *
- * @returns whether every finding has required non-empty strings
- */
-function findingsAreValid(findings: readonly PolicyFinding[],): boolean {
-  return findings.every(function findingIsValid(finding,) {
-    return ((typeof finding.code) === 'string')
-      && (finding.code
-        .length
-        > 0)
-      && ((typeof finding.message) === 'string')
-      && (finding.message
-        .length
-        > 0);
-  },);
 }
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Internal registry contains callback-bearing policy declarations; engine reads but never mutates them, as documented in docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
@@ -220,110 +204,134 @@ export async function runPolicyEngine({
    */
   const selectedSet = new Set(selectedIds,);
   /**
-   * Candidate-state context shared by current stable pass.
+   * Canonical built-in IDs separating trusted plugins from fixed core.
    */
-  const context = createPolicyContext({
-    rawArgs: args,
-    transformedArgs: controls.args,
-    escapedPolicyIds: controls.escapedPolicyIds,
+  const builtInIds = new Set(BUILT_IN_POLICIES.map(function builtInId(policy,) {
+    return policy.name;
+  },),);
+  /**
+   * Configurable built-ins retained in canonical registry order.
+   */
+  const builtInPolicies = registeredPolicies.filter(function isBuiltIn(policy,) {
+    return builtInIds.has(policy.name,);
   },);
   /**
-   * Settled events buffered until policy checks finish.
+   * Trusted plugin policies retained after fixed transforms.
    */
-  const events: PolicyEvent[] = [];
-  for (const policy of registeredPolicies) {
-    if (!policy.triggers
-      .includes(trigger,))
-      continue;
-    if ((selectedSet.size > 0) && (!selectedSet.has(policy.name,)))
-      continue;
-    if (controls.escapedPolicyIds
-      .has(policy.name,))
-      continue;
-
-    /**
-     * Persistent override or policy declaration default.
-     */
-    const severity = parsedConfig.output
-      .policies[policy.name]
-      ?? policy.defaultSeverity;
-    if (severity === 'off')
-      continue;
-    /**
-     * Whether selected warning severity weakens enforcement.
-     */
-    const warnUnsafe = (severity === 'warn') && (!policy.warnSafe);
-
-    try {
-      /**
-       * Findings from current policy in fixed sequential order.
-       */
-      // oxlint-disable-next-line no-await-in-loop -- Policy contract requires sequential checks in fixed registration order.
-      const findings = await policy.check({
-        context: {
-          ...context,
-          trigger,
-        },
-        options: policyOptions.get(policy.name,),
-      },);
-      if (!findingsAreValid(findings,))
-        throw new TypeError(`Policy ${policy.name} returned an invalid finding.`,);
-      events.push(...findings.map(function toFindingEvent(
-        finding,
-        findingIndex,
-      ) {
-        return createFindingEvent({
-          sequence: events.length + findingIndex,
-          trigger,
-          policyId: policy.name,
-          severity,
-          code: finding.code,
-          message: finding.message,
-          ...(finding.path === undefined ? {} : { path: finding.path, }),
-          ...(finding.location === undefined ? {} : { location: finding.location, }),
-          fix: finding.patch === undefined ? 'none' : 'available',
-        },);
-      },),);
-      if (warnUnsafe)
-        events.push(createConfigurationWarningEvent({
-          sequence: events.length,
-          trigger,
-          policyId: policy.name,
-        },),);
-      if ((severity === 'error') && (findings.length > 0)
-        && (!controls.keepGoing))
-        break;
-    }
-    catch (error: unknown) {
-      /**
-       * Safe diagnostic for arbitrary thrown policy value.
-       */
-      const message = Error.isError(error,) ? error.message : String(error,);
-      events.push(createEngineFailureEvent({
-        sequence: events.length,
-        code: 'policy-incomplete',
-        message,
-        trigger,
-        policyId: policy.name,
-      },),);
-      return {
-        args: controls.args,
-        escapedPolicyIds: controls.escapedPolicyIds,
-        events,
-        exitCode: 2,
-        shouldForward: false,
-      };
-    }
-  }
-
+  const pluginPolicies = registeredPolicies.filter(function isPlugin(policy,) {
+    return !builtInIds.has(policy.name,);
+  },);
   /**
-   * Whether stable pass contains any blocking finding.
+   * Built-ins inspect control-clean raw semantic facts before transforms.
    */
-  const hasError = events.some(function isBlockingFinding(event,) {
-    return (event.type === 'finding') && (event.severity === 'error');
+  const builtInStage = await runPolicyStage({
+    policies: builtInPolicies,
+    context: createPolicyContext({
+      rawArgs: args,
+      transformedArgs: controls.args,
+      escapedPolicyIds: controls.escapedPolicyIds,
+      trigger,
+    },),
+    trigger,
+    severities: parsedConfig.output
+      .policies,
+    selectedPolicyIds: selectedSet,
+    escapedPolicyIds: controls.escapedPolicyIds,
+    policyOptions,
+    keepGoing: controls.keepGoing,
+    sequence: 0,
+  },);
+  if ((!builtInStage.complete) || builtInStage.stopped) {
+    return {
+      args: controls.args,
+      escapedPolicyIds: controls.escapedPolicyIds,
+      events: builtInStage.events,
+      exitCode: builtInStage.complete ? 1 : 2,
+      shouldForward: false,
+    };
+  }
+  /**
+   * Fixed transforms run only at forwarded command lifecycle point.
+   */
+  const fixedStage = trigger === 'pre-forward'
+    ? await applyFixedTransforms({
+      args: controls.args,
+      sequence: builtInStage.events
+        .length,
+    },)
+    : {
+      args: controls.args,
+      events: [],
+      complete: true,
+    };
+  /**
+   * Events settled before trusted plugins execute.
+   */
+  const stagedEvents: readonly PolicyEvent[] = [
+    ...builtInStage.events,
+    ...fixedStage.events,
+  ];
+  /**
+   * Whether fixed core produced expected blocking rejection.
+   */
+  const coreBlocked = fixedStage.events
+    .some(function isCoreFinding(event,) {
+    return event.type === 'core-finding';
+  },);
+  if ((!fixedStage.complete) || (coreBlocked && (!controls.keepGoing))) {
+    return {
+      args: fixedStage.args,
+      escapedPolicyIds: controls.escapedPolicyIds,
+      events: stagedEvents,
+      exitCode: fixedStage.complete ? 1 : 2,
+      shouldForward: false,
+    };
+  }
+  /**
+   * Plugins inspect exact raw input and fixed transformed command facts.
+   */
+  const pluginStage = await runPolicyStage({
+    policies: pluginPolicies,
+    context: createPolicyContext({
+      rawArgs: args,
+      transformedArgs: fixedStage.args,
+      escapedPolicyIds: controls.escapedPolicyIds,
+      trigger,
+    },),
+    trigger,
+    severities: parsedConfig.output
+      .policies,
+    selectedPolicyIds: selectedSet,
+    escapedPolicyIds: controls.escapedPolicyIds,
+    policyOptions,
+    keepGoing: controls.keepGoing,
+    sequence: stagedEvents.length,
+  },);
+  /**
+   * Complete ordered invocation events.
+   */
+  const events: readonly PolicyEvent[] = [
+    ...stagedEvents,
+    ...pluginStage.events,
+  ];
+  if (!pluginStage.complete) {
+    return {
+      args: fixedStage.args,
+      escapedPolicyIds: controls.escapedPolicyIds,
+      events,
+      exitCode: 2,
+      shouldForward: false,
+    };
+  }
+  /**
+   * Whether stable pass contains any blocking policy or core finding.
+   */
+  const hasError = events.some(function isBlockingEvent(event,) {
+    return (event.type === 'core-finding')
+      || ((event.type === 'finding') && (event.severity === 'error'));
   },);
   return {
-    args: controls.args,
+    args: fixedStage.args,
     escapedPolicyIds: controls.escapedPolicyIds,
     events,
     exitCode: hasError ? 1 : 0,

@@ -97,6 +97,7 @@ export type EngineFailureEvent = Readonly<{
    */
   code:
     | 'config-invalid'
+    | 'core-incomplete'
     | 'policy-incomplete'
     | 'config-untrusted'
     | 'config-changed'
@@ -113,6 +114,49 @@ export type EngineFailureEvent = Readonly<{
    * Responsible policy ID.
    */
   policyId?: string;
+}>;
+
+/**
+ * Expected non-configurable fixed-core rejection.
+ *
+ * @example
+ * ```ts
+ * const event: CoreFindingEvent = { schemaVersion: 1, sequence: 0, type: 'core-finding', trigger: 'pre-forward', coreId: 'commit-only', code: 'commit-only/pathspec-required', message: 'Name a path.' };
+ * ```
+ */
+export type CoreFindingEvent = Readonly<{
+  /**
+   * Schema version.
+   */
+  schemaVersion: 1;
+  /**
+   * Invocation-local sequence.
+   */
+  sequence: number;
+  /**
+   * Event discriminator.
+   */
+  type: 'core-finding';
+  /**
+   * Lifecycle trigger.
+   */
+  trigger: 'pre-forward';
+  /**
+   * Non-configurable fixed-core identifier.
+   */
+  coreId: 'commit-only';
+  /**
+   * Policy identifier is intentionally absent for fixed core.
+   */
+  policyId?: never;
+  /**
+   * Stable fully qualified rejection code.
+   */
+  code: string;
+  /**
+   * Human-readable rejection.
+   */
+  message: string;
 }>;
 
 /**
@@ -162,7 +206,7 @@ export type ConfigurationWarningEvent = Readonly<{
  * const events: readonly PolicyEvent[] = [];
  * ```
  */
-export type PolicyEvent = ConfigurationWarningEvent | FindingEvent | EngineFailureEvent;
+export type PolicyEvent = ConfigurationWarningEvent | CoreFindingEvent | FindingEvent | EngineFailureEvent;
 
 /**
  * Creates finding event while copying retained fields.
@@ -222,6 +266,46 @@ export function createFindingEvent({
         },
       }),
     fix,
+  };
+}
+
+/**
+ * Creates structured non-configurable core finding.
+ *
+ * @param sequence - invocation-local event order
+ *
+ * @param coreId - fixed core identifier
+ *
+ * @param code - core-local finding code
+ *
+ * @param message - user-facing rejection
+ *
+ * @returns immutable core finding
+ *
+ * @example
+ * ```ts
+ * createCoreFindingEvent({ sequence: 0, coreId: 'commit-only', code: 'pathspec-required', message: 'Name a path.' });
+ * ```
+ */
+export function createCoreFindingEvent({
+  sequence,
+  coreId,
+  code,
+  message,
+}: Readonly<{
+  sequence: number;
+  coreId: CoreFindingEvent['coreId'];
+  code: string;
+  message: string;
+}>,): CoreFindingEvent {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    sequence,
+    type: 'core-finding',
+    trigger: 'pre-forward',
+    coreId,
+    code: `${coreId}/${code}`,
+    message,
   };
 }
 

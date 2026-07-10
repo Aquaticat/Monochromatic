@@ -468,6 +468,9 @@ await describe({
           ],
         },),);
 
+        expect(error.stderr,).toContain('"type":"core-finding"',);
+        expect(error.stderr,).toContain('"coreId":"commit-only"',);
+        expect(error.stderr,).toContain('"code":"commit-only/pathspec-required"',);
         expect(error.stderr,).toContain(
           'cli-git: git commit requires an explicit pathspec',
         );

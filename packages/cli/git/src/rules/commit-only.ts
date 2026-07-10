@@ -51,6 +51,45 @@ const ALL_FLAG_MESSAGE =
     + 'or pass --no-enforce-only to bypass for this invocation.';
 
 /**
+ * Stable expected commit-only rejection codes.
+ */
+export type CommitOnlyViolationCode =
+  | 'all-flag'
+  | 'pathspec-required'
+  | 'staged-changes-ignored';
+
+/**
+ * Expected non-configurable commit-only rejection.
+ */
+export class CommitOnlyViolationError extends Error {
+  /**
+   * Stable core finding code.
+   */
+  public readonly code: CommitOnlyViolationCode;
+
+  /**
+   * Creates expected fixed-transform rejection.
+   *
+   * @param code - stable rejection code
+   *
+   * @param message - user-facing explanation
+   *
+   * @example
+   * ```ts
+   * throw new CommitOnlyViolationError('pathspec-required', 'Name a path.');
+   * ```
+   */
+  public constructor(
+    code: CommitOnlyViolationCode,
+    message: string,
+  ) {
+    super(message,);
+    this.name = 'CommitOnlyViolationError';
+    this.code = code;
+  }
+}
+
+/**
  * Builds the diagnostic for pathless `--amend`/`--allow-empty` commits where
  * injected `--only` would make git commit from HEAD's existing tree,
  * silently ignoring whatever is staged.
@@ -238,7 +277,10 @@ export function makeCommitOnly({
 
     if (!region.hasNoOnlyFlag) {
       if (region.hasAllFlag)
-        throw new Error(ALL_FLAG_MESSAGE,);
+        throw new CommitOnlyViolationError(
+          'all-flag',
+          ALL_FLAG_MESSAGE,
+        );
 
       /**
        * True when pathspecs are supplied positionally, through a pathspec file, or by a git mode that permits pathless only commits.
@@ -269,7 +311,10 @@ export function makeCommitOnly({
           return args;
         }
 
-        throw new Error(NO_PATHSPEC_MESSAGE,);
+        throw new CommitOnlyViolationError(
+          'pathspec-required',
+          NO_PATHSPEC_MESSAGE,
+        );
       }
     }
 
@@ -315,7 +360,10 @@ export function makeCommitOnly({
           ...(region.hasAmendFlag ? ['--amend',] : []),
           ...(region.hasAllowEmptyFlag ? ['--allow-empty',] : []),
         ].join(' ',);
-        throw new Error(ignoredIndexMessage(flagText,),);
+        throw new CommitOnlyViolationError(
+          'staged-changes-ignored',
+          ignoredIndexMessage(flagText,),
+        );
       }
 
       rl.debug('index matches HEAD or is undeterminable, proceeding with injection',);
