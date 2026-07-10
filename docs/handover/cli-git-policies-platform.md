@@ -3,8 +3,10 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issue #341 is reconciling the canonical decision and freezing the package implementation interface before runtime slices
-begin.
+Issue #341 is complete and closed;
+filesystem identity,
+package preparation,
+and the Git-root blocker are the next unblocked implementation slices.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -650,14 +652,17 @@ Unless later grilling changes them:
 - Repository Markdown lint passes for the decision,
   spec,
   and handover.
+- Commits `0a22e16e3` and `32c938a8b` contain the contract and final strict-TypeScript correction.
+- Independent final review reported no required corrections and #341 was closed.
 
 ## GitHub implementation tracker
 
 The confirmed plan is recorded as dependency-linked GitHub issues.
-Active AFK implementation slices:
+Dependency-ordered implementation slices:
 
-- [#341](https://github.com/Aquaticat/Monochromatic/issues/341):
-  finalize the canonical decision and implementation contract.
+- [#341](https://github.com/Aquaticat/Monochromatic/issues/341),
+   completed:
+  finalized the canonical decision and implementation contract.
 - [#342](https://github.com/Aquaticat/Monochromatic/issues/342):
   build the cross-platform filesystem-ID prerequisite.
 - [#343](https://github.com/Aquaticat/Monochromatic/issues/343):
@@ -986,15 +991,8 @@ implementation checkpoint,
 verification result,
 and commit.
 
-Issue #341 completion requires:
-
-1. Compile the public declaration and authoring examples in a disposable consumer.
-2. Parse every documented management command form through an Optique fixture.
-3. Lint the decision,
-   spec,
-   and handover.
-4. Close #341 after committing its verified contract.
-
+Issue #341 completed its contract gates.
 Continue recording each runtime implementation checkpoint,
 verification result,
+commit,
 and issue closure here.
