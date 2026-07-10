@@ -400,7 +400,7 @@ await describe({
           cwd: subdirectoryPath,
           args: ['cli-git', 'status',],
         },);
-        expect(statusResult.stdout,).toBe(`${JSON.stringify({
+        expect(statusResult.stdout,).toBe(JSON.stringify({
           schemaVersion: 1,
           type: 'status',
           policies: [{
@@ -408,7 +408,7 @@ await describe({
             severity: 'error',
             warnSafe: false,
           },],
-        },)}`,);
+        },),);
         /** Built-in direct-check failure. */
         const checkError = requireSubprocessError(await catchWrapperError({
           cwd: subdirectoryPath,
@@ -418,6 +418,13 @@ await describe({
         expect(checkError.stdout,).toContain('"trigger":"direct-check"',);
         expect(checkError.stdout,).toContain('"code":"require-root/not-at-root"',);
         expect(checkError.stderr,).toBe('',);
+        /** Direct check honoring Git global chdir before management namespace. */
+        const globalChdirError = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: ['-C', subdirectoryPath, 'cli-git', 'check', '--all',],
+        },),);
+        expect(globalChdirError.exitCode,).toBe(1,);
+        expect(globalChdirError.stdout,).toContain('"trigger":"direct-check"',);
       },
     },),
     it({

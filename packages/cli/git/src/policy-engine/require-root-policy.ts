@@ -31,9 +31,19 @@ export const requireRootPolicy: PolicyDefinition<undefined, 'require-root'> = de
     'direct-check',
   ],
   check: async function checkRequireRoot({ context, }): Promise<readonly PolicyFinding[]> {
+    /**
+     * Legacy adapter args with synthetic nonexempt command for direct checks.
+     */
+    const args = context.trigger === 'direct-check'
+      ? [
+        ...context.command
+          .rawArgs,
+        'cli-git-direct-check',
+      ]
+      : context.command
+        .rawArgs;
     try {
-      await requireRoot(context.command
-        .rawArgs,);
+      await requireRoot(args,);
       return [];
     }
     catch (error: unknown) {

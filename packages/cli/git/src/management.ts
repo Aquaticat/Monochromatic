@@ -60,14 +60,22 @@ const MANAGEMENT_PARSER = or(
  *
  * @param args - arguments following `git cli-git`
  *
+ * @param gitGlobalArgs - arguments preceding `cli-git`
+ *
  * @returns settled cli-git exit code
  *
  * @example
  * ```ts
- * await runManagementCommand(['status']);
+ * await runManagementCommand({ args: ['status'], gitGlobalArgs: [] });
  * ```
  */
-export async function runManagementCommand(args: readonly string[],): Promise<0 | 1 | 2> {
+export async function runManagementCommand({
+  args,
+  gitGlobalArgs,
+}: Readonly<{
+  args: readonly string[];
+  gitGlobalArgs: readonly string[];
+}>,): Promise<0 | 1 | 2> {
   /**
    * Parsed management action or parse-stop sentinel.
    */
@@ -133,7 +141,7 @@ export async function runManagementCommand(args: readonly string[],): Promise<0 
    * Built-in direct-check decision.
    */
   const result = await runPolicyEngine({
-    args,
+    args: gitGlobalArgs,
     trigger: 'direct-check',
     selectedPolicyIds: parsed.policies
       .filter(function isString(value,): value is string {

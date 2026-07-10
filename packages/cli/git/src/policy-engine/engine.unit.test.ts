@@ -4,6 +4,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { runPolicyEngine, } from './engine.ts';
+import { renderPolicyEvents, } from './events.ts';
 
 await describe({
   name: 'policy engine',
@@ -17,6 +18,7 @@ await describe({
         expect(result.shouldForward,).toBe(false,);
         expect(result.events[0]?.type,).toBe('finding',);
         expect(result.events[0]?.sequence,).toBe(0,);
+        expect(renderPolicyEvents(result.events,).endsWith('\n',),).toBe(true,);
       },
     },),
     it({

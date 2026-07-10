@@ -71,6 +71,48 @@ missing object IDs,
 and direct operations without a Git subcommand.
 It is an in-process unique symbol and is never serialized to JSONL.
 
+## Policy engine and management
+
+The shadow executable runs `require-root` through the unified policy contract before the existing command transformers.
+The built-in defaults to `error`.
+Validated policy settings support `off`,
+`warn`,
+and `error`;
+configuring warn-unsafe `require-root` as `warn` also produces a configuration warning.
+Trusted repository config discovery and execution is intentionally added by the trust implementation slices,
+so the current shadow executable uses the built-in default.
+
+Policy findings and engine failures are compact LF-terminated JSONL.
+Forwarded wrapper invocations write events to stderr;
+direct management checks write them to stdout.
+Exit code `0` means no blocking finding,
+`1` means at least one policy finding remained,
+and `2` means configuration,
+usage,
+or engine failure.
+Events are buffered until the pass settles,
+and sequence values start at zero for every invocation.
+
+Use the namespaced Optique management commands:
+
+```sh
+git cli-git status
+git cli-git check --all
+git cli-git check --policy require-root -- path/to/file
+```
+
+Direct check requires exactly one scope source:
+`--all` or at least one pathspec following `--`.
+The first engine slice accepts only the `require-root` policy filter.
+Git global options remain before the namespace,
+for example `git -C /repo cli-git check --all`.
+
+`--no-enforce-require-root` bypasses the policy for one forwarded invocation and is stripped before real Git runs.
+The token is recognized only in flag position before Git's `--` pathspec separator;
+option values and pathspecs with the same bytes remain untouched.
+`--cli-git-keep-going` is also wrapper-only and preserves fixed policy order while allowing later finding-producing policies to run.
+Engine failures always stop immediately.
+
 ## Rules
 
 **Require root**:

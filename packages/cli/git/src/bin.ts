@@ -141,9 +141,13 @@ const managementLayout = parseGlobalOptions(rawArgs,);
 const isManagementCommand = rawArgs[managementLayout.subcommandIndex] === 'cli-git';
 
 if (isManagementCommand) {
-  process.exitCode = await runManagementCommand(
-    rawArgs.slice(managementLayout.subcommandIndex + 1,),
-  );
+  process.exitCode = await runManagementCommand({
+    args: rawArgs.slice(managementLayout.subcommandIndex + 1,),
+    gitGlobalArgs: rawArgs.slice(
+      0,
+      managementLayout.subcommandIndex,
+    ),
+  },);
 }
 else try {
   /**
