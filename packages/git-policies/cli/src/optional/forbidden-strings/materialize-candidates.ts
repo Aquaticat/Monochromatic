@@ -16,7 +16,7 @@ import type { CandidateFile, } from '../../api/index.ts';
 /**
  * Maximum simultaneous candidate reads and temporary-file writes.
  */
-const MATERIALIZATION_CONCURRENCY = 8;
+const MATERIALIZATION_CONCURRENCY = 64;
 
 /**
  * Returns scanner-equivalent candidate identity.
