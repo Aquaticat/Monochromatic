@@ -5,6 +5,7 @@ import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
 import { runManagementCommand, } from './management.ts';
 import { parseCommitRegion, } from './parsers/commit.ts';
+import { parsePushRegion, } from './parsers/push.ts';
 import { COMMIT_TRANSACTION_NOT_APPLICABLE, } from './policy-engine/commit-transaction.ts';
 import { runCommitTransactionBoundary, } from './policy-engine/commit-transaction-boundary.ts';
 import {
@@ -13,6 +14,10 @@ import {
 } from './policy-engine/commit-transaction-recovery.ts';
 import { runPreForwardPolicyEngine, } from './policy-engine/pre-forward-engine.ts';
 import { runPostCommitLifecycle, } from './policy-engine/post-commit-lifecycle.ts';
+import {
+  hasManualPushPolicy,
+  runManualPushLifecycle,
+} from './policy-engine/manual-push-lifecycle.ts';
 import {
   createEngineFailureEvent,
   renderPolicyEvents,
@@ -301,18 +306,6 @@ try {
   rl.debug(`final args: [${processedArgs.join(', ',)}]`,);
 
   /**
-   * Whether private-index transaction already executed real Git.
-   */
-  const transactionCommitted = ((typeof commitTransaction) !== 'symbol')
-    && commitTransaction.committed;
-  if (!transactionCommitted)
-    await nanoSpawn(
-      gitPath,
-      [...processedArgs,],
-      { stdio: 'inherit', },
-    );
-
-  /**
    * Layout of `processedArgs`: where the subcommand sits, what precedes it, and
    * the directory git will operate in after `-C` chaining.
    */
@@ -335,6 +328,48 @@ try {
    * Post-subcommand region; scanned for status flags that switch git's output to a machine-readable format.
    */
   const postSubcommand = processedArgs.slice(subcommandIndex + 1,);
+  /**
+   * Whether trusted registry has enabled manual-push work.
+   */
+  const manualPushEnabled = runtimeResolution.loaded !== RUNTIME_CONFIG_ABSENT
+    && hasManualPushPolicy({
+      registeredPolicies: runtimeResolution.loaded.validated.registeredPolicies,
+      policySeverities: runtimeResolution.loaded.validated.policySeverities,
+    },);
+  if ((subcommand === 'push') && manualPushEnabled
+    && (runtimeResolution.loaded !== RUNTIME_CONFIG_ABSENT)
+    && (!parsePushRegion(postSubcommand,).isDryRun)) {
+    /** Settled manual-push gate before any remote update. */
+    const manualPushResult = await runManualPushLifecycle({
+      rawArgs,
+      transformedArgs: processedArgs,
+      gitPath,
+      cwd: effectiveCwd,
+      policySeverities: runtimeResolution.loaded.validated.policySeverities,
+      registeredPolicies: runtimeResolution.loaded.validated.registeredPolicies,
+      policyOptions: runtimeResolution.loaded.validated.policyOptions,
+    },);
+    /** Manual-push events use wrapper stderr routing. */
+    const renderedManualPushEvents = renderPolicyEvents(manualPushResult.events,);
+    if (renderedManualPushEvents !== '')
+      process.stderr.write(renderedManualPushEvents,);
+    if (!manualPushResult.shouldForward) {
+      if (manualPushResult.exitCode === 0)
+        throw new TypeError('Non-forwarding manual-push result cannot use exit code 0.',);
+      throw new PolicyDecisionError(manualPushResult.exitCode,);
+    }
+  }
+  /**
+   * Whether private-index transaction already executed real Git.
+   */
+  const transactionCommitted = ((typeof commitTransaction) !== 'symbol')
+    && commitTransaction.committed;
+  if (!transactionCommitted)
+    await nanoSpawn(
+      gitPath,
+      [...processedArgs,],
+      { stdio: 'inherit', },
+    );
 
   /**
    * True when a real commit just landed (the spawn above succeeded and this
