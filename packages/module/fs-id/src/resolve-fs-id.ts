@@ -199,11 +199,14 @@ function resolveCanonicalPath({
 }
 
 /**
- * Creates an independently memoized resolver around supplied effect adapters.
+ * Creates resolver around supplied effect adapters.
+ *
+ * Each call resolves platform identity afresh after canonicalization.
+ * Avoiding cross-call memoization prevents a volume replaced at the same path from inheriting stale identity.
  *
  * @param adapters - Production or test effects
  *
- * @returns Resolver memoized by canonical absolute path
+ * @returns Fresh canonicalizing resolver
  *
  * @example
  * ```ts
@@ -216,89 +219,40 @@ export function createFsIdResolver({
 }: {
   readonly adapters: FsIdResolverAdapters;
 },): FsIdResolver {
-  /**
-   * In-flight and completed resolutions keyed by canonical path.
-   */
-  const cache = new Map<string, Promise<FsIdResolution>>();
-
-  /**
-   * Resolves and warns for one canonical path while evicting failed work.
-   *
-   * @param path - Canonical target path
-   *
-   * @returns Memoized resolution
-   *
-   * @example
-   * ```ts
-   * await resolveCanonical({ path: '/repo' });
-   * ```
-   */
-  async function resolveCanonical({ path, }: { readonly path: string; },): Promise<FsIdResolution> {
+  return async function freshResolver({
+    path,
+  }: {
+    readonly path: string;
+  }): Promise<FsIdResolution> {
+    /**
+     * Canonical path resolved on every call so symlink and mount changes are observed.
+     */
+    const canonicalPath = await adapters.canonicalizePath({ path, },);
     try {
       /**
-       * Platform resolution before mandatory degraded warning.
+       * Fresh platform resolution before mandatory degraded warning.
        */
       const resolution = await resolveCanonicalPath({
-        path,
+        path: canonicalPath,
         adapters,
       },);
       if (!resolution.stable) {
         adapters.warn({
-          path,
+          path: canonicalPath,
           reason: resolution.reason ?? 'stable identity mechanism unavailable',
         },);
       }
       return resolution;
     }
     catch (error) {
-      l.error(`filesystem identity resolution failed for ${path}: ${String(error,)}`,);
-      cache.delete(path,);
+      l.error(`filesystem identity resolution failed for ${canonicalPath}: ${String(error,)}`,);
       throw error;
     }
-  }
-
-  /**
-   * Canonicalizing resolver returned to caller.
-   *
-   * @param path - Existing filesystem path
-   *
-   * @returns Stable or degraded identity
-   *
-   * @example
-   * ```ts
-   * await memoizedResolver({ path: '/repo' });
-   * ```
-   */
-  return async function memoizedResolver({
-    path,
-  }: {
-    readonly path: string;
-  }): Promise<FsIdResolution> {
-    /**
-     * Canonical cache key that distinguishes distinct mount paths.
-     */
-    const canonicalPath = await adapters.canonicalizePath({ path, },);
-    /**
-     * Existing in-flight or completed path resolution.
-     */
-    const cached = cache.get(canonicalPath,);
-    if (cached !== undefined)
-      return cached;
-
-    /**
-     * Resolution promise stored before awaiting so concurrent callers share it.
-     */
-    const pending = resolveCanonical({ path: canonicalPath, },);
-    cache.set(
-      canonicalPath,
-      pending,
-    );
-    return pending;
   };
 }
 
 /**
- * Default production resolver with process-local canonical-path memoization.
+ * Default production resolver with fresh identity observation per call.
  *
  * @example
  * ```ts

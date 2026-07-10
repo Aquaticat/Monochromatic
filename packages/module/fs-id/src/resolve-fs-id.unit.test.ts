@@ -5,14 +5,16 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  createFsIdResolver,
   FsIdResolutionError,
   isFsId,
   resolveFsId,
   UnsupportedFsIdPlatformError,
+} from '../dist/final/node/index.mjs';
+import {
+  createFsIdResolver,
   type FsIdCommand,
   type FsIdResolverAdapters,
-} from '../dist/final/node/index.mjs';
+} from '../dist/final/node/testing.mjs';
 
 /**
  * Fixture adapter construction input.
@@ -239,14 +241,19 @@ await describe({
          */
         const fixture = createFixture({
           platform: 'darwin',
-          commandResults: ['Device Identifier: disk3\nVolume UUID: ABCD-1234\n',],
+          commandResults: [
+            '<?xml version="1.0"?><plist><dict><key>VolumeUUID</key><string>ABCD-1234</string></dict></plist>',
+          ],
         },);
         /**
          * Stable identity.
          */
         const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: '/repo', },);
         expect(result,).toEqual({ value: 'volume-uuid_abcd-1234', stable: true, source: 'volume-uuid', },);
-        expect(fixture.commands[0],).toEqual({ command: 'diskutil', args: ['info', '/repo',], },);
+        expect(fixture.commands[0],).toEqual({
+          command: 'diskutil',
+          args: ['info', '-plist', '/repo',],
+        },);
       },
     },),
     it({
@@ -302,7 +309,7 @@ await describe({
          */
         const fixture = createFixture({
           platform: 'win32',
-          commandResults: ['Volume Serial Number is 1A2B-3C4D\r\n',],
+          commandResults: ['1A2B-3C4D\r\n',],
         },);
         /**
          * Stable identity.
@@ -314,8 +321,14 @@ await describe({
           source: 'volume-serial',
         },);
         expect(fixture.commands,).toEqual([{
-          command: 'cmd.exe',
-          args: ['/d', '/s', '/c', 'vol C:\\',],
+          command: 'powershell.exe',
+          args: [
+            '-NoLogo',
+            '-NoProfile',
+            '-NonInteractive',
+            '-Command',
+            `(Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'").VolumeSerialNumber`,
+          ],
         },],);
       },
     },),
@@ -390,14 +403,14 @@ await describe({
       },
     },),
     it({
-      name: 'shares canonical-path work but never aliases distinct mount paths',
+      name: 'resolves aliases and distinct mount paths independently',
       fn: async () => {
         /**
          * Two-mount fixture with one alias.
          */
         const fixture = createFixture({
           platform: 'linux',
-          commandResults: ['UUID-A', 'UUID-B',],
+          commandResults: ['UUID-A', 'UUID-A', 'UUID-B',],
           canonicalPaths: {
             '/alias-a': '/mount/a',
             '/mount/a': '/mount/a',
@@ -420,13 +433,40 @@ await describe({
          * Distinct mount resolution.
          */
         const other = await resolver({ path: '/mount/b', },);
-        expect(alias,).toBe(duplicate,);
+        expect(alias,).toEqual(duplicate,);
         expect(other.value,).toBe('fs-uuid_uuid-b',);
+        expect(fixture.commands,).toHaveLength(3,);
+      },
+    },),
+    it({
+      name: 'observes a replacement volume mounted at same canonical path',
+      fn: async () => {
+        /**
+         * Same-path replacement fixture.
+         */
+        const fixture = createFixture({
+          platform: 'linux',
+          commandResults: ['UUID-A', 'UUID-B',],
+        },);
+        /**
+         * Fresh resolver.
+         */
+        const resolver = createFsIdResolver({ adapters: fixture.adapters, },);
+        /**
+         * Identity before simulated replacement.
+         */
+        const before = await resolver({ path: '/mount', },);
+        /**
+         * Identity after simulated replacement.
+         */
+        const after = await resolver({ path: '/mount', },);
+        expect(before.value,).toBe('fs-uuid_uuid-a',);
+        expect(after.value,).toBe('fs-uuid_uuid-b',);
         expect(fixture.commands,).toHaveLength(2,);
       },
     },),
     it({
-      name: 'evicts failed resolutions so a later call can recover',
+      name: 'retries failed resolution on later call',
       fn: async () => {
         /**
          * Failure then success fixture.

@@ -14,7 +14,10 @@ import {
  */
 const config: UserConfig = defineConfig({
   ...base,
-  entry: ['./src/index.ts',],
+  entry: {
+    index: './src/index.ts',
+    testing: './src/testing.ts',
+  },
 },);
 
 export default config;

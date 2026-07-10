@@ -6,17 +6,18 @@
  */
 
 import { execFile, } from 'node:child_process';
+import { stat, } from 'node:fs/promises';
 import { platform, } from 'node:os';
 import { resolve, } from 'node:path';
 import { promisify, } from 'node:util';
 
 import {
   createFsId,
+  normalizeIdentityPayload,
   parseDiskutilVolumeUuid,
   parseFindmntUuid,
-  parseVolumeSerial,
+  windowsDriveRoot,
 } from './parsers.ts';
-import { windowsDriveRoot, } from './platform-resolvers.ts';
 import type { FsIdResolution, } from './types.ts';
 
 /**
@@ -113,6 +114,7 @@ async function preferredHostResolution(): Promise<FsIdResolution> {
       command: 'diskutil',
       args: [
         'info',
+        '-plist',
         target,
       ],
     },);
@@ -131,21 +133,29 @@ async function preferredHostResolution(): Promise<FsIdResolution> {
      */
     const driveRoot = windowsDriveRoot(target,);
     /**
-     * Windows preferred volume output.
+     * Drive identifier without trailing separator.
+     */
+    const driveId = driveRoot.slice(
+      0,
+      2,
+    );
+    /**
+     * Windows locale-invariant CIM property output.
      */
     const output = await commandOutput({
-      command: 'cmd.exe',
+      command: 'powershell.exe',
       args: [
-        '/d',
-        '/s',
-        '/c',
-        `vol ${driveRoot}`,
+        '-NoLogo',
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        `(Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='${driveId}'").VolumeSerialNumber`,
       ],
     },);
     return {
       value: createFsId({
         source: 'volume-serial',
-        payload: parseVolumeSerial(output,),
+        payload: normalizeIdentityPayload(output,),
       },),
       stable: true,
       source: 'volume-serial',
@@ -161,9 +171,19 @@ const result = await preferredHostResolution();
 if (result.value
   .includes(':',))
   throw new Error('real-host identity contains forbidden colon',);
+/**
+ * Real host runtime device number recorded as degraded-path evidence.
+ */
+const runtimeDeviceNumber = (await stat(
+  process.cwd(),
+  { bigint: true, },
+)).dev
+  .toString();
 console.log(JSON.stringify({
   platform: platform(),
   source: result.source,
   stable: result.stable,
   colonFree: true,
+  runtimeDeviceNumber,
+  runtimeDeviceUsable: runtimeDeviceNumber !== '0',
 },),);

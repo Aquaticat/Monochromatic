@@ -57,6 +57,16 @@ const SERIAL_TERMINATORS: ReadonlySet<string> = new Set([
 const SERIAL_LABEL = 'serial number is';
 
 /**
+ * ASCII drive letters accepted for Windows volume queries.
+ *
+ * @example
+ * ```ts
+ * WINDOWS_DRIVE_LETTERS.includes('c');
+ * ```
+ */
+const WINDOWS_DRIVE_LETTERS = 'abcdefghijklmnopqrstuvwxyz';
+
+/**
  * Stable prefixes used by generated identifiers.
  *
  * @example
@@ -214,36 +224,96 @@ export function parseFindmntUuid(output: string,): string {
 }
 
 /**
- * Parses `Volume UUID` from `diskutil info` output.
+ * Parses `VolumeUUID` from structured `diskutil info -plist` output.
  *
- * @param output - Captured `diskutil` text
+ * @param output - Captured XML property list
  *
  * @returns Safe token
  *
- * @throws when output has no safe Volume UUID
+ * @throws when property list has no safe Volume UUID
  *
  * @example
  * ```ts
- * parseDiskutilVolumeUuid('Volume UUID: ABCD-1234\n'); // 'abcd-1234'
+ * parseDiskutilVolumeUuid('<key>VolumeUUID</key><string>ABCD-1234</string>');
  * ```
  */
 export function parseDiskutilVolumeUuid(output: string,): string {
   /**
-   * Lowercase field label accepted after trimming line indentation.
+   * Invariant plist key emitted independent of display locale.
    */
-  const label = 'volume uuid:';
-  for (const line of output.split('\n',)) {
-    /**
-     * Trimmed line whose original offsets are irrelevant after delimiter.
-     */
-    const trimmed = line.trim();
-    if (!trimmed.toLowerCase()
-      .startsWith(label,)) {
-      continue;
-    }
-    return normalizeIdentityPayload(trimmed.slice(label.length,),);
+  const key = '<key>VolumeUUID</key>';
+  /**
+   * String value opening tag.
+   */
+  const stringOpen = '<string>';
+  /**
+   * String value closing tag.
+   */
+  const stringClose = '</string>';
+  /**
+   * Key position or absent sentinel.
+   */
+  const keyIndex = output.indexOf(key,);
+  if (keyIndex === (-1))
+    throw new TypeError('diskutil plist has no VolumeUUID key',);
+  /**
+   * Value opening position after exact key.
+   */
+  const openIndex = output.indexOf(
+    stringOpen,
+    keyIndex + key.length,
+  );
+  if (openIndex === (-1))
+    throw new TypeError('diskutil plist VolumeUUID has no string value',);
+  /**
+   * Value start after opening tag.
+   */
+  const valueStart = openIndex + stringOpen.length;
+  /**
+   * Value end or absent sentinel.
+   */
+  const closeIndex = output.indexOf(
+    stringClose,
+    valueStart,
+  );
+  if (closeIndex === (-1))
+    throw new TypeError('diskutil plist VolumeUUID string is unterminated',);
+  return normalizeIdentityPayload(output.slice(
+    valueStart,
+    closeIndex,
+  ),);
+}
+
+/**
+ * Extracts safe Windows drive root from canonical path.
+ *
+ * @param path - Canonical Windows path
+ *
+ * @returns Uppercase drive root
+ *
+ * @throws for non-drive path
+ *
+ * @example
+ * ```ts
+ * windowsDriveRoot('c:\\repo'); // 'C:\\'
+ * ```
+ */
+export function windowsDriveRoot(path: string,): string {
+  /**
+   * Lowercase drive letter candidate.
+   */
+  const letter = path.charAt(0,)
+    .toLowerCase();
+  /**
+   * Root separator candidate.
+   */
+  const separator = path.charAt(2,);
+  if ((!WINDOWS_DRIVE_LETTERS.includes(letter,))
+    || (path.charAt(1,) !== ':')
+    || ((separator !== '\\') && (separator !== '/'))) {
+    throw new TypeError(`Windows path has no drive root: ${path}`,);
   }
-  throw new TypeError('diskutil returned no valid Volume UUID',);
+  return `${letter.toUpperCase()}:\\`;
 }
 
 /**

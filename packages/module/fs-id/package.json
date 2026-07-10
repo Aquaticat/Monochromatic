@@ -11,6 +11,10 @@
       "types": "./dist/final/node/index.d.mts",
       "default": "./dist/final/node/index.mjs"
     },
+    "./testing": {
+      "types": "./dist/final/node/testing.d.mts",
+      "default": "./dist/final/node/testing.mjs"
+    },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },

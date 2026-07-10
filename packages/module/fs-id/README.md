@@ -31,20 +31,21 @@ console.log(resolution.source,);
 A stable result uses one of:
 
 - Linux filesystem UUID from unprivileged `findmnt`;
-- macOS Volume UUID from `diskutil`;
-- Windows volume serial from `vol`.
+- macOS Volume UUID from structured `diskutil info -plist`;
+- Windows volume serial from locale-invariant `Win32_LogicalDisk.VolumeSerialNumber` CIM output.
 
 A preferred-command or preferred-output failure falls back to:
 
 - Linux `f_fsid` from GNU `stat`;
 - macOS device number from BSD `stat`;
-- Windows runtime device number from Node `stat`.
+- Windows nonzero runtime device number from Node `stat`.
 
 Degraded results set `stable: false`,
 include `reason`,
 and emit a tagged warning.
-They still distinguish a different mounted volume at the same path,
-but the identity may change after reboot.
+A degraded value is used only when its platform mechanism returns a nonempty safe identity;
+Windows zero device numbers are rejected because they cannot distinguish volumes.
+The identity may change after reboot.
 Unsupported platforms and total preferred-plus-fallback failure throw.
 
 ## Identity grammar
@@ -72,15 +73,17 @@ or traversal segments.
 `isFsId` validates this generated shape.
 Consumers still use reversible encoding when mapping a complete identity into filesystem path components.
 
-## Memoization
+## Fresh observation
 
-`resolveFsId` memoizes by canonical absolute path for the current process.
-Different canonical paths never share a cache entry,
-so paths on different mounted volumes cannot be confused.
-Rejected resolutions are evicted and may be retried.
+`resolveFsId` canonicalizes and resolves identity on every call.
+It intentionally does not memoize across calls:
+a volume replaced at the same canonical path must not receive a stale identity from process memory.
 
-`createFsIdResolver` accepts explicit adapters and creates an independent cache.
-It is the internal seam used by platform fixtures and consumers that need controlled operating-system effects.
+Adapter factories,
+platform parsers,
+and command resolvers are available only from the explicit
+`@monochromatic-dev/module-fs-id/testing` subpath for built fixture tests.
+Ordinary consumers use the smaller package-root interface.
 
 ## Security scope
 

@@ -100,7 +100,7 @@ export type FsIdResolverAdapters = {
 };
 
 /**
- * Memoizing asynchronous resolver function.
+ * Asynchronous fresh-observation resolver function.
  *
  * @example
  * ```ts

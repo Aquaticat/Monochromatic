@@ -12,7 +12,7 @@ import {
   normalizeIdentityPayload,
   parseDiskutilVolumeUuid,
   parseFindmntUuid,
-  parseVolumeSerial,
+  windowsDriveRoot,
 } from './parsers.ts';
 import type {
   FsIdResolution,
@@ -28,16 +28,6 @@ import type {
  * ```
  */
 const l = tagged({ tag: 'module-fs-id', },);
-
-/**
- * ASCII drive letters accepted for Windows `vol` invocation.
- *
- * @example
- * ```ts
- * WINDOWS_DRIVE_LETTERS.includes('c');
- * ```
- */
-const WINDOWS_DRIVE_LETTERS = 'abcdefghijklmnopqrstuvwxyz';
 
 /**
  * Formats unknown caught value without discarding it.
@@ -286,6 +276,7 @@ export async function resolveDarwinFsId({
       command: 'diskutil',
       args: [
         'info',
+        '-plist',
         path,
       ],
     },);
@@ -333,38 +324,6 @@ export async function resolveDarwinFsId({
 }
 
 /**
- * Extracts safe Windows drive root from canonical path.
- *
- * @param path - Canonical Windows path
- *
- * @returns Uppercase drive root
- *
- * @throws for non-drive path
- *
- * @example
- * ```ts
- * windowsDriveRoot('c:\\repo'); // 'C:\\'
- * ```
- */
-export function windowsDriveRoot(path: string,): string {
-  /**
-   * Lowercase drive letter candidate.
-   */
-  const letter = path.charAt(0,)
-    .toLowerCase();
-  /**
-   * Root separator candidate.
-   */
-  const separator = path.charAt(2,);
-  if ((!WINDOWS_DRIVE_LETTERS.includes(letter,))
-    || (path.charAt(1,) !== ':')
-    || ((separator !== '\\') && (separator !== '/'))) {
-    throw new FsIdResolutionError(`Windows path has no drive root: ${path}`,);
-  }
-  return `${letter.toUpperCase()}:\\`;
-}
-
-/**
  * Resolves Windows volume serial or degraded runtime device number.
  *
  * @param path - Canonical target path
@@ -396,29 +355,33 @@ export async function resolveWindowsFsId({
   },);
   try {
     /**
-     * Validated drive root safe for fixed `cmd.exe` command text.
+     * Validated drive root safe for fixed PowerShell query text.
      */
     const driveRoot = windowsDriveRoot(path,);
     /**
-     * Preferred localized `vol` output.
+     * Drive identifier without trailing separator.
+     */
+    const driveId = driveRoot.slice(
+      0,
+      2,
+    );
+    /**
+     * Preferred locale-invariant CIM property output.
      */
     const output = await adapters.run({
-      command: 'cmd.exe',
+      command: 'powershell.exe',
       args: [
-        '/d',
-        '/s',
-        '/c',
-        `vol ${driveRoot}`,
+        '-NoLogo',
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        `(Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='${driveId}'").VolumeSerialNumber`,
       ],
     },);
     /**
-     * Serial token from output.
+     * Safe normalized volume serial.
      */
-    const serial = parseVolumeSerial(output,);
-    /**
-     * Safe normalized serial or absent sentinel.
-     */
-    const payload = normalizeIdentityPayload(serial,);
+    const payload = normalizeIdentityPayload(output,);
     rl.debug(`resolved stable volume serial for ${path}`,);
     return stableResolution({
       source: 'volume-serial',
@@ -432,12 +395,18 @@ export async function resolveWindowsFsId({
        * Runtime device identity from Node stat.
        */
       const deviceNumber = await adapters.deviceNumber({ path, },);
+      /**
+       * Validated nonzero runtime device identity.
+       */
+      const payload = requiredPayload({
+        output: deviceNumber,
+        source: 'runtime device number',
+      },);
+      if (payload === '0')
+        throw new FsIdResolutionError('runtime device number is zero and cannot distinguish volumes',);
       return degradedResolution({
         source: 'device-number',
-        payload: requiredPayload({
-          output: deviceNumber,
-          source: 'runtime device number',
-        },),
+        payload,
         reason: `volume serial unavailable: ${caughtMessage(preferredError,)}`,
       },);
     }

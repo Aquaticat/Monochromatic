@@ -12,7 +12,7 @@ import {
   parseFindmntUuid,
   parseVolumeSerial,
   windowsDriveRoot,
-} from '../dist/final/node/index.mjs';
+} from '../dist/final/node/testing.mjs';
 
 /**
  * Run length proving parser uses bounded-stack iteration.
@@ -146,17 +146,24 @@ await describe({
       name: parseDiskutilVolumeUuid.name,
       children: [
         it({
-          name: 'parses indented case-insensitive field',
+          name: 'parses invariant VolumeUUID plist key independent of display language',
           fn: async () => {
-            expect(parseDiskutilVolumeUuid('Device: disk3\n   VOLUME UUID: ABCD-1234\n',),)
-              .toBe('abcd-1234',);
+            expect(parseDiskutilVolumeUuid(
+              '<plist><dict><key>Localized Display Name</key><string>Volumen</string>'
+                + '<key>VolumeUUID</key><string>ABCD-1234</string></dict></plist>',
+            ),).toBe('abcd-1234',);
           },
         },),
         it({
-          name: 'rejects absent and unsafe fields',
+          name: 'rejects absent malformed unterminated and unsafe plist values',
           fn: async () => {
-            expect(() => parseDiskutilVolumeUuid('Device: disk3\n',),).toThrow(TypeError,);
-            expect(() => parseDiskutilVolumeUuid('Volume UUID: a:b\n',),).toThrow(TypeError,);
+            expect(() => parseDiskutilVolumeUuid('<plist><dict></dict></plist>',),).toThrow(TypeError,);
+            expect(() => parseDiskutilVolumeUuid('<key>VolumeUUID</key><integer>1</integer>',),)
+              .toThrow(TypeError,);
+            expect(() => parseDiskutilVolumeUuid('<key>VolumeUUID</key><string>abcd',),)
+              .toThrow(TypeError,);
+            expect(() => parseDiskutilVolumeUuid('<key>VolumeUUID</key><string>a:b</string>',),)
+              .toThrow(TypeError,);
           },
         },),
       ],
