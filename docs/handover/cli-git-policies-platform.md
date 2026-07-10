@@ -3,13 +3,11 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #352 are complete and closed.
-Repository-plugin migration issue #353 has an implementation checkpoint but remains open pending packed verification and
-closure review.
+Issues #280 and #341 through #353 are complete and closed.
 The Pi Bash result-loss priority investigation is complete through implementation,
 user-boundary verification,
 and `docs/troubleshooting/pi-bash-output-spool-write-failure.md`.
-Resume issue #353 after the final Pi handover todo closes.
+Issue #354 is the active dependency-ordered cli-git slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1434,12 +1432,35 @@ Unless later grilling changes them:
   direct TUI,
   and original-command verification.
   `docs/handover/pi-bash-result-loss.md` contains the resume evidence.
-- Remaining issue #353 gates are packed npm-tarball/shadow-bin verification,
-  final documentation,
-  independent acceptance review,
-  push confirmation,
-  and explicit issue closure.
-- Issues #354 through #357 remain dependency-ordered behind #353.
+- The first packed run exposed fixture assertions that expected the policy-local code rather than the public qualified
+  code.
+  The maintained fixture now asserts `mono/forbidden-root-context/root-context-forbidden`.
+- The final packed fixture installs both the cli-git and repository-policy tarballs.
+  Trusted config imports the real `@monochromatic-dev/cli-git/ts` and
+  `@monochromatic-dev/git-policy-repository/ts` subpaths,
+  and direct check covers explicit pathspec plus `--all` scope.
+- The final packed container emitted `built-trust-consumer-ok`.
+  Cli-git and repository-policy type checks,
+  zero-warning Oxlint,
+  and unit suites passed.
+- Independent closure review found no remaining acceptance blocker.
+  The unchanged-candidate classification observation does not affect this policy because every non-deleted root
+  candidate is forbidden.
+- Final correction commits `f312473a7`,
+  `5b939695b`,
+  `3f4e82cb1`,
+  `3d53207ba`,
+  `d3bf30fe9`,
+  `3bd4eb45a`,
+  `2d2a5ce0d`,
+  and `c956ad88c` contain package,
+  import,
+  JSONL,
+  direct-scope,
+  strict-loading,
+  and built-artifact test corrections.
+- Issue #353 closed on 2026-07-10 after every acceptance criterion passed.
+- Issues #354 through #357 remain dependency-ordered after #353.
   Npm publication remains indefinitely deferred in #358.
 
 ### Issue #342 filesystem identity
@@ -1537,8 +1558,9 @@ Dependency-ordered implementation slices:
 - [#352](https://github.com/Aquaticat/Monochromatic/issues/352),
   completed:
   harden commit modes and interrupted-index recovery.
-- [#353](https://github.com/Aquaticat/Monochromatic/issues/353):
-  migrate forbidden-root-context as the first repo plugin.
+- [#353](https://github.com/Aquaticat/Monochromatic/issues/353),
+  completed:
+  migrated forbidden-root-context as the first repo plugin.
 - [#354](https://github.com/Aquaticat/Monochromatic/issues/354):
   migrate forbidden-strings across commit and push lifecycle.
 - [#355](https://github.com/Aquaticat/Monochromatic/issues/355):
