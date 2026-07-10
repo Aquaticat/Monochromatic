@@ -268,6 +268,96 @@ return updates.length === 2 ? [{ code: 'two', message: updates.map(update => upd
       },
     },),
     it({
+      name: 'uses authoritative prior oid for default ordinary push',
+      fn: async function testDefaultPush() {
+        await using fixture = await createFixture();
+        await installPolicy({
+          fixture,
+          checkBody: `const updates = await context.git.pushUpdates();
+return [{ code: 'observe', message: updates.map(update => update.remoteOid).join(',') }];`,
+        },);
+        await nanoSpawn(REAL_GIT, [
+          'push',
+          '--quiet',
+          '--set-upstream',
+          'origin',
+          'HEAD:refs/heads/main',
+        ], { cwd: fixture.repository, },);
+        /** Authoritative remote state before local advance. */
+        const priorOid = (await nanoSpawn(REAL_GIT, ['rev-parse', 'HEAD',], {
+          cwd: fixture.repository,
+        },)).stdout;
+        await writeFile(join(fixture.repository, 'ordinary.txt',), 'ordinary\n',);
+        await nanoSpawn(REAL_GIT, ['add', 'ordinary.txt',], { cwd: fixture.repository, },);
+        await nanoSpawn(REAL_GIT, ['commit', '--quiet', '-m', 'ordinary',], { cwd: fixture.repository, },);
+        const failure = await captureFailure({
+          fixture,
+          args: ['push', 'origin',],
+        },);
+        expect(failure.stderr,).toContain(priorOid,);
+        expect((await nanoSpawn(REAL_GIT, ['rev-parse', 'refs/heads/main',], {
+          cwd: fixture.remote,
+        },)).stdout,).toBe(priorOid,);
+      },
+    },),
+    it({
+      name: 'materializes annotated tag, tree, and blob targets',
+      fn: async function testNonCommitTargets() {
+        await using fixture = await createFixture();
+        await installPolicy({
+          fixture,
+          checkBody: `const candidates = await context.git.candidates();
+return [{ code: 'objects', message: candidates.map(candidate => candidate.path).sort().join(',') }];`,
+        },);
+        await nanoSpawn(REAL_GIT, ['tag', '--annotate', '--message', 'tag', 'annotated',], {
+          cwd: fixture.repository,
+        },);
+        /** Current tree object. */
+        const treeOid = (await nanoSpawn(REAL_GIT, ['rev-parse', 'HEAD^{tree}',], {
+          cwd: fixture.repository,
+        },)).stdout;
+        /** Standalone blob object. */
+        const blobOid = (await nanoSpawn(REAL_GIT, ['hash-object', '-w', '--stdin',], {
+          cwd: fixture.repository,
+          stdio: [
+            { string: 'standalone blob\n', },
+            'pipe',
+            'pipe',
+          ],
+        },)).stdout;
+        const failure = await captureFailure({
+          fixture,
+          args: [
+            'push',
+            'origin',
+            'refs/tags/annotated:refs/tags/annotated',
+            `${treeOid}:refs/trees/current`,
+            `${blobOid}:refs/blobs/standalone`,
+          ],
+        },);
+        expect(failure.stderr,).toContain('refs/blobs/standalone',);
+        expect(failure.stderr,).toContain('cli-git.config.mjs',);
+      },
+    },),
+    it({
+      name: 'skips manual policies for explicit dry run',
+      fn: async function testDryRun() {
+        await using fixture = await createFixture();
+        await installPolicy({
+          fixture,
+          checkBody: `return [{ code: 'blocked', message: 'policy should not run' }];`,
+        },);
+        await runWrapper({
+          fixture,
+          args: ['push', '--dry-run', 'origin', 'HEAD:refs/heads/main',],
+        },);
+        expect(await remoteRefMissing({
+          fixture,
+          ref: 'refs/heads/main',
+        },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'allows pure deletion without content candidates',
       fn: async function testPureDeletion() {
         await using fixture = await createFixture();
