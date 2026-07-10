@@ -175,7 +175,8 @@ async function findBudgetModel(
      */
     const configuredOverrideSlug = (typeof opts.modelOverride) === 'string'
       ? opts.modelOverride
-      : opts.modelOverride.model;
+      : opts.modelOverride
+        .model;
     if (!excludedSlugs.has(configuredOverrideSlug,)) {
       /**
        * Configured override remains first choice, but an override that already

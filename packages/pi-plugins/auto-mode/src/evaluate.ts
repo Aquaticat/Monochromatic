@@ -249,14 +249,14 @@ async function evaluate(
      */
     const verdict = await callJudgeWithFallback({
       firstJudge: judge,
-      async resolveFallbackJudge({ failedModelSlug, },) {
+      resolveFallbackJudge({ failedModelSlug, },) {
         return resolveJudgeModel({
           ctx,
           config,
           excludedModelSlugs: [failedModelSlug,],
         },);
       },
-      async callJudgeAttempt({ judge: selectedJudge, },) {
+      callJudgeAttempt({ judge: selectedJudge, },) {
         return callJudge({
           model: selectedJudge.model,
           auth: selectedJudge.auth,

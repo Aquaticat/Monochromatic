@@ -111,6 +111,7 @@ async function resolveDistinctFallback(
       `Judge model ${firstModelSlug} failed all retries; selecting another judge model failed: ${
         describeError(fallbackResolutionError,)
       }`,
+      { cause: fallbackResolutionError, },
     );
   }
 }
@@ -199,6 +200,7 @@ async function callJudgeWithFallback(
         `Judge model ${firstModelSlug} failed all retries; fallback judge model ${fallbackModelSlug} also failed all retries: ${
           describeError(fallbackError,)
         }`,
+        { cause: fallbackError, },
       );
     }
   }
