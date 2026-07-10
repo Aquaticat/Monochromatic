@@ -284,6 +284,10 @@ Tradeoffs:
 - At the time of investigation,
   the release had not yet cleared the workspace's 1,440-minute supply-chain age policy.
   It becomes eligible at 2026-07-10 08:52:56-04:00.
+  The user selected an immediate,
+  exact-version `rolldown-plugin-dts@0.27.4` exception rather than waiting or temporarily rolling back.
+  Pnpm 11.10.0 accepted that selector and passed the repository's 731-entry supply-chain check in the disposable
+  prototype.
 
 The consumer prototype passed both Node and neutral builds,
 kept all five comparable JavaScript output hashes unchanged,

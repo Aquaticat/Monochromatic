@@ -2,7 +2,7 @@
 
 ## Status
 
-Diagnosis complete and repair strategy comparison in progress on 2026-07-09.
+Planning complete and awaiting implementation on 2026-07-09.
 
 The failing surface is
 `mise run //packages/pi-plugins/auto-mode:lint:oxlint`.
@@ -378,12 +378,27 @@ not against the main checkout's ignored build outputs.
 
 The eventual implementation is complete only when:
 
-- The minimized reproduction is green.
-- `mise run //packages/config/oxlint:build:js:node` succeeds from a fresh-output fixture.
-- `mise run //packages/pi-plugins/auto-mode:lint:oxlint` reaches and completes oxlint successfully.
-- Each affected package's type lint passes with zero warnings or errors.
-- A representative built config can be loaded by Node and passed to the real oxlint wrapper.
-- Editing a bundled plugin source makes `ensureOxlintConfig()` rebuild the shared outputs.
-- No manual plugin prebuild is needed unless the selected architecture explicitly adopts and tests that dependency.
-- Generated output changes are intentional and enumerated.
-- The final plan and troubleshooting document match verified behavior.
+- `pnpm-workspace.yaml` exempts only `rolldown-plugin-dts@0.27.4` from release age and forces that exact transitive
+  version with documented rationale.
+- Pnpm's supply-chain verification passes with the exact-version exception.
+- The generated lockfile resolves rolldown-plugin-dts 0.27.4 without unrelated unexplained drift.
+- Node and neutral shared presets select `generator: 'oxc'` explicitly;
+  the client preset still emits no declarations.
+- Config-tsdown README documents declaration generation and the separate semantic type-lint boundary.
+- Config-tsdown lint,
+  type lint,
+  and unit tests pass with zero warnings or errors.
+- `mise run //packages/config/oxlint:build:js:node` succeeds twice from a fresh-output fixture and produces all ten
+  expected outputs.
+- Representative Node and neutral consumer builds pass.
+- Config-oxlint lint and type lint pass.
+- Auto-mode's exposed TSDoc diagnostics are corrected without runtime changes;
+  its type lint and unit tests pass.
+- `mise run //packages/pi-plugins/auto-mode:lint:oxlint` reaches real oxlint and reports zero warnings and zero errors.
+- Touching a bundled plugin source makes `ensureOxlintConfig()` rebuild the shared outputs.
+- No plugin prebuild is required.
+- Every comparable JavaScript output retains its recorded SHA-256 hash,
+  and all declaration outputs are restored.
+- Markdown lint passes for every changed document.
+- No unrelated concurrent change or ignored build output is staged.
+- The final plan and troubleshooting document match implemented behavior and verification evidence.
