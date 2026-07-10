@@ -197,7 +197,7 @@ await describe({
          */
         const firstJudge = judgeFixture({ id: 'first', },);
         /**
-         * Aggregate error after first attempt and fallback resolution fail.
+         * Chained error after first attempt and fallback resolution fail.
          */
         const caught = await captureError(async function runFailingSelection() {
           return await callJudgeWithFallback({
@@ -211,11 +211,12 @@ await describe({
           },);
         },);
 
-        expect(caught,).toBeInstanceOf(AggregateError,);
+        expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
           'Judge model test-provider/first failed all retries; selecting another judge model failed',
         );
         expect((caught as Error).message,).toContain('no alternative authenticated model',);
+        expect((caught as Error).cause,).toBeInstanceOf(Error,);
       },
     },),
     it({
@@ -226,7 +227,7 @@ await describe({
          */
         const firstJudge = judgeFixture({ id: 'first', },);
         /**
-         * Aggregate error proving model identity check rejected duplicate.
+         * Chained error proving model identity check rejected duplicate.
          */
         const caught = await captureError(async function runRepeatedSelection() {
           return await callJudgeWithFallback({
@@ -240,10 +241,11 @@ await describe({
           },);
         },);
 
-        expect(caught,).toBeInstanceOf(AggregateError,);
+        expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
           'Fallback judge resolver selected failed model again: test-provider/first',
         );
+        expect((caught as Error).cause,).toBeInstanceOf(Error,);
       },
     },),
     it({
@@ -262,7 +264,7 @@ await describe({
          */
         const attemptedSlugs: string[] = [];
         /**
-         * Aggregate error after both model attempts fail.
+         * Chained error after both model attempts fail.
          */
         const caught = await captureError(async function runFailingAttempts() {
           return await callJudgeWithFallback({
@@ -281,10 +283,11 @@ await describe({
           },);
         },);
 
-        expect(caught,).toBeInstanceOf(AggregateError,);
+        expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
           'fallback judge model test-provider/fallback also failed all retries',
         );
+        expect((caught as Error).cause,).toBeInstanceOf(Error,);
         expect(attemptedSlugs,).toEqual([
           'test-provider/first',
           'test-provider/fallback',

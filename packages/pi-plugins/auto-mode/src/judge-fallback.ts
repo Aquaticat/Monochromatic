@@ -50,19 +50,16 @@ function describeError(
  *
  * @param firstJudge - selected judge whose internal attempts failed
  *
- * @param firstError - terminal error from first judge
- *
  * @param resolveFallbackJudge - resolver that excludes failed model slug
  *
  * @returns distinct fallback judge
  *
- * @throws AggregateError when fallback resolution fails or returns first model again
+ * @throws Error when fallback resolution fails or returns first model again
  *
  * @example
  * ```typescript
  * const fallback = await resolveDistinctFallback({
  *   firstJudge,
- *   firstError,
  *   resolveFallbackJudge,
  * });
  * ```
@@ -70,11 +67,9 @@ function describeError(
 async function resolveDistinctFallback(
   {
     firstJudge,
-    firstError,
     resolveFallbackJudge,
   }: {
     readonly firstJudge: BudgetModel;
-    readonly firstError: unknown;
     readonly resolveFallbackJudge: (
       options: { readonly failedModelSlug: string; },
     ) => Promise<BudgetModel>;
@@ -103,11 +98,7 @@ async function resolveDistinctFallback(
     return fallbackJudge;
   }
   catch (fallbackResolutionError) {
-    throw new AggregateError(
-      [
-        firstError,
-        fallbackResolutionError,
-      ],
+    throw new Error(
       `Judge model ${firstModelSlug} failed all retries; selecting another judge model failed: ${
         describeError(fallbackResolutionError,)
       }`,
@@ -128,7 +119,7 @@ async function resolveDistinctFallback(
  *
  * @returns verdict from first successful judge model
  *
- * @throws AggregateError when fallback selection or fallback judge also fails
+ * @throws Error when fallback selection or fallback judge also fails
  *
  * @example
  * ```typescript
@@ -177,7 +168,6 @@ async function callJudgeWithFallback(
      */
     const fallbackJudge = await resolveDistinctFallback({
       firstJudge,
-      firstError,
       resolveFallbackJudge,
     },);
     /**
@@ -192,11 +182,7 @@ async function callJudgeWithFallback(
       innerL.error(
         `fallback judge model ${fallbackModelSlug} failed all retries: ${describeError(fallbackError,)}`,
       );
-      throw new AggregateError(
-        [
-          firstError,
-          fallbackError,
-        ],
+      throw new Error(
         `Judge model ${firstModelSlug} failed all retries; fallback judge model ${fallbackModelSlug} also failed all retries: ${
           describeError(fallbackError,)
         }`,
