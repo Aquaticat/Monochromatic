@@ -7,7 +7,6 @@ import {
   access,
   readFile,
   rm,
-  symlink,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -18,6 +17,10 @@ import {
   assertFixtureEqual,
   resolveFixtureOid,
 } from './built-post-commit-helpers.ts';
+import {
+  verifyReplacedRecoveryLock,
+  verifyUnsafeRecoveryDirectory,
+} from './built-autofix-recovery-adversarial.ts';
 
 /**
  * Executable private hook mode.
@@ -262,6 +265,11 @@ export async function verifyAutofixRecovery({
     throw new Error('post-ref interruption did not create commit',);
   if ((!(await pathExists(transactionDirectory,))) || (!(await pathExists(lockPath,))))
     throw new Error('post-ref interruption did not retain recovery artifacts',);
+  await verifyReplacedRecoveryLock({
+    repository,
+    lockPath,
+    env,
+  },);
   /**
    * External commit deliberately moves ref away from journaled landed result.
    */
@@ -351,31 +359,9 @@ export async function verifyAutofixRecovery({
     context: 'commit-created recovered worktree',
   },);
 
-  /**
-   * Symlinked recovery directory fails closed before reading target content.
-   */
-  await symlink(
-    '/tmp',
+  await verifyUnsafeRecoveryDirectory({
+    repository,
     transactionDirectory,
-    'dir',
-  );
-  /**
-   * Symlinked directory rejection.
-   */
-  const symlinked = await execute({
-    command: 'git',
-    args: [
-      'status',
-      '--short',
-    ],
-    expectedExit: 2,
-    cwd: repository,
     env,
   },);
-  assertIncludes({
-    text: symlinked.stderr,
-    expected: 'Unsafe transaction recovery directory',
-    context: 'symlinked recovery directory',
-  },);
-  await rm(transactionDirectory,);
 }
