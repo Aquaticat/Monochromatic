@@ -1,155 +1,185 @@
 # Pi Bash result-loss and crash handover
 
-## Priority and status
+## Status
 
-This investigation has priority over the remaining cli-git work.
-Todo `#31` armed crash capture and is complete.
-Todo `#32` is diagnosing the missing Bash tool results.
-Todos `#33` and `#34` cover the fix or workaround,
-regression evidence,
-troubleshooting record,
-and final handover.
-Todo `#30` for cli-git issues `#353` through `#357` is pending behind `#34`.
+The Pi priority investigation is complete through implementation and user-boundary verification.
+Todos `#31`,
+ `#32`,
+ and `#33` are complete.
+Todo `#34` is recording final handover and issue state.
+Cli-git issue `#353` may resume after `#34` closes.
 
-The active affected Pi process is PID `1309170`.
-Do not stop its monitor or signal-trace units while this session remains active.
+The durable diagnosis is
+`docs/troubleshooting/pi-bash-output-spool-write-failure.md`.
+Its companion source patch is
+`docs/troubleshooting/pi-bash-output-spool-write-failure.patch`.
 
-## Observed symptom
+## Established cause
 
-Two synchronous Bash calls ran the same command:
+The recurrent batch failure was an unhandled Pi Bash spill-file stream error.
+Linux errno `122` is `EDQUOT`.
+Node `26.5.0` and libuv `1.52.1` rendered it as
+`Unknown system error -122` because their system-error map lacks that value.
 
-```text
-mise run //packages/cli/git:test:unit
-```
+At incident time,
+`/tmp` was a quota-controlled `tmpfs`.
+The user limit measured `6390M`,
+and usage reached about `6.3G` while global free space remained.
+The user removed that quota on July 10,
+ 2026.
+A post-change probe reported `460M` used,
+`16G` available,
+and `0K` in both quota and limit columns.
 
-The calls began at `2026-07-10T16:46:38Z` and `2026-07-10T16:49:57Z`.
-Neither acquired a `toolResult` entry in the Pi session JSONL before the user restarted Pi.
-The user reported the first restart at `2026-07-10T16:49:38Z` and the second at
-`2026-07-10T16:57:26Z`.
-The source evidence is in
-`/home/user/.pi/agent/sessions/--var-home-user-Monochromatic--/2026-07-09T22-31-45-304Z_019f4902-2598-7eb1-822e-239618ee2503.jsonl`,
-starting near lines `8640` and `8646`.
+Pi `0.80.6` writes complete truncated Bash output to
+`os.tmpdir()/pi-bash-*.log`.
+`OutputAccumulator` opened and wrote its `WriteStream` without a durable `error` listener.
+The listener in `closeTempFile()` arrived too late for errors emitted while output was still streaming.
+An early error terminated Pi;
+a finalization error rejected the Bash promise before result recording.
+Three concurrent overflowing commands therefore showed `No result provided` together.
 
-The test suite itself is not failing:
+`packages/coding-agent/src/core/bash-executor.ts` independently duplicated the same unguarded pattern for direct
+`!` Bash and RPC execution.
 
-- A one-file-at-a-time process-tool run passed all cli-git unit tests in 27 seconds.
-- The exact parallel command passed through the process tool in 5 seconds.
-- The successful parallel run produced 34 stdout lines and 25 stderr lines.
+## Installed fix
 
-This narrows the incident to the synchronous Pi Bash execution/result boundary or an interaction specific to that
-boundary.
-It does not establish the exact cause.
-Do not repeat the same synchronous invocation to gather more evidence.
-Commit `ede6fc66a` added rule `NXR` to `AGENTS.md` and generated `CLAUDE.md` so future sessions change execution paths
-after a missing result or restart.
-
-## Crash capture now armed
-
-The current Pi process already has an unlimited soft and hard core-file limit.
-The host routes core dumps through `systemd-coredump`:
+The workspace carries a pnpm patch at:
 
 ```text
-kernel.core_pattern = |/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h %d %F
+patches/@earendil-works__pi-coding-agent@0.80.6.patch
 ```
 
-`systemd-coredump.socket` was active when checked,
-and `/var/lib/systemd/coredump` had more than 400 GB available.
-No Pi or Node core dump existed for either observed restart.
-This means the prior incidents may have been hangs,
-manual termination,
-or non-dumping termination rather than fatal signals.
-The next incident monitor can distinguish those cases.
+The patch now:
 
-The crash-surviving systemd user units are:
+- installs a persistent spill-stream error listener at creation time;
+- records the first persistence failure and stops additional writes;
+- preserves and returns the bounded in-memory tail;
+- awaits guarded stream finalization in success and cancellation paths;
+- reports `Full output unavailable` to model context;
+- returns `fullOutputError` from direct Bash execution;
+- uses `OutputAccumulator` instead of a duplicate direct-executor spooler;
+- renders the persistence failure as an interactive warning status.
 
-- `pi-crash-monitor-1309170.service`
-- `pi-signal-trace-1309170.service`
+Implementation checkpoints are:
 
-Both were active after installation.
-The monitor samples `/proc/1309170` once per second,
-including process state,
-resident and peak memory,
-swap,
-thread and file-descriptor counts,
-children,
-I/O counters,
-resource limits,
-cgroup,
-and system CPU,
-memory,
-and I/O pressure.
-When PID `1309170` disappears,
-it writes a final event and captures journal,
-coredump,
-and process-list evidence.
-The signal tracer records signals delivered to the active Pi process.
+- `d0c388a16`,
+   ordinary Bash stream hardening;
+- `92f8d209c`,
+   direct Bash spooler hardening;
+- `91ac69a42`,
+   direct metadata and TUI warning rendering;
+- `b1be09ac8`,
+   complete diagnosis and source prototype.
 
-Artifacts live at:
+`NXR` in `AGENTS.md` and generated `CLAUDE.md` remains required:
+after a missing synchronous result or transport loss,
+inspect processes and artifacts before changing to a narrower or managed execution path.
 
-```text
-/var/home/user/temp/agent/pi-crash-monitor-1309170-20260710T1705/
-```
+## Verification evidence
 
-Important files are:
-
-- `samples.jsonl`
-- `signals.strace`
-- `monitor.json`
-- `journal.log`, after process disappearance
-- `coredumps.log`, after process disappearance
-- `processes.log`, after process disappearance
-
-The monitor source is:
-
-```text
-/var/home/user/temp/agent/pi-crash-monitor-1309170.mjs
-```
-
-After the next restart,
-inspect the artifact directory before starting another synchronous Bash verification.
-Also run `coredumpctl list` and preserve any matching dump identity before cleanup.
-
-## Pi source trace
-
-Installed Pi is `@earendil-works/pi-coding-agent` `0.80.6`.
-A disk-backed source clone of tag `v0.80.6` is at:
+The disk-backed upstream clone remains at:
 
 ```text
 /var/home/user/temp/agent/pi-bash-result-loss-20260710-1329434
 ```
 
-The clone is commit `2b3fda9921b5590f285165287bd442a25817f17b` from
-`https://github.com/earendil-works/pi.git`.
+It is tag `v0.80.6`,
+commit `2b3fda9921b5590f285165287bd442a25817f17b`.
+Its focused source verification passed:
 
-`packages/coding-agent/src/core/tools/bash.ts:96-103` spawns a detached shell with piped stdout and stderr.
-`packages/coding-agent/src/core/tools/bash.ts:123-140` streams both pipes and awaits `waitForChildProcess`.
-`packages/coding-agent/src/utils/child-process.ts:38-47` says the helper is intended to avoid hangs caused by detached
-descendants retaining inherited pipes.
-`packages/coding-agent/src/utils/child-process.ts:88-126` arms a 100 ms post-exit idle timer and also finalizes on close.
-The observed missing result therefore occurred despite the installed release containing that anti-hang path.
+```text
+Test Files  2 passed (2)
+Tests       78 passed (78)
+Type check  passed
+Build       passed
+```
 
-Do not conclude that `waitForChildProcess` is faulty until the next monitor evidence or a minimal Bash-tool harness
-shows which event or promise remained unsettled.
+The deterministic external harness is:
 
-## Next diagnostic steps
+```text
+/var/home/user/temp/agent/pi-output-write-failure-repro.mjs
+```
 
-- Preserve monitor artifacts immediately after PID `1309170` disappears.
-- Distinguish fatal signal,
-  OOM kill,
-  clean exit,
-  and user termination from `signals.strace`,
-  `coredumpctl`,
-  and the journal.
-- Build a minimal SDK harness around `createBashTool` using the same command and environment as the synchronous Pi tool.
-- Compare built-in Bash execution with the process extension while holding command,
-  cwd,
-  environment,
-  and output constant.
-- Instrument only the shell `exit`,
-  `close`,
-  stdout `end`,
-  stderr `end`,
-  and idle-timer boundaries in a disposable Pi source prototype.
-- Write `docs/troubleshooting/pi-bash-result-loss.md` with the complete source trace and upstream-filing decision after
-  the cause or durable workaround is verified.
-- Resume cli-git only after todos `#32` through `#34` are complete.
+It points `TMPDIR` at a regular file and starts three overflowing Bash tools plus three direct executors.
+Unpatched `0.80.6` exited `1` before stdout.
+The installed patch returned all results,
+retained each output tail,
+and reported `ENOTDIR` as `fullOutputError` or a direct warning.
+
+A fresh `pi -ne` TUI with the same invalid temp base stayed alive after a `60,000` byte direct Bash command and rendered:
+
+```text
+Output truncated. Full output unavailable: ENOTDIR: not a directory, open '.../pi-bash-*.log'
+```
+
+After the user removed the quota,
+the original three concurrent commands completed through the installed package in `1,241 ms`.
+One remained below the truncation threshold.
+The other two returned valid `/tmp/pi-bash-*.log` paths.
+No command reported `fullOutputError`.
+
+A separate direct SDK harness ran the cli-git unit command twenty times before the fix.
+Every run passed in about `4.2` to `4.6` seconds with about `18.4 KB` of result text.
+This proves that ordinary single-command execution was healthy after quota usage fell;
+it does not prove the exact child wait state for the earlier missing unit results.
+
+## Distinct observations
+
+The controlled `SIGABRT` core validates crash capture only.
+The signal was intentional.
+Its V8 string-flattening stack is not evidence that V8 caused an organic failure.
+No spontaneous incident produced a core.
+
+The monitored and passive Luna forks both completed the target command.
+No observer-dependent failure was established.
+Large inherited sessions triggered compaction and were less diagnostic than the direct harness.
+
+The two earlier missing unit-test results belong to the quota incident cluster by timing and environment,
+but their sessions preserve no child-process stack.
+Do not overstate the evidence as a proven exact child wait site.
+
+## Upstream decision
+
+Closed issue `earendil-works/pi#5667` reports the same unguarded spill stream with macOS `EACCES`.
+No new issue was filed.
+The troubleshooting record contains an additive-comment draft,
+but contribution constraints do not justify an unsolicited agent-authored comment.
+A human contributor may rewrite the draft in their own voice,
+retain the AI-assistance label,
+and add the Linux `EDQUOT` evidence to that existing issue.
+
+## Preserved and cleaned artifacts
+
+Crash and monitor evidence remains below:
+
+```text
+/var/home/user/temp/agent/pi-crash-monitor-*
+```
+
+The controlled PID `1309170` core remains available through `systemd-coredump` subject to host retention.
+
+Residual `pi-crash-repro` tmux sessions,
+monitor and signal-trace services,
+Inspector watchdogs,
+and Inspector listeners on ports `9229` and `9230` were stopped after evidence preservation.
+Disposable unpatched package trees,
+pnpm patch-extraction trees,
+invalid-temp fixtures,
+and post-quota spill files were removed.
+
+## Resume point
+
+Resume cli-git issue `#353`:
+
+1.  Verify commit push status through the latest Pi documentation checkpoint.
+2.  Run the packed npm-tarball and shadow-bin repository-plugin fixture.
+3.  Complete issue `#353` documentation and independent acceptance review.
+4.  Push,
+    close `#353`,
+    then continue dependency-ordered issues `#354` through `#357`.
+5.  Keep npm publication issue `#358` deferred until a maintainer explicitly resumes it.
+
+Issue `#360`,
+which replaces the faulty third-party goal extension,
+remains separate and does not block cli-git.

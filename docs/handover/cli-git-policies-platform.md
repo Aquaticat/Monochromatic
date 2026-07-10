@@ -6,8 +6,10 @@ Shared understanding was confirmed and implementation was authorized on 2026-07-
 Issues #280 and #341 through #352 are complete and closed.
 Repository-plugin migration issue #353 has an implementation checkpoint but remains open pending packed verification and
 closure review.
-The Pi synchronous Bash result-loss investigation in `docs/handover/pi-bash-result-loss.md` now has higher priority;
-resume issue #353 only after that investigation's todos are complete.
+The Pi Bash result-loss priority investigation is complete through implementation,
+user-boundary verification,
+and `docs/troubleshooting/pi-bash-output-spool-write-failure.md`.
+Resume issue #353 after the final Pi handover todo closes.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1425,7 +1427,13 @@ Unless later grilling changes them:
   and build pass.
   The full cli-git unit suite also passed through the process tool both sequentially and with its normal parallelism.
 - Two synchronous Pi Bash attempts to run the same cli-git unit task lost their tool results and led to Pi restarts.
-  That incident is now higher priority and is tracked in `docs/handover/pi-bash-result-loss.md`.
+  The priority investigation traced the recurrent batch failure to `EDQUOT` from Pi's unguarded full-output spill stream,
+  installed a local Pi patch,
+  and passed source,
+  external consumer,
+  direct TUI,
+  and original-command verification.
+  `docs/handover/pi-bash-result-loss.md` contains the resume evidence.
 - Remaining issue #353 gates are packed npm-tarball/shadow-bin verification,
   final documentation,
   independent acceptance review,
