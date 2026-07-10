@@ -8,7 +8,10 @@ import {
   ABSENT_GIT_VALUE,
   type LazyPolicyGitFacts,
 } from '../api/context-types.ts';
-import type { PolicySeverity, } from '../api/policy-types.ts';
+import type {
+  CandidateFile,
+  PolicySeverity,
+} from '../api/policy-types.ts';
 import { createEngineFailureEvent, } from './events.ts';
 import { runPolicyEngine, } from './engine.ts';
 import {
@@ -20,6 +23,45 @@ import type {
   RuntimePolicyDefinition,
 } from './types.ts';
 
+/**
+ * Returns no manual-push candidates until range materialization is requested.
+ *
+ * @returns empty candidate collection
+ */
+function emptyCandidates(): Promise<readonly CandidateFile[]> {
+  return Promise.resolve([],);
+}
+
+/**
+ * Returns absent commit identity for manual-push lifecycle.
+ *
+ * @returns shared absence sentinel
+ */
+function absentOid(): Promise<typeof ABSENT_GIT_VALUE> {
+  return Promise.resolve(ABSENT_GIT_VALUE,);
+}
+
+/**
+ * Creates lazy manual-push facts around settled updates.
+ *
+ * @param updates - authoritative push updates
+ *
+ * @returns lazy lifecycle facts
+ */
+function createManualPushFacts(
+  updates: Awaited<ReturnType<typeof probeManualPushUpdates>>,
+): LazyPolicyGitFacts {
+  return {
+    candidates: emptyCandidates,
+    headOid: absentOid,
+    landedCommitOid: absentOid,
+    pushUpdates: function pushUpdates() {
+      return Promise.resolve(updates,);
+    },
+  };
+}
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; lifecycle reads but never mutates it. */
 /**
  * Reports whether registered policy requires manual-push facts.
  *
@@ -42,10 +84,16 @@ export function hasManualPushPolicy({
   policySeverities: Readonly<Record<string, PolicySeverity>>;
 }>,): boolean {
   return registeredPolicies.some(function isEnabledManualPushPolicy(policy,) {
+    /**
+     * Effective configured or declared severity.
+     */
     const severity = policySeverities[policy.name] ?? policy.defaultSeverity;
-    return (severity !== 'off') && policy.triggers.includes('manual-push',);
+    return (severity !== 'off')
+      && policy.triggers
+      .includes('manual-push',);
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Resolves canonical repository root through real Git.
@@ -63,6 +111,9 @@ async function resolveRepositoryRoot({
   gitPath: string;
   cwd: string;
 }>,): Promise<string> {
+  /**
+   * Real Git repository-root query.
+   */
   const result = await nanoSpawn(
     gitPath,
     [
@@ -71,11 +122,14 @@ async function resolveRepositoryRoot({
     ],
     { cwd, },
   );
-  if (result.stdout.length === 0)
+  if (result.stdout
+    .length
+    === 0)
     throw new ManualPushProbeError('Git returned empty manual-push repository root.',);
   return result.stdout;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; lifecycle reads but never mutates it. */
 /**
  * Runs manual-push policies before forwarding real Git.
  *
@@ -118,28 +172,24 @@ export async function runManualPushLifecycle({
   policyOptions: ReadonlyMap<string, unknown>;
 }>,): Promise<PolicyEngineResult> {
   try {
+    /**
+     * Canonical repository root and authoritative push updates.
+     */
     const [repositoryRoot, updates,] = await Promise.all([
-      resolveRepositoryRoot({ gitPath, cwd, },),
+      resolveRepositoryRoot({
+        gitPath,
+        cwd,
+      },),
       probeManualPushUpdates({
         gitPath,
         cwd,
         args: transformedArgs,
       },),
     ],);
-    const gitFacts: LazyPolicyGitFacts = {
-      candidates: function candidates() {
-        return Promise.resolve([],);
-      },
-      headOid: function headOid() {
-        return Promise.resolve(ABSENT_GIT_VALUE,);
-      },
-      landedCommitOid: function landedCommitOid() {
-        return Promise.resolve(ABSENT_GIT_VALUE,);
-      },
-      pushUpdates: function pushUpdates() {
-        return Promise.resolve(updates,);
-      },
-    };
+    /**
+     * Lazy manual-push Git facts.
+     */
+    const gitFacts = createManualPushFacts(updates,);
     return await runPolicyEngine({
       args: rawArgs,
       transformedArgs,
@@ -167,3 +217,4 @@ export async function runManualPushLifecycle({
     };
   }
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -87,7 +87,8 @@ export function parsePushRegion(
   /**
    * Final exact dry-run toggle, matching Git's last-option-wins behavior.
    */
-  const isDryRun = postSubcommandArgs.reduce(function applyDryRunToggle(
+  const isDryRun = postSubcommandArgs.reduce(
+    function applyDryRunToggle(
     enabled,
     arg,
   ) {
@@ -96,7 +97,9 @@ export function parsePushRegion(
     if (arg === '--no-dry-run')
       return false;
     return enabled;
-  }, false,);
+  },
+    false,
+  );
   return {
     hasAtomicChoice: parseResult.value
       .atomicFlags

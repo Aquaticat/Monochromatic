@@ -5,7 +5,7 @@ import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
 import { runManagementCommand, } from './management.ts';
 import { parseCommitRegion, } from './parsers/commit.ts';
-import { parsePushRegion, } from './parsers/push.ts';
+import { printPostCommandOutput, } from './post-command-output.ts';
 import { COMMIT_TRANSACTION_NOT_APPLICABLE, } from './policy-engine/commit-transaction.ts';
 import { runCommitTransactionBoundary, } from './policy-engine/commit-transaction-boundary.ts';
 import {
@@ -15,9 +15,9 @@ import {
 import { runPreForwardPolicyEngine, } from './policy-engine/pre-forward-engine.ts';
 import { runPostCommitLifecycle, } from './policy-engine/post-commit-lifecycle.ts';
 import {
-  hasManualPushPolicy,
-  runManualPushLifecycle,
-} from './policy-engine/manual-push-lifecycle.ts';
+  MANUAL_PUSH_NOT_APPLICABLE,
+  runManualPushGate,
+} from './policy-engine/manual-push-gate.ts';
 import {
   createEngineFailureEvent,
   renderPolicyEvents,
@@ -28,7 +28,6 @@ import {
   resolveRuntimeConfig,
   RUNTIME_CONFIG_ABSENT,
 } from './trust/runtime-config.ts';
-import { hasExplicitStatusHintsOverride, } from './rules/status-hints-off.ts';
 
 /**
  * Logger root for cli-git after removing the package log shim.
@@ -51,17 +50,6 @@ const rl = tagged({
 },);
 
 /**
- * Pre-subcommand argv tokens that request version information and cause git
- * to print the version and exit (ignoring any later subcommand). Detected by
- * scanning args before the located subcommand index; the `version` subcommand
- * is handled separately by inspecting `args[subcommandIndex]`.
- */
-const VERSION_FLAGS: ReadonlySet<string> = new Set([
-  '--version',
-  '-v',
-],);
-
-/**
  * Pre-subcommand argv tokens that cause git to short-circuit: it prints
  * version/help and ignores the subcommand. When any of these appears, the
  * rules pipeline is skipped entirely so wrapper injections do not slot
@@ -74,22 +62,6 @@ const SHORT_CIRCUIT_FLAGS: ReadonlySet<string> = new Set([
   '-v',
   '--help',
   '-h',
-],);
-
-/**
- * `git status` flags that switch output to a machine-readable format
- * (no hints, fixed shape consumed by tooling). When any of these is present,
- * the cli-git note is suppressed so the output remains parseable.
- *
- * `-z` implies `--porcelain` per git's docs and is included here for that
- * reason. `--porcelain=v1` / `--porcelain=v2` use the same exact-token check
- * applied via prefix match.
- */
-const STATUS_MACHINE_READABLE_FLAGS: ReadonlySet<string> = new Set([
-  '--porcelain',
-  '-s',
-  '--short',
-  '-z',
 ],);
 
 //endregion Rule pipeline
@@ -318,45 +290,40 @@ try {
    */
   const subcommand = processedArgs[subcommandIndex];
   /**
-   * Pre-subcommand region (global options); scanned for `--version`/`-v` flags that short-circuit git.
-   */
-  const preSubcommand = processedArgs.slice(
-    0,
-    subcommandIndex,
-  );
-  /**
-   * Post-subcommand region; scanned for status flags that switch git's output to a machine-readable format.
+   * Post-subcommand region used by commit lifecycle classification.
    */
   const postSubcommand = processedArgs.slice(subcommandIndex + 1,);
-  /**
-   * Whether trusted registry has enabled manual-push work.
-   */
-  const manualPushEnabled = runtimeResolution.loaded !== RUNTIME_CONFIG_ABSENT
-    && hasManualPushPolicy({
-      registeredPolicies: runtimeResolution.loaded.validated.registeredPolicies,
-      policySeverities: runtimeResolution.loaded.validated.policySeverities,
-    },);
-  if ((subcommand === 'push') && manualPushEnabled
-    && (runtimeResolution.loaded !== RUNTIME_CONFIG_ABSENT)
-    && (!parsePushRegion(postSubcommand,).isDryRun)) {
-    /** Settled manual-push gate before any remote update. */
-    const manualPushResult = await runManualPushLifecycle({
+  if (runtimeResolution.loaded !== RUNTIME_CONFIG_ABSENT) {
+    /**
+     * Settled manual-push gate or not-applicable sentinel.
+     */
+    const manualPushResult = await runManualPushGate({
       rawArgs,
       transformedArgs: processedArgs,
       gitPath,
-      cwd: effectiveCwd,
-      policySeverities: runtimeResolution.loaded.validated.policySeverities,
-      registeredPolicies: runtimeResolution.loaded.validated.registeredPolicies,
-      policyOptions: runtimeResolution.loaded.validated.policyOptions,
+      policySeverities: runtimeResolution.loaded
+        .validated
+        .policySeverities,
+      registeredPolicies: runtimeResolution.loaded
+        .validated
+        .registeredPolicies,
+      policyOptions: runtimeResolution.loaded
+        .validated
+        .policyOptions,
     },);
-    /** Manual-push events use wrapper stderr routing. */
-    const renderedManualPushEvents = renderPolicyEvents(manualPushResult.events,);
-    if (renderedManualPushEvents !== '')
-      process.stderr.write(renderedManualPushEvents,);
-    if (!manualPushResult.shouldForward) {
-      if (manualPushResult.exitCode === 0)
-        throw new TypeError('Non-forwarding manual-push result cannot use exit code 0.',);
-      throw new PolicyDecisionError(manualPushResult.exitCode,);
+    if (manualPushResult !== MANUAL_PUSH_NOT_APPLICABLE) {
+      /**
+       * Manual-push events use wrapper stderr routing.
+       */
+      const renderedManualPushEvents = renderPolicyEvents(manualPushResult.events,);
+      if (renderedManualPushEvents !== '')
+        process.stderr
+          .write(renderedManualPushEvents,);
+      if (!manualPushResult.shouldForward) {
+        if (manualPushResult.exitCode === 0)
+          throw new TypeError('Non-forwarding manual-push result cannot use exit code 0.',);
+        throw new PolicyDecisionError(manualPushResult.exitCode,);
+      }
     }
   }
   /**
@@ -423,52 +390,10 @@ try {
     },);
   }
 
-  /**
-   * True when this invocation asks git for its version, in any of the supported forms (subcommand, global flag, with or without `-C` chaining).
-   */
-  const isVersionRequest = (subcommand === 'version')
-    || preSubcommand
-    .some(function isVersionFlag(arg,) {
-      return VERSION_FLAGS.has(arg,);
-    },);
-
-  /**
-   * True when `git status` is in a machine-readable mode (`-s`, `--short`, `--porcelain`, `--porcelain=v*`, `-z`); the cli-git note would corrupt this output and is suppressed.
-   */
-  const isStatusMachineReadable = postSubcommand.some(
-    function isMachineReadableFlag(arg,) {
-      return STATUS_MACHINE_READABLE_FLAGS.has(arg,)
-        || arg
-        .startsWith('--porcelain=',);
-    },
-  );
-
-  /**
-   * True when the caller has explicitly configured git's status hints (checked on rawArgs so the wrapper's own injection does not register); mirroring the rule's user-override path, the note is also suppressed.
-   */
-  const userOverrodeStatusHints = hasExplicitStatusHintsOverride(rawArgs,);
-
-  /**
-   * True when this is a human-readable `git status` invocation that did not opt into git's stock hints; the wrapper prints a note explaining the constraints.
-   */
-  const shouldPrintStatusNote = (subcommand === 'status')
-    && (!isStatusMachineReadable)
-    && (!userOverrodeStatusHints);
-
-  if (isVersionRequest) {
-    console.log(
-      'cli-git wrapper (require-root, linked-worktree-only, branch-worktree-only, '
-        + 'add-explicit, atomic-push, commit-only, status-hints-off, auto-push)',
-    );
-  }
-  else if (shouldPrintStatusNote) {
-    console.log(
-      'cli-git: bulk-add patterns (`.`, `*`, `-A`, `-u`), `git commit -a`, '
-        + 'and current-worktree branch creation are rejected; stage with `git add <path>`, '
-        + 'commit with `git commit -m <msg> <path>`, and branch with '
-        + '`git worktree add -b <branch> <path>`.',
-    );
-  }
+  printPostCommandOutput({
+    rawArgs,
+    processedArgs,
+  },);
   }
 }
 catch (error) {
