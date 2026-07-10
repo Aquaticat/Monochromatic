@@ -13,11 +13,10 @@ Found 1 violation:
 ```
 
 This is not a signing failure.
-The initial diagnostic scan found 69 unique commits created on 2026-07-09 and reachable through the pre-diagnosis
-repository refs or reflogs.
-Every one contains an SSH `gpgsig` header.
-The affected commits are signed,
- but GitHub cannot associate their committer email with a user.
+The initial diagnostic scan found 69 unique commits reachable through the pre-diagnosis repository refs or reflogs
+whose committer timestamps fell between local midnight and the 20:34:34 EDT snapshot.
+Every one contains an SSH `gpgsig` header and verifies cryptographically against the configured public key.
+GitHub still cannot associate the affected commits' committer email with a user.
 
 The GitHub API shows the verification boundary:
 
@@ -193,10 +192,9 @@ No user was associated with the `committer` email address in the commit.
 ```
 
 That exactly matches `fixture@example.invalid`.
-Git still used the configured SSH key and added a valid-looking `gpgsig` object header,
- but GitHub could not associate
-that commit identity with the account that owns the signing key.
-The immediately preceding `an@aquati.cat` commit verifies as `valid` with the same key.
+Git still used the configured SSH key and added a cryptographically valid `gpgsig` object header.
+GitHub could not associate the commit's committer email with any GitHub user.
+The immediately preceding `an@aquati.cat` commit verifies on GitHub as `valid`.
 
 ## Verification
 
@@ -217,8 +215,8 @@ The immediately preceding `an@aquati.cat` commit verifies as `valid` with the sa
 - Affected commits currently reachable through refs or reflogs:
    36.
 - Initial pre-diagnosis snapshot at main `797061b59`:
-   69 signed,
-   0 unsigned.
+   69 cryptographically verified,
+   0 verification failures.
 
 ### Signature-presence harness
 
@@ -246,6 +244,42 @@ signature_absent=0
 
 The absolute present count increases as new signed commits are created;
 the invariant under test is zero absent signatures.
+
+### Cryptographic-verification harness
+
+A disposable allowed-signers file associated both observed commit principals with the configured public key.
+The harness verified the same frozen pre-diagnosis set:
+
+```bash
+allowed="$(mktemp /tmp/agent/git-signing-allowed-signers-XXXXXXXX)"
+awk '{
+  print "an@aquati.cat " $1 " " $2
+  print "fixture@example.invalid " $1 " " $2
+}' /home/user/.ssh/github_sign.pub > "$allowed"
+
+while read -r hash; do
+  git -c gpg.ssh.allowedSignersFile="$allowed" verify-commit "$hash"
+done < <(
+  git log --all --reflog \
+    --since='2026-07-09T00:00:00-04:00' \
+    --until='2026-07-09T20:34:34-04:00' \
+    --format='%H' |
+    sort --unique
+)
+rm --force -- "$allowed"
+```
+
+Observed aggregate result:
+
+```text
+checked=69
+cryptographic_verification_passed=69
+cryptographic_verification_failed=0
+allowed_signers_removed=true
+```
+
+The configured public key cryptographically verifies every signature in the frozen sample.
+GitHub's `no_user` outcome is therefore an identity-association failure rather than an invalid-signature result.
 
 ### Automatic-signing harness
 
@@ -305,16 +339,21 @@ Good "git" signature for an@aquati.cat with ED25519 key
 
 ### Restore the global identity for future commits
 
-Remove only the accidental repository-local overrides:
+Record all local values first,
+ then remove only the accidental repository-local overrides:
 
 ```bash
-git config unset --local user.name
-git config unset --local user.email
-git config --show-origin --show-scope --get-regexp '^user\.(name|email)$'
+git config get --local --all user.name
+git config get --local --all user.email
+git config unset --local --all user.name
+git config unset --local --all user.email
+git config get --show-origin --show-scope --all --regexp '^user\.(name|email)$'
 ```
 
-A disposable repository verified that these two `unset` commands restore `Aquaticat <an@aquati.cat>` from global
-configuration and that the next commit still contains an SSH signature.
+A disposable repository with duplicate local values verified that `unset --local --all` removes every local identity
+entry,
+ restores `Aquaticat <an@aquati.cat>` from global configuration,
+ and leaves automatic signing active.
 
 Tradeoff:
 this repairs future commits only.
@@ -377,9 +416,16 @@ Repairing the 36 affected commits therefore requires rewriting,
 
 Tradeoff:
 this disrupts branches,
+ tags,
+ open pull requests,
  open worktrees,
+ forks,
  links,
- and any downstream clones based on the existing hashes.
+ and downstream clones based on the existing hashes.
+A safe rewrite needs backup refs,
+ branch-protection and force-push authorization,
+ collaborator coordination,
+ and verification that every rewritten commit was re-signed.
 Do not perform it as an incidental signing-config fix.
 It requires explicit authorization and coordination.
 
@@ -387,8 +433,7 @@ It requires explicit authorization and coordination.
 
 - **Rotating or replacing the SSH signing key.
   **
-  The commits already contain signatures,
-   and the same key verifies on the last good commit.
+  The configured key cryptographically verifies all 69 commits in the frozen sample.
   Key rotation does not repair the fixture committer email.
 - **Setting `commit.gpgSign` again.
   **
