@@ -713,8 +713,8 @@ Consumer lockfiles and self-contained builds govern plugin inputs.
   current wrapper behavior.
 - `packages/cli/git/src/escape-hatch.ts`:
   parser-based invocation escape hatches.
-- `docs/planning/module-fs-id.md`:
-  filesystem identity prerequisite.
+- `packages/module/fs-id/README.md`:
+  implemented filesystem identity prerequisite and verified platform behavior.
 - `docs/planning/final-newline-normalization.md`:
   final-newline behavior and exclusions.
 - `docs/troubleshooting/hk-partial-staging-final-newline.md`:

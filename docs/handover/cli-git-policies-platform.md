@@ -4,9 +4,8 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issue #341 is complete and closed;
-filesystem identity,
-package preparation,
-and the Git-root blocker are the next unblocked implementation slices.
+Filesystem identity issue #342 is complete and closed.
+Package preparation and the Git-root blocker are the next unblocked implementation slices.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -639,6 +638,41 @@ Unless later grilling changes them:
 
 ## Implementation checkpoints
 
+### Issue #342 filesystem identity
+
+- Added `@monochromatic-dev/module-fs-id` with source-qualified colon-free IDs,
+  stable and warned degraded results,
+  adapter fixtures,
+  fresh per-call volume observation,
+  and a narrow package-root interface.
+- Linux uses `findmnt` UUID with GNU `stat` `f_fsid` fallback.
+- macOS maps arbitrary paths through `df -P`,
+  parses structured `diskutil` plist Volume UUID,
+  and falls back to BSD `stat` device identity.
+- Windows reads locale-invariant CIM volume serial and accepts only a nonzero Node-stat device fallback.
+- Build,
+  type lint,
+  Oxlint with zero warnings,
+  unit tests,
+  README lint,
+  and a disposable built consumer call pass.
+- Workflow run [29064685354](https://github.com/Aquaticat/Monochromatic/actions/runs/29064685354) passed preferred and
+  degraded evidence on Linux,
+  macOS,
+  and Windows.
+- A physical macOS 26.5.2 host at `ssh m1` independently passed the same script;
+  its tiny disposable directory was removed after verification.
+- Commits `5b5b6b098`,
+  `b7636ce69`,
+  `9641fb381`,
+  `b058283d2`,
+  and `91db0a466` contain the package,
+  fixes,
+  tests,
+  host evidence,
+  and required troubleshooting record.
+- Independent final review reported no required corrections.
+
 ### Issue #341 contract
 
 - Reconciled `docs/decisions/cli-git-policies-platform.md` with every settled grilling revision.
@@ -663,8 +697,9 @@ Dependency-ordered implementation slices:
 - [#341](https://github.com/Aquaticat/Monochromatic/issues/341),
    completed:
   finalized the canonical decision and implementation contract.
-- [#342](https://github.com/Aquaticat/Monochromatic/issues/342):
-  build the cross-platform filesystem-ID prerequisite.
+- [#342](https://github.com/Aquaticat/Monochromatic/issues/342),
+   completed:
+  built and verified the cross-platform filesystem-ID prerequisite.
 - [#343](https://github.com/Aquaticat/Monochromatic/issues/343):
   prepare the npm tarball boundary and side-effect-free public API without publishing.
 - [#344](https://github.com/Aquaticat/Monochromatic/issues/344):
@@ -741,7 +776,8 @@ a later phase does not wait to record an earlier phase's work.
 
 ### Build the filesystem-ID prerequisite
 
-- Implement `@monochromatic-dev/module-fs-id` from `docs/planning/module-fs-id.md`.
+- Implement `@monochromatic-dev/module-fs-id` from its completed contract now documented in
+  `packages/module/fs-id/README.md`.
 - Keep OS command execution behind injected adapters so Linux,
   macOS,
   and Windows branches have fixture coverage.
