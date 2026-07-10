@@ -236,7 +236,7 @@ await describe({
                 'You MUST call the render_verdict tool to submit your evaluation. Do not respond with text; use the tool.',
               batchContext: [],
               streamSimpleFn: function streamSimpleFn(
-                model,
+                model: Model<Api>,
               ) {
                 /**
                  * Canonical model slug for current transport attempt.
