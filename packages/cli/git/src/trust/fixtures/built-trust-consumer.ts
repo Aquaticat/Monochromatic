@@ -14,6 +14,7 @@ import {
   assertJsonl,
   execute,
 } from './built-consumer-helpers.ts';
+import { verifyAutofixTransactionConsumer, } from './built-autofix-transaction-consumer.ts';
 import { verifyPostCommitPolicyConsumer, } from './built-post-commit-policy-consumer.ts';
 import { verifyPostCommitRoutingConsumer, } from './built-post-commit-routing-consumer.ts';
 import { verifyPolicyConfigConsumer, } from './built-policy-config-consumer.ts';
@@ -276,5 +277,6 @@ await verifyPolicyConfigConsumer({ env, },);
 await verifyPolicyDefaultConsumer({ env, },);
 await verifyPostCommitPolicyConsumer({ env, },);
 await verifyPostCommitRoutingConsumer({ env, },);
+await verifyAutofixTransactionConsumer({ env, },);
 await verifyTypeScriptConsumer({ env, },);
 console.log('built-trust-consumer-ok',);

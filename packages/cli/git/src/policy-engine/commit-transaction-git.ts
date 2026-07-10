@@ -71,6 +71,10 @@ export type GitOutput = Readonly<{
    * Standard error text.
    */
   stderr: string;
+  /**
+   * Exact process exit code.
+   */
+  exitCode: number;
 }>;
 
 /**
@@ -104,6 +108,8 @@ function emptyPushUpdates(): Promise<readonly never[]> {
  *
  * @param stdio - whether user-facing output inherits
  *
+ * @param allowFailure - whether caller handles nonzero status
+ *
  * @returns exact captured output
  *
  * @throws CommitTransactionGitError when Git exits nonzero
@@ -119,12 +125,14 @@ export async function runTransactionGit({
   args,
   indexPath,
   stdio = 'capture',
+  allowFailure = false,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   args: readonly string[];
   indexPath?: string;
   stdio?: 'capture' | 'inherit';
+  allowFailure?: boolean;
 }>,): Promise<GitOutput> {
   /**
    * Environment containing only engine-selected index override.
@@ -152,11 +160,12 @@ export async function runTransactionGit({
       child,
       'close',
     );
-    if (child.exitCode !== 0)
+    if ((child.exitCode !== 0) && (!allowFailure))
       throw new CommitTransactionGitError(`git ${args.join(' ',)} exited ${String(child.exitCode,)}`,);
     return {
       stdout: new Uint8Array(),
       stderr: '',
+      exitCode: child.exitCode ?? 1,
     };
   }
   /**
@@ -190,11 +199,12 @@ export async function runTransactionGit({
    * Captured binary output and diagnostic.
    */
   const [stdout, stderr,] = await output;
-  if (child.exitCode !== 0)
+  if ((child.exitCode !== 0) && (!allowFailure))
     throw new CommitTransactionGitError(`git ${args.join(' ',)} failed: ${stderr.trim()}`,);
   return {
     stdout: new Uint8Array(stdout,),
     stderr,
+    exitCode: child.exitCode ?? 1,
   };
 }
 

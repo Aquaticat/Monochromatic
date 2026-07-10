@@ -74,6 +74,7 @@ function createPolicyContext({
   escapedPolicyIds,
   trigger,
   gitFacts,
+  candidateVersion,
   repositoryRoot,
 }: Readonly<{
   rawArgs: readonly string[];
@@ -81,6 +82,7 @@ function createPolicyContext({
   escapedPolicyIds: ReadonlySet<string>;
   trigger: PolicyTrigger;
   gitFacts: LazyPolicyGitFacts;
+  candidateVersion: number;
   repositoryRoot?: string;
 }>,): PolicyContext {
   /**
@@ -95,7 +97,7 @@ function createPolicyContext({
    */
   const subcommand = transformedArgs[subcommandIndex] ?? ABSENT_GIT_VALUE;
   return {
-    candidateVersion: 0,
+    candidateVersion,
     trigger,
     command: {
       rawArgs,
@@ -144,6 +146,7 @@ export async function runPolicyEngine({
   trigger,
   transformedArgs,
   gitFacts = EMPTY_LAZY_GIT_FACTS,
+  candidateVersion = 0,
   repositoryRoot,
   config = {},
   selectedPolicyIds,
@@ -255,6 +258,7 @@ export async function runPolicyEngine({
       escapedPolicyIds: controls.escapedPolicyIds,
       trigger,
       gitFacts,
+      candidateVersion,
       ...(repositoryRoot === undefined ? {} : { repositoryRoot, }),
     },),
     trigger,
@@ -326,6 +330,7 @@ export async function runPolicyEngine({
       escapedPolicyIds: controls.escapedPolicyIds,
       trigger,
       gitFacts,
+      candidateVersion,
       ...(repositoryRoot === undefined ? {} : { repositoryRoot, }),
     },),
     trigger,

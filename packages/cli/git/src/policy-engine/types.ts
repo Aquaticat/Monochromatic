@@ -77,6 +77,10 @@ export type RunPolicyEngineOptions = Readonly<{
    */
   gitFacts?: LazyPolicyGitFacts;
   /**
+   * Monotonic candidate version for convergence passes.
+   */
+  candidateVersion?: number;
+  /**
    * Canonical repository root when already resolved.
    */
   repositoryRoot?: string;

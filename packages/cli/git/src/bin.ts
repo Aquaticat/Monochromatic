@@ -6,6 +6,10 @@ import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
 import { runManagementCommand, } from './management.ts';
 import { parseCommitRegion, } from './parsers/commit.ts';
+import {
+  COMMIT_TRANSACTION_NOT_APPLICABLE,
+  runCommitTransaction,
+} from './policy-engine/commit-transaction.ts';
 import { runPolicyEngine, } from './policy-engine/engine.ts';
 import { runPostCommitLifecycle, } from './policy-engine/post-commit-lifecycle.ts';
 import {
@@ -202,27 +206,48 @@ else try {
   }
 
   /**
-   * Stable policy result before legacy transforms.
+   * Absolute path to real Git binary needed by candidate transactions.
+   */
+  const gitPath = await resolveGit();
+  rl.debug(`using real git at ${gitPath}`,);
+  /**
+   * Trusted policy options retained identically across convergence passes.
+   */
+  const policyOptions = runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT
+    ? {}
+    : {
+      config: { policies: runtimeResolution.loaded
+        .validated
+        .policySeverities, },
+      registeredPolicies: runtimeResolution.loaded
+        .validated
+        .registeredPolicies,
+      policyOptions: runtimeResolution.loaded
+        .validated
+        .policyOptions,
+    };
+  /**
+   * Supported commit transaction, including final stable policy pass.
+   */
+  const commitTransaction = willShortCircuit
+    ? COMMIT_TRANSACTION_NOT_APPLICABLE
+    : await runCommitTransaction({
+      args: rawArgs,
+      gitPath,
+      policyOptions,
+    },);
+  /**
+   * Stable policy result before real Git forwarding.
    */
   const policyResult = willShortCircuit
     ? undefined
-    : await runPolicyEngine({
-      args: rawArgs,
-      trigger: 'pre-forward',
-      ...(runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT
-        ? {}
-        : {
-          config: { policies: runtimeResolution.loaded
-            .validated
-            .policySeverities, },
-          registeredPolicies: runtimeResolution.loaded
-            .validated
-            .registeredPolicies,
-          policyOptions: runtimeResolution.loaded
-            .validated
-            .policyOptions,
-        }),
-    },);
+    : ((typeof commitTransaction) !== 'symbol'
+      ? commitTransaction.policyResult
+      : await runPolicyEngine({
+        args: rawArgs,
+        trigger: 'pre-forward',
+        ...policyOptions,
+      },));
   if (policyResult !== undefined) {
     /**
      * Stable wrapper JSONL emitted only after pass settles.
@@ -249,16 +274,16 @@ else try {
   rl.debug(`final args: [${processedArgs.join(', ',)}]`,);
 
   /**
-   * Absolute path to the real git binary.
+   * Whether private-index transaction already executed real Git.
    */
-  const gitPath = await resolveGit();
-  rl.debug(`using real git at ${gitPath}`,);
-
-  await nanoSpawn(
-    gitPath,
-    [...processedArgs,],
-    { stdio: 'inherit', },
-  );
+  const transactionCommitted = ((typeof commitTransaction) !== 'symbol')
+    && commitTransaction.committed;
+  if (!transactionCommitted)
+    await nanoSpawn(
+      gitPath,
+      [...processedArgs,],
+      { stdio: 'inherit', },
+    );
 
   /**
    * Layout of `processedArgs`: where the subcommand sits, what precedes it, and
@@ -293,9 +318,10 @@ else try {
    * abbreviation. A failed commit throws out of the spawn above and never
    * reaches here.
    */
-  const committed = (subcommand === 'commit')
-    && (!parseCommitRegion(postSubcommand,)
-      .isDryRun);
+  const committed = transactionCommitted
+    || ((subcommand === 'commit')
+      && (!parseCommitRegion(postSubcommand,)
+        .isDryRun));
 
   if (committed) {
     /**

@@ -54,14 +54,36 @@ export async function initializeCommitIndex({
     );
     return original;
   }
+  /**
+   * Optional parent tree for unborn-repository compatibility.
+   */
+  const head = await runTransactionGit({
+    gitPath,
+    cwd,
+    args: [
+      'rev-parse',
+      '--verify',
+      'HEAD^{tree}',
+    ],
+    allowFailure: true,
+  },);
   await runTransactionGit({
     gitPath,
     cwd,
     indexPath: workspace.commitIndexPath,
-    args: [
-      'read-tree',
-      'HEAD',
-    ],
+    args: head.exitCode === 0
+      ? [
+        'read-tree',
+        new TextDecoder(
+          'utf-8',
+          { fatal: true, },
+        ).decode(head.stdout,)
+          .trim(),
+      ]
+      : [
+        'read-tree',
+        '--empty',
+      ],
   },);
   await runTransactionGit({
     gitPath,
