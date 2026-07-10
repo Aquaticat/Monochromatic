@@ -53,7 +53,9 @@ function createManualPushFacts({
   cwd: string;
   updates: Awaited<ReturnType<typeof probeManualPushUpdates>>;
 }>,): LazyPolicyGitFacts {
-  /** Candidate promise memoized after first policy request. */
+  /**
+   * Candidate promise memoized after first policy request.
+   */
   const state: { candidates?: Promise<readonly CandidateFile[]> } = {};
   return {
     candidates: function candidates() {

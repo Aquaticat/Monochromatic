@@ -20,15 +20,22 @@ import type {
 } from '../api/policy-types.ts';
 import { ManualPushProbeError, } from './manual-push-probe.ts';
 
-/** Git tree modes mapped to policy modes. */
+/**
+ * Git tree modes mapped to policy modes.
+ */
 const TREE_MODES: Readonly<Record<string, CandidateFileMode>> = {
   '100644': 'regular',
   '100755': 'executable',
   '120000': 'symlink',
   '160000': 'submodule',
 };
-/** Strict decoder for Git metadata and paths. */
-const DECODER = new TextDecoder('utf-8', { fatal: true, },);
+/**
+ * Strict decoder for Git metadata and paths.
+ */
+const DECODER = new TextDecoder(
+  'utf-8',
+  { fatal: true, },
+);
 
 /**
  * Runs real Git and returns exact stdout bytes.
@@ -50,7 +57,9 @@ async function runGitBytes({
   cwd: string;
   args: readonly string[];
 }>,): Promise<Uint8Array> {
-  /** Child process with binary stdout. */
+  /**
+   * Child process with binary stdout.
+   */
   const child = spawn(
     gitPath,
     [...args,],
@@ -63,13 +72,20 @@ async function runGitBytes({
       ],
     },
   );
-  /** Concurrent output consumers. */
+  /**
+   * Concurrent output consumers.
+   */
   const output = Promise.all([
     arrayBuffer(child.stdout,),
     text(child.stderr,),
   ],);
-  await once(child, 'close',);
-  /** Settled stdout and stderr. */
+  await once(
+    child,
+    'close',
+  );
+  /**
+   * Settled stdout and stderr.
+   */
   const [stdout, stderr,] = await output;
   if (child.exitCode !== 0)
     throw new ManualPushProbeError(`git ${args.join(' ',)} failed: ${stderr.trim()}`,);
@@ -99,7 +115,9 @@ async function resolveContentObject({
   oid: string;
   type: string;
 }>> {
-  /** Peeled object identity when local object is annotated tag. */
+  /**
+   * Peeled object identity when local object is annotated tag.
+   */
   const peeled = await nanoSpawn(
     gitPath,
     [
@@ -109,9 +127,13 @@ async function resolveContentObject({
     ],
     { cwd, },
   );
-  /** Peeled object ID. */
+  /**
+   * Peeled object ID.
+   */
   const peeledOid = peeled.stdout;
-  /** Git object type. */
+  /**
+   * Git object type.
+   */
   const objectType = (await nanoSpawn(
     gitPath,
     [
@@ -151,7 +173,9 @@ async function treeCandidates({
   treeish: string;
   targetPrefix: string;
 }>,): Promise<readonly CandidateFile[]> {
-  /** NUL-delimited recursive tree records. */
+  /**
+   * NUL-delimited recursive tree records.
+   */
   const records = DECODER.decode(await runGitBytes({
     gitPath,
     cwd,
@@ -162,28 +186,44 @@ async function treeCandidates({
       '-z',
       treeish,
     ],
-  },),).split('\0',)
+  },),)
+    .split('\0',)
     .filter(function isRecord(record,) {
       return record.length > 0;
     },);
   return records.map(function toCandidate(record,): CandidateFile {
-    /** Metadata and path separator. */
+    /**
+     * Metadata and path separator.
+     */
     const pathSeparator = record.indexOf('\t',);
     if (pathSeparator === (-1))
       throw new ManualPushProbeError('Manual-push tree entry lacks path separator.',);
-    /** Space-delimited tree metadata. */
-    const metadata = record.slice(0, pathSeparator,).split(' ',);
-    /** Required Git tree fields. */
+    /**
+     * Space-delimited tree metadata.
+     */
+    const metadata = record.slice(
+      0,
+      pathSeparator,
+    )
+      .split(' ',);
+    /**
+     * Required Git tree fields.
+     */
     const [modeText, objectType, objectOid,] = metadata;
-    if ((modeText === undefined) || (objectType === undefined) || (objectOid === undefined))
+    if ((modeText === undefined) || (objectType === undefined)
+      || (objectOid === undefined))
       throw new ManualPushProbeError('Manual-push tree metadata is incomplete.',);
-    /** Policy mode. */
+    /**
+     * Policy mode.
+     */
     const mode = TREE_MODES[modeText];
     if (mode === undefined)
       throw new ManualPushProbeError(`Unsupported manual-push tree mode: ${modeText}`,);
     if ((objectType !== 'blob') && (objectType !== 'commit'))
       throw new ManualPushProbeError(`Unsupported manual-push object type: ${objectType}`,);
-    /** Repository-relative path. */
+    /**
+     * Repository-relative path.
+     */
     const path = record.slice(pathSeparator + 1,);
     return {
       targetId: `${targetPrefix}:${objectOid}:${path}`,
@@ -228,11 +268,15 @@ async function pushedCommits({
   cwd: string;
   update: PushUpdate & { readonly localOid: string };
 }>,): Promise<readonly string[]> {
-  /** Range exclusions from authoritative prior destination. */
+  /**
+   * Range exclusions from authoritative prior destination.
+   */
   const exclusions = update.remoteOid === ABSENT_GIT_VALUE
     ? []
     : [`^${update.remoteOid}`,];
-  /** Newly reachable commits in oldest-first order. */
+  /**
+   * Newly reachable commits in oldest-first order.
+   */
   const result = await nanoSpawn(
     gitPath,
     [
@@ -244,7 +288,9 @@ async function pushedCommits({
     { cwd, },
   );
   return [...new Set([
-    ...result.stdout.split('\n',).filter(function isOid(oid,) {
+    ...result.stdout
+      .split('\n',)
+      .filter(function isOid(oid,) {
       return oid.length > 0;
     },),
     update.localOid,
@@ -276,19 +322,26 @@ export async function createManualPushCandidates({
   cwd: string;
   updates: readonly PushUpdate[];
 }>,): Promise<readonly CandidateFile[]> {
+  /**
+   * Candidate groups for every content-bearing update.
+   */
   const candidateGroups = await Promise.all(updates
     .filter(function hasContent(update,): update is PushUpdate & { readonly localOid: string } {
       return update.localOid !== ABSENT_GIT_VALUE;
     },)
     .map(async function updateCandidates(update,) {
-      /** Peeled local target. */
+      /**
+       * Peeled local target.
+       */
       const content = await resolveContentObject({
         gitPath,
         cwd,
         oid: update.localOid,
       },);
       if (content.type === 'commit') {
-        /** Every newly reachable commit plus final target state. */
+        /**
+         * Every newly reachable commit plus final target state.
+         */
         const commits = await pushedCommits({
           gitPath,
           cwd,
