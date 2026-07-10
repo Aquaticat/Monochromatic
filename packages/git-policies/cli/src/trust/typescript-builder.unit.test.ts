@@ -144,9 +144,11 @@ export default defineConfig({
   plugins: { mono: repositoryPolicyPlugin },
 });
 `,);
-        /** Workspace dependency tree exposed to disposable fixture. */
-        const workspaceNodeModules = await realpath(join(import.meta.dirname, '../../node_modules',),);
-        await symlink(workspaceNodeModules, join(fixture.repository, 'node_modules',), 'dir',);
+        /** Current cli-git package exposed as installed scoped package to disposable fixture. */
+        const packageDirectory = await realpath(join(import.meta.dirname, '../..',),);
+        const fixtureScope = join(fixture.repository, 'node_modules', '@monochromatic-dev',);
+        await mkdir(fixtureScope, { recursive: true, },);
+        await symlink(packageDirectory, join(fixtureScope, 'cli-git',), 'dir',);
         const candidate = await buildTypeScriptCandidate({
           discovered: fixture.discovered,
           buildDirectory: fixture.buildDirectory,
