@@ -3,8 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #346 are complete and closed.
-TypeScript trust issue #347 is implemented and undergoing final closure verification.
+Issues #280 and #341 through #347 are complete and closed.
+Command-safeguard migration issue #348 is the next unblocked implementation slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1083,6 +1083,7 @@ Unless later grilling changes them:
   packed verification,
   reviewed race fixes,
   and external option diagnosis.
+  Issue #347 was closed after every acceptance criterion and evidence gate passed.
   Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity
