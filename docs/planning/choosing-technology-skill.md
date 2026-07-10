@@ -2,8 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 through 7 are resolved;
-worked-example strategy remains open.
+Decisions 1 through 8 are resolved.
+The plan awaits final shared-understanding confirmation and independent audit.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -612,7 +612,17 @@ Do not edit the skill during grilling.
   confidence,
   and how it changed the ordering.
 - Require sensitivity analysis when a one-step change to an influential low-confidence input could change the winner.
-- Replace the dated SaaS example with an evidence-complete synthetic example or canonical repository artifact.
+- Replace the dated SaaS example with one evidence-complete synthetic example embedded in `SKILL.md`.
+- Make the example explicitly fictional and timeless.
+- Exercise context routing,
+  a hard-gate exit,
+  candidate promotion,
+  weighted scoring,
+  sensitivity,
+  finalist validation,
+  ranking,
+  automatic vet-report creation,
+  and the recommendation-versus-adoption boundary.
 - Key the final checklist to named workflow gates.
 - Require generated audit artifacts to record the skill revision.
 
@@ -712,6 +722,7 @@ The improvement is complete only when:
   or decision-record edits;
 - adopted choices receive a decision record;
 - scenario fixtures exercise every route and failure state;
+- the inline synthetic example reaches an evidence-complete recommendation without time-sensitive real-world claims;
 - an independent review finds no contradiction between body,
   example,
   and checklist;
@@ -1132,8 +1143,71 @@ Literal suite completeness beats consumer-only checks because broad upstream val
 
 ### Decision 8: worked example
 
-Open after Decision 7.
-Choose whether the skill should link to a dated,
-evidence-complete repository vet as its canonical example,
-embed a synthetic example,
-or rely only on the output contract and scenario fixtures.
+Decision:
+embed a synthetic worked example in `SKILL.md`.
+The user selected this on 2026-07-09.
+
+The example must be explicitly fictional and must not use current vendor,
+price,
+funding,
+outage,
+release,
+or maintenance facts.
+Use a fictional credential-handling automation choice whose candidates span:
+
+- a managed SaaS option with the retained six vendor domains and added direct risks;
+- an open-source self-hosted option that reaches source and validation gates;
+- an opaque proprietary high-trust plugin that exits at the source and provenance gate.
+
+The example should show:
+
+1. measurable context gathered before preference questions;
+2. one context-fork question that changes the candidate set;
+3. category routing and applicable gates;
+4. discovery,
+   serious-alternative promotion,
+   finalist promotion,
+   and a hard-gate exit;
+5. precommitted criteria and weights;
+6. cited fictional evidence ratings,
+   confidence,
+   normalized arithmetic,
+   and sensitivity result;
+7. complete CI-equivalent and relevant-suite validation records for finalists;
+8. pros,
+   cons,
+   evidence limits,
+   and adjacent ranking reasons;
+9. automatic vet-report path and skill revision;
+10. recommendation without adoption changes;
+11. later decision-record update only after an explicit adoption action.
+
+Pros:
+
+- keeps the complete governing workflow and example in one file;
+- avoids stale real-world claims;
+- can deliberately cover every important state and failure path;
+- makes scoring arithmetic and lifecycle transitions easy to inspect.
+
+Cons:
+
+- cannot prove the workflow is practical on a real candidate;
+- synthetic evidence can look cleaner than real research;
+- adds substantial length to an already comprehensive skill;
+- scenario fixtures and future real vet reports must provide the practical counterweight.
+
+Rejected alternative:
+link a new real vet as the canonical example.
+It would demonstrate practical execution,
+but becomes historical and requires a substantial unrelated selection audit to finish the skill rewrite.
+
+Rejected alternative:
+provide only the output contract.
+It is concise,
+but gives no end-to-end gold-standard rendering of gates,
+scoring,
+and lifecycle transitions.
+
+Ranking:
+synthetic inline example beats a real canonical vet because the user prioritizes one-file authority and timeless coverage.
+A real canonical vet beats output-contract-only because an executed artifact still teaches the workflow better than a schema alone.
