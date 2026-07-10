@@ -225,8 +225,9 @@ or dynamically loaded code.
 
 ### Cli-git-built TypeScript
 
-`git cli-git trust` owns the TypeScript build.
+`git cli-git trust` owns the first TypeScript build.
 Ordinary Git commands never build an untrusted TypeScript config.
+A previously trusted path explicitly relaxed through `CLI_GIT_NO_PARANOID` is the exception described below.
 
 - Use tsdown with Node platform targeting.
 - Attempt to bundle every import into a self-contained cached artifact.
@@ -243,6 +244,13 @@ Ordinary Git commands never build an untrusted TypeScript config.
 - An explicit repeat `git cli-git trust` always rebuilds TypeScript and is the refresh path for excluded package
   imports.
   Changed cached bundle bytes are disclosed before replacement even when tracked source bytes are unchanged.
+- Under `CLI_GIT_NO_PARANOID`,
+  entry or tracked-relative-module mtime/size changes trigger an automatic tsdown rebuild during the next config-loading
+  Git command.
+  Those metadata values are cache signals only,
+  not trust checks;
+  rebuild failure blocks with exit code `2`.
+- Package-only changes still require explicit trust refresh because package imports are outside tracked invalidation.
 - Trust prints a warning when TypeScript config is not self-contained.
 - Exact treatment of absolute imports,
   dynamic imports,
