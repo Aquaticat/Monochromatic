@@ -99,6 +99,7 @@ export type EngineFailureEvent = Readonly<{
     | 'config-invalid'
     | 'content-unavailable'
     | 'core-incomplete'
+    | 'plugin-threw'
     | 'policy-incomplete'
     | 'config-untrusted'
     | 'config-changed'

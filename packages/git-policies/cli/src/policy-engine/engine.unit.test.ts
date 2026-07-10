@@ -105,6 +105,16 @@ const THROWING_POLICY: RuntimePolicyDefinition = {
     return Promise.reject(new Error('intentional policy failure',),);
   },
 };
+/** Policy returning a finding that violates engine validation. */
+const INVALID_FINDING_POLICY: RuntimePolicyDefinition = {
+  name: 'invalid-finding-policy',
+  defaultSeverity: 'error',
+  warnSafe: true,
+  triggers: ['pre-forward',],
+  check: function checkInvalidFindingPolicy() {
+    return Promise.resolve([{ code: '', message: '', },],);
+  },
+};
 
 await describe({
   name: 'policy engine',
@@ -353,6 +363,22 @@ await describe({
         expect(result.exitCode,).toBe(2,);
         expect(result.events,).toHaveLength(1,);
         expect(result.events[0]?.type,).toBe('engine-failure',);
+        expect(result.events[0]?.type === 'engine-failure' ? result.events[0].code : '',)
+          .toBe('plugin-threw',);
+      },
+    },),
+    it({
+      name: 'distinguishes invalid policy output from plugin exceptions',
+      fn: async function testInvalidFindingFailure() {
+        /** Engine-owned validation failure after plugin completion. */
+        const result = await runPolicyEngine({
+          args: ['status',],
+          trigger: 'pre-forward',
+          registeredPolicies: [INVALID_FINDING_POLICY,],
+        },);
+        expect(result.exitCode,).toBe(2,);
+        expect(result.events[0]?.type === 'engine-failure' ? result.events[0].code : '',)
+          .toBe('policy-incomplete',);
       },
     },),
   ],

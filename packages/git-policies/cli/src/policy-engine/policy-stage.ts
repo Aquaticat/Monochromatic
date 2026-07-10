@@ -64,7 +64,72 @@ function findingsAreValid(findings: readonly PolicyFinding[],): boolean {
   },);
 }
 
+/**
+ * Settled plugin check result preserving whether plugin code threw.
+ */
+type PolicyCheckResult = Readonly<{
+  /**
+   * Successful check discriminator.
+   */
+  status: 'complete';
+  /**
+   * Unvalidated plugin findings.
+   */
+  findings: readonly PolicyFinding[];
+}> | Readonly<{
+  /**
+   * Thrown check discriminator.
+   */
+  status: 'threw';
+  /**
+   * Exact thrown plugin value.
+   */
+  error: unknown;
+}>;
+
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Internal registry contains callback-bearing declarations; stage reads but never mutates them, as documented in docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
+/**
+ * Settles one plugin callback without conflating its exception with engine validation.
+ *
+ * @param policy - current runtime plugin
+ *
+ * @param context - trigger-specific policy facts
+ *
+ * @param options - validated plugin options
+ *
+ * @returns discriminated plugin result
+ *
+ * @example
+ * ```ts
+ * const result = await checkPolicy({ policy, context, options: undefined });
+ * ```
+ */
+async function checkPolicy({
+  policy,
+  context,
+  options,
+}: Readonly<{
+  policy: RuntimePolicyDefinition;
+  context: PolicyContext;
+  options: unknown;
+}>,): Promise<PolicyCheckResult> {
+  try {
+    return {
+      status: 'complete',
+      findings: await policy.check({
+        context,
+        options,
+      },),
+    };
+  }
+  catch (error: unknown) {
+    return {
+      status: 'threw',
+      error,
+    };
+  }
+}
+
 /**
  * Runs one ordered policy group.
  *
@@ -140,15 +205,37 @@ export async function runPolicyStage({
      * Whether selected warning severity weakens enforcement.
      */
     const warnUnsafe = (severity === 'warn') && (!policy.warnSafe);
+    /**
+     * Settled callback result preserving plugin ownership of thrown values.
+     */
+    // oxlint-disable-next-line no-await-in-loop -- Policy contract requires sequential checks in fixed registration order.
+    const checkResult = await checkPolicy({
+      policy,
+      context,
+      options: policyOptions.get(policy.name,),
+    },);
+    if (checkResult.status === 'threw') {
+      events.push(createEngineFailureEvent({
+        sequence: sequence + events.length,
+        code: 'plugin-threw',
+        message: Error.isError(checkResult.error,) ? checkResult.error
+          .message : String(checkResult.error,),
+        trigger,
+        policyId: policy.name,
+      },),);
+      return {
+        events,
+        complete: false,
+        stopped: true,
+        patches,
+        patchProposed: false,
+      };
+    }
     try {
       /**
        * Findings produced by current sequential policy.
        */
-      // oxlint-disable-next-line no-await-in-loop -- Policy contract requires sequential checks in fixed registration order.
-      const findings = await policy.check({
-        context,
-        options: policyOptions.get(policy.name,),
-      },);
+      const { findings, } = checkResult;
       if (!findingsAreValid(findings,))
         throw new TypeError(`Policy ${policy.name} returned an invalid finding.`,);
       /**
