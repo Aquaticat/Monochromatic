@@ -60,6 +60,44 @@ Issue #356 sets and enforces budgets after every required scenario has a measure
 Raw samples and exact fixture metadata are stored in
 `packages/git-policies/cli/perf/forbidden-strings-2026-07-10.json`.
 
+## Cli-git repository-scale manual push
+
+Measured on 2026-07-10 at cli-git revision
+`470c0f5dc8732c6bd2f89d20cadb873fb8b5a154`.
+The fixture cloned the complete repository history from remote revision
+`ef179a737ccd39fab84e9f320e8777eeb959367b`
+to the measured revision and repeatedly pushed the same complete range through both packed cli-git and direct Git.
+A deterministic absent rule exercised candidate materialization and scanner traversal without findings.
+
+The disposable Linux x64 container was capped at 2 GiB RAM and 2 CPUs.
+It used Node `24.18.0`,
+Git `2.39.5`,
+scanner `0.1.9`,
+and a 1 GiB `/tmp` tmpfs matching the host's verified temporary-storage type.
+Pair order alternated after three warm-up pairs.
+All 10 measured pairs completed successfully.
+
+```text
+direct Git       median 50.021 ms
+cli-git wrapper  median 1,074.817 ms
+added latency    median 1,023.730 ms   maximum 1,051.905 ms
+required ceiling                       strictly less than 2,000 ms
+```
+
+The first implementation created one lazy `git cat-file blob` subprocess per historical candidate and exhausted the
+host process table during a real push.
+Commit `f621432a6` replaced that fan-out with one `git cat-file --batch` process,
+deduplicated scanner-equivalent historical states,
+and bounded temporary-file materialization.
+Measurements retained 64 file lanes:
+eight lanes missed the ceiling on overlay storage,
+while 128 lanes increased storage contention.
+The accepted tmpfs run stayed at most 1,051.905 ms below direct Git's paired baseline,
+leaving 948.095 ms of measured headroom.
+
+Raw samples are stored in
+`packages/git-policies/cli/perf/manual-push-latency-2026-07-10.json`.
+
 The release profile is `lto = true`,
  `codegen-units = 1`,
  `opt-level = 3`,

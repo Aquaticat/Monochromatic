@@ -1324,6 +1324,9 @@ annotated-tag,
 tree,
 or blob state for each update.
 Deduplicate exact candidate identities across updates.
+Load unique Git blobs through one `git cat-file --batch` process per evaluation.
+Materialize scanner files with no more than 64 concurrent lanes.
+Wrapper-added latency for every forwarded real Git command must remain strictly less than `2,000 ms`.
 Explicit dry runs bypass manual-push policies.
 Pure ref deletion is clean.
 Indeterminate required content exits `2` with `content-unavailable`.

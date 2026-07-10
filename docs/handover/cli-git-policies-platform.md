@@ -1550,6 +1550,25 @@ Unless later grilling changes them:
   This is a baseline rather than a budget;
   raw samples live in `packages/git-policies/cli/perf/forbidden-strings-2026-07-10.json`,
   while #356 remains responsible for cross-platform budgets and enforcement.
+- The first real repository push exposed unbounded process fan-out in manual-push candidate loading.
+  Each lazy historical blob launched `git cat-file blob` inside an unbounded `Promise.all`,
+  exhausting the host process table and producing `spawn /bin/bash EAGAIN` before a forced reboot.
+  The remote remained at `ef179a737` and local commits remained intact.
+- Commit `f621432a6` replaced per-blob processes with one `git cat-file --batch` process,
+  removed scanner-equivalent historical duplicates,
+  and bounded scanner-file materialization.
+  Commits `b9b5a72c6`,
+  `1830851c0`,
+  and `470c0f5dc` measured storage concurrency and retained the 64-lane optimum after 128 lanes increased contention.
+- A packed full-repository benchmark at revision `470c0f5dc` ran 10 paired manual-push samples in a disposable Linux
+  container capped at 2 GiB RAM and 2 CPUs.
+  Its 1 GiB `/tmp` tmpfs matches the host's verified temporary-storage type.
+  Direct Git median was 50.021 ms,
+  wrapper median was 1,074.817 ms,
+  added median was 1,023.730 ms,
+  and worst added latency was 1,051.905 ms.
+  Every sample remained below the strict 2,000 ms ceiling.
+  Raw samples live in `packages/git-policies/cli/perf/manual-push-latency-2026-07-10.json`.
 - The latest hosted forbidden-strings workflow at pre-integration `origin/main` revision `ef179a737` failed on one
   credential-shaped patch-context line and credential-shaped literals in the concurrently landed forbidden-regex tests.
   Commits `c35e012b6` and `a8baa6024` preserve the tests' runtime bytes and patch applicability while removing those
@@ -1558,7 +1577,7 @@ Unless later grilling changes them:
   baseline plus shared appendix against every `origin/main...HEAD` changed file,
   then passed locally for all 20 changed paths.
   A full-tree run with the active repository rules also passed with no findings.
-  A hosted success still requires an authorized push because external mutation is not implied by local completion.
+  This user-controlled repository may now be pushed automatically under the controlled-resource authorization rule.
 - Key implementation checkpoints are `b9dc927ef`,
   `a5918a490`,
   `bacfe57b1`,
@@ -1567,7 +1586,10 @@ Unless later grilling changes them:
   `18d7940c3`,
   `6eccb3064`,
   `c35e012b6`,
-  and `a8baa6024`.
+  `a8baa6024`,
+  `f621432a6`,
+  `470c0f5dc`,
+  and `3d8c240da`.
 
 ### Issue #342 filesystem identity
 

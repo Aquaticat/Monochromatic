@@ -654,6 +654,10 @@ tag,
 tree,
 or blob state.
 Commits created outside the wrapper and forbidden content removed by a later commit therefore remain covered.
+Manual-push blob content is loaded through one `git cat-file --batch` process,
+repeated scanner-equivalent historical states are removed,
+and scanner files use at most 64 concurrent materialization lanes.
+This avoids subprocess fan-out while preserving exact historical bytes.
 Explicit user dry runs do not run manual-push policies.
 
 An enabled scanner that cannot determine a required content-bearing push range has not completed and exits `2`.
