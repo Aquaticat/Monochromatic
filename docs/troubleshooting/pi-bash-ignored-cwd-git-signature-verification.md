@@ -61,7 +61,7 @@ The call intended to use a disposable fixture directory:
 
 ```json
 {
-  "command": "git init\ngit config user.email fixture@example.invalid\ngit config user.name 'Final newline fixture'\n...",
+  "command": "git init\ngit config user.email fixture@example.invalid\n...",
   "cwd": "/tmp/agent/final-newline-hook-fixture-oCurQRYW",
   "timeout": 180
 }
@@ -342,15 +342,20 @@ It requires explicit authorization and coordination.
 
 ## What does not work
 
-- **Rotating or replacing the SSH signing key.** The commits already contain signatures, and the same key verifies on the
-  last good commit. Key rotation does not repair the fixture committer email.
-- **Setting `commit.gpgSign` again.** The effective value is already `true`, and all 69 sampled commits are signed.
-- **Adding only `gpg.ssh.allowedSignersFile`.** This fixes local trust evaluation, not GitHub's `no_user` attribution.
-- **Reverting the fixture commit.** Git commits track trees and metadata, not `.git/config`; `8fd72562` reverted files but
-  left the local identity active.
-- **Pushing the same commits again.** Commit objects are immutable, and GitHub's persistent verification record is tied to
-  each commit object.
-- **Relying on the unsupported `cwd` argument.** Pi 0.80.6 retains it during validation and drops it during Bash execution.
+- **Rotating or replacing the SSH signing key.**
+  The commits already contain signatures, and the same key verifies on the last good commit.
+  Key rotation does not repair the fixture committer email.
+- **Setting `commit.gpgSign` again.**
+  The effective value is already `true`, and all 69 sampled commits are signed.
+- **Adding only `gpg.ssh.allowedSignersFile`.**
+  This fixes local trust evaluation, not GitHub's `no_user` attribution.
+- **Reverting the fixture commit.**
+  Git commits track trees and metadata, not `.git/config`.
+  Commit `8fd72562` reverted files but left the local identity active.
+- **Pushing the same commits again.**
+  Commit objects are immutable, and GitHub's persistent verification record is tied to each commit object.
+- **Relying on the unsupported `cwd` argument.**
+  Pi 0.80.6 retains it during validation and drops it during Bash execution.
 
 ## Upstream filing decision
 
@@ -372,7 +377,8 @@ The six filing constraints resolve as follows:
    Pi could reject unknown top-level fields, strip them with an explicit warning, or add a per-call directory field.
    Technical possibility does not override the maintainers' intentional API boundary.
 3. **Are they supporting this use case?** No.
-   The maintainer explicitly rejected per-call `cwd` as a valid parameter, and the original reporter withdrew the request.
+   The maintainer explicitly rejected per-call `cwd` as a valid parameter.
+   The original reporter withdrew the request.
 4. **Would the repo welcome our contribution?** No for this generated artifact.
    `CONTRIBUTING.md` requires issue text in the contributor's own voice and says not to use an LLM to generate it.
    Recent maintainer responses also reject AI-generated tracker comments.
