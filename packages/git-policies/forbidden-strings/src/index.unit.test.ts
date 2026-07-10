@@ -11,6 +11,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
+import { setTimeout as wait, } from 'node:timers/promises';
 import {
   describe,
   expect,
@@ -221,6 +222,75 @@ await describe({
           },);
         },);
         expect(status.message,).toContain('status 2',);
+      },
+    },),
+    it({
+      name: 'deduplicates historical content and bounds materialization concurrency',
+      fn: async function testBoundedMaterialization() {
+        await using directory = await createTestDirectory();
+        const scanner = await writeScanner({
+          directory: directory.path,
+          body: 'process.exitCode = 0;',
+        },);
+        /** Number of distinct scanner identities. */
+        const candidateCount = 64;
+        /** Delay keeping candidate reads concurrently observable. */
+        const readDelayMilliseconds = 10;
+        /** Mutable activity observed only by this sequential test. */
+        const activity = {
+          active: 0,
+          peak: 0,
+          calls: 0,
+        };
+        /** Distinct candidates followed by scanner-equivalent duplicates. */
+        const candidates = Array.from(
+          { length: candidateCount, },
+          function createCandidate(_unused, index,): readonly CandidateFile[] {
+            /** Shared scanner-equivalent candidate fields. */
+            const fields = {
+              path: `candidate-${String(index,)}.txt`,
+              revision: `revision-${String(index,)}`,
+              mode: 'regular',
+              change: 'added',
+            } as const;
+            /** First retained candidate with observable lazy bytes. */
+            const first: CandidateFile = {
+              ...fields,
+              targetId: `first-${String(index,)}`,
+              async bytes(): Promise<Uint8Array> {
+                activity.active += 1;
+                activity.calls += 1;
+                activity.peak = Math.max(
+                  activity.peak,
+                  activity.active,
+                );
+                await wait(readDelayMilliseconds,);
+                activity.active -= 1;
+                return CANDIDATE_BYTES;
+              },
+            };
+            /** Duplicate that must never load bytes. */
+            const duplicate: CandidateFile = {
+              ...fields,
+              targetId: `duplicate-${String(index,)}`,
+              bytes: function rejectDuplicateRead(): Promise<Uint8Array> {
+                throw new Error('Scanner-equivalent duplicate bytes were loaded.',);
+              },
+            };
+            return [
+              first,
+              duplicate,
+            ];
+          },
+        ).flat();
+        expect(await scanCandidates({
+          executable: scanner,
+          repositoryRoot: directory.path,
+          candidates,
+          signal: new AbortController().signal,
+        },),).toEqual([],);
+        expect(activity.calls,).toBe(candidateCount,);
+        expect(activity.peak,).toBe(8,);
       },
     },),
     it({

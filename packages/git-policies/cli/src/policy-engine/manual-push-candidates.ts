@@ -18,6 +18,7 @@ import type {
   CandidateFile,
   CandidateFileMode,
 } from '../api/policy-types.ts';
+import { loadManualPushBlobs, } from './manual-push-blob-batch.ts';
 import { ManualPushProbeError, } from './manual-push-probe.ts';
 
 /**
@@ -36,6 +37,50 @@ const DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
+
+/**
+ * Candidate metadata separated from batched object content.
+ */
+type ManualPushCandidateDescriptor = Readonly<{
+  /**
+   * Invocation-local candidate identity.
+   */
+  targetId: string;
+  /**
+   * Repository-relative finding path.
+   */
+  path: CandidateFile['path'];
+  /**
+   * Exact Git object identity.
+   */
+  revision: string;
+  /**
+   * Candidate Git mode.
+   */
+  mode: CandidateFileMode;
+  /**
+   * Content source resolved after every descriptor is known.
+   */
+  content: Readonly<{
+    /**
+     * Git blob content discriminator.
+     */
+    kind: 'blob';
+    /**
+     * Blob object ID requested from batch reader.
+     */
+    oid: string;
+  }> | Readonly<{
+    /**
+     * Already-materialized content discriminator.
+     */
+    kind: 'inline';
+    /**
+     * Exact inline bytes.
+     */
+    bytes: Uint8Array;
+  }>;
+}>;
 
 /**
  * Runs real Git and returns exact stdout bytes.
@@ -160,7 +205,7 @@ async function resolveContentObject({
  *
  * @param targetPrefix - invocation-local target prefix
  *
- * @returns complete tree candidates
+ * @returns complete tree candidate descriptors
  */
 async function treeCandidates({
   gitPath,
@@ -172,7 +217,7 @@ async function treeCandidates({
   cwd: string;
   treeish: string;
   targetPrefix: string;
-}>,): Promise<readonly CandidateFile[]> {
+}>,): Promise<readonly ManualPushCandidateDescriptor[]> {
   /**
    * NUL-delimited recursive tree records.
    */
@@ -191,7 +236,7 @@ async function treeCandidates({
     .filter(function isRecord(record,) {
       return record.length > 0;
     },);
-  return records.map(function toCandidate(record,): CandidateFile {
+  return records.map(function toCandidate(record,): ManualPushCandidateDescriptor {
     /**
      * Metadata and path separator.
      */
@@ -230,20 +275,15 @@ async function treeCandidates({
       path,
       revision: objectOid,
       mode,
-      change: 'unchanged',
-      bytes: function loadPushedBytes(): Promise<Uint8Array> {
-        if (mode === 'submodule')
-          return Promise.resolve(new TextEncoder().encode(objectOid,),);
-        return runGitBytes({
-          gitPath,
-          cwd,
-          args: [
-            'cat-file',
-            'blob',
-            objectOid,
-          ],
-        },);
-      },
+      content: mode === 'submodule'
+        ? {
+          kind: 'inline',
+          bytes: new TextEncoder().encode(objectOid,),
+        }
+        : {
+          kind: 'blob',
+          oid: objectOid,
+        },
     };
   },);
 }
@@ -373,21 +413,53 @@ export async function createManualPushCandidates({
           path: update.remoteRef,
           revision: content.oid,
           mode: 'regular',
-          change: 'unchanged',
-          bytes: function loadPushedBlob(): Promise<Uint8Array> {
-            return runGitBytes({
-              gitPath,
-              cwd,
-              args: [
-                'cat-file',
-                'blob',
-                content.oid,
-              ],
-            },);
+          content: {
+            kind: 'blob',
+            oid: content.oid,
           },
-        },] satisfies readonly CandidateFile[];
+        },] satisfies readonly ManualPushCandidateDescriptor[];
       }
       throw new ManualPushProbeError(`Unsupported pushed object type: ${content.type}`,);
     },),);
-  return candidateGroups.flat();
+  /**
+   * Ordered descriptors before exact object content is loaded.
+   */
+  const descriptors = candidateGroups.flat();
+  /**
+   * One batched read for every unique blob across every pushed state.
+   */
+  const blobBytes = await loadManualPushBlobs({
+    gitPath,
+    cwd,
+    oids: descriptors.flatMap(function blobOid(descriptor,) {
+      return descriptor.content
+        .kind
+        === 'blob' ? [descriptor.content
+          .oid,] : [];
+    },),
+  },);
+  return descriptors.map(function materializeDescriptor(descriptor,): CandidateFile {
+    /**
+     * Narrowed content source captured by lazy candidate callback.
+     */
+    const { content, } = descriptor;
+    return {
+      targetId: descriptor.targetId,
+      path: descriptor.path,
+      revision: descriptor.revision,
+      mode: descriptor.mode,
+      change: 'unchanged',
+      bytes(): Promise<Uint8Array> {
+        if (content.kind === 'inline')
+          return Promise.resolve(content.bytes,);
+        /**
+         * Exact shared blob view loaded by the single batch subprocess.
+         */
+        const bytes = blobBytes.get(content.oid,);
+        if (bytes === undefined)
+          throw new ManualPushProbeError(`Git blob batch omitted requested object ${content.oid}.`,);
+        return Promise.resolve(bytes,);
+      },
+    };
+  },);
 }

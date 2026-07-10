@@ -13,6 +13,55 @@ import { join, } from 'node:path';
 import type { CandidateFile, } from '@monochromatic-dev/git-policy-api/ts';
 
 /**
+ * Maximum simultaneous candidate reads and temporary-file writes.
+ */
+const MATERIALIZATION_CONCURRENCY = 8;
+
+/**
+ * Returns scanner-equivalent candidate identity.
+ *
+ * @param candidate - exact policy candidate
+ *
+ * @returns stable content and finding-path identity
+ */
+function scannerCandidateKey(candidate: CandidateFile,): string {
+  /**
+   * Immutable revision identity when Git owns bytes,
+   * otherwise invocation-local target identity.
+   */
+  const contentIdentity = (typeof candidate.revision) === 'string'
+    ? `revision:${candidate.revision}`
+    : `target:${candidate.targetId}`;
+  return `${contentIdentity}\0${candidate.path}\0${candidate.mode}`;
+}
+
+/**
+ * Removes repeated historical states that produce identical scanner findings.
+ *
+ * @param candidates - content-bearing candidates in encounter order
+ *
+ * @returns first scanner-equivalent candidate for each identity
+ */
+function uniqueScannerCandidates(
+  candidates: readonly CandidateFile[],
+): readonly CandidateFile[] {
+  /**
+   * Identities already retained for scanner input.
+   */
+  const seen = new Set<string>();
+  return candidates.filter(function firstScannerIdentity(candidate,): boolean {
+    /**
+     * Content plus reported-path identity.
+     */
+    const key = scannerCandidateKey(candidate,);
+    if (seen.has(key,))
+      return false;
+    seen.add(key,);
+    return true;
+  },);
+}
+
+/**
  * Plugin-owned disposable scanner files.
  */
 export type MaterializedCandidates = Readonly<{
@@ -55,9 +104,9 @@ export async function materializeCandidates(
   /**
    * Content-bearing candidate states.
    */
-  const contentCandidates = candidates.filter(function hasContent(candidate,): boolean {
+  const contentCandidates = uniqueScannerCandidates(candidates.filter(function hasContent(candidate,): boolean {
     return candidate.change !== 'deleted';
-  },);
+  },),);
   /**
    * Stable plugin-owned paths independent of repository path grammar.
    */
@@ -70,14 +119,56 @@ export async function materializeCandidates(
       `candidate-${String(index,)}`,
     );
   },);
-  await Promise.all(contentCandidates.map(async function writeCandidate(
+  /**
+   * Candidate and generated path pairs before bounded lane assignment.
+   */
+  const indexedCandidates = contentCandidates.map(function indexCandidate(
     candidate,
     index,
-  ): Promise<void> {
-    await writeFile(
-      paths[index] ?? '',
-      await candidate.bytes(),
-    );
+  ) {
+    return {
+      candidate,
+      path: paths[index] ?? '',
+    };
+  },);
+  /**
+   * Active lane count never exceeds candidate count or fixed process-safe cap.
+   */
+  const laneCount = Math.min(
+    MATERIALIZATION_CONCURRENCY,
+    indexedCandidates.length,
+  );
+  /**
+   * Deterministic independent lanes avoid an unbounded `Promise.all` fan-out.
+   */
+  const lanes = Array.from(
+    { length: laneCount, },
+    function createLane(
+      _unused,
+      laneIndex,
+    ) {
+      return indexedCandidates.filter(function assignedToLane(
+        _candidate,
+        candidateIndex,
+      ): boolean {
+        return (candidateIndex % laneCount) === laneIndex;
+      },);
+    },
+  );
+  await Promise.all(lanes.map(async function writeLane(lane,): Promise<void> {
+    /* oxlint-disable no-await-in-loop -- Each bounded lane deliberately sequences process-backed reads and temporary writes to cap process and file-descriptor pressure. */
+    for (const entry of lane) {
+      /**
+       * Exact candidate bytes loaded only when current bounded lane reaches entry.
+       */
+      const bytes = await entry.candidate
+        .bytes();
+      await writeFile(
+        entry.path,
+        bytes,
+      );
+    }
+    /* oxlint-enable no-await-in-loop */
   },),);
   return {
     paths,
