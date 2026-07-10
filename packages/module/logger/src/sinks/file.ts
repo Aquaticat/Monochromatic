@@ -86,10 +86,15 @@ export async function findNodeModulesUp(
       return candidate;
   }
   catch (error: unknown) {
-    reportLoggerInternalError({
-      context: `node_modules candidate ${candidate} unavailable during file sink search`,
-      error,
-    },);
+    // Missing candidate is expected while walking ancestors; only unexpected stat failures are logger faults.
+    if (!(Error.isError(error,)
+      && ('code' in error)
+      && (error.code === 'ENOENT'))) {
+      reportLoggerInternalError({
+        context: `node_modules candidate ${candidate} unavailable during file sink search`,
+        error,
+      },);
+    }
   }
   /**
    * Parent directory used by the next recursive step; equal to `cwd` only at the filesystem root, which terminates the walk.
