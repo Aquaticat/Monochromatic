@@ -38,10 +38,13 @@ The helpers cannot clone or transform these values:
 `packages/cli/git/SPEC.md` requires each helper to return the exact input object,
 and Valibot consumers need the original schema type for parsing and output inference.
 The internal `registeredPolicies` adapter in
-`packages/cli/git/src/policy-engine/engine.ts` must retain executable callbacks so tests can prove sequential order,
+`packages/cli/git/src/policy-engine/engine.ts` and filesystem-failure adapter in
+`packages/cli/git/src/policy-engine/commit-transaction-boundary.ts` must retain executable callbacks so tests can prove
+sequential order,
 keep-going behavior,
-and immediate exception stopping with deterministic policies.
-It reads the declarations and never mutates them.
+immediate exception stopping,
+and fail-closed transaction setup with deterministic policies.
+They read the declarations and never mutate them.
 
 ## Verification
 
@@ -57,8 +60,8 @@ This demonstrates that the warning follows nested mutable structure rather than 
 
 ## Verified workaround
 
-Keep the parameter types honest and add a one-line
-`typescript/prefer-readonly-parameter-types` suppression immediately before each affected helper or internal engine
+Keep the parameter types honest and add a tightly scoped
+`typescript/prefer-readonly-parameter-types` disable/enable pair around each affected helper or internal engine
 boundary.
 Each justification must identify the identity or registry contract,
 the callback-bearing policy shape,
