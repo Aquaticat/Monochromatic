@@ -10,14 +10,14 @@ When the user submits a prompt containing a correction phrase,
 ```text
 <correction-detected>
 The user is correcting a substantive claim from your previous response.
-Per AGENTS.md Pre-response checklist item 11: a user correction is an
+Per AGENTS.md rule CKB: a user correction is an
 approach-change moment, not a small patch. The blind spot that produced
 the original claim is still active for the revision.
 
 Before your next substantive response, re-check the claim against primary
 sources, local files, logs, or command output. Do not run a same-session
 self-review or write an `Advisor pass: ...` line; self-review is not
-independent evidence. See `docs/agent-self-review.md`.
+independent evidence. See `docs/agents/self-review.md`.
 </correction-detected>
 ```
 

@@ -155,20 +155,20 @@ function detectCorrection(prompt: string,): boolean {
 /**
  * Text injected into Claude's context when a correction is detected.
  *
- * Mirrors the language of AGENTS.md Pre-response checklist item 11 so the
+ * Mirrors the language of AGENTS.md rule CKB so the
  * reminder fires in the same vocabulary the agent is already trained on.
  */
 const CORRECTION_REMINDER_TEXT = [
   '<correction-detected>',
   'The user is correcting a substantive claim from your previous response.',
-  'Per AGENTS.md Pre-response checklist item 11: a user correction is an',
+  'Per AGENTS.md rule CKB: a user correction is an',
   'approach-change moment, not a small patch. The blind spot that produced',
   'the original claim is still active for the revision.',
   '',
   'Before your next substantive response, re-check the claim against primary',
   'sources, local files, logs, or command output. Do not run a same-session',
   'self-review or write an `Advisor pass: ...` line; self-review is not',
-  'independent evidence. See `docs/agent-self-review.md`.',
+  'independent evidence. See `docs/agents/self-review.md`.',
   '</correction-detected>',
 ]
   .join('\n',);
