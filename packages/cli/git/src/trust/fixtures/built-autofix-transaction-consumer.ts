@@ -7,7 +7,9 @@ import {
   readFile,
   writeFile,
 } from 'node:fs/promises';
+import { writeAutofixConfig, } from './built-autofix-config.ts';
 import { execute, } from './built-consumer-helpers.ts';
+import { verifyAutofixFailures, } from './built-autofix-failure-consumer.ts';
 import {
   assertFixtureEqual,
   initializePostCommitRepository,
@@ -57,59 +59,7 @@ export async function verifyAutofixTransactionConsumer({ env, }: Readonly<{
    */
   const repository = '/work/autofix-transaction';
   await initializePostCommitRepository(repository,);
-  /**
-   * Trusted policy that canonicalizes selected fixture content.
-   */
-  const configPath = `${repository}/cli-git.config.mjs`;
-  await writeFile(
-    configPath,
-    `export default {
-  plugins: {
-    fixture: {
-      name: 'fixture',
-      policies: [{
-        name: 'canonical',
-        defaultSeverity: 'error',
-        warnSafe: false,
-        triggers: ['pre-forward'],
-        check: async ({ context }) => {
-          const candidates = await context.git.candidates();
-          const candidate = candidates.find(({ path }) => path === 'selected.txt');
-          if (candidate === undefined) return [];
-          const value = new TextDecoder().decode(await candidate.bytes());
-          if (value === 'good\\n') return [];
-          if (typeof candidate.revision === 'symbol') throw new Error('fixture needs tracked candidate');
-          const oldLines = value.endsWith('\\n')
-            ? value.slice(0, -1).split('\\n')
-            : value.split('\\n');
-          const patch = [
-            'diff --git a/selected.txt b/selected.txt',
-            'index ' + candidate.revision + '..0000000000000000000000000000000000000000 100644',
-            '--- a/selected.txt',
-            '+++ b/selected.txt',
-            '@@ -1,' + oldLines.length + ' +1 @@',
-            ...oldLines.map((line) => '-' + line),
-            '+good',
-            '',
-          ].join('\\n');
-          return [{
-            code: 'noncanonical',
-            message: 'selected content is not canonical',
-            path: candidate.path,
-            patch: {
-              kind: 'git-unified',
-              targetId: candidate.targetId,
-              path: candidate.path,
-              bytes: new TextEncoder().encode(patch),
-            },
-          }];
-        },
-      }],
-    },
-  },
-};
-`,
-  );
+  await writeAutofixConfig(repository,);
   await writeFile(
     `${repository}/selected.txt`,
     'base\n',
@@ -118,6 +68,10 @@ export async function verifyAutofixTransactionConsumer({ env, }: Readonly<{
     `${repository}/unrelated.txt`,
     'base unrelated\n',
   );
+  await writeFile(
+    `${repository}/companion.txt`,
+    'good companion\n',
+  );
   await execute({
     command: '/usr/bin/git',
     args: [
@@ -125,6 +79,7 @@ export async function verifyAutofixTransactionConsumer({ env, }: Readonly<{
       'cli-git.config.mjs',
       'selected.txt',
       'unrelated.txt',
+      'companion.txt',
     ],
     cwd: repository,
   },);
@@ -251,5 +206,64 @@ export async function verifyAutofixTransactionConsumer({ env, }: Readonly<{
     ),
     expected: 'bad\nTAIL\n',
     context: 'index worktree tail',
+  },);
+
+  /**
+   * Non-overlapping patches on distinct candidates compose in one private index.
+   */
+  await writeFile(
+    `${repository}/selected.txt`,
+    'bad\n',
+  );
+  await writeFile(
+    `${repository}/companion.txt`,
+    'bad companion\n',
+  );
+  await writeFile(
+    `${repository}/marker.txt`,
+    'composed marker\n',
+  );
+  await execute({
+    command: '/usr/bin/git',
+    args: [
+      'add',
+      'selected.txt',
+      'companion.txt',
+      'marker.txt',
+    ],
+    cwd: repository,
+  },);
+  await execute({
+    command: 'git',
+    args: [
+      'commit',
+      '--no-only',
+      '--quiet',
+      '-m',
+      'composed autofix',
+    ],
+    cwd: repository,
+    env,
+  },);
+  assertFixtureEqual({
+    actual: await readGitText({
+      repository,
+      revision: 'HEAD:selected.txt',
+    },),
+    expected: 'good\n',
+    context: 'composed selected blob',
+  },);
+  assertFixtureEqual({
+    actual: await readGitText({
+      repository,
+      revision: 'HEAD:companion.txt',
+    },),
+    expected: 'good companion\n',
+    context: 'composed companion blob',
+  },);
+
+  await verifyAutofixFailures({
+    repository,
+    env,
   },);
 }
