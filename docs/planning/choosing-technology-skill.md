@@ -3,7 +3,11 @@
 Status:
 draft under grill-me review.
 Decisions 1 through 8 are resolved.
-The plan awaits final shared-understanding confirmation and independent audit.
+Default weights,
+promotion thresholds,
+score-based exits,
+SaaS soft-risk applicability,
+and vet-report timing remain open after independent review.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -528,7 +532,12 @@ evidence failures,
 SaaS layers,
 weighted scoring,
 full validation,
-and worked-example strategy.
+worked-example strategy,
+default weights,
+promotion thresholds,
+score-based exits,
+SaaS soft-risk applicability,
+and vet-report timing.
 
 Update this plan after each answer.
 Do not edit the skill during grilling.
@@ -1211,3 +1220,33 @@ and lifecycle transitions.
 Ranking:
 synthetic inline example beats a real canonical vet because the user prioritizes one-file authority and timeless coverage.
 A real canonical vet beats output-contract-only because an executed artifact still teaches the workflow better than a schema alone.
+
+### Decision 9: default scoring weights
+
+Open after Decision 8.
+Decide how weights are assigned when requirements establish no preference among relevance-gated criteria:
+equal defaults with sensitivity-triggered questions,
+an explicit user question for every weight,
+or fixed category presets.
+
+### Decision 10: promotion threshold
+
+Open after Decision 9.
+Define the evidence required to promote a discovered candidate to serious alternative and a serious alternative to finalist.
+
+### Decision 11: score-based candidate exits
+
+Open after Decision 10.
+Decide whether a hard-gate-passing candidate may exit before finalist validation from a preliminary score gap,
+and what confidence or sensitivity margin is required.
+
+### Decision 12: SaaS soft-risk applicability
+
+Open after Decision 11.
+Decide whether retained SaaS soft-risk domains are presumed relevant until excluded or activated only by a stated workload concern.
+
+### Decision 13: vet-report timing and reuse
+
+Open after Decision 12.
+Decide whether a substantial recommendation waits for its vet report to be written in the same task,
+and whether an existing current report is updated instead of creating a dated duplicate.
