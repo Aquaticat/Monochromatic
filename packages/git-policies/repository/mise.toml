@@ -30,3 +30,11 @@ extends = "lint:types"
 
 [tasks."test:unit"]
 extends = "test:unit"
+
+[tasks.'pack:npm']
+description = "Build and create the private repository-policy fixture tarball"
+depends = ["build"]
+run = [
+  "node -e \"const { mkdirSync } = await import('node:fs'); mkdirSync('dist/pack', { recursive: true })\"",
+  "pnpm pack --pack-destination dist/pack",
+]
