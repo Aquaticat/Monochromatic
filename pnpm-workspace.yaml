@@ -391,5 +391,3 @@ supportedArchitectures:
     - linux
     - current
 trustPolicy: no-downgrade
-patchedDependencies:
-  '@earendil-works/pi-coding-agent@0.80.6': patches/@earendil-works__pi-coding-agent@0.80.6.patch
