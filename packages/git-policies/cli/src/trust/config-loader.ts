@@ -3,15 +3,22 @@
  *
  * @module
  */
-import { randomUUID, } from 'node:crypto';
-import { join, } from 'node:path';
-import { pathToFileURL, } from 'node:url';
+import { createRequire, } from 'node:module';
+import {
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
+import {
+  dirname,
+  join,
+} from 'node:path';
 import {
   validateConfig,
   type ValidatedConfig,
 } from './config-validation.ts';
 import { captureTrustSource, } from './candidate.ts';
 import { validateMjs, } from './mjs-validator.ts';
+import { writePrivateFile, } from './registry-io.ts';
 import { readPrivateFile, } from './record-validation.ts';
 import type {
   LoadedTrustedConfig,
@@ -90,7 +97,55 @@ export function exactBytesEqual({
 }
 
 /**
- * Imports stored executable snapshot and validates default export.
+ * Disposable exact-byte ESM execution copy.
+ */
+type ExecutionCopy = Readonly<{
+  /** Unique MJS path used to avoid Node's immutable ESM cache. */
+  path: string;
+  /** Removes private execution directory. */
+  [Symbol.asyncDispose]: () => Promise<void>;
+}>;
+
+/**
+ * Writes verified bytes to one unique private ESM path.
+ *
+ * Node's synchronous ESM loader caches by canonical path and cannot evict an
+ * ESM namespace through `require.cache`. A unique exact-byte copy preserves
+ * relaxed rebuild behavior without importing by a computed specifier.
+ *
+ * @param executablePath - private stored snapshot path
+ *
+ * @param bytes - already validated exact executable bytes
+ *
+ * @returns disposable unique execution copy
+ *
+ * @example
+ * ```ts
+ * await using copy = await createExecutionCopy({ executablePath, bytes });
+ * ```
+ */
+async function createExecutionCopy({
+  executablePath,
+  bytes,
+}: Readonly<{
+  executablePath: string;
+  bytes: Uint8Array;
+}>,): Promise<ExecutionCopy> {
+  /** Private uniquely named directory beside trusted snapshot. */
+  const directory = await mkdtemp(join(dirname(executablePath,), '.execute-',),);
+  /** Stable filename inside unique directory retains ESM format classification. */
+  const path = join(directory, 'config.mjs',);
+  await writePrivateFile({ path, bytes, },);
+  return {
+    path,
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(directory, { recursive: true, force: true, },);
+    },
+  };
+}
+
+/**
+ * Loads stored executable snapshot and validates default export.
  *
  * @param executablePath - private stored MJS path
  *
@@ -110,25 +165,19 @@ export async function executeStoredConfig(executablePath: string,): Promise<Vali
     bytes: executableBytes,
     sourceName: executablePath,
   },);
+  /** Unique exact-byte path prevents stale ESM cache reuse after relaxed rebuilds. */
+  await using executionCopy = await createExecutionCopy({
+    executablePath,
+    bytes: executableBytes,
+  },);
+  /** Synchronous Node ESM loader rooted at private execution copy. */
+  const require = createRequire(executionCopy.path,);
   /**
-   * Cache-busting private stored executable URL.
+   * Loaded module namespace from exact private snapshot copy only.
    */
-  const executableUrl = pathToFileURL(executablePath,);
-  executableUrl.searchParams
-    .set(
-      'cli-git-load',
-      randomUUID(),
-    );
-  /**
-   * Imported module namespace from private snapshot only.
-   */
-  const imported: unknown = await (async function importStoredSnapshot() {
+  const imported: unknown = (function requireStoredSnapshot() {
     try {
-      /**
-       * Dynamic import result narrowed to unknown boundary.
-       */
-      const importedModule: unknown = await import(executableUrl.href,);
-      return importedModule;
+      return require(executionCopy.path,);
     }
     catch (error: unknown) {
       throw new TrustedConfigError(
