@@ -3,7 +3,7 @@
 ## Audit metadata
 
 - Status: in progress
-- Lifecycle phase: context measured; rubric freeze pending
+- Lifecycle phase: rubric and initial discovery schedule frozen
 - Subject: `pi-dynamic-workflows` replacement for `@narumitw/pi-subagents`
 - Scope: evaluate whether `@quintinshaw/pi-dynamic-workflows` is safe and suitable to replace the installed
   `@narumitw/pi-subagents` Pi extension.
@@ -118,12 +118,105 @@ implementation can be recommended unless every ready-to-use technology fails a n
 
 ## Frozen criteria and weights
 
-Pending context completion and rubric freeze. Candidate-specific soft evidence will not be rated before this section is
-frozen.
+Hard gates remain outside arithmetic. Every surviving finalist receives each criterion at equal depth.
+
+- Human auditability and attack-surface concentration, weight `5`: the prior audit explicitly prioritizes clarity and
+  human auditability over feature breadth. Measure source lines and files, runtime and same-author dependencies, control
+  flow, state and event boundaries, generated code, and where filesystem, process, network, and credentials concentrate.
+- Incumbent-path parity, weight `1`: compare single, parallel, sequential, aggregation, custom agent, custom timeout,
+  tool-capability, result-delivery, and operator-control paths actually exposed by the installed incumbent.
+- Failure handling and lifecycle reliability, weight `1`: inspect timeout, cancellation, descendant cleanup, retry,
+  malformed-event, persistence, resume, and concurrent-run behavior.
+- Test and validation strength, weight `1`: inspect unit, integration, end-to-end, property, fuzz, mutation, platform,
+  coverage, and required CI evidence, then reproduce relevant suites.
+- Maintenance and release discipline, weight `1`: measure recent issue and pull-request handling, maintainer-authored work,
+  release latency, version alignment, release provenance, and maintainer concentration.
+- Resource and cost governance, weight `1`: inspect concurrency, agent-count, token, timeout, process, filesystem, and
+  background-run bounds. Unused breadth receives no credit.
+- Operator ergonomics beyond hard gates, weight `1`: compare transcript navigation, status detail, error diagnosis,
+  steering, persistence visibility, and configuration clarity after the mandatory observability and interruption gates
+  pass.
+- Migration and reversibility, weight `1`: compare configuration change, agent-definition compatibility, stored state,
+  coexistence conflicts, rollback, and whether replacing one tool changes the parent model's orchestration contract.
+
+Each rating uses `0` through `4` and records high, medium, or low confidence. Unspecified priorities retain weight `1`.
+The only elevated weight comes from the settled auditability preference. Candidate-specific evidence cannot change these
+weights.
+
+Maximum baseline score for every finalist is:
+
+```text
+(5 + 1 + 1 + 1 + 1 + 1 + 1 + 1) * 4 = 48
+```
 
 ## Query schedule and discovery ledger
 
-Pending literal schedule freeze and source-class saturation.
+### Initial frozen schedule
+
+No candidate-specific rating was assigned before this schedule was recorded.
+
+#### npm registry
+
+For each literal query, request results ordered by npm search quality from offset `0` in complete pages of `100`, then
+continue until the registry is exhausted or two consecutive complete pages add no screening survivor:
+
+- `pi subagent`
+- `pi subagents`
+- `pi dynamic workflows`
+- `pi workflow orchestration`
+- `@narumitw/pi-subagents alternative`
+- `pi coding agent multi agent`
+
+Record package name, version, repository URL, publisher, date, keywords, and screening status. A package without a mapped
+public source repository fails the inspectability gate.
+
+#### GitHub repositories, topics, code, and releases
+
+For each literal repository query, order by `updated` descending with `100` results per page. Continue until exhaustion or
+two consecutive complete pages add no screening survivor:
+
+- `pi-coding-agent subagent in:name,description,readme`
+- `pi-coding-agent subagents in:name,description,readme`
+- `pi dynamic workflows in:name,description,readme`
+- `pi workflow orchestration agents in:name,description,readme`
+- `narumitw pi-subagents alternative in:name,description,readme`
+- `topic:pi-package subagents`
+
+For candidates discovered from repositories, inspect repository topics, package manifests, releases, organization
+projects, and code references before screening promotion.
+
+#### Broader web
+
+Run each literal query through the configured Exa search with Linkup fallback. These providers expose a finite result set
+rather than a page cursor in this harness, so record the returned count and complete the schedule at that result set:
+
+- `Pi coding agent subagent extension`
+- `Pi coding agent dynamic workflow extension`
+- `Pi dynamic workflows alternative`
+- `@narumitw/pi-subagents alternative`
+- `Pi multi-agent orchestration extension npm GitHub`
+- `Pi code mode subagents`
+
+#### This repository and installed system
+
+Run and record these literal local searches without result caps or negative-match filters beyond excluding dependency and
+Git metadata where stated:
+
+- fixed string `@narumitw/pi-subagents` across the repository;
+- terms `pi-subagents`, `dynamic-workflows`, and `subagent` across `.agents`, `.pi`, `docs`, and manifests;
+- candidate reports under `docs/audit/`;
+- relevant decisions under `docs/decisions/`;
+- parallel orchestration implementations under `packages/pi-plugins/`;
+- installed package manifests and lock entries under `/var/home/user/.pi/agent/npm/`.
+
+### Expansion round
+
+Pending collection of new taxonomy terms from the initial schedule. One de-duplicated expansion round will be appended,
+then the schedule will remain frozen even if later evidence introduces more terms.
+
+### Discovery status
+
+Pending execution and saturation.
 
 ## Evidence records
 
