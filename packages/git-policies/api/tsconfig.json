@@ -1,12 +1,3 @@
 {
-  "extends": "@monochromatic-dev/config-typescript",
-  "compilerOptions": {
-    "rootDir": ".",
-    "outDir": "dist/final/types",
-    "tsBuildInfoFile": "dist/final/types/tsconfig.tsbuildinfo"
-  },
-  "include": [
-    "src/**/*.ts",
-    "tsdown.node.config.ts"
-  ]
+  "extends": "@monochromatic-dev/config-typescript/dom"
 }
