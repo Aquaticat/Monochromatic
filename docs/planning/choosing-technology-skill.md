@@ -2,8 +2,7 @@
 
 Status:
 draft under grill-me review.
-Decision 1 is resolved;
-file organization,
+Decisions 1 and 2 are resolved;
 artifact policy,
 unknown evidence,
 and full-validation scope remain open.
@@ -307,8 +306,11 @@ Future technology audit and decision artifacts should record the skill revision 
 
 ## Proposed target design
 
-The exact file split remains open for grilling.
-The logical architecture should be stable regardless of file placement.
+Keep one comprehensive `.agents/skills/choosing-technology/SKILL.md` as the complete authority.
+Do not distribute the governing workflow or category gates across reference files.
+The file may remain long when operational detail earns its place,
+matching the troubleshooting-doc benchmark.
+Use named lifecycle phases and gates inside that file so each rule has one authoritative location.
 
 ### Entry contract
 
@@ -416,7 +418,6 @@ It never silently becomes a pass.
 Use grill-me to settle:
 
 - exhaustive-by-relevance versus always-exhaustive or user-budgeted depth;
-- one-file versus routed reference structure;
 - durable artifact policy for evaluations before adoption;
 - treatment of unknown vendor evidence;
 - exact definition of full relevant validation.
@@ -461,17 +462,22 @@ Do not edit the skill during grilling.
 - Key the final checklist to named workflow gates.
 - Require generated audit artifacts to record the skill revision.
 
-### Phase 5: organize for reliable loading
+### Phase 5: organize one authoritative skill
 
-- Apply the grilled file-organization decision.
-- Keep links one level deep if references are used.
+- Keep the workflow,
+  category gates,
+  examples,
+  and completion contract in one `SKILL.md`.
+- Use named lifecycle phases and gate identifiers to make internal references exact.
 - Ensure the description covers selection,
   evaluation,
   replacement,
   vendor vetting,
   and safety review triggers.
-- Keep each rule authoritative in one place.
-- Preserve troubleshooting-doc-level detail where execution depends on it.
+- Keep each rule authoritative in one place and point the final checklist to those rule names.
+- Remove duplicated restatements that can drift while preserving troubleshooting-doc-level detail where execution depends on it.
+- Accept that this exceeds the generic skill-authoring guide's suggested size;
+  the user chose single-file coherence over progressive disclosure for this high-stakes workflow.
 
 ### Phase 6: verify with scenario fixtures
 
@@ -584,10 +590,39 @@ Always exhaustive beats user-budgeted tiers because a skill-level quality floor 
 
 ### Decision 2: file organization
 
-Open after Decision 1.
-Choose between one authoritative file,
-a short router with detailed one-level references,
-or a hybrid with the invariant workflow in `SKILL.md` and category playbooks in references.
+Decision:
+keep one comprehensive `SKILL.md`.
+The user selected this on 2026-07-09 and rejected the premise that contradictions become easier to isolate across more files.
+
+Pros:
+
+- one file remains the complete authority;
+- agents cannot skip a category procedure because they failed to follow a reference;
+- cross-category invariants and category-specific gates can be compared in one search;
+- matches the successful troubleshooting-doc shape;
+- generated mirrors copy one artifact.
+
+Cons:
+
+- every technology-selection task loads detail for categories that may not apply;
+- disciplined headings,
+  named gates,
+  and deduplication are necessary to keep the file navigable;
+- the result will exceed the generic skill-authoring guide's suggested length.
+
+Rejected alternative:
+hybrid core plus references.
+It would reduce irrelevant loaded detail,
+but introduces cross-file authority and makes contradiction checks span several documents.
+
+Rejected alternative:
+thin router plus references.
+It minimizes initial context,
+but fragments the governing contract and makes skipped references a correctness risk.
+
+Ranking:
+single comprehensive file beats hybrid because one authority makes whole-contract review and contradiction search direct.
+Hybrid beats a thin router because it would at least keep invariant workflow and completion gates in the loaded skill.
 
 ### Decision 3: pre-adoption artifact
 
