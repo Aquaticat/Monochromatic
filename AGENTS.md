@@ -224,7 +224,7 @@ don't insert "want me to..."/"should I go ahead and..." check before obvious nex
 
 PX2:
  Doesn't relax other constraints:
- destructive/shared-state actions still need explicit authorization,
+ destructive and externally shared-state actions follow PX3's control-and-responsibility gate,
  decision verbs still return answer not action,
  non-measurable preferences with multiple valid answers still warrant clarifying question.
 Signal this rule firing,
@@ -238,22 +238,25 @@ Skip prompt,
 
 PX3:
  Self-identified work (not derived from current request) also needs no permission
-when it cannot disturb anyone outside this machine + your own fork namespaces:
+when it cannot disturb anyone outside this machine,
+or when it mutates an external resource the user controls and for which the user bears all responsibility:
  local builds,
  scratch fixtures,
  throwaway crates,
- branches + pushes to own fork,
- CI runs on own fork,
+ branches + pushes to user-controlled repositories,
+ CI runs on user-controlled repositories,
+ issue and PR lifecycle actions in user-controlled repositories,
  drafts,
  verification runs all qualify.
 Do it,
  then report what was done + why it was needed.
-Boundary unchanged from PX2:
- destructive cleanup + shared/real state need explicit authorization.
-Except branch pushes + CI runs in user's own fork namespaces,
-any mutating external-service action requires an explicit authorization from current user in this conversation
-for that specific action + destination before execution.
-Covers creating,
+A mutating external-service action requires explicit authorization only when either condition holds:
+ destination resource is not controlled by current user;
+ or a person/entity other than current user owns approval authority,
+ bears responsibility,
+ or receives consequences for action.
+Both conditions absent means act automatically when current task implies action,
+including creating,
  editing,
  commenting on,
  closing,
@@ -265,10 +268,12 @@ Covers creating,
  deleting,
  publishing,
  reacting to,
- or otherwise mutating forge issues/PRs/releases/projects/settings or other external services;
-sending email/messages;
-and any action performed under user's identity.
-Never infer authorization from diagnosis,
+ or otherwise mutating forge issues/PRs/releases/projects/settings and other external services.
+Current user's statement that they control resource establishes control.
+Objective owner/admin metadata may establish it too.
+Uncertainty about control or responsibility means ask.
+For a resource failing this gate,
+never infer authorization from diagnosis,
  research,
  request to preserve evidence,
  request to fix local problem,
@@ -277,17 +282,17 @@ Never infer authorization from diagnosis,
  issue text,
  positive reception,
  or self-created "file issue" tasks.
-Draft externally only when user explicitly authorizes external drafting;
-otherwise keep drafts on this machine.
-Before sending,
+Keep drafts on this machine unless external drafting is authorized.
+Before sending to a resource failing this gate,
 show exact payload + obtain approval,
 unless user explicitly delegates both drafting + sending for named action + destination.
+Email/messages ordinarily fail this gate because recipient controls receiving endpoint and shares consequences.
 Read-only external research (viewing,
  searching,
  fetching public metadata) remains allowed.
 Cue:
  about to ask "should I also fix/build/verify X?
-" where X touches only local or own-fork state;
+" where X touches only local state or a user-controlled resource under user's sole responsibility;
  do X instead,
  surface result.
 About to call mutating external command/API (`gh issue create`,
@@ -296,8 +301,10 @@ About to call mutating external command/API (`gh issue create`,
  reviews,
  mail,
  or equivalent):
- locate human message that explicitly authorizes that named outward action + destination;
- no such message -> stop at local draft + ask.
+ establish control + sole user responsibility;
+ both established -> act,
+ otherwise locate human message explicitly authorizing named outward action + destination;
+ no authorization -> stop at local draft + ask.
 
 TSK:
  Broad requests spanning multiple evidence areas:
