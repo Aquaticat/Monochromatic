@@ -3,12 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #344 are complete and closed.
-Trust issue #345 is implemented and all local,
-packed-bin,
-Windows ACL,
-and final independent review gates pass.
-Issue closure and handover finalization are the remaining administrative steps.
+Issues #280 and #341 through #345 are complete and closed.
+Recursive trust issue #346 is the next unblocked implementation slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -920,6 +916,7 @@ Unless later grilling changes them:
 - Final independent closure review found no remaining actionable repo-controlled correctness or security blocker.
   Privileged non-Linux mount-swap concerns are outside the checked-out-repository threat model and are documented by
   the guarded path-based identity behavior.
+- Issue #345 was closed after all acceptance criteria and evidence gates passed.
 - Recursive trust remains #346;
   TypeScript trust remains #347;
   actual npm publication remains deferred in #358.
@@ -993,12 +990,11 @@ Dependency-ordered implementation slices:
   completed:
   ran `require-root` through the packaged JSONL engine with Optique management commands and built consumer evidence.
 - [#345](https://github.com/Aquaticat/Monochromatic/issues/345),
-  implementation complete with closure pending:
-  trust and execute one stored MJS plugin snapshot;
-  local,
+  completed:
+  trusted and executed one stored MJS plugin snapshot with local,
   packed-bin,
   Windows ACL,
-  and final independent review gates pass.
+  and final independent review evidence.
 - [#346](https://github.com/Aquaticat/Monochromatic/issues/346):
   add recursive snapshot trust and cascading revocation.
 - [#347](https://github.com/Aquaticat/Monochromatic/issues/347):
