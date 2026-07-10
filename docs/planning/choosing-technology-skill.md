@@ -4,8 +4,10 @@ Status:
 plan complete and grilled.
 All 13 decisions are resolved;
 the user confirmed shared understanding on 2026-07-09.
-Independent audit remains before final delivery.
-No skill changes are authorized by this plan.
+Independent audit findings are incorporated;
+final re-audit remains before delivery.
+This document specifies future implementation but does not authorize skill or policy changes without
+a separate action request.
 
 ## Goal
 
@@ -81,7 +83,10 @@ Maintenance evidence:
 - the initial no-index diff showed the mirrors lacked the external-code-execution gate;
 - commit-time file-enforcer execution later synchronized all three copies to SHA-256
   `31c4169de3f538426b7a5942457e51a4a4856324ac6658a315fed0df7b717ca8`;
-- no read-only mirror verification task currently detects a later mismatch before generation repairs it;
+- no read-only mirror verification task currently detects a later mismatch before generation or
+  manual synchronization repairs it;
+- the user explicitly permitted manual byte-for-byte synchronization from `.agents/skills/` into
+  both mirror directories on 2026-07-09;
 - `git log --follow` shows the skill accumulated several independent policy additions after its initial extraction from
   `AGENTS.md`.
 
@@ -330,9 +335,10 @@ The final checklist should reference the same phase and gate names rather than r
 
 ### Medium: mirror freshness is not verified
 
-`file-enforcer.config.ts` is the canonical mirror mechanism,
-but the generated copies currently lag the canonical skill.
-The implementation plan must regenerate them and add a verification path that fails when generated skill mirrors drift.
+`file-enforcer.config.ts` is the canonical mirror mechanism.
+The generated copies lagged during the initial review and are synchronized now,
+but no read-only verification path detects future drift before regeneration.
+The implementation plan must add that verification path.
 Generated mirrors must not become independently edited sources.
 
 ### Medium: historical artifacts cannot identify the governing skill revision
@@ -423,7 +429,7 @@ The final checklist should point to these invariant names instead of paraphrasin
 
 ### Base categories and overlays
 
-Classify each adopted component into exactly one base category:
+Classify each candidate component under evaluation into exactly one base category:
 
 - managed service or SaaS;
 - inspectable open-source local technology,
@@ -488,11 +494,23 @@ For each decision:
    base category,
    overlays,
    and cheap hard-gate result in the ledger.
-6. Vary search terms by problem class,
+6. Log each literal query,
+   provider or registry,
+   include and exclude filters,
+   sort order,
+   page or cursor,
+   result count,
+   and newly discovered survivors.
+7. For paginated sources,
+   continue until two consecutive complete pages add no plausible hard-gate survivor or
+   the provider reports exhaustion;
+   record any provider cap that prevents exhaustion.
+8. Vary literal search terms by problem class,
    protocol,
    deployment model,
    and ecosystem until two consecutive query variants in each still-promising source class add no
    plausible hard-gate survivor.
+9. Record an explicit saturated-no-survivor result when every candidate fails cheap hard gates.
 
 Do not make npm and GitHub the universal discovery sources;
 use category-appropriate registries and source hosts.
@@ -538,6 +556,7 @@ and recommendation claim must carry one evidence record containing:
   and sensitivity range for scored evidence;
 - pass,
   fail,
+  scored-concern,
   not-applicable,
   low-signal,
   or excluded status with reason.
@@ -587,7 +606,11 @@ Every rating cites its evidence and records high,
 medium,
 or low confidence.
 A low-signal rating records an evidence-supported minimum and maximum rating rather than an invented exact value.
-Calculate minimum and maximum weighted totals from those ranges.
+Use the arithmetic midpoint as the provisional rating,
+which may be a half step,
+and calculate aggregate minimum and maximum weighted totals from all ranges.
+The provisional midpoint is not a confidence claim;
+it exists only to produce the baseline score tested by sensitivity.
 
 Normalized score equals earned weighted points divided by maximum applicable weighted points,
 multiplied by 100.
@@ -605,9 +628,11 @@ Sensitivity is deterministic:
   one input at a time;
 - test the complete minimum and maximum range for every low-signal rating.
 
-If a tested change alters the winner or adjacent order,
+If any one-at-a-time endpoint or rating change alters the winner or adjacent order,
 gather decisive evidence or ask only the preference that controls that input,
 then refreeze and rerun the calculation.
+Rank by the provisional midpoint score only after every defined one-at-a-time test preserves the order.
+Publish the aggregate range even when simultaneous endpoint changes fall outside the settled stability claim.
 If exact scores remain tied,
 or no soft criteria apply and factual tradeoffs do not determine order,
 ask for the unresolved user preference rather than inventing a tiebreaker.
@@ -634,7 +659,12 @@ Use this sequence:
 7. Promote plausible hard-gate survivors to serious alternatives.
 8. As soon as the substantial threshold is crossed,
    create or reopen the matching vet report before further evidence work;
-   update and commit the scoped report after every major phase.
+   if saturation produced no survivor,
+   create the report with a snapshot of completed context,
+   discovery,
+   and hard-gate screening,
+   then finish the terminal result;
+   otherwise update and commit the scoped report after every major phase.
 9. Run targeted category and overlay evidence checks that confirm every hard gate and provenance claim.
 10. Promote every confirmed hard-gate survivor to finalist.
 11. Create and approve an execution manifest before each third-party command tree.
@@ -737,9 +767,23 @@ The skill must define explicit terminal behavior:
 
 A vet report uses `docs/audit/<subject>-vet-YYYY-MM-DD.md`,
 with a stable kebab-case subject and the date the audit began.
-Update the newest compatible report.
+Build a compatibility fingerprint from canonical sorted values for decision scope,
+hard constraints,
+deployment,
+trust boundary,
+incumbent,
+base categories,
+and overlays.
+Store the full SHA-256 fingerprint in report metadata.
+
+Search every matching subject report.
+A report is compatible only when its full fingerprint matches.
+If several compatible reports exist,
+select the greatest `last-updated` date;
+break a remaining tie by lexicographically smallest repo-relative path and record the duplicates.
 When same-day contexts are incompatible,
-append a short kebab-case context qualifier rather than overwriting.
+append the first eight fingerprint characters as the context qualifier.
+This makes selection and collisions deterministic without interpreting prose titles.
 
 The report begins with:
 
@@ -754,6 +798,7 @@ The report begins with:
   criteria,
   frozen weights,
   and unresolved preferences;
+- full compatibility fingerprint;
 - compatible prior-report path or reason a new report was required;
 - active audit owner and concurrent-edit check.
 
@@ -963,12 +1008,11 @@ SaaS soft-risk applicability,
 and vet-report timing.
 Decisions 1 through 13 are the implementation contract.
 
-The next authorized implementation action is Phase 2.
+After a separate action request authorizes implementation,
+Phase 2 is the next action.
 Do not restart grilling unless implementation evidence exposes a new non-measurable preference fork.
 
-### Phase 2: establish authority,
-lifecycle,
-and routing
+### Phase 2: establish authority, lifecycle, and routing
 
 - Merge the narrow choosing-technology vet-report exception into `AGENTS.md` rules `VRB` and `IWT`.
 - Regenerate `CLAUDE.md` through file-enforcer rather than editing it.
@@ -989,7 +1033,7 @@ and routing
 - Replace `skip none` with `skip no applicable gate`.
 - Define pass,
   hard failure,
-  scored risk,
+  scored-concern,
   low-signal,
   excluded,
   and not-applicable outcomes.
@@ -1011,7 +1055,7 @@ and routing
   and relevant output.
 - Add the deterministic scoring contract with decision-level applicability,
   precommitted context-derived weights,
-  0-to-4 ratings,
+  0 to 4 ratings,
   low-signal ranges,
   raw and normalized totals,
   one-decimal display,
@@ -1061,9 +1105,7 @@ and routing
   macOS arm64,
   and Windows x64 machines for relevant platform claims.
 
-### Phase 4: align reports,
-output,
-and examples
+### Phase 4: align reports, output, and examples
 
 - Add the exact vet-report slug,
   metadata,
@@ -1086,11 +1128,15 @@ and examples
   and complete it before recommendation.
 - Create a new dated report only when merging materially incompatible decision context would obscure
   the evidence trail.
-- Define the substantial threshold as any evaluation that promotes a serious alternative and uses external source,
+- Define the substantial threshold as either:
+  promotion of a serious alternative using external source,
   vendor,
   maintenance,
   clone,
-  or execution evidence.
+  or execution evidence;
+  or completed external discovery and hard-gate screening that leaves no serious alternative.
+- When the no-survivor branch crosses the threshold,
+  create the report with a snapshot of already completed phases and finish its terminal result.
 - Treat the vet report as permitted process documentation,
   not authorization to adopt a dependency or service.
 - Require pros,
@@ -1163,12 +1209,26 @@ Each fixture contains:
 - assertion results and reviewer verdict.
 
 Run each fixture in a fresh agent session rooted in its own disposable linked worktree.
+The implementation session drives the fixture with `subagent` single mode,
+pins `cwd` to that worktree,
+sets a 10-minute process ceiling,
+and sends one self-contained task containing the exact prompt,
+evidence bundle,
+allowed report path,
+and network prohibition.
 Load the rewritten project skill,
 provide no prior conversation,
 and expose no ambient credentials or live third-party resources.
 Allow writes only to the fixture's expected vet report inside that worktree.
-Use a separate independent reviewer to compare the transcript and report with the expected assertions.
-A fixture passes only when both execution and review agree.
+
+Capture the returned session output verbatim in the validation artifact.
+Capture the scoped report diff with `/usr/bin/git -C <fixture-worktree> diff -- <report-path>` and record
+all other changed paths as assertion failures.
+Then run a separate read-only reviewer subagent with the transcript,
+report diff,
+and expected assertions.
+The reviewer emits one result per assertion plus a final PASS or FAIL.
+A fixture passes only when the execution assertions and independent reviewer both pass.
 
 Cover at least these cases:
 
@@ -1184,6 +1244,10 @@ Cover at least these cases:
 - proprietary local tool passing only through the explicit open-source exception;
 - license hard failure;
 - security hard failure;
+- multi-platform and browser-baseline overlays routing to Linux x64,
+  macOS arm64,
+  Windows x64,
+  and relevant browser validation;
 - tiny repository with no tracker activity remaining low-signal while other maintenance evidence is scored;
 - every hard-gate survivor receiving equal-depth finalist validation despite weak preliminary soft evidence;
 - relevant upstream failure proven outside the claimed and consumed surface;
@@ -1215,17 +1279,40 @@ and results against this plan and the troubleshooting-doc benchmark.
 - Add a `verify:skill-mirrors` task with inline `node -e` logic.
 - Compare every canonical `.agents/skills/*/*.md` file byte-for-byte with both
   `.claude/skills/*/*.md` and `.factory/skills/*/*.md`.
-- Fail on a missing,
-  extra,
-  or content-mismatched mirror.
+- Fail when any canonical source lacks a destination counterpart or differs in content.
+- Ignore destination-only files because `.claude/skills/` and `.factory/skills/` also contain separately owned skills,
+  currently including `code-review` and `research-drafting`.
 - Sequence `prepare:pnpm:others:files` so file-enforcer generation is followed by `verify:skill-mirrors`.
-- Keep `file-enforcer.config.ts` and its `mirrorSkills` function as the only mirror writer.
-- Regenerate `mise.toml` and all mirrors through `mise run prepare:pnpm:others:files`.
+- Keep `file-enforcer.config.ts` and its `mirrorSkills` function as the normal mirror generator.
+- Permit manual byte-for-byte synchronization from `.agents/skills/` into either mirror directory when
+  immediate synchronization is useful;
+  never edit mirror content independently.
+- After either path,
+  run `mise run verify:skill-mirrors`.
+- Regenerate `mise.toml` through `mise run prepare:pnpm:others:files` when task source changes.
 - In a disposable worktree,
   verify a modified mirror fails `mise run verify:skill-mirrors`,
   then regenerate and verify the task passes.
-- Confirm `.claude/skills/` and `.factory/skills/` remain ignored outputs and
-  `.agents/skills/` remains the only edited skill source.
+- Confirm `.claude/skills/` and `.factory/skills/` remain ignored derived outputs and
+  `.agents/skills/` remains the only authoritative edited skill source.
+
+### Phase 8: run final checks
+
+- Run `mise run lint:markdown -- AGENTS.md`.
+- Run `mise run lint:markdown -- .agents/skills/choosing-technology/SKILL.md`.
+- Run `mise run lint:markdown -- docs/audit/choosing-technology-skill-validation.md`.
+- Run `mise run lint:markdown -- docs/planning/choosing-technology-skill.md`.
+- Run `mise run verify:skill-mirrors` before and after the mismatch fixture described in Phase 7.
+- Re-read the rewritten skill,
+  synthetic example,
+  validation artifact,
+  policy exception,
+  and final checklist end to end.
+- Use an independent reviewer to audit every plan requirement and all 13 grilled decisions.
+- Do not declare implementation complete while any fixture,
+  lint,
+  mirror check,
+  or independent review fails.
 
 ## Success criteria
 
@@ -1405,12 +1492,20 @@ automatically write a vet report for every substantial technology evaluation.
 The user selected this on 2026-07-09 to meet the troubleshooting-doc durable-artifact standard.
 
 The report lives at `docs/audit/<topic>-vet-<date>.md` and records the exact choosing-technology skill revision.
-The substantial threshold is crossed when an evaluation promotes at least one serious alternative and
-uses external source,
-vendor,
-maintenance,
-clone,
-or execution evidence.
+The substantial threshold is crossed when either:
+
+- an evaluation promotes at least one serious alternative using external source,
+  vendor,
+  maintenance,
+  clone,
+  or execution evidence;
+- external discovery and hard-gate screening reach saturation with no surviving serious alternative.
+
+The no-survivor branch creates the report with an initial snapshot of the context,
+discovery ledger,
+queries,
+and hard-gate exits,
+then finishes the terminal result.
 A response that only applies an existing decision record or answers a narrow factual question does not create
 a redundant vet report.
 
@@ -1617,12 +1712,12 @@ The user selected this on 2026-07-09.
 The scoring contract is:
 
 - hard gates are pass or fail and stay outside arithmetic;
-- decision-level criteria and 1-to-5 weights come from context and resolved preferences;
+- decision-level criteria and 1 to 5 weights come from context and resolved preferences;
 - criteria,
   applicability,
   and weights freeze before candidate-specific soft-risk results are rated;
 - every relevant criterion applies to every equally validated finalist;
-- each criterion receives a cited 0-to-4 rating with high,
+- each criterion receives a cited 0 to 4 rating with high,
   medium,
   or low confidence;
 - low-signal evidence receives an evidence-supported minimum and maximum rating;
@@ -1831,7 +1926,7 @@ The user selected this on 2026-07-09.
 Process:
 
 1. Give every decision-level soft criterion supported by an explicit requirement or preference its
-   precommitted 1-to-5 weight.
+   precommitted 1 to 5 weight.
 2. Give every remaining decision-level soft criterion equal weight 1.
 3. Rate and score every fully validated finalist with the frozen rubric.
 4. Raise each equal-default criterion from weight 1 through weight 5,
@@ -1858,7 +1953,7 @@ Cons:
 
 - equal weight is still a temporary assumption;
 - one-at-a-time sensitivity can miss interactions between several simultaneous preference changes;
-- testing the full 1-to-5 range may flag a preference fork the user considers implausible;
+- testing the full 1 to 5 range may flag a preference fork the user considers implausible;
 - rerunning weights adds arithmetic and report detail.
 
 Rejected alternative:
@@ -2049,15 +2144,19 @@ The user selected this on 2026-07-09.
 Lifecycle:
 
 1. Before creating a report,
-   search `docs/audit/` for the same decision subject.
-2. Reuse the current matching report when its hard constraints,
-   deployment context,
-   trust boundary,
-   incumbent,
-   and decision scope are compatible.
-3. As soon as the substantial-evaluation threshold from Decision 3 is crossed,
+   derive the canonical compatibility fingerprint and search `docs/audit/` for the same subject.
+2. Reuse only a report with the same full fingerprint;
+   if several match,
+   select greatest `last-updated` date and then lexicographically smallest repo-relative path.
+3. As soon as either substantial-evaluation threshold from Decision 3 is crossed,
    create or reopen that report.
-4. Update it after context,
+   If saturation leaves no survivor,
+   snapshot the already completed context,
+   discovery,
+   queries,
+   and hard-gate exits before finishing the terminal result.
+4. Otherwise,
+   update it after context,
    discovery,
    hard-gate screening,
    targeted evidence,
@@ -2066,8 +2165,9 @@ Lifecycle:
    and synthesis phases.
 5. Record the governing skill revision and each evidence date.
 6. Finish the report before returning the recommendation.
-7. Create a new dated report only when changed decision context is materially incompatible and merging would obscure
-   which evidence supports which constraints.
+7. Create a new dated report when no full fingerprint matches;
+   on a same-day collision,
+   append the first eight fingerprint characters.
 8. Link later adoption decisions to the vet report;
    do not turn the vet report itself into adoption authorization.
 
