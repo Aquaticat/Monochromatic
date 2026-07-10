@@ -1,734 +1,727 @@
-# cli-git pluggable git policies platform
+# cli-git pluggable Git policies platform
 
 ## Status
 
-Decided in design,
- not yet built.
-This session refined the decision through grilling and a round of external review,
-which surfaced gaps in config loading,
- trust,
- and the commit scan target;
- all are resolved below.
-Execution is deferred.
-Sequencing is platform-first:
- build the platform,
- migrate the existing checks onto it,
-then retire hk (and with it pkl) as the capstone.
+Accepted.
+Implementation is tracked by GitHub issues #342 through #357.
+The public package is prepared for npm distribution,
+but registry publication remains indefinitely deferred in #358.
+
+The canonical implementation interface is
+`packages/cli/git/SPEC.md`.
+The execution record is
+`docs/handover/cli-git-policies-platform.md`.
 
 ## Decision
 
-Make `packages/cli/git` a pluggable git policies platform modeled on oxlint.
-Git policy enforcement consolidates into `cli-git` as configurable,
- distributable policies,
-rather than living in separate hook-runner tooling.
-hk,
- the git hook runner,
- is deprecated as the final step,
- and pkl goes with it,
-because pkl exists in this repo only as hk's config language.
+Turn `packages/cli/git` into a pluggable Git policies platform modeled on Oxlint.
+Keep the existing shadowing `git` executable as the enforcement point.
+Expose configurable built-in and third-party policies,
+fixed command transforms,
+trusted repository configuration,
+direct check/fix management commands,
+and stable JSONL findings.
 
-The platform is meant for standalone use,
- including by people who do not use mise,
-so its install path,
- config format,
- and trust model cannot assume mise is present.
+Build the platform first,
+migrate the existing cli-git and hk behavior onto it,
+then retire hk and Pkl as the capstone.
+Pkl leaves with hk because this repository uses Pkl only for hk configuration.
 
-## Why oxlint as the model
+The platform must work without mise.
+Its package,
+configuration,
+trust registry,
+and management commands therefore cannot assume mise is installed.
 
-The platform framing overrides the repo's usual lean toward direct execution (AD3) and starting simple (XNC),
-so it has to earn that override,
- and it does.
-Git policy enforcement is linter-shaped:
- a growing set of independent rules,
- each with its own applicability,
-severity,
- and options,
- which is the case where a configurable platform beats a hardcoded list.
-External distribution supplies a real second consumer,
- which is what AD3 and XNC concede to;
-a platform with one consumer would be speculative,
- a platform other repos and non-mise users adopt is not.
+## Goals
 
-The repo already practices this model for linting,
- so the structure transfers rather than being invented:
-`oxlint.config.ts` is a TS config auto-discovered by convention,
- and `packages/oxlint-plugins/tsdoc` is a
-plugin published as `@monochromatic-dev/config-oxlint-tsdoc`.
-cli-git borrows the authoring ergonomics,
- not the runtime internals (see config loading below).
+- Preserve and make configurable the current Git safeguards.
+- Provide a small policy-authoring interface for repo-local and distributed plugins.
+- Keep ordinary real-Git stdout intact.
+- Fail closed when an enabled policy cannot complete.
+- Apply commit normalizers without staging unrelated worktree bytes.
+- Execute only explicitly trusted,
+  exact stored config artifacts.
+- Provide an npm-ready Node package and shadowing `git` bin.
+- Keep CI enforcement independent from local wrapper trust.
 
-## Why shadow git on PATH rather than git hooks
+## Non-goals
 
-`cli-git` enforces by shadowing the `git` binary on PATH,
- the mechanism it already uses for its current rules.
-This beats native git hooks (what hk drives today) on the two axes that matter.
+- Sandboxing trusted JavaScript.
+- Making PATH shadowing impossible to bypass.
+- Replacing CI as the authoritative enforcement layer.
+- Loading native plugins in the first release.
+- Shipping standalone native executables in the first release.
+- Publishing the package to npm as part of the active implementation sequence.
 
-- More capable.
-  A PATH wrapper intercepts and can rewrite any subcommand,
-   which is exactly what the transformer rules do
-  (atomic-push injects `--atomic`,
-   commit-only injects `-o`,
-   status-hints-off injects `-c advice.statusHints=false`).
-  Native hooks only observe and reject at fixed lifecycle points;
-   they cannot transform the command.
-- Lower friction.
-  PATH placement activates the wrapper with no separate install step,
-   where hk needs an `hk install` that
-  people forget,
-   so in practice the shim is the more reliably present gate.
+## Why a PATH wrapper
 
-The limitation is recorded honestly.
-A PATH shim fires only when the resolved `git` is the shim,
- so calling real git by absolute path,
- or running
-with the shim not first on PATH,
- or through an IDE or GUI that links libgit2,
- bypasses every policy.
-Native hooks have their own bypasses (`--no-verify`,
- and they do nothing until installed),
- so the two are
-different in shape,
- not strictly ordered:
- a PATH shim can be bypassed more often in IDE-heavy or scripted
-environments,
- less often where install is forgotten.
-Local enforcement is therefore treated as best-effort fast feedback,
- with CI as the authoritative gate.
+The wrapper already intercepts Git and can transform command arguments.
+That supports behavior that native hooks cannot express,
+including atomic push,
+commit-only,
+and status-hint transforms.
+PATH placement also avoids a separate hook installation step.
 
-Distribution follows from the standalone goal:
- mise bin linkage is the zero-config install for mise users,
-and non-mise users install the shim and place it ahead of real git on PATH themselves.
+The limitation is explicit:
+absolute real-Git paths,
+PATH order changes,
+GUI clients using libgit2,
+and other non-wrapper Git implementations bypass local policy enforcement.
+Native hooks have different bypasses,
+including `--no-verify` and missing installation.
+Local enforcement remains best-effort fast feedback;
+CI remains authoritative.
 
-## Policy surface and model
+## Policy module
 
-The surface is narrow on purpose.
-Policies are the configurable,
- toggleable,
- distributable lint surface,
- and only three kinds qualify:
-validators,
- which reject or pass a command;
-content scanners,
- which scan files and reject on a hit;
-and content normalizers,
- which check or canonically rewrite selected file content.
+A policy is one unified module.
+It may validate command facts,
+scan candidate bytes,
+and return canonicalizing patches in the same run.
+The earlier mutually exclusive validator,
+scanner,
+and normalizer kinds are rejected.
 
-The command transformers (atomic-push,
- commit-only,
- status-hints-off) and post-commit auto-push are not policies.
-They stay fixed core wrapper behavior,
- configured only by their existing per-invocation flags.
-A transform that always fires is just a transform,
- not an opt-in autofix,
- so dressing it as a policy buys no
-configurability anyone uses,
- and auto-push is a side-effecting backup that is hook-shaped,
- not rule-shaped.
-The cost is explicit:
- a transform cannot be toggled from config,
- only via its flag (for example `--no-atomic`).
+A policy declares:
 
-Every existing and migrated behavior classifies as one of:
+- a policy-local name;
+- a default severity;
+- whether `warn` is safe;
+- a Valibot option schema when it accepts options;
+- applicable lifecycle triggers;
+- one asynchronous check function.
 
-- Fixed core transformers:
-   atomic-push,
-   commit-only,
-   status-hints-off.
-- Fixed core side effect:
-   post-commit auto-push,
-   which additionally runs content-scan policies as a pre-push gate.
-- Built-in configurable policies (universal git safety,
-   shipped in cli-git core):
-   require-root,
-   add-explicit,
-  linked-worktree-only.
-- Plugin and repo-local policies (this repo configures them):
-   forbidden-strings,
-   wrapping the separately built,
-  SLSA-attested binary;
-   forbidden-root-context,
-   a small first-party validator for the repo's root-CONTEXT.
-  md rule;
-   and final-newline,
-   a content normalizer with exact-byte exclusions.
+A policy returns structured findings.
+A finding may be command-level,
+path-located,
+or fixable.
+A fixable finding carries unified Git patch bytes for exactly one located path.
+Expected policy violations are findings.
+Thrown exceptions,
+invalid options,
+incomplete checks,
+invalid patches,
+and unavailable required content are engine failures.
+Engine failures block immediately with exit code `2`.
 
-A policy declares its kind (validator,
- content scanner,
- or content normalizer),
- the subcommands it applies to,
- its trigger points
-(pre-forward,
- post-commit before auto-push,
- on push,
- or direct check/fix),
- its default severity,
- and its warn-safety.
-A content normalizer additionally declares its fix mode,
-file selection,
-and exclusions.
-The detailed API contract,
- including the exact context object passed to a policy,
- is deferred to an
-implementation spec;
- this record fixes the decisions,
- not the interfaces.
+The policy context exposes immutable cheap command facts directly.
+Expensive Git-derived facts use lazy asynchronous methods.
+Lazy values are memoized for one candidate-state version only.
+Applying a patch invalidates candidate-dependent memoized data before another policy runs.
 
-## Config artifact and loading
+Exact public TypeScript declarations and invariants live in
+`packages/cli/git/SPEC.md`.
 
-The runtime contract is narrow:
- cli-git loads `cli-git.config.mjs` from the git repo root.
-cli-git neither transpiles nor bundles.
-Authoring in TypeScript (`cli-git.config.ts`,
- oxlint-style `defineConfig`) is supported as a source format,
-but producing `cli-git.config.mjs`,
- whether hand-written ESM or compiled and bundled from the TS source with
-plugins inlined,
- is the consumer's responsibility.
-Anyone who prebundles places the result at `cli-git.config.mjs` at the repo root;
- cli-git does not manage that build.
+## Policy identifiers and configuration
 
-Because config and plugins are the same runtime as cli-git,
- a consumer can fuse them into a single
-`cli-git.config.mjs`,
- an advantage a linter whose plugins run in a different runtime than its core does not have.
+Built-in policy IDs are unprefixed.
+Plugin IDs use `<consumer-namespace>/<policy-name>`.
+The consumer chooses each plugin namespace in its config.
+Namespace registration order and each plugin's declaration order are significant.
 
-Loading is eager,
- and the cost is recorded rather than waved away:
- loading `cli-git.config.mjs` runs its
-top-level code on every config-loading command,
- which the chosen design accepts.
-Two things keep that affordable.
-A consumer-produced prebundle collapses loading to a single module with no per-plugin resolution,
- and the
-platform contract requires plugins to do negligible work at module top level;
- a policy's actual check runs
-only when its subcommand matches,
- so eager loading pays for registration,
- not for scanning.
+`defineConfig` is a typed identity helper.
+Cli-git does not merge shared and local configuration.
+Consumers that need inheritance merge ordinary JavaScript objects before calling `defineConfig`,
+preferably with `deepmerge-ts` or explicit merge logic.
+Collection merge semantics remain visible consumer code rather than hidden cli-git behavior.
 
-With no `cli-git.config.mjs` present the wrapper runs built-in rules only,
- with no parsing,
- transpilation,
- or
-plugin load.
-Discovery is bounded to the repo root rather than an unbounded parent walk,
- and read-only or inspection
-commands (those that cannot mutate state,
- such as `status`,
- `log`,
- `diff`,
- `show`) never load config at all,
-which limits both the hot-path cost and,
- under the trust model below,
- the code-execution exposure.
+Every registered policy uses its declared default when omitted from `policies`.
+Registering a plugin therefore activates that plugin's declared defaults.
+An explicit `off` persistently disables a policy.
+A configured policy value is either a severity or a severity-plus-options tuple.
 
-## Trust
+## Severity and warn safety
 
-Because the wrapper shadows `git`,
- loading `cli-git.config.mjs` turns an innocuous-looking command into code
-execution,
- the hazard native hooks avoid by never running a clone's checked-out hooks.
-cli-git therefore gates config loading behind trust,
- with its own self-contained registry rather than mise's,
-because standalone and non-mise use is expected.
+Severity is `off`,
+`warn`,
+or `error`.
 
-The allowlist key is the pair (filesystem id,
- artifact path),
- and adds a sha256 of `cli-git.config.mjs` under
-paranoid mode.
-The filesystem id binds trust to the physical volume rather than the mount path,
- so a path trusted on one
-volume is not trusted when a different volume is mounted at the same path;
- this closes a mount-swap
-trust-confusion hole that a path-only key leaves open,
- and it is why the id must be part of the key,
- not just
-the path.
-The filesystem id comes from a new shared module,
- `@monochromatic-dev/module-fs-id`,
- planned in
-`docs/planning/module-fs-id.md`.
-That module extracts and corrects the mechanic editord seeded
-(`packages-paused/desktop-daemon/editord/src/server/operations/resolve-fs-id.ts`),
- which was unshared and
-latently wrong:
- it called the Linux `f_fsid` reboot-stable (filesystem-specific,
- false for XFS),
- read a device
-number on macOS while labeling it `f_fsid`,
- and misdescribed the Windows command.
-The module instead resolves a reboot-stable volume id where the platform can produce one (a filesystem UUID via
-`findmnt` on Linux,
- the Volume UUID via `diskutil` on macOS,
- the volume serial on Windows),
- degrades to a
-runtime id and warns when stability cannot be guaranteed,
- and never fails merely because a stable id is
-unavailable,
- since a trust check that hard-fails on an exotic filesystem trains people to disable it.
-The resolved id is guaranteed colon-free,
- so the `"<filesystem id>:<path>"` key recovers both halves by
-splitting on the first colon even when the path is a Windows `C:\...` path.
+- `off` skips the policy.
+- `warn` emits findings but does not block real Git.
+- `error` blocks when an error finding remains after convergence.
 
-It borrows mise's machinery but,
- deliberately,
- not mise's default posture:
+An explicitly configured unsafe `warn` remains valid,
+but config loading emits a warning.
 
-- Default:
-   content-hashed (mise's paranoid posture made the default).
-  First encounter is untrusted:
-   built-ins run,
-   the repo config does not,
-   until an explicit `cli-git trust`.
-  The sha256 component of the key is active (mise's `file_hash_sha256`,
-   which mise gates behind
-  `Settings::paranoid`),
-   so any later change to the artifact,
-   an edit,
-   a re-bundle,
-   or a pulled change,
-  re-prompts before it executes.
-  This is stricter than mise's default on purpose:
-   mise executes config on `cd` or an explicit command,
-   while
-  cli-git executes it on ordinary git commands,
-   so the silent-pulled-change hole is worth closing by default.
-- Relaxed mode (no content re-check):
-   paranoid is on by default and can be turned off only per config,
-   never globally.
-  Because the only thing a relaxation can express is "paranoid off here",
-   the value never needs to carry one,
-   so
-  `CLI_GIT_NO_PARANOID` is just a list of the (filesystem id,
-   path) pairs whose content re-check is disabled.
-  The operator sets it by hand (in a shell or `mise.toml`);
-   cli-git never writes it,
-   but it surfaces the exact
-  `<filesystem id>:<path>` entry to paste,
-   so the operator does not have to compute the id (the command that
-  prints it is in the implementation spec).
-  Each entry is the colon-joined `<filesystem id>:<path>` key the trust registry uses,
-   recovered by splitting on
-  the first colon (the id is colon-free,
-   so this round-trips even for a Windows `C:\...` path);
-   membership in the
-  list is the whole signal,
-   with no JSON and no key-to-value map (the exact list separator and escaping are in the
-  implementation spec).
-  Keying each entry on the filesystem id,
-   not the path alone,
-   is the security feature:
-   a legitimate relaxation
-  names the exact (filesystem id,
-   path) it relaxes,
-   which requires knowing the actual volume,
-   whereas an
-  opportunistic attacker planting guesses in a repo's env knows a likely path but not the cloner's filesystem id
-  (see the security note).
-  Relaxing drops only the content re-check;
-   the (filesystem id,
-   path) trust still applies,
-   so a modified trusted
-  config no longer re-prompts (its explicit cost),
-   but first execution still requires `cli-git trust`.
-  Per-path no-paranoid lives in the environment by necessity,
-   not preference:
-   it cannot live in the repo config it
-  governs,
-   or a repo could opt itself out of being re-checked.
-  This is the inverse of mise,
-   which makes `paranoid` global-only (`settings.toml`,
-   `global_only = true`),
-   and
-  the inversion is the point:
-   a global off-switch would be an entry that names no (filesystem id,
-   path) at all,
-  exactly the shape the security note treats as suspicious,
-   so allowing one would hand an attacker a legitimate
-  unkeyed bypass and defeat the detection.
-  With per-config-only relaxation,
-   a list entry for the config being loaded that carries no matching filesystem
-  id is unambiguously the attack signature,
-   because that config's own volume is necessarily mounted at load time,
-  so a legitimate relaxation for it would carry the real id.
-- It fails closed when it cannot prompt and the artifact is untrusted,
-   or,
-   under paranoid,
-   changed (run
-  built-ins,
-   do not execute it),
-   and exposes an env kill-switch to disable discovery entirely.
+Warn-unsafe policies are:
 
-Security note on the env channel.
-Setting `CLI_GIT_NO_PARANOID` intentionally,
- in your own shell or `mise.toml`,
- is fine;
- relaxing a config you own
-is your call and is not flagged.
-The attack to defeat is different:
- a repo plants `CLI_GIT_NO_PARANOID` entries for guessed common config paths in
-its `mise.toml` env,
- betting a cloner trusts the `mise.toml` without much thought.
-The tell is that such an entry cannot carry a real filesystem id,
- because the attacker can guess a path but does
-not know the cloner's volume,
- so the planted entry is path-only.
-So cli-git shouts on two kinds of entry.
-Structurally,
- on any list entry that carries no filesystem id or a malformed one (an id that does not parse as a
-real volume-id shape),
- wherever it sits in the list:
- a legitimate entry carries the real id that cli-git
-surfaced for the operator to paste,
- so a missing or malformed id is the mark of a path guess,
- not of legitimate
-use.
-Semantically,
- and scoped to the config being loaded,
- on the entry that names this config's path but whose
-well-formed id matches no mounted volume:
- this config's own volume is necessarily mounted at load time,
- so a
-well-formed but wrong id there is a planted guess.
-The scoping is what keeps the semantic check quiet for a legitimate dormant entry:
- a well-formed entry for some
-other path (an unplugged external drive,
- or a repo not yet cloned) names a real id that simply is not mounted
-right now,
- so it is never consulted.
-A shout is a loud warning naming the variable and the offending path,
- because both shapes are signatures of
-opportunistic path matching,
- not intentional relaxation;
- legitimate use carries the real id for a mounted volume
-and stays quiet.
-Even ignored,
- the relaxation removes only the re-check on later changes,
- not the first-execution gate (the
-(filesystem id,
- path) trust still requires an explicit `cli-git trust`),
- and a path-only entry matches no
-trusted key anyway.
+- `require-root`;
+- `add-explicit`;
+- `linked-worktree-only`;
+- `forbidden-strings`.
 
-Provisional,
- derived from mise rather than decided here:
- whether to support mise's `.monorepo`-style trust of a
-config root for a subtree,
- and how an external consumer's CI that runs the wrapper obtains trust under a
-content-hashed default (this repo's own CI runs the attested binary directly,
- not the wrapper,
- so it is
-unaffected).
-Both belong in the implementation spec.
+Warn-safe policies are:
 
-The supply-chain boundary is stated plainly so a future reader does not over-read it.
-Under the default a modified `cli-git.config.mjs` re-prompts,
- so a bundled-in plugin update is caught;
-only plugins the artifact imports from node_modules rather than inlining escape the hash,
- and those are
-governed by the consumer's lockfile pinning.
-Trust answers only whether to execute this repo's config at all;
- it does not vet what that config imports.
-Plugin internals and versions remain the consumer's lockfile-pinning problem (the earlier "provenance is not
-cli-git's business" stance),
- not cli-git's.
+- `branch-worktree-only`;
+- `forbidden-root-context`;
+- `final-newline`.
 
-## Severity
+All current safety policies default to `error`.
 
-Severity follows oxlint's off,
- warn,
- and error.
-error rejects the command (the current validator behavior),
- warn prints a diagnostic and forwards to git anyway,
-and off skips the policy.
+## Policy and transform order
 
-Each policy also carries warn-safety metadata,
- so config validation can shout when warn is dangerous rather
-than silently honoring it.
-forbidden-strings ships defaulting to error,
- because warn would let a secret-bearing commit through locally.
-The destructive-command guard linked-worktree-only (it gates `git stash`,
- state-changing `git clean`,
- and
-`--hard`/`--merge`/`--keep` reset in the main worktree) defaults to error for the same reason:
- warn there
-would permit data loss with only a diagnostic.
-CI is the backstop regardless.
+Each pass uses this fixed staged order:
 
-## Scan trigger points
+1. Built-in configurable safety policies in fixed core order.
+2. Fixed idempotent command transformers.
+3. Plugin policies in consumer namespace registration order and plugin declaration order.
 
-forbidden-strings scans at two points,
- for two reasons.
+The built-in order is:
 
-- Pre-forward,
-   on the predicted to-be-committed paths,
-   for instant feedback before the commit lands.
-  commit-only narrows the modes (it rejects `-a`/`--all`,
-   forces an explicit pathspec,
-   and guards pathless
-  amend),
-   which keeps the prediction tractable.
-- Post-commit,
-   on the tree git actually wrote,
-   gating the auto-push.
-  This scans ground truth,
-   so it cannot false-pass a secret to the remote even if the pre-forward prediction
-  was wrong;
-   a hit blocks the backup push and leaves the commit local for the developer to amend or reset,
-  reusing cli-git's existing failed-push behavior.
+1. `require-root`.
+2. `linked-worktree-only`.
+3. `branch-worktree-only`.
+4. `add-explicit`.
 
-For a manual `git push` of commits never scanned at commit time (made outside the wrapper,
- or older),
- cli-git
-scans the actual range being pushed,
- determined by parsing the push form with Optique as the existing rules do,
-or by a git-native range computation,
- not hand-rolled refspec guesses.
-Derived choice,
- not user-decided:
- on a push form whose range cannot be determined (for example `--mirror` or a
-ref deletion),
- cli-git fails open locally with a warning that the local scan was skipped,
- rather than blocking
-a legitimate push,
- because local enforcement is best-effort and CI is authoritative.
+The fixed transformer order is:
 
-forbidden-root-context is a pre-forward validator (path-based,
- rejecting staging or committing a root `CONTEXT.md`).
+1. atomic push;
+2. commit only;
+3. status hints off.
 
-## Final-newline normalization semantics
+Post-commit auto-push remains a fixed side effect after post-commit policy checks.
 
-final-newline migrates from hk as a content normalizer,
-not as a command transformer.
+Core policies inspect raw and semantic command facts.
+Plugin policies receive raw and transformed command facts and predict candidate content from the transformed command.
+Severity and option overrides do not reorder policies.
+Policies execute sequentially.
+A plugin that needs parallel internal checks owns that concurrency.
+
+The default stops at the first remaining error finding.
+`--cli-git-keep-going` continues after policy findings so later findings can be collected,
+but real Git still does not run while any error remains.
+The flag never continues after an engine,
+plugin,
+patch,
+or transaction failure.
+Cli-git does not consume Git's own generic `--keep-going` options.
+
+## Escape hatches
+
+A per-invocation policy escape hatch is `--no-enforce-<policy-id>` in flag position.
+Cli-git strips it before forwarding.
+A token after Git's `--` pathspec separator remains a pathspec rather than an escape hatch.
+The escape applies to the complete invocation lifecycle:
+findings,
+fixes,
+post-commit checks,
+and auto-push gating.
+Persistent disable uses config severity `off`.
+
+`git commit --no-verify` does not skip cli-git policies after hk retirement.
+Documentation must state this behavior change.
+
+## Distribution
+
+Prepare `@monochromatic-dev/cli-git` as a public npm-ready Node package.
+The package installs the shadowing `git` bin and exports side-effect-free authoring modules from the same package.
+Importing authoring helpers must not execute CLI startup code.
+
+Public authoring exports include:
+
+- `defineConfig`;
+- `definePlugin`;
+- `definePolicy`;
+- Valibot-backed option helpers;
+- policy,
+  finding,
+  patch,
+  config,
+  trigger,
+  and context types.
+
+Third-party plugins peer-depend on a compatible cli-git package version.
+Private workspace runtime helpers are bundled into the Node artifact rather than left as unresolved registry
+requirements.
+The Node engine range must satisfy the shipped tsdown runtime.
+
+The package must pass `npm pack` inspection and installation in a disposable non-workspace consumer.
+Registry upload,
+registry authentication,
+publish-workflow enablement,
+and provenance publication belong only to indefinitely deferred issue #358.
+
+## Management commands
+
+Cli-git intercepts one namespaced Git subcommand:
+
+```text
+git cli-git trust [--yes]
+git cli-git check [--policy <id>]... (--all | -- <pathspec>...)
+git cli-git fix [--policy <id>]... (--all | -- <pathspec>...)
+git cli-git untrust
+git cli-git status
+```
+
+Management parsing uses Optique.
+`check` and `fix` require exactly one scope source:
+`--all` or one or more pathspecs after `--`.
+A repeated `--policy` filters the enabled set.
+An empty filter means every enabled policy.
+
+`trust`,
+`untrust`,
+and `status` inspect or recover trust without first executing repository config.
+`check` and `fix` load only trusted config.
+Ordinary Git commands continue to invoke the resolved real Git executable by absolute path.
+
+## Configuration discovery
+
+Discovery is bounded to the effective Git repository root.
+Precedence is:
+
+1. `cli-git.config.mjs`;
+2. `cli-git.config.ts`;
+3. built-in policies only.
+
+Keeping both files is valid;
+MJS wins.
+
+A consumer-built MJS artifact must be self-contained except for Node built-in imports.
+Consumer source may import cli-git authoring helpers and plugins,
+but those imports must be bundled into the runtime artifact.
+A directly hand-written artifact exports raw validated data or inlines helpers.
+Trusted config is not sandboxed and runs with the user's full permissions.
+
+For TypeScript source,
+`git cli-git trust` invokes tsdown's public build interface with config discovery disabled,
+Node ESM output,
+every package forced into the bundle,
+and inline dynamic imports.
+Trust accepts exactly one JavaScript output chunk,
+no unresolved non-Node imports,
+and no extra assets.
+Ordinary Git commands never build untrusted TypeScript.
+
+The stored TypeScript invalidation graph covers:
+
+- `cli-git.config.ts`;
+- statically resolved relative local modules.
+
+It excludes lockfiles and bare package or workspace imports.
+Trust warns about those excluded package imports.
+Explicit re-trust always rebuilds and is the refresh path for them.
+Changed cached bundle bytes are disclosed before replacement.
+
+## Config-loading classification
+
+Known read-only commands skip config loading.
+Mixed commands such as `branch` and `tag` use argument-aware classification.
+Unknown aliases,
+external subcommands,
+future Git commands,
+and ambiguous forms take the config-loading path.
+
+An untrusted or changed config blocks a config-loading command and directs the user to
+`git cli-git trust`.
+Cli-git does not continue with built-ins only.
+There is no global config-discovery kill switch.
+
+## Exact-snapshot trust
+
+Trust stores and compares exact bytes.
+It never uses SHA-256 or another content hash for trusted source,
+artifacts,
+registry keys,
+or candidate-state comparisons.
+
+The trust identity is the complete pair of filesystem ID and canonical config path.
+The registry path uses reversible encoding of that complete identity rather than a digest.
+Trust records keep validated metadata and exact snapshot files in one per-key directory.
+After a successful comparison,
+cli-git executes the stored MJS snapshot or stored TypeScript bundle,
+not the live entry file that was compared.
+This closes the entry-file compare-then-swap window.
+It is not a sandbox:
+trusted code retains ambient Node authority and may deliberately read or dynamically load other live files.
+
+Production registry location derives from the operating-system account home rather than repository-controlled
+`HOME`,
+XDG,
+or AppData environment variables.
+Tests inject a registry root through internal adapters.
+Registry replacement is atomic,
+uses safe permissions,
+and rejects symlink substitution.
+
+First execution always requires explicit trust.
+A later covered byte change blocks until re-trust unless that exact path is in relaxed mode.
+Trust,
+config,
+and plugin failures exit `2`.
+
+## Trust consent
+
+Trust has two consent stages because recursive intent can be learned only by executing authorized config.
+
+Before root consent,
+`git cli-git trust` prints:
+
+- config path and format;
+- filesystem identity;
+- exact source and artifact snapshot changes;
+- TypeScript self-containment or excluded-import warnings;
+- arbitrary-code authority;
+- notice that recursive intent is evaluated only after root execution is authorized.
+
+The disclosure states that trusted code may read and write files,
+run programs,
+access the network,
+automatically modify Git content,
+and behave incorrectly despite transaction safeguards.
+
+Root approval remains in memory until stored-artifact execution and validation succeed.
+Failure leaves no persistent record.
+If validated config declares child trust,
+cli-git prints a second disclosure naming the root and descendant authority and requests separate consent.
+`--yes` prints both applicable disclosures and skips input reads.
+CI uses this explicit form and receives no detected-CI auto-trust.
+
+## Relaxed exact-path mode
+
+`CLI_GIT_NO_PARANOID` is a comma-separated list of exact
+`<filesystem-id>:<canonical-path>` entries.
+Percent escaping protects comma and percent characters.
+Each decoded entry splits on its first colon because filesystem IDs are colon-free and Windows paths may contain later
+colons.
+
+Malformed or suspicious entries emit a prominent warning,
+are ignored,
+and leave that path in strict mode.
+They never waive first trust.
+
+For a previously trusted MJS path in relaxed mode,
+a size or modification-time change triggers private snapshot replacement,
+self-containment checks,
+and config validation without renewed consent.
+Failure retains the previous record and exits `2` for that invocation.
+Unchanged metadata intentionally continues executing the previous stored snapshot.
+
+For a previously trusted TypeScript path in relaxed mode,
+entry or tracked-relative-module size or modification-time changes trigger automatic rebuild on the next config-loading
+command.
+Metadata is only a cache signal.
+The new bundle is stored and used only after a successful build and config validation.
+Build failure exits `2`.
+Package-only changes remain outside automatic invalidation and require explicit re-trust.
+
+## Recursive trust
+
+Config declares recursive authority with:
+
+```ts
+trust: {
+  children: true,
+}
+```
+
+The second consent authorizes descendant configs under the exact canonical repository root.
+Authority intentionally crosses filesystem and mount boundaries,
+including future mounts beneath the root.
+The disclosure states that consequence.
+
+First descendant encounter auto-enrolls and stores exact snapshots without another prompt.
+Later descendant byte changes block.
+Records preserve authorizing-root provenance.
+Untrusting a recursive root removes records inherited only from that root.
+Separately trusted descendants remain trusted.
+
+Untrusting a nested recursive root also revokes every outer recursive root currently authorizing that nested path.
+Cli-git lists every affected root before revocation.
+The cascade intentionally removes inherited authority from sibling subtrees and avoids persistent deny-boundary state.
+
+## Findings and JSONL
+
+Policy findings use stable JSON Lines.
+The schema version is frozen in
+`packages/cli/git/SPEC.md`.
+Every finding includes a human-readable message.
+Public output contains only findings from the final stable pass.
+Changed-pass findings are provisional and never emitted as authoritative results.
+
+Wrapper-mode policy events go to stderr so real Git stdout remains intact.
+Direct `check` and `fix` policy events go to stdout.
+
+When real Git did not run:
+
+- exit `0` means success or warning findings only;
+- exit `1` means one or more error findings;
+- exit `2` means trust,
+  config,
+  plugin,
+  patch,
+  transaction,
+  or engine failure.
+
+A forwarded command normally preserves real Git's exit code.
+If a commit lands and a post-commit policy or engine failure follows,
+cli-git returns `2`,
+leaves the commit intact,
+blocks auto-push,
+and emits a landed-commit event containing the new commit OID.
+Callers must not retry the commit blindly.
+An ordinary auto-push network or remote failure is not an engine failure:
+cli-git surfaces complete push output,
+leaves the commit local,
+and preserves the successful commit command's exit code `0`.
+
+## Patch ownership and validation
+
+A fixable finding carries unified Git patch bytes against the candidate bytes supplied to the policy.
+Each patch addresses exactly the finding's located path.
+A multi-file policy returns one finding per path.
+Plugins never choose or write temporary patch files.
+
+Cli-git writes bytes to private temporary files and applies them with Git three-way semantics against private candidate
+state.
+It rejects traversal,
+renames,
+mode changes,
+submodules,
+unexpected paths,
+and unsupported binary patches.
+Conflicts remain in temporary state and exit `2`.
+
+## Automatic and direct fixes
+
+Matching pre-forward commit normalizers automatically apply fixes.
+Trust consent authorizes that mutation capability.
+Push and direct check are read-only.
+Direct fix modifies selected worktree files but leaves every real index blob unchanged.
+Direct check and fix require explicit pathspecs or `--all`.
+
+For unsupported commit modes such as `--patch`,
+`--interactive`,
+or `--include`,
+cli-git checks the candidate without mutation.
+It proceeds when content is already canonical and blocks with direct-fix guidance only when correction is required.
+
+## Whole-sequence convergence
+
+Later policies in a pass see earlier applied patches.
+If any patch changes candidate bytes,
+all findings from that pass become provisional and execution restarts from the first built-in policy.
+
+Convergence uses at most eight complete policy passes.
+Candidate states compare exact ordered path-and-byte content.
+Repeated non-adjacent states are cycles.
+The implementation streams retained private snapshots for comparison and does not keep duplicate complete states in
+process memory.
+
+A stable state with remaining errors exits `1`.
+A cycle or changing eighth pass exits `2`.
+Only final stable-pass findings are emitted.
+
+## Transactional commit gate
+
+The transaction implementation must be proven in disposable repositories before production use.
+Plugins never mutate the real index or worktree through the policy interface.
+Cli-git holds the real index lock,
+uses private indexes,
+and journals the non-atomic gap between Git's reference update and real-index replacement.
+
+Index commits copy the real index,
+apply patches through `GIT_INDEX_FILE`,
+run real Git against that index,
+and install the result only after success.
+Explicit-path commits build a commit index from `HEAD` plus selected worktree paths,
+then build a post-commit index from the original real index plus selected paths from the landed commit.
+Merge,
+cherry-pick,
+and revert conclusions use index semantics only.
+
+Patch conflict or commit failure leaves the real index and worktree unchanged by cli-git.
+A durable journal supports recovery when the commit reference moved before index installation.
+Required fixtures are enumerated in the implementation spec.
+
+## Repository policy migration
+
+### Built-in safeguards
+
+Migrate these configurable built-ins with behavior parity:
+
+- `require-root`;
+- `linked-worktree-only`;
+- `branch-worktree-only`;
+- `add-explicit`.
+
+Keep atomic push,
+commit only,
+status hints off,
+and auto-push as fixed behavior in the staged lifecycle.
+
+### Forbidden root context
+
+`forbidden-root-context` runs before commit and on direct check.
+It rejects a root `CONTEXT.md` candidate.
+It is the first repo plugin migration and proves the minimal finding path.
+
+### Forbidden strings
+
+`forbidden-strings` wraps the separately built,
+SLSA-attested scanner.
+It scans:
+
+- predicted would-be-committed content before forwarding;
+- committed ground truth after commit and before auto-push;
+- actual content-bearing ranges for manual push;
+- direct check scope.
+
+An enabled scanner that cannot determine a required content-bearing push range has not completed and exits `2`.
+A pure ref deletion carries no content and is exempt from that failure.
+Scanner subprocess failure exits `2`.
+
+### Final newline
+
 For selected non-empty text files,
-check mode requires exactly one final LF and fix mode removes a final LF run before appending one LF.
-Binary-looking and empty files remain unchanged.
+`final-newline` requires exactly one final LF.
+Fixing removes a final LF run and appends one LF.
+Empty and binary-looking files remain byte-identical.
 
-The repo-local exclusions migrate as part of policy parity:
+Exact exclusion families are:
 
-- `packages/fuzz/forbidden-strings/corpus/**`,
-  because fuzz input bytes are test data.
-- `packages/test-fixture/toml-edit/src/**`,
-  because missing final LF can be parser input under test.
-- `**/dist/final/node/**`,
-  because tsdown output intentionally keeps its producer-native missing final LF and saves one byte per file.
-  The measured tracked baseline contains 18 such files and saves 18 bytes.
+- `packages/fuzz/forbidden-strings/corpus/**`;
+- `packages/test-fixture/toml-edit/src/**`;
+- `**/dist/final/node/**`.
 
-Pre-forward fix mode must transform the exact would-be-committed content without staging unrelated worktree bytes.
-Partially staged files are the decisive parity case:
-unstaged edits must survive the commit transaction,
-and the committed blob alone must receive required canonicalization.
-The implementation must not achieve this by adding the whole worktree file to the index.
-It also must not copy hk 1.50.0's duplicate-separator edge:
-when staged content lacks final LF and an unstaged tail starts at that boundary,
-hk restores the text with an extra blank line.
-`docs/troubleshooting/hk-partial-staging-final-newline.md` records the exact bytes and upstream-compatible prototype.
+Commit fixing changes only exact would-be-committed blobs.
+Unstaged tails and unrelated staged paths remain byte-identical.
+The implementation must cover hk's duplicate-separator partial-staging regression.
+Direct fix replaces the old `hk fix --all --step final-newline --no-stage` capability without touching the index.
 
-The interim hk pre-commit surface is therefore read-only:
-it keeps `stash = "git"` so the check sees staged bytes,
-but does not set `fix = true`.
-Auto-fix remains on the explicit `fix` surface until a verified hk release fixes the merge or cli-git replaces it.
-That surface does not enable stashing:
-it normalizes full worktree files,
-and `--no-stage` preserves index blobs without entering hk's faulty staged-prefix merge.
+## CI
 
-Push and direct check modes are read-only.
-A direct fix surface must provide the current `hk fix --all --step final-newline --no-stage` capability,
-so a caller can normalize the worktree and inspect explicit path groups without bulk staging.
-The implementation spec decides the API and transaction mechanism,
-but cannot weaken these semantics or the exact exclusions.
-
-## Escape hatches and a behavior change
-
-The escape-hatch parsing already exists and is parser-based,
- so it is not a design open question.
-`packages/cli/git/src/escape-hatch.ts` uses Optique to recognize `--no-enforce-<id>` only in flag position,
-strip it before forwarding,
- and preserve any token past the `--` pathspec separator,
- so `git commit -- --no-enforce-x`
-is correctly treated as a pathspec.
-The platform inherits this convention for per-policy bypass,
- and config severity `off` is the persistent disable.
-This persistent disable is itself a change for the built-in safety policies:
- require-root,
- add-explicit,
- and
-linked-worktree-only are bypassable today only per invocation (for example `--no-enforce-bulk-add`) and now gain
-a persistent `off` through config;
- they default to their current always-on severity,
- so the change is opt-in.
-`git commit --no-verify` no longer affects these checks,
- because there are no native hooks left for it to skip.
-That is a behavior change from the hk era and the docs must state it,
- so nobody assumes `--no-verify` still opts out.
-
-## CI relationship
-
-CI already runs forbidden-strings directly via the SLSA-attested binary;
-the old `mise exec -- hk check` step was removed because it forced mise to install unrelated tools.
-CI stays independent of the wrapper.
-The forbidden-strings `cli-git` policy wraps the same binary for local fast feedback;
-it does not replace the CI gate.
-
-final-newline is temporarily local-only while hk owns it.
+CI remains independent of wrapper trust.
+Forbidden-strings continues to run its SLSA-attested binary directly.
+Before hk removal,
+add an independent final-newline check that invokes the direct checker without loading unrelated root tooling.
 Do not reintroduce generic hk execution in CI.
-Before hk retirement,
-add an independent final-newline check that invokes the migrated policy's direct checker without loading unrelated
-root tooling and honors all three exclusion families.
+
+External consumers that exercise trusted config in CI run:
+
+```text
+git cli-git trust --yes
+```
+
+## Performance and packaging gates
+
+Measure the built shim for:
+
+- no config;
+- read-only command;
+- strict MJS;
+- strict cached TypeScript;
+- relaxed TypeScript rebuild;
+- validator;
+- scanner;
+- normalizer;
+- post-commit lifecycle.
+
+The spec defines fixture and sampling methods.
+Numeric budgets are set only from measured baselines during #356.
+Package readiness includes lint,
+type checks,
+tests,
+`npm pack` audit,
+and a disposable non-workspace installation and invocation.
+
+## Retirement capstone
+
+Do not retire hk or Pkl until policy parity,
+trust,
+transaction,
+performance,
+package,
+documentation,
+and independent CI gates pass.
+
+Then:
+
+- remove hk and Pkl tool declarations and managed outputs;
+- remove root hk config and obsolete Pkl IDE config;
+- update or remove hk/Pkl planning and troubleshooting documentation after reading it;
+- update forbidden-strings documentation;
+- provide a verified idempotent per-machine cleanup for `hook.hk-*` Git config;
+- resolve or supersede existing #143 and #160;
+- verify the built shim and direct management commands after removal.
+
+Actual npm registry publication remains outside this capstone.
 
 ## Alternatives considered
 
-Sequencing was the first live fork.
+### Native Git hooks
 
-- Decouple and retire hk now (rejected).
-  Fold the three hk-managed behaviors into the existing pipeline as first-party modules immediately and grow the
-  platform after.
-  Lands the supply-chain win sooner and matches the repo's commit-early lean.
-  Rejected for a single coherent landing,
-   since nothing ships this session anyway.
-- Parallel-run both (rejected).
-  Keep hk running the managed behaviors alongside cli-git until proven.
-  Rejected because forbidden-strings already has an authoritative CI gate,
-  while final-newline needs parity fixtures and an independent checker rather than two local normalizers touching
-  the same content.
-  Parallel operation would keep hk and pkl without adding a distinct evidence layer.
-- Platform-first (chosen).
-  The accepted cost:
-   hk,
-   pkl,
-   and hk's under-verified supply-chain surface persist for the whole platform build.
+Rejected as the primary enforcement point because hooks cannot express command transforms and require separate
+installation.
+CI remains the backstop for PATH bypasses.
 
-The three forks the external review surfaced resolved as:
+### Separate policy kinds
 
-- Config loading:
-   eager load of a consumer-produced prebundle (chosen) over a cli-git-built manifest (rejected,
-  it would put a build cli-git does not own on the hot path) and dynamic-import thunks (rejected,
-   they drop the
-  plain-import authoring ergonomic).
-- Trust:
-   cli-git's own registry,
-   content-hashed by default (chosen,
-   stricter than mise's path-keyed default
-  because the wrapper executes config on ordinary git commands) over reusing mise's store (rejected,
-   non-mise
-  use is expected) and treating trust as out of scope (rejected,
-   it turns `git status` into code execution on
-  any clone).
-- Scan timing:
-   both pre-forward and post-commit (chosen) over pre-forward only (rejected,
-   a misprediction
-  false-passes to the remote) and post-commit only (rejected,
-   no early feedback).
+Rejected because validation,
+content scanning,
+and normalization often share selection and Git context.
+One finding model and one check interface provide greater locality.
 
-## Retirement, the capstone
+### Shared config merge behavior
 
-Do not retire hk and pkl until all of these hold:
+Rejected because array and collection merge semantics are product choices.
+Consumer-owned JavaScript composition keeps those choices explicit.
 
-- The platform is implemented and all three hk-managed behaviors run on it.
-- The migrated validators,
-  scanner,
-  and normalizer have parity tests proving each old hk trigger path is covered,
-  including partial staging and all final-newline exclusions,
-  and they pass.
-- Agreed performance gates exist (exact budgets belong in the implementation spec) and pass.
-- The docs explain the `--no-verify` behavior change.
-- Independent CI checks for forbidden-strings and final-newline are green.
-- An idempotent cleanup exists for the per-machine hk Git config.
+### Live or dependency-resolved MJS execution
 
-Then perform the removal:
+Rejected because dependency resolution changes trust inputs and importing the compared live entry leaves an entry-file
+compare-then-swap window.
+Stored artifacts make the entry execution target exact;
+they do not restrict trusted code's ambient authority to load other live code deliberately.
 
-- Remove `hk` and `pkl` from `mise.toml` and `mise.no-env.toml`,
-   and delete `hk.pkl`.
-- Remove the per-machine Git 2.54 `hook.hk-*` config entries via `hk uninstall`,
-   documented as a per-machine step.
-- Remove `.idea/pklSettings.xml`;
-   `docs/troubleshooting/intellij-pkl-plugin-discovery.md` is then moot.
-- Update `packages/cli/forbidden-strings/README.md`,
-   whose Local (hk) and GitHub Actions hk-check sections are
-  already stale relative to the live CI workflow.
-- Update the hk and pkl references in `docs/todo/forbidden-strings.md` and `docs/planning/forbidden-strings-em-dash.md`.
+### Hash-based trust
 
-Migration order within the platform:
- forbidden-root-context first,
- because it is smaller and proves the
-validator shape;
- forbidden-strings next,
- which proves the content-scanner shape and dual trigger semantics;
- then final-newline,
- which proves content normalization,
-exact-byte exclusions,
-direct check/fix surfaces,
-and partial-staging safety.
+Rejected.
+Trust stores and compares exact bytes and executes stored copies.
+Hashes would add an unnecessary representation while failing to remove the need to preserve executable bytes.
 
-## Supply-chain note
+### Global relaxed or discovery bypasses
 
-Per `mise-aqua-backend.md`,
- hk is digest-verified only,
- because mise does not implement
-`github_release_attestations`,
- the key hk's registry entry relies on.
-Retiring hk and pkl removes that under-verified surface from the toolchain.
-forbidden-strings,
- by contrast,
- is built in-repo and distributed to CI with SLSA provenance.
-The platform's own plugin supply chain is governed by the consumer's lockfile pinning,
- not by cli-git's trust
-(see trust above),
- so consolidating onto it does not inherit hk's gap.
+Rejected because repository-controlled environment could use an unkeyed bypass.
+Relaxation names one exact filesystem and path and never waives first trust.
+
+### Fail-open incomplete scans
+
+Rejected for content-bearing operations.
+An enabled policy that cannot obtain required content has not completed and must block.
+
+### Retire hk before platform parity
+
+Rejected because the accepted sequence is platform-first with one capstone removal after evidence is complete.
+
+## Supply-chain boundary
+
+Retiring hk and Pkl removes hk's digest-only mise installation surface.
+Forbidden-strings remains built in-repo and distributed to CI with SLSA provenance.
+Cli-git trust decides whether to execute one repository artifact;
+it does not certify plugin provenance or package versions.
+Consumer lockfiles and self-contained builds govern plugin inputs.
 
 ## References
 
+- `packages/cli/git/SPEC.md`:
+  canonical implementation interface and verification contract.
+- `docs/handover/cli-git-policies-platform.md`:
+  implementation state and evidence.
 - `packages/cli/git/README.md` and `packages/cli/git/src/index.ts`:
-   the current wrapper and its RULES pipeline.
-- `packages/cli/git/src/escape-hatch.ts` and `packages/cli/git/src/rules/commit-only.ts`:
-   the existing
-  Optique-based escape-hatch parsing and the commit-mode narrowing the scan relies on.
-- `packages/cli/git/src/rules/add-explicit.ts` and `packages/cli/git/src/auto-push.ts`:
-   the add-explicit
-  validator (now a built-in configurable policy) and the post-commit auto-push the post-commit scan gates.
-- `oxlint.config.ts`,
-   `packages/config/oxlint`,
-   `packages/oxlint-plugins/tsdoc`:
-   the authoring model borrowed
-  (TS `defineConfig` and plugin packages),
-   not the runtime.
-- jdx/mise `src/config/config_file/mod.rs` (`trust_path`,
-   the `paranoid`-gated `file_hash_sha256`) and
-  `src/cli/trust.rs`:
-   the trust model cli-git mirrors,
-   path-keyed by default,
-   content-hashed only under paranoid.
-- `docs/planning/module-fs-id.md` and the planned `@monochromatic-dev/module-fs-id`:
-   the corrected shared
-  filesystem-id mechanic the trust key uses (a reboot-stable volume id where available,
-   degrade-and-warn
-  otherwise),
-   extracted from and fixing editord's seed `resolve-fs-id.ts`.
-- `hk.pkl`:
-   the current hk config,
-   with final-newline on pre-commit,
-  pre-push,
-  check,
-  and fix;
-  forbidden-root-context on pre-commit,
-  pre-push,
-  and check;
-  and forbidden-strings definitions retained but temporarily disabled during refactoring.
-- `docs/planning/final-newline-normalization.md`,
-   `docs/troubleshooting/hk-partial-staging-final-newline.md`,
-  and `docs/troubleshooting/tsdown-final-newline.md`:
-   current normalization semantics,
-  exact-byte exclusions,
-  partial-staging evidence and known boundary merge,
-  and tsdown's compact-output exception.
+  current wrapper behavior.
+- `packages/cli/git/src/escape-hatch.ts`:
+  parser-based invocation escape hatches.
+- `docs/planning/module-fs-id.md`:
+  filesystem identity prerequisite.
+- `docs/planning/final-newline-normalization.md`:
+  final-newline behavior and exclusions.
+- `docs/troubleshooting/hk-partial-staging-final-newline.md`:
+  exact partial-staging regression.
 - `.github/workflows/forbidden-strings.yml`:
-   the CI gate,
-   already off hk.
-- `mise-aqua-backend.md`:
-   hk's supply-chain posture.
-- A future implementation spec,
-   to hold the policy API contract,
-   performance budgets,
-   the parity-test list,
-   and
-  the exact `CLI_GIT_NO_PARANOID` list format (the entry separator and path escaping).
+  independent scanner CI.
+- GitHub issues #341 through #357:
+  active dependency-ordered implementation slices.
+- GitHub issue #358:
+  recorded and indefinitely deferred npm publication.

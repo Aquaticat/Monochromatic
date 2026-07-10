@@ -2,16 +2,15 @@
 
 ## Status
 
-Implementation planning is in an active one-question-at-a-time grilling session.
-No platform code has been implemented.
-Do not start implementation until the user confirms shared understanding.
+Shared understanding was confirmed and implementation was authorized on 2026-07-09.
+Issue #341 is reconciling the canonical decision and freezing the package implementation interface before runtime slices
+begin.
 
-The source decision is
+The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
-Several choices in that decision have been revised during grilling;
-this handover is the current source for those revisions until the decision and implementation spec are updated.
-
-The user requested that this handover be kept current as grilling continues.
+The implementation interface is
+`packages/cli/git/SPEC.md`.
+This handover remains the current execution-state and evidence record.
 
 Concurrent worktree state:
 `pnpm-lock.yaml` became modified by external work after the handover commits began.
@@ -297,11 +296,12 @@ A previously trusted path explicitly relaxed through `CLI_GIT_NO_PARANOID` is th
   imports.
   Changed cached bundle bytes are disclosed before replacement even when tracked source bytes are unchanged.
 - Under `CLI_GIT_NO_PARANOID`,
-  entry or tracked-relative-module mtime/size changes trigger an automatic tsdown rebuild during the next config-loading
-  Git command.
+  an MJS mtime/size change triggers private snapshot replacement and validation,
+  while a TypeScript entry or tracked-relative-module mtime/size change triggers an automatic tsdown rebuild during the
+  next config-loading Git command.
   Those metadata values are cache signals only,
   not trust checks;
-  rebuild failure blocks with exit code `2`.
+  replacement or rebuild failure blocks with exit code `2` and retains the previous record.
 - Package-only changes still require explicit trust refresh because package imports are outside tracked invalidation.
 - Trust prints a warning when TypeScript source uses bare package imports excluded from automatic invalidation,
   even though their current JavaScript is bundled into the cached artifact.
@@ -377,8 +377,9 @@ After successful authorized execution:
   not cryptographic content hashes.
 - Consumer-built MJS stores and compares the complete artifact bytes.
   After an exact match,
-  cli-git executes the stored snapshot copy rather than the live file,
-  closing the compare-then-swap window.
+  cli-git executes the stored snapshot copy rather than the live entry file,
+  closing the entry-file compare-then-swap window.
+  Trusted code still has ambient Node authority and may deliberately load other live files.
 - Cli-git-built TypeScript stores and compares every tracked entry or relative-local-module file plus the cached bundle
   bytes and executes the stored cached bundle.
 - Recursively auto-enrolled child configs also execute their stored snapshot or cached bundle,
@@ -632,6 +633,22 @@ Unless later grilling changes them:
   docs,
   CI,
   and per-machine cleanup requirements pass.
+
+## Implementation checkpoints
+
+### Issue #341 contract
+
+- Reconciled `docs/decisions/cli-git-policies-platform.md` with every settled grilling revision.
+- Added canonical implementation interface `packages/cli/git/SPEC.md`.
+- A disposable TypeScript 7.0.1-rc consumer compiled both authoring examples and proved statically known unknown policy IDs
+  and wrong option values are rejected.
+- An Optique 1.1.1 fixture parsed every documented management form and rejected missing,
+  conflicting,
+  empty,
+  and misplaced scope forms.
+- Repository Markdown lint passes for the decision,
+  spec,
+  and handover.
 
 ## GitHub implementation tracker
 
@@ -894,51 +911,29 @@ a later phase does not wait to record an earlier phase's work.
   CI checks,
   and clean npm install after removal.
 
-## Open design questions
+## Implementation risks and evidence gaps
 
-Continue grilling one question at a time,
-but do not burn a question on a recommendation already determined by settled user choices.
-Adopt and record those implications directly.
-Ask only when at least two viable paths remain and the choice depends on user preference or authority.
-Do not ask the user for facts that source or disposable fixtures can establish.
+`packages/cli/git/SPEC.md` freezes the public declarations,
+JSONL schema,
+management grammar,
+trust record,
+relaxed-mode parser,
+lifecycle,
+and benchmark method.
+Implementation must now close these evidence gaps without making new product decisions:
 
-Major unresolved branches:
-
-- Exact policy,
-  plugin,
-  finding,
-  patch,
-  lazy context-method,
-  trigger,
-  and config TypeScript APIs.
-- Exact JSONL schema,
-  schema versioning,
-  ordering,
-  and patch-result events.
-- Exact direct `check` and `fix` grammar,
-  policy filters,
-  pathspec semantics,
-  and no-stage verification.
-- Complete read-only and mixed Git command classifier.
+- Complete source-backed read-only and mixed Git command classifier.
 - Complete temporary-index transaction prototype and crash journal.
-- Trust record schema,
-  account-derived platform paths,
-  permissions,
-  canonical paths,
-  symlinks,
-  and recursive-root revocation transactions.
-- `CLI_GIT_NO_PARANOID` encoder and parser edge cases.
-- `@monochromatic-dev/module-fs-id` implementation choices and real macOS/Windows verification.
-- Tsdown API integration,
+- `@monochromatic-dev/module-fs-id` implementation and real macOS/Windows verification.
+- Tsdown integration,
   source-graph extraction,
   cache layout,
   immutable artifact loading,
   and self-contained import validation.
-- Performance budgets and benchmark fixtures.
+- Measured performance budgets and benchmark fixtures.
 - Exact forbidden-strings push-range computation and failed-range JSONL diagnostic.
 - Migration parity matrix for every hk trigger and final-newline exclusion.
 - Independent final-newline CI command after migration.
-- Implementation issue slicing and commit sequence.
 
 ## Required verification before implementation completion
 
@@ -990,9 +985,15 @@ implementation checkpoint,
 verification result,
 and commit.
 
-When grilling ends:
+Issue #341 completion requires:
 
-1. Reconcile this handover into `docs/decisions/cli-git-policies-platform.md`.
-2. Write the implementation spec named by that decision.
-3. Keep this handover as the execution-state record.
-4. Do not begin platform implementation until the user explicitly confirms shared understanding.
+1. Compile the public declaration and authoring examples in a disposable consumer.
+2. Parse every documented management command form through an Optique fixture.
+3. Lint the decision,
+   spec,
+   and handover.
+4. Close #341 after committing its verified contract.
+
+Continue recording each runtime implementation checkpoint,
+verification result,
+and issue closure here.
