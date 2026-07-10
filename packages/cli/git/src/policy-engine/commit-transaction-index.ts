@@ -1,17 +1,23 @@
 /**
- * Private commit-index initialization and installation.
+ * Private commit-index initialization and prepared installation state.
  *
  * @module
  */
-import {
-  copyFile,
-  readFile,
-} from 'node:fs/promises';
+import { copyFile, } from 'node:fs/promises';
+import type { GitObjectId, } from '../api/policy-types.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
- * Copies or builds private commit index.
+ * Strict Git object decoder.
+ */
+const DECODER = new TextDecoder(
+  'utf-8',
+  { fatal: true, },
+);
+
+/**
+ * Copies or builds private commit index and snapshots original index.
  *
  * @param workspace - owned transaction workspace
  *
@@ -22,8 +28,6 @@ import type { CommitTransactionWorkspace, } from './commit-transaction-workspace
  * @param mode - commit selection semantics
  *
  * @param pathspecs - engine-selected explicit paths
- *
- * @returns original index bytes
  *
  * @example
  * ```ts
@@ -42,17 +46,17 @@ export async function initializeCommitIndex({
   cwd: string;
   mode: 'explicit-path' | 'index';
   pathspecs: readonly string[];
-}>,): Promise<Uint8Array> {
-  /**
-   * Exact pre-transaction real index bytes.
-   */
-  const original = new Uint8Array(await readFile(workspace.realIndexPath,),);
+}>,): Promise<void> {
+  await copyFile(
+    workspace.realIndexPath,
+    workspace.originalIndexPath,
+  );
   if (mode === 'index') {
     await copyFile(
-      workspace.realIndexPath,
+      workspace.originalIndexPath,
       workspace.commitIndexPath,
     );
-    return original;
+    return;
   }
   /**
    * Optional parent tree for unborn-repository compatibility.
@@ -74,10 +78,7 @@ export async function initializeCommitIndex({
     args: head.exitCode === 0
       ? [
         'read-tree',
-        new TextDecoder(
-          'utf-8',
-          { fatal: true, },
-        ).decode(head.stdout,)
+        DECODER.decode(head.stdout,)
           .trim(),
       ]
       : [
@@ -91,15 +92,15 @@ export async function initializeCommitIndex({
     indexPath: workspace.commitIndexPath,
     args: [
       'add',
+      '--all',
       '--',
       ...pathspecs,
     ],
   },);
-  return original;
 }
 
 /**
- * Reconciles explicit selected entries from landed commit and installs index.
+ * Writes exact intended tree from private commit index.
  *
  * @param workspace - transaction workspace
  *
@@ -107,30 +108,85 @@ export async function initializeCommitIndex({
  *
  * @param cwd - repository directory
  *
- * @param pathspecs - selected paths
- *
- * @param landedOid - exact landed commit
+ * @returns intended Git tree OID
  *
  * @example
  * ```ts
- * await installExplicitPostIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', pathspecs: ['a'], landedOid });
+ * await writePrivateTree({ workspace, gitPath: '/usr/bin/git', cwd: '/repo' });
  * ```
  */
-export async function installExplicitPostIndex({
+export async function writePrivateTree({
   workspace,
   gitPath,
   cwd,
-  pathspecs,
-  landedOid,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
   gitPath: string;
   cwd: string;
-  pathspecs: readonly string[];
-  landedOid: string;
+}>,): Promise<GitObjectId> {
+  /**
+   * Git tree object written from private index.
+   */
+  const output = await runTransactionGit({
+    gitPath,
+    cwd,
+    indexPath: workspace.commitIndexPath,
+    args: ['write-tree',],
+  },);
+  /**
+   * Exact intended tree OID.
+   */
+  const oid = DECODER.decode(output.stdout,)
+    .trim();
+  if (oid.length === 0)
+    throw new TypeError('Git returned empty private tree identity.',);
+  return oid;
+}
+
+/**
+ * Prepares exact post-commit index before real Git may advance ref.
+ *
+ * @param workspace - transaction workspace
+ *
+ * @param gitPath - resolved Git executable
+ *
+ * @param cwd - repository directory
+ *
+ * @param mode - transaction commit semantics
+ *
+ * @param selectedPaths - concrete selected paths
+ *
+ * @param intendedTreeOid - exact prepared commit tree
+ *
+ * @example
+ * ```ts
+ * await preparePostIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', selectedPaths: [], intendedTreeOid });
+ * ```
+ */
+export async function preparePostIndex({
+  workspace,
+  gitPath,
+  cwd,
+  mode,
+  selectedPaths,
+  intendedTreeOid,
+}: Readonly<{
+  workspace: CommitTransactionWorkspace;
+  gitPath: string;
+  cwd: string;
+  mode: 'explicit-path' | 'index';
+  selectedPaths: readonly string[];
+  intendedTreeOid: GitObjectId;
 }>,): Promise<void> {
+  if (mode === 'index') {
+    await copyFile(
+      workspace.commitIndexPath,
+      workspace.postIndexPath,
+    );
+    return;
+  }
   await copyFile(
-    workspace.realIndexPath,
+    workspace.originalIndexPath,
     workspace.postIndexPath,
   );
   await runTransactionGit({
@@ -140,10 +196,9 @@ export async function installExplicitPostIndex({
     args: [
       'reset',
       '--quiet',
-      landedOid,
+      intendedTreeOid,
       '--',
-      ...pathspecs,
+      ...selectedPaths,
     ],
   },);
-  await workspace.installIndex(workspace.postIndexPath,);
 }

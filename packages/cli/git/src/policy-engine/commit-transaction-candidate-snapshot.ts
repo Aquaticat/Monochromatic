@@ -144,8 +144,13 @@ export async function writeCandidateSnapshot({
  * @param rightPath - current snapshot
  *
  * @returns whether every byte and total length match
+ *
+ * @example
+ * ```ts
+ * await snapshotFilesEqual({ leftPath: '/tmp/one', rightPath: '/tmp/two' });
+ * ```
  */
-async function snapshotFilesEqual({
+export async function snapshotFilesEqual({
   leftPath,
   rightPath,
 }: Readonly<{

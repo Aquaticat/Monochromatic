@@ -426,7 +426,7 @@ await describe({
       },
     },),
     it({
-      name: 'forwards exact final transformed argv to real Git boundary',
+      name: 'runs recovery probe before exact transformed Git boundary',
       fn: async function testFinalTransformedForwarding(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /** Fake real-Git executable directory. */
@@ -465,8 +465,11 @@ appendFileSync(capturePath, JSON.stringify(process.argv.slice(2)) + '\\n');
           env,
         },);
         expect(await readFile(capturePath, 'utf8',),).toBe(
-          '["push","--atomic","origin","main"]\n'
+          '["rev-parse","--is-inside-work-tree"]\n'
+          + '["push","--atomic","origin","main"]\n'
+          + '["rev-parse","--is-inside-work-tree"]\n'
           + '["-c","advice.statusHints=false","status","--porcelain=v1"]\n'
+          + '["rev-parse","--is-inside-work-tree"]\n'
           + '["commit","-o","--dry-run","-m","message","file.txt"]\n',
         );
       },

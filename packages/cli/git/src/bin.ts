@@ -10,6 +10,10 @@ import {
   COMMIT_TRANSACTION_NOT_APPLICABLE,
   runCommitTransaction,
 } from './policy-engine/commit-transaction.ts';
+import {
+  CommitTransactionRecoveryError,
+  recoverCommitTransaction,
+} from './policy-engine/commit-transaction-recovery.ts';
 import { runPolicyEngine, } from './policy-engine/engine.ts';
 import { runPostCommitLifecycle, } from './policy-engine/post-commit-lifecycle.ts';
 import {
@@ -151,16 +155,25 @@ const managementLayout = parseGlobalOptions(rawArgs,);
  */
 const isManagementCommand = rawArgs[managementLayout.subcommandIndex] === 'cli-git';
 
-if (isManagementCommand) {
-  process.exitCode = await runManagementCommand({
-    args: rawArgs.slice(managementLayout.subcommandIndex + 1,),
-    gitGlobalArgs: rawArgs.slice(
-      0,
-      managementLayout.subcommandIndex,
-    ),
-  },);
-}
-else try {
+try {
+  if (isManagementCommand) {
+    /**
+     * Real Git required for startup transaction recovery.
+     */
+    const gitPath = await resolveGit();
+    await recoverCommitTransaction({
+      args: rawArgs,
+      gitPath,
+    },);
+    process.exitCode = await runManagementCommand({
+      args: rawArgs.slice(managementLayout.subcommandIndex + 1,),
+      gitGlobalArgs: rawArgs.slice(
+        0,
+        managementLayout.subcommandIndex,
+      ),
+    },);
+  }
+  else {
   /**
    * Layout of `rawArgs` consulted before the rules run so short-circuit flags can be detected on the user's literal input.
    */
@@ -180,7 +193,16 @@ else try {
   },);
 
   /**
-   * Trusted runtime config resolution before repository code executes.
+   * Absolute real Git path needed before repository config executes.
+   */
+  const gitPath = await resolveGit();
+  if (!willShortCircuit)
+    await recoverCommitTransaction({
+      args: rawArgs,
+      gitPath,
+    },);
+  /**
+   * Trusted runtime config resolution after transaction recovery.
    */
   const runtimeResolution: WrapperRuntimeResolution = willShortCircuit
     ? { loaded: RUNTIME_CONFIG_ABSENT, }
@@ -205,10 +227,6 @@ else try {
     throw new PolicyDecisionError(2,);
   }
 
-  /**
-   * Absolute path to real Git binary needed by candidate transactions.
-   */
-  const gitPath = await resolveGit();
   rl.debug(`using real git at ${gitPath}`,);
   /**
    * Trusted policy options retained identically across convergence passes.
@@ -407,9 +425,19 @@ else try {
         + '`git worktree add -b <branch> <path>`.',
     );
   }
+  }
 }
 catch (error) {
-  if (error instanceof PolicyDecisionError)
+  if (error instanceof CommitTransactionRecoveryError) {
+    process.stderr
+      .write(renderPolicyEvents([createEngineFailureEvent({
+      sequence: 0,
+      code: 'content-unavailable',
+      message: error.message,
+    },),],),);
+    process.exitCode = 2;
+  }
+  else if (error instanceof PolicyDecisionError)
     process.exitCode = error.exitCode;
   else if (error instanceof SubprocessError)
     process.exitCode = error.exitCode

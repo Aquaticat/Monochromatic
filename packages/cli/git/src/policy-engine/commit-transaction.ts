@@ -15,15 +15,16 @@ import {
   applyPrivatePatch,
   createPrivateIndexFacts,
   listChangedIndexPaths,
-  runTransactionGit,
 } from './commit-transaction-git.ts';
 import {
   initializeCommitIndex,
-  installExplicitPostIndex,
+  preparePostIndex,
+  writePrivateTree,
 } from './commit-transaction-index.ts';
+import { executePreparedCommit, } from './commit-transaction-finalize.ts';
+import { prepareTransactionJournal, } from './commit-transaction-journal.ts';
 import { createCommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 import { runPolicyEngine, } from './engine.ts';
-import { resolveLandedCommitOid, } from './post-commit-facts.ts';
 import type {
   PolicyEngineResult,
   RunPolicyEngineOptions,
@@ -364,6 +365,30 @@ export async function runCommitTransaction({
       committed: false,
     };
   /**
+   * Exact intended tree written from stable private candidate state.
+   */
+  const intendedTreeOid = await writePrivateTree({
+    workspace,
+    gitPath,
+    cwd: layout.effectiveCwd,
+  },);
+  await preparePostIndex({
+    workspace,
+    gitPath,
+    cwd: layout.effectiveCwd,
+    mode,
+    selectedPaths: candidatePaths,
+    intendedTreeOid,
+  },);
+  await prepareTransactionJournal({
+    workspace,
+    gitPath,
+    cwd: layout.effectiveCwd,
+    mode,
+    selectedPaths: candidatePaths,
+    intendedTreeOid,
+  },);
+  /**
    * Real Git arguments against complete private intended index.
    */
   const commitArgs = mode === 'explicit-path'
@@ -372,29 +397,14 @@ export async function runCommitTransaction({
       pathspecs: region.pathspecs,
     },)
     : pass.args;
-  await runTransactionGit({
+  await executePreparedCommit({
+    workspace,
     gitPath,
-    cwd: process.cwd(),
-    indexPath: workspace.commitIndexPath,
-    args: commitArgs,
-    stdio: 'inherit',
+    spawnCwd: process.cwd(),
+    effectiveCwd: layout.effectiveCwd,
+    commitArgs,
+    intendedTreeOid,
   },);
-  /**
-   * Exact landed commit after successful private-index Git.
-   */
-  const landedOid = await resolveLandedCommitOid({
-    gitPath,
-    cwd: layout.effectiveCwd,
-  },);
-  await (mode === 'explicit-path'
-    ? installExplicitPostIndex({
-      workspace,
-      gitPath,
-      cwd: layout.effectiveCwd,
-      pathspecs: candidatePaths,
-      landedOid,
-    },)
-    : workspace.installIndex(workspace.commitIndexPath,));
   return {
     policyResult: pass,
     committed: true,
