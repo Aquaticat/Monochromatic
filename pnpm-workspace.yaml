@@ -155,11 +155,18 @@ lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@earendil-works/pi-*'
+  # Exact reviewed release fixes TypeScript 7 selecting tsgo before inherited
+  # isolatedDeclarations. Future rolldown-plugin-dts releases remain age-gated.
+  - 'rolldown-plugin-dts@0.27.4'
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 nodeLinker: isolated
 
 overrides:
+  # tsdown 0.22.4 allows rolldown-plugin-dts ^0.27.1, but only 0.27.4+
+  # exposes the generator selector needed to keep Oxc explicit under TypeScript 7.
+  # Remove when tsdown's own dependency floor includes that selector.
+  'rolldown-plugin-dts': '0.27.4'
   '@anthropic-ai/sdk': 'catalog:'
   # Drop @earendil-works/pi-* transitive deps that this workspace does not
   # exercise: either unused in the published dist, loaded only via lazy
