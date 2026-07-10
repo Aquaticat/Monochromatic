@@ -233,7 +233,7 @@ await describe({
           body: 'process.exitCode = 0;',
         },);
         /** Number of distinct scanner identities. */
-        const candidateCount = 256;
+        const candidateCount = 128;
         /** Delay keeping candidate reads concurrently observable. */
         const readDelayMilliseconds = 10;
         /** Mutable activity observed only by this sequential test. */
@@ -290,7 +290,7 @@ await describe({
           signal: new AbortController().signal,
         },),).toEqual([],);
         expect(activity.calls,).toBe(candidateCount,);
-        expect(activity.peak,).toBe(128,);
+        expect(activity.peak,).toBe(64,);
       },
     },),
     it({
