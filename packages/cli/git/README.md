@@ -108,7 +108,13 @@ and sequence values start at zero for every invocation.
 
 ### Commit autofix transaction
 
-For normal explicit-path commits and explicit `--no-only` index commits,
+For explicit-path commits,
+`--no-only` index commits,
+pathspec-file selections,
+amend and allow-empty edge cases,
+and merge,
+cherry-pick,
+or revert conclusions,
 trusted pre-forward policies receive lazy candidate bytes from a locked private Git index.
 A fixable finding returns one `git-unified` patch bound to the candidate's opaque target ID and repository path.
 Cli-git validates that the patch contains exactly one matching ordinary text target,
@@ -131,7 +137,22 @@ The completed index is installed atomically only after real Git succeeds,
 so policy failures,
 patch conflicts,
 and failed commit hooks leave real index and worktree bytes unchanged by cli-git.
-Broader commit modes and durable recovery of the post-ref-update installation gap remain separate dependency-ordered slices.
+Interactive,
+patch,
+and include selections remain read-only:
+canonical candidates proceed through real Git,
+while a required correction blocks with direct-fix guidance.
+Unmerged indexes block automatic correction.
+
+A durable no-follow transaction directory retains exact original and prepared index snapshots,
+expected parent and tree identities,
+and the owned real-index lock identity before reference advancement.
+Every later wrapper invocation recovers before trusted config execution,
+installs or recognizes the exact prepared index after an interrupted landed commit,
+and fails closed on active owners,
+replaced locks,
+unsafe artifacts,
+or unrelated reference/index movement.
 
 Use the namespaced Optique management commands:
 

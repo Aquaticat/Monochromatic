@@ -1112,7 +1112,14 @@ a later invocation must load the complete winning record without repair.
 
 ## Transaction protocol
 
-The first production tracer supports normal explicit-path commits and explicit `--no-only` index commits.
+The production transaction supports explicit-path and `--no-only` commits,
+pathspec files including stdin and NUL forms,
+selected deletions and untracked files,
+amend,
+allow-empty,
+and merge,
+cherry-pick,
+or revert conclusions.
 It holds the real index lock,
 constructs candidate facts from a private index,
 validates one-target ordinary text patches,
@@ -1129,8 +1136,13 @@ unstaged-tail preservation,
 unrelated staged preservation,
 and failure rollback.
 
-Exhaustive mode support and durable recovery are dependency-ordered follow-up slices.
-The complete target implementation uses a transaction directory outside the worktree with:
+Interactive,
+patch,
+and include selection modes receive read-only policy checks:
+canonical content proceeds through real Git,
+while a proposed automatic patch blocks with direct-fix guidance.
+Unmerged indexes block automatic correction.
+The implementation uses a transaction directory outside the worktree with:
 
 - original index snapshot;
 - private commit index;
@@ -1189,6 +1201,14 @@ It either installs the intended post-commit index,
 recognizes an already completed install,
 or blocks with a precise manual-recovery diagnostic.
 It never silently guesses after unrelated ref or index changes.
+A prepared journal records expected parent OIDs,
+intended tree,
+exact original and prepared index snapshots,
+real-index filesystem/device/inode identity,
+and owner PID before real Git can advance the ref.
+Recovery runs before trusted repository config,
+refuses active owners and unsafe or replaced filesystem artifacts,
+and preserves conflicting evidence after unrelated ref or index movement.
 Concurrent wrapper processes serialize on the real index lock and transaction journal lock.
 
 ### Required disposable fixtures

@@ -4,7 +4,7 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #351 are complete and closed.
-Transaction recovery and exhaustive-mode issue #352 is the active dependency-ordered slice.
+Repository-plugin migration issue #353 is the active dependency-ordered slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1315,6 +1315,55 @@ Unless later grilling changes them:
 - Issue #351 was closed after every acceptance criterion and evidence gate passed.
   Actual npm publication remains deferred in #358.
 
+### Issue #352 recovery and exhaustive commit modes
+
+- Added commit parser facts and transaction selection for pathspec files,
+  stdin and NUL forms,
+  deletions,
+  untracked selected paths,
+  amend,
+  allow-empty,
+  and merge,
+  cherry-pick,
+  or revert conclusions.
+- Interactive,
+  patch,
+  and include selection modes receive read-only policy checks;
+  canonical candidates forward unchanged,
+  while required corrections return direct-fix guidance without changing real state.
+- Automatic correction rejects unmerged indexes with exact path diagnostics.
+- Durable prepared journals retain original,
+  commit,
+  and post-index snapshots,
+  expected parent OIDs,
+  intended tree,
+  owner PID,
+  and real-index filesystem/device/inode identity before ref advancement.
+- Recovery runs before trusted config and distinguishes pre-ref cleanup,
+  post-ref installation,
+  already-installed state,
+  active owners,
+  replaced locks,
+  unsafe artifacts,
+  and conflicting external ref or index movement.
+- Packed fixtures exercise mode compatibility,
+  interruption before and after ref advancement,
+  exact index installation,
+  concurrent wrappers,
+  lock replacement,
+  conflicting ref movement,
+  symlink rejection,
+  and signal cleanup.
+- Core checkpoint `41a48556f` contains the expanded transaction and adversarial fixture implementation.
+- Formatting,
+  type checking,
+  build,
+  and packed shadow-bin runs `proc_9`,
+  `proc_11`,
+  and `proc_12` pass;
+  the final all-suite evidence and independent closure review are recorded with the closure checkpoint.
+- Actual npm publication remains deferred in #358.
+
 ### Issue #342 filesystem identity
 
 - Added `@monochromatic-dev/module-fs-id` with source-qualified colon-free IDs,
@@ -1389,19 +1438,26 @@ Dependency-ordered implementation slices:
   packed-bin,
   Windows ACL,
   and final independent review evidence.
-- [#346](https://github.com/Aquaticat/Monochromatic/issues/346):
+- [#346](https://github.com/Aquaticat/Monochromatic/issues/346),
+  completed:
   add recursive snapshot trust and cascading revocation.
-- [#347](https://github.com/Aquaticat/Monochromatic/issues/347):
+- [#347](https://github.com/Aquaticat/Monochromatic/issues/347),
+  completed:
   build and cache trusted TypeScript config.
-- [#348](https://github.com/Aquaticat/Monochromatic/issues/348):
+- [#348](https://github.com/Aquaticat/Monochromatic/issues/348),
+  completed:
   migrate configurable command safeguards.
-- [#349](https://github.com/Aquaticat/Monochromatic/issues/349):
+- [#349](https://github.com/Aquaticat/Monochromatic/issues/349),
+  completed:
   stage fixed command transforms.
-- [#350](https://github.com/Aquaticat/Monochromatic/issues/350):
+- [#350](https://github.com/Aquaticat/Monochromatic/issues/350),
+  completed:
   gate post-commit auto-push through policy lifecycle.
-- [#351](https://github.com/Aquaticat/Monochromatic/issues/351):
+- [#351](https://github.com/Aquaticat/Monochromatic/issues/351),
+  completed:
   deliver the first real private-index autofix transaction.
-- [#352](https://github.com/Aquaticat/Monochromatic/issues/352):
+- [#352](https://github.com/Aquaticat/Monochromatic/issues/352),
+  completed:
   harden commit modes and interrupted-index recovery.
 - [#353](https://github.com/Aquaticat/Monochromatic/issues/353):
   migrate forbidden-root-context as the first repo plugin.

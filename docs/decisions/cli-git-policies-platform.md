@@ -539,16 +539,25 @@ Only final stable-pass findings are emitted.
 
 ## Transactional commit gate
 
-The first production tracer is proven through packed shadow-bin disposable repositories for explicit-path and explicit
-`--no-only` commits.
+The transaction is proven through packed shadow-bin disposable repositories for explicit-path and `--no-only`
+commits,
+pathspec files including stdin and NUL forms,
+selected deletion and untracked paths,
+amend,
+allow-empty,
+and merge,
+cherry-pick,
+or revert conclusions.
 It covers exact lazy candidates,
 private three-way patch application,
 whole-sequence restart,
 composition,
 conflict blocking,
 failed hooks,
-and real-state preservation.
-Exhaustive commit modes and durable crash recovery remain dependency-ordered follow-up slices.
+and exact real-state preservation.
+Interactive,
+patch,
+and include selection modes use read-only checks and block only when correction is required.
 Plugins never mutate the real index or worktree through the policy interface.
 Cli-git holds the real index lock,
 uses private indexes,
@@ -564,8 +573,20 @@ Merge,
 cherry-pick,
 and revert conclusions use index semantics only.
 
-Patch conflict or commit failure leaves the real index and worktree unchanged by cli-git.
-A durable journal supports recovery when the commit reference moved before index installation.
+Patch conflict,
+unmerged state,
+or commit failure leaves the real index and worktree unchanged by cli-git.
+Before ref advancement,
+a durable no-follow journal records exact original and prepared indexes,
+expected parent and tree identities,
+owner PID,
+and real-index filesystem/device/inode identity.
+Startup recovery runs before trusted config,
+installs or recognizes exact prepared state after interruption,
+and fails closed on active owners,
+replaced locks,
+unsafe artifacts,
+or unrelated ref/index movement.
 Required fixtures are enumerated in the implementation spec.
 
 ## Repository policy migration
