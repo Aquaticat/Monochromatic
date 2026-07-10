@@ -2,10 +2,11 @@
 
 ## Status
 
-Planning in progress on 2026-07-09.
+Plan complete on 2026-07-09;
+implementation has not started.
 
 The failure has been diagnosed and future identity restored.
-The architecture has incorporated an independent advisor review.
+The architecture has incorporated independent advisor reviews.
 This plan records the defense-in-depth work that remains.
 No prevention code or remote protection change has been implemented yet.
 
@@ -526,17 +527,34 @@ it proves anchored-regex behavior,
 composition with `required_signatures`,
 owner behavior with an empty bypass list,
 and the GitHub-generated identity path.
-Do not create the final ruleset if any expected rejection or acceptance differs.
-The final payload changes only the name and the include condition to `~ALL`.
+The final full-policy payload changes only the name and the include condition to `~ALL`.
+
+If GitHub rejects the email-rule payload or observed behavior differs:
+
+- do not claim server-side approved-email enforcement;
+- activate the `~ALL` ruleset with only `required_signatures` and `non_fast_forward`,
+  still with no bypass actors;
+- retain exact local identity enforcement in cli-git and hk;
+- retain administrator enforcement in classic `main` protection;
+- record the failed request,
+  response,
+  and residual risk that a GitHub-verified but locally unapproved identity could pass the remote signature rule.
+
+This fallback still blocks the diagnosed incident:
+`fixture@example.invalid` produced GitHub reason `no_user`,
+which is not a verified signature.
+It does not broaden the guarantee to a different GitHub-recognized identity.
 
 GitHub's ruleset API documents `~ALL` as the all-branches condition,
 `required_signatures` as requiring verified commits,
 `committer_email_pattern` as a commit metadata rule,
 and `non_fast_forward` as preventing force pushes.
-After the fixture passes,
+After the full-policy fixture passes,
 the ruleset closes ordinary administrator bypass,
 rejects a valid signature carrying an unapproved committer email,
 and protects topic-branch publication as well as default-branch history.
+Under the fallback,
+only signature and non-fast-forward guarantees are server-authoritative.
 
 The server can enforce an email but has no committer-display-name rule.
 Local checks remain responsible for exact `Name <email>` identity.
@@ -758,7 +776,8 @@ Do not test rejection by pushing a bad commit to `main`.
 13. Verify a normal signed checkpoint commit remains local until the post-commit verifier succeeds.
 14. Export current remote-protection JSON and inventory current branch creators and committers.
 15. Test the proposed all-branch ruleset and tag behavior with temporary refs.
-16. Activate the verified all-branch ruleset with no bypass actors.
+16. Activate either the verified full-policy all-branch ruleset or its documented signature-only fallback,
+    with no bypass actors.
 17. Enable administrator enforcement and disable force pushes in classic `main` protection.
 18. Query GitHub rulesets and classic protection through the API and verify the exact final fields.
 19. Confirm subsequent pushed commits report GitHub verification reason `valid` and approved committer email.
@@ -852,11 +871,12 @@ The work is complete only when:
   or malformed update;
 - deliberate `HK=0` and `--no-verify` bypasses are rejected by the server;
 - valid signed commits still commit and push through user-facing commands and linked worktrees;
-- every branch requires verified signatures,
-  approved committer emails,
-  and fast-forward updates with no bypass actors;
+- every branch requires verified signatures and fast-forward updates with no bypass actors;
+- every branch also requires approved committer emails when the empirical GitHub contract passes,
+  otherwise the documented signature-only fallback and its narrower guarantee are recorded;
 - classic `main` protection also enforces signatures for administrators and forbids force pushes;
-- an owner cannot publish an unverified or unapproved-identity fixture commit to a temporary protected branch;
+- an owner cannot publish an unverified fixture commit to a temporary protected branch;
+- an owner also cannot publish an unapproved but valid identity when the empirical email-rule contract passes;
 - current web and automation workflows have measured compatibility decisions;
 - tag-publication behavior is tested and either protected by a verified tag ruleset
   or recorded as a residual limitation;
