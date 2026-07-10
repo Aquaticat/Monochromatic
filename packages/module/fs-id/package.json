@@ -1,0 +1,40 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/module-fs-id",
+  "description": "Cross-platform filesystem and volume identity resolution with explicit stable and degraded results.",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "module": "dist/final/node/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "nano-spawn": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  },
+  "files": [
+    "dist/final",
+    "src",
+    "LICENSES",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/module/fs-id"
+  }
+}
