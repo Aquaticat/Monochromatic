@@ -16,6 +16,7 @@ import {
 import { budgetModelSlug, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 import { callJudgeWithFallback, } from './judge-fallback.ts';
+import { callJudge, } from './judge.ts';
 import type {
   BudgetModel,
   Verdict,
@@ -30,6 +31,11 @@ const CONTEXT_WINDOW = 128_000;
  * Fixture maximum output token count.
  */
 const MAX_TOKENS = 4_096;
+
+/**
+ * Timeout budget for real judge retry composition test.
+ */
+const JUDGE_TIMEOUT_MS = 10_000;
 
 /**
  * Successful fallback verdict fixture.
@@ -65,7 +71,7 @@ function judgeFixture(
   const model = {
     id,
     name: id,
-    api: 'faux',
+    api: 'openai-completions',
     provider: 'test-provider',
     baseUrl: 'https://example.invalid',
     reasoning: false,
@@ -184,6 +190,101 @@ await describe({
         expect(result,).toBe(APPROVE_VERDICT,);
         expect(failedSlugs,).toEqual(['test-provider/first',],);
         expect(attemptedSlugs,).toEqual([
+          'test-provider/first',
+          'test-provider/fallback',
+        ],);
+      },
+    },),
+    it({
+      name: 'waits for every callJudge retry before selecting fallback model',
+      fn: async function waitsForCallJudgeRetries() {
+        /**
+         * Initially selected judge whose streams never produce a verdict.
+         */
+        const firstJudge = judgeFixture({ id: 'first', },);
+        /**
+         * Distinct judge that succeeds through forced tool call.
+         */
+        const fallbackJudge = judgeFixture({ id: 'fallback', },);
+        /**
+         * Model slugs observed by real callJudge stream seam.
+         */
+        const streamedSlugs: string[] = [];
+        /**
+         * Verdict returned only after first model's complete retry sequence.
+         */
+        const result = await callJudgeWithFallback({
+          firstJudge,
+          async resolveFallbackJudge() {
+            expect(streamedSlugs,).toEqual([
+              'test-provider/first',
+              'test-provider/first',
+              'test-provider/first',
+            ],);
+            return fallbackJudge;
+          },
+          callJudgeAttempt({ judge, },) {
+            return callJudge({
+              model: judge.model,
+              auth: judge.auth,
+              action: 'bash: echo hi',
+              cwd: '/project',
+              recentContext: '',
+              trustDirectives: [],
+              timeoutMs: JUDGE_TIMEOUT_MS,
+              systemPrompt:
+                'You MUST call the render_verdict tool to submit your evaluation. Do not respond with text; use the tool.',
+              batchContext: [],
+              streamSimpleFn: function streamSimpleFn(
+                model,
+              ) {
+                /**
+                 * Canonical model slug for current transport attempt.
+                 */
+                const slug = budgetModelSlug(model,);
+                streamedSlugs.push(slug,);
+                if (slug === budgetModelSlug(fallbackJudge.model,)) {
+                  return (async function* fallbackToolStream() {
+                    yield {
+                      type: 'toolcall_end',
+                      contentIndex: 0,
+                      toolCall: {
+                        id: 'fallback-verdict',
+                        name: 'render_verdict',
+                        arguments: APPROVE_VERDICT,
+                      },
+                      partial: {},
+                    };
+                  })() as never;
+                }
+                /**
+                 * Number of streams started for failed first model.
+                 */
+                const firstModelStreamCount = streamedSlugs.filter(
+                  function isFirstModel(streamedSlug,) {
+                    return streamedSlug === budgetModelSlug(firstJudge.model,);
+                  },
+                )
+                  .length;
+                return (async function* failedFirstModelStream() {
+                  yield {
+                    type: 'text_end',
+                    contentIndex: 0,
+                    content: firstModelStreamCount === 1
+                      ? 'First response omitted render_verdict.'
+                      : '',
+                    partial: {},
+                  };
+                })() as never;
+              } as never,
+            },);
+          },
+        },);
+
+        expect(result,).toEqual(APPROVE_VERDICT,);
+        expect(streamedSlugs,).toEqual([
+          'test-provider/first',
+          'test-provider/first',
           'test-provider/first',
           'test-provider/fallback',
         ],);
