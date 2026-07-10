@@ -13,7 +13,10 @@ import {
   execute,
 } from './built-consumer-helpers.ts';
 import { assertFixtureEqual, } from './built-post-commit-helpers.ts';
-import { installRepositoryPluginConfig, } from './built-repository-plugin-config.ts';
+import {
+  installRepositoryPluginConfig,
+  REPOSITORY_POLICY_FINDING_CODE,
+} from './built-repository-plugin-config.ts';
 import { verifyRepositoryPluginSeverities, } from './built-repository-plugin-severity.ts';
 
 /**
@@ -135,7 +138,7 @@ export async function verifyRepositoryPluginConsumer({ env, }: Readonly<{
   },);
   assertJsonl({
     text: blockedAdd.stderr,
-    expectedCode: 'root-context-forbidden',
+    expectedCode: REPOSITORY_POLICY_FINDING_CODE,
     context: 'root add finding',
   },);
   assertFixtureEqual({
@@ -210,7 +213,7 @@ export async function verifyRepositoryPluginConsumer({ env, }: Readonly<{
   },);
   assertJsonl({
     text: blockedCommit.stderr,
-    expectedCode: 'root-context-forbidden',
+    expectedCode: REPOSITORY_POLICY_FINDING_CODE,
     context: 'root commit finding',
   },);
   assertIncludes({
@@ -256,7 +259,7 @@ export async function verifyRepositoryPluginConsumer({ env, }: Readonly<{
   },);
   assertJsonl({
     text: direct.stdout,
-    expectedCode: 'root-context-forbidden',
+    expectedCode: REPOSITORY_POLICY_FINDING_CODE,
     context: 'root direct check',
   },);
   assertFixtureEqual({
@@ -276,6 +279,32 @@ export async function verifyRepositoryPluginConsumer({ env, }: Readonly<{
     ],
     cwd: repository,
     env,
+  },);
+  /**
+   * Complete direct scope finds untracked root candidate on stdout.
+   */
+  const directAll = await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'check',
+      '--policy',
+      'mono/forbidden-root-context',
+      '--all',
+    ],
+    expectedExit: 1,
+    cwd: repository,
+    env,
+  },);
+  assertJsonl({
+    text: directAll.stdout,
+    expectedCode: REPOSITORY_POLICY_FINDING_CODE,
+    context: 'root direct all check',
+  },);
+  assertFixtureEqual({
+    actual: directAll.stderr,
+    expected: '',
+    context: 'direct all check stderr',
   },);
 
   await verifyRepositoryPluginSeverities({

@@ -12,6 +12,7 @@ import {
 import { assertFixtureEqual, } from './built-post-commit-helpers.ts';
 import {
   installRepositoryPluginConfig,
+  REPOSITORY_POLICY_FINDING_CODE,
   repositoryPluginConfigSource,
 } from './built-repository-plugin-config.ts';
 
@@ -103,7 +104,7 @@ export async function verifyRepositoryPluginSeverities({
   },);
   assertJsonl({
     text: warned.stderr,
-    expectedCode: 'root-context-forbidden',
+    expectedCode: REPOSITORY_POLICY_FINDING_CODE,
     context: 'warn root add',
   },);
   await execute({

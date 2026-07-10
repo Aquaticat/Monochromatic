@@ -7,6 +7,11 @@ import { writeFile, } from 'node:fs/promises';
 import { execute, } from './built-consumer-helpers.ts';
 
 /**
+ * Fully qualified repository-policy finding code.
+ */
+export const REPOSITORY_POLICY_FINDING_CODE = 'mono/forbidden-root-context/root-context-forbidden';
+
+/**
  * Repository policy severity fixture.
  */
 export type RepositoryPolicySeverity = 'default' | 'warn' | 'off';
