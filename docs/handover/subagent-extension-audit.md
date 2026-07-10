@@ -26,10 +26,10 @@ Evaluate open-source Pi extensions and a minimal custom design for subagent orch
 ## Investigation state
 
 - Context fork: complete.
-- Candidate inventory: in progress. UI observability, interruption, and per-subagent timeout control are hard filters.
-- Source and maintenance audit: pending.
-- Integration validation: pending.
-- Recommendation: pending.
+- Candidate inventory: complete. UI observability, interruption, and per-subagent timeout control are hard filters.
+- Source and maintenance audit: complete.
+- Integration validation: host loading complete; child execution and interactive interruption remain unproven.
+- Recommendation: complete for evaluation; adoption awaits user selection and an implementation-level end-to-end proof.
 
 ## Screened candidate set
 
@@ -76,6 +76,14 @@ Meaningful open-source candidates found through GitHub and npm searches:
   separated from global run, no-output, and workflow-step settings.
 
 ## Validation probes
+
+Host verification measured Pi `0.80.6` and Node `v26.5.0`. Real Pi RPC smoke runs loaded
+`@the-forge-flow/sub-agents-pi`, `nicobailon/pi-subagents`, `pi-crew`, and `pi-multiagent` from
+cloned source paths. Each returned a successful `get_state` response; Forge, Nico, Pi Crew, and
+Multiagent also emitted extension UI requests. Pi Crew emitted status and widget registrations,
+Forge and Nico emitted widget registrations, and Multiagent emitted its live widget. This proves
+host loading and registration, not complete child execution, complete live history, or interactive
+control.
 
 All containerized validation runs used a 2 GB memory cap and 2 CPU cap.
 
