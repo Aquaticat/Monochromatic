@@ -110,9 +110,14 @@ function dynamicImportTargets({
       value: importSource.value,
     },];
   }
-  if ((!('start' in importSource)) || ((typeof importSource.start) !== 'number')
-    || (!('end' in importSource)) || ((typeof importSource.end) !== 'number'))
-    throw new Error('packed artifact computed import has no source range',);
+  if (!('start' in importSource))
+    throw new Error('packed artifact computed import has no source start',);
+  if ((typeof importSource.start) !== 'number')
+    throw new Error('packed artifact computed import has invalid source start',);
+  if (!('end' in importSource))
+    throw new Error('packed artifact computed import has no source end',);
+  if ((typeof importSource.end) !== 'number')
+    throw new Error('packed artifact computed import has invalid source end',);
   return [{
     kind: 'computed',
     value: source.slice(
