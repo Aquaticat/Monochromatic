@@ -101,7 +101,10 @@ The differential probes confirmed an upstream option-resolution regression:
 - Explicit Oxc selection through the shared Node and neutral presets also passed representative package builds,
   type lint,
   and oxlint.
-- Rebuilt tracked artifacts were byte-identical to their pre-regression Oxc output.
+- The five JavaScript outputs still present in the main checkout matched the 0.27.4 Oxc rebuild by SHA-256.
+  The failed 0.27.2 rebuild had removed the five declaration outputs,
+  so those files had no remaining main-checkout byte baseline;
+  the passing build restored all ten expected outputs.
 
 The complete source trace,
 version catalog,
