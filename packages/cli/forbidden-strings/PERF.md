@@ -63,7 +63,7 @@ Raw samples and exact fixture metadata are stored in
 ## Cli-git repository-scale manual push
 
 Measured on 2026-07-10 at cli-git revision
-`470c0f5dc8732c6bd2f89d20cadb873fb8b5a154`.
+`a9096c04a88f5b7413012f34b0287fb0d2dd237c`.
 The fixture cloned the complete repository history from remote revision
 `ef179a737ccd39fab84e9f320e8777eeb959367b`
 to the measured revision and repeatedly pushed the same complete range through both packed cli-git and direct Git.
@@ -74,14 +74,16 @@ It used Node `24.18.0`,
 Git `2.39.5`,
 scanner `0.1.9`,
 and a 1 GiB `/tmp` tmpfs matching the host's verified temporary-storage type.
-Pair order alternated after three warm-up pairs.
-All 10 measured pairs completed successfully.
+Pair order alternated after two consecutive three-pair median windows stabilized within 5% for direct and wrapped
+commands.
+Stability was reached after six warm-up pairs.
+All 30 measured pairs completed successfully.
 
 ```text
-direct Git       median 50.021 ms
-cli-git wrapper  median 1,074.817 ms
-added latency    median 1,023.730 ms   maximum 1,051.905 ms
-required ceiling                       strictly less than 2,000 ms
+direct Git       median 54.702 ms     p95 55.869 ms     MAD 0.645 ms
+cli-git wrapper  median 1,174.731 ms  p95 1,205.668 ms  MAD 15.992 ms
+added latency    median 1,119.389 ms  p95 1,152.066 ms  MAD 16.212 ms  maximum 1,205.014 ms
+required ceiling                                                         strictly less than 2,000 ms
 ```
 
 The first implementation created one lazy `git cat-file blob` subprocess per historical candidate and exhausted the
@@ -92,11 +94,25 @@ and bounded temporary-file materialization.
 Measurements retained 64 file lanes:
 eight lanes missed the ceiling on overlay storage,
 while 128 lanes increased storage contention.
-The accepted tmpfs run added at most 1,051.905 ms relative to paired direct Git,
-leaving 948.095 ms below the 2,000 ms ceiling.
+The accepted tmpfs run added at most 1,205.014 ms relative to paired direct Git,
+leaving 794.986 ms below the 2,000 ms ceiling.
 
+The committed harness is
+`packages/git-policies/cli/perf/manual-push-latency-benchmark.mjs`.
 Raw samples are stored in
 `packages/git-policies/cli/perf/manual-push-latency-2026-07-10.json`.
+After building and packing both production artifacts,
+run it from the repository root with:
+
+```sh
+podman run --memory=2g --cpus=2 --rm --tmpfs /tmp:rw,size=1g \
+  --security-opt label=disable \
+  --volume "$PWD/packages/git-policies/cli/dist/pack/monochromatic-dev-cli-git-0.0.1.tgz:/fixture/cli.tgz:ro" \
+  --volume "$PWD/packages/cli/forbidden-strings/target/release/forbidden-strings:/fixture/forbidden-strings:ro" \
+  --volume "$PWD:/source:ro" \
+  docker.io/library/node:24-slim \
+  node /source/packages/git-policies/cli/perf/manual-push-latency-benchmark.mjs
+```
 
 The release profile is `lto = true`,
  `codegen-units = 1`,

@@ -1560,15 +1560,17 @@ Unless later grilling changes them:
   Commits `b9b5a72c6`,
   `1830851c0`,
   and `470c0f5dc` measured storage concurrency and retained the 64-lane optimum after 128 lanes increased contention.
-- A packed full-repository benchmark at revision `470c0f5dc` ran 10 paired manual-push samples in a disposable Linux
-  container capped at 2 GiB RAM and 2 CPUs.
+- A packed full-repository benchmark at revision `a9096c04a` ran 30 paired manual-push samples after six stable warm-up
+  pairs in a disposable Linux container capped at 2 GiB RAM and 2 CPUs.
   Its 1 GiB `/tmp` tmpfs matches the host's verified temporary-storage type.
-  Direct Git median was 50.021 ms,
-  wrapper median was 1,074.817 ms,
-  added median was 1,023.730 ms,
-  and worst added latency was 1,051.905 ms.
+  Direct Git median was 54.702 ms,
+  wrapper median was 1,174.731 ms,
+  added median was 1,119.389 ms,
+  added p95 was 1,152.066 ms,
+  and worst added latency was 1,205.014 ms.
   Every sample remained below the strict 2,000 ms ceiling.
-  Raw samples live in `packages/git-policies/cli/perf/manual-push-latency-2026-07-10.json`.
+  The committed harness is `packages/git-policies/cli/perf/manual-push-latency-benchmark.mjs`;
+  raw samples live in `packages/git-policies/cli/perf/manual-push-latency-2026-07-10.json`.
 - The latest hosted forbidden-strings workflow at pre-integration `origin/main` revision `ef179a737` failed on one
   credential-shaped patch-context line and credential-shaped literals in the concurrently landed forbidden-regex tests.
   Commits `c35e012b6` and `a8baa6024` preserve the tests' runtime bytes and patch applicability while removing those
