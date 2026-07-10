@@ -2,8 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 through 6 are resolved;
-full-validation scope remains open.
+Decisions 1 through 7 are resolved;
+worked-example strategy remains open.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -483,11 +483,35 @@ validation depth should follow candidate state and risk:
   and safety inspection;
 - finalist:
   full relevant source audit,
-  reproducible build or installation,
-  upstream validation appropriate to the claimed surface,
+  complete default CI-equivalent validation,
+  every non-default suite relevant to the claimed surface,
   and consumer-boundary exercise;
 - high-trust finalist:
   finalist checks plus human-auditability and concentrated security-boundary review.
+
+Before running a finalist's validation,
+inventory every upstream task and CI job.
+Run the full default CI-equivalent path at the pinned revision in a secret-free,
+disposable,
+resource-bounded environment.
+Then run every non-default test,
+fuzz,
+platform,
+feature,
+native,
+Wasm,
+or integration suite relevant to the promised behavior and this repo's risk.
+Exercise relevant platform claims on the user's Linux x64,
+macOS arm64,
+and Windows x64 machines when the integration targets those platforms.
+
+Every omitted upstream suite receives an exact command,
+its purpose,
+and evidence that it cannot affect the claimed surface.
+A relevant suite that cannot be inspected or run blocks the finalist.
+An upstream failure must be diagnosed:
+it disqualifies the finalist unless evidence demonstrates that the failing path is outside every claimed and consumed surface.
+Consumer-boundary verification remains mandatory even after upstream validation passes.
 
 A skipped critical check is a failed gate.
 A soft criterion with sparse evidence remains low-signal with an explicit confidence range.
@@ -497,9 +521,14 @@ Neither silently becomes a pass.
 
 ### Phase 1: resolve the operating model
 
-Use grill-me to settle:
-
-- exact definition of full relevant validation.
+Use grill-me to settle the operating model,
+file authority,
+artifact policy,
+evidence failures,
+SaaS layers,
+weighted scoring,
+full validation,
+and worked-example strategy.
 
 Update this plan after each answer.
 Do not edit the skill during grilling.
@@ -550,7 +579,15 @@ Do not edit the skill during grilling.
   data portability,
   and lock-in checks where applicable.
 - Turn the external execution gate into an execution-manifest procedure.
-- Define consumer-boundary validation and partial-validation reporting.
+- Require an inventory of every upstream task and CI job before finalist execution.
+- Require the complete default CI-equivalent path plus every non-default suite relevant to the claimed surface.
+- Require exact omission records for irrelevant suites.
+- Block a finalist when a relevant suite cannot be inspected or run.
+- Diagnose upstream failures and reject unless the failure is proven outside every claimed and consumed surface.
+- Run consumer-boundary validation after upstream validation.
+- Use the user's Linux x64,
+  macOS arm64,
+  and Windows x64 machines for relevant platform claims.
 
 ### Phase 4: align output and examples
 
@@ -629,7 +666,11 @@ verify:
   configuration,
   or decision state;
 - adoption updates the decision record;
-- unsafe or uninspectable execution remains blocked.
+- unsafe or uninspectable execution remains blocked;
+- finalist fixtures inventory upstream tasks,
+  run default CI-equivalent validation and relevant non-default suites,
+  and justify every omission;
+- consumer-boundary checks still run after upstream suites pass.
 
 Use an independent reviewer to compare the rewritten skill and fixtures against this plan and the troubleshooting-doc benchmark.
 
@@ -652,6 +693,10 @@ The improvement is complete only when:
   and high-trust cases activate the correct gates;
 - candidate promotion and stopping rules prevent both shallow anchoring and unbounded audits;
 - every executed third-party command has a reviewed manifest and disposable boundary;
+- every finalist passes complete default CI-equivalent validation,
+  every relevant non-default suite,
+  and consumer-boundary checks on relevant available platforms;
+- every omitted suite has evidence that it cannot affect the claimed surface;
 - every recommendation separates non-compensable gates from relevance-gated scores,
   publishes frozen weights and arithmetic,
   and contains evidence status,
@@ -1016,6 +1061,79 @@ Ordinal bands beat narrative-only comparison because they still constrain how ev
 
 ### Decision 7: full relevant validation
 
-Open after Decision 6.
-Define when upstream's full suite is mandatory and when a bounded,
-consumer-focused validation plus documented omissions is sufficient.
+Decision:
+require complete default CI-equivalent validation,
+every non-default suite relevant to the claimed surface,
+and consumer-boundary checks for every finalist.
+The user selected this on 2026-07-09.
+
+Procedure:
+
+1. Inventory every upstream task and CI job at the pinned revision.
+2. Inspect the commands through the external-execution gate.
+3. Run the complete default CI-equivalent path in a secret-free,
+   disposable,
+   resource-bounded environment.
+4. Run every non-default suite relevant to claimed behavior or this repo's risk,
+   including test,
+   integration,
+   fuzz,
+   native,
+   Wasm,
+   feature,
+   and platform suites where applicable.
+5. Exercise relevant platform claims on Linux x64,
+   macOS arm64,
+   and Windows x64 when those are consumer targets.
+6. Record every omitted suite by exact command,
+   purpose,
+   and evidence that it cannot affect the claimed surface.
+7. Diagnose every failure.
+   Reject the finalist unless the failing path is proven outside every claimed and consumed surface.
+8. Exercise the real consumer boundary after upstream validation passes.
+
+A relevant suite that cannot be inspected or run blocks recommendation.
+Hours-long work is not skipped merely for duration;
+run it with appropriate resource isolation when it is relevant.
+Unrelated benchmarks,
+stress suites,
+or platform targets may be omitted only with the exact record required by this decision.
+
+Pros:
+
+- verifies upstream's normal quality contract and this repo's actual boundary;
+- catches relevant optional-feature and platform failures outside the default suite;
+- preserves risk-gated proportionality because only finalists receive this depth;
+- prevents `consumer smoke test passed` from standing in for upstream health;
+- makes omissions auditable.
+
+Cons:
+
+- finalist validation can consume substantial compute and machine time;
+- relevance and failure-isolation claims require evidence;
+- cross-platform coordination adds operational work;
+- upstream validation may expose additional external-execution paths that must be inspected first.
+
+Rejected alternative:
+run literally every upstream suite.
+It maximizes execution,
+but spends time and trust exposure on unrelated benchmarks,
+stress modes,
+and unsupported targets that cannot change the decision.
+
+Rejected alternative:
+consumer-boundary checks only.
+They prove the immediate integration,
+but miss defects and maintenance failures in the upstream quality contract.
+
+Ranking:
+CI-equivalent plus every relevant suite beats literal suite completeness because it remains exhaustive for the claimed surface without executing irrelevant code.
+Literal suite completeness beats consumer-only checks because broad upstream validation catches failures a narrow integration fixture cannot.
+
+### Decision 8: worked example
+
+Open after Decision 7.
+Choose whether the skill should link to a dated,
+evidence-complete repository vet as its canonical example,
+embed a synthetic example,
+or rely only on the output contract and scenario fixtures.
