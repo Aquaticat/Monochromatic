@@ -3,7 +3,8 @@ Generated from `AGENTS.md` by file-enforcer.
 ### Delegating work to subagents and child sessions
 
 Two peer mechanisms;
-pick by whether you need a visible, independently-running session.
+pick by whether you need a visible,
+independently-running session.
 
 In-process subagents (the Agent tool,
 including the general-purpose type) run inside this session and forward their results back to you reliably.
@@ -12,7 +13,8 @@ Caveat:
 you cannot enumerate how many subagents are running,
 and SendMessage steering is unreliable,
 so fan out general-purpose subagents only in interactive sessions where the user watches and steers them in the Claude Code UI.
-Rationale: `docs/decisions/general-purpose-subagent-ban.md`.
+Rationale:
+`docs/decisions/general-purpose-subagent-ban.md`.
 
 Use `spawn-claude` outside sandbox to launch a steerable child Claude Code session in a visible terminal window.
 The child runs independently,
