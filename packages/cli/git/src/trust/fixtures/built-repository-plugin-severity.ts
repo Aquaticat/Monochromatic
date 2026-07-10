@@ -48,10 +48,7 @@ export async function verifyRepositoryPluginSeverities({
    */
   const changed = await execute({
     command: 'git',
-    args: [
-      'status',
-      '--short',
-    ],
+    args: ['future-command',],
     expectedExit: 2,
     cwd: repository,
     env,
