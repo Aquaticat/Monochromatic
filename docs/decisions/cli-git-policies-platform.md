@@ -579,15 +579,22 @@ or commit failure leaves the real index and worktree unchanged by cli-git.
 Before ref advancement,
 a durable no-follow journal records exact original and prepared indexes,
 expected parent and tree identities,
-owner PID,
+owner PID plus process-birth identity,
 a private nonce-bearing reflog action,
-and real-index filesystem/device/inode identity.
+and exact directory,
+prepared-index,
+and real-index-lock device/inode identities.
 Startup recovery runs before trusted config,
+stabilizes and installs owned artifacts through verified hard links,
 installs or recognizes exact prepared state after interruption,
 and fails closed on active owners,
 replaced locks,
-unsafe artifacts,
+replaced or unsafe artifacts,
+read-only filesystem setup failures,
 or unrelated ref/index movement.
+Setup failures emit stable `content-unavailable` JSONL and preserve exact ref,
+index,
+and worktree state.
 Required fixtures are enumerated in the implementation spec.
 
 ## Repository policy migration

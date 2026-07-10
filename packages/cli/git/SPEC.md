@@ -1205,13 +1205,19 @@ A prepared journal records expected parent OIDs,
 intended tree,
 exact original and prepared index snapshots,
 a private nonce-bearing `GIT_REFLOG_ACTION`,
-real-index filesystem/device/inode identity,
-and owner PID before real Git can advance the ref.
+transaction-directory,
+original-index,
+post-index,
+and real-index-lock device/inode identities,
+and owner PID plus process-birth identity before real Git can advance the ref.
 When interruption happens before the exact landed-OID marker,
 recovery requires current OID and the nonce-bearing action in the latest `HEAD` reflog entry;
 missing or later reflog movement fails closed.
 Recovery runs before trusted repository config,
-refuses active owners and unsafe or replaced filesystem artifacts,
+refuses active owners while treating PID reuse as stale ownership,
+stabilizes exact prepared artifacts through verified same-filesystem hard links,
+installs only through an owner-preserving hard link rather than the mutable lock pathname,
+refuses unsafe or replaced filesystem artifacts,
 and preserves conflicting evidence after unrelated ref or index movement.
 Concurrent wrapper processes serialize on the real index lock and transaction journal lock.
 
@@ -1224,7 +1230,9 @@ Concurrent wrapper processes serialize on the real index lock and transaction jo
 - unrelated staged paths;
 - deletion;
 - untracked selected path;
-- `--pathspec-from-file` and NUL form;
+- `--pathspec-from-file` from ordinary files,
+  standard input,
+  and NUL form;
 - amend;
 - allow-empty;
 - merge conclusion;
@@ -1238,6 +1246,7 @@ Concurrent wrapper processes serialize on the real index lock and transaction jo
 - interruption after ref update and before index install;
 - interruption after index install and before journal completion;
 - concurrent wrapper attempts;
+- read-only administrative filesystem failure and healthy next invocation;
 - hk duplicate-separator regression bytes.
 
 Each fixture asserts exact ref,

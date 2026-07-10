@@ -147,13 +147,21 @@ Unmerged indexes block automatic correction.
 A durable no-follow transaction directory retains exact original and prepared index snapshots,
 expected parent and tree identities,
 a private nonce-bearing reflog action,
-and the owned real-index lock identity before reference advancement.
+process birth identity,
+and exact directory,
+index-artifact,
+and real-index lock identities before reference advancement.
 Every later wrapper invocation recovers before trusted config execution,
 installs or recognizes the exact prepared index after an interrupted landed commit,
 and fails closed on active owners,
+reused PIDs,
 replaced locks,
-unsafe artifacts,
+replaced or unsafe artifacts,
+read-only transaction filesystem setup,
 or unrelated reference/index movement.
+Filesystem setup errors emit `content-unavailable` JSONL and leave exact ref,
+index,
+and worktree state unchanged.
 
 Use the namespaced Optique management commands:
 

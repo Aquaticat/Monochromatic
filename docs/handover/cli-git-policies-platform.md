@@ -1337,9 +1337,11 @@ Unless later grilling changes them:
   and post-index snapshots,
   expected parent OIDs,
   intended tree,
-  owner PID,
+  owner PID plus process-birth identity,
   a private nonce-bearing `GIT_REFLOG_ACTION`,
-  and real-index filesystem/device/inode identity before ref advancement.
+  and exact transaction-directory,
+  prepared-index,
+  and real-index-lock device/inode identities before ref advancement.
 - Recovery runs before trusted config and distinguishes pre-ref cleanup,
   post-ref installation,
   already-installed state,
@@ -1354,9 +1356,13 @@ Unless later grilling changes them:
   lock replacement,
   conflicting ref movement,
   symlink rejection,
+  read-only administrative filesystem failure with a healthy next invocation,
+  standard-input pathspec capture,
   and signal cleanup.
 - Recovery consumes artifacts through no-follow descriptors,
-  revalidates the owned lock before path replacement,
+  stabilizes exact prepared files through verified hard links,
+  installs the index through an owner-preserving hard link rather than a mutable lock pathname,
+  distinguishes a live owner from PID reuse,
   and requires current OID plus the private nonce in the latest `HEAD` reflog entry when interruption precedes the
   exact landed-OID marker.
 - Checkpoints `41a48556f`,
@@ -1364,18 +1370,23 @@ Unless later grilling changes them:
   `bbfe7e8fd`,
   `8c7e378c9`,
   `07405c2e4`,
-  and `19c333622` contain expanded modes,
+  `19c333622`,
+  `01cd5e292`,
+  `33132c065`,
+  and `3979281e9` contain expanded modes,
   adversarial fixtures,
   no-follow recovery,
   reflog attribution,
   exact native selection,
-  and patch-grammar hardening.
+  patch-grammar hardening,
+  owner-preserving artifact installation,
+  and completed-install recovery evidence.
 - Formatting,
   type checking,
   build,
   full unit tests,
-  and packed shadow-bin runs through `proc_2` pass;
-  the final packed rerun and independent closure review are recorded with the closure checkpoint.
+  and packed shadow-bin runs through final `proc_6` pass;
+  the independent closure review found no remaining blocker after standard-input and filesystem-error evidence landed.
 - Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity
