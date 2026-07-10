@@ -361,7 +361,11 @@ export async function buildTypeScriptCandidate({
     clean: false,
     dts: false,
     sourcemap: false,
-    treeshake: false,
+    treeshake: true,
+    define: {
+      // Trusted config executes only through dynamic import, so package direct-entry branches are unreachable.
+      'import.meta.main': 'false',
+    },
     fixedExtension: true,
     logLevel: 'silent',
     deps: {
