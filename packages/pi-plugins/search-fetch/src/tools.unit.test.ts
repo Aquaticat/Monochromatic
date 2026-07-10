@@ -50,6 +50,20 @@ const CONFIG: LinkupConfig = {
  */
 const EMPTY_RESPONSE = { results: [], };
 
+/**
+ * Exact metadata search response fixture expected to render its object results as JSONL.
+ */
+const METADATA_SEARCH_RESPONSE = {
+  costDollars: {},
+  requestId: 'search-request',
+  resolvedSearchType: '',
+  results: [{
+    name: 'allowed',
+    url: GOOD_RESULT_URL,
+  },],
+  searchTime: 1,
+} as const;
+
 //endregion Fixtures
 
 await describe({
@@ -186,6 +200,37 @@ await describe({
           `https://www.${BLOCKED_HOST}/b`,
         ],);
         expect(result.details.provider,).toBe('exa',);
+      },
+    },),
+    it({
+      name: 'search renders exact metadata response results as JSONL',
+      fn: async () => {
+        /**
+         * Local value for mock.
+         */
+        const mock = mockClient({
+          searchResponse: METADATA_SEARCH_RESPONSE,
+          fetchResponse: { markdown: 'ok', },
+        },);
+        /**
+         * Local value for searchTool.
+         */
+        const searchTool = searchToolFrom(mock.client,);
+
+        /**
+         * Local value for result.
+         */
+        const result = await searchTool.execute(
+          'tool-call-search-metadata',
+          { query: 'metadata', },
+          undefined,
+          undefined,
+          fakeContext(),
+        );
+
+        expect(parseVisibleJsonl({ result, index: 0, },),).toEqual(METADATA_SEARCH_RESPONSE.results,);
+        expect(textContentAt({ result, index: 0, },),).not.toContain('requestId',);
+        expect(result.details.linkupResponse,).toBe(METADATA_SEARCH_RESPONSE,);
       },
     },),
     it({

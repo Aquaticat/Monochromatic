@@ -109,6 +109,66 @@ const METADATA_RESULTS_WITH_SCALAR_ITEM_RESPONSE = {
 } as const;
 
 /**
+ * Metadata search response fixture containing an invalid null result item.
+ */
+const METADATA_RESULTS_WITH_NULL_ITEM_RESPONSE = {
+  ...METADATA_RESULTS_RESPONSE,
+  results: [
+    ...METADATA_RESULTS_RESPONSE.results,
+    null,
+  ],
+} as const;
+
+/**
+ * Metadata search response fixture containing an invalid array result item.
+ */
+const METADATA_RESULTS_WITH_ARRAY_ITEM_RESPONSE = {
+  ...METADATA_RESULTS_RESPONSE,
+  results: [
+    ...METADATA_RESULTS_RESPONSE.results,
+    [],
+  ],
+} as const;
+
+/**
+ * Metadata search response fixture containing a non-array results value.
+ */
+const METADATA_RESULTS_WITH_NON_ARRAY_RESULTS_RESPONSE = {
+  ...METADATA_RESULTS_RESPONSE,
+  results: 'invalid results value',
+} as const;
+
+/**
+ * Metadata response shapes that must retain complete pretty JSON rather than JSONL.
+ */
+const METADATA_RESULTS_JSON_FALLBACK_CASES = [
+  {
+    name: 'unexpected top-level data',
+    value: METADATA_RESULTS_WITH_EXTRA_KEY_RESPONSE,
+  },
+  {
+    name: 'a missing required top-level key',
+    value: METADATA_RESULTS_WITH_MISSING_KEY_RESPONSE,
+  },
+  {
+    name: 'a scalar result item',
+    value: METADATA_RESULTS_WITH_SCALAR_ITEM_RESPONSE,
+  },
+  {
+    name: 'a null result item',
+    value: METADATA_RESULTS_WITH_NULL_ITEM_RESPONSE,
+  },
+  {
+    name: 'an array result item',
+    value: METADATA_RESULTS_WITH_ARRAY_ITEM_RESPONSE,
+  },
+  {
+    name: 'a non-array results value',
+    value: METADATA_RESULTS_WITH_NON_ARRAY_RESULTS_RESPONSE,
+  },
+] as const;
+
+/**
  * Markdown-only response fixture.
  */
 const MARKDOWN_ONLY_RESPONSE = { markdown: '# Meow', } as const;
@@ -251,53 +311,27 @@ await describe({
             expect(result.content.text,).toContain('"title":"First"',);
           },
         },),
-        it({
-          name: 'keeps JSON for metadata envelopes with unexpected top-level data',
-          fn: async () => {
-            /**
-             * Local value for result.
-             */
-            const result = await createJsonContent({
-              value: METADATA_RESULTS_WITH_EXTRA_KEY_RESPONSE,
-              renderResultsArrayAsJsonl: true,
-            },);
+        ...METADATA_RESULTS_JSON_FALLBACK_CASES.map(function createMetadataFallbackTest(testCase,) {
+          return it({
+            name: `keeps complete JSON for metadata envelopes with ${testCase.name}`,
+            fn: async () => {
+              /**
+               * Local value for result.
+               */
+              const result = await createJsonContent({
+                value: testCase.value,
+                renderResultsArrayAsJsonl: true,
+              },);
 
-            expect(result.content.type,).toBe('text',);
-            expect(result.content.text,).toContain('"diagnostic"',);
-            expect(result.content.text,).toContain('"requestId"',);
-          },
-        },),
-        it({
-          name: 'keeps JSON for metadata envelopes missing a required top-level key',
-          fn: async () => {
-            /**
-             * Local value for result.
-             */
-            const result = await createJsonContent({
-              value: METADATA_RESULTS_WITH_MISSING_KEY_RESPONSE,
-              renderResultsArrayAsJsonl: true,
-            },);
-
-            expect(result.content.type,).toBe('text',);
-            expect(result.content.text,).toContain('"requestId"',);
-            expect(result.content.text,).toContain('"searchTime"',);
-          },
-        },),
-        it({
-          name: 'keeps JSON for metadata envelopes with scalar result items',
-          fn: async () => {
-            /**
-             * Local value for result.
-             */
-            const result = await createJsonContent({
-              value: METADATA_RESULTS_WITH_SCALAR_ITEM_RESPONSE,
-              renderResultsArrayAsJsonl: true,
-            },);
-
-            expect(result.content.type,).toBe('text',);
-            expect(result.content.text,).toContain('invalid scalar result',);
-            expect(result.content.text,).toContain('"requestId"',);
-          },
+              expect(result.content.type,).toBe('text',);
+              expect(result.content.text,).toBe(JSON.stringify(
+                testCase.value,
+                null,
+                2,
+              ),);
+              expect(result.fullJsonPath,).toBeUndefined();
+            },
+          },);
         },),
         it({
           name: 'returns empty JSONL for empty results when requested',
