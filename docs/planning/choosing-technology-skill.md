@@ -2,8 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 through 12 are resolved.
-Vet-report timing remains open after independent review.
+Decisions 1 through 13 are resolved.
+The plan awaits final shared-understanding confirmation and independent audit.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -424,7 +424,8 @@ Use this sequence:
     weighted score breakdowns,
     sensitivity results,
     and a complete ranking.
-12. Write or update the automatic vet report when the substantial-evaluation threshold is crossed.
+12. Create or reopen the matching vet report as soon as the substantial-evaluation threshold is crossed;
+    update it after each major audit phase and finish it before recommending.
 13. Recommend without changing product code,
     dependencies,
     configuration,
@@ -624,6 +625,16 @@ Do not edit the skill during grilling.
 
 - Add the required recommendation schema.
 - Add an automatic `docs/audit/<topic>-vet-<date>.md` artifact for substantial evaluations.
+- Search for a matching current vet report before creating one.
+- Reuse and update the current report when decision subject,
+  hard constraints,
+  deployment,
+  trust boundary,
+  and incumbent context remain compatible.
+- Create the report as soon as the substantial threshold is crossed,
+  update it after each major audit phase,
+  and complete it before recommendation.
+- Create a new dated report only when merging materially incompatible decision context would obscure the evidence trail.
 - Define the substantial threshold as any evaluation that promotes a serious alternative and uses external source,
   vendor,
   maintenance,
@@ -705,6 +716,8 @@ verify:
 - alternatives receive pros,
   cons,
   and complete rankings with adjacent-order reasons;
+- the vet report exists and is current before recommendation;
+- matching compatible reports are updated instead of duplicated;
 - recommendation writes only the required vet report and does not mutate product,
   dependency,
   configuration,
@@ -750,7 +763,9 @@ The improvement is complete only when:
   evidence limits,
   score breakdown,
   and a full ranking;
-- substantial evaluations automatically receive a vet report recording the governing skill revision;
+- substantial evaluations create or reopen a compatible vet report as soon as the threshold is crossed,
+  update it through the audit,
+  and complete it before recommendation;
 - evaluation requests do not cause unauthorized product,
   dependency,
   configuration,
@@ -1459,6 +1474,59 @@ Activated-only inspection beats scoring every domain because relevance still mat
 
 ### Decision 13: vet-report timing and reuse
 
-Open after Decision 12.
-Decide whether a substantial recommendation waits for its vet report to be written in the same task,
-and whether an existing current report is updated instead of creating a dated duplicate.
+Decision:
+create or update the matching vet report during the audit and complete it before delivering the recommendation.
+The user selected this on 2026-07-09.
+
+Lifecycle:
+
+1. Before creating a report,
+   search `docs/audit/` for the same decision subject.
+2. Reuse the current matching report when its hard constraints,
+   deployment context,
+   trust boundary,
+   incumbent,
+   and decision scope are compatible.
+3. As soon as the substantial-evaluation threshold from Decision 3 is crossed,
+   create or reopen that report.
+4. Update it after context,
+   discovery,
+   hard-gate screening,
+   targeted evidence,
+   finalist validation,
+   scoring,
+   and synthesis phases.
+5. Record the governing skill revision and each evidence date.
+6. Finish the report before returning the recommendation.
+7. Create a new dated report only when changed decision context is materially incompatible and merging would obscure which evidence supports which constraints.
+8. Link later adoption decisions to the vet report;
+   do not turn the vet report itself into adoption authorization.
+
+Pros:
+
+- matches the troubleshooting-doc rule that the durable artifact exists before completion;
+- preserves work throughout a long audit rather than writing from memory at the end;
+- avoids duplicate reports for one evolving decision;
+- makes handover possible at every major phase;
+- keeps recommendation and adoption separate.
+
+Cons:
+
+- recommendation delivery waits for report completion;
+- an existing report can accumulate substantial edits;
+- compatibility judgments determine whether history stays in one file or splits;
+- concurrent sessions must coordinate edits to the same report.
+
+Rejected alternative:
+create a new dated snapshot for every evaluation.
+It preserves immutable episodes,
+but duplicates evidence and fragments one continuing decision.
+
+Rejected alternative:
+recommend first and document later.
+It is faster at the response boundary,
+but breaks durable-artifact closure and risks losing evidence.
+
+Ranking:
+update-before-answer beats new snapshots because one current evidence trail is easier to resume and audit than duplicates.
+New snapshots beat document-later because at least every recommendation still has a completed artifact.
