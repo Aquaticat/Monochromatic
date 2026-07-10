@@ -26,6 +26,16 @@ import type {
 } from './types.ts';
 
 /**
+ * Public cli-git package import used by trusted configs.
+ */
+const CLI_GIT_PACKAGE_IMPORT = '@monochromatic-dev/cli-git';
+
+/**
+ * Source export used to avoid rebundling cli-git's complete executable artifact.
+ */
+const CLI_GIT_SOURCE_IMPORT = '@monochromatic-dev/cli-git/ts';
+
+/**
  * TypeScript trust build failure.
  */
 export class TypeScriptBuildError extends Error {
@@ -164,6 +174,20 @@ function sourceCapturePlugin({
       const importerPath = modulePath(importer,);
       if (!trackedPaths.has(importerPath,))
         return null;
+      if (source === CLI_GIT_PACKAGE_IMPORT) {
+        bareImports.add(source,);
+        /**
+         * Source-level package entry lets tree shaking remove direct-executable code from stored config.
+         */
+        const resolved = await this.resolve(
+          CLI_GIT_SOURCE_IMPORT,
+          importer,
+          { skipSelf: true, },
+        );
+        if ((resolved === null) || ((resolved.external !== undefined) && (resolved.external !== false)))
+          throw new TypeScriptBuildError('cli-git source authoring export did not resolve into bundle.',);
+        return resolved;
+      }
       if (source.startsWith('.',)) {
         /**
          * Rolldown-resolved local target.

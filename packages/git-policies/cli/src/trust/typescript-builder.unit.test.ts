@@ -133,6 +133,36 @@ export default {
       },
     },),
     it({
+      name: 'tree shakes executable runtime from cli-git package-root authoring imports',
+      fn: async function testCliGitPackageRootImport() {
+        await using fixture = await createFixture(`import {
+  defineConfig,
+  repositoryPolicyPlugin,
+} from '@monochromatic-dev/cli-git';
+
+export default defineConfig({
+  plugins: { mono: repositoryPolicyPlugin },
+});
+`,);
+        /** Workspace dependency tree exposed to disposable fixture. */
+        const workspaceNodeModules = await realpath(join(import.meta.dirname, '../../node_modules',),);
+        await symlink(workspaceNodeModules, join(fixture.repository, 'node_modules',), 'dir',);
+        const candidate = await buildTypeScriptCandidate({
+          discovered: fixture.discovered,
+          buildDirectory: fixture.buildDirectory,
+        },);
+        expect(candidate.barePackageImports,).toContain('@monochromatic-dev/cli-git',);
+        /** Private executable copy for import verification. */
+        const executablePath = join(fixture.repository, 'stored.mjs',);
+        await writePrivateFile({ path: executablePath, bytes: candidate.executableBytes, },);
+        const validated = await executeStoredConfig(executablePath,);
+        expect(validated.registeredPolicies.map(function policyName(policy,) {
+          return policy.name;
+        },),)
+          .toContain('mono/forbidden-root-context',);
+      },
+    },),
+    it({
       name: 'inlines literal dynamic bare package into sole bundle',
       fn: async function testLiteralDynamicPackage() {
         await using fixture = await createFixture(`export default {\n  plugins: {\n    dynamic: {\n      name: 'dynamic',\n      policies: [{\n        name: 'load',\n        defaultSeverity: 'off',\n        warnSafe: true,\n        triggers: ['direct-check'],\n        check: async () => { await import('valibot'); return []; },\n      }],\n    },\n  },\n};\n`,);

@@ -3,6 +3,7 @@
   "name": "@monochromatic-dev/cli-git",
   "description": "Policy-aware Git wrapper and side-effect-free policy authoring API.",
   "type": "module",
+  "sideEffects": false,
   "private": false,
   "main": "dist/final/node/index.mjs",
   "types": "dist/final/node/index.d.mts",
