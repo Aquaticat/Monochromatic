@@ -1,0 +1,70 @@
+{
+  "revision": "470c0f5dc8732c6bd2f89d20cadb873fb8b5a154",
+  "baseOid": "ef179a737ccd39fab84e9f320e8777eeb959367b",
+  "limits": {
+    "memoryBytes": 2147483648,
+    "cpus": 2,
+    "addedLatencyCeilingMs": 2000
+  },
+  "platform": "linux",
+  "node": "v24.18.0",
+  "git": "git version 2.39.5",
+  "scanner": "forbidden-strings 0.1.9",
+  "runs": 10,
+  "medianDirectMs": 50.02061,
+  "medianWrapperMs": 1074.8169105,
+  "medianAddedMs": 1023.730065,
+  "maximumAddedMs": 1051.905163,
+  "samples": [
+    {
+      "directMs": 49.758865,
+      "wrapperMs": 1066.348108,
+      "addedMs": 1016.5892429999999
+    },
+    {
+      "directMs": 50.335306,
+      "wrapperMs": 1069.103263,
+      "addedMs": 1018.767957
+    },
+    {
+      "directMs": 50.076041,
+      "wrapperMs": 1039.402755,
+      "addedMs": 989.326714
+    },
+    {
+      "directMs": 49.965179,
+      "wrapperMs": 1045.475695,
+      "addedMs": 995.510516
+    },
+    {
+      "directMs": 51.838385,
+      "wrapperMs": 1080.530558,
+      "addedMs": 1028.692173
+    },
+    {
+      "directMs": 51.127432,
+      "wrapperMs": 1093.877043,
+      "addedMs": 1042.749611
+    },
+    {
+      "directMs": 48.955948,
+      "wrapperMs": 1100.861111,
+      "addedMs": 1051.905163
+    },
+    {
+      "directMs": 50.209563,
+      "wrapperMs": 1030.755223,
+      "addedMs": 980.5456599999999
+    },
+    {
+      "directMs": 49.124032,
+      "wrapperMs": 1083.395816,
+      "addedMs": 1034.271784
+    },
+    {
+      "directMs": 48.942249,
+      "wrapperMs": 1087.084968,
+      "addedMs": 1038.142719
+    }
+  ]
+}
