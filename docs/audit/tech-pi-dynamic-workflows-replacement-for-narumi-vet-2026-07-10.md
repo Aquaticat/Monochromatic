@@ -3,7 +3,7 @@
 ## Audit metadata
 
 - Status: in progress
-- Lifecycle phase: named-candidate source audit complete; runtime validation pending
+- Lifecycle phase: named-candidate hard failures reproduced; scoring prohibited; synthesis pending
 - Subject: `pi-dynamic-workflows` replacement for `@narumitw/pi-subagents`
 - Scope: evaluate whether `@quintinshaw/pi-dynamic-workflows` is safe and suitable to replace the installed
   `@narumitw/pi-subagents` Pi extension.
@@ -644,8 +644,28 @@ observable transcript, and direct per-child operator interruption.
 
 ## Execution manifests
 
-No third-party command tree has been executed for this report. Clone operations will use `/tmp/agent/`; any install, build,
-test, or runtime execution will receive a manifest first.
+### Candidate hard-gate reproduction harness
+
+- Candidate, revision, and clone origin: `@quintinshaw/pi-dynamic-workflows` `2.12.1`, commit
+  `df334361b1149b7b9a129c720c0d8c287838be8a`, cloned from
+  https://github.com/QuintinShaw/pi-dynamic-workflows into
+  `/tmp/agent/quintinshaw-pi-dynamic-workflows-20260710`.
+- Top-level command: `podman run --rm --memory=2g --cpus=2 --env=VM_ESCAPE_SENTINEL=sentinel-only --volume /tmp/agent/quintinshaw-pi-dynamic-workflows-20260710:/candidate:ro --volume /tmp/agent/pi-dynamic-artifacts/candidate-hard-gates.mjs:/probe.mjs:ro --workdir /candidate docker.io/library/node:24-slim sh -c 'npm ci --no-audit --no-fund && npm run build && node /probe.mjs'`.
+- Statically discovered command tree: `npm ci` resolves the lockfile and may run `preinstall`, `install`, and `postinstall`
+  scripts from devDependencies. The candidate package itself declares no install script; the only devDependency with a
+  postinstall is `esbuild` (binary download). `npm run build` runs `tsc`. `node /probe.mjs` imports built candidate modules
+  and the Pi SDK to reproduce three hard-gate findings.
+- Expected reads: `/candidate/dist/**`, `/candidate/node_modules/**`, `/candidate/package.json`, `/probe.mjs`.
+- Expected writes: `/candidate/node_modules/**`, `/candidate/dist/**` (build output), `/tmp/sdk-cwd`,
+  `/tmp/empty-agent-home` (inside the container's private scratch filesystem).
+- Expected subprocesses: `npm`, `node`, `tsc`, `esbuild`'s installed binary.
+- Expected network endpoints: `registry.npmjs.org` for `npm ci`, then none.
+- Resource ceilings: 2 GiB memory, 2 CPUs, wall-clock bounded by the process tool.
+- Credential, environment, home-directory, network, and repository-mount policy: no ambient credentials; only
+  `VM_ESCAPE_SENTINEL` is injected as a probe value; no real home-directory mount; the repository clone is mounted
+  read-only; the probe script is mounted read-only; network is allowed only during `npm ci` and cannot reach
+  user secrets.
+- Stop conditions: the probe prints three JSON lines and exits, or the container exceeds its memory or CPU ceiling.
 
 ## Hard-gate exits
 
@@ -656,7 +676,53 @@ test, or runtime execution will receive a manifest first.
 
 ## Validation results
 
-Pending.
+### Reproduction environment
+
+- Container image: `docker.io/library/node:24-slim`, Node `v24.18.0`, npm `11.16.0`.
+- Isolation: `podman run --rm --memory=2g --cpus=2 --userns=keep-id --env=VM_ESCAPE_SENTINEL=sentinel-only`.
+- Mounts: `/tmp/agent/work:/work:rw,Z` (writable copy of the tagged clone) and the probe script read-only with `:Z`
+  relabeling. SELinux on the host is `Enforcing`; without `:Z` the container could not read host files.
+- Build: `npm ci --no-audit --no-fund` installed `251` packages; `npm run build` (`tsc`) succeeded. npm `11` blocked
+  install scripts for `@google/genai`, `esbuild`, and `protobufjs` under its `allowScripts` policy, so no third-party
+  postinstall ran.
+- Probe: `/tmp/agent/pi-dynamic-artifacts/candidate-hard-gates.mjs`, log at
+  `/tmp/agent/pi-dynamic-artifacts/logs/candidate-hard-gates.log`. Exit status `0`.
+
+### Reproduced failures
+
+The probe output, verbatim:
+
+```text
+{"probe":"vm-escape","result":["sentinel-only","function"]}
+{"probe":"timeout-immediate","result":null,"lateAgentCompleted":false}
+{"probe":"timeout-after-wait","lateAgentCompleted":true}
+{"probe":"sdk-tool-policy","candidateFilteredCustomTools":["read"],"realActiveTools":["read","bash","edit","write"]}
+```
+
+#### VM boundary escape
+
+A workflow body `return await agent.constructor('return [process.env.VM_ESCAPE_SENTINEL, typeof fetch]')()` returned
+`["sentinel-only","function"]`. The script read the injected host environment value and confirmed host `fetch` is a
+function. The README's "sandboxed script" and "fs/network are unavailable" claims are contradicted by this run. Hard
+failure confirmed.
+
+#### Timeout does not cancel the agent
+
+With `timeoutMs: 5` and an agent that sleeps `80ms`, the immediate result was `null` (the recoverable timeout path), and
+`lateAgentCompleted` was `false` right after the timeout. After waiting `120ms`, `lateAgentCompleted` became `true`. The
+timed-out agent kept running, completed its body, and could have continued calling tools. Hard failure confirmed.
+
+#### Tool allowlist does not constrain the real session
+
+The candidate's `applyToolPolicy(..., ['read'], undefined)` produced `["read"]`, but `session.getActiveToolNames()`
+returned `["read","bash","edit","write"]`. The Pi SDK defaults overrode the candidate's allowlist, so a "read-only"
+agentType still receives `bash`, `edit`, and `write`. Hard failure confirmed.
+
+### CI-equivalent suite
+
+The candidate is excluded, so the full `679`-test suite is outside the decisive surface. The build and the probe together
+constitute the reproducible validation. `CONTRIBUTING.md` confirms the unit tests use fake agents that do not surface
+these failures, which is consistent with the tests passing while the real SDK boundary remains unenforced.
 
 ## Score arithmetic and sensitivity
 
