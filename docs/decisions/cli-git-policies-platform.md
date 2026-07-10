@@ -670,9 +670,12 @@ and scanner-owned candidate read failure are distinct diagnostics that emit `plu
 Redacted scanner findings emit qualified finding events and exit `1` at error severity.
 The policy defaults to the `forbidden-strings` executable on `PATH`,
 accepts an explicit executable option,
-never invokes a shell,
-defaults to error,
-and is warn-unsafe.
+and never invokes a shell.
+Because candidate scanning uses explicit temporary paths,
+the adapter applies the scanner's path-anchored `--all` exclusions for its configured rules file and canonical
+self-match sources before materialization;
+unrelated nested basename matches remain scannable.
+The policy defaults to error and is warn-unsafe.
 
 ### Final newline
 

@@ -1584,6 +1584,16 @@ Unless later grilling changes them:
   every other policy remained enforced.
   Hosted push workflow [29130940967](https://github.com/Aquaticat/Monochromatic/actions/runs/29130940967) then passed its
   independent full-tree scan at revision `295a61834`.
+- A following unescaped incremental push exposed a path-semantics mismatch:
+  explicit `candidate-N` temporary paths bypassed the scanner's `--all` exclusions and reported its canonical rules
+  sources as findings.
+  The wrapper blocked the push and left remote `main` unchanged.
+  Commit `298876aeb` filters the configured rules file and four canonical self-match sources before materialization while
+  retaining unrelated nested basename candidates;
+  focused unit,
+  type,
+  Oxlint,
+  and cli-git build checks pass.
 - Key implementation checkpoints are `b9dc927ef`,
   `a5918a490`,
   `bacfe57b1`,
@@ -1597,7 +1607,8 @@ Unless later grilling changes them:
   `470c0f5dc`,
   `3d8c240da`,
   `a9096c04a`,
-  and `295a61834`.
+  `295a61834`,
+  and `298876aeb`.
 
 ### Issue #342 filesystem identity
 

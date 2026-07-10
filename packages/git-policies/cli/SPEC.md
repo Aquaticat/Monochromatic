@@ -1334,6 +1334,9 @@ Indeterminate required content exits `2` with `content-unavailable`.
 Default scanner resolution uses `forbidden-strings` from `PATH`.
 An explicit policy option may choose another executable.
 Always invoke the scanner with an argument array and no shell.
+Before explicit temporary-file scanning,
+apply the scanner's path-anchored `--all` exclusions for its configured rules file and canonical self-match sources.
+Do not exclude unrelated nested files sharing those basenames.
 Exit `1` is parsed as redacted findings;
 the scanner must not expose matched bytes.
 Missing executable,
