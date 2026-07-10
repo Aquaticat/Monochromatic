@@ -194,6 +194,10 @@ export type CommitRegion = {
    * Whether wrapper-only escape hatch appears as a real flag.
    */
   readonly hasEscapeHatch: boolean;
+  /**
+   * Parsed positional pathspecs for supported explicit-path transactions.
+   */
+  readonly pathspecs: readonly string[];
 };
 
 /**
@@ -261,6 +265,7 @@ export function parseCommitRegion(
       hasPathspecFromFile: false,
       hasPathspec: false,
       hasEscapeHatch: false,
+      pathspecs: [],
     };
   }
 
@@ -328,6 +333,10 @@ export function parseCommitRegion(
     hasEscapeHatch: value.escape
       .length
       > 0,
+    pathspecs: [
+      ...value.positionals,
+      ...(separatorIndex === (-1) ? [] : normalised.slice(separatorIndex + 1,)),
+    ],
   };
 }
 
