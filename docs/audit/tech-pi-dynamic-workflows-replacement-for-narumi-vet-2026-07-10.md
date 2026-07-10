@@ -2,8 +2,8 @@
 
 ## Audit metadata
 
-- Status: in progress
-- Lifecycle phase: named-candidate hard failures reproduced; scoring prohibited; synthesis pending
+- Status: complete; no recommendation
+- Lifecycle phase: complete; no recommendation
 - Subject: `pi-dynamic-workflows` replacement for `@narumitw/pi-subagents`
 - Scope: evaluate whether `@quintinshaw/pi-dynamic-workflows` is safe and suitable to replace the installed
   `@narumitw/pi-subagents` Pi extension.
@@ -726,8 +726,102 @@ these failures, which is consistent with the tests passing while the real SDK bo
 
 ## Score arithmetic and sensitivity
 
-Pending validated finalists.
+Score: not applicable. `@quintinshaw/pi-dynamic-workflows` `2.12.1` failed hard gates, so it is not a validated finalist
+and cannot be scored. Hard gates remain outside arithmetic and cannot be offset by points. No other candidate reached
+finalist validation, because required GitHub discovery is blocked by the documented `1,000`-result search cap while
+sampled pages still add plausible survivors. With no validated finalists, the weighted rubric has no scored subjects and
+no sensitivity matrix to run.
 
 ## Pros, cons, ranking, and recommendation
 
-Pending completion of every applicable gate. Recommendation is deliberately withheld.
+### `@quintinshaw/pi-dynamic-workflows` `2.12.1`
+
+Pros:
+
+- Strong release cadence and provenance: `34` tagged releases in six weeks, npm SLSA provenance, signed annotated tag,
+  and tag-to-version verification in CI.
+- Real token and cost accounting read from subagent sessions, journaled resume with longest-unchanged-prefix replay,
+  per-phase model routing, git-worktree isolation, background runs with result delivery, and a rich `/workflows` TUI.
+- One direct runtime dependency (`acorn`); no install hooks in the published package; no covert telemetry or backdoor
+  found in production source.
+
+Cons:
+
+- Hard failure: the `node:vm` boundary is documented as not a security sandbox, yet the README advertises a sandboxed
+  script with `fs`/network unavailable. A model-generated body can read ambient `process.env` and reach host `fetch` via
+  the injected `agent.constructor`.
+- Hard failure: per-agent `timeoutMs` reports a recoverable `null` without cancelling the agent, so a timed-out child
+  keeps running, keeps spending tokens, and can outlive its worktree.
+- Hard failure: `agentType` tool allowlists filter only a local array; the real Pi session still activates
+  `read`, `bash`, `edit`, and `write`, so "read-only" is not enforced.
+- Hard failure: operator pause and stop target whole runs; no per-child interruption and no direct child TUI exists.
+- Hard failure: observable history is capped at `40` entries and `20,000` total characters and is not a complete
+  transcript.
+- Material audit surface: `6,732` code lines across `33` source files, `283` lockfile packages, `75%` owner commit
+  concentration, and no fuzz, mutation, coverage, or end-to-end CI job.
+
+### `@narumitw/pi-subagents` `0.13.0` (incumbent baseline)
+
+Pros:
+
+- Small surface: `1,723` code lines in `2` source files, one runtime dependency (`typebox`).
+- Real subprocess isolation with process-group `SIGTERM` then `SIGKILL` teardown, so a timeout or abort actually stops
+  the child.
+- Passes `--tools` or `--no-tools` to the `pi` CLI, so the allowlist is enforced by the real runtime, not a local array.
+- Per-task `timeoutMs`, `thinkingLevel`, `cwd`, chain, parallel, and aggregator fields in the tool schema.
+
+Cons:
+
+- No interactive per-child TUI; the user cannot enter or steer a running child session directly.
+- Child activity surfaces through streamed status and a final result, not a complete persisted transcript.
+- `1,980` physical lines; single test file; no fuzz, mutation, or coverage evidence.
+- The user explicitly asked to replace it, so it is the comparison baseline, not a recommendation.
+
+### Ranking
+
+1. `@narumitw/pi-subagents` `0.13.0` (incumbent) beats `@quintinshaw/pi-dynamic-workflows` `2.12.1` because the candidate
+   fails six hard gates that the incumbent's subprocess model does not fail in the same way. The incumbent actually
+   kills children on timeout and routes tool policy through the real `pi` runtime.
+2. `@quintinshaw/pi-dynamic-workflows` `2.12.1` is excluded. Its feature breadth is irrelevant once hard gates fail.
+
+This ranking is conditional and incomplete. It compares only the incumbent and the single user-named candidate. Other
+ready-made alternatives exist but could not be enumerated to saturation, so they are not ranked.
+
+### Recommendation
+
+No recommendation.
+
+Two independent conditions each forbid a replacement recommendation:
+
+- Required discovery is blocked. GitHub's documented search cap returns at most `1,000` results per query, and four
+  frozen queries report between `1,192` and `23,764` matches while sampled page three still adds plausible survivors.
+  npm token search and broader-web search are finite or unbounded-but-unfiltered alternates, not uncapped category
+  enumeration. Under the governing workflow, a blocked required source forbids a recommendation even if every named
+  candidate is otherwise favorable.
+- The user-named candidate failed six hard gates, reproduced in a disposable, secret-free, resource-bounded
+  container. Soft scoring cannot rescue a hard failure.
+
+### What the user can do next
+
+The recorded Zellij fallback directly addresses the candidate's missing per-child control and transcript visibility, but
+it is not eligible for a recommendation here. The existing-tools-first gate requires every ready-made technology to fail a
+named hard constraint, and the blocked GitHub source means that exhaustion is not proven. A later session that unblocks
+enumeration, or that narrows the hard constraints with the user, could reopen finalist validation.
+
+If the user instead wants to keep the incumbent and patch its missing pieces, the honest path is a separate
+implementation request, not part of this evaluation. This audit did not change product code, dependencies, configuration,
+or any decision record.
+
+## Confidence and evidence limits
+
+- Source and artifact claims cite clone paths, commit, tag, npm integrity, and `path:line` ranges. Reproduction claims
+  cite the exact container command, resource ceilings, and verbatim probe output.
+- GitHub maintenance counts use the frozen year window and the `10` most recently updated items. They are a maintainer
+  activity sample, not a complete tracker census.
+- Discovery did not saturate. The candidate ledger is deliberately incomplete; any "no other alternatives exist" claim
+  would be unsupported.
+- The VM escape reproduction used a synthetic environment variable and `typeof fetch`; it did not attempt a full
+  filesystem read or network call. The `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING` result shows `import()` is not directly
+  available, but `process.env` and `fetch` are, which is enough to contradict the advertised boundary.
+- The SDK allowlist probe ran against installed Pi `0.80.6`. A future Pi SDK change that lets callers pass `tools` or
+  `noTools` through `createAgentSession` could change this finding; the candidate would still need to call it.
