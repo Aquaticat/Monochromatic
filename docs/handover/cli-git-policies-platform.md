@@ -1500,6 +1500,64 @@ Unless later grilling changes them:
 - The existing scanner source and independent forbidden-strings CI remain separate;
   this slice wraps the binary rather than modifying its matching engine.
 
+### Issue #354 implementation checkpoint
+
+- Manual push now obtains Git-native update records from a private `--dry-run --verify` pre-push hook and validates
+  destination OIDs through `git ls-remote --refs`.
+  It scans every newly reachable commit tree and final commit,
+  annotated-tag,
+  tree,
+  or blob state.
+  Stale negotiation and indeterminate required content fail closed;
+  explicit dry runs bypass manual-push policies and pure deletion remains contentless.
+- Canonical policy source lives in `packages/git-policies/forbidden-strings/`.
+  File-enforcer maintains its cli-local mirror under
+  `packages/git-policies/cli/src/optional/forbidden-strings/` so the single cli-git MJS artifact exports the inert
+  plugin without a package cycle or secondary runtime chunk.
+- Root `cli-git.config.ts` registers `forbiddenStringsPlugin` under namespace `security` and points it at the repository's
+  release scanner binary.
+  Default plugin behavior still resolves `forbidden-strings` from `PATH`.
+- Scanner invocation uses an argument array without a shell.
+  Redacted exit-`1` output becomes findings.
+  Missing executable,
+  interruption,
+  unexpected status,
+  malformed output,
+  and scanner-owned materialized-file read failure produce distinct messages under `plugin-threw` and exit `2`.
+  Invalid completed plugin output remains `policy-incomplete`.
+- Packed non-workspace fixtures cover direct check,
+  predicted commit content,
+  full-lifecycle escape,
+  post-commit auto-push gating,
+  manual pushes of externally created history,
+  warning severity,
+  and every scanner failure class.
+  `mise run //packages/git-policies/cli:test:built:trust` completed with `built-trust-consumer-ok` after the source export
+  declared `nano-spawn` as a packed runtime dependency.
+- A disposable repository copied the exact root config and used the real Rust scanner through the built artifact.
+  Direct check and pre-forward findings blocked,
+  clean post-commit policy evaluation auto-pushed,
+  and an externally created forbidden commit was rejected by manual push while the bare remote stayed unchanged.
+- Scanner-engine performance remains documented in `packages/cli/forbidden-strings/PERF.md`.
+  The cli-git integration measurement used the built tarball,
+  scanner `0.1.9`,
+  the 11 files changed from `origin/main` at revision `6eccb3064250a3c521d13f6824e4658f428c7628`,
+  and a disposable Linux x64 container capped at 2 GiB RAM and 2 CPUs.
+  Across 30 paired samples,
+  direct scanner median was 1.993 ms,
+  cli-git policy median was 269.900 ms,
+  and wrapper-added median was 267.907 ms.
+  This is a baseline rather than a budget;
+  raw samples live in `packages/git-policies/cli/perf/forbidden-strings-2026-07-10.json`,
+  while #356 remains responsible for cross-platform budgets and enforcement.
+- Key implementation checkpoints are `b9dc927ef`,
+  `a5918a490`,
+  `bacfe57b1`,
+  `54b316aae`,
+  `df7e6dec0`,
+  `18d7940c3`,
+  and `6eccb3064`.
+
 ### Issue #342 filesystem identity
 
 - Added `@monochromatic-dev/module-fs-id` with source-qualified colon-free IDs,

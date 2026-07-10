@@ -25,6 +25,41 @@ md.
  change README.
 md too.
 
+## Cli-git integration baseline
+
+Measured on 2026-07-10 at cli-git revision
+`6eccb3064250a3c521d13f6824e4658f428c7628`.
+This measurement does not replace the scanner benchmarks in this document.
+It isolates the added cost of running the scanner through cli-git's trusted policy lifecycle.
+
+The fixture used cli-git's packed production artifact and scanner `0.1.9` in a disposable Linux x64 container capped at
+2 GiB RAM and 2 CPUs.
+The container ran Node `24.18.0`,
+Git `2.39.5`,
+and overlayfs.
+Its corpus copied the 11 files changed from `origin/main` to the measured revision,
+437,892 bytes in total,
+and scanned them with one deterministic non-matching literal rule.
+The direct scanner and `git cli-git check --policy security/forbidden-strings` used the same scanner,
+repository,
+filesystem cache state,
+and null standard-output sinks.
+Pair order alternated.
+Warm-up ended after two consecutive five-sample median windows differed by at most 5% for both commands.
+The measured set contained 30 successful samples per command.
+
+```text
+direct scanner   median 1.993 ms   p95 2.146 ms   MAD 0.140 ms
+cli-git policy   median 269.900 ms p95 275.931 ms MAD 1.923 ms
+added median     267.907 ms
+```
+
+This is a baseline,
+not an accepted performance budget.
+Issue #356 sets and enforces budgets after every required scenario has a measured operating-system baseline.
+Raw samples and exact fixture metadata are stored in
+`packages/git-policies/cli/perf/forbidden-strings-2026-07-10.json`.
+
 The release profile is `lto = true`,
  `codegen-units = 1`,
  `opt-level = 3`,

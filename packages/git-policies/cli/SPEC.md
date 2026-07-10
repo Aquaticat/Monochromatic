@@ -1313,9 +1313,34 @@ Deleted root candidates are clean.
 
 Use candidate bytes rather than incidental worktree bytes.
 Post-commit scan uses landed commit ground truth.
-Manual push uses Git-native update calculation and scans every required content-bearing state.
+Manual push runs a private Git `--dry-run --verify` pre-push probe,
+parses Git's pre-push update records,
+and validates negotiated remote OIDs with `git ls-remote --refs` before policy evaluation.
+Do not infer destination state from cached tracking refs,
+push output,
+or hand-written refspec interpretation.
+Scan every newly reachable commit tree and final commit,
+annotated-tag,
+tree,
+or blob state for each update.
+Deduplicate exact candidate identities across updates.
+Explicit dry runs bypass manual-push policies.
 Pure ref deletion is clean.
-Indeterminate required content and scanner process failure exit `2`.
+Indeterminate required content exits `2` with `content-unavailable`.
+
+Default scanner resolution uses `forbidden-strings` from `PATH`.
+An explicit policy option may choose another executable.
+Always invoke the scanner with an argument array and no shell.
+Exit `1` is parsed as redacted findings;
+the scanner must not expose matched bytes.
+Missing executable,
+unexpected non-finding status,
+process interruption,
+malformed output,
+and scanner-owned materialized-file read failure throw from the plugin.
+A thrown plugin callback emits `plugin-threw` and exits `2`;
+invalid completed plugin output emits `policy-incomplete`.
+The policy defaults to error and is warn-unsafe.
 Preserve the independent SLSA-attested CI invocation.
 
 ### Final newline

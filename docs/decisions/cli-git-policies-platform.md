@@ -639,7 +639,7 @@ It is the first repo plugin migration and proves the minimal finding path.
 ### Forbidden strings
 
 `forbidden-strings` wraps the separately built,
-SLSA-attested scanner.
+SLSA-attested scanner and remains inert until trusted config registers it.
 It scans:
 
 - predicted would-be-committed content before forwarding;
@@ -647,9 +647,28 @@ It scans:
 - actual content-bearing ranges for manual push;
 - direct check scope.
 
+Manual push uses Git's pre-push protocol from a private `--dry-run --verify` probe,
+then validates every negotiated remote OID through `git ls-remote --refs`.
+It scans every newly reachable commit tree and final commit,
+tag,
+tree,
+or blob state.
+Commits created outside the wrapper and forbidden content removed by a later commit therefore remain covered.
+Explicit user dry runs do not run manual-push policies.
+
 An enabled scanner that cannot determine a required content-bearing push range has not completed and exits `2`.
 A pure ref deletion carries no content and is exempt from that failure.
-Scanner subprocess failure exits `2`.
+Missing executables,
+interruption,
+unexpected status,
+malformed output,
+and scanner-owned candidate read failure are distinct diagnostics that emit `plugin-threw` and exit `2`.
+Redacted scanner findings emit qualified finding events and exit `1` at error severity.
+The policy defaults to the `forbidden-strings` executable on `PATH`,
+accepts an explicit executable option,
+never invokes a shell,
+defaults to error,
+and is warn-unsafe.
 
 ### Final newline
 
