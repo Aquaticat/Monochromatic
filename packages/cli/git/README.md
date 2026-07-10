@@ -73,15 +73,22 @@ It is an in-process unique symbol and is never serialized to JSONL.
 
 ## Policy engine and management
 
-The shadow executable runs `require-root` through the unified policy contract before the existing command transformers.
-The built-in defaults to `error`.
+The shadow executable runs four configurable safeguards through the unified policy contract before fixed command
+transformers:
+`require-root`,
+`linked-worktree-only`,
+`branch-worktree-only`,
+and `add-explicit`.
+All default to `error`.
 Validated policy settings support `off`,
 `warn`,
-and `error`;
-configuring warn-unsafe `require-root` as `warn` also produces a configuration warning.
-Repository-root `cli-git.config.mjs` can register namespaced plugin policies after exact-snapshot trust.
-Only `require-root` has migrated from the legacy rule pipeline in this transitional slice;
-plugin policies join it in declaration order when trusted config is active.
+and `error`.
+`branch-worktree-only` is warn-safe;
+configuring any other current built-in as `warn` also produces a configuration warning.
+Repository-root `cli-git.config.mjs` or `cli-git.config.ts` can configure built-ins and register namespaced plugin policies
+after exact-snapshot trust.
+Built-ins run in the listed order;
+plugin policies follow in declaration order when trusted config is active.
 
 Policy findings and engine failures are compact LF-terminated JSONL.
 Forwarded wrapper invocations write events to stderr;
@@ -237,8 +244,12 @@ and cascading untrust:
 mise run //packages/cli/git:test:built:trust
 ```
 
-`--no-enforce-require-root` bypasses the policy for one forwarded invocation and is stripped before real Git runs.
-The token is recognized only in flag position before Git's `--` pathspec separator;
+Every built-in accepts a generic one-invocation escape named `--no-enforce-<policy-id>`.
+The existing `--no-enforce-worktree`,
+`--no-enforce-worktree-branch`,
+and `--no-enforce-bulk-add` aliases remain supported.
+Escapes skip that policy for the complete invocation and are stripped before real Git runs.
+They are recognized only in flag position before Git's `--` pathspec separator;
 option values and pathspecs with the same bytes remain untouched.
 `--cli-git-keep-going` is also wrapper-only and preserves fixed policy order while allowing later finding-producing policies to run.
 Engine failures always stop immediately.
@@ -305,8 +316,7 @@ Run guarded commands from a linked worktree root,
 `--no-enforce-worktree` after the guarded subcommand and before any `--`
 pathspec separator to bypass linked-worktree enforcement for one invocation;
 the wrapper strips the flag before forwarding to real git.
- The existing
-require-root rule still rejects linked-worktree subdirectories.
+ The `require-root` policy still rejects linked-worktree subdirectories.
 
 Repositories under a baked-in tool-cache directory are exempt from this rule.
 A third-party tool (currently uv,
@@ -379,7 +389,7 @@ for the same reason as `git add .`.
 `--no-enforce-bulk-add` to bypass for one invocation;
  the flag is stripped
 before forwarding to real git.
- The rule walks pre-subcommand global options
+ The policy walks pre-subcommand global options
 the same way atomic-push does.
 
 **Atomic push**:

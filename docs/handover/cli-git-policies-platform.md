@@ -4,7 +4,8 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #347 are complete and closed.
-Command-safeguard migration issue #348 is the next unblocked implementation slice.
+Command-safeguard migration issue #348 is implemented locally and awaiting final packed verification and closure.
+Fixed-transform staging issue #349 is the next dependency-ordered slice after #348 closes.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -38,12 +39,13 @@ absolute path.
 ## Verified current-state facts
 
 - `packages/cli/git/package.json` exposes only the `git` binary today.
-- `packages/cli/git/src/index.ts` runs a sequential `RULES` array and stops when a rule throws.
-- Current rule order is:
-  - `requireRoot`
-  - `linkedWorktreeOnly`
-  - `branchWorktreeOnly`
-  - `addExplicit`
+- `packages/cli/git/src/bin.ts` runs the configurable policy engine before a sequential fixed-transform `RULES` array.
+- Current policy order is:
+  - `require-root`
+  - `linked-worktree-only`
+  - `branch-worktree-only`
+  - `add-explicit`
+- Current fixed-transform order is:
   - `atomicPush`
   - `commitOnly`
   - `statusHintsOff`
@@ -1084,6 +1086,46 @@ Unless later grilling changes them:
   reviewed race fixes,
   and external option diagnosis.
   Issue #347 was closed after every acceptance criterion and evidence gate passed.
+  Actual npm publication remains deferred in #358.
+
+### Issue #348 configurable safeguard migration
+
+- Registered `linked-worktree-only`,
+  `branch-worktree-only`,
+  and `add-explicit` after `require-root` in one canonical built-in registry shared by execution and trusted config
+  validation.
+- Preserved default `error` severity for all four safeguards.
+  Only `branch-worktree-only` is warn-safe;
+  the other built-ins emit warning metadata when trusted config selects `warn`.
+- Added persistent trusted-config `off` and `warn` coverage through the packed shadow executable.
+  No-config unit and built-wrapper fixtures preserve previous default enforcement.
+- Centralized generic and legacy escape parsing before policy execution.
+  Flag-position escapes are stripped before real Git;
+  option values and pathspecs with the same bytes are preserved.
+  The engine retains escaped policy IDs for later lifecycle stages.
+- Preserved stash,
+  clean,
+  reset,
+  explicit and implicit branch creation,
+  and bulk-add parsing through parser and disposable-repository suites.
+- Added a disposable ignored-root-sentinel clean fixture covering `HEAD`,
+  `config`,
+  `hooks`,
+  `objects`,
+  and `refs` without mutating the real worktree.
+- Kept the baked tool-cache allowlist segment-aware and realpath-safe with configured-cache and repository git-dir
+  fixtures.
+- Removed the superseded safeguard modules from `src/rules/` after policy-engine unit and wrapper parity passed;
+  checks and their focused tests now live under `src/policy-engine/`.
+- Commits `7cae6d950`,
+  `4d6601f03`,
+  `4e619ed82`,
+  `0d6a61b38`,
+  and `01cfcd12e` contain the engine migration,
+  trusted registry correction,
+  old-rule retirement,
+  and packed consumer fixture work.
+- Final packed-bin and independent closure evidence are still pending at this checkpoint.
   Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity

@@ -557,17 +557,19 @@ Required fixtures are enumerated in the implementation spec.
 
 ### Built-in safeguards
 
-Migrate these configurable built-ins with behavior parity:
+These configurable built-ins now run through one fixed-order policy registry with behavior parity:
 
 - `require-root`;
 - `linked-worktree-only`;
 - `branch-worktree-only`;
 - `add-explicit`.
 
-Keep atomic push,
+Their persistent severities and complete-invocation escapes are resolved before any policy executes.
+Legacy safeguard aliases remain compatible and are stripped with the generic policy escapes before real Git.
+Atomic push,
 commit only,
 status hints off,
-and auto-push as fixed behavior in the staged lifecycle.
+and auto-push remain fixed behavior in the staged lifecycle.
 
 ### Forbidden root context
 

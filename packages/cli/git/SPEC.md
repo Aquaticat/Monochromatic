@@ -1166,10 +1166,18 @@ State-mutating verification uses disposable repositories only.
 
 ### Built-ins
 
-The four configurable built-ins preserve every current accepted and rejected command fixture.
-`branch-worktree-only` is included even though the superseded decision omitted it.
+The four configurable built-ins preserve every accepted and rejected command fixture through the unified policy engine.
+Their fixed order is `require-root`,
+`linked-worktree-only`,
+`branch-worktree-only`,
+then `add-explicit`.
+All default to `error`;
+only `branch-worktree-only` is warn-safe.
 Unsafe warn configuration emits a config warning but still forwards when only warning findings remain.
-Every invocation escape hatch skips the complete policy lifecycle.
+Generic `--no-enforce-<policy-id>` escapes and the legacy safeguard aliases skip the complete policy lifecycle and are
+stripped before real Git.
+Escape-looking option values and pathspecs remain ordinary Git arguments.
+The legacy fixed-rule implementations no longer participate in dispatch.
 
 ### Forbidden root context
 
