@@ -119,6 +119,23 @@ export type TrustCandidate = Readonly<{
   filesystemStabilityReason?: string;
 }>;
 /**
+ * Trust consent and output adapters.
+ */
+export type TrustConsentAdapters = Readonly<{
+  /**
+   * Writes human-readable disclosure to stderr boundary.
+   */
+  disclose: (text: string,) => void;
+  /**
+   * Requests explicit interactive affirmative response.
+   */
+  prompt: () => Promise<boolean>;
+  /**
+   * Supplies audit timestamp.
+   */
+  now: () => Date;
+}>;
+/**
  * Loaded trusted configuration ready for policy execution.
  */
 export type LoadedTrustedConfig = Readonly<{

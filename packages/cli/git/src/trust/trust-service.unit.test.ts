@@ -336,8 +336,8 @@ await describe({
         /** Canonical discovered config. */
         const discovered = await fixtureConfig(fixture,);
         await trustMjs({ discovered, registryRoot: fixture.registryRoot, yes: true, adapters: trustAdapters([],), },);
-        expect(await untrustConfig({ discovered, registryRoot: fixture.registryRoot, },),).toBe(true,);
-        expect(await untrustConfig({ discovered, registryRoot: fixture.registryRoot, },),).toBe(false,);
+        expect((await untrustConfig({ discovered, registryRoot: fixture.registryRoot, },)).removed,).toBe(true,);
+        expect((await untrustConfig({ discovered, registryRoot: fixture.registryRoot, },)).removed,).toBe(false,);
       },
     },),
     it({

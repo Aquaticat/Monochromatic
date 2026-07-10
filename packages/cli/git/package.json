@@ -37,6 +37,7 @@
     "nano-spawn": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-async-time": "workspace:*",
     "@optique/core": "catalog:",
     "acorn": "catalog:",
     "tsdown": "catalog:",

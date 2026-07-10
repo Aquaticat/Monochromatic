@@ -149,17 +149,19 @@ export async function runTrustManagement({
     }
     if (action.command === 'untrust') {
       /**
-       * Whether exact identity record existed.
+       * Recursive revocation summary after pre-mutation disclosure.
        */
-      const removed = await untrustConfig({
+      const result = await untrustConfig({
         discovered,
         registryRoot: effectiveRegistryRoot,
+        disclose: discloseTrust,
       },);
       console.log(JSON.stringify({
         schemaVersion: 1,
         type: 'untrust-summary',
         configPath: discovered.configPath,
-        removed,
+        removed: result.removed,
+        affectedRoots: result.affectedRoots,
       },),);
       return 0;
     }

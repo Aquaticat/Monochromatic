@@ -107,9 +107,13 @@ async function validateCandidateDirectory(directory: string,): Promise<TrustReco
 function buildMjsRecord({
   candidate,
   recordedAt,
+  recursiveChildren,
+  authorizingRoots,
 }: Readonly<{
   candidate: TrustCandidate;
   recordedAt: string;
+  recursiveChildren: boolean;
+  authorizingRoots: readonly TrustRecord['identity'][];
 }>,): TrustRecord {
   return {
     schemaVersion: 1,
@@ -126,8 +130,8 @@ function buildMjsRecord({
     },],
     executableSnapshotFile: MJS_SNAPSHOT_FILE,
     executableSize: candidate.size,
-    recursiveChildren: false,
-    authorizingRoots: [],
+    recursiveChildren,
+    authorizingRoots,
     recordedAt,
   };
 }
@@ -141,6 +145,10 @@ function buildMjsRecord({
  *
  * @param recordedAt - RFC 3339 UTC audit timestamp
  *
+ * @param recursiveChildren - persisted descendant authority
+ *
+ * @param authorizingRoots - explicit and inherited provenance
+ *
  * @returns disposable candidate with explicit commit operation
  *
  * @example
@@ -152,10 +160,14 @@ export async function prepareMjsRecord({
   registryRoot,
   candidate,
   recordedAt,
+  recursiveChildren = false,
+  authorizingRoots = [],
 }: Readonly<{
   registryRoot: string;
   candidate: TrustCandidate;
   recordedAt: string;
+  recursiveChildren?: boolean;
+  authorizingRoots?: readonly TrustRecord['identity'][];
 }>,): Promise<PreparedTrustRecord> {
   await ensureRegistryRoot(registryRoot,);
   /**
@@ -234,6 +246,8 @@ export async function prepareMjsRecord({
   const record = buildMjsRecord({
     candidate,
     recordedAt,
+    recursiveChildren,
+    authorizingRoots,
   },);
   await writePrivateFile({
     path: join(
