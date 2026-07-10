@@ -31,6 +31,8 @@ export type CommandResult = Readonly<{
  *
  * @param env - optional complete environment
  *
+ * @param input - optional exact standard input
+ *
  * @returns captured standard streams
  *
  * @example
@@ -44,12 +46,14 @@ export async function execute({
   expectedExit = 0,
   cwd,
   env,
+  input,
 }: Readonly<{
   command: string;
   args: readonly string[];
   expectedExit?: number | readonly number[];
   cwd?: string;
   env?: NodeJS.ProcessEnv;
+  input?: string;
 }>,): Promise<CommandResult> {
   /**
    * Child process with piped machine-readable streams.
@@ -61,18 +65,30 @@ export async function execute({
     cwd,
     env,
     stdio: [
-      'ignore',
+      input === undefined ? 'ignore' : 'pipe',
       'pipe',
       'pipe',
     ],
   },
   );
+  if (input !== undefined)
+    child.stdin
+      ?.end(input,);
+  if ((child.stdout === null) || (child.stderr === null))
+    throw new TypeError('Fixture command capture streams are unavailable.',);
+  /**
+   * Captured output streams narrowed after spawn configuration.
+   */
+  const {
+    stdout: stdoutStream,
+    stderr: stderrStream,
+  } = child;
   /**
    * Stream collection started before waiting for process settlement.
    */
   const outputPromise = Promise.all([
-    consumeText(child.stdout,),
-    consumeText(child.stderr,),
+    consumeText(stdoutStream,),
+    consumeText(stderrStream,),
   ],);
   await once(
     child,

@@ -31,6 +31,7 @@ import {
 import {
   assertLandedCommit,
   assertOwnedLock,
+  assertTransactionReflog,
   CommitTransactionRecoveryError,
   headsEqual,
   parsePreparedJournal,
@@ -308,6 +309,14 @@ export async function recoverCommitTransaction({
     );
     if (marker.landedOid !== currentHead.oid)
       throw new CommitTransactionRecoveryError(`Current HEAD differs from journal landed OID; recovery retained at ${directory}`,);
+  }
+  else {
+    await assertTransactionReflog({
+      gitPath,
+      cwd: effectiveCwd,
+      oid: currentHead.oid,
+      journal,
+    },);
   }
   await assertLandedCommit({
     gitPath,

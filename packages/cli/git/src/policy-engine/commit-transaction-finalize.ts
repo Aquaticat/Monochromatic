@@ -70,6 +70,7 @@ export async function executePreparedCommit({
       cwd: spawnCwd,
       indexPath: workspace.commitIndexPath,
       args: commitArgs,
+      environment: { GIT_REFLOG_ACTION: workspace.reflogAction, },
       stdio: 'inherit',
     },);
   }

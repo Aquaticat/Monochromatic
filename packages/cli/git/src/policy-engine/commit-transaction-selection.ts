@@ -24,6 +24,16 @@ const ONLY_MODE_TOKENS: ReadonlySet<string> = new Set([
   '--only',
 ],);
 /**
+ * Selection controls consumed before final private-index commit.
+ */
+const PRIVATE_SELECTION_TOKENS: ReadonlySet<string> = new Set([
+  '-i',
+  '-p',
+  '--include',
+  '--interactive',
+  '--patch',
+],);
+/**
  * Private pathspec input mode.
  */
 const PRIVATE_FILE_MODE = 0o600;
@@ -85,6 +95,146 @@ export function privateExplicitCommitArgs({
   }
   return retained.filter(function retainToken(token,) {
     return (token !== '--') && (!ONLY_MODE_TOKENS.has(token,));
+  },);
+}
+
+/**
+ * Removes selection controls after private index contains exact user choice.
+ *
+ * @param args - transformed Git arguments
+ *
+ * @param pathspecs - parsed positional pathspecs
+ *
+ * @returns complete private-index commit arguments
+ *
+ * @example
+ * ```ts
+ * privateSelectionCommitArgs({ args: ['commit', '--patch', 'a'], pathspecs: ['a'] });
+ * ```
+ */
+export function privateSelectionCommitArgs({
+  args,
+  pathspecs,
+}: Readonly<{
+  args: readonly string[];
+  pathspecs: readonly string[];
+}>,): readonly string[] {
+  return privateExplicitCommitArgs({
+    args,
+    pathspecs,
+  },)
+    .filter(function retainSelectionToken(token,) {
+    return !PRIVATE_SELECTION_TOKENS.has(token,);
+  },);
+}
+
+/**
+ * Resolves final arguments after private selection creates complete index.
+ *
+ * @param args - transformed Git arguments
+ *
+ * @param pathspecs - parsed positional pathspecs
+ *
+ * @param mode - private index construction mode
+ *
+ * @param selectedPrivately - whether selection controls were consumed privately
+ *
+ * @returns real Git commit arguments
+ *
+ * @example
+ * ```ts
+ * resolvePrivateCommitArgs({ args: ['commit', '--patch', 'a'], pathspecs: ['a'], mode: 'index', selectedPrivately: true });
+ * ```
+ */
+export function resolvePrivateCommitArgs({
+  args,
+  pathspecs,
+  mode,
+  selectedPrivately,
+}: Readonly<{
+  args: readonly string[];
+  pathspecs: readonly string[];
+  mode: 'explicit-path' | 'index';
+  selectedPrivately: boolean;
+}>,): readonly string[] {
+  if (mode === 'explicit-path')
+    return privateExplicitCommitArgs({
+      args,
+      pathspecs,
+    },);
+  return selectedPrivately
+    ? privateSelectionCommitArgs({
+      args,
+      pathspecs,
+    },)
+    : args;
+}
+
+/**
+ * Runs native interactive selection against private copied index.
+ *
+ * @param workspace - private transaction workspace
+ *
+ * @param gitPath - resolved real Git executable
+ *
+ * @param cwd - effective repository cwd
+ *
+ * @param patch - whether patch rather than menu selection applies
+ *
+ * @param pathspecs - positional selection pathspecs
+ *
+ * @param pathspecFile - optional materialized pathspec file
+ *
+ * @param pathspecFileNul - whether file records use NUL separators
+ *
+ * @example
+ * ```ts
+ * await prepareInteractiveSelection({ workspace, gitPath, cwd, patch: true, pathspecs: ['a'] });
+ * ```
+ */
+export async function prepareInteractiveSelection({
+  workspace,
+  gitPath,
+  cwd,
+  patch,
+  pathspecs,
+  pathspecFile,
+  pathspecFileNul,
+}: Readonly<{
+  workspace: CommitTransactionWorkspace;
+  gitPath: string;
+  cwd: string;
+  patch: boolean;
+  pathspecs: readonly string[];
+  pathspecFile?: string;
+  pathspecFileNul: boolean;
+}>,): Promise<void> {
+  /**
+   * Git-native add selection mode matching commit selection UI.
+   */
+  const mode = patch ? '--patch' : '--interactive';
+  /**
+   * Exact pathspec source arguments consumed only by private add.
+   */
+  const selectionPathspecs = pathspecFile === undefined
+    ? [
+      '--',
+      ...pathspecs,
+    ]
+    : [
+      `--pathspec-from-file=${pathspecFile}`,
+      ...(pathspecFileNul ? ['--pathspec-file-nul',] : []),
+    ];
+  await runTransactionGit({
+    gitPath,
+    cwd,
+    indexPath: workspace.commitIndexPath,
+    args: [
+      'add',
+      mode,
+      ...selectionPathspecs,
+    ],
+    stdio: 'inherit',
   },);
 }
 

@@ -70,6 +70,10 @@ export type PreparedTransactionJournal = Readonly<{
    */
   realIndexPath: string;
   /**
+   * Private nonce-bearing reflog action identifying real Git ref update.
+   */
+  reflogAction: string;
+  /**
    * Exact original HEAD state.
    */
   originalHead: OriginalHead;
@@ -317,6 +321,7 @@ export async function prepareTransactionJournal({
     state: 'prepared',
     repositoryRoot,
     realIndexPath: workspace.realIndexPath,
+    reflogAction: workspace.reflogAction,
     originalHead,
     expectedParentOids,
     mode,

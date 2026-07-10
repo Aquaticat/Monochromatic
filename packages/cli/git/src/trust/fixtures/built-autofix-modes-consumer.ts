@@ -4,14 +4,11 @@
  * @module
  */
 import {
-  readFile,
   rm,
   writeFile,
 } from 'node:fs/promises';
-import {
-  assertIncludes,
-  execute,
-} from './built-consumer-helpers.ts';
+import { execute, } from './built-consumer-helpers.ts';
+import { verifyAutofixSelectionModes, } from './built-autofix-selection-modes-consumer.ts';
 import { assertFixtureEqual, } from './built-post-commit-helpers.ts';
 
 /**
@@ -183,91 +180,8 @@ export async function verifyAutofixModes({
     cwd: repository,
   },);
 
-  /**
-   * Canonical include mode proceeds through real Git without automatic patch.
-   */
-  await writeFile(
-    `${repository}/include-marker.txt`,
-    'include baseline\n',
-  );
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'add',
-      'include-marker.txt',
-    ],
-    cwd: repository,
-  },);
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'commit',
-      '--quiet',
-      '-m',
-      'include baseline',
-    ],
-    cwd: repository,
-  },);
-  await writeFile(
-    `${repository}/include-marker.txt`,
-    'include marker\n',
-  );
-  await execute({
-    command: 'git',
-    args: [
-      'commit',
-      '--include',
-      '--quiet',
-      '-m',
-      'canonical include',
-      'include-marker.txt',
-    ],
-    cwd: repository,
+  await verifyAutofixSelectionModes({
+    repository,
     env,
   },);
-  /**
-   * Exact clean real index before read-only correction blocks.
-   */
-  const readOnlyIndex = Buffer.from(await readFile(`${repository}/.git/index`,))
-    .toString('base64',);
-  await writeFile(
-    `${repository}/selected.txt`,
-    'bad\n',
-  );
-  for (const selectionFlag of [
-    '--include',
-    '--patch',
-    '--interactive',
-  ]) {
-    /**
-     * Read-only selection result requiring direct correction.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- Each user-facing selection mode must be exercised independently.
-    const blocked = await execute({
-      command: 'git',
-      args: [
-        'commit',
-        selectionFlag,
-        '--quiet',
-        '-m',
-        `blocked ${selectionFlag}`,
-        'selected.txt',
-      ],
-      expectedExit: 1,
-      cwd: repository,
-      env,
-    },);
-    assertIncludes({
-      text: blocked.stderr,
-      expected: '"fix":"available"',
-      context: `${selectionFlag} direct-fix guidance`,
-    },);
-    assertFixtureEqual({
-      // oxlint-disable-next-line no-await-in-loop -- Exact index preservation is asserted after each independent mode.
-      actual: Buffer.from(await readFile(`${repository}/.git/index`,))
-        .toString('base64',),
-      expected: readOnlyIndex,
-      context: `${selectionFlag} real index`,
-    },);
-  }
 }

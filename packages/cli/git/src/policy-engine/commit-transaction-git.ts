@@ -70,6 +70,8 @@ export type GitOutput = Readonly<{
  *
  * @param allowFailure - whether caller handles nonzero status
  *
+ * @param environment - transaction-owned environment additions
+ *
  * @returns exact captured output
  *
  * @throws CommitTransactionGitError when Git exits nonzero
@@ -86,6 +88,7 @@ export async function runTransactionGit({
   indexPath,
   stdio = 'capture',
   allowFailure = false,
+  environment = {},
 }: Readonly<{
   gitPath: string;
   cwd: string;
@@ -93,16 +96,16 @@ export async function runTransactionGit({
   indexPath?: string;
   stdio?: 'capture' | 'inherit';
   allowFailure?: boolean;
+  environment?: Readonly<Record<string, string>>;
 }>,): Promise<GitOutput> {
   /**
    * Environment containing only engine-selected index override.
    */
-  const env = indexPath === undefined
-    ? process.env
-    : {
-      ...process.env,
-      GIT_INDEX_FILE: indexPath,
-    };
+  const env = {
+    ...process.env,
+    ...environment,
+    ...(indexPath === undefined ? {} : { GIT_INDEX_FILE: indexPath, }),
+  };
   if (stdio === 'inherit') {
     /**
      * User-facing Git child.

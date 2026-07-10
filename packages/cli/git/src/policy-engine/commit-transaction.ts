@@ -30,7 +30,8 @@ import {
 import {
   hasSequencerConclusion,
   materializePathspecFile,
-  privateExplicitCommitArgs,
+  prepareInteractiveSelection,
+  resolvePrivateCommitArgs,
 } from './commit-transaction-selection.ts';
 import { createCommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 import { runPolicyEngine, } from './engine.ts';
@@ -160,8 +161,18 @@ export async function runCommitTransaction({
     pathspecs: region.pathspecs,
     ...((typeof pathspecFile) === 'symbol' ? {} : { pathspecFile, }),
     pathspecFileNul: region.hasPathspecFileNul,
-    stageIntoIndex: readOnlySelection,
+    stageIntoIndex: region.hasIncludeFlag,
   },);
+  if (region.hasInteractiveFlag || region.hasPatchFlag)
+    await prepareInteractiveSelection({
+      workspace,
+      gitPath,
+      cwd: layout.effectiveCwd,
+      patch: region.hasPatchFlag,
+      pathspecs: region.pathspecs,
+      ...((typeof pathspecFile) === 'symbol' ? {} : { pathspecFile, }),
+      pathspecFileNul: region.hasPathspecFileNul,
+    },);
   /**
    * Unmerged paths unsafe for automatic candidate rewriting.
    */
@@ -380,12 +391,12 @@ export async function runCommitTransaction({
   /**
    * Real Git arguments against complete private intended index.
    */
-  const commitArgs = mode === 'explicit-path'
-    ? privateExplicitCommitArgs({
-      args: pass.args,
-      pathspecs: region.pathspecs,
-    },)
-    : pass.args;
+  const commitArgs = resolvePrivateCommitArgs({
+    args: pass.args,
+    pathspecs: region.pathspecs,
+    mode,
+    selectedPrivately: readOnlySelection,
+  },);
   await executePreparedCommit({
     workspace,
     gitPath,

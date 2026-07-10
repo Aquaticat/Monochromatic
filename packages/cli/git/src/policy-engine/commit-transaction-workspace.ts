@@ -4,6 +4,7 @@
  * @module
  */
 import { resolveFsId, } from '@monochromatic-dev/module-fs-id/ts';
+import { randomUUID, } from 'node:crypto';
 import {
   lstat,
   mkdir,
@@ -59,6 +60,10 @@ export type CommitTransactionWorkspace = Readonly<{
    * Durable transaction journal.
    */
   journalPath: string;
+  /**
+   * Private nonce-bearing reflog action for post-crash attribution.
+   */
+  reflogAction: string;
   /**
    * Real index path.
    */
@@ -307,6 +312,7 @@ export async function createCommitTransactionWorkspace({
       directory,
       'journal.json',
     ),
+    reflogAction: `cli-git:transaction:${randomUUID()}`,
     realIndexPath,
     lockPath,
     lockFsId: lockFilesystem.value,
