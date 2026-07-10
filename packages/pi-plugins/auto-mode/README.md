@@ -221,20 +221,19 @@ referenced files from global,
  or package skills.
 
 Auto-mode also allows `read` tool access to existing files under `/tmp/agent`
-when that directory exists,
- is owned by the current process user,
- and has no
-group or other permission bits.
- Agents should place third-party source clones
-there when they need repeated inspection outside the current project.
- The
-allowlist uses canonical filesystem paths,
+and `~/temp/agent` when each directory is owned by the current process user,
+has no group or other permission bits,
+ and resolves without symlinks.
+Agents should place third-party source clones under either root when they need
+repeated inspection outside the current project.
+The allowlist uses canonical filesystem paths,
  so symlinks that resolve outside
-`/tmp/agent` still go through the normal signal and judge pipeline.
+either root still go through the normal signal and judge pipeline.
 
 For bash tool calls,
- the same private `/tmp/agent` root is trusted for existing
+ only the private `/tmp/agent` root is trusted for existing
 non-secret helper paths.
+ `~/temp/agent` is read-only allowlisted.
  Running an inspected helper script from there does not
 trigger a location-only prompt.
  Bash calls still flag destructive commands,

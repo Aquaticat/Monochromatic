@@ -1,15 +1,23 @@
 /**
  * Trusted temporary allowlist helpers.
  *
- * Owns the policy for deciding whether `/tmp/agent` is safe to trust for
- * structured read-tool bypasses and bash helper execution. The path must exist,
- * be a directory, be owned by the current process user, and have no group or
+ * Owns the policy for deciding whether `/tmp/agent` and `~/temp/agent` are
+ * safe for structured read-tool bypasses. `/tmp/agent` alone is also trusted
+ * for bash helper execution. Each root must exist, be a real directory owned
+ * by the current process user, resolve without symlinks, and have no group or
  * other permission bits.
  *
  * @module
  */
 
-import { stat, } from 'node:fs/promises';
+import {
+  lstat,
+  realpath,
+} from 'node:fs/promises';
+import {
+  join,
+  resolve,
+} from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -48,7 +56,7 @@ const GROUP_OR_OTHER_PERMISSION_BITS = 0o077;
  *
  * @param dir - directory considered for read allowlisting
  *
- * @returns whether directory ownership and mode make read allowlisting safe
+ * @returns whether directory identity, ownership, and mode make read allowlisting safe
  *
  * @example
  * ```typescript
@@ -62,8 +70,10 @@ async function isTrustedReadAllowlistDir(
     /**
      * Filesystem metadata for candidate allowlist root.
      */
-    const stats = await stat(dir,);
+    const stats = await lstat(dir,);
     if (!stats.isDirectory())
+      return false;
+    if ((await realpath(dir,)) !== resolve(dir,))
       return false;
     if (process.getuid === undefined)
       return false;
@@ -79,7 +89,7 @@ async function isTrustedReadAllowlistDir(
       tag: isTrustedReadAllowlistDir.name,
       l: moduleLogger,
     },);
-    innerL.debug(`stat failed for ${dir}: ${String(error,)}`,);
+    innerL.debug(`metadata lookup failed for ${dir}: ${String(error,)}`,);
     return false;
   }
 }
@@ -102,18 +112,53 @@ async function agentTempAllowlistedDirs(): Promise<readonly string[]> {
 }
 
 /**
- * Return agent temp root for structured read-tool bypass compatibility; a
- * passthrough to {@link agentTempAllowlistedDirs}.
+ * Return private roots for structured read-tool bypasses. `/tmp/agent` keeps
+ * compatibility with trusted bash helpers, while `~/temp/agent` is read-only
+ * and never returned by {@link agentTempAllowlistedDirs}.
  *
- * @returns singleton allowlist when `/tmp/agent` is private, otherwise empty list
+ * @param home - permits isolated callers to derive the current-user boundary without mutating process env
+ *
+ * @returns private existing read roots, otherwise an empty list
  *
  * @example
  * ```typescript
- * const dirs = agentTempReadAllowlistedDirs();
+ * const dirs = agentTempReadAllowlistedDirs({ home: '/home/user' });
  * ```
  */
-async function agentTempReadAllowlistedDirs(): Promise<readonly string[]> {
-  return await agentTempAllowlistedDirs();
+async function agentTempReadAllowlistedDirs(
+  {
+    home = process.env
+      .HOME
+      ?? '/home',
+  }: {
+    readonly home?: string;
+  } = {},
+): Promise<readonly string[]> {
+  /**
+   * Candidate roots whose current metadata is checked for every read call.
+   */
+  const candidateDirs = [
+    AGENT_TEMP_READ_DIR,
+    join(
+      home,
+      'temp',
+      'agent',
+    ),
+  ];
+  /**
+   * Per-root trust decisions in the same order as {@link candidateDirs}.
+   */
+  const trustDecisions = await Promise.all(candidateDirs.map(
+    function checkCandidateDir(candidateDir,) {
+      return isTrustedReadAllowlistDir(candidateDir,);
+    },
+  ),);
+  return candidateDirs.filter(function keepTrustedReadDir(
+    _candidateDir,
+    index,
+  ) {
+    return trustDecisions[index] === true;
+  },);
 }
 
 export {

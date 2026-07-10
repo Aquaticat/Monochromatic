@@ -35,7 +35,10 @@ import {
   shouldFlag,
 } from './signals.ts';
 import { buildSystemPrompt, } from './system-prompt.ts';
-import { agentTempAllowlistedDirs, } from './temp-read-allowlist.ts';
+import {
+  agentTempAllowlistedDirs,
+  agentTempReadAllowlistedDirs,
+} from './temp-read-allowlist.ts';
 import {
   buildApprovalFingerprint,
   describeAction,
@@ -344,15 +347,23 @@ export default async function autoMode(
           ?? '/home',
       };
       /**
-       * Private agent temp roots shared by structured reads and trusted bash helper execution.
+       * Private roots whose existing non-secret contents bypass structured-read location prompts.
        */
-      const trustedAgentTempDirs = await agentTempAllowlistedDirs();
+      const readAgentTempDirs = event.toolName === 'read'
+        ? await agentTempReadAllowlistedDirs({ home: signalCtx.home, },)
+        : [];
+      /**
+       * Private `/tmp/agent` root trusted for bash helper execution, intentionally excluding `~/temp/agent`.
+       */
+      const trustedAgentTempDirs = event.toolName === 'bash'
+        ? await agentTempAllowlistedDirs()
+        : [];
       /**
        * Read-only roots whose existing non-secret contents bypass location prompts.
        */
       const readAllowlistedDirs: readonly string[] = event.toolName === 'read'
         ? [
-          ...trustedAgentTempDirs,
+          ...readAgentTempDirs,
           ...(await linkedWorktreeReadAllowlistedDirs({ cwd: ctx.cwd, },)),
           ...currentSkillReadDirs,
         ]
