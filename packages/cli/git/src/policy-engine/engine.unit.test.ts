@@ -3,12 +3,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import type { PolicyDefinition, } from '../api/policy-types.ts';
+import type { RuntimePolicyDefinition, } from './types.ts';
 import { runPolicyEngine, } from './engine.ts';
 import { renderPolicyEvents, } from './events.ts';
 
 /** First deterministic ordering policy. */
-const FIRST_POLICY: PolicyDefinition = {
+const FIRST_POLICY: RuntimePolicyDefinition = {
   name: 'first-policy',
   defaultSeverity: 'error',
   warnSafe: true,
@@ -18,7 +18,7 @@ const FIRST_POLICY: PolicyDefinition = {
   },
 };
 /** Second deterministic ordering policy. */
-const SECOND_POLICY: PolicyDefinition = {
+const SECOND_POLICY: RuntimePolicyDefinition = {
   name: 'second-policy',
   defaultSeverity: 'error',
   warnSafe: true,
@@ -28,7 +28,7 @@ const SECOND_POLICY: PolicyDefinition = {
   },
 };
 /** Policy that violates engine exception contract. */
-const THROWING_POLICY: PolicyDefinition = {
+const THROWING_POLICY: RuntimePolicyDefinition = {
   name: 'throwing-policy',
   defaultSeverity: 'error',
   warnSafe: true,

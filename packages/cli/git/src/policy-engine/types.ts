@@ -3,11 +3,47 @@
  *
  * @module
  */
+import type { GenericSchema, } from 'valibot';
 import type {
-  PolicyDefinition,
+  PolicyContext,
+  PolicyFinding,
   PolicySeverity,
+  PolicyTrigger,
 } from '../api/policy-types.ts';
 import type { PolicyEvent, } from './events.ts';
+
+/**
+ * Runtime-erased policy after option validation.
+ */
+export type RuntimePolicyDefinition = Readonly<{
+  /**
+   * Effective built-in or namespaced policy ID.
+   */
+  name: string;
+  /**
+   * Declared default severity.
+   */
+  defaultSeverity: PolicySeverity;
+  /**
+   * Whether warning preserves enforcement semantics.
+   */
+  warnSafe: boolean;
+  /**
+   * Applicable lifecycle triggers.
+   */
+  triggers: readonly PolicyTrigger[];
+  /**
+   * Optional runtime options schema.
+   */
+  options?: Readonly<GenericSchema<unknown, unknown>>;
+  /**
+   * Runtime policy callback receiving validated options.
+   */
+  check: (input: Readonly<{
+    context: PolicyContext;
+    options: unknown;
+  }>,) => Promise<readonly PolicyFinding[]>;
+}>;
 
 /**
  * Configuration accepted by engine invocation.
@@ -39,9 +75,13 @@ export type RunPolicyEngineOptions = Readonly<{
    */
   selectedPolicyIds?: readonly string[];
   /**
-   * Internal registry adapter for sequencing tests.
+   * Internal registry adapter for sequencing tests and trusted plugins.
    */
-  registeredPolicies?: readonly PolicyDefinition[];
+  registeredPolicies?: readonly RuntimePolicyDefinition[];
+  /**
+   * Runtime-validated option outputs by effective policy ID.
+   */
+  policyOptions?: ReadonlyMap<string, unknown>;
 }>;
 /**
  * Stable policy-engine result.

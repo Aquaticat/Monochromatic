@@ -7,8 +7,16 @@ import { parseGlobalOptions, } from './parse-global-options.ts';
 import { runManagementCommand, } from './management.ts';
 import { parseCommitRegion, } from './parsers/commit.ts';
 import { runPolicyEngine, } from './policy-engine/engine.ts';
-import { renderPolicyEvents, } from './policy-engine/events.ts';
+import {
+  createEngineFailureEvent,
+  renderPolicyEvents,
+} from './policy-engine/events.ts';
 import { resolveGit, } from './resolve-git.ts';
+import { TrustedConfigError, } from './trust/config-loader.ts';
+import {
+  resolveRuntimeConfig,
+  RUNTIME_CONFIG_ABSENT,
+} from './trust/runtime-config.ts';
 import { addExplicit, } from './rules/add-explicit.ts';
 import { atomicPush, } from './rules/atomic-push.ts';
 import { branchWorktreeOnly, } from './rules/branch-worktree-only.ts';
@@ -111,6 +119,29 @@ const RULES: readonly ((
 //region Execution: resolve real git, apply rules, spawn
 
 /**
+ * Wrapper runtime-config resolution result.
+ */
+type WrapperRuntimeResolution =
+  | Readonly<{ loaded: Awaited<ReturnType<typeof resolveRuntimeConfig>>; }>
+  | Readonly<{ error: unknown; }>;
+
+/**
+ * Resolves trusted config while retaining failures for stable JSONL rendering.
+ *
+ * @param args - exact wrapper arguments
+ *
+ * @returns loaded config or captured failure
+ */
+async function resolveWrapperRuntime(args: readonly string[],): Promise<WrapperRuntimeResolution> {
+  try {
+    return { loaded: await resolveRuntimeConfig({ args, },), };
+  }
+  catch (error: unknown) {
+    return { error, };
+  }
+}
+
+/**
  * Expected non-zero policy decision after buffered events were emitted.
  */
 class PolicyDecisionError extends Error {
@@ -169,13 +200,52 @@ else try {
   },);
 
   /**
-   * Stable require-root policy result before legacy transforms.
+   * Trusted runtime config resolution before repository code executes.
+   */
+  const runtimeResolution: WrapperRuntimeResolution = willShortCircuit
+    ? { loaded: RUNTIME_CONFIG_ABSENT, }
+    : await resolveWrapperRuntime(rawArgs,);
+  if ('error' in runtimeResolution) {
+    /**
+     * Stable trust failure code.
+     */
+    const code = runtimeResolution.error instanceof TrustedConfigError
+      ? runtimeResolution.error
+        .code
+      : 'trust-failed';
+    process.stderr
+      .write(renderPolicyEvents([createEngineFailureEvent({
+      sequence: 0,
+      code,
+      message: Error.isError(runtimeResolution.error,)
+        ? runtimeResolution.error
+          .message
+        : String(runtimeResolution.error,),
+    },),],),);
+    throw new PolicyDecisionError(2,);
+  }
+
+  /**
+   * Stable policy result before legacy transforms.
    */
   const policyResult = willShortCircuit
     ? undefined
     : await runPolicyEngine({
       args: rawArgs,
       trigger: 'pre-forward',
+      ...(runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT
+        ? {}
+        : {
+          config: { policies: runtimeResolution.loaded
+            .validated
+            .policySeverities, },
+          registeredPolicies: runtimeResolution.loaded
+            .validated
+            .registeredPolicies,
+          policyOptions: runtimeResolution.loaded
+            .validated
+            .policyOptions,
+        }),
     },);
   if (policyResult !== undefined) {
     /**

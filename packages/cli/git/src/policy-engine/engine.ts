@@ -8,7 +8,6 @@ import {
 } from '../api/context-types.ts';
 import type {
   PolicyContext,
-  PolicyDefinition,
   PolicyFinding,
 } from '../api/policy-types.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
@@ -22,6 +21,7 @@ import type {
   ParsedPolicyControls,
   PolicyEngineResult,
   RunPolicyEngineOptions,
+  RuntimePolicyDefinition,
 } from './types.ts';
 
 /**
@@ -49,7 +49,7 @@ const VALUE_TAKING_OPTIONS: ReadonlySet<string> = new Set([
 /**
  * Supported policies in fixed built-in order.
  */
-const BUILT_IN_POLICIES: readonly PolicyDefinition[] = [requireRootPolicy,];
+const BUILT_IN_POLICIES: readonly RuntimePolicyDefinition[] = [requireRootPolicy,];
 /**
  * Empty lazy Git facts for command-only built-ins in first slice.
  */
@@ -239,6 +239,8 @@ function findingsAreValid(findings: readonly PolicyFinding[],): boolean {
  *
  * @param registeredPolicies - internal deterministic registry adapter
  *
+ * @param policyOptions - runtime-validated outputs by effective policy ID
+ *
  * @returns policy decision and forwardable arguments
  *
  * @example
@@ -252,6 +254,7 @@ export async function runPolicyEngine({
   config = {},
   selectedPolicyIds,
   registeredPolicies = BUILT_IN_POLICIES,
+  policyOptions = new Map(),
 }: RunPolicyEngineOptions,): Promise<PolicyEngineResult> {
   /**
    * Wrapper controls and real-Git arguments.
@@ -367,7 +370,7 @@ export async function runPolicyEngine({
           ...context,
           trigger,
         },
-        options: undefined,
+        options: policyOptions.get(policy.name,),
       },);
       if (!findingsAreValid(findings,))
         throw new TypeError(`Policy ${policy.name} returned an invalid finding.`,);

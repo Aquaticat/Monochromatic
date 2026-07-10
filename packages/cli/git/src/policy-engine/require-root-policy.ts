@@ -4,11 +4,8 @@
  * @module
  */
 
-import { definePolicy, } from '../api/authoring.ts';
-import type {
-  PolicyDefinition,
-  PolicyFinding,
-} from '../api/policy-types.ts';
+import type { PolicyFinding, } from '../api/policy-types.ts';
+import type { RuntimePolicyDefinition, } from './types.ts';
 import {
   requireRoot,
   RequireRootViolationError,
@@ -22,7 +19,7 @@ import {
  * requireRootPolicy.name;
  * ```
  */
-export const requireRootPolicy: PolicyDefinition<undefined, 'require-root'> = definePolicy({
+export const requireRootPolicy: RuntimePolicyDefinition = {
   name: 'require-root',
   defaultSeverity: 'error',
   warnSafe: false,
@@ -56,4 +53,4 @@ export const requireRootPolicy: PolicyDefinition<undefined, 'require-root'> = de
       throw error;
     }
   },
-},);
+};

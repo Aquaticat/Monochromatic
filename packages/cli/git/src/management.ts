@@ -14,13 +14,41 @@ import {
   runParserSync,
   string,
 } from '@optique/core';
-import { renderPolicyEvents, } from './policy-engine/events.ts';
+import {
+  createEngineFailureEvent,
+  renderPolicyEvents,
+} from './policy-engine/events.ts';
 import { runPolicyEngine, } from './policy-engine/engine.ts';
+import { TrustedConfigError, } from './trust/config-loader.ts';
+import { runTrustManagement, } from './trust/management-runtime.ts';
+import {
+  resolveRuntimeConfig,
+  RUNTIME_CONFIG_ABSENT,
+} from './trust/runtime-config.ts';
 
 /**
  * Sentinel returned when Optique renders help or a usage failure.
  */
 const PARSE_STOPPED = Symbol('Optique management parsing stopped',);
+/**
+ * Trust command parser.
+ */
+const TRUST_PARSER = command(
+  'trust',
+  object({
+    command: constant('trust' as const,),
+    yes: optional(flag('--yes',),),
+  },),
+);
+/**
+ * Untrust command parser.
+ */
+const UNTRUST_PARSER = command(
+  'untrust',
+  object({
+    command: constant('untrust' as const,),
+  },),
+);
 /**
  * Status command parser.
  */
@@ -51,6 +79,8 @@ const CHECK_PARSER = command(
  * First management grammar slice.
  */
 const MANAGEMENT_PARSER = or(
+  TRUST_PARSER,
+  UNTRUST_PARSER,
   STATUS_PARSER,
   CHECK_PARSER,
 );
@@ -113,11 +143,50 @@ function hasPreSeparatorPositional(args: readonly string[],): boolean {
 }
 
 /**
+ * Direct-check runtime configuration resolution.
+ */
+type DirectRuntimeResolution =
+  | Readonly<{ loaded: Awaited<ReturnType<typeof resolveRuntimeConfig>>; }>
+  | Readonly<{ error: unknown; }>;
+
+/**
+ * Loads trusted direct-check config while retaining stable failure output.
+ *
+ * @param gitGlobalArgs - global options determining repository
+ *
+ * @param registryRoot - internal private registry root
+ *
+ * @returns loaded config or captured failure
+ */
+async function resolveDirectRuntime({
+  gitGlobalArgs,
+  registryRoot,
+}: Readonly<{
+  gitGlobalArgs: readonly string[];
+  registryRoot?: string;
+}>,): Promise<DirectRuntimeResolution> {
+  try {
+    return {
+      loaded: await resolveRuntimeConfig({
+        args: gitGlobalArgs,
+        forceLoad: true,
+        ...(registryRoot === undefined ? {} : { registryRoot, }),
+      },),
+    };
+  }
+  catch (error: unknown) {
+    return { error, };
+  }
+}
+
+/**
  * Parses and runs one namespaced management command.
  *
  * @param args - arguments following `git cli-git`
  *
  * @param gitGlobalArgs - arguments preceding `cli-git`
+ *
+ * @param registryRoot - internal complete test registry root
  *
  * @returns settled cli-git exit code
  *
@@ -129,9 +198,11 @@ function hasPreSeparatorPositional(args: readonly string[],): boolean {
 export async function runManagementCommand({
   args,
   gitGlobalArgs,
+  registryRoot,
 }: Readonly<{
   args: readonly string[];
   gitGlobalArgs: readonly string[];
+  registryRoot?: string;
 }>,): Promise<0 | 1 | 2> {
   /**
    * Parsed management action or parse-stop sentinel.
@@ -150,17 +221,17 @@ export async function runManagementCommand({
   if (((typeof parsed) !== 'object') || (parsed === null)
     || (!('command' in parsed)))
     return 2;
-  if (parsed.command === 'status') {
-    console.log(JSON.stringify({
-      schemaVersion: 1,
-      type: 'status',
-      policies: [{
-        id: 'require-root',
-        severity: 'error',
-        warnSafe: false,
-      },],
-    },),);
-    return 0;
+  if ((parsed.command === 'trust')
+    || (parsed.command === 'untrust')
+    || (parsed.command === 'status')) {
+    return await runTrustManagement({
+      action: {
+        command: parsed.command,
+        ...(('yes' in parsed) && (parsed.yes === true) ? { yes: true, } : {}),
+      },
+      gitGlobalArgs,
+      ...(registryRoot === undefined ? {} : { registryRoot, }),
+    },);
   }
 
   if ((parsed.command !== 'check')
@@ -199,15 +270,59 @@ export async function runManagementCommand({
   }
 
   /**
-   * Built-in direct-check decision.
+   * Deduplicated direct-check filter preserving first occurrence order.
+   */
+  const selectedPolicyIds = [...new Set(parsed.policies
+    .filter(function isString(value,): value is string {
+      return (typeof value) === 'string';
+    },),),];
+  /**
+   * Trusted direct-check config resolution.
+   */
+  const runtimeResolution = await resolveDirectRuntime({
+    gitGlobalArgs,
+    ...(registryRoot === undefined ? {} : { registryRoot, }),
+  },);
+  if ('error' in runtimeResolution) {
+    /**
+     * Stable direct trust failure code.
+     */
+    const code = runtimeResolution.error instanceof TrustedConfigError
+      ? runtimeResolution.error
+        .code
+      : 'trust-failed';
+    process.stdout
+      .write(renderPolicyEvents([createEngineFailureEvent({
+      sequence: 0,
+      code,
+      message: Error.isError(runtimeResolution.error,)
+        ? runtimeResolution.error
+          .message
+        : String(runtimeResolution.error,),
+    },),],),);
+    return 2;
+  }
+  /**
+   * Loaded config or no-config sentinel.
+   */
+  const runtimeConfig = runtimeResolution.loaded;
+  /**
+   * Built-in and trusted-plugin direct-check decision.
    */
   const result = await runPolicyEngine({
     args: gitGlobalArgs,
     trigger: 'direct-check',
-    selectedPolicyIds: parsed.policies
-      .filter(function isString(value,): value is string {
-      return (typeof value) === 'string';
-    },),
+    selectedPolicyIds,
+    ...(runtimeConfig === RUNTIME_CONFIG_ABSENT
+      ? {}
+      : {
+        config: { policies: runtimeConfig.validated
+          .policySeverities, },
+        registeredPolicies: runtimeConfig.validated
+          .registeredPolicies,
+        policyOptions: runtimeConfig.validated
+          .policyOptions,
+      }),
   },);
   /**
    * Stable direct-command JSONL.

@@ -95,7 +95,12 @@ export type EngineFailureEvent = Readonly<{
   /**
    * Stable failure code.
    */
-  code: 'config-invalid' | 'policy-incomplete';
+  code:
+    | 'config-invalid'
+    | 'policy-incomplete'
+    | 'config-untrusted'
+    | 'config-changed'
+    | 'trust-failed';
   /**
    * Human-readable message.
    */
