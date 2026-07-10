@@ -241,6 +241,9 @@ and the aggregate project beats prebuild orchestration because it at least prese
    add the exact selector `rolldown-plugin-dts@0.27.4` to `minimumReleaseAgeExclude`.
    This applies the user's approved exception only to the reviewed release,
    not to future rolldown-plugin-dts versions.
+   Retain it as the audit record for this exact reviewed release:
+   after the release ages past the gate it has no behavioral effect,
+   while removing it before then would make clean frozen installs fail.
 3. Add an exact `rolldown-plugin-dts: 0.27.4` override with a comment that:
    0.27.2 selects experimental tsgo before inherited `isolatedDeclarations`;
    0.27.4 adds `generator`;
@@ -252,7 +255,14 @@ and the aggregate project beats prebuild orchestration because it at least prese
    ```
 
    This exact command passed with the exact-version age exception in the disposable prototype.
-5. Inspect the generated `pnpm-lock.yaml` diff.
+5. In a clean disposable worktree carrying the generated lockfile,
+   verify the frozen path:
+
+   ```sh
+   mise run prepare:pnpm:install -- --frozen-lockfile
+   ```
+
+6. Inspect the generated `pnpm-lock.yaml` diff.
    It must resolve rolldown-plugin-dts 0.27.4 with its registry integrity and tarball URL,
    retain tsdown 0.22.4 and Rolldown 1.1.5 unless an independently required lock update is explained,
    and contain no hand-edited lock content.
@@ -278,6 +288,8 @@ and the aggregate project beats prebuild orchestration because it at least prese
    while the regression occurs only when tsdown loads its transitive declaration plugin against a cross-package
    Rolldown graph.
    The config-oxlint build is the correct integration seam;
+   it is itself a four-entry consumer and root or package lint invokes it on every fresh checkout because generated
+   output is absent.
    Node and neutral consumer builds cover both changed presets.
 
 ### Auto-mode diagnostics exposed after the build repair
@@ -328,12 +340,15 @@ not against the main checkout's ignored build outputs.
    mise run //packages/config/tsdown:test:unit
    ```
 
-3. Run the failing aggregate build twice from fresh generated output state:
+3. Before each aggregate build in the disposable worktree,
+   remove only its generated output directory:
 
    ```sh
+   rm --recursive --force packages/config/oxlint/dist/final/node
    mise run //packages/config/oxlint:build:js:node
    ```
 
+   Run this fresh-output sequence twice.
    Both runs must produce `index.mjs`,
    its declaration entry and shared declaration chunk,
    plus JavaScript and declaration files for all three plugin sidecars.
