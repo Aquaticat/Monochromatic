@@ -15,8 +15,7 @@ diff --git a/docs/environments/index.md b/docs/environments/index.md
 index ca3054f..f5680a1 100644
 --- a/docs/environments/index.md
 +++ b/docs/environments/index.md
-@@ -137,18 +137,20 @@ API_TOKEN = "token_123"
- PASSWORD = "my_password"
+@@ -139,16 +139,18 @@
  ```
  
 -### Viewing Redacted Environment Variables
