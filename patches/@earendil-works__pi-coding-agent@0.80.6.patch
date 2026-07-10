@@ -1,3 +1,153 @@
+diff --git a/dist/core/bash-executor.js b/dist/core/bash-executor.js
+index 46a438fb39fb4b9bdf033fd26b09d84db8311ea6..d79f94e503b6fdee3e105211d05b8dbd232a7eb1 100644
+--- a/dist/core/bash-executor.js
++++ b/dist/core/bash-executor.js
+@@ -5,13 +5,9 @@
+  * - AgentSession.executeBash() for interactive and RPC modes
+  * - Direct calls from modes that need bash execution
+  */
+-import { randomBytes } from "node:crypto";
+-import { createWriteStream } from "node:fs";
+-import { tmpdir } from "node:os";
+-import { join } from "node:path";
+ import { stripAnsi } from "../utils/ansi.js";
+ import { sanitizeBinaryOutput } from "../utils/shell.js";
+-import { DEFAULT_MAX_BYTES, truncateTail } from "./tools/truncate.js";
++import { OutputAccumulator } from "./tools/output-accumulator.js";
+ // ============================================================================
+ // Implementation
+ // ============================================================================
+@@ -20,91 +16,60 @@ import { DEFAULT_MAX_BYTES, truncateTail } from "./tools/truncate.js";
+  * Used for remote execution (SSH, containers, etc.).
+  */
+ export async function executeBashWithOperations(command, cwd, operations, options) {
+-    const outputChunks = [];
+-    let outputBytes = 0;
+-    const maxOutputBytes = DEFAULT_MAX_BYTES * 2;
+-    let tempFilePath;
+-    let tempFileStream;
+-    let totalBytes = 0;
+-    const ensureTempFile = () => {
+-        if (tempFilePath) {
+-            return;
+-        }
+-        const id = randomBytes(8).toString("hex");
+-        tempFilePath = join(tmpdir(), `pi-bash-${id}.log`);
+-        tempFileStream = createWriteStream(tempFilePath);
+-        for (const chunk of outputChunks) {
+-            tempFileStream.write(chunk);
+-        }
+-    };
++    const output = new OutputAccumulator({ tempFilePrefix: "pi-bash" });
+     const decoder = new TextDecoder();
++    let acceptingOutput = true;
+     const onData = (data) => {
+-        totalBytes += data.length;
+-        // Sanitize: strip ANSI, replace binary garbage, normalize newlines
+-        const text = sanitizeBinaryOutput(stripAnsi(decoder.decode(data, { stream: true }))).replace(/\r/g, "");
+-        // Start writing to temp file if exceeds threshold
+-        if (totalBytes > DEFAULT_MAX_BYTES) {
+-            ensureTempFile();
+-        }
+-        if (tempFileStream) {
+-            tempFileStream.write(text);
++        if (!acceptingOutput) {
++            return;
+         }
+-        // Keep rolling buffer
+-        outputChunks.push(text);
+-        outputBytes += text.length;
+-        while (outputBytes > maxOutputBytes && outputChunks.length > 1) {
+-            const removed = outputChunks.shift();
+-            outputBytes -= removed.length;
++        const text = sanitizeBinaryOutput(stripAnsi(decoder.decode(data, { stream: true }))).replace(/\r/g, "");
++        output.append(Buffer.from(text, "utf-8"));
++        options?.onChunk?.(text);
++    };
++    const finishOutput = async (persistIfTruncated) => {
++        acceptingOutput = false;
++        output.finish();
++        if (persistIfTruncated) {
++            output.snapshot({ persistIfTruncated: true });
+         }
+-        // Stream to callback
+-        if (options?.onChunk) {
+-            options.onChunk(text);
++        await output.closeTempFile();
++        return output.snapshot();
++    };
++    const formatOutput = (snapshot) => {
++        const text = snapshot.content;
++        if (!snapshot.truncation.truncated || !snapshot.fullOutputError) {
++            return text;
+         }
++        return `${text}\n\n[Output truncated. Full output unavailable: ${snapshot.fullOutputError}]`;
+     };
+     try {
+         const result = await operations.exec(command, cwd, {
+             onData,
+             signal: options?.signal,
+         });
+-        const fullOutput = outputChunks.join("");
+-        const truncationResult = truncateTail(fullOutput);
+-        if (truncationResult.truncated) {
+-            ensureTempFile();
+-        }
+-        if (tempFileStream) {
+-            tempFileStream.end();
+-        }
++        const snapshot = await finishOutput(true);
+         const cancelled = options?.signal?.aborted ?? false;
+         return {
+-            output: truncationResult.truncated ? truncationResult.content : fullOutput,
++            output: formatOutput(snapshot),
+             exitCode: cancelled ? undefined : (result.exitCode ?? undefined),
+             cancelled,
+-            truncated: truncationResult.truncated,
+-            fullOutputPath: tempFilePath,
++            truncated: snapshot.truncation.truncated,
++            fullOutputPath: snapshot.fullOutputPath,
+         };
+     }
+     catch (err) {
+-        // Check if it was an abort
+         if (options?.signal?.aborted) {
+-            const fullOutput = outputChunks.join("");
+-            const truncationResult = truncateTail(fullOutput);
+-            if (truncationResult.truncated) {
+-                ensureTempFile();
+-            }
+-            if (tempFileStream) {
+-                tempFileStream.end();
+-            }
++            const snapshot = await finishOutput(true);
+             return {
+-                output: truncationResult.truncated ? truncationResult.content : fullOutput,
++                output: formatOutput(snapshot),
+                 exitCode: undefined,
+                 cancelled: true,
+-                truncated: truncationResult.truncated,
+-                fullOutputPath: tempFilePath,
++                truncated: snapshot.truncation.truncated,
++                fullOutputPath: snapshot.fullOutputPath,
+             };
+         }
+-        if (tempFileStream) {
+-            tempFileStream.end();
+-        }
++        await finishOutput(false);
+         throw err;
+     }
+ }
+diff --git a/dist/core/bash-executor.js.map b/dist/core/bash-executor.js.map
+index 04d037c04d1f963d017adbe0f42a4542169087ab..1f0579c9c05085784e637bff9dda65588d43d464 100644
+--- a/dist/core/bash-executor.js.map
++++ b/dist/core/bash-executor.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"bash-executor.js","sourceRoot":"","sources":["../../src/core/bash-executor.ts"],"names":[],"mappings":"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","sourcesContent":["/**\n * Bash command execution with streaming support and cancellation.\n *\n * This module provides a unified bash execution implementation used by:\n * - AgentSession.executeBash() for interactive and RPC modes\n * - Direct calls from modes that need bash execution\n */\n\nimport { randomBytes } from \"node:crypto\";\nimport { createWriteStream, type WriteStream } from \"node:fs\";\nimport { tmpdir } from \"node:os\";\nimport { join } from \"node:path\";\nimport { stripAnsi } from \"../utils/ansi.ts\";\nimport { sanitizeBinaryOutput } from \"../utils/shell.ts\";\nimport type { BashOperations } from \"./tools/bash.ts\";\nimport { DEFAULT_MAX_BYTES, truncateTail } from \"./tools/truncate.ts\";\n\n// ============================================================================\n// Types\n// ============================================================================\n\nexport interface BashExecutorOptions {\n\t/** Callback for streaming output chunks (already sanitized) */\n\tonChunk?: (chunk: string) => void;\n\t/** AbortSignal for cancellation */\n\tsignal?: AbortSignal;\n}\n\nexport interface BashResult {\n\t/** Combined stdout + stderr output (sanitized, possibly truncated) */\n\toutput: string;\n\t/** Process exit code (undefined if killed/cancelled) */\n\texitCode: number | undefined;\n\t/** Whether the command was cancelled via signal */\n\tcancelled: boolean;\n\t/** Whether the output was truncated */\n\ttruncated: boolean;\n\t/** Path to temp file containing full output (if output exceeded truncation threshold) */\n\tfullOutputPath?: string;\n}\n\n// ============================================================================\n// Implementation\n// ============================================================================\n\n/**\n * Execute a bash command using custom BashOperations.\n * Used for remote execution (SSH, containers, etc.).\n */\nexport async function executeBashWithOperations(\n\tcommand: string,\n\tcwd: string,\n\toperations: BashOperations,\n\toptions?: BashExecutorOptions,\n): Promise<BashResult> {\n\tconst outputChunks: string[] = [];\n\tlet outputBytes = 0;\n\tconst maxOutputBytes = DEFAULT_MAX_BYTES * 2;\n\n\tlet tempFilePath: string | undefined;\n\tlet tempFileStream: WriteStream | undefined;\n\tlet totalBytes = 0;\n\n\tconst ensureTempFile = () => {\n\t\tif (tempFilePath) {\n\t\t\treturn;\n\t\t}\n\t\tconst id = randomBytes(8).toString(\"hex\");\n\t\ttempFilePath = join(tmpdir(), `pi-bash-${id}.log`);\n\t\ttempFileStream = createWriteStream(tempFilePath);\n\t\tfor (const chunk of outputChunks) {\n\t\t\ttempFileStream.write(chunk);\n\t\t}\n\t};\n\n\tconst decoder = new TextDecoder();\n\n\tconst onData = (data: Buffer) => {\n\t\ttotalBytes += data.length;\n\n\t\t// Sanitize: strip ANSI, replace binary garbage, normalize newlines\n\t\tconst text = sanitizeBinaryOutput(stripAnsi(decoder.decode(data, { stream: true }))).replace(/\\r/g, \"\");\n\n\t\t// Start writing to temp file if exceeds threshold\n\t\tif (totalBytes > DEFAULT_MAX_BYTES) {\n\t\t\tensureTempFile();\n\t\t}\n\n\t\tif (tempFileStream) {\n\t\t\ttempFileStream.write(text);\n\t\t}\n\n\t\t// Keep rolling buffer\n\t\toutputChunks.push(text);\n\t\toutputBytes += text.length;\n\t\twhile (outputBytes > maxOutputBytes && outputChunks.length > 1) {\n\t\t\tconst removed = outputChunks.shift()!;\n\t\t\toutputBytes -= removed.length;\n\t\t}\n\n\t\t// Stream to callback\n\t\tif (options?.onChunk) {\n\t\t\toptions.onChunk(text);\n\t\t}\n\t};\n\n\ttry {\n\t\tconst result = await operations.exec(command, cwd, {\n\t\t\tonData,\n\t\t\tsignal: options?.signal,\n\t\t});\n\n\t\tconst fullOutput = outputChunks.join(\"\");\n\t\tconst truncationResult = truncateTail(fullOutput);\n\t\tif (truncationResult.truncated) {\n\t\t\tensureTempFile();\n\t\t}\n\t\tif (tempFileStream) {\n\t\t\ttempFileStream.end();\n\t\t}\n\t\tconst cancelled = options?.signal?.aborted ?? false;\n\n\t\treturn {\n\t\t\toutput: truncationResult.truncated ? truncationResult.content : fullOutput,\n\t\t\texitCode: cancelled ? undefined : (result.exitCode ?? undefined),\n\t\t\tcancelled,\n\t\t\ttruncated: truncationResult.truncated,\n\t\t\tfullOutputPath: tempFilePath,\n\t\t};\n\t} catch (err) {\n\t\t// Check if it was an abort\n\t\tif (options?.signal?.aborted) {\n\t\t\tconst fullOutput = outputChunks.join(\"\");\n\t\t\tconst truncationResult = truncateTail(fullOutput);\n\t\t\tif (truncationResult.truncated) {\n\t\t\t\tensureTempFile();\n\t\t\t}\n\t\t\tif (tempFileStream) {\n\t\t\t\ttempFileStream.end();\n\t\t\t}\n\t\t\treturn {\n\t\t\t\toutput: truncationResult.truncated ? truncationResult.content : fullOutput,\n\t\t\t\texitCode: undefined,\n\t\t\t\tcancelled: true,\n\t\t\t\ttruncated: truncationResult.truncated,\n\t\t\t\tfullOutputPath: tempFilePath,\n\t\t\t};\n\t\t}\n\n\t\tif (tempFileStream) {\n\t\t\ttempFileStream.end();\n\t\t}\n\n\t\tthrow err;\n\t}\n}\n"]}
+\ No newline at end of file
++{"version":3,"file":"bash-executor.js","sourceRoot":"","sources":["../../src/core/bash-executor.ts"],"names":[],"mappings":"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","sourcesContent":["/**\n * Bash command execution with streaming support and cancellation.\n *\n * This module provides a unified bash execution implementation used by:\n * - AgentSession.executeBash() for interactive and RPC modes\n * - Direct calls from modes that need bash execution\n */\n\nimport { stripAnsi } from \"../utils/ansi.ts\";\nimport { sanitizeBinaryOutput } from \"../utils/shell.ts\";\nimport type { BashOperations } from \"./tools/bash.ts\";\nimport { OutputAccumulator, type OutputSnapshot } from \"./tools/output-accumulator.ts\";\n\n// ============================================================================\n// Types\n// ============================================================================\n\nexport interface BashExecutorOptions {\n\t/** Callback for streaming output chunks (already sanitized) */\n\tonChunk?: (chunk: string) => void;\n\t/** AbortSignal for cancellation */\n\tsignal?: AbortSignal;\n}\n\nexport interface BashResult {\n\t/** Combined stdout + stderr output (sanitized, possibly truncated) */\n\toutput: string;\n\t/** Process exit code (undefined if killed/cancelled) */\n\texitCode: number | undefined;\n\t/** Whether the command was cancelled via signal */\n\tcancelled: boolean;\n\t/** Whether the output was truncated */\n\ttruncated: boolean;\n\t/** Path to temp file containing full output (if output exceeded truncation threshold) */\n\tfullOutputPath?: string;\n}\n\n// ============================================================================\n// Implementation\n// ============================================================================\n\n/**\n * Execute a bash command using custom BashOperations.\n * Used for remote execution (SSH, containers, etc.).\n */\nexport async function executeBashWithOperations(\n\tcommand: string,\n\tcwd: string,\n\toperations: BashOperations,\n\toptions?: BashExecutorOptions,\n): Promise<BashResult> {\n\tconst output = new OutputAccumulator({ tempFilePrefix: \"pi-bash\" });\n\tconst decoder = new TextDecoder();\n\tlet acceptingOutput = true;\n\n\tconst onData = (data: Buffer) => {\n\t\tif (!acceptingOutput) {\n\t\t\treturn;\n\t\t}\n\t\tconst text = sanitizeBinaryOutput(stripAnsi(decoder.decode(data, { stream: true }))).replace(/\\r/g, \"\");\n\t\toutput.append(Buffer.from(text, \"utf-8\"));\n\t\toptions?.onChunk?.(text);\n\t};\n\n\tconst finishOutput = async (persistIfTruncated: boolean): Promise<OutputSnapshot> => {\n\t\tacceptingOutput = false;\n\t\toutput.finish();\n\t\tif (persistIfTruncated) {\n\t\t\toutput.snapshot({ persistIfTruncated: true });\n\t\t}\n\t\tawait output.closeTempFile();\n\t\treturn output.snapshot();\n\t};\n\n\tconst formatOutput = (snapshot: OutputSnapshot): string => {\n\t\tconst text = snapshot.content;\n\t\tif (!snapshot.truncation.truncated || !snapshot.fullOutputError) {\n\t\t\treturn text;\n\t\t}\n\t\treturn `${text}\\n\\n[Output truncated. Full output unavailable: ${snapshot.fullOutputError}]`;\n\t};\n\n\ttry {\n\t\tconst result = await operations.exec(command, cwd, {\n\t\t\tonData,\n\t\t\tsignal: options?.signal,\n\t\t});\n\t\tconst snapshot = await finishOutput(true);\n\t\tconst cancelled = options?.signal?.aborted ?? false;\n\n\t\treturn {\n\t\t\toutput: formatOutput(snapshot),\n\t\t\texitCode: cancelled ? undefined : (result.exitCode ?? undefined),\n\t\t\tcancelled,\n\t\t\ttruncated: snapshot.truncation.truncated,\n\t\t\tfullOutputPath: snapshot.fullOutputPath,\n\t\t};\n\t} catch (err) {\n\t\tif (options?.signal?.aborted) {\n\t\t\tconst snapshot = await finishOutput(true);\n\t\t\treturn {\n\t\t\t\toutput: formatOutput(snapshot),\n\t\t\t\texitCode: undefined,\n\t\t\t\tcancelled: true,\n\t\t\t\ttruncated: snapshot.truncation.truncated,\n\t\t\t\tfullOutputPath: snapshot.fullOutputPath,\n\t\t\t};\n\t\t}\n\n\t\tawait finishOutput(false);\n\t\tthrow err;\n\t}\n}\n"]}
+\ No newline at end of file
 diff --git a/dist/core/tools/bash.d.ts b/dist/core/tools/bash.d.ts
 index 18f6bd66599f3cedbb45dd161353f63ba9667717..8bd59ae9036177e51cfddb99b8799d5981de2385 100644
 --- a/dist/core/tools/bash.d.ts
