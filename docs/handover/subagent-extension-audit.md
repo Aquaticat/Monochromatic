@@ -96,10 +96,11 @@ All containerized validation runs used a 2 GB memory cap and 2 CPU cap.
   checked out.
 - `pi-crew`: the full test command reached 5991 tests, with 5987 passing, 3 skipped, and one
   failure in `test/unit/settings-store-cov.test.ts` where a root container could write a path the
-  test expected to reject. Treat this result as an environment-sensitive failure, not proof of a
-  production defect, but the full command was not green.
-- `jwu/pi-subagents`: validation remains pending because the Bun container image reference was
-  rejected by Podman's non-interactive short-name policy before tests ran.
+  test expected to reject. Re-running that file as the mapped non-root user passed all 13 tests;
+  the full root-container command was still not green.
+- `jwu/pi-subagents`: using the fully qualified Bun image, `bun run lint && bun test` passed
+  formatting, typecheck, and 111 tests across 7 files. Bun reported two blocked postinstall
+  scripts requiring trust approval.
 
 ## Evidence rules
 
