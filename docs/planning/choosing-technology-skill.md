@@ -2,10 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 and 2 are resolved;
-artifact policy,
-unknown evidence,
-and full-validation scope remain open.
+Decisions 1 through 3 are resolved;
+unknown evidence and full-validation scope remain open.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -146,7 +144,12 @@ The replacement must distinguish these states:
 - adopted decision is recorded.
 
 Recommendation is the answer to an evaluation request.
-Adoption and repository mutation are separate actions unless the user's verb authorizes them.
+The automatic vet report selected in Decision 3 is a process artifact,
+not adoption.
+Product code,
+dependencies,
+configuration,
+and the durable decision record remain unchanged until the user's verb authorizes adoption.
 
 ### Blocker: applicability routing is unclear
 
@@ -268,6 +271,7 @@ The improved skill needs one output contract:
   and evidence;
 - complete ranking with the reason for each adjacent ordering;
 - recommendation confidence and blocked checks;
+- vet-report path and governing skill revision;
 - adoption status;
 - decision-document status.
 
@@ -342,8 +346,12 @@ Use this sequence:
     cons,
     unknowns,
     and a complete ranking.
-12. Recommend without mutating the repository when the request is evaluative.
-13. After adoption is authorized,
+12. Write or update the automatic vet report when the substantial-evaluation threshold is crossed.
+13. Recommend without changing product code,
+    dependencies,
+    configuration,
+    or decision records when the request is evaluative.
+14. After adoption is authorized,
     update the decision document and record rejected alternatives.
 
 ### Category gates
@@ -418,7 +426,6 @@ It never silently becomes a pass.
 Use grill-me to settle:
 
 - exhaustive-by-relevance versus always-exhaustive or user-budgeted depth;
-- durable artifact policy for evaluations before adoption;
 - treatment of unknown vendor evidence;
 - exact definition of full relevant validation.
 
@@ -454,6 +461,14 @@ Do not edit the skill during grilling.
 ### Phase 4: align output and examples
 
 - Add the required recommendation schema.
+- Add an automatic `docs/audit/<topic>-vet-<date>.md` artifact for substantial evaluations.
+- Define the substantial threshold as any evaluation that promotes a serious alternative and uses external source,
+  vendor,
+  maintenance,
+  clone,
+  or execution evidence.
+- Treat the vet report as permitted process documentation,
+  not authorization to adopt a dependency or service.
 - Require pros,
   cons,
   unknowns,
@@ -503,7 +518,10 @@ verify:
 - alternatives receive pros,
   cons,
   and complete ranking;
-- recommendation does not mutate repository state;
+- recommendation writes only the required vet report and does not mutate product,
+  dependency,
+  configuration,
+  or decision state;
 - adoption updates the decision record;
 - unsafe or uninspectable execution remains blocked.
 
@@ -533,7 +551,11 @@ The improvement is complete only when:
   cons,
   unknowns,
   and a full ranking;
-- evaluation requests do not cause unauthorized adoption edits;
+- substantial evaluations automatically receive a vet report recording the governing skill revision;
+- evaluation requests do not cause unauthorized product,
+  dependency,
+  configuration,
+  or decision-record edits;
 - adopted choices receive a decision record;
 - scenario fixtures exercise every route and failure state;
 - an independent review finds no contradiction between body,
@@ -626,10 +648,55 @@ Hybrid beats a thin router because it would at least keep invariant workflow and
 
 ### Decision 3: pre-adoption artifact
 
-Open after Decision 2.
-Choose whether substantial evaluations always create an audit artifact,
-create one only when explicitly requested,
-or keep evidence inline until adoption creates a decision document.
+Decision:
+automatically write a vet report for every substantial technology evaluation.
+The user selected this on 2026-07-09 to meet the troubleshooting-doc durable-artifact standard.
+
+The report lives at `docs/audit/<topic>-vet-<date>.md` and records the exact choosing-technology skill revision.
+The substantial threshold is crossed when an evaluation promotes at least one serious alternative and uses external source,
+vendor,
+maintenance,
+clone,
+or execution evidence.
+A response that only applies an existing decision record or answers a narrow factual question does not create a redundant vet report.
+
+The vet report is a process artifact.
+It does not authorize dependency changes,
+service signup,
+configuration edits,
+or a decision-record update.
+Those remain adoption actions.
+
+Pros:
+
+- preserves source paths,
+commands,
+evidence dates,
+unknowns,
+and rejected candidates;
+- lets interrupted work resume without repeating expensive research;
+- makes the skill revision and completion state auditable;
+- matches the benchmark skill's rule that substantial investigation ends in a durable artifact.
+
+Cons:
+
+- creates repository documentation during an evaluation-only request;
+- requires a specific project rule that this process artifact is permitted despite the normal decision-verb boundary;
+- can create clutter unless finished reports are linked from later decisions and obsolete drafts are retired.
+
+Rejected alternative:
+write a report only when requested or when a handover becomes necessary.
+It reduces artifact volume,
+but makes equal research receive inconsistent durability and can defer documentation until context is already exhausted.
+
+Rejected alternative:
+keep evidence inline until adoption.
+It avoids pre-adoption files,
+but loses the benchmark's durable evidence trail and makes interrupted audits expensive to reconstruct.
+
+Ranking:
+automatic vet reports beat conditional reports because durability should follow measurable research depth rather than whether someone remembered to request a file.
+Conditional reports beat inline-only evidence because they preserve at least the evaluations most likely to outlive one session.
 
 ### Decision 4: unknown evidence
 
