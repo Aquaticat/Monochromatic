@@ -186,7 +186,13 @@ await describe({
         expect(disclosures[0],).toContain('full account permissions',);
         expect(trusted.validated.registeredPolicies.map(function policyId(policy,) {
           return policy.name;
-        },),).toEqual(['require-root', 'example/deny',],);
+        },),).toEqual([
+      'require-root',
+      'linked-worktree-only',
+      'branch-worktree-only',
+      'add-explicit',
+      'example/deny',
+    ],);
         /** Strict load from installed stored snapshot. */
         const loaded = await loadTrustedConfig({
           discovered,

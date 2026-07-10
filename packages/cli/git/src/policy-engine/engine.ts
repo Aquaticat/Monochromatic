@@ -11,31 +11,19 @@ import type {
   PolicyFinding,
 } from '../api/policy-types.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
+import { BUILT_IN_POLICIES, } from './built-ins.ts';
 import { parsePolicyControls, } from './controls.ts';
 import {
   createEngineFailureEvent,
   createFindingEvent,
   type PolicyEvent,
 } from './events.ts';
-import { addExplicitPolicy, } from './add-explicit-policy.ts';
-import { branchWorktreePolicy, } from './branch-worktree-policy.ts';
-import { linkedWorktreePolicy, } from './linked-worktree-policy.ts';
-import { requireRootPolicy, } from './require-root-policy.ts';
 import type {
   PolicyEngineResult,
   RunPolicyEngineOptions,
   RuntimePolicyDefinition,
 } from './types.ts';
 
-/**
- * Supported policies in fixed built-in order.
- */
-const BUILT_IN_POLICIES: readonly RuntimePolicyDefinition[] = [
-  requireRootPolicy,
-  linkedWorktreePolicy,
-  branchWorktreePolicy,
-  addExplicitPolicy,
-];
 /**
  * Empty lazy Git facts for command-only built-ins in first slice.
  */

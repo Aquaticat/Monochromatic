@@ -100,7 +100,13 @@ await describe({
         },);
         expect(result.registeredPolicies.map(function policyId(policy,) {
           return policy.name;
-        },),).toEqual(['require-root', 'example/suffix',],);
+        },),).toEqual([
+      'require-root',
+      'linked-worktree-only',
+      'branch-worktree-only',
+      'add-explicit',
+      'example/suffix',
+    ],);
         expect(result.policySeverities['example/suffix'],).toBe('warn',);
         expect(result.policyOptions.get('example/suffix',),).toEqual({ suffix: '.ts', },);
       },

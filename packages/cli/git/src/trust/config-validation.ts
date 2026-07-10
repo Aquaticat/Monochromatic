@@ -8,7 +8,7 @@ import type {
   PolicySeverity,
   PolicyTrigger,
 } from '../api/policy-types.ts';
-import { requireRootPolicy, } from '../policy-engine/require-root-policy.ts';
+import { BUILT_IN_POLICIES, } from '../policy-engine/built-ins.ts';
 import type { RuntimePolicyDefinition, } from '../policy-engine/types.ts';
 
 /**
@@ -379,7 +379,7 @@ export function validateConfig(value: unknown,): ValidatedConfig {
    * Fixed built-ins followed by namespaced plugin policies.
    */
   const registeredPolicies: readonly RuntimePolicyDefinition[] = [
-    requireRootPolicy,
+    ...BUILT_IN_POLICIES,
     ...pluginPolicies,
   ];
 
