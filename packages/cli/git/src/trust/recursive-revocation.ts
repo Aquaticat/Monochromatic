@@ -1,7 +1,7 @@
 /**
  * Recursive trust revocation planning and transaction. @module
  */
-import type { TrustCandidate, } from './types.ts';
+import type { TrustIdentity, } from './types.ts';
 import {
   listTrustRecords,
   trustIdentityKey,
@@ -152,7 +152,7 @@ function planOperations({
  *
  * @param registryRoot - complete private registry root
  *
- * @param candidate - current target identity
+ * @param identity - current or recovered target identity
  *
  * @param disclose - prints affected recursive roots before mutation
  *
@@ -160,16 +160,16 @@ function planOperations({
  *
  * @example
  * ```ts
- * await revokeRecursiveTrust({ registryRoot, candidate, disclose: console.error });
+ * await revokeRecursiveTrust({ registryRoot, identity, disclose: console.error });
  * ```
  */
 export async function revokeRecursiveTrust({
   registryRoot,
-  candidate,
+  identity,
   disclose,
 }: Readonly<{
   registryRoot: string;
-  candidate: TrustCandidate;
+  identity: TrustIdentity;
   disclose: (text: string,) => void;
 }>,): Promise<RecursiveUntrustResult> {
   /**
@@ -194,7 +194,7 @@ export async function revokeRecursiveTrust({
   /**
    * Exact current target entry.
    */
-  const target = entriesByKey.get(trustIdentityKey(candidate.identity,),);
+  const target = entriesByKey.get(trustIdentityKey(identity,),);
   if (target === undefined)
     return {
       removed: false,

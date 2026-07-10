@@ -6,7 +6,10 @@ import {
   rename,
   rm,
 } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 import {
   DIRECTORY_MODE,
   isMissingPath,
@@ -140,6 +143,7 @@ async function applyOperation({
         force: true,
       },
     );
+    await syncDirectory(dirname(directory,),);
     return;
   }
   /**
@@ -261,4 +265,5 @@ export async function settleProvenanceJournal({
     journalPath,
     { force: true, },
   );
+  await syncDirectory(dirname(journalPath,),);
 }

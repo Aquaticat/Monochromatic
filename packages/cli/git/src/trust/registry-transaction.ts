@@ -4,7 +4,6 @@
 import { randomUUID, } from 'node:crypto';
 import {
   mkdir,
-  readFile,
   readdir,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -16,6 +15,7 @@ import {
   TrustStorageError,
   writePrivateFile,
 } from './registry-io.ts';
+import { readPrivateFile, } from './record-validation.ts';
 import { recordDirectory, } from './registry-path.ts';
 import { settleProvenanceJournal, } from './registry-transaction-apply.ts';
 import {
@@ -101,27 +101,37 @@ export async function recoverProvenanceTransactions({
   /**
    * Journal filenames in deterministic order.
    */
-  const names = (await readdir(directory,)).toSorted();
-  await names.reduce<Promise<void>>(
+  const entries = (await readdir(
+    directory,
+    { withFileTypes: true, },
+  ))
+    .toSorted(function byName(
+      left,
+      right,
+    ) {
+      return left.name
+        .localeCompare(right.name,);
+    },);
+  await entries.reduce<Promise<void>>(
     async function recoverAfter(
       previous,
-      name,
+      entry,
     ) {
     await previous;
+    if (!entry.isFile())
+      throw new TrustStorageError(`Unsafe transaction journal entry: ${entry.name}`,);
     /**
      * Exact journal path.
      */
     const journalPath = join(
       directory,
-      name,
+      entry.name,
     );
     /**
      * Parsed private journal.
      */
-    const journal = parseTransactionJournal(await readFile(
-      journalPath,
-      'utf8',
-    ),);
+    const journal = parseTransactionJournal(Buffer.from(await readPrivateFile(journalPath,),)
+      .toString('utf8',),);
     if ((journal.ownerPid !== process.pid) && processExists(journal.ownerPid))
       throw new TrustStorageError('Recursive trust transaction is active in another process.',);
     await settleProvenanceJournal({

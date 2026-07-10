@@ -25,7 +25,7 @@ export type CommandResult = Readonly<{
  *
  * @param args - exact argument vector
  *
- * @param expectedExit - required status
+ * @param expectedExit - required status or accepted race statuses
  *
  * @param cwd - optional working directory
  *
@@ -47,7 +47,7 @@ export async function execute({
 }: Readonly<{
   command: string;
   args: readonly string[];
-  expectedExit?: number;
+  expectedExit?: number | readonly number[];
   cwd?: string;
   env?: NodeJS.ProcessEnv;
 }>,): Promise<CommandResult> {
@@ -82,9 +82,15 @@ export async function execute({
    * Fully consumed standard streams.
    */
   const [stdout, stderr,] = await outputPromise;
-  if (child.exitCode !== expectedExit) {
+  /**
+   * Allowed status set, including explicitly nondeterministic race outcomes.
+   */
+  const expectedExits = (typeof expectedExit) === 'number'
+    ? [expectedExit,]
+    : expectedExit;
+  if (!expectedExits.includes(child.exitCode ?? (-1),)) {
     throw new Error(
-      `${command} ${args.join(' ',)} expected ${String(expectedExit,)}, got ${String(child.exitCode,)}\nstdout=${stdout}\nstderr=${stderr}`,
+      `${command} ${args.join(' ',)} expected ${expectedExits.join(' or ',)}, got ${String(child.exitCode,)}\nstdout=${stdout}\nstderr=${stderr}`,
     );
   }
   return {

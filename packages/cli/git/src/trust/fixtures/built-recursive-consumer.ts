@@ -147,6 +147,55 @@ export async function verifyRecursiveConsumer({
     expected: '"reason":"trusted"',
     context: 'auto-enrolled status',
   },);
+  /**
+   * Replace mounted filesystem while preserving canonical config path and bytes.
+   */
+  await execute({
+    command: '/usr/bin/umount',
+    args: [child,],
+  },);
+  await execute({
+    command: '/usr/bin/git',
+    args: [
+      'init',
+      '--quiet',
+    ],
+    cwd: child,
+  },);
+  await writeFile(
+    childConfig,
+    'export default {};\n',
+  );
+  /**
+   * Trust status immediately after filesystem replacement.
+   */
+  const swappedStatus = await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'status',
+    ],
+    cwd: child,
+    env,
+  },);
+  assertIncludes({
+    text: swappedStatus.stdout,
+    expected: '"reason":"untrusted"',
+    context: 'mount-swap identity',
+  },);
+  /**
+   * Recursive root enrolls replacement only through a new exact snapshot.
+   */
+  await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'check',
+      '--all',
+    ],
+    cwd: child,
+    env,
+  },);
   await writeFile(
     childConfig,
     'export default { policies: {} };\n',
@@ -178,17 +227,61 @@ export async function verifyRecursiveConsumer({
     'export default {};\n',
   );
   /**
-   * Recursive root revocation result.
+   * Fresh sibling racing enrollment against independent revocation process.
    */
-  const untrust = await execute({
-    command: 'git',
+  const sibling = join(
+    outer,
+    'sibling',
+  );
+  await mkdir(sibling,);
+  await execute({
+    command: '/usr/bin/git',
     args: [
-      'cli-git',
-      'untrust',
+      'init',
+      '--quiet',
     ],
-    cwd: outer,
-    env,
+    cwd: sibling,
   },);
+  await writeFile(
+    join(
+      sibling,
+      'cli-git.config.mjs',
+    ),
+    'export default {};\n',
+  );
+  /**
+   * Separate packed-bin processes serialized by registry-wide lock.
+   */
+  const [siblingRace, untrust,] = await Promise.all([
+    execute({
+      command: 'git',
+      args: [
+        'cli-git',
+        'check',
+        '--all',
+      ],
+      expectedExit: [
+        0,
+        2,
+      ],
+      cwd: sibling,
+      env,
+    },),
+    execute({
+      command: 'git',
+      args: [
+        'cli-git',
+        'untrust',
+      ],
+      cwd: outer,
+      env,
+    },),
+  ],);
+  if (siblingRace.stderr
+    .includes('EEXIST',)
+    || siblingRace.stdout
+    .includes('EEXIST',))
+    throw new Error('Concurrent enrollment leaked filesystem lock error.',);
   assertIncludes({
     text: untrust.stdout,
     expected: '"removed":true',
@@ -198,6 +291,23 @@ export async function verifyRecursiveConsumer({
     text: untrust.stderr,
     expected: `Affected recursive root: ${outer}`,
     context: 'cascade disclosure',
+  },);
+  /**
+   * Sibling cannot retain orphaned authority after either race order.
+   */
+  const siblingStatus = await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'status',
+    ],
+    cwd: sibling,
+    env,
+  },);
+  assertIncludes({
+    text: siblingStatus.stdout,
+    expected: '"reason":"untrusted"',
+    context: 'raced sibling status',
   },);
   /**
    * Child status after inherited authority removal.

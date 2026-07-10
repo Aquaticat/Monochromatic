@@ -2,15 +2,21 @@
  * Recursive trust authorizer discovery and descendant enrollment. @module
  */
 import { captureTrustCandidate, } from './candidate.ts';
-import { executeStoredConfig, } from './config-loader.ts';
+import {
+  executeStoredConfig,
+  exactBytesEqual,
+  TrustedConfigError,
+} from './config-loader.ts';
 import type { ValidatedConfig, } from './config-validation.ts';
 import type { DiscoveredConfig, } from './config-discovery.ts';
 import { validateMjs, } from './mjs-validator.ts';
 import {
+  isStrictRepositoryDescendant,
   listTrustRecords,
-  recursiveAuthorizers,
   trustIdentityKey,
+  type TrustCatalogEntry,
 } from './registry-catalog.ts';
+import { readPrivateFile, } from './record-validation.ts';
 import { acquireRecursiveRegistryLock, } from './registry-recursive-lock.ts';
 import { prepareMjsRecord, } from './registry-storage.ts';
 import { recoverProvenanceTransactions, } from './registry-transaction.ts';
@@ -59,6 +65,96 @@ export function canonicalAuthorizers(identities: readonly TrustIdentity[],): rea
 }
 
 /**
+ * Verifies one recursive root remains exactly trusted without executing it.
+ *
+ * @param entry - recursive root catalog entry
+ *
+ * @returns unchanged authorizer identity
+ */
+async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<TrustIdentity> {
+  if (entry.record
+    .format
+    !== 'mjs')
+    throw new TrustedConfigError(
+      'trust-failed',
+      'TypeScript recursive trust requires issue #347.',
+    );
+  /**
+   * Fresh exact root candidate or stable changed-root failure.
+   */
+  const candidate = await (async function captureRootCandidate(): Promise<TrustCandidate> {
+    try {
+      return await captureTrustCandidate({
+        configPath: entry.record
+          .identity
+          .canonicalConfigPath,
+        repositoryRoot: entry.record
+          .repositoryRoot,
+        format: 'mjs',
+      },);
+    }
+    catch (error: unknown) {
+      throw new TrustedConfigError(
+        'config-changed',
+        `Recursive root is unavailable or changed: ${entry.record
+          .repositoryRoot}`,
+        { cause: error, },
+      );
+    }
+  })();
+  /**
+   * Exact stored recursive-root snapshot.
+   */
+  const snapshot = await readPrivateFile(`${entry.directory}/${entry.record
+    .executableSnapshotFile}`,);
+  if ((trustIdentityKey(candidate.identity,) !== trustIdentityKey(entry.record
+    .identity,))
+    || (!exactBytesEqual({
+      left: candidate.bytes,
+      right: snapshot,
+    }))) {
+    throw new TrustedConfigError(
+      'config-changed',
+      `Recursive root bytes changed: ${entry.record
+        .repositoryRoot}`,
+    );
+  }
+  return entry.record
+    .identity;
+}
+
+/**
+ * Finds only unchanged recursive roots covering descendant.
+ *
+ * @param entries - installed catalog
+ *
+ * @param repositoryRoot - candidate descendant root
+ *
+ * @returns exact active authorizer identities
+ */
+async function activeRecursiveAuthorizers({
+  entries,
+  repositoryRoot,
+}: Readonly<{
+  entries: readonly TrustCatalogEntry[];
+  repositoryRoot: string;
+}>,): Promise<readonly TrustIdentity[]> {
+  /**
+   * Covering recursive roots before exact validation.
+   */
+  const authorizers = entries.filter(function coversDescendant(entry,) {
+    return entry.record
+      .recursiveChildren
+      && isStrictRepositoryDescendant({
+      ancestor: entry.record
+        .repositoryRoot,
+      descendant: repositoryRoot,
+    },);
+  },);
+  return await Promise.all(authorizers.map(validateRecursiveAuthorizer,));
+}
+
+/**
  * Finds inherited roots plus explicit self-authorizer.
  *
  * @param registryRoot - complete private registry root
@@ -86,7 +182,7 @@ export async function explicitAuthorizers({
   const entries = await listTrustRecords({ registryRoot, },);
   return canonicalAuthorizers([
     candidate.identity,
-    ...recursiveAuthorizers({
+    ...await activeRecursiveAuthorizers({
       entries,
       repositoryRoot: candidate.discovered
         .repositoryRoot,
@@ -177,7 +273,7 @@ export async function autoEnrollRecursiveConfig({
   /**
    * Every recursive root covering descendant across filesystems.
    */
-  const authorizingRoots = canonicalAuthorizers(recursiveAuthorizers({
+  const authorizingRoots = canonicalAuthorizers(await activeRecursiveAuthorizers({
     entries,
     repositoryRoot: discovered.repositoryRoot,
   },),);

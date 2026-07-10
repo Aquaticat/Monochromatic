@@ -95,6 +95,35 @@ async function findRegularConfig(path: string,): Promise<string | typeof CONFIG_
 }
 
 /**
+ * Resolves canonical repository root without requiring config artifact.
+ *
+ * @param args - exact wrapper arguments including Git global options
+ *
+ * @returns canonical root or absence outside repository
+ *
+ * @example
+ * ```ts
+ * await resolveConfigRepositoryRoot(['status']);
+ * ```
+ */
+export async function resolveConfigRepositoryRoot(
+  args: readonly string[],
+): Promise<string | typeof CONFIG_ABSENT> {
+  /**
+   * Effective directory after ordered Git global chdir options.
+   */
+  const { effectiveCwd, } = parseGlobalOptions(args,);
+  try {
+    return await realpath(await findGitRepoRoot({ cwd: effectiveCwd, },),);
+  }
+  catch (error: unknown) {
+    if ((error instanceof GitRepositoryRootNotFoundError) || isMissingPath(error,))
+      return CONFIG_ABSENT;
+    throw error;
+  }
+}
+
+/**
  * Discovers repository-root configuration with MJS precedence.
  *
  * @param args - exact wrapper arguments including Git global options
@@ -108,22 +137,9 @@ async function findRegularConfig(path: string,): Promise<string | typeof CONFIG_
  */
 export async function discoverConfig(args: readonly string[],): Promise<DiscoveredConfig | typeof CONFIG_ABSENT> {
   /**
-   * Effective directory after ordered Git global chdir options.
-   */
-  const { effectiveCwd, } = parseGlobalOptions(args,);
-  /**
    * Canonical valid Git repository root or absence sentinel.
    */
-  const repositoryRoot = await (async function findCanonicalRepositoryRoot(): Promise<string | typeof CONFIG_ABSENT> {
-    try {
-      return await realpath(await findGitRepoRoot({ cwd: effectiveCwd, },),);
-    }
-    catch (error: unknown) {
-      if ((error instanceof GitRepositoryRootNotFoundError) || isMissingPath(error,))
-        return CONFIG_ABSENT;
-      throw error;
-    }
-  })();
+  const repositoryRoot = await resolveConfigRepositoryRoot(args,);
   if (repositoryRoot === CONFIG_ABSENT)
     return CONFIG_ABSENT;
 

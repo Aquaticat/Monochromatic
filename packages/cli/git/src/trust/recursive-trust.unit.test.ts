@@ -3,6 +3,7 @@ import {
   mkdtemp,
   realpath,
   rm,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -20,6 +21,7 @@ import { listTrustRecords, trustIdentityKey, } from './registry-catalog.ts';
 import {
   DIRECTORY_MODE,
   protectPath,
+  TrustStorageError,
   writePrivateFile,
 } from './registry-io.ts';
 import { recordDirectory, } from './registry-path.ts';
@@ -29,6 +31,7 @@ import {
   loadTrustedConfig,
   trustMjs,
   untrustConfig,
+  untrustRepository,
 } from './trust-service.ts';
 import type { TrustConsentAdapters, } from './types.ts';
 
@@ -247,6 +250,68 @@ await describe({
         expect(failure,).toBeInstanceOf(TrustedConfigError,);
         if (failure instanceof TrustedConfigError)
           expect(failure.code,).toBe('config-changed',);
+      },
+    },),
+    it({
+      name: 'rejects enrollment when recursive root bytes changed',
+      fn: async function testChangedRootCannotAuthorize() {
+        await using fixture = await createFixture();
+        /** Recursive outer config. */
+        const outer = await discoverFixture(fixture.outer,);
+        await trustMjs({ discovered: outer, registryRoot: fixture.registryRoot, yes: true, adapters: consentAdapters({ answers: [], disclosures: [], },), },);
+        await writeFile(outer.configPath, 'export default {};\n',);
+        /** Fresh descendant has no record before changed-root attempt. */
+        const nested = await discoverFixture(fixture.nested,);
+        const failure = await (async function captureRootFailure(): Promise<unknown> {
+          try {
+            return await loadTrustedConfig({ discovered: nested, registryRoot: fixture.registryRoot, },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('config-changed',);
+        expect(await listTrustRecords({ registryRoot: fixture.registryRoot, },),).toHaveLength(1,);
+      },
+    },),
+    it({
+      name: 'revokes recursive authority after root config deletion',
+      fn: async function testDeletedRootRevocation() {
+        await using fixture = await createFixture();
+        /** Recursive outer config. */
+        const outer = await discoverFixture(fixture.outer,);
+        await trustMjs({ discovered: outer, registryRoot: fixture.registryRoot, yes: true, adapters: consentAdapters({ answers: [], disclosures: [], },), },);
+        /** Auto-enrolled descendant requiring cascade. */
+        const nested = await discoverFixture(fixture.nested,);
+        await loadTrustedConfig({ discovered: nested, registryRoot: fixture.registryRoot, },);
+        await rm(outer.configPath,);
+        const result = await untrustRepository({
+          repositoryRoot: fixture.outer,
+          registryRoot: fixture.registryRoot,
+        },);
+        expect(result.removed,).toBe(true,);
+        expect(await listTrustRecords({ registryRoot: fixture.registryRoot, },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'rejects symbolic-link transaction journals',
+      fn: async function testJournalSymlink() {
+        await using fixture = await createFixture();
+        /** Recursive outer creates private transaction directory. */
+        const outer = await discoverFixture(fixture.outer,);
+        await trustMjs({ discovered: outer, registryRoot: fixture.registryRoot, yes: true, adapters: consentAdapters({ answers: [], disclosures: [], },), },);
+        await symlink(outer.configPath, join(fixture.registryRoot, 'transactions', 'unsafe.json',),);
+        const failure = await (async function captureJournalFailure(): Promise<unknown> {
+          try {
+            return await recoverProvenanceTransactions({ registryRoot: fixture.registryRoot, },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustStorageError,);
       },
     },),
     it({

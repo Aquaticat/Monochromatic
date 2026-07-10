@@ -27,6 +27,7 @@ await execute({
     '--yes',
     '--no-install-recommends',
     'git',
+    'mount',
   ],
 },);
 await mkdir(

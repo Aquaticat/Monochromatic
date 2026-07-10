@@ -853,9 +853,6 @@ importers:
 
   packages/cli/git:
     dependencies:
-      '@monochromatic-dev/module-async-time':
-        specifier: workspace:*
-        version: link:../../module/async-time
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -878,6 +875,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
       '@monochromatic-dev/module-fs-id':
         specifier: workspace:*
         version: link:../../module/fs-id

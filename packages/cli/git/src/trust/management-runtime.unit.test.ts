@@ -177,6 +177,20 @@ await describe({
       },
     },),
     it({
+      name: 'untrust recovers record after config deletion',
+      fn: async function testDeletedConfigUntrust() {
+        await using fixture = await createFixture();
+        await writeFile(fixture.configPath, 'export default { trust: { children: true } };\n',);
+        await runManagement({ fixture, args: ['trust', '--yes',], },);
+        await rm(fixture.configPath,);
+        const untrustResult = await runManagement({ fixture, args: ['untrust',], },);
+        expect(untrustResult.stdout,).toContain('"removed":true',);
+        expect(untrustResult.stdout,).toContain('"configPath":null',);
+        const status = await runManagement({ fixture, args: ['status',], },);
+        expect(status.stdout,).toContain('"reason":"no-config"',);
+      },
+    },),
+    it({
       name: 'changed bytes report changed and block direct check',
       fn: async function testChangedConfig() {
         await using fixture = await createFixture();

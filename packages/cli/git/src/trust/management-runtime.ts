@@ -8,11 +8,13 @@ import { resolveAccountRegistryRoot, } from './account-root.ts';
 import {
   CONFIG_ABSENT,
   discoverConfig,
+  resolveConfigRepositoryRoot,
 } from './config-discovery.ts';
 import {
   inspectTrust,
   trustMjs,
   untrustConfig,
+  untrustRepository,
 } from './trust-service.ts';
 
 /**
@@ -126,6 +128,36 @@ export async function runTrustManagement({
           trusted: false,
           unchanged: false,
           reason: 'no-config',
+        },),);
+        return 0;
+      }
+      if (action.command === 'untrust') {
+        /**
+         * Canonical repository root retained after config deletion.
+         */
+        const repositoryRoot = await resolveConfigRepositoryRoot(gitGlobalArgs,);
+        if (repositoryRoot === CONFIG_ABSENT) {
+          console.error('cli-git: no repository was found for trust recovery.',);
+          return 2;
+        }
+        /**
+         * Injected test root or OS-account-derived production root.
+         */
+        const recoveredRegistryRoot = registryRoot ?? await resolveAccountRegistryRoot();
+        /**
+         * Recovered recursive revocation summary.
+         */
+        const result = await untrustRepository({
+          repositoryRoot,
+          registryRoot: recoveredRegistryRoot,
+          disclose: discloseTrust,
+        },);
+        console.log(JSON.stringify({
+          schemaVersion: 1,
+          type: 'untrust-summary',
+          configPath: null,
+          removed: result.removed,
+          affectedRoots: result.affectedRoots,
         },),);
         return 0;
       }

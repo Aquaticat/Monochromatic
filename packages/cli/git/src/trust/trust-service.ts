@@ -9,6 +9,7 @@ import {
 } from './config-loader.ts';
 import type { DiscoveredConfig, } from './config-discovery.ts';
 import { readPrivateFile, } from './record-validation.ts';
+import { listTrustRecords, } from './registry-catalog.ts';
 import { recordDirectory, } from './registry-path.ts';
 import { isMissingPath, } from './registry-io.ts';
 import { loadRecord, } from './registry-storage.ts';
@@ -228,7 +229,69 @@ export async function untrustConfig({
   const candidate = await captureTrustCandidate(discovered,);
   return await revokeRecursiveTrust({
     registryRoot,
-    candidate,
+    identity: candidate.identity,
+    disclose,
+  },);
+}
+
+/**
+ * Revokes a repository record after its config artifact was removed.
+ *
+ * @param repositoryRoot - canonical repository root
+ *
+ * @param registryRoot - complete registry root
+ *
+ * @param disclose - reports affected recursive roots before mutation
+ *
+ * @returns recursive revocation summary
+ *
+ * @example
+ * ```ts
+ * await untrustRepository({ repositoryRoot, registryRoot, disclose: console.error });
+ * ```
+ */
+export async function untrustRepository({
+  repositoryRoot,
+  registryRoot,
+  disclose = omitUntrustDisclosure,
+}: Readonly<{
+  repositoryRoot: string;
+  registryRoot: string;
+  disclose?: TrustConsentAdapters['disclose'];
+}>,): Promise<RecursiveUntrustResult> {
+  await recoverProvenanceTransactions({ registryRoot, },);
+  /**
+   * Exact records historically installed for repository root.
+   */
+  const matches = (await listTrustRecords({ registryRoot, },))
+    .filter(function matchesRepository(entry,) {
+      return entry.record
+        .repositoryRoot
+        === repositoryRoot;
+    },);
+  if (matches.length === 0)
+    return {
+      removed: false,
+      affectedRoots: [],
+    };
+  if (matches.length !== 1)
+    throw new TrustedConfigError(
+      'trust-failed',
+      `Multiple trust records match repository root: ${repositoryRoot}`,
+    );
+  /**
+   * Sole exact recovered record.
+   */
+  const [entry,] = matches;
+  if (entry === undefined)
+    throw new TrustedConfigError(
+      'trust-failed',
+      `Missing recovered trust record: ${repositoryRoot}`,
+    );
+  return await revokeRecursiveTrust({
+    registryRoot,
+    identity: entry.record
+      .identity,
     disclose,
   },);
 }
