@@ -7,11 +7,13 @@ import type { PolicySeverity, } from '../api/policy-types.ts';
 import { BUILT_IN_POLICIES, } from './built-ins.ts';
 import {
   createCommitLandedEvent,
+  createEngineFailureEvent,
   type PolicyEvent,
 } from './events.ts';
 import {
   createPostCommitGitFacts,
-  resolveLandedCommit,
+  resolveLandedCommitOid,
+  resolvePostCommitRepositoryRoot,
 } from './post-commit-facts.ts';
 import { runPolicyEngine, } from './engine.ts';
 import type { RuntimePolicyDefinition, } from './types.ts';
@@ -77,47 +79,77 @@ export async function runPostCommitLifecycle({
   policyOptions?: ReadonlyMap<string, unknown>;
 }>,): Promise<PostCommitLifecycleResult> {
   /**
-   * Exact post-spawn commit identity and repository root.
+   * Exact post-spawn commit identity resolved before fallible policy setup.
    */
-  const landed = await resolveLandedCommit({
+  const oid = await resolveLandedCommitOid({
     gitPath,
     cwd,
   },);
-  /**
-   * Settled post-commit engine decision.
-   */
-  const result = await runPolicyEngine({
-    args: rawArgs,
-    transformedArgs,
-    trigger: 'post-commit',
-    gitFacts: createPostCommitGitFacts({
+  try {
+    /**
+     * Canonical repository root for landed policy context.
+     */
+    const repositoryRoot = await resolvePostCommitRepositoryRoot({
       gitPath,
       cwd,
-      landedOid: landed.oid,
-    },),
-    repositoryRoot: landed.repositoryRoot,
-    config: { policies: policySeverities, },
-    registeredPolicies,
-    policyOptions,
-  },);
-  if (result.shouldForward) {
+    },);
+    /**
+     * Settled post-commit engine decision.
+     */
+    const result = await runPolicyEngine({
+      args: rawArgs,
+      transformedArgs,
+      trigger: 'post-commit',
+      gitFacts: createPostCommitGitFacts({
+        gitPath,
+        cwd,
+        landedOid: oid,
+      },),
+      repositoryRoot,
+      config: { policies: policySeverities, },
+      registeredPolicies,
+      policyOptions,
+    },);
+    if (result.shouldForward)
+      return {
+        oid,
+        events: result.events,
+        blocked: false,
+      };
     return {
-      oid: landed.oid,
-      events: result.events,
-      blocked: false,
+      oid,
+      events: [
+        ...result.events,
+        createCommitLandedEvent({
+          sequence: result.events
+            .length,
+          oid,
+        },),
+      ],
+      blocked: true,
     };
   }
-  return {
-    oid: landed.oid,
-    events: [
-      ...result.events,
-      createCommitLandedEvent({
-        sequence: result.events
-          .length,
-        oid: landed.oid,
-      },),
-    ],
-    blocked: true,
-  };
+  catch (error: unknown) {
+    /**
+     * Stable setup or unexpected engine failure event.
+     */
+    const failure = createEngineFailureEvent({
+      sequence: 0,
+      code: 'content-unavailable',
+      message: Error.isError(error,) ? error.message : String(error,),
+      trigger: 'post-commit',
+    },);
+    return {
+      oid,
+      events: [
+        failure,
+        createCommitLandedEvent({
+          sequence: 1,
+          oid,
+        },),
+      ],
+      blocked: true,
+    };
+  }
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

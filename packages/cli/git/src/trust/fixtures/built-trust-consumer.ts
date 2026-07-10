@@ -14,6 +14,8 @@ import {
   assertJsonl,
   execute,
 } from './built-consumer-helpers.ts';
+import { verifyPostCommitPolicyConsumer, } from './built-post-commit-policy-consumer.ts';
+import { verifyPostCommitRoutingConsumer, } from './built-post-commit-routing-consumer.ts';
 import { verifyPolicyConfigConsumer, } from './built-policy-config-consumer.ts';
 import { verifyPolicyDefaultConsumer, } from './built-policy-default-consumer.ts';
 import { verifyRecursiveConsumer, } from './built-recursive-consumer.ts';
@@ -272,5 +274,7 @@ assertIncludes({
 await verifyRecursiveConsumer({ env, },);
 await verifyPolicyConfigConsumer({ env, },);
 await verifyPolicyDefaultConsumer({ env, },);
+await verifyPostCommitPolicyConsumer({ env, },);
+await verifyPostCommitRoutingConsumer({ env, },);
 await verifyTypeScriptConsumer({ env, },);
 console.log('built-trust-consumer-ok',);

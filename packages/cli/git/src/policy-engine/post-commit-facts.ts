@@ -254,67 +254,88 @@ async function loadLandedCandidates({
 }
 
 /**
- * Resolves exact commit and canonical repository root after real Git succeeds.
+ * Resolves exact landed commit after real Git succeeds.
  *
  * @param gitPath - resolved real Git executable
  *
  * @param cwd - effective repository directory
  *
- * @returns landed OID and canonical repository root
+ * @returns exact landed commit OID
  *
  * @example
  * ```ts
- * await resolveLandedCommit({ gitPath: '/usr/bin/git', cwd: '/repo' });
+ * await resolveLandedCommitOid({ gitPath: '/usr/bin/git', cwd: '/repo' });
  * ```
  */
-export async function resolveLandedCommit({
+export async function resolveLandedCommitOid({
   gitPath,
   cwd,
 }: Readonly<{
   gitPath: string;
   cwd: string;
-}>,): Promise<Readonly<{
-  oid: GitObjectId;
-  repositoryRoot: string;
-}>> {
+}>,): Promise<GitObjectId> {
   /**
-   * Exact commit and repository-root command outputs.
+   * Exact commit identity command output.
    */
-  const [oidBytes, rootBytes,] = await Promise.all([
-    runGitBytes({
-      gitPath,
-      cwd,
-      args: [
-        'rev-parse',
-        '--verify',
-        'HEAD^{commit}',
-      ],
-    },),
-    runGitBytes({
-      gitPath,
-      cwd,
-      args: [
-        'rev-parse',
-        '--show-toplevel',
-      ],
-    },),
-  ],);
+  const oidBytes = await runGitBytes({
+    gitPath,
+    cwd,
+    args: [
+      'rev-parse',
+      '--verify',
+      'HEAD^{commit}',
+    ],
+  },);
   /**
    * Decoded exact landed commit object ID.
    */
   const oid = UTF8_DECODER.decode(oidBytes,)
     .trim();
+  if (oid.length === 0)
+    throw new PostCommitGitError('Real Git returned empty landed commit identity.',);
+  return oid;
+}
+
+/**
+ * Resolves canonical repository root after landed OID is known.
+ *
+ * @param gitPath - resolved real Git executable
+ *
+ * @param cwd - effective repository directory
+ *
+ * @returns canonical repository root
+ *
+ * @example
+ * ```ts
+ * await resolvePostCommitRepositoryRoot({ gitPath: '/usr/bin/git', cwd: '/repo' });
+ * ```
+ */
+export async function resolvePostCommitRepositoryRoot({
+  gitPath,
+  cwd,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+}>,): Promise<string> {
+  /**
+   * Repository-root command output.
+   */
+  const rootBytes = await runGitBytes({
+    gitPath,
+    cwd,
+    args: [
+      'rev-parse',
+      '--show-toplevel',
+    ],
+  },);
   /**
    * Decoded repository root from real Git.
    */
   const root = UTF8_DECODER.decode(rootBytes,)
     .trim();
-  if ((oid.length === 0) || (root.length === 0))
-    throw new PostCommitGitError('Real Git returned empty landed commit identity.',);
-  return {
-    oid,
-    repositoryRoot: await realpath(root,),
-  };
+  if (root.length === 0)
+    throw new PostCommitGitError('Real Git returned empty repository root.',);
+  return realpath(root,);
 }
 
 /**

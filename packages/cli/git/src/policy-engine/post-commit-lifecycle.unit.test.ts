@@ -140,6 +140,25 @@ await describe({
       },
     },),
     it({
+      name: 'allows warning-only post-commit result',
+      fn: async function testWarningBackup() {
+        await using repository = await createRepository();
+        /** Warning-only post-commit gate. */
+        const result = await runPostCommitLifecycle({
+          rawArgs: ['commit', 'landed.txt',],
+          transformedArgs: ['commit', '-o', 'landed.txt',],
+          gitPath: realGitPath,
+          cwd: repository.path,
+          policySeverities: { 'fixture/block': 'warn', },
+          registeredPolicies: [BLOCK_POLICY,],
+        },);
+        expect(result.blocked,).toBe(false,);
+        expect(result.events.map(function eventType(event,) {
+          return event.type;
+        },),).toEqual(['finding', 'configuration-warning',],);
+      },
+    },),
+    it({
       name: 'retains commit after post-commit engine failure',
       fn: async function testEngineFailure() {
         await using repository = await createRepository();
