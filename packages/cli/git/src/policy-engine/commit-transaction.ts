@@ -281,7 +281,9 @@ export async function runCommitTransaction({
         return (currentCandidate.targetId === patch.targetId)
           && (currentCandidate.path === patch.path);
       },);
-      if ((candidate === undefined) || ((typeof candidate.revision) === 'symbol'))
+      if ((candidate === undefined)
+        || ((typeof candidate.revision) === 'symbol')
+        || ((candidate.mode !== 'regular') && (candidate.mode !== 'executable')))
         return {
           policyResult: transactionFailure({
             previous: pass,

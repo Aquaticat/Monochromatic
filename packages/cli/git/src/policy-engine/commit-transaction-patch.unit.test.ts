@@ -79,6 +79,14 @@ await describe({
         name: 'binary directive',
         text: VALID_PATCH.replace('@@ -1 +1 @@', 'GIT binary patch',),
       },
+      {
+        name: 'mode directive',
+        text: VALID_PATCH.replace('index 1111111..2222222 100644', 'old mode 100644\nnew mode 100755',),
+      },
+      {
+        name: 'submodule mode',
+        text: VALID_PATCH.replace('100644', '160000',),
+      },
     ].map(function invalidCase(fixture,) {
       return it({
         name: `rejects ${fixture.name}`,
@@ -91,6 +99,21 @@ await describe({
           },).toThrow();
         },
       },);
+    },),
+    it({
+      name: 'rejects traversal in declared path',
+      fn: async function testPathTraversal(): Promise<void> {
+        expect(function validate(): void {
+          validatePolicyPatch({
+            patch: createPatch({
+              path: '../outside.txt',
+              text: VALID_PATCH
+                .replaceAll('file.txt', '../outside.txt',),
+            },),
+            expectedRevision: '1111111',
+          },);
+        },).toThrow();
+      },
     },),
     it({
       name: 'rejects line delimiter in declared path',
