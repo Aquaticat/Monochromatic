@@ -1,6 +1,6 @@
 [tasks.run]
 description = "Run git wrapper CLI"
-run = "node src/index.ts"
+run = "node src/bin.ts"
 
 [tasks.build]
 extends = "build"
@@ -34,3 +34,12 @@ extends = "format:oxlint"
 
 [tasks.'test:unit']
 extends = "test:unit"
+
+[tasks.'pack:npm']
+description = "Build and create the unpublished npm tarball"
+depends = ["build"]
+run = [
+  "pnpm install --force --config.dedupe-direct-deps=false --filter @monochromatic-dev/cli-git",
+  "node -e \"const { mkdirSync } = await import('node:fs'); mkdirSync('dist/pack', { recursive: true })\"",
+  "pnpm pack --pack-destination dist/pack",
+]

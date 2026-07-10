@@ -25,7 +25,7 @@ const realGitPath = await resolveGit();
 /** Absolute path to cli-git entry point under test. */
 const WRAPPER_PATH = join(
   import.meta.dirname,
-  'index.ts',
+  'bin.ts',
 );
 
 /** Git author email used in disposable repositories. */

@@ -1,6 +1,75 @@
 # cli-git
 
 Git wrapper that enforces safety rules before forwarding to the real git binary.
+The package also exposes a side-effect-free policy authoring API.
+
+## Runtime
+
+Cli-git requires Node `^22.18.0 || >=24.11.0`.
+Installing the package exposes a shadowing `git` executable.
+Put the package's `node_modules/.bin` directory before the real Git directory on `PATH`;
+the wrapper resolves and forwards to the next real Git executable.
+
+The package is prepared for npm distribution,
+but registry publication is deliberately deferred to issue #358.
+
+## Policy authoring API
+
+Importing the package root does not inspect process arguments,
+read files,
+resolve Git,
+write output,
+or start the executable.
+The identity helpers preserve their input objects so TypeScript retains concrete policy names,
+plugin namespaces,
+and Valibot output types.
+
+```ts
+import {
+  defineConfig,
+  definePlugin,
+  definePolicy,
+  definePolicyOptions,
+} from '@monochromatic-dev/cli-git';
+import * as v from 'valibot';
+
+const options = definePolicyOptions(v.object({
+  requiredSuffix: v.string(),
+}));
+
+const suffixPolicy = definePolicy({
+  name: 'suffix',
+  defaultSeverity: 'error',
+  warnSafe: true,
+  triggers: ['direct-check'],
+  options,
+  check: async ({ options: parsedOptions }) => {
+    void parsedOptions.requiredSuffix;
+    return [];
+  },
+});
+
+const examplePlugin = definePlugin({
+  name: 'example',
+  policies: [suffixPolicy],
+});
+
+export default defineConfig({
+  plugins: {
+    example: examplePlugin,
+  },
+  policies: {
+    'example/suffix': ['warn', { requiredSuffix: '.ts' }],
+  },
+});
+```
+
+`defineConfig` rejects unknown statically known policy IDs and option values that do not match a policy's Valibot
+output.
+`ABSENT_GIT_VALUE` represents mutable candidate revisions,
+missing object IDs,
+and direct operations without a Git subcommand.
+It is an in-process unique symbol and is never serialized to JSONL.
 
 ## Rules
 

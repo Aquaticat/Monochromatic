@@ -1,24 +1,45 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/cli-git",
-  "description": "Git wrapper that enforces repo-root, linked-worktree-only, explicit add, atomic push, commit-only, and status-hint safeguards, then auto-pushes each commit to origin.",
+  "description": "Policy-aware Git wrapper and side-effect-free policy authoring API.",
   "type": "module",
-  "private": true,
-  "main": "src/index.ts",
+  "private": false,
+  "main": "dist/final/node/index.mjs",
+  "types": "dist/final/node/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "import": "./dist/final/node/index.mjs"
+    }
+  },
   "bin": {
-    "git": "dist/final/node/index.mjs"
+    "git": "dist/final/node/bin.mjs"
+  },
+  "files": [
+    "dist/final/node",
+    "LICENSES",
+    "README.md"
+  ],
+  "engines": {
+    "node": "^22.18.0 || >=24.11.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "@monochromatic-dev/module-test": "workspace:*",
-    "@optique/core": "catalog:",
-    "@types/node": "catalog:"
-  },
-  "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
     "find-up": "catalog:",
     "nano-spawn": "catalog:"
+  },
+  "dependencies": {
+    "@optique/core": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "valibot": "catalog:"
   },
   "version": "0.0.1",
   "repository": {
@@ -26,5 +47,7 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/cli/git"
   },
-  "sideEffects": true
+  "sideEffects": [
+    "dist/final/node/bin.mjs"
+  ]
 }

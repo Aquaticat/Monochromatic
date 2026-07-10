@@ -32,7 +32,7 @@ const PACKAGE_NAME = '@monochromatic-dev/cli-git';
  * pnpm's generated `node_modules/.bin/git` script can reference this built file
  * without naming the package, so package-name detection alone misses it.
  */
-const BUNDLED_ENTRY_MARKER = 'packages/cli/git/dist/final/node/index.mjs';
+const BUNDLED_ENTRY_MARKER = 'packages/cli/git/dist/final/node/bin.mjs';
 
 /**
  * Text markers that identify scripts delegating back into this wrapper.
