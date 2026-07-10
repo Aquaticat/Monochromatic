@@ -522,9 +522,10 @@ It proceeds when content is already canonical and blocks with direct-fix guidanc
 
 ## Whole-sequence convergence
 
-Later policies in a pass see earlier applied patches.
-If any patch changes candidate bytes,
-all findings from that pass become provisional and execution restarts from the first built-in policy.
+A patch proposal ends the current pass before any later policy runs.
+After cli-git applies the patch to private state,
+all findings from that pass remain provisional and execution restarts from the first built-in policy.
+A later policy therefore runs only against candidate state containing every earlier applied patch.
 
 Convergence uses at most eight complete policy passes.
 Candidate states compare exact ordered path-and-byte content.

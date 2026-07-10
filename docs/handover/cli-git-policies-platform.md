@@ -1253,8 +1253,11 @@ Unless later grilling changes them:
   removes internal only/pathspec arguments before private-index commit,
   and reconciles only selected landed entries into the original index copy.
 - Explicit `--no-only` mode patches a complete copy of the real index and installs the resulting index after success.
-- Patch proposals must bind exact opaque target ID and path;
-  destination-grammar validation rejects extra targets,
+- Patch proposals must bind exact opaque target ID,
+  concrete Git-resolved path,
+  and candidate blob revision in the patch index header;
+  destination-grammar validation rejects stale bases,
+  extra targets,
   mismatched headers,
   line-delimiter injection,
   renames,
@@ -1263,7 +1266,8 @@ Unless later grilling changes them:
   and binary directives.
 - Patches apply sequentially with real `git apply --cached --3way` against `GIT_INDEX_FILE`;
   overlap conflicts remain private and return `content-unavailable`.
-- Any exact index change restarts the full ordered engine;
+- Any patch proposal ends the provisional pass before later policies run;
+  after an exact index change the full ordered engine restarts,
   provisional events are discarded,
   only the final unchanged pass emits,
   eight changed passes cap convergence,
@@ -1276,6 +1280,9 @@ Unless later grilling changes them:
   overlapping conflict,
   policy exception,
   failed pre-commit hook,
+  successful hook observation of patched private staged bytes,
+  Git-magic pathspec resolution,
+  pre-subcommand `-C` execution,
   and exact real index/worktree/ref preservation.
 - Commits `e19c7340a`,
   `e07102aad`,
@@ -1283,19 +1290,23 @@ Unless later grilling changes them:
   `f15c4cea8`,
   `8389a156b`,
   `75179dc49`,
-  and `ab30eb84a` contain the parser seam,
+  `ab30eb84a`,
+  `35d4ae62e`,
+  and `ecf2c09df` contain the parser seam,
   patch retention,
   private-index primitives,
   convergent integration,
   boundary hardening,
-  and evidence.
+  evidence,
+  exact snapshot streaming,
+  and independent-review corrections.
 - Formatting,
   type checks,
   build,
   full unit suite,
-  and packed shadow-bin run `proc_4` pass.
+  and packed shadow-bin runs `proc_4` and `proc_5` pass.
   Final documentation lint,
-  final packed rerun after snapshot streaming,
+  final packed rerun `proc_6` after review corrections,
   and independent closure review remain.
   Actual npm publication remains deferred in #358.
 
