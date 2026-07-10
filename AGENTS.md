@@ -629,7 +629,7 @@ Any root sentinel exists:
 GCW:
  Review touches `cli-git`'s linked-worktree guard:
  account for baked-in tool-cache allowlist,
- `DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`:
+ `DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/git-policies/cli/src/allowed-worktree-dirs.ts`:
  git-dirs under allowed dir bypass guard.
 
 ### Research tools

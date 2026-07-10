@@ -61,11 +61,11 @@ await describe({
       fn: async function testExplicitFile(): Promise<void> {
         expect(addExplicit([
           'add',
-          'packages/cli/git/src/index.ts',
+          'packages/git-policies/cli/src/index.ts',
         ],),)
           .toEqual([
             'add',
-            'packages/cli/git/src/index.ts',
+            'packages/git-policies/cli/src/index.ts',
           ],);
       },
     },),

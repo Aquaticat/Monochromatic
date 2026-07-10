@@ -12,7 +12,7 @@ Issue #354 is the active dependency-ordered cli-git slice.
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
 The implementation interface is
-`packages/cli/git/SPEC.md`.
+`packages/git-policies/cli/SPEC.md`.
 This handover remains the current execution-state and evidence record.
 
 Concurrent worktree state:
@@ -28,7 +28,7 @@ Issue #343 legitimately regenerated `pnpm-lock.yaml` from the current workspace 
 
 ## Original implementation objective
 
-Turn `packages/cli/git` into a standalone pluggable Git policy platform,
+Turn `packages/git-policies/cli` into a standalone pluggable Git policy platform,
 migrate the current cli-git safeguards and hk-managed checks,
 then retire hk and Pkl after parity,
 performance,
@@ -40,8 +40,8 @@ absolute path.
 
 ## Verified current-state facts
 
-- `packages/cli/git/package.json` exposes only the `git` binary today.
-- `packages/cli/git/src/bin.ts` runs the configurable policy engine before a sequential fixed-transform `RULES` array.
+- `packages/git-policies/cli/package.json` exposes only the `git` binary today.
+- `packages/git-policies/cli/src/bin.ts` runs the configurable policy engine before a sequential fixed-transform `RULES` array.
 - Current policy order is:
   - `require-root`
   - `linked-worktree-only`
@@ -52,7 +52,7 @@ absolute path.
   - `commitOnly`
   - `statusHintsOff`
 - `branch-worktree-only` is active,
-  documented in `packages/cli/git/README.md`,
+  documented in `packages/git-policies/cli/README.md`,
   and tested,
   but the source decision omitted it from the supposedly complete behavior classification.
 - Current Git is 2.54.0 on this host.
@@ -873,7 +873,7 @@ Unless later grilling changes them:
   unsafe permissions,
   changed bytes,
   and management exits.
-- `mise run //packages/cli/git:test:built:trust` builds the unpublished tarball and passed in a bounded disposable
+- `mise run //packages/git-policies/cli:test:built:trust` builds the unpublished tarball and passed in a bounded disposable
   Node container.
   It installs the package's actual shadowing `git` bin and verifies pure JSONL first-use and changed-byte failures,
   trust disclosure,
@@ -1529,7 +1529,7 @@ Unless later grilling changes them:
 ### Issue #341 contract
 
 - Reconciled `docs/decisions/cli-git-policies-platform.md` with every settled grilling revision.
-- Added canonical implementation interface `packages/cli/git/SPEC.md`.
+- Added canonical implementation interface `packages/git-policies/cli/SPEC.md`.
 - A disposable TypeScript 7.0.1-rc consumer compiled both authoring examples and proved statically known unknown policy IDs
   and wrong option values are rejected.
 - An Optique 1.1.1 fixture parsed every documented management form and rejected missing,
@@ -1821,7 +1821,7 @@ a later phase does not wait to record an earlier phase's work.
 
 ## Implementation risks and evidence gaps
 
-`packages/cli/git/SPEC.md` freezes the public declarations,
+`packages/git-policies/cli/SPEC.md` freezes the public declarations,
 JSONL schema,
 management grammar,
 trust record,

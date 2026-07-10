@@ -1,8 +1,11 @@
+#!/usr/bin/env node
 /**
- * Side-effect-free cli-git policy authoring API.
+ * Side-effect-free cli-git exports and direct executable entry.
  *
  * @module
  */
+
+import { runCliGit, } from './bin.ts';
 
 export {
   defineConfig,
@@ -43,3 +46,7 @@ export type {
   PolicyTrigger,
   RepositoryPath,
 } from './api/policy-types.ts';
+
+// Direct execution runs the wrapper; module import remains inert.
+if (import.meta.main)
+  await runCliGit();

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -36,8 +35,6 @@ import { hasExplicitStatusHintsOverride, } from './rules/status-hints-off.ts';
  */
 const l = tagged({ tag: 'cli-git', },);
 
-export {};
-
 //region Rule pipeline: validate and transform args before forwarding to real git
 
 /**
@@ -47,12 +44,6 @@ const rl = tagged({
   tag: 'main',
   l,
 },);
-
-/**
- * Raw arguments passed after the script name.
- */
-const rawArgs: readonly string[] = process.argv
-  .slice(2,);
 
 /**
  * Pre-subcommand argv tokens that request version information and cause git
@@ -145,13 +136,32 @@ class PolicyDecisionError extends Error {
 }
 
 /**
- * Layout used to intercept namespaced management command before Git forwarding.
+ * Runs one direct cli-git invocation.
+ *
+ * Package root calls this function only when its single MJS artifact is Node's
+ * direct program entry.
+ *
+ * @returns completion after real Git or policy handling settles
+ *
+ * @example
+ * ```ts
+ * await runCliGit();
+ * ```
  */
-const managementLayout = parseGlobalOptions(rawArgs,);
-/**
- * Whether wrapper owns this invocation as a management command.
- */
-const isManagementCommand = rawArgs[managementLayout.subcommandIndex] === 'cli-git';
+export async function runCliGit(): Promise<void> {
+  /**
+   * Raw arguments passed after the script name.
+   */
+  const rawArgs: readonly string[] = process.argv
+    .slice(2,);
+  /**
+   * Layout used to intercept namespaced management command before Git forwarding.
+   */
+  const managementLayout = parseGlobalOptions(rawArgs,);
+  /**
+   * Whether wrapper owns this invocation as a management command.
+   */
+  const isManagementCommand = rawArgs[managementLayout.subcommandIndex] === 'cli-git';
 
 try {
   if (isManagementCommand) {
@@ -450,6 +460,7 @@ catch (error) {
   else {
     throw error;
   }
+}
 }
 
 //endregion Execution

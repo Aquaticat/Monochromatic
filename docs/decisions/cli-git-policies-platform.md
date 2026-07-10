@@ -8,13 +8,13 @@ The public package is prepared for npm distribution,
 but registry publication remains indefinitely deferred in #358.
 
 The canonical implementation interface is
-`packages/cli/git/SPEC.md`.
+`packages/git-policies/cli/SPEC.md`.
 The execution record is
 `docs/handover/cli-git-policies-platform.md`.
 
 ## Decision
 
-Turn `packages/cli/git` into a pluggable Git policies platform modeled on Oxlint.
+Turn `packages/git-policies/cli` into a pluggable Git policies platform modeled on Oxlint.
 Keep the existing shadowing `git` executable as the enforcement point.
 Expose configurable built-in and third-party policies,
 fixed command transforms,
@@ -111,7 +111,7 @@ Lazy values are memoized for one candidate-state version only.
 Applying a patch invalidates candidate-dependent memoized data before another policy runs.
 
 Exact public TypeScript declarations and invariants live in
-`packages/cli/git/SPEC.md`.
+`packages/git-policies/cli/SPEC.md`.
 
 ## Policy identifiers and configuration
 
@@ -467,7 +467,7 @@ The cascade intentionally removes inherited authority from sibling subtrees and 
 
 Policy findings use stable JSON Lines.
 The schema version is frozen in
-`packages/cli/git/SPEC.md`.
+`packages/git-policies/cli/SPEC.md`.
 Every finding includes a human-readable message.
 Public output contains only findings from the final stable pass.
 Changed-pass findings are provisional and never emitted as authoritative results.
@@ -781,13 +781,13 @@ Consumer lockfiles and self-contained builds govern plugin inputs.
 
 ## References
 
-- `packages/cli/git/SPEC.md`:
+- `packages/git-policies/cli/SPEC.md`:
   canonical implementation interface and verification contract.
 - `docs/handover/cli-git-policies-platform.md`:
   implementation state and evidence.
-- `packages/cli/git/README.md` and `packages/cli/git/src/index.ts`:
+- `packages/git-policies/cli/README.md` and `packages/git-policies/cli/src/index.ts`:
   current wrapper behavior.
-- `packages/cli/git/src/escape-hatch.ts`:
+- `packages/git-policies/cli/src/escape-hatch.ts`:
   parser-based invocation escape hatches.
 - `packages/module/fs-id/README.md`:
   implemented filesystem identity prerequisite and verified platform behavior.

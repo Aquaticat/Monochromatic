@@ -32,17 +32,17 @@ Valibot 1.4.2 defines `GenericSchema` as an alias of `BaseSchema` in
 `node_modules/.pnpm/valibot@1.4.2_typescript@7.0.1-rc/node_modules/valibot/dist/index.d.mts:3141`.
 The schema contract includes function members and generic input/output positions whose complete structure is not deeply
 readonly.
-Cli-git's `PolicyDefinition` in `packages/cli/git/src/api/policy-types.ts` contains that schema plus a policy callback.
+Cli-git's `PolicyDefinition` in `packages/git-policies/cli/src/api/policy-types.ts` contains that schema plus a policy callback.
 
 The helpers cannot clone or transform these values:
-`packages/cli/git/SPEC.md` requires each helper to return the exact input object,
+`packages/git-policies/cli/SPEC.md` requires each helper to return the exact input object,
 and Valibot consumers need the original schema type for parsing and output inference.
 The internal `registeredPolicies` adapter in
-`packages/cli/git/src/policy-engine/engine.ts`,
+`packages/git-policies/cli/src/policy-engine/engine.ts`,
 filesystem-failure adapter in
-`packages/cli/git/src/policy-engine/commit-transaction-boundary.ts`,
+`packages/git-policies/cli/src/policy-engine/commit-transaction-boundary.ts`,
 and command-facts adapter in
-`packages/cli/git/src/policy-engine/pre-forward-engine.ts` must retain executable callbacks so tests can prove
+`packages/git-policies/cli/src/policy-engine/pre-forward-engine.ts` must retain executable callbacks so tests can prove
 sequential order,
 keep-going behavior,
 immediate exception stopping,
@@ -51,7 +51,7 @@ They read the declarations and never mutate them.
 
 ## Verification
 
-`mise run //packages/cli/git:lint:oxlint` reproduced the two warnings against:
+`mise run //packages/git-policies/cli:lint:oxlint` reproduced the two warnings against:
 
 - `definePolicyOptions` with `Readonly<GenericSchema<TInput, TOutput>>`;
 - `definePolicy` with `Readonly<PolicyDefinition<Readonly<TOptions>, TName>>`.

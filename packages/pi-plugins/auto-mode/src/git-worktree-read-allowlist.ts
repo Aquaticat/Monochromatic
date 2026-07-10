@@ -38,7 +38,7 @@ const CLI_GIT_PACKAGE_NAME = '@monochromatic-dev/cli-git';
 /**
  * Built cli-git entry marker used by pnpm shims that do not name package metadata.
  */
-const CLI_GIT_BUNDLED_ENTRY_MARKER = 'packages/cli/git/dist/final/node/index.mjs';
+const CLI_GIT_BUNDLED_ENTRY_MARKER = 'packages/git-policies/cli/dist/final/node/index.mjs';
 
 /**
  * Text markers that identify scripts delegating to the workspace git wrapper.

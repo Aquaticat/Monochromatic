@@ -303,7 +303,7 @@ concurrent enrollment and revocation,
 and cascading untrust:
 
 ```sh
-mise run //packages/cli/git:test:built:trust
+mise run //packages/git-policies/cli:test:built:trust
 ```
 
 Every built-in accepts a generic one-invocation escape named `--no-enforce-<policy-id>`.
@@ -619,7 +619,7 @@ The wrapper shadows the system `git` binary on PATH (via mise bin linkage).
 It scans PATH to find the real git binary,
  skipping its own entry.
 Self-shim detection checks both the package name and the bundled entry path
-`packages/cli/git/dist/final/node/index.mjs`,
+`packages/git-policies/cli/dist/final/node/index.mjs`,
  because pnpm-generated shims can
 point at the built file without naming the package.
 Arguments pass through built-in policy,

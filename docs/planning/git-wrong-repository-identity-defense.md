@@ -78,16 +78,16 @@ it reasons about command text and permits explicit bypass.
 
 ### Git command boundary
 
-`packages/cli/git/src/index.ts` evaluates a pre-spawn rule pipeline before invoking real Git.
+`packages/git-policies/cli/src/index.ts` evaluates a pre-spawn rule pipeline before invoking real Git.
 That is the deterministic seam for command-level repository safeguards.
 
-`packages/cli/git/src/effective-target.ts` already replays global repository-selection options and inherited
+`packages/git-policies/cli/src/effective-target.ts` already replays global repository-selection options and inherited
 `GIT_DIR` or `GIT_WORK_TREE` state through real Git.
 The new rules must reuse that seam rather than independently guessing the target repository.
 
 Current gaps include:
 
-- `packages/cli/git/src/rules/require-root.ts` exempts `git init`.
+- `packages/git-policies/cli/src/rules/require-root.ts` exempts `git init`.
 - No rule rejects reinitialization of an existing worktree.
 - No rule rejects writes to `user.name`,
    `user.email`,
@@ -150,7 +150,7 @@ and GitHub boundaries.
 
 ### Module interface
 
-The implementation home is `packages/cli/git/src/repository-safety/`.
+The implementation home is `packages/git-policies/cli/src/repository-safety/`.
 It exposes three concepts:
 
 ```ts
@@ -177,7 +177,7 @@ The interface stays small while hiding:
 - cryptographic commit verification;
 - diagnostic formatting.
 
-Add a `git-safety` bin entry to `packages/cli/git/package.json` that points to `src/git-safety.ts`.
+Add a `git-safety` bin entry to `packages/git-policies/cli/package.json` that points to `src/git-safety.ts`.
 The entry carries the required Node shebang
 and runs the checked-out TypeScript source under the repository's pinned Node runtime,
 matching the package's existing `node src/index.ts` execution model.
@@ -186,7 +186,7 @@ It does not depend on ignored or potentially stale `dist` output.
 The bin exposes `pre-commit`,
 `verify-objects`,
 and `pre-push <remote> <url>` modes to hk without sending policy operations back through the `git` wrapper.
-All internal Git subprocesses reuse `packages/cli/git/src/resolve-git.ts` and a sanitized environment,
+All internal Git subprocesses reuse `packages/git-policies/cli/src/resolve-git.ts` and a sanitized environment,
 so verification cannot recurse into cli-git.
 
 The concrete hk command is `node_modules/.bin/git-safety` from the active worktree.
@@ -270,7 +270,7 @@ Keep project `.pi/settings.json` package-free.
 
 ### Layer B: reject dangerous Git invocations before spawn
 
-Add non-bypassable rules to the existing `packages/cli/git` rule pipeline.
+Add non-bypassable rules to the existing `packages/git-policies/cli` rule pipeline.
 
 #### Existing-repository initialization
 
@@ -931,9 +931,9 @@ The work is complete only when:
 - Pi guardrail:
   `packages/pi-plugins/guardrail/README.md`
 - cli-git entry point:
-  `packages/cli/git/src/index.ts`
+  `packages/git-policies/cli/src/index.ts`
 - cli-git root rule:
-  `packages/cli/git/src/rules/require-root.ts`
+  `packages/git-policies/cli/src/rules/require-root.ts`
 - Hook configuration:
   `hk.pkl`
 - hk hook behavior:

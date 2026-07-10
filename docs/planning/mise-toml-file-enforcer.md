@@ -181,7 +181,7 @@ No second file.
 
 Kind detection from filesystem signals is ambiguous in real cases:
 
-- `packages/cli/git` is both a CLI (custom `run` task on `src/index.ts`) and
+- `packages/git-policies/cli` is both a CLI (custom `run` task on `src/index.ts`) and
   extends `build:js:node`,
    `lint`,
    `lint:types`,
