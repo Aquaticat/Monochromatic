@@ -72,6 +72,27 @@ export async function verifyPolicyConfigConsumer({
     'branch-worktree-only': 'warn',
     'add-explicit': 'warn',
   },
+  plugins: {
+    fixture: {
+      name: 'fixture',
+      policies: [{
+        name: 'transform-view',
+        defaultSeverity: 'error',
+        warnSafe: false,
+        triggers: ['pre-forward'],
+        check: async ({ context }) => {
+          if (context.command.subcommand !== 'commit') return [];
+          const raw = context.command.rawArgs.join('\\0');
+          const transformed = context.command.transformedArgs.join('\\0');
+          const expectedRaw = ['commit', '-m', 'plugin view', 'plugin.txt'].join('\\0');
+          const expectedTransformed = ['commit', '-o', '-m', 'plugin view', 'plugin.txt'].join('\\0');
+          return raw === expectedRaw && transformed === expectedTransformed
+            ? []
+            : [{ code: 'view-mismatch', message: 'fixed transform command facts differ' }];
+        },
+      }],
+    },
+  },
 };
 `,
   );
@@ -99,6 +120,36 @@ export async function verifyPolicyConfigConsumer({
       'cli-git',
       'trust',
       '--yes',
+    ],
+    cwd: repository,
+    env,
+  },);
+  /**
+   * Plugin receives exact raw commit plus fixed transformed commit.
+   */
+  await writeFile(
+    join(
+      repository,
+      'plugin.txt',
+    ),
+    'plugin\n',
+  );
+  await execute({
+    command: 'git',
+    args: [
+      'add',
+      'plugin.txt',
+    ],
+    cwd: repository,
+    env,
+  },);
+  await execute({
+    command: 'git',
+    args: [
+      'commit',
+      '-m',
+      'plugin view',
+      'plugin.txt',
     ],
     cwd: repository,
     env,

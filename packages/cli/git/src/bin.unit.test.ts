@@ -388,6 +388,29 @@ await describe({
       },
     },),
     it({
+      name: 'preserves human and machine-readable status output',
+      fn: async function testStatusOutputModes(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeFile(join(tempDirectory.path, 'untracked.txt',), 'content\n',);
+        /** Human status with cli-git guidance. */
+        const human = await runWrapper({ cwd: tempDirectory.path, args: ['status',], },);
+        expect(human.stdout,).toContain('cli-git: bulk-add patterns',);
+        /** Porcelain output without wrapper prose. */
+        const machine = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['status', '--porcelain=v1',],
+        },);
+        expect(machine.stdout,).toBe('?? untracked.txt',);
+        /** Explicit user status-hints choice suppresses wrapper guidance. */
+        const overridden = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['-c', 'advice.statusHints=true', 'status',],
+        },);
+        expect(overridden.stdout,).not.toContain('cli-git: bulk-add patterns',);
+      },
+    },),
+    it({
       name: 'runs trust status and direct check management commands',
       fn: async function testManagementCommands(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

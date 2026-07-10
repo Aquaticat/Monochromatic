@@ -256,6 +256,7 @@ export async function runPolicyEngine({
   const fixedStage = trigger === 'pre-forward'
     ? await applyFixedTransforms({
       args: controls.args,
+      rawArgs: args,
       sequence: builtInStage.events
         .length,
     },)

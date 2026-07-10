@@ -115,6 +115,29 @@ function ignoredIndexMessage(flagText: string,): string {
 }
 
 /**
+ * Reports whether current commit argv contains wrapper escape in option position.
+ *
+ * @param args - command arguments to inspect
+ *
+ * @returns whether commit-only is escaped for this invocation
+ *
+ * @example
+ * ```ts
+ * hasCommitOnlyEscapeHatch(['commit', '--no-enforce-only', '-m', 'message']);
+ * ```
+ */
+export function hasCommitOnlyEscapeHatch(args: readonly string[],): boolean {
+  /**
+   * Located command after global options.
+   */
+  const { subcommandIndex, } = parseGlobalOptions(args,);
+  if (args[subcommandIndex] !== 'commit')
+    return false;
+  return parseCommitRegion(args.slice(subcommandIndex + 1,),)
+    .hasEscapeHatch;
+}
+
+/**
  * Commit-only rule signature consumed by the cli-git rule pipeline.
  */
 export type CommitOnlyRule = (
