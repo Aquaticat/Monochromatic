@@ -1468,9 +1468,11 @@ Unless later grilling changes them:
 - The policy implementation lives in a separate private source package under
   `packages/git-policies/forbidden-strings/`.
   It does not broaden `@monochromatic-dev/git-policy-repository`.
-- Repo-owned policy source packages are bundled into the public cli-git tarball as
-  `@monochromatic-dev/cli-git/policies/*` subpaths.
-  Importing them is side-effect free and does not enable them;
+- Repo-owned policy source packages are statically bundled into cli-git's single public MJS artifact and exported from
+  `@monochromatic-dev/cli-git`.
+  The same artifact is the executable bin and the side-effect-free import target.
+  It contains no dynamic imports or secondary chunks.
+  Importing it does not enable shipped policies;
   trusted consumer config must register each plugin explicitly.
 - Scanner resolution defaults to the `forbidden-strings` executable on `PATH`.
   Policy options may override the executable path;

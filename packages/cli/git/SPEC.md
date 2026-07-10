@@ -18,8 +18,7 @@ Issue #358 records that indefinitely deferred action.
 The package has these external seams:
 
 - the shadowing `git` executable;
-- the side-effect-free authoring exports from `@monochromatic-dev/cli-git`;
-- side-effect-free optional policy exports from `@monochromatic-dev/cli-git/policies/*`;
+- the side-effect-free authoring and optional-policy exports from `@monochromatic-dev/cli-git`;
 - repository-root config artifacts;
 - JSONL policy events;
 - the per-account exact-snapshot trust registry.
@@ -41,10 +40,19 @@ write output,
 register a policy,
 or start the executable.
 
-## Shipped optional policies
+## Single artifact and shipped optional policies
+
+The public cli-git tarball contains exactly one MJS artifact.
+That artifact exports authoring declarations and optional repo-owned policies,
+and is also the executable named by the `git` bin entry.
+It uses static imports only and must not emit shared chunks,
+secondary MJS entries,
+or dynamic imports.
+Direct-invocation detection calls CLI startup only when Node executes the artifact as the program entry.
+Importing it as a module remains side-effect free.
 
 Repo-owned policy implementations remain in separate workspace source packages for ownership and focused tests.
-The public cli-git package bundles them into self-contained `./policies/<name>` subpaths.
+The cli-git build statically bundles them into the one artifact.
 No private workspace policy package may remain as a runtime or declaration dependency of the packed artifact.
 
 Importing an optional policy returns its plugin definition only.
@@ -52,12 +60,10 @@ It never changes the built-in registry or enabled policy set.
 A consumer enables it by registering the plugin under a chosen namespace in trusted config.
 A no-config invocation therefore retains built-ins only.
 
-The shipped optional policies are:
-
-- `@monochromatic-dev/cli-git/policies/repository`;
-- `@monochromatic-dev/cli-git/policies/forbidden-strings` after issue #354 lands.
-
-The forbidden-strings policy bundles its Node adapter but not the Rust scanner binary.
+The root package export includes `repositoryPolicyPlugin` and,
+after issue #354 lands,
+`forbiddenStringsPlugin`.
+The forbidden-strings export bundles its Node adapter but not the Rust scanner binary.
 Scanner lookup defaults to `forbidden-strings` on `PATH` only when the enabled policy executes.
 
 ## Public authoring declarations

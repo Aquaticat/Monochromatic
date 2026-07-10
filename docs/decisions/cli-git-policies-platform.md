@@ -241,12 +241,14 @@ missing object IDs,
 and command forms without a subcommand.
 This represents domain absence without nullable unions and is never serialized to JSONL.
 
-Repo-owned policies retain separate workspace source packages but ship as side-effect-free
-`@monochromatic-dev/cli-git/policies/*` subpaths.
+Repo-owned policies retain separate workspace source packages but are bundled into the single public cli-git MJS
+artifact and exported from `@monochromatic-dev/cli-git`.
 Importing a shipped policy does not register or enable it;
 consumer config must register the plugin under a chosen namespace.
-The public tarball contains every runtime needed by those policy subpaths except explicitly documented external
-executables such as the `forbidden-strings` scanner.
+The public tarball contains every runtime needed by those exports except explicitly documented external executables
+such as the `forbidden-strings` scanner.
+The same MJS artifact is both the side-effect-free import target and the executable bin;
+CLI startup runs only when Node invokes that artifact directly.
 
 Third-party plugins peer-depend on a compatible cli-git package version.
 Private workspace runtime helpers are bundled into the Node artifact rather than left as unresolved registry
