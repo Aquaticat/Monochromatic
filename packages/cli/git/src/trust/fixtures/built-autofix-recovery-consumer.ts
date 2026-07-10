@@ -17,6 +17,7 @@ import {
   assertFixtureEqual,
   resolveFixtureOid,
 } from './built-post-commit-helpers.ts';
+import { verifyCompletedInstallRecovery, } from './built-autofix-recovery-completed.ts';
 import {
   verifyConflictingRecoveryReflog,
   verifyReplacedRecoveryLock,
@@ -302,6 +303,16 @@ export async function verifyAutofixRecovery({
     ),
     expected: 'bad\n',
     context: 'commit-created recovered worktree',
+  },);
+
+  await verifyCompletedInstallRecovery({
+    repository,
+    transactionDirectory,
+    lockPath,
+    postHookPath,
+    killingHookSource: KILL_WRAPPER_SOURCE,
+    waitForOrphan,
+    env,
   },);
 
   await verifyConflictingRecoveryReflog({
