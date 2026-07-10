@@ -568,8 +568,11 @@ Their persistent severities and complete-invocation escapes are resolved before 
 Legacy safeguard aliases remain compatible and are stripped with the generic policy escapes before real Git.
 Atomic push,
 commit only,
-status hints off,
-and auto-push remain fixed behavior in the staged lifecycle.
+and status hints off now run as one idempotent fixed-transform stage between built-ins and trusted plugins.
+Plugins receive both the exact raw command and final transformed command.
+Expected commit-only rejection emits a non-configurable `core-finding` JSONL event;
+unexpected transform failure emits `core-incomplete` and exits `2`.
+Auto-push remains fixed behavior later in the staged lifecycle.
 
 ### Forbidden root context
 

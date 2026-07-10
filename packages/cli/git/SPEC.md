@@ -688,6 +688,26 @@ An explicitly configured warn-unsafe policy emits this non-blocking event even w
 Configuration warnings share the same JSONL stream and invocation-local sequence as findings and engine failures;
 they never write ad hoc prose to the machine stream.
 
+### Core finding event
+
+```ts
+export type CoreFindingEvent = EventBase & {
+  readonly type: 'core-finding';
+  readonly trigger: 'pre-forward';
+  readonly coreId: 'commit-only';
+  readonly code:
+    | 'commit-only/all-flag'
+    | 'commit-only/pathspec-required'
+    | 'commit-only/staged-changes-ignored';
+  readonly message: string;
+};
+```
+
+Core findings are expected rejections from fixed non-configurable behavior.
+They block with exit `1`,
+share policy-event sequencing,
+and cannot be disabled or assigned a severity through repository config.
+
 ### Fix summary event
 
 ```ts
@@ -709,6 +729,7 @@ export type EngineFailureCode =
   | 'config-invalid'
   | 'config-untrusted'
   | 'config-changed'
+  | 'core-incomplete'
   | 'plugin-threw'
   | 'policy-incomplete'
   | 'content-unavailable'
@@ -730,6 +751,7 @@ export type EngineFailureEvent = EventBase & {
 ```
 
 One causal engine-failure event is emitted for an engine exit.
+`core-incomplete` means a fixed transform failed unexpectedly rather than producing an expected core finding.
 Nested exception stacks and arbitrary thrown values remain debug logs rather than schema fields.
 
 ### Commit landed event

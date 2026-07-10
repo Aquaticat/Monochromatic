@@ -4,7 +4,8 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #348 are complete and closed.
-Fixed-transform staging issue #349 is the next unblocked dependency-ordered slice.
+Fixed-transform staging issue #349 is implemented locally and undergoing final packed verification and review.
+Automatic-push lifecycle issue #350 is the next dependency-ordered slice after #349 closes.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1142,6 +1143,39 @@ Unless later grilling changes them:
   and checker-only sentinel coverage.
   Its final closure pass found no remaining concrete blocker.
 - Issue #348 was closed after every acceptance criterion and evidence gate passed.
+  Actual npm publication remains deferred in #358.
+
+### Issue #349 fixed command-transform stage
+
+- Split policy execution into configurable built-in and trusted-plugin stages.
+- Added the fixed-transform stage between them in the canonical atomic-push,
+  commit-only,
+  and status-hints-off order.
+- Plugin contexts retain exact raw arguments while exposing final transformed arguments.
+  Unit coverage and a trusted packed-plugin fixture validate both views.
+- Removed fixed transforms from `bin.ts`'s legacy sequential rule pipeline;
+  the engine result is now the sole final argv forwarded to real Git.
+- Added pass-idempotence coverage for injected atomic push,
+  explicit `--no-atomic`,
+  commit-only injection,
+  stripped commit escape state,
+  and status-hints configuration.
+- Converted expected commit-only rejections to typed `core-finding` JSONL events with stable codes.
+  Unexpected transform exceptions become `core-incomplete` engine failures with exit `2`.
+- Preserved commit parser,
+  dirty-index,
+  pathspec-file,
+  include/only,
+  and sequencer parity through retained focused and disposable Git suites.
+- Added end-user status coverage for native-hint suppression,
+  explicit user override,
+  and uncorrupted porcelain output.
+- Commit `c410b3a11` contains the initial staged engine and structured core findings;
+  commit `906338dce` contains pass-stability and packed plugin evidence.
+- Final packed-bin,
+  exact real-Git argv capture,
+  documentation,
+  and independent closure review remain in progress at this checkpoint.
   Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity

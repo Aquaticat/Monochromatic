@@ -87,8 +87,13 @@ and `error`.
 configuring any other current built-in as `warn` also produces a non-blocking `configuration-warning` JSONL event.
 Repository-root `cli-git.config.mjs` or `cli-git.config.ts` can configure built-ins and register namespaced plugin policies
 after exact-snapshot trust.
-Built-ins run in the listed order;
-plugin policies follow in declaration order when trusted config is active.
+Built-ins run in the listed order.
+Atomic push,
+commit only,
+and status hints off then run as fixed non-configurable transforms.
+Trusted plugin policies follow in namespace and declaration order and receive both exact raw arguments and final
+transformed arguments.
+Expected commit-only rejections are `core-finding` JSONL events rather than configurable policy findings.
 
 Policy findings and engine failures are compact LF-terminated JSONL.
 Forwarded wrapper invocations write events to stderr;
@@ -550,8 +555,10 @@ Self-shim detection checks both the package name and the bundled entry path
 `packages/cli/git/dist/final/node/index.mjs`,
  because pnpm-generated shims can
 point at the built file without naming the package.
-Arguments pass through a rule pipeline that may reject or transform them,
-then the real git is spawned with full stdio inheritance.
+Arguments pass through built-in policy,
+fixed-transform,
+and trusted-plugin stages;
+the real git is then spawned with exactly the final transformed arguments and full stdio inheritance.
  After a successful
 commit,
  the new commit is auto-pushed to origin as described above.
