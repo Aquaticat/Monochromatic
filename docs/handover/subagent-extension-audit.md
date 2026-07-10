@@ -12,6 +12,7 @@ Evaluate open-source Pi extensions and a minimal custom design for subagent orch
 - Target the installed Pi and Node workflow.
 - Require a user-facing UI that exposes the complete observable child activity: prompts, progress, tool calls, outputs, status, and errors. Hidden model reasoning is outside the observable requirement.
 - Require user interruption of any running subagent from that UI, including parallel and background children.
+- Require the parent model to set a custom timeout per subagent, not only one global timeout.
 - Treat this as an agent/plugin trust-boundary review. Inspect source, tests, CI, dependencies, maintenance, and integration behavior before recommending anything.
 
 ## Current findings
@@ -25,7 +26,7 @@ Evaluate open-source Pi extensions and a minimal custom design for subagent orch
 ## Investigation state
 
 - Context fork: complete.
-- Candidate inventory: in progress. UI observability and interruption are hard filters.
+- Candidate inventory: in progress. UI observability, interruption, and per-subagent timeout control are hard filters.
 - Source and maintenance audit: pending.
 - Integration validation: pending.
 - Recommendation: pending.
