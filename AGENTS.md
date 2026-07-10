@@ -768,9 +768,20 @@ HRM:
  Before any action,
  consider whether it could physically harm a human (blasting audio volume,
  flashing content,
- unexpected hardware activation).
+ unexpected hardware activation)
+ or damage hardware through avoidable resource wear.
 If so,
  warn user + state what will happen before proceeding.
+For remote `ssh m1`,
+ treat its 16 GiB RAM as a hard capacity constraint and its internal SSD as fragile.
+Probe `/Volumes/MacData` before write-heavy work;
+ when mounted,
+ place clones,
+ scratch data,
+ build outputs,
+ and other high-write temporary state there.
+Use the internal SSD only when `MacData` is unavailable,
+ and bound memory plus write amplification either way.
 
 RXI:
  Always run commands that might crash/exhaust host in performance-limited container/VM,
