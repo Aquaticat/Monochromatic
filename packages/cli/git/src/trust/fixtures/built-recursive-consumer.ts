@@ -3,6 +3,7 @@
  */
 import {
   mkdir,
+  rm,
   stat,
   writeFile,
 } from 'node:fs/promises';
@@ -186,6 +187,42 @@ export async function verifyRecursiveConsumer({
   /**
    * Recursive root enrolls replacement only through a new exact snapshot.
    */
+  await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'check',
+      '--all',
+    ],
+    cwd: child,
+    env,
+  },);
+  // Missing-config recovery removes old and replacement identity records.
+  await rm(childConfig,);
+  /**
+   * Recovered multi-identity untrust result.
+   */
+  const recoveredUntrust = await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'untrust',
+    ],
+    cwd: child,
+    env,
+  },);
+  assertIncludes({
+    text: recoveredUntrust.stdout,
+    expected: '"removed":true',
+    context: 'mount-swap recovered untrust',
+  },);
+  /**
+   * Outer authority enrolls new exact record after recovered cleanup.
+   */
+  await writeFile(
+    childConfig,
+    'export default {};\n',
+  );
   await execute({
     command: 'git',
     args: [

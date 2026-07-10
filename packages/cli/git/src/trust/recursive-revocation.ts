@@ -31,32 +31,34 @@ export type RecursiveUntrustResult = Readonly<{
 /**
  * Expands nested recursive-root cascade through provenance graph.
  *
- * @param target - exact target record
+ * @param targets - exact target records
  *
  * @param entriesByKey - installed records by identity
  *
  * @returns identities whose authority must be removed
  */
 function cascadeRootKeys({
-  target,
+  targets,
   entriesByKey,
 }: Readonly<{
-  target: TrustCatalogEntry;
+  targets: readonly TrustCatalogEntry[];
   entriesByKey: ReadonlyMap<string, TrustCatalogEntry>;
 }>,): ReadonlySet<string> {
   /**
    * Mutable structural graph work state.
    */
-  const revoked = new Set<string>([trustIdentityKey(target.record
-    .identity,),],);
-  if (!target.record
-    .recursiveChildren)
-    return revoked;
+  const revoked = new Set<string>(targets.map(function targetKey(target,) {
+    return trustIdentityKey(target.record
+      .identity,);
+  },),);
   /**
    * Bounded provenance graph work stack.
    */
-  const pending = [...target.record
-    .authorizingRoots,];
+  const pending = targets.flatMap(function recursiveAuthorizers(target,) {
+    return target.record
+      .recursiveChildren ? target.record
+        .authorizingRoots : [];
+  },);
   while (pending.length > 0) {
     /**
      * Next outer authorizer.
@@ -152,7 +154,7 @@ function planOperations({
  *
  * @param registryRoot - complete private registry root
  *
- * @param identity - current or recovered target identity
+ * @param identities - current or recovered target identities
  *
  * @param disclose - prints affected recursive roots before mutation
  *
@@ -160,16 +162,16 @@ function planOperations({
  *
  * @example
  * ```ts
- * await revokeRecursiveTrust({ registryRoot, identity, disclose: console.error });
+ * await revokeRecursiveTrust({ registryRoot, identities: [identity], disclose: console.error });
  * ```
  */
 export async function revokeRecursiveTrust({
   registryRoot,
-  identity,
+  identities,
   disclose,
 }: Readonly<{
   registryRoot: string;
-  identity: TrustIdentity;
+  identities: readonly TrustIdentity[];
   disclose: (text: string,) => void;
 }>,): Promise<RecursiveUntrustResult> {
   /**
@@ -192,10 +194,16 @@ export async function revokeRecursiveTrust({
     ] as const;
   },),);
   /**
-   * Exact current target entry.
+   * Exact current or recovered target entries.
    */
-  const target = entriesByKey.get(trustIdentityKey(identity,),);
-  if (target === undefined)
+  const targets = identities
+    .map(function targetEntry(identity,) {
+      return entriesByKey.get(trustIdentityKey(identity,),);
+    },)
+    .filter(function targetExists(entry,): entry is TrustCatalogEntry {
+      return entry !== undefined;
+    },);
+  if (targets.length === 0)
     return {
       removed: false,
       affectedRoots: [],
@@ -204,13 +212,13 @@ export async function revokeRecursiveTrust({
    * Root identities removed directly or by nested cascade.
    */
   const revokedKeys = cascadeRootKeys({
-    target,
+    targets,
     entriesByKey,
   },);
   /**
    * Canonical affected recursive root paths.
    */
-  const affectedRoots = [...revokedKeys,]
+  const affectedRootCandidates = [...revokedKeys,]
     .map(function affectedEntry(key,) {
       return entriesByKey.get(key,);
     },)
@@ -222,8 +230,11 @@ export async function revokeRecursiveTrust({
     .map(function repositoryRoot(entry,) {
       return entry.record
         .repositoryRoot;
-    },)
-    .toSorted();
+    },);
+  /**
+   * Deterministic unique affected paths across replaced identities.
+   */
+  const affectedRoots = [...new Set(affectedRootCandidates,)].toSorted();
   if (affectedRoots.length > 0) {
     disclose([
       'cli-git recursive untrust cascade',

@@ -315,6 +315,27 @@ await describe({
       },
     },),
     it({
+      name: 'rejects symbolic-link transaction directory',
+      fn: async function testJournalDirectorySymlink() {
+        await using fixture = await createFixture();
+        await mkdir(fixture.registryRoot, { mode: DIRECTORY_MODE, },);
+        await protectPath({ path: fixture.registryRoot, directory: true, },);
+        /** External directory substituted for private transaction root. */
+        const external = join(fixture.root, 'external-transactions',);
+        await mkdir(external,);
+        await symlink(external, join(fixture.registryRoot, 'transactions',), 'dir',);
+        const failure = await (async function captureDirectoryFailure(): Promise<unknown> {
+          try {
+            return await recoverProvenanceTransactions({ registryRoot: fixture.registryRoot, },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustStorageError,);
+      },
+    },),
+    it({
       name: 'preserves separately explicit descendant after root untrust',
       fn: async function testExplicitDescendantSurvives() {
         await using fixture = await createFixture();

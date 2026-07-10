@@ -11,6 +11,7 @@ import {
   join,
 } from 'node:path';
 import {
+  assertSafeRegistryDirectory,
   DIRECTORY_MODE,
   isMissingPath,
   protectPath,
@@ -215,6 +216,19 @@ export async function settleProvenanceJournal({
   journal: TransactionJournal;
   recovering: boolean;
 }>,): Promise<void> {
+  /**
+   * Exact validated transaction journal parent.
+   */
+  const journalDirectory = dirname(journalPath,);
+  if (journalDirectory !== join(
+    registryRoot,
+    'transactions',
+  ))
+    throw new TrustStorageError(`Transaction journal escaped registry directory: ${journalPath}`,);
+  await assertSafeRegistryDirectory({
+    registryRoot,
+    targetDirectory: journalDirectory,
+  },);
   if (recovering) {
     await Promise.all(journal.operations
       .map(function removeStaleLock(operation,) {
@@ -261,9 +275,13 @@ export async function settleProvenanceJournal({
       operation,
     },);
   },),);
+  await assertSafeRegistryDirectory({
+    registryRoot,
+    targetDirectory: journalDirectory,
+  },);
   await rm(
     journalPath,
     { force: true, },
   );
-  await syncDirectory(dirname(journalPath,),);
+  await syncDirectory(journalDirectory,);
 }

@@ -8,6 +8,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 import {
+  assertSafeRegistryDirectory,
   DIRECTORY_MODE,
   ensureRegistryRoot,
   protectPath,
@@ -65,16 +66,33 @@ async function transactionDirectory(registryRoot: string,): Promise<string> {
     registryRoot,
     'transactions',
   );
-  await mkdir(
-    directory,
-    {
-      recursive: true,
-      mode: DIRECTORY_MODE,
-    },
-  );
-  await protectPath({
-    path: directory,
-    directory: true,
+  /**
+   * Whether this invocation created exact leaf without following substitution.
+   */
+  const created = await (async function createTransactionDirectory(): Promise<boolean> {
+    try {
+      await mkdir(
+        directory,
+        { mode: DIRECTORY_MODE, },
+      );
+      return true;
+    }
+    catch (error: unknown) {
+      if (Error.isError(error,) && ('code' in error)
+        && (error.code === 'EEXIST'))
+        return false;
+      throw error;
+    }
+  })();
+  if (created) {
+    await protectPath({
+      path: directory,
+      directory: true,
+    },);
+  }
+  await assertSafeRegistryDirectory({
+    registryRoot,
+    targetDirectory: directory,
   },);
   return directory;
 }

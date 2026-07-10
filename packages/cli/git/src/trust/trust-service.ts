@@ -229,7 +229,7 @@ export async function untrustConfig({
   const candidate = await captureTrustCandidate(discovered,);
   return await revokeRecursiveTrust({
     registryRoot,
-    identity: candidate.identity,
+    identities: [candidate.identity,],
     disclose,
   },);
 }
@@ -274,24 +274,12 @@ export async function untrustRepository({
       removed: false,
       affectedRoots: [],
     };
-  if (matches.length !== 1)
-    throw new TrustedConfigError(
-      'trust-failed',
-      `Multiple trust records match repository root: ${repositoryRoot}`,
-    );
-  /**
-   * Sole exact recovered record.
-   */
-  const [entry,] = matches;
-  if (entry === undefined)
-    throw new TrustedConfigError(
-      'trust-failed',
-      `Missing recovered trust record: ${repositoryRoot}`,
-    );
   return await revokeRecursiveTrust({
     registryRoot,
-    identity: entry.record
-      .identity,
+    identities: matches.map(function matchingIdentity(entry,) {
+      return entry.record
+        .identity;
+    },),
     disclose,
   },);
 }
