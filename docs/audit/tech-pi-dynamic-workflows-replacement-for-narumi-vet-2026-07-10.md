@@ -3,7 +3,7 @@
 ## Audit metadata
 
 - Status: in progress
-- Lifecycle phase: expansion schedule frozen; required GitHub source class blocked
+- Lifecycle phase: named-candidate source audit complete; runtime validation pending
 - Subject: `pi-dynamic-workflows` replacement for `@narumitw/pi-subagents`
 - Scope: evaluate whether `@quintinshaw/pi-dynamic-workflows` is safe and suitable to replace the installed
   `@narumitw/pi-subagents` Pi extension.
@@ -71,6 +71,13 @@ instead of asking a rubber-stamp question.
 - Multi-platform overlay: not active as a hard requirement because the measured deployment is Linux `x86_64`. Any broader
   platform claim made by a finalist will still be checked before receiving score credit.
 - Native, Wasm, generated-code, and prebuilt overlays: pending dependency and release-artifact inspection.
+
+## Resolved and unresolved preferences
+
+- Resolved conditional preference: if existing tools fail and a custom implementation becomes necessary, use Zellij as
+  its operator-control base so the human can enter, inspect, steer, and interrupt child sessions directly.
+- This preference does not authorize building the fallback and does not relax the existing-tools-first gate.
+- Unresolved preferences: none that can repair a named candidate's hard-gate failure.
 
 ## Hard constraints
 
@@ -434,7 +441,206 @@ source and runtime audit; its result is an evidence finding, not an adoption rec
 
 ## Evidence records
 
-Pending targeted audits.
+### Source and artifact identity
+
+#### Candidate `@quintinshaw/pi-dynamic-workflows` `2.12.1`
+
+- Clone: `/tmp/agent/quintinshaw-pi-dynamic-workflows-20260710` at
+  `df334361b1149b7b9a129c720c0d8c287838be8a`, exact annotated tag `v2.12.1`, origin
+  https://github.com/QuintinShaw/pi-dynamic-workflows.
+- npm artifact: `205,649` bytes, SHA-512
+  `WjKcQHLEENutv2bnqEeKq5hvi2/qeyQKvVQtDH6RQFuRey1hXnKjh3o+Iy5W+nN2Jv3goL0rngy56AdZDZTf0A==`, `100`
+  files. The downloaded bytes matched the registry integrity value at
+  https://registry.npmjs.org/@quintinshaw%2Fpi-dynamic-workflows/2.12.1.
+- Every published `src/` and `extensions/` file matched the tagged clone byte for byte. The MIT license also matched.
+- The npm SLSA provenance maps the artifact to the tag, workflow `.github/workflows/release.yml`, and commit
+  `df334361b1149b7b9a129c720c0d8c287838be8a`:
+  https://registry.npmjs.org/-/npm/v1/attestations/@quintinshaw%2fpi-dynamic-workflows@2.12.1.
+- Release provenance status: pass. The release job runs `npm ci`, the default test task, a tag-to-version check, TypeScript
+  build, and `npm publish --provenance` in `.github/workflows/release.yml:15-59`.
+- License status: pass for MIT compatibility.
+- Candidate-specific native, Wasm, downloaded-runtime, and install-hook status: pass. The published package declares one
+  runtime dependency, pure-JavaScript `acorn`; it declares no `preinstall`, `install`, or `postinstall` script. Pi and
+  `typebox` remain host peer boundaries rather than bundled candidate dependencies.
+
+#### Incumbent `@narumitw/pi-subagents` `0.13.0`
+
+- Clone: `/tmp/agent/narumiruna-pi-extensions-20260710` at
+  `462c38cbeabd821a32f3731409658cf36e92c5f4`, exact tag `v0.13.0`, origin
+  https://github.com/narumiruna/pi-extensions.
+- npm artifact: `21,614` bytes, SHA-512
+  `18d4NEDM+dIQahzDukeg2RebMDx5vitXS44hgtRSLmPGTJAZfL4sB1SHc1UuUxV1rIFFAc1Us6n/xxd2cfmxcw==`, `5` files. Published
+  source and MIT license matched the tag byte for byte.
+- Registry provenance is present at
+  https://registry.npmjs.org/-/npm/v1/attestations/@narumitw%2fpi-subagents@0.13.0.
+
+### High-trust security audit
+
+#### Hard failure: generated workflow code can escape the advertised VM boundary
+
+Candidate source explicitly acknowledges the boundary failure at `src/workflow.ts:235-239`:
+
+```ts
+Using the vm realm's own Math/Date/Reflect (not host objects) means this adds
+no host-`Function` escape. Note: vm is not a security sandbox — an injected
+bridge function's `.constructor` is still the host Function, so a determined
+script could bypass this. The guard is best-effort against ACCIDENTAL
+nondeterminism from trusted (user / guided-LLM) scripts, not a security wall.
+```
+
+The runtime injects the host `agent`, orchestration, logging, checkpoint, and other bridge functions into the context,
+then executes the model-produced body at `src/workflow.ts:879-911`:
+
+```ts
+const context = vm.createContext({
+  agent,
+  parallel,
+  pipeline,
+  // ... more host bridge functions ...
+});
+const wrapped = `${DETERMINISM_PRELUDE}\n(async () => {\n${body}\n})()`;
+const result = await new vm.Script(wrapped).runInContext(context);
+```
+
+A bounded Node reproduction used an environment variable containing only `sentinel-only`; it read that host value and
+confirmed host `fetch` visibility through the same async bridge-function constructor path:
+
+```text
+cwd: /tmp/agent/pi-dynamic-artifacts
+command: VM_ESCAPE_SENTINEL=sentinel-only node --input-type=module-typescript -e '<vm reproduction>'
+OS/architecture: Linux x86_64
+Node: 26.5.0
+exit: 0
+output: sentinel-only
+second output: ["object","function"]
+```
+
+This is not hidden malware. It is a documented design compromise whose README nevertheless calls the script sandboxed
+and says `fs` and network are unavailable at `README.md:70`, `README.md:88`, and `README.md:201`. In this trust boundary,
+a repository prompt injection can influence the parent model's generated workflow body, so "guided-LLM" does not make
+that body trusted. The script can reach ambient process environment and host networking. **Security-boundary hard gate:
+fail.**
+
+#### Hard failure: agent tool allowlists do not constrain the real Pi session
+
+The candidate filters a locally created tool array at `src/agent.ts:368-375`, but passes it only as `customTools` at
+`src/agent.ts:411-431`. It does not pass Pi SDK `tools`, `excludeTools`, `noTools`, or an extension-free resource loader:
+
+```ts
+const customTools = applyToolPolicy([...baseTools, ...(options.tools ?? [])], options.toolNames,
+  options.disallowedToolNames);
+const { session } = await createAgentSession({
+  cwd: runCwd,
+  agentDir,
+  settingsManager: SettingsManager.create(this.cwd, agentDir),
+  customTools,
+});
+```
+
+Installed Pi `0.80.6` creates a default resource loader and activates `read`, `bash`, `edit`, and `write` whenever the
+caller omits the SDK-level tool policy at
+`node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/dist/core/sdk.js:63-77`
+and `:131-135`. Its session constructor also enables all extension tools at
+`dist/core/agent-session.js:127-150` and `:1911-1977`.
+
+Consequences:
+
+- an `agentType` allowlist that says only `read` does not remove SDK `bash`, `edit`, or `write`;
+- global and project extensions load into child sessions and their tools become active;
+- the candidate's `systemTools` intentionally bypass its own policy at `src/agent.ts:377-379`.
+
+The candidate tests verify that a filtered array reaches a fake agent runner. They do not inspect the real session's active
+registry. `CONTRIBUTING.md` correctly warns that real SDK behavior differs from mocks, but the current implementation does
+not apply the SDK boundary. **Read-only and no-ambient-extension hard gate: fail.**
+
+#### No covert network or telemetry path found
+
+An uncapped search across production source found no analytics, telemetry service, webhook, encoded payload, install hook,
+fixed exfiltration endpoint, or hidden downloader. Network access exists only through model providers inherited from Pi and
+the explicit `web_search` and `web_fetch` tools in `src/web-tools.ts`. The security result is therefore "unsafe boundary",
+not "backdoor".
+
+### Lifecycle and operator-control audit
+
+#### Hard failure: per-agent timeout reports completion without aborting the agent
+
+The candidate starts `agentRunner.run(...)` with the workflow-wide signal at `src/workflow.ts:494-528`. Its timeout helper
+at `src/workflow.ts:1156-1177` races that promise against a rejecting timer:
+
+```ts
+return await Promise.race([promise, timeoutPromise]);
+```
+
+The timeout does not create or abort a per-agent controller. The original agent promise therefore keeps running, can keep
+calling tools and spending tokens, and can overlap retry attempts. If worktree isolation was active, the outer `finally`
+can remove the worktree while the timed-out session still uses it. The timeout unit test at `tests/agent.test.ts:607-632`
+checks only the early `null` result; it does not assert cancellation or absence of later side effects. **Per-child hard
+timeout gate: fail.**
+
+The incumbent uses a detached subprocess group and sends `SIGTERM`, then `SIGKILL` after a grace period at
+`extensions/pi-subagents/src/subagents.ts:370-397` and `:482-497`; its timeout is materially harder than the candidate's.
+
+#### Hard failure: operator actions address runs, not selected children
+
+The navigator resolves pause and stop through `state.activeRunId(model)` and calls `manager.pause(id)` or
+`manager.stop(id)` at `src/workflow-ui.ts:1045-1053`. Agent detail view has no child-specific stop action. The in-process
+child has no Zellij, tmux, terminal pane, or child TUI for direct human interaction. **Every-child user-interruption gate:
+fail.**
+
+#### Hard failure: observable history is intentionally incomplete
+
+`src/agent-history.ts:20-27` caps history at `40` entries, `2,000` characters per entry, and `20,000` total characters.
+`src/agent-history.ts:90-95` keeps only the newest entries and truncates text. Persisted run state stores that compact array,
+not the underlying in-memory Pi session. Open pull request
+https://github.com/QuintinShaw/pi-dynamic-workflows/pull/54 independently proposes durable subagent transcripts.
+**Complete observable child activity gate: fail.**
+
+### Replacement parity
+
+The installed incumbent exposes one parent tool with single, parallel, chain, fan-in aggregator, custom agent, per-task
+working-directory, per-task thinking, and per-task timeout fields at
+`extensions/pi-subagents/src/subagents.ts:605-653`. The candidate exposes a model-generated JavaScript orchestration
+contract with parallel, pipeline, nested workflow, persistence, background execution, and richer model routing. It is a
+broader but different parent-model interface, not a drop-in replacement.
+
+- Candidate advantage: persistent run history, background result delivery, model tiers, token accounting, resume,
+  worktrees, and orchestration combinators.
+- Incumbent advantage: `1,723` code lines in `2` source files versus candidate `6,732` code lines in `33` source files;
+  process-group timeout and teardown; direct declarative chain and aggregator schema.
+- Candidate migration cost: prompts and agent guidance must move from the `subagent` schema to generated workflow scripts;
+  stored agent definitions are partially reused, but current tool policy is not enforced at the SDK boundary.
+- Conditional custom fallback: the recorded Zellij preference directly addresses the candidate's missing human control,
+  but no custom design is eligible while ready-made technologies remain unexhausted.
+
+### Test, CI, and maintenance audit
+
+- Candidate source: `6,732` code lines in `33` non-test TypeScript files; tests: `14,054` physical lines across `37` test
+  files. Incumbent source: `1,723` code lines in `2` files.
+- Candidate lockfile contains `283` package entries because it locks development and Pi peer validation. Published runtime
+  adds one direct dependency, `acorn`; the installed host supplies Pi, TUI, and `typebox` peers.
+- Default CI runs `npm ci` and `npm test` on Ubuntu with Node `22` in `.github/workflows/ci.yml:14-26`. There is no Windows,
+  macOS, Node `26`, or multi-Pi-version job.
+- Unit tests include `fast-check` properties for model-spec parsing. Searches found no fuzz harness, mutation suite,
+  coverage command, published coverage report, or end-to-end test job. `CONTRIBUTING.md` requires maintainers to run real
+  model checks manually for runtime changes, so those checks are policy rather than reproducible CI evidence.
+- GitHub API sample for the year ending 2026-07-10 found `24` issues and `35` pull requests. Following the frozen method,
+  this audit inspected the `10` most recently updated of each at
+  https://github.com/QuintinShaw/pi-dynamic-workflows/issues and
+  https://github.com/QuintinShaw/pi-dynamic-workflows/pulls.
+- Of the issue sample, `7` are closed and `3` open. Owner actions linked or closed implemented issues; maintainer comments
+  appeared on `4` sampled issues. This is active release maintenance with selective public discussion, not abandonment.
+- Of the pull-request sample, `3` merged in `22.4`, `81.2`, and `167.1` hours; `4` remain open and `3` closed unmerged.
+  Maintainer prose comments appeared on `7` sampled pull requests, but GitHub recorded no formal review event in the sample.
+- GitHub lists `34` releases from `v1.0.0` on 2026-05-30 to `v2.12.1` on 2026-07-10. Contributor data assigns `63` of `84`
+  commits to the owner, exactly `75%`, so bus-factor concentration remains material. Primary release record:
+  https://github.com/QuintinShaw/pi-dynamic-workflows/releases/tag/v2.12.1.
+
+### Candidate hard-gate outcome
+
+`@quintinshaw/pi-dynamic-workflows` `2.12.1` exits before finalist validation. It passes source availability, MIT license,
+artifact mapping, release provenance, candidate-specific native/Wasm, and category-fit gates. It fails the high-trust
+security boundary, enforced read-only capability, no-ambient-extension requirement, true per-child timeout, complete
+observable transcript, and direct per-child operator interruption.
 
 ## Execution manifests
 
@@ -443,7 +649,10 @@ test, or runtime execution will receive a manifest first.
 
 ## Hard-gate exits
 
-None yet.
+- `@quintinshaw/pi-dynamic-workflows` `2.12.1`: excluded for the six hard failures in the candidate outcome.
+- Candidate scoring is prohibited. Soft feature breadth cannot offset these failures.
+- Other candidates cannot be promoted because required discovery remains blocked by GitHub's documented search cap.
+
 
 ## Validation results
 
