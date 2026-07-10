@@ -2,13 +2,15 @@
 
 ## Status
 
-Reproduction complete and diagnosis in progress on 2026-07-09.
+Diagnosis complete and repair strategy comparison in progress on 2026-07-09.
 
 The failing surface is
 `mise run //packages/pi-plugins/auto-mode:lint:oxlint`.
 The failure occurs before oxlint starts,
 while the lint task refreshes the shared built oxlint configuration.
-No repair has been selected or implemented.
+rolldown-plugin-dts 0.27.2 introduced the regression;
+upstream 0.27.4 provides the verified generator selector needed for the durable repair.
+No repair has been implemented in the main worktree.
 
 ## Goal
 
@@ -87,34 +89,40 @@ and propagated its nonzero exit before invoking the oxlint wrapper.
 The failing build wrote declarations for the config-oxlint project into a fresh temporary directory on every run,
 but did not write declarations for the three plugin package entry files.
 
-This confirms a deterministic cross-package declaration-emission boundary failure.
-One-variable probes must still distinguish a consumer project-scope defect from an upstream implementation defect.
+The differential probes confirmed an upstream option-resolution regression:
 
-## Ranked hypotheses
+- rolldown-plugin-dts 0.27.1 passed the aggregate build under the original config.
+- rolldown-plugin-dts 0.27.2 failed the aggregate build under the original config.
+- A package-local stylistic plugin build passed under 0.27.2,
+  disproving a broad TypeScript 7 incompatibility.
+- Explicit `oxc: true` under 0.27.2 failed with the plugin's unconditional
+  `TypeScript 7.0 is installed, but the tsgo option is disabled` error.
+- rolldown-plugin-dts 0.27.4 passed the aggregate build under both inferred and explicit Oxc selection.
+- Explicit Oxc selection through the shared Node and neutral presets also passed representative package builds,
+  type lint,
+  and oxlint.
+- Rebuilt tracked artifacts were byte-identical to their pre-regression Oxc output.
 
-1. **rolldown-plugin-dts 0.27.2's TypeScript 7 path assumes every bundled TypeScript module belongs to the selected
-   tsconfig project.**
-   If this is the cause,
-   the same build will pass under rolldown-plugin-dts 0.27.1 or a non-tsgo declaration path,
-   while a control build whose graph stays inside one package will pass under 0.27.2.
-2. **The aggregate config-oxlint build needs an explicit declaration tsconfig spanning the plugin source packages.**
-   If this is sufficient,
-   widening only declaration-generation project scope and root placement will make tsgo emit all three missing files.
-3. **The sidecar build should consume prebuilt plugin package declarations instead of `/ts` source exports.**
-   If this is sufficient,
-   building the plugin packages first and resolving their default exports will remove the external source files from
-   the aggregate declaration graph.
-4. **TypeScript 7 support in this tsdown release is broadly incompatible with the repository's declaration settings.**
-   If this is the cause,
-   a representative single-package tsdown build that does not bundle another workspace package's source will fail in
-   the same way.
+The complete source trace,
+version catalog,
+and upstream-filing decision are recorded in
+`docs/troubleshooting/rolldown-plugin-dts-typescript-7-generator.md`.
 
-Ranking:
-1 > 2 > 3 > 4,
-because the lockfile transition and exact missing-file set directly match the new plugin code path;
-a project-scope defect is more localized than changing package build order;
-and a broad incompatibility predicts failures beyond the three cross-package entries that are not present in the
-reported output.
+## Hypothesis results
+
+1. **Confirmed:** rolldown-plugin-dts 0.27.2 chooses tsgo before reading inherited `isolatedDeclarations`.
+   Tsgo emits the package tsconfig project,
+   while Rolldown later requests declarations for external workspace source modules included by the JavaScript bundle.
+2. **Rejected as a repair:** an aggregate declaration tsconfig would model Rolldown's dynamic bundle graph as a static
+   TypeScript project.
+   Upstream 0.27.4 instead restores the repository's per-module Oxc path without coupling config-oxlint to transitive
+   source directories.
+3. **Rejected as a repair:** consuming prebuilt plugin declarations adds build-order and freshness dependencies that
+   the current source-driven sidecars intentionally avoid.
+   The 0.27.4 Oxc path preserves source inlining and requires no plugin prebuild.
+4. **Disproved:** TypeScript 7 is not broadly incompatible with repository declaration settings.
+   Package-local 0.27.2 builds pass,
+   and Node plus neutral builds pass under the explicit 0.27.4 Oxc generator.
 
 ## Investigation procedure
 
