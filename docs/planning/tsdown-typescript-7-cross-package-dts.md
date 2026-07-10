@@ -2,7 +2,7 @@
 
 ## Status
 
-Investigation in progress on 2026-07-09.
+Reproduction complete and diagnosis in progress on 2026-07-09.
 
 The failing surface is
 `mise run //packages/pi-plugins/auto-mode:lint:oxlint`.
@@ -66,8 +66,29 @@ The three plugin source files reported by the failure are outside that package d
 The user-provided TSFILE list contains declarations for `packages/config/oxlint` files,
 but none for the three external plugin package entry files.
 
-This makes a cross-package tsgo emission mismatch the leading hypothesis,
-but the hypothesis is not yet confirmed by an isolated reproduction and one-variable probes.
+An independent reproduction ran at commit `ebc4a04d3c02e7dbe2c4268d14846566749a4d1d`
+in a disposable Git worktree.
+The minimized command was:
+
+```sh
+mise run //packages/config/oxlint:build:js:node
+```
+
+It failed on two consecutive runs with the same three missing declaration paths.
+The complete user-facing command also reproduced independently:
+
+```sh
+mise run //packages/pi-plugins/auto-mode:lint:oxlint
+```
+
+The full task reached `ensureOxlintConfig()`,
+ran the minimized command,
+and propagated its nonzero exit before invoking the oxlint wrapper.
+The failing build wrote declarations for the config-oxlint project into a fresh temporary directory on every run,
+but did not write declarations for the three plugin package entry files.
+
+This confirms a deterministic cross-package declaration-emission boundary failure.
+One-variable probes must still distinguish a consumer project-scope defect from an upstream implementation defect.
 
 ## Ranked hypotheses
 
