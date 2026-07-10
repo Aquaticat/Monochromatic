@@ -55,8 +55,9 @@ builds,
 tests,
 and generated commands.
 If the execution path cannot be inspected or its safety cannot be established,
-do not execute it;
-use static analysis or report the limitation instead.
+disqualify the technology as a choice;
+do not execute it or recommend it.
+Use static analysis only to document the disqualification.
 
 ## Context-fork questions first
 
