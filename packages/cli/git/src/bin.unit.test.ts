@@ -388,7 +388,7 @@ await describe({
       },
     },),
     it({
-      name: 'runs Optique status and direct check management commands',
+      name: 'runs trust status and direct check management commands',
       fn: async function testManagementCommands(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         await initializeRepository({ repoPath: tempDirectory.path, },);
@@ -402,12 +402,11 @@ await describe({
         },);
         expect(statusResult.stdout,).toBe(JSON.stringify({
           schemaVersion: 1,
-          type: 'status',
-          policies: [{
-            id: 'require-root',
-            severity: 'error',
-            warnSafe: false,
-          },],
+          type: 'trust-status',
+          configPresent: false,
+          trusted: false,
+          unchanged: false,
+          reason: 'no-config',
         },),);
         /** Built-in direct-check failure. */
         const checkError = requireSubprocessError(await catchWrapperError({
