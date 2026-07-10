@@ -104,6 +104,51 @@ This exited with status `0`, with empty stdout and stderr. The auto-mode unit
 suite also passed after the notification implementation was added, including the
 notification failure path.
 
+## Prototype
+
+The exact coredump query is unavailable, but FFF issue 618 provides a close,
+red-capable reproducer for native live grep with an overflow file and a path
+constraint.
+
+The prototype used a fresh disposable checkout of FFF. It added the published
+issue reproducer at `crates/fff-core/tests/grep_overflow_path_constraint_segfault.rs`
+and ran the test with a 2 GiB memory and two CPU container bound:
+
+```bash
+podman run --memory=2g --cpus=2 --rm \\
+  --volume /tmp/agent/fff-prototype-20260709-a:/work:Z \\
+  --volume /var/home/user/fff-prototype-target:/target:Z \\
+  --volume /var/home/user/fff-prototype-cargo-home:/cargo-home:Z \\
+  --workdir /work \\
+  --env CARGO_HOME=/cargo-home \\
+  --env CARGO_TARGET_DIR=/target \\
+  docker.io/library/rust:1.88-bookworm \\
+  cargo test --package fff-search --test grep_overflow_path_constraint_segfault
+```
+
+At the pre-fix parent commit `b8e16d884bbef3625db6de13fb02f8a4275ed26d`,
+the test reproduced an abort:
+
+```text
+unsafe precondition(s) violated: slice::from_raw_parts requires the pointer to be aligned and non-null
+process didn't exit successfully ... (signal: 6, SIGABRT)
+```
+
+Applying the source patch from upstream fix commit
+`8e8b09f2d37882cf48254f8287ab4bf663abecaf` made the same test pass:
+
+```text
+test grep_path_constraint_on_overflow_file_does_not_segfault ... ok
+test result: ok. 1 passed; 0 failed
+```
+
+The patch passes the correct base or overflow arena through constraint matching,
+grep prefiltering, and scoring. The complete prototype patch is stored in
+[`pi-fff-sigbus.patch`](pi-fff-sigbus.patch). This proves a real adjacent native
+crash can be reproduced and fixed; it does not yet prove that the user's
+coredump is the same defect. The installed v0.9.6 source already contains this
+published fix, so the remaining coredump may be another FFF native grep defect.
+
 ## Verified workarounds
 
 - Temporarily remove `npm:@ff-labs/pi-fff` from the Pi package list and restart
@@ -142,8 +187,10 @@ The six-constraint check is:
    FFF tag, and no prohibition on external reports was found in its README.
 5. **Likely to fix it:** yes, the related issues were triaged and closed with
    fixes.
-6. **Minimal fix prototyped:** no, the exact crashing query and fixture are not
-   present in the coredump, so a consumer-side patch would be speculative.
+6. **Minimal fix prototyped:** yes for the adjacent issue 618 reproducer. The
+   prototype applies upstream commit `8e8b09f2d37882cf48254f8287ab4bf663abecaf`
+   and turns the reproducer from SIGABRT into a passing test. The exact coredump
+   still needs its query and fixture before claiming the same fix applies.
 
 [fff-422]: https://github.com/dmtrKovalenko/fff/issues/422
 [fff-476]: https://github.com/dmtrKovalenko/fff/issues/476
