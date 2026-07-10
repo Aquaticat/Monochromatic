@@ -103,6 +103,76 @@ await describe({
       },
     },),
     it({
+      name: 'runs migrated safeguards with policy metadata and severity',
+      fn: async function testMigratedPolicyMetadata() {
+        /** Warn-unsafe add policy finding. */
+        const addWarn = await runPolicyEngine({
+          args: ['add', '.',],
+          trigger: 'pre-forward',
+          config: { policies: { 'require-root': 'off', 'add-explicit': 'warn', }, },
+        },);
+        expect(addWarn.shouldForward,).toBe(true,);
+        /** Settled add warning event. */
+        const [addEvent,] = addWarn.events;
+        expect(addEvent?.policyId,).toBe('add-explicit',);
+        expect(addEvent?.type,).toBe('finding',);
+        if (addEvent?.type === 'finding')
+          expect(addEvent.severity,).toBe('warn',);
+        expect(addWarn.configWarnings,).toContain('Policy add-explicit is warn-unsafe but configured as warn.',);
+        /** Warn-safe branch policy finding. */
+        const branchWarn = await runPolicyEngine({
+          args: ['branch', 'policy-topic',],
+          trigger: 'pre-forward',
+          config: { policies: { 'require-root': 'off', 'branch-worktree-only': 'warn', }, },
+        },);
+        expect(branchWarn.shouldForward,).toBe(true,);
+        expect(branchWarn.events[0]?.policyId,).toBe('branch-worktree-only',);
+        expect(branchWarn.configWarnings,).toEqual([],);
+        /** Persistently disabled linked policy. */
+        const linkedOff = await runPolicyEngine({
+          args: ['clean', '-fd',],
+          trigger: 'pre-forward',
+          config: { policies: { 'require-root': 'off', 'linked-worktree-only': 'off', }, },
+        },);
+        expect(linkedOff.events,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'preserves legacy and generic full-lifecycle escape controls',
+      fn: async function testMigratedEscapeControls() {
+        /** Legacy aliases in flag position. */
+        const linked = await runPolicyEngine({
+          args: ['clean', '-fd', '--no-enforce-worktree',],
+          trigger: 'pre-forward',
+          config: { policies: { 'require-root': 'off', }, },
+        },);
+        const branch = await runPolicyEngine({
+          args: ['branch', 'topic', '--no-enforce-worktree-branch',],
+          trigger: 'pre-forward',
+          config: { policies: { 'require-root': 'off', }, },
+        },);
+        const add = await runPolicyEngine({
+          args: ['add', '.', '--no-enforce-bulk-add',],
+          trigger: 'pre-forward',
+          config: { policies: { 'require-root': 'off', }, },
+        },);
+        expect(linked.args,).toEqual(['clean', '-fd',],);
+        expect(branch.args,).toEqual(['branch', 'topic',],);
+        expect(add.args,).toEqual(['add', '.',],);
+        expect(linked.escapedPolicyIds.has('linked-worktree-only',),).toBe(true,);
+        expect(branch.escapedPolicyIds.has('branch-worktree-only',),).toBe(true,);
+        expect(add.escapedPolicyIds.has('add-explicit',),).toBe(true,);
+        /** Abbreviated clean option consumes apparent alias as value. */
+        const cleanValue = await runPolicyEngine({
+          args: ['clean', '--excl', '--no-enforce-worktree', '--dry-run',],
+          trigger: 'pre-forward',
+          config: { policies: { 'require-root': 'off', }, },
+        },);
+        expect(cleanValue.args,).toContain('--no-enforce-worktree',);
+        expect(cleanValue.escapedPolicyIds.has('linked-worktree-only',),).toBe(false,);
+      },
+    },),
+    it({
       name: 'rejects unknown policy IDs as engine failures',
       fn: async function testUnknownPolicyId() {
         /** Invalid built-in configuration result. */

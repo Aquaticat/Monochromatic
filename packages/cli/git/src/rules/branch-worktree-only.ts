@@ -51,6 +51,21 @@ function isGuardedSubcommand(subcommand: string,): subcommand is BranchCreationS
 
 //endregion Branch worktree policy facts
 
+/**
+ * Expected branch-worktree policy violation.
+ */
+export class BranchWorktreeViolationError extends Error {
+  /**
+   * Creates expected policy violation.
+   *
+   * @param message - safe rejection explanation
+   */
+  public constructor(message: string,) {
+    super(message,);
+    this.name = 'BranchWorktreeViolationError';
+  }
+}
+
 //region Branch worktree enforcement entry
 
 /**
@@ -128,7 +143,7 @@ export async function branchWorktreeOnly(args: readonly string[],): Promise<read
   }
 
   if (region.createsBranch)
-    throw new Error(branchCreationMessage({ subcommand, },),);
+    throw new BranchWorktreeViolationError(branchCreationMessage({ subcommand, },),);
 
   /**
    * Target that may be created by git's implicit remote branch guessing.
@@ -163,7 +178,7 @@ export async function branchWorktreeOnly(args: readonly string[],): Promise<read
   },);
 
   if (guessedBranchCreation) {
-    throw new Error(branchCreationMessage({
+    throw new BranchWorktreeViolationError(branchCreationMessage({
       subcommand,
       target: implicitCreationTarget,
     },),);

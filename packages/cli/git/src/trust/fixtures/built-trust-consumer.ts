@@ -14,6 +14,7 @@ import {
   assertJsonl,
   execute,
 } from './built-consumer-helpers.ts';
+import { verifyPolicyConfigConsumer, } from './built-policy-config-consumer.ts';
 import { verifyRecursiveConsumer, } from './built-recursive-consumer.ts';
 import { verifyTypeScriptConsumer, } from './built-typescript-consumer.ts';
 
@@ -268,5 +269,6 @@ assertIncludes({
   context: 'untrusted status',
 },);
 await verifyRecursiveConsumer({ env, },);
+await verifyPolicyConfigConsumer({ env, },);
 await verifyTypeScriptConsumer({ env, },);
 console.log('built-trust-consumer-ok',);

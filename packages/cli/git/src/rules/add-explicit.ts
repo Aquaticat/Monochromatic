@@ -16,6 +16,21 @@ import {
  */
 const l = tagged({ tag: 'cli-git', },);
 
+/**
+ * Expected add-explicit policy violation.
+ */
+export class AddExplicitViolationError extends Error {
+  /**
+   * Creates expected policy violation.
+   *
+   * @param message - safe rejection explanation
+   */
+  public constructor(message: string,) {
+    super(message,);
+    this.name = 'AddExplicitViolationError';
+  }
+}
+
 //region Add-explicit rule
 
 /**
@@ -106,7 +121,7 @@ export function addExplicit(args: readonly string[],): readonly string[] {
   if (region.bulkMatches
     .length
     > 0) {
-    throw new Error(
+    throw new AddExplicitViolationError(
       `cli-git: git add rejects bulk-staging patterns (${
         region.bulkMatches
           .join(', ',)

@@ -11,45 +11,31 @@ import type {
   PolicyFinding,
 } from '../api/policy-types.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
+import { parsePolicyControls, } from './controls.ts';
 import {
   createEngineFailureEvent,
   createFindingEvent,
   type PolicyEvent,
 } from './events.ts';
+import { addExplicitPolicy, } from './add-explicit-policy.ts';
+import { branchWorktreePolicy, } from './branch-worktree-policy.ts';
+import { linkedWorktreePolicy, } from './linked-worktree-policy.ts';
 import { requireRootPolicy, } from './require-root-policy.ts';
 import type {
-  ParsedPolicyControls,
   PolicyEngineResult,
   RunPolicyEngineOptions,
   RuntimePolicyDefinition,
 } from './types.ts';
 
 /**
- * Wrapper-only continue flag.
- */
-const KEEP_GOING_FLAG = '--cli-git-keep-going';
-/**
- * Value-taking options whose following token is never wrapper control syntax.
- */
-const VALUE_TAKING_OPTIONS: ReadonlySet<string> = new Set([
-  '-c',
-  '-C',
-  '--git-dir',
-  '--work-tree',
-  '--namespace',
-  '--super-prefix',
-  '--attr-source',
-  '-m',
-  '--message',
-  '-F',
-  '--file',
-  '--author',
-  '--date',
-]);
-/**
  * Supported policies in fixed built-in order.
  */
-const BUILT_IN_POLICIES: readonly RuntimePolicyDefinition[] = [requireRootPolicy,];
+const BUILT_IN_POLICIES: readonly RuntimePolicyDefinition[] = [
+  requireRootPolicy,
+  linkedWorktreePolicy,
+  branchWorktreePolicy,
+  addExplicitPolicy,
+];
 /**
  * Empty lazy Git facts for command-only built-ins in first slice.
  */
@@ -75,92 +61,6 @@ const ENGINE_CONFIG_SCHEMA = v.looseObject({
     {}
   ),
 },);
-
-/**
- * Returns escape flag for policy ID.
- *
- * @param policyId - policy receiving one-invocation bypass
- *
- * @returns exact wrapper-only flag
- */
-function escapeFlag(policyId: string,): string {
-  return `--no-enforce-${policyId}`;
-}
-
-/**
- * Parses wrapper controls without treating option values or pathspecs as flags.
- *
- * @param args - exact wrapper arguments
- *
- * @returns controls plus forwardable argument sequence
- */
-function parsePolicyControls(args: readonly string[],): ParsedPolicyControls {
-  /**
-   * Escape flags recognized by current built-in registry.
-   */
-  const knownEscapeFlags = new Map(BUILT_IN_POLICIES.map(function toEscapeEntry(policy,) {
-    return [
-      escapeFlag(policy.name,),
-      policy.name,
-    ] as const;
-  },),);
-  /**
-   * Mutable scan is isolated so cursor state cannot leak into later engine work.
-   */
-  const controls = (function collectControls(): ParsedPolicyControls {
-    /**
-     * Policy IDs bypassed before pathspec separator.
-     */
-    const escapedPolicyIds = new Set<string>();
-    /**
-     * Whether invocation requested continued policy collection.
-     */
-    let keepGoing = false;
-    /**
-     * Whether Git pathspec separator was consumed.
-     */
-    let separatorReached = false;
-    /**
-     * Whether current token is previous option's value.
-     */
-    let previousTakesValue = false;
-    /**
-     * Arguments retained for real Git.
-     */
-    const forwardableArgs = args.filter(function retainArgument(arg,) {
-      if (separatorReached)
-        return true;
-      if (arg === '--') {
-        separatorReached = true;
-        return true;
-      }
-      if (previousTakesValue) {
-        previousTakesValue = false;
-        return true;
-      }
-      previousTakesValue = VALUE_TAKING_OPTIONS.has(arg,);
-      if (arg === KEEP_GOING_FLAG) {
-        keepGoing = true;
-        return false;
-      }
-      /**
-       * Policy selected by current exact escape flag.
-       */
-      const escapedPolicyId = knownEscapeFlags.get(arg,);
-      if (escapedPolicyId !== undefined) {
-        escapedPolicyIds.add(escapedPolicyId,);
-        return false;
-      }
-      return true;
-    },);
-    return {
-      args: forwardableArgs,
-      keepGoing,
-      escapedPolicyIds,
-    };
-  })();
-  return controls;
-}
 
 /**
  * Creates current command policy context with lazy facts for this candidate version.
@@ -259,7 +159,10 @@ export async function runPolicyEngine({
   /**
    * Wrapper controls and real-Git arguments.
    */
-  const controls = parsePolicyControls(args,);
+  const controls = parsePolicyControls({
+    args,
+    registeredPolicies,
+  },);
   /**
    * Runtime-authoritative built-in configuration parse.
    */
@@ -270,6 +173,7 @@ export async function runPolicyEngine({
   if (!parsedConfig.success) {
     return {
       args: controls.args,
+      escapedPolicyIds: controls.escapedPolicyIds,
       events: [createEngineFailureEvent({
         sequence: 0,
         code: 'config-invalid',
@@ -308,6 +212,7 @@ export async function runPolicyEngine({
   if (unknownId !== undefined) {
     return {
       args: controls.args,
+      escapedPolicyIds: controls.escapedPolicyIds,
       events: [createEngineFailureEvent({
         sequence: 0,
         code: 'config-invalid',
@@ -408,6 +313,7 @@ export async function runPolicyEngine({
       },),);
       return {
         args: controls.args,
+        escapedPolicyIds: controls.escapedPolicyIds,
         events,
         configWarnings,
         exitCode: 2,
@@ -424,6 +330,7 @@ export async function runPolicyEngine({
   },);
   return {
     args: controls.args,
+    escapedPolicyIds: controls.escapedPolicyIds,
     events,
     configWarnings,
     exitCode: hasError ? 1 : 0,

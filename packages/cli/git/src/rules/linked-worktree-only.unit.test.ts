@@ -1,7 +1,9 @@
 import {
+  access,
   mkdir,
   mkdtemp,
   rm,
+  writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
@@ -14,7 +16,10 @@ import {
 import nanoSpawn from 'nano-spawn';
 
 import { resolveGit, } from '../resolve-git.ts';
-import { linkedWorktreeOnly, } from './linked-worktree-only.ts';
+import {
+  linkedWorktreeOnly,
+  LinkedWorktreeViolationError,
+} from './linked-worktree-only.ts';
 
 //region Test fixtures
 
@@ -402,6 +407,47 @@ await describe({
         ] as const;
 
         expect(await linkedWorktreeOnly(args,),).toBe(args,);
+      },
+    },),
+    it({
+      name: 'protects ignored root Git sentinels in disposable clean fixture',
+      fn: async function testIgnoredRootSentinels(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        /** Ignored root artifacts that resemble bare Git administrative state. */
+        const sentinels = {
+          head: join(tempDirectory.path, 'HEAD',),
+          config: join(tempDirectory.path, 'config',),
+          hooks: join(tempDirectory.path, 'hooks',),
+          objects: join(tempDirectory.path, 'objects',),
+          refs: join(tempDirectory.path, 'refs',),
+        } as const;
+        /** Complete ignored sentinel paths. */
+        const sentinelPaths = Object.values(sentinels,);
+        await writeFile(join(tempDirectory.path, '.gitignore',), '/HEAD\n/config\n/hooks\n/objects\n/refs\n',);
+        await Promise.all([
+          writeFile(sentinels.head, 'sentinel\n',),
+          writeFile(sentinels.config, 'sentinel\n',),
+          mkdir(sentinels.hooks,),
+          mkdir(sentinels.objects,),
+          mkdir(sentinels.refs,),
+        ],);
+        /** Allowed dry-run exercises real Git without mutation. */
+        await runRealGit({ cwd: tempDirectory.path, args: ['clean', '--dry-run', '-d', '-X',], },);
+        await Promise.all(sentinelPaths.map(function sentinelRemains(path,) {
+          return access(path,);
+        },),);
+        /** State-changing counterpart is rejected before real Git. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '-fdX',
+        ],);
+        expect(caught,).toBeInstanceOf(LinkedWorktreeViolationError,);
+        await Promise.all(sentinelPaths.map(function rejectedSentinelRemains(path,) {
+          return access(path,);
+        },),);
       },
     },),
     it({

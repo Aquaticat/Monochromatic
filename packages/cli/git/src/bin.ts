@@ -17,11 +17,8 @@ import {
   resolveRuntimeConfig,
   RUNTIME_CONFIG_ABSENT,
 } from './trust/runtime-config.ts';
-import { addExplicit, } from './rules/add-explicit.ts';
 import { atomicPush, } from './rules/atomic-push.ts';
-import { branchWorktreeOnly, } from './rules/branch-worktree-only.ts';
 import { commitOnly, } from './rules/commit-only.ts';
-import { linkedWorktreeOnly, } from './rules/linked-worktree-only.ts';
 import {
   hasExplicitStatusHintsOverride,
   statusHintsOff,
@@ -99,16 +96,11 @@ const STATUS_MACHINE_READABLE_FLAGS: ReadonlySet<string> = new Set([
 
 /**
  * Rules applied in sequence. Each rule may transform args or throw to reject.
- * Order matters: unified require-root policy runs before this pipeline,
- * then {@link linkedWorktreeOnly} catches guarded state-changing
- * worktree forms, then arg transforms run.
+ * Unified configurable built-ins run before this fixed transform pipeline.
  */
 const RULES: readonly ((
   args: readonly string[],
 ) => readonly string[] | Promise<readonly string[]>)[] = [
-  linkedWorktreeOnly,
-  branchWorktreeOnly,
-  addExplicit,
   atomicPush,
   commitOnly,
   statusHintsOff,

@@ -173,6 +173,21 @@ function computeRegion({
 
 //endregion Guarded command predicates and policy facts
 
+/**
+ * Expected linked-worktree policy violation.
+ */
+export class LinkedWorktreeViolationError extends Error {
+  /**
+   * Creates expected policy violation.
+   *
+   * @param message - safe rejection explanation
+   */
+  public constructor(message: string,) {
+    super(message,);
+    this.name = 'LinkedWorktreeViolationError';
+  }
+}
+
 //region Linked worktree enforcement entry
 
 /**
@@ -289,10 +304,10 @@ export async function linkedWorktreeOnly(
   },);
 
   if (target === 'outside-worktree')
-    throw new Error(outsideWorktreeMessage({ command: subcommand, },),);
+    throw new LinkedWorktreeViolationError(outsideWorktreeMessage({ command: subcommand, },),);
 
   if (target === 'main-worktree')
-    throw new Error(mainWorktreeMessage({ command: subcommand, },),);
+    throw new LinkedWorktreeViolationError(mainWorktreeMessage({ command: subcommand, },),);
 
   rl.debug(`effective target ${target}; linked-worktree enforcement not triggered`,);
   return args;

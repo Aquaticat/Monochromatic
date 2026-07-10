@@ -92,6 +92,10 @@ export type PolicyEngineResult = Readonly<{
    */
   args: readonly string[];
   /**
+   * Policy IDs escaped for complete invocation lifecycle.
+   */
+  escapedPolicyIds: ReadonlySet<string>;
+  /**
    * Stable ordered events.
    */
   events: readonly PolicyEvent[];
