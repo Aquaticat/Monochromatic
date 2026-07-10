@@ -9,7 +9,10 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { dirnameFallback, } from './fallbacks.ts';
+import {
+  dirnameFallback,
+  resolveFallback,
+} from './fallbacks.ts';
 
 //region Types
 
@@ -26,6 +29,24 @@ export type RootFilesystem = {
    * Checks whether path exists as any filesystem entry kind.
    */
   readonly exists: (path: string,) => Promise<boolean>;
+
+  /**
+   * Checks whether path resolves to a directory.
+   */
+  readonly isDirectory: (path: string,) => Promise<boolean>;
+
+  /**
+   * Checks whether path resolves to a regular file.
+   */
+  readonly isFile: (path: string,) => Promise<boolean>;
+
+  /**
+   * Resolves path against a containing directory with runtime-native semantics.
+   */
+  readonly resolvePath: (options: {
+    readonly from: string;
+    readonly path: string;
+  },) => string;
 };
 
 /**
@@ -194,10 +215,19 @@ async function resolveNodeRootFilesystem(): Promise<RootFilesystem> {
   /**
    * Dynamic import keeps `node:fs/promises` out of browser bundles.
    */
-  const {
-    lstat,
-    readFile,
-  } = await import('node:fs/promises');
+  const [
+    {
+      lstat,
+      readFile,
+      stat,
+    },
+    {
+      resolve,
+    },
+  ] = await Promise.all([
+    import('node:fs/promises'),
+    import('node:path'),
+  ],);
 
   return {
     readTextFile: async function nodeReadTextFile(
@@ -227,7 +257,69 @@ async function resolveNodeRootFilesystem(): Promise<RootFilesystem> {
         throw error;
       }
     },
+
+    isDirectory: async function nodeIsDirectory(path: string,): Promise<boolean> {
+      try {
+        return (await stat(path,)).isDirectory();
+      }
+      catch (error: unknown) {
+        if (isNoEntryError(error,))
+          return false;
+        throw error;
+      }
+    },
+
+    isFile: async function nodeIsFile(path: string,): Promise<boolean> {
+      try {
+        return (await stat(path,)).isFile();
+      }
+      catch (error: unknown) {
+        if (isNoEntryError(error,))
+          return false;
+        throw error;
+      }
+    },
+
+    resolvePath: function nodeResolvePath({
+      from,
+      path,
+    }: {
+      readonly from: string;
+      readonly path: string;
+    },): string {
+      return resolve(
+        from,
+        path,
+      );
+    },
   };
+}
+
+/**
+ * Resolves path with portable fallback semantics.
+ *
+ * @param from - containing directory
+ *
+ * @param path - candidate path
+ *
+ * @returns normalized resolved path
+ *
+ * @example
+ * ```ts
+ * resolveFallbackPath({ from: '/repo', path: '.git' });
+ * ```
+ */
+function resolveFallbackPath({
+  from,
+  path,
+}: {
+  readonly from: string;
+  readonly path: string;
+},): string {
+  return resolveFallback([
+    from,
+    path,
+  ],);
 }
 
 /**
@@ -274,6 +366,34 @@ async function resolveOpfsRootFilesystem(): Promise<RootFilesystem> {
         return result.unwrap();
       return false;
     },
+
+    isDirectory: async function opfsPathIsDirectory(path: string,): Promise<boolean> {
+      /**
+       * {@link AsyncIOResult} from `happy-opfs`; errors map to non-directories.
+       */
+      const result = await opfsExists(
+        path,
+        { isDirectory: true, },
+      );
+      if (result.isOk())
+        return result.unwrap();
+      return false;
+    },
+
+    isFile: async function opfsPathIsFile(path: string,): Promise<boolean> {
+      /**
+       * {@link AsyncIOResult} from `happy-opfs`; errors map to non-files.
+       */
+      const result = await opfsExists(
+        path,
+        { isFile: true, },
+      );
+      if (result.isOk())
+        return result.unwrap();
+      return false;
+    },
+
+    resolvePath: resolveFallbackPath,
   };
 }
 
@@ -328,6 +448,12 @@ function resolveEmptyRootFilesystem(): RootFilesystem {
     readTextFile: emptyReadTextFile,
 
     exists: emptyExists,
+
+    isDirectory: emptyExists,
+
+    isFile: emptyExists,
+
+    resolvePath: resolveFallbackPath,
   };
 }
 

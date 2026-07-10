@@ -36,6 +36,7 @@ export {
 /* oxlint-disable import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMiseMonorepoRoot runs */
 export {
   findGitRepoRoot,
+  GitRepositoryRootNotFoundError,
   findGitRepoRootCached,
   findMiseMonorepoRoot,
   findMiseMonorepoRootCached,

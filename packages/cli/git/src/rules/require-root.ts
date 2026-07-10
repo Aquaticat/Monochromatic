@@ -1,6 +1,7 @@
-import { dirname, } from 'node:path';
-
-import { findUp, } from 'find-up';
+import {
+  findGitRepoRoot,
+  GitRepositoryRootNotFoundError,
+} from '@monochromatic-dev/module-fs-path/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { parseGlobalOptions, } from '../parse-global-options.ts';
@@ -35,6 +36,38 @@ const GLOBAL_CONFIG_FLAGS: ReadonlySet<string> = new Set([
   '--list',
   '-l',
 ],);
+
+/**
+ * Sentinel returned when no structurally valid Git root exists.
+ */
+const VALID_GIT_ROOT_ABSENT: unique symbol = Symbol(
+  'No ancestor has a structurally usable Git administrative marker',
+);
+
+/**
+ * Resolves usable Git repository root without treating expected absence as failure.
+ *
+ * @param cwd - effective command working directory
+ *
+ * @returns root path or absence sentinel
+ *
+ * @throws unexpected filesystem errors
+ *
+ * @example
+ * ```ts
+ * await resolveValidGitRoot('/repo/subdirectory');
+ * ```
+ */
+async function resolveValidGitRoot(cwd: string,): Promise<string | typeof VALID_GIT_ROOT_ABSENT> {
+  try {
+    return await findGitRepoRoot({ cwd, },);
+  }
+  catch (error: unknown) {
+    if (error instanceof GitRepositoryRootNotFoundError)
+      return VALID_GIT_ROOT_ABSENT;
+    throw error;
+  }
+}
 
 /**
  * Enforces that, when the effective working directory (computed by
@@ -108,25 +141,13 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
   }
 
   /**
-   * Absolute path to the nearest `.git`, or `undefined` if not in a repo.
+   * Nearest root with a structurally usable Git marker.
    */
-  const gitPath = await findUp(
-    '.git',
-    {
-      type: 'both',
-      cwd: effectiveCwd,
-    },
-  );
-
-  if (gitPath === undefined) {
-    rl.debug('not inside a git repository: forwarding to real git',);
+  const repoRoot = await resolveValidGitRoot(effectiveCwd,);
+  if (repoRoot === VALID_GIT_ROOT_ABSENT) {
+    rl.debug('not inside a valid Git repository',);
     return args;
   }
-
-  /**
-   * Directory containing the found `.git`.
-   */
-  const repoRoot = dirname(gitPath,);
 
   if (repoRoot !== effectiveCwd) {
     throw new Error(

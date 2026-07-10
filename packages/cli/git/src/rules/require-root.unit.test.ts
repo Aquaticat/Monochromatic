@@ -56,6 +56,76 @@ async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
+ * Creates minimum valid Git administrative directory structure.
+ *
+ * @param gitDirectory - administrative directory path
+ *
+ * @example
+ * ```ts
+ * await createValidGitDirectory({ gitDirectory: '/repo/.git' });
+ * ```
+ */
+async function createValidGitDirectory({
+  gitDirectory,
+}: {
+  readonly gitDirectory: string;
+},): Promise<void> {
+  await Promise.all([
+    mkdir(
+      join(
+        gitDirectory,
+        'objects',
+      ),
+      { recursive: true, },
+    ),
+    mkdir(
+      join(
+        gitDirectory,
+        'refs',
+      ),
+      { recursive: true, },
+    ),
+  ],);
+  await writeFile(
+    join(
+      gitDirectory,
+      'HEAD',
+    ),
+    'ref: refs/heads/main\n',
+  );
+}
+
+/**
+ * Creates a valid relative gitfile marker and target.
+ *
+ * @param repositoryRoot - worktree root receiving marker
+ *
+ * @example
+ * ```ts
+ * await createValidGitFile({ repositoryRoot: '/repo' });
+ * ```
+ */
+async function createValidGitFile({
+  repositoryRoot,
+}: {
+  readonly repositoryRoot: string;
+},): Promise<void> {
+  /** Administrative directory targeted by gitfile. */
+  const gitDirectory = join(
+    repositoryRoot,
+    '.git-target',
+  );
+  await createValidGitDirectory({ gitDirectory, },);
+  await writeFile(
+    join(
+      repositoryRoot,
+      '.git',
+    ),
+    'gitdir: .git-target\n',
+  );
+}
+
+/**
  * Captures asynchronous error from require-root invocation.
  *
  * @param args - Git argv to pass through require-root rule.
@@ -101,10 +171,12 @@ await describe({
       fn: async function testGitDirectoryAtRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 
-        await mkdir(join(
-          tempDirectory.path,
-          '.git',
-        ),);
+        await createValidGitDirectory({
+          gitDirectory: join(
+            tempDirectory.path,
+            '.git',
+          ),
+        },);
 
         /** Status argv rooted at normal repository root. */
         const args = [
@@ -121,10 +193,12 @@ await describe({
       fn: async function testGitDirectorySubdirectory(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 
-        await mkdir(join(
-          tempDirectory.path,
-          '.git',
-        ),);
+        await createValidGitDirectory({
+          gitDirectory: join(
+            tempDirectory.path,
+            '.git',
+          ),
+        },);
         /** Subdirectory below normal repository root. */
         const subdirectory = join(
           tempDirectory.path,
@@ -150,13 +224,7 @@ await describe({
       fn: async function testGitFileAtRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 
-        await writeFile(
-          join(
-            tempDirectory.path,
-            '.git',
-          ),
-          'gitdir: /tmp/example.git\n',
-        );
+        await createValidGitFile({ repositoryRoot: tempDirectory.path, },);
 
         /** Status argv rooted at linked-worktree-style repository root. */
         const args = [
@@ -173,13 +241,7 @@ await describe({
       fn: async function testGitFileSubdirectory(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 
-        await writeFile(
-          join(
-            tempDirectory.path,
-            '.git',
-          ),
-          'gitdir: /tmp/example.git\n',
-        );
+        await createValidGitFile({ repositoryRoot: tempDirectory.path, },);
         /** Subdirectory below linked-worktree-style repository root. */
         const subdirectory = join(
           tempDirectory.path,
@@ -201,14 +263,65 @@ await describe({
       },
     },),
     it({
-      name: 'exempts clone even inside repository subdirectory',
-      fn: async function testCloneExemption(): Promise<void> {
+      name: 'passes through below an invalid empty .git ancestor',
+      fn: async function testInvalidGitDirectoryAncestor(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
-
         await mkdir(join(
           tempDirectory.path,
           '.git',
         ),);
+        /** Nested directory below invalid marker. */
+        const subdirectory = join(
+          tempDirectory.path,
+          'subdir',
+        );
+        await mkdir(subdirectory,);
+        /** Status argv that invalid ancestor must not affect. */
+        const args = [
+          '-C',
+          subdirectory,
+          'status',
+        ] as const;
+        expect(await requireRoot(args,),).toBe(args,);
+      },
+    },),
+    it({
+      name: 'passes through below a malformed gitfile ancestor',
+      fn: async function testMalformedGitFileAncestor(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        await writeFile(
+          join(
+            tempDirectory.path,
+            '.git',
+          ),
+          'git-dir: missing\n',
+        );
+        /** Nested directory below malformed marker. */
+        const subdirectory = join(
+          tempDirectory.path,
+          'subdir',
+        );
+        await mkdir(subdirectory,);
+        /** Status argv that malformed ancestor must not affect. */
+        const args = [
+          '-C',
+          subdirectory,
+          'status',
+        ] as const;
+        expect(await requireRoot(args,),).toBe(args,);
+      },
+    },),
+    it({
+      name: 'exempts clone even inside repository subdirectory',
+      fn: async function testCloneExemption(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await createValidGitDirectory({
+          gitDirectory: join(
+            tempDirectory.path,
+            '.git',
+          ),
+        },);
         /** Subdirectory below repository root. */
         const subdirectory = join(
           tempDirectory.path,
@@ -232,10 +345,12 @@ await describe({
       fn: async function testGlobalConfigExemption(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 
-        await mkdir(join(
-          tempDirectory.path,
-          '.git',
-        ),);
+        await createValidGitDirectory({
+          gitDirectory: join(
+            tempDirectory.path,
+            '.git',
+          ),
+        },);
         /** Subdirectory below repository root. */
         const subdirectory = join(
           tempDirectory.path,

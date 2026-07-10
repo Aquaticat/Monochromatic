@@ -146,6 +146,46 @@ async function createNonMonorepoMiseFixture(): Promise<RootFixture> {
 }
 
 /**
+ * Creates minimum valid Git administrative directory structure.
+ *
+ * @param gitDirectory - administrative directory path
+ *
+ * @example
+ * ```ts
+ * await createValidGitDirectory({ gitDirectory: '/repo/.git' });
+ * ```
+ */
+async function createValidGitDirectory({
+  gitDirectory,
+}: {
+  readonly gitDirectory: string;
+},): Promise<void> {
+  await Promise.all([
+    mkdir(
+      nodeJoin(
+        gitDirectory,
+        'objects',
+      ),
+      { recursive: true, },
+    ),
+    mkdir(
+      nodeJoin(
+        gitDirectory,
+        'refs',
+      ),
+      { recursive: true, },
+    ),
+  ],);
+  await writeFile(
+    nodeJoin(
+      gitDirectory,
+      'HEAD',
+    ),
+    'ref: refs/heads/main\n',
+  );
+}
+
+/**
  * Creates a Git root fixture with directory or gitfile marker.
  *
  * @param markerKind - marker shape to create at fixture root
@@ -175,14 +215,71 @@ async function createGitFixture({
   );
 
   if (markerKind === 'directory') {
-    await mkdir(markerPath,);
+    await createValidGitDirectory({ gitDirectory: markerPath, },);
     return fixture;
   }
 
+  /** Git administrative directory targeted by relative gitfile. */
+  const gitDirectory = nodeJoin(
+    fixture.root,
+    '.git-target',
+  );
+  await createValidGitDirectory({ gitDirectory, },);
   await writeFile(
     markerPath,
-    'gitdir: /tmp/example-gitdir\n',
+    'gitdir: .git-target\n',
   );
+  return fixture;
+}
+
+/**
+ * Creates linked-worktree-style gitfile with separate common directory.
+ *
+ * @returns disposable linked-worktree fixture
+ *
+ * @example
+ * ```ts
+ * await using fixture = await createLinkedGitFixture();
+ * ```
+ */
+async function createLinkedGitFixture(): Promise<RootFixture> {
+  /** Fixture root that receives linked-worktree gitfile. */
+  const fixture = await createRootFixture({ prefix: 'fs-path-linked-git-', },);
+  /** Common administrative directory owning objects and refs. */
+  const commonDirectory = nodeJoin(
+    fixture.root,
+    '.git-common',
+  );
+  await createValidGitDirectory({ gitDirectory: commonDirectory, },);
+  /** Per-worktree administrative directory owning HEAD and commondir. */
+  const gitDirectory = nodeJoin(
+    fixture.root,
+    '.git-worktree',
+  );
+  await mkdir(gitDirectory,);
+  await Promise.all([
+    writeFile(
+      nodeJoin(
+        gitDirectory,
+        'HEAD',
+      ),
+      'ref: refs/heads/main\n',
+    ),
+    writeFile(
+      nodeJoin(
+        gitDirectory,
+        'commondir',
+      ),
+      '../.git-common\n',
+    ),
+    writeFile(
+      nodeJoin(
+        fixture.root,
+        '.git',
+      ),
+      'gitdir: .git-worktree\n',
+    ),
+  ],);
   return fixture;
 }
 
@@ -361,6 +458,61 @@ await describe({
         /** Git root discovered from nested fixture child. */
         const root = await findGitRepoRoot({ cwd: fixture.nested, },);
         expect(root,).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'finds a linked-worktree gitfile with commondir',
+      fn: async () => {
+        /** Temporary linked-worktree fixture. */
+        await using fixture = await createLinkedGitFixture();
+        /** Git root discovered through per-worktree and common directories. */
+        const root = await findGitRepoRoot({ cwd: fixture.nested, },);
+        expect(root,).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'rejects an empty .git directory marker',
+      fails: true,
+      fn: async () => {
+        /** Temporary fixture with invalid empty Git directory. */
+        await using fixture = await createRootFixture({ prefix: 'fs-path-empty-git-', },);
+        await mkdir(nodeJoin(
+          fixture.root,
+          '.git',
+        ),);
+        await findGitRepoRoot({ cwd: fixture.nested, },);
+      },
+    },),
+    it({
+      name: 'rejects malformed gitfile content',
+      fails: true,
+      fn: async () => {
+        /** Temporary fixture with malformed gitfile. */
+        await using fixture = await createRootFixture({ prefix: 'fs-path-malformed-gitfile-', },);
+        await writeFile(
+          nodeJoin(
+            fixture.root,
+            '.git',
+          ),
+          'not-a-gitdir: target\n',
+        );
+        await findGitRepoRoot({ cwd: fixture.nested, },);
+      },
+    },),
+    it({
+      name: 'rejects gitfile whose target is unusable',
+      fails: true,
+      fn: async () => {
+        /** Temporary fixture with missing gitfile target. */
+        await using fixture = await createRootFixture({ prefix: 'fs-path-missing-gitdir-', },);
+        await writeFile(
+          nodeJoin(
+            fixture.root,
+            '.git',
+          ),
+          'gitdir: missing-target\n',
+        );
+        await findGitRepoRoot({ cwd: fixture.nested, },);
       },
     },),
     it({

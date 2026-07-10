@@ -869,6 +869,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-fs-path':
+        specifier: workspace:*
+        version: link:../../module/fs-path
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -878,9 +881,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
-      find-up:
-        specifier: 'catalog:'
-        version: 8.0.0
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0

@@ -14,6 +14,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { matchesValidGitMarker, } from './git-marker.ts';
 import {
   ABSENT,
   findRootByWalkingUp,
@@ -48,11 +49,6 @@ type RootCache = {
 const MONOREPO_SECTION_MARKER = '\n[monorepo]\n';
 
 /**
- * Marker path that identifies a Git repository root.
- */
-const GIT_MARKER_BASENAME = '.git';
-
-/**
  * Manifest path that identifies a pnpm workspace root.
  */
 const PNPM_WORKSPACE_MANIFEST = 'pnpm-workspace.yaml';
@@ -74,6 +70,29 @@ const GIT_ROOT_MISSING_MESSAGE =
  */
 const PNPM_ROOT_MISSING_MESSAGE =
   'Could not find pnpm workspace root (no pnpm-workspace.yaml found upward)';
+
+/**
+ * Error raised when no usable Git repository marker exists in ancestors.
+ *
+ * @example
+ * ```ts
+ * throw new GitRepositoryRootNotFoundError();
+ * ```
+ */
+export class GitRepositoryRootNotFoundError extends Error {
+  /**
+   * Creates missing Git repository root error.
+   *
+   * @example
+   * ```ts
+   * new GitRepositoryRootNotFoundError();
+   * ```
+   */
+  public constructor() {
+    super(GIT_ROOT_MISSING_MESSAGE,);
+    this.name = 'GitRepositoryRootNotFoundError';
+  }
+}
 
 /**
  * Tagged logger for public root finder entry points.
@@ -128,12 +147,13 @@ async function matchesMiseMonorepoRoot({
 /**
  * Checks whether a directory contains a Git root marker.
  *
- * `.git` may be a directory or a gitfile, so existence of any filesystem entry
- * kind is enough.
+ * `.git` may be a directory or a gitfile,
+ * but its HEAD,
+ * object,
+ * ref,
+ * and gitfile target signatures must be usable.
  *
- * @param dir - candidate directory
- *
- * @param fs - filesystem backend
+ * @param args - candidate directory and filesystem backend
  *
  * @returns `true` when candidate is Git repository root
  *
@@ -142,11 +162,8 @@ async function matchesMiseMonorepoRoot({
  * await matchesGitRepoRoot({ dir: '/repo', fs });
  * ```
  */
-function matchesGitRepoRoot({
-  dir,
-  fs,
-}: RootMatcherArgs,): Promise<boolean> {
-  return fs.exists(`${dir}/${GIT_MARKER_BASENAME}`,);
+function matchesGitRepoRoot(args: RootMatcherArgs,): Promise<boolean> {
+  return matchesValidGitMarker(args,);
 }
 
 /**
@@ -285,16 +302,23 @@ export function findMiseMonorepoRootCached(): Promise<string> {
  * const root = await findGitRepoRoot({ cwd: import.meta.dirname });
  * ```
  */
-export function findGitRepoRoot(options: RootSearchOptions = {},): Promise<string> {
+export async function findGitRepoRoot(options: RootSearchOptions = {},): Promise<string> {
   logRootSearchStart({
     functionName: findGitRepoRoot.name,
     ...options,
   },);
-  return findRootByWalkingUp({
-    ...options,
-    matches: matchesGitRepoRoot,
-    missingMessage: GIT_ROOT_MISSING_MESSAGE,
-  },);
+  try {
+    return await findRootByWalkingUp({
+      ...options,
+      matches: matchesGitRepoRoot,
+      missingMessage: GIT_ROOT_MISSING_MESSAGE,
+    },);
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,) && (error.message === GIT_ROOT_MISSING_MESSAGE))
+      throw new GitRepositoryRootNotFoundError();
+    throw error;
+  }
 }
 
 /**
