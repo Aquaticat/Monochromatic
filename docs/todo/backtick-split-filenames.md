@@ -34,11 +34,11 @@ Inspect matches manually;
 
 ## Fix recipe
 
-1.   Join the split token onto one line and wrap it in backticks in the source file.
-2.   Run `mise run format:markdown <file>` and confirm the reflow is stable,
-      then `mise run lint:markdown <file>`.
-3.   When the file feeds a generated output (for example `AGENTS.md` feeds `CLAUDE.md`),
-      run `mise run sync:files` and commit both.
+1.  Join the split token onto one line and wrap it in backticks in the source file.
+2.  Run `mise run format:markdown <file>` and confirm the reflow is stable,
+     then `mise run lint:markdown <file>`.
+3.  When the file feeds a generated output (for example `AGENTS.md` feeds `CLAUDE.md`),
+     run `mise run sync:files` and commit both.
 
 ## Done when
 

@@ -1,4 +1,4 @@
-# Development Guidelines for AI Agents
+# Development guidelines for AI agents
 
 ORG:
  Organized by moment of decision,
@@ -89,7 +89,7 @@ Branch on how determined inference is:
  several valid interpretations -> confirm which before acting (see "Measure-vs-ask").
 Missing fact is neither:
  research it,
- don't ask (see implicit-asks above);
+ don't ask (HON);
  trigger to ask is ambiguous intent,
  not knowledge gap.
 Cue:
@@ -493,7 +493,7 @@ EL4:
  deprecation markers,
  workaround comments.
  Zero signals discipline (but verify search ran;
- see null-search rule);
+ see QRY);
  thousands signal debt.
 
 EL5:
@@ -643,7 +643,8 @@ Any root sentinel exists:
 
 GCW:
  Review touches `cli-git`'s linked-worktree guard:
- account for baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`):
+ account for baked-in tool-cache allowlist,
+ `DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`:
  git-dirs under allowed dir bypass guard.
 
 ### Research tools
@@ -868,7 +869,7 @@ Reproducing,
 That fork + its dep installs + its builds/runs are local-only work needing no permission (PX3),
  even when parent task investigate-only.
 This is stricter than THR (which governs where mutating verification runs),
- except documentation/report/Markdown artifacts above.
+ except this rule's documentation/report/Markdown-artifact carve-out.
 Cue:
  about to write,
  edit,
@@ -1001,7 +1002,8 @@ RDC:
  mirroring `require-tsdoc` for TypeScript.
  `///` outer or `//!` inner doc comment counts;
  plain `//` does NOT,
- so on a documentable item write the `dum-dum-non-ts` `// What:`/`// Why:` block itself as `///` (and `//!` atop each file):
+ so on a documentable item write the `dum-dum-non-ts` `// What:`/`// Why:` block itself as `///`,
+ and `//!` atop each file:
  the one block is both the dum-dum explainer and the rustdoc,
  no separate summary.
  Never keep a plain `//` block with a `///` name-stub bolted on;
@@ -1079,7 +1081,8 @@ LN4:
  Prefer `Object.entries` + functional methods over `for...in`.
 
 LN5:
- Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering rules.
+ Add `oxlint-disable-next-line` comments with justification
+ for things that can't be implemented without triggering rules.
 
 LN6:
  Block-level `/* oxlint-disable rule */` must wrap tightly:
@@ -1197,7 +1200,7 @@ TD4:
  never inline after code.
 
 TD5:
- Escape `*/` as `*\\/` inside TSDoc blocks.
+ Escape `*/` as `*\/` inside TSDoc blocks.
 
 TD6:
  Avoid `the`/`a`/`an` in `@param`/`@returns`;
@@ -1388,7 +1391,8 @@ RG2:
 RG3:
  Regex literals,
  `RegExp` constructor calls,
- string methods using regex must be guarded by scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment.
+ string methods using regex must be guarded
+ by scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment.
  Justification must explain why regex is right tool,
  what input shape bounds it,
  why it can't backtrack or rescan unbounded prefixes/suffixes.
@@ -1612,6 +1616,18 @@ MD6:
  blank line before headers,
  lines under 120 chars.
 
+WRP:
+ Wrap file names,
+ identifiers,
+ commands,
+ other code tokens in backticks in Markdown prose;
+ `semantic-line-breaks` autofix splits bare dotted tokens mid-token,
+ inline code spans exempt.
+Backlog:
+ `docs/todo/backtick-split-filenames.md`.
+Cue:
+ about to type dotted/punctuated token bare in prose.
+
 ### Doc placement
 
 DPL:
@@ -1753,7 +1769,8 @@ Surface it,
 Don't silently let it stand;
 future readers see only message.
 Cue:
- about to write "the commit message overstates scope" or similar in chat as one-off note instead of recording it where commit lives.
+ about to write "the commit message overstates scope" or similar in chat as one-off note
+ instead of recording it where commit lives.
 
 CLG:
  Never preemptively bypass `cli-git` guards.
@@ -1761,7 +1778,8 @@ They reject bulk staging (`-A`,
  `.`) + pathspec-less commits because dirty trees/concurrent sessions sweep unrelated files.
 Stage/commit explicit scoped pathspecs (`git add <path>`;
  `git commit <path> -m ...`).
-Use `--no-enforce-bulk-add`/`--no-enforce-only` only when no scoped pathspec can express genuine whole-tree single-session change;
+Use `--no-enforce-bulk-add`/`--no-enforce-only`
+ only when no scoped pathspec can express genuine whole-tree single-session change;
  never default or child-session recipe.
 Cue:
  about to type `--no-enforce`,
@@ -1869,7 +1887,7 @@ CM3:
  use corresponding mise task.
  When no suitable task exists,
  add one to target package's `mise.toml` first,
- unless a rule below carves out direct call (e.g. running test file with `node <file>`).
+ unless another rule (e.g. CM4) carves out direct call (running test file with `node <file>`).
 
 CM4:
  Never substitute `bun test` for missing mise task;
