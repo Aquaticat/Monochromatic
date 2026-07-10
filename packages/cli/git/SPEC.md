@@ -60,6 +60,10 @@ export type PolicyTrigger =
 
 export type GitObjectId = string;
 
+export declare const ABSENT_GIT_VALUE: unique symbol;
+
+export type AbsentGitValue = typeof ABSENT_GIT_VALUE;
+
 export type RepositoryPath = string;
 
 export type CandidateFileMode =
@@ -77,15 +81,15 @@ export type CandidateChange =
 export type CandidateFile = {
   readonly targetId: string;
   readonly path: RepositoryPath;
-  readonly revision: GitObjectId | null;
+  readonly revision: GitObjectId | AbsentGitValue;
   readonly mode: CandidateFileMode;
   readonly change: CandidateChange;
-  bytes(): Promise<Uint8Array>;
+  readonly bytes: () => Promise<Uint8Array>;
 };
 
 export type PushUpdate = {
-  readonly localOid: GitObjectId | null;
-  readonly remoteOid: GitObjectId | null;
+  readonly localOid: GitObjectId | AbsentGitValue;
+  readonly remoteOid: GitObjectId | AbsentGitValue;
   readonly remoteName: string;
   readonly remoteRef: string;
 };
@@ -93,17 +97,17 @@ export type PushUpdate = {
 export type PolicyCommandFacts = {
   readonly rawArgs: readonly string[];
   readonly transformedArgs: readonly string[];
-  readonly subcommand: string | null;
+  readonly subcommand: string | AbsentGitValue;
   readonly effectiveCwd: string;
   readonly repositoryRoot: string;
   readonly escapedPolicyIds: ReadonlySet<string>;
 };
 
 export type LazyPolicyGitFacts = {
-  candidates(): Promise<readonly CandidateFile[]>;
-  headOid(): Promise<GitObjectId | null>;
-  landedCommitOid(): Promise<GitObjectId | null>;
-  pushUpdates(): Promise<readonly PushUpdate[]>;
+  readonly candidates: () => Promise<readonly CandidateFile[]>;
+  readonly headOid: () => Promise<GitObjectId | AbsentGitValue>;
+  readonly landedCommitOid: () => Promise<GitObjectId | AbsentGitValue>;
+  readonly pushUpdates: () => Promise<readonly PushUpdate[]>;
 };
 
 export type PolicyContext = {
@@ -136,7 +140,7 @@ export type PolicyFinding = {
 
 export type PolicyCheckInput<TOptions> = {
   readonly context: PolicyContext;
-  readonly options: TOptions;
+  readonly options: Readonly<TOptions>;
 };
 
 export type PolicyDefinition<
@@ -147,13 +151,13 @@ export type PolicyDefinition<
   readonly defaultSeverity: PolicySeverity;
   readonly warnSafe: boolean;
   readonly triggers: readonly PolicyTrigger[];
-  readonly options?: v.GenericSchema<unknown, TOptions>;
-  check(input: PolicyCheckInput<TOptions>): Promise<readonly PolicyFinding[]>;
+  readonly options?: Readonly<v.GenericSchema<unknown, TOptions>>;
+  readonly check: (input: PolicyCheckInput<TOptions>) => Promise<readonly PolicyFinding[]>;
 };
 
 export type PluginDefinition<
-  TPolicies extends readonly PolicyDefinition<unknown, string>[] =
-    readonly PolicyDefinition<unknown, string>[],
+  TPolicies extends readonly PolicyDefinition<unknown>[] =
+    readonly PolicyDefinition<unknown>[],
   TName extends string = string,
 > = {
   readonly name: TName;
@@ -172,35 +176,9 @@ export type BuiltInPolicyId =
 
 export type PluginMap = Readonly<Record<string, PluginDefinition>>;
 
-type PolicySettingEntry<
-  TNamespace extends string,
-  TPolicy,
-> = TPolicy extends PolicyDefinition<infer TOptions, infer TName>
-  ? { readonly [TId in `${TNamespace}/${TName}`]?: PolicySetting<TOptions> }
-  : never;
-
-type UnionToIntersection<TValue> = (
-  TValue extends unknown
-    ? (value: TValue) => void
-    : never
-) extends (value: infer TIntersection) => void
-  ? TIntersection
-  : never;
-
-type PluginPolicySettings<TPlugins extends PluginMap> =
-  keyof TPlugins & string extends never
-    ? Readonly<Record<never, never>>
-    : UnionToIntersection<{
-      readonly [TNamespace in keyof TPlugins & string]: PolicySettingEntry<
-        TNamespace,
-        TPlugins[TNamespace]['policies'][number]
-      >;
-    }[keyof TPlugins & string]>;
-
 export type CliGitConfig<TPlugins extends PluginMap = PluginMap> = {
   readonly plugins?: TPlugins;
-  readonly policies?: Partial<Record<BuiltInPolicyId, PolicySeverity>>
-    & PluginPolicySettings<TPlugins>;
+  readonly policies?: Readonly<Record<string, PolicySetting>>;
   readonly trust?: {
     readonly children?: boolean;
   };
@@ -217,25 +195,41 @@ type CliGitConfigInput = {
 type ConfigPlugins<TConfig extends CliGitConfigInput> =
   TConfig extends { readonly plugins: infer TPlugins extends PluginMap }
     ? TPlugins
-    : Readonly<Record<never, never>>;
+    : never;
 
 type ConfigPolicies<TConfig extends CliGitConfigInput> =
   TConfig extends {
     readonly policies: infer TPolicies extends Readonly<Record<string, unknown>>;
   }
     ? TPolicies
-    : Readonly<Record<never, never>>;
+    : never;
 
-type AllowedPolicySettings<TConfig extends CliGitConfigInput> = NonNullable<
-  CliGitConfig<ConfigPlugins<TConfig>>['policies']
->;
+type PluginPolicyForId<
+  TPlugins extends PluginMap,
+  TId extends string,
+> = TId extends `${infer TNamespace}/${infer TName}`
+  ? TNamespace extends keyof TPlugins
+    ? Extract<TPlugins[TNamespace]['policies'][number], PolicyDefinition<unknown, TName>>
+    : never
+  : never;
+
+type AllowedPolicySetting<
+  TConfig extends CliGitConfigInput,
+  TId extends PropertyKey,
+> = TId extends BuiltInPolicyId
+  ? PolicySeverity
+  : TId extends string
+    ? [PluginPolicyForId<ConfigPlugins<TConfig>, TId>] extends [never]
+      ? never
+      : PluginPolicyForId<ConfigPlugins<TConfig>, TId> extends PolicyDefinition<infer TOptions>
+        ? PolicySetting<TOptions>
+        : never
+    : never;
 
 type CheckedPolicySettings<TConfig extends CliGitConfigInput> = {
   readonly [TId in keyof ConfigPolicies<TConfig>]:
-    TId extends keyof AllowedPolicySettings<TConfig>
-      ? ConfigPolicies<TConfig>[TId] extends AllowedPolicySettings<TConfig>[TId]
-        ? ConfigPolicies<TConfig>[TId]
-        : never
+    ConfigPolicies<TConfig>[TId] extends AllowedPolicySetting<TConfig, TId>
+      ? ConfigPolicies<TConfig>[TId]
       : never;
 };
 
@@ -243,12 +237,12 @@ export declare function definePolicy<
   const TName extends string,
   const TOptions = undefined,
 >(
-  definition: PolicyDefinition<TOptions, TName>,
-): PolicyDefinition<TOptions, TName>;
+  definition: Readonly<PolicyDefinition<Readonly<TOptions>, TName>>,
+): PolicyDefinition<Readonly<TOptions>, TName>;
 
 export declare function definePlugin<
   const TName extends string,
-  const TPolicies extends readonly PolicyDefinition<unknown, string>[],
+  const TPolicies extends readonly PolicyDefinition<unknown>[],
 >(
   definition: PluginDefinition<TPolicies, TName>,
 ): PluginDefinition<TPolicies, TName>;
@@ -260,7 +254,7 @@ export declare function defineConfig<const TConfig extends CliGitConfigInput>(
 ): TConfig;
 
 export declare function definePolicyOptions<const TInput, const TOutput>(
-  schema: v.GenericSchema<TInput, TOutput>,
+  schema: Readonly<v.GenericSchema<TInput, TOutput>>,
 ): v.GenericSchema<TInput, TOutput>;
 ```
 
@@ -301,7 +295,7 @@ export declare function definePolicyOptions<const TInput, const TOutput>(
   The engine validates object IDs before invoking Git.
 - `targetId` is invocation-local and opaque.
   Plugins must return the exact target ID supplied by a candidate.
-- `revision` is `null` for a mutable candidate and a Git object ID for immutable historical content.
+- `revision` is `ABSENT_GIT_VALUE` for a mutable candidate and a Git object ID for immutable historical content.
 - Deleted and submodule candidates reject `bytes()` with a typed engine-owned unavailable-content error.
 - `bytes()` returns a fresh copy on every call.
 - Lazy methods memoize success or failure for one `candidateVersion`.
@@ -343,7 +337,7 @@ A patch is valid only when all conditions hold:
 - finding has `path`;
 - patch path equals finding path;
 - patch target ID identifies the same mutable candidate and path;
-- revision is `null`;
+- revision is `ABSENT_GIT_VALUE`;
 - patch bytes are one textual unified Git diff;
 - old and new paths resolve to exactly the candidate path;
 - no rename,
@@ -622,8 +616,8 @@ Only events derived from the stable pass are emitted as findings.
 ## JSONL schema version 1
 
 Each event is one compact JSON object followed by LF.
-Fields not listed for an event are absent rather than `null`,
-except fields whose type explicitly includes `null`.
+Fields not listed for an event are absent rather than carrying a JSON `null` value.
+The in-process `ABSENT_GIT_VALUE` sentinel is never serialized.
 Unknown fields may be added only in a backward-compatible schema revision.
 Removing,
 renaming,

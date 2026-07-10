@@ -231,6 +231,11 @@ Public authoring exports include:
   trigger,
   and context types.
 
+The public API uses one exported unique `ABSENT_GIT_VALUE` symbol for mutable revisions,
+missing object IDs,
+and command forms without a subcommand.
+This represents domain absence without nullable unions and is never serialized to JSONL.
+
 Third-party plugins peer-depend on a compatible cli-git package version.
 Private workspace runtime helpers are bundled into the Node artifact rather than left as unresolved registry
 requirements.
