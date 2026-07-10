@@ -621,6 +621,204 @@ Unless later grilling changes them:
   CI,
   and per-machine cleanup requirements pass.
 
+## Implementation sequence
+
+This is platform-first and checkpointed.
+Each phase receives scoped commits as soon as changes exist;
+a later phase does not wait to record an earlier phase's work.
+
+### Reconcile the decision and write the implementation contract
+
+- Update `docs/decisions/cli-git-policies-platform.md` from this handover:
+  unified policies,
+  exact snapshots,
+  two-stage recursive trust,
+  npm distribution,
+  fixed-transform ordering,
+  global autofix passes,
+  and post-commit exits.
+- Write the implementation spec deferred by that decision.
+- Freeze public TypeScript API shapes,
+  JSONL event schema,
+  management grammar,
+  trust-record schema,
+  and benchmark methods before production implementation depends on them.
+- Verify examples by compiling and invoking the smallest consumer fixture.
+
+### Build the filesystem-ID prerequisite
+
+- Implement `@monochromatic-dev/module-fs-id` from `docs/planning/module-fs-id.md`.
+- Keep OS command execution behind injected adapters so Linux,
+  macOS,
+  and Windows branches have fixture coverage.
+- Verify real command output on all three operating systems through CI or real hosts before trusting parser claims.
+- Guarantee a registry-path-safe ID representation and exact stable/degraded metadata.
+- Finish the package only after README,
+  lint,
+  type checks,
+  unit tests,
+  and a consuming import call pass.
+
+### Reshape and publish the cli-git package boundary
+
+- Separate side-effectful bin startup from side-effect-free public API modules.
+- Export `defineConfig`,
+  `definePlugin`,
+  `definePolicy`,
+  Valibot-backed helpers,
+  and public types from `@monochromatic-dev/cli-git`.
+- Make the package public,
+  add npm provenance settings and publish-workflow coverage,
+  and include only required build artifacts,
+  source declarations,
+  README,
+  and licenses.
+- Bundle private workspace helpers such as fs-id and logger into the public Node artifact rather than publishing them as
+  unresolved private runtime dependencies.
+- Verify `npm pack`,
+  install the tarball in a disposable non-workspace project,
+  import the API,
+  place the bin first on `PATH`,
+  and run both wrapper and management commands.
+
+### Implement the core policy engine and migrate current safeguards
+
+- Add immutable parsed-command facts and lazy memoized Git context methods.
+- Add Valibot config and option validation.
+- Add unified findings with optional single-path patch bytes.
+- Add default severity,
+  warn-safety,
+  namespace registration,
+  core/plugin ordering,
+  lifecycle escape hatches,
+  and `--cli-git-keep-going`.
+- Add final-pass-only JSONL and settled exit-code behavior.
+- Split fixed transformers from configurable policies and make transforms idempotent.
+- Migrate `require-root`,
+  `linked-worktree-only`,
+  `branch-worktree-only`,
+  and `add-explicit` with behavior-parity fixtures before deleting their old rule functions.
+- Keep atomic-push,
+  commit-only,
+  status-hints-off,
+  and auto-push fixed while moving them into the staged pipeline.
+
+### Implement config discovery and trust
+
+- Build the read-only and mixed-command classifier from current Git documentation and parser fixtures.
+- Implement account-derived registry paths,
+  per-key snapshot directories,
+  atomic writes,
+  permissions,
+  canonicalization,
+  and symlink defenses.
+- Implement MJS self-contained validation,
+  exact snapshot copies,
+  and execution from stored bytes.
+- Prototype tsdown programmatic output,
+  local graph extraction,
+  one-chunk enforcement,
+  assets/native failures,
+  and immutable cache loading before landing the TypeScript path.
+- Implement strict snapshot comparison,
+  relaxed metadata-triggered rebuilds,
+  comma/percent `CLI_GIT_NO_PARANOID` parsing,
+  malformed-entry warnings,
+  and no global discovery bypass.
+- Implement two-stage recursive trust,
+  cross-filesystem inheritance,
+  child auto-enrollment,
+  provenance,
+  nested outer-root revocation,
+  and explicit CI trust.
+- Exercise races and interrupted writes with concurrent disposable processes.
+
+### Prototype and implement transactional autofix
+
+- Before editing production transaction code,
+  build a disposable Git prototype for copied indexes,
+  explicit-path commit indexes,
+  post-commit index reconciliation,
+  exact worktree preservation,
+  and crash journals.
+- Prove ordinary index commits,
+  injected-only commits,
+  amend,
+  allow-empty,
+  merge/cherry-pick/revert conclusions,
+  deletions,
+  untracked selected paths,
+  partial staging,
+  unrelated staging,
+  hook failure,
+  patch conflict,
+  and process interruption.
+- Apply engine-owned patch files with `git apply --cached --3way` against private indexes.
+- Implement eight whole-sequence passes with exact byte comparison,
+  cycle detection,
+  provisional changed-pass findings,
+  and engine-stop semantics.
+- Install a real index only after successful commit and journal recovery checks.
+- Leave unsupported interactive modes read-only and block only when a fix is required.
+
+### Add repo policies in migration order
+
+- Add `forbidden-root-context` first to prove a plugin validator/finding shape.
+- Add `forbidden-strings` next to prove candidate content,
+  committed ground truth,
+  manual push ranges,
+  external binary failures,
+  and post-commit auto-push gating.
+- Add `final-newline` last to prove patch fixes,
+  global convergence,
+  exact exclusions,
+  direct check/fix,
+  and partial-staging safety.
+- Preserve every source-decision exclusion and old hk trigger path in named parity fixtures.
+
+### Complete lifecycle, CI, performance, and publication verification
+
+- Implement direct `check`,
+  `fix`,
+  trust,
+  untrust,
+  and status user-boundary tests through the built shim.
+- Add independent final-newline CI before hk removal;
+  keep forbidden-strings CI independent of the wrapper.
+- Measure no-config,
+  read-only,
+  strict MJS,
+  strict cached TypeScript,
+  relaxed TypeScript rebuild,
+  validator,
+  scanner,
+  normalizer,
+  and post-commit paths.
+- Set budgets from measured baselines in the implementation spec and fail repeatable benchmark fixtures when they regress.
+- Run package lint,
+  type checks,
+  tests,
+  npm tarball install,
+  and cross-platform trust verification.
+- Obtain independent standards and specification review before retirement.
+
+### Retire hk and Pkl as the capstone
+
+- Confirm all parity,
+  performance,
+  CI,
+  trust,
+  documentation,
+  and public-package gates are green.
+- Remove hk and Pkl config/tool references,
+  stale IDE config,
+  and obsolete documentation named by the source decision.
+- Provide and verify idempotent per-machine hk Git-config cleanup.
+- Verify the end-user `git` shim,
+  direct policy commands,
+  CI checks,
+  and clean npm install after removal.
+
 ## Open design questions
 
 Continue grilling one question at a time,
