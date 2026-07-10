@@ -463,7 +463,7 @@ if (args[0] === 'ls-remote') {
           args: ['push', 'origin', 'HEAD:refs/heads/main',],
         },);
         expect(failure.exitCode,).toBe(2,);
-        expect(failure.stderr,).toContain('manual-push-probe-failed',);
+        expect(failure.stderr,).toContain('content-unavailable',);
       },
     },),
     it({
