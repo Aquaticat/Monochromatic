@@ -8,8 +8,11 @@ Independent audit findings are incorporated.
 Final reviewer and Advisor planning audits passed against commit `0551184a6` on 2026-07-09.
 Implementation is now authorized.
 During implementation,
-the user clarified that the selected model in the active Pi session must execute scenario validation;
-the separate SDK harness design is removed.
+the user clarified that the selected model in the active Pi session must execute scenario validation and that
+documentation,
+reports,
+and Markdown artifacts may and should be written directly in the main worktree.
+The separate SDK harness and narrow vet-report-only exception are removed.
 This document specifies future implementation but does not authorize skill or policy changes without
 a separate action request.
 
@@ -373,32 +376,44 @@ The entry section should define:
 - output contract;
 - completion checklist keyed to named gates.
 
-### Required policy exception
+### Required documentation policy
 
-The skill cannot authorize its automatic vet report by itself because `AGENTS.md` has higher authority.
-Implementation must merge a narrow exception into existing `VRB` and `IWT` rules:
+The skill cannot authorize main-worktree artifacts by itself because `AGENTS.md` has higher authority.
+Implementation must merge the user's documentation rule into existing `VRB` and `IWT` rules:
 
-- an evaluation that crosses choosing-technology's substantial threshold may create or update only its required
-  `docs/audit/<subject>-vet-<date>.md` process artifact in the main worktree;
-- the exception does not authorize product code,
+- review,
+  evaluation,
+  audit,
+  investigation,
+  and planning work may and should create or update documentation,
+  reports,
+  and Markdown artifacts directly in the main worktree;
+- the documentation allowance includes choosing-technology vet reports,
+  validation reports,
+  planning documents,
+  handovers,
+  troubleshooting documents,
+  decision proposals,
+  and package or repository Markdown;
+- the allowance does not authorize non-document source code,
   dependencies,
   configuration,
-  generated files,
-  decision records,
-  installation,
+  generated outputs,
+  installations,
   builds,
   or experiments in the main worktree;
-- every mutating investigation or validation operation still runs in a disposable worktree,
+- managed Markdown outputs still follow their generator source of truth;
+  edit `AGENTS.md`,
+  not generated `CLAUDE.md`,
+  then regenerate it through file-enforcer;
+- mutating investigation and validation operations that are not document writes still run in a disposable worktree,
   scratch directory,
   container,
   VM,
   or external target;
-- adoption remains separately authorized by an action verb.
+- adoption and product changes remain separately authorized by an action verb.
 
-Edit `AGENTS.md`,
-not generated `CLAUDE.md`,
-then regenerate managed outputs through file-enforcer.
-No new rule code is needed because the exception narrows the existing `VRB` and `IWT` rules.
+No new rule code is needed because the documentation allowance refines existing `VRB` and `IWT` rules.
 
 ### Non-regression invariants
 
@@ -1131,7 +1146,9 @@ Do not restart grilling unless implementation evidence exposes a new non-measura
 
 ### Phase 2: establish authority, lifecycle, and routing
 
-- Merge the narrow choosing-technology vet-report exception into `AGENTS.md` rules `VRB` and `IWT`.
+- Merge the main-worktree documentation,
+  report,
+  and Markdown allowance into `AGENTS.md` rules `VRB` and `IWT`.
 - Regenerate `CLAUDE.md` through file-enforcer rather than editing it.
 - Define candidate lifecycle states and legal transitions.
 - Replace `before naming` with `before recommending` where discovery must name candidates.
@@ -1340,9 +1357,8 @@ record:
 - one assertion result per expected behavior;
 - final PASS or FAIL.
 
-Run report-write scenarios in disposable linked worktrees so simulated vet reports,
-locks,
-and decision records cannot alter the primary checkout.
+Write the validation document and any durable scenario documentation directly in the main worktree.
+Embed simulated report and decision-record content in the validation document rather than creating fake production decisions.
 Use synthetic evidence rather than live vendors,
 registries,
 credentials,
@@ -1387,7 +1403,7 @@ Cover at least these cases:
 - compatible report reuse,
   incompatible same-day report creation,
   and concurrent write blocking;
-- evaluation mutating only the authorized vet report;
+- evaluation writing only authorized documentation and report artifacts;
 - adoption updating a decision record only after a separate action request.
 
 Fix every failed scenario before proceeding.
@@ -1466,8 +1482,9 @@ and validation document against this plan and the troubleshooting-doc benchmark.
 
 The improvement is complete only when:
 
-- `AGENTS.md` explicitly authorizes the narrow vet-report process artifact and still forbids every other
-  evaluation mutation;
+- `AGENTS.md` explicitly allows documentation,
+  reports,
+  and Markdown artifacts in the main worktree while preserving every non-document evaluation mutation ban;
 - a reader can identify the current lifecycle state and next legal action;
 - every component has one base category and every matching overlay;
 - the open-source default,
