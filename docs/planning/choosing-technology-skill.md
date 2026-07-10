@@ -6,19 +6,23 @@ All 13 decisions are resolved;
 the user confirmed shared understanding on 2026-07-09.
 Independent audit findings are incorporated.
 Final reviewer and Advisor planning audits passed against commit `0551184a6` on 2026-07-09.
-Implementation is now authorized.
+Implementation was authorized and completed on 2026-07-09 under the user's revised verification scope.
 During implementation,
 the user clarified that the selected model in the active Pi session must execute scenario validation and that
 documentation,
 reports,
 and Markdown artifacts may and should be written directly in the main worktree.
-The separate SDK harness and narrow vet-report-only exception are removed.
+The separate SDK harness and narrow vet-report-only exception were removed.
 Implementation progress:
 
-- Phase 2 documentation policy completed on 2026-07-09;
-- Phases 3 through 5 authoritative skill rewrite completed on 2026-07-09;
-- Phase 6 selected-model validation completed 21 synthetic scenarios on 2026-07-09;
-- mirror guard and final audit remain.
+- Phase 2 documentation policy completed;
+- Phases 3 through 5 authoritative skill rewrite completed;
+- Phase 6 selected-model validation completed 21 synthetic scenarios;
+- Phase 7 ownership manifests,
+  byte-identity verification,
+  and positive mirror verification completed;
+- the remaining negative fixture matrix and independent final audit were canceled at the user's direction after
+  a Pi crash.
 
 ## Goal
 
