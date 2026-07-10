@@ -2,11 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 through 9 are resolved.
-Promotion thresholds,
-score-based exits,
-SaaS soft-risk applicability,
-and vet-report timing remain open after independent review.
+Decisions 1 through 11 are resolved.
+SaaS soft-risk applicability and vet-report timing remain open after independent review.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -194,10 +191,11 @@ The improved skill needs explicit promotion and exit criteria:
 
 - discovery records the search space;
 - hard constraints eliminate candidates cheaply;
-- serious alternatives are plausible survivors with no known hard failure;
-- finalists are the small set that could still win;
+- serious alternatives plausibly pass every known hard gate after cheap screening;
+- finalists are every serious alternative whose targeted evidence confirms all hard gates and provenance;
 - source and maintenance depth increases only as a candidate advances;
-- a recorded hard failure stops further work unless evidence is needed to compare a close tradeoff.
+- every hard-gate survivor receives full finalist validation;
+- only a hard failure or product-category mismatch exits a candidate before ranking.
 
 ### High: evidence quality and failure semantics are underspecified
 
@@ -412,15 +410,15 @@ Use this sequence:
 2. Ask one context-fork preference only when it changes the candidate set.
 3. Classify the subject and activate applicable gates.
 4. Discover candidates broadly enough to avoid anchoring.
-5. Apply hard constraints and critical evidence gates;
+5. Apply cheap hard-constraint and critical-evidence screening;
    record unavailable critical evidence as a failed exit,
    not a neutral unknown.
-6. Promote plausible survivors to serious alternatives.
-7. Run category-specific evidence checks.
-8. Promote candidates that could still win to finalists.
+6. Promote plausible hard-gate survivors to serious alternatives.
+7. Run targeted category-specific evidence checks that confirm every hard gate and provenance claim.
+8. Promote every confirmed hard-gate survivor to finalist.
 9. Inspect execution safety before running any third-party code.
-10. Source-audit and validate finalists at the consumer boundary.
-11. Compare finalists with pros,
+10. Fully source-audit and validate every finalist at the consumer boundary.
+11. Score and compare validated finalists with pros,
     cons,
     evidence limits,
     weighted score breakdowns,
@@ -462,7 +460,7 @@ Category gates add only what materially differs.
 ### Candidate promotion rules
 
 A candidate is discovered when a credible search finds it.
-It becomes a serious alternative only when:
+It becomes a serious alternative only when cheap screening shows:
 
 - it plausibly satisfies every known hard constraint;
 - it has no known disqualifying license,
@@ -470,11 +468,26 @@ It becomes a serious alternative only when:
   security,
   or reproducibility failure;
 - its product category matches the actual job;
-- enough evidence exists to justify deeper work.
+- its source and execution paths appear inspectable enough to justify targeted evidence work.
 
-A serious alternative becomes a finalist only when it can still outrank the current leader after known tradeoffs.
-Every exit receives a concrete reason and evidence.
-A candidate that cannot win receives no further expensive validation.
+Targeted evidence then confirms every hard gate,
+license,
+provenance,
+security,
+reproducibility,
+and category-fit claim.
+Every serious alternative that still passes becomes a finalist.
+There is no fixed candidate count,
+score cutoff,
+or preliminary soft-score exit.
+Every finalist receives full CI-equivalent,
+relevant-suite,
+and consumer-boundary validation.
+
+Every exit receives a concrete hard-failure or category-mismatch reason and evidence.
+Soft scores rank finalists only after full validation;
+they never reduce audit depth.
+The user chose this because the expected hard-gate survivor set is manageable in practice.
 
 ### Validation levels
 
@@ -556,7 +569,10 @@ Do not edit the skill during grilling.
   weighted risk,
   low-signal,
   and not-applicable outcomes.
-- Define promotion and stopping rules.
+- Define hard-gate-only promotion and stopping rules.
+- Forbid preliminary soft scores,
+  fixed candidate counts,
+  or score intervals from eliminating hard-gate survivors before full validation.
 
 ### Phase 3: make evidence and safety executable
 
@@ -668,7 +684,8 @@ Dry-run the rewritten skill against at least these synthetic prompts:
 - answer an evaluation request that does not authorize adoption;
 - reject a candidate whose critical provenance or safety evidence is unavailable;
 - retain a tiny repository with no tracker activity as low-signal when other relevant gates pass;
-- stop auditing a candidate after a decisive hard failure.
+- stop auditing a candidate after a decisive hard failure;
+- promote every hard-gate survivor to full finalist validation even when its preliminary soft evidence looks weaker.
 
 For each fixture,
 verify:
@@ -714,7 +731,8 @@ The improvement is complete only when:
   proprietary,
   replacement,
   and high-trust cases activate the correct gates;
-- candidate promotion and stopping rules prevent both shallow anchoring and unbounded audits;
+- candidate promotion and stopping rules eliminate hard failures early and send every remaining survivor through full validation;
+- soft scores never eliminate a hard-gate survivor before finalist validation;
 - every executed third-party command has a reviewed manifest and disposable boundary;
 - every finalist passes complete default CI-equivalent validation,
   every relevant non-default suite,
@@ -1277,14 +1295,92 @@ Asking every weight beats fixed presets because explicit answers are safer than 
 
 ### Decision 10: promotion threshold
 
-Open after Decision 9.
-Define the evidence required to promote a discovered candidate to serious alternative and a serious alternative to finalist.
+Decision:
+promote every confirmed hard-gate survivor to finalist.
+The user selected this on 2026-07-09 because the expected survivor set is manageable in practice.
+
+Promotion sequence:
+
+1. Discovery records every credible candidate found by the category-appropriate search.
+2. Cheap screening checks known hard constraints,
+   category fit,
+   license,
+   apparent provenance,
+   and apparent inspectability.
+3. Plausible survivors become serious alternatives.
+4. Targeted evidence confirms every hard gate,
+   provenance,
+   safety,
+   reproducibility,
+   and category-fit claim.
+5. Every confirmed survivor becomes a finalist.
+6. Every finalist receives the full validation bar from Decision 7.
+
+No fixed top count,
+score interval,
+or preliminary soft ranking limits finalist promotion.
+Only a hard failure or product-category mismatch exits a candidate.
+
+Pros:
+
+- no viable hard-gate-passing candidate is excluded by uncertain preliminary scoring;
+- promotion is easy to explain and audit;
+- preserves exhaustive comparison among eligible technologies;
+- aligns audit depth with objective eligibility rather than soft preferences.
+
+Cons:
+
+- every survivor incurs full source and runtime validation;
+- a broad problem with many eligible tools can still require substantial work;
+- hard gates must be defined precisely enough to prevent soft dislikes from becoming convenient exits;
+- the expected manageable survivor count is an operating expectation rather than a fixed bound.
+
+Rejected alternative:
+promote by evidence-backed score intervals.
+It bounds work more aggressively,
+but can exclude a candidate before full validation based on uncertain soft evidence.
+
+Rejected alternative:
+promote a fixed top count.
+It makes effort predictable,
+but arbitrary cutoffs can exclude ties or distinct tradeoffs.
+
+Ranking:
+all hard-gate survivors beat score intervals because eligibility,
+not preliminary preference,
+should control who receives definitive validation.
+Score intervals beat a fixed count because they at least respond to evidence and uncertainty rather than an arbitrary number.
 
 ### Decision 11: score-based candidate exits
 
-Open after Decision 10.
-Decide whether a hard-gate-passing candidate may exit before finalist validation from a preliminary score gap,
-and what confidence or sensitivity margin is required.
+Decision:
+soft score cannot eliminate a hard-gate-passing candidate before finalist validation.
+Decision 10 settles this without another preference question.
+
+Weighted scores are calculated for ranking after every finalist completes Decision 7 validation.
+A lower soft score lowers final rank but never retroactively excuses skipped source,
+upstream,
+platform,
+or consumer-boundary checks.
+
+Pros:
+
+- prevents circular reasoning where shallow evidence justifies keeping evidence shallow;
+- makes all final scores comparable at the same validation depth;
+- preserves soft scoring as ranking rather than eligibility.
+
+Cons:
+
+- spends full validation effort on candidates likely to rank lower;
+- removes score-based early stopping as a cost control.
+
+Rejected alternative:
+allow a large preliminary score gap to stop validation.
+It saves work,
+but makes the score depend on unequal evidence depth and can lock in an early leader.
+
+Ranking:
+full validation before soft-score exits beats preliminary score stopping because equal evidence depth matters more than reducing a manageable finalist set.
 
 ### Decision 12: SaaS soft-risk applicability
 
