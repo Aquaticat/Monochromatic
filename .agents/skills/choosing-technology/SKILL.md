@@ -45,6 +45,19 @@ Report findings inline,
 A recommendation made after checking only "do they satisfy the constraints" is a guess;
 the user catches the gap when they sign up and discover the problem themselves.
 
+## External code execution gate
+
+Execute external code only after looking through what will execute and determining that it is safe.
+This includes package lifecycle scripts,
+cloned-repository commands,
+downloaded scripts,
+builds,
+tests,
+and generated commands.
+If the execution path cannot be inspected or its safety cannot be established,
+do not execute it;
+use static analysis or report the limitation instead.
+
 ## Context-fork questions first
 
 Identify facts about the user's deployment,
