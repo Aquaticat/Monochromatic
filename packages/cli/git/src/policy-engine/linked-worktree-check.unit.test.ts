@@ -16,10 +16,8 @@ import {
 import nanoSpawn from 'nano-spawn';
 
 import { resolveGit, } from '../resolve-git.ts';
-import {
-  checkLinkedWorktree as linkedWorktreeOnly,
-  LinkedWorktreeViolationError,
-} from './linked-worktree-check.ts';
+import { runPolicyEngine, } from './engine.ts';
+import { checkLinkedWorktree as linkedWorktreeOnly, } from './linked-worktree-check.ts';
 
 //region Test fixtures
 
@@ -441,20 +439,30 @@ await describe({
           '-d',
           '-X',
         ] as const;
-        expect(await linkedWorktreeOnly(allowedArgs,),).toBe(allowedArgs,);
+        /** Unified policy result for allowed sentinel inspection. */
+        const allowedResult = await runPolicyEngine({
+          args: allowedArgs,
+          trigger: 'pre-forward',
+        },);
+        expect(allowedResult.exitCode,).toBe(0,);
+        expect(allowedResult.events,).toEqual([],);
         /** Allowed dry-run exercises real Git without mutation. */
         await runRealGit({ cwd: tempDirectory.path, args: ['clean', '--dry-run', '-d', '-X',], },);
         await Promise.all(sentinelPaths.map(function sentinelRemains(path,) {
           return access(path,);
         },),);
-        /** State-changing counterpart is rejected before real Git. */
-        const caught = await catchLinkedWorktreeOnlyError([
-          '-C',
-          tempDirectory.path,
-          'clean',
-          '-fdX',
-        ],);
-        expect(caught,).toBeInstanceOf(LinkedWorktreeViolationError,);
+        /** State-changing counterpart is rejected by unified policy before real Git. */
+        const rejectedResult = await runPolicyEngine({
+          args: [
+            '-C',
+            tempDirectory.path,
+            'clean',
+            '-fdX',
+          ],
+          trigger: 'pre-forward',
+        },);
+        expect(rejectedResult.exitCode,).toBe(1,);
+        expect(rejectedResult.events[0]?.policyId,).toBe('linked-worktree-only',);
         await Promise.all(sentinelPaths.map(function rejectedSentinelRemains(path,) {
           return access(path,);
         },),);

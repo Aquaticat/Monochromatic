@@ -672,6 +672,22 @@ A corrected finding from a provisional pass is not emitted.
 Consequently successful autofix emits only `fix-summary`,
 not the corrected finding.
 
+### Configuration warning event
+
+```ts
+export type ConfigurationWarningEvent = EventBase & {
+  readonly type: 'configuration-warning';
+  readonly trigger: PolicyTrigger;
+  readonly policyId: string;
+  readonly code: 'warn-unsafe';
+  readonly message: string;
+};
+```
+
+An explicitly configured warn-unsafe policy emits this non-blocking event even when its check returns no finding.
+Configuration warnings share the same JSONL stream and invocation-local sequence as findings and engine failures;
+they never write ad hoc prose to the machine stream.
+
 ### Fix summary event
 
 ```ts
@@ -1173,7 +1189,8 @@ Their fixed order is `require-root`,
 then `add-explicit`.
 All default to `error`;
 only `branch-worktree-only` is warn-safe.
-Unsafe warn configuration emits a config warning but still forwards when only warning findings remain.
+Unsafe warn configuration emits a `configuration-warning` JSONL event but still forwards when only warning findings
+remain.
 Generic `--no-enforce-<policy-id>` escapes and the legacy safeguard aliases skip the complete policy lifecycle and are
 stripped before real Git.
 Escape-looking option values and pathspecs remain ordinary Git arguments.

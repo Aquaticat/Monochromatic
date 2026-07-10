@@ -142,7 +142,7 @@ or `error`.
 - `error` blocks when an error finding remains after convergence.
 
 An explicitly configured unsafe `warn` remains valid,
-but config loading emits a warning.
+but config loading emits a non-blocking `configuration-warning` event in the same JSONL stream as policy findings.
 
 Warn-unsafe policies are:
 

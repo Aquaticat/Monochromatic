@@ -84,7 +84,7 @@ Validated policy settings support `off`,
 `warn`,
 and `error`.
 `branch-worktree-only` is warn-safe;
-configuring any other current built-in as `warn` also produces a configuration warning.
+configuring any other current built-in as `warn` also produces a non-blocking `configuration-warning` JSONL event.
 Repository-root `cli-git.config.mjs` or `cli-git.config.ts` can configure built-ins and register namespaced plugin policies
 after exact-snapshot trust.
 Built-ins run in the listed order;
