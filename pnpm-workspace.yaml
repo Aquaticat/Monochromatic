@@ -345,7 +345,7 @@ packageExtensions:
       '@mitata/counters': 'catalog:'
 packageImportMethod: clone-or-copy
 packages:
-- 'packages/*/*'
+  - 'packages/*/*'
 peerDependencyRules:
   # tsdown and rolldown-plugin-dts declare an optional `typescript` peer ranged
   # ^5 || ^6 for their classic-compiler declaration-emit path. This workspace sets
@@ -379,15 +379,17 @@ strictPeerDependencies: true
 # See docs/decisions/pnpm-supported-architectures.md for full rationale.
 supportedArchitectures:
   cpu:
-  - x64
-  - arm64
-  - current
+    - x64
+    - arm64
+    - current
   libc:
-  - glibc
-  - musl
-  - current
+    - glibc
+    - musl
+    - current
   os:
-  - darwin
-  - linux
-  - current
+    - darwin
+    - linux
+    - current
 trustPolicy: no-downgrade
+patchedDependencies:
+  '@earendil-works/pi-coding-agent@0.80.6': patches/@earendil-works__pi-coding-agent@0.80.6.patch

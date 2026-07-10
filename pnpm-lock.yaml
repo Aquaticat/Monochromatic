@@ -329,6 +329,9 @@ packageExtensionsChecksum: sha256-gD9T//+G7LgmfrdkuAns6+OIpwGt5qZWZRqAB+4BK00=
 
 pnpmfileChecksum: sha256-+JgUg3IiJaGDQMDLnqPUSEZvBb2N6C46c2sr2EmD/+w=
 
+patchedDependencies:
+  '@earendil-works/pi-coding-agent@0.80.6': d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2
+
 importers:
 
   .:
@@ -2627,7 +2630,7 @@ importers:
         version: 0.80.6
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
         version: 0.80.6
@@ -2670,7 +2673,7 @@ importers:
         version: 0.80.6
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2695,7 +2698,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2723,7 +2726,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2745,7 +2748,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
         version: 0.80.6
@@ -2773,7 +2776,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2810,7 +2813,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2835,7 +2838,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2857,7 +2860,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2879,7 +2882,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2910,7 +2913,7 @@ importers:
         version: 0.80.6
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.6
+        version: 0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -6674,7 +6677,7 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-coding-agent@0.80.6':
+  '@earendil-works/pi-coding-agent@0.80.6(patch_hash=d179dac28a15a2eceeff70851cc202497dc98525e58a90d9d26a1367858762c2)':
     dependencies:
       '@earendil-works/pi-agent-core': 0.80.6
       '@earendil-works/pi-ai': 0.80.6
