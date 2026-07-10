@@ -13,6 +13,7 @@ import type {
   PolicySeverity,
 } from '../api/policy-types.ts';
 import { createEngineFailureEvent, } from './events.ts';
+import { createManualPushCandidates, } from './manual-push-candidates.ts';
 import { runPolicyEngine, } from './engine.ts';
 import {
   ManualPushProbeError,
@@ -22,15 +23,6 @@ import type {
   PolicyEngineResult,
   RuntimePolicyDefinition,
 } from './types.ts';
-
-/**
- * Returns no manual-push candidates until range materialization is requested.
- *
- * @returns empty candidate collection
- */
-function emptyCandidates(): Promise<readonly CandidateFile[]> {
-  return Promise.resolve([],);
-}
 
 /**
  * Returns absent commit identity for manual-push lifecycle.
@@ -44,15 +36,34 @@ function absentOid(): Promise<typeof ABSENT_GIT_VALUE> {
 /**
  * Creates lazy manual-push facts around settled updates.
  *
+ * @param gitPath - resolved real Git executable
+ *
+ * @param cwd - effective repository directory
+ *
  * @param updates - authoritative push updates
  *
  * @returns lazy lifecycle facts
  */
-function createManualPushFacts(
-  updates: Awaited<ReturnType<typeof probeManualPushUpdates>>,
-): LazyPolicyGitFacts {
+function createManualPushFacts({
+  gitPath,
+  cwd,
+  updates,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  updates: Awaited<ReturnType<typeof probeManualPushUpdates>>;
+}>,): LazyPolicyGitFacts {
+  /** Candidate promise memoized after first policy request. */
+  const state: { candidates?: Promise<readonly CandidateFile[]> } = {};
   return {
-    candidates: emptyCandidates,
+    candidates: function candidates() {
+      state.candidates ??= createManualPushCandidates({
+        gitPath,
+        cwd,
+        updates,
+      },);
+      return state.candidates;
+    },
     headOid: absentOid,
     landedCommitOid: absentOid,
     pushUpdates: function pushUpdates() {
@@ -189,7 +200,11 @@ export async function runManualPushLifecycle({
     /**
      * Lazy manual-push Git facts.
      */
-    const gitFacts = createManualPushFacts(updates,);
+    const gitFacts = createManualPushFacts({
+      gitPath,
+      cwd,
+      updates,
+    },);
     return await runPolicyEngine({
       args: rawArgs,
       transformedArgs,
