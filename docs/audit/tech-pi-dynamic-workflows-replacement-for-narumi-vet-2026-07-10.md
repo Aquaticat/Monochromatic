@@ -3,7 +3,7 @@
 ## Audit metadata
 
 - Status: in progress
-- Lifecycle phase: rubric and initial discovery schedule frozen
+- Lifecycle phase: expansion schedule frozen; required GitHub source class blocked
 - Subject: `pi-dynamic-workflows` replacement for `@narumitw/pi-subagents`
 - Scope: evaluate whether `@quintinshaw/pi-dynamic-workflows` is safe and suitable to replace the installed
   `@narumitw/pi-subagents` Pi extension.
@@ -211,12 +211,131 @@ Git metadata where stated:
 
 ### Expansion round
 
-Pending collection of new taxonomy terms from the initial schedule. One de-duplicated expansion round will be appended,
-then the schedule will remain frozen even if later evidence introduces more terms.
+The initial web and registry results introduced `taskflow`, `workflow engine`, `interactive subagents`, `code mode`,
+`agent swarm`, and `workflow TUI`. The one allowed de-duplicated expansion round is now frozen:
+
+#### npm registry expansion
+
+- `pi taskflow`
+- `pi workflow engine`
+- `pi interactive subagents`
+- `pi code mode subagents`
+- `pi agent swarm`
+- `pi workflow TUI`
+
+Use the same quality-only ordering, page size, and stop rule as the initial npm schedule.
+
+#### GitHub expansion
+
+- `pi-taskflow in:name`
+- `pi-workflow-engine in:name`
+- `pi-interactive-subagents in:name`
+- `pi-codeMode in:name`
+- `pi-swarm in:name`
+- `pi-loom in:name`
+
+Use the same updated-descending ordering, page size, and stop rule as the initial GitHub schedule.
+
+#### Broader-web expansion
+
+- `Pi taskflow subagents`
+- `Pi workflow engine subagents`
+- `Pi interactive subagents extension`
+- `Pi code mode subagents extension`
+- `Pi agent swarm extension`
+- `Pi workflow TUI extension`
+
+No later taxonomy term will add another query.
+
+### Initial query execution
+
+#### npm registry pages
+
+Each request used `size=100`, `quality=1`, `popularity=0`, and `maintenance=0` at
+https://registry.npmjs.org/-/v1/search. Returned counts and registry-reported totals were:
+
+- `pi subagent`: pages `1`, `2`, and `3` each returned `100`; total `14,187`.
+- `pi subagents`: pages `1`, `2`, and `3` each returned `100`; total `14,068`.
+- `pi dynamic workflows`: pages `1`, `2`, and `3` each returned `100`; total `177,682`.
+- `pi workflow orchestration`: pages `1`, `2`, and `3` each returned `100`; total `104,204`.
+- `@narumitw/pi-subagents alternative`: pages `1`, `2`, and `3` each returned `100`; total `32,042`.
+- `pi coding agent multi agent`: pages `1`, `2`, and `3` each returned `100`; total `175,594`.
+
+Every third page still introduced plausible public-source Pi orchestration packages. Examples new at page `3` included
+`@kky42/pi-flow`, `pi-conductor`, `pi-workflow-engine`, `pi-agent-workflows`, `@aphotic/pi-mux-subagents`,
+`pi-analyst-worker-orchestrator`, `pi-submarine`, `@adamjen/pi-interactive-subagents`, and `pi-fast-subagent`. The page
+stop condition was therefore not met.
+
+The initial npm pages also recovered the user-named candidate, incumbent, and prior-audit alternatives including
+`pi-subagents`, `pi-crew`, `pi-taskflow`, `pi-swarm`, `pi-multiagent`, `pi-dynamic-workflows`,
+`pi-dynamic-workflows-oc-style`, `@johnnywu/pi-subagents`, `@e9n/pi-subagent` through its repository, and
+`@the-forge-flow/sub-agents-pi` through prior repository evidence. Numerous metadata-only packages lacked a public source
+URL and failed inspectability immediately; examples include `pi-side-agents`, `@lebronj/pi-suite`, and
+`@anishthite/pi-better-workflows`.
+
+#### GitHub repository pages
+
+Each request used `per_page=100`, `sort=updated`, and `order=desc` through the GitHub Search API:
+
+- `pi-coding-agent subagent in:name,description,readme`: pages `1` to `3` each returned `100`; total `1,192`.
+- `pi-coding-agent subagents in:name,description,readme`: pages `1` to `3` each returned `100`; total `1,195`.
+- `pi dynamic workflows in:name,description,readme`: pages `1` to `3` each returned `100`; total `23,764`.
+- `pi workflow orchestration agents in:name,description,readme`: pages `1` to `3` each returned `100`; total `12,067`.
+- `narumitw pi-subagents alternative in:name,description,readme`: page `1` returned `3`; exhausted.
+- `topic:pi-package subagents`: page `1` returned `15`; exhausted.
+
+Using repository name, description, and topics only, the first three pages introduced `49` unique plausible Pi
+subagent or orchestration repositories. Page `3` still added plausible repositories, including
+`vnedyalk0v/pi-subagent-kernel`, `QuintinShaw/pi-dynamic-workflows`, and
+`introspection-recipes/pi-multi-agent-research`, so the two-page no-survivor rule was not met.
+
+GitHub's official current search documentation states that each search returns at most `1,000` results and searches at
+most `4,000` matching repositories:
+https://docs.github.com/en/rest/search/search?apiVersion=2022-11-28#about-search and
+https://docs.github.com/en/rest/search/search?apiVersion=2022-11-28#search-scope-limits. Four frozen queries report
+between `1,192` and `23,764` matches. The provider cap arrives before exhaustion, while new plausible candidates still
+appear in sampled pages.
+
+#### Broader-web result sets
+
+The configured search returned `10` results for each frozen query, with no include or exclude filters. Across the sets it
+found the user-named candidate and alternatives or comparable technologies including:
+
+- `tintinweb/pi-subagents`, `mjakl/pi-subagent`, `jwu/pi-subagents`, `espennilsen/pi`, and the official Pi example;
+- `QuintinShaw/pi-dynamic-workflows`, `Michaelliv/pi-dynamic-workflows`,
+  `gtnotacoder/pi-dynamic-workflows`, `timbrinded/pi-workflow-engine`, and `heggria/taskflow`;
+- `betaHi/pi-loom`, `5queezer/pi-subflow`, `joelhooks/pi-workflow-os`, and `umutbasal/pi-workflows`;
+- `Tiziano-AI/pi-multiagent`, `KristjanPikhof/pi-agents-team`, `sandalsoft/pi-fleet`, and
+  `Hor1zonZzz/pi-codeMode`;
+- `davidsunglee/pi-mux-subagents`, `Whamp/pi-interactive-subagents`, and Catdaemon's subagent package.
+
+These finite result sets are complete for the harness-visible provider response, not evidence that the broader web is
+exhaustive.
+
+#### Local source class
+
+The uncapped local searches produced:
+
+- `10` fixed-string incumbent matches across the repository;
+- `112` broader subagent or workflow matches in `.agents`, `.pi`, `docs`, and manifests;
+- `42` relevant report, decision, and handover paths;
+- `854` orchestration-related matches under `packages/pi-plugins/`;
+- `100` incumbent package and lock matches under `/var/home/user/.pi/agent/npm/`.
+
+The local source class is exhausted for the frozen paths. The existing implementation at `packages/pi-plugins/spawn/`
+and prior `docs/handover/subagent-extension-audit.md` evidence remain parallel-system inputs, not ready-made replacements.
 
 ### Discovery status
 
-Pending execution and saturation.
+**Terminal status: blocked by an unenumerable required GitHub source.** GitHub's documented `1,000`-result return cap is
+lower than four query totals, and sampled page `3` still adds plausible survivors. npm and independent broader-web
+searches expose many additional alternatives but cannot enumerate the GitHub remainder. Exact-name, topic, registry,
+web, and local searches are alternate paths already attempted; none proves that the capped GitHub tail contains no
+screening survivor.
+
+Under the governing selection workflow, this block forbids a replacement recommendation even if the named candidate's
+security audit is otherwise favorable. The named candidate will still receive the requested targeted "funny business"
+source and runtime audit; its result is an evidence finding, not an adoption recommendation.
 
 ## Evidence records
 
