@@ -3,7 +3,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { applyFixedTransforms, } from './fixed-transforms.ts';
+import {
+  applyFixedTransforms,
+  FIXED_TRANSFORM_DEPENDENCIES,
+} from './fixed-transforms.ts';
 
 await describe({
   name: 'fixed transform stage',
@@ -73,6 +76,33 @@ await describe({
         expect(first.args,).toEqual(['commit', '-m', 'message',],);
         expect(second.args,).toEqual(first.args,);
         expect(second.events,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'converts unexpected transform failure into engine failure',
+      fn: async function testUnexpectedTransformFailure() {
+        /** Stable raw status command. */
+        const rawArgs = ['status',] as const;
+        /** Injected transform failure result. */
+        const result = await applyFixedTransforms({
+          args: rawArgs,
+          rawArgs,
+          sequence: 3,
+          dependencies: {
+            ...FIXED_TRANSFORM_DEPENDENCIES,
+            atomicPush: function throwAtomicFailure() {
+              throw new Error('injected atomic failure',);
+            },
+          },
+        },);
+        expect(result.complete,).toBe(false,);
+        expect(result.events,).toEqual([{
+          schemaVersion: 1,
+          sequence: 3,
+          type: 'engine-failure',
+          code: 'core-incomplete',
+          message: 'injected atomic failure',
+        },],);
       },
     },),
     it({

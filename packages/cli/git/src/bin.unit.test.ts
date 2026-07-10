@@ -1,11 +1,16 @@
 import {
+  chmod,
   mkdir,
   mkdtemp,
+  readFile,
   rm,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
+import {
+  delimiter,
+  join,
+} from 'node:path';
 
 import {
   describe,
@@ -32,6 +37,9 @@ const WRAPPER_PATH = join(
   'bin.mjs',
 );
 
+/** Executable mode for disposable Node-based Git capture fixture. */
+const TEST_EXECUTABLE_MODE = 0o755;
+
 /** Git author email used in disposable repositories. */
 const TEST_USER_EMAIL = 'cli-git@example.invalid';
 
@@ -44,6 +52,8 @@ type RunGitOptions = {
   readonly cwd: string;
   /** Arguments passed after executable name. */
   readonly args: readonly string[];
+  /** Optional complete subprocess environment. */
+  readonly env?: NodeJS.ProcessEnv;
 };
 
 /** Disposable temporary directory used by CLI integration tests. */
@@ -125,7 +135,10 @@ async function runWrapper(options: RunGitOptions,): Promise<Result> {
       WRAPPER_PATH,
       ...options.args,
     ],
-    { cwd: options.cwd, },
+    {
+      cwd: options.cwd,
+      ...(options.env === undefined ? {} : { env: options.env, }),
+    },
   );
 }
 
@@ -396,6 +409,7 @@ await describe({
         /** Human status with cli-git guidance. */
         const human = await runWrapper({ cwd: tempDirectory.path, args: ['status',], },);
         expect(human.stdout,).toContain('cli-git: bulk-add patterns',);
+        expect(human.stdout,).not.toContain('use "git add <file>..."',);
         /** Porcelain output without wrapper prose. */
         const machine = await runWrapper({
           cwd: tempDirectory.path,
@@ -408,6 +422,53 @@ await describe({
           args: ['-c', 'advice.statusHints=true', 'status',],
         },);
         expect(overridden.stdout,).not.toContain('cli-git: bulk-add patterns',);
+        expect(overridden.stdout,).toContain('use "git add <file>..."',);
+      },
+    },),
+    it({
+      name: 'forwards exact final transformed argv to real Git boundary',
+      fn: async function testFinalTransformedForwarding(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Fake real-Git executable directory. */
+        const fakeBin = join(tempDirectory.path, 'bin',);
+        await mkdir(fakeBin,);
+        /** Append-only capture path for forwarded argument vectors. */
+        const capturePath = join(tempDirectory.path, 'captured.jsonl',);
+        /** Node executable discovered by resolveGit after wrapper self path. */
+        const fakeGitPath = join(fakeBin, 'git',);
+        await writeFile(fakeGitPath, `#!/usr/bin/env node
+import { appendFileSync } from 'node:fs';
+const capturePath = process.env.CLI_GIT_CAPTURE_PATH;
+if (capturePath === undefined) throw new Error('missing capture path');
+appendFileSync(capturePath, JSON.stringify(process.argv.slice(2)) + '\\n');
+`,);
+        await chmod(fakeGitPath, TEST_EXECUTABLE_MODE,);
+        /** Environment routing wrapper resolution to disposable Git boundary. */
+        const env: NodeJS.ProcessEnv = {
+          ...process.env,
+          CLI_GIT_CAPTURE_PATH: capturePath,
+          PATH: `${fakeBin}${delimiter}${process.env.PATH ?? ''}`,
+        };
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['push', 'origin', 'main',],
+          env,
+        },);
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['status', '--porcelain=v1',],
+          env,
+        },);
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['commit', '--dry-run', '-m', 'message', 'file.txt',],
+          env,
+        },);
+        expect(await readFile(capturePath, 'utf8',),).toBe(
+          '["push","--atomic","origin","main"]\n'
+          + '["-c","advice.statusHints=false","status","--porcelain=v1"]\n'
+          + '["commit","-o","--dry-run","-m","message","file.txt"]\n',
+        );
       },
     },),
     it({

@@ -17,6 +17,38 @@ import {
 } from './events.ts';
 
 /**
+ * Fixed-transform dependencies exposed for deterministic failure tests.
+ */
+export type FixedTransformDependencies = Readonly<{
+  /**
+   * Atomic-push transform.
+   */
+  atomicPush: typeof atomicPush;
+  /**
+   * Commit-only transform.
+   */
+  commitOnly: typeof commitOnly;
+  /**
+   * Commit escape detector.
+   */
+  hasCommitOnlyEscapeHatch: typeof hasCommitOnlyEscapeHatch;
+  /**
+   * Status-hints transform.
+   */
+  statusHintsOff: typeof statusHintsOff;
+}>;
+
+/**
+ * Canonical production fixed-transform dependencies.
+ */
+export const FIXED_TRANSFORM_DEPENDENCIES: FixedTransformDependencies = {
+  atomicPush,
+  commitOnly,
+  hasCommitOnlyEscapeHatch,
+  statusHintsOff,
+};
+
+/**
  * Result from one fixed-transform stage.
  */
 export type FixedTransformResult = Readonly<{
@@ -43,6 +75,8 @@ export type FixedTransformResult = Readonly<{
  *
  * @param sequence - sequence for any emitted event
  *
+ * @param dependencies - injectable fixed transforms for deterministic tests
+ *
  * @returns transformed arguments and structured fixed-core outcome
  *
  * @example
@@ -54,29 +88,31 @@ export async function applyFixedTransforms({
   args,
   rawArgs,
   sequence,
+  dependencies = FIXED_TRANSFORM_DEPENDENCIES,
 }: Readonly<{
   args: readonly string[];
   rawArgs: readonly string[];
   sequence: number;
+  dependencies?: FixedTransformDependencies;
 }>,): Promise<FixedTransformResult> {
-  /**
-   * Atomic-push output passed to commit-only.
-   */
-  const atomicArgs = atomicPush(args,);
   try {
+    /**
+     * Atomic-push output passed to commit-only.
+     */
+    const atomicArgs = dependencies.atomicPush(args,);
     /**
      * Whether prior pass already stripped invocation-wide commit escape.
      */
-    const retainedCommitEscape = hasCommitOnlyEscapeHatch(rawArgs,)
-      && (!hasCommitOnlyEscapeHatch(atomicArgs,));
+    const retainedCommitEscape = dependencies.hasCommitOnlyEscapeHatch(rawArgs,)
+      && (!dependencies.hasCommitOnlyEscapeHatch(atomicArgs,));
     /**
      * Commit-only output passed to status-hints-off.
      */
     const commitArgs = retainedCommitEscape
       ? atomicArgs
-      : await commitOnly(atomicArgs,);
+      : await dependencies.commitOnly(atomicArgs,);
     return {
-      args: statusHintsOff(commitArgs,),
+      args: dependencies.statusHintsOff(commitArgs,),
       events: [],
       complete: true,
     };
@@ -84,7 +120,7 @@ export async function applyFixedTransforms({
   catch (error: unknown) {
     if (error instanceof CommitOnlyViolationError) {
       return {
-        args: atomicArgs,
+        args,
         events: [createCoreFindingEvent({
           sequence,
           coreId: 'commit-only',
@@ -95,7 +131,7 @@ export async function applyFixedTransforms({
       };
     }
     return {
-      args: atomicArgs,
+      args,
       events: [createEngineFailureEvent({
         sequence,
         code: 'core-incomplete',
