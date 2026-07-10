@@ -289,10 +289,15 @@ Tradeoffs:
   Pnpm 11.10.0 accepted that selector and passed the repository's 731-entry supply-chain check in the disposable
   prototype.
 
-The consumer prototype passed both Node and neutral builds,
+The implemented repair passed both Node and neutral builds,
 kept all five comparable JavaScript output hashes unchanged,
 restored the five declaration outputs removed by the failed build,
 and restored the original lint path after the independent TSDoc findings were corrected.
+
+The exact release-age exception applies only to 0.27.4 and never exempts a future release.
+Removing it after 2026-07-10 08:52:56-04:00 is optional policy-file cleanup rather than a correctness change;
+the exact override remains necessary until tsdown's own dependency floor requires a plugin release with
+`generator`.
 
 ### Temporarily hold rolldown-plugin-dts 0.27.1
 
@@ -312,6 +317,12 @@ Tradeoffs:
   verified to fail with the plugin's TypeScript 7 tsgo-disabled error.
 - Keeping 0.27.2 and setting `tsgo: false`:
   reaches the same unconditional check in `src/options.ts:295`.
+- Using `packageExtensions` to set
+  `tsdown@0.22.4.dependencies.rolldown-plugin-dts: 0.27.4`:
+  a clean pnpm 11.10.0 install retained rolldown-plugin-dts 0.27.2 because package extensions supplement package
+  metadata rather than replacing this existing dependency edge.
+  The aggregate build then reproduced all three missing declarations.
+  An override is required to replace the resolved transitive version.
 - Relying on config-oxlint's package tsconfig while using 0.27.2 tsgo:
   it cannot emit source files from the three external plugin package projects,
   even though Rolldown deliberately bundles them.
@@ -391,4 +402,5 @@ Do not file a new issue or comment.
 - [Generator option commit](https://github.com/sxzz/rolldown-plugin-dts/commit/4564ef53545456ce2a2e21029066db27ee99991a)
 - [Earlier monorepo tsgo issue](https://github.com/sxzz/rolldown-plugin-dts/issues/47)
 - [Project-reference limitation](https://github.com/sxzz/rolldown-plugin-dts/issues/189)
+- [Pnpm package extension and override settings](https://pnpm.io/settings#packageextensions)
 - [Implementation plan](../planning/tsdown-typescript-7-cross-package-dts.md)

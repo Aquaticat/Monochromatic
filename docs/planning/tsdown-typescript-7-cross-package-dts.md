@@ -2,15 +2,20 @@
 
 ## Status
 
-Planning complete and awaiting implementation on 2026-07-09.
+Implemented and verified on 2026-07-09.
 
-The failing surface is
-`mise run //packages/pi-plugins/auto-mode:lint:oxlint`.
-The failure occurs before oxlint starts,
-while the lint task refreshes the shared built oxlint configuration.
-rolldown-plugin-dts 0.27.2 introduced the regression;
-upstream 0.27.4 provides the verified generator selector needed for the durable repair.
-No repair has been implemented in the main worktree.
+The repair is:
+
+- An exact rolldown-plugin-dts 0.27.4 override and exact-version release-age exception in `pnpm-workspace.yaml`.
+- A package-manager-generated lockfile resolution at 0.27.4.
+  Regeneration also registered the already-landed fs-id package importer;
+  the lock commit reports that unrelated generated drift separately.
+- Explicit Oxc declaration generation in config-tsdown's Node and neutral presets.
+- Config-tsdown README guidance for declaration generation and separate semantic type lint.
+- Correct destructured parameter and void-return TSDoc in auto-mode's notification helpers.
+
+The original command now reaches real oxlint and reports zero warnings and zero errors in a clean disposable worktree
+at implementation commit `5bdc39e4a`.
 
 ## Goal
 
@@ -42,11 +47,13 @@ The current task graph is:
 
 ## Evidence collected
 
-The lockfile currently resolves:
+The failing lockfile resolved:
 
 - TypeScript `7.0.1-rc`.
 - tsdown `0.22.4`.
 - rolldown-plugin-dts `0.27.2`.
+
+The implemented lockfile keeps TypeScript and tsdown unchanged and resolves rolldown-plugin-dts `0.27.4`.
 
 Commit `797061b59ea222281a19d89ccbad6200ea526a70` updated only `pnpm-lock.yaml` and moved
 rolldown-plugin-dts from `0.27.1` to `0.27.2`.
@@ -393,9 +400,44 @@ not against the main checkout's ignored build outputs.
     ignored build output,
     or disposable-worktree artifact may be staged.
 
+## Implementation verification
+
+Verification ran in a clean disposable worktree at commit `5bdc39e4a`:
+
+- Frozen install passed and pnpm verified all 731 lock entries against supply-chain policy.
+- Installed versions were Node 26.5.0,
+  TypeScript 7.0.1-rc,
+  tsdown 0.22.4,
+  Rolldown 1.1.5,
+  and rolldown-plugin-dts 0.27.4.
+- Two builds after removing `packages/config/oxlint/dist/final/node` each produced ten files with identical SHA-256
+  catalogs.
+- All five comparable JavaScript hashes matched the pre-repair Oxc outputs.
+- Config-tsdown type lint,
+  oxlint,
+  and unit tests passed.
+- Config-oxlint type lint and oxlint passed.
+- Stylistic's Node build and module-const's neutral build passed.
+- Auto-mode type lint and unit tests passed.
+- The original auto-mode oxlint command reported zero warnings and zero errors.
+- Touching stylistic plugin source increased config output modification time from `1783651532` to `1783651629`,
+  proving `ensureOxlintConfig()` rebuilt before linting.
+- Markdown lint passed for config-tsdown README,
+  this plan,
+  and the troubleshooting document.
+- The verification worktree remained clean after ignored generated outputs were excluded.
+- No real neutral multi-entry preset consumer exists:
+  all 24 neutral config files are one-line re-exports.
+  The four-entry config-oxlint build covers multi-entry generator behavior on the Node preset.
+
+A clean `packageExtensions` experiment was also rejected:
+adding rolldown-plugin-dts 0.27.4 to `tsdown@0.22.4.dependencies` left 0.27.2 resolved,
+and the aggregate build reproduced the same three missing declarations.
+The exact override is therefore required to replace tsdown's existing dependency edge.
+
 ## Acceptance criteria
 
-The eventual implementation is complete only when:
+The implementation is complete because:
 
 - `pnpm-workspace.yaml` exempts only `rolldown-plugin-dts@0.27.4` from release age and forces that exact transitive
   version with documented rationale.
