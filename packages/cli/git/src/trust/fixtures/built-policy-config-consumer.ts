@@ -76,6 +76,24 @@ export async function verifyPolicyConfigConsumer({
 `,
   );
   await execute({
+    command: '/usr/bin/git',
+    args: [
+      'add',
+      'cli-git.config.mjs',
+    ],
+    cwd: repository,
+  },);
+  await execute({
+    command: '/usr/bin/git',
+    args: [
+      'commit',
+      '--quiet',
+      '-m',
+      'initial config',
+    ],
+    cwd: repository,
+  },);
+  await execute({
     command: 'git',
     args: [
       'cli-git',
