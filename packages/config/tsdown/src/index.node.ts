@@ -18,6 +18,11 @@ const target = await browserslistTargets({ runtime: 'node', },);
  * so built artifacts are self-contained and work outside the monorepo
  * (e.g. Claude Code plugins installed via marketplace).
  *
+ * Selects Oxc declaration generation explicitly because repository source
+ * satisfies `isolatedDeclarations`; this keeps declaration emission local to
+ * each Rolldown module and prevents TypeScript 7 from selecting experimental
+ * tsgo for cross-package source bundles.
+ *
  * @example
  * ```ts
  * // tsdown.node.config.ts
@@ -26,7 +31,9 @@ const target = await browserslistTargets({ runtime: 'node', },);
  * ```
  */
 const baseOptions: UserConfig = {
-  dts: true,
+  dts: {
+    generator: 'oxc',
+  },
   target,
   platform: 'node',
   deps: {

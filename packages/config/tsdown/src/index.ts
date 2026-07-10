@@ -17,6 +17,11 @@ const target = await browserslistTargets({ runtime: 'browser', },);
  * Bundles workspace dependencies (`@monochromatic-dev/*`) into the output
  * so built artifacts are self-contained and work outside the monorepo.
  *
+ * Selects Oxc declaration generation explicitly because repository source
+ * satisfies `isolatedDeclarations`; this keeps declaration emission local to
+ * each Rolldown module and prevents TypeScript 7 from selecting experimental
+ * tsgo for cross-package source bundles.
+ *
  * @example
  * ```ts
  * // tsdown.browser.config.ts
@@ -26,7 +31,9 @@ const target = await browserslistTargets({ runtime: 'browser', },);
  */
 const _default_1: UserConfig = defineConfig({
   entry: ['./src/index.ts',],
-  dts: true,
+  dts: {
+    generator: 'oxc',
+  },
   target,
   platform: 'neutral',
   inputOptions: {
