@@ -1579,7 +1579,11 @@ Unless later grilling changes them:
   baseline plus shared appendix against every `origin/main...HEAD` changed file,
   then passed locally for all 20 changed paths.
   A full-tree run with the active repository rules also passed with no findings.
-  This user-controlled repository may now be pushed automatically under the controlled-resource authorization rule.
+  The first integration push used the explicit `security/forbidden-strings` lifecycle escape because intermediate commits
+  retained the old remote violation before later commits removed it;
+  every other policy remained enforced.
+  Hosted push workflow [29130940967](https://github.com/Aquaticat/Monochromatic/actions/runs/29130940967) then passed its
+  independent full-tree scan at revision `295a61834`.
 - Key implementation checkpoints are `b9dc927ef`,
   `a5918a490`,
   `bacfe57b1`,
@@ -1591,7 +1595,9 @@ Unless later grilling changes them:
   `a8baa6024`,
   `f621432a6`,
   `470c0f5dc`,
-  and `3d8c240da`.
+  `3d8c240da`,
+  `a9096c04a`,
+  and `295a61834`.
 
 ### Issue #342 filesystem identity
 
