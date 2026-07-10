@@ -102,11 +102,77 @@ instead of asking a rubber-stamp question.
 - Screening result: serious alternative pending hard-gate confirmation. The npm registry reports version `2.12.1`, MIT,
   one runtime dependency on `acorn`, and `100` published files. These are discovery facts, not trust evidence.
 
-### Other alternatives
+### `pi-subagents` `0.34.0`
 
-The prior handover records multiple open-source Pi subagent extensions and a minimal custom design. The frozen discovery
-schedule will determine which remain category-fit alternatives for this narrower direct-replacement decision. No custom
-implementation can be recommended unless every ready-to-use technology fails a named hard constraint.
+- Discovery source: prior local audit plus npm and web rediscovery at https://github.com/nicobailon/pi-subagents.
+- Base category: inspectable open-source local technology.
+- Overlays: incumbent replacement candidate, high-trust execution, human auditability.
+- Screening result: serious alternative in the prior audit; further promotion stops because required discovery is blocked.
+
+### `pi-dynamic-workflows` `1.0.1`
+
+- Discovery source: npm and web search at https://github.com/Michaelliv/pi-dynamic-workflows.
+- Base category: inspectable open-source local technology.
+- Overlays: incumbent replacement candidate, high-trust execution, human auditability.
+- Screening result: discovered upstream implementation; source relationship to the user-named fork requires targeted
+  provenance comparison.
+
+### `pi-dynamic-workflows-oc-style` `0.2.3`
+
+- Discovery source: npm and web search at https://github.com/gtnotacoder/pi-dynamic-workflows.
+- Base category: inspectable open-source local technology.
+- Overlays: incumbent replacement candidate, high-trust execution, human auditability.
+- Screening result: discovered fork; pending hard-gate evidence.
+
+### `pi-taskflow` `0.1.8`
+
+- Discovery source: npm, GitHub, and web expansion at https://github.com/heggria/taskflow.
+- Base category: inspectable open-source local technology.
+- Overlays: incumbent replacement candidate, high-trust execution, human auditability.
+- Screening result: discovered graph-oriented alternative; pending hard-gate evidence.
+
+### `pi-workflow-engine` `0.10.3`
+
+- Discovery source: npm and web expansion at https://github.com/timbrinded/pi-workflow-engine.
+- Base category: inspectable open-source local technology.
+- Overlays: incumbent replacement candidate, high-trust execution, human auditability.
+- Screening result: discovered orchestration alternative; pending hard-gate evidence.
+
+### `pi-swarm` `0.9.5`
+
+- Discovery source: npm, GitHub expansion, and web expansion at https://github.com/gjczone/pi-swarm.
+- Base category: inspectable open-source local technology.
+- Overlays: incumbent replacement candidate, high-trust execution, human auditability.
+- Screening result: discovered team-orchestration alternative; pending hard-gate evidence.
+
+### `pi-crew` `0.9.32`
+
+- Discovery source: prior local audit plus npm rediscovery at https://github.com/baphuongna/pi-crew.
+- Base category: inspectable open-source local technology.
+- Overlays: incumbent replacement candidate, high-trust execution, human auditability.
+- Screening result: serious alternative in the prior audit; further promotion stops because required discovery is blocked.
+
+### `pi-multiagent` `0.9.8`
+
+- Discovery source: prior local audit plus web rediscovery at https://github.com/Tiziano-AI/pi-multiagent.
+- Base category: inspectable open-source local technology.
+- Overlays: incumbent replacement candidate, high-trust execution, human auditability.
+- Screening result: serious alternative in the prior audit; further promotion stops because required discovery is blocked.
+
+### Prior lightweight alternatives
+
+The prior audit also carries forward `mjakl/pi-subagent`, `jwu/pi-subagents`, `@e9n/pi-subagent`,
+`@the-forge-flow/sub-agents-pi`, and the official Pi subagent example. Each has inspectable source, but the prior source and
+runtime review identified missing operator-interruption, per-child-timeout, UI, test, or current-Pi evidence. They remain
+ledger entries rather than invented alternatives; no preliminary soft score removes them.
+
+### Ledger limit caused by source block
+
+The frozen searches discovered many additional plausible packages and repositories. GitHub's cap prevents enumerating the
+required source class, so this ledger cannot honestly claim completeness. Under the terminal discovery rule, incomplete
+candidate enumeration ends in no recommendation rather than arbitrary finalist selection.
+
+No custom implementation can be recommended unless every ready-to-use technology fails a named hard constraint.
 
 ## Preliminary evidence limits
 
@@ -324,6 +390,35 @@ The uncapped local searches produced:
 
 The local source class is exhausted for the frozen paths. The existing implementation at `packages/pi-plugins/spawn/`
 and prior `docs/handover/subagent-extension-audit.md` evidence remain parallel-system inputs, not ready-made replacements.
+
+### Expansion execution
+
+The npm expansion used the same quality-only API parameters. Every query returned three complete pages of `100` results,
+and every registry total exceeded the sampled `300`:
+
+- `pi taskflow`: total `12,971`;
+- `pi workflow engine`: total `148,581`;
+- `pi interactive subagents`: total `131,742`;
+- `pi code mode subagents`: total `1,837,310`;
+- `pi agent swarm`: total `103,795`;
+- `pi workflow TUI`: total `102,809`.
+
+The expansion confirms that npm token search is not an uncapped category enumeration substitute for GitHub. Its broad
+matching introduces unrelated packages deep into the result set and does not prove exhaustion.
+
+The GitHub exact-name expansion exhausted every query:
+
+- `pi-taskflow in:name`: `23` results;
+- `pi-workflow-engine in:name`: `12` results;
+- `pi-interactive-subagents in:name`: `3` results;
+- `pi-codeMode in:name`: `6` results;
+- `pi-swarm in:name`: `255` results across pages of `100`, `100`, and `55`;
+- `pi-loom in:name`: `50` results.
+
+The broader-web expansion returned `10` results per query and rediscovered `heggria/taskflow`,
+`timbrinded/pi-workflow-engine`, `QuintinShaw/pi-dynamic-workflows`, `betaHi/pi-loom`,
+`Hor1zonZzz/pi-codeMode`, `gjczone/pi-swarm`, `nicobailon/pi-subagents`, and several interactive-subagent forks. It added
+no taxonomy query because the single expansion round was already frozen.
 
 ### Discovery status
 
