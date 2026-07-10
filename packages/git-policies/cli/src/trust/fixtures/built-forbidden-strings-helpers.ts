@@ -108,6 +108,7 @@ export async function initializeForbiddenRepository({
     args: [
       'init',
       '--quiet',
+      '--initial-branch=main',
     ],
     cwd: repository,
   },);
