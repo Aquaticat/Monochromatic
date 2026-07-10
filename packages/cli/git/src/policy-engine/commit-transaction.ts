@@ -355,7 +355,7 @@ export async function runCommitTransaction({
       repositoryRoot: layout.effectiveCwd,
     },);
   }
-  if ((!pass.shouldForward) || (changedPasses === 0))
+  if ((!pass.shouldForward) || ((changedPasses === 0) && (!readOnlySelection)))
     return {
       policyResult: pass,
       committed: false,
