@@ -16,11 +16,9 @@ The separate SDK harness and narrow vet-report-only exception are removed.
 Implementation progress:
 
 - Phase 2 documentation policy completed on 2026-07-09;
-- Phases 3 through 5 authoritative skill rewrite completed on 2026-07-09,
-  with verification pending;
-- mirror guard,
-  scenario validation,
-  and final audit remain.
+- Phases 3 through 5 authoritative skill rewrite completed on 2026-07-09;
+- Phase 6 selected-model validation completed 21 synthetic scenarios on 2026-07-09;
+- mirror guard and final audit remain.
 
 ## Goal
 
