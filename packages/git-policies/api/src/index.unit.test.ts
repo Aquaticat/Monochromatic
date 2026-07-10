@@ -1,4 +1,4 @@
-﻿/** Git policy authoring contract tests. @module */
+/** Git policy authoring contract tests. @module */
 import {
   describe,
   expect,
@@ -13,6 +13,7 @@ import {
   definePolicy,
   definePolicyOptions,
   type PolicyDefinition,
+  type PolicyFinding,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -36,7 +37,7 @@ await describe({
           warnSafe: true,
           triggers: ['direct-check',],
           options: definePolicyOptions(v.object({ suffix: v.string(), },),),
-          check: async function checkSuffix(): Promise<readonly []> { return []; },
+          check: async function checkSuffix(): Promise<readonly PolicyFinding[]> { return []; },
         } satisfies PolicyDefinition<{ readonly suffix: string }, 'suffix'>;
         const definedPolicy = definePolicy(policy,);
         const pluginInput = {

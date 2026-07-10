@@ -141,8 +141,6 @@ class PolicyDecisionError extends Error {
  * Package root calls this function only when its single MJS artifact is Node's
  * direct program entry.
  *
- * @returns completion after real Git or policy handling settles
- *
  * @example
  * ```ts
  * await runCliGit();

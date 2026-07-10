@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Neutral side-effect-free Git policy authoring contract.
  *
  * @module
