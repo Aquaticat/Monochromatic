@@ -2,8 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 through 11 are resolved.
-SaaS soft-risk applicability and vet-report timing remain open after independent review.
+Decisions 1 through 12 are resolved.
+Vet-report timing remains open after independent review.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -437,7 +437,9 @@ Use this sequence:
 Keep distinct check sets for:
 
 - managed service or SaaS,
-  retaining the 24-month layoffs and 12-month outage windows while adding direct operational risks;
+  inspecting every retained historical and direct-risk domain for every candidate,
+  retaining the 24-month layoffs and 12-month outage windows,
+  and scoring only findings with an explicit causal link to the proposed use;
 - open-source library,
   framework,
   build tool,
@@ -634,6 +636,8 @@ Do not edit the skill during grilling.
   evidence limits,
   score breakdown,
   and fully sorted ranking for live options.
+- Require every SaaS audit to inspect every retained historical and direct-risk domain.
+- Report inspected but irrelevant SaaS findings without score impact.
 - Require every scored concern to show why it is relevant,
   its weight,
   rating,
@@ -1384,8 +1388,74 @@ full validation before soft-score exits beats preliminary score stopping because
 
 ### Decision 12: SaaS soft-risk applicability
 
-Open after Decision 11.
-Decide whether retained SaaS soft-risk domains are presumed relevant until excluded or activated only by a stated workload concern.
+Decision:
+inspect every retained SaaS risk domain for every SaaS candidate,
+but score only findings relevant to the proposed use.
+The user selected this on 2026-07-09.
+
+Every SaaS audit inspects:
+
+- layoffs and headcount over 24 months;
+- customer reviews;
+- outages over 12 months;
+- funding,
+ownership,
+and business model;
+- signup friction;
+- security and abuse history;
+- every direct operational-risk domain added by Decision 5.
+
+For each finding,
+the report states:
+
+- what was inspected;
+- evidence and date;
+- whether it has a plausible causal effect on the proposed use;
+- if relevant,
+  criterion,
+  weight,
+  rating,
+  confidence,
+  and score effect;
+- if irrelevant,
+  why it receives no score effect.
+
+Inspection is universal;
+scoring is relevance-gated.
+A domain cannot be omitted merely because the initial workload description did not mention it.
+A finding cannot lower score merely because it exists.
+
+Pros:
+
+- preserves broad early-warning discovery;
+- catches risks the initial requirements did not anticipate;
+- prevents irrelevant vendor facts from changing rank;
+- makes every no-score decision inspectable.
+
+Cons:
+
+- broad vendor research remains mandatory even when likely irrelevant;
+- causal relevance judgments can be disputed;
+- the report must avoid double-counting one incident across overlapping domains;
+- inspected but unscored evidence adds report length.
+
+Rejected alternative:
+inspect only workload-activated domains.
+It reduces work,
+but can miss unexpected account,
+business,
+outage,
+security,
+or support risks.
+
+Rejected alternative:
+inspect and score every domain.
+It is uniform,
+but lets irrelevant soft facts lower a candidate's rank.
+
+Ranking:
+universal inspection plus relevance-gated scoring beats activated-only inspection because discovery should not depend on already knowing the risk.
+Activated-only inspection beats scoring every domain because relevance still matters more than rubric uniformity.
 
 ### Decision 13: vet-report timing and reuse
 
