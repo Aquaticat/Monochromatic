@@ -64,6 +64,51 @@ const RESULTS_WITH_EXTRA_KEY_RESPONSE = {
 } as const;
 
 /**
+ * Search response fixture carrying Linkup metadata in a noncanonical property order.
+ */
+const METADATA_RESULTS_RESPONSE = {
+  costDollars: {
+    search: {
+      neural: 0.007,
+    },
+    total: 0.007,
+  },
+  requestId: '4b6f791ad7a70eb585c93832ab8af1f3',
+  results: RESULTS_RESPONSE.results,
+  resolvedSearchType: '',
+  searchTime: 577.5,
+} as const;
+
+/**
+ * Metadata search response fixture with unexpected top-level data.
+ */
+const METADATA_RESULTS_WITH_EXTRA_KEY_RESPONSE = {
+  ...METADATA_RESULTS_RESPONSE,
+  diagnostic: 'upstream diagnostic',
+} as const;
+
+/**
+ * Metadata search response fixture missing required cost data.
+ */
+const METADATA_RESULTS_WITH_MISSING_KEY_RESPONSE = {
+  requestId: METADATA_RESULTS_RESPONSE.requestId,
+  results: METADATA_RESULTS_RESPONSE.results,
+  resolvedSearchType: METADATA_RESULTS_RESPONSE.resolvedSearchType,
+  searchTime: METADATA_RESULTS_RESPONSE.searchTime,
+} as const;
+
+/**
+ * Metadata search response fixture containing an invalid scalar result item.
+ */
+const METADATA_RESULTS_WITH_SCALAR_ITEM_RESPONSE = {
+  ...METADATA_RESULTS_RESPONSE,
+  results: [
+    ...METADATA_RESULTS_RESPONSE.results,
+    'invalid scalar result',
+  ],
+} as const;
+
+/**
  * Markdown-only response fixture.
  */
 const MARKDOWN_ONLY_RESPONSE = { markdown: '# Meow', } as const;
@@ -161,6 +206,100 @@ await describe({
           },
         },),
         it({
+          name: 'returns metadata envelope results as JSONL when requested',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: METADATA_RESULTS_RESPONSE,
+              renderResultsArrayAsJsonl: true,
+            },);
+            /**
+             * Expected model-visible JSONL text.
+             */
+            const expectedJsonl = [
+              '{"title":"First","url":"https://example.com/first"}',
+              '{"title":"Second","url":"https://example.com/second"}',
+            ].join('\n',);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).toBe(expectedJsonl,);
+            expect(result.content.text,).not.toContain('requestId',);
+            expect(result.fullJsonPath,).toBeUndefined();
+          },
+        },),
+        it({
+          name: 'ignores metadata value types when exact top-level key set matches',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: {
+                costDollars: false,
+                requestId: null,
+                results: RESULTS_RESPONSE.results,
+                resolvedSearchType: [],
+                searchTime: 'unknown',
+              },
+              renderResultsArrayAsJsonl: true,
+            },);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).not.toContain('requestId',);
+            expect(result.content.text,).toContain('"title":"First"',);
+          },
+        },),
+        it({
+          name: 'keeps JSON for metadata envelopes with unexpected top-level data',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: METADATA_RESULTS_WITH_EXTRA_KEY_RESPONSE,
+              renderResultsArrayAsJsonl: true,
+            },);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).toContain('"diagnostic"',);
+            expect(result.content.text,).toContain('"requestId"',);
+          },
+        },),
+        it({
+          name: 'keeps JSON for metadata envelopes missing a required top-level key',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: METADATA_RESULTS_WITH_MISSING_KEY_RESPONSE,
+              renderResultsArrayAsJsonl: true,
+            },);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).toContain('"requestId"',);
+            expect(result.content.text,).toContain('"searchTime"',);
+          },
+        },),
+        it({
+          name: 'keeps JSON for metadata envelopes with scalar result items',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: METADATA_RESULTS_WITH_SCALAR_ITEM_RESPONSE,
+              renderResultsArrayAsJsonl: true,
+            },);
+
+            expect(result.content.type,).toBe('text',);
+            expect(result.content.text,).toContain('invalid scalar result',);
+            expect(result.content.text,).toContain('"requestId"',);
+          },
+        },),
+        it({
           name: 'returns empty JSONL for empty results when requested',
           fn: async () => {
             /**
@@ -218,6 +357,34 @@ await describe({
             const fullJsonl = await readFile(result.fullJsonPath, 'utf8',);
             expect(fullJsonl,).toContain('"title":"First"',);
             expect(fullJsonl,).not.toContain('"results"',);
+          },
+        },),
+        it({
+          name: 'truncates metadata-envelope JSONL and writes full JSONL to temp file',
+          fn: async () => {
+            /**
+             * Local value for result.
+             */
+            const result = await createJsonContent({
+              value: METADATA_RESULTS_RESPONSE,
+              renderResultsArrayAsJsonl: true,
+              truncationOptions: {
+                maxBytes: 10,
+                maxLines: 10,
+              },
+            },);
+
+            expect(result.content.text,).toContain('JSONL response truncated',);
+            expect(result.fullJsonPath,).toBeDefined();
+            if (result.fullJsonPath === undefined)
+              throw new Error('missing full metadata-envelope JSONL path',);
+            expect(result.fullJsonPath.endsWith('/response.jsonl',),).toBe(true,);
+            /**
+             * Local value for fullJsonl.
+             */
+            const fullJsonl = await readFile(result.fullJsonPath, 'utf8',);
+            expect(fullJsonl,).toContain('"title":"First"',);
+            expect(fullJsonl,).not.toContain('"requestId"',);
           },
         },),
         it({

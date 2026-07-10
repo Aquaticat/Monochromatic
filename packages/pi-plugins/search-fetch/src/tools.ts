@@ -257,13 +257,13 @@ function createLinkupWebSearchTool(
   return defineTool({
     name: LINKUP_WEB_SEARCH_TOOL_NAME,
     label: 'Web Search',
-    description: `Search the web with Exa fast search first and Linkup standard search fallback. Uses the configured global blocklist. Exact {"results":[...]} responses whose results are objects are returned as JSONL from the inner results array; other output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
+    description: `Search the web with Exa fast search first and Linkup standard search fallback. Uses the configured global blocklist. Exact {"results":[...]} responses, plus exact metadata envelopes with requestId, resolvedSearchType, results, searchTime, and costDollars, return object results as JSONL; other output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
     promptSnippet: 'Search the web with Exa fast search first, Linkup fallback, and the global blocklist.',
     promptGuidelines: [
       'Use web_search to discover sources across the web before fetching a specific page.',
       'web_search uses Exa type="fast" first and Linkup depth="standard" fallback; do not rely on deep, web-answer, limit, or maxResults controls.',
       'web_search applies the configured global blocklist locally after providers respond.',
-      'web_search returns exact {"results":[...]} responses whose results are objects as one JSON object per line from the inner results array.',
+      'web_search returns object results as JSONL for exact {"results":[...]} responses and exact metadata envelopes with requestId, resolvedSearchType, results, searchTime, and costDollars.',
     ],
     parameters: LinkupWebSearchParametersSchema,
     async execute(

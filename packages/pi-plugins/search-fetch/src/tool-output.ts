@@ -130,7 +130,7 @@ type JsonContentOptions = {
    */
   readonly value: unknown;
   /**
-   * Whether exact single-field results arrays should render as JSONL.
+   * Whether accepted search result envelopes should render as JSONL.
    */
   readonly renderResultsArrayAsJsonl?: boolean;
   /**
@@ -208,7 +208,7 @@ type LinkupToolOutputOptions = {
    */
   readonly fixedBehavior: string;
   /**
-   * Whether exact single-field results arrays should render as JSONL.
+   * Whether accepted search result envelopes should render as JSONL.
    */
   readonly renderResultsArrayAsJsonl?: boolean;
   /**

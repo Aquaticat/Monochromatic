@@ -63,6 +63,11 @@ and `outputType` are ignored.
 The tool returns a warning text item before the response when that happens.
 
 When a search response is exactly `{ "results": [...] }`,
+or has exactly the top-level keys `requestId`,
+`resolvedSearchType`,
+`results`,
+`searchTime`,
+and `costDollars`,
 and every result is an object,
 the tool returns the inner results array as JSONL,
 one result object per line.
