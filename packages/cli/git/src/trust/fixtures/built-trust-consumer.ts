@@ -14,6 +14,7 @@ import {
   assertJsonl,
   execute,
 } from './built-consumer-helpers.ts';
+import { verifyRecursiveConsumer, } from './built-recursive-consumer.ts';
 
 await execute({
   command: 'apt-get',
@@ -28,7 +29,10 @@ await execute({
     'git',
   ],
 },);
-await mkdir('/work',);
+await mkdir(
+  '/work',
+  { recursive: true, },
+);
 await execute({
   command: 'npm',
   args: [
@@ -261,4 +265,5 @@ assertIncludes({
   expected: '"reason":"untrusted"',
   context: 'untrusted status',
 },);
+await verifyRecursiveConsumer({ env, },);
 console.log('built-trust-consumer-ok',);

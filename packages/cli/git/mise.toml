@@ -47,4 +47,4 @@ run = [
 [tasks.'test:built:trust']
 description = "Exercise packed shadow git trust lifecycle in a disposable container"
 depends = ["pack:npm"]
-run = "podman run --memory=1g --cpus=1 --rm --volume \"$PWD/dist/pack/monochromatic-dev-cli-git-0.0.1.tgz:/fixture/cli.tgz:ro,Z\" --volume \"$PWD/src/trust/fixtures:/fixture/tests:ro,Z\" docker.io/library/node:24-slim node /fixture/tests/built-trust-consumer.ts"
+run = "podman run --memory=1g --cpus=1 --rm --volume \"$PWD/dist/pack/monochromatic-dev-cli-git-0.0.1.tgz:/fixture/cli.tgz:ro,Z\" --volume \"$PWD/src/trust/fixtures:/fixture/tests:ro,Z\" --tmpfs /work/recursive/child:rw,size=16m docker.io/library/node:24-slim node /fixture/tests/built-trust-consumer.ts"
