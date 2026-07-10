@@ -1,11 +1,11 @@
 # Plan: improve the choosing-technology skill
 
 Status:
-draft under grill-me review.
-Decisions 1 through 13 are resolved.
-The plan awaits final shared-understanding confirmation and independent audit.
+plan complete and grilled.
+All 13 decisions are resolved;
+the user confirmed shared understanding on 2026-07-09.
+Independent audit remains before final delivery.
 No skill changes are authorized by this plan.
-The plan will be updated after each resolved planning decision.
 
 ## Goal
 
@@ -185,7 +185,7 @@ The image-processing handover lists thirteen cloned repositories,
 reports a scratch install of 137 packages,
 and still ends with required synthesis work.
 The work produced useful evidence,
-but the skill did not tell the investigator when broad discovery should stop or which candidates no longer justified full validation.
+but the skill did not tell the investigator when broad discovery should stop or which hard failures should prevent candidate promotion.
 
 The improved skill needs explicit promotion and exit criteria:
 
@@ -788,8 +788,9 @@ The improvement is complete only when:
 ### Decision 1: operating model
 
 Decision:
-use a risk-gated exhaustive workflow.
-The user selected this on 2026-07-09.
+use a hard-gated exhaustive workflow.
+The user selected the risk-gated model on 2026-07-09,
+then Decision 10 established hard failures as the only pre-finalist risk gate.
 
 Every applicable gate remains mandatory,
 but expensive source and runtime validation follows candidate promotion.
@@ -822,7 +823,7 @@ It offers an explicit speed-versus-depth tradeoff,
 but makes recommendation quality optional and can fall below the benchmark skill's completion standard.
 
 Ranking:
-risk-gated exhaustive beats always exhaustive because it preserves every relevant gate while removing work that cannot change the decision.
+hard-gated exhaustive beats always exhaustive because decisive hard failures stop work while every eligible survivor receives equal-depth validation.
 Always exhaustive beats user-budgeted tiers because a skill-level quality floor should not disappear when a shallow tier is selected.
 
 ### Decision 2: file organization
@@ -887,7 +888,7 @@ Pros:
 - preserves source paths,
 commands,
 evidence dates,
-unknowns,
+evidence limits,
 and rejected candidates;
 - lets interrupted work resume without repeating expensive research;
 - makes the skill revision and completion state auditable;
@@ -1164,7 +1165,7 @@ Pros:
 
 - verifies upstream's normal quality contract and this repo's actual boundary;
 - catches relevant optional-feature and platform failures outside the default suite;
-- preserves risk-gated proportionality because only finalists receive this depth;
+- preserves hard-gated proportionality because only eligible finalists receive this depth;
 - prevents `consumer smoke test passed` from standing in for upstream health;
 - makes omissions auditable.
 
