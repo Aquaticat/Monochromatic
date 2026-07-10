@@ -8,7 +8,7 @@ import {
   forbiddenRootContext,
   hasForbiddenRootContext,
   repositoryPolicyPlugin,
-} from './index.ts';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: forbiddenRootContext.name,
