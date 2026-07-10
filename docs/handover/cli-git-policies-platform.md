@@ -196,9 +196,11 @@ Fixed transforms must be idempotent because a changed candidate tree restarts th
 
 ### Distribution
 
-`@monochromatic-dev/cli-git` becomes a public npm package instead of remaining private.
-The first distributable is the Node package only;
+`@monochromatic-dev/cli-git` becomes npm-ready instead of remaining private.
+The prepared artifact is the Node package only;
 standalone native executables are out of the first platform release.
+Actual npm registry publication is recorded in #358 and deferred indefinitely until a maintainer explicitly resumes
+it.
 The package installs the shadowing `git` bin and includes the runtime needed for trusted TypeScript config bundling.
 The same package exposes side-effect-free public config and plugin API entry points,
 including `defineConfig`,
@@ -216,10 +218,12 @@ tsdown 0.22.4 declares `^22.18.0 || >=24.11.0`.
 Re-verify that constraint at implementation time.
 
 `publishConfig`,
-provenance workflow,
 package contents,
 installation documentation,
-and end-user PATH verification remain implementation work.
+and end-user PATH verification remain active implementation work.
+Registry authentication,
+publish-workflow enablement,
+and the upload itself belong only to deferred issue #358.
 
 ### Management commands
 
@@ -624,6 +628,64 @@ Unless later grilling changes them:
   CI,
   and per-machine cleanup requirements pass.
 
+## GitHub implementation tracker
+
+The confirmed plan is recorded as dependency-linked GitHub issues.
+Active AFK implementation slices:
+
+- [#341](https://github.com/Aquaticat/Monochromatic/issues/341):
+  finalize the canonical decision and implementation contract.
+- [#342](https://github.com/Aquaticat/Monochromatic/issues/342):
+  build the cross-platform filesystem-ID prerequisite.
+- [#343](https://github.com/Aquaticat/Monochromatic/issues/343):
+  prepare the npm tarball boundary and side-effect-free public API without publishing.
+- [#344](https://github.com/Aquaticat/Monochromatic/issues/344):
+  run a built-in policy through the packaged JSONL engine;
+  existing #280 is an explicit blocker for valid Git-root detection.
+- [#345](https://github.com/Aquaticat/Monochromatic/issues/345):
+  trust and execute one stored MJS plugin snapshot.
+- [#346](https://github.com/Aquaticat/Monochromatic/issues/346):
+  add recursive snapshot trust and cascading revocation.
+- [#347](https://github.com/Aquaticat/Monochromatic/issues/347):
+  build and cache trusted TypeScript config.
+- [#348](https://github.com/Aquaticat/Monochromatic/issues/348):
+  migrate configurable command safeguards.
+- [#349](https://github.com/Aquaticat/Monochromatic/issues/349):
+  stage fixed command transforms.
+- [#350](https://github.com/Aquaticat/Monochromatic/issues/350):
+  gate post-commit auto-push through policy lifecycle.
+- [#351](https://github.com/Aquaticat/Monochromatic/issues/351):
+  deliver the first real private-index autofix transaction.
+- [#352](https://github.com/Aquaticat/Monochromatic/issues/352):
+  harden commit modes and interrupted-index recovery.
+- [#353](https://github.com/Aquaticat/Monochromatic/issues/353):
+  migrate forbidden-root-context as the first repo plugin.
+- [#354](https://github.com/Aquaticat/Monochromatic/issues/354):
+  migrate forbidden-strings across commit and push lifecycle.
+- [#355](https://github.com/Aquaticat/Monochromatic/issues/355):
+  migrate transactional final-newline normalization and direct check/fix.
+- [#356](https://github.com/Aquaticat/Monochromatic/issues/356):
+  close CI,
+  platform,
+  performance,
+  documentation,
+  and npm-pack readiness gaps without publishing.
+- [#357](https://github.com/Aquaticat/Monochromatic/issues/357):
+  retire hk and Pkl after every capstone gate passes.
+
+Deferred issue:
+
+- [#358](https://github.com/Aquaticat/Monochromatic/issues/358):
+  actually publish the npm package and verify the registry artifact.
+  It is recorded now,
+  labeled not-ready,
+  blocked by #356,
+  and deferred indefinitely pending an explicit maintainer resume decision.
+
+Existing #139 remains relevant to packaged CLI shebang behavior.
+Existing #143 and #160 are explicitly handled by the retirement slice rather than silently left as contradictory hk
+expansion work.
+
 ## Implementation sequence
 
 This is platform-first and checkpointed.
@@ -662,7 +724,7 @@ a later phase does not wait to record an earlier phase's work.
   unit tests,
   and a consuming import call pass.
 
-### Reshape and publish the cli-git package boundary
+### Reshape the npm-ready cli-git package boundary
 
 - Separate side-effectful bin startup from side-effect-free public API modules.
 - Export `defineConfig`,
@@ -670,8 +732,8 @@ a later phase does not wait to record an earlier phase's work.
   `definePolicy`,
   Valibot-backed helpers,
   and public types from `@monochromatic-dev/cli-git`.
-- Make the package public,
-  add npm provenance settings and publish-workflow coverage,
+- Make the package manifest npm-ready,
+  add publication metadata without enabling registry upload,
   and include only required build artifacts,
   source declarations,
   README,
@@ -683,6 +745,8 @@ a later phase does not wait to record an earlier phase's work.
   import the API,
   place the bin first on `PATH`,
   and run both wrapper and management commands.
+- Do not enable publish workflow or upload the package;
+  those actions belong only to indefinitely deferred issue #358.
 
 ### Implement the core policy engine and migrate current safeguards
 
@@ -779,7 +843,7 @@ a later phase does not wait to record an earlier phase's work.
   and partial-staging safety.
 - Preserve every source-decision exclusion and old hk trigger path in named parity fixtures.
 
-### Complete lifecycle, CI, performance, and publication verification
+### Complete lifecycle, CI, performance, and package-readiness verification
 
 - Implement direct `check`,
   `fix`,
@@ -804,6 +868,8 @@ a later phase does not wait to record an earlier phase's work.
   npm tarball install,
   and cross-platform trust verification.
 - Obtain independent standards and specification review before retirement.
+- Stop at verified npm tarball readiness;
+  actual registry publication remains outside the active sequence in #358.
 
 ### Retire hk and Pkl as the capstone
 
