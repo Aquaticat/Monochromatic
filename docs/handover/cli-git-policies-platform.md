@@ -3,9 +3,10 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issue #341 is complete and closed;
-Filesystem identity issue #342 is complete and closed.
-Package preparation and the Git-root blocker are the next unblocked implementation slices.
+Issues #341,
+#342,
+and #343 are complete and closed.
+The Git-root blocker #280 is the next unblocked implementation slice before engine issue #344.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -14,12 +15,15 @@ The implementation interface is
 This handover remains the current execution-state and evidence record.
 
 Concurrent worktree state:
-`pnpm-lock.yaml` became modified by external work after the handover commits began.
+`.pi/settings.json`,
+`.pi/teams/`,
+and `mise.lock` are unrelated external work.
 Do not edit,
 stage,
 stash,
 restore,
-or otherwise disturb it as part of this plan.
+or otherwise disturb them as part of this plan.
+Issue #343 legitimately regenerated `pnpm-lock.yaml` from the current workspace state when package dependencies changed.
 
 ## Original implementation objective
 
@@ -638,6 +642,52 @@ Unless later grilling changes them:
 
 ## Implementation checkpoints
 
+### Issue #343 package and authoring API
+
+- Split executable startup into `src/bin.ts` and made the package-root `src/index.ts` a side-effect-free authoring API.
+- Added identity-preserving `defineConfig`,
+  `definePlugin`,
+  `definePolicy`,
+  and `definePolicyOptions` helpers plus policy,
+  finding,
+  patch,
+  config,
+  trigger,
+  and lazy-context contracts.
+- Added exported `ABSENT_GIT_VALUE` unique symbol for domain absence without nullable unions.
+- Prepared public package metadata with Node `^22.18.0 || >=24.11.0`,
+  built declarations,
+  licenses,
+  side-effect metadata,
+  shadow `git` bin,
+  tsdown runtime,
+  TypeScript 7,
+  Valibot,
+  and Optique.
+- `pack:npm` works around pnpm issue #9566 with a command-local forced non-deduplicated install before `pnpm pack`.
+- The tarball has exactly eight expected files,
+  no `workspace:` or `catalog:` specs,
+  and no repository-only or sensitive content.
+- A disposable npm consumer imported the API without filesystem changes,
+  compiled valid config,
+  rejected unknown IDs and wrong options,
+  emitted and ran a self-contained tsdown config bundle,
+  resolved the packaged bin first on `PATH`,
+  and forwarded real Git 2.54.0.
+- Build,
+  type lint,
+  zero-warning Oxlint,
+  all package unit tests,
+  README lint,
+  final standalone install,
+  and independent review pass.
+- Commits `ae4c09853` and `58f1d7754` contain the implementation and contract evidence.
+  Commits `9ced4d01e`,
+  `e36b89d73`,
+  and `0108b0db2` preserve the tested but ineffective Valibot allow-list path and its removal.
+- Registry publication and workflow enablement were not performed;
+  deferred issue #358 remains untouched.
+
 ### Issue #342 filesystem identity
 
 - Added `@monochromatic-dev/module-fs-id` with source-qualified colon-free IDs,
@@ -700,8 +750,9 @@ Dependency-ordered implementation slices:
 - [#342](https://github.com/Aquaticat/Monochromatic/issues/342),
    completed:
   built and verified the cross-platform filesystem-ID prerequisite.
-- [#343](https://github.com/Aquaticat/Monochromatic/issues/343):
-  prepare the npm tarball boundary and side-effect-free public API without publishing.
+- [#343](https://github.com/Aquaticat/Monochromatic/issues/343),
+  completed:
+  prepared and externally verified the npm tarball boundary and side-effect-free public API without publishing.
 - [#344](https://github.com/Aquaticat/Monochromatic/issues/344):
   run a built-in policy through the packaged JSONL engine;
   existing #280 is an explicit blocker for valid Git-root detection.
