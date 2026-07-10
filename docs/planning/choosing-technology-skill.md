@@ -1364,7 +1364,8 @@ record:
 - final PASS or FAIL.
 
 Write the validation document and any durable scenario documentation directly in the main worktree.
-Embed simulated report and decision-record content in the validation document rather than creating fake production decisions.
+Embed simulated report and decision-record content in the validation document rather than creating fake
+production decisions.
 Use synthetic evidence rather than live vendors,
 registries,
 credentials,
