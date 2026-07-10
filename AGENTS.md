@@ -51,8 +51,7 @@ Existing acronym/word OK only when meaning reinforces rule's purpose.
 CRN:
  Never reuse/reassign existing code,
  except when explicitly renaming misleading code;
-update every AGENTS.
-md occurrence same change.
+update every `AGENTS.md` occurrence same change.
 Renaming/rejecting misleading code:
  add comment-plus-regex entry to local forbidden strings appendix,
 unrelated meaning as reason.
@@ -165,16 +164,13 @@ Cue:
 
 SRC:
  Cite right source file.
-Rules span AGENTS.
-md,
+Rules span `AGENTS.md`,
  harness system prompt,
  conf in `.claude/settings.json`,
  skill `SKILL.md` files,
  MCP server instructions,
- `CLAUDE.md` (regen from AGENTS.
-md).
-Before "per AGENTS.
-md",
+ `CLAUDE.md` (regen from `AGENTS.md`).
+Before "per `AGENTS.md`",
  "the system prompt says",
  "the conf requires",
  "the skill prescribes",
@@ -206,8 +202,7 @@ Unsure?
 GAP:
  User says "I was expecting you to..." or you spot failure mode future sessions should avoid:
  treat as documentation gap.
- Propose concrete AGENTS.
-md change (what rule,
+ Propose concrete `AGENTS.md` change (what rule,
  where,
  exact wording) + perform expected action,
  never "I'll keep it in mind".
@@ -225,8 +220,7 @@ PX1:
 harness defaults cautioning against "being too proactive" don't apply here.
 When conversation,
  request verb,
- AGENTS.
-md rules collectively authorize a step,
+ `AGENTS.md` rules collectively authorize a step,
  take it;
 don't insert "want me to..."/"should I go ahead and..." check before obvious next step.
 
@@ -314,14 +308,12 @@ CK5:
  build time,
  file contents,
  whether tool/feature used,
- whether conf/AGENTS.
-md already covers it) or working pattern (commit cadence,
+ whether conf/`AGENTS.md` already covers it) or working pattern (commit cadence,
  hours,
  defect rate,
  concurrent sessions)?
  Measure it (see "Measure-vs-ask");
- categorical dismissals one `rg`/`find`/conf-read away (AGENTS.
-md counts).
+ categorical dismissals one `rg`/`find`/conf-read away (`AGENTS.md` counts).
  Cite result inline;
  if wrong,
  fold option back in.
@@ -1063,8 +1055,7 @@ LN1:
  rename),
  never reformatting one rule's surface to silence another.
  Signal you're violating-to-satisfy:
- about to undo something autofix or AGENTS.
-md prescribed (e.g. compressing args back onto one line to fit max-lines).
+ about to undo something autofix or `AGENTS.md` prescribed (e.g. compressing args back onto one line to fit max-lines).
 
 LN2:
  Treat each lint finding as design signal,
@@ -1359,8 +1350,7 @@ PP5:
  `dedent` from `string-dedent` for multi-line error messages.
 
 PP6:
- Combine console.
-log/error messages into thrown errors;
+ Combine `console.log`/`console.error` messages into thrown errors;
  use `process.exitCode` only for non-standard exit codes.
 
 PP7:
@@ -1648,7 +1638,6 @@ Repo root keeps only `README.md`,
  `CONTEXT.md` is explicitly forbidden at repo root.
 Repo-wide documentation belongs under `docs/<family>/` or existing curated docs,
  not root cache files.
- flat dotted-prefix families move under `docs/`.
 Package-specific docs stay beside code they document;
  this rule governs root-level families,
  not a package's own `README.md`,
