@@ -4,7 +4,8 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #350 are complete and closed.
-Autofix transaction issue #351 is the next unblocked dependency-ordered slice.
+Autofix transaction issue #351 is in progress;
+commit `e19c7340a` exposes parsed explicit commit pathspecs for the private-index transaction seam.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
