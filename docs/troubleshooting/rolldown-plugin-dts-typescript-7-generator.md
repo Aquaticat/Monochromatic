@@ -1,4 +1,4 @@
-# rolldown-plugin-dts 0.27.2 with TypeScript 7.0.1-rc selects tsgo before inherited isolatedDeclarations, so a tsdown 0.22.4 cross-package bundle fails with missing declarations
+# rolldown-plugin-dts 0.27.2 selects tsgo under TypeScript 7 and misses cross-package declarations
 
 ## Symptom
 
@@ -345,19 +345,19 @@ Two related closed issues exist:
 Neither needs a new comment for this incident.
 Release 0.27.4 already contains the generator-selection mechanism needed by this repository.
 
-1. **Is it really upstream's fault?**
+1. **Upstream responsibility**
    Yes for 0.27.2.
    Its new default selected tsgo before reading inherited `isolatedDeclarations`,
    changing a previously passing supported configuration.
-2. **Can upstream fix it?**
+2. **Upstream ability to fix**
    Yes.
    Upstream added the generator selector in commit `4564ef53545456ce2a2e21029066db27ee99991a` and released it in 0.27.4.
-3. **Are they supporting this use case?**
+3. **Supported use case**
    Yes.
    The 0.27.4 README documents `generator: 'oxc'` and automatic Oxc selection for
    `isolatedDeclarations`.
-4. **Would the repository welcome our contribution?**
-   Yes in general,
+4. **Contribution policy**
+   The repository welcomes contributions in general,
    but no contribution remains necessary here.
    The repository has issues enabled,
    its organization contribution guide asks for minimal reproductions and Conventional Commits,
@@ -365,12 +365,12 @@ Release 0.27.4 already contains the generator-selection mechanism needed by this
    organization guide,
    issue workflow,
    or code-of-conduct text bans AI-assisted reports.
-5. **Will they likely fix it?**
+5. **Likelihood of a fix**
    Already satisfied.
    Releases 0.27.3 and 0.27.4 followed 0.27.2 on 2026-07-09,
    and 0.27.4 contains the verified solution.
-6. **Have we prototyped a minimal fix compatible with their architecture?**
-   Yes at the consumer boundary.
+6. **Compatible minimal prototype**
+   Verified at the consumer boundary.
    The released `generator: 'oxc'` path was integrated into both shared declaration-emitting presets,
    exercised through Node and neutral tsdown builds,
    type-checked,

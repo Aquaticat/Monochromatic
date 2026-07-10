@@ -20,7 +20,8 @@ and without making the generated oxlint configuration depend on untracked build 
 
 The implementation must preserve these existing behaviors:
 
-- `ensureOxlintConfig()` rebuilds the shared configuration when any bundled oxlint package source is newer than its outputs.
+- `ensureOxlintConfig()` rebuilds the shared configuration when any bundled oxlint package source is newer than its
+  outputs.
 - `packages/config/oxlint/dist/final/node/index.mjs` and its three plugin sidecars remain self-contained.
 - Source exports under each plugin package's `/ts` subpath remain usable for in-repository development.
 - Package builds and lint tasks continue to run through mise.
@@ -113,17 +114,20 @@ and upstream-filing decision are recorded in
 
 ## Hypothesis results
 
-1. **Confirmed:** rolldown-plugin-dts 0.27.2 chooses tsgo before reading inherited `isolatedDeclarations`.
+1. **Confirmed**
+   rolldown-plugin-dts 0.27.2 chooses tsgo before reading inherited `isolatedDeclarations`.
    Tsgo emits the package tsconfig project,
    while Rolldown later requests declarations for external workspace source modules included by the JavaScript bundle.
-2. **Rejected as a repair:** an aggregate declaration tsconfig would model Rolldown's dynamic bundle graph as a static
-   TypeScript project.
+2. **Rejected as a repair**
+   an aggregate declaration tsconfig would model Rolldown's dynamic bundle graph as a static TypeScript project.
    Upstream 0.27.4 instead restores the repository's per-module Oxc path without coupling config-oxlint to transitive
    source directories.
-3. **Rejected as a repair:** consuming prebuilt plugin declarations adds build-order and freshness dependencies that
-   the current source-driven sidecars intentionally avoid.
+3. **Rejected as a repair**
+   consuming prebuilt plugin declarations adds build-order and freshness dependencies that the current source-driven
+   sidecars intentionally avoid.
    The 0.27.4 Oxc path preserves source inlining and requires no plugin prebuild.
-4. **Disproved:** TypeScript 7 is not broadly incompatible with repository declaration settings.
+4. **Disproved**
+   TypeScript 7 is not broadly incompatible with repository declaration settings.
    Package-local 0.27.2 builds pass,
    and Node plus neutral builds pass under the explicit 0.27.4 Oxc generator.
 
