@@ -4,23 +4,39 @@
  * @module
  */
 
-/** Git-native push update plus destination used for authority query. */
+/**
+ * Git-native push update plus destination used for authority query.
+ */
 export type ProbedPushUpdate = Readonly<{
-  /** Local source ref expression reported by Git. */
+  /**
+   * Local source ref expression reported by Git.
+   */
   localRef: string;
-  /** Local object ID reported by Git. */
+  /**
+   * Local object ID reported by Git.
+   */
   localOid: string;
-  /** Destination remote location used by Git. */
+  /**
+   * Destination remote location used by Git.
+   */
   remoteLocation: string;
-  /** Destination name supplied to pre-push hook. */
+  /**
+   * Destination name supplied to pre-push hook.
+   */
   remoteName: string;
-  /** Advertised remote object ID reported by push negotiation. */
+  /**
+   * Advertised remote object ID reported by push negotiation.
+   */
   advertisedRemoteOid: string;
-  /** Fully qualified destination ref. */
+  /**
+   * Fully qualified destination ref.
+   */
   remoteRef: string;
 }>;
 
-/** Manual-push discovery failure. */
+/**
+ * Manual-push discovery failure.
+ */
 export class ManualPushProbeError extends Error {
   /**
    * Creates stable update-discovery failure.
@@ -47,6 +63,11 @@ export class ManualPushProbeError extends Error {
  * @param oid - object ID text
  *
  * @returns whether every character is zero
+ *
+ * @example
+ * ```ts
+ * isZeroOid('0000');
+ * ```
  */
 export function isZeroOid(oid: string,): boolean {
   if (oid.length === 0)

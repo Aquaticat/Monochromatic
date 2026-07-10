@@ -21,30 +21,59 @@ import {
   type ProbedPushUpdate,
 } from './manual-push-probe-types.ts';
 
-/** Maximum pre-push hook input accepted from one remote. */
-const MAX_HOOK_INPUT_BYTES = 16 * 1_024 * 1_024;
-/** Environment variable carrying private capture directory. */
+/**
+ * Binary kibibyte size.
+ */
+const KIBIBYTE = 1_024;
+/**
+ * Maximum pre-push hook input accepted from one remote.
+ */
+const MAX_HOOK_INPUT_BYTES = 16 * KIBIBYTE * KIBIBYTE;
+/**
+ * Number of fields in documented pre-push record.
+ */
+const PRE_PUSH_FIELD_COUNT = 4;
+/**
+ * Private executable hook mode.
+ */
+const PRIVATE_HOOK_MODE = 0o700;
+/**
+ * Environment variable carrying private capture directory.
+ */
 const CAPTURE_DIRECTORY_ENV = 'CLI_GIT_PUSH_FACTS_DIRECTORY';
-/** Sentinel representing successful probe command. */
-const PROBE_SUCCEEDED: unique symbol = Symbol('manual push probe succeeded',);
-
-/** Serialized capture emitted by private pre-push hook. */
+/**
+ * Serialized capture emitted by private pre-push hook.
+ */
 type HookCapture = Readonly<{
-  /** Raw pre-push stdin. */
+  /**
+   * Raw pre-push stdin.
+   */
   input: string;
-  /** Destination location argument. */
+  /**
+   * Destination location argument.
+   */
   remoteLocation: string;
-  /** Destination name argument. */
+  /**
+   * Destination name argument.
+   */
   remoteName: string;
 }>;
 
-/** Disposable private probe directory. */
+/**
+ * Disposable private probe directory.
+ */
 type ProbeDirectory = Readonly<{
-  /** Captured hook records directory. */
+  /**
+   * Captured hook records directory.
+   */
   captureDirectory: string;
-  /** Private hooks directory. */
+  /**
+   * Private hooks directory.
+   */
   hooksDirectory: string;
-  /** Removes complete probe state. */
+  /**
+   * Removes complete probe state.
+   */
   [Symbol.asyncDispose]: () => Promise<void>;
 }>;
 
@@ -54,12 +83,27 @@ type ProbeDirectory = Readonly<{
  * @returns initialized private probe scope
  */
 async function createProbeDirectory(): Promise<ProbeDirectory> {
-  /** Private root directory. */
-  const directory = await mkdtemp(join(tmpdir(), 'cli-git-push-facts-',),);
-  /** Hook path override directory. */
-  const hooksDirectory = join(directory, 'hooks',);
-  /** Per-remote hook capture directory. */
-  const captureDirectory = join(directory, 'captures',);
+  /**
+   * Private root directory.
+   */
+  const directory = await mkdtemp(join(
+    tmpdir(),
+    'cli-git-push-facts-',
+  ),);
+  /**
+   * Hook path override directory.
+   */
+  const hooksDirectory = join(
+    directory,
+    'hooks',
+  );
+  /**
+   * Per-remote hook capture directory.
+   */
+  const captureDirectory = join(
+    directory,
+    'captures',
+  );
   await Promise.all([
     mkdir(hooksDirectory,),
     mkdir(captureDirectory,),
@@ -68,7 +112,13 @@ async function createProbeDirectory(): Promise<ProbeDirectory> {
     hooksDirectory,
     captureDirectory,
     async [Symbol.asyncDispose](): Promise<void> {
-      await rm(directory, { recursive: true, force: true, },);
+      await rm(
+        directory,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
     },
   };
 }
@@ -89,22 +139,36 @@ function probeArgs({
   args: readonly string[];
   hooksDirectory: string;
 }>,): readonly string[] {
-  /** Parsed global command location. */
+  /**
+   * Parsed global command location.
+   */
   const layout = parseGlobalOptions(args,);
-  /** Arguments following push subcommand. */
+  /**
+   * Arguments following push subcommand.
+   */
   const postSubcommand = args.slice(layout.subcommandIndex + 1,);
-  /** User's explicit option terminator. */
+  /**
+   * User's explicit option terminator.
+   */
   const separatorIndex = postSubcommand.indexOf('--',);
-  /** Last option position that remains interpreted by Git. */
+  /**
+   * Last option position that remains interpreted by Git.
+   */
   const insertionIndex = separatorIndex === (-1)
     ? postSubcommand.length
     : separatorIndex;
   return [
-    ...args.slice(0, layout.subcommandIndex,),
+    ...args.slice(
+      0,
+      layout.subcommandIndex,
+    ),
     '-c',
     `core.hooksPath=${hooksDirectory}`,
     'push',
-    ...postSubcommand.slice(0, insertionIndex,),
+    ...postSubcommand.slice(
+      0,
+      insertionIndex,
+    ),
     '--dry-run',
     '--verify',
     ...postSubcommand.slice(insertionIndex,),
@@ -117,7 +181,10 @@ function probeArgs({
  * @returns complete CommonJS hook source
  */
 function hookSource(): string {
-  if (process.execPath.includes('\n',) || process.execPath.includes('\r',))
+  if (process.execPath
+    .includes('\n',)
+    || process.execPath
+    .includes('\r',))
     throw new ManualPushProbeError('Node executable path cannot be represented in hook shebang.',);
   return `#!${process.execPath}
 const { readFileSync, writeFileSync } = require('node:fs');
@@ -157,19 +224,25 @@ function isHookCapture(value: unknown,): value is HookCapture {
  * @returns updates reported by Git negotiation
  */
 function parseCapture(capture: HookCapture,): readonly ProbedPushUpdate[] {
-  return capture.input.split('\n',)
+  return capture.input
+    .split('\n',)
     .filter(function isRecord(line,) {
       return line.length > 0;
     },)
     .map(function parseRecord(line,): ProbedPushUpdate {
-      /** Space-delimited fields guaranteed by Git ref grammar. */
+      /**
+       * Space-delimited fields guaranteed by Git ref grammar.
+       */
       const parts = line.split(' ',);
-      if (parts.length !== 4)
+      if (parts.length !== PRE_PUSH_FIELD_COUNT)
         throw new ManualPushProbeError(`Malformed pre-push update record: ${line}`,);
-      /** Required fields in documented order. */
+      /**
+       * Required fields in documented order.
+       */
       const [localRef, localOid, remoteRef, advertisedRemoteOid,] = parts;
       if ((localRef === undefined) || (localOid === undefined)
-        || (remoteRef === undefined) || (advertisedRemoteOid === undefined))
+        || (remoteRef === undefined)
+        || (advertisedRemoteOid === undefined))
         throw new ManualPushProbeError(`Incomplete pre-push update record: ${line}`,);
       return {
         localRef,
@@ -197,7 +270,7 @@ async function runProbe({
   cwd: string;
   args: readonly string[];
   directory: ProbeDirectory;
-}>,): Promise<typeof PROBE_SUCCEEDED | unknown> {
+}>,): Promise<unknown> {
   try {
     await nanoSpawn(
       gitPath,
@@ -210,7 +283,7 @@ async function runProbe({
         env: { [CAPTURE_DIRECTORY_ENV]: directory.captureDirectory, },
       },
     );
-    return PROBE_SUCCEEDED;
+    return undefined;
   }
   catch (error: unknown) {
     return error;
@@ -233,7 +306,9 @@ async function readCapture({
   directory: string;
   path: string;
 }>,): Promise<HookCapture> {
-  /** Parsed untrusted capture JSON. */
+  /**
+   * Parsed untrusted capture JSON.
+   */
   const parsed: unknown = JSON.parse(await readFile(
     join(
       directory,
@@ -256,6 +331,11 @@ async function readCapture({
  * @param args - transformed push arguments
  *
  * @returns Git-negotiated push updates
+ *
+ * @example
+ * ```ts
+ * await captureProbedPushUpdates({ gitPath: '/usr/bin/git', cwd: '/repo', args: ['push', 'origin', 'main'] });
+ * ```
  */
 export async function captureProbedPushUpdates({
   gitPath,
@@ -266,9 +346,13 @@ export async function captureProbedPushUpdates({
   cwd: string;
   args: readonly string[];
 }>,): Promise<readonly ProbedPushUpdate[]> {
-  /** Disposable private hook scope. */
+  /**
+   * Disposable private hook scope.
+   */
   await using directory = await createProbeDirectory();
-  /** Executable private pre-push hook. */
+  /**
+   * Executable private pre-push hook.
+   */
   const hookPath = join(
     directory.hooksDirectory,
     'pre-push',
@@ -276,20 +360,24 @@ export async function captureProbedPushUpdates({
   await writeFile(
     hookPath,
     hookSource(),
-    { mode: 0o700, },
+    { mode: PRIVATE_HOOK_MODE, },
   );
   await chmod(
     hookPath,
-    0o700,
+    PRIVATE_HOOK_MODE,
   );
-  /** Probe result retained because Git may exit after hook still supplied facts. */
+  /**
+   * Probe result retained because Git may exit after hook still supplied facts.
+   */
   const probeResult = await runProbe({
     gitPath,
     cwd,
     args,
     directory,
   },);
-  /** Capture files emitted once per destination remote. */
+  /**
+   * Capture files emitted once per destination remote.
+   */
   const captureFiles = (await readdir(directory.captureDirectory,))
     .filter(function isCapture(path,) {
       return path.endsWith('.json',);
@@ -300,7 +388,9 @@ export async function captureProbedPushUpdates({
       { cause: probeResult, },
     );
   }
-  /** Validated per-remote captures. */
+  /**
+   * Validated per-remote captures.
+   */
   const captures = await Promise.all(captureFiles.map(function loadCapture(path,) {
     return readCapture({
       directory: directory.captureDirectory,

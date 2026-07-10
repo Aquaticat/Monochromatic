@@ -27,14 +27,22 @@ function parseRemoteRefs(output: string,): ReadonlyMap<string, string> {
     .filter(function isRecord(line,) {
       return line.length > 0;
     },)
-    .map(function parseRecord(line,): readonly [string, string] {
-      /** Tab separating object ID from fully qualified ref. */
+    .map(function parseRecord(line,): readonly [
+      string,
+      string
+    ] {
+      /**
+       * Tab separating object ID from fully qualified ref.
+       */
       const separator = line.indexOf('\t',);
       if (separator === (-1))
         throw new ManualPushProbeError(`Malformed ls-remote record: ${line}`,);
       return [
         line.slice(separator + 1,),
-        line.slice(0, separator,),
+        line.slice(
+          0,
+          separator,
+        ),
       ];
     },),);
 }
@@ -63,7 +71,9 @@ async function resolveRemoteGroup({
   remoteLocation: string;
   updates: readonly ProbedPushUpdate[];
 }>,): Promise<readonly PushUpdate[]> {
-  /** Authoritative remote reference query. */
+  /**
+   * Authoritative remote reference query.
+   */
   const result = await nanoSpawn(
     gitPath,
     [
@@ -76,12 +86,18 @@ async function resolveRemoteGroup({
     ],
     { cwd, },
   );
-  /** Authoritative remote references by fully qualified name. */
+  /**
+   * Authoritative remote references by fully qualified name.
+   */
   const remoteRefs = parseRemoteRefs(result.stdout,);
   return updates.map(function publicUpdate(update,): PushUpdate {
-    /** Authoritative destination value after dry-run negotiation. */
+    /**
+     * Authoritative destination value after dry-run negotiation.
+     */
     const authoritativeOid = remoteRefs.get(update.remoteRef,);
-    /** Whether push negotiation observed destination absence. */
+    /**
+     * Whether push negotiation observed destination absence.
+     */
     const advertisedAbsent = isZeroOid(update.advertisedRemoteOid,);
     if ((authoritativeOid === undefined) !== advertisedAbsent)
       throw new ManualPushProbeError(`Remote ref changed during manual-push discovery: ${update.remoteRef}`,);
@@ -116,11 +132,18 @@ async function resolveRemoteOids({
   cwd: string;
   updates: readonly ProbedPushUpdate[];
 }>,): Promise<readonly PushUpdate[]> {
-  /** Updates grouped by exact destination location. */
-  const byLocation = Map.groupBy(updates, function remoteLocation(update,) {
+  /**
+   * Updates grouped by exact destination location.
+   */
+  const byLocation = Map.groupBy(
+    updates,
+    function remoteLocation(update,) {
     return update.remoteLocation;
-  },);
-  /** Concurrent authority queries, one per destination. */
+  },
+  );
+  /**
+   * Concurrent authority queries, one per destination.
+   */
   const resolvedGroups = await Promise.all([...byLocation.entries(),]
     .map(function resolveLocation([remoteLocation, locationUpdates,],) {
       return resolveRemoteGroup({
@@ -158,7 +181,9 @@ export async function probeManualPushUpdates({
   cwd: string;
   args: readonly string[];
 }>,): Promise<readonly PushUpdate[]> {
-  /** Git-resolved mappings from private dry-run hook. */
+  /**
+   * Git-resolved mappings from private dry-run hook.
+   */
   const updates = await captureProbedPushUpdates({
     gitPath,
     cwd,
