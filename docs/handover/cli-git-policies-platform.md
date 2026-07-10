@@ -3,8 +3,11 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #351 are complete and closed.
-Repository-plugin migration issue #353 is the active dependency-ordered slice.
+Issues #280 and #341 through #352 are complete and closed.
+Repository-plugin migration issue #353 has an implementation checkpoint but remains open pending packed verification and
+closure review.
+The Pi synchronous Bash result-loss investigation in `docs/handover/pi-bash-result-loss.md` now has higher priority;
+resume issue #353 only after that investigation's todos are complete.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1388,6 +1391,48 @@ Unless later grilling changes them:
   and packed shadow-bin runs through final `proc_6` pass;
   the independent closure review found no remaining blocker after standard-input and filesystem-error evidence landed.
 - Actual npm publication remains deferred in #358.
+- Issue #352 closed on 2026-07-10 after checkpoint `9d1447d29` completed the documentation contract and the independent
+  closure audit found no blockers.
+
+### Issue #353 repository policy plugin checkpoint
+
+- Added private package `@monochromatic-dev/git-policy-repository` so repository policy code remains outside cli-git
+  core.
+- Added root `cli-git.config.ts` registering `repositoryPolicyPlugin` under consumer-chosen namespace `mono` with
+  `mono/forbidden-root-context` active at its declared error default.
+- The policy is warning-safe and matches only a non-deleted root `CONTEXT.md` candidate during `pre-forward` and
+  `direct-check`.
+- Added private-index add candidate derivation and unchanged-inclusive direct-check pathspec projection.
+  Wrapper-only escape controls are removed before private Git runs,
+  and candidate resources remain alive until lazy policy evaluation settles.
+- Direct checks now derive exact worktree/index state for explicit Git pathspecs or `--all` and retain stdout JSONL;
+  wrapper findings retain stderr JSONL.
+- Added packed fixture coverage for root versus nested paths,
+  pathspec-separator escape-looking tokens,
+  add and commit blocking,
+  direct checks,
+  error,
+  warn,
+  off,
+  lifecycle escape,
+  changed strict trust,
+  and state preservation.
+- Commit `66bcce672` contains the implementation checkpoint.
+  Commit `504e7b499` adds generated package license texts.
+- Package format,
+  type checks,
+  unit tests,
+  and build pass.
+  The full cli-git unit suite also passed through the process tool both sequentially and with its normal parallelism.
+- Two synchronous Pi Bash attempts to run the same cli-git unit task lost their tool results and led to Pi restarts.
+  That incident is now higher priority and is tracked in `docs/handover/pi-bash-result-loss.md`.
+- Remaining issue #353 gates are packed npm-tarball/shadow-bin verification,
+  final documentation,
+  independent acceptance review,
+  push confirmation,
+  and explicit issue closure.
+- Issues #354 through #357 remain dependency-ordered behind #353.
+  Npm publication remains indefinitely deferred in #358.
 
 ### Issue #342 filesystem identity
 
