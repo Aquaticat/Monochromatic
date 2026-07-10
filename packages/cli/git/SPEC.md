@@ -19,6 +19,7 @@ The package has these external seams:
 
 - the shadowing `git` executable;
 - the side-effect-free authoring exports from `@monochromatic-dev/cli-git`;
+- side-effect-free optional policy exports from `@monochromatic-dev/cli-git/policies/*`;
 - repository-root config artifacts;
 - JSONL policy events;
 - the per-account exact-snapshot trust registry.
@@ -32,11 +33,32 @@ and prompts.
 Production adapters own operating-system effects.
 Disposable tests replace those adapters without production environment overrides.
 
-Importing the authoring exports must not inspect process arguments,
+Importing authoring or optional-policy exports must not inspect process arguments,
 read files,
 resolve Git,
+resolve external scanner executables,
 write output,
+register a policy,
 or start the executable.
+
+## Shipped optional policies
+
+Repo-owned policy implementations remain in separate workspace source packages for ownership and focused tests.
+The public cli-git package bundles them into self-contained `./policies/<name>` subpaths.
+No private workspace policy package may remain as a runtime or declaration dependency of the packed artifact.
+
+Importing an optional policy returns its plugin definition only.
+It never changes the built-in registry or enabled policy set.
+A consumer enables it by registering the plugin under a chosen namespace in trusted config.
+A no-config invocation therefore retains built-ins only.
+
+The shipped optional policies are:
+
+- `@monochromatic-dev/cli-git/policies/repository`;
+- `@monochromatic-dev/cli-git/policies/forbidden-strings` after issue #354 lands.
+
+The forbidden-strings policy bundles its Node adapter but not the Rust scanner binary.
+Scanner lookup defaults to `forbidden-strings` on `PATH` only when the enabled policy executes.
 
 ## Public authoring declarations
 

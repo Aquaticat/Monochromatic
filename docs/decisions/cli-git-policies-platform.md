@@ -241,6 +241,13 @@ missing object IDs,
 and command forms without a subcommand.
 This represents domain absence without nullable unions and is never serialized to JSONL.
 
+Repo-owned policies retain separate workspace source packages but ship as side-effect-free
+`@monochromatic-dev/cli-git/policies/*` subpaths.
+Importing a shipped policy does not register or enable it;
+consumer config must register the plugin under a chosen namespace.
+The public tarball contains every runtime needed by those policy subpaths except explicitly documented external
+executables such as the `forbidden-strings` scanner.
+
 Third-party plugins peer-depend on a compatible cli-git package version.
 Private workspace runtime helpers are bundled into the Node artifact rather than left as unresolved registry
 requirements.

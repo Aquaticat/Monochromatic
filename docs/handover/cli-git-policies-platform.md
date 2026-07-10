@@ -1465,8 +1465,13 @@ Unless later grilling changes them:
 
 ### Issue #354 forbidden-strings policy decisions
 
-- The policy lives in a separate private package under `packages/git-policies/forbidden-strings/`.
+- The policy implementation lives in a separate private source package under
+  `packages/git-policies/forbidden-strings/`.
   It does not broaden `@monochromatic-dev/git-policy-repository`.
+- Repo-owned policy source packages are bundled into the public cli-git tarball as
+  `@monochromatic-dev/cli-git/policies/*` subpaths.
+  Importing them is side-effect free and does not enable them;
+  trusted consumer config must register each plugin explicitly.
 - Scanner resolution defaults to the `forbidden-strings` executable on `PATH`.
   Policy options may override the executable path;
   invocation always uses an argument array without shell interpolation.
