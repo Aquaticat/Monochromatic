@@ -13,8 +13,9 @@ Found 1 violation:
 ```
 
 This is not a signing failure.
-All 69 unique commits created on 2026-07-09 and reachable through repository refs or reflogs contain an SSH
-`gpgsig` header.
+The initial diagnostic scan found 69 unique commits created on 2026-07-09 and reachable through the pre-diagnosis
+repository refs or reflogs.
+Every one contains an SSH `gpgsig` header.
 The affected commits are signed,
  but GitHub cannot associate their committer email with a user.
 
@@ -215,7 +216,7 @@ The immediately preceding `an@aquati.cat` commit verifies as `valid` with the sa
    `c16e52451097299b02ca1e7b62d4a2ce5f2a90da` at 17:48:21 EDT.
 - Affected commits currently reachable through refs or reflogs:
    36.
-- Unique commits created since local midnight:
+- Initial pre-diagnosis snapshot at main `797061b59`:
    69 signed,
    0 unsigned.
 
@@ -236,12 +237,15 @@ done < <(git log --all --reflog --since=midnight --format='%H' | sort --unique)
 printf 'signature_present=%s\nsignature_absent=%s\n' "$present" "$absent"
 ```
 
-Observed output:
+Observed output before this documentation branch added further signed commits:
 
 ```text
 signature_present=69
 signature_absent=0
 ```
+
+The absolute present count increases as new signed commits are created;
+the invariant under test is zero absent signatures.
 
 ### Automatic-signing harness
 
