@@ -21,6 +21,7 @@ import type {
   GitObjectId,
   PolicyPatch,
 } from '../api/policy-types.ts';
+import { validatePolicyPatch, } from './commit-transaction-patch.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
@@ -381,20 +382,7 @@ export async function applyPrivatePatch({
   patch: PolicyPatch;
   ordinal: number;
 }>,): Promise<void> {
-  /**
-   * Required single-path patch header.
-   */
-  const requiredHeader = `diff --git a/${patch.path} b/${patch.path}`;
-  /**
-   * Decoded patch for structural boundary validation.
-   */
-  const decoded = DECODER.decode(patch.bytes,);
-  if ((!decoded.startsWith(`${requiredHeader}\n`,))
-    || decoded.includes(
-      '\ndiff --git ',
-      requiredHeader.length,
-    ))
-    throw new CommitTransactionGitError(`Patch must contain exactly declared path ${patch.path}`,);
+  validatePolicyPatch(patch,);
   /**
    * Private patch file.
    */

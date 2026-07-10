@@ -22,6 +22,7 @@ import {
   SHORT_ALIASES,
 } from './commit-flag-aliases.ts';
 import {
+  extractCommitPathspecs,
   hasCommitPathspec,
   normaliseCommitArgs,
 } from './commit-normalise.ts';
@@ -333,10 +334,7 @@ export function parseCommitRegion(
     hasEscapeHatch: value.escape
       .length
       > 0,
-    pathspecs: [
-      ...value.positionals,
-      ...(separatorIndex === (-1) ? [] : normalised.slice(separatorIndex + 1,)),
-    ],
+    pathspecs: extractCommitPathspecs(normalised,),
   };
 }
 

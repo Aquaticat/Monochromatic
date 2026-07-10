@@ -192,20 +192,6 @@ export function normaliseCommitArgs(args: readonly string[],): readonly string[]
 //region Commit pathspec scanning
 
 /**
- * Options for scanning a commit option region for positional pathspecs.
- */
-type ScanPathspecOptions = {
-  /**
-   * Normalised argv tokens before any pathspec separator.
-   */
-  readonly args: readonly string[];
-  /**
-   * Current scan position.
-   */
-  readonly index: number;
-};
-
-/**
  * Identifies tokens Git will parse as options in the pre-`--` region.
  * A lone `-` is a valid pathspec, so it is not option-like.
  *
@@ -225,54 +211,6 @@ function isOptionLikeToken(arg: string,): boolean {
 }
 
 /**
- * Recursively scans the option region for the first token Git would treat as
- * a positional pathspec. Known separated-value options skip their value slot;
- * every other token classified by {@link isOptionLikeToken} as option-like is
- * no-value for scanner purposes so no-value flags such as `-q` and
- * `--dry-run` cannot swallow the following pathspec.
- *
- * @param args - Normalised argv tokens before any pathspec separator.
- *
- * @param index - Cursor position to inspect.
- *
- * @returns `true` when a positional pathspec appears before `--`.
- *
- * @example
- * ```ts
- * scanOptionRegionForPathspec({ args: ['-q', 'file.ts'], index: 0 });
- * // => true
- * ```
- */
-function scanOptionRegionForPathspec({
-  args,
-  index,
-}: ScanPathspecOptions,): boolean {
-  /**
-   * Current argv token under the scanner cursor.
-   */
-  const arg = args[index];
-
-  if (arg === undefined)
-    return false;
-
-  if (SEPARATED_VALUE_OPTIONS.has(arg,)) {
-    return scanOptionRegionForPathspec({
-      args,
-      index: index + 2,
-    },);
-  }
-
-  if (isOptionLikeToken(arg,)) {
-    return scanOptionRegionForPathspec({
-      args,
-      index: index + 1,
-    },);
-  }
-
-  return true;
-}
-
-/**
  * Detects whether normalised commit argv supplies at least one pathspec.
  * Tokens after {@link PATHSPEC_SEPARATOR} are pathspecs by definition; tokens
  * before it are scanned by {@link scanOptionRegionForPathspec} with commit
@@ -289,20 +227,62 @@ function scanOptionRegionForPathspec({
  * ```
  */
 export function hasCommitPathspec(normalised: readonly string[],): boolean {
+  return extractCommitPathspecs(normalised,)
+    .length
+    > 0;
+}
+
+/**
+ * Extracts every positional pathspec with commit option arity.
+ *
+ * @param normalised - normalized post-commit arguments
+ *
+ * @returns exact positional pathspec tokens
+ *
+ * @example
+ * ```ts
+ * extractCommitPathspecs(['-m', 'message', 'file.ts']);
+ * // => ['file.ts']
+ * ```
+ */
+export function extractCommitPathspecs(normalised: readonly string[],): readonly string[] {
   /**
-   * Position of pathspec separator after normalisation.
+   * Position of explicit pathspec separator.
    */
   const separatorIndex = normalised.indexOf(PATHSPEC_SEPARATOR,);
-
-  if (separatorIndex !== (-1))
-    return normalised
-      .length
-      > (separatorIndex + 1);
-
-  return scanOptionRegionForPathspec({
-    args: normalised,
-    index: 0,
-  },);
+  /**
+   * Option-scanned region before separator.
+   */
+  const optionRegion = separatorIndex === (-1)
+    ? normalised
+    : normalised.slice(
+      0,
+      separatorIndex,
+    );
+  /**
+   * Pathspecs discovered before explicit separator.
+   */
+  const pathspecs: string[] = [];
+  for (let index = 0; index < optionRegion.length; index += 1) {
+    /**
+     * Current normalized option-region token.
+     */
+    const token = optionRegion[index];
+    if (token === undefined)
+      continue;
+    if (SEPARATED_VALUE_OPTIONS.has(token,)) {
+      index += 1;
+      continue;
+    }
+    if (!isOptionLikeToken(token,))
+      pathspecs.push(token,);
+  }
+  return separatorIndex === (-1)
+    ? pathspecs
+    : [
+      ...pathspecs,
+      ...normalised.slice(separatorIndex + 1,),
+    ];
 }
 
 //endregion Commit pathspec scanning

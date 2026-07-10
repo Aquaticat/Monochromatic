@@ -172,6 +172,24 @@ await describe({
       },
     },),
     it({
+      name: 'extracts pathspecs without wrapper flags or option values',
+      fn: async function testPathspecExtraction(): Promise<void> {
+        expect(parseCommitRegion([
+          '--no-enforce-fixture/policy',
+          '--author',
+          'Author <author@example.invalid>',
+          '-m',
+          'message',
+          'first.txt',
+          '--',
+          '--dash-path',
+        ],).pathspecs,).toEqual([
+          'first.txt',
+          '--dash-path',
+        ],);
+      },
+    },),
+    it({
       name: 'reports no include flag for plain commits',
       fn: async function testNoIncludeFlag(): Promise<void> {
         expect(parseCommitRegion([
