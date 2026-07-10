@@ -10,6 +10,8 @@ Evaluate open-source Pi extensions and a minimal custom design for subagent orch
 - Require a read-only subagent option; write access may exist when the extension communicates capabilities clearly.
 - Include a minimal custom extension only as a fallback comparison after surveying existing options.
 - Target the installed Pi and Node workflow.
+- Require a user-facing UI that exposes the complete observable child activity: prompts, progress, tool calls, outputs, status, and errors. Hidden model reasoning is outside the observable requirement.
+- Require user interruption of any running subagent from that UI, including parallel and background children.
 - Treat this as an agent/plugin trust-boundary review. Inspect source, tests, CI, dependencies, maintenance, and integration behavior before recommending anything.
 
 ## Current findings
@@ -18,11 +20,12 @@ Evaluate open-source Pi extensions and a minimal custom design for subagent orch
 - Shell-visible user and project agent directories did not explain that registry, so the registry source remains an open investigation item.
 - A read-write probe succeeded: `/tmp/agent/hello.txt` contains `Hello`.
 - All six registered names accepted read-only diagnostic probes.
+- A broad delegated source-audit attempt timed out for every shard at 180 seconds without producing usable final reports; continue with narrower bounded probes and direct source reads.
 
 ## Investigation state
 
 - Context fork: complete.
-- Candidate inventory: pending.
+- Candidate inventory: in progress. UI observability and interruption are hard filters.
 - Source and maintenance audit: pending.
 - Integration validation: pending.
 - Recommendation: pending.
