@@ -2,8 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 through 5 are resolved;
-scoring method and full-validation scope remain open.
+Decisions 1 through 6 are resolved;
+full-validation scope remains open.
 No skill changes are authorized by this plan.
 The plan will be updated after each resolved planning decision.
 
@@ -227,7 +227,8 @@ Each decision-relevant claim should record:
   not-applicable,
   low-signal,
   or scored-concern status;
-- score effect for every relevance-gated concern.
+- score effect for every relevance-gated concern;
+- rating confidence and sensitivity range when evidence is low-signal.
 
 Critical evidence does not receive a neutral unknown state.
 An uninspectable high-trust plugin,
@@ -351,6 +352,50 @@ The entry section should define:
 - output contract;
 - completion checklist keyed to named gates.
 
+### Weighted scoring contract
+
+Apply weighted points to every relevance-gated concern for SaaS and technology candidates.
+Hard gates remain outside the score and cannot be compensated.
+
+Before scoring candidates:
+
+- derive criterion weights from known requirements and resolved user preferences;
+- publish and freeze the criteria,
+  applicability rules,
+  and weights before reading candidate-specific soft-risk results;
+- use a weight from 1 to 5,
+  where 1 is marginally relevant and 5 is decisive if it were not already a hard gate;
+- remove duplicate criteria and assign overlapping evidence to one primary criterion.
+
+For each applicable criterion:
+
+- rate the candidate from 0 to 4,
+  where 0 is a serious concern,
+  1 is weak,
+  2 is acceptable,
+  3 is good,
+  and 4 is strong;
+- cite the evidence supporting the rating;
+- state confidence as high,
+  medium,
+  or low;
+- treat genuinely inapplicable criteria as not applicable rather than giving free points;
+- treat a low-signal source as a confidence limitation,
+  then score from other relevant evidence or carry a sensitivity range rather than inventing facts.
+
+Calculate the normalized score as earned weighted points divided by maximum applicable weighted points,
+then multiply by 100.
+Publish the full breakdown,
+not only the total.
+
+Run a sensitivity check when finalists are close or any influential rating has low confidence.
+If moving one low-confidence rating or weight by one step changes the winner,
+report the ranking as unstable and either gather decisive evidence or ask the unresolved preference.
+A numeric score never replaces candidate pros,
+cons,
+evidence limits,
+or the required reason for each adjacent ranking.
+
 ### Shared workflow
 
 Use this sequence:
@@ -369,7 +414,9 @@ Use this sequence:
 10. Source-audit and validate finalists at the consumer boundary.
 11. Compare finalists with pros,
     cons,
-    unknowns,
+    evidence limits,
+    weighted score breakdowns,
+    sensitivity results,
     and a complete ranking.
 12. Write or update the automatic vet report when the substantial-evaluation threshold is crossed.
 13. Recommend without changing product code,
@@ -442,8 +489,9 @@ validation depth should follow candidate state and risk:
 - high-trust finalist:
   finalist checks plus human-auditability and concentrated security-boundary review.
 
-A skipped relevant check remains visible as blocked or unknown.
-It never silently becomes a pass.
+A skipped critical check is a failed gate.
+A soft criterion with sparse evidence remains low-signal with an explicit confidence range.
+Neither silently becomes a pass.
 
 ## Implementation plan
 
@@ -451,8 +499,6 @@ It never silently becomes a pass.
 
 Use grill-me to settle:
 
-- exhaustive-by-relevance versus always-exhaustive or user-budgeted depth;
-- scoring method for relevance-gated concerns;
 - exact definition of full relevant validation.
 
 Update this plan after each answer.
@@ -466,12 +512,18 @@ Do not edit the skill during grilling.
 - Replace `skip none` with `skip no applicable gate`.
 - Define hard failure,
   weighted risk,
-  unknown,
+  low-signal,
   and not-applicable outcomes.
 - Define promotion and stopping rules.
 
 ### Phase 3: make evidence and safety executable
 
+- Add the weighted scoring contract with precommitted context-derived weights,
+  0-to-4 evidence ratings,
+  confidence labels,
+  normalized totals,
+  and sensitivity checks.
+- Keep every hard gate outside the score so points cannot compensate for failure.
 - Add source hierarchy and claim-record requirements.
 - Retain the current 24-month layoffs and 12-month outage windows.
 - Add direct vendor risks:
@@ -516,7 +568,13 @@ Do not edit the skill during grilling.
   evidence limits,
   score breakdown,
   and fully sorted ranking for live options.
-- Require every scored concern to show why it is relevant and how it changed the ordering.
+- Require every scored concern to show why it is relevant,
+  its weight,
+  rating,
+  evidence,
+  confidence,
+  and how it changed the ordering.
+- Require sensitivity analysis when a one-step change to an influential low-confidence input could change the winner.
 - Replace the dated SaaS example with an evidence-complete synthetic example or canonical repository artifact.
 - Key the final checklist to named workflow gates.
 - Require generated audit artifacts to record the skill revision.
@@ -561,10 +619,11 @@ verify:
 - no irrelevant exhaustive work is required;
 - unavailable critical evidence causes a recorded exit;
 - absent soft tracker evidence remains low-signal and relevance-gated;
+- score breakdowns use precommitted weights and reproducible arithmetic;
+- sensitivity checks expose unstable rankings;
 - alternatives receive pros,
   cons,
-  score breakdowns,
-  and complete ranking;
+  and complete rankings with adjacent-order reasons;
 - recommendation writes only the required vet report and does not mutate product,
   dependency,
   configuration,
@@ -593,7 +652,9 @@ The improvement is complete only when:
   and high-trust cases activate the correct gates;
 - candidate promotion and stopping rules prevent both shallow anchoring and unbounded audits;
 - every executed third-party command has a reviewed manifest and disposable boundary;
-- every recommendation separates non-compensable gates from relevance-gated scores and contains evidence status,
+- every recommendation separates non-compensable gates from relevance-gated scores,
+  publishes frozen weights and arithmetic,
+  and contains evidence status,
   pros,
   cons,
   evidence limits,
@@ -895,11 +956,63 @@ Direct-risks-only beats six mandatory gates because direct contractual and opera
 
 ### Decision 6: scoring method
 
-Open after Decision 5.
-Choose whether relevance-gated concerns use an explicit weighted numeric rubric,
-an ordinal risk rubric,
-or narrative pairwise comparison.
-Hard-gate failures cannot be offset by any score.
+Decision:
+use explicit weighted points for every relevance-gated concern.
+The user selected this on 2026-07-09.
+
+The scoring contract is:
+
+- hard gates are pass or fail and stay outside arithmetic;
+- criteria and 1-to-5 weights come from context and resolved preferences;
+- criteria,
+  applicability,
+  and weights freeze before candidate-specific soft-risk results are scored;
+- each applicable candidate criterion receives a cited 0-to-4 rating;
+- every rating records high,
+  medium,
+  or low confidence;
+- normalized score equals earned weighted points divided by maximum applicable weighted points,
+  multiplied by 100;
+- full calculations are published;
+- low-signal evidence uses a sensitivity range rather than invented certainty;
+- overlapping evidence is counted once;
+- a sensitivity check moves influential low-confidence ratings or weights by one step;
+- if that change flips the winner,
+  ranking is unstable and requires decisive evidence or a user preference;
+- score never replaces pros,
+  cons,
+  evidence limits,
+  or adjacent-ranking reasons.
+
+Pros:
+
+- implements an explicit lower-score,
+lower-rank policy;
+- exposes weights instead of hiding them in prose;
+- freezing weights before candidate ratings reduces winner-driven criteria changes;
+- normalized totals keep not-applicable criteria from granting free points;
+- sensitivity checks expose false precision.
+
+Cons:
+
+- numbers can imply more certainty than the evidence supports;
+- weight selection remains a judgment even when published;
+- criterion overlap requires active deduplication;
+- close totals need narrative judgment and may require another user decision.
+
+Rejected alternative:
+ordinal risk bands.
+They reduce false precision,
+but need extra aggregation and tie rules and do not implement a direct score as clearly.
+
+Rejected alternative:
+narrative pairwise comparison.
+It preserves nuance,
+but permits hidden weighting and does not produce the requested lower score.
+
+Ranking:
+weighted points beat ordinal bands because transparent precommitted weights and sensitivity checks make arithmetic inspectable.
+Ordinal bands beat narrative-only comparison because they still constrain how evidence maps to risk.
 
 ### Decision 7: full relevant validation
 
