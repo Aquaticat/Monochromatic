@@ -220,8 +220,21 @@ function scanMixedCommand({
       continue;
     }
     if (token.startsWith('--',)) {
-      state.listing ||= listFlags.has(token,);
-      state.mutating ||= mutatingLongFlags.has(token,);
+      /**
+       * Long option name without optional inline assignment.
+       */
+      const assignmentIndex = token.indexOf('=',);
+      /**
+       * Exact long flag used for classification.
+       */
+      const optionName = assignmentIndex === (-1)
+        ? token
+        : token.slice(
+          0,
+          assignmentIndex,
+        );
+      state.listing ||= listFlags.has(optionName,);
+      state.mutating ||= mutatingLongFlags.has(optionName,);
       continue;
     }
     if (token.startsWith('-',) && (token !== '-')) {

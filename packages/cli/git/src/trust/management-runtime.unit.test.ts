@@ -1,6 +1,7 @@
 import {
   mkdir,
   mkdtemp,
+  realpath,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -59,7 +60,9 @@ type ManagementFixture = Readonly<{
  */
 async function createFixture(): Promise<ManagementFixture> {
   /** Disposable fixture root. */
-  const root = await mkdtemp(join(tmpdir(), 'cli-git-management-',),);
+  const root = await realpath(
+    await mkdtemp(join(tmpdir(), 'cli-git-management-',),),
+  );
   /** Repository root. */
   const repository = join(root, 'repo',);
   /** Private registry root. */

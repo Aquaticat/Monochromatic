@@ -109,6 +109,14 @@ export type TrustCandidate = Readonly<{
    * Decimal nanosecond modification time.
    */
   mtimeNanoseconds: string;
+  /**
+   * Whether filesystem identity survives host reboot.
+   */
+  filesystemStable: boolean;
+  /**
+   * Why only runtime-lifetime identity was available.
+   */
+  filesystemStabilityReason?: string;
 }>;
 /**
  * Loaded trusted configuration ready for policy execution.

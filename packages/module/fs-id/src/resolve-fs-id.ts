@@ -262,11 +262,25 @@ export function createFsIdResolver({
 const defaultResolver = createFsIdResolver({ adapters: productionAdapters, },);
 
 /**
+ * Production resolver that leaves degraded reporting to its caller.
+ */
+const callerReportedResolver = createFsIdResolver({
+  adapters: {
+    ...productionAdapters,
+    warn: function deferDegradedWarning(input,): void {
+      void input;
+    },
+  },
+},);
+
+/**
  * Resolves filesystem identity for existing path on current host.
  *
  * @param path - Existing path whose containing filesystem is identified
  *
- * @returns Stable preferred or warned degraded identity
+ * @param emitDegradedWarning - whether module logger reports runtime-only fallback
+ *
+ * @returns Stable preferred or explicitly caller-reported degraded identity
  *
  * @throws when host has no strategy or no identity mechanism succeeds
  *
@@ -277,8 +291,12 @@ const defaultResolver = createFsIdResolver({ adapters: productionAdapters, },);
  */
 export function resolveFsId({
   path,
+  emitDegradedWarning = true,
 }: {
   readonly path: string;
+  readonly emitDegradedWarning?: boolean;
 }): Promise<FsIdResolution> {
-  return defaultResolver({ path, },);
+  return emitDegradedWarning
+    ? defaultResolver({ path, },)
+    : callerReportedResolver({ path, },);
 }

@@ -13,6 +13,7 @@ import {
   assertRecordDirectoryIdentity,
   validateSnapshotRelativePath,
 } from './registry-path.ts';
+import { assertPrivatePathProtection, } from './registry-io.ts';
 import type {
   TrustIdentity,
   TrustRecord,
@@ -215,6 +216,7 @@ function assertPrivateMode({
  * ```
  */
 export async function readPrivateFile(path: string,): Promise<Uint8Array> {
+  await assertPrivatePathProtection({ path, },);
   /**
    * No-follow handle for exact private file.
    */
@@ -262,6 +264,10 @@ export async function readRecord({
   registryRoot: string;
   directory: string;
 }>,): Promise<TrustRecord> {
+  /**
+   * Final record directory metadata.
+   */
+  await assertPrivatePathProtection({ path: directory, },);
   /**
    * Final record directory metadata.
    */

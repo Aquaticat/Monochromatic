@@ -159,6 +159,9 @@ function rootDisclosure({
     'Format: mjs',
     `Filesystem identity: ${candidate.identity
       .filesystemId}`,
+    `Filesystem identity stability: ${candidate.filesystemStable
+      ? 'stable across reboot'
+      : `runtime-only (${candidate.filesystemStabilityReason ?? 'stable identity unavailable'})`}`,
     `Exact snapshot state: ${state}`,
     `Exact snapshot bytes: ${candidate.size}`,
     `Static Node built-ins: ${builtins}`,

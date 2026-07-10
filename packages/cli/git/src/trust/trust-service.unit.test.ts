@@ -4,6 +4,7 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  realpath,
   rename,
   rm,
   symlink,
@@ -75,7 +76,9 @@ type TrustFixture = Readonly<{
  */
 async function createTrustFixture(source: string = VALID_CONFIG,): Promise<TrustFixture> {
   /** Disposable fixture root. */
-  const root = await mkdtemp(join(tmpdir(), 'cli-git-trust-',),);
+  const root = await realpath(
+    await mkdtemp(join(tmpdir(), 'cli-git-trust-',),),
+  );
   /** Disposable repository root. */
   const repository = join(root, 'repo',);
   /** Private injected registry root. */
@@ -369,6 +372,35 @@ await describe({
         expect(await inspectTrust({ discovered, registryRoot: fixture.registryRoot, },),).toMatchObject({ reason: 'untrusted', },);
         await trustMjs({ discovered, registryRoot: fixture.registryRoot, yes: true, adapters: trustAdapters([],), },);
         expect(await inspectTrust({ discovered, registryRoot: fixture.registryRoot, },),).toMatchObject({ reason: 'trusted', },);
+      },
+    },),
+    it({
+      name: 'rejects registry paths with symlinked ancestors',
+      fn: async function testRegistryAncestorSymlink() {
+        await using fixture = await createTrustFixture();
+        /** Canonical discovered config. */
+        const discovered = await fixtureConfig(fixture,);
+        /** Real directory hidden behind injected ancestor link. */
+        const realAncestor = join(fixture.root, 'real-registry-parent',);
+        /** Symlinked injected ancestor. */
+        const linkedAncestor = join(fixture.root, 'linked-registry-parent',);
+        await mkdir(realAncestor, { mode: 0o700, },);
+        await symlink(realAncestor, linkedAncestor, 'dir',);
+        /** Unsafe-root trust failure. */
+        const failure = await (async function captureUnsafeRootFailure(): Promise<unknown> {
+          try {
+            return await trustMjs({
+              discovered,
+              registryRoot: join(linkedAncestor, 'registry',),
+              yes: true,
+              adapters: trustAdapters([],),
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(Error,);
       },
     },),
     it({

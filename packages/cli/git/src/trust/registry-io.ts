@@ -9,6 +9,7 @@ import {
   lstat,
   mkdir,
   open,
+  realpath,
 } from 'node:fs/promises';
 import {
   join,
@@ -34,11 +35,13 @@ const NON_OWNER_PERMISSION_MASK = 0o077;
  */
 const WINDOWS_ACL_SCRIPT = String.raw`
 $target = $args[0]
-$acl = New-Object System.Security.AccessControl.DirectorySecurity
+$isDirectory = $args[1] -eq 'true'
+$acl = Get-Acl -LiteralPath $target
 $acl.SetAccessRuleProtection($true, $false)
+foreach ($existingRule in @($acl.Access)) { [void]$acl.RemoveAccessRuleSpecific($existingRule) }
 $userSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User
 $adminsSid = New-Object System.Security.Principal.SecurityIdentifier('S-1-5-32-544')
-$inheritance = [System.Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit'
+$inheritance = if ($isDirectory) { [System.Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit' } else { [System.Security.AccessControl.InheritanceFlags]::None }
 $propagation = [System.Security.AccessControl.PropagationFlags]::None
 $type = [System.Security.AccessControl.AccessControlType]::Allow
 $userRule = New-Object System.Security.AccessControl.FileSystemAccessRule($userSid, 'FullControl', $inheritance, $propagation, $type)
@@ -46,9 +49,25 @@ $adminsRule = New-Object System.Security.AccessControl.FileSystemAccessRule($adm
 $acl.AddAccessRule($userRule)
 $acl.AddAccessRule($adminsRule)
 Set-Acl -LiteralPath $target -AclObject $acl
-$verified = Get-Acl -LiteralPath $target
-$unexpected = @($verified.Access | Where-Object { $_.AccessControlType -ne 'Allow' -or ($_.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value -ne $userSid.Value -and $_.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value -ne $adminsSid.Value) })
-if ($unexpected.Count -ne 0) { throw 'Registry ACL contains unexpected principals or deny rules.' }
+`;
+/**
+ * Windows ACL verification without modifying target.
+ */
+const WINDOWS_ACL_VERIFY_SCRIPT = String.raw`
+$target = $args[0]
+$acl = Get-Acl -LiteralPath $target
+if (-not $acl.AreAccessRulesProtected) { throw 'Registry ACL inheritance is not protected.' }
+$userSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+$adminsSid = 'S-1-5-32-544'
+$seenUser = $false
+$seenAdmins = $false
+foreach ($rule in @($acl.Access)) {
+  $sid = $rule.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value
+  if ($rule.AccessControlType -ne 'Allow' -or ($sid -ne $userSid -and $sid -ne $adminsSid) -or (($rule.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::FullControl) -ne [System.Security.AccessControl.FileSystemRights]::FullControl)) { throw 'Registry ACL contains unsafe access.' }
+  if ($sid -eq $userSid) { $seenUser = $true }
+  if ($sid -eq $adminsSid) { $seenAdmins = $true }
+}
+if (-not $seenUser -or -not $seenAdmins) { throw 'Registry ACL lacks required account protections.' }
 `;
 
 /**
@@ -93,6 +112,45 @@ export function isMissingPath(error: unknown,): boolean {
 }
 
 /**
+ * Verifies platform-native ACL protection before trusting stored content.
+ *
+ * @param path - registry directory or private file
+ *
+ * @example
+ * ```ts
+ * await assertPrivatePathProtection({ path: 'C:\\private\\record.json' });
+ * ```
+ */
+export async function assertPrivatePathProtection({
+  path,
+}: Readonly<{
+  path: string;
+}>,): Promise<void> {
+  if (process.platform !== 'win32')
+    return;
+  try {
+    await nanoSpawn(
+      'powershell.exe',
+      [
+        '-NoLogo',
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        WINDOWS_ACL_VERIFY_SCRIPT,
+        path,
+      ],
+      { windowsHide: true, },
+    );
+  }
+  catch (error: unknown) {
+    throw new TrustStorageError(
+      `Unsafe Windows trust ACL: ${path}`,
+      { cause: error, },
+    );
+  }
+}
+
+/**
  * Applies private permissions and Windows ACL protection.
  *
  * @param path - registry root or created entry
@@ -112,26 +170,50 @@ export async function protectPath({
   directory: boolean;
 }>,): Promise<void> {
   if (process.platform === 'win32') {
-    if (directory) {
-      await nanoSpawn(
-        'powershell.exe',
-        [
+    await nanoSpawn(
+      'powershell.exe',
+      [
         '-NoLogo',
         '-NoProfile',
         '-NonInteractive',
         '-Command',
         WINDOWS_ACL_SCRIPT,
         path,
+        String(directory,),
       ],
-        { windowsHide: true, },
-      );
-    }
+      { windowsHide: true, },
+    );
+    await assertPrivatePathProtection({ path, },);
     return;
   }
   await chmod(
     path,
     directory ? DIRECTORY_MODE : FILE_MODE,
   );
+}
+
+/**
+ * Verifies registry root spelling contains no followed symlink or junction.
+ *
+ * @param registryRoot - complete registry root
+ */
+async function assertCanonicalRegistryRoot(registryRoot: string,): Promise<void> {
+  /**
+   * Native canonical registry location.
+   */
+  const canonicalRoot = await realpath(registryRoot,);
+  /**
+   * Lexically resolved requested location.
+   */
+  const requestedRoot = resolve(registryRoot,);
+  /**
+   * Case-normalized paths on case-insensitive Windows.
+   */
+  const pathsAgree = process.platform === 'win32'
+    ? canonicalRoot.toLowerCase() === requestedRoot.toLowerCase()
+    : canonicalRoot === requestedRoot;
+  if (!pathsAgree)
+    throw new TrustStorageError('Trust registry path contains a symbolic link or junction.',);
 }
 
 /**
@@ -154,6 +236,10 @@ export async function ensureRegistryRoot(registryRoot: string,): Promise<void> {
   );
   /**
    * Root metadata checked before any trust write.
+   */
+  await assertCanonicalRegistryRoot(registryRoot,);
+  /**
+   * Root metadata after canonical ancestor verification.
    */
   const metadata = await lstat(registryRoot,);
   if ((!metadata.isDirectory()) || metadata.isSymbolicLink())
@@ -185,6 +271,7 @@ export async function assertSafeRegistryDirectory({
   registryRoot: string;
   targetDirectory: string;
 }>,): Promise<void> {
+  await assertCanonicalRegistryRoot(registryRoot,);
   /**
    * Relative path proven to remain below registry root.
    */
@@ -242,6 +329,9 @@ export async function assertSafeRegistryDirectory({
     if ((process.platform !== 'win32') && (process.getuid?.() !== metadata.uid))
       throw new TrustStorageError(`Trust registry component is not owned by current account: ${path}`,);
   },);
+  await Promise.all(paths.map(function verifyPathProtection(path,) {
+    return assertPrivatePathProtection({ path, },);
+  },),);
 }
 
 /**

@@ -25,6 +25,7 @@ await describe({
         expect(classifyConfigLoading(['branch', 'feature',]),).toBe('load-config',);
         expect(classifyConfigLoading(['branch', '-d', 'feature',]),).toBe('load-config',);
         expect(classifyConfigLoading(['branch', '-M', 'main',]),).toBe('load-config',);
+        expect(classifyConfigLoading(['branch', '--set-upstream-to=origin/main',]),).toBe('load-config',);
       },
     },),
     it({
@@ -35,6 +36,7 @@ await describe({
         expect(classifyConfigLoading(['tag', 'v1',]),).toBe('load-config',);
         expect(classifyConfigLoading(['tag', '-d', 'v1',]),).toBe('load-config',);
         expect(classifyConfigLoading(['tag', '-s', 'v1',]),).toBe('load-config',);
+        expect(classifyConfigLoading(['tag', '--delete=v1',]),).toBe('load-config',);
       },
     },),
     it({

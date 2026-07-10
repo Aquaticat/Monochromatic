@@ -5,6 +5,7 @@
  */
 import {
   constants,
+  lstat,
   open,
 } from 'node:fs/promises';
 import { resolveFsId, } from '@monochromatic-dev/module-fs-id/ts';
@@ -42,11 +43,7 @@ export async function captureTrustCandidate(discovered: DiscoveredConfig,): Prom
   if (discovered.format !== 'mjs')
     throw new TrustCandidateError('TypeScript trust is not available until issue #347.',);
   /**
-   * Fresh source-qualified filesystem identity.
-   */
-  const filesystem = await resolveFsId({ path: discovered.configPath, },);
-  /**
-   * No-follow source handle.
+   * No-follow source handle opened before filesystem identity resolution.
    */
   const handle = await open(
     discovered.configPath,
@@ -57,14 +54,43 @@ export async function captureTrustCandidate(discovered: DiscoveredConfig,): Prom
    */
   await using disposableHandle = handle;
   /**
-   * Exact bytes and same-handle bigint metadata.
+   * Same-handle metadata before byte capture.
    */
-  const [bytes, metadata,] = await Promise.all([
-    handle.readFile(),
-    handle.stat({ bigint: true, },),
-  ],);
-  if (!metadata.isFile())
+  const beforeMetadata = await handle.stat({ bigint: true, },);
+  if (!beforeMetadata.isFile())
     throw new TrustCandidateError('Configuration must remain a regular file during capture.',);
+  /**
+   * Exact bytes from opened source object.
+   */
+  const bytes = await handle.readFile();
+  /**
+   * Fresh source-qualified filesystem identity without logger stream pollution.
+   */
+  const filesystem = await resolveFsId({
+    path: discovered.configPath,
+    emitDegradedWarning: false,
+  },);
+  /**
+   * Same-handle metadata after byte capture and identity resolution.
+   */
+  const metadata = await handle.stat({ bigint: true, },);
+  /**
+   * Live path metadata proving identity resolution still named opened object.
+   */
+  const pathMetadata = await lstat(
+    discovered.configPath,
+    { bigint: true, },
+  );
+  if ((!metadata.isFile())
+    || (!pathMetadata.isFile())
+    || (beforeMetadata.dev !== metadata.dev)
+    || (beforeMetadata.ino !== metadata.ino)
+    || (beforeMetadata.size !== metadata.size)
+    || (beforeMetadata.mtimeNs !== metadata.mtimeNs)
+    || (pathMetadata.dev !== metadata.dev)
+    || (pathMetadata.ino !== metadata.ino)
+    || (BigInt(bytes.byteLength,) !== metadata.size))
+    throw new TrustCandidateError('Configuration changed identity or bytes during capture.',);
   return {
     discovered,
     identity: {
@@ -76,5 +102,9 @@ export async function captureTrustCandidate(discovered: DiscoveredConfig,): Prom
       .toString(),
     mtimeNanoseconds: metadata.mtimeNs
       .toString(),
+    filesystemStable: filesystem.stable,
+    ...filesystem.reason === undefined
+      ? {}
+      : { filesystemStabilityReason: filesystem.reason, },
   };
 }
