@@ -32,9 +32,20 @@ const JSON_INDENT_SPACES = 2;
 const MARKDOWN_RESPONSE_KEY = 'markdown' as const;
 
 /**
- * Single-field Linkup search results response key.
+ * Search results response key.
  */
 const RESULTS_RESPONSE_KEY = 'results' as const;
+
+/**
+ * Own enumerable keys required by metadata-bearing search result envelopes.
+ */
+const SEARCH_RESULT_ENVELOPE_KEYS = [
+  'requestId',
+  'resolvedSearchType',
+  RESULTS_RESPONSE_KEY,
+  'searchTime',
+  'costDollars',
+] as const;
 
 /**
  * Sentinel used when a response is not exactly one markdown field.
@@ -139,9 +150,9 @@ function modelTextForLinkupResponse(
 
   if (options.renderResultsArrayAsJsonl) {
     /**
-     * JSONL response text, when value is exactly a results-array response.
+     * JSONL response text, when value has an accepted search results envelope.
      */
-    const jsonlText = resultsArrayJsonlText(options.value,);
+    const jsonlText = searchResultsJsonlText(options.value,);
     if ((typeof jsonlText) === 'string')
       return {
         text: jsonlText,
@@ -203,9 +214,32 @@ function markdownOnlyResponseText(value: unknown,): MarkdownOnlyResponseText {
 }
 
 /**
- * Extract JSONL text from exact single-field results-array Linkup responses.
+ * Extract JSONL text from accepted search results response envelopes.
  *
- * @param value - Linkup response value
+ * @param value - search response value
+ *
+ * @returns JSONL text when value contains object search results in an accepted envelope
+ *
+ * @example
+ * ```ts
+ * searchResultsJsonlText({ results: [{ title: 'Meow' }] });
+ * ```
+ */
+function searchResultsJsonlText(value: unknown,): ResultsArrayJsonlResponseText {
+  /**
+   * JSONL text from the existing results-only response envelope.
+   */
+  const resultsOnlyJsonlText = resultsArrayJsonlText(value,);
+  if ((typeof resultsOnlyJsonlText) === 'string')
+    return resultsOnlyJsonlText;
+
+  return searchResultEnvelopeJsonlText(value,);
+}
+
+/**
+ * Extract JSONL text from the exact results-only response envelope.
+ *
+ * @param value - search response value
  *
  * @returns JSONL text when value has only an array results property
  *
@@ -218,16 +252,59 @@ function resultsArrayJsonlText(value: unknown,): ResultsArrayJsonlResponseText {
   if (!isRecord(value,))
     return NOT_RESULTS_ARRAY_RESPONSE;
 
-  /**
-   * Own enumerable response keys.
-   */
-  const keys = Object.keys(value,);
-  if ((keys.length !== 1) || (keys[0] !== RESULTS_RESPONSE_KEY))
+  if (!hasExactOwnEnumerableKeys({
+    value,
+    expectedKeys: [RESULTS_RESPONSE_KEY,],
+  },))
     return NOT_RESULTS_ARRAY_RESPONSE;
 
-  if (!hasResultsResponseProperty(value,))
+  return resultsPropertyJsonlText(value,);
+}
+
+/**
+ * Extract JSONL text from the exact metadata-bearing search results envelope.
+ *
+ * @param value - search response value
+ *
+ * @returns JSONL text when value has exact metadata keys and object result items
+ *
+ * @example
+ * ```ts
+ * searchResultEnvelopeJsonlText({
+ *   requestId: 'request',
+ *   resolvedSearchType: '',
+ *   results: [{ title: 'Meow' }],
+ *   searchTime: 1,
+ *   costDollars: {},
+ * });
+ * ```
+ */
+function searchResultEnvelopeJsonlText(value: unknown,): ResultsArrayJsonlResponseText {
+  if (!isRecord(value,))
     return NOT_RESULTS_ARRAY_RESPONSE;
 
+  if (!hasExactOwnEnumerableKeys({
+    value,
+    expectedKeys: SEARCH_RESULT_ENVELOPE_KEYS,
+  },))
+    return NOT_RESULTS_ARRAY_RESPONSE;
+
+  return resultsPropertyJsonlText(value,);
+}
+
+/**
+ * Serialize object items from a response results property as JSONL.
+ *
+ * @param value - record exposing a candidate results property
+ *
+ * @returns JSONL text when results is an array of records
+ *
+ * @example
+ * ```ts
+ * resultsPropertyJsonlText({ results: [{ title: 'Meow' }] });
+ * ```
+ */
+function resultsPropertyJsonlText(value: Readonly<Record<string, unknown>>,): ResultsArrayJsonlResponseText {
   /**
    * Results property value.
    */
@@ -254,6 +331,39 @@ function resultsArrayJsonlText(value: unknown,): ResultsArrayJsonlResponseText {
 }
 
 /**
+ * Return whether record has exactly the expected own enumerable keys.
+ *
+ * @param value - record to inspect
+ *
+ * @param expectedKeys - required keys in arbitrary order
+ *
+ * @returns whether record has the exact expected key set
+ *
+ * @example
+ * ```ts
+ * hasExactOwnEnumerableKeys({ value: { results: [] }, expectedKeys: ['results'] });
+ * ```
+ */
+function hasExactOwnEnumerableKeys(
+  {
+    value,
+    expectedKeys,
+  }: {
+    readonly value: Readonly<Record<string, unknown>>;
+    readonly expectedKeys: readonly string[];
+  },
+): boolean {
+  /**
+   * Own enumerable keys on the candidate response.
+   */
+  const actualKeys = Object.keys(value,);
+  return (actualKeys.length === expectedKeys.length)
+    && expectedKeys.every(function hasExpectedKey(expectedKey,) {
+      return actualKeys.includes(expectedKey,);
+    },);
+}
+
+/**
  * Return whether object exposes a markdown response property.
  *
  * @param value - object response value
@@ -267,22 +377,6 @@ function resultsArrayJsonlText(value: unknown,): ResultsArrayJsonlResponseText {
  */
 function hasMarkdownResponseProperty(value: object,): value is { readonly markdown: unknown; } {
   return MARKDOWN_RESPONSE_KEY in value;
-}
-
-/**
- * Return whether object exposes a results response property.
- *
- * @param value - object response value
- *
- * @returns whether object has a results property readable as unknown
- *
- * @example
- * ```ts
- * hasResultsResponseProperty({ results: [] });
- * ```
- */
-function hasResultsResponseProperty(value: object,): value is { readonly results: unknown; } {
-  return RESULTS_RESPONSE_KEY in value;
 }
 
 /**
