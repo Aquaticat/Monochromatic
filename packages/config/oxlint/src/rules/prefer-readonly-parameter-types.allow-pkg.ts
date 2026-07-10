@@ -54,6 +54,15 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
     name: ["ServeHandle"],
   },
   {
+    // Valibot schema objects expose mutable-looking structural fields even
+    // when an authoring helper only preserves and returns the same schema.
+    // Consumers cannot replace the upstream GenericSchema declaration with
+    // a deeply readonly equivalent without losing assignability to Valibot.
+    from: "package",
+    package: "valibot",
+    name: ["GenericSchema"],
+  },
+  {
     from: "package",
     package: "@tursodatabase/database",
     name: [
