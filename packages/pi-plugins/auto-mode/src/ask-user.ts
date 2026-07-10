@@ -79,9 +79,9 @@ type AskNotificationInvoker = (
  * notification utility is handled by {@link notifyAsk}, so approval remains
  * available when the host does not provide `notify-send`.
  *
- * @param invocation - executable and arguments for the notification
+ * @param command - selects host notification utility without shell interpretation
  *
- * @returns completion after the notification process exits
+ * @param args - keeps notification payload outside shell grammar
  *
  * @example
  * ```typescript
@@ -118,8 +118,6 @@ async function invokeTerminalNotification(
  * @param action - guarded action shown in the notification body
  *
  * @param invoke - notification runner, replaceable for deterministic tests
- *
- * @returns completion after attempting notification
  *
  * @example
  * ```typescript
