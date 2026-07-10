@@ -6,12 +6,16 @@
 import { parseGlobalOptions, } from './parse-global-options.ts';
 import { hasExplicitStatusHintsOverride, } from './rules/status-hints-off.ts';
 
-/** Git flags that request version output before subcommand. */
+/**
+ * Git flags that request version output before subcommand.
+ */
 const VERSION_FLAGS: ReadonlySet<string> = new Set([
   '--version',
   '-v',
 ],);
-/** Status flags that produce machine-readable output. */
+/**
+ * Status flags that produce machine-readable output.
+ */
 const STATUS_MACHINE_READABLE_FLAGS: ReadonlySet<string> = new Set([
   '--porcelain',
   '-s',
@@ -38,27 +42,46 @@ export function printPostCommandOutput({
   rawArgs: readonly string[];
   processedArgs: readonly string[];
 }>,): void {
-  /** Final transformed command layout. */
+  /**
+   * Final transformed command layout.
+   */
   const layout = parseGlobalOptions(processedArgs,);
-  /** Final subcommand. */
+  /**
+   * Final subcommand.
+   */
   const subcommand = processedArgs[layout.subcommandIndex];
-  /** Global options preceding subcommand. */
-  const preSubcommand = processedArgs.slice(0, layout.subcommandIndex,);
-  /** Arguments following subcommand. */
+  /**
+   * Global options preceding subcommand.
+   */
+  const preSubcommand = processedArgs.slice(
+    0,
+    layout.subcommandIndex,
+  );
+  /**
+   * Arguments following subcommand.
+   */
   const postSubcommand = processedArgs.slice(layout.subcommandIndex + 1,);
-  /** Whether invocation requests Git version. */
+  /**
+   * Whether invocation requests Git version.
+   */
   const isVersionRequest = (subcommand === 'version')
     || preSubcommand.some(function isVersionFlag(arg,) {
       return VERSION_FLAGS.has(arg,);
     },);
-  /** Whether status output must remain machine-readable. */
+  /**
+   * Whether status output must remain machine-readable.
+   */
   const isStatusMachineReadable = postSubcommand.some(function isMachineReadableFlag(arg,) {
     return STATUS_MACHINE_READABLE_FLAGS.has(arg,)
       || arg.startsWith('--porcelain=',);
   },);
-  /** Whether caller explicitly controls stock Git status hints. */
+  /**
+   * Whether caller explicitly controls stock Git status hints.
+   */
   const userOverrodeStatusHints = hasExplicitStatusHintsOverride(rawArgs,);
-  /** Whether human-readable status note is applicable. */
+  /**
+   * Whether human-readable status note is applicable.
+   */
   const shouldPrintStatusNote = (subcommand === 'status')
     && (!isStatusMachineReadable)
     && (!userOverrodeStatusHints);
