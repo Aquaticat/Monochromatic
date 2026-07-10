@@ -40,7 +40,14 @@ absolute path.
 
 ## Verified current-state facts
 
-- `packages/git-policies/cli/package.json` exposes only the `git` binary today.
+- `packages/git-policies/cli/package.json` maps both its package import and `git` binary to the same
+  `dist/final/node/index.mjs` artifact.
+- The package-root import exposes authoring declarations and `repositoryPolicyPlugin` without starting cli-git or enabling
+  the optional policy.
+- `packages/git-policies/repository/src/index.ts` remains the canonical repository-policy source.
+  File-enforcer generates `packages/git-policies/cli/src/optional/repository-policy.ts` for self-contained source-level
+  trusted config bundling.
+- `packages/git-policies/api` owns the cycle-free policy contract used by separately owned policy source packages.
 - `packages/git-policies/cli/src/bin.ts` runs the configurable policy engine before a sequential fixed-transform `RULES` array.
 - Current policy order is:
   - `require-root`
