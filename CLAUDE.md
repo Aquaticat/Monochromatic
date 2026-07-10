@@ -1,12 +1,26 @@
-Generated from AGENTS.md by file-enforcer.
+Generated from `AGENTS.md` by file-enforcer.
 
 ### Delegating work to subagents and child sessions
 
-Two peer mechanisms; pick by whether you need a visible, independently-running session.
+Two peer mechanisms;
+pick by whether you need a visible, independently-running session.
 
-In-process subagents (the Agent tool, including the general-purpose type) run inside this session and forward their results back to you reliably. General-purpose subagents are allowed. Caveat: you cannot enumerate how many subagents are running, and SendMessage steering is unreliable, so fan out general-purpose subagents only in interactive sessions where the user watches and steers them in the Claude Code UI. Rationale: `docs/decisions/general-purpose-subagent-ban.md`.
+In-process subagents (the Agent tool,
+including the general-purpose type) run inside this session and forward their results back to you reliably.
+General-purpose subagents are allowed.
+Caveat:
+you cannot enumerate how many subagents are running,
+and SendMessage steering is unreliable,
+so fan out general-purpose subagents only in interactive sessions where the user watches and steers them in the Claude Code UI.
+Rationale: `docs/decisions/general-purpose-subagent-ban.md`.
 
-Use `spawn-claude` outside sandbox to launch a steerable child Claude Code session in a visible terminal window. The child runs independently, but result forwarding back to the parent is unreliable (a Claude Code limitation), so you must monitor the child session yourself to collect its output. Do not pass `--cwd`: the child then will not read the repo `CLAUDE.md`, and Claude Code's cwd handling is unreliable.
+Use `spawn-claude` outside sandbox to launch a steerable child Claude Code session in a visible terminal window.
+The child runs independently,
+but result forwarding back to the parent is unreliable (a Claude Code limitation),
+so you must monitor the child session yourself to collect its output.
+Do not pass `--cwd`:
+the child then will not read the repo `CLAUDE.md`,
+and Claude Code's cwd handling is unreliable.
 
 # Development Guidelines for AI Agents
 
