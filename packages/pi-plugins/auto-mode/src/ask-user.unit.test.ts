@@ -13,7 +13,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { askUser, } from './ask-user.ts';
+import {
+  askUser,
+  notifyAsk,
+} from './ask-user.ts';
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import { VERDICT_ENTRY_TYPE, } from './types.ts';
 
@@ -109,6 +112,70 @@ function createHeadlessContext(): ExtensionContext {
   } as unknown as ExtensionContext;
 }
 
+/**
+ * Ignore external notification execution in approval-flow tests.
+ *
+ * @param _invocation - terminal command that production would execute
+ *
+ * @returns resolved promise after intentionally skipping the command
+ *
+ * @example
+ * ```typescript
+ * await ignoreNotification({ command: 'notify-send', args: [] });
+ * ```
+ */
+async function ignoreNotification(
+  _invocation: {
+    readonly command: string;
+    readonly args: readonly string[];
+  },
+): Promise<void> {}
+
+await describe({
+  name: notifyAsk.name,
+  children: [
+    it({
+      name: 'invokes notify-send with the guarded action',
+      fn: async function invokesNotifySendWithGuardedAction() {
+        /** Terminal notification invocations captured by the test runner. */
+        const invocations: {
+          readonly command: string;
+          readonly args: readonly string[];
+        }[] = [];
+        await notifyAsk({
+          action: 'read .env',
+          invoke: async function captureInvocation(invocation) {
+            invocations.push(invocation,);
+          },
+        },);
+
+        expect(invocations,).toEqual([
+          {
+            command: 'notify-send',
+            args: [
+              '--app-name=Pi',
+              'Pi auto-mode approval required',
+              'read .env',
+            ],
+          },
+        ],);
+      },
+    },),
+
+    it({
+      name: 'does not block approval when notification fails',
+      fn: async function doesNotBlockApprovalWhenNotificationFails() {
+        await notifyAsk({
+          action: 'read .env',
+          invoke: async function failNotification() {
+            throw new Error('notify-send unavailable',);
+          },
+        },);
+      },
+    },),
+  ],
+},);
+
 await describe({
   name: askUser.name,
   children: [
@@ -124,6 +191,7 @@ await describe({
           pi: createMockApi({ entries, },),
           ctx: createInteractiveContext({ choice: 'Deny', },),
           action: 'read .env',
+          notificationInvoker: ignoreNotification,
           explanation,
           reflectExplanationOnDeny: true,
         },);
@@ -157,6 +225,7 @@ await describe({
           pi: createMockApi({ entries, },),
           ctx: createInteractiveContext({ choice: 'Deny', },),
           action: 'read .env',
+          notificationInvoker: ignoreNotification,
           explanation,
         },);
 
@@ -199,6 +268,7 @@ await describe({
           pi: createMockApi({ entries, },),
           ctx: createInteractiveContext({ choice: 'Allow', },),
           action: 'read .env.example',
+          notificationInvoker: ignoreNotification,
           approvalFingerprint: READ_ENV_EXAMPLE_APPROVAL_FINGERPRINT,
           explanation: 'The user should decide whether this is safe.',
         },);

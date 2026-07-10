@@ -12,6 +12,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
+import nanoSpawn from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { formatModelBlockReason, } from './model-feedback.ts';
@@ -39,6 +40,131 @@ const l = tagged({
   tag: 'ask-user',
   l: parentLogger,
 },);
+
+/**
+ * Notification command used to alert the user that approval is waiting.
+ */
+const ASK_NOTIFICATION_COMMAND = 'notify-send';
+
+/**
+ * Maximum time allowed for a terminal notification subprocess.
+ */
+const ASK_NOTIFICATION_TIMEOUT_MS = 1_000;
+
+/**
+ * Invocation data passed to the terminal notification runner.
+ */
+type AskNotificationInvocation = {
+  /**
+   * Executable name resolved through the current PATH.
+   */
+  readonly command: string;
+  /**
+   * Argument vector passed without shell interpolation.
+   */
+  readonly args: readonly string[];
+};
+
+/**
+ * Injectable terminal notification runner used by {@link notifyAsk} and tests.
+ */
+type AskNotificationInvoker = (
+  invocation: AskNotificationInvocation,
+) => Promise<void>;
+
+/**
+ * Invoke the configured terminal notification command.
+ *
+ * The argument vector avoids shell interpretation of action text. A missing
+ * notification utility is handled by {@link notifyAsk}, so approval remains
+ * available when the host does not provide `notify-send`.
+ *
+ * @param invocation - executable and arguments for the notification
+ *
+ * @returns completion after the notification process exits
+ *
+ * @example
+ * ```typescript
+ * await invokeTerminalNotification({
+ *   command: 'notify-send',
+ *   args: ['--app-name=Pi', 'Pi approval required', 'read .env'],
+ * });
+ * ```
+ */
+async function invokeTerminalNotification(
+  {
+    command,
+    args,
+  }: AskNotificationInvocation,
+): Promise<void> {
+  await nanoSpawn(
+    command,
+    [...args,],
+    {
+      stdin: 'ignore',
+      stdout: 'ignore',
+      stderr: 'ignore',
+      timeout: ASK_NOTIFICATION_TIMEOUT_MS,
+    },
+  );
+}
+
+/**
+ * Notify the user that auto-mode is waiting for approval.
+ *
+ * Notification failure is deliberately non-blocking for the approval flow:
+ * terminal notification utilities are optional host capabilities.
+ *
+ * @param action - guarded action shown in the notification body
+ *
+ * @param invoke - notification runner, replaceable for deterministic tests
+ *
+ * @returns completion after attempting notification
+ *
+ * @example
+ * ```typescript
+ * await notifyAsk({ action: 'read .env' });
+ * ```
+ */
+async function notifyAsk(
+  {
+    action,
+    invoke = invokeTerminalNotification,
+  }: {
+    readonly action: string;
+    readonly invoke?: AskNotificationInvoker;
+  },
+): Promise<void> {
+  /**
+   * Per-call logger for terminal notification lifecycle and failure diagnostics.
+   */
+  const innerL = tagged({
+    tag: notifyAsk.name,
+    l,
+  },);
+  /**
+   * Notification arguments passed as an argv vector so action text cannot become shell syntax.
+   */
+  const args = [
+    '--app-name=Pi',
+    'Pi auto-mode approval required',
+    action,
+  ];
+
+  innerL.debug(`sending approval notification for action: ${action}`,);
+  try {
+    await invoke({
+      command: ASK_NOTIFICATION_COMMAND,
+      args,
+    },);
+    innerL.debug(`approval notification sent for action: ${action}`,);
+  }
+  catch (error) {
+    innerL.warn(
+      `approval notification unavailable: ${Error.isError(error,) ? error.message : String(error,)}`,
+    );
+  }
+}
 
 /**
  * Prompt the user to approve or deny an action.
@@ -76,6 +202,7 @@ async function askUser(
     readonly approvalFingerprint?: string;
     readonly explanation: string;
     readonly reflectExplanationOnDeny?: boolean;
+    readonly notificationInvoker?: AskNotificationInvoker;
   },
 ): Promise<GuardDecision> {
   /**
@@ -105,6 +232,12 @@ async function askUser(
     };
   }
 
+  await notifyAsk({
+    action,
+    ...(notificationInvoker !== undefined
+      ? { invoke: notificationInvoker, }
+      : {}),
+  },);
   innerL.debug(`prompting user for action: ${action}`,);
   /**
    * Multi-line prompt body shown to the user; first line is a header, last is the literal action.
@@ -240,5 +373,10 @@ function updateWidget(
 
 export {
   askUser,
+  notifyAsk,
   updateWidget,
+};
+export type {
+  AskNotificationInvocation,
+  AskNotificationInvoker,
 };

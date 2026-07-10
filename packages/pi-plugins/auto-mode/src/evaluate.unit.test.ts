@@ -287,6 +287,7 @@ await describe({
           approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
           explanation: promptExplanation,
           reflectExplanationOnDeny: true,
+          notificationInvoker: async function ignoreNotification() {},
         },);
 
         expect(approvalDecision.block,).toBe(false,);
