@@ -612,10 +612,7 @@ Both fail silently,
  denylist `-v` filters,
  `-l` hiding context,
  narrow `--type`,
- and `rg -r`/`--replace` rewriting matched substrings in output:
- grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`,
- not recursive,
- since ripgrep recurses by default).
+ and `rg -r`/`--replace` rewriting matched substrings in output (RGT)).
 Sanity-check (broader pattern,
  no cap,
  no negative filter) before claiming you've enumerated what's there.
@@ -1304,10 +1301,6 @@ TY9:
  remove `*` (sync) or `async *` (async) from non-implementation signatures.
 
 #### Variables and values
-
-VA3:
- Functional approaches over loops;
- `for...of` when iteration is unavoidable.
 
 VA5:
  `satisfies` for type checking without widening;
