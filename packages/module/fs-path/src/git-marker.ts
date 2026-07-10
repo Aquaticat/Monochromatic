@@ -122,6 +122,42 @@ function isValidHead(content: string,): boolean {
 }
 
 /**
+ * Validates regular-file and symbolic-link HEAD forms.
+ *
+ * @param headPath - candidate HEAD path
+ *
+ * @param fs - root-discovery filesystem adapter
+ *
+ * @returns whether HEAD has a Git-supported shape
+ *
+ * @example
+ * ```ts
+ * await isValidHeadPath({ headPath: '/repo/.git/HEAD', fs });
+ * ```
+ */
+async function isValidHeadPath({
+  headPath,
+  fs,
+}: {
+  readonly headPath: string;
+  readonly fs: RootMatcherArgs['fs'];
+},): Promise<boolean> {
+  /**
+   * Symbolic HEAD target accepted when it names refs namespace.
+   */
+  const symbolicHead = await fs.readSymbolicLink(headPath,);
+  if (symbolicHead !== ABSENT)
+    return symbolicHead.startsWith('refs/',);
+  if (!await fs.isFile(headPath,))
+    return false;
+  /**
+   * Regular HEAD content.
+   */
+  const head = await fs.readTextFile(headPath,);
+  return (head !== ABSENT) && isValidHead(head,);
+}
+
+/**
  * Parses a Git path payload after a required prefix.
  *
  * @param content - exact file text
@@ -230,13 +266,10 @@ async function isValidGitDirectory({
    * Candidate HEAD path.
    */
   const headPath = `${gitDirectory}/HEAD`;
-  if (!await fs.isFile(headPath,))
-    return false;
-  /**
-   * Candidate HEAD content.
-   */
-  const head = await fs.readTextFile(headPath,);
-  if ((head === ABSENT) || (!isValidHead(head,)))
+  if (!await isValidHeadPath({
+    headPath,
+    fs,
+  },))
     return false;
   /**
    * Directory that must own objects and refs.

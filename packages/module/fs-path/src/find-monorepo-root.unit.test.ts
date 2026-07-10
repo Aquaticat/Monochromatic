@@ -13,6 +13,7 @@ import {
   mkdir,
   mkdtemp,
   rm,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -446,6 +447,44 @@ await describe({
         /** Temporary Git fixture using normal `.git` directory. */
         await using fixture = await createGitFixture({ markerKind: 'directory', },);
         /** Git root discovered from nested fixture child. */
+        const root = await findGitRepoRoot({ cwd: fixture.nested, },);
+        expect(root,).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'accepts dangling symbolic HEAD into refs namespace',
+      fn: async () => {
+        /** Temporary root with Git-supported symbolic HEAD. */
+        await using fixture = await createRootFixture({ prefix: 'fs-path-symlink-head-', },);
+        /** Administrative directory with common signatures. */
+        const gitDirectory = nodeJoin(
+          fixture.root,
+          '.git',
+        );
+        await Promise.all([
+          mkdir(
+            nodeJoin(
+              gitDirectory,
+              'objects',
+            ),
+            { recursive: true, },
+          ),
+          mkdir(
+            nodeJoin(
+              gitDirectory,
+              'refs',
+            ),
+            { recursive: true, },
+          ),
+        ],);
+        await symlink(
+          'refs/heads/missing',
+          nodeJoin(
+            gitDirectory,
+            'HEAD',
+          ),
+        );
+        /** Root discovered despite dangling symbolic ref target. */
         const root = await findGitRepoRoot({ cwd: fixture.nested, },);
         expect(root,).toBe(fixture.root,);
       },

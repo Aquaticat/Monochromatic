@@ -26,6 +26,12 @@ export type RootFilesystem = {
   readonly readTextFile: (path: string,) => Promise<string | typeof ABSENT>;
 
   /**
+   * Reads symbolic-link target text,
+   * returning {@link ABSENT} when path is absent or not a symbolic link.
+   */
+  readonly readSymbolicLink: (path: string,) => Promise<string | typeof ABSENT>;
+
+  /**
    * Checks whether path exists as any filesystem entry kind.
    */
   readonly exists: (path: string,) => Promise<boolean>;
@@ -219,6 +225,7 @@ async function resolveNodeRootFilesystem(): Promise<RootFilesystem> {
     {
       lstat,
       readFile,
+      readlink,
       stat,
     },
     {
@@ -238,6 +245,21 @@ async function resolveNodeRootFilesystem(): Promise<RootFilesystem> {
           path,
           'utf8',
         );
+      }
+      catch (error: unknown) {
+        if (isNoEntryError(error,))
+          return ABSENT;
+        throw error;
+      }
+    },
+
+    readSymbolicLink: async function nodeReadSymbolicLink(
+      path: string,
+    ): Promise<string | typeof ABSENT> {
+      try {
+        if (!(await lstat(path,)).isSymbolicLink())
+          return ABSENT;
+        return await readlink(path,);
       }
       catch (error: unknown) {
         if (isNoEntryError(error,))
@@ -293,6 +315,22 @@ async function resolveNodeRootFilesystem(): Promise<RootFilesystem> {
       );
     },
   };
+}
+
+/**
+ * Returns absence for runtimes without symbolic links.
+ *
+ * @param _path - ignored symbolic-link path
+ *
+ * @returns promise resolving to {@link ABSENT}
+ *
+ * @example
+ * ```ts
+ * await unsupportedReadSymbolicLink('/repo/.git/HEAD');
+ * ```
+ */
+function unsupportedReadSymbolicLink(_path: string,): Promise<typeof ABSENT> {
+  return Promise.resolve(ABSENT,);
 }
 
 /**
@@ -356,6 +394,8 @@ async function resolveOpfsRootFilesystem(): Promise<RootFilesystem> {
         return result.unwrap();
       return ABSENT;
     },
+
+    readSymbolicLink: unsupportedReadSymbolicLink,
 
     exists: async function opfsPathExists(path: string,): Promise<boolean> {
       /**
@@ -446,6 +486,8 @@ function resolveEmptyRootFilesystem(): RootFilesystem {
 
   return {
     readTextFile: emptyReadTextFile,
+
+    readSymbolicLink: unsupportedReadSymbolicLink,
 
     exists: emptyExists,
 
