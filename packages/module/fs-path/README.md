@@ -47,10 +47,13 @@ finding.
    memoised variant that locks the first resolved
   mise root for process lifetime.
 - `findGitRepoRoot` (`src/find-monorepo-root.ts`):
-   walks upward for a `.git` marker,
-   accepting both directories
-  and gitfile markers,
-   then normalizes `/home` roots to `/var/home` for ostree.
+   walks upward for a structurally usable `.git` directory or gitfile,
+   validating HEAD,
+  objects,
+  refs,
+  relative targets,
+  and linked-worktree `commondir` pointers before normalizing `/home` roots to `/var/home` for ostree.
+  Invalid nearer markers are skipped.
 - `findGitRepoRootCached` (`src/find-monorepo-root.ts`):
    memoised variant that locks the first resolved Git root
   for process lifetime.
