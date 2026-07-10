@@ -859,9 +859,11 @@ Failure to apply or verify protection fails closed.
 
 ### Exact comparison and execution
 
-Strict trust compares every live source byte sequence and expected executable byte sequence to stored snapshots.
+Strict MJS trust compares live entry bytes to the stored executable snapshot.
+Strict TypeScript trust compares every tracked live source byte sequence to its stored source snapshot and does not
+rebuild during ordinary Git commands.
 Comparison streams bytes and does not compute a digest.
-After equality,
+After source equality,
 execution opens the already validated stored executable snapshot.
 The live entry path is never imported.
 This closes entry-file compare-then-swap only.
@@ -870,7 +872,9 @@ self-containment validation does not sandbox or intercept that behavior.
 
 For TypeScript,
 explicit trust always builds a candidate bundle before consent.
-The candidate and stored bundle bytes are compared exactly for disclosure.
+Only explicit trust or a relaxed metadata-triggered rebuild compares candidate bundle bytes to the stored bundle for
+disclosure and replacement.
+Ordinary strict execution never rebuilds or claims to derive expected bundle bytes.
 Persistent replacement occurs only after both consent stages and config validation succeed.
 
 ## Trust consent protocol

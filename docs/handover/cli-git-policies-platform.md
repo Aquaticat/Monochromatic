@@ -380,8 +380,9 @@ After successful authorized execution:
   cli-git executes the stored snapshot copy rather than the live entry file,
   closing the entry-file compare-then-swap window.
   Trusted code still has ambient Node authority and may deliberately load other live files.
-- Cli-git-built TypeScript stores and compares every tracked entry or relative-local-module file plus the cached bundle
-  bytes and executes the stored cached bundle.
+- Cli-git-built TypeScript compares tracked live source bytes to stored source snapshots during ordinary strict
+  execution and executes the stored cached bundle without rebuilding.
+  Explicit trust and relaxed rebuild compare candidate bundle bytes to the stored bundle before replacement.
 - Recursively auto-enrolled child configs also execute their stored snapshot or cached bundle,
   never a live file that was merely compared.
 - First execution blocks until explicit trust.
