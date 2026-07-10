@@ -22,7 +22,8 @@ The failure chain was:
 4. Repository-local fixture identity overrode the intended global identity.
 5. Git continued to create cryptographically signed commits under `fixture@example.invalid`.
 6. GitHub classified those signatures as `no_user` because the commit identity was not associated with a user.
-7. Classic branch protection required verified signatures but exempted administrators, so the owner could publish them.
+7. Classic branch protection required verified signatures but exempted administrators,
+    so the owner could publish them.
 
 The design must enforce these invariants:
 
@@ -88,7 +89,9 @@ Current gaps include:
 
 - `packages/cli/git/src/rules/require-root.ts` exempts `git init`.
 - No rule rejects reinitialization of an existing worktree.
-- No rule rejects writes to `user.name`, `user.email`, or signing configuration.
+- No rule rejects writes to `user.name`,
+   `user.email`,
+   or signing configuration.
 - No rule checks the effective author or committer identity before commit.
 - The wrapper auto-pushes a successful `git commit` without first verifying the created commit artifact.
 
@@ -253,7 +256,8 @@ Accepted top-level properties for the current Pi Bash tool are:
 Any other property blocks the call.
 A `cwd` rejection explains that Pi 0.80.6 does not support the property and requires either:
 
-- `cd -- <absolute-target> && <command>`; or
+- `cd -- <absolute-target> && <command>`;
+   or
 - a command-native directory argument such as `git -C <absolute-target>`.
 
 The strict local copy is intentionally fail-closed.
@@ -272,7 +276,8 @@ Add non-bypassable rules to the existing `packages/cli/git` rule pipeline.
 
 Reject `git init` when its effective target is:
 
-- an existing repository or worktree root; or
+- an existing repository or worktree root;
+   or
 - nested inside an existing worktree.
 
 Intentional nested repositories are forbidden by this policy.
@@ -312,9 +317,21 @@ Reject writes through the wrapper to these keys at every scope and file target:
 The invocation parser rejects before real Git:
 
 - legacy `git config <key> <value>` mutation;
-- `set`, `unset`, `rename-section`, and `remove-section` mutation;
-- legacy `--add`, `--replace-all`, `--unset`, `--unset-all`, `--rename-section`, and `--remove-section` mutation;
-- mutation through `--local`, `--worktree`, `--global`, `--system`, or `--file`;
+- `set`,
+   `unset`,
+   `rename-section`,
+   and `remove-section` mutation;
+- legacy `--add`,
+   `--replace-all`,
+   `--unset`,
+   `--unset-all`,
+   `--rename-section`,
+   and `--remove-section` mutation;
+- mutation through `--local`,
+   `--worktree`,
+   `--global`,
+   `--system`,
+   or `--file`;
 - protected `-c key=value` global options;
 - every wrapper subcommand that resolves to a Git alias;
 - `--no-verify` on guarded commit and push commands;
@@ -324,8 +341,12 @@ The environment checker rejects before a commit or push:
 
 - `GIT_CONFIG_PARAMETERS` containing a protected key;
 - `GIT_CONFIG_COUNT` plus every indexed `GIT_CONFIG_KEY_<n>` and `GIT_CONFIG_VALUE_<n>` protected-key pair;
-- `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM`, or `GIT_CONFIG_NOSYSTEM` trust redirection;
-- `GIT_COMMITTER_NAME`, `GIT_COMMITTER_EMAIL`, or `EMAIL` identity overrides;
+- `GIT_CONFIG_GLOBAL`,
+   `GIT_CONFIG_SYSTEM`,
+   or `GIT_CONFIG_NOSYSTEM` trust redirection;
+- `GIT_COMMITTER_NAME`,
+   `GIT_COMMITTER_EMAIL`,
+   or `EMAIL` identity overrides;
 - unexpected `core.hooksPath`;
 - missing or changed Git 2.54 config-based hk commands for pre-commit and pre-push.
 
@@ -633,13 +654,25 @@ Create disposable repositories for:
 - `git init .` in the root;
 - `git init child` under a worktree;
 - chained `git -C` targeting a worktree;
-- `--git-dir`, `--work-tree`, `GIT_DIR`, and `GIT_WORK_TREE` targeting another repository;
+- `--git-dir`,
+   `--work-tree`,
+   `GIT_DIR`,
+   and `GIT_WORK_TREE` targeting another repository;
 - `--bare` and `--separate-git-dir` under an existing worktree;
 - linked-worktree and symlinked targets;
 - initialization in a new external temporary directory;
 - protected identity writes using legacy and current config syntax;
-- `--worktree`, `--file`, includes, `includeIf`, protected `-c`, and indexed `GIT_CONFIG_*` injection;
-- config `--add`, `--replace-all`, `--unset-all`, section rename, and section removal variants;
+- `--worktree`,
+   `--file`,
+   includes,
+   `includeIf`,
+   protected `-c`,
+   and indexed `GIT_CONFIG_*` injection;
+- config `--add`,
+   `--replace-all`,
+   `--unset-all`,
+   section rename,
+   and section removal variants;
 - aliases that expand to protected config writes or commit-producing commands;
 - protected hook-path or config-based-hook mutation;
 - wrapper `--no-verify` and `HK=0` rejection;
@@ -663,7 +696,9 @@ Cover:
 - local email override;
 - worktree-scope override;
 - included local or worktree identity;
-- protected `-c`, legacy and indexed `GIT_CONFIG_*`, and committer-environment overrides;
+- protected `-c`,
+   legacy and indexed `GIT_CONFIG_*`,
+   and committer-environment overrides;
 - missing or changed hk config-based hook commands;
 - allowed author-only environment and `--author` metadata;
 - malformed display names and exact matching;
