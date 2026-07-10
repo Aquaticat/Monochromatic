@@ -26,9 +26,13 @@ import {
  */
 const KIBIBYTE = 1_024;
 /**
+ * Binary mebibyte size.
+ */
+const MEBIBYTE = KIBIBYTE * KIBIBYTE;
+/**
  * Maximum pre-push hook input accepted from one remote.
  */
-const MAX_HOOK_INPUT_BYTES = 16 * KIBIBYTE * KIBIBYTE;
+const MAX_HOOK_INPUT_BYTES = 16 * MEBIBYTE;
 /**
  * Number of fields in documented pre-push record.
  */

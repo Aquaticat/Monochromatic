@@ -23,6 +23,11 @@ const pushRegionParser = object({
     '--atomic',
     '--no-atomic',
   ),),
+  dryRunFlags: multiple(flag(
+    '-n',
+    '--dry-run',
+  ),),
+  noDryRunFlags: multiple(flag('--no-dry-run',),),
   positionals: multiple(
     argument(string(),),
   ),
@@ -41,6 +46,10 @@ export type PushRegion = {
    * True when caller has chosen atomic or non-atomic mode explicitly.
    */
   readonly hasAtomicChoice: boolean;
+  /**
+   * Whether final exact dry-run toggle requests no remote update.
+   */
+  readonly isDryRun: boolean;
 };
 
 /**
@@ -69,14 +78,31 @@ export function parsePushRegion(
     postSubcommandArgs,
   );
 
-  if (!parseResult.success)
-    return { hasAtomicChoice: false, };
-
+  if (!parseResult.success) {
+    return {
+      hasAtomicChoice: false,
+      isDryRun: false,
+    };
+  }
+  /**
+   * Final exact dry-run toggle, matching Git's last-option-wins behavior.
+   */
+  const isDryRun = postSubcommandArgs.reduce(function applyDryRunToggle(
+    enabled,
+    arg,
+  ) {
+    if ((arg === '-n') || (arg === '--dry-run'))
+      return true;
+    if (arg === '--no-dry-run')
+      return false;
+    return enabled;
+  }, false,);
   return {
     hasAtomicChoice: parseResult.value
       .atomicFlags
       .length
       > 0,
+    isDryRun,
   };
 }
 
