@@ -2,9 +2,8 @@
 
 Status:
 draft under grill-me review.
-Decisions 1 through 8 are resolved.
-Default weights,
-promotion thresholds,
+Decisions 1 through 9 are resolved.
+Promotion thresholds,
 score-based exits,
 SaaS soft-risk applicability,
 and vet-report timing remain open after independent review.
@@ -364,6 +363,7 @@ Hard gates remain outside the score and cannot be compensated.
 Before scoring candidates:
 
 - derive criterion weights from known requirements and resolved user preferences;
+- assign equal weight 1 to every applicable soft criterion whose priority remains unspecified;
 - publish and freeze the criteria,
   applicability rules,
   and weights before reading candidate-specific soft-risk results;
@@ -392,9 +392,13 @@ then multiply by 100.
 Publish the full breakdown,
 not only the total.
 
-Run a sensitivity check when finalists are close or any influential rating has low confidence.
-If moving one low-confidence rating or weight by one step changes the winner,
-report the ranking as unstable and either gather decisive evidence or ask the unresolved preference.
+Run a sensitivity check when finalists are close,
+any influential rating has low confidence,
+or equal default weights remain.
+For equal defaults,
+raise each unresolved criterion from weight 1 through weight 5 while holding the others fixed.
+If any tested weight or a one-step low-confidence rating change changes the winner,
+report the ranking as unstable and ask only the preference that can resolve it.
 A numeric score never replaces candidate pros,
 cons,
 evidence limits,
@@ -1223,11 +1227,53 @@ A real canonical vet beats output-contract-only because an executed artifact sti
 
 ### Decision 9: default scoring weights
 
-Open after Decision 8.
-Decide how weights are assigned when requirements establish no preference among relevance-gated criteria:
-equal defaults with sensitivity-triggered questions,
-an explicit user question for every weight,
-or fixed category presets.
+Decision:
+use equal default weights and ask only when sensitivity analysis shows an unresolved preference can change the winner.
+The user selected this on 2026-07-09.
+
+Process:
+
+1. Give every applicable soft criterion supported by an explicit requirement or preference its precommitted 1-to-5 weight.
+2. Give every remaining applicable soft criterion equal weight 1.
+3. Score candidates with the frozen rubric.
+4. Raise each equal-default criterion from weight 1 through weight 5,
+   one criterion at a time,
+   while holding all other inputs fixed.
+5. If no tested weight changes the winner,
+   keep equal defaults and do not ask a rubber-stamp question.
+6. If a tested weight changes the winner,
+   ask only the preference that determines that criterion's real weight,
+   then freeze and rerun the score.
+7. Apply the existing rating-confidence sensitivity check separately.
+
+Pros:
+
+- exposes rather than hides absent preferences;
+- avoids a long weight questionnaire when priorities cannot change the result;
+- gives every unprioritized soft criterion equal treatment;
+- uses user questions only at genuine decision forks;
+- produces a reproducible trigger for reopening weights.
+
+Cons:
+
+- equal weight is still a temporary assumption;
+- one-at-a-time sensitivity can miss interactions between several simultaneous preference changes;
+- testing the full 1-to-5 range may flag a preference fork the user considers implausible;
+- rerunning weights adds arithmetic and report detail.
+
+Rejected alternative:
+ask the user to set every weight before research.
+It maximizes explicit preference ownership,
+but creates questions whose answers often cannot alter the result.
+
+Rejected alternative:
+use fixed category presets.
+It makes repeated audits consistent,
+but embeds unstated project preferences and can silently bias candidates.
+
+Ranking:
+equal defaults plus sensitivity beat asking every weight because they preserve user control only where it matters to the outcome.
+Asking every weight beats fixed presets because explicit answers are safer than inferred standing preferences.
 
 ### Decision 10: promotion threshold
 
