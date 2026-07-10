@@ -10,13 +10,15 @@
     ".": {
       "types": "./dist/final/node/index.d.mts",
       "import": "./dist/final/node/index.mjs"
-    }
+    },
+    "./ts": "./src/index.ts"
   },
   "bin": {
     "git": "dist/final/node/bin.mjs"
   },
   "files": [
     "dist/final/node",
+    "src",
     "LICENSES",
     "README.md"
   ],

@@ -393,6 +393,9 @@ importers:
       '@monochromatic-dev/dev-script-task-util':
         specifier: workspace:*
         version: link:packages/dev-script/task-util
+      '@monochromatic-dev/git-policy-repository':
+        specifier: workspace:*
+        version: link:packages/git-policies/repository
       '@monochromatic-dev/module-image-diff':
         specifier: workspace:*
         version: link:packages/module/image-diff
@@ -1674,6 +1677,25 @@ importers:
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../../module/or-throw
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
+  packages/git-policies/repository:
+    dependencies:
+      '@monochromatic-dev/cli-git':
+        specifier: workspace:*
+        version: link:../../cli/git
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test

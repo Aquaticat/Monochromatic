@@ -369,6 +369,56 @@ export async function listUnmergedIndexPaths({
 }
 
 /**
+ * Returns concrete paths from private index through Git pathspec semantics.
+ *
+ * @param gitPath - resolved Git executable
+ *
+ * @param cwd - effective repository cwd
+ *
+ * @param indexPath - private index path
+ *
+ * @param pathspecs - Git pathspec scope
+ *
+ * @returns ordered concrete repository paths
+ *
+ * @example
+ * ```ts
+ * await listPrivateIndexPaths({ gitPath, cwd, indexPath, pathspecs: [':/'] });
+ * ```
+ */
+export async function listPrivateIndexPaths({
+  gitPath,
+  cwd,
+  indexPath,
+  pathspecs,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  indexPath: string;
+  pathspecs: readonly string[];
+}>,): Promise<readonly string[]> {
+  /**
+   * NUL-delimited private-index path output.
+   */
+  const output = await runTransactionGit({
+    gitPath,
+    cwd,
+    indexPath,
+    args: [
+      'ls-files',
+      '-z',
+      '--',
+      ...pathspecs,
+    ],
+  },);
+  return DECODER.decode(output.stdout,)
+    .split('\0',)
+    .filter(function nonempty(path,) {
+    return path.length > 0;
+  },);
+}
+
+/**
  * Returns staged paths from private index relative to HEAD.
  *
  * @param gitPath - resolved Git executable

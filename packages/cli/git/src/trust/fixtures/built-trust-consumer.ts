@@ -20,6 +20,7 @@ import { verifyPostCommitRoutingConsumer, } from './built-post-commit-routing-co
 import { verifyPolicyConfigConsumer, } from './built-policy-config-consumer.ts';
 import { verifyPolicyDefaultConsumer, } from './built-policy-default-consumer.ts';
 import { verifyRecursiveConsumer, } from './built-recursive-consumer.ts';
+import { verifyRepositoryPluginConsumer, } from './built-repository-plugin-consumer.ts';
 import { verifyTypeScriptConsumer, } from './built-typescript-consumer.ts';
 
 await execute({
@@ -275,6 +276,7 @@ assertIncludes({
 await verifyRecursiveConsumer({ env, },);
 await verifyPolicyConfigConsumer({ env, },);
 await verifyPolicyDefaultConsumer({ env, },);
+await verifyRepositoryPluginConsumer({ env, },);
 await verifyPostCommitPolicyConsumer({ env, },);
 await verifyPostCommitRoutingConsumer({ env, },);
 await verifyAutofixTransactionConsumer({ env, },);

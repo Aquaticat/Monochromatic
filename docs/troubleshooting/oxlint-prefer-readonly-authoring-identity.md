@@ -38,8 +38,11 @@ The helpers cannot clone or transform these values:
 `packages/cli/git/SPEC.md` requires each helper to return the exact input object,
 and Valibot consumers need the original schema type for parsing and output inference.
 The internal `registeredPolicies` adapter in
-`packages/cli/git/src/policy-engine/engine.ts` and filesystem-failure adapter in
-`packages/cli/git/src/policy-engine/commit-transaction-boundary.ts` must retain executable callbacks so tests can prove
+`packages/cli/git/src/policy-engine/engine.ts`,
+filesystem-failure adapter in
+`packages/cli/git/src/policy-engine/commit-transaction-boundary.ts`,
+and command-facts adapter in
+`packages/cli/git/src/policy-engine/pre-forward-engine.ts` must retain executable callbacks so tests can prove
 sequential order,
 keep-going behavior,
 immediate exception stopping,

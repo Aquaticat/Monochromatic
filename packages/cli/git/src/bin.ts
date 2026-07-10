@@ -12,7 +12,7 @@ import {
   CommitTransactionRecoveryError,
   recoverCommitTransaction,
 } from './policy-engine/commit-transaction-recovery.ts';
-import { runPolicyEngine, } from './policy-engine/engine.ts';
+import { runPreForwardPolicyEngine, } from './policy-engine/pre-forward-engine.ts';
 import { runPostCommitLifecycle, } from './policy-engine/post-commit-lifecycle.ts';
 import {
   createEngineFailureEvent,
@@ -259,10 +259,13 @@ try {
     ? undefined
     : ((typeof commitTransaction) !== 'symbol'
       ? commitTransaction.policyResult
-      : await runPolicyEngine({
-        args: rawArgs,
-        trigger: 'pre-forward',
-        ...policyOptions,
+      : await runPreForwardPolicyEngine({
+        options: {
+          args: rawArgs,
+          trigger: 'pre-forward',
+          ...policyOptions,
+        },
+        gitPath,
       },));
   if (policyResult !== undefined) {
     /**
