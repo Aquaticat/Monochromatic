@@ -3,8 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #343 are complete and closed.
-Engine issue #344 is the next unblocked implementation slice.
+Issues #280 and #341 through #344 are complete and closed.
+Trust issue #345 is the next unblocked implementation slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -701,8 +701,12 @@ Unless later grilling changes them:
   Valibot,
   and Optique.
 - `pack:npm` works around pnpm issue #9566 with a command-local forced non-deduplicated install before `pnpm pack`.
-- The tarball has exactly eight expected files,
-  no `workspace:` or `catalog:` specs,
+- The tarball contains only audited runtime chunks,
+  declarations,
+  package metadata,
+  documentation,
+  and licenses;
+  it has no `workspace:` or `catalog:` specs,
   and no repository-only or sensitive content.
 - A disposable npm consumer imported the API without filesystem changes,
   compiled valid config,
@@ -723,6 +727,71 @@ Unless later grilling changes them:
   and `0108b0db2` preserve the tested but ineffective Valibot allow-list path and its removal.
 - Registry publication and workflow enablement were not performed;
   deferred issue #358 remains untouched.
+
+### Issue #344 first complete policy-engine path
+
+- Moved `require-root` from the legacy rule array into a configurable built-in policy using the public unified contract.
+- Added stable schema-versioned JSONL finding and engine-failure events,
+  invocation-local sequence values,
+  final-pass buffering,
+  wrapper stderr routing,
+  direct-check stdout routing,
+  and exit codes `0`,
+  `1`,
+  and `2`.
+- Added runtime-authoritative Valibot validation for this optionless built-in's severity configuration.
+  Source-level engine fixtures prove persistent `off`,
+  warn-unsafe `warn`,
+  default `error`,
+  unknown-ID failure,
+  fixed registry order,
+  keep-going collection,
+  and immediate stop on a thrown policy.
+- Added flag-position parsing for `--no-enforce-require-root` and `--cli-git-keep-going` while preserving option values and
+  post-`--` pathspec bytes.
+- Added Optique `git cli-git status` and built-in-only `check` dispatch.
+  Direct check requires exactly one scope source,
+  rejects positional input before `--`,
+  and preserves preceding Git global options such as `-C`.
+  Optique still owns command and option parsing;
+  the small pre-separator scan enforces Git's pathspec boundary rather than duplicating Optique's grammar.
+- Kept the package-root authoring import side-effect free and continued resolving forwarded Git through an absolute path.
+- Changed built CLI integration tests to execute `dist/final/node/bin.mjs`.
+  Disposable repositories verify exact settled event bytes,
+  stderr and stdout routing,
+  escapes,
+  direct and wrapper failures,
+  global chdir,
+  status output,
+  malformed grammar,
+  and preservation of every legacy safeguard.
+- Fixed module-logger's expected ancestor `ENOENT` probes so they cannot contaminate machine-readable stderr;
+  its direct regression test proves missing paths stay silent and unexpected stat failures remain reported.
+- The final npm tarball was rebuilt after the last corrections.
+  A disposable external install imported the authoring API,
+  verified the executable shebang,
+  selected the packaged shadow bin on `PATH`,
+  exercised wrapper and direct JSONL from a repository subdirectory,
+  rejected mixed scope with exit `2`,
+  stripped the escape,
+  and observed no logger contamination.
+- Build,
+  type lint,
+  zero-warning Oxlint,
+  all cli-git tests,
+  module-logger lint and direct regression tests,
+  tarball audit,
+  and final independent review pass.
+- Commits `10f962c5c`,
+  `a3cabafee`,
+  `6bf9ab513`,
+  `481f93072`,
+  `2e9471e21`,
+  and `bf5df520a` contain the engine,
+  management grammar,
+  built coverage,
+  logger isolation,
+  and review corrections.
 
 ### Issue #342 filesystem identity
 
@@ -789,9 +858,9 @@ Dependency-ordered implementation slices:
 - [#343](https://github.com/Aquaticat/Monochromatic/issues/343),
   completed:
   prepared and externally verified the npm tarball boundary and side-effect-free public API without publishing.
-- [#344](https://github.com/Aquaticat/Monochromatic/issues/344):
-  run a built-in policy through the packaged JSONL engine;
-  former Git-root blocker #280 is complete.
+- [#344](https://github.com/Aquaticat/Monochromatic/issues/344),
+  completed:
+  ran `require-root` through the packaged JSONL engine with Optique management commands and built consumer evidence.
 - [#345](https://github.com/Aquaticat/Monochromatic/issues/345):
   trust and execute one stored MJS plugin snapshot.
 - [#346](https://github.com/Aquaticat/Monochromatic/issues/346):
