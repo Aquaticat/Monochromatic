@@ -365,7 +365,7 @@ importers:
         version: link:packages/claude-code-plugins/terminal-title
       '@monochromatic-dev/cli-git':
         specifier: workspace:*
-        version: link:packages/cli/git
+        version: link:packages/git-policies/cli
       '@monochromatic-dev/cli-git-clone-size':
         specifier: workspace:*
         version: link:packages/cli/git-clone-size
@@ -393,9 +393,6 @@ importers:
       '@monochromatic-dev/dev-script-task-util':
         specifier: workspace:*
         version: link:packages/dev-script/task-util
-      '@monochromatic-dev/git-policy-repository':
-        specifier: workspace:*
-        version: link:packages/git-policies/repository
       '@monochromatic-dev/module-image-diff':
         specifier: workspace:*
         version: link:packages/module/image-diff
@@ -844,52 +841,6 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.1.1
-      nano-spawn:
-        specifier: 'catalog:'
-        version: 2.1.0
-
-  packages/cli/git:
-    dependencies:
-      '@optique/core':
-        specifier: 'catalog:'
-        version: 1.1.1
-      acorn:
-        specifier: 'catalog:'
-        version: 8.17.0
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.22.4(typescript@7.0.1-rc)
-      typescript:
-        specifier: 'catalog:'
-        version: 7.0.1-rc
-      valibot:
-        specifier: 'catalog:'
-        version: 1.4.2(typescript@7.0.1-rc)
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@monochromatic-dev/module-async-time':
-        specifier: workspace:*
-        version: link:../../module/async-time
-      '@monochromatic-dev/module-fs-id':
-        specifier: workspace:*
-        version: link:../../module/fs-id
-      '@monochromatic-dev/module-fs-path':
-        specifier: workspace:*
-        version: link:../../module/fs-path
-      '@monochromatic-dev/module-logger':
-        specifier: workspace:*
-        version: link:../../module/logger
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
@@ -1684,11 +1635,79 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
+  packages/git-policies/api:
+    dependencies:
+      valibot:
+        specifier: 'catalog:'
+        version: 1.4.2(typescript@7.0.1-rc)
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
+  packages/git-policies/cli:
+    dependencies:
+      '@optique/core':
+        specifier: 'catalog:'
+        version: 1.1.1
+      acorn:
+        specifier: 'catalog:'
+        version: 8.17.0
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.4(typescript@7.0.1-rc)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+      valibot:
+        specifier: 'catalog:'
+        version: 1.4.2(typescript@7.0.1-rc)
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/git-policy-repository':
+        specifier: workspace:*
+        version: link:../repository
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-fs-id':
+        specifier: workspace:*
+        version: link:../../module/fs-id
+      '@monochromatic-dev/module-fs-path':
+        specifier: workspace:*
+        version: link:../../module/fs-path
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+
   packages/git-policies/repository:
     dependencies:
-      '@monochromatic-dev/cli-git':
+      '@monochromatic-dev/git-policy-api':
         specifier: workspace:*
-        version: link:../../cli/git
+        version: link:../api
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
