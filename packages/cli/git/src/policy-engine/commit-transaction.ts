@@ -3,14 +3,14 @@
  *
  * @module
  */
-import {
-  copyFile,
-  readFile,
-} from 'node:fs/promises';
 import { join, } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parseCommitRegion, } from '../parsers/commit.ts';
 import { createEngineFailureEvent, } from './events.ts';
+import {
+  containsExactCandidateSnapshot,
+  writeCandidateSnapshot,
+} from './commit-transaction-candidate-snapshot.ts';
 import {
   applyPrivatePatch,
   createPrivateIndexFacts,
@@ -21,7 +21,6 @@ import {
   initializeCommitIndex,
   installExplicitPostIndex,
 } from './commit-transaction-index.ts';
-import { containsExactSnapshot, } from './commit-transaction-snapshots.ts';
 import { createCommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 import { runPolicyEngine, } from './engine.ts';
 import { resolveLandedCommitOid, } from './post-commit-facts.ts';
@@ -209,16 +208,25 @@ export async function runCommitTransaction({
     indexPath: workspace.commitIndexPath,
   },);
   /**
+   * Initial private-index candidate facts.
+   */
+  const initialFacts = createPrivateIndexFacts({
+    gitPath,
+    cwd: layout.effectiveCwd,
+    indexPath: workspace.commitIndexPath,
+    paths: candidatePaths,
+  },);
+  /**
    * Initial exact private candidate-state snapshot.
    */
   const initialSnapshot = join(
     workspace.directory,
-    'candidate-0.index',
+    'candidate-0.state',
   );
-  await copyFile(
-    workspace.commitIndexPath,
-    initialSnapshot,
-  );
+  await writeCandidateSnapshot({
+    gitFacts: initialFacts,
+    snapshotPath: initialSnapshot,
+  },);
   /**
    * Ordered private paths for previously visited exact states.
    */
@@ -231,12 +239,7 @@ export async function runCommitTransaction({
     ...policyOptions,
     args,
     trigger: 'pre-forward',
-    gitFacts: createPrivateIndexFacts({
-      gitPath,
-      cwd: layout.effectiveCwd,
-      indexPath: workspace.commitIndexPath,
-      paths: candidatePaths,
-    },),
+    gitFacts: initialFacts,
     candidateVersion: 0,
     repositoryRoot: layout.effectiveCwd,
   },);
@@ -311,14 +314,30 @@ export async function runCommitTransaction({
       }
     }
     /**
-     * Exact state after current ordered patches.
+     * Current private-index candidate facts after ordered patches.
      */
-    // oxlint-disable-next-line no-await-in-loop -- Exact state is captured after each bounded changed pass.
-    const current = new Uint8Array(await readFile(workspace.commitIndexPath,),);
+    const currentFacts = createPrivateIndexFacts({
+      gitPath,
+      cwd: layout.effectiveCwd,
+      indexPath: workspace.commitIndexPath,
+      paths: candidatePaths,
+    },);
+    /**
+     * Private exact snapshot for current changed pass.
+     */
+    const snapshotPath = join(
+      workspace.directory,
+      `candidate-${String(changedPasses + 1,)}.state`,
+    );
+    // oxlint-disable-next-line no-await-in-loop -- Each bounded pass streams one exact candidate-state snapshot.
+    await writeCandidateSnapshot({
+      gitFacts: currentFacts,
+      snapshotPath,
+    },);
     // oxlint-disable-next-line no-await-in-loop -- Cycle detection streams prior exact snapshots after each bounded change.
-    if (await containsExactSnapshot({
+    if (await containsExactCandidateSnapshot({
       snapshotPaths: visited,
-      current,
+      currentPath: snapshotPath,
     },))
       return {
         policyResult: transactionFailure({
@@ -327,18 +346,6 @@ export async function runCommitTransaction({
         },),
         committed: false,
       };
-    /**
-     * Private exact snapshot for current changed pass.
-     */
-    const snapshotPath = join(
-      workspace.directory,
-      `candidate-${String(changedPasses + 1,)}.index`,
-    );
-    // oxlint-disable-next-line no-await-in-loop -- Each bounded changed pass persists one exact comparison snapshot.
-    await copyFile(
-      workspace.commitIndexPath,
-      snapshotPath,
-    );
     visited.push(snapshotPath,);
     changedPasses += 1;
     // oxlint-disable-next-line no-await-in-loop -- Whole ordered engine restarts after each bounded exact change.
@@ -346,12 +353,7 @@ export async function runCommitTransaction({
       ...policyOptions,
       args,
       trigger: 'pre-forward',
-      gitFacts: createPrivateIndexFacts({
-        gitPath,
-        cwd: layout.effectiveCwd,
-        indexPath: workspace.commitIndexPath,
-        paths: candidatePaths,
-      },),
+      gitFacts: currentFacts,
       candidateVersion: changedPasses,
       repositoryRoot: layout.effectiveCwd,
     },);
