@@ -1,38 +1,30 @@
-#!/usr/bin/env node
 /**
- * Side-effect-free cli-git exports and direct executable entry.
+ * Local source-level policy authoring entry for trusted configuration bundling.
  *
  * @module
  */
-
-import { runCliGit, } from './bin.ts';
 
 export {
   defineConfig,
   definePlugin,
   definePolicy,
   definePolicyOptions,
-} from './api/authoring.ts';
+} from './authoring.ts';
 export {
   ABSENT_GIT_VALUE,
-} from './api/context-types.ts';
+} from './context-types.ts';
 export type {
   AbsentGitValue,
   LazyPolicyGitFacts,
   PushUpdate,
-} from './api/context-types.ts';
+} from './context-types.ts';
 export type {
   BuiltInPolicyId,
   CliGitConfig,
   PluginDefinition,
   PluginMap,
   PolicySetting,
-} from './api/config-types.ts';
-export {
-  forbiddenRootContext,
-  hasForbiddenRootContext,
-  repositoryPolicyPlugin,
-} from './optional/repository-policy.ts';
+} from './config-types.ts';
 export type {
   ActivePolicySeverity,
   CandidateChange,
@@ -50,8 +42,4 @@ export type {
   PolicySeverity,
   PolicyTrigger,
   RepositoryPath,
-} from './api/policy-types.ts';
-
-// Direct execution runs the wrapper; module import remains inert.
-if (import.meta.main)
-  await runCliGit();
+} from './policy-types.ts';

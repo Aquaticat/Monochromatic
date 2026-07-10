@@ -1225,6 +1225,16 @@ ${await cat(['./AGENTS.md',],)}`,
 
   generateForbiddenStringsRules(),
 
+  overwrite({
+    dest: './packages/git-policies/cli/src/optional/repository-policy.ts',
+    content: `// Generated from \`packages/git-policies/repository/src/index.ts\` by file-enforcer; edit canonical source owner.\n${(await cat([
+      './packages/git-policies/repository/src/index.ts',
+    ],)).replace(
+      '@monochromatic-dev/git-policy-api/ts',
+      '../api/index.ts',
+    )}`,
+  },),
+
   generatePackageLicenseTexts(),
 
   generateResolvedBrowserslistTargets(),
