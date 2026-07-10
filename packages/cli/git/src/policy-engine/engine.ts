@@ -10,7 +10,6 @@ import type {
   PolicyContext,
   PolicyDefinition,
   PolicyFinding,
-  PolicySeverity,
 } from '../api/policy-types.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
@@ -19,6 +18,11 @@ import {
   type PolicyEvent,
 } from './events.ts';
 import { requireRootPolicy, } from './require-root-policy.ts';
+import type {
+  ParsedPolicyControls,
+  PolicyEngineResult,
+  RunPolicyEngineOptions,
+} from './types.ts';
 
 /**
  * Wrapper-only continue flag.
@@ -71,79 +75,6 @@ const ENGINE_CONFIG_SCHEMA = v.looseObject({
     {}
   ),
 },);
-
-/**
- * Configuration accepted by engine invocation.
- */
-export type PolicyEngineConfig = Readonly<{
-  /**
-   * Persistent built-in severity overrides.
-   */
-  policies?: Readonly<Record<string, PolicySeverity>>;
-}>;
-/**
- * Policy engine invocation options.
- */
-export type RunPolicyEngineOptions = Readonly<{
-  /**
-   * Exact wrapper arguments.
-   */
-  args: readonly string[];
-  /**
-   * Lifecycle trigger.
-   */
-  trigger: 'pre-forward' | 'direct-check';
-  /**
-   * Persistent built-in settings.
-   */
-  config?: PolicyEngineConfig;
-  /**
-   * Optional direct-check policy filter.
-   */
-  selectedPolicyIds?: readonly string[];
-}>;
-/**
- * Stable policy-engine result.
- */
-export type PolicyEngineResult = Readonly<{
-  /**
-   * Forwardable args after wrapper controls are removed.
-   */
-  args: readonly string[];
-  /**
-   * Stable ordered events.
-   */
-  events: readonly PolicyEvent[];
-  /**
-   * Unsafe warning configuration diagnostics.
-   */
-  configWarnings: readonly string[];
-  /**
-   * Settled cli-git exit code.
-   */
-  exitCode: 0 | 1 | 2;
-  /**
-   * Whether real Git should run.
-   */
-  shouldForward: boolean;
-}>;
-/**
- * Parsed invocation controls.
- */
-type ParsedPolicyControls = Readonly<{
-  /**
-   * Forwardable arguments.
-   */
-  args: readonly string[];
-  /**
-   * Continue mode.
-   */
-  keepGoing: boolean;
-  /**
-   * Escaped policy IDs.
-   */
-  escapedPolicyIds: ReadonlySet<string>;
-}>;
 
 /**
  * Returns escape flag for policy ID.
@@ -294,6 +225,7 @@ function findingsAreValid(findings: readonly PolicyFinding[],): boolean {
   },);
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Internal registry contains callback-bearing policy declarations; engine reads but never mutates them, as documented in docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Runs configured built-ins and buffers only settled pass events.
  *
@@ -304,6 +236,8 @@ function findingsAreValid(findings: readonly PolicyFinding[],): boolean {
  * @param config - persistent built-in settings
  *
  * @param selectedPolicyIds - direct-check filter
+ *
+ * @param registeredPolicies - internal deterministic registry adapter
  *
  * @returns policy decision and forwardable arguments
  *
@@ -317,6 +251,7 @@ export async function runPolicyEngine({
   trigger,
   config = {},
   selectedPolicyIds,
+  registeredPolicies = BUILT_IN_POLICIES,
 }: RunPolicyEngineOptions,): Promise<PolicyEngineResult> {
   /**
    * Wrapper controls and real-Git arguments.
@@ -346,7 +281,7 @@ export async function runPolicyEngine({
   /**
    * Every policy ID supported by current built-in registry.
    */
-  const knownIds = new Set(BUILT_IN_POLICIES.map(function policyId(policy,) {
+  const knownIds = new Set(registeredPolicies.map(function policyId(policy,) {
     return policy.name;
   },),);
   /**
@@ -401,7 +336,7 @@ export async function runPolicyEngine({
    */
   const configWarnings: string[] = [];
 
-  for (const policy of BUILT_IN_POLICIES) {
+  for (const policy of registeredPolicies) {
     if (!policy.triggers
       .includes(trigger,))
       continue;
@@ -492,3 +427,4 @@ export async function runPolicyEngine({
     shouldForward: !hasError,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

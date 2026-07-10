@@ -438,6 +438,13 @@ await describe({
         },),);
         expect(error.exitCode,).toBe(2,);
         expect(error.stderr,).toContain('requires exactly one scope',);
+        /** Mixed pre-separator and valid pathspec scope failure. */
+        const mixedScopeError = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: ['cli-git', 'check', 'before', '--', 'after',],
+        },),);
+        expect(mixedScopeError.exitCode,).toBe(2,);
+        expect(mixedScopeError.stderr,).toContain('pathspecs must follow --',);
       },
     },),
     it({

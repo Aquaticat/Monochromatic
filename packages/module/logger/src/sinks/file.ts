@@ -49,6 +49,8 @@ export const NO_NODE_MODULES_FOUND: unique symbol = Symbol('logger:no-node-modul
  *
  * @param join - `node:path` join
  *
+ * @param reportError - logger fault reporter injected for deterministic tests
+ *
  * @returns absolute path to the nearest ancestor `node_modules`, or
  * {@link NO_NODE_MODULES_FOUND} when no ancestor contains one
  *
@@ -63,11 +65,13 @@ export async function findNodeModulesUp(
     stat,
     dirname,
     join,
+    reportError = reportLoggerInternalError,
   }: {
     readonly cwd: string;
     readonly stat: typeof Stat;
     readonly dirname: typeof Dirname;
     readonly join: typeof Join;
+    readonly reportError?: typeof reportLoggerInternalError;
   },
 ): Promise<string | typeof NO_NODE_MODULES_FOUND> {
   /**
@@ -90,7 +94,7 @@ export async function findNodeModulesUp(
     if (!(Error.isError(error,)
       && ('code' in error)
       && (error.code === 'ENOENT'))) {
-      reportLoggerInternalError({
+      reportError({
         context: `node_modules candidate ${candidate} unavailable during file sink search`,
         error,
       },);
@@ -107,6 +111,7 @@ export async function findNodeModulesUp(
     stat,
     dirname,
     join,
+    reportError,
   },);
 }
 

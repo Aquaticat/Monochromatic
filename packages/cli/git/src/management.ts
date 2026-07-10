@@ -56,6 +56,63 @@ const MANAGEMENT_PARSER = or(
 );
 
 /**
+ * Detects positional input before explicit pathspec separator.
+ *
+ * @param args - complete management arguments
+ *
+ * @returns whether non-option input appears before `--`
+ */
+function hasPreSeparatorPositional(args: readonly string[],): boolean {
+  /**
+   * Tokens before pathspec separator, excluding command name.
+   */
+  const separatorIndex = args.indexOf('--',);
+  /**
+   * Option region that cannot contain direct-check paths.
+   */
+  const optionRegion = args.slice(
+    1,
+    separatorIndex === (-1) ? args.length : separatorIndex,
+  );
+  /**
+   * Parser state for separated `--policy <id>` values.
+   */
+  const state = optionRegion.reduce(
+    function inspectOptionRegion(
+    current,
+    token,
+  ): Readonly<{
+    expectsPolicyValue: boolean;
+    positionalFound: boolean
+  }> {
+    if (current.positionalFound)
+      return current;
+    if (current.expectsPolicyValue) {
+      return {
+        expectsPolicyValue: false,
+        positionalFound: false,
+      };
+    }
+    if (token === '--policy') {
+      return {
+        expectsPolicyValue: true,
+        positionalFound: false,
+      };
+    }
+    return {
+      expectsPolicyValue: false,
+      positionalFound: (token === '-') || (!token.startsWith('-',)),
+    };
+  },
+    {
+    expectsPolicyValue: false,
+    positionalFound: false,
+  },
+  );
+  return state.positionalFound;
+}
+
+/**
  * Parses and runs one namespaced management command.
  *
  * @param args - arguments following `git cli-git`
@@ -112,6 +169,10 @@ export async function runManagementCommand({
     || (!('policies' in parsed))
     || (!Array.isArray(parsed.policies,)))
     return 2;
+  if (hasPreSeparatorPositional(args,)) {
+    console.error('git cli-git check pathspecs must follow --.',);
+    return 2;
+  }
   /**
    * Position of required pathspec separator.
    */

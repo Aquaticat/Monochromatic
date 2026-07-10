@@ -31,6 +31,19 @@ function statAlwaysMissing(): never {
 }
 
 /**
+ * Mock `stat` that always throws an unexpected permission error.
+ *
+ * @returns Never; always throws.
+ */
+function statAlwaysDenied(): never {
+  const error: NodeJS.ErrnoException = Object.assign(
+    new Error('EACCES',),
+    { code: 'EACCES', },
+  );
+  throw error;
+}
+
+/**
  * Builds a LogRecord for write-path tests.
  *
  * @param message - Message body.
@@ -108,15 +121,40 @@ await describe({
     },),
 
     it({
-      name: 'findNodeModulesUp returns NO_NODE_MODULES_FOUND when no ancestor contains node_modules',
+      name: 'findNodeModulesUp keeps expected missing candidates silent',
       fn: async () => {
+        /** Unexpected faults reported during expected missing-path walk. */
+        const reports: unknown[] = [];
+        /** Exhausted ancestor result. */
         const result = await findNodeModulesUp({
           cwd: import.meta.dirname,
           stat: statAlwaysMissing as unknown as typeof stat,
           dirname,
           join,
+          reportError: function collectUnexpectedReport(report,) {
+            reports.push(report,);
+          },
         },);
         expect(result,).toBe(NO_NODE_MODULES_FOUND,);
+        expect(reports,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'findNodeModulesUp reports unexpected stat failures',
+      fn: async () => {
+        /** Unexpected faults reported during denied-path walk. */
+        const reports: unknown[] = [];
+        await findNodeModulesUp({
+          cwd: import.meta.dirname,
+          stat: statAlwaysDenied as unknown as typeof stat,
+          dirname,
+          join,
+          reportError: function collectUnexpectedReport(report,) {
+            reports.push(report,);
+          },
+        },);
+        expect(reports.length > 0,).toBe(true,);
       },
     },),
 

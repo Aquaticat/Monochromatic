@@ -3,8 +3,40 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { PolicyDefinition, } from '../api/policy-types.ts';
 import { runPolicyEngine, } from './engine.ts';
 import { renderPolicyEvents, } from './events.ts';
+
+/** First deterministic ordering policy. */
+const FIRST_POLICY: PolicyDefinition = {
+  name: 'first-policy',
+  defaultSeverity: 'error',
+  warnSafe: true,
+  triggers: ['pre-forward',],
+  check: function checkFirstPolicy() {
+    return Promise.resolve([{ code: 'first', message: 'first finding', },],);
+  },
+};
+/** Second deterministic ordering policy. */
+const SECOND_POLICY: PolicyDefinition = {
+  name: 'second-policy',
+  defaultSeverity: 'error',
+  warnSafe: true,
+  triggers: ['pre-forward',],
+  check: function checkSecondPolicy() {
+    return Promise.resolve([{ code: 'second', message: 'second finding', },],);
+  },
+};
+/** Policy that violates engine exception contract. */
+const THROWING_POLICY: PolicyDefinition = {
+  name: 'throwing-policy',
+  defaultSeverity: 'error',
+  warnSafe: true,
+  triggers: ['pre-forward',],
+  check: function checkThrowingPolicy() {
+    return Promise.reject(new Error('intentional policy failure',),);
+  },
+};
 
 await describe({
   name: 'policy engine',
@@ -80,6 +112,43 @@ await describe({
           config: { policies: { unknown: 'error', }, },
         },);
         expect(result.exitCode,).toBe(2,);
+        expect(result.events[0]?.type,).toBe('engine-failure',);
+      },
+    },),
+    it({
+      name: 'honors fixed order and keep-going collection',
+      fn: async function testKeepGoingOrder() {
+        /** Default first-error result. */
+        const stoppedResult = await runPolicyEngine({
+          args: ['status',],
+          trigger: 'pre-forward',
+          registeredPolicies: [FIRST_POLICY, SECOND_POLICY,],
+        },);
+        /** Continued result. */
+        const continuedResult = await runPolicyEngine({
+          args: ['--cli-git-keep-going', 'status',],
+          trigger: 'pre-forward',
+          registeredPolicies: [FIRST_POLICY, SECOND_POLICY,],
+        },);
+        expect(stoppedResult.events,).toHaveLength(1,);
+        expect(continuedResult.events,).toHaveLength(2,);
+        expect(continuedResult.events.map(function eventCode(event,) {
+          return event.type === 'finding' ? event.code : event.type;
+        },),).toEqual(['first-policy/first', 'second-policy/second',],);
+        expect(continuedResult.args,).toEqual(['status',],);
+      },
+    },),
+    it({
+      name: 'stops keep-going mode on policy failure',
+      fn: async function testPolicyFailureStop() {
+        /** Engine failure before later policy. */
+        const result = await runPolicyEngine({
+          args: ['--cli-git-keep-going', 'status',],
+          trigger: 'pre-forward',
+          registeredPolicies: [THROWING_POLICY, SECOND_POLICY,],
+        },);
+        expect(result.exitCode,).toBe(2,);
+        expect(result.events,).toHaveLength(1,);
         expect(result.events[0]?.type,).toBe('engine-failure',);
       },
     },),

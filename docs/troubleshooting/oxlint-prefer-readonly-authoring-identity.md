@@ -1,4 +1,4 @@
-# Oxlint flags identity helpers that accept Valibot schemas and policy declarations
+# Oxlint flags identity helpers and registries that accept policy declarations
 
 ## Symptom
 
@@ -10,7 +10,9 @@ const policy = definePolicy(definition);
 ```
 
 Oxlint's `typescript/prefer-readonly-parameter-types` still reports both parameters after wrapping their surface types
-in `Readonly`:
+in `Readonly`.
+The same diagnostic applies to the policy engine's internal sequencing-test registry because it accepts the same
+callback-bearing declarations:
 
 ```text
 Parameter should be a readonly type.
@@ -35,6 +37,11 @@ Cli-git's `PolicyDefinition` in `packages/cli/git/src/api/policy-types.ts` conta
 The helpers cannot clone or transform these values:
 `packages/cli/git/SPEC.md` requires each helper to return the exact input object,
 and Valibot consumers need the original schema type for parsing and output inference.
+The internal `registeredPolicies` adapter in
+`packages/cli/git/src/policy-engine/engine.ts` must retain executable callbacks so tests can prove sequential order,
+keep-going behavior,
+and immediate exception stopping with deterministic policies.
+It reads the declarations and never mutates them.
 
 ## Verification
 
@@ -50,10 +57,11 @@ This demonstrates that the warning follows nested mutable structure rather than 
 
 ## Verified workaround
 
-Keep the public parameter types honest and add a one-line
-`typescript/prefer-readonly-parameter-types` suppression immediately before each affected helper.
-Each justification must identify the identity contract,
-the upstream Valibot shape,
+Keep the parameter types honest and add a one-line
+`typescript/prefer-readonly-parameter-types` suppression immediately before each affected helper or internal engine
+boundary.
+Each justification must identify the identity or registry contract,
+the callback-bearing policy shape,
 and the fact that the function neither mutates nor clones its input.
 
 This is narrower than globally allowing Valibot or enabling `treatMethodsAsReadonly`.
