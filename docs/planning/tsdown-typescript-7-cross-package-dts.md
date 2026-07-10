@@ -127,88 +127,252 @@ and upstream-filing decision are recorded in
    Package-local 0.27.2 builds pass,
    and Node plus neutral builds pass under the explicit 0.27.4 Oxc generator.
 
-## Investigation procedure
+## Investigation completed
 
-All mutating reproduction and build probes belong in a disposable Git worktree.
-The main worktree contains unrelated concurrent changes and must retain them untouched.
+All mutating reproduction and build probes ran in disposable Git worktrees.
+The main worktree's unrelated concurrent changes remained untouched.
 
-1. Reproduce the original lint-triggered build failure twice in the disposable worktree.
-2. Tighten the feedback loop to the config-oxlint build task.
-3. Run a representative plugin package build as the within-package control.
-4. Compare rolldown-plugin-dts `0.27.1` and `0.27.2` with all other inputs held constant.
-5. Capture tsgo's exact command and temporary output tree under the plugin's debug namespace.
-6. Test one variable at a time for each viable consumer-side fix:
-   declaration project scope,
-   declaration engine selection if supported,
-   sidecar dependency boundary,
-   and dependency pinning.
-7. Inspect rolldown-plugin-dts and tsdown primary source plus upstream issue and release history before deciding whether
-   the behavior is an upstream defect or a documented constraint.
+Completed probes:
 
-## Fix options awaiting verification
+1. Reproduced the original lint-triggered failure and the minimized config-oxlint build failure.
+2. Compared rolldown-plugin-dts 0.27.1,
+   0.27.2,
+   and 0.27.4 with the same consumer source.
+3. Verified the package-local stylistic build as a passing 0.27.2 control.
+4. Verified that explicit `oxc: true` cannot bypass 0.27.2's TypeScript 7 tsgo guard.
+5. Read rolldown-plugin-dts 0.27.2 and 0.27.4 source at their release tags.
+6. Read tsdown 0.22.4's pass-through from `UserConfig.dts` to rolldown-plugin-dts.
+7. Searched upstream releases,
+   commit history,
+   issues,
+   pull requests,
+   contribution policy,
+   and repository `.out-of-scope/` policy.
+8. Prototyped inferred and explicit Oxc selection under 0.27.4.
+9. Exercised Node and neutral shared presets,
+   package type lint,
+   package oxlint,
+   and the original user-facing lint task.
+10. Verified pnpm 11.10.0's exact-version `minimumReleaseAgeExclude` syntax with
+    `rolldown-plugin-dts@0.27.4` through the repository install task and its 731-entry supply-chain check.
 
-### Keep 0.27.2 and supply a declaration project spanning bundled source
+## Strategy decision
 
-Pros:
-keeps current dependency resolution and TypeScript 7 support;
-retains direct source bundling.
+The selected strategy is rolldown-plugin-dts 0.27.4 plus explicit Oxc selection in both declaration-emitting shared
+presets.
+The user selected an exact-version release-age exception so implementation can proceed before the normal eligibility
+time.
 
-Cons:
-may require a specialized build tsconfig;
-could couple config-oxlint to every bundled package path;
-may conflict with package-scoped path aliases or root placement.
-
-### Keep 0.27.2 and select another supported declaration engine
-
-Pros:
-can preserve the existing package graph with a narrowly scoped tsdown configuration change.
-
-Cons:
-may be unsupported when TypeScript 7 is installed;
-could bypass TypeScript 7 behavior intentionally selected by the plugin;
-requires upstream source and runtime verification rather than an assumed option.
-
-### Pin rolldown-plugin-dts 0.27.1
+### Selected: 0.27.4 with explicit shared Oxc generator
 
 Pros:
-small dependency-level rollback;
-likely restores the immediately preceding behavior if the differential probe passes.
+uses the released upstream mechanism;
+restores the pre-regression generator;
+keeps source-driven cross-package bundling;
+protects all 64 Node and 24 neutral preset consumers from an implicit switch to experimental tsgo;
+requires no plugin prebuild;
+and produced the expected aggregate declarations in the prototype.
 
 Cons:
-the prior version does not declare TypeScript 7 support;
-a transitive override adds maintenance burden;
-postpones rather than resolves compatibility with the new declaration path.
+requires a transitive version floor while tsdown 0.22.4 still allows older plugin versions;
+adds an exact-version supply-chain age exception;
+and keeps semantic type checking as a separate lint step because Oxc declaration generation is syntax-driven.
 
-### Build plugin packages first and consume built package exports
+### Rejected: 0.27.4 with inferred Oxc
 
 Pros:
-creates explicit package build boundaries;
-the aggregate package no longer asks one declaration project to emit external package source.
+passes today with no shared preset source change because 0.27.4 prioritizes inherited `isolatedDeclarations`.
 
 Cons:
-adds build-order dependencies to a lint prerequisite;
-requires generated plugin artifacts to be present and fresh;
-works against the current design goal of source-driven inlining without manual prebuilds.
+leaves the intended generator implicit;
+allows a future option-order change to repeat the 0.27.2 class of regression;
+and does not explain why this repository deliberately avoids experimental tsgo for declaration bundling.
 
-No option is selected until the probes establish which ones actually work.
-Any remaining choice between verified approaches will be put to the user one decision at a time.
+### Rejected: temporary 0.27.1 rollback
 
-## Planned implementation shape
+Pros:
+passed the failing build immediately without a release-age exception.
 
-This section will be replaced after diagnosis and user decisions.
-A complete implementation plan must name:
+Cons:
+does not declare TypeScript 7 peer support;
+relies on old implicit behavior;
+requires another lock transition;
+and postpones adoption of the released upstream selector.
 
-- Exact files and symbols to change.
-- Dependency and lockfile regeneration steps,
-  if applicable.
-- A regression test or deterministic build fixture that fails on the current state and passes with the repair.
-- Package-scoped lint,
-  type-check,
-  build,
-  and end-user oxlint invocation checks.
-- Generated artifact expectations and freshness behavior.
-- Troubleshooting documentation required by the external-tool investigation.
-- Rollback criteria if the selected declaration path changes upstream.
+### Rejected: aggregate tsgo project
+
+Pros:
+keeps tsgo and can model the three immediate plugin entry files.
+
+Cons:
+turns Rolldown's dynamic bundle graph into a static TypeScript project;
+must follow every transitive workspace source package in `alwaysBundle`;
+conflicts with the repository policy against cross-package TypeScript project references;
+and is unnecessary once per-module Oxc generation is selectable.
+
+### Rejected: prebuilt plugin package boundary
+
+Pros:
+keeps each declaration build inside one package project.
+
+Cons:
+adds plugin build-order and freshness dependencies to every lint prerequisite;
+requires generated plugin artifacts before config-oxlint can build;
+and reverses the current source-driven sidecar design.
+
+Ranking:
+explicit 0.27.4 Oxc > inferred 0.27.4 Oxc > temporary 0.27.1 > aggregate tsgo project > prebuilt plugin boundary.
+Explicit selection beats inference by making the generator an owned repository decision;
+inference beats rollback by using the fixed release without follow-up churn;
+rollback beats an aggregate project because it restores known output without introducing cross-package project
+coupling;
+and the aggregate project beats prebuild orchestration because it at least preserves source-driven bundling.
+
+## Implementation plan
+
+### Dependency policy and lockfile
+
+1. Confirm `file-enforcer.config.ts` still does not manage `pnpm-workspace.yaml`.
+2. In `pnpm-workspace.yaml`,
+   add the exact selector `rolldown-plugin-dts@0.27.4` to `minimumReleaseAgeExclude`.
+   This applies the user's approved exception only to the reviewed release,
+   not to future rolldown-plugin-dts versions.
+3. Add an exact `rolldown-plugin-dts: 0.27.4` override with a comment that:
+   0.27.2 selects experimental tsgo before inherited `isolatedDeclarations`;
+   0.27.4 adds `generator`;
+   and the override can be removed when tsdown's own dependency floor requires a release carrying that option.
+4. Run:
+
+   ```sh
+   mise run prepare:pnpm:install -- --no-frozen-lockfile
+   ```
+
+   This exact command passed with the exact-version age exception in the disposable prototype.
+5. Inspect the generated `pnpm-lock.yaml` diff.
+   It must resolve rolldown-plugin-dts 0.27.4 with its registry integrity and tarball URL,
+   retain tsdown 0.22.4 and Rolldown 1.1.5 unless an independently required lock update is explained,
+   and contain no hand-edited lock content.
+
+### Shared declaration generator
+
+1. In `packages/config/tsdown/src/index.node.ts`,
+   replace `dts: true` in `baseOptions` with:
+
+   ```typescript
+   dts: {
+     generator: 'oxc',
+   },
+   ```
+
+2. Apply the same change to the neutral preset in `packages/config/tsdown/src/index.ts`.
+3. Leave `packages/config/tsdown/src/index.client.ts` at `dts: false`.
+4. Update `packages/config/tsdown/README.md` to state that Node and neutral presets explicitly use Oxc because the
+   shared TypeScript policy enforces `isolatedDeclarations`,
+   while type lint remains responsible for semantic checking.
+5. Do not add an isolated unit test for the option object.
+   Config-tsdown is a source-exported preset package with no self-build task,
+   while the regression occurs only when tsdown loads its transitive declaration plugin against a cross-package
+   Rolldown graph.
+   The config-oxlint build is the correct integration seam;
+   Node and neutral consumer builds cover both changed presets.
+
+### Auto-mode diagnostics exposed after the build repair
+
+Once config-oxlint builds,
+the original lint command reaches three pre-existing TSDoc diagnostics in
+`packages/pi-plugins/auto-mode/src/ask-user.ts`.
+The implementation must fix them so the requested user-facing command is actually green:
+
+1. For `invokeTerminalNotification`,
+   replace `@param invocation` with separate `@param command` and `@param args` entries matching its destructured
+   fields.
+2. Remove its `@returns` tag because the function returns `Promise<void>`.
+3. Remove `notifyAsk`'s `@returns` tag for the same reason.
+4. Preserve the notification behavior and tests;
+   only documentation changes are needed.
+
+The exact edits passed auto-mode oxlint and type lint in the disposable prototype.
+
+### Documentation and commits
+
+1. Keep `docs/troubleshooting/rolldown-plugin-dts-typescript-7-generator.md` aligned with the implemented dependency
+   selector,
+   age exception,
+   and verification results.
+2. Update this plan's status to implemented only after every acceptance criterion passes.
+3. Commit dependency policy and generated lock changes with explicit pathspecs before continuing.
+4. Commit shared preset and README changes with explicit pathspecs.
+5. Commit the auto-mode TSDoc correction separately so the independent diagnostics remain distinguishable from the
+   declaration fix.
+6. Commit final documentation evidence with explicit pathspecs.
+
+## Verification procedure
+
+All fresh-output and freshness probes run in a disposable worktree created from the implementation commits,
+not against the main checkout's ignored build outputs.
+
+1. Confirm resolved versions in `pnpm-lock.yaml` and installed package metadata:
+   TypeScript 7.0.1-rc,
+   tsdown 0.22.4,
+   Rolldown 1.1.5,
+   and rolldown-plugin-dts 0.27.4.
+2. Run config-tsdown checks:
+
+   ```sh
+   mise run //packages/config/tsdown:lint:types
+   mise run //packages/config/tsdown:lint:oxlint
+   mise run //packages/config/tsdown:test:unit
+   ```
+
+3. Run the failing aggregate build twice from fresh generated output state:
+
+   ```sh
+   mise run //packages/config/oxlint:build:js:node
+   ```
+
+   Both runs must produce `index.mjs`,
+   its declaration entry and shared declaration chunk,
+   plus JavaScript and declaration files for all three plugin sidecars.
+4. Exercise one direct Node consumer and one direct neutral consumer:
+
+   ```sh
+   mise run //packages/oxlint-plugins/stylistic:build:js:node
+   mise run //packages/module/const:build:js:browser
+   ```
+
+5. Run config-oxlint checks:
+
+   ```sh
+   mise run //packages/config/oxlint:lint:types
+   mise run //packages/config/oxlint:lint:oxlint
+   ```
+
+6. Run auto-mode checks after the TSDoc correction:
+
+   ```sh
+   mise run //packages/pi-plugins/auto-mode:lint:types
+   mise run //packages/pi-plugins/auto-mode:test:unit
+   mise run //packages/pi-plugins/auto-mode:lint:oxlint
+   ```
+
+   The final command is the end-user boundary from the original report and must report zero warnings and zero errors.
+7. In the disposable worktree,
+   record the config output modification time,
+   touch a bundled plugin source,
+   rerun the auto-mode oxlint task,
+   and assert the output modification time increased.
+   This verifies `ensureOxlintConfig()` still rebuilds stale sidecars.
+8. Confirm the repaired build creates ten config-oxlint output files.
+   Compare the five JavaScript outputs against the recorded pre-repair SHA-256 values;
+   all must match.
+   Confirm the five declarations removed by the failed 0.27.2 build are present.
+9. Run Markdown lint on the plan,
+   troubleshooting document,
+   and config-tsdown README.
+10. Inspect `git status` and the complete diff.
+    No unrelated concurrent file,
+    ignored build output,
+    or disposable-worktree artifact may be staged.
 
 ## Acceptance criteria
 
