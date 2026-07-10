@@ -180,7 +180,12 @@ The fixed transformer order is:
 2. commit only;
 3. status hints off.
 
-Post-commit auto-push remains a fixed side effect after post-commit policy checks.
+Post-commit policies now inspect exact landed OID and tree facts before auto-push.
+Error findings and engine failures retain the commit,
+block backup,
+return `2`,
+and emit explicit landed-commit JSONL.
+Auto-push remains a fixed side effect only after that gate settles clean or warning-only.
 
 Core policies inspect raw and semantic command facts.
 Plugin policies receive raw and transformed command facts and predict candidate content from the transformed command.

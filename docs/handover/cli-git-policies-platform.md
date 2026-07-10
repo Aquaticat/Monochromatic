@@ -4,7 +4,8 @@
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
 Issues #280 and #341 through #349 are complete and closed.
-Automatic-push lifecycle issue #350 is the next unblocked dependency-ordered slice.
+Automatic-push lifecycle issue #350 is implemented locally and undergoing final verification and review.
+Autofix transaction issue #351 is the next dependency-ordered slice after #350 closes.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -1187,6 +1188,50 @@ Unless later grilling changes them:
   failure,
   and JSONL contract corrections.
 - Issue #349 was closed after every acceptance criterion and evidence gate passed.
+  Actual npm publication remains deferred in #358.
+
+### Issue #350 post-commit backup gate
+
+- Widened engine lifecycle input to carry exact transformed arguments,
+  canonical repository root,
+  and lifecycle-specific lazy Git facts.
+- After successful non-dry-run commit,
+  real Git resolves the exact landed commit OID before any backup gate work.
+- Post-commit candidates lazily enumerate the complete landed tree and read exact object bytes by blob OID;
+  policies never read incidental worktree bytes for landed ground truth.
+- Clean and warning-only post-commit results permit the existing auto-push behavior.
+- Error findings,
+  policy exceptions,
+  and setup failures after OID resolution block backup,
+  return `2`,
+  retain the commit,
+  and emit causal JSONL followed by `commit-landed` with the exact OID.
+- Full-lifecycle plugin escapes now skip both pre-forward and post-commit checks for the same invocation.
+- Preserved commit dry-run/output classification,
+  configured upstream precedence,
+  origin fallback,
+  detached and no-remote skips,
+  filtered success output,
+  and ordinary backup-failure exit behavior.
+- Packed disposable remotes cover successful backup,
+  policy finding block,
+  engine failure block,
+  escaped backup,
+  dry-run and porcelain exclusion,
+  failed backup,
+  non-origin upstream,
+  detached HEAD,
+  and no remote.
+- Commits `65bf23dee`,
+  `5e077357e`,
+  and `379efccca` contain the landed facts,
+  lifecycle gate,
+  packed routing matrix,
+  and setup-failure correction.
+- Packed run `proc_21` and the full unit suite passed;
+  final documentation,
+  final packed rerun after setup-failure correction,
+  and independent closure review remain.
   Actual npm publication remains deferred in #358.
 
 ### Issue #342 filesystem identity

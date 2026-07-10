@@ -548,11 +548,15 @@ Remaining errors block before real Git.
 After a successful non-dry-run commit,
 resolve the landed OID from real Git rather than assuming `HEAD` text.
 Run applicable post-commit policies against committed ground truth.
+`landedCommitOid()` returns the exact resolved commit;
+`candidates()` lazily enumerates its complete recursive tree and reads blobs by object ID rather than worktree path.
 Only a clean or warning-only result allows auto-push.
 A policy or engine failure leaves the commit intact,
 blocks push,
 returns `2`,
-and emits `commit-landed`.
+and emits `commit-landed` after the causal events.
+Once the landed OID is known,
+repository-root or candidate-fact setup failure emits `content-unavailable` plus the same explicit landed state.
 
 ### Manual push
 

@@ -497,10 +497,20 @@ matches config keys.
 
 ## Post-commit auto-push
 
-After a successful `git commit`,
- the wrapper backs up the new commit by
-pushing it.
- Dry runs do not push:
+After a successful real `git commit`,
+the wrapper resolves the exact landed commit OID and committed tree before backup.
+Trusted `post-commit` plugin policies receive that landed OID and lazy exact tree candidates.
+A clean or warning-only result permits automatic push.
+An error finding,
+policy exception,
+or post-commit setup failure blocks push,
+returns exit `2`,
+leaves the commit intact,
+and emits JSONL ending with `commit-landed` and the exact OID so automation does not retry the commit blindly.
+A matching full-lifecycle policy escape skips that plugin's post-commit gate.
+
+The wrapper then backs up the permitted new commit by pushing it.
+Dry runs do not run post-commit policies or push:
  besides `--dry-run` itself,
  git documents
 `--short`,
