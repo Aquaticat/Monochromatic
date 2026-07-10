@@ -825,8 +825,10 @@ Stage only explicit task paths so concurrent changes are never swept into a comm
 
 Rollback is per layer,
 not all-or-nothing.
-The active all-branch signature-and-email ruleset is the minimum safe publication state after rollout.
-Never disable it merely to repair a local false positive.
+The active all-branch signature and non-fast-forward ruleset with no bypass actors
+is the minimum safe publication state after rollout.
+Approved-email enforcement remains part of that minimum only when its empirical contract passes.
+Never disable signature enforcement merely to repair a local false positive.
 
 - Pi guardrail false positive:
   keep rejecting `cwd`,
@@ -841,8 +843,9 @@ Never disable it merely to repair a local false positive.
   remove only the named identity step from that hook while retaining wrapper and server enforcement.
 - GitHub policy blocks an intended workflow:
   add a measured approved email or repair that workflow's signing;
-  restore old protection only from exported JSON after confirming another server rule still blocks unverified and
-  unapproved identities.
+  restore old protection only from exported JSON after confirming another server rule still blocks unverified commits.
+  If email enforcement is withdrawn,
+  record the transition to the documented fallback and its residual identity risk.
 
 The implementation records current classic-protection JSON,
 ruleset JSON,
