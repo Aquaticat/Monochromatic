@@ -173,16 +173,23 @@ The interface stays small while hiding:
 - cryptographic commit verification;
 - diagnostic formatting.
 
-Add a `git-safety` bin entry to `packages/cli/git/package.json`.
-The bin exposes commit-environment,
-explicit-object,
-and pre-push modes to hk without sending policy operations back through the `git` wrapper.
+Add a `git-safety` bin entry to `packages/cli/git/package.json` that points to `src/git-safety.ts`.
+The entry carries the required Node shebang
+and runs the checked-out TypeScript source under the repository's pinned Node runtime,
+matching the package's existing `node src/index.ts` execution model.
+It does not depend on ignored or potentially stale `dist` output.
+
+The bin exposes `pre-commit`,
+`verify-objects`,
+and `pre-push <remote> <url>` modes to hk without sending policy operations back through the `git` wrapper.
 All internal Git subprocesses reuse `packages/cli/git/src/resolve-git.ts` and a sanitized environment,
 so verification cannot recurse into cli-git.
 
-The hk command resolves the built workspace bin and fails closed when it is missing or stale.
-A linked-worktree fixture must prove the bin resolves from that worktree's installation.
-The hook must not silently fall back to a main-checkout artifact or unbuilt source from another revision.
+The concrete hk command is `node_modules/.bin/git-safety` from the active worktree.
+A missing workspace installation fails the hook with no fallback.
+A linked-worktree and clean-clone fixture must prove
+that dependency installation plus `hk install` resolves that revision's source entry.
+The hook never falls back to a main-checkout artifact or another worktree.
 
 The existing `git` wrapper calls the TypeScript interface directly.
 
@@ -297,23 +304,32 @@ Reject writes through the wrapper to these keys at every scope and file target:
 - `gpg.ssh.allowedSignersFile`
 - `include.path`
 - `includeIf.*.path`
+- `core.hooksPath`
+- `hook.*.command`
+- `hook.*.event`
 
-Cover:
+The invocation parser rejects before real Git:
 
-- legacy `git config <key> <value>` syntax;
-- current `get`, `set`, `unset`, `rename-section`, and `remove-section` forms;
-- `--local`, `--worktree`, `--global`, `--system`, `--file`, and `--blob` targets;
+- legacy `git config <key> <value>` mutation;
+- `set`, `unset`, `rename-section`, and `remove-section` mutation;
+- legacy `--add`, `--replace-all`, `--unset`, `--unset-all`, `--rename-section`, and `--remove-section` mutation;
+- mutation through `--local`, `--worktree`, `--global`, `--system`, or `--file`;
 - protected `-c key=value` global options;
-- `GIT_CONFIG_PARAMETERS` and `GIT_CONFIG_COUNT` key-value injection;
-- aliases that would defer expansion until after wrapper rules.
+- every wrapper subcommand that resolves to a Git alias;
+- `--no-verify` on guarded commit and push commands;
+- `HK=0` on guarded commit and push commands.
 
-Reject invocation-time `GIT_COMMITTER_NAME`,
-`GIT_COMMITTER_EMAIL`,
-and `EMAIL` overrides in guarded commit-producing commands.
-Reject `GIT_CONFIG_GLOBAL`,
-`GIT_CONFIG_SYSTEM`,
-and `GIT_CONFIG_NOSYSTEM` for those commands so the commit cannot use a redirected trust context.
+The environment checker rejects before a commit or push:
+
+- `GIT_CONFIG_PARAMETERS` containing a protected key;
+- `GIT_CONFIG_COUNT` plus every indexed `GIT_CONFIG_KEY_<n>` and `GIT_CONFIG_VALUE_<n>` protected-key pair;
+- `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM`, or `GIT_CONFIG_NOSYSTEM` trust redirection;
+- `GIT_COMMITTER_NAME`, `GIT_COMMITTER_EMAIL`, or `EMAIL` identity overrides;
+- unexpected `core.hooksPath`;
+- missing or changed Git 2.54 config-based hk commands for pre-commit and pre-push.
+
 Author-only variables remain permitted because author and committer are different domains.
+Read-only `get` forms and `--blob` remain allowed.
 
 Read operations remain allowed.
 Direct edits to `.git/config` or an included file are not command-interceptable;
@@ -376,29 +392,60 @@ Amend uses the same check.
 Commands that do not auto-push rely on the broader pre-push boundary.
 
 Before implementing range logic,
-prove with a real disposable push that hk 1.50.0 forwards native pre-push standard input byte-for-byte through
-`{{ hook_stdin }}` and a step's `stdin` field.
-Pin that fixture to the repository's hk executable and Pkl package versions.
+prove with a real disposable push that hk 1.50.0 forwards native pre-push standard input byte-for-byte.
+The production Pkl shape is:
 
-For each native pre-push line:
+```pkl
+local gitSafetyPrePush = new Step {
+  check = "node_modules/.bin/git-safety pre-push {{ hook_args }}"
+  stdin = "{{ hook_stdin }}"
+  exclusive = true
+}
+```
+
+The fixture installs a temporary hk configuration with the same `stdin` field.
+Its Node check command writes standard input bytes to a file inside the disposable repository.
+A real push supplies known local and remote refs;
+the test compares captured bytes against Git's expected
+`<local-ref> <local-oid> <remote-ref> <remote-oid>\n` records in refspec order.
+Pin the fixture to the repository's hk executable and Pkl package versions.
+
+The verifier acquires an isolated object graph before calculating ranges:
+
+1. Create a temporary bare clone with `git clone --bare --shared` from the active worktree.
+   The clone sees every local object through a read-only alternates file and does not mutate the source repository.
+2. Fetch live remote heads and tags from the hook-provided URL into only
+   `refs/prepush-remote/heads/*` and `refs/prepush-remote/tags/*` in the temporary clone.
+3. Abort on authentication,
+   advertisement,
+   fetch,
+   or object-connectivity failure.
+4. Remove the temporary clone through structured cleanup after verification.
+
+For each native pre-push line inside that complete disposable graph:
 
 - skip a deletion when the local object ID is all zeroes;
-- require every nonzero local object to exist;
+- require every nonzero local and remote object to exist;
 - peel tag objects to commits when possible;
 - for an existing remote ref,
-  compute the local commit minus the advertised remote object and fail closed if that remote object is absent locally;
+  compute the local commit minus the exact advertised remote object;
 - for a new remote ref,
-  query live remote refs with real `git ls-remote --refs`,
-  use locally present advertised tips as exclusions,
-  and treat missing tips as widening the verification set rather than silently excluding history;
+  compute the local commit minus every fetched `refs/prepush-remote/*` tip;
 - deduplicate commit object IDs across updates;
 - require the committer identity to match the trusted local allowlist;
 - run `git verify-commit` for every selected commit;
 - require the verified SSH principal to match the commit's committer email.
 
 Do not use remote-tracking refs as authority because they can be stale.
-Any missing object or ambiguous parse aborts the push with a fetch-and-retry diagnostic.
-The hook performs no fetch and changes no refs.
+The remote fetch mutates only the temporary bare clone,
+never local refs,
+configuration,
+index,
+or object storage.
+Existing bad commits already reachable from the remote are subtracted and do not require history rewriting.
+An empty remote has no exclusions,
+so publishing a complete history to it verifies every reachable commit and may require a separate migration decision.
+Any missing object or ambiguous parse aborts the push.
 
 This covers normal pushes,
 new branches,
@@ -443,11 +490,50 @@ and topic-branch creators before activation.
 Adding another committer email is an explicit server-policy change,
 not something a local commit can self-authorize.
 
+The temporary-branch contract sent to the repository-rules API is equivalent to:
+
+```json
+{
+  "name": "Verified approved committers fixture",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/git-safety-fixture"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    { "type": "required_signatures" },
+    {
+      "type": "committer_email_pattern",
+      "parameters": {
+        "name": "Approved committer emails",
+        "negate": false,
+        "operator": "regex",
+        "pattern": "^(an@aquati\\.cat|noreply@github\\.com)$"
+      }
+    },
+    { "type": "non_fast_forward" }
+  ]
+}
+```
+
+The fixture is a mandatory contract test,
+not an assumption:
+it proves anchored-regex behavior,
+composition with `required_signatures`,
+owner behavior with an empty bypass list,
+and the GitHub-generated identity path.
+Do not create the final ruleset if any expected rejection or acceptance differs.
+The final payload changes only the name and the include condition to `~ALL`.
+
 GitHub's ruleset API documents `~ALL` as the all-branches condition,
 `required_signatures` as requiring verified commits,
 `committer_email_pattern` as a commit metadata rule,
 and `non_fast_forward` as preventing force pushes.
-Unlike current classic protection for `main`,
+After the fixture passes,
 the ruleset closes ordinary administrator bypass,
 rejects a valid signature carrying an unapproved committer email,
 and protects topic-branch publication as well as default-branch history.
@@ -534,8 +620,11 @@ Create disposable repositories for:
 - linked-worktree and symlinked targets;
 - initialization in a new external temporary directory;
 - protected identity writes using legacy and current config syntax;
-- `--worktree`, `--file`, includes, `includeIf`, protected `-c`, and `GIT_CONFIG_*` injection;
+- `--worktree`, `--file`, includes, `includeIf`, protected `-c`, and indexed `GIT_CONFIG_*` injection;
+- config `--add`, `--replace-all`, `--unset-all`, section rename, and section removal variants;
 - aliases that expand to protected config writes or commit-producing commands;
+- protected hook-path or config-based-hook mutation;
+- wrapper `--no-verify` and `HK=0` rejection;
 - read-only protected config queries;
 - explicit cleanup of contaminated local values.
 
@@ -556,7 +645,8 @@ Cover:
 - local email override;
 - worktree-scope override;
 - included local or worktree identity;
-- protected `-c`, `GIT_CONFIG_*`, and committer-environment overrides;
+- protected `-c`, legacy and indexed `GIT_CONFIG_*`, and committer-environment overrides;
+- missing or changed hk config-based hook commands;
 - allowed author-only environment and `--author` metadata;
 - malformed display names and exact matching;
 - fixture email with a cryptographically valid signature;
@@ -594,10 +684,14 @@ Cover:
 - one unsigned commit;
 - one bad signature;
 - multiple outgoing commits with one bad middle commit;
-- existing remote object absent locally;
+- existing remote object absent from the source clone but acquired into the temporary graph;
 - new branch against live remote refs;
-- stale remote-tracking refs;
-- live remote tips absent locally;
+- stale remote-tracking refs ignored;
+- prior bad ancestors already reachable from the remote excluded without rewriting;
+- empty remote requiring verification of every reachable commit;
+- remote authentication,
+  fetch,
+  and object-connectivity failures;
 - multiple refs;
 - merge commit;
 - symbolic and annotated tag inputs;
@@ -608,6 +702,11 @@ Cover:
 
 Rejected pushes must leave every remote ref unchanged.
 Accepted pushes must update only the requested refs.
+Every case hashes source refs,
+configuration,
+index,
+and object directories before and after to prove the remote snapshot touched only its temporary bare clone.
+The temporary clone must be removed after both success and failure.
 
 ### GitHub protection fixture
 
@@ -619,7 +718,13 @@ Verify:
 - an owner push containing a valid signature and unapproved committer email is rejected;
 - an owner force push is rejected;
 - an owner push containing an approved committer email and valid signature succeeds;
-- current GitHub-generated and automation commit paths either satisfy the rule or receive an explicit policy decision.
+- a Contents API commit with no custom identity demonstrates the actual GitHub-generated committer path;
+- current automation and release commit paths either satisfy the rule or receive an explicit policy decision.
+
+Record the fixture request JSON,
+response JSON,
+rule-suite results,
+and observed remote diagnostics in this plan before creating the `~ALL` ruleset.
 
 Run a separate temporary tag-ruleset experiment:
 
