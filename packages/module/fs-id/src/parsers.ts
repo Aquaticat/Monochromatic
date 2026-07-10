@@ -73,67 +73,55 @@ const SOURCE_PREFIXES: Readonly<Record<FsIdSource, string>> = {
 };
 
 /**
+ * Checks canonical payload grammar without throwing.
+ *
+ * @param value - Canonical payload candidate
+ *
+ * @returns Whether payload is lowercase safe ASCII
+ *
+ * @example
+ * ```ts
+ * isNormalizedIdentityPayload('1a2b-3c4d'); // true
+ * ```
+ */
+function isNormalizedIdentityPayload(value: string,): boolean {
+  if ((value.length === 0)
+    || (value.length > MAX_PAYLOAD_LENGTH)
+    || (value === '-')
+    || (value !== value.trim())
+    || (value !== value.toLowerCase())) {
+    return false;
+  }
+  for (const character of value) {
+    if (!SAFE_PAYLOAD_CHARACTERS.includes(character,))
+      return false;
+  }
+  return true;
+}
+
+/**
  * Normalizes and validates one command-supplied identity payload.
  *
  * @param value - Untrusted command output token
  *
- * @returns Lowercase safe payload or `null`
+ * @returns Lowercase safe payload
+ *
+ * @throws when payload is empty or unsafe
  *
  * @example
  * ```ts
  * normalizeIdentityPayload(' 1A2B-3C4D '); // '1a2b-3c4d'
  * ```
  */
-export function normalizeIdentityPayload(value: string,): string | null {
+export function normalizeIdentityPayload(value: string,): string {
   /**
    * Trimmed lowercase representation used by trust keys.
    */
-  const normalized = value.trim().toLowerCase();
-  if ((normalized.length === 0) || (normalized.length > MAX_PAYLOAD_LENGTH))
-    return null;
-
-  for (const character of normalized) {
-    if (!SAFE_PAYLOAD_CHARACTERS.includes(character,))
-      return null;
-  }
-
-  if (normalized === '-')
-    return null;
-
+  const normalized = value.trim()
+    .toLowerCase();
+  if (!isNormalizedIdentityPayload(normalized,))
+    throw new TypeError('invalid filesystem identity payload',);
   return normalized;
-}
-
-/**
- * Creates a source-qualified colon-free identity.
- *
- * @param source - Mechanism that produced payload
- *
- * @param payload - Validated platform value
- *
- * @returns Branded identity
- *
- * @throws {TypeError} when payload is unsafe or empty
- *
- * @example
- * ```ts
- * createFsId({ source: 'fs-uuid', payload: 'ABCD' });
- * ```
- */
-export function createFsId({
-  source,
-  payload,
-}: {
-  readonly source: FsIdSource;
-  readonly payload: string;
-},): FsId {
-  /**
-   * Canonical payload after grammar validation.
-   */
-  const normalized = normalizeIdentityPayload(payload,);
-  if (normalized === null)
-    throw new TypeError(`invalid ${source} filesystem identity payload`,);
-
-  return `${SOURCE_PREFIXES[source]}${normalized}` as FsId;
 }
 
 /**
@@ -153,8 +141,58 @@ export function isFsId(value: string,): value is FsId {
     .some(function prefixMatches(prefix,): boolean {
       if (!value.startsWith(prefix,))
         return false;
-      return normalizeIdentityPayload(value.slice(prefix.length,)) !== null;
+      return isNormalizedIdentityPayload(value.slice(prefix.length,),);
     },);
+}
+
+/**
+ * Asserts generated filesystem-ID grammar.
+ *
+ * @param value - Candidate identifier
+ *
+ * @returns Nothing after narrowing value to generated identity
+ *
+ * @throws when value does not have generated shape
+ *
+ * @example
+ * ```ts
+ * assertFsId('fs-uuid_abcd');
+ * ```
+ */
+export function assertFsId(value: string,): asserts value is FsId {
+  if (!isFsId(value,))
+    throw new TypeError('invalid generated filesystem identity',);
+}
+
+/**
+ * Creates a source-qualified colon-free identity.
+ *
+ * @param source - Mechanism that produced payload
+ *
+ * @param payload - Validated platform value
+ *
+ * @returns Branded identity
+ *
+ * @throws when payload is unsafe or empty
+ *
+ * @example
+ * ```ts
+ * createFsId({ source: 'fs-uuid', payload: 'ABCD' });
+ * ```
+ */
+export function createFsId({
+  source,
+  payload,
+}: {
+  readonly source: FsIdSource;
+  readonly payload: string;
+},): FsId {
+  /**
+   * Source-qualified canonical string before assertion narrowing.
+   */
+  const candidate = `${SOURCE_PREFIXES[source]}${normalizeIdentityPayload(payload,)}`;
+  assertFsId(candidate,);
+  return candidate;
 }
 
 /**
@@ -162,14 +200,16 @@ export function isFsId(value: string,): value is FsId {
  *
  * @param output - Captured standard output
  *
- * @returns Safe token or `null`
+ * @returns Safe token
+ *
+ * @throws when output has no safe UUID
  *
  * @example
  * ```ts
  * parseFindmntUuid(' 1234-ABCD\n'); // '1234-abcd'
  * ```
  */
-export function parseFindmntUuid(output: string,): string | null {
+export function parseFindmntUuid(output: string,): string {
   return normalizeIdentityPayload(output,);
 }
 
@@ -178,14 +218,16 @@ export function parseFindmntUuid(output: string,): string | null {
  *
  * @param output - Captured `diskutil` text
  *
- * @returns Safe token or `null`
+ * @returns Safe token
+ *
+ * @throws when output has no safe Volume UUID
  *
  * @example
  * ```ts
  * parseDiskutilVolumeUuid('Volume UUID: ABCD-1234\n'); // 'abcd-1234'
  * ```
  */
-export function parseDiskutilVolumeUuid(output: string,): string | null {
+export function parseDiskutilVolumeUuid(output: string,): string {
   /**
    * Lowercase field label accepted after trimming line indentation.
    */
@@ -195,11 +237,13 @@ export function parseDiskutilVolumeUuid(output: string,): string | null {
      * Trimmed line whose original offsets are irrelevant after delimiter.
      */
     const trimmed = line.trim();
-    if (!trimmed.toLowerCase().startsWith(label,))
+    if (!trimmed.toLowerCase()
+      .startsWith(label,)) {
       continue;
-    return normalizeIdentityPayload(trimmed.slice(label.length,));
+    }
+    return normalizeIdentityPayload(trimmed.slice(label.length,),);
   }
-  return null;
+  throw new TypeError('diskutil returned no valid Volume UUID',);
 }
 
 /**
@@ -223,31 +267,32 @@ export function parseVolumeSerial(output: string,): string {
    * Label start or `-1` when localized/unexpected output omits it.
    */
   const labelIndex = lower.indexOf(SERIAL_LABEL,);
-  if (labelIndex === -1)
+  if (labelIndex === (-1))
     return '';
 
-  /**
-   * Forward-only cursor after label.
-   */
-  let cursor = labelIndex + SERIAL_LABEL.length;
-  while ((cursor < output.length)
-    && ((output.charAt(cursor,) === ' ') || (output.charAt(cursor,) === '\t'))) {
-    cursor += 1;
-  }
-
-  /**
-   * Serial characters collected once to avoid repeated string rebuilding.
-   */
-  const characters: string[] = [];
-  while (cursor < output.length) {
+  return (function scanSerialToken(): string {
     /**
-     * Current character whose whitespace membership ends token.
+     * Forward-only cursor after label.
      */
-    const character = output.charAt(cursor,);
-    if (SERIAL_TERMINATORS.has(character,))
-      break;
-    characters.push(character,);
-    cursor += 1;
-  }
-  return characters.join('',);
+    let cursor = labelIndex + SERIAL_LABEL.length;
+    while ((cursor < output.length)
+      && ((output.charAt(cursor,) === ' ') || (output.charAt(cursor,) === '\t'))) {
+      cursor += 1;
+    }
+    /**
+     * Serial characters collected once to avoid repeated string rebuilding.
+     */
+    const characters: string[] = [];
+    while (cursor < output.length) {
+      /**
+       * Current character whose whitespace membership ends token.
+       */
+      const character = output.charAt(cursor,);
+      if (SERIAL_TERMINATORS.has(character,))
+        break;
+      characters.push(character,);
+      cursor += 1;
+    }
+    return characters.join('',);
+  })();
 }

@@ -5,6 +5,18 @@
  */
 
 /**
+ * Readonly cause options accepted by custom errors.
+ *
+ * @example
+ * ```ts
+ * const options: FsIdErrorOptions = { cause: new Error('command'), };
+ * ```
+ */
+type FsIdErrorOptions = {
+  readonly cause?: unknown;
+};
+
+/**
  * Error raised when supported-platform identity mechanisms all fail.
  *
  * @example
@@ -27,10 +39,13 @@ export class FsIdResolutionError extends Error {
    */
   public constructor(
     message: string,
-    options?: ErrorOptions,
+    options?: FsIdErrorOptions,
   ) {
-    super(message, options,);
-    this.name = FsIdResolutionError.name;
+    super(
+      message,
+      options,
+    );
+    this.name = 'FsIdResolutionError';
   }
 }
 
@@ -55,6 +70,6 @@ export class UnsupportedFsIdPlatformError extends Error {
    */
   public constructor(platform: string,) {
     super(`unsupported platform for filesystem ID resolution: ${platform}`,);
-    this.name = UnsupportedFsIdPlatformError.name;
+    this.name = 'UnsupportedFsIdPlatformError';
   }
 }

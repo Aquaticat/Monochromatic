@@ -4,7 +4,10 @@
  * @module
  */
 
-import { realpath, stat, } from 'node:fs/promises';
+import {
+  realpath,
+  stat,
+} from 'node:fs/promises';
 import { platform, } from 'node:os';
 import { resolve, } from 'node:path';
 
@@ -45,7 +48,7 @@ const l = tagged({ tag: 'module-fs-id', },);
  * await canonicalizePath({ path: '.' });
  * ```
  */
-async function canonicalizePath({ path, }: { readonly path: string; },): Promise<string> {
+function canonicalizePath({ path, }: { readonly path: string; },): Promise<string> {
   return realpath(resolve(path,),);
 }
 
@@ -73,12 +76,18 @@ async function runCommand({
   /**
    * Function-scoped logger.
    */
-  const rl = tagged({ tag: runCommand.name, l, },);
+  const rl = tagged({
+    tag: runCommand.name,
+    l,
+  },);
   rl.debug(`running ${command} ${args.join(' ',)}`,);
   /**
    * Successful command result.
    */
-  const { stdout, } = await nanoSpawn(command, [...args,],);
+  const { stdout, } = await nanoSpawn(
+    command,
+    [...args,],
+  );
   return stdout;
 }
 
@@ -98,8 +107,12 @@ async function readDeviceNumber({ path, }: { readonly path: string; },): Promise
   /**
    * Bigint stat result avoids precision loss for device identifiers.
    */
-  const metadata = await stat(path, { bigint: true, },);
-  return metadata.dev.toString();
+  const metadata = await stat(
+    path,
+    { bigint: true, },
+  );
+  return metadata.dev
+    .toString();
 }
 
 /**
@@ -149,14 +162,14 @@ const productionAdapters: FsIdResolverAdapters = {
  *
  * @returns Stable or degraded identity
  *
- * @throws {UnsupportedFsIdPlatformError} when platform has no strategy
+ * @throws when platform has no strategy
  *
  * @example
  * ```ts
  * await resolveCanonicalPath({ path: '/repo', adapters });
  * ```
  */
-async function resolveCanonicalPath({
+function resolveCanonicalPath({
   path,
   adapters,
 }: {
@@ -168,11 +181,20 @@ async function resolveCanonicalPath({
    */
   const hostPlatform = adapters.platform();
   if (hostPlatform === 'linux')
-    return resolveLinuxFsId({ path, adapters, },);
+    return resolveLinuxFsId({
+      path,
+      adapters,
+    },);
   if (hostPlatform === 'darwin')
-    return resolveDarwinFsId({ path, adapters, },);
+    return resolveDarwinFsId({
+      path,
+      adapters,
+    },);
   if (hostPlatform === 'win32')
-    return resolveWindowsFsId({ path, adapters, },);
+    return resolveWindowsFsId({
+      path,
+      adapters,
+    },);
   throw new UnsupportedFsIdPlatformError(hostPlatform,);
 }
 
@@ -216,7 +238,10 @@ export function createFsIdResolver({
       /**
        * Platform resolution before mandatory degraded warning.
        */
-      const resolution = await resolveCanonicalPath({ path, adapters, },);
+      const resolution = await resolveCanonicalPath({
+        path,
+        adapters,
+      },);
       if (!resolution.stable) {
         adapters.warn({
           path,
@@ -264,7 +289,10 @@ export function createFsIdResolver({
      * Resolution promise stored before awaiting so concurrent callers share it.
      */
     const pending = resolveCanonical({ path: canonicalPath, },);
-    cache.set(canonicalPath, pending,);
+    cache.set(
+      canonicalPath,
+      pending,
+    );
     return pending;
   };
 }
@@ -286,16 +314,14 @@ const defaultResolver = createFsIdResolver({ adapters: productionAdapters, },);
  *
  * @returns Stable preferred or warned degraded identity
  *
- * @throws {UnsupportedFsIdPlatformError} when host has no strategy
- *
- * @throws {FsIdResolutionError} when no identity mechanism succeeds
+ * @throws when host has no strategy or no identity mechanism succeeds
  *
  * @example
  * ```ts
  * const result = await resolveFsId({ path: process.cwd() });
  * ```
  */
-export async function resolveFsId({
+export function resolveFsId({
   path,
 }: {
   readonly path: string;

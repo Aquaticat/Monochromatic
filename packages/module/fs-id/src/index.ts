@@ -9,6 +9,7 @@ export {
   UnsupportedFsIdPlatformError,
 } from './errors.ts';
 export {
+  assertFsId,
   createFsId,
   isFsId,
   normalizeIdentityPayload,

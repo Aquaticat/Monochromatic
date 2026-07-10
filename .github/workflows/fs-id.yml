@@ -1,0 +1,42 @@
+name: filesystem identity host evidence
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+    - 'packages/module/fs-id/**'
+    - '.github/workflows/fs-id.yml'
+  push:
+    branches: ['main']
+    paths:
+    - 'packages/module/fs-id/**'
+    - '.github/workflows/fs-id.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  preferred-identity:
+    name: preferred identity (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-latest
+        - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Set up Node
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+      with:
+        node-version: 26.5.0
+        package-manager-cache: false
+
+    - name: Resolve preferred identity
+      run: node packages/module/fs-id/src/host-evidence.ts

@@ -79,7 +79,10 @@ function stableResolution({
   readonly payload: string;
 },): FsIdResolution {
   return {
-    value: createFsId({ source, payload, },),
+    value: createFsId({
+      source,
+      payload,
+    },),
     stable: true,
     source,
   };
@@ -111,7 +114,10 @@ function degradedResolution({
   readonly reason: string;
 },): FsIdResolution {
   return {
-    value: createFsId({ source, payload, },),
+    value: createFsId({
+      source,
+      payload,
+    },),
     stable: false,
     source,
     reason,
@@ -127,7 +133,7 @@ function degradedResolution({
  *
  * @returns Safe payload
  *
- * @throws {FsIdResolutionError} when output has no safe identity
+ * @throws when output has no safe identity
  *
  * @example
  * ```ts
@@ -144,10 +150,16 @@ function requiredPayload({
   /**
    * Normalized command output.
    */
-  const payload = normalizeIdentityPayload(output,);
-  if (payload === null)
-    throw new FsIdResolutionError(`${source} returned no valid filesystem identity`,);
-  return payload;
+  try {
+    return normalizeIdentityPayload(output,);
+  }
+  catch (error) {
+    l.error(`${source} returned unsafe filesystem identity: ${caughtMessage(error,)}`,);
+    throw new FsIdResolutionError(
+      `${source} returned no valid filesystem identity`,
+      { cause: error, },
+    );
+  }
 }
 
 /**
@@ -159,7 +171,7 @@ function requiredPayload({
  *
  * @returns Stable or degraded identity
  *
- * @throws {FsIdResolutionError} when both commands fail
+ * @throws when both commands fail
  *
  * @example
  * ```ts
@@ -176,7 +188,10 @@ export async function resolveLinuxFsId({
   /**
    * Function-scoped logger.
    */
-  const rl = tagged({ tag: resolveLinuxFsId.name, l, },);
+  const rl = tagged({
+    tag: resolveLinuxFsId.name,
+    l,
+  },);
   try {
     /**
      * Preferred UUID command output.
@@ -194,10 +209,11 @@ export async function resolveLinuxFsId({
      * Parsed UUID or absent sentinel.
      */
     const uuid = parseFindmntUuid(output,);
-    if (uuid === null)
-      throw new FsIdResolutionError('findmnt returned no filesystem UUID',);
     rl.debug(`resolved stable filesystem UUID for ${path}`,);
-    return stableResolution({ source: 'fs-uuid', payload: uuid, },);
+    return stableResolution({
+      source: 'fs-uuid',
+      payload: uuid,
+    },);
   }
   catch (preferredError) {
     rl.debug(`findmnt UUID unavailable for ${path}: ${caughtMessage(preferredError,)}`,);
@@ -215,7 +231,10 @@ export async function resolveLinuxFsId({
       },);
       return degradedResolution({
         source: 'f-fsid',
-        payload: requiredPayload({ output, source: 'stat f_fsid', },),
+        payload: requiredPayload({
+          output,
+          source: 'stat f_fsid',
+        },),
         reason: `filesystem UUID unavailable: ${caughtMessage(preferredError,)}`,
       },);
     }
@@ -238,7 +257,7 @@ export async function resolveLinuxFsId({
  *
  * @returns Stable or degraded identity
  *
- * @throws {FsIdResolutionError} when both commands fail
+ * @throws when both commands fail
  *
  * @example
  * ```ts
@@ -255,20 +274,30 @@ export async function resolveDarwinFsId({
   /**
    * Function-scoped logger.
    */
-  const rl = tagged({ tag: resolveDarwinFsId.name, l, },);
+  const rl = tagged({
+    tag: resolveDarwinFsId.name,
+    l,
+  },);
   try {
     /**
      * Preferred diskutil output.
      */
-    const output = await adapters.run({ command: 'diskutil', args: ['info', path,], },);
+    const output = await adapters.run({
+      command: 'diskutil',
+      args: [
+        'info',
+        path,
+      ],
+    },);
     /**
      * Parsed UUID or absent sentinel.
      */
     const uuid = parseDiskutilVolumeUuid(output,);
-    if (uuid === null)
-      throw new FsIdResolutionError('diskutil returned no Volume UUID',);
     rl.debug(`resolved stable Volume UUID for ${path}`,);
-    return stableResolution({ source: 'volume-uuid', payload: uuid, },);
+    return stableResolution({
+      source: 'volume-uuid',
+      payload: uuid,
+    },);
   }
   catch (preferredError) {
     rl.debug(`diskutil UUID unavailable for ${path}: ${caughtMessage(preferredError,)}`,);
@@ -276,10 +305,20 @@ export async function resolveDarwinFsId({
       /**
        * Degraded BSD stat device output.
        */
-      const output = await adapters.run({ command: 'stat', args: ['-f', '%d', path,], },);
+      const output = await adapters.run({
+        command: 'stat',
+        args: [
+          '-f',
+          '%d',
+          path,
+        ],
+      },);
       return degradedResolution({
         source: 'device-number',
-        payload: requiredPayload({ output, source: 'stat device number', },),
+        payload: requiredPayload({
+          output,
+          source: 'stat device number',
+        },),
         reason: `Volume UUID unavailable: ${caughtMessage(preferredError,)}`,
       },);
     }
@@ -300,7 +339,7 @@ export async function resolveDarwinFsId({
  *
  * @returns Uppercase drive root
  *
- * @throws {FsIdResolutionError} for non-drive path
+ * @throws for non-drive path
  *
  * @example
  * ```ts
@@ -311,7 +350,8 @@ export function windowsDriveRoot(path: string,): string {
   /**
    * Lowercase drive letter candidate.
    */
-  const letter = path.charAt(0,).toLowerCase();
+  const letter = path.charAt(0,)
+    .toLowerCase();
   /**
    * Root separator candidate.
    */
@@ -333,7 +373,7 @@ export function windowsDriveRoot(path: string,): string {
  *
  * @returns Stable or degraded identity
  *
- * @throws {FsIdResolutionError} when both mechanisms fail
+ * @throws when both mechanisms fail
  *
  * @example
  * ```ts
@@ -350,7 +390,10 @@ export async function resolveWindowsFsId({
   /**
    * Function-scoped logger.
    */
-  const rl = tagged({ tag: resolveWindowsFsId.name, l, },);
+  const rl = tagged({
+    tag: resolveWindowsFsId.name,
+    l,
+  },);
   try {
     /**
      * Validated drive root safe for fixed `cmd.exe` command text.
@@ -361,7 +404,12 @@ export async function resolveWindowsFsId({
      */
     const output = await adapters.run({
       command: 'cmd.exe',
-      args: ['/d', '/s', '/c', `vol ${driveRoot}`,],
+      args: [
+        '/d',
+        '/s',
+        '/c',
+        `vol ${driveRoot}`,
+      ],
     },);
     /**
      * Serial token from output.
@@ -371,10 +419,11 @@ export async function resolveWindowsFsId({
      * Safe normalized serial or absent sentinel.
      */
     const payload = normalizeIdentityPayload(serial,);
-    if (payload === null)
-      throw new FsIdResolutionError('vol returned no volume serial',);
     rl.debug(`resolved stable volume serial for ${path}`,);
-    return stableResolution({ source: 'volume-serial', payload, },);
+    return stableResolution({
+      source: 'volume-serial',
+      payload,
+    },);
   }
   catch (preferredError) {
     rl.debug(`volume serial unavailable for ${path}: ${caughtMessage(preferredError,)}`,);
@@ -385,7 +434,10 @@ export async function resolveWindowsFsId({
       const deviceNumber = await adapters.deviceNumber({ path, },);
       return degradedResolution({
         source: 'device-number',
-        payload: requiredPayload({ output: deviceNumber, source: 'runtime device number', },),
+        payload: requiredPayload({
+          output: deviceNumber,
+          source: 'runtime device number',
+        },),
         reason: `volume serial unavailable: ${caughtMessage(preferredError,)}`,
       },);
     }
