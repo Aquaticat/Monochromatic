@@ -25,7 +25,11 @@ const realGitPath = await resolveGit();
 /** Absolute path to cli-git entry point under test. */
 const WRAPPER_PATH = join(
   import.meta.dirname,
-  'bin.ts',
+  '..',
+  'dist',
+  'final',
+  'node',
+  'bin.mjs',
 );
 
 /** Git author email used in disposable repositories. */
@@ -339,6 +343,96 @@ async function readLatestSubject({
 await describe({
   name: 'cli-git entry point',
   children: [
+    it({
+      name: 'emits stable wrapper JSONL and blocks real git below root',
+      fn: async function testRequireRootJsonl(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        /** Subdirectory rejected by require-root. */
+        const subdirectoryPath = join(tempDirectory.path, 'subdirectory',);
+        await mkdir(subdirectoryPath,);
+        /** Built-wrapper policy failure. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: subdirectoryPath,
+          args: ['status', '--short',],
+        },),);
+        /** Exact expected settled finding bytes. */
+        const expectedEvent = JSON.stringify({
+          schemaVersion: 1,
+          sequence: 0,
+          type: 'finding',
+          trigger: 'pre-forward',
+          policyId: 'require-root',
+          severity: 'error',
+          code: 'require-root/not-at-root',
+          message: `cli-git: not at the root of the git repository. Repo root is ${tempDirectory.path} but effective cwd is ${subdirectoryPath}. Tip: cd to ${tempDirectory.path} or pass -C ${tempDirectory.path} before the subcommand.`,
+          fix: 'none',
+        },);
+        expect(error.exitCode,).toBe(1,);
+        expect(error.stderr,).toBe(`${expectedEvent}\n`,);
+        expect(error.stdout,).toBe('',);
+      },
+    },),
+    it({
+      name: 'strips require-root escape before built git forwarding',
+      fn: async function testBuiltEscapeForwarding(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        /** Subdirectory allowed for one escaped invocation. */
+        const subdirectoryPath = join(tempDirectory.path, 'subdirectory',);
+        await mkdir(subdirectoryPath,);
+        await runWrapper({
+          cwd: subdirectoryPath,
+          args: ['--no-enforce-require-root', 'status', '--short',],
+        },);
+      },
+    },),
+    it({
+      name: 'runs Optique status and direct check management commands',
+      fn: async function testManagementCommands(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        /** Subdirectory checked by direct management operation. */
+        const subdirectoryPath = join(tempDirectory.path, 'subdirectory',);
+        await mkdir(subdirectoryPath,);
+        /** Stable management status response. */
+        const statusResult = await runWrapper({
+          cwd: subdirectoryPath,
+          args: ['cli-git', 'status',],
+        },);
+        expect(statusResult.stdout,).toBe(`${JSON.stringify({
+          schemaVersion: 1,
+          type: 'status',
+          policies: [{
+            id: 'require-root',
+            severity: 'error',
+            warnSafe: false,
+          },],
+        },)}\n`,);
+        /** Built-in direct-check failure. */
+        const checkError = requireSubprocessError(await catchWrapperError({
+          cwd: subdirectoryPath,
+          args: ['cli-git', 'check', '--policy', 'require-root', '--all',],
+        },),);
+        expect(checkError.exitCode,).toBe(1,);
+        expect(checkError.stdout,).toContain('"trigger":"direct-check"',);
+        expect(checkError.stdout,).toContain('"code":"require-root/not-at-root"',);
+        expect(checkError.stderr,).toBe('',);
+      },
+    },),
+    it({
+      name: 'reports direct-check usage failures with exit code two',
+      fn: async function testManagementUsageFailure(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Missing direct-check scope failure. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: ['cli-git', 'check',],
+        },),);
+        expect(error.exitCode,).toBe(2,);
+        expect(error.stderr,).toContain('requires exactly one scope',);
+      },
+    },),
     it({
       name: 'prints wrapper diagnostic for pathless commit before git fatal',
       fn: async function testPathlessCommitDiagnostic(): Promise<void> {

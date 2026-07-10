@@ -25,27 +25,49 @@ const SCHEMA_VERSION = 1;
  * ```
  */
 export type FindingEvent = Readonly<{
-  /** Schema version. */
+  /**
+   * Schema version.
+   */
   schemaVersion: 1;
-  /** Invocation-local sequence. */
+  /**
+   * Invocation-local sequence.
+   */
   sequence: number;
-  /** Event discriminator. */
+  /**
+   * Event discriminator.
+   */
   type: 'finding';
-  /** Lifecycle trigger. */
+  /**
+   * Lifecycle trigger.
+   */
   trigger: PolicyTrigger;
-  /** Effective policy ID. */
+  /**
+   * Effective policy ID.
+   */
   policyId: string;
-  /** Active severity. */
+  /**
+   * Active severity.
+   */
   severity: ActivePolicySeverity;
-  /** Fully qualified finding code. */
+  /**
+   * Fully qualified finding code.
+   */
   code: string;
-  /** Human-readable message. */
+  /**
+   * Human-readable message.
+   */
   message: string;
-  /** Optional repository path. */
+  /**
+   * Optional repository path.
+   */
   path?: RepositoryPath;
-  /** Optional byte location. */
+  /**
+   * Optional byte location.
+   */
   location?: FindingLocation;
-  /** Whether correction remains available. */
+  /**
+   * Whether correction remains available.
+   */
   fix: 'none' | 'available';
 }>;
 
@@ -58,19 +80,33 @@ export type FindingEvent = Readonly<{
  * ```
  */
 export type EngineFailureEvent = Readonly<{
-  /** Schema version. */
+  /**
+   * Schema version.
+   */
   schemaVersion: 1;
-  /** Invocation-local sequence. */
+  /**
+   * Invocation-local sequence.
+   */
   sequence: number;
-  /** Event discriminator. */
+  /**
+   * Event discriminator.
+   */
   type: 'engine-failure';
-  /** Stable failure code. */
+  /**
+   * Stable failure code.
+   */
   code: 'config-invalid' | 'policy-incomplete';
-  /** Human-readable message. */
+  /**
+   * Human-readable message.
+   */
   message: string;
-  /** Lifecycle trigger. */
+  /**
+   * Lifecycle trigger.
+   */
   trigger?: PolicyTrigger;
-  /** Responsible policy ID. */
+  /**
+   * Responsible policy ID.
+   */
   policyId?: string;
 }>;
 
@@ -87,7 +123,23 @@ export type PolicyEvent = FindingEvent | EngineFailureEvent;
 /**
  * Creates finding event while copying retained fields.
  *
- * @param options - validated finding event values
+ * @param sequence - invocation-local event order
+ *
+ * @param trigger - lifecycle point being checked
+ *
+ * @param policyId - effective policy identifier
+ *
+ * @param severity - active policy severity
+ *
+ * @param code - policy-local finding code
+ *
+ * @param message - human-readable explanation
+ *
+ * @param path - optional affected repository path
+ *
+ * @param location - optional exact byte range
+ *
+ * @param fix - whether correction remains available
  *
  * @returns immutable event value
  *
@@ -132,7 +184,15 @@ export function createFindingEvent({
 /**
  * Creates engine failure event.
  *
- * @param options - failure fields except common schema fields
+ * @param sequence - invocation-local event order
+ *
+ * @param code - stable engine failure code
+ *
+ * @param message - human-readable failure explanation
+ *
+ * @param trigger - optional lifecycle point
+ *
+ * @param policyId - optional responsible policy ID
  *
  * @returns immutable event value
  *
@@ -176,5 +236,6 @@ export function renderPolicyEvents(events: readonly PolicyEvent[],): string {
     return '';
   return `${events.map(function serializePolicyEvent(event,) {
     return JSON.stringify(event,);
-  },).join('\n',)}\n`;
+  },)
+    .join('\n',)}\n`;
 }

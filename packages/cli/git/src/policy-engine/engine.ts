@@ -1,6 +1,11 @@
-/** First stable-pass policy engine slice. @module */
+/**
+ * First stable-pass policy engine slice. @module
+ */
 import * as v from 'valibot';
-import { ABSENT_GIT_VALUE, } from '../api/context-types.ts';
+import {
+  ABSENT_GIT_VALUE,
+  type LazyPolicyGitFacts,
+} from '../api/context-types.ts';
 import type {
   PolicyContext,
   PolicyDefinition,
@@ -15,137 +20,290 @@ import {
 } from './events.ts';
 import { requireRootPolicy, } from './require-root-policy.ts';
 
-/** Wrapper-only continue flag. */
+/**
+ * Wrapper-only continue flag.
+ */
 const KEEP_GOING_FLAG = '--cli-git-keep-going';
-/** Value-taking options whose following token is never wrapper control syntax. */
+/**
+ * Value-taking options whose following token is never wrapper control syntax.
+ */
 const VALUE_TAKING_OPTIONS: ReadonlySet<string> = new Set([
-  '-c', '-C', '--git-dir', '--work-tree', '--namespace', '--super-prefix',
-  '--attr-source', '-m', '--message', '-F', '--file', '--author', '--date',
+  '-c',
+  '-C',
+  '--git-dir',
+  '--work-tree',
+  '--namespace',
+  '--super-prefix',
+  '--attr-source',
+  '-m',
+  '--message',
+  '-F',
+  '--file',
+  '--author',
+  '--date',
 ]);
-/** Supported policies in fixed built-in order. */
-const BUILT_IN_POLICIES: readonly PolicyDefinition<undefined>[] = [requireRootPolicy,];
-/** Built-in-only configuration schema for this slice. */
+/**
+ * Supported policies in fixed built-in order.
+ */
+const BUILT_IN_POLICIES: readonly PolicyDefinition[] = [requireRootPolicy,];
+/**
+ * Empty lazy Git facts for command-only built-ins in first slice.
+ */
+const EMPTY_LAZY_GIT_FACTS: LazyPolicyGitFacts = {
+  candidates: function candidates() { return Promise.resolve([],); },
+  headOid: function headOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
+  landedCommitOid: function landedCommitOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
+  pushUpdates: function pushUpdates() { return Promise.resolve([],); },
+};
+/**
+ * Built-in-only configuration schema for this slice.
+ */
 const ENGINE_CONFIG_SCHEMA = v.looseObject({
-  policies: v.optional(v.record(v.string(), v.picklist(['off', 'warn', 'error',] as const,),), {}),
+  policies: v.optional(
+    v.record(
+      v.string(),
+      v.picklist([
+        'off',
+        'warn',
+        'error',
+      ] as const,),
+    ),
+    {}
+  ),
 },);
 
-/** Configuration accepted by engine invocation. */
+/**
+ * Configuration accepted by engine invocation.
+ */
 export type PolicyEngineConfig = Readonly<{
-  /** Persistent built-in severity overrides. */
+  /**
+   * Persistent built-in severity overrides.
+   */
   policies?: Readonly<Record<string, PolicySeverity>>;
 }>;
-/** Policy engine invocation options. */
+/**
+ * Policy engine invocation options.
+ */
 export type RunPolicyEngineOptions = Readonly<{
-  /** Exact wrapper arguments. */
+  /**
+   * Exact wrapper arguments.
+   */
   args: readonly string[];
-  /** Lifecycle trigger. */
+  /**
+   * Lifecycle trigger.
+   */
   trigger: 'pre-forward' | 'direct-check';
-  /** Persistent built-in settings. */
+  /**
+   * Persistent built-in settings.
+   */
   config?: PolicyEngineConfig;
-  /** Optional direct-check policy filter. */
+  /**
+   * Optional direct-check policy filter.
+   */
   selectedPolicyIds?: readonly string[];
 }>;
-/** Stable policy-engine result. */
+/**
+ * Stable policy-engine result.
+ */
 export type PolicyEngineResult = Readonly<{
-  /** Forwardable args after wrapper controls are removed. */
+  /**
+   * Forwardable args after wrapper controls are removed.
+   */
   args: readonly string[];
-  /** Stable ordered events. */
+  /**
+   * Stable ordered events.
+   */
   events: readonly PolicyEvent[];
-  /** Unsafe warning configuration diagnostics. */
+  /**
+   * Unsafe warning configuration diagnostics.
+   */
   configWarnings: readonly string[];
-  /** Settled cli-git exit code. */
+  /**
+   * Settled cli-git exit code.
+   */
   exitCode: 0 | 1 | 2;
-  /** Whether real Git should run. */
+  /**
+   * Whether real Git should run.
+   */
   shouldForward: boolean;
 }>;
-/** Parsed invocation controls. */
+/**
+ * Parsed invocation controls.
+ */
 type ParsedPolicyControls = Readonly<{
-  /** Forwardable arguments. */
+  /**
+   * Forwardable arguments.
+   */
   args: readonly string[];
-  /** Continue mode. */
+  /**
+   * Continue mode.
+   */
   keepGoing: boolean;
-  /** Escaped policy IDs. */
+  /**
+   * Escaped policy IDs.
+   */
   escapedPolicyIds: ReadonlySet<string>;
 }>;
 
-/** Returns escape flag for policy ID. */
+/**
+ * Returns escape flag for policy ID.
+ *
+ * @param policyId - policy receiving one-invocation bypass
+ *
+ * @returns exact wrapper-only flag
+ */
 function escapeFlag(policyId: string,): string {
   return `--no-enforce-${policyId}`;
 }
 
-/** Parses wrapper controls without treating option values or pathspecs as flags. */
+/**
+ * Parses wrapper controls without treating option values or pathspecs as flags.
+ *
+ * @param args - exact wrapper arguments
+ *
+ * @returns controls plus forwardable argument sequence
+ */
 function parsePolicyControls(args: readonly string[],): ParsedPolicyControls {
+  /**
+   * Escape flags recognized by current built-in registry.
+   */
   const knownEscapeFlags = new Map(BUILT_IN_POLICIES.map(function toEscapeEntry(policy,) {
-    return [escapeFlag(policy.name,), policy.name,] as const;
+    return [
+      escapeFlag(policy.name,),
+      policy.name,
+    ] as const;
   },),);
-  const escapedPolicyIds = new Set<string>();
-  let keepGoing = false;
-  let separatorReached = false;
-  let previousTakesValue = false;
-  const forwardableArgs = args.filter(function retainArgument(arg,) {
-    if (separatorReached)
+  /**
+   * Mutable scan is isolated so cursor state cannot leak into later engine work.
+   */
+  const controls = (function collectControls(): ParsedPolicyControls {
+    /**
+     * Policy IDs bypassed before pathspec separator.
+     */
+    const escapedPolicyIds = new Set<string>();
+    /**
+     * Whether invocation requested continued policy collection.
+     */
+    let keepGoing = false;
+    /**
+     * Whether Git pathspec separator was consumed.
+     */
+    let separatorReached = false;
+    /**
+     * Whether current token is previous option's value.
+     */
+    let previousTakesValue = false;
+    /**
+     * Arguments retained for real Git.
+     */
+    const forwardableArgs = args.filter(function retainArgument(arg,) {
+      if (separatorReached)
+        return true;
+      if (arg === '--') {
+        separatorReached = true;
+        return true;
+      }
+      if (previousTakesValue) {
+        previousTakesValue = false;
+        return true;
+      }
+      previousTakesValue = VALUE_TAKING_OPTIONS.has(arg,);
+      if (arg === KEEP_GOING_FLAG) {
+        keepGoing = true;
+        return false;
+      }
+      /**
+       * Policy selected by current exact escape flag.
+       */
+      const escapedPolicyId = knownEscapeFlags.get(arg,);
+      if (escapedPolicyId !== undefined) {
+        escapedPolicyIds.add(escapedPolicyId,);
+        return false;
+      }
       return true;
-    if (arg === '--') {
-      separatorReached = true;
-      return true;
-    }
-    if (previousTakesValue) {
-      previousTakesValue = false;
-      return true;
-    }
-    previousTakesValue = VALUE_TAKING_OPTIONS.has(arg,);
-    if (arg === KEEP_GOING_FLAG) {
-      keepGoing = true;
-      return false;
-    }
-    const escapedPolicyId = knownEscapeFlags.get(arg,);
-    if (escapedPolicyId !== undefined) {
-      escapedPolicyIds.add(escapedPolicyId,);
-      return false;
-    }
-    return true;
-  },);
-  return { args: forwardableArgs, keepGoing, escapedPolicyIds, };
+    },);
+    return {
+      args: forwardableArgs,
+      keepGoing,
+      escapedPolicyIds,
+    };
+  })();
+  return controls;
 }
 
-/** Creates current command policy context with lazy facts for this candidate version. */
+/**
+ * Creates current command policy context with lazy facts for this candidate version.
+ *
+ * @param rawArgs - exact wrapper arguments
+ *
+ * @param transformedArgs - wrapper controls removed before real Git
+ *
+ * @returns initial candidate-state context
+ */
 function createPolicyContext({
   rawArgs,
   transformedArgs,
-}: Readonly<{ rawArgs: readonly string[]; transformedArgs: readonly string[]; }>,): PolicyContext {
-  const { effectiveCwd, subcommandIndex, } = parseGlobalOptions(transformedArgs,);
+}: Readonly<{
+  rawArgs: readonly string[];
+  transformedArgs: readonly string[]
+}>,): PolicyContext {
+  /**
+   * Parsed command location and effective directory.
+   */
+  const {
+    effectiveCwd,
+    subcommandIndex,
+  } = parseGlobalOptions(transformedArgs,);
+  /**
+   * Subcommand or explicit absence sentinel.
+   */
+  const subcommand = transformedArgs[subcommandIndex] ?? ABSENT_GIT_VALUE;
   return {
+    candidateVersion: 0,
+    trigger: 'pre-forward',
     command: {
       rawArgs,
       transformedArgs,
-      subcommand: transformedArgs[subcommandIndex],
+      subcommand,
       effectiveCwd,
+      repositoryRoot: effectiveCwd,
       escapedPolicyIds: new Set(),
     },
-    repositoryRoot: effectiveCwd,
-    candidateVersion: 0,
-    stagedPaths: async function stagedPaths() { return []; },
-    worktreePaths: async function worktreePaths() { return []; },
-    readIndexBlob: async function readIndexBlob() { return ABSENT_GIT_VALUE; },
-    readWorktreeFile: async function readWorktreeFile() { return ABSENT_GIT_VALUE; },
-    readCandidateFile: async function readCandidateFile() { return ABSENT_GIT_VALUE; },
+    git: EMPTY_LAZY_GIT_FACTS,
+    signal: new AbortController().signal,
   };
 }
 
-/** Confirms returned policy findings have first-slice runtime shape. */
+/**
+ * Confirms returned policy findings have first-slice runtime shape.
+ *
+ * @param findings - untrusted policy return value
+ *
+ * @returns whether every finding has required non-empty strings
+ */
 function findingsAreValid(findings: readonly PolicyFinding[],): boolean {
   return findings.every(function findingIsValid(finding,) {
-    return typeof finding.code === 'string'
-      && finding.code.length > 0
-      && typeof finding.message === 'string'
-      && finding.message.length > 0;
+    return ((typeof finding.code) === 'string')
+      && (finding.code
+        .length
+        > 0)
+      && ((typeof finding.message) === 'string')
+      && (finding.message
+        .length
+        > 0);
   },);
 }
 
 /**
  * Runs configured built-ins and buffers only settled pass events.
  *
- * @param options - invocation facts and persistent settings
+ * @param args - exact wrapper arguments
+ *
+ * @param trigger - lifecycle point being checked
+ *
+ * @param config - persistent built-in settings
+ *
+ * @param selectedPolicyIds - direct-check filter
  *
  * @returns policy decision and forwardable arguments
  *
@@ -160,8 +318,17 @@ export async function runPolicyEngine({
   config = {},
   selectedPolicyIds,
 }: RunPolicyEngineOptions,): Promise<PolicyEngineResult> {
+  /**
+   * Wrapper controls and real-Git arguments.
+   */
   const controls = parsePolicyControls(args,);
-  const parsedConfig = v.safeParse(ENGINE_CONFIG_SCHEMA, config,);
+  /**
+   * Runtime-authoritative built-in configuration parse.
+   */
+  const parsedConfig = v.safeParse(
+    ENGINE_CONFIG_SCHEMA,
+    config,
+  );
   if (!parsedConfig.success) {
     return {
       args: controls.args,
@@ -176,12 +343,28 @@ export async function runPolicyEngine({
     };
   }
 
+  /**
+   * Every policy ID supported by current built-in registry.
+   */
   const knownIds = new Set(BUILT_IN_POLICIES.map(function policyId(policy,) {
     return policy.name;
   },),);
-  const configuredIds = Object.keys(parsedConfig.output.policies,);
+  /**
+   * IDs named by persistent configuration.
+   */
+  const configuredIds = Object.keys(parsedConfig.output
+    .policies,);
+  /**
+   * IDs named by direct-check filter.
+   */
   const selectedIds = selectedPolicyIds ?? [];
-  const unknownId = [...configuredIds, ...selectedIds,].find(function isUnknown(policyId,) {
+  /**
+   * First ID outside built-in registry.
+   */
+  const unknownId = [
+    ...configuredIds,
+    ...selectedIds,
+  ].find(function isUnknown(policyId,) {
     return !knownIds.has(policyId,);
   },);
   if (unknownId !== undefined) {
@@ -198,56 +381,86 @@ export async function runPolicyEngine({
     };
   }
 
+  /**
+   * Direct-check filter optimized for sequential lookup.
+   */
   const selectedSet = new Set(selectedIds,);
-  const context = createPolicyContext({ rawArgs: args, transformedArgs: controls.args, },);
+  /**
+   * Candidate-state context shared by current stable pass.
+   */
+  const context = createPolicyContext({
+    rawArgs: args,
+    transformedArgs: controls.args,
+  },);
+  /**
+   * Settled events buffered until policy checks finish.
+   */
   const events: PolicyEvent[] = [];
+  /**
+   * Non-blocking unsafe severity diagnostics.
+   */
   const configWarnings: string[] = [];
-  let hasError = false;
 
   for (const policy of BUILT_IN_POLICIES) {
-    if (!policy.triggers.includes(trigger,))
+    if (!policy.triggers
+      .includes(trigger,))
       continue;
-    if (selectedSet.size > 0 && !selectedSet.has(policy.name,))
+    if ((selectedSet.size > 0) && (!selectedSet.has(policy.name,)))
       continue;
-    if (controls.escapedPolicyIds.has(policy.name,))
+    if (controls.escapedPolicyIds
+      .has(policy.name,))
       continue;
 
-    const severity = parsedConfig.output.policies[policy.name] ?? policy.defaultSeverity;
+    /**
+     * Persistent override or policy declaration default.
+     */
+    const severity = parsedConfig.output
+      .policies[policy.name]
+      ?? policy.defaultSeverity;
     if (severity === 'off')
       continue;
-    if (severity === 'warn' && !policy.warnSafe)
+    if ((severity === 'warn') && (!policy.warnSafe))
       configWarnings.push(`Policy ${policy.name} is warn-unsafe but configured as warn.`,);
 
     try {
+      /**
+       * Findings from current policy in fixed sequential order.
+       */
+      // oxlint-disable-next-line no-await-in-loop -- Policy contract requires sequential checks in fixed registration order.
       const findings = await policy.check({
-        context,
-        trigger,
-        severity,
+        context: {
+          ...context,
+          trigger,
+        },
         options: undefined,
       },);
       if (!findingsAreValid(findings,))
         throw new TypeError(`Policy ${policy.name} returned an invalid finding.`,);
-      events.push(...findings.map(function toFindingEvent(finding,) {
+      events.push(...findings.map(function toFindingEvent(
+        finding,
+        findingIndex,
+      ) {
         return createFindingEvent({
-          sequence: events.length,
+          sequence: events.length + findingIndex,
           trigger,
           policyId: policy.name,
           severity,
           code: finding.code,
           message: finding.message,
-          path: finding.path,
-          location: finding.location,
+          ...(finding.path === undefined ? {} : { path: finding.path, }),
+          ...(finding.location === undefined ? {} : { location: finding.location, }),
           fix: finding.patch === undefined ? 'none' : 'available',
         },);
       },),);
-      if (severity === 'error' && findings.length > 0) {
-        hasError = true;
-        if (!controls.keepGoing)
-          break;
-      }
+      if ((severity === 'error') && (findings.length > 0)
+        && (!controls.keepGoing))
+        break;
     }
     catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error,);
+      /**
+       * Safe diagnostic for arbitrary thrown policy value.
+       */
+      const message = Error.isError(error,) ? error.message : String(error,);
       events.push(createEngineFailureEvent({
         sequence: events.length,
         code: 'policy-incomplete',
@@ -265,6 +478,12 @@ export async function runPolicyEngine({
     }
   }
 
+  /**
+   * Whether stable pass contains any blocking finding.
+   */
+  const hasError = events.some(function isBlockingFinding(event,) {
+    return (event.type === 'finding') && (event.severity === 'error');
+  },);
   return {
     args: controls.args,
     events,

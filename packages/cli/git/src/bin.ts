@@ -110,9 +110,13 @@ const RULES: readonly ((
 
 //region Execution: resolve real git, apply rules, spawn
 
-/** Expected non-zero policy decision after buffered events were emitted. */
+/**
+ * Expected non-zero policy decision after buffered events were emitted.
+ */
 class PolicyDecisionError extends Error {
-  /** Settled cli-git exit code. */
+  /**
+   * Settled cli-git exit code.
+   */
   public readonly exitCode: 1 | 2;
 
   /**
@@ -127,9 +131,13 @@ class PolicyDecisionError extends Error {
   }
 }
 
-/** Layout used to intercept namespaced management command before Git forwarding. */
+/**
+ * Layout used to intercept namespaced management command before Git forwarding.
+ */
 const managementLayout = parseGlobalOptions(rawArgs,);
-/** Whether wrapper owns this invocation as a management command. */
+/**
+ * Whether wrapper owns this invocation as a management command.
+ */
 const isManagementCommand = rawArgs[managementLayout.subcommandIndex] === 'cli-git';
 
 if (isManagementCommand) {
@@ -156,19 +164,32 @@ else try {
     return SHORT_CIRCUIT_FLAGS.has(arg,);
   },);
 
-  /** Stable require-root policy result before legacy transforms. */
+  /**
+   * Stable require-root policy result before legacy transforms.
+   */
   const policyResult = willShortCircuit
     ? undefined
-    : await runPolicyEngine({ args: rawArgs, trigger: 'pre-forward', },);
+    : await runPolicyEngine({
+      args: rawArgs,
+      trigger: 'pre-forward',
+    },);
   if (policyResult !== undefined) {
+    /**
+     * Stable wrapper JSONL emitted only after pass settles.
+     */
     const renderedEvents = renderPolicyEvents(policyResult.events,);
     if (renderedEvents !== '')
-      process.stderr.write(renderedEvents,);
-    policyResult.configWarnings.forEach(function emitConfigWarning(warning,) {
+      process.stderr
+        .write(renderedEvents,);
+    policyResult.configWarnings
+      .forEach(function emitConfigWarning(warning,) {
       console.error(`cli-git: ${warning}`,);
     },);
-    if (!policyResult.shouldForward)
-      throw new PolicyDecisionError(policyResult.exitCode as 1 | 2,);
+    if (!policyResult.shouldForward) {
+      if (policyResult.exitCode === 0)
+        throw new TypeError('Non-forwarding policy result cannot use exit code 0.',);
+      throw new PolicyDecisionError(policyResult.exitCode,);
+    }
   }
 
   /**

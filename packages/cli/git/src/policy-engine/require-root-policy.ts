@@ -5,7 +5,10 @@
  */
 
 import { definePolicy, } from '../api/authoring.ts';
-import type { PolicyFinding, } from '../api/policy-types.ts';
+import type {
+  PolicyDefinition,
+  PolicyFinding,
+} from '../api/policy-types.ts';
 import {
   requireRoot,
   RequireRootViolationError,
@@ -19,7 +22,7 @@ import {
  * requireRootPolicy.name;
  * ```
  */
-export const requireRootPolicy = definePolicy({
+export const requireRootPolicy: PolicyDefinition<undefined, 'require-root'> = definePolicy({
   name: 'require-root',
   defaultSeverity: 'error',
   warnSafe: false,
@@ -29,7 +32,8 @@ export const requireRootPolicy = definePolicy({
   ],
   check: async function checkRequireRoot({ context, }): Promise<readonly PolicyFinding[]> {
     try {
-      await requireRoot(context.command.rawArgs,);
+      await requireRoot(context.command
+        .rawArgs,);
       return [];
     }
     catch (error: unknown) {
