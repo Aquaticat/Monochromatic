@@ -15,6 +15,7 @@ import {
 const config: UserConfig = defineConfig({
   ...base,
   entry: ['./src/index.ts',],
+  minify: false,
   outputOptions: {
     codeSplitting: false,
   },
