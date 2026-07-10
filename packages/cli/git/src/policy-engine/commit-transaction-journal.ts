@@ -54,6 +54,10 @@ export type PreparedTransactionJournal = Readonly<{
    */
   version: 1;
   /**
+   * Wrapper process owning active real-index lock.
+   */
+  ownerPid: number;
+  /**
    * Prepared phase discriminator.
    */
   state: 'prepared';
@@ -243,6 +247,7 @@ export async function prepareTransactionJournal({
    */
   const journal: PreparedTransactionJournal = {
     version: JOURNAL_VERSION,
+    ownerPid: process.pid,
     state: 'prepared',
     repositoryRoot,
     realIndexPath: workspace.realIndexPath,

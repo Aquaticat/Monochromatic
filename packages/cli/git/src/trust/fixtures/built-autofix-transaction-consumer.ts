@@ -11,6 +11,7 @@ import {
 import { writeAutofixConfig, } from './built-autofix-config.ts';
 import { execute, } from './built-consumer-helpers.ts';
 import { verifyAutofixFailures, } from './built-autofix-failure-consumer.ts';
+import { verifyAutofixRecovery, } from './built-autofix-recovery-consumer.ts';
 import {
   assertFixtureEqual,
   initializePostCommitRepository,
@@ -295,6 +296,10 @@ writeFileSync('.git/private-hook-seen', value);
   },);
 
   await verifyAutofixFailures({
+    repository,
+    env,
+  },);
+  await verifyAutofixRecovery({
     repository,
     env,
   },);

@@ -78,6 +78,29 @@ async function pathExists(path: string,): Promise<boolean> {
 }
 
 /**
+ * Reports whether journal owner process is still alive.
+ *
+ * @param pid - recorded wrapper process ID
+ *
+ * @returns whether signal-zero probe succeeds
+ */
+function processIsAlive(pid: number,): boolean {
+  try {
+    process.kill(
+      pid,
+      0,
+    );
+    return true;
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ESRCH'))
+      return false;
+    throw error;
+  }
+}
+
+/**
  * Installs prepared post-index through exact owned lock.
  *
  * @param lockPath - verified lock path
@@ -250,6 +273,8 @@ export async function recoverCommitTransaction({
   const journal = parsePreparedJournal(
     new Uint8Array(await readFile(journalPath,),),
   );
+  if ((journal.ownerPid !== process.pid) && processIsAlive(journal.ownerPid,))
+    throw new CommitTransactionRecoveryError(`Transaction owner process ${String(journal.ownerPid,)} is still active: ${directory}`,);
   /**
    * Canonical current repository root.
    */

@@ -76,6 +76,9 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
   if (((typeof value) !== 'object') || (value === null)
     || (!('version' in value))
     || (value.version !== 1)
+    || (!('ownerPid' in value))
+    || ((typeof value.ownerPid) !== 'number')
+    || (!Number.isSafeInteger(value.ownerPid,))
     || (!('state' in value))
     || (value.state !== 'prepared')
     || (!('repositoryRoot' in value))
@@ -106,6 +109,7 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
   const originalHead = parseOriginalHead(value.originalHead,);
   return {
     version: 1,
+    ownerPid: value.ownerPid,
     state: 'prepared',
     repositoryRoot: value.repositoryRoot,
     realIndexPath: value.realIndexPath,

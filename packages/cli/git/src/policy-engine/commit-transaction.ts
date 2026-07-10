@@ -380,7 +380,10 @@ export async function runCommitTransaction({
     selectedPaths: candidatePaths,
     intendedTreeOid,
   },);
-  await prepareTransactionJournal({
+  /**
+   * Durable prepared metadata used to detect interrupted ref advancement.
+   */
+  const journal = await prepareTransactionJournal({
     workspace,
     gitPath,
     cwd: layout.effectiveCwd,
@@ -404,6 +407,7 @@ export async function runCommitTransaction({
     effectiveCwd: layout.effectiveCwd,
     commitArgs,
     intendedTreeOid,
+    originalHead: journal.originalHead,
   },);
   return {
     policyResult: pass,

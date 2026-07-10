@@ -4,9 +4,15 @@
  * @module
  */
 import {
+  type OriginalHead,
   recordIndexInstalled,
   recordRefUpdated,
+  resolveCurrentHead,
 } from './commit-transaction-journal.ts';
+import {
+  CommitTransactionRecoveryError,
+  headsEqual,
+} from './commit-transaction-recovery-validation.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
 import { resolveLandedCommitOid, } from './post-commit-facts.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
@@ -34,6 +40,8 @@ const DECODER = new TextDecoder(
  *
  * @param intendedTreeOid - exact policy-settled tree
  *
+ * @param originalHead - journaled ref state before Git
+ *
  * @example
  * ```ts
  * await executePreparedCommit({ workspace, gitPath: '/usr/bin/git', spawnCwd: '/work', effectiveCwd: '/repo', commitArgs: ['commit'], intendedTreeOid });
@@ -46,6 +54,7 @@ export async function executePreparedCommit({
   effectiveCwd,
   commitArgs,
   intendedTreeOid,
+  originalHead,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
   gitPath: string;
@@ -53,14 +62,35 @@ export async function executePreparedCommit({
   effectiveCwd: string;
   commitArgs: readonly string[];
   intendedTreeOid: string;
+  originalHead: OriginalHead;
 }>,): Promise<void> {
-  await runTransactionGit({
-    gitPath,
-    cwd: spawnCwd,
-    indexPath: workspace.commitIndexPath,
-    args: commitArgs,
-    stdio: 'inherit',
-  },);
+  try {
+    await runTransactionGit({
+      gitPath,
+      cwd: spawnCwd,
+      indexPath: workspace.commitIndexPath,
+      args: commitArgs,
+      stdio: 'inherit',
+    },);
+  }
+  catch (error: unknown) {
+    workspace.preserveForRecovery();
+    /**
+     * Ref state after failed or interrupted Git process.
+     */
+    const currentHead = await resolveCurrentHead({
+      gitPath,
+      cwd: effectiveCwd,
+    },);
+    if (headsEqual({
+      expected: originalHead,
+      current: currentHead,
+    })) {
+      workspace.finishTransaction();
+      throw error;
+    }
+    throw new CommitTransactionRecoveryError(`Real Git ended after advancing HEAD; recovery retained at ${workspace.directory}`,);
+  }
   workspace.preserveForRecovery();
   /**
    * Exact landed commit after successful private-index Git.
