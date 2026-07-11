@@ -3,6 +3,7 @@
  *
  * @module
  */
+import { Buffer, } from 'node:buffer';
 import { constants, } from 'node:fs';
 import { open, } from 'node:fs/promises';
 import type { LazyPolicyGitFacts, } from '../api/context-types.ts';
@@ -88,16 +89,14 @@ export async function writeCandidateSnapshot({
   /**
    * Candidates sorted by exact repository path for stable comparison.
    */
-  const candidates = (await gitFacts.candidates()).toSorted(function comparePath(
+  const candidates = (await gitFacts.candidates()).toSorted(function comparePathBytes(
     left,
     right,
   ) {
-    return left.path
-      .localeCompare(
-        right.path,
-        'en',
-        { sensitivity: 'variant', },
-      );
+    return Buffer.compare(
+      Buffer.from(left.path,),
+      Buffer.from(right.path,),
+    );
   },);
   /**
    * Private exact snapshot output.
