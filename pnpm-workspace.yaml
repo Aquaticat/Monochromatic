@@ -12,51 +12,51 @@ autoInstallPeers: false
 modulesCacheMaxAge: 0
 
 catalog:
-  '@anthropic-ai/sdk': '>=0.109.1'
-  '@clack/prompts': '>=1.6.0'
+  '@anthropic-ai/sdk': '>=0.111.0'
+  '@clack/prompts': '>=1.7.0'
   '@csstools/css-tokenizer': '>=4.0.0'
-  '@deck.gl/core': '>=9.3.5'
-  '@deck.gl/layers': '>=9.3.5'
-  '@deck.gl/mesh-layers': '>=9.3.5'
-  '@earendil-works/pi-ai': '>=0.80.3'
-  '@earendil-works/pi-coding-agent': '>=0.80.3'
-  '@earendil-works/pi-tui': '>=0.80.3'
-  '@electron/packager': '>=20.0.0'
+  '@deck.gl/core': '>=9.3.6'
+  '@deck.gl/layers': '>=9.3.6'
+  '@deck.gl/mesh-layers': '>=9.3.6'
+  '@earendil-works/pi-ai': '>=0.80.6'
+  '@earendil-works/pi-coding-agent': '>=0.80.6'
+  '@earendil-works/pi-tui': '>=0.80.6'
+  '@electron/packager': '>=20.0.2'
   '@lezer/common': '>=1.5.2'
   '@lezer/css': '>=1.3.4'
   '@lezer/highlight': '>=1.2.3'
   '@lezer/html': '>=1.3.13'
   '@lezer/javascript': '>=1.5.4'
-  '@lezer/markdown': '>=1.6.4'
+  '@lezer/markdown': '>=1.7.1'
   '@lezer/rust': '>=1.0.2'
   '@lezer/xml': '>=1.0.6'
   '@lezer/yaml': '>=1.0.4'
   '@libsql/client': '>=0.17.3'
   '@libsql/kysely-libsql': '>=0.4.1'
   '@lobehub/icons-static-svg': '>=1.82.0'
-  '@luma.gl/engine': '>=9.3.5'
+  '@luma.gl/engine': '>=9.3.6'
   '@mdx-js/mdx': '>=3.1.1'
   '@mitata/counters': '>=0.0.8'
   '@optique/core': '>=1.1.1'
   '@optique/run': '>=1.1.1'
-  '@oxlint/plugins': '>=1.72.0'
+  '@oxlint/plugins': '>=1.73.0'
   '@playwright/test': '>=1.61.1'
   '@total-typescript/ts-reset': '>=0.6.1'
   '@tursodatabase/database': '>=0.6.1'
   '@types/chai': '>=5.2.3'
   '@types/chai-as-promised': '>=8.0.2'
-  '@types/hast': '>=3.0.4'
+  '@types/hast': '>=3.0.5'
   '@types/hyphen': '>=1.14.0'
   '@types/mdast': '>=4.0.4'
   '@types/mdx': '>=2.0.13'
-  '@types/node': '>=26.1.0'
+  '@types/node': '>=26.1.1'
   '@types/sinon': '>=22.0.0'
   '@types/sinon-chai': '>=4.0.0'
   '@types/unist': '>=3.0.3'
   'acorn': '>=8.17.0'
   'aws4fetch': '>=1.0.20'
   'better-auth': '>=1.6.9'
-  'browserslist': '>=4.28.4'
+  'browserslist': '>=4.28.5'
   'chai': '>=6.2.2'
   'chai-as-promised': '>=8.0.2'
   'chokidar': '>=5.0.0'
@@ -64,21 +64,21 @@ catalog:
   'csstype': '>=3.2.3'
   'decircular': '>=1.0.0'
   'dot-prop': '>=10.1.0'
-  'electron': '>=42.5.0'
+  'electron': '>=43.1.0'
   'execa': '>=9.6.1'
   'expect-type': '>=1.4.0'
-  'fast-check': '>=4.8.0'
+  'fast-check': '>=4.9.0'
   'farmhashjs': '>=1.0.1'
-  'feedsmith': '>=3.0.0-next.6'
+  'feedsmith': '>=3.0.0-rc.1'
   'file-type': '>=21.3.0'
   'find-up': '>=8.0.0'
-  'h3': '>=2.0.1-rc.22'
+  'h3': '>=2.0.1-rc.24'
   'happy-dom': '>=20.5.0'
   'happy-opfs': '>=2.1.0'
   'happy-rusty': '>=1.9.1'
   'hb-subset-wasm': '>=0.4.0'
   'hyphen': '>=1.14.1'
-  'ignore': '>=7.0.5'
+  'ignore': '>=7.0.6'
   'isomorphic-git': '>=1.27.0'
   'jsonc-eslint-parser': '>=3.1.0'
   'jsonc-parser': '>=3.3.1'
@@ -94,9 +94,9 @@ catalog:
   'openai': '>=6.22.0'
   'opentype.js': '>=2.0.0'
   'oxc-minify': '>=0.1.1'
-  'oxc-parser': '>=0.138.0'
+  'oxc-parser': '>=0.139.0'
   'oxc-resolver': '>=11.17.0'
-  'oxlint': '>=1.72.0'
+  'oxlint': '>=1.73.0'
   'oxlint-tsgolint': '>=0.24.0'
   'p-limit': '>=7.3.0'
   'pdfjs-dist': '>=4.0.0'
@@ -115,9 +115,9 @@ catalog:
   'remark-parse': '>=11.0.0'
   'remark-rehype': '>=11.1.2'
   'remark-sectionize': '>=2.1.0'
-  'rolldown': '>=1.1.4'
+  'rolldown': '>=1.1.5'
   'safe-stringify': '>=1.3.0'
-  'satteri': '>=0.9.4'
+  'satteri': '>=0.9.5'
   'serialize-error': '>=13.0.1'
   'sharp': '>=0.35.3'
   'sinon': '>=22.0.0'
@@ -132,13 +132,11 @@ catalog:
   'to-vfile': '>=8.0.0'
   'toml-eslint-parser': '>=1.0.3'
   'ts-pattern': '>=5.9.0'
-  'tsdown': '>=0.22.3'
-  'type-fest': '>=5.7.0'
-  'typebox': '>=1.3.3'
+  'tsdown': '>=0.22.5'
+  'type-fest': '>=5.8.0'
+  'typebox': '>=1.3.6'
   'typesafe-i18n': '>=5.27.1'
-  # TypeScript 7 RC native compiler (binary: tsc). Pinned exact because npm semver
-  # '>=' ranges exclude prerelease tags, so '>=7.0.0' would not match '7.0.1-rc'.
-  'typescript': '7.0.1-rc'
+  'typescript': '>=7.0.2'
   'unbash': '>=4.0.2'
   'unified': '>=11.0.5'
   'valibot': '>=1.4.2'
@@ -156,18 +154,12 @@ lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@earendil-works/pi-*'
-  # Exact reviewed release fixes TypeScript 7 selecting tsgo before inherited
-  # isolatedDeclarations. Future rolldown-plugin-dts releases remain age-gated.
-  - 'rolldown-plugin-dts@0.27.4'
+  - 'tsdown@0.22.5'
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 nodeLinker: isolated
 
 overrides:
-  # tsdown 0.22.4 allows rolldown-plugin-dts ^0.27.1, but only 0.27.4+
-  # exposes the generator selector needed to keep Oxc explicit under TypeScript 7.
-  # Remove when tsdown's own dependency floor includes that selector.
-  'rolldown-plugin-dts': '0.27.4'
   '@anthropic-ai/sdk': 'catalog:'
   # Drop @earendil-works/pi-* transitive deps that this workspace does not
   # exercise: either unused in the published dist, loaded only via lazy
@@ -347,15 +339,8 @@ packageImportMethod: clone-or-copy
 packages:
   - 'packages/*/*'
 peerDependencyRules:
-  # tsdown and rolldown-plugin-dts declare an optional `typescript` peer ranged
-  # ^5 || ^6 for their classic-compiler declaration-emit path. This workspace sets
-  # isolatedDeclarations: true, so declarations are emitted by oxc and the classic
-  # compiler is never invoked; allow the TypeScript 7 RC so strictPeerDependencies
-  # passes. Re-confirm by building a dts-emitting package (see the typescript
-  # migration verification).
   allowedVersions:
-    'rolldown-plugin-dts>typescript': '7.0.1-rc'
-    'tsdown>typescript': '7.0.1-rc'
+
 # version management of both node and pnpm is handled by Mise
 pmOnFail: ignore
 preferWorkspacePackages: true
