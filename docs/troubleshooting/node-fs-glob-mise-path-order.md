@@ -9,7 +9,8 @@ its `node_modules/.bin` directory exists.
 
 ## Symptom
 
-Before commit `13dcfb114`, `file-enforcer.config.ts` copied raw
+Before commit `13dcfb114`,
+ `file-enforcer.config.ts` copied raw
 `fs.promises.glob()` output into the generated `mise.toml` `_.path` list.
 A regeneration on another filesystem could move existing entries and change
 which duplicate executable appeared first in `PATH`.
@@ -85,15 +86,26 @@ Sorting therefore controls the observable precedence of package-local binaries.
 Versions under test:
 
 - `Node.js` `v26.5.0`
-- mise `2026.7.0`, Linux x64
-- `nodejs/node` tag `v26.5.0`, commit `bebd1b8d92bf4cc917844d6335ed1ecf9c2a75fb`
+- mise `2026.7.0`,
+   Linux x64
+- `nodejs/node` tag `v26.5.0`,
+   commit `bebd1b8d92bf4cc917844d6335ed1ecf9c2a75fb`
 
 The following checks passed on 2026-07-11:
 
-- A disposable fixture created `zebra`, `amber`, `quartz`, then `birch` package
+- A disposable fixture created `zebra`,
+   `amber`,
+   `quartz`,
+   then `birch` package
   directories.
-  Raw `glob()` output was `zebra`, `quartz`, `birch`, then `amber`.
-  `toSorted()` produced `amber`, `birch`, `quartz`, then `zebra`.
+  Raw `glob()` output was `zebra`,
+   `quartz`,
+   `birch`,
+   then `amber`.
+  `toSorted()` produced `amber`,
+   `birch`,
+   `quartz`,
+   then `zebra`.
 - The current repository's forty-two generated `_.path` entries matched
   `node_modules/.bin` followed by the current glob results after `toSorted()`.
 - A second `mise run sync:files` made no change to `mise.toml`.
@@ -103,13 +115,15 @@ The following checks passed on 2026-07-11:
 ## Implemented workaround
 
 The consumer-side `toSorted()` call is the durable workaround.
-It is applied before `file-enforcer` writes generated `mise.toml`, so a later
+It is applied before `file-enforcer` writes generated `mise.toml`,
+ so a later
 synchronization cannot undo it.
 
 The intentional tradeoff is lexical path precedence for duplicate binaries.
 The current installation has thirteen duplicate executable names among the
 materialized package bins.
-For example, the sorted order makes
+For example,
+ the sorted order makes
 `packages/pi-plugins/advisor/node_modules/.bin` win for `pi` and
 `packages/cli/git-clone-size/node_modules/.bin` win for `tsc`.
 
@@ -123,7 +137,9 @@ For example, the sorted order makes
 - `toSorted()` does not fix membership drift.
   Different dependency installation states can produce a different set of
   existing `packages/*/*/node_modules/.bin` directories.
-  Canonical metadata, rather than the installed filesystem, would be needed if
+  Canonical metadata,
+   rather than the installed filesystem,
+   would be needed if
   membership must also be identical across machines.
 - Filing a `Node.js` defect would misidentify the cause.
   `Node.js` intentionally exposes native directory enumeration;
@@ -138,21 +154,31 @@ There is nothing additive to post.
 
 The filing gate is not met:
 
-1. Upstream fault: no.
+1. Upstream fault:
+    no.
    `Node.js` exposes underlying directory order;
    the repository now normalizes it at the consumer boundary.
-2. Upstream fixability: technically yes.
-   A global sort would be an upstream behavior change, not a repair of a defect.
-3. Supported use case: no documented `Node.js` guarantee covers deterministic
+2. Upstream fixability:
+    technically yes.
+   A global sort would be an upstream behavior change,
+    not a repair of a defect.
+3. Supported use case:
+    no documented `Node.js` guarantee covers deterministic
    glob ordering for generated configuration.
-4. Contribution welcome: `nodejs/node@v26.5.0:CONTRIBUTING.md` welcomes
-   contributions, but it requires explicit authorization before external
+4. Contribution welcome:
+    `nodejs/node@v26.5.0:CONTRIBUTING.md` welcomes
+   contributions,
+    but it requires explicit authorization before external
    automation interacts with the project.
    No such authorization exists for this diagnosis.
-5. Likely upstream resolution: no basis exists to expect a change to documented
+5. Likely upstream resolution:
+    no basis exists to expect a change to documented
    native-order behavior.
-6. Compatible upstream prototype: not applicable.
+6. Compatible upstream prototype:
+    not applicable.
    The consumer-side fix is complete because the first constraint fails.
 
-No issue, comment, or pull request draft is retained.
+No issue,
+ comment,
+ or pull request draft is retained.
 Do not file an upstream report as-is.
