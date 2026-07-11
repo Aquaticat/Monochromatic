@@ -162,6 +162,14 @@ export const TYPESCRIPT_REPOSITORY = '/work/strict-typescript';
  */
 export const DIRECT_COMMIT_REPOSITORY = '/work/direct-commit';
 /**
+ * Local bare remote for wrapped post-commit auto-push.
+ */
+export const WRAPPED_COMMIT_REMOTE = '/work/wrapped-commit.git';
+/**
+ * Local bare remote for direct commit baseline push.
+ */
+export const DIRECT_COMMIT_REMOTE = '/work/direct-commit.git';
+/**
  * Synthetic scanner executable.
  */
 export const SCANNER_PATH = '/work/scanner.mjs';
@@ -196,6 +204,6 @@ export const SCENARIO_BUDGETS: Readonly<Record<LifecycleScenarioId, number>> = {
   'validator': 300,
   'scanner': 450,
   'normalizer': 375,
-  'normalizer-change': MAXIMUM_BUDGET_MS,
+  'normalizer-change': 475,
   'post-commit': 500,
 };

@@ -13,7 +13,6 @@ import { join, } from 'node:path';
 import { execute, } from './lifecycle-latency-command.ts';
 import {
   BENCHMARK_FILE,
-  DIRECT_COMMIT_REPOSITORY,
   MJS_REPOSITORY,
   NO_CONFIG_REPOSITORY,
   PACKAGE_BIN,
@@ -23,6 +22,7 @@ import {
   TREE_WRITE_BATCH_SIZE,
   TYPESCRIPT_REPOSITORY,
 } from './lifecycle-latency-contracts.ts';
+import { prepareCommitRemotes, } from './lifecycle-latency-remotes.ts';
 
 /**
  * Executable mode for synthetic scanner.
@@ -266,44 +266,7 @@ export default defineConfig({
     ],
     cwd: TYPESCRIPT_REPOSITORY,
   },);
-
-  await execute({
-    command: REAL_GIT,
-    args: [
-      'clone',
-      '--quiet',
-      TYPESCRIPT_REPOSITORY,
-      DIRECT_COMMIT_REPOSITORY,
-    ],
-    cwd: '/work',
-  },);
-  await execute({
-    command: REAL_GIT,
-    args: [
-      'remote',
-      'remove',
-      'origin',
-    ],
-    cwd: DIRECT_COMMIT_REPOSITORY,
-  },);
-  await execute({
-    command: REAL_GIT,
-    args: [
-      'config',
-      'user.email',
-      'cli-git-benchmark@example.invalid',
-    ],
-    cwd: DIRECT_COMMIT_REPOSITORY,
-  },);
-  await execute({
-    command: REAL_GIT,
-    args: [
-      'config',
-      'user.name',
-      'cli-git benchmark',
-    ],
-    cwd: DIRECT_COMMIT_REPOSITORY,
-  },);
+  await prepareCommitRemotes();
 
   /**
    * Unknown JSON trust-status boundary.

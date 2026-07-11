@@ -648,6 +648,36 @@ surfaced but never changes the commit command's own exit code:
  the commit stays
 saved locally and a later `git push` retries it.
 
+## Performance gates
+
+Run the packed lifecycle gate with:
+
+```console
+mise run //packages/git-policies/cli:perf:lifecycle-latency
+```
+
+The task builds an unpublished npm tarball and runs it in a disposable Podman container
+limited to 2 GiB RAM and 2 CPUs.
+The fixture contains 2,048 tracked files so accidental repository-wide candidate reads remain observable.
+Each scenario validates six warm-up samples,
+then records 30 samples with median,
+p95,
+median absolute deviation,
+raw timings,
+and either absolute or paired wrapper-added latency.
+
+The matrix covers no-config forwarding,
+read-only commands,
+strict MJS and TypeScript snapshots,
+relaxed TypeScript rebuilds,
+config validation,
+scanner checks,
+clean and changed final-newline paths,
+and post-commit policy work.
+`perf/lifecycle-latency-2026-07-11.json` stores the measured baseline.
+Each enforced ceiling is twice its baseline maximum rounded up to the next 25 milliseconds;
+every ceiling remains below 2,000 milliseconds.
+
 ## How it works
 
 The wrapper shadows the system `git` binary on PATH (via mise bin linkage).

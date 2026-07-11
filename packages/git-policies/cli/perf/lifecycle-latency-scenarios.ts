@@ -346,9 +346,21 @@ async function collectPostCommit(): Promise<ScenarioSummary> {
       /**
        * Direct commit duration.
        */
-      const directMs = await measure(direct,);
+      const directCommitMs = await measure(direct,);
       /**
-       * Wrapper commit duration.
+       * Direct local push duration paired with wrapper auto-push.
+       */
+      const directPushMs = await measure({
+        command: REAL_GIT,
+        args: ['push',],
+        cwd: DIRECT_COMMIT_REPOSITORY,
+      },);
+      /**
+       * Complete direct commit and push duration.
+       */
+      const directMs = directCommitMs + directPushMs;
+      /**
+       * Wrapper commit including local auto-push duration.
        */
       const wrapperMs = await measure(wrapper,);
       return [
