@@ -1,3 +1,12 @@
 {
   "extends": "@monochromatic-dev/config-typescript/dom",
+  "compilerOptions": {
+    // aquati.cat compiles MDX content (src/**/*.mdx); @types/mdx supplies the
+    // ambient `declare module '*.mdx'` types. `types` is replaced, not merged,
+    // across `extends`, so `node` (from tsconfig.options.json) must be repeated.
+    "types": [
+      "node",
+      "mdx"
+    ]
+  }
 }

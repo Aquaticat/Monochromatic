@@ -41,6 +41,7 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
     "@types/hast": "catalog:",
+    "@types/mdx": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }
