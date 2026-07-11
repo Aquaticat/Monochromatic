@@ -226,9 +226,9 @@ Third-party plugins peer-depend on the compatible `@monochromatic-dev/cli-git` A
 there is no separate API or types package.
 External non-mise users install the npm package and put its bin directory before real Git on `PATH`.
 
-The initial Node engine range must satisfy the shipped tsdown version;
-tsdown 0.22.4 declares `^22.18.0 || >=24.11.0`.
-Re-verify that constraint at implementation time.
+The package now declares `^22.18.0 || >=24.11.0` as its explicit Node runtime contract.
+Trust bundling uses a lazy direct Rolldown dependency;
+tsdown remains development-only build tooling.
 
 `publishConfig`,
 package contents,
@@ -290,11 +290,12 @@ or dynamically loaded code.
 Ordinary Git commands never build an untrusted TypeScript config.
 A previously trusted path explicitly relaxed through `CLI_GIT_NO_PARANOID` is the exception described below.
 
-- Use tsdown with Node platform targeting.
-- Call tsdown's public `build()` API with config-file discovery disabled,
+- Lazily import Rolldown only for trust builds.
+- Call Rolldown's public `rolldown()` API with Node platform targeting,
   Node ESM output,
-  every package forced into the bundle,
-  and Rolldown inline dynamic imports.
+  dependency bundling,
+  and `codeSplitting: false`.
+- Close the disposable bundle after in-memory generation so native workers do not retain the process.
 - Accept exactly one JavaScript output chunk with no unresolved non-Node imports or extra assets.
 - A failed or incomplete bundle aborts trust.
 - The trusted cache executes an immutable bundle,
@@ -311,8 +312,8 @@ A previously trusted path explicitly relaxed through `CLI_GIT_NO_PARANOID` is th
   Changed cached bundle bytes are disclosed before replacement even when tracked source bytes are unchanged.
 - Under `CLI_GIT_NO_PARANOID`,
   an MJS mtime/size change triggers private snapshot replacement and validation,
-  while a TypeScript entry or tracked-relative-module mtime/size change triggers an automatic tsdown rebuild during the
-  next config-loading Git command.
+  while a TypeScript entry or tracked-relative-module mtime/size change triggers an automatic Rolldown rebuild during
+  the next config-loading Git command.
   Those metadata values are cache signals only,
   not trust checks;
   replacement or rebuild failure blocks with exit code `2` and retains the previous record.
@@ -1016,15 +1017,13 @@ Unless later grilling changes them:
 ### Issue #347 TypeScript bundle trust
 
 - Added MJS-precedence fallback discovery for root `cli-git.config.ts` to the trust runtime.
-- Every explicit trust invokes tsdown's public `build()` API with config discovery disabled,
-  Node ESM,
+- TypeScript trust originally used tsdown's public `build()` API.
+  Issue #356 replaced that middle layer with a lazy direct Rolldown `rolldown()` call,
+  in-memory Node ESM generation,
   package bundling,
-  declaration and source-map output disabled,
-  writes disabled,
-  private output state,
-  and Rolldown `codeSplitting: false`.
-  Rolldown 1.1.5 source and tests prove that current option sets internal inline dynamic imports;
-  `docs/troubleshooting/rolldown-inline-dynamic-imports-deprecation.md` records the source trace and reproducible warning.
+  `codeSplitting: false`,
+  and explicit bundle closure.
+  `docs/troubleshooting/cli-git-post-commit-tree-latency.md` records the measured trust-build result.
 - The build accepts exactly one JavaScript entry chunk and rejects extra outputs,
   unresolved non-Node module edges,
   computed dynamic imports,

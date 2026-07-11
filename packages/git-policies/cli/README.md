@@ -302,10 +302,10 @@ If a root config was deleted,
 
 When root `cli-git.config.mjs` is absent,
 cli-git discovers `cli-git.config.ts`.
-Explicit trust calls tsdown's public API with config discovery disabled,
-Node ESM output,
-all packages forced into one bundle,
-and Rolldown `codeSplitting: false` (the current nondeprecated spelling that inlines dynamic imports).
+Explicit trust lazily imports Rolldown and calls its public bundle API directly with
+Node ESM output and `codeSplitting: false`.
+The disposable bundle is closed explicitly after in-memory generation,
+so ordinary Git commands never initialize Rolldown and trust builds do not retain native workers.
 It accepts one JavaScript chunk only,
 captures the entry and every statically resolved relative local source through stable no-follow reads,
 and rechecks the complete graph after build completion.

@@ -106,10 +106,12 @@ The following checks passed:
 - post-commit lifecycle regression proving changed and unchanged classification;
 - final-newline regression proving unchanged landed bytes remain unread;
 - forbidden-strings regression proving only landed-delta candidates reach scanner materialization;
-- dirty-worktree commit with hk stashing five files, reduced from `18.64 s` to `0.74 s`;
+- dirty-worktree commit with hk stashing five files,
+   reduced from `18.64 s` to `0.74 s`;
 - main-repository commits with the old trusted forbidden-strings bundle,
   which reproduced the second fan-out at `20.85 s` and `16.77 s`;
-- real main-repository TypeScript trust rebuild through direct Rolldown, which completed in `0.29 s`.
+- real main-repository TypeScript trust rebuild through direct Rolldown,
+   which completed in `0.29 s`.
 
 The measured fixed command is below the required `2,000 ms` real-Git operation ceiling.
 
@@ -134,4 +136,7 @@ which completed in `0.74 s`.
 
 No upstream report is appropriate.
 The defect was in cli-git's post-commit candidate consumption,
-not Git, hk, mise, or the Pi process harness.
+not Git,
+ hk,
+ mise,
+ or the Pi process harness.

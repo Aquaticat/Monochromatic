@@ -1158,18 +1158,19 @@ Failure exits `2` and retains the previous record without executing it for that 
 
 ## TypeScript build contract
 
-Invoke tsdown's public `build()` interface with:
+Lazily import Rolldown only when a TypeScript trust build is required.
+Invoke its public `rolldown()` interface with:
 
-- config-file discovery disabled;
 - Node platform;
 - ESM format;
 - one output chunk;
-- all packages forced into the bundle;
-- Rolldown `codeSplitting: false`,
-  the current nondeprecated option that sets internal `inlineDynamicImports: true`;
-- declarations disabled for runtime config;
-- clean disabled outside the private build directory.
+- dependencies bundled by default;
+- `codeSplitting: false`;
+- in-memory generation in the private build directory.
 
+Close the disposable bundle after generation,
+including failure paths,
+so native workers and the async runtime cannot retain the process.
 Accept exactly one JavaScript chunk and no asset,
 source-map,
 native binary,

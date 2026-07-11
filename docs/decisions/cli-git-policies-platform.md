@@ -257,7 +257,8 @@ The exact stored-MJS execution boundary may retain one computed dynamic import t
 Third-party plugins peer-depend on a compatible cli-git package version.
 Private workspace runtime helpers are bundled into the Node artifact rather than left as unresolved registry
 requirements.
-The Node engine range must satisfy the shipped tsdown runtime.
+The Node engine range is the package's explicit runtime contract;
+build tooling remains a development dependency.
 
 The package must pass `npm pack` inspection and installation in a disposable non-workspace consumer.
 Registry upload,
@@ -313,11 +314,10 @@ A directly hand-written artifact exports raw validated data or inlines helpers.
 Trusted config is not sandboxed and runs with the user's full permissions.
 
 For TypeScript source,
-`git cli-git trust` invokes tsdown's public build interface with config discovery disabled,
-Node ESM output,
-every package forced into the bundle,
-and Rolldown `codeSplitting: false`.
-Rolldown 1.1.5 maps that current option to internal inline dynamic imports without the deprecated option's stderr warning.
+`git cli-git trust` lazily imports Rolldown and invokes its public bundle interface directly with
+Node ESM output and `codeSplitting: false`.
+The runtime closes the disposable bundle after in-memory generation,
+including failure paths.
 Trust accepts exactly one JavaScript output chunk,
 no unresolved non-Node imports,
 and no extra assets.
