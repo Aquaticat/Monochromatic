@@ -12,18 +12,24 @@ import {
   convergeDirectFix,
   type DirectFixPolicyOptions,
 } from './direct-fix-convergence.ts';
-import { createFixSummaryEvent, } from './events.ts';
+import { withFixSummary, } from './fix-summary.ts';
 import {
   captureDirectFixOriginalBytes,
   installDirectFix,
 } from './direct-fix-install.ts';
 import type { PolicyEngineResult, } from './types.ts';
 
-/** Settled direct-fix operation. */
+/**
+ * Settled direct-fix operation.
+ */
 export type DirectFixResult = Readonly<{
-  /** Final policy decision. */
+  /**
+   * Final policy decision.
+   */
   policyResult: PolicyEngineResult;
-  /** Worktree paths changed after stable convergence. */
+  /**
+   * Worktree paths changed after stable convergence.
+   */
   changedPaths: readonly string[];
 }>;
 
@@ -53,9 +59,13 @@ export async function runDirectFix({
   pathspecs: readonly string[];
   policyOptions: DirectFixPolicyOptions;
 }>,): Promise<DirectFixResult> {
-  /** Real Git executable resolved beyond wrapper shadow. */
+  /**
+   * Real Git executable resolved beyond wrapper shadow.
+   */
   const gitPath = await resolveGit();
-  /** Exact private worktree projection. */
+  /**
+   * Exact private worktree projection.
+   */
   const facts = await createAddPolicyFacts({
     args: [
       ...gitGlobalArgs,
@@ -72,19 +82,29 @@ export async function runDirectFix({
       throw new TypeError('Unknown direct policy facts state.',);
     throw new TypeError('Direct fix requires a Git worktree.',);
   }
+  /** Disposable private direct-fix scope. */
   await using scope = facts;
-  /** Exact initial candidates before private policy changes. */
-  const initialCandidates = await scope.gitFacts.candidates();
-  /** Exact initial worktree bytes used for concurrency checks. */
+  /**
+   * Exact initial candidates before private policy changes.
+   */
+  const initialCandidates = await scope.gitFacts
+    .candidates();
+  /**
+   * Exact initial worktree bytes used for concurrency checks.
+   */
   const originals = await captureDirectFixOriginalBytes(initialCandidates,);
-  /** Stable or failed private convergence result. */
+  /**
+   * Stable or failed private convergence result.
+   */
   const convergence = await convergeDirectFix({
     args: gitGlobalArgs,
     gitPath,
     scope,
     policyOptions,
   },);
-  if (convergence.policyResult.exitCode !== 0) {
+  if (convergence.policyResult
+    .exitCode
+    !== 0) {
     return {
       policyResult: convergence.policyResult,
       changedPaths: [],
@@ -95,21 +115,17 @@ export async function runDirectFix({
     changedPaths: convergence.changedPaths,
     originals,
   },);
-  if (convergence.changedPaths.length === 0)
+  if (convergence.changedPaths
+    .length
+    === 0)
     return convergence;
   return {
-    policyResult: {
-      ...convergence.policyResult,
-      events: [
-        ...convergence.policyResult.events,
-        createFixSummaryEvent({
-          sequence: convergence.policyResult.events.length,
-          trigger: 'direct-fix',
-          passes: convergence.passes,
-          changedPaths: convergence.changedPaths,
-        },),
-      ],
-    },
+    policyResult: withFixSummary({
+      result: convergence.policyResult,
+      trigger: 'direct-fix',
+      passes: convergence.passes,
+      changedPaths: convergence.changedPaths,
+    },),
     changedPaths: convergence.changedPaths,
   };
 }

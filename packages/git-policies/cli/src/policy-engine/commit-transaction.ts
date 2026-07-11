@@ -35,6 +35,7 @@ import {
 } from './commit-transaction-selection.ts';
 import { createCommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 import { runPolicyEngine, } from './engine.ts';
+import { withFixSummary, } from './fix-summary.ts';
 import type {
   PolicyEngineResult,
   RunPolicyEngineOptions,
@@ -245,6 +246,10 @@ export async function runCommitTransaction({
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Bounded sequential convergence counts exact candidate changes.
   let changedPasses = 0;
+  /**
+   * Paths changed by at least one provisional patch.
+   */
+  const changedPaths = new Set<string>();
   while (pass.patches
     .length
     > 0) {
@@ -301,6 +306,7 @@ export async function runCommitTransaction({
           candidateRevision: candidate.revision,
           ordinal,
         },);
+        changedPaths.add(patch.path,);
       }
       catch (error: unknown) {
         return {
@@ -409,7 +415,12 @@ export async function runCommitTransaction({
     originalHead: journal.originalHead,
   },);
   return {
-    policyResult: pass,
+    policyResult: withFixSummary({
+      result: pass,
+      trigger: 'pre-forward',
+      passes: changedPasses,
+      changedPaths: [...changedPaths,],
+    },),
     committed: true,
   };
 }

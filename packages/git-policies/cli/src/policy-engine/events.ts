@@ -248,19 +248,33 @@ export type ConfigurationWarningEvent = Readonly<{
  * ```
  */
 export type FixSummaryEvent = Readonly<{
-  /** Schema version. */
+  /**
+   * Schema version.
+   */
   schemaVersion: 1;
-  /** Invocation-local sequence. */
+  /**
+   * Invocation-local sequence.
+   */
   sequence: number;
-  /** Event discriminator. */
+  /**
+   * Event discriminator.
+   */
   type: 'fix-summary';
-  /** Policy identifier is absent for aggregate summary. */
+  /**
+   * Policy identifier is absent for aggregate summary.
+   */
   policyId?: never;
-  /** Fixable lifecycle trigger. */
+  /**
+   * Fixable lifecycle trigger.
+   */
   trigger: 'pre-forward' | 'direct-fix';
-  /** Number of private candidate changes before stability. */
+  /**
+   * Number of private candidate changes before stability.
+   */
   passes: number;
-  /** Unique changed paths in Git byte order. */
+  /**
+   * Unique changed paths in Git byte order.
+   */
   changedPaths: readonly RepositoryPath[];
 }>;
 
@@ -286,6 +300,11 @@ export type PolicyEvent = CommitLandedEvent | ConfigurationWarningEvent | CoreFi
  * @param changedPaths - unique Git-byte-ordered paths
  *
  * @returns immutable summary event
+ *
+ * @example
+ * ```ts
+ * createFixSummaryEvent({ sequence: 0, trigger: 'direct-fix', passes: 1, changedPaths: ['a.txt'] });
+ * ```
  */
 export function createFixSummaryEvent({
   sequence,

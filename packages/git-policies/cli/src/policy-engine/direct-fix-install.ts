@@ -19,27 +19,47 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { CandidateFile, } from '../api/policy-types.ts';
 import type { AddPolicyFactsScope, } from './add-policy-facts.ts';
 
-/** Module logger. */
+/**
+ * Module logger.
+ */
 const l = tagged({ tag: 'cli-git', },);
-/** Ordinary file mode. */
+/**
+ * Ordinary file mode.
+ */
 const REGULAR_MODE = 0o644;
-/** Executable file mode. */
+/**
+ * Executable file mode.
+ */
 const EXECUTABLE_MODE = 0o755;
-/** Real index absence sentinel. */
+/**
+ * Real index absence sentinel.
+ */
 const INDEX_ABSENT: unique symbol = Symbol('real index file absent',);
 
-/** Initial direct-fix worktree bytes by repository path. */
+/**
+ * Initial direct-fix worktree bytes by repository path.
+ */
 export type DirectFixOriginalBytes = ReadonlyMap<string, Uint8Array>;
 
-/** Prepared atomic worktree replacement. */
+/**
+ * Prepared atomic worktree replacement.
+ */
 type PreparedReplacement = Readonly<{
-  /** Repository-relative path. */
+  /**
+   * Repository-relative path.
+   */
   path: string;
-  /** Absolute destination path. */
+  /**
+   * Absolute destination path.
+   */
   destination: string;
-  /** Same-directory replacement path. */
+  /**
+   * Same-directory replacement path.
+   */
   prepared: string;
-  /** Same-directory rollback copy. */
+  /**
+   * Same-directory rollback copy.
+   */
   backup: string;
 }>;
 
@@ -61,7 +81,10 @@ function bytesEqual({
 }>,): boolean {
   if (left.length !== right.length)
     return false;
-  return left.every(function sameByte(byte, index,) {
+  return left.every(function sameByte(
+    byte,
+    index,
+  ) {
     return byte === right[index];
   },);
 }
@@ -79,7 +102,8 @@ async function readIndex(path: string,): Promise<Uint8Array | typeof INDEX_ABSEN
   }
   catch (error: unknown) {
     l.debug(`real index snapshot read failed for ${path}: ${String(error,)}`,);
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
       return INDEX_ABSENT;
     throw error;
   }
@@ -101,9 +125,12 @@ function indexesEqual({
   left: Uint8Array | typeof INDEX_ABSENT;
   right: Uint8Array | typeof INDEX_ABSENT;
 }>,): boolean {
-  if ((typeof left) === 'symbol' || (typeof right) === 'symbol')
+  if (((typeof left) === 'symbol') || ((typeof right) === 'symbol'))
     return left === right;
-  return bytesEqual({ left, right, });
+  return bytesEqual({
+    left,
+    right,
+  });
 }
 
 /**
@@ -114,8 +141,14 @@ function indexesEqual({
 async function cleanup(replacements: readonly PreparedReplacement[],): Promise<void> {
   await Promise.all(replacements.flatMap(function cleanupPaths(replacement,) {
     return [
-      rm(replacement.prepared, { force: true, },),
-      rm(replacement.backup, { force: true, },),
+      rm(
+        replacement.prepared,
+        { force: true, },
+      ),
+      rm(
+        replacement.backup,
+        { force: true, },
+      ),
     ];
   },),);
 }
@@ -129,7 +162,10 @@ async function rollback(installed: readonly PreparedReplacement[],): Promise<voi
   for (const replacement of installed.toReversed()) {
     try {
       // oxlint-disable-next-line no-await-in-loop -- Rollback order is intentionally reverse installation order.
-      await rename(replacement.backup, replacement.destination,);
+      await rename(
+        replacement.backup,
+        replacement.destination,
+      );
     }
     catch (error: unknown) {
       l.error(`direct-fix rollback failed for ${replacement.path}: ${String(error,)}`,);
@@ -144,22 +180,36 @@ async function rollback(installed: readonly PreparedReplacement[],): Promise<voi
  * @param candidates - initial direct-fix candidates
  *
  * @returns path-to-byte snapshot for ordinary content
+ *
+ * @example
+ * ```ts
+ * await captureDirectFixOriginalBytes([]);
+ * ```
  */
 export async function captureDirectFixOriginalBytes(
   candidates: readonly CandidateFile[],
 ): Promise<DirectFixOriginalBytes> {
-  /** Captured ordinary candidate entries. */
-  const entries: Array<readonly [string, Uint8Array]> = [];
+  /**
+   * Captured ordinary candidate entries.
+   */
+  const entries: (readonly [
+    string,
+    Uint8Array
+  ])[] = [];
   /* oxlint-disable no-await-in-loop -- Sequential candidate reads bound process-backed fact loading. */
   for (const candidate of candidates) {
     if ((candidate.change !== 'deleted')
       && ((candidate.mode === 'regular') || (candidate.mode === 'executable')))
-      entries.push([candidate.path, await candidate.bytes(),],);
+      entries.push([
+        candidate.path,
+        await candidate.bytes(),
+      ],);
   }
   /* oxlint-enable no-await-in-loop */
   return new Map(entries,);
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Scope contains callback-bearing lazy Git facts; installer reads but never mutates it. */
 /**
  * Installs converged private-index bytes without changing real index.
  *
@@ -170,6 +220,11 @@ export async function captureDirectFixOriginalBytes(
  * @param originals - exact pre-convergence worktree bytes
  *
  * @throws Error when worktree or index changed concurrently
+ *
+ * @example
+ * ```ts
+ * await installDirectFix({ scope, changedPaths: [], originals: new Map() });
+ * ```
  */
 export async function installDirectFix({
   scope,
@@ -180,42 +235,70 @@ export async function installDirectFix({
   changedPaths: readonly string[];
   originals: DirectFixOriginalBytes;
 }>,): Promise<void> {
-  /** Real index snapshot proving direct fix remains index-neutral. */
+  /**
+   * Real index snapshot proving direct fix remains index-neutral.
+   */
   const indexBefore = await readIndex(scope.realIndexPath,);
-  /** Final private candidates containing converged bytes. */
-  const finalCandidates = await scope.gitFacts.candidates();
-  /** Prepared replacement records. */
+  /**
+   * Final private candidates containing converged bytes.
+   */
+  const finalCandidates = await scope.gitFacts
+    .candidates();
+  /**
+   * Prepared replacement records.
+   */
   const replacements: PreparedReplacement[] = [];
   /* oxlint-disable no-await-in-loop -- Preparation is sequential to bound filesystem descriptors and preserve deterministic rollback records. */
   for (const path of changedPaths) {
-    /** Final candidate for changed path. */
+    /**
+     * Final candidate for changed path.
+     */
     const candidate = finalCandidates.find(function candidateAtPath(value,) {
       return value.path === path;
     },);
-    /** Initial expected worktree bytes. */
+    /**
+     * Initial expected worktree bytes.
+     */
     const original = originals.get(path,);
     if ((candidate === undefined) || (original === undefined)
       || ((candidate.mode !== 'regular') && (candidate.mode !== 'executable')))
       throw new Error(`Direct-fix candidate became unavailable: ${path}`,);
-    /** Absolute worktree destination. */
-    const destination = join(scope.repositoryRoot, path,);
-    /** Current bytes immediately before replacement preparation. */
+    /**
+     * Absolute worktree destination.
+     */
+    const destination = join(
+      scope.repositoryRoot,
+      path,
+    );
+    /**
+     * Current bytes immediately before replacement preparation.
+     */
     const current = await readFile(destination,);
-    if (!bytesEqual({ left: current, right: original, }))
+    if (!bytesEqual({
+      left: current,
+      right: original,
+    }))
       throw new Error(`Direct-fix worktree path changed concurrently: ${path}`,);
-    /** Unique sibling prefix retaining destination filesystem. */
+    /**
+     * Unique sibling prefix retaining destination filesystem.
+     */
     const temporaryPrefix = join(
       dirname(destination,),
       `.cli-git-direct-fix-${randomUUID()}`,
     );
-    /** Prepared replacement record. */
+    /**
+     * Prepared replacement record.
+     */
     const replacement: PreparedReplacement = {
       path,
       destination,
       prepared: `${temporaryPrefix}.new`,
       backup: `${temporaryPrefix}.old`,
     };
-    await copyFile(destination, replacement.backup,);
+    await copyFile(
+      destination,
+      replacement.backup,
+    );
     await writeFile(
       replacement.prepared,
       await candidate.bytes(),
@@ -224,18 +307,28 @@ export async function installDirectFix({
     replacements.push(replacement,);
   }
   /* oxlint-enable no-await-in-loop */
-  /** Replacements already visible in worktree. */
+  /**
+   * Replacements already visible in worktree.
+   */
   const installed: PreparedReplacement[] = [];
   try {
     /* oxlint-disable no-await-in-loop -- Atomic sibling renames install deterministic path order. */
     for (const replacement of replacements) {
-      await rename(replacement.prepared, replacement.destination,);
+      await rename(
+        replacement.prepared,
+        replacement.destination,
+      );
       installed.push(replacement,);
     }
     /* oxlint-enable no-await-in-loop */
-    /** Real index snapshot after worktree-only installation. */
+    /**
+     * Real index snapshot after worktree-only installation.
+     */
     const indexAfter = await readIndex(scope.realIndexPath,);
-    if (!indexesEqual({ left: indexBefore, right: indexAfter, }))
+    if (!indexesEqual({
+      left: indexBefore,
+      right: indexAfter,
+    }))
       throw new Error('Direct fix changed real Git index bytes.',);
   }
   catch (error: unknown) {
@@ -246,3 +339,4 @@ export async function installDirectFix({
   }
   await cleanup(replacements,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

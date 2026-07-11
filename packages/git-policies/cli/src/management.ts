@@ -2,18 +2,15 @@
  * Optique management-command parser and dispatcher. @module
  */
 import {
-  argument,
   command,
   constant,
   flag,
-  multiple,
   object,
-  option,
   optional,
   or,
   runParserSync,
-  string,
 } from '@optique/core';
+import { DIRECT_MANAGEMENT_PARSER, } from './management-direct-parser.ts';
 import { resolveGit, } from './resolve-git.ts';
 import {
   createEngineFailureEvent,
@@ -65,48 +62,13 @@ const STATUS_PARSER = command(
 },),
 );
 /**
- * Built-in-only direct check parser.
- */
-const CHECK_PARSER = command(
-  'check',
-  object({
-  command: constant('check' as const,),
-  all: optional(flag('--all',),),
-  policies: multiple(option(
-    '--policy',
-    string(),
-  ),),
-  pathspecs: multiple(
-    argument(string(),),
-  ),
-},),
-);
-/**
- * Direct policy fix parser.
- */
-const FIX_PARSER = command(
-  'fix',
-  object({
-  command: constant('fix' as const,),
-  all: optional(flag('--all',),),
-  policies: multiple(option(
-    '--policy',
-    string(),
-  ),),
-  pathspecs: multiple(
-    argument(string(),),
-  ),
-},),
-);
-/**
  * First management grammar slice.
  */
 const MANAGEMENT_PARSER = or(
   TRUST_PARSER,
   UNTRUST_PARSER,
   STATUS_PARSER,
-  CHECK_PARSER,
-  FIX_PARSER,
+  DIRECT_MANAGEMENT_PARSER,
 );
 
 /**
@@ -340,7 +302,9 @@ export async function runManagementCommand({
       return (typeof value) === 'string';
     },);
   if (parsed.command === 'fix') {
-    /** Converged direct-fix operation. */
+    /**
+     * Converged direct-fix operation.
+     */
     const fixed = await runDirectFix({
       gitGlobalArgs,
       pathspecs: directPathspecs,
@@ -349,17 +313,25 @@ export async function runManagementCommand({
         ...(runtimeConfig === RUNTIME_CONFIG_ABSENT
           ? {}
           : {
-            config: { policies: runtimeConfig.validated.policySeverities, },
-            registeredPolicies: runtimeConfig.validated.registeredPolicies,
-            policyOptions: runtimeConfig.validated.policyOptions,
+            config: { policies: runtimeConfig.validated
+              .policySeverities, },
+            registeredPolicies: runtimeConfig.validated
+              .registeredPolicies,
+            policyOptions: runtimeConfig.validated
+              .policyOptions,
           }),
       },
     },);
-    /** Stable direct-fix JSONL. */
-    const renderedEvents = renderPolicyEvents(fixed.policyResult.events,);
+    /**
+     * Stable direct-fix JSONL.
+     */
+    const renderedEvents = renderPolicyEvents(fixed.policyResult
+      .events,);
     if (renderedEvents !== '')
-      process.stdout.write(renderedEvents,);
-    return fixed.policyResult.exitCode;
+      process.stdout
+        .write(renderedEvents,);
+    return fixed.policyResult
+      .exitCode;
   }
   /**
    * Exact private worktree/index projection for direct checks.
@@ -396,9 +368,12 @@ export async function runManagementCommand({
     ...(runtimeConfig === RUNTIME_CONFIG_ABSENT
       ? {}
       : {
-        config: { policies: runtimeConfig.validated.policySeverities, },
-        registeredPolicies: runtimeConfig.validated.registeredPolicies,
-        policyOptions: runtimeConfig.validated.policyOptions,
+        config: { policies: runtimeConfig.validated
+          .policySeverities, },
+        registeredPolicies: runtimeConfig.validated
+          .registeredPolicies,
+        policyOptions: runtimeConfig.validated
+          .policyOptions,
       }),
   },);
   /**
@@ -406,6 +381,7 @@ export async function runManagementCommand({
    */
   const renderedEvents = renderPolicyEvents(result.events,);
   if (renderedEvents !== '')
-    process.stdout.write(renderedEvents,);
+    process.stdout
+      .write(renderedEvents,);
   return result.exitCode;
 }
