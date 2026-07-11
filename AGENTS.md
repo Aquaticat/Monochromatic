@@ -229,6 +229,10 @@ and running background processes are not stopping conditions.
 Continue independent work while a background process runs;
 when no independent work remains,
 let its completion notification arrive before deciding whether work is complete or blocked.
+Managed background processes are event-driven:
+after starting one,
+never call process list or output merely to check whether it finished;
+read output only after its alert or for a separate diagnostic need.
 Stop only at completion or a genuine blocker requiring user authority or a non-measurable preference.
 Never send a progress-only final response as a substitute for continuing.
 
