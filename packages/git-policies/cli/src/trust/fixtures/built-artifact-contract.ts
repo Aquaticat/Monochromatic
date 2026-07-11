@@ -211,6 +211,21 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
   },))
     throw new Error('packed artifact omitted exact stored-MJS execution import',);
   /**
+   * Published TypeScript source retained for explicit source consumers.
+   */
+  const sourceFiles = await readdir(
+    '/work/node_modules/@monochromatic-dev/cli-git/src',
+    { recursive: true, },
+  );
+  if (!sourceFiles.includes('index.ts',))
+    throw new Error('packed cli-git omitted public TypeScript source entry',);
+  if (sourceFiles.some(function isDevelopmentOnlySource(path,) {
+    return path.endsWith('.unit.test.ts',)
+      || path.endsWith('.host-evidence.ts',)
+      || path.startsWith('trust/fixtures/',);
+  },))
+    throw new Error('packed cli-git retained development-only TypeScript source',);
+  /**
    * Installed packages in private workspace scope.
    */
   const scopedPackages = (await readdir('/work/node_modules/@monochromatic-dev',))
