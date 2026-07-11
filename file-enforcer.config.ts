@@ -613,7 +613,7 @@ _.path = [
 ${
     [
       'node_modules/.bin',
-      ...(await Array.fromAsync(glob('packages/*/*/node_modules/.bin',),)),
+      ...(await Array.fromAsync(glob('packages/*/*/node_modules/.bin',),)).toSorted(),
     ]
       .map(function quote(dir,): string {
         return `  "${dir}"`;
