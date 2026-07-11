@@ -15,6 +15,7 @@ import {
   execute,
 } from './built-consumer-helpers.ts';
 import { verifyBuiltArtifactContract, } from './built-artifact-contract.ts';
+import { verifyFinalNewlineConsumer, } from './built-final-newline-consumer.ts';
 import { verifyForbiddenStringsPolicyConsumer, } from './built-forbidden-strings-policy-consumer.ts';
 import { verifyAutofixTransactionConsumer, } from './built-autofix-transaction-consumer.ts';
 import { verifyPostCommitPolicyConsumer, } from './built-post-commit-policy-consumer.ts';
@@ -280,6 +281,7 @@ await verifyRecursiveConsumer({ env, },);
 await verifyPolicyConfigConsumer({ env, },);
 await verifyPolicyDefaultConsumer({ env, },);
 await verifyRepositoryPluginConsumer({ env, },);
+await verifyFinalNewlineConsumer({ env, },);
 await verifyForbiddenStringsPolicyConsumer({ env, },);
 await verifyPostCommitPolicyConsumer({ env, },);
 await verifyPostCommitRoutingConsumer({ env, },);
