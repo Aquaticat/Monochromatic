@@ -37,11 +37,16 @@ It printed the landed commit before eventually reporting:
 elapsed=18.64 user=6.93 system=11.64
 ```
 
-A repeat after the fix used the same dirty-worktree shape and reported:
+A repeat after the core final-newline fix used the same dirty-worktree shape and reported:
 
 ```text
 elapsed=0.74 user=0.42 system=0.53
 ```
+
+A main-repository run then measured `20.85 s` while the built cli-git artifact still contained
+the pre-fix forbidden-strings plugin.
+That second observation isolated the same unchanged-candidate fan-out in scanner materialization;
+rebundling cli-git picked up the plugin's landed-delta filter.
 
 ## Diagnosis
 
@@ -91,7 +96,8 @@ The following checks passed:
 - post-commit lifecycle regression proving changed and unchanged classification;
 - final-newline regression proving unchanged landed bytes remain unread;
 - forbidden-strings regression proving only landed-delta candidates reach scanner materialization;
-- dirty-worktree commit with hk stashing five files, reduced from `18.64 s` to `0.74 s`.
+- dirty-worktree commit with hk stashing five files, reduced from `18.64 s` to `0.74 s`;
+- main-repository commit with the old bundled forbidden-strings policy, which reproduced the second fan-out at `20.85 s`.
 
 The measured fixed command is below the required `2,000 ms` real-Git operation ceiling.
 
