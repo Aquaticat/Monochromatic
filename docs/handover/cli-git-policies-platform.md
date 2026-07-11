@@ -1569,7 +1569,7 @@ Unless later grilling changes them:
   added p95 was 1,152.066 ms,
   and worst added latency was 1,205.014 ms.
   Every sample remained below the strict 2,000 ms ceiling.
-  The committed harness is `packages/git-policies/cli/perf/manual-push-latency-benchmark.mjs`;
+  The committed harness is `packages/git-policies/cli/perf/manual-push-latency-benchmark.ts`;
   raw samples live in `packages/git-policies/cli/perf/manual-push-latency-2026-07-10.json`.
 - The latest hosted forbidden-strings workflow at pre-integration `origin/main` revision `ef179a737` failed on one
   credential-shaped patch-context line and credential-shaped literals in the concurrently landed forbidden-regex tests.

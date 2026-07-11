@@ -98,7 +98,7 @@ The accepted tmpfs run added at most 1,205.014 ms relative to paired direct Git,
 leaving 794.986 ms below the 2,000 ms ceiling.
 
 The committed harness is
-`packages/git-policies/cli/perf/manual-push-latency-benchmark.mjs`.
+`packages/git-policies/cli/perf/manual-push-latency-benchmark.ts`.
 Raw samples are stored in
 `packages/git-policies/cli/perf/manual-push-latency-2026-07-10.json`.
 After building and packing both production artifacts,
@@ -111,7 +111,7 @@ podman run --memory=2g --cpus=2 --rm --tmpfs /tmp:rw,size=1g \
   --volume "$PWD/packages/cli/forbidden-strings/target/release/forbidden-strings:/fixture/forbidden-strings:ro" \
   --volume "$PWD:/source:ro" \
   docker.io/library/node:24-slim \
-  node /source/packages/git-policies/cli/perf/manual-push-latency-benchmark.mjs
+  node /source/packages/git-policies/cli/perf/manual-push-latency-benchmark.ts
 ```
 
 The release profile is `lto = true`,
