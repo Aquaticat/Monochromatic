@@ -42,7 +42,7 @@ finding.
 
 - `findMiseMonorepoRoot` (`src/find-monorepo-root.ts`):
    walks upward for a `mise.toml` containing `[monorepo]`
-  and normalizes `/home` roots to `/var/home` for ostree.
+  and preserves runtime-native path identity.
 - `findMiseMonorepoRootCached` (`src/find-monorepo-root.ts`):
    memoised variant that locks the first resolved
   mise root for process lifetime.
@@ -52,14 +52,13 @@ finding.
   objects,
   refs,
   relative targets,
-  and linked-worktree `commondir` pointers before normalizing `/home` roots to `/var/home` for ostree.
+  and linked-worktree `commondir` pointers while preserving runtime-native path identity.
   Invalid nearer markers are skipped.
 - `findGitRepoRootCached` (`src/find-monorepo-root.ts`):
    memoised variant that locks the first resolved Git root
   for process lifetime.
 - `findPnpmWorkspaceRoot` (`src/find-monorepo-root.ts`):
-   walks upward for `pnpm-workspace.yaml` and normalizes
-  `/home` roots to `/var/home` for ostree.
+   walks upward for `pnpm-workspace.yaml` and preserves runtime-native path identity.
 - `findPnpmWorkspaceRootCached` (`src/find-monorepo-root.ts`):
    memoised variant that locks the first resolved
   pnpm workspace root for process lifetime.

@@ -159,26 +159,6 @@ const NO_ENTRY_ERROR_CODES: ReadonlySet<string> = new Set([
   'ENOTDIR',
 ],);
 
-/**
- * Home symlink root used on Fedora ostree systems.
- */
-const HOME_ROOT = '/home';
-
-/**
- * Home symlink prefix used on Fedora ostree systems.
- */
-const HOME_PREFIX = `${HOME_ROOT}/`;
-
-/**
- * Canonical home root used on Fedora ostree systems.
- */
-const VAR_HOME_ROOT = '/var/home';
-
-/**
- * Canonical home prefix used on Fedora ostree systems.
- */
-const VAR_HOME_PREFIX = `${VAR_HOME_ROOT}/`;
-
 //endregion Constants
 
 //region Runtime filesystem backend
@@ -562,31 +542,6 @@ export function defaultRootSearchCwd(): string {
   return '/';
 }
 
-/**
- * Normalizes Fedora ostree `/home` symlink roots to `/var/home`.
- *
- * @param root - discovered root path
- *
- * @returns normalized root path
- *
- * @example
- * ```ts
- * normalizeHomeRoot('/home/user/project');
- * // '/var/home/user/project'
- * ```
- */
-export function normalizeHomeRoot(root: string,): string {
-  if (root === HOME_ROOT)
-    return VAR_HOME_ROOT;
-  if (root.startsWith(HOME_PREFIX,)) {
-    return root.replace(
-      HOME_PREFIX,
-      VAR_HOME_PREFIX,
-    );
-  }
-  return root;
-}
-
 //endregion Path helpers
 
 //region Upward walk
@@ -647,7 +602,7 @@ async function walkUpRoot({
  *
  * @param missingMessage - error text when no ancestor matches
  *
- * @returns normalized root directory
+ * @returns matching root directory
  *
  * @throws when no ancestor satisfies `matches`
  *
@@ -674,22 +629,15 @@ export async function findRootByWalkingUp({
    * Filesystem backend resolved once per walk.
    */
   const fs = await resolveRootFilesystem();
-  /**
-   * Raw root before Fedora ostree home normalization.
-   */
-  const rawRoot = await walkUpRoot({
+  /** Matching root using caller's runtime-native path identity. */
+  const root = await walkUpRoot({
     dir: startDir,
     fs,
     matches,
     missingMessage,
   },);
-
-  /**
-   * Root path after Fedora ostree home normalization.
-   */
-  const normalizedRoot = normalizeHomeRoot(rawRoot,);
-  rootDiscoveryLogger.debug(`resolved root discovery result ${normalizedRoot}`,);
-  return normalizedRoot;
+  rootDiscoveryLogger.debug(`resolved root discovery result ${root}`,);
+  return root;
 }
 
 //endregion Upward walk

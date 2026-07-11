@@ -57,6 +57,8 @@ type RootFixture = {
  *
  * @param prefix - temporary directory prefix passed to `mkdtemp`
  *
+ * @param parent - optional logical parent preserving caller path spelling
+ *
  * @returns disposable fixture paths
  *
  * @example
@@ -66,12 +68,14 @@ type RootFixture = {
  */
 async function createRootFixture({
   prefix,
+  parent,
 }: {
   readonly prefix: string;
+  readonly parent?: string;
 },): Promise<RootFixture> {
-  /** Absolute fixture root under system temporary directory. */
+  /** Absolute fixture root under selected temporary parent. */
   const root = await mkdtemp(nodeJoin(
-    tmpdir(),
+    parent ?? tmpdir(),
     prefix,
   ),);
   /** Nested directory that forces upward walking before marker discovery. */
@@ -371,11 +375,13 @@ await describe({
       },
     },),
     it({
-      name: 'normalizes /home/ to /var/home/ on Fedora ostree systems',
+      name: 'preserves runtime-native path identity from current directory',
       fn: async () => {
         /** Root discovered from current process directory. */
         const root = await findMiseMonorepoRoot();
-        expect(root.startsWith('/home/',),).toBe(false,);
+        /** Runtime-native current process directory. */
+        const cwd = process.cwd();
+        expect((cwd === root) || cwd.startsWith(`${root}/`,),).toBe(true,);
       },
     },),
   ],
@@ -597,11 +603,34 @@ await describe({
       },
     },),
     it({
-      name: 'normalizes /home/ to /var/home/ on Fedora ostree systems',
+      name: 'preserves runtime-native path identity from current directory',
       fn: async () => {
         /** Git root discovered from current process directory. */
         const root = await findGitRepoRoot();
-        expect(root.startsWith('/home/',),).toBe(false,);
+        /** Runtime-native current process directory. */
+        const cwd = process.cwd();
+        expect((cwd === root) || cwd.startsWith(`${root}/`,),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'preserves logical home spelling instead of fabricating var-home path',
+      skip: !(process.env.HOME?.startsWith('/home/',) ?? false)
+        ? 'requires POSIX /home alias fixture'
+        : false,
+      fn: async () => {
+        /** Logical home path supplied by process environment. */
+        const logicalHome = process.env.HOME;
+        if (logicalHome === undefined)
+          throw new Error('HOME disappeared after skip evaluation.',);
+        /** Git fixture rooted through logical home spelling. */
+        await using fixture = await createRootFixture({
+          prefix: 'fs-path-home-alias-',
+          parent: logicalHome,
+        },);
+        await createValidGitDirectory({
+          gitDirectory: nodeJoin(fixture.root, '.git',),
+        },);
+        expect(await findGitRepoRoot({ cwd: fixture.nested, },)).toBe(fixture.root,);
       },
     },),
   ],
@@ -689,11 +718,13 @@ await describe({
       },
     },),
     it({
-      name: 'normalizes /home/ to /var/home/ on Fedora ostree systems',
+      name: 'preserves runtime-native path identity from current directory',
       fn: async () => {
         /** pnpm workspace root discovered from current process directory. */
         const root = await findPnpmWorkspaceRoot();
-        expect(root.startsWith('/home/',),).toBe(false,);
+        /** Runtime-native current process directory. */
+        const cwd = process.cwd();
+        expect((cwd === root) || cwd.startsWith(`${root}/`,),).toBe(true,);
       },
     },),
   ],

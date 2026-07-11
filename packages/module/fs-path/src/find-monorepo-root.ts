@@ -224,7 +224,7 @@ function logRootSearchStart({
  * Finds the mise monorepo root directory by searching upward from `cwd`
  * for a `mise.toml` containing `[monorepo]`.
  *
- * Normalizes the result to use `/var/home` instead of `/home` on Fedora ostree.
+ * Preserves runtime-native path identity from upward walk.
  *
  * @param options - upward-search options; `cwd` defaults to `process.cwd()`
  *
@@ -284,7 +284,7 @@ export function findMiseMonorepoRootCached(): Promise<string> {
  * Finds Git repository root directory by searching upward from `cwd` for `.git`.
  *
  * Accepts both normal `.git` directories and gitfile markers used by worktrees
- * and submodules. Normalizes `/home` roots to `/var/home` on Fedora ostree.
+ * and submodules while preserving runtime-native path identity.
  *
  * @param options - upward-search options; `cwd` defaults to `process.cwd()`
  *
@@ -349,7 +349,7 @@ export function findGitRepoRootCached(): Promise<string> {
  * Finds pnpm workspace root directory by searching upward from `cwd` for
  * `pnpm-workspace.yaml`.
  *
- * Normalizes `/home` roots to `/var/home` on Fedora ostree.
+ * Preserves runtime-native path identity from upward walk.
  *
  * @param options - upward-search options; `cwd` defaults to `process.cwd()`
  *
