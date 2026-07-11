@@ -736,7 +736,7 @@ then records 30 samples with median,
 p95,
 median absolute deviation,
 raw timings,
-and either absolute or paired wrapper-added latency.
+and paired wrapper-added latency for every scenario.
 
 The matrix covers no-config forwarding,
 read-only commands,
