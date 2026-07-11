@@ -1,0 +1,43 @@
+name: cli-git performance
+
+on:
+  pull_request:
+    branches: ['main']
+  merge_group:
+    branches: ['main']
+  push:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+jobs:
+  lifecycle-latency:
+    runs-on: ubuntu-latest
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Set up mise without repository-wide tool installation
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      with:
+        install: false
+
+    - name: Install benchmark tools
+      run: mise install node pnpm
+
+    - name: Update package metadata
+      run: sudo apt-get update
+
+    - name: Install Podman
+      run: sudo apt-get install --yes podman
+
+    - name: Install cli-git dependency closure
+      run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/cli-git...
+
+    - name: Enforce measured lifecycle budgets
+      run: mise run //packages/git-policies/cli:perf:lifecycle-latency
