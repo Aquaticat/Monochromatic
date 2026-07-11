@@ -40,6 +40,11 @@ run = "cargo publish"
 description = "cargo nextest run"
 run = "cargo nextest run --release"
 
+[tasks."scan:all"]
+description = "Scan the complete repository with the release forbidden-strings binary"
+depends = ["build"]
+run = "target/release/forbidden-strings --all"
+
 # Fuzzing moved to its own config root at packages/fuzz/forbidden-strings so a
 # scoped nightly toolchain does not force this published crate onto nightly.
 # Run targets via `mise run //packages/fuzz/forbidden-strings:build` etc.
