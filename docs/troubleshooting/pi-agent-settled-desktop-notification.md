@@ -73,13 +73,19 @@ Pi's upstream contribution guide also says features outside its minimal core sho
 
 ### Versions and source
 
-- Installed `@earendil-works/pi-coding-agent`: `0.80.6`.
-- Source inspected: `earendil-works/pi` tag `v0.80.6`, commit
+- Installed `@earendil-works/pi-coding-agent`:
+   `0.80.6`.
+- Source inspected:
+   `earendil-works/pi` tag `v0.80.6`,
+   commit
   `2b3fda9921b5590f285165287bd442a25817f17b`,
   cloned at `/var/home/user/temp/agent/pi-mono-stop-notification-2026-07-11`.
-- Desktop environment: KDE Plasma on Wayland.
-- Notification server: `plasmashell` owns `org.freedesktop.Notifications` on the user D-Bus.
-- Notification client: `notify-send 0.8.8`.
+- Desktop environment:
+   KDE Plasma on Wayland.
+- Notification server:
+   `plasmashell` owns `org.freedesktop.Notifications` on the user D-Bus.
+- Notification client:
+   `notify-send 0.8.8`.
 
 The host delivery primitive was exercised directly:
 
@@ -164,18 +170,24 @@ and extension issues.
 
 The filing gate resolves as follows:
 
-1. **Is this upstream's fault?** No.
+1. **Is this upstream's fault?
+   ** No.
    Pi exposes the precise event needed by the consumer integration.
-2. **Can upstream change core?** Yes,
+2. **Can upstream change core?
+   ** Yes,
    but no core change is necessary.
-3. **Is this use case supported?** Yes.
+3. **Is this use case supported?
+   ** Yes.
    `agent_settled` is a typed extension event designed to report final agent idleness.
-4. **Would upstream welcome this core contribution?** No.
+4. **Would upstream welcome this core contribution?
+   ** No.
    `CONTRIBUTING.md` says features outside Pi's minimal core should be extensions,
    and it warns against agent-generated tracker submissions.
-5. **Will upstream likely change it?** No evidence supports a core change,
+5. **Will upstream likely change it?
+   ** No evidence supports a core change,
    because the supported extension seam already solves it.
-6. **Has a compatible upstream prototype been made?** Not applicable.
+6. **Has a compatible upstream prototype been made?
+   ** Not applicable.
    The first gate fails and a core patch would be unnecessary scope expansion.
 
 No upstream issue or comment should be filed.
