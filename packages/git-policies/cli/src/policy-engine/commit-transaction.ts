@@ -6,6 +6,7 @@
 import { join, } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parseCommitRegion, } from '../parsers/commit.ts';
+import { applyPolicyPatches, } from './apply-policy-patches.ts';
 import {
   containsExactCandidateSnapshot,
   writeCandidateSnapshot,
@@ -15,7 +16,6 @@ import {
   listChangedIndexPaths,
   listUnmergedIndexPaths,
 } from './commit-transaction-candidates.ts';
-import { applyPrivatePatch, } from './commit-transaction-git.ts';
 import {
   initializeCommitIndex,
   preparePostIndex,
@@ -27,8 +27,6 @@ import {
   fixCycleFailure,
   fixPassLimitFailure,
   initialTransactionFailure,
-  patchApplicationFailure,
-  patchTargetFailure,
 } from './commit-transaction-results.ts';
 import {
   hasSequencerConclusion,
@@ -259,50 +257,24 @@ export async function runCommitTransaction({
       paths: candidatePaths,
     },)
       .candidates();
-    for (const [ordinal, patch,] of pass.patches
-      .entries()) {
-      /**
-       * Exact candidate bound by opaque ID and declared path.
-       */
-      const candidate = candidates.find(function matches(currentCandidate,) {
-        return (currentCandidate.targetId === patch.targetId)
-          && (currentCandidate.path === patch.path);
-      },);
-      if ((candidate === undefined)
-        || ((typeof candidate.revision) === 'symbol')
-        || ((candidate.mode !== 'regular') && (candidate.mode !== 'executable')))
-        return {
-          policyResult: patchTargetFailure({
-            previous: pass,
-            trigger: 'pre-forward',
-            path: patch.path,
-          },),
-          committed: false,
-        };
-      try {
-        // oxlint-disable-next-line no-await-in-loop -- Ordered patches intentionally compose through one private index.
-        await applyPrivatePatch({
-          workspace,
-          gitPath,
-          cwd: layout.effectiveCwd,
-          patch,
-          candidateRevision: candidate.revision,
-          ordinal,
-        },);
-        changedPaths.add(patch.path,);
-      }
-      catch (error: unknown) {
-        return {
-          policyResult: patchApplicationFailure({
-            previous: pass,
-            trigger: 'pre-forward',
-            path: patch.path,
-            error,
-          },),
-          committed: false,
-        };
-      }
-    }
+    /** Ordered private patch application for current provisional pass. */
+    // oxlint-disable-next-line no-await-in-loop -- Each changed pass applies its exact ordered proposals before restart.
+    const applied = await applyPolicyPatches({
+      workspace,
+      gitPath,
+      cwd: layout.effectiveCwd,
+      pass,
+      candidates,
+      trigger: 'pre-forward',
+    },);
+    if (applied.kind === 'failed')
+      return {
+        policyResult: applied.result,
+        committed: false,
+      };
+    applied.paths.forEach(function recordChangedPath(path,) {
+      changedPaths.add(path,);
+    },);
     /**
      * Current private-index candidate facts after ordered patches.
      */

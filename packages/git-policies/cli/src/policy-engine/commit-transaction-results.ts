@@ -117,6 +117,11 @@ export function transactionFailure({
  * @param trigger - fixable lifecycle point
  *
  * @returns blocking pass-limit result
+ *
+ * @example
+ * ```ts
+ * fixPassLimitFailure({ previous, trigger: 'direct-fix' });
+ * ```
  */
 export function fixPassLimitFailure({
   previous,
@@ -143,6 +148,11 @@ export function fixPassLimitFailure({
  * @param path - stale or mutable patch target
  *
  * @returns blocking invalid-patch result
+ *
+ * @example
+ * ```ts
+ * patchTargetFailure({ previous, trigger: 'pre-forward', path: 'a.txt' });
+ * ```
  */
 export function patchTargetFailure({
   previous,
@@ -174,6 +184,11 @@ export function patchTargetFailure({
  * @param error - validation or Git application failure
  *
  * @returns blocking classified patch result
+ *
+ * @example
+ * ```ts
+ * patchApplicationFailure({ previous, trigger: 'direct-fix', path: 'a.txt', error });
+ * ```
  */
 export function patchApplicationFailure({
   previous,
@@ -205,6 +220,11 @@ export function patchApplicationFailure({
  * @param message - lifecycle-specific cycle explanation
  *
  * @returns blocking cycle result
+ *
+ * @example
+ * ```ts
+ * fixCycleFailure({ previous, trigger: 'pre-forward', message: 'Repeated state.' });
+ * ```
  */
 export function fixCycleFailure({
   previous,

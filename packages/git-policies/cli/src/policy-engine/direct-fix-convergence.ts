@@ -6,17 +6,15 @@
 import { Buffer, } from 'node:buffer';
 import { join, } from 'node:path';
 import type { CandidateFile, } from '../api/policy-types.ts';
+import { applyPolicyPatches, } from './apply-policy-patches.ts';
 import {
   containsExactCandidateSnapshot,
   writeCandidateSnapshot,
 } from './commit-transaction-candidate-snapshot.ts';
 import { createPrivateIndexFacts, } from './commit-transaction-candidates.ts';
-import { applyPrivatePatch, } from './commit-transaction-git.ts';
 import {
   fixCycleFailure,
   fixPassLimitFailure,
-  patchApplicationFailure,
-  patchTargetFailure,
 } from './commit-transaction-results.ts';
 import { runPolicyEngine, } from './engine.ts';
 import type { AddPolicyFactsScope, } from './add-policy-facts.ts';
@@ -173,52 +171,25 @@ export async function convergeDirectFix({
       paths: scope.paths,
     },)
       .candidates();
-    for (const [ordinal, patch,] of pass.patches
-      .entries()) {
-      /**
-       * Exact candidate selected by opaque target and path.
-       */
-      const target = candidates.find(function matchingTarget(candidate,) {
-        return (candidate.targetId === patch.targetId) && (candidate.path === patch.path);
-      },);
-      if ((target === undefined) || ((typeof target.revision) === 'symbol')
-        || ((target.mode !== 'regular') && (target.mode !== 'executable'))) {
-        return {
-          policyResult: patchTargetFailure({
-            previous: pass,
-            trigger: 'direct-fix',
-            path: patch.path,
-          },),
-          changedPaths: [],
-          passes: changedPasses,
-        };
-      }
-      try {
-        // oxlint-disable-next-line no-await-in-loop -- Ordered policy patches intentionally compose through one private index.
-        await applyPrivatePatch({
-          workspace: {
-            directory: scope.directory,
-            commitIndexPath: scope.indexPath,
-          },
-          gitPath,
-          cwd: scope.repositoryRoot,
-          patch,
-          candidateRevision: target.revision,
-          ordinal,
-        },);
-      }
-      catch (error: unknown) {
-        return {
-          policyResult: patchApplicationFailure({
-            previous: pass,
-            trigger: 'direct-fix',
-            path: patch.path,
-            error,
-          },),
-          changedPaths: [],
-          passes: changedPasses,
-        };
-      }
+    /** Ordered private patch application for current provisional pass. */
+    // oxlint-disable-next-line no-await-in-loop -- Each changed pass applies its exact ordered proposals before restart.
+    const applied = await applyPolicyPatches({
+      workspace: {
+        directory: scope.directory,
+        commitIndexPath: scope.indexPath,
+      },
+      gitPath,
+      cwd: scope.repositoryRoot,
+      pass,
+      candidates,
+      trigger: 'direct-fix',
+    },);
+    if (applied.kind === 'failed') {
+      return {
+        policyResult: applied.result,
+        changedPaths: [],
+        passes: changedPasses,
+      };
     }
     changedPasses += 1;
     /**
