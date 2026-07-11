@@ -307,7 +307,9 @@ export default {
       CLI_GIT_NO_PARANOID: 'bad%20entry',
     },
   },);
-  /** Canonical non-policy trust warning. */
+  /**
+   * Canonical non-policy trust warning.
+   */
   const warning = parseJsonObjectLine({
     text: malformed.stderr,
     context: 'malformed relaxed warning',
