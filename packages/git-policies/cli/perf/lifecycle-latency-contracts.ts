@@ -22,7 +22,7 @@ export type LifecycleScenarioId =
 /**
  * Metric compared with measured scenario budget.
  */
-export type LifecycleMetric = 'absolute' | 'wrapper-added';
+export type LifecycleMetric = 'wrapper-added';
 
 /**
  * One command wall-time observation.

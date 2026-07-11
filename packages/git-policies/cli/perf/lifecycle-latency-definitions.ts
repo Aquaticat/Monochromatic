@@ -40,17 +40,31 @@ export type PairedScenario = Readonly<{
 }>;
 
 /**
- * Scenario absolute-command declaration.
+ * Direct and wrapped requests sharing one prepared repository state.
  */
-export type AbsoluteScenario = Readonly<{
+export type PreparedPair = Readonly<{
+  /**
+   * Direct real-Git baseline request.
+   */
+  direct: CommandRequest;
+  /**
+   * Wrapped lifecycle request.
+   */
+  wrapper: CommandRequest;
+}>;
+
+/**
+ * Scenario requiring fresh state before each command pair.
+ */
+export type PreparedPairedScenario = Readonly<{
   /**
    * Stable scenario identity.
    */
   id: LifecycleScenarioId;
   /**
-   * Builds next stateful request.
+   * Builds next equivalent direct and wrapped requests.
    */
-  request: (input: Readonly<{
+  prepare: (input: Readonly<{
     /**
      * Unique state sequence.
      */
@@ -59,8 +73,71 @@ export type AbsoluteScenario = Readonly<{
      * Prepared trust facts.
      */
     fixture: LifecycleFixture;
-  }>,) => Promise<CommandRequest>;
+  }>,) => Promise<PreparedPair>;
 }>;
+
+/**
+ * Creates one same-command pair over prepared repository state.
+ *
+ * @param args - literal Git arguments
+ *
+ * @param cwd - shared repository
+ *
+ * @param env - optional wrapped trust environment
+ *
+ * @returns direct and wrapped requests differing only by executable and wrapped environment
+ *
+ * @example
+ * ```ts
+ * commandPair({ args: ['status'], cwd: '/work/repository' });
+ * ```
+ */
+function commandPair({
+  args,
+  cwd,
+  env,
+}: Readonly<{
+  args: readonly string[];
+  cwd: string;
+  env?: Readonly<Record<string, string>>;
+}>,): PreparedPair {
+  return {
+    direct: {
+      command: REAL_GIT,
+      args,
+      cwd,
+    },
+    wrapper: {
+      command: PACKAGE_BIN,
+      args,
+      cwd,
+      ...(env === undefined ? {} : { env, }),
+    },
+  };
+}
+
+/**
+ * Creates dry-run commit arguments that exercise selected content without changing repository state.
+ *
+ * @param iteration - unique diagnostic sequence
+ *
+ * @returns same direct and wrapped Git argument vector
+ *
+ * @example
+ * ```ts
+ * dryRunCommitArgs(1);
+ * ```
+ */
+function dryRunCommitArgs(iteration: number,): readonly string[] {
+  return [
+    'commit',
+    '--dry-run',
+    '--only',
+    `--message=benchmark-${String(iteration,)}`,
+    '--',
+    BENCHMARK_FILE,
+  ];
+}
 
 /**
  * Builds validator trust request after changing exact bytes.
@@ -71,9 +148,11 @@ export type AbsoluteScenario = Readonly<{
  */
 async function validatorRequest({
   iteration,
+  fixture,
 }: Readonly<{
   iteration: number;
-}>,): Promise<CommandRequest> {
+  fixture: LifecycleFixture;
+}>,): Promise<PreparedPair> {
   await appendFile(
     join(
       MJS_REPOSITORY,
@@ -81,15 +160,14 @@ async function validatorRequest({
     ),
     `// validator-${String(iteration,)}\n`,
   );
-  return {
-    command: PACKAGE_BIN,
+  return commandPair({
     args: [
-      'cli-git',
-      'trust',
-      '--yes',
+      'status',
+      '--short',
     ],
     cwd: MJS_REPOSITORY,
-  };
+    env: fixture.mjsRelaxedEnvironment,
+  },);
 }
 
 /**
@@ -107,7 +185,7 @@ async function relaxedRequest({
 }: Readonly<{
   iteration: number;
   fixture: LifecycleFixture;
-}>,): Promise<CommandRequest> {
+}>,): Promise<PreparedPair> {
   await appendFile(
     join(
       TYPESCRIPT_REPOSITORY,
@@ -115,15 +193,14 @@ async function relaxedRequest({
     ),
     `// relaxed-${String(iteration,)}\n`,
   );
-  return {
-    command: PACKAGE_BIN,
+  return commandPair({
     args: [
       'status',
       '--short',
     ],
     cwd: TYPESCRIPT_REPOSITORY,
-    env: fixture.relaxedEnvironment,
-  };
+    env: fixture.typescriptRelaxedEnvironment,
+  },);
 }
 
 /**
@@ -131,17 +208,20 @@ async function relaxedRequest({
  *
  * @returns scanner request
  */
-function scannerRequest(): Promise<CommandRequest> {
-  return Promise.resolve({
-    command: PACKAGE_BIN,
-    args: [
-      'cli-git',
-      'check',
-      '--policy',
-      'security/forbidden-strings',
-      '--',
+async function scannerRequest({
+  iteration,
+}: Readonly<{
+  iteration: number;
+}>,): Promise<PreparedPair> {
+  await writeFile(
+    join(
+      TYPESCRIPT_REPOSITORY,
       BENCHMARK_FILE,
-    ],
+    ),
+    `scanner-${String(iteration,)}\n`,
+  );
+  return commandPair({
+    args: dryRunCommitArgs(iteration,),
     cwd: TYPESCRIPT_REPOSITORY,
   },);
 }
@@ -157,26 +237,18 @@ async function normalizerChangedRequest({
   iteration,
 }: Readonly<{
   iteration: number;
-}>,): Promise<CommandRequest> {
+}>,): Promise<PreparedPair> {
   await writeFile(
     join(
-      TYPESCRIPT_REPOSITORY,
+      MJS_REPOSITORY,
       BENCHMARK_FILE,
     ),
     `changed-${String(iteration,)}`,
   );
-  return {
-    command: PACKAGE_BIN,
-    args: [
-      'cli-git',
-      'fix',
-      '--policy',
-      'final-newline',
-      '--',
-      BENCHMARK_FILE,
-    ],
-    cwd: TYPESCRIPT_REPOSITORY,
-  };
+  return commandPair({
+    args: dryRunCommitArgs(iteration,),
+    cwd: MJS_REPOSITORY,
+  },);
 }
 
 /**
@@ -184,18 +256,21 @@ async function normalizerChangedRequest({
  *
  * @returns normalizer request
  */
-function normalizerRequest(): Promise<CommandRequest> {
-  return Promise.resolve({
-    command: PACKAGE_BIN,
-    args: [
-      'cli-git',
-      'check',
-      '--policy',
-      'final-newline',
-      '--',
+async function normalizerRequest({
+  iteration,
+}: Readonly<{
+  iteration: number;
+}>,): Promise<PreparedPair> {
+  await writeFile(
+    join(
+      MJS_REPOSITORY,
       BENCHMARK_FILE,
-    ],
-    cwd: TYPESCRIPT_REPOSITORY,
+    ),
+    `normalizer-${String(iteration,)}\n`,
+  );
+  return commandPair({
+    args: dryRunCommitArgs(iteration,),
+    cwd: MJS_REPOSITORY,
   },);
 }
 
@@ -282,27 +357,27 @@ export const PAIRED_SCENARIOS: readonly PairedScenario[] = [
 ];
 
 /**
- * Absolute scenarios in stable report order.
+ * Prepared paired scenarios in stable report order.
  */
-export const ABSOLUTE_SCENARIOS: readonly AbsoluteScenario[] = [
+export const PREPARED_PAIRED_SCENARIOS: readonly PreparedPairedScenario[] = [
   {
-  id: 'scanner',
-  request: scannerRequest,
-},
+    id: 'scanner',
+    prepare: scannerRequest,
+  },
   {
-  id: 'normalizer',
-  request: normalizerRequest,
-},
+    id: 'normalizer',
+    prepare: normalizerRequest,
+  },
   {
-  id: 'normalizer-change',
-  request: normalizerChangedRequest,
-},
+    id: 'normalizer-change',
+    prepare: normalizerChangedRequest,
+  },
   {
-  id: 'validator',
-  request: validatorRequest,
-},
+    id: 'validator',
+    prepare: validatorRequest,
+  },
   {
-  id: 'relaxed-rebuild',
-  request: relaxedRequest,
-},
+    id: 'relaxed-rebuild',
+    prepare: relaxedRequest,
+  },
 ];

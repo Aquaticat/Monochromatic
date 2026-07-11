@@ -31,10 +31,10 @@ import {
   WARMUP_RUNS,
 } from './lifecycle-latency-contracts.ts';
 import {
-  ABSOLUTE_SCENARIOS,
   PAIRED_SCENARIOS,
-  type AbsoluteScenario,
+  PREPARED_PAIRED_SCENARIOS,
   type PairedScenario,
+  type PreparedPairedScenario,
 } from './lifecycle-latency-definitions.ts';
 import type { LifecycleFixture, } from './lifecycle-latency-fixture.ts';
 import { assertStableWarmups, } from './lifecycle-latency-warmup.ts';
@@ -64,22 +64,16 @@ function measurementIndices(): readonly number[] {
 /**
  * Selects metric values from samples.
  *
- * @param samples - recorded samples
+ * @param samples - recorded paired samples
  *
- * @param metric - enforced metric
- *
- * @returns numeric metric observations
+ * @returns wrapper-added observations
  */
 function metricValues({
   samples,
-  metric,
 }: Readonly<{
   samples: readonly CommandSample[];
-  metric: LifecycleMetric;
 }>,): readonly number[] {
   return samples.map(function sampleMetric(sample,) {
-    if (metric === 'absolute')
-      return sample.wrapperMs;
     if (sample.addedMs === undefined)
       throw new LifecycleBenchmarkError('Paired scenario omitted wrapper-added latency.',);
     return sample.addedMs;
@@ -109,10 +103,7 @@ function summarize({
   /**
    * Values selected by scenario metric.
    */
-  const values = metricValues({
-    samples,
-    metric,
-  },);
+  const values = metricValues({ samples, },);
   /**
    * Largest recorded metric value.
    */
@@ -195,10 +186,7 @@ async function collectPaired(scenario: PairedScenario,): Promise<ScenarioSummary
   );
   assertStableWarmups({
     id: scenario.id,
-    values: metricValues({
-      samples: allSamples,
-      metric: 'wrapper-added',
-    },),
+    values: metricValues({ samples: allSamples, },),
   },);
   return summarize({
     id: scenario.id,
@@ -208,54 +196,75 @@ async function collectPaired(scenario: PairedScenario,): Promise<ScenarioSummary
 }
 
 /**
- * Collects absolute stateful command measurements.
+ * Collects stateful pairs after preparing equivalent command state.
  *
- * @param scenario - absolute command declaration
+ * @param scenario - prepared pair declaration
  *
  * @param fixture - prepared trust facts
  *
- * @returns enforced absolute summary
+ * @returns enforced wrapper-added summary
  */
-async function collectAbsolute({
+async function collectPreparedPaired({
   scenario,
   fixture,
 }: Readonly<{
-  scenario: AbsoluteScenario;
+  scenario: PreparedPairedScenario;
   fixture: LifecycleFixture;
 }>,): Promise<ScenarioSummary> {
   /**
-   * Complete sequential absolute collection.
+   * Complete sequential prepared pair collection.
    */
   const allSamples = await measurementIndices()
     .reduce(
-    async function appendMeasurement(
-      previousPromise,
-      index,
-    ) {
-      /**
-       * Earlier sequential absolute samples.
-       */
-      const previous = await previousPromise;
-      return [
-        ...previous,
-        { wrapperMs: await measure(await scenario.request({
+      async function appendPreparedPair(
+        previousPromise,
+        index,
+      ) {
+        /**
+         * Earlier sequential prepared pairs.
+         */
+        const previous = await previousPromise;
+        /**
+         * Direct and wrapped requests over one newly prepared state.
+         */
+        const pair = await scenario.prepare({
           iteration: index,
           fixture,
-        },),), },
-      ];
-    },
-    Promise.resolve<readonly CommandSample[]>([],),
-  );
+        },);
+        /**
+         * Alternating execution order for systematic-noise control.
+         */
+        const wrapperFirst = (index % 2) === 1;
+        /**
+         * Optional wrapper duration measured before direct Git.
+         */
+        const firstWrapperMs = wrapperFirst ? await measure(pair.wrapper,) : undefined;
+        /**
+         * Paired direct Git duration.
+         */
+        const directMs = await measure(pair.direct,);
+        /**
+         * Wrapper duration from selected execution order.
+         */
+        const wrapperMs = firstWrapperMs ?? await measure(pair.wrapper,);
+        return [
+          ...previous,
+          {
+            directMs,
+            wrapperMs,
+            addedMs: wrapperMs - directMs,
+          },
+        ];
+      },
+      Promise.resolve<readonly CommandSample[]>([],),
+    );
   assertStableWarmups({
     id: scenario.id,
-    values: metricValues({
-      samples: allSamples,
-      metric: 'absolute',
-    },),
+    values: metricValues({ samples: allSamples, },),
   },);
   return summarize({
     id: scenario.id,
-    metric: 'absolute',
+    metric: 'wrapper-added',
     samples: allSamples.slice(WARMUP_RUNS,),
   },);
 }
@@ -376,10 +385,7 @@ async function collectPostCommit(): Promise<ScenarioSummary> {
   );
   assertStableWarmups({
     id: 'post-commit',
-    values: metricValues({
-      samples: allSamples,
-      metric: 'wrapper-added',
-    },),
+    values: metricValues({ samples: allSamples, },),
   },);
   return summarize({
     id: 'post-commit',
@@ -423,16 +429,16 @@ export async function collectLifecycleScenarios(
    */
   const postCommit = await collectPostCommit();
   /**
-   * Absolute summaries collected sequentially over shared trusted state.
+   * Stateful paired summaries collected sequentially over shared trusted state.
    */
-  const absolute = await ABSOLUTE_SCENARIOS.reduce(
-    async function appendAbsolute(
+  const preparedPaired = await PREPARED_PAIRED_SCENARIOS.reduce(
+    async function appendPreparedPaired(
       previousPromise,
       scenario,
     ) {
       return [
         ...await previousPromise,
-        await collectAbsolute({
+        await collectPreparedPaired({
           scenario,
           fixture,
         },),
@@ -443,6 +449,6 @@ export async function collectLifecycleScenarios(
   return [
     ...paired,
     postCommit,
-    ...absolute,
+    ...preparedPaired,
   ];
 }

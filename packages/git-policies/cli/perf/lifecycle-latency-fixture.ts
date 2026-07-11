@@ -38,9 +38,13 @@ const TREE_NAME_WIDTH = 5;
  */
 export type LifecycleFixture = Readonly<{
   /**
+   * Exact relaxed-mode environment entry for MJS config.
+   */
+  mjsRelaxedEnvironment: Readonly<Record<string, string>>;
+  /**
    * Exact relaxed-mode environment entry for TypeScript config.
    */
-  relaxedEnvironment: Readonly<Record<string, string>>;
+  typescriptRelaxedEnvironment: Readonly<Record<string, string>>;
 }>;
 
 /**
@@ -178,6 +182,68 @@ async function commitBaseline(repository: string,): Promise<void> {
 }
 
 /**
+ * Reads filesystem identity from built trust status.
+ *
+ * @param repository - trusted repository
+ *
+ * @returns stable filesystem identity
+ *
+ * @throws {@link TypeError} when built status omits required identity
+ *
+ * @example
+ * ```ts
+ * await trustFilesystemId('/work/repository');
+ * ```
+ */
+async function trustFilesystemId(repository: string,): Promise<string> {
+  /**
+   * Unknown JSON trust-status boundary.
+   */
+  const trustStatus: unknown = JSON.parse(await execute({
+    command: PACKAGE_BIN,
+    args: [
+      'cli-git',
+      'status',
+    ],
+    cwd: repository,
+  },),);
+  if (((typeof trustStatus) !== 'object') || (trustStatus === null)
+    || (!('filesystemId' in trustStatus))
+    || ((typeof trustStatus.filesystemId) !== 'string'))
+    throw new TypeError('Trust status omitted filesystem identity.',);
+  return trustStatus.filesystemId;
+}
+
+/**
+ * Builds exact relaxed-mode environment for one config identity.
+ *
+ * @param repository - trusted repository
+ *
+ * @param configName - repository-relative config path
+ *
+ * @returns relaxed trust environment
+ *
+ * @example
+ * ```ts
+ * await relaxedEnvironment({ repository: '/work/repository', configName: 'cli-git.config.ts' });
+ * ```
+ */
+async function relaxedEnvironment({
+  repository,
+  configName,
+}: Readonly<{
+  repository: string;
+  configName: string;
+}>,): Promise<Readonly<Record<string, string>>> {
+  return {
+    CLI_GIT_NO_PARANOID: `${await trustFilesystemId(repository,)}:${join(
+      repository,
+      configName,
+    )}`,
+  };
+}
+
+/**
  * Prepares package installation, trusted configs, and equivalent repositories.
  *
  * @returns reusable benchmark fixture facts
@@ -268,27 +334,14 @@ export default defineConfig({
   },);
   await prepareCommitRemotes();
 
-  /**
-   * Unknown JSON trust-status boundary.
-   */
-  const trustStatus: unknown = JSON.parse(await execute({
-    command: PACKAGE_BIN,
-    args: [
-      'cli-git',
-      'status',
-    ],
-    cwd: TYPESCRIPT_REPOSITORY,
-  },),);
-  if (((typeof trustStatus) !== 'object') || (trustStatus === null)
-    || (!('filesystemId' in trustStatus))
-    || ((typeof trustStatus.filesystemId) !== 'string'))
-    throw new TypeError('TypeScript trust status omitted filesystem identity.',);
   return {
-    relaxedEnvironment: {
-      CLI_GIT_NO_PARANOID: `${trustStatus.filesystemId}:${join(
-        TYPESCRIPT_REPOSITORY,
-        'cli-git.config.ts',
-      )}`,
-    },
+    mjsRelaxedEnvironment: await relaxedEnvironment({
+      repository: MJS_REPOSITORY,
+      configName: 'cli-git.config.mjs',
+    },),
+    typescriptRelaxedEnvironment: await relaxedEnvironment({
+      repository: TYPESCRIPT_REPOSITORY,
+      configName: 'cli-git.config.ts',
+    },),
   };
 }

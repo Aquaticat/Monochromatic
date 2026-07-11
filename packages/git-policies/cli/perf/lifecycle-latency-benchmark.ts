@@ -68,14 +68,23 @@ const benchmarkResult = {
 /**
  * Stable serialized evidence shared by logs and CI artifact storage.
  */
-const serializedResult = JSON.stringify(benchmarkResult, null, 2,);
+const serializedResult = JSON.stringify(
+  benchmarkResult,
+  null,
+  2,
+);
 /**
  * Optional caller-owned artifact destination mounted outside the disposable benchmark container.
  */
-const outputPath = process.env.CLI_GIT_BENCHMARK_OUTPUT;
+const outputPath = process.env
+  .CLI_GIT_BENCHMARK_OUTPUT;
 
 if (outputPath !== undefined)
-  await writeFile(outputPath, serializedResult, 'utf8',);
+  await writeFile(
+    outputPath,
+    serializedResult,
+    'utf8',
+  );
 
 console.log(serializedResult,);
 

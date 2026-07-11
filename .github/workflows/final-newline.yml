@@ -32,23 +32,5 @@ jobs:
     - name: Install cli-git dependency closure
       run: pnpm install --frozen-lockfile --filter @monochromatic-dev/cli-git...
 
-    - name: Create isolated core policy repository
-      run: |
-        scan_root="$(realpath "$RUNNER_TEMP")/final-newline"
-        git clone --local --no-hardlinks "$GITHUB_WORKSPACE" "$scan_root"
-        printf 'export default {};\n' > "$scan_root/cli-git.config.mjs"
-        printf 'SCAN_ROOT=%s\n' "$scan_root" >> "$GITHUB_ENV"
-
-    - name: Verify isolated repository
-      run: |
-        cd -- "$SCAN_ROOT"
-        test -d .git
-        test -f cli-git.config.mjs
-        test "$(git rev-parse --show-toplevel)" = "$SCAN_ROOT"
-        node --input-type=module-typescript --eval "import { findGitRepoRoot } from '$GITHUB_WORKSPACE/packages/module/fs-path/src/index.ts'; const root = await findGitRepoRoot({ cwd: process.cwd() }); if (root !== process.cwd()) throw new Error('cli-git repository discovery mismatch: ' + root)"
-
-    - name: Trust isolated core policy config
-      run: cd -- "$SCAN_ROOT" && node "$GITHUB_WORKSPACE/packages/git-policies/cli/src/index.ts" cli-git trust --yes
-
-    - name: Check final newlines
-      run: cd -- "$SCAN_ROOT" && node "$GITHUB_WORKSPACE/packages/git-policies/cli/src/index.ts" cli-git check --policy final-newline --all
+    - name: Check final newlines in isolated repository
+      run: node packages/git-policies/cli/src/trust/fixtures/final-newline-workflow.ts
