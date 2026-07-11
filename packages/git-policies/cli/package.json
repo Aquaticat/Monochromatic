@@ -20,6 +20,9 @@
   "files": [
     "dist/final/node",
     "src",
+    "!src/**/*.unit.test.ts",
+    "!src/trust/fixtures",
+    "!src/**/*.host-evidence.ts",
     "LICENSES",
     "README.md"
   ],
