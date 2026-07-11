@@ -3,8 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues `#280` and `#341` through `#356` are complete and closed.
-Issue `#357` is the active hk and Pkl retirement capstone.
+Issues `#280` and `#341` through `#357` are complete and closed.
+The cli-git platform sequence has no active implementation slice.
 The Pi Bash result-loss priority investigation is complete through implementation,
 user-boundary verification,
 and `docs/troubleshooting/pi-bash-output-spool-write-failure.md`.
@@ -1723,9 +1723,9 @@ single-MJS artifact.
 
 ## Release-readiness checkpoint on 2026-07-11
 
-Issues `#354` through `#356` are complete and closed.
+Issues `#354` through `#357` are complete and closed.
 Issue `#356` passed its independent standards and specification review after every required correction landed.
-Issue `#357` is now the active dependency-ordered slice.
+Issue `#357` then completed hk/Pkl retirement and its own independent review.
 Npm publication remains deferred to `#358` and is not authorized.
 
 Final hosted evidence at release commit `375dd8ea9`:
@@ -1804,11 +1804,30 @@ Automated verification never touches real per-user Git state.
 Current documentation now treats hk/Pkl behavior as historical evidence,
 points local enforcement to cli-git,
 and keeps independent scanner and final-newline CI authoritative.
-Final built-shim,
-packed-install,
-independent CI,
-review,
-and related-issue disposition remain before `#357` closes.
+Issues `#143` and `#160` are closed as superseded.
+
+Final local build,
+types,
+zero-warning lint,
+units,
+cleanup fixture,
+direct checks,
+and complete packed non-workspace lifecycle passed.
+The final tarball has 146 entries and 403,641 compressed bytes;
+repository-only `src/maintenance` is absent.
+Independent Standards and Specification review reported no unresolved required finding.
+
+Final hosted evidence at retirement commit `f771a237a`:
+
+- forbidden-strings run `29172447991` passed;
+- final-newline run `29172447995` passed;
+- lifecycle-performance run `29172447986` passed;
+- cross-platform trust run `29172448009` passed Linux,
+  macOS,
+  and Windows.
+
+Issue `#357` is closed.
+Npm publication remains deferred to `#358`.
 
 ## GitHub implementation tracker
 
@@ -1877,24 +1896,22 @@ Dependency-ordered implementation slices:
   user documentation,
   and independent review passed without publishing.
 - [#357](https://github.com/Aquaticat/Monochromatic/issues/357),
-  in final verification:
-  hk/Pkl infrastructure is removed,
-  exact cleanup passes disposable fixtures,
-  and documentation is migrated.
+  completed:
+  hk/Pkl infrastructure was removed,
+  exact cleanup passed disposable fixtures,
+  documentation and related issues were migrated,
+  and all capstone gates passed.
 
 Deferred issue:
 
 - [#358](https://github.com/Aquaticat/Monochromatic/issues/358):
   actually publish the npm package and verify the registry artifact.
   It is recorded now,
-  labeled not-ready,
-  blocked by #356,
+  labeled `needs-triage`,
   and deferred indefinitely pending an explicit maintainer resume decision.
 
 Existing #139 remains relevant to packaged CLI shebang behavior.
-Existing #143 and #160 now have tracker comments,
-no longer carry `ready-for-agent`,
-and remain open under `needs-triage` for explicit final disposition in #357 rather than contradictory hk expansion.
+Issues #143 and #160 are closed as superseded by the completed cli-git platform and hk/Pkl retirement.
 
 ## Implementation sequence
 
@@ -2101,17 +2118,10 @@ a later phase does not wait to record an earlier phase's work.
 
 ## Remaining work
 
-The earlier evidence gaps and issue `#356` review findings are closed.
-Issue `#357` has removed hk and Pkl,
-updated transitional documentation,
-and verified idempotent per-machine Git-config cleanup in disposable state.
-Remaining work reruns the end-user shim,
-direct checks,
-independent CI,
-clean packed installation,
-and final review before related-issue disposition and closure.
+The earlier evidence gaps and issues `#356` and `#357` are closed.
+No active cli-git platform implementation slice remains.
 Do not publish npm artifacts;
-`#358` remains deferred.
+`#358` remains indefinitely deferred.
 
 ## Required verification before implementation completion
 
@@ -2163,5 +2173,5 @@ implementation checkpoint,
 verification result,
 and commit.
 
-Issues `#341` through `#356` completed their contract gates.
-Continue recording each `#357` retirement checkpoint and verification run here.
+Issues `#341` through `#357` completed their contract gates.
+Resume only if an explicitly authorized follow-up changes the platform or reactivates deferred publication issue `#358`.

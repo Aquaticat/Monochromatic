@@ -735,7 +735,7 @@ and a disposable non-workspace installation and invocation.
 
 ## Retirement capstone
 
-Issue `#357` is retiring hk and Pkl only after policy parity,
+Issue `#357` retired hk and Pkl only after policy parity,
 trust,
 transaction,
 performance,
@@ -830,6 +830,6 @@ Consumer lockfiles and self-contained builds govern plugin inputs.
 - GitHub issues #341 through #356:
   completed dependency-ordered implementation and release-readiness slices.
 - GitHub issue #357:
-  hk and Pkl retirement capstone at final verification.
+  completed hk and Pkl retirement capstone.
 - GitHub issue #358:
   recorded and indefinitely deferred npm publication.

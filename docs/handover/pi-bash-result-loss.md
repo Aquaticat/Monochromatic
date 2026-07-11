@@ -164,11 +164,12 @@ paired performance,
 packaging,
 documentation,
 and independent standards and specification review passed.
-Issue `#357` has removed hk/Pkl infrastructure and added exact disposable-tested Git-config cleanup;
-continue with its built-shim,
+Issue `#357` is closed after hk/Pkl removal,
+exact disposable-tested Git-config cleanup,
+built-shim and packed-install verification,
 independent CI,
 documentation,
-and final review gates.
+and final review passed.
 Keep npm publication issue `#358` deferred until a maintainer explicitly resumes it.
 
 Issue `#360`,
