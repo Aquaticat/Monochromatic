@@ -10,6 +10,19 @@ Installing the package exposes a shadowing `git` executable.
 Put the package's `node_modules/.bin` directory before the real Git directory on `PATH`;
 the wrapper resolves and forwards to the next real Git executable.
 
+PATH shadowing covers only processes that resolve the `git` command through that `PATH`.
+An absolute path to the real executable,
+a `PATH` with the wrapper directory removed,
+a GUI using an embedded Git library,
+and direct libgit2 consumers bypass cli-git completely.
+That bypass also skips startup transaction recovery,
+trusted policies,
+fixed transforms,
+and post-commit auto-push.
+Use a known absolute real-Git path only for deliberate bypasses such as fixture setup or forensic inspection.
+Cli-git's own real-Git resolver rejects its package entry and package-manager shims that point back to that entry,
+then follows PATH directory order and Windows `PATHEXT` extension order.
+
 The package is prepared for npm distribution,
 but registry publication is deliberately deferred to issue #358.
 The tarball contains one `dist/final/node/index.mjs` artifact.
@@ -199,6 +212,23 @@ Filesystem setup errors emit `content-unavailable` JSONL and leave exact ref,
 index,
 and worktree state unchanged.
 
+Recovery is automatic rather than a separate management command.
+Run the next ordinary cli-git invocation after the interrupted owner has terminated.
+Before loading trusted repository code,
+cli-git inspects the Git-provided `cli-git-transaction` administrative path and either restores the original index,
+installs the prepared post-commit index,
+recognizes an already completed installation,
+or fails closed with the retained transaction path.
+An active owner or conflicting ref,
+reflog,
+index,
+lock,
+artifact,
+or filesystem identity produces exit `2` without discarding evidence.
+Do not remove the retained directory merely to silence that diagnostic;
+the preserved snapshots and journal are the evidence needed to distinguish an unlanded commit from a landed commit
+whose index installation was interrupted.
+
 Use the namespaced Optique management commands:
 
 ```sh
@@ -223,6 +253,18 @@ Direct check requires exactly one scope source:
 Policy filters accept registered built-in and trusted plugin IDs.
 Git global options remain before the namespace,
 for example `git -C /repo cli-git check --all`.
+
+`check` and `fix` are cli-git commands and are never forwarded as Git subcommands.
+Both require exactly one scope:
+`--all` or pathspecs after `--`.
+Repeated `--policy <id>` options narrow execution to named registered policies.
+`check` reads exact worktree candidates and emits findings to stdout without changing worktree or index bytes.
+`fix` converges privately,
+revalidates each worktree source before installation,
+atomically replaces only changed worktree paths,
+and verifies that the real index remains byte-identical.
+An untrusted or changed repository config blocks either command before plugin execution;
+built-in policies remain available when repository config is absent.
 
 ## Exact MJS trust
 
@@ -259,6 +301,16 @@ it runs with full account file,
 process,
 network,
 and Git authority after consent.
+`--yes` changes only how consent is collected;
+it grants the same authority as interactive consent.
+Trust attaches to the disclosed canonical config path,
+filesystem identity,
+and exact bytes,
+not to a branch name,
+commit,
+repository remote,
+or signer.
+Changing bytes requires explicit re-trust unless that exact identity was already trusted and selected for relaxed refresh.
 
 The registry root comes from the operating-system account database rather than `HOME`,
 XDG,
@@ -288,6 +340,14 @@ including current and future mounted volumes.
 The first encounter with a strict descendant captures and validates exact bytes in private state,
 records every unchanged recursive root that authorizes it,
 and installs a stored executable snapshot without another prompt.
+Recursive consent therefore delegates future exact-snapshot enrollment to every descendant repository,
+even when that descendant is on another filesystem or a volume mounted later.
+It does not execute live descendant bytes directly:
+each descendant still passes syntax,
+configuration,
+stable-read,
+private-storage,
+and exact stored-snapshot checks before execution.
 A filesystem replacement cannot reuse the prior record:
 the changed filesystem identity requires a fresh exact auto-enrollment while an unchanged recursive root still
 authorizes the path.
@@ -350,6 +410,18 @@ They are recognized only in flag position before Git's `--` pathspec separator;
 option values and pathspecs with the same bytes remain untouched.
 `--cli-git-keep-going` is also wrapper-only and preserves fixed policy order while allowing later finding-producing policies to run.
 Engine failures always stop immediately.
+
+Git's `--no-verify` is not a cli-git bypass.
+Cli-git policies and commit transaction processing run before forwarding,
+and post-commit policy gating and auto-push run after successful real Git.
+The option is forwarded unchanged so real Git can skip only the `pre-commit` and `commit-msg` hooks assigned by
+[Git's `git commit` documentation](https://git-scm.com/docs/git-commit/2.55.0).
+Use the policy-specific `--no-enforce-<policy-id>` escape when an enabled policy permits an explicit one-invocation
+bypass.
+Fixed transforms retain their own named controls,
+including `--no-atomic`,
+`--no-only`,
+and `--no-enforce-only`.
 
 ## Rules
 

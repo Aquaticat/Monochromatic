@@ -230,6 +230,7 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     args: [
       'commit',
       '--quiet',
+      '--no-verify',
       '--message=normalize commit',
       '--',
       'commit.txt',
