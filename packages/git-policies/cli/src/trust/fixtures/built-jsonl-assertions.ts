@@ -12,7 +12,8 @@
  * @returns whether value is record object
  */
 function isRecordObject(value: unknown,): value is Record<string, unknown> {
-  return ((typeof value) === 'object') && (value !== null) && (!Array.isArray(value,));
+  return ((typeof value) === 'object') && (value !== null)
+    && (!Array.isArray(value,));
 }
 
 /**
@@ -38,11 +39,18 @@ export function parseJsonObjectLine({
 }>,): Record<string, unknown> {
   if (!text.endsWith('\n',))
     throw new Error(`${context} expected terminal LF\n${text}`,);
-  /** Complete compact JSON text without terminal LF. */
-  const json = text.slice(0, -1,);
+  /**
+   * Complete compact JSON text without terminal LF.
+   */
+  const json = text.slice(
+    0,
+    -1,
+  );
   if (json.includes('\n',) || json.includes('\r',))
     throw new Error(`${context} expected one compact JSON object\n${text}`,);
-  /** Parsed unknown machine value. */
+  /**
+   * Parsed unknown machine value.
+   */
   const value: unknown = JSON.parse(json,);
   if (!isRecordObject(value,))
     throw new Error(`${context} expected one JSON object\n${text}`,);
@@ -74,9 +82,15 @@ export function parseJsonObjectLines({
 }>,): readonly Record<string, unknown>[] {
   if (!text.endsWith('\n',))
     throw new Error(`${context} expected terminal LF\n${text}`,);
-  return text.slice(0, -1,)
+  return text.slice(
+    0,
+    -1,
+  )
     .split('\n',)
-    .map(function parseLine(line, ordinal,) {
+    .map(function parseLine(
+      line,
+      ordinal,
+    ) {
       return parseJsonObjectLine({
         text: `${line}\n`,
         context: `${context} line ${String(ordinal,)}`,
@@ -107,11 +121,18 @@ export function assertJsonl({
   expectedCode: string;
   context: string;
 }>,): void {
-  /** Parsed canonical event objects. */
-  const events = parseJsonObjectLines({ text, context, },);
+  /**
+   * Parsed canonical event objects.
+   */
+  const events = parseJsonObjectLines({
+    text,
+    context,
+  },);
   if (events.length !== 1)
     throw new Error(`${context} expected one event, got ${String(events.length,)}\n${text}`,);
-  /** Sole event selected through array destructuring. */
+  /**
+   * Sole event selected through array destructuring.
+   */
   const [event,] = events;
   if ((event?.schemaVersion !== 1)
     || (event.sequence !== 0)
@@ -143,10 +164,17 @@ export function assertAffectedRootSummary({
   root: string;
   context: string;
 }>,): void {
-  /** Canonical recursive untrust summary. */
-  const summary = parseJsonObjectLine({ text, context, },);
-  /** Recursive roots named by summary. */
-  const affectedRoots = summary.affectedRoots;
+  /**
+   * Canonical recursive untrust summary.
+   */
+  const summary = parseJsonObjectLine({
+    text,
+    context,
+  },);
+  /**
+   * Recursive roots named by summary.
+   */
+  const {affectedRoots} = summary;
   if ((summary.schemaVersion !== 1)
     || (summary.type !== 'untrust-summary')
     || (summary.removed !== true)

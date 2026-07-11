@@ -227,7 +227,9 @@ export async function verifyPostCommitPolicyConsumer({
     text: failedGate.stderr,
     context: 'post-commit engine failure',
   },);
-  /** Engine failure followed by landed-state event. */
+  /**
+   * Engine failure followed by landed-state event.
+   */
   const [engineFailure, commitLanded,] = failureEvents;
   if ((failureEvents.length !== 2)
     || (engineFailure?.schemaVersion !== 1)
