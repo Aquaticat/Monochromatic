@@ -21,6 +21,7 @@
     "dist/final/node",
     "src",
     "!src/**/*.unit.test.ts",
+    "!src/maintenance",
     "!src/trust/fixtures",
     "!src/**/*.host-evidence.ts",
     "LICENSES",
