@@ -1,5 +1,5 @@
 /**
- * Private tsdown TypeScript trust candidate builder. @module
+ * Private Rolldown TypeScript trust candidate builder. @module
  */
 import { isBuiltin, } from 'node:module';
 import {
@@ -7,10 +7,7 @@ import {
   relative,
 } from 'node:path';
 import { realpath, } from 'node:fs/promises';
-import {
-  build,
-  type Rolldown,
-} from 'tsdown';
+import type { Plugin, } from 'rolldown';
 import {
   captureTrustCandidate,
   captureTrustSource,
@@ -87,7 +84,7 @@ type SourceCaptureState = Readonly<{
   /**
    * Source-capturing Rolldown plugin.
    */
-  plugin: Rolldown.Plugin;
+  plugin: Plugin;
   /**
    * Exact captured source map.
    */
@@ -97,15 +94,6 @@ type SourceCaptureState = Readonly<{
    */
   bareImports: ReadonlySet<string>;
 }>;
-
-/**
- * Forces every bare package into immutable bundle.
- *
- * @returns always true
- */
-function bundleEveryPackage(): true {
-  return true;
-}
 
 /**
  * Creates source-capturing Rolldown plugin.
@@ -138,7 +126,7 @@ function sourceCapturePlugin({
   /**
    * Source-capturing plugin.
    */
-  const plugin: Rolldown.Plugin = {
+  const plugin: Plugin = {
     name: 'cli-git-trust-source-capture',
     async resolveId(
       source,
@@ -277,7 +265,7 @@ type TypeScriptBuildOutput = Readonly<{
 /**
  * Selects and validates exactly one generated JavaScript chunk.
  *
- * @param chunks - complete tsdown output
+ * @param chunks - complete Rolldown output
  *
  * @returns immutable executable bytes
  */
@@ -307,7 +295,7 @@ function executableBytes({
 }
 
 /**
- * Builds one immutable TypeScript config candidate through public tsdown API.
+ * Builds one immutable TypeScript config candidate through public Rolldown API.
  *
  * @param discovered - canonical TypeScript config
  *
@@ -351,48 +339,36 @@ export async function buildTypeScriptCandidate({
     entrySource,
   },);
   /**
-   * Build outputs with native external-memory cleanup.
+   * Lazy direct Rolldown API, absent from normal wrapper command startup.
    */
-  const outputs = await build({
-    config: false,
+  const { rolldown, } = await import('rolldown');
+  /**
+   * Explicitly disposable bundler whose close stops native workers.
+   */
+  await using build = await rolldown({
     cwd: discovered.repositoryRoot,
-    entry: discovered.configPath,
+    input: discovered.configPath,
     platform: 'node',
-    format: 'esm',
-    outDir: buildDirectory,
-    write: false,
-    clean: false,
-    dts: false,
-    sourcemap: false,
     treeshake: true,
-    define: {
-      // Trusted config executes only through dynamic import, so package direct-entry branches are unreachable.
-      'import.meta.main': 'false',
+    transform: {
+      define: {
+        // Trusted config executes only through dynamic import, so package direct-entry branches are unreachable.
+        'import.meta.main': 'false',
+      },
     },
-    fixedExtension: true,
     logLevel: 'silent',
-    deps: {
-      alwaysBundle: bundleEveryPackage,
-      onlyBundle: false,
-    },
-    outputOptions: { codeSplitting: false, },
     plugins: [sourceCapture.plugin,],
   },);
   /**
-   * Registered external-memory cleanup for every format output.
+   * Sole in-memory ESM output with code splitting forbidden.
    */
-  await using outputCleanup = new AsyncDisposableStack();
-  outputs.forEach(function registerOutput(output,) {
-    outputCleanup.use(output,);
+  const bundle = await build.generate({
+    format: 'esm',
+    dir: buildDirectory,
+    entryFileNames: 'config.mjs',
+    codeSplitting: false,
+    sourcemap: false,
   },);
-  if (outputs.length !== 1)
-    throw new TypeScriptBuildError(`TypeScript trust build produced ${String(outputs.length,)} format bundles.`,);
-  /**
-   * Sole format bundle.
-   */
-  const [bundle,] = outputs;
-  if (bundle === undefined)
-    throw new TypeScriptBuildError('TypeScript trust build returned no bundle.',);
   /**
    * Canonically ordered complete exact source graph.
    */
@@ -412,7 +388,7 @@ export async function buildTypeScriptCandidate({
   /**
    * Output module IDs prove every tracked source participated.
    */
-  const moduleIds = new Set(bundle.chunks
+  const moduleIds = new Set(bundle.output
     .flatMap(function outputModuleIds(chunk,) {
     return chunk.type === 'chunk' ? chunk.moduleIds
       .map(modulePath,) : [];
@@ -469,7 +445,7 @@ export async function buildTypeScriptCandidate({
   return {
     entry,
     sources,
-    executableBytes: executableBytes({ chunks: bundle.chunks, }),
+    executableBytes: executableBytes({ chunks: bundle.output, }),
     barePackageImports: [...sourceCapture.bareImports,].toSorted(),
   };
 }

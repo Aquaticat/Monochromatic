@@ -44,7 +44,7 @@
     "@optique/core": "catalog:",
     "acorn": "catalog:",
     "nano-spawn": "catalog:",
-    "tsdown": "catalog:",
+    "rolldown": "catalog:",
     "typescript": "catalog:",
     "valibot": "catalog:"
   },

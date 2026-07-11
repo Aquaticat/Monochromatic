@@ -181,10 +181,20 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
     value: artifactSyntax,
     source: artifactSource,
   },);
-  if (retainedDynamicImports.some(function hasNonBuiltinLiteral(target,) {
-    return (target.kind === 'literal') && (!isBuiltin(target.value,));
+  /**
+   * Literal runtime imports permitted only at lazy trust-build boundary.
+   */
+  const permittedLiteralImports: ReadonlySet<string> = new Set(['rolldown',],);
+  if (retainedDynamicImports.some(function hasUnknownLiteral(target,) {
+    return (target.kind === 'literal')
+      && (!isBuiltin(target.value,))
+      && (!permittedLiteralImports.has(target.value,));
   },))
-    throw new Error(`packed artifact retained non-builtin literal dynamic import: ${JSON.stringify(retainedDynamicImports,)}`,);
+    throw new Error(`packed artifact retained unknown literal dynamic import: ${JSON.stringify(retainedDynamicImports,)}`,);
+  if (!retainedDynamicImports.some(function hasLazyRolldownImport(target,) {
+    return (target.kind === 'literal') && (target.value === 'rolldown');
+  },))
+    throw new Error('packed artifact omitted lazy direct Rolldown trust-build import',);
   /**
    * Known computed imports: cross-runtime path library and exact stored-MJS execution.
    */
