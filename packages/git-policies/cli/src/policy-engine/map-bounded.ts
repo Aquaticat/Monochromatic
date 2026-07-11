@@ -34,27 +34,44 @@ export async function mapBounded<const Value, Result>({
 }>,): Promise<readonly Result[]> {
   if ((concurrency < 1) || (!Number.isInteger(concurrency)))
     throw new TypeError('Bounded map concurrency must be a positive integer.',);
-  /** Active lane count bounded by configured cap and input count. */
+  /**
+   * Active lane count bounded by configured cap and input count.
+   */
   const laneCount = Math.min(
     concurrency,
     values.length,
   );
   if (laneCount === 0)
     return [];
-  /** Indexed value lanes retaining deterministic input positions. */
+  /**
+   * Indexed value lanes retaining deterministic input positions.
+   */
   const lanes = Array.from(
     { length: laneCount, },
-    function createLane(_unused, laneIndex,) {
-      return values.flatMap(function assignValue(value, index,) {
+    function createLane(
+      _unused,
+      laneIndex,
+    ) {
+      return values.flatMap(function assignValue(
+        value,
+        index,
+      ) {
         return (index % laneCount) === laneIndex
-          ? [{ index, value, },]
+          ? [{
+            index,
+            value,
+          },]
           : [];
       },);
     },
   );
-  /** Independently mapped lanes with asynchronous work sequenced per lane. */
+  /**
+   * Independently mapped lanes with asynchronous work sequenced per lane.
+   */
   const loadedLanes = await Promise.all(lanes.map(async function mapLane(lane,) {
-    /** Results accumulated in current lane order. */
+    /**
+     * Results accumulated in current lane order.
+     */
     const loaded: {
       index: number;
       result: Result;
@@ -74,7 +91,10 @@ export async function mapBounded<const Value, Result>({
   },),);
   return loadedLanes
     .flat()
-    .toSorted(function byInputIndex(left, right,) {
+    .toSorted(function byInputIndex(
+      left,
+      right,
+    ) {
       return left.index - right.index;
     },)
     .map(function resultFromEntry(entry,) {
