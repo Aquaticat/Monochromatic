@@ -17,7 +17,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import type { CandidateFile, } from '@monochromatic-dev/git-policy-api/ts';
+import {
+  ABSENT_GIT_VALUE,
+  type CandidateFile,
+  type PolicyContext,
+} from '@monochromatic-dev/git-policy-api/ts';
 import {
   ForbiddenStringsPluginError,
   forbiddenStringsPlugin,
@@ -28,6 +32,8 @@ import {
 
 /** Executable fixture mode. */
 const EXECUTABLE_MODE = 0o755;
+/** Node argv count for scanner plus one candidate. */
+const EXPECTED_SCANNER_ARGUMENT_COUNT = 3;
 /** Candidate bytes used by adapter tests. */
 const CANDIDATE_BYTES = new TextEncoder().encode('first\nsecret\n',);
 
@@ -194,6 +200,51 @@ await describe({
           message: 'Forbidden string matched at line 2, columns 1 to 6 (rule 1).',
           path: 'name;not-a-command',
         },],);
+      },
+    },),
+    it({
+      name: 'materializes only landed-delta candidates after commit',
+      fn: async function testPostCommitDelta() {
+        await using directory = await createTestDirectory();
+        /** Scanner requiring exactly one retained candidate path. */
+        const scanner = await writeScanner({
+          directory: directory.path,
+          body: `if (process.argv.length !== ${String(EXPECTED_SCANNER_ARGUMENT_COUNT,)}) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
+        },);
+        /** Unchanged candidate whose bytes must remain unread. */
+        const unchanged: CandidateFile = {
+          ...candidate('stable.txt',),
+          change: 'unchanged',
+          bytes: function rejectUnchangedRead(): Promise<Uint8Array> {
+            throw new Error('Unchanged landed candidate was read.',);
+          },
+        };
+        /** Changed candidate retained for scanner. */
+        const changed = candidate('changed.txt',);
+        /** Post-commit policy context over complete landed tree. */
+        const context: PolicyContext = {
+          candidateVersion: 0,
+          trigger: 'post-commit',
+          command: {
+            rawArgs: ['commit',],
+            transformedArgs: ['commit',],
+            subcommand: 'commit',
+            effectiveCwd: directory.path,
+            repositoryRoot: directory.path,
+            escapedPolicyIds: new Set(),
+          },
+          git: {
+            candidates: function candidates() { return Promise.resolve([unchanged, changed,],); },
+            headOid: function headOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
+            landedCommitOid: function landedCommitOid() { return Promise.resolve('landed',); },
+            pushUpdates: function pushUpdates() { return Promise.resolve([],); },
+          },
+          signal: new AbortController().signal,
+        };
+        expect(await forbiddenStringsPolicy.check({
+          context,
+          options: { executable: scanner, },
+        },),).toEqual([],);
       },
     },),
     it({
