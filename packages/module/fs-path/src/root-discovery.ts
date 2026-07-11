@@ -629,7 +629,9 @@ export async function findRootByWalkingUp({
    * Filesystem backend resolved once per walk.
    */
   const fs = await resolveRootFilesystem();
-  /** Matching root using caller's runtime-native path identity. */
+  /**
+   * Matching root using caller's runtime-native path identity.
+   */
   const root = await walkUpRoot({
     dir: startDir,
     fs,
