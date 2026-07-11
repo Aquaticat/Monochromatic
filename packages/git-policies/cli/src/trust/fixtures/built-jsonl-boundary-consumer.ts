@@ -28,7 +28,9 @@ export async function verifyJsonlFailureBoundaries({
   repository: string;
   env: NodeJS.ProcessEnv;
 }>,): Promise<void> {
-  /** Direct-check setup failure outside Git worktree. */
+  /**
+   * Direct-check setup failure outside Git worktree.
+   */
   const unavailableDirectCheck = await execute({
     command: 'git',
     args: [
@@ -48,7 +50,9 @@ export async function verifyJsonlFailureBoundaries({
   if (unavailableDirectCheck.stderr !== '')
     throw new Error(`direct check setup failure leaked stderr\n${unavailableDirectCheck.stderr}`,);
 
-  /** First config-loading wrapper use blocked before execution. */
+  /**
+   * First config-loading wrapper use blocked before execution.
+   */
   const untrusted = await execute({
     command: 'git',
     args: ['future-command',],
@@ -64,7 +68,9 @@ export async function verifyJsonlFailureBoundaries({
   if (untrusted.stdout !== '')
     throw new Error(`untrusted wrapper leaked stdout\n${untrusted.stdout}`,);
 
-  /** Direct config-untrusted failure routed only to stdout. */
+  /**
+   * Direct config-untrusted failure routed only to stdout.
+   */
   const untrustedDirectCheck = await execute({
     command: 'git',
     args: [
@@ -84,7 +90,9 @@ export async function verifyJsonlFailureBoundaries({
   if (untrustedDirectCheck.stderr !== '')
     throw new Error(`untrusted direct check leaked stderr\n${untrustedDirectCheck.stderr}`,);
 
-  /** Declined trust failure remains stdout JSONL beside stderr disclosure. */
+  /**
+   * Declined trust failure remains stdout JSONL beside stderr disclosure.
+   */
   const declinedTrust = await execute({
     command: 'git',
     args: [

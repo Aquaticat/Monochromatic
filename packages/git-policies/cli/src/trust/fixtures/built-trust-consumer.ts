@@ -111,7 +111,10 @@ const env: NodeJS.ProcessEnv = {
     .PATH
     ?? ''}`,
 };
-await verifyJsonlFailureBoundaries({ repository, env, },);
+await verifyJsonlFailureBoundaries({
+  repository,
+  env,
+},);
 /**
  * Explicit noninteractive trust result.
  */
