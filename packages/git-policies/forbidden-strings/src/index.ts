@@ -61,8 +61,11 @@ export const forbiddenStringsPolicy: PolicyDefinition<
     context,
     options,
   }): Promise<readonly PolicyFinding[]> {
-    /** Exact candidates, limited to landed delta after commit. */
-    const candidates = (await context.git.candidates())
+    /**
+     * Exact candidates, limited to landed delta after commit.
+     */
+    const candidates = (await context.git
+      .candidates())
       .filter(function isRelevantCandidate(candidate,) {
         return (context.trigger !== 'post-commit') || (candidate.change !== 'unchanged');
       },);
