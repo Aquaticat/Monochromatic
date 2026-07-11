@@ -221,6 +221,16 @@ When conversation,
  `AGENTS.md` rules collectively authorize a step,
  take it;
 don't insert "want me to..."/"should I go ahead and..." check before obvious next step.
+An open implementation sequence remains active while authorized actionable work remains.
+Intermediate progress,
+ test or process notifications,
+ recoverable failures,
+and running background processes are not stopping conditions.
+Continue independent work while a background process runs;
+when no independent work remains,
+let its completion notification arrive before deciding whether work is complete or blocked.
+Stop only at completion or a genuine blocker requiring user authority or a non-measurable preference.
+Never send a progress-only final response as a substitute for continuing.
 
 PX2:
  Doesn't relax other constraints:
