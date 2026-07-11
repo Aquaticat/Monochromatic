@@ -15,13 +15,21 @@ import {
   initializePostCommitRepository,
 } from './built-post-commit-helpers.ts';
 
-/** Fuzz corpus path excluded from every final-newline lifecycle. */
+/**
+ * Fuzz corpus path excluded from every final-newline lifecycle.
+ */
 const FUZZ_PATH = 'packages/fuzz/forbidden-strings/corpus/newline-fixture';
-/** TOML parser fixture path excluded from every final-newline lifecycle. */
+/**
+ * TOML parser fixture path excluded from every final-newline lifecycle.
+ */
 const TOML_PATH = 'packages/test-fixture/toml-edit/src/newline-fixture.toml';
-/** Compact tsdown output path excluded from every final-newline lifecycle. */
+/**
+ * Compact tsdown output path excluded from every final-newline lifecycle.
+ */
 const TSDOWN_PATH = 'pkg/dist/final/node/index.mjs';
-/** Named hk exclusion families exercised through packed lifecycle paths. */
+/**
+ * Named hk exclusion families exercised through packed lifecycle paths.
+ */
 const EXCLUDED_PATHS = [
   FUZZ_PATH,
   TOML_PATH,
@@ -41,13 +49,20 @@ const EXCLUDED_PATHS = [
 export async function verifyFinalNewlineExclusions({ env, }: Readonly<{
   env: NodeJS.ProcessEnv;
 }>,): Promise<void> {
-  /** Disposable exclusion-parity repository. */
+  /**
+   * Disposable exclusion-parity repository.
+   */
   const repository = '/work/final-newline-exclusions';
-  /** Disposable bare remote for pre-push parity. */
+  /**
+   * Disposable bare remote for pre-push parity.
+   */
   const remote = '/work/final-newline-exclusions-origin.git';
   await initializePostCommitRepository(repository,);
   await initializeBareRemote(remote,);
-  await writeFile(`${repository}/cli-git.config.mjs`, 'export default {};\n',);
+  await writeFile(
+    `${repository}/cli-git.config.mjs`,
+    'export default {};\n',
+  );
   await execute({
     command: '/usr/bin/git',
     args: [
@@ -76,12 +91,25 @@ export async function verifyFinalNewlineExclusions({ env, }: Readonly<{
     env,
   },);
   await Promise.all(EXCLUDED_PATHS.map(async function writeExcluded(path,): Promise<void> {
-    /** Parent directory for excluded fixture path. */
-    const parent = path.slice(0, path.lastIndexOf('/',));
-    await mkdir(`${repository}/${parent}`, { recursive: true, },);
-    await writeFile(`${repository}/${path}`, `missing newline in ${path}`,);
+    /**
+     * Parent directory for excluded fixture path.
+     */
+    const parent = path.slice(
+      0,
+      path.lastIndexOf('/',)
+    );
+    await mkdir(
+      `${repository}/${parent}`,
+      { recursive: true, },
+    );
+    await writeFile(
+      `${repository}/${path}`,
+      `missing newline in ${path}`,
+    );
   },),);
-  /** Exact index bytes before read-only check and index-neutral fix. */
+  /**
+   * Exact index bytes before read-only check and index-neutral fix.
+   */
   const indexBefore = Buffer.from(await readFile(`${repository}/.git/index`,))
     .toString('base64',);
   await execute({
@@ -97,7 +125,9 @@ export async function verifyFinalNewlineExclusions({ env, }: Readonly<{
     cwd: repository,
     env,
   },);
-  /** No-op direct fix over excluded paths. */
+  /**
+   * No-op direct fix over excluded paths.
+   */
   const fixed = await execute({
     command: 'git',
     args: [
@@ -130,7 +160,9 @@ export async function verifyFinalNewlineExclusions({ env, }: Readonly<{
     ],
     cwd: repository,
   },);
-  /** Packed pre-commit invocation retaining exact excluded bytes. */
+  /**
+   * Packed pre-commit invocation retaining exact excluded bytes.
+   */
   const committed = await execute({
     command: 'git',
     args: [
@@ -149,7 +181,9 @@ export async function verifyFinalNewlineExclusions({ env, }: Readonly<{
     context: 'excluded pre-commit output',
   },);
   await Promise.all(EXCLUDED_PATHS.map(async function assertCommittedBytes(path,): Promise<void> {
-    /** Exact committed excluded blob. */
+    /**
+     * Exact committed excluded blob.
+     */
     const blob = await execute({
       command: '/usr/bin/git',
       args: [

@@ -45,7 +45,10 @@ export function withFixSummary({
           .length,
         trigger,
         passes,
-        changedPaths: changedPaths.toSorted(function comparePathBytes(left, right,) {
+        changedPaths: changedPaths.toSorted(function comparePathBytes(
+          left,
+          right,
+        ) {
           return Buffer.compare(
             Buffer.from(left,),
             Buffer.from(right,),

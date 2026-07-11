@@ -271,7 +271,10 @@ export async function convergeDirectFix({
     .filter(function changedCandidate(candidate,) {
       return initialRevisions.get(candidate.path,) !== candidate.revision;
     },)
-    .toSorted(function comparePathBytes(left, right,) {
+    .toSorted(function comparePathBytes(
+      left,
+      right,
+    ) {
       return Buffer.compare(
         Buffer.from(left.path,),
         Buffer.from(right.path,),
