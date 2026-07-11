@@ -4,23 +4,34 @@ on:
   pull_request:
     branches: ['main']
     paths:
-    - 'packages/cli/git/**'
+    - 'packages/git-policies/cli/**'
     - 'packages/module/fs-id/**'
+    - 'pnpm-lock.yaml'
     - '.github/workflows/cli-git-trust.yml'
+  merge_group:
+    branches: ['main']
   push:
     branches: ['main']
     paths:
-    - 'packages/cli/git/**'
+    - 'packages/git-policies/cli/**'
     - 'packages/module/fs-id/**'
+    - 'pnpm-lock.yaml'
     - '.github/workflows/cli-git-trust.yml'
 
 permissions:
   contents: read
 
 jobs:
-  windows-acl:
-    name: Windows trust ACL
-    runs-on: windows-latest
+  trust:
+    name: Trust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-latest
+        - windows-latest
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -33,12 +44,24 @@ jobs:
         node-version: 26.5.0
         package-manager-cache: false
 
-    # Match the pnpm major and current workspace install used to generate pnpm-lock.yaml.
     - name: Set up pnpm
       run: npm install --global pnpm@11.10.0
 
     - name: Install cli-git dependency closure
       run: pnpm install --frozen-lockfile --filter @monochromatic-dev/cli-git...
 
-    - name: Verify protected file ACL and tamper rejection
-      run: node packages/cli/git/src/trust/windows-acl.host-evidence.ts
+    - name: Exercise real filesystem identity commands
+      run: node packages/module/fs-id/src/host-evidence.ts
+
+    - name: Verify strict and relaxed MJS snapshots
+      run: node packages/git-policies/cli/src/trust/trust-service.unit.test.ts
+
+    - name: Verify strict and relaxed TypeScript cache
+      run: node packages/git-policies/cli/src/trust/typescript-trust.unit.test.ts
+
+    - name: Verify reversible trust paths
+      run: node packages/git-policies/cli/src/trust/registry-path.unit.test.ts
+
+    - name: Verify Windows protected ACL rejection
+      if: runner.os == 'Windows'
+      run: node packages/git-policies/cli/src/trust/windows-acl.host-evidence.ts
