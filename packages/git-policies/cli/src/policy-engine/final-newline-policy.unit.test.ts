@@ -181,6 +181,25 @@ await describe({
       },
     },),
     it({
+      name: 'builds complete collapse patch for repeated terminal LF bytes',
+      fn: async function testCollapsePatch() {
+        /** Repeated-final-LF candidate bytes. */
+        const original = bytes('value\n\n',);
+        /** Canonical one-final-LF replacement bytes. */
+        const replacement = bytes('value\n',);
+        /** Decoded generated collapse patch. */
+        const patch = DECODER.decode(createFinalNewlinePatch({
+          targetId: 'target:a.txt',
+          path: 'a.txt',
+          revision: REVISION,
+          mode: 'regular',
+          original,
+          replacement,
+        },).bytes,);
+        expect(patch,).toContain('@@ -1,2 +1,1 @@\n-value\n-\n+value\n',);
+      },
+    },),
+    it({
       name: 'attaches patches only at fixable lifecycle points',
       fn: async function testLifecyclePatches() {
         /** Noncanonical ordinary candidate. */
