@@ -23,6 +23,7 @@ import {
 import spawn from 'nano-spawn';
 
 import {
+  FIXTURE_PNPM_ENV,
   SCENARIOS,
   type Scenario,
 } from './combos.ts';
@@ -87,18 +88,58 @@ const TMP_TMPFS_SIZE = '1g';
 const MATRIX_CONCURRENCY = 2;
 
 /**
- * Builds the `podman run` argv for one combination.
+ * Resolves the monorepo's pnpm spec (`pnpm@<version>`) from the pnpm on PATH, so
+ * every fixture installs with the exact pnpm the repo runs (mise's floating
+ * `pnpm = "latest"`) instead of a version hardcoded here that would drift.
+ *
+ * @returns `pnpm@<version>` spec for the container's `packageManager` and corepack
+ *
+ * @throws Error when `pnpm --version` yields no version
+ *
+ * @example
+ * ```ts
+ * await resolvePnpmSpec() // "pnpm\@11.11.0"
+ * ```
+ */
+async function resolvePnpmSpec(): Promise<string> {
+  /**
+   * Monorepo pnpm version reported by the pnpm on PATH (mise-managed).
+   */
+  const version = (await spawn(
+    'pnpm',
+    ['--version',],
+    { cwd: REPO_ROOT, },
+  )).stdout
+    .trim();
+  if (version.length === 0)
+    throw new Error('could not resolve the monorepo pnpm version via `pnpm --version`',);
+  return `pnpm@${version}`;
+}
+
+/**
+ * Builds the `podman run` argv for one combination, passing the resolved
+ * monorepo pnpm spec into the container through {@link FIXTURE_PNPM_ENV}.
  *
  * @param scenario - scenario to execute; serialised as the entrypoint argument
+ *
+ * @param pnpmSpec - monorepo `pnpm@<version>` spec the fixture installs with
  *
  * @returns argument vector excluding the `podman` executable
  *
  * @example
  * ```ts
- * buildPodmanArgs(SCENARIOS[0]).at(0) // 'run'
+ * buildPodmanArgs({ scenario: SCENARIOS[0], pnpmSpec: "pnpm\@11.11.0" }).at(0) // 'run'
  * ```
  */
-function buildPodmanArgs(scenario: Scenario,): readonly string[] {
+function buildPodmanArgs(
+  {
+    scenario,
+    pnpmSpec,
+  }: {
+    readonly scenario: Scenario;
+    readonly pnpmSpec: string;
+  },
+): readonly string[] {
   return [
     'run',
     '--rm',
@@ -116,6 +157,8 @@ function buildPodmanArgs(scenario: Scenario,): readonly string[] {
     `/tmp:rw,exec,size=${TMP_TMPFS_SIZE}`,
     '--env',
     'HOME=/tmp',
+    '--env',
+    `${FIXTURE_PNPM_ENV}=${pnpmSpec}`,
     '--volume',
     `${REPO_ROOT}:/repo:ro`,
     '--workdir',
@@ -137,20 +180,33 @@ function buildPodmanArgs(scenario: Scenario,): readonly string[] {
  *
  * @param scenario - scenario to run
  *
+ * @param pnpmSpec - monorepo `pnpm@<version>` spec passed into the container
+ *
  * @throws Error when the container exits non-zero or does not report PASS
  *
  * @example
  * ```ts
- * await runScenario(SCENARIOS[0]);
+ * await runScenario({ scenario: SCENARIOS[0], pnpmSpec: "pnpm\@11.11.0" });
  * ```
  */
-async function runScenario(scenario: Scenario,): Promise<void> {
+async function runScenario(
+  {
+    scenario,
+    pnpmSpec,
+  }: {
+    readonly scenario: Scenario;
+    readonly pnpmSpec: string;
+  },
+): Promise<void> {
   /**
    * Container result; nano-spawn rejects on a non-zero exit, surfacing a failed assertion.
    */
   const result = await spawn(
     'podman',
-    buildPodmanArgs(scenario,),
+    buildPodmanArgs({
+      scenario,
+      pnpmSpec,
+    },),
   );
   if (!result.stdout
     .includes('PASS',)) {
@@ -160,6 +216,12 @@ async function runScenario(scenario: Scenario,): Promise<void> {
   }
 }
 
+/**
+ * Monorepo pnpm spec resolved once, passed into every container so fixtures
+ * install with the pnpm the repo actually runs.
+ */
+const pnpmSpec = await resolvePnpmSpec();
+
 await describe({
   name: 'catalog-tighten install-layout matrix',
   concurrency: MATRIX_CONCURRENCY,
@@ -167,7 +229,10 @@ await describe({
     return it({
       name: scenario.label,
       fn: async () => {
-        await runScenario(scenario,);
+        await runScenario({
+          scenario,
+          pnpmSpec,
+        },);
       },
     },);
   },),

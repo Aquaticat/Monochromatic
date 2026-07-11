@@ -20,13 +20,13 @@ import {
 import spawn from 'nano-spawn';
 
 import {
+  buildRootPackageJson,
   buildWorkspaceYaml,
   CONSUMER_DIRS,
   consumerPackageJson,
   EXPECTED_TIGHTENED,
   FIXTURE_PACKAGE,
-  FIXTURE_ROOT_PACKAGE_JSON,
-  PINNED_PNPM,
+  FIXTURE_PNPM_ENV,
   type Scenario,
 } from './combos.ts';
 import {
@@ -60,17 +60,28 @@ type ToolResult = {
 
 /**
  * Writes the fixture workspace for `scenario` into {@link WORK_DIR}: the
- * workspace file built by {@link buildWorkspaceYaml}, the root manifest, and
- * both consumer packages written via {@link consumerPackageJson}.
+ * workspace file built by {@link buildWorkspaceYaml}, the root manifest pinned
+ * to `fixturePnpm` via {@link buildRootPackageJson}, and both consumer packages
+ * written via {@link consumerPackageJson}.
  *
  * @param scenario - scenario whose settings shape the workspace file
  *
+ * @param fixturePnpm - `pnpm@<version>` spec the monorepo resolved, written into `packageManager`
+ *
  * @example
  * ```ts
- * await writeFixture(SCENARIOS[0]);
+ * await writeFixture({ scenario: SCENARIOS[0], fixturePnpm: "pnpm\@11.11.0" });
  * ```
  */
-async function writeFixture(scenario: Scenario,): Promise<void> {
+async function writeFixture(
+  {
+    scenario,
+    fixturePnpm,
+  }: {
+    readonly scenario: Scenario;
+    readonly fixturePnpm: string;
+  },
+): Promise<void> {
   await writeFile(
     join(
       WORK_DIR,
@@ -83,7 +94,7 @@ async function writeFixture(scenario: Scenario,): Promise<void> {
       WORK_DIR,
       'package.json',
     ),
-    FIXTURE_ROOT_PACKAGE_JSON,
+    buildRootPackageJson(fixturePnpm,),
   );
   await Promise.all(CONSUMER_DIRS.map(async function writeConsumer(dir,): Promise<void> {
     /**
@@ -108,20 +119,22 @@ async function writeFixture(scenario: Scenario,): Promise<void> {
 }
 
 /**
- * Installs the fixture with the pinned pnpm via corepack. Layout settings live
- * in the workspace file, so this is a plain install; corepack caches pnpm under
+ * Installs the fixture with `fixturePnpm` via corepack. Layout settings live in
+ * the workspace file, so this is a plain install; corepack caches pnpm under
  * `HOME` (tmpfs) and the download prompt is disabled for non-interactive runs.
+ *
+ * @param fixturePnpm - `pnpm@<version>` spec the monorepo resolved
  *
  * @example
  * ```ts
- * await installFixture();
+ * await installFixture("pnpm\@11.11.0");
  * ```
  */
-async function installFixture(): Promise<void> {
+async function installFixture(fixturePnpm: string,): Promise<void> {
   await spawn(
     'corepack',
     [
-      PINNED_PNPM,
+      fixturePnpm,
       'install',
       '--ignore-scripts',
       '--config.confirmModulesPurge=false',
@@ -327,8 +340,22 @@ if (scenarioJson === undefined)
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the orchestrator serialises a Scenario it owns
 const scenario = JSON.parse(scenarioJson,) as Scenario;
 
-await writeFixture(scenario,);
-await installFixture();
+/**
+ * Monorepo `pnpm@<version>` spec the orchestrator resolved and passed in, so the
+ * fixture installs with the pnpm the repo actually runs.
+ */
+const fixturePnpm = process.env[FIXTURE_PNPM_ENV];
+if (fixturePnpm === undefined) {
+  throw new Error(
+    `${FIXTURE_PNPM_ENV} not set; the orchestrator must pass the monorepo pnpm spec into the container`,
+  );
+}
+
+await writeFixture({
+  scenario,
+  fixturePnpm,
+},);
+await installFixture(fixturePnpm,);
 await enablePnpm();
 await applyMutation(scenario,);
 

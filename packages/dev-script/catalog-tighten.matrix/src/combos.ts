@@ -34,9 +34,12 @@ export const FIXTURE_ACTIVE = '4.0.2';
 export const FIXTURE_ORPHAN = '4.0.4';
 
 /**
- * pnpm version corepack provisions in the container, pinned to match the monorepo's pnpm.
+ * Environment variable through which the orchestrator passes the monorepo's
+ * `pnpm@<version>` spec into each container, so a fixture always installs with
+ * the pnpm the repo actually runs (resolved at run time) rather than a hardcoded
+ * version that drifts from mise's floating `pnpm = "latest"`.
  */
-export const PINNED_PNPM = 'pnpm@11.9.0';
+export const FIXTURE_PNPM_ENV = 'FIXTURE_PNPM';
 
 /**
  * Relocatable content-addressable store path used by the remove-store scenario, so the mutation
@@ -351,19 +354,33 @@ export function buildWorkspaceYaml(scenario: Scenario,): string {
 }
 
 /**
- * Root `package.json` for the fixture workspace, pinning the package manager so
- * the corepack pnpm shim resolves the cached version offline.
+ * Builds the fixture root `package.json`, pinning `packageManager` to the
+ * monorepo pnpm spec the orchestrator resolved at run time, so corepack
+ * provisions exactly the pnpm the repo runs.
+ *
+ * @param pnpmSpec - `pnpm@<version>` spec derived from the monorepo's pnpm
+ *
+ * @returns root `package.json` text
+ *
+ * @example
+ * ```ts
+ * buildRootPackageJson("pnpm\@11.11.0")
+ * ```
  */
-export const FIXTURE_ROOT_PACKAGE_JSON: string = `${JSON.stringify(
-  {
-    name: 'catalog-tighten-fixture-root',
-    private: true,
-    version: '0.0.0',
-    packageManager: PINNED_PNPM,
-  },
-  undefined,
-  2,
-)}\n`;
+export function buildRootPackageJson(pnpmSpec: string,): string {
+  return `${
+    JSON.stringify(
+      {
+        name: 'catalog-tighten-fixture-root',
+        private: true,
+        version: '0.0.0',
+        packageManager: pnpmSpec,
+      },
+      undefined,
+      2,
+    )
+  }\n`;
+}
 
 /**
  * Builds a consumer `package.json` depending on the {@link FIXTURE_PACKAGE} catalog entry.

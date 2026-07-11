@@ -16,6 +16,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  buildRootPackageJson,
   buildWorkspaceYaml,
   EXPECTED_TIGHTENED,
   FIXTURE_ACTIVE,
@@ -100,6 +101,15 @@ await describe({
       name: 'expected tightened line names floor and active version',
       fn: async () => {
         expect(EXPECTED_TIGHTENED,).toBe(`${FIXTURE_PACKAGE}: >=${FIXTURE_FLOOR} -> >=${FIXTURE_ACTIVE}`,);
+      },
+    },),
+
+    it({
+      name: 'pins packageManager to the passed monorepo pnpm spec',
+      fn: async () => {
+        /** Root manifest built with a resolved pnpm spec. */
+        const rootJson = buildRootPackageJson('pnpm@11.11.0',);
+        expect(rootJson.includes('"packageManager": "pnpm@11.11.0"',),).toBe(true,);
       },
     },),
 
