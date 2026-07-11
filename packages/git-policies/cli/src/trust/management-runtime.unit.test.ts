@@ -230,8 +230,14 @@ await describe({
         /** Declined trust process. */
         const error = await runManagementFailure({ fixture, args: ['trust',], },);
         expect(error.exitCode,).toBe(2,);
-        expect(error.stdout,).toBe('',);
-        expect(error.stderr.endsWith('cli-git: trust operation failed: Trust declined; no persistent record was installed.',),).toBe(true,);
+        expect(parseManagementOutput(error.stdout,),).toMatchObject({
+          schemaVersion: 1,
+          sequence: 0,
+          type: 'engine-failure',
+          code: 'trust-failed',
+          message: 'Trust declined; no persistent record was installed.',
+        },);
+        expect(error.stderr,).toContain('Exact snapshot state: new',);
         const status = await runManagement({ fixture, args: ['status',], },);
         expect(status.stdout,).toContain('"reason":"untrusted"',);
       },

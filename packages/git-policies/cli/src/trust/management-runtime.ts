@@ -4,6 +4,11 @@
  * @module
  */
 import { createInterface, } from 'node:readline/promises';
+import {
+  createEngineFailureEvent,
+  type EngineFailureCode,
+  renderPolicyEvents,
+} from '../policy-engine/events.ts';
 import { resolveAccountRegistryRoot, } from './account-root.ts';
 import {
   CONFIG_ABSENT,
@@ -16,6 +21,7 @@ import {
   untrustConfig,
   untrustRepository,
 } from './trust-service.ts';
+import { TrustedConfigError, } from './config-loader.ts';
 
 /**
  * Trust management action parsed by Optique.
@@ -65,6 +71,30 @@ function discloseTrust(text: string,): void {
  */
 function currentTime(): Date {
   return new Date();
+}
+
+/**
+ * Emits one trust-management failure on stdout JSONL.
+ *
+ * @param code - stable engine failure code
+ *
+ * @param message - human-readable failure detail
+ *
+ * @returns engine failure exit code
+ */
+function emitTrustFailure({
+  code,
+  message,
+}: Readonly<{
+  code: EngineFailureCode;
+  message: string;
+}>,): 2 {
+  process.stdout.write(renderPolicyEvents([createEngineFailureEvent({
+    sequence: 0,
+    code,
+    message,
+  },),],),);
+  return 2;
 }
 
 /**
@@ -136,10 +166,11 @@ export async function runTrustManagement({
          * Canonical repository root retained after config deletion.
          */
         const repositoryRoot = await resolveConfigRepositoryRoot(gitGlobalArgs,);
-        if (repositoryRoot === CONFIG_ABSENT) {
-          console.error('cli-git: no repository was found for trust recovery.',);
-          return 2;
-        }
+        if (repositoryRoot === CONFIG_ABSENT)
+          return emitTrustFailure({
+            code: 'trust-failed',
+            message: 'No repository was found for trust recovery.',
+          },);
         /**
          * Injected test root or OS-account-derived production root.
          */
@@ -161,8 +192,10 @@ export async function runTrustManagement({
         },),);
         return 0;
       }
-      console.error('cli-git: no repository configuration was found at the canonical repository root.',);
-      return 2;
+      return emitTrustFailure({
+        code: 'trust-failed',
+        message: 'No repository configuration was found at the canonical repository root.',
+      },);
     }
     /**
      * Injected test root or OS-account-derived production root.
@@ -216,7 +249,13 @@ export async function runTrustManagement({
     return 0;
   }
   catch (error: unknown) {
-    console.error(`cli-git: trust operation failed: ${Error.isError(error,) ? error.message : String(error,)}`,);
-    return 2;
+    return emitTrustFailure({
+      code: error instanceof TrustedConfigError
+        ? error.code
+        : 'trust-failed',
+      message: Error.isError(error,)
+        ? error.message
+        : String(error,),
+    },);
   }
 }
