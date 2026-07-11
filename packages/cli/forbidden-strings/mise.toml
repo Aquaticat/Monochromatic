@@ -43,7 +43,18 @@ run = "cargo nextest run --release"
 [tasks."scan:all"]
 description = "Scan the complete repository with the release forbidden-strings binary"
 depends = ["build"]
-run = "target/release/forbidden-strings --all"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const child = spawn(
+  './packages/cli/forbidden-strings/target/release/forbidden-strings',
+  ['--rules', './forbidden-strings.local.txt', '--all'],
+  { cwd: '../../..', stdio: 'inherit' },
+)
+await once(child, 'exit')
+if (child.exitCode !== 0) throw new Error(`forbidden-strings exited ${String(child.exitCode)}`)
+"""
 
 # Fuzzing moved to its own config root at packages/fuzz/forbidden-strings so a
 # scoped nightly toolchain does not force this published crate onto nightly.
