@@ -16,6 +16,7 @@ export type LifecycleScenarioId =
   | 'validator'
   | 'scanner'
   | 'normalizer'
+  | 'normalizer-change'
   | 'post-commit';
 
 /**
@@ -70,6 +71,10 @@ export type ScenarioSummary = Readonly<{
    */
   p95Ms: number;
   /**
+   * Median absolute deviation observation.
+   */
+  madMs: number;
+  /**
    * Complete ordered command samples.
    */
   samples: readonly CommandSample[];
@@ -110,11 +115,24 @@ export class LifecycleBenchmarkError extends Error {
 /**
  * Recorded samples per scenario after warm-up.
  */
-export const RECORDED_RUNS = 7;
+export const RECORDED_RUNS = 30;
 /**
  * Warm-up commands excluded from recorded summaries.
  */
-export const WARMUP_RUNS = 2;
+export const WARMUP_RUNS = 6;
+/**
+ * Samples in each adjacent warm-up window.
+ */
+export const WARMUP_WINDOW = 3;
+/**
+ * Denominator producing accepted warm-up drift fraction.
+ */
+const WARMUP_STABILITY_DENOMINATOR = 5;
+/**
+ * Maximum relative drift between warm-up medians.
+ */
+export const WARMUP_STABILITY_RATIO: number = 1
+  / WARMUP_STABILITY_DENOMINATOR;
 /**
  * Nanoseconds in one millisecond.
  */
@@ -178,5 +196,6 @@ export const SCENARIO_BUDGETS: Readonly<Record<LifecycleScenarioId, number>> = {
   'validator': 300,
   'scanner': 450,
   'normalizer': 375,
+  'normalizer-change': MAXIMUM_BUDGET_MS,
   'post-commit': 500,
 };

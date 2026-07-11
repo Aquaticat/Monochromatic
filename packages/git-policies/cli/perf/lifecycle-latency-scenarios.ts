@@ -10,6 +10,7 @@ import {
   execute,
   measure,
   median,
+  medianAbsoluteDeviation,
   p95,
 } from './lifecycle-latency-command.ts';
 import {
@@ -36,6 +37,7 @@ import {
   type PairedScenario,
 } from './lifecycle-latency-definitions.ts';
 import type { LifecycleFixture, } from './lifecycle-latency-fixture.ts';
+import { assertStableWarmups, } from './lifecycle-latency-warmup.ts';
 
 /**
  * Decimal places in failure diagnostics.
@@ -138,6 +140,7 @@ function summarize({
     maximumMs,
     medianMs: median(values,),
     p95Ms: p95(values,),
+    madMs: medianAbsoluteDeviation(values,),
     samples,
   };
 }
@@ -190,6 +193,13 @@ async function collectPaired(scenario: PairedScenario,): Promise<ScenarioSummary
     },
     Promise.resolve<readonly CommandSample[]>([],),
   );
+  assertStableWarmups({
+    id: scenario.id,
+    values: metricValues({
+      samples: allSamples,
+      metric: 'wrapper-added',
+    },),
+  },);
   return summarize({
     id: scenario.id,
     metric: 'wrapper-added',
@@ -236,6 +246,13 @@ async function collectAbsolute({
     },
     Promise.resolve<readonly CommandSample[]>([],),
   );
+  assertStableWarmups({
+    id: scenario.id,
+    values: metricValues({
+      samples: allSamples,
+      metric: 'absolute',
+    },),
+  },);
   return summarize({
     id: scenario.id,
     metric: 'absolute',
@@ -345,6 +362,13 @@ async function collectPostCommit(): Promise<ScenarioSummary> {
     },
     Promise.resolve<readonly CommandSample[]>([],),
   );
+  assertStableWarmups({
+    id: 'post-commit',
+    values: metricValues({
+      samples: allSamples,
+      metric: 'wrapper-added',
+    },),
+  },);
   return summarize({
     id: 'post-commit',
     metric: 'wrapper-added',

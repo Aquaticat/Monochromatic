@@ -4,7 +4,10 @@
  * @module
  */
 
-import { appendFile, } from 'node:fs/promises';
+import {
+  appendFile,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 import {
   BENCHMARK_FILE,
@@ -144,6 +147,39 @@ function scannerRequest(): Promise<CommandRequest> {
 }
 
 /**
+ * Builds changed normalizer direct-fix request.
+ *
+ * @param iteration - unique content sequence
+ *
+ * @returns normalizer fix request
+ */
+async function normalizerChangedRequest({
+  iteration,
+}: Readonly<{
+  iteration: number;
+}>,): Promise<CommandRequest> {
+  await writeFile(
+    join(
+      TYPESCRIPT_REPOSITORY,
+      BENCHMARK_FILE,
+    ),
+    `changed-${String(iteration,)}`,
+  );
+  return {
+    command: PACKAGE_BIN,
+    args: [
+      'cli-git',
+      'fix',
+      '--policy',
+      'final-newline',
+      '--',
+      BENCHMARK_FILE,
+    ],
+    cwd: TYPESCRIPT_REPOSITORY,
+  };
+}
+
+/**
  * Builds normalizer direct-check request.
  *
  * @returns normalizer request
@@ -256,6 +292,10 @@ export const ABSOLUTE_SCENARIOS: readonly AbsoluteScenario[] = [
   {
   id: 'normalizer',
   request: normalizerRequest,
+},
+  {
+  id: 'normalizer-change',
+  request: normalizerChangedRequest,
 },
   {
   id: 'validator',

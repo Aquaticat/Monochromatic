@@ -54,10 +54,14 @@ description = "Measure and enforce packed lifecycle latency budgets in a bounded
 depends = ["pack:npm"]
 shell = "node --input-type=module-typescript -e"
 run = '''
-const { spawn } = await import('node:child_process')
+const { execFile, spawn } = await import('node:child_process')
 const { once } = await import('node:events')
 const { join } = await import('node:path')
+const { promisify } = await import('node:util')
 const packageRoot = process.cwd()
+const execute = promisify(execFile)
+const { stdout: revisionOutput } = await execute('/usr/bin/git', ['rev-parse', 'HEAD'], { cwd: packageRoot })
+const revision = revisionOutput.trim()
 const bootstrap = `
 const { execFile } = await import('node:child_process')
 const { mkdir } = await import('node:fs/promises')
@@ -78,6 +82,8 @@ const child = spawn('podman', [
   '--rm',
   '--env',
   'CLI_GIT_CAPTURE_LATENCY_BASELINE',
+  '--env',
+  `CLI_GIT_BENCHMARK_REVISION=${revision}`,
   '--volume',
   `${join(packageRoot, 'dist/pack/monochromatic-dev-cli-git-0.0.1.tgz')}:/fixture/cli.tgz:ro,Z`,
   '--volume',

@@ -7,6 +7,7 @@
  * @module
  */
 
+import { availableParallelism, } from 'node:os';
 import {
   MAXIMUM_BUDGET_MS,
   RECORDED_RUNS,
@@ -30,6 +31,9 @@ const scenarios = await collectLifecycleScenarios(fixture,);
 console.log(JSON.stringify(
   {
   schemaVersion: 1,
+  revision: process.env
+    .CLI_GIT_BENCHMARK_REVISION
+    ?? 'unrecorded',
   platform: process.platform,
   node: process.version,
   git: await execute({
@@ -37,9 +41,18 @@ console.log(JSON.stringify(
     args: ['--version',],
     cwd: '/work',
   },),
+  filesystem: await execute({
+    command: '/usr/bin/df',
+    args: [
+      '--output=fstype',
+      '/work',
+    ],
+    cwd: '/work',
+  },),
   limits: {
     memoryBytes: 2_147_483_648,
     cpus: 2,
+    availableCpus: availableParallelism(),
     maximumBudgetMs: MAXIMUM_BUDGET_MS,
   },
   fixture: {

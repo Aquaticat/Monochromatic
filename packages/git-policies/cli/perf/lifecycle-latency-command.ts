@@ -171,6 +171,28 @@ export function median(values: readonly number[],): number {
 }
 
 /**
+ * Calculates median absolute deviation.
+ *
+ * @param values - non-empty measured values
+ *
+ * @returns median distance from median
+ *
+ * @example
+ * ```ts
+ * medianAbsoluteDeviation([1, 2, 3]);
+ * ```
+ */
+export function medianAbsoluteDeviation(values: readonly number[],): number {
+  /**
+   * Median used as robust distribution center.
+   */
+  const center = median(values,);
+  return median(values.map(function distance(value,) {
+    return Math.abs(value - center,);
+  },),);
+}
+
+/**
  * Calculates nearest-rank ninety-fifth percentile.
  *
  * @param values - non-empty measured values
