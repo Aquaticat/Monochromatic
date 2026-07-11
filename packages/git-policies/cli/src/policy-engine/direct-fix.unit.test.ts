@@ -260,7 +260,9 @@ await describe({
         ],);
         expect(await readFile(join(fixture.repository, 'one.txt',), 'utf8',),).toBe('8\n',);
         expect(await readFile(join(fixture.repository, 'two.txt',), 'utf8',),).toBe('8\n',);
-        expect(await readFile(join(fixture.repository, '.git/index',),),).toEqual(indexBefore,);
+        expect(
+          await readFile(join(fixture.repository, '.git/index',),),
+        ).toEqual(indexBefore,);
       },
     },),
     it({
