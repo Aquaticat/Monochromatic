@@ -254,6 +254,8 @@ export type FixSummaryEvent = Readonly<{
   sequence: number;
   /** Event discriminator. */
   type: 'fix-summary';
+  /** Policy identifier is absent for aggregate summary. */
+  policyId?: never;
   /** Fixable lifecycle trigger. */
   trigger: 'pre-forward' | 'direct-fix';
   /** Number of private candidate changes before stability. */
