@@ -173,6 +173,7 @@ The built-in order is:
 2. `linked-worktree-only`.
 3. `branch-worktree-only`.
 4. `add-explicit`.
+5. `final-newline`.
 
 The fixed transformer order is:
 

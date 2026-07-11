@@ -100,18 +100,19 @@ or start the executable.
 
 ## Policy engine and management
 
-The shadow executable runs four configurable safeguards through the unified policy contract before fixed command
+The shadow executable runs configurable core policies through the unified policy contract before fixed command
 transformers:
 `require-root`,
 `linked-worktree-only`,
 `branch-worktree-only`,
-and `add-explicit`.
+`add-explicit`,
+and `final-newline`.
 All default to `error`.
 Validated policy settings support `off`,
 `warn`,
 and `error`.
-`branch-worktree-only` is warn-safe;
-configuring any other current built-in as `warn` also produces a non-blocking `configuration-warning` JSONL event.
+`branch-worktree-only` and `final-newline` are warn-safe;
+configuring another current built-in as `warn` also produces a non-blocking `configuration-warning` JSONL event.
 Repository-root `cli-git.config.mjs` or `cli-git.config.ts` can configure built-ins and register namespaced plugin policies
 after exact-snapshot trust.
 Built-ins run in the listed order.
@@ -170,6 +171,14 @@ Policies inspect the exact chosen private candidate without applying automatic p
 canonical candidates commit the settled private index,
 while a required correction blocks with direct-fix guidance.
 Unmerged indexes block automatic correction.
+
+Direct `git cli-git fix` uses the same eight-pass policy convergence against a disposable private index.
+It accepts exactly one scope,
+`--all` or pathspecs after `--`,
+revalidates worktree bytes before installation,
+uses same-directory atomic replacements with rollback copies,
+and verifies that real index bytes remain exact.
+Successful corrections emit only a `fix-summary` JSONL event.
 
 A durable no-follow transaction directory retains exact original and prepared index snapshots,
 expected parent and tree identities,

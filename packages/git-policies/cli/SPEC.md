@@ -1289,13 +1289,14 @@ State-mutating verification uses disposable repositories only.
 
 ### Built-ins
 
-The four configurable built-ins preserve every accepted and rejected command fixture through the unified policy engine.
+The configurable core policies preserve every accepted and rejected command fixture through the unified policy engine.
 Their fixed order is `require-root`,
 `linked-worktree-only`,
 `branch-worktree-only`,
-then `add-explicit`.
+`add-explicit`,
+then `final-newline`.
 All default to `error`;
-only `branch-worktree-only` is warn-safe.
+`branch-worktree-only` and `final-newline` are warn-safe.
 Unsafe warn configuration emits a `configuration-warning` JSONL event but still forwards when only warning findings
 remain.
 Generic `--no-enforce-<policy-id>` escapes and the legacy safeguard aliases skip the complete policy lifecycle and are
@@ -1351,6 +1352,7 @@ Preserve the independent SLSA-attested CI invocation.
 
 ### Final newline
 
+`final-newline` is a core policy enabled at error severity by default.
 Selected non-empty text ends with exactly one LF.
 Remove every terminal LF before adding one.
 Empty and binary-looking bytes stay unchanged.
