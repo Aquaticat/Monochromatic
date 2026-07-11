@@ -1814,10 +1814,24 @@ DL3:
  Bug reports fold into most relevant `docs/troubleshooting/<topic>.md` as section rather than getting their own family.
 
 DL4:
- Delete verifiably-finished docs once their work lands;
- git history is backstop,
- so removal not destructive.
+ Delete a doc only when its work has landed AND it no longer carries durable operational value.
+ A landed fix alone insufficient.
+ Retain + update records explaining external behavior,
+ root causes,
+ verified workarounds,
+ tradeoffs,
+ recurring failure modes,
+ or upstream disposition.
+ Before deletion,
+ identify current replacement for each durable fact;
+ if none exists,
+ update document instead.
+ Git history is backstop after retention gate,
+ not proof deletion safe.
  Read each before deleting.
+Cue:
+ about to delete because implementation landed;
+ check whether document would prevent future session from re-diagnosing behavior or missing constraint.
 
 DL5:
  Reference source files by repo-relative path,
