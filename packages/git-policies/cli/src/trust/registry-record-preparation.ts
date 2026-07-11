@@ -15,7 +15,6 @@ import {
   validateTrustRecord,
 } from './record-validation.ts';
 import {
-  assertSafeRegistryDirectory,
   DIRECTORY_MODE,
   ensureRegistryRoot,
   protectPath,
@@ -23,6 +22,7 @@ import {
   TrustStorageError,
   writePrivateFile,
 } from './registry-io.ts';
+import { ensurePrivateRegistryDirectory, } from './registry-directory.ts';
 import { recordDirectory, } from './registry-path.ts';
 import {
   createPreparedTrustRecord,
@@ -165,14 +165,7 @@ export async function prepareTrustRecord({
    * Existing parent containing lock and candidate sibling.
    */
   const parentDirectory = dirname(finalDirectory,);
-  await mkdir(
-    parentDirectory,
-    {
-      recursive: true,
-      mode: DIRECTORY_MODE,
-    },
-  );
-  await assertSafeRegistryDirectory({
+  await ensurePrivateRegistryDirectory({
     registryRoot,
     targetDirectory: parentDirectory,
   },);
