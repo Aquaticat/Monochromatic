@@ -17,6 +17,7 @@ import {
 } from './built-consumer-helpers.ts';
 import { verifyBuiltArtifactContract, } from './built-artifact-contract.ts';
 import { verifyFinalNewlineConsumer, } from './built-final-newline-consumer.ts';
+import { verifyJsonlFailureBoundaries, } from './built-jsonl-boundary-consumer.ts';
 import { verifyForbiddenStringsPolicyConsumer, } from './built-forbidden-strings-policy-consumer.ts';
 import { verifyAutofixTransactionConsumer, } from './built-autofix-transaction-consumer.ts';
 import { verifyPostCommitPolicyConsumer, } from './built-post-commit-policy-consumer.ts';
@@ -110,82 +111,7 @@ const env: NodeJS.ProcessEnv = {
     .PATH
     ?? ''}`,
 };
-/** Direct-check setup failure outside a Git worktree. */
-const unavailableDirectCheck = await execute({
-  command: 'git',
-  args: [
-    'cli-git',
-    'check',
-    '--all',
-  ],
-  expectedExit: 2,
-  cwd: '/work',
-  env,
-},);
-assertJsonl({
-  text: unavailableDirectCheck.stdout,
-  expectedCode: 'transaction-failed',
-  context: 'direct check outside worktree',
-},);
-if (unavailableDirectCheck.stderr !== '')
-  throw new Error(`direct check setup failure leaked stderr\n${unavailableDirectCheck.stderr}`,);
-/**
- * First config-loading use blocked before config execution.
- */
-const untrusted = await execute({
-  command: 'git',
-  args: ['future-command',],
-  expectedExit: 2,
-  cwd: repository,
-  env,
-},);
-assertJsonl({
-  text: untrusted.stderr,
-  expectedCode: 'config-untrusted',
-  context: 'untrusted wrapper',
-},);
-if (untrusted.stdout !== '')
-  throw new Error(`untrusted wrapper leaked stdout\n${untrusted.stdout}`,);
-/** Direct config-untrusted failure routed only to stdout. */
-const untrustedDirectCheck = await execute({
-  command: 'git',
-  args: [
-    'cli-git',
-    'check',
-    '--all',
-  ],
-  expectedExit: 2,
-  cwd: repository,
-  env,
-},);
-assertJsonl({
-  text: untrustedDirectCheck.stdout,
-  expectedCode: 'config-untrusted',
-  context: 'untrusted direct check',
-},);
-if (untrustedDirectCheck.stderr !== '')
-  throw new Error(`untrusted direct check leaked stderr\n${untrustedDirectCheck.stderr}`,);
-/** Declined trust failure remains stdout JSONL beside stderr disclosure. */
-const declinedTrust = await execute({
-  command: 'git',
-  args: [
-    'cli-git',
-    'trust',
-  ],
-  expectedExit: 2,
-  cwd: repository,
-  env,
-},);
-assertJsonl({
-  text: declinedTrust.stdout,
-  expectedCode: 'trust-failed',
-  context: 'declined trust management',
-},);
-assertIncludes({
-  text: declinedTrust.stderr,
-  expected: 'Exact snapshot state: new',
-  context: 'declined trust disclosure',
-},);
+await verifyJsonlFailureBoundaries({ repository, env, },);
 /**
  * Explicit noninteractive trust result.
  */
