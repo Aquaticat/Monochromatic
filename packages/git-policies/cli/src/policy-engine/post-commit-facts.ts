@@ -160,7 +160,9 @@ async function loadLandedChangedPaths({
   cwd: string;
   landedOid: GitObjectId;
 }>,): Promise<ReadonlySet<string>> {
-  /** NUL-delimited changed paths, including every root-commit path. */
+  /**
+   * NUL-delimited changed paths, including every root-commit path.
+   */
   const changedBytes = await runGitBytes({
     gitPath,
     cwd,
@@ -202,7 +204,9 @@ async function loadLandedCandidates({
   cwd: string;
   landedOid: GitObjectId;
 }>,): Promise<readonly CandidateFile[]> {
-  /** Recursive tree metadata and landed change paths loaded concurrently. */
+  /**
+   * Recursive tree metadata and landed change paths loaded concurrently.
+   */
   const [treeBytes, changedPaths,] = await Promise.all([
     runGitBytes({
       gitPath,
@@ -215,7 +219,11 @@ async function loadLandedCandidates({
         landedOid,
       ],
     },),
-    loadLandedChangedPaths({ gitPath, cwd, landedOid, },),
+    loadLandedChangedPaths({
+      gitPath,
+      cwd,
+      landedOid,
+    },),
   ],);
   /**
    * Decoded tree records, excluding terminal empty record.
