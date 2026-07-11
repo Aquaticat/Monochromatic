@@ -11,8 +11,8 @@ import { join, } from 'node:path';
 import {
   assertIncludes,
   execute,
-  parseJsonObjectLine,
 } from './built-consumer-helpers.ts';
+import { assertAffectedRootSummary, } from './built-jsonl-assertions.ts';
 
 /**
  * Exercises two-stage trust and cross-filesystem descendant enrollment.
@@ -320,19 +320,11 @@ export async function verifyRecursiveConsumer({
     || siblingRace.stdout
     .includes('EEXIST',))
     throw new Error('Concurrent enrollment leaked filesystem lock error.',);
-  /** Canonical recursive untrust summary. */
-  const untrustSummary = parseJsonObjectLine({
+  assertAffectedRootSummary({
     text: untrust.stdout,
+    root: outer,
     context: 'recursive untrust',
   },);
-  /** Recursive roots named by summary. */
-  const affectedRoots = untrustSummary.affectedRoots;
-  if ((untrustSummary.schemaVersion !== 1)
-    || (untrustSummary.type !== 'untrust-summary')
-    || (untrustSummary.removed !== true)
-    || (!Array.isArray(affectedRoots,))
-    || (!affectedRoots.includes(outer,)))
-    throw new Error(`recursive untrust summary mismatch\n${untrust.stdout}`,);
   assertIncludes({
     text: untrust.stderr,
     expected: `Affected recursive root: ${outer}`,

@@ -332,8 +332,12 @@ await describe({
           trigger: 'direct-fix',
           path: 'one.txt',
         },);
-        expect(await readFile(join(fixture.repository, 'one.txt',),)).toEqual(worktreeBefore,);
-        expect(await readFile(join(fixture.repository, '.git/index',),)).toEqual(indexBefore,);
+        expect(
+          await readFile(join(fixture.repository, 'one.txt',),),
+        ).toEqual(worktreeBefore,);
+        expect(
+          await readFile(join(fixture.repository, '.git/index',),),
+        ).toEqual(indexBefore,);
       },
     },),
     it({
@@ -362,8 +366,12 @@ await describe({
           code: 'fix-pass-limit',
           trigger: 'direct-fix',
         },);
-        expect(await readFile(join(fixture.repository, 'one.txt',),)).toEqual(worktreeBefore,);
-        expect(await readFile(join(fixture.repository, '.git/index',),)).toEqual(indexBefore,);
+        expect(
+          await readFile(join(fixture.repository, 'one.txt',),),
+        ).toEqual(worktreeBefore,);
+        expect(
+          await readFile(join(fixture.repository, '.git/index',),),
+        ).toEqual(indexBefore,);
       },
     },),
     it({

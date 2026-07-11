@@ -220,15 +220,15 @@ export async function verifyPostCommitPolicyConsumer({
    * Local commit retained after engine failure.
    */
   const failureOid = await resolveFixtureOid({ repository, },);
-  /** Exact canonical post-commit failure events in wire order. */
+  /**
+   * Exact canonical post-commit failure events in wire order.
+   */
   const failureEvents = parseJsonObjectLines({
     text: failedGate.stderr,
     context: 'post-commit engine failure',
   },);
-  /** Engine failure event preceding landed-state event. */
-  const engineFailure = failureEvents[0];
-  /** Landed-state event following engine failure. */
-  const commitLanded = failureEvents[1];
+  /** Engine failure followed by landed-state event. */
+  const [engineFailure, commitLanded,] = failureEvents;
   if ((failureEvents.length !== 2)
     || (engineFailure?.schemaVersion !== 1)
     || (engineFailure?.sequence !== 0)

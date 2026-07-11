@@ -103,7 +103,9 @@ export async function verifyAutofixFilesystemFailure({
         gitDirectory,
       ],
     },);
-    /** Direct-fix setup failure routed only to stdout. */
+    /**
+     * Direct-fix setup failure routed only to stdout.
+     */
     const directBlocked = await execute({
       command: 'git',
       args: [
