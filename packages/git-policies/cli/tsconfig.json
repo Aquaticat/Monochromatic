@@ -1,3 +1,8 @@
 {
   "extends": "@monochromatic-dev/config-typescript/dom",
+  "include": [
+    "src/**/*.ts",
+    "perf/**/*.ts",
+    "*.config.ts"
+  ]
 }
