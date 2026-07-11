@@ -63,43 +63,81 @@ class BenchmarkError extends Error {}
 
 //region Benchmark constants -- Keep sample counts, limits, and fixture locations explicit.
 
-/** Number of recorded pairs after warm-up stability. */
+/**
+ * Number of recorded pairs after warm-up stability.
+ */
 const RUNS = 30;
-/** Minimum number of warm-up pairs considered for stability. */
+/**
+ * Minimum number of warm-up pairs considered for stability.
+ */
 const MINIMUM_WARMUPS = 6;
-/** Maximum number of warm-up pairs before benchmark failure. */
+/**
+ * Maximum number of warm-up pairs before benchmark failure.
+ */
 const MAXIMUM_WARMUPS = 30;
-/** Number of samples in each compared warm-up window. */
+/**
+ * Number of samples in each compared warm-up window.
+ */
 const WARMUP_WINDOW = 3;
-/** Maximum relative median drift accepted between warm-up windows. */
+/**
+ * Maximum relative median drift accepted between warm-up windows.
+ */
 const STABILITY_RATIO = 5 / 100;
-/** Maximum allowed wrapper-added latency in milliseconds. */
+/**
+ * Maximum allowed wrapper-added latency in milliseconds.
+ */
 const LIMIT_MS = 2_000;
-/** Nanoseconds in one millisecond. */
+/**
+ * Nanoseconds in one millisecond.
+ */
 const NANOSECONDS_PER_MILLISECOND = 1_000_000;
-/** Percentile represented by p95. */
+/**
+ * Percentile represented by p95.
+ */
 const NINETY_FIFTH_PERCENTILE = 95 / 100;
-/** Decimal places used in threshold failure messages. */
+/**
+ * Decimal places used in threshold failure messages.
+ */
 const DECIMAL_PLACES = 3;
-/** Byte count for benchmark memory limit. */
+/**
+ * Byte count for benchmark memory limit.
+ */
 const MEMORY_LIMIT_BYTES = 2_147_483_648;
-/** CPU count for benchmark container limit. */
+/**
+ * CPU count for benchmark container limit.
+ */
 const CPU_LIMIT = 2;
-/** Byte count for benchmark temporary filesystem limit. */
+/**
+ * Byte count for benchmark temporary filesystem limit.
+ */
 const TEMPORARY_FILESYSTEM_LIMIT_BYTES = 1_073_741_824;
-/** Installed packed cli-git executable. */
+/**
+ * Installed packed cli-git executable.
+ */
 const PACKAGE_BIN = '/work/node_modules/.bin/git';
-/** Repository used for direct Git measurements. */
+/**
+ * Repository used for direct Git measurements.
+ */
 const DIRECT_REPOSITORY = '/work/direct';
-/** Repository used for wrapper measurements. */
+/**
+ * Repository used for wrapper measurements.
+ */
 const WRAPPED_REPOSITORY = '/work/wrapped';
-/** Bare remote used for direct Git measurements. */
+/**
+ * Bare remote used for direct Git measurements.
+ */
 const DIRECT_REMOTE = '/work/direct.git';
-/** Bare remote used for wrapper measurements. */
+/**
+ * Bare remote used for wrapper measurements.
+ */
 const WRAPPED_REMOTE = '/work/wrapped.git';
-/** Environment override that places packed cli-git before system Git. */
+/**
+ * Environment override that places packed cli-git before system Git.
+ */
 const COMMAND_ENV = {
-  PATH: `/work/node_modules/.bin:/usr/bin:${process.env.PATH ?? ''}`,
+  PATH: `/work/node_modules/.bin:/usr/bin:${process.env
+    .PATH
+    ?? ''}`,
 } as const;
 
 //endregion Benchmark constants
@@ -110,7 +148,9 @@ const COMMAND_ENV = {
  * Compare numeric values in ascending order.
  *
  * @param left - Value placed on left side of comparison.
+ *
  * @param right - Value placed on right side of comparison.
+ *
  * @returns Negative, zero, or positive ordering value.
  *
  * @example
@@ -119,7 +159,10 @@ const COMMAND_ENV = {
  * [2, 1].toSorted(compareNumbers);
  * ```
  */
-function compareNumbers(left: number, right: number): number {
+function compareNumbers(
+  left: number,
+  right: number
+): number {
   return left - right;
 }
 
@@ -127,8 +170,11 @@ function compareNumbers(left: number, right: number): number {
  * Read required numeric array element.
  *
  * @param values - Sequence containing required element.
+ *
  * @param index - Position expected to exist.
+ *
  * @returns Numeric element at requested position.
+ *
  * @throws {@link BenchmarkError} when position is absent.
  *
  * @example
@@ -155,7 +201,9 @@ function requiredNumberAt({
  * Calculate median of non-empty numeric samples.
  *
  * @param values - Samples whose midpoint represents central latency.
+ *
  * @returns Median sample value.
+ *
  * @throws {@link BenchmarkError} when no samples are supplied.
  *
  * @example
@@ -171,10 +219,19 @@ function median(values: readonly number[]): number {
   const sorted = values.toSorted(compareNumbers);
   const middle = Math.floor(sorted.length / 2);
   if ((sorted.length % 2) !== 0) {
-    return requiredNumberAt({ values: sorted, index: middle });
+    return requiredNumberAt({
+      values: sorted,
+      index: middle
+    });
   }
-  const lower = requiredNumberAt({ values: sorted, index: middle - 1 });
-  const upper = requiredNumberAt({ values: sorted, index: middle });
+  const lower = requiredNumberAt({
+    values: sorted,
+    index: middle - 1
+  });
+  const upper = requiredNumberAt({
+    values: sorted,
+    index: middle
+  });
   return (lower + upper) / 2;
 }
 
@@ -182,7 +239,9 @@ function median(values: readonly number[]): number {
  * Calculate nearest-rank ninety-fifth percentile of non-empty samples.
  *
  * @param values - Samples whose upper-tail latency is required.
+ *
  * @returns Ninety-fifth percentile sample value.
+ *
  * @throws {@link BenchmarkError} when no samples are supplied.
  *
  * @example
@@ -197,14 +256,19 @@ function p95(values: readonly number[]): number {
   }
   const sorted = values.toSorted(compareNumbers);
   const rank = Math.ceil(sorted.length * NINETY_FIFTH_PERCENTILE) - 1;
-  return requiredNumberAt({ values: sorted, index: rank });
+  return requiredNumberAt({
+    values: sorted,
+    index: rank
+  });
 }
 
 /**
  * Calculate median absolute deviation of non-empty samples.
  *
  * @param values - Samples whose robust spread is required.
+ *
  * @returns Median distance from sample median.
+ *
  * @throws {@link BenchmarkError} when no samples are supplied.
  *
  * @example
@@ -228,9 +292,13 @@ function medianAbsoluteDeviation(values: readonly number[]): number {
  * Execute command with benchmark environment and optional output suppression.
  *
  * @param command - Executable path or name.
+ *
  * @param args - Literal command arguments.
+ *
  * @param options - Working directory and output behavior.
+ *
  * @returns Trimmed standard output.
+ *
  * @throws Error from `nano-spawn` when command fails.
  *
  * @example
@@ -248,23 +316,32 @@ async function execute({
   args: readonly string[];
   options?: ExecuteOptions;
 }>): Promise<string> {
-  const result = await spawn(command, args, {
+  const result = await spawn(
+    command,
+    args,
+    {
     cwd: options.cwd,
     env: COMMAND_ENV,
     stdin: 'ignore',
     stdout: options.discardOutput === true ? 'ignore' : 'pipe',
     stderr: options.discardOutput === true ? 'ignore' : 'pipe',
-  });
-  return result.stdout.trim();
+  }
+  );
+  return result.stdout
+    .trim();
 }
 
 /**
  * Measure successful command wall time.
  *
  * @param command - Executable path or name.
+ *
  * @param args - Literal command arguments.
+ *
  * @param cwd - Repository where command executes.
+ *
  * @returns Elapsed wall time in milliseconds.
+ *
  * @throws Error from `nano-spawn` when command fails.
  *
  * @example
@@ -282,9 +359,19 @@ async function measure({
   args: readonly string[];
   cwd: string;
 }>): Promise<number> {
-  const started = process.hrtime.bigint();
-  await execute({ command, args, options: { cwd, discardOutput: true } });
-  const elapsedNanoseconds = process.hrtime.bigint() - started;
+  const started = process.hrtime
+    .bigint();
+  await execute({
+    command,
+    args,
+    options: {
+      cwd,
+      discardOutput: true
+    }
+  });
+  const elapsedNanoseconds = process.hrtime
+    .bigint()
+    - started;
   return Number(elapsedNanoseconds) / NANOSECONDS_PER_MILLISECOND;
 }
 
@@ -292,17 +379,27 @@ async function measure({
 
 //region Fixture lifecycle -- Prepare equivalent direct and wrapped repository paths.
 
-/** Reset both benchmark remotes to common baseline revision. */
+/**
+ * Reset both benchmark remotes to common baseline revision.
+ */
 async function resetRemotes({ baseOid }: Readonly<{ baseOid: string }>): Promise<void> {
   await Promise.all([
     execute({
       command: '/usr/bin/git',
-      args: ['update-ref', 'refs/heads/main', baseOid],
+      args: [
+        'update-ref',
+        'refs/heads/main',
+        baseOid
+      ],
       options: { cwd: DIRECT_REMOTE },
     }),
     execute({
       command: '/usr/bin/git',
-      args: ['update-ref', 'refs/heads/main', baseOid],
+      args: [
+        'update-ref',
+        'refs/heads/main',
+        baseOid
+      ],
       options: { cwd: WRAPPED_REMOTE },
     }),
   ]);
@@ -312,7 +409,9 @@ async function resetRemotes({ baseOid }: Readonly<{ baseOid: string }>): Promise
  * Measure one direct and wrapped push in alternating order.
  *
  * @param wrapperFirst - Whether wrapped push runs before direct push.
+ *
  * @param baseOid - Revision restored before measurements.
+ *
  * @returns Paired direct, wrapped, and added latency values.
  *
  * @example
@@ -332,33 +431,58 @@ async function runPair({
   if (wrapperFirst) {
     const wrapperMs = await measure({
       command: PACKAGE_BIN,
-      args: ['push', 'origin', 'main:main'],
+      args: [
+        'push',
+        'origin',
+        'main:main'
+      ],
       cwd: WRAPPED_REPOSITORY,
     });
     const directMs = await measure({
       command: '/usr/bin/git',
-      args: ['push', 'origin', 'main:main'],
+      args: [
+        'push',
+        'origin',
+        'main:main'
+      ],
       cwd: DIRECT_REPOSITORY,
     });
-    return { directMs, wrapperMs, addedMs: wrapperMs - directMs };
+    return {
+      directMs,
+      wrapperMs,
+      addedMs: wrapperMs - directMs
+    };
   }
   const directMs = await measure({
     command: '/usr/bin/git',
-    args: ['push', 'origin', 'main:main'],
+    args: [
+      'push',
+      'origin',
+      'main:main'
+    ],
     cwd: DIRECT_REPOSITORY,
   });
   const wrapperMs = await measure({
     command: PACKAGE_BIN,
-    args: ['push', 'origin', 'main:main'],
+    args: [
+      'push',
+      'origin',
+      'main:main'
+    ],
     cwd: WRAPPED_REPOSITORY,
   });
-  return { directMs, wrapperMs, addedMs: wrapperMs - directMs };
+  return {
+    directMs,
+    wrapperMs,
+    addedMs: wrapperMs - directMs
+  };
 }
 
 /**
  * Select direct latency from paired sample.
  *
  * @param sample - Paired measurement.
+ *
  * @returns Direct Git latency.
  *
  * @example
@@ -375,6 +499,7 @@ function selectDirectMs(sample: Sample): number {
  * Select wrapper latency from paired sample.
  *
  * @param sample - Paired measurement.
+ *
  * @returns Wrapper latency.
  *
  * @example
@@ -391,6 +516,7 @@ function selectWrapperMs(sample: Sample): number {
  * Select wrapper-added latency from paired sample.
  *
  * @param sample - Paired measurement.
+ *
  * @returns Wrapper-added latency.
  *
  * @example
@@ -407,6 +533,7 @@ function selectAddedMs(sample: Sample): number {
  * Determine whether recent warm-up windows have stable direct and wrapper medians.
  *
  * @param samples - Warm-up pairs accumulated in execution order.
+ *
  * @returns Whether both measurements remain within stability ratio.
  *
  * @example
@@ -419,87 +546,178 @@ function warmupsAreStable(samples: readonly Sample[]): boolean {
   if (samples.length < MINIMUM_WARMUPS) {
     return false;
   }
-  const previous = samples.slice(-(2 * WARMUP_WINDOW), -WARMUP_WINDOW);
+  const previous = samples.slice(
+    -(2 * WARMUP_WINDOW),
+    -WARMUP_WINDOW
+  );
   const current = samples.slice(-WARMUP_WINDOW);
   const previousDirect = median(previous.map(selectDirectMs));
   const previousWrapper = median(previous.map(selectWrapperMs));
   const directDrift = Math.abs(median(current.map(selectDirectMs)) - previousDirect) / previousDirect;
   const wrapperDrift = Math.abs(median(current.map(selectWrapperMs)) - previousWrapper) / previousWrapper;
-  return directDrift <= STABILITY_RATIO && wrapperDrift <= STABILITY_RATIO;
+  return (directDrift <= STABILITY_RATIO) && (wrapperDrift <= STABILITY_RATIO);
 }
 
 //endregion Fixture lifecycle
 
 //region Benchmark execution -- Build fixture, stabilize measurements, record samples, and enforce ceiling.
 
-await execute({ command: 'apt-get', args: ['update'] });
 await execute({
   command: 'apt-get',
-  args: ['install', '--yes', '--no-install-recommends', 'git'],
+  args: ['update']
 });
-await mkdir('/work', { recursive: true });
-await execute({ command: 'npm', args: ['init', '--yes'], options: { cwd: '/work' } });
+await execute({
+  command: 'apt-get',
+  args: [
+    'install',
+    '--yes',
+    '--no-install-recommends',
+    'git'
+  ],
+});
+await mkdir(
+  '/work',
+  { recursive: true }
+);
 await execute({
   command: 'npm',
-  args: ['install', '--ignore-scripts', '/fixture/cli.tgz'],
+  args: [
+    'init',
+    '--yes'
+  ],
+  options: { cwd: '/work' }
+});
+await execute({
+  command: 'npm',
+  args: [
+    'install',
+    '--ignore-scripts',
+    '/fixture/cli.tgz'
+  ],
   options: { cwd: '/work' },
 });
-/** Remote baseline used before each paired measurement. */
+/**
+ * Remote baseline used before each paired measurement.
+ */
 const baseOid = await execute({
   command: '/usr/bin/git',
-  args: ['-C', '/source', 'rev-parse', 'origin/main'],
+  args: [
+    '-C',
+    '/source',
+    'rev-parse',
+    'origin/main'
+  ],
 });
-/** Revision represented by benchmark evidence. */
+/**
+ * Revision represented by benchmark evidence.
+ */
 const headOid = await execute({
   command: '/usr/bin/git',
-  args: ['-C', '/source', 'rev-parse', 'HEAD'],
+  args: [
+    '-C',
+    '/source',
+    'rev-parse',
+    'HEAD'
+  ],
 });
 await execute({
   command: '/usr/bin/git',
-  args: ['clone', '--quiet', '--bare', '/source', DIRECT_REMOTE],
+  args: [
+    'clone',
+    '--quiet',
+    '--bare',
+    '/source',
+    DIRECT_REMOTE
+  ],
 });
 await execute({
   command: '/usr/bin/git',
-  args: ['clone', '--quiet', '--bare', '/source', WRAPPED_REMOTE],
+  args: [
+    'clone',
+    '--quiet',
+    '--bare',
+    '/source',
+    WRAPPED_REMOTE
+  ],
 });
 await execute({
   command: '/usr/bin/git',
-  args: ['clone', '--quiet', '/source', DIRECT_REPOSITORY],
+  args: [
+    'clone',
+    '--quiet',
+    '/source',
+    DIRECT_REPOSITORY
+  ],
 });
 await execute({
   command: '/usr/bin/git',
-  args: ['clone', '--quiet', '/source', WRAPPED_REPOSITORY],
+  args: [
+    'clone',
+    '--quiet',
+    '/source',
+    WRAPPED_REPOSITORY
+  ],
 });
 await execute({
   command: '/usr/bin/git',
-  args: ['remote', 'set-url', 'origin', DIRECT_REMOTE],
+  args: [
+    'remote',
+    'set-url',
+    'origin',
+    DIRECT_REMOTE
+  ],
   options: { cwd: DIRECT_REPOSITORY },
 });
 await execute({
   command: '/usr/bin/git',
-  args: ['remote', 'set-url', 'origin', WRAPPED_REMOTE],
+  args: [
+    'remote',
+    'set-url',
+    'origin',
+    WRAPPED_REMOTE
+  ],
   options: { cwd: WRAPPED_REPOSITORY },
 });
-await rm(`${WRAPPED_REPOSITORY}/tsconfig.json`, { force: true });
-await mkdir(`${WRAPPED_REPOSITORY}/packages/cli/forbidden-strings/target/release`, {
+await rm(
+  `${WRAPPED_REPOSITORY}/tsconfig.json`,
+  { force: true }
+);
+await mkdir(
+  `${WRAPPED_REPOSITORY}/packages/cli/forbidden-strings/target/release`,
+  {
   recursive: true,
-});
+}
+);
 await symlink(
   '/fixture/forbidden-strings',
   `${WRAPPED_REPOSITORY}/packages/cli/forbidden-strings/target/release/forbidden-strings`,
 );
-/** Scanner rule guaranteed absent from source revision. */
+/**
+ * Scanner rule guaranteed absent from source revision.
+ */
 const absentRule = `MANUAL_PUSH_LATENCY_${String(Date.now())}_${String(process.pid)}`;
-await writeFile(`${WRAPPED_REPOSITORY}/forbidden-strings.local.txt`, `${absentRule}\n`);
+await writeFile(
+  `${WRAPPED_REPOSITORY}/forbidden-strings.local.txt`,
+  `${absentRule}\n`
+);
 await execute({
   command: PACKAGE_BIN,
-  args: ['cli-git', 'trust', '--yes'],
+  args: [
+    'cli-git',
+    'trust',
+    '--yes'
+  ],
   options: { cwd: WRAPPED_REPOSITORY },
 });
-/** Warm-up pairs accumulated until medians stabilize. */
+/**
+ * Warm-up pairs accumulated until medians stabilize.
+ */
 const warmupSamples: Sample[] = [];
 for (let index = 0; index < MAXIMUM_WARMUPS; index += 1) {
-  const sample = await runPair({ wrapperFirst: (index % 2) === 1, baseOid });
+  const sample = await runPair({
+    wrapperFirst: (index % 2) === 1,
+    baseOid
+  });
   warmupSamples.push(sample);
   if (warmupsAreStable(warmupSamples)) {
     break;
@@ -508,16 +726,26 @@ for (let index = 0; index < MAXIMUM_WARMUPS; index += 1) {
 if (!warmupsAreStable(warmupSamples)) {
   throw new BenchmarkError('Benchmark did not reach its warm-up stability threshold.');
 }
-/** Recorded benchmark pairs. */
+/**
+ * Recorded benchmark pairs.
+ */
 const samples: Sample[] = [];
 for (let index = 0; index < RUNS; index += 1) {
-  samples.push(await runPair({ wrapperFirst: (index % 2) === 1, baseOid }));
+  samples.push(await runPair({
+    wrapperFirst: (index % 2) === 1,
+    baseOid
+  }));
 }
-/** Wrapper-added latency values extracted for threshold enforcement. */
+/**
+ * Wrapper-added latency values extracted for threshold enforcement.
+ */
 const added = samples.map(selectAddedMs);
-/** Largest observed wrapper-added latency. */
+/**
+ * Largest observed wrapper-added latency.
+ */
 const maximumAddedMs = Math.max(...added);
-console.log(JSON.stringify({
+console.log(JSON.stringify(
+  {
   revision: headOid,
   baseOid,
   limits: {
@@ -529,8 +757,14 @@ console.log(JSON.stringify({
   },
   platform: process.platform,
   node: process.version,
-  git: await execute({ command: '/usr/bin/git', args: ['--version'] }),
-  scanner: await execute({ command: '/fixture/forbidden-strings', args: ['--version'] }),
+  git: await execute({
+    command: '/usr/bin/git',
+    args: ['--version']
+  }),
+  scanner: await execute({
+    command: '/fixture/forbidden-strings',
+    args: ['--version']
+  }),
   warmups: warmupSamples.length,
   runs: RUNS,
   medianDirectMs: median(samples.map(selectDirectMs)),
@@ -544,7 +778,10 @@ console.log(JSON.stringify({
   madAddedMs: medianAbsoluteDeviation(added),
   maximumAddedMs,
   samples,
-}, null, 2));
+},
+  null,
+  2
+));
 if (maximumAddedMs >= LIMIT_MS) {
   throw new BenchmarkError(
     `Wrapper added ${maximumAddedMs.toFixed(DECIMAL_PLACES)} ms, exceeding ${String(LIMIT_MS)} ms ceiling.`,
