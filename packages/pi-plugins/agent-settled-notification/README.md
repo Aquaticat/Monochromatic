@@ -1,6 +1,6 @@
 # pi-agent-settled-notification
 
-Pi extension that sends a KDE desktop notification when an agent becomes idle.
+Pi extension that sends a Freedesktop desktop notification when an agent becomes idle.
 
 ## Behavior
 
@@ -11,10 +11,11 @@ and queued follow-up work are complete.
 It also fires after provider errors and user aborts.
 
 The extension calls `notify-send` with a static title and body.
-Its notification subprocess is limited to one second.
+Its notification subprocess is limited to one second,
+so Pi can wait briefly for a delivery result without an unbounded stall.
 A missing desktop session,
 D-Bus server,
-or executable is logged and never fails the Pi agent run.
+or executable is logged once per Pi runtime and never fails the agent run.
 
 ## Installation
 

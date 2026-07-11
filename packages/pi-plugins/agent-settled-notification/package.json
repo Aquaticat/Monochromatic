@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic-dev/pi-agent-settled-notification",
-  "description": "Pi extension that sends a KDE desktop notification after an agent fully settles",
+  "description": "Pi extension that sends a Freedesktop desktop notification after an agent fully settles",
   "type": "module",
   "private": true,
   "version": "0.0.1",

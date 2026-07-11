@@ -1,5 +1,5 @@
 /**
- * Pi extension that tells KDE when an agent fully settles.
+ * Pi extension that tells Linux desktop environments when an agent fully settles.
  *
  * @module
  */
@@ -10,16 +10,16 @@ import nanoSpawn from 'nano-spawn';
 
 //region Constants
 
-/** Executable implementing the local desktop-notification boundary. */
+/** Executable implementing the local Freedesktop desktop-notification boundary. */
 const NOTIFICATION_COMMAND = 'notify-send';
 
-/** Limits notification delivery so a broken desktop session cannot hold up Pi's settled event. */
+/** Limits notification delivery so a broken desktop session cannot hold up Pi settlement indefinitely. */
 const NOTIFICATION_TIMEOUT_MS = 1_000;
 
 /** Immutable desktop-notification payload that does not expose prompt, session, or project information. */
 const NOTIFICATION_ARGUMENTS = [
   '--app-name=Pi',
-  'Pi stopped',
+  'Pi agent finished',
   'Agent is idle and ready for input.',
 ] as const;
 
@@ -39,54 +39,129 @@ type NotificationInvocation = {
   readonly args: readonly string[];
 };
 
-/** Injectable notification boundary used for deterministic delivery tests. */
+/** Isolated child-process request used to verify the notification subprocess boundary. */
+type NotificationProcessInput = NotificationInvocation & {
+  /** Discards terminal input because notifications require no interactive data. */
+  readonly stdin: 'ignore';
+
+  /** Prevents the desktop executable from contaminating Pi output. */
+  readonly stdout: 'ignore';
+
+  /** Prevents expected host-capability errors from contaminating Pi output. */
+  readonly stderr: 'ignore';
+
+  /** Bounded subprocess lifetime in milliseconds. */
+  readonly timeout: number;
+};
+
+/** Injectable command runner used to verify subprocess options without touching the desktop. */
+type NotificationProcessRunner = (
+  input: NotificationProcessInput,
+) => Promise<void>;
+
+/** Injectable notification boundary used to verify settled-event delivery. */
 type NotificationInvoker = (
   invocation: NotificationInvocation,
 ) => Promise<void>;
 
+/** Outcome of an attempted desktop-notification delivery. */
+type NotificationDeliveryResult =
+  | { readonly delivered: true; }
+  | {
+    readonly delivered: false;
+    readonly error: unknown;
+  };
+
 /**
- * Invokes the local desktop-notification executable without a shell.
+ * Runs a local desktop-notification process without shell interpretation.
+ *
+ * @param input - executable, fixed arguments, and bounded stdio configuration
+ *
+ * @returns after the operating system accepts the notification or rejects delivery
+ *
+ * @example
+ * ```ts
+ * await runNotificationProcess({
+ *   command: 'notify-send',
+ *   args: ['--app-name=Pi', 'Pi agent finished', 'Agent is idle and ready for input.'],
+ *   stdin: 'ignore',
+ *   stdout: 'ignore',
+ *   stderr: 'ignore',
+ *   timeout: 1_000,
+ * });
+ * ```
+ */
+async function runNotificationProcess(
+  {
+    command,
+    args,
+    stdin,
+    stdout,
+    stderr,
+    timeout,
+  }: NotificationProcessInput,
+): Promise<void> {
+  await nanoSpawn(
+    command,
+    [...args,],
+    {
+      stdin,
+      stdout,
+      stderr,
+      timeout,
+    },
+  );
+}
+
+/**
+ * Invokes the local desktop-notification executable with bounded, non-interactive process options.
  *
  * @param invocation - fixed command payload sent to the operating system
+ *
+ * @param run - replacement process boundary for tests
  *
  * @returns after the command accepts the notification or rejects on delivery failure
  *
  * @example
  * ```ts
  * await invokeNotification({
- *   command: 'notify-send',
- *   args: ['--app-name=Pi', 'Pi stopped', 'Agent is idle and ready for input.'],
+ *   invocation: {
+ *     command: 'notify-send',
+ *     args: ['--app-name=Pi', 'Pi agent finished', 'Agent is idle and ready for input.'],
+ *   },
  * });
  * ```
  */
 async function invokeNotification(
   {
-    command,
-    args,
-  }: NotificationInvocation,
+    invocation,
+    run = runNotificationProcess,
+  }: {
+    readonly invocation: NotificationInvocation;
+    readonly run?: NotificationProcessRunner;
+  },
 ): Promise<void> {
-  await nanoSpawn(
-    command,
-    [...args,],
-    {
-      stdin: 'ignore',
-      stdout: 'ignore',
-      stderr: 'ignore',
-      timeout: NOTIFICATION_TIMEOUT_MS,
-    },
-  );
+  await run({
+    ...invocation,
+    stdin: 'ignore',
+    stdout: 'ignore',
+    stderr: 'ignore',
+    timeout: NOTIFICATION_TIMEOUT_MS,
+  },);
 }
 
 /**
- * Delivers the settled-agent notification without allowing desktop failures to affect Pi.
+ * Attempts delivery of the settled-agent notification without propagating a desktop failure to Pi.
  *
- * @param invoke - replacement delivery boundary for tests
+ * @param invoke - replacement desktop-notification boundary for tests
  *
- * @returns after successful delivery or logged delivery failure
+ * @returns successful delivery state or captured failure for caller-owned logging
  *
  * @example
  * ```ts
- * await notifyAgentSettled({});
+ * const delivery = await notifyAgentSettled({});
+ * if (!delivery.delivered)
+ *   console.error(delivery.error);
  * ```
  */
 async function notifyAgentSettled(
@@ -95,25 +170,19 @@ async function notifyAgentSettled(
   }: {
     readonly invoke?: NotificationInvoker;
   },
-): Promise<void> {
-  /** Per-delivery logger carrying the function boundary tag. */
-  const innerLogger = tagged({
-    tag: notifyAgentSettled.name,
-    l: logger,
-  },);
-
-  innerLogger.debug('sending settled-agent desktop notification',);
+): Promise<NotificationDeliveryResult> {
   try {
     await invoke({
       command: NOTIFICATION_COMMAND,
       args: NOTIFICATION_ARGUMENTS,
     },);
-    innerLogger.debug('sent settled-agent desktop notification',);
+    return { delivered: true, };
   }
   catch (error) {
-    innerLogger.warn(
-      `settled-agent desktop notification unavailable: ${Error.isError(error,) ? error.message : String(error,)}`,
-    );
+    return {
+      delivered: false,
+      error,
+    };
   }
 }
 
@@ -148,14 +217,38 @@ function registerAgentSettledNotification(
     invoke,
   }: AgentSettledNotificationRegistration,
 ): void {
+  /** Tracks whether the current Pi runtime already surfaced unavailable desktop capability. */
+  let hasWarnedAboutUnavailableNotification = false;
+
   pi.on(
     'agent_settled',
     async function handleAgentSettled() {
-      await notifyAgentSettled({
+      /** Per-event logger carrying the lifecycle handler boundary. */
+      const innerLogger = tagged({
+        tag: handleAgentSettled.name,
+        l: logger,
+      },);
+      /** Result of attempting the static desktop notification. */
+      const delivery = await notifyAgentSettled({
         ...(invoke === undefined
           ? {}
           : { invoke, }),
       },);
+      if (delivery.delivered) {
+        innerLogger.debug('sent settled-agent desktop notification',);
+        return;
+      }
+
+      /** Safe error summary that preserves diagnostics without throwing from Pi's lifecycle hook. */
+      const failure = Error.isError(delivery.error,)
+        ? delivery.error.message
+        : String(delivery.error,);
+      if (!hasWarnedAboutUnavailableNotification) {
+        hasWarnedAboutUnavailableNotification = true;
+        innerLogger.warn(`settled-agent desktop notification unavailable: ${failure}`,);
+        return;
+      }
+      innerLogger.debug(`settled-agent desktop notification remains unavailable: ${failure}`,);
     },
   );
 }
@@ -180,11 +273,15 @@ export {
   NOTIFICATION_ARGUMENTS,
   NOTIFICATION_COMMAND,
   NOTIFICATION_TIMEOUT_MS,
+  invokeNotification,
   notifyAgentSettled,
   registerAgentSettledNotification,
 };
 
 export type {
+  NotificationDeliveryResult,
   NotificationInvocation,
+  NotificationProcessInput,
+  NotificationProcessRunner,
   NotificationInvoker,
 };

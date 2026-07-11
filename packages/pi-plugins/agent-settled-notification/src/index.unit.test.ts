@@ -13,10 +13,15 @@ import {
 import agentSettledNotification, {
   NOTIFICATION_ARGUMENTS,
   NOTIFICATION_COMMAND,
+  NOTIFICATION_TIMEOUT_MS,
+  invokeNotification,
   notifyAgentSettled,
   registerAgentSettledNotification,
 } from '../dist/final/node/index.mjs';
-import type { NotificationInvocation, } from '../dist/final/node/index.mjs';
+import type {
+  NotificationInvocation,
+  NotificationProcessInput,
+} from '../dist/final/node/index.mjs';
 
 //region Test harness
 
@@ -186,21 +191,61 @@ await describe({
     },),
 
     describe({
+      name: invokeNotification.name,
+      children: [
+        it({
+          name: 'uses bounded non-interactive subprocess options',
+          fn: async () => {
+            /** Captured child-process request. */
+            const requests: NotificationProcessInput[] = [];
+
+            await invokeNotification({
+              invocation: {
+                command: NOTIFICATION_COMMAND,
+                args: NOTIFICATION_ARGUMENTS,
+              },
+              run: async function captureProcess(
+                input: NotificationProcessInput,
+              ): Promise<void> {
+                requests.push(input,);
+              },
+            },);
+
+            expect(requests,).toEqual([
+              {
+                command: NOTIFICATION_COMMAND,
+                args: NOTIFICATION_ARGUMENTS,
+                stdin: 'ignore',
+                stdout: 'ignore',
+                stderr: 'ignore',
+                timeout: NOTIFICATION_TIMEOUT_MS,
+              },
+            ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: notifyAgentSettled.name,
       children: [
         it({
-          name: 'absorbs notification delivery failure',
+          name: 'returns delivery failure without throwing',
           fn: async () => {
             /** Delivery failure returned by an unavailable desktop-notification executable. */
             const unavailable = new Error('notify-send unavailable',);
 
-            await notifyAgentSettled({
+            /** Settled-notification result after injected delivery failure. */
+            const delivery = await notifyAgentSettled({
               invoke: async function rejectNotification(): Promise<void> {
                 throw unavailable;
               },
             },);
 
-            expect(unavailable.message,).toBe('notify-send unavailable',);
+            expect(delivery,).toEqual({
+              delivered: false,
+              error: unavailable,
+            },);
           },
         },),
       ],

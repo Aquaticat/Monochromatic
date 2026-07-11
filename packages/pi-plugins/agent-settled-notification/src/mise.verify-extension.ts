@@ -21,7 +21,7 @@ const AGENT_SETTLED_EVENT = 'agent_settled';
 const EXPECTED_COMMAND = 'notify-send';
 
 /** Static title sent to the local desktop-notification service. */
-const EXPECTED_TITLE = 'Pi stopped';
+const EXPECTED_TITLE = 'Pi agent finished';
 
 //endregion Constants
 
