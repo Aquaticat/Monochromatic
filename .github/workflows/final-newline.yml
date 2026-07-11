@@ -36,7 +36,7 @@ jobs:
       run: printf 'export default {};\n' > cli-git.config.mjs
 
     - name: Trust isolated core policy config
-      run: node packages/git-policies/cli/src/index.ts cli-git trust --yes
+      run: node packages/git-policies/cli/src/index.ts -C "$GITHUB_WORKSPACE" cli-git trust --yes
 
     - name: Check final newlines
-      run: node packages/git-policies/cli/src/index.ts cli-git check --policy final-newline --all
+      run: node packages/git-policies/cli/src/index.ts -C "$GITHUB_WORKSPACE" cli-git check --policy final-newline --all
