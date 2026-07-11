@@ -175,9 +175,16 @@ await describe({
           },
         },);
         expect(result.policyResult.exitCode,).toBe(2,);
-        expect(result.policyResult.events[0]?.message,).toContain('repeated candidate-state cycle',);
-        expect(await readFile(join(fixture.repository, 'one.txt',),)).toEqual(worktreeBefore,);
-        expect(await readFile(join(fixture.repository, '.git/index',),)).toEqual(indexBefore,);
+        expect(result.policyResult.events[0],).toMatchObject({
+          type: 'engine-failure',
+          message: 'Policy patches entered a repeated candidate-state cycle.',
+        },);
+        /** Worktree bytes after rejected cycle. */
+        const worktreeAfter = await readFile(join(fixture.repository, 'one.txt',),);
+        /** Real index bytes after rejected cycle. */
+        const indexAfter = await readFile(join(fixture.repository, '.git/index',),);
+        expect(worktreeAfter,).toEqual(worktreeBefore,);
+        expect(indexAfter,).toEqual(indexBefore,);
       },
     },),
   ],
