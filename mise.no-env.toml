@@ -621,6 +621,14 @@ try { execFileSync('mise', ['run', process.env.usage_task], { stdio: 'inherit' }
 description = "Regenerate mise.lock from active tool declarations"
 run = "mise lock"
 
+[tasks."cleanup:hk-git-config"]
+description = "Remove only retired hook.hk-* keys from explicit Git configuration scopes"
+usage = '''
+flag "--local" help="Clean current repository configuration"
+flag "--global" help="Clean per-user global configuration"
+'''
+run = "node packages/git-policies/cli/src/maintenance/hk-config-cleanup-command.ts"
+
 #endregion Utility Tasks
 
 #region Build Tasks
