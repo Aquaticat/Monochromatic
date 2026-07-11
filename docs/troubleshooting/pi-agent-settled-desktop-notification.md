@@ -123,6 +123,14 @@ expect(harness.eventsOfType("agent_settled")).toHaveLength(1);
 expect(settledIdleStates).toEqual([true]);
 ```
 
+The error and abort cases in
+`packages/coding-agent/test/suite/agent-session-retry-events.test.ts:326-361`
+also end with `agent_settled`.
+The completion notification should therefore fire after ordinary completion,
+provider errors,
+and user aborts,
+which is the literal meaning of notifying whenever the agent stops.
+
 ### Cases that do not satisfy the requirement
 
 - `agent_end` is too early:
