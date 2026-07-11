@@ -10,61 +10,91 @@ import nanoSpawn from 'nano-spawn';
 
 //region Constants
 
-/** Executable implementing the local Freedesktop desktop-notification boundary. */
+/**
+ * Executable implementing the local Freedesktop desktop-notification boundary.
+ */
 const NOTIFICATION_COMMAND = 'notify-send';
 
-/** Limits notification delivery so a broken desktop session cannot hold up Pi settlement indefinitely. */
+/**
+ * Limits notification delivery so a broken desktop session cannot hold up Pi settlement indefinitely.
+ */
 const NOTIFICATION_TIMEOUT_MS = 1_000;
 
-/** Immutable desktop-notification payload that does not expose prompt, session, or project information. */
+/**
+ * Immutable desktop-notification payload that does not expose prompt, session, or project information.
+ */
 const NOTIFICATION_ARGUMENTS = [
   '--app-name=Pi',
   'Pi agent finished',
   'Agent is idle and ready for input.',
 ] as const;
 
-/** Root logger for this extension's notification lifecycle. */
+/**
+ * Root logger for this extension's notification lifecycle.
+ */
 const logger = tagged({ tag: 'pi-agent-settled-notification', },);
 
 //endregion Constants
 
 //region Notification boundary
 
-/** Command and arguments passed to the desktop-notification executable. */
+/**
+ * Command and arguments passed to the desktop-notification executable.
+ */
 type NotificationInvocation = {
-  /** Executable resolved through `PATH`. */
+  /**
+   * Executable resolved through `PATH`.
+   */
   readonly command: string;
 
-  /** Fixed arguments kept outside shell syntax. */
+  /**
+   * Fixed arguments kept outside shell syntax.
+   */
   readonly args: readonly string[];
 };
 
-/** Isolated child-process request used to verify the notification subprocess boundary. */
+/**
+ * Isolated child-process request used to verify the notification subprocess boundary.
+ */
 type NotificationProcessInput = NotificationInvocation & {
-  /** Discards terminal input because notifications require no interactive data. */
+  /**
+   * Discards terminal input because notifications require no interactive data.
+   */
   readonly stdin: 'ignore';
 
-  /** Prevents the desktop executable from contaminating Pi output. */
+  /**
+   * Prevents the desktop executable from contaminating Pi output.
+   */
   readonly stdout: 'ignore';
 
-  /** Prevents expected host-capability errors from contaminating Pi output. */
+  /**
+   * Prevents expected host-capability errors from contaminating Pi output.
+   */
   readonly stderr: 'ignore';
 
-  /** Bounded subprocess lifetime in milliseconds. */
+  /**
+   * Bounded subprocess lifetime in milliseconds.
+   */
   readonly timeout: number;
 };
 
-/** Injectable command runner used to verify subprocess options without touching the desktop. */
+/**
+ * Injectable command runner used to verify subprocess options without touching the desktop.
+ */
 type NotificationProcessRunner = (
   input: NotificationProcessInput,
 ) => Promise<void>;
 
-/** Injectable notification boundary used to verify settled-event delivery. */
+/**
+ * Injectable notification boundary used to verify settled-event delivery.
+ */
 type NotificationInvoker = (
   invocation: NotificationInvocation,
 ) => Promise<void>;
 
-/** Outcome of an attempted desktop-notification delivery. */
+/**
+ * Outcome of an attempted desktop-notification delivery.
+ */
 type NotificationDeliveryResult =
   | { readonly delivered: true; }
   | {
@@ -75,9 +105,17 @@ type NotificationDeliveryResult =
 /**
  * Runs a local desktop-notification process without shell interpretation.
  *
- * @param input - executable, fixed arguments, and bounded stdio configuration
+ * @param command - executable resolved through `PATH`
  *
- * @returns after the operating system accepts the notification or rejects delivery
+ * @param args - fixed values passed outside shell syntax
+ *
+ * @param stdin - non-interactive input disposition
+ *
+ * @param stdout - output disposition that protects Pi output
+ *
+ * @param stderr - error disposition that protects Pi output
+ *
+ * @param timeout - bounded subprocess lifetime
  *
  * @example
  * ```ts
@@ -120,8 +158,6 @@ async function runNotificationProcess(
  *
  * @param run - replacement process boundary for tests
  *
- * @returns after the command accepts the notification or rejects on delivery failure
- *
  * @example
  * ```ts
  * await invokeNotification({
@@ -151,6 +187,25 @@ async function invokeNotification(
 }
 
 /**
+ * Delegates fixed notification invocation through the testable subprocess adapter.
+ *
+ * @param invocation - executable and fixed arguments sent to the desktop boundary
+ *
+ * @example
+ * ```ts
+ * await invokeDefaultNotification({
+ *   command: 'notify-send',
+ *   args: ['--app-name=Pi', 'Pi agent finished', 'Agent is idle and ready for input.'],
+ * });
+ * ```
+ */
+async function invokeDefaultNotification(
+  invocation: NotificationInvocation,
+): Promise<void> {
+  await invokeNotification({ invocation, },);
+}
+
+/**
  * Attempts delivery of the settled-agent notification without propagating a desktop failure to Pi.
  *
  * @param invoke - replacement desktop-notification boundary for tests
@@ -166,7 +221,7 @@ async function invokeNotification(
  */
 async function notifyAgentSettled(
   {
-    invoke = invokeNotification,
+    invoke = invokeDefaultNotification,
   }: {
     readonly invoke?: NotificationInvoker;
   },
@@ -190,21 +245,27 @@ async function notifyAgentSettled(
 
 //region Extension registration
 
-/** Registration inputs for the settled-agent notification event handler. */
+/**
+ * Registration inputs for the settled-agent notification event handler.
+ */
 type AgentSettledNotificationRegistration = {
-  /** Pi extension API that owns lifecycle-event registration. */
+  /**
+   * Pi extension API that owns lifecycle-event registration.
+   */
   readonly pi: ExtensionAPI;
 
-  /** Optional injectable notification boundary for deterministic tests. */
+  /**
+   * Optional injectable notification boundary for deterministic tests.
+   */
   readonly invoke?: NotificationInvoker;
 };
 
 /**
  * Registers the desktop-notification handler for final agent settlement only.
  *
- * @param registration - Pi API and optional test delivery boundary
+ * @param pi - Pi API receiving the sole lifecycle subscription
  *
- * @returns after Pi has registered the sole lifecycle handler
+ * @param invoke - optional desktop-notification boundary used by tests
  *
  * @example
  * ```ts
@@ -217,31 +278,39 @@ function registerAgentSettledNotification(
     invoke,
   }: AgentSettledNotificationRegistration,
 ): void {
-  /** Tracks whether the current Pi runtime already surfaced unavailable desktop capability. */
+  /**
+   * Tracks whether the current Pi runtime already surfaced unavailable desktop capability.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Session-local failure latch prevents repeated warnings after expected host-capability failures.
   let hasWarnedAboutUnavailableNotification = false;
 
   pi.on(
     'agent_settled',
     async function handleAgentSettled() {
-      /** Per-event logger carrying the lifecycle handler boundary. */
+      /**
+       * Per-event logger carrying the lifecycle handler boundary.
+       */
       const innerLogger = tagged({
         tag: handleAgentSettled.name,
         l: logger,
       },);
-      /** Result of attempting the static desktop notification. */
-      const delivery = await notifyAgentSettled({
-        ...(invoke === undefined
+      /**
+       * Result of attempting the static desktop notification.
+       */
+      const delivery = await notifyAgentSettled((invoke === undefined
           ? {}
-          : { invoke, }),
-      },);
+          : { invoke, }),);
       if (delivery.delivered) {
         innerLogger.debug('sent settled-agent desktop notification',);
         return;
       }
 
-      /** Safe error summary that preserves diagnostics without throwing from Pi's lifecycle hook. */
+      /**
+       * Safe error summary that preserves diagnostics without throwing from Pi's lifecycle hook.
+       */
       const failure = Error.isError(delivery.error,)
-        ? delivery.error.message
+        ? delivery.error
+          .message
         : String(delivery.error,);
       if (!hasWarnedAboutUnavailableNotification) {
         hasWarnedAboutUnavailableNotification = true;

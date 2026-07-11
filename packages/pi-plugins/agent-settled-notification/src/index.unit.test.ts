@@ -17,10 +17,8 @@ import agentSettledNotification, {
   invokeNotification,
   notifyAgentSettled,
   registerAgentSettledNotification,
-} from '../dist/final/node/index.mjs';
-import type {
-  NotificationInvocation,
-  NotificationProcessInput,
+  type NotificationInvocation,
+  type NotificationProcessInput,
 } from '../dist/final/node/index.mjs';
 
 //region Test harness
@@ -55,7 +53,6 @@ function createFakePiHarness(): FakePiHarness {
   const handlersByEvent = new Map<string, EventHandler[]>();
 
   /** Fake Pi API implementing only the event-registration surface under test. */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Test double intentionally implements only `ExtensionAPI.on()`.
   const api = {
     on(
       event: string,
@@ -160,10 +157,11 @@ await describe({
 
             registerAgentSettledNotification({
               pi: harness.api,
-              invoke: async function captureNotification(
+              invoke: function captureNotification(
                 invocation: NotificationInvocation,
               ): Promise<void> {
                 invocations.push(invocation,);
+                return Promise.resolve();
               },
             },);
 
@@ -204,10 +202,11 @@ await describe({
                 command: NOTIFICATION_COMMAND,
                 args: NOTIFICATION_ARGUMENTS,
               },
-              run: async function captureProcess(
+              run: function captureProcess(
                 input: NotificationProcessInput,
               ): Promise<void> {
                 requests.push(input,);
+                return Promise.resolve();
               },
             },);
 
