@@ -18,6 +18,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
 import { runManagementCommand, } from '../management.ts';
+import { createFinalNewlinePatch, } from './final-newline-patch.ts';
+import { runDirectFix, } from './direct-fix.ts';
+import type { RuntimePolicyDefinition, } from './types.ts';
 
 /** Real Git executable for disposable fixture setup and assertions. */
 const REAL_GIT = '/usr/bin/git';
@@ -117,6 +120,64 @@ await describe({
         expect(
           await readFile(join(fixture.repository, '.git/index',),),
         ).toEqual(indexBefore,);
+      },
+    },),
+    it({
+      name: 'rejects repeated private candidate state without changing worktree',
+      fn: async function testDirectFixCycle() {
+        await using fixture = await createFixture();
+        /** Exact real index bytes before cyclic policy evaluation. */
+        const indexBefore = await readFile(join(fixture.repository, '.git/index',),);
+        /** Exact original worktree bytes that cycle must preserve. */
+        const worktreeBefore = await readFile(join(fixture.repository, 'one.txt',),);
+        /** Fixture policy alternating one candidate between two exact states. */
+        const alternatingPolicy: RuntimePolicyDefinition = {
+          name: 'alternating',
+          defaultSeverity: 'error',
+          warnSafe: false,
+          triggers: ['direct-fix',],
+          async check({ context, }) {
+            /** Sole selected fixture candidate. */
+            const [selected,] = await context.git.candidates();
+            if ((selected === undefined) || ((typeof selected.revision) === 'symbol')
+              || ((selected.mode !== 'regular') && (selected.mode !== 'executable')))
+              return [];
+            /** Exact current fixture bytes. */
+            const original = await selected.bytes();
+            /** Alternating replacement bytes. */
+            const replacement = new TextEncoder().encode(new TextDecoder().decode(original,) === 'one\n'
+              ? 'other\n'
+              : 'one\n',);
+            return [{
+              code: 'alternate',
+              message: 'Alternate exact candidate state.',
+              path: selected.path,
+              patch: createFinalNewlinePatch({
+                targetId: selected.targetId,
+                path: selected.path,
+                revision: selected.revision,
+                mode: selected.mode,
+                original,
+                replacement,
+              },),
+            },];
+          },
+        };
+        /** Failed cyclic direct-fix result. */
+        const result = await runDirectFix({
+          gitGlobalArgs: [
+            '-C',
+            fixture.repository,
+          ],
+          pathspecs: ['one.txt',],
+          policyOptions: {
+            registeredPolicies: [alternatingPolicy,],
+          },
+        },);
+        expect(result.policyResult.exitCode,).toBe(2,);
+        expect(result.policyResult.events[0]?.message,).toContain('repeated candidate-state cycle',);
+        expect(await readFile(join(fixture.repository, 'one.txt',),)).toEqual(worktreeBefore,);
+        expect(await readFile(join(fixture.repository, '.git/index',),)).toEqual(indexBefore,);
       },
     },),
   ],
