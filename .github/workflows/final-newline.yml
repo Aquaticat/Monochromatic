@@ -38,7 +38,9 @@ jobs:
         printf 'export default {};\n' > "$RUNNER_TEMP/final-newline/cli-git.config.mjs"
 
     - name: Trust isolated core policy config
-      run: node packages/git-policies/cli/src/index.ts -C "$RUNNER_TEMP/final-newline" cli-git trust --yes
+      working-directory: ${{ runner.temp }}/final-newline
+      run: node "$GITHUB_WORKSPACE/packages/git-policies/cli/src/index.ts" cli-git trust --yes
 
     - name: Check final newlines
-      run: node packages/git-policies/cli/src/index.ts -C "$RUNNER_TEMP/final-newline" cli-git check --policy final-newline --all
+      working-directory: ${{ runner.temp }}/final-newline
+      run: node "$GITHUB_WORKSPACE/packages/git-policies/cli/src/index.ts" cli-git check --policy final-newline --all
