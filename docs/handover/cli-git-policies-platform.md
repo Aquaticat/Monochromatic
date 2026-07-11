@@ -1695,7 +1695,9 @@ provisional findings are not emitted.
 Read-only check and manual push never carry patches.
 
 Acceptance fixtures now cover eight changed passes,
-cross-policy cycles,
+cross-policy cycles through streamed exact path,
+mode,
+and content snapshots,
 Git-byte-ordered summary paths,
 canonical and blocked interactive selection modes,
 the hk partial-staging regression,
@@ -1704,6 +1706,22 @@ and packed check,
 fix,
 commit,
 and push invocations.
+Private candidate metadata loads use deterministic 64-lane mapping rather than repository-sized process fan-out.
+The 2026-07-11 checkout contained 7,321 tracked paths;
+an end-user `git cli-git check --policy final-newline --all` completed successfully in 47 seconds with no findings.
+Performance acceptance and optimization beyond that behavior proof belong to issue `#356`.
+
+The final verification set passed cli-git build,
+zero-warning Oxlint,
+type checking,
+full unit tests,
+packed trust and lifecycle consumption,
+Markdown lint,
+and the independent full-tree forbidden-strings scan.
+A packed-test registry race discovered during acceptance was traced to readers observing lock-owner JSON between
+exclusive creation and write;
+`registry-recursive-lock.ts` now publishes owner metadata through an atomic sibling rename,
+and repeated 32-contender regression coverage passes.
 The committed manual-push benchmark is type-checked under the cli-git package and remains separate from the shipped
 single-MJS artifact.
 
@@ -1758,9 +1776,11 @@ Dependency-ordered implementation slices:
   completed:
   migrated forbidden-strings across commit and push lifecycle with bounded manual-push materialization.
 - [#355](https://github.com/Aquaticat/Monochromatic/issues/355),
-  active:
-  implements transactional final-newline normalization and index-neutral direct check/fix;
-  closure awaits final verification evidence.
+  completed:
+  implemented transactional final-newline normalization,
+  exact whole-policy convergence,
+  packed lifecycle parity,
+  and index-neutral direct check/fix.
 - [#356](https://github.com/Aquaticat/Monochromatic/issues/356):
   close CI,
   platform,
