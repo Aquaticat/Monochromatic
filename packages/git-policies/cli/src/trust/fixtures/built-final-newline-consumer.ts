@@ -11,6 +11,7 @@ import {
   assertIncludes,
   execute,
 } from './built-consumer-helpers.ts';
+import { verifyFinalNewlinePartialCommit, } from './built-final-newline-partial-consumer.ts';
 import {
   assertFixtureEqual,
   initializeBareRemote,
@@ -348,4 +349,5 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     expected: 'push missing',
     context: 'manual-push committed blob bytes',
   },);
+  await verifyFinalNewlinePartialCommit({ env, },);
 }
