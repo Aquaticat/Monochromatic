@@ -141,6 +141,48 @@ function requiredPart({
 }
 
 /**
+ * Loads repository paths changed by landed commit against its parents.
+ *
+ * @param gitPath - resolved real Git executable
+ *
+ * @param cwd - effective repository directory
+ *
+ * @param landedOid - exact landed commit
+ *
+ * @returns changed repository path set
+ */
+async function loadLandedChangedPaths({
+  gitPath,
+  cwd,
+  landedOid,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  landedOid: GitObjectId;
+}>,): Promise<ReadonlySet<string>> {
+  /** NUL-delimited changed paths, including every root-commit path. */
+  const changedBytes = await runGitBytes({
+    gitPath,
+    cwd,
+    args: [
+      'diff-tree',
+      '--root',
+      '--no-commit-id',
+      '--name-only',
+      '-r',
+      '-z',
+      '-m',
+      landedOid,
+    ],
+  },);
+  return new Set(UTF8_DECODER.decode(changedBytes,)
+    .split('\0',)
+    .filter(function isChangedPath(path,) {
+      return path.length > 0;
+    },),);
+}
+
+/**
  * Loads complete landed tree as immutable candidate files.
  *
  * @param gitPath - resolved real Git executable
@@ -160,20 +202,21 @@ async function loadLandedCandidates({
   cwd: string;
   landedOid: GitObjectId;
 }>,): Promise<readonly CandidateFile[]> {
-  /**
-   * NUL-delimited recursive tree metadata.
-   */
-  const treeBytes = await runGitBytes({
-    gitPath,
-    cwd,
-    args: [
-      'ls-tree',
-      '--full-tree',
-      '-r',
-      '-z',
-      landedOid,
-    ],
-  },);
+  /** Recursive tree metadata and landed change paths loaded concurrently. */
+  const [treeBytes, changedPaths,] = await Promise.all([
+    runGitBytes({
+      gitPath,
+      cwd,
+      args: [
+        'ls-tree',
+        '--full-tree',
+        '-r',
+        '-z',
+        landedOid,
+      ],
+    },),
+    loadLandedChangedPaths({ gitPath, cwd, landedOid, },),
+  ],);
   /**
    * Decoded tree records, excluding terminal empty record.
    */
@@ -235,7 +278,9 @@ async function loadLandedCandidates({
       path,
       revision: objectOid,
       mode,
-      change: 'unchanged',
+      change: changedPaths.has(path,)
+        ? 'modified'
+        : 'unchanged',
       bytes: function loadCommittedBytes(): Promise<Uint8Array> {
         if (mode === 'submodule')
           return Promise.resolve(new TextEncoder().encode(objectOid,),);

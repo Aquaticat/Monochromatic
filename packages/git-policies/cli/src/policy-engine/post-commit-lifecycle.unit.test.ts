@@ -49,6 +49,12 @@ const GROUND_TRUTH_POLICY: RuntimePolicyDefinition = {
     },);
     if (landedFile === undefined)
       return [{ code: 'file-absent', message: 'Landed file was absent.', },];
+    /** Stable file retained from parent commit. */
+    const stableFile = candidates.find(function isStableFile(candidate,) {
+      return candidate.path === 'stable.txt';
+    },);
+    if ((landedFile.change !== 'modified') || (stableFile?.change !== 'unchanged'))
+      return [{ code: 'change-wrong', message: 'Landed change classification differs.', },];
     /** Exact committed file bytes. */
     const contents = new TextDecoder().decode(await landedFile.bytes(),);
     return contents === LANDED_CONTENT
@@ -88,6 +94,9 @@ async function createRepository(): Promise<RepositoryFixture> {
   await nanoSpawn(realGitPath, ['init', '--quiet',], { cwd: path, },);
   await nanoSpawn(realGitPath, ['config', 'user.email', 'cli-git@example.invalid',], { cwd: path, },);
   await nanoSpawn(realGitPath, ['config', 'user.name', 'cli-git fixture',], { cwd: path, },);
+  await writeFile(join(path, 'stable.txt',), 'stable content\n',);
+  await nanoSpawn(realGitPath, ['add', 'stable.txt',], { cwd: path, },);
+  await nanoSpawn(realGitPath, ['commit', '--quiet', '-m', 'baseline',], { cwd: path, },);
   await writeFile(join(path, 'landed.txt',), LANDED_CONTENT,);
   await nanoSpawn(realGitPath, ['add', 'landed.txt',], { cwd: path, },);
   await nanoSpawn(realGitPath, ['commit', '--quiet', '-m', 'landed',], { cwd: path, },);

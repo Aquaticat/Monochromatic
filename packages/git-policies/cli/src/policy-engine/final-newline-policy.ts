@@ -99,11 +99,11 @@ export const finalNewlinePolicy: RuntimePolicyDefinition = {
      * Whether engine may apply corrections at this lifecycle point.
      */
     const fixable = (context.trigger === 'pre-forward') || (context.trigger === 'direct-fix');
-    /**
-     * Exact selected or ground-truth lifecycle candidates.
-     */
-    const candidates = await context.git
-      .candidates();
+    /** Exact selected candidates, limited to landed delta after commit. */
+    const candidates = (await context.git.candidates())
+      .filter(function isRelevantCandidate(candidate,) {
+        return (context.trigger !== 'post-commit') || (candidate.change !== 'unchanged');
+      },);
     /**
      * Findings accumulated without unbounded candidate-byte fan-out.
      */
