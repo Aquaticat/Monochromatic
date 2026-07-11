@@ -134,6 +134,25 @@ async function runManagementFailure({
   throw new Error('Management command unexpectedly succeeded.',);
 }
 
+/**
+ * Parses one compact LF-terminated management JSON object.
+ *
+ * @param output - complete management stdout
+ *
+ * @returns parsed object with exact single-line framing proven
+ */
+function parseManagementOutput(output: string,): Record<string, unknown> {
+  expect(output.endsWith('\n',),).toBe(true,);
+  /** Complete JSON text without required terminal LF. */
+  const json = output.slice(0, -1,);
+  expect(json.includes('\n',),).toBe(false,);
+  /** Parsed unknown management value. */
+  const value: unknown = JSON.parse(json,);
+  if (((typeof value) !== 'object') || (value === null) || Array.isArray(value,))
+    throw new TypeError('Management output is not one JSON object.',);
+  return value as Record<string, unknown>;
+}
+
 await describe({
   name: 'trust management runtime',
   children: [
@@ -145,10 +164,35 @@ await describe({
         const trustResult = await runManagement({ fixture, args: ['trust', '--yes',], },);
         expect(trustResult.stderr,).toContain('Exact snapshot state: new',);
         expect(trustResult.stderr,).toContain('full account permissions',);
-        expect(trustResult.stdout,).toContain('"type":"trust-summary"',);
+        expect(trustResult.stdout,).toBe(`${JSON.stringify({
+          schemaVersion: 1,
+          type: 'trust-summary',
+          configPath: fixture.configPath,
+          trusted: true,
+        },)}\n`,);
         /** Trusted status result. */
         const statusResult = await runManagement({ fixture, args: ['status',], },);
-        expect(statusResult.stdout,).toContain('"reason":"trusted"',);
+        /** Parsed trusted status compatibility object. */
+        const trustedStatus = parseManagementOutput(statusResult.stdout,);
+        expect(trustedStatus,).toMatchObject({
+          schemaVersion: 1,
+          type: 'trust-status',
+          configPresent: true,
+          trusted: true,
+          unchanged: true,
+          configPath: fixture.configPath,
+          reason: 'trusted',
+        },);
+        expect(Object.keys(trustedStatus,).toSorted(),).toEqual([
+          'configPath',
+          'configPresent',
+          'filesystemId',
+          'reason',
+          'schemaVersion',
+          'trusted',
+          'type',
+          'unchanged',
+        ],);
         /** Direct trusted plugin finding. */
         const checkError = await runManagementFailure({
           fixture,
@@ -159,9 +203,27 @@ await describe({
         expect(checkError.stdout,).toContain('"trigger":"direct-check"',);
         /** Exact untrust summary. */
         const untrustResult = await runManagement({ fixture, args: ['untrust',], },);
-        expect(untrustResult.stdout,).toContain('"removed":true',);
-        const untrustedStatus = await runManagement({ fixture, args: ['status',], },);
-        expect(untrustedStatus.stdout,).toContain('"reason":"untrusted"',);
+        expect(untrustResult.stdout,).toBe(`${JSON.stringify({
+          schemaVersion: 1,
+          type: 'untrust-summary',
+          configPath: fixture.configPath,
+          removed: true,
+          affectedRoots: [],
+        },)}\n`,);
+        /** Untrusted status after exact record removal. */
+        const untrustedStatus = parseManagementOutput((await runManagement({
+          fixture,
+          args: ['status',],
+        },)).stdout,);
+        expect(untrustedStatus,).toMatchObject({
+          schemaVersion: 1,
+          type: 'trust-status',
+          configPresent: true,
+          trusted: false,
+          unchanged: false,
+          configPath: fixture.configPath,
+          reason: 'untrusted',
+        },);
       },
     },),
     it({
@@ -171,7 +233,8 @@ await describe({
         /** Declined trust process. */
         const error = await runManagementFailure({ fixture, args: ['trust',], },);
         expect(error.exitCode,).toBe(2,);
-        expect(error.stderr,).toContain('Trust declined',);
+        expect(error.stdout,).toBe('',);
+        expect(error.stderr.endsWith('cli-git: trust operation failed: Trust declined.\n',),).toBe(true,);
         const status = await runManagement({ fixture, args: ['status',], },);
         expect(status.stdout,).toContain('"reason":"untrusted"',);
       },
@@ -187,7 +250,7 @@ await describe({
         expect(untrustResult.stdout,).toContain('"removed":true',);
         expect(untrustResult.stdout,).toContain('"configPath":null',);
         const status = await runManagement({ fixture, args: ['status',], },);
-        expect(status.stdout,).toContain('"reason":"no-config"',);
+        expect(status.stdout,).toBe('{"schemaVersion":1,"type":"trust-status","configPresent":false,"trusted":false,"unchanged":false,"reason":"no-config"}\n',);
       },
     },),
     it({
@@ -197,11 +260,25 @@ await describe({
         await runManagement({ fixture, args: ['trust', '--yes',], },);
         await writeFile(fixture.configPath, 'export default {};\n',);
         const status = await runManagement({ fixture, args: ['status',], },);
-        expect(status.stdout,).toContain('"reason":"changed"',);
+        expect(parseManagementOutput(status.stdout,),).toMatchObject({
+          schemaVersion: 1,
+          type: 'trust-status',
+          configPresent: true,
+          trusted: false,
+          unchanged: false,
+          configPath: fixture.configPath,
+          reason: 'changed',
+        },);
         /** Direct changed-config engine failure. */
         const error = await runManagementFailure({ fixture, args: ['check', '--all',], },);
         expect(error.exitCode,).toBe(2,);
-        expect(error.stdout,).toContain('"code":"config-changed"',);
+        expect(error.stderr,).toBe('',);
+        expect(parseManagementOutput(error.stdout,),).toMatchObject({
+          schemaVersion: 1,
+          sequence: 0,
+          type: 'engine-failure',
+          code: 'config-changed',
+        },);
       },
     },),
   ],
