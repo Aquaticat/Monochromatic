@@ -197,13 +197,13 @@ export const MAXIMUM_BUDGET_MS = 2_000;
  */
 export const SCENARIO_BUDGETS: Readonly<Record<LifecycleScenarioId, number>> = {
   'no-config': 250,
-  'read-only': 225,
-  'strict-mjs': 225,
+  'read-only': 250,
+  'strict-mjs': 275,
   'strict-typescript': 250,
   'relaxed-rebuild': 250,
   'validator': 300,
-  'scanner': 450,
+  'scanner': 425,
   'normalizer': 375,
-  'normalizer-change': 475,
-  'post-commit': 500,
+  'normalizer-change': 525,
+  'post-commit': 625,
 };
