@@ -224,7 +224,9 @@ export async function convergeDirectFix({
       indexPath: scope.indexPath,
       paths: scope.paths,
     },);
-    /** Current exact candidates used for cycle identity. */
+    /**
+     * Current exact candidates used for cycle identity.
+     */
     // oxlint-disable-next-line no-await-in-loop -- Cycle detection observes exact state after each sequential pass.
     const currentCandidates = await currentFacts.candidates();
     /**

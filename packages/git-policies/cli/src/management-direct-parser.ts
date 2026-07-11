@@ -18,7 +18,9 @@ import {
   withDefault,
 } from '@optique/core';
 
-/** Direct read-only policy check parser. */
+/**
+ * Direct read-only policy check parser.
+ */
 const CHECK_PARSER = command(
   'check',
   object({
@@ -31,10 +33,14 @@ const CHECK_PARSER = command(
     '--policy',
     string(),
   ),),
-  pathspecs: multiple(argument(string(),),),
+  pathspecs: multiple(argument(
+    string(),
+  ),),
 },),
 );
-/** Direct convergent policy fix parser. */
+/**
+ * Direct convergent policy fix parser.
+ */
 const FIX_PARSER = command(
   'fix',
   object({
@@ -47,7 +53,9 @@ const FIX_PARSER = command(
     '--policy',
     string(),
   ),),
-  pathspecs: multiple(argument(string(),),),
+  pathspecs: multiple(argument(
+    string(),
+  ),),
 },),
 );
 
@@ -59,7 +67,7 @@ const FIX_PARSER = command(
  * runParserSync(DIRECT_MANAGEMENT_PARSER, 'git cli-git', ['check', '--all']);
  * ```
  */
-export const DIRECT_MANAGEMENT_PARSER: Parser<'sync', unknown> = or(
+export const DIRECT_MANAGEMENT_PARSER: Parser = or(
   CHECK_PARSER,
   FIX_PARSER,
 );

@@ -40,7 +40,8 @@ export function withFixSummary({
     events: [
       ...result.events,
       createFixSummaryEvent({
-        sequence: result.events.length,
+        sequence: result.events
+          .length,
         trigger,
         passes,
         changedPaths,

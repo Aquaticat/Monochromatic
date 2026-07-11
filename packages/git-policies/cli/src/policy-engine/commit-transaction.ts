@@ -37,9 +37,9 @@ import { createCommitTransactionWorkspace, } from './commit-transaction-workspac
 import { runPolicyEngine, } from './engine.ts';
 import { withFixSummary, } from './fix-summary.ts';
 import type {
-  PolicyEngineResult,
-  RunPolicyEngineOptions,
-} from './types.ts';
+  CommitTransactionPolicyOptions,
+  CommitTransactionResult,
+} from './commit-transaction-types.ts';
 
 /**
  * Transaction does not apply to current invocation.
@@ -49,28 +49,6 @@ export const COMMIT_TRANSACTION_NOT_APPLICABLE: unique symbol = Symbol('commit t
  * Maximum changed passes before convergence failure.
  */
 const MAXIMUM_CHANGED_PASSES = 8;
-
-/**
- * Transaction result before shared post-commit lifecycle.
- */
-export type CommitTransactionResult = Readonly<{
-  /**
-   * Final stable policy result.
-   */
-  policyResult: PolicyEngineResult;
-  /**
-   * Whether transaction executed real commit.
-   */
-  committed: boolean;
-}>;
-
-/**
- * Policy options supplied identically on every convergence pass.
- */
-export type CommitTransactionPolicyOptions = Omit<
-  RunPolicyEngineOptions,
-  'args' | 'trigger' | 'gitFacts' | 'candidateVersion' | 'repositoryRoot'
->;
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; transaction reads but never mutates them. */
 /**

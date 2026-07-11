@@ -3,10 +3,8 @@
  *
  * @module
  */
-import {
-  runCommitTransaction,
-  type CommitTransactionPolicyOptions,
-} from './commit-transaction.ts';
+import { runCommitTransaction, } from './commit-transaction.ts';
+import type { CommitTransactionPolicyOptions, } from './commit-transaction-types.ts';
 import { CommitTransactionGitError, } from './commit-transaction-git.ts';
 import { initialTransactionFailure, } from './commit-transaction-results.ts';
 

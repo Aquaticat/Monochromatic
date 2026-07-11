@@ -82,7 +82,9 @@ export async function runDirectFix({
       throw new TypeError('Unknown direct policy facts state.',);
     throw new TypeError('Direct fix requires a Git worktree.',);
   }
-  /** Disposable private direct-fix scope. */
+  /**
+   * Disposable private direct-fix scope.
+   */
   await using scope = facts;
   /**
    * Exact initial candidates before private policy changes.
