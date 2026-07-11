@@ -257,7 +257,9 @@ export async function runCommitTransaction({
       paths: candidatePaths,
     },)
       .candidates();
-    /** Ordered private patch application for current provisional pass. */
+    /**
+     * Ordered private patch application for current provisional pass.
+     */
     // oxlint-disable-next-line no-await-in-loop -- Each changed pass applies its exact ordered proposals before restart.
     const applied = await applyPolicyPatches({
       workspace,
@@ -272,7 +274,8 @@ export async function runCommitTransaction({
         policyResult: applied.result,
         committed: false,
       };
-    applied.paths.forEach(function recordChangedPath(path,) {
+    applied.paths
+      .forEach(function recordChangedPath(path,) {
       changedPaths.add(path,);
     },);
     /**

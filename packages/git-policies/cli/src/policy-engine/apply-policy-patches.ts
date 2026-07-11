@@ -21,9 +21,13 @@ import type { PolicyEngineResult, } from './types.ts';
  * Successful ordered patch application.
  */
 type AppliedPolicyPatches = Readonly<{
-  /** Stable result discriminator. */
+  /**
+   * Stable result discriminator.
+   */
   kind: 'applied';
-  /** Patch paths in proposal order. */
+  /**
+   * Patch paths in proposal order.
+   */
   paths: readonly string[];
 }>;
 
@@ -31,9 +35,13 @@ type AppliedPolicyPatches = Readonly<{
  * Failed ordered patch application.
  */
 type FailedPolicyPatches = Readonly<{
-  /** Stable result discriminator. */
+  /**
+   * Stable result discriminator.
+   */
   kind: 'failed';
-  /** Classified policy-engine failure. */
+  /**
+   * Classified policy-engine failure.
+   */
   result: PolicyEngineResult;
 }>;
 
@@ -79,10 +87,15 @@ export async function applyPolicyPatches({
   candidates: readonly CandidateFile[];
   trigger: Extract<PolicyTrigger, 'pre-forward' | 'direct-fix'>;
 }>,): Promise<ApplyPolicyPatchesResult> {
-  /** Successfully applied patch paths in proposal order. */
+  /**
+   * Successfully applied patch paths in proposal order.
+   */
   const paths: string[] = [];
-  for (const [ordinal, patch,] of pass.patches.entries()) {
-    /** Exact candidate selected by opaque target and path. */
+  for (const [ordinal, patch,] of pass.patches
+    .entries()) {
+    /**
+     * Exact candidate selected by opaque target and path.
+     */
     const target = candidates.find(function matchingTarget(candidate,) {
       return (candidate.targetId === patch.targetId) && (candidate.path === patch.path);
     },);
