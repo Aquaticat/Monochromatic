@@ -24,6 +24,12 @@ import type { RuntimePolicyDefinition, } from './types.ts';
 
 /** Real Git executable for disposable fixture setup and assertions. */
 const REAL_GIT = '/usr/bin/git';
+/** Text fixture encoder shared by synthetic fixable policies. */
+const ENCODER = new TextEncoder();
+/** Text fixture decoder shared by synthetic fixable policies. */
+const DECODER = new TextDecoder();
+/** Changed passes accepted before stable direct-fix convergence. */
+const CONVERGENCE_PASSES = 8;
 
 /** Disposable direct-fix repository. */
 type DirectFixFixture = Readonly<{
@@ -77,6 +83,98 @@ async function createFixture(): Promise<DirectFixFixture> {
   };
 }
 
+/**
+ * Creates policy replacing one exact text state with another.
+ *
+ * @param name - fixture policy identity
+ *
+ * @param from - exact source text eligible for replacement
+ *
+ * @param to - exact replacement text
+ *
+ * @returns synthetic fixable policy
+ */
+function createReplacementPolicy({
+  name,
+  from,
+  to,
+}: Readonly<{
+  name: string;
+  from: string;
+  to: string;
+}>,): RuntimePolicyDefinition {
+  return {
+    name,
+    defaultSeverity: 'error',
+    warnSafe: false,
+    triggers: ['direct-fix',],
+    async check({ context, }) {
+      /** Findings from all exact selected candidates. */
+      const findings = await Promise.all((await context.git.candidates()).map(async function replacementFinding(selected,) {
+        if (((typeof selected.revision) === 'symbol')
+          || ((selected.mode !== 'regular') && (selected.mode !== 'executable')))
+          return [];
+        /** Exact current candidate bytes. */
+        const original = await selected.bytes();
+        if (DECODER.decode(original,) !== from)
+          return [];
+        return [{
+          code: name,
+          message: `Replace ${from} with ${to}.`,
+          path: selected.path,
+          patch: createFinalNewlinePatch({
+            targetId: selected.targetId,
+            path: selected.path,
+            revision: selected.revision,
+            mode: selected.mode,
+            original,
+            replacement: ENCODER.encode(to,),
+          },),
+        },];
+      },),);
+      return findings.flat();
+    },
+  };
+}
+
+/** Synthetic policy requiring exactly eight changed candidate passes. */
+const eightPassPolicy: RuntimePolicyDefinition = {
+  name: 'eight-pass',
+  defaultSeverity: 'error',
+  warnSafe: false,
+  triggers: ['direct-fix',],
+  async check({ context, }) {
+    /** Findings from every selected numeric fixture candidate. */
+    const findings = await Promise.all((await context.git.candidates()).map(async function incrementFinding(selected,) {
+      if (((typeof selected.revision) === 'symbol')
+        || ((selected.mode !== 'regular') && (selected.mode !== 'executable')))
+        return [];
+      /** Exact current candidate bytes. */
+      const original = await selected.bytes();
+      /** Current numeric fixture state. */
+      const current = Number(DECODER.decode(original,).trim());
+      if (current >= CONVERGENCE_PASSES)
+        return [];
+      /** Next numeric fixture state. */
+      const replacement = ENCODER.encode(`${String(current + 1,)}\n`,);
+      return [{
+        code: 'increment',
+        message: 'Advance candidate toward stable fixture state.',
+        path: selected.path,
+        patch: createFinalNewlinePatch({
+          targetId: selected.targetId,
+          path: selected.path,
+          revision: selected.revision,
+          mode: selected.mode,
+          original,
+          replacement,
+        },),
+      },];
+    },),);
+    return findings.flat();
+  },
+};
+
 await describe({
   name: 'direct policy fix',
   children: [
@@ -123,46 +221,68 @@ await describe({
       },
     },),
     it({
-      name: 'rejects repeated private candidate state without changing worktree',
+      name: 'converges after eight changed passes with only ordered final summary',
+      fn: async function testEightPassConvergence() {
+        await using fixture = await createFixture();
+        /** Exact real index bytes before convergent policy evaluation. */
+        const indexBefore = await readFile(join(fixture.repository, '.git/index',),);
+        await writeFile(join(fixture.repository, 'one.txt',), '0\n',);
+        await writeFile(join(fixture.repository, 'two.txt',), '0\n',);
+        /** Stable eight-pass direct-fix result over reverse requested paths. */
+        const result = await runDirectFix({
+          gitGlobalArgs: [
+            '-C',
+            fixture.repository,
+          ],
+          pathspecs: [
+            'two.txt',
+            'one.txt',
+          ],
+          policyOptions: {
+            registeredPolicies: [eightPassPolicy,],
+          },
+        },);
+        expect(result.policyResult.exitCode,).toBe(0,);
+        expect(result.policyResult.events,).toEqual([{
+          schemaVersion: 1,
+          sequence: 0,
+          type: 'fix-summary',
+          trigger: 'direct-fix',
+          passes: CONVERGENCE_PASSES,
+          changedPaths: [
+            'one.txt',
+            'two.txt',
+          ],
+        },],);
+        expect(result.changedPaths,).toEqual([
+          'one.txt',
+          'two.txt',
+        ],);
+        expect(await readFile(join(fixture.repository, 'one.txt',), 'utf8',),).toBe('8\n',);
+        expect(await readFile(join(fixture.repository, 'two.txt',), 'utf8',),).toBe('8\n',);
+        expect(await readFile(join(fixture.repository, '.git/index',),),).toEqual(indexBefore,);
+      },
+    },),
+    it({
+      name: 'rejects cross-policy candidate-state cycle without changing worktree',
       fn: async function testDirectFixCycle() {
         await using fixture = await createFixture();
         /** Exact real index bytes before cyclic policy evaluation. */
         const indexBefore = await readFile(join(fixture.repository, '.git/index',),);
         /** Exact original worktree bytes that cycle must preserve. */
         const worktreeBefore = await readFile(join(fixture.repository, 'one.txt',),);
-        /** Fixture policy alternating one candidate between two exact states. */
-        const alternatingPolicy: RuntimePolicyDefinition = {
-          name: 'alternating',
-          defaultSeverity: 'error',
-          warnSafe: false,
-          triggers: ['direct-fix',],
-          async check({ context, }) {
-            /** Sole selected fixture candidate. */
-            const [selected,] = await context.git.candidates();
-            if ((selected === undefined) || ((typeof selected.revision) === 'symbol')
-              || ((selected.mode !== 'regular') && (selected.mode !== 'executable')))
-              return [];
-            /** Exact current fixture bytes. */
-            const original = await selected.bytes();
-            /** Alternating replacement bytes. */
-            const replacement = new TextEncoder().encode(new TextDecoder().decode(original,) === 'one\n'
-              ? 'other\n'
-              : 'one\n',);
-            return [{
-              code: 'alternate',
-              message: 'Alternate exact candidate state.',
-              path: selected.path,
-              patch: createFinalNewlinePatch({
-                targetId: selected.targetId,
-                path: selected.path,
-                revision: selected.revision,
-                mode: selected.mode,
-                original,
-                replacement,
-              },),
-            },];
-          },
-        };
+        /** First policy producing intermediate cyclic state. */
+        const forwardPolicy = createReplacementPolicy({
+          name: 'forward',
+          from: 'one\n',
+          to: 'other\n',
+        },);
+        /** Second policy restoring original cyclic state. */
+        const reversePolicy = createReplacementPolicy({
+          name: 'reverse',
+          from: 'other\n',
+          to: 'one\n',
+        },);
         /** Failed cyclic direct-fix result. */
         const result = await runDirectFix({
           gitGlobalArgs: [
@@ -171,7 +291,10 @@ await describe({
           ],
           pathspecs: ['one.txt',],
           policyOptions: {
-            registeredPolicies: [alternatingPolicy,],
+            registeredPolicies: [
+              forwardPolicy,
+              reversePolicy,
+            ],
           },
         },);
         expect(result.policyResult.exitCode,).toBe(2,);
