@@ -118,7 +118,7 @@ const workspaceRootsCache = new Map<string, string[]>();
  * // ["/home/user/Monochromatic/packages/dev-script/file-enforcer", ...]
  * ```
  */
-async function discoverWorkspaceRoots(monorepoRoot: string,): Promise<string[]> {
+export async function discoverWorkspaceRoots(monorepoRoot: string,): Promise<string[]> {
   /**
    * Previously-computed roots for this `monorepoRoot`, if any; short-circuits the directory scan.
    */

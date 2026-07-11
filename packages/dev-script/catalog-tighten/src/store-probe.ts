@@ -175,4 +175,57 @@ async function readStoreEntries(storeDir: string,): Promise<string[] | typeof NO
   }
 }
 
+/**
+ * Returns the store versions of the first candidate npm name that has any store
+ * copy, or {@link NOT_IN_STORE} when none of the candidates is in the store.
+ * Mirrors the candidate ordering of the symlink resolver so an aliased entry is
+ * classified by its installed key first.
+ *
+ * @param npmNames - ordered candidate npm names (catalog key first, alias target next)
+ *
+ * @param monorepoRoot - absolute path to the monorepo root
+ *
+ * @param modulesDir - per-importer modules directory name; `.pnpm` sits inside it
+ *
+ * @returns store versions of the first candidate found, or {@link NOT_IN_STORE}
+ *
+ * @example
+ * ```ts
+ * await firstStoreHit({ npmNames: ["\@types/mdx"], monorepoRoot: "/repo", modulesDir: "node_modules" }) // ["2.0.14"]
+ * ```
+ */
+export async function firstStoreHit(
+  {
+    npmNames,
+    monorepoRoot: root,
+    modulesDir: dir,
+  }: {
+    readonly npmNames: readonly string[];
+    readonly monorepoRoot: string;
+    readonly modulesDir: string;
+  },
+): Promise<readonly string[] | typeof NOT_IN_STORE> {
+  /**
+   * Store lookup result for every candidate name, preserving candidate order.
+   */
+  const perName = await Promise.all(npmNames.map(async function probeStore(
+    candidate,
+  ): Promise<readonly string[] | typeof NOT_IN_STORE> {
+    return await readStoreVersions({
+      npmName: candidate,
+      monorepoRoot: root,
+      modulesDir: dir,
+    },);
+  },),);
+  /**
+   * First candidate with a store copy; the symlink resolver already failed, so any hit is transitive-only.
+   */
+  const hit = perName.find(function isHit(
+    result,
+  ): result is readonly string[] {
+    return result !== NOT_IN_STORE;
+  },);
+  return hit ?? NOT_IN_STORE;
+}
+
 //endregion Store probe

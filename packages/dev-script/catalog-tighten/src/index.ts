@@ -39,11 +39,14 @@ import {
   resolveNpmNames,
 } from './version.ts';
 import {
+  isDeclaredByLiveImporter,
+} from './declared.ts';
+import {
   readModulesDir,
 } from './settings.ts';
 import {
+  firstStoreHit,
   NOT_IN_STORE,
-  readStoreVersions,
 } from './store-probe.ts';
 import {
   rewriteCatalogRanges,
@@ -285,59 +288,6 @@ const initialSummary: CatalogSummary = {
 };
 
 /**
- * Returns the pnpm store versions of the first candidate npm name that has any
- * store copy, or `NOT_IN_STORE` when none of the candidates is in the store.
- * Mirrors the candidate ordering of the symlink resolver so an aliased entry is
- * classified by its installed key first.
- *
- * @param npmNames - ordered candidate npm names (catalog key first, alias target next)
- *
- * @param monorepoRoot - absolute path to the monorepo root
- *
- * @param modulesDir - per-importer modules directory name; `.pnpm` sits inside it
- *
- * @returns store versions of the first candidate found, or `NOT_IN_STORE`
- *
- * @example
- * ```ts
- * await firstStoreHit({ npmNames: ["\@types/mdx"], monorepoRoot: "/repo", modulesDir: "node_modules" }) // ["2.0.14"]
- * ```
- */
-async function firstStoreHit(
-  {
-    npmNames,
-    monorepoRoot: root,
-    modulesDir: dir,
-  }: {
-    readonly npmNames: readonly string[];
-    readonly monorepoRoot: string;
-    readonly modulesDir: string;
-  },
-): Promise<readonly string[] | typeof NOT_IN_STORE> {
-  /**
-   * Store lookup result for every candidate name, preserving candidate order.
-   */
-  const perName = await Promise.all(npmNames.map(async function probeStore(
-    candidate,
-  ): Promise<readonly string[] | typeof NOT_IN_STORE> {
-    return await readStoreVersions({
-      npmName: candidate,
-      monorepoRoot: root,
-      modulesDir: dir,
-    },);
-  },),);
-  /**
-   * First candidate with a store copy; the symlink resolver already failed, so any hit is transitive-only.
-   */
-  const hit = perName.find(function isHit(
-    result,
-  ): result is readonly string[] {
-    return result !== NOT_IN_STORE;
-  },);
-  return hit ?? NOT_IN_STORE;
-}
-
-/**
  * Catalog as `[name, value]` entry pairs, folded into the per-category summary below.
  */
 const catalogEntries = Object.entries(catalog,);
@@ -396,8 +346,9 @@ const entrySummaries = await Promise.all(catalogEntries.map(
       === undefined)) {
       // No direct-dependency symlink resolved. Classify the miss: a package
       // installed only as a transitive dependency lives in the pnpm store with
-      // no top-level symlink, so probe the store to tell "present but no live
-      // package declares it" (actionable) from "absent" (no live consumer).
+      // no top-level symlink, so probe the store, then confirm no live importer
+      // declares it before calling it undeclared (symlinks also vanish under
+      // `symlink: false` or a broken `.pnp.cjs`, where the package is declared).
       /**
        * Store versions found for the first candidate name that has any store copy, or `NOT_IN_STORE`.
        */
@@ -407,18 +358,36 @@ const entrySummaries = await Promise.all(catalogEntries.map(
         modulesDir,
       },);
       if (storeVersions !== NOT_IN_STORE) {
+        /**
+         * Whether a live importer declares this entry directly; only an undeclared store copy is `UNDCL`.
+         */
+        const declared = await isDeclaredByLiveImporter({
+          npmNames,
+          monorepoRoot,
+        },);
+        if (!declared) {
+          console.warn(
+            `UNDCL ${name}: in pnpm store as ${
+              storeVersions.join(', ',)
+            } but no live package declares it directly -- add it as a direct dependency of its user, or drop the catalog entry`,
+          );
+          return {
+            ...initialSummary,
+            undeclaredCount: 1,
+          };
+        }
         console.warn(
-          `UNDCL ${name}: in pnpm store as ${
+          `MISS  ${name}: declared but no installed version resolved -- present in pnpm store as ${
             storeVersions.join(', ',)
-          } but no live package declares it directly -- add it as a direct dependency of its user, or drop the catalog entry`,
+          }, but no importer symlink or PnP entry resolved it (broken install?)`,
         );
         return {
           ...initialSummary,
-          undeclaredCount: 1,
+          notFoundCount: 1,
         };
       }
       console.warn(
-        `MISS  ${name}: not installed in this workspace -- no importer symlink or store copy (tried ${
+        `MISS  ${name}: not installed in this workspace -- no importer symlink, PnP entry, or store copy (tried ${
           npmNames.join(', ',)
         })`,
       );
