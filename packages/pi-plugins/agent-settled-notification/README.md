@@ -40,4 +40,17 @@ mise run //packages/pi-plugins/agent-settled-notification:build
 mise run //packages/pi-plugins/agent-settled-notification:lint
 mise run //packages/pi-plugins/agent-settled-notification:test:unit
 mise run //packages/pi-plugins/agent-settled-notification:verify:extension
+mise run //packages/pi-plugins/agent-settled-notification:verify:pi-runtime
+```
+
+`verify:pi-runtime` loads the built package through Pi's extension discovery API,
+then emits its registered `agent_settled` handler.
+Use a D-Bus monitor alongside this task to verify desktop delivery without requiring a model request:
+
+```sh
+# Terminal 1
+dbus-monitor --session "interface='org.freedesktop.Notifications',member='Notify'"
+
+# Terminal 2
+mise run //packages/pi-plugins/agent-settled-notification:verify:pi-runtime
 ```
