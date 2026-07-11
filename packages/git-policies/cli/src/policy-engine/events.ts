@@ -72,6 +72,29 @@ export type FindingEvent = Readonly<{
 }>;
 
 /**
+ * Stable engine failure classification.
+ *
+ * @example
+ * ```ts
+ * const code: EngineFailureCode = 'patch-conflict';
+ * ```
+ */
+export type EngineFailureCode =
+  | 'config-invalid'
+  | 'config-untrusted'
+  | 'config-changed'
+  | 'core-incomplete'
+  | 'plugin-threw'
+  | 'policy-incomplete'
+  | 'content-unavailable'
+  | 'patch-invalid'
+  | 'patch-conflict'
+  | 'fix-cycle'
+  | 'fix-pass-limit'
+  | 'transaction-failed'
+  | 'trust-failed';
+
+/**
  * Engine failure event.
  *
  * @example
@@ -95,15 +118,7 @@ export type EngineFailureEvent = Readonly<{
   /**
    * Stable failure code.
    */
-  code:
-    | 'config-invalid'
-    | 'content-unavailable'
-    | 'core-incomplete'
-    | 'plugin-threw'
-    | 'policy-incomplete'
-    | 'config-untrusted'
-    | 'config-changed'
-    | 'trust-failed';
+  code: EngineFailureCode;
   /**
    * Human-readable message.
    */
@@ -116,6 +131,10 @@ export type EngineFailureEvent = Readonly<{
    * Responsible policy ID.
    */
   policyId?: string;
+  /**
+   * Repository path responsible for path-specific failure.
+   */
+  path?: RepositoryPath;
 }>;
 
 /**
@@ -503,6 +522,8 @@ export function createConfigurationWarningEvent({
  *
  * @param policyId - optional responsible policy ID
  *
+ * @param path - optional repository path responsible for failure
+ *
  * @returns immutable event value
  *
  * @example
@@ -516,6 +537,7 @@ export function createEngineFailureEvent({
   message,
   trigger,
   policyId,
+  path,
 }: Omit<EngineFailureEvent, 'schemaVersion' | 'type'>,): EngineFailureEvent {
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -525,6 +547,7 @@ export function createEngineFailureEvent({
     message,
     ...(trigger === undefined ? {} : { trigger, }),
     ...(policyId === undefined ? {} : { policyId, }),
+    ...(path === undefined ? {} : { path, }),
   };
 }
 

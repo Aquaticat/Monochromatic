@@ -3,7 +3,10 @@
  *
  * @module
  */
-import { createEngineFailureEvent, } from './events.ts';
+import {
+  createEngineFailureEvent,
+  type EngineFailureCode,
+} from './events.ts';
 import type { PolicyEngineResult, } from './types.ts';
 
 /**
@@ -12,6 +15,12 @@ import type { PolicyEngineResult, } from './types.ts';
  * @param args - exact wrapper arguments
  *
  * @param message - failure description
+ *
+ * @param code - stable transaction failure classification
+ *
+ * @param trigger - lifecycle point owning failure
+ *
+ * @param path - optional path owning failure
  *
  * @returns blocking engine result
  *
@@ -23,18 +32,25 @@ import type { PolicyEngineResult, } from './types.ts';
 export function initialTransactionFailure({
   args,
   message,
+  code = 'transaction-failed',
+  trigger = 'pre-forward',
+  path,
 }: Readonly<{
   args: readonly string[];
   message: string;
+  code?: EngineFailureCode;
+  trigger?: 'pre-forward' | 'direct-fix';
+  path?: string;
 }>,): PolicyEngineResult {
   return {
     args,
     escapedPolicyIds: new Set(),
     events: [createEngineFailureEvent({
       sequence: 0,
-      code: 'content-unavailable',
+      code,
       message,
-      trigger: 'pre-forward',
+      trigger,
+      ...(path === undefined ? {} : { path, }),
     },),],
     patches: [],
     exitCode: 2,
@@ -49,6 +65,12 @@ export function initialTransactionFailure({
  *
  * @param message - transaction failure description
  *
+ * @param code - stable transaction failure classification
+ *
+ * @param trigger - lifecycle point owning failure
+ *
+ * @param path - optional path owning failure
+ *
  * @returns blocking engine result
  *
  * @example
@@ -59,18 +81,25 @@ export function initialTransactionFailure({
 export function transactionFailure({
   previous,
   message,
+  code = 'transaction-failed',
+  trigger = 'pre-forward',
+  path,
 }: Readonly<{
   previous: PolicyEngineResult;
   message: string;
+  code?: EngineFailureCode;
+  trigger?: 'pre-forward' | 'direct-fix';
+  path?: string;
 }>,): PolicyEngineResult {
   return {
     args: previous.args,
     escapedPolicyIds: previous.escapedPolicyIds,
     events: [createEngineFailureEvent({
       sequence: 0,
-      code: 'content-unavailable',
+      code,
       message,
-      trigger: 'pre-forward',
+      trigger,
+      ...(path === undefined ? {} : { path, }),
     },),],
     patches: [],
     exitCode: 2,

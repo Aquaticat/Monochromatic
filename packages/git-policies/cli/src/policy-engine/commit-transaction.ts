@@ -15,7 +15,10 @@ import {
   listChangedIndexPaths,
   listUnmergedIndexPaths,
 } from './commit-transaction-candidates.ts';
-import { applyPrivatePatch, } from './commit-transaction-git.ts';
+import {
+  applyPrivatePatch,
+  CommitTransactionGitError,
+} from './commit-transaction-git.ts';
 import {
   initializeCommitIndex,
   preparePostIndex,
@@ -164,6 +167,7 @@ export async function runCommitTransaction({
     return {
       policyResult: initialTransactionFailure({
         args,
+        code: 'content-unavailable',
         message: `Automatic commit fixes do not support unmerged index paths: ${unmergedPaths.join(', ',)}`,
       },),
       committed: false,
@@ -240,6 +244,7 @@ export async function runCommitTransaction({
       return {
         policyResult: transactionFailure({
           previous: pass,
+          code: 'fix-pass-limit',
           message: 'Policy patches did not converge within eight changed passes.',
         },),
         committed: false,
@@ -270,7 +275,9 @@ export async function runCommitTransaction({
         return {
           policyResult: transactionFailure({
             previous: pass,
+            code: 'patch-invalid',
             message: `Patch target is stale, undeclared, or mutable: ${patch.path}`,
+            path: patch.path,
           },),
           committed: false,
         };
@@ -290,7 +297,9 @@ export async function runCommitTransaction({
         return {
           policyResult: transactionFailure({
             previous: pass,
+            code: error instanceof CommitTransactionGitError ? 'patch-conflict' : 'patch-invalid',
             message: Error.isError(error,) ? error.message : String(error,),
+            path: patch.path,
           },),
           committed: false,
         };
@@ -325,6 +334,7 @@ export async function runCommitTransaction({
       return {
         policyResult: transactionFailure({
           previous: pass,
+          code: 'fix-cycle',
           message: 'Policy patches repeated an exact prior candidate state.',
         },),
         committed: false,
