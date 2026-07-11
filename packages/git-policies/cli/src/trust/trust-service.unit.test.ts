@@ -540,9 +540,11 @@ await describe({
         const candidate = await captureTrustCandidate(discovered,);
         /** Exact record directory. */
         const directory = recordDirectory({ registryRoot: fixture.registryRoot, identity: candidate.identity, },);
-        await chmod(join(directory, 'record.json',), 0o644,);
-        expect(await inspectTrust({ discovered, registryRoot: fixture.registryRoot, },),).toMatchObject({ reason: 'corrupt', },);
-        await chmod(join(directory, 'record.json',), 0o600,);
+        if (process.platform !== 'win32') {
+          await chmod(join(directory, 'record.json',), 0o644,);
+          expect(await inspectTrust({ discovered, registryRoot: fixture.registryRoot, },),).toMatchObject({ reason: 'corrupt', },);
+          await chmod(join(directory, 'record.json',), 0o600,);
+        }
         /** Real registry moved behind a root-level symbolic link. */
         const movedRegistry = `${fixture.registryRoot}-moved`;
         await rename(fixture.registryRoot, movedRegistry,);

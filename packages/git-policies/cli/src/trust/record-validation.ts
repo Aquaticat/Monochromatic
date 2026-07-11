@@ -268,18 +268,15 @@ export async function readRecord({
   directory: string;
 }>,): Promise<TrustRecord> {
   /**
-   * Final record directory metadata.
-   */
-  await assertPrivatePathProtection({
-    path: directory,
-    directory: true,
-  },);
-  /**
-   * Final record directory metadata.
+   * Final record directory metadata, read before ACL verification so absence retains ENOENT classification.
    */
   const directoryMetadata = await lstat(directory,);
   if ((!directoryMetadata.isDirectory()) || directoryMetadata.isSymbolicLink())
     throw new TrustRecordError('Trust record directory is unsafe.',);
+  await assertPrivatePathProtection({
+    path: directory,
+    directory: true,
+  },);
   assertPrivateMode({
     mode: directoryMetadata.mode,
     label: directory,
