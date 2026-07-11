@@ -105,6 +105,7 @@ await describe({
       'linked-worktree-only',
       'branch-worktree-only',
       'add-explicit',
+      'final-newline',
       'example/suffix',
     ],);
         expect(result.policySeverities['example/suffix'],).toBe('warn',);

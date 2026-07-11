@@ -191,6 +191,7 @@ await describe({
       'linked-worktree-only',
       'branch-worktree-only',
       'add-explicit',
+      'final-newline',
       'example/deny',
     ],);
         /** Strict load from installed stored snapshot. */

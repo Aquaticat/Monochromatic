@@ -9,12 +9,16 @@ import type {
   PolicyPatch,
 } from '../api/policy-types.ts';
 
-/** Strict decoder after normalization has established UTF-8 content. */
+/**
+ * Strict decoder after normalization has established UTF-8 content.
+ */
 const DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
-/** Patch byte encoder. */
+/**
+ * Patch byte encoder.
+ */
 const ENCODER = new TextEncoder();
 
 /**
@@ -31,9 +35,14 @@ const ENCODER = new TextEncoder();
  * ```
  */
 function completePatchLines(text: string,): readonly string[] {
-  /** Split lines including possible terminal artifact. */
+  /**
+   * Split lines including possible terminal artifact.
+   */
   const lines = text.split('\n',);
-  return text.endsWith('\n',) ? lines.slice(0, -1,) : lines;
+  return text.endsWith('\n',) ? lines.slice(
+    0,
+    -1,
+  ) : lines;
 }
 
 /**
@@ -73,19 +82,33 @@ export function createFinalNewlinePatch({
   original: Uint8Array;
   replacement: Uint8Array;
 }>,): PolicyPatch {
-  /** Decoded original text established as valid UTF-8 by classifier. */
+  /**
+   * Decoded original text established as valid UTF-8 by classifier.
+   */
   const originalText = DECODER.decode(original,);
-  /** Decoded canonical replacement text. */
+  /**
+   * Decoded canonical replacement text.
+   */
   const replacementText = DECODER.decode(replacement,);
-  /** Complete old lines represented by removal hunk. */
+  /**
+   * Complete old lines represented by removal hunk.
+   */
   const originalLines = completePatchLines(originalText,);
-  /** Complete new lines represented by addition hunk. */
+  /**
+   * Complete new lines represented by addition hunk.
+   */
   const replacementLines = completePatchLines(replacementText,);
-  /** Git ordinary-file mode corresponding to candidate semantics. */
+  /**
+   * Git ordinary-file mode corresponding to candidate semantics.
+   */
   const gitMode = mode === 'executable' ? '100755' : '100644';
-  /** New-object placeholder constrained to current hash width. */
+  /**
+   * New-object placeholder constrained to current hash width.
+   */
   const replacementOid = '0'.repeat(revision.length,);
-  /** Complete destination-grammar patch lines. */
+  /**
+   * Complete destination-grammar patch lines.
+   */
   const lines = [
     `diff --git a/${path} b/${path}`,
     `index ${revision}..${replacementOid} ${gitMode}`,
@@ -93,7 +116,7 @@ export function createFinalNewlinePatch({
     `+++ b/${path}`,
     `@@ -1,${String(originalLines.length,)} +1,${String(replacementLines.length,)} @@`,
     ...originalLines.map(function removeLine(line,) { return `-${line}`; }),
-    ...(originalText.endsWith('\n',) ? [] : ['\\ No newline at end of file',]),
+    ...(originalText.endsWith('\n',) ? [] : [String.raw`\ No newline at end of file`,]),
     ...replacementLines.map(function addLine(line,) { return `+${line}`; }),
     '',
   ];

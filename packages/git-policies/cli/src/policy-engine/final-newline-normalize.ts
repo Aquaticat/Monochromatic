@@ -5,29 +5,49 @@
  */
 import { isUtf8, } from 'node:buffer';
 
-/** LF byte required at end of selected text files. */
+/**
+ * LF byte required at end of selected text files.
+ */
 const LINE_FEED = 0x0A;
-/** NUL byte used by binary-looking content classification. */
+/**
+ * NUL byte used by binary-looking content classification.
+ */
 const NUL = 0;
+/** Segment offset proving matched Node directory contains a descendant file. */
+const PATH_AFTER_NODE_OFFSET = 3;
 
-/** Result when candidate bytes need no policy patch. */
+/**
+ * Result when candidate bytes need no policy patch.
+ */
 export type UnchangedFinalNewline = Readonly<{
-  /** Stable result discriminator. */
+  /**
+   * Stable result discriminator.
+   */
   kind: 'unchanged';
 }>;
 
-/** Result containing canonical replacement bytes. */
+/**
+ * Result containing canonical replacement bytes.
+ */
 export type ChangedFinalNewline = Readonly<{
-  /** Stable result discriminator. */
+  /**
+   * Stable result discriminator.
+   */
   kind: 'changed';
-  /** Exact replacement bytes ending in one LF. */
+  /**
+   * Exact replacement bytes ending in one LF.
+   */
   bytes: Uint8Array;
 }>;
 
-/** Exact final-newline normalization result. */
+/**
+ * Exact final-newline normalization result.
+ */
 export type FinalNewlineNormalization = UnchangedFinalNewline | ChangedFinalNewline;
 
-/** Shared immutable unchanged result. */
+/**
+ * Shared immutable unchanged result.
+ */
 const UNCHANGED: UnchangedFinalNewline = { kind: 'unchanged', };
 
 /**
@@ -47,13 +67,15 @@ export function isFinalNewlineExcluded(path: string,): boolean {
   if (path.startsWith('packages/fuzz/forbidden-strings/corpus/',)
     || path.startsWith('packages/test-fixture/toml-edit/src/',))
     return true;
-  /** Repository path segments used for directory-family matching. */
+  /**
+   * Repository path segments used for directory-family matching.
+   */
   const segments = path.split('/',);
   for (let index = 0; index < segments.length; index += 1) {
     if ((segments[index] === 'dist')
       && (segments[index + 1] === 'final')
       && (segments[index + 2] === 'node')
-      && ((index + 3) < segments.length))
+      && ((index + PATH_AFTER_NODE_OFFSET) < segments.length))
       return true;
   }
   return false;
@@ -73,15 +95,20 @@ export function isFinalNewlineExcluded(path: string,): boolean {
  * ```
  */
 export function normalizeFinalNewline(bytes: Uint8Array,): FinalNewlineNormalization {
-  if ((bytes.length === 0) || bytes.includes(NUL,) || !isUtf8(bytes,))
+  if ((bytes.length === 0) || bytes.includes(NUL,)
+    || (!isUtf8(bytes,)))
     return UNCHANGED;
-  /** Cursor immediately after final non-LF byte. */
-  let contentEnd = bytes.length;
-  while ((contentEnd > 0) && (bytes[contentEnd - 1] === LINE_FEED))
-    contentEnd -= 1;
-  if ((contentEnd === (bytes.length - 1)) && (bytes[bytes.length - 1] === LINE_FEED))
+  /**
+   * Cursor immediately after final non-LF byte.
+   */
+  const contentEnd = bytes.findLastIndex(function isContentByte(byte,) {
+    return byte !== LINE_FEED;
+  },) + 1;
+  if ((contentEnd === (bytes.length - 1)) && (bytes.at(-1) === LINE_FEED))
     return UNCHANGED;
-  /** Exact canonical output with one reserved terminal byte. */
+  /**
+   * Exact canonical output with one reserved terminal byte.
+   */
   const normalized = new Uint8Array(contentEnd + 1,);
   normalized.set(bytes.subarray(
     0,

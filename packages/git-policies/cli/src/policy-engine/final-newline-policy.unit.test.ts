@@ -124,7 +124,7 @@ await describe({
   children: [
     it({
       name: 'normalizes only terminal LF bytes',
-      fn: function testNormalization() {
+      fn: async function testNormalization() {
         expect(normalizedText('value',),).toBe('value\n',);
         expect(normalizedText('value\n',),).toBe('unchanged',);
         expect(normalizedText('value\n\n\n',),).toBe('value\n',);
@@ -135,7 +135,7 @@ await describe({
     },),
     it({
       name: 'preserves empty and binary-looking bytes',
-      fn: function testBinaryPreservation() {
+      fn: async function testBinaryPreservation() {
         expect(normalizeFinalNewline(new Uint8Array(),).kind,).toBe('unchanged',);
         expect(normalizeFinalNewline(new Uint8Array([
           1,
@@ -150,7 +150,7 @@ await describe({
     },),
     it({
       name: 'matches only exact exclusion families',
-      fn: function testExclusions() {
+      fn: async function testExclusions() {
         expect(isFinalNewlineExcluded('packages/fuzz/forbidden-strings/corpus/a',),).toBe(true,);
         expect(isFinalNewlineExcluded('packages/test-fixture/toml-edit/src/a.toml',),).toBe(true,);
         expect(isFinalNewlineExcluded('pkg/dist/final/node/index.mjs',),).toBe(true,);
@@ -162,7 +162,7 @@ await describe({
     },),
     it({
       name: 'builds complete ordinary patch with missing-newline marker',
-      fn: function testPatch() {
+      fn: async function testPatch() {
         /** Missing-newline candidate bytes. */
         const original = bytes('value',);
         /** Canonical replacement bytes. */
