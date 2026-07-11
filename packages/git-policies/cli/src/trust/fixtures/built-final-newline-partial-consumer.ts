@@ -26,11 +26,19 @@ import {
 export async function verifyFinalNewlinePartialCommit({ env, }: Readonly<{
   env: NodeJS.ProcessEnv;
 }>,): Promise<void> {
-  /** Disposable partial-staging repository. */
+  /**
+   * Disposable partial-staging repository.
+   */
   const repository = '/work/final-newline-partial';
   await initializePostCommitRepository(repository,);
-  await writeFile(`${repository}/cli-git.config.mjs`, 'export default {};\n',);
-  await writeFile(`${repository}/partial.txt`, 'baseline\n',);
+  await writeFile(
+    `${repository}/cli-git.config.mjs`,
+    'export default {};\n',
+  );
+  await writeFile(
+    `${repository}/partial.txt`,
+    'baseline\n',
+  );
   await execute({
     command: '/usr/bin/git',
     args: [
@@ -59,7 +67,10 @@ export async function verifyFinalNewlinePartialCommit({ env, }: Readonly<{
     cwd: repository,
     env,
   },);
-  await writeFile(`${repository}/partial.txt`, 'staged',);
+  await writeFile(
+    `${repository}/partial.txt`,
+    'staged',
+  );
   await execute({
     command: '/usr/bin/git',
     args: [
@@ -68,8 +79,13 @@ export async function verifyFinalNewlinePartialCommit({ env, }: Readonly<{
     ],
     cwd: repository,
   },);
-  await writeFile(`${repository}/partial.txt`, 'staged\nunstaged\n',);
-  /** Exact partially staged worktree bytes before private correction. */
+  await writeFile(
+    `${repository}/partial.txt`,
+    'staged\nunstaged\n',
+  );
+  /**
+   * Exact partially staged worktree bytes before private correction.
+   */
   const worktreeBefore = Buffer.from(await readFile(`${repository}/partial.txt`,))
     .toString('base64',);
   await execute({
@@ -84,7 +100,9 @@ export async function verifyFinalNewlinePartialCommit({ env, }: Readonly<{
     cwd: repository,
     env,
   },);
-  /** Canonical committed staged prefix. */
+  /**
+   * Canonical committed staged prefix.
+   */
   const committed = await execute({
     command: '/usr/bin/git',
     args: [
