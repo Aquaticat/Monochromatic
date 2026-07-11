@@ -158,13 +158,13 @@ and post-quota spill files were removed.
 ## Resume point
 
 Cli-git issues `#353` through `#355` are closed.
-Issue `#356` has reached its final independent standards and specification review after hosted CI,
+Issue `#356` is closed after hosted CI,
 cross-platform trust,
-performance,
+paired performance,
 packaging,
-and documentation verification passed.
-Close `#356` after that review,
-then continue with dependency-ordered hk and Pkl retirement in `#357`.
+documentation,
+and independent standards and specification review passed.
+Continue with dependency-ordered hk and Pkl retirement in `#357`.
 Keep npm publication issue `#358` deferred until a maintainer explicitly resumes it.
 
 Issue `#360`,

@@ -311,9 +311,10 @@ platform's exact-byte model.
 Formatter-only enforcement remains incomplete because it cannot protect every in-scope text file.
 
 Issue `#356` added independent final-newline CI in `.github/workflows/final-newline.yml`.
-Hosted run `29166399098` passed while invoking cli-git's direct checker from a disposable clone without loading unrelated
-hk or Pkl tooling.
-Issue `#357` may remove hk after the remaining independent standards and specification review closes `#356`.
+Hosted run `29171565809` passed while invoking cli-git's direct checker through typed Node orchestration over a
+disposable clone without loading unrelated hk or Pkl tooling.
+Issue `#356` is closed;
+issue `#357` may now remove hk.
 
 ## Limitations
 

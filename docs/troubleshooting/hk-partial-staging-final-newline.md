@@ -55,8 +55,9 @@ and rejected manual push through the shipped shadow `git` executable.
 The transaction fixture in
 `packages/git-policies/cli/src/trust/fixtures/built-autofix-transaction-consumer.ts`
 retains the exact partial-staging regression coverage.
-Independent final-newline workflow run `29166399098` passed.
-Hk and Pkl remain transitional until issue `#357` removes them after issue `#356`'s final independent review.
+Independent final-newline workflow run `29171565809` passed typed Node orchestration and direct policy checking.
+Issue `#356` is closed;
+hk and Pkl remain only until active issue `#357` removes them.
 
 ## Root cause
 

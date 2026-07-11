@@ -3,10 +3,8 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues `#280` and `#341` through `#355` are complete and closed.
-Issue `#356` has completed implementation and verification except for its final independent standards and specification
-review.
-Issue `#357` remains blocked until `#356` closes.
+Issues `#280` and `#341` through `#356` are complete and closed.
+Issue `#357` is the active hk and Pkl retirement capstone.
 The Pi Bash result-loss priority investigation is complete through implementation,
 user-boundary verification,
 and `docs/troubleshooting/pi-bash-output-spool-write-failure.md`.
@@ -1725,22 +1723,17 @@ single-MJS artifact.
 
 ## Release-readiness checkpoint on 2026-07-11
 
-Issues `#354` and `#355` are complete.
-Issue `#356` has implemented every runtime,
-CI,
-performance,
-packaging,
-and documentation acceptance item;
-only the independent standards and specification review remains before closure.
-Issue `#357` is the next dependency-ordered slice and must not begin until that review closes `#356`.
+Issues `#354` through `#356` are complete and closed.
+Issue `#356` passed its independent standards and specification review after every required correction landed.
+Issue `#357` is now the active dependency-ordered slice.
 Npm publication remains deferred to `#358` and is not authorized.
 
-Hosted evidence:
+Final hosted evidence at release commit `375dd8ea9`:
 
-- final-newline workflow run `29166399098` passed;
-- lifecycle-performance workflow run `29168507046` passed;
-- forbidden-strings workflow run `29170099154` passed independently at release-checkpoint commit `47914e16f`;
-- cross-platform trust workflow run `29169584084` passed Linux,
+- final-newline workflow run `29171565809` passed typed shell-free orchestration and direct checking;
+- lifecycle-performance workflow run `29171565793` passed all paired budgets and uploaded raw evidence;
+- forbidden-strings workflow run `29171565821` passed independently;
+- cross-platform trust workflow run `29171565815` passed Linux,
   macOS,
   and Windows,
   including strict and relaxed MJS and TypeScript trust,
@@ -1761,6 +1754,11 @@ The measured lifecycle baseline is
 Its scenario-specific ceilings are derived as twice the measured maximum rounded to 25 milliseconds,
 and every ceiling is below 2,000 milliseconds.
 The performance workflow stores each run's complete raw-sample JSON as a retained CI artifact.
+The artifact from run `29171565793` was downloaded and parsed successfully:
+all required scenarios contain 30 direct and wrapped samples and use the wrapper-added metric.
+The final review also broadened trust workflow triggers to the complete `packages/git-policies/**`,
+fs-id,
+and fs-path dependency scope.
 The dirty-worktree commit path improved from 18.64 seconds to 0.74 seconds after post-commit content policies were
 restricted to the landed delta while complete landed-tree metadata remained available.
 
@@ -1830,13 +1828,15 @@ Dependency-ordered implementation slices:
   packed lifecycle parity,
   and index-neutral direct check/fix.
 - [#356](https://github.com/Aquaticat/Monochromatic/issues/356),
-  in final review:
+  completed:
   independent CI,
   cross-platform trust,
-  measured performance gates,
+  paired measured performance gates,
+  raw CI artifacts,
   JSONL compatibility,
   npm-pack readiness,
-  and user documentation are complete without publishing.
+  user documentation,
+  and independent review passed without publishing.
 - [#357](https://github.com/Aquaticat/Monochromatic/issues/357):
   retire hk and Pkl after every capstone gate passes.
 
@@ -2059,26 +2059,10 @@ a later phase does not wait to record an earlier phase's work.
 
 ## Remaining work
 
-The earlier evidence gaps are closed.
-The only remaining work in issue `#356` is an independent review along two axes:
-
-- standards:
-  verify repository rules,
-  packaging,
-  workflow isolation,
-  cross-platform storage,
-  tests,
-  and user documentation;
-- specification:
-  compare the complete implementation against issue `#356` and
-  `packages/git-policies/cli/SPEC.md`,
-  with no unresolved required finding.
-
-After both reviews pass,
-close `#356` explicitly and start `#357`.
-Issue `#357` removes hk and Pkl,
+The earlier evidence gaps and issue `#356` review findings are closed.
+Issue `#357` now removes hk and Pkl,
 updates transitional documentation,
-verifies per-machine cleanup,
+provides and verifies idempotent per-machine Git-config cleanup,
 and reruns the end-user shim,
 direct checks,
 independent CI,
@@ -2136,9 +2120,5 @@ implementation checkpoint,
 verification result,
 and commit.
 
-Issues `#341` through `#355` completed their contract gates.
-Issue `#356` is at the independent-review gate described in `Remaining work`.
-Continue recording each review result,
-issue closure,
-`#357` retirement checkpoint,
-and verification run here.
+Issues `#341` through `#356` completed their contract gates.
+Continue recording each `#357` retirement checkpoint and verification run here.
