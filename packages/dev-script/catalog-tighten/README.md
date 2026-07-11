@@ -35,9 +35,21 @@ pnpm symlink farm and bypassing the package's `exports` map (resolving a
 `<name>/package.json` subpath through `require.resolve` throws
 `ERR_PACKAGE_PATH_NOT_EXPORTED` for packages whose `exports` omit it).
 
-A catalog package that is installed nowhere (for example a dependency of a
-paused package that was never installed) is reported as `MISS` and skipped:
-there is no active installed version to tighten its floor against.
+A catalog package with no direct-dependency symlink is not tightened, but the
+tool distinguishes two reasons by probing pnpm's virtual store
+(`node_modules/.pnpm/<mangled>@<version>/node_modules/<name>`), where pnpm keeps
+packages that are installed only as transitive dependencies:
+
+- `UNDCL`: the package is present in the store (a transitive dependency of some
+  live package) but no live package declares it directly. This is a
+  dependency-hygiene signal, not noise: either a package uses it without
+  declaring it (declare it directly), or the catalog entry is dead (drop it).
+  The store version is only for classification; it is never used to tighten,
+  since a transitive copy's version is whatever a dependent pulled, not what the
+  catalog entry itself resolves to.
+- `MISS`: the package is installed nowhere (no importer symlink and no store
+  copy), for example a catalog entry used only by a paused package that is
+  outside the workspace. There is no installed version to tighten against.
 
 If neither `node_modules` nor `.pnp.cjs` exists at the monorepo root, the tool
 fails with a clear error rather than reporting every entry as missing.
@@ -73,7 +85,10 @@ Every catalog entry is logged with a status prefix:
 - **TIGHT**: range was tightened (old to new).
 - **OK**: installed version matches the catalog floor (already tight).
 - **SKIP**: entry is not a `>=` range.
-- **MISS**: package is not installed in any `node_modules`.
+- **UNDCL**: present in the pnpm store (with version) as a transitive dependency,
+  but no live package declares it directly; declare it or drop the catalog entry.
+- **MISS**: package is not installed in the workspace (no importer symlink and no
+  store copy).
 
 A catalog key that is not a valid npm package name is logged and skipped, so a
 crafted key cannot become a result-map entry.
