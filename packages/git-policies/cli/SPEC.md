@@ -576,8 +576,7 @@ export type TrustStatus = {
     | 'untrusted'
     | 'trusted'
     | 'changed'
-    | 'corrupt'
-    | 'typescript-unsupported';
+    | 'corrupt';
 };
 
 export type UntrustSummary = {

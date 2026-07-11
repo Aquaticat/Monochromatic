@@ -214,8 +214,7 @@ git cli-git check --policy require-root -- path/to/file
 untrusted,
 trusted and unchanged,
 changed,
-corrupt,
-or deferred TypeScript.
+or corrupt.
 It does not execute live repository config.
 This trust-status schema supersedes the temporary built-in policy inventory emitted by the first policy-engine slice.
 

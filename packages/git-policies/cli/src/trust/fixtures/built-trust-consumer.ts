@@ -110,6 +110,25 @@ const env: NodeJS.ProcessEnv = {
     .PATH
     ?? ''}`,
 };
+/** Direct-check setup failure outside a Git worktree. */
+const unavailableDirectCheck = await execute({
+  command: 'git',
+  args: [
+    'cli-git',
+    'check',
+    '--all',
+  ],
+  expectedExit: 2,
+  cwd: '/work',
+  env,
+},);
+assertJsonl({
+  text: unavailableDirectCheck.stdout,
+  expectedCode: 'transaction-failed',
+  context: 'direct check outside worktree',
+},);
+if (unavailableDirectCheck.stderr !== '')
+  throw new Error(`direct check setup failure leaked stderr\n${unavailableDirectCheck.stderr}`,);
 /**
  * First config-loading use blocked before config execution.
  */
@@ -127,6 +146,46 @@ assertJsonl({
 },);
 if (untrusted.stdout !== '')
   throw new Error(`untrusted wrapper leaked stdout\n${untrusted.stdout}`,);
+/** Direct config-untrusted failure routed only to stdout. */
+const untrustedDirectCheck = await execute({
+  command: 'git',
+  args: [
+    'cli-git',
+    'check',
+    '--all',
+  ],
+  expectedExit: 2,
+  cwd: repository,
+  env,
+},);
+assertJsonl({
+  text: untrustedDirectCheck.stdout,
+  expectedCode: 'config-untrusted',
+  context: 'untrusted direct check',
+},);
+if (untrustedDirectCheck.stderr !== '')
+  throw new Error(`untrusted direct check leaked stderr\n${untrustedDirectCheck.stderr}`,);
+/** Declined trust failure remains stdout JSONL beside stderr disclosure. */
+const declinedTrust = await execute({
+  command: 'git',
+  args: [
+    'cli-git',
+    'trust',
+  ],
+  expectedExit: 2,
+  cwd: repository,
+  env,
+},);
+assertJsonl({
+  text: declinedTrust.stdout,
+  expectedCode: 'trust-failed',
+  context: 'declined trust management',
+},);
+assertIncludes({
+  text: declinedTrust.stderr,
+  expected: 'Exact snapshot state: new',
+  context: 'declined trust disclosure',
+},);
 /**
  * Explicit noninteractive trust result.
  */

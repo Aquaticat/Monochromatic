@@ -2,6 +2,7 @@ import {
   mkdir,
   mkdtemp,
   realpath,
+  readdir,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -220,6 +221,36 @@ await describe({
           unchanged: false,
           configPath: fixture.configPath,
           reason: 'untrusted',
+        },);
+      },
+    },),
+    it({
+      name: 'reports corrupt stored record through stable status reason',
+      fn: async function testCorruptStatus() {
+        await using fixture = await createFixture();
+        await runManagement({ fixture, args: ['trust', '--yes',], },);
+        /** Registry paths after exact trust enrollment. */
+        const registryPaths = await readdir(fixture.registry, { recursive: true, },);
+        /** Relative exact record path selected from registry. */
+        const recordPath = registryPaths.find(function isRecordPath(path,) {
+          return path.endsWith('record.json',);
+        },);
+        if (recordPath === undefined)
+          throw new Error('Trusted fixture did not create record.json.',);
+        await writeFile(join(fixture.registry, recordPath,), '{}\n',);
+        /** Corrupt status result. */
+        const status = parseManagementOutput((await runManagement({
+          fixture,
+          args: ['status',],
+        },)).stdout,);
+        expect(status,).toMatchObject({
+          schemaVersion: 1,
+          type: 'trust-status',
+          configPresent: true,
+          trusted: false,
+          unchanged: false,
+          configPath: fixture.configPath,
+          reason: 'corrupt',
         },);
       },
     },),

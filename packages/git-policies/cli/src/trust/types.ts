@@ -237,5 +237,5 @@ export type TrustStatus = Readonly<{
   /**
    * Stable status reason.
    */
-  reason: 'no-config' | 'untrusted' | 'trusted' | 'changed' | 'corrupt' | 'typescript-unsupported';
+  reason: 'no-config' | 'untrusted' | 'trusted' | 'changed' | 'corrupt';
 }>;
