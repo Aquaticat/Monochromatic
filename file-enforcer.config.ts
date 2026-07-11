@@ -612,8 +612,10 @@ _.file = [{ path = ".env.local.json", redact = true }]
 _.path = [
 ${
     [
-      'node_modules/.bin',
-      ...(await Array.fromAsync(glob('packages/*/*/node_modules/.bin',),)).toSorted(),
+      ...new Set([
+        'node_modules/.bin',
+        ...(await Array.fromAsync(glob('packages/*/*/node_modules/.bin',),)).toSorted(),
+      ]),
     ]
       .map(function quote(dir,): string {
         return `  "${dir}"`;
