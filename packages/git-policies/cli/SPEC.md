@@ -551,17 +551,50 @@ Rules:
   and `status` never execute live repository config during preflight.
 - `fix` changes selected worktree files and verifies every real index blob is unchanged.
 
-`status` emits one compact `trust-status` object with `configPresent`,
-`trusted`,
-`unchanged`,
-and a stable reason:
-`no-config`,
-`untrusted`,
-`trusted`,
-`changed`,
-`corrupt`,
-or `typescript-unsupported`.
-It inspects exact trust state without executing live config.
+Trust management emits one compact LF-terminated JSON object on stdout.
+These management objects carry `schemaVersion` but no policy-event `sequence`.
+Human trust and recursive-authority disclosures remain on stderr.
+
+```ts
+export type TrustSummary = {
+  readonly schemaVersion: 1;
+  readonly type: 'trust-summary';
+  readonly configPath: string;
+  readonly trusted: true;
+};
+
+export type TrustStatus = {
+  readonly schemaVersion: 1;
+  readonly type: 'trust-status';
+  readonly configPresent: boolean;
+  readonly trusted: boolean;
+  readonly unchanged: boolean;
+  readonly configPath?: string;
+  readonly filesystemId?: string;
+  readonly reason:
+    | 'no-config'
+    | 'untrusted'
+    | 'trusted'
+    | 'changed'
+    | 'corrupt'
+    | 'typescript-unsupported';
+};
+
+export type UntrustSummary = {
+  readonly schemaVersion: 1;
+  readonly type: 'untrust-summary';
+  readonly configPath: string | null;
+  readonly removed: boolean;
+  readonly affectedRoots: readonly string[];
+};
+```
+
+`status` inspects exact trust state without executing live config.
+`configPath` and `filesystemId` are absent when no supported config is present.
+Deleted-config recovery uses `null` for `UntrustSummary.configPath` because no canonical config path remains.
+Trust management failures emit one schema-version-one `engine-failure` event on stdout and exit `2`.
+A classified `TrustedConfigError` retains its stable code;
+an unclassified management or recovery failure uses `trust-failed`.
 This schema supersedes the temporary built-in policy inventory from the first policy-engine slice.
 
 ## Lifecycle
@@ -812,6 +845,10 @@ and preserves the successful commit command's exit code `0`.
 
 Wrapper policy events use stderr.
 Direct `check` and `fix` policy events use stdout.
+Trust management summaries,
+statuses,
+and failures use stdout;
+human trust disclosures use stderr.
 Real Git inherits normal stdio.
 Debug logs must not corrupt the selected JSONL event stream.
 
