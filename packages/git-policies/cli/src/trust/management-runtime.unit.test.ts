@@ -231,7 +231,7 @@ await describe({
         const error = await runManagementFailure({ fixture, args: ['trust',], },);
         expect(error.exitCode,).toBe(2,);
         expect(error.stdout,).toBe('',);
-        expect(error.stderr.endsWith('cli-git: trust operation failed: Trust declined.',),).toBe(true,);
+        expect(error.stderr.endsWith('cli-git: trust operation failed: Trust declined; no persistent record was installed.',),).toBe(true,);
         const status = await runManagement({ fixture, args: ['status',], },);
         expect(status.stdout,).toContain('"reason":"untrusted"',);
       },
