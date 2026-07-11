@@ -4,8 +4,9 @@ on:
   pull_request:
     branches: ['main']
     paths:
-    - 'packages/git-policies/cli/**'
+    - 'packages/git-policies/**'
     - 'packages/module/fs-id/**'
+    - 'packages/module/fs-path/**'
     - 'pnpm-lock.yaml'
     - '.github/workflows/cli-git-trust.yml'
   merge_group:
@@ -13,8 +14,9 @@ on:
   push:
     branches: ['main']
     paths:
-    - 'packages/git-policies/cli/**'
+    - 'packages/git-policies/**'
     - 'packages/module/fs-id/**'
+    - 'packages/module/fs-path/**'
     - 'pnpm-lock.yaml'
     - '.github/workflows/cli-git-trust.yml'
 

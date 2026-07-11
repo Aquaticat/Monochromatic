@@ -7,6 +7,7 @@
  * @module
  */
 
+import { writeFile, } from 'node:fs/promises';
 import { availableParallelism, } from 'node:os';
 import {
   MAXIMUM_BUDGET_MS,
@@ -28,8 +29,10 @@ const fixture = await prepareLifecycleFixture();
  * Complete measured scenario matrix.
  */
 const scenarios = await collectLifecycleScenarios(fixture,);
-console.log(JSON.stringify(
-  {
+/**
+ * Machine-readable evidence containing raw samples and derived statistics.
+ */
+const benchmarkResult = {
   schemaVersion: 1,
   revision: process.env
     .CLI_GIT_BENCHMARK_REVISION
@@ -61,9 +64,19 @@ console.log(JSON.stringify(
     runs: RECORDED_RUNS,
   },
   scenarios,
-},
-  null,
-  2,
-),);
+};
+/**
+ * Stable serialized evidence shared by logs and CI artifact storage.
+ */
+const serializedResult = JSON.stringify(benchmarkResult, null, 2,);
+/**
+ * Optional caller-owned artifact destination mounted outside the disposable benchmark container.
+ */
+const outputPath = process.env.CLI_GIT_BENCHMARK_OUTPUT;
+
+if (outputPath !== undefined)
+  await writeFile(outputPath, serializedResult, 'utf8',);
+
+console.log(serializedResult,);
 
 //endregion Benchmark execution

@@ -1739,6 +1739,7 @@ Hosted evidence:
 
 - final-newline workflow run `29166399098` passed;
 - lifecycle-performance workflow run `29168507046` passed;
+- forbidden-strings workflow run `29170099154` passed independently at release-checkpoint commit `47914e16f`;
 - cross-platform trust workflow run `29169584084` passed Linux,
   macOS,
   and Windows,
@@ -1759,6 +1760,7 @@ The measured lifecycle baseline is
 `packages/git-policies/cli/perf/lifecycle-latency-2026-07-11.json`.
 Its scenario-specific ceilings are derived as twice the measured maximum rounded to 25 milliseconds,
 and every ceiling is below 2,000 milliseconds.
+The performance workflow stores each run's complete raw-sample JSON as a retained CI artifact.
 The dirty-worktree commit path improved from 18.64 seconds to 0.74 seconds after post-commit content policies were
 restricted to the landed delta while complete landed-tree metadata remained available.
 
