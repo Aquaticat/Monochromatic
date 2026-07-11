@@ -1,9 +1,10 @@
 # `Node.js` v26.5.0 `fs.promises.glob()` needs consumer sorting for stable mise PATH ordering
 
 `Node.js` returns glob matches in filesystem directory-entry order.
-The root `mise.toml` generator now calls `toSorted()` before serializing workspace
-`node_modules/.bin` directories into `_.path`.
-That makes ordering reproducible for the same set of discovered directories.
+The root `mise.toml` generator sorts and deduplicates workspace
+`node_modules/.bin` directories before serializing them into `_.path`.
+That makes configuration entries unique and ordering reproducible for the same
+set of discovered directories.
 Membership remains installation-dependent because a path is included only when
 its `node_modules/.bin` directory exists.
 
@@ -60,17 +61,19 @@ Entries added or removed while iterating over the directory might not be
 included in the iteration results.
 ```
 
-### The generator normalizes ordering at its boundary
+### The generator normalizes ordering and removes duplicate paths
 
-`file-enforcer.config.ts:614-621` keeps the root `node_modules/.bin` directory
-first and applies `toSorted()` to every discovered package bin directory before
+`file-enforcer.config.ts:614-624` keeps the root `node_modules/.bin` directory
+first, sorts discovered package bin directories, then constructs a `Set` before
 creating TOML:
 
 ```ts
 // file-enforcer.config.ts
 [
-  'node_modules/.bin',
-  ...(await Array.fromAsync(glob('packages/*/*/node_modules/.bin',),)).toSorted(),
+  ...new Set([
+    'node_modules/.bin',
+    ...(await Array.fromAsync(glob('packages/*/*/node_modules/.bin',),)).toSorted(),
+  ]),
 ]
   .map(function quote(dir,): string {
     return `  "${dir}"`;
@@ -79,7 +82,8 @@ creating TOML:
 ```
 
 Mise preserves the `_.path` array's sequence when it constructs `PATH`.
-Sorting therefore controls the observable precedence of package-local binaries.
+Sorting controls observable package-local binary precedence;
+the `Set` ensures no path is emitted twice.
 
 ## Verification
 
@@ -107,17 +111,18 @@ The following checks passed on 2026-07-11:
    `quartz`,
    then `zebra`.
 - The current repository's forty-two generated `_.path` entries matched
-  `node_modules/.bin` followed by the current glob results after `toSorted()`.
+  the root path followed by sorted, deduplicated glob results.
+  The configured path count and unique path count were both forty-two.
 - A second `mise run sync:files` made no change to `mise.toml`.
 - `mise env --json --locked --quiet` preserved all forty-two generated paths at
   the start of `PATH`.
 
 ## Implemented workaround
 
-The consumer-side `toSorted()` call is the durable workaround.
+The consumer-side `toSorted()` plus `Set` construction is the durable workaround.
 It is applied before `file-enforcer` writes generated `mise.toml`,
  so a later
-synchronization cannot undo it.
+synchronization cannot undo either normalization.
 
 The intentional tradeoff is lexical path precedence for duplicate binaries.
 The current installation has thirteen duplicate executable names among the
@@ -134,7 +139,7 @@ For example,
   contract.
 - Sorting only generated `mise.toml` is not durable.
   `file-enforcer.config.ts` owns and rewrites the `_.path` section.
-- `toSorted()` does not fix membership drift.
+- Sorting and deduplication do not fix membership drift.
   Different dependency installation states can produce a different set of
   existing `packages/*/*/node_modules/.bin` directories.
   Canonical metadata,
