@@ -5,6 +5,7 @@ import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   mkdir,
   readFile,
+  rename,
   rm,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -12,6 +13,7 @@ import {
   DIRECTORY_MODE,
   ensureRegistryRoot,
   protectPath,
+  syncDirectory,
   TrustStorageError,
   writePrivateFile,
 } from './registry-io.ts';
@@ -105,14 +107,21 @@ async function initializeLock(lockDirectory: string,): Promise<AsyncDisposable> 
     directory: true,
   },);
   /**
-   * Private owner metadata.
+   * Private owner metadata installed only after complete write and fsync.
    */
   const ownerPath = join(
     lockDirectory,
     'owner.json',
   );
+  /**
+   * Private sibling hidden from lock readers during owner initialization.
+   */
+  const pendingOwnerPath = join(
+    lockDirectory,
+    'owner.pending',
+  );
   await writePrivateFile({
-    path: ownerPath,
+    path: pendingOwnerPath,
     bytes: Buffer.from(
       `${JSON.stringify({
         schemaVersion: 1,
@@ -121,6 +130,11 @@ async function initializeLock(lockDirectory: string,): Promise<AsyncDisposable> 
       'utf8',
     ),
   },);
+  await rename(
+    pendingOwnerPath,
+    ownerPath,
+  );
+  await syncDirectory(lockDirectory,);
   return {
     async [Symbol.asyncDispose](): Promise<void> {
       await rm(
