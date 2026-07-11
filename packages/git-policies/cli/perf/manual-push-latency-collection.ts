@@ -26,12 +26,15 @@ import { warmupsAreStable } from './manual-push-latency-statistics.ts';
  * ```
  */
 function createIndices(count: number): readonly number[] {
-  return Array.from({ length: count }, function selectIndex(
+  return Array.from(
+    { length: count },
+    function selectIndex(
     _unused: unknown,
     index: number,
   ): number {
     return index;
-  });
+  }
+  );
 }
 
 /**
@@ -61,26 +64,42 @@ function collectPairs({
   baseOid: string;
   stopWhenStable: boolean;
 }>): Promise<PairCollectionState> {
-  return createIndices(count).reduce(
+  return createIndices(count)
+    .reduce(
     async function appendSequentialPair(
       previousPromise: Promise<PairCollectionState>,
       index: number,
     ): Promise<PairCollectionState> {
-      /** State produced by all earlier sequential pair measurements. */
+      /**
+       * State produced by all earlier sequential pair measurements.
+       */
       const previous = await previousPromise;
       if (previous.stable) {
         return previous;
       }
-      /** Next pair measured only after earlier state resolves. */
-      const sample = await runPair({ wrapperFirst: (index % 2) === 1, baseOid });
-      /** Immutable ordered pair list including new sample. */
-      const samples = [...previous.samples, sample];
+      /**
+       * Next pair measured only after earlier state resolves.
+       */
+      const sample = await runPair({
+        wrapperFirst: (index % 2) === 1,
+        baseOid
+      });
+      /**
+       * Immutable ordered pair list including new sample.
+       */
+      const samples = [
+        ...previous.samples,
+        sample
+      ];
       return {
         samples,
         stable: stopWhenStable && warmupsAreStable(samples),
       };
     },
-    Promise.resolve<PairCollectionState>({ samples: [], stable: false }),
+    Promise.resolve<PairCollectionState>({
+      samples: [],
+      stable: false
+    }),
   );
 }
 
@@ -101,7 +120,11 @@ function collectPairs({
 export function collectWarmups({
   baseOid,
 }: Readonly<{ baseOid: string }>): Promise<PairCollectionState> {
-  return collectPairs({ count: MAXIMUM_WARMUPS, baseOid, stopWhenStable: true });
+  return collectPairs({
+    count: MAXIMUM_WARMUPS,
+    baseOid,
+    stopWhenStable: true
+  });
 }
 
 /**
@@ -121,7 +144,13 @@ export function collectWarmups({
 export async function collectSamples({
   baseOid,
 }: Readonly<{ baseOid: string }>): Promise<readonly Sample[]> {
-  /** Pair state after requested recorded count. */
-  const state = await collectPairs({ count: RUNS, baseOid, stopWhenStable: false });
+  /**
+   * Pair state after requested recorded count.
+   */
+  const state = await collectPairs({
+    count: RUNS,
+    baseOid,
+    stopWhenStable: false
+  });
   return state.samples;
 }
