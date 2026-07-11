@@ -135,19 +135,16 @@ async function runManagementFailure({
 }
 
 /**
- * Parses one compact LF-terminated management JSON object.
+ * Parses one compact management JSON object captured after nano-spawn strips its terminal LF.
  *
- * @param output - complete management stdout
+ * @param output - complete captured management stdout
  *
  * @returns parsed object with exact single-line framing proven
  */
 function parseManagementOutput(output: string,): Record<string, unknown> {
-  expect(output.endsWith('\n',),).toBe(true,);
-  /** Complete JSON text without required terminal LF. */
-  const json = output.slice(0, -1,);
-  expect(json.includes('\n',),).toBe(false,);
+  expect(output.includes('\n',),).toBe(false,);
   /** Parsed unknown management value. */
-  const value: unknown = JSON.parse(json,);
+  const value: unknown = JSON.parse(output,);
   if (((typeof value) !== 'object') || (value === null) || Array.isArray(value,))
     throw new TypeError('Management output is not one JSON object.',);
   return value as Record<string, unknown>;
@@ -164,12 +161,12 @@ await describe({
         const trustResult = await runManagement({ fixture, args: ['trust', '--yes',], },);
         expect(trustResult.stderr,).toContain('Exact snapshot state: new',);
         expect(trustResult.stderr,).toContain('full account permissions',);
-        expect(trustResult.stdout,).toBe(`${JSON.stringify({
+        expect(trustResult.stdout,).toBe(JSON.stringify({
           schemaVersion: 1,
           type: 'trust-summary',
           configPath: fixture.configPath,
           trusted: true,
-        },)}\n`,);
+        },),);
         /** Trusted status result. */
         const statusResult = await runManagement({ fixture, args: ['status',], },);
         /** Parsed trusted status compatibility object. */
@@ -203,13 +200,13 @@ await describe({
         expect(checkError.stdout,).toContain('"trigger":"direct-check"',);
         /** Exact untrust summary. */
         const untrustResult = await runManagement({ fixture, args: ['untrust',], },);
-        expect(untrustResult.stdout,).toBe(`${JSON.stringify({
+        expect(untrustResult.stdout,).toBe(JSON.stringify({
           schemaVersion: 1,
           type: 'untrust-summary',
           configPath: fixture.configPath,
           removed: true,
           affectedRoots: [],
-        },)}\n`,);
+        },),);
         /** Untrusted status after exact record removal. */
         const untrustedStatus = parseManagementOutput((await runManagement({
           fixture,
@@ -234,7 +231,7 @@ await describe({
         const error = await runManagementFailure({ fixture, args: ['trust',], },);
         expect(error.exitCode,).toBe(2,);
         expect(error.stdout,).toBe('',);
-        expect(error.stderr.endsWith('cli-git: trust operation failed: Trust declined.\n',),).toBe(true,);
+        expect(error.stderr.endsWith('cli-git: trust operation failed: Trust declined.',),).toBe(true,);
         const status = await runManagement({ fixture, args: ['status',], },);
         expect(status.stdout,).toContain('"reason":"untrusted"',);
       },
@@ -250,7 +247,7 @@ await describe({
         expect(untrustResult.stdout,).toContain('"removed":true',);
         expect(untrustResult.stdout,).toContain('"configPath":null',);
         const status = await runManagement({ fixture, args: ['status',], },);
-        expect(status.stdout,).toBe('{"schemaVersion":1,"type":"trust-status","configPresent":false,"trusted":false,"unchanged":false,"reason":"no-config"}\n',);
+        expect(status.stdout,).toBe('{"schemaVersion":1,"type":"trust-status","configPresent":false,"trusted":false,"unchanged":false,"reason":"no-config"}',);
       },
     },),
     it({
