@@ -47,17 +47,36 @@ async function readBase64(path: string,): Promise<string> {
 export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
   env: NodeJS.ProcessEnv;
 }>,): Promise<void> {
-  /** Disposable final-newline repository. */
+  /**
+   * Disposable final-newline repository.
+   */
   const repository = '/work/final-newline';
-  /** Disposable bare remote used for read-only push rejection. */
+  /**
+   * Disposable bare remote used for read-only push rejection.
+   */
   const remote = '/work/final-newline-origin.git';
   await initializePostCommitRepository(repository,);
   await initializeBareRemote(remote,);
-  await writeFile(`${repository}/cli-git.config.mjs`, 'export default {};\n',);
-  await writeFile(`${repository}/check.txt`, 'check baseline\n',);
-  await writeFile(`${repository}/fix.txt`, 'fix baseline\n',);
-  await writeFile(`${repository}/commit.txt`, 'commit baseline\n',);
-  await writeFile(`${repository}/push.txt`, 'push baseline\n',);
+  await writeFile(
+    `${repository}/cli-git.config.mjs`,
+    'export default {};\n',
+  );
+  await writeFile(
+    `${repository}/check.txt`,
+    'check baseline\n',
+  );
+  await writeFile(
+    `${repository}/fix.txt`,
+    'fix baseline\n',
+  );
+  await writeFile(
+    `${repository}/commit.txt`,
+    'commit baseline\n',
+  );
+  await writeFile(
+    `${repository}/push.txt`,
+    'push baseline\n',
+  );
   await execute({
     command: '/usr/bin/git',
     args: [
@@ -110,10 +129,17 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     env,
   },);
 
-  /** Exact real index bytes before direct lifecycle operations. */
+  /**
+   * Exact real index bytes before direct lifecycle operations.
+   */
   const directIndex = await readBase64(`${repository}/.git/index`,);
-  await writeFile(`${repository}/check.txt`, 'check missing',);
-  /** Read-only direct-check finding. */
+  await writeFile(
+    `${repository}/check.txt`,
+    'check missing',
+  );
+  /**
+   * Read-only direct-check finding.
+   */
   const checked = await execute({
     command: 'git',
     args: [
@@ -135,7 +161,8 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
   },);
   assertFixtureEqual({
     actual: await readBase64(`${repository}/check.txt`,),
-    expected: Buffer.from('check missing',).toString('base64',),
+    expected: Buffer.from('check missing',)
+      .toString('base64',),
     context: 'direct-check worktree bytes',
   },);
   assertFixtureEqual({
@@ -144,8 +171,13 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     context: 'direct-check index bytes',
   },);
 
-  await writeFile(`${repository}/fix.txt`, 'fix missing',);
-  /** Converged direct-fix summary. */
+  await writeFile(
+    `${repository}/fix.txt`,
+    'fix missing',
+  );
+  /**
+   * Converged direct-fix summary.
+   */
   const fixed = await execute({
     command: 'git',
     args: [
@@ -166,7 +198,8 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
   },);
   assertFixtureEqual({
     actual: await readBase64(`${repository}/fix.txt`,),
-    expected: Buffer.from('fix missing\n',).toString('base64',),
+    expected: Buffer.from('fix missing\n',)
+      .toString('base64',),
     context: 'direct-fix worktree bytes',
   },);
   assertFixtureEqual({
@@ -175,7 +208,10 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     context: 'direct-fix index bytes',
   },);
 
-  await writeFile(`${repository}/commit.txt`, 'commit missing',);
+  await writeFile(
+    `${repository}/commit.txt`,
+    'commit missing',
+  );
   await execute({
     command: '/usr/bin/git',
     args: [
@@ -184,7 +220,9 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     ],
     cwd: repository,
   },);
-  /** Packed commit correction summary routed to wrapper stderr. */
+  /**
+   * Packed commit correction summary routed to wrapper stderr.
+   */
   const committed = await execute({
     command: 'git',
     args: [
@@ -202,7 +240,9 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     expected: '"type":"fix-summary"',
     context: 'packed commit fix summary',
   },);
-  /** Exact committed canonical text. */
+  /**
+   * Exact committed canonical text.
+   */
   const committedBlob = await execute({
     command: '/usr/bin/git',
     args: [
@@ -218,11 +258,14 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
   },);
   assertFixtureEqual({
     actual: await readBase64(`${repository}/commit.txt`,),
-    expected: Buffer.from('commit missing',).toString('base64',),
+    expected: Buffer.from('commit missing',)
+      .toString('base64',),
     context: 'packed commit worktree bytes',
   },);
 
-  /** Remote main before intentionally noncanonical local commit. */
+  /**
+   * Remote main before intentionally noncanonical local commit.
+   */
   const remoteBefore = (await execute({
     command: '/usr/bin/git',
     args: [
@@ -232,7 +275,10 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
       'refs/heads/main',
     ],
   },)).stdout;
-  await writeFile(`${repository}/push.txt`, 'push missing',);
+  await writeFile(
+    `${repository}/push.txt`,
+    'push missing',
+  );
   await execute({
     command: '/usr/bin/git',
     args: [
@@ -250,7 +296,9 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     ],
     cwd: repository,
   },);
-  /** Read-only manual-push finding from packed wrapper. */
+  /**
+   * Read-only manual-push finding from packed wrapper.
+   */
   const pushed = await execute({
     command: 'git',
     args: [
@@ -267,7 +315,9 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     expected: '"policyId":"final-newline"',
     context: 'packed final-newline manual push',
   },);
-  /** Remote main after rejected noncanonical push. */
+  /**
+   * Remote main after rejected noncanonical push.
+   */
   const remoteAfter = (await execute({
     command: '/usr/bin/git',
     args: [
@@ -282,7 +332,9 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     expected: remoteBefore,
     context: 'manual-push remote ref',
   },);
-  /** Exact noncanonical local committed blob after read-only push. */
+  /**
+   * Exact noncanonical local committed blob after read-only push.
+   */
   const pushedBlob = await execute({
     command: '/usr/bin/git',
     args: [

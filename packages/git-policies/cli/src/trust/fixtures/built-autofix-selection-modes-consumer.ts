@@ -165,7 +165,7 @@ export async function verifyAutofixSelectionModes({
 
   await writeFile(
     `${repository}/selected.txt`,
-    'bad\n',
+    'bad',
   );
   await execute({
     command: '/usr/bin/git',
@@ -202,6 +202,11 @@ export async function verifyAutofixSelectionModes({
       expectedExit: 1,
       cwd: repository,
       env,
+    },);
+    assertIncludes({
+      text: blocked.stderr,
+      expected: '"policyId":"final-newline"',
+      context: `${selectionFlag} core final-newline guidance`,
     },);
     assertIncludes({
       text: blocked.stderr,
