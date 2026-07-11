@@ -78,7 +78,7 @@ export const WARMUP_WINDOW = 3;
 /**
  * Maximum relative median drift accepted between warm-up windows.
  */
-export const STABILITY_RATIO = 1 / ((2 + 2) * (2 + 2
+export const STABILITY_RATIO: number = 1 / ((2 + 2) * (2 + 2
   + 1));
 /**
  * Maximum allowed wrapper-added latency in milliseconds.
@@ -91,7 +91,7 @@ export const NANOSECONDS_PER_MILLISECOND = 1_000_000;
 /**
  * Percentile represented by p95.
  */
-export const NINETY_FIFTH_PERCENTILE = 1 - STABILITY_RATIO;
+export const NINETY_FIFTH_PERCENTILE: number = 1 - STABILITY_RATIO;
 /**
  * Decimal places used in threshold failure messages.
  */
@@ -131,7 +131,7 @@ export const WRAPPED_REMOTE = '/work/wrapped.git';
 /**
  * Environment override that places packed cli-git before system Git.
  */
-export const COMMAND_ENV = {
+export const COMMAND_ENV: Readonly<Record<string, string>> = {
   PATH: `/work/node_modules/.bin:/usr/bin:${process.env
     .PATH
     ?? ''}`,
