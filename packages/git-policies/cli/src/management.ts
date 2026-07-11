@@ -23,6 +23,7 @@ import {
   ADD_POLICY_FACTS_NOT_APPLICABLE,
   createAddPolicyFacts,
 } from './policy-engine/add-policy-facts.ts';
+import { runDirectFix, } from './policy-engine/direct-fix.ts';
 import { runPolicyEngine, } from './policy-engine/engine.ts';
 import { TrustedConfigError, } from './trust/config-loader.ts';
 import { runTrustManagement, } from './trust/management-runtime.ts';
@@ -81,6 +82,23 @@ const CHECK_PARSER = command(
 },),
 );
 /**
+ * Direct policy fix parser.
+ */
+const FIX_PARSER = command(
+  'fix',
+  object({
+  command: constant('fix' as const,),
+  all: optional(flag('--all',),),
+  policies: multiple(option(
+    '--policy',
+    string(),
+  ),),
+  pathspecs: multiple(
+    argument(string(),),
+  ),
+},),
+);
+/**
  * First management grammar slice.
  */
 const MANAGEMENT_PARSER = or(
@@ -88,6 +106,7 @@ const MANAGEMENT_PARSER = or(
   UNTRUST_PARSER,
   STATUS_PARSER,
   CHECK_PARSER,
+  FIX_PARSER,
 );
 
 /**
@@ -239,14 +258,14 @@ export async function runManagementCommand({
     },);
   }
 
-  if ((parsed.command !== 'check')
+  if (((parsed.command !== 'check') && (parsed.command !== 'fix'))
     || (!('pathspecs' in parsed))
     || (!Array.isArray(parsed.pathspecs,))
     || (!('policies' in parsed))
     || (!Array.isArray(parsed.policies,)))
     return 2;
   if (hasPreSeparatorPositional(args,)) {
-    console.error('git cli-git check pathspecs must follow --.',);
+    console.error(`git cli-git ${parsed.command} pathspecs must follow --.`,);
     return 2;
   }
   /**
@@ -264,13 +283,13 @@ export async function runManagementCommand({
    */
   const hasAllScope = ('all' in parsed) && (parsed.all === true);
   if (hasAllScope === hasPathspecScope) {
-    console.error('git cli-git check requires exactly one scope: --all or non-empty pathspecs after --.',);
+    console.error(`git cli-git ${parsed.command} requires exactly one scope: --all or non-empty pathspecs after --.`,);
     return 2;
   }
   if ((separatorIndex === (-1)) && (parsed.pathspecs
     .length
     > 0)) {
-    console.error('git cli-git check pathspecs must follow --.',);
+    console.error(`git cli-git ${parsed.command} pathspecs must follow --.`,);
     return 2;
   }
 
@@ -320,6 +339,28 @@ export async function runManagementCommand({
       .filter(function stringPathspec(value,): value is string {
       return (typeof value) === 'string';
     },);
+  if (parsed.command === 'fix') {
+    /** Converged direct-fix operation. */
+    const fixed = await runDirectFix({
+      gitGlobalArgs,
+      pathspecs: directPathspecs,
+      policyOptions: {
+        selectedPolicyIds,
+        ...(runtimeConfig === RUNTIME_CONFIG_ABSENT
+          ? {}
+          : {
+            config: { policies: runtimeConfig.validated.policySeverities, },
+            registeredPolicies: runtimeConfig.validated.registeredPolicies,
+            policyOptions: runtimeConfig.validated.policyOptions,
+          }),
+      },
+    },);
+    /** Stable direct-fix JSONL. */
+    const renderedEvents = renderPolicyEvents(fixed.policyResult.events,);
+    if (renderedEvents !== '')
+      process.stdout.write(renderedEvents,);
+    return fixed.policyResult.exitCode;
+  }
   /**
    * Exact private worktree/index projection for direct checks.
    */
@@ -355,12 +396,9 @@ export async function runManagementCommand({
     ...(runtimeConfig === RUNTIME_CONFIG_ABSENT
       ? {}
       : {
-        config: { policies: runtimeConfig.validated
-          .policySeverities, },
-        registeredPolicies: runtimeConfig.validated
-          .registeredPolicies,
-        policyOptions: runtimeConfig.validated
-          .policyOptions,
+        config: { policies: runtimeConfig.validated.policySeverities, },
+        registeredPolicies: runtimeConfig.validated.registeredPolicies,
+        policyOptions: runtimeConfig.validated.policyOptions,
       }),
   },);
   /**
@@ -368,7 +406,6 @@ export async function runManagementCommand({
    */
   const renderedEvents = renderPolicyEvents(result.events,);
   if (renderedEvents !== '')
-    process.stdout
-      .write(renderedEvents,);
+    process.stdout.write(renderedEvents,);
   return result.exitCode;
 }

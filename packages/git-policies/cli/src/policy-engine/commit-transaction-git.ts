@@ -18,6 +18,12 @@ import type {
 import { validatePolicyPatch, } from './commit-transaction-patch.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
+/** Private workspace fields required for patch application. */
+export type PrivatePatchWorkspace = Readonly<Pick<
+  CommitTransactionWorkspace,
+  'directory' | 'commitIndexPath'
+>>;
+
 /**
  * Private patch file mode.
  */
@@ -201,7 +207,7 @@ export async function applyPrivatePatch({
   candidateRevision,
   ordinal,
 }: Readonly<{
-  workspace: CommitTransactionWorkspace;
+  workspace: PrivatePatchWorkspace;
   gitPath: string;
   cwd: string;
   patch: PolicyPatch;

@@ -53,6 +53,22 @@ export type AddPolicyFactsScope = Readonly<{
    */
   gitFacts: LazyPolicyGitFacts;
   /**
+   * Private workspace directory.
+   */
+  directory: string;
+  /**
+   * Private candidate index path.
+   */
+  indexPath: string;
+  /**
+   * Real index path that must remain unchanged during direct fix.
+   */
+  realIndexPath: string;
+  /**
+   * Candidate paths selected by caller scope.
+   */
+  paths: readonly string[];
+  /**
    * Removes private index state.
    */
   [Symbol.asyncDispose]: () => Promise<void>;
@@ -211,6 +227,10 @@ export async function createAddPolicyFacts({
     },);
   return {
     repositoryRoot,
+    directory,
+    indexPath,
+    realIndexPath,
+    paths,
     gitFacts: createPrivateIndexFacts({
       gitPath,
       cwd: layout.effectiveCwd,
