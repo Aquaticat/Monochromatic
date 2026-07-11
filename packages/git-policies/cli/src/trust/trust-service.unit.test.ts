@@ -22,6 +22,11 @@ import nanoSpawn from 'nano-spawn';
 import { resolveGit, } from '../resolve-git.ts';
 import { discoverConfig, CONFIG_ABSENT, } from './config-discovery.ts';
 import { TrustedConfigError, } from './config-loader.ts';
+import { ensurePrivateRegistryDirectory, } from './registry-directory.ts';
+import {
+  ensureRegistryRoot,
+  protectPath,
+} from './registry-io.ts';
 import { recordDirectory, } from './registry-path.ts';
 import { prepareMjsRecord, } from './registry-storage.ts';
 import {
@@ -494,7 +499,15 @@ await describe({
         const candidate = await captureTrustCandidate(discovered,);
         /** Exact final record directory. */
         const directory = recordDirectory({ registryRoot: fixture.registryRoot, identity: candidate.identity, },);
-        await mkdir(`${directory}.tmp-interrupted`, { recursive: true, mode: 0o700, },);
+        /** Interrupted candidate matching production parent and candidate protection. */
+        const interruptedDirectory = `${directory}.tmp-interrupted`;
+        await ensureRegistryRoot(fixture.registryRoot,);
+        await ensurePrivateRegistryDirectory({
+          registryRoot: fixture.registryRoot,
+          targetDirectory: dirname(directory,),
+        },);
+        await mkdir(interruptedDirectory, { mode: 0o700, },);
+        await protectPath({ path: interruptedDirectory, directory: true, },);
         expect(await inspectTrust({ discovered, registryRoot: fixture.registryRoot, },),).toMatchObject({ reason: 'untrusted', },);
         await trustMjs({ discovered, registryRoot: fixture.registryRoot, yes: true, adapters: trustAdapters([],), },);
         expect(await inspectTrust({ discovered, registryRoot: fixture.registryRoot, },),).toMatchObject({ reason: 'trusted', },);
