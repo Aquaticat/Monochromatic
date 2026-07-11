@@ -43,10 +43,11 @@ A repeat after the core final-newline fix used the same dirty-worktree shape and
 elapsed=0.74 user=0.42 system=0.53
 ```
 
-A main-repository run then measured `20.85 s` while the built cli-git artifact still contained
+A main-repository run then measured `20.85 s` while its trusted configuration snapshot still contained
 the pre-fix forbidden-strings plugin.
-That second observation isolated the same unchanged-candidate fan-out in scanner materialization;
-rebundling cli-git picked up the plugin's landed-delta filter.
+A later run with cli-git rebuilt but the trusted snapshot unchanged measured `16.77 s`.
+Those observations isolated the same unchanged-candidate fan-out in scanner materialization
+and proved that rebuilding the executable alone could not update already-trusted bundled policy code.
 
 ## Diagnosis
 
@@ -89,6 +90,15 @@ before requesting bytes or materializing scanner inputs.
 Root commits remain covered because `git diff-tree --root` reports every initial path.
 Merge commits remain covered because `-m` reports differences against each parent and the implementation deduplicates paths.
 
+File-enforcer must copy the canonical forbidden-strings source into cli-git's statically shipped optional-policy source.
+After rebuilding cli-git,
+`git cli-git trust --yes` must replace an existing trusted TypeScript bundle that contains the old policy implementation.
+
+The TypeScript trust builder now calls Rolldown directly instead of using tsdown's programmatic middle layer.
+Rolldown is imported only when a trust build is required,
+and `await using` closes the bundle and its native workers explicitly.
+The real main-repository trust rebuild completed in `0.29 s`.
+
 ## Verification
 
 The following checks passed:
@@ -97,7 +107,9 @@ The following checks passed:
 - final-newline regression proving unchanged landed bytes remain unread;
 - forbidden-strings regression proving only landed-delta candidates reach scanner materialization;
 - dirty-worktree commit with hk stashing five files, reduced from `18.64 s` to `0.74 s`;
-- main-repository commit with the old bundled forbidden-strings policy, which reproduced the second fan-out at `20.85 s`.
+- main-repository commits with the old trusted forbidden-strings bundle,
+  which reproduced the second fan-out at `20.85 s` and `16.77 s`;
+- real main-repository TypeScript trust rebuild through direct Rolldown, which completed in `0.29 s`.
 
 The measured fixed command is below the required `2,000 ms` real-Git operation ceiling.
 
