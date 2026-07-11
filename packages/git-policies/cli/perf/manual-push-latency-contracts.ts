@@ -53,45 +53,86 @@ export type PairCollectionState = Readonly<{
  * ```
  */
 export class BenchmarkError extends Error {
-  /** Stable error name for benchmark diagnostics. */
+  /**
+   * Stable error name for benchmark diagnostics.
+   */
   public override readonly name = 'BenchmarkError';
 }
 
-/** Number of recorded pairs after warm-up stability. */
+/**
+ * Number of recorded pairs after warm-up stability.
+ */
 export const RUNS = 30;
-/** Minimum number of warm-up pairs considered for stability. */
+/**
+ * Minimum number of warm-up pairs considered for stability.
+ */
 export const MINIMUM_WARMUPS = 6;
-/** Maximum number of warm-up pairs before benchmark failure. */
+/**
+ * Maximum number of warm-up pairs before benchmark failure.
+ */
 export const MAXIMUM_WARMUPS = 30;
-/** Number of samples in each compared warm-up window. */
+/**
+ * Number of samples in each compared warm-up window.
+ */
 export const WARMUP_WINDOW = 3;
-/** Maximum relative median drift accepted between warm-up windows. */
-export const STABILITY_RATIO = 1 / ((2 + 2) * (2 + 2 + 1));
-/** Maximum allowed wrapper-added latency in milliseconds. */
+/**
+ * Maximum relative median drift accepted between warm-up windows.
+ */
+export const STABILITY_RATIO = 1 / ((2 + 2) * (2 + 2
+  + 1));
+/**
+ * Maximum allowed wrapper-added latency in milliseconds.
+ */
 export const LIMIT_MS = 2_000;
-/** Nanoseconds in one millisecond. */
+/**
+ * Nanoseconds in one millisecond.
+ */
 export const NANOSECONDS_PER_MILLISECOND = 1_000_000;
-/** Percentile represented by p95. */
+/**
+ * Percentile represented by p95.
+ */
 export const NINETY_FIFTH_PERCENTILE = 1 - STABILITY_RATIO;
-/** Decimal places used in threshold failure messages. */
+/**
+ * Decimal places used in threshold failure messages.
+ */
 export const DECIMAL_PLACES = 3;
-/** Byte count for benchmark memory limit. */
+/**
+ * Byte count for benchmark memory limit.
+ */
 export const MEMORY_LIMIT_BYTES = 2_147_483_648;
-/** CPU count for benchmark container limit. */
+/**
+ * CPU count for benchmark container limit.
+ */
 export const CPU_LIMIT = 2;
-/** Byte count for benchmark temporary filesystem limit. */
+/**
+ * Byte count for benchmark temporary filesystem limit.
+ */
 export const TEMPORARY_FILESYSTEM_LIMIT_BYTES = 1_073_741_824;
-/** Installed packed cli-git executable. */
+/**
+ * Installed packed cli-git executable.
+ */
 export const PACKAGE_BIN = '/work/node_modules/.bin/git';
-/** Repository used for direct Git measurements. */
+/**
+ * Repository used for direct Git measurements.
+ */
 export const DIRECT_REPOSITORY = '/work/direct';
-/** Repository used for wrapper measurements. */
+/**
+ * Repository used for wrapper measurements.
+ */
 export const WRAPPED_REPOSITORY = '/work/wrapped';
-/** Bare remote used for direct Git measurements. */
+/**
+ * Bare remote used for direct Git measurements.
+ */
 export const DIRECT_REMOTE = '/work/direct.git';
-/** Bare remote used for wrapper measurements. */
+/**
+ * Bare remote used for wrapper measurements.
+ */
 export const WRAPPED_REMOTE = '/work/wrapped.git';
-/** Environment override that places packed cli-git before system Git. */
+/**
+ * Environment override that places packed cli-git before system Git.
+ */
 export const COMMAND_ENV = {
-  PATH: `/work/node_modules/.bin:/usr/bin:${process.env.PATH ?? ''}`,
+  PATH: `/work/node_modules/.bin:/usr/bin:${process.env
+    .PATH
+    ?? ''}`,
 } as const;

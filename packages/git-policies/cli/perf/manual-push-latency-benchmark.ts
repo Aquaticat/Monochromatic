@@ -35,20 +35,31 @@ import {
 
 //region Benchmark execution -- Prepare fixture, stabilize measurements, record samples, and enforce ceiling.
 
-/** Prepared source revisions for repeatable pair execution. */
+/**
+ * Prepared source revisions for repeatable pair execution.
+ */
 const fixture = await prepareFixture();
-/** Warm-up pair state accumulated until stability or maximum count. */
+/**
+ * Warm-up pair state accumulated until stability or maximum count.
+ */
 const warmups = await collectWarmups({ baseOid: fixture.baseOid });
 if (!warmups.stable) {
   throw new BenchmarkError('Benchmark did not reach its warm-up stability threshold.');
 }
-/** Recorded benchmark pairs after stable warm-up. */
+/**
+ * Recorded benchmark pairs after stable warm-up.
+ */
 const samples = await collectSamples({ baseOid: fixture.baseOid });
-/** Wrapper-added latency values extracted for threshold enforcement. */
+/**
+ * Wrapper-added latency values extracted for threshold enforcement.
+ */
 const added = samples.map(selectAddedMs);
-/** Largest observed wrapper-added latency. */
+/**
+ * Largest observed wrapper-added latency.
+ */
 const maximumAddedMs = Math.max(...added);
-console.log(JSON.stringify({
+console.log(JSON.stringify(
+  {
   revision: fixture.headOid,
   baseOid: fixture.baseOid,
   limits: {
@@ -60,9 +71,16 @@ console.log(JSON.stringify({
   },
   platform: process.platform,
   node: process.version,
-  git: await execute({ command: '/usr/bin/git', args: ['--version'] }),
-  scanner: await execute({ command: '/fixture/forbidden-strings', args: ['--version'] }),
-  warmups: warmups.samples.length,
+  git: await execute({
+    command: '/usr/bin/git',
+    args: ['--version']
+  }),
+  scanner: await execute({
+    command: '/fixture/forbidden-strings',
+    args: ['--version']
+  }),
+  warmups: warmups.samples
+    .length,
   runs: RUNS,
   medianDirectMs: median(samples.map(selectDirectMs)),
   p95DirectMs: p95(samples.map(selectDirectMs)),
@@ -75,7 +93,10 @@ console.log(JSON.stringify({
   madAddedMs: medianAbsoluteDeviation(added),
   maximumAddedMs,
   samples,
-}, null, 2));
+},
+  null,
+  2
+));
 if (maximumAddedMs >= LIMIT_MS) {
   throw new BenchmarkError(
     `Wrapper added ${maximumAddedMs.toFixed(DECIMAL_PLACES)} ms, exceeding ${String(LIMIT_MS)} ms ceiling.`,
