@@ -12,6 +12,7 @@ import type {
   CandidateFileMode,
   GitObjectId,
 } from '../api/policy-types.ts';
+import { mapBounded, } from './map-bounded.ts';
 import {
   CommitTransactionGitError,
   runTransactionGit,
@@ -28,6 +29,10 @@ const DECODER = new TextDecoder(
  * Exact submodule identity encoder.
  */
 const ENCODER = new TextEncoder();
+/**
+ * Maximum simultaneous process-backed private candidate loads.
+ */
+const CANDIDATE_LOAD_CONCURRENCY = 64;
 /**
  * Git index mode mapping.
  */
@@ -289,14 +294,18 @@ export function createPrivateIndexFacts({
 }>,): LazyPolicyGitFacts {
   return {
     candidates: function candidates(): Promise<readonly CandidateFile[]> {
-      return Promise.all(paths.map(function loadPath(path,) {
-        return loadIndexCandidate({
-          gitPath,
-          cwd,
-          indexPath,
-          path,
-        },);
-      },),);
+      return mapBounded({
+        values: paths,
+        concurrency: CANDIDATE_LOAD_CONCURRENCY,
+        map: function loadPath({ value: path, }) {
+          return loadIndexCandidate({
+            gitPath,
+            cwd,
+            indexPath,
+            path,
+          },);
+        },
+      },);
     },
     headOid: async function headOid(): Promise<GitObjectId> {
       return DECODER.decode((await runTransactionGit({
