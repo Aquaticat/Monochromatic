@@ -3,7 +3,13 @@
  *
  * @module
  */
+import { Buffer, } from 'node:buffer';
+import { join, } from 'node:path';
 import type { CandidateFile, } from '../api/policy-types.ts';
+import {
+  containsExactCandidateSnapshot,
+  writeCandidateSnapshot,
+} from './commit-transaction-candidate-snapshot.ts';
 import { createPrivateIndexFacts, } from './commit-transaction-candidates.ts';
 import { applyPrivatePatch, } from './commit-transaction-git.ts';
 import { transactionFailure, } from './commit-transaction-results.ts';
@@ -44,25 +50,6 @@ export type DirectFixConvergenceResult = Readonly<{
    */
   passes: number;
 }>;
-
-/**
- * Serializes exact candidate identity for cycle detection.
- *
- * @param candidates - current private-index candidates
- *
- * @returns deterministic state identity
- */
-function candidateState(candidates: readonly CandidateFile[],): string {
-  return JSON.stringify(candidates.map(function candidateIdentity(candidate,) {
-    return [
-      candidate.path,
-      candidate.targetId,
-      candidate.revision,
-      candidate.mode,
-      candidate.change,
-    ];
-  },),);
-}
 
 /**
  * Maps candidate path to immutable blob identity.
@@ -120,9 +107,20 @@ export async function convergeDirectFix({
    */
   const initialRevisions = candidateRevisions(initialCandidates,);
   /**
-   * Visited exact candidate states.
+   * Initial exact path, mode, and content snapshot.
    */
-  const visited = new Set([candidateState(initialCandidates,),],);
+  const initialSnapshotPath = join(
+    scope.directory,
+    'candidate-0.state',
+  );
+  await writeCandidateSnapshot({
+    gitFacts: scope.gitFacts,
+    snapshotPath: initialSnapshotPath,
+  },);
+  /**
+   * Ordered private snapshots retained for bounded exact cycle comparison.
+   */
+  const visited = [initialSnapshotPath,];
   /**
    * Latest policy pass.
    */
@@ -225,15 +223,22 @@ export async function convergeDirectFix({
       paths: scope.paths,
     },);
     /**
-     * Current exact candidates used for cycle identity.
+     * Private exact snapshot for current changed pass.
      */
-    // oxlint-disable-next-line no-await-in-loop -- Cycle detection observes exact state after each sequential pass.
-    const currentCandidates = await currentFacts.candidates();
-    /**
-     * Exact current state identity.
-     */
-    const state = candidateState(currentCandidates,);
-    if (visited.has(state,)) {
+    const snapshotPath = join(
+      scope.directory,
+      `candidate-${String(changedPasses,)}.state`,
+    );
+    // oxlint-disable-next-line no-await-in-loop -- Each bounded pass streams one exact candidate-state snapshot.
+    await writeCandidateSnapshot({
+      gitFacts: currentFacts,
+      snapshotPath,
+    },);
+    // oxlint-disable-next-line no-await-in-loop -- Cycle detection streams prior exact snapshots after each bounded change.
+    if (await containsExactCandidateSnapshot({
+      snapshotPaths: visited,
+      currentPath: snapshotPath,
+    },)) {
       return {
         policyResult: transactionFailure({
           previous: pass,
@@ -243,7 +248,7 @@ export async function convergeDirectFix({
         passes: changedPasses,
       };
     }
-    visited.add(state,);
+    visited.push(snapshotPath,);
     // oxlint-disable-next-line no-await-in-loop -- Next policy pass must observe prior pass output.
     pass = await runPolicyEngine({
       ...policyOptions,
@@ -265,6 +270,12 @@ export async function convergeDirectFix({
   const changedPaths = finalCandidates
     .filter(function changedCandidate(candidate,) {
       return initialRevisions.get(candidate.path,) !== candidate.revision;
+    },)
+    .toSorted(function comparePathBytes(left, right,) {
+      return Buffer.compare(
+        Buffer.from(left.path,),
+        Buffer.from(right.path,),
+      );
     },)
     .map(function changedPath(candidate,) { return candidate.path; });
   return {
