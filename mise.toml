@@ -173,11 +173,6 @@ hcloud = "latest"
 "npm:pagefind" = "latest"
 betterleaks = "latest"
 
-# Git hook runner. Pinned with hk.pkl's Pkl package because staged-byte
-# handling is version-sensitive; upgrade both together after fixture verification.
-hk = "1.50.0"
-# Pkl: hk's config language
-pkl = "latest"
 
 # === Android toolchain (packages/music-player/android-app) ===
 # Hoisted here so the whole repo provisions from one tool manifest; the package's
@@ -622,6 +617,10 @@ const { execFileSync } = await import('node:child_process')
 // visible), and try only stops the non-zero exit from propagating.
 try { execFileSync('mise', ['run', process.env.usage_task], { stdio: 'inherit' }) } catch { /* tolerated */ }
 """
+
+[tasks."lock:mise"]
+description = "Regenerate mise.lock from active tool declarations"
+run = "mise lock"
 
 #endregion Utility Tasks
 
