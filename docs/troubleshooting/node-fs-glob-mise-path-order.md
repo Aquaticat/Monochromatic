@@ -64,7 +64,9 @@ included in the iteration results.
 ### The generator normalizes ordering and removes duplicate paths
 
 `file-enforcer.config.ts:614-624` keeps the root `node_modules/.bin` directory
-first, sorts discovered package bin directories, then constructs a `Set` before
+first,
+ sorts discovered package bin directories,
+ then constructs a `Set` before
 creating TOML:
 
 ```ts
@@ -111,7 +113,8 @@ The following checks passed on 2026-07-11:
    `quartz`,
    then `zebra`.
 - The current repository's forty-two generated `_.path` entries matched
-  the root path followed by sorted, deduplicated glob results.
+  the root path followed by sorted,
+   deduplicated glob results.
   The configured path count and unique path count were both forty-two.
 - A second `mise run sync:files` made no change to `mise.toml`.
 - `mise env --json --locked --quiet` preserved all forty-two generated paths at
