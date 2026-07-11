@@ -29,6 +29,8 @@ export type DirectFixConvergenceResult = Readonly<{
   policyResult: PolicyEngineResult;
   /** Paths whose private blob identity changed. */
   changedPaths: readonly string[];
+  /** Number of private candidate changes before stability. */
+  passes: number;
 }>;
 
 /**
@@ -117,7 +119,7 @@ export async function convergeDirectFix({
   let changedPasses = 0;
   while (pass.patches.length > 0) {
     if (pass.exitCode === 2)
-      return { policyResult: pass, changedPaths: [], };
+      return { policyResult: pass, changedPaths: [], passes: changedPasses, };
     if (changedPasses >= MAXIMUM_CHANGED_PASSES) {
       return {
         policyResult: transactionFailure({
@@ -125,6 +127,7 @@ export async function convergeDirectFix({
           message: 'Policy patches did not converge within eight changed passes.',
         },),
         changedPaths: [],
+        passes: changedPasses,
       };
     }
     /** Pass-start candidates binding patch target identities. */
@@ -148,6 +151,7 @@ export async function convergeDirectFix({
             message: `Patch target is stale, undeclared, or mutable: ${patch.path}`,
           },),
           changedPaths: [],
+          passes: changedPasses,
         };
       }
       try {
@@ -171,6 +175,7 @@ export async function convergeDirectFix({
             message: Error.isError(error,) ? error.message : String(error,),
           },),
           changedPaths: [],
+          passes: changedPasses,
         };
       }
     }
@@ -193,6 +198,7 @@ export async function convergeDirectFix({
           message: 'Policy patches entered a repeated candidate-state cycle.',
         },),
         changedPaths: [],
+        passes: changedPasses,
       };
     }
     visited.add(state,);
@@ -217,6 +223,7 @@ export async function convergeDirectFix({
   return {
     policyResult: pass,
     changedPaths,
+    passes: changedPasses,
   };
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

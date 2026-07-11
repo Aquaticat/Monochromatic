@@ -240,6 +240,29 @@ export type ConfigurationWarningEvent = Readonly<{
 }>;
 
 /**
+ * Successful policy correction summary.
+ *
+ * @example
+ * ```ts
+ * const event: FixSummaryEvent = { schemaVersion: 1, sequence: 0, type: 'fix-summary', trigger: 'direct-fix', passes: 1, changedPaths: ['a.txt'] };
+ * ```
+ */
+export type FixSummaryEvent = Readonly<{
+  /** Schema version. */
+  schemaVersion: 1;
+  /** Invocation-local sequence. */
+  sequence: number;
+  /** Event discriminator. */
+  type: 'fix-summary';
+  /** Fixable lifecycle trigger. */
+  trigger: 'pre-forward' | 'direct-fix';
+  /** Number of private candidate changes before stability. */
+  passes: number;
+  /** Unique changed paths in Git byte order. */
+  changedPaths: readonly RepositoryPath[];
+}>;
+
+/**
  * Policy event supported by first engine slice.
  *
  * @example
@@ -247,7 +270,36 @@ export type ConfigurationWarningEvent = Readonly<{
  * const events: readonly PolicyEvent[] = [];
  * ```
  */
-export type PolicyEvent = CommitLandedEvent | ConfigurationWarningEvent | CoreFindingEvent | FindingEvent | EngineFailureEvent;
+export type PolicyEvent = CommitLandedEvent | ConfigurationWarningEvent | CoreFindingEvent | FindingEvent | FixSummaryEvent | EngineFailureEvent;
+
+/**
+ * Creates successful policy correction summary.
+ *
+ * @param sequence - invocation-local event order
+ *
+ * @param trigger - fixable lifecycle point
+ *
+ * @param passes - changed private candidate passes
+ *
+ * @param changedPaths - unique Git-byte-ordered paths
+ *
+ * @returns immutable summary event
+ */
+export function createFixSummaryEvent({
+  sequence,
+  trigger,
+  passes,
+  changedPaths,
+}: Omit<FixSummaryEvent, 'schemaVersion' | 'type'>,): FixSummaryEvent {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    sequence,
+    type: 'fix-summary',
+    trigger,
+    passes,
+    changedPaths,
+  };
+}
 
 /**
  * Creates finding event while copying retained fields.

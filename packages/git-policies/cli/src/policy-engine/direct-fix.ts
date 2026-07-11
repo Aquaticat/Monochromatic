@@ -12,6 +12,7 @@ import {
   convergeDirectFix,
   type DirectFixPolicyOptions,
 } from './direct-fix-convergence.ts';
+import { createFixSummaryEvent, } from './events.ts';
 import {
   captureDirectFixOriginalBytes,
   installDirectFix,
@@ -94,6 +95,22 @@ export async function runDirectFix({
     changedPaths: convergence.changedPaths,
     originals,
   },);
-  return convergence;
+  if (convergence.changedPaths.length === 0)
+    return convergence;
+  return {
+    policyResult: {
+      ...convergence.policyResult,
+      events: [
+        ...convergence.policyResult.events,
+        createFixSummaryEvent({
+          sequence: convergence.policyResult.events.length,
+          trigger: 'direct-fix',
+          passes: convergence.passes,
+          changedPaths: convergence.changedPaths,
+        },),
+      ],
+    },
+    changedPaths: convergence.changedPaths,
+  };
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
