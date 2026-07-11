@@ -32,8 +32,10 @@ Missing-X robustness:
   (its symlinks survive): still tighten, because resolution reads on-disk state.
 - Missing virtual store (`node_modules/.pnpm` deleted, symlinks left dangling): MISS. Missing
   `.pnp.cjs` under `symlink: false` (no symlinks left to fall back on): MISS.
-- Store-only (both consumers' `node_modules` removed, root `.pnpm` kept): UNDCL, because the package
-  is present in the store as a transitive-style copy but no importer declares it directly.
+- Store-only orphan (package undeclared in both consumers and their `node_modules` removed, root `.pnpm`
+  kept): UNDCL, because the package is present in the store but no importer declares it directly. A package
+  a live importer still declares is never labelled undeclared, even when its resolution path is broken (the
+  `symlink: false` plus missing `.pnp.cjs` case stays a MISS).
 - Missing all `node_modules`, missing `pnpm-workspace.yaml`: fail cleanly with a clear error.
 
 ## How it runs

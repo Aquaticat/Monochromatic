@@ -77,8 +77,8 @@ type NodeLinker = 'isolated' | 'hoisted' | 'pnp';
  * - `remove-workspace-yaml`: delete `pnpm-workspace.yaml`.
  * - `remove-all-modules`: delete every `node_modules`.
  * - `remove-some-modules`: delete one consumer's `node_modules`.
- * - `unlink-consumers`: delete both consumers' `node_modules` (their symlinks to the package) while keeping
- *   the root virtual store, so the package is resolvable only from `.pnpm` (store-only, no importer symlink).
+ * - `orphan-store-copy`: undeclare the package in both consumers and delete their `node_modules`, keeping the
+ *   root virtual store, so it is present in `.pnpm` but declared by no importer and reachable through no symlink.
  * - `remove-virtual-store`: delete `node_modules/.pnpm`, leaving dangling symlinks.
  * - `remove-store`: delete the relocated content-addressable store.
  * - `remove-pnp-cjs`: delete `.pnp.cjs` under the pnp linker; pnpm's pnp is a hybrid that also keeps
@@ -92,7 +92,7 @@ type Mutation =
   | 'remove-workspace-yaml'
   | 'remove-all-modules'
   | 'remove-some-modules'
-  | 'unlink-consumers'
+  | 'orphan-store-copy'
   | 'remove-virtual-store'
   | 'remove-store'
   | 'remove-pnp-cjs'
@@ -253,10 +253,10 @@ export const SCENARIOS: readonly Scenario[] = [
     expect: 'miss',
   },
   {
-    label: 'store-only, no importer symlink',
+    label: 'store-only orphan, undeclared',
     nodeLinker: 'isolated',
     hoist: false,
-    mutation: 'unlink-consumers',
+    mutation: 'orphan-store-copy',
     expect: 'undeclared',
   },
   {

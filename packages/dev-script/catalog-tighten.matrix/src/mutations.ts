@@ -124,22 +124,49 @@ async function removeAllModules(): Promise<void> {
 }
 
 /**
- * Removes both {@link CONSUMER_DIRS} `node_modules` while leaving the root
- * `node_modules` (and its `.pnpm` virtual store) intact, so the catalog package
- * has no importer symlink but is still present in the store. This is the
- * store-only layout that catalog-tighten classifies as `UNDCL` rather than
- * `MISS`.
+ * Turns the catalog package into a store-only orphan: rewrites both
+ * {@link CONSUMER_DIRS} manifests to drop the {@link FIXTURE_PACKAGE}
+ * dependency and removes their `node_modules`, while leaving the root
+ * `node_modules` (and its `.pnpm` virtual store) intact. The package is then
+ * present in the store but declared by no importer and reachable through no
+ * symlink, which is the layout catalog-tighten classifies as `UNDCL` (rather
+ * than `MISS`, which also requires the store copy to be absent, or a plain
+ * unresolved miss, which keeps the declaration).
  *
  * @example
  * ```ts
- * await unlinkConsumers();
+ * await orphanStoreCopy();
  * ```
  */
-async function unlinkConsumers(): Promise<void> {
-  await Promise.all(CONSUMER_DIRS.map(async function removeOneConsumerModules(dir,): Promise<void> {
-    await removePath(join(
+async function orphanStoreCopy(): Promise<void> {
+  await Promise.all(CONSUMER_DIRS.map(async function orphanOneConsumer(dir,): Promise<void> {
+    /**
+     * Absolute consumer directory whose manifest is undeclared and `node_modules` removed.
+     */
+    const consumerDir = join(
       WORK_DIR,
       dir,
+    );
+    await writeFile(
+      join(
+        consumerDir,
+        'package.json',
+      ),
+      `${
+        JSON.stringify(
+          {
+            name: dir,
+            private: true,
+            version: '0.0.0',
+            dependencies: {},
+          },
+          undefined,
+          JSON_INDENT,
+        )
+      }\n`,
+    );
+    await removePath(join(
+      consumerDir,
       'node_modules',
     ),);
   },),);
@@ -194,8 +221,8 @@ export async function applyMutation(scenario: Scenario,): Promise<void> {
     ),);
     return;
   }
-  if (mutation === 'unlink-consumers') {
-    await unlinkConsumers();
+  if (mutation === 'orphan-store-copy') {
+    await orphanStoreCopy();
     return;
   }
   if (mutation === 'remove-virtual-store') {

@@ -112,7 +112,7 @@ await describe({
             === 'undeclared';
         },);
         expect(undeclared.length,).toBe(1,);
-        expect(undeclared[0]?.mutation,).toBe('unlink-consumers',);
+        expect(undeclared[0]?.mutation,).toBe('orphan-store-copy',);
       },
     },),
   ],
