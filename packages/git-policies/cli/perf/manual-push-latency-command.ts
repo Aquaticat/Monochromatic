@@ -9,8 +9,8 @@ import spawn from 'nano-spawn';
 import {
   COMMAND_ENV,
   NANOSECONDS_PER_MILLISECOND,
+  type ExecuteOptions,
 } from './manual-push-latency-contracts.ts';
-import type { ExecuteOptions } from './manual-push-latency-contracts.ts';
 
 /**
  * Execute command with benchmark environment and optional output suppression.

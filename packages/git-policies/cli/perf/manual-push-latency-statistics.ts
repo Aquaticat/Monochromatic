@@ -9,29 +9,29 @@ import {
   MINIMUM_WARMUPS,
   NINETY_FIFTH_PERCENTILE,
   STABILITY_RATIO,
+  type Sample,
   WARMUP_WINDOW,
 } from './manual-push-latency-contracts.ts';
-import type { Sample } from './manual-push-latency-contracts.ts';
 
 /**
- * Compare numeric values in ascending order.
+ * Copy numeric values in ascending order.
  *
- * @param left - Value placed on left side of comparison.
+ * @param values - Numeric values to order without mutation.
  *
- * @param right - Value placed on right side of comparison.
- *
- * @returns Negative, zero, or positive ordering value.
+ * @returns Ascending copy of numeric values.
  *
  * @example
  * ```ts
- * [2, 1].toSorted(compareNumbers);
+ * sortNumbers([2, 1]);
  * ```
  */
-function compareNumbers(
-  left: number,
-  right: number
-): number {
-  return left - right;
+function sortNumbers(values: readonly number[]): readonly number[] {
+  return values.toSorted(function compareNumbers(
+    left: number,
+    right: number,
+  ): number {
+    return left - right;
+  });
 }
 
 /**
@@ -88,7 +88,7 @@ export function median(values: readonly number[]): number {
   /**
    * Ordered copy used to locate sample midpoint.
    */
-  const sorted = values.toSorted(compareNumbers);
+  const sorted = sortNumbers(values);
   /**
    * Integer midpoint index in ordered samples.
    */
@@ -137,7 +137,7 @@ export function p95(values: readonly number[]): number {
   /**
    * Ordered copy used for nearest-rank lookup.
    */
-  const sorted = values.toSorted(compareNumbers);
+  const sorted = sortNumbers(values);
   /**
    * Zero-based nearest-rank percentile position.
    */
@@ -173,51 +173,57 @@ export function medianAbsoluteDeviation(values: readonly number[]): number {
 }
 
 /**
- * Select direct latency from paired sample.
+ * Extract direct Git latencies from paired samples.
  *
- * @param sample - Paired measurement.
+ * @param samples - Paired measurements.
  *
- * @returns Direct Git latency.
+ * @returns Direct Git latency values in sample order.
  *
  * @example
  * ```ts
- * selectDirectMs({ directMs: 1, wrapperMs: 2, addedMs: 1 });
+ * directValues([{ directMs: 1, wrapperMs: 2, addedMs: 1 }]);
  * ```
  */
-export function selectDirectMs(sample: Sample): number {
-  return sample.directMs;
+export function directValues(samples: readonly Sample[]): readonly number[] {
+  return samples.map(function selectDirect(sample: Sample): number {
+    return sample.directMs;
+  });
 }
 
 /**
- * Select wrapper latency from paired sample.
+ * Extract wrapper latencies from paired samples.
  *
- * @param sample - Paired measurement.
+ * @param samples - Paired measurements.
  *
- * @returns Wrapper latency.
+ * @returns Wrapper latency values in sample order.
  *
  * @example
  * ```ts
- * selectWrapperMs({ directMs: 1, wrapperMs: 2, addedMs: 1 });
+ * wrapperValues([{ directMs: 1, wrapperMs: 2, addedMs: 1 }]);
  * ```
  */
-export function selectWrapperMs(sample: Sample): number {
-  return sample.wrapperMs;
+export function wrapperValues(samples: readonly Sample[]): readonly number[] {
+  return samples.map(function selectWrapper(sample: Sample): number {
+    return sample.wrapperMs;
+  });
 }
 
 /**
- * Select wrapper-added latency from paired sample.
+ * Extract wrapper-added latencies from paired samples.
  *
- * @param sample - Paired measurement.
+ * @param samples - Paired measurements.
  *
- * @returns Wrapper-added latency.
+ * @returns Wrapper-added latency values in sample order.
  *
  * @example
  * ```ts
- * selectAddedMs({ directMs: 1, wrapperMs: 2, addedMs: 1 });
+ * addedValues([{ directMs: 1, wrapperMs: 2, addedMs: 1 }]);
  * ```
  */
-export function selectAddedMs(sample: Sample): number {
-  return sample.addedMs;
+export function addedValues(samples: readonly Sample[]): readonly number[] {
+  return samples.map(function selectAdded(sample: Sample): number {
+    return sample.addedMs;
+  });
 }
 
 /**
@@ -250,18 +256,18 @@ export function warmupsAreStable(samples: readonly Sample[]): boolean {
   /**
    * Previous direct Git median used as drift denominator.
    */
-  const previousDirect = median(previous.map(selectDirectMs));
+  const previousDirect = median(directValues(previous));
   /**
    * Previous wrapper median used as drift denominator.
    */
-  const previousWrapper = median(previous.map(selectWrapperMs));
+  const previousWrapper = median(wrapperValues(previous));
   /**
    * Relative direct Git median drift between adjacent windows.
    */
-  const directDrift = Math.abs(median(current.map(selectDirectMs)) - previousDirect) / previousDirect;
+  const directDrift = Math.abs(median(directValues(current)) - previousDirect) / previousDirect;
   /**
    * Relative wrapper median drift between adjacent windows.
    */
-  const wrapperDrift = Math.abs(median(current.map(selectWrapperMs)) - previousWrapper) / previousWrapper;
+  const wrapperDrift = Math.abs(median(wrapperValues(current)) - previousWrapper) / previousWrapper;
   return (directDrift <= STABILITY_RATIO) && (wrapperDrift <= STABILITY_RATIO);
 }

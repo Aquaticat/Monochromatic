@@ -22,15 +22,15 @@ import {
 import {
   collectSamples,
   collectWarmups,
-  prepareFixture,
-} from './manual-push-latency-fixture.ts';
+} from './manual-push-latency-collection.ts';
+import { prepareFixture } from './manual-push-latency-fixture.ts';
 import {
+  addedValues,
+  directValues,
   median,
   medianAbsoluteDeviation,
   p95,
-  selectAddedMs,
-  selectDirectMs,
-  selectWrapperMs,
+  wrapperValues,
 } from './manual-push-latency-statistics.ts';
 
 //region Benchmark execution -- Prepare fixture, stabilize measurements, record samples, and enforce ceiling.
@@ -53,7 +53,15 @@ const samples = await collectSamples({ baseOid: fixture.baseOid });
 /**
  * Wrapper-added latency values extracted for threshold enforcement.
  */
-const added = samples.map(selectAddedMs);
+const added = addedValues(samples);
+/**
+ * Direct Git latency values used by summary statistics.
+ */
+const direct = directValues(samples);
+/**
+ * Wrapper latency values used by summary statistics.
+ */
+const wrapped = wrapperValues(samples);
 /**
  * Largest observed wrapper-added latency.
  */
@@ -82,12 +90,12 @@ console.log(JSON.stringify(
   warmups: warmups.samples
     .length,
   runs: RUNS,
-  medianDirectMs: median(samples.map(selectDirectMs)),
-  p95DirectMs: p95(samples.map(selectDirectMs)),
-  madDirectMs: medianAbsoluteDeviation(samples.map(selectDirectMs)),
-  medianWrapperMs: median(samples.map(selectWrapperMs)),
-  p95WrapperMs: p95(samples.map(selectWrapperMs)),
-  madWrapperMs: medianAbsoluteDeviation(samples.map(selectWrapperMs)),
+  medianDirectMs: median(direct),
+  p95DirectMs: p95(direct),
+  madDirectMs: medianAbsoluteDeviation(direct),
+  medianWrapperMs: median(wrapped),
+  p95WrapperMs: p95(wrapped),
+  madWrapperMs: medianAbsoluteDeviation(wrapped),
   medianAddedMs: median(added),
   p95AddedMs: p95(added),
   madAddedMs: medianAbsoluteDeviation(added),

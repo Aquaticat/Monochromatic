@@ -18,17 +18,11 @@ import {
 import {
   DIRECT_REMOTE,
   DIRECT_REPOSITORY,
-  MAXIMUM_WARMUPS,
   PACKAGE_BIN,
-  RUNS,
+  type Sample,
   WRAPPED_REMOTE,
   WRAPPED_REPOSITORY,
 } from './manual-push-latency-contracts.ts';
-import type {
-  PairCollectionState,
-  Sample,
-} from './manual-push-latency-contracts.ts';
-import { warmupsAreStable } from './manual-push-latency-statistics.ts';
 
 /**
  * Prepared revisions needed by benchmark execution and evidence.
@@ -42,30 +36,6 @@ export type BenchmarkFixture = Readonly<{
   baseOid: string;
   headOid: string;
 }>;
-
-/**
- * Create numeric sequence from zero to count minus one.
- *
- * @param count - Number of indices required.
- *
- * @returns Ordered numeric indices.
- *
- * @example
- * ```ts
- * createIndices(2);
- * ```
- */
-function createIndices(count: number): readonly number[] {
-  return Array.from(
-    { length: count },
-    function selectIndex(
-      _unused: unknown,
-      index: number
-    ): number {
-    return index;
-  }
-  );
-}
 
 /**
  * Prepare equivalent direct and wrapped repositories from source mount.
@@ -238,8 +208,6 @@ export async function prepareFixture(): Promise<BenchmarkFixture> {
  *
  * @param baseOid - Revision installed on both remote main branches.
  *
- * @returns Completion after both refs are restored.
- *
  * @throws Error when either update-ref command fails.
  *
  * @example
@@ -286,7 +254,7 @@ async function resetRemotes({ baseOid }: Readonly<{ baseOid: string }>): Promise
  * await runPair({ wrapperFirst: true, baseOid: '0123456789abcdef' });
  * ```
  */
-async function runPair({
+export async function runPair({
   wrapperFirst,
   baseOid,
 }: Readonly<{
@@ -354,122 +322,4 @@ async function runPair({
     wrapperMs,
     addedMs: wrapperMs - directMs
   };
-}
-
-/**
- * Collect paired measurements sequentially through immutable reducer state.
- *
- * @param count - Maximum number of pairs to collect.
- *
- * @param baseOid - Revision restored before each pair.
- *
- * @param stopWhenStable - Whether collection ends after stable warm-up windows.
- *
- * @returns Ordered paired measurements and stability state.
- *
- * @throws Error when any pair cannot be measured.
- *
- * @example
- * ```ts
- * await collectPairs({ count: 2, baseOid: '0123456789abcdef', stopWhenStable: false });
- * ```
- */
-async function collectPairs({
-  count,
-  baseOid,
-  stopWhenStable,
-}: Readonly<{
-  count: number;
-  baseOid: string;
-  stopWhenStable: boolean;
-}>): Promise<PairCollectionState> {
-  return createIndices(count)
-    .reduce(
-    async function appendSequentialPair(
-      previousPromise: Promise<PairCollectionState>,
-      index: number,
-    ): Promise<PairCollectionState> {
-      /**
-       * State produced by all earlier sequential pair measurements.
-       */
-      const previous = await previousPromise;
-      if (previous.stable) {
-        return previous;
-      }
-      /**
-       * Next pair measured only after earlier state resolves.
-       */
-      const sample = await runPair({
-        wrapperFirst: (index % 2) === 1,
-        baseOid
-      });
-      /**
-       * Immutable ordered pair list including new sample.
-       */
-      const samples = [
-        ...previous.samples,
-        sample
-      ];
-      return {
-        samples,
-        stable: stopWhenStable && warmupsAreStable(samples),
-      };
-    },
-    Promise.resolve<PairCollectionState>({
-      samples: [],
-      stable: false
-    }),
-  );
-}
-
-/**
- * Collect warm-up pairs until stability or maximum count.
- *
- * @param baseOid - Revision restored before each pair.
- *
- * @returns Warm-up state with ordered samples and stability result.
- *
- * @throws Error when any pair cannot be measured.
- *
- * @example
- * ```ts
- * await collectWarmups({ baseOid: '0123456789abcdef' });
- * ```
- */
-export async function collectWarmups({
-  baseOid,
-}: Readonly<{ baseOid: string }>): Promise<PairCollectionState> {
-  return collectPairs({
-    count: MAXIMUM_WARMUPS,
-    baseOid,
-    stopWhenStable: true
-  });
-}
-
-/**
- * Collect fixed count of recorded paired measurements.
- *
- * @param baseOid - Revision restored before each pair.
- *
- * @returns Ordered recorded samples.
- *
- * @throws Error when any pair cannot be measured.
- *
- * @example
- * ```ts
- * await collectSamples({ baseOid: '0123456789abcdef' });
- * ```
- */
-export async function collectSamples({
-  baseOid,
-}: Readonly<{ baseOid: string }>): Promise<readonly Sample[]> {
-  /**
-   * Pair state after requested recorded count.
-   */
-  const state = await collectPairs({
-    count: RUNS,
-    baseOid,
-    stopWhenStable: false
-  });
-  return state.samples;
 }
