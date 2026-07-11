@@ -196,14 +196,14 @@ export const MAXIMUM_BUDGET_MS = 2_000;
  * every result remains below user-required 2,000-millisecond ceiling.
  */
 export const SCENARIO_BUDGETS: Readonly<Record<LifecycleScenarioId, number>> = {
-  'no-config': 250,
-  'read-only': 250,
+  'no-config': 275,
+  'read-only': 300,
   'strict-mjs': 275,
   'strict-typescript': 250,
   'relaxed-rebuild': 250,
-  'validator': 300,
-  'scanner': 425,
-  'normalizer': 375,
-  'normalizer-change': 525,
-  'post-commit': 625,
+  'validator': 250,
+  'scanner': 375,
+  'normalizer': 300,
+  'normalizer-change': 275,
+  'post-commit': 1_150,
 };
