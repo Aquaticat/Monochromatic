@@ -89,7 +89,8 @@ function emitTrustFailure({
   code: EngineFailureCode;
   message: string;
 }>,): 2 {
-  process.stdout.write(renderPolicyEvents([createEngineFailureEvent({
+  process.stdout
+    .write(renderPolicyEvents([createEngineFailureEvent({
     sequence: 0,
     code,
     message,
