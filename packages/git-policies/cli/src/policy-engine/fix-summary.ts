@@ -3,6 +3,7 @@
  *
  * @module
  */
+import { Buffer, } from 'node:buffer';
 import { createFixSummaryEvent, } from './events.ts';
 import type { PolicyEngineResult, } from './types.ts';
 
@@ -44,7 +45,12 @@ export function withFixSummary({
           .length,
         trigger,
         passes,
-        changedPaths,
+        changedPaths: changedPaths.toSorted(function comparePathBytes(left, right,) {
+          return Buffer.compare(
+            Buffer.from(left,),
+            Buffer.from(right,),
+          );
+        },),
       },),
     ],
   };
