@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "platform": "linux",
+  "node": "v24.18.0",
+  "git": "git version 2.39.5",
+  "limits": {
+    "memoryBytes": 2147483648,
+    "cpus": 2,
+    "maximumBudgetMs": 2000
+  },
+  "fixture": {
+    "trackedFiles": 2048,
+    "warmups": 2,
+    "runs": 7
+  },
+  "scenarios": [
+    {
+      "id": "no-config",
+      "metric": "wrapper-added",
+      "budgetMs": 2000,
+      "maximumMs": 121.776855,
+      "medianMs": 113.782911,
+      "p95Ms": 121.776855,
+      "samples": [
+        {
+          "directMs": 2.302057,
+          "wrapperMs": 124.078912,
+          "addedMs": 121.776855
+        },
+        {
+          "directMs": 2.405809,
+          "wrapperMs": 119.10817,
+          "addedMs": 116.702361
+        },
+        {
+          "directMs": 2.046952,
+          "wrapperMs": 117.408224,
+          "addedMs": 115.361272
+        },
+        {
+          "directMs": 2.416089,
+          "wrapperMs": 113.882822,
+          "addedMs": 111.466733
+        },
+        {
+          "directMs": 2.173534,
+          "wrapperMs": 115.956445,
+          "addedMs": 113.782911
+        },
+        {
+          "directMs": 2.378149,
+          "wrapperMs": 115.556737,
+          "addedMs": 113.178588
+        },
+        {
+          "directMs": 1.92222,
+          "wrapperMs": 112.701598,
+          "addedMs": 110.77937800000001
+        }
+      ]
+    },
+    {
+      "id": "read-only",
+      "metric": "wrapper-added",
+      "budgetMs": 2000,
+      "maximumMs": 112.298119,
+      "medianMs": 109.78509799999999,
+      "p95Ms": 112.298119,
+      "samples": [
+        {
+          "directMs": 1.556692,
+          "wrapperMs": 109.654556,
+          "addedMs": 108.097864
+        },
+        {
+          "directMs": 1.95462,
+          "wrapperMs": 111.739718,
+          "addedMs": 109.78509799999999
+        },
+        {
+          "directMs": 1.727296,
+          "wrapperMs": 114.025415,
+          "addedMs": 112.298119
+        },
+        {
+          "directMs": 2.134864,
+          "wrapperMs": 111.021483,
+          "addedMs": 108.88661900000001
+        },
+        {
+          "directMs": 1.571353,
+          "wrapperMs": 111.807799,
+          "addedMs": 110.236446
+        },
+        {
+          "directMs": 1.851998,
+          "wrapperMs": 113.660798,
+          "addedMs": 111.8088
+        },
+        {
+          "directMs": 1.754426,
+          "wrapperMs": 109.783578,
+          "addedMs": 108.02915200000001
+        }
+      ]
+    },
+    {
+      "id": "strict-mjs",
+      "metric": "wrapper-added",
+      "budgetMs": 2000,
+      "maximumMs": 111.649665,
+      "medianMs": 109.57661399999999,
+      "p95Ms": 111.649665,
+      "samples": [
+        {
+          "directMs": 2.011602,
+          "wrapperMs": 113.661267,
+          "addedMs": 111.649665
+        },
+        {
+          "directMs": 2.310908,
+          "wrapperMs": 111.875391,
+          "addedMs": 109.564483
+        },
+        {
+          "directMs": 2.130554,
+          "wrapperMs": 110.37524,
+          "addedMs": 108.244686
+        },
+        {
+          "directMs": 2.269067,
+          "wrapperMs": 113.680378,
+          "addedMs": 111.411311
+        },
+        {
+          "directMs": 1.991641,
+          "wrapperMs": 110.501782,
+          "addedMs": 108.510141
+        },
+        {
+          "directMs": 2.158264,
+          "wrapperMs": 111.734878,
+          "addedMs": 109.57661399999999
+        },
+        {
+          "directMs": 2.006791,
+          "wrapperMs": 113.496885,
+          "addedMs": 111.490094
+        }
+      ]
+    },
+    {
+      "id": "strict-typescript",
+      "metric": "wrapper-added",
+      "budgetMs": 2000,
+      "maximumMs": 115.245929,
+      "medianMs": 113.23317899999999,
+      "p95Ms": 115.245929,
+      "samples": [
+        {
+          "directMs": 3.932731,
+          "wrapperMs": 117.16591,
+          "addedMs": 113.23317899999999
+        },
+        {
+          "directMs": 4.146795,
+          "wrapperMs": 116.955295,
+          "addedMs": 112.80850000000001
+        },
+        {
+          "directMs": 4.303549,
+          "wrapperMs": 115.626418,
+          "addedMs": 111.322869
+        },
+        {
+          "directMs": 4.215557,
+          "wrapperMs": 117.745432,
+          "addedMs": 113.52987499999999
+        },
+        {
+          "directMs": 3.804828,
+          "wrapperMs": 118.179991,
+          "addedMs": 114.375163
+        },
+        {
+          "directMs": 4.202597,
+          "wrapperMs": 119.448526,
+          "addedMs": 115.245929
+        },
+        {
+          "directMs": 4.421881,
+          "wrapperMs": 115.25374,
+          "addedMs": 110.831859
+        }
+      ]
+    },
+    {
+      "id": "post-commit",
+      "metric": "wrapper-added",
+      "budgetMs": 2000,
+      "maximumMs": 249.37962900000002,
+      "medianMs": 241.13324,
+      "p95Ms": 249.37962900000002,
+      "samples": [
+        {
+          "directMs": 8.214059,
+          "wrapperMs": 247.577051,
+          "addedMs": 239.36299200000002
+        },
+        {
+          "directMs": 7.614066,
+          "wrapperMs": 252.256128,
+          "addedMs": 244.64206199999998
+        },
+        {
+          "directMs": 7.138427,
+          "wrapperMs": 254.261679,
+          "addedMs": 247.12325199999998
+        },
+        {
+          "directMs": 7.418262,
+          "wrapperMs": 248.551502,
+          "addedMs": 241.13324
+        },
+        {
+          "directMs": 7.103916,
+          "wrapperMs": 241.400525,
+          "addedMs": 234.296609
+        },
+        {
+          "directMs": 7.001394,
+          "wrapperMs": 256.381023,
+          "addedMs": 249.37962900000002
+        },
+        {
+          "directMs": 7.24741,
+          "wrapperMs": 247.99151,
+          "addedMs": 240.7441
+        }
+      ]
+    },
+    {
+      "id": "scanner",
+      "metric": "absolute",
+      "budgetMs": 2000,
+      "maximumMs": 221.429403,
+      "medianMs": 196.116263,
+      "p95Ms": 221.429403,
+      "samples": [
+        {
+          "wrapperMs": 221.429403
+        },
+        {
+          "wrapperMs": 197.936491
+        },
+        {
+          "wrapperMs": 189.250292
+        },
+        {
+          "wrapperMs": 196.116263
+        },
+        {
+          "wrapperMs": 193.577741
+        },
+        {
+          "wrapperMs": 196.495121
+        },
+        {
+          "wrapperMs": 190.435166
+        }
+      ]
+    },
+    {
+      "id": "normalizer",
+      "metric": "absolute",
+      "budgetMs": 2000,
+      "maximumMs": 177.335137,
+      "medianMs": 176.060221,
+      "p95Ms": 177.335137,
+      "samples": [
+        {
+          "wrapperMs": 176.359747
+        },
+        {
+          "wrapperMs": 176.060221
+        },
+        {
+          "wrapperMs": 174.442347
+        },
+        {
+          "wrapperMs": 176.706544
+        },
+        {
+          "wrapperMs": 175.075761
+        },
+        {
+          "wrapperMs": 174.471268
+        },
+        {
+          "wrapperMs": 177.335137
+        }
+      ]
+    },
+    {
+      "id": "validator",
+      "metric": "absolute",
+      "budgetMs": 2000,
+      "maximumMs": 141.9725,
+      "medianMs": 140.144912,
+      "p95Ms": 141.9725,
+      "samples": [
+        {
+          "wrapperMs": 141.432749
+        },
+        {
+          "wrapperMs": 139.758604
+        },
+        {
+          "wrapperMs": 141.9725
+        },
+        {
+          "wrapperMs": 139.242594
+        },
+        {
+          "wrapperMs": 136.472797
+        },
+        {
+          "wrapperMs": 141.638303
+        },
+        {
+          "wrapperMs": 140.144912
+        }
+      ]
+    },
+    {
+      "id": "relaxed-rebuild",
+      "metric": "absolute",
+      "budgetMs": 2000,
+      "maximumMs": 115.913144,
+      "medianMs": 114.905403,
+      "p95Ms": 115.913144,
+      "samples": [
+        {
+          "wrapperMs": 111.868501
+        },
+        {
+          "wrapperMs": 115.169958
+        },
+        {
+          "wrapperMs": 113.683118
+        },
+        {
+          "wrapperMs": 115.580887
+        },
+        {
+          "wrapperMs": 114.905403
+        },
+        {
+          "wrapperMs": 112.685368
+        },
+        {
+          "wrapperMs": 115.913144
+        }
+      ]
+    }
+  ]
+}

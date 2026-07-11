@@ -165,17 +165,18 @@ export const TREE_WRITE_BATCH_SIZE = 64;
 export const MAXIMUM_BUDGET_MS = 2_000;
 
 /**
- * Scenario budgets derived from the first bounded packed baseline run.
- * Values are replaced with measured headroom after collecting that run.
+ * Scenario budgets derived from `perf/lifecycle-latency-2026-07-11.json`.
+ * Each ceiling is twice measured maximum rounded up to next 25 milliseconds;
+ * every result remains below user-required 2,000-millisecond ceiling.
  */
 export const SCENARIO_BUDGETS: Readonly<Record<LifecycleScenarioId, number>> = {
-  'no-config': MAXIMUM_BUDGET_MS,
-  'read-only': MAXIMUM_BUDGET_MS,
-  'strict-mjs': MAXIMUM_BUDGET_MS,
-  'strict-typescript': MAXIMUM_BUDGET_MS,
-  'relaxed-rebuild': MAXIMUM_BUDGET_MS,
-  'validator': MAXIMUM_BUDGET_MS,
-  'scanner': MAXIMUM_BUDGET_MS,
-  'normalizer': MAXIMUM_BUDGET_MS,
-  'post-commit': MAXIMUM_BUDGET_MS,
+  'no-config': 250,
+  'read-only': 225,
+  'strict-mjs': 225,
+  'strict-typescript': 250,
+  'relaxed-rebuild': 250,
+  'validator': 300,
+  'scanner': 450,
+  'normalizer': 375,
+  'post-commit': 500,
 };
