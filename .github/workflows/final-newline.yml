@@ -32,11 +32,13 @@ jobs:
     - name: Install cli-git dependency closure
       run: pnpm install --frozen-lockfile --filter @monochromatic-dev/cli-git...
 
-    - name: Select isolated core policy config
-      run: printf 'export default {};\n' > cli-git.config.mjs
+    - name: Create isolated core policy repository
+      run: |
+        git clone --local --no-hardlinks "$GITHUB_WORKSPACE" "$RUNNER_TEMP/final-newline"
+        printf 'export default {};\n' > "$RUNNER_TEMP/final-newline/cli-git.config.mjs"
 
     - name: Trust isolated core policy config
-      run: node packages/git-policies/cli/src/index.ts -C "$GITHUB_WORKSPACE" cli-git trust --yes
+      run: node packages/git-policies/cli/src/index.ts -C "$RUNNER_TEMP/final-newline" cli-git trust --yes
 
     - name: Check final newlines
-      run: node packages/git-policies/cli/src/index.ts -C "$GITHUB_WORKSPACE" cli-git check --policy final-newline --all
+      run: node packages/git-policies/cli/src/index.ts -C "$RUNNER_TEMP/final-newline" cli-git check --policy final-newline --all
