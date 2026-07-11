@@ -11,6 +11,7 @@ import {
   assertIncludes,
   execute,
 } from './built-consumer-helpers.ts';
+import { verifyFinalNewlineExclusions, } from './built-final-newline-exclusions-consumer.ts';
 import { verifyFinalNewlinePartialCommit, } from './built-final-newline-partial-consumer.ts';
 import {
   assertFixtureEqual,
@@ -236,10 +237,10 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     cwd: repository,
     env,
   },);
-  assertIncludes({
-    text: committed.stderr,
-    expected: '"type":"fix-summary"',
-    context: 'packed commit fix summary',
+  assertFixtureEqual({
+    actual: committed.stderr,
+    expected: '{"schemaVersion":1,"sequence":0,"type":"fix-summary","trigger":"pre-forward","passes":1,"changedPaths":["commit.txt"]}\n',
+    context: 'packed commit final-only summary',
   },);
   /**
    * Exact committed canonical text.
@@ -350,4 +351,5 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     context: 'manual-push committed blob bytes',
   },);
   await verifyFinalNewlinePartialCommit({ env, },);
+  await verifyFinalNewlineExclusions({ env, },);
 }
