@@ -250,19 +250,19 @@ export const PAIRED_SCENARIOS: readonly PairedScenario[] = [
  */
 export const ABSOLUTE_SCENARIOS: readonly AbsoluteScenario[] = [
   {
-  id: 'validator',
-  request: validatorRequest,
-},
-  {
-  id: 'relaxed-rebuild',
-  request: relaxedRequest,
-},
-  {
   id: 'scanner',
   request: scannerRequest,
 },
   {
   id: 'normalizer',
   request: normalizerRequest,
+},
+  {
+  id: 'validator',
+  request: validatorRequest,
+},
+  {
+  id: 'relaxed-rebuild',
+  request: relaxedRequest,
 },
 ];

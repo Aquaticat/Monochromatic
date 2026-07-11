@@ -383,6 +383,10 @@ export async function collectLifecycleScenarios(
     Promise.resolve<readonly ScenarioSummary[]>([],),
   );
   /**
+   * Post-commit summary collected before relaxed config mutation.
+   */
+  const postCommit = await collectPostCommit();
+  /**
    * Absolute summaries collected sequentially over shared trusted state.
    */
   const absolute = await ABSOLUTE_SCENARIOS.reduce(
@@ -402,7 +406,7 @@ export async function collectLifecycleScenarios(
   );
   return [
     ...paired,
+    postCommit,
     ...absolute,
-    await collectPostCommit(),
   ];
 }

@@ -67,6 +67,7 @@ await run('apt-get', ['update'])
 await run('apt-get', ['install', '--yes', '--no-install-recommends', 'git'])
 await mkdir('/work', { recursive: true })
 await run('npm', ['init', '--yes'], { cwd: '/work' })
+await run('npm', ['pkg', 'set', 'type=module'], { cwd: '/work' })
 await run('npm', ['install', '--ignore-scripts', '/fixture/cli.tgz'], { cwd: '/work' })
 await import('/work/perf/lifecycle-latency-benchmark.ts')
 `
