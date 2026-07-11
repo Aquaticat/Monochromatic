@@ -60,7 +60,8 @@ export type BuiltInPolicyId =
   | 'require-root'
   | 'linked-worktree-only'
   | 'branch-worktree-only'
-  | 'add-explicit';
+  | 'add-explicit'
+  | 'final-newline';
 
 /**
  * Plugin namespace map.

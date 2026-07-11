@@ -39,6 +39,18 @@ export type {
   ForbiddenStringsPolicyOptions,
 } from './optional/forbidden-strings/index.ts';
 export {
+  finalNewlinePolicy,
+} from './policy-engine/final-newline-policy.ts';
+export {
+  isFinalNewlineExcluded,
+  normalizeFinalNewline,
+} from './policy-engine/final-newline-normalize.ts';
+export type {
+  ChangedFinalNewline,
+  FinalNewlineNormalization,
+  UnchangedFinalNewline,
+} from './policy-engine/final-newline-normalize.ts';
+export {
   forbiddenRootContext,
   hasForbiddenRootContext,
   repositoryPolicyPlugin,
