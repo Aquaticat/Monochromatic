@@ -52,6 +52,14 @@ type ResolveGitOptions = {
    * calls follow shell lookup order, while tests can inject isolated paths.
    */
   readonly pathEnv?: string;
+  /**
+   * Runtime platform used for executable naming.
+   */
+  readonly platform?: NodeJS.Platform;
+  /**
+   * Windows executable extensions in shell lookup order.
+   */
+  readonly pathExtensions?: string;
 };
 
 /**
@@ -111,6 +119,10 @@ export async function resolveGit({
   pathEnv = process.env
     .PATH
     ?? '',
+  platform = process.platform,
+  pathExtensions = process.env
+    .PATHEXT
+    ?? '.COM;.EXE;.BAT;.CMD',
 }: ResolveGitOptions = {},): Promise<string> {
   /**
    * Tagged logger for git binary resolution.
@@ -124,15 +136,32 @@ export async function resolveGit({
    * Individual PATH entries, scanned in order so the first executable git wins.
    */
   const pathDirs = pathEnv.split(delimiter,);
+  /**
+   * Platform-specific executable names in native lookup order.
+   */
+  const executableNames = platform === 'win32'
+    ? pathExtensions
+      .split(';',)
+      .filter(function nonemptyExtension(extension,) {
+        return extension.length > 0;
+      },)
+      .map(function gitExecutableName(extension,) {
+        return `git${extension.startsWith('.') ? extension : `.${extension}`}`;
+      },)
+    : ['git',];
+  /**
+   * Ordered executable candidates across PATH directories and Windows extensions.
+   */
+  const candidates = pathDirs.flatMap(function candidatesInDirectory(dir,) {
+    return executableNames.map(function executableInDirectory(name,) {
+      return join(
+        dir,
+        name,
+      );
+    },);
+  },);
 
-  for (const dir of pathDirs) {
-    /**
-     * Candidate git binary path in this PATH entry.
-     */
-    const candidate = join(
-      dir,
-      'git',
-    );
+  for (const candidate of candidates) {
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential PATH scan; we need the first match and stop
       await access(
@@ -157,6 +186,6 @@ export async function resolveGit({
 
   throw new Error(
     'cli-git: could not find real git binary on PATH. '
-      + 'Ensure git is installed at /usr/bin/git or another PATH entry.',
+      + 'Ensure Git is installed and PATH/PATHEXT expose its executable.',
   );
 }

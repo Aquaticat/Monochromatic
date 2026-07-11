@@ -188,6 +188,26 @@ await describe({
       },);
     },),
     it({
+      name: 'resolves Windows executable through PATHEXT order',
+      fn: async function testWindowsExecutableExtension(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** PATH directory containing executable-suffixed Git. */
+        const realBinDir = join(tempDirectory.path, 'real-bin',);
+        await mkdir(realBinDir,);
+        /** Windows-style executable fixture selected after absent COM candidate. */
+        const realGitPath = join(realBinDir, 'git.EXE',);
+        await writeExecutable({
+          path: realGitPath,
+          content: REAL_GIT_CONTENT,
+        },);
+        expect(await resolveGit({
+          pathEnv: realBinDir,
+          platform: 'win32',
+          pathExtensions: '.COM;.EXE;.BAT;.CMD',
+        },),).toBe(realGitPath,);
+      },
+    },),
+    it({
       name: 'throws when PATH has only self shims',
       fn: async function testOnlySelfShims(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
