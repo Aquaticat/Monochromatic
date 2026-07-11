@@ -100,7 +100,9 @@ await describe({
         },),).toBe(0,);
         expect(await readFile(join(fixture.repository, 'one.txt',), 'utf8',),).toBe('one\n',);
         expect(await readFile(join(fixture.repository, 'two.txt',), 'utf8',),).toBe('two',);
-        expect(await readFile(join(fixture.repository, '.git/index',),)).toEqual(indexBefore,);
+        expect(
+          await readFile(join(fixture.repository, '.git/index',),),
+        ).toEqual(indexBefore,);
         expect(await runManagementCommand({
           args: [
             'fix',
@@ -112,7 +114,9 @@ await describe({
           ],
         },),).toBe(0,);
         expect(await readFile(join(fixture.repository, 'two.txt',), 'utf8',),).toBe('two\n',);
-        expect(await readFile(join(fixture.repository, '.git/index',),)).toEqual(indexBefore,);
+        expect(
+          await readFile(join(fixture.repository, '.git/index',),),
+        ).toEqual(indexBefore,);
       },
     },),
   ],

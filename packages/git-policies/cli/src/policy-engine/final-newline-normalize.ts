@@ -13,7 +13,9 @@ const LINE_FEED = 0x0A;
  * NUL byte used by binary-looking content classification.
  */
 const NUL = 0;
-/** Segment offset proving matched Node directory contains a descendant file. */
+/**
+ * Segment offset proving matched Node directory contains a descendant file.
+ */
 const PATH_AFTER_NODE_OFFSET = 3;
 
 /**

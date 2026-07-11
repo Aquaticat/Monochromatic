@@ -18,7 +18,9 @@ import type {
 import { validatePolicyPatch, } from './commit-transaction-patch.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
-/** Private workspace fields required for patch application. */
+/**
+ * Private workspace fields required for patch application.
+ */
 export type PrivatePatchWorkspace = Readonly<Pick<
   CommitTransactionWorkspace,
   'directory' | 'commitIndexPath'
