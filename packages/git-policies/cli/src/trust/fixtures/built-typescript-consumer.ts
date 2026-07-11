@@ -10,6 +10,7 @@ import {
   assertIncludes,
   assertJsonl,
   execute,
+  parseJsonObjectLine,
 } from './built-consumer-helpers.ts';
 
 /**
@@ -306,14 +307,18 @@ export default {
       CLI_GIT_NO_PARANOID: 'bad%20entry',
     },
   },);
-  assertJsonl({
+  /** Canonical non-policy trust warning. */
+  const warning = parseJsonObjectLine({
     text: malformed.stderr,
-    expectedCode: 'relaxed-entry-malformed',
     context: 'malformed relaxed warning',
   },);
-  assertIncludes({
+  if ((warning.schemaVersion !== 1)
+    || (warning.type !== 'trust-warning')
+    || (warning.code !== 'relaxed-entry-malformed'))
+    throw new Error(`malformed relaxed warning mismatch\n${malformed.stderr}`,);
+  assertJsonl({
     text: malformed.stdout,
-    expected: '"code":"config-changed"',
+    expectedCode: 'config-changed',
     context: 'malformed strict block',
   },);
   /**
