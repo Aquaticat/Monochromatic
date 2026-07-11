@@ -1,6 +1,24 @@
-# Forbidden strings: enforcement plan
+# Forbidden strings historical enforcement design
 
-Plan for blocking enumerable literal/regex strings from being introduced in commits,
+## Status
+
+The Rust scanner,
+out-of-band rule model,
+redacted findings,
+and independent CI are implemented.
+Cli-git now owns local commit,
+landed-commit,
+and manual-push policy enforcement.
+Issue `#357` removed the superseded hk/Pkl layer.
+Every hk command,
+Pkl snippet,
+and rollout step in this document is historical evidence rather than current setup guidance.
+Current commands and architecture live in `packages/cli/forbidden-strings/README.md`,
+`packages/cli/forbidden-strings/PERF.md`,
+`packages/git-policies/cli/README.md`,
+and `.github/workflows/forbidden-strings.yml`.
+
+This record explains the original plan for blocking enumerable literal/regex strings from being introduced in commits,
 both locally and in CI.
 
 Release-readiness work for promoting the shipped crate to `1.0` lives in a separate
@@ -80,7 +98,7 @@ As of 2026-05-02 the implementation is ~300x under the full-repo budget,
 so the budgets above describe upper bounds the design honors with comfortable headroom,
 not targets the implementation is striving toward.
 
-## Decision: hk + Rust scanner using resharp with plain-text out-of-band deny-list
+## Historical decision: Rust scanner with a superseded hk adapter
 
 Adopt **hk** (`https://hk.jdx.dev/`,
  `jdx/hk`) as the git hook runner
@@ -225,7 +243,7 @@ so the engine sees a single uniform input.
   Pulls a Python tool into a Bun/mise repo;
    tool-family mismatch.
 
-## Implementation plan
+## Historical implementation plan
 
 ### Where the deny-list lives
 
@@ -391,7 +409,7 @@ and only invoke the full regex on files where the AC stage hits.
 This is a v1.1 optimization;
  v1 trusts the unified automaton and measures.
 
-### Pkl configuration sketch
+### Historical Pkl configuration sketch
 
 ```pkl
 amends "package://github.com/jdx/hk/releases/download/v1.44.3/hk@1.44.3#/Config.pkl"
@@ -410,7 +428,7 @@ hooks {
 }
 ```
 
-### CI workflow sketch
+### Historical CI workflow sketch
 
 A single GitHub Actions job on pull_request and push to main:
 
@@ -476,10 +494,9 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
    review the list quarterly,
    remove unused rules,
    document why each entry exists.
-- **Pkl is a new config language for this repo.
+- **Pkl added a config language during the retired hk phase.
   **
-  Reviewers will need a one-time orientation;
-  pinning the Pkl version via `mise` mitigates surprise.
+  Issue `#357` removed both Pkl and its IDE configuration after cli-git parity.
 - **Rust toolchain becomes a build-time dependency.
   **
   `mise.toml` already pins `rust = "latest"`,
@@ -503,7 +520,7 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
   The column range leaks the match length only,
    which is the accepted floor.
 
-## Rollout
+## Historical rollout
 
 1. Land the Rust crate at `packages/cli/forbidden-strings/`
    with the loader pointing at a `.local.txt` file that contains
@@ -536,7 +553,7 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
    how to format new rules,
    and how to interpret the opaque rule index in failure messages.
 
-## Open questions
+## Historical open questions
 
 - **Scope of files scanned.
   **

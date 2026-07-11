@@ -27,6 +27,11 @@ Scope:
  The standalone aqua CLI is out of scope because this repo does not
 use it (see "What is actually in the trust chain").
 
+Retirement update:
+issue `#357` removed `jdx/hk` and `apple/pkl` from active tool declarations and regenerated `mise.lock`.
+Their findings remain historical supply-chain evidence;
+they no longer describe tools provisioned by the current repository.
+
 ## What is actually in the trust chain
 
 "aqua" names two different things,

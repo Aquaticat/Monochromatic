@@ -701,7 +701,8 @@ Direct fix replaces the old `hk fix --all --step final-newline --no-stage` capab
 CI remains independent of wrapper trust.
 Forbidden-strings continues to run its SLSA-attested binary directly.
 Before hk removal,
-add an independent final-newline check that invokes the direct checker without loading unrelated root tooling.
+issue `#356` added an independent final-newline check that invokes the direct checker without loading unrelated root
+tooling.
 Do not reintroduce generic hk execution in CI.
 
 External consumers that exercise trusted config in CI run:
@@ -734,23 +735,22 @@ and a disposable non-workspace installation and invocation.
 
 ## Retirement capstone
 
-Do not retire hk or Pkl until policy parity,
+Issue `#357` is retiring hk and Pkl only after policy parity,
 trust,
 transaction,
 performance,
 package,
 documentation,
-and independent CI gates pass.
+and independent CI gates passed.
 
-Then:
-
-- remove hk and Pkl tool declarations and managed outputs;
-- remove root hk config and obsolete Pkl IDE config;
-- update or remove hk/Pkl planning and troubleshooting documentation after reading it;
-- update forbidden-strings documentation;
-- provide a verified idempotent per-machine cleanup for `hook.hk-*` Git config;
-- resolve or supersede existing #143 and #160;
-- verify the built shim and direct management commands after removal.
+The capstone removed tool declarations,
+managed lock entries,
+root hk config,
+and obsolete Pkl IDE config.
+It rewrote current planning and troubleshooting guidance,
+updated forbidden-strings documentation,
+and added a verified idempotent per-machine cleanup for `hook.hk-*` Git config.
+Issues `#143` and `#160` are superseded by the completed cli-git platform.
 
 Actual npm registry publication remains outside this capstone.
 
@@ -803,7 +803,7 @@ Rejected because the accepted sequence is platform-first with one capstone remov
 
 ## Supply-chain boundary
 
-Retiring hk and Pkl removes hk's digest-only mise installation surface.
+Retiring hk and Pkl removed hk's digest-only mise installation surface.
 Forbidden-strings remains built in-repo and distributed to CI with SLSA provenance.
 Cli-git trust decides whether to execute one repository artifact;
 it does not certify plugin provenance or package versions.
@@ -830,6 +830,6 @@ Consumer lockfiles and self-contained builds govern plugin inputs.
 - GitHub issues #341 through #356:
   completed dependency-ordered implementation and release-readiness slices.
 - GitHub issue #357:
-  active hk and Pkl retirement capstone.
+  hk and Pkl retirement capstone at final verification.
 - GitHub issue #358:
   recorded and indefinitely deferred npm publication.

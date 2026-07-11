@@ -164,7 +164,11 @@ paired performance,
 packaging,
 documentation,
 and independent standards and specification review passed.
-Continue with dependency-ordered hk and Pkl retirement in `#357`.
+Issue `#357` has removed hk/Pkl infrastructure and added exact disposable-tested Git-config cleanup;
+continue with its built-shim,
+independent CI,
+documentation,
+and final review gates.
 Keep npm publication issue `#358` deferred until a maintainer explicitly resumes it.
 
 Issue `#360`,

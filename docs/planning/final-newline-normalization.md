@@ -36,7 +36,7 @@ The final hk-era tracked-file scan inspected 7,074 paths and found zero in-scope
 67 binary or non-UTF-8 files,
 and 1,561 excluded paths.
 Those counts remain historical evidence rather than current-tree claims.
-Hk remains as transitional local-hook infrastructure until issue `#357` removes hk and Pkl.
+Issue `#357` removed the transitional hk and Pkl infrastructure after independent cli-git CI passed.
 
 ## Goal
 
@@ -115,9 +115,10 @@ but it is rejected here:
 
 The repository will normalize before commit instead of asking Git to conceal a real byte difference.
 
-## Chosen mechanism
+## Historical interim mechanism
 
-Use hk's built-in `newlines` step as an interim local fixer and checker.
+Before the durable cli-git migration,
+the repository used hk's built-in `newlines` step as an interim local fixer and checker.
 At hk 1.50.0,
 `pkl/builtins/newlines.pkl` delegates to `hk util end-of-file-fixer`:
 
@@ -127,12 +128,10 @@ At hk 1.50.0,
 - The builtin selects text-like paths,
   then the utility performs its own content check.
 
-The implementation will align the executable and Pkl package at hk 1.50.0.
-The current state is version-skewed:
-`hk.pkl` imports 1.44.3,
-while `mise.lock` contains a legacy backend-keyed 1.47.0 entry plus the active short-name 1.50.0 entry,
-and the planning environment activated 1.50.0.
-A hook that mutates staged content should not depend on an older Pkl package than its active executable.
+The interim implementation aligned the executable and Pkl package at hk 1.50.0 before retirement.
+Issue `#357` removed the root config,
+both active tool declarations,
+and all legacy and active hk/Pkl lock entries.
 
 The configured step will be equivalent to:
 
@@ -162,7 +161,7 @@ and every file beneath that producer boundary keeps producer-native bytes.
 The current 18 tracked outputs all omit the final LF,
 so the exemption saves 18 bytes in the measured baseline.
 
-## Hook behavior
+## Historical hook behavior
 
 ### Pre-commit
 
@@ -304,8 +303,9 @@ converges whole-policy passes,
 revalidates concurrent worktree changes,
 and installs sibling-file replacements atomically.
 
-Hk now provides duplicate transitional checks and an explicit fallback fixer only until issue `#357`.
-Its pre-commit fixer remains disabled because hk 1.50.0 can alter a partially staged worktree at an EOF-tail boundary.
+Issue `#357` removed hk's duplicate transitional checks and fallback fixer.
+The historical pre-commit fixer remained disabled through retirement because hk 1.50.0 can alter a partially staged
+worktree at an EOF-tail boundary.
 Git clean filters remain rejected because local driver configuration and worktree/index opacity conflict with the
 platform's exact-byte model.
 Formatter-only enforcement remains incomplete because it cannot protect every in-scope text file.
@@ -313,24 +313,16 @@ Formatter-only enforcement remains incomplete because it cannot protect every in
 Issue `#356` added independent final-newline CI in `.github/workflows/final-newline.yml`.
 Hosted run `29171565809` passed while invoking cli-git's direct checker through typed Node orchestration over a
 disposable clone without loading unrelated hk or Pkl tooling.
-Issue `#356` is closed;
-issue `#357` may now remove hk.
+Issues `#356` and `#357` completed the independent CI gate and hk/Pkl retirement.
 
 ## Limitations
 
-- Transitional duplicate local-hook enforcement still requires hk to be installed and enabled;
-  cli-git's wrapper and independent CI do not depend on hk.
-- Git hooks can be bypassed by clients that do not invoke them or by explicit verification bypasses.
-- hk's text detection is heuristic.
-  New exact-byte fixtures must receive a narrow exclusion when introduced.
-- Empty files are accepted by hk.
-  This implementation removes the only current empty placeholder but does not forbid future intentional empty files.
+- Clients that bypass the PATH-shadowed executable also bypass local cli-git policy enforcement;
+  independent CI remains the backstop.
 - Only LF runs are collapsed.
   The existing `.gitattributes` policy remains responsible for CRLF-to-LF normalization.
-- The local hk hook is temporary infrastructure because issue `#357` schedules hk retirement.
-- Hk pre-commit newline enforcement remains read-only while both systems coexist.
-- Hk 1.50.0's fixer can insert a blank boundary line when it adds the staged file's missing final LF at the exact
-  point where an unstaged tail begins.
+- Hk 1.50.0's retired fixer could insert a blank boundary line when it added the staged file's missing final LF at the
+  exact point where an unstaged tail began.
   Cli-git avoids that merge path entirely:
   commit correction changes only its private index,
   and direct fix changes selected worktree files only after exact concurrency and real-index checks.
@@ -343,7 +335,9 @@ issue `#357` may now remove hk.
 Implementation updates:
 
 - `docs/decisions/cli-git-policies-platform.md`:
-  record the interim third hk behavior and migration obligation.
+  record the historical interim hk behavior,
+  migration obligation,
+  and completed retirement.
 - `docs/troubleshooting/hk-partial-staging-final-newline.md`:
   record hk 1.50.0's partial-staging boundary merge,
   exact-byte reproduction,

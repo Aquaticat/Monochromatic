@@ -1,5 +1,14 @@
 # Pkl IntelliJ Plugin 0.36.1 is not discoverable in JetBrains Marketplace and is hidden from IDEA before 2024.3
 
+## Repository status
+
+Issue `#357` removed this repository's sole Pkl input,
+root `hk.pkl`,
+and obsolete `.idea/pklSettings.xml` after cli-git replaced hk.
+No Pkl editor integration is now required for Monochromatic.
+The external plugin findings remain durable evidence for any future Pkl use;
+they are not current repository setup instructions.
+
 Pkl support for IntelliJ IDEA is real,
  but it is not bundled into IDEA and the
 official Apple plugin is not published in the ordinary JetBrains Marketplace
@@ -30,12 +39,9 @@ Two common variants produce the same user-facing impression:
    so the
   current plugin is incompatible and the plugin manager hides or rejects it.
 
-The repo does have Pkl inputs;
- `rg --files . --glob '*.pkl'` returned:
-
-```text
-./hk.pkl
-```
+At diagnosis time,
+the repository's only Pkl input was `./hk.pkl`.
+Issue `#357` later removed it.
 
 ## Root cause
 
@@ -133,16 +139,9 @@ Version under test:
 - Official latest plugin feed at
   `https://github.com/apple/pkl-intellij/releases/latest/download/updatePlugins.xml`.
 
-Repository inventory confirmed this repo contains a Pkl file:
-
-```shell
-cd /var/home/user/Monochromatic
-rg --files . --glob '*.pkl'
-```
-
-```text
-./hk.pkl
-```
+The diagnosis-time repository inventory found only `./hk.pkl`.
+After issue `#357`,
+`rg --files . --glob '*.pkl'` returns no tracked path.
 
 The latest official feed returns plugin `0.36.1` with IntelliJ build `243`
 minimum:
@@ -277,9 +276,8 @@ fallback standard library support.
 - Do not treat the old Marketplace listing mentioned in upstream issue `#4` as
   official.
    Apple's maintainer said it was not from Apple.
-- Do not expect `hk.pkl` or another `.pkl` file to become recognized merely
-  because the Pkl CLI is installed via mise or aqua.
-   The CLI evaluates Pkl;
+- Do not expect a `.pkl` file to become recognized merely because the Pkl CLI is installed.
+  The CLI evaluates Pkl;
   IDEA editor support comes from the separate JetBrains plugin.
 
 ## Upstream filing artifact

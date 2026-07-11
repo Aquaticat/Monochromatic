@@ -135,11 +135,6 @@ redacted output,
    `mise install rust`.
 - **mise** itself,
    since build commands are `mise run` tasks.
-- **For local git hooks**:
-   `hk` (the hook runner) and `pkl` (its config language).
-   Both
-  are available via mise / aqua:
-   `mise install 'aqua:jdx/hk' 'aqua:apple/pkl'`.
 
 ## Build
 
@@ -148,8 +143,8 @@ mise run //packages/cli/forbidden-strings:build
 ```
 
 The release binary lands at `packages/cli/forbidden-strings/target/release/forbidden-strings`.
-`hk.pkl` invokes that path directly;
- nothing needs to be on `$PATH`.
+Root `cli-git.config.ts` gives that path to the bundled `security/forbidden-strings` policy;
+nothing needs to be on `$PATH`.
 
 ## Setup
 
@@ -582,67 +577,38 @@ inside one pattern,
 
 ## Integration
 
-### Local (hk)
+### Local cli-git policy
 
-`hk` replaces husky for this repo.
- Wire git hooks once per machine:
+Root `cli-git.config.ts` enables `security/forbidden-strings` at error severity.
+The PATH-shadowed cli-git wrapper evaluates selected would-be-committed bytes before commit,
+landed commit bytes before automatic push,
+and Git-native outgoing ranges before manual push.
+Native `--no-verify` skips Git hooks but does not skip this policy.
+
+Run an explicit read-only check through the built shim with:
 
 ```sh
-hk install --global   # recommended; needs Git 2.54+
-# or, per-repo:
-hk install
+git cli-git check --policy security/forbidden-strings --all
 ```
 
-`hk.pkl` registers `forbidden-strings` for the `pre-commit`,
- `pre-push`,
- and `check`
-hooks,
- so every commit,
- every push,
- and every explicit `hk check` runs the scanner
-against the relevant files.
+The policy invokes the repository-built scanner directly.
+Scanner infrastructure failures remain distinct exit-2 engine failures;
+findings exit `1`.
 
 ### GitHub Actions
 
-Materialize the runtime rules file from the committed baseline plus the optional
-repository secret,
- then dispatch by event type.
- The shape below mirrors
-`.github/workflows/forbidden-strings.yml`:
+`.github/workflows/forbidden-strings.yml` remains independent of cli-git trust and local wrapper state.
+It downloads the release matching the scanner crate version,
+verifies the archive's GitHub build-provenance attestation,
+materializes the committed baseline plus shared appendix and optional repository secret,
+then invokes the scanner binary directly.
+Pull-request and merge-queue jobs scan changed files relative to `origin/main`;
+pushes to `main` scan the complete tracked tree.
 
-```yaml
-- name: Build scanner
-  run: mise run //packages/cli/forbidden-strings:build
-
-- name: Materialize deny-list
-  env:
-    FORBIDDEN_STRINGS_LIST: ${{ secrets.FORBIDDEN_STRINGS_LIST }}
-  run: |
-    cp forbidden-strings.local.example.txt forbidden-strings.local.txt
-    if [ -n "$FORBIDDEN_STRINGS_LIST" ]; then
-      printenv FORBIDDEN_STRINGS_LIST >> forbidden-strings.local.txt
-    fi
-
-- name: Scan (PR / merge_group)
-  if: github.event_name != 'push'
-  run: mise exec -- hk check --from-ref origin/main
-
-- name: Scan (push to main)
-  if: github.event_name == 'push'
-  run: |
-    packages/cli/forbidden-strings/target/release/forbidden-strings \
-      --rules forbidden-strings.local.txt --all
-```
-
-Pipe via `printenv >> file` rather than interpolating the secret into a `run:` block;
-shell expansion in the latter can leak the value to the log even with GitHub's masking.
-The committed baseline always runs;
- the optional secret extends it.
- The same precedence
-applies as locally:
- `--rules` > `FORBIDDEN_STRINGS_RULES` > `./forbidden-strings.local.txt`.
-The full workflow at `.github/workflows/forbidden-strings.yml` runs `hk check` against
-changed files for PR / merge_group events and additionally runs `--all` on push to main.
+Pipe secrets through `printenv` rather than interpolating them into a workflow command;
+shell expansion can leak values even when log masking is enabled.
+The same precedence applies locally and in CI:
+`--rules` > `FORBIDDEN_STRINGS_RULES` > `./forbidden-strings.local.txt`.
 
 ## Output
 

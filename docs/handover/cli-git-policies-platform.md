@@ -1771,6 +1771,45 @@ the one `index.mjs` artifact,
 and `index.d.mts` remain.
 Publication workflow state was not changed.
 
+## Retirement checkpoint on 2026-07-11
+
+Issue `#357` removed root `hk.pkl`,
+obsolete `.idea/pklSettings.xml`,
+hk and Pkl declarations from canonical `mise.no-env.toml`,
+the managed `mise.toml` output,
+and four legacy or active lockfile blocks.
+Commit `122c5dbd2` records that infrastructure boundary.
+
+The first push after removal failed because this checkout still has local `hook.hk-pre-push` configuration and the
+retired executable was no longer provisioned.
+No real local or global Git configuration was changed.
+The checkpoint used native `--no-verify` only to bypass that stale hook;
+cli-git manual-push policies still executed and the push succeeded.
+
+Commit `a9b07385c` adds `mise run cleanup:hk-git-config -- --local --global`.
+The command resolves real Git through cli-git,
+requires explicit scopes,
+removes only keys beginning with `hook.hk-`,
+and reports exact removed names.
+`test:hk-config-cleanup` passes independent disposable unconfigured,
+configured,
+repeated,
+local,
+global,
+unrelated-key preservation,
+and root-task fixtures.
+The fresh-context procedure is `docs/runbook/remove-retired-hk-git-config.md`.
+Automated verification never touches real per-user Git state.
+
+Current documentation now treats hk/Pkl behavior as historical evidence,
+points local enforcement to cli-git,
+and keeps independent scanner and final-newline CI authoritative.
+Final built-shim,
+packed-install,
+independent CI,
+review,
+and related-issue disposition remain before `#357` closes.
+
 ## GitHub implementation tracker
 
 The confirmed plan is recorded as dependency-linked GitHub issues.
@@ -1837,8 +1876,11 @@ Dependency-ordered implementation slices:
   npm-pack readiness,
   user documentation,
   and independent review passed without publishing.
-- [#357](https://github.com/Aquaticat/Monochromatic/issues/357):
-  retire hk and Pkl after every capstone gate passes.
+- [#357](https://github.com/Aquaticat/Monochromatic/issues/357),
+  in final verification:
+  hk/Pkl infrastructure is removed,
+  exact cleanup passes disposable fixtures,
+  and documentation is migrated.
 
 Deferred issue:
 
@@ -2060,13 +2102,14 @@ a later phase does not wait to record an earlier phase's work.
 ## Remaining work
 
 The earlier evidence gaps and issue `#356` review findings are closed.
-Issue `#357` now removes hk and Pkl,
-updates transitional documentation,
-provides and verifies idempotent per-machine Git-config cleanup,
-and reruns the end-user shim,
+Issue `#357` has removed hk and Pkl,
+updated transitional documentation,
+and verified idempotent per-machine Git-config cleanup in disposable state.
+Remaining work reruns the end-user shim,
 direct checks,
 independent CI,
-and clean packed installation.
+clean packed installation,
+and final review before related-issue disposition and closure.
 Do not publish npm artifacts;
 `#358` remains deferred.
 

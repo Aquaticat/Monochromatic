@@ -24,8 +24,10 @@ The unstaged text survives,
 but hk inserts an unintended blank line at the boundary.
 This violates exact partial-staging preservation.
 
-The repository therefore keeps hk pre-commit newline checks read-only while hk remains installed.
-Hk rewriting remains available only through the explicit `fix` hook with `--no-stage`.
+Before retirement,
+the repository kept hk pre-commit newline checks read-only and exposed rewriting only through the explicit `fix` hook
+with `--no-stage`.
+Issue `#357` removed hk and Pkl after cli-git parity passed.
 
 ## Cli-git migration resolution
 
@@ -56,8 +58,9 @@ The transaction fixture in
 `packages/git-policies/cli/src/trust/fixtures/built-autofix-transaction-consumer.ts`
 retains the exact partial-staging regression coverage.
 Independent final-newline workflow run `29171565809` passed typed Node orchestration and direct policy checking.
-Issue `#356` is closed;
-hk and Pkl remain only until active issue `#357` removes them.
+Issues `#356` and `#357` completed release readiness and removed hk/Pkl infrastructure.
+This document remains as durable root-cause and exact-byte regression evidence;
+it no longer prescribes repository setup.
 
 ## Root cause
 
@@ -227,15 +230,15 @@ The targeted upstream Bats regression also passed:
 ok 1 fix avoids duplicate separator when fixer adds missing final newline
 ```
 
-## Verified workarounds
+## Historical verified workarounds
 
 ### Keep hk pre-commit read-only
 
-While hk remains installed,
-this repository keeps `stash = "git"` so hk checks observe staged bytes,
-but removes `fix = true` from `pre-commit`.
+Before retirement,
+the repository kept `stash = "git"` so hk checks observed staged bytes,
+but removed `fix = true` from `pre-commit`.
 A failed commit restores the partial worktree exactly.
-The explicit command remains:
+The historical explicit command was:
 
 ```sh
 hk fix --all --step final-newline --no-stage

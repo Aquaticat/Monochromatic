@@ -82,7 +82,7 @@ if (discoveredRoot !== scanRoot)
   throw new TypeError(`Cli-git repository discovery mismatch: ${discoveredRoot}`,);
 
 /**
- * Source entry invoked directly so generic hk and root mise tasks remain outside this workflow.
+ * Source entry invoked directly so retired hk behavior and root mise tasks remain outside this workflow.
  */
 const cliEntry = join(
   workspace,

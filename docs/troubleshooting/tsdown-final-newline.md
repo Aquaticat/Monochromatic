@@ -293,12 +293,12 @@ The shared tsdown producer remains byte-transparent.
 All 18 tracked files under `packages/claude-code-plugins/*/dist/final/node/` have zero final LF bytes,
 which saves 18 bytes compared with mandatory one-LF output.
 
-`hk.pkl` excludes `**/dist/final/node/**` from pre-commit,
-pre-push,
-explicit check,
-and explicit fix behavior.
-A real commit containing all 18 rebuilt artifacts ran the other pre-commit step but omitted `final-newline`,
-proving the exclusion applies at the commit boundary.
+Cli-git's core `final-newline` policy excludes `**/dist/final/node/**` from commit,
+manual-push,
+direct-check,
+and direct-fix behavior.
+Packed lifecycle fixtures prove the exclusion applies at each policy boundary.
+Issue `#357` removed the superseded hk/Pkl layer.
 The producer normalizer and its tests were removed.
 
 The exception is directory-scoped rather than suffix-scoped because `dist/final/node` is the shared tsdown producer

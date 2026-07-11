@@ -10,6 +10,16 @@ The architecture has incorporated independent advisor reviews.
 This plan records the defense-in-depth work that remains.
 No prevention code or remote protection change has been implemented yet.
 
+Issue `#357` retirement amendment:
+hk and Pkl are removed and must not be reintroduced by this plan.
+Every hk adapter,
+`HK=0` case,
+Pkl snippet,
+and config-hook integrity requirement in the original design is superseded.
+Future implementation uses cli-git's pre-forward,
+post-commit,
+and Git-native manual-push lifecycle plus authoritative server rules.
+
 ## Goal
 
 Make the July 9 failure stop at several independent boundaries before it can alter or publish repository history.
@@ -95,20 +105,17 @@ Current gaps include:
 - No rule checks the effective author or committer identity before commit.
 - The wrapper auto-pushes a successful `git commit` without first verifying the created commit artifact.
 
-### Hook boundary
+### Cli-git lifecycle boundary
 
-`hk.pkl` has `pre-commit` and `pre-push` hooks.
-They currently enforce final-newline and forbidden-root-context policies,
-not Git identity or signature policy.
-
-The repository pins hk 1.50.0.
-That version exposes Git pre-push standard input as `{{ hook_stdin }}`
-and can forward it through a step's `stdin` field.
-Git provides one line per pushed ref containing local ref,
+Cli-git now owns pre-forward,
+post-commit,
+and manual-push policy execution.
+Its Git-native manual-push probe obtains one record per pushed ref containing local ref,
 local object ID,
 remote ref,
-and remote object ID.
-This is the correct seam for computing the exact outgoing commit set.
+and remote object ID,
+then validates remote state authoritatively before forwarding.
+Identity and signature policy must extend these existing lifecycle seams rather than add another hook runner.
 
 ### Identity and server boundary
 
@@ -177,25 +184,15 @@ The interface stays small while hiding:
 - cryptographic commit verification;
 - diagnostic formatting.
 
-Add a `git-safety` bin entry to `packages/git-policies/cli/package.json` that points to `src/git-safety.ts`.
-The entry carries the required Node shebang
-and runs the checked-out TypeScript source under the repository's pinned Node runtime,
-matching the package's existing `node src/index.ts` execution model.
-It does not depend on ignored or potentially stale `dist` output.
-
-The bin exposes `pre-commit`,
-`verify-objects`,
-and `pre-push <remote> <url>` modes to hk without sending policy operations back through the `git` wrapper.
+Implement identity checks as cli-git policy and lifecycle modules bundled into the existing single `index.mjs` artifact.
+Pre-forward checks cover commit-producing commands;
+post-commit checks gate automatic push;
+manual-push checks consume cli-git's Git-native authoritative push updates and candidate ranges.
 All internal Git subprocesses reuse `packages/git-policies/cli/src/resolve-git.ts` and a sanitized environment,
 so verification cannot recurse into cli-git.
 
-The concrete hk command is `node_modules/.bin/git-safety` from the active worktree.
-A missing workspace installation fails the hook with no fallback.
-A linked-worktree and clean-clone fixture must prove
-that dependency installation plus `hk install` resolves that revision's source entry.
-The hook never falls back to a main-checkout artifact or another worktree.
-
-The existing `git` wrapper calls the TypeScript interface directly.
+A linked-worktree and clean-clone fixture must prove the built shadow `git` resolves from the active package installation
+without falling back to a main-checkout artifact or another worktree.
 
 ### Trusted identity source
 
@@ -334,8 +331,10 @@ The invocation parser rejects before real Git:
    or `--file`;
 - protected `-c key=value` global options;
 - every wrapper subcommand that resolves to a Git alias;
-- `--no-verify` on guarded commit and push commands;
-- `HK=0` on guarded commit and push commands.
+- cli-git policy escape controls on guarded commit and push commands.
+
+Native `--no-verify` remains allowed because it bypasses only retired/native Git hooks;
+cli-git policies still execute.
 
 The environment checker rejects before a commit or push:
 
@@ -347,8 +346,7 @@ The environment checker rejects before a commit or push:
 - `GIT_COMMITTER_NAME`,
    `GIT_COMMITTER_EMAIL`,
    or `EMAIL` identity overrides;
-- unexpected `core.hooksPath`;
-- missing or changed Git 2.54 config-based hk commands for pre-commit and pre-push.
+- unexpected `core.hooksPath` or newly introduced config-based hook commands.
 
 Author-only variables remain permitted because author and committer are different domains.
 Read-only `get` forms and `--blob` remain allowed.
@@ -367,8 +365,8 @@ not an automated wrapper operation.
 
 ### Layer C: validate the environment before commit
 
-Add an hk `pre-commit` step backed by `assertSafeCommitEnvironment`.
-It runs before file-oriented steps and checks repository metadata only.
+Add `assertSafeCommitEnvironment` to cli-git's pre-forward lifecycle before commit-producing commands.
+It checks repository metadata before real Git runs.
 
 The check evaluates `git config --show-origin --show-scope` with includes enabled and rejects when:
 
@@ -402,8 +400,9 @@ Reject wrapper aliases instead of guessing whether alias expansion creates a com
 
 Some sequencer and plumbing paths do not run `pre-commit`.
 `commit-tree` can create an unattached commit object without updating `HEAD`.
-The wrapper preflight and hk pre-commit checks improve locality,
-but pre-push and server enforcement remain the correctness boundaries for every publishable ref update.
+The wrapper preflight improves locality,
+but cli-git's manual-push lifecycle and server enforcement remain the correctness boundaries for every publishable ref
+update.
 
 ### Layer D: verify created and outgoing commit artifacts
 
@@ -413,24 +412,14 @@ A failed verification leaves the commit local and returns a nonzero result.
 Amend uses the same check.
 Commands that do not auto-push rely on the broader pre-push boundary.
 
-Before implementing range logic,
-prove with a real disposable push that hk 1.50.0 forwards native pre-push standard input byte-for-byte.
-The production Pkl shape is:
-
-```pkl
-local gitSafetyPrePush = new Step {
-  check = "node_modules/.bin/git-safety pre-push {{ hook_args }}"
-  stdin = "{{ hook_stdin }}"
-  exclusive = true
-}
-```
-
-The fixture installs a temporary hk configuration with the same `stdin` field.
-Its Node check command writes standard input bytes to a file inside the disposable repository.
-A real push supplies known local and remote refs;
-the test compares captured bytes against Git's expected
-`<local-ref> <local-oid> <remote-ref> <remote-oid>\n` records in refspec order.
-Pin the fixture to the repository's hk executable and Pkl package versions.
+Reuse cli-git's implemented Git-native manual-push probe.
+It performs a private native dry run with pre-push records,
+validates destination state through `git ls-remote --refs`,
+loads object content through bounded `git cat-file --batch`,
+and forwards only after the policy result settles.
+Disposable pushes must cover byte-exact update records,
+destination races,
+and all outgoing range classes through the built shadow `git`.
 
 The verifier acquires an isolated object graph before calculating ranges:
 
@@ -484,12 +473,11 @@ malformed input,
 and missing advertised objects are explicit test paths.
 
 The wrapper's direct post-commit check improves error locality.
-The pre-push hook is the broader local boundary for direct Git,
-GUI clients,
-plumbing-created commits,
-merge commits,
-and batches of existing commits.
-`HK=0` and `git push --no-verify` deliberately bypass that hook;
+The manual-push lifecycle covers wrapper-mediated pushes,
+including merge commits and batches of existing commits.
+Absolute real-Git paths,
+GUI clients that embed Git,
+and libgit2 bypass the PATH shadow;
 the remote fixture must prove the server rejects the same bad updates.
 
 ### Layer E: make the server authoritative
@@ -555,7 +543,7 @@ If GitHub rejects the email-rule payload or observed behavior differs:
 - do not claim server-side approved-email enforcement;
 - activate the `~ALL` ruleset with only `required_signatures` and `non_fast_forward`,
   still with no bypass actors;
-- retain exact local identity enforcement in cli-git and hk;
+- retain exact local identity enforcement in cli-git;
 - retain administrator enforcement in classic `main` protection;
 - record the failed request,
   response,
@@ -675,7 +663,7 @@ Create disposable repositories for:
    and section removal variants;
 - aliases that expand to protected config writes or commit-producing commands;
 - protected hook-path or config-based-hook mutation;
-- wrapper `--no-verify` and `HK=0` rejection;
+- wrapper policy-escape rejection while native `--no-verify` still runs cli-git policies;
 - read-only protected config queries;
 - explicit cleanup of contaminated local values.
 
@@ -699,7 +687,7 @@ Cover:
 - protected `-c`,
    legacy and indexed `GIT_CONFIG_*`,
    and committer-environment overrides;
-- missing or changed hk config-based hook commands;
+- unexpected newly introduced config-based hook commands;
 - allowed author-only environment and `--author` metadata;
 - malformed display names and exact matching;
 - fixture email with a cryptographically valid signature;
@@ -728,8 +716,8 @@ and configuration byte-identical.
 
 ### Pre-push fixtures
 
-Push to disposable bare remotes with forwarded native pre-push input.
-First require byte-equal proof that hk delivers the complete native input to the verifier.
+Push to disposable bare remotes through cli-git's Git-native manual-push probe.
+Require byte-equal proof that private native pre-push records reach the verifier.
 Cover:
 
 - one valid signed commit;
@@ -751,7 +739,7 @@ Cover:
 - malformed and truncated input;
 - deletion;
 - non-fast-forward update;
-- `HK=0` and `git push --no-verify` reaching server rejection.
+- absolute real-Git and embedded-client bypasses reaching server rejection.
 
 Rejected pushes must leave every remote ref unchanged.
 Accepted pushes must update only the requested refs.
@@ -796,27 +784,25 @@ Do not test rejection by pushing a bad commit to `main`.
 3. Start a fresh Pi session and verify a synthetic unsupported-`cwd` tool call is blocked before execution.
 4. Land cli-git invocation rules and disposable repository tests.
 5. Provision the mode-`0600` trusted-committer policy and verify its provenance checks.
-6. Land the shared commit-environment checker and stable `git-safety` bin.
-7. Prove the bin resolves fail-closed from a disposable linked worktree.
-8. Add the hk pre-commit adapter.
-9. Prove hk 1.50.0 pre-push standard-input forwarding byte-for-byte in a disposable native push.
-10. Land direct post-commit verification and the hk pre-push adapter.
-11. Run the full disposable commit and push matrix,
-    including deliberate local-hook bypasses.
-12. Run package lint,
+6. Land the shared commit-environment checker inside cli-git's pre-forward lifecycle.
+7. Prove the built shadow `git` resolves fail-closed from a disposable linked worktree.
+8. Land direct post-commit verification and Git-native manual-push verification.
+9. Run the full disposable commit and push matrix,
+   including deliberate PATH-shadow bypasses.
+10. Run package lint,
     type checking,
     unit tests,
     build,
-    and end-user wrapper and hook verification through mise tasks.
-13. Verify a normal signed checkpoint commit remains local until the post-commit verifier succeeds.
-14. Export current remote-protection JSON and inventory current branch creators and committers.
-15. Test the proposed all-branch ruleset and tag behavior with temporary refs.
-16. Activate either the verified full-policy all-branch ruleset or its documented signature-only fallback,
+    and end-user wrapper verification through mise tasks.
+11. Verify a normal signed checkpoint commit remains local until the post-commit verifier succeeds.
+12. Export current remote-protection JSON and inventory current branch creators and committers.
+13. Test the proposed all-branch ruleset and tag behavior with temporary refs.
+14. Activate either the verified full-policy all-branch ruleset or its documented signature-only fallback,
     with no bypass actors.
-17. Enable administrator enforcement and disable force pushes in classic `main` protection.
-18. Query GitHub rulesets and classic protection through the API and verify the exact final fields.
-19. Confirm subsequent pushed commits report GitHub verification reason `valid` and approved committer email.
-20. Update this plan's status and measured results.
+15. Enable administrator enforcement and disable force pushes in classic `main` protection.
+16. Query GitHub rulesets and classic protection through the API and verify the exact final fields.
+17. Confirm subsequent pushed commits report GitHub verification reason `valid` and approved committer email.
+18. Update this plan's status and measured results.
 
 Commit each repository change at the earliest scoped checkpoint.
 Stage only explicit task paths so concurrent changes are never swept into a commit.
@@ -837,10 +823,8 @@ Never disable signature enforcement merely to repair a local false positive.
   Do not remove the guardrail package entirely.
 - cli-git false positive:
   revert the specific invocation rule while retaining identity,
-  pre-push,
+  manual-push,
   and server verification.
-- hk false positive:
-  remove only the named identity step from that hook while retaining wrapper and server enforcement.
 - GitHub policy blocks an intended workflow:
   add a measured approved email or repair that workflow's signing;
   restore old protection only from exported JSON after confirming another server rule still blocks unverified commits.
@@ -902,12 +886,12 @@ The work is complete only when:
   and mode checks;
 - contaminated identity fails before a normal commit is created;
 - a created bad commit cannot reach the wrapper's auto-push path;
-- native hk pre-push input reaches the verifier byte-for-byte;
-- pre-push rejects every fixture containing an untrusted identity,
+- Git-native manual-push records reach the verifier byte-for-byte;
+- manual push rejects every fixture containing an untrusted identity,
   unverifiable commit,
   missing object,
   or malformed update;
-- deliberate `HK=0` and `--no-verify` bypasses are rejected by the server;
+- deliberate absolute-real-Git and embedded-client bypasses are rejected by the server;
 - valid signed commits still commit and push through user-facing commands and linked worktrees;
 - every branch requires verified signatures and fast-forward updates with no bypass actors;
 - every branch also requires approved committer emails when the empirical GitHub contract passes,
@@ -934,12 +918,10 @@ The work is complete only when:
   `packages/git-policies/cli/src/index.ts`
 - cli-git root rule:
   `packages/git-policies/cli/src/rules/require-root.ts`
-- Hook configuration:
-  `hk.pkl`
-- hk hook behavior:
-  <https://hk.jdx.dev/hooks.html>
-- hk pre-push standard-input support:
-  <https://github.com/jdx/hk/pull/825>
+- Cli-git manual-push lifecycle:
+  `packages/git-policies/cli/src/policy-engine/manual-push-lifecycle.ts`
+- Cli-git post-commit lifecycle:
+  `packages/git-policies/cli/src/policy-engine/post-commit-lifecycle.ts`
 - GitHub commit signature verification:
   <https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification>
 - GitHub repository rules API:
