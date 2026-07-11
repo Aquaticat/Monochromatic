@@ -121,7 +121,7 @@ export async function verifyAutofixFilesystemFailure({
     },);
     assertIncludes({
       text: blocked.stderr,
-      expected: '"code":"content-unavailable"',
+      expected: '"code":"transaction-failed"',
       context: 'read-only transaction filesystem failure',
     },);
   }

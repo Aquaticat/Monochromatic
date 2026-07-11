@@ -338,8 +338,11 @@ export async function runManagementCommand({
     pathspecs: directPathspecs,
   },);
   if (directFacts.kind === 'failed') {
-    process.stdout.write(renderPolicyEvents(directFacts.result.events,));
-    return directFacts.result.exitCode;
+    process.stdout
+      .write(renderPolicyEvents(directFacts.result
+        .events,));
+    return directFacts.result
+      .exitCode;
   }
   /**
    * Scope-bound exact direct-check candidate facts.

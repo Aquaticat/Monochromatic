@@ -4,6 +4,7 @@
  * @module
  */
 import type { PolicyTrigger, } from '../api/policy-types.ts';
+import { CommitTransactionGitError, } from './commit-transaction-git.ts';
 import {
   createEngineFailureEvent,
   type EngineFailureCode,
@@ -106,4 +107,118 @@ export function transactionFailure({
     exitCode: 2,
     shouldForward: false,
   };
+}
+
+/**
+ * Produces stable changed-pass-limit failure.
+ *
+ * @param previous - latest provisional policy pass
+ *
+ * @param trigger - fixable lifecycle point
+ *
+ * @returns blocking pass-limit result
+ */
+export function fixPassLimitFailure({
+  previous,
+  trigger,
+}: Readonly<{
+  previous: PolicyEngineResult;
+  trigger: Extract<PolicyTrigger, 'pre-forward' | 'direct-fix'>;
+}>,): PolicyEngineResult {
+  return transactionFailure({
+    previous,
+    code: 'fix-pass-limit',
+    message: 'Policy patches did not converge within eight changed passes.',
+    trigger,
+  },);
+}
+
+/**
+ * Produces stable invalid patch-target failure.
+ *
+ * @param previous - latest provisional policy pass
+ *
+ * @param trigger - fixable lifecycle point
+ *
+ * @param path - stale or mutable patch target
+ *
+ * @returns blocking invalid-patch result
+ */
+export function patchTargetFailure({
+  previous,
+  trigger,
+  path,
+}: Readonly<{
+  previous: PolicyEngineResult;
+  trigger: Extract<PolicyTrigger, 'pre-forward' | 'direct-fix'>;
+  path: string;
+}>,): PolicyEngineResult {
+  return transactionFailure({
+    previous,
+    code: 'patch-invalid',
+    message: `Patch target is stale, undeclared, or mutable: ${path}`,
+    trigger,
+    path,
+  },);
+}
+
+/**
+ * Classifies private patch validation and Git application failures.
+ *
+ * @param previous - latest provisional policy pass
+ *
+ * @param trigger - fixable lifecycle point
+ *
+ * @param path - declared patch target
+ *
+ * @param error - validation or Git application failure
+ *
+ * @returns blocking classified patch result
+ */
+export function patchApplicationFailure({
+  previous,
+  trigger,
+  path,
+  error,
+}: Readonly<{
+  previous: PolicyEngineResult;
+  trigger: Extract<PolicyTrigger, 'pre-forward' | 'direct-fix'>;
+  path: string;
+  error: unknown;
+}>,): PolicyEngineResult {
+  return transactionFailure({
+    previous,
+    code: error instanceof CommitTransactionGitError ? 'patch-conflict' : 'patch-invalid',
+    message: Error.isError(error,) ? error.message : String(error,),
+    trigger,
+    path,
+  },);
+}
+
+/**
+ * Produces stable exact candidate-cycle failure.
+ *
+ * @param previous - latest provisional policy pass
+ *
+ * @param trigger - fixable lifecycle point
+ *
+ * @param message - lifecycle-specific cycle explanation
+ *
+ * @returns blocking cycle result
+ */
+export function fixCycleFailure({
+  previous,
+  trigger,
+  message,
+}: Readonly<{
+  previous: PolicyEngineResult;
+  trigger: Extract<PolicyTrigger, 'pre-forward' | 'direct-fix'>;
+  message: string;
+}>,): PolicyEngineResult {
+  return transactionFailure({
+    previous,
+    code: 'fix-cycle',
+    message,
+    trigger,
+  },);
 }

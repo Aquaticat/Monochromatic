@@ -11,11 +11,13 @@ import {
   writeCandidateSnapshot,
 } from './commit-transaction-candidate-snapshot.ts';
 import { createPrivateIndexFacts, } from './commit-transaction-candidates.ts';
+import { applyPrivatePatch, } from './commit-transaction-git.ts';
 import {
-  applyPrivatePatch,
-  CommitTransactionGitError,
-} from './commit-transaction-git.ts';
-import { transactionFailure, } from './commit-transaction-results.ts';
+  fixCycleFailure,
+  fixPassLimitFailure,
+  patchApplicationFailure,
+  patchTargetFailure,
+} from './commit-transaction-results.ts';
 import { runPolicyEngine, } from './engine.ts';
 import type { AddPolicyFactsScope, } from './add-policy-facts.ts';
 import type {
@@ -152,10 +154,8 @@ export async function convergeDirectFix({
       };
     if (changedPasses >= MAXIMUM_CHANGED_PASSES) {
       return {
-        policyResult: transactionFailure({
+        policyResult: fixPassLimitFailure({
           previous: pass,
-          code: 'fix-pass-limit',
-          message: 'Policy patches did not converge within eight changed passes.',
           trigger: 'direct-fix',
         },),
         changedPaths: [],
@@ -184,10 +184,8 @@ export async function convergeDirectFix({
       if ((target === undefined) || ((typeof target.revision) === 'symbol')
         || ((target.mode !== 'regular') && (target.mode !== 'executable'))) {
         return {
-          policyResult: transactionFailure({
+          policyResult: patchTargetFailure({
             previous: pass,
-            code: 'patch-invalid',
-            message: `Patch target is stale, undeclared, or mutable: ${patch.path}`,
             trigger: 'direct-fix',
             path: patch.path,
           },),
@@ -211,12 +209,11 @@ export async function convergeDirectFix({
       }
       catch (error: unknown) {
         return {
-          policyResult: transactionFailure({
+          policyResult: patchApplicationFailure({
             previous: pass,
-            code: error instanceof CommitTransactionGitError ? 'patch-conflict' : 'patch-invalid',
-            message: Error.isError(error,) ? error.message : String(error,),
             trigger: 'direct-fix',
             path: patch.path,
+            error,
           },),
           changedPaths: [],
           passes: changedPasses,
@@ -251,11 +248,10 @@ export async function convergeDirectFix({
       currentPath: snapshotPath,
     },)) {
       return {
-        policyResult: transactionFailure({
+        policyResult: fixCycleFailure({
           previous: pass,
-          code: 'fix-cycle',
-          message: 'Policy patches entered a repeated candidate-state cycle.',
           trigger: 'direct-fix',
+          message: 'Policy patches entered a repeated candidate-state cycle.',
         },),
         changedPaths: [],
         passes: changedPasses,

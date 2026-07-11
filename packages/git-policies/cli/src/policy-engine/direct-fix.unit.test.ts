@@ -302,6 +302,8 @@ await describe({
         expect(result.policyResult.exitCode,).toBe(2,);
         expect(result.policyResult.events[0],).toMatchObject({
           type: 'engine-failure',
+          code: 'fix-cycle',
+          trigger: 'direct-fix',
           message: 'Policy patches entered a repeated candidate-state cycle.',
         },);
         /** Worktree bytes after rejected cycle. */

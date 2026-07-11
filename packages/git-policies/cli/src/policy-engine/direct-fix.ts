@@ -39,9 +39,13 @@ export type DirectFixResult = Readonly<{
  * Prepared private direct-fix state.
  */
 type PreparedDirectFix = Readonly<{
-  /** Real Git executable resolved beyond wrapper shadow. */
+  /**
+   * Real Git executable resolved beyond wrapper shadow.
+   */
   gitPath: string;
-  /** Exact private worktree projection. */
+  /**
+   * Exact private worktree projection.
+   */
   scope: AddPolicyFactsScope;
 }>;
 
@@ -63,9 +67,13 @@ async function prepareDirectFix({
   gitGlobalArgs: readonly string[];
   pathspecs: readonly string[];
 }>,): Promise<PreparedDirectFix> {
-  /** Real Git executable resolved beyond wrapper shadow. */
+  /**
+   * Real Git executable resolved beyond wrapper shadow.
+   */
   const gitPath = await resolveGit();
-  /** Exact private worktree projection. */
+  /**
+   * Exact private worktree projection.
+   */
   const facts = await createAddPolicyFacts({
     args: [
       ...gitGlobalArgs,
@@ -109,13 +117,22 @@ async function runPreparedDirectFix({
   policyOptions: DirectFixPolicyOptions;
   prepared: PreparedDirectFix;
 }>,): Promise<DirectFixResult> {
+  /**
+   * Disposable private direct-fix scope.
+   */
   await using scope = prepared.scope;
-  /** Exact initial candidates before private policy changes. */
+  /**
+   * Exact initial candidates before private policy changes.
+   */
   const initialCandidates = await scope.gitFacts
     .candidates();
-  /** Exact initial worktree bytes used for concurrency checks. */
+  /**
+   * Exact initial worktree bytes used for concurrency checks.
+   */
   const originals = await captureDirectFixOriginalBytes(initialCandidates,);
-  /** Stable or failed private convergence result. */
+  /**
+   * Stable or failed private convergence result.
+   */
   const convergence = await convergeDirectFix({
     args: gitGlobalArgs,
     gitPath: prepared.gitPath,
@@ -176,7 +193,9 @@ export async function runDirectFix({
   policyOptions: DirectFixPolicyOptions;
 }>,): Promise<DirectFixResult> {
   try {
-    /** Private direct-fix state prepared before policy execution. */
+    /**
+     * Private direct-fix state prepared before policy execution.
+     */
     const prepared = await prepareDirectFix({
       gitGlobalArgs,
       pathspecs,

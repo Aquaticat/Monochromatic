@@ -16,9 +16,13 @@ import type { PolicyEngineResult, } from './types.ts';
  * Prepared direct-check facts.
  */
 type PreparedDirectCheck = Readonly<{
-  /** Stable preparation discriminator. */
+  /**
+   * Stable preparation discriminator.
+   */
   kind: 'prepared';
-  /** Disposable private worktree projection. */
+  /**
+   * Disposable private worktree projection.
+   */
   scope: AddPolicyFactsScope;
 }>;
 
@@ -26,9 +30,13 @@ type PreparedDirectCheck = Readonly<{
  * Failed direct-check preparation.
  */
 type FailedDirectCheck = Readonly<{
-  /** Stable preparation discriminator. */
+  /**
+   * Stable preparation discriminator.
+   */
   kind: 'failed';
-  /** Machine-readable direct-check failure. */
+  /**
+   * Machine-readable direct-check failure.
+   */
   result: PolicyEngineResult;
 }>;
 
@@ -63,7 +71,9 @@ export async function prepareDirectCheckFacts({
   pathspecs: readonly string[];
 }>,): Promise<DirectCheckFactsResult> {
   try {
-    /** Exact private worktree/index projection for direct checks. */
+    /**
+     * Exact private worktree/index projection for direct checks.
+     */
     const facts = await createAddPolicyFacts({
       args: [
         ...gitGlobalArgs,

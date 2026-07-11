@@ -239,8 +239,13 @@ export async function verifyAutofixFailures({
   },);
   assertIncludes({
     text: conflicted.stderr,
-    expected: '"code":"content-unavailable"',
+    expected: '"code":"patch-conflict"',
     context: 'patch conflict diagnostic',
+  },);
+  assertIncludes({
+    text: conflicted.stderr,
+    expected: '"path":"selected.txt"',
+    context: 'patch conflict path',
   },);
   assertFixtureEqual({
     actual: await readIndexBase64(repository,),

@@ -15,10 +15,7 @@ import {
   listChangedIndexPaths,
   listUnmergedIndexPaths,
 } from './commit-transaction-candidates.ts';
-import {
-  applyPrivatePatch,
-  CommitTransactionGitError,
-} from './commit-transaction-git.ts';
+import { applyPrivatePatch, } from './commit-transaction-git.ts';
 import {
   initializeCommitIndex,
   preparePostIndex,
@@ -27,8 +24,11 @@ import {
 import { executePreparedCommit, } from './commit-transaction-finalize.ts';
 import { prepareTransactionJournal, } from './commit-transaction-journal.ts';
 import {
+  fixCycleFailure,
+  fixPassLimitFailure,
   initialTransactionFailure,
-  transactionFailure,
+  patchApplicationFailure,
+  patchTargetFailure,
 } from './commit-transaction-results.ts';
 import {
   hasSequencerConclusion,
@@ -242,10 +242,9 @@ export async function runCommitTransaction({
       };
     if (changedPasses >= MAXIMUM_CHANGED_PASSES)
       return {
-        policyResult: transactionFailure({
+        policyResult: fixPassLimitFailure({
           previous: pass,
-          code: 'fix-pass-limit',
-          message: 'Policy patches did not converge within eight changed passes.',
+          trigger: 'pre-forward',
         },),
         committed: false,
       };
@@ -273,10 +272,9 @@ export async function runCommitTransaction({
         || ((typeof candidate.revision) === 'symbol')
         || ((candidate.mode !== 'regular') && (candidate.mode !== 'executable')))
         return {
-          policyResult: transactionFailure({
+          policyResult: patchTargetFailure({
             previous: pass,
-            code: 'patch-invalid',
-            message: `Patch target is stale, undeclared, or mutable: ${patch.path}`,
+            trigger: 'pre-forward',
             path: patch.path,
           },),
           committed: false,
@@ -295,11 +293,11 @@ export async function runCommitTransaction({
       }
       catch (error: unknown) {
         return {
-          policyResult: transactionFailure({
+          policyResult: patchApplicationFailure({
             previous: pass,
-            code: error instanceof CommitTransactionGitError ? 'patch-conflict' : 'patch-invalid',
-            message: Error.isError(error,) ? error.message : String(error,),
+            trigger: 'pre-forward',
             path: patch.path,
+            error,
           },),
           committed: false,
         };
@@ -332,9 +330,9 @@ export async function runCommitTransaction({
       currentPath: snapshotPath,
     },))
       return {
-        policyResult: transactionFailure({
+        policyResult: fixCycleFailure({
           previous: pass,
-          code: 'fix-cycle',
+          trigger: 'pre-forward',
           message: 'Policy patches repeated an exact prior candidate state.',
         },),
         committed: false,
