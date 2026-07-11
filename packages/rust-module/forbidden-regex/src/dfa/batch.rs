@@ -212,9 +212,9 @@ impl Dfa {
         let nc = self.nclasses as usize;
         let dead = self.dead as usize;
         let start = self.start as usize;
-        let mut chunks = lines.chunks_exact(N);
+        let (chunks, remainder) = lines.as_chunks::<N>();
         let mut base = 0;
-        for chunk in &mut chunks {
+        for chunk in chunks {
             let lens: [usize; N] = std::array::from_fn(|lane| chunk[lane].len());
             let max_len = lens.iter().copied().max().unwrap_or(0);
             let mut lanes = Lanes::<N>::new(start);
@@ -248,7 +248,7 @@ impl Dfa {
             out[base..base + N].copy_from_slice(&lanes.hit);
             base += N;
         }
-        for (offset, line) in chunks.remainder().iter().enumerate() {
+        for (offset, line) in remainder.iter().enumerate() {
             out[base + offset] = self.is_match(line);
         }
     }
@@ -342,13 +342,13 @@ impl Dfa {
     /// ```
     pub fn is_match_batch_tight_w<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
         let len = lines.first().map_or(0, |line| line.len());
-        let mut chunks = lines.chunks_exact(N);
+        let (chunks, remainder) = lines.as_chunks::<N>();
         let mut base = 0;
-        for chunk in &mut chunks {
+        for chunk in chunks {
             self.tight_chunk::<N>(chunk, len, &mut out[base..base + N]);
             base += N;
         }
-        for (offset, line) in chunks.remainder().iter().enumerate() {
+        for (offset, line) in remainder.iter().enumerate() {
             out[base + offset] = self.is_match(line);
         }
     }
