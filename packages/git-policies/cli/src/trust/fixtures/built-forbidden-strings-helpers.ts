@@ -223,4 +223,6 @@ export function assertForbiddenPluginThrew({
     expectedCode: 'plugin-threw',
     context,
   },);
+  if (result.stderr !== '')
+    throw new Error(`${context} leaked direct failure to stderr\n${result.stderr}`,);
 }

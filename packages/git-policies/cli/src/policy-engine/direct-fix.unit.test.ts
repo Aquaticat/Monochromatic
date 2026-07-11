@@ -30,6 +30,8 @@ const ENCODER = new TextEncoder();
 const DECODER = new TextDecoder();
 /** Changed passes accepted before stable direct-fix convergence. */
 const CONVERGENCE_PASSES = 8;
+/** Changed passes requiring one pass beyond bounded convergence. */
+const EXCESS_PASSES = CONVERGENCE_PASSES + 1;
 
 /** Disposable direct-fix repository. */
 type DirectFixFixture = Readonly<{
@@ -92,16 +94,20 @@ async function createFixture(): Promise<DirectFixFixture> {
  *
  * @param to - exact replacement text
  *
+ * @param targetId - optional intentionally overridden patch target
+ *
  * @returns synthetic fixable policy
  */
 function createReplacementPolicy({
   name,
   from,
   to,
+  targetId,
 }: Readonly<{
   name: string;
   from: string;
   to: string;
+  targetId?: string;
 }>,): RuntimePolicyDefinition {
   return {
     name,
@@ -123,7 +129,7 @@ function createReplacementPolicy({
           message: `Replace ${from} with ${to}.`,
           path: selected.path,
           patch: createFinalNewlinePatch({
-            targetId: selected.targetId,
+            targetId: targetId ?? selected.targetId,
             path: selected.path,
             revision: selected.revision,
             mode: selected.mode,
@@ -137,43 +143,71 @@ function createReplacementPolicy({
   };
 }
 
-/** Synthetic policy requiring exactly eight changed candidate passes. */
-const eightPassPolicy: RuntimePolicyDefinition = {
-  name: 'eight-pass',
-  defaultSeverity: 'error',
-  warnSafe: false,
-  triggers: ['direct-fix',],
-  async check({ context, }) {
-    /** Findings from every selected numeric fixture candidate. */
-    const findings = await Promise.all((await context.git.candidates()).map(async function incrementFinding(selected,) {
-      if (((typeof selected.revision) === 'symbol')
-        || ((selected.mode !== 'regular') && (selected.mode !== 'executable')))
-        return [];
-      /** Exact current candidate bytes. */
-      const original = await selected.bytes();
-      /** Current numeric fixture state. */
-      const current = Number(DECODER.decode(original,).trim());
-      if (current >= CONVERGENCE_PASSES)
-        return [];
-      /** Next numeric fixture state. */
-      const replacement = ENCODER.encode(`${String(current + 1,)}\n`,);
-      return [{
-        code: 'increment',
-        message: 'Advance candidate toward stable fixture state.',
-        path: selected.path,
-        patch: createFinalNewlinePatch({
-          targetId: selected.targetId,
+/**
+ * Creates numeric policy requiring specified changed candidate passes.
+ *
+ * @param name - fixture policy identity
+ *
+ * @param stableAt - first stable numeric state
+ *
+ * @returns synthetic bounded-convergence policy
+ */
+function createIncrementPolicy({
+  name,
+  stableAt,
+}: Readonly<{
+  name: string;
+  stableAt: number;
+}>,): RuntimePolicyDefinition {
+  return {
+    name,
+    defaultSeverity: 'error',
+    warnSafe: false,
+    triggers: ['direct-fix',],
+    async check({ context, }) {
+      /** Findings from every selected numeric fixture candidate. */
+      const findings = await Promise.all((await context.git.candidates()).map(async function incrementFinding(selected,) {
+        if (((typeof selected.revision) === 'symbol')
+          || ((selected.mode !== 'regular') && (selected.mode !== 'executable')))
+          return [];
+        /** Exact current candidate bytes. */
+        const original = await selected.bytes();
+        /** Current numeric fixture state. */
+        const current = Number(DECODER.decode(original,).trim());
+        if (current >= stableAt)
+          return [];
+        /** Next numeric fixture state. */
+        const replacement = ENCODER.encode(`${String(current + 1,)}\n`,);
+        return [{
+          code: 'increment',
+          message: 'Advance candidate toward stable fixture state.',
           path: selected.path,
-          revision: selected.revision,
-          mode: selected.mode,
-          original,
-          replacement,
-        },),
-      },];
-    },),);
-    return findings.flat();
-  },
-};
+          patch: createFinalNewlinePatch({
+            targetId: selected.targetId,
+            path: selected.path,
+            revision: selected.revision,
+            mode: selected.mode,
+            original,
+            replacement,
+          },),
+        },];
+      },),);
+      return findings.flat();
+    },
+  };
+}
+
+/** Synthetic policy requiring exactly bounded changed candidate passes. */
+const eightPassPolicy = createIncrementPolicy({
+  name: 'eight-pass',
+  stableAt: CONVERGENCE_PASSES,
+},);
+
+/** Synthetic policy exceeding bounded changed candidate passes. */
+const ninePassPolicy = createIncrementPolicy({
+  name: 'nine-pass',
+  stableAt: EXCESS_PASSES,
+},);
 
 await describe({
   name: 'direct policy fix',
@@ -263,6 +297,73 @@ await describe({
         expect(
           await readFile(join(fixture.repository, '.git/index',),),
         ).toEqual(indexBefore,);
+      },
+    },),
+    it({
+      name: 'rejects patch targeting undeclared candidate without changing worktree or index',
+      fn: async function testInvalidPatchTarget() {
+        await using fixture = await createFixture();
+        /** Exact worktree bytes before invalid patch. */
+        const worktreeBefore = await readFile(join(fixture.repository, 'one.txt',),);
+        /** Exact real index bytes before invalid patch. */
+        const indexBefore = await readFile(join(fixture.repository, '.git/index',),);
+        /** Policy proposing patch for unknown target identity. */
+        const invalidTargetPolicy = createReplacementPolicy({
+          name: 'invalid-target',
+          from: 'one\n',
+          to: 'other\n',
+          targetId: 'undeclared-target',
+        },);
+        /** Failed direct-fix result for invalid target. */
+        const result = await runDirectFix({
+          gitGlobalArgs: [
+            '-C',
+            fixture.repository,
+          ],
+          pathspecs: ['one.txt',],
+          policyOptions: {
+            registeredPolicies: [invalidTargetPolicy,],
+          },
+        },);
+        expect(result.policyResult.exitCode,).toBe(2,);
+        expect(result.policyResult.events[0],).toMatchObject({
+          type: 'engine-failure',
+          code: 'patch-invalid',
+          trigger: 'direct-fix',
+          path: 'one.txt',
+        },);
+        expect(await readFile(join(fixture.repository, 'one.txt',),)).toEqual(worktreeBefore,);
+        expect(await readFile(join(fixture.repository, '.git/index',),)).toEqual(indexBefore,);
+      },
+    },),
+    it({
+      name: 'rejects ninth changed pass without changing worktree or index',
+      fn: async function testPassLimit() {
+        await using fixture = await createFixture();
+        await writeFile(join(fixture.repository, 'one.txt',), '0\n',);
+        /** Exact worktree bytes before bounded failure. */
+        const worktreeBefore = await readFile(join(fixture.repository, 'one.txt',),);
+        /** Exact real index bytes before bounded failure. */
+        const indexBefore = await readFile(join(fixture.repository, '.git/index',),);
+        /** Failed direct-fix result exceeding changed-pass bound. */
+        const result = await runDirectFix({
+          gitGlobalArgs: [
+            '-C',
+            fixture.repository,
+          ],
+          pathspecs: ['one.txt',],
+          policyOptions: {
+            registeredPolicies: [ninePassPolicy,],
+          },
+        },);
+        expect(result.policyResult.exitCode,).toBe(2,);
+        expect(result.policyResult.events[0],).toMatchObject({
+          type: 'engine-failure',
+          code: 'fix-pass-limit',
+          trigger: 'direct-fix',
+        },);
+        expect(await readFile(join(fixture.repository, 'one.txt',),)).toEqual(worktreeBefore,);
+        expect(await readFile(join(fixture.repository, '.git/index',),)).toEqual(indexBefore,);
       },
     },),
     it({

@@ -8,7 +8,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import {
-  assertIncludes,
+  assertJsonl,
   execute,
 } from './built-consumer-helpers.ts';
 import {
@@ -103,6 +103,28 @@ export async function verifyAutofixFilesystemFailure({
         gitDirectory,
       ],
     },);
+    /** Direct-fix setup failure routed only to stdout. */
+    const directBlocked = await execute({
+      command: 'git',
+      args: [
+        'cli-git',
+        'fix',
+        '--policy',
+        'final-newline',
+        '--',
+        'selected.txt',
+      ],
+      expectedExit: 2,
+      cwd: repository,
+      env,
+    },);
+    assertJsonl({
+      text: directBlocked.stdout,
+      expectedCode: 'transaction-failed',
+      context: 'read-only direct-fix setup failure',
+    },);
+    if (directBlocked.stderr !== '')
+      throw new Error(`direct-fix setup failure leaked stderr\n${directBlocked.stderr}`,);
     /**
      * Stable engine failure from transaction workspace creation.
      */
@@ -119,11 +141,13 @@ export async function verifyAutofixFilesystemFailure({
       cwd: repository,
       env,
     },);
-    assertIncludes({
+    assertJsonl({
       text: blocked.stderr,
-      expected: '"code":"transaction-failed"',
+      expectedCode: 'transaction-failed',
       context: 'read-only transaction filesystem failure',
     },);
+    if (blocked.stdout !== '')
+      throw new Error(`commit transaction failure leaked stdout\n${blocked.stdout}`,);
   }
   assertFixtureEqual({
     actual: await resolveFixtureOid({ repository, },),

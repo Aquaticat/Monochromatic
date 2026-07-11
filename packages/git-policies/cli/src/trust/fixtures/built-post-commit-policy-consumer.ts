@@ -5,6 +5,7 @@ import { writeFile, } from 'node:fs/promises';
 import {
   assertIncludes,
   execute,
+  parseJsonObjectLines,
 } from './built-consumer-helpers.ts';
 import { verifyPostCommitDryAndFailure, } from './built-post-commit-dry-failure-consumer.ts';
 import {
@@ -219,21 +220,27 @@ export async function verifyPostCommitPolicyConsumer({
    * Local commit retained after engine failure.
    */
   const failureOid = await resolveFixtureOid({ repository, },);
-  assertIncludes({
+  /** Exact canonical post-commit failure events in wire order. */
+  const failureEvents = parseJsonObjectLines({
     text: failedGate.stderr,
-    expected: '"type":"engine-failure"',
-    context: 'post engine failure',
+    context: 'post-commit engine failure',
   },);
-  assertIncludes({
-    text: failedGate.stderr,
-    expected: '"type":"commit-landed"',
-    context: 'failure landed state',
-  },);
-  assertIncludes({
-    text: failedGate.stderr,
-    expected: failureOid,
-    context: 'failure landed oid',
-  },);
+  /** Engine failure event preceding landed-state event. */
+  const engineFailure = failureEvents[0];
+  /** Landed-state event following engine failure. */
+  const commitLanded = failureEvents[1];
+  if ((failureEvents.length !== 2)
+    || (engineFailure?.schemaVersion !== 1)
+    || (engineFailure?.sequence !== 0)
+    || (engineFailure?.type !== 'engine-failure')
+    || (engineFailure?.trigger !== 'post-commit')
+    || (engineFailure?.code !== 'plugin-threw')
+    || (commitLanded?.schemaVersion !== 1)
+    || (commitLanded?.sequence !== 1)
+    || (commitLanded?.type !== 'commit-landed')
+    || (commitLanded?.oid !== failureOid)
+    || (commitLanded?.outcome !== 'post-commit-blocked'))
+    throw new Error(`post-commit failure compatibility mismatch\n${failedGate.stderr}`,);
   assertFixtureEqual({
     actual: await resolveFixtureOid({
       repository: remote,

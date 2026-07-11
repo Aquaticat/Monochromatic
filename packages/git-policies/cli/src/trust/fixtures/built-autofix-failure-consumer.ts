@@ -10,6 +10,7 @@ import {
 } from 'node:fs/promises';
 import {
   assertIncludes,
+  assertJsonl,
   execute,
 } from './built-consumer-helpers.ts';
 import {
@@ -237,11 +238,13 @@ export async function verifyAutofixFailures({
     cwd: repository,
     env,
   },);
-  assertIncludes({
+  assertJsonl({
     text: conflicted.stderr,
-    expected: '"code":"patch-conflict"',
+    expectedCode: 'patch-conflict',
     context: 'patch conflict diagnostic',
   },);
+  if (conflicted.stdout !== '')
+    throw new Error(`patch conflict leaked stdout\n${conflicted.stdout}`,);
   assertIncludes({
     text: conflicted.stderr,
     expected: '"path":"selected.txt"',

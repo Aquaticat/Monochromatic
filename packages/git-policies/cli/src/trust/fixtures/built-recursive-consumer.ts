@@ -11,6 +11,7 @@ import { join, } from 'node:path';
 import {
   assertIncludes,
   execute,
+  parseJsonObjectLine,
 } from './built-consumer-helpers.ts';
 
 /**
@@ -319,11 +320,19 @@ export async function verifyRecursiveConsumer({
     || siblingRace.stdout
     .includes('EEXIST',))
     throw new Error('Concurrent enrollment leaked filesystem lock error.',);
-  assertIncludes({
+  /** Canonical recursive untrust summary. */
+  const untrustSummary = parseJsonObjectLine({
     text: untrust.stdout,
-    expected: '"removed":true',
     context: 'recursive untrust',
   },);
+  /** Recursive roots named by summary. */
+  const affectedRoots = untrustSummary.affectedRoots;
+  if ((untrustSummary.schemaVersion !== 1)
+    || (untrustSummary.type !== 'untrust-summary')
+    || (untrustSummary.removed !== true)
+    || (!Array.isArray(affectedRoots,))
+    || (!affectedRoots.includes(outer,)))
+    throw new Error(`recursive untrust summary mismatch\n${untrust.stdout}`,);
   assertIncludes({
     text: untrust.stderr,
     expected: `Affected recursive root: ${outer}`,

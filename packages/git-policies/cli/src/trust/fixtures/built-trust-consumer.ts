@@ -13,6 +13,7 @@ import {
   assertIncludes,
   assertJsonl,
   execute,
+  parseJsonObjectLine,
 } from './built-consumer-helpers.ts';
 import { verifyBuiltArtifactContract, } from './built-artifact-contract.ts';
 import { verifyFinalNewlineConsumer, } from './built-final-newline-consumer.ts';
@@ -124,6 +125,8 @@ assertJsonl({
   expectedCode: 'config-untrusted',
   context: 'untrusted wrapper',
 },);
+if (untrusted.stdout !== '')
+  throw new Error(`untrusted wrapper leaked stdout\n${untrusted.stdout}`,);
 /**
  * Explicit noninteractive trust result.
  */
@@ -150,11 +153,13 @@ const trust = await execute({
     context: 'trust disclosure',
   },);
 },);
-assertIncludes({
-  text: trust.stdout,
-  expected: '"type":"trust-summary"',
-  context: 'trust summary',
-},);
+if (trust.stdout !== `${JSON.stringify({
+  schemaVersion: 1,
+  type: 'trust-summary',
+  configPath,
+  trusted: true,
+},)}\n`)
+  throw new Error(`trust summary compatibility mismatch\n${trust.stdout}`,);
 /**
  * Exact trusted status result.
  */
@@ -167,11 +172,20 @@ const status = await execute({
   cwd: repository,
   env,
 },);
-assertIncludes({
+/** Canonical trusted status object. */
+const trustedStatus = parseJsonObjectLine({
   text: status.stdout,
-  expected: '"reason":"trusted"',
   context: 'trusted status',
 },);
+if ((trustedStatus.schemaVersion !== 1)
+  || (trustedStatus.type !== 'trust-status')
+  || (trustedStatus.configPresent !== true)
+  || (trustedStatus.trusted !== true)
+  || (trustedStatus.unchanged !== true)
+  || (trustedStatus.configPath !== configPath)
+  || ((typeof trustedStatus.filesystemId) !== 'string')
+  || (trustedStatus.reason !== 'trusted'))
+  throw new Error(`trusted status compatibility mismatch\n${status.stdout}`,);
 /**
  * Stored plugin direct finding.
  */
@@ -188,16 +202,13 @@ const check = await execute({
   cwd: repository,
   env,
 },);
-assertIncludes({
+assertJsonl({
   text: check.stdout,
-  expected: '"policyId":"example/deny"',
+  expectedCode: 'example/deny/denied',
   context: 'stored policy finding',
 },);
-assertIncludes({
-  text: check.stdout,
-  expected: 'built stored plugin ran',
-  context: 'stored policy message',
-},);
+if (check.stderr !== '')
+  throw new Error(`stored direct check leaked stderr\n${check.stderr}`,);
 await execute({
   command: 'git',
   args: [
@@ -226,6 +237,27 @@ assertJsonl({
   expectedCode: 'config-changed',
   context: 'changed wrapper',
 },);
+if (changed.stdout !== '')
+  throw new Error(`changed wrapper leaked stdout\n${changed.stdout}`,);
+/** Direct config-changed failure routed only to stdout. */
+const directChanged = await execute({
+  command: 'git',
+  args: [
+    'cli-git',
+    'check',
+    '--all',
+  ],
+  expectedExit: 2,
+  cwd: repository,
+  env,
+},);
+assertJsonl({
+  text: directChanged.stdout,
+  expectedCode: 'config-changed',
+  context: 'changed direct check',
+},);
+if (directChanged.stderr !== '')
+  throw new Error(`changed direct check leaked stderr\n${directChanged.stderr}`,);
 /**
  * Changed status result.
  */
@@ -238,11 +270,19 @@ const changedStatus = await execute({
   cwd: repository,
   env,
 },);
-assertIncludes({
+/** Canonical changed status object. */
+const changedStatusEvent = parseJsonObjectLine({
   text: changedStatus.stdout,
-  expected: '"reason":"changed"',
   context: 'changed status',
 },);
+if ((changedStatusEvent.schemaVersion !== 1)
+  || (changedStatusEvent.type !== 'trust-status')
+  || (changedStatusEvent.configPresent !== true)
+  || (changedStatusEvent.trusted !== false)
+  || (changedStatusEvent.unchanged !== false)
+  || (changedStatusEvent.configPath !== configPath)
+  || (changedStatusEvent.reason !== 'changed'))
+  throw new Error(`changed status compatibility mismatch\n${changedStatus.stdout}`,);
 /**
  * Exact record removal result.
  */
@@ -255,11 +295,14 @@ const untrust = await execute({
   cwd: repository,
   env,
 },);
-assertIncludes({
-  text: untrust.stdout,
-  expected: '"removed":true',
-  context: 'untrust summary',
-},);
+if (untrust.stdout !== `${JSON.stringify({
+  schemaVersion: 1,
+  type: 'untrust-summary',
+  configPath,
+  removed: true,
+  affectedRoots: [],
+},)}\n`)
+  throw new Error(`untrust summary compatibility mismatch\n${untrust.stdout}`,);
 /**
  * Final untrusted status result.
  */
@@ -272,11 +315,19 @@ const finalStatus = await execute({
   cwd: repository,
   env,
 },);
-assertIncludes({
+/** Canonical untrusted status object. */
+const untrustedStatus = parseJsonObjectLine({
   text: finalStatus.stdout,
-  expected: '"reason":"untrusted"',
   context: 'untrusted status',
 },);
+if ((untrustedStatus.schemaVersion !== 1)
+  || (untrustedStatus.type !== 'trust-status')
+  || (untrustedStatus.configPresent !== true)
+  || (untrustedStatus.trusted !== false)
+  || (untrustedStatus.unchanged !== false)
+  || (untrustedStatus.configPath !== configPath)
+  || (untrustedStatus.reason !== 'untrusted'))
+  throw new Error(`untrusted status compatibility mismatch\n${finalStatus.stdout}`,);
 await verifyRecursiveConsumer({ env, },);
 await verifyPolicyConfigConsumer({ env, },);
 await verifyPolicyDefaultConsumer({ env, },);
