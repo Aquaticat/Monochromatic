@@ -86,10 +86,14 @@ and `git rev-parse --show-toplevel` were all valid before the package root finde
 
 ### Version and harness
 
-- cli-git package version: `0.0.1`.
-- Failing runner image: `ubuntu-24.04` version `20260705.232.1`.
-- Regression test: `packages/module/fs-path/src/find-monorepo-root.unit.test.ts`.
-- Hosted harness: `.github/workflows/final-newline.yml`.
+- cli-git package version:
+   `0.0.1`.
+- Failing runner image:
+   `ubuntu-24.04` version `20260705.232.1`.
+- Regression test:
+   `packages/module/fs-path/src/find-monorepo-root.unit.test.ts`.
+- Hosted harness:
+   `.github/workflows/final-newline.yml`.
 
 Run local package verification with:
 
@@ -113,11 +117,16 @@ It proves `findGitRepoRoot` returns the exact logical fixture root instead of in
 
 ### Failing catalog before the fix
 
-- Checkout root plus default cwd: run `29165776240`.
-- Checkout root plus Git `-C`: run `29165832538`.
-- Disposable clone plus Git `-C`: run `29165889435`.
-- Disposable clone plus process cwd: run `29165942247`.
-- Instrumented disposable clone: run `29165988807` exposed `/home` becoming `/var/home`.
+- Checkout root plus default cwd:
+   run `29165776240`.
+- Checkout root plus Git `-C`:
+   run `29165832538`.
+- Disposable clone plus Git `-C`:
+   run `29165889435`.
+- Disposable clone plus process cwd:
+   run `29165942247`.
+- Instrumented disposable clone:
+   run `29165988807` exposed `/home` becoming `/var/home`.
 
 ## Verified workarounds
 
@@ -153,18 +162,24 @@ It intentionally excludes checkout-local dependency artifacts and unrelated root
 
 ### Constraint check
 
-1. **Is it really upstream's fault?** No.
+1. **Is it really upstream's fault?
+   ** No.
    Git and GitHub Actions preserved a valid repository and config;
    this repository changed `/home` to `/var/home` unconditionally.
-2. **Can upstream fix it?** Not at the relevant boundary.
+2. **Can upstream fix it?
+   ** Not at the relevant boundary.
    GitHub cannot correct a path rewrite implemented by `module-fs-path`.
-3. **Are they supporting this use case?** GitHub Actions supports checkout,
+3. **Are they supporting this use case?
+   ** GitHub Actions supports checkout,
    process cwd,
    and temporary repositories,
    all of which worked under real Git.
-4. **Would the repo welcome our contribution?** Not evaluated as an upstream contribution because constraint one fails.
-5. **Will they likely fix it?** Not applicable because there is no upstream defect to fix.
-6. **Have we prototyped a minimal fix compatible with their architecture?** Yes at the consumer boundary.
+4. **Would the repo welcome our contribution?
+   ** Not evaluated as an upstream contribution because constraint one fails.
+5. **Will they likely fix it?
+   ** Not applicable because there is no upstream defect to fix.
+6. **Have we prototyped a minimal fix compatible with their architecture?
+   ** Yes at the consumer boundary.
    Commit `ac70fa47c` removes the unsupported transform and adds a regression fixture.
 
 No matching `.out-of-scope/` entry names GitHub runner path identity or `module-fs-path`.
