@@ -34,21 +34,21 @@ jobs:
 
     - name: Create isolated core policy repository
       run: |
-        git clone --local --no-hardlinks "$GITHUB_WORKSPACE" "$RUNNER_TEMP/final-newline"
-        printf 'export default {};\n' > "$RUNNER_TEMP/final-newline/cli-git.config.mjs"
+        scan_root="$(realpath "$RUNNER_TEMP")/final-newline"
+        git clone --local --no-hardlinks "$GITHUB_WORKSPACE" "$scan_root"
+        printf 'export default {};\n' > "$scan_root/cli-git.config.mjs"
+        printf 'SCAN_ROOT=%s\n' "$scan_root" >> "$GITHUB_ENV"
 
     - name: Verify isolated repository
-      working-directory: ${{ runner.temp }}/final-newline
       run: |
+        cd -- "$SCAN_ROOT"
         test -d .git
         test -f cli-git.config.mjs
-        test "$(git rev-parse --show-toplevel)" = "$RUNNER_TEMP/final-newline"
+        test "$(git rev-parse --show-toplevel)" = "$SCAN_ROOT"
         node --input-type=module-typescript --eval "import { findGitRepoRoot } from '$GITHUB_WORKSPACE/packages/module/fs-path/src/index.ts'; const root = await findGitRepoRoot({ cwd: process.cwd() }); if (root !== process.cwd()) throw new Error('cli-git repository discovery mismatch: ' + root)"
 
     - name: Trust isolated core policy config
-      working-directory: ${{ runner.temp }}/final-newline
-      run: node "$GITHUB_WORKSPACE/packages/git-policies/cli/src/index.ts" cli-git trust --yes
+      run: cd -- "$SCAN_ROOT" && node "$GITHUB_WORKSPACE/packages/git-policies/cli/src/index.ts" cli-git trust --yes
 
     - name: Check final newlines
-      working-directory: ${{ runner.temp }}/final-newline
-      run: node "$GITHUB_WORKSPACE/packages/git-policies/cli/src/index.ts" cli-git check --policy final-newline --all
+      run: cd -- "$SCAN_ROOT" && node "$GITHUB_WORKSPACE/packages/git-policies/cli/src/index.ts" cli-git check --policy final-newline --all
