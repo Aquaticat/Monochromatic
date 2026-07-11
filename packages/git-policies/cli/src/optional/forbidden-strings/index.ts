@@ -63,10 +63,13 @@ export const forbiddenStringsPolicy: PolicyDefinition<
     options,
   }): Promise<readonly PolicyFinding[]> {
     /**
-     * Exact content candidates for current lifecycle state or push range.
+     * Exact candidates, limited to landed delta after commit.
      */
-    const candidates = await context.git
-      .candidates();
+    const candidates = (await context.git
+      .candidates())
+      .filter(function isRelevantCandidate(candidate,) {
+        return (context.trigger !== 'post-commit') || (candidate.change !== 'unchanged');
+      },);
     return await scanCandidates({
       executable: options.executable,
       repositoryRoot: context.command
