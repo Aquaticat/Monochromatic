@@ -11,15 +11,11 @@ import {
   runParserSync,
 } from '@optique/core';
 import { DIRECT_MANAGEMENT_PARSER, } from './management-direct-parser.ts';
-import { resolveGit, } from './resolve-git.ts';
 import {
   createEngineFailureEvent,
   renderPolicyEvents,
 } from './policy-engine/events.ts';
-import {
-  ADD_POLICY_FACTS_NOT_APPLICABLE,
-  createAddPolicyFacts,
-} from './policy-engine/add-policy-facts.ts';
+import { prepareDirectCheckFacts, } from './policy-engine/direct-check-facts.ts';
 import { runDirectFix, } from './policy-engine/direct-fix.ts';
 import { runPolicyEngine, } from './policy-engine/engine.ts';
 import { TrustedConfigError, } from './trust/config-loader.ts';
@@ -334,28 +330,21 @@ export async function runManagementCommand({
       .exitCode;
   }
   /**
-   * Exact private worktree/index projection for direct checks.
+   * Exact private worktree/index projection or stable setup failure.
    */
-  const directFacts = await createAddPolicyFacts({
-    args: [
-      ...gitGlobalArgs,
-      'add',
-      '--all',
-      '--',
-      ...directPathspecs,
-    ],
-    gitPath: await resolveGit(),
-    candidatePathspecs: directPathspecs,
+  const directFacts = await prepareDirectCheckFacts({
+    args,
+    gitGlobalArgs,
+    pathspecs: directPathspecs,
   },);
-  if ((typeof directFacts) === 'symbol') {
-    if (directFacts !== ADD_POLICY_FACTS_NOT_APPLICABLE)
-      throw new TypeError('Unknown direct policy facts state.',);
-    throw new TypeError('Direct check requires a Git worktree.',);
+  if (directFacts.kind === 'failed') {
+    process.stdout.write(renderPolicyEvents(directFacts.result.events,));
+    return directFacts.result.exitCode;
   }
   /**
    * Scope-bound exact direct-check candidate facts.
    */
-  await using scopedDirectFacts = directFacts;
+  await using scopedDirectFacts = directFacts.scope;
   /**
    * Built-in and trusted-plugin direct-check decision.
    */

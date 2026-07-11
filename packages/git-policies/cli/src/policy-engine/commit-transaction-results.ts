@@ -3,6 +3,7 @@
  *
  * @module
  */
+import type { PolicyTrigger, } from '../api/policy-types.ts';
 import {
   createEngineFailureEvent,
   type EngineFailureCode,
@@ -39,7 +40,7 @@ export function initialTransactionFailure({
   args: readonly string[];
   message: string;
   code?: EngineFailureCode;
-  trigger?: 'pre-forward' | 'direct-fix';
+  trigger?: PolicyTrigger;
   path?: string;
 }>,): PolicyEngineResult {
   return {
@@ -88,7 +89,7 @@ export function transactionFailure({
   previous: PolicyEngineResult;
   message: string;
   code?: EngineFailureCode;
-  trigger?: 'pre-forward' | 'direct-fix';
+  trigger?: PolicyTrigger;
   path?: string;
 }>,): PolicyEngineResult {
   return {
