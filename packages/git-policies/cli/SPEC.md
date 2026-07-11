@@ -704,7 +704,7 @@ Removing,
 renaming,
 or changing field meaning requires a new integer `schemaVersion`.
 
-All events share:
+All policy events share:
 
 ```ts
 export type EventBase = {
@@ -715,6 +715,25 @@ export type EventBase = {
 ```
 
 `sequence` starts at `0` for each cli-git invocation and increments by one in emission order.
+Trust management objects use the separate schema specified in `Management grammar`.
+
+### Trust warning object
+
+```ts
+export type TrustWarningObject = {
+  readonly schemaVersion: 1;
+  readonly type: 'trust-warning';
+  readonly code:
+    | 'relaxed-entry-malformed'
+    | 'relaxed-entry-filesystem-mismatch'
+    | 'typescript-package-import-not-invalidated';
+  readonly message: string;
+};
+```
+
+A trust warning is not a policy event and has no `sequence`.
+It is one compact LF-terminated JSON object on stderr.
+It may accompany direct-command policy JSONL on stdout without corrupting that stream.
 
 ### Finding event
 
