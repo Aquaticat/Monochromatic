@@ -1665,6 +1665,48 @@ Unless later grilling changes them:
 - Commits `0a22e16e3` and `32c938a8b` contain the contract and final strict-TypeScript correction.
 - Independent final review reported no required corrections and #341 was closed.
 
+## Final-newline migration state
+
+Issue `#355` implements `final-newline` as an enabled-by-default core policy at error severity.
+The core order places it after `add-explicit`.
+It is warn-safe because warning mode reports without applying patches.
+
+Exact normalization collapses terminal LF runs to one LF and appends one LF when absent.
+It preserves interior CRLF bytes and skips empty,
+NUL-containing,
+invalid UTF-8,
+deleted,
+symlink,
+submodule,
+and exact excluded candidates.
+The migrated exclusions match hk:
+`packages/fuzz/forbidden-strings/corpus/**`,
+`packages/test-fixture/toml-edit/src/**`,
+and `**/dist/final/node/**`.
+
+Commit correction applies full-content single-path Git patches to a private index.
+Direct fix requires explicit pathspecs or `--all`,
+converges whole-policy passes in a private index,
+revalidates worktree bytes,
+installs atomically,
+and leaves the real index byte-identical.
+Successful correction emits one aggregate policy-neutral `fix-summary` after stable convergence;
+provisional findings are not emitted.
+Read-only check and manual push never carry patches.
+
+Acceptance fixtures now cover eight changed passes,
+cross-policy cycles,
+Git-byte-ordered summary paths,
+canonical and blocked interactive selection modes,
+the hk partial-staging regression,
+all exclusion families,
+and packed check,
+fix,
+commit,
+and push invocations.
+The committed manual-push benchmark is type-checked under the cli-git package and remains separate from the shipped
+single-MJS artifact.
+
 ## GitHub implementation tracker
 
 The confirmed plan is recorded as dependency-linked GitHub issues.
@@ -1712,10 +1754,13 @@ Dependency-ordered implementation slices:
 - [#353](https://github.com/Aquaticat/Monochromatic/issues/353),
   completed:
   migrated forbidden-root-context as the first repo plugin.
-- [#354](https://github.com/Aquaticat/Monochromatic/issues/354):
-  migrate forbidden-strings across commit and push lifecycle.
-- [#355](https://github.com/Aquaticat/Monochromatic/issues/355):
-  migrate transactional final-newline normalization and direct check/fix.
+- [#354](https://github.com/Aquaticat/Monochromatic/issues/354),
+  completed:
+  migrated forbidden-strings across commit and push lifecycle with bounded manual-push materialization.
+- [#355](https://github.com/Aquaticat/Monochromatic/issues/355),
+  active:
+  implements transactional final-newline normalization and index-neutral direct check/fix;
+  closure awaits final verification evidence.
 - [#356](https://github.com/Aquaticat/Monochromatic/issues/356):
   close CI,
   platform,
@@ -1963,7 +2008,6 @@ Implementation must now close these evidence gaps without making new product dec
   and self-contained import validation.
 - Measured performance budgets and benchmark fixtures.
 - Exact forbidden-strings push-range computation and failed-range JSONL diagnostic.
-- Migration parity matrix for every hk trigger and final-newline exclusion.
 - Independent final-newline CI command after migration.
 
 ## Required verification before implementation completion

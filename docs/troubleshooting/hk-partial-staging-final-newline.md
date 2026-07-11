@@ -24,8 +24,38 @@ The unstaged text survives,
 but hk inserts an unintended blank line at the boundary.
 This violates exact partial-staging preservation.
 
-The repository therefore uses read-only pre-commit newline checks.
-Automatic rewriting remains available only through the explicit `fix` hook with `--no-stage`.
+The repository therefore keeps hk pre-commit newline checks read-only while hk remains installed.
+Hk rewriting remains available only through the explicit `fix` hook with `--no-stage`.
+
+## Cli-git migration resolution
+
+The core cli-git `final-newline` policy now avoids hk's stash-tail merge entirely.
+For commit correction,
+cli-git copies the real index,
+projects the exact selected candidate state,
+applies single-path Git patches to that private index,
+and commits through the private index.
+The worktree is not rewritten,
+so a partially staged tail remains byte-for-byte identical.
+After success,
+cli-git reconciles the real index to the committed result without folding the unstaged tail into either state.
+
+Direct `git cli-git fix` uses another private index for whole-policy convergence.
+After convergence it revalidates selected worktree bytes against the initial snapshot,
+installs sibling-file replacements atomically,
+and verifies that the real index bytes are unchanged.
+`git cli-git check` and manual push remain read-only.
+
+The packed acceptance fixture in
+`packages/git-policies/cli/src/trust/fixtures/built-final-newline-consumer.ts`
+exercises direct check,
+direct fix,
+commit correction,
+and rejected manual push through the shipped shadow `git` executable.
+The transaction fixture in
+`packages/git-policies/cli/src/trust/fixtures/built-autofix-transaction-consumer.ts`
+retains the exact partial-staging regression coverage.
+Hk and Pkl remain transitional until issue `#357` removes them after independent CI readiness.
 
 ## Root cause
 
@@ -197,9 +227,10 @@ ok 1 fix avoids duplicate separator when fixer adds missing final newline
 
 ## Verified workarounds
 
-### Keep pre-commit read-only
+### Keep hk pre-commit read-only
 
-This repository keeps `stash = "git"` so checks observe staged bytes,
+While hk remains installed,
+this repository keeps `stash = "git"` so hk checks observe staged bytes,
 but removes `fix = true` from `pre-commit`.
 A failed commit restores the partial worktree exactly.
 The explicit command remains:

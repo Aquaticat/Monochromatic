@@ -2,23 +2,41 @@
 
 ## Status
 
-Implemented and verified on 2026-07-09,
+The hk baseline was implemented and verified on 2026-07-09,
 with tsdown Node output explicitly exempted during implementation.
+The durable cli-git migration was implemented on 2026-07-11 under issue `#355`.
 
-The repository canonicalizes every in-scope,
-non-empty text file to exactly one trailing LF,
-except exact-byte fixtures and files under `**/dist/final/node/**`.
-Tsdown outputs keep their producer-native missing final LF to save one byte per generated file.
+`final-newline` is now an enabled-by-default core cli-git policy at error severity.
+It runs after `add-explicit` in core order and remains warn-safe.
+Pre-forward commit handling applies corrections only to a private index,
+then commits canonical blobs while preserving partially staged worktree tails byte-for-byte.
+Manual push and direct check report findings without rewriting content.
+Direct fix converges against a private index,
+installs selected worktree files atomically,
+and verifies that real index bytes remain unchanged.
+
+The policy canonicalizes every in-scope,
+non-empty UTF-8 text file to exactly one trailing LF.
+It skips empty,
+NUL-containing,
+invalid UTF-8,
+deleted,
+symlink,
+and submodule candidates.
+The exact hk exclusion families remain unchanged:
+`packages/fuzz/forbidden-strings/corpus/**`,
+`packages/test-fixture/toml-edit/src/**`,
+and `**/dist/final/node/**`.
+Tsdown outputs therefore keep producer-native missing final LF.
 Git continues to track actual bytes;
 it is not configured to hide newline-only changes.
 
-The final tracked-file scan inspected 7,074 paths and found zero in-scope violations:
+The final hk-era tracked-file scan inspected 7,074 paths and found zero in-scope violations:
 5,446 compliant text files,
 67 binary or non-UTF-8 files,
 and 1,561 excluded paths.
-The obsolete empty placeholder is gone.
-Pre-commit enforcement is read-only because hk 1.50.0's auto-fixer has a documented partial-staging merge bug;
-explicit no-stage fixing remains available.
+Those counts remain historical evidence rather than current-tree claims.
+Hk remains as transitional local-hook infrastructure until issue `#357` removes hk and Pkl.
 
 ## Goal
 
@@ -27,10 +45,12 @@ while preserving binary files and text-shaped test data whose exact bytes are pa
 
 The user-facing outcomes are:
 
-- Committing a normal text file with an invalid ending is rejected before commit.
-- An explicit hk fix canonicalizes the worktree without bulk staging.
-- A partially staged file keeps its staged and unstaged bytes exactly when a newline check rejects it.
-- A repository-wide check reports any in-scope violation without modifying files.
+- Committing a normal text file with an invalid ending commits a canonical private-index blob without rewriting
+  unstaged worktree bytes.
+- `git cli-git fix -- <pathspec>...` and `git cli-git fix --all` canonicalize selected worktree files without changing
+  real index bytes.
+- `git cli-git check` and manual push report invalid endings without rewriting worktree or committed content.
+- A partially staged file keeps its worktree tail byte-for-byte while its would-be committed blob is corrected.
 - Generated license copies remain canonical after their normal producer runs.
 - Tsdown Node outputs remain byte-identical to producer output and outside newline enforcement.
 - Fuzz corpora and parser fixtures remain byte-identical.
@@ -274,34 +294,25 @@ The implementation must trust the fresh scan over this historical list if the tr
 
 ## Architecture tradeoff and migration
 
-The current architecture decision in `docs/decisions/cli-git-policies-platform.md` plans to retire hk and Pkl after the
-first-party cli-git policies platform exists.
-That platform is designed but not built.
+The migration selected cli-git as the durable owner.
+`packages/git-policies/cli/src/policy-engine/final-newline-policy.ts` owns policy registration and lifecycle behavior;
+`final-newline-normalize.ts` owns exact-byte classification;
+`final-newline-patch.ts` owns destination-grammar Git patch generation.
+The shared commit transaction applies pre-forward patches only to a private index.
+The direct-fix transaction projects selected worktree bytes into another private index,
+converges whole-policy passes,
+revalidates concurrent worktree changes,
+and installs sibling-file replacements atomically.
 
-Current ranking:
+Hk now provides duplicate transitional checks and an explicit fallback fixer only until issue `#357`.
+Its pre-commit fixer remains disabled because hk 1.50.0 can alter a partially staged worktree at an EOF-tail boundary.
+Git clean filters remain rejected because local driver configuration and worktree/index opacity conflict with the
+platform's exact-byte model.
+Formatter-only enforcement remains incomplete because it cannot protect every in-scope text file.
 
-1. hk builtin.
-   It implements the exact transformation for explicit fixes,
-   checks staged bytes safely with `stash = "git"`,
-   and adds no dependency.
-   Its pre-commit fixer is disabled because hk 1.50.0 can alter a partially staged worktree at an EOF-tail boundary.
-   Its other costs are future migration and local hook installation.
-2. Future cli-git policy.
-   It is the durable architectural home and avoids a separate hook installation,
-   but implementing the platform plus safe staged-blob rewriting would expand this newline task substantially.
-3. Git clean filter or formatter-only enforcement.
-   Clean filters have local configuration and index-transparency problems.
-   Dprint covers only configured formats and cannot protect every in-scope text file.
-   EditorConfig remains useful editor guidance but is not enforcement.
-
-The implementation will update the existing cli-git decision
-to record `final-newline` as another hk behavior that must reach parity before hk retirement.
-It will not add hk back to CI:
-the existing decision requires CI to remain independent,
-and the previous generic `mise exec -- hk check` workflow installed unrelated root tools.
-Local hooks are therefore fast feedback,
-not an unbypassable authority.
-A future cli-git policy and independent CI checker remain the durable destination.
+Independent final-newline CI belongs to issue `#356`.
+It must invoke cli-git's direct checker without loading unrelated hk or Pkl tooling.
+Issue `#357` may remove hk only after that independent check and the remaining capstone gates pass.
 
 ## Limitations
 
@@ -313,15 +324,13 @@ A future cli-git policy and independent CI checker remain the durable destinatio
   This implementation removes the only current empty placeholder but does not forbid future intentional empty files.
 - Only LF runs are collapsed.
   The existing `.gitattributes` policy remains responsible for CRLF-to-LF normalization.
-- The local hook is temporary infrastructure because hk is scheduled for retirement.
-- Pre-commit newline enforcement is read-only until the hk partial-staging merge bug is fixed in a verified release.
-- hk 1.50.0's fixer can insert a blank boundary line when it adds the staged file's missing final LF at the exact
+- The local hk hook is temporary infrastructure because issue `#357` schedules hk retirement.
+- Hk pre-commit newline enforcement remains read-only while both systems coexist.
+- Hk 1.50.0's fixer can insert a blank boundary line when it adds the staged file's missing final LF at the exact
   point where an unstaged tail begins.
-  This configuration avoids the bug by keeping pre-commit read-only and reserving auto-fix for the unstashed,
-  no-stage worktree surface.
-  An exact-byte fixture verified that explicit fixing normalizes a partially staged worktree while preserving its
-  staged blob;
-  the future cli-git normalizer must preserve both index and worktree bytes exactly.
+  Cli-git avoids that merge path entirely:
+  commit correction changes only its private index,
+  and direct fix changes selected worktree files only after exact concurrency and real-index checks.
 - Generated license normalization stays attached to file-enforcer's canonical source.
 - Tsdown's `dist/final/node` tree is a deliberate compact-output exception;
   paths moved outside that boundary become subject to normal enforcement.
@@ -349,7 +358,36 @@ Implementation updates:
 
 ## Verification and acceptance criteria
 
-The work is complete only when all of these hold:
+The original hk baseline criteria remain historical evidence.
+The durable cli-git migration additionally requires:
+
+- Core registration is enabled by default at error severity and ordered after `add-explicit`.
+- Unit fixtures cover exact normalization,
+  binary and empty preservation,
+  all exclusion families,
+  single-path patch grammar,
+  eight changed passes,
+  cross-policy cycle detection,
+  final-pass-only summaries,
+  and Git-byte-ordered paths.
+- Disposable Git fixtures prove transactional commit correction,
+  partial-staging worktree preservation,
+  direct-fix real-index neutrality,
+  and read-only check and push behavior.
+- Packed built-shim fixtures invoke check,
+  fix,
+  commit,
+  patch selection,
+  interactive selection,
+  and push through the shipped `index.mjs`.
+- Cli-git build,
+  Oxlint with zero warnings,
+  type checks,
+  unit tests,
+  packed trust,
+  and independent forbidden-strings scanning pass.
+
+The hk baseline was complete only when all of these held:
 
 - `hk.pkl` evaluates with the pinned hk executable and Pkl package version.
 - An actual Git commit fixture proves missing and multiple final LF cases are rejected without mutation.
