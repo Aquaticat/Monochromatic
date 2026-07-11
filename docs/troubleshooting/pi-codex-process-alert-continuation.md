@@ -156,12 +156,12 @@ Known-failing cases:
 - The diagnostic reports that the continuation state expected an assistant or tool message but received the
   user message created from the custom process update.
 
-A live isolated probe injected one custom process-like update while a Codex response was streaming.
-It produced no provider output in 30 seconds and was stopped, so it neither confirms nor rejects the
-hypothesized continuation failure. The Pi source test could not be executed in a clean Node container:
-`npm ci` reported that it could not find a usable lockfile, then `npm install --ignore-scripts` failed with
-`ERR_INVALID_ARG_TYPE` after the repository bootstrap hook. Those environment failures do not test the
-provider behavior.
+Two live isolated probes injected one custom process-like update while a Codex response was streaming.
+Neither produced provider output: the first was stopped after 30 seconds and the second after 47 seconds.
+They therefore neither confirm nor reject the hypothesized continuation failure. The Pi source test could not
+be executed in a clean Node container: `npm ci` reported that it could not find a usable lockfile, then
+`npm install --ignore-scripts` failed with `ERR_INVALID_ARG_TYPE` after the repository bootstrap hook.
+Those environment failures do not test the provider behavior.
 
 ## Verified workarounds
 
