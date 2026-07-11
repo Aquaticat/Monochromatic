@@ -827,7 +827,11 @@ Consumer lockfiles and self-contained builds govern plugin inputs.
   exact partial-staging regression.
 - `.github/workflows/forbidden-strings.yml`:
   independent scanner CI.
-- GitHub issues #341 through #357:
-  active dependency-ordered implementation slices.
+- GitHub issues #341 through #355:
+  completed dependency-ordered implementation slices.
+- GitHub issue #356:
+  release-readiness implementation at its final independent-review gate.
+- GitHub issue #357:
+  hk and Pkl retirement capstone blocked by #356.
 - GitHub issue #358:
   recorded and indefinitely deferred npm publication.

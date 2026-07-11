@@ -3,11 +3,13 @@
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.
-Issues #280 and #341 through #353 are complete and closed.
+Issues `#280` and `#341` through `#355` are complete and closed.
+Issue `#356` has completed implementation and verification except for its final independent standards and specification
+review.
+Issue `#357` remains blocked until `#356` closes.
 The Pi Bash result-loss priority investigation is complete through implementation,
 user-boundary verification,
 and `docs/troubleshooting/pi-bash-output-spool-write-failure.md`.
-Issue #354 is the active dependency-ordered cli-git slice.
 
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
@@ -15,16 +17,13 @@ The implementation interface is
 `packages/git-policies/cli/SPEC.md`.
 This handover remains the current execution-state and evidence record.
 
-Concurrent worktree state:
-`.pi/settings.json`,
-`.pi/teams/`,
-and `mise.lock` are unrelated external work.
-Do not edit,
-stage,
+Earlier checkpoint sections are retained as chronological evidence;
+the `Release-readiness checkpoint on 2026-07-11` section and this status are authoritative when an older checkpoint says
+work remains open.
+Treat any unrelated worktree changes as concurrent work and do not stage,
 stash,
 restore,
-or otherwise disturb them as part of this plan.
-Issue #343 legitimately regenerated `pnpm-lock.yaml` from the current workspace state when package dependencies changed.
+or otherwise disturb them.
 
 ## Original implementation objective
 
@@ -1546,9 +1545,9 @@ Unless later grilling changes them:
   direct scanner median was 1.993 ms,
   cli-git policy median was 269.900 ms,
   and wrapper-added median was 267.907 ms.
-  This is a baseline rather than a budget;
-  raw samples live in `packages/git-policies/cli/perf/forbidden-strings-2026-07-10.json`,
-  while #356 remains responsible for cross-platform budgets and enforcement.
+  This slice-specific measurement remained a baseline rather than a budget;
+  raw samples live in `packages/git-policies/cli/perf/forbidden-strings-2026-07-10.json`.
+  Issue `#356` later added and hosted-verified the complete enforced lifecycle budget matrix.
 - The first real repository push exposed unbounded process fan-out in manual-push candidate loading.
   Each lazy historical blob launched `git cat-file blob` inside an unbounded `Promise.all`,
   exhausting the host process table and producing `spawn /bin/bash EAGAIN` before a forced reboot.
@@ -1724,6 +1723,54 @@ and repeated 32-contender regression coverage passes.
 The committed manual-push benchmark is type-checked under the cli-git package and remains separate from the shipped
 single-MJS artifact.
 
+## Release-readiness checkpoint on 2026-07-11
+
+Issues `#354` and `#355` are complete.
+Issue `#356` has implemented every runtime,
+CI,
+performance,
+packaging,
+and documentation acceptance item;
+only the independent standards and specification review remains before closure.
+Issue `#357` is the next dependency-ordered slice and must not begin until that review closes `#356`.
+Npm publication remains deferred to `#358` and is not authorized.
+
+Hosted evidence:
+
+- final-newline workflow run `29166399098` passed;
+- lifecycle-performance workflow run `29168507046` passed;
+- cross-platform trust workflow run `29169584084` passed Linux,
+  macOS,
+  and Windows,
+  including strict and relaxed MJS and TypeScript trust,
+  real filesystem identity,
+  registry paths,
+  and Windows ACL rejection.
+
+The Windows sequence fixed two host-only defects:
+real Git resolution now follows PATH directory order plus Windows `PATHEXT`,
+and every newly created nested trust-registry component receives its own protected ACL before deeper creation.
+Missing records are classified before ACL probing so Windows absence remains `untrusted` rather than `corrupt`.
+Troubleshooting evidence lives in
+`docs/troubleshooting/cli-git-windows-pathext-resolution.md` and
+`docs/troubleshooting/cli-git-windows-nested-registry-acls.md`.
+
+The measured lifecycle baseline is
+`packages/git-policies/cli/perf/lifecycle-latency-2026-07-11.json`.
+Its scenario-specific ceilings are derived as twice the measured maximum rounded to 25 milliseconds,
+and every ceiling is below 2,000 milliseconds.
+The dirty-worktree commit path improved from 18.64 seconds to 0.74 seconds after post-commit content policies were
+restricted to the landed delta while complete landed-tree metadata remained available.
+
+The unpublished npm tarball passes the bounded non-workspace packed consumer.
+The audit reduced it from 221 entries and 494,783 compressed bytes to 146 entries and 402,357 bytes;
+unit tests,
+host-evidence programs,
+and packed fixture sources are now excluded while `src/index.ts`,
+the one `index.mjs` artifact,
+and `index.d.mts` remain.
+Publication workflow state was not changed.
+
 ## GitHub implementation tracker
 
 The confirmed plan is recorded as dependency-linked GitHub issues.
@@ -1780,12 +1827,14 @@ Dependency-ordered implementation slices:
   exact whole-policy convergence,
   packed lifecycle parity,
   and index-neutral direct check/fix.
-- [#356](https://github.com/Aquaticat/Monochromatic/issues/356):
-  close CI,
-  platform,
-  performance,
-  documentation,
-  and npm-pack readiness gaps without publishing.
+- [#356](https://github.com/Aquaticat/Monochromatic/issues/356),
+  in final review:
+  independent CI,
+  cross-platform trust,
+  measured performance gates,
+  JSONL compatibility,
+  npm-pack readiness,
+  and user documentation are complete without publishing.
 - [#357](https://github.com/Aquaticat/Monochromatic/issues/357):
   retire hk and Pkl after every capstone gate passes.
 
@@ -2006,28 +2055,34 @@ a later phase does not wait to record an earlier phase's work.
   CI checks,
   and clean npm install after removal.
 
-## Implementation risks and evidence gaps
+## Remaining work
 
-`packages/git-policies/cli/SPEC.md` freezes the public declarations,
-JSONL schema,
-management grammar,
-trust record,
-relaxed-mode parser,
-lifecycle,
-and benchmark method.
-Implementation must now close these evidence gaps without making new product decisions:
+The earlier evidence gaps are closed.
+The only remaining work in issue `#356` is an independent review along two axes:
 
-- Complete source-backed read-only and mixed Git command classifier.
-- Complete temporary-index transaction prototype and crash journal.
-- `@monochromatic-dev/module-fs-id` implementation and real macOS/Windows verification.
-- Tsdown integration,
-  source-graph extraction,
-  cache layout,
-  immutable artifact loading,
-  and self-contained import validation.
-- Measured performance budgets and benchmark fixtures.
-- Exact forbidden-strings push-range computation and failed-range JSONL diagnostic.
-- Independent final-newline CI command after migration.
+- standards:
+  verify repository rules,
+  packaging,
+  workflow isolation,
+  cross-platform storage,
+  tests,
+  and user documentation;
+- specification:
+  compare the complete implementation against issue `#356` and
+  `packages/git-policies/cli/SPEC.md`,
+  with no unresolved required finding.
+
+After both reviews pass,
+close `#356` explicitly and start `#357`.
+Issue `#357` removes hk and Pkl,
+updates transitional documentation,
+verifies per-machine cleanup,
+and reruns the end-user shim,
+direct checks,
+independent CI,
+and clean packed installation.
+Do not publish npm artifacts;
+`#358` remains deferred.
 
 ## Required verification before implementation completion
 
@@ -2079,8 +2134,9 @@ implementation checkpoint,
 verification result,
 and commit.
 
-Issue #341 completed its contract gates.
-Continue recording each runtime implementation checkpoint,
-verification result,
-commit,
-and issue closure here.
+Issues `#341` through `#355` completed their contract gates.
+Issue `#356` is at the independent-review gate described in `Remaining work`.
+Continue recording each review result,
+issue closure,
+`#357` retirement checkpoint,
+and verification run here.

@@ -310,13 +310,15 @@ Git clean filters remain rejected because local driver configuration and worktre
 platform's exact-byte model.
 Formatter-only enforcement remains incomplete because it cannot protect every in-scope text file.
 
-Independent final-newline CI belongs to issue `#356`.
-It must invoke cli-git's direct checker without loading unrelated hk or Pkl tooling.
-Issue `#357` may remove hk only after that independent check and the remaining capstone gates pass.
+Issue `#356` added independent final-newline CI in `.github/workflows/final-newline.yml`.
+Hosted run `29166399098` passed while invoking cli-git's direct checker from a disposable clone without loading unrelated
+hk or Pkl tooling.
+Issue `#357` may remove hk after the remaining independent standards and specification review closes `#356`.
 
 ## Limitations
 
-- hk must be installed and its Git hooks enabled on a contributor's machine.
+- Transitional duplicate local-hook enforcement still requires hk to be installed and enabled;
+  cli-git's wrapper and independent CI do not depend on hk.
 - Git hooks can be bypassed by clients that do not invoke them or by explicit verification bypasses.
 - hk's text detection is heuristic.
   New exact-byte fixtures must receive a narrow exclusion when introduced.

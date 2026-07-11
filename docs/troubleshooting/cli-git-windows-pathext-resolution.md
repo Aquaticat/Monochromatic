@@ -60,7 +60,7 @@ and proves the resolver selects the executable path.
 The package resolver unit test,
 type check,
 and zero-warning Oxlint pass locally.
-The cross-platform hosted workflow is the user-boundary verification because it exercises Git installed on an actual Windows runner.
+Cross-platform hosted workflow run `29169584084` passed this user boundary with Git installed on an actual Windows runner.
 
 ## Rejected hypotheses
 
