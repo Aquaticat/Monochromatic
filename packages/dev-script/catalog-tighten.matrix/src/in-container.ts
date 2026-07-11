@@ -6,7 +6,7 @@
  * fixture workspace into `/work`, installs it with pnpm (via corepack) under the
  * scenario's layout, provisions pnpm on PATH, applies the scenario's post-install
  * mutation, runs catalog-tighten against the fixture, and asserts the tool
- * tightens, reports a MISS, or fails cleanly as the scenario expects.
+ * tightens, reports a MISS or an UNDCL, or fails cleanly as the scenario expects.
  */
 
 import {
@@ -239,7 +239,7 @@ async function runTool(): Promise<ToolResult> {
 /**
  * Asserts the tool result matches the scenario's expectation, checking the
  * output against {@link EXPECTED_TIGHTENED} and the {@link FIXTURE_PACKAGE}
- * MISS line, throwing a labelled error on mismatch.
+ * MISS and UNDCL lines, throwing a labelled error on mismatch.
  *
  * @param scenario - scenario under test
  *
@@ -271,6 +271,10 @@ function assertOutcome(
    */
   const reportedMiss = output.includes(`MISS  ${FIXTURE_PACKAGE}`,);
   /**
+   * Whether the output reports an UNDCL for the fixture package (store-present but undeclared; on stderr).
+   */
+  const reportedUndeclared = output.includes(`UNDCL ${FIXTURE_PACKAGE}`,);
+  /**
    * Whether the output reports the expected tightened line (on stdout).
    */
   const tightened = output.includes(EXPECTED_TIGHTENED,);
@@ -287,6 +291,14 @@ function assertOutcome(
       throw new Error(`[${scenario.label}] tool failed unexpectedly:\n${output}`,);
     if ((!reportedMiss) || tightened)
       throw new Error(`[${scenario.label}] expected a MISS, got:\n${output}`,);
+    return;
+  }
+  if (scenario.expect
+    === 'undeclared') {
+    if (!ok)
+      throw new Error(`[${scenario.label}] tool failed unexpectedly:\n${output}`,);
+    if ((!reportedUndeclared) || tightened)
+      throw new Error(`[${scenario.label}] expected an UNDCL, got:\n${output}`,);
     return;
   }
   if ((!ok) || (!tightened))

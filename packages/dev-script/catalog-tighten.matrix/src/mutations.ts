@@ -3,8 +3,8 @@
  *
  * Each scenario applies one mutation after install and before the tool runs:
  * seeding a stale orphan, or removing a file or directory that catalog-tighten
- * depends on, to exercise its graceful behaviour (tighten anyway, MISS, or fail
- * cleanly).
+ * depends on, to exercise its graceful behaviour (tighten anyway, MISS, UNDCL,
+ * or fail cleanly).
  */
 
 import {
@@ -124,6 +124,28 @@ async function removeAllModules(): Promise<void> {
 }
 
 /**
+ * Removes both {@link CONSUMER_DIRS} `node_modules` while leaving the root
+ * `node_modules` (and its `.pnpm` virtual store) intact, so the catalog package
+ * has no importer symlink but is still present in the store. This is the
+ * store-only layout that catalog-tighten classifies as `UNDCL` rather than
+ * `MISS`.
+ *
+ * @example
+ * ```ts
+ * await unlinkConsumers();
+ * ```
+ */
+async function unlinkConsumers(): Promise<void> {
+  await Promise.all(CONSUMER_DIRS.map(async function removeOneConsumerModules(dir,): Promise<void> {
+    await removePath(join(
+      WORK_DIR,
+      dir,
+      'node_modules',
+    ),);
+  },),);
+}
+
+/**
  * Applies the scenario's post-install mutation before the tool runs. An if/else
  * chain maps each mutation to its action (rule PP9: no switch), delegating to
  * {@link seedStaleOrphan} and {@link removeAllModules} for the multi-step cases.
@@ -170,6 +192,10 @@ export async function applyMutation(scenario: Scenario,): Promise<void> {
       CONSUMER_DIRS[0],
       'node_modules',
     ),);
+    return;
+  }
+  if (mutation === 'unlink-consumers') {
+    await unlinkConsumers();
     return;
   }
   if (mutation === 'remove-virtual-store') {

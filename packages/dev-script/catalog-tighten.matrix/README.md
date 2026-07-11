@@ -10,7 +10,7 @@ install layout, in isolated containers.
 Each scenario installs a tiny fixture workspace (two consumer packages, both
 depending on a pinned `picomatch`) under one pnpm layout, applies an optional
 post-install mutation, then asserts the tool tightens `picomatch` from `>=4.0.0`
-to `>=4.0.2`, reports a MISS, or fails cleanly.
+to `>=4.0.2`, reports a MISS or an UNDCL, or fails cleanly.
 
 Layout and settings (expect tighten):
 
@@ -32,6 +32,8 @@ Missing-X robustness:
   (its symlinks survive): still tighten, because resolution reads on-disk state.
 - Missing virtual store (`node_modules/.pnpm` deleted, symlinks left dangling): MISS. Missing
   `.pnp.cjs` under `symlink: false` (no symlinks left to fall back on): MISS.
+- Store-only (both consumers' `node_modules` removed, root `.pnpm` kept): UNDCL, because the package
+  is present in the store as a transitive-style copy but no importer declares it directly.
 - Missing all `node_modules`, missing `pnpm-workspace.yaml`: fail cleanly with a clear error.
 
 ## How it runs

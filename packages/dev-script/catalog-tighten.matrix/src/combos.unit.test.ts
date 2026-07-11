@@ -102,5 +102,18 @@ await describe({
         expect(EXPECTED_TIGHTENED,).toBe(`${FIXTURE_PACKAGE}: >=${FIXTURE_FLOOR} -> >=${FIXTURE_ACTIVE}`,);
       },
     },),
+
+    it({
+      name: 'covers the store-only case that expects an UNDCL',
+      fn: async () => {
+        /** Scenarios whose expectation is the store-present-but-undeclared classification. */
+        const undeclared = SCENARIOS.filter(function isUndeclared(scenario,): boolean {
+          return scenario.expect
+            === 'undeclared';
+        },);
+        expect(undeclared.length,).toBe(1,);
+        expect(undeclared[0]?.mutation,).toBe('unlink-consumers',);
+      },
+    },),
   ],
 },);

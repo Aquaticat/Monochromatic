@@ -4,7 +4,8 @@
  * Each scenario installs a tiny fixture workspace under one pnpm layout, applies
  * an optional post-install mutation (removing a file or directory, seeding a
  * stale orphan), then asserts catalog-tighten behaves correctly: tightening the
- * catalog floor to the active version, reporting a MISS, or failing cleanly.
+ * catalog floor to the active version, reporting a MISS or an UNDCL, or failing
+ * cleanly.
  * The fixture pins {@link FIXTURE_PACKAGE} to {@link FIXTURE_ACTIVE} via an
  * override so the expected tightened range is deterministic across layouts, and
  * declares two consumer packages so "only some node_modules missing" is testable.
@@ -76,6 +77,8 @@ type NodeLinker = 'isolated' | 'hoisted' | 'pnp';
  * - `remove-workspace-yaml`: delete `pnpm-workspace.yaml`.
  * - `remove-all-modules`: delete every `node_modules`.
  * - `remove-some-modules`: delete one consumer's `node_modules`.
+ * - `unlink-consumers`: delete both consumers' `node_modules` (their symlinks to the package) while keeping
+ *   the root virtual store, so the package is resolvable only from `.pnpm` (store-only, no importer symlink).
  * - `remove-virtual-store`: delete `node_modules/.pnpm`, leaving dangling symlinks.
  * - `remove-store`: delete the relocated content-addressable store.
  * - `remove-pnp-cjs`: delete `.pnp.cjs` under the pnp linker; pnpm's pnp is a hybrid that also keeps
@@ -89,6 +92,7 @@ type Mutation =
   | 'remove-workspace-yaml'
   | 'remove-all-modules'
   | 'remove-some-modules'
+  | 'unlink-consumers'
   | 'remove-virtual-store'
   | 'remove-store'
   | 'remove-pnp-cjs'
@@ -97,10 +101,11 @@ type Mutation =
 /**
  * Expected tool behaviour for a scenario.
  * - `tighten`: exits zero and tightens the floor to the active version.
- * - `miss`: exits zero, reports a MISS, and tightens nothing.
+ * - `miss`: exits zero, reports a MISS (absent from the workspace), and tightens nothing.
+ * - `undeclared`: exits zero, reports an UNDCL (present in the store, no importer symlink), and tightens nothing.
  * - `error`: exits non-zero with a clear message.
  */
-type Expectation = 'tighten' | 'miss' | 'error';
+type Expectation = 'tighten' | 'miss' | 'undeclared' | 'error';
 
 /**
  * One matrix scenario: a pnpm layout, a mutation, and the expected tool behaviour.
@@ -246,6 +251,13 @@ export const SCENARIOS: readonly Scenario[] = [
     hoist: false,
     mutation: 'remove-virtual-store',
     expect: 'miss',
+  },
+  {
+    label: 'store-only, no importer symlink',
+    nodeLinker: 'isolated',
+    hoist: false,
+    mutation: 'unlink-consumers',
+    expect: 'undeclared',
   },
   {
     label: 'missing all node_modules',
