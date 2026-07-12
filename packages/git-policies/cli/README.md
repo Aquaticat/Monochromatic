@@ -668,8 +668,10 @@ matches config keys.
 ## Post-commit auto-push
 
 After a successful real `git commit`,
-the wrapper resolves the exact landed commit OID and committed tree before backup.
-Trusted `post-commit` plugin policies receive that landed OID and lazy exact tree candidates.
+the wrapper resolves the exact landed commit OID before backup.
+Trusted `post-commit` plugin policies receive that landed OID and lazy landed-delta candidates:
+only the files that commit changed against its parents,
+never the unchanged remainder of the tree.
 A clean or warning-only result permits automatic push.
 An error finding,
 policy exception,
