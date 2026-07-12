@@ -6,6 +6,9 @@ edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/packages/cli/forbidden-strings"
 include = [
   "src/**/*.rs",
+  # The embedded baseline: lib.rs include_str!s it at compile time, so the
+  # published crate cannot build without it.
+  "data/builtin-rules.txt",
   "Cargo.toml",
   "Cargo.lock",
   "README.md",
@@ -44,14 +47,8 @@ fuzzing = []
 [dependencies]
 # `anyhow` carries application-level errors while preserving their display text for
 # CLI stderr output and tests.
-anyhow = "1"
 aho-corasick = "1"
-# The logging facade and its subscriber. tracing routes the compiler's rule-rejection
-# warnings and the CLI's top-level errors as structured events to stderr via
-# tracing-subscriber (RUST_LOG, default info); the scan findings stay on stdout, and the
-# env-gated FORBIDDEN_STRINGS_DEBUG_* developer report dumps stay as direct stderr output.
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1"
 # `clap` owns argv parsing, generated help/version output, and validation for the
 # `forbidden-strings` binary. The derive feature lets `src/cli.rs` declare the
 # command shape as a typed struct instead of maintaining a handwritten argv loop.
@@ -84,6 +81,12 @@ regex = "1"
 # See docs/troubleshooting/resharp.md. Caret semantics keep this within
 # 0.6.x (`>=0.6.13, <0.7`).
 resharp = "0.6.13"
+# The logging facade and its subscriber. tracing routes the compiler's rule-rejection
+# warnings and the CLI's top-level errors as structured events to stderr via
+# tracing-subscriber (RUST_LOG, default info); the scan findings stay on stdout, and the
+# env-gated FORBIDDEN_STRINGS_DEBUG_* developer report dumps stay as direct stderr output.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
 # "abort" + default-off overflow checks:

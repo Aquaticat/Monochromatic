@@ -61,6 +61,13 @@ ENV:\n\
     FORBIDDEN_STRINGS_RULES    Default rules path; --rules wins if both are set.\n\
                                If unset, falls back to ./forbidden-strings.local.txt\n\
 \n\
+BUILT-IN BASELINE:\n\
+    --builtin-rules appends the embedded betterleaks-ported baseline after\n\
+    the resolved rules file (user rule numbering is unchanged). When the\n\
+    implicit default rules file is absent, the baseline alone is used; an\n\
+    explicitly named missing file (--rules or env) still errors. Without\n\
+    the flag, the baseline is never read.\n\
+\n\
 EXIT CODES:\n\
     0    No violations.\n\
     1    One or more violations (printed to stderr, redacted).\n\
@@ -156,6 +163,26 @@ pub struct Cli {
     // ```
     #[arg(long = "all", help = "Scan every git-tracked file under cwd")]
     pub all: bool,
+
+    /// Whether to append the embedded betterleaks-ported baseline ruleset.
+    // What:     `pub builtin_rules: bool` declares a boolean switch filled by
+    //           `--builtin-rules`, same shape as `all`: a flag is present or
+    //           absent, so `false` is the correct default (sibling
+    //           `Option<bool>` would model a third state that cannot occur).
+    // Why:      The baseline ships inside the binary but must stay opt-in:
+    //           silently adding rules would change scan results for existing
+    //           users of the published CLI.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // @flag("--builtin-rules")
+    // builtinRules: boolean;
+    // ```
+    #[arg(
+        long = "builtin-rules",
+        help = "Also scan with the embedded betterleaks-ported baseline rules"
+    )]
+    pub builtin_rules: bool,
 
     /// Files to scan when `--all` is absent.
     // What:     `Vec<String>` is an owned, growable array of owned UTF-8 strings.

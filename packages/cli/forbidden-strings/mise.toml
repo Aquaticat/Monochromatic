@@ -7,7 +7,7 @@ description = "Build the forbidden-strings binary in debug mode"
 run = "cargo build"
 
 [tasks."generate:rules"]
-description = "Regenerate the root forbidden-strings.local.example.txt baseline from the vendored betterleaks config"
+description = "Regenerate the embedded data/builtin-rules.txt baseline from the vendored betterleaks config"
 run = "node src/mise.port-betterleaks.ts"
 
 [tasks.lint]

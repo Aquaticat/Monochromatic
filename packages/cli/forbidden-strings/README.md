@@ -157,6 +157,9 @@ Put one rule per line in a file named `forbidden-strings.local.txt` at the repo 
  or
 pass `--rules <PATH>` / set `FORBIDDEN_STRINGS_RULES=<PATH>` to point at any other path.
 That is the whole setup.
+ For a zero-file start,
+ pass `--builtin-rules` to scan with the embedded betterleaks-ported baseline
+ (see "Built-in baseline" below).
  Add the file to `.gitignore` if the rules themselves are
 sensitive;
  otherwise commit it.
@@ -226,6 +229,39 @@ FORBIDDEN_STRINGS_RULES=./materialized.txt forbidden-strings --all
 
 # print version and exit
 forbidden-strings --version    # or -V
+```
+
+### Built-in baseline (`--builtin-rules`)
+
+The binary embeds the betterleaks-ported baseline ruleset
+(`data/builtin-rules.txt`,
+ compiled in via `include_str!` and exported as the library constant
+`forbidden_strings::BUILTIN_RULES`).
+It is pure opt-in:
+ without the flag the scanner never reads it,
+ so existing invocations behave exactly as before the flag existed.
+
+With `--builtin-rules`:
+
+- The baseline is appended AFTER the resolved rules file,
+  so `rule=N` numbers for your own rules do not shift.
+- When no rules file resolves at all
+  (no `--rules`,
+   no env var,
+   and no `./forbidden-strings.local.txt` in cwd),
+  the baseline alone is the ruleset;
+  passing the flag is itself the configuration.
+- An explicitly named missing file
+  (`--rules <path>` or the env var pointing at a path that does not exist)
+  still exits 2:
+  silently scanning without your rules would be a false-clean result.
+
+```sh
+# zero-file quick start: scan the tree with the embedded baseline only
+forbidden-strings --builtin-rules --all
+
+# your rules plus the baseline
+forbidden-strings --builtin-rules --rules ./rules.txt --all
 ```
 
 `--all` and positional files are mutually exclusive in practice:

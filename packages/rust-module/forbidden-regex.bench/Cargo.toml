@@ -25,6 +25,11 @@ forbidden-regex = { path = "../forbidden-regex" }
 # head-to-head throughput comparison lives.
 regex = "1"
 
+# The scanner crate, by path, imported ONLY for its exported BUILTIN_RULES
+# constant (the embedded betterleaks-ported baseline the bench replays); this
+# replaces a fragile ../../../../ include_str! into the repository root.
+forbidden-strings = { path = "../../cli/forbidden-strings" }
+
 # The same gitignore-aware walker the real forbidden-strings scanner uses, so the
 # corpus is the exact file set that scanner would process (honors `.gitignore`,
 # `.git/info/exclude`, skips `.git`/`.jj`).

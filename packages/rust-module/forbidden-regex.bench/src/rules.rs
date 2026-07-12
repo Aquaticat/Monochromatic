@@ -1,26 +1,36 @@
 //! Loads the real forbidden-strings ruleset and ports each rule for both engines.
 //!
-//! What: embeds the committed example ruleset and the shared appendix, extracts the
-//! `/PATTERN/FLAGS` regex rules, and ports each into an `(ours, bare)` pair. Why: a
-//! realistic benchmark must run the credential shapes the scanner actually ships,
-//! not toy patterns.
+//! What: reads the scanner's embedded baseline constant and the shared appendix,
+//! extracts the `/PATTERN/FLAGS` regex rules, and ports each into an `(ours, bare)`
+//! pair. Why: a realistic benchmark must run the credential shapes the scanner
+//! actually ships, not toy patterns.
 
 /// Imports the per-rule porter.
 use crate::port::port;
 
-/// The committed betterleaks port plus set-algebra demonstrations.
-const EXAMPLE: &str = include_str!("../../../../forbidden-strings.local.example.txt");
+/// What:     `use forbidden_strings::BUILTIN_RULES;` imports the scanner crate's
+///           exported baseline constant: the betterleaks port plus set-algebra
+///           demonstrations, embedded in that crate at compile time.
+/// Why:      The bench replays the exact ruleset the scanner ships; importing the
+///           constant replaces an `include_str!` with a fragile `../../../../`
+///           path into the repository root.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { BUILTIN_RULES } from '@monochromatic-dev/forbidden-strings';
+/// ```
+use forbidden_strings::BUILTIN_RULES;
 
 /// The shared appendix of shortcode-label rules.
 const APPEND: &str = include_str!("../../../../forbidden-strings.append.txt");
 
 /// Loads every regex rule, ported into `(ours, bare)` pairs.
 ///
-/// What: walks both rule files, keeps the `/.../` regex lines, and ports each. Why:
-/// the caller compile-filters these to the subset both engines accept.
+/// What: walks both rule sources, keeps the `/.../` regex lines, and ports each.
+/// Why: the caller compile-filters these to the subset both engines accept.
 pub fn load_rules() -> Vec<(String, String)> {
     let mut pairs = Vec::new();
-    for source in [EXAMPLE, APPEND] {
+    for source in [BUILTIN_RULES, APPEND] {
         for line in source.lines() {
             let trimmed = line.trim();
             if let Some(inner) = extract_pattern(trimmed) {

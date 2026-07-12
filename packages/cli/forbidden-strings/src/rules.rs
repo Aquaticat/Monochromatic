@@ -244,6 +244,103 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet> {
     load_ruleset_from_source(&content, path)
 }
 
+/// Implements `load_ruleset_with_builtin`.
+// What:     `pub fn load_ruleset_with_builtin(path: &str, explicit: bool) -> Result<RuleSet>`
+//           loads the rules file at `path` like `load_ruleset`, then appends
+//           the embedded `crate::BUILTIN_RULES` baseline after the file's own
+//           lines before compiling. When the file is MISSING and `explicit`
+//           is false (the path came from the cwd default, not `--rules` or
+//           the env var), the baseline alone becomes the rule source instead
+//           of an error. `&str` parameters are read-only borrowed views
+//           (sibling: owned `String`, which would force the caller to give
+//           up its value).
+// Why:      Implements the opt-in `--builtin-rules` flag: user rules keep
+//           their original line numbers in `rule=N` output because the
+//           baseline is appended AFTER them, and an explicitly named missing
+//           file still errors because silently scanning without the user's
+//           rules would produce a false-clean scan.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function loadRulesetWithBuiltin(path: string, explicit: boolean): RuleSet {
+//   let content: string;
+//   try { content = readFileSync(path, 'utf8'); }
+//   catch (error) {
+//     if (!explicit && error.code === 'ENOENT') {
+//       return loadRulesetFromSource(BUILTIN_RULES, 'builtin-rules');
+//     }
+//     throw new Error(`read rules ${path}: ${error}`);
+//   }
+//   return loadRulesetFromSource(`${content}\n${BUILTIN_RULES}`, path);
+// }
+// ```
+pub fn load_ruleset_with_builtin(path: &str, explicit: bool) -> Result<RuleSet> {
+    // What:     `match fs::read_to_string(path) { ... }` destructures the
+    //           `Result<String, io::Error>` from slurping the rules file into
+    //           an owned `String` (sibling `&str` cannot own file bytes).
+    // Why:      The three outcomes (file present, file absent under the
+    //           implicit default, any other failure) need three behaviours,
+    //           so a plain `?` propagation is not enough.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { const content = readFileSync(path, 'utf8'); /* ... */ }
+    // catch (error) { /* ... */ }
+    // ```
+    match fs::read_to_string(path) {
+        // What:     `Ok(content) => { ... }` binds the successfully read
+        //           bytes. `format!("{}\n{}", ...)` allocates one owned
+        //           `String` holding the user's rules first, then the
+        //           embedded baseline; the `\n` guarantees the baseline
+        //           starts on a fresh line even when the file lacks a
+        //           trailing newline (a doubled newline is harmless because
+        //           the loader skips empty lines).
+        // Why:      User rules stay first so their `rule=N` line numbers in
+        //           scanner output do not shift when the flag is on.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return loadRulesetFromSource(`${content}\n${BUILTIN_RULES}`, path);
+        // ```
+        Ok(content) => {
+            let combined = format!("{}\n{}", content, crate::BUILTIN_RULES);
+            load_ruleset_from_source(&combined, path)
+        }
+        // What:     `Err(e) if !explicit && e.kind() == std::io::ErrorKind::NotFound => ...`
+        //           is a guarded match arm: it fires only when the read
+        //           failed, the path came from the implicit cwd default, AND
+        //           the failure was specifically "file does not exist" (not
+        //           permissions or I/O corruption). `e.kind()` extracts the
+        //           error's category enum from the `io::Error`.
+        // Why:      Passing the flag is itself configuration, so the
+        //           zero-file case scans with the baseline alone; every
+        //           other read failure still surfaces because hiding an
+        //           unreadable rules file would silently weaken the scan.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (!explicit && error.code === 'ENOENT') {
+        //   return loadRulesetFromSource(BUILTIN_RULES, 'builtin-rules');
+        // }
+        // ```
+        Err(e) if !explicit && e.kind() == std::io::ErrorKind::NotFound => {
+            load_ruleset_from_source(crate::BUILTIN_RULES, "builtin-rules")
+        }
+        // What:     `Err(e) => Err(anyhow!("read rules {}: {}", path, e))`
+        //           wraps the I/O error in the same user-facing message shape
+        //           `load_ruleset` produces; the arm's value is the
+        //           function's return for this branch.
+        // Why:      Keep the "read rules PATH: ERROR" stderr contract
+        //           identical whether or not `--builtin-rules` was passed.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // throw new Error(`read rules ${path}: ${error}`);
+        // ```
+        Err(e) => Err(anyhow!("read rules {}: {}", path, e)),
+    }
+}
+
 /// Implements `load_ruleset_from_source`.
 // What:     `pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet>`
 //           runs the loader pipeline (classify -> compile regex

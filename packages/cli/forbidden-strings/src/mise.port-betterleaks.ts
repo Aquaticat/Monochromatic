@@ -1,8 +1,9 @@
-// What:     Port the betterleaks default ruleset to a forbidden-strings
-//           example file. Input is the upstream betterleaks
+// What:     Port the betterleaks default ruleset to the forbidden-strings
+//           built-in baseline. Input is the upstream betterleaks
 //           configuration TOML stored verbatim under `data/`; output is
-//           written to `<repo>/forbidden-strings.local.example.txt` at
-//           run time.
+//           written to `<package>/data/builtin-rules.txt` at run time,
+//           where `lib.rs` embeds it into the binary via `include_str!`
+//           (see docs/decisions/gitignore-negations.md).
 // Why:      Forbidden-strings is rules-out-of-band by design, but most
 //           teams want a sane starting deny-list of common credential
 //           shapes. Rather than maintain that list ourselves, we port
@@ -531,12 +532,12 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
 }
 
 /**
- * Banner prepended to the generated example file.
+ * Banner prepended to the generated built-in baseline file.
  *
  * Documents that the file is generated, names the source TOML and converter
  * script, and reminds readers of forbidden-strings' line-level grammar.
  */
-const HEADER = `# forbidden-strings deny-list (committed example).
+const HEADER = `# forbidden-strings built-in baseline deny-list.
 #
 # THIS FILE IS GENERATED. Do not edit by hand. Source of truth is
 # packages/cli/forbidden-strings/src/mise.port-betterleaks.ts
@@ -546,15 +547,15 @@ const HEADER = `# forbidden-strings deny-list (committed example).
 #   mise run //packages/cli/forbidden-strings:generate:rules
 #
 # Composition:
-#   - This file (the committed example) ports the betterleaks default
-#     ruleset into forbidden-strings format. It is a sane baseline of
-#     common credential shapes (PEM, AWS, Slack, GitHub PAT, etc.) plus
+#   - This file ports the betterleaks default ruleset into
+#     forbidden-strings format. It is a sane baseline of common
+#     credential shapes (PEM, AWS, Slack, GitHub PAT, etc.) plus
 #     resharp set-algebra demonstrations.
-#   - For per-repo additions (codenames, partner identifiers, etc.) write
-#     them into a gitignored file \`forbidden-strings.append.local.txt\`.
-#     File-enforcer concatenates this file plus the append file into
-#     \`forbidden-strings.local.txt\` at \`mise run prepare\` time, and
-#     the scanner reads that combined file at scan time.
+#   - The build embeds it into the forbidden-strings binary via
+#     \`include_str!\`; the \`--builtin-rules\` flag appends it to
+#     whatever rules file resolves at scan time (and scans with it
+#     alone when the implicit default rules file is absent). Without
+#     the flag the scanner never reads these rules.
 #
 # Attribution:
 #   Rules are ported from betterleaks' default configuration
@@ -577,7 +578,7 @@ const HEADER = `# forbidden-strings deny-list (committed example).
 `;
 
 /**
- * Trailer appended to the generated example file.
+ * Trailer appended to the generated built-in baseline file.
  *
  * Includes two resharp-only set-algebra demonstrations (intersection and
  * complement) so consumers can see capabilities that pure-PCRE engines lack.
@@ -619,18 +620,6 @@ async function main(): Promise<void> {
    * Directory holding this script, used as the anchor for path resolution.
    */
   const here = import.meta.dirname;
-  // mise.port-betterleaks.ts lives in packages/cli/forbidden-strings/src/.
-  // Walk up four levels to land at the repo root.
-  /**
-   * Repository root, four levels above this script.
-   */
-  const repoRoot = join(
-    here,
-    '..',
-    '..',
-    '..',
-    '..',
-  );
   /**
    * Path to the verbatim upstream TOML; input to the port.
    */
@@ -641,11 +630,15 @@ async function main(): Promise<void> {
     'betterleaks-default-config.toml',
   );
   /**
-   * Path to the generated forbidden-strings example file at the repo root.
+   * Path to the generated baseline inside the package, embedded into the
+   * binary by `lib.rs` via `include_str!` and activated by the
+   * `--builtin-rules` flag.
    */
   const outPath = join(
-    repoRoot,
-    'forbidden-strings.local.example.txt',
+    here,
+    '..',
+    'data',
+    'builtin-rules.txt',
   );
 
   /**

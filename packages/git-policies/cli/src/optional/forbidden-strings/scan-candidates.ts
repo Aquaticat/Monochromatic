@@ -24,6 +24,7 @@ import { parseScannerOutput, } from './scanner-output.ts';
  */
 const SCANNER_SELF_MATCH_PATHS: ReadonlySet<string> = new Set([
   'packages/cli/forbidden-strings/data/betterleaks-default-config.toml',
+  'packages/cli/forbidden-strings/data/builtin-rules.txt',
   'packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts',
   'forbidden-strings.local.example.txt',
   'packages/cli/forbidden-strings/src/rules/algebra_tests.rs',
