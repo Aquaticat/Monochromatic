@@ -35,6 +35,9 @@ CRN:
 Rename/reject:
  add comment+regex entry to local forbidden strings appendix.
 
+APG:
+ Auto-push is enabled.
+
 ## Before responding to the user
 
 ### Communication style
