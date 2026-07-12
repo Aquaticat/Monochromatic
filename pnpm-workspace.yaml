@@ -3,6 +3,7 @@ allowBuilds:
   core-js: false
   protobufjs: false
   sharp: true
+  usocket: false
 
 autoInstallPeers: false
 # Prune stale project-local virtual-store entries on every install. Benchmarks in
@@ -156,8 +157,8 @@ hoistWorkspacePackages: false
 lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
-- '@earendil-works/pi-*'
-- 'tsdown@0.22.5'
+  - '@earendil-works/pi-*'
+  - 'tsdown@0.22.5'
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 nodeLinker: isolated
@@ -340,11 +341,8 @@ packageExtensions:
       '@mitata/counters': 'catalog:'
 packageImportMethod: clone-or-copy
 packages:
-- 'packages/*/*'
-peerDependencyRules:
-  allowedVersions:
-
-# version management of both node and pnpm is handled by Mise
+  - 'packages/*/*'
+peerDependencyRules: {}
 pmOnFail: ignore
 preferWorkspacePackages: true
 resolutionMode: highest
@@ -367,15 +365,15 @@ strictPeerDependencies: true
 # See docs/decisions/pnpm-supported-architectures.md for full rationale.
 supportedArchitectures:
   cpu:
-  - x64
-  - arm64
-  - current
+    - x64
+    - arm64
+    - current
   libc:
-  - glibc
-  - musl
-  - current
+    - glibc
+    - musl
+    - current
   os:
-  - darwin
-  - linux
-  - current
+    - darwin
+    - linux
+    - current
 trustPolicy: no-downgrade

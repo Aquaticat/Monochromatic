@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Id": "key-helper-kwin",
+        "Name": "Key Helper (KWin side)",
+        "Description": "KWin-side companion to the key-helper daemon (org.monochromatic.KeyHelper): active-window tracking, Ctrl+F4 tab close, and Meta+N new instance of the current app",
+        "Version": "1.0",
+        "Authors": [{ "Name": "user" }],
+        "EnabledByDefault": true
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js",
+    "KPackageStructure": "KWin/Script"
+}

@@ -55,7 +55,6 @@ target/
 *.bun-build
 *.br
 *.js
-!*.config.js
 *.map
 *.tsbuildinfo
 *.tgz
@@ -193,15 +192,10 @@ $RECYCLE.BIN/
 *.iml
 *.iws
 out/
-# Ignore the root .vscode sentinel file, but allow shared VS Code config if the path is a directory.
+# Editor config is machine-local, never shared (matches the .zed treatment);
+# /.vscode also catches the root sandbox sentinel file.
 /.vscode
-!/.vscode/
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
+.vscode/
 .zed/settings.json
 .history/
 captures/
@@ -224,7 +218,6 @@ captures/
 /packages/fuzz/forbidden-strings/corpus/*/*
 !/packages/fuzz/forbidden-strings/corpus/*/seed-*
 /packages/rust-module/forbidden-regex.fuzz/corpus/*/*
-!/packages/rust-module/forbidden-regex.fuzz/corpus/*/seed-*
 
 # cargo-mutants report output (written into the crate dir by the containerized run)
 mutants.out/
@@ -232,11 +225,11 @@ mutants.out.old/
 
 # Claude Code plugin bundles. Marketplace distribution requires committed built files.
 !/packages/claude-code-plugins/*/dist/
-!/packages/claude-code-plugins/*/dist/final/*.js
 
 # Re-include files hidden by broader local patterns.
 !/forbidden-strings.local.example.txt
 
-# The KWin script's main.js is genuine tracked source, not a stray build artifact
-# hidden by the blanket `*.js` ignore.
+# The KWin script's main.js and metadata.json are genuine tracked source, not
+# stray build artifacts hidden by the blanket `*.js` and `metadata.json` ignores.
 !/packages/kwin/key-helper/kwin-script/contents/code/main.js
+!/packages/kwin/key-helper/kwin-script/metadata.json
