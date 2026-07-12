@@ -9,6 +9,7 @@ import {
 import { tmpdir, } from 'node:os';
 import {
   delimiter,
+  dirname,
   join,
 } from 'node:path';
 
@@ -447,7 +448,10 @@ appendFileSync(capturePath, JSON.stringify(process.argv.slice(2)) + '\\n');
         const env: NodeJS.ProcessEnv = {
           ...process.env,
           CLI_GIT_CAPTURE_PATH: capturePath,
-          PATH: `${fakeBin}${delimiter}${process.env.PATH ?? ''}`,
+          PATH: [
+            fakeBin,
+            dirname(process.execPath,),
+          ].join(delimiter,),
         };
         await runWrapper({
           cwd: tempDirectory.path,

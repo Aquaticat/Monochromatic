@@ -194,12 +194,17 @@ await describe({
       name: 'checks common paths before PATH directories',
       fn: async function testCommonPathPriority(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
-        /** PATH directory containing fallback Git executable. */
+        /** PATH directory containing earlier fallback Git executable. */
         const pathBinDir = join(tempDirectory.path, 'path-bin',);
-        await mkdir(pathBinDir,);
-        /** Common Git executable that should be checked first. */
-        const commonGitPath = join(tempDirectory.path, 'common-git',);
-        /** PATH Git executable that should lose to common candidate. */
+        /** PATH directory containing later common Git executable. */
+        const commonBinDir = join(tempDirectory.path, 'common-bin',);
+        await Promise.all([
+          mkdir(pathBinDir,),
+          mkdir(commonBinDir,),
+        ],);
+        /** Common Git executable that should be promoted before earlier PATH entry. */
+        const commonGitPath = join(commonBinDir, 'git',);
+        /** Earlier PATH Git executable that should lose to common candidate. */
         const pathGitPath = join(pathBinDir, 'git',);
         await Promise.all([
           writeExecutable({
@@ -213,7 +218,7 @@ await describe({
         ],);
 
         expect(await resolveGit({
-          pathEnv: pathBinDir,
+          pathEnv: [pathBinDir, commonBinDir,].join(delimiter,),
           commonGitPaths: [commonGitPath,],
         },),).toBe(commonGitPath,);
       },

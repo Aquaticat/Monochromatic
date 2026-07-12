@@ -44,8 +44,8 @@ const SELF_SHIM_MARKERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Common Unix Git locations checked before PATH to avoid probing every shim-heavy
- * package-manager directory first.
+ * Common Unix Git locations prioritized within PATH to avoid probing every
+ * shim-heavy package-manager directory first.
  */
 const COMMON_UNIX_GIT_PATHS: readonly string[] = [
   '/usr/bin/git',
@@ -102,8 +102,8 @@ type ResolveGitOptions = {
    */
   readonly pathExtensions?: string;
   /**
-   * Absolute Git paths checked before PATH candidates. Defaults to common
-   * platform locations; tests can inject disposable candidates.
+   * Absolute Git paths prioritized when present among PATH candidates. Defaults
+   * to common platform locations; tests can inject disposable candidates.
    */
   readonly commonGitPaths?: readonly string[];
 };
@@ -144,7 +144,7 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
 }
 
 /**
- * Locates real Git by checking common platform paths before scanning PATH,
+ * Locates real Git by prioritizing common platform paths present in PATH,
  * skipping candidates that delegate back into this package as detected by
  * {@link isShimForSelf}.
  *
@@ -153,7 +153,7 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
  *
  * @returns Absolute path to the real git binary.
  *
- * @throws When no real Git binary is found in common locations or on PATH.
+ * @throws When no real Git binary is found on PATH.
  *
  * @example
  * ```ts
@@ -208,11 +208,17 @@ export async function resolveGit({
     },);
   },);
   /**
-   * Common paths followed by PATH candidates, deduplicated without disturbing
-   * preference order.
+   * PATH candidates used to retain only exposed common locations.
+   */
+  const pathCandidateSet = new Set(pathCandidates,);
+  /**
+   * Exposed common paths followed by all PATH candidates, deduplicated without
+   * disturbing preference order.
    */
   const candidates = new Set([
-    ...commonGitPaths,
+    ...commonGitPaths.filter(function commonPathIsExposed(commonGitPath,) {
+      return pathCandidateSet.has(commonGitPath,);
+    },),
     ...pathCandidates,
   ],);
 
@@ -240,7 +246,7 @@ export async function resolveGit({
   }
 
   throw new Error(
-    'cli-git: could not find real git binary in common locations or on PATH. '
+    'cli-git: could not find real git binary on PATH. '
       + 'Ensure Git is installed and PATH/PATHEXT expose its executable.',
   );
 }
