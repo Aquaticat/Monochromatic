@@ -7,8 +7,12 @@ Accepted,
 The stale-negation cleanup already landed
  (its hunks shipped inside commit `078d1bcd3`;
  a scope-note comment on that commit documents them).
-The three restructures below are design-decided but not yet implemented;
- each has a tracking issue.
+The restructures below are design-decided but not yet implemented;
+ tracking issues:
+ seeds in #364,
+ plugin bundles in #365,
+ embedded baseline in #366,
+ repo de-rooting in #367 (blocked by #366).
 
 ## Goal
 
