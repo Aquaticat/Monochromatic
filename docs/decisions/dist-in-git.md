@@ -295,3 +295,14 @@ Reconsider this decision only if at least one of the following becomes true:
 
 The general "no dist in git" default for the rest of the workspace stays in force regardless of how this
 specific carve-out evolves.
+
+## Superseded in part, 2026-07-11
+
+`docs/decisions/gitignore-negations.md` retires the `.gitignore` carve-out mechanism only:
+ the committed bundles move from `dist/` to a distinct tracked directory
+ (one-line `outDir` override per plugin),
+ so the blanket `dist/` ignore needs no re-include.
+Every constraint recorded here stands:
+ Claude Code still copies plugin sources into the per-user cache without an install step,
+ and built bundles stay committed.
+Only their directory name changes.
