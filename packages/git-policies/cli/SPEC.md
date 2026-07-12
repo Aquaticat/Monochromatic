@@ -1417,7 +1417,8 @@ A file with CRLF content receives one terminal LF without normalizing interior l
 Preserve these exclusion families exactly:
 
 ```text
-packages/fuzz/forbidden-strings/corpus/**
+packages/fuzz/forbidden-strings/seeds/**
+packages/rust-module/forbidden-regex.fuzz/seeds/**
 packages/test-fixture/toml-edit/src/**
 **/dist/final/node/**
 ```

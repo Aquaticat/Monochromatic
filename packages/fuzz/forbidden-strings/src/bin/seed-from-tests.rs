@@ -3,8 +3,10 @@
 //           `packages/cli/forbidden-strings/src/rules/{extract,atom,engine,algebra}_tests.rs`,
 //           extracts every double-quoted string literal, and
 //           writes each unique one as a raw-byte seed file under
-//           `corpus/<target>/seed-<sha8>` (relative to this fuzz
-//           crate root). Run manually as
+//           `seeds/<target>/seed-<sha8>` (relative to this fuzz
+//           crate root). The tracked `seeds/` tree is separate from
+//           the gitignored `corpus/` scratch tree; fuzz invocations
+//           pass both as libFuzzer corpus dirs. Run manually as
 //           `cargo +nightly run --bin seed-from-tests --release`.
 // Why:      libFuzzer benefits enormously from a hand-curated
 //           seed corpus that already contains "interesting" inputs.
@@ -56,7 +58,7 @@ const TEST_FILES: &[&str] = &[
 const FORBIDDEN_LOCAL: &str = "../../cli/forbidden-strings/forbidden-strings.local.txt";
 
 // What:     `const TARGETS: &[&str]`. The set of fuzz targets that
-//           get seeded. Each gets its own `corpus/<target>/` dir.
+//           get seeded. Each gets its own `seeds/<target>/` dir.
 const TARGETS: &[&str] = &[
     "fuzz_extract_gate_soundness",
     "fuzz_ruleset_scan_invariants",
@@ -100,7 +102,7 @@ fn main() -> Result<()> {
 
     let mut written = 0usize;
     for target in TARGETS {
-        let dir = PathBuf::from("corpus").join(target);
+        let dir = PathBuf::from("seeds").join(target);
         fs::create_dir_all(&dir)?;
         for lit in &seen {
             let mut hasher = Sha256::new();

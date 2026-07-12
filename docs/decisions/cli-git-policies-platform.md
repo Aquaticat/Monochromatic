@@ -687,7 +687,11 @@ Empty and binary-looking files remain byte-identical.
 
 Exact exclusion families are:
 
-- `packages/fuzz/forbidden-strings/corpus/**`;
+- `packages/fuzz/forbidden-strings/seeds/**`
+  (originally `corpus/**`;
+   renamed when committed seeds moved to tracked `seeds/<target>/` dirs,
+   see `docs/decisions/gitignore-negations.md`);
+- `packages/rust-module/forbidden-regex.fuzz/seeds/**`;
 - `packages/test-fixture/toml-edit/src/**`;
 - `**/dist/final/node/**`.
 

@@ -151,11 +151,13 @@ await describe({
     it({
       name: 'matches only exact exclusion families',
       fn: async function testExclusions() {
-        expect(isFinalNewlineExcluded('packages/fuzz/forbidden-strings/corpus/a',),).toBe(true,);
+        expect(isFinalNewlineExcluded('packages/fuzz/forbidden-strings/seeds/a',),).toBe(true,);
+        expect(isFinalNewlineExcluded('packages/rust-module/forbidden-regex.fuzz/seeds/a',),).toBe(true,);
         expect(isFinalNewlineExcluded('packages/test-fixture/toml-edit/src/a.toml',),).toBe(true,);
         expect(isFinalNewlineExcluded('pkg/dist/final/node/index.mjs',),).toBe(true,);
         expect(isFinalNewlineExcluded('dist/final/node/index.d.mts',),).toBe(true,);
-        expect(isFinalNewlineExcluded('packages/fuzz/other/corpus/a',),).toBe(false,);
+        expect(isFinalNewlineExcluded('packages/fuzz/forbidden-strings/corpus/a',),).toBe(false,);
+        expect(isFinalNewlineExcluded('packages/fuzz/other/seeds/a',),).toBe(false,);
         expect(isFinalNewlineExcluded('pkg/dist/final/browser/index.mjs',),).toBe(false,);
         expect(isFinalNewlineExcluded('pkg/dist/final/node',),).toBe(false,);
       },

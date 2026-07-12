@@ -4,6 +4,18 @@ State of the implementation of `~/.claude/plans/setup-fuzzing-for-forbidden-stri
 when context approached compaction.
  Resume from here after compact.
 
+Layout update (2026-07-12,
+ issue #364):
+ this snapshot predates the corpus split.
+Committed seeds now live in tracked `seeds/<target>/` directories,
+ the `corpus/<target>/` tree is wholly gitignored scratch,
+ and fuzz invocations pass `corpus/<target> seeds/<target>` as explicit
+libFuzzer corpus dirs (new discoveries land only in the first).
+Mentions of a `seed-*` `.gitignore` re-include and of seeds under
+`corpus/<target>/` describe the layout as it was when this snapshot was
+written;
+ see `docs/decisions/gitignore-negations.md` for the design.
+
 ## Overall task
 
 Implement coverage-guided fuzzing for `packages/cli/forbidden-strings`

@@ -43,10 +43,18 @@ description = "Run every fuzz target for 30s with the dictionary as a smoke test
 shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
+const { mkdirSync } = await import('node:fs')
 const targets = execFileSync('cargo', ['fuzz', 'list', '--fuzz-dir', '.'], { encoding: 'utf8' }).split('\\n').map((line) => line.trim()).filter(Boolean)
 for (const target of targets) {
   console.log(`--- ${target} ---`)
-  execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', '--', '-max_total_time=30', '-rss_limit_mb=2048', '-dict=dictionaries/forbidden-strings.dict'], { stdio: 'inherit' })
+  // Dual corpus: gitignored scratch first (libFuzzer writes new discoveries
+  // only to the first dir), committed seeds/<target> second (read-only in
+  // practice). Explicit corpus positionals replace cargo-fuzz's default
+  // corpus/<target>, and cargo-fuzz only auto-creates the default, so both
+  // dirs are created here before the run.
+  mkdirSync(`corpus/${target}`, { recursive: true })
+  mkdirSync(`seeds/${target}`, { recursive: true })
+  execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', `corpus/${target}`, `seeds/${target}`, '--', '-max_total_time=30', '-rss_limit_mb=2048', '-dict=dictionaries/forbidden-strings.dict'], { stdio: 'inherit' })
 }
 """
 
@@ -68,20 +76,31 @@ arg "[args]" var=#true help="libFuzzer flags (-flag=v) and/or input paths to rep
 # default `corpus/<target>` positional ONLY when no input positional is
 # given before `--`. So a single crash artifact must be passed as an
 # input positional (before `--`), not as a libFuzzer arg (after `--`):
-# otherwise libfuzzer receives both the artifact file AND the default
-# corpus dir as positionals, tries to opendir the file, and exits 1 with
+# otherwise libfuzzer receives both the artifact file AND a corpus dir
+# as positionals, tries to opendir the file, and exits 1 with
 # "Not a directory: artifacts/<target>/crash-...; exiting". Inputs go
 # before `--` (cargo-fuzz CORPUS slot, suppressing the default corpus);
-# flags go after `--`. With no input, `...$inputs` is empty and the
-# command is unchanged (continuous fuzzing over the default corpus).
+# flags go after `--`. With no input, continuous fuzzing runs over the
+# dual corpus: gitignored scratch corpus/<target> first (libFuzzer
+# writes new discoveries only to the first dir), committed
+# seeds/<target> second. Both dirs are created up front because
+# cargo-fuzz only auto-creates its default corpus positional.
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.parse_usage_args}}
 const { execFileSync } = await import('node:child_process')
+const { mkdirSync } = await import('node:fs')
 const target = process.env.usage_target
 const extras = parseUsageArgs(process.env.usage_args ?? '')
 const flags = extras.filter((part) => part.startsWith('-'))
-const inputs = extras.filter((part) => !part.startsWith('-'))
+const replays = extras.filter((part) => !part.startsWith('-'))
+const corpusDirs = [`corpus/${target}`, `seeds/${target}`]
+if (replays.length === 0) {
+  for (const dir of corpusDirs) {
+    mkdirSync(dir, { recursive: true })
+  }
+}
+const inputs = replays.length === 0 ? corpusDirs : replays
 execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', ...inputs, '--', '-dict=dictionaries/forbidden-strings.dict', ...flags], { stdio: 'inherit' })
 """
 

@@ -55,7 +55,13 @@ All seven targets share a single tuned dictionary at
 `dictionaries/forbidden-strings.dict` (one dictionary,
  not per-target).
  Each
-target has its own per-target seed corpus under `corpus/<target>/`.
+target has its own per-target seed corpus under `seeds/<target>/`
+(tracked),
+ separate from the gitignored scratch corpus under
+`corpus/<target>/`;
+ fuzz invocations pass both as libFuzzer corpus
+dirs with scratch first,
+ so new discoveries land only in scratch.
  Crash
 output uses a Unicode-literal-aware printable renderer (the May 2026 mojibake fix
 in commit `099bfe84`).
@@ -149,15 +155,20 @@ prebuilt image isn't handy.
 
 ## Corpus and artifact policy
 
-- `corpus/<target>/seed-*` -- curated seed files committed
-  to the repo (re-included via `.gitignore`).
+- `seeds/<target>/seed-*` -- curated seed files committed
+  to the repo (tracked plainly;
+   no `.gitignore` re-include needed).
    192 unique
   literals per target,
    extracted from
   `rules/{extract,atom,engine,algebra}_tests.rs` by
   `seed-from-tests`.
-- `corpus/<target>/<other>` -- libFuzzer's corpus growth.
-  Ignored.
+- `corpus/<target>/` -- libFuzzer's corpus growth (scratch).
+  Wholly ignored.
+   The smoke and run tasks pass
+  `corpus/<target> seeds/<target>` as explicit corpus dirs;
+  libFuzzer reads both and writes new discoveries only to the
+  first.
 - `artifacts/` -- libFuzzer's crash reproducers.
    Always
   ignored.
@@ -254,7 +265,7 @@ the `extract_tests.rs`,
 
 ```bash
 mise run //packages/fuzz/forbidden-strings:seed
-git add packages/fuzz/forbidden-strings/corpus/
+git add packages/fuzz/forbidden-strings/seeds/
 ```
 
 Without the refresh,
