@@ -264,6 +264,23 @@ Current checkpoint:
   and `rolldown-plugin-dts`;
 - the docs now distinguish absent Oxlint-supplied parser services from the feasibility of an independently loaded semantic
   pipeline;
+- preliminary source findings narrow candidate roles without selecting one:
+  - TypeScript can create the required `Program` and `TypeChecker` independently of Oxlint;
+  - `oxc-parser` supplies syntax rather than TypeScript type objects,
+    so pairing it with TypeScript still needs a TypeScript program and a cross-tree mapping;
+  - Yuku 0.6.1 supplies Oxc-compatible AST,
+    scopes,
+    symbols,
+    resolved references,
+    and cross-file module links,
+    but its documented and exported analyzer surface does not expose inferred TypeScript type objects or a
+    `TypeChecker`;
+  - Oxc isolated declarations emit per-file `.d.ts` text without TypeScript type checking when source satisfies
+    `isolatedDeclarations`;
+  - `rolldown-plugin-dts` 0.27.7 contains a reusable-looking TypeScript program cache and invalidation model,
+    while its public operation remains declaration generation and bundling rather than arbitrary type queries;
+- these role findings do not rule out compositions,
+  such as declaration normalization followed by TypeScript analysis or Yuku-assisted binding and mapping;
 - no candidate has been selected,
   rejected,
   or performance-qualified;
@@ -276,8 +293,9 @@ Current checkpoint:
 - no implementation code or dependency change is authorized.
 
 Next action:
- audit the named candidate source and APIs,
-then build disposable feasibility probes before asking the semantic-contract question.
+ask which semantic guarantee the replacement should target.
+That answer freezes the bridge evaluation's hard requirements before disposable probes and equal-depth candidate
+validation.
 
 ## Decision log
 
