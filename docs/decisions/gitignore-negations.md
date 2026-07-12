@@ -3,16 +3,19 @@
 ## Status
 
 Accepted,
- 2026-07-11.
-The stale-negation cleanup already landed
+ 2026-07-11;
+ implemented in full,
+ 2026-07-12.
+The stale-negation cleanup landed first
  (its hunks shipped inside commit `078d1bcd3`;
  a scope-note comment on that commit documents them).
-The restructures below are design-decided but not yet implemented;
- tracking issues:
- seeds in #364,
- plugin bundles in #365,
- embedded baseline in #366,
- repo de-rooting in #367 (blocked by #366).
+The three restructures then landed:
+ seeds in #364 (commit `e02ae3974`),
+ plugin bundles in #365 (commit `d6a858fb7`),
+ embedded baseline in #366 (commit `44c4ab9bc`),
+ repo de-rooting in #367 (commit `58995afff`).
+The only remaining `.gitignore` negations are the two KWin ones
+ discussed in the closing section.
 
 ## Goal
 
@@ -169,8 +172,8 @@ Rejected alternatives:
 
 ## Remaining negations and their root causes
 
-After the three restructures land,
- the file should contain no re-includes from the families above.
+With the three restructures landed,
+ the file contains no re-includes from the families above.
 Two newer negations arrived independently
  (commits `dd6a8c973` and `078d1bcd3`)
  and are out of scope here:
