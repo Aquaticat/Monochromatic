@@ -70,8 +70,9 @@ const DEFAULT_WINDOWS_PROGRAM_FILES = String.raw`C:\Program Files`;
 /**
  * Returns common absolute Git paths for runtime platform.
  *
- * @param options - Runtime platform and environment used to select conventional
- * install locations.
+ * @param platform - Runtime platform used to select conventional install locations.
+ *
+ * @param environment - Environment containing Windows installation roots.
  *
  * @returns Common Git executable paths in preferred lookup order.
  *
@@ -85,13 +86,19 @@ function commonGitPathsForPlatform({
   platform,
   environment = process.env,
 }: {
-  /** Runtime platform used to select conventional install locations. */
+  /**
+   * Runtime platform used to select conventional install locations.
+   */
   readonly platform: NodeJS.Platform;
-  /** Environment containing Windows installation roots. */
+  /**
+   * Environment containing Windows installation roots.
+   */
   readonly environment?: NodeJS.ProcessEnv;
 },): readonly string[] {
   if (platform === 'win32') {
-    /** Program Files roots that can contain system-wide Git installations. */
+    /**
+     * Program Files roots that can contain system-wide Git installations.
+     */
     const programFilesRoots = new Set([
       environment.ProgramFiles,
       environment.ProgramW6432,
@@ -100,18 +107,33 @@ function commonGitPathsForPlatform({
     ].filter(function definedRoot(root,): root is string {
       return root !== undefined;
     },),);
-    /** Local application root that can contain per-user Git installation. */
+    /**
+     * Local application root that can contain per-user Git installation.
+     */
     const localGitRoot = environment.LOCALAPPDATA === undefined
       ? []
-      : [win32.join(environment.LOCALAPPDATA, 'Programs',),];
+      : [win32.join(
+          environment.LOCALAPPDATA,
+          'Programs',
+        ),];
 
     return [
       ...programFilesRoots,
       ...localGitRoot,
     ].flatMap(function commonWindowsGitPaths(root,) {
       return [
-        win32.join(root, 'Git', 'cmd', 'git.exe',),
-        win32.join(root, 'Git', 'bin', 'git.exe',),
+        win32.join(
+          root,
+          'Git',
+          'cmd',
+          'git.exe',
+        ),
+        win32.join(
+          root,
+          'Git',
+          'bin',
+          'git.exe',
+        ),
       ];
     },);
   }
@@ -264,11 +286,15 @@ export async function resolveGit({
   const exposedCommonGitPaths = commonGitPaths.flatMap(function findExposedCommonPath(
     commonGitPath,
   ) {
-    /** Platform-comparable identity for common candidate. */
+    /**
+     * Platform-comparable identity for common candidate.
+     */
     const identity = platform === 'win32'
       ? commonGitPath.toLowerCase()
       : commonGitPath;
-    /** Exact candidate spelling produced from PATH. */
+    /**
+     * Exact candidate spelling produced from PATH.
+     */
     const exposedPath = pathCandidateByIdentity.get(identity,);
     return exposedPath === undefined
       ? []
