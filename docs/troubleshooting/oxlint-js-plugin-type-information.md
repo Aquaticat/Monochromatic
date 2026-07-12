@@ -1,4 +1,4 @@
-# Oxlint 1.73 JavaScript plugins expose no TypeScript type information, so a custom readonly-parameter rule cannot reproduce type-aware semantics
+# Oxlint 1.73 does not supply TypeScript type information to JavaScript plugins, so custom rules need an independent semantic bridge
 
 ## Symptom
 
@@ -13,7 +13,7 @@ error type-probe(probe): parserServices keys=; count=0
 ```
 
 This prevents a JavaScript replacement for
-`typescript/prefer-readonly-parameter-types` from determining facts such as:
+`typescript/prefer-readonly-parameter-types` from determining the following facts through the Oxlint host API alone:
 
 - whether a named alias resolves to a mutable object;
 - whether a type originates in a library or package;
@@ -25,6 +25,9 @@ The rule can still inspect syntax,
 scopes,
 references,
 and function-body operations.
+It can also import independent Node.
+js libraries,
+so absent Oxlint parser services do not prove that type-aware replacement semantics are impossible.
 
 ## Root cause
 
@@ -180,20 +183,28 @@ this retains the allow-list,
 false-positive,
 and external-boundary maintenance that motivated replacement.
 
-### Create a separate TypeScript program inside the plugin
+### Load an independent semantic pipeline inside the plugin
 
-A JavaScript plugin can import the TypeScript compiler as an ordinary dependency,
-read project configuration,
-and construct its own `Program` and `TypeChecker`.
+A JavaScript plugin can import ordinary Node.
+js dependencies.
+Candidate pipelines include a TypeScript `Program` and `TypeChecker`,
+`oxc-parser` paired with TypeScript semantics,
+Yuku's parser and analyzer,
+Oxc isolated declaration generation,
+and the declaration pipeline exposed by `rolldown-plugin-dts`.
 
 Tradeoff:
-this duplicates Oxlint's project analysis,
-requires cache and workspace lifecycle design,
-and does not receive the already-running tsgolint checker.
-It also recreates the semantic complexity of the retired rule rather than using the normal Oxlint plugin surface.
-This workaround was established from the ordinary Node.
-js module boundary,
-not adopted or performance-qualified for this repository.
+none of these candidates receives the already-running tsgolint checker.
+Each needs proof for semantic depth,
+Oxlint-node mapping,
+project and package resolution,
+cache invalidation,
+editor lifecycle,
+and consumer-boundary behavior.
+Parser or declaration throughput alone does not prove that a candidate can answer deep readonly queries.
+The candidates are not yet selected,
+rejected,
+or performance-qualified for this repository.
 
 ## What does not work
 
@@ -213,14 +224,15 @@ Existence of the property does not imply TypeScript parser services.
 Type declarations can describe an API only if the runtime supplies it.
 Changing local `Context` typings would not populate parser services or connect the JavaScript host to tsgolint.
 
-### Port the native rule line for line to an ESTree visitor
+### Port the native rule line for line using only the Oxlint ESTree visitor
 
 The visitor can reproduce annotation-shape checks,
-but calls that require resolved symbols,
+but the Oxlint context has no equivalent input for calls that require resolved symbols,
 properties,
 generics,
-or package origins have no equivalent input.
-A line-for-line port would either fail or replace semantic checks with undocumented guesses.
+or package origins.
+A direct port that adds no independent semantic bridge would either fail or replace semantic checks with undocumented
+guesses.
 
 ## Upstream filing decision
 
@@ -270,8 +282,8 @@ The filing constraints resolve as follows:
     with no update as of 2026-06-12.
 6.  **Compatible minimal fix prototyped:
     ** no.
-    A bridge between tsgo and JavaScript plugin contexts is upstream architecture work and is unnecessary for the
-    project-side syntax or body-analysis replacement.
+    A bridge between tsgo and JavaScript plugin contexts is upstream architecture work.
+    Project-side independent semantic pipelines remain a separate investigation and do not constitute an upstream fix.
 
 Because the behavior is documented as unsupported,
 constraint 1 fails and no upstream prototype or new filing is warranted.

@@ -7,14 +7,48 @@ No implementation is authorized until the grilling interview reaches shared unde
 Last updated:
  2026-07-12.
 
+## Continuity contract
+
+This session is expected to cross repeated automatic context compactions.
+This document is the canonical task state,
+not a summary written only at the end.
+Update it whenever research changes feasibility,
+the user corrects an assumption,
+a decision is settled,
+a candidate exits,
+a probe completes,
+or the next action changes.
+
+Keep the following recoverable from repository documents:
+
+- user's actual request and subsequent scope corrections;
+- measured repository facts and exact source locations;
+- external candidates,
+  versions,
+  source revisions,
+  evidence,
+  and unresolved gates;
+- discarded hypotheses and why they failed;
+- settled decisions and the still-ordered question queue;
+- verification commands,
+  relevant outputs,
+  changed files,
+  and commit hashes;
+- one explicit next action for a continuation session.
+
+Compaction prompts do not change scope or authorize implementation.
+After compaction,
+resume from this document and the task list,
+then re-derive the next action from the user's request and recorded decisions.
+
 ## Goal
 
 Retire Oxlint's type-aware `typescript/prefer-readonly-parameter-types` rule and replace its useful policy with a
 project-owned JavaScript rule in
 `@monochromatic-dev/config-oxlint-no-restricted-syntax`.
 
-The replacement must reduce false positives and configuration maintenance without quietly claiming semantic guarantees
-that an Oxlint JavaScript plugin cannot provide.
+The replacement must reduce false positives and configuration maintenance without claiming guarantees that its chosen
+analysis pipeline has not proved.
 
 ## Measured baseline
 
@@ -37,9 +71,9 @@ callback-bearing declarations,
 and generic types whose caller-owned identity must be preserved.
 The current rule is therefore enforcing several different concerns through one deep structural readonly test.
 
-## Confirmed platform constraint
+## Confirmed host constraint and open bridge investigation
 
-Oxlint 1.73 JavaScript plugins do not receive TypeScript type information.
+Oxlint 1.73 does not supply its JavaScript plugins with TypeScript type information.
 The installed `@oxlint/plugins` declaration says parser services are unavailable,
 and a disposable probe run with `--type-aware` observed an empty `context.sourceCode.parserServices` object.
 Oxlint's source separately runs the regular linter,
@@ -49,20 +83,31 @@ and the tsgolint type-aware linter.
 The source trace and runnable probe are recorded in
 [`docs/troubleshooting/oxlint-js-plugin-type-information.md`](../troubleshooting/oxlint-js-plugin-type-information.md).
 
-Consequences:
+This establishes only what the Oxlint host supplies.
+It does not establish that a JavaScript plugin must remain syntax-only.
+The plugin can load other parser,
+semantic-analysis,
+declaration-generation,
+or TypeScript compiler components.
 
-- a normal rule in `packages/oxlint-plugins/no-restricted-syntax/` can inspect syntax,
-  scopes,
-  references,
-  and function bodies;
-- it cannot ask Oxlint for resolved aliases,
-  package provenance,
-  generic instantiations,
-  class members,
-  or deep structural readonlyness;
-- exact parity with the retired rule would require creating and maintaining a separate TypeScript program inside the
-  plugin,
-  not merely writing another AST visitor.
+The feasibility investigation must compare at least:
+
+- the Oxlint ESTree already supplied to the rule plus a TypeScript `Program` and `TypeChecker`,
+  with source-span or binding mapping between the two trees;
+- `oxc-parser` plus the TypeScript compiler;
+- `yuku-parser` and `yuku-analyzer`,
+  including whether Yuku exposes TypeScript type semantics rather than only scopes,
+symbols,
+resolved references,
+and cross-file module links;
+- Oxc isolated declaration generation as a normalized per-file input to later analysis;
+- `rolldown-plugin-dts` as an existing declaration pipeline,
+  including whether its bundling lifecycle can serve lint-time queries rather than only build output;
+- a syntax or function-body analysis rule as the no-extra-semantic-engine baseline.
+
+No candidate is selected or ruled out yet.
+Exact parity also requires defining which parts of the retired rule's semantics are worth preserving,
+not merely obtaining any type checker.
 
 ## Provisional architecture
 
@@ -81,14 +126,28 @@ The implementation location is settled by the request:
 - user-facing rule contract:
   `packages/oxlint-plugins/no-restricted-syntax/README.md`.
 
-The semantic contract is not settled.
-That decision determines the rule name,
+The semantic contract and semantic-analysis pipeline are not settled.
+Those decisions determine the rule name,
 visitor shape,
 fixtures,
 migration edits,
-and whether a separate TypeScript compiler dependency is needed.
+and dependency or generated-declaration boundaries.
 
 ## Implementation sequence after approval
+
+### Prototype semantic-information candidates
+
+Build disposable probes against the same representative type catalog used to calibrate the final rule.
+Each candidate must prove how a plugin invocation obtains reusable project state,
+maps the Oxlint visitor node to semantic data,
+resolves local and package aliases,
+handles project references,
+and invalidates caches after edits.
+
+Measure cold and warm lint behavior through the normal package lint boundary.
+Inspect native artifact provenance for parser or analyzer packages before execution.
+Do not select a bridge from parser speed alone because readonly analysis depends on semantic depth,
+not AST throughput.
 
 ### Define the rule contract
 
@@ -192,6 +251,28 @@ Resolve one item at a time during the grilling interview:
 - historical documentation updates;
 - acceptance criteria for deleting the native rule.
 
+## Research checkpoint
+
+Current checkpoint:
+
+- commit `5eb558033` added the initial plan and Oxlint host-API investigation;
+- that initial documentation overstated the host limitation as an impossibility result;
+- the user corrected the assumption and named additional bridge candidates:
+  `oxc-parser` plus TypeScript,
+  Yuku,
+  Oxc isolated declarations,
+  and `rolldown-plugin-dts`;
+- the docs now distinguish absent Oxlint-supplied parser services from the feasibility of an independently loaded semantic
+  pipeline;
+- no candidate has been selected,
+  rejected,
+  or performance-qualified;
+- no implementation code or dependency change is authorized.
+
+Next action:
+ audit the named candidate source and APIs,
+then build disposable feasibility probes before asking the semantic-contract question.
+
 ## Decision log
 
 ### Settled before the interview
@@ -201,6 +282,19 @@ Resolve one item at a time during the grilling interview:
 - Keep this planning document current as decisions are made.
 - Do not implement until the user confirms shared understanding.
 
+### Corrected during investigation
+
+The initial plan incorrectly treated absent Oxlint parser services as proof that a replacement could not reproduce
+ type-aware semantics.
+The verified fact is narrower:
+Oxlint does not supply type information to JavaScript plugins.
+Independent analysis through the TypeScript compiler,
+`oxc-parser`,
+Yuku,
+Oxc isolated declarations,
+or `rolldown-plugin-dts` remains open pending source audit and disposable probes.
+
 ### Awaiting decision
 
-The first unresolved decision is the replacement rule's semantic contract.
+The first unresolved decision is the replacement rule's semantic contract,
+informed by the bridge feasibility results.
