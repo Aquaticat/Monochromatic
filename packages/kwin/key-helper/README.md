@@ -32,8 +32,14 @@ The two halves talk over the session bus under `org.monochromatic.KeyHelper`.
 ## Layout
 
 - `src/`:
-   the daemon, split into pure logic (`evdev-parse`, `keys`, `launch`) and I/O
-   (`evdev`, `nvim`, `dbus-iface`, `index`).
+   the daemon,
+   split into pure logic (`evdev-parse`,
+   `keys`,
+   `launch`) and I/O
+   (`evdev`,
+   `nvim`,
+   `dbus-iface`,
+   `index`).
 - `kwin-script/`:
    the KWin KPackage (`metadata.json` plus `contents/code/main.js`).
    Its `DBUS_*` constants must match `src/constants.ts`;
