@@ -39,36 +39,25 @@ run = "node src/index.ts"
 description = "Run the daemon from source with file-watch auto-restart"
 run = "mise watch -w src -r -- node src/index.ts"
 
-[tasks."build:sea"]
+# Named `sea` (not `build:sea`) so the `build` fanout, which runs every `build:*`
+# subtask, does not pull it in before the ESM bundle exists.
+[tasks.sea]
 description = "Embed the built ESM bundle into a Node SEA binary (key-helper-service)"
 shell = "node --input-type=module-typescript -e"
 run = """
 import { execFileSync, } from 'node:child_process'
-import { chmodSync, copyFileSync, } from 'node:fs'
+import { chmodSync, } from 'node:fs'
 
-// Generate the SEA blob from dist/final/node/index.mjs (see sea-config.json).
-execFileSync(process.execPath, ['--experimental-sea-config', 'sea-config.json',], { stdio: 'inherit', },)
-// Base the executable on the running node binary, then make it runnable.
-copyFileSync(process.execPath, 'key-helper-service',)
+// Node 26 --build-sea does blob generation + injection in one step, loading the
+// ESM main directly via "mainFormat": "module" in sea-config.json.
+execFileSync(process.execPath, ['--build-sea', 'sea-config.json',], { stdio: 'inherit', },)
 chmodSync('key-helper-service', 0o755,)
-// Inject the blob using the standard SEA fuse sentinel.
-execFileSync(
-  'node_modules/.bin/postject',
-  [
-    'key-helper-service',
-    'NODE_SEA_BLOB',
-    'dist/sea-prep.blob',
-    '--sentinel-fuse',
-    'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
-  ],
-  { stdio: 'inherit', },
-)
 console.log('built key-helper-service',)
 """
 
-[tasks."build:binary"]
+[tasks.binary]
 description = "Build the ESM bundle then embed it into the SEA binary"
-run = ["mise run build", "mise run build:sea"]
+run = ["mise run build", "mise run sea"]
 
 [tasks.install]
 description = "Symlink the KWin script, point autostart at the in-repo binary, enable the script"

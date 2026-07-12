@@ -53,7 +53,7 @@ The two halves talk over the session bus under `org.monochromatic.KeyHelper`.
 
 ```sh
 # Build the daemon binary (ESM bundle, then embed into a Node SEA executable).
-mise run //packages/kwin/key-helper:build:binary
+mise run //packages/kwin/key-helper:binary
 ```
 
 This produces `key-helper-service` in the package directory.

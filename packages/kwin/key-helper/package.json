@@ -6,14 +6,15 @@
   "private": true,
   "main": "src/index.ts",
   "dependencies": {
+    "@monochromatic-dev/module-async-time": "workspace:*",
     "@msgpack/msgpack": "catalog:",
     "dbus-next": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
-    "postject": "catalog:",
     "tsdown": "catalog:"
   },
   "version": "0.0.1",

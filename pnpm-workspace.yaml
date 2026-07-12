@@ -106,7 +106,6 @@ catalog:
   'picomatch': '>=4.0.5'
   'postcss': '>=8.5.16'
   'postcss-html': '>=1.8.1'
-  'postject': '>=1.0.0-alpha.6'
   'preact': '>=10.26.0'
   'preact-render-to-string': '>=6.5.0'
   'rehype-autolink-headings': '>=7.1.0'

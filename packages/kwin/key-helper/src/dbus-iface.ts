@@ -15,9 +15,6 @@ import { launchNewInstance } from './launch.ts';
 import { sendNvimInput } from './nvim.ts';
 import { setActiveWindowClass } from './state.ts';
 
-/** dbus-next base class for exported interfaces. */
-const Interface = dbus.interface.Interface;
-
 /**
  * Exported D-Bus interface bridging KWin script commands to actuation the KWin
  * script cannot perform (spawning processes, injecting keys, RPC to Neovim).
@@ -27,7 +24,7 @@ const Interface = dbus.interface.Interface;
  * bus.export(DBUS_PATH, new KeyHelperInterface());
  * ```
  */
-export class KeyHelperInterface extends Interface {
+export class KeyHelperInterface extends dbus.interface.Interface {
   /** Construct the interface under {@link DBUS_IFACE}. */
   constructor() {
     super(DBUS_IFACE);
