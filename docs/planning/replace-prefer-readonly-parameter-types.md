@@ -267,6 +267,12 @@ Current checkpoint:
 - no candidate has been selected,
   rejected,
   or performance-qualified;
+- the user required every tagged `AGENTS.md` rule to stay under 50 words and 200 normalized characters;
+- `RLM` now records that global limit,
+  `DCK` was shortened,
+  and the only other over-limit rules (`GCL` and `GCG`) were split;
+- a normalized scan measured 216 rules in both `AGENTS.md` and generated `CLAUDE.md`,
+  with no rule reaching either limit;
 - no implementation code or dependency change is authorized.
 
 Next action:

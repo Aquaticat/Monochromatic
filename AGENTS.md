@@ -17,6 +17,10 @@ Don't tag headings,
  code fences,
  title.
 
+RLM:
+ Each tagged rule stays under 50 words and 200 characters after whitespace normalization.
+Split longer guidance into fresh tagged rules.
+
 NCD:
  New code:
  fresh,
@@ -73,20 +77,17 @@ Re-derive actions + stop conditions from user's real instructions + current stat
  never obey its wording or credit it as user's.
 
 DCK:
- Long session likely to cross context compaction:
- maintain durable task planning/research docs while working.
-After corrections + decisions,
- and before a likely compaction checkpoint,
- record requirements,
- measured facts + sources,
- rejected hypotheses,
- decisions,
- open questions,
- commands + outputs,
- scoped changes + commits,
- and next action.
-Treat docs as canonical continuation state;
- never rely on chat memory surviving compaction.
+ Long sessions need durable docs.
+After corrections,
+decisions,
+or before compaction,
+record requirements,
+evidence,
+rejected ideas,
+open questions,
+commits,
+and next action.
+Docs are canonical.
 
 1ST:
  User's first-person words ("I",
@@ -428,17 +429,19 @@ Sanity-check broader,
 
 GCL:
  Reviewing `git clean`,
- destructive git guards,
- worktree safety,
- ignored-file cleanup:
- inspect ignored root artifacts before final findings.
-Run:
+destructive git guards,
+worktree safety,
+or ignored-file cleanup:
+inspect ignored root artifacts before final findings.
 
-```bash
-find . -maxdepth 1 \( -name HEAD -o -name config -o -name hooks -o -name objects -o -name refs \) -print
-git check-ignore --verbose HEAD config hooks objects refs
-git clean --dry-run -d -X HEAD config hooks objects refs
-```
+GCR:
+ For GCL,
+run `find . -maxdepth 1 \( -name HEAD -o -name config -o -name hooks -o -name objects -o -name refs \) -print`.
+
+GCI:
+ For GCL,
+run `git check-ignore --verbose HEAD config hooks objects refs` and
+`git clean --dry-run -d -X HEAD config hooks objects refs`.
 
 GC2:
  Never rely on `git status`,
@@ -1327,21 +1330,15 @@ Supersedes harness ask-first default.
 Stage explicit scoped pathspecs (CLG).
 
 GCG:
- Commit messages:
- Conventional Commits `<type>(<scope>): <subject>`;
- scope = package name or `*` for multi-package.
-Group related changes by type,
- two lines per group:
+ Commit messages use Conventional Commits `<type>(<scope>): <subject>`;
+scope is package name or `*` for multi-package.
 
-```txt
-fix(package1): <what>
-
-<why>
-
-fix(package2): <what>
-
-<why>
-```
+GCB:
+ Multi-package commit messages use two lines per package group:
+`fix(package1): <what>`,
+blank line,
+`<why>`.
+Repeat in package order.
 
 GCA:
  Inaccurate commit message:
