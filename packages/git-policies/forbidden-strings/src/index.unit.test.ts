@@ -12,6 +12,8 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import { setTimeout as wait, } from 'node:timers/promises';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import * as v from 'valibot';
 import {
   describe,
   expect,
@@ -140,6 +142,15 @@ await describe({
           'manual-push',
           'direct-check',
         ],);
+        // The policy defaults to baseline-on: a git policy exists to catch
+        // leaked credentials, so repositories must opt OUT, not in.
+        expect(v.parse(
+          nonNullishOrThrow(forbiddenStringsPolicy.options,),
+          {},
+        ),).toEqual({
+          executable: 'forbidden-strings',
+          builtinRules: true,
+        },);
       },
     },),
     it({

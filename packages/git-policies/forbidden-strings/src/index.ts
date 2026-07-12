@@ -24,7 +24,10 @@ export type ForbiddenStringsPolicyOptions = Readonly<{
   executable: string;
   /**
    * Whether scans also load the scanner's embedded betterleaks-ported
-   * baseline via its opt-in `--builtin-rules` flag.
+   * baseline via its `--builtin-rules` flag. Defaults to `true`: the
+   * standalone CLI keeps the baseline pure opt-in, but a git policy exists
+   * to catch leaked credentials, so the policy is baseline-on unless a
+   * repository explicitly opts out.
    */
   builtinRules: boolean;
 }>;
@@ -39,7 +42,7 @@ const forbiddenStringsOptions = definePolicyOptions(v.object({
   ),
   builtinRules: v.optional(
     v.boolean(),
-    false,
+    true,
   ),
 },),);
 

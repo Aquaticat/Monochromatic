@@ -1729,6 +1729,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
