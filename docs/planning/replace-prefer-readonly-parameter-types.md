@@ -41,6 +41,22 @@ After compaction,
 resume from this document and the task list,
 then re-derive the next action from the user's request and recorded decisions.
 
+## Decision posture
+
+The user set implementation time and money to unlimited for this replacement.
+Do not rank an option lower because it takes longer,
+requires more engineering,
+uses more analysis passes,
+or needs a wider migration.
+Correctness,
+semantic coverage,
+explainability,
+and durable maintenance decide between feasible designs.
+
+When removing cost constraints leaves one option that strictly covers the others without weakening those qualities,
+adopt and record it without asking.
+Ask only when alternatives encode genuinely different policy or correctness outcomes.
+
 ## Goal
 
 Retire Oxlint's type-aware `typescript/prefer-readonly-parameter-types` rule and replace its useful policy with a
@@ -301,6 +317,11 @@ validation.
 
 ### Settled before the interview
 
+- Treat implementation time and money as unlimited.
+- Never choose a narrower design merely because it is easier,
+faster,
+or cheaper to build.
+- Resolve a decision without asking when removal of resource constraints leaves one strictly dominant option.
 - Replace the native rule rather than adding another layer of allow-list entries.
 - Implement the replacement in the existing `no-restricted-syntax` JavaScript plugin package.
 - Keep this planning document current as decisions are made.
