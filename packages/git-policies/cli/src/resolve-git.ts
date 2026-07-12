@@ -44,6 +44,47 @@ const SELF_SHIM_MARKERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Common Unix Git locations checked before PATH to avoid probing every shim-heavy
+ * package-manager directory first.
+ */
+const COMMON_UNIX_GIT_PATHS: readonly string[] = [
+  '/usr/bin/git',
+  '/usr/local/bin/git',
+];
+
+/**
+ * Additional common macOS Git locations after standard Unix locations.
+ */
+const COMMON_MACOS_GIT_PATHS: readonly string[] = [
+  ...COMMON_UNIX_GIT_PATHS,
+  '/opt/homebrew/bin/git',
+  '/opt/local/bin/git',
+];
+
+/**
+ * Returns common absolute Git paths for runtime platform.
+ *
+ * @param platform - Runtime platform used to select conventional install locations.
+ *
+ * @returns Common Git executable paths in preferred lookup order.
+ *
+ * @example
+ * ```ts
+ * commonGitPathsForPlatform('linux');
+ * // => ['/usr/bin/git', '/usr/local/bin/git']
+ * ```
+ */
+function commonGitPathsForPlatform(platform: NodeJS.Platform,): readonly string[] {
+  if (platform === 'win32')
+    return [];
+
+  if (platform === 'darwin')
+    return COMMON_MACOS_GIT_PATHS;
+
+  return COMMON_UNIX_GIT_PATHS;
+}
+
+/**
  * Options for resolving the real git binary.
  */
 type ResolveGitOptions = {
@@ -60,6 +101,11 @@ type ResolveGitOptions = {
    * Windows executable extensions in shell lookup order.
    */
   readonly pathExtensions?: string;
+  /**
+   * Absolute Git paths checked before PATH candidates. Defaults to common
+   * platform locations; tests can inject disposable candidates.
+   */
+  readonly commonGitPaths?: readonly string[];
 };
 
 /**
@@ -98,16 +144,16 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
 }
 
 /**
- * Locates the real git binary by scanning PATH entries, skipping any that
- * resolve back into this package's directory tree as detected by
+ * Locates real Git by checking common platform paths before scanning PATH,
+ * skipping candidates that delegate back into this package as detected by
  * {@link isShimForSelf}.
  *
- * Sequential scanning is intentional: we need the first PATH match
- * and can stop immediately, so parallelizing would waste work.
+ * Sequential scanning is intentional: we need first preferred match and can
+ * stop immediately, so parallelizing would waste work.
  *
  * @returns Absolute path to the real git binary.
  *
- * @throws When no real git binary is found on PATH.
+ * @throws When no real Git binary is found in common locations or on PATH.
  *
  * @example
  * ```ts
@@ -123,6 +169,7 @@ export async function resolveGit({
   pathExtensions = process.env
     .PATHEXT
     ?? '.COM;.EXE;.BAT;.CMD',
+  commonGitPaths = commonGitPathsForPlatform(platform,),
 }: ResolveGitOptions = {},): Promise<string> {
   /**
    * Tagged logger for git binary resolution.
@@ -150,9 +197,9 @@ export async function resolveGit({
       },)
     : ['git',];
   /**
-   * Ordered executable candidates across PATH directories and Windows extensions.
+   * Executable candidates derived from PATH directories and Windows extensions.
    */
-  const candidates = pathDirs.flatMap(function candidatesInDirectory(dir,) {
+  const pathCandidates = pathDirs.flatMap(function candidatesInDirectory(dir,) {
     return executableNames.map(function executableInDirectory(name,) {
       return join(
         dir,
@@ -160,6 +207,14 @@ export async function resolveGit({
       );
     },);
   },);
+  /**
+   * Common paths followed by PATH candidates, deduplicated without disturbing
+   * preference order.
+   */
+  const candidates = new Set([
+    ...commonGitPaths,
+    ...pathCandidates,
+  ],);
 
   for (const candidate of candidates) {
     try {
@@ -185,7 +240,7 @@ export async function resolveGit({
   }
 
   throw new Error(
-    'cli-git: could not find real git binary on PATH. '
+    'cli-git: could not find real git binary in common locations or on PATH. '
       + 'Ensure Git is installed and PATH/PATHEXT expose its executable.',
   );
 }

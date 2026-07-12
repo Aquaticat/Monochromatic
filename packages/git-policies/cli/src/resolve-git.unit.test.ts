@@ -181,11 +181,62 @@ await describe({
           ]
             .join(delimiter,);
           /** Resolved executable path returned by cli-git. */
-          const resolvedGit = await resolveGit({ pathEnv, },);
+          const resolvedGit = await resolveGit({
+            pathEnv,
+            commonGitPaths: [],
+          },);
 
           expect(resolvedGit,).toBe(realGitPath,);
         },
       },);
+    },),
+    it({
+      name: 'checks common paths before PATH directories',
+      fn: async function testCommonPathPriority(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** PATH directory containing fallback Git executable. */
+        const pathBinDir = join(tempDirectory.path, 'path-bin',);
+        await mkdir(pathBinDir,);
+        /** Common Git executable that should be checked first. */
+        const commonGitPath = join(tempDirectory.path, 'common-git',);
+        /** PATH Git executable that should lose to common candidate. */
+        const pathGitPath = join(pathBinDir, 'git',);
+        await Promise.all([
+          writeExecutable({
+            path: commonGitPath,
+            content: REAL_GIT_CONTENT,
+          },),
+          writeExecutable({
+            path: pathGitPath,
+            content: REAL_GIT_CONTENT,
+          },),
+        ],);
+
+        expect(await resolveGit({
+          pathEnv: pathBinDir,
+          commonGitPaths: [commonGitPath,],
+        },),).toBe(commonGitPath,);
+      },
+    },),
+    it({
+      name: 'falls back to PATH when common paths are unavailable',
+      fn: async function testCommonPathFallback(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** PATH directory containing fallback Git executable. */
+        const pathBinDir = join(tempDirectory.path, 'path-bin',);
+        await mkdir(pathBinDir,);
+        /** PATH Git executable selected after missing common candidate. */
+        const pathGitPath = join(pathBinDir, 'git',);
+        await writeExecutable({
+          path: pathGitPath,
+          content: REAL_GIT_CONTENT,
+        },);
+
+        expect(await resolveGit({
+          pathEnv: pathBinDir,
+          commonGitPaths: [join(tempDirectory.path, 'missing-git',),],
+        },),).toBe(pathGitPath,);
+      },
     },),
     it({
       name: 'resolves Windows executable through PATHEXT order',
@@ -204,6 +255,7 @@ await describe({
           pathEnv: realBinDir,
           platform: 'win32',
           pathExtensions: '.COM;.EXE;.BAT;.CMD',
+          commonGitPaths: [],
         },),).toBe(realGitPath,);
       },
     },),
@@ -232,7 +284,10 @@ await describe({
         /** Error captured from resolving a PATH with no real git candidate. */
         const caught = await (async function catchResolveError(): Promise<unknown> {
           try {
-            await resolveGit({ pathEnv: selfBinDir, },);
+            await resolveGit({
+              pathEnv: selfBinDir,
+              commonGitPaths: [],
+            },);
           }
           catch (error) {
             return error;
