@@ -51,7 +51,7 @@ export type CandidateFileMode = 'regular' | 'executable' | 'symlink' | 'submodul
 /**
  * Candidate change kind. @example `const change: CandidateChange = 'modified';`
  */
-export type CandidateChange = 'added' | 'modified' | 'deleted' | 'unchanged';
+export type CandidateChange = 'added' | 'modified' | 'deleted';
 
 /**
  * Committed or mutable candidate. @example `const file = await context.git.candidates().then(files => files[0]);`

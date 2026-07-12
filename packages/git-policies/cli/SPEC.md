@@ -106,8 +106,7 @@ export type CandidateFileMode =
 export type CandidateChange =
   | 'added'
   | 'modified'
-  | 'deleted'
-  | 'unchanged';
+  | 'deleted';
 
 export type CandidateFile = {
   readonly targetId: string;
