@@ -1,11 +1,12 @@
 # forbidden-strings shared appendix (checked into version control).
 # Non-sensitive deny-list rules that apply to every clone of this repo.
 # Add literal substrings or /PATTERN/FLAGS regex rules below; one per line.
-# This file is concatenated onto forbidden-strings.local.example.txt and
-# forbidden-strings.append.local.txt by file-enforcer to produce the runtime
-# forbidden-strings.local.txt. Keep sensitive rules (codenames, customer
-# names, partner identifiers, politically-charged literals) out of this file;
-# put those in the gitignored forbidden-strings.append.local.txt instead.
+# This file is concatenated onto forbidden-strings.append.local.txt by
+# file-enforcer to produce the runtime .cache/forbidden-strings.rules.txt
+# (the betterleaks baseline ships inside the scanner binary; repo scans pass
+# --builtin-rules). Keep sensitive rules (codenames, customer names, partner
+# identifiers, politically-charged literals) out of this file; put those in
+# the gitignored forbidden-strings.append.local.txt instead.
 
 # AGENTS.md shortcode labels reserved against the NCD rule: common acronyms,
 # abbreviations, country codes, networking and tech identifiers, and medical terms

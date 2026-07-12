@@ -296,7 +296,6 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
         "packages/cli/forbidden-strings/data/betterleaks-default-config.toml",
         "packages/cli/forbidden-strings/data/builtin-rules.txt",
         "packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts",
-        "forbidden-strings.local.example.txt",
         "packages/cli/forbidden-strings/src/rules/algebra_tests.rs",
     ];
     for k in canonical_self_match_paths {

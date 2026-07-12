@@ -23,6 +23,11 @@ export type ForbiddenStringsPolicyOptions = Readonly<{
    * PATH-resolved command or explicit scanner executable path.
    */
   executable: string;
+  /**
+   * Whether scans also load the scanner's embedded betterleaks-ported
+   * baseline via its opt-in `--builtin-rules` flag.
+   */
+  builtinRules: boolean;
 }>;
 
 /**
@@ -32,6 +37,10 @@ const forbiddenStringsOptions = definePolicyOptions(v.object({
   executable: v.optional(
     v.string(),
     'forbidden-strings',
+  ),
+  builtinRules: v.optional(
+    v.boolean(),
+    false,
   ),
 },),);
 
@@ -72,6 +81,7 @@ export const forbiddenStringsPolicy: PolicyDefinition<
       },);
     return await scanCandidates({
       executable: options.executable,
+      builtinRules: options.builtinRules,
       repositoryRoot: context.command
         .repositoryRoot,
       candidates,

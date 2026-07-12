@@ -191,6 +191,7 @@ await describe({
         },);
         const findings = await scanCandidates({
           executable: scanner,
+          builtinRules: false,
           repositoryRoot: directory.path,
           candidates: [candidate('name;not-a-command',),],
           signal: new AbortController().signal,
@@ -243,7 +244,10 @@ await describe({
         };
         expect(await forbiddenStringsPolicy.check({
           context,
-          options: { executable: scanner, },
+          options: {
+            executable: scanner,
+            builtinRules: false,
+          },
         },),).toEqual([],);
       },
     },),
@@ -251,15 +255,14 @@ await describe({
       name: 'preserves scanner walker exclusions for materialized candidates',
       fn: async function testScannerWalkerExclusions() {
         await using directory = await createTestDirectory();
-        /** Scanner requiring exactly two retained candidate arguments. */
+        /** Scanner requiring exactly three retained candidate arguments. */
         const scanner = await writeScanner({
           directory: directory.path,
-          body: `if (process.argv.length !== 4) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
+          body: `if (process.argv.length !== 5) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
         },);
         /** Paths scanner excludes only at canonical repository locations. */
         const excludedPaths = [
           'forbidden-strings.local.txt',
-          'forbidden-strings.local.example.txt',
           'packages/cli/forbidden-strings/data/betterleaks-default-config.toml',
           'packages/cli/forbidden-strings/data/builtin-rules.txt',
           'packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts',
@@ -274,17 +277,54 @@ await describe({
             },
           };
         },);
-        /** Same basename outside canonical location must remain scannable. */
+        /** Same basename outside canonical location must remain scannable, and
+         * the retired root example path is ordinary scannable content now that
+         * the baseline lives inside the scanner package. */
         const retainedCandidates = [
           candidate('nested/forbidden-strings.local.example.txt',),
+          candidate('forbidden-strings.local.example.txt',),
           candidate('src/value.ts',),
         ];
+        // The cwd-default exclusion only applies when no env override
+        // exists; the repo's mise env sets one, so the test injects an
+        // empty environment instead of mutating shared global state.
         expect(await scanCandidates({
           executable: scanner,
+          builtinRules: false,
           repositoryRoot: directory.path,
+          environment: {},
           candidates: [
             ...excludedCandidates,
             ...retainedCandidates,
+          ],
+          signal: new AbortController().signal,
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'excludes env-configured rules path inside repository',
+      fn: async function testEnvConfiguredRulesExclusion() {
+        await using directory = await createTestDirectory();
+        /** Scanner requiring exactly one retained candidate argument. */
+        const scanner = await writeScanner({
+          directory: directory.path,
+          body: `if (process.argv.length !== 3) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
+        },);
+        /** Env-configured rules file whose bytes must remain unread. */
+        const excludedRules: CandidateFile = {
+          ...candidate('.cache/forbidden-strings.rules.txt',),
+          bytes: function rejectRulesRead(): Promise<Uint8Array> {
+            throw new Error('Env-configured rules candidate was read.',);
+          },
+        };
+        expect(await scanCandidates({
+          executable: scanner,
+          builtinRules: false,
+          repositoryRoot: directory.path,
+          environment: { FORBIDDEN_STRINGS_RULES: '.cache/forbidden-strings.rules.txt', },
+          candidates: [
+            excludedRules,
+            candidate('src/value.ts',),
           ],
           signal: new AbortController().signal,
         },),).toEqual([],);
@@ -297,6 +337,7 @@ await describe({
         const missing = await capturePluginError(async function runMissing() {
           await scanCandidates({
             executable: join(directory.path, 'missing',),
+            builtinRules: false,
             repositoryRoot: directory.path,
             candidates: [candidate('file.txt',),],
             signal: new AbortController().signal,
@@ -310,6 +351,7 @@ await describe({
         const status = await capturePluginError(async function runFailedScanner() {
           await scanCandidates({
             executable: scanner,
+            builtinRules: false,
             repositoryRoot: directory.path,
             candidates: [candidate('file.txt',),],
             signal: new AbortController().signal,
@@ -379,6 +421,7 @@ await describe({
         ).flat();
         expect(await scanCandidates({
           executable: scanner,
+          builtinRules: false,
           repositoryRoot: directory.path,
           candidates,
           signal: new AbortController().signal,
@@ -388,11 +431,30 @@ await describe({
       },
     },),
     it({
+      name: 'passes opt-in builtin-rules flag before candidate positionals',
+      fn: async function testBuiltinRulesFlag() {
+        await using directory = await createTestDirectory();
+        /** Scanner requiring the flag as its first argument. */
+        const scanner = await writeScanner({
+          directory: directory.path,
+          body: `if (process.argv[2] !== '--builtin-rules' || process.argv.length !== 4) { process.stderr.write('missing builtin-rules flag'); process.exitCode = 2; }`,
+        },);
+        expect(await scanCandidates({
+          executable: scanner,
+          builtinRules: true,
+          repositoryRoot: directory.path,
+          candidates: [candidate('src/value.ts',),],
+          signal: new AbortController().signal,
+        },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'does not invoke scanner for contentless candidates',
       fn: async function testContentless() {
         await using directory = await createTestDirectory();
         expect(await scanCandidates({
           executable: join(directory.path, 'missing',),
+          builtinRules: false,
           repositoryRoot: directory.path,
           candidates: [],
           signal: new AbortController().signal,

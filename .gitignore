@@ -6,7 +6,6 @@
 # against adding secret-bearing MCP servers there; those belong in a separate,
 # genuinely local file. See docs/runbook (Slint testing).
 /betterleaks.toml
-/forbidden-strings.local.txt
 .env
 .env*.local
 *.local.*
@@ -222,9 +221,6 @@ captures/
 # cargo-mutants report output (written into the crate dir by the containerized run)
 mutants.out/
 mutants.out.old/
-
-# Re-include files hidden by broader local patterns.
-!/forbidden-strings.local.example.txt
 
 # The KWin script's main.js and metadata.json are genuine tracked source, not
 # stray build artifacts hidden by the blanket `*.js` and `metadata.json` ignores.

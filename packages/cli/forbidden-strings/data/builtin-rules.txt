@@ -1,4 +1,4 @@
-# forbidden-strings deny-list (committed example).
+# forbidden-strings built-in baseline deny-list.
 #
 # THIS FILE IS GENERATED. Do not edit by hand. Source of truth is
 # packages/cli/forbidden-strings/src/mise.port-betterleaks.ts
@@ -8,15 +8,15 @@
 #   mise run //packages/cli/forbidden-strings:generate:rules
 #
 # Composition:
-#   - This file (the committed example) ports the betterleaks default
-#     ruleset into forbidden-strings format. It is a sane baseline of
-#     common credential shapes (PEM, AWS, Slack, GitHub PAT, etc.) plus
+#   - This file ports the betterleaks default ruleset into
+#     forbidden-strings format. It is a sane baseline of common
+#     credential shapes (PEM, AWS, Slack, GitHub PAT, etc.) plus
 #     resharp set-algebra demonstrations.
-#   - For per-repo additions (codenames, partner identifiers, etc.) write
-#     them into a gitignored file `forbidden-strings.append.local.txt`.
-#     File-enforcer concatenates this file plus the append file into
-#     `forbidden-strings.local.txt` at `mise run prepare` time, and
-#     the scanner reads that combined file at scan time.
+#   - The build embeds it into the forbidden-strings binary via
+#     `include_str!`; the `--builtin-rules` flag appends it to
+#     whatever rules file resolves at scan time (and scans with it
+#     alone when the implicit default rules file is absent). Without
+#     the flag the scanner never reads these rules.
 #
 # Attribution:
 #   Rules are ported from betterleaks' default configuration
