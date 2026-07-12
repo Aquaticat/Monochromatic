@@ -233,6 +233,26 @@ overrides:
   # (last commit 2022-05).
   # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
   'argparse': '-'
+  # Remove usocket globally. It is dbus-next@0.10.2's only optional native
+  # dependency (SCM_RIGHTS file-descriptor passing and abstract-socket connect)
+  # and it drags in node-gyp@7 -> the deprecated, retired request@2.88.2 build
+  # chain, which is the source of 13 Dependabot advisories across form-data,
+  # tar, tough-cookie, qs, and uuid, plus request's own unpatchable SSRF
+  # (GHSA-p8p7-x288-28g6; no fix will ship because request is EOL). key-helper
+  # already sets `allowBuilds: usocket: false`, so the native addon is never
+  # compiled and dbus-next takes its pure-JS `net` socket path
+  # (node_modules/dbus-next/lib/connection.js falls back to net.createConnection);
+  # the daemon connects to the session bus over the systemd path socket and
+  # passes no file descriptors, so removal is a runtime no-op. Confirmed by the
+  # daemon already running with the native binary absent.
+  # See docs/troubleshooting/dependencies.md for the audit.
+  'dbus-next>usocket': '-'
+  # Patch GHSA-776f-qx25-q3cc: xml2js <0.5.0 is prototype-pollution-vulnerable.
+  # dbus-next depends on `^0.4.17`; key-helper is server-only and unbundles the
+  # xml2js parser via packages/kwin/key-helper/src/sax-stub.ts (it only ever
+  # calls xml2js's Builder to answer Introspect), so the fix is inert here, but
+  # the floor clears the advisory. Builder API is unchanged from 0.4 through 0.6.
+  'dbus-next>xml2js': '>=0.5.0'
   # Remove dprint globally. The npm distribution is a Node wrapper that re-execs
   # the native binary; each invocation pays the Node startup cost (multiple
   # seconds in this workspace, vs sub-100ms for the native binary directly).

@@ -1511,6 +1511,71 @@ js-yaml previously carried is gone;
  See `docs/dependency-blocklist.md` for the policy
 reference.
 
+### `dbus-next` (usocket removed, xml2js floored)
+
+`dbus-next@0.10.2` (last published 2022-04-28, effectively unmaintained) is the
+sole source of a burst of Dependabot advisories reached only through
+`packages/kwin/key-helper`.
+ Two `pnpm.overrides` entries clear all of them without touching the daemon:
+`'dbus-next>usocket': '-'` and `'dbus-next>xml2js': '>=0.5.0'`.
+
+#### Dependency chain
+
+Thirteen of the advisories sit under `dbus-next`'s single optional native
+dependency `usocket`:
+
+```txt
+kwin-key-helper
+`-- dbus-next@0.10.2
+    |-- xml2js@^0.4.17                       GHSA-776f-qx25-q3cc (prototype pollution)
+    `-- usocket@0.3.0            (optional native)
+        `-- node-gyp@7.1.2       (install-time build tool)
+            `-- request@2.88.2   (deprecated, EOL) GHSA-p8p7-x288-28g6 (SSRF, no patch)
+                |-- form-data                 GHSA-fjxv-7rqg-78g4, GHSA-hmw2-7cc7-3qxx
+                |-- tar                        7 advisories (GHSA-8qq5-... through GHSA-vmf3-...)
+                |-- tough-cookie              GHSA-72xf-g2v4-qvf3
+                |-- qs                        GHSA-6rw7-vpxm-498p
+                `-- uuid                      GHSA-w5hq-g745-h8pq
+```
+
+`request@2.88.2` is the last release the package will ever ship,
+ so its SSRF advisory has no patched version;
+ the only remediation is removing `request` from the tree,
+ which dropping `usocket` does wholesale (it takes `node-gyp@7` and its entire
+`request` subtree with it).
+ The `pnpm install` that applied the overrides reported `+1 -86`.
+
+#### Why runtime is fine
+
+`key-helper` already sets `allowBuilds: usocket: false`,
+ so the native addon was never compiled;
+ `dbus-next` was therefore already taking its pure-JS `net` socket path
+(`node_modules/dbus-next/lib/connection.js` falls back to `net.createConnection`
+when `usocket` is unavailable),
+ and the daemon connects to the session bus over the systemd path socket at
+`$XDG_RUNTIME_DIR/bus` and passes no file descriptors.
+ Removing `usocket` outright is therefore a no-op at runtime.
+ `xml2js` is server-only here:
+ the parser is unbundled via `packages/kwin/key-helper/src/sax-stub.ts`,
+ and `dbus-next` only calls `xml2js`'s `Builder` to answer Introspect,
+ whose API is unchanged from 0.4 through 0.6,
+ so flooring to `>=0.5.0` (resolves to `0.6.2`) is inert beyond clearing the
+advisory.
+
+#### Verification
+
+`pnpm why request tar form-data tough-cookie qs uuid node-gyp usocket -r`
+returns none of them under `dbus-next` after the override;
+ `grep -c` in `pnpm-lock.yaml` shows zero occurrences of `request@`, `usocket@`,
+`node-gyp@7`, `xml2js@0.4`, `har-validator`, `form-data@2`, and `tough-cookie@2`,
+ with `xml2js@0.6.2` the only remaining `xml2js`.
+ `mise run //packages/kwin/key-helper:lint:types`, `:build:js:node`, and
+`:test:unit` all pass,
+ and loading the built `dist/final/node/index.mjs` with a bogus
+`DBUS_SESSION_BUS_ADDRESS` reaches a clean `net` `connect ENOENT` (no `usocket`
+or `sax` module crash),
+ confirming the bundle initializes over the pure-JS socket path.
+
 ## Why we do not file the policy entries upstream
 
 Walked the 5-constraint upstream-filing check once for the whole policy
