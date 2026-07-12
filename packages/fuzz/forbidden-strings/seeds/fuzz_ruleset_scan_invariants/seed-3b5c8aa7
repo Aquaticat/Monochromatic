@@ -1,0 +1,1 @@
+stacked_quantifier should NOT fire on {case:?}, got {:?}

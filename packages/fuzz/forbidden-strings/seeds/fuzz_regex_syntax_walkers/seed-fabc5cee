@@ -1,0 +1,1 @@
+compile_rule_src on nested-complement shape took {elapsed:?}; expected <100ms
