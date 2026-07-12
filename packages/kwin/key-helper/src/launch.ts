@@ -16,6 +16,9 @@
  */
 
 import { execFile } from 'node:child_process';
+import { once } from 'node:events';
+
+import { NoAppIdentityError } from './errors.ts';
 
 /**
  * Lowercased resource class to the exact command (and args) that launches a new,
@@ -26,23 +29,74 @@ import { execFile } from 'node:child_process';
  * NEW_WINDOW_OVERRIDES.firefox // ['firefox', '--new-window']
  * ```
  */
-export const NEW_WINDOW_OVERRIDES: Record<string, readonly [string, ...string[]]> = {
-  'com.mitchellh.ghostty': ['ghostty', '--gtk-single-instance=false'],
-  ghostty: ['ghostty', '--gtk-single-instance=false'],
-  librewolf: ['librewolf', '--new-window'],
-  firefox: ['firefox', '--new-window'],
-  'firefox-esr': ['firefox-esr', '--new-window'],
-  chrome: ['google-chrome', '--new-window'],
-  'google-chrome': ['google-chrome', '--new-window'],
-  chromium: ['chromium', '--new-window'],
-  'chromium-browser': ['chromium', '--new-window'],
-  brave: ['brave-browser', '--new-window'],
-  'brave-browser': ['brave-browser', '--new-window'],
-  vivaldi: ['vivaldi', '--new-window'],
-  'vivaldi-stable': ['vivaldi', '--new-window'],
-  opera: ['opera', '--new-window'],
-  edge: ['microsoft-edge', '--new-window'],
-  'microsoft-edge': ['microsoft-edge', '--new-window'],
+export const NEW_WINDOW_OVERRIDES: Record<string, readonly [
+  string,
+  ...string[]
+]> = {
+  'com.mitchellh.ghostty': [
+    'ghostty',
+    '--gtk-single-instance=false'
+  ],
+  ghostty: [
+    'ghostty',
+    '--gtk-single-instance=false'
+  ],
+  librewolf: [
+    'librewolf',
+    '--new-window'
+  ],
+  firefox: [
+    'firefox',
+    '--new-window'
+  ],
+  'firefox-esr': [
+    'firefox-esr',
+    '--new-window'
+  ],
+  chrome: [
+    'google-chrome',
+    '--new-window'
+  ],
+  'google-chrome': [
+    'google-chrome',
+    '--new-window'
+  ],
+  chromium: [
+    'chromium',
+    '--new-window'
+  ],
+  'chromium-browser': [
+    'chromium',
+    '--new-window'
+  ],
+  brave: [
+    'brave-browser',
+    '--new-window'
+  ],
+  'brave-browser': [
+    'brave-browser',
+    '--new-window'
+  ],
+  vivaldi: [
+    'vivaldi',
+    '--new-window'
+  ],
+  'vivaldi-stable': [
+    'vivaldi',
+    '--new-window'
+  ],
+  opera: [
+    'opera',
+    '--new-window'
+  ],
+  edge: [
+    'microsoft-edge',
+    '--new-window'
+  ],
+  'microsoft-edge': [
+    'microsoft-edge',
+    '--new-window'
+  ],
 };
 
 /**
@@ -54,9 +108,13 @@ export const NEW_WINDOW_OVERRIDES: Record<string, readonly [string, ...string[]]
  * ```
  */
 export type LaunchCommand = {
-  /** Executable to run. */
+  /**
+   * Executable to run.
+   */
   readonly cmd: string;
-  /** Arguments passed to the executable. */
+  /**
+   * Arguments passed to the executable.
+   */
   readonly args: readonly string[];
 };
 
@@ -65,31 +123,55 @@ export type LaunchCommand = {
  * an explicit override, then the desktop file, then the bare resource class.
  *
  * @param desktopFileName - Focused window's `desktopFileName`, may be empty
+ *
  * @param resourceClass - Focused window's `resourceClass`, may be empty
- * @returns Command to run, or null when no app identity was provided
+ *
+ * @returns Command that launches a new instance
+ *
+ * @throws {@link NoAppIdentityError} when neither a desktop file nor a class was provided
+ *
  * @example
  * ```ts
  * selectLaunchCommand({ desktopFileName: '', resourceClass: 'ghostty' });
  * ```
  */
-export function selectLaunchCommand({ desktopFileName, resourceClass }: {
-  desktopFileName: string;
-  resourceClass: string;
-}): LaunchCommand | null {
-  /** Override lookup key. */
+export function selectLaunchCommand({
+  desktopFileName,
+  resourceClass
+}: {
+  readonly desktopFileName: string;
+  readonly resourceClass: string;
+}): LaunchCommand {
+  /**
+   * Override lookup key.
+   */
   const cls = resourceClass.toLowerCase();
-  /** Explicit command for apps that need special new-instance handling. */
+  /**
+   * Explicit command for apps that need special new-instance handling.
+   */
   const override = NEW_WINDOW_OVERRIDES[cls];
   if (override) {
-    return { cmd: override[0], args: override.slice(1) };
+    return {
+      cmd: override[0],
+      args: override.slice(1)
+    };
   }
   if (desktopFileName) {
-    return { cmd: 'kstart', args: ['--application', desktopFileName] };
+    return {
+      cmd: 'kstart',
+      args: [
+        '--application',
+        desktopFileName
+      ]
+    };
   }
   if (resourceClass) {
-    return { cmd: 'kstart', args: [resourceClass] };
+    return {
+      cmd: 'kstart',
+      args: [resourceClass]
+    };
   }
-  return null;
+  throw new NoAppIdentityError();
 }
 
 /**
@@ -97,26 +179,47 @@ export function selectLaunchCommand({ desktopFileName, resourceClass }: {
  * (never throwing) so a failed launch cannot crash the daemon.
  *
  * @param desktopFileName - Focused window's `desktopFileName`, may be empty
+ *
  * @param resourceClass - Focused window's `resourceClass`, may be empty
+ *
  * @example
  * ```ts
  * launchNewInstance({ desktopFileName: '', resourceClass: 'ghostty' });
  * ```
  */
-export function launchNewInstance({ desktopFileName, resourceClass }: {
-  desktopFileName: string;
-  resourceClass: string;
-}): void {
-  /** Resolved command, or null when no identity was provided. */
-  const chosen = selectLaunchCommand({ desktopFileName, resourceClass });
-  if (!chosen) {
-    console.error('[key-helper] LaunchNewInstance: no app identity provided');
-    return;
+export async function launchNewInstance({
+  desktopFileName,
+  resourceClass
+}: {
+  readonly desktopFileName: string;
+  readonly resourceClass: string;
+}): Promise<void> {
+  try {
+    /**
+     * Resolved command; throws when no app identity was provided.
+     */
+    const chosen = selectLaunchCommand({
+      desktopFileName,
+      resourceClass
+    });
+    console.log(`[key-helper] launching new instance: ${chosen.cmd} ${chosen.args
+      .join(' ')}`);
+    /**
+     * Spawned process, awaited via its `close` event.
+     */
+    const child = execFile(
+      chosen.cmd,
+      [...chosen.args]
+    );
+    await once(
+      child,
+      'close'
+    );
+  } catch (error) {
+    /**
+     * Best-effort message extracted from a thrown value of unknown type.
+     */
+    const message = Error.isError(error) ? error.message : String(error);
+    console.error(`[key-helper] launch failed: ${message}`);
   }
-  console.log(`[key-helper] launching new instance: ${chosen.cmd} ${chosen.args.join(' ')}`);
-  execFile(chosen.cmd, [...chosen.args], (error) => {
-    if (error) {
-      console.error(`[key-helper] launch error: ${error.message}`);
-    }
-  });
 }

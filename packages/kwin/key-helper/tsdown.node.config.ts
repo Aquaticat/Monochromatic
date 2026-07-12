@@ -6,8 +6,13 @@ import {
   type UserConfig,
 } from 'tsdown';
 
-/** Absolute path to the local `sax` stub aliased in place of the blocklisted package. */
-const saxStub = fileURLToPath(new URL('./src/sax-stub.ts', import.meta.url));
+/**
+ * Absolute path to the local `sax` stub aliased in place of the blocklisted package.
+ */
+const saxStub = fileURLToPath(new URL(
+  'src/sax-stub.ts',
+  import.meta.url
+));
 
 /**
  * Node build for the key-helper daemon.
@@ -29,7 +34,9 @@ const config: UserConfig = defineConfig({
   dts: false,
   alias: { sax: saxStub },
   deps: {
-    alwaysBundle: (id: string): boolean => !id.startsWith('node:') && (id !== 'usocket'),
+    alwaysBundle: function shouldBundle(id: string): boolean {
+      return (!id.startsWith('node:')) && (id !== 'usocket');
+    },
     neverBundle: ['usocket'],
   },
 });

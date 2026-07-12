@@ -11,6 +11,7 @@
  */
 
 import { execFile } from 'node:child_process';
+import { once } from 'node:events';
 
 import { UnknownKeyError } from './errors.ts';
 
@@ -72,30 +73,52 @@ export const EVDEV_KEYS: Record<string, number> = {
  * sequence: every key is pressed left-to-right, then released right-to-left.
  *
  * @param combo - Case-insensitive combo such as `ctrl+w` or `ctrl+shift+t`
+ *
  * @returns ydotool `key` arguments, e.g. `['29:1','17:1','17:0','29:0']`
+ *
  * @throws {@link UnknownKeyError} when a token has no {@link EVDEV_KEYS} entry
+ *
  * @example
  * ```ts
  * keysToEvdev('ctrl+w'); // ['29:1','17:1','17:0','29:0']
  * ```
  */
 export function keysToEvdev(combo: string): readonly string[] {
-  /** Lowercased tokens split on `+`, in press order. */
-  const parts = combo.toLowerCase().split('+');
-  /** Evdev codes for each token; throws on any unmapped token. */
-  const codes = parts.map((part) => {
-    /** Evdev code for one token, or `undefined` when unmapped. */
+  /**
+   * Lowercased tokens split on `+`, in press order.
+   */
+  const parts = combo.toLowerCase()
+    .split('+');
+  /**
+   * Evdev codes for each token; throws on any unmapped token.
+   */
+  const codes = parts.map(function toCode(part: string): number {
+    /**
+     * Evdev code for one token, or `undefined` when unmapped.
+     */
     const code = EVDEV_KEYS[part];
     if (code === undefined) {
       throw new UnknownKeyError(part);
     }
     return code;
   });
-  /** Press events (`code:1`) in left-to-right order. */
-  const presses = codes.map((code) => `${code}:1`);
-  /** Release events (`code:0`) in reverse order, so keys release inside-out. */
-  const releases = codes.toReversed().map((code) => `${code}:0`);
-  return [...presses, ...releases];
+  /**
+   * Press events (`code:1`) in left-to-right order.
+   */
+  const presses = codes.map(function toPress(code: number): string {
+    return `${code}:1`;
+  });
+  /**
+   * Release events (`code:0`) in reverse order, so keys release inside-out.
+   */
+  const releases = codes.toReversed()
+    .map(function toRelease(code: number): string {
+    return `${code}:0`;
+  });
+  return [
+    ...presses,
+    ...releases
+  ];
 }
 
 /**
@@ -103,23 +126,37 @@ export function keysToEvdev(combo: string): readonly string[] {
  * on translation or process failure so a bad combo cannot crash the daemon.
  *
  * @param keys - Combo string forwarded to {@link keysToEvdev}
+ *
  * @example
  * ```ts
  * sendKeys('ctrl+w');
  * ```
  */
-export function sendKeys(keys: string): void {
+export async function sendKeys(keys: string): Promise<void> {
   try {
-    /** Press/release token sequence for the requested combo. */
+    /**
+     * Press/release token sequence for the requested combo.
+     */
     const evdev = keysToEvdev(keys);
-    execFile('ydotool', ['key', ...evdev], (error) => {
-      if (error) {
-        console.error(`[key-helper] ydotool error: ${error.message}`);
-      }
-    });
+    /**
+     * Spawned ydotool process, awaited via its `close` event.
+     */
+    const child = execFile(
+      'ydotool',
+      [
+        'key',
+        ...evdev
+      ]
+    );
+    await once(
+      child,
+      'close'
+    );
   } catch (error) {
-    /** Best-effort message extracted from a thrown value of unknown type. */
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`[key-helper] key mapping error: ${message}`);
+    /**
+     * Best-effort message extracted from a thrown value of unknown type.
+     */
+    const message = Error.isError(error) ? error.message : String(error);
+    console.error(`[key-helper] ydotool/key error: ${message}`);
   }
 }

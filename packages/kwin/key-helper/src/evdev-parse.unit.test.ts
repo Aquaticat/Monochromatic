@@ -20,13 +20,13 @@ import {
 } from './evdev-parse.ts';
 
 /** Timestamp of the first tap in a double-shift sequence. */
-const FIRST_TAP_MS = 1000;
+const FIRST_TAP_MS = 1_000;
 
 /** Second tap within the detection window (100ms gap, under 300ms). */
-const SECOND_TAP_FAST_MS = 1100;
+const SECOND_TAP_FAST_MS = 1_100;
 
 /** Second tap outside the detection window (400ms gap, over 300ms). */
-const SECOND_TAP_SLOW_MS = 1400;
+const SECOND_TAP_SLOW_MS = 1_400;
 
 /**
  * Fold a press then release of Shift into the detector, returning the result of

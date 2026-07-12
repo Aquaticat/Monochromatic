@@ -9,31 +9,36 @@
  * @module
  */
 
-/** Lowercased resource class of the focused window, empty until first reported. */
-let activeWindowClass = '';
+/**
+ * Mutable holder for the focused window class, a `const` object rather than a
+ * module-root `let` binding.
+ */
+const windowState: { current: string } = { current: '' };
 
 /**
  * Read the class of the currently focused window.
  *
  * @returns Lowercased resource class, or empty string before any focus report
+ *
  * @example
  * ```ts
  * if (getActiveWindowClass() === NEOVIDE_CLASS) { ... }
  * ```
  */
 export function getActiveWindowClass(): string {
-  return activeWindowClass;
+  return windowState.current;
 }
 
 /**
  * Record the class of the newly focused window.
  *
  * @param windowClass - Resource class reported by the KWin script
+ *
  * @example
  * ```ts
  * setActiveWindowClass('neovide');
  * ```
  */
 export function setActiveWindowClass(windowClass: string): void {
-  activeWindowClass = windowClass;
+  windowState.current = windowClass;
 }

@@ -12,6 +12,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { NoAppIdentityError } from './errors.ts';
 import { selectLaunchCommand } from './launch.ts';
 
 await describe({
@@ -61,9 +62,11 @@ await describe({
       },
     }),
     it({
-      name: 'returns null when no app identity is provided',
+      name: 'throws NoAppIdentityError when no app identity is provided',
       fn: async () => {
-        expect(selectLaunchCommand({ desktopFileName: '', resourceClass: '' })).toBeNull();
+        expect(() => selectLaunchCommand({ desktopFileName: '', resourceClass: '' })).toThrow(
+          NoAppIdentityError,
+        );
       },
     }),
   ],

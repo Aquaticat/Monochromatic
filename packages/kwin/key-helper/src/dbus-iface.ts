@@ -15,6 +15,13 @@ import { launchNewInstance } from './launch.ts';
 import { sendNvimInput } from './nvim.ts';
 import { setActiveWindowClass } from './state.ts';
 
+/* oxlint-disable no-restricted-syntax/no-class -- dbus-next's API mandates
+   subclassing its `Interface` base (node_modules/dbus-next/types.d.ts:45
+   `export class Interface`): methods are defined as instance methods and wired
+   with the static `configureMembers`, which a factory-returned frozen object
+   cannot express. Adding an `Interface` suffix to the rule's allow-list would be
+   a repo-wide config change needing approval (LN7), so the class is suppressed
+   here instead. */
 /**
  * Exported D-Bus interface bridging KWin script commands to actuation the KWin
  * script cannot perform (spawning processes, injecting keys, RPC to Neovim).
@@ -24,8 +31,11 @@ import { setActiveWindowClass } from './state.ts';
  * bus.export(DBUS_PATH, new KeyHelperInterface());
  * ```
  */
-export class KeyHelperInterface extends dbus.interface.Interface {
-  /** Construct the interface under {@link DBUS_IFACE}. */
+export class KeyHelperInterface extends dbus.interface
+  .Interface {
+  /**
+   * Construct the interface under {@link DBUS_IFACE}.
+   */
   constructor() {
     super(DBUS_IFACE);
   }
@@ -34,7 +44,7 @@ export class KeyHelperInterface extends dbus.interface.Interface {
    * Record the focused window's class on every focus change (double-shift scope).
    *
    * @param windowClass - Resource class reported by the KWin script
-   * @returns Nothing
+   *
    * @example
    * ```ts
    * iface.SetActiveWindow('neovide');
@@ -47,7 +57,6 @@ export class KeyHelperInterface extends dbus.interface.Interface {
   /**
    * Send F20 to Neovim, the manual equivalent of a detected double-shift.
    *
-   * @returns Nothing
    * @example
    * ```ts
    * iface.SendF20();
@@ -61,7 +70,7 @@ export class KeyHelperInterface extends dbus.interface.Interface {
    * Send an arbitrary Neovim key sequence over RPC.
    *
    * @param keys - Neovim key notation, e.g. `<F16>`, `<C-w>`, `<Esc>`
-   * @returns Nothing
+   *
    * @example
    * ```ts
    * iface.SendNvimKeys('<F16>');
@@ -75,38 +84,61 @@ export class KeyHelperInterface extends dbus.interface.Interface {
    * Inject a key combo into the focused app via ydotool.
    *
    * @param keys - `+`-joined combo, e.g. `ctrl+w`
-   * @returns Nothing
+   *
    * @example
    * ```ts
    * iface.SendKeys('ctrl+w');
    * ```
    */
   SendKeys(keys: string): void {
-    sendKeys(keys);
+    void sendKeys(keys);
   }
 
   /**
    * Launch another instance of the focused app (Meta+N).
    *
    * @param desktopFileName - Focused window's `desktopFileName`, may be empty
+   *
    * @param resourceClass - Focused window's `resourceClass`, may be empty
-   * @returns Nothing
+   *
    * @example
    * ```ts
    * iface.LaunchNewInstance('', 'ghostty');
    * ```
    */
-  LaunchNewInstance(desktopFileName: string, resourceClass: string): void {
-    launchNewInstance({ desktopFileName, resourceClass });
+  LaunchNewInstance(
+    desktopFileName: string,
+    resourceClass: string
+  ): void {
+    void launchNewInstance({
+      desktopFileName,
+      resourceClass
+    });
   }
 }
+/* oxlint-enable no-restricted-syntax/no-class */
 
 KeyHelperInterface.configureMembers({
   methods: {
-    SetActiveWindow: { inSignature: 's', outSignature: '' },
-    SendF20: { inSignature: '', outSignature: '' },
-    SendNvimKeys: { inSignature: 's', outSignature: '' },
-    SendKeys: { inSignature: 's', outSignature: '' },
-    LaunchNewInstance: { inSignature: 'ss', outSignature: '' },
+    SetActiveWindow: {
+      inSignature: 's',
+      outSignature: ''
+    },
+    SendF20: {
+      inSignature: '',
+      outSignature: ''
+    },
+    SendNvimKeys: {
+      inSignature: 's',
+      outSignature: ''
+    },
+    SendKeys: {
+      inSignature: 's',
+      outSignature: ''
+    },
+    LaunchNewInstance: {
+      inSignature: 'ss',
+      outSignature: ''
+    },
   },
 });

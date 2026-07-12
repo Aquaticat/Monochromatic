@@ -15,7 +15,7 @@
  * Stand-in for `sax.parser`, which key-helper never calls.
  *
  * @throws {@link Error} always, since XML parsing is intentionally unbundled
- * @returns Never
+ *
  * @example
  * ```ts
  * // Not reached in server-only D-Bus usage.
@@ -25,7 +25,9 @@ export function parser(): never {
   throw new Error('[key-helper] sax XML parsing is not bundled (server-only D-Bus usage)');
 }
 
-/** Module-shaped default export; xml2js only ever reads `parser`. */
+/**
+ * Module-shaped default export; xml2js only ever reads `parser`.
+ */
 const sax: { parser: typeof parser } = { parser };
 
 export default sax;

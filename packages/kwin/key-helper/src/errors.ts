@@ -42,3 +42,41 @@ export class UnknownKeyError extends KeyHelperError {
     this.name = 'UnknownKeyError';
   }
 }
+
+/**
+ * Thrown when no Neovim listen socket exists, so there is nothing to send input
+ * to. Callers treat this as "Neovim not running" rather than a hard failure.
+ *
+ * @example
+ * ```ts
+ * throw new NoNvimSocketError();
+ * ```
+ */
+export class NoNvimSocketError extends KeyHelperError {
+  /**
+   * Construct with a fixed, descriptive message.
+   */
+  constructor() {
+    super('no nvim socket found');
+    this.name = 'NoNvimSocketError';
+  }
+}
+
+/**
+ * Thrown when a launch request carries neither a desktop file nor a resource
+ * class, so no instance can be started.
+ *
+ * @example
+ * ```ts
+ * throw new NoAppIdentityError();
+ * ```
+ */
+export class NoAppIdentityError extends KeyHelperError {
+  /**
+   * Construct with a fixed, descriptive message.
+   */
+  constructor() {
+    super('no app identity provided');
+    this.name = 'NoAppIdentityError';
+  }
+}
