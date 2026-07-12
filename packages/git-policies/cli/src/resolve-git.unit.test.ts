@@ -191,6 +191,39 @@ await describe({
       },);
     },),
     it({
+      name: 'skips prioritized common self shim and resolves ordinary PATH Git',
+      fn: async function testCommonSelfShimSkip(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Earlier PATH directory containing ordinary Git executable. */
+        const realBinDir = join(tempDirectory.path, 'real-bin',);
+        /** Later PATH directory containing prioritized self shim. */
+        const selfBinDir = join(tempDirectory.path, 'self-bin',);
+        await Promise.all([
+          mkdir(realBinDir,),
+          mkdir(selfBinDir,),
+        ],);
+        /** Ordinary PATH Git selected after prioritized self shim is rejected. */
+        const realGitPath = join(realBinDir, 'git',);
+        /** Common candidate that delegates back to cli-git. */
+        const selfGitPath = join(selfBinDir, 'git',);
+        await Promise.all([
+          writeExecutable({
+            path: realGitPath,
+            content: REAL_GIT_CONTENT,
+          },),
+          writeExecutable({
+            path: selfGitPath,
+            content: BUNDLED_ENTRY_SHIM_CONTENT,
+          },),
+        ],);
+
+        expect(await resolveGit({
+          pathEnv: [realBinDir, selfBinDir,].join(delimiter,),
+          commonGitPaths: [selfGitPath,],
+        },),).toBe(realGitPath,);
+      },
+    },),
+    it({
       name: 'checks common paths before PATH directories',
       fn: async function testCommonPathPriority(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
@@ -250,17 +283,25 @@ await describe({
         /** PATH directory containing executable-suffixed Git. */
         const realBinDir = join(tempDirectory.path, 'real-bin',);
         await mkdir(realBinDir,);
-        /** Windows-style executable fixture selected after absent COM candidate. */
+        /** Earlier PATHEXT fallback executable. */
+        const fallbackGitPath = join(realBinDir, 'git.COM',);
+        /** Common Windows executable prioritized case-insensitively. */
         const realGitPath = join(realBinDir, 'git.EXE',);
-        await writeExecutable({
-          path: realGitPath,
-          content: REAL_GIT_CONTENT,
-        },);
+        await Promise.all([
+          writeExecutable({
+            path: fallbackGitPath,
+            content: REAL_GIT_CONTENT,
+          },),
+          writeExecutable({
+            path: realGitPath,
+            content: REAL_GIT_CONTENT,
+          },),
+        ],);
         expect(await resolveGit({
           pathEnv: realBinDir,
           platform: 'win32',
           pathExtensions: '.COM;.EXE;.BAT;.CMD',
-          commonGitPaths: [],
+          commonGitPaths: [realGitPath.toLowerCase(),],
         },),).toBe(realGitPath,);
       },
     },),

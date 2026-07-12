@@ -6,6 +6,7 @@ import {
 import {
   delimiter,
   join,
+  win32,
 } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -62,21 +63,58 @@ const COMMON_MACOS_GIT_PATHS: readonly string[] = [
 ];
 
 /**
+ * Fallback Program Files root when Windows omits environment metadata.
+ */
+const DEFAULT_WINDOWS_PROGRAM_FILES = String.raw`C:\Program Files`;
+
+/**
  * Returns common absolute Git paths for runtime platform.
  *
- * @param platform - Runtime platform used to select conventional install locations.
+ * @param options - Runtime platform and environment used to select conventional
+ * install locations.
  *
  * @returns Common Git executable paths in preferred lookup order.
  *
  * @example
  * ```ts
- * commonGitPathsForPlatform('linux');
+ * commonGitPathsForPlatform({ platform: 'linux' });
  * // => ['/usr/bin/git', '/usr/local/bin/git']
  * ```
  */
-function commonGitPathsForPlatform(platform: NodeJS.Platform,): readonly string[] {
-  if (platform === 'win32')
-    return [];
+function commonGitPathsForPlatform({
+  platform,
+  environment = process.env,
+}: {
+  /** Runtime platform used to select conventional install locations. */
+  readonly platform: NodeJS.Platform;
+  /** Environment containing Windows installation roots. */
+  readonly environment?: NodeJS.ProcessEnv;
+},): readonly string[] {
+  if (platform === 'win32') {
+    /** Program Files roots that can contain system-wide Git installations. */
+    const programFilesRoots = new Set([
+      environment.ProgramFiles,
+      environment.ProgramW6432,
+      environment['ProgramFiles(x86)'],
+      DEFAULT_WINDOWS_PROGRAM_FILES,
+    ].filter(function definedRoot(root,): root is string {
+      return root !== undefined;
+    },),);
+    /** Local application root that can contain per-user Git installation. */
+    const localGitRoot = environment.LOCALAPPDATA === undefined
+      ? []
+      : [win32.join(environment.LOCALAPPDATA, 'Programs',),];
+
+    return [
+      ...programFilesRoots,
+      ...localGitRoot,
+    ].flatMap(function commonWindowsGitPaths(root,) {
+      return [
+        win32.join(root, 'Git', 'cmd', 'git.exe',),
+        win32.join(root, 'Git', 'bin', 'git.exe',),
+      ];
+    },);
+  }
 
   if (platform === 'darwin')
     return COMMON_MACOS_GIT_PATHS;
@@ -169,7 +207,7 @@ export async function resolveGit({
   pathExtensions = process.env
     .PATHEXT
     ?? '.COM;.EXE;.BAT;.CMD',
-  commonGitPaths = commonGitPathsForPlatform(platform,),
+  commonGitPaths = commonGitPathsForPlatform({ platform, },),
 }: ResolveGitOptions = {},): Promise<string> {
   /**
    * Tagged logger for git binary resolution.
@@ -208,17 +246,40 @@ export async function resolveGit({
     },);
   },);
   /**
-   * PATH candidates used to retain only exposed common locations.
+   * PATH candidates keyed by platform-appropriate path comparison identity.
    */
-  const pathCandidateSet = new Set(pathCandidates,);
+  const pathCandidateByIdentity = new Map(pathCandidates.map(function indexPathCandidate(
+    pathCandidate,
+  ) {
+    return [
+      platform === 'win32'
+        ? pathCandidate.toLowerCase()
+        : pathCandidate,
+      pathCandidate,
+    ];
+  },),);
+  /**
+   * Exposed common paths resolved back to exact PATH candidate spelling.
+   */
+  const exposedCommonGitPaths = commonGitPaths.flatMap(function findExposedCommonPath(
+    commonGitPath,
+  ) {
+    /** Platform-comparable identity for common candidate. */
+    const identity = platform === 'win32'
+      ? commonGitPath.toLowerCase()
+      : commonGitPath;
+    /** Exact candidate spelling produced from PATH. */
+    const exposedPath = pathCandidateByIdentity.get(identity,);
+    return exposedPath === undefined
+      ? []
+      : [exposedPath,];
+  },);
   /**
    * Exposed common paths followed by all PATH candidates, deduplicated without
    * disturbing preference order.
    */
   const candidates = new Set([
-    ...commonGitPaths.filter(function commonPathIsExposed(commonGitPath,) {
-      return pathCandidateSet.has(commonGitPath,);
-    },),
+    ...exposedCommonGitPaths,
     ...pathCandidates,
   ],);
 
