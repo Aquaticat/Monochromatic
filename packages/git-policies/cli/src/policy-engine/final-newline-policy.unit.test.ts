@@ -225,28 +225,27 @@ await describe({
       },
     },),
     it({
-      name: 'reads only landed-delta candidates after commit',
-      fn: async function testPostCommitDelta() {
-        /** Unchanged landed candidate whose bytes must remain unread. */
-        const unchanged: CandidateFile = {
-          ...candidate({ path: 'stable.txt', value: 'stable', },),
-          change: 'unchanged',
-          bytes: function rejectRead(): Promise<Uint8Array> {
-            throw new Error('Unchanged landed candidate bytes were read.',);
-          },
-        };
-        /** Changed landed candidate requiring one finding. */
-        const changed = candidate({ path: 'changed.txt', value: 'changed', },);
-        /** Read-only post-commit findings limited to landed delta. */
+      name: 'checks every lifecycle-provided candidate after commit',
+      fn: async function testPostCommitPassThrough() {
+        /** Landed-delta candidates already narrowed by the facts layer. */
+        const landed = [
+          candidate({ path: 'stable.txt', value: 'stable', },),
+          candidate({ path: 'changed.txt', value: 'changed', },),
+        ];
+        /** Read-only post-commit findings across the whole landed delta. */
         const findings = await finalNewlinePolicy.check({
           context: context({
             trigger: 'post-commit',
-            candidates: [unchanged, changed,],
+            candidates: landed,
           },),
           options: undefined,
         },);
-        expect(findings,).toHaveLength(1,);
-        expect(findings[0]?.path,).toBe('changed.txt',);
+        expect(findings.map(function findingPath(finding,) {
+          return finding.path;
+        },),).toEqual([
+          'stable.txt',
+          'changed.txt',
+        ],);
       },
     },),
     it({

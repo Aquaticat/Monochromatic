@@ -141,51 +141,93 @@ function requiredPart({
 }
 
 /**
- * Loads repository paths changed by landed commit against its parents.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param landedOid - exact landed commit
- *
- * @returns changed repository path set
+ * Parsed landed diff-tree record retained for candidate construction.
  */
-async function loadLandedChangedPaths({
-  gitPath,
-  cwd,
-  landedOid,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  landedOid: GitObjectId;
-}>,): Promise<ReadonlySet<string>> {
+type LandedChangeRecord = Readonly<{
   /**
-   * NUL-delimited changed paths, including every root-commit path.
+   * Repository-relative committed path.
    */
-  const changedBytes = await runGitBytes({
-    gitPath,
-    cwd,
-    args: [
-      'diff-tree',
-      '--root',
-      '--no-commit-id',
-      '--name-only',
-      '-r',
-      '-z',
-      '-m',
-      landedOid,
-    ],
+  path: string;
+  /**
+   * Landed-side Git object ID.
+   */
+  oid: GitObjectId;
+  /**
+   * Policy candidate mode.
+   */
+  mode: CandidateFileMode;
+  /**
+   * Landed change classification against commit parents.
+   */
+  change: 'added' | 'modified';
+}>;
+
+/**
+ * Parses one raw diff-tree metadata token into a retained change record.
+ *
+ * @param meta - colon-prefixed raw metadata token
+ *
+ * @param path - NUL-separated companion path token
+ *
+ * @returns retained record, or empty for deletions absent from landed tree
+ *
+ * @throws PostCommitGitError when record fields are malformed
+ */
+function parseLandedChangeRecord({
+  meta,
+  path,
+}: Readonly<{
+  meta: string;
+  path: string;
+}>,): readonly LandedChangeRecord[] {
+  /**
+   * Old mode, new mode, old OID, new OID, and status fields.
+   */
+  const parts = meta.slice(1,)
+    .split(' ',);
+  /**
+   * Landed-side tree mode text.
+   */
+  const modeText = requiredPart({
+    parts,
+    index: 1,
   },);
-  return new Set(UTF8_DECODER.decode(changedBytes,)
-    .split('\0',)
-    .filter(function isChangedPath(path,) {
-      return path.length > 0;
-    },),);
+  /**
+   * Landed-side Git object ID.
+   */
+  const oid = requiredPart({
+    parts,
+    index: 3,
+  },);
+  /**
+   * Single-letter change status against one parent.
+   */
+  const status = requiredPart({
+    parts,
+    index: 4,
+  },);
+  // Deleted paths do not exist in the landed tree and never become candidates.
+  if (status === 'D')
+    return [];
+  if ((status !== 'A') && (status !== 'M')
+    && (status !== 'T'))
+    throw new PostCommitGitError(`Unsupported landed change status ${status} for ${path}`,);
+  /**
+   * Policy mode mapped from landed Git mode.
+   */
+  const mode = TREE_MODES[modeText];
+  if (mode === undefined)
+    throw new PostCommitGitError(`Unsupported landed tree mode: ${modeText}`,);
+  return [{
+    path,
+    oid,
+    mode,
+    change: status === 'A' ? 'added' : 'modified',
+  },];
 }
 
 /**
- * Loads complete landed tree as immutable candidate files.
+ * Loads only paths the landed commit changed as immutable candidate files.
  *
  * @param gitPath - resolved real Git executable
  *
@@ -193,7 +235,7 @@ async function loadLandedChangedPaths({
  *
  * @param landedOid - exact landed commit
  *
- * @returns complete committed tree candidates
+ * @returns landed-delta candidates without unchanged tree entries
  */
 async function loadLandedCandidates({
   gitPath,
@@ -205,100 +247,73 @@ async function loadLandedCandidates({
   landedOid: GitObjectId;
 }>,): Promise<readonly CandidateFile[]> {
   /**
-   * Recursive tree metadata and landed change paths loaded concurrently.
+   * Raw NUL-delimited landed change records against every parent.
    */
-  const [treeBytes, changedPaths,] = await Promise.all([
-    runGitBytes({
-      gitPath,
-      cwd,
-      args: [
-        'ls-tree',
-        '--full-tree',
-        '-r',
-        '-z',
-        landedOid,
-      ],
-    },),
-    loadLandedChangedPaths({
-      gitPath,
-      cwd,
+  const deltaBytes = await runGitBytes({
+    gitPath,
+    cwd,
+    args: [
+      'diff-tree',
+      '--root',
+      '--no-commit-id',
+      '-r',
+      '-z',
+      '-m',
       landedOid,
-    },),
-  ],);
+    ],
+  },);
   /**
-   * Decoded tree records, excluding terminal empty record.
+   * Alternating metadata and path tokens, excluding terminal empty token.
    */
-  const records = UTF8_DECODER.decode(treeBytes,)
+  const tokens = UTF8_DECODER.decode(deltaBytes,)
     .split('\0',)
-    .filter(function isRecord(record,) {
-      return record.length > 0;
+    .filter(function isToken(token,) {
+      return token.length > 0;
     },);
-  return records.map(function toCandidate(record,): CandidateFile {
+  /**
+   * First retained record per path across every parent diff.
+   */
+  const recordsByPath = new Map<string, LandedChangeRecord>();
+  // Tokens alternate strictly: one colon-prefixed metadata token, then its path.
+  for (let cursor = 0; cursor < tokens.length; cursor += 2) {
     /**
-     * Separator between metadata and raw path.
+     * Colon-prefixed raw metadata token.
      */
-    const pathSeparator = record.indexOf('\t',);
-    if (pathSeparator === (-1))
-      throw new PostCommitGitError('Landed tree entry lacks path separator.',);
+    const meta = tokens[cursor];
     /**
-     * Mode, object type, and object ID fields.
+     * Companion repository-relative path token.
      */
-    const parts = record.slice(
-      0,
-      pathSeparator,
-    )
-      .split(' ',);
-    /**
-     * Git tree mode text.
-     */
-    const modeText = requiredPart({
-      parts,
-      index: 0,
-    },);
-    /**
-     * Git tree object type.
-     */
-    const objectType = requiredPart({
-      parts,
-      index: 1,
-    },);
-    /**
-     * Git tree object ID.
-     */
-    const objectOid = requiredPart({
-      parts,
-      index: 2,
-    },);
-    /**
-     * Policy mode mapped from Git tree mode.
-     */
-    const mode = TREE_MODES[modeText];
-    if (mode === undefined)
-      throw new PostCommitGitError(`Unsupported landed tree mode: ${modeText}`,);
-    if ((objectType !== 'blob') && (objectType !== 'commit'))
-      throw new PostCommitGitError(`Unsupported landed tree object type: ${objectType}`,);
-    /**
-     * Exact repository-relative committed path.
-     */
-    const path = record.slice(pathSeparator + 1,);
-    return {
-      targetId: `post-commit:${objectOid}:${path}`,
+    const path = tokens[cursor + 1];
+    if ((meta === undefined) || (!meta.startsWith(':',))
+      || (path === undefined))
+      throw new PostCommitGitError('Landed diff-tree output is not metadata/path token pairs.',);
+    for (const record of parseLandedChangeRecord({
+      meta,
       path,
-      revision: objectOid,
-      mode,
-      change: changedPaths.has(path,)
-        ? 'modified'
-        : 'unchanged',
+    },))
+      if (!recordsByPath.has(record.path,))
+        recordsByPath.set(
+          record.path,
+          record,
+        );
+  }
+  return [...recordsByPath.values(),].map(function toCandidate(record,): CandidateFile {
+    return {
+      targetId: `post-commit:${record.oid}:${record.path}`,
+      path: record.path,
+      revision: record.oid,
+      mode: record.mode,
+      change: record.change,
       bytes: function loadCommittedBytes(): Promise<Uint8Array> {
-        if (mode === 'submodule')
-          return Promise.resolve(new TextEncoder().encode(objectOid,),);
+        if (record.mode === 'submodule')
+          return Promise.resolve(new TextEncoder().encode(record.oid,),);
         return runGitBytes({
           gitPath,
           cwd,
           args: [
             'cat-file',
             'blob',
-            objectOid,
+            record.oid,
           ],
         },);
       },

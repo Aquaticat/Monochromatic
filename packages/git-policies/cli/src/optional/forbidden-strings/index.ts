@@ -75,13 +75,11 @@ export const forbiddenStringsPolicy: PolicyDefinition<
     options,
   }): Promise<readonly PolicyFinding[]> {
     /**
-     * Exact candidates, limited to landed delta after commit.
+     * Exact lifecycle-selected candidates; every lifecycle now supplies only
+     * the operation's own delta, so no post-commit narrowing happens here.
      */
-    const candidates = (await context.git
-      .candidates())
-      .filter(function isRelevantCandidate(candidate,) {
-        return (context.trigger !== 'post-commit') || (candidate.change !== 'unchanged');
-      },);
+    const candidates = await context.git
+      .candidates();
     return await scanCandidates({
       executable: options.executable,
       builtinRules: options.builtinRules,

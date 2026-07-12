@@ -42,18 +42,18 @@ const GROUND_TRUTH_POLICY: RuntimePolicyDefinition = {
     const landedOid = await context.git.landedCommitOid();
     if ((typeof landedOid) === 'symbol')
       return [{ code: 'oid-absent', message: 'Landed OID was absent.', },];
-    /** Complete landed tree candidates. */
+    /** Landed-delta candidates without unchanged parent-tree entries. */
     const candidates = await context.git.candidates();
     const landedFile = candidates.find(function isLandedFile(candidate,) {
       return candidate.path === 'landed.txt';
     },);
     if (landedFile === undefined)
       return [{ code: 'file-absent', message: 'Landed file was absent.', },];
-    /** Stable file retained from parent commit. */
+    /** Stable parent-commit file that must stay outside the landed delta. */
     const stableFile = candidates.find(function isStableFile(candidate,) {
       return candidate.path === 'stable.txt';
     },);
-    if ((landedFile.change !== 'modified') || (stableFile?.change !== 'unchanged'))
+    if ((landedFile.change !== 'added') || (stableFile !== undefined))
       return [{ code: 'change-wrong', message: 'Landed change classification differs.', },];
     /** Exact committed file bytes. */
     const contents = new TextDecoder().decode(await landedFile.bytes(),);

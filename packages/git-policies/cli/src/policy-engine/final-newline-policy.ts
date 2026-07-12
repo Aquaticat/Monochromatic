@@ -100,13 +100,11 @@ export const finalNewlinePolicy: RuntimePolicyDefinition = {
      */
     const fixable = (context.trigger === 'pre-forward') || (context.trigger === 'direct-fix');
     /**
-     * Exact selected candidates, limited to landed delta after commit.
+     * Exact lifecycle-selected candidates; every lifecycle now supplies only
+     * the operation's own delta, so no post-commit narrowing happens here.
      */
-    const candidates = (await context.git
-      .candidates())
-      .filter(function isRelevantCandidate(candidate,) {
-        return (context.trigger !== 'post-commit') || (candidate.change !== 'unchanged');
-      },);
+    const candidates = await context.git
+      .candidates();
     /**
      * Findings accumulated without unbounded candidate-byte fan-out.
      */

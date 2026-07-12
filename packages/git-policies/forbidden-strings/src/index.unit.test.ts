@@ -215,25 +215,20 @@ await describe({
       },
     },),
     it({
-      name: 'materializes only landed-delta candidates after commit',
-      fn: async function testPostCommitDelta() {
+      name: 'scans every lifecycle-provided candidate after commit',
+      fn: async function testPostCommitPassThrough() {
         await using directory = await createTestDirectory();
-        /** Scanner requiring exactly one retained candidate path. */
+        /** Scanner requiring exactly two retained candidate paths. */
         const scanner = await writeScanner({
           directory: directory.path,
-          body: `if (process.argv.length !== ${String(EXPECTED_SCANNER_ARGUMENT_COUNT,)}) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
+          body: `if (process.argv.length !== ${String(EXPECTED_SCANNER_ARGUMENT_COUNT + 1,)}) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
         },);
-        /** Unchanged candidate whose bytes must remain unread. */
-        const unchanged: CandidateFile = {
-          ...candidate('stable.txt',),
-          change: 'unchanged',
-          bytes: function rejectUnchangedRead(): Promise<Uint8Array> {
-            throw new Error('Unchanged landed candidate was read.',);
-          },
-        };
-        /** Changed candidate retained for scanner. */
-        const changed = candidate('changed.txt',);
-        /** Post-commit policy context over complete landed tree. */
+        /** Landed-delta candidates already narrowed by the facts layer. */
+        const landed = [
+          candidate('stable.txt',),
+          candidate('changed.txt',),
+        ];
+        /** Post-commit policy context over the landed delta. */
         const context: PolicyContext = {
           candidateVersion: 0,
           trigger: 'post-commit',
@@ -246,7 +241,7 @@ await describe({
             escapedPolicyIds: new Set(),
           },
           git: {
-            candidates: function candidates() { return Promise.resolve([unchanged, changed,],); },
+            candidates: function candidates() { return Promise.resolve(landed,); },
             headOid: function headOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
             landedCommitOid: function landedCommitOid() { return Promise.resolve('landed',); },
             pushUpdates: function pushUpdates() { return Promise.resolve([],); },
