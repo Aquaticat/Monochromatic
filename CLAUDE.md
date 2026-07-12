@@ -629,6 +629,30 @@ State what you searched + what comparable evidence you found;
 empty result on narrowest query is not "no precedent.
 "
 
+CB2:
+ Same for impossibility/hard-limit claims about an external system ("X can't do Y",
+ "not achievable",
+ "architectural limitation",
+ "single-instance by design"):
+ read the source of the component that actually decides the behavior before asserting the limit,
+ whenever that source is open (clone + read the deciding code path,
+ as `troubleshooting-doc` requires).
+Black-box probes that merely reproduce the limit are not the deciding code;
+ they show that something blocks it,
+ not that nothing can unblock it.
+Offering the user a workaround menu premised on the limit (`AskUserQuestion`,
+ degraded options) counts as asserting it:
+ finish the source read first,
+ then escalate only a genuine non-measurable preference.
+Surprising behavior right after your own edit implicates the edit:
+ re-read/diff your change before blaming the external system.
+Cue:
+ about to write "can't be done",
+ "not possible",
+ "by design",
+ or offer the user options premised on a limit,
+ before tracing that limit to the deciding source.
+
 RPB:
  One failed probe of a resource user says is present (empty `adb devices`,
  connection refused) isn't proof of absence.
