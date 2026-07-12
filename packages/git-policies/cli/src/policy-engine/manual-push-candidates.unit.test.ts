@@ -190,7 +190,7 @@ await describe({
           { cwd: fixture.repository, },
         )).stdout;
         /**
-         * Complete generic candidate list retains every historical tree state.
+         * Per-commit delta candidates across every newly reachable commit.
          */
         const candidates = await createManualPushCandidates({
           gitPath: fixture.gitPath,
@@ -202,7 +202,15 @@ await describe({
             remoteRef: 'refs/heads/main',
           },],
         },);
-        expect(candidates,).toHaveLength(FILE_COUNT * COMMIT_COUNT,);
+        // Root commit introduces every file; each later commit only rewrites file-0.
+        expect(candidates,).toHaveLength(FILE_COUNT + (COMMIT_COUNT - 1),);
+        /**
+         * Every committed revision of the repeatedly rewritten file.
+         */
+        const rewrittenRevisions = candidates.filter(function isRewritten(candidate,) {
+          return candidate.path === 'file-0.txt';
+        },);
+        expect(rewrittenRevisions,).toHaveLength(COMMIT_COUNT,);
         await Promise.all(candidates.map(function loadCandidate(candidate,) {
           return candidate.bytes();
         },),);
@@ -228,6 +236,50 @@ await describe({
         },);
         expect(batchCalls,).toHaveLength(1,);
         expect(individualBlobCalls,).toHaveLength(0,);
+      },
+    },),
+    it({
+      name: 'scans only the pushed range delta above an existing remote baseline',
+      fn: async function testRangeDelta() {
+        await using fixture = await createCandidateFixture();
+        /**
+         * Final local commit advancing the existing remote ref.
+         */
+        const localOid = (await nanoSpawn(
+          REAL_GIT,
+          ['rev-parse', 'HEAD',],
+          { cwd: fixture.repository, },
+        )).stdout;
+        /**
+         * Authoritative destination one commit behind local head.
+         */
+        const remoteOid = (await nanoSpawn(
+          REAL_GIT,
+          ['rev-parse', 'HEAD~1',],
+          { cwd: fixture.repository, },
+        )).stdout;
+        /**
+         * Delta candidates for the single newly reachable commit.
+         */
+        const candidates = await createManualPushCandidates({
+          gitPath: fixture.gitPath,
+          cwd: fixture.repository,
+          updates: [{
+            localOid,
+            remoteOid,
+            remoteName: 'origin',
+            remoteRef: 'refs/heads/main',
+          },],
+        },);
+        expect(candidates.map(function summary(candidate,) {
+          return {
+            path: candidate.path,
+            change: candidate.change,
+          };
+        },),).toEqual([{
+          path: 'file-0.txt',
+          change: 'modified',
+        },],);
       },
     },),
   ],

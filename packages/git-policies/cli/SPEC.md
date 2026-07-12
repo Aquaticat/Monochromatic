@@ -1376,10 +1376,13 @@ and validates negotiated remote OIDs with `git ls-remote --refs` before policy e
 Do not infer destination state from cached tracking refs,
 push output,
 or hand-written refspec interpretation.
-Scan every newly reachable commit tree and final commit,
-annotated-tag,
+Scan each newly reachable commit's own delta against its parents:
+every parent for merges,
+the whole tree only for parentless commits,
+and deletions publish no content and are skipped.
+Directly pushed annotated-tag,
 tree,
-or blob state for each update.
+and blob targets scan their complete content.
 Deduplicate exact candidate identities across updates.
 Load unique Git blobs through one `git cat-file --batch` process per evaluation.
 Materialize scanner files with no more than 64 concurrent lanes.

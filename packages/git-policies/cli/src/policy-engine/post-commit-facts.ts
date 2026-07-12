@@ -16,9 +16,9 @@ import type {
 } from '../api/context-types.ts';
 import type {
   CandidateFile,
-  CandidateFileMode,
   GitObjectId,
 } from '../api/policy-types.ts';
+import { parseRawDiffRecords, } from './raw-diff-records.ts';
 
 /**
  * Candidate promise has not been initialized.
@@ -31,15 +31,6 @@ const UTF8_DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
-/**
- * Git tree modes mapped to policy modes.
- */
-const TREE_MODES: Readonly<Record<string, CandidateFileMode>> = {
-  '100644': 'regular',
-  '100755': 'executable',
-  '120000': 'symlink',
-  '160000': 'submodule',
-};
 
 /**
  * Git command could not provide required landed state.
@@ -114,116 +105,14 @@ async function runGitBytes({
 }
 
 /**
- * Returns required parsed metadata part.
+ * Creates landed-domain error for malformed raw diff output.
  *
- * @param parts - split metadata fields
+ * @param message - safe failure explanation
  *
- * @param index - required field index
- *
- * @returns present metadata field
- *
- * @throws PostCommitGitError when field is absent
+ * @returns landed-state failure
  */
-function requiredPart({
-  parts,
-  index,
-}: Readonly<{
-  parts: readonly string[];
-  index: number;
-}>,): string {
-  /**
-   * Metadata field at required position.
-   */
-  const value = parts[index];
-  if (value === undefined)
-    throw new PostCommitGitError('Landed tree entry metadata is incomplete.',);
-  return value;
-}
-
-/**
- * Parsed landed diff-tree record retained for candidate construction.
- */
-type LandedChangeRecord = Readonly<{
-  /**
-   * Repository-relative committed path.
-   */
-  path: string;
-  /**
-   * Landed-side Git object ID.
-   */
-  oid: GitObjectId;
-  /**
-   * Policy candidate mode.
-   */
-  mode: CandidateFileMode;
-  /**
-   * Landed change classification against commit parents.
-   */
-  change: 'added' | 'modified';
-}>;
-
-/**
- * Parses one raw diff-tree metadata token into a retained change record.
- *
- * @param meta - colon-prefixed raw metadata token
- *
- * @param path - NUL-separated companion path token
- *
- * @returns retained record, or empty for deletions absent from landed tree
- *
- * @throws PostCommitGitError when record fields are malformed
- */
-function parseLandedChangeRecord({
-  meta,
-  path,
-}: Readonly<{
-  meta: string;
-  path: string;
-}>,): readonly LandedChangeRecord[] {
-  /**
-   * Old mode, new mode, old OID, new OID, and status fields.
-   */
-  const parts = meta.slice(1,)
-    .split(' ',);
-  /**
-   * Landed-side tree mode text.
-   */
-  const modeText = requiredPart({
-    parts,
-    index: 1,
-  },);
-  /**
-   * Landed-side Git object ID.
-   */
-  const oid = requiredPart({
-    parts,
-    index: 3,
-  },);
-  /**
-   * Single-letter change status against one parent.
-   */
-  const status = requiredPart({
-    parts,
-    index: 4,
-  },);
-  // Deleted paths do not exist in the landed tree and never become candidates.
-  if (status === 'D')
-    return [];
-  if ((status !== 'A') && (status !== 'M')
-    && (status !== 'T'))
-    throw new PostCommitGitError(`Unsupported landed change status ${status} for ${path}`,);
-  /**
-   * Policy mode mapped from landed Git mode.
-   */
-  const mode = TREE_MODES[modeText];
-  if (mode === undefined)
-    throw new PostCommitGitError(`Unsupported landed tree mode: ${modeText}`,);
-  return [{
-    path,
-    oid,
-    mode,
-    change: status === 'A' ? 'added' : 'modified',
-  },];
+function landedDiffError(message: string,): Error {
+  return new PostCommitGitError(message,);
 }
 
 /**
@@ -263,41 +152,13 @@ async function loadLandedCandidates({
     ],
   },);
   /**
-   * Alternating metadata and path tokens, excluding terminal empty token.
+   * Retained content-bearing landed change records.
    */
-  const tokens = UTF8_DECODER.decode(deltaBytes,)
-    .split('\0',)
-    .filter(function isToken(token,) {
-      return token.length > 0;
-    },);
-  /**
-   * First retained record per path across every parent diff.
-   */
-  const recordsByPath = new Map<string, LandedChangeRecord>();
-  // Tokens alternate strictly: one colon-prefixed metadata token, then its path.
-  for (let cursor = 0; cursor < tokens.length; cursor += 2) {
-    /**
-     * Colon-prefixed raw metadata token.
-     */
-    const meta = tokens[cursor];
-    /**
-     * Companion repository-relative path token.
-     */
-    const path = tokens[cursor + 1];
-    if ((meta === undefined) || (!meta.startsWith(':',))
-      || (path === undefined))
-      throw new PostCommitGitError('Landed diff-tree output is not metadata/path token pairs.',);
-    for (const record of parseLandedChangeRecord({
-      meta,
-      path,
-    },))
-      if (!recordsByPath.has(record.path,))
-        recordsByPath.set(
-          record.path,
-          record,
-        );
-  }
-  return [...recordsByPath.values(),].map(function toCandidate(record,): CandidateFile {
+  const records = parseRawDiffRecords({
+    text: UTF8_DECODER.decode(deltaBytes,),
+    createError: landedDiffError,
+  },);
+  return records.map(function toCandidate(record,): CandidateFile {
     return {
       targetId: `post-commit:${record.oid}:${record.path}`,
       path: record.path,
