@@ -431,6 +431,103 @@ const SANDBOX_NOISE_PREDICATES: readonly ((line: string,) => boolean)[] = [
 
 //endregion
 
+//region Mise bootstrap and upgrade noise
+
+/**
+ * Echo prefix mise prints for each command the `bootstrap` task runs. That task
+ * is the directory-`enter` task (see root `mise.toml`), so it auto-runs
+ * `mise install` then `mise upgrade` ahead of every task, and each
+ * `[//:bootstrap] $ <cmd>` echo line is pure runner chatter.
+ */
+const BOOTSTRAP_ECHO_PREFIX = '[//:bootstrap] $';
+
+/**
+ * Whether `line` is a `bootstrap` task command-echo line
+ * (`[//:bootstrap] $ mise install`, `[//:bootstrap] $ mise upgrade`).
+ *
+ * @param line - candidate output line
+ *
+ * @returns whether the line is a bootstrap task command echo
+ *
+ * @example
+ * ```ts
+ * isMiseBootstrapEchoLine('[//:bootstrap] $ mise install'); // true
+ * isMiseBootstrapEchoLine('mise install');                  // false
+ * ```
+ */
+function isMiseBootstrapEchoLine(line: string,): boolean {
+  return line.startsWith(BOOTSTRAP_ECHO_PREFIX,);
+}
+
+/**
+ * Fixed summary lines mise prints when `mise install` and `mise upgrade` find
+ * nothing to do. `bootstrap` runs both on every entry, so both recur with no
+ * actionable content.
+ */
+const MISE_TOOLS_SUMMARY_LINES: ReadonlySet<string> = new Set([
+  'mise all tools are installed',
+  'mise All tools are up to date',
+],);
+
+/**
+ * Whether `line` is one of mise's no-op tool summaries emitted by
+ * `mise install` / `mise upgrade` when nothing changes.
+ *
+ * @param line - candidate output line
+ *
+ * @returns whether the line is a mise install/upgrade no-op summary
+ *
+ * @example
+ * ```ts
+ * isMiseToolsSummaryLine('mise All tools are up to date'); // true
+ * isMiseToolsSummaryLine('mise installing node');          // false
+ * ```
+ */
+function isMiseToolsSummaryLine(line: string,): boolean {
+  return MISE_TOOLS_SUMMARY_LINES.has(line,);
+}
+
+/**
+ * Marker unique to mise's `minimum_release_age` gate warning. `mise upgrade`
+ * emits one `mise WARN` line per tool whose newest release is still inside the
+ * configured age window; tool names and versions vary, this phrase does not.
+ */
+const MISE_MIN_RELEASE_AGE_MARKER = 'ignored by minimum_release_age';
+
+/**
+ * Whether `line` is a mise `minimum_release_age` gate warning, e.g.
+ * `mise WARN  newer pnpm release 11.12.0 ignored by minimum_release_age (24h); latest eligible release is 10.34.5`.
+ * Requires both {@link MISE_WARN_TOKEN} and {@link MISE_MIN_RELEASE_AGE_MARKER};
+ * together they are unique to this warning, so a substring test needs no
+ * positional anchoring or bracket-prefix scanning.
+ *
+ * @param line - candidate output line
+ *
+ * @returns whether the line is a minimum-release-age gate warning
+ *
+ * @example
+ * ```ts
+ * isMiseMinReleaseAgeWarn('mise WARN  newer tree-sitter release 0.26.11 ignored by minimum_release_age (24h); latest eligible release is 0.26.10'); // true
+ * ```
+ */
+function isMiseMinReleaseAgeWarn(line: string,): boolean {
+  return line.includes(MISE_WARN_TOKEN,) && line.includes(MISE_MIN_RELEASE_AGE_MARKER,);
+}
+
+/**
+ * Predicates that classify mise bootstrap/upgrade chatter. A line matching any
+ * of these should be stripped. Distinct from {@link SANDBOX_NOISE_PREDICATES},
+ * whose warning is specific to the read-only sandbox filesystem; these lines
+ * recur in any environment that enters a directory and runs mise.
+ */
+const MISE_NOISE_PREDICATES: readonly ((line: string,) => boolean)[] = [
+  isMiseBootstrapEchoLine,
+  isMiseToolsSummaryLine,
+  isMiseMinReleaseAgeWarn,
+];
+
+//endregion
+
 export {
   ALT_CWD_PREFIX,
   CWD_PREFIX,
@@ -440,6 +537,7 @@ export {
   isGitFileModeLine,
   MAX_LINE_LENGTH,
   MAX_REPEATED_CHARS,
+  MISE_NOISE_PREDICATES,
   PATH_PREFIX_ABSENT,
   REAL_HOME_DIR,
   SANDBOX_NOISE_PREDICATES,

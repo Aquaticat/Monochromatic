@@ -21,6 +21,7 @@ import {
   isGitFileModeLine,
   MAX_LINE_LENGTH,
   MAX_REPEATED_CHARS,
+  MISE_NOISE_PREDICATES,
   PATH_PREFIX_ABSENT,
   REAL_HOME_DIR,
   SANDBOX_NOISE_PREDICATES,
@@ -28,6 +29,18 @@ import {
 } from './filter-patterns.ts';
 
 //region Line stripping
+
+/**
+ * Every noise predicate consulted by {@link shouldStripLine}, flattened into a
+ * single scan. Adding a noise category is one array entry here rather than
+ * another `.some` branch inside the function.
+ */
+const STRIP_LINE_PREDICATES: readonly ((line: string,) => boolean)[] = [
+  isGitFileModeLine,
+  ...GIT_TRANSPORT_PROGRESS_PREDICATES,
+  ...SANDBOX_NOISE_PREDICATES,
+  ...MISE_NOISE_PREDICATES,
+];
 
 /**
  * Whether a line should be removed entirely.
@@ -43,14 +56,7 @@ import {
  * ```
  */
 function shouldStripLine(line: string,): boolean {
-  if (isGitFileModeLine(line,))
-    return true;
-  if (SANDBOX_NOISE_PREDICATES.some(function predicateTest(predicate,) {
-    return predicate(line,);
-  },)) {
-    return true;
-  }
-  return GIT_TRANSPORT_PROGRESS_PREDICATES.some(function predicateTest(predicate,) {
+  return STRIP_LINE_PREDICATES.some(function predicateTest(predicate,): boolean {
     return predicate(line,);
   },);
 }
