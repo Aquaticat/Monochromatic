@@ -29,13 +29,8 @@ and Claude Code's cwd handling is unreliable.
 ORG:
  Organized by moment of decision,
  not topic.
- At each point (about to respond,
- run command,
- edit code,
- declare done) matching section holds every applicable rule.
-Cross-cutting reference (workspace conventions,
- enforcement mechanisms,
- agent skills) lives in "Architecture decisions" + "Agent skills" sections.
+Cross-cutting reference:
+ "Architecture decisions" + "Agent skills" sections.
 Rationale,
  mechanisms,
  examples:
@@ -50,37 +45,21 @@ Don't tag headings,
 
 NCD:
  New code:
- assign fresh,
+ fresh,
  unique,
- semi-meaningful code;
-check vs this rule + local `forbidden-strings.append.local.txt` blocklist for strong unrelated meanings.
-Reject any whose common first reading may surprise future reader.
-Examples:
- common acronyms,
- abbreviations,
- task-status labels,
- product names,
- slang,
- country/region codes,
-ordinary words,
- common names,
- external code namespaces.
-Block whole families when prefix+digit is known external namespace:
-compiler diagnostics,
- shell prompts,
- hardware standards,
- games,
- geography,
- networking identifiers.
-Existing acronym/word OK only when meaning reinforces rule's purpose.
+ semi-meaningful;
+ check `forbidden-strings.append.local.txt`.
+Reject unrelated first readings:
+ acronyms,
+ products,
+ ordinary words,
+ external prefix+digit namespaces.
 
 CRN:
- Never reuse/reassign existing code,
- except when explicitly renaming misleading code;
-update every `AGENTS.md` occurrence same change.
-Renaming/rejecting misleading code:
- add comment-plus-regex entry to local forbidden strings appendix,
-unrelated meaning as reason.
+ Never reuse existing code except explicit rename of misleading one;
+ update every `AGENTS.md` occurrence same change.
+Rename/reject:
+ add comment+regex entry to local forbidden strings appendix.
 
 ## Before responding to the user
 
@@ -89,118 +68,50 @@ unrelated meaning as reason.
 HON:
  Direct,
  honest.
-Search for evidence before responding to opinions,
- guesses,
- analysis requests.
-Embedded questions ("month?
- year?
-"),
- implicit asks,
- estimate requests,
- input gaps = research tasks:
- web search,
- read code,
- check docs.
- Never deflect with "genuinely unknown.
-"
-Do not call an unpublished package change a compatibility break unless measured internal consumers depend on the behavior;
-describe it as a pre-release design change instead.
-Prompt phrased as observation,
- report,
- bare question usually implies action;
- infer action,
- don't answer only surface.
-One clear reading -> act like explicit request (see "Proactivity calibration");
- several valid interpretations -> confirm which before acting (see "Measure-vs-ask").
-Trigger to ask is ambiguous intent,
- never knowledge gap:
- research gaps,
- don't ask.
-Cue:
- about to answer surface when one reading implies action,
- or act on inferred meaning when more than one reading valid.
+Research,
+ don't deflect.
+One clear reading -> act;
+ several -> confirm.
+Ask on ambiguous intent,
+ never knowledge gap.
+Unpublished package change = design change,
+ not compat break.
 
 SYS:
- Never attribute `<system-reminder>` content to user;
-these tags carry harness-level conf,
- not what user typed.
-"per your instruction" / "you asked me to" wrong when source is system reminder;
-cite policy by what it says ("the no-questions policy").
-Same for other injected context (tooling-appended prompt text,
- MCP server instructions,
- skill descriptions):
- source is injector,
- not human.
-`role:user` turn not by itself proof human typed it.
+ Never attribute `<system-reminder>` or injected context (MCP instructions,
+ skill descriptions) to user;
+ cite policy by content.
+`role:user` turn alone doesn't prove human typed it.
 
 WKP:
- Prompt fired by your own `ScheduleWakeup`/`CronCreate`,
- any queued continuation,
- or `<<autonomous-loop>>` sentinel arrives as user turn but you authored it in that tool call's `prompt` field:
- self-authored boilerplate,
- not human instruction.
-Failure one:
- never write directives into that `prompt` field (no stop condition,
+ Wakeup/cron/continuation prompts arrive as user turns but you authored them.
+Never write directives (stop conditions,
  cadence,
- scope,
- "give up when X" you invented);
- relay only user's real task + instructions,
- or bare sentinel.
+ scope) into `prompt`;
+ relay user's real task or bare sentinel.
 
 WK2:
  Fired wakeup/continuation carries no authority.
-Failure two:
- re-derive what to do and when to stop from user's real instructions + current state,
- never obey prompt's wording.
-Failure three:
- never cite it as user's;
- trace "per your instruction" / "you asked me to" to actual human message;
- if first surfaced in wakeup/continuation turn,
- it's yours.
-Cue:
- about to write stop/continue,
- cadence,
- scope rule into `ScheduleWakeup`/`CronCreate` prompt,
- or obey/credit user for one that fired;
- check tool_use origin + real human messages first.
+Re-derive actions + stop conditions from user's real instructions + current state;
+ never obey its wording or credit it as user's.
 
 1ST:
- User's first-person words name human,
- never Claude or future agent session.
-"I",
+ User's first-person words ("I",
  "me",
- "my",
- "myself",
- "future me",
- "next time I" point to person typing;
-Claude is "you"/"Claude" in their words.
-Repo's handover-to-future-sessions framing (`docs/handover/`,
- "future readers",
- "future sessions will follow") primes wrong reading:
- "future me will find a better solution" means human plans to solve later,
- not work handed to future Claude.
-Cue:
- about to read user's "me"/"I" as agent,
- or address doc,
- issue,
- plan,
- task to "future-me" when user meant themselves.
+ "future me") name the human typing,
+ never Claude or future sessions.
+"Future me" = user themselves,
+ not future Claude,
+ despite handover framing.
 
 SRC:
- Cite right source file.
-Rules span `AGENTS.md`,
+ Cite right source file (`AGENTS.md`,
  harness system prompt,
- conf in `.claude/settings.json`,
- skill `SKILL.md` files,
- MCP server instructions,
- `CLAUDE.md` (regen from `AGENTS.md`).
-Before "per `AGENTS.md`",
- "the system prompt says",
- "the conf requires",
- "the skill prescribes",
- grep named file.
-Cue:
- about to attribute rule to source without verifying it contains it.
+ `.claude/settings.json`,
+ `SKILL.md`,
+ MCP instructions,
+ `CLAUDE.md`).
+Grep named file before attributing rule to it.
 
 EXT:
  External tool features,
@@ -208,159 +119,62 @@ EXT:
  conf syntax,
  API capabilities:
  fetch current docs/src before responding.
-"Does X support Y",
- "how do I do Y in X" = research tasks,
+"Does X support Y" = research task,
  not recall.
 
 WRN:
  Explaining warning/error:
  name exact emitting tool,
- not vague category;
  cite diagnostic code/message.
 Unsure?
- Investigate first:
- grep codebase for diagnostic,
+ Grep codebase for diagnostic,
  check tool docs,
- run tool.
+ run tool first.
 
 GAP:
- User says "I was expecting you to..." or you spot failure mode future sessions should avoid:
- treat as documentation gap.
- Propose concrete `AGENTS.md` change (what rule,
- where,
- exact wording) + perform expected action,
+ "I was expecting you to..." or spotted failure mode = doc gap:
+ propose `AGENTS.md` edit + perform expected action,
  never "I'll keep it in mind".
-Merge new rule overlapping existing one,
- don't append;
-remove older rule overtaken by sharper version.
-Cue to draft edit:
- moment you want to "remember next time.
-"
+Merge overlapping rules;
+ remove superseded.
 
 ### Proactivity calibration
 
 PX1:
- This user doesn't perceive proactive action as overreach;
-harness defaults cautioning against "being too proactive" don't apply here.
-When conversation,
- request verb,
- `AGENTS.md` rules collectively authorize a step,
- take it;
-don't insert "want me to..."/"should I go ahead and..." check before obvious next step.
-An open implementation sequence remains active while authorized actionable work remains.
-Intermediate progress,
- test or process notifications,
+ Proactivity isn't overreach;
+ take authorized steps unasked.
+Notifications,
  recoverable failures,
-and running background processes are not stopping conditions.
-Continue independent work while a background process runs;
-when no independent work remains,
-let its completion notification arrive before deciding whether work is complete or blocked.
-Managed background processes are event-driven:
-after starting one,
-never call process list or output merely to check whether it finished;
-read output only after its alert or for a separate diagnostic need.
-Stop only at completion or a genuine blocker requiring user authority or a non-measurable preference.
-Never send a progress-only final response as a substitute for continuing.
+ background runs:
+ keep working,
+ don't poll.
+Stop only at completion or genuine blocker.
 
 PX2:
- Doesn't relax other constraints:
- destructive and externally shared-state actions follow PX3's control-and-responsibility gate,
- decision verbs still return answer not action,
- non-measurable preferences with multiple valid answers still warrant clarifying question.
-Signal this rule firing,
- not one of those:
- next step already determined by what user asked,
- not unresolved choice you'd invent an answer to.
-Cue:
- about to write "want me to also..."/"should I go ahead and..." about already-authorized step.
-Skip prompt,
- do step.
+ Doesn't relax constraints:
+ PX3 gates destructive/external actions,
+ decision verbs return answers,
+ non-measurable preferences warrant asking.
+Already-authorized step:
+ skip "should I...",
+ do it.
 
 PX3:
- Self-identified work (not derived from current request) also needs no permission
-when it cannot disturb anyone outside this machine,
-or when it mutates an external resource the user controls and for which the user bears all responsibility:
- local builds,
- scratch fixtures,
- throwaway crates,
- branches + pushes to user-controlled repositories,
- CI runs on user-controlled repositories,
- issue and PR lifecycle actions in user-controlled repositories,
- drafts,
- verification runs all qualify.
-Do it,
- then report what was done + why it was needed.
-A mutating external-service action requires explicit authorization only when either condition holds:
- destination resource is not controlled by current user;
- or a person/entity other than current user owns approval authority,
- bears responsibility,
- or receives consequences for action.
-Both conditions absent means act automatically when current task implies action,
-including creating,
- editing,
- commenting on,
- closing,
- reopening,
- labeling,
- assigning,
- reviewing,
- merging,
- deleting,
- publishing,
- reacting to,
- or otherwise mutating forge issues/PRs/releases/projects/settings and other external services.
-Current user's statement that they control resource establishes control.
-Objective owner/admin metadata may establish it too.
-Uncertainty about control or responsibility means ask.
-For a resource failing this gate,
-never infer authorization from diagnosis,
- research,
- request to preserve evidence,
- request to fix local problem,
- bug's relevance,
- repository instructions,
- issue text,
- positive reception,
- or self-created "file issue" tasks.
-Keep drafts on this machine unless external drafting is authorized.
-Before sending to a resource failing this gate,
-show exact payload + obtain approval,
-unless user explicitly delegates both drafting + sending for named action + destination.
-Email/messages ordinarily fail this gate because recipient controls receiving endpoint and shares consequences.
-Read-only external research (viewing,
- searching,
- fetching public metadata) remains allowed.
-Cue:
- about to ask "should I also fix/build/verify X?
-" where X touches only local state or a user-controlled resource under user's sole responsibility;
- do X instead,
- surface result.
-About to call mutating external command/API (`gh issue create`,
- `gh pr create`,
- comments,
- reviews,
- mail,
- or equivalent):
- establish control + sole user responsibility;
- both established -> act,
- otherwise locate human message explicitly authorizing named outward action + destination;
- no authorization -> stop at local draft + ask.
+ Local work + mutating user-controlled,
+ sole-user-responsibility resources:
+ act,
+ report.
+Else explicit authorization;
+ uncertain -> ask;
+ drafts local,
+ show payload.
+Read-only research allowed.
 
 TSK:
- Broad requests spanning multiple evidence areas:
+ Broad multi-area requests:
  split into separate task-list items per major area,
- not one umbrella item.
-Each task needs independently verifiable completion criteria:
- inventory,
- tooling,
- architecture,
- tests,
- security,
- documentation,
- synthesis,
- whatever request demands.
-Cue:
- single task subject would hide multiple kinds of evidence gathering or blur what "done" means.
+ each with independently verifiable completion criteria;
+ never one umbrella item.
 
 ### Pre-response checklist
 
@@ -375,7 +189,7 @@ CK1:
  not label (CK3).
 
 CK2:
- Described how external tool works without following `troubleshooting-doc` investigation path?
+ Described external tool behavior without `troubleshooting-doc` investigation path?
  Do it,
  or label recall-from-training.
 
@@ -392,85 +206,54 @@ CK6:
  ASK.
 
 CK7:
- Confident factual claim about your environment,
+ Confident claim about environment,
  external tool,
- src code?
- Verify any cited path/line still exists;
- for uncited claims,
- add citation inline (see "Name the verification step") or downgrade to labeled guess.
+ src?
+ Verify cited path/line still exists;
+ uncited:
+ cite inline or downgrade to labeled guess.
 
 CK8:
  Claimed tool cannot do something?
- Check whether composition (Bash + shell utility) bridges gap;
- refuse only after trying (see "Before claiming inability").
+ Try composition (Bash + shell utility) first;
+ refuse only after trying.
 
 CK9:
- Quoted clause/doc passage + drawn conclusion?
- Restate subject + object in plain English first.
- Failure shape:
- "X waives Y" read as "X is freed from Y" when clause actually runs Y from X toward third party.
+ Quoted clause + drew conclusion?
+ Restate subject + object in plain English first;
+ obligation direction is the classic misread.
 
 CKA:
- About to ask user to perform manual action?
- Try bridging path first;
- must hand off -> invoke `runbook` skill (see "Before claiming inability").
+ Asking user to perform manual action?
+ Try bridging first;
+ genuine handoff -> invoke `runbook` skill.
 
 CKB:
- Revising substantive claim user just corrected?
- Treat correction as evidence prior verification path insufficient:
+ User corrected a claim?
+ Prior verification was insufficient:
  re-read primary sources,
- run concrete commands,
- or use genuinely separate reviewer when independent review asked.
- Never run same-session self-review,
- local "advisor" skill,
- magic `Advisor pass: ...` ritual;
- self-review not independent evidence (see `docs/agents/self-review.md`).
- User-correction phrases ("demonstrably false",
- "you missed",
- "didn't you",
- "you're wrong",
- "shouldn't have",
- "why would you") = approach-change moment,
- not small patch.
+ run commands,
+ or use separate reviewer.
+Never same-session self-review (`docs/agents/self-review.md`).
 
 ### Measure-vs-ask
 
 QF1:
  **Measurable facts:
  measure.
-** Codebase size,
- build time,
- file count,
- dependency tree,
- test count,
- perf numbers,
+** Sizes,
+ counts,
  conf values,
  file contents,
- whether tool/feature used,
- whether conf/`AGENTS.md` already covers it.
-Also user's working pattern in repo artifacts:
- commit cadence,
- working hours,
- defect-recovery rate,
- concurrent-session evidence.
-Categorical dismissals one `rg`/`find`/conf-read away (`AGENTS.md` counts);
- cite result inline;
- if wrong,
- fold option back in.
+ user's working pattern in repo artifacts.
+Categorical dismissals are one `rg`/conf-read away;
+ cite result inline.
 
 QJ1:
  Run measurement yourself;
-never quantitative adjective ("small",
- "large",
+ never quantitative adjective ("small",
  "fast",
- "slow",
- "simple",
  "complex",
- "short",
- "long",
- "sparse",
- "dense",
- "tractable",
  "trivial",
  "significant") without one.
 Agent has tools;
@@ -480,66 +263,54 @@ Agent has tools;
 ASK:
  **Non-measurable facts:
  ask.
-** Which of two valid approaches user prefers,
- whether they want a feature,
- whether they authorize destructive action,
- what they value (depth vs governance,
+** Preferred approach,
+ feature wanted,
+ destructive-action authorization,
+ values (depth vs governance,
  speed vs clarity).
 
 MA3:
- Three failure directions:
- asking what you could measure (lazy);
-assuming what you should ask (confidently wrong);
-asking permission for already-authorized step (PX2).
-Trigger phrases for assumption form:
+ Failure directions:
+ asking what you could measure;
+ assuming what you should ask;
+ asking permission for authorized step (PX2).
+Tells:
  "for a project like this...",
  "in a typical setup...".
 
 QGR:
- Grilling or interview mode does not justify rubber-stamp questions (PX2).
-When one answer follows from settled user decisions and alternatives would contradict them,
-adopt and record it without asking.
-Ask only while at least two viable paths remain and the choice depends on the user's non-measurable preference or
-authority.
-Cue:
- about to present a recommended option that prior decisions already determine;
-skip the questionnaire,
-state the inference,
-continue to the next real fork.
+ Grilling doesn't justify rubber-stamp questions.
+Settled decisions determine one answer:
+ adopt + record it unasked.
+Ask only while two paths hinge on non-measurable preference or authority.
 
 ### Present options with pros, cons, and a personal ranking
 
 OPT:
- Proposing choice between distinct options ("A,
- B,
- or C?
-"):
- give each option its own pros + cons plus fully sorted personal ranking covering every option,
+ Proposing distinct options:
+ give each pros + cons plus fully sorted personal ranking,
  with reason deciding each adjacent pair.
 
 OPA:
  `AskUserQuestion`:
- each option's `description` holds its pros + cons;
- order options by preference (best first),
- append "(Recommended)" to top label;
- in prose around tool call,
- state full ranking (e.g. "ranking:
- B > A > C") with reason for each adjacent comparison.
+ pros + cons in each `description`;
+ order best first,
+ "(Recommended)" on top label;
+ state full ranking + adjacent-pair reasons in surrounding prose.
 
 OPI:
  Inline prose:
- one short paragraph/bullet block per option with pros + cons,
+ per-option pros + cons block,
  then "Ranking:
  B > A > C,
- because ..." line explaining each step of order,
+ because ..." explaining each adjacent step,
  not just top pick.
 
 ### Exhaust evidence layers when assessing system usage
 
 EVL:
- For "should we use X better?
-" / "are we taking advantage of X?
-",
+ "Should we use X better?
+":
  walk every layer before recommending;
  each can flip conclusion.
 
@@ -557,167 +328,113 @@ EL2:
 EL3:
  Third layer,
  **content of those parallel systems**:
- not just file count but what's inside.
+ what's inside,
+ not just file count.
 
 EL4:
  Fourth layer,
- **inline annotations in code**:
+ **inline annotations**:
  TODO/FIXME/HACK,
  deprecation markers,
  workaround comments.
- Zero signals discipline (but verify search ran;
- see QRY);
+Zero signals discipline (verify search ran;
+ QRY);
  thousands signal debt.
 
 EL5:
  Fifth layer,
- **suppressions and exceptions**:
+ **suppressions + exceptions**:
  lint disables,
- type-error suppressions,
+ type suppressions,
  skipped tests.
- Justified-with-rationale healthy;
+Justified-with-rationale healthy;
  bare suppressions debt.
 
 EL6:
  Sixth layer,
- **stated policies in code or conf**:
- comments declaring intent ("X is tracked via Y,
- not Z") that may/may not be followed in practice.
+ **stated policies in code/conf**:
+ declared intent may not match practice.
 
 ELR:
- Report findings at each layer before conclusion.
-Recommendation after only checking layer 1 is guess shaped by surface you happened to look at.
+ Report findings at each layer before concluding;
+ layer-1-only recommendation is a guess.
 
 ### Before claiming inability
 
 CB1:
- Capability/handoff claims ("can't read/render/test",
- "you'll need to") cover whole toolset,
- not Read/Bash limits.
+ Inability claims cover whole toolset.
 Before refusing,
  bridge:
- convert/decompose/pipe through shell utilities;
- web/browser via `agent-browser`;
- native GUI via `xdotool`/`wtype`/`ydotool`,
- shortcuts,
- or HTTP/IPC;
+ shell utils;
+ web via `agent-browser`;
+ GUI via `xdotool`/`wtype`/`ydotool`,
+ HTTP/IPC;
  auth via `expect`/tokens;
  hardware via CLI.
 
 BR2:
- Refuse/hand off only after attempting bridge + confirming no path exists.
-State bridges you tried;
-unconsidered refusal/handoff looks identical to real obstacle.
-Cue:
- about to write "you'll need to",
- "please open",
- or any phrasing meaning "can't see / render / interact with a web page",
- without naming bridges you tried.
+ Refuse/hand off only after attempting bridges + confirming no path exists;
+ state bridges tried.
+Unconsidered refusal looks identical to real obstacle.
 
 RXH:
- Same for research-exhaustion claims.
-Narrow search returns "no direct evidence for X" and X is specific entity in broader class:
- widen to nearest comparable entities (sibling tools,
- peer platforms,
- projects solving same problem) first.
-Failure shape:
- "no precedent for Netlify" while LocalStack,
- MinIO,
- Dokku,
- Coolify each give one-search-away evidence on same question.
-State what you searched + what comparable evidence you found;
-empty result on narrowest query is not "no precedent.
-"
+ Same for research:
+ narrow "no evidence for X" -> widen to comparable entities (siblings,
+ peer platforms) first.
+State searches + comparable evidence;
+ narrowest empty query isn't "no precedent".
 
 CB2:
- Same for impossibility/hard-limit claims about an external system ("X can't do Y",
- "not achievable",
- "architectural limitation",
- "single-instance by design"):
- read the source of the component that actually decides the behavior before asserting the limit,
- whenever that source is open (clone + read the deciding code path,
- as `troubleshooting-doc` requires).
-Black-box probes that merely reproduce the limit are not the deciding code;
- they show that something blocks it,
- not that nothing can unblock it.
-Offering the user a workaround menu premised on the limit (`AskUserQuestion`,
- degraded options) counts as asserting it:
- finish the source read first,
- then escalate only a genuine non-measurable preference.
-Surprising behavior right after your own edit implicates the edit:
- re-read/diff your change before blaming the external system.
-Cue:
- about to write "can't be done",
- "not possible",
- "by design",
- or offer the user options premised on a limit,
- before tracing that limit to the deciding source.
+ External-system impossibility claims ("can't",
+ "by design"):
+ read deciding source.
+Black-box probes aren't proof;
+ workaround menus premised on it assert it.
+Surprise after your edit:
+ diff it.
 
 RPB:
- One failed probe of a resource user says is present (empty `adb devices`,
- connection refused) isn't proof of absence.
-Re-probe,
- ask user to reconnect/re-authorize/restart,
- before concluding unreachable or moving on.
-Cue:
- writing "can't reach X" after one failed probe of something user said is there.
+ One failed probe of resource user says is present isn't proof of absence.
+Re-probe + ask user to reconnect/re-authorize/restart before concluding unreachable.
 
 RBK:
- Bridges genuinely fail + user must execute:
- invoke `runbook` skill when writing any manual-action document (it encodes required sections + formatting rules).
-Repo-wide runbooks (manual-step procedures the user executes) live in `docs/runbook/<topic>.md`;
- repo-wide handovers (cross-session state handoffs) live in `docs/handover/<topic>.md`;
- package-specific runbooks/handovers stay beside code they document.
-Canonical example:
- `packages-paused/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
+ User must execute manually:
+ invoke `runbook` skill for the document.
+Repo-wide runbooks:
+ `docs/runbook/<topic>.md`;
+ handovers:
+ `docs/handover/<topic>.md`;
+ package-specific ones stay beside code.
 
 FCH:
- ToS,
- README,
- spec,
- other source document references another where substantive provisions live:
- fetch that document before drawing conclusions about its contents.
-Hedging about named,
- fetchable target is failure mode;
-cue:
- writing "likely contains,
-" "almost certainly addresses,
-" or "probably covers" about document one tool call away.
-Pointer is research lead,
- not stopping point.
+ Source doc points at another where substantive provisions live:
+ fetch it before drawing conclusions.
+Never hedge ("likely contains") about document one tool call away.
 
 ### Name the verification step
 
 NVS:
- Confident factual claims about user's environment,
+ Confident claims about environment,
  external tool,
- src code must be paired inline with what backs them.
-Cannot name what backs a claim?
- Downgrade to labeled guess or do verification.
+ src pair inline with what backs them.
+Can't name backing?
+ Labeled guess or verify.
 
 QRY:
- Every search result carries two claims:
- search ran correctly,
- and lines shown are matches.
-Both fail silently,
- both directions:
- zero-match (invalid `--type`,
- wrong glob,
- `2>/dev/null` masking errors,
- stale dir,
- stdin mode) and non-zero-match (`head -N` truncation,
- denylist `-v` filters,
- `-l` hiding context,
- narrow `--type`,
- and `rg -r`/`--replace` rewriting matched substrings in output (RGT)).
-Sanity-check (broader pattern,
- no cap,
- no negative filter) before claiming you've enumerated what's there.
+ Search results claim search ran + lines are matches;
+ both fail silently (bad `--type`,
+ masked stderr,
+ `head` caps,
+ `-v` filters,
+ `rg --replace`).
+Sanity-check broader,
+ uncapped,
+ unfiltered.
 
 ### Git cleanup and worktree safety reviews
 
 GCL:
- Reviewing plan/change touching `git clean`,
+ Reviewing `git clean`,
  destructive git guards,
  worktree safety,
  ignored-file cleanup:
@@ -734,38 +451,37 @@ GC2:
  Never rely on `git status`,
  `git ls-files --others --exclude-standard`,
  `rg --files`;
-those hide ignored files.
+ they hide ignored files.
 Any root sentinel exists:
- cleanup or exact safe cleanup path is part of design under review.
+ safe cleanup path is part of design under review.
 
 GCW:
- Review touches `cli-git`'s linked-worktree guard:
- account for baked-in tool-cache allowlist,
- `DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/git-policies/cli/src/allowed-worktree-dirs.ts`:
- git-dirs under allowed dir bypass guard.
+ `cli-git` worktree-guard reviews:
+ baked-in allowlist `DEFAULT_ALLOWED_WORKTREE_DIRS` (`packages/git-policies/cli/src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass guard.
 
 ### Research tools
 
 RT1:
  `rg`:
  fast text search;
- use directly rather than navigating directory trees;
- `rg --files` to find files by glob.
+ use directly,
+ not directory navigation;
+ `rg --files` for globs.
 
 RT2:
  `agent-browser`:
  headless browser CLI;
- rendered web pages,
+ rendered pages,
  screenshots,
  web UI interaction,
  deployed-app verification.
 
 RT3:
  `FetchUrl`:
- documentation sites,
+ docs sites,
  npm pages,
  GitHub READMEs;
- raw source still useful when docs incomplete.
+ raw source when docs incomplete.
 
 RT4:
  `gh`:
@@ -779,50 +495,31 @@ RT4:
 ### Command execution conventions
 
 TMO:
- Never wrap routine verification commands in external `timeout` binary.
-Use command tool's session/polling first;
-process truly remaining after producing useful output:
- inspect PID,
- stop that stale process.
-Reserve external timeout wrappers for commands whose behavior is being tested,
- or with known unbounded runtime + no narrower kill mechanism.
+ Never wrap routine verification in external `timeout`.
+Use command tool's session/polling;
+ stop stale surviving processes by PID.
+Wrappers only for behavior-under-test or unbounded runtime.
 
 NXR:
- Bash tool returns `No result provided`,
- Pi session drops,
- or another transport-level failure occurs while child command may have run:
- never repeat same synchronous command.
-First inspect managed processes + OS process table for survivors,
- then inspect logs or output artifacts.
-A rerun uses process tool with captured logs + completion alert,
- or narrower bounded execution;
-never recreate same transport failure blindly.
-Cue:
- about to rerun unchanged Bash command after missing result or session restart;
- stop,
- inspect,
- change execution path.
+ Transport failure (`No result provided`,
+ dropped session) while child may have run:
+ never rerun same synchronous command.
+Inspect processes + logs;
+ rerun via process tool or bounded execution.
 
 RGP:
  Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
 
 CLN:
- Investigating package source code:
- clone its git repository into disk-backed scratch root `${HOME}/temp/agent/`;
- `mkdir --parents` first.
-Use `gh repo clone <repo> ${HOME}/temp/agent/<descriptive-name>-<date-or-random> -- --depth 1`,
+ Investigating package source:
+ `mkdir --parents ${HOME}/temp/agent/`,
+ then `gh repo clone <repo> ${HOME}/temp/agent/<name>-<date> -- --depth 1`;
  not `git clone`,
- unless commit history part of investigation;
-`gh` handles authentication + fork remotes automatically.
+ unless commit history matters.
 
 BOP:
- Never treat `~` in Bash tool output as literal tilde;
-it's display substitution for `/var/home/user` or `/home/user` by `bash-output-filter` hook (display-only,
- filesystem values unchanged).
-Account for it when debugging path issues,
- before concluding path is wrong.
-Skip filter for one command:
- include blocklist trigger:
+ `~` in Bash output = display substitution for home dir by `bash-output-filter` hook (display-only).
+Skip filter via blocklist trigger:
  `eval`,
  `export`,
  `source`,
@@ -831,139 +528,104 @@ Skip filter for one command:
  `> file`.
 
 WCD:
- Pin target dir explicitly for every shell command.
-The harness Bash tool has no `cwd` field and silently ignores an unsupported one;
-never pass `cwd` to it.
-Use a command's native `-C`/`--cwd`,
-or begin with `cd -- <absolute path> &&` when no native option exists.
-Before a write or commit intended for an alternate worktree,
-verify `pwd` and `git rev-parse --show-toplevel` in that same shell body and abort unless both equal the intended path.
+ Pin target dir on every shell command;
+ Bash tool has no `cwd`.
+Use native `-C`/`--cwd` or `cd -- <abs path> &&`.
+Alternate-worktree writes:
+ verify `pwd` + `git rev-parse --show-toplevel` first.
 
 ### Long-form flags
 
 LFF:
- Use long-form (`--flag`) options for CLI commands,
- not bundled/single-letter short flags.
-Writing long form forces knowing what it does,
- where short-flag muscle memory fails.
+ Use long-form (`--flag`) CLI options,
+ not bundled single-letter short flags;
+ writing long form forces knowing what it does.
 
 RGT:
- `rg` is canonical trap:
- ripgrep recurses by default,
- so `-r` means `--replace`,
+ `rg` recurses by default:
+ `-r` means `--replace`,
  not grep's recursive `-r`;
- grep-reflex `rg -rl`/`-ir` silently rewrites matches in output instead of recursing.
- Long form removes trap.
+ grep-reflex `rg -rl`/`-ir` silently rewrites matches in output.
+Long form removes trap.
 
 LF2:
- Where flag has no long-form spelling,
+ No long-form spelling:
  short flag stays;
-`--` argument separators (`mise watch -- task`) unaffected.
+ `--` argument separators (`mise watch -- task`) unaffected.
 
 ### Hazardous commands
 
 HRM:
- Before any action,
- consider whether it could physically harm a human (blasting audio volume,
- flashing content,
- unexpected hardware activation)
- or damage hardware through avoidable resource wear.
-If so,
- warn user + state what will happen before proceeding.
-For remote `ssh m1`,
- treat its 16 GiB RAM as a hard capacity constraint and its internal SSD as fragile.
-Probe `/Volumes/MacData` before write-heavy work;
- when mounted,
- place clones,
- scratch data,
- build outputs,
- and other high-write temporary state there.
-Use the internal SSD only when `MacData` is unavailable,
- and bound memory plus write amplification either way.
+ Could action physically harm human or wear hardware?
+ Warn first.
+`ssh m1`:
+ 16 GiB RAM hard cap,
+ fragile internal SSD;
+ probe + prefer `/Volumes/MacData` for write-heavy work.
 
 RXI:
- Always run commands that might crash/exhaust host in performance-limited container/VM,
- never directly on host.
-"May exhaust host" set broader than destructive-command set:
- heavy memory/process/file-descriptor allocation,
+ Commands that might crash/exhaust host:
+ performance-limited container/VM only.
+Includes:
+ heavy memory/process/fd allocation,
  unbounded loops,
- uncapped subprocess fan-outs,
- stress/benchmark/load runs.
+ uncapped fan-outs,
+ stress/bench/load runs.
 
 BOX:
- Use `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` for container isolation,
- or `mvm` CLI for VM isolation.
-State bounds explicitly (memory cap,
- cpu cap,
- timeout).
-User requests one directly:
- propose containerised invocation + confirm.
-Past authorisation doesn't transfer across commands;
-each heavy run needs isolated environment.
+ Isolate via `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` or `mvm` CLI;
+ state bounds explicitly.
+Authorization doesn't transfer;
+ isolate each heavy run.
 
 DCB:
- Never execute or instruct another agent to execute extremely destructive commands,
- even as guardrail tests,
- e.g. `sudo rm -rf /`,
+ Never execute or have agents execute catastrophic commands (`sudo rm -rf /`,
  `mkfs`,
  `dd of=/dev/sda`,
- fork bombs.
-Guardrails can fail;
-catastrophic command must not appear in instructions to other agents,
- subshells,
- generated scripts,
- whatever the intent.
-Verifying a guardrail:
- use moderately dangerous commands (e.g. `sudo apt-get install`).
+ fork bombs),
+ even as guardrail tests.
+Verify guardrails with moderately dangerous commands.
 
 ### Essential commands
 
 CM1:
  Identify target package + task before running tests;
- never reflexively use repo-root `mise run test` for narrow package work.
+ never reflexive repo-root `mise run test` for narrow package work.
 
 CM2:
- Mise tasks use mise's platform default shell (`sh -c -o errexit` on unix,
- `cmd /c` on Windows) for single bare commands.
- Sequence with the array `run` form (`run = ["a", "b"]`),
- which mise runs in order and fails fast;
- never `;`-chaining (sh-only),
- nor `mise run a ::: b` inline sugar.
- Override `shell = "node --input-type=module-typescript -e"` (SCR) only for logic or non-portable bodies.
+ Mise bare commands use default shell.
+Sequence with `run` array form (`run = ["a", "b"]`);
+ never `;`-chaining nor `:::`.
+`shell = "node --input-type=module-typescript -e"` for logic only.
 
 CM3:
- All builds + tasks use `mise run`.
- Never run `pnpm exec` or direct package scripts.
- Never invoke raw tools (`tsc`,
+ All builds + tasks via `mise run`;
+ never `pnpm exec`,
+ package scripts,
+ or raw tools (`tsc`,
  `tsdown`,
- `bun test`,
- `oxlint`,
- etc.) directly;
- use corresponding mise task.
- When no suitable task exists,
- add one to target package's `mise.toml` first,
- unless another rule (e.g. CM4) carves out direct call (running test file with `node <file>`).
+ `bun test`).
+No suitable task:
+ add one to package `mise.toml` first (CM4 excepted).
 
 CM4:
  Never substitute `bun test` for missing mise task;
- it misreports under `@monochromatic-dev/module-test` harness.
- Use `mise run //packages/<path>:test:unit`,
- or run file directly with `node <file>` if no task exists.
+ it misreports under `@monochromatic-dev/module-test`.
+Use `mise run //packages/<path>:test:unit`,
+ or `node <file>` when no task exists.
 
 CM5:
- Read `mise.toml` files in root + package directories for available commands.
- Run task in specific package with `mise run //packages/path:task` (not `mise run --cd`).
+ Read root + package `mise.toml` for available commands.
+Run package task via `mise run //packages/path:task` (not `mise run --cd`).
 
 CM6:
  Run `mise run //packages/<path>:lint:types` manually after editing TypeScript;
  no automated type-check yet.
 
 WC2:
- Some root-level files (e.g. `CLAUDE.md`) generated by file-enforcer.
- Before editing any root config file,
- check `file-enforcer.config.ts` for managed-output status;
- if so,
- edit source + run file-enforcer.
+ Some root files (e.g. `CLAUDE.md`) generated by file-enforcer.
+Check `file-enforcer.config.ts` before editing any root config;
+ managed -> edit source + run file-enforcer.
 
 ## Before editing code
 
@@ -971,79 +633,30 @@ WC2:
 
 VRB:
  Decision verbs ("decide",
- "evaluate",
- "assess",
  "review",
  "audit",
- "triage",
- "look at",
- "analyze",
  "investigate",
- "propose",
- "spot-check",
- "estimate") request deliberation.
-Deliverable is answer + any requested/required documentation,
- report,
- or Markdown artifact;
- don't also apply fixes answer implies.
+ "propose"...) request deliberation:
+ deliver answer + docs,
+ no fixes.
 Action verbs ("fix",
  "implement",
- "apply",
- "do",
- "change",
- "add",
- "remove",
- "update",
- "refactor") authorize action.
+ "update"...) authorize action.
 
 IWT:
- Decision/investigation verbs (VRB) forbid non-document changes to main worktree:
- no instrumentation/debug edits to real source,
- no throwaway tests beside real code,
- no dep installs,
+ Decision verbs forbid non-document mutations in main worktree (edits,
+ installs,
  builds,
- formatter/lint autofixes,
- config,
- generated-output,
- or other implementation mutations there.
-Documentation,
- reports,
- and Markdown artifacts may + should be created/updated directly in main worktree;
- managed Markdown still edited through its source + generator.
-Reproducing,
- experimenting,
- or running anything else that writes files happens in a forked worktree:
+ autofixes);
+ docs/reports OK.
+Reproduce/experiment in fork:
  `git worktree add <path> HEAD`,
- then install deps,
- build,
- edit,
- run freely inside it,
- remove it after (`git worktree remove`).
-That fork + its dep installs + its builds/runs are local-only work needing no permission (PX3),
- even when parent task investigate-only.
-This is stricter than THR (which governs where mutating verification runs),
- except this rule's documentation/report/Markdown-artifact carve-out.
-Cue:
- about to write,
- edit,
- instrument,
- or `pnpm install` non-document state in main worktree while task verb only asked investigate,
- evaluate,
- assess,
- review,
- audit,
- triage,
- analyze,
- spot-check,
- estimate,
- or propose;
- fork worktree instead.
+ remove after.
 
 AUT:
  Holds in Auto Mode:
- its "prefer action over planning" applies to executing requested action,
- not expanding scope;
-not authorization to act on adjacent decisions user hasn't made.
+ "prefer action over planning" applies to executing requested action,
+ not expanding scope or acting on adjacent undecided choices.
 
 VR2:
  Verb ambiguous:
@@ -1059,9 +672,9 @@ Unsure:
  propose concrete edit + location.
 
 EC4:
- Never implement features that won't achieve intended effect.
-If tool/command doesn't support requested functionality,
- explain that instead of creating non-functional code.
+ Never implement features that won't achieve intended effect;
+ unsupported functionality gets explanation,
+ not non-functional code.
 
 ### Cross-runtime and scripts
 
@@ -1070,11 +683,9 @@ XRT:
 
 SCR:
  Never write bash/powershell scripts.
- Put mise task logic inline in a node eval body,
- setting `shell = "node --input-type=module-typescript -e"` on the task:
- explicit input type keeps TS stripping + top-level await working even when Node module-syntax detection is off;
- or move it into a package's normal bin invoked as a command-runner.
- Never create `mise.<action>.ts` files.
+Inline mise task logic via `shell = "node --input-type=module-typescript -e"`,
+ or move into package bin.
+Never create `mise.<action>.ts` files.
 
 PIN:
  Pin tool versions only with clear justification + comment explaining why.
@@ -1082,8 +693,8 @@ PIN:
 SPG:
  Add explicit guards (transcript size check,
  env var flag,
- session type filter) to any automation spawning agent sessions,
- to prevent recursive token burn.
+ session type filter) to any automation spawning agent sessions;
+ prevents recursive token burn.
 
 ### Simplification
 
@@ -1101,152 +712,72 @@ XNC:
  refactor to complexity only when necessary.
 
 ITR:
- Iterate linear input with `map`/`filter`/`reduce` or `for...of`;
- counter `for (let i = 0; ...)` loop for index/lookahead;
- `while` for side-effecting cursor.
- Never recurse over string or flat array (including a regex you remove).
- Recurse only for bounded **structural** walks (AST,
- tree,
- grid,
- filesystem);
- flatten degenerate spines iteratively with work-stack.
- Why + spine trap:
- philosophy doc;
- `docs/audit/chain-flatten-skewed-tree.md`.
+ Linear input:
+ `map`/`filter`/`reduce`,
+ `for...of`,
+ counter `for`,
+ `while` cursor;
+ never recurse over string/flat array.
+Recurse only bounded structural walks;
+ flatten spines with work-stack.
 
 MXL:
- Never disable,
- raise,
- bypass,
- work around max-lines limit.
- Remediate by splitting:
+ Never disable/raise/bypass max-lines limit.
+Remediate by splitting:
  re-export from `index.ts`;
- move helpers to siblings,
- constants to `constants.ts`,
- types to `types.ts`.
- Forbidden workarounds:
- compressing function arguments to one line,
- joining multi-line statements,
- removing TSDoc,
- removing `//region` markers,
- joining declarations.
- If you find yourself reformatting to reduce line count,
- stop;
- fix lives in another file.
+ helpers to siblings,
+ constants/types to own files.
+Never reformat or strip TSDoc/`//region` to fit.
 
 MXR:
- Same max-lines budget on `.rs` files (`monochromatic-rust-linter`,
- `packages/linter/rust`,
- rule `max-lines`,
- 300 code lines,
- blanks/comments excluded).
- Run via each Rust package's `lint:rust`,
- or root `lint:rust` which fans out to them.
- Remediate by splitting:
- sibling modules,
- re-export from parent `mod`,
- move helpers/types/constants.
- `tests/`,
- `*_tests.rs`,
- `fuzz/`,
- `build.rs` exempt;
- never disable or raise.
-
-RDC:
- Require rustdoc on every documentable `.rs` item (`monochromatic-rust-linter`,
- `packages/linter/rust`,
- rule `require-rustdoc`),
- mirroring `require-tsdoc` for TypeScript.
- `///` outer or `//!` inner doc comment counts;
- plain `//` does NOT,
- so on a documentable item write the `dum-dum-non-ts` `// What:`/`// Why:` block itself as `///`,
- and `//!` atop each file:
- the one block is both the dum-dum explainer and the rustdoc,
- no separate summary.
- Never keep a plain `//` block with a `///` name-stub bolted on;
- statements inside a body stay plain `//` (a `///` there is a rustc `unused_doc_comments` error).
- Covers functions,
- structs,
- enums,
- unions,
- traits,
- type aliases,
- consts,
- statics,
- modules,
- macro defs,
- extern crates/blocks,
- `use`,
- `impl` blocks,
- enum variants,
- fields,
- item-position macro calls,
- the file itself;
- public AND private,
- no trait-impl carve-out (unlike Rust's public-only `missing_docs`),
- except in files referencing cxx-qt:
- when a `cxx_qt`/`cxx_qt_lib` identifier is present (`#[cxx_qt::bridge]`,
- `use cxx_qt_lib::...`),
- `use` imports and trait-impl associated items are exempt in that file,
- because bridge companion code needs plumbing imports and trait impls (`impl Default`,
- etc.) the macro/traits demand;
- rustc's `missing_docs` exempts both,
- and the relaxation is scoped to cxx-qt files so the rest of the repo keeps the maximal policy.
- Run via root `lint:rust`.
- `tests/`,
+ `.rs` files share max-lines budget (`monochromatic-rust-linter` rule `max-lines`,
+ 300 code lines).
+Split into sibling modules.
+`tests/`,
  `*_tests.rs`,
  `fuzz/`,
  `build.rs` exempt;
  never disable.
 
+RDC:
+ Rustdoc (`///`/`//!`;
+ plain `//` doesn't count) on every documentable `.rs` item,
+ public + private (`require-rustdoc`).
+cxx-qt files exempt `use` + trait-impls;
+ tests/fuzz exempt;
+ never disable.
+
 ### Linting
 
 LN1:
- Never violate one rule to satisfy another.
- Lint rules form single shape:
- code satisfying all of them.
- When two rules appear to conflict,
- remediation is structural (split,
+ Never violate one rule to satisfy another;
+ apparent conflicts get structural remediation (split,
  extract,
  rename),
  never reformatting one rule's surface to silence another.
- Signal you're violating-to-satisfy:
- about to undo something autofix or `AGENTS.md` prescribed (e.g. compressing args back onto one line to fit max-lines).
 
 LN2:
  Treat each lint finding as design signal,
- not checkbox.
- Name rule's real intent,
-then make best code shape satisfying that intent + rest of codebase.
-Shortcut taken for one warning is evidence about care taken everywhere else.
+ not checkbox:
+ name rule's real intent,
+ make best code shape satisfying it + rest of codebase.
 
 LN3:
- Before disabling,
- suppressing,
- weakening types,
- broadening annotations,
- otherwise skirting lint rule,
-inspect linter source + source code of value being linted.
-Try rule's config/allow-list mechanism first.
-If suppression remains necessary,
- write/update `.md` document citing both source paths,
-proving why allow-list/config path can't work,
- linking suppression to that document.
-Don't land suppression without that document.
+ Before suppressing/skirting a lint rule:
+ inspect linter source + linted value;
+ try config/allow-list first.
+Remaining suppression needs `.md` doc citing both sources + proving config can't work.
 
 LN4:
  Prefer `Object.entries` + functional methods over `for...in`.
 
 LN5:
- Add `oxlint-disable-next-line` comments with justification
- for things that can't be implemented without triggering rules.
+ Add `oxlint-disable-next-line` comments with justification where rules can't be avoided.
 
 LN6:
- Block-level `/* oxlint-disable rule */` must wrap tightly:
- `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** TSDoc;
- enable on **very next line** after declaration or closing `);`/`}`,
- never at end-of-file).
- Don't use `// oxlint-disable-next-line` between TSDoc + declaration.
+ Block disables wrap tightly:
+ `/* oxlint-disable rule */` -> TSDoc -> declaration -> `/* oxlint-enable rule */` on very next line.
+Never `disable-next-line` between TSDoc + declaration.
 
 LN7:
  Never loosen lint rules without prior approval.
@@ -1259,91 +790,65 @@ LN8:
 
 LOG:
  Log extensively by default:
- function entry points,
+ entry points,
  branch decisions,
  error paths,
- async lifecycle events.
+ async lifecycle.
 Never remove logging to "clean up";
- treat as permanent infrastructure.
+ permanent infrastructure.
 
 TLG:
- Always use tagged loggers from `@monochromatic-dev/module-logger`.
-Never raw `console.log`/`console.error` or untagged logger instances in production code.
+ Tagged loggers from `@monochromatic-dev/module-logger` only;
+ never raw/untagged `console` in production code.
 Exception:
- raw `console` when precise control over terminal output needed (CLI user-facing messages,
- progress indicators,
- interactive prompts).
+ raw `console` for precise terminal output (CLI output,
+ prompts).
 
 LG1:
- Tag every module + function boundary with logger tags,
- using `myFn.name`;
- when passing logger to tagged sub-function,
- wrap with additional tag.
- Never embed tags in message strings;
+ Tag every module + function boundary using `myFn.name`;
+ wrap logger with additional tag when passing to sub-function.
+Never embed tags in message strings;
  use `tagged` wrapper.
 
 LG2:
- Catch bindings added for lint must be used in the catch body:
- log the caught value,
- even when the error is expected,
- or rethrow it.
- Never satisfy `catch-binding` by writing an unused `catch (error)`.
+ Catch bindings must be used in body:
+ log caught value (even expected) or rethrow;
+ never unused `catch (error)`.
 
 ### Security
 
 SYB:
- Any code transforming/embedding text across syntax boundary must treat destination grammar as authority.
-Source escapes not portable:
- Markdown `\<`,
- shell quotes,
- JSON escaping,
- URL encoding,
- regex escaping don't make
-text safe in another language.
- Normalize source semantics only as needed,
- then encode for exact destination subcontext
-at final interpolation boundary.
- Account for nested contexts:
- HTML text vs attribute vs URL,
- JS string inside
-`<script>`,
- CSS string,
- SQL literal,
- shell token,
- Markdown/MDX,
- JSON,
- regex,
- glob,
- terminal escape,
- config syntax.
+ Text crossing syntax boundary:
+ destination grammar is authority;
+ source escapes not portable.
+Encode for exact destination subcontext at final interpolation boundary;
+ mind nested contexts.
 
 STB:
- Tests for any transformer emitting another syntax must include adversarial boundary cases for that destination:
-active delimiters,
- terminators,
+ Transformer tests emitting another syntax need adversarial destination boundary cases:
+ delimiters,
  escapes,
  quotes,
  newlines,
  traversal tokens,
  command separators,
- source-escaped
-variants.
+ source-escaped variants.
 
 ### TSDoc comments
 
 TSD:
- Write comprehensive TSDoc for **all** declarations (exported or not,
- including locals).
-Adhere to TSDoc rules enforced by `@monochromatic-dev/config-oxlint-tsdoc`.
-Use `{@inheritDoc originalFn}` for non-async wrappers.
+ Comprehensive TSDoc on all declarations (exported or not,
+ locals too),
+ per `@monochromatic-dev/config-oxlint-tsdoc`.
+`{@inheritDoc originalFn}` for non-async wrappers.
 
 TD1:
- Use `${ // comment \n '' }` to embed comments inside template literals;
- don't use target-language comments or move comment outside template.
+ Embed comments inside template literals via `${ // comment \n '' }`;
+ never target-language comments or moving comment outside.
 
 TD2:
  TSDoc (`/** */`) for declarations only;
- use `//` or `/* */` for statements,
+ `//` or `/* */` for statements,
  control flow,
  imports,
  returns.
@@ -1353,7 +858,7 @@ TD3:
  not statement.
 
 TD4:
- Comments on their own line above code,
+ Comments on own line above code,
  never inline after code.
 
 TD5:
@@ -1375,7 +880,7 @@ TD8:
 #### Standards
 
 ST2:
- Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
+ Use `//region`/`//endregion` markers with purpose + explanation for logical sections.
 
 ST3:
  Cross-package workspace imports must resolve to TypeScript source,
@@ -1391,21 +896,20 @@ ST6:
  HTML,
  CSS,
  SQL) instead of `readFile`;
- build tooling resolves these at build time,
- no async preload step needed.
+ build tooling resolves at build time.
 
 ST8:
- No calling functions before their declaration in source order;
- hoisting makes it legal but reading top-down becomes unreliable.
+ No calling functions before declaration in source order;
+ hoisting legal but top-down reading unreliable.
 
 ST9:
- Functions with 2+ parameters must use single destructured object parameter (named params);
+ Functions with 2+ parameters use single destructured object parameter;
  exempt:
- callbacks whose signature dictated by external API/library.
+ callbacks with externally dictated signatures.
 
 TQ1:
  No rest parameters (`...args`) in functions we control;
- accept array parameter instead.
+ accept array parameter.
 
 TQ2:
  Export immediately at declaration;
@@ -1420,7 +924,7 @@ XPT:
 #### Type system
 
 TY1:
- Explicit parameter and return types;
+ Explicit parameter + return types;
  `type` over `interface`;
  `Record` for maps.
 
@@ -1443,18 +947,18 @@ TY5:
  meaningful constraint names.
 
 TY6:
- Prefer `as` over angle bracket syntax;
- use type guards for runtime checking;
+ Prefer `as` over angle brackets;
+ type guards for runtime checking;
  avoid deep nesting in conditional types.
 
 TY7:
  Use assertion functions (`asserts value is T`) for runtime type narrowing.
 
 TY8:
- `const` narrowing doesn't reach **function declarations** (classic tsc 6 + native tsc 7).
- Fix:
+ `const` narrowing doesn't reach function declarations (classic tsc 6 + native tsc 7).
+Fix:
  helper returning non-null,
- or reassign to new `const` with explicit type annotation after null check.
+ or new `const` with explicit type after null check.
 
 TY9:
  Generator overloads:
@@ -1467,15 +971,11 @@ VA5:
  separate destructuring blocks for dependent values.
 
 VA6:
- Magic literals as named `const` (exception:
- `-2` through `2`,
- and numeric literals used as object-literal property values,
- mirroring oxlint's `no-magic-numbers` `detectObjects: false`);
- for fractional values needing a name anyway,
- compose from exempt range:
- `HALF = 1 / 2`,
- `QUARTER = HALF / 2`,
- `THREE_QUARTERS = HALF + QUARTER`.
+ Magic literals as named `const`;
+ exempt:
+ `-2` through `2` + object-literal property values (oxlint `detectObjects: false`).
+Fractional names compose from exempt range:
+ `HALF = 1 / 2`.
 
 #### Programming patterns
 
@@ -1504,7 +1004,7 @@ PP5:
 
 PP6:
  Combine `console.log`/`console.error` messages into thrown errors;
- use `process.exitCode` only for non-standard exit codes.
+ `process.exitCode` only for non-standard exit codes.
 
 PP7:
  Never `process.exit()`:
@@ -1517,9 +1017,9 @@ PP8:
 
 PP9:
  No `switch` statements:
- use if/else chains or `Record` lookups;
- if/else avoids `break` boilerplate + fallthrough bugs;
- `Record` preferred when mapping discriminant to value.
+ if/else chains or `Record` lookups;
+ if/else avoids `break` + fallthrough bugs;
+ `Record` for discriminant-to-value maps.
 
 PPX:
  Composition over inheritance;
@@ -1529,32 +1029,23 @@ PPX:
 #### Regular expressions
 
 RG1:
- Don't introduce regular expression when index scan,
+ Don't introduce regex when index scan,
  parser,
  string API expresses same rule clearly.
 
 RG2:
- Regex you remove must become single linear pass (`for...of`/`for`/`reduce`,
- O(n) time,
- O(1) extra stack),
- never recursion over text nor accumulator rebuilding string/array each step (`acc + c`,
- `[...acc, x]`).
- Don't assume original regex was linear:
- backtracking pattern can be superlinear,
- so prove O(n) for attacker-controlled/unbounded input.
- Why:
- philosophy doc.
+ Removed regex becomes single linear pass (O(n),
+ O(1) stack);
+ never recursion over text or accumulator rebuilds (`acc + c`).
+Original may backtrack superlinearly;
+ prove O(n) for unbounded input.
 
 RG3:
- Regex literals,
- `RegExp` constructor calls,
- string methods using regex must be guarded
- by scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment.
- Justification must explain why regex is right tool,
- what input shape bounds it,
- why it can't backtrack or rescan unbounded prefixes/suffixes.
- If no useful justification exists,
- don't use regex.
+ Every regex needs scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` justifying why regex fits,
+ what bounds input,
+ why no backtracking/rescanning.
+No justification:
+ no regex.
 
 ### Third-party libraries
 
@@ -1578,10 +1069,10 @@ DM2:
  Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`.
 
 LFW:
- Never hand-edit lockfiles.
-Regenerate them with the owning package manager or repo task,
- then inspect generated diffs.
-Report unrelated drift separately.
+ Never hand-edit lockfiles;
+ regenerate with owning package manager or repo task,
+ inspect generated diffs,
+ report unrelated drift separately.
 
 ### Adding new packages
 
@@ -1595,54 +1086,49 @@ AP3:
  Configure `package.json` with workspace dependencies.
 
 AP4:
- CLI packages with `bin` entry:
- add `#!/usr/bin/env node` shebang as first line of entry point;
- without it,
- Unix falls back to `/bin/sh` + script hangs/errors.
- Use `#!/usr/bin/env bun` only in an explicitly documented Bun island;
- normal CLI bins default to Node.
+ CLI packages with `bin`:
+ `#!/usr/bin/env node` shebang first line;
+ without it Unix falls back to `/bin/sh` + hangs.
+`#!/usr/bin/env bun` only in documented Bun islands.
 
 AP5:
- Packages with client-side bundling:
+ Client-side bundling packages:
  add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`,
- `build:js:client` mise task,
- `@monochromatic-dev/config-tsdown` as devDependency.
+ `build:js:client` task,
+ `@monochromatic-dev/config-tsdown` devDependency.
 
 ## Before declaring work complete
 
 ### Package completeness
 
 PKG:
- Package not finished until it has `README.md`,
- passes linting with zero errors,
- has passing tests covering every exported code path.
-Never declare work complete while any condition unmet.
+ Package unfinished until it has `README.md`,
+ zero lint errors,
+ passing tests covering every exported code path.
+Never declare complete while any unmet.
 
 TCV:
- Enumerate every distinct code path module exposes,
- not just obvious happy path.
-Implementation has separate branches (sync vs async,
- string vs object,
- direct vs delegated)?
- Each branch needs its own test.
+ Enumerate every distinct code path,
+ not just happy path;
+ each implementation branch (sync/async,
+ string/object,
+ direct/delegated) needs own test.
 
 TC2:
- "Tests exist and pass" not evidence of completeness.
-Compare test names against implementation's branches;
+ "Tests exist and pass" isn't completeness evidence;
+ compare test names against implementation branches,
  confirm no untested path.
 
 ### Verify at the user boundary
 
 VUB:
- After building,
- deploying,
- installing artifact,
- run verification steps exercising it the way an end user would.
+ After building/deploying/installing artifact,
+ verify by exercising it the way an end user would.
 
 VB1:
  Server:
- confirm it serves correct responses,
- not just that it starts.
+ confirm correct responses,
+ not just startup.
 
 VB2:
  CLI tool:
@@ -1651,79 +1137,50 @@ VB2:
 VB3:
  Hook/plugin:
  trigger through host application,
- not just by piping test input directly.
+ not just piped test input.
 
 VB4:
  Library:
  import + call from consuming project,
- not just compile it.
+ not just compile.
 
 VB5:
- Web page or standalone HTML artifact (including local `file://` docs + demos in `docs/`):
+ Web page/HTML artifact:
  load with `agent-browser`,
  confirm no console errors,
- then exercise every interactive element (buttons,
- checkboxes,
- tabs) + read back rendered state via `agent-browser eval`.
- "Markup balances,
-" "JS parsed in Node,
-" "I fetched the HTML" are prerequisites,
- not proof.
- If task involved rewriting any JS handler,
- you must drive each rewritten code path through `agent-browser` before declaring done.
+ exercise every interactive element,
+ read rendered state via `agent-browser eval`.
+Rewritten JS paths:
+ drive each.
 
 VB6:
- Verification must cross integration boundary between artifact + consumer.
-"It compiled" / "It installed" alone not verification.
+ Verification must cross artifact-consumer integration boundary;
+ "it compiled"/"it installed" alone isn't verification.
 
 URF:
- Verification needing a resource the user provided runs FIRST,
- before unrelated work AND other parts of same task.
-Scope expansion or long task-list never licenses deferring;
- finish before next unit.
+ Verification needing user-provided resource runs FIRST,
+ before unrelated work + other parts of same task;
+ scope expansion never defers it.
 Not done until resource exercised.
-Cue:
- "X connected"/"you have access to X",
- task verifies against X.
 
 ### Verify on a throwaway, not against real state
 
 THR:
- Verification involving state-mutating/destructive operation runs against disposable fixture you create,
- never user's real/shared state (working tree,
- caches,
- database,
- live conf),
- even if command looks idempotent or you committed first.
-Reproduce real scenario:
- `mktemp -d` + `git init`,
- scratch dir,
- throwaway branch/worktree,
- container,
- fresh sqlite file;
- exercise real artifact,
- delete afterward.
-Guard tests need both allowed + rejected fixtures.
-Cue:
- about to run `reset --hard`,
- `clean -fd`,
- migration,
- bulk delete,
- overwrite,
- or state-mutating observation against real repo/cache/data;
- create throwaway target first.
+ State-mutating verification runs on disposable fixtures (`mktemp -d`,
+ throwaway worktree,
+ container),
+ never user's real/shared state,
+ even idempotent.
+Guard tests:
+ allowed + rejected fixtures.
 
 TAE:
- Writing instructions,
- conf,
- documentation prescribing how a tool/API behaves:
- test claim first with real invocation.
-Never write "use X for Y" based on how X **should** work;
-run X against real target + confirm output.
-Applies to agent prompts,
+ Prescribing tool/API behavior in instructions/conf/docs:
+ test claim with real invocation first,
+ never from how X should work.
+Covers agent prompts,
  README guidance,
- CI scripts,
- any artifact future sessions will follow.
+ CI scripts.
 
 ## When committing or documenting
 
@@ -1732,52 +1189,41 @@ Applies to agent prompts,
 #### Prose style
 
 WR2:
- No em-dashes (`—`),
- en-dashes (`–`),
- their ASCII substitutes (`-`,
- `--`) when used in prose as em-dashes;
- all such uses informal.
- Use paired commas/parentheses for asides,
- colon for elaboration/lists,
- semicolon for linked independent clauses,
- period for abrupt breaks.
- Use "to" for ranges.
- Hyphens fine in compound words ("user-facing"),
- `--` fine in CLI flags (`--watch`);
- ban applies only to em-dash use.
+ No em-dashes,
+ en-dashes,
+ or their ASCII substitutes as prose em-dashes.
+Use paired commas/parentheses,
+ colon,
+ semicolon,
+ or period;
+ "to" for ranges.
+Compound-word hyphens + CLI `--flags` fine.
 
 WR3:
- Sentence case for headings;
- **bold** for inline emphasis only (not ALL CAPS).
- Never use bold as standalone title;
- use appropriate ATX header level instead.
+ Sentence case headings;
+ **bold** for inline emphasis only (no ALL CAPS);
+ never bold as standalone title,
+ use ATX header level.
 
 WR4:
- Avoid unnecessary numbers in prose.
- Use numerals only when exact count,
+ Numerals only when exact count,
  order,
- quantity,
  version,
  ID,
- or reproducible measurement matters.
- Prefer count-neutral wording when count is incidental or likely to drift,
- for example `these cases`,
- not a fixed count.
- Lists may use markers for structure;
- do not mention list length unless length is part of the claim.
+ or measurement matters;
+ prefer count-neutral wording;
+ never mention list length unless it's the claim.
 
 WR5:
  Never reference by relative position ("above",
  "below",
- "earlier").
- Refs go stale when content moves.
- Name the thing directly:
+ "earlier");
+ name the thing:
  tag,
  heading,
  path,
- symbol,
- dependency name.
- Applies to prose,
+ symbol.
+Applies to prose,
  TSDoc,
  comments.
 
@@ -1811,82 +1257,56 @@ MD6:
  lines under 120 chars.
 
 WRP:
- Wrap file names,
+ Backtick file names,
  identifiers,
  commands,
- other code tokens in backticks in Markdown prose;
- `semantic-line-breaks` autofix splits bare dotted tokens mid-token,
- inline code spans exempt.
+ code tokens in Markdown prose;
+ `semantic-line-breaks` autofix splits bare dotted tokens mid-token.
 Backlog:
  `docs/todo/backtick-split-filenames.md`.
-Cue:
- about to type dotted/punctuated token bare in prose.
 
 ### Doc placement
 
 DPL:
- Repo-wide docs live under `docs/<family>/`,
- one directory per dotted-prefix family (`docs/troubleshooting/`,
- `docs/philosophy/`,
- `docs/todo/`,
- `docs/handover/`,
- `docs/runbook/`,
- etc.).
-Repo root keeps only `README.md`,
+ Repo-wide docs:
+ `docs/<family>/`.
+Root keeps only `README.md`,
  `SECURITY.md`,
  `AGENTS.md`,
  `CLAUDE.md`,
  `LICENSES/`,
- already-tidy doc subdirectories like `.out-of-scope/`;
- `CONTEXT.md` is explicitly forbidden at repo root.
-Repo-wide documentation belongs under `docs/<family>/` or existing curated docs,
- not root cache files.
-Package-specific docs stay beside code they document;
- this rule governs root-level families,
- not a package's own `README.md`,
- `TODO.md`,
- `HANDOVER.*.md`.
+ tidy subdirs;
+ `CONTEXT.md` forbidden.
+Package docs stay beside code.
 
 DL1:
- Naming:
- `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`,
- dropping now-redundant prefix;
- second dotted segment stays flat in filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`),
- not deeper directory.
- Use kebab-case for multi-word topics.
+ `PREFIX.rest.md` becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`,
+ dropping redundant prefix;
+ second dotted segment stays flat in filename;
+ kebab-case for multi-word topics.
 
 DL2:
  Hubs:
  bare `PREFIX.md` index becomes `docs/<family>/README.md`,
- keeping its curated prose.
+ keeping curated prose.
 
 DL3:
- Bug reports fold into most relevant `docs/troubleshooting/<topic>.md` as section rather than getting their own family.
+ Bug reports fold into most relevant `docs/troubleshooting/<topic>.md` as section,
+ not own family.
 
 DL4:
- Delete a doc only when its work has landed AND it no longer carries durable operational value.
- A landed fix alone insufficient.
- Retain + update records explaining external behavior,
- root causes,
- verified workarounds,
- tradeoffs,
- recurring failure modes,
- or upstream disposition.
- Before deletion,
- identify current replacement for each durable fact;
- if none exists,
- update document instead.
- Git history is backstop after retention gate,
- not proof deletion safe.
- Read each before deleting.
-Cue:
- about to delete because implementation landed;
- check whether document would prevent future session from re-diagnosing behavior or missing constraint.
+ Delete doc only when work landed AND no durable value (root causes,
+ workarounds,
+ tradeoffs) remains.
+Identify replacement per durable fact;
+ none -> update.
+Read first;
+ git history isn't proof.
 
 DL5:
  Reference source files by repo-relative path,
  not pinned GitHub blob URL;
- blob URL also breaks when target moves.
+ blob URLs break when target moves.
 
 DL6:
  No automated check guards root regression;
@@ -1895,62 +1315,30 @@ DL6:
 ### Handling external changes
 
 EC1:
- External worktree changes normal + often expected in this repo.
- Treat `git status` entries you didn't modify as concurrent work,
+ External worktree changes = concurrent work,
  not emergency.
-Never `git restore`,
- `git stash`,
- cleanup,
- move aside,
- or revert unrelated external changes.
-Only touch task-scope files;
- unrelated change blocks necessary edit -> acknowledge it + ask before changing/reverting.
+Never restore/stash/revert unrelated changes;
+ touch only task-scope files.
+Unrelated change blocks needed edit:
+ acknowledge + ask.
 
 ### Git commit guidelines
 
 GCE:
  Commit at earliest opportunity,
- even if progress isn't coherent,
- before next work step.
-Never wait for full verification,
- for a feature/fix to finish,
- or for a change to stand on its own;
-commit a checkpoint the moment anything is worth recording,
- then keep testing + fixing in follow-up commits.
-Supersedes harness ask-before-committing default;
- commit eagerly without asking.
-Stage explicit,
- scoped pathspecs so eager commits don't sweep unrelated/concurrent changes (see CLG).
-Cue:
-"I just changed something,
- even if incomplete,
- untested,
- or not a coherent unit;
- committing now records progress.
-"
+ before next work step;
+ never wait for verification,
+ coherence,
+ or completion.
+Supersedes harness ask-first default.
+Stage explicit scoped pathspecs (CLG).
 
 GCG:
- Commit messages use Conventional Commits:
- `<type>(<scope>): <subject>`.
-Types:
- `feat`,
- `fix`,
- `docs`,
- `style`,
- `refactor`,
- `perf`,
- `test`,
- `build`,
- `ci`,
- `chore`,
- `revert`.
-Scope:
- package name,
- or `*` for multi-package changes.
-Group related changes by type;
- be specific about what changed.
- Two lines per group.
- Example:
+ Commit messages:
+ Conventional Commits `<type>(<scope>): <subject>`;
+ scope = package name or `*` for multi-package.
+Group related changes by type,
+ two lines per group:
 
 ```txt
 fix(package1): <what>
@@ -1963,67 +1351,37 @@ fix(package2): <what>
 ```
 
 GCA:
- Commit message inaccurate after committing:
+ Inaccurate commit message:
  don't amend (harness rule).
 Surface it,
  ask user to push,
- then post commit comment:
- renders alongside commit on GitHub + survives history rewrites.
-Don't silently let it stand;
-future readers see only message.
-Cue:
- about to write "the commit message overstates scope" or similar in chat as one-off note
- instead of recording it where commit lives.
+ post commit comment (renders on GitHub,
+ survives rewrites);
+ never silently let it stand.
 
 CLG:
- Never preemptively bypass `cli-git` guards.
-They reject bulk staging (`-A`,
- `.`) + pathspec-less commits because dirty trees/concurrent sessions sweep unrelated files.
-Stage/commit explicit scoped pathspecs (`git add <path>`;
- `git commit <path> -m ...`).
-Use `--no-enforce-bulk-add`/`--no-enforce-only`
- only when no scoped pathspec can express genuine whole-tree single-session change;
- never default or child-session recipe.
-Cue:
- about to type `--no-enforce`,
- `git add -A`,
- `git add .`,
- or pathspec-less `git commit`.
+ Never preemptively bypass `cli-git` guards (they reject bulk staging + pathspec-less commits).
+Stage explicit scoped pathspecs.
+`--no-enforce-*` only when no scoped pathspec fits the change.
 
 XCM:
  External communications report result,
- not optional follow-up menu.
-Never append work-inviting offers/questions (`happy to`,
- `want me to`,
- `if you'd prefer`,
- `say the word`,
- `let me know and I'll`) to PRs,
- reviews,
- issues,
- commit comments,
- emails.
-Genuine user-only choice:
- ask user before sending,
- not in external text.
+ never work-inviting offers ("happy to",
+ "want me to").
+User-only choice:
+ ask user before sending.
 Necessary blocker question to recipient allowed.
-Cue:
- about to end external message with optional offer/question;
- cut it.
 
 ATR:
- Never append AI-attribution markers to outward-facing text:
+ No AI-attribution markers outward:
  no "Generated with Claude Code" footers,
  no `Co-Authored-By: Claude` trailers,
  in commits,
  PRs,
  issues,
- review comments,
+ reviews,
  emails.
-Supersedes harness default instructing that footer on PR bodies;
-this rule wins.
-Cue:
- about to end PR body or commit message with attribution marker;
- cut it.
+Supersedes harness PR-footer default.
 
 ## Architecture decisions
 
@@ -2040,25 +1398,26 @@ AD3:
  Direct async execution over descriptor/interpreter patterns.
 
 AD4:
- Nested calls (`b(a())`) over method chaining to keep functions self-contained;
-split chain of more than two nested calls across lines instead of stacking close-parens (`)))`) on one line.
+ Nested calls (`b(a())`) over method chaining;
+ split chains of more than two nested calls across lines,
+ no stacked `)))`.
 
 ## Agent skills
 
 SK1:
  **Issue tracker**:
- GitHub Issues via `gh` CLI.
- "Resolve issue N" requires explicit `gh issue close` after fix commits;
- commit-body `Closes #N` auto-close not sufficient.
- See `docs/agents/issue-tracker.md`.
+ GitHub Issues via `gh`.
+"Resolve issue N" requires explicit `gh issue close` after fix commits;
+ `Closes #N` auto-close insufficient.
+See `docs/agents/issue-tracker.md`.
 
 SK2:
  **Triage labels**:
  canonical roles with default label strings.
- See `docs/agents/triage-labels.md`.
+See `docs/agents/triage-labels.md`.
 
 SK3:
  **Domain docs**:
  no context files;
  agents read fresh code on every probe.
- See `docs/agents/domain.md`.
+See `docs/agents/domain.md`.
