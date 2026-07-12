@@ -127,13 +127,13 @@ await describe({
           },
         },),
         it({
-          name: 'reminder cites AGENTS.md item 11',
+          name: 'reminder cites AGENTS.md rule CKB',
           fn: async () => {
             const out = correctionReminderHandler(
               makeEvent('Why would you include that rule?',),
             );
             expect(out.hookSpecificOutput?.additionalContext,).toContain(
-              'item 11',
+              'rule CKB',
             );
           },
         },),
