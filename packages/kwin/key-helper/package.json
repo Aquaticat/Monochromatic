@@ -1,0 +1,26 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/kwin-key-helper",
+  "description": "KWin script plus D-Bus daemon: active-window tracking, Ctrl+F4 tab close, Meta+N new instance of the current app, and double-shift-to-F20 for Neovide.",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "@msgpack/msgpack": "catalog:",
+    "dbus-next": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "postject": "catalog:",
+    "tsdown": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/kwin/key-helper"
+  },
+  "sideEffects": true
+}

@@ -1,0 +1,140 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:node"]
+extends = "build:js:node"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:js"]
+extends = "watch:build:js"
+
+[tasks."watch:build:js:node"]
+extends = "watch:build:js:node"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."test:unit"]
+extends = "test:unit"
+
+[tasks.run]
+description = "Run the key-helper daemon from source (dev)"
+run = "node src/index.ts"
+
+[tasks."run:dev"]
+description = "Run the daemon from source with file-watch auto-restart"
+run = "mise watch -w src -r -- node src/index.ts"
+
+[tasks."build:sea"]
+description = "Embed the built ESM bundle into a Node SEA binary (key-helper-service)"
+shell = "node --input-type=module-typescript -e"
+run = """
+import { execFileSync, } from 'node:child_process'
+import { chmodSync, copyFileSync, } from 'node:fs'
+
+// Generate the SEA blob from dist/final/node/index.mjs (see sea-config.json).
+execFileSync(process.execPath, ['--experimental-sea-config', 'sea-config.json',], { stdio: 'inherit', },)
+// Base the executable on the running node binary, then make it runnable.
+copyFileSync(process.execPath, 'key-helper-service',)
+chmodSync('key-helper-service', 0o755,)
+// Inject the blob using the standard SEA fuse sentinel.
+execFileSync(
+  'node_modules/.bin/postject',
+  [
+    'key-helper-service',
+    'NODE_SEA_BLOB',
+    'dist/sea-prep.blob',
+    '--sentinel-fuse',
+    'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
+  ],
+  { stdio: 'inherit', },
+)
+console.log('built key-helper-service',)
+"""
+
+[tasks."build:binary"]
+description = "Build the ESM bundle then embed it into the SEA binary"
+run = ["mise run build", "mise run build:sea"]
+
+[tasks.install]
+description = "Symlink the KWin script, point autostart at the in-repo binary, enable the script"
+shell = "node --input-type=module-typescript -e"
+run = """
+import { execFileSync, } from 'node:child_process'
+import {
+  lstatSync,
+  mkdirSync,
+  readlinkSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
+import {
+  join,
+  resolve,
+} from 'node:path'
+
+const home = process.env.HOME
+if (!home) { throw new Error('HOME is not set',) }
+const pkgDir = process.cwd()
+const kwinTarget = resolve(pkgDir, 'kwin-script',)
+const binPath = resolve(pkgDir, 'key-helper-service',)
+
+// 1. Symlink the KWin script package into the XDG scripts dir (idempotent).
+const scriptsDir = join(home, '.local/share/kwin/scripts',)
+mkdirSync(scriptsDir, { recursive: true, },)
+const linkPath = join(scriptsDir, 'key-helper-kwin',)
+let needLink = true
+try {
+  const st = lstatSync(linkPath,)
+  if (st.isSymbolicLink() && (readlinkSync(linkPath,) === kwinTarget)) { needLink = false }
+  else { rmSync(linkPath, { recursive: true, force: true, },) }
+} catch (error) {
+  // Link absent: nothing to reconcile, create it below.
+  void error
+}
+if (needLink) {
+  symlinkSync(kwinTarget, linkPath,)
+  console.log(`linked ${linkPath} -> ${kwinTarget}`,)
+} else {
+  console.log(`link already correct: ${linkPath}`,)
+}
+
+// 2. Write the autostart entry pointing at the in-repo SEA binary.
+const autostartDir = join(home, '.config/autostart',)
+mkdirSync(autostartDir, { recursive: true, },)
+const desktop = [
+  '[Desktop Entry]',
+  'Type=Application',
+  'Name=Key Helper D-Bus Service',
+  'Comment=Bridges KWin script commands to Neovim RPC and ydotool',
+  `Exec=/bin/sh -c 'exec ${binPath} 2>&1 | systemd-cat -t key-helper -p debug'`,
+  'Terminal=false',
+  'X-KDE-autostart-phase=2',
+  '',
+].join('\\n',)
+writeFileSync(join(autostartDir, 'key-helper-service.desktop',), desktop,)
+console.log('wrote autostart: key-helper-service.desktop',)
+
+// 3. Enable the KWin script in kwinrc.
+execFileSync(
+  'kwriteconfig6',
+  ['--file', 'kwinrc', '--group', 'Plugins', '--key', 'key-helper-kwinEnabled', 'true',],
+  { stdio: 'inherit', },
+)
+console.log('enabled key-helper-kwin in kwinrc',)
+"""

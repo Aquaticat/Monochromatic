@@ -37,6 +37,7 @@ catalog:
   '@luma.gl/engine': '>=9.3.6'
   '@mdx-js/mdx': '>=3.1.1'
   '@mitata/counters': '>=0.0.8'
+  '@msgpack/msgpack': '>=3.0.0-beta2'
   '@optique/core': '>=1.1.1'
   '@optique/run': '>=1.1.1'
   '@oxlint/plugins': '>=1.73.0'
@@ -62,6 +63,7 @@ catalog:
   'chokidar': '>=5.0.0'
   'crossws': '>=0.4.4'
   'csstype': '>=3.2.3'
+  'dbus-next': '>=0.10.2'
   'decircular': '>=1.0.0'
   'dot-prop': '>=10.1.0'
   'electron': '>=43.1.0'
@@ -103,6 +105,7 @@ catalog:
   'picomatch': '>=4.0.5'
   'postcss': '>=8.5.16'
   'postcss-html': '>=1.8.1'
+  'postject': '>=1.0.0-alpha.6'
   'preact': '>=10.26.0'
   'preact-render-to-string': '>=6.5.0'
   'rehype-autolink-headings': '>=7.1.0'
@@ -153,8 +156,8 @@ hoistWorkspacePackages: false
 lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
-  - '@earendil-works/pi-*'
-  - 'tsdown@0.22.5'
+- '@earendil-works/pi-*'
+- 'tsdown@0.22.5'
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 nodeLinker: isolated
@@ -337,7 +340,7 @@ packageExtensions:
       '@mitata/counters': 'catalog:'
 packageImportMethod: clone-or-copy
 packages:
-  - 'packages/*/*'
+- 'packages/*/*'
 peerDependencyRules:
   allowedVersions:
 
@@ -364,15 +367,15 @@ strictPeerDependencies: true
 # See docs/decisions/pnpm-supported-architectures.md for full rationale.
 supportedArchitectures:
   cpu:
-    - x64
-    - arm64
-    - current
+  - x64
+  - arm64
+  - current
   libc:
-    - glibc
-    - musl
-    - current
+  - glibc
+  - musl
+  - current
   os:
-    - darwin
-    - linux
-    - current
+  - darwin
+  - linux
+  - current
 trustPolicy: no-downgrade

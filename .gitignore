@@ -214,6 +214,7 @@ captures/
 
 # Package-specific generated files unsafe to generalize
 /packages/desktop-daemon/hall-monitor/**/hall-monitor
+/packages/kwin/key-helper/key-helper-service
 /packages/music-player/android-app/build/
 **/app/build/
 **/linter/kotlin/build/
@@ -235,3 +236,7 @@ mutants.out.old/
 
 # Re-include files hidden by broader local patterns.
 !/forbidden-strings.local.example.txt
+
+# The KWin script's main.js is genuine tracked source, not a stray build artifact
+# hidden by the blanket `*.js` ignore.
+!/packages/kwin/key-helper/kwin-script/contents/code/main.js
