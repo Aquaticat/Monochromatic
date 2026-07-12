@@ -18,8 +18,11 @@ import {
 import type { LazyPolicyGitFacts, } from '../api/context-types.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
+  captureIndexRecords,
+  stagedDeltaPaths,
+} from './add-staged-delta.ts';
+import {
   createPrivateIndexFacts,
-  listChangedIndexPaths,
   listPrivateIndexPaths,
 } from './commit-transaction-candidates.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
@@ -204,6 +207,15 @@ export async function createAddPolicyFacts({
       ],
     },);
   }
+  /**
+   * Complete records before replaying the add, scoping the add gate to
+   * exactly the entries this invocation stages.
+   */
+  const beforeRecords = await captureIndexRecords({
+    gitPath,
+    cwd: layout.effectiveCwd,
+    indexPath,
+  },);
   await runTransactionGit({
     gitPath,
     cwd: layout.effectiveCwd,
@@ -211,13 +223,14 @@ export async function createAddPolicyFacts({
     args: args.slice(layout.subcommandIndex,),
   },);
   /**
-   * Changed add paths or exact unchanged-inclusive direct scope.
+   * Paths this add staged or exact unchanged-inclusive direct scope.
    */
   const paths = candidatePathspecs === undefined
-    ? await listChangedIndexPaths({
+    ? await stagedDeltaPaths({
       gitPath,
       cwd: layout.effectiveCwd,
       indexPath,
+      before: beforeRecords,
     },)
     : await listPrivateIndexPaths({
       gitPath,
