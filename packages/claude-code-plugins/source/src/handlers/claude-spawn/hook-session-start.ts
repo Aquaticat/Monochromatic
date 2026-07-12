@@ -234,12 +234,11 @@ async function autoSetupCli(hookDir: string,): Promise<string | typeof NO_WARNIN
 
   /**
    * Resolve plugin root from the compiled hook's location.
-   * Hook binary: `${PLUGIN_ROOT}/dist/final/node/index.mjs`
+   * Hook binary: `${PLUGIN_ROOT}/bundle/node/index.mjs`
    * CLI source:  `${PLUGIN_ROOT}/src/cli.ts`
    */
   const pluginRoot = resolve(
     hookDir,
-    '..',
     '..',
     '..',
   );

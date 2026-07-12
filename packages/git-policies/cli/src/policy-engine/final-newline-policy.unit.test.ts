@@ -156,6 +156,8 @@ await describe({
         expect(isFinalNewlineExcluded('packages/test-fixture/toml-edit/src/a.toml',),).toBe(true,);
         expect(isFinalNewlineExcluded('pkg/dist/final/node/index.mjs',),).toBe(true,);
         expect(isFinalNewlineExcluded('dist/final/node/index.d.mts',),).toBe(true,);
+        expect(isFinalNewlineExcluded('pkg/bundle/node/index.mjs',),).toBe(true,);
+        expect(isFinalNewlineExcluded('pkg/bundle/node',),).toBe(false,);
         expect(isFinalNewlineExcluded('packages/fuzz/forbidden-strings/corpus/a',),).toBe(false,);
         expect(isFinalNewlineExcluded('packages/fuzz/other/seeds/a',),).toBe(false,);
         expect(isFinalNewlineExcluded('pkg/dist/final/browser/index.mjs',),).toBe(false,);

@@ -4,7 +4,7 @@
   "description": "Claude Code PreToolUse hook that pipes Bash tool output through a filter to strip git boilerplate, truncate long lines, and collapse repeated diagnostics.",
   "type": "module",
   "bin": {
-    "ccbof": "./dist/final/node/index.mjs"
+    "ccbof": "./bundle/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {

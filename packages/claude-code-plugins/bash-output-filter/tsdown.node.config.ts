@@ -9,10 +9,19 @@ import type { UserConfig, } from 'tsdown';
  * the `text-scan` lib. Building each entry as its own bundle keeps both outputs
  * self-contained with stable filenames instead of emitting a content-hashed
  * shared chunk.
+ *
+ * Every entry overrides the shared outDir because committed plugin bundles
+ * live in the tracked `bundle/node/` directory, not gitignored `dist/`; see
+ * `docs/decisions/gitignore-negations.md`.
  */
 const config: UserConfig[] = perEntryNodeConfig([
   './src/index.ts',
   './src/filter.ts',
-],);
+],).map(function intoBundleDir(entryConfig: UserConfig,): UserConfig {
+  return {
+    ...entryConfig,
+    outDir: 'bundle/node',
+  };
+},);
 
 export default config;

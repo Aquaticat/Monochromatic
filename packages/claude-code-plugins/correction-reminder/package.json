@@ -4,7 +4,7 @@
   "description": "Claude Code UserPromptSubmit hook that detects correction phrases and reminds Claude to re-check evidence before its next substantive response.",
   "type": "module",
   "bin": {
-    "cccr": "./dist/final/node/index.mjs"
+    "cccr": "./bundle/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {

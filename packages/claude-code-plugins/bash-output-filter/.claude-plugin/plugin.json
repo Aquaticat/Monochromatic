@@ -12,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/node/index.mjs"
+            "command": "${CLAUDE_PLUGIN_ROOT}/bundle/node/index.mjs"
           }
         ]
       }

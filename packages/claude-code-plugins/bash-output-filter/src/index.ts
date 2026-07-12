@@ -7,8 +7,8 @@
  * Thin shim; handler logic, validation, and the filter pipeline live in
  * `@monochromatic-dev/claude-code-plugins-source/handlers/bash-output-filter`.
  * This file exists so the standard tsdown build produces an installable plugin
- * entry at `dist/final/node/index.mjs`. The companion shim `src/filter.ts`
- * builds to `dist/final/node/filter.mjs`, which the rewritten command pipes
+ * entry at `bundle/node/index.mjs`. The companion shim `src/filter.ts`
+ * builds to `bundle/node/filter.mjs`, which the rewritten command pipes
  * Bash output through.
  *
  * @example

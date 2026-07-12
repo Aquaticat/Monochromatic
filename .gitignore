@@ -223,9 +223,6 @@ captures/
 mutants.out/
 mutants.out.old/
 
-# Claude Code plugin bundles. Marketplace distribution requires committed built files.
-!/packages/claude-code-plugins/*/dist/
-
 # Re-include files hidden by broader local patterns.
 !/forbidden-strings.local.example.txt
 

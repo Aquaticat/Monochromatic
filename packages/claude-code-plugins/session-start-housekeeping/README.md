@@ -12,6 +12,7 @@ Runs these cleanup steps in parallel on every session startup or resume:
    `hooks`,
    `objects`,
    `refs`) and `.claude` directories leaked into `packages/*/*/dist/final/`
+  and committed-plugin `packages/*/*/bundle/` directories
 - Removes zero-byte Claude Code sandbox sentinels (`HEAD`,
    `config`,
    `hooks`,

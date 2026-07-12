@@ -28,12 +28,17 @@ const TOML_PATH = 'packages/test-fixture/toml-edit/src/newline-fixture.toml';
  */
 const TSDOWN_PATH = 'pkg/dist/final/node/index.mjs';
 /**
+ * Committed plugin bundle path excluded from every final-newline lifecycle.
+ */
+const BUNDLE_PATH = 'pkg/bundle/node/index.mjs';
+/**
  * Named hk exclusion families exercised through packed lifecycle paths.
  */
 const EXCLUDED_PATHS = [
   FUZZ_PATH,
   TOML_PATH,
   TSDOWN_PATH,
+  BUNDLE_PATH,
 ] as const;
 
 /**

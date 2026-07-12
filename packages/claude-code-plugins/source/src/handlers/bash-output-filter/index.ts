@@ -40,7 +40,7 @@ type BashOutputFilterOutput = PreToolUseOutput;
  * Rewrites the Bash command to pipe its merged stdout/stderr through the
  * filter script. The filter script lives next to the bundled hook entry:
  * `import.meta.dirname` resolves at runtime to the bundle's directory,
- * which is `dist/final/node/`, where `filter.mjs` is a sibling output of
+ * which is `bundle/node/`, where `filter.mjs` is a sibling output of
  * the same multi-entry tsdown build.
  *
  * Decision tree:

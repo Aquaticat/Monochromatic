@@ -306,3 +306,8 @@ Every constraint recorded here stands:
  Claude Code still copies plugin sources into the per-user cache without an install step,
  and built bundles stay committed.
 Only their directory name changes.
+
+Implemented 2026-07-12 (issue #365):
+ bundles now live in tracked `bundle/node/` per plugin,
+ `plugin.json` hooks and `package.json` `bin` entries point there,
+ and the carve-out lines left `.gitignore`.

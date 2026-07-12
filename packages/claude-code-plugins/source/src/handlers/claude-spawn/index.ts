@@ -34,8 +34,8 @@ import {
 
 /**
  * Captured at module load. After tsdown bundles the source package into the
- * per-plugin entry, this resolves to `${pluginRoot}/dist/final/node/`, which
- * {@link handleSessionStart} walks up three levels to recover the plugin root.
+ * per-plugin entry, this resolves to `${pluginRoot}/bundle/node/`, which
+ * {@link handleSessionStart} walks up two levels to recover the plugin root.
  */
 const HOOK_DIR = import.meta.dirname;
 

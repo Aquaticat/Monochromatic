@@ -4,7 +4,7 @@
   "description": "Claude Code UserPromptSubmit hook that injects the current local system time into Claude's context as <time>HH:MM</time>.",
   "type": "module",
   "bin": {
-    "ccpt": "./dist/final/node/index.mjs"
+    "ccpt": "./bundle/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {

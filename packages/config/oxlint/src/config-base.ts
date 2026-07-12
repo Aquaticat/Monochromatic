@@ -57,6 +57,9 @@ export const base: OxlintConfig = {
 
   ignorePatterns: [
     '**/dist',
+    // Committed Claude Code plugin bundles (tsdown output moved out of dist;
+    // see docs/decisions/gitignore-negations.md).
+    '**/bundle',
     '**/node_modules',
     '**/logs',
     '**/coverage',

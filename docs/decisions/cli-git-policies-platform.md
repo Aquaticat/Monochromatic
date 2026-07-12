@@ -693,7 +693,11 @@ Exact exclusion families are:
    see `docs/decisions/gitignore-negations.md`);
 - `packages/rust-module/forbidden-regex.fuzz/seeds/**`;
 - `packages/test-fixture/toml-edit/src/**`;
-- `**/dist/final/node/**`.
+- `**/dist/final/node/**`;
+- `**/bundle/node/**`
+  (committed Claude Code plugin bundles,
+   which moved out of `dist/`;
+   see `docs/decisions/gitignore-negations.md`).
 
 Commit fixing changes only exact would-be-committed blobs.
 Unstaged tails and unrelated staged paths remain byte-identical.

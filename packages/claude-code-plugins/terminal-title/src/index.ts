@@ -8,7 +8,7 @@
  * Thin shim; handler logic, parser, writer, and the tool-title registry live in
  * `@monochromatic-dev/claude-code-plugins-source/handlers/terminal-title`.
  * This file exists so the standard tsdown build produces an installable plugin
- * entry at `dist/final/node/index.mjs` for Claude Code's marketplace install.
+ * entry at `bundle/node/index.mjs` for Claude Code's marketplace install.
  *
  * @module
  */

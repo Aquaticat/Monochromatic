@@ -16,7 +16,8 @@ import {
 
 /**
  * Stale artifact names that git metadata or Claude config can leak into nested
- * `dist/final/` directories. Removed on session start to prevent build contamination.
+ * `dist/final/` and committed-plugin `bundle/` directories. Removed on session
+ * start to prevent build contamination.
  */
 const STALE_DIST_ARTIFACTS = [
   'HEAD',
@@ -59,8 +60,12 @@ async function ensureDir(dirPath: string,): Promise<void> {
 
 /**
  * Removes stale git metadata and Claude config directories from all nested
- * `dist/final/` paths under `packages/`. Uses `node:fs/promises` glob to find
- * matching paths and removes them recursively.
+ * `dist/final/` paths and committed-plugin `bundle/` paths under `packages/`.
+ * Uses `node:fs/promises` glob to find matching paths and removes them
+ * recursively. The `bundle/` family exists because Claude Code plugin hook
+ * commands execute from `bundle/node/` (see
+ * `docs/decisions/gitignore-negations.md`), so leaks land there the same way
+ * they landed in `dist/final/` when hooks lived under `dist/`.
  *
  * @param workspaceRoot - absolute path to the monorepo root
  *
@@ -71,12 +76,15 @@ async function ensureDir(dirPath: string,): Promise<void> {
  */
 async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
   /**
-   * Pending `rm` operations across every matched `dist/final/<artifact>`, awaited concurrently below.
+   * Pending `rm` operations across every matched artifact path, awaited concurrently below.
    */
   const removals: Promise<void>[] = [];
 
   for await (const finalDir of glob(
-    'packages/*/*/dist/final',
+    [
+      'packages/*/*/dist/final',
+      'packages/*/*/bundle',
+    ],
     { cwd: workspaceRoot, },
   )) {
     for (const artifact of STALE_DIST_ARTIFACTS) {

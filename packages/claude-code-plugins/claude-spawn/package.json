@@ -4,7 +4,7 @@
   "description": "Claude Code plugin that spawns steerable child Claude sessions in terminal windows with automatic result forwarding via hooks.",
   "type": "module",
   "bin": {
-    "cccs": "./dist/final/node/index.mjs"
+    "cccs": "./bundle/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {

@@ -4,7 +4,7 @@
   "description": "Claude Code Stop hook that detects uncertain language in responses and reminds Claude to investigate before guessing.",
   "type": "module",
   "bin": {
-    "ccsr": "./dist/final/node/index.mjs"
+    "ccsr": "./bundle/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {

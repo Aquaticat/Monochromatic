@@ -4,7 +4,7 @@
   "description": "Claude Code hook that sets the terminal tab title to reflect current activity.",
   "type": "module",
   "bin": {
-    "cctt": "./dist/final/node/index.mjs"
+    "cctt": "./bundle/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {

@@ -4,7 +4,7 @@
   "description": "Claude Code PreToolUse hook that blocks general-purpose Agent calls (redirecting to spawn-claude) and Agent resume calls (preventing polling loops).",
   "type": "module",
   "bin": {
-    "ccgr": "./dist/final/node/index.mjs"
+    "ccgr": "./bundle/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {

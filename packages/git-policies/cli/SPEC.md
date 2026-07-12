@@ -1421,6 +1421,7 @@ packages/fuzz/forbidden-strings/seeds/**
 packages/rust-module/forbidden-regex.fuzz/seeds/**
 packages/test-fixture/toml-edit/src/**
 **/dist/final/node/**
+**/bundle/node/**
 ```
 
 Commit patches affect only would-be-committed bytes.

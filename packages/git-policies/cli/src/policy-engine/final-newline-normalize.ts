@@ -17,6 +17,10 @@ const NUL = 0;
  * Segment offset proving matched Node directory contains a descendant file.
  */
 const PATH_AFTER_NODE_OFFSET = 3;
+/**
+ * Segment offset proving matched committed-bundle directory contains a descendant file.
+ */
+const PATH_AFTER_BUNDLE_NODE_OFFSET = 2;
 
 /**
  * Result when candidate bytes need no policy patch.
@@ -79,6 +83,10 @@ export function isFinalNewlineExcluded(path: string,): boolean {
       && (segments[index + 1] === 'final')
       && (segments[index + 2] === 'node')
       && ((index + PATH_AFTER_NODE_OFFSET) < segments.length))
+      return true;
+    if ((segments[index] === 'bundle')
+      && (segments[index + 1] === 'node')
+      && ((index + PATH_AFTER_BUNDLE_NODE_OFFSET) < segments.length))
       return true;
   }
   return false;

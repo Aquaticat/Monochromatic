@@ -21,8 +21,8 @@ packages/claude-code-plugins/
     package.json                       Slim; declares bin name and depends on source
     mise.toml                          Slim; lint tasks only
     tsconfig.json                      One-line extends
-    tsdown.node.config.ts              One-line re-export of the shared .node.ts config
-    dist/final/node/index.mjs          Bundled entry; what marketplace install runs
+    tsdown.node.config.ts              Spreads the shared .node.ts config; overrides outDir
+    bundle/node/index.mjs              Committed bundled entry; what marketplace install runs
     README.md                          Per-plugin documentation
   statusline/                          Not a Claude Code plugin; configured directly in
                                          ~/.claude/settings.json statusLine field
@@ -70,7 +70,9 @@ The standard tsdown build bundles the shim with the source package contents
 inlined via `alwaysBundle: [/^@monochromatic-dev\//]` in
 `@monochromatic-dev/config-tsdown/.node.ts`.
  The bundled output goes to
-`dist/final/node/index.mjs`,
+`bundle/node/index.mjs` (a tracked directory,
+ unlike gitignored `dist/`;
+ see `docs/decisions/gitignore-negations.md`),
  which is the path declared in
 `.claude-plugin/plugin.json`.
 
@@ -80,7 +82,7 @@ For each plugin to migrate from the old per-plugin source-tree layout into the
 source package:
 
 1. Build the current plugin with `mise run //packages/claude-code-plugins/{plugin}:build:js:node`
-   so a baseline `dist/final/node/index.mjs` exists.
+   so a baseline `bundle/node/index.mjs` exists.
 2. Capture stdin -> stdout fixtures from the baseline binary covering every
    distinct decision-tree path in the handler.
     Store them under
@@ -161,9 +163,10 @@ source package:
 
 ### Decision
 
-Each plugin keeps its own `tsdown.node.config.ts` (one line,
- re-exporting the
-shared `@monochromatic-dev/config-tsdown/.node.ts`).
+Each plugin keeps its own `tsdown.node.config.ts` (a few lines,
+ spreading the
+shared `@monochromatic-dev/config-tsdown/.node.ts` with the committed
+`bundle/node` outDir override).
  The source package is
 source-only;
  it does not own a build orchestrator.
@@ -187,7 +190,7 @@ Three layouts were considered for bundling N plugins from one source package:
     `.claude-plugin/plugin.json`,
     `README.md`,
    `src/index.ts` (shim),
-    `dist/`.
+    `bundle/`.
     About six files of trivial scaffolding per
    plugin in addition to the marketplace-required and content files.
 2. **Multi-entry tsdown from source with `outDir: '..'`.
