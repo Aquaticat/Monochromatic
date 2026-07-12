@@ -339,7 +339,30 @@ Yuku,
 Oxc isolated declarations,
 or `rolldown-plugin-dts` remains open pending source audit and disposable probes.
 
+### Resolved from scope and the no-resource-constraint posture
+
+The replacement remains a type-contract rule.
+A behavior-only `no-param-reassign` variant is not a replacement for
+`prefer-readonly-parameter-types` because it abandons the declared API contract.
+No resource constraint justifies that loss.
+
+The comprehensive design may analyze body writes,
+aliases,
+callee effects,
+and capability use as supporting evidence.
+That analysis helps distinguish accidental mutable exposure from a truthful mutable parameter contract;
+it does not replace type analysis.
+
+Existing active code proves that intentional parameter mutation is legitimate in this repository:
+visited sets,
+caches,
+DOM transforms,
+streams,
+render sessions,
+and assertion trackers all have documented mutable contracts.
+The replacement must express these contracts without restoring a global type-name allow list or treating every method as
+readonly.
+
 ### Awaiting decision
 
-The first unresolved decision is the replacement rule's semantic contract,
-informed by the bridge feasibility results.
+The first unresolved policy decision is how intentional parameter mutation becomes explicit at the function boundary.
