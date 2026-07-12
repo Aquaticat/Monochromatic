@@ -100,6 +100,28 @@ sets,
 and classes.
 Changing the repository-wide semantic would be disproportionate to two explicit identity boundaries.
 
+## Local aliases hide allowlisted lib types
+
+`packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-lib.ts`
+already allowlists `ReadonlyMap` and `ReadonlySet`,
+but the specifier matcher resolves the parameter's declared symbol.
+A repo-local alias such as `type IndexRecordMap = ReadonlyMap<string, string>`
+is a file-domain symbol,
+so the `from: 'lib'` entry no longer matches and the rule reports the parameter again.
+
+Remediation:
+spell the lib type directly in parameter positions
+(`before: ReadonlyMap<string, string>`).
+The allowlist is correct;
+the alias indirection is the problem.
+Do not reach for a scoped `oxlint-disable`:
+`packages/git-policies/cli/src/policy-engine/add-staged-delta.ts` hit this in 2026-07
+and the direct spelling removed the warning with no suppression.
+Types genuinely outside our control that are still missing from the list
+belong in `prefer-readonly-parameter-types.allow-lib.ts`
+(or `.allow-pkg.ts` for package types),
+not behind per-site disables.
+
 ## Upstream filing decision
 
 No upstream issue should be filed.

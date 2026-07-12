@@ -17,11 +17,6 @@ const DECODER = new TextDecoder(
 );
 
 /**
- * Complete per-path index records joined across conflict stages.
- */
-export type IndexRecordMap = ReadonlyMap<string, string>;
-
-/**
  * Captures complete per-path index records for exact state comparison.
  *
  * Unmerged paths contribute one record per conflict stage, so conflict
@@ -48,7 +43,7 @@ export async function captureIndexRecords({
   gitPath: string;
   cwd: string;
   indexPath: string;
-}>,): Promise<IndexRecordMap> {
+}>,): Promise<ReadonlyMap<string, string>> {
   /**
    * NUL-delimited complete stage records.
    */
@@ -149,7 +144,6 @@ async function headPresentPaths({
     },),);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- ReadonlyMap carries only read methods, yet the repo config keeps treatMethodsAsReadonly disabled to expose real mutable maps. See docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Returns exactly the paths whose staged records this operation changed.
  *
@@ -181,7 +175,7 @@ export async function stagedDeltaPaths({
   gitPath: string;
   cwd: string;
   indexPath: string;
-  before: IndexRecordMap;
+  before: ReadonlyMap<string, string>;
 }>,): Promise<readonly string[]> {
   /**
    * Complete records after the staging operation.
@@ -220,4 +214,3 @@ export async function stagedDeltaPaths({
     return after.has(path,) || headPaths.has(path,);
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
