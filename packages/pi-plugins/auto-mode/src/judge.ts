@@ -26,7 +26,6 @@ import { mistralConversationsApi, } from '@earendil-works/pi-ai/api/mistral-conv
 import { openAICodexResponsesApi, } from '@earendil-works/pi-ai/api/openai-codex-responses.lazy';
 import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completions.lazy';
 import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -42,6 +41,7 @@ import { parseVerdict, } from './judge-json.ts';
 import {
   buildStreamOptions,
   disposableTimeout,
+  mergeJudgeAbortSignals,
 } from './judge-runtime.ts';
 import { collectJudgeVerdictArgs, } from './judge-stream.ts';
 import type {
@@ -327,7 +327,7 @@ async function callJudge(
     readonly timeoutMs: number;
     readonly systemPrompt: string;
     readonly batchContext: readonly BatchEntry[];
-    readonly abortSignal?: ForeignBorrowed<AbortSignal>;
+    readonly abortSignal?: AbortSignal;
     readonly streamSimpleFn?: JudgeStreamSimple;
   },
 ): Promise<Verdict> {
@@ -380,12 +380,10 @@ async function callJudge(
    */
   const signal = abortSignal === undefined
     ? controller.signal
-    : (function mergeFallbackAbortSignals(): AbortSignal {
-      return AbortSignal.any([
-        controller.signal,
-        abortSignal,
-      ],);
-    })();
+    : mergeJudgeAbortSignals({
+      timeout: controller.signal,
+      outer: abortSignal,
+    },);
 
   /**
    * API-specific forced tool-call selector for the initial judge invocation.

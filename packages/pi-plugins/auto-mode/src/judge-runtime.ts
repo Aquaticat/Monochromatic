@@ -5,6 +5,7 @@
  */
 
 import type { SimpleStreamOptions, } from '@earendil-works/pi-ai';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type { BudgetModelAuth, } from './types.ts';
 
 /**
@@ -53,6 +54,33 @@ function buildStreamOptions(
 }
 
 /**
+ * Combine a judge's private timeout with a foreign race cancellation handle.
+ *
+ * @param handles - timeout and outer cancellation handles borrowed from host APIs
+ *
+ * @returns signal that aborts after either input signal aborts
+ *
+ * @example
+ * ```typescript
+ * const signal = mergeJudgeAbortSignals({ timeout, outer });
+ * ```
+ */
+function mergeJudgeAbortSignals(
+  {
+    timeout,
+    outer,
+  }: ForeignBorrowed<{
+    readonly timeout: AbortSignal;
+    readonly outer: AbortSignal;
+  }>,
+): AbortSignal {
+  return AbortSignal.any([
+    timeout,
+    outer,
+  ],);
+}
+
+/**
  * Create a disposable timeout that clears itself on scope exit.
  *
  * @param ms - timeout duration in milliseconds
@@ -92,4 +120,5 @@ function disposableTimeout(
 export {
   buildStreamOptions,
   disposableTimeout,
+  mergeJudgeAbortSignals,
 };
