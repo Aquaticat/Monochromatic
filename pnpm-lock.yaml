@@ -2571,6 +2571,9 @@ importers:
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.73.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
     devDependencies:
       '@monochromatic-dev/config-oxlint-test-support':
         specifier: workspace:*
