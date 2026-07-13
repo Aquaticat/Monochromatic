@@ -27,6 +27,7 @@
     "tsdoc/require-param": "warn",
     "tsdoc/require-param-name": "error",
     "tsdoc/require-param-description": "warn",
+    "tsdoc/check-mutates": "error",
     "tsdoc/require-returns": "warn",
     "tsdoc/require-returns-check": "error",
     "tsdoc/require-returns-description": "warn",

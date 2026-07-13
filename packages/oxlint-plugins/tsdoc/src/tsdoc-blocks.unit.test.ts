@@ -115,6 +115,71 @@ await describe({
 
         //endregion @param extraction
 
+        //region @mutates extraction
+
+        it({
+          name: 'extracts mutation targets and descriptions',
+          fn: async () => {
+            const { mutates, } = splitDocComment({
+              comment: commentFromBody([
+                '@mutates values - Clears caller-owned entries.',
+                '',
+                '@mutates cache - Replaces cached values.',
+              ],),
+            },);
+            expect(mutates.blocks,).toEqual([
+              {
+                parameterName: 'values',
+                hasDescription: true,
+              },
+              {
+                parameterName: 'cache',
+                hasDescription: true,
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'records missing mutation target and description independently',
+          fn: async () => {
+            const { mutates, } = splitDocComment({
+              comment: commentFromBody([
+                '@mutates - Has rationale.',
+                '',
+                '@mutates values',
+              ],),
+            },);
+            expect(mutates.blocks,).toEqual([
+              {
+                parameterName: '',
+                hasDescription: true,
+              },
+              {
+                parameterName: 'values',
+                hasDescription: false,
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'ignores mutation tags inside fenced examples',
+          fn: async () => {
+            const { mutates, } = splitDocComment({
+              comment: commentFromBody([
+                '@example',
+                '```ts',
+                '@mutates fake - Not documentation.',
+                '```',
+              ],),
+            },);
+            expect(mutates.blocks,).toEqual([],);
+          },
+        },),
+
+        //endregion @mutates extraction
+
         //region @returns extraction
 
         it({

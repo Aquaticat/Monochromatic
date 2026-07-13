@@ -307,6 +307,39 @@ await describe({
       ],
     },),
     describe({
+      name: 'mutation contract rules',
+      children: [
+        it({
+          name: 'reports malformed mutation contracts',
+          fn: async () => {
+            const diagnostics = await lint('invalid/mutates-issues.ts',);
+            const mutatesDiagnostics = diagnostics.filter(
+              function isCheckMutates(diagnostic,): boolean {
+                return diagnostic.code === 'tsdoc(check-mutates)';
+              },
+            );
+
+            expect(mutatesDiagnostics,).toHaveLength(4,);
+            expect(mutatesDiagnostics.map(function message(diagnostic,): string {
+              return diagnostic.message;
+            },),).toEqual([
+              'Mutation contract must name a parameter.',
+              'Mutation contract for "value" must include a description.',
+              'Mutation contract target "other" does not match any parameter.',
+              'Mutation contract target "value" is duplicated.',
+            ],);
+          },
+        },),
+        it({
+          name: 'accepts named and destructured mutation targets',
+          fn: async () => {
+            const diagnostics = await lint('valid/mutates-contracts.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: 'returns rules',
       children: [
         it({
