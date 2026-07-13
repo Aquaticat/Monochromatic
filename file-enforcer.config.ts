@@ -1223,12 +1223,6 @@ await Promise.all([
     dest: './CLAUDE.md',
     content: `Generated from \`AGENTS.md\` by file-enforcer.
 
-### Delegating work to subagents and child sessions
-
-Two peer mechanisms;
-pick by whether you need a visible,
-independently-running session.
-
 In-process subagents (the Agent tool,
 including the general-purpose type) run inside this session and forward their results back to you reliably.
 General-purpose subagents are allowed.
@@ -1246,6 +1240,8 @@ so you must monitor the child session yourself to collect its output.
 Do not pass \`--cwd\`:
 the child then will not read the repo \`CLAUDE.md\`,
 and Claude Code's cwd handling is unreliable.
+
+Use \`pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<your question>"\` for a strong model's opinion.
 
 ${await cat(['./AGENTS.md',],)}`,
   },),

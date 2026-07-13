@@ -18,7 +18,7 @@ Do not pass `--cwd`:
 the child then will not read the repo `CLAUDE.md`,
 and Claude Code's cwd handling is unreliable.
 
-Use `pi --model openai-codex/gpt-5.6-sol --print --no-tools --thinking max "<your question>"` for a strong model's opinion.
+Use `pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<your question>"` for a strong model's opinion.
 
 # Development guidelines for AI agents
 
