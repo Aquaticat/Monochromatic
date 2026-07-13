@@ -70,6 +70,16 @@ export {
 } from './rules/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
 
 export {
+  INTRINSIC_EFFECTS,
+  intrinsicEffect,
+  NO_INTRINSIC_EFFECT,
+  type IntrinsicEffectEntry,
+  type IntrinsicEffectQuery,
+  type IntrinsicEffectTarget,
+  type IntrinsicProvenance,
+} from './rules/prefer-readonly-parameter-types/intrinsic-effect-catalog.ts';
+
+export {
   findNodeAtOffset,
   typescriptOffset,
 } from './rules/prefer-readonly-parameter-types/typescript-node-map.ts';
