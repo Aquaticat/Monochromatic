@@ -68,11 +68,18 @@ The semantic-rule implementation is now functional but not migration-ready:
   returned,
   and directly passed deferred effects;
 - commit `4901811d2` traces separately assigned aliases and excludes local parameter rebinding;
-- commit `089c19f93` rejects adapter links that do not identify the opaque callable member.
+- commit `089c19f93` rejects adapter links that do not identify the opaque callable member;
+- commit `81e53f211` propagates opaque provenance transitively through owned calls and callback relations,
+  and exposes retained boundary names in diagnostics;
+- commit `c8ddcf53d` activates passed and returned closures through local initializer aliases while retaining dead
+  function-expression exclusion;
+- commit `82acd6523` resolves aliased callback arguments for higher-order effect specialization;
+- commit `609b3b824` offers suggestion-only `ReadonlyDeep` projections for capability-free structural data when a
+  named `type-fest` import already resolves.
 
-Remaining gates include closure aliases and indirect escape modeling,
+Remaining gates include indirect object and storage escape modeling,
 audited nonmutating intrinsic calls,
-`ReadonlyDeep` and ownership-aware suggestions,
+additional ownership-aware suggestions,
 package-catalog completion,
 and the agreed parser-recovery,
 invalidation,
@@ -91,8 +98,8 @@ Verified package tasks:
 - `mise run //packages/config/oxlint:lint:oxlint`.
 
 Next action:
-complete overload and closure effect semantics,
-then add verified readonly type suggestions before configuration migration.
+complete audited observational intrinsics and indirect storage escape semantics,
+then finish acceptance probes before configuration migration.
 
 ## Continuity contract
 
