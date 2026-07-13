@@ -34,9 +34,11 @@ The fix was released in `mise-action` `4.1.0`.
 Update the pinned action to `4.2.0` commit `e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d`.
 This release contains the `mise-shim.exe` fix and remains pinned to an immutable commit.
 
-Each PowerShell build or test step prepends `mise where node` plus `mise where pnpm` to its process-local `PATH` using
-`[IO.Path]::PathSeparator`.
-This makes the runtime roots explicit before mise creates its child task shell and works with each host's path separator.
+Each build or test step uses `mise run --tool node`.
+This asks mise to add Node to the task environment explicitly instead of depending on automatic Windows task-shell
+activation.
+The workflow runs the root `test` task after its explicit build rather than `buildAndTest`,
+which would launch a nested `mise` build from its Node task body.
 
 The semantic-plugin package also invokes its directly declared tsdown entry through Node:
 
@@ -70,7 +72,7 @@ The replacement workflow must pass these consumer-boundary steps on `windows-lat
 - Wrapping `mise run` in `mise exec node --` does not help when the nested task shell reconstructs a Windows environment
   without the runtime path.
 - Invoking `mise` again inside a package task has the same nested-shell problem.
-- Invoking `node` directly inside a package task still fails until the workflow exposes Node's installation root.
+- Invoking `node` directly inside a package task still fails unless the outer `mise run` includes `--tool node`.
 
 ## Upstream filing artifact
 
