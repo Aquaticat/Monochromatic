@@ -438,7 +438,38 @@ so the sibling plugins cannot drift.
 so `@mutates` automatically requires a preceding blank line.
 `tsdoc/empty-tags` must not classify `@mutates` as a modifier because the new tag requires content.
 
+### Chosen layered type and effect contract
+
+For a nonmutating parameter,
+require a deeply readonly TypeScript type whenever that type honestly represents the callable contract.
+For external,
+identity-sensitive,
+callback-bearing,
+branded,
+or capability types where a readonly projection would misrepresent the usable API or break required assignability,
+retain the original type only when whole-program effect analysis proves no mutation path.
+
+This is not a global type-name allow list.
+The decision is made per parameter from resolved declarations,
+provenance,
+assignability,
+used members,
+and effect summaries.
+A plain owned object that can become `Readonly<T>` remains a violation when declared mutable.
+An opaque capability is not forced through a facade merely to satisfy syntax.
+
+Readonlyness and mutation effects are transitive through reachable properties,
+aliases,
+destructuring,
+closures,
+and callee arguments.
+Unknown external or dynamic effects fail closed:
+the implementation must obtain an explicit effect summary or require `@mutates` rather than assuming safety.
+
+The absence of `@mutates` is a verified negative effect contract,
+but it does not replace an honest TypeScript readonly type where one is available.
+
 ### Awaiting decision
 
-The first unresolved policy decision is what happens when a function does not mutate a parameter but its declared
-TypeScript type remains structurally mutable.
+The first unresolved policy decision is whether mutation tags are required on every mutating callable or only on selected
+API boundaries.
