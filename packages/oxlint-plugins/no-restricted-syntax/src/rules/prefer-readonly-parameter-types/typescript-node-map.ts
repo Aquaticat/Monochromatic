@@ -40,7 +40,6 @@ export function typescriptOffset({
   return hasBOM ? offset + 1 : offset;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- TypeScript SourceFile is an external semantic handle whose identity and methods must remain intact. */
 /**
  * Finds deepest TypeScript node containing UTF-16 source offset.
  *
@@ -104,4 +103,3 @@ export function findNodeAtOffset({
   }
   return found.current;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

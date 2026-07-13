@@ -155,7 +155,6 @@ type JudgeStreamCallOptions = DirectJudgeStreamOptions & {
   readonly streamSimpleFn?: JudgeStreamSimple;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- pi-ai model, context, and stream option types are library-owned mutable API shapes; this adapter only reads them before handing them back to pi-ai */
 /**
  * Stream through pi-ai's direct non-compat API implementation for the model API,
  * looked up from {@link JUDGE_API_STREAMS}.
@@ -197,9 +196,7 @@ function defaultJudgeStreamSimple(
     options,
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- pi-ai model, context, and stream option types are library-owned mutable API shapes; this adapter only reads them before handing them back to pi-ai */
 /**
  * Route judge streaming through a supplied test seam or {@link defaultJudgeStreamSimple}'s
  * direct pi-ai API map.
@@ -247,7 +244,6 @@ function streamJudgeSimple(
     context,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //region Public API
 

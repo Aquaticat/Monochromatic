@@ -20,7 +20,6 @@ import {
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Project, Checker, and CallExpression mirror TypeScript semantic identities. */
 /**
  * Tests whether imported or global call has fully audited zero-target effect.
  *
@@ -71,4 +70,3 @@ export function isAuditedObservationalCallable({
     .length
     === 0);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

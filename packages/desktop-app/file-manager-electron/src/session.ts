@@ -59,7 +59,6 @@ export type RendererSession = {
   readonly stripElement: HTMLElement;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `session: RendererSession` is the renderer's mutable-by-design carrier: `strip` is reassigned on every model mutation and `stores` holds DOM/listing caches mutated via `.set`; threading it immutably would defeat the session (same class as the injected memoization cache in packages/rolldown-plugins/import-attributes/src/scan-importer.ts). */
 /**
  * Counts pane pairs whose rendered boxes intersect; sticky flow must keep
  * this zero, and the boundary test asserts exactly that.
@@ -439,4 +438,3 @@ export function sessionHandlers(
     },
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

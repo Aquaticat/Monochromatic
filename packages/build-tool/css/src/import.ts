@@ -153,7 +153,6 @@ export const postcssInlineImport: Plugin = {
   },
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `imported` is a mutable visited-set accumulator shared by reference across recursive calls for whole-tree dedup; the function mutates it via `.add`, so deep-readonly cannot apply. */
 /**
  * Recursively inlines \@import rules in a PostCSS root: each specifier is
  * resolved via {@link resolveSpecifier} and read with {@link readCssFileSync}.
@@ -243,6 +242,5 @@ function inlineImports({
       node.remove();
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion PostCSS Plugin

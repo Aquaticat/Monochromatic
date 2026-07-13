@@ -92,7 +92,6 @@ function fastPath(source: string,): JsoncValue | typeof FASTPATH_MISS {
 
 //region Entry
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- StringJsonc is a branded immutable string (string intersected with a phantom readonly __brand); the rule does not recognize a branded primitive intersection as a readonly type */
 /**
  * Parses a JSONC document into a structured, comment-preserving value.
  *
@@ -172,6 +171,5 @@ export function parseJsonc({
     comments: trailing.comments,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Entry

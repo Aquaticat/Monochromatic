@@ -102,7 +102,6 @@ const ADVISOR_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
   ],
 ],);
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- pi-ai model, context, and stream option types are library-owned mutable API shapes; this adapter only reads them before handing them back to pi-ai. */
 /**
  * Complete through pi-ai's direct non-compat API implementation for the model API.
  *
@@ -152,7 +151,6 @@ async function defaultCompleteAdvisorModel(
     )
     .result();
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Complete function used to call Advisor model.

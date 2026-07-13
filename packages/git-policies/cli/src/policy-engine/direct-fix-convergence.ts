@@ -70,7 +70,6 @@ function candidateRevisions(candidates: readonly CandidateFile[],): ReadonlyMap<
   },),);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; convergence reads but never mutates them. */
 /**
  * Applies policy patches to private direct-fix index until stable.
  *
@@ -269,4 +268,3 @@ export async function convergeDirectFix({
     passes: changedPasses,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

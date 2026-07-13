@@ -240,7 +240,6 @@ function packageIdentity(fileName: string,): PackageIdentity | typeof NO_PACKAGE
 }
 /* oxlint-enable no-restricted-syntax/no-sync */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Project mirrors TypeScript semantic API identity required for source classification. */
 /**
  * Classifies declaration source as ECMAScript, DOM, Node, or package major.
  *
@@ -300,9 +299,7 @@ export function intrinsicProvenance({
     major: identity.major,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Type and Symbol mirror TypeScript semantic API identities required for exact matching. */
 /**
  * Creates exact catalog query from receiver type and callable property symbol.
  *
@@ -374,9 +371,7 @@ export function intrinsicEffectQuery({
     member: memberSymbol.name,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Project and Symbol mirror TypeScript semantic API identities required for exact matching. */
 /**
  * Creates exact catalog query for imported or global callable symbol.
  *
@@ -452,4 +447,3 @@ export function intrinsicCallableEffectQuery({
     member: resolvedMemberSymbol.name,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

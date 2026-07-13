@@ -96,7 +96,6 @@ async function prepareDirectFix({
   };
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; direct fix reads but never mutates them. */
 /**
  * Runs convergence and installation against prepared private state.
  *
@@ -218,4 +217,3 @@ export async function runDirectFix({
     };
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

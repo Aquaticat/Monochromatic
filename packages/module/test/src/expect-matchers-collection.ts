@@ -65,7 +65,6 @@ declare global {
  */
 const MIN_ALL_EQUAL_VALUES = 2;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- chai SDK types (`ChaiStatic`, `AssertionStatic`) mutate assertion state by design and cannot be expressed as deep-readonly. */
 /**
  * Chai plugin registering the collection assertions consumed by
  * {@link buildCollectionMatchers}. Each method reads the array actual from the
@@ -229,7 +228,6 @@ export function collectionMatchersPlugin(chai: Chai.ChaiStatic,): void {
       },
     );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Collection plugin
 
@@ -244,7 +242,6 @@ export type CollectionMatcherSet = Pick<
   'toAllBe' | 'toAllEqual' | 'toSatisfyAll'
 >;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `Chai.Assertion` is an external chai SDK type whose chainable getters mutate assertion state by design; deep-readonly does not apply to a type we do not own. */
 /**
  * Builds the collection matcher subset from a chai Assertion instance. The
  * assertion already carries the array actual (and any `.not` flag), so the
@@ -285,6 +282,5 @@ export function buildCollectionMatchers(
     },
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Collection matcher builder

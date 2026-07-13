@@ -5,7 +5,6 @@
 /**
  * Recursively marks every property and array element of `T` readonly.
  *
- * `typescript/prefer-readonly-parameter-types` treats a parameter as immutable
  * only when it is deeply readonly. The feed, outline, and item values this
  * package threads through its pipeline are plain parsed data, so a homomorphic
  * deep map describes them without dropping any field the renderers read;

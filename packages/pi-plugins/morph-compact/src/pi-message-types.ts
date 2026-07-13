@@ -6,7 +6,6 @@
  * a transitive of `@earendil-works/pi-coding-agent` and is not exposed in
  * morph-compact's `node_modules` under pnpm's isolated linker. Every field is
  * `readonly` so the conversion helpers satisfy
- * `typescript/prefer-readonly-parameter-types` without wrapper types. The base
  * message variants are kept index-signature-free so pi's structurally-wider
  * `AgentMessage` values (which carry no index signature) assign into them.
  *

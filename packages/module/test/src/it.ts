@@ -44,14 +44,12 @@ export type ItOptions = {
    * Whether the test is expected to throw. When `true` or a reason string, a throwing test is treated as PASS and a passing test as FAIL. Defaults to `false`.
    */
   readonly fails?: boolean | string;
-  /* oxlint-disable typescript/prefer-readonly-parameter-types -- `TestContext.sinon` is `DisposableSandbox` extending sinon's `SinonSandbox`, an external SDK class whose methods mutate sandbox state by design; deep-readonly does not apply. */
   /**
    * Async function that performs assertions and throws on failure.
    * Receives a {@link TestContext} with a scoped `expect` for assertion counting.
    * The global `expect` still works but does not support `expect.assertions(n)`.
    */
   readonly fn: (ctx: TestContext,) => Promise<void>;
-  /* oxlint-enable typescript/prefer-readonly-parameter-types */
   /**
    * Logger to use for pass/fail output. Provided by the parent describe.
    */
@@ -95,7 +93,6 @@ export type ItResult = {
  *
  * @param name - test name, used as the timeout label
  */
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `ctx: TestContext` carries `DisposableSandbox` extending sinon's `SinonSandbox`, an external SDK class whose methods mutate sandbox state by design; deep-readonly does not apply. */
 async function runFnOnce({
   fn,
   ctx,
@@ -120,7 +117,6 @@ async function runFnOnce({
     },)
     : promise);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Executes a single test case. Internal: the public {@link it} entry

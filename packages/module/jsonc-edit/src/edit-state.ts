@@ -55,7 +55,6 @@ function normalizeNode({
 
 //region Entry points
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- StringJsonc is a branded immutable string (string intersected with a phantom readonly __brand); the rule does not recognize a branded primitive intersection as a readonly type */
 /**
  * Parses a JSONC document into an editable state. The fast-path `plainJson` leaf
  * is expanded to structured nodes so edits operate uniformly.
@@ -80,7 +79,6 @@ export function parseJsoncEdit({
     root: normalizeNode({ node: parseJsonc({ source, },), },),
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Serializes an edit state back to canonical JSONC text, preserving all

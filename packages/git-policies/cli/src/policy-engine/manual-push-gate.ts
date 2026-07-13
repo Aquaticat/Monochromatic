@@ -20,7 +20,6 @@ import type {
  */
 export const MANUAL_PUSH_NOT_APPLICABLE: unique symbol = Symbol('manual push lifecycle not applicable',);
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; gate reads but never mutates it. */
 /**
  * Runs manual-push lifecycle only for enabled real push.
  *
@@ -86,4 +85,3 @@ export async function runManualPushGate({
     policyOptions,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

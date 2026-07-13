@@ -70,7 +70,6 @@ export type WatcherOptions = {
    * Shared content-hash cache; pre-populated during the initial walk.
    * Typed `Readonly<HashCache>` so the options object is deeply readonly
    * (the cache's mutating methods stay callable); keeps the {@link Watcher}
-   * constructor within `typescript/prefer-readonly-parameter-types`.
    */
   readonly hashCache: Readonly<HashCache>;
   /**

@@ -1,5 +1,5 @@
 declare module 'opentype.js' {
-  /* oxlint-disable no-restricted-syntax/no-class, typescript/prefer-readonly-parameter-types -- ambient declaration mirroring the untyped opentype.js library: it ships `new opentype.Path()`/`Glyph`/`Font` as real classes with mutable constructor-option params, so the shape is dictated by the external API, not our code */
+  /* oxlint-disable no-restricted-syntax/no-class -- ambient declaration mirroring the untyped opentype.js library: it ships `new opentype.Path()`/`Glyph`/`Font` as real classes with mutable constructor-option params, so the shape is dictated by the external API, not our code */
   export class Path {
     moveTo(
       x: number,
@@ -38,7 +38,7 @@ declare module 'opentype.js' {
     download(): void;
     toArrayBuffer(): ArrayBuffer;
   }
-  /* oxlint-enable no-restricted-syntax/no-class, typescript/prefer-readonly-parameter-types */
+  /* oxlint-enable no-restricted-syntax/no-class */
 
   export function parse(buffer: ArrayBuffer,): Font;
 

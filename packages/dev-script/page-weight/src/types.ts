@@ -5,7 +5,6 @@
 /**
  * Recursively marks every property and array element of `T` readonly.
  *
- * `typescript/prefer-readonly-parameter-types` treats a parameter as immutable
  * only when it is deeply readonly. The hast nodes this package walks are plain
  * data trees (no methods), so a homomorphic deep map describes them without
  * dropping any field the walkers read; passing a mutable hast node into a

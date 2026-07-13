@@ -75,7 +75,6 @@ const TEXTURE_ALPHA = 255;
 
 //region Per-probe layer factory
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `mesh` is luma.gl's external `Geometry` class (mutating GPU-buffer methods, owned by luma.gl); deep-readonly cannot apply. */
 /**
  * Builds the per-probe `SimpleMeshLayer`. Per-glyph position, scale,
  * and texture; per-layer opacity for the filtered-fade effect.
@@ -212,7 +211,6 @@ function buildProbeLayer(
     pickable: true,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Per-probe layer factory
 

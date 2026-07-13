@@ -41,7 +41,6 @@ export type CoreMatcherSet = Pick<
   | 'toStrictEqual'
 >;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `Chai.Assertion` is an external chai SDK type whose chainable getters mutate assertion state by design; deep-readonly does not apply to a type we do not own. */
 /**
  * Builds the core value-comparison matcher subset from a chai Assertion
  * instance. None of these matchers need the raw `actual` value, so the
@@ -269,4 +268,3 @@ export function buildCoreMatchers(
     },
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

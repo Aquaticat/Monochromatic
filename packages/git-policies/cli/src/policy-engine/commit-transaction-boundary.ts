@@ -8,7 +8,6 @@ import type { CommitTransactionPolicyOptions, } from './commit-transaction-types
 import { CommitTransactionGitError, } from './commit-transaction-git.ts';
 import { initialTransactionFailure, } from './commit-transaction-results.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; boundary reads but never mutates them. See docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Runs commit transaction and converts setup/filesystem exceptions to engine result.
  *
@@ -53,4 +52,3 @@ export async function runCommitTransactionBoundary({
     };
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

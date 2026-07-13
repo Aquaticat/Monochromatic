@@ -13,7 +13,6 @@ export type DisposableSandbox = SinonSandbox & {
   [Symbol.dispose]: () => void;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `SinonSandboxConfig` is an external sinon SDK type forwarded verbatim to `createSandbox`; deep-readonly does not apply to a type we do not own. */
 /**
  * Creates a sinon sandbox that auto-restores on scope exit
  * when used with `await using` or `using`.
@@ -48,4 +47,3 @@ export function createSinon(config?: SinonSandboxConfig,): DisposableSandbox {
 
   return sandbox;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

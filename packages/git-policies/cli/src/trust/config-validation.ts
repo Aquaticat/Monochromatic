@@ -251,7 +251,6 @@ function validatePolicy({
   };
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Runtime-erased policy contains callback-bearing declaration; parser reads but never mutates it, as documented in docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Parses one policy setting and options through declared schema.
  *
@@ -313,7 +312,6 @@ function parsePolicySetting({
     options: parsed.output,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Validates imported default export and prepares policy runtime values.

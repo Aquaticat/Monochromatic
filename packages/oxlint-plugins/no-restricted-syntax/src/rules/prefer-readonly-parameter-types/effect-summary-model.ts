@@ -49,7 +49,6 @@ export type EffectCallableDeclaration =
   | FunctionTypeNode
   | ConstructorTypeNode;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Node mirrors TypeScript semantic AST identity required for narrowing. */
 /**
  * Tests whether node participates in callable effect contract.
  *
@@ -72,7 +71,6 @@ export function isEffectCallableDeclaration(node: Node,): node is EffectCallable
     || isFunctionTypeNode(node,)
     || isConstructorTypeNode(node,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * One callback-parameter relation inferred from owned function body.
@@ -111,7 +109,6 @@ export type MutableEffectSummary = {
   readonly calls: CallEdge[];
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- FunctionLikeDeclaration mirrors TypeScript semantic identity required for stable lookup. */
 /**
  * Builds stable declaration key across TypeScript API node wrapper instances.
  *
@@ -131,9 +128,7 @@ export function callableKey(declaration: EffectCallableDeclaration,): string {
   const sourceFile = declaration.getSourceFile();
   return `${sourceFile.fileName}:${String(declaration.pos,)}:${String(declaration.end,)}:${String(declaration.kind,)}`;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable set is intentional fixed-point accumulator. */
 /**
  * Adds parameter index to effect set.
  *
@@ -166,9 +161,7 @@ export function addEffectIndex({
   target.add(value,);
   return target.size !== priorSize;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Node mirrors TypeScript semantic AST identity required for traversal. */
 /**
  * Collects all descendants using explicit work stack.
  *
@@ -230,4 +223,3 @@ export function expressionRoot(node: Node,): Node {
   }
   return cursor.current;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

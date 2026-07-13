@@ -162,7 +162,6 @@ function reportStaleContract({
   },);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Callable declarations mirror TypeScript semantic AST identities. */
 /**
  * Verifies one callable's type and mutation contracts.
  *
@@ -374,4 +373,3 @@ export function verifyReadonlyCallable({
     }
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

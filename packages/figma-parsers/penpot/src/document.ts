@@ -265,7 +265,6 @@ function selectPageSources(
   return sources;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- buildPage writes into ctx.shapes during conversion, and convertFigmaToPenpot takes figma-kiwi's FigmaFile whose Map/Record members cannot be expressed as deeply readonly here; a readonly param would forbid the writes or mismatch the upstream type */
 /**
  * Build one Penpot page: register its root frame and convert its children.
  *
@@ -478,4 +477,3 @@ export function convertFigmaToPenpot(
     thumbnails: [],
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

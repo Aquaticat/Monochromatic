@@ -51,7 +51,6 @@ export const COMMIT_TRANSACTION_NOT_APPLICABLE: unique symbol = Symbol('commit t
  */
 const MAXIMUM_CHANGED_PASSES = 8;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; transaction reads but never mutates them. */
 /**
  * Runs supported commit through convergent private-index patch transaction.
  *
@@ -385,4 +384,3 @@ export async function runCommitTransaction({
     committed: true,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

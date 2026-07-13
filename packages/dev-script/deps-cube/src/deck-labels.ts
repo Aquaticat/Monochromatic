@@ -58,7 +58,6 @@ type TextDatum = {
 
 //region Datum accessors
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- deck.gl layer accessors: `TextDatum` carries mutable coordinate arrays required by deck.gl's `Position`-returning accessor contract; deep-readonly cannot apply. */
 /**
  * Reads the `position` field off a {@link TextDatum} for `TextLayer.getPosition`.
  *
@@ -97,7 +96,6 @@ function getDatumPosition(d: TextDatum,): [
 function getDatumText(d: TextDatum,): string {
   return d.text;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Datum accessors
 

@@ -51,7 +51,6 @@ const ABSENT_ELEMENT_HEAD: unique symbol = Symbol('file-enforcer/pipeline/xml: e
  * ```
  */
 function elementHead(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- @lezer SyntaxNode is an external class, traversed read-only here.
   { element, }: { readonly element: SyntaxNode; },
 ): SyntaxNode | typeof ABSENT_ELEMENT_HEAD {
   /**
@@ -76,7 +75,6 @@ function elementHead(
  * ```
  */
 function tagNameOf(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- @lezer SyntaxNode is an external class, traversed read-only here.
   {
     element,
     source,
@@ -145,7 +143,6 @@ function decodeAttributeValue({ raw, }: { readonly raw: string; },): string {
  * ```
  */
 function elementAttribute(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- @lezer SyntaxNode is an external class, traversed read-only here.
   {
     element,
     source,

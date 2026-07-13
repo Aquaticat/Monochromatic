@@ -58,7 +58,6 @@ export function isJsonObject(value: unknown,): value is JsonObject {
  * ```
  */
 function setOwnJsonValue(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- target is mutated in place via Object.defineProperty.
   {
     target,
     key,

@@ -94,7 +94,6 @@ async function readManifestSilent(
 
 //region Public API
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `visited` is a mutable cycle-breaker `Set` mutated via `.add` during the walk; deep-readonly cannot apply. */
 /**
  * Best-effort transitive dep count via a depth-bounded registry walk.
  *
@@ -228,6 +227,5 @@ export async function probeTransitive(
   },);
   return total;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Public API

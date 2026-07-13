@@ -39,7 +39,6 @@ import {
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Checker and Node mirror TypeScript semantic identities required for symbol lookup. */
 /**
  * Maps expression root symbol to callable parameter index.
  *
@@ -153,9 +152,7 @@ function callableDeclaration({
     ? OWNED_CALLABLE_UNAVAILABLE
     : declaration;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable summary is intentional effect accumulator. */
 /**
  * Records unresolved external effect and callable provenance.
  *
@@ -193,9 +190,7 @@ function addOpaqueEffect({
       provenanceFacts,
     );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Project, Checker, and CallExpression mirror TypeScript semantic identities required for call effects. */
 /**
  * Classifies one call as callback relation, intrinsic effect, owned edge, or opaque boundary.
  *
@@ -443,4 +438,3 @@ export function inspectEffectCall({
     },);
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -15,7 +15,6 @@ import type {
   RunPolicyEngineOptions,
 } from './types.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; adapter reads but never mutates them. See docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Runs pre-forward engine with exact private add candidates when applicable.
  *
@@ -74,4 +73,3 @@ export async function runPreForwardPolicyEngine({
   },);
   return result;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -133,7 +133,6 @@ export default function spawnPi(pi: ExtensionAPI,): void {
  * ```
  */
 async function registerSession(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi ExtensionContext is an external mutable interface; spawn-pi only reads it.
   {
     ctx,
     extensionPath,
@@ -215,7 +214,6 @@ async function registerSession(
  * ```
  */
 async function reportChildCompletion(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi AgentEndEvent and ExtensionContext are external mutable interfaces; spawn-pi only reads them.
   {
     event,
     ctx,
@@ -278,7 +276,6 @@ type UnrefableTimer = ReturnType<typeof setInterval> & {
  * ```
  */
 async function startCompletedChildMonitor(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi ExtensionAPI and ExtensionContext are external mutable interfaces; spawn-pi only reads them.
   {
     pi,
     ctx,
@@ -358,7 +355,6 @@ function stopCompletedChildMonitor(
  * ```
  */
 async function deliverCompletedChildren(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi ExtensionAPI and ExtensionContext are external mutable interfaces; spawn-pi only reads them.
   {
     pi,
     ctx,

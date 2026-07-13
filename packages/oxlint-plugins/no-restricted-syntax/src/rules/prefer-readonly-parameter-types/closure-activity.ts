@@ -28,7 +28,6 @@ import {
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Project and Node mirror TypeScript semantic AST identities. */
 /**
  * Activates callables reachable through escaped expression containers and aliases.
  *
@@ -153,9 +152,7 @@ function insideOnlyActiveClosures({
   }
   return true;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Project and callable body mirror TypeScript semantic AST identities. */
 /**
  * Selects outer body nodes plus nested closures that may execute or escape.
  *
@@ -269,4 +266,3 @@ export function activeCallableBodyNodes({
     },);
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

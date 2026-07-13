@@ -21,7 +21,6 @@ import {
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- TypeScript nodes and mutable origin map are semantic-analysis identities and accumulators. */
 /**
  * Registers every identifier bound by one parameter or destructuring pattern.
  *
@@ -212,4 +211,3 @@ export function discoverAliasOrigins({
     },);
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

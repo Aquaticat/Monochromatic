@@ -65,7 +65,6 @@ function equalIndexes({
     },);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Callable declaration mirrors TypeScript semantic AST identity. */
 /**
  * Builds report location for callable name or declaration span.
  *
@@ -118,9 +117,7 @@ function declarationLocation({
       .getLocFromIndex(end,), },
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Project and callable declarations mirror TypeScript semantic identities. */
 /**
  * Reports implementation whose actual effects differ from union of overload contracts.
  *
@@ -244,4 +241,3 @@ export function verifyOverloadConsistency({
     },);
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

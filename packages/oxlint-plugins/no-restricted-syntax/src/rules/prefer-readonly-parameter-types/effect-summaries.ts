@@ -39,7 +39,6 @@ export type CallableEffectSummary = {
   readonly opaqueProvenanceByParameter: ReadonlyMap<number, ReadonlySet<string>>;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- FunctionLikeDeclaration mirrors TypeScript semantic identity required for exact lookup. */
 /**
  * Whole-project effect lookup tied to one TypeScript snapshot project.
  */
@@ -51,7 +50,6 @@ export type EffectSummaryIndex = {
     declaration: EffectCallableDeclaration,
   ) => CallableEffectSummary | typeof NO_EFFECT_SUMMARY;
 };
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Sentinel when declaration is outside indexed owned source.
@@ -60,7 +58,6 @@ export const NO_EFFECT_SUMMARY: unique symbol = Symbol(
   'declaration lacks indexed CallableEffectSummary',
 );
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable effect set is intentional fixed-point accumulator. */
 /**
  * Maps callee parameter effects through one call edge.
  *
@@ -100,9 +97,7 @@ function propagateCalleeIndexes({
     false,
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable provenance map is intentional fixed-point accumulator. */
 /**
  * Adds opaque provenance facts for one caller parameter.
  *
@@ -191,9 +186,7 @@ function propagateOpaqueProvenance({
     false,
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable summary is intentional fixed-point accumulator. */
 /**
  * Propagates callback relation through one owned call edge.
  *
@@ -284,7 +277,6 @@ function propagateCallbackRelations({
       false,
     );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Propagates direct, transitive, recursive, and higher-order effects to fixed point.
@@ -351,7 +343,6 @@ function propagateEffects(
   }
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Project and declarations mirror TypeScript semantic identities required for project-wide summaries. */
 /**
  * Builds effect summaries for owned non-declaration source in project.
  *
@@ -449,4 +440,3 @@ export function buildEffectSummaryIndex({
     },
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

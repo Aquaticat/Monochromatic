@@ -24,7 +24,6 @@ import {
   paneById,
 } from './strip.js';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `session: RendererSession` is the renderer's mutable-by-design carrier: `strip` is reassigned on every model mutation and `stores` holds DOM/listing caches mutated via `.set`; threading it immutably would defeat the session (same class as the injected memoization cache in packages/rolldown-plugins/import-attributes/src/scan-importer.ts). */
 /**
  * Moves the in-pane selection of the focused pane and reveals it.
  *
@@ -326,4 +325,3 @@ export function installKeyboard({ session, }: { readonly session: RendererSessio
     },
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

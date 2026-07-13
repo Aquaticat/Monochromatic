@@ -54,7 +54,6 @@ function serializeDecls(decls: object,): string {
   return parts.join(';',);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- AtRuleOptions = TypedAtRuleOptions | UntypedAtRuleOptions; UntypedAtRuleOptions.at uses the csstype `(string & {})` escape hatch and decls accepts mutable csstype descriptor interfaces, both treated as mutable by this rule; deep-readonly would discard csstype intellisense and the arbitrary-name escape hatch */
 /**
  * Checks whether an at-rule has any block content (declarations, raw, or children).
  *
@@ -83,7 +82,6 @@ function hasBlock(options: AtRuleOptions,): boolean {
 
   return false;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Renders the inside of a `{ }` block from declarations, raw, and children.
@@ -161,7 +159,6 @@ function renderBody(
 
 //region Builder functions
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- RuleOptions.decls is StrictCssDeclarations, which intentionally accepts `CssValue | string`, the `(string & {})` escape hatch, and a `Record<`--${string}`, ...>` custom-property index signature, all treated as mutable by this rule; deep-readonly would discard the branded strict-value typing */
 /**
  * Builds a CSS style rule string. Renders the block body via {@link renderBody}.
  *
@@ -186,9 +183,7 @@ export function buildRule(
     renderBody(options,)
   }}`;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- AtRuleOptions = TypedAtRuleOptions | UntypedAtRuleOptions; UntypedAtRuleOptions.at uses the csstype `(string & {})` escape hatch and decls accepts mutable csstype descriptor interfaces, both treated as mutable by this rule; deep-readonly would discard csstype intellisense and the arbitrary-name escape hatch */
 /**
  * Builds a CSS at-rule string.
  *
@@ -233,6 +228,5 @@ export function buildAtRule(
     renderBody(options,)
   }}`;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion

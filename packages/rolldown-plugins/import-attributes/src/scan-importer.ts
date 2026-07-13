@@ -24,7 +24,6 @@ import {
   NO_ATTR_TYPE,
 } from './ast-extract.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `importerSourceCache` is an injected memoization cache mutated via `.set` on a miss; threading it immutably would defeat the cache, so deep-readonly cannot apply. */
 /**
  * Scans an importer file's source code to find the import attribute type
  * associated with a given specifier.
@@ -168,4 +167,3 @@ export async function scanImporterForAttribute({
   visitor.visit(result.program,);
   return found;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

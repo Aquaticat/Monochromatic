@@ -187,7 +187,6 @@ export function allowedSlugs<TModel extends ModelIdentity,>(
       .join(', ',);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- generic scope entries must retain caller model type rather than ReadonlyDeep<TModel>. */
 /**
  * Resolve an explicit model slug inside an effective scoped model set.
  *
@@ -284,7 +283,6 @@ export function resolveRequestedModel<TModel extends ModelIdentity,>(
     }`,
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Public API
 

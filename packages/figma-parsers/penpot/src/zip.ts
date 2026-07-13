@@ -46,7 +46,6 @@ export function mtypeToExtension(mtype: string,): string {
     ?? '.bin';
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- these append to the ZipWriter (zip.add) and iterate the document's Maps; a deeply-readonly param would forbid the writes or fail to model the Map-bearing PenpotDocument */
 /**
  * Serialize a JSON value into the archive at a given path.
  *
@@ -253,4 +252,3 @@ export function serializePenpotZip(doc: PenpotDocument,): Uint8Array {
 
   return zip.build();
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

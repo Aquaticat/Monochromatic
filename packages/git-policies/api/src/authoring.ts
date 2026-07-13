@@ -20,7 +20,6 @@ import type {
   PolicyDefinition,
 } from './policy-types.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Identity boundary accepts an upstream Valibot schema whose nested mutable declaration cannot be deeply readonly without losing assignability; verified in docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Preserves a Valibot policy-options schema without widening its output.
  *
@@ -39,9 +38,7 @@ export function definePolicyOptions<const TInput, const TOutput>(
 ): GenericSchema<TInput, TOutput> {
   return schema;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Identity boundary accepts callback-bearing policy declarations and never mutates or clones them; verified in docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Preserves policy name and options output.
  *
@@ -68,7 +65,6 @@ export function definePolicy<
 ): PolicyDefinition<Readonly<TOptions>, TName> {
   return definition;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Preserves plugin namespace and policy declarations.

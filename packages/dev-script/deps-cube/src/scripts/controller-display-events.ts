@@ -35,7 +35,6 @@ type CheckboxDisplayKey = 'showWireframe' | 'showThresholdPlanes' | 'showAxisLab
 
 //region Helpers
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- every handler here takes the mutable `session` bundle (state reassigned in place); deep-readonly cannot apply. */
 /**
  * Binds one checkbox to its display-toggles key.
  *
@@ -84,13 +83,11 @@ function bindCheckbox(
     },
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Helpers
 
 //region Wire functions
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- every wire function takes the mutable `session` bundle (state reassigned in place); deep-readonly cannot apply. */
 
 /**
  * Wires four display checkboxes plus `name-labels` select.
@@ -219,6 +216,5 @@ export function wireReset(
     },
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Wire functions

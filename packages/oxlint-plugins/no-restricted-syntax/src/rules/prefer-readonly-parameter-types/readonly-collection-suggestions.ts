@@ -30,7 +30,6 @@ const COLLECTION_PROJECTIONS: Readonly<Record<string, {
   },
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- ParameterDeclaration mirrors TypeScript semantic AST identity. */
 /**
  * Builds verified mutable standard-collection projection suggestion.
  *
@@ -169,4 +168,3 @@ export function readonlyCollectionSuggestions({
     },
   ];
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

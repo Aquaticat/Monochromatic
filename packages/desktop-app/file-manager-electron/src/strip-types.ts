@@ -19,7 +19,6 @@
  * never reused, so it also encodes spawn order.
  *
  * Deliberately a plain `number` alias rather than a branded intersection:
- * `typescript/prefer-readonly-parameter-types` cannot model a branded
  * primitive intersection as readonly (see the documented precedent in
  * `packages/module/jsonc-edit/src/edit-state.ts`), and every call site here
  * passes ids through named object parameters, which already prevents

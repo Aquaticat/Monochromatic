@@ -40,7 +40,6 @@ export type EffectSummaryCacheStats = {
   readonly sourceCacheHitCount: number;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable summary clone intentionally creates fresh fixed-point accumulators. */
 /**
  * Clones direct summary before fixed-point propagation mutates it.
  *
@@ -73,7 +72,6 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
     calls: [...summary.calls,],
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Returns cloned direct summaries from cache or source scanner.

@@ -133,7 +133,6 @@ const THRESHOLD_LINE_WIDTH = 1.5;
 
 //region Accessors
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- deck.gl layer accessors: `PolygonDatum`/`PathDatum` carry mutable coordinate arrays required by deck.gl's accessor return contract; deep-readonly cannot apply. */
 /**
  * Returns a `PolygonDatum`'s `polygon` field; deck.gl's `SolidPolygonLayer` calls this per datum.
  *
@@ -165,7 +164,6 @@ function getPolygonAccessor(d: PolygonDatum,): PolygonDatum['polygon'] {
 function getPathAccessor(d: PathDatum,): PathDatum['path'] {
   return d.path;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Accessors
 

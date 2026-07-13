@@ -430,7 +430,6 @@ export function lastImportExpressionItem(node: Node,): OptionalNode {
   return NO_NODE;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- @oxlint/plugins getTokenAfter accepts its mutable Token union; this wrapper only reads it. */
 /**
  * Returns token after a node or token, or sentinel when absent.
  *
@@ -458,7 +457,6 @@ function tokenAfter(params: Readonly<TokenAfterParams>,): Token | typeof NO_TOKE
     .getTokenAfter(target,);
   return token ?? NO_TOKEN;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Returns last token in a node, or sentinel when absent.

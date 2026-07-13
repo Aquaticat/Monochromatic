@@ -98,7 +98,6 @@ export type ReadonlyClassification =
  */
 const HONEST_READONLY: ReadonlyClassification = { kind: 'honest-readonly', };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Type mirrors TypeScript semantic API identity required for symbol lookup. */
 /**
  * Returns owner symbol name for resolved type.
  *
@@ -137,7 +136,6 @@ function claimsReadonlyProjection(type: Type,): boolean {
     || (aliasName === 'ReadonlyDeep')
     || (aliasName === 'ReadonlyArray');
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Reads declaration modifier flags without assuming every node supports modifiers.
@@ -157,7 +155,6 @@ function declarationIsReadonly(value: object,): boolean {
     && ((modifierFlags & ModifierFlags.Readonly) !== 0);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Symbol and Project mirror TypeScript semantic API identities required for readonly checks. */
 /**
  * Determines whether property symbol is declared or mapped readonly.
  *
@@ -205,7 +202,6 @@ export function propertyIsReadonly({
         && declarationIsReadonly(declaration,);
     },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Combines constituent classifications by diagnostic priority.
@@ -229,7 +225,6 @@ function combineClassifications(
     ?? HONEST_READONLY;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Checker, Project, and Type mirror TypeScript semantic API identities required for recursive classification. */
 /**
  * Classifies deep readonly honesty for one resolved type graph.
  *
@@ -498,4 +493,3 @@ export function classifyReadonlyType({
 
   return classify(type,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

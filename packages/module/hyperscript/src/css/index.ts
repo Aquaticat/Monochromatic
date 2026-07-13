@@ -106,7 +106,6 @@ export {
 
 //region Main export
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- CssOptions = AtRuleOptions | RuleOptions; both transit StrictCssDeclarations (intentional `CssValue | string` and `(string & {})` escape hatches) and csstype descriptor interfaces, which this rule treats as mutable; deep-readonly is impossible without discarding the branded strict-typing the API is built on */
 /**
  * Creates a CSS string from declarative options.
  *
@@ -132,6 +131,5 @@ export {
 
   return buildAtRule(options,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion

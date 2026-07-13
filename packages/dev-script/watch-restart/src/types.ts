@@ -112,7 +112,6 @@ export type WatchCtx = {
    * Typed `Readonly<HashCache>` so this context is deeply readonly (the cache's
    * mutating methods stay callable; only reassignment of the binding is barred),
    * which keeps {@link WatchFilter} and every filter that destructures it
-   * within `typescript/prefer-readonly-parameter-types`.
    */
   readonly hashCache: Readonly<HashCache>;
 };

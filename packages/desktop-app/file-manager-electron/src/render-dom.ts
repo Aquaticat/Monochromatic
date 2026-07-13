@@ -248,7 +248,6 @@ function buildPaneElement(
   return section;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `stores: RendererStores` is the renderer's mutable-by-design element/listing cache, mutated via `.set`/`.delete` during reconciliation; threading it immutably would defeat the cache (same class as the injected memoization cache in packages/rolldown-plugins/import-attributes/src/scan-importer.ts). */
 /**
  * Fills a directory pane's list body from its fetched listing, once.
  *
@@ -544,4 +543,3 @@ export function renderStrip(
       },);
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

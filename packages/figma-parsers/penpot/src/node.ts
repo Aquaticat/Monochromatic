@@ -85,7 +85,6 @@ function resolveParentUuid(
     ?? parentUuid;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- these assemble shapes by in-place mutation (shape.* fields, ctx.shapes.set) and recurse through the shared ConvertContext; a deeply-readonly param would forbid the very writes the conversion performs */
 /**
  * Stamp uniform border radius onto a shape when the node has a positive corner radius.
  *
@@ -344,4 +343,3 @@ export function convertNode(
   );
   return shapeUuid;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

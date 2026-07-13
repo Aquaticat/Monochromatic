@@ -209,7 +209,6 @@ export async function captureDirectFixOriginalBytes(
   return new Map(entries,);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Scope contains callback-bearing lazy Git facts; installer reads but never mutates it. */
 /**
  * Installs converged private-index bytes without changing real index.
  *
@@ -339,4 +338,3 @@ export async function installDirectFix({
   }
   await cleanup(replacements,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

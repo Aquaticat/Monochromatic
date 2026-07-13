@@ -87,7 +87,6 @@ type PolicyCheckResult = Readonly<{
   error: unknown;
 }>;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Internal registry contains callback-bearing declarations; stage reads but never mutates them, as documented in docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Settles one plugin callback without conflating its exception with engine validation.
  *
@@ -311,4 +310,3 @@ export async function runPolicyStage({
     patchProposed: false,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

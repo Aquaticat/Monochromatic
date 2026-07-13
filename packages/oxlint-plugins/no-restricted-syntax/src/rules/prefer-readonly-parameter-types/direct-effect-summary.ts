@@ -43,7 +43,6 @@ import {
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- TypeScript nodes and mutable origin map are semantic-analysis identities and accumulators. */
 /**
  * Records direct write rooted at callable parameter or alias.
  *
@@ -256,4 +255,3 @@ export function directEffectSummary({
   },);
   return summary;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -114,7 +114,6 @@ function getProbes(): readonly PackageProbe[] {
  */
 const NO_PICKED_PROBE: unique symbol = Symbol('deps-cube/no-picked-probe',);
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `info` is deck.gl's external `PickingInfo`, which carries mutating methods; deep-readonly cannot apply. */
 /**
  * Extracts the probe payload from a deck.gl picking-info object, or
  * returns {@link NO_PICKED_PROBE} when nothing was picked or the picked datum
@@ -140,13 +139,11 @@ function pickedProbe(info: PickingInfo,): PackageProbe | typeof NO_PICKED_PROBE 
     .probe as PackageProbe;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access */
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Helpers
 
 //region Render path
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- every render-path helper takes the mutable `session` bundle (fields reassigned and mutated in place); deep-readonly cannot apply. */
 /**
  * Recomputes `visibleIndices` from the current state, updates the
  * visibility counter, and writes the result back into the session.
@@ -238,13 +235,12 @@ function syncHash(
     },),
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Render path
 
 //region Picking
 
-/* oxlint-disable no-restricted-syntax/no-nullish-union, typescript/prefer-readonly-parameter-types -- mirrors deck.gl's `getTooltip` contract: the handler receives the external `PickingInfo` (mutating methods, owned by deck.gl) and must return `{ html: string } | null` per deck.gl's `TooltipContent` type, so neither the param nor the nullish return can be reshaped. */
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors deck.gl's `getTooltip` contract: the handler receives the external `PickingInfo` (mutating methods, owned by deck.gl) and must return `{ html: string } | null` per deck.gl's `TooltipContent` type, so neither the param nor the nullish return can be reshaped. */
 /**
  * Builds the `getTooltip` payload for the deck.gl tooltip widget.
  *
@@ -265,9 +261,8 @@ function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
     },),
   };
 }
-/* oxlint-enable no-restricted-syntax/no-nullish-union, typescript/prefer-readonly-parameter-types */
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `info` is deck.gl's external `PickingInfo`, which carries mutating methods; deep-readonly cannot apply. */
 /**
  * `onClick` handler; pins a tooltip beside the canvas, or unpins it
  * when the click misses every glyph.
@@ -287,7 +282,6 @@ function onCanvasClick(info: PickingInfo,): void {
     probe,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Picking
 

@@ -112,7 +112,6 @@ function createPolicyContext({
   };
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Internal registry contains callback-bearing policy declarations; engine reads but never mutates them, as documented in docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Runs configured built-ins and buffers only settled pass events.
  *
@@ -388,4 +387,3 @@ export async function runPolicyEngine({
     shouldForward: (!hasError) && (!hasPatchProposal),
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

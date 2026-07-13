@@ -99,7 +99,6 @@ type RawLiveScopeItem<TModel extends ReadonlyModel = ReadonlyModel,> = TModel | 
 
 //region Public API
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- generic model entries must retain caller model type rather than ReadonlyDeep<TModel>. */
 /**
  * Resolve the effective scoped model set.
  *
@@ -193,7 +192,6 @@ export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
       },),
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Public API
 

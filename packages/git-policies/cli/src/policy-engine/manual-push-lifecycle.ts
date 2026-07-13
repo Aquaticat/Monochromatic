@@ -74,7 +74,6 @@ function createManualPushFacts({
   };
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; lifecycle reads but never mutates it. */
 /**
  * Reports whether registered policy requires manual-push facts.
  *
@@ -106,7 +105,6 @@ export function hasManualPushPolicy({
       .includes('manual-push',);
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Resolves canonical repository root through real Git.
@@ -142,7 +140,6 @@ async function resolveRepositoryRoot({
   return result.stdout;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Trusted runtime registry contains callback declarations; lifecycle reads but never mutates it. */
 /**
  * Runs manual-push policies before forwarding real Git.
  *
@@ -234,4 +231,3 @@ export async function runManualPushLifecycle({
     };
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

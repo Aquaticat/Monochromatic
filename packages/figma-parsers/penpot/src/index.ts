@@ -33,7 +33,6 @@ export type {
 } from './types.ts';
 export { serializePenpotZip, } from './zip.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- takes figma-kiwi's FigmaFile, whose Map/Record members cannot be expressed as deeply readonly here */
 /**
  * Convert a parsed Figma file to a Penpot export file.
  *
@@ -89,4 +88,3 @@ export async function figmaToPenpot(
 
   return zipBuffer;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

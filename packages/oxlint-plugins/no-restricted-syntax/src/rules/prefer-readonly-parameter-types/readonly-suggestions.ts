@@ -52,7 +52,6 @@ const READONLY_DEEP_IMPORT_UNAVAILABLE: unique symbol = Symbol(
   'source lacks type-fest ReadonlyDeep import',
 );
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- SourceFile mirrors TypeScript semantic AST identity. */
 /**
  * Finds local name for named type-fest ReadonlyDeep import.
  *
@@ -94,9 +93,7 @@ function readonlyDeepLocalName(
     .text
     ?? READONLY_DEEP_IMPORT_UNAVAILABLE;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- ParameterDeclaration mirrors TypeScript semantic AST identity. */
 /**
  * Builds verified deep-readonly array type suggestion.
  *
@@ -327,4 +324,3 @@ export function readonlyParameterSuggestions({
     },),
   ];
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

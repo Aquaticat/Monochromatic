@@ -19,7 +19,6 @@ import { TOGGLE_KEYS, } from './state.ts';
 
 //region Wire functions
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- every wire function takes the mutable `session` bundle (state reassigned in place by each handler); deep-readonly cannot apply. */
 /**
  * Wires the seven 3-state toggle radio groups.
  *
@@ -124,6 +123,5 @@ export function wireSearch(
     },
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Wire functions

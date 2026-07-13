@@ -14,7 +14,6 @@ import {
   mutationTargetIndexes,
 } from './mutation-contract-query.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable summary is intentional effect accumulator. */
 /**
  * Converts documented direct opaque boundary into verified adapter mutation.
  *
@@ -110,4 +109,3 @@ export function applyVerifiedAdapterContracts({
       .add(affectedParameterIndex,);
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

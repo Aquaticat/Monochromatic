@@ -93,7 +93,6 @@ export type MatcherSet = {
   ) => void;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `Chai.Assertion` is an external chai SDK type whose chainable getters mutate assertion state by design; deep-readonly does not apply to a type we do not own. */
 /**
  * Builds a Jest-style matcher set from a chai Assertion instance.
  * Core value matchers come from {@link buildCoreMatchers}; the sinon
@@ -346,6 +345,5 @@ export function buildMatchers(
     //endregion sinon-chai matchers
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Matcher set builder

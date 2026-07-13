@@ -68,7 +68,6 @@ export type PostCommitLifecycleResult = Readonly<{
   blocked: boolean;
 }>;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Internal registry contains callback-bearing declarations; lifecycle reads but never mutates them, as documented in docs/troubleshooting/oxlint-prefer-readonly-authoring-identity.md. */
 /**
  * Runs post-commit policies against exact committed ground truth.
  *
@@ -188,4 +187,3 @@ export async function runPostCommitLifecycle({
     };
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

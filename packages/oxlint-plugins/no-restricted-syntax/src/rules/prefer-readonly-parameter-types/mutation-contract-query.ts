@@ -61,7 +61,6 @@ const COMMENT_OPEN_WIDTH = 2;
  */
 const COMMENT_CLOSE_WIDTH = 2;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- FunctionLikeDeclaration mirrors TypeScript semantic AST identity. */
 /**
  * Reads shared mutation blocks from callable's final attached JSDoc comment.
  *
@@ -215,4 +214,3 @@ export function mutationTargetIndexes({
   },);
   return targetIndexes;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
