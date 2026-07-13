@@ -109,6 +109,13 @@ Capability types may retain their original API when analysis proves no mutation 
 A readonly projection that retains audited mutation capabilities reports `dishonestReadonly`.
 Unknown external calls report `opaqueEffect` instead of being assumed safe.
 
+Externally dictated mutable callback and API handles use project-owned `ForeignBorrowed<T>` marker at audited foreign
+boundaries.
+Marker records ownership rather than claiming readonly semantics:
+direct mutation still requires `@mutates`,
+and unresolved calls still report `opaqueEffect`.
+Project-owned data contracts continue to require structural deep readonly.
+
 Intentional mutation uses a repeatable project TSDoc block:
 
 ```typescript
@@ -130,6 +137,7 @@ The sibling `@monochromatic-dev/config-oxlint-tsdoc` plugin validates grammar;
 both plugins consume the same shared parser.
 The semantic rule reports missing and stale contracts,
 propagates effects and opaque provenance through owned calls,
+matches destructured mutation targets to packaged object-literal properties,
 callback aliases,
 and escaped closure containers,
 and consumes bodyless source-signature contracts.
