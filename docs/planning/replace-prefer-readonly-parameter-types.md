@@ -490,11 +490,41 @@ The implementation must add mutation-tag fixtures for direct declarations,
 methods,
 and callback comment attachment so Oxlint's comment ownership cannot silently skip an effect contract.
 
+### Chosen bodyless and external contract model
+
+Every owned callable signature carries its own effect tags,
+including overload declarations,
+interface and type-literal call signatures,
+abstract methods,
+ambient declarations owned by this repository,
+and the concrete implementation signature.
+
+Overload effects may differ.
+The implementation summary must cover the union of reachable overload effects,
+with parameters mapped by resolved signature rather than assumed name equality.
+The TSDoc plugin validates each signature independently;
+the semantic rule validates cross-signature consistency.
+
+Raw external mutable-effect calls are isolated behind locally owned,
+documented adapters.
+Production code calls the adapters rather than maintaining a global package-symbol effect registry.
+Adapter tags state the external effect at the repository boundary and must name the upstream callable in their
+description or link.
+
+`@mutates` means "may mutate,
+"
+not "always mutates.
+"
+The effect analyzer uses three outcomes:
+
+- proven mutation requires the tag;
+- proven absence rejects a stale tag;
+- possible mutation through an opaque external boundary requires and accepts the tag,
+  while retaining the unresolved boundary in diagnostics or audit output.
+
+This permits honest external adapters without pretending their implementation was proved from unavailable source.
+
 ### Awaiting decision
 
-The first unresolved policy decision is how callable declarations without one concrete body,
-such as overloads,
-interfaces,
-abstract methods,
-and ambient or external declarations,
-carry mutation effects.
+The first unresolved policy decision is how higher-order callables express and propagate mutation performed by callback
+parameters.
