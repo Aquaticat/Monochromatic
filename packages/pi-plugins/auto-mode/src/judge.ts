@@ -326,7 +326,7 @@ async function callJudge(
     readonly timeoutMs: number;
     readonly systemPrompt: string;
     readonly batchContext: readonly BatchEntry[];
-    readonly abortSignal?: AbortSignal;
+    readonly abortSignal?: Readonly<AbortSignal>;
     readonly streamSimpleFn?: JudgeStreamSimple;
   },
 ): Promise<Verdict> {
