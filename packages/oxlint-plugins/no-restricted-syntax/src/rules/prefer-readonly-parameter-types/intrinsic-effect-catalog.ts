@@ -203,6 +203,23 @@ const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: '@types/node 26 path.d.ts primitive path operations',
     };
   },),
+  ...[
+    'isBlockDevice',
+    'isCharacterDevice',
+    'isDirectory',
+    'isFIFO',
+    'isFile',
+    'isSocket',
+    'isSymbolicLink',
+  ].map(function direntObservation(member,): IntrinsicEffectEntry {
+    return {
+      provenance: { kind: 'node', },
+      ownerType: 'Dirent',
+      member,
+      targets: [],
+      evidence: '@types/node 26 fs.d.ts Dirent file-type observation declarations',
+    };
+  },),
   {
     provenance: { kind: 'node', },
     ownerType: 'node:url',

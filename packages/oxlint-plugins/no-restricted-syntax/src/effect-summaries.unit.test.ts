@@ -59,6 +59,7 @@ await describe({
           'pathObservationEffect',
           'dateObservationEffect',
           'fileUrlObservationEffect',
+          'direntObservationEffect',
           'aliasSemanticEffect',
           'assignedAliasSemanticEffect',
           'reboundParameterSemanticEffect',
@@ -172,6 +173,11 @@ await describe({
           },
           {
             functionName: 'fileUrlObservationEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'direntObservationEffect',
             mutated: [],
             opaque: [],
           },

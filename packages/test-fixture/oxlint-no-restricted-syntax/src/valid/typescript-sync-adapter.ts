@@ -1,3 +1,4 @@
+import type { Dirent, } from 'node:fs';
 import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
@@ -303,6 +304,17 @@ export function dateObservationEffect(date: Date,): number {
  */
 export function fileUrlObservationEffect(url: URL,): string {
   return fileURLToPath(url,);
+}
+
+/**
+ * Reads foreign directory-entry file type through audited Node methods.
+ *
+ * @param entry - Directory entry inspected without mutation.
+ *
+ * @returns whether entry represents file or directory.
+ */
+export function direntObservationEffect(entry: Dirent,): boolean {
+  return entry.isFile() || entry.isDirectory();
 }
 
 /**
