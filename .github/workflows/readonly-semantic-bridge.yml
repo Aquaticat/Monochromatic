@@ -49,7 +49,7 @@ jobs:
       run: mise install node pnpm
 
     - name: Install semantic bridge dependency closure
-      run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/config-oxlint-no-restricted-syntax...
+      run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter . --filter @monochromatic-dev/config-oxlint-no-restricted-syntax...
 
     - name: Build semantic plugin artifact
       run: mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node
