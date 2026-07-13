@@ -76,13 +76,30 @@ export function applyVerifiedAdapterContracts({
      * Whether every opaque call is named or linked by matching contract.
      */
     const fullyDocumented = [...provenanceFacts,].every(function documented(provenance,): boolean {
+      /**
+       * Final callable member retained for matching documentation links.
+       */
+      const finalMemberSeparator = provenance.lastIndexOf('.',);
+      /**
+       * Callable member text after final property separator.
+       */
+      const member = provenance.slice(finalMemberSeparator + 1,);
       return parameterContracts.some(function namesBoundary(block,): boolean {
-        return block.description
-          .includes(provenance,)
-          || block.description
+        /**
+         * Whether contract names exact authored call expression.
+         */
+        const namesExactBoundary = block.description
+          .includes(provenance,);
+        /**
+         * Whether contract links documentation while naming callable member.
+         */
+        const linksNamedBoundary = (block.description
           .includes('https://',)
           || block.description
-          .includes('http://',);
+          .includes('http://',))
+          && block.description
+          .includes(member,);
+        return namesExactBoundary || linksNamedBoundary;
       },);
     },);
     if (!fullyDocumented)

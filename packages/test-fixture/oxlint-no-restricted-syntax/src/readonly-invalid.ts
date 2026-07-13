@@ -1,3 +1,5 @@
+import { opaqueExternalMutation, } from './readonly-external.fixture.js';
+
 /**
  * Mutable local projection used to test dishonest capability retention.
  */
@@ -52,4 +54,15 @@ export function dishonestReadonlyCapability(
  */
 export function opaqueReadonlyEffect(state: { readonly value: string; },): string {
   return JSON.stringify(state,);
+}
+
+/**
+ * Uses unrelated URL instead of naming opaque upstream callable.
+ *
+ * @param state - State sent through undocumented external boundary.
+ *
+ * @mutates state - See https://example.test/unrelated-contract.
+ */
+export function unrelatedLinkReadonlyAdapter(state: { value: string; },): void {
+  opaqueExternalMutation(state,);
 }

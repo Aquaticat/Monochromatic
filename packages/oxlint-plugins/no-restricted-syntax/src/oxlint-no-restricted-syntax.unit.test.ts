@@ -528,7 +528,7 @@ await describe({
           name: 'reports readonly, mutation, stale, dishonest, and opaque failures',
           fn: async () => {
             const diagnostics = await lintReadonly('readonly-invalid.ts',);
-            expect(diagnostics.length,).toBe(5,);
+            expect(diagnostics.length,).toBe(6,);
             const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
               return diagnostic.message;
             },);
