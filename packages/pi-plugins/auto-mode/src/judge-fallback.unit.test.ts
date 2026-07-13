@@ -149,7 +149,7 @@ await describe({
         /** Complete judge-attempt order. */
         const attemptedSlugs: string[] = [];
         /** Exclusions sent to the fallback selector. */
-        const resolverExclusions: string[][] = [];
+        const resolverExclusions: (readonly string[])[] = [];
         /** Initially selected judge. */
         const firstJudge = judgeFixture({ id: 'first', },);
         /** First contender in the fallback race. */
