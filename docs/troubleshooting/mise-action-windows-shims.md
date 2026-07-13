@@ -34,8 +34,9 @@ The fix was released in `mise-action` `4.1.0`.
 Update the pinned action to `4.2.0` commit `e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d`.
 This release contains the `mise-shim.exe` fix and remains pinned to an immutable commit.
 
-The workflow uses Bash for run steps and appends `mise where node` plus `mise where pnpm` to `GITHUB_PATH`.
-This avoids relying on the Windows PowerShell-to-task environment transfer that omitted tool roots in the failing logs.
+Each PowerShell build or test step prepends `mise where node` plus `mise where pnpm` to its process-local `PATH` using
+`[IO.Path]::PathSeparator`.
+This makes the runtime roots explicit before mise creates its child task shell and works with each host's path separator.
 
 The semantic-plugin package also invokes its directly declared tsdown entry through Node:
 
