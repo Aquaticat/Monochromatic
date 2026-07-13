@@ -16,6 +16,11 @@ import type {
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
 import {
+  everyBoundaryIsInputMethod,
+  inputMethodUsageSubject,
+  inputUsageSubject,
+} from './input-diagnostic-description.ts';
+import {
   MUTATION_CONTRACT_UNAVAILABLE,
   mutationContractsForDeclaration,
   mutationTargetIndexes,
@@ -167,55 +172,6 @@ function reportStaleContract({
 }
 
 /**
- * Describes identifier names that belong to one function input.
- *
- * @param targetIndexes - Binding names mapped to owning input indexes.
- *
- * @param parameterIndex - Input index being described.
- *
- * @returns subject plus verb for singular or destructured input names.
- */
-function inputUsageSubject({
-  targetIndexes,
-  parameterIndex,
-}: {
-  readonly targetIndexes: ReadonlyMap<string, number>;
-  readonly parameterIndex: number;
-},): string {
-  /**
-   * Authored binding names belonging to current input.
-   */
-  const names: string[] = [];
-  targetIndexes.forEach(function collectName(
-    index,
-    name,
-  ): void {
-    if (index === parameterIndex)
-      names.push(`"${name}"`,);
-  },);
-  if (names.length === 0)
-    return 'The function input at this location is';
-  if (names.length === 1)
-    return `The function input named ${names[0]} is`;
-  if (names.length === 2)
-    return `The function inputs named ${names[0]} and ${names[1]} are`;
-  /**
-   * Final binding name joined after comma-separated leading names.
-   */
-  const finalName = names.at(-1,) ?? '"unknown input"';
-  /**
-   * Leading names joined before final human-readable conjunction.
-   */
-  const leadingNames = names
-    .slice(
-      0,
-      -1,
-    )
-    .join(', ',);
-  return `The function inputs named ${leadingNames}, and ${finalName} are`;
-}
-
-/**
  * Verifies one callable's type and mutation contracts.
  *
  * @param context - Rule context receiving diagnostics.
@@ -354,17 +310,36 @@ export function verifyReadonlyCallable({
       /**
        * Sorted upstream boundary names retained by effect propagation.
        */
-      const boundaries = [
+      const boundaryFacts = [
         ...effectSummary.opaqueProvenanceByParameter
           .get(parameterIndex,)
           ?? [],
-      ].toSorted()
-        .join(', ',);
+      ].toSorted();
+      /**
+       * Human-readable list of unresolved calls.
+       */
+      const boundaries = boundaryFacts.join(', ',);
+      /**
+       * Whether every unknown call is a method on one current input binding.
+       */
+      const onlyInputMethods = everyBoundaryIsInputMethod({
+        boundaries: boundaryFacts,
+        targetIndexes,
+        parameterIndex,
+      },);
       context.report({
         loc,
-        messageId: 'opaqueEffect',
+        messageId: onlyInputMethods
+          ? 'opaqueMethodEffect'
+          : 'opaqueEffect',
         data: {
-          inputSubject,
+          inputSubject: onlyInputMethods
+            ? inputMethodUsageSubject({
+              boundaries: boundaryFacts,
+              targetIndexes,
+              parameterIndex,
+            },)
+            : inputSubject,
           boundaries: boundaries === ''
             ? 'a call whose name this rule could not determine'
             : boundaries,

@@ -1,4 +1,7 @@
-import { opaqueExternalMutation, } from './readonly-external.fixture.js';
+import {
+  type OpaqueExternalService,
+  opaqueExternalMutation,
+} from './readonly-external.fixture.js';
 
 /**
  * Mutable local projection used to test dishonest capability retention.
@@ -54,6 +57,15 @@ export function dishonestReadonlyCapability(
  */
 export function opaqueReadonlyEffect(state: { readonly value: string; },): string {
   return JSON.stringify(state,);
+}
+
+/**
+ * Calls unknown method through external service input.
+ *
+ * @param service - External service with unavailable implementation.
+ */
+export function opaqueMethodEffect(service: OpaqueExternalService,): void {
+  service.write();
 }
 
 /**

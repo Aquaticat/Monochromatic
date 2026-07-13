@@ -528,7 +528,7 @@ await describe({
           name: 'reports readonly, mutation, stale, dishonest, and opaque failures',
           fn: async () => {
             const diagnostics = await lintReadonly('readonly-invalid.ts',);
-            expect(diagnostics.length,).toBe(7,);
+            expect(diagnostics.length,).toBe(8,);
             const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
               return diagnostic.message;
             },);
@@ -555,15 +555,30 @@ await describe({
             expect(opaqueMessage,).toBe(
               'The function input named "state" is used by these calls: JSON.stringify.'
                 + '\n\nThis rule cannot inspect enough of those calls to know what they might change. They could change the input itself, change an object stored inside it, call a function stored inside it, or arrange for one of those changes to happen later.'
-                + '\n\nMove these calls into a function in this repository. For each input that the calls might change, add its own @mutates line to that function\'s /** ... */ comment:'
-                + '\n@mutates inputName - explain what may change and name the call responsible'
-                + '\nReplace inputName with that function\'s actual input name. Then call that function here.',
+                + '\n\nChoose the remediation that matches the call:'
+                + '\n1. Remove the call or rewrite the code so this input is not given to code the rule cannot inspect.'
+                + '\n2. If the called code is in this repository but missing from its TypeScript project, update the nearest tsconfig.json so the rule can inspect that source.'
+                + '\n3. If the exact external function or method has been audited, add an entry with evidence and tests to the rule\'s audited-call catalogue. Package calls belong in package-effect-catalog.ts; JavaScript, DOM, and Node calls belong in their matching platform catalogue. The entry must record every input or object the call can change; an empty list is allowed only when the audit proves it changes no state that code outside this function can observe.'
+                + '\n4. Otherwise, document the possible change here or in a dedicated function that contains the calls. For each input that might be changed, add its own line to the function\'s /** ... */ comment:'
+                + '\n@mutates inputName - explain what may change and name every listed call responsible'
+                + '\nReplace inputName with that function\'s actual input name.',
             );
             expect(messages.some(function destructuredInput(message,): boolean {
               return message.startsWith(
                 'The function inputs named "state" and "label" are used by these calls: JSON.stringify.',
               );
             },),).toBe(true,);
+            /** Method-specific diagnostic explaining state changes without assignment. */
+            const methodMessage = messages.find(function unknownMethod(message,): boolean {
+              return message.startsWith(
+                'The function input named "service" is used as the object for these method calls: service.write.',
+              );
+            },);
+            if (methodMessage === undefined)
+              throw new Error('Expected unknown method diagnostic.',);
+            expect(methodMessage.includes(
+              'A method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.',
+            ),).toBe(true,);
           },
         },),
         it({

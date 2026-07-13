@@ -68,6 +68,22 @@ function isEnforcedTypeScriptSource(fileName: string,): boolean {
 }
 
 /**
+ * Plain-language explanation for calls whose implementation remains unknown.
+ */
+const UNKNOWN_CALL_CHANGE_EXPLANATION = '\n\nThis rule cannot inspect enough of those calls to know what they might change. They could change the input itself, change an object stored inside it, call a function stored inside it, or arrange for one of those changes to happen later.';
+
+/**
+ * Every supported remediation for calls whose implementation remains unknown.
+ */
+const UNKNOWN_CALL_REMEDIATION = '\n\nChoose the remediation that matches the call:'
+  + '\n1. Remove the call or rewrite the code so this input is not given to code the rule cannot inspect.'
+  + '\n2. If the called code is in this repository but missing from its TypeScript project, update the nearest tsconfig.json so the rule can inspect that source.'
+  + '\n3. If the exact external function or method has been audited, add an entry with evidence and tests to the rule\'s audited-call catalogue. Package calls belong in package-effect-catalog.ts; JavaScript, DOM, and Node calls belong in their matching platform catalogue. The entry must record every input or object the call can change; an empty list is allowed only when the audit proves it changes no state that code outside this function can observe.'
+  + '\n4. Otherwise, document the possible change here or in a dedicated function that contains the calls. For each input that might be changed, add its own line to the function\'s /** ... */ comment:'
+  + '\n@mutates inputName - explain what may change and name every listed call responsible'
+  + '\nReplace inputName with that function\'s actual input name.';
+
+/**
  * Enforces honest readonly parameter types and verified mutation contracts.
  *
  * @example
@@ -88,11 +104,8 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
       shouldBeReadonly: 'Parameter "{{parameterName}}" should be readonly: {{reason}}.',
       missingMutatesTag: 'Parameter "{{parameterName}}" is mutated but lacks @mutates contract.',
       staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
-      opaqueEffect: '{{inputSubject}} used by these calls: {{boundaries}}.'
-        + '\n\nThis rule cannot inspect enough of those calls to know what they might change. They could change the input itself, change an object stored inside it, call a function stored inside it, or arrange for one of those changes to happen later.'
-        + '\n\nMove these calls into a function in this repository. For each input that the calls might change, add its own @mutates line to that function\'s /** ... */ comment:'
-        + '\n@mutates inputName - explain what may change and name the call responsible'
-        + '\nReplace inputName with that function\'s actual input name. Then call that function here.',
+      opaqueEffect: `{{inputSubject}} used by these calls: {{boundaries}}.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
+      opaqueMethodEffect: `{{inputSubject}} used as the object for these method calls: {{boundaries}}.\n\nA method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       dishonestReadonly: 'Parameter "{{parameterName}}" claims readonly semantics dishonestly: {{reason}}.',
       inconsistentMutatesContract: 'Mutation contracts disagree across callable signatures.',
       semanticBridgeUnavailable: 'Readonly semantic analysis unavailable: {{reason}}.',
