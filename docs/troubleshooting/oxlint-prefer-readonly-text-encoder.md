@@ -2,7 +2,7 @@
 
 ## Symptom
 
-`no-restricted-syntax/prefer-readonly-parameter-types` initially treated
+`prefer-readonly-parameter-type/prefer-readonly-parameter-types` initially treated
 `encoder.encode(text)` as an unresolved method effect.
 The call is observational,
 but a full `Readonly<TextEncoder>` projection remains dishonest because it also retains mutating `encodeInto`.
@@ -27,7 +27,7 @@ which writes into caller-supplied `destination` and therefore cannot share an em
 
 ## Verified resolution
 
-`packages/oxlint-plugins/no-restricted-syntax/src/rules/prefer-readonly-parameter-types/intrinsic-effect-catalog.ts`
+`packages/oxlint-plugins/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/intrinsic-effect-catalog.ts`
 now records exact DOM provenance:
 
 - Owner:

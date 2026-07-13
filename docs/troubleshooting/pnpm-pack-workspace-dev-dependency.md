@@ -2,7 +2,7 @@
 
 ## Symptom
 
-Packing `@monochromatic-dev/config-oxlint-no-restricted-syntax` directly emits:
+Packing `@monochromatic-dev/config-oxlint-no-restricted-syntax` directly emitted:
 
 ```text
 [ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL] Cannot resolve workspace protocol of dependency
@@ -11,6 +11,11 @@ Packing `@monochromatic-dev/config-oxlint-no-restricted-syntax` directly emits:
 
 The package's production artifact is bundled and does not load this development-only TypeScript configuration,
 but `pnpm pack` still validates and transforms the development dependency.
+
+The semantic rule later moved to
+`@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type`.
+Its moved external-consumer test retains the same staged production-manifest workaround;
+the original package name remains here because it identifies the artifact used for this diagnosis.
 
 Using `npm pack` avoids that validation but leaves `catalog:` production dependency specifications unchanged.
 Installing that tarball externally then emits:

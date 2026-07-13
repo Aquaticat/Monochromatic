@@ -65,7 +65,7 @@ Both methods therefore change state observable through Pi even though the local 
 
 ## Resolution
 
-`packages/oxlint-plugins/no-restricted-syntax/src/rules/prefer-readonly-parameter-types/pi-package-effect-catalog.ts`
+`packages/oxlint-plugins/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/pi-package-effect-catalog.ts`
 now records exact receiver effects for:
 
 - package `@earendil-works/pi-coding-agent`;

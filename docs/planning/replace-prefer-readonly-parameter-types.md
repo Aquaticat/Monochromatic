@@ -167,8 +167,21 @@ The semantic-rule implementation is functional and shared-configuration migratio
 - after the user rejected an absent `message` mutation contract as dishonest,
   commit `c6e026a82` moves MCP response serialization to ownership-known call sites and passes primitive text through the
   generic writer;
+- after the user required a dedicated package seam,
+  commit `092963df8` moves semantic rule source,
+  focused tests,
+  host acceptance,
+  publication acceptance,
+  namespace,
+  and shared-config sidecar under `packages/oxlint-plugins/prefer-readonly-parameter-type`;
+- the same commit satisfies the user's narrow ubiquitous-dependency requirement through
+  `packages/ownership-markers/foreign-borrowed`,
+  which contains one type declaration,
+  no runtime code,
+  and no runtime dependencies;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
+  `packages/oxlint-plugins/prefer-readonly-parameter-type`,
   `packages/oxlint-plugins/tsdoc`,
   `packages/oxlint-plugins/stylistic`,
   `packages/module/or-throw`,
@@ -192,7 +205,13 @@ Verified package tasks:
 - `mise run //packages/dev-script/task-util:lint:oxlint`;
 - `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types`;
 - `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint`;
-- `mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit`.
+- `mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit`;
+- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:build:js:node`;
+- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:types`;
+- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint`;
+- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit`;
+- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:semantic-bridge-host`;
+- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:external-consumer-host`.
 
 Next action:
 classify latest one-worker workspace sweep,
@@ -251,8 +270,8 @@ Ask only when alternatives encode genuinely different policy or correctness outc
 ## Goal
 
 Retire Oxlint's type-aware `typescript/prefer-readonly-parameter-types` rule and replace its useful policy with a
-project-owned JavaScript rule in
-`@monochromatic-dev/config-oxlint-no-restricted-syntax`.
+project-owned JavaScript rule in dedicated
+`@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type`.
 
 The replacement must reduce false positives and configuration maintenance without claiming guarantees that its chosen
 analysis pipeline has not proved.
@@ -930,7 +949,7 @@ Ambiguous cases remain diagnostics without a suggestion.
 Use one project rule:
 
 ```text
-no-restricted-syntax/prefer-readonly-parameter-types
+prefer-readonly-parameter-type/prefer-readonly-parameter-types
 ```
 
 The recognizable basename preserves lineage from the retired native rule.

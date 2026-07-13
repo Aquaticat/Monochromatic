@@ -9,7 +9,7 @@ allow entry never matches,
 
 ## Symptom
 
-Writing a `@monochromatic-dev/config-oxlint-no-restricted-syntax` rule with an AST visitor
+Writing `@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type` with an AST visitor
 parameter typed through the re-exported ESTree namespace:
 
 ```typescript

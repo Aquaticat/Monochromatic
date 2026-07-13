@@ -2,7 +2,7 @@
 
 ## Symptom
 
-`no-restricted-syntax/prefer-readonly-parameter-types` reports `opaqueEffect` when a parameter crosses an
+`prefer-readonly-parameter-type/prefer-readonly-parameter-types` reports `opaqueEffect` when a parameter crosses an
 uncatalogued ECMAScript call.
 Blanket treatment of serialization and reflection as observational would remove useful diagnostics but would be
 unsound.
