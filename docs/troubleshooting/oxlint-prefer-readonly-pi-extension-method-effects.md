@@ -194,10 +194,17 @@ member,
 and targets for every added Pi method.
 The rule-level invalid fixture also proves that direct callback invocation without a contract
 reports the missing callback contract.
-Package-local Oxlint accepts the documented effects in auto-mode,
-current-time-context,
+Package-local Oxlint accepts the documented effects in current-time-context,
 Advisor,
 and shared model selection.
+Auto-mode still has separate capability and data-contract migration findings.
+
+The subsequent root `mise run lint:oxlint` sweep completed its Oxlint run in `259.1` seconds.
+It returned status `1` because the repository still had `3,803` warnings and `1,714` errors across all rules,
+not because the semantic bridge crashed.
+The replacement rule reported `1,049` migration diagnostics,
+no semantic bridge failure marker,
+and no remaining Advisor or shared model-selection diagnostic.
 
 ## Verified workarounds
 

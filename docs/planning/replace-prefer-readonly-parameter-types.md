@@ -228,6 +228,17 @@ The semantic-rule implementation is functional and shared-configuration migratio
   63 missing contracts,
   and 1 stale contract,
   with no semantic bridge failure;
+- the root sweep after commits `3d90851aa`,
+  `fe9e0b99e`,
+  and `3ee0ab774` reported 1,049 diagnostics:
+  496 uncertain calls,
+  246 readonly projections,
+  181 missing contracts,
+  125 dishonest readonly declarations,
+  and 1 stale contract;
+  direct callback invocation moved previously hidden effects into enforceable missing contracts,
+  Advisor and shared model selection each reported zero diagnostics,
+  and no semantic bridge failure was present;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,
