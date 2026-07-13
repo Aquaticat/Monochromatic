@@ -35,8 +35,9 @@ Update the pinned action to `4.2.0` commit `e6a8b3978addb5a52f2b4cd9d91eafa7f0ab
 This release contains the `mise-shim.exe` fix and remains pinned to an immutable commit.
 
 Each build or test step uses `mise run --tool node`.
-This asks mise to add Node to the task environment explicitly instead of depending on automatic Windows task-shell
-activation.
+The external-consumer step also supplies `--tool pnpm` because it packs and installs the staged artifact.
+These options ask mise to add required tools to the task environment explicitly instead of depending on automatic
+Windows task-shell activation.
 The workflow runs the root `test` task after its explicit build rather than `buildAndTest`,
 which would launch a nested `mise` build from its Node task body.
 
