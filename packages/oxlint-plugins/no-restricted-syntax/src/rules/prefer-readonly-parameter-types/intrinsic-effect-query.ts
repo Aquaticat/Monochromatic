@@ -321,12 +321,6 @@ export function intrinsicEffectQuery({
   readonly memberSymbol: TypeScriptSymbol;
 },): IntrinsicEffectQuery | typeof NO_INTRINSIC_QUERY {
   /**
-   * Receiver owner symbol preserving declared API type identity.
-   */
-  const ownerSymbol = receiverType.getSymbol() ?? receiverType.getAliasSymbol();
-  if (ownerSymbol === undefined)
-    return NO_INTRINSIC_QUERY;
-  /**
    * First exact declaration for callable member symbol.
    */
   const declarationHandle = memberSymbol
@@ -339,6 +333,21 @@ export function intrinsicEffectQuery({
    */
   const declaration = declarationHandle.resolve(project,);
   if (declaration === undefined)
+    return NO_INTRINSIC_QUERY;
+  /**
+   * Declaring owner type, preserving original identity through mapped projections.
+   */
+  const declaringType = project
+    .checker
+    .getTypeAtLocation(declaration.parent,);
+  /**
+   * Callable owner symbol from declaration first, receiver as fallback.
+   */
+  const ownerSymbol = declaringType
+    ?.getSymbol()
+    ?? receiverType.getSymbol()
+    ?? receiverType.getAliasSymbol();
+  if (ownerSymbol === undefined)
     return NO_INTRINSIC_QUERY;
   /**
    * Declaration provenance after source-file classification.

@@ -9,6 +9,13 @@ export type SemanticFixtureBox<T> = {
 };
 
 /**
+ * Recursive readonly projection used without package dependency in fixture.
+ */
+type ReadonlyDeep<T> = {
+  readonly [Key in keyof T]: ReadonlyDeep<T[Key]>;
+};
+
+/**
  * Reads semantic fixture value.
  *
  * @param box - Fixture box resolved by TypeScript bridge.
@@ -40,4 +47,55 @@ export function addSemanticFixtureValue(values: Set<string>,): void {
  */
 export function abortSemanticFixture(controller: AbortController,): void {
   controller.abort();
+}
+
+/**
+ * Accepts mutable structural data for classifier fixture.
+ *
+ * @param mutableObject - Writable structural data.
+ */
+export function classifyMutableObject(mutableObject: { value: string; },): void {
+  void mutableObject;
+}
+
+/**
+ * Accepts deeply readonly structural data for classifier fixture.
+ *
+ * @param readonlyObject - Deeply readonly structural data.
+ */
+export function classifyReadonlyObject(
+  readonlyObject: Readonly<SemanticFixtureBox<string>>,
+): void {
+  void readonlyObject;
+}
+
+/**
+ * Accepts projected capability that retains abort operation.
+ *
+ * @param projectedController - Dishonest readonly capability projection.
+ */
+export function classifyProjectedController(
+  projectedController: ReadonlyDeep<AbortController>,
+): void {
+  void projectedController;
+}
+
+/**
+ * Accepts original capability for effect-dependent classification.
+ *
+ * @param capabilityController - Original cancellation capability.
+ */
+export function classifyCapabilityController(capabilityController: AbortController,): void {
+  void capabilityController;
+}
+
+/**
+ * Accepts standard readonly collection interface.
+ *
+ * @param readonlyMap - Observational readonly collection.
+ */
+export function classifyReadonlyMap(
+  readonlyMap: ReadonlyMap<string, Readonly<SemanticFixtureBox<string>>>,
+): void {
+  void readonlyMap;
 }

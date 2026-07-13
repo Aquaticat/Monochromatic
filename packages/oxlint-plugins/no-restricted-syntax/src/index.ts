@@ -64,6 +64,12 @@ import { requireDestructuredParams, } from './rules/require-destructured-params.
 import { requireQueryselectorGeneric, } from './rules/require-queryselector-generic.ts';
 
 export {
+  classifyReadonlyType,
+  propertyIsReadonly,
+  type ReadonlyClassification,
+} from './rules/prefer-readonly-parameter-types/readonly-classifier.ts';
+
+export {
   closeSemanticBridge,
   openSemanticFile,
   type SemanticFileSession,
