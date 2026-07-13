@@ -2,11 +2,12 @@
  * Stub for `sax`, aliased into the SEA bundle in place of the workspace-
  * blocklisted `sax` package.
  *
- * dbus-next pulls in xml2js, whose parser does `require('sax')` at module load
- * but only calls `sax.parser()` when PARSING introspection XML (client role).
- * key-helper is server-only: it answers Introspect via xml2js's Builder and
- * never parses, so this stub lets the module load and throws only if parsing is
- * ever attempted.
+ * `@homebridge/dbus-native` statically requires `./introspect` in
+ * `lib/bus.js`, which loads xml2js, whose parser does `require('sax')` at module
+ * load but only runs when PARSING a remote object's introspection XML (client
+ * role). key-helper is a D-Bus service: it answers Introspect from
+ * `lib/stdifaces.js` without xml2js and never parses, so this stub lets the
+ * bundle's module graph load and throws only if parsing is ever attempted.
  *
  * @module
  */

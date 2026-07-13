@@ -6,9 +6,9 @@
   "private": true,
   "main": "src/index.ts",
   "dependencies": {
+    "@homebridge/dbus-native": "catalog:",
     "@monochromatic-dev/module-async-time": "workspace:*",
-    "@msgpack/msgpack": "catalog:",
-    "dbus-next": "catalog:"
+    "@msgpack/msgpack": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

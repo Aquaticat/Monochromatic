@@ -19,9 +19,8 @@ const saxStub = fileURLToPath(new URL(
  *
  * Produces a single self-contained ESM bundle that Node SEA embeds. SEA cannot
  * resolve filesystem modules at runtime, so every runtime dependency is bundled;
- * only `node:` builtins (always external) and the optional native `usocket` are
- * left out. dbus-next falls back to `net` for the path-style session bus, so the
- * runtime `usocket` require throwing is expected and handled.
+ * only `node:` builtins are left external. `@homebridge/dbus-native` speaks to
+ * the path-style session bus over Node's `net`, so no native addon is bundled.
  *
  * @example
  * ```ts
@@ -35,9 +34,8 @@ const config: UserConfig = defineConfig({
   alias: { sax: saxStub },
   deps: {
     alwaysBundle: function shouldBundle(id: string): boolean {
-      return (!id.startsWith('node:')) && (id !== 'usocket');
+      return !id.startsWith('node:');
     },
-    neverBundle: ['usocket'],
   },
 });
 

@@ -1,7 +1,7 @@
 /**
  * key-helper daemon entry point.
  *
- * Claims the {@link DBUS_SERVICE} bus name, exports {@link KeyHelperInterface}
+ * Claims the {@link DBUS_SERVICE} bus name, exports {@link keyHelperInterface}
  * for the KWin script to drive, and monitors every Shift-capable input device
  * for double-shift. Double-shift trips F20 in Neovim only while Neovide is
  * focused, so the tap stays passive everywhere else (e.g. VSCodium keeps its own
@@ -13,20 +13,36 @@
  * @module
  */
 
-import dbus from 'dbus-next';
+import { promisify } from 'node:util';
+
+import { sessionBus } from '@homebridge/dbus-native';
 
 import {
   DBUS_PATH,
   DBUS_SERVICE,
   NEOVIDE_CLASS,
 } from './constants.ts';
-import { KeyHelperInterface } from './dbus-iface.ts';
+import {
+  keyHelperInterface,
+  keyHelperInterfaceDescriptor,
+} from './dbus-iface.ts';
 import {
   findShiftDevices,
   startEvdevMonitor,
 } from './evdev.ts';
 import { sendNvimInput } from './nvim.ts';
 import { getActiveWindowClass } from './state.ts';
+
+/**
+ * `RequestName` reply code meaning this connection became primary owner of the
+ * requested well-known name.
+ */
+const DBUS_NAME_PRIMARY_OWNER = 1;
+
+/**
+ * `RequestName` flags value requesting the name with no special queueing.
+ */
+const DBUS_NAME_NO_FLAGS = 0;
 
 /**
  * Fire F20 on double-shift, but only while Neovide is focused.
@@ -55,20 +71,30 @@ async function main(): Promise<void> {
   /**
    * Session bus connection.
    */
-  const bus = dbus.sessionBus();
-  /**
-   * Exported interface instance.
-   */
-  const iface = new KeyHelperInterface();
-  bus.export(
+  const bus = sessionBus();
+  bus.exportInterface(
+    keyHelperInterface,
     DBUS_PATH,
-    iface
+    keyHelperInterfaceDescriptor
   );
-  // 0: request the name with no special flags.
-  await bus.requestName(
+  /**
+   * Promise-returning `RequestName`, resolving to its numeric reply code.
+   */
+  const requestName: (
+    name: string,
+    flags: number
+  ) => Promise<number> = promisify(bus.requestName
+    .bind(bus));
+  /**
+   * `RequestName` reply code for {@link DBUS_SERVICE}.
+   */
+  const retCode = await requestName(
     DBUS_SERVICE,
-    0
+    DBUS_NAME_NO_FLAGS
   );
+  if (retCode !== DBUS_NAME_PRIMARY_OWNER) {
+    throw new Error(`[key-helper] failed to own ${DBUS_SERVICE}: RequestName returned ${retCode}`);
+  }
   console.log(`[key-helper] D-Bus service registered: ${DBUS_SERVICE}`);
 
   /**

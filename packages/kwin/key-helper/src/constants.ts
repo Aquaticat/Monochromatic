@@ -13,7 +13,7 @@
  *
  * @example
  * ```ts
- * await bus.requestName(DBUS_SERVICE, 0);
+ * bus.requestName(DBUS_SERVICE, 0, (err, code) => {});
  * ```
  */
 export const DBUS_SERVICE = 'org.monochromatic.KeyHelper';
@@ -23,7 +23,7 @@ export const DBUS_SERVICE = 'org.monochromatic.KeyHelper';
  *
  * @example
  * ```ts
- * bus.export(DBUS_PATH, iface);
+ * bus.exportInterface(iface, DBUS_PATH, descriptor);
  * ```
  */
 export const DBUS_PATH = '/org/monochromatic/KeyHelper';
@@ -33,7 +33,7 @@ export const DBUS_PATH = '/org/monochromatic/KeyHelper';
  *
  * @example
  * ```ts
- * super(DBUS_IFACE);
+ * const descriptor = { name: DBUS_IFACE, methods: {} };
  * ```
  */
 export const DBUS_IFACE = 'org.monochromatic.KeyHelper';
