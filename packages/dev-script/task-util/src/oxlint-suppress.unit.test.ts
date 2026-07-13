@@ -8,40 +8,24 @@ import {
   classifyHeader,
   filterOxlintOutput,
   NOT_DIAGNOSTIC_HEADER,
-  OXLINT_SUPPRESSIONS,
   shouldForceSuccess,
 } from './oxlint-suppress.ts';
 
-/** Diagnostic block for the CssValue branded-nesting false positive (matches the shipped suppression). */
-const cssValueBlock = [
-  '  ! typescript(prefer-readonly-parameter-types): Parameter should be a readonly type.',
-  '     ,-[src/client/mixins.ts:253:3]',
-  ' 252 | export function focusOutline(',
-  ' 253 |   { offset = cssRem(OUTLINE_WIDTH,), }: { readonly offset?: CssValue; } = {},',
-  '     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
-  ' 254 | ): CssDeclarations {',
+/** Diagnostic block matched only by explicit test suppression input. */
+const customSuppressibleBlock = [
+  '  ! typescript(no-explicit-any): Unexpected any.',
+  '     ,-[src/legacy/opaque.ts:10:20]',
+  '  10 | export type LegacyOpaque = any;',
+  '     :                                  ^^^',
   '     `----',
 ].join('\n',);
 
-/** Genuine prefer-readonly violation (mutable object param); must NOT be suppressed. */
+/** Genuine diagnostic not matched by test suppression input. */
 const realViolationBlock = [
-  '  ! typescript(prefer-readonly-parameter-types): Parameter should be a readonly type.',
+  '  ! typescript(no-explicit-any): Unexpected any.',
   '     ,-[src/server/handler.ts:10:20]',
-  '  10 | export function handle(options: { count: number; },): void {',
-  '     :                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
-  '     `----',
-].join('\n',);
-
-/**
- * Prefer-readonly block naming `CssValue` in a file other than the gated
- * `src/client/mixins.ts`; the default registry's `pathIncludes` gate must keep
- * it (a `CssValue` token elsewhere is not the documented false positive).
- */
-const cssValueOtherFileBlock = [
-  '  ! typescript(prefer-readonly-parameter-types): Parameter should be a readonly type.',
-  '     ,-[src/widgets/panel.ts:10:3]',
-  '  10 | export function panel({ gap, }: { gap?: CssValue; },): void {',
-  '     :                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
+  '  10 | export type RequestBody = any;',
+  '     :                                 ^^^',
   '     `----',
 ].join('\n',);
 
@@ -81,9 +65,9 @@ await describe({
         it({
           name: 'reads a warning header',
           fn: async () => {
-            expect(classifyHeader('  ! typescript(prefer-readonly-parameter-types): msg',),)
+            expect(classifyHeader('  ! typescript(no-explicit-any): msg',),)
               .toEqual({
-                rule: 'prefer-readonly-parameter-types',
+                rule: 'no-explicit-any',
                 severity: 'warning',
               },);
           },
@@ -119,22 +103,29 @@ await describe({
       name: filterOxlintOutput.name,
       children: [
         it({
-          name: 'drops the CssValue block and passes an all-suppressed run',
+          name: 'drops a custom-matched block and passes an all-suppressed run',
           fn: async () => {
             const result = filterOxlintOutput({
               output: [
-                cssValueBlock,
+                customSuppressibleBlock,
                 '',
                 summary({
                   warnings: 1,
                   errors: 0,
                 },),
               ].join('\n',),
+              suppressions: [
+                {
+                  rule: 'no-explicit-any',
+                  snippetIncludes: 'LegacyOpaque',
+                  reason: 'test-only suppression match',
+                },
+              ],
             },);
             expect(result.hasRemainingDiagnostics,).toBe(false,);
             expect(result.suppressedWarnings,).toBe(1,);
             expect(result.filtered
-              .includes('prefer-readonly-parameter-types',),).toBe(false,);
+              .includes('LegacyOpaque',),).toBe(false,);
             expect(result.filtered
               .includes('Found 0 warnings and 0 errors.',),).toBe(true,);
           },
@@ -144,7 +135,7 @@ await describe({
           fn: async () => {
             const result = filterOxlintOutput({
               output: [
-                cssValueBlock,
+                customSuppressibleBlock,
                 '',
                 realViolationBlock,
                 '',
@@ -153,19 +144,26 @@ await describe({
                   errors: 0,
                 },),
               ].join('\n',),
+              suppressions: [
+                {
+                  rule: 'no-explicit-any',
+                  snippetIncludes: 'LegacyOpaque',
+                  reason: 'test-only suppression match',
+                },
+              ],
             },);
             expect(result.hasRemainingDiagnostics,).toBe(true,);
             expect(result.suppressedWarnings,).toBe(1,);
             expect(result.filtered
               .includes('src/server/handler.ts',),).toBe(true,);
             expect(result.filtered
-              .includes('src/client/mixins.ts',),).toBe(false,);
+              .includes('src/legacy/opaque.ts',),).toBe(false,);
             expect(result.filtered
               .includes('Found 1 warning and 0 errors.',),).toBe(true,);
           },
         },),
         it({
-          name: 'does not suppress a prefer-readonly block without the snippet',
+          name: 'keeps a diagnostic when default registry is empty',
           fn: async () => {
             const result = filterOxlintOutput({
               output: [
@@ -212,7 +210,7 @@ await describe({
           fn: async () => {
             const result = filterOxlintOutput({
               output: [
-                cssValueBlock,
+                customSuppressibleBlock,
                 '',
                 summary({
                   warnings: 1,
@@ -221,8 +219,8 @@ await describe({
               ].join('\n',),
               suppressions: [
                 {
-                  rule: 'prefer-readonly-parameter-types',
-                  snippetIncludes: 'CssValue',
+                  rule: 'no-explicit-any',
+                  snippetIncludes: 'LegacyOpaque',
                   pathIncludes: 'never/matches.ts',
                   reason: 'path gate excludes this file',
                 },
@@ -230,37 +228,6 @@ await describe({
             },);
             expect(result.hasRemainingDiagnostics,).toBe(true,);
             expect(result.suppressedWarnings,).toBe(0,);
-          },
-        },),
-        it({
-          name: 'ships a CssValue suppression in the default registry',
-          fn: async () => {
-            expect(OXLINT_SUPPRESSIONS.some(function isCssValue(suppression,) {
-              return suppression.snippetIncludes
-                === 'CssValue';
-            },),).toBe(true,);
-          },
-        },),
-        it({
-          name: 'default registry path gate keeps a CssValue block outside src/client/mixins.ts',
-          fn: async () => {
-            // Precision: the default suppression is scoped to src/client/mixins.ts,
-            // so a prefer-readonly violation naming CssValue in any other file is
-            // a real diagnostic and must survive.
-            const result = filterOxlintOutput({
-              output: [
-                cssValueOtherFileBlock,
-                '',
-                summary({
-                  warnings: 1,
-                  errors: 0,
-                },),
-              ].join('\n',),
-            },);
-            expect(result.hasRemainingDiagnostics,).toBe(true,);
-            expect(result.suppressedWarnings,).toBe(0,);
-            expect(result.filtered
-              .includes('src/widgets/panel.ts',),).toBe(true,);
           },
         },),
       ],

@@ -11,8 +11,7 @@
  * module segments by block (not by line) and recomputes the summary counts.
  *
  * Each suppression must name a genuine false positive the linter cannot be
- * told to ignore by configuration. The CssValue case is the canonical
- * example: see {@link OXLINT_SUPPRESSIONS}.
+ * told to ignore by configuration. See {@link OXLINT_SUPPRESSIONS}.
  *
  * @module
  */
@@ -36,7 +35,7 @@ import {
  */
 export type OxlintSuppression = {
   /**
-   * Exact oxlint rule name (without plugin prefix), e.g. `prefer-readonly-parameter-types`.
+   * Exact oxlint rule name without plugin prefix, for example `no-explicit-any`.
    */
   readonly rule: string;
   /**
@@ -44,7 +43,7 @@ export type OxlintSuppression = {
    *
    * Plain `String.prototype.includes` matching, so keep it specific: a broad
    * token (e.g. `'string'`) would silently suppress unrelated diagnostics, and
-   * `'CssValue'` also matches `'CssValueHelper'`.
+   * `'LegacyOpaque'` also matches `'LegacyOpaqueHelper'`.
    */
   readonly snippetIncludes: string;
   /**
@@ -66,26 +65,7 @@ export type OxlintSuppression = {
  * filterOxlintOutput({ output, suppressions: OXLINT_SUPPRESSIONS });
  * ```
  */
-export const OXLINT_SUPPRESSIONS: readonly OxlintSuppression[] = [
-  {
-    rule: 'prefer-readonly-parameter-types',
-    snippetIncludes: 'CssValue',
-    pathIncludes: 'src/client/mixins.ts',
-    reason: [
-      'CssValue is a deeply-readonly branded primitive (`string & { readonly __cssValue: unique symbol }`).',
-      'oxlint/tsgolint AND typescript-eslint only exempt branded primitives at the TOP LEVEL of a parameter',
-      '(isTypeBrandedLiteralLike is consulted once in the listener, never inside the readonly recursion),',
-      'so a CssValue nested in an object-property parameter is reported even though it is immutable.',
-      'The `allow` option cannot silence it: every specifier form gates on the type-alias name, which is',
-      'lost when the rule recurses into a property type, so there is no `CssValue` name left to match.',
-      'Working-as-intended in both implementations (typescript-eslint #1790/#11660; nested non-readonly',
-      'members are "working as intended" per #2823). See docs/troubleshooting/oxlint-prefer-readonly-branded-nesting.md.',
-      'Scoped via pathIncludes to src/client/mixins.ts, the only flagged site (verified by raw',
-      '`oxlint --type-aware`), so a CssValue token in any other file cannot trip the substring match.',
-    ]
-      .join(' ',),
-  },
-];
+export const OXLINT_SUPPRESSIONS: readonly OxlintSuppression[] = [];
 
 //endregion Suppression registry
 
@@ -131,8 +111,8 @@ export const NOT_DIAGNOSTIC_HEADER: unique symbol = Symbol('line lacks oxlint di
  *
  * @example
  * ```ts
- * classifyHeader('  ! typescript(prefer-readonly-parameter-types): ...');
- * // { rule: 'prefer-readonly-parameter-types', severity: 'warning' }
+ * classifyHeader('  ! typescript(no-explicit-any): ...');
+ * // { rule: 'no-explicit-any', severity: 'warning' }
  * classifyHeader(' 253 | code');
  * // NOT_DIAGNOSTIC_HEADER
  * ```
@@ -206,7 +186,7 @@ function blockEndIndex({
  *
  * @example
  * ```ts
- * blockIsSuppressed({ block: ['! t(prefer-readonly-parameter-types): m', ' 1 | x: CssValue'], rule: 'prefer-readonly-parameter-types', suppressions: OXLINT_SUPPRESSIONS });
+ * blockIsSuppressed({ block: ['! t(no-explicit-any): m', ' 1 | type LegacyOpaque = any'], rule: 'no-explicit-any', suppressions: OXLINT_SUPPRESSIONS });
  * // true
  * ```
  */
