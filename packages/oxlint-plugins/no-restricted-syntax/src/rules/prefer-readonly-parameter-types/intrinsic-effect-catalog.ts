@@ -125,6 +125,20 @@ function receiverEffect({
  * ECMAScript receiver effects audited against TypeScript 7 standard library declarations.
  */
 const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  {
+    provenance: { kind: 'ecmascript', },
+    ownerType: 'ArrayConstructor',
+    member: 'isArray',
+    targets: [],
+    evidence: 'ECMA-262 commit 1355a23e spec.html Array.isArray and IsArray algorithms',
+  },
+  {
+    provenance: { kind: 'ecmascript', },
+    ownerType: 'ObjectConstructor',
+    member: 'is',
+    targets: [],
+    evidence: 'ECMA-262 commit 1355a23e spec.html Object.is and SameValue algorithms',
+  },
   ...[
     'copyWithin',
     'fill',

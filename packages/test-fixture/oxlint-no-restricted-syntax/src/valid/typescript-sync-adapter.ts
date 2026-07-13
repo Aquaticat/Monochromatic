@@ -220,6 +220,15 @@ export function noSemanticEffect(readOnlyController: AbortController,): AbortSig
 }
 
 /**
+ * Observes parameter through spec-audited non-dispatching intrinsics.
+ *
+ * @param state - State checked by exact observational intrinsics.
+ */
+export function observationalIntrinsicEffect(state: readonly unknown[],): boolean {
+  return Array.isArray(state,) && Object.is(state, state,);
+}
+
+/**
  * Mutates parameter through local alias.
  *
  * @param aliasState - State assigned to local alias.

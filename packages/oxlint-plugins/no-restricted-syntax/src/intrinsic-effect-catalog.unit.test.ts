@@ -48,6 +48,20 @@ await describe({
       },
     },),
     it({
+      name: 'matches audited observational intrinsics with no mutation targets',
+      fn: async () => {
+        const arrayCheck = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'ArrayConstructor',
+          member: 'isArray',
+        },);
+        expect(arrayCheck,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (arrayCheck === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Array.isArray observational effect.',);
+        expect(arrayCheck.targets,).toEqual([],);
+      },
+    },),
+    it({
       name: 'does not match method name on another owner',
       fn: async () => {
         expect(intrinsicEffect({
@@ -91,6 +105,8 @@ await describe({
         const queries = [
           'values.add',
           'controller.abort',
+          'Array.isArray',
+          'Object.is',
         ].map(function queryMember(memberText,) {
           const memberOffset = SOURCE.indexOf(memberText,) + memberText.indexOf('.',) + 1;
           const memberNode = session.nodeAtOffset(memberOffset,);
@@ -119,6 +135,16 @@ await describe({
             provenance: { kind: 'dom', },
             ownerType: 'AbortController',
             member: 'abort',
+          },
+          {
+            provenance: { kind: 'ecmascript', },
+            ownerType: 'ArrayConstructor',
+            member: 'isArray',
+          },
+          {
+            provenance: { kind: 'ecmascript', },
+            ownerType: 'ObjectConstructor',
+            member: 'is',
           },
         ],);
         expect(queries,).not.toContain(NO_INTRINSIC_QUERY,);
