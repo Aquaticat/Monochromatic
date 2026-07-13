@@ -185,6 +185,13 @@ const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: 'TypeScript 7 lib.dom.d.ts EventTarget declaration',
     },);
   },),
+  {
+    provenance: { kind: 'dom', },
+    ownerType: 'Node',
+    member: 'cloneNode',
+    targets: [],
+    evidence: 'DOM cloneNode creates a detached copy without changing source node',
+  },
   ...[
     'appendChild',
     'insertBefore',
@@ -197,6 +204,24 @@ const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
       member,
       evidence: 'TypeScript 7 lib.dom.d.ts Node declaration',
     },);
+  },),
+  ...[
+    'preventDefault',
+    'stopImmediatePropagation',
+    'stopPropagation',
+  ].map(function eventEffect(member,): IntrinsicEffectEntry {
+    return receiverEffect({
+      provenance: { kind: 'dom', },
+      ownerType: 'Event',
+      member,
+      evidence: 'DOM Event cancellation and propagation-state transition methods',
+    },);
+  },),
+  receiverEffect({
+    provenance: { kind: 'dom', },
+    ownerType: 'ParentNode',
+    member: 'replaceChildren',
+    evidence: 'DOM ParentNode.replaceChildren replaces receiver child list',
   },),
 ];
 

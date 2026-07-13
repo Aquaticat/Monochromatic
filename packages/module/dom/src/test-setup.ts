@@ -16,6 +16,7 @@ import { join, } from 'node:path';
 import { pathToFileURL, } from 'node:url';
 
 import type { Page, } from '@playwright/test';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 declare global {
   /**
@@ -314,6 +315,8 @@ type HarnessPage = Readonly<{
  *   appended to the harness URL so `globalThis.location.search` reflects
  *   it when `onLoadSetCssFromUrlParams` runs
  *
+ * @mutates page - `page.goto`, `page.addScriptTag`, and `page.waitForFunction` change browser session state
+ *
  * @example
  * ```ts
  * await loadHarness({ page, query: '--brand=red', },);
@@ -324,10 +327,10 @@ export async function loadHarness(
   {
     page,
     query,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     page: HarnessPage;
     query?: string;
-  }>,
+  }>>,
 ): Promise<void> {
   /**
    * Harness URL with the optional query string normalised to a leading `?`.

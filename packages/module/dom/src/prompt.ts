@@ -159,7 +159,14 @@ export async function prompt(
     // can resolve to the entered string instead of null, even when the string is empty.
     form.addEventListener(
       'submit',
-      function onSubmit(event,) {
+      /**
+       * Accepts submitted value and prevents browser navigation.
+       *
+       * @param event - Form submission event owned by browser.
+       *
+       * @mutates event - `event.preventDefault` marks submission as canceled.
+       */
+      function onSubmit(event,): void {
         event.preventDefault();
         state.cancelled = false;
         dialog.close();

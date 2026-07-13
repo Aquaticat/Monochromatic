@@ -1,3 +1,5 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 /**
  * Replaces an element's parent's content with clones of that element, each
  * produced via {@link deepCloneNode}.
@@ -6,6 +8,8 @@
  * @param templateElement - Reference to element
  *
  * @param targetCount - Desired number of cloned elements to become the new children of the parent. A count of 0 will remove all children.
+ *
+ * @mutates templateElement - `parent.replaceChildren` replaces children of reachable parent element
  *
  * @example
  * ```html
@@ -33,10 +37,10 @@ export function replicateElementAsParentContent(
   {
     templateElement,
     targetCount,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     templateElement: HTMLElement;
     targetCount: number;
-  }>,
+  }>>,
 ): void {
   /**
    * Parent of the template; required because replication targets its children.
@@ -95,6 +99,8 @@ export function deepCloneNode<const T extends Node,>(element: T,): T {
  *
  * @param targetCount - Number of clones to insert
  *
+ * @mutates parentElement - `parentElement.replaceChildren` replaces target child list
+ *
  * @example
  * ```html
  * <!-- Initial DOM -->
@@ -114,11 +120,11 @@ export function replicateElementAsContentOf(
     templateElement,
     parentElement,
     targetCount,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     templateElement: HTMLElement;
     parentElement: HTMLElement;
     targetCount: number;
-  }>,
+  }>>,
 ): void {
   /**
    * Independent deep clones of the template; one per slot in the explicit parent.
