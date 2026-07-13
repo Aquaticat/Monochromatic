@@ -21,6 +21,14 @@ type ReadonlyDeep<T> = {
 };
 
 /**
+ * Callable capability used to verify projection honesty.
+ */
+type SemanticMethodCapability = {
+  readonly value: string;
+  mutate: () => void;
+};
+
+/**
  * Reads semantic fixture value.
  *
  * @param box - Fixture box resolved by TypeScript bridge.
@@ -123,6 +131,37 @@ export function classifyShallowReadonlyArray(
   shallowReadonlyValues: readonly SemanticFixtureBox<string>[],
 ): void {
   void shallowReadonlyValues;
+}
+
+/**
+ * Accepts readonly map whose values remain mutable.
+ *
+ * @param shallowReadonlyMap - Readonly map with mutable reachable values.
+ */
+export function classifyShallowReadonlyMap(
+  shallowReadonlyMap: ReadonlyMap<string, SemanticFixtureBox<string>>,
+): void {
+  void shallowReadonlyMap;
+}
+
+/**
+ * Accepts readonly projection retaining unknown method capability.
+ *
+ * @param projectedMethod - Projection retaining callable effect boundary.
+ */
+export function classifyProjectedMethod(
+  projectedMethod: Readonly<SemanticMethodCapability>,
+): void {
+  void projectedMethod;
+}
+
+/**
+ * Accepts original unknown method capability.
+ *
+ * @param originalMethod - Original callable capability contract.
+ */
+export function classifyOriginalMethod(originalMethod: SemanticMethodCapability,): void {
+  void originalMethod;
 }
 
 /**

@@ -60,6 +60,14 @@ const PROJECTABLE_MUTABLE_OWNERS: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Standard readonly generic collections classified through reachable type arguments.
+ */
+const READONLY_GENERIC_COLLECTION_OWNERS: ReadonlySet<string> = new Set([
+  'ReadonlyMap',
+  'ReadonlySet',
+]);
+
+/**
  * Semantic readonly classification used by rule diagnostics.
  *
  * @example
@@ -323,6 +331,15 @@ export function classifyReadonlyType({
         reason: 'mutable Array has ReadonlyArray projection',
       },);
     }
+    if (READONLY_GENERIC_COLLECTION_OWNERS.has(currentOwner,)
+      && current.isTypeReference()) {
+      /**
+       * Deep classifications for keys and values reachable through collection iteration.
+       */
+      const readonlyCollectionTypeArguments = checker.getTypeArguments(current,)
+        .map(classify,);
+      return finish(combineClassifications(readonlyCollectionTypeArguments,),);
+    }
     if (currentOwner === 'ReadonlyArray') {
       /**
        * Deep classifications for values reachable through readonly array index.
@@ -438,8 +455,17 @@ export function classifyReadonlyType({
          * Whether property is behavior rather than assignable data slot.
          */
         const callable = isMethod || (callSignatures.length > 0);
-        if (callable)
-          return HONEST_READONLY;
+        if (callable) {
+          return projectionClaimed
+            ? {
+              kind: 'dishonest-readonly',
+              reason: `${currentOwner}.${property.name} retains unknown callable capability`,
+            }
+            : {
+              kind: 'opaque-capability',
+              reason: `${currentOwner}.${property.name} has unresolved callable effect`,
+            };
+        }
         if (!propertyIsReadonly({
           project,
           property,

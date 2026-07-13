@@ -57,6 +57,18 @@ await describe({
         parameter: 'shallowReadonlyValues:',
         expected: 'mutable',
       },
+      {
+        parameter: 'shallowReadonlyMap:',
+        expected: 'mutable',
+      },
+      {
+        parameter: 'projectedMethod:',
+        expected: 'dishonest-readonly',
+      },
+      {
+        parameter: 'originalMethod:',
+        expected: 'opaque-capability',
+      },
     ].map(function classificationCase({ parameter, expected, },) {
       return it({
         name: `classifies ${parameter} as ${expected}`,
