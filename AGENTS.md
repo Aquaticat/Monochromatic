@@ -125,6 +125,13 @@ Unsure?
  check tool docs,
  run tool first.
 
+DGT:
+ User-facing diagnostics:
+ name the affected input and observed calls plainly.
+Explain uncertainty and exact remediation.
+Avoid unexplained implementation terms;
+ length is not a constraint.
+
 GAP:
  "I was expecting you to..." or spotted failure mode = doc gap:
  propose `AGENTS.md` edit + perform expected action,
