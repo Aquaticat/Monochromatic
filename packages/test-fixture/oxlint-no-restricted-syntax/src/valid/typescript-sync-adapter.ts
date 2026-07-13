@@ -197,6 +197,20 @@ export function callbackSemanticEffect(callbackState: { value: string; },): void
 }
 
 /**
+ * Mutates parameter through aliased generic callback argument.
+ *
+ * @param callbackState - State forwarded through aliased callback relation.
+ */
+export function aliasedCallbackSemanticEffect(callbackState: { value: string; },): void {
+  const mutateVisitedState = function mutateAliasedVisitedState(visitedState: {
+    value: string;
+  },): void {
+    visitedState.value = 'changed';
+  };
+  visitSemanticEffectFixture(callbackState, mutateVisitedState,);
+}
+
+/**
  * Reads capability without invoking mutator.
  *
  * @param readOnlyController - Capability inspected without mutation.

@@ -44,6 +44,7 @@ await describe({
           'directSemanticEffect',
           'crossFileSemanticEffect',
           'callbackSemanticEffect',
+          'aliasedCallbackSemanticEffect',
           'noSemanticEffect',
           'aliasSemanticEffect',
           'assignedAliasSemanticEffect',
@@ -103,6 +104,11 @@ await describe({
           },
           {
             functionName: 'callbackSemanticEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'aliasedCallbackSemanticEffect',
             mutated: [0,],
             opaque: [],
           },

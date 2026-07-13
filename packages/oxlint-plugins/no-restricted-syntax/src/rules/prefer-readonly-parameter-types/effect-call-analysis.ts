@@ -15,6 +15,7 @@ import type {
 import {
   isIdentifier,
   isPropertyAccessExpression,
+  isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 
 import {
@@ -89,32 +90,57 @@ function callableDeclaration({
   readonly project: Project;
   readonly node: Node;
 },): EffectCallableDeclaration | typeof OWNED_CALLABLE_UNAVAILABLE {
-  /* oxlint-disable no-restricted-syntax/no-nullish-union -- TypeScript declaration-handle resolve() externally returns Node | undefined when handle is stale. */
   /**
-   * Direct callable node or symbol-resolved declaration candidate.
+   * Cursor follows callable variable aliases iteratively.
    */
-  const declaration = isEffectCallableDeclaration(node,)
-    ? node
-    : (function resolvedDeclaration(): Node | undefined {
-      /**
-       * Resolved symbol for identifier or expression.
-       */
-      const symbol = isIdentifier(node,)
-        ? project.checker
-          .getResolvedSymbol(node,)
-        : project.checker
-          .getSymbolAtLocation(node,);
-      /**
-       * Preferred value declaration handle, with first declaration fallback.
-       */
-      const handle = symbol?.valueDeclaration
-        ?? symbol?.declarations
-        .at(0,);
-      return handle?.resolve(project,);
-    })();
-  /* oxlint-enable no-restricted-syntax/no-nullish-union */
-  if ((declaration === undefined) || (!isEffectCallableDeclaration(declaration,)))
-    return OWNED_CALLABLE_UNAVAILABLE;
+  const cursor: { current: Node; } = { current: node, };
+  /**
+   * Stable node keys prevent cyclic callable alias traversal.
+   */
+  const visited = new Set<string>();
+  while (!isEffectCallableDeclaration(cursor.current,)) {
+    /**
+     * Stable source span for alias-cycle detection.
+     */
+    const cursorKey = `${cursor.current
+      .getSourceFile()
+      .fileName}:${String(cursor.current
+        .pos,)}:${String(cursor.current
+          .end,)}`;
+    if (visited.has(cursorKey,))
+      return OWNED_CALLABLE_UNAVAILABLE;
+    visited.add(cursorKey,);
+    /**
+     * Resolved symbol for identifier or expression.
+     */
+    const symbol = isIdentifier(cursor.current,)
+      ? project.checker
+        .getResolvedSymbol(cursor.current,)
+      : project.checker
+        .getSymbolAtLocation(cursor.current,);
+    /**
+     * Preferred value declaration handle, with first declaration fallback.
+     */
+    const handle = symbol?.valueDeclaration
+      ?? symbol?.declarations
+      .at(0,);
+    /**
+     * Resolved declaration in current project.
+     */
+    const declaration = handle?.resolve(project,);
+    if (declaration === undefined)
+      return OWNED_CALLABLE_UNAVAILABLE;
+    if (isVariableDeclaration(declaration,)
+      && (declaration.initializer !== undefined)) {
+      cursor.current = declaration.initializer;
+      continue;
+    }
+    cursor.current = declaration;
+  }
+  /**
+   * Owned callable declaration reached after alias traversal.
+   */
+  const declaration = cursor.current;
   /**
    * Source file used to reject declaration and external-library boundaries.
    */
