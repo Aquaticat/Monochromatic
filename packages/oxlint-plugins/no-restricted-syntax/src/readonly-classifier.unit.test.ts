@@ -49,6 +49,14 @@ await describe({
         parameter: 'readonlyMap:',
         expected: 'honest-readonly',
       },
+      {
+        parameter: 'readonlyValues:',
+        expected: 'honest-readonly',
+      },
+      {
+        parameter: 'shallowReadonlyValues:',
+        expected: 'mutable',
+      },
     ].map(function classificationCase({ parameter, expected, },) {
       return it({
         name: `classifies ${parameter} as ${expected}`,

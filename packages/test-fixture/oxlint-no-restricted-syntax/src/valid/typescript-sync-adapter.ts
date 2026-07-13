@@ -106,6 +106,26 @@ export function classifyReadonlyMap(
 }
 
 /**
+ * Accepts readonly array with primitive elements.
+ *
+ * @param readonlyValues - Readonly primitive collection.
+ */
+export function classifyReadonlyArray(readonlyValues: readonly string[],): void {
+  void readonlyValues;
+}
+
+/**
+ * Accepts readonly array whose elements remain mutable.
+ *
+ * @param shallowReadonlyValues - Collection with mutable reachable elements.
+ */
+export function classifyShallowReadonlyArray(
+  shallowReadonlyValues: readonly SemanticFixtureBox<string>[],
+): void {
+  void shallowReadonlyValues;
+}
+
+/**
  * Mutates parameter directly.
  *
  * @param directState - Writable caller state.

@@ -313,11 +313,25 @@ export function classifyReadonlyType({
     }
     if (!current.isObjectType())
       return finish(HONEST_READONLY,);
-    if (checker.isArrayType(current,)) {
+    /**
+     * Declared owner identity used by standard projection policy.
+     */
+    const currentOwner = ownerName(current,);
+    if (checker.isArrayType(current,) && (currentOwner === 'Array')) {
       return finish({
         kind: 'mutable',
         reason: 'mutable Array has ReadonlyArray projection',
       },);
+    }
+    if (currentOwner === 'ReadonlyArray') {
+      /**
+       * Deep classifications for values reachable through readonly array index.
+       */
+      const readonlyArrayValueResults = checker.getIndexInfosOfType(current,)
+        .map(function classifyReadonlyArrayValue(indexInfo,): ReadonlyClassification {
+          return classify(indexInfo.valueType,);
+        },);
+      return finish(combineClassifications(readonlyArrayValueResults,),);
     }
     if (current.isTupleType()) {
       if (!current.readonly) {
@@ -334,10 +348,6 @@ export function classifyReadonlyType({
       return finish(combineClassifications(tupleElementResults,),);
     }
 
-    /**
-     * Declared owner identity used by standard projection policy.
-     */
-    const currentOwner = ownerName(current,);
     /**
      * Whether authored type claims readonly projection semantics.
      */
