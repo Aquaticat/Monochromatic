@@ -42,7 +42,7 @@ type FallbackJudgeResult = {
 /**
  * Sentinel indicating that no authenticated fallback judge is available.
  */
-const NO_FALLBACK_JUDGES: unique symbol = Symbol('no authenticated fallback judge',);
+const NO_FALLBACK_JUDGES: unique symbol = Symbol('no fallback judge after primary retry exhaustion in Auto Mode',);
 
 /**
  * Immutable view of a selected judge passed to complete judge attempts.
