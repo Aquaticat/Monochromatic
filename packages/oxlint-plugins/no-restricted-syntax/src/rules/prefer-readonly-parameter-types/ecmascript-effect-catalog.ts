@@ -140,7 +140,10 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         targets: [],
         callbacks: [{
           argumentIndex: 0,
-          receiverParameterIndexes: [0, 2],
+          receiverParameterIndexes: [
+            0,
+            2,
+          ],
         },],
         evidence: 'ECMA-262 commit 1355a23e array iteration algorithms with callback effects',
       };
@@ -192,7 +195,11 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       targets: [],
       callbacks: [{
         argumentIndex: 0,
-        receiverParameterIndexes: [0, 1, 2],
+        receiverParameterIndexes: [
+          0,
+          1,
+          2,
+        ],
       },],
       evidence: 'ECMA-262 commit 1355a23e collection iteration algorithms with callback effects',
     };

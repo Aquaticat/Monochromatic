@@ -353,7 +353,9 @@ export function openSemanticFile({
   /**
    * Config path discovered from temporary open-file association or prior cache.
    */
-  const discoveredProject = { configFileName: knownProject, };
+  const discoveredProject = {
+    configFileName: sourcePreviouslyKnown ? knownProject : undefined,
+  };
   if ((discoveredProject.configFileName === undefined)
     && (discoverySnapshot !== NO_SNAPSHOT)) {
     discoveredProject.configFileName = discoverySnapshot

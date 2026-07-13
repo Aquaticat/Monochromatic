@@ -92,7 +92,9 @@ export function receiverElementsArePrimitive({
   readonly checker: Checker;
   readonly type: Type;
 },): boolean {
-  /** Indexed value types exposed by receiver. */
+  /**
+   * Indexed value types exposed by receiver.
+   */
   const indexes = checker.getIndexInfosOfType(type,);
   return (indexes.length > 0)
     && indexes.every(function indexValueIsPrimitive(index,): boolean {

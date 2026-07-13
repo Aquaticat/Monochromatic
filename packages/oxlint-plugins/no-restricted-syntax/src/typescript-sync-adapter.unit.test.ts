@@ -275,8 +275,37 @@ await describe({
           },
         },),
         it({
+          name: 'discovers nested project after caching containing parent project',
+          fn: async () => {
+            closeSemanticBridge();
+            openSemanticFile({ fileName: FIXTURE_PATH, sourceText: SOURCE, hasBOM: false, },);
+            using directory = createSemanticFixtureDirectory();
+            /** Nested project source path also contained by parent project include. */
+            const fileName = join(directory.path, 'input.ts',);
+            /** Nested project source text. */
+            const sourceText = 'export const nestedValue: string = \'nested\';\n';
+            writeFileSync(
+              join(directory.path, 'tsconfig.json',),
+              `${JSON.stringify({
+                compilerOptions: { strict: true, },
+                include: ['input.ts',],
+              },)}\n`,
+            );
+            writeFileSync(fileName, sourceText,);
+            const session = openSemanticFile({
+              fileName,
+              sourceText,
+              hasBOM: false,
+            },);
+            expect(session.project.configFileName,).toBe(
+              join(directory.path, 'tsconfig.json',),
+            );
+          },
+        },),
+        it({
           name: 'bounds overlays by active file and projects by configured root',
           fn: async () => {
+            closeSemanticBridge();
             openSemanticFile({ fileName: FIXTURE_PATH, sourceText: SOURCE, hasBOM: false, },);
             openSemanticFile({ fileName: FIXTURE_PATH, sourceText: SOURCE, hasBOM: false, },);
             expect(semanticBridgeCacheStats(),).toEqual({
