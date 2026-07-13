@@ -2565,12 +2565,6 @@ importers:
 
   packages/oxlint-plugins/no-restricted-syntax:
     dependencies:
-      '@monochromatic-dev/config-oxlint-shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@monochromatic-dev/module-logger':
-        specifier: workspace:*
-        version: link:../../module/logger
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.73.0
@@ -2578,6 +2572,9 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
     devDependencies:
+      '@monochromatic-dev/config-oxlint-shared':
+        specifier: workspace:*
+        version: link:../shared
       '@monochromatic-dev/config-oxlint-test-support':
         specifier: workspace:*
         version: link:../test-support
@@ -2587,6 +2584,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
