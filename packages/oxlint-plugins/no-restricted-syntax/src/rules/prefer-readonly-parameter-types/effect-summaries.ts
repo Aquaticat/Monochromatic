@@ -404,10 +404,19 @@ export function buildEffectSummaryIndex({
       ? activeSourceFile
       : project.program
         .getSourceFile(fileName,);
-    if ((sourceFile === undefined)
-      || sourceFile.isDeclarationFile
-      || project.program
-      .isSourceFileFromExternalLibrary(sourceFile,))
+    if ((sourceFile === undefined) || sourceFile.isDeclarationFile)
+      return;
+    /**
+     * Whether source is current lint target whose ownership is already proven
+     * by configured-project discovery.
+     */
+    const isActiveSource = sourceFile.fileName === activeSourceFile.fileName;
+    /**
+     * Whether configured dependency source belongs to external library graph.
+     */
+    const isExternalLibrary = project.program
+      .isSourceFileFromExternalLibrary(sourceFile,);
+    if ((!isActiveSource) && isExternalLibrary)
       return;
     activeFiles.add(fileName,);
     /**
