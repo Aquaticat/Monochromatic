@@ -705,7 +705,36 @@ Do not introduce separate `@consumes`,
 or `@cancels` tags;
 the prose description explains the domain-specific transition while the machine-readable effect remains one concept.
 
-### Awaiting decision
+### Chosen ownership-aware remediation
 
-The next policy decision is whether remediation should improve an owned type at its declaration or keep readonly
-projection local to each parameter.
+Use whole-program ownership evidence to choose the remediation location.
+
+When every valid use treats a repository-owned type as immutable,
+make the type declaration deeply readonly and let consumers retain the canonical name.
+When lifecycle owners legitimately mutate the type,
+keep that declaration mutable and apply an honest readonly projection only at nonmutating parameter boundaries.
+External capability types retain their original form only under the selected effect proof.
+
+Type-owner suggestions originate when the owner file is linted,
+not as cross-file edits attached to a consumer diagnostic.
+Oxlint JavaScript fix payloads carry ranges for the current file rather than workspace edits.
+The semantic pipeline may coordinate findings across files,
+but each suggestion must be independently valid in its own file and pre-verified against all affected TypeScript
+projects.
+
+For mixed ownership,
+do not automatically split one domain type into mutable and immutable sibling types.
+Prefer a local projection unless an independently meaningful domain distinction already exists or is separately designed.
+
+### Deferred readonly projection outcome
+
+The exact projection mechanism remains evidence-driven:
+existing `ReadonlyDeep`,
+a project-owned utility,
+or synthesized structural syntax must be compared against brands,
+functions,
+collections,
+capabilities,
+recursive types,
+conditional types,
+and generic variance before selection.
