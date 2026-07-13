@@ -19,7 +19,7 @@ import {
   mutationTargetIndexes,
 } from './mutation-contract-query.ts';
 import { classifyReadonlyType, } from './readonly-classifier.ts';
-import { readonlyArraySuggestions, } from './readonly-suggestions.ts';
+import { readonlyParameterSuggestions, } from './readonly-suggestions.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 
 /**
@@ -345,7 +345,7 @@ export function verifyReadonlyCallable({
       /**
        * Verified semantic type suggestions available for current syntax.
        */
-      const suggestions = readonlyArraySuggestions({
+      const suggestions = readonlyParameterSuggestions({
         context,
         parameter,
         project,

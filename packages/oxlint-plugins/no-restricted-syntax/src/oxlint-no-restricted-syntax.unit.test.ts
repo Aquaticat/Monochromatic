@@ -577,6 +577,33 @@ await describe({
           },
         },),
         it({
+          name: 'suggests imported type-fest ReadonlyDeep for structural data only explicitly',
+          fn: async () => {
+            /** Source with mutable nested data and aliased type-fest import. */
+            const source = `import type { ReadonlyDeep as DeepReadonly, } from 'type-fest';
+
+/**
+ * Reads nested state.
+ *
+ * @param state - Nested state read without mutation.
+ */
+export function readNested(state: { nested: { value: string; }; },): string {
+  return state.nested.value;
+}
+`;
+            const ordinarilyFixed = await fixReadonlyGeneratedSource({
+              source,
+              fixSuggestions: false,
+            },);
+            expect(ordinarilyFixed.includes('state: { nested:',),).toBe(true,);
+            const suggestionFixed = await fixReadonlyGeneratedSource({
+              source,
+              fixSuggestions: true,
+            },);
+            expect(suggestionFixed.includes('state: DeepReadonly<{ nested:',),).toBe(true,);
+          },
+        },),
+        it({
           name: 'keeps stale contracts under ordinary fix and removes them through suggestions',
           fn: async () => {
             /** Source with one semantically stale mutation block. */

@@ -5,6 +5,9 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "devDependencies": {
+    "type-fest": "catalog:"
+  },
   "files": [
     "src/",
     "LICENSES"
