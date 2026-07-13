@@ -13,48 +13,15 @@
  */
 export type ReadonlyRecord = Readonly<Record<string, unknown>>;
 
-/**
- * Checks whether `char` is ASCII whitespace per JavaScript `\s` semantics used
- * by the plugin scanners.
- *
- * @param char - candidate character
- *
- * @returns whether `char` is space, tab, newline, carriage return, form feed, or vertical tab
- *
- * @example
- * ```ts
- * isWhitespaceChar(' '); // true
- * isWhitespaceChar('x'); // false
- * ```
- */
-export function isWhitespaceChar(char: string,): boolean {
-  return (char === ' ')
-    || (char === '\t')
-    || (char === '\n')
-    || (char === '\r')
-    || (char === '\f')
-    || (char === '\v');
-}
+export {
+  isWhitespaceChar,
+  isWordChar,
+} from './text-character.ts';
 
-/**
- * Checks whether `char` is an ASCII word character.
- *
- * @param char - candidate character
- *
- * @returns whether `char` qualifies as `[A-Za-z0-9_]`
- *
- * @example
- * ```ts
- * isWordChar('a'); // true
- * isWordChar('-'); // false
- * ```
- */
-export function isWordChar(char: string,): boolean {
-  return ((char >= '0') && (char <= '9'))
-    || ((char >= 'a') && (char <= 'z'))
-    || ((char >= 'A') && (char <= 'Z'))
-    || (char === '_');
-}
+export {
+  type ParsedMutationContractBlock,
+  parseMutationContractBlocks,
+} from './mutation-contract.ts';
 
 /**
  * Narrows an unknown value to a readonly record-like object.

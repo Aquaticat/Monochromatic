@@ -8,6 +8,7 @@
  * @module
  */
 
+import { parseMutationContractBlocks, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import type { Comment, } from '@oxlint/plugins';
 import type { ReadonlyDeep, } from 'type-fest';
 
@@ -334,16 +335,16 @@ export function splitDocComment({
   /**
    * Parsed `@mutates` blocks in source order.
    */
-  const mutatesBlocks = segments
-    .filter(function isMutates(segment,): boolean {
-      return segment.tag === '@mutates';
-    },)
-    .map(function toMutatesBlock(segment,): ParsedMutatesBlock {
-      return {
-        ...parseParamSegment(segment.text,),
-        lineOffset: segment.lineOffset,
-      };
-    },);
+  const mutatesBlocks = parseMutationContractBlocks({
+    commentValue: comment.value,
+  },)
+    .map(function toTsdocMutatesBlock(block,): ParsedMutatesBlock {
+    return {
+      parameterName: block.parameterName,
+      hasDescription: block.hasDescription,
+      lineOffset: block.lineOffset,
+    };
+  },);
 
   /**
    * First `@returns` segment, or undefined when none is present.
