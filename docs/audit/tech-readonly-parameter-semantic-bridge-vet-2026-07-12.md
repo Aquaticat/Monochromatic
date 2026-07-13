@@ -451,6 +451,9 @@ One Oxlint run reported `threads_count: 16` but all probe diagnostics carried on
 That run proves the tested embedded-JavaScript execution was serialized through one plugin process;
 it does not prove every Oxlint mode or future host lifecycle.
 A process search after Oxlint exited found no surviving native TypeScript API child for the fixture path.
+A cache revision reused snapshot 1 and its effect summaries across ordinary disk-backed files.
+The BOM fixture alone created snapshot 2 because Oxlint's source text and the raw disk text differed at the BOM;
+the adapter must normalize `sourceCode.hasBOM` before deciding that an editor overlay changed.
 
 A source fixture placed a BOM,
 CRLF line endings,

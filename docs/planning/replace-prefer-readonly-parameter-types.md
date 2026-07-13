@@ -777,8 +777,9 @@ Follow-up probes added these bounded results:
 
 - `openFiles` discovered the distinct package `tsconfig.json` files for the no-restricted-syntax and JSONC-edit
   packages and returned zero semantic diagnostics for each queried source file;
-- one Oxlint run configured with 16 threads invoked the JavaScript plugin in one process and produced sequential
-  snapshots across the tested files;
+- one Oxlint run configured with 16 threads invoked the JavaScript plugin in one process;
+  a cache revision reused one snapshot across ordinary disk-backed files,
+  while the BOM fixture exposed a required `sourceCode.hasBOM` normalization before overlay comparison;
 - a BOM plus CRLF fixture with an astral character and a combining sequence before the parameter mapped to the expected
   line,
   column,
