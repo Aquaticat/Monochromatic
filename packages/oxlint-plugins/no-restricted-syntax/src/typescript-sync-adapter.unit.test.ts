@@ -212,6 +212,34 @@ await describe({
           },
         },),
         it({
+          name: 'accepts Windows source paths with noncanonical casing',
+          fn: async () => {
+            if (process.platform !== 'win32') {
+              expect(true,).toBe(true,);
+              return;
+            }
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Canonically cased source written inside configured project. */
+            const canonicalPath = join(directory.path, 'MixedCase.ts',);
+            /** Noncanonical source path accepted by case-insensitive Windows filesystem. */
+            const noncanonicalPath = join(directory.path, 'mixedcase.ts',);
+            /** Source queried through noncanonical path. */
+            const source = 'export const mixedCaseValue: string = \'case\';\n';
+            writeFileSync(canonicalPath, source,);
+            const session = openSemanticFile({
+              fileName: noncanonicalPath,
+              sourceText: source,
+              hasBOM: false,
+            },);
+            const node = session.nodeAtOffset(source.indexOf('mixedCaseValue',),);
+            const type = session.checker.getTypeAtLocation(node,);
+            if (type === undefined)
+              throw new Error('Expected noncanonical-path source type.',);
+            expect(session.checker.typeToString(type,),).toBe('string',);
+          },
+        },),
+        it({
           name: 'rejects inferred project and recovers for next configured source',
           fn: async () => {
             /** Disposable source outside every configured project. */
