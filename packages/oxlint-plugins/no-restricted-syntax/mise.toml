@@ -8,6 +8,7 @@ extends = "build:js"
 extends = "build:js:node"
 # Invoke package entry directly so Windows does not depend on executable shim discovery.
 run = "node ../../../node_modules/tsdown/dist/run.mjs --config tsdown.node.config.ts"
+run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node -- node ../../../node_modules/tsdown/dist/run.mjs --config tsdown.node.config.ts'
 
 [tasks."watch:build"]
 extends = "watch:build"
@@ -32,3 +33,13 @@ extends = "lint:types"
 
 [tasks."test:unit"]
 extends = "test:unit"
+
+[tasks."test:semantic-bridge-host"]
+description = "Exercise built semantic bridge lifecycle on current host"
+run = "node src/typescript-sync-adapter.unit.test.ts"
+run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node -- node src/typescript-sync-adapter.unit.test.ts'
+
+[tasks."test:external-consumer-host"]
+description = "Exercise built package from external consumer on current host"
+run = "node src/external-consumer.unit.test.ts"
+run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node pnpm -- node src/external-consumer.unit.test.ts'
