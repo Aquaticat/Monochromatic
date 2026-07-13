@@ -726,6 +726,22 @@ For mixed ownership,
 do not automatically split one domain type into mutable and immutable sibling types.
 Prefer a local projection unless an independently meaningful domain distinction already exists or is separately designed.
 
+### Chosen declaration publication
+
+Preserve `@mutates` blocks in emitted and bundled declaration files.
+Mutation effects are part of the published API contract,
+not repository-only lint metadata.
+Do not strip them or translate them into prose-only `@remarks` blocks.
+
+The custom tag documentation must explain how external TSDoc consumers register it.
+Declaration verification must exercise Oxc isolated declaration output,
+`rolldown-plugin-dts` bundling,
+overloads,
+interface call signatures,
+re-exports,
+and declaration comments to prove targets and descriptions survive intact.
+Published rule and config packages must expose the custom-tag contract in their READMEs.
+
 ### Deferred readonly projection outcome
 
 The exact projection mechanism remains evidence-driven:
@@ -738,3 +754,12 @@ capabilities,
 recursive types,
 conditional types,
 and generic variance before selection.
+
+### Grilling status
+
+The currently known user-policy branches are resolved.
+Technical feasibility work may uncover another genuine policy fork;
+if it does,
+resume one-question-at-a-time grilling rather than choosing a preference implicitly.
+Otherwise complete the implementation plan from measured prototype results and request confirmation of shared
+understanding before any implementation.
