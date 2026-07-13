@@ -14,6 +14,7 @@ import { resolve, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import nanoSpawn from 'nano-spawn';
 
+import { caughtMessage, } from './caught-message.ts';
 import { UnsupportedFsIdPlatformError, } from './errors.ts';
 import {
   resolveDarwinFsId,
@@ -151,7 +152,7 @@ function reportResolutionError({
     tag,
     l,
   },)
-    .error(`${message}: ${String(error,)}`,);
+    .error(`${message}: ${caughtMessage(error,)}`,);
 }
 
 /**

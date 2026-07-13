@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 /**
  * Readonly cause options accepted by custom errors.
  *
@@ -32,6 +34,8 @@ export class FsIdResolutionError extends Error {
    *
    * @param options - Optional underlying failure
    *
+   * @mutates options - `super` may invoke a `cause` getter or proxy trap on supplied options
+   *
    * @example
    * ```ts
    * new FsIdResolutionError('failed', { cause: new Error('command'), });
@@ -39,7 +43,7 @@ export class FsIdResolutionError extends Error {
    */
   public constructor(
     message: string,
-    options?: FsIdErrorOptions,
+    options?: ForeignBorrowed<FsIdErrorOptions>,
   ) {
     super(
       message,

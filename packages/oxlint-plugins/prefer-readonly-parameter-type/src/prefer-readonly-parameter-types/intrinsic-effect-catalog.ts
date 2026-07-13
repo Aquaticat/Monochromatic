@@ -148,6 +148,20 @@ function receiverEffect({
 const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
   {
     provenance: { kind: 'dom', },
+    ownerType: 'globalThis',
+    member: 'getComputedStyle',
+    targets: [],
+    evidence: 'CSSOM getComputedStyle returns live computed declaration without invoking caller-owned code',
+  },
+  {
+    provenance: { kind: 'dom', },
+    ownerType: 'CanvasRenderingContext2D',
+    member: 'measureText',
+    targets: [],
+    evidence: 'HTML Canvas measureText reads context font state and returns new TextMetrics',
+  },
+  {
+    provenance: { kind: 'dom', },
     ownerType: 'TextEncoder',
     member: 'encode',
     targets: [],

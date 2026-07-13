@@ -130,6 +130,8 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       'filter',
       'find',
       'findIndex',
+      'findLast',
+      'findLastIndex',
       'flatMap',
       'forEach',
       'map',

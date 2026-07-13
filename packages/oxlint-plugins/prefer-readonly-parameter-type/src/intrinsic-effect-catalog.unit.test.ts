@@ -125,6 +125,22 @@ await describe({
         if (arrayCheck === NO_INTRINSIC_EFFECT)
           throw new Error('Expected Array.isArray observational effect.',);
         expect(arrayCheck.targets,).toEqual([],);
+        expect([
+          {
+            provenance: { kind: 'dom', } as const,
+            ownerType: 'globalThis',
+            member: 'getComputedStyle',
+          },
+          {
+            provenance: { kind: 'dom', } as const,
+            ownerType: 'CanvasRenderingContext2D',
+            member: 'measureText',
+          },
+        ].every(function domObservation(query,): boolean {
+          const effect = intrinsicEffect(query,);
+          return (effect !== NO_INTRINSIC_EFFECT)
+            && (effect.targets.length === 0);
+        },),).toBe(true,);
       },
     },),
     it({

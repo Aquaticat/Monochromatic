@@ -6,6 +6,8 @@
  * splitting runs through plain string methods.
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 /**
  * Shared segmenter for grapheme-cluster splitting, via {@link splitGraphemes}.
  */
@@ -292,10 +294,10 @@ export function computeMaxLength<T,>(
   {
     items,
     lengthOf,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     items: readonly T[];
     lengthOf: (item: T) => number;
-  }>,
+  }>>,
 ): number {
   /**
    * Largest length seen so far.

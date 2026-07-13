@@ -81,7 +81,13 @@ export function execvp({ command, }: { readonly command: readonly string[]; },):
   proc.on(
     'error',
     function onError(err: unknown,) {
-      console.error(`terminal-exec: failed to execute '${executable}': ${String(err,)}`,);
+      /**
+       * Noncoercing failure detail from Node spawn error.
+       */
+      const detail = Error.isError(err,)
+        ? err.message
+        : `non-Error ${typeof err}`;
+      console.error(`terminal-exec: failed to execute '${executable}': ${detail}`,);
       process.exitCode = EXIT_NOT_FOUND;
     },
   );

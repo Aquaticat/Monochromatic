@@ -17,6 +17,7 @@
   "dependencies": {
     "@clack/prompts": "catalog:",
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "nano-spawn": "catalog:"
   },
   "version": "0.0.1",

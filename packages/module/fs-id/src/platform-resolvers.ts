@@ -4,6 +4,7 @@
  * @module
  */
 
+import { caughtMessage, } from './caught-message.ts';
 import { FsIdResolutionError, } from './errors.ts';
 import {
   createFsId,
@@ -17,24 +18,6 @@ import type {
   FsIdResolution,
   FsIdResolverAdapters,
 } from './types.ts';
-
-/**
- * Formats unknown caught value without discarding it.
- *
- * @param error - Caught failure value
- *
- * @returns Diagnostic text
- *
- * @example
- * ```ts
- * caughtMessage(new Error('failed')); // 'failed'
- * ```
- */
-function caughtMessage(error: unknown,): string {
-  if (Error.isError(error,))
-    return error.message;
-  return String(error,);
-}
 
 /**
  * Converts validated stable payload to resolution.

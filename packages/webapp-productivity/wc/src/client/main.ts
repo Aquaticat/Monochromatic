@@ -7,6 +7,7 @@
  * the Firefox ESR baseline, so the growth is scripted).
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 // Imported from page-stats directly, never from ../page.ts: page.ts
 // imports the favicon generator, whose sharp/node imports must stay
@@ -291,17 +292,19 @@ function renderEmptyFrequencyRow(): string {
  *
  * @returns widest width in rem plus {@link WORD_COLUMN_SLACK_REM},
  * capped at {@link WORD_COLUMN_MAX_REM}
+ *
+ * @mutates context - assignment updates `context.font` before observational `context.measureText` calls
  */
 function measureWordColumnRem(
   {
     words,
     reference,
     context,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     words: readonly string[];
     reference: HTMLElement;
     context: CanvasRenderingContext2D;
-  }>,
+  }>>,
 ): number {
   /**
    * Computed font parts of the element the words render inside.
@@ -317,23 +320,23 @@ function measureWordColumnRem(
   /**
    * Widest measured word width in CSS pixels.
    */
-  const widestPx = words.reduce(
-    function widestSoFar(
-      max,
-      word,
-    ): number {
+  const widestPx = (function measureWidestPx(): number {
+    /**
+     * Widest width accumulated inside isolated mutation scope.
+     */
+    let widest = 0;
+    for (const word of words) {
       /**
        * Measured metrics of word in the reference font.
        */
       const metrics = context.measureText(word,);
-
-      return Math.max(
-        max,
+      widest = Math.max(
+        widest,
         metrics.width,
       );
-    },
-    0,
-  );
+    }
+    return widest;
+  })();
 
   /**
    * Root computed font-size string, always serialized in `px`.
@@ -497,8 +500,12 @@ function updateResults(text: string,): void {
  * keeps using `style` rather than a class.
  *
  * @param input - textarea to grow
+ *
+ * @mutates input - assignments update `input.style.minBlockSize` to fit current content
  */
-function autoGrow({ input, }: Readonly<{ input: HTMLTextAreaElement; }>,): void {
+function autoGrow(
+  { input, }: ForeignBorrowed<Readonly<{ input: HTMLTextAreaElement; }>>,
+): void {
   /**
    * Style declaration destructured once so member access stays flat.
    */
@@ -526,9 +533,11 @@ function autoGrow({ input, }: Readonly<{ input: HTMLTextAreaElement; }>,): void 
  * the live value once the page has fully shown is the reliable hook.
  *
  * @param input - textarea whose current value drives the page
+ *
+ * @mutates input - `autoGrow` updates `input.style.minBlockSize` before results render
  */
 function syncFromInput(
-  { input, }: Readonly<{ input: HTMLTextAreaElement; }>,
+  { input, }: ForeignBorrowed<Readonly<{ input: HTMLTextAreaElement; }>>,
 ): void {
   autoGrow({ input, },);
   updateResults(input.value,);

@@ -8,6 +8,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 /**
  * Base class for every adb-related failure raised by this CLI. Catch this to
  * handle any adb problem uniformly; catch a subclass for a specific cause.
@@ -29,10 +31,12 @@ export class AdbError extends Error {
    *
    * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
    *                  underlying error such as a `SubprocessError`.
+   *
+   * @mutates options - `super` may invoke a `cause` getter or proxy trap on supplied ErrorOptions
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ForeignBorrowed<Readonly<ErrorOptions>>,
   ) {
     super(
       message,
@@ -53,10 +57,12 @@ export class AdbNotFoundError extends AdbError {
    *
    * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain the
    *                  spawn error.
+   *
+   * @mutates options - `super` may invoke a `cause` getter or proxy trap on supplied ErrorOptions
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ForeignBorrowed<Readonly<ErrorOptions>>,
   ) {
     super(
       message,
@@ -78,10 +84,12 @@ export class NoDevicesError extends AdbError {
    *
    * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
    *                  underlying error.
+   *
+   * @mutates options - `super` may invoke a `cause` getter or proxy trap on supplied ErrorOptions
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ForeignBorrowed<Readonly<ErrorOptions>>,
   ) {
     super(
       message,
@@ -103,10 +111,12 @@ export class AdbCommandError extends AdbError {
    *
    * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain the
    *                  `SubprocessError`.
+   *
+   * @mutates options - `super` may invoke a `cause` getter or proxy trap on supplied ErrorOptions
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ForeignBorrowed<Readonly<ErrorOptions>>,
   ) {
     super(
       message,

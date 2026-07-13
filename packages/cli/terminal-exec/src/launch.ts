@@ -9,6 +9,7 @@
  */
 
 import { spawn, } from 'node:child_process';
+import { once, } from 'node:events';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { buildCommand, } from './build-command.ts';
@@ -102,31 +103,21 @@ export async function launchTerminal({
 
   l.info(`launching: ${String(executable,)} ${args.join(' ',)}`,);
 
-  // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping callback-based child_process.spawn requires manual Promise construction
-  await new Promise<void>(function awaitSpawn(
-    resolve,
-    reject,
-  ): void {
-    /**
-     * Detached child reference; unref'd so the parent does not wait on it.
-     */
-    const child = spawn(
-      String(executable,),
-      args,
-      {
-        cwd: dir,
-        detached: true,
-        stdio: 'ignore',
-      },
-    );
-    child.unref();
-    child.on(
-      'error',
-      reject,
-    );
-    /**
-     * Resolve on next tick: if spawn failed, the error event fires synchronously.
-     */
-    queueMicrotask(resolve,);
-  },);
+  /**
+   * Detached child reference; the Node event helper rejects if spawn fails.
+   */
+  const child = spawn(
+    String(executable,),
+    args,
+    {
+      cwd: dir,
+      detached: true,
+      stdio: 'ignore',
+    },
+  );
+  await once(
+    child,
+    'spawn',
+  );
+  child.unref();
 }

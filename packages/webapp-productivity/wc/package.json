@@ -7,7 +7,8 @@
   "main": "src/build.ts",
   "version": "0.0.1",
   "dependencies": {
-    "@monochromatic-dev/module-hyperscript": "workspace:*"
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

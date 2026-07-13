@@ -817,6 +817,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1934,6 +1937,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -3602,6 +3608,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
