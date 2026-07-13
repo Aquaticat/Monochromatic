@@ -199,6 +199,21 @@ export function callbackSemanticEffect(callbackState: { value: string; },): void
 }
 
 /**
+ * Mutates receiver-reachable array elements through audited callback relation.
+ *
+ * @param states - Readonly container whose mutable elements are updated.
+ *
+ * @mutates states - Updates value on every receiver-reachable element.
+ */
+export function arrayCallbackSemanticEffect(
+  states: readonly { value: string; }[],
+): void {
+  states.forEach(function updateState(state,): void {
+    state.value = 'changed';
+  },);
+}
+
+/**
  * Mutates parameter through aliased generic callback argument.
  *
  * @param callbackState - State forwarded through aliased callback relation.

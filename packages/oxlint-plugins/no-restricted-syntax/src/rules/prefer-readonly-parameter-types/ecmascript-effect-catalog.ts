@@ -84,19 +84,56 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'Array',
     'ReadonlyArray',
   ].flatMap(function arrayOwner(ownerType,): readonly IntrinsicEffectEntry[] {
-    return [
+    /**
+     * Array operations without callbacks or caller-visible mutation.
+     */
+    const observations = [
+      'at',
+      'entries',
       'includes',
       'indexOf',
+      'keys',
       'lastIndexOf',
+      'slice',
+      'values',
     ].map(function arrayObservation(member,): IntrinsicEffectEntry {
       return {
         provenance: { kind: 'ecmascript', },
         ownerType,
         member,
         targets: [],
-        evidence: 'ECMA-262 commit 1355a23e array identity-search algorithms',
+        evidence: 'ECMA-262 commit 1355a23e array observation and copy algorithms',
       };
     },);
+    /**
+     * Array operations whose callbacks receive receiver-reachable values.
+     */
+    const callbackObservations = [
+      'every',
+      'filter',
+      'find',
+      'findIndex',
+      'flatMap',
+      'forEach',
+      'map',
+      'some',
+    ].map(function arrayCallbackObservation(member,): IntrinsicEffectEntry {
+      return {
+        provenance: { kind: 'ecmascript', },
+        ownerType,
+        member,
+        targets: [],
+        callbacks: [{
+          argumentIndex: 0,
+          receiverParameterIndexes: [0, 2],
+        },],
+        evidence: 'ECMA-262 commit 1355a23e array iteration algorithms with callback effects',
+      };
+    },);
+    return [
+      ...observations,
+      ...callbackObservations,
+    ];
   },),
   ...[
     'Map',
@@ -112,6 +149,36 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       member: 'has',
       targets: [],
       evidence: 'ECMA-262 commit 1355a23e collection identity-membership algorithms',
+    };
+  },),
+  ...[
+    'Map',
+    'ReadonlyMap',
+  ].map(function mapGetObservation(ownerType,): IntrinsicEffectEntry {
+    return {
+      provenance: { kind: 'ecmascript', },
+      ownerType,
+      member: 'get',
+      targets: [],
+      evidence: 'ECMA-262 commit 1355a23e map value lookup algorithm',
+    };
+  },),
+  ...[
+    'Map',
+    'ReadonlyMap',
+    'Set',
+    'ReadonlySet',
+  ].map(function collectionCallbackObservation(ownerType,): IntrinsicEffectEntry {
+    return {
+      provenance: { kind: 'ecmascript', },
+      ownerType,
+      member: 'forEach',
+      targets: [],
+      callbacks: [{
+        argumentIndex: 0,
+        receiverParameterIndexes: [0, 1, 2],
+      },],
+      evidence: 'ECMA-262 commit 1355a23e collection iteration algorithms with callback effects',
     };
   },),
   {

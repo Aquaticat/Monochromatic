@@ -41,6 +41,22 @@ export type IntrinsicEffectTarget =
   };
 
 /**
+ * Callback argument whose selected parameters expose receiver-reachable values.
+ *
+ * @example
+ * ```ts
+ * const callback: IntrinsicCallbackEffect = {
+ *   argumentIndex: 0,
+ *   receiverParameterIndexes: [0, 2],
+ * };
+ * ```
+ */
+export type IntrinsicCallbackEffect = {
+  readonly argumentIndex: number;
+  readonly receiverParameterIndexes: readonly number[];
+};
+
+/**
  * One audited callable effect keyed by owner symbol and exact declaration provenance.
  *
  * @example
@@ -59,6 +75,7 @@ export type IntrinsicEffectEntry = {
   readonly ownerType: string;
   readonly member: string;
   readonly targets: readonly IntrinsicEffectTarget[];
+  readonly callbacks?: readonly IntrinsicCallbackEffect[];
   readonly evidence: string;
 };
 
