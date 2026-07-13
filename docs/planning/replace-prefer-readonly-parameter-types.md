@@ -524,7 +524,35 @@ The effect analyzer uses three outcomes:
 
 This permits honest external adapters without pretending their implementation was proved from unavailable source.
 
+### Rejected higher-order TSDoc relation DSL
+
+A proposed tag such as
+`@propagates visitor.value to value`
+is rejected.
+It embeds parameter relations,
+path syntax,
+and directional keywords in unchecked comment text.
+Typos and renames would depend on a second custom grammar,
+and the authored contract would be harder to read than the code it describes.
+
+Keep `@mutates` limited to one signature-local parameter target plus prose description.
+The TSDoc plugin can validate that one target against the callable signature and report on the tag line,
+like its existing `@param` name checks.
+Do not expand TSDoc into a general effect-language syntax.
+
+Higher-order propagation should instead come from machine-readable program structure:
+
+- infer symbolic parameter-to-callback-argument relations from owned function bodies;
+- resolve callback call signatures and their `@mutates` summaries through the type checker;
+- specialize generated effect summaries at call sites when concrete callback effects are known;
+- persist generated summaries for incremental and cross-package analysis rather than asking authors to write relation
+  strings;
+- use conservative signature-local `@mutates` effects for bodyless or opaque callables when specialization cannot be
+  proved;
+- prototype TypeScript-level effect metadata only if a bodyless generic API needs expressiveness that generated summaries
+  cannot carry.
+
 ### Awaiting decision
 
-The first unresolved policy decision is how higher-order callables express and propagate mutation performed by callback
-parameters.
+No user policy decision is needed until feasibility probes compare inferred symbolic summaries with TypeScript-checked
+effect metadata for bodyless generic callables.

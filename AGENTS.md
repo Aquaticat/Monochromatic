@@ -814,11 +814,9 @@ LG2:
 ### Security
 
 SYB:
- Text crossing syntax boundary:
- destination grammar is authority;
- source escapes not portable.
-Encode for exact destination subcontext at final interpolation boundary;
- mind nested contexts.
+ Text crossing syntax boundaries obeys destination grammar.
+Encode at final interpolation.
+Don't invent comment-string DSLs for relations the host type system or AST can express or infer.
 
 STB:
  Transformer tests emitting another syntax need adversarial destination boundary cases:
