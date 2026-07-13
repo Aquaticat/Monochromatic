@@ -246,3 +246,53 @@ export function destructuredParameterSemanticEffect(
 export function opaqueSemanticEffect(opaqueState: { readonly value: string; },): string {
   return JSON.stringify(opaqueState,);
 }
+
+/**
+ * Defines but never invokes or exposes nested mutation closure.
+ *
+ * @param closureState - State captured only by dead local closure.
+ */
+export function unusedClosureSemanticEffect(closureState: { value: string; },): void {
+  function neverCalled(): void {
+    closureState.value = 'changed';
+  }
+  void neverCalled;
+}
+
+/**
+ * Invokes nested closure that mutates captured parameter.
+ *
+ * @param closureState - State captured by invoked closure.
+ */
+export function calledClosureSemanticEffect(closureState: { value: string; },): void {
+  function mutateCapturedState(): void {
+    closureState.value = 'changed';
+  }
+  mutateCapturedState();
+}
+
+/**
+ * Returns deferred closure that mutates captured parameter.
+ *
+ * @param closureState - State captured by returned closure.
+ *
+ * @returns deferred mutation closure.
+ */
+export function returnedClosureSemanticEffect(
+  closureState: { value: string; },
+): () => void {
+  return function mutateReturnedState(): void {
+    closureState.value = 'changed';
+  };
+}
+
+/**
+ * Passes deferred closure that mutates captured parameter.
+ *
+ * @param closureState - State captured by scheduled closure.
+ */
+export function passedClosureSemanticEffect(closureState: { value: string; },): void {
+  queueMicrotask(function mutateScheduledState(): void {
+    closureState.value = 'changed';
+  },);
+}

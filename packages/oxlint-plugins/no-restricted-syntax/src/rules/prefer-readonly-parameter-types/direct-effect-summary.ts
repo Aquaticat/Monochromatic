@@ -23,6 +23,7 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
+import { activeCallableBodyNodes, } from './closure-activity.ts';
 import { applyVerifiedAdapterContracts, } from './effect-adapter.ts';
 import { inspectEffectCall, } from './effect-call-analysis.ts';
 import {
@@ -32,7 +33,6 @@ import {
 } from './mutation-contract-query.ts';
 import {
   addEffectIndex,
-  collectAstNodes,
   type EffectCallableDeclaration,
   expressionRoot,
   type MutableEffectSummary,
@@ -315,7 +315,10 @@ export function directEffectSummary({
   /**
    * Body nodes shared by alias discovery and effect inspection.
    */
-  const bodyNodes = collectAstNodes(body,);
+  const bodyNodes = activeCallableBodyNodes({
+    project,
+    body,
+  },);
   /**
    * Variable declarations that may alias parameter-reachable state.
    */
