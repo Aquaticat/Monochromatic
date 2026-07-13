@@ -27,6 +27,7 @@ import { noDisableNoUselessReturn, } from './rules/no-disable-no-useless-return.
 import {
   noDisableNoVariableFunctionExpression,
 } from './rules/no-disable-no-variable-function-expression.ts';
+import { noDisablePreferReadonlyParameterTypes, } from './rules/no-disable-prefer-readonly-parameter-types.ts';
 import { noDisablePreferRegexpExec, } from './rules/no-disable-prefer-regexp-exec.ts';
 import {
   noDisableRequireDestructuredParams,
@@ -177,6 +178,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-disable-no-useless-return': noDisableNoUselessReturn,
     'no-disable-no-variable-function-expression': noDisableNoVariableFunctionExpression,
     'no-disable-no-non-null-assertion': noDisableNoNonNullAssertion,
+    'no-disable-prefer-readonly-parameter-types': noDisablePreferReadonlyParameterTypes,
     'no-disable-prefer-regexp-exec': noDisablePreferRegexpExec,
     'no-disable-require-destructured-params': noDisableRequireDestructuredParams,
     'no-disable-require-returns': noDisableRequireReturns,

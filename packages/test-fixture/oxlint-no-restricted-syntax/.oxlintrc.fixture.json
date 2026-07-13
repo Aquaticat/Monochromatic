@@ -52,6 +52,7 @@
     "no-restricted-syntax/no-disable-no-try-finally": "error",
     "no-restricted-syntax/no-disable-no-useless-return": "error",
     "no-restricted-syntax/no-disable-no-variable-function-expression": "error",
+    "no-restricted-syntax/no-disable-prefer-readonly-parameter-types": "error",
     "no-restricted-syntax/no-disable-prefer-regexp-exec": "error",
     "no-restricted-syntax/no-disable-require-destructured-params": "error",
     "no-restricted-syntax/no-disable-require-returns": "error",

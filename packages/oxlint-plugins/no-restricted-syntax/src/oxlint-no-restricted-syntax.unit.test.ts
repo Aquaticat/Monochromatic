@@ -291,6 +291,7 @@ const BAN_DISABLE_RULES = [
   'no-disable-no-try-finally',
   'no-disable-no-useless-return',
   'no-disable-no-variable-function-expression',
+  'no-disable-prefer-readonly-parameter-types',
   'no-disable-prefer-regexp-exec',
   'no-disable-require-destructured-params',
   'no-disable-require-returns',
@@ -327,6 +328,26 @@ await describe({
           },
         },);
       },),
+    },),
+    describe({
+      name: 'no-disable-prefer-readonly-parameter-types forms',
+      children: [
+        it({
+          name: 'reports line, block, and mixed-list directives',
+          fn: async () => {
+            const diagnostics = await lint(
+              'invalid/no-disable-prefer-readonly-parameter-types.ts',
+            );
+            const readonlyDisableDiagnostics = diagnostics.filter(
+              function readonlyDisable(diagnostic,): boolean {
+                return diagnostic.code
+                  === 'no-restricted-syntax(no-disable-prefer-readonly-parameter-types)';
+              },
+            );
+            expect(readonlyDisableDiagnostics.length,).toBe(3,);
+          },
+        },),
+      ],
     },),
     describe({
       name: 'valid fixtures',
