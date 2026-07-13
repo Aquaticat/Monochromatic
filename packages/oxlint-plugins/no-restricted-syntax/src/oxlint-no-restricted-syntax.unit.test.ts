@@ -550,6 +550,16 @@ await describe({
           },
         },),
         it({
+          name: 'reports overload contracts whose union differs from implementation effects',
+          fn: async () => {
+            const diagnostics = await lintReadonly('readonly-overload-invalid.ts',);
+            expect(diagnostics.length,).toBe(1,);
+            expect(diagnostics[0]?.message,).toBe(
+              'Mutation contracts disagree across callable signatures.',
+            );
+          },
+        },),
+        it({
           name: 'keeps stale contracts under ordinary fix and removes them through suggestions',
           fn: async () => {
             /** Source with one semantically stale mutation block. */

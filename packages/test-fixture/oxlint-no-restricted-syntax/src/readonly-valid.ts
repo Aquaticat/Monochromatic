@@ -64,3 +64,23 @@ export function readonlyExternalAdapter(state: { value: string; },): void {
 export function callReadonlyExternalAdapter(state: { value: string; },): void {
   readonlyExternalAdapter(state,);
 }
+
+/**
+ * Declares mutating overload contract.
+ *
+ * @param values - Set cleared by implementation.
+ *
+ * @mutates values - Clears supplied set in overload contract.
+ */
+export function clearReadonlyOverload(values: Set<string>,): void;
+
+/**
+ * Implements mutating overload contract.
+ *
+ * @param values - Set cleared by implementation.
+ *
+ * @mutates values - Clears supplied set in implementation.
+ */
+export function clearReadonlyOverload(values: Set<string>,): void {
+  values.clear();
+}

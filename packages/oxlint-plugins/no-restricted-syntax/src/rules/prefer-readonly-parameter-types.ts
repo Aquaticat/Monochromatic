@@ -20,6 +20,7 @@ import {
   buildEffectSummaryIndex,
   NO_EFFECT_SUMMARY,
 } from './prefer-readonly-parameter-types/effect-summaries.ts';
+import { verifyOverloadConsistency, } from './prefer-readonly-parameter-types/overload-consistency.ts';
 import { SemanticBridgeError, } from './prefer-readonly-parameter-types/semantic-bridge-error.ts';
 import { openSemanticFile, } from './prefer-readonly-parameter-types/typescript-sync-adapter.ts';
 import { verifyReadonlyCallable, } from './prefer-readonly-parameter-types/verifier.ts';
@@ -100,6 +101,12 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
               effectSummary,
               project: session.project,
             },);
+          },);
+          verifyOverloadConsistency({
+            context,
+            project: session.project,
+            sourceFile: session.sourceFile,
+            effectIndex,
           },);
         }
         catch (error) {
