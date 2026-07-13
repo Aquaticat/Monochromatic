@@ -729,9 +729,10 @@ UTL:
  Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
 
 XNC:
- Extract + name concepts;
- start simple,
- refactor to complexity only when necessary.
+ Extract + name concepts by role and boundary behavior;
+ names reveal sentinel and fallback semantics.
+Start simple;
+ refactor only when necessary.
 
 ITR:
  Linear input:
