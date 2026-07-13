@@ -8,6 +8,7 @@ import type {
   Node as UnbashNode,
   Redirect as UnbashRedirect,
 } from 'unbash';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import { commandToInfo, } from './convert.ts';
 import {
   EMPTY_REDIRECTS,
@@ -50,8 +51,8 @@ function visitNode(
     paramRefs,
     context,
   }: {
-    readonly node: UnbashNode;
-    readonly redirects: readonly UnbashRedirect[];
+    readonly node: ForeignBorrowed<UnbashNode>;
+    readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
     readonly paramRefs: readonly string[];
     readonly context: ShellCommandContext;
   },

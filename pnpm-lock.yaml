@@ -492,6 +492,9 @@ importers:
 
   packages/agent-harnesses-shared/shell-command-analyzer:
     dependencies:
+      '@monochromatic-dev/config-oxlint-shared':
+        specifier: workspace:*
+        version: link:../../oxlint-plugins/shared
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger

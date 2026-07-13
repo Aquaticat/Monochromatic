@@ -9,6 +9,7 @@ import type {
   Word as UnbashWord,
   WordPart as UnbashWordPart,
 } from 'unbash';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import {
   EMPTY_VISIT_RESULT,
   type VisitResult,
@@ -36,7 +37,7 @@ function visitWord(
     word,
     context,
   }: {
-    readonly word: UnbashWord;
+    readonly word: ForeignBorrowed<UnbashWord>;
     readonly context: ShellCommandContext;
   },
 ): VisitResult {
@@ -69,7 +70,7 @@ function visitPart(
     part,
     context,
   }: {
-    readonly part: UnbashWordPart | UnbashDoubleQuotedChild;
+    readonly part: ForeignBorrowed<UnbashWordPart | UnbashDoubleQuotedChild>;
     readonly context: ShellCommandContext;
   },
 ): VisitResult {
@@ -130,14 +131,18 @@ function visitParts(
     parts,
     context,
   }: {
-    readonly parts: readonly (UnbashWordPart | UnbashDoubleQuotedChild)[];
+    readonly parts: readonly ForeignBorrowed<
+      UnbashWordPart | UnbashDoubleQuotedChild
+    >[];
     readonly context: ShellCommandContext;
   },
 ): VisitResult {
   /**
    * Visit result for each word part.
    */
-  const results = parts.map(function visitWordPart(part,): VisitResult {
+  const results = parts.map(function visitWordPart(
+    part: ForeignBorrowed<UnbashWordPart | UnbashDoubleQuotedChild>,
+  ): VisitResult {
     return visitPart({
       part,
       context,

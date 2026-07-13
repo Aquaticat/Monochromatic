@@ -8,6 +8,7 @@ import type {
   ArithmeticExpression as UnbashArithmeticExpression,
   TestExpression as UnbashTestExpression,
 } from 'unbash';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import {
   EMPTY_VISIT_RESULT,
   type VisitResult,
@@ -35,7 +36,7 @@ function visitArithmetic(
     expression,
     context,
   }: {
-    readonly expression: UnbashArithmeticExpression;
+    readonly expression: ForeignBorrowed<UnbashArithmeticExpression>;
     readonly context: ShellCommandContext;
   },
 ): VisitResult {
@@ -126,7 +127,7 @@ function visitTest(
     expression,
     context,
   }: {
-    readonly expression: UnbashTestExpression;
+    readonly expression: ForeignBorrowed<UnbashTestExpression>;
     readonly context: ShellCommandContext;
   },
 ): VisitResult {

@@ -15,6 +15,7 @@ import type {
   Word as UnbashWord,
   WordPart as UnbashWordPart,
 } from 'unbash';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import type {
   ShellCommandContext,
   ShellCommandInfo,
@@ -24,17 +25,17 @@ import type {
 /**
  * `unbash` script plus tolerant parser diagnostics.
  */
-type ParsedUnbashScript = UnbashScript & {
+type ParsedUnbashScript = ForeignBorrowed<UnbashScript> & {
   /**
    * Recoverable parse errors reported by `unbash`.
    */
-  readonly errors?: readonly UnbashParseError[];
+  readonly errors?: readonly ForeignBorrowed<UnbashParseError>[];
 };
 
 /**
  * Word part union reached from full words or quoted child lists.
  */
-type TraversablePart = UnbashWordPart | UnbashDoubleQuotedChild;
+type TraversablePart = ForeignBorrowed<UnbashWordPart> | ForeignBorrowed<UnbashDoubleQuotedChild>;
 
 /**
  * AST node work item.
@@ -47,11 +48,11 @@ type NodeWorkItem = {
   /**
    * AST node to visit.
    */
-  readonly node: UnbashNode;
+  readonly node: ForeignBorrowed<UnbashNode>;
   /**
    * Redirects inherited from wrapping statement nodes.
    */
-  readonly redirects: readonly UnbashRedirect[];
+  readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
   /**
    * Execution context inherited by child commands.
    */
@@ -69,7 +70,7 @@ type WordWorkItem = {
   /**
    * Word whose parts may contain nested scripts.
    */
-  readonly word: UnbashWord;
+  readonly word: ForeignBorrowed<UnbashWord>;
   /**
    * Execution context inherited by expansions inside word.
    */
@@ -105,7 +106,7 @@ type ArithmeticWorkItem = {
   /**
    * Expression that may contain command expansion.
    */
-  readonly expression: UnbashArithmeticExpression;
+  readonly expression: ForeignBorrowed<UnbashArithmeticExpression>;
   /**
    * Execution context inherited by expansions inside expression.
    */
@@ -123,7 +124,7 @@ type TestWorkItem = {
   /**
    * Expression whose operands may contain command expansion.
    */
-  readonly expression: UnbashTestExpression;
+  readonly expression: ForeignBorrowed<UnbashTestExpression>;
   /**
    * Execution context inherited by expansions inside expression.
    */
@@ -141,7 +142,7 @@ type RedirectsWorkItem = {
   /**
    * Redirects to surface as path signals.
    */
-  readonly redirects: readonly UnbashRedirect[];
+  readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
   /**
    * Execution context inherited by redirect words.
    */
@@ -234,7 +235,7 @@ const EXECUTED_CONTEXT: ShellCommandContext = { kind: 'executed', };
 /**
  * Empty redirects singleton used for child work items.
  */
-const EMPTY_REDIRECTS: readonly UnbashRedirect[] = [];
+const EMPTY_REDIRECTS: readonly ForeignBorrowed<UnbashRedirect>[] = [];
 
 /**
  * Empty traversal flags singleton.

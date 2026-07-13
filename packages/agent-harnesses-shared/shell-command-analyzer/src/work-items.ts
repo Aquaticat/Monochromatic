@@ -14,6 +14,7 @@ import type {
   Statement as UnbashStatement,
   Word as UnbashWord,
 } from 'unbash';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import type { ShellCommandContext, } from './types.ts';
 import {
   EMPTY_REDIRECTS,
@@ -39,7 +40,7 @@ function nodeWorkItem(
     node,
     context,
   }: {
-    readonly node: UnbashNode;
+    readonly node: ForeignBorrowed<UnbashNode>;
     readonly context: ShellCommandContext;
   },
 ): WorkItem {
@@ -70,7 +71,7 @@ function nodeWorkItems(
     nodes,
     context,
   }: {
-    readonly nodes: readonly UnbashNode[];
+    readonly nodes: readonly ForeignBorrowed<UnbashNode>[];
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
@@ -101,7 +102,7 @@ function statementWorkItems(
     statements,
     context,
   }: {
-    readonly statements: readonly UnbashStatement[];
+    readonly statements: readonly ForeignBorrowed<UnbashStatement>[];
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
@@ -132,7 +133,7 @@ function wordWorkItems(
     word,
     context,
   }: {
-    readonly word: UnbashWord;
+    readonly word: ForeignBorrowed<UnbashWord>;
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
@@ -162,7 +163,7 @@ function wordsWorkItems(
     words,
     context,
   }: {
-    readonly words: readonly UnbashWord[];
+    readonly words: readonly ForeignBorrowed<UnbashWord>[];
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
@@ -193,7 +194,7 @@ function parameterWordItems(
     part,
     context,
   }: {
-    readonly part: UnbashParameterExpansionPart;
+    readonly part: ForeignBorrowed<UnbashParameterExpansionPart>;
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
@@ -258,7 +259,7 @@ function assignmentWordItems(
     assignments,
     context,
   }: {
-    readonly assignments: readonly UnbashAssignmentPrefix[];
+    readonly assignments: readonly ForeignBorrowed<UnbashAssignmentPrefix>[];
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
@@ -297,7 +298,7 @@ function redirectWordItems(
     redirects,
     context,
   }: {
-    readonly redirects: readonly UnbashRedirect[];
+    readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
@@ -338,7 +339,7 @@ function redirectWorkItems(
     redirects,
     context,
   }: {
-    readonly redirects: readonly UnbashRedirect[];
+    readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
@@ -373,8 +374,8 @@ function commandWordItems(
     redirects,
     context,
   }: {
-    readonly command: UnbashCommand;
-    readonly redirects: readonly UnbashRedirect[];
+    readonly command: ForeignBorrowed<UnbashCommand>;
+    readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
@@ -422,12 +423,14 @@ function caseItemWorkItems(
     node,
     context,
   }: {
-    readonly node: UnbashCase;
+    readonly node: ForeignBorrowed<UnbashCase>;
     readonly context: ShellCommandContext;
   },
 ): WorkItem[] {
   return node.items
-    .flatMap(function caseItemWords(item,): WorkItem[] {
+    .flatMap(function caseItemWords(
+      item: ForeignBorrowed<UnbashCase['items'][number]>,
+    ): WorkItem[] {
       return [
         ...wordsWorkItems({
           words: item.pattern,

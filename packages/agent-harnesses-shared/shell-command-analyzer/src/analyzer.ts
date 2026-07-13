@@ -40,18 +40,16 @@ const moduleLogger = tagged({
 /**
  * Convert unexpected parser throw to public diagnostic.
  *
- * @param error - caught parser failure
- *
  * @returns parser diagnostic with source offset zero
  *
  * @example
  * ```ts
- * thrownParseError(error);
+ * thrownParseError();
  * ```
  */
-function thrownParseError(error: unknown,): ShellParseError {
+function thrownParseError(): ShellParseError {
   return {
-    message: `unbash parse threw: ${String(error,)}`,
+    message: 'unbash parse threw',
     pos: 0,
   };
 }
@@ -105,10 +103,10 @@ function tryParseScript(
       tag: tryParseScript.name,
       l: moduleLogger,
     },);
-    innerLogger.debug(`unbash parse threw for command: ${String(error,)}`,);
+    innerLogger.debug(`unbash parse threw value type: ${typeof error}`,);
     return {
       ok: false,
-      parseErrors: [thrownParseError(error,),],
+      parseErrors: [thrownParseError(),],
     };
   }
 }

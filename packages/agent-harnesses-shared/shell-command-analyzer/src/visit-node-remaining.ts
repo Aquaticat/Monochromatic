@@ -8,6 +8,7 @@ import type {
   Node as UnbashNode,
   Redirect as UnbashRedirect,
 } from 'unbash';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import { redirectOnlyCommand, } from './convert.ts';
 import {
   EMPTY_REDIRECTS,
@@ -45,7 +46,7 @@ function visitRedirectsItem(
     paramRefs,
     context,
   }: {
-    readonly redirects: readonly UnbashRedirect[];
+    readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
     readonly paramRefs: readonly string[];
     readonly context: ShellCommandContext;
   },
@@ -91,8 +92,8 @@ function visitRemainingAfterCase(
     paramRefs,
     context,
   }: {
-    readonly node: UnbashNode;
-    readonly redirects: readonly UnbashRedirect[];
+    readonly node: ForeignBorrowed<UnbashNode>;
+    readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
     readonly paramRefs: readonly string[];
     readonly context: ShellCommandContext;
   },
@@ -216,8 +217,8 @@ function visitRemainingNode(
     paramRefs,
     context,
   }: {
-    readonly node: UnbashNode;
-    readonly redirects: readonly UnbashRedirect[];
+    readonly node: ForeignBorrowed<UnbashNode>;
+    readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
     readonly paramRefs: readonly string[];
     readonly context: ShellCommandContext;
   },

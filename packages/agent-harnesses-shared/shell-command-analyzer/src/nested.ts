@@ -11,6 +11,7 @@ import {
   type ProcessSubstitutionPart as UnbashProcessSubstitutionPart,
   type Script as UnbashScript,
 } from 'unbash';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
   ShellCommandContext,
@@ -53,7 +54,7 @@ const moduleLogger = tagged({
  * parseErrorsFromScript(script);
  * ```
  */
-function parseErrorsFromScript(script: UnbashScript,): ShellParseError[] {
+function parseErrorsFromScript(script: ForeignBorrowed<UnbashScript>,): ShellParseError[] {
   return [
     ...(((script as ParsedUnbashScript).errors) ?? []),
   ]
@@ -96,9 +97,9 @@ function failedParseErrors(): ShellParseError[] {
  */
 function scriptFromExpansion(
   expansion:
-    | UnbashArithmeticCommandExpansion
-    | UnbashCommandExpansionPart
-    | UnbashProcessSubstitutionPart,
+    | ForeignBorrowed<UnbashArithmeticCommandExpansion>
+    | ForeignBorrowed<UnbashCommandExpansionPart>
+    | ForeignBorrowed<UnbashProcessSubstitutionPart>,
 ): {
   readonly script: ParsedUnbashScript;
   readonly parseErrors: readonly ShellParseError[]
@@ -164,9 +165,9 @@ function visitExpansion(
     context,
   }: {
     readonly expansion:
-      | UnbashArithmeticCommandExpansion
-      | UnbashCommandExpansionPart
-      | UnbashProcessSubstitutionPart;
+      | ForeignBorrowed<UnbashArithmeticCommandExpansion>
+      | ForeignBorrowed<UnbashCommandExpansionPart>
+      | ForeignBorrowed<UnbashProcessSubstitutionPart>;
     readonly context: ShellCommandContext;
   },
 ): VisitResult {

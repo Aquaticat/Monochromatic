@@ -11,6 +11,7 @@ import type {
   RedirectOperator as UnbashRedirectOperator,
   Word as UnbashWord,
 } from 'unbash';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import type {
   ShellCommandContext,
   ShellCommandInfo,
@@ -183,7 +184,7 @@ function redirectReadsFile(
  * redirectToInfo(redirect);
  * ```
  */
-function redirectToInfo(redirect: UnbashRedirect,): ShellRedirect {
+function redirectToInfo(redirect: ForeignBorrowed<UnbashRedirect>,): ShellRedirect {
   /**
    * Parsed target text, when `unbash` produced one.
    */
@@ -251,9 +252,11 @@ function redirectTargets(redirects: readonly ShellRedirect[],): string[] {
  * wordToArg(word);
  * ```
  */
-function wordToArg(word: UnbashWord,): string[] {
+function wordToArg(word: ForeignBorrowed<UnbashWord>,): string[] {
   if ((word.parts ?? [])
-    .some(function isProcessSubstitution(part,): boolean {
+    .some(function isProcessSubstitution(
+      part: ForeignBorrowed<NonNullable<UnbashWord['parts']>[number]>,
+    ): boolean {
       return part.type === 'ProcessSubstitution';
     },)) {
     return [];
@@ -273,13 +276,13 @@ function wordToArg(word: UnbashWord,): string[] {
  * assignmentValue(assignment);
  * ```
  */
-function assignmentValue(assignment: UnbashAssignmentPrefix,): string {
+function assignmentValue(assignment: ForeignBorrowed<UnbashAssignmentPrefix>,): string {
   if (assignment.value !== undefined)
     return assignment.value
       .value;
   if (assignment.array !== undefined) {
     return assignment.array
-      .map(function wordValue(word,): string {
+      .map(function wordValue(word: ForeignBorrowed<UnbashWord>,): string {
         return word.value;
       },)
       .join(' ',);
@@ -299,7 +302,7 @@ function assignmentValue(assignment: UnbashAssignmentPrefix,): string {
  * assignmentToEnvAssignment(assignment);
  * ```
  */
-function assignmentToEnvAssignment(assignment: UnbashAssignmentPrefix,): ShellEnvAssignment[] {
+function assignmentToEnvAssignment(assignment: ForeignBorrowed<UnbashAssignmentPrefix>,): ShellEnvAssignment[] {
   if (assignment.name === undefined)
     return [];
   return [{
@@ -333,8 +336,8 @@ function commandToInfo(
     paramRefs,
     context,
   }: {
-    readonly command: UnbashCommand;
-    readonly inheritedRedirects: readonly UnbashRedirect[];
+    readonly command: ForeignBorrowed<UnbashCommand>;
+    readonly inheritedRedirects: readonly ForeignBorrowed<UnbashRedirect>[];
     readonly paramRefs: readonly string[];
     readonly context: ShellCommandContext;
   },
@@ -346,7 +349,9 @@ function commandToInfo(
     ...command.redirects,
     ...inheritedRedirects,
   ]
-    .map(function mapRedirectToInfo(redirect,): ShellRedirect {
+    .map(function mapRedirectToInfo(
+      redirect: ForeignBorrowed<UnbashRedirect>,
+    ): ShellRedirect {
       return redirectToInfo(redirect,);
     },);
 
@@ -387,7 +392,7 @@ function redirectOnlyCommand(
     paramRefs,
     context,
   }: {
-    readonly redirects: readonly UnbashRedirect[];
+    readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
     readonly paramRefs: readonly string[];
     readonly context: ShellCommandContext;
   },
