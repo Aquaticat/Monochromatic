@@ -7,6 +7,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import {
   BYTES_UINT16,
   BYTES_UINT32,
@@ -35,6 +37,10 @@ import type {
  * @param startOffset - Cursor at which to begin writing
  *
  * @returns Cursor position after the header and data
+ *
+ * @mutates view - `view.setUint16` and `view.setUint32` write ZIP header fields
+ *
+ * @mutates buffer - `buffer.set` writes filename and file-content bytes
  */
 function writeOneLocalFileHeader(
   {
@@ -42,12 +48,12 @@ function writeOneLocalFileHeader(
     buffer,
     entry,
     startOffset,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     view: DataView;
     buffer: Uint8Array;
     entry: ZipEntry;
     startOffset: number;
-  }>,
+  }>>,
 ): number {
   /**
    * Local cursor tracking each successive little-endian write.
@@ -152,6 +158,10 @@ function writeOneLocalFileHeader(
  *
  * @returns Cursor position after the last write
  *
+ * @mutates view - `writeOneLocalFileHeader` delegates `view.setUint16` and `view.setUint32` writes
+ *
+ * @mutates buffer - `writeOneLocalFileHeader` delegates filename and content writes to `buffer.set`
+ *
  * @example
  * ```ts
  * const lfhEnd = writeLocalFileHeaders({ view, buffer, positioned, startOffset: 0, },);
@@ -163,12 +173,12 @@ export function writeLocalFileHeaders(
     buffer,
     positioned,
     startOffset,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     view: DataView;
     buffer: Uint8Array;
     positioned: readonly Positioned[];
     startOffset: number;
-  }>,
+  }>>,
 ): number {
   /**
    * Running cursor advancing through successive local file headers.
@@ -199,6 +209,10 @@ export function writeLocalFileHeaders(
  * @param startOffset - Cursor at which to begin writing
  *
  * @returns Cursor position after the header
+ *
+ * @mutates view - `view.setUint16` and `view.setUint32` write directory fields
+ *
+ * @mutates buffer - `buffer.set` writes filename bytes
  */
 function writeOneCentralDirectoryHeader(
   {
@@ -207,13 +221,13 @@ function writeOneCentralDirectoryHeader(
     entry,
     lfhOffset,
     startOffset,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     view: DataView;
     buffer: Uint8Array;
     entry: ZipEntry;
     lfhOffset: number;
     startOffset: number;
-  }>,
+  }>>,
 ): number {
   /**
    * Local cursor tracking each successive little-endian write.
@@ -348,6 +362,10 @@ function writeOneCentralDirectoryHeader(
  *
  * @returns Cursor position after the last write
  *
+ * @mutates view - `writeOneCentralDirectoryHeader` delegates `view.setUint16` and `view.setUint32` writes
+ *
+ * @mutates buffer - `writeOneCentralDirectoryHeader` delegates filename writes to `buffer.set`
+ *
  * @example
  * ```ts
  * const cdEnd = writeCentralDirectory({ view, buffer, positioned, startOffset: lfhEnd, },);
@@ -359,12 +377,12 @@ export function writeCentralDirectory(
     buffer,
     positioned,
     startOffset,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     view: DataView;
     buffer: Uint8Array;
     positioned: readonly Positioned[];
     startOffset: number;
-  }>,
+  }>>,
 ): number {
   /**
    * Running cursor advancing through successive central directory headers.

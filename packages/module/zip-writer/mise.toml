@@ -37,3 +37,10 @@ hide = true
 extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
+
+[tasks."test:unit"]
+extends = "test:unit"
+
+[tasks.buildAndTest]
+description = "Build neutral ZIP writer artifacts, then run unit tests"
+run = ["mise run build", "mise run test:unit"]

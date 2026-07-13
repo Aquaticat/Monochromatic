@@ -8,6 +8,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import {
   BYTES_UINT16,
   BYTES_UINT32,
@@ -118,6 +120,8 @@ function computeOffsets(
  * @param startOffset - Cursor where the EOCD record begins
  *
  * @returns Cursor position after the last write
+ *
+ * @mutates view - `view.setUint16` and `view.setUint32` write end-record fields
  */
 function writeEndOfCentralDirectory(
   {
@@ -126,13 +130,13 @@ function writeEndOfCentralDirectory(
     cdSize,
     cdStart,
     startOffset,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     view: DataView;
     entryCount: number;
     cdSize: number;
     cdStart: number;
     startOffset: number;
-  }>,
+  }>>,
 ): number {
   /**
    * Local cursor tracking each successive little-endian write.

@@ -2575,6 +2575,10 @@ importers:
         version: 7.0.2
 
   packages/module/zip-writer:
+    dependencies:
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
