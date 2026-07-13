@@ -1,5 +1,5 @@
 /**
- * Unit tests for judge-model fallback orchestration.
+ * Unit tests for judge-model fallback race orchestration.
  *
  * @module
  */
@@ -22,28 +22,27 @@ import type {
   Verdict,
 } from './types.ts';
 
-/**
- * Fixture context window.
- */
+/** Fixture context window. */
 const CONTEXT_WINDOW = 128_000;
 
-/**
- * Fixture maximum output token count.
- */
+/** Fixture maximum output token count. */
 const MAX_TOKENS = 4_096;
 
-/**
- * Timeout budget for real judge retry composition test.
- */
+/** Timeout budget for real judge retry composition test. */
 const JUDGE_TIMEOUT_MS = 10_000;
 
-/**
- * Successful fallback verdict fixture.
- */
+/** Successful fallback verdict fixture. */
 const APPROVE_VERDICT = {
   verdict: 'approve',
   reason: 'Fallback judge approved.',
   guidance: '',
+} satisfies Verdict;
+
+/** Successful fallback deny fixture. */
+const DENY_VERDICT = {
+  verdict: 'deny',
+  reason: 'Fallback judge denied.',
+  guidance: 'Use a safer action.',
 } satisfies Verdict;
 
 /**
@@ -65,9 +64,7 @@ function judgeFixture(
     readonly id: string;
   },
 ): BudgetModel {
-  /**
-   * Complete pi model record used by fallback identity checks.
-   */
+  /** Complete pi model record used by fallback identity checks. */
   const model = {
     id,
     name: id,
@@ -119,19 +116,13 @@ await describe({
   name: callJudgeWithFallback.name,
   children: [
     it({
-      name: 'returns first verdict without resolving fallback',
-      fn: async function returnsFirstVerdict() {
-        /**
-         * Calls made to first judge attempt.
-         */
+      name: 'returns primary verdict without resolving fallback contenders',
+      fn: async function returnsPrimaryVerdict() {
+        /** Calls made to judge attempts. */
         const attemptedSlugs: string[] = [];
-        /**
-         * Initially selected judge.
-         */
+        /** Initially selected judge. */
         const firstJudge = judgeFixture({ id: 'first', },);
-        /**
-         * Verdict returned by successful first judge.
-         */
+        /** Verdict returned by the primary judge. */
         const result = await callJudgeWithFallback({
           firstJudge,
           async resolveFallbackJudge() {
@@ -148,82 +139,157 @@ await describe({
       },
     },),
     it({
-      name: 'uses distinct fallback after first model fails all retries',
-      fn: async function usesDistinctFallback() {
-        /**
-         * Models called in attempt order.
-         */
+      name: 'resolves two distinct contenders before either fallback attempt starts',
+      fn: async function resolvesContendersBeforeRace() {
+        /** Complete judge-attempt order. */
         const attemptedSlugs: string[] = [];
-        /**
-         * Failed slugs handed to fallback resolver.
-         */
-        const failedSlugs: string[] = [];
-        /**
-         * Initially selected judge.
-         */
+        /** Exclusions sent to the fallback selector. */
+        const resolverExclusions: readonly string[][] = [];
+        /** Initially selected judge. */
         const firstJudge = judgeFixture({ id: 'first', },);
-        /**
-         * Judge returned after first failure.
-         */
-        const fallbackJudge = judgeFixture({ id: 'fallback', },);
-        /**
-         * Verdict returned by fallback judge.
-         */
+        /** First contender in the fallback race. */
+        const firstFallback = judgeFixture({ id: 'fallback-one', },);
+        /** Second contender in the fallback race. */
+        const secondFallback = judgeFixture({ id: 'fallback-two', },);
+        /** Verdict settled by the race. */
         const result = await callJudgeWithFallback({
           firstJudge,
-          async resolveFallbackJudge({ failedModelSlug, },) {
-            failedSlugs.push(failedModelSlug,);
-            return fallbackJudge;
+          async resolveFallbackJudge({ excludedModelSlugs, },) {
+            resolverExclusions.push(excludedModelSlugs,);
+            return excludedModelSlugs.length === 1
+              ? firstFallback
+              : secondFallback;
           },
           async callJudgeAttempt({ judge, },) {
-            /**
-             * Current attempt slug used to make first model fail deterministically.
-             */
+            /** Identity recorded before this attempt yields. */
             const slug = budgetModelSlug(judge.model,);
             attemptedSlugs.push(slug,);
             if (slug === budgetModelSlug(firstJudge.model,))
-              throw new Error('first model exhausted retries',);
+              throw new Error('primary exhausted retries',);
+            if (slug === budgetModelSlug(firstFallback.model,)) {
+              await Promise.resolve();
+              expect(attemptedSlugs,).toEqual([
+                'test-provider/first',
+                'test-provider/fallback-one',
+                'test-provider/fallback-two',
+              ],);
+            }
             return APPROVE_VERDICT;
           },
         },);
 
-        expect(result,).toBe(APPROVE_VERDICT,);
-        expect(failedSlugs,).toEqual(['test-provider/first',],);
-        expect(attemptedSlugs,).toEqual([
-          'test-provider/first',
-          'test-provider/fallback',
+        expect(result,).toEqual(APPROVE_VERDICT,);
+        expect(resolverExclusions,).toEqual([
+          ['test-provider/first',],
+          [
+            'test-provider/first',
+            'test-provider/fallback-one',
+          ],
         ],);
       },
     },),
     it({
-      name: 'waits for every callJudge retry before selecting fallback model',
-      fn: async function waitsForCallJudgeRetries() {
-        /**
-         * Initially selected judge whose streams never produce a verdict.
-         */
+      name: 'ignores a rejected contender until another contender returns a verdict',
+      fn: async function ignoresRejectedContender() {
+        /** Initially selected judge. */
         const firstJudge = judgeFixture({ id: 'first', },);
-        /**
-         * Distinct judge that succeeds through forced tool call.
-         */
-        const fallbackJudge = judgeFixture({ id: 'fallback', },);
-        /**
-         * Model slugs observed by real callJudge stream seam.
-         */
-        const streamedSlugs: string[] = [];
-        /**
-         * Verdict returned only after first model's complete retry sequence.
-         */
+        /** Contender that rejects before the winner answers. */
+        const rejectedFallback = judgeFixture({ id: 'fallback-one', },);
+        /** Contender that returns after the other contender rejects. */
+        const winningFallback = judgeFixture({ id: 'fallback-two', },);
+        /** Race result, which must come from the later successful contender. */
         const result = await callJudgeWithFallback({
           firstJudge,
-          async resolveFallbackJudge() {
+          async resolveFallbackJudge({ excludedModelSlugs, },) {
+            return excludedModelSlugs.length === 1
+              ? rejectedFallback
+              : winningFallback;
+          },
+          async callJudgeAttempt({ judge, },) {
+            const slug = budgetModelSlug(judge.model,);
+            if (slug === budgetModelSlug(firstJudge.model,))
+              throw new Error('primary exhausted retries',);
+            if (slug === budgetModelSlug(rejectedFallback.model,))
+              throw new Error('first contender unavailable',);
+            await Promise.resolve();
+            return DENY_VERDICT;
+          },
+        },);
+
+        expect(result,).toEqual(DENY_VERDICT,);
+      },
+    },),
+    it({
+      name: 'aborts losing contender after another contender returns a verdict',
+      fn: async function abortsLosingContender() {
+        /** Whether the slower contender received the winner cancellation signal. */
+        let loserObservedAbort = false;
+        /** Initially selected judge. */
+        const firstJudge = judgeFixture({ id: 'first', },);
+        /** Fast contender that supplies the race verdict. */
+        const winningFallback = judgeFixture({ id: 'fallback-one', },);
+        /** Slower contender that must observe cancellation. */
+        const losingFallback = judgeFixture({ id: 'fallback-two', },);
+        /** Race result returned by the winner. */
+        const result = await callJudgeWithFallback({
+          firstJudge,
+          async resolveFallbackJudge({ excludedModelSlugs, },) {
+            return excludedModelSlugs.length === 1
+              ? winningFallback
+              : losingFallback;
+          },
+          async callJudgeAttempt({
+            judge,
+            abortSignal,
+          },) {
+            const slug = budgetModelSlug(judge.model,);
+            if (slug === budgetModelSlug(firstJudge.model,))
+              throw new Error('primary exhausted retries',);
+            if (slug === budgetModelSlug(winningFallback.model,)) {
+              await Promise.resolve();
+              return APPROVE_VERDICT;
+            }
+            await Promise.resolve();
+            await Promise.resolve();
+            loserObservedAbort = abortSignal?.aborted === true;
+            throw new Error('losing contender cancelled',);
+          },
+        },);
+
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(result,).toEqual(APPROVE_VERDICT,);
+        expect(loserObservedAbort,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'waits for every primary retry before resolving fallback contenders',
+      fn: async function waitsForPrimaryRetries() {
+        /** Initially selected judge whose streams never produce a verdict. */
+        const firstJudge = judgeFixture({ id: 'first', },);
+        /** First contender, which returns a forced tool verdict. */
+        const firstFallback = judgeFixture({ id: 'fallback-one', },);
+        /** Second contender, which returns the same forced tool verdict. */
+        const secondFallback = judgeFixture({ id: 'fallback-two', },);
+        /** Model slugs observed by the real `callJudge` stream seam. */
+        const streamedSlugs: string[] = [];
+        /** Verdict returned only after primary retry sequence and fallback race start. */
+        const result = await callJudgeWithFallback({
+          firstJudge,
+          async resolveFallbackJudge({ excludedModelSlugs, },) {
             expect(streamedSlugs,).toEqual([
               'test-provider/first',
               'test-provider/first',
               'test-provider/first',
             ],);
-            return fallbackJudge;
+            return excludedModelSlugs.length === 1
+              ? firstFallback
+              : secondFallback;
           },
-          callJudgeAttempt({ judge, },) {
+          callJudgeAttempt({
+            judge,
+            abortSignal,
+          },) {
             return callJudge({
               model: judge.model,
               auth: judge.auth,
@@ -235,21 +301,20 @@ await describe({
               systemPrompt:
                 'You MUST call the render_verdict tool to submit your evaluation. Do not respond with text; use the tool.',
               batchContext: [],
+              abortSignal,
               streamSimpleFn: function streamSimpleFn(
                 model: Model<Api>,
               ) {
-                /**
-                 * Canonical model slug for current transport attempt.
-                 */
+                /** Canonical model identity for this transport attempt. */
                 const slug = budgetModelSlug(model,);
                 streamedSlugs.push(slug,);
-                if (slug === budgetModelSlug(fallbackJudge.model,)) {
+                if (slug !== budgetModelSlug(firstJudge.model,)) {
                   return (async function* fallbackToolStream() {
                     yield {
                       type: 'toolcall_end',
                       contentIndex: 0,
                       toolCall: {
-                        id: 'fallback-verdict',
+                        id: `verdict-${slug}`,
                         name: 'render_verdict',
                         arguments: APPROVE_VERDICT,
                       },
@@ -257,22 +322,11 @@ await describe({
                     };
                   })() as never;
                 }
-                /**
-                 * Number of streams started for failed first model.
-                 */
-                const firstModelStreamCount = streamedSlugs.filter(
-                  function isFirstModel(streamedSlug,) {
-                    return streamedSlug === budgetModelSlug(firstJudge.model,);
-                  },
-                )
-                  .length;
-                return (async function* failedFirstModelStream() {
+                return (async function* emptyPrimaryStream() {
                   yield {
                     type: 'text_end',
                     contentIndex: 0,
-                    content: firstModelStreamCount === 1
-                      ? 'First response omitted render_verdict.'
-                      : '',
+                    content: '',
                     partial: {},
                   };
                 })() as never;
@@ -286,113 +340,109 @@ await describe({
           'test-provider/first',
           'test-provider/first',
           'test-provider/first',
-          'test-provider/fallback',
+          'test-provider/fallback-one',
+          'test-provider/fallback-two',
         ],);
       },
     },),
     it({
-      name: 'reports fallback selection failure with first error',
-      fn: async function reportsFallbackSelectionFailure() {
-        /**
-         * Initially selected judge.
-         */
+      name: 'does not run an undersized race when selecting second contender fails',
+      fn: async function rejectsUndersizedRace() {
+        /** Models that reached a judge attempt. */
+        const attemptedSlugs: string[] = [];
+        /** Initially selected judge. */
         const firstJudge = judgeFixture({ id: 'first', },);
-        /**
-         * Chained error after first attempt and fallback resolution fail.
-         */
-        const caught = await captureError(async function runFailingSelection() {
+        /** Only resolvable fallback model. */
+        const firstFallback = judgeFixture({ id: 'fallback-one', },);
+        /** Terminal error after contender selection fails. */
+        const caught = await captureError(async function failToResolveSecondFallback() {
           return await callJudgeWithFallback({
             firstJudge,
-            async resolveFallbackJudge() {
-              throw new Error('no alternative authenticated model',);
+            async resolveFallbackJudge({ excludedModelSlugs, },) {
+              if (excludedModelSlugs.length === 1)
+                return firstFallback;
+              throw new Error('no second authenticated fallback model',);
             },
-            async callJudgeAttempt() {
-              throw new Error('first model exhausted retries',);
+            async callJudgeAttempt({ judge, },) {
+              attemptedSlugs.push(budgetModelSlug(judge.model,),);
+              throw new Error('primary exhausted retries',);
             },
           },);
         },);
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'Judge model test-provider/first failed all retries; selecting another judge model failed',
+          'resolving two distinct fallback judge models failed',
         );
-        expect((caught as Error).message,).toContain('no alternative authenticated model',);
-        expect((caught as Error).cause,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'no second authenticated fallback model',
+        );
+        expect(attemptedSlugs,).toEqual(['test-provider/first',],);
       },
     },),
     it({
-      name: 'rejects resolver returning failed model again',
-      fn: async function rejectsRepeatedModel() {
-        /**
-         * Initially selected judge returned again by broken fallback resolver.
-         */
+      name: 'rejects a resolver that returns an excluded model',
+      fn: async function rejectsDuplicateFallback() {
+        /** Initially selected judge returned again by the broken resolver. */
         const firstJudge = judgeFixture({ id: 'first', },);
-        /**
-         * Chained error proving model identity check rejected duplicate.
-         */
-        const caught = await captureError(async function runRepeatedSelection() {
+        /** Terminal error proving duplicate identity was rejected. */
+        const caught = await captureError(async function runDuplicateResolver() {
           return await callJudgeWithFallback({
             firstJudge,
             async resolveFallbackJudge() {
               return firstJudge;
             },
             async callJudgeAttempt() {
-              throw new Error('first model exhausted retries',);
+              throw new Error('primary exhausted retries',);
             },
           },);
         },);
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'Fallback judge resolver selected failed model again: test-provider/first',
+          'Fallback judge resolver selected an excluded model: test-provider/first',
         );
         expect((caught as Error).cause,).toBeInstanceOf(Error,);
       },
     },),
     it({
-      name: 'reports when fallback model also fails all retries',
-      fn: async function reportsFallbackAttemptFailure() {
-        /**
-         * Initially selected judge.
-         */
+      name: 'reports primary and both contender failures when the race cannot return a verdict',
+      fn: async function reportsAllRaceFailures() {
+        /** Initially selected judge. */
         const firstJudge = judgeFixture({ id: 'first', },);
-        /**
-         * Distinct fallback judge.
-         */
-        const fallbackJudge = judgeFixture({ id: 'fallback', },);
-        /**
-         * Models called before terminal fallback failure.
-         */
-        const attemptedSlugs: string[] = [];
-        /**
-         * Chained error after both model attempts fail.
-         */
-        const caught = await captureError(async function runFailingAttempts() {
+        /** First fallback contender. */
+        const firstFallback = judgeFixture({ id: 'fallback-one', },);
+        /** Second fallback contender. */
+        const secondFallback = judgeFixture({ id: 'fallback-two', },);
+        /** Terminal race error. */
+        const caught = await captureError(async function exhaustEveryJudge() {
           return await callJudgeWithFallback({
             firstJudge,
-            async resolveFallbackJudge() {
-              return fallbackJudge;
+            async resolveFallbackJudge({ excludedModelSlugs, },) {
+              return excludedModelSlugs.length === 1
+                ? firstFallback
+                : secondFallback;
             },
             async callJudgeAttempt({ judge, },) {
-              /**
-               * Attempt slug captured before deterministic failure.
-               */
-              const slug = budgetModelSlug(judge.model,);
-              attemptedSlugs.push(slug,);
-              throw new Error(`${slug} exhausted retries`,);
+              throw new Error(`${budgetModelSlug(judge.model,)} exhausted retries`,);
             },
           },);
         },);
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'fallback judge model test-provider/fallback also failed all retries',
+          'Judge model test-provider/first failed all retries: test-provider/first exhausted retries',
         );
-        expect((caught as Error).cause,).toBeInstanceOf(Error,);
-        expect(attemptedSlugs,).toEqual([
-          'test-provider/first',
-          'test-provider/fallback',
-        ],);
+        expect((caught as Error).message,).toContain(
+          'fallback judge race models test-provider/fallback-one, test-provider/fallback-two also failed all retries',
+        );
+        expect((caught as Error).message,).toContain(
+          'fallback judge model test-provider/fallback-one failed all retries',
+        );
+        expect((caught as Error).message,).toContain(
+          'fallback judge model test-provider/fallback-two failed all retries',
+        );
+        expect((caught as Error).cause,).toBeInstanceOf(AggregateError,);
       },
     },),
   ],

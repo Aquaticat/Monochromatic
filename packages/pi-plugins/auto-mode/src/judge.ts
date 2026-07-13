@@ -282,6 +282,8 @@ function streamJudgeSimple(
  *
  * @param batchContext - sibling actions already evaluated in this turn
  *
+ * @param abortSignal - outer cancellation signal, used to stop a losing fallback contender
+ *
  * @param streamSimpleFn - stream implementation used for model calls
  *
  * @returns judge's verdict
@@ -312,6 +314,7 @@ async function callJudge(
     timeoutMs,
     systemPrompt,
     batchContext,
+    abortSignal,
     streamSimpleFn,
   }: {
     readonly model: Model<Api>;
@@ -323,6 +326,7 @@ async function callJudge(
     readonly timeoutMs: number;
     readonly systemPrompt: string;
     readonly batchContext: readonly BatchEntry[];
+    readonly abortSignal?: AbortSignal;
     readonly streamSimpleFn?: JudgeStreamSimple;
   },
 ): Promise<Verdict> {
@@ -370,6 +374,15 @@ async function callJudge(
       controller.abort();
     },
   },);
+  /**
+   * Signal that aborts when this model exhausts its own timeout or an outer fallback race settles.
+   */
+  const signal = abortSignal === undefined
+    ? controller.signal
+    : AbortSignal.any([
+      controller.signal,
+      abortSignal,
+    ],);
 
   /**
    * API-specific forced tool-call selector for the initial judge invocation.
@@ -389,7 +402,7 @@ async function callJudge(
     },
     options: buildStreamOptions({
       auth,
-      controller,
+      signal,
       toolChoice,
     },),
   },);
@@ -431,7 +444,7 @@ async function callJudge(
       },
       options: buildStreamOptions({
         auth,
-        controller,
+        signal,
       },),
     },);
   }

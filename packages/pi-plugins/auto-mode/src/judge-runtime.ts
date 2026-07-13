@@ -12,7 +12,7 @@ import type { BudgetModelAuth, } from './types.ts';
  *
  * @param auth - API key and headers for the selected judge model
  *
- * @param controller - abort controller enforcing the total judge timeout
+ * @param signal - combined timeout and caller cancellation signal
  *
  * @param toolChoice - provider-specific forced tool choice for the first attempt
  *
@@ -20,17 +20,17 @@ import type { BudgetModelAuth, } from './types.ts';
  *
  * @example
  * ```typescript
- * buildStreamOptions({ auth: {}, controller: new AbortController() });
+ * buildStreamOptions({ auth: {}, signal: new AbortController().signal });
  * ```
  */
 function buildStreamOptions(
   {
     auth,
-    controller,
+    signal,
     toolChoice,
   }: {
     readonly auth: BudgetModelAuth;
-    readonly controller: AbortController;
+    readonly signal: AbortSignal;
     readonly toolChoice?: unknown;
   },
 ): SimpleStreamOptions {
@@ -38,7 +38,7 @@ function buildStreamOptions(
    * Provider-specific stream options assembled key-by-key so `auth` fields stay optional.
    */
   const opts: Record<string, unknown> = {
-    signal: controller.signal,
+    signal,
   };
   if (auth.apiKey
     !== undefined)

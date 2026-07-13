@@ -1,5 +1,5 @@
 /**
- * Judge-model fallback after one selected model exhausts its internal attempts.
+ * Judge-model fallback race after one selected model exhausts every internal attempt.
  *
  * @module
  */
@@ -26,6 +26,16 @@ const l = tagged({
 },);
 
 /**
+ * Successful fallback attempt paired with its source model for winner logging.
+ */
+type FallbackJudgeResult = {
+  /** Judge that supplied the verdict. */
+  readonly judge: BudgetModel;
+  /** Parsed verdict that settled the fallback race. */
+  readonly verdict: Verdict;
+};
+
+/**
  * Convert an unknown thrown value to stable diagnostic text.
  *
  * @param error - thrown value to describe
@@ -46,80 +56,210 @@ function describeError(
 }
 
 /**
- * Resolve a fallback judge that differs from the failed first model.
+ * Render every rejected contender from a `Promise.any` fallback race.
  *
- * @param firstJudge - selected judge whose internal attempts failed
+ * @param error - terminal race error, usually an `AggregateError`
  *
- * @param resolveFallbackJudge - resolver that excludes failed model slug
- *
- * @returns distinct fallback judge
- *
- * @throws Error when fallback resolution fails or returns first model again
+ * @returns semicolon-delimited contender diagnostics
  *
  * @example
  * ```typescript
- * const fallback = await resolveDistinctFallback({
- *   firstJudge,
+ * describeRaceError(new AggregateError([new Error('one'), new Error('two')]));
+ * ```
+ */
+function describeRaceError(
+  error: unknown,
+): string {
+  if (error instanceof AggregateError) {
+    return error.errors
+      .map(describeError,)
+      .join('; ',);
+  }
+  return describeError(error,);
+}
+
+/**
+ * Select one fallback judge that is not any previously failed or selected model.
+ *
+ * @param excludedModelSlugs - canonical model identities unavailable to this race
+ *
+ * @param resolveFallbackJudge - resolver that honours all excluded model identities
+ *
+ * @returns one newly selected fallback judge
+ *
+ * @throws Error when selection returns an excluded model
+ *
+ * @example
+ * ```typescript
+ * const fallback = await resolveFreshFallback({
+ *   excludedModelSlugs: ['provider/failed'],
  *   resolveFallbackJudge,
  * });
  * ```
  */
-async function resolveDistinctFallback(
+async function resolveFreshFallback(
+  {
+    excludedModelSlugs,
+    resolveFallbackJudge,
+  }: {
+    readonly excludedModelSlugs: readonly string[];
+    readonly resolveFallbackJudge: (
+      options: { readonly excludedModelSlugs: readonly string[]; },
+    ) => Promise<BudgetModel>;
+  },
+): Promise<BudgetModel> {
+  /**
+   * Candidate selected after excluding every prior race participant.
+   */
+  const fallbackJudge = await resolveFallbackJudge({ excludedModelSlugs, },);
+  /**
+   * Canonical candidate identity used to prevent duplicate provider calls.
+   */
+  const fallbackModelSlug = budgetModelSlug(fallbackJudge.model,);
+  if (excludedModelSlugs.includes(fallbackModelSlug,)) {
+    throw new Error(
+      `Fallback judge resolver selected an excluded model: ${fallbackModelSlug}`,
+    );
+  }
+  return fallbackJudge;
+}
+
+/**
+ * Resolve two distinct fallbacks before either model receives a judge request.
+ *
+ * A partial fallback is deliberately not run: a two-model race requires both
+ * contenders, otherwise the caller falls back to explicit user approval.
+ *
+ * @param firstJudge - primary judge whose complete attempt failed
+ *
+ * @param resolveFallbackJudge - resolver that excludes earlier race participants
+ *
+ * @returns two distinct authenticated fallback judges
+ *
+ * @example
+ * ```typescript
+ * const fallbacks = await resolveFallbackRace({ firstJudge, resolveFallbackJudge });
+ * ```
+ */
+async function resolveFallbackRace(
   {
     firstJudge,
     resolveFallbackJudge,
   }: {
     readonly firstJudge: BudgetModel;
     readonly resolveFallbackJudge: (
-      options: { readonly failedModelSlug: string; },
+      options: { readonly excludedModelSlugs: readonly string[]; },
     ) => Promise<BudgetModel>;
   },
-): Promise<BudgetModel> {
+): Promise<readonly [BudgetModel, BudgetModel]> {
   /**
-   * Canonical slug excluded from fallback selection.
+   * Primary model identity excluded from every fallback selection.
    */
   const firstModelSlug = budgetModelSlug(firstJudge.model,);
+  /**
+   * First contender, selected without starting any fallback transport.
+   */
+  const firstFallback = await resolveFreshFallback({
+    excludedModelSlugs: [firstModelSlug,],
+    resolveFallbackJudge,
+  },);
+  /**
+   * Second contender, selected after excluding primary plus first fallback.
+   */
+  const secondFallback = await resolveFreshFallback({
+    excludedModelSlugs: [
+      firstModelSlug,
+      budgetModelSlug(firstFallback.model,),
+    ],
+    resolveFallbackJudge,
+  },);
+  return [
+    firstFallback,
+    secondFallback,
+  ];
+}
+
+/**
+ * Execute one fallback's complete judge attempt inside the shared race.
+ *
+ * @param judge - contender whose full transport sequence should run
+ *
+ * @param callJudgeAttempt - complete per-model judge attempt
+ *
+ * @param abortSignal - abort signal triggered after another contender returns a verdict
+ *
+ * @returns contender plus its valid verdict
+ *
+ * @throws Error labeled with the failed contender identity
+ *
+ * @example
+ * ```typescript
+ * const result = await runFallbackJudge({ judge, callJudgeAttempt, abortSignal });
+ * ```
+ */
+async function runFallbackJudge(
+  {
+    judge,
+    callJudgeAttempt,
+    abortSignal,
+  }: {
+    readonly judge: BudgetModel;
+    readonly callJudgeAttempt: (
+      options: { readonly judge: BudgetModel; readonly abortSignal?: AbortSignal; },
+    ) => Promise<Verdict>;
+    readonly abortSignal: AbortSignal;
+  },
+): Promise<FallbackJudgeResult> {
+  /**
+   * Per-call logger carrying the function boundary tag.
+   */
+  const innerL = tagged({
+    tag: runFallbackJudge.name,
+    l,
+  },);
+  /**
+   * Canonical contender identity used in logs and errors.
+   */
+  const modelSlug = budgetModelSlug(judge.model,);
+  innerL.debug(`starting fallback judge contender ${modelSlug}`,);
   try {
-    /**
-     * Candidate selected after excluding first judge model.
-     */
-    const fallbackJudge = await resolveFallbackJudge({
-      failedModelSlug: firstModelSlug,
-    },);
-    /**
-     * Canonical fallback slug used to enforce distinct model identity.
-     */
-    const fallbackModelSlug = budgetModelSlug(fallbackJudge.model,);
-    if (fallbackModelSlug === firstModelSlug) {
-      throw new Error(
-        `Fallback judge resolver selected failed model again: ${firstModelSlug}`,
+    return {
+      judge,
+      verdict: await callJudgeAttempt({
+        judge,
+        abortSignal,
+      },),
+    };
+  }
+  catch (error) {
+    if (abortSignal.aborted) {
+      innerL.debug(`fallback judge contender ${modelSlug} cancelled after another verdict`,);
+    }
+    else {
+      innerL.error(
+        `fallback judge model ${modelSlug} failed all retries: ${describeError(error,)}`,
       );
     }
-    return fallbackJudge;
-  }
-  catch (fallbackResolutionError) {
     throw new Error(
-      `Judge model ${firstModelSlug} failed all retries; selecting another judge model failed: ${
-        describeError(fallbackResolutionError,)
-      }`,
-      { cause: fallbackResolutionError, },
+      `fallback judge model ${modelSlug} failed all retries: ${describeError(error,)}`,
+      { cause: error, },
     );
   }
 }
 
 /**
- * Call selected judge, then select and call one distinct fallback model when
- * first judge exhausts every retry inside its attempt.
+ * Call selected judge, then race two distinct fallback models after the primary
+ * exhausts every internal retry. The first valid fallback verdict wins.
  *
  * @param firstJudge - initially selected judge model and auth
  *
- * @param resolveFallbackJudge - selects another authenticated model after first failure
+ * @param resolveFallbackJudge - selects one authenticated model outside supplied exclusions
  *
  * @param callJudgeAttempt - runs all transport attempts for one selected model
  *
- * @returns verdict from first successful judge model
+ * @returns verdict from primary or first successful fallback contender
  *
- * @throws Error when fallback selection or fallback judge also fails
+ * @throws Error when fallback selection fails or both fallback contenders fail
  *
  * @example
  * ```typescript
@@ -138,22 +278,22 @@ async function callJudgeWithFallback(
   }: {
     readonly firstJudge: BudgetModel;
     readonly resolveFallbackJudge: (
-      options: { readonly failedModelSlug: string; },
+      options: { readonly excludedModelSlugs: readonly string[]; },
     ) => Promise<BudgetModel>;
     readonly callJudgeAttempt: (
-      options: { readonly judge: BudgetModel; },
+      options: { readonly judge: BudgetModel; readonly abortSignal?: AbortSignal; },
     ) => Promise<Verdict>;
   },
 ): Promise<Verdict> {
   /**
-   * Per-call logger carrying function boundary tag.
+   * Per-call logger carrying the function boundary tag.
    */
   const innerL = tagged({
     tag: callJudgeWithFallback.name,
     l,
   },);
   /**
-   * Canonical first model slug used in diagnostics.
+   * Canonical primary model identity used in diagnostics.
    */
   const firstModelSlug = budgetModelSlug(firstJudge.model,);
   try {
@@ -164,29 +304,62 @@ async function callJudgeWithFallback(
       `judge model ${firstModelSlug} failed all retries: ${describeError(firstError,)}`,
     );
     /**
-     * Distinct authenticated judge selected after first model failure.
+     * Fully resolved fallback contenders, ready to start concurrently.
      */
-    const fallbackJudge = await resolveDistinctFallback({
-      firstJudge,
-      resolveFallbackJudge,
-    },);
+    const fallbackJudges = await (async function resolveFallbackContenders(): Promise<
+      readonly [BudgetModel, BudgetModel]
+    > {
+      try {
+        return await resolveFallbackRace({
+          firstJudge,
+          resolveFallbackJudge,
+        },);
+      }
+      catch (error) {
+        throw new Error(
+          `Judge model ${firstModelSlug} failed all retries: ${describeError(firstError,)}; resolving two distinct fallback judge models failed: ${
+            describeError(error,)
+          }`,
+          { cause: error, },
+        );
+      }
+    })();
     /**
-     * Canonical fallback slug used for audit logging and errors.
+     * Shared cancellation source that stops the losing fallback request after a verdict wins.
      */
-    const fallbackModelSlug = budgetModelSlug(fallbackJudge.model,);
-    innerL.warn(`retrying judge with fallback model ${fallbackModelSlug}`,);
+    const raceController = new AbortController();
+    /**
+     * Concurrent complete attempts, one per already-distinct fallback contender.
+     */
+    const fallbackAttempts = fallbackJudges.map(function startFallbackJudge(judge,) {
+      return runFallbackJudge({
+        judge,
+        callJudgeAttempt,
+        abortSignal: raceController.signal,
+      },);
+    },);
     try {
-      return await callJudgeAttempt({ judge: fallbackJudge, },);
-    }
-    catch (fallbackError) {
-      innerL.error(
-        `fallback judge model ${fallbackModelSlug} failed all retries: ${describeError(fallbackError,)}`,
+      /**
+       * First successfully parsed fallback verdict, ignoring rejected contenders.
+       */
+      const winner = await Promise.any(fallbackAttempts,);
+      raceController.abort();
+      innerL.debug(
+        `fallback judge race winner: ${budgetModelSlug(winner.judge.model,)}`,
       );
+      return winner.verdict;
+    }
+    catch (fallbackRaceError) {
+      raceController.abort();
       throw new Error(
-        `Judge model ${firstModelSlug} failed all retries; fallback judge model ${fallbackModelSlug} also failed all retries: ${
-          describeError(fallbackError,)
-        }`,
-        { cause: fallbackError, },
+        `Judge model ${firstModelSlug} failed all retries: ${describeError(firstError,)}; fallback judge race models ${
+          fallbackJudges
+            .map(function fallbackSlug(judge,) {
+              return budgetModelSlug(judge.model,);
+            },)
+            .join(', ')
+        } also failed all retries: ${describeRaceError(fallbackRaceError,)}`,
+        { cause: fallbackRaceError, },
       );
     }
   }
