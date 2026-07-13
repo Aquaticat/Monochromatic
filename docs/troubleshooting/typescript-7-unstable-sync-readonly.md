@@ -125,6 +125,33 @@ closes the temporary file association,
 and sends later `fileChanges.changed` notifications to project-owned snapshots.
 The same built test then returned `Readonly<SemanticFixtureBox<string>>` while confirming disk text was unchanged.
 
+### Windows snapshots use case-insensitive source identity
+
+The Windows x64 host run exposed a second stale-overlay path.
+Oxlint supplied an absolute path with an uppercase drive letter and backslashes,
+while TypeScript returned the source as a lowercase-drive path with forward slashes:
+
+```text
+D:\a\Monochromatic\Monochromatic\packages\...
+d:/a/Monochromatic/Monochromatic/packages/...
+```
+
+The virtual overlay map used Node's platform `resolve()` result as its key.
+The differently cased TypeScript filesystem callback missed that key and delegated to disk,
+so the changed overlay still produced `SemanticFixtureBox<string>` and recovering syntax produced `any`.
+The configured project itself remained discoverable,
+which made this look like a parser or snapshot-refresh defect rather than a file-identity mismatch.
+
+The adapter now case-folds absolute paths only on Windows before overlay,
+active-file,
+cache,
+and `fileChanges` lookup.
+Other hosts preserve path case.
+The Windows host test then verifies overlay refresh,
+parser recovery,
+noncanonical filename casing,
+and separator-neutral source identity through the native TypeScript process.
+
 ### Hidden disposable directories can fall into an inferred project
 
 A stale-contract suggestion test initially created its disposable source under a dot-prefixed directory inside the
