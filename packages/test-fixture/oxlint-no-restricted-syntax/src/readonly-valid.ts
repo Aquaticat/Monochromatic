@@ -1,4 +1,7 @@
-import { opaqueExternalMutation, } from './readonly-external.fixture.js';
+import {
+  opaqueExternalMutation,
+  opaqueExternalValues,
+} from './readonly-external.fixture.js';
 
 /**
  * Reads honestly readonly data.
@@ -99,6 +102,17 @@ export type ReadonlyFixtureMutator = {
  */
 export function readonlyExternalAdapter(state: { value: string; },): void {
   opaqueExternalMutation(state,);
+}
+
+/**
+ * Sends a fresh array of primitive elements through an unknown boundary.
+ *
+ * The fresh container and primitive elements retain no caller-owned state.
+ *
+ * @param values - Primitive values copied into owned container.
+ */
+export function copiedPrimitiveArray(values: readonly string[],): void {
+  opaqueExternalValues([...values,],);
 }
 
 /**

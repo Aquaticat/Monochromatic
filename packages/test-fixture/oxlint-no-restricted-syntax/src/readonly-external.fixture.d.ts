@@ -6,6 +6,13 @@
 export declare function opaqueExternalMutation(state: { value: string; },): void;
 
 /**
+ * Simulates an uncatalogued boundary receiving a newly allocated values array.
+ *
+ * @param values - Values accepted by unavailable implementation.
+ */
+export declare function opaqueExternalValues(values: readonly unknown[],): void;
+
+/**
  * External same-named lookalike for ECMAScript global String.
  *
  * @param value - Value accepted by unavailable implementation.

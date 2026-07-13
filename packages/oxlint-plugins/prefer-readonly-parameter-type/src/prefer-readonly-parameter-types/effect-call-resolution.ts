@@ -20,7 +20,10 @@ import {
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 
-import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import {
+  expressionCanCarryMutableState,
+  receiverElementsArePrimitive,
+} from './effect-primitive-origin.ts';
 import {
   type EffectCallableDeclaration,
   expressionRoot,
@@ -183,7 +186,22 @@ export function parameterIndexes({
     if (isArrayLiteralExpression(current,)) {
       current.elements
         .forEach(function collectElement(element,): void {
-        collect(isSpreadElement(element,) ? element.expression : element,);
+        if (!isSpreadElement(element,)) {
+          collect(element,);
+          return;
+        }
+        /**
+         * Spread source type used to prove newly allocated arrays retain no
+         * caller-reachable object when every copied element is primitive.
+         */
+        const spreadType = checker.getTypeAtLocation(element.expression,);
+        if ((spreadType !== undefined)
+          && receiverElementsArePrimitive({
+            checker,
+            type: spreadType,
+          },))
+          return;
+        collect(element.expression,);
       },);
     }
   }
