@@ -105,8 +105,8 @@ The issue-first rule has exactly two exceptions:
 the tiny-fix carve-out below,
  and security,
 which routes through the private advisory flow and never a public issue (see below).
-A PR references its approved issue by number;
-the maintainer closes the issue explicitly rather than relying on `Closes #N`,
+A PR references its approved issue by number with a `Closes #N` line,
+which auto-closes the issue when the PR merges to the default branch,
 per [`docs/agents/issue-tracker.md`](../agents/issue-tracker.md).
 
 ### Contribution size
