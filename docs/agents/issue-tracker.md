@@ -35,16 +35,12 @@ Run `gh issue view <number> --comments`.
 
 When the user says "resolve issue N" (or links to a specific issue),
  the verb authorizes the full workflow:
- fix,
- commit,
- and close the issue explicitly via `gh issue close`.
-Do not rely on `Closes #N` in the commit body;
- that only fires when the commit lands on the default branch via a PR merge or push event,
- neither of which is guaranteed at the moment you commit.
-Close explicitly:
+ fix and commit.
+Put a `Closes #N` line in the commit body.
+Auto-push (the `APG` rule) lands the commit on the default branch,
+ so GitHub closes the issue automatically once the push is processed.
+Reference what changed from the commit message so a reader landing on the closed issue can find it.
 
-```sh
-gh issue close <N> --comment "Resolved in <SHA> (<commit subject>). <one-line summary of what changed>"
-```
-
-Reference the commit SHA in the comment so a reader landing on the closed issue can find the change.
+Close manually with `gh issue close <N> --comment "..."` only when no fix commit carries the closing keyword:
+ a wontfix, duplicate, or already-fixed issue,
+ or work that landed on a non-default branch GitHub will not scan.

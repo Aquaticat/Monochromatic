@@ -1395,8 +1395,8 @@ AD4:
 SK1:
  **Issue tracker**:
  GitHub Issues via `gh`.
-"Resolve issue N" requires explicit `gh issue close` after fix commits;
- `Closes #N` auto-close insufficient.
+"Resolve issue N" authorizes fix + commit;
+ `Closes #N` in the commit body auto-closes on auto-push.
 See `docs/agents/issue-tracker.md`.
 
 SK2:
