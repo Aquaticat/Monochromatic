@@ -24,7 +24,8 @@
     "src"
   ],
   "dependencies": {
-    "@monochromatic-dev/module-terminal-title": "workspace:*"
+    "@monochromatic-dev/module-terminal-title": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",

@@ -2825,6 +2825,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -3055,6 +3058,9 @@ importers:
       '@monochromatic-dev/module-terminal-title':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/terminal-title
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'

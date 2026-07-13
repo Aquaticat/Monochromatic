@@ -6,6 +6,7 @@
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import nanoSpawn from 'nano-spawn';
 
 //region Constants
@@ -252,7 +253,7 @@ type AgentSettledNotificationRegistration = {
   /**
    * Pi extension API that owns lifecycle-event registration.
    */
-  readonly pi: ExtensionAPI;
+  readonly pi: ForeignBorrowed<ExtensionAPI>;
 
   /**
    * Optional injectable notification boundary for deterministic tests.
@@ -266,6 +267,8 @@ type AgentSettledNotificationRegistration = {
  * @param pi - Pi API receiving the sole lifecycle subscription
  *
  * @param invoke - optional desktop-notification boundary used by tests
+ *
+ * @mutates pi - `pi.on` stores the `agent_settled` lifecycle registration in the Pi host
  *
  * @example
  * ```ts
@@ -327,12 +330,14 @@ function registerAgentSettledNotification(
  *
  * @param pi - Pi extension API receiving the lifecycle subscription
  *
+ * @mutates pi - `registerAgentSettledNotification` delegates lifecycle registration to `pi.on`
+ *
  * @example
  * ```ts
  * pi -e ./packages/pi-plugins/agent-settled-notification/src/index.ts
  * ```
  */
-export default function agentSettledNotification(pi: ExtensionAPI,): void {
+export default function agentSettledNotification(pi: ForeignBorrowed<ExtensionAPI>,): void {
   registerAgentSettledNotification({ pi, },);
 }
 

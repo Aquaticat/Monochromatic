@@ -26,6 +26,7 @@ import type {
   SessionStartEvent,
 } from '@earendil-works/pi-coding-agent';
 import { safeTerminalTitlePayload, } from '@monochromatic-dev/module-terminal-title/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { titleForEvent, } from './title-builder.ts';
 
 /**
@@ -179,13 +180,15 @@ function setTerminalTitle(
  *
  * @param pi - the pi extension API
  *
+ * @mutates pi - `pi.on` stores tool, session, and agent lifecycle registrations in the Pi host
+ *
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
  * { "packages": ["./packages/pi-plugins/terminal-title"] }
  * ```
  */
-export default function terminalTitle(pi: ExtensionAPI,): void {
+export default function terminalTitle(pi: ForeignBorrowed<ExtensionAPI>,): void {
   /**
    * Tool arguments captured at start time. Pi completion events expose result
    * metadata but not original args, so terminal titles need this per-call cache

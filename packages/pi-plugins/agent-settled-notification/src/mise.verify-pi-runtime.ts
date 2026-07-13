@@ -56,7 +56,7 @@ async function verifyPiLoader(): Promise<string> {
     .length
     > 0)
     throw new Error(`Pi discovery reported: ${result.errors
-      .map(function errorText(error,): string {
+      .map(function errorText(error: Readonly<(typeof result.errors)[number]>,): string {
       return error.error;
     },)
       .join('; ')}`,);
