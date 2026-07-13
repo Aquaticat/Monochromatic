@@ -27,19 +27,42 @@ await describe({
     it({
       name: 'does not invoke coercion hooks on thrown references',
       fn: async () => {
-        /** Number of caller-owned coercion hook invocations. */
+        /** Number of caller-owned coercion method invocations. */
         let coercionCount = 0;
-        /** Thrown reference carrying observable coercion hook. */
-        const value = {
+        /** Thrown reference carrying ordinary coercion method. */
+        const ordinaryValue = {
           toString(): string {
             coercionCount++;
             return 'coerced';
           },
         };
-        expect(caughtErrorMessage(value,),).toBe(
+        /** Thrown reference carrying preferred primitive-conversion method. */
+        const exoticValue = {
+          [Symbol.toPrimitive](): string {
+            coercionCount++;
+            return 'coerced';
+          },
+        };
+        /** Number of caller-owned proxy property reads. */
+        let proxyReadCount = 0;
+        /** Thrown proxy whose conversion-property lookup is observable. */
+        const proxyValue = new Proxy({}, {
+          get(): never {
+            proxyReadCount++;
+            throw new Error('unexpected conversion property read',);
+          },
+        },);
+        expect(caughtErrorMessage(ordinaryValue,),).toBe(
+          'Non-Error thrown value of type object',
+        );
+        expect(caughtErrorMessage(exoticValue,),).toBe(
+          'Non-Error thrown value of type object',
+        );
+        expect(caughtErrorMessage(proxyValue,),).toBe(
           'Non-Error thrown value of type object',
         );
         expect(coercionCount,).toBe(0,);
+        expect(proxyReadCount,).toBe(0,);
       },
     },),
   ],
