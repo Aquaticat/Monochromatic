@@ -15,6 +15,7 @@ import {
   errorResponse,
   textResponse,
 } from './response.ts';
+import { requiredStringArgument, } from './required-string-argument.ts';
 
 //region Mutation tools: VM creation and destruction
 
@@ -58,9 +59,9 @@ export const createTool: ToolEntry = defineTool({
     },
     handler: async function handleCreateVm(args,) {
       /**
-       * New VM name coerced to string so the backend receives a stable type regardless of MCP client encoding.
+       * New VM name validated as string so the backend receives a stable type regardless of MCP client encoding.
        */
-      const name = String(args.name,);
+      const name = requiredStringArgument(args.name,);
       /**
        * Optional source VM to clone from; `undefined` selects the create-fresh path below.
        */

@@ -15,6 +15,7 @@ import {
   errorResponse,
   textResponse,
 } from './response.ts';
+import { requiredStringArgument, } from './required-string-argument.ts';
 
 //region Transfer tools: move files between host and guest VMs
 
@@ -52,17 +53,17 @@ export const pushTool: ToolEntry = defineTool({
     },
     handler: async function handlePushToVm(args,) {
       /**
-       * Target VM name coerced to string so downstream calls receive a stable type regardless of MCP client encoding.
+       * Target VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
        */
-      const name = String(args.name,);
+      const name = requiredStringArgument(args.name,);
       /**
-       * Host source path coerced to string for the same reason as `name`.
+       * Host source path validated as string for the same reason as `name`.
        */
-      const hostPath = String(args.hostPath,);
+      const hostPath = requiredStringArgument(args.hostPath,);
       /**
-       * Guest destination path coerced to string for the same reason as `name`.
+       * Guest destination path validated as string for the same reason as `name`.
        */
-      const guestPath = String(args.guestPath,);
+      const guestPath = requiredStringArgument(args.guestPath,);
       try {
         /**
          * Backend resolved from the optional `backend` arg, env, or default.
@@ -119,17 +120,17 @@ export const pullTool: ToolEntry = defineTool({
     },
     handler: async function handlePullFromVm(args,) {
       /**
-       * Source VM name coerced to string so downstream calls receive a stable type regardless of MCP client encoding.
+       * Source VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
        */
-      const name = String(args.name,);
+      const name = requiredStringArgument(args.name,);
       /**
-       * Guest source path coerced to string for the same reason as `name`.
+       * Guest source path validated as string for the same reason as `name`.
        */
-      const guestPath = String(args.guestPath,);
+      const guestPath = requiredStringArgument(args.guestPath,);
       /**
-       * Host destination path coerced to string for the same reason as `name`.
+       * Host destination path validated as string for the same reason as `name`.
        */
-      const hostPath = String(args.hostPath,);
+      const hostPath = requiredStringArgument(args.hostPath,);
       try {
         /**
          * Backend resolved from the optional `backend` arg, env, or default.

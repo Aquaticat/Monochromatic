@@ -16,6 +16,7 @@ import {
   formatExecResult,
   textResponse,
 } from './response.ts';
+import { requiredStringArgument, } from './required-string-argument.ts';
 
 //region Execution tools: run commands inside VMs
 
@@ -49,13 +50,13 @@ export const execTool: ToolEntry = defineTool({
     },
     handler: async function handleExecInVm(args,) {
       /**
-       * Target VM name coerced to string so the backend receives a stable type regardless of MCP client encoding.
+       * Target VM name validated as string so the backend receives a stable type regardless of MCP client encoding.
        */
-      const name = String(args.name,);
+      const name = requiredStringArgument(args.name,);
       /**
-       * Shell command coerced to string for the same reason as `name`.
+       * Shell command validated as string for the same reason as `name`.
        */
-      const command = String(args.command,);
+      const command = requiredStringArgument(args.command,);
       try {
         /**
          * Backend resolved from the optional `backend` arg, env, or default.
@@ -108,9 +109,9 @@ export const runTool: ToolEntry = defineTool({
     },
     handler: async function handleRunInVm(args,) {
       /**
-       * Shell command coerced to string so the ephemeral VM receives a stable type regardless of MCP client encoding.
+       * Shell command validated as string so the ephemeral VM receives a stable type regardless of MCP client encoding.
        */
-      const command = String(args.command,);
+      const command = requiredStringArgument(args.command,);
       /**
        * Optional source VM to clone from; absence selects the create-fresh path inside the backend run.
        */

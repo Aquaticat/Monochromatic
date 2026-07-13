@@ -56,7 +56,7 @@ export function textResponse(text: string,): TextResponse {
 
 /**
  * Build an MCP error response from a caught exception.
- * Logs the full error to stderr before returning the message to the client.
+ * Logs noncoercing error text to stderr before returning it to client.
  *
  * @param tag - Tool name or label for the log prefix.
  *
@@ -77,13 +77,14 @@ export function errorResponse({
   readonly tag: string;
 },): ErrorResponse {
   /**
-   * Human-readable error text extracted from `Error.message` when available, stringified otherwise.
+   * Human-readable text that avoids invoking conversion hooks on unknown values.
    */
-  const message = (Error.isError(err,)) ? err.message : String(err,);
-  console.error(
-    `[mcp-mvm] ${tag} failed:`,
-    err,
-  );
+  const message = Error.isError(err,)
+    ? err.message
+    : ((typeof err) === 'string'
+      ? err
+      : `non-Error ${typeof err}`);
+  console.error(`[mcp-mvm] ${tag} failed: ${message}`,);
   return {
     content: [{
       type: TEXT_TYPE,

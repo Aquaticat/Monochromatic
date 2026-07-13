@@ -49,7 +49,7 @@ export const listTool: ToolEntry = defineTool({
         /**
          * One `name: state` line per VM, joined with newlines into the response body below.
          */
-        const lines = vms.map(function formatVmLine(vm,) {
+        const lines = vms.map(function formatVmLine(vm: Readonly<(typeof vms)[number]>,) {
           return `${vm.name}: ${vm.state}`;
         },);
         return textResponse(lines.join('\n',),);
