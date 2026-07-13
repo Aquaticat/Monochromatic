@@ -1,3 +1,5 @@
+import { join, } from 'node:path';
+
 import {
   clearSemanticEffectFixture,
   visitSemanticEffectFixture,
@@ -226,6 +228,34 @@ export function noSemanticEffect(readOnlyController: AbortController,): AbortSig
  */
 export function observationalIntrinsicEffect(state: readonly unknown[],): boolean {
   return Array.isArray(state,) && Object.is(state, state,);
+}
+
+/**
+ * Observes primitive path through audited Node operation.
+ *
+ * @param path - Path joined without caller mutation.
+ *
+ * @returns joined fixture path.
+ */
+export function pathObservationEffect(path: string,): string {
+  return join(path, 'fixture',);
+}
+
+/**
+ * Observes primitive values and collection membership through audited intrinsics.
+ *
+ * @param inputs - Primitive and collection inputs checked without mutation.
+ *
+ * @returns whether every observational check succeeds.
+ */
+export function observationalValueEffects(inputs: {
+  readonly text: string;
+  readonly values: ReadonlySet<string>;
+  readonly error: unknown;
+},): boolean {
+  return inputs.text.trim().startsWith('fixture',)
+    && inputs.values.has(inputs.text,)
+    && Error.isError(inputs.error,);
 }
 
 /**

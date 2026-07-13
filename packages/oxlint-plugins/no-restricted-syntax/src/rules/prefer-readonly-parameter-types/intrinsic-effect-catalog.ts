@@ -4,6 +4,8 @@
  * @module
  */
 
+import { ECMASCRIPT_EFFECTS, } from './ecmascript-effect-catalog.ts';
+
 /**
  * Intrinsic declaration provenance classes.
  *
@@ -122,97 +124,6 @@ function receiverEffect({
 }
 
 /**
- * ECMAScript receiver effects audited against TypeScript 7 standard library declarations.
- */
-const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
-  {
-    provenance: { kind: 'ecmascript', },
-    ownerType: 'ArrayConstructor',
-    member: 'isArray',
-    targets: [],
-    evidence: 'ECMA-262 commit 1355a23e spec.html Array.isArray and IsArray algorithms',
-  },
-  {
-    provenance: { kind: 'ecmascript', },
-    ownerType: 'ObjectConstructor',
-    member: 'is',
-    targets: [],
-    evidence: 'ECMA-262 commit 1355a23e spec.html Object.is and SameValue algorithms',
-  },
-  ...[
-    'copyWithin',
-    'fill',
-    'pop',
-    'push',
-    'reverse',
-    'shift',
-    'sort',
-    'splice',
-    'unshift',
-  ].map(function arrayEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      provenance: { kind: 'ecmascript', },
-      ownerType: 'Array',
-      member,
-      evidence: 'TypeScript 7 lib.es5.d.ts Array declarations',
-    },);
-  },),
-  ...[
-    'delete',
-    'set',
-  ].map(function mapEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      provenance: { kind: 'ecmascript', },
-      ownerType: 'Map',
-      member,
-      evidence: 'TypeScript 7 lib.es2015.collection.d.ts Map declarations',
-    },);
-  },),
-  receiverEffect({
-    provenance: { kind: 'ecmascript', },
-    ownerType: 'Map',
-    member: 'clear',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts Map declarations',
-  },),
-  ...[
-    'add',
-    'clear',
-    'delete',
-  ].map(function setEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      provenance: { kind: 'ecmascript', },
-      ownerType: 'Set',
-      member,
-      evidence: 'TypeScript 7 lib.es2015.collection.d.ts Set declarations',
-    },);
-  },),
-  receiverEffect({
-    provenance: { kind: 'ecmascript', },
-    ownerType: 'WeakMap',
-    member: 'set',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts WeakMap declarations',
-  },),
-  receiverEffect({
-    provenance: { kind: 'ecmascript', },
-    ownerType: 'WeakMap',
-    member: 'delete',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts WeakMap declarations',
-  },),
-  receiverEffect({
-    provenance: { kind: 'ecmascript', },
-    ownerType: 'WeakSet',
-    member: 'add',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts WeakSet declarations',
-  },),
-  receiverEffect({
-    provenance: { kind: 'ecmascript', },
-    ownerType: 'WeakSet',
-    member: 'delete',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts WeakSet declarations',
-  },),
-];
-
-/**
  * DOM receiver effects audited against TypeScript 7 `lib.dom.d.ts` declarations.
  */
 const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
@@ -253,6 +164,26 @@ const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
  * Node receiver effects audited against current lockfile `@types/node` major 26 declarations.
  */
 const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  ...[
+    'basename',
+    'dirname',
+    'extname',
+    'isAbsolute',
+    'join',
+    'matchesGlob',
+    'normalize',
+    'relative',
+    'resolve',
+    'toNamespacedPath',
+  ].map(function pathObservation(member,): IntrinsicEffectEntry {
+    return {
+      provenance: { kind: 'node', },
+      ownerType: 'node:path',
+      member,
+      targets: [],
+      evidence: '@types/node 26 path.d.ts primitive path operations',
+    };
+  },),
   ...[
     'addListener',
     'emit',

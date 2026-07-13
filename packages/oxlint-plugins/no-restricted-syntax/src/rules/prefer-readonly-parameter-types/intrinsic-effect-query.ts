@@ -7,11 +7,19 @@
 import { readFileSync, } from 'node:fs';
 import { basename, } from 'node:path';
 
+import type { Node, } from 'typescript/unstable/ast';
+import {
+  isModuleDeclaration,
+  isSourceFile,
+  isStringLiteral,
+} from 'typescript/unstable/ast/is';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type {
-  Project,
-  Symbol as TypeScriptSymbol,
-  Type,
+import {
+  type Project,
+  SymbolFlags,
+  type Symbol as TypeScriptSymbol,
+  type Type,
 } from 'typescript/unstable/sync';
 
 import type {
@@ -364,6 +372,84 @@ export function intrinsicEffectQuery({
     provenance,
     ownerType: ownerSymbol.name,
     member: memberSymbol.name,
+  };
+}
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Project and Symbol mirror TypeScript semantic API identities required for exact matching. */
+/**
+ * Creates exact catalog query for imported or global callable symbol.
+ *
+ * @param project - TypeScript project owning semantic objects.
+ *
+ * @param memberSymbol - Resolved callable symbol.
+ *
+ * @returns exact module or global query, or sentinel when unavailable.
+ *
+ * @example
+ * ```ts
+ * intrinsicCallableEffectQuery({ project, memberSymbol });
+ * ```
+ */
+export function intrinsicCallableEffectQuery({
+  project,
+  memberSymbol,
+}: {
+  readonly project: Project;
+  readonly memberSymbol: TypeScriptSymbol;
+}): IntrinsicEffectQuery | typeof NO_INTRINSIC_QUERY {
+  /**
+   * Callable symbol after import-alias resolution.
+   */
+  const resolvedMemberSymbol = (memberSymbol.flags & SymbolFlags.Alias) !== 0
+    ? project.checker
+      .getAliasedSymbol(memberSymbol,)
+    : memberSymbol;
+  /**
+   * First exact declaration for callable symbol.
+   */
+  const declarationHandle = resolvedMemberSymbol.declarations
+    .at(0,);
+  if (declarationHandle === undefined)
+    return NO_INTRINSIC_QUERY;
+  /**
+   * Resolved declaration providing module ancestry and provenance.
+   */
+  const declaration = declarationHandle.resolve(project,);
+  if (declaration === undefined)
+    return NO_INTRINSIC_QUERY;
+  /**
+   * Outermost authored ambient module name, or global owner fallback.
+   */
+  const owner = { name: 'globalThis', };
+  /**
+   * Parent cursor walking bounded declaration ancestry.
+   */
+  const cursor: { current: Node; } = { current: declaration.parent, };
+  while (!isSourceFile(cursor.current,)) {
+    if (isModuleDeclaration(cursor.current,)
+      && isStringLiteral(cursor.current
+        .name,))
+      owner.name = cursor.current
+        .name
+        .text;
+    cursor.current = cursor.current
+      .parent;
+  }
+  /**
+   * Declaration provenance after source-file classification.
+   */
+  const provenance = intrinsicProvenance({
+    project,
+    fileName: declaration.getSourceFile()
+      .fileName,
+  },);
+  if (provenance === NO_INTRINSIC_PROVENANCE)
+    return NO_INTRINSIC_QUERY;
+  return {
+    provenance,
+    ownerType: owner.name,
+    member: resolvedMemberSymbol.name,
   };
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

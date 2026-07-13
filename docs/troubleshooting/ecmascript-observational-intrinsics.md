@@ -9,8 +9,10 @@ unsound.
 
 The audited outcomes are:
 
-- `Array.isArray(value)` is observational;
-- `Object.is(left, right)` is observational;
+- `Array.isArray(value)` and `Object.is(left, right)` are observational;
+- primitive String transforms and searches are observational for typed primitive inputs and outputs;
+- Array identity searches and collection `has` checks are observational;
+- `Error.isError(value)` is observational;
 - `JSON.stringify(value)` remains opaque because it can invoke `toJSON`,
    accessors,
    proxy behavior,
@@ -125,6 +127,15 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
 
 - `Array.isArray(proxy)` did not invoke configured proxy traps.
 - `Object.is(proxy, proxy)` did not invoke configured proxy traps.
+- Exact standard-library String transforms and searches return primitives without mutating their string receiver.
+- Exact Array `includes`,
+   `indexOf`,
+   and `lastIndexOf` calls compare identity without mutating the receiver.
+- Exact Map,
+   Set,
+   WeakMap,
+   and WeakSet `has` calls test identity without mutating the receiver.
+- Exact `Error.isError` inspects error identity without mutating its argument.
 
 ### Calls verified as effectful or opaque
 
@@ -134,9 +145,14 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
 
 ## Verified workarounds
 
-The rule catalog records only exact `ArrayConstructor.isArray` and `ObjectConstructor.is` symbol identities with empty
-mutation targets.
- Exact declaration provenance prevents same-named project methods from inheriting this treatment.
+The rule catalog records exact standard-library owner and member identities with empty mutation targets.
+This covers `ArrayConstructor.isArray`,
+`ObjectConstructor.is`,
+primitive String methods with primitive-only typed inputs and outputs,
+Array identity searches,
+collection membership checks,
+and `ErrorConstructor.isError`.
+Exact declaration provenance prevents same-named project methods from inheriting this treatment.
 
 For `JSON.stringify`,
  use a verified local adapter whose `@mutates` contract names `JSON.stringify` as its upstream

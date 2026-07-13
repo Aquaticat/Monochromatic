@@ -93,6 +93,7 @@ export {
 } from './rules/prefer-readonly-parameter-types/effect-summaries.ts';
 
 export {
+  intrinsicCallableEffectQuery,
   intrinsicEffectQuery,
   intrinsicProvenance,
   NO_INTRINSIC_PROVENANCE,

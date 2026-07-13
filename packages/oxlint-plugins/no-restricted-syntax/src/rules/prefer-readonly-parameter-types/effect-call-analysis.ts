@@ -26,6 +26,7 @@ import {
   intrinsicEffectQuery,
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
+import { isAuditedObservationalCallable, } from './effect-call-observation.ts';
 import {
   addEffectIndex,
   callableKey,
@@ -260,6 +261,13 @@ export function inspectEffectCall({
     },);
     return;
   }
+
+  if (isAuditedObservationalCallable({
+    project,
+    checker,
+    call,
+  },))
+    return;
 
   if (isPropertyAccessExpression(call.expression,)) {
     /**

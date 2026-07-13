@@ -18,6 +18,7 @@ import {
 import {
   closeSemanticBridge,
   INTRINSIC_EFFECTS,
+  intrinsicCallableEffectQuery,
   intrinsicEffect,
   intrinsicEffectQuery,
   intrinsicProvenance,
@@ -26,7 +27,10 @@ import {
   NO_INTRINSIC_QUERY,
   openSemanticFile,
 } from '../dist/final/node/index.mjs';
-import { isPropertyAccessExpression, } from 'typescript/unstable/ast/is';
+import {
+  isIdentifier,
+  isPropertyAccessExpression,
+} from 'typescript/unstable/ast/is';
 
 /** Intrinsic-provenance source fixture. */
 const FIXTURE_PATH = fileURLToPath(new URL(
@@ -139,8 +143,10 @@ await describe({
           'controller.abort',
           'Array.isArray',
           'Object.is',
+          'inputs.text.trim',
+          'Error.isError',
         ].map(function queryMember(memberText,) {
-          const memberOffset = SOURCE.indexOf(memberText,) + memberText.indexOf('.',) + 1;
+          const memberOffset = SOURCE.indexOf(memberText,) + memberText.lastIndexOf('.',) + 1;
           const memberNode = session.nodeAtOffset(memberOffset,);
           const propertyAccess = memberNode.parent;
           if (!isPropertyAccessExpression(propertyAccess,))
@@ -178,8 +184,44 @@ await describe({
             ownerType: 'ObjectConstructor',
             member: 'is',
           },
+          {
+            provenance: { kind: 'ecmascript', },
+            ownerType: 'String',
+            member: 'trim',
+          },
+          {
+            provenance: { kind: 'ecmascript', },
+            ownerType: 'ErrorConstructor',
+            member: 'isError',
+          },
         ],);
         expect(queries,).not.toContain(NO_INTRINSIC_QUERY,);
+      },
+    },),
+    it({
+      name: 'resolves exact imported Node module callable provenance',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        /** Imported join identifier in path observation fixture. */
+        const node = session.nodeAtOffset(SOURCE.indexOf('join(path',),);
+        if (!isIdentifier(node,))
+          throw new Error('Expected node:path join identifier.',);
+        const symbol = session.checker.getResolvedSymbol(node,);
+        if (symbol === undefined)
+          throw new Error('Expected resolved node:path join symbol.',);
+        expect(intrinsicCallableEffectQuery({
+          project: session.project,
+          memberSymbol: symbol,
+        },),).toEqual({
+          provenance: { kind: 'node', },
+          ownerType: 'node:path',
+          member: 'join',
+        },);
+        closeSemanticBridge();
       },
     },),
     it({

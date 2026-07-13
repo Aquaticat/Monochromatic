@@ -49,6 +49,8 @@ await describe({
           'aliasedCallbackSemanticEffect',
           'noSemanticEffect',
           'observationalIntrinsicEffect',
+          'observationalValueEffects',
+          'pathObservationEffect',
           'aliasSemanticEffect',
           'assignedAliasSemanticEffect',
           'reboundParameterSemanticEffect',
@@ -126,6 +128,16 @@ await describe({
           },
           {
             functionName: 'observationalIntrinsicEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'observationalValueEffects',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'pathObservationEffect',
             mutated: [],
             opaque: [],
           },
