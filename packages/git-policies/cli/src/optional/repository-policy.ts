@@ -4,11 +4,13 @@
  *
  * @module
  */
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import {
   definePlugin,
   definePolicy,
   type CandidateFile,
   type PluginDefinition,
+  type PolicyContext,
   type PolicyDefinition,
   type PolicyFinding,
 } from '../api/index.ts';
@@ -61,7 +63,18 @@ export const forbiddenRootContext: PolicyDefinition<undefined, 'forbidden-root-c
     'pre-forward',
     'direct-check',
   ],
-  async check({ context, }): Promise<readonly PolicyFinding[]> {
+  /**
+   * Checks candidate paths against root context-file policy.
+   *
+   * @param context - Policy context exposing lazy Git facts.
+   *
+   * @returns findings for forbidden root context file.
+   *
+   * @mutates context - context.git.candidates may memoize candidate-state loading inside lazy Git facts.
+   */
+  async check({ context, }: {
+    readonly context: ForeignBorrowed<PolicyContext>;
+  },): Promise<readonly PolicyFinding[]> {
     /**
      * Exact candidates selected by current Git or direct-check operation.
      */
