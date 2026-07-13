@@ -112,6 +112,16 @@ function normalizeFileName(fileName: string,): string {
 
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- TypeScript FileSystem callbacks require undefined to delegate to the real filesystem. */
 /**
+ * Overlay file text or TypeScript's real-filesystem delegation sentinel.
+ */
+type OverlayFileTextOrRealFileSystemFallback = string | undefined;
+
+/**
+ * Positive overlay presence or TypeScript's real-filesystem delegation sentinel.
+ */
+type OverlayPresenceOrRealFileSystemFallback = true | undefined;
+
+/**
  * Reads virtual current-file content or delegates to TypeScript real filesystem.
  *
  * @param fileName - Path requested by native TypeScript process.
@@ -120,28 +130,32 @@ function normalizeFileName(fileName: string,): string {
  *
  * @example
  * ```ts
- * readOverlay('/repo/src/index.ts');
+ * readFileFromOverlayOrDelegate('/repo/src/index.ts');
  * ```
  */
-function readOverlay(fileName: string,): string | undefined {
+function readFileFromOverlayOrDelegate(
+  fileName: string,
+): OverlayFileTextOrRealFileSystemFallback {
   return bridgeState
     .overlays
     .get(normalizeFileName(fileName,),);
 }
 
 /**
- * Reports whether requested path is supplied by virtual overlay.
+ * Reports positive overlay presence or delegates unknown paths to real filesystem.
  *
  * @param fileName - Path requested by native TypeScript process.
  *
- * @returns true for overlay file or undefined for real-filesystem fallback.
+ * @returns true for overlay file or delegation sentinel for every other path.
  *
  * @example
  * ```ts
- * overlayExists('/repo/src/index.ts');
+ * reportOverlayPresenceOrDelegate('/repo/src/index.ts');
  * ```
  */
-function overlayExists(fileName: string,): true | undefined {
+function reportOverlayPresenceOrDelegate(
+  fileName: string,
+): OverlayPresenceOrRealFileSystemFallback {
   return bridgeState
     .overlays
     .has(normalizeFileName(fileName,),) ? true : undefined;
@@ -189,8 +203,8 @@ function getApi(): API {
     bridgeState.api = new API({
       cwd: process.cwd(),
       fs: {
-        readFile: readOverlay,
-        fileExists: overlayExists,
+        readFile: readFileFromOverlayOrDelegate,
+        fileExists: reportOverlayPresenceOrDelegate,
       },
     },);
     rl.debug(`started TypeScript ${typescriptVersion} synchronous API`,);
