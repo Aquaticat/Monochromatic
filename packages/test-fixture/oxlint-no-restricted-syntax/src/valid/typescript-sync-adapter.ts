@@ -409,6 +409,25 @@ export function primitiveOpaqueArgumentEffect(value: string,): string {
 }
 
 /**
+ * Packages primitive inputs without exposing caller-owned mutable state.
+ *
+ * @param value - Primitive text packaged into local object.
+ *
+ * @param count - Primitive count packaged into local object.
+ *
+ * @returns serialized local primitive record.
+ */
+export function packagedPrimitiveOpaqueArgumentEffect({
+  value,
+  count,
+}: {
+  readonly value: string;
+  readonly count: number;
+},): string {
+  return JSON.stringify({ value, count, },);
+}
+
+/**
  * Propagates opaque boundary through owned helper call.
  *
  * @param opaqueState - State forwarded to opaque helper.

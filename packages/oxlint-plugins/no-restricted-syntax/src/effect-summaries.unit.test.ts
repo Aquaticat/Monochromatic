@@ -67,6 +67,7 @@ await describe({
           'destructuredParameterSemanticEffect',
           'opaqueSemanticEffect',
           'primitiveOpaqueArgumentEffect',
+          'packagedPrimitiveOpaqueArgumentEffect',
           'transitiveOpaqueSemanticEffect',
           'unusedClosureSemanticEffect',
           'calledClosureSemanticEffect',
@@ -213,6 +214,11 @@ await describe({
           },
           {
             functionName: 'primitiveOpaqueArgumentEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'packagedPrimitiveOpaqueArgumentEffect',
             mutated: [],
             opaque: [],
           },

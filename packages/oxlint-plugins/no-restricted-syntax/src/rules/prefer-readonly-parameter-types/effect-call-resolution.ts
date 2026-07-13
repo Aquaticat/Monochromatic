@@ -20,6 +20,7 @@ import {
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 
+import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   type EffectCallableDeclaration,
   expressionRoot,
@@ -129,7 +130,11 @@ export function parameterIndexes({
       node: current,
     },);
     if (direct !== PARAMETER_INDEX_UNAVAILABLE) {
-      origins.add(direct,);
+      if (expressionCanCarryMutableState({
+        checker,
+        node: current,
+      },))
+        origins.add(direct,);
       return;
     }
     if (isObjectLiteralExpression(current,)) {
@@ -160,7 +165,11 @@ export function parameterIndexes({
              * Caller parameter origin represented by shorthand value.
              */
             const origin = bindingOriginBySymbolId.get(valueSymbol.id,);
-            if (origin !== undefined)
+            if ((origin !== undefined)
+              && expressionCanCarryMutableState({
+                checker,
+                node: property.name,
+              },))
               origins.add(origin,);
           }
           return;
