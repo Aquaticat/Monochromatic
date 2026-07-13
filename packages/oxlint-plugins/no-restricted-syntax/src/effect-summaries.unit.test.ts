@@ -46,6 +46,8 @@ await describe({
           'callbackSemanticEffect',
           'noSemanticEffect',
           'aliasSemanticEffect',
+          'assignedAliasSemanticEffect',
+          'reboundParameterSemanticEffect',
           'destructuredAliasSemanticEffect',
           'destructuredParameterSemanticEffect',
           'opaqueSemanticEffect',
@@ -93,6 +95,16 @@ await describe({
           {
             functionName: 'aliasSemanticEffect',
             mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'assignedAliasSemanticEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'reboundParameterSemanticEffect',
+            mutated: [],
             opaque: [],
           },
           {

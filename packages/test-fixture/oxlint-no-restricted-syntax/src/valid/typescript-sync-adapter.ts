@@ -216,6 +216,27 @@ export function aliasSemanticEffect(aliasState: { value: string; },): void {
 }
 
 /**
+ * Mutates parameter through separately assigned local alias.
+ *
+ * @param assignedState - State assigned after local declaration.
+ */
+export function assignedAliasSemanticEffect(assignedState: { value: string; },): void {
+  let assignedAlias: { value: string; };
+  assignedAlias = assignedState;
+  assignedAlias.value = 'changed';
+}
+
+/**
+ * Rebinds parameter without mutating caller referent.
+ *
+ * @param reboundState - Local binding replaced without reachable write.
+ */
+export function reboundParameterSemanticEffect(reboundState: { value: string; },): void {
+  reboundState = { value: 'local', };
+  void reboundState;
+}
+
+/**
  * Mutates nested parameter state through destructured alias.
  *
  * @param wrappedState - Wrapper destructured before nested write.
