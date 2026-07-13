@@ -212,6 +212,8 @@ The semantic-rule implementation is functional and shared-configuration migratio
   applies nonzero imported-callable catalog targets,
   and expands exact Pi effect evidence;
 - commit `fe9e0b99e` migrates Advisor and shared model-selection capability contracts;
+- commit `3ee0ab774` limits imported callable effects to audited option fields
+  and verifies each added Pi method against real Advisor source;
 - the 2026-07-13 sweep reported 1,014 replacement-rule diagnostics with no bridge-failure category:
   585 uncertain calls,
   272 readonly projections,

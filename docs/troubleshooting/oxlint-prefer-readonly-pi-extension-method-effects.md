@@ -97,8 +97,15 @@ reads its color maps in `fg` and delegates primitive text to Chalk in `bold`.
 `dist/core/session-manager.js:881` to `890` shows that `SessionManager.getBranch` creates a fresh path array
 without changing session state.
 `ExtensionCommandContext.waitForIdle` only waits for current streaming to finish.
-`dist/core/model-registry.js:553` to `579` shows that `ModelRegistry.getApiKeyAndHeaders` is effectful because auth
-resolution can execute command-backed configuration.
+`dist/modes/interactive/interactive-mode.js:1651` to `1657` binds `ExtensionUIContext.notify`
+to `showExtensionNotify`.
+That implementation delegates to status,
+warning,
+or error UI updates at lines `1886` to `1896`.
+`dist/core/model-registry.js:553` to `579` shows that `ModelRegistry.getApiKeyAndHeaders` is effectful
+because auth resolution can execute command-backed configuration.
+Its reads from the supplied model can also invoke caller-owned accessors or proxy traps,
+so the catalog retains the model argument as an affected input.
 
 These methods therefore have different exact effects even though none reassigns the local capability binding.
 
@@ -126,6 +133,11 @@ now records exact receiver effects for:
 - mutating `ExtensionUIContext.notify`;
 - effectful `ModelRegistry.getApiKeyAndHeaders`,
   including its model input because auth resolution can inspect that supplied object.
+
+Imported callable catalog targets can name exact option fields.
+The shared model-selection entries target only `ctx` for `resolveEffectiveScope`
+and `scope` plus `modelRegistry` for `resolveRequestedModel`.
+They do not mark unrelated values stored in either options bag.
 
 `packages/pi-plugins/auto-mode/src/register-propose-trust.ts` documents the known state changes with:
 
@@ -174,8 +186,14 @@ mise run //packages/pi-plugins/advisor:test:unit
 mise run //packages/pi-plugins/advisor:verify:extension
 ```
 
-The intrinsic test resolves `appendEntry` and `registerTool` through real Pi declaration provenance,
-then verifies every additional exact owner and member entry.
+The intrinsic test resolves `appendEntry` and `registerTool` through real Pi declaration provenance.
+`packages/oxlint-plugins/prefer-readonly-parameter-type/src/pi-package-effect-catalog.unit.test.ts`
+opens real Advisor sources through the TypeScript bridge and verifies exact package provenance,
+owner,
+member,
+and targets for every added Pi method.
+The rule-level invalid fixture also proves that direct callback invocation without a contract
+reports the missing callback contract.
 Package-local Oxlint accepts the documented effects in auto-mode,
 current-time-context,
 Advisor,
@@ -202,6 +220,11 @@ Its tradeoff is contract propagation through local wrappers that forward the sam
   `getBranch`,
   `waitForIdle`,
   and primitive theme formatting.
+- Treating direct callback invocation as observational misses changes to captured state,
+  invoked capabilities,
+  and deferred work.
+- Keeping direct callback invocation opaque rejects a verified local wrapper even after its exact relation
+  to supplied callback capability is documented.
 - Checking only method names can match unrelated owners.
   Exact package major,
   owner type,
