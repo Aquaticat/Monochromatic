@@ -52,10 +52,10 @@ jobs:
       run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
     - name: Build semantic plugin artifact
-      run: mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node
+      run: mise exec node -- mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node
 
     - name: Verify native bridge lifecycle and platform paths
-      run: mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/typescript-sync-adapter.unit.test.ts
+      run: mise exec node -- mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/typescript-sync-adapter.unit.test.ts
 
     - name: Verify external consumer artifact
-      run: mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts
+      run: mise exec node -- mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts
