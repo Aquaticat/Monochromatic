@@ -24,7 +24,7 @@ import {
 /**
  * Reports one malformed mutation block.
  *
- * @param context - Rule context receiving diagnostics.
+ * @param report - Host callback receiving diagnostics.
  *
  * @param comment - Parsed comment owning block.
  *
@@ -32,54 +32,56 @@ import {
  *
  * @param validTargets - Parameter and destructured binding names accepted by callable.
  *
- * @param seenTargets - Targets already documented by preceding blocks.
+ * @param duplicate - Whether preceding block already names target.
  *
  * @example
  * ```ts
- * reportInvalidMutatesBlock({ context, comment, block, validTargets, seenTargets });
+ * reportInvalidMutatesBlock({ report: context.report, comment, block, validTargets, duplicate: false });
  * ```
  */
 function reportInvalidMutatesBlock({
-  context,
+  report,
   comment,
   block,
   validTargets,
-  seenTargets,
+  duplicate,
 }: {
-  readonly context: Context;
+  readonly report: Context['report'];
   readonly comment: Parameters<typeof commentLineReportLoc>[0]['comment'];
   readonly block: ReadonlyDeep<ParsedMutatesBlock>;
   readonly validTargets: ReadonlySet<string>;
-  readonly seenTargets: Set<string>;
+  readonly duplicate: boolean;
 },): void {
-  /** Location anchored to the malformed custom-tag line. */
+  /**
+   * Location anchored to malformed custom-tag line.
+   */
   const loc = commentLineReportLoc({
     comment,
     lineOffset: block.lineOffset,
   },);
   if (block.parameterName === '') {
-    context.report({ loc, messageId: 'missingTarget', },);
+    report({
+      loc,
+      messageId: 'missingTarget',
+    },);
     return;
   }
   if (!validTargets.has(block.parameterName,)) {
-    context.report({
+    report({
       loc,
       messageId: 'unknownTarget',
       data: { target: block.parameterName, },
     },);
   }
-  if (seenTargets.has(block.parameterName,)) {
-    context.report({
+  if (duplicate) {
+    report({
       loc,
       messageId: 'duplicateTarget',
       data: { target: block.parameterName, },
     },);
   }
-  else {
-    seenTargets.add(block.parameterName,);
-  }
   if (!block.hasDescription) {
-    context.report({
+    report({
       loc,
       messageId: 'missingDescription',
       data: { target: block.parameterName, },
@@ -116,22 +118,35 @@ export const checkMutates: CreateOnceRule = {
         node,
         result,
       ): void {
-        /** Named parameters accepted as mutation targets. */
+        /**
+         * Named parameters accepted as mutation targets.
+         */
         const validTargets = new Set([
           ...extractParamNames(node,),
           ...extractDestructuredParamNames(node,),
         ],);
-        /** Targets already encountered in source order. */
-        const seenTargets = new Set<string>();
-        result.docComment.mutates.blocks.forEach(function validateBlock(block,): void {
-          reportInvalidMutatesBlock({
-            context,
-            comment: result.comment,
+        result.docComment
+          .mutates
+          .blocks
+          .forEach(function validateBlock(
             block,
-            validTargets,
-            seenTargets,
+            index,
+            blocks,
+          ): void {
+            /**
+             * Whether another block named target earlier in source order.
+             */
+            const duplicate = blocks.findIndex(function hasTarget(candidate,): boolean {
+              return candidate.parameterName === block.parameterName;
+            },) !== index;
+            reportInvalidMutatesBlock({
+              report: context.report,
+              comment: result.comment,
+              block,
+              validTargets,
+              duplicate,
+            },);
           },);
-        },);
       },
     },);
   },
