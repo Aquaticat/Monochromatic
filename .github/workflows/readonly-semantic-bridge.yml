@@ -32,9 +32,6 @@ jobs:
         - macos-15-arm64
         - windows-latest
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
     env:
       MISE_AUTO_INSTALL: 'false'
     steps:
@@ -51,20 +48,26 @@ jobs:
     - name: Install package tools
       run: mise install node pnpm
 
-    - name: Expose package tools to task shells
-      shell: pwsh
-      run: |
-        mise where node | Out-File -FilePath $env:GITHUB_PATH -Append
-        mise where pnpm | Out-File -FilePath $env:GITHUB_PATH -Append
-
     - name: Install workspace dependencies
       run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
     - name: Build semantic plugin artifact
-      run: mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node
+      shell: pwsh
+      run: |
+        $separator = [IO.Path]::PathSeparator
+        $env:PATH = "$(mise where node)$separator$(mise where pnpm)$separator$env:PATH"
+        mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node
 
     - name: Verify native bridge lifecycle and platform paths
-      run: mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/typescript-sync-adapter.unit.test.ts
+      shell: pwsh
+      run: |
+        $separator = [IO.Path]::PathSeparator
+        $env:PATH = "$(mise where node)$separator$(mise where pnpm)$separator$env:PATH"
+        mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/typescript-sync-adapter.unit.test.ts
 
     - name: Verify external consumer artifact
-      run: mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts
+      shell: pwsh
+      run: |
+        $separator = [IO.Path]::PathSeparator
+        $env:PATH = "$(mise where node)$separator$(mise where pnpm)$separator$env:PATH"
+        mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts
