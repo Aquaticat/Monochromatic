@@ -1,8 +1,9 @@
 # Replace `prefer-readonly-parameter-types` with a project rule
 
 Status:
- final plan review after resolving package-catalog admission.
-No implementation is authorized until the user confirms shared understanding.
+ final plan complete,
+awaiting shared-understanding confirmation.
+No implementation is authorized until the user confirms.
 
 Last updated:
  2026-07-12.
@@ -551,12 +552,15 @@ and callback comment attachment so Oxlint's comment ownership cannot silently sk
 
 ### Chosen bodyless and external contract model
 
-Every owned callable signature carries its own effect tags,
+Every owned callable signature in enforced source carries its own effect tags,
 including overload declarations,
 interface and type-literal call signatures,
 abstract methods,
-ambient declarations owned by this repository,
+source `declare` signatures in `.ts` files,
 and the concrete implementation signature.
+Signatures inside `.d.ts`,
+`.d.mts`,
+and `.d.cts` files remain exempt.
 
 Overload effects may differ.
 The implementation summary must cover the union of reachable overload effects,
@@ -600,10 +604,15 @@ The effect analyzer uses three outcomes:
 
 - proven mutation requires the tag;
 - proven absence rejects a stale tag;
-- possible mutation through an opaque external boundary requires and accepts the tag,
-  while retaining the unresolved boundary in diagnostics or audit output.
+- possible mutation through an opaque external boundary reports `opaqueEffect` unless it occurs inside a verified local
+  adapter.
 
-This permits honest external adapters without pretending their implementation was proved from unavailable source.
+A local adapter is verified structurally:
+every opaque effect must map to a parameter carrying `@mutates`,
+and no opaque effect target may remain unaccounted for.
+The adapter's generated summary retains the opaque upstream provenance for diagnostics and audit output.
+A tag on an arbitrary production callable does not by itself waive `opaqueEffect`.
+This permits explicit external adapters without pretending their implementation was proved from unavailable source.
 
 ### Rejected higher-order TSDoc relation DSL
 
@@ -956,4 +965,4 @@ Node,
 and package names present in the recorded current `pnpm-lock.yaml` baseline.
 Package entries remain gated by resolved major version and source audit.
 All currently known policy questions are resolved.
-Implementation remains blocked until the user confirms shared understanding.
+Implementation remains blocked until the user confirms that this final plan reflects shared understanding.
