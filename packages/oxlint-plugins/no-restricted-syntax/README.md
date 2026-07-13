@@ -107,7 +107,9 @@ Oxlint CLI diagnostics are authoritative because Oxlint's language server does n
 Nonmutating data parameters require an honest deep-readonly type.
 Capability types may retain their original API when analysis proves no mutation path.
 A readonly projection that retains audited mutation capabilities reports `dishonestReadonly`.
-Unknown external calls report `opaqueEffect` instead of being assumed safe.
+Unknown external calls report what input and calls are involved instead of being assumed safe.
+Unknown method diagnostics explain that a method can change its object or controlled system without assigning a new
+value to input binding.
 
 Externally dictated mutable callback and API handles use project-owned `ForeignBorrowed<T>` marker at audited foreign
 boundaries.
@@ -143,11 +145,17 @@ and escaped closure containers,
 and consumes bodyless source-signature contracts.
 Declaration files remain exempt enforcement inputs.
 
-Uncatalogued package or platform calls require a local adapter.
-Every opaque parameter effect in that adapter must have a matching `@mutates` block
-whose description names the upstream callable or links its contract.
-The adapter effect then propagates as mutation while retaining provenance for audit.
-An arbitrary tag that leaves any opaque target undocumented does not waive `opaqueEffect`.
+An unknown call has distinct valid remediations,
+and the diagnostic spells out all of them:
+
+- remove or rewrite call;
+- include repository-owned implementation in nearest TypeScript project;
+- audit exact external function or method and add tested catalogue entry recording every changed receiver or argument;
+- document every possible change with `@mutates` in current function or dedicated wrapper.
+
+Every unknown call effect documented through `@mutates` must name upstream callable or link its contract.
+Documented effect then propagates as mutation while retaining provenance for audit.
+An unrelated tag or tag that leaves any affected input undocumented does not waive diagnostic.
 
 Semantic rewrites are suggestions only.
 Ordinary `--fix` does not change signatures or mutation contracts;

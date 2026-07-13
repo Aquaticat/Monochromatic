@@ -137,6 +137,12 @@ The semantic-rule implementation is functional and shared-configuration migratio
   configured active source despite stale external-library metadata;
 - a repeat one-worker workspace sweep reports zero semantic bridge failures across 1,315 replacement-rule diagnostics;
 - commit `37e48c19b` removes caller-owned coercion hooks from `module-or-throw` failure formatting;
+- unknown-call diagnostics now distinguish method receivers from other call inputs,
+  explain that methods can change controlled state without assignment,
+  name only affected destructured bindings,
+  and enumerate every supported remediation;
+- audited Pi `0.80.6` package effects record `ExtensionAPI.appendEntry` and `ExtensionAPI.registerTool` as exact receiver
+  mutations backed by installed declarations and implementations;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/tsdoc`,

@@ -127,10 +127,10 @@ Unsure?
 
 DGT:
  User-facing diagnostics:
- name the affected input and observed calls plainly.
-Explain uncertainty and exact remediation.
+ name affected input and calls plainly.
+Explain uncertainty and every valid remediation path.
 Avoid unexplained implementation terms;
- length is not a constraint.
+ length is unconstrained.
 
 GAP:
  "I was expecting you to..." or spotted failure mode = doc gap:
