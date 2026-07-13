@@ -26,6 +26,7 @@ import { mistralConversationsApi, } from '@earendil-works/pi-ai/api/mistral-conv
 import { openAICodexResponsesApi, } from '@earendil-works/pi-ai/api/openai-codex-responses.lazy';
 import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completions.lazy';
 import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -326,7 +327,7 @@ async function callJudge(
     readonly timeoutMs: number;
     readonly systemPrompt: string;
     readonly batchContext: readonly BatchEntry[];
-    readonly abortSignal?: Readonly<AbortSignal>;
+    readonly abortSignal?: ForeignBorrowed<AbortSignal>;
     readonly streamSimpleFn?: JudgeStreamSimple;
   },
 ): Promise<Verdict> {

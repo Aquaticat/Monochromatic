@@ -44,7 +44,10 @@ type FallbackJudgeResult = {
  */
 type FallbackJudgeContenders =
   | readonly [BudgetModel]
-  | readonly [BudgetModel, BudgetModel];
+  | readonly [
+    BudgetModel,
+    BudgetModel,
+  ];
 
 /**
  * Render canonical identity of a locally selected judge model.
@@ -448,9 +451,13 @@ async function callJudgeWithFallback(
       const winner = await Promise.any(fallbackAttempts,);
       raceController.abort();
       /**
+       * Judge that returned the first valid verdict.
+       */
+      const { judge: winningJudge, } = winner;
+      /**
        * Canonical identity of contender that returned the first valid verdict.
        */
-      const winnerModelSlug = judgeModelSlug({ model: winner.judge.model, },);
+      const winnerModelSlug = judgeModelSlug({ model: winningJudge.model, },);
       innerL.debug(`fallback judge race winner: ${winnerModelSlug}`,);
       return winner.verdict;
     }
