@@ -5,6 +5,7 @@
  * discovers `*.unit.matrix.test.ts` files by walking the directory tree.
  */
 
+import type { Dirent, } from 'node:fs';
 import { readdir, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 
@@ -49,7 +50,7 @@ export async function discoverTestFiles(cwd: string,): Promise<readonly string[]
    * Filtered, sorted absolute paths; built as a chain to keep each step inspectable.
    */
   const files = entries
-    .filter(function isMatrixTest(entry,) {
+    .filter(function isMatrixTest(entry: Readonly<Dirent>,) {
       if (!entry.isFile())
         return false;
       if (!entry.name
@@ -65,7 +66,7 @@ export async function discoverTestFiles(cwd: string,): Promise<readonly string[]
         return false;
       return true;
     },)
-    .map(function toAbsolutePath(entry,) {
+    .map(function toAbsolutePath(entry: Readonly<Dirent>,) {
       return resolve(
         entry.parentPath,
         entry.name,
