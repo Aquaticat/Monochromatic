@@ -63,6 +63,17 @@ import { preferErrorIsError, } from './rules/prefer-error-is-error.ts';
 import { requireDestructuredParams, } from './rules/require-destructured-params.ts';
 import { requireQueryselectorGeneric, } from './rules/require-queryselector-generic.ts';
 
+export {
+  closeSemanticBridge,
+  openSemanticFile,
+  type SemanticFileSession,
+} from './rules/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
+
+export {
+  findNodeAtOffset,
+  typescriptOffset,
+} from './rules/prefer-readonly-parameter-types/typescript-node-map.ts';
+
 /**
  * Oxlint JS plugin implementing `no-restricted-syntax` rules
  * that oxlint does not support natively.
