@@ -110,6 +110,41 @@ A readonly projection that retains audited mutation capabilities reports `dishon
 Unknown external calls report what input and calls are involved instead of being assumed safe.
 Unknown method diagnostics explain that a method can change its object or controlled system without assigning a new
 value to input binding.
+Exact global `String(value)` analysis reads both declaration identity and argument type.
+It accepts primitive unions,
+`symbol`,
+and type-branded primitives because those paths cannot expose caller-owned mutable state.
+For object-capable values,
+the diagnostic names getter and proxy property reads plus `Symbol.toPrimitive`,
+`toString`,
+and `valueOf` calls.
+A TypeScript object type cannot prove those runtime hooks absent because a caller can supply accessors,
+overrides,
+or a proxy.
+The diagnostic therefore enumerates narrowing,
+primitive-field conversion,
+noncoercing fallback,
+removal,
+and deliberate `@mutates` remedies.
+
+Deliberate conversion of `unknown` remains expressible:
+
+```typescript
+/**
+ * Converts caller value with deliberate coercion hooks.
+ *
+ * @param value - Caller value allowed to define conversion behavior.
+ *
+ * @returns caller-defined text conversion.
+ *
+ * @mutates value - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input.
+ */
+function deliberatelyCoerce(value: unknown,): string {
+  return String(value,);
+}
+```
+
+The rule verifies that complete contract and propagates it as a mutation rather than reporting unresolved coercion.
 
 Externally dictated mutable callback and API handles use project-owned `ForeignBorrowed<T>` marker at audited foreign
 boundaries.

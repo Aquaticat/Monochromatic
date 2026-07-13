@@ -143,11 +143,29 @@ The semantic-rule implementation is functional and shared-configuration migratio
   and enumerate every supported remediation;
 - audited Pi `0.80.6` package effects record `ExtensionAPI.appendEntry` and `ExtensionAPI.registerTool` as exact receiver
   mutations backed by installed declarations and implementations;
+- commit `a74fe0ba3` excludes packaged primitive leaf values from opaque caller-state effects;
+- commit `a9a93514f` audits `Array.prototype.toSorted` as observational only for primitive receiver elements;
+- commit `49a81ddd7` replaces page-weight's object-capable `String(error)` fallback with noncoercing runtime-category
+  formatting and proves caller `toString` is not invoked;
+- commit `baa102b18` identifies exact global `String` conversion,
+  accepts primitive inputs,
+  and emits a dedicated object-coercion diagnostic naming every hook and supported remedy;
+- commit `8054e3764` accepts deliberately coercing `unknown` through a complete `@mutates` hook contract,
+  classifies `unknown` and `any` as opaque capabilities rather than readonly claims,
+  and proves same-named external callables retain ordinary treatment;
+- commits `51cbaea0d` and `1090b762d` prove noncoercing error formatting avoids ordinary methods,
+  `Symbol.toPrimitive`,
+  `valueOf`,
+  accessors,
+  and proxy property traps;
+- commit `5a66e8b2f` proves incomplete global `String` mutation contracts remain unresolved diagnostics;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/tsdoc`,
   `packages/oxlint-plugins/stylistic`,
-  and `packages/module/or-throw` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
+  `packages/module/or-throw`,
+  and `packages/dev-script/page-weight` now pass package Oxlint under replacement rule with one JavaScript-plugin
+  worker.
 
 Remaining gates are active workspace source migration,
 migrated consumer acceptance,

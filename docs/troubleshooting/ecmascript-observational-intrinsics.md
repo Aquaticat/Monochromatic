@@ -181,9 +181,10 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
 
 ### Calls verified as effectful or opaque
 
-- `String(object)` can invoke `Symbol.toPrimitive`,
+- `String(object)` property reads can invoke getters and proxy traps;
+  callable `Symbol.toPrimitive`,
   `toString`,
-  and `valueOf` hooks.
+  and `valueOf` values are then invoked.
 - `JSON.stringify(proxy)` invoked proxy behavior.
 - `JSON.stringify(state)` invoked authored `toJSON` and mutated `state.value`.
 - `JSON.stringify(value, replacer)` has an additional explicit callback path in `spec.html:48392`.
@@ -202,14 +203,51 @@ and `ErrorConstructor.isError`.
 Exact declaration provenance prevents same-named project methods from inheriting this treatment.
 
 For global `String(value)`,
-first narrow primitive branches and format nonprimitive values without coercion.
+the rule now identifies exact `globalThis.String` declaration provenance and inspects argument type.
+It accepts primitive unions,
+`symbol`,
+and type-branded primitives,
+then emits a dedicated object-coercion diagnostic for object-capable input.
+Same-named imported callables retain ordinary external-call treatment.
+
+Global `String` does not reassign its argument and is not itself a mutator.
+The effect comes from reading conversion properties and invoking caller-owned code.
+A TypeScript object type cannot prove that code absent at runtime because accessors,
+method overrides,
+and proxies remain assignable.
+The diagnostic names those operations and lists every supported remediation rather than describing `String` as an
+unknown external call.
+
+First narrow primitive branches and format nonprimitive values without coercion.
 `packages/dev-script/page-weight/src/error-format.ts` returns `Error.message` for errors,
 returns thrown strings directly,
 and reports only runtime category for other values.
-Its regression test proves object `toString` is not invoked.
+Its regression test proves ordinary `toString`,
+`valueOf`,
+`Symbol.toPrimitive`,
+conversion-property accessors,
+and proxy property traps are not invoked.
+
 If object coercion is intentional,
-document every possible hook effect with `@mutates` or add exact audited call effect rather than treating conversion as
-readonly.
+use an explicit complete contract:
+
+```typescript
+/**
+ * Converts caller value with deliberate coercion hooks.
+ *
+ * @param value - Caller value allowed to define conversion behavior.
+ *
+ * @returns caller-defined text conversion.
+ *
+ * @mutates value - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input.
+ */
+function deliberatelyCoerce(value: unknown,): string {
+  return String(value,);
+}
+```
+
+The rule verifies that contract against exact global `String` provenance and propagates a known mutation effect.
+Incomplete `@mutates` descriptions remain unresolved diagnostics.
 
 For `JSON.stringify`,
  use a verified local adapter whose `@mutates` contract names `JSON.stringify` as its upstream
