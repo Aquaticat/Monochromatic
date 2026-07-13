@@ -1,9 +1,8 @@
 # Replace `prefer-readonly-parameter-types` with a project rule
 
 Status:
- design interview reopened after final-plan review.
-No implementation is authorized until the remaining package-catalog admission policy is resolved and the user confirms
-shared understanding.
+ final plan review after resolving package-catalog admission.
+No implementation is authorized until the user confirms shared understanding.
 
 Last updated:
  2026-07-12.
@@ -325,7 +324,7 @@ All discovered policy branches are resolved:
 - recognize ECMAScript,
   DOM,
   Node,
-  and major-version-gated common-package effects intrinsically,
+  and major-version-gated effects for packages present in the recorded pnpm lockfile baseline intrinsically,
   with local adapters as the fallback;
 - infer higher-order relationships rather than adding a TSDoc relation language;
 - enforce active production source while retaining test,
@@ -571,7 +570,14 @@ Node,
 and common ecosystem packages.
 Package effects are keyed by resolved package identity and supported major version;
 an effect entry for one major must never apply to another major implicitly.
-The catalog records exact callable symbols,
+A package is eligible for intrinsic coverage when its package name occurs in the current pnpm lockfile baseline,
+`pnpm-lock.yaml` lockfile version 9.0 with SHA-256
+`3912af5f960cef4c459f6dc99966dcdf9947507690f39969a4951404036cf76d`.
+Transitive and direct packages use the same eligibility rule.
+A later lockfile addition is not silently admitted to this baseline.
+
+Eligibility does not itself assert an effect.
+Each catalog entry still records exact callable symbols,
 effect targets,
 source provenance,
 supported declaration versions,
@@ -944,11 +950,10 @@ so it must not offer an import that would leave the source unresolved.
 
 ### Grilling status
 
-The intrinsic-effect boundary now includes ECMAScript,
+The intrinsic-effect boundary includes ECMAScript,
 DOM,
 Node,
-and common ecosystem packages gated by resolved major version.
-One policy question remains:
-how packages qualify as common enough for the intrinsic catalog.
-Resolve that admission policy before requesting shared-understanding confirmation.
-Implementation remains blocked until the user then confirms.
+and package names present in the recorded current `pnpm-lock.yaml` baseline.
+Package entries remain gated by resolved major version and source audit.
+All currently known policy questions are resolved.
+Implementation remains blocked until the user confirms shared understanding.
