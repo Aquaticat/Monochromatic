@@ -337,6 +337,30 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name: 'validates bodyless method, call, and ambient signatures',
+          fn: async () => {
+            const diagnostics = await lint('invalid/mutates-signature-issues.ts',);
+            const mutatesDiagnostics = diagnostics.filter(
+              function isCheckMutates(diagnostic,): boolean {
+                return diagnostic.code === 'tsdoc(check-mutates)';
+              },
+            );
+            expect(mutatesDiagnostics,).toHaveLength(3,);
+          },
+        },),
+        it({
+          name: 'accepts valid bodyless method and call signatures',
+          fn: async () => {
+            const diagnostics = await lint('valid/mutates-signatures.ts',);
+            const mutatesDiagnostics = diagnostics.filter(
+              function isCheckMutates(diagnostic,): boolean {
+                return diagnostic.code === 'tsdoc(check-mutates)';
+              },
+            );
+            expect(mutatesDiagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
     describe({
