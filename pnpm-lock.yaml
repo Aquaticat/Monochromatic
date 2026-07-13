@@ -1654,6 +1654,9 @@ importers:
 
   packages/git-policies/api:
     dependencies:
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
@@ -1673,6 +1676,9 @@ importers:
 
   packages/git-policies/cli:
     dependencies:
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1

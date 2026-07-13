@@ -4,6 +4,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import type {
   GenericSchema,
 } from 'valibot';
@@ -34,7 +35,7 @@ import type {
  * ```
  */
 export function definePolicyOptions<const TInput, const TOutput>(
-  schema: Readonly<GenericSchema<TInput, TOutput>>,
+  schema: ForeignBorrowed<GenericSchema<TInput, TOutput>>,
 ): GenericSchema<TInput, TOutput> {
   return schema;
 }
@@ -61,7 +62,7 @@ export function definePolicy<
   const TName extends string,
   const TOptions = undefined,
 >(
-  definition: Readonly<PolicyDefinition<Readonly<TOptions>, TName>>,
+  definition: ForeignBorrowed<PolicyDefinition<Readonly<TOptions>, TName>>,
 ): PolicyDefinition<Readonly<TOptions>, TName> {
   return definition;
 }

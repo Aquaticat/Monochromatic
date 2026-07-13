@@ -4,6 +4,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import type {
   GenericSchema,
 } from 'valibot';
@@ -260,5 +261,5 @@ export type PolicyDefinition<
   /**
    * Finds every violation for one candidate state.
    */
-  check: (input: PolicyCheckInput<TOptions>) => Promise<readonly PolicyFinding[]>;
+  check: (input: ForeignBorrowed<PolicyCheckInput<TOptions>>) => Promise<readonly PolicyFinding[]>;
 }>;
