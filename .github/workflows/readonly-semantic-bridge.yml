@@ -41,27 +41,21 @@ jobs:
         fetch-depth: 1
 
     - name: Set up mise without repository-wide tool installation
-      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d
       with:
         install: false
 
     - name: Install package tools
       run: mise install node pnpm
 
-    - name: Expose package tools to later task shells
-      shell: bash
-      run: |
-        mise where node >> "$GITHUB_PATH"
-        mise where pnpm >> "$GITHUB_PATH"
-
     - name: Install workspace dependencies
       run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
     - name: Build semantic plugin artifact
-      run: mise exec node -- mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node
+      run: mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node
 
     - name: Verify native bridge lifecycle and platform paths
-      run: mise exec node -- mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/typescript-sync-adapter.unit.test.ts
+      run: mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/typescript-sync-adapter.unit.test.ts
 
     - name: Verify external consumer artifact
-      run: mise exec node -- mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts
+      run: mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts
