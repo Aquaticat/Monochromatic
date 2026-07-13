@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+
 /**
  * Throws an `Error` from expression position.
  *
@@ -30,6 +32,6 @@
  * }
  * ```
  */
-export function throws(error: Error,): never {
+export function throws(error: ForeignBorrowed<Error>,): never {
   throw error;
 }

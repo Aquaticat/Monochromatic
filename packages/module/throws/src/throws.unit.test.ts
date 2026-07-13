@@ -94,7 +94,10 @@ await describe({
     it({
       name: 'exposes an Error-only parameter and never return type',
       fn: async () => {
-        expectTypeOf<Parameters<typeof throws>>().toEqualTypeOf<[error: Error,]>();
+        expectTypeOf<Parameters<typeof throws>[0]>()
+          .toExtend<Error>();
+        expectTypeOf<Error>()
+          .toExtend<Parameters<typeof throws>[0]>();
         expectTypeOf<ReturnType<typeof throws>>().toEqualTypeOf<never>();
       },
     },),
