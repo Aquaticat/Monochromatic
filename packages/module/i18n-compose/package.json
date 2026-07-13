@@ -14,7 +14,9 @@
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@monochromatic-dev/config-oxlint-shared": "workspace:*"
+  },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",

@@ -4,6 +4,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import type {
   NounEntry,
   SubjectEntry,
@@ -120,6 +121,8 @@ export const caNouns: Record<TestNoun, NounEntry> = {
  *
  * @returns map mirroring `record` with its literal key type intact
  *
+ * @mutates record - `Object.entries` can invoke caller-owned accessors and proxy traps while collecting values.
+ *
  * @example
  * ```ts
  * const present = toReadonlyMap<PersonNumberKey, string>({ '1s': 'tinc', },);
@@ -127,7 +130,7 @@ export const caNouns: Record<TestNoun, NounEntry> = {
  * ```
  */
 function toReadonlyMap<const K extends string, V,>(
-  record: Readonly<Record<K, V>>,
+  record: ForeignBorrowed<Record<K, V>>,
 ): ReadonlyMap<K, V> {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.entries() widens keys to string; the record's own `K` is the source of truth, so the cast restores it, routed through `unknown` because the generic key blocks a direct narrowing assertion. */
   /**

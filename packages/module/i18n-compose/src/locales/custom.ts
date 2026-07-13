@@ -41,7 +41,7 @@ export function defineCustomLocale<
   Verb extends string,
   Noun extends string,
 >(
-  spec: Readonly<LocaleSpec<Label, Subject, Verb, Noun>>,
+  spec: LocaleSpec<Label, Subject, Verb, Noun>,
 ): LocaleSpec<Label, Subject, Verb, Noun> {
   return spec;
 }

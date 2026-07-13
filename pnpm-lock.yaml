@@ -2010,6 +2010,10 @@ importers:
         version: 7.0.2
 
   packages/module/i18n-compose:
+    dependencies:
+      '@monochromatic-dev/config-oxlint-shared':
+        specifier: workspace:*
+        version: link:../../oxlint-plugins/shared
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
