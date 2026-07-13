@@ -22,7 +22,7 @@ import {
   intrinsicEffectQuery,
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
-import { auditedCallableEffect, } from './effect-call-observation.ts';
+import { applyAuditedCallableEffect, } from './effect-imported-callable.ts';
 import { effectCallName, } from './effect-call-name.ts';
 import {
   expressionCanCarryMutableState,
@@ -129,40 +129,14 @@ export function inspectEffectCall({
     return;
   }
 
-  /**
-   * Exact imported or global callable effect when cataloged.
-   */
-  const callableEffect = auditedCallableEffect({
+  if (applyAuditedCallableEffect({
     project,
     checker,
-    expression: call.expression,
-  },);
-  if (callableEffect !== NO_INTRINSIC_EFFECT) {
-    callableEffect.targets
-      .forEach(function callableTarget(target,): void {
-        if (target.kind !== 'argument')
-          return;
-        /**
-         * Call argument selected by audited callable effect target.
-         */
-        const argument = call.arguments[target.index];
-        if (argument === undefined)
-          return;
-        parameterIndexes({
-          checker,
-          bindingOriginBySymbolId,
-          node: argument,
-          includedPropertyNames: ALL_PACKAGED_PROPERTIES,
-        },)
-          .forEach(function addCallableMutation(index,): void {
-            addEffectIndex({
-              target: summary.directMutated,
-              value: index,
-            },);
-          },);
-      },);
+    bindingOriginBySymbolId,
+    call,
+    summary,
+  },))
     return;
-  }
 
   if (isPropertyAccessExpression(call.expression,)) {
     /**
@@ -227,7 +201,9 @@ export function inspectEffectCall({
               checker,
               bindingOriginBySymbolId,
               node: argument,
-              includedPropertyNames: ALL_PACKAGED_PROPERTIES,
+              includedPropertyNames: target.propertyNames === undefined
+                ? ALL_PACKAGED_PROPERTIES
+                : new Set(target.propertyNames,),
             },)
               .forEach(function intrinsicArgumentOrigin(origin,): void {
               addEffectIndex({

@@ -191,6 +191,23 @@ await describe({
           ownerType: 'API',
           member: 'updateSnapshot',
         },),).toBe(NO_INTRINSIC_EFFECT,);
+        const scopeEffect = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/pi-shared-model-selection',
+            major: 0,
+          },
+          ownerType: 'globalThis',
+          member: 'resolveEffectiveScope',
+        },);
+        expect(scopeEffect,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (scopeEffect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected model-scope capability effect.',);
+        expect(scopeEffect.targets,).toEqual([{
+          kind: 'argument',
+          index: 0,
+          propertyNames: ['ctx',],
+        },],);
       },
     },),
     it({

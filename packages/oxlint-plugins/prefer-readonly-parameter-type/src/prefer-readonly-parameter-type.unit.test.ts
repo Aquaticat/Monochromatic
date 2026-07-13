@@ -127,7 +127,7 @@ children: [
     name: 'reports readonly, mutation, stale, dishonest, and opaque failures',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-invalid.ts',);
-      expect(diagnostics.length,).toBe(10,);
+      expect(diagnostics.length,).toBe(12,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
@@ -136,6 +136,9 @@ children: [
       },),).toBe(true,);
       expect(messages.some(function missingContract(message,): boolean {
         return message.includes('lacks @mutates contract',);
+      },),).toBe(true,);
+      expect(messages.some(function directCallbackContract(message,): boolean {
+        return message.startsWith('Parameter "callback" is mutated but lacks @mutates contract.',);
       },),).toBe(true,);
       expect(messages.some(function staleContract(message,): boolean {
         return message.includes('stale @mutates contract',);

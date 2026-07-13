@@ -39,6 +39,7 @@ export type IntrinsicEffectTarget =
   | {
     readonly kind: 'argument';
     readonly index: number;
+    readonly propertyNames?: readonly string[];
   };
 
 /**

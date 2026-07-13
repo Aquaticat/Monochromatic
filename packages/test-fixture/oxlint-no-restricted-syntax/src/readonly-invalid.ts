@@ -111,6 +111,15 @@ export function destructuredOpaqueEffect({
 }
 
 /**
+ * Invokes caller callback without declaring captured-state effects.
+ *
+ * @param callback - Caller callback whose closure can change state.
+ */
+export function missingCallbackContract(callback: () => void,): void {
+  callback();
+}
+
+/**
  * Uses unrelated URL instead of naming opaque upstream callable.
  *
  * @param state - State sent through undocumented external boundary.

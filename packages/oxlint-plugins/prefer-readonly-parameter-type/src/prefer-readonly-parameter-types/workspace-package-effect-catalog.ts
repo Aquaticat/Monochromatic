@@ -26,25 +26,39 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: 'config-oxlint-shared 0.0.1 source pure parser and record predicates',
     };
   },),
-  ...[
-    'resolveEffectiveScope',
-    'resolveRequestedModel',
-  ].map(function modelSelectionCapabilityEffect(member,): IntrinsicEffectEntry {
-    return {
-      provenance: {
-        kind: 'package',
-        packageName: '@monochromatic-dev/pi-shared-model-selection',
-        major: 0,
-      },
-      ownerType: 'globalThis',
-      member,
-      targets: [{
-        kind: 'argument',
-        index: 0,
-      },],
-      evidence: 'pi-shared-model-selection 0.0.1 invokes model scope or registry callbacks from options',
-    };
-  },),
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@monochromatic-dev/pi-shared-model-selection',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'resolveEffectiveScope',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+      propertyNames: ['ctx',],
+    },],
+    evidence: 'pi-shared-model-selection 0.0.1 invokes scope callbacks from options.ctx',
+  },
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@monochromatic-dev/pi-shared-model-selection',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'resolveRequestedModel',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+      propertyNames: [
+        'scope',
+        'modelRegistry',
+      ],
+    },],
+    evidence: 'pi-shared-model-selection 0.0.1 reads scope and invokes options.modelRegistry.getAll',
+  },
   {
     provenance: {
       kind: 'package',
