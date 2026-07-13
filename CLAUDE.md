@@ -1,11 +1,5 @@
 Generated from `AGENTS.md` by file-enforcer.
 
-### Delegating work to subagents and child sessions
-
-Two peer mechanisms;
-pick by whether you need a visible,
-independently-running session.
-
 In-process subagents (the Agent tool,
 including the general-purpose type) run inside this session and forward their results back to you reliably.
 General-purpose subagents are allowed.
@@ -23,6 +17,8 @@ so you must monitor the child session yourself to collect its output.
 Do not pass `--cwd`:
 the child then will not read the repo `CLAUDE.md`,
 and Claude Code's cwd handling is unreliable.
+
+Use `pi --model openai-codex/gpt-5.6-sol --print --no-tools --thinking max "<your question>"` for a strong model's opinion.
 
 # Development guidelines for AI agents
 
@@ -151,12 +147,31 @@ Unsure?
  check tool docs,
  run tool first.
 
+DGT:
+ User-facing diagnostics:
+ name affected input and calls plainly.
+Explain uncertainty and every valid remediation path.
+Avoid unexplained implementation terms;
+ length is unconstrained.
+
+JCH:
+ Never use `@mutates` for absent effects.
+Move work to an ownership-known boundary,
+ pass its primitive result,
+ or improve proof.
+Contracts describe possible runtime effects,
+ not analyzer gaps.
+
 GAP:
  "I was expecting you to..." or spotted failure mode = doc gap:
  propose `AGENTS.md` edit + perform expected action,
  never "I'll keep it in mind".
 Merge overlapping rules;
  remove superseded.
+
+EPR:
+ Naming or technology brainstorming that could benefit from ecosystem precedent:
+ research it before offering options.
 
 ### Proactivity calibration
 
