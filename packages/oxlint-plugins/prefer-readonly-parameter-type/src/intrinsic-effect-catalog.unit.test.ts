@@ -138,6 +138,47 @@ await describe({
       },
     },),
     it({
+      name: 'records exact Object hooks and Array copy or callback effects',
+      fn: async () => {
+        const objectEntries = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'ObjectConstructor',
+          member: 'entries',
+        },);
+        expect(objectEntries,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (objectEntries === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Object.entries intrinsic effect.',);
+        expect(objectEntries.targets,).toEqual([{
+          kind: 'argument',
+          index: 0,
+        },],);
+        const arrayWith = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'ReadonlyArray',
+          member: 'with',
+        },);
+        expect(arrayWith,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (arrayWith === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected ReadonlyArray.with intrinsic effect.',);
+        expect(arrayWith.targets,).toEqual([],);
+        const arrayReduce = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'Array',
+          member: 'reduce',
+        },);
+        expect(arrayReduce,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (arrayReduce === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Array.reduce intrinsic effect.',);
+        expect(arrayReduce.callbacks,).toEqual([{
+          argumentIndex: 0,
+          receiverParameterIndexes: [
+            1,
+            3,
+          ],
+        },],);
+      },
+    },),
+    it({
       name: 'records dependent-signal mutation for AbortSignal.any',
       fn: async () => {
         const effect = intrinsicEffect({

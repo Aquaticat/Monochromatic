@@ -9,11 +9,17 @@ import type {
   IntrinsicEffectTarget,
 } from './intrinsic-effect-catalog.ts';
 import { ECMASCRIPT_DATE_EFFECTS, } from './ecmascript-date-effect-catalog.ts';
+import { ECMASCRIPT_OBJECT_EFFECTS, } from './ecmascript-object-effect-catalog.ts';
 
 /**
  * Shared receiver mutation target.
  */
 const RECEIVER: IntrinsicEffectTarget = { kind: 'receiver', };
+
+/**
+ * Array callback parameter receiving original array.
+ */
+const ARRAY_CALLBACK_ARRAY_PARAMETER_INDEX = 3;
 
 /**
  * Creates ECMAScript receiver-mutating entry.
@@ -97,6 +103,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       'lastIndexOf',
       'slice',
       'values',
+      'with',
     ].map(function arrayObservation(member,): IntrinsicEffectEntry {
       return {
         provenance: { kind: 'ecmascript', },
@@ -152,10 +159,28 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         evidence: 'ECMA-262 commit 1355a23e array iteration algorithms with callback effects',
       };
     },);
+    /**
+     * Array reduction whose callback receives current receiver value and array.
+     */
+    const reduceObservation: IntrinsicEffectEntry = {
+      provenance: { kind: 'ecmascript', },
+      ownerType,
+      member: 'reduce',
+      targets: [],
+      callbacks: [{
+        argumentIndex: 0,
+        receiverParameterIndexes: [
+          1,
+          ARRAY_CALLBACK_ARRAY_PARAMETER_INDEX,
+        ],
+      },],
+      evidence: 'ECMA-262 commit 1355a23e Array.prototype.reduce callback relation',
+    };
     return [
       ...observations,
       ...primitiveElementObservations,
       ...callbackObservations,
+      reduceObservation,
     ];
   },),
   ...[
@@ -244,13 +269,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
     targets: [],
     evidence: 'ECMA-262 commit 1355a23e Array.isArray and IsArray algorithms',
   },
-  {
-    provenance: { kind: 'ecmascript', },
-    ownerType: 'ObjectConstructor',
-    member: 'is',
-    targets: [],
-    evidence: 'ECMA-262 commit 1355a23e Object.is and SameValue algorithms',
-  },
+  ...ECMASCRIPT_OBJECT_EFFECTS,
   ...[
     'copyWithin',
     'fill',
