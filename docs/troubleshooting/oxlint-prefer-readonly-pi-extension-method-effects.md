@@ -74,7 +74,33 @@ appendEntry: (customType, data) => {
 }
 ```
 
-These methods therefore change state observable through Pi even though the local `pi` binding is never reassigned.
+The installed loader at `dist/core/extensions/loader.js:192` to `213`
+also stores commands and message renderers in extension maps:
+
+```js
+registerCommand(name, options) {
+  extension.commands.set(name, { name, sourceInfo: extension.sourceInfo, ...options });
+}
+registerMessageRenderer(customType, renderer) {
+  extension.messageRenderers.set(customType, renderer);
+}
+```
+
+The same loader at `dist/core/extensions/loader.js:228` to `266`
+delegates `sendMessage` to runtime message handling and `setActiveTools` to session tool-state replacement.
+By contrast,
+`getActiveTools` calls `AgentSession.getActiveToolNames()`.
+`dist/core/agent-session.js:591` to `593` returns a newly mapped array of primitive names.
+
+The installed `Theme` implementation at `dist/modes/interactive/theme/theme.js:254` to `267`
+reads its color maps in `fg` and delegates primitive text to Chalk in `bold`.
+`dist/core/session-manager.js:881` to `890` shows that `SessionManager.getBranch` creates a fresh path array
+without changing session state.
+`ExtensionCommandContext.waitForIdle` only waits for current streaming to finish.
+`dist/core/model-registry.js:553` to `579` shows that `ModelRegistry.getApiKeyAndHeaders` is effectful because auth
+resolution can execute command-backed configuration.
+
+These methods therefore have different exact effects even though none reassigns the local capability binding.
 
 ## Resolution
 
@@ -84,12 +110,22 @@ now records exact receiver effects for:
 - package `@earendil-works/pi-coding-agent`;
 - package major `0`;
 - owner type `ExtensionAPI`;
-- mutating members `appendEntry`,
+- mutating `ExtensionAPI` members `appendEntry`,
   `on`,
+  `registerCommand`,
+  `registerMessageRenderer`,
   `registerTool`,
+  `sendMessage`,
+  `setActiveTools`,
   and `setThinkingLevel`;
-- observational member `getThinkingLevel`,
-  with no mutation targets.
+- observational `ExtensionAPI` members `getActiveTools` and `getThinkingLevel`;
+- observational `Theme.bold`,
+  `Theme.fg`,
+  `SessionManager.getBranch`,
+  and `ExtensionCommandContext.waitForIdle`;
+- mutating `ExtensionUIContext.notify`;
+- effectful `ModelRegistry.getApiKeyAndHeaders`,
+  including its model input because auth resolution can inspect that supplied object.
 
 `packages/pi-plugins/auto-mode/src/register-propose-trust.ts` documents the known state changes with:
 
@@ -131,8 +167,64 @@ mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
 mise run //packages/pi-plugins/current-time-context:lint:oxlint
 mise run //packages/pi-plugins/current-time-context:test:unit
 mise run //packages/pi-plugins/current-time-context:verify:extension
+mise run //packages/pi-shared/model-selection:lint:oxlint
+mise run //packages/pi-shared/model-selection:test:unit
+mise run //packages/pi-plugins/advisor:lint:oxlint
+mise run //packages/pi-plugins/advisor:test:unit
+mise run //packages/pi-plugins/advisor:verify:extension
 ```
 
 The intrinsic test resolves `appendEntry` and `registerTool` through real Pi declaration provenance,
-then verifies the exact `on` catalogue entry.
-Package-local Oxlint runs accept the documented effects in both auto-mode and current-time-context sources.
+then verifies every additional exact owner and member entry.
+Package-local Oxlint accepts the documented effects in auto-mode,
+current-time-context,
+Advisor,
+and shared model selection.
+
+## Verified workarounds
+
+Use `ForeignBorrowed<T>` for Pi-owned capabilities without claiming immutability.
+Pair every mutating or effectful exact call with `@mutates` at each forwarding boundary.
+Use `ReadonlyDeep<T>` only for structural message and result data whose nested projection remains assignable.
+
+This keeps host callback and registration effects visible.
+Its tradeoff is contract propagation through local wrappers that forward the same capability.
+
+## What does not work
+
+- `ReadonlyDeep<ExtensionAPI>` retains mutating methods and therefore makes a dishonest immutability claim.
+- Treating every method as observational misses registration,
+  message,
+  UI,
+  active-tool,
+  and command-backed-auth effects.
+- Treating every method as mutating creates false contracts for `getActiveTools`,
+  `getBranch`,
+  `waitForIdle`,
+  and primitive theme formatting.
+- Checking only method names can match unrelated owners.
+  Exact package major,
+  owner type,
+  member,
+  and implementation evidence are all required.
+
+## Upstream filing artifact
+
+### Upstream filing decision
+
+1. **Is it really upstream's fault?
+   ** No.
+   Pi methods are behaving according to their host-capability roles.
+2. **Can upstream fix it?
+   ** No applicable Pi defect was found.
+3. **Are they supporting this use case?
+   ** Pi supports extensions and exposes the methods needed by these plugins.
+4. **Would the repo welcome our contribution?
+   ** Not applicable because no upstream defect is present.
+5. **Will they likely fix it?
+   ** Not applicable because no behavior change is requested.
+6. **Have we prototyped a minimal fix compatible with their architecture?
+   ** Yes.
+   The project-owned exact effect catalog and `ForeignBorrowed<T>` contracts pass package tests.
+
+Nothing should be filed upstream.

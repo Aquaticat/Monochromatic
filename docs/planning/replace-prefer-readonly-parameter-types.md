@@ -208,6 +208,10 @@ The semantic-rule implementation is functional and shared-configuration migratio
 - commit `d12de9816` resolves exact ambient `AbortSignal.any` identity,
   records its dependent-signal mutation,
   and propagates honest contracts through git-clone-size;
+- commit `3d90851aa` treats direct callback invocation as a known capability mutation,
+  applies nonzero imported-callable catalog targets,
+  and expands exact Pi effect evidence;
+- commit `fe9e0b99e` migrates Advisor and shared model-selection capability contracts;
 - the 2026-07-13 sweep reported 1,014 replacement-rule diagnostics with no bridge-failure category:
   585 uncertain calls,
   272 readonly projections,
@@ -215,6 +219,13 @@ The semantic-rule implementation is functional and shared-configuration migratio
   48 missing contracts,
   and 1 stale contract;
   later package commits in this list postdate that baseline;
+- a later sweep before the Advisor and direct-callback commits reported 965 diagnostics:
+  533 uncertain calls,
+  265 readonly projections,
+  103 dishonest readonly declarations,
+  63 missing contracts,
+  and 1 stale contract,
+  with no semantic bridge failure;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,
@@ -232,6 +243,8 @@ The semantic-rule implementation is functional and shared-configuration migratio
   `packages/dev-script/catalog-tighten`,
   `packages/agent-harnesses-shared/terminal-title`,
   `packages/cli/git-clone-size`,
+  `packages/pi-shared/model-selection`,
+  `packages/pi-plugins/advisor`,
   `packages/pi-plugins/current-time-context`,
   `packages/pi-plugins/terminal-title`,
   `packages/pi-plugins/agent-settled-notification`,
@@ -264,7 +277,12 @@ Verified package tasks:
 - `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint`;
 - `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit`;
 - `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:semantic-bridge-host`;
-- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:external-consumer-host`.
+- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:external-consumer-host`;
+- `mise run //packages/pi-shared/model-selection:lint:oxlint`;
+- `mise run //packages/pi-shared/model-selection:test:unit`;
+- `mise run //packages/pi-plugins/advisor:lint:oxlint`;
+- `mise run //packages/pi-plugins/advisor:test:unit`;
+- `mise run //packages/pi-plugins/advisor:verify:extension`.
 
 Next action:
 migrate remaining packages from the measured 1,014-diagnostic baseline,
