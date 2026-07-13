@@ -11,7 +11,13 @@ The audited outcomes are:
 
 - `Array.isArray(value)` and `Object.is(left, right)` are observational;
 - primitive String transforms and searches are observational for typed primitive inputs and outputs;
-- Array identity searches and collection `has` checks are observational;
+- Array identity searches,
+  array and collection iterators,
+  collection lookups,
+  and collection `has` checks are observational;
+- Array callback methods expose receiver-reachable values to callbacks,
+  so callback effects propagate back to receiver origin;
+- `Array.prototype.join` is observational only when every reachable element is primitive;
 - `Error.isError(value)` is observational;
 - `JSON.stringify(value)` remains opaque because it can invoke `toJSON`,
    accessors,
@@ -44,6 +50,11 @@ ECMA-262 commit `1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1` defines `Array.isArra
   1. Return ? IsArray(_proxyTarget_).
 1. Return *false*.
 ```
+
+Array and collection callback operations do not mutate their receiver directly,
+but they call user code with receiver-reachable values.
+The catalog therefore records callback argument positions separately from direct mutation targets.
+A zero-target callback operation is not complete until call analysis propagates callback mutation and opacity.
 
 `Object.is` delegates only to `SameValue` (`spec.html:31394`):
 
@@ -129,12 +140,32 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
 - `Object.is(proxy, proxy)` did not invoke configured proxy traps.
 - Exact standard-library String transforms and searches return primitives without mutating their string receiver.
 - Exact Array `includes`,
-   `indexOf`,
-   and `lastIndexOf` calls compare identity without mutating the receiver.
+  `indexOf`,
+  and `lastIndexOf` calls compare identity without mutating receiver.
+- Exact Array `at`,
+  `entries`,
+  `keys`,
+  `slice`,
+  and `values` calls observe receiver without invoking user callbacks.
+- Exact Array `every`,
+  `filter`,
+  `find`,
+  `findIndex`,
+  `flatMap`,
+  `forEach`,
+  `map`,
+  and `some` calls propagate callback effects from receiver-reachable element and collection arguments.
 - Exact Map,
-   Set,
-   WeakMap,
-   and WeakSet `has` calls test identity without mutating the receiver.
+  Set,
+  WeakMap,
+  and WeakSet `has` calls test identity without mutating receiver.
+- Exact Map and Set iterator calls observe collection without invoking user callbacks.
+- Exact collection `forEach` calls propagate callback effects from receiver-reachable keys,
+  values,
+  and collection arguments.
+- Exact Map `get` observes stored identity without mutating receiver.
+- Exact Array `join` observes primitive elements,
+  while object-element coercion remains opaque.
 - Exact `Error.isError` inspects error identity without mutating its argument.
 
 ### Calls verified as effectful or opaque
@@ -149,8 +180,10 @@ The rule catalog records exact standard-library owner and member identities with
 This covers `ArrayConstructor.isArray`,
 `ObjectConstructor.is`,
 primitive String methods with primitive-only typed inputs and outputs,
-Array identity searches,
-collection membership checks,
+Array identity searches and iterators,
+collection membership and iterator operations,
+callback operations with explicit callback relations,
+primitive-element Array `join`,
 and `ErrorConstructor.isError`.
 Exact declaration provenance prevents same-named project methods from inheriting this treatment.
 
@@ -168,6 +201,10 @@ mutation even when current runtime values happen to be plain data.
   and proxy behavior remain reachable.
 - Cataloging all reflection functions together fails because operations such as integrity checks can dispatch proxy
   internal methods.
+- Treating callback methods as complete zero-effect observations misses mutation through callback parameters.
+- Treating Array `join` as unconditionally observational misses object coercion hooks.
+- Treating `Object.entries` over unknown values as observational misses getters and proxy traps.
+  Traverse foreign AST values through parser-declared visitor keys instead.
 - Matching only member text such as `is` or `isArray` would bless unrelated project code.
    The catalog must retain owner,
   member,
