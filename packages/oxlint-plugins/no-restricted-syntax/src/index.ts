@@ -70,6 +70,13 @@ export {
 } from './rules/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
 
 export {
+  intrinsicEffectQuery,
+  intrinsicProvenance,
+  NO_INTRINSIC_PROVENANCE,
+  NO_INTRINSIC_QUERY,
+} from './rules/prefer-readonly-parameter-types/intrinsic-effect-query.ts';
+
+export {
   INTRINSIC_EFFECTS,
   intrinsicEffect,
   NO_INTRINSIC_EFFECT,
