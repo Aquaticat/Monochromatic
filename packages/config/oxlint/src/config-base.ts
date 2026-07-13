@@ -74,6 +74,7 @@ export const base: OxlintConfig = {
     '**/packages-paused/**',
     '**/packages-deprecated/**',
     '**/fixture/**',
+    '**/fixtures/**',
     '**/invalid/**',
     '**/test-fixture/**',
     '**/perf-test-data/**',
