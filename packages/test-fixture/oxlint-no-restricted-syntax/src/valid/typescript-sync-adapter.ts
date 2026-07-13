@@ -274,6 +274,36 @@ export function observationalIntrinsicEffect(state: readonly unknown[],): boolea
 }
 
 /**
+ * Sorts primitive array copy through audited nonmutating intrinsic.
+ *
+ * @param values - Primitive numbers copied and sorted without receiver mutation.
+ *
+ * @returns ascending copy of values.
+ */
+export function primitiveArraySortObservationEffect(
+  values: readonly number[],
+): readonly number[] {
+  return values.toSorted(function ascending(left, right,): number {
+    return left - right;
+  },);
+}
+
+/**
+ * Keeps object-element sorting conservative until callback presence is specialized.
+ *
+ * @param values - Object values whose sort callback may expose state.
+ *
+ * @returns sorted object copy.
+ */
+export function objectArraySortOpaqueEffect(
+  values: readonly { readonly value: string; }[],
+): readonly { readonly value: string; }[] {
+  return values.toSorted(function ascending(left, right,): number {
+    return left.value.localeCompare(right.value,);
+  },);
+}
+
+/**
  * Observes primitive path through audited Node operation.
  *
  * @param path - Path joined without caller mutation.

@@ -111,6 +111,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
      */
     const primitiveElementObservations = [
       'join',
+      'toSorted',
     ].map(function primitiveArrayObservation(member,): IntrinsicEffectEntry {
       return {
         provenance: { kind: 'ecmascript', },
@@ -118,7 +119,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         member,
         targets: [],
         requiresPrimitiveReceiverElements: true,
-        evidence: 'ECMA-262 commit 1355a23e array stringification with primitive elements',
+        evidence: 'ECMA-262 commit 1355a23e array operations with primitive-only coercion and callback inputs',
       };
     },);
     /**

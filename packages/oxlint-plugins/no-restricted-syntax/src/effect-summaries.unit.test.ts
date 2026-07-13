@@ -55,6 +55,8 @@ await describe({
           'aliasedCallbackSemanticEffect',
           'noSemanticEffect',
           'observationalIntrinsicEffect',
+          'primitiveArraySortObservationEffect',
+          'objectArraySortOpaqueEffect',
           'observationalValueEffects',
           'pathObservationEffect',
           'dateObservationEffect',
@@ -156,6 +158,16 @@ await describe({
             functionName: 'observationalIntrinsicEffect',
             mutated: [],
             opaque: [],
+          },
+          {
+            functionName: 'primitiveArraySortObservationEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'objectArraySortOpaqueEffect',
+            mutated: [],
+            opaque: [0,],
           },
           {
             functionName: 'observationalValueEffects',
