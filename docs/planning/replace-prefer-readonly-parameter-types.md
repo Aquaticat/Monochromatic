@@ -469,7 +469,32 @@ the implementation must obtain an explicit effect summary or require `@mutates` 
 The absence of `@mutates` is a verified negative effect contract,
 but it does not replace an honest TypeScript readonly type where one is available.
 
+### Chosen callable coverage
+
+Every callable that intentionally mutates a parameter requires `@mutates`:
+exported functions,
+local helpers,
+methods,
+constructors,
+getters or setters with parameters,
+function expressions,
+and inline callbacks.
+
+The rule infers effects to verify tags and propagate diagnostics,
+not to make internal mutation implicit.
+Every call edge therefore has an inspectable contract.
+Moving a callable between local and exported scope does not change the requirement.
+
+The TSDoc plugin already visits function expressions and arrow functions as documentable nodes.
+The implementation must add mutation-tag fixtures for direct declarations,
+methods,
+and callback comment attachment so Oxlint's comment ownership cannot silently skip an effect contract.
+
 ### Awaiting decision
 
-The first unresolved policy decision is whether mutation tags are required on every mutating callable or only on selected
-API boundaries.
+The first unresolved policy decision is how callable declarations without one concrete body,
+such as overloads,
+interfaces,
+abstract methods,
+and ambient or external declarations,
+carry mutation effects.
