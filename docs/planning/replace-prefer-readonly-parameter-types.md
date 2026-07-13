@@ -200,6 +200,14 @@ The semantic-rule implementation is functional and shared-configuration migratio
   error,
   and ownership boundaries;
 - commit `b72d5e979` adds `mise run lint:oxlint` as a single-worker repository sweep;
+- commits `e3317a477`,
+  `a576a9db9`,
+  and `25ec90308` migrate catalog tightening,
+  terminal-title registry handling,
+  and git-clone-size ownership boundaries;
+- commit `d12de9816` resolves exact ambient `AbortSignal.any` identity,
+  records its dependent-signal mutation,
+  and propagates honest contracts through git-clone-size;
 - the 2026-07-13 sweep reported 1,014 replacement-rule diagnostics with no bridge-failure category:
   585 uncertain calls,
   272 readonly projections,
@@ -221,6 +229,9 @@ The semantic-rule implementation is functional and shared-configuration migratio
   `packages/module/pnpm-workspace-catalog`,
   `packages/module/fs-id`,
   `packages/module/dom`,
+  `packages/dev-script/catalog-tighten`,
+  `packages/agent-harnesses-shared/terminal-title`,
+  `packages/cli/git-clone-size`,
   `packages/pi-plugins/current-time-context`,
   `packages/pi-plugins/terminal-title`,
   `packages/pi-plugins/agent-settled-notification`,
