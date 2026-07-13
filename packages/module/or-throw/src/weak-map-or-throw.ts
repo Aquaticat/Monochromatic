@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
 
 /**
@@ -34,7 +36,7 @@ export function weakMapOrThrow<T,>(
   value: T,
 ): ExtractOrUnknown<T, WeakMap<object, unknown>> {
   if (!(value instanceof WeakMap))
-    throw new Error(`Expected WeakMap, got ${typeof value} ${String(value,)}`,);
+    throw new Error(`Expected WeakMap, got ${typeof value} ${formatUnknownValue(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after instanceof
   return value as ExtractOrUnknown<T, WeakMap<object, unknown>>;
 }

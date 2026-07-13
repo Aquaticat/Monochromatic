@@ -39,6 +39,27 @@ await describe({
     },),
 
     it({
+      name: 'does not invoke caller-owned coercion hooks while formatting failures',
+      fn: async () => {
+        /**
+         * Number of user coercion hook calls.
+         */
+        let coercionCount = 0;
+        /**
+         * Rejected reference carrying observable coercion hook.
+         */
+        const value = {
+          toString(): string {
+            coercionCount++;
+            return 'coerced';
+          },
+        };
+        expect(() => stringOrThrow(value,)).toThrow('[object]',);
+        expect(coercionCount,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'narrows unknown to string',
       fn: async () => {
         const input: unknown = 'hello';

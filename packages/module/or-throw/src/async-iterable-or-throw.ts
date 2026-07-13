@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 /**
  * Asserts that a value implements the async-iterable protocol, returning it
  * intersected with `AsyncIterable<unknown>`.
@@ -37,7 +39,7 @@
 export function asyncIterableOrThrow<T,>(value: T,): T & AsyncIterable<unknown> {
   if ((value === null) || (value === undefined)
     || ((typeof value) !== 'object'))
-    throw new Error(`Expected async iterable, got ${typeof value} ${String(value,)}`,);
+    throw new Error(`Expected async iterable, got ${typeof value} ${formatUnknownValue(value,)}`,);
   if (!(Symbol.asyncIterator
     in value))
     throw new Error(`Expected async iterable, got object without Symbol.asyncIterator`,);

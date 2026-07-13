@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
 import type { Falsy, } from './falsy.ts';
 
@@ -44,7 +46,7 @@ import type { Falsy, } from './falsy.ts';
 export function falsyOrThrow<T,>(value: T,): ExtractOrUnknown<T, Falsy> {
   // oxlint-disable-next-line typescript/strict-boolean-expressions -- intentional truthiness check on generic T; the rule's narrower-type preference defeats the purpose of this assertion
   if (value)
-    throw new Error(`Expected falsy value, got ${String(value,)}`,);
+    throw new Error(`Expected falsy value, got ${formatUnknownValue(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T via `if (value)`, so the cast bridges the runtime check to the documented return type
   return value as ExtractOrUnknown<T, Falsy>;
 }

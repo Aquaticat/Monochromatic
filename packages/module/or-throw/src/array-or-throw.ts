@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
 
 /**
@@ -35,7 +37,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  */
 export function arrayOrThrow<T,>(value: T,): ExtractOrUnknown<T, readonly unknown[]> {
   if (!Array.isArray(value,))
-    throw new Error(`Expected array, got ${typeof value} ${String(value,)}`,);
+    throw new Error(`Expected array, got ${typeof value} ${formatUnknownValue(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after Array.isArray
   return value as ExtractOrUnknown<T, readonly unknown[]>;
 }

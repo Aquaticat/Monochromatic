@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
 
 /**
@@ -33,7 +35,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  */
 export function objectOrThrow<T,>(value: T,): ExtractOrUnknown<T, object> {
   if (((typeof value) !== 'object') || (value === null))
-    throw new Error(`Expected non-null object, got ${typeof value} ${String(value,)}`,);
+    throw new Error(`Expected non-null object, got ${typeof value} ${formatUnknownValue(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after typeof + null check
   return value as ExtractOrUnknown<T, object>;
 }

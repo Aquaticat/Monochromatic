@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 /**
  * Returns the element count of a recognized container shape.
  *
@@ -37,7 +39,7 @@
  */
 export function getSize(value: unknown,): number {
   if ((value === null) || (value === undefined))
-    throw new Error(`Expected sized container, got ${String(value,)}`,);
+    throw new Error(`Expected sized container, got ${formatUnknownValue(value,)}`,);
   if ((typeof value) === 'string')
     return value.length;
   if (Array.isArray(value,))

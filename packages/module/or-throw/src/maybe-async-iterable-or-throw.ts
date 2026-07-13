@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 /**
  * Asserts that a value implements either the sync-iterable or the
  * async-iterable protocol, returning it intersected with the union of both
@@ -45,7 +47,7 @@ export function maybeAsyncIterableOrThrow<T,>(
   if ((value === null) || (value === undefined)
     || ((typeof value) !== 'object')) {
     throw new Error(
-      `Expected iterable or async iterable, got ${typeof value} ${String(value,)}`,
+      `Expected iterable or async iterable, got ${typeof value} ${formatUnknownValue(value,)}`,
     );
   }
   if ((!(Symbol.iterator

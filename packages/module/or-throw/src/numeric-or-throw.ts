@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
 
 /**
@@ -33,7 +35,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  */
 export function numericOrThrow<T,>(value: T,): ExtractOrUnknown<T, number | bigint> {
   if (((typeof value) !== 'number') && ((typeof value) !== 'bigint'))
-    throw new Error(`Expected number or bigint, got ${typeof value} ${String(value,)}`,);
+    throw new Error(`Expected number or bigint, got ${typeof value} ${formatUnknownValue(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after typeof
   return value as ExtractOrUnknown<T, number | bigint>;
 }

@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
 
 /**
@@ -31,7 +33,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  */
 export function setOrThrow<T,>(value: T,): ExtractOrUnknown<T, Set<unknown>> {
   if (!(value instanceof Set))
-    throw new Error(`Expected Set, got ${typeof value} ${String(value,)}`,);
+    throw new Error(`Expected Set, got ${typeof value} ${formatUnknownValue(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after instanceof
   return value as ExtractOrUnknown<T, Set<unknown>>;
 }

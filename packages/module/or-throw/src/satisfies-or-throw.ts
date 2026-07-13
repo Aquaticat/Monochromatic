@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 /**
  * Parameters passed to custom `satisfiesOrThrow` predicates.
  *
@@ -165,8 +167,8 @@ export type SatisfiesOrThrowAsyncOptions<Value, Candidate = unknown,> =
  * Formats values that appear in satisfaction failure messages.
  *
  * `String(-0)` returns `"0"`, which hides the exact `Object.is` failure.
- * This formatter preserves `-0` while leaving the package's existing
- * `String(value)` convention in place for every other value.
+ * This formatter preserves `-0` while delegating other values to the
+ * side-effect-free diagnostic formatter.
  *
  * @param value - Value being rendered for diagnostics
  *
@@ -184,7 +186,7 @@ function formatSatisfactionValue(value: unknown,): string {
     -0,
   ))
     return '-0';
-  return String(value,);
+  return formatUnknownValue(value,);
 }
 
 /**

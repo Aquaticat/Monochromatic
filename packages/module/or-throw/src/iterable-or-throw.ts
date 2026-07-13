@@ -4,6 +4,8 @@
  * @module
  */
 
+import { formatUnknownValue, } from './format-unknown-value.ts';
+
 /**
  * Asserts that a value implements the sync-iterable protocol, returning it
  * intersected with `Iterable<unknown>`.
@@ -41,7 +43,7 @@ export function iterableOrThrow<T,>(value: T,): T & Iterable<unknown> {
   }
   if ((value === null) || (value === undefined)
     || ((typeof value) !== 'object'))
-    throw new Error(`Expected iterable, got ${typeof value} ${String(value,)}`,);
+    throw new Error(`Expected iterable, got ${typeof value} ${formatUnknownValue(value,)}`,);
   if (!(Symbol.iterator
     in value))
     throw new Error(`Expected iterable, got object without Symbol.iterator`,);
