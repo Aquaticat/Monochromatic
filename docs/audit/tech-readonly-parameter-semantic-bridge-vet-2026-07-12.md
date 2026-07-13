@@ -1,9 +1,9 @@
 # Readonly parameter semantic bridge technology vet
 
 Status:
- in progress.
-TypeScript 7's synchronous unstable API is the user-approved primary candidate;
-acceptance validation and product-policy grilling remain open.
+ complete for technology selection.
+TypeScript 7's synchronous unstable API is selected;
+remaining gates are implementation acceptance criteria rather than alternative-selection blockers.
 
 Subject:
  readonly parameter semantic bridge.
@@ -204,8 +204,7 @@ and `microsoft/typescript-go` source at
 `168e7015edf98244febc8f4ae450b673b5d195d7`.
 
 Lifecycle:
- user-approved primary candidate,
-acceptance validation pending.
+ selected with explicit unstable-API acceptance gates.
 
 Role:
  keep one synchronous native API client per Oxlint plugin process;
@@ -534,7 +533,7 @@ Read-only shallow clones were used at these revisions:
   Yuku,
   and `rolldown-plugin-dts` revisions.
 
-## Open acceptance gates
+## Implementation acceptance gates
 
 - Replace the prototype's mutating-method name set with symbol- and signature-grounded capability handling.
 - Prove fail-closed `opaqueEffect` behavior for unresolved calls,
@@ -622,17 +621,38 @@ fixtures using repository tasks or an equivalent isolated harness.
 
 ## Scoring and sensitivity
 
-Scoring remains pending the open acceptance gates.
-The representative Linux fixture does not justify numeric ratings for semantic completeness,
-editor lifecycle,
-cross-package behavior,
-or cross-platform provenance.
+The selected candidate scores 31 out of 40 under the frozen equal weights:
 
-Ordering is nevertheless constrained:
-TypeScript 7 remains the sole user-approved candidate,
-and TypeScript 6 candidates may not be selected.
-This is a policy selection,
-not a substitute for capability scoring.
+- semantic completeness:
+  4 out of 5,
+  because TypeScript supplies the required semantic objects while the project still owns effect interpretation;
+- Oxlint-node to semantic-node mapping:
+  4 out of 5,
+  because ASCII and adversarial Unicode positions passed while parser recovery remains an acceptance case;
+- incremental and editor lifecycle:
+  4 out of 5,
+  because snapshots,
+  overlays,
+  caching,
+  and project discovery passed while editor integration is unavailable;
+- cross-package behavior:
+  4 out of 5,
+  based on two distinct repository package projects rather than every topology;
+- explainability:
+  4 out of 5,
+  reduced for the hidden mapped-readonly flag;
+- source and cache auditability:
+  3 out of 5,
+  reduced for the unstable API and native RPC boundary;
+- reuse of repository components:
+  5 out of 5;
+- platform and artifact provenance:
+  3 out of 5,
+  because package metadata covers target platforms but runtime probes ran only on Linux x64.
+
+Sensitivity does not change the result because TypeScript 7 is the only candidate permitted by the user constraint that
+also matches the installed compiler semantics.
+The reduced ratings become explicit implementation acceptance work rather than grounds to substitute TypeScript 6.
 
 ## Adoption and rollback plan
 
@@ -665,7 +685,7 @@ No source-level migration should depend on an unverified automatic rewrite.
 
 ## Current outcome
 
-User-approved primary candidate:
+Selected:
  TypeScript 7.0.2's `typescript/unstable/sync` API.
 
 Rejected by user constraint:
@@ -677,7 +697,7 @@ Oxc isolated declarations,
 `rolldown-plugin-dts` as a lint lifecycle,
 and wrappers built on TypeScript 6.
 
-Still open:
+Required before implementation completion:
  remaining semantic-bridge acceptance gates and built-package publication verification.
 The installed declaration transform and bundler preserved the selected `@mutates` contract,
 and `type-fest`'s `ReadonlyDeep` is selected for projection authoring.
