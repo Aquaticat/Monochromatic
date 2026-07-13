@@ -10,7 +10,8 @@
     "@monochromatic-dev/config-oxlint-no-restricted-syntax": "workspace:*",
     "@monochromatic-dev/config-oxlint-stylistic": "workspace:*",
     "@monochromatic-dev/config-oxlint-tsdoc": "workspace:*",
-    "oxlint": "catalog:"
+    "oxlint": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

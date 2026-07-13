@@ -1140,6 +1140,9 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.73.0(oxlint-tsgolint@0.24.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*

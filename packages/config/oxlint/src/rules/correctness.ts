@@ -12,8 +12,6 @@
 
 import type { DummyRuleMap, } from 'oxlint';
 
-import { preferReadonlyParameterTypesRule, } from './prefer-readonly-parameter-types.ts';
-
 /**
  * Correctness, typescript, and performance rules.
  */
@@ -44,9 +42,6 @@ export const correctnessRules: DummyRuleMap = {
   // null checks, causing runtime crashes. The rule has no per-rule fix-disable
   // option, so the whole rule is turned off.
   'typescript/no-unnecessary-condition': 'off',
-
-  // See ./prefer-readonly-parameter-types.ts for the allow-list and rationale.
-  'typescript/prefer-readonly-parameter-types': preferReadonlyParameterTypesRule,
 
   //region correctness
 

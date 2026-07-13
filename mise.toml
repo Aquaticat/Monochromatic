@@ -574,6 +574,9 @@ run = """
 ensureOxlintConfig()
 runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware'])
 """
+[task_templates."lint:oxlint".env]
+# JavaScript semantic plugins own process-local native analysis state, so every source must share one Oxlint worker.
+OXLINT_THREADS = "1"
 
 [task_templates."format:oxlint"]
 description = "Auto-fix this package with Oxlint using its package-local tsconfig"
@@ -583,6 +586,9 @@ run = """
 ensureOxlintConfig()
 runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware', '--fix'])
 """
+[task_templates."format:oxlint".env]
+# Match lint worker identity so semantic diagnostics stay stable across fixpoint passes.
+OXLINT_THREADS = "1"
 
 [task_templates."lint:types"]
 description = "TypeScript"

@@ -160,6 +160,11 @@ export const restrictionRules: DummyRuleMap = {
   // why-regex, input-bound, and backtracking-safety rationale.
   'no-restricted-syntax/no-regex': 'error',
 
+  // Require honest deep-readonly parameter types for nonmutating data and verify
+  // caller-observable mutation through repeatable @mutates contracts. Capability
+  // reads require audited effects or structurally verified local adapters.
+  'no-restricted-syntax/prefer-readonly-parameter-types': 'error',
+
   // Static Symbol descriptions must carry enough debugging information. Sentinel
   // Symbols stand in for nullish unions, so the description is the only identity
   // at a crash site. A structural classifier (word count, casing, namespace
@@ -187,6 +192,7 @@ export const restrictionRules: DummyRuleMap = {
   'no-restricted-syntax/no-disable-no-useless-return': 'error',
   'no-restricted-syntax/no-disable-require-returns': 'error',
   'no-restricted-syntax/no-disable-prefer-regexp-exec': 'error',
+  'no-restricted-syntax/no-disable-prefer-readonly-parameter-types': 'error',
   //endregion no-disable
 
   // Never process.exit(): throw errors instead.
