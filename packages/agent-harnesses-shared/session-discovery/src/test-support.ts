@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import {
   SESSION_NOT_FOUND,
   type SessionDiscoveryIo,
@@ -41,41 +43,25 @@ function parseTestMapping(raw: string,): TestMapping {
    * Parsed fixture value before runtime validation.
    */
   const parsed: unknown = JSON.parse(raw,);
-  if (!isTestMapping(parsed,))
+  if (!isObject(parsed,))
     throw new Error(`Invalid test mapping JSON: ${raw}`,);
-
-  return parsed;
-}
-
-/**
- * Checks whether a parsed fixture has the test mapping shape.
- *
- * @param value - parsed fixture value
- *
- * @returns whether value is a test mapping
- *
- * @example
- * ```ts
- * isTestMapping({ sessionId: 's' });
- * ```
- */
-function isTestMapping(value: unknown,): value is TestMapping {
-  if (!isObject(value,))
-    return false;
   if (!Object.hasOwn(
-    value,
+    parsed,
     'sessionId',
   ))
-    return false;
+    throw new Error(`Invalid test mapping JSON: ${raw}`,);
 
   /**
-   * Candidate session id property value.
+   * Candidate session id read from JSON-owned fixture data.
    */
   const sessionId: unknown = Reflect.get(
-    value,
+    parsed,
     'sessionId',
   );
-  return (typeof sessionId) === 'string';
+  if ((typeof sessionId) !== 'string')
+    throw new Error(`Invalid test mapping JSON: ${raw}`,);
+
+  return { sessionId, };
 }
 
 /**
@@ -121,6 +107,8 @@ function mappingJson(sessionId: string,): string {
  *
  * @returns fake IO seam
  *
+ * @mutates files - deferred `Object.keys` may invoke own-key and property-descriptor proxy traps
+ *
  * @example
  * ```ts
  * fakeIo({ files: {}, mtimes: {}, parents: new Map() });
@@ -131,11 +119,11 @@ function fakeIo(
     files,
     mtimes,
     parents,
-  }: {
-    readonly files: Readonly<Record<string, string>>;
-    readonly mtimes: Readonly<Record<string, number>>;
-    readonly parents: ReadonlyMap<number, number>;
-  },
+  }: ForeignBorrowed<Readonly<{
+    files: Readonly<Record<string, string>>;
+    mtimes: Readonly<Record<string, number>>;
+    parents: ReadonlyMap<number, number>;
+  }>>,
 ): SessionDiscoveryIo {
   return {
     readDir: function readDir(path,): Promise<readonly string[]> {
