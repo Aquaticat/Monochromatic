@@ -4,6 +4,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Comment,
   Context,
@@ -134,7 +135,7 @@ function tsdocContentLines(comment: ReadonlyDeep<Comment>,): readonly string[] {
  * ```
  */
 function multilineTsdocReplacement(
-  params: Readonly<MultilineTsdocReplacementParams>,
+  params: ForeignBorrowed<Readonly<MultilineTsdocReplacementParams>>,
 ): string {
   /**
    * Rule context whose source text provides indentation.
@@ -198,7 +199,19 @@ export const checkAlignment: CreateOnceRule = {
         'TSDoc asterisk misaligned: expected {{expected}} spaces of indent, found {{actual}}.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createTsdocVisitor({
       context,
       handler: function checkAlignmentHandler(
@@ -283,7 +296,19 @@ export const multilineBlocks: CreateOnceRule = {
       singleLine: 'TSDoc comments must use multiline format.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
       before() {
         if (shouldSkipIgnoredFile({ context, }))
@@ -293,10 +318,10 @@ export const multilineBlocks: CreateOnceRule = {
       Program(): void {
         context.sourceCode
           .getAllComments()
-          .filter(function keepTsdocBlock(comment,): boolean {
+          .filter(function keepTsdocBlock(comment: ForeignBorrowed<Comment>,): boolean {
             return isTsdocBlock(comment,);
           },)
-          .forEach(function checkComment(comment,): void {
+          .forEach(function checkComment(comment: ForeignBorrowed<Comment>,): void {
             /**
              * Comment body split into lines; one body line means opener and closer share a physical line.
              */
@@ -310,7 +335,7 @@ export const multilineBlocks: CreateOnceRule = {
             context.report({
               loc: commentReportLoc(comment,),
               messageId: 'singleLine',
-              fix(fixer: Fixer,): Fix | Fix[] {
+              fix(fixer: ForeignBorrowed<Fixer>,): Fix | Fix[] {
                 /**
                  * Complete source text used to detect whether comment starts mid-line after code.
                  */

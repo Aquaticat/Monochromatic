@@ -4,6 +4,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -111,7 +112,7 @@ export const checkMutates: CreateOnceRule = {
       duplicateTarget: 'Mutation contract target "{{target}}" is duplicated.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createFunctionTsdocVisitor({
       context,
       includeTypeSignatures: true,

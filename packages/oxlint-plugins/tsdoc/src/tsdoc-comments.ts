@@ -6,6 +6,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Comment,
   Context,
@@ -140,7 +141,7 @@ export type TsdocLookupParams = {
 export function findTsdocComment({
   node,
   context,
-}: TsdocLookupParams,): Comment | typeof NO_TSDOC {
+}: ForeignBorrowed<TsdocLookupParams>,): Comment | typeof NO_TSDOC {
   // Fast path: getCommentsBefore works for most declarations
   /**
    * Leading comments returned by the standard API; scanned back-to-front for nearest TSDoc.
@@ -285,7 +286,7 @@ export function parseTsdocComment(comment: ReadonlyDeep<Comment>,): ParsedCommen
 export function parseTsdocForNode({
   node,
   context,
-}: TsdocLookupParams,): ParsedTsdocResult | typeof NO_TSDOC {
+}: ForeignBorrowed<TsdocLookupParams>,): ParsedTsdocResult | typeof NO_TSDOC {
   /**
    * Located TSDoc comment for the node; absent means nothing to parse.
    */

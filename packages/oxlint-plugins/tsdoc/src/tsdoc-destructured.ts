@@ -6,6 +6,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type { Span, } from '@oxlint/plugins';
 
 import {
@@ -40,7 +41,7 @@ import {
  * ```
  */
 export function extractDestructuredParamNames(
-  node: Span & ReadonlyRecord,
+  node: ForeignBorrowed<Span & ReadonlyRecord>,
 ): ReadonlySet<string> {
   /**
    * Accumulator populated by the recursive walk; returned as a read-only view.

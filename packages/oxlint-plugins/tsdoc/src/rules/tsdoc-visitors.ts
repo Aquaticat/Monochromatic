@@ -7,9 +7,11 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Comment,
   Context,
+  ESTree,
   LineColumn,
   Span,
   VisitorWithHooks,
@@ -69,7 +71,7 @@ type CreateDocumentableVisitorParams = {
   /**
    * Invoked for each documentable node type.
    */
-  readonly check: (node: Span) => void;
+  readonly check: (node: ForeignBorrowed<Span>) => void;
 };
 
 /**
@@ -85,7 +87,7 @@ type CreateDocumentableVisitorParams = {
  * if (shouldSkipIgnoredFile({ context })) return false;
  * ```
  */
-export function shouldSkipIgnoredFile(params: IgnoredFileBeforeHookParams,): boolean {
+export function shouldSkipIgnoredFile(params: ForeignBorrowed<IgnoredFileBeforeHookParams>,): boolean {
   /**
    * Rule context carrying current filename.
    */
@@ -180,7 +182,7 @@ export function commentLineReportLoc(
  * createDocumentableVisitor({ context, check });
  * ```
  */
-function createDocumentableVisitor(params: CreateDocumentableVisitorParams,): VisitorWithHooks {
+function createDocumentableVisitor(params: ForeignBorrowed<CreateDocumentableVisitorParams>,): VisitorWithHooks {
   /**
    * Rule context and callback used by every documentable-node visitor.
    */
@@ -205,7 +207,11 @@ function createDocumentableVisitor(params: CreateDocumentableVisitorParams,): Vi
     VariableDeclaration: check,
     PropertyDefinition: check,
     TSEnumMember: check,
-    Property(node,): void {
+    Property(node: ForeignBorrowed<
+      | ESTree.AssignmentTargetProperty
+      | ESTree.BindingProperty
+      | ESTree.ObjectProperty
+    >,): void {
       if ((node.kind
         === 'get') || (node.kind
           === 'set'))
@@ -226,7 +232,7 @@ export type CreateTsdocVisitorParams = {
    * Invoked for each (node, comment) pair.
    */
   readonly handler: (
-    node: Span,
+    node: ForeignBorrowed<Span>,
     comment: ReadonlyDeep<Comment>,
   ) => void;
 };
@@ -245,7 +251,7 @@ export type CreateTsdocVisitorParams = {
  * return createTsdocVisitor({ context, handler });
  * ```
  */
-export function createTsdocVisitor(params: CreateTsdocVisitorParams,): VisitorWithHooks {
+export function createTsdocVisitor(params: ForeignBorrowed<CreateTsdocVisitorParams>,): VisitorWithHooks {
   /**
    * Rule context and handler for located TSDoc comments.
    */
@@ -258,7 +264,7 @@ export function createTsdocVisitor(params: CreateTsdocVisitorParams,): VisitorWi
    *
    * @param node - AST node to check
    */
-  function check(node: Span,): void {
+  function check(node: ForeignBorrowed<Span>,): void {
     /**
      * Located TSDoc comment for the node; only when present does the handler fire.
      */
@@ -292,7 +298,7 @@ export type CreateParsedTsdocVisitorParams = {
    * Invoked with node and parsed TSDoc for each documentable node.
    */
   readonly handler: (
-    node: Span,
+    node: ForeignBorrowed<Span>,
     result: ReadonlyDeep<TsdocParseResult>,
   ) => void;
 };
@@ -310,7 +316,7 @@ export type CreateParsedTsdocVisitorParams = {
  * return createParsedTsdocVisitor({ context, handler });
  * ```
  */
-export function createParsedTsdocVisitor(params: CreateParsedTsdocVisitorParams,): VisitorWithHooks {
+export function createParsedTsdocVisitor(params: ForeignBorrowed<CreateParsedTsdocVisitorParams>,): VisitorWithHooks {
   /**
    * Rule context and handler for parsed TSDoc comments.
    */
@@ -323,7 +329,7 @@ export function createParsedTsdocVisitor(params: CreateParsedTsdocVisitorParams,
    *
    * @param node - AST node to check
    */
-  function check(node: Span,): void {
+  function check(node: ForeignBorrowed<Span>,): void {
     /**
      * Parsed TSDoc bundle for the node; absent means no TSDoc and the handler is skipped.
      */
@@ -365,7 +371,7 @@ export type CreateFunctionTsdocVisitorParams = {
    * Invoked with node and parsed TSDoc for each function-like node.
    */
   readonly handler: (
-    node: Span & ReadonlyRecord,
+    node: ForeignBorrowed<Span & ReadonlyRecord>,
     result: ReadonlyDeep<TsdocParseResult>,
   ) => void;
 };
@@ -388,7 +394,7 @@ export type CreateFunctionTsdocVisitorParams = {
  * ```
  */
 export function createFunctionTsdocVisitor(
-  params: CreateFunctionTsdocVisitorParams,
+  params: ForeignBorrowed<CreateFunctionTsdocVisitorParams>,
 ): VisitorWithHooks {
   /**
    * Rule context, arrow toggle, and handler for parsed function TSDoc comments.
@@ -404,7 +410,7 @@ export function createFunctionTsdocVisitor(
    *
    * @param node - AST node to check
    */
-  function check(node: Span,): void {
+  function check(node: ForeignBorrowed<Span>,): void {
     /**
      * Parsed TSDoc bundle for the node; absent means no TSDoc and the handler is skipped.
      */

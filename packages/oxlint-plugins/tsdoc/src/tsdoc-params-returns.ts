@@ -6,6 +6,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type { Span, } from '@oxlint/plugins';
 
 import {
@@ -29,7 +30,7 @@ import {
  * if (functionReturnsValue(node)) { /* check for \@returns tag *\/ }
  * ```
  */
-export function functionReturnsValue(node: Span & ReadonlyRecord,): boolean {
+export function functionReturnsValue(node: ForeignBorrowed<Span & ReadonlyRecord>,): boolean {
   // Check kind on the outer MethodDefinition BEFORE unwrapping to .value,
   // because `kind` ("constructor", "get", "set", "method") is a property
   // of MethodDefinition, not of the inner FunctionExpression.
@@ -131,7 +132,7 @@ export function functionReturnsValue(node: Span & ReadonlyRecord,): boolean {
  * if (isGeneratorFunction(node)) { /* check for \@yields tag *\/ }
  * ```
  */
-export function isGeneratorFunction(node: Span & ReadonlyRecord,): boolean {
+export function isGeneratorFunction(node: ForeignBorrowed<Span & ReadonlyRecord>,): boolean {
   /**
    * Inner function value (for methods) or the node itself; carries the `generator` flag.
    */

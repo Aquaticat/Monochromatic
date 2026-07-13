@@ -6,6 +6,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   Span,
@@ -109,7 +110,7 @@ function readNamedChild({
  * const name = extractNodeName(functionNode); // e.g. 'myFunction'
  * ```
  */
-export function extractNodeName(node: Span,): string {
+export function extractNodeName(node: ForeignBorrowed<Span>,): string {
   /**
    * Narrowed view that exposes the untyped properties added by the host AST.
    */
@@ -195,7 +196,7 @@ export function extractNodeName(node: Span,): string {
  * extractNodeKind(functionNode) // → 'function'
  * ```
  */
-export function extractNodeKind(node: Span,): string {
+export function extractNodeKind(node: ForeignBorrowed<Span>,): string {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped. */
   /**
    * AST type tag (e.g. `FunctionDeclaration`); the key into {@link NODE_KIND_LABELS}.
@@ -232,11 +233,13 @@ export type ReportMissingParams = {
  * ```ts
  * reportMissing({ node, context });
  * ```
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 export function reportMissing({
   node,
   context,
-}: ReportMissingParams,): void {
+}: ForeignBorrowed<ReportMissingParams>,): void {
   if (findTsdocComment({
     node,
     context,

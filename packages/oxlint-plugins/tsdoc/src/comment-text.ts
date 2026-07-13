@@ -436,6 +436,22 @@ export function normalizeLines({
    * Folded result whose `rows` hold every normalized line in source order.
    */
   const folded = rawLines.reduce(
+    /**
+     * Handles effectful plugin callback.
+     *
+     * @param acc - Mutable fold state accumulated across comment lines.
+     *
+     * @param rawLine - Current unnormalized comment line.
+     *
+     * @returns same fold state after current line normalization.
+     *
+     * @mutates acc - Updates fence state and appends normalized comment rows.
+     *
+     * @example
+     * ```ts
+     * fold(acc);
+     * ```
+     */
     function fold(
       acc,
       rawLine,

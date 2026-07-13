@@ -11,6 +11,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Comment,
   Context,
@@ -47,7 +48,7 @@ import {
  *
  * @returns true when the node's parent is an export declaration
  */
-function isDirectlyExported(node: Span,): boolean {
+function isDirectlyExported(node: ForeignBorrowed<Span>,): boolean {
   /**
    * Narrowed view of `node` that exposes the untyped `parent` property added by the host.
    */
@@ -133,7 +134,19 @@ export const requireExample: CreateOnceRule = {
       missing: 'Exported function is missing an @example tag in its TSDoc comment.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Deferred checks for functions that may be exported via specifier lists.
      * Maps declaration name to the AST node and its TSDoc comment.
@@ -189,7 +202,7 @@ export const requireExample: CreateOnceRule = {
      *
      * @param node - AST node to check
      */
-    function checkFunction(node: Span,): void {
+    function checkFunction(node: ForeignBorrowed<Span>,): void {
       /**
        * Attached TSDoc comment, when present; absent means nothing to validate.
        */
@@ -232,7 +245,7 @@ export const requireExample: CreateOnceRule = {
      *
      * @param node - VariableDeclaration AST node
      */
-    function checkVariable(node: Span,): void {
+    function checkVariable(node: ForeignBorrowed<Span>,): void {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped. */
       /**
        * Narrowed view of the VariableDeclaration so untyped `declarations` is reachable.
@@ -319,7 +332,7 @@ export const requireExample: CreateOnceRule = {
       },
       FunctionDeclaration: checkFunction,
       VariableDeclaration: checkVariable,
-      ExportNamedDeclaration(node: Span,): void {
+      ExportNamedDeclaration(node: ForeignBorrowed<Span>,): void {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped. */
         /**
          * Narrowed view of the ExportNamedDeclaration so untyped `specifiers` is reachable.

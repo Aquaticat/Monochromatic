@@ -6,6 +6,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -86,7 +87,19 @@ export const tagLines: CreateOnceRule = {
       noBlankBefore: 'Expected a blank line before "{{tag}}".',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createTsdocVisitor({
       context,
       handler: function tagLinesHandler(
@@ -179,7 +192,7 @@ export const tagLines: CreateOnceRule = {
               },),
               messageId: 'noBlankBefore',
               data: { tag, },
-              fix(fixer: Fixer,) {
+              fix(fixer: ForeignBorrowed<Fixer>,) {
                 /**
                  * Insert a blank comment line (`\n *`) just before the tag line.
                  * Use `getIndexFromLoc` to find the byte offset of the tag line start,

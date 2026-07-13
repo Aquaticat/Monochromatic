@@ -7,6 +7,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type { Span, } from '@oxlint/plugins';
 import type { ReadonlyDeep, } from 'type-fest';
 
@@ -39,7 +40,7 @@ import type {
  * ```
  */
 export function extractParamNames(
-  node: Span & ReadonlyRecord,
+  node: ForeignBorrowed<Span & ReadonlyRecord>,
 ): readonly string[] {
   return extractRawParams(node,)
     .flatMap(function extractName(param,): readonly string[] {

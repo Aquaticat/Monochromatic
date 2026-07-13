@@ -221,7 +221,7 @@ function buildSegments(normalizedLines: readonly NormalizedLine[],): readonly Se
   },);
 
   return segments
-    .map(function finalize(segment,): Segment {
+    .map(function finalize(segment: ReadonlyDeep<OpenSegment>,): Segment {
       return {
         tag: segment.tag,
         lineOffset: segment.lineOffset,

@@ -1,6 +1,8 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
+  ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
@@ -50,7 +52,19 @@ export const requireTsdoc: CreateOnceRule = {
       missing: 'Missing TSDoc comment on {{kind}} "{{name}}".',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Mutable visitor traversal state shared across AST callbacks.
      *
@@ -70,37 +84,37 @@ export const requireTsdoc: CreateOnceRule = {
           return false;
         return undefined;
       },
-      FunctionDeclaration(node,): void {
+      FunctionDeclaration(node: ForeignBorrowed<ESTree.Node>,): void {
         reportMissing({
           node,
           context,
         },);
       },
-      ClassDeclaration(node,): void {
+      ClassDeclaration(node: ForeignBorrowed<ESTree.Node>,): void {
         reportMissing({
           node,
           context,
         },);
       },
-      MethodDefinition(node,): void {
+      MethodDefinition(node: ForeignBorrowed<ESTree.Node>,): void {
         reportMissing({
           node,
           context,
         },);
       },
-      TSInterfaceDeclaration(node,): void {
+      TSInterfaceDeclaration(node: ForeignBorrowed<ESTree.Node>,): void {
         reportMissing({
           node,
           context,
         },);
       },
-      TSTypeAliasDeclaration(node,): void {
+      TSTypeAliasDeclaration(node: ForeignBorrowed<ESTree.Node>,): void {
         reportMissing({
           node,
           context,
         },);
       },
-      TSEnumDeclaration(node,): void {
+      TSEnumDeclaration(node: ForeignBorrowed<ESTree.Node>,): void {
         reportMissing({
           node,
           context,
@@ -115,7 +129,7 @@ export const requireTsdoc: CreateOnceRule = {
       ForInStatement(): void {
         state.inForLoopInit = true;
       },
-      VariableDeclaration(node,): void {
+      VariableDeclaration(node: ForeignBorrowed<ESTree.Node>,): void {
         if (state.inForLoopInit) {
           state.inForLoopInit = false;
           return;
@@ -125,19 +139,23 @@ export const requireTsdoc: CreateOnceRule = {
           context,
         },);
       },
-      PropertyDefinition(node,): void {
+      PropertyDefinition(node: ForeignBorrowed<ESTree.Node>,): void {
         reportMissing({
           node,
           context,
         },);
       },
-      TSEnumMember(node,): void {
+      TSEnumMember(node: ForeignBorrowed<ESTree.Node>,): void {
         reportMissing({
           node,
           context,
         },);
       },
-      Property(node,): void {
+      Property(node: ForeignBorrowed<
+        | ESTree.AssignmentTargetProperty
+        | ESTree.BindingProperty
+        | ESTree.ObjectProperty
+      >,): void {
         if ((node.kind
           === 'get') || (node.kind
             === 'set')) {
