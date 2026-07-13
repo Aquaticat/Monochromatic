@@ -4,7 +4,11 @@
  * @module
  */
 
-import { resolve, } from 'node:path';
+import { existsSync, } from 'node:fs';
+import {
+  dirname,
+  resolve,
+} from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { version as typescriptVersion, } from 'typescript';
@@ -19,6 +23,10 @@ import type {
   SourceFile,
 } from 'typescript/unstable/ast';
 
+import {
+  cachedProjectForFile,
+  type SemanticBridgeCacheStats,
+} from './semantic-bridge-cache.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 import {
   findNodeAtOffset,
@@ -41,6 +49,11 @@ const NO_API: unique symbol = Symbol('TypeScript synchronous API not started',);
 const NO_SNAPSHOT: unique symbol = Symbol('TypeScript semantic snapshot not created',);
 
 /**
+ * Sentinel before bridge tracks current source for rename invalidation.
+ */
+const NO_ACTIVE_FILE: unique symbol = Symbol('TypeScript semantic bridge has no active source',);
+
+/**
  * UTF-16 byte-order mark restored when Oxlint strips it from source text.
  */
 const BYTE_ORDER_MARK = '\uFEFF';
@@ -52,13 +65,15 @@ const bridgeState: {
   api: API | typeof NO_API;
   snapshot: Snapshot | typeof NO_SNAPSHOT;
   readonly overlays: Map<string, string>;
-  readonly projectByFile: Map<string, string>;
+  readonly projectByRoot: Map<string, string>;
+  activeFileName: string | typeof NO_ACTIVE_FILE;
   exitHookRegistered: boolean;
 } = {
   api: NO_API,
   snapshot: NO_SNAPSHOT,
   overlays: new Map(),
-  projectByFile: new Map(),
+  projectByRoot: new Map(),
+  activeFileName: NO_ACTIVE_FILE,
   exitHookRegistered: false,
 };
 
@@ -110,7 +125,7 @@ function normalizeFileName(fileName: string,): string {
   return resolve(fileName,);
 }
 
-/* oxlint-disable no-restricted-syntax/no-nullish-union -- TypeScript FileSystem callbacks require undefined to delegate to the real filesystem. */
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- TypeScript FileSystem callbacks require undefined fallback sentinels. */
 /**
  * Overlay file text or TypeScript's real-filesystem delegation sentinel.
  */
@@ -284,6 +299,19 @@ export function openSemanticFile({
    * Canonical source key shared by overlay and project service.
    */
   const normalizedFileName = normalizeFileName(fileName,);
+  /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous Oxlint visitor must classify prior-path deletion before synchronous snapshot update. */
+  /**
+   * Previously active source removed from disk by rename or deletion.
+   */
+  const deletedFiles = (bridgeState.activeFileName !== NO_ACTIVE_FILE)
+    && (bridgeState.activeFileName !== normalizedFileName)
+    && (!existsSync(bridgeState.activeFileName,))
+    ? [bridgeState.activeFileName,]
+    : [];
+  /* oxlint-enable no-restricted-syntax/no-sync */
+  bridgeState.activeFileName = normalizedFileName;
+  bridgeState.overlays
+    .clear();
   bridgeState
     .overlays
     .set(
@@ -304,16 +332,35 @@ export function openSemanticFile({
   /**
    * Previously discovered configured project path for source.
    */
-  const knownProject = bridgeState
-    .projectByFile
-    .get(normalizedFileName,);
+  const knownProject = cachedProjectForFile({
+    fileName: normalizedFileName,
+    projectByRoot: bridgeState.projectByRoot,
+  },);
   /**
-   * Snapshot used for configured-project discovery on first encounter.
+   * Whether active snapshot already contains current source path.
    */
-  const discoverySnapshot = knownProject === undefined
+  const sourcePreviouslyKnown = (knownProject !== undefined)
+    && (bridgeState.snapshot !== NO_SNAPSHOT)
+    && (bridgeState.snapshot
+      .getProject(knownProject,)
+      ?.program
+      .getSourceFile(normalizedFileName,)
+      !== undefined);
+  /**
+   * Whether current source requires open-file project association.
+   */
+  const needsDiscovery = (knownProject === undefined) || (!sourcePreviouslyKnown);
+  /**
+   * Snapshot used for configured-project discovery on first encounter or created file.
+   */
+  const discoverySnapshot = needsDiscovery
     ? api.updateSnapshot({
       openFiles: [normalizedFileName,],
-      fileChanges: { changed: [normalizedFileName,], },
+      fileChanges: {
+        created: sourcePreviouslyKnown ? [] : [normalizedFileName,],
+        changed: sourcePreviouslyKnown ? [normalizedFileName,] : [],
+        deleted: deletedFiles,
+      },
     },)
     : NO_SNAPSHOT;
   /**
@@ -337,9 +384,9 @@ export function openSemanticFile({
     },);
   }
   bridgeState
-    .projectByFile
+    .projectByRoot
     .set(
-      normalizedFileName,
+      dirname(configFileName,),
       configFileName,
     );
 
@@ -347,13 +394,17 @@ export function openSemanticFile({
    * New immutable project view reading current overlay outside LSP open-file cache.
    */
   const nextSnapshot = api.updateSnapshot({
-    ...knownProject === undefined
+    ...needsDiscovery
       ? {
         openProjects: [configFileName,],
         closeFiles: [normalizedFileName,],
       }
       : {},
-    fileChanges: { changed: [normalizedFileName,], },
+    fileChanges: {
+      changed: sourcePreviouslyKnown ? [normalizedFileName,] : [],
+      created: sourcePreviouslyKnown ? [] : [normalizedFileName,],
+      deleted: deletedFiles,
+    },
   },);
   if (bridgeState.snapshot !== NO_SNAPSHOT)
     bridgeState
@@ -404,6 +455,27 @@ export function openSemanticFile({
   };
 }
 
+export type { SemanticBridgeCacheStats, } from './semantic-bridge-cache.ts';
+
+/**
+ * Reads bounded cache counts without exposing mutable bridge storage.
+ *
+ * @returns current overlay and configured-project root counts.
+ *
+ * @example
+ * ```ts
+ * semanticBridgeCacheStats();
+ * ```
+ */
+export function semanticBridgeCacheStats(): SemanticBridgeCacheStats {
+  return {
+    overlayCount: bridgeState.overlays
+      .size,
+    projectRootCount: bridgeState.projectByRoot
+      .size,
+  };
+}
+
 /**
  * Disposes active snapshot and native TypeScript API process.
  *
@@ -438,7 +510,8 @@ export function closeSemanticBridge(): void {
     .overlays
     .clear();
   bridgeState
-    .projectByFile
+    .projectByRoot
     .clear();
+  bridgeState.activeFileName = NO_ACTIVE_FILE;
   rl.debug('closed TypeScript synchronous API',);
 }

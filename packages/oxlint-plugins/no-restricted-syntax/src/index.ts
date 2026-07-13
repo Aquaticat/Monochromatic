@@ -74,6 +74,8 @@ export {
 export {
   closeSemanticBridge,
   openSemanticFile,
+  semanticBridgeCacheStats,
+  type SemanticBridgeCacheStats,
   type SemanticFileSession,
 } from './rules/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
 

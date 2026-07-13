@@ -1,4 +1,12 @@
-import { readFileSync, } from 'node:fs';
+import {
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
 import {
@@ -10,6 +18,7 @@ import {
 import {
   closeSemanticBridge,
   openSemanticFile,
+  semanticBridgeCacheStats,
   typescriptOffset,
 } from '../dist/final/node/index.mjs';
 
@@ -18,6 +27,34 @@ const FIXTURE_PATH = fileURLToPath(new URL(
   '../../../test-fixture/oxlint-no-restricted-syntax/src/valid/typescript-sync-adapter.ts',
   import.meta.url,
 ),);
+
+/** Configured fixture package root for disposable semantic files. */
+const FIXTURE_ROOT = fileURLToPath(new URL(
+  '../../../test-fixture/oxlint-no-restricted-syntax/src/',
+  import.meta.url,
+),);
+
+/** Disposable configured-project directory. */
+type SemanticFixtureDirectory = {
+  readonly path: string;
+  [Symbol.dispose]: () => void;
+};
+
+/**
+ * Creates non-hidden disposable directory included by fixture project.
+ *
+ * @returns disposable configured-project directory.
+ */
+function createSemanticFixtureDirectory(): SemanticFixtureDirectory {
+  /** Unique directory path under configured fixture package. */
+  const path = mkdtempSync(join(FIXTURE_ROOT, 'semantic-acceptance-',),);
+  return {
+    path,
+    [Symbol.dispose]: function removeSemanticFixtureDirectory(): void {
+      rmSync(path, { recursive: true, force: true, },);
+    },
+  };
+}
 
 /** Original source retained on disk while overlays change in memory. */
 const SOURCE = readFileSync(
@@ -92,6 +129,96 @@ await describe({
             }
             expect(caught,).toBeInstanceOf(Error,);
             expect((caught as Error).message,).toContain('No TypeScript node contains offset',);
+          },
+        },),
+        it({
+          name: 'retains semantic nodes through parser recovery',
+          fn: async () => {
+            /** Incomplete member access retained by recovering parser. */
+            const malformedSource = `export function inspect(value: { readonly text: string; },): string {\n  return value.\n`;
+            /** Semantic session over malformed in-memory source. */
+            const session = openSemanticFile({
+              fileName: FIXTURE_PATH,
+              sourceText: malformedSource,
+              hasBOM: false,
+            },);
+            /** Recovered parameter identifier. */
+            const node = session.nodeAtOffset(malformedSource.indexOf('value:',),);
+            /** Recovered parameter type. */
+            const type = session.checker.getTypeAtLocation(node,);
+            if (type === undefined)
+              throw new Error('Expected parser-recovered parameter type.',);
+            expect(session.checker.typeToString(type,),).toBe('{ readonly text: string; }',);
+          },
+        },),
+        it({
+          name: 'invalidates deleted source during rename',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Original source path opened before rename. */
+            const originalPath = join(directory.path, 'original.ts',);
+            /** Renamed source path created after first snapshot. */
+            const renamedPath = join(directory.path, 'renamed.ts',);
+            /** Original source text. */
+            const originalSource = 'export const originalValue: string = \'before\';\n';
+            writeFileSync(originalPath, originalSource,);
+            openSemanticFile({
+              fileName: originalPath,
+              sourceText: originalSource,
+              hasBOM: false,
+            },);
+            renameSync(originalPath, renamedPath,);
+            /** Changed text supplied at renamed path. */
+            const renamedSource = 'export const renamedValue: number = 1;\n';
+            writeFileSync(renamedPath, renamedSource,);
+            /** Session after deleted plus created invalidation. */
+            const session = openSemanticFile({
+              fileName: renamedPath,
+              sourceText: renamedSource,
+              hasBOM: false,
+            },);
+            const node = session.nodeAtOffset(renamedSource.indexOf('renamedValue',),);
+            const type = session.checker.getTypeAtLocation(node,);
+            if (type === undefined)
+              throw new Error('Expected renamed source type.',);
+            expect(session.checker.typeToString(type,),).toBe('number',);
+          },
+        },),
+        it({
+          name: 'opens configured source through symbolic link path',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Real source path targeted by symbolic link. */
+            const realPath = join(directory.path, 'real.ts',);
+            /** Symbolic source path passed to bridge. */
+            const linkedPath = join(directory.path, 'linked.ts',);
+            /** Source shared by real and symbolic paths. */
+            const source = 'export const linkedValue: string = \'linked\';\n';
+            writeFileSync(realPath, source,);
+            symlinkSync(realPath, linkedPath,);
+            const session = openSemanticFile({
+              fileName: linkedPath,
+              sourceText: source,
+              hasBOM: false,
+            },);
+            const node = session.nodeAtOffset(source.indexOf('linkedValue',),);
+            const type = session.checker.getTypeAtLocation(node,);
+            if (type === undefined)
+              throw new Error('Expected symbolic-link source type.',);
+            expect(session.checker.typeToString(type,),).toBe('string',);
+          },
+        },),
+        it({
+          name: 'bounds overlays by active file and projects by configured root',
+          fn: async () => {
+            openSemanticFile({ fileName: FIXTURE_PATH, sourceText: SOURCE, hasBOM: false, },);
+            openSemanticFile({ fileName: FIXTURE_PATH, sourceText: SOURCE, hasBOM: false, },);
+            expect(semanticBridgeCacheStats(),).toEqual({
+              overlayCount: 1,
+              projectRootCount: 1,
+            },);
           },
         },),
         it({
