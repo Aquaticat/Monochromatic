@@ -2385,6 +2385,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       find-up:
         specifier: 'catalog:'
         version: 8.0.0

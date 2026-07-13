@@ -21,6 +21,7 @@
   ],
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "find-up": "catalog:",
     "yaml": "catalog:"
   },

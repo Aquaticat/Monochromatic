@@ -5,6 +5,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { parse as parseYaml, } from 'yaml';
 
 import {
@@ -135,6 +136,9 @@ function warnMalformedBlock(blockName: string,): void {
  * @param value - parsed YAML block value
  *
  * @returns validated catalog map
+ *
+ * @mutates value - `Object.entries` may invoke own-property getters or proxy enumeration traps
+ * on parsed block
  *
  * @example
  * ```ts
@@ -272,12 +276,12 @@ export function parseCatalogFromYaml(content: string,): CatalogDocument {
    * Named YAML blocks copied into the validated outer map.
    */
   const namedEntries = Object.entries(parsed.catalogs,);
-  namedEntries.forEach(function copyNamedCatalog([name, value,],): void {
+  for (const [name, value,] of namedEntries) {
     namedCatalogs[name] = parseBlock({
       blockName: `catalogs.${name}`,
       value,
     },);
-  },);
+  }
 
   return {
     defaultCatalog,
@@ -298,6 +302,9 @@ export function parseCatalogFromYaml(content: string,): CatalogDocument {
  *
  * @returns raw catalog entries in deterministic default-then-named order
  *
+ * @mutates document - `Object.entries` may invoke own-property getters or proxy enumeration traps
+ * on catalog maps
+ *
  * @example
  * ```ts
  * const entries = flattenCatalogEntries({
@@ -310,7 +317,7 @@ export function flattenCatalogEntries(
   {
     document,
     includeNamedCatalogs = false,
-  }: FlattenCatalogEntriesOptions,
+  }: ForeignBorrowed<FlattenCatalogEntriesOptions>,
 ): readonly CatalogEntry[] {
   /**
    * Default catalog entries without a catalog-name marker.
@@ -328,17 +335,16 @@ export function flattenCatalogEntries(
   /**
    * Named catalog entries appended after the default block.
    */
-  const namedEntries = Object.entries(document.namedCatalogs,)
-    .flatMap(function expandNamed([catalogName, catalog,],): readonly CatalogEntry[] {
-      return Object.entries(catalog,)
-        .map(function toNamedEntry([catalogKey, catalogValue,],): CatalogEntry {
-          return {
-            catalogKey,
-            catalogName,
-            catalogValue,
-          };
-        },);
-    },);
+  const namedEntries: CatalogEntry[] = [];
+  for (const [catalogName, catalog,] of Object.entries(document.namedCatalogs,)) {
+    for (const [catalogKey, catalogValue,] of Object.entries(catalog,)) {
+      namedEntries.push({
+        catalogKey,
+        catalogName,
+        catalogValue,
+      },);
+    }
+  }
   return [
     ...defaultEntries,
     ...namedEntries,
