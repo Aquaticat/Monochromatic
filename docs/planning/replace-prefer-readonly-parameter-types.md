@@ -131,8 +131,17 @@ The semantic-rule implementation is functional and shared-configuration migratio
   migrates plugin's foreign Oxlint boundaries,
   audits TypeScript 7 and Oxlint package operations,
   and propagates destructured object-literal call effects by declared mutation target;
-- `packages/dev-script/task-util` and `packages/oxlint-plugins/no-restricted-syntax` now pass their package Oxlint tasks
-  under replacement rule with one JavaScript-plugin worker.
+- commit `dbb5616ee` moves `ForeignBorrowed` into shared plugin configuration for package-wide foreign-boundary use;
+- commits `1c662eb1a` and `6a21274b0` migrate TSDoc and stylistic plugin foreign inputs and verified context effects;
+- commits `f3c61a669` and `807cdcb2c` preserve current callable identities across direct-summary cache hits and always index
+  configured active source despite stale external-library metadata;
+- a repeat one-worker workspace sweep reports zero semantic bridge failures across 1,315 replacement-rule diagnostics;
+- commit `37e48c19b` removes caller-owned coercion hooks from `module-or-throw` failure formatting;
+- `packages/dev-script/task-util`,
+  `packages/oxlint-plugins/no-restricted-syntax`,
+  `packages/oxlint-plugins/tsdoc`,
+  `packages/oxlint-plugins/stylistic`,
+  and `packages/module/or-throw` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
 
 Remaining gates are active workspace source migration,
 migrated consumer acceptance,

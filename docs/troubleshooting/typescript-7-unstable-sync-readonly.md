@@ -125,6 +125,33 @@ closes the temporary file association,
 and sends later `fileChanges.changed` notifications to project-owned snapshots.
 The same built test then returned `Readonly<SemanticFixtureBox<string>>` while confirming disk text was unchanged.
 
+### Active source metadata can disagree with configured ownership
+
+A one-worker workspace sweep repeatedly failed only on
+`packages/git-policies/cli/src/bin.ts` with:
+
+```text
+node-not-found: Effect summary index omitted owned callable declaration
+/var/home/user/Monochromatic/packages/git-policies/cli/src/bin.ts:3407:12786:263.
+```
+
+A package-local run indexed the same `runCliGit` function declaration.
+The workspace process had already crossed many project snapshots.
+Its current source remained available through `Project.program.getSourceFile`,
+but program metadata could classify that decoded wrapper as external.
+The effect index then skipped the active source before the verifier traversed it.
+
+Configured-project discovery already proves that the current lint target belongs to selected project.
+The effect index now receives the verifier's exact active `SourceFile`,
+always indexes that source regardless of external-library metadata,
+and applies external-library filtering only to other project sources.
+Its direct-summary cache also rejects exact-text hits that omit any callable key present in current source wrapper.
+
+A repeat one-worker workspace sweep reported zero semantic bridge failures across 1,315 replacement-rule diagnostics.
+Package type lint,
+Oxlint,
+and focused effect-summary tests also passed.
+
 ### Windows snapshots use case-insensitive source identity
 
 The Windows x64 host run exposed a second stale-overlay path.
