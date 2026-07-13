@@ -19,6 +19,7 @@ import {
   mutationTargetIndexes,
 } from './mutation-contract-query.ts';
 import { classifyReadonlyType, } from './readonly-classifier.ts';
+import { readonlyArraySuggestions, } from './readonly-suggestions.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 
 /**
@@ -329,13 +330,24 @@ export function verifyReadonlyCallable({
       },);
     }
     if ((!mutated) && (classification.kind === 'mutable')) {
+      /**
+       * Verified semantic type suggestions available for current syntax.
+       */
+      const suggestions = readonlyArraySuggestions({
+        context,
+        parameter,
+        project,
+      },);
       context.report({
+        node: context.sourceCode
+          .ast,
         loc,
         messageId: 'shouldBeReadonly',
         data: {
           parameterName,
           reason: classification.reason,
         },
+        ...suggestions.length === 0 ? {} : { suggest: suggestions, },
       },);
     }
     if (hasBody && (!mutated)

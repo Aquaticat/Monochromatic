@@ -560,6 +560,23 @@ await describe({
           },
         },),
         it({
+          name: 'suggests readonly arrays only through explicit suggestion fixes',
+          fn: async () => {
+            /** Source with deeply projectable primitive array parameter. */
+            const source = `/**\n * Reads values.\n *\n * @param values - Values read without mutation.\n */\nexport function countValues(values: string[],): number {\n  return values.length;\n}\n`;
+            const ordinarilyFixed = await fixReadonlyGeneratedSource({
+              source,
+              fixSuggestions: false,
+            },);
+            expect(ordinarilyFixed.includes('values: string[]',),).toBe(true,);
+            const suggestionFixed = await fixReadonlyGeneratedSource({
+              source,
+              fixSuggestions: true,
+            },);
+            expect(suggestionFixed.includes('values: readonly string[]',),).toBe(true,);
+          },
+        },),
+        it({
           name: 'keeps stale contracts under ordinary fix and removes them through suggestions',
           fn: async () => {
             /** Source with one semantically stale mutation block. */
