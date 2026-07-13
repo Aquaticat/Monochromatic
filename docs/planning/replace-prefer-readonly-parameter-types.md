@@ -826,19 +826,24 @@ build a separate editor integration,
 or block CLI rollout on the upstream capability.
 Live editor diagnostics and code actions for this rule are therefore explicitly deferred.
 
-### Deferred readonly projection outcome
+### Chosen readonly projection authoring
 
-The exact authoring mechanism remains evidence-driven:
-existing `ReadonlyDeep`,
-a project-owned utility,
-or synthesized structural syntax must be compared against brands,
-functions,
-collections,
-capabilities,
-recursive types,
-conditional types,
-and generic variance before selection.
-The chosen TypeScript 7 bridge can evaluate each candidate without selecting its source-level spelling in advance.
+Use `ReadonlyDeep` from `type-fest` for parameter-local deep-readonly projections.
+Do not create a project-owned duplicate or synthesize inline structural readonly types.
+Each package that imports `ReadonlyDeep` must declare `type-fest` through the pnpm catalog rather than relying on a
+transitive or root dependency.
+
+`ReadonlyDeep` is authoring syntax,
+not proof that the resulting capability is honestly immutable.
+The semantic rule must still inspect the resolved projection and its reachable effects.
+The probe showed that `ReadonlyDeep<Map<...>>` and `ReadonlyDeep<Set<...>>` produce useful collection projections,
+while `ReadonlyDeep<AbortController>` retains `abort()` and must produce `dishonestReadonly` when used as a supposedly
+nonmutating contract.
+
+Suggestions may introduce `ReadonlyDeep<T>` only when the target package already declares `type-fest` or when the
+migration explicitly adds that dependency.
+A suggestion cannot edit `package.json`,
+so it must not offer an import that would leave the source unresolved.
 
 ### Grilling status
 

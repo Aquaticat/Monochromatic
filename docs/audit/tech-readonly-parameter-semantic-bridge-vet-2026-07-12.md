@@ -316,16 +316,16 @@ Discovery source:
  122 repository references and the selected ownership-aware remediation.
 
 Lifecycle:
- deferred authoring subcomponent outside this bridge decision.
+ selected authoring subcomponent.
 
-Provisional role:
- construct honest parameter-local projections when a shared type remains legitimately mutable.
+Role:
+ use `type-fest`'s `ReadonlyDeep` for parameter-local projections when a shared type remains legitimately mutable.
+Every consuming package declares the catalog dependency directly.
 
-Open gate:
- compare existing `type-fest` behavior,
-a project-owned utility,
-and synthesized structural syntax across all calibrated type classes.
-The selected TypeScript 7 bridge can evaluate every candidate.
+Boundary:
+ `ReadonlyDeep` does not establish effect honesty.
+Capability methods retained by the mapped type remain subject to `dishonestReadonly` analysis.
+Project-owned duplicate utilities and synthesized inline structural types are rejected.
 
 ## Evidence collected
 
@@ -667,9 +667,8 @@ Oxc isolated declarations,
 and wrappers built on TypeScript 6.
 
 Still open:
- acceptance gates,
-readonly projection authoring syntax,
-and declaration-publication verification.
+ acceptance gates and declaration-publication verification.
+`type-fest`'s `ReadonlyDeep` is selected for projection authoring.
 Editor integration is explicitly deferred until Oxlint's language server supports JavaScript plugins.
 Product implementation remains blocked until the audit finishes and the full plan reaches shared-understanding
 confirmation.
