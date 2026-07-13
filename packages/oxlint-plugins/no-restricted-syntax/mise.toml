@@ -6,8 +6,8 @@ extends = "build:js"
 
 [tasks."build:js:node"]
 extends = "build:js:node"
-# Activate Node and invoke package entry directly so Windows does not depend on executable shim discovery.
-run = "mise exec node -- node ../../../node_modules/tsdown/dist/run.mjs --config tsdown.node.config.ts"
+# Invoke package entry directly so Windows does not depend on executable shim discovery.
+run = "node ../../../node_modules/tsdown/dist/run.mjs --config tsdown.node.config.ts"
 
 [tasks."watch:build"]
 extends = "watch:build"
