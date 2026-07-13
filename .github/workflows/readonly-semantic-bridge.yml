@@ -52,10 +52,10 @@ jobs:
       run: mise install node pnpm
 
     - name: Expose package tools to task shells
-      shell: bash
+      shell: pwsh
       run: |
-        mise where node >> "$GITHUB_PATH"
-        mise where pnpm >> "$GITHUB_PATH"
+        mise where node | Out-File -FilePath $env:GITHUB_PATH -Append
+        mise where pnpm | Out-File -FilePath $env:GITHUB_PATH -Append
 
     - name: Install workspace dependencies
       run: mise exec node pnpm -- pnpm install --frozen-lockfile
