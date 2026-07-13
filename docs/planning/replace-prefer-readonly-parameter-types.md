@@ -107,9 +107,9 @@ The semantic-rule implementation is now functional but not migration-ready:
   membership,
   `Error.isError`,
   and imported `node:path` calls;
-- workflow `readonly-semantic-bridge.yml` passes Linux x64 host evidence.
-  macOS arm64 and Windows x64 remain in progress after earlier runs exposed an architecture-ambiguous macOS label plus
-  Windows build-tool and Node activation gaps;
+- workflow `readonly-semantic-bridge.yml` passes Linux x64 and Windows x64 host evidence,
+  including external-consumer installation and Windows overlay path identity.
+  macOS arm64 remains in progress after replacing the architecture-ambiguous macOS label;
 - a sustained local bridge probe sampled resident memory after forced collection across 2,000 post-warmup overlay opens.
   Cache stats remained at one overlay and one project root.
   Resident memory reached 102,727,680 bytes during the first sampled phase and rose by 1,310,720 bytes during the next
