@@ -141,7 +141,8 @@ An arbitrary tag that leaves any opaque target undocumented does not waive `opaq
 
 Semantic rewrites are suggestions only.
 Ordinary `--fix` does not change signatures or mutation contracts;
-explicit `--fix-suggestions` may apply a verified stale-contract removal.
+explicit `--fix-suggestions` may apply verified stale-contract removal
+or a deep-safe `T[]` to `readonly T[]` rewrite.
 Inline suppression is prohibited by `no-disable-prefer-readonly-parameter-types`.
 
 ## no-nullish-union

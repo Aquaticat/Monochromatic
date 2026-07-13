@@ -60,12 +60,14 @@ The semantic-rule implementation is now functional but not migration-ready:
   and mixed-list inline suppressions;
 - commit `8258a37e9` exercised the core diagnostics through Oxlint;
 - commit `d3fd789bc` retained opaque provenance and structurally verified local adapters;
-- commit `39aeaea3c` kept ordinary fixes inert while exposing stale-contract removal as an explicit suggestion.
+- commit `39aeaea3c` kept ordinary fixes inert while exposing stale-contract removal as an explicit suggestion;
+- commits `acd78d72a` and `ff09e0e69` fixed deep readonly collections and fail-closed callable capabilities;
+- commit `55c849541` verifies implementation effects against bodyless overload-contract unions;
+- commit `cb40ebe48` suggests `readonly T[]` only when element semantics prove the deep rewrite.
 
-Remaining gates include overload consistency,
-complete closure and deferred-effect modeling,
+Remaining gates include complete closure and deferred-effect modeling,
 audited nonmutating intrinsic calls,
-verified readonly type suggestions,
+`ReadonlyDeep` and ownership-aware suggestions,
 package-catalog completion,
 and the agreed parser-recovery,
 invalidation,
