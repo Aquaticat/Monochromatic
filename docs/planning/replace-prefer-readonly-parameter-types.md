@@ -552,7 +552,36 @@ Higher-order propagation should instead come from machine-readable program struc
 - prototype TypeScript-level effect metadata only if a bodyless generic API needs expressiveness that generated summaries
   cannot carry.
 
+### Chosen test and declaration exemptions
+
+Tests and declaration files retain their exemptions from the readonly and mutation-effect contract.
+The shared config must turn the replacement rule off for all test and benchmark filename forms already recognized across
+config and TSDoc handling:
+
+- `*.test.ts`,
+  including unit,
+  browser,
+  and end-to-end variants;
+- `*.spec.ts`;
+- `*.bench.ts`;
+- `*.d.ts`,
+  `*.d.mts`,
+  and `*.d.cts`.
+
+The TSDoc `@mutates` validation rules use the same exemption predicate,
+so exempt files do not gain tag requirements indirectly through the TSDoc plugin.
+The dedicated plugin fixture configs remain allowed to enable the rules on fixture files because those files test the
+rule itself rather than adopting production policy.
+
+This preserves the current reason for the test override:
+framework-owned mutable callbacks,
+fixtures,
+spies,
+and mocks are not production API contracts.
+Declaration files remain descriptive ambient shapes without bodies to verify.
+
 ### Awaiting decision
 
 No user policy decision is needed until feasibility probes compare inferred symbolic summaries with TypeScript-checked
 effect metadata for bodyless generic callables.
+The next rollout question concerns ignored and inactive source trees.
