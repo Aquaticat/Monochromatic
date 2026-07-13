@@ -9,6 +9,7 @@ import type {
   ToolCall,
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 import { extractJsonVerdict, } from './judge-json.ts';
 
@@ -141,6 +142,10 @@ class JudgeJsonNoTextError extends Error {
  *
  * @returns parsed verdict arguments from either path
  *
+ * @mutates toolCallStream - `collectJudgeStream` consumes supplied async iterator state
+ *
+ * @mutates createJsonRetryStream - invokes retry-stream factory capability, which can change captured state
+ *
  * @example
  * ```typescript
  * const args = await collectJudgeVerdictArgs({ toolCallStream, createJsonRetryStream });
@@ -151,8 +156,8 @@ async function collectJudgeVerdictArgs(
     toolCallStream,
     createJsonRetryStream,
   }: {
-    readonly toolCallStream: AsyncIterable<AssistantMessageEvent>;
-    readonly createJsonRetryStream: JsonRetryStreamFactory;
+    readonly toolCallStream: ForeignBorrowed<AsyncIterable<AssistantMessageEvent>>;
+    readonly createJsonRetryStream: ForeignBorrowed<JsonRetryStreamFactory>;
   },
 ): Promise<Record<string, string>> {
   /**
@@ -200,13 +205,15 @@ async function collectJudgeVerdictArgs(
  *
  * @throws when the model calls an unexpected tool
  *
+ * @mutates stream - async iteration consumes supplied model stream state
+ *
  * @example
  * ```typescript
  * const result = await collectJudgeStream(stream);
  * ```
  */
 async function collectJudgeStream(
-  stream: AsyncIterable<AssistantMessageEvent>,
+  stream: ForeignBorrowed<AsyncIterable<AssistantMessageEvent>>,
 ): Promise<JudgeStreamResult> {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- async-iteration accumulator latches: `toolCall` set on `toolcall_end`, `textContent` appended on each `text_end`; both are read after the loop terminates */
   /**
@@ -259,13 +266,15 @@ async function collectJudgeStream(
  *
  * @throws {@link JudgeJsonNoTextError} when the retry emits neither a `render_verdict` tool call nor text
  *
+ * @mutates stream - `collectJudgeStream` consumes supplied retry stream state
+ *
  * @example
  * ```typescript
  * const args = await collectJsonVerdict(stream);
  * ```
  */
 async function collectJsonVerdict(
-  stream: AsyncIterable<AssistantMessageEvent>,
+  stream: ForeignBorrowed<AsyncIterable<AssistantMessageEvent>>,
 ): Promise<Record<string, string>> {
   /**
    * Retry stream result, usually direct text JSON but tolerant of valid tool output.
@@ -299,13 +308,15 @@ async function collectJsonVerdict(
  *
  * @throws when the stream produces neither a `render_verdict` tool call nor parseable text content
  *
+ * @mutates stream - `collectJudgeStream` consumes supplied model stream state
+ *
  * @example
  * ```typescript
  * const args = await collectToolCall(stream);
  * ```
  */
 async function collectToolCall(
-  stream: AsyncIterable<AssistantMessageEvent>,
+  stream: ForeignBorrowed<AsyncIterable<AssistantMessageEvent>>,
 ): Promise<Record<string, string>> {
   /**
    * Stream result from the shared collector.

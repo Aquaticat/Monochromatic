@@ -11,6 +11,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
 
 /**
@@ -21,6 +22,8 @@ import { TRUST_ENTRY_TYPE, } from './types.ts';
  *
  * @param pi - extension API used to register commands and persist entries
  *
+ * @mutates pi - `pi.registerCommand` stores command registration and deferred handler entries
+ *
  * @example
  * ```typescript
  * registerGuardCommand({ pi });
@@ -30,16 +33,27 @@ function registerGuardCommand(
   {
     pi,
   }: {
-    readonly pi: ExtensionAPI;
+    readonly pi: ForeignBorrowed<ExtensionAPI>;
   },
 ): void {
   pi.registerCommand(
     'guard',
     {
       description: 'Manage auto-mode: /guard <trust directive> or /guard reset',
+      /**
+       * Handles one `/guard` invocation.
+       *
+       * @param args - User-supplied command text.
+       *
+       * @param ctx - Active Pi command context.
+       *
+       * @returns Nothing.
+       *
+       * @mutates ctx - `ctx.ui.notify` changes displayed Pi notification state.
+       */
       async handler(
         args: string,
-        ctx: ExtensionContext,
+        ctx: ForeignBorrowed<ExtensionContext>,
       ) {
         /**
          * Dynamically imported context helper; lazy to keep startup cost low when /guard is never used.

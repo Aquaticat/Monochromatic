@@ -11,6 +11,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 //region Constants
 
@@ -211,7 +212,7 @@ function findLatestBypassEnabled(
   {
     ctx,
   }: {
-    readonly ctx: ExtensionContext;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
   },
 ): boolean {
   /**
@@ -220,7 +221,7 @@ function findLatestBypassEnabled(
   const branchEntries: SessionCustomEntry[] = ctx.sessionManager
     .getBranch()
     .map(
-      function normalizeSessionEntry(entry,) {
+      function normalizeSessionEntry(entry: Readonly<SessionCustomEntry>,) {
         return {
           type: entry.type,
           ...('customType' in entry ? { customType: entry.customType, } : {}),
@@ -254,6 +255,8 @@ function findLatestBypassEnabled(
  *
  * @param enabled - current bypass state
  *
+ * @mutates ctx - `ctx.ui.setStatus` changes displayed Pi status state
+ *
  * @example
  * ```typescript
  * updateBypassStatus({ ctx, enabled: true });
@@ -264,7 +267,7 @@ function updateBypassStatus(
     ctx,
     enabled,
   }: {
-    readonly ctx: ExtensionContext;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly enabled: boolean;
   },
 ): void {
@@ -282,6 +285,8 @@ function updateBypassStatus(
  *
  * @param enabled - new bypass state
  *
+ * @mutates pi - `pi.appendEntry` appends bypass-toggle Pi session state
+ *
  * @example
  * ```typescript
  * appendBypassToggleEntry({ pi, enabled: true });
@@ -292,7 +297,7 @@ function appendBypassToggleEntry(
     pi,
     enabled,
   }: {
-    readonly pi: ExtensionAPI;
+    readonly pi: ForeignBorrowed<ExtensionAPI>;
     readonly enabled: boolean;
   },
 ): void {
@@ -313,6 +318,8 @@ function appendBypassToggleEntry(
  *
  * @param action - human-readable action bypass mode allowed
  *
+ * @mutates pi - `pi.appendEntry` appends bypass-allow Pi session state
+ *
  * @example
  * ```typescript
  * appendBypassAllowEntry({ pi, action: 'read /repo/.env' });
@@ -323,7 +330,7 @@ function appendBypassAllowEntry(
     pi,
     action,
   }: {
-    readonly pi: ExtensionAPI;
+    readonly pi: ForeignBorrowed<ExtensionAPI>;
     readonly action: string;
   },
 ): void {
@@ -344,6 +351,8 @@ function appendBypassAllowEntry(
  *
  * @param enabled - new bypass state
  *
+ * @mutates ctx - `updateBypassStatus` and `ctx.ui.notify` change displayed Pi state
+ *
  * @example
  * ```typescript
  * announceBypassToggle({ ctx, enabled: false });
@@ -354,7 +363,7 @@ function announceBypassToggle(
     ctx,
     enabled,
   }: {
-    readonly ctx: ExtensionContext;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly enabled: boolean;
   },
 ): void {

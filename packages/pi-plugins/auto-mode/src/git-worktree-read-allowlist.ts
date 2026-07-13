@@ -146,7 +146,7 @@ type LinkedWorktreeReadAllowlistedDirsOptions = {
 function formatError(error: unknown,): string {
   if (Error.isError(error,))
     return error.message;
-  return String(error,);
+  return `non-Error ${typeof error}`;
 }
 
 /**

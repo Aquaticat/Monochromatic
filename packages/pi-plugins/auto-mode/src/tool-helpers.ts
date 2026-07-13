@@ -18,6 +18,7 @@ import {
   isToolCallEventType,
   type ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { RELEVANT_TOOLS, } from './constants.ts';
 
 /**
@@ -31,33 +32,6 @@ const APPROVAL_FINGERPRINT_HASH_ALGORITHM = 'sha256';
 const APPROVAL_FINGERPRINT_HASH_ENCODING = 'hex';
 
 /**
- * Serializable identity that is hashed for approval reuse.
- *
- * @example
- * ```typescript
- * const identity: ApprovalFingerprintIdentity = {
- *   cwd: '/repo',
- *   input: { path: '.env' },
- *   toolName: 'read',
- * };
- * ```
- */
-type ApprovalFingerprintIdentity = {
-  /**
-   * Working directory in which relative tool inputs are interpreted.
-   */
-  readonly cwd: string;
-  /**
-   * Tool input fields that affect approval reuse.
-   */
-  readonly input: unknown;
-  /**
-   * Tool name receiving approval.
-   */
-  readonly toolName: string;
-};
-
-/**
  * Serialize JSON-compatible data with sorted object keys.
  *
  * Tool inputs arrive as JSON-compatible objects. Sorting object keys keeps the
@@ -68,6 +42,8 @@ type ApprovalFingerprintIdentity = {
  * @param value - JSON-compatible value to serialize
  *
  * @returns canonical JSON string
+ *
+ * @mutates value - `JSON.stringify` and recursive `stableSerialize` calls can invoke caller-owned hooks
  *
  * @example
  * ```typescript
@@ -80,11 +56,22 @@ function stableSerialize(
   if (Array.isArray(value,)) {
     return `[${
       value
-        .map(function serializeArrayItem(item,) {
+        .map(
+          /**
+           * Serializes one caller-reachable array item.
+           *
+           * @param item - Item read from supplied array.
+           *
+           * @returns Canonical JSON text for item.
+           *
+           * @mutates item - `stableSerialize` and nested `JSON.stringify` can invoke caller-owned hooks.
+           */
+          function serializeArrayItem(item: unknown,) {
           return item === undefined
             ? 'null'
             : stableSerialize(item,);
-        },)
+          },
+        )
         .join(',',)
     }]`;
   }
@@ -123,13 +110,29 @@ function stableSerialize(
         const [rightKey,] = rightEntry;
         return leftKey.localeCompare(rightKey,);
       },)
-      .map(function serializeObjectEntry(entry,) {
+      .map(
         /**
-         * Object key and value serialized into canonical key order.
+         * Serializes one caller-reachable object entry.
+         *
+         * @param entry - Key and value produced by object enumeration.
+         *
+         * @returns Canonical JSON property text.
+         *
+         * @mutates entry - `stableSerialize` and nested `JSON.stringify` can invoke caller-owned hooks.
          */
-        const [entryKey, entryValue,] = entry;
-        return `${JSON.stringify(entryKey,)}:${stableSerialize(entryValue,)}`;
-      },)
+        function serializeObjectEntry(
+          entry: ForeignBorrowed<readonly [
+            string,
+            unknown,
+          ]>,
+        ) {
+          /**
+           * Object key and value serialized into canonical key order.
+           */
+          const [entryKey, entryValue,] = entry;
+          return `${JSON.stringify(entryKey,)}:${stableSerialize(entryValue,)}`;
+        },
+      )
       .join(',',)
   }}`;
 }
@@ -146,7 +149,9 @@ function stableSerialize(
  *
  * @param cwd - current extension working directory
  *
- * @returns serializable call identity for approval reuse
+ * @returns serialized call identity for approval reuse
+ *
+ * @mutates event - `stableSerialize` can invoke caller-owned hooks reachable from tool input
  *
  * @example
  * ```typescript
@@ -158,29 +163,21 @@ function buildApprovalFingerprintIdentity(
     event,
     cwd,
   }: {
-    readonly event: ToolCallEvent;
+    readonly event: ForeignBorrowed<ToolCallEvent>;
     readonly cwd: string;
   },
-): ApprovalFingerprintIdentity {
+): string {
   if (isToolCallEventType(
     'read',
     event,
   )) {
-    return {
-      cwd,
-      input: {
-        path: event.input
-          .path,
-      },
-      toolName: event.toolName,
-    };
+    return `{"cwd":${JSON.stringify(cwd,)},"input":${stableSerialize({
+      path: event.input
+        .path,
+    },)},"toolName":${JSON.stringify(event.toolName,)}}`;
   }
 
-  return {
-    cwd,
-    input: event.input,
-    toolName: event.toolName,
-  };
+  return `{"cwd":${JSON.stringify(cwd,)},"input":${stableSerialize(event.input,)},"toolName":${JSON.stringify(event.toolName,)}}`;
 }
 
 /**
@@ -201,6 +198,8 @@ function buildApprovalFingerprintIdentity(
  *
  * @returns SHA-256 digest for the guarded tool call
  *
+ * @mutates event - canonical serialization can invoke caller-owned hooks reachable from tool input
+ *
  * @example
  * ```typescript
  * const fingerprint = buildApprovalFingerprint({ event, cwd: '/repo' });
@@ -211,21 +210,17 @@ function buildApprovalFingerprint(
     event,
     cwd,
   }: {
-    readonly event: ToolCallEvent;
+    readonly event: ForeignBorrowed<ToolCallEvent>;
     readonly cwd: string;
   },
 ): string {
   /**
    * Permission identity after per-tool normalization.
    */
-  const fingerprintIdentity = buildApprovalFingerprintIdentity({
+  const serializedCall = buildApprovalFingerprintIdentity({
     event,
     cwd,
   },);
-  /**
-   * Serialized call identity with canonical object key order.
-   */
-  const serializedCall = stableSerialize(fingerprintIdentity,);
   return createHash(APPROVAL_FINGERPRINT_HASH_ALGORITHM,)
     .update(serializedCall,)
     .digest(APPROVAL_FINGERPRINT_HASH_ENCODING,);
@@ -245,7 +240,7 @@ function buildApprovalFingerprint(
  * ```
  */
 function extractToolText(
-  event: ToolCallEvent,
+  event: ForeignBorrowed<ToolCallEvent>,
 ): string {
   if (isToolCallEventType(
     'write',
@@ -262,7 +257,7 @@ function extractToolText(
       .input
       .edits
       .map(
-        function extractNewText(e,) {
+        function extractNewText(e: Readonly<{ readonly newText: string; }>,) {
           return e.newText;
         },
       )
@@ -284,7 +279,7 @@ function extractToolText(
  * ```
  */
 function getFilePath(
-  event: ToolCallEvent,
+  event: ForeignBorrowed<ToolCallEvent>,
 ): string {
   if (isToolCallEventType(
     'read',
@@ -333,7 +328,7 @@ function getFilePath(
  * ```
  */
 function describeAction(
-  event: ToolCallEvent,
+  event: ForeignBorrowed<ToolCallEvent>,
 ): string {
   if (isToolCallEventType(
     'bash',
@@ -407,7 +402,7 @@ function describeAction(
  * ```
  */
 function isRelevantTool(
-  event: ToolCallEvent,
+  event: ForeignBorrowed<ToolCallEvent>,
 ): boolean {
   return RELEVANT_TOOLS.includes(event.toolName,);
 }

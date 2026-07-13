@@ -14,6 +14,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import nanoSpawn from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 import { formatModelBlockReason, } from './model-feedback.ts';
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
@@ -68,9 +69,9 @@ type AskNotificationInvocation = {
 /**
  * Injectable terminal notification runner used by {@link notifyAsk} and tests.
  */
-type AskNotificationInvoker = (
+type AskNotificationInvoker = ForeignBorrowed<(
   invocation: AskNotificationInvocation,
-) => Promise<void>;
+) => Promise<void>>;
 
 /**
  * Invoke the configured terminal notification command.
@@ -119,6 +120,8 @@ async function invokeTerminalNotification(
  *
  * @param invoke - notification runner, replaceable for deterministic tests
  *
+ * @mutates invoke - invokes notification capability, which can change host or captured state
+ *
  * @example
  * ```typescript
  * await notifyAsk({ action: 'read .env' });
@@ -159,7 +162,7 @@ async function notifyAsk(
   }
   catch (error) {
     innerL.warn(
-      `approval notification unavailable: ${Error.isError(error,) ? error.message : String(error,)}`,
+      `approval notification unavailable: ${Error.isError(error,) ? error.message : `non-Error ${typeof error}`}`,
     );
   }
 }
@@ -173,6 +176,12 @@ async function notifyAsk(
  * the generic {@link DEFAULT_DENY_GUIDANCE} block guidance.
  *
  * @returns block {@link GuardDecision} with guidance, or an allow decision
+ *
+ * @mutates pi - `pi.appendEntry` appends user-decision Pi session state
+ *
+ * @mutates ctx - UI selection and abort methods change active Pi host state
+ *
+ * @mutates notificationInvoker - `notifyAsk` invokes supplied notification capability when present
  *
  * @example
  * ```typescript
@@ -195,8 +204,8 @@ async function askUser(
     reflectExplanationOnDeny = false,
     notificationInvoker,
   }: {
-    readonly pi: ExtensionAPI;
-    readonly ctx: ExtensionContext;
+    readonly pi: ForeignBorrowed<ExtensionAPI>;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly action: string;
     readonly approvalFingerprint?: string;
     readonly explanation: string;
@@ -324,6 +333,8 @@ async function askUser(
  * Approved verdicts are intentionally omitted so routine auto-approvals do not
  * create visible widget noise.
  *
+ * @mutates ctx - `ctx.ui.setWidget` changes displayed Pi widget state
+ *
  * @example
  * ```typescript
  * updateWidget({ ctx, verdicts: flowVerdicts });
@@ -334,7 +345,7 @@ function updateWidget(
     ctx,
     verdicts,
   }: {
-    readonly ctx: ExtensionContext;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly verdicts: readonly {
       readonly action: string;
       readonly verdict: string;

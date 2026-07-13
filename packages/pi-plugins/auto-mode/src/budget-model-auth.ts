@@ -15,6 +15,7 @@ import {
   NO_OVERRIDE_MODEL,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 /**
  * Logger root for auto-mode after removing the package log shim.
@@ -47,6 +48,10 @@ const l = tagged({
  *
  * @returns auth details, or {@link NO_AUTH} when resolution failed
  *
+ * @mutates ctx - `ctx.modelRegistry.getApiKeyAndHeaders` can run command-backed auth
+ *
+ * @mutates model - registry auth reads can invoke caller-owned model accessors or proxy traps
+ *
  * @example
  * ```typescript
  * const auth = await resolveBudgetAuth({ ctx, model });
@@ -57,8 +62,8 @@ async function resolveBudgetAuth(
     ctx,
     model,
   }: {
-    readonly ctx: ExtensionContext;
-    readonly model: Model<Api>;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly model: ForeignBorrowed<Model<Api>>;
   },
 ): Promise<BudgetModelAuth | typeof NO_AUTH> {
   try {
@@ -96,7 +101,7 @@ async function resolveBudgetAuth(
     },);
     innerL.error(
       `getApiKeyAndHeaders failed for ${model.provider}/${model.id}: ${
-        Error.isError(error,) ? error.message : String(error,)
+        Error.isError(error,) ? error.message : `non-Error ${typeof error}`
       }`,
     );
     return NO_AUTH;
@@ -112,6 +117,8 @@ async function resolveBudgetAuth(
  *
  * @returns whether auth is configured
  *
+ * @mutates model - `hasConfiguredAuth` reads can invoke caller-owned model accessors or proxy traps
+ *
  * @example
  * ```typescript
  * hasConfiguredBudgetAuth({ ctx, model });
@@ -122,8 +129,8 @@ function hasConfiguredBudgetAuth(
     ctx,
     model,
   }: {
-    readonly ctx: ExtensionContext;
-    readonly model: Model<Api>;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly model: ForeignBorrowed<Model<Api>>;
   },
 ): boolean {
   return ctx.modelRegistry
@@ -152,7 +159,7 @@ function findBudgetOverrideModel(
     provider,
     modelId,
   }: {
-    readonly ctx: ExtensionContext;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly provider: string;
     readonly modelId: string;
   },

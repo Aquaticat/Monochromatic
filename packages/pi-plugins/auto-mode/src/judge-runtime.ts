@@ -5,6 +5,7 @@
  */
 
 import type { SimpleStreamOptions, } from '@earendil-works/pi-ai';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import type { BudgetModelAuth, } from './types.ts';
 
 /**
@@ -61,6 +62,8 @@ function buildStreamOptions(
  *
  * @returns disposable object
  *
+ * @mutates onTimeout - global `setTimeout` schedules callback capability for deferred invocation
+ *
  * @example
  * ```typescript
  * using timer = disposableTimeout({ ms: 5_000, onTimeout() { controller.abort(); } });
@@ -72,7 +75,7 @@ function disposableTimeout(
     onTimeout,
   }: {
     readonly ms: number;
-    readonly onTimeout: () => void;
+    readonly onTimeout: ForeignBorrowed<() => void>;
   },
 ): Disposable {
   /**

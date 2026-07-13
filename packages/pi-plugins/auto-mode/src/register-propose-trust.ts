@@ -17,6 +17,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { Type, } from 'typebox';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 import { getTrustDirectives, } from './context.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
@@ -104,7 +105,7 @@ const trustReasonParameterSchema = Type.Optional(
  * ```
  */
 function registerProposeTrust(
-  pi: ExtensionAPI,
+  pi: ForeignBorrowed<ExtensionAPI>,
 ): void {
   pi.registerTool({
     name: 'propose_trust',
@@ -123,12 +124,29 @@ function registerProposeTrust(
       rule: trustRuleParameterSchema,
       reason: trustReasonParameterSchema,
     },),
+    /**
+     * Resolves one trust-rule proposal.
+     *
+     * @param _toolCallId - Pi-assigned tool call identity.
+     *
+     * @param params - Requested trust rule and rationale.
+     *
+     * @param _signal - Pi cancellation capability unused by this implementation.
+     *
+     * @param _onUpdate - Pi progress callback unused by this implementation.
+     *
+     * @param ctx - Active Pi tool context.
+     *
+     * @returns Trust proposal result for Pi tool host.
+     *
+     * @mutates ctx - `ctx.ui.select` changes active Pi selector state.
+     */
     async execute(
       _toolCallId: string,
       params: ProposeTrustParams,
       _signal: unknown,
       _onUpdate: unknown,
-      ctx: ExtensionContext,
+      ctx: ForeignBorrowed<ExtensionContext>,
     ): Promise<ProposeTrustResult> {
       /**
        * Per-call sub-logger so branches are visible without logging rule text.
@@ -214,7 +232,7 @@ function isActiveTrustRule(
     ctx,
     rule,
   }: {
-    readonly ctx: ExtensionContext;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly rule: string;
   },
 ): boolean {

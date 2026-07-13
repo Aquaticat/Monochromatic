@@ -13,6 +13,7 @@ import {
   isToolCallEventType,
   type ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import {
   hasFlag,
   hasInlineCode,
@@ -105,7 +106,7 @@ async function shouldFlag(
     readAllowlistedDirs = [],
     bashAllowlistedDirs = [],
   }: {
-    readonly event: ToolCallEvent;
+    readonly event: ForeignBorrowed<ToolCallEvent>;
     readonly ctx: SignalContext;
     readonly config?: MergedConfig;
     /**
@@ -340,7 +341,9 @@ async function bashSignals(
          */
         const files = [
           ...cmd.args
-            .filter(looksLikePath,),
+            .filter(function pathShapedArgument(argument,) {
+              return looksLikePath(argument,);
+            },),
           ...cmd.redirectTargets,
         ];
         /**

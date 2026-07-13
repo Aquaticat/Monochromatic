@@ -15,6 +15,7 @@ import type {
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 import { askUser, } from './ask-user.ts';
 import {
@@ -102,6 +103,14 @@ function decisionForDenyVerdict(
  *
  * @returns block-or-allow decision plus the flow verdict to record, if any
  *
+ * @mutates pi - verdict and approval paths append Pi session entries
+ *
+ * @mutates ctx - context, auth, and user-prompt paths can change controlled Pi state
+ *
+ * @mutates config - judge selection can read caller-owned configuration hooks
+ *
+ * @mutates batchContext - judge context construction can read caller-owned entry hooks
+ *
  * @example
  * ```typescript
  * const result = await evaluate({
@@ -125,8 +134,8 @@ async function evaluate(
     approvalFingerprint,
     batchContext,
   }: {
-    readonly pi: ExtensionAPI;
-    readonly ctx: ExtensionContext;
+    readonly pi: ForeignBorrowed<ExtensionAPI>;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly config: MergedConfig;
     readonly systemPrompt: string;
     readonly action: string;
@@ -249,14 +258,40 @@ async function evaluate(
      */
     const verdict = await callJudgeWithFallback({
       firstJudge: judge,
-      resolveFallbackJudge({ excludedModelSlugs, },) {
+      /**
+       * Resolves one fallback outside prior model attempts.
+       *
+       * @param excludedModelSlugs - Completed model attempts excluded from selection.
+       *
+       * @returns Authenticated fallback judge.
+       *
+       * @mutates excludedModelSlugs - `resolveJudgeModel` iterates supplied exclusion capability.
+       */
+      resolveFallbackJudge({
+        excludedModelSlugs,
+      }: {
+        readonly excludedModelSlugs: ForeignBorrowed<readonly string[]>;
+      },) {
         return resolveJudgeModel({
           ctx,
           config,
           excludedModelSlugs,
         },);
       },
-      callJudgeAttempt({ judge: selectedJudge, },) {
+      /**
+       * Runs one complete judge transport attempt.
+       *
+       * @param selectedJudge - Authenticated model used by provider transport.
+       *
+       * @returns Structured judge verdict.
+       *
+       * @mutates selectedJudge - `callJudge` can invoke model and auth hooks through provider transport.
+       */
+      callJudgeAttempt({
+        judge: selectedJudge,
+      }: {
+        readonly judge: ForeignBorrowed<BudgetModel>;
+      },) {
         return callJudge({
           model: selectedJudge.model,
           auth: selectedJudge.auth,
@@ -331,7 +366,7 @@ async function evaluate(
     /**
      * Normalised error message so both `Error` instances and non-`Error` throws produce a string.
      */
-    const msg = Error.isError(err,) ? err.message : String(err,);
+    const msg = Error.isError(err,) ? err.message : `non-Error ${typeof err}`;
     innerL.error(`judge error: ${msg}`,);
     return {
       decision: await askUser({
@@ -356,6 +391,12 @@ async function evaluate(
  * @param excludedModelSlugs - judge models whose completed attempts already failed
  *
  * @returns a budget model with auth credentials
+ *
+ * @mutates ctx - `findBudgetModel` can invoke registry and command-backed auth capabilities
+ *
+ * @mutates config - model option projection can read caller-owned configuration hooks
+ *
+ * @mutates excludedModelSlugs - model exclusion iteration can invoke caller-owned hooks
  */
 async function resolveJudgeModel(
   {
@@ -363,7 +404,7 @@ async function resolveJudgeModel(
     config,
     excludedModelSlugs = [],
   }: {
-    readonly ctx: ExtensionContext;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly config: MergedConfig;
     readonly excludedModelSlugs?: readonly string[];
   },

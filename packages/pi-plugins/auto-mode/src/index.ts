@@ -15,6 +15,7 @@ import type {
   ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 import { updateWidget, } from './ask-user.ts';
 import {
@@ -111,6 +112,8 @@ type SkillPromptEvent = {
  *
  * @param pi - the pi extension API
  *
+ * @mutates pi - registers Pi commands, tools, shortcuts, lifecycle handlers, and session entries
+ *
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
@@ -118,7 +121,7 @@ type SkillPromptEvent = {
  * ```
  */
 export default async function autoMode(
-  pi: ExtensionAPI,
+  pi: ForeignBorrowed<ExtensionAPI>,
 ): Promise<void> {
   /**
    * Per-call sub-logger so registration log lines carry the entry-point name as a tag.
@@ -197,8 +200,17 @@ export default async function autoMode(
     BYPASS_SHORTCUT,
     {
       description: 'Toggle auto-mode bypass',
+      /**
+       * Toggles bypass state from registered shortcut.
+       *
+       * @param ctx - Active Pi extension context.
+       *
+       * @returns Nothing.
+       *
+       * @mutates ctx - `announceBypassToggle` changes displayed Pi state.
+       */
       handler(
-        ctx: ExtensionContext,
+        ctx: ForeignBorrowed<ExtensionContext>,
       ) {
         bypassEnabled = !bypassEnabled;
         innerL.warn(
@@ -222,9 +234,20 @@ export default async function autoMode(
 
   pi.on(
     'session_start',
+    /**
+     * Restores bypass state for active session.
+     *
+     * @param _event - Unused Pi lifecycle payload.
+     *
+     * @param ctx - Active Pi extension context.
+     *
+     * @returns Nothing.
+     *
+     * @mutates ctx - `updateBypassStatus` changes displayed Pi status state.
+     */
     function handleSessionStart(
       _event: unknown,
-      ctx: ExtensionContext,
+      ctx: ForeignBorrowed<ExtensionContext>,
     ) {
       bypassEnabled = findLatestBypassEnabled({ ctx, },);
       updateBypassStatus({
@@ -236,9 +259,20 @@ export default async function autoMode(
 
   pi.on(
     'session_tree',
+    /**
+     * Restores bypass state after session tree changes.
+     *
+     * @param _event - Unused Pi lifecycle payload.
+     *
+     * @param ctx - Active Pi extension context.
+     *
+     * @returns Nothing.
+     *
+     * @mutates ctx - `updateBypassStatus` changes displayed Pi status state.
+     */
     function handleSessionTree(
       _event: unknown,
-      ctx: ExtensionContext,
+      ctx: ForeignBorrowed<ExtensionContext>,
     ) {
       bypassEnabled = findLatestBypassEnabled({ ctx, },);
       updateBypassStatus({
@@ -274,9 +308,20 @@ export default async function autoMode(
 
   pi.on(
     'agent_start',
+    /**
+     * Resets per-agent flow state and clears displayed widget state.
+     *
+     * @param _event - Unused Pi lifecycle payload.
+     *
+     * @param ctx - Active Pi extension context.
+     *
+     * @returns Nothing.
+     *
+     * @mutates ctx - `ctx.ui.setWidget` clears displayed Pi widget state.
+     */
     function handleAgentStart(
       _event: unknown,
-      ctx: ExtensionContext,
+      ctx: ForeignBorrowed<ExtensionContext>,
     ) {
       currentTurnBatch = [];
       denialInCurrentTurn = false;
@@ -301,9 +346,20 @@ export default async function autoMode(
 
   pi.on(
     'agent_end',
+    /**
+     * Clears completed flow and skill state.
+     *
+     * @param _event - Unused Pi lifecycle payload.
+     *
+     * @param ctx - Active Pi extension context.
+     *
+     * @returns Nothing.
+     *
+     * @mutates ctx - `ctx.ui.setWidget` clears displayed Pi widget state when needed.
+     */
     function handleAgentEnd(
       _event: unknown,
-      ctx: ExtensionContext,
+      ctx: ForeignBorrowed<ExtensionContext>,
     ) {
       if (flowVerdicts.length
         > 0) {
@@ -320,9 +376,22 @@ export default async function autoMode(
 
   pi.on(
     'tool_call',
+    /**
+     * Evaluates one Pi tool call through bypass and judge policy.
+     *
+     * @param event - Pi tool-call payload inspected and fingerprinted.
+     *
+     * @param ctx - Active Pi extension context.
+     *
+     * @returns Optional Pi block decision.
+     *
+     * @mutates event - approval fingerprint serialization can invoke caller-owned input hooks.
+     *
+     * @mutates ctx - evaluation can invoke registry, session, and UI capabilities.
+     */
     async function handleToolCall(
-      event: ToolCallEvent,
-      ctx: ExtensionContext,
+      event: ForeignBorrowed<ToolCallEvent>,
+      ctx: ForeignBorrowed<ExtensionContext>,
     ) {
       if (bypassEnabled) {
         /**

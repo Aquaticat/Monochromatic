@@ -15,6 +15,7 @@ import {
   resolveBudgetModelOverride,
   selectBudgetModel,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import {
   findBudgetOverrideModel,
   hasConfiguredBudgetAuth,
@@ -142,6 +143,12 @@ function assertModelApiList(
  *
  * @returns budget model with auth credentials
  *
+ * @mutates ctx - registry selection can invoke model accessors and command-backed auth capabilities
+ *
+ * @mutates options - override and strategy reads can invoke caller-owned accessors or proxy traps
+ *
+ * @mutates excludedModelSlugs - iteration can invoke caller-owned iterator hooks
+ *
  * @example
  * ```typescript
  * const budget = await findBudgetModel({ ctx });
@@ -153,7 +160,7 @@ async function findBudgetModel(
     options,
     excludedModelSlugs = [],
   }: {
-    readonly ctx: ExtensionContext;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly options?: BudgetModelOptions;
     readonly excludedModelSlugs?: readonly string[];
   },
@@ -196,7 +203,16 @@ async function findBudgetModel(
             modelId,
           },);
         },
-        async resolveAuth({ model, },) {
+        /**
+         * Resolves auth for configured override model.
+         *
+         * @param model - Registry model selected by override resolver.
+         *
+         * @returns Resolved auth or no-auth sentinel.
+         *
+         * @mutates model - `resolveBudgetAuth` can invoke model hooks and command-backed auth.
+         */
+        async resolveAuth({ model, }: { readonly model: ForeignBorrowed<Model<Api>>; },) {
           return await resolveBudgetAuth({
             ctx,
             model,
@@ -232,22 +248,51 @@ async function findBudgetModel(
    * Registry models after runtime shape validation, excluding models whose
    * completed judge attempts already failed.
    */
-  const allModels = rawAllModels.filter(function modelHasNotFailed(model,) {
-    return !excludedSlugs.has(budgetModelSlug(model,),);
-  },);
+  const allModels = rawAllModels.filter(
+    /**
+     * Excludes models whose previous judge attempts failed.
+     *
+     * @param model - Registry model whose identity is inspected.
+     *
+     * @returns Whether model remains eligible.
+     *
+     * @mutates model - `budgetModelSlug` reads can invoke caller-owned model hooks.
+     */
+    function modelHasNotFailed(model: ForeignBorrowed<Model<Api>>,) {
+      return !excludedSlugs.has(budgetModelSlug(model,),);
+    },
+  );
 
   return await selectBudgetModel<Model<Api>>({
     activeModel,
     allModels,
     strategy: opts.strategy,
     majorVersions: opts.majorVersions,
-    async resolveAuth({ model, },) {
+    /**
+     * Resolves auth for one automatically selected model.
+     *
+     * @param model - Registry model selected by strategy.
+     *
+     * @returns Resolved auth or no-auth sentinel.
+     *
+     * @mutates model - `resolveBudgetAuth` can invoke model hooks and command-backed auth.
+     */
+    async resolveAuth({ model, }: { readonly model: ForeignBorrowed<Model<Api>>; },) {
       return await resolveBudgetAuth({
         ctx,
         model,
       },);
     },
-    hasConfiguredAuth({ model, },) {
+    /**
+     * Checks auth configuration for one candidate model.
+     *
+     * @param model - Registry model inspected by auth storage.
+     *
+     * @returns Whether auth is configured.
+     *
+     * @mutates model - `hasConfiguredBudgetAuth` reads can invoke caller-owned model hooks.
+     */
+    hasConfiguredAuth({ model, }: { readonly model: ForeignBorrowed<Model<Api>>; },) {
       return hasConfiguredBudgetAuth({
         ctx,
         model,

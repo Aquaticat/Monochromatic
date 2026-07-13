@@ -13,6 +13,7 @@ import type {
   ExtensionContext,
   SessionMessageEntry,
 } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   isTrustEntry,
@@ -69,7 +70,7 @@ type ReusableApproval =
  * ```
  */
 function getTrustDirectives(
-  ctx: ExtensionContext,
+  ctx: ForeignBorrowed<ExtensionContext>,
 ): string[] {
   /**
    * Accumulator for currently-active trust directives.
@@ -121,7 +122,7 @@ function getReusableApproval(
     action,
     approvalFingerprint,
   }: {
-    readonly ctx: ExtensionContext;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly action: string;
     readonly approvalFingerprint: string;
   },
@@ -205,7 +206,7 @@ const NO_PENDING_VERDICT = Symbol('pending verdict entry absent from context',);
  * ```
  */
 function buildContext(
-  ctx: ExtensionContext,
+  ctx: ForeignBorrowed<ExtensionContext>,
 ): string {
   /**
    * Full session branch snapshot, scanned forward below.

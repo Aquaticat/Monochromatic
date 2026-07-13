@@ -5,6 +5,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { NoBudgetModelError, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 import type {
@@ -184,6 +185,8 @@ function describeRaceError(
  *
  * @throws Error when selection returns an excluded model
  *
+ * @mutates resolveFallbackJudge - invokes fallback resolver capability, which can change captured state
+ *
  * @example
  * ```typescript
  * const fallback = await resolveFreshFallback({
@@ -198,9 +201,9 @@ async function resolveFreshFallback(
     resolveFallbackJudge,
   }: {
     readonly excludedModelSlugs: readonly string[];
-    readonly resolveFallbackJudge: (
+    readonly resolveFallbackJudge: ForeignBorrowed<(
       options: { readonly excludedModelSlugs: readonly string[]; },
-    ) => Promise<BudgetModel>;
+    ) => Promise<BudgetModel>>;
   },
 ): Promise<BudgetModel> {
   /**
@@ -231,6 +234,8 @@ async function resolveFreshFallback(
  *
  * @returns one or two distinct authenticated fallback judges
  *
+ * @mutates resolveFallbackJudge - `resolveFreshFallback` invokes supplied resolver capability
+ *
  * @example
  * ```typescript
  * const fallbacks = await resolveFallbackRace({ firstJudge, resolveFallbackJudge });
@@ -242,9 +247,9 @@ async function resolveFallbackRace(
     resolveFallbackJudge,
   }: {
     readonly firstJudge: BudgetModel;
-    readonly resolveFallbackJudge: (
+    readonly resolveFallbackJudge: ForeignBorrowed<(
       options: { readonly excludedModelSlugs: readonly string[]; },
-    ) => Promise<BudgetModel>;
+    ) => Promise<BudgetModel>>;
   },
 ): Promise<FallbackJudgeContenders> {
   /**
@@ -299,6 +304,8 @@ async function resolveFallbackRace(
  *
  * @throws Error labeled with the failed contender identity
  *
+ * @mutates callJudgeAttempt - invokes judge attempt capability, which can change captured state
+ *
  * @example
  * ```typescript
  * const result = await runFallbackJudge({ judge, callJudgeAttempt });
@@ -310,7 +317,7 @@ async function runFallbackJudge(
     callJudgeAttempt,
   }: {
     readonly judge: BudgetModel;
-    readonly callJudgeAttempt: JudgeAttempt;
+    readonly callJudgeAttempt: ForeignBorrowed<JudgeAttempt>;
   },
 ): Promise<FallbackJudgeResult> {
   /**
@@ -356,6 +363,10 @@ async function runFallbackJudge(
  *
  * @throws Error when fallback selection fails or both fallback contenders fail
  *
+ * @mutates resolveFallbackJudge - invokes fallback resolver capability, which can change captured state
+ *
+ * @mutates callJudgeAttempt - invokes judge attempt capability, which can change captured state
+ *
  * @example
  * ```typescript
  * const verdict = await callJudgeWithFallback({
@@ -372,10 +383,10 @@ async function callJudgeWithFallback(
     callJudgeAttempt,
   }: {
     readonly firstJudge: BudgetModel;
-    readonly resolveFallbackJudge: (
+    readonly resolveFallbackJudge: ForeignBorrowed<(
       options: { readonly excludedModelSlugs: readonly string[]; },
-    ) => Promise<BudgetModel>;
-    readonly callJudgeAttempt: JudgeAttempt;
+    ) => Promise<BudgetModel>>;
+    readonly callJudgeAttempt: ForeignBorrowed<JudgeAttempt>;
   },
 ): Promise<Verdict> {
   /**

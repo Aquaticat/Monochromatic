@@ -27,6 +27,7 @@ import { openAICodexResponsesApi, } from '@earendil-works/pi-ai/api/openai-codex
 import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completions.lazy';
 import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 import {
   toolChoiceForApi,
@@ -134,15 +135,15 @@ type DirectJudgeStreamOptions = {
   /**
    * Selected judge model.
    */
-  readonly model: Readonly<Model<Api>>;
+  readonly model: ForeignBorrowed<Model<Api>>;
   /**
    * Context handed to pi-ai streamSimple.
    */
-  readonly context: Readonly<Context>;
+  readonly context: ForeignBorrowed<Context>;
   /**
    * Simple stream options with resolved auth.
    */
-  readonly options?: Readonly<SimpleStreamOptions>;
+  readonly options?: ForeignBorrowed<SimpleStreamOptions>;
 };
 
 /**
@@ -152,7 +153,7 @@ type JudgeStreamCallOptions = DirectJudgeStreamOptions & {
   /**
    * Test seam or caller-supplied stream implementation.
    */
-  readonly streamSimpleFn?: JudgeStreamSimple;
+  readonly streamSimpleFn?: ForeignBorrowed<JudgeStreamSimple>;
 };
 
 /**
@@ -169,6 +170,12 @@ type JudgeStreamCallOptions = DirectJudgeStreamOptions & {
  *
  * @throws when model API has no direct implementation registered for auto-mode
  *
+ * @mutates model - `streams.streamSimple` can read caller-owned model accessors and proxy traps
+ *
+ * @mutates context - `streams.streamSimple` can read caller-owned context accessors and proxy traps
+ *
+ * @mutates options - `streams.streamSimple` can invoke payload callbacks and read caller-owned hooks
+ *
  * @example
  * ```typescript
  * const stream = defaultJudgeStreamSimple({ model, context, options });
@@ -179,7 +186,7 @@ function defaultJudgeStreamSimple(
     model,
     context,
     options,
-  }: Readonly<DirectJudgeStreamOptions>,
+  }: ForeignBorrowed<Readonly<DirectJudgeStreamOptions>>,
 ): AssistantMessageEventStream {
   /**
    * Direct API stream implementation matching the selected judge model.
@@ -211,6 +218,14 @@ function defaultJudgeStreamSimple(
  *
  * @returns assistant event stream from supplied or default implementation
  *
+ * @mutates streamSimpleFn - supplied stream capability can change captured state when invoked
+ *
+ * @mutates model - selected stream implementation can read caller-owned model hooks
+ *
+ * @mutates context - selected stream implementation can read caller-owned context hooks
+ *
+ * @mutates options - selected stream implementation can invoke callbacks and read caller-owned hooks
+ *
  * @example
  * ```typescript
  * const stream = streamJudgeSimple({ model, context, options });
@@ -222,7 +237,7 @@ function streamJudgeSimple(
     model,
     context,
     options,
-  }: Readonly<JudgeStreamCallOptions>,
+  }: ForeignBorrowed<Readonly<JudgeStreamCallOptions>>,
 ): AssistantMessageEventStream {
   if (streamSimpleFn
     !== undefined) {
@@ -286,6 +301,12 @@ function streamJudgeSimple(
  *
  * @returns judge's verdict
  *
+ * @mutates model - `streamJudgeSimple` can read caller-owned model hooks
+ *
+ * @mutates auth - stream options expose caller-owned header hooks to provider implementation
+ *
+ * @mutates streamSimpleFn - supplied stream capability can change captured state when invoked
+ *
  * @example
  * ```typescript
  * const verdict = await callJudge({
@@ -314,8 +335,8 @@ async function callJudge(
     batchContext,
     streamSimpleFn,
   }: {
-    readonly model: Model<Api>;
-    readonly auth: BudgetModelAuth;
+    readonly model: ForeignBorrowed<Model<Api>>;
+    readonly auth: ForeignBorrowed<BudgetModelAuth>;
     readonly action: string;
     readonly cwd: string;
     readonly recentContext: string;
@@ -323,7 +344,7 @@ async function callJudge(
     readonly timeoutMs: number;
     readonly systemPrompt: string;
     readonly batchContext: readonly BatchEntry[];
-    readonly streamSimpleFn?: JudgeStreamSimple;
+    readonly streamSimpleFn?: ForeignBorrowed<JudgeStreamSimple>;
   },
 ): Promise<Verdict> {
   /**
