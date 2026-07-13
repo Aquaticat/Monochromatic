@@ -278,6 +278,17 @@ export function callbackSemanticEffect(callbackState: { value: string; },): void
 }
 
 /**
+ * Invokes caller callback whose closure effects remain opaque.
+ *
+ * @param callback - Caller callback allowed to change captured state.
+ *
+ * @mutates callback - Direct invocation can change state captured by caller callback.
+ */
+export function directCallbackEffect(callback: () => void,): void {
+  callback();
+}
+
+/**
  * Mutates receiver-reachable array elements through audited callback relation.
  *
  * @param states - Readonly container whose mutable elements are updated.

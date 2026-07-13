@@ -9,6 +9,7 @@ import type {
   IntrinsicProvenance,
 } from './intrinsic-effect-catalog.ts';
 import { PI_PACKAGE_EFFECTS, } from './pi-package-effect-catalog.ts';
+import { WORKSPACE_PACKAGE_EFFECTS, } from './workspace-package-effect-catalog.ts';
 
 /**
  * Shared receiver mutation target.
@@ -106,44 +107,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: '@oxlint/plugins 1.73 index.d.ts source and fixer descriptor operations',
     };
   },),
-  ...[
-    'isRecord',
-    'parseMutationContractBlocks',
-  ].map(function sharedPluginObservation(member,): IntrinsicEffectEntry {
-    return {
-      provenance: {
-        kind: 'package',
-        packageName: '@monochromatic-dev/config-oxlint-shared',
-        major: 0,
-      },
-      ownerType: 'globalThis',
-      member,
-      targets: [],
-      evidence: 'config-oxlint-shared 0.0.1 source pure parser and record predicates',
-    };
-  },),
-  {
-    provenance: {
-      kind: 'package',
-      packageName: '@monochromatic-dev/module-current-time-context',
-      major: 0,
-    },
-    ownerType: 'globalThis',
-    member: 'formatTimeContext',
-    targets: [],
-    evidence: 'module-current-time-context 0.0.1 source reads Date local-time fields and formats primitive text',
-  },
-  {
-    provenance: {
-      kind: 'package',
-      packageName: '@monochromatic-dev/module-or-throw',
-      major: 0,
-    },
-    ownerType: 'globalThis',
-    member: 'nonNullishOrThrow',
-    targets: [],
-    evidence: 'module-or-throw 0.0.1 nonNullishOrThrow validation without argument mutation',
-  },
+  ...WORKSPACE_PACKAGE_EFFECTS,
   ...[
     'isArrayLiteralExpression',
     'isArrayTypeNode',

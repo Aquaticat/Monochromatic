@@ -22,7 +22,7 @@ import {
   intrinsicEffectQuery,
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
-import { isAuditedObservationalCallable, } from './effect-call-observation.ts';
+import { auditedCallableEffect, } from './effect-call-observation.ts';
 import { effectCallName, } from './effect-call-name.ts';
 import {
   expressionCanCarryMutableState,
@@ -97,6 +97,10 @@ export function inspectEffectCall({
     },)
     : PARAMETER_INDEX_UNAVAILABLE;
   if (callbackParameterIndex !== PARAMETER_INDEX_UNAVAILABLE) {
+    addEffectIndex({
+      target: summary.directMutated,
+      value: callbackParameterIndex,
+    },);
     call.arguments
       .forEach(function callbackArgument(
         argument,
@@ -125,12 +129,40 @@ export function inspectEffectCall({
     return;
   }
 
-  if (isAuditedObservationalCallable({
+  /**
+   * Exact imported or global callable effect when cataloged.
+   */
+  const callableEffect = auditedCallableEffect({
     project,
     checker,
-    call,
-  },))
+    expression: call.expression,
+  },);
+  if (callableEffect !== NO_INTRINSIC_EFFECT) {
+    callableEffect.targets
+      .forEach(function callableTarget(target,): void {
+        if (target.kind !== 'argument')
+          return;
+        /**
+         * Call argument selected by audited callable effect target.
+         */
+        const argument = call.arguments[target.index];
+        if (argument === undefined)
+          return;
+        parameterIndexes({
+          checker,
+          bindingOriginBySymbolId,
+          node: argument,
+          includedPropertyNames: ALL_PACKAGED_PROPERTIES,
+        },)
+          .forEach(function addCallableMutation(index,): void {
+            addEffectIndex({
+              target: summary.directMutated,
+              value: index,
+            },);
+          },);
+      },);
     return;
+  }
 
   if (isPropertyAccessExpression(call.expression,)) {
     /**

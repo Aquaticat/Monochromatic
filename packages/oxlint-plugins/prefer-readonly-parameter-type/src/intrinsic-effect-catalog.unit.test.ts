@@ -389,8 +389,13 @@ await describe({
             && (intrinsicEffect(query,) !== NO_INTRINSIC_EFFECT);
         },),).toBe(true,);
         expect([
+          'getActiveTools',
           'getThinkingLevel',
           'on',
+          'registerCommand',
+          'registerMessageRenderer',
+          'sendMessage',
+          'setActiveTools',
           'setThinkingLevel',
         ].every(function piMemberCatalogued(member,): boolean {
           return intrinsicEffect({
@@ -400,6 +405,24 @@ await describe({
               major: 0,
             },
             ownerType: 'ExtensionAPI',
+            member,
+          },) !== NO_INTRINSIC_EFFECT;
+        },),).toBe(true,);
+        expect([
+          { ownerType: 'ExtensionCommandContext', member: 'waitForIdle', },
+          { ownerType: 'ExtensionUIContext', member: 'notify', },
+          { ownerType: 'ModelRegistry', member: 'getApiKeyAndHeaders', },
+          { ownerType: 'SessionManager', member: 'getBranch', },
+          { ownerType: 'Theme', member: 'bold', },
+          { ownerType: 'Theme', member: 'fg', },
+        ].every(function piOwnedMemberCatalogued({ ownerType, member, },): boolean {
+          return intrinsicEffect({
+            provenance: {
+              kind: 'package',
+              packageName: '@earendil-works/pi-coding-agent',
+              major: 0,
+            },
+            ownerType,
             member,
           },) !== NO_INTRINSIC_EFFECT;
         },),).toBe(true,);

@@ -4,7 +4,14 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
+
+/**
+ * Scanner producing direct summaries for one source.
+ */
+type DirectSummaryFactory = () => ReadonlyMap<string, MutableEffectSummary>;
 
 /**
  * Cached direct summaries for one exact source text.
@@ -97,6 +104,26 @@ function containsEveryExpectedKey({
 }
 
 /**
+ * Invokes caller-owned direct-summary scanner.
+ *
+ * @param create - Scanner callback to invoke.
+ *
+ * @returns newly scanned direct summaries.
+ *
+ * @mutates create - invokes caller scanner callback and its captured state
+ *
+ * @example
+ * ```ts
+ * runSummaryFactory(create);
+ * ```
+ */
+function runSummaryFactory(
+  create: ForeignBorrowed<DirectSummaryFactory>,
+): ReadonlyMap<string, MutableEffectSummary> {
+  return create();
+}
+
+/**
  * Returns cloned direct summaries from cache or source scanner.
  *
  * @param projectKey - Configured project identity.
@@ -111,6 +138,8 @@ function containsEveryExpectedKey({
  *
  * @returns independent direct summaries safe for propagation.
  *
+ * @mutates create - invokes caller scanner callback on cache miss or incomplete hit
+ *
  * @example
  * ```ts
  * directSummariesForSource({ projectKey, fileName, sourceText, expectedKeys, create });
@@ -122,13 +151,13 @@ export function directSummariesForSource({
   sourceText,
   expectedKeys,
   create,
-}: {
-  readonly projectKey: string;
-  readonly fileName: string;
-  readonly sourceText: string;
-  readonly expectedKeys: ReadonlySet<string>;
-  readonly create: () => ReadonlyMap<string, MutableEffectSummary>;
-}): ReadonlyMap<string, MutableEffectSummary> {
+}: ForeignBorrowed<Readonly<{
+  projectKey: string;
+  fileName: string;
+  sourceText: string;
+  expectedKeys: ReadonlySet<string>;
+  create: DirectSummaryFactory;
+}>>): ReadonlyMap<string, MutableEffectSummary> {
   /**
    * Project-local cache bounded by configured source paths.
    */
@@ -162,7 +191,7 @@ export function directSummariesForSource({
   /**
    * Fresh semantic direct summaries for changed or uncached source.
    */
-  const created = create();
+  const created = runSummaryFactory(create,);
   counters.directSummaryBuildCount += created.size;
   projectCache.set(
     fileName,
