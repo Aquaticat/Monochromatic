@@ -2568,6 +2568,9 @@ importers:
       '@monochromatic-dev/config-oxlint-shared':
         specifier: workspace:*
         version: link:../shared
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.73.0
