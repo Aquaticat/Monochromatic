@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import { TOOL_TITLE_ENTRY_MISSING, } from './sentinels.ts';
 import {
   formatKnownToolTitle,
@@ -64,6 +66,8 @@ function genericUnknownToolTitle(
  *
  * @returns formatted title body without host prefix
  *
+ * @mutates registry - `lookupToolTitleEntry` delegates `Object.hasOwn` and may invoke proxy traps
+ *
  * @example
  * ```ts
  * buildToolTitle({ registry, toolName: 'Read', input: { path: 'a.ts' }, tense: 'pre' });
@@ -77,14 +81,14 @@ function buildToolTitle(
     tense,
     context = {},
     unknownToolTitle = genericUnknownToolTitle,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     registry: ToolTitleRegistry;
     toolName: string;
     input: ToolTitleInput;
     tense: ToolTitleTense;
     context?: ToolTitleContext;
     unknownToolTitle?: UnknownToolTitleFormatter;
-  }>,
+  }>>,
 ): string {
   /**
    * Formatter registered for the host tool name.
@@ -165,6 +169,8 @@ function buildTerminalTitle(
  *
  * @returns prefixed terminal title text before output-boundary sanitizing
  *
+ * @mutates registry - `buildToolTitle` delegates `Object.hasOwn` and may invoke proxy traps
+ *
  * @example
  * ```ts
  * buildToolTerminalTitle({ prefix: 'π', registry, toolName: 'bash', input: { command: 'npm test' }, tense: 'pre' });
@@ -179,7 +185,7 @@ function buildToolTerminalTitle(
     tense,
     context,
     unknownToolTitle,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     prefix: string;
     registry: ToolTitleRegistry;
     toolName: string;
@@ -187,7 +193,7 @@ function buildToolTerminalTitle(
     tense: ToolTitleTense;
     context?: ToolTitleContext;
     unknownToolTitle?: UnknownToolTitleFormatter;
-  }>,
+  }>>,
 ): string {
   /**
    * Optional arguments only included when present to satisfy exact optional property types.

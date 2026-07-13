@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import { terminalTitleCommand, } from './command.ts';
 import {
   lifecycleValueTitle,
@@ -64,11 +66,11 @@ function fieldTitleEntry(
     field,
     fallback,
     format,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     field: string;
     fallback: TenseLabels;
     format: (input: ToolTitleFieldFormatInput,) => string;
-  }>,
+  }>>,
 ): FieldToolTitleEntry {
   return {
     kind: 'field',
@@ -99,10 +101,10 @@ function inputTitleEntry(
   {
     fallback,
     format,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     fallback: TenseLabels;
     format: WholeInputToolTitleEntry['format'];
-  }>,
+  }>>,
 ): WholeInputToolTitleEntry {
   return {
     kind: 'input',

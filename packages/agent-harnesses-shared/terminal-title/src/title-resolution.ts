@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import {
   TOOL_TITLE_ENTRY_MISSING,
   TOOL_TITLE_FIELD_MISSING,
@@ -28,6 +30,8 @@ import type {
  *
  * @returns matching own registry entry or undefined
  *
+ * @mutates registry - `Object.hasOwn` may invoke proxy `getOwnPropertyDescriptor` traps
+ *
  * @example
  * ```ts
  * lookupToolTitleEntry({ registry, toolName: 'Read' });
@@ -37,10 +41,10 @@ function lookupToolTitleEntry(
   {
     registry,
     toolName,
-  }: Readonly<{
+  }: ForeignBorrowed<Readonly<{
     registry: ToolTitleRegistry;
     toolName: string;
-  }>,
+  }>>,
 ): ToolTitleEntry | typeof TOOL_TITLE_ENTRY_MISSING {
   if (!Object.hasOwn(
     registry,
