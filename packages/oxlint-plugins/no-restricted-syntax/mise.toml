@@ -33,13 +33,3 @@ extends = "lint:types"
 
 [tasks."test:unit"]
 extends = "test:unit"
-
-[tasks."test:semantic-bridge-host"]
-description = "Exercise built semantic bridge lifecycle on current host"
-run = "node src/typescript-sync-adapter.unit.test.ts"
-run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node -- node src/typescript-sync-adapter.unit.test.ts'
-
-[tasks."test:external-consumer-host"]
-description = "Exercise built package from external consumer on current host"
-run = "node src/external-consumer.unit.test.ts"
-run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node pnpm -- node src/external-consumer.unit.test.ts'

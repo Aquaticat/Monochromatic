@@ -3,7 +3,7 @@ import type {
   ESTree,
   Variable,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { isNodeBuiltinSource, } from './no-sync.constants.ts';
 import {

@@ -492,12 +492,12 @@ importers:
 
   packages/agent-harnesses-shared/shell-command-analyzer:
     dependencies:
-      '@monochromatic-dev/config-oxlint-shared':
-        specifier: workspace:*
-        version: link:../../oxlint-plugins/shared
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       unbash:
         specifier: 'catalog:'
         version: 4.0.2
@@ -1134,6 +1134,9 @@ importers:
       '@monochromatic-dev/config-oxlint-no-restricted-syntax':
         specifier: workspace:*
         version: link:../../oxlint-plugins/no-restricted-syntax
+      '@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type':
+        specifier: workspace:*
+        version: link:../../oxlint-plugins/prefer-readonly-parameter-type
       '@monochromatic-dev/config-oxlint-stylistic':
         specifier: workspace:*
         version: link:../../oxlint-plugins/stylistic
@@ -1750,6 +1753,9 @@ importers:
       '@monochromatic-dev/git-policy-api':
         specifier: workspace:*
         version: link:../api
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -2011,9 +2017,9 @@ importers:
 
   packages/module/i18n-compose:
     dependencies:
-      '@monochromatic-dev/config-oxlint-shared':
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../oxlint-plugins/shared
+        version: link:../../ownership-markers/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -2033,15 +2039,15 @@ importers:
 
   packages/module/image-diff:
     dependencies:
-      '@monochromatic-dev/config-oxlint-shared':
-        specifier: workspace:*
-        version: link:../../oxlint-plugins/shared
       '@monochromatic-dev/module-llm-types':
         specifier: workspace:*
         version: link:../llm-types
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -2465,9 +2471,9 @@ importers:
 
   packages/module/throws:
     dependencies:
-      '@monochromatic-dev/config-oxlint-shared':
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../oxlint-plugins/shared
+        version: link:../../ownership-markers/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -2580,7 +2586,50 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  packages/ownership-markers/foreign-borrowed:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+
   packages/oxlint-plugins/no-restricted-syntax:
+    dependencies:
+      '@oxlint/plugins':
+        specifier: 'catalog:'
+        version: 1.73.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+    devDependencies:
+      '@monochromatic-dev/config-oxlint-shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@monochromatic-dev/config-oxlint-test-support':
+        specifier: workspace:*
+        version: link:../test-support
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.5(typescript@7.0.2)
+
+  packages/oxlint-plugins/prefer-readonly-parameter-type:
     dependencies:
       '@oxlint/plugins':
         specifier: 'catalog:'
@@ -2607,6 +2656,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
@@ -2640,6 +2692,9 @@ importers:
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.73.0
@@ -2687,6 +2742,9 @@ importers:
       '@monochromatic-dev/config-oxlint-shared':
         specifier: workspace:*
         version: link:../shared
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.73.0

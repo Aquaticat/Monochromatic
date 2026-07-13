@@ -82,10 +82,6 @@ This plugin provides individual rules for each banned syntax pattern instead.
    constructor comparisons,
    and Node `util.types.isNativeError()`),
    autofixing them to `Error.isError(value,)`
-- **prefer-readonly-parameter-types**:
-   requires honest deep-readonly contracts for nonmutating data,
-   verifies `@mutates` against caller-observable effects,
-   and fails closed at unresolved external boundaries
 - **no-disable-prefer-readonly-parameter-types**:
    prohibits inline suppression of semantic readonly-effect checks
 - **require-destructured-params**:
@@ -96,108 +92,12 @@ This plugin provides individual rules for each banned syntax pattern instead.
 `no-regex` is enabled by the shared `@monochromatic-dev/config-oxlint` package.
 Necessary regex sites must use scoped disable justifications.
 
-## prefer-readonly-parameter-types
+## Semantic readonly companion
 
-This project-owned replacement combines resolved TypeScript readonly semantics
-with whole-project mutation summaries.
-It uses TypeScript 7 through `typescript/unstable/sync` and therefore requires
-a configured project containing each linted source file.
-Oxlint CLI diagnostics are authoritative because Oxlint's language server does not run JavaScript plugins.
-
-Nonmutating data parameters require an honest deep-readonly type.
-Capability types may retain their original API when analysis proves no mutation path.
-A readonly projection that retains audited mutation capabilities reports `dishonestReadonly`.
-Unknown external calls report what input and calls are involved instead of being assumed safe.
-Unknown method diagnostics explain that a method can change its object or controlled system without assigning a new
-value to input binding.
-Exact global `String(value)` analysis reads both declaration identity and argument type.
-It accepts primitive unions,
-`symbol`,
-and type-branded primitives because those paths cannot expose caller-owned mutable state.
-For object-capable values,
-the diagnostic names getter and proxy property reads plus `Symbol.toPrimitive`,
-`toString`,
-and `valueOf` calls.
-A TypeScript object type cannot prove those runtime hooks absent because a caller can supply accessors,
-overrides,
-or a proxy.
-The diagnostic therefore enumerates narrowing,
-primitive-field conversion,
-noncoercing fallback,
-removal,
-and deliberate `@mutates` remedies.
-
-Deliberate conversion of `unknown` remains expressible:
-
-```typescript
-/**
- * Converts caller value with deliberate coercion hooks.
- *
- * @param value - Caller value allowed to define conversion behavior.
- *
- * @returns caller-defined text conversion.
- *
- * @mutates value - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input.
- */
-function deliberatelyCoerce(value: unknown,): string {
-  return String(value,);
-}
-```
-
-The rule verifies that complete contract and propagates it as a mutation rather than reporting unresolved coercion.
-
-Externally dictated mutable callback and API handles use project-owned `ForeignBorrowed<T>` marker at audited foreign
-boundaries.
-Marker records ownership rather than claiming readonly semantics:
-direct mutation still requires `@mutates`,
-and unresolved calls still report `opaqueEffect`.
-Project-owned data contracts continue to require structural deep readonly.
-
-Intentional mutation uses a repeatable project TSDoc block:
-
-```typescript
-/**
- * Clears shared traversal state before reuse.
- *
- * @param visited - Shared cycle detector retained across calls.
- *
- * @mutates visited - Clears caller-owned traversal state.
- */
-function clearVisited(visited: Set<string>,): void {
-  visited.clear();
-}
-```
-
-The target must name a parameter or destructured parameter binding,
-and the description must explain why mutation occurs.
-The sibling `@monochromatic-dev/config-oxlint-tsdoc` plugin validates grammar;
-both plugins consume the same shared parser.
-The semantic rule reports missing and stale contracts,
-propagates effects and opaque provenance through owned calls,
-matches destructured mutation targets to packaged object-literal properties,
-callback aliases,
-and escaped closure containers,
-and consumes bodyless source-signature contracts.
-Declaration files remain exempt enforcement inputs.
-
-An unknown call has distinct valid remediations,
-and the diagnostic spells out all of them:
-
-- remove or rewrite call;
-- include repository-owned implementation in nearest TypeScript project;
-- audit exact external function or method and add tested catalogue entry recording every changed receiver or argument;
-- document every possible change with `@mutates` in current function or dedicated wrapper.
-
-Every unknown call effect documented through `@mutates` must name upstream callable or link its contract.
-Documented effect then propagates as mutation while retaining provenance for audit.
-An unrelated tag or tag that leaves any affected input undocumented does not waive diagnostic.
-
-Semantic rewrites are suggestions only.
-Ordinary `--fix` does not change signatures or mutation contracts;
-explicit `--fix-suggestions` may apply verified stale-contract removal,
-a deep-safe `T[]` to `readonly T[]` rewrite,
-or a capability-free structural projection through an existing named `type-fest` `ReadonlyDeep` import.
-Inline suppression is prohibited by `no-disable-prefer-readonly-parameter-types`.
+The semantic `prefer-readonly-parameter-types` rule now lives in
+`packages/oxlint-plugins/prefer-readonly-parameter-type`.
+This package retains `no-disable-prefer-readonly-parameter-types` so inline comments cannot bypass the dedicated
+plugin's rule.
 
 ## no-nullish-union
 

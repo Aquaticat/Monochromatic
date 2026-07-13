@@ -8,7 +8,7 @@ import type {
   Node as UnbashNode,
   Redirect as UnbashRedirect,
 } from 'unbash';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { commandToInfo, } from './convert.ts';
 import {
   EMPTY_REDIRECTS,

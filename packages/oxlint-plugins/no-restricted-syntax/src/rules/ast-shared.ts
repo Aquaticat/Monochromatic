@@ -2,7 +2,7 @@ import type {
   Definition,
   ESTree,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Sentinel for call-expression shapes that do not expose one ordinary argument.

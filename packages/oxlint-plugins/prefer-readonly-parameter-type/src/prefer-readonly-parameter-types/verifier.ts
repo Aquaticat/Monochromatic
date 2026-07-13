@@ -4,10 +4,8 @@
  * @module
  */
 
-import type {
-  ForeignBorrowed,
-  ParsedMutationContractBlock,
-} from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ParsedMutationContractBlock, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type {
   Context,
   Fixer,

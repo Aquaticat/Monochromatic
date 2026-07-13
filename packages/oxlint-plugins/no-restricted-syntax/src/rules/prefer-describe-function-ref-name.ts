@@ -12,7 +12,7 @@ import type {
   Variable,
   VisitorWithHooks,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /* oxlint-disable no-restricted-syntax/no-regex -- binding names are parser-produced identifiers, source files are normal TypeScript modules, and the anchored constant-name grammar has no nested quantifiers. */
 /**

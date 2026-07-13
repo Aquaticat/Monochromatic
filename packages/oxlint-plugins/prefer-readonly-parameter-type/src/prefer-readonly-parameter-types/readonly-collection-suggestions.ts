@@ -9,7 +9,7 @@ import type {
   Fixer,
   Suggestion,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { ParameterDeclaration, } from 'typescript/unstable/ast';
 import {
   isIdentifier,

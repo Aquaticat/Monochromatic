@@ -8,7 +8,7 @@ import type {
   Context,
   LineColumn,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { Project, } from 'typescript/unstable/sync';
 
 import {

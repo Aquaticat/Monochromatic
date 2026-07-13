@@ -49,6 +49,6 @@ export function isForeignBorrowedType({
           '\\',
           '/',
         )
-        .endsWith('/oxlint-plugins/shared/src/foreign-borrowed.ts',);
+        .endsWith('/ownership-markers/foreign-borrowed/src/index.ts',);
     },);
 }

@@ -34,6 +34,10 @@ const config: OxlintConfig = defineConfig({
       import.meta.url,
     ).href,
     new URL(
+      'plugin-prefer-readonly-parameter-type.mjs',
+      import.meta.url,
+    ).href,
+    new URL(
       'plugin-stylistic.mjs',
       import.meta.url,
     ).href,

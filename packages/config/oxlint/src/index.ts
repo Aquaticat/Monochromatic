@@ -43,6 +43,10 @@ const config: OxlintConfig = defineConfig({
     new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-no-restricted-syntax/ts',),)
       .pathname,
 
+    // TypeScript semantic readonly types and caller-observable mutation contracts.
+    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type/ts',),)
+      .pathname,
+
     // TypeScript layout enforcement for per-line constructs, semicolons, and expression structure.
     new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-stylistic/ts',),).pathname,
   ],

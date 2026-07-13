@@ -23,6 +23,7 @@ import {
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
 import { isAuditedObservationalCallable, } from './effect-call-observation.ts';
+import { effectCallName, } from './effect-call-name.ts';
 import {
   expressionCanCarryMutableState,
   receiverElementsArePrimitive,
@@ -319,8 +320,7 @@ export function inspectEffectCall({
     project,
   },)
     ? STRING_OBJECT_COERCION_PROVENANCE
-    : call.expression
-      .getText();
+    : effectCallName(call.expression,);
   addOpaqueEffect({
     summary,
     affectedParameterIndex: isPropertyAccessExpression(call.expression,)

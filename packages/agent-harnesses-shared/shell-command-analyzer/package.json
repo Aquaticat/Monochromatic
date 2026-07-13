@@ -15,7 +15,7 @@
     "./ts/*": "./src/*"
   },
   "dependencies": {
-    "@monochromatic-dev/config-oxlint-shared": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "unbash": "catalog:"
   },

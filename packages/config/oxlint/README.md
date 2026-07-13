@@ -41,8 +41,9 @@ src/
   index.ts          -- dev entry (./ts): spreads base, resolves plugins to /ts source
   index.node.ts     -- built entry (.): spreads base, points jsPlugins at sidecars
   plugin-tsdoc.ts                 -- sidecar entry, bundles tsdoc plugin /ts source
-  plugin-no-restricted-syntax.ts  -- sidecar entry, bundles no-restricted-syntax source
-  plugin-stylistic.ts             -- sidecar entry, bundles stylistic plugin /ts source
+  plugin-no-restricted-syntax.ts          -- sidecar entry, bundles syntax plugin source
+  plugin-prefer-readonly-parameter-type.ts -- sidecar entry, bundles semantic readonly plugin source
+  plugin-stylistic.ts                     -- sidecar entry, bundles stylistic plugin source
   overrides.ts      -- file-pattern overrides (.d.ts, .test.ts, .config.*, etc.)
   rules/
     tsdoc.ts        -- tsdoc jsPlugin rule severity configuration
@@ -81,6 +82,8 @@ The `--type-aware` flag is passed via the CLI in the mise task template
    jsPlugin providing TSDoc validation rules
 - **@monochromatic-dev/config-oxlint-no-restricted-syntax**:
    jsPlugin for banned syntax patterns
+- **@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type**:
+   jsPlugin for semantic readonly types and mutation contracts
 - **@monochromatic-dev/config-oxlint-stylistic**:
    jsPlugin for one-item-per-line,
    semicolon,
@@ -90,11 +93,11 @@ The `--type-aware` flag is passed via the CLI in the mise task template
 - **@monochromatic-dev/config-oxlint-test-support**:
    private fixture-test helpers for plugin unit tests
 
-The first three packages are JS plugins (`jsPlugins`),
+The first four packages are JS plugins (`jsPlugins`),
 not config packages.
 They implement rule logic;
 this package configures rule severity and options.
-Those three plugin packages are declared as dependencies of this package:
+Those four plugin packages are declared as dependencies of this package:
 the development entry resolves their `/ts` source via `import.meta.resolve()`,
 and the build bundles that source into the sidecars.
 The shared package is a runtime dependency of plugin packages;

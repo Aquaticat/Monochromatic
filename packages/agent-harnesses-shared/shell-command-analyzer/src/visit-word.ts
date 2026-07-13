@@ -9,7 +9,7 @@ import type {
   Word as UnbashWord,
   WordPart as UnbashWordPart,
 } from 'unbash';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   EMPTY_VISIT_RESULT,
   type VisitResult,

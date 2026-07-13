@@ -1,5 +1,5 @@
 // oxlint-disable typescript/no-unsafe-type-assertion -- API response types require assertions
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type {

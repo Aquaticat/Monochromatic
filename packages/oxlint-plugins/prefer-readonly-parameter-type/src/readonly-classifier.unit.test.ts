@@ -27,7 +27,7 @@ const SOURCE = readFileSync(
 
 /** Project-owned foreign marker fixture source. */
 const FOREIGN_FIXTURE_PATH = fileURLToPath(new URL(
-  'rules/ast-shared.ts',
+  'prefer-readonly-parameter-types.ts',
   import.meta.url,
 ),);
 
@@ -129,7 +129,7 @@ await describe({
           sourceText: FOREIGN_SOURCE,
           hasBOM: false,
         },);
-        const parameterNode = session.nodeAtOffset(FOREIGN_SOURCE.indexOf('{ call, }: ForeignBorrowed',),);
+        const parameterNode = session.nodeAtOffset(FOREIGN_SOURCE.indexOf('context: ForeignBorrowed',),);
         const type = session.checker.getTypeAtLocation(parameterNode,);
         if (type === undefined)
           throw new Error('Expected semantic foreign borrowed type.',);

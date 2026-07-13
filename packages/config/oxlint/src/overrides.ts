@@ -112,7 +112,7 @@ const declarationOverride = {
     // External function signatures use positional parameters.
     'no-restricted-syntax/require-destructured-params': 'off',
     // Ambient declarations preserve external contracts without semantic verification.
-    'no-restricted-syntax/prefer-readonly-parameter-types': 'off',
+    'prefer-readonly-parameter-type/prefer-readonly-parameter-types': 'off',
     //endregion no-restricted-syntax
 
     //region tsdoc: Ambient declarations are often trivial stubs.
@@ -189,7 +189,7 @@ const testOverride = {
     // Tests use `any` for mocking and edge-case coverage.
     'typescript/no-explicit-any': 'off',
     // Test callbacks often receive framework-owned mutable objects.
-    'no-restricted-syntax/prefer-readonly-parameter-types': 'off',
+    'prefer-readonly-parameter-type/prefer-readonly-parameter-types': 'off',
 
     // Test TSDoc doesn't need full tag formatting but declarations still require TSDoc.
     'tsdoc/tag-lines': 'off',

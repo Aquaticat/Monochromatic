@@ -163,7 +163,7 @@ export const restrictionRules: DummyRuleMap = {
   // Require honest deep-readonly parameter types for nonmutating data and verify
   // caller-observable mutation through repeatable @mutates contracts. Capability
   // reads require audited effects or structurally verified local adapters.
-  'no-restricted-syntax/prefer-readonly-parameter-types': 'error',
+  'prefer-readonly-parameter-type/prefer-readonly-parameter-types': 'error',
 
   // Static Symbol descriptions must carry enough debugging information. Sentinel
   // Symbols stand in for nullish unions, so the description is the only identity

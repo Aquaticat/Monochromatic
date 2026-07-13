@@ -10,6 +10,7 @@
   ],
   "dependencies": {
     "@monochromatic-dev/config-oxlint-shared": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@oxlint/plugins": "catalog:"
   },
   "devDependencies": {

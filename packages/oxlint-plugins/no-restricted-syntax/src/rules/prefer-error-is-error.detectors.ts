@@ -2,7 +2,7 @@ import type {
   Context,
   ESTree,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   CONSTRUCTOR_PROPERTY_NAME,

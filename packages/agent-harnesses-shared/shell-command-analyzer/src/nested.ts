@@ -11,7 +11,7 @@ import {
   type ProcessSubstitutionPart as UnbashProcessSubstitutionPart,
   type Script as UnbashScript,
 } from 'unbash';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
   ShellCommandContext,

@@ -65,7 +65,8 @@ export function opaqueReadonlyEffect(state: { readonly value: string; },): strin
  * @param service - External service with unavailable implementation.
  */
 export function opaqueMethodEffect(service: OpaqueExternalService,): void {
-  service.write();
+  service
+    .write();
 }
 
 /**

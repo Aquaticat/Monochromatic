@@ -8,7 +8,7 @@ import type {
   ArithmeticExpression as UnbashArithmeticExpression,
   TestExpression as UnbashTestExpression,
 } from 'unbash';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   EMPTY_VISIT_RESULT,
   type VisitResult,

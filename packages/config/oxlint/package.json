@@ -8,6 +8,7 @@
   ],
   "dependencies": {
     "@monochromatic-dev/config-oxlint-no-restricted-syntax": "workspace:*",
+    "@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type": "workspace:*",
     "@monochromatic-dev/config-oxlint-stylistic": "workspace:*",
     "@monochromatic-dev/config-oxlint-tsdoc": "workspace:*",
     "oxlint": "catalog:",

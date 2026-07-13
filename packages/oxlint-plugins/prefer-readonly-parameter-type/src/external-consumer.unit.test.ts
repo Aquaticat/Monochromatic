@@ -48,7 +48,7 @@ function createExternalConsumer(): ExternalConsumer {
 }
 
 await describe({
-  name: 'published no-restricted-syntax consumer',
+  name: 'published prefer-readonly-parameter-type consumer',
   children: [
     it({
       name: 'loads packed rule and TypeScript 7 bridge outside monorepo',
@@ -85,11 +85,11 @@ await describe({
         /** Packed publication tarball produced by pnpm. */
         const tarballName = readdirSync(consumer.path,)
           .find(function packageTarball(fileName,): boolean {
-            return fileName.includes('config-oxlint-no-restricted-syntax',)
+            return fileName.includes('config-oxlint-prefer-readonly-parameter-type',)
               && fileName.endsWith('.tgz',);
           },);
         if (tarballName === undefined)
-          throw new Error('Expected packed no-restricted-syntax tarball.',);
+          throw new Error('Expected packed prefer-readonly-parameter-type tarball.',);
         /** Absolute tarball dependency path. */
         const tarballPath = join(consumer.path, tarballName,);
         writeFileSync(
@@ -99,7 +99,7 @@ await describe({
             private: true,
             type: 'module',
             dependencies: {
-              '@monochromatic-dev/config-oxlint-no-restricted-syntax': `file:${tarballPath}`,
+              '@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type': `file:${tarballPath}`,
             },
           }, null, 2,)}\n`,
         );
@@ -118,7 +118,7 @@ await describe({
           '{"compilerOptions":{"strict":true},"include":["input.ts"]}\n',
         );
         /** Runtime probe imported only from installed publication artifact. */
-        const probeSource = `import plugin, { closeSemanticBridge, openSemanticFile, } from '@monochromatic-dev/config-oxlint-no-restricted-syntax';\nimport { readFileSync, } from 'node:fs';\nimport { resolve, } from 'node:path';\nconst fileName = resolve('input.ts');\nconst sourceText = readFileSync(fileName, 'utf8');\nconst session = openSemanticFile({ fileName, sourceText, hasBOM: false });\nconst node = session.nodeAtOffset(sourceText.indexOf('value:'));\nconst type = session.checker.getTypeAtLocation(node);\nif (type === undefined) throw new Error('Expected external consumer type.');\nconsole.log(JSON.stringify({ hasRule: 'prefer-readonly-parameter-types' in plugin.rules, type: session.checker.typeToString(type) }));\ncloseSemanticBridge();\n`;
+        const probeSource = `import plugin, { closeSemanticBridge, openSemanticFile, } from '@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type';\nimport { readFileSync, } from 'node:fs';\nimport { resolve, } from 'node:path';\nconst fileName = resolve('input.ts');\nconst sourceText = readFileSync(fileName, 'utf8');\nconst session = openSemanticFile({ fileName, sourceText, hasBOM: false });\nconst node = session.nodeAtOffset(sourceText.indexOf('value:'));\nconst type = session.checker.getTypeAtLocation(node);\nif (type === undefined) throw new Error('Expected external consumer type.');\nconsole.log(JSON.stringify({ hasRule: 'prefer-readonly-parameter-types' in plugin.rules, type: session.checker.typeToString(type) }));\ncloseSemanticBridge();\n`;
         const probePath = join(consumer.path, 'probe.mjs',);
         writeFileSync(probePath, probeSource,);
         const result = await spawn('node', [probePath,], { cwd: consumer.path, },);
@@ -129,11 +129,12 @@ await describe({
         const installedManifest = readFileSync(
           join(
             consumer.path,
-            'node_modules/@monochromatic-dev/config-oxlint-no-restricted-syntax/package.json',
+            'node_modules/@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type/package.json',
           ),
           'utf8',
         );
         expect(installedManifest.includes('"typescript"',),).toBe(true,);
+        expect(installedManifest.includes('"./ts"',),).toBe(false,);
       },
     },),
   ],

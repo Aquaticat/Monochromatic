@@ -61,59 +61,8 @@ import {
   preferDescribeFunctionRefName,
 } from './rules/prefer-describe-function-ref-name.ts';
 import { preferErrorIsError, } from './rules/prefer-error-is-error.ts';
-import { preferReadonlyParameterTypes, } from './rules/prefer-readonly-parameter-types.ts';
 import { requireDestructuredParams, } from './rules/require-destructured-params.ts';
 import { requireQueryselectorGeneric, } from './rules/require-queryselector-generic.ts';
-
-export {
-  classifyReadonlyType,
-  propertyIsReadonly,
-  type ReadonlyClassification,
-} from './rules/prefer-readonly-parameter-types/readonly-classifier.ts';
-
-export {
-  closeSemanticBridge,
-  openSemanticFile,
-  semanticBridgeCacheStats,
-  type SemanticBridgeCacheStats,
-  type SemanticFileSession,
-} from './rules/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
-
-export {
-  clearEffectSummaryCache,
-  effectSummaryCacheStats,
-  type EffectSummaryCacheStats,
-} from './rules/prefer-readonly-parameter-types/effect-summary-cache.ts';
-
-export {
-  buildEffectSummaryIndex,
-  NO_EFFECT_SUMMARY,
-  type CallableEffectSummary,
-  type EffectSummaryIndex,
-} from './rules/prefer-readonly-parameter-types/effect-summaries.ts';
-
-export {
-  intrinsicCallableEffectQuery,
-  intrinsicEffectQuery,
-  intrinsicProvenance,
-  NO_INTRINSIC_PROVENANCE,
-  NO_INTRINSIC_QUERY,
-} from './rules/prefer-readonly-parameter-types/intrinsic-effect-query.ts';
-
-export {
-  INTRINSIC_EFFECTS,
-  intrinsicEffect,
-  NO_INTRINSIC_EFFECT,
-  type IntrinsicEffectEntry,
-  type IntrinsicEffectQuery,
-  type IntrinsicEffectTarget,
-  type IntrinsicProvenance,
-} from './rules/prefer-readonly-parameter-types/intrinsic-effect-catalog.ts';
-
-export {
-  findNodeAtOffset,
-  typescriptOffset,
-} from './rules/prefer-readonly-parameter-types/typescript-node-map.ts';
 
 /**
  * Oxlint JS plugin implementing `no-restricted-syntax` rules
@@ -166,7 +115,6 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-variable-function-expression': noVariableFunctionExpression,
     'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'prefer-error-is-error': preferErrorIsError,
-    'prefer-readonly-parameter-types': preferReadonlyParameterTypes,
     'require-destructured-params': requireDestructuredParams,
     'require-queryselector-generic': requireQueryselectorGeneric,
     //endregion Syntax rules

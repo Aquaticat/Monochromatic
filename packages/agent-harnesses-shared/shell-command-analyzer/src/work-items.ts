@@ -14,7 +14,7 @@ import type {
   Statement as UnbashStatement,
   Word as UnbashWord,
 } from 'unbash';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { ShellCommandContext, } from './types.ts';
 import {
   EMPTY_REDIRECTS,

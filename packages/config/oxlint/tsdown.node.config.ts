@@ -8,7 +8,7 @@ import {
  * Node build for `config-oxlint`.
  *
  * Object entry so `src/index.node.ts` emits `dist/final/node/index.mjs` (the package
- * default export) alongside three plugin sidecars (`plugin-*.mjs`) that the built
+ * default export) alongside four plugin sidecars (`plugin-*.mjs`) that the built
  * config references by relative `file://` URL. `@oxlint/plugins` is added to
  * `alwaysBundle` so the sidecars are self-contained (config-oxlint does not declare
  * it as a runtime dependency); the base `@monochromatic-dev/**` glob already inlines
@@ -20,6 +20,7 @@ const config: UserConfig = defineConfig({
     index: './src/index.node.ts',
     'plugin-tsdoc': './src/plugin-tsdoc.ts',
     'plugin-no-restricted-syntax': './src/plugin-no-restricted-syntax.ts',
+    'plugin-prefer-readonly-parameter-type': './src/plugin-prefer-readonly-parameter-type.ts',
     'plugin-stylistic': './src/plugin-stylistic.ts',
   },
   deps: {
