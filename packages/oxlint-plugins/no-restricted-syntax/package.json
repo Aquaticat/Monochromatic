@@ -10,6 +10,7 @@
   ],
   "dependencies": {
     "@monochromatic-dev/config-oxlint-shared": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@oxlint/plugins": "catalog:",
     "typescript": "catalog:"
   },
