@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   Node,
@@ -228,7 +229,7 @@ export function rangeOfUnit(unit: SyntaxUnit,): readonly [
 export function firstBraceInNode({
   context,
   node,
-}: Readonly<FirstBraceInNodeParams>,): SyntaxUnit {
+}: ForeignBorrowed<Readonly<FirstBraceInNodeParams>>,): SyntaxUnit {
   /**
    * First `{` token contained by the node.
    */
@@ -262,7 +263,7 @@ export function firstBraceInNode({
 export function firstBraceAfterNode({
   context,
   node,
-}: Readonly<FirstBraceAfterNodeParams>,): SyntaxUnit {
+}: ForeignBorrowed<Readonly<FirstBraceAfterNodeParams>>,): SyntaxUnit {
   /**
    * First `{` token after the preceding node.
    */
@@ -292,7 +293,7 @@ export function firstBraceAfterNode({
 export function lastBraceInNode({
   context,
   node,
-}: Readonly<LastBraceInNodeParams>,): SyntaxUnit {
+}: ForeignBorrowed<Readonly<LastBraceInNodeParams>>,): SyntaxUnit {
   /**
    * Last `}` token contained by the node.
    */
@@ -325,7 +326,7 @@ export function bracedContent({
   context,
   openBrace,
   closeBrace,
-}: Readonly<BracedContentParams>,): readonly SyntaxUnit[] {
+}: ForeignBorrowed<Readonly<BracedContentParams>>,): readonly SyntaxUnit[] {
   /**
    * Offset immediately after the opening brace.
    */
@@ -340,7 +341,9 @@ export function bracedContent({
    */
   const { tokensAndComments, } = context.sourceCode;
 
-  return tokensAndComments.filter(function isInsideBody(unit,): boolean {
+  return tokensAndComments.filter(function isInsideBody(
+    unit: ForeignBorrowed<SyntaxUnit>,
+  ): boolean {
     /**
      * Range of the candidate source unit.
      */
@@ -366,7 +369,7 @@ export function bracedContent({
 export function lineOfOffset({
   context,
   offset,
-}: Readonly<LineOfOffsetParams>,): number {
+}: ForeignBorrowed<Readonly<LineOfOffsetParams>>,): number {
   return context.sourceCode
     .getLocFromIndex(offset,)
     .line;
@@ -389,7 +392,7 @@ export function lineOfOffset({
 export function lineOfUnitEnd({
   context,
   unit,
-}: Readonly<LineOfUnitEndParams>,): number {
+}: ForeignBorrowed<Readonly<LineOfUnitEndParams>>,): number {
   /**
    * Unit range used to locate its final character.
    */
@@ -412,6 +415,51 @@ export function lineOfUnitEnd({
 //region Indentation helpers
 
 /**
+ * Counts unmatched braces before current body on same source line.
+ *
+ * @param tokensAndComments - Foreign source units scanned in order.
+ *
+ * @param lineStart - First offset on current source line.
+ *
+ * @param openStart - Current body opening-brace offset.
+ *
+ * @returns unmatched opening-brace depth before current body.
+ */
+function sameLineBraceDepth({
+  tokensAndComments,
+  lineStart,
+  openStart,
+}: {
+  readonly tokensAndComments: readonly SyntaxUnit[];
+  readonly lineStart: number;
+  readonly openStart: number;
+},): number {
+  /**
+   * Running unmatched opening-brace depth.
+   */
+  let depth = 0;
+  for (const unit of tokensAndComments) {
+    /**
+     * Candidate unit start offset.
+     */
+    const [unitStart,] = rangeOfUnit(unit,);
+    if ((unitStart < lineStart) || (unitStart >= openStart))
+      continue;
+    if (isOpeningBrace(unit,)) {
+      depth++;
+      continue;
+    }
+    if (isClosingBrace(unit,)) {
+      depth = Math.max(
+        0,
+        depth - 1,
+      );
+    }
+  }
+  return depth;
+}
+
+/**
  * Returns indentation for the closing brace of the current body.
  *
  * When several braced bodies are dense on one line, inner body braces begin on
@@ -431,7 +479,7 @@ export function bodyBaseIndent({
   sourceText,
   openBrace,
   bodyIndent,
-}: Readonly<BodyBaseIndentParams>,): string {
+}: ForeignBorrowed<Readonly<BodyBaseIndentParams>>,): string {
   /**
    * Opening brace start offset for the body being checked.
    */
@@ -454,31 +502,11 @@ export function bodyBaseIndent({
   /**
    * Syntactic brace depth already open on this source line before this body.
    */
-  const sameLineDepth = tokensAndComments.reduce(
-    function countSameLineBraceDepth(
-      depth,
-      unit,
-    ): number {
-      /**
-       * Candidate unit start offset.
-       */
-      const [unitStart,] = rangeOfUnit(unit,);
-      if ((unitStart < lineStart) || (unitStart >= openStart))
-        return depth;
-
-      if (isOpeningBrace(unit,))
-        return depth + 1;
-
-      if (isClosingBrace(unit,))
-        return Math.max(
-          0,
-          depth - 1,
-        );
-
-      return depth;
-    },
-    0,
-  );
+  const sameLineDepth = sameLineBraceDepth({
+    tokensAndComments,
+    lineStart,
+    openStart,
+  },);
 
   return `${
     baseIndentAt({

@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -44,7 +45,19 @@ export const commaDangle: CreateOnceRule = {
       missingComma: 'Missing trailing comma.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Checks array element lists and array-pattern element lists.
      *
@@ -53,7 +66,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - array-like container node
      */
-    function checkElements(node: Node,): void {
+    function checkElements(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -73,7 +86,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - object-like container node
      */
-    function checkProperties(node: Node,): void {
+    function checkProperties(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -93,7 +106,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - call-like node
      */
-    function checkArguments(node: Node,): void {
+    function checkArguments(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -113,7 +126,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - function-like node
      */
-    function checkParams(node: Node,): void {
+    function checkParams(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -132,7 +145,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - import declaration node
      */
-    function checkImportDeclaration(node: Node,): void {
+    function checkImportDeclaration(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -156,7 +169,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - export named declaration node
      */
-    function checkExportNamedDeclaration(node: Node,): void {
+    function checkExportNamedDeclaration(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -183,7 +196,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - export all declaration node
      */
-    function checkExportAllDeclaration(node: Node,): void {
+    function checkExportAllDeclaration(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -202,7 +215,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - dynamic import expression node
      */
-    function checkImportExpression(node: Node,): void {
+    function checkImportExpression(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -219,7 +232,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - enum declaration node
      */
-    function checkEnumDeclaration(node: Node,): void {
+    function checkEnumDeclaration(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -235,7 +248,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - type parameter declaration node
      */
-    function checkTypeParameters(node: Node,): void {
+    function checkTypeParameters(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,
@@ -254,7 +267,7 @@ export const commaDangle: CreateOnceRule = {
      *
      * @param node - tuple type node
      */
-    function checkTupleElements(node: Node,): void {
+    function checkTupleElements(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
         context,
         container: node,

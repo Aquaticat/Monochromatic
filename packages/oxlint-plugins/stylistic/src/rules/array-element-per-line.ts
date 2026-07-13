@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -49,9 +50,21 @@ export const arrayElementPerLine: CreateOnceRule = {
       elementPerLine: 'Each array element must be on its own line.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      ArrayExpression(node: Span,): void {
+      ArrayExpression(node: ForeignBorrowed<Span>,): void {
         /**
          * Narrowed array visitor node used for element access.
          */

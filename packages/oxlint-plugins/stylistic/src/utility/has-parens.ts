@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type { Span, } from '@oxlint/plugins';
 
 /**
@@ -38,7 +39,7 @@ export type HasParensParams = {
 export function hasParens({
   child,
   sourceText,
-}: HasParensParams,): boolean {
+}: ForeignBorrowed<HasParensParams>,): boolean {
   /**
    * Source slice before the operand; trailing whitespace stripped so the `(` lands at the end.
    */

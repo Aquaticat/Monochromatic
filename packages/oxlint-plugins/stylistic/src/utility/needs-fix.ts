@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type { Span, } from '@oxlint/plugins';
 
 import type { PerLineBoundaryOffsets, } from './per-line-boundary.ts';
@@ -45,7 +46,7 @@ export function needsPerLineFix({
   container,
   boundary,
   items,
-}: NeedsPerLineFixParams,): boolean {
+}: ForeignBorrowed<NeedsPerLineFixParams>,): boolean {
   /**
    * Container span boundaries; fallback delimiter offsets when no explicit boundary is supplied.
    */

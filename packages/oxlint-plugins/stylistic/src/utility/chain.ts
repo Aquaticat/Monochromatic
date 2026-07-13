@@ -1,4 +1,6 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
+  Comment,
   Context,
   Span,
 } from '@oxlint/plugins';
@@ -98,7 +100,7 @@ export type ParenIsolatedParams = {
 export function parenIsolated({
   context,
   node,
-}: ParenIsolatedParams,): boolean {
+}: ForeignBorrowed<ParenIsolatedParams>,): boolean {
   /**
    * Token immediately before the node; `(` when the node opens a grouping.
    */
@@ -144,7 +146,7 @@ type WrapsChildParams = {
 function wrapsChild({
   parent,
   child,
-}: WrapsChildParams,): boolean {
+}: ForeignBorrowed<WrapsChildParams>,): boolean {
   /**
    * Whether the parent is one of the four transparent wrapper kinds.
    */
@@ -178,7 +180,7 @@ function wrapsChild({
  * effectiveTop(node); // the enclosing TSAsExpression
  * ```
  */
-export function effectiveTop(node: ChainNode,): ChainNode {
+export function effectiveTop(node: ForeignBorrowed<ChainNode>,): ChainNode {
   /**
    * Parent link; absent at program scope.
    */
@@ -230,7 +232,7 @@ export type IsChainRootParams = {
 export function isChainRoot({
   context,
   node,
-}: IsChainRootParams,): boolean {
+}: ForeignBorrowed<IsChainRootParams>,): boolean {
   /**
    * Outermost transparent wrapper around the node; the parent of this decides absorption.
    */
@@ -316,10 +318,10 @@ export function hasReflowableComment({
   context,
   node,
   firstBreak,
-}: HasReflowableCommentParams,): boolean {
+}: ForeignBorrowed<HasReflowableCommentParams>,): boolean {
   return context.sourceCode
     .getCommentsInside(node,)
-    .some(function precedesFirstBreak(comment,): boolean {
+    .some(function precedesFirstBreak(comment: ForeignBorrowed<Comment>,): boolean {
       return comment.start
         < firstBreak;
     },);

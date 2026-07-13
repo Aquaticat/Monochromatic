@@ -1,4 +1,6 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
+  Comment,
   Context,
   Fixer,
   Token,
@@ -59,7 +61,7 @@ type FindOpenParenParams = {
 function findOpenParen({
   context,
   owner,
-}: FindOpenParenParams,): Token {
+}: ForeignBorrowed<FindOpenParenParams>,): Token {
   if (owner.type
     === 'ImportExpression') {
     /**
@@ -99,21 +101,6 @@ type ScannedToken = {
 };
 
 /**
- * Grouping-paren scan accumulator: whether still in the contiguous close-paren
- * prefix, and the effective operand end seen so far.
- */
-type GroupingScan = {
-  /**
-   * Whether the scan is still inside the leading run of grouping close parens.
-   */
-  readonly open: boolean;
-  /**
-   * Byte offset just past the last grouping close paren, or the operand end.
-   */
-  readonly end: number;
-};
-
-/**
  * Parameters for {@link commaInsertionOffset}.
  */
 type CommaOffsetParams = {
@@ -132,6 +119,38 @@ type CommaOffsetParams = {
 };
 
 /**
+ * Finds end offset of leading grouping-close-paren token run.
+ *
+ * @param tokens - Tokens between operand and call closing bracket.
+ *
+ * @param initialEnd - Operand end before grouping parentheses.
+ *
+ * @returns end offset after every leading grouping close parenthesis.
+ */
+function groupingEnd({
+  tokens,
+  initialEnd,
+}: {
+  readonly tokens: readonly ScannedToken[];
+  readonly initialEnd: number;
+},): number {
+  /**
+   * End offset advanced by each leading grouping close parenthesis.
+   */
+  let end = initialEnd;
+  for (const token of tokens) {
+    if (token.value !== ')')
+      return end;
+    /**
+     * End offset after current grouping parenthesis.
+     */
+    const { end: tokenEnd, } = token;
+    end = tokenEnd;
+  }
+  return end;
+}
+
+/**
  * Returns the byte offset where the trailing comma is inserted.
  *
  * The offset sits just past the operand and any grouping parentheses that wrap
@@ -139,8 +158,7 @@ type CommaOffsetParams = {
  * the operand and the call's closing bracket are the grouping close parens
  * (always a leading run, since they hug the operand) followed by an optional
  * trailing comma; comments are excluded by the token lookup, so a comment never
- * shifts the offset. A `reduce` over that run keeps the scan free of root-level
- * mutable state.
+ * shifts the offset. A bounded token loop stops at first non-parenthesis.
  *
  * @returns offset for the inserted comma
  */
@@ -148,7 +166,7 @@ function commaInsertionOffset({
   context,
   owner,
   operand,
-}: CommaOffsetParams,): number {
+}: ForeignBorrowed<CommaOffsetParams>,): number {
   /**
    * Call's closing bracket token; bounds the between-token lookup.
    */
@@ -162,32 +180,10 @@ function commaInsertionOffset({
     operand,
     closeToken,
   );
-  /**
-   * Scan over the leading grouping-close-paren run; its `end` is the offset.
-   */
-  const scan = between.reduce(
-    function extendGrouping(
-      accumulator: GroupingScan,
-      token: ScannedToken,
-    ): GroupingScan {
-      if (accumulator.open && (token.value
-        === ')')) {
-        return {
-          open: true,
-          end: token.end,
-        };
-      }
-      return {
-        open: false,
-        end: accumulator.end,
-      };
-    },
-    {
-      open: true,
-      end: operand.end,
-    },
-  );
-  return scan.end;
+  return groupingEnd({
+    tokens: between,
+    initialEnd: operand.end,
+  },);
 }
 
 /**
@@ -234,7 +230,7 @@ export function buildSplitFix({
   context,
   fixer,
   owner,
-}: BuildSplitFixParams,): ReturnType<Fixer['replaceTextRange']> {
+}: ForeignBorrowed<BuildSplitFixParams>,): ReturnType<Fixer['replaceTextRange']> {
   /**
    * Full file source text for verbatim operand slicing.
    */
@@ -273,7 +269,7 @@ export function buildSplitFix({
    */
   const trailingComments = context.sourceCode
     .getCommentsInside(owner,)
-    .filter(function isTrailing(comment,): boolean {
+    .filter(function isTrailing(comment: ForeignBorrowed<Comment>,): boolean {
       return comment.start
         >= commaOffset;
     },);
@@ -285,7 +281,7 @@ export function buildSplitFix({
     ? ''
     : ` ${
       trailingComments
-        .map(function commentText(comment,): string {
+        .map(function commentText(comment: ForeignBorrowed<Comment>,): string {
           return sourceText.slice(
             comment.start,
             comment.end,

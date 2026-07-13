@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   Fixer,
@@ -117,7 +118,7 @@ export function buildPerLineFix({
   bracketPair,
   boundary,
   delimiter = ',',
-}: PerLineFixConfig,): ReturnType<Fixer['replaceText']> {
+}: ForeignBorrowed<PerLineFixConfig>,): ReturnType<Fixer['replaceText']> {
   /**
    * Range of the first item; left edge used to locate the opening bracket.
    */
@@ -197,7 +198,7 @@ export function buildPerLineFix({
    * Extract each item's source text, stripping any existing trailing delimiter.
    */
   const itemTexts = items.map(
-    function getItemText(item,): string {
+    function getItemText(item: ForeignBorrowed<Span>,): string {
       /**
        * Trimmed source text of the item; the trailing delimiter (if any) is stripped below to be re-added uniformly.
        */

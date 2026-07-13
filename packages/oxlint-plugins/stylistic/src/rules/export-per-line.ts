@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -59,9 +60,21 @@ export const exportPerLine: CreateOnceRule = {
       exportPerLine: 'Each named export specifier must be on its own line.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      ExportNamedDeclaration(node: Span,): void {
+      ExportNamedDeclaration(node: ForeignBorrowed<Span>,): void {
         /**
          * Narrowed export visitor node used for declaration and specifier access.
          */

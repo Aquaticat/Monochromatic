@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -46,9 +47,21 @@ export const destructurePerLine: CreateOnceRule = {
       destructurePerLine: 'Each destructured property must be on its own line.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      ObjectPattern(node: Span,): void {
+      ObjectPattern(node: ForeignBorrowed<Span>,): void {
         /**
          * Narrowed object-pattern visitor node used for property access.
          */

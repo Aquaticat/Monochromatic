@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -64,7 +65,19 @@ export const invocationDepthPerLine: CreateOnceRule = {
         'No more than two nested invocations may start on one line; split the operand onto its own line.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Visitor entry for every counted invocation. Bails unless {@link isSpineRoot}
      * says the node is a spine root, collects the spine via {@link collectSpine},
@@ -73,7 +86,7 @@ export const invocationDepthPerLine: CreateOnceRule = {
      *
      * @param node - candidate `CallExpression`, `NewExpression`, or `ImportExpression`
      */
-    function check(node: Span,): void {
+    function check(node: ForeignBorrowed<Span>,): void {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- visitor nodes carry the callee/arguments/source/options/expression/argument/parent fields SpineNode reads; oxlint types them only as bare Span */
       /**
        * Node narrowed to the spine view the walk reads.
@@ -97,7 +110,7 @@ export const invocationDepthPerLine: CreateOnceRule = {
        * Count of invocation heads per source line.
        */
       const lineCounts = new Map<number, number>();
-      spine.forEach(function tally(spineNode,): void {
+      spine.forEach(function tally(spineNode: ForeignBorrowed<SpineNode>,): void {
         /**
          * Source location of this invocation's head.
          */
@@ -130,7 +143,7 @@ export const invocationDepthPerLine: CreateOnceRule = {
         context.report({
           node: lineOwner,
           messageId: 'invocationDepth',
-          fix(fixer: Fixer,) {
+          fix(fixer: ForeignBorrowed<Fixer>,) {
             return buildSplitFix({
               context,
               fixer,

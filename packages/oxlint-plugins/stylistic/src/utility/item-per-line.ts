@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   Fixer,
@@ -97,6 +98,8 @@ export type ItemPerLineConfig = {
  *   messageId: 'itemPerLine', bracketPair: { open: '[', close: ']' },
  * });
  * ```
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 export function checkItemsPerLine({
   context,
@@ -107,7 +110,7 @@ export function checkItemsPerLine({
   boundary,
   minItems = 2,
   delimiter = ',',
-}: ItemPerLineConfig,): void {
+}: ForeignBorrowed<ItemPerLineConfig>,): void {
   if (items.length
     < minItems)
     return;
@@ -140,7 +143,7 @@ export function checkItemsPerLine({
   context.report({
     node: container,
     messageId,
-    fix(fixer: Fixer,) {
+    fix(fixer: ForeignBorrowed<Fixer>,) {
       if (boundary === undefined) {
         return buildPerLineFix({
           fixer,

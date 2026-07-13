@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type { Span, } from '@oxlint/plugins';
 
 /**
@@ -15,7 +16,7 @@ import type { Span, } from '@oxlint/plugins';
  * const [start, end] = rangeOf(node);
  * ```
  */
-export function rangeOf(node: Span,): [
+export function rangeOf(node: ForeignBorrowed<Span>,): [
   number,
   number,
 ] {

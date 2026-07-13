@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type { Span, } from '@oxlint/plugins';
 
 import { at, } from './range.ts';
@@ -103,7 +104,7 @@ const WRAPPER_ARGUMENT_TYPES: ReadonlySet<string> = new Set([
  *
  * @returns whether the node is a counted invocation
  */
-function isCounted(node: SpineNode,): boolean {
+function isCounted(node: ForeignBorrowed<SpineNode>,): boolean {
   return (node.type
     === 'CallExpression')
     || (node.type
@@ -135,7 +136,7 @@ function isTransparentWrapper(type: string,): boolean {
  *
  * @returns inner expression, or {@link STOP} when the wrapper has no operand
  */
-function transparentInner(node: SpineNode,): SpineNode | typeof STOP {
+function transparentInner(node: ForeignBorrowed<SpineNode>,): SpineNode | typeof STOP {
   if (WRAPPER_EXPRESSION_TYPES.has(node.type,))
     return node.expression ?? STOP;
   if (WRAPPER_ARGUMENT_TYPES.has(node.type,))
@@ -154,7 +155,7 @@ function transparentInner(node: SpineNode,): SpineNode | typeof STOP {
  *
  * @returns innermost wrapped node, or {@link STOP} when a wrapper has no operand
  */
-function descendWrappers(node: SpineNode,): SpineNode | typeof STOP {
+function descendWrappers(node: ForeignBorrowed<SpineNode>,): SpineNode | typeof STOP {
   for (let cursor: SpineNode = node;;) {
     if (!isTransparentWrapper(cursor.type,))
       return cursor;
@@ -181,7 +182,7 @@ function descendWrappers(node: SpineNode,): SpineNode | typeof STOP {
  *
  * @returns raw single operand, or {@link STOP} when the spine does not continue
  */
-function operandOf(node: SpineNode,): SpineNode | typeof STOP {
+function operandOf(node: ForeignBorrowed<SpineNode>,): SpineNode | typeof STOP {
   if ((node.type
     === 'CallExpression')
     || (node.type
@@ -231,7 +232,7 @@ function operandOf(node: SpineNode,): SpineNode | typeof STOP {
  * operandOrThrow(node);
  * ```
  */
-export function operandOrThrow(node: SpineNode,): SpineNode {
+export function operandOrThrow(node: ForeignBorrowed<SpineNode>,): SpineNode {
   /**
    * Raw single operand or the stop sentinel.
    */
@@ -254,7 +255,7 @@ export function operandOrThrow(node: SpineNode,): SpineNode {
  *
  * @returns next counted invocation on the spine, or {@link STOP}
  */
-function nextSpineNode(node: SpineNode,): SpineNode | typeof STOP {
+function nextSpineNode(node: ForeignBorrowed<SpineNode>,): SpineNode | typeof STOP {
   /**
    * Raw single operand; {@link STOP} when arity or import options break the spine.
    */
@@ -281,7 +282,7 @@ function nextSpineNode(node: SpineNode,): SpineNode | typeof STOP {
  *
  * @returns outermost transparent wrapper enclosing `node`, or `node` itself
  */
-function wrapperTop(node: SpineNode,): SpineNode {
+function wrapperTop(node: ForeignBorrowed<SpineNode>,): SpineNode {
   for (let top: SpineNode = node;;) {
     /**
      * Parent link; absent at program scope.
@@ -318,7 +319,7 @@ function wrapperTop(node: SpineNode,): SpineNode {
  * isSpineRoot(node);
  * ```
  */
-export function isSpineRoot(node: SpineNode,): boolean {
+export function isSpineRoot(node: ForeignBorrowed<SpineNode>,): boolean {
   /**
    * Outermost transparent wrapper around the node; its parent decides absorption.
    */
@@ -353,7 +354,7 @@ export function isSpineRoot(node: SpineNode,): boolean {
  * collectSpine(rootNode);
  * ```
  */
-export function collectSpine(root: SpineNode,): readonly SpineNode[] {
+export function collectSpine(root: ForeignBorrowed<SpineNode>,): readonly SpineNode[] {
   /**
    * Spine accumulator seeded with the root; later invocations push on.
    */

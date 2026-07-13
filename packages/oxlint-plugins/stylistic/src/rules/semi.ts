@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -153,7 +154,7 @@ type CheckForSemicolonParams = {
  * const lastToken = lastTokenOf({ context, node });
  * ```
  */
-function lastTokenOf(params: Readonly<LastTokenOfParams>,): Token {
+function lastTokenOf(params: ForeignBorrowed<Readonly<LastTokenOfParams>>,): Token {
   /**
    * Rule context used for source-code token lookup.
    */
@@ -186,7 +187,7 @@ function lastTokenOf(params: Readonly<LastTokenOfParams>,): Token {
  * if (isForStatementInitializer({ node, parent })) return false;
  * ```
  */
-function isForStatementInitializer(params: Readonly<IsForStatementInitializerParams>,): boolean {
+function isForStatementInitializer(params: ForeignBorrowed<Readonly<IsForStatementInitializerParams>>,): boolean {
   /**
    * Variable declaration being checked.
    */
@@ -210,7 +211,7 @@ function isForStatementInitializer(params: Readonly<IsForStatementInitializerPar
  * if (isForInOrOfLeft({ node, parent })) return false;
  * ```
  */
-function isForInOrOfLeft(params: Readonly<IsForInOrOfLeftParams>,): boolean {
+function isForInOrOfLeft(params: ForeignBorrowed<Readonly<IsForInOrOfLeftParams>>,): boolean {
   /**
    * Variable declaration being checked.
    */
@@ -238,7 +239,7 @@ function isForInOrOfLeft(params: Readonly<IsForInOrOfLeftParams>,): boolean {
  * if (shouldCheckVariableDeclaration(node)) checkForSemicolon(node);
  * ```
  */
-function shouldCheckVariableDeclaration(node: Node,): boolean {
+function shouldCheckVariableDeclaration(node: ForeignBorrowed<Node>,): boolean {
   /**
    * Parent link from Oxlint's AST, narrowed to the loop fields this rule reads.
    */
@@ -277,7 +278,7 @@ function shouldCheckVariableDeclaration(node: Node,): boolean {
  * if (shouldCheckExportDefaultDeclaration(node)) checkForSemicolon(node);
  * ```
  */
-function shouldCheckExportDefaultDeclaration(node: Node,): boolean {
+function shouldCheckExportDefaultDeclaration(node: ForeignBorrowed<Node>,): boolean {
   /**
    * Export-default declaration payload, narrowed to its discriminant.
    */
@@ -298,8 +299,10 @@ function shouldCheckExportDefaultDeclaration(node: Node,): boolean {
  * ```ts
  * checkForSemicolon({ context, node });
  * ```
+ *
+ * @mutates params - Emits Oxlint diagnostics through params.context.
  */
-function checkForSemicolon(params: Readonly<CheckForSemicolonParams>,): void {
+function checkForSemicolon(params: ForeignBorrowed<Readonly<CheckForSemicolonParams>>,): void {
   /**
    * Rule context with token lookup and reporting APIs.
    */
@@ -321,7 +324,7 @@ function checkForSemicolon(params: Readonly<CheckForSemicolonParams>,): void {
   context.report({
     node,
     messageId: 'missingSemi',
-    fix(fixer: Fixer,): ReturnType<Fixer['insertTextAfter']> {
+    fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['insertTextAfter']> {
       return fixer.insertTextAfter(
         lastToken,
         SEMICOLON,
@@ -362,13 +365,13 @@ export const semi: CreateOnceRule = {
       missingSemi: 'Missing semicolon.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Helper bound to this rule context for visitor callbacks.
      *
      * @param node - statement-like AST node being checked
      */
-    function check(node: Node,): void {
+    function check(node: ForeignBorrowed<Node>,): void {
       checkForSemicolon({
         context,
         node,
@@ -380,7 +383,7 @@ export const semi: CreateOnceRule = {
      *
      * @param node - variable declaration being checked
      */
-    function checkVariableDeclaration(node: Node,): void {
+    function checkVariableDeclaration(node: ForeignBorrowed<Node>,): void {
       if (!shouldCheckVariableDeclaration(node,))
         return;
 
@@ -392,7 +395,7 @@ export const semi: CreateOnceRule = {
      *
      * @param node - export-named declaration being checked
      */
-    function checkExportNamedDeclaration(node: Node,): void {
+    function checkExportNamedDeclaration(node: ForeignBorrowed<Node>,): void {
       /**
        * Export-named declaration payload; null for `export { value }`.
        */
@@ -411,7 +414,7 @@ export const semi: CreateOnceRule = {
      *
      * @param node - export-default declaration being checked
      */
-    function checkExportDefaultDeclaration(node: Node,): void {
+    function checkExportDefaultDeclaration(node: ForeignBorrowed<Node>,): void {
       if (!shouldCheckExportDefaultDeclaration(node,))
         return;
 

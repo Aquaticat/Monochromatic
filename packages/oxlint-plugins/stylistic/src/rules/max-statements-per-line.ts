@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -106,7 +107,19 @@ export const maxStatementsPerLine: CreateOnceRule = {
       exceed: 'This line has {{count}} statements. Maximum allowed is 1.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Statements counted per start-line, in source order.
      */
@@ -118,7 +131,7 @@ export const maxStatementsPerLine: CreateOnceRule = {
      *
      * @param node - statement AST node
      */
-    function trackStatement(node: Span,): void {
+    function trackStatement(node: ForeignBorrowed<Span>,): void {
       /**
        * Statement node narrowed to the parent link used for exemptions.
        */
@@ -250,7 +263,7 @@ export const maxStatementsPerLine: CreateOnceRule = {
             data: { count: stmts.length, },
             ...canFix
               ? {
-                fix(fixer: Fixer,): ReturnType<Fixer['replaceTextRange']> {
+                fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
                   return fixer.replaceTextRange(
                     [
                       prevEnd,

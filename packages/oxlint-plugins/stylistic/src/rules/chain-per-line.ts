@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -39,7 +40,7 @@ const sourceTextCache = new WeakMap<SourceCode, string>();
  *
  * @returns full source text of the file `context.sourceCode` describes
  */
-function sourceTextOf(context: Context,): string {
+function sourceTextOf(context: ForeignBorrowed<Context>,): string {
   /**
    * Source code accessor identifying the current file.
    */
@@ -116,7 +117,19 @@ export const chainPerLine: CreateOnceRule = {
         'Put each operator, member, or method step in this chain on its own line.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Visitor entry for every chain-capable node. Bails unless the node is the
      * outermost root, then reports when its layout is not canonical.
@@ -124,7 +137,7 @@ export const chainPerLine: CreateOnceRule = {
      * @param node - candidate `MemberExpression`, `CallExpression`,
      *   `BinaryExpression`, or `LogicalExpression`
      */
-    function check(node: Span,): void {
+    function check(node: ForeignBorrowed<Span>,): void {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- visitor nodes always carry the type/object/callee/left/right/operator/parent fields ChainNode reads; oxlint types them only as bare Span */
       /**
        * Node narrowed to the structural view the chain walk reads.
@@ -206,7 +219,7 @@ export const chainPerLine: CreateOnceRule = {
         messageId: 'chain',
         ...fixable
           ? {
-            fix(fixer: Fixer,): Fix {
+            fix(fixer: ForeignBorrowed<Fixer>,): Fix {
               return fixer.replaceTextRange(
                 [
                   regionStart,

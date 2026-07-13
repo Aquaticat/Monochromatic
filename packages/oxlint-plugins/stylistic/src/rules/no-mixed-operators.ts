@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -45,7 +46,19 @@ export const noMixedOperators: CreateOnceRule = {
       nested: 'Nested binary expression with a different operator requires parentheses.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Checks both children of a BinaryExpression or LogicalExpression and
      * reports the parent node once for each child that mixes operators
@@ -63,7 +76,7 @@ export const noMixedOperators: CreateOnceRule = {
      *
      * @param node - parent BinaryExpression or LogicalExpression
      */
-    function check(node: Span,): void {
+    function check(node: ForeignBorrowed<Span>,): void {
       /**
        * Source text is needed for `hasParens` to peek at bytes surrounding the operand spans.
        */
@@ -103,7 +116,7 @@ export const noMixedOperators: CreateOnceRule = {
         context.report({
           node,
           messageId: 'nested',
-          fix(fixer: Fixer,): Fix[] {
+          fix(fixer: ForeignBorrowed<Fixer>,): Fix[] {
             return [
               fixer.insertTextBeforeRange(
                 [

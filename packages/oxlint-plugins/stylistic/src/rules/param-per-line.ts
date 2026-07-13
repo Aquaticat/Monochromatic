@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -72,13 +73,25 @@ export const paramPerLine: CreateOnceRule = {
       paramPerLine: 'Each function parameter must be on its own line.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Checks function parameters and reports if they share lines.
      *
      * @param node - function declaration or expression AST node
      */
-    function checkFunction(node: Span,): void {
+    function checkFunction(node: ForeignBorrowed<Span>,): void {
       /**
        * Narrowed function-like visitor node used for parameter access.
        */

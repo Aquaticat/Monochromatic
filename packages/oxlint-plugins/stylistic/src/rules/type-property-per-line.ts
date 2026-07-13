@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -54,13 +55,25 @@ export const typePropertyPerLine: CreateOnceRule = {
       typePropertyPerLine: 'Each type/interface member must be on its own line.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Checks a type literal or interface body for per-line compliance.
      *
      * @param node - TSTypeLiteral or TSInterfaceBody AST node
      */
-    function checkBody(node: Span,): void {
+    function checkBody(node: ForeignBorrowed<Span>,): void {
       /**
        * Narrowed type-body visitor node used for member access.
        */

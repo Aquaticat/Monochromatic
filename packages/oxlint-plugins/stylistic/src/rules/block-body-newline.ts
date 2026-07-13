@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -94,8 +95,10 @@ type CheckBodyLayoutParams = {
  * ```ts
  * reportOpening(layout);
  * ```
+ *
+ * @mutates layout - Emits Oxlint diagnostics through layout.context.
  */
-function reportOpening(layout: Readonly<BodyLayout>,): void {
+function reportOpening(layout: ForeignBorrowed<Readonly<BodyLayout>>,): void {
   /**
    * Opening brace range, used as replacement start.
    */
@@ -112,7 +115,7 @@ function reportOpening(layout: Readonly<BodyLayout>,): void {
   context.report({
     node: layout.node,
     messageId: 'bodyAfterOpeningBrace',
-    fix(fixer: Fixer,): Fix {
+    fix(fixer: ForeignBorrowed<Fixer>,): Fix {
       return fixer.replaceTextRange(
         [
           openEnd,
@@ -133,8 +136,10 @@ function reportOpening(layout: Readonly<BodyLayout>,): void {
  * ```ts
  * reportClosing(layout);
  * ```
+ *
+ * @mutates layout - Emits Oxlint diagnostics through layout.context.
  */
-function reportClosing(layout: Readonly<BodyLayout>,): void {
+function reportClosing(layout: ForeignBorrowed<Readonly<BodyLayout>>,): void {
   /**
    * Last body-content range, used as replacement start.
    */
@@ -151,7 +156,7 @@ function reportClosing(layout: Readonly<BodyLayout>,): void {
   context.report({
     node: layout.node,
     messageId: 'closingBraceAfterBody',
-    fix(fixer: Fixer,): Fix {
+    fix(fixer: ForeignBorrowed<Fixer>,): Fix {
       return fixer.replaceTextRange(
         [
           lastEnd,
@@ -175,7 +180,7 @@ function checkBodyLayout({
   context,
   node,
   braces,
-}: Readonly<CheckBodyLayoutParams>,): void {
+}: ForeignBorrowed<Readonly<CheckBodyLayoutParams>>,): void {
   /**
    * Opening body brace.
    */
@@ -337,13 +342,13 @@ export const blockBodyNewline: CreateOnceRule = {
         'Put the closing brace on the line after the final body token.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Checks a braced node whose range starts at or before its own body brace.
      *
      * @param node - `BlockStatement`, `ClassBody`, `StaticBlock`, or `TSModuleBlock`
      */
-    function checkBracedNode(node: Node,): void {
+    function checkBracedNode(node: ForeignBorrowed<Node>,): void {
       checkBodyLayout({
         context,
         node,
@@ -366,7 +371,7 @@ export const blockBodyNewline: CreateOnceRule = {
      *
      * @param node - switch statement being checked
      */
-    function checkSwitchStatement(node: ESTree.SwitchStatement,): void {
+    function checkSwitchStatement(node: ForeignBorrowed<ESTree.SwitchStatement>,): void {
       checkBodyLayout({
         context,
         node,

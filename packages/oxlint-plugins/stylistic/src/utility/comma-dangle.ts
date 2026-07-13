@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   Fixer,
@@ -178,7 +179,7 @@ function isFieldRecord(value: unknown,): value is FieldRecord {
  * const fields = fieldsOf(node);
  * ```
  */
-function fieldsOf(node: Node,): FieldRecord {
+function fieldsOf(node: ForeignBorrowed<Node>,): FieldRecord {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint visitor nodes expose runtime fields that generic Node omits
   return node as unknown as FieldRecord;
 }
@@ -195,7 +196,7 @@ function fieldsOf(node: Node,): FieldRecord {
  * if (nodeType(node) === 'RestElement') return;
  * ```
  */
-function nodeType(node: Node,): string {
+function nodeType(node: ForeignBorrowed<Node>,): string {
   /**
    * Runtime `type` field from oxlint visitor node.
    */
@@ -236,7 +237,7 @@ function isNode(value: unknown,): value is Node {
  * if (isRestElement(lastItem)) return;
  * ```
  */
-function isRestElement(node: Node,): boolean {
+function isRestElement(node: ForeignBorrowed<Node>,): boolean {
   return nodeType(node,) === 'RestElement';
 }
 
@@ -323,7 +324,7 @@ function lastNode(items?: readonly unknown[],): OptionalNode {
 export function lastFieldNode({
   node,
   fieldName,
-}: LastFieldNodeParams,): OptionalNode {
+}: ForeignBorrowed<LastFieldNodeParams>,): OptionalNode {
   /**
    * Runtime field value, expected to be an array for supported lists.
    */
@@ -349,7 +350,7 @@ export function lastFieldNode({
  * const lastSpecifier = lastNamedImportSpecifier(node);
  * ```
  */
-export function lastNamedImportSpecifier(node: Node,): OptionalNode {
+export function lastNamedImportSpecifier(node: ForeignBorrowed<Node>,): OptionalNode {
   /**
    * Import declaration specifier field.
    */
@@ -380,7 +381,7 @@ export function lastNamedImportSpecifier(node: Node,): OptionalNode {
  * const lastMember = lastEnumMember(node);
  * ```
  */
-export function lastEnumMember(node: Node,): OptionalNode {
+export function lastEnumMember(node: ForeignBorrowed<Node>,): OptionalNode {
   /**
    * Enum body value carrying members in oxlint AST.
    */
@@ -412,7 +413,7 @@ export function lastEnumMember(node: Node,): OptionalNode {
  * const lastItem = lastImportExpressionItem(node);
  * ```
  */
-export function lastImportExpressionItem(node: Node,): OptionalNode {
+export function lastImportExpressionItem(node: ForeignBorrowed<Node>,): OptionalNode {
   /**
    * Dynamic import options expression, present only for two-argument imports.
    */
@@ -442,7 +443,7 @@ export function lastImportExpressionItem(node: Node,): OptionalNode {
  * const next = tokenAfter({ context, target: node });
  * ```
  */
-function tokenAfter(params: Readonly<TokenAfterParams>,): Token | typeof NO_TOKEN {
+function tokenAfter(params: ForeignBorrowed<Readonly<TokenAfterParams>>,): Token | typeof NO_TOKEN {
   /**
    * Rule context and lookup target.
    */
@@ -470,7 +471,7 @@ function tokenAfter(params: Readonly<TokenAfterParams>,): Token | typeof NO_TOKE
  * const token = lastToken({ context, node });
  * ```
  */
-function lastToken(params: Readonly<LastTokenParams>,): Token | typeof NO_TOKEN {
+function lastToken(params: ForeignBorrowed<Readonly<LastTokenParams>>,): Token | typeof NO_TOKEN {
   /**
    * Rule context and node.
    */
@@ -499,7 +500,7 @@ function lastToken(params: Readonly<LastTokenParams>,): Token | typeof NO_TOKEN 
  * ```
  */
 function containerPenultimateToken(
-  params: Readonly<ContainerPenultimateTokenParams>,
+  params: ForeignBorrowed<Readonly<ContainerPenultimateTokenParams>>,
 ): Token | typeof NO_TOKEN {
   /**
    * Rule context and container node.
@@ -546,7 +547,7 @@ function insertionTokenForList({
   container,
   lastItem,
   useContainerPenultimateToken,
-}: InsertionTokenParams,): Token | typeof NO_TOKEN {
+}: ForeignBorrowed<InsertionTokenParams>,): Token | typeof NO_TOKEN {
   if (useContainerPenultimateToken) {
     /**
      * Token immediately before container close delimiter.
@@ -606,13 +607,15 @@ function insertionTokenForList({
  * ```ts
  * checkTrailingComma({ context, container: node, lastItem });
  * ```
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 export function checkTrailingComma({
   context,
   container,
   lastItem,
   useContainerPenultimateToken = false,
-}: CheckTrailingCommaParams,): void {
+}: ForeignBorrowed<CheckTrailingCommaParams>,): void {
   if (lastItem === NO_NODE)
     return;
   if (isRestElement(lastItem,))
@@ -635,7 +638,7 @@ export function checkTrailingComma({
   context.report({
     node: lastItem,
     messageId: 'missingComma',
-    fix(fixer: Fixer,): ReturnType<Fixer['insertTextAfter']> {
+    fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['insertTextAfter']> {
       return fixer.insertTextAfter(
         insertionToken,
         COMMA,

@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type {
   Context,
   CreateOnceRule,
@@ -65,13 +66,25 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
       expectVarOnNewline: 'Expected variable declaration to be on a new line.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles effectful plugin callback.
+   *
+   * @param context - Foreign callback value carrying diagnostic capability.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Checks consecutive declarator pairs and reports those that share a line.
      *
      * @param node - VariableDeclaration AST node
      */
-    function checkDeclaration(node: Span,): void {
+    function checkDeclaration(node: ForeignBorrowed<Span>,): void {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint Span omits declaration fields exposed by this visitor node */
       /**
        * Declaration node narrowed to declarator and parent fields.
@@ -171,7 +184,7 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
           messageId: 'expectVarOnNewline',
           ...canFix
             ? {
-              fix(fixer: Fixer,): ReturnType<Fixer['replaceTextRange']> {
+              fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
                 return fixer.replaceTextRange(
                   [
                     prevRange[1],

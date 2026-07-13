@@ -1,4 +1,9 @@
-import type { Context, } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
+import type {
+  Comment,
+  Context,
+  Token,
+} from '@oxlint/plugins';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
@@ -70,7 +75,7 @@ type MemberDotStartParams = {
 function memberDotStart({
   context,
   member,
-}: MemberDotStartParams,): number {
+}: ForeignBorrowed<MemberDotStartParams>,): number {
   /**
    * Accessed property; its preceding token is the dot punctuator.
    */
@@ -119,7 +124,7 @@ type OperatorTokenStartParams = {
 function operatorTokenStart({
   context,
   node,
-}: OperatorTokenStartParams,): number {
+}: ForeignBorrowed<OperatorTokenStartParams>,): number {
   /**
    * Left operand; the operator token is the first matching token after it.
    */
@@ -137,7 +142,9 @@ function operatorTokenStart({
     .getTokenAfter(
     left,
     {
-      filter: function matchesOperator(candidate,): boolean {
+      filter: function matchesOperator(
+        candidate: ForeignBorrowed<Comment | Token>,
+      ): boolean {
         return candidate.value
           === operator;
       },
@@ -174,7 +181,7 @@ type ChainWalkParams = {
  *
  * @returns receiver to descend into, or {@link LEAF} when the node is the leaf
  */
-function descentChild(node: ChainNode,): ChainNode | typeof LEAF {
+function descentChild(node: ForeignBorrowed<ChainNode>,): ChainNode | typeof LEAF {
   if (isTransparentWrapper(node.type,))
     return node.expression ?? LEAF;
   if (node.type
@@ -198,7 +205,7 @@ function descentChild(node: ChainNode,): ChainNode | typeof LEAF {
 function trailingStep({
   context,
   node,
-}: ChainWalkParams,): ChainSegment[] {
+}: ForeignBorrowed<ChainWalkParams>,): ChainSegment[] {
   if (node.type
     === 'MemberExpression') {
     return (node.computed
@@ -244,7 +251,7 @@ function trailingStep({
 export function chainSegments({
   context,
   node,
-}: ChainWalkParams,): ChainSegment[] {
+}: ForeignBorrowed<ChainWalkParams>,): ChainSegment[] {
   /**
    * Nodes that each contribute a trailing step, outermost first; the leaf contributes none.
    */
@@ -273,7 +280,7 @@ export function chainSegments({
     ATTACHED,
     ...contributors
       .toReversed()
-      .flatMap(function step(contributor,): ChainSegment[] {
+      .flatMap(function step(contributor: ForeignBorrowed<ChainNode>,): ChainSegment[] {
         return trailingStep({
           context,
           node: contributor,
@@ -335,7 +342,7 @@ type OperatorChainParts = {
 function collectOperatorChain({
   context,
   root,
-}: OperatorChainParams,): OperatorChainParts {
+}: ForeignBorrowed<OperatorChainParams>,): OperatorChainParts {
   /**
    * Operand nodes terminating the chain.
    */
@@ -411,7 +418,7 @@ function collectOperatorChain({
 function operatorChainBreakOffsets({
   context,
   root,
-}: OperatorChainParams,): readonly number[] {
+}: ForeignBorrowed<OperatorChainParams>,): readonly number[] {
   /**
    * Operands and operator offsets, neither ordered; the final sort imposes order.
    */
@@ -425,7 +432,9 @@ function operatorChainBreakOffsets({
   /**
    * Break offsets contributed by the operands' own member subchains.
    */
-  const operandBreakOffsets = operands.flatMap(function operandBreaks(operand,): readonly number[] {
+  const operandBreakOffsets = operands.flatMap(function operandBreaks(
+    operand: ForeignBorrowed<ChainNode>,
+  ): readonly number[] {
     return selectBreakOffsets(chainSegments({
       context,
       node: operand,
@@ -489,7 +498,7 @@ function operatorChainBreakOffsets({
 export function chainBreakOffsets({
   context,
   node,
-}: ChainWalkParams,): readonly number[] {
+}: ForeignBorrowed<ChainWalkParams>,): readonly number[] {
   if ((node.type
     === 'BinaryExpression') || (node.type
       === 'LogicalExpression')) {
