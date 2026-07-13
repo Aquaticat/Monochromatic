@@ -39,6 +39,40 @@ The semantic-bridge foundation is complete:
   commit `a53861211` names both callbacks and return types by overlay and delegation behavior,
   and commit `07d2c6934` records that naming standard in `XNC`.
 
+The semantic-rule implementation is now functional but not migration-ready:
+
+- commits `d2d6b8521` and `c76f39219` added exact intrinsic lookup and recursive readonly classification;
+- commit `353f2fd9a` added direct,
+  intrinsic,
+  cross-file,
+  recursive,
+  opaque,
+  and immediate-callback effect summaries;
+- commit `b29e44eec` moved `@mutates` extraction behind the shared plugin parser seam;
+- commit `2909ca22c` traces direct,
+  local-alias,
+  and destructured parameter origins;
+- commit `f02f16ea2` registered the replacement rule and its core diagnostics,
+  covered bodyless source signatures,
+  and failed closed on unresolved external calls;
+- commit `b5afc9274` prohibited line,
+  block,
+  and mixed-list inline suppressions;
+- commit `8258a37e9` exercised the core diagnostics through Oxlint;
+- commit `d3fd789bc` retained opaque provenance and structurally verified local adapters;
+- commit `39aeaea3c` kept ordinary fixes inert while exposing stale-contract removal as an explicit suggestion.
+
+Remaining gates include overload consistency,
+complete closure and deferred-effect modeling,
+audited nonmutating intrinsic calls,
+verified readonly type suggestions,
+package-catalog completion,
+and the agreed parser-recovery,
+invalidation,
+platform,
+memory,
+and publication acceptance corpus.
+
 Verified package tasks:
 
 - `mise run buildAndTest --` with TSDoc parser,
@@ -50,10 +84,8 @@ Verified package tasks:
 - `mise run //packages/config/oxlint:lint:oxlint`.
 
 Next action:
-implement readonly classification,
-effect summaries,
-semantic diagnostics,
-and suggestions on the bridge foundation.
+complete overload and closure effect semantics,
+then add verified readonly type suggestions before configuration migration.
 
 ## Continuity contract
 
