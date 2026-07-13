@@ -30,6 +30,17 @@ export function readControllerSignal(controller: AbortController,): AbortSignal 
 }
 
 /**
+ * Converts only primitive input without caller-owned coercion hooks.
+ *
+ * @param value - Primitive value converted directly by ECMAScript.
+ *
+ * @returns text representation.
+ */
+export function primitiveStringConversion(value: string | number,): string {
+  return String(value,);
+}
+
+/**
  * Bodyless owned mutation contract.
  */
 export type ReadonlyFixtureMutator = {

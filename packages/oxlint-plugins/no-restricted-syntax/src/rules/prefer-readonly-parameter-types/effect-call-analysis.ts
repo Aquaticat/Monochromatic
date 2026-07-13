@@ -47,6 +47,10 @@ import {
   mutationContractsForDeclaration,
 } from './mutation-contract-query.ts';
 import { addIntrinsicCallbackEffects, } from './effect-intrinsic-callback.ts';
+import {
+  isGlobalStringConversion,
+  STRING_OBJECT_COERCION_PROVENANCE,
+} from './string-coercion-effect.ts';
 
 /**
  * Classifies one call as callback relation, intrinsic effect, owned edge, or opaque boundary.
@@ -309,8 +313,14 @@ export function inspectEffectCall({
   /**
    * Authored unresolved call target retained for adapter verification.
    */
-  const opaqueProvenance = call.expression
-    .getText();
+  const opaqueProvenance = isGlobalStringConversion({
+    call,
+    checker,
+    project,
+  },)
+    ? STRING_OBJECT_COERCION_PROVENANCE
+    : call.expression
+      .getText();
   addOpaqueEffect({
     summary,
     affectedParameterIndex: isPropertyAccessExpression(call.expression,)

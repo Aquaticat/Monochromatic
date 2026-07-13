@@ -84,6 +84,18 @@ const UNKNOWN_CALL_REMEDIATION = '\n\nChoose the remediation that matches the ca
   + '\nReplace inputName with that function\'s actual input name.';
 
 /**
+ * Every supported remediation for object-capable global String conversion.
+ */
+const STRING_OBJECT_COERCION_REMEDIATION = '\n\nChoose the remediation that preserves the intended output:'
+  + '\n1. Narrow the input to string, number, bigint, boolean, symbol, null, or undefined before calling String. Primitive conversion cannot run caller-owned hooks.'
+  + '\n2. Read a known primitive field and convert that field instead of converting its containing object.'
+  + '\n3. For error or logging fallbacks, return known strings directly and describe other values by a noncoercing fact such as typeof value.'
+  + '\n4. Remove the conversion when its text is not required.'
+  + '\n5. If invoking object coercion hooks is intentional, document every affected input with its own line in the function\'s /** ... */ comment:'
+  + '\n@mutates inputName - String may invoke Symbol.toPrimitive, toString, or valueOf on this input'
+  + '\nReplace inputName with that function\'s actual input name.';
+
+/**
  * Enforces honest readonly parameter types and verified mutation contracts.
  *
  * @example
@@ -106,6 +118,7 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
       staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
       opaqueEffect: `{{inputSubject}} used by these calls: {{boundaries}}.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       opaqueMethodEffect: `{{inputSubject}} used as the object for these method calls: {{boundaries}}.\n\nA method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
+      stringObjectCoercionEffect: `{{inputSubject}} passed to global String while it may be an object. String does not reassign the input, but object conversion can call input[Symbol.toPrimitive], input.toString(), or input.valueOf(). Those caller-owned methods can change the input, reachable state, or another system. This rule does not report String conversion when the input is provably primitive.${STRING_OBJECT_COERCION_REMEDIATION}`,
       dishonestReadonly: 'Parameter "{{parameterName}}" claims readonly semantics dishonestly: {{reason}}.',
       inconsistentMutatesContract: 'Mutation contracts disagree across callable signatures.',
       semanticBridgeUnavailable: 'Readonly semantic analysis unavailable: {{reason}}.',

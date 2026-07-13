@@ -69,6 +69,17 @@ export function opaqueMethodEffect(service: OpaqueExternalService,): void {
 }
 
 /**
+ * Converts unknown value through global String coercion hooks.
+ *
+ * @param error - Unknown value that may carry caller-owned conversion methods.
+ *
+ * @returns coerced text.
+ */
+export function stringObjectCoercionEffect(error: unknown,): string {
+  return String(error,);
+}
+
+/**
  * Sends destructured inputs through unsafe serialization.
  *
  * @param state - Structured value sent to serializer.

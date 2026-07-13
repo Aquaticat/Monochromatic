@@ -28,6 +28,7 @@ import {
 import { classifyReadonlyType, } from './readonly-classifier.ts';
 import { readonlyParameterSuggestions, } from './readonly-suggestions.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
+import { STRING_OBJECT_COERCION_PROVENANCE, } from './string-coercion-effect.ts';
 
 /**
  * Converts TypeScript source offset to Oxlint source offset.
@@ -320,6 +321,11 @@ export function verifyReadonlyCallable({
        */
       const boundaries = boundaryFacts.join(', ',);
       /**
+       * Whether only exact global String object conversion remains unresolved.
+       */
+      const onlyStringObjectCoercion = (boundaryFacts.length === 1)
+        && (boundaryFacts[0] === STRING_OBJECT_COERCION_PROVENANCE);
+      /**
        * Whether every unknown call is a method on one current input binding.
        */
       const onlyInputMethods = everyBoundaryIsInputMethod({
@@ -329,9 +335,11 @@ export function verifyReadonlyCallable({
       },);
       context.report({
         loc,
-        messageId: onlyInputMethods
-          ? 'opaqueMethodEffect'
-          : 'opaqueEffect',
+        messageId: onlyStringObjectCoercion
+          ? 'stringObjectCoercionEffect'
+          : onlyInputMethods
+            ? 'opaqueMethodEffect'
+            : 'opaqueEffect',
         data: {
           inputSubject: onlyInputMethods
             ? inputMethodUsageSubject({
