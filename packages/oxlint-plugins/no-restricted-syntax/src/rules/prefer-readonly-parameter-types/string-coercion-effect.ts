@@ -14,7 +14,7 @@ import {
  * Exact provenance label used for object-capable global String conversion.
  */
 export const STRING_OBJECT_COERCION_PROVENANCE =
-  'global String object conversion through Symbol.toPrimitive, toString, or valueOf';
+  'global String object conversion through property access, proxy traps, Symbol.toPrimitive, toString, or valueOf';
 
 /**
  * Reports whether call resolves to ECMAScript global String conversion.

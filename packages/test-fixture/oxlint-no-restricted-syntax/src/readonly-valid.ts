@@ -29,6 +29,14 @@ export function readControllerSignal(controller: AbortController,): AbortSignal 
   return controller.signal;
 }
 
+/** Unique type-only brand for primitive String conversion coverage. */
+declare const STRING_PRIMITIVE_BRAND: unique symbol;
+
+/** Primitive string retaining type-only domain identity. */
+type BrandedPrimitiveString = string & {
+  readonly [STRING_PRIMITIVE_BRAND]: true;
+};
+
 /**
  * Converts only primitive input without caller-owned coercion hooks.
  *
@@ -36,7 +44,35 @@ export function readControllerSignal(controller: AbortController,): AbortSignal 
  *
  * @returns text representation.
  */
-export function primitiveStringConversion(value: string | number,): string {
+export function primitiveStringConversion(
+  value: string | number | symbol,
+): string {
+  return String(value,);
+}
+
+/**
+ * Converts type-branded primitive without treating brand as runtime object state.
+ *
+ * @param value - Branded primitive string.
+ *
+ * @returns underlying primitive text.
+ */
+export function brandedPrimitiveStringConversion(
+  value: BrandedPrimitiveString,
+): string {
+  return String(value,);
+}
+
+/**
+ * Deliberately runs caller-owned global String coercion hooks.
+ *
+ * @param value - Unknown value whose conversion behavior is intentionally allowed.
+ *
+ * @returns caller-defined String conversion result.
+ *
+ * @mutates value - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input.
+ */
+export function deliberateStringObjectCoercion(value: unknown,): string {
   return String(value,);
 }
 

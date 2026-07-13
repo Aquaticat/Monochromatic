@@ -8,6 +8,7 @@ import {
   ModifierFlags,
   SignatureKind,
   SymbolFlags,
+  TypeFlags,
   type Checker,
   type Project,
   type Symbol as TypeScriptSymbol,
@@ -24,6 +25,10 @@ import {
 } from './intrinsic-effect-query.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 import { isForeignBorrowedType, } from './foreign-borrowed-classifier.ts';
+import {
+  readonlyOwnerName,
+  typeClaimsReadonlyProjection,
+} from './readonly-owner.ts';
 
 /**
  * Bit position of hidden TypeScript 7 mapped-property readonly state.
@@ -98,45 +103,6 @@ export type ReadonlyClassification =
  * Honest readonly singleton result.
  */
 const HONEST_READONLY: ReadonlyClassification = { kind: 'honest-readonly', };
-
-/**
- * Returns owner symbol name for resolved type.
- *
- * @param type - TypeScript semantic type.
- *
- * @returns declared or alias symbol name, or empty string when anonymous.
- */
-function ownerName(type: Type,): string {
-  /**
-   * Direct symbol for interface, class, and object type.
-   */
-  const symbol = type.getSymbol();
-  if (symbol !== undefined)
-    return symbol.name;
-  /**
-   * Alias symbol fallback for mapped and projected types.
-   */
-  const aliasSymbol = type.getAliasSymbol();
-  return aliasSymbol === undefined ? '' : aliasSymbol.name;
-}
-
-/**
- * Detects authored readonly projection aliases.
- *
- * @param type - TypeScript semantic type.
- *
- * @returns whether alias claims readonly projection.
- */
-function claimsReadonlyProjection(type: Type,): boolean {
-  /**
-   * Authored alias name when type was instantiated through projection.
-   */
-  const aliasName = type.getAliasSymbol()
-    ?.name;
-  return (aliasName === 'Readonly')
-    || (aliasName === 'ReadonlyDeep')
-    || (aliasName === 'ReadonlyArray');
-}
 
 /**
  * Reads declaration modifier flags without assuming every node supports modifiers.
@@ -305,6 +271,13 @@ export function classifyReadonlyType({
       },);
     }
 
+    if ((current.flags & (TypeFlags.Any | TypeFlags.Unknown)) !== 0) {
+      return finish({
+        kind: 'opaque-capability',
+        reason: 'unknown runtime value may carry mutable caller-owned capability',
+      },);
+    }
+
     if (current.isUnionType() || current.isIntersectionType()) {
       /**
        * Constituent classifications for combined type.
@@ -330,7 +303,7 @@ export function classifyReadonlyType({
     /**
      * Declared owner identity used by standard projection policy.
      */
-    const currentOwner = ownerName(current,);
+    const currentOwner = readonlyOwnerName(current,);
     if (checker.isArrayType(current,) && (currentOwner === 'Array')) {
       return finish({
         kind: 'mutable',
@@ -374,7 +347,7 @@ export function classifyReadonlyType({
     /**
      * Whether authored type claims readonly projection semantics.
      */
-    const projectionClaimed = claimsReadonlyProjection(current,);
+    const projectionClaimed = typeClaimsReadonlyProjection(current,);
     /**
      * Classification of every reachable named property.
      */

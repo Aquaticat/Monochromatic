@@ -13,6 +13,63 @@ import {
   mutationContractsForDeclaration,
   mutationTargetIndexes,
 } from './mutation-contract-query.ts';
+import { STRING_OBJECT_COERCION_PROVENANCE, } from './string-coercion-effect.ts';
+
+/**
+ * Terms required for deliberate global String object-coercion contract.
+ */
+const STRING_COERCION_CONTRACT_TERMS: readonly string[] = [
+  'String',
+  'getters',
+  'proxy traps',
+  'Symbol.toPrimitive',
+  'toString',
+  'valueOf',
+];
+
+/**
+ * Tests whether one contract identifies an exact unresolved boundary.
+ *
+ * Global String conversion accepts explicit hook enumeration because its
+ * generated provenance explanation is not reasonable authored prose.
+ * Other boundaries retain exact-name or linked-member requirements.
+ *
+ * @param description - Authored mutation-contract explanation.
+ *
+ * @param provenance - Generated exact boundary provenance.
+ *
+ * @returns Whether description identifies boundary with required detail.
+ *
+ * @example
+ * ```ts
+ * descriptionDocumentsBoundary({ description, provenance });
+ * ```
+ */
+function descriptionDocumentsBoundary({
+  description,
+  provenance,
+}: {
+  readonly description: string;
+  readonly provenance: string;
+},): boolean {
+  if (provenance === STRING_OBJECT_COERCION_PROVENANCE)
+    return STRING_COERCION_CONTRACT_TERMS.every(function includesTerm(term,): boolean {
+      return description.includes(term,);
+    },);
+  if (description.includes(provenance,))
+    return true;
+  /**
+   * Final callable member retained for matching documentation links.
+   */
+  const finalMemberSeparator = provenance.lastIndexOf('.',);
+  /**
+   * Callable member text after final property separator.
+   */
+  const member = provenance.slice(finalMemberSeparator + 1,);
+  return (description.includes('https://')
+      || description.includes('http://'))
+    && description.includes(member,);
+}
 
 /**
  * Converts documented direct opaque boundary into verified adapter mutation.
@@ -75,30 +132,11 @@ export function applyVerifiedAdapterContracts({
      * Whether every opaque call is named or linked by matching contract.
      */
     const fullyDocumented = [...provenanceFacts,].every(function documented(provenance,): boolean {
-      /**
-       * Final callable member retained for matching documentation links.
-       */
-      const finalMemberSeparator = provenance.lastIndexOf('.',);
-      /**
-       * Callable member text after final property separator.
-       */
-      const member = provenance.slice(finalMemberSeparator + 1,);
       return parameterContracts.some(function namesBoundary(block,): boolean {
-        /**
-         * Whether contract names exact authored call expression.
-         */
-        const namesExactBoundary = block.description
-          .includes(provenance,);
-        /**
-         * Whether contract links documentation while naming callable member.
-         */
-        const linksNamedBoundary = (block.description
-          .includes('https://',)
-          || block.description
-          .includes('http://',))
-          && block.description
-          .includes(member,);
-        return namesExactBoundary || linksNamedBoundary;
+        return descriptionDocumentsBoundary({
+          description: block.description,
+          provenance,
+        },);
       },);
     },);
     if (!fullyDocumented)

@@ -51,6 +51,14 @@ await describe({
         expected: 'honest-readonly',
       },
       {
+        parameter: 'unknownValue:',
+        expected: 'opaque-capability',
+      },
+      {
+        parameter: 'anyValue:',
+        expected: 'opaque-capability',
+      },
+      {
         parameter: 'projectedController:',
         expected: 'dishonest-readonly',
       },

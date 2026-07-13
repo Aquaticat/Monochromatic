@@ -91,8 +91,8 @@ const STRING_OBJECT_COERCION_REMEDIATION = '\n\nChoose the remediation that pres
   + '\n2. Read a known primitive field and convert that field instead of converting its containing object.'
   + '\n3. For error or logging fallbacks, return known strings directly and describe other values by a noncoercing fact such as typeof value.'
   + '\n4. Remove the conversion when its text is not required.'
-  + '\n5. If invoking object coercion hooks is intentional, document every affected input with its own line in the function\'s /** ... */ comment:'
-  + '\n@mutates inputName - String may invoke Symbol.toPrimitive, toString, or valueOf on this input'
+  + '\n5. If invoking object coercion hooks is intentional, document every affected input with its own line in the function\'s /** ... */ comment. An object type alone cannot prove that runtime hooks are absent:'
+  + '\n@mutates inputName - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input'
   + '\nReplace inputName with that function\'s actual input name.';
 
 /**
@@ -118,7 +118,7 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
       staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
       opaqueEffect: `{{inputSubject}} used by these calls: {{boundaries}}.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       opaqueMethodEffect: `{{inputSubject}} used as the object for these method calls: {{boundaries}}.\n\nA method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
-      stringObjectCoercionEffect: `{{inputSubject}} passed to global String while it may be an object. String does not reassign the input, but object conversion can call input[Symbol.toPrimitive], input.toString(), or input.valueOf(). Those caller-owned methods can change the input, reachable state, or another system. This rule does not report String conversion when the input is provably primitive.${STRING_OBJECT_COERCION_REMEDIATION}`,
+      stringObjectCoercionEffect: `{{inputSubject}} passed to global String while it may be an object. String does not reassign the input. Object conversion reads input[Symbol.toPrimitive], input.toString, and input.valueOf; those reads can run getters or proxy traps, and callable values are then invoked. That caller-owned code can change the input, reachable state, or another system. This rule does not report String conversion when the input is provably primitive.${STRING_OBJECT_COERCION_REMEDIATION}`,
       dishonestReadonly: 'Parameter "{{parameterName}}" claims readonly semantics dishonestly: {{reason}}.',
       inconsistentMutatesContract: 'Mutation contracts disagree across callable signatures.',
       semanticBridgeUnavailable: 'Readonly semantic analysis unavailable: {{reason}}.',

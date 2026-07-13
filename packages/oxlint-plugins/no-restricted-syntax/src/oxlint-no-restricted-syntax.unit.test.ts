@@ -588,16 +588,29 @@ await describe({
             if (stringMessage === undefined)
               throw new Error('Expected global String object coercion diagnostic.',);
             expect(stringMessage,).toBe(
-              'The function input named "error" is passed to global String while it may be an object. String does not reassign the input, but object conversion can call input[Symbol.toPrimitive], input.toString(), or input.valueOf(). Those caller-owned methods can change the input, reachable state, or another system. This rule does not report String conversion when the input is provably primitive.'
+              'The function input named "error" is passed to global String while it may be an object. String does not reassign the input. Object conversion reads input[Symbol.toPrimitive], input.toString, and input.valueOf; those reads can run getters or proxy traps, and callable values are then invoked. That caller-owned code can change the input, reachable state, or another system. This rule does not report String conversion when the input is provably primitive.'
                 + '\n\nChoose the remediation that preserves the intended output:'
                 + '\n1. Narrow the input to string, number, bigint, boolean, symbol, null, or undefined before calling String. Primitive conversion cannot run caller-owned hooks.'
                 + '\n2. Read a known primitive field and convert that field instead of converting its containing object.'
                 + '\n3. For error or logging fallbacks, return known strings directly and describe other values by a noncoercing fact such as typeof value.'
                 + '\n4. Remove the conversion when its text is not required.'
-                + '\n5. If invoking object coercion hooks is intentional, document every affected input with its own line in the function\'s /** ... */ comment:'
-                + '\n@mutates inputName - String may invoke Symbol.toPrimitive, toString, or valueOf on this input'
+                + '\n5. If invoking object coercion hooks is intentional, document every affected input with its own line in the function\'s /** ... */ comment. An object type alone cannot prove that runtime hooks are absent:'
+                + '\n@mutates inputName - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input'
                 + '\nReplace inputName with that function\'s actual input name.',
             );
+          },
+        },),
+        it({
+          name: 'does not identify same-named external callable as global String',
+          fn: async () => {
+            const diagnostics = await lintReadonly('readonly-string-lookalike-invalid.ts',);
+            expect(diagnostics.length,).toBe(1,);
+            expect(diagnostics[0]?.message.startsWith(
+              'The function input named "value" is used by these calls: String.',
+            ),).toBe(true,);
+            expect(diagnostics[0]?.message.includes(
+              'passed to global String',
+            ),).toBe(false,);
           },
         },),
         it({

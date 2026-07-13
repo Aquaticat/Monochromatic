@@ -76,6 +76,24 @@ export function classifyMutableObject(mutableObject: { value: string; },): void 
 }
 
 /**
+ * Accepts unknown runtime capability for classifier fixture.
+ *
+ * @param unknownValue - Value whose runtime capabilities are not known.
+ */
+export function classifyUnknownCapability(unknownValue: unknown,): void {
+  void unknownValue;
+}
+
+/**
+ * Accepts unchecked runtime capability for classifier fixture.
+ *
+ * @param anyValue - Value whose runtime capabilities bypass type checking.
+ */
+export function classifyAnyCapability(anyValue: any,): void {
+  void anyValue;
+}
+
+/**
  * Accepts deeply readonly structural data for classifier fixture.
  *
  * @param readonlyObject - Deeply readonly structural data.
