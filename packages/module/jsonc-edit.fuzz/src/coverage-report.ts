@@ -257,26 +257,25 @@ function checkBaseline({
   baseline,
   current,
 }: {
-  readonly baseline: CoverageCounts;
-  readonly current: CoverageCounts;
+  readonly baseline: ReadonlyMap<string, number>;
+  readonly current: ReadonlyMap<string, number>;
 },): void {
   /**
    * Human-readable regression lines.
    */
-  const regressions = Object.entries(baseline,)
+  const regressions = [...baseline.entries(),]
     .flatMap(function compare([file, expected],): readonly string[] {
     /**
      * Covered functions for this file in the current run.
      */
-    const got = current[file] ?? 0;
+    const got = current.get(file,) ?? 0;
     return (got < expected)
       ? [`${file}: ${String(got,)} < baseline ${String(expected,)}`,]
       : [];
   },);
   if (regressions.length > 0)
     throw new Error(`coverage regressed:\n  ${regressions.join('\n  ',)}`,);
-  console.log(`coverage gate passed: ${String(Object.keys(baseline,)
-    .length,)} files at or above baseline`,);
+  console.log(`coverage gate passed: ${String(baseline.size,)} files at or above baseline`,);
 }
 
 //endregion Gate
@@ -324,8 +323,8 @@ else {
   const baseline = JSON.parse(baselineText,) as CoverageCounts;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   checkBaseline({
-    baseline,
-    current,
+    baseline: new Map(Object.entries(baseline,),),
+    current: new Map(Object.entries(current,),),
   },);
 }
 
