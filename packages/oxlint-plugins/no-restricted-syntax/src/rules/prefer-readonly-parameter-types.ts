@@ -14,6 +14,7 @@ import type {
 import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 
 import {
+  callableKey,
   collectAstNodes,
   isEffectCallableDeclaration,
 } from './prefer-readonly-parameter-types/effect-summary-model.ts';
@@ -131,7 +132,10 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
           /**
            * Whole-project callable effect summaries.
            */
-          const effectIndex = buildEffectSummaryIndex({ project: session.project, },);
+          const effectIndex = buildEffectSummaryIndex({
+            project: session.project,
+            activeSourceFile: session.sourceFile,
+          },);
           collectAstNodes(session.sourceFile,)
             .forEach(function verifyNode(semanticNode,): void {
             if (!isEffectCallableDeclaration(semanticNode,))
@@ -140,11 +144,16 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
              * Effect summary for current callable declaration.
              */
             const effectSummary = effectIndex.get(semanticNode,);
-            if (effectSummary === NO_EFFECT_SUMMARY)
+            if (effectSummary === NO_EFFECT_SUMMARY) {
+              /**
+               * Stable semantic identity omitted by project effect index.
+               */
+              const missingKey = callableKey(semanticNode,);
               throw new SemanticBridgeError({
                 reason: 'node-not-found',
-                message: 'Effect summary index omitted owned callable declaration.',
+                message: `Effect summary index omitted owned callable declaration ${missingKey}.`,
               },);
+            }
             verifyReadonlyCallable({
               context,
               declaration: semanticNode,

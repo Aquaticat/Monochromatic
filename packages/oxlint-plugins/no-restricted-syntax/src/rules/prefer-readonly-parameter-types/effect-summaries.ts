@@ -4,6 +4,7 @@
  * @module
  */
 
+import type { SourceFile, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
@@ -365,17 +366,21 @@ function propagateEffects(
  *
  * @param project - TypeScript project snapshot to analyze.
  *
+ * @param activeSourceFile - Current overlay source wrapper used by verifier.
+ *
  * @returns exact declaration summary lookup.
  *
  * @example
  * ```ts
- * const effects = buildEffectSummaryIndex({ project });
+ * const effects = buildEffectSummaryIndex({ project, activeSourceFile });
  * ```
  */
 export function buildEffectSummaryIndex({
   project,
+  activeSourceFile,
 }: {
   readonly project: Project;
+  readonly activeSourceFile: SourceFile;
 },): EffectSummaryIndex {
   /**
    * Mutable summaries keyed by stable declaration identity.
@@ -385,14 +390,20 @@ export function buildEffectSummaryIndex({
    * Current owned source paths used to prune rename and deletion residue.
    */
   const activeFiles = new Set<string>();
-  project.program
-    .getSourceFileNames()
+  new Set([
+    ...project.program
+      .getSourceFileNames(),
+    activeSourceFile.fileName,
+  ],)
     .forEach(function gatherSource(fileName,): void {
     /**
-     * Program source file matching configured file name.
+     * Program source file matching configured file name, using active wrapper
+     * shared with verifier when identities match.
      */
-    const sourceFile = project.program
-      .getSourceFile(fileName,);
+    const sourceFile = fileName === activeSourceFile.fileName
+      ? activeSourceFile
+      : project.program
+        .getSourceFile(fileName,);
     if ((sourceFile === undefined)
       || sourceFile.isDeclarationFile
       || project.program
@@ -400,30 +411,40 @@ export function buildEffectSummaryIndex({
       return;
     activeFiles.add(fileName,);
     /**
-     * Direct summaries reused when exact source text remains unchanged.
+     * Callable declarations present in current decoded source wrapper.
+     */
+    const declarations = collectAstNodes(sourceFile,)
+      .filter(function retainEffectCallable(node,): node is EffectCallableDeclaration {
+        return isEffectCallableDeclaration(node,);
+      },);
+    /**
+     * Stable callable identities required from any exact-text cache hit.
+     */
+    const expectedKeys = new Set(declarations
+      .map(function declarationKey(declaration,): string {
+        return callableKey(declaration,);
+      },),);
+    /**
+     * Direct summaries reused when exact source text and declarations remain unchanged.
      */
     const fileSummaries = directSummariesForSource({
       projectKey: project.configFileName,
       fileName,
       sourceText: sourceFile.text,
+      expectedKeys,
       create(): ReadonlyMap<string, MutableEffectSummary> {
-        /**
-         * Fresh summaries scanned only for changed source.
-         */
-        const created = new Map<string, MutableEffectSummary>();
-        collectAstNodes(sourceFile,)
-          .forEach(function gatherCallable(node,): void {
-          if (isEffectCallableDeclaration(node,)) {
-            created.set(
-              callableKey(node,),
-              directEffectSummary({
-                project,
-                declaration: node,
-              },),
-            );
-          }
-        },);
-        return created;
+        return new Map(declarations.map(function gatherCallable(declaration,): [
+          string,
+          MutableEffectSummary,
+        ] {
+          return [
+            callableKey(declaration,),
+            directEffectSummary({
+              project,
+              declaration,
+            },),
+          ];
+        },),);
       },
     },);
     fileSummaries.forEach(function addSummary(

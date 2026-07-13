@@ -41,7 +41,10 @@ await describe({
           sourceText: SOURCE,
           hasBOM: false,
         },);
-        const index = buildEffectSummaryIndex({ project: session.project, },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
         const effects = [
           'directSemanticEffect',
           'mutatePackagedState',
@@ -263,7 +266,10 @@ await describe({
           sourceText: SOURCE,
           hasBOM: false,
         },);
-        buildEffectSummaryIndex({ project: firstSession.project, },);
+        buildEffectSummaryIndex({
+          project: firstSession.project,
+          activeSourceFile: firstSession.sourceFile,
+        },);
         /** Counters after uncached whole-project scan. */
         const firstStats = effectSummaryCacheStats();
         expect(firstStats.directSummaryBuildCount > 0,).toBe(true,);
@@ -272,7 +278,10 @@ await describe({
           sourceText: SOURCE,
           hasBOM: false,
         },);
-        buildEffectSummaryIndex({ project: secondSession.project, },);
+        buildEffectSummaryIndex({
+          project: secondSession.project,
+          activeSourceFile: secondSession.sourceFile,
+        },);
         /** Counters after identical project snapshot source. */
         const secondStats = effectSummaryCacheStats();
         expect(secondStats.directSummaryBuildCount,).toBe(

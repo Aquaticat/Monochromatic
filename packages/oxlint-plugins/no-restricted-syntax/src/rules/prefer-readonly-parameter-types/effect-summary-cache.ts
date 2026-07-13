@@ -74,6 +74,29 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
 }
 
 /**
+ * Tests whether cached summaries contain every current callable key.
+ *
+ * @param expectedKeys - Current callable keys required by source wrapper.
+ *
+ * @param summaries - Cached direct summaries keyed by callable identity.
+ *
+ * @returns whether cache covers every current callable.
+ */
+function containsEveryExpectedKey({
+  expectedKeys,
+  summaries,
+}: {
+  readonly expectedKeys: ReadonlySet<string>;
+  readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
+},): boolean {
+  for (const key of expectedKeys) {
+    if (!summaries.has(key,))
+      return false;
+  }
+  return true;
+}
+
+/**
  * Returns cloned direct summaries from cache or source scanner.
  *
  * @param projectKey - Configured project identity.
@@ -82,24 +105,28 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
  *
  * @param sourceText - Exact semantic snapshot source text.
  *
- * @param create - Scanner producing direct summaries on cache miss.
+ * @param expectedKeys - Callable keys present in current source wrapper.
+ *
+ * @param create - Scanner producing direct summaries on cache miss or incomplete hit.
  *
  * @returns independent direct summaries safe for propagation.
  *
  * @example
  * ```ts
- * directSummariesForSource({ projectKey, fileName, sourceText, create });
+ * directSummariesForSource({ projectKey, fileName, sourceText, expectedKeys, create });
  * ```
  */
 export function directSummariesForSource({
   projectKey,
   fileName,
   sourceText,
+  expectedKeys,
   create,
 }: {
   readonly projectKey: string;
   readonly fileName: string;
   readonly sourceText: string;
+  readonly expectedKeys: ReadonlySet<string>;
   readonly create: () => ReadonlyMap<string, MutableEffectSummary>;
 }): ReadonlyMap<string, MutableEffectSummary> {
   /**
@@ -111,7 +138,12 @@ export function directSummariesForSource({
    * Prior direct summaries for exact path.
    */
   const cached = projectCache.get(fileName,);
-  if ((cached !== undefined) && (cached.sourceText === sourceText)) {
+  if ((cached !== undefined)
+    && (cached.sourceText === sourceText)
+    && containsEveryExpectedKey({
+      expectedKeys,
+      summaries: cached.summaries,
+    },)) {
     counters.sourceCacheHitCount++;
     return new Map(
       [...cached.summaries
