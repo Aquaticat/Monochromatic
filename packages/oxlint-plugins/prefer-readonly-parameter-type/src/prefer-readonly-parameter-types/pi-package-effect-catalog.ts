@@ -15,6 +15,7 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'on',
     'registerCommand',
     'registerMessageRenderer',
+    'registerShortcut',
     'registerTool',
     'sendMessage',
     'setActiveTools',
@@ -32,6 +33,21 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: '@earendil-works/pi-coding-agent 0.80.6 extension loader and agent session state updates',
     };
   },),
+  ...[
+    'abort',
+  ].map(function piCommandContextMutation(member,): IntrinsicEffectEntry {
+    return {
+      provenance: {
+        kind: 'package',
+        packageName: '@earendil-works/pi-coding-agent',
+        major: 0,
+      },
+      ownerType: 'ExtensionContext',
+      member,
+      targets: [{ kind: 'receiver', },],
+      evidence: '@earendil-works/pi-coding-agent 0.80.6 changes active command session state',
+    };
+  },),
   {
     provenance: {
       kind: 'package',
@@ -43,6 +59,22 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     targets: [],
     evidence: '@earendil-works/pi-coding-agent 0.80.6 waits for current agent stream completion',
   },
+  ...[
+    'notify',
+    'setStatus',
+  ].map(function piUiReceiverMutation(member,): IntrinsicEffectEntry {
+    return {
+      provenance: {
+        kind: 'package',
+        packageName: '@earendil-works/pi-coding-agent',
+        major: 0,
+      },
+      ownerType: 'ExtensionUIContext',
+      member,
+      targets: [{ kind: 'receiver', },],
+      evidence: '@earendil-works/pi-coding-agent 0.80.6 changes rendered extension UI state',
+    };
+  },),
   {
     provenance: {
       kind: 'package',
@@ -50,9 +82,40 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       major: 0,
     },
     ownerType: 'ExtensionUIContext',
-    member: 'notify',
-    targets: [{ kind: 'receiver', },],
-    evidence: '@earendil-works/pi-coding-agent 0.80.6 displays host notification state',
+    member: 'select',
+    targets: [
+      { kind: 'receiver', },
+      {
+        kind: 'argument',
+        index: 1,
+      },
+      {
+        kind: 'argument',
+        index: 2,
+      },
+    ],
+    evidence: '@earendil-works/pi-coding-agent 0.80.6 stores selector state and abort-signal listeners',
+  },
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@earendil-works/pi-coding-agent',
+      major: 0,
+    },
+    ownerType: 'ExtensionUIContext',
+    member: 'setWidget',
+    targets: [
+      { kind: 'receiver', },
+      {
+        kind: 'argument',
+        index: 1,
+      },
+      {
+        kind: 'argument',
+        index: 2,
+      },
+    ],
+    evidence: '@earendil-works/pi-coding-agent 0.80.6 stores widget state and invokes supplied component factories',
   },
   {
     provenance: {
@@ -70,6 +133,36 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       },
     ],
     evidence: '@earendil-works/pi-coding-agent 0.80.6 resolves auth including command-backed configuration',
+  },
+  ...[
+    'find',
+    'getAll',
+  ].map(function piModelRegistryObservation(member,): IntrinsicEffectEntry {
+    return {
+      provenance: {
+        kind: 'package',
+        packageName: '@earendil-works/pi-coding-agent',
+        major: 0,
+      },
+      ownerType: 'ModelRegistry',
+      member,
+      targets: [],
+      evidence: '@earendil-works/pi-coding-agent 0.80.6 reads current model registry entries',
+    };
+  },),
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@earendil-works/pi-coding-agent',
+      major: 0,
+    },
+    ownerType: 'ModelRegistry',
+    member: 'hasConfiguredAuth',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+    },],
+    evidence: '@earendil-works/pi-coding-agent 0.80.6 reads supplied model fields without refreshing auth',
   },
   {
     provenance: {

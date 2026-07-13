@@ -18,9 +18,10 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Real Advisor call used to verify exact Pi declaration identity.
+ * Real Pi plugin call used to verify exact declaration identity.
  */
 type PiCallProbe = {
+  readonly pluginDirectory?: 'auto-mode';
   readonly relativePath: string;
   readonly callText: string;
   readonly ownerType: string;
@@ -29,7 +30,7 @@ type PiCallProbe = {
 };
 
 /**
- * Advisor source probes covering each added Pi owner and effect class.
+ * Pi plugin source probes covering each added owner and effect class.
  */
 const PROBES: readonly PiCallProbe[] = [
   {
@@ -115,24 +116,111 @@ const PROBES: readonly PiCallProbe[] = [
     member: 'getBranch',
     targets: [],
   },
+  {
+    pluginDirectory: 'auto-mode',
+    relativePath: 'index.ts',
+    callText: 'pi.registerShortcut',
+    ownerType: 'ExtensionAPI',
+    member: 'registerShortcut',
+    targets: [{ kind: 'receiver', },],
+  },
+  {
+    pluginDirectory: 'auto-mode',
+    relativePath: 'bypass.ts',
+    callText: '.setStatus(',
+    ownerType: 'ExtensionUIContext',
+    member: 'setStatus',
+    targets: [{ kind: 'receiver', },],
+  },
+  {
+    pluginDirectory: 'auto-mode',
+    relativePath: 'ask-user.ts',
+    callText: '.setWidget(',
+    ownerType: 'ExtensionUIContext',
+    member: 'setWidget',
+    targets: [
+      { kind: 'receiver', },
+      {
+        kind: 'argument',
+        index: 1,
+      },
+      {
+        kind: 'argument',
+        index: 2,
+      },
+    ],
+  },
+  {
+    pluginDirectory: 'auto-mode',
+    relativePath: 'ask-user.ts',
+    callText: '.select(',
+    ownerType: 'ExtensionUIContext',
+    member: 'select',
+    targets: [
+      { kind: 'receiver', },
+      {
+        kind: 'argument',
+        index: 1,
+      },
+      {
+        kind: 'argument',
+        index: 2,
+      },
+    ],
+  },
+  {
+    pluginDirectory: 'auto-mode',
+    relativePath: 'ask-user.ts',
+    callText: 'ctx.abort',
+    ownerType: 'ExtensionContext',
+    member: 'abort',
+    targets: [{ kind: 'receiver', },],
+  },
+  {
+    pluginDirectory: 'auto-mode',
+    relativePath: 'budget-model.ts',
+    callText: '.getAll(',
+    ownerType: 'ModelRegistry',
+    member: 'getAll',
+    targets: [],
+  },
+  {
+    pluginDirectory: 'auto-mode',
+    relativePath: 'budget-model-auth.ts',
+    callText: '.find(',
+    ownerType: 'ModelRegistry',
+    member: 'find',
+    targets: [],
+  },
+  {
+    pluginDirectory: 'auto-mode',
+    relativePath: 'budget-model-auth.ts',
+    callText: '.hasConfiguredAuth(',
+    ownerType: 'ModelRegistry',
+    member: 'hasConfiguredAuth',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+    },],
+  },
 ];
 
 await describe({
   name: 'Pi package effect catalog',
   children: [
     it({
-      name: 'resolves audited Advisor calls through exact Pi owners and targets',
+      name: 'resolves audited plugin calls through exact Pi owners and targets',
       fn: async () => {
         const results = PROBES.map(function resolveProbe(probe,) {
           /**
-           * Real Advisor source path containing current call.
+           * Real Pi plugin source path containing current call.
            */
           const fileName = fileURLToPath(new URL(
-            `../../../pi-plugins/advisor/src/${probe.relativePath}`,
+            `../../../pi-plugins/${probe.pluginDirectory ?? 'advisor'}/src/${probe.relativePath}`,
             import.meta.url,
           ),);
           /**
-           * Current Advisor source text.
+           * Current Pi plugin source text.
            */
           const sourceText = readFileSync(fileName, 'utf8',);
           /**
@@ -181,7 +269,7 @@ await describe({
             ? NO_INTRINSIC_EFFECT
             : intrinsicEffect(query,);
           if (effect === NO_INTRINSIC_EFFECT)
-            throw new Error(`Expected catalog effect for ${probe.callText}.`,);
+            throw new Error(`Expected catalog effect for ${probe.callText}: ${JSON.stringify(query,)}.`,);
           return {
             query,
             targets: effect.targets,
