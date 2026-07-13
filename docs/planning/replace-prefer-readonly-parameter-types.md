@@ -63,9 +63,14 @@ The semantic-rule implementation is now functional but not migration-ready:
 - commit `39aeaea3c` kept ordinary fixes inert while exposing stale-contract removal as an explicit suggestion;
 - commits `acd78d72a` and `ff09e0e69` fixed deep readonly collections and fail-closed callable capabilities;
 - commit `55c849541` verifies implementation effects against bodyless overload-contract unions;
-- commit `cb40ebe48` suggests `readonly T[]` only when element semantics prove the deep rewrite.
+- commit `cb40ebe48` suggests `readonly T[]` only when element semantics prove the deep rewrite;
+- commit `aadbab490` excludes dead nested closures while retaining invoked,
+  returned,
+  and directly passed deferred effects;
+- commit `4901811d2` traces separately assigned aliases and excludes local parameter rebinding;
+- commit `089c19f93` rejects adapter links that do not identify the opaque callable member.
 
-Remaining gates include complete closure and deferred-effect modeling,
+Remaining gates include closure aliases and indirect escape modeling,
 audited nonmutating intrinsic calls,
 `ReadonlyDeep` and ownership-aware suggestions,
 package-catalog completion,
