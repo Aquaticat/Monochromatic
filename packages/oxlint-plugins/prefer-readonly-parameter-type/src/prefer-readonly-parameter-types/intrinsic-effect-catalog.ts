@@ -177,8 +177,11 @@ const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
     provenance: { kind: 'dom', },
     ownerType: 'AbortSignal',
     member: 'any',
-    targets: [],
-    evidence: 'DOM AbortSignal.any creates composite signal observing supplied signal states',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+    },],
+    evidence: 'DOM commit 5796f716 AbortSignal.any stores dependent-signal relations on supplied signals',
   },
   ...[
     'addEventListener',

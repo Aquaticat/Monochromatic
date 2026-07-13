@@ -192,6 +192,8 @@ async function* estimateLocal(
  * @param options - runtime options
  *
  * @returns async generator of snapshots
+ *
+ * @mutates options - `AbortSignal.any` stores a dependent-signal relation on `options.signal` when provided
  */
 async function* estimateRemote(
   {
@@ -313,6 +315,8 @@ async function* estimateRemote(
  * @param options - runtime options
  *
  * @returns async generator of progressive snapshots
+ *
+ * @mutates options - `estimateRemote` can make `AbortSignal.any` store a dependent relation on `options.signal`
  *
  * @example
  * ```ts

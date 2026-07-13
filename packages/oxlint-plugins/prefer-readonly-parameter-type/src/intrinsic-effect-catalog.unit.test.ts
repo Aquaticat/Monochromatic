@@ -114,6 +114,23 @@ await describe({
       },
     },),
     it({
+      name: 'records dependent-signal mutation for AbortSignal.any',
+      fn: async () => {
+        const effect = intrinsicEffect({
+          provenance: { kind: 'dom', },
+          ownerType: 'AbortSignal',
+          member: 'any',
+        },);
+        expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (effect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected AbortSignal.any intrinsic effect.',);
+        expect(effect.targets,).toEqual([{
+          kind: 'argument',
+          index: 0,
+        },],);
+      },
+    },),
+    it({
       name: 'matches audited observational intrinsics with no mutation targets',
       fn: async () => {
         const arrayCheck = intrinsicEffect({
