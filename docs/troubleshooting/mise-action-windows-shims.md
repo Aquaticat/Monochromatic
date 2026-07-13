@@ -34,15 +34,18 @@ The fix was released in `mise-action` `4.1.0`.
 Update the pinned action to `4.2.0` commit `e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d`.
 This release contains the `mise-shim.exe` fix and remains pinned to an immutable commit.
 
-The semantic-plugin package also invokes its directly declared tsdown entry through an explicitly activated Node runtime:
+The workflow uses Bash for run steps and appends `mise where node` plus `mise where pnpm` to `GITHUB_PATH`.
+This avoids relying on the Windows PowerShell-to-task environment transfer that omitted tool roots in the failing logs.
+
+The semantic-plugin package also invokes its directly declared tsdown entry through Node:
 
 ```toml
 # packages/oxlint-plugins/no-restricted-syntax/mise.toml
-run = "mise exec node -- node ../../../node_modules/tsdown/dist/run.mjs --config tsdown.node.config.ts"
+run = "node ../../../node_modules/tsdown/dist/run.mjs --config tsdown.node.config.ts"
 ```
 
 That package-local defense avoids relying on pnpm's bare-command shim for the build entry.
-Root `buildAndTest` still depends on the repaired mise shim because its configured task shell is Node.
+Root `buildAndTest` depends on Node remaining visible because its configured task shell is Node.
 
 ## Verification
 
@@ -63,9 +66,10 @@ The replacement workflow must pass these consumer-boundary steps on `windows-lat
 
 - Declaring `tsdown` directly fixes dependency ownership but not mise's missing Windows runtime shim.
 - A full pnpm workspace install does not repair `mise-shim.exe`.
-- Wrapping `mise run` in `mise exec node --` does not help when the nested task shell reconstructs an environment without
-  a working shim.
-- Invoking `node` directly inside a package task still fails until Node is activated or discoverable.
+- Wrapping `mise run` in `mise exec node --` does not help when the nested task shell reconstructs a Windows environment
+  without the runtime path.
+- Invoking `mise` again inside a package task has the same nested-shell problem.
+- Invoking `node` directly inside a package task still fails until the workflow exposes Node's installation root.
 
 ## Upstream filing artifact
 
