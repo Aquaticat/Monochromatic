@@ -270,7 +270,9 @@ async function evaluate(
           timeoutMs: config.judgeTimeoutMs,
           systemPrompt,
           batchContext,
-          abortSignal,
+          ...(abortSignal !== undefined
+            ? { abortSignal, }
+            : {}),
         },);
       },
     },);

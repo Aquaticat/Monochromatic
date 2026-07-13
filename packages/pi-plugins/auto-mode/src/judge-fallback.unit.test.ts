@@ -149,7 +149,7 @@ await describe({
         /** Complete judge-attempt order. */
         const attemptedSlugs: string[] = [];
         /** Exclusions sent to the fallback selector. */
-        const resolverExclusions: readonly string[][] = [];
+        const resolverExclusions: string[][] = [];
         /** Initially selected judge. */
         const firstJudge = judgeFixture({ id: 'first', },);
         /** First contender in the fallback race. */
@@ -310,7 +310,9 @@ await describe({
               systemPrompt:
                 'You MUST call the render_verdict tool to submit your evaluation. Do not respond with text; use the tool.',
               batchContext: [],
-              abortSignal,
+              ...(abortSignal !== undefined
+                ? { abortSignal, }
+                : {}),
               streamSimpleFn: function streamSimpleFn(
                 model: Model<Api>,
               ) {
