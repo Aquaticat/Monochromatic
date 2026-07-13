@@ -1,3 +1,8 @@
+import {
+  clearSemanticEffectFixture,
+  visitSemanticEffectFixture,
+} from './semantic-effects-helper.ts';
+
 /**
  * Generic object used by TypeScript bridge fixture.
  */
@@ -98,4 +103,45 @@ export function classifyReadonlyMap(
   readonlyMap: ReadonlyMap<string, Readonly<SemanticFixtureBox<string>>>,
 ): void {
   void readonlyMap;
+}
+
+/**
+ * Mutates parameter directly.
+ *
+ * @param directState - Writable caller state.
+ */
+export function directSemanticEffect(directState: { value: string; },): void {
+  directState.value = 'changed';
+}
+
+/**
+ * Mutates parameter through cross-file helper.
+ *
+ * @param crossFileValues - Set forwarded to clearing helper.
+ */
+export function crossFileSemanticEffect(crossFileValues: Set<string>,): void {
+  clearSemanticEffectFixture(crossFileValues,);
+}
+
+/**
+ * Mutates parameter through immediate generic callback invocation.
+ *
+ * @param callbackState - State forwarded through callback relation.
+ */
+export function callbackSemanticEffect(callbackState: { value: string; },): void {
+  visitSemanticEffectFixture(
+    callbackState,
+    function mutateVisitedState(visitedState,): void {
+      visitedState.value = 'changed';
+    },
+  );
+}
+
+/**
+ * Reads capability without invoking mutator.
+ *
+ * @param readOnlyController - Capability inspected without mutation.
+ */
+export function noSemanticEffect(readOnlyController: AbortController,): AbortSignal {
+  return readOnlyController.signal;
 }

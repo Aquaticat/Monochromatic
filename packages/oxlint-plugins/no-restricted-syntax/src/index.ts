@@ -76,6 +76,13 @@ export {
 } from './rules/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
 
 export {
+  buildEffectSummaryIndex,
+  NO_EFFECT_SUMMARY,
+  type CallableEffectSummary,
+  type EffectSummaryIndex,
+} from './rules/prefer-readonly-parameter-types/effect-summaries.ts';
+
+export {
   intrinsicEffectQuery,
   intrinsicProvenance,
   NO_INTRINSIC_PROVENANCE,
