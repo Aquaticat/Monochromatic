@@ -14,6 +14,8 @@
  *
  * @returns same value as the input promise when it settles before the timeout
  *
+ * @mutates promise - `Promise.race` performs caller-owned promise assimilation through its `then` capability.
+ *
  * @throws Error when the timeout expires before the promise settles
  *
  * @example
@@ -32,9 +34,9 @@ export async function withTimeout<T,>({
   ms,
   label,
 }: {
-  readonly label: string;
-  readonly ms: number;
-  readonly promise: Promise<T>;
+  label: string;
+  ms: number;
+  promise: Promise<T>;
 },): Promise<T> {
   /**
    * Rejecter and its promise captured up front via `Promise.withResolvers`,

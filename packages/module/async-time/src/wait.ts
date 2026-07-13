@@ -23,11 +23,18 @@
  * ```
  */
 export function wait(ms: number,): Promise<undefined> {
-  // oxlint-disable-next-line promise/avoid-new -- Promise constructor pattern
-  return new Promise(function createTimeout(resolve,) {
-    setTimeout(
-      resolve,
-      ms,
-    );
-  },);
+  /**
+   * Promise capability created locally rather than borrowed from executor input.
+   */
+  const {
+    promise,
+    resolve,
+  } = Promise.withResolvers<undefined>();
+  setTimeout(
+    function resolveAfterDelay(): void {
+      resolve(undefined,);
+    },
+    ms,
+  );
+  return promise;
 }
