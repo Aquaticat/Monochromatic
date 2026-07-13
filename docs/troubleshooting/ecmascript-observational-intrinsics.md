@@ -250,11 +250,15 @@ The rule verifies that contract against exact global `String` provenance and pro
 Incomplete `@mutates` descriptions remain unresolved diagnostics.
 
 For `JSON.stringify`,
- use a verified local adapter whose `@mutates` contract names `JSON.stringify` as its upstream
-boundary and lists every parameter whose hooks can run.
- This is conservative:
- callers must acknowledge possible
-mutation even when current runtime values happen to be plain data.
+first move serialization to the boundary where value ownership or construction is known,
+then pass serialized primitive text through generic transports.
+This avoids falsely declaring that a transport mutates a message which its caller already proved to be plain data.
+`packages/mcp/stdio/src/transport.ts` follows this shape:
+call sites serialize owned response values,
+while `writeSerializedMessage` receives only text and documents only output-writer mutation.
+
+Use a verified local adapter with `@mutates` only when caller-owned hooks can actually run.
+Its contract must name `JSON.stringify` and every parameter whose reachable hooks remain possible.
 
 ## What does not work
 

@@ -159,13 +159,22 @@ The semantic-rule implementation is functional and shared-configuration migratio
   accessors,
   and proxy property traps;
 - commit `5a66e8b2f` proves incomplete global `String` mutation contracts remain unresolved diagnostics;
+- commit `1f18c8edf` declares the real Voyage request serialization effect without changing caller assignability;
+- commit `3b6b0685f` audits exact `TextEncoder.encode` as observational under the WHATWG algorithm;
+- commit `8e7e6c8d9` distinguishes zero-effect intrinsic methods from mutating capabilities,
+  preserves named type-alias package provenance,
+  and audits `StdoutWriter.write` as receiver mutation;
+- after the user rejected an absent `message` mutation contract as dishonest,
+  commit `c6e026a82` moves MCP response serialization to ownership-known call sites and passes primitive text through the
+  generic writer;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/tsdoc`,
   `packages/oxlint-plugins/stylistic`,
   `packages/module/or-throw`,
-  and `packages/dev-script/page-weight` now pass package Oxlint under replacement rule with one JavaScript-plugin
-  worker.
+  `packages/dev-script/page-weight`,
+  `packages/module/image-diff`,
+  and `packages/mcp/stdio` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
 
 Remaining gates are active workspace source migration,
 migrated consumer acceptance,

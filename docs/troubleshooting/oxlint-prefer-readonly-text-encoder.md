@@ -4,7 +4,8 @@
 
 `no-restricted-syntax/prefer-readonly-parameter-types` initially treated
 `encoder.encode(text)` as an unresolved method effect.
-That made reusable `Readonly<TextEncoder>` inputs appear capable of changing caller-owned state.
+The call is observational,
+but a full `Readonly<TextEncoder>` projection remains dishonest because it also retains mutating `encodeInto`.
 
 ## Root cause
 
@@ -39,12 +40,15 @@ now records exact DOM provenance:
   WHATWG Encoding Standard commit `a985b62a`.
 
 Semantic tests resolve the actual TypeScript 7 declaration to that owner and member.
-Effect-summary coverage proves `Readonly<TextEncoder>` plus primitive text produces no caller-observable mutation.
+Effect-summary coverage proves exact `TextEncoder.encode` plus primitive text produces no caller-observable mutation.
+Classifier coverage separately proves a full `Readonly<TextEncoder>` remains dishonest while
+`Pick<TextEncoder, 'encode'>` is honest.
 Same-named methods on other owners do not inherit this treatment.
 
 ## Authoring guidance
 
-Use `TextEncoder.encode` when a fresh byte array is required.
+Use `Pick<TextEncoder, 'encode'>` when a function only needs fresh byte arrays.
+Do not use `Readonly<TextEncoder>` as a shortcut because it retains `encodeInto`.
 Do not catalogue `TextEncoder.encodeInto` as observational:
 its destination argument is deliberately mutated and needs an exact argument-target effect.
 
