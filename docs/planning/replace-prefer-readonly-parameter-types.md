@@ -89,12 +89,29 @@ The semantic-rule implementation is now functional but not migration-ready:
   symlink,
   and cache lifecycle;
 - commit `a2ed792a6` packs a production staging manifest and exercises the installed artifact plus TypeScript 7 bridge
-  from a disposable external consumer.
+  from a disposable external consumer;
+- commit `46ef12790` automates declaration preservation for function,
+  overload,
+  and call-signature mutation blocks through bundled re-exports;
+- commit `677498da6` covers duplicate package majors,
+  aliases,
+  subpaths,
+  and unresolved package metadata;
+- commit `7efe445aa` adds exact standard-library `Array<T>` to `ReadonlyArray<T>` suggestions;
+- commit `03a2a0618` caches exact-source direct effect scans after a workspace shadow run consumed CPU for more than ten
+  minutes without completing;
+- commit `b6dcba729` rejects inferred-project sentinels without poisoning later configured snapshots and skips non-enforced
+  or declaration inputs;
+- commit `42478177d` catalogs exact observational String,
+  identity-search,
+  membership,
+  `Error.isError`,
+  and imported `node:path` calls;
+- workflow `readonly-semantic-bridge.yml` passes Linux x64 and macOS arm64 host evidence.
+  Windows x64 remains in progress after its first run exposed missing filtered-install build-tool availability.
 
-Remaining gates include additional ownership-aware suggestions,
-package-catalog completion,
-path-case and required-platform runs,
-declaration-preservation automation,
+Remaining gates include required Windows x64 host evidence,
+additional package effects discovered during migration,
 and full publication acceptance.
 
 Verified package tasks:
@@ -108,8 +125,8 @@ Verified package tasks:
 - `mise run //packages/config/oxlint:lint:oxlint`.
 
 Next action:
-finish package-catalog and declaration-preservation acceptance,
-then run required platform probes before configuration migration.
+finish Windows x64 host evidence,
+then switch shared configuration and migrate active source contracts.
 
 ## Continuity contract
 
