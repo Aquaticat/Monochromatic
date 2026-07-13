@@ -44,6 +44,28 @@ export type TimeStrategy = BuiltinTimeStrategy | `sh:${string}`;
 //region Strategy functions
 
 /**
+ * Sums numeric values in one linear pass.
+ *
+ * @param values - Numeric values to total.
+ *
+ * @returns arithmetic total.
+ *
+ * @example
+ * ```ts
+ * sumValues([1, 2, 3]); // 6
+ * ```
+ */
+function sumValues(values: readonly number[],): number {
+  /**
+   * Running arithmetic total.
+   */
+  let sum = 0;
+  for (const value of values)
+    sum += value;
+  return sum;
+}
+
+/**
  * Computes the arithmetic mean of an array of numbers.
  *
  * @param values - Non-empty array of timestamps
@@ -56,19 +78,7 @@ export type TimeStrategy = BuiltinTimeStrategy | `sh:${string}`;
  * ```
  */
 function computeMean(values: readonly number[],): number {
-  /**
-   * Running total accumulated by the linear reduce below; final value divided by length to produce the mean.
-   */
-  const sum = values.reduce(
-    function add(
-      acc,
-      v,
-    ) {
-      return acc + v;
-    },
-    0,
-  );
-  return sum / values
+  return sumValues(values,) / values
     .length;
 }
 

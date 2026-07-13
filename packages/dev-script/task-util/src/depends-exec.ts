@@ -156,11 +156,11 @@ function dumpAndHandleError({
      * Re-typed thrown error so its captured subprocess fields can be dumped to the parent streams.
      */
     const subprocessError = error as {
-      stdout?: string;
-      stderr?: string;
-      exitCode?: number;
-      signalName?: string;
-      message?: string;
+      readonly stdout?: string;
+      readonly stderr?: string;
+      readonly exitCode?: number;
+      readonly signalName?: string;
+      readonly message?: string;
     };
 
     // Dump captured output so the user can see what happened
@@ -194,7 +194,7 @@ function dumpAndHandleError({
   // Non-subprocess error (e.g. command not found)
   console.error(
     `[task-depends] failed to execute command: ${
-      Error.isError(error,) ? error.message : String(error,)
+      Error.isError(error,) ? error.message : 'unknown non-Error value'
     }`,
   );
 

@@ -77,7 +77,9 @@ async function runStrategyCommand({
   /**
    * Space-separated stringified timestamps suitable for embedding in a `printf` argument list.
    */
-  const formattedValues = timestamps.map(String,)
+  const formattedValues = timestamps.map(function stringifyTimestamp(timestamp,): string {
+    return `${timestamp}`;
+  },)
     .join(' ',);
   // Use printf to pipe timestamps (one per line) into the strategy command via stdin
   /**

@@ -131,9 +131,9 @@ catch (error) {
       function isSubprocessError(
         candidate,
       ): candidate is {
-        exitCode?: number;
-        signalName?: string;
-        message: string;
+        readonly exitCode?: number;
+        readonly signalName?: string;
+        readonly message: string;
       } {
         return (candidate !== null)
           && ((typeof candidate) === 'object')

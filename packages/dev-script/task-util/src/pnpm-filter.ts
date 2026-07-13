@@ -58,6 +58,8 @@ type WriteFilteredOptions = {
  *
  * @param stream - Target writable stream
  *
+ * @mutates stream - Writes non-empty filtered output to stream.
+ *
  * @example
  * ```ts
  * writeFiltered({ raw: 'some output\n', stream: process.stdout });
