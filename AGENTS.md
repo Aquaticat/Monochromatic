@@ -132,6 +132,10 @@ GAP:
 Merge overlapping rules;
  remove superseded.
 
+EPR:
+ Naming or technology brainstorming that could benefit from ecosystem precedent:
+ research it before offering options.
+
 ### Proactivity calibration
 
 PX1:
