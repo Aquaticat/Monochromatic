@@ -21,6 +21,7 @@ import {
 } from './comment-text.ts';
 import type {
   ParsedDocComment,
+  ParsedMutatesBlock,
   ParsedParamBlock,
   ParsedReturnsBlock,
 } from './tsdoc-doc-model.ts';
@@ -47,6 +48,7 @@ const BLOCK_TAG_NAMES: ReadonlySet<string> = new Set([
   '@jsxRuntime',
   '@jsxFrag',
   '@jsxImportSource',
+  '@mutates',
   '@yields',
 ],);
 
@@ -58,6 +60,10 @@ type OpenSegment = {
    * Block tag including the `@`, e.g. `'@param'`.
    */
   readonly tag: string;
+  /**
+   * Zero-based opening-line offset from comment start.
+   */
+  readonly lineOffset: number;
   /**
    * Content fragments after the tag, one per contributing line.
    */
@@ -72,6 +78,10 @@ type Segment = {
    * Block tag including the `@`.
    */
   readonly tag: string;
+  /**
+   * Zero-based opening-line offset from comment start.
+   */
+  readonly lineOffset: number;
   /**
    * Joined content after the tag, across all the block's lines.
    */
@@ -181,7 +191,10 @@ function buildSegments(normalizedLines: readonly NormalizedLine[],): readonly Se
    */
   const segments: OpenSegment[] = [];
 
-  for (const line of normalizedLines) {
+  normalizedLines.forEach(function collectSegment(
+    line,
+    lineOffset,
+  ): void {
     if (!line.inFence) {
       /**
        * Leading tag of the line, or {@link NO_TAG} when the line is untagged.
@@ -190,10 +203,11 @@ function buildSegments(normalizedLines: readonly NormalizedLine[],): readonly Se
       if (((typeof tag) === 'string') && BLOCK_TAG_NAMES.has(tag,)) {
         segments.push({
           tag,
+          lineOffset,
           parts: [line.text
             .slice(tag.length,),],
         },);
-        continue;
+        return;
       }
     }
     /**
@@ -203,12 +217,13 @@ function buildSegments(normalizedLines: readonly NormalizedLine[],): readonly Se
     if (last !== undefined)
       last.parts
         .push(line.text,);
-  }
+  },);
 
   return segments
     .map(function finalize(segment,): Segment {
       return {
         tag: segment.tag,
+        lineOffset: segment.lineOffset,
         text: segment.parts
           .join('\n',),
       };
@@ -317,6 +332,20 @@ export function splitDocComment({
     },);
 
   /**
+   * Parsed `@mutates` blocks in source order.
+   */
+  const mutatesBlocks = segments
+    .filter(function isMutates(segment,): boolean {
+      return segment.tag === '@mutates';
+    },)
+    .map(function toMutatesBlock(segment,): ParsedMutatesBlock {
+      return {
+        ...parseParamSegment(segment.text,),
+        lineOffset: segment.lineOffset,
+      };
+    },);
+
+  /**
    * First `@returns` segment, or undefined when none is present.
    */
   const returnsSegment = segments.find(function isReturns(segment,): boolean {
@@ -332,6 +361,7 @@ export function splitDocComment({
 
   return {
     params: { blocks, },
+    mutates: { blocks: mutatesBlocks, },
     ...returns,
     hasExampleTag: presence.example,
     hasInheritDocTag: presence.inheritDoc,

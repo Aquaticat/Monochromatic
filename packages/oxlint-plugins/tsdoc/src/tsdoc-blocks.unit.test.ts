@@ -131,10 +131,12 @@ await describe({
               {
                 parameterName: 'values',
                 hasDescription: true,
+                lineOffset: 1,
               },
               {
                 parameterName: 'cache',
                 hasDescription: true,
+                lineOffset: 3,
               },
             ],);
           },
@@ -154,10 +156,12 @@ await describe({
               {
                 parameterName: '',
                 hasDescription: true,
+                lineOffset: 1,
               },
               {
                 parameterName: 'values',
                 hasDescription: false,
+                lineOffset: 3,
               },
             ],);
           },

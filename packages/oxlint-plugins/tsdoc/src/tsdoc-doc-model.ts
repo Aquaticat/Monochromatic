@@ -26,6 +26,32 @@ export type ParsedParamBlock = {
 };
 
 /**
+ * One documented `@mutates` block reduced to its target and rationale presence.
+ *
+ * @example
+ * ```ts
+ * const mutation: ParsedMutatesBlock = {
+ *   parameterName: 'cache',
+ *   hasDescription: true,
+ * };
+ * ```
+ */
+export type ParsedMutatesBlock = {
+  /**
+   * Parameter target after `@mutates`; empty when tag omits target.
+   */
+  readonly parameterName: string;
+  /**
+   * True when block has non-whitespace rationale after target.
+   */
+  readonly hasDescription: boolean;
+  /**
+   * Zero-based tag-line offset from comment start.
+   */
+  readonly lineOffset: number;
+};
+
+/**
  * The `@returns` block reduced to whether it carries a description.
  */
 export type ParsedReturnsBlock = {
@@ -47,6 +73,15 @@ export type ParsedDocComment = {
      * Param blocks; order matches the function-signature comparison.
      */
     readonly blocks: readonly ParsedParamBlock[];
+  };
+  /**
+   * Documented mutation contracts in source order.
+   */
+  readonly mutates: {
+    /**
+     * Mutation blocks consumed by grammar and semantic verification.
+     */
+    readonly blocks: readonly ParsedMutatesBlock[];
   };
   /**
    * Parsed `@returns` block, absent when the comment has none.

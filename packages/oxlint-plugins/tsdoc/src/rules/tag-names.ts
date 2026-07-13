@@ -66,10 +66,11 @@ const STANDARD_TSDOC_TAGS: readonly string[] = [
 ];
 
 /**
- * Valid TSDoc tag names: the standard set plus the plugin's custom `@yields`.
+ * Valid TSDoc tag names: standard set plus project `@mutates` and compatibility `@yields`.
  */
 const VALID_TSDOC_TAGS: ReadonlySet<string> = new Set([
   ...STANDARD_TSDOC_TAGS,
+  '@mutates',
   '@yields',
 ],);
 

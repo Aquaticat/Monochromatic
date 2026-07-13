@@ -370,9 +370,9 @@ export type CreateFunctionTsdocVisitorParams = {
  * Creates a visitor for function-like nodes that have TSDoc comments, parsed
  * via {@link parseTsdocForNode}.
  *
- * Covers FunctionDeclaration, FunctionExpression, ArrowFunctionExpression,
- * and MethodDefinition by default. Callers whose rule cannot apply to arrow
- * functions can pass `includeArrowFunctions: false`.
+ * Covers runtime callables and TypeScript signature nodes by default.
+ * Callers whose rule cannot apply to arrow functions can pass
+ * `includeArrowFunctions: false`.
  *
  * @param params - rule context, arrow-function toggle, and parsed-comment handler
  *
@@ -435,6 +435,12 @@ export function createFunctionTsdocVisitor(
       ? { ArrowFunctionExpression: check, }
       : {},
     MethodDefinition: check,
+    TSAbstractMethodDefinition: check,
+    TSDeclareFunction: check,
+    TSFunctionType: check,
+    TSMethodSignature: check,
+    TSCallSignatureDeclaration: check,
+    TSConstructSignatureDeclaration: check,
   } as VisitorWithHooks;
   return visitor;
 }

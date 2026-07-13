@@ -3,6 +3,7 @@ import {
   type Plugin,
 } from '@oxlint/plugins';
 
+import { checkMutates, } from './rules/mutates.ts';
 import {
   checkParamNames,
   requireParam,
@@ -84,6 +85,10 @@ const plugin: Plugin = eslintCompatPlugin({
     'require-param-name': requireParamName,
     'require-param-description': requireParamDescription,
     //endregion Parameter documentation
+
+    //region Mutation contracts
+    'check-mutates': checkMutates,
+    //endregion Mutation contracts
 
     //region Return documentation
     'require-returns': requireReturns,

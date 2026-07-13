@@ -72,6 +72,9 @@ export const tsdocRules: DummyRuleMap = {
   // @param tags should include a description.
   'tsdoc/require-param-description': 'warn',
 
+  // @mutates targets must name one callable parameter exactly once and include rationale.
+  'tsdoc/check-mutates': 'error',
+
   // Functions that return a value need @returns. Skips void, never,
   // Promise<void>, Promise<never> return types, constructors, and setters.
   'tsdoc/require-returns': 'warn',

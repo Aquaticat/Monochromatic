@@ -103,6 +103,47 @@ development.
 - **require-param-description**:
    requires descriptions on `@param` tags
 
+### Mutation contracts
+
+- **check-mutates**:
+  validates each project-specific `@mutates parameterName - description` block;
+  reports missing targets,
+  unknown callable parameters,
+  duplicate targets,
+  and missing descriptions;
+  accepts named parameters and destructured binding names
+
+`@mutates` means that a callable may cause caller-observable state changes through state reachable from the named
+parameter.
+It is a repeatable custom block tag,
+not a standard TSDoc tag.
+This plugin recognizes and validates the tag directly.
+
+External tools using [`@microsoft/tsdoc`][microsoft-tsdoc] must register it before parsing comments:
+
+```typescript
+import {
+  TSDocConfiguration,
+  TSDocTagDefinition,
+  TSDocTagSyntaxKind,
+} from '@microsoft/tsdoc';
+
+const configuration = new TSDocConfiguration();
+const mutatesTag = new TSDocTagDefinition({
+  tagName: '@mutates',
+  syntaxKind: TSDocTagSyntaxKind.BlockTag,
+  allowMultiple: true,
+});
+configuration.addTagDefinition(mutatesTag);
+configuration.setSupportForTag(mutatesTag, true);
+```
+
+Registration makes the reference parser accept repeatable blocks.
+Consumers must preserve the block text and interpret the first token as the parameter target followed by a hyphen and
+author-written rationale.
+The API shape is verified against `@microsoft/tsdoc` 0.16.0's
+[`TSDocConfiguration`][tsdoc-configuration] and [`TSDocTagDefinition`][tsdoc-tag-definition] declarations.
+
 ### Return documentation
 
 - **require-returns**:
@@ -153,7 +194,9 @@ Files matching these extensions are skipped by all rules:
    TSDoc block parsing,
    and parse-result assembly
 - `tsdoc-blocks.ts`:
-   in-house scanner producing the parsed `@param`/`@returns` model
+   in-house scanner producing parsed `@param`,
+  `@mutates`,
+  and `@returns` models
 - `tsdoc-params.ts`,
   `tsdoc-destructured.ts`,
   and `tsdoc-params-returns.ts`:
@@ -174,9 +217,10 @@ Files matching these extensions are skipped by all rules:
 - `rules/require-tsdoc.ts` and `rules/require-example.ts`:
    presence rules for declarations and exported function examples
 - `rules/params.ts`,
+  `rules/mutates.ts`,
   `rules/returns.ts`,
   and `rules/yields.ts`:
-   function documentation rules
+   callable documentation rules
 - `rules/structural.ts` and `rules/tag-validation.ts`:
    aggregate entry points for structural and tag-validation rules
 - `rules/asterisk-validation.ts`,
@@ -200,3 +244,7 @@ mise run //packages/oxlint-plugins/tsdoc:test:unit
 ```
 
 Test fixtures live in `packages/test-fixture/oxlint-tsdoc/src/` with `valid/` and `invalid/` directories.
+
+[microsoft-tsdoc]: https://tsdoc.org/pages/packages/tsdoc/
+[tsdoc-configuration]: https://cdn.jsdelivr.net/npm/@microsoft/tsdoc@0.16.0/lib/configuration/TSDocConfiguration.d.ts
+[tsdoc-tag-definition]: https://cdn.jsdelivr.net/npm/@microsoft/tsdoc@0.16.0/lib/configuration/TSDocTagDefinition.d.ts
