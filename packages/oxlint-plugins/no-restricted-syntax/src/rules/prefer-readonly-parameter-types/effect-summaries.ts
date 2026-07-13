@@ -98,6 +98,97 @@ function propagateCalleeIndexes({
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable provenance map is intentional fixed-point accumulator. */
+/**
+ * Adds opaque provenance facts for one caller parameter.
+ *
+ * @param target - Caller provenance map receiving facts.
+ *
+ * @param parameterIndex - Caller parameter affected by opaque boundary.
+ *
+ * @param provenanceFacts - Callee provenance facts to propagate.
+ *
+ * @returns whether target changed.
+ *
+ * @mutates target - Adds previously unseen provenance facts.
+ */
+function addOpaqueProvenance({
+  target,
+  parameterIndex,
+  provenanceFacts,
+}: {
+  readonly target: Map<number, Set<string>>;
+  readonly parameterIndex: number | typeof PARAMETER_INDEX_UNAVAILABLE;
+  readonly provenanceFacts: ReadonlySet<string>;
+},): boolean {
+  if (parameterIndex === PARAMETER_INDEX_UNAVAILABLE)
+    return false;
+  /**
+   * Existing caller provenance or new accumulator.
+   */
+  const callerFacts = target.get(parameterIndex,) ?? new Set<string>();
+  /**
+   * Size before union detects fixed-point progress.
+   */
+  const priorSize = callerFacts.size;
+  provenanceFacts.forEach(function add(provenance,): void {
+    callerFacts.add(provenance,);
+  },);
+  target.set(
+    parameterIndex,
+    callerFacts,
+  );
+  return callerFacts.size !== priorSize;
+}
+
+/**
+ * Maps opaque provenance through one owned call edge.
+ *
+ * @param summary - Caller summary receiving provenance.
+ *
+ * @param calleeSummary - Callee summary providing opaque facts.
+ *
+ * @param edge - Caller-to-callee argument mapping.
+ *
+ * @returns whether caller provenance changed.
+ *
+ * @mutates summary - Adds transitive opaque provenance.
+ */
+function propagateOpaqueProvenance({
+  summary,
+  calleeSummary,
+  edge,
+}: {
+  readonly summary: MutableEffectSummary;
+  readonly calleeSummary: MutableEffectSummary;
+  readonly edge: CallEdge;
+},): boolean {
+  return [...calleeSummary.opaque,].reduce(
+    function propagate(
+      changed,
+      calleeIndex,
+    ): boolean {
+    /**
+     * Caller parameter passed to opaque callee parameter.
+     */
+    const callerIndex = edge.arguments[calleeIndex] ?? PARAMETER_INDEX_UNAVAILABLE;
+    /**
+     * Provenance facts attached to opaque callee parameter.
+     */
+    const provenanceFacts = calleeSummary.opaqueProvenanceByParameter
+      .get(calleeIndex,)
+      ?? new Set<string>();
+    return addOpaqueProvenance({
+      target: summary.opaqueProvenanceByParameter,
+      parameterIndex: callerIndex,
+      provenanceFacts,
+    },) || changed;
+  },
+    false,
+  );
+}
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
+
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable summary is intentional fixed-point accumulator. */
 /**
  * Propagates callback relation through one owned call edge.
@@ -161,14 +252,30 @@ function propagateCallbackRelations({
     /**
      * Whether opaque propagation changed caller summary.
      */
-    const opaqueChanged = callbackSummary.opaque
-      .has(relation.callbackArgumentIndex,)
+    const callbackArgumentOpaque = callbackSummary.opaque
+      .has(relation.callbackArgumentIndex,);
+    /**
+     * Whether opaque propagation changed caller summary.
+     */
+    const opaqueChanged = callbackArgumentOpaque
       && addEffectIndex({
         target: summary.opaque,
         value: sourceCallerIndex,
       },);
+    /**
+     * Whether callback opaque provenance changed caller summary.
+     */
+    const opaqueProvenanceChanged = callbackArgumentOpaque
+      && addOpaqueProvenance({
+        target: summary.opaqueProvenanceByParameter,
+        parameterIndex: sourceCallerIndex,
+        provenanceFacts: callbackSummary.opaqueProvenanceByParameter
+          .get(relation.callbackArgumentIndex,)
+          ?? new Set<string>(),
+      },);
     return changed || mutationChanged
-      || opaqueChanged;
+      || opaqueChanged
+      || opaqueProvenanceChanged;
   },
       false,
     );
@@ -223,6 +330,11 @@ function propagateEffects(
           target: summary.opaque,
           edge,
           calleeIndexes: calleeSummary.opaque,
+        },) || state.changed;
+        state.changed = propagateOpaqueProvenance({
+          summary,
+          calleeSummary,
+          edge,
         },) || state.changed;
         state.changed = propagateCallbackRelations({
           summaries,

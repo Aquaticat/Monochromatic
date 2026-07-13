@@ -269,6 +269,17 @@ export function opaqueSemanticEffect(opaqueState: { readonly value: string; },):
 }
 
 /**
+ * Propagates opaque boundary through owned helper call.
+ *
+ * @param opaqueState - State forwarded to opaque helper.
+ */
+export function transitiveOpaqueSemanticEffect(
+  opaqueState: { readonly value: string; },
+): string {
+  return opaqueSemanticEffect(opaqueState,);
+}
+
+/**
  * Defines but never invokes or exposes nested mutation closure.
  *
  * @param closureState - State captured only by dead local closure.

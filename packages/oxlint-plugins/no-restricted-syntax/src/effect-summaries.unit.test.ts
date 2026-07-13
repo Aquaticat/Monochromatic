@@ -51,6 +51,7 @@ await describe({
           'destructuredAliasSemanticEffect',
           'destructuredParameterSemanticEffect',
           'opaqueSemanticEffect',
+          'transitiveOpaqueSemanticEffect',
           'unusedClosureSemanticEffect',
           'calledClosureSemanticEffect',
           'returnedClosureSemanticEffect',
@@ -69,6 +70,22 @@ await describe({
             opaque: [...summary.opaqueParameterIndexes,],
           };
         },);
+        /** Transitive opaque callable declaration. */
+        const transitiveNameNode = session.nodeAtOffset(
+          SOURCE.indexOf('transitiveOpaqueSemanticEffect',),
+        );
+        /** Parent function declaration for transitive opaque callable. */
+        const transitiveDeclaration = transitiveNameNode.parent;
+        if (!isFunctionLikeDeclaration(transitiveDeclaration,))
+          throw new Error('Expected transitive opaque function declaration.',);
+        /** Transitive opaque callable summary retaining originating boundary. */
+        const transitiveSummary = index.get(transitiveDeclaration,);
+        if (transitiveSummary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected transitive opaque summary.',);
+        /** Opaque boundary names propagated to wrapper parameter. */
+        const transitiveProvenance = [
+          ...transitiveSummary.opaqueProvenanceByParameter.get(0,) ?? [],
+        ];
         closeSemanticBridge();
 
         expect(effects,).toEqual([
@@ -123,6 +140,11 @@ await describe({
             opaque: [0,],
           },
           {
+            functionName: 'transitiveOpaqueSemanticEffect',
+            mutated: [],
+            opaque: [0,],
+          },
+          {
             functionName: 'unusedClosureSemanticEffect',
             mutated: [],
             opaque: [],
@@ -143,6 +165,7 @@ await describe({
             opaque: [],
           },
         ],);
+        expect(transitiveProvenance,).toEqual(['JSON.stringify',],);
       },
     },),
   ],

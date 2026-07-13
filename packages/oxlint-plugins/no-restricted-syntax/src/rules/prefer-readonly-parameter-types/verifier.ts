@@ -290,10 +290,22 @@ export function verifyReadonlyCallable({
       .has(parameterIndex,);
 
     if (opaque) {
+      /**
+       * Sorted upstream boundary names retained by effect propagation.
+       */
+      const boundaries = [
+        ...effectSummary.opaqueProvenanceByParameter
+          .get(parameterIndex,)
+          ?? [],
+      ].toSorted()
+        .join(', ',);
       context.report({
         loc,
         messageId: 'opaqueEffect',
-        data: { parameterName, },
+        data: {
+          parameterName,
+          boundaries: boundaries === '' ? 'unresolved callable' : boundaries,
+        },
       },);
       return;
     }

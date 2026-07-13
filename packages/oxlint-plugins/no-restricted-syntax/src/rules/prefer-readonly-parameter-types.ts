@@ -51,7 +51,7 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
       shouldBeReadonly: 'Parameter "{{parameterName}}" should be readonly: {{reason}}.',
       missingMutatesTag: 'Parameter "{{parameterName}}" is mutated but lacks @mutates contract.',
       staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
-      opaqueEffect: 'Parameter "{{parameterName}}" crosses an opaque effect boundary; use a verified local adapter.',
+      opaqueEffect: 'Parameter "{{parameterName}}" crosses opaque effect boundary "{{boundaries}}"; use a verified local adapter.',
       dishonestReadonly: 'Parameter "{{parameterName}}" claims readonly semantics dishonestly: {{reason}}.',
       inconsistentMutatesContract: 'Mutation contracts disagree across callable signatures.',
       semanticBridgeUnavailable: 'Readonly semantic analysis unavailable: {{reason}}.',
