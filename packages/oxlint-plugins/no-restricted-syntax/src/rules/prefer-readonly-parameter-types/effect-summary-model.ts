@@ -53,9 +53,8 @@ export type CallEdge = {
  * Mutable internal summary while fixed point is computed.
  */
 export type MutableEffectSummary = {
-  readonly parameterSymbolIds: readonly (
-    number | typeof PARAMETER_INDEX_UNAVAILABLE
-  )[];
+  readonly parameterCount: number;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
   readonly directMutated: Set<number>;
   readonly directOpaque: Set<number>;
   readonly mutated: Set<number>;

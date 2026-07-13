@@ -45,6 +45,9 @@ await describe({
           'crossFileSemanticEffect',
           'callbackSemanticEffect',
           'noSemanticEffect',
+          'aliasSemanticEffect',
+          'destructuredAliasSemanticEffect',
+          'destructuredParameterSemanticEffect',
         ].map(function summaryFor(functionName,) {
           const nameNode = session.nodeAtOffset(SOURCE.indexOf(functionName,),);
           const declaration = nameNode.parent;
@@ -80,6 +83,21 @@ await describe({
           {
             functionName: 'noSemanticEffect',
             mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'aliasSemanticEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'destructuredAliasSemanticEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'destructuredParameterSemanticEffect',
+            mutated: [0,],
             opaque: [],
           },
         ],);

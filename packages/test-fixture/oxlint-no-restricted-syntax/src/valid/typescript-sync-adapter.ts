@@ -145,3 +145,36 @@ export function callbackSemanticEffect(callbackState: { value: string; },): void
 export function noSemanticEffect(readOnlyController: AbortController,): AbortSignal {
   return readOnlyController.signal;
 }
+
+/**
+ * Mutates parameter through local alias.
+ *
+ * @param aliasState - State assigned to local alias.
+ */
+export function aliasSemanticEffect(aliasState: { value: string; },): void {
+  const localAlias = aliasState;
+  localAlias.value = 'changed';
+}
+
+/**
+ * Mutates nested parameter state through destructured alias.
+ *
+ * @param wrappedState - Wrapper destructured before nested write.
+ */
+export function destructuredAliasSemanticEffect(
+  wrappedState: { nested: { value: string; }; },
+): void {
+  const { nested, } = wrappedState;
+  nested.value = 'changed';
+}
+
+/**
+ * Mutates nested state through destructured parameter binding.
+ *
+ * @param anonymous - Wrapper destructured at parameter boundary.
+ */
+export function destructuredParameterSemanticEffect(
+  { nested, }: { nested: { value: string; }; },
+): void {
+  nested.value = 'changed';
+}

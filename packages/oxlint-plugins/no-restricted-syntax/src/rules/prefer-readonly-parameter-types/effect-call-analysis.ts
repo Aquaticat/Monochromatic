@@ -42,7 +42,7 @@ import {
  *
  * @param checker - TypeScript checker resolving root symbol.
  *
- * @param parameterSymbolIds - Callable parameter symbols by index.
+ * @param bindingOriginBySymbolId - Local binding symbols mapped to source parameters.
  *
  * @param node - Expression whose root may be parameter.
  *
@@ -50,13 +50,11 @@ import {
  */
 function parameterIndex({
   checker,
-  parameterSymbolIds,
+  bindingOriginBySymbolId,
   node,
 }: {
   readonly checker: Checker;
-  readonly parameterSymbolIds: readonly (
-    number | typeof PARAMETER_INDEX_UNAVAILABLE
-  )[];
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
   readonly node: Node;
 },): number | typeof PARAMETER_INDEX_UNAVAILABLE {
   /**
@@ -71,11 +69,8 @@ function parameterIndex({
   const symbol = checker.getSymbolAtLocation(root,);
   if (symbol === undefined)
     return PARAMETER_INDEX_UNAVAILABLE;
-  /**
-   * Matching parameter index, or negative lookup sentinel.
-   */
-  const index = parameterSymbolIds.indexOf(symbol.id,);
-  return index === (-1) ? PARAMETER_INDEX_UNAVAILABLE : index;
+  return bindingOriginBySymbolId.get(symbol.id,)
+    ?? PARAMETER_INDEX_UNAVAILABLE;
 }
 
 /**
@@ -128,7 +123,7 @@ function callableDeclaration({
  *
  * @param checker - TypeScript checker resolving call receiver.
  *
- * @param parameterSymbolIds - Current callable parameters by symbol.
+ * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
  *
  * @param call - Call expression to classify.
  *
@@ -136,21 +131,19 @@ function callableDeclaration({
  *
  * @example
  * ```ts
- * inspectEffectCall({ project, checker, parameterSymbolIds, call, summary });
+ * inspectEffectCall({ project, checker, bindingOriginBySymbolId, call, summary });
  * ```
  */
 export function inspectEffectCall({
   project,
   checker,
-  parameterSymbolIds,
+  bindingOriginBySymbolId,
   call,
   summary,
 }: {
   readonly project: Project;
   readonly checker: Checker;
-  readonly parameterSymbolIds: readonly (
-    number | typeof PARAMETER_INDEX_UNAVAILABLE
-  )[];
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
   readonly call: CallExpression;
   readonly summary: MutableEffectSummary;
 },): void {
@@ -160,7 +153,7 @@ export function inspectEffectCall({
   const callbackParameterIndex = isIdentifier(call.expression,)
     ? parameterIndex({
       checker,
-      parameterSymbolIds,
+      bindingOriginBySymbolId,
       node: call.expression,
     },)
     : PARAMETER_INDEX_UNAVAILABLE;
@@ -175,7 +168,7 @@ export function inspectEffectCall({
        */
       const sourceParameterIndex = parameterIndex({
         checker,
-        parameterSymbolIds,
+        bindingOriginBySymbolId,
         node: argument,
       },);
       if (sourceParameterIndex !== PARAMETER_INDEX_UNAVAILABLE) {
@@ -201,7 +194,7 @@ export function inspectEffectCall({
      */
     const receiverParameterIndex = parameterIndex({
       checker,
-      parameterSymbolIds,
+      bindingOriginBySymbolId,
       node: receiver,
     },);
     /**
@@ -248,7 +241,7 @@ export function inspectEffectCall({
               ? PARAMETER_INDEX_UNAVAILABLE
               : parameterIndex({
                 checker,
-                parameterSymbolIds,
+                bindingOriginBySymbolId,
                 node: argument,
               },),
           },);
@@ -285,7 +278,7 @@ export function inspectEffectCall({
     .map(function argumentIndex(argument,) {
     return parameterIndex({
       checker,
-      parameterSymbolIds,
+      bindingOriginBySymbolId,
       node: argument,
     },);
   },);
@@ -316,7 +309,7 @@ export function inspectEffectCall({
     value: isPropertyAccessExpression(call.expression,)
       ? parameterIndex({
         checker,
-        parameterSymbolIds,
+        bindingOriginBySymbolId,
         node: call.expression
           .expression,
       },)

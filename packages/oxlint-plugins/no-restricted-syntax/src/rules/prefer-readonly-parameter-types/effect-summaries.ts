@@ -190,9 +190,7 @@ function propagateEffects(
     totalCount,
     summary,
   ): number {
-    return totalCount + (summary.parameterSymbolIds
-      .length
-      * 2);
+    return totalCount + (summary.parameterCount * 2);
   },
     0,
   );
