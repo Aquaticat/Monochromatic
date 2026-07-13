@@ -742,9 +742,46 @@ re-exports,
 and declaration comments to prove targets and descriptions survive intact.
 Published rule and config packages must expose the custom-tag contract in their READMEs.
 
+### Chosen semantic bridge
+
+Use TypeScript 7's project-native synchronous API through `typescript/unstable/sync`.
+Do not install or fall back to TypeScript 6.
+The repository accepts the API's unstable compatibility status in exchange for matching its installed TypeScript 7
+compiler semantics.
+
+The rule will keep one process-scoped `API` client,
+open projects through snapshots,
+provide unsaved current-file text through virtual filesystem callbacks,
+and invalidate changed files with `updateSnapshot`.
+Oxlint's synchronous JavaScript-rule visitors require the synchronous TypeScript API rather than its asynchronous
+counterpart.
+
+The disposable Oxlint-boundary prototype proved all of the following with installed TypeScript 7.0.2:
+
+- imported aliases,
+  generics,
+  unions,
+  overloads,
+  function types,
+  call signatures,
+  and method signatures resolve from the TypeScript project;
+- source offsets from the TypeScript tree produce exact Oxlint diagnostic spans;
+- explicitly readonly types and recursively mapped `DeepReadonly` projections can be distinguished from mutable
+  types;
+- direct,
+  cross-file transitive,
+  and higher-order callback mutation summaries reach the owning parameter;
+- a virtual filesystem overlay changes queried parameter types in the next snapshot without writing source to disk.
+
+Readonly detection must isolate the unstable detail behind a tested adapter.
+TypeScript 7.0.2 exposes transient mapped-property readonly state through `Symbol.checkFlags`,
+whose upstream `CheckFlagsReadonly` value is `1 << 3` but whose enum is not exported.
+Pin adapter contract tests to the installed TypeScript version and fail closed with `opaqueEffect` or a dedicated
+semantic-bridge diagnostic when the expected capability disappears.
+
 ### Deferred readonly projection outcome
 
-The exact projection mechanism remains evidence-driven:
+The exact authoring mechanism remains evidence-driven:
 existing `ReadonlyDeep`,
 a project-owned utility,
 or synthesized structural syntax must be compared against brands,
@@ -754,6 +791,7 @@ capabilities,
 recursive types,
 conditional types,
 and generic variance before selection.
+The chosen TypeScript 7 bridge can evaluate each candidate without selecting its source-level spelling in advance.
 
 ### Grilling status
 
