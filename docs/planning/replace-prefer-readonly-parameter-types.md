@@ -108,7 +108,13 @@ The semantic-rule implementation is now functional but not migration-ready:
   `Error.isError`,
   and imported `node:path` calls;
 - workflow `readonly-semantic-bridge.yml` passes Linux x64 and macOS arm64 host evidence.
-  Windows x64 remains in progress after its first run exposed missing filtered-install build-tool availability.
+  Windows x64 remains in progress after its first runs exposed build-tool and Node activation gaps;
+- a sustained local bridge probe sampled resident memory after forced collection across 2,000 post-warmup overlay opens.
+  Cache stats remained at one overlay and one project root.
+  Resident memory reached 102,727,680 bytes during the first sampled phase and rose by 1,310,720 bytes during the next
+  1,000 opens,
+  reaching 104,038,400 bytes rather than retaining each snapshot;
+- commit `fb9fd3ab5` adds Windows-host acceptance for noncanonical source-path casing.
 
 Remaining gates include required Windows x64 host evidence,
 additional package effects discovered during migration,
