@@ -307,6 +307,25 @@ export function primitiveArraySortObservationEffect(
 }
 
 /**
+ * Encodes primitive text without changing TextEncoder receiver.
+ *
+ * @param encoder - Stateless encoder reused across calls.
+ *
+ * @param text - Primitive text converted to new bytes.
+ *
+ * @returns newly allocated UTF-8 bytes.
+ */
+export function textEncoderObservationEffect({
+  encoder,
+  text,
+}: {
+  readonly encoder: Readonly<TextEncoder>;
+  readonly text: string;
+},): Uint8Array {
+  return encoder.encode(text,);
+}
+
+/**
  * Keeps object-element sorting conservative until callback presence is specialized.
  *
  * @param values - Object values whose sort callback may expose state.

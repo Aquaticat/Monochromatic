@@ -146,6 +146,13 @@ function receiverEffect({
  * DOM receiver effects audited against TypeScript 7 `lib.dom.d.ts` declarations.
  */
 const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  {
+    provenance: { kind: 'dom', },
+    ownerType: 'TextEncoder',
+    member: 'encode',
+    targets: [],
+    evidence: 'WHATWG Encoding Standard commit a985b62a TextEncoder.encode creates a new Uint8Array from primitive input',
+  },
   receiverEffect({
     provenance: { kind: 'dom', },
     ownerType: 'AbortController',

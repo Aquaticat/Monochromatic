@@ -159,6 +159,7 @@ await describe({
         const queries = [
           'values.add',
           'controller.abort',
+          'encoder.encode',
           'Array.isArray',
           'Object.is',
           'inputs.text.trim',
@@ -191,6 +192,11 @@ await describe({
             provenance: { kind: 'dom', },
             ownerType: 'AbortController',
             member: 'abort',
+          },
+          {
+            provenance: { kind: 'dom', },
+            ownerType: 'TextEncoder',
+            member: 'encode',
           },
           {
             provenance: { kind: 'ecmascript', },

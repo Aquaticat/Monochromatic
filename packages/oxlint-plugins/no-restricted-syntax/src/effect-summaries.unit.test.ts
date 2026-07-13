@@ -56,6 +56,7 @@ await describe({
           'noSemanticEffect',
           'observationalIntrinsicEffect',
           'primitiveArraySortObservationEffect',
+          'textEncoderObservationEffect',
           'objectArraySortOpaqueEffect',
           'observationalValueEffects',
           'pathObservationEffect',
@@ -161,6 +162,11 @@ await describe({
           },
           {
             functionName: 'primitiveArraySortObservationEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'textEncoderObservationEffect',
             mutated: [],
             opaque: [],
           },
