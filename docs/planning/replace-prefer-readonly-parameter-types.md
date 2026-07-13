@@ -39,7 +39,7 @@ The semantic-bridge foundation is complete:
   commit `a53861211` names both callbacks and return types by overlay and delegation behavior,
   and commit `07d2c6934` records that naming standard in `XNC`.
 
-The semantic-rule implementation is now functional but not migration-ready:
+The semantic-rule implementation is functional and shared-configuration migration is in progress:
 
 - commits `d2d6b8521` and `c76f39219` added exact intrinsic lookup and recursive readonly classification;
 - commit `353f2fd9a` added direct,
@@ -118,11 +118,25 @@ The semantic-rule implementation is now functional but not migration-ready:
   Resident memory reached 102,727,680 bytes during the first sampled phase and rose by 1,310,720 bytes during the next
   1,000 opens,
   reaching 104,038,400 bytes rather than retaining each snapshot;
-- commit `fb9fd3ab5` adds Windows-host acceptance for noncanonical source-path casing.
+- commit `fb9fd3ab5` adds Windows-host acceptance for noncanonical source-path casing;
+- commit `ccb5bfd95` enables replacement and no-disable rules in shared configuration,
+  disables native rule explicitly,
+  and adds agreed declaration and test exemptions;
+- commit `2d0bb636a` removes retired native-rule directives from active source without disturbing mixed directives;
+- commit `4eeb356b5` excludes primitive-only values from opaque caller-state effects;
+- commit `8668d4363` adds explicit callback relations for Array and collection operations;
+- commit `b4704a308` audits primitive-element Array `join` and exact Node `Socket.write` mutation;
+- commit `d23f96871` rediscovers nested configured projects when cached containing project omits current source;
+- commit `026f7ae08` introduces exact `ForeignBorrowed` ownership marker for externally dictated mutable handles,
+  migrates plugin's foreign Oxlint boundaries,
+  audits TypeScript 7 and Oxlint package operations,
+  and propagates destructured object-literal call effects by declared mutation target;
+- `packages/dev-script/task-util` and `packages/oxlint-plugins/no-restricted-syntax` now pass their package Oxlint tasks
+  under replacement rule with one JavaScript-plugin worker.
 
-Remaining gates include required Windows x64 host evidence,
-additional package effects discovered during migration,
-and full publication acceptance.
+Remaining gates are active workspace source migration,
+migrated consumer acceptance,
+and final publication and workspace verification.
 
 Verified package tasks:
 
@@ -132,11 +146,15 @@ Verified package tasks:
 - `mise run //packages/oxlint-plugins/tsdoc:lint:types`;
 - `mise run //packages/oxlint-plugins/tsdoc:lint:oxlint`;
 - `mise run //packages/config/oxlint:lint:types`;
-- `mise run //packages/config/oxlint:lint:oxlint`.
+- `mise run //packages/config/oxlint:lint:oxlint`;
+- `mise run //packages/dev-script/task-util:lint:oxlint`;
+- `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types`;
+- `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint`;
+- `mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit`.
 
 Next action:
-finish Windows x64 host evidence,
-then switch shared configuration and migrate active source contracts.
+classify latest one-worker workspace sweep,
+then migrate remaining active package contracts and run consumer acceptance.
 
 ## Continuity contract
 
