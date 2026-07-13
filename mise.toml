@@ -1166,6 +1166,7 @@ _.path = [
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/git-policies/cli/node_modules/.bin",
   "packages/git-policies/repository/node_modules/.bin",
+  "packages/kwin/key-helper/node_modules/.bin",
   "packages/mcp/mvm/node_modules/.bin",
   "packages/module/pnpm-workspace-catalog/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
