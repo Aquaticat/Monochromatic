@@ -79,7 +79,51 @@ getIndexInfosOfType(type: Type): readonly IndexInfo[];
 ```
 
 The API client's virtual filesystem callback lets an Oxlint rule overlay `context.sourceCode.text`.
-Passing the path through `fileChanges.changed` produces a new snapshot without writing editor text to disk.
+Passing the path through `fileChanges.changed` produces a new snapshot without writing editor text to disk when the
+configured project,
+rather than a persistent API-open-file association,
+owns later snapshots.
+
+The production adapter initially used `openFiles` for every-file persistence.
+A built-artifact test changed `SemanticFixtureBox<string>` to `Readonly<SemanticFixtureBox<string>>` in the virtual
+overlay,
+but the next snapshot still returned `SemanticFixtureBox<string>`.
+`clearSourceFileCache()` did not change that result.
+
+At the audited TypeScript Go revision,
+`internal/project/projectcollectionbuilder.go:180-205` shows that `CloseFiles` decrements or deletes an API-open-file
+association and `OpenFiles` increments it:
+
+```go
+if apiRequest.CloseFiles != nil {
+    for path := range apiRequest.CloseFiles.Keys() {
+        if entry, ok := b.apiState.openFiles[path]; ok {
+            if entry.refCount > 1 {
+                entry.refCount--
+                b.apiState.openFiles[path] = entry
+            } else {
+                delete(b.apiState.openFiles, path)
+            }
+        }
+    }
+}
+
+if apiRequest.OpenFiles != nil {
+    for uri := range apiRequest.OpenFiles.Keys() {
+        fileName := uri.FileName()
+        path := b.toPath(fileName)
+        // ...
+        entry.refCount++
+        b.apiState.openFiles[path] = entry
+    }
+}
+```
+
+The verified adapter now uses `openFiles` only to discover the configured project.
+It then opens that `tsconfig.json`,
+closes the temporary file association,
+and sends later `fileChanges.changed` notifications to project-owned snapshots.
+The same built test then returned `Readonly<SemanticFixtureBox<string>>` while confirming disk text was unchanged.
 
 ### Mapped readonly state is exposed only as an unnamed number
 
@@ -197,7 +241,8 @@ true
 - `Checker.getTypeFromTypeNode` preserves imported alias identity and generic instantiation.
 - direct declaration modifiers classify ordinary readonly properties.
 - `symbol.checkFlags & (1 << 3)` classifies the tested recursively mapped readonly property.
-- virtual filesystem overlays plus `fileChanges.changed` update semantic results in a later snapshot.
+- virtual filesystem overlays plus configured-project snapshots and `fileChanges.changed` update semantic results;
+- temporary `openFiles` discovery followed by `openProjects` and `closeFiles` avoids stale API-open-file semantics.
 - TypeScript source offsets map to exact Oxlint diagnostic locations.
 
 ### Failing or unsupported catalog
@@ -206,7 +251,8 @@ true
 - `typescript/lib/typescript.js` is absent.
 - no exported `CheckFlags` enum names the mapped readonly bit.
 - no stable TypeScript 7 API contract covers this use in 7.0.
-- recreating `API` for every linted parameter starts unnecessary native clients and loses snapshot reuse.
+- recreating `API` for every linted parameter starts unnecessary native clients and loses snapshot reuse;
+- retaining `openFiles` across changed virtual overlays returned stale type text in the built adapter test.
 
 ## Verified workarounds
 
@@ -223,9 +269,10 @@ The adapter must fail closed and emit a bridge diagnostic instead of silently tr
 
 ### Use snapshots and a virtual filesystem overlay
 
-Open configured projects once,
-reuse the active snapshot while disk text is unchanged,
-and create a replacement snapshot only when current source differs.
+Use `openFiles` only for ancestor `tsconfig.json` discovery.
+Open that configured project,
+close the temporary file association,
+and create replacement project snapshots with `fileChanges.changed` whenever current source changes.
 Dispose superseded snapshots and close the API client at process shutdown when the host provides a lifecycle hook.
 
 Tradeoff:

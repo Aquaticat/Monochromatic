@@ -19,6 +19,26 @@ The TSDoc contract phase is complete:
   call,
   and ambient signatures.
 
+The semantic-bridge foundation is complete:
+
+- commits `9283e2e7a` and `de9578f10` declared and locked TypeScript 7 as a runtime dependency;
+- commits `12071895f` and `39c2ac5e9` added tagged lifecycle logging;
+- commit `73aecdf47` added configured-project discovery,
+  virtual overlays,
+  snapshot disposal,
+  BOM-aware node mapping,
+  and fail-closed errors;
+- commit `32d84ac10` added exact owner,
+  member,
+  provenance,
+  evidence,
+  and package-major intrinsic effects;
+- the built overlay test exposed stale semantics when `openFiles` persisted;
+  the adapter now uses it only for project discovery before switching to `openProjects` and `closeFiles`;
+- the user corrected ambiguous virtual-filesystem callback names;
+  commit `a53861211` names both callbacks and return types by overlay and delegation behavior,
+  and commit `07d2c6934` records that naming standard in `XNC`.
+
 Verified package tasks:
 
 - `mise run buildAndTest --` with TSDoc parser,
@@ -30,7 +50,10 @@ Verified package tasks:
 - `mise run //packages/config/oxlint:lint:oxlint`.
 
 Next action:
-build the TypeScript 7 semantic adapter and intrinsic effect catalog in the `no-restricted-syntax` plugin.
+implement readonly classification,
+effect summaries,
+semantic diagnostics,
+and suggestions on the bridge foundation.
 
 ## Continuity contract
 
