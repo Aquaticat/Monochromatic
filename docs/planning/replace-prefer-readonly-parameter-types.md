@@ -675,6 +675,37 @@ external adapters,
 or effect rationales.
 Those diagnostics require authored design because project TSDoc requires comments to explain why.
 
+### Chosen mutation boundary
+
+`@mutates parameterName` means the callable may cause any caller-observable state change through state reachable from
+that parameter at entry.
+It covers:
+
+- property assignment,
+  update,
+  and deletion;
+- transitive writes through nested objects and aliases;
+- collection mutators;
+- stream,
+  iterator,
+  cancellation,
+  event,
+  DOM,
+  and other capability operations that change receiver state or external state represented by the receiver;
+- synchronous,
+  asynchronous,
+  deferred,
+  and closure-captured effects;
+- effects propagated through callees and callbacks.
+
+Local rebinding of the parameter variable does not mutate the caller's referent and is outside this rule.
+A separate parameter-reassignment policy could govern that syntax later.
+Do not introduce separate `@consumes`,
+`@writes`,
+or `@cancels` tags;
+the prose description explains the domain-specific transition while the machine-readable effect remains one concept.
+
 ### Awaiting decision
 
-The next policy decision is the boundary of what `@mutates` means for interior and capability effects.
+The next policy decision is whether remediation should improve an owned type at its declaration or keep readonly
+projection local to each parameter.
