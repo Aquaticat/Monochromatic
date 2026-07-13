@@ -66,6 +66,18 @@ const SHARED_SOURCE_PATH = fileURLToPath(new URL(
   import.meta.url,
 ),);
 
+/** Auto-mode runtime source used for exact global timer provenance. */
+const AUTO_MODE_RUNTIME_SOURCE_PATH = fileURLToPath(new URL(
+  '../../../pi-plugins/auto-mode/src/judge-runtime.ts',
+  import.meta.url,
+),);
+
+/** Auto-mode runtime source text containing global timer call. */
+const AUTO_MODE_RUNTIME_SOURCE = readFileSync(
+  AUTO_MODE_RUNTIME_SOURCE_PATH,
+  'utf8',
+);
+
 /** Pi extension source used for exact package method provenance. */
 const PI_EXTENSION_SOURCE_PATH = fileURLToPath(new URL(
   '../../../pi-plugins/auto-mode/src/register-propose-trust.ts',
@@ -288,6 +300,41 @@ await describe({
           },
         ],);
         expect(queries,).not.toContain(NO_INTRINSIC_QUERY,);
+      },
+    },),
+    it({
+      name: 'resolves exact global timer provenance and deferred callback effect',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: AUTO_MODE_RUNTIME_SOURCE_PATH,
+          sourceText: AUTO_MODE_RUNTIME_SOURCE,
+          hasBOM: false,
+        },);
+        const node = session.nodeAtOffset(AUTO_MODE_RUNTIME_SOURCE.indexOf('setTimeout(',),);
+        if (!isIdentifier(node,))
+          throw new Error('Expected global setTimeout identifier.',);
+        const symbol = session.checker.getResolvedSymbol(node,);
+        if (symbol === undefined)
+          throw new Error('Expected resolved global setTimeout symbol.',);
+        const query = intrinsicCallableEffectQuery({
+          project: session.project,
+          memberSymbol: symbol,
+        },);
+        expect(query,).toEqual({
+          provenance: { kind: 'dom', },
+          ownerType: 'globalThis',
+          member: 'setTimeout',
+        },);
+        if (query === NO_INTRINSIC_QUERY)
+          throw new Error('Expected global setTimeout intrinsic query.',);
+        const effect = intrinsicEffect(query,);
+        if (effect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected global setTimeout intrinsic effect.',);
+        expect(effect.targets,).toEqual([{
+          kind: 'argument',
+          index: 0,
+        },],);
+        closeSemanticBridge();
       },
     },),
     it({

@@ -52,6 +52,7 @@ await describe({
           'crossFileSemanticEffect',
           'callbackSemanticEffect',
           'directCallbackEffect',
+          'asyncIteratorEffect',
           'arrayCallbackSemanticEffect',
           'aliasedCallbackSemanticEffect',
           'noSemanticEffect',
@@ -143,6 +144,11 @@ await describe({
           },
           {
             functionName: 'directCallbackEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'asyncIteratorEffect',
             mutated: [0,],
             opaque: [],
           },

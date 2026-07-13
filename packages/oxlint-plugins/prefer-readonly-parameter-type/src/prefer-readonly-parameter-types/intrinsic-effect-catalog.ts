@@ -150,6 +150,16 @@ const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
   {
     provenance: { kind: 'dom', },
     ownerType: 'globalThis',
+    member: 'setTimeout',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+    },],
+    evidence: 'HTML timers schedule supplied handler for deferred invocation without retaining delay input',
+  },
+  {
+    provenance: { kind: 'dom', },
+    ownerType: 'globalThis',
     member: 'getComputedStyle',
     targets: [],
     evidence: 'CSSOM getComputedStyle returns live computed declaration without invoking caller-owned code',

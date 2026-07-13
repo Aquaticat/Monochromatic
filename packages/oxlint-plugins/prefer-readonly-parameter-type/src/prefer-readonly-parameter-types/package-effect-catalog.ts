@@ -120,6 +120,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'isDeleteExpression',
     'isFunctionLikeDeclaration',
     'isFunctionTypeNode',
+    'isForOfStatement',
     'isIdentifier',
     'isImportDeclaration',
     'isMethodSignatureDeclaration',

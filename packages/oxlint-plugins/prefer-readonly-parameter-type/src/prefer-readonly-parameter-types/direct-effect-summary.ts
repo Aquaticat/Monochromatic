@@ -15,6 +15,7 @@ import {
   isBinaryExpression,
   isCallExpression,
   isDeleteExpression,
+  isForOfStatement,
   isIdentifier,
   isPostfixUnaryExpression,
   isPrefixUnaryExpression,
@@ -228,6 +229,17 @@ export function directEffectSummary({
         bindingOriginBySymbolId,
         summary,
         node: node.operand,
+      },);
+      return;
+    }
+    if (isForOfStatement(node,) && (node.awaitModifier !== undefined)) {
+      addEffectIndex({
+        target: summary.directMutated,
+        value: expressionOrigin({
+          project,
+          bindingOriginBySymbolId,
+          node: node.expression,
+        },),
       },);
       return;
     }

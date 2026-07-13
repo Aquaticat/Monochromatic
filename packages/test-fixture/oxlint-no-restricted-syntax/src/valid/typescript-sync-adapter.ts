@@ -289,6 +289,18 @@ export function directCallbackEffect(callback: () => void,): void {
 }
 
 /**
+ * Consumes caller-owned async iterator state.
+ *
+ * @param stream - Caller stream consumed by async iteration.
+ *
+ * @mutates stream - Async iteration invokes iterator methods and advances supplied state.
+ */
+export async function asyncIteratorEffect(stream: AsyncIterable<unknown>,): Promise<void> {
+  for await (const value of stream)
+    void value;
+}
+
+/**
  * Mutates receiver-reachable array elements through audited callback relation.
  *
  * @param states - Readonly container whose mutable elements are updated.

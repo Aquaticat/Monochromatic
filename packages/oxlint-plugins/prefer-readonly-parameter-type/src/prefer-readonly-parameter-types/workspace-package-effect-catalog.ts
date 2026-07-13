@@ -33,6 +33,34 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       major: 0,
     },
     ownerType: 'globalThis',
+    member: 'budgetModelSlug',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+    },],
+    evidence: 'pi-shared-model-selection 0.0.1 reads caller-owned model identity fields',
+  },
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@monochromatic-dev/pi-shared-model-selection',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'selectBudgetModel',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+    },],
+    evidence: 'pi-shared-model-selection 0.0.1 reads selection options and invokes supplied auth callbacks',
+  },
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@monochromatic-dev/pi-shared-model-selection',
+      major: 0,
+    },
+    ownerType: 'globalThis',
     member: 'resolveEffectiveScope',
     targets: [{
       kind: 'argument',
@@ -58,6 +86,17 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ],
     },],
     evidence: 'pi-shared-model-selection 0.0.1 reads scope and invokes options.modelRegistry.getAll',
+  },
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'isToolCallEventType',
+    targets: [],
+    evidence: 'shell-command-analyzer 0.0.1 source compares tool event discriminator with primitive expected type',
   },
   {
     provenance: {
