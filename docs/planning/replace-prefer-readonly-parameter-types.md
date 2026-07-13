@@ -214,6 +214,19 @@ The semantic-rule implementation is functional and shared-configuration migratio
 - commit `fe9e0b99e` migrates Advisor and shared model-selection capability contracts;
 - commit `3ee0ab774` limits imported callable effects to audited option fields
   and verifies each added Pi method against real Advisor source;
+- commit `a717266a9` audits additional Pi shortcut,
+  UI,
+  command-context,
+  and model-registry capabilities against real auto-mode source;
+- commit `35f48181f` audits global timer and workspace helper boundaries
+  and tracks caller-owned async iterator consumption;
+- commit `4efbc821e` preserves nested origins for ordinary parameter contracts
+  and audits Pi tool-event predicates through exact package provenance;
+- commit `97d59cff8` migrates auto-mode Pi,
+  provider-stream,
+  callback,
+  iterator,
+  and canonical serialization boundaries;
 - the 2026-07-13 sweep reported 1,014 replacement-rule diagnostics with no bridge-failure category:
   585 uncertain calls,
   272 readonly projections,
@@ -258,6 +271,7 @@ The semantic-rule implementation is functional and shared-configuration migratio
   `packages/cli/git-clone-size`,
   `packages/pi-shared/model-selection`,
   `packages/pi-plugins/advisor`,
+  `packages/pi-plugins/auto-mode`,
   `packages/pi-plugins/current-time-context`,
   `packages/pi-plugins/terminal-title`,
   `packages/pi-plugins/agent-settled-notification`,
@@ -295,7 +309,10 @@ Verified package tasks:
 - `mise run //packages/pi-shared/model-selection:test:unit`;
 - `mise run //packages/pi-plugins/advisor:lint:oxlint`;
 - `mise run //packages/pi-plugins/advisor:test:unit`;
-- `mise run //packages/pi-plugins/advisor:verify:extension`.
+- `mise run //packages/pi-plugins/advisor:verify:extension`;
+- `mise run //packages/pi-plugins/auto-mode:lint:oxlint`;
+- `mise run //packages/pi-plugins/auto-mode:build:js:node`;
+- `mise run //packages/pi-plugins/auto-mode:test:unit`.
 
 Next action:
 migrate remaining packages from the measured 1,014-diagnostic baseline,

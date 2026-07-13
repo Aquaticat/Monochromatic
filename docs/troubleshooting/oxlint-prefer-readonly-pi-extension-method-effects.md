@@ -86,7 +86,9 @@ registerMessageRenderer(customType, renderer) {
 }
 ```
 
-The same loader at `dist/core/extensions/loader.js:228` to `266`
+The same loader at `dist/core/extensions/loader.js:192` to `213`
+stores shortcuts as well as commands and message renderers in extension maps.
+The loader at lines `228` to `266`
 delegates `sendMessage` to runtime message handling and `setActiveTools` to session tool-state replacement.
 By contrast,
 `getActiveTools` calls `AgentSession.getActiveToolNames()`.
@@ -102,6 +104,12 @@ to `showExtensionNotify`.
 That implementation delegates to status,
 warning,
 or error UI updates at lines `1886` to `1896`.
+The same interactive-mode source binds `select`,
+`setStatus`,
+and `setWidget` to selector and rendered UI state transitions.
+`dist/core/agent-session.js:1874` to `1880` shows that `ExtensionContext.abort` invokes active abort handling.
+`dist/core/model-registry.js:505` to `527` shows that `getAll` and `find` are registry observations,
+while `hasConfiguredAuth` reads supplied model fields without refreshing auth.
 `dist/core/model-registry.js:553` to `579` shows that `ModelRegistry.getApiKeyAndHeaders` is effectful
 because auth resolution can execute command-backed configuration.
 Its reads from the supplied model can also invoke caller-owned accessors or proxy traps,
@@ -121,6 +129,7 @@ now records exact receiver effects for:
   `on`,
   `registerCommand`,
   `registerMessageRenderer`,
+  `registerShortcut`,
   `registerTool`,
   `sendMessage`,
   `setActiveTools`,
@@ -130,9 +139,17 @@ now records exact receiver effects for:
   `Theme.fg`,
   `SessionManager.getBranch`,
   and `ExtensionCommandContext.waitForIdle`;
-- mutating `ExtensionUIContext.notify`;
-- effectful `ModelRegistry.getApiKeyAndHeaders`,
-  including its model input because auth resolution can inspect that supplied object.
+- mutating `ExtensionContext.abort`;
+- mutating `ExtensionUIContext.notify`,
+  `select`,
+  `setStatus`,
+  and `setWidget`,
+  with supplied selector and widget inputs retained when applicable;
+- observational `ModelRegistry.find` and `ModelRegistry.getAll`;
+- model-input effects for `ModelRegistry.hasConfiguredAuth`;
+- receiver and model-input effects for `ModelRegistry.getApiKeyAndHeaders`,
+  because auth resolution can inspect that supplied object and run command-backed configuration;
+- observational package callable `isToolCallEventType`.
 
 Imported callable catalog targets can name exact option fields.
 The shared model-selection entries target only `ctx` for `resolveEffectiveScope`
@@ -184,6 +201,10 @@ mise run //packages/pi-shared/model-selection:test:unit
 mise run //packages/pi-plugins/advisor:lint:oxlint
 mise run //packages/pi-plugins/advisor:test:unit
 mise run //packages/pi-plugins/advisor:verify:extension
+mise run //packages/pi-plugins/auto-mode:lint:types
+mise run //packages/pi-plugins/auto-mode:lint:oxlint
+mise run //packages/pi-plugins/auto-mode:build:js:node
+mise run //packages/pi-plugins/auto-mode:test:unit
 ```
 
 The intrinsic test resolves `appendEntry` and `registerTool` through real Pi declaration provenance.
@@ -196,8 +217,8 @@ The rule-level invalid fixture also proves that direct callback invocation witho
 reports the missing callback contract.
 Package-local Oxlint accepts the documented effects in current-time-context,
 Advisor,
-and shared model selection.
-Auto-mode still has separate capability and data-contract migration findings.
+shared model selection,
+and auto-mode.
 
 The subsequent root `mise run lint:oxlint` sweep completed its Oxlint run in `259.1` seconds.
 It returned status `1` because the repository still had `3,803` warnings and `1,714` errors across all rules,
