@@ -126,7 +126,20 @@ function reportStaleContract({
         .hasBOM,
     },),
   ];
+  /**
+   * Replacement preserving closing-comment indentation for final block.
+   */
+  const replacement = context.sourceCode
+    .text
+    .startsWith(
+      '*/',
+      range[1],
+    )
+    ? ' '
+    : '';
   context.report({
+    node: context.sourceCode
+      .ast,
     loc: semanticLocation({
       context,
       start: commentBodyStartOffset + block.blockStartOffset,
@@ -140,7 +153,7 @@ function reportStaleContract({
         fix(fixer: Fixer,): ReturnType<Fixer['replaceTextRange']> {
           return fixer.replaceTextRange(
             range,
-            '',
+            replacement,
           );
         },
       },

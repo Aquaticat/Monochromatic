@@ -265,6 +265,60 @@ async function fixGeneratedSource(
 }
 
 /**
+ * Applies readonly semantic fixes to disposable source inside fixture project.
+ *
+ * @param source - Source text to lint and optionally suggest-fix.
+ *
+ * @param fixSuggestions - Whether suggestion channel is enabled.
+ *
+ * @returns resulting source text.
+ */
+async function fixReadonlyGeneratedSource({
+  source,
+  fixSuggestions,
+}: {
+  readonly source: string;
+  readonly fixSuggestions: boolean;
+},): Promise<string> {
+  /** Disposable in-project directory discoverable by fixture tsconfig. */
+  const dirPath = mkdtempSync(join(FIXTURES, 'readonly-fix-',),);
+  /** Disposable source path inside configured project. */
+  const filePath = resolve(dirPath, 'stale-contract.ts',);
+  writeFileSync(filePath, source,);
+  using fixture: GeneratedSource = {
+    filePath,
+    [Symbol.dispose]: function cleanup(): void {
+      rmSync(dirPath, { recursive: true, force: true, },);
+    },
+  };
+  /** Fix flags preserving suggestion opt-in boundary. */
+  const fixFlags = fixSuggestions
+    ? ['--fix', '--fix-suggestions',]
+    : ['--fix',];
+  try {
+    await spawn(
+      'oxlint',
+      [
+        '--threads',
+        '1',
+        ...fixFlags,
+        '--format',
+        'json',
+        '-c',
+        READONLY_FIXTURE_CONFIG,
+        fixture.filePath,
+      ],
+      { cwd: ROOT, },
+    );
+  }
+  catch (error: unknown) {
+    if ((!((typeof error) === 'object')) || (error === null) || (!('stdout' in error)))
+      throw error;
+  }
+  return readFileSync(fixture.filePath, 'utf8',);
+}
+
+/**
  * Names of the substantive syntax rules; each has a fixture in `invalid/`
  * that triggers the rule.
  */
@@ -493,6 +547,23 @@ await describe({
             expect(messages.some(function opaque(message,): boolean {
               return message.includes('opaque effect boundary',);
             },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'keeps stale contracts under ordinary fix and removes them through suggestions',
+          fn: async () => {
+            /** Source with one semantically stale mutation block. */
+            const source = `/**\n * Reads signal.\n *\n * @param controller - Capability read only.\n *\n * @mutates controller - Claims absent transition.\n */\nexport function readSignal(controller: AbortController,): AbortSignal {\n  return controller.signal;\n}\n`;
+            const ordinarilyFixed = await fixReadonlyGeneratedSource({
+              source,
+              fixSuggestions: false,
+            },);
+            expect(ordinarilyFixed.includes('@mutates controller',),).toBe(true,);
+            const suggestionFixed = await fixReadonlyGeneratedSource({
+              source,
+              fixSuggestions: true,
+            },);
+            expect(suggestionFixed.includes('@mutates controller',),).toBe(false,);
           },
         },),
       ],

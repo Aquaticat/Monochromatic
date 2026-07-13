@@ -40,6 +40,7 @@ const l = tagged({ tag: 'prefer-readonly-parameter-types', },);
 export const preferReadonlyParameterTypes: CreateOnceRule = {
   meta: {
     type: 'problem',
+    fixable: 'code',
     hasSuggestions: true,
     docs: {
       description: 'Require honest readonly parameter types and verified @mutates effects.',

@@ -82,6 +82,12 @@ This plugin provides individual rules for each banned syntax pattern instead.
    constructor comparisons,
    and Node `util.types.isNativeError()`),
    autofixing them to `Error.isError(value,)`
+- **prefer-readonly-parameter-types**:
+   requires honest deep-readonly contracts for nonmutating data,
+   verifies `@mutates` against caller-observable effects,
+   and fails closed at unresolved external boundaries
+- **no-disable-prefer-readonly-parameter-types**:
+   prohibits inline suppression of semantic readonly-effect checks
 - **require-destructured-params**:
    function declarations with 2+ params must use a single destructured object
 - **require-queryselector-generic**:
@@ -89,6 +95,54 @@ This plugin provides individual rules for each banned syntax pattern instead.
 
 `no-regex` is enabled by the shared `@monochromatic-dev/config-oxlint` package.
 Necessary regex sites must use scoped disable justifications.
+
+## prefer-readonly-parameter-types
+
+This project-owned replacement combines resolved TypeScript readonly semantics
+with whole-project mutation summaries.
+It uses TypeScript 7 through `typescript/unstable/sync` and therefore requires
+a configured project containing each linted source file.
+Oxlint CLI diagnostics are authoritative because Oxlint's language server does not run JavaScript plugins.
+
+Nonmutating data parameters require an honest deep-readonly type.
+Capability types may retain their original API when analysis proves no mutation path.
+A readonly projection that retains audited mutation capabilities reports `dishonestReadonly`.
+Unknown external calls report `opaqueEffect` instead of being assumed safe.
+
+Intentional mutation uses a repeatable project TSDoc block:
+
+```typescript
+/**
+ * Clears shared traversal state before reuse.
+ *
+ * @param visited - Shared cycle detector retained across calls.
+ *
+ * @mutates visited - Clears caller-owned traversal state.
+ */
+function clearVisited(visited: Set<string>,): void {
+  visited.clear();
+}
+```
+
+The target must name a parameter or destructured parameter binding,
+and the description must explain why mutation occurs.
+The sibling `@monochromatic-dev/config-oxlint-tsdoc` plugin validates grammar;
+both plugins consume the same shared parser.
+The semantic rule reports missing and stale contracts,
+propagates effects through owned calls and callbacks,
+and consumes bodyless source-signature contracts.
+Declaration files remain exempt enforcement inputs.
+
+Uncatalogued package or platform calls require a local adapter.
+Every opaque parameter effect in that adapter must have a matching `@mutates` block
+whose description names the upstream callable or links its contract.
+The adapter effect then propagates as mutation while retaining provenance for audit.
+An arbitrary tag that leaves any opaque target undocumented does not waive `opaqueEffect`.
+
+Semantic rewrites are suggestions only.
+Ordinary `--fix` does not change signatures or mutation contracts;
+explicit `--fix-suggestions` may apply a verified stale-contract removal.
+Inline suppression is prohibited by `no-disable-prefer-readonly-parameter-types`.
 
 ## no-nullish-union
 

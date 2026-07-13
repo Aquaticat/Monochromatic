@@ -125,6 +125,28 @@ closes the temporary file association,
 and sends later `fileChanges.changed` notifications to project-owned snapshots.
 The same built test then returned `Readonly<SemanticFixtureBox<string>>` while confirming disk text was unchanged.
 
+### Hidden disposable directories can fall into an inferred project
+
+A stale-contract suggestion test initially created its disposable source under a dot-prefixed directory inside the
+fixture `src/` tree.
+`getDefaultProjectForFile` returned an inferred project whose config path was `/dev/null/inferred`,
+and the configured-project snapshot then omitted that identity.
+The semantic rule correctly failed closed with:
+
+```text
+project-not-found: TypeScript snapshot omitted configured project /dev/null/inferred.
+```
+
+Creating the same disposable source under a non-hidden directory inside the configured project selected the fixture
+`tsconfig.json` and allowed Oxlint to apply the suggestion.
+Semantic integration fixtures must therefore verify configured-project inclusion,
+not infer inclusion merely from filesystem ancestry.
+
+The TypeScript native API process can print `context canceled` while Oxlint exits successfully after the adapter's
+process-exit cleanup closes the synchronous RPC channel.
+Treat Oxlint's exit status and diagnostics as authoritative;
+the shutdown line alone did not indicate a lint failure in the verified fixture runs.
+
 ### Mapped readonly state is exposed only as an unnamed number
 
 `typescript@7.0.2/dist/api/sync/api.d.ts:387` exposes this field:
@@ -252,7 +274,8 @@ true
 - no exported `CheckFlags` enum names the mapped readonly bit.
 - no stable TypeScript 7 API contract covers this use in 7.0.
 - recreating `API` for every linted parameter starts unnecessary native clients and loses snapshot reuse;
-- retaining `openFiles` across changed virtual overlays returned stale type text in the built adapter test.
+- retaining `openFiles` across changed virtual overlays returned stale type text in the built adapter test;
+- a dot-prefixed disposable source directory selected `/dev/null/inferred` rather than the expected configured project.
 
 ## Verified workarounds
 
