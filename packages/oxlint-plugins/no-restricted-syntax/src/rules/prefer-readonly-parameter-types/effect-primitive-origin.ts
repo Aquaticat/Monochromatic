@@ -24,8 +24,13 @@ import {
  * @param type - Semantic type crossing opaque boundary.
  *
  * @returns whether value can carry caller-owned mutable state.
+ *
+ * @example
+ * ```ts
+ * typeCanCarryMutableState({ checker, type });
+ * ```
  */
-function typeCanCarryMutableState({
+export function typeCanCarryMutableState({
   checker,
   type,
 }: {
@@ -64,6 +69,38 @@ function typeCanCarryMutableState({
       },);
   }
   return (type.flags & TypeFlags.Primitive) === 0;
+}
+
+/**
+ * Tests whether every indexed value reachable from receiver is primitive.
+ *
+ * @param checker - TypeScript checker resolving index value types.
+ *
+ * @param type - Semantic receiver type.
+ *
+ * @returns whether receiver exposes at least one index and every value is primitive.
+ *
+ * @example
+ * ```ts
+ * receiverElementsArePrimitive({ checker, type });
+ * ```
+ */
+export function receiverElementsArePrimitive({
+  checker,
+  type,
+}: {
+  readonly checker: Checker;
+  readonly type: Type;
+},): boolean {
+  /** Indexed value types exposed by receiver. */
+  const indexes = checker.getIndexInfosOfType(type,);
+  return (indexes.length > 0)
+    && indexes.every(function indexValueIsPrimitive(index,): boolean {
+      return !typeCanCarryMutableState({
+        checker,
+        type: index.valueType,
+      },);
+    },);
 }
 
 /**

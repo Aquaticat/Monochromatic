@@ -28,7 +28,10 @@ import {
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
 import { isAuditedObservationalCallable, } from './effect-call-observation.ts';
-import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import {
+  expressionCanCarryMutableState,
+  receiverElementsArePrimitive,
+} from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
   callableKey,
@@ -405,7 +408,12 @@ export function inspectEffectCall({
       const effect = query === NO_INTRINSIC_QUERY
         ? NO_INTRINSIC_EFFECT
         : intrinsicEffect(query,);
-      if (effect !== NO_INTRINSIC_EFFECT) {
+      if ((effect !== NO_INTRINSIC_EFFECT)
+        && ((!effect.requiresPrimitiveReceiverElements)
+          || receiverElementsArePrimitive({
+            checker,
+            type: receiverType,
+          },))) {
         effect.targets
           .forEach(function intrinsicTarget(target,): void {
           if (target.kind === 'receiver') {

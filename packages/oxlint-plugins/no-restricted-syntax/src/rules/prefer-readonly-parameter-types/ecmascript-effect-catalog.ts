@@ -106,6 +106,21 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       };
     },);
     /**
+     * Array operations safe when every reachable element is primitive.
+     */
+    const primitiveElementObservations = [
+      'join',
+    ].map(function primitiveArrayObservation(member,): IntrinsicEffectEntry {
+      return {
+        provenance: { kind: 'ecmascript', },
+        ownerType,
+        member,
+        targets: [],
+        requiresPrimitiveReceiverElements: true,
+        evidence: 'ECMA-262 commit 1355a23e array stringification with primitive elements',
+      };
+    },);
+    /**
      * Array operations whose callbacks receive receiver-reachable values.
      */
     const callbackObservations = [
@@ -132,6 +147,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
     },);
     return [
       ...observations,
+      ...primitiveElementObservations,
       ...callbackObservations,
     ];
   },),

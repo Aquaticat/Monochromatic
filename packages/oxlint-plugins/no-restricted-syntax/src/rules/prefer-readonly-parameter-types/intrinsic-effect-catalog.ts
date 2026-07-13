@@ -76,6 +76,7 @@ export type IntrinsicEffectEntry = {
   readonly member: string;
   readonly targets: readonly IntrinsicEffectTarget[];
   readonly callbacks?: readonly IntrinsicCallbackEffect[];
+  readonly requiresPrimitiveReceiverElements?: boolean;
   readonly evidence: string;
 };
 
@@ -218,6 +219,12 @@ const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       member,
       evidence: '@types/node 26 events.d.ts EventEmitter declaration',
     },);
+  },),
+  receiverEffect({
+    provenance: { kind: 'node', },
+    ownerType: 'Socket',
+    member: 'write',
+    evidence: '@types/node 26 net.d.ts Socket write declaration',
   },),
   ...[
     'destroy',
