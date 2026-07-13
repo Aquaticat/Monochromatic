@@ -349,15 +349,21 @@ await describe({
           return (query !== NO_INTRINSIC_QUERY)
             && (intrinsicEffect(query,) !== NO_INTRINSIC_EFFECT);
         },),).toBe(true,);
-        expect(intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@earendil-works/pi-coding-agent',
-            major: 0,
-          },
-          ownerType: 'ExtensionAPI',
-          member: 'on',
-        },),).not.toBe(NO_INTRINSIC_EFFECT,);
+        expect([
+          'getThinkingLevel',
+          'on',
+          'setThinkingLevel',
+        ].every(function piMemberCatalogued(member,): boolean {
+          return intrinsicEffect({
+            provenance: {
+              kind: 'package',
+              packageName: '@earendil-works/pi-coding-agent',
+              major: 0,
+            },
+            ownerType: 'ExtensionAPI',
+            member,
+          },) !== NO_INTRINSIC_EFFECT;
+        },),).toBe(true,);
         expect(intrinsicEffect({
           provenance: {
             kind: 'package',

@@ -157,6 +157,9 @@ function fakePiApi(): {
     registerMessageRenderer(customType: string,) {
       registrations.push(`renderer:${customType}`,);
     },
+    registerEntryRenderer(customType: string,) {
+      registrations.push(`entry-renderer:${customType}`,);
+    },
     sendMessage(message: { readonly customType: string; },) {
       registrations.push(`message:${message.customType}`,);
     },

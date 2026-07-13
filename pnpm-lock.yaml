@@ -3087,6 +3087,9 @@ importers:
 
   packages/pi-plugins/thinking-defaults:
     dependencies:
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@monochromatic-dev/pi-shared-model-selection':
         specifier: workspace:*
         version: link:../../pi-shared/model-selection

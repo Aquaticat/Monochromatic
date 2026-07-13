@@ -28,6 +28,7 @@
     "typebox": "*"
   },
   "dependencies": {
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@monochromatic-dev/pi-shared-model-selection": "workspace:*"
   },
   "devDependencies": {

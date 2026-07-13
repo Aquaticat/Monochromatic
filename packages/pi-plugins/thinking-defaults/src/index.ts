@@ -8,9 +8,13 @@
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { applyThinkingDefault, } from './apply-thinking-default.ts';
 import { restoreGlobalDefaultThinkingLevel, } from './global-settings.ts';
-import type { ThinkingDefaultLevel, } from './model-policy.ts';
+import type {
+  ModelWithId,
+  ThinkingDefaultLevel,
+} from './model-policy.ts';
 
 //region Types
 
@@ -21,12 +25,32 @@ type RegisterThinkingDefaultsOptions = {
   /**
    * Pi extension API.
    */
-  readonly pi: ExtensionAPI;
+  readonly pi: ForeignBorrowed<ExtensionAPI>;
   /**
    * Restores persisted scalar thinking default after active-level changes.
    */
   readonly restoreDefaultThinkingLevel?: () => Promise<boolean>;
 };
+
+/**
+ * Session-start event surface consumed by this extension.
+ */
+type SessionStartEvent = Readonly<{
+  /**
+   * Event discriminant.
+   */
+  type: 'session_start';
+}>;
+
+/**
+ * Model-selection event surface consumed by this extension.
+ */
+type ModelSelectEvent = Readonly<{
+  /**
+   * Newly selected model used by thinking policy.
+   */
+  model: ModelWithId;
+}>;
 
 //endregion Types
 
@@ -39,6 +63,8 @@ type RegisterThinkingDefaultsOptions = {
  * @param pi - pi extension API
  *
  * @param restoreDefaultThinkingLevel - settings restorer dependency; defaults to {@link restoreGlobalDefaultThinkingLevel}
+ *
+ * @mutates pi - `pi.on` registers lifecycle handlers and `pi.setThinkingLevel` changes active host state
  *
  * @example
  * ```typescript
@@ -82,7 +108,7 @@ export function registerThinkingDefaults(
   pi.on(
     'session_start',
     async function onSessionStart(
-      _event,
+      _event: Readonly<SessionStartEvent>,
       ctx,
     ) {
       /**
@@ -106,7 +132,7 @@ export function registerThinkingDefaults(
   );
   pi.on(
     'model_select',
-    async function onModelSelect(event,) {
+    async function onModelSelect(event: Readonly<ModelSelectEvent>,) {
       /**
        * Thinking application result for the newly selected model.
        */
@@ -134,13 +160,15 @@ export function registerThinkingDefaults(
  *
  * @param pi - pi extension API
  *
+ * @mutates pi - `registerThinkingDefaults` delegates `pi.on` registration and `pi.setThinkingLevel` updates
+ *
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
  * // { "packages": ["./packages/pi-plugins/thinking-defaults"] }
  * ```
  */
-export default function thinkingDefaults(pi: ExtensionAPI,): void {
+export default function thinkingDefaults(pi: ForeignBorrowed<ExtensionAPI>,): void {
   registerThinkingDefaults({ pi, },);
 }
 
