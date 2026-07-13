@@ -38,6 +38,7 @@ import {
 import {
   addEffectIndex,
   type EffectCallableDeclaration,
+  collectAstNodes,
   type MutableEffectSummary,
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
@@ -165,22 +166,19 @@ export function directEffectSummary({
     return summary;
   }
   /**
-   * Body nodes shared by alias discovery and effect inspection.
+   * Complete body nodes used to discover origins before escape selection.
    */
-  const bodyNodes = activeCallableBodyNodes({
-    project,
-    body,
-  },);
+  const allBodyNodes = collectAstNodes(body,);
   /**
    * Variable declarations that may alias parameter-reachable state.
    */
-  const variableDeclarations = bodyNodes.filter(function variableDeclaration(node,): node is VariableDeclaration {
+  const variableDeclarations = allBodyNodes.filter(function variableDeclaration(node,): node is VariableDeclaration {
     return isVariableDeclaration(node,);
   },);
   /**
    * Simple assignments that may establish aliases after declaration.
    */
-  const aliasAssignments = bodyNodes.filter(function aliasAssignment(node,): node is BinaryExpression {
+  const aliasAssignments = allBodyNodes.filter(function aliasAssignment(node,): node is BinaryExpression {
     return isBinaryExpression(node,)
       && (node.operatorToken
         .kind
@@ -190,6 +188,14 @@ export function directEffectSummary({
     project,
     variableDeclarations,
     aliasAssignments,
+    bindingOriginBySymbolId,
+  },);
+  /**
+   * Body nodes selected after aliases expose caller-reachable closure storage.
+   */
+  const bodyNodes = activeCallableBodyNodes({
+    project,
+    body,
     bindingOriginBySymbolId,
   },);
   bodyNodes.forEach(function inspect(node,): void {

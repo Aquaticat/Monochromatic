@@ -4,8 +4,12 @@
  * @module
  */
 
-import type { Node, } from 'typescript/unstable/ast';
 import {
+  type Node,
+  SyntaxKind,
+} from 'typescript/unstable/ast';
+import {
+  isBinaryExpression,
   isCallExpression,
   isIdentifier,
   isReturnStatement,
@@ -14,120 +18,140 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
+  expressionOrigin,
+} from './effect-binding-origins.ts';
+import {
   callableKey,
   type EffectCallableDeclaration,
   collectAstNodes,
   isEffectCallableDeclaration,
+  PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
-
-/**
- * Sentinel when expression does not resolve to owned nested callable.
- */
-const NESTED_CALLABLE_UNAVAILABLE: unique symbol = Symbol(
-  'closure expression lacks nested callable declaration',
-);
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Project and Node mirror TypeScript semantic AST identities. */
 /**
- * Resolves expression or selected call signature to callable declaration.
+ * Activates callables reachable through escaped expression containers and aliases.
  *
- * @param project - TypeScript project resolving symbols.
+ * @param project - TypeScript project resolving variable aliases.
  *
- * @param node - Expression or declaration candidate.
+ * @param node - Passed or returned expression whose callables escape.
  *
- * @returns callable declaration or sentinel.
+ * @param nestedKeys - Callable declarations nested under outer body.
+ *
+ * @param activeKeys - Accumulator receiving escaped callable keys.
+ *
+ * @mutates activeKeys - Adds every reachable nested callable key.
  */
-function resolvedCallable({
+function activateEscapedCallables({
   project,
   node,
+  nestedKeys,
+  activeKeys,
 }: {
   readonly project: Project;
   readonly node: Node;
-}): EffectCallableDeclaration | typeof NESTED_CALLABLE_UNAVAILABLE {
+  readonly nestedKeys: ReadonlySet<string>;
+  readonly activeKeys: Set<string>;
+}): void {
   /**
-   * Cursor follows identifier and variable-initializer aliases iteratively.
+   * Explicit work stack for container and alias traversal.
    */
-  const cursor: { current: Node; } = { current: node, };
+  const stack: Node[] = [node,];
   /**
-   * Stable node keys prevent cyclic alias traversal.
+   * Stable node keys prevent cyclic object and variable aliases.
    */
   const visited = new Set<string>();
-  while (true) {
-    if (isEffectCallableDeclaration(cursor.current,))
-      return cursor.current;
+  while (stack.length > 0) {
     /**
-     * Stable source span for alias-cycle detection.
+     * Next escaped expression node.
      */
-    const cursorKey = `${cursor.current
-      .getSourceFile()
-      .fileName}:${String(cursor.current
-        .pos,)}:${String(cursor.current
-          .end,)}`;
-    if (visited.has(cursorKey,))
-      return NESTED_CALLABLE_UNAVAILABLE;
-    visited.add(cursorKey,);
+    const current = stack.pop();
+    if (current === undefined)
+      continue;
     /**
-     * Resolved symbol for expression reference.
+     * Stable source span for cycle detection.
      */
-    const symbol = isIdentifier(cursor.current,)
-      ? project.checker
-        .getResolvedSymbol(cursor.current,)
-      : project.checker
-        .getSymbolAtLocation(cursor.current,);
-    /**
-     * Value declaration with first declaration fallback.
-     */
-    const handle = symbol?.valueDeclaration
-      ?? symbol?.declarations
-      .at(0,);
-    /**
-     * Resolved declaration in current project.
-     */
-    const declaration = handle?.resolve(project,);
-    if (declaration === undefined)
-      return NESTED_CALLABLE_UNAVAILABLE;
-    if (isEffectCallableDeclaration(declaration,))
-      return declaration;
-    if (isVariableDeclaration(declaration,)
-      && (declaration.initializer !== undefined)) {
-      cursor.current = declaration.initializer;
+    const currentKey = `${current.getSourceFile()
+      .fileName}:${String(current.pos,)}:${String(current.end,)}`;
+    if (visited.has(currentKey,))
+      continue;
+    visited.add(currentKey,);
+    if (isEffectCallableDeclaration(current,)) {
+      /**
+       * Stable callable key activated as escaped value.
+       */
+      const key = callableKey(current,);
+      if (nestedKeys.has(key,))
+        activeKeys.add(key,);
       continue;
     }
-    return NESTED_CALLABLE_UNAVAILABLE;
+    if (isIdentifier(current,)) {
+      /**
+       * Symbol reached through identifier alias.
+       */
+      const symbol = project.checker
+        .getResolvedSymbol(current,);
+      /**
+       * Declaration reached through identifier alias.
+       */
+      const declaration = (symbol?.valueDeclaration
+        ?? symbol?.declarations
+        .at(0,))?.resolve(project,);
+      if ((declaration !== undefined)
+        && isEffectCallableDeclaration(declaration,)) {
+        stack.push(declaration,);
+        continue;
+      }
+      if ((declaration !== undefined)
+        && isVariableDeclaration(declaration,)
+        && (declaration.initializer !== undefined)) {
+        stack.push(declaration.initializer,);
+        continue;
+      }
+    }
+    current.forEachChild(function addEscapedChild(child,): undefined {
+      stack.push(child,);
+      return undefined;
+    },);
   }
 }
 
 /**
- * Finds nearest nested callable enclosing node before body boundary.
+ * Tests that node is enclosed only by active nested closures.
  *
- * @param node - Descendant whose closure owner is required.
+ * @param node - Descendant whose closure ancestry is checked.
  *
  * @param body - Outer callable body boundary.
  *
- * @returns enclosing nested callable or sentinel.
+ * @param activeKeys - Nested callables proven active.
+ *
+ * @returns whether every enclosing nested closure is active.
  */
-function enclosingNestedCallable({
+function insideOnlyActiveClosures({
   node,
   body,
+  activeKeys,
 }: {
   readonly node: Node;
   readonly body: Node;
-}): EffectCallableDeclaration | typeof NESTED_CALLABLE_UNAVAILABLE {
+  readonly activeKeys: ReadonlySet<string>;
+}): boolean {
   /**
-   * Parent cursor ascending toward outer body.
+   * Parent cursor ascending through every nested closure.
    */
   const cursor: { current: Node; } = { current: node.parent, };
   while (cursor.current !== body) {
-    if (isEffectCallableDeclaration(cursor.current,))
-      return cursor.current;
+    if (isEffectCallableDeclaration(cursor.current,)
+      && (!activeKeys.has(callableKey(cursor.current,),)))
+      return false;
     if (cursor.current
       .parent
       === cursor.current)
-      return NESTED_CALLABLE_UNAVAILABLE;
+      return false;
     cursor.current = cursor.current
       .parent;
   }
-  return NESTED_CALLABLE_UNAVAILABLE;
+  return true;
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
@@ -144,6 +168,8 @@ function enclosingNestedCallable({
  *
  * @param body - Outer callable body.
  *
+ * @param bindingOriginBySymbolId - Binding symbols mapped to source parameters.
+ *
  * @returns effect-relevant body nodes.
  *
  * @example
@@ -154,9 +180,11 @@ function enclosingNestedCallable({
 export function activeCallableBodyNodes({
   project,
   body,
+  bindingOriginBySymbolId,
 }: {
   readonly project: Project;
   readonly body: Node;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
 }): readonly Node[] {
   /**
    * Complete descendants used to discover nested declarations and activations.
@@ -179,6 +207,23 @@ export function activeCallableBodyNodes({
    */
   const activeKeys = new Set<string>();
   allNodes.forEach(function findActivation(node,): void {
+    if (isBinaryExpression(node,)
+      && (node.operatorToken
+        .kind
+        === SyntaxKind.EqualsToken)
+      && (expressionOrigin({
+        project,
+        bindingOriginBySymbolId,
+        node: node.left,
+      },) !== PARAMETER_INDEX_UNAVAILABLE)) {
+      activateEscapedCallables({
+        project,
+        node: node.right,
+        nestedKeys,
+        activeKeys,
+      },);
+      return;
+    }
     if (isCallExpression(node,)) {
       /**
        * Callable selected by overload resolution.
@@ -198,52 +243,30 @@ export function activeCallableBodyNodes({
       }
       node.arguments
         .forEach(function callbackArgument(argument,): void {
-        /**
-         * Callable passed directly as callback argument.
-         */
-        const callback = resolvedCallable({
+        activateEscapedCallables({
           project,
           node: argument,
+          nestedKeys,
+          activeKeys,
         },);
-        if (callback === NESTED_CALLABLE_UNAVAILABLE)
-          return;
-        /**
-         * Stable declaration key for callback argument.
-         */
-        const key = callableKey(callback,);
-        if (nestedKeys.has(key,))
-          activeKeys.add(key,);
       },);
       return;
     }
     if ((!isReturnStatement(node,)) || (node.expression === undefined))
       return;
-    /**
-     * Callable returned directly or by identifier.
-     */
-    const returned = resolvedCallable({
+    activateEscapedCallables({
       project,
       node: node.expression,
+      nestedKeys,
+      activeKeys,
     },);
-    if (returned === NESTED_CALLABLE_UNAVAILABLE)
-      return;
-    /**
-     * Stable declaration key for returned closure.
-     */
-    const key = callableKey(returned,);
-    if (nestedKeys.has(key,))
-      activeKeys.add(key,);
   },);
   return allNodes.filter(function activeNode(node,): boolean {
-    /**
-     * Nearest nested closure containing node.
-     */
-    const closure = enclosingNestedCallable({
+    return insideOnlyActiveClosures({
       node,
       body,
+      activeKeys,
     },);
-    return (closure === NESTED_CALLABLE_UNAVAILABLE)
-      || activeKeys.has(callableKey(closure,),);
   },);
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

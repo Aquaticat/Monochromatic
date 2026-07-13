@@ -60,6 +60,10 @@ await describe({
           'passedClosureSemanticEffect',
           'aliasedPassedClosureSemanticEffect',
           'unusedFunctionExpressionSemanticEffect',
+          'returnedContainerClosureSemanticEffect',
+          'passedContainerClosureSemanticEffect',
+          'deadParentClosureSemanticEffect',
+          'storedClosureSemanticEffect',
         ].map(function summaryFor(functionName,) {
           const nameNode = session.nodeAtOffset(SOURCE.indexOf(functionName,),);
           const declaration = nameNode.parent;
@@ -187,6 +191,26 @@ await describe({
             functionName: 'unusedFunctionExpressionSemanticEffect',
             mutated: [],
             opaque: [],
+          },
+          {
+            functionName: 'returnedContainerClosureSemanticEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'passedContainerClosureSemanticEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'deadParentClosureSemanticEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'storedClosureSemanticEffect',
+            mutated: [0,],
+            opaque: [0,],
           },
         ],);
         expect(transitiveProvenance,).toEqual(['JSON.stringify',],);

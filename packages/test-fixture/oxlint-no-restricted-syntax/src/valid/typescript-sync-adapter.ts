@@ -379,3 +379,73 @@ export function unusedFunctionExpressionSemanticEffect(
   };
   void neverCalled;
 }
+
+/**
+ * Returns aliased object containing closure that mutates captured parameter.
+ *
+ * @param closureState - State captured by escaped object method.
+ *
+ * @returns container whose method mutates captured state.
+ */
+export function returnedContainerClosureSemanticEffect(
+  closureState: { value: string; },
+): { readonly run: () => void; } {
+  const handlers = {
+    run(): void {
+      closureState.value = 'changed';
+    },
+  };
+  return handlers;
+}
+
+/**
+ * Passes object containing deferred closure that mutates captured parameter.
+ *
+ * @param closureState - State captured by asynchronously stored method.
+ */
+export function passedContainerClosureSemanticEffect(
+  closureState: { value: string; },
+): void {
+  void Promise.resolve({
+    run(): void {
+      closureState.value = 'changed';
+    },
+  },);
+}
+
+/**
+ * Defines dead outer closure whose invoked child captures parameter.
+ *
+ * @param closureState - State captured behind dead closure ancestry.
+ */
+export function deadParentClosureSemanticEffect(
+  closureState: { value: string; },
+): void {
+  function neverCalledParent(): void {
+    function calledOnlyInsideDeadParent(): void {
+      closureState.value = 'changed';
+    }
+    calledOnlyInsideDeadParent();
+  }
+  void neverCalledParent;
+}
+
+/**
+ * Stores closure on caller-reachable holder for later invocation.
+ *
+ * @param holder - Caller holder receiving deferred closure.
+ *
+ * @param closureState - Separate state captured by stored closure.
+ */
+export function storedClosureSemanticEffect({
+  holder,
+  closureState,
+}: {
+  readonly holder: { callback?: () => void; };
+  readonly closureState: { value: string; };
+}): void {
+  holder.callback = function mutateStoredState(): void {
+    closureState.value = 'changed';
+    void JSON.stringify(closureState,);
+  };
+}
