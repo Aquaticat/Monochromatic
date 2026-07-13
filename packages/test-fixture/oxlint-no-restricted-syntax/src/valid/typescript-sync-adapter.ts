@@ -1,4 +1,5 @@
 import { join, } from 'node:path';
+import { fileURLToPath, } from 'node:url';
 
 import {
   clearSemanticEffectFixture,
@@ -280,6 +281,28 @@ export function observationalIntrinsicEffect(state: readonly unknown[],): boolea
  */
 export function pathObservationEffect(path: string,): string {
   return join(path, 'fixture',);
+}
+
+/**
+ * Observes Date internal slots through audited getters.
+ *
+ * @param date - Date capability read without caller mutation.
+ *
+ * @returns local and UTC minute total.
+ */
+export function dateObservationEffect(date: Date,): number {
+  return date.getMinutes() + date.getUTCMinutes();
+}
+
+/**
+ * Converts URL through audited Node URL operation.
+ *
+ * @param url - File URL read without caller mutation.
+ *
+ * @returns platform path for file URL.
+ */
+export function fileUrlObservationEffect(url: URL,): string {
+  return fileURLToPath(url,);
 }
 
 /**

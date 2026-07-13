@@ -203,6 +203,13 @@ const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: '@types/node 26 path.d.ts primitive path operations',
     };
   },),
+  {
+    provenance: { kind: 'node', },
+    ownerType: 'node:url',
+    member: 'fileURLToPath',
+    targets: [],
+    evidence: '@types/node 26 url.d.ts file URL path conversion',
+  },
   ...[
     'addListener',
     'emit',

@@ -8,6 +8,7 @@ import type {
   IntrinsicEffectEntry,
   IntrinsicEffectTarget,
 } from './intrinsic-effect-catalog.ts';
+import { ECMASCRIPT_DATE_EFFECTS, } from './ecmascript-date-effect-catalog.ts';
 
 /**
  * Shared receiver mutation target.
@@ -225,6 +226,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: 'ECMA-262 commit 1355a23e collection iteration algorithms with callback effects',
     };
   },),
+  ...ECMASCRIPT_DATE_EFFECTS,
   {
     provenance: { kind: 'ecmascript', },
     ownerType: 'ErrorConstructor',

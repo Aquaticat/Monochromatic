@@ -57,6 +57,8 @@ await describe({
           'observationalIntrinsicEffect',
           'observationalValueEffects',
           'pathObservationEffect',
+          'dateObservationEffect',
+          'fileUrlObservationEffect',
           'aliasSemanticEffect',
           'assignedAliasSemanticEffect',
           'reboundParameterSemanticEffect',
@@ -160,6 +162,16 @@ await describe({
           },
           {
             functionName: 'pathObservationEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'dateObservationEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'fileUrlObservationEffect',
             mutated: [],
             opaque: [],
           },
