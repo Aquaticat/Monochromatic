@@ -4,6 +4,8 @@
  * @module
  */
 
+import { once, } from 'node:events';
+
 import type {
   Api,
   Model,
@@ -249,9 +251,13 @@ await describe({
               await Promise.resolve();
               return APPROVE_VERDICT;
             }
-            await Promise.resolve();
-            await Promise.resolve();
-            loserObservedAbort = abortSignal?.aborted === true;
+            if (abortSignal === undefined)
+              throw new Error('race contender received no cancellation signal',);
+            await once(
+              abortSignal,
+              'abort',
+            );
+            loserObservedAbort = abortSignal.aborted;
             throw new Error('losing contender cancelled',);
           },
         },);
