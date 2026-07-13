@@ -773,12 +773,35 @@ The disposable Oxlint-boundary prototype proved representative feasibility with 
   and one immediate generic callback-invocation shape propagated to the owning parameter;
 - one virtual filesystem overlay changed a queried parameter type in the next snapshot without writing source to disk.
 
+Follow-up probes added these bounded results:
+
+- `openFiles` discovered the distinct package `tsconfig.json` files for the no-restricted-syntax and JSONC-edit
+  packages and returned zero semantic diagnostics for each queried source file;
+- one Oxlint run configured with 16 threads invoked the JavaScript plugin in one process and produced sequential
+  snapshots across the tested files;
+- a BOM plus CRLF fixture with an astral character and a combining sequence before the parameter mapped to the expected
+  line,
+  column,
+  and UTF-8 Oxlint output offset;
+- brands,
+  recursive types,
+  callable objects,
+  conditional types,
+  indexed access,
+  arrays,
+  maps,
+  sets,
+  weak maps,
+  typed arrays,
+  and an `AbortController` capability all produced queryable TypeScript 7 type structures;
+- `ReadonlyDeep<Map<...>>` and `ReadonlyDeep<Set<...>>` produced readonly mapped projections,
+  while `ReadonlyDeep<AbortController>` retained the mutating `abort` capability and therefore demonstrated why
+  structural readonly alone cannot satisfy `dishonestReadonly` detection.
+
 These results select the primary bridge but do not complete its acceptance suite.
-The full adversarial type,
-effect,
-span,
-project,
-parallelism,
+The remaining effect,
+parser-recovery span,
+lifecycle,
 cache,
 packaging,
 and platform probes remain mandatory before implementation planning can call the bridge validated.

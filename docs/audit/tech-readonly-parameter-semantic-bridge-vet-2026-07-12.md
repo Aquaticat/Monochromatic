@@ -432,6 +432,54 @@ the recorded cold snapshot was 32.096689 milliseconds and the changed snapshot w
 These are feasibility measurements,
 not production budgets.
 
+### Follow-up project, span, and type probes
+
+`updateSnapshot({ openFiles })` discovered these separate configured projects from repository source paths:
+
+- `packages/oxlint-plugins/no-restricted-syntax/tsconfig.json`,
+  containing 406 source files in the returned program;
+- `packages/module/jsonc-edit/tsconfig.json`,
+  containing 571 source files in the returned program.
+
+Each queried source file returned zero semantic diagnostics.
+The recorded API request total for opening and querying both projects was 77.47605 milliseconds on the same Linux x64
+host.
+This proves configured-project discovery for two repository packages,
+not every package topology.
+
+One Oxlint run reported `threads_count: 16` but all probe diagnostics carried one process ID and sequential snapshot IDs.
+That run proves the tested embedded-JavaScript execution was serialized through one plugin process;
+it does not prove every Oxlint mode or future host lifecycle.
+A process search after Oxlint exited found no surviving native TypeScript API child for the fixture path.
+
+A source fixture placed a BOM,
+CRLF line endings,
+an astral character,
+and a combining sequence before the parameter.
+The TypeScript source position mapped through `getLocFromIndex` to Oxlint line 5,
+column 3,
+and byte offset 87,
+which matched an independent buffer search.
+Parser recovery and source mutations around such characters remain open.
+
+A type corpus exposed brands,
+recursive types,
+callable objects,
+conditional types,
+indexed access,
+arrays,
+collections,
+weak collections,
+typed arrays,
+and a DOM cancellation capability.
+The prototype distinguished the expected mutable and readonly object shapes,
+but also established two important algorithm requirements:
+
+- direct `ReadonlyMap` and `ReadonlySet` need collection-aware semantics because their observational methods are not
+  syntactically readonly properties;
+- `ReadonlyDeep<AbortController>` appears structurally readonly while retaining the mutating `abort` method,
+  so capability effects must detect `dishonestReadonly` instead of trusting mapped-property flags.
+
 ## Execution manifests
 
 ### TypeScript 7.0.2 probe
