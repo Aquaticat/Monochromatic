@@ -80,6 +80,12 @@ export {
 } from './rules/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
 
 export {
+  clearEffectSummaryCache,
+  effectSummaryCacheStats,
+  type EffectSummaryCacheStats,
+} from './rules/prefer-readonly-parameter-types/effect-summary-cache.ts';
+
+export {
   buildEffectSummaryIndex,
   NO_EFFECT_SUMMARY,
   type CallableEffectSummary,

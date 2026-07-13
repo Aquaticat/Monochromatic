@@ -8,6 +8,10 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
 import {
+  directSummariesForSource,
+  pruneDirectSummaryCache,
+} from './effect-summary-cache.ts';
+import {
   addEffectIndex,
   callableKey,
   type CallEdge,
@@ -369,6 +373,10 @@ export function buildEffectSummaryIndex({
    * Mutable summaries keyed by stable declaration identity.
    */
   const summaries = new Map<string, MutableEffectSummary>();
+  /**
+   * Current owned source paths used to prune rename and deletion residue.
+   */
+  const activeFiles = new Set<string>();
   project.program
     .getSourceFileNames()
     .forEach(function gatherSource(fileName,): void {
@@ -382,18 +390,47 @@ export function buildEffectSummaryIndex({
       || project.program
       .isSourceFileFromExternalLibrary(sourceFile,))
       return;
-    collectAstNodes(sourceFile,)
-      .forEach(function gatherCallable(node,): void {
-      if (isEffectCallableDeclaration(node,)) {
-        summaries.set(
-          callableKey(node,),
-          directEffectSummary({
-            project,
-            declaration: node,
-          },),
-        );
-      }
+    activeFiles.add(fileName,);
+    /**
+     * Direct summaries reused when exact source text remains unchanged.
+     */
+    const fileSummaries = directSummariesForSource({
+      projectKey: project.configFileName,
+      fileName,
+      sourceText: sourceFile.text,
+      create(): ReadonlyMap<string, MutableEffectSummary> {
+        /**
+         * Fresh summaries scanned only for changed source.
+         */
+        const created = new Map<string, MutableEffectSummary>();
+        collectAstNodes(sourceFile,)
+          .forEach(function gatherCallable(node,): void {
+          if (isEffectCallableDeclaration(node,)) {
+            created.set(
+              callableKey(node,),
+              directEffectSummary({
+                project,
+                declaration: node,
+              },),
+            );
+          }
+        },);
+        return created;
+      },
     },);
+    fileSummaries.forEach(function addSummary(
+      summary,
+      key,
+    ): void {
+      summaries.set(
+        key,
+        summary,
+      );
+    },);
+  },);
+  pruneDirectSummaryCache({
+    projectKey: project.configFileName,
+    activeFiles,
   },);
   propagateEffects(summaries,);
   return {

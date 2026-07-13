@@ -10,7 +10,9 @@ import { isFunctionLikeDeclaration, } from 'typescript/unstable/ast/is';
 
 import {
   buildEffectSummaryIndex,
+  clearEffectSummaryCache,
   closeSemanticBridge,
+  effectSummaryCacheStats,
   NO_EFFECT_SUMMARY,
   openSemanticFile,
 } from '../dist/final/node/index.mjs';
@@ -214,6 +216,35 @@ await describe({
           },
         ],);
         expect(transitiveProvenance,).toEqual(['JSON.stringify',],);
+      },
+    },),
+    it({
+      name: 'reuses direct scans for unchanged project sources',
+      fn: async () => {
+        clearEffectSummaryCache();
+        const firstSession = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        buildEffectSummaryIndex({ project: firstSession.project, },);
+        /** Counters after uncached whole-project scan. */
+        const firstStats = effectSummaryCacheStats();
+        expect(firstStats.directSummaryBuildCount > 0,).toBe(true,);
+        const secondSession = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        buildEffectSummaryIndex({ project: secondSession.project, },);
+        /** Counters after identical project snapshot source. */
+        const secondStats = effectSummaryCacheStats();
+        expect(secondStats.directSummaryBuildCount,).toBe(
+          firstStats.directSummaryBuildCount,
+        );
+        expect(secondStats.sourceCacheHitCount > firstStats.sourceCacheHitCount,).toBe(true,);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
       },
     },),
   ],
