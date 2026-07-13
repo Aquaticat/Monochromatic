@@ -5,10 +5,7 @@
  */
 
 import { existsSync, } from 'node:fs';
-import {
-  dirname,
-  resolve,
-} from 'node:path';
+import { dirname, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { version as typescriptVersion, } from 'typescript';
@@ -28,6 +25,7 @@ import {
   type SemanticBridgeCacheStats,
 } from './semantic-bridge-cache.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
+import { normalizeSemanticFileName, } from './semantic-file-name.ts';
 import {
   findNodeAtOffset,
   typescriptOffset,
@@ -114,22 +112,6 @@ export type SemanticFileSession = {
   readonly nodeAtOffset: (offset: number) => Node;
 };
 
-/**
- * Normalizes source path for overlay and project lookup.
- *
- * @param fileName - Host-provided absolute or relative source path.
- *
- * @returns absolute platform-normalized source path.
- *
- * @example
- * ```ts
- * normalizeFileName('src/index.ts');
- * ```
- */
-function normalizeFileName(fileName: string,): string {
-  return resolve(fileName,);
-}
-
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- TypeScript FileSystem callbacks require undefined fallback sentinels. */
 /**
  * Overlay file text or TypeScript's real-filesystem delegation sentinel.
@@ -158,7 +140,7 @@ function readFileFromOverlayOrDelegate(
 ): OverlayFileTextOrRealFileSystemFallback {
   return bridgeState
     .overlays
-    .get(normalizeFileName(fileName,),);
+    .get(normalizeSemanticFileName(fileName,),);
 }
 
 /**
@@ -178,7 +160,7 @@ function reportOverlayPresenceOrDelegate(
 ): OverlayPresenceOrRealFileSystemFallback {
   return bridgeState
     .overlays
-    .has(normalizeFileName(fileName,),) ? true : undefined;
+    .has(normalizeSemanticFileName(fileName,),) ? true : undefined;
 }
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
@@ -303,7 +285,7 @@ export function openSemanticFile({
   /**
    * Canonical source key shared by overlay and project service.
    */
-  const normalizedFileName = normalizeFileName(fileName,);
+  const normalizedFileName = normalizeSemanticFileName(fileName,);
   /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous Oxlint visitor must classify prior-path deletion before synchronous snapshot update. */
   /**
    * Previously active source removed from disk by rename or deletion.

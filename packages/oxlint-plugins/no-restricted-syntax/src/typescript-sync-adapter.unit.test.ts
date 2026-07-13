@@ -295,7 +295,9 @@ await describe({
               sourceText: SOURCE,
               hasBOM: false,
             },);
-            expect(session.sourceFile.fileName,).toBe(FIXTURE_PATH,);
+            expect(
+              session.sourceFile.fileName.replaceAll('\\', '/',).toLowerCase(),
+            ).toBe(FIXTURE_PATH.replaceAll('\\', '/',).toLowerCase(),);
             closeSemanticBridge();
           },
         },),
