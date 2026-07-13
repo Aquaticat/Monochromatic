@@ -60,6 +60,12 @@ function createPackageFixture(): PackageFixture {
   };
 }
 
+/** Workspace package source used for manifest provenance. */
+const SHARED_SOURCE_PATH = fileURLToPath(new URL(
+  '../../shared/src/index.ts',
+  import.meta.url,
+),);
+
 /** Current fixture source text. */
 const SOURCE = readFileSync(
   FIXTURE_PATH,
@@ -220,6 +226,25 @@ await describe({
           provenance: { kind: 'node', },
           ownerType: 'node:path',
           member: 'join',
+        },);
+        closeSemanticBridge();
+      },
+    },),
+    it({
+      name: 'resolves nearest workspace package manifest provenance',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        expect(intrinsicProvenance({
+          project: session.project,
+          fileName: SHARED_SOURCE_PATH,
+        },),).toEqual({
+          kind: 'package',
+          packageName: '@monochromatic-dev/config-oxlint-shared',
+          major: 0,
         },);
         closeSemanticBridge();
       },

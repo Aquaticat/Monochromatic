@@ -63,10 +63,22 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },),
   ...[
     'getAllComments',
+    'getCommentsBefore',
+    'getCommentsInside',
     'getDeclaredVariables',
+    'getFirstToken',
+    'getIndexFromLoc',
+    'getLastToken',
     'getLocFromIndex',
     'getScope',
     'getText',
+    'getTokenAfter',
+    'getTokenBefore',
+    'getTokensBetween',
+    'insertTextAfter',
+    'insertTextAfterRange',
+    'insertTextBefore',
+    'insertTextBeforeRange',
     'replaceText',
     'replaceTextRange',
   ].map(function oxlintObservation(member,): IntrinsicEffectEntry {
@@ -82,6 +94,33 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: '@oxlint/plugins 1.73 index.d.ts source and fixer descriptor operations',
     };
   },),
+  ...[
+    'isRecord',
+    'parseMutationContractBlocks',
+  ].map(function sharedPluginObservation(member,): IntrinsicEffectEntry {
+    return {
+      provenance: {
+        kind: 'package',
+        packageName: '@monochromatic-dev/config-oxlint-shared',
+        major: 0,
+      },
+      ownerType: 'globalThis',
+      member,
+      targets: [],
+      evidence: 'config-oxlint-shared 0.0.1 source pure parser and record predicates',
+    };
+  },),
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@monochromatic-dev/module-or-throw',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'nonNullishOrThrow',
+    targets: [],
+    evidence: 'module-or-throw 0.0.1 nonNullishOrThrow validation without argument mutation',
+  },
   ...[
     'isArrayLiteralExpression',
     'isArrayTypeNode',

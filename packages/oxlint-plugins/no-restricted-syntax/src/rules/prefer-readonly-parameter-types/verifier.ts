@@ -4,14 +4,15 @@
  * @module
  */
 
-import type { ParsedMutationContractBlock, } from '@monochromatic-dev/config-oxlint-shared/ts';
+import type {
+  ForeignBorrowed,
+  ParsedMutationContractBlock,
+} from '@monochromatic-dev/config-oxlint-shared/ts';
 import type {
   Context,
   Fixer,
   LineColumn,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
-
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
 import {

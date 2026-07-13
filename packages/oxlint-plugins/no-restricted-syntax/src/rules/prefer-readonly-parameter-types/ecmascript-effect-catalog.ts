@@ -193,6 +193,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...[
     'Map',
     'ReadonlyMap',
+    'WeakMap',
   ].map(function mapGetObservation(ownerType,): IntrinsicEffectEntry {
     return {
       provenance: { kind: 'ecmascript', },

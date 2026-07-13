@@ -5,7 +5,10 @@
  */
 
 import { readFileSync, } from 'node:fs';
-import { basename, } from 'node:path';
+import {
+  basename,
+  dirname,
+} from 'node:path';
 
 import type { Node, } from 'typescript/unstable/ast';
 import {
@@ -79,8 +82,9 @@ function hasPackageIdentityFields(value: unknown,): value is {
     && ((typeof value.version) === 'string');
 }
 
+/* oxlint-disable no-restricted-syntax/no-sync -- Oxlint visitors require synchronous package provenance lookup for installed and workspace source declarations. */
 /**
- * Locates package root and name from final `node_modules` segment.
+ * Locates package root and name from final `node_modules` segment or nearest workspace manifest.
  *
  * @param fileName - Declaration source path.
  *
@@ -105,8 +109,39 @@ function packageRootAndName(fileName: string,): {
    * Offset of final installed-package boundary.
    */
   const markerIndex = normalized.lastIndexOf(marker,);
-  if (markerIndex === (-1))
-    return NO_PACKAGE_IDENTITY;
+  if (markerIndex === (-1)) {
+    /**
+     * Parent cursor searching nearest workspace package manifest.
+     */
+    const cursor = { directory: dirname(normalized,), };
+    while (true) {
+      try {
+        /**
+         * Candidate workspace manifest narrowed to package identity fields.
+         */
+        const parsed: unknown = JSON.parse(readFileSync(
+          `${cursor.directory}/package.json`,
+          'utf8',
+        ),);
+        if (hasPackageIdentityFields(parsed,)) {
+          return {
+            packageRoot: cursor.directory,
+            packageName: parsed.name,
+          };
+        }
+      }
+      catch (error) {
+        l.debug(`could not read workspace package identity in ${cursor.directory}: ${String(error,)}`,);
+      }
+      /**
+       * Parent directory for next manifest probe.
+       */
+      const parent = dirname(cursor.directory,);
+      if (parent === cursor.directory)
+        return NO_PACKAGE_IDENTITY;
+      cursor.directory = parent;
+    }
+  }
   /**
    * Path beginning with package name after final boundary.
    */
@@ -149,7 +184,6 @@ function packageRootAndName(fileName: string,): {
   };
 }
 
-/* oxlint-disable no-restricted-syntax/no-sync -- Oxlint visitors and TypeScript synchronous API require synchronous package provenance lookup. */
 /**
  * Reads exact package name and major for declaration source.
  *
