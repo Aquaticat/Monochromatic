@@ -121,6 +121,8 @@ to registry consumers.
   `mise` task shell,
   even after a full install reported `tsdown 0.22.5` in root development dependencies.
   The package task invokes `node ../../../node_modules/tsdown/dist/run.mjs` instead of relying on a Windows command shim.
+  The workflow also wraps the task in `mise exec node --` because Windows reported `mise-shim.exe` absent and did not
+  expose the installed `node` command to a plain `mise run` task.
 - Manually creating a workspace link would mutate installation state and would not represent a reproducible consumer
   boundary.
 
