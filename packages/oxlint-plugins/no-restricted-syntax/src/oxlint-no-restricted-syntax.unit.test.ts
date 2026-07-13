@@ -577,6 +577,23 @@ await describe({
           },
         },),
         it({
+          name: 'suggests standard ReadonlyArray owner for readonly reachable types',
+          fn: async () => {
+            /** Source with standard mutable Array type reference. */
+            const source = '/** Reads array. @param values - Values. */\nexport function read(values: Array<string>,): number { return values.length; }\n';
+            const ordinarilyFixed = await fixReadonlyGeneratedSource({
+              source,
+              fixSuggestions: false,
+            },);
+            expect(ordinarilyFixed.includes('Array<string>',),).toBe(true,);
+            const suggestionFixed = await fixReadonlyGeneratedSource({
+              source,
+              fixSuggestions: true,
+            },);
+            expect(suggestionFixed.includes('ReadonlyArray<string>',),).toBe(true,);
+          },
+        },),
+        it({
           name: 'suggests imported type-fest ReadonlyDeep for structural data only explicitly',
           fn: async () => {
             /** Source with mutable nested data and aliased type-fest import. */

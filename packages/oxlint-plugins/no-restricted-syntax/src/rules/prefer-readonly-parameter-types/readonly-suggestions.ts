@@ -21,6 +21,7 @@ import {
 } from 'typescript/unstable/ast/is';
 
 import { classifyReadonlyType, } from './readonly-classifier.ts';
+import { readonlyCollectionSuggestions, } from './readonly-collection-suggestions.ts';
 
 /**
  * Converts TypeScript offset to Oxlint offset after BOM stripping.
@@ -310,6 +311,11 @@ export function readonlyParameterSuggestions({
 },): Suggestion[] {
   return [
     ...readonlyArraySuggestions({
+      context,
+      parameter,
+      project,
+    },),
+    ...readonlyCollectionSuggestions({
       context,
       parameter,
       project,
