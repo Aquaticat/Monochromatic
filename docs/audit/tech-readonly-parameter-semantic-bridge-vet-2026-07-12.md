@@ -1,9 +1,9 @@
 # Readonly parameter semantic bridge technology vet
 
 Status:
- in progress,
-discovery and feasibility validation.
-No recommendation or adoption decision exists.
+ in progress.
+TypeScript 7's synchronous unstable API is the user-approved primary candidate;
+acceptance validation and product-policy grilling remain open.
 
 Subject:
  readonly parameter semantic bridge.
@@ -150,8 +150,16 @@ Ratings and sensitivity remain pending finalist validation.
   parser,
   and output-filter systems.
 
-One de-duplicated expansion round will be added after the initial schedule records new taxonomy.
-Discovery is not yet saturated.
+The de-duplicated expansion round added TypeScript ESLint Project Service,
+`ts-morph`,
+and `effect-analyzer`.
+Registry,
+repository,
+web,
+and local-source searches then produced only wrappers around the same TypeScript 6 API,
+syntax-only analyzers,
+or domain-specific consumers.
+Discovery is saturated for the semantic-bridge decision.
 
 ## Candidate ledger
 
@@ -186,43 +194,48 @@ package,
 or deep readonly requirements alone.
 It remains a baseline component for local effect syntax.
 
-### Direct TypeScript compiler program and checker
+### TypeScript 7 `typescript/unstable/sync`
 
 Discovery source:
- repository root TypeScript dependency,
-TypeScript compiler API,
-and `rolldown-plugin-dts` source.
+ repository root TypeScript 7.0.2 package,
+its installed declarations,
+TypeScript's 7.0 announcement,
+and `microsoft/typescript-go` source at
+`168e7015edf98244febc8f4ae450b673b5d195d7`.
 
 Lifecycle:
- serious alternative,
-targeted validation pending.
+ user-approved primary candidate,
+acceptance validation pending.
 
-Provisional role:
- authoritative type,
-symbol,
-assignability,
-project,
-and declaration analysis;
-map Oxlint visitor nodes to TypeScript nodes through source file and spans.
+Role:
+ keep one synchronous native API client per Oxlint plugin process;
+open project snapshots,
+overlay current source through virtual filesystem callbacks,
+query types and resolved signatures,
+and map diagnostics by source offsets.
 
-Open gates:
- incremental lifecycle,
-node-span mapping across Unicode and transformed source,
-project-reference coverage,
-TypeScript 7 API stability,
-and plugin-worker reuse.
+Accepted risk:
+ the API is explicitly unstable.
+The project chose it and rejected a TypeScript 6 fallback.
+All unstable access must remain behind a version-tested adapter that fails closed.
 
-### TypeScript project or language service
+### TypeScript 6 compiler and language-service family
 
 Discovery source:
- compiler ecosystem taxonomy discovered while examining incremental program needs.
+ TypeScript's official 7.0 compatibility guidance,
+`@typescript-eslint/project-service`,
+`ts-morph`,
+and `effect-analyzer`.
 
 Lifecycle:
- discovered,
-screening pending.
+ user-directed exit.
 
-Provisional role:
- reuse TypeScript's incremental project graph and change invalidation rather than constructing programs per file.
+Reason:
+ the user explicitly chose the TypeScript 7 unstable API and prohibited a TypeScript 6 fallback.
+The current `@typescript-eslint/project-service` peer range ends before TypeScript 7 and wraps
+`typescript/lib/tsserverlibrary`.
+`ts-morph@28` is built around TypeScript 6.0.2,
+and `effect-analyzer` is an Effect-specific `ts-morph` consumer rather than a general replacement semantic engine.
 
 ### `oxc-parser` plus TypeScript semantics
 
@@ -232,16 +245,12 @@ repository catalog,
 and Oxc source.
 
 Lifecycle:
- serious composition,
-targeted validation pending.
+ hard-gate exit.
 
-Provisional role:
- Oxc-compatible syntax or span bridge paired with a TypeScript program for semantic facts.
-
-Open gate:
- Oxlint already supplies an Oxc AST,
-so the additional parse must prove a mapping or lifecycle benefit rather than duplicate syntax work.
-`oxc-parser` does not itself provide TypeScript type objects.
+Reason:
+ Oxlint already supplies the Oxc AST and source spans.
+The real-boundary TypeScript 7 probe mapped semantic nodes to exact Oxlint diagnostics without another parse.
+`oxc-parser` adds no type objects or lifecycle capability and would introduce a third tree without a compensating benefit.
 
 ### Yuku parser and analyzer plus a custom type evaluator
 
@@ -253,25 +262,16 @@ and `yuku-toolchain/yuku` source at
 `d41e37c9eeac42ba72f1f7d5ef3c76a09975adc9`.
 
 Lifecycle:
- serious composition,
-targeted validation pending.
+ hard-gate exit.
 
-Provisional role:
- Oxc-compatible AST,
-scopes,
-symbols,
-resolved references,
-write flags,
-and cross-file links with native transfer-friendly data.
-
-Open gate:
+Reason:
  Yuku 0.6.1 exposes binding and module semantics,
 not TypeScript inferred type objects or a `TypeChecker`.
-A custom evaluator would need to implement generics,
+A custom evaluator would reimplement generics,
 conditional and mapped types,
 assignability,
-and external declaration semantics or pair with TypeScript.
-Native prebuilt provenance and platform artifacts also require validation.
+and external declaration semantics while still needing TypeScript for compiler parity.
+The selected TypeScript 7 bridge already supplies symbol identity and resolved signatures for effect summaries.
 
 ### Oxc isolated declarations plus semantic analysis
 
@@ -282,17 +282,14 @@ Oxc source,
 and repository tsdown configuration.
 
 Lifecycle:
- serious composition,
-targeted validation pending.
+ hard-gate exit.
 
-Provisional role:
- normalize source into per-file declarations before a later type or effect analysis stage.
-
-Open gate:
+Reason:
  isolated declarations deliberately avoid type checking and require source annotations.
-The transform must prove that normalization preserves every internal parameter and effect-relevant declaration needed by
-the rule,
-not only public emit.
+They omit function bodies and internal effect evidence,
+then still require a semantic engine for inferred types and assignability.
+They remain declaration-publication verification input,
+not the lint semantic bridge.
 
 ### `rolldown-plugin-dts` declaration pipeline and TypeScript context
 
@@ -303,20 +300,13 @@ and `sxzz/rolldown-plugin-dts` source at
 `e7de7e9210b94ddae88f6a7eae36e5ffd4d82d42`.
 
 Lifecycle:
- serious composition,
-targeted validation pending.
+ hard-gate exit for semantic bridging.
 
-Provisional role:
- reuse its TypeScript `Program` cache,
-file invalidation,
-project parsing,
-Oxc isolated declaration path,
-and declaration bundling.
-
-Open gate:
+Reason:
  public operations generate declarations rather than answer arbitrary type queries.
-Its exported `TscContext` exposes cached programs only after emit-oriented setup,
-and its build lifecycle may be the wrong seam for per-file editor linting.
+Its exported `TscContext` exposes cached TypeScript 6 programs only after emit-oriented setup,
+and its build lifecycle does not match per-file editor linting.
+It remains required for declaration-comment preservation tests.
 The repository currently resolves 0.27.4,
 while the audited main clone declares 0.27.7.
 
@@ -326,8 +316,7 @@ Discovery source:
  122 repository references and the selected ownership-aware remediation.
 
 Lifecycle:
- candidate subcomponent family,
-discovery pending.
+ deferred authoring subcomponent outside this bridge decision.
 
 Provisional role:
  construct honest parameter-local projections when a shared type remains legitimately mutable.
@@ -336,6 +325,7 @@ Open gate:
  compare existing `type-fest` behavior,
 a project-owned utility,
 and synthesized structural syntax across all calibrated type classes.
+The selected TypeScript 7 bridge can evaluate every candidate.
 
 ## Evidence collected
 
@@ -386,23 +376,157 @@ and invalidates every program containing a changed file.
 The public `./tsc-context` export exposes context construction and invalidation;
 the program creation helper remains internal.
 
+### TypeScript 7 synchronous semantic surface
+
+The installed `typescript@7.0.2` package exports `typescript/unstable/sync`.
+Its `API` creates snapshots containing projects,
+programs,
+checkers,
+and emitters.
+The checker exposes type,
+symbol,
+resolved-signature,
+assignability,
+property,
+and index-info queries.
+Virtual filesystem callbacks and `fileChanges.changed` update unsaved current-file text.
+
+The synchronous client starts the bundled TypeScript native executable with `--api` and communicates through a
+blocking RPC channel.
+This matches Oxlint's synchronous rule lifecycle and makes process-scoped reuse mandatory.
+
+Mapped readonly state is the remaining unstable seam.
+The JavaScript API exposes `Symbol.checkFlags` only as a number;
+the matching TypeScript-Go source defines `CheckFlagsReadonly` as `1 << 3`.
+The disposable probe distinguished a recursive mapped `DeepReadonly` projection only after testing that bit.
+Full source trace and reproduction:
+[`docs/troubleshooting/typescript-7-unstable-sync-readonly.md`](../troubleshooting/typescript-7-unstable-sync-readonly.md).
+
+### Real Oxlint boundary probe
+
+A disposable plugin loaded `typescript/unstable/sync` from Oxlint 1.73.0 and reported semantic findings at TypeScript
+source offsets.
+The representative ASCII LF fixture covered four files and distinguished:
+
+- mutable and explicitly readonly imported aliases;
+- a recursive mapped `DeepReadonly<MutableEnvelope<string>>` projection;
+- mutable unions;
+- overload declarations and implementation signatures;
+- function types,
+  call signatures,
+  and method signatures;
+- one direct mutation,
+  one cross-file transitive call,
+  and one immediate generic callback invocation.
+
+The effect probe is not a complete effect engine.
+Its mutating-method name set is a feasibility shortcut,
+unknown calls do not yet produce `opaqueEffect`,
+and only one higher-order relation shape was exercised.
+
+A separate virtual-filesystem probe changed one parameter from `ReadonlyEnvelope<string>` to
+`MutableEnvelope<string>` in memory.
+Snapshot 1 reported readonly and snapshot 2 reported mutable without a disk write.
+On this Linux x64 fixture,
+the recorded cold snapshot was 32.096689 milliseconds and the changed snapshot was 0.513561 milliseconds.
+These are feasibility measurements,
+not production budgets.
+
 ## Execution manifests
 
-No third-party candidate command tree has been executed yet.
-Source-only inspection and repository-owned installed Oxlint probes have run.
+### TypeScript 7.0.2 probe
 
-Before candidate execution,
-record package revision,
-artifact checksums,
-lifecycle scripts,
-native downloads,
-subprocesses,
-network policy,
-and the bounded disposable environment here.
+- Package:
+  repository-installed `typescript@7.0.2` under the pnpm lockfile.
+- Source revision:
+  `microsoft/typescript-go@168e7015edf98244febc8f4ae450b673b5d195d7`.
+- License:
+  Apache-2.0.
+- Native boundary:
+  platform package already installed by pnpm;
+  no probe-time artifact download.
+- Lifecycle scripts:
+  none executed.
+- Subprocess:
+  the API client spawned the installed native TypeScript executable with `--api`.
+- Network:
+  disabled by construction after source discovery;
+  the probe read only repository packages and disposable fixture files.
+- Filesystem:
+  disposable fixture under `/var/home/user/temp/agent/readonly-parameter-probe-2026-07-12`;
+  current-file overlays remained in memory.
+- Command boundary:
+  `mise` task invoking installed Oxlint against the disposable fixture,
+  plus a `mise` task invoking the standalone snapshot probe.
+
+### Source-audit clones
+
+No upstream build or lifecycle scripts ran.
+Read-only shallow clones were used at these revisions:
+
+- `typescript-eslint/typescript-eslint@bcfe16fd2c4cbb12227168475172b46cd5788543`;
+- `dsherret/ts-morph@699815f54ae9b5c2a93f016ba1a9df1e8ac1c014`;
+- `jagreehal/effect-analyzer@ba7d42d81cd6b4e230dccb1954ac3434379d673d`;
+- `microsoft/typescript-go@168e7015edf98244febc8f4ae450b673b5d195d7`;
+- previously recorded Oxc,
+  Yuku,
+  and `rolldown-plugin-dts` revisions.
+
+## Open acceptance gates
+
+- Replace the prototype's mutating-method name set with symbol- and signature-grounded capability handling.
+- Prove fail-closed `opaqueEffect` behavior for unresolved calls,
+  dynamic dispatch,
+  external callbacks,
+  stored callbacks,
+  closures,
+  deferred work,
+  recursion,
+  and overload-selected effects.
+- Calibrate readonly semantics for brands,
+  callable objects,
+  collections,
+  weak collections,
+  typed arrays,
+  classes,
+  accessors,
+  recursive mixed-mutability cycles,
+  conditionals,
+  indexed access,
+  mapped unions,
+  platform capabilities,
+  and variance.
+- Test BOM,
+  astral Unicode,
+  combining characters,
+  CRLF,
+  comments,
+  parser recovery,
+  and source changes before claiming general span equivalence.
+- Test multiple inherited `tsconfig` files,
+  package aliases,
+  symlinks,
+  path case normalization,
+  changed/deleted/renamed files,
+  parallel Oxlint workers,
+  repeated runs,
+  snapshot disposal,
+  overlay eviction,
+  native-process cleanup,
+  and memory growth.
+- Test Linux x64,
+  macOS arm64,
+  and Windows x64 artifacts instead of inferring platform support from package metadata.
+- Add TypeScript 7 as an explicit runtime dependency of the published plugin package and load the built plugin from a
+  disposable external consumer.
+- Resolve the editor requirement:
+  `packages/config/oxlint/src/index.ts` records that Oxlint's language server does not support JavaScript plugins.
+- Verify `@mutates` preservation with the repository-installed declaration pipeline rather than inferring it from a
+  newer upstream clone.
 
 ## Validation plan
 
-Use one adversarial calibration corpus for every surviving pipeline:
+Use one adversarial calibration corpus for the primary pipeline:
 
 - owned mutable and readonly object aliases;
 - nested arrays,
@@ -436,13 +560,65 @@ fixtures using repository tasks or an equivalent isolated harness.
 
 ## Scoring and sensitivity
 
-Pending discovery saturation,
-hard-gate confirmation,
-equal-depth source audits,
-and runtime validation.
-No candidate has a score or rank.
+Scoring remains pending the open acceptance gates.
+The representative Linux fixture does not justify numeric ratings for semantic completeness,
+editor lifecycle,
+cross-package behavior,
+or cross-platform provenance.
+
+Ordering is nevertheless constrained:
+TypeScript 7 remains the sole user-approved candidate,
+and TypeScript 6 candidates may not be selected.
+This is a policy selection,
+not a substitute for capability scoring.
+
+## Adoption and rollback plan
+
+Adopt through one project-owned adapter inside the Oxlint plugin package.
+The adapter owns API creation,
+project discovery,
+snapshots,
+virtual overlays,
+source-node lookup,
+readonly queries,
+and bridge diagnostics.
+Effect-summary logic consumes adapter-owned identities rather than importing unstable TypeScript APIs throughout the
+rule.
+
+Keep the repository's existing TypeScript catalog and lockfile authority.
+Do not add TypeScript 6,
+`@typescript-eslint/project-service`,
+`ts-morph`,
+or `effect-analyzer`.
+Add contract tests for every unstable method and for the `1 << 3` mapped-readonly bit.
+Unknown API shapes,
+missing projects,
+error types,
+or changed flag behavior must fail closed.
+
+Rollback is local:
+disable the new project-owned rule and restore the existing
+`typescript/prefer-readonly-parameter-types` configuration while retaining migrated `@mutates` documentation.
+No source-level migration should depend on an unverified automatic rewrite.
 
 ## Current outcome
 
-No recommendation.
-The next action is discovery saturation followed by disposable feasibility probes.
+User-approved primary candidate:
+ TypeScript 7.0.2's `typescript/unstable/sync` API.
+
+Rejected by user constraint:
+ every TypeScript 6 fallback.
+
+Rejected by hard gates:
+ syntax-only Oxc and Yuku compositions,
+Oxc isolated declarations,
+`rolldown-plugin-dts` as a lint lifecycle,
+and wrappers built on TypeScript 6.
+
+Still open:
+ acceptance gates,
+readonly projection authoring syntax,
+declaration-publication verification,
+and the editor-support policy branch.
+Product implementation remains blocked until the audit finishes and the full plan reaches shared-understanding
+confirmation.

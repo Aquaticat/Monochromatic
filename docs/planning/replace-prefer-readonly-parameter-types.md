@@ -756,28 +756,48 @@ and invalidate changed files with `updateSnapshot`.
 Oxlint's synchronous JavaScript-rule visitors require the synchronous TypeScript API rather than its asynchronous
 counterpart.
 
-The disposable Oxlint-boundary prototype proved all of the following with installed TypeScript 7.0.2:
+The disposable Oxlint-boundary prototype proved representative feasibility with installed TypeScript 7.0.2:
 
-- imported aliases,
+- one fixture covering imported aliases,
   generics,
   unions,
   overloads,
   function types,
   call signatures,
-  and method signatures resolve from the TypeScript project;
-- source offsets from the TypeScript tree produce exact Oxlint diagnostic spans;
-- explicitly readonly types and recursively mapped `DeepReadonly` projections can be distinguished from mutable
-  types;
-- direct,
-  cross-file transitive,
-  and higher-order callback mutation summaries reach the owning parameter;
-- a virtual filesystem overlay changes queried parameter types in the next snapshot without writing source to disk.
+  and method signatures resolved from one TypeScript project;
+- TypeScript source offsets produced the expected Oxlint spans on ASCII LF source;
+- explicitly readonly properties and one recursive mapped `DeepReadonly` projection were distinguished from mutable
+  properties;
+- one direct mutation,
+  one cross-file call,
+  and one immediate generic callback-invocation shape propagated to the owning parameter;
+- one virtual filesystem overlay changed a queried parameter type in the next snapshot without writing source to disk.
+
+These results select the primary bridge but do not complete its acceptance suite.
+The full adversarial type,
+effect,
+span,
+project,
+parallelism,
+cache,
+packaging,
+and platform probes remain mandatory before implementation planning can call the bridge validated.
 
 Readonly detection must isolate the unstable detail behind a tested adapter.
 TypeScript 7.0.2 exposes transient mapped-property readonly state through `Symbol.checkFlags`,
 whose upstream `CheckFlagsReadonly` value is `1 << 3` but whose enum is not exported.
-Pin adapter contract tests to the installed TypeScript version and fail closed with `opaqueEffect` or a dedicated
-semantic-bridge diagnostic when the expected capability disappears.
+Pin adapter contract tests to the installed TypeScript version and fail closed with a dedicated semantic-bridge
+diagnostic when the expected capability disappears.
+Do not misreport unavailable readonly semantics as `opaqueEffect`,
+which is reserved for unresolved mutation effects.
+
+The published `no-restricted-syntax` package must declare TypeScript 7 as a runtime dependency and prove that its built
+artifact resolves `typescript/unstable/sync` in a disposable external consumer.
+It may not rely on the monorepo root's development dependency.
+
+Oxlint's language server currently does not support JavaScript plugins,
+so editor diagnostics and code actions are an unresolved product-policy branch rather than a proven bridge property.
+Resolve that branch through one-question-at-a-time grilling before finalizing the plan.
 
 ### Deferred readonly projection outcome
 
