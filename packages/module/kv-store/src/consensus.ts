@@ -3,6 +3,7 @@
 // prioritized sources) is general, but these stay internal to the store.
 
 import { ABSENT, } from './constants.ts';
+import { groupBackendResults, } from './group-backend-results.ts';
 
 /**
  * Internal result record for store get-aggregation.
@@ -164,12 +165,10 @@ export function computeCanonical<TBackend = unknown,>({
   /**
    * Cross-tier grouping by serialized value so a strong overall majority can short-circuit tier-aware fallback.
    */
-  const groupedAll = Map.groupBy(
+  const groupedAll = groupBackendResults({
     results,
-    function byValue({ value, },) {
-      return value;
-    },
-  );
+    field: 'value',
+  },);
 
   /**
    * Cross-tier majority pick; consulted before falling back to highest-tier-only resolution.
@@ -222,12 +221,10 @@ export function resolveConsensus<TBackend = unknown,>({
   /**
    * Results grouped by priority tier so the highest-priority cohort can be isolated for consensus.
    */
-  const grouped = Map.groupBy(
+  const grouped = groupBackendResults({
     results,
-    function byPriority({ priority, },) {
-      return priority;
-    },
-  );
+    field: 'priority',
+  },);
 
   /**
    * Tier cohorts ordered ascending by priority so `.at(-1)` yields the highest-priority cohort.
