@@ -30,9 +30,23 @@ export type Cell = {
   /**
    * Absolute X offset of this cell in the master SVG.
    */
-  xOffset: number;
+  readonly xOffset: number;
   /**
    * All path elements belonging to this cell.
+   */
+  readonly paths: readonly CellPath[];
+};
+
+/**
+ * Parser-owned cell accumulator before immutable publication.
+ */
+type MutableCell = {
+  /**
+   * Absolute X offset of this cell in the master SVG.
+   */
+  xOffset: number;
+  /**
+   * Path elements accumulated until next cell begins.
    */
   paths: CellPath[];
 };
@@ -128,7 +142,7 @@ export function parseSvg(svgContent: string,): Cell[] {
   /**
    * Accumulator of parsed cells, filled in strip order as `<rect>` tags are encountered.
    */
-  const cells: Cell[] = [];
+  const cells: MutableCell[] = [];
   /* oxlint-disable no-restricted-syntax/no-regex -- SVG element tokenizer scoped to two literal tag names; lazy `([^>]*?)` is bounded by the next `/>` and the input is a Figma-exported master strip (bounded size). Linear: every char is visited at most twice across the alternation. */
   /**
    * Matches a self-closing `<rect ... />` or `<path ... />` tag and captures its tag name and attributes.

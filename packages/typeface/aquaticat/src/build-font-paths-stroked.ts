@@ -5,6 +5,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import type * as opentype from 'opentype.js';
 
 import { fontY, } from './build-font-metrics.ts';
@@ -27,6 +28,8 @@ import type { SVGPathCommand, } from './parse-svg.ts';
  *
  * @param xShift - horizontal shift to apply for proportional spacing
  *
+ * @mutates otPath - `otPath.moveTo`, `otPath.lineTo`, and `otPath.close` append glyph commands
+ *
  * @example
  * ```ts
  * addStrokedPath({
@@ -44,13 +47,13 @@ export function addStrokedPath({
   strokeWidth,
   cellX,
   xShift,
-}: {
-  readonly otPath: Readonly<opentype.Path>;
-  readonly commands: readonly SVGPathCommand[];
-  readonly strokeWidth: number;
-  readonly cellX: number;
-  readonly xShift: number;
-},): void {
+}: ForeignBorrowed<Readonly<{
+  otPath: opentype.Path;
+  commands: readonly SVGPathCommand[];
+  strokeWidth: number;
+  cellX: number;
+  xShift: number;
+}>>,): void {
   /**
    * Half the stroke width, the signed distance each side is shifted from the centreline.
    */

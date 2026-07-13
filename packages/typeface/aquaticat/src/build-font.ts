@@ -106,7 +106,7 @@ const spaceGlyph = new opentype.Glyph({
  */
 const letterGlyphs = cells.flatMap(
   function buildGlyph(
-    cell,
+    cell: Readonly<(typeof cells)[number]>,
     cellIndex,
   ): Glyph[] {
     /**

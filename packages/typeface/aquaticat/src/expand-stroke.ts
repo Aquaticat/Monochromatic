@@ -160,7 +160,7 @@ export function offsetPolygon({
 
   // Intersect consecutive offset edges to find new vertices
   return offsetEdges.map(function intersectEdge(
-    edge,
+    edge: Readonly<(typeof offsetEdges)[number]>,
     edgeIndex,
   ) {
     /**

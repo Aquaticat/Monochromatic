@@ -7,6 +7,7 @@
  * ```
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import type * as opentype from 'opentype.js';
 
 import { fontY, } from './build-font-metrics.ts';
@@ -112,6 +113,8 @@ export function computeLocalXBounds({
  *
  * @param xShift - horizontal shift to apply for proportional spacing
  *
+ * @mutates otPath - `otPath.moveTo`, `otPath.lineTo`, and `otPath.close` append glyph commands
+ *
  * @example
  * ```ts
  * addFilledPath({
@@ -127,12 +130,12 @@ export function addFilledPath({
   commands,
   cellX,
   xShift,
-}: {
-  readonly otPath: Readonly<opentype.Path>;
-  readonly commands: readonly SVGPathCommand[];
-  readonly cellX: number;
-  readonly xShift: number;
-},): void {
+}: ForeignBorrowed<Readonly<{
+  otPath: opentype.Path;
+  commands: readonly SVGPathCommand[];
+  cellX: number;
+  xShift: number;
+}>>,): void {
   /**
    * X component of the pen cursor while emitting OpenType path commands.
    *
