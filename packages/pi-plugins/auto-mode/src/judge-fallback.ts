@@ -5,7 +5,10 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { budgetModelSlug, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import {
+  budgetModelSlug,
+  NoBudgetModelError,
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 import type {
   BudgetModel,
@@ -125,16 +128,16 @@ async function resolveFreshFallback(
 }
 
 /**
- * Resolve two distinct fallbacks before either model receives a judge request.
+ * Resolve up to two distinct fallbacks before either model receives a judge request.
  *
- * A partial fallback is deliberately not run: a two-model race requires both
- * contenders, otherwise the caller falls back to explicit user approval.
+ * When the second contender is unavailable, the first fallback still runs.
+ * With no selected fallback, the caller falls back to explicit user approval.
  *
  * @param firstJudge - primary judge whose complete attempt failed
  *
  * @param resolveFallbackJudge - resolver that excludes earlier race participants
  *
- * @returns two distinct authenticated fallback judges
+ * @returns one or two distinct authenticated fallback judges
  *
  * @example
  * ```typescript
@@ -151,7 +154,7 @@ async function resolveFallbackRace(
       options: { readonly excludedModelSlugs: readonly string[]; },
     ) => Promise<BudgetModel>;
   },
-): Promise<readonly [BudgetModel, BudgetModel]> {
+): Promise<readonly BudgetModel[]> {
   /**
    * Primary model identity excluded from every fallback selection.
    */
@@ -163,20 +166,27 @@ async function resolveFallbackRace(
     excludedModelSlugs: [firstModelSlug,],
     resolveFallbackJudge,
   },);
-  /**
-   * Second contender, selected after excluding primary plus first fallback.
-   */
-  const secondFallback = await resolveFreshFallback({
-    excludedModelSlugs: [
-      firstModelSlug,
-      budgetModelSlug(firstFallback.model,),
-    ],
-    resolveFallbackJudge,
-  },);
-  return [
-    firstFallback,
-    secondFallback,
-  ];
+  try {
+    /**
+     * Second contender, selected after excluding primary plus first fallback.
+     */
+    const secondFallback = await resolveFreshFallback({
+      excludedModelSlugs: [
+        firstModelSlug,
+        budgetModelSlug(firstFallback.model,),
+      ],
+      resolveFallbackJudge,
+    },);
+    return [
+      firstFallback,
+      secondFallback,
+    ];
+  }
+  catch (error) {
+    if (error instanceof NoBudgetModelError)
+      return [firstFallback,];
+    throw error;
+  }
 }
 
 /**
@@ -248,8 +258,8 @@ async function runFallbackJudge(
 }
 
 /**
- * Call selected judge, then race two distinct fallback models after the primary
- * exhausts every internal retry. The first valid fallback verdict wins.
+ * Call selected judge, then run up to two distinct fallback models after the
+ * primary exhausts every internal retry. The first valid fallback verdict wins.
  *
  * @param firstJudge - initially selected judge model and auth
  *
@@ -307,7 +317,7 @@ async function callJudgeWithFallback(
      * Fully resolved fallback contenders, ready to start concurrently.
      */
     const fallbackJudges = await (async function resolveFallbackContenders(): Promise<
-      readonly [BudgetModel, BudgetModel]
+      readonly BudgetModel[]
     > {
       try {
         return await resolveFallbackRace({
@@ -317,7 +327,7 @@ async function callJudgeWithFallback(
       }
       catch (error) {
         throw new Error(
-          `Judge model ${firstModelSlug} failed all retries: ${describeError(firstError,)}; resolving two distinct fallback judge models failed: ${
+          `Judge model ${firstModelSlug} failed all retries: ${describeError(firstError,)}; resolving up to two distinct fallback judge models failed: ${
             describeError(error,)
           }`,
           { cause: error, },

@@ -15,7 +15,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { budgetModelSlug, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import {
+  budgetModelSlug,
+  NoBudgetModelError,
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 import { callJudgeWithFallback, } from './judge-fallback.ts';
 import { callJudge, } from './judge.ts';
@@ -352,22 +355,51 @@ await describe({
       },
     },),
     it({
-      name: 'does not run an undersized race when selecting second contender fails',
-      fn: async function rejectsUndersizedRace() {
+      name: 'runs one contender when no second fallback model can be selected',
+      fn: async function runsSingleFallbackContender() {
         /** Models that reached a judge attempt. */
         const attemptedSlugs: string[] = [];
         /** Initially selected judge. */
         const firstJudge = judgeFixture({ id: 'first', },);
         /** Only resolvable fallback model. */
         const firstFallback = judgeFixture({ id: 'fallback-one', },);
-        /** Terminal error after contender selection fails. */
-        const caught = await captureError(async function failToResolveSecondFallback() {
+        /** Verdict returned by the sole fallback contender. */
+        const result = await callJudgeWithFallback({
+          firstJudge,
+          async resolveFallbackJudge({ excludedModelSlugs, },) {
+            if (excludedModelSlugs.length === 1)
+              return firstFallback;
+            throw new NoBudgetModelError('no second authenticated fallback model',);
+          },
+          async callJudgeAttempt({ judge, },) {
+            const slug = budgetModelSlug(judge.model,);
+            attemptedSlugs.push(slug,);
+            if (slug === budgetModelSlug(firstJudge.model,))
+              throw new Error('primary exhausted retries',);
+            return APPROVE_VERDICT;
+          },
+        },);
+
+        expect(result,).toEqual(APPROVE_VERDICT,);
+        expect(attemptedSlugs,).toEqual([
+          'test-provider/first',
+          'test-provider/fallback-one',
+        ],);
+      },
+    },),
+    it({
+      name: 'reports selection failure without starting a fallback when none are available',
+      fn: async function reportsNoFallbackModel() {
+        /** Models that reached a judge attempt. */
+        const attemptedSlugs: string[] = [];
+        /** Initially selected judge. */
+        const firstJudge = judgeFixture({ id: 'first', },);
+        /** Error returned when no fallback model is eligible. */
+        const caught = await captureError(async function runWithoutFallbackModel() {
           return await callJudgeWithFallback({
             firstJudge,
-            async resolveFallbackJudge({ excludedModelSlugs, },) {
-              if (excludedModelSlugs.length === 1)
-                return firstFallback;
-              throw new Error('no second authenticated fallback model',);
+            async resolveFallbackJudge() {
+              throw new NoBudgetModelError('no fallback models available',);
             },
             async callJudgeAttempt({ judge, },) {
               attemptedSlugs.push(budgetModelSlug(judge.model,),);
@@ -378,11 +410,9 @@ await describe({
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'resolving two distinct fallback judge models failed',
+          'resolving up to two distinct fallback judge models failed',
         );
-        expect((caught as Error).message,).toContain(
-          'no second authenticated fallback model',
-        );
+        expect((caught as Error).message,).toContain('no fallback models available',);
         expect(attemptedSlugs,).toEqual(['test-provider/first',],);
       },
     },),

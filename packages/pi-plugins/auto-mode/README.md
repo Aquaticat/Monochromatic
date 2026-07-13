@@ -95,15 +95,17 @@ use the same safety context,
 
 Model fallback:
  if the selected judge model still fails after its transport attempts,
-auto-mode excludes that model and resolves two distinct authenticated fallback models before sending either request.
- It runs both complete judge attempts concurrently;
+auto-mode excludes that model and resolves up to two distinct authenticated fallback models before sending any request.
+ It runs every selected complete judge attempt concurrently;
 the first valid structured verdict wins and aborts the other contender.
- A rejected contender does not settle the race while the other contender can still return a verdict.
+ When only one fallback model can be selected,
+that model runs alone.
+ A rejected contender does not settle the race while another contender can still return a verdict.
  This is an availability fallback, not consensus,
 so the winning fallback is timing-dependent when models disagree.
  A configured model override is the first choice,
-but automatic selection supplies both contenders after that override fails.
- If two distinct contenders cannot be selected or both complete attempts fail,
+but automatic selection supplies the fallback contenders after that override fails.
+ If no fallback model can be selected or all complete attempts fail,
 auto-mode asks the user as before.
 
 Compatibility fallback:
