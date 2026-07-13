@@ -580,8 +580,42 @@ spies,
 and mocks are not production API contracts.
 Declaration files remain descriptive ambient shapes without bodies to verify.
 
-### Awaiting decision
+### Deferred feasibility outcome
 
 No user policy decision is needed until feasibility probes compare inferred symbolic summaries with TypeScript-checked
 effect metadata for bodyless generic callables.
-The next rollout question concerns ignored and inactive source trees.
+
+### Resolved rollout scope
+
+Do not redefine repository lifecycle categories as part of a lint-rule replacement.
+The replacement enforces the active production lint scope.
+Existing global ignores remain for paused,
+deprecated,
+generated,
+fixture,
+invalid,
+and build-output trees.
+
+Migration still removes obsolete native-rule directives and misleading explanatory comments from ignored authored source
+when that cleanup does not require making the source compile or pass the new rule.
+Historical troubleshooting and audit documents retain factual references with a supersession note.
+Generated artifacts are regenerated from their owner or left untouched when no owner is in scope;
+never hand-edit them for textual cleanup.
+
+### Resolved suppression and severity policy
+
+The final replacement rule and `@mutates` validation rules are errors.
+No inline suppression of either rule is allowed.
+Add companion `no-disable-*` enforcement so opaque cases must gain an honest type,
+verified effect summary,
+local external adapter,
+or existing file-class exemption instead of a comment bypass.
+
+An implementation branch may use a temporary warning only while its own migration commit series is incomplete.
+The merge-ready state has no active violations and error severity.
+
+### Awaiting decision
+
+The next policy decision is whether proven remediations are automatic fixes,
+editor suggestions,
+or diagnostics only.
