@@ -1,8 +1,9 @@
 # Replace `prefer-readonly-parameter-types` with a project rule
 
 Status:
- design interview in progress.
-No implementation is authorized until the grilling interview reaches shared understanding.
+ design interview reopened after final-plan review.
+No implementation is authorized until the remaining capability-effect policy is resolved and the user confirms shared
+understanding.
 
 Last updated:
  2026-07-12.
@@ -29,7 +30,7 @@ Keep the following recoverable from repository documents:
   evidence,
   and unresolved gates;
 - discarded hypotheses and why they failed;
-- settled decisions and the still-ordered question queue;
+- settled decisions and any still-ordered question queue;
 - verification commands,
   relevant outputs,
   changed files,
@@ -87,7 +88,7 @@ callback-bearing declarations,
 and generic types whose caller-owned identity must be preserved.
 The current rule is therefore enforcing several different concerns through one deep structural readonly test.
 
-## Confirmed host constraint and open bridge investigation
+## Confirmed host constraint and chosen bridge
 
 Oxlint 1.73 does not supply its JavaScript plugins with TypeScript type information.
 The installed `@oxlint/plugins` declaration says parser services are unavailable,
@@ -106,26 +107,19 @@ semantic-analysis,
 declaration-generation,
 or TypeScript compiler components.
 
-The feasibility investigation must compare at least:
+The selected independent bridge is TypeScript 7.0.2's `typescript/unstable/sync` API.
+One project-owned adapter owns the native client,
+project discovery,
+snapshots,
+virtual current-file overlays,
+source-node lookup,
+semantic queries,
+and fail-closed bridge diagnostics.
+TypeScript 6 fallbacks are prohibited.
+The complete technology vet and remaining implementation acceptance gates are recorded in
+[`docs/audit/tech-readonly-parameter-semantic-bridge-vet-2026-07-12.md`](../audit/tech-readonly-parameter-semantic-bridge-vet-2026-07-12.md).
 
-- the Oxlint ESTree already supplied to the rule plus a TypeScript `Program` and `TypeChecker`,
-  with source-span or binding mapping between the two trees;
-- `oxc-parser` plus the TypeScript compiler;
-- `yuku-parser` and `yuku-analyzer`,
-  including whether Yuku exposes TypeScript type semantics rather than only scopes,
-symbols,
-resolved references,
-and cross-file module links;
-- Oxc isolated declaration generation as a normalized per-file input to later analysis;
-- `rolldown-plugin-dts` as an existing declaration pipeline,
-  including whether its bundling lifecycle can serve lint-time queries rather than only build output;
-- a syntax or function-body analysis rule as the no-extra-semantic-engine baseline.
-
-No candidate is selected or ruled out yet.
-Exact parity also requires defining which parts of the retired rule's semantics are worth preserving,
-not merely obtaining any type checker.
-
-## Provisional architecture
+## Architecture
 
 The implementation location is settled by the request:
 
@@ -142,28 +136,44 @@ The implementation location is settled by the request:
 - user-facing rule contract:
   `packages/oxlint-plugins/no-restricted-syntax/README.md`.
 
-The semantic contract and semantic-analysis pipeline are not settled.
-Those decisions determine the rule name,
-visitor shape,
-fixtures,
-migration edits,
-and dependency or generated-declaration boundaries.
+The semantic contract is the layered readonly-type and mutation-effect model recorded in the decision log.
+The plugin package adds direct runtime dependencies on TypeScript 7 and the existing shared plugin package.
+Packages receiving `ReadonlyDeep` projections declare `type-fest` directly through the pnpm catalog.
 
 ## Implementation sequence after approval
 
-### Prototype semantic-information candidates
+### Build the TypeScript 7 semantic adapter test-first
 
-Build disposable probes against the same representative type catalog used to calibrate the final rule.
-Each candidate must prove how a plugin invocation obtains reusable project state,
-maps the Oxlint visitor node to semantic data,
-resolves local and package aliases,
-handles project references,
-and invalidates caches after edits.
+Add contract tests around every unstable API operation before rule logic consumes it.
+The adapter must prove configured-project discovery,
+current-file virtual overlays,
+BOM normalization,
+source-span mapping,
+snapshot reuse and disposal,
+changed/deleted/renamed-file invalidation,
+multiple package projects,
+symlink and path-case behavior,
+and fail-closed handling of missing or changed API capabilities.
 
-Measure cold and warm lint behavior through the normal package lint boundary.
-Inspect native artifact provenance for parser or analyzer packages before execution.
-Do not select a bridge from parser speed alone because readonly analysis depends on semantic depth,
-not AST throughput.
+Retain the disposable corpus for brands,
+recursive and conditional types,
+indexed access,
+callable objects,
+collections,
+capabilities,
+overloads,
+bodyless signatures,
+higher-order callbacks,
+and Unicode spans.
+Extend it for parser recovery,
+dynamic dispatch,
+closures,
+deferred effects,
+recursion,
+and external callbacks.
+Run platform artifact probes on Linux x64,
+macOS arm64,
+and Windows x64 before completion.
 
 ### Define the rule contract
 
@@ -191,8 +201,36 @@ Add invalid and valid fixture files under
 Extend the dedicated fixture config and integration test so the new diagnostic appears under
 `no-restricted-syntax/<settled-rule-name>`.
 
-Implement the rule in a focused sibling module and register it in the plugin index.
-Use scope/reference APIs rather than source-text matching when the selected contract concerns bindings or mutations.
+Implement the rule as focused sibling modules for the host rule,
+semantic adapter,
+readonly classifier,
+effect summaries,
+TSDoc effect lookup,
+and source suggestions.
+Use TypeScript symbols and resolved signatures for semantic identity,
+and use Oxlint scope/reference APIs for current-tree diagnostics.
+Unknown calls or unsupported semantic states fail closed with `opaqueEffect` or a dedicated bridge diagnostic;
+method-name lists cannot serve as effect proof.
+
+### Implement the `@mutates` TSDoc contract
+
+Register the custom block tag in the TSDoc parser configuration and expose parsed mutation targets through the shared
+document-model seam.
+Add dedicated validation for syntax,
+known parameter targets,
+duplicates,
+descriptions,
+overload consistency,
+missing tags,
+and stale tags.
+Keep malformed-tag diagnostics in the TSDoc plugin and semantic effect diagnostics in the readonly rule.
+
+Update the TSDoc plugin registration,
+fixture config,
+valid and invalid fixtures,
+unit tests,
+and README.
+Verify that the shared parser performs one parse per comment for all participating rules.
 
 ### Switch shared configuration
 
@@ -221,14 +259,21 @@ Remove the obsolete output suppression and its dedicated test cases from
 Classify every active directive before deleting it:
 
 - sites accepted by the new contract lose the directive;
-- sites violating the new contract receive a structural code change or a scoped replacement-rule directive according
-  to the agreed exception policy;
+- sites violating the new contract receive an honest `ReadonlyDeep` projection,
+  an ownership-correct declaration improvement,
+  an accurate `@mutates` contract,
+  or a local adapter around external mutation;
 - comments and helper types created only to placate the retired rule are removed or simplified;
 - historical troubleshooting documents remain as historical evidence but gain a supersession note when their remedy is
   no longer current.
 
-Repeat the classification for `packages-paused/` if paused packages are included in the rollout decision.
+Keep `packages-paused/`,
+generated,
+fixture,
+invalid,
+and build-output trees under their existing ignores.
 Do not perform blind string replacement because old block disables may contain another still-active rule.
+No inline suppression of the replacement rule is permitted.
 
 ### Verify the consumer boundary
 
@@ -248,70 +293,75 @@ Verify that:
 - the normal `--type-aware` wrapper still runs the remaining native type-aware rules;
 - no output suppression hides replacement-rule diagnostics.
 
-A full active-workspace lint is the rollout gate after targeted consumer checks pass.
+Build the published plugin artifact and load it from a disposable external consumer with no monorepo-root dependency
+resolution.
+Verify TypeScript 7 native artifact startup and rule diagnostics on Linux x64,
+macOS arm64,
+and Windows x64.
+Build declarations through the installed Oxc and `rolldown-plugin-dts` path and assert every `@mutates` target and
+description survives overloads,
+call signatures,
+and re-exports.
 
-## Decision queue
+A full active-workspace CLI lint is the rollout gate after targeted consumer checks pass.
+The CLI is authoritative;
+editor diagnostics remain deferred while Oxlint's language server cannot load JavaScript plugins.
 
-Resolve one item at a time during the grilling interview:
+## Interview resolution
 
-- semantic contract;
-- treatment of actual parameter mutation;
-- scope for inline versus named type declarations;
-- inferred and externally dictated callback parameters;
-- exception and suppression policy;
-- test-file and declaration-file overrides;
-- paused-package migration;
-- initial severity and promotion gate;
-- autofix or suggestion policy;
-- rule name and diagnostic wording;
-- historical documentation updates;
-- acceptance criteria for deleting the native rule.
+All discovered policy branches are resolved:
+
+- preserve readonly type-contract semantics and add mutation effects;
+- require universal,
+  verified `@mutates` contracts for owned mutation;
+- wrap external mutable effects locally;
+- infer higher-order relationships rather than adding a TSDoc relation language;
+- enforce active production source while retaining test,
+  benchmark,
+  declaration,
+  paused,
+  generated,
+  fixture,
+  invalid,
+  and build-output exemptions;
+- prohibit inline suppression and enable the replacement at `error`;
+- expose semantic rewrites only as suggestions;
+- keep one rule identity with distinct diagnostic message IDs;
+- preserve `@mutates` in published declarations;
+- use TypeScript 7's unstable synchronous API without a TypeScript 6 fallback;
+- treat the CLI as authoritative until Oxlint supports JavaScript plugins in its language server;
+- author local projections with `type-fest`'s `ReadonlyDeep` while rejecting dishonest capability projections.
+
+No policy question remains known.
+A newly discovered genuine policy fork reopens one-question-at-a-time grilling;
+implementation details that have a correctness-dominant answer do not.
 
 ## Research checkpoint
 
 Current checkpoint:
 
-- commit `5eb558033` added the initial plan and Oxlint host-API investigation;
-- that initial documentation overstated the host limitation as an impossibility result;
-- the user corrected the assumption and named additional bridge candidates:
-  `oxc-parser` plus TypeScript,
-  Yuku,
-  Oxc isolated declarations,
-  and `rolldown-plugin-dts`;
-- the docs now distinguish absent Oxlint-supplied parser services from the feasibility of an independently loaded semantic
-  pipeline;
-- preliminary source findings narrow candidate roles without selecting one:
-  - TypeScript can create the required `Program` and `TypeChecker` independently of Oxlint;
-  - `oxc-parser` supplies syntax rather than TypeScript type objects,
-    so pairing it with TypeScript still needs a TypeScript program and a cross-tree mapping;
-  - Yuku 0.6.1 supplies Oxc-compatible AST,
-    scopes,
-    symbols,
-    resolved references,
-    and cross-file module links,
-    but its documented and exported analyzer surface does not expose inferred TypeScript type objects or a
-    `TypeChecker`;
-  - Oxc isolated declarations emit per-file `.d.ts` text without TypeScript type checking when source satisfies
-    `isolatedDeclarations`;
-  - `rolldown-plugin-dts` 0.27.7 contains a reusable-looking TypeScript program cache and invalidation model,
-    while its public operation remains declaration generation and bundling rather than arbitrary type queries;
-- these role findings do not rule out compositions,
-  such as declaration normalization followed by TypeScript analysis or Yuku-assisted binding and mapping;
-- no candidate has been selected,
-  rejected,
-  or performance-qualified;
-- the user required every tagged `AGENTS.md` rule to stay under 50 words and 200 normalized characters;
-- `RLM` now records that global limit,
-  `DCK` was shortened,
-  and the only other over-limit rules (`GCL` and `GCG`) were split;
-- a normalized scan measured 216 rules in both `AGENTS.md` and generated `CLAUDE.md`,
-  with no rule reaching either limit;
+- the technology vet selected TypeScript 7.0.2's `typescript/unstable/sync` API and rejected every TypeScript 6
+  fallback;
+- real Oxlint-boundary probes covered imported semantic types,
+  mapped readonly state,
+  representative direct and higher-order effects,
+  current-file overlays,
+  configured-project discovery,
+  snapshot reuse,
+  BOM and Unicode mapping,
+  and native child cleanup;
+- the type corpus confirmed that `ReadonlyDeep` handles the tested collections and recursive structures but cannot make
+  retained capability methods honest;
+- installed Oxc isolated declarations and `rolldown-plugin-dts` 0.27.4 preserved all tested `@mutates` blocks through a
+  re-exporting declaration bundle;
+- the advisor review converted unproved generalizations into explicit implementation acceptance gates;
+- the user chose CLI-only authority while Oxlint's language server lacks JavaScript-plugin support;
+- the user chose `type-fest`'s `ReadonlyDeep` instead of a project-owned duplicate or synthesized structural types;
+- all discovered policy questions are resolved;
 - no implementation code or dependency change is authorized.
 
 Next action:
-ask which semantic guarantee the replacement should target.
-That answer freezes the bridge evaluation's hard requirements before disposable probes and equal-depth candidate
-validation.
+request the user's confirmation that this document reflects shared understanding.
 
 ## Decision log
 
@@ -333,11 +383,9 @@ The initial plan incorrectly treated absent Oxlint parser services as proof that
  type-aware semantics.
 The verified fact is narrower:
 Oxlint does not supply type information to JavaScript plugins.
-Independent analysis through the TypeScript compiler,
-`oxc-parser`,
-Yuku,
-Oxc isolated declarations,
-or `rolldown-plugin-dts` remains open pending source audit and disposable probes.
+Independent analysis was therefore investigated.
+The completed vet selected TypeScript 7's synchronous unstable API;
+the other candidates remain recorded as rejected alternatives or declaration-only components.
 
 ### Resolved from scope and the no-resource-constraint posture
 
@@ -579,11 +627,16 @@ fixtures,
 spies,
 and mocks are not production API contracts.
 Declaration files remain descriptive ambient shapes without bodies to verify.
+Generated and published declarations are preservation-test inputs,
+not source files subject to the replacement rule or `tsdoc/*` enforcement.
 
-### Deferred feasibility outcome
+### Resolved bodyless generic feasibility boundary
 
-No user policy decision is needed until feasibility probes compare inferred symbolic summaries with TypeScript-checked
-effect metadata for bodyless generic callables.
+Use generated symbolic summaries for owned higher-order implementations.
+Bodyless generic callables expose only signature-local `@mutates` effects;
+they cannot express an unchecked parameter-relation language.
+When specialization cannot prove whether a callback propagates mutation to another parameter,
+report `opaqueEffect` and require an owned wrapper with an analyzable body.
 
 ### Resolved rollout scope
 
@@ -606,10 +659,17 @@ never hand-edit them for textual cleanup.
 
 The final replacement rule and `@mutates` validation rules are errors.
 No inline suppression of either rule is allowed.
-Add companion `no-disable-*` enforcement so opaque cases must gain an honest type,
+Add `no-disable-prefer-readonly-parameter-types.ts`,
+register it in the plugin index,
+enable it in shared and fixture configs,
+and cover line,
+block,
+and list-style disable directives in fixtures and integration tests.
+Opaque cases must gain an honest type,
 verified effect summary,
 local external adapter,
 or existing file-class exemption instead of a comment bypass.
+Retired native-rule directives must be parsed and edited token-by-token so mixed directives retain every other rule.
 
 An implementation branch may use a temporary warning only while its own migration commit series is incomplete.
 The merge-ready state has no active violations and error severity.
@@ -619,7 +679,8 @@ The merge-ready state has no active violations and error severity.
 Offer proven type rewrites as Oxlint suggestions.
 Do not attach them as direct fixes,
 so ordinary `--fix` and the repository's normal `format:oxlint` task cannot apply semantic signature changes.
-Suggestions remain available as editor code actions and through explicit `--fix-suggestions` or `--fix-dangerously` use.
+Suggestions remain available through explicit `--fix-suggestions` or `--fix-dangerously` use.
+They can become editor code actions only after Oxlint's language server supports JavaScript plugins.
 
 Oxlint 1.73 JavaScript plugins cannot mark a fix dangerous directly.
 Their protocol maps `Diagnostic.fix` to a normal fix and `Diagnostic.suggest` to a suggestion;
@@ -649,7 +710,8 @@ Distinct message IDs classify findings without independently configurable partia
 - `staleMutatesTag`;
 - `opaqueEffect`;
 - `dishonestReadonly`;
-- signature and overload effect inconsistencies discovered during implementation.
+- `inconsistentMutatesContract`;
+- `semanticBridgeUnavailable`.
 
 Malformed tag names,
 duplicate targets,
@@ -813,7 +875,7 @@ parser-recovery span,
 lifecycle,
 cache,
 packaging,
-and platform probes remain mandatory before implementation planning can call the bridge validated.
+and platform probes remain mandatory before the replacement can be enabled and declared complete.
 
 Readonly detection must isolate the unstable detail behind a tested adapter.
 TypeScript 7.0.2 exposes transient mapped-property readonly state through `Symbol.checkFlags`,
@@ -855,9 +917,16 @@ so it must not offer an import that would leave the source unresolved.
 
 ### Grilling status
 
-The currently known user-policy branches are resolved.
-Technical feasibility work may uncover another genuine policy fork;
-if it does,
-resume one-question-at-a-time grilling rather than choosing a preference implicitly.
-Otherwise complete the implementation plan from measured prototype results and request confirmation of shared
-understanding before any implementation.
+Final-plan review found one unresolved policy boundary:
+which bodyless standard-library and platform effects the analyzer may recognize intrinsically before requiring a local
+adapter.
+Resolve that boundary one question at a time.
+It determines operational readonly honesty for collections,
+typed arrays,
+DOM and Node capabilities,
+iterators,
+classes,
+accessors,
+callable objects,
+and package types.
+Implementation remains blocked until the user then confirms shared understanding.
