@@ -214,6 +214,47 @@ The failure reproduced on consecutive minimized runs and once through the comple
 Every run reported the same three missing paths;
 only diagnostic ordering varied.
 
+### Custom TSDoc tag preservation on the resolved version
+
+A later disposable probe exercised the repository-resolved passing stack:
+
+- Rolldown 1.1.5;
+- `rolldown-plugin-dts` 0.27.4;
+- `generator: 'oxc'`;
+- TypeScript 7.0.2 installed;
+- one function,
+  one overload,
+  and one type call signature carrying `@mutates target - description`;
+- a separate entry file re-exporting every declaration.
+
+The direct `rolldown/experimental` `isolatedDeclarationSync` result contained three `@mutates` blocks and no errors.
+Bundling through `rolldown-plugin-dts` also contained three blocks,
+including every target and description.
+The re-exporting entry changed declaration linkage but did not strip custom TSDoc.
+
+The verification task was a disposable `mise` task invoking a Node module that called
+`isolatedDeclarationSync(sourcePath, source, { sourcemap: false })`,
+then:
+
+```javascript
+const build = await rolldown({
+  input: reexportingEntryPath,
+  plugins: [dts({ generator: 'oxc' })],
+});
+const generated = await build.generate({ format: 'es' });
+```
+
+Verified counts:
+
+```text
+isolatedMutatesCount: 3
+bundledMutatesCount: 3
+isolatedErrors: []
+```
+
+This verifies custom-tag preservation for the installed versions and tested declaration forms.
+It does not replace package-build and external-consumer publication tests.
+
 ### Passing catalog
 
 - rolldown-plugin-dts 0.27.1 with the original shared `dts: true` configuration:

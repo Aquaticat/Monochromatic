@@ -376,6 +376,17 @@ and invalidates every program containing a changed file.
 The public `./tsc-context` export exposes context construction and invalidation;
 the program creation helper remains internal.
 
+### Installed declaration pipeline preserves `@mutates`
+
+A disposable probe used installed Rolldown 1.1.5 and `rolldown-plugin-dts` 0.27.4 with the Oxc generator.
+Oxc isolated declarations preserved three custom blocks on a function,
+an overload,
+and a type call signature with zero transform errors.
+A declaration bundle entered through a separate re-exporting source file and retained all three `@mutates` targets and
+descriptions.
+This validates the selected custom tag against the installed transform and bundler versions.
+Package README publication and a built external consumer remain implementation acceptance checks.
+
 ### TypeScript 7 synchronous semantic surface
 
 The installed `typescript@7.0.2` package exports `typescript/unstable/sync`.
@@ -572,8 +583,8 @@ Read-only shallow clones were used at these revisions:
   disposable external consumer.
 - Treat CLI diagnostics as authoritative until Oxlint's language server supports JavaScript plugins;
   do not retain an editor-only incumbent approximation or add a separate editor integration.
-- Verify `@mutates` preservation with the repository-installed declaration pipeline rather than inferring it from a
-  newer upstream clone.
+- Retain the verified installed declaration-transform corpus and extend it through built package READMEs and a
+  disposable external consumer.
 
 ## Validation plan
 
@@ -667,8 +678,9 @@ Oxc isolated declarations,
 and wrappers built on TypeScript 6.
 
 Still open:
- acceptance gates and declaration-publication verification.
-`type-fest`'s `ReadonlyDeep` is selected for projection authoring.
+ remaining semantic-bridge acceptance gates and built-package publication verification.
+The installed declaration transform and bundler preserved the selected `@mutates` contract,
+and `type-fest`'s `ReadonlyDeep` is selected for projection authoring.
 Editor integration is explicitly deferred until Oxlint's language server supports JavaScript plugins.
 Product implementation remains blocked until the audit finishes and the full plan reaches shared-understanding
 confirmation.

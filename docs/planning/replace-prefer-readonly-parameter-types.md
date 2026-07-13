@@ -742,6 +742,14 @@ re-exports,
 and declaration comments to prove targets and descriptions survive intact.
 Published rule and config packages must expose the custom-tag contract in their READMEs.
 
+A disposable probe against the repository-installed Rolldown 1.1.5 and `rolldown-plugin-dts` 0.27.4 verified the
+selected path.
+Oxc isolated declarations preserved three `@mutates` blocks on a function,
+an overload,
+and a call signature with zero transform errors.
+Bundling those declarations through a re-exporting entry preserved all three blocks and their descriptions.
+The implementation suite must retain this corpus and add package-level README and external-consumer checks.
+
 ### Chosen semantic bridge
 
 Use TypeScript 7's project-native synchronous API through `typescript/unstable/sync`.
