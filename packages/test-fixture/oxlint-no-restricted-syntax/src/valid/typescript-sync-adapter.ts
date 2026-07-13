@@ -94,6 +94,28 @@ export function classifyAnyCapability(anyValue: any,): void {
 }
 
 /**
+ * Accepts full TextEncoder readonly projection retaining encodeInto mutation.
+ *
+ * @param readonlyEncoder - Projection that still writes supplied destinations.
+ */
+export function classifyReadonlyEncoder(
+  readonlyEncoder: Readonly<TextEncoder>,
+): void {
+  void readonlyEncoder;
+}
+
+/**
+ * Accepts only audited observational TextEncoder operation.
+ *
+ * @param encodeOnly - Narrow capability creating fresh bytes.
+ */
+export function classifyEncodeOnly(
+  encodeOnly: Pick<TextEncoder, 'encode'>,
+): void {
+  void encodeOnly;
+}
+
+/**
  * Accepts deeply readonly structural data for classifier fixture.
  *
  * @param readonlyObject - Deeply readonly structural data.

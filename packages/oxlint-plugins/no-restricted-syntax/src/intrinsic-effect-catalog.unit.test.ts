@@ -78,6 +78,18 @@ const PI_EXTENSION_SOURCE = readFileSync(
   'utf8',
 );
 
+/** MCP stdio transport source used for exact writer provenance. */
+const MCP_STDIO_SOURCE_PATH = fileURLToPath(new URL(
+  '../../../mcp/stdio/src/transport.ts',
+  import.meta.url,
+),);
+
+/** MCP stdio transport source text containing audited writer call. */
+const MCP_STDIO_SOURCE = readFileSync(
+  MCP_STDIO_SOURCE_PATH,
+  'utf8',
+);
+
 /** Current fixture source text. */
 const SOURCE = readFileSync(
   FIXTURE_PATH,
@@ -244,6 +256,40 @@ await describe({
           provenance: { kind: 'node', },
           ownerType: 'node:path',
           member: 'join',
+        },);
+        closeSemanticBridge();
+      },
+    },),
+    it({
+      name: 'resolves named type-alias owner for MCP stdout writer',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: MCP_STDIO_SOURCE_PATH,
+          sourceText: MCP_STDIO_SOURCE,
+          hasBOM: false,
+        },);
+        const memberOffset = MCP_STDIO_SOURCE.lastIndexOf('writer.write',)
+          + 'writer.'.length;
+        const memberNode = session.nodeAtOffset(memberOffset,);
+        const propertyAccess = memberNode.parent;
+        if (!isPropertyAccessExpression(propertyAccess,))
+          throw new Error('Expected StdoutWriter property access.',);
+        const receiverType = session.checker.getTypeAtLocation(propertyAccess.expression,);
+        const memberSymbol = session.checker.getSymbolAtLocation(propertyAccess.name,);
+        if ((receiverType === undefined) || (memberSymbol === undefined))
+          throw new Error('Expected StdoutWriter receiver and member.',);
+        expect(intrinsicEffectQuery({
+          project: session.project,
+          receiverType,
+          memberSymbol,
+        },),).toEqual({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/mcp-stdio',
+            major: 0,
+          },
+          ownerType: 'StdoutWriter',
+          member: 'write',
         },);
         closeSemanticBridge();
       },

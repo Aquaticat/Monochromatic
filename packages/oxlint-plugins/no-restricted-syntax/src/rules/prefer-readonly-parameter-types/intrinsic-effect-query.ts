@@ -15,6 +15,7 @@ import {
   isModuleDeclaration,
   isSourceFile,
   isStringLiteral,
+  isTypeAliasDeclaration,
 } from 'typescript/unstable/ast/is';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -44,6 +45,11 @@ export const NO_INTRINSIC_PROVENANCE: unique symbol = Symbol('no IntrinsicProven
  * Sentinel for callable symbols that cannot form exact intrinsic query.
  */
 export const NO_INTRINSIC_QUERY: unique symbol = Symbol('no IntrinsicEffectQuery for resolved callable',);
+
+/**
+ * Sentinel when callable member has no enclosing named type alias.
+ */
+const TYPE_ALIAS_OWNER_UNAVAILABLE: unique symbol = Symbol('absent named type-alias owner for exact callable member',);
 
 /**
  * Parsed package identity from declaration path.
@@ -389,6 +395,26 @@ export function intrinsicEffectQuery({
   if (ownerSymbol === undefined)
     return NO_INTRINSIC_QUERY;
   /**
+   * Named type alias enclosing anonymous type-literal members, when present.
+   */
+  const aliasOwner: { name: string | typeof TYPE_ALIAS_OWNER_UNAVAILABLE; } = {
+    name: TYPE_ALIAS_OWNER_UNAVAILABLE,
+  };
+  /**
+   * Parent cursor locating authored type-alias owner before source boundary.
+   */
+  const cursor: { current: Node; } = { current: declaration.parent, };
+  while (!isSourceFile(cursor.current,)) {
+    if (isTypeAliasDeclaration(cursor.current,)) {
+      aliasOwner.name = cursor.current
+        .name
+        .text;
+      break;
+    }
+    cursor.current = cursor.current
+      .parent;
+  }
+  /**
    * Declaration provenance after source-file classification.
    */
   const provenance = intrinsicProvenance({
@@ -401,7 +427,9 @@ export function intrinsicEffectQuery({
     return NO_INTRINSIC_QUERY;
   return {
     provenance,
-    ownerType: ownerSymbol.name,
+    ownerType: aliasOwner.name === TYPE_ALIAS_OWNER_UNAVAILABLE
+      ? ownerSymbol.name
+      : aliasOwner.name,
     member: memberSymbol.name,
   };
 }

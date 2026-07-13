@@ -24,6 +24,7 @@ import {
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
+import { intrinsicEffectIsObservational, } from './intrinsic-effect-observation.ts';
 import { isForeignBorrowedType, } from './foreign-borrowed-classifier.ts';
 import {
   readonlyOwnerName,
@@ -406,6 +407,8 @@ export function classifyReadonlyType({
           ? NO_INTRINSIC_EFFECT
           : intrinsicEffect(query,);
         if (effect !== NO_INTRINSIC_EFFECT) {
+          if (intrinsicEffectIsObservational(effect,))
+            return HONEST_READONLY;
           if (projectionClaimed) {
             return {
               kind: 'dishonest-readonly',

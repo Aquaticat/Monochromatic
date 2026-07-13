@@ -59,6 +59,14 @@ await describe({
         expected: 'opaque-capability',
       },
       {
+        parameter: 'readonlyEncoder:',
+        expected: 'dishonest-readonly',
+      },
+      {
+        parameter: 'encodeOnly:',
+        expected: 'honest-readonly',
+      },
+      {
         parameter: 'projectedController:',
         expected: 'dishonest-readonly',
       },

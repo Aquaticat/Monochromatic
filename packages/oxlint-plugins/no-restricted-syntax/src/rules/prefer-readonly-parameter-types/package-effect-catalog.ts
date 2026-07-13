@@ -56,6 +56,16 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   receiverEffect({
     provenance: {
       kind: 'package',
+      packageName: '@monochromatic-dev/mcp-stdio',
+      major: 0,
+    },
+    ownerType: 'StdoutWriter',
+    member: 'write',
+    evidence: 'mcp-stdio 0.1.0 StdoutWriter contract writes bytes to output stream state',
+  },),
+  receiverEffect({
+    provenance: {
+      kind: 'package',
       packageName: '@oxlint/plugins',
       major: 1,
     },
