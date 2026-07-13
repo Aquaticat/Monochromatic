@@ -13,7 +13,7 @@
  *
  * @param error - Unknown caught value.
  *
- * @returns Error message when available, otherwise stringified value.
+ * @returns Error message, thrown string, or non-Error runtime category.
  *
  * @example
  * ```ts
@@ -25,5 +25,8 @@ export function caughtErrorMessage(error: unknown,): string {
   if (Error.isError(error,))
     return error.message;
 
-  return String(error,);
+  if ((typeof error) === 'string')
+    return error;
+
+  return `Non-Error thrown value of type ${typeof error}`;
 }
