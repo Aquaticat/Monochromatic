@@ -14,6 +14,8 @@ import {
   serializeConversation,
   type SessionEntry,
 } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import {
   ADVISOR_MESSAGE_TYPE,
   ADVISOR_TOOL_NAME,
@@ -55,7 +57,7 @@ export type BuildAdvisorContextOptions = {
   /**
    * Session branch entries from pi.
    */
-  readonly branch: readonly SessionEntry[];
+  readonly branch: readonly ForeignBorrowed<SessionEntry>[];
   /**
    * Runtime Advisor configuration.
    */
@@ -107,6 +109,8 @@ export type MaxContextCharsForAdvisorModelOptions = {
  *
  * @returns serialized context and metadata
  *
+ * @mutates options - `latestUserPromptExcerpt` calls `branch.toReversed`, which can invoke array accessors or proxy traps
+ *
  * @example
  * ```typescript
  * const context = buildAdvisorContext({ branch, config, advisorSystemPrompt });
@@ -120,7 +124,7 @@ export function buildAdvisorContext(
    */
   const messages = options
     .branch
-    .map(function mapEntry(entry,) {
+    .map(function mapEntry(entry: ForeignBorrowed<SessionEntry>,) {
       return entryToMessage({
         entry,
         includePriorAdvisorResults: options.config
@@ -131,7 +135,9 @@ export function buildAdvisorContext(
           : { currentToolCallId: options.toolCallId, }),
       },);
     },)
-    .filter(function isIncludedMessage(message,): message is AdvisorAgentMessage {
+    .filter(function isIncludedMessage(
+      message: ReadonlyDeep<AdvisorAgentMessage> | typeof MESSAGE_EXCLUDED,
+    ): message is ForeignBorrowed<AdvisorAgentMessage> {
       return message !== MESSAGE_EXCLUDED;
     },);
 
@@ -334,11 +340,11 @@ function entryToMessage(
     includePriorAdvisorResults,
     currentToolCallId,
   }: {
-    readonly entry: SessionEntry;
+    readonly entry: ForeignBorrowed<SessionEntry>;
     readonly includePriorAdvisorResults: boolean;
     readonly currentToolCallId?: string;
   },
-): AdvisorAgentMessage | typeof MESSAGE_EXCLUDED {
+): ForeignBorrowed<AdvisorAgentMessage> | typeof MESSAGE_EXCLUDED {
   if (entry.type
     === 'message') {
     return filterMessage({
@@ -402,12 +408,12 @@ function filterMessage(
     message,
     includePriorAdvisorResults,
     currentToolCallId,
-  }: {
-    readonly message: AdvisorAgentMessage;
-    readonly includePriorAdvisorResults: boolean;
-    readonly currentToolCallId?: string;
-  },
-): AdvisorAgentMessage | typeof MESSAGE_EXCLUDED {
+  }: ForeignBorrowed<Readonly<{
+    message: AdvisorAgentMessage;
+    includePriorAdvisorResults: boolean;
+    currentToolCallId?: string;
+  }>>,
+): ForeignBorrowed<AdvisorAgentMessage> | typeof MESSAGE_EXCLUDED {
   if (message.role
     === 'toolResult') {
     if ((currentToolCallId !== undefined) && (message.toolCallId
@@ -427,7 +433,9 @@ function filterMessage(
    * Assistant content with current Advisor placeholder tool call omitted.
    */
   const content = message.content
-    .filter(function keepContentBlock(block,) {
+    .filter(function keepContentBlock(
+      block: ReadonlyDeep<(typeof message.content)[number]>,
+    ) {
     return !(
       (block.type
         === 'toolCall')

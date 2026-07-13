@@ -9,6 +9,7 @@ import type {
   SessionEntry,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import {
   buildAdvisorContext,
   maxContextCharsForAdvisorModel,
@@ -48,11 +49,11 @@ export type AdvisorSelectionContext = {
 /**
  * Options for selecting model and model-budgeted context together.
  */
-export type SelectAdvisorRunContextOptions = {
+export type SelectAdvisorRunContextOptions = ForeignBorrowed<{
   /**
    * Session branch entries from pi.
    */
-  readonly branch: readonly SessionEntry[];
+  readonly branch: readonly ForeignBorrowed<SessionEntry>[];
   /**
    * Runtime Advisor configuration.
    */
@@ -64,11 +65,11 @@ export type SelectAdvisorRunContextOptions = {
   /**
    * Effective scoped model set.
    */
-  readonly scope: EffectiveModelScope;
+  readonly scope: ReadonlyDeep<EffectiveModelScope>;
   /**
    * Global model registry for explicit slug validation.
    */
-  readonly modelRegistry: ReadonlyDeep<ModelRegistry>;
+  readonly modelRegistry: ModelRegistry;
   /**
    * Active primary model to avoid for default selection when possible.
    */
@@ -85,12 +86,12 @@ export type SelectAdvisorRunContextOptions = {
    * Current Advisor tool call id to omit.
    */
   readonly toolCallId?: string;
-};
+}>;
 
 /**
  * Options for building context for one scoped Advisor model.
  */
-type BuildContextForScopedModelOptions = {
+type BuildContextForScopedModelOptions = ForeignBorrowed<Readonly<{
   /**
    * Session branch entries from pi.
    */
@@ -115,7 +116,7 @@ type BuildContextForScopedModelOptions = {
    * Current Advisor tool call id to omit.
    */
   readonly toolCallId?: string;
-};
+}>>;
 
 /**
  * Context candidate for a scoped Advisor model.
@@ -141,6 +142,8 @@ type AdvisorContextCandidate = {
  * @param options - branch, config, scope, and model-selection inputs
  *
  * @returns selected model and serialized context
+ *
+ * @mutates options - `resolveRequestedModel` can invoke registry callbacks and context building can invoke branch accessors
  *
  * @example
  * ```typescript
@@ -208,7 +211,7 @@ export function selectAdvisorRunContext(
    * Input token estimates keyed by canonical scoped model slug.
    */
   const estimatedInputTokensBySlug = new Map(
-    candidates.map(function mapCandidate(candidate,) {
+    candidates.map(function mapCandidate(candidate: ReadonlyDeep<AdvisorContextCandidate>,) {
       return [
         candidate.scopedModel
           .canonicalSlug,
@@ -229,7 +232,9 @@ export function selectAdvisorRunContext(
   /**
    * Context candidate matching selected default model.
    */
-  const selectedCandidate = candidates.find(function matchesSelection(candidate,) {
+  const selectedCandidate = candidates.find(function matchesSelection(
+    candidate: ReadonlyDeep<AdvisorContextCandidate>,
+  ) {
     return candidate.scopedModel
       .canonicalSlug
       === defaultSelection

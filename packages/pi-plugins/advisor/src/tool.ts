@@ -11,6 +11,7 @@ import type {
   ToolRenderResultOptions,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import {
   buildAdvisorSystemPrompt,
   completeAdvisor,
@@ -90,9 +91,9 @@ export function createAdvisorTool(
         readonly question?: string;
       },
       // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- pi ToolDefinition.execute dictates positional `signal: AbortSignal | undefined` before required `onUpdate`/`ctx`, so optionality cannot move to a trailing `?:`.
-      signal: ReadonlyDeep<AbortSignal> | undefined,
+      signal: ForeignBorrowed<AbortSignal> | undefined,
       _onUpdate: unknown,
-      ctx: ReadonlyDeep<ExtensionContext>,
+      ctx: ForeignBorrowed<ExtensionContext>,
     ): Promise<AdvisorToolResult> {
       if (!toolOptions.getSessionEnabled()) {
         throw new Error(
@@ -137,7 +138,7 @@ export function createAdvisorTool(
         readonly model?: string;
         readonly question?: string;
       },
-      theme: ReadonlyDeep<Theme>,
+      theme: ForeignBorrowed<Theme>,
       _context: unknown,
     ) {
       return renderAdvisorCall({
@@ -149,7 +150,7 @@ export function createAdvisorTool(
     renderResult: function renderResult(
       result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>,
       renderOptions: ReadonlyDeep<ToolRenderResultOptions>,
-      theme: ReadonlyDeep<Theme>,
+      theme: ForeignBorrowed<Theme>,
       _context: unknown,
     ) {
       return renderAdvisorResult({
@@ -167,6 +168,8 @@ export function createAdvisorTool(
  * @param options - runtime call options
  *
  * @returns advisor text and details
+ *
+ * @mutates options - `resolveEffectiveScope` can invoke context scope callbacks and `completeAdvisor` can run command-backed auth through `ctx.modelRegistry.getApiKeyAndHeaders`
  *
  * @example
  * ```typescript
@@ -277,7 +280,9 @@ export async function runAdvisor(
         .provider,
       scopeSource: scope.source,
       scopedSlugs: scope.entries
-        .map(function mapEntry(entry,) {
+        .map(function mapEntry(
+          entry: ReadonlyDeep<(typeof scope.entries)[number]>,
+        ) {
         return entry.canonicalSlug;
       },),
       ...(selection.defaultSelection

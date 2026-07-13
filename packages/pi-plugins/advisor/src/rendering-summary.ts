@@ -5,7 +5,7 @@
  */
 
 import type { Theme, } from '@earendil-works/pi-coding-agent';
-import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import type { AdvisorDetails, } from './types.ts';
 
@@ -54,7 +54,7 @@ export function renderAdvisorSummary(
     readonly text: string;
     readonly details: AdvisorDetails;
     readonly expanded: boolean;
-    readonly theme: ReadonlyDeep<Theme>;
+    readonly theme: ForeignBorrowed<Theme>;
   },
 ): string {
   /**
@@ -244,7 +244,7 @@ function formatHeader(
     theme,
   }: {
     readonly details: AdvisorDetails;
-    readonly theme: ReadonlyDeep<Theme>;
+    readonly theme: ForeignBorrowed<Theme>;
   },
 ): string {
   /**

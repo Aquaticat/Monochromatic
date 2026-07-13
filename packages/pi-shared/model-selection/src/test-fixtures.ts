@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import type { ReadonlyModel, } from './types.ts';
 
 /**
@@ -145,13 +147,15 @@ export function fixtureSlug(
  *
  * @returns caught error value
  *
+ * @mutates action - invokes supplied test callback and its captured state
+ *
  * @example
  * ```typescript
  * const error = captureError(function fail() { throw new Error('x'); });
  * ```
  */
 export function captureError(
-  action: () => unknown,
+  action: ForeignBorrowed<() => unknown>,
 ): unknown {
   try {
     action();
@@ -169,13 +173,15 @@ export function captureError(
  *
  * @returns caught error value
  *
+ * @mutates action - invokes supplied async test callback and its captured state
+ *
  * @example
  * ```typescript
  * const error = await captureAsyncError(async function fail() { throw new Error('x'); });
  * ```
  */
 export async function captureAsyncError(
-  action: () => Promise<unknown>,
+  action: ForeignBorrowed<() => Promise<unknown>>,
 ): Promise<unknown> {
   try {
     await action();

@@ -11,9 +11,12 @@ import type {
   BeforeAgentStartEvent,
   ExtensionAPI,
   ExtensionContext,
+  MessageRenderOptions,
+  Theme,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import {
@@ -56,6 +59,8 @@ const l = tagged({
  *
  * @param pi - pi extension API
  *
+ * @mutates pi - `pi.registerTool`, `pi.registerMessageRenderer`, `pi.on`, and delegated `pi.registerCommand` change Pi host registrations
+ *
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
@@ -63,7 +68,7 @@ const l = tagged({
  * ```
  */
 export default async function advisor(
-  pi: ExtensionAPI,
+  pi: ForeignBorrowed<ExtensionAPI>,
 ): Promise<void> {
   /**
    * Logger tagged with the extension factory name.
@@ -103,9 +108,12 @@ export default async function advisor(
   pi.registerMessageRenderer(
     ADVISOR_MESSAGE_TYPE,
     function renderMessage(
-      message,
-      options,
-      theme,
+      message: ReadonlyDeep<{
+        content: unknown;
+        details?: unknown;
+      }>,
+      options: Readonly<MessageRenderOptions>,
+      theme: ForeignBorrowed<Theme>,
     ) {
       return renderAdvisorMessage({
         message,
@@ -127,9 +135,20 @@ export default async function advisor(
 
   pi.on(
     'before_agent_start',
+    /**
+     * Adds Advisor guidance before each enabled agent turn.
+     *
+     * @param event - Pi prompt event.
+     *
+     * @param ctx - Pi extension context.
+     *
+     * @returns Prompt replacement when Advisor is enabled.
+     *
+     * @mutates ctx - `buildMainModelGuidance` invokes context scope and model-registry callbacks
+     */
     async function handleBeforeAgentStart(
-      event: ReadonlyDeep<BeforeAgentStartEvent>,
-      ctx: ReadonlyDeep<ExtensionContext>,
+      event: ForeignBorrowed<BeforeAgentStartEvent>,
+      ctx: ForeignBorrowed<ExtensionContext>,
     ) {
       if (!state.getEnabled())
         return undefined;
@@ -161,6 +180,8 @@ export default async function advisor(
  *
  * @returns prompt text appended to main model system prompt
  *
+ * @mutates ctx - `resolveEffectiveScope` invokes context live-scope and model-registry callbacks
+ *
  * @example
  * ```typescript
  * buildMainModelGuidance({ ctx, config });
@@ -171,7 +192,7 @@ async function buildMainModelGuidance(
     ctx,
     config,
   }: {
-    readonly ctx: ReadonlyDeep<ExtensionContext>;
+    readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly config: Awaited<ReturnType<typeof loadMergedConfig>>;
   },
 ): Promise<string> {
@@ -202,7 +223,9 @@ async function buildMainModelGuidance(
    * Canonical slugs available to Advisor.
    */
   const scopedSlugs = scope.entries
-    .map(function mapEntry(entry,) {
+    .map(function mapEntry(
+      entry: ReadonlyDeep<(typeof scope.entries)[number]>,
+    ) {
     return entry.canonicalSlug;
   },);
 

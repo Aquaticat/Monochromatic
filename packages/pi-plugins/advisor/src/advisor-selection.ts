@@ -6,8 +6,8 @@
 
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import {
-  canonicalSlug,
   resolveRequestedModel,
   selectDefaultModel,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
@@ -45,6 +45,8 @@ export type CurrentMainModelIdentity = Pick<AdvisorModelSelection['selected']['m
  *
  * @returns selected Advisor model
  *
+ * @mutates modelRegistry - `resolveRequestedModel` can invoke supplied registry `getAll` capability
+ *
  * @example
  * ```typescript
  * selectAdvisorModel({ scope, config, estimatedInputTokens, modelRegistry, currentMainModel });
@@ -58,14 +60,14 @@ export function selectAdvisorModel(
     estimatedInputTokens,
     modelRegistry,
     currentMainModel,
-  }: {
-    readonly scope: EffectiveModelScope;
-    readonly requestedSlug?: string;
-    readonly config: AdvisorConfig;
-    readonly estimatedInputTokens: number;
-    readonly modelRegistry: ReadonlyDeep<ModelRegistry>;
-    readonly currentMainModel?: CurrentMainModelIdentity;
-  },
+  }: ForeignBorrowed<Readonly<{
+    scope: ReadonlyDeep<EffectiveModelScope>;
+    requestedSlug?: string;
+    config: AdvisorConfig;
+    estimatedInputTokens: number;
+    modelRegistry: ModelRegistry;
+    currentMainModel?: CurrentMainModelIdentity;
+  }>>,
 ): AdvisorModelSelection {
   if ((requestedSlug !== undefined) && (requestedSlug.trim()
     !== '')) {
@@ -117,10 +119,10 @@ export function scopeAvoidingCurrentMainModel(
   {
     scope,
     currentMainModel,
-  }: {
+  }: ReadonlyDeep<{
     readonly scope: EffectiveModelScope;
     readonly currentMainModel?: CurrentMainModelIdentity;
-  },
+  }>,
 ): EffectiveModelScope {
   if (currentMainModel === undefined)
     return scope;
@@ -128,13 +130,15 @@ export function scopeAvoidingCurrentMainModel(
   /**
    * Canonical slug for active primary model.
    */
-  const currentMainModelSlug = canonicalSlug(currentMainModel,);
+  const currentMainModelSlug = `${currentMainModel.provider}/${currentMainModel.id}`;
   /**
    * Scoped entries that differ from active primary model.
    */
   const alternativeEntries = scope
     .entries
-    .filter(function keepNonCurrentModel(entry,) {
+    .filter(function keepNonCurrentModel(
+      entry: ReadonlyDeep<(typeof scope.entries)[number]>,
+    ) {
       return entry.canonicalSlug
         !== currentMainModelSlug;
     },);

@@ -10,6 +10,7 @@ import type {
 } from '@earendil-works/pi-ai';
 import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { LATEST_USER_EXCERPT_CHARS, } from './constants.ts';
 
 //region Public API
@@ -27,13 +28,15 @@ export const NO_USER_PROMPT: unique symbol = Symbol('advisor/no-user-prompt',);
  *
  * @returns latest user prompt excerpt, or {@link NO_USER_PROMPT} when none
  *
+ * @mutates branch - `branch.toReversed` can invoke caller-defined array index accessors or proxy traps
+ *
  * @example
  * ```typescript
  * latestUserPromptExcerpt(branch);
  * ```
  */
 export function latestUserPromptExcerpt(
-  branch: readonly SessionEntry[],
+  branch: readonly ForeignBorrowed<SessionEntry>[],
 ): string | typeof NO_USER_PROMPT {
   /**
    * Latest user message entry, if present.
@@ -79,11 +82,13 @@ function userMessageText(
   if ((typeof content) === 'string')
     return content;
   return content
-    .filter(function keepTextBlock(block,): block is TextContent {
+    .filter(function keepTextBlock(
+      block: ReadonlyDeep<(typeof content)[number]>,
+    ): block is ReadonlyDeep<TextContent> {
       return block.type
         === 'text';
     },)
-    .map(function mapTextBlock(block,) {
+    .map(function mapTextBlock(block: ReadonlyDeep<TextContent>,) {
       return block.text;
     },)
     .join('\n',);
@@ -97,11 +102,11 @@ function userMessageText(
  * @returns whether entry contains a user message
  */
 function isUserMessageEntry(
-  entry: SessionEntry,
-): entry is SessionEntry & {
+  entry: ForeignBorrowed<SessionEntry>,
+): entry is ForeignBorrowed<SessionEntry & {
   readonly type: 'message';
   readonly message: UserMessage;
-} {
+}> {
   return (entry.type
     === 'message') && (entry.message
       .role

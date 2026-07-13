@@ -12,6 +12,7 @@ import type {
   Model,
   ProviderStreamOptions,
   ProviderStreams,
+  TextContent,
 } from '@earendil-works/pi-ai';
 import { anthropicMessagesApi, } from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
 import { azureOpenAIResponsesApi, } from '@earendil-works/pi-ai/api/azure-openai-responses.lazy';
@@ -24,6 +25,7 @@ import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completi
 import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
 import type {
@@ -113,6 +115,12 @@ const ADVISOR_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
  *
  * @returns final assistant message from matching pi-ai API implementation
  *
+ * @mutates model - provider `streams.stream` implementations can inspect or retain selected model data
+ *
+ * @mutates context - provider `streams.stream` implementations consume message context and reachable content
+ *
+ * @mutates providerOptions - provider `streams.stream` implementations observe abort and auth capabilities
+ *
  * @throws when model API has no direct implementation registered for Advisor
  *
  * @example
@@ -125,7 +133,7 @@ async function defaultCompleteAdvisorModel(
     model,
     context,
     providerOptions,
-  }: CompleteAdvisorModelOptions,
+  }: ForeignBorrowed<CompleteAdvisorModelOptions>,
 ): Promise<AssistantMessage> {
   /**
    * Direct API stream implementation matching the selected Advisor model.
@@ -160,11 +168,11 @@ export type CompleteAdvisorModel = typeof defaultCompleteAdvisorModel;
 /**
  * Options for invoking the selected Advisor model.
  */
-export type CompleteAdvisorOptions = {
+export type CompleteAdvisorOptions = ForeignBorrowed<{
   /**
    * Pi extension context, used for auth lookup.
    */
-  readonly ctx: ReadonlyDeep<ExtensionContext>;
+  readonly ctx: ExtensionContext;
   /**
    * Selected Advisor model.
    */
@@ -184,14 +192,38 @@ export type CompleteAdvisorOptions = {
   /**
    * Abort signal from tool or command mode.
    */
-  readonly signal?: ReadonlyDeep<AbortSignal>;
+  readonly signal?: AbortSignal;
   /**
    * Override model completion implementation for focused tests.
    */
   readonly completeModel?: CompleteAdvisorModel;
-};
+}>;
 
 //endregion Types
+
+//region Error formatting
+
+/**
+ * Formats caught provider failures without invoking unknown coercion hooks.
+ *
+ * @param error - Caught provider value.
+ *
+ * @returns Error message, primitive string, or noncoercing value category.
+ *
+ * @example
+ * ```typescript
+ * caughtMessage(new Error('offline'));
+ * ```
+ */
+function caughtMessage(error: unknown,): string {
+  if (Error.isError(error,))
+    return error.message;
+  if ((typeof error) === 'string')
+    return error;
+  return `Non-Error value of type ${typeof error}`;
+}
+
+//endregion Error formatting
 
 //region Public API
 
@@ -201,6 +233,8 @@ export type CompleteAdvisorOptions = {
  * @param options - call inputs
  *
  * @returns final assistant message from the advisor model
+ *
+ * @mutates options - auth lookup can run command-backed configuration, provider callbacks consume supplied capabilities, and `AbortSignal.any` stores dependent-signal relations
  *
  * @throws when auth lookup or provider call fails
  *
@@ -310,7 +344,9 @@ export async function completeAdvisor(
      */
     const responseHasText = firstResponse
       .content
-      .some(function hasTextContent(block,) {
+      .some(function hasTextContent(
+        block: ReadonlyDeep<(typeof firstResponse.content)[number]>,
+      ) {
         return (block.type
           === 'text')
           && (block.text !== '');
@@ -328,9 +364,7 @@ export async function completeAdvisor(
     throw new Error(
       `advisor: provider call failed for ${options.model
         .provider}/${options.model
-          .id}: ${
-        Error.isError(error,) ? error.message : String(error,)
-      }`,
+          .id}: ${caughtMessage(error,)}`,
       { cause: error, },
     );
   }
@@ -349,15 +383,17 @@ export async function completeAdvisor(
  * ```
  */
 export function extractAdvisorText(
-  message: AssistantMessage,
+  message: ReadonlyDeep<AssistantMessage>,
 ): string {
   return message
     .content
-    .filter(function keepText(block,) {
+    .filter(function keepText(
+      block: ReadonlyDeep<(typeof message.content)[number]>,
+    ): block is ReadonlyDeep<TextContent> {
       return block.type
         === 'text';
     },)
-    .map(function mapText(block,) {
+    .map(function mapText(block: ReadonlyDeep<TextContent>,) {
       return block.text;
     },)
     .join('\n',);
@@ -398,15 +434,17 @@ export function buildAdvisorSystemPrompt(
  * @param timeoutMs - timeout in milliseconds
  *
  * @returns combined abort signal
+ *
+ * @mutates signal - `AbortSignal.any` stores a dependent-signal relation on supplied caller signal
  */
 function combinedSignal(
   {
     signal,
     timeoutMs,
-  }: {
-    readonly signal?: ReadonlyDeep<AbortSignal>;
-    readonly timeoutMs: number;
-  },
+  }: ForeignBorrowed<Readonly<{
+    signal?: AbortSignal;
+    timeoutMs: number;
+  }>>,
 ): AbortSignal {
   /**
    * Timeout signal for this Advisor call.

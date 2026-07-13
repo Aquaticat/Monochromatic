@@ -2811,6 +2811,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@monochromatic-dev/pi-shared-model-selection':
         specifier: workspace:*
         version: link:../../pi-shared/model-selection
@@ -3131,6 +3134,9 @@ importers:
 
   packages/pi-shared/model-selection:
     dependencies:
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       type-fest:
         specifier: 'catalog:'
         version: 5.8.0

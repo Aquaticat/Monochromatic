@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import {
   NO_ARGV_MODELS,
   parseArgvModelPatterns,
@@ -62,7 +64,7 @@ export type ResolveEffectiveScopeContext<TModel extends ReadonlyModel = Readonly
 /**
  * Options for resolving effective model scope.
  */
-export type ResolveEffectiveScopeOptions<TModel extends ReadonlyModel = ReadonlyModel,> = {
+export type ResolveEffectiveScopeOptions<TModel extends ReadonlyModel = ReadonlyModel,> = ForeignBorrowed<{
   /**
    * Narrow pi extension context.
    */
@@ -79,7 +81,7 @@ export type ResolveEffectiveScopeOptions<TModel extends ReadonlyModel = Readonly
    * Error prefix used by settings validation.
    */
   readonly errorPrefix?: string;
-};
+}>;
 
 /**
  * Raw live scope item shapes accepted by the detector.
@@ -114,6 +116,8 @@ type RawLiveScopeItem<TModel extends ReadonlyModel = ReadonlyModel,> = TModel | 
  * @param errorPrefix - optional settings-validation error prefix
  *
  * @returns scoped models and source metadata
+ *
+ * @mutates ctx - invokes optional `getScopedModels` and model-registry `getAvailable` callbacks supplied by context
  *
  * @example
  * ```typescript
@@ -205,12 +209,14 @@ export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
  * @param scopedModels - optional live-scope property
  *
  * @returns live scoped models, or {@link NO_LIVE_SCOPE} when unavailable
+ *
+ * @mutates getScopedModels - invokes supplied live-scope callback when present
  */
 function readLiveScope<TModel extends ReadonlyModel,>(
   {
     getScopedModels,
     scopedModels,
-  }: Pick<ResolveEffectiveScopeContext<TModel>, 'getScopedModels' | 'scopedModels'>,
+  }: ForeignBorrowed<Pick<ResolveEffectiveScopeContext<TModel>, 'getScopedModels' | 'scopedModels'>>,
 ): ScopedModel<TModel>[] | typeof NO_LIVE_SCOPE {
   /**
    * Raw live scope value from method or property.

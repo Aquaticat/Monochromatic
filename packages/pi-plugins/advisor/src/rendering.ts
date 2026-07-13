@@ -13,6 +13,7 @@ import {
   Text,
 } from '@earendil-works/pi-tui';
 import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import {
   fallbackDetails,
   isAdvisorDetails,
@@ -45,7 +46,7 @@ export function renderAdvisorCall(
     theme,
   }: {
     readonly args: AdvisorToolParams;
-    readonly theme: ReadonlyDeep<Theme>;
+    readonly theme: ForeignBorrowed<Theme>;
   },
 ): Component {
   /**
@@ -114,7 +115,7 @@ export function renderAdvisorResult(
   }: {
     readonly result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>;
     readonly expanded: boolean;
-    readonly theme: ReadonlyDeep<Theme>;
+    readonly theme: ForeignBorrowed<Theme>;
   },
 ): Component {
   /**
@@ -165,7 +166,7 @@ export function renderAdvisorMessage(
       readonly details?: unknown;
     };
     readonly expanded: boolean;
-    readonly theme: ReadonlyDeep<Theme>;
+    readonly theme: ForeignBorrowed<Theme>;
   },
 ): Component {
   /**

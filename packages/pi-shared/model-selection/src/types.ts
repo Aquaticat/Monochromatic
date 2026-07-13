@@ -5,6 +5,7 @@
  */
 
 import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 
 //region Core model types
 
@@ -328,7 +329,7 @@ export type ResolveBudgetAuth<TModel extends ModelIdentity = ReadonlyModel,> = (
 /**
  * Options for shared budget-model strategy selection.
  */
-export type BudgetModelSelectionOptions<TModel extends ModelPricing = ReadonlyModel,> = {
+export type BudgetModelSelectionOptions<TModel extends ModelPricing = ReadonlyModel,> = ForeignBorrowed<{
   /**
    * Active model whose provider anchors same-provider selection.
    */
@@ -353,6 +354,6 @@ export type BudgetModelSelectionOptions<TModel extends ModelPricing = ReadonlyMo
    * Host auth availability predicate for error reports.
    */
   readonly hasConfiguredAuth: (options: { readonly model: TModel; }) => boolean;
-};
+}>;
 
 //endregion Budget types

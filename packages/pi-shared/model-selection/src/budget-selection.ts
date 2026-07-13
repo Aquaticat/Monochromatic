@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import {
   NoBudgetModelError,
   toBudgetModelCandidate,
@@ -47,6 +49,8 @@ type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
  * @param options - active model, model list, strategy, major versions, and auth callbacks
  *
  * @returns selected budget model with auth
+ *
+ * @mutates options - strategy helpers invoke supplied `resolveAuth` and `hasConfiguredAuth` callbacks
  *
  * @throws {@link NoBudgetModelError} when no suitable model is found
  *
@@ -95,6 +99,8 @@ export async function selectBudgetModel<TModel extends ModelPricing,>(
  *
  * @returns fastest candidate when present
  *
+ * @mutates hasConfiguredAuth - invokes supplied auth-availability predicate for selected model
+ *
  * @example
  * ```typescript
  * const candidate = findFastestCandidate({ allModels, majorVersions, hasConfiguredAuth });
@@ -105,11 +111,11 @@ export function findFastestCandidate<TModel extends ModelPricing,>(
     allModels,
     majorVersions,
     hasConfiguredAuth,
-  }: {
-    readonly allModels: readonly TModel[];
-    readonly majorVersions: number;
-    readonly hasConfiguredAuth: (options: { readonly model: TModel; }) => boolean;
-  },
+  }: ForeignBorrowed<Readonly<{
+    allModels: readonly TModel[];
+    majorVersions: number;
+    hasConfiguredAuth: (options: { readonly model: TModel; }) => boolean;
+  }>>,
 ): BudgetModelCandidate | typeof NO_CANDIDATE {
   /**
    * Provider name to its list of models.
@@ -193,6 +199,10 @@ export const findCheapestCandidate: typeof findFastestCandidate = findFastestCan
  * @param hasConfiguredAuth - host auth predicate for reporting
  *
  * @returns selected budget model
+ *
+ * @mutates resolveAuth - invokes supplied async auth resolver for ranked candidates
+ *
+ * @mutates hasConfiguredAuth - invokes supplied auth-availability predicate for error context
  *
  * @throws {@link NoBudgetModelError} when no suitable same-provider model is found
  */
@@ -317,6 +327,8 @@ async function findSameProvider<TModel extends ModelPricing,>(
  * @param resolveAuth - host auth resolver
  *
  * @returns selected budget model
+ *
+ * @mutates resolveAuth - invokes supplied async auth resolver for ranked candidates
  *
  * @throws {@link NoBudgetModelError} when no suitable model is found across any provider
  */

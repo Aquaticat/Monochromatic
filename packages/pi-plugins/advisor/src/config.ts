@@ -7,6 +7,7 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import * as v from 'valibot';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import {
   type AdvisorConfigFile,
   AdvisorConfigFileSchema,
@@ -165,15 +166,17 @@ export function getConfigPaths(
  * @param configs - config files in merge order, with {@link NO_CONFIG_FILE} entries skipped
  *
  * @returns merged runtime config without source metadata
+ *
+ * @mutates configs - `configs.reduce` can invoke caller-defined array accessors or proxy traps
  */
 function mergeConfigFiles(
   {
     defaults,
     configs,
-  }: {
-    readonly defaults: Omit<AdvisorConfig, 'source'>;
-    readonly configs: readonly (AdvisorConfigFile | typeof NO_CONFIG_FILE)[];
-  },
+  }: ForeignBorrowed<Readonly<{
+    defaults: Omit<AdvisorConfig, 'source'>;
+    configs: readonly (AdvisorConfigFile | typeof NO_CONFIG_FILE)[];
+  }>>,
 ): Omit<AdvisorConfig, 'source'> {
   return configs.reduce(
     function mergeConfig(
@@ -296,6 +299,8 @@ async function readJsonFile(
  * @param label - config scope label
  *
  * @returns validated config file
+ *
+ * @mutates raw - `v.safeParse` can invoke getters or proxy traps while traversing parsed configuration
  */
 function parseConfigFile(
   {

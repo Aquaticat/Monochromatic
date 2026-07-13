@@ -14,6 +14,7 @@ import type {
   ToolDefinition,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import type {
   Static,
   TSchema,
@@ -291,11 +292,11 @@ export type AdvisorRunResult = {
 /**
  * Arguments for executing Advisor.
  */
-export type AdvisorRunOptions = {
+export type AdvisorRunOptions = ForeignBorrowed<{
   /**
    * Pi extension context.
    */
-  readonly ctx: ReadonlyDeep<ExtensionContext>;
+  readonly ctx: ExtensionContext;
   /**
    * Runtime config.
    */
@@ -315,8 +316,8 @@ export type AdvisorRunOptions = {
   /**
    * Abort signal from tool or command execution.
    */
-  readonly signal?: ReadonlyDeep<AbortSignal>;
-};
+  readonly signal?: AbortSignal;
+}>;
 
 /**
  * Advisor tool definition type with concrete parameters and details.

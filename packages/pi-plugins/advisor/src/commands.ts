@@ -9,6 +9,7 @@ import type {
   ExtensionCommandContext,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
@@ -98,13 +99,15 @@ export type RegisterAdvisorCommandsOptions = {
  *
  * @param options - pi API and runtime state
  *
+ * @mutates options - `options.pi.registerCommand` stores command registration in Pi host state
+ *
  * @example
  * ```typescript
  * registerAdvisorCommands({ pi, getConfig, state });
  * ```
  */
 export function registerAdvisorCommands(
-  options: RegisterAdvisorCommandsOptions,
+  options: ForeignBorrowed<RegisterAdvisorCommandsOptions>,
 ): void {
   options.pi
     .registerCommand(
@@ -135,6 +138,8 @@ export function registerAdvisorCommands(
  *
  * @param enabled - whether Advisor should be active
  *
+ * @mutates pi - `pi.setActiveTools` changes active Pi host tools when Advisor state differs
+ *
  * @example
  * ```typescript
  * syncAdvisorActiveTool({ pi, enabled: false });
@@ -144,10 +149,10 @@ export function syncAdvisorActiveTool(
   {
     pi,
     enabled,
-  }: {
-    readonly pi: ReadonlyDeep<ExtensionAPI>;
-    readonly enabled: boolean;
-  },
+  }: ForeignBorrowed<Readonly<{
+    pi: ExtensionAPI;
+    enabled: boolean;
+  }>>,
 ): void {
   /**
    * Current active tool names.
@@ -182,6 +187,8 @@ export function syncAdvisorActiveTool(
  *
  * @returns status text
  *
+ * @mutates ctx - `resolveEffectiveScope` invokes context live-scope and model-registry callbacks
+ *
  * @example
  * ```typescript
  * const text = buildAdvisorStatus({ ctx, config, enabled: true });
@@ -192,11 +199,11 @@ export async function buildAdvisorStatus(
     ctx,
     config,
     enabled,
-  }: {
-    readonly ctx: ReadonlyDeep<ExtensionCommandContext>;
-    readonly config: AdvisorConfig;
-    readonly enabled: boolean;
-  },
+  }: ForeignBorrowed<Readonly<{
+    ctx: ExtensionCommandContext;
+    config: AdvisorConfig;
+    enabled: boolean;
+  }>>,
 ): Promise<string> {
   /**
    * Effective model scope for status.
@@ -258,7 +265,9 @@ export async function buildAdvisorStatus(
         .length
         === 0 ? 'none' : scope
         .entries
-          .map(function mapEntry(entry,) {
+          .map(function mapEntry(
+            entry: ReadonlyDeep<(typeof scope.entries)[number]>,
+          ) {
           return entry.canonicalSlug;
         },)
           .join(', ',)
@@ -322,9 +331,11 @@ type HandleAdvisorCommandOptions = {
  * Handle one `/advisor` invocation.
  *
  * @param options - command handler inputs
+ *
+ * @mutates options - changes session toggle and invokes Pi active-tool and notification capabilities
  */
 async function handleAdvisorCommand(
-  options: HandleAdvisorCommandOptions,
+  options: ForeignBorrowed<HandleAdvisorCommandOptions>,
 ): Promise<void> {
   /**
    * Trimmed command args.
@@ -394,6 +405,10 @@ async function handleAdvisorCommand(
 
 /**
  * Run immediate manual Advisor review and append a custom message.
+ *
+ * @mutates ctx - `ctx.ui.notify` changes displayed Pi notification state on completion failures
+ *
+ * @mutates pi - `sendAdvisorMessage` calls `pi.sendMessage` to append Advisor output
  */
 async function runImmediateAdvisor(
   {
@@ -401,12 +416,12 @@ async function runImmediateAdvisor(
     pi,
     config,
     requestedSlug,
-  }: {
-    readonly ctx: ReadonlyDeep<ExtensionCommandContext>;
-    readonly pi: ReadonlyDeep<ExtensionAPI>;
-    readonly config: AdvisorConfig;
-    readonly requestedSlug?: string;
-  },
+  }: ForeignBorrowed<Readonly<{
+    ctx: ExtensionCommandContext;
+    pi: ExtensionAPI;
+    config: AdvisorConfig;
+    requestedSlug?: string;
+  }>>,
 ): Promise<void> {
   await ctx.waitForIdle();
   try {
