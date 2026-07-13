@@ -11,6 +11,8 @@ The audited outcomes are:
 
 - `Array.isArray(value)` and `Object.is(left, right)` are observational;
 - primitive String transforms and searches are observational for typed primitive inputs and outputs;
+- global `String(value)` is observational only for primitive `value`;
+  object conversion can invoke user-defined coercion hooks;
 - Array identity searches,
   array and collection iterators,
   collection lookups,
@@ -65,6 +67,15 @@ A zero-target callback operation is not complete until call analysis propagates 
   </emu-alg>
 </emu-clause>
 ```
+
+Global `String(value)` is also different from methods on primitive strings.
+`String(value)` calls `ToString(value)` in `spec.html:36077`.
+For an object,
+`ToString` calls `ToPrimitive` with string preference (`spec.html:5650`).
+`ToPrimitive` first gets and calls `value[Symbol.toPrimitive]` when present,
+then `OrdinaryToPrimitive` gets and calls `toString` and `valueOf` (`spec.html:5049`).
+Any of those caller-owned functions can change state.
+Primitive arguments take direct conversion branches and cannot expose caller-owned mutable state.
 
 `JSON.stringify` is different.
  Its `SerializeJSONProperty` operation reads `toJSON` and calls it when callable
@@ -170,6 +181,9 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
 
 ### Calls verified as effectful or opaque
 
+- `String(object)` can invoke `Symbol.toPrimitive`,
+  `toString`,
+  and `valueOf` hooks.
 - `JSON.stringify(proxy)` invoked proxy behavior.
 - `JSON.stringify(state)` invoked authored `toJSON` and mutated `state.value`.
 - `JSON.stringify(value, replacer)` has an additional explicit callback path in `spec.html:48392`.
@@ -187,6 +201,16 @@ primitive-element Array `join`,
 and `ErrorConstructor.isError`.
 Exact declaration provenance prevents same-named project methods from inheriting this treatment.
 
+For global `String(value)`,
+first narrow primitive branches and format nonprimitive values without coercion.
+`packages/dev-script/page-weight/src/error-format.ts` returns `Error.message` for errors,
+returns thrown strings directly,
+and reports only runtime category for other values.
+Its regression test proves object `toString` is not invoked.
+If object coercion is intentional,
+document every possible hook effect with `@mutates` or add exact audited call effect rather than treating conversion as
+readonly.
+
 For `JSON.stringify`,
  use a verified local adapter whose `@mutates` contract names `JSON.stringify` as its upstream
 boundary and lists every parameter whose hooks can run.
@@ -196,6 +220,7 @@ mutation even when current runtime values happen to be plain data.
 
 ## What does not work
 
+- Cataloging global `String` as observational for unknown or object inputs fails because coercion dispatches user code.
 - Cataloging `JSON.stringify` as observational because no replacer argument is present fails because `toJSON`,
    getters,
   and proxy behavior remain reachable.
