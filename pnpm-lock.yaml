@@ -2033,6 +2033,9 @@ importers:
 
   packages/module/image-diff:
     dependencies:
+      '@monochromatic-dev/config-oxlint-shared':
+        specifier: workspace:*
+        version: link:../../oxlint-plugins/shared
       '@monochromatic-dev/module-llm-types':
         specifier: workspace:*
         version: link:../llm-types

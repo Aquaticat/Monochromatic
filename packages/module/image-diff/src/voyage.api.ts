@@ -1,4 +1,5 @@
 // oxlint-disable typescript/no-unsafe-type-assertion -- API response types require assertions
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type {
@@ -71,6 +72,8 @@ export function resolveVoyageApiKey(configKey?: string,): string {
  *
  * @returns parsed API response
  *
+ * @mutates requestBody - JSON.stringify may invoke getters, proxy traps, toJSON, or other conversion hooks on request body and reachable values.
+ *
  * @throws on non-OK HTTP status with the error body
  *
  * @example
@@ -82,7 +85,7 @@ export async function callVoyageApi({
   requestBody,
   apiKey,
 }: {
-  readonly requestBody: VoyageApiRequest;
+  readonly requestBody: ForeignBorrowed<VoyageApiRequest>;
   readonly apiKey: string;
 },): Promise<VoyageApiResponse> {
   /**
