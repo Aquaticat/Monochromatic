@@ -209,14 +209,14 @@ function peekNonSpace({
  *
  * @example
  * ```ts
- * forceStyleText({ format: ['cyan'], text: '"key"' });
+ * forceStyleText({ format: 'cyan', text: '"key"' });
  * ```
  */
 function forceStyleText({
   format,
   text,
 }: {
-  readonly format: readonly InspectColor[];
+  readonly format: InspectColor;
   readonly text: string;
 },): string {
   return styleText(
@@ -272,7 +272,7 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
         from: read.next,
       },) === ':';
       out.push(forceStyleText({
-        format: [isKey ? 'cyan' : 'green',],
+        format: isKey ? 'cyan' : 'green',
         text: read.token,
       },),);
       cursor.i = read.next;
@@ -287,7 +287,7 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
         start: cursor.i,
       },);
       out.push(forceStyleText({
-        format: ['yellow',],
+        format: 'yellow',
         text: read.token,
       },),);
       cursor.i = read.next;
@@ -308,7 +308,7 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
         cursor.i,
       ) ? 'true'.length : 'false'.length;
       out.push(forceStyleText({
-        format: ['magenta',],
+        format: 'magenta',
         text: json.slice(
           cursor.i,
           cursor.i + length,
@@ -322,7 +322,7 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
       cursor.i,
     )) {
       out.push(forceStyleText({
-        format: ['dim',],
+        format: 'dim',
         text: 'null',
       },),);
       cursor.i += 'null'.length;

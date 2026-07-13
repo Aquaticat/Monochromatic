@@ -173,6 +173,13 @@ const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
     member: 'abort',
     evidence: 'TypeScript 7 lib.dom.d.ts AbortController declaration',
   },),
+  {
+    provenance: { kind: 'dom', },
+    ownerType: 'AbortSignal',
+    member: 'any',
+    targets: [],
+    evidence: 'DOM AbortSignal.any creates composite signal observing supplied signal states',
+  },
   ...[
     'addEventListener',
     'dispatchEvent',

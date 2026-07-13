@@ -888,6 +888,9 @@ importers:
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1

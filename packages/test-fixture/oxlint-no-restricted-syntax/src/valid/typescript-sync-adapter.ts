@@ -67,6 +67,17 @@ export function abortSemanticFixture(controller: AbortController,): void {
 }
 
 /**
+ * Composes cancellation signals through global constructor variable method.
+ *
+ * @param signals - Signals observed by composite.
+ *
+ * @returns Composite cancellation signal.
+ */
+export function composeAbortSignals(signals: readonly AbortSignal[],): AbortSignal {
+  return AbortSignal.any([...signals,],);
+}
+
+/**
  * Accepts mutable structural data for classifier fixture.
  *
  * @param mutableObject - Writable structural data.

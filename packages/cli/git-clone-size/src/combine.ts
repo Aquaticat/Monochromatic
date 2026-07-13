@@ -62,15 +62,15 @@ function confidenceFromRank(rank: number,): Confidence {
  * ```
  */
 function sum(values: readonly number[],): number {
-  return values.reduce(
-    function add(
-      total,
-      value,
-    ) {
-    return total + value;
-  },
-    0,
-  );
+  return (function sumValues(): number {
+    /**
+     * Arithmetic sum isolated inside local mutation scope.
+     */
+    let total = 0;
+    for (const value of values)
+      total += value;
+    return total;
+  })();
 }
 
 /**

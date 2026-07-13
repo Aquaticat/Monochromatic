@@ -111,15 +111,15 @@ function summarizeMarginals(
   /**
    * Arithmetic mean of the raw marginals.
    */
-  const mean = marginals.reduce(
-    function add(
-      sum,
-      value,
-    ) {
-    return sum + value;
-  },
-    0,
-  ) / marginals.length;
+  const mean = (function meanMarginal(): number {
+    /**
+     * Marginal total isolated inside local mutation scope.
+     */
+    let total = 0;
+    for (const value of marginals)
+      total += value;
+    return total / marginals.length;
+  })();
   return {
     hi: floored(Math.max(...marginals,),),
     lo: floored(Math.min(...marginals,) * biasFactor,),

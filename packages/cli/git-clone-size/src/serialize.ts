@@ -1,3 +1,5 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+
 import { colorizeJson, } from './color.ts';
 import type { EstimateSnapshot, } from './types.ts';
 
@@ -13,6 +15,8 @@ import type { EstimateSnapshot, } from './types.ts';
  *
  * @returns one line of (optionally colored) JSON, without a trailing newline
  *
+ * @mutates snapshot - `JSON.stringify` may invoke getters, proxy traps, or nested `toJSON` methods
+ *
  * @example
  * ```ts
  * const line = serializeSnapshot({ snapshot, colorOn: false });
@@ -23,10 +27,10 @@ export function serializeSnapshot(
   {
     snapshot,
     colorOn,
-  }: {
-    readonly snapshot: EstimateSnapshot;
-    readonly colorOn: boolean
-  },
+  }: ForeignBorrowed<Readonly<{
+    snapshot: EstimateSnapshot;
+    colorOn: boolean;
+  }>>,
 ): string {
   /**
    * Verbatim JSON line, the machine-readable form.

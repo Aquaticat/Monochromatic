@@ -187,6 +187,7 @@ await describe({
         const queries = [
           'values.add',
           'controller.abort',
+          'AbortSignal.any',
           'encoder.encode',
           'Array.isArray',
           'Object.is',
@@ -220,6 +221,11 @@ await describe({
             provenance: { kind: 'dom', },
             ownerType: 'AbortController',
             member: 'abort',
+          },
+          {
+            provenance: { kind: 'dom', },
+            ownerType: 'AbortSignal',
+            member: 'any',
           },
           {
             provenance: { kind: 'dom', },
