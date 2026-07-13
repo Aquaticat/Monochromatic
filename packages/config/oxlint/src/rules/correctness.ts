@@ -43,6 +43,9 @@ export const correctnessRules: DummyRuleMap = {
   // option, so the whole rule is turned off.
   'typescript/no-unnecessary-condition': 'off',
 
+  // Project semantic rule in restriction.ts owns readonly contracts and effects.
+  'typescript/prefer-readonly-parameter-types': 'off',
+
   //region correctness
 
   // import/default, import/named, import/namespace aren't enabled because TypeScript already checks for those.
