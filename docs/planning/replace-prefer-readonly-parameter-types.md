@@ -75,17 +75,27 @@ The semantic-rule implementation is now functional but not migration-ready:
   function-expression exclusion;
 - commit `82acd6523` resolves aliased callback arguments for higher-order effect specialization;
 - commit `609b3b824` offers suggestion-only `ReadonlyDeep` projections for capability-free structural data when a
-  named `type-fest` import already resolves.
+  named `type-fest` import already resolves;
+- commit `f10bc94a9` audits exact non-dispatching `Array.isArray` and `Object.is` calls while retaining
+  `JSON.stringify` opacity;
+- commit `9189aea99` propagates effects from closures in returned,
+  passed,
+  and caller-reachable stored containers while requiring active closure ancestry;
+- commit `fdb6335ea` bounds overlays to the active file,
+  caches configured roots instead of files,
+  classifies created and deleted paths,
+  and covers parser recovery,
+  rename,
+  symlink,
+  and cache lifecycle;
+- commit `a2ed792a6` packs a production staging manifest and exercises the installed artifact plus TypeScript 7 bridge
+  from a disposable external consumer.
 
-Remaining gates include indirect object and storage escape modeling,
-audited nonmutating intrinsic calls,
-additional ownership-aware suggestions,
+Remaining gates include additional ownership-aware suggestions,
 package-catalog completion,
-and the agreed parser-recovery,
-invalidation,
-platform,
-memory,
-and publication acceptance corpus.
+path-case and required-platform runs,
+declaration-preservation automation,
+and full publication acceptance.
 
 Verified package tasks:
 
@@ -98,8 +108,8 @@ Verified package tasks:
 - `mise run //packages/config/oxlint:lint:oxlint`.
 
 Next action:
-complete audited observational intrinsics and indirect storage escape semantics,
-then finish acceptance probes before configuration migration.
+finish package-catalog and declaration-preservation acceptance,
+then run required platform probes before configuration migration.
 
 ## Continuity contract
 

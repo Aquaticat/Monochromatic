@@ -129,7 +129,9 @@ and the description must explain why mutation occurs.
 The sibling `@monochromatic-dev/config-oxlint-tsdoc` plugin validates grammar;
 both plugins consume the same shared parser.
 The semantic rule reports missing and stale contracts,
-propagates effects through owned calls and callbacks,
+propagates effects and opaque provenance through owned calls,
+callback aliases,
+and escaped closure containers,
 and consumes bodyless source-signature contracts.
 Declaration files remain exempt enforcement inputs.
 
@@ -141,8 +143,9 @@ An arbitrary tag that leaves any opaque target undocumented does not waive `opaq
 
 Semantic rewrites are suggestions only.
 Ordinary `--fix` does not change signatures or mutation contracts;
-explicit `--fix-suggestions` may apply verified stale-contract removal
-or a deep-safe `T[]` to `readonly T[]` rewrite.
+explicit `--fix-suggestions` may apply verified stale-contract removal,
+a deep-safe `T[]` to `readonly T[]` rewrite,
+or a capability-free structural projection through an existing named `type-fest` `ReadonlyDeep` import.
 Inline suppression is prohibited by `no-disable-prefer-readonly-parameter-types`.
 
 ## no-nullish-union
