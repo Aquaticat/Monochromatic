@@ -5,11 +5,22 @@
  */
 
 import type {
+  CallSignatureDeclaration,
+  ConstructorTypeNode,
+  ConstructSignatureDeclaration,
   FunctionLikeDeclaration,
+  FunctionTypeNode,
+  MethodSignatureDeclaration,
   Node,
 } from 'typescript/unstable/ast';
 import {
+  isCallSignatureDeclaration,
+  isConstructorTypeNode,
+  isConstructSignatureDeclaration,
   isElementAccessExpression,
+  isFunctionLikeDeclaration,
+  isFunctionTypeNode,
+  isMethodSignatureDeclaration,
   isPropertyAccessExpression,
 } from 'typescript/unstable/ast/is';
 
@@ -26,6 +37,42 @@ export const PARAMETER_INDEX_UNAVAILABLE: unique symbol = Symbol(
 export const OWNED_CALLABLE_UNAVAILABLE: unique symbol = Symbol(
   'call target lacks owned callable declaration',
 );
+
+/**
+ * Callable implementation or bodyless source signature covered by effect contract.
+ */
+export type EffectCallableDeclaration =
+  | FunctionLikeDeclaration
+  | CallSignatureDeclaration
+  | ConstructSignatureDeclaration
+  | MethodSignatureDeclaration
+  | FunctionTypeNode
+  | ConstructorTypeNode;
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Node mirrors TypeScript semantic AST identity required for narrowing. */
+/**
+ * Tests whether node participates in callable effect contract.
+ *
+ * @param node - TypeScript AST node to classify.
+ *
+ * @returns whether node is callable implementation or supported signature.
+ *
+ * @example
+ * ```ts
+ * if (isEffectCallableDeclaration(node)) {
+ *   node.parameters;
+ * }
+ * ```
+ */
+export function isEffectCallableDeclaration(node: Node,): node is EffectCallableDeclaration {
+  return isFunctionLikeDeclaration(node,)
+    || isCallSignatureDeclaration(node,)
+    || isConstructSignatureDeclaration(node,)
+    || isMethodSignatureDeclaration(node,)
+    || isFunctionTypeNode(node,)
+    || isConstructorTypeNode(node,);
+}
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * One callback-parameter relation inferred from owned function body.
@@ -76,7 +123,7 @@ export type MutableEffectSummary = {
  * const key = callableKey(declaration);
  * ```
  */
-export function callableKey(declaration: FunctionLikeDeclaration,): string {
+export function callableKey(declaration: EffectCallableDeclaration,): string {
   /**
    * Source file owning declaration.
    */

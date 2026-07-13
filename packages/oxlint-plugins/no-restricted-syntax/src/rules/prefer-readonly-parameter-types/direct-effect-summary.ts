@@ -6,7 +6,6 @@
 
 import {
   type BindingName,
-  type FunctionLikeDeclaration,
   type Node,
   SyntaxKind,
   type VariableDeclaration,
@@ -26,8 +25,14 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import { inspectEffectCall, } from './effect-call-analysis.ts';
 import {
+  MUTATION_CONTRACT_UNAVAILABLE,
+  mutationContractsForDeclaration,
+  mutationTargetIndexes,
+} from './mutation-contract-query.ts';
+import {
   addEffectIndex,
   collectAstNodes,
+  type EffectCallableDeclaration,
   expressionRoot,
   type MutableEffectSummary,
   PARAMETER_INDEX_UNAVAILABLE,
@@ -238,7 +243,7 @@ export function directEffectSummary({
   declaration,
 }: {
   readonly project: Project;
-  readonly declaration: FunctionLikeDeclaration;
+  readonly declaration: EffectCallableDeclaration;
 },): MutableEffectSummary {
   /**
    * TypeScript checker for current project.
@@ -274,12 +279,41 @@ export function directEffectSummary({
     relations: [],
     calls: [],
   };
-  if (declaration.body === undefined)
+  /**
+   * Callable implementation body, absent for source signatures.
+   */
+  const body = 'body' in declaration ? declaration.body : undefined;
+  if (body === undefined) {
+    /**
+     * Authored bodyless mutation contracts used as conservative call effects.
+     */
+    const contracts = mutationContractsForDeclaration({
+      declaration,
+      sourceFile: declaration.getSourceFile(),
+    },);
+    if (contracts === MUTATION_CONTRACT_UNAVAILABLE)
+      return summary;
+    /**
+     * Contract target names mapped to source parameter indexes.
+     */
+    const targetIndexes = mutationTargetIndexes({
+      declaration,
+      sourceFile: declaration.getSourceFile(),
+    },);
+    contracts.blocks
+      .forEach(function seedContract(block,): void {
+      addEffectIndex({
+        target: summary.mutated,
+        value: targetIndexes.get(block.parameterName,)
+          ?? PARAMETER_INDEX_UNAVAILABLE,
+      },);
+    },);
     return summary;
+  }
   /**
    * Body nodes shared by alias discovery and effect inspection.
    */
-  const bodyNodes = collectAstNodes(declaration.body,);
+  const bodyNodes = collectAstNodes(body,);
   /**
    * Variable declarations that may alias parameter-reachable state.
    */

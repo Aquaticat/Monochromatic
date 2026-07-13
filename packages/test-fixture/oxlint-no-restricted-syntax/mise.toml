@@ -14,3 +14,11 @@
 [tasks."lint-fixture"]
 description = "Lint fixture files with all no-restricted-syntax rules enabled (for plugin validation)"
 run = "oxlint -c .oxlintrc.fixture.json src/"
+
+[tasks."lint-fixture-readonly"]
+description = "Lint valid readonly-effect fixture with semantic replacement rule"
+run = "oxlint --threads 1 -c .oxlintrc.readonly.fixture.json src/readonly-valid.ts"
+
+[tasks."lint-fixture-readonly-invalid"]
+description = "Exercise readonly-effect diagnostics on invalid fixture"
+run = "oxlint --threads 1 -c .oxlintrc.readonly.fixture.json src/readonly-invalid.ts"

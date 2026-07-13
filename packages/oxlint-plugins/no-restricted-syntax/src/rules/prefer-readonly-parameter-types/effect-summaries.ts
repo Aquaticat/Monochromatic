@@ -4,8 +4,6 @@
  * @module
  */
 
-import type { FunctionLikeDeclaration, } from 'typescript/unstable/ast';
-import { isFunctionLikeDeclaration, } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
@@ -14,6 +12,8 @@ import {
   callableKey,
   type CallEdge,
   collectAstNodes,
+  type EffectCallableDeclaration,
+  isEffectCallableDeclaration,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
   PARAMETER_INDEX_UNAVAILABLE,
@@ -43,7 +43,7 @@ export type EffectSummaryIndex = {
    * Looks up summary for exact callable declaration node.
    */
   readonly get: (
-    declaration: FunctionLikeDeclaration,
+    declaration: EffectCallableDeclaration,
   ) => CallableEffectSummary | typeof NO_EFFECT_SUMMARY;
 };
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
@@ -271,7 +271,7 @@ export function buildEffectSummaryIndex({
       return;
     collectAstNodes(sourceFile,)
       .forEach(function gatherCallable(node,): void {
-      if (isFunctionLikeDeclaration(node,)) {
+      if (isEffectCallableDeclaration(node,)) {
         summaries.set(
           callableKey(node,),
           directEffectSummary({

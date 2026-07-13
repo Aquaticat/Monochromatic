@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  "jsPlugins": [
+    "../../oxlint-plugins/no-restricted-syntax/src/index.ts"
+  ],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "rules": {
+    "no-restricted-syntax/prefer-readonly-parameter-types": "error"
+  }
+}

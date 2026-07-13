@@ -60,6 +60,7 @@ import {
   preferDescribeFunctionRefName,
 } from './rules/prefer-describe-function-ref-name.ts';
 import { preferErrorIsError, } from './rules/prefer-error-is-error.ts';
+import { preferReadonlyParameterTypes, } from './rules/prefer-readonly-parameter-types.ts';
 import { requireDestructuredParams, } from './rules/require-destructured-params.ts';
 import { requireQueryselectorGeneric, } from './rules/require-queryselector-generic.ts';
 
@@ -155,6 +156,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-variable-function-expression': noVariableFunctionExpression,
     'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'prefer-error-is-error': preferErrorIsError,
+    'prefer-readonly-parameter-types': preferReadonlyParameterTypes,
     'require-destructured-params': requireDestructuredParams,
     'require-queryselector-generic': requireQueryselectorGeneric,
     //endregion Syntax rules

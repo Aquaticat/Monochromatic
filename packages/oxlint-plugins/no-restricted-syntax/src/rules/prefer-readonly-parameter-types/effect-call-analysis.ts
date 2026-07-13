@@ -10,11 +10,9 @@ import type {
 } from 'typescript/unstable/sync';
 import type {
   CallExpression,
-  FunctionLikeDeclaration,
   Node,
 } from 'typescript/unstable/ast';
 import {
-  isFunctionLikeDeclaration,
   isIdentifier,
   isPropertyAccessExpression,
 } from 'typescript/unstable/ast/is';
@@ -30,7 +28,9 @@ import {
 import {
   addEffectIndex,
   callableKey,
+  type EffectCallableDeclaration,
   expressionRoot,
+  isEffectCallableDeclaration,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
   PARAMETER_INDEX_UNAVAILABLE,
@@ -88,30 +88,42 @@ function callableDeclaration({
 }: {
   readonly project: Project;
   readonly node: Node;
-},): FunctionLikeDeclaration | typeof OWNED_CALLABLE_UNAVAILABLE {
-  if (isFunctionLikeDeclaration(node,))
-    return node;
+},): EffectCallableDeclaration | typeof OWNED_CALLABLE_UNAVAILABLE {
+  /* oxlint-disable no-restricted-syntax/no-nullish-union -- TypeScript declaration-handle resolve() externally returns Node | undefined when handle is stale. */
   /**
-   * Resolved symbol for identifier or expression.
+   * Direct callable node or symbol-resolved declaration candidate.
    */
-  const symbol = isIdentifier(node,)
-    ? project.checker
-      .getResolvedSymbol(node,)
-    : project.checker
-      .getSymbolAtLocation(node,);
+  const declaration = isEffectCallableDeclaration(node,)
+    ? node
+    : (function resolvedDeclaration(): Node | undefined {
+      /**
+       * Resolved symbol for identifier or expression.
+       */
+      const symbol = isIdentifier(node,)
+        ? project.checker
+          .getResolvedSymbol(node,)
+        : project.checker
+          .getSymbolAtLocation(node,);
+      /**
+       * Preferred value declaration handle, with first declaration fallback.
+       */
+      const handle = symbol?.valueDeclaration
+        ?? symbol?.declarations
+        .at(0,);
+      return handle?.resolve(project,);
+    })();
+  /* oxlint-enable no-restricted-syntax/no-nullish-union */
+  if ((declaration === undefined) || (!isEffectCallableDeclaration(declaration,)))
+    return OWNED_CALLABLE_UNAVAILABLE;
   /**
-   * Preferred value declaration handle, with first declaration fallback.
+   * Source file used to reject declaration and external-library boundaries.
    */
-  const handle = symbol?.valueDeclaration
-    ?? symbol?.declarations
-    .at(0,);
-  /**
-   * Resolved declaration node in current project.
-   */
-  const declaration = handle?.resolve(project,);
-  return (declaration !== undefined) && isFunctionLikeDeclaration(declaration,)
-    ? declaration
-    : OWNED_CALLABLE_UNAVAILABLE;
+  const sourceFile = declaration.getSourceFile();
+  return sourceFile.isDeclarationFile
+    || project.program
+    .isSourceFileFromExternalLibrary(sourceFile,)
+    ? OWNED_CALLABLE_UNAVAILABLE
+    : declaration;
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
@@ -264,13 +276,22 @@ export function inspectEffectCall({
   /**
    * Owned callee declaration selected by signature or symbol fallback.
    */
-  const callee = (resolvedDeclaration !== undefined)
-    && isFunctionLikeDeclaration(resolvedDeclaration,)
-    ? resolvedDeclaration
-    : callableDeclaration({
+  const signatureCallee = (resolvedDeclaration !== undefined)
+    && isEffectCallableDeclaration(resolvedDeclaration,)
+    ? callableDeclaration({
+      project,
+      node: resolvedDeclaration,
+    },)
+    : OWNED_CALLABLE_UNAVAILABLE;
+  /**
+   * Owned callee selected by signature or expression symbol fallback.
+   */
+  const callee = signatureCallee === OWNED_CALLABLE_UNAVAILABLE
+    ? callableDeclaration({
       project,
       node: call.expression,
-    },);
+    },)
+    : signatureCallee;
   /**
    * Caller parameter roots corresponding to call arguments.
    */

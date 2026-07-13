@@ -48,6 +48,7 @@ await describe({
           'aliasSemanticEffect',
           'destructuredAliasSemanticEffect',
           'destructuredParameterSemanticEffect',
+          'opaqueSemanticEffect',
         ].map(function summaryFor(functionName,) {
           const nameNode = session.nodeAtOffset(SOURCE.indexOf(functionName,),);
           const declaration = nameNode.parent;
@@ -99,6 +100,11 @@ await describe({
             functionName: 'destructuredParameterSemanticEffect',
             mutated: [0,],
             opaque: [],
+          },
+          {
+            functionName: 'opaqueSemanticEffect',
+            mutated: [],
+            opaque: [0,],
           },
         ],);
       },

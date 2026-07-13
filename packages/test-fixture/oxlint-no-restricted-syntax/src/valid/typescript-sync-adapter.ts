@@ -178,3 +178,12 @@ export function destructuredParameterSemanticEffect(
 ): void {
   nested.value = 'changed';
 }
+
+/**
+ * Passes parameter through uncatalogued external callable.
+ *
+ * @param opaqueState - State crossing unresolved external effect boundary.
+ */
+export function opaqueSemanticEffect(opaqueState: { readonly value: string; },): string {
+  return JSON.stringify(opaqueState,);
+}
