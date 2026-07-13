@@ -290,12 +290,22 @@ export function inspectEffectCall({
      * Caller origins narrowed to declared destructured mutation targets.
      */
     const argumentIndexes = call.arguments
-      .map(function ownedArgumentIndex(argument,): readonly number[] {
+      .map(function ownedArgumentIndex(
+        argument,
+        argumentIndex,
+      ): readonly number[] {
+        /**
+         * Callee parameter receiving current argument.
+         */
+        const parameter = callee.parameters[argumentIndex];
         return parameterIndexes({
           checker,
           bindingOriginBySymbolId,
           node: argument,
-          includedPropertyNames: mutatedPropertyNames,
+          includedPropertyNames: (parameter !== undefined)
+            && isIdentifier(parameter.name,)
+            ? ALL_PACKAGED_PROPERTIES
+            : mutatedPropertyNames,
         },);
       },);
     summary.calls

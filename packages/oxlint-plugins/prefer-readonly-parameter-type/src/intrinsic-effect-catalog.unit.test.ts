@@ -66,6 +66,18 @@ const SHARED_SOURCE_PATH = fileURLToPath(new URL(
   import.meta.url,
 ),);
 
+/** Auto-mode tool source used for exact Pi predicate provenance. */
+const AUTO_MODE_TOOL_SOURCE_PATH = fileURLToPath(new URL(
+  '../../../pi-plugins/auto-mode/src/tool-helpers.ts',
+  import.meta.url,
+),);
+
+/** Auto-mode tool source text containing Pi predicate calls. */
+const AUTO_MODE_TOOL_SOURCE = readFileSync(
+  AUTO_MODE_TOOL_SOURCE_PATH,
+  'utf8',
+);
+
 /** Auto-mode runtime source used for exact global timer provenance. */
 const AUTO_MODE_RUNTIME_SOURCE_PATH = fileURLToPath(new URL(
   '../../../pi-plugins/auto-mode/src/judge-runtime.ts',
@@ -334,6 +346,46 @@ await describe({
           kind: 'argument',
           index: 0,
         },],);
+        closeSemanticBridge();
+      },
+    },),
+    it({
+      name: 'resolves exact Pi tool-event predicate provenance',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: AUTO_MODE_TOOL_SOURCE_PATH,
+          sourceText: AUTO_MODE_TOOL_SOURCE,
+          hasBOM: false,
+        },);
+        const offset = AUTO_MODE_TOOL_SOURCE.indexOf(
+          'isToolCallEventType(',
+          AUTO_MODE_TOOL_SOURCE.indexOf('function buildApprovalFingerprintIdentity',),
+        );
+        const node = session.nodeAtOffset(offset,);
+        if (!isIdentifier(node,))
+          throw new Error('Expected Pi isToolCallEventType identifier.',);
+        const symbol = session.checker.getResolvedSymbol(node,);
+        if (symbol === undefined)
+          throw new Error('Expected resolved Pi isToolCallEventType symbol.',);
+        const query = intrinsicCallableEffectQuery({
+          project: session.project,
+          memberSymbol: symbol,
+        },);
+        expect(query,).toEqual({
+          provenance: {
+            kind: 'package',
+            packageName: '@earendil-works/pi-coding-agent',
+            major: 0,
+          },
+          ownerType: 'globalThis',
+          member: 'isToolCallEventType',
+        },);
+        if (query === NO_INTRINSIC_QUERY)
+          throw new Error('Expected Pi tool-event predicate query.',);
+        const effect = intrinsicEffect(query,);
+        if (effect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Pi tool-event predicate effect.',);
+        expect(effect.targets,).toEqual([],);
         closeSemanticBridge();
       },
     },),

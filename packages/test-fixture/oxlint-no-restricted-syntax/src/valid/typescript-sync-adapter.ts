@@ -301,6 +301,28 @@ export async function asyncIteratorEffect(stream: AsyncIterable<unknown>,): Prom
 }
 
 /**
+ * Mutates object passed through ordinary named parameter.
+ *
+ * @param input - Wrapper containing caller state.
+ *
+ * @mutates input - Changes nested caller state through ordinary parameter.
+ */
+function mutateWholeParameter(input: { readonly value: { flag: boolean; }; },): void {
+  input.value.flag = true;
+}
+
+/**
+ * Propagates whole-parameter mutation through fresh object packaging.
+ *
+ * @param state - Caller state packaged for local helper.
+ *
+ * @mutates state - `mutateWholeParameter` changes packaged state.
+ */
+export function wholeParameterContractEffect(state: { flag: boolean; },): void {
+  mutateWholeParameter({ value: state, },);
+}
+
+/**
  * Mutates receiver-reachable array elements through audited callback relation.
  *
  * @param states - Readonly container whose mutable elements are updated.

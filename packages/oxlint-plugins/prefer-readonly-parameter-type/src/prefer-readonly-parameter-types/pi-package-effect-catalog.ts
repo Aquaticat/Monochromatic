@@ -10,6 +10,17 @@ import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
  * Pi extension methods that change host state through extension capability.
  */
 export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@earendil-works/pi-coding-agent',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'isToolCallEventType',
+    targets: [],
+    evidence: '@earendil-works/pi-coding-agent 0.80.6 compares primitive tool-name discriminator',
+  },
   ...[
     'appendEntry',
     'on',

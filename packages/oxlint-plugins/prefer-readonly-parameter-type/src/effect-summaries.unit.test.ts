@@ -53,6 +53,7 @@ await describe({
           'callbackSemanticEffect',
           'directCallbackEffect',
           'asyncIteratorEffect',
+          'wholeParameterContractEffect',
           'arrayCallbackSemanticEffect',
           'aliasedCallbackSemanticEffect',
           'noSemanticEffect',
@@ -149,6 +150,11 @@ await describe({
           },
           {
             functionName: 'asyncIteratorEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'wholeParameterContractEffect',
             mutated: [0,],
             opaque: [],
           },

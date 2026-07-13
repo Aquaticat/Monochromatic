@@ -90,17 +90,6 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   {
     provenance: {
       kind: 'package',
-      packageName: '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer',
-      major: 0,
-    },
-    ownerType: 'globalThis',
-    member: 'isToolCallEventType',
-    targets: [],
-    evidence: 'shell-command-analyzer 0.0.1 source compares tool event discriminator with primitive expected type',
-  },
-  {
-    provenance: {
-      kind: 'package',
       packageName: '@monochromatic-dev/module-current-time-context',
       major: 0,
     },
