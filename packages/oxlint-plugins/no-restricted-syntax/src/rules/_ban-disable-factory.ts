@@ -4,7 +4,7 @@ import type {
   CreateOnceRule,
   VisitorWithHooks,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from './foreign-borrowed.ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 
 /**
  * Text prefix common to every oxlint disable directive.

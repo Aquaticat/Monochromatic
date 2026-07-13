@@ -4,7 +4,7 @@ import type {
   ESTree,
   Variable,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from './foreign-borrowed.ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 
 import {
   getStaticMemberName,

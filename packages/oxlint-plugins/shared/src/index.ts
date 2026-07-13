@@ -18,6 +18,8 @@ export {
   isWordChar,
 } from './text-character.ts';
 
+export { type ForeignBorrowed, } from './foreign-borrowed.ts';
+
 export {
   type ParsedMutationContractBlock,
   parseMutationContractBlocks,

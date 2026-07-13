@@ -5,7 +5,7 @@ import type {
   Fixer,
   VisitorWithHooks,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from './foreign-borrowed.ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 
 import { extractParamsText, } from './arrow-function-params.ts';
 

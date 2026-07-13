@@ -49,6 +49,6 @@ export function isForeignBorrowedType({
           '\\',
           '/',
         )
-        .endsWith('/rules/foreign-borrowed.ts',);
+        .endsWith('/oxlint-plugins/shared/src/foreign-borrowed.ts',);
     },);
 }

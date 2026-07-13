@@ -2,7 +2,7 @@ import type {
   Context,
   ESTree,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from './foreign-borrowed.ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 
 import { NO_VARIABLE, } from './no-sync.constants.ts';
 import { findVariable, } from './no-sync.syntax.ts';

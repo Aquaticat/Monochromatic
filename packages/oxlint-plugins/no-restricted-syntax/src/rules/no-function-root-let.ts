@@ -4,7 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from './foreign-borrowed.ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 
 /**
  * Checks whether a function body matches the helper-function shape:

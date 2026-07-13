@@ -3,7 +3,7 @@ import type {
   Definition,
   ESTree,
 } from '@oxlint/plugins';
-import type { ForeignBorrowed, } from './foreign-borrowed.ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts';
 
 import {
   ERROR_IS_ERROR_CALLEE,
