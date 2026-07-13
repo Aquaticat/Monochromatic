@@ -141,8 +141,11 @@ The semantic-rule implementation is functional and shared-configuration migratio
   explain that methods can change controlled state without assignment,
   name only affected destructured bindings,
   and enumerate every supported remediation;
-- audited Pi `0.80.6` package effects record `ExtensionAPI.appendEntry` and `ExtensionAPI.registerTool` as exact receiver
-  mutations backed by installed declarations and implementations;
+- audited Pi `0.80.6` package effects record `ExtensionAPI.appendEntry`,
+  `ExtensionAPI.on`,
+  `ExtensionAPI.registerTool`,
+  and `ExtensionAPI.setThinkingLevel` as exact receiver mutations;
+  `ExtensionAPI.getThinkingLevel` is observational;
 - commit `a74fe0ba3` excludes packaged primitive leaf values from opaque caller-state effects;
 - commit `a9a93514f` audits `Array.prototype.toSorted` as observational only for primitive receiver elements;
 - commit `49a81ddd7` replaces page-weight's object-capable `String(error)` fallback with noncoercing runtime-category
@@ -179,6 +182,31 @@ The semantic-rule implementation is functional and shared-configuration migratio
   which contains one type declaration,
   no runtime code,
   and no runtime dependencies;
+- commit `d370083d4` severs caller origins when primitive elements are copied into a fresh array before an opaque call;
+- commits `ddd47efeb`,
+  `b1e4c55d6`,
+  `b8088e3ca`,
+  `9210628dd`,
+  `52dde2957`,
+  `9040ac96d`,
+  `1bb39c3b5`,
+  `77543359c`,
+  `607374e91`,
+  `df1877225`,
+  and `ecfb3ec7f` migrate additional exact Pi,
+  authoring,
+  serialization,
+  DOM,
+  error,
+  and ownership boundaries;
+- commit `b72d5e979` adds `mise run lint:oxlint` as a single-worker repository sweep;
+- the 2026-07-13 sweep reported 1,014 replacement-rule diagnostics with no bridge-failure category:
+  585 uncertain calls,
+  272 readonly projections,
+  108 dishonest declarations,
+  48 missing contracts,
+  and 1 stale contract;
+  later package commits in this list postdate that baseline;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,
@@ -187,7 +215,21 @@ The semantic-rule implementation is functional and shared-configuration migratio
   `packages/module/or-throw`,
   `packages/dev-script/page-weight`,
   `packages/module/image-diff`,
-  and `packages/mcp/stdio` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
+  `packages/mcp/stdio`,
+  `packages/mcp/mvm`,
+  `packages/module/zip-writer`,
+  `packages/module/pnpm-workspace-catalog`,
+  `packages/module/fs-id`,
+  `packages/module/dom`,
+  `packages/pi-plugins/current-time-context`,
+  `packages/pi-plugins/terminal-title`,
+  `packages/pi-plugins/agent-settled-notification`,
+  `packages/pi-plugins/thinking-defaults`,
+  `packages/agent-harnesses-shared/session-discovery`,
+  `packages/typeface/aquaticat`,
+  `packages/cli/android-exempt-unused`,
+  `packages/cli/terminal-exec`,
+  and `packages/webapp-productivity/wc` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
 
 Remaining gates are active workspace source migration,
 migrated consumer acceptance,
@@ -214,8 +256,8 @@ Verified package tasks:
 - `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:external-consumer-host`.
 
 Next action:
-classify latest one-worker workspace sweep,
-then migrate remaining active package contracts and run consumer acceptance.
+migrate remaining packages from the measured 1,014-diagnostic baseline,
+then rerun the repository sweep and complete consumer acceptance.
 
 ## Continuity contract
 

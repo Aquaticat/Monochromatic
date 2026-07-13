@@ -15,9 +15,11 @@ It also did not explain that a method can change state without assigning a new v
 
 The installed Pi `0.80.6` declaration at
 `node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/types.d.ts`
-declares both members with method syntax:
+declares the registration and append members with method syntax:
 
 ```ts
+on(event: "before_agent_start", handler: ExtensionHandler<BeforeAgentStartEvent, BeforeAgentStartEventResult>): void;
+
 registerTool<TParams extends TSchema = TSchema, TDetails = unknown, TState = any>(
   tool: ToolDefinition<TParams, TDetails, TState>,
 ): void;
@@ -25,7 +27,7 @@ registerTool<TParams extends TSchema = TSchema, TDetails = unknown, TState = any
 appendEntry<T = unknown>(customType: string, data?: T): void;
 ```
 
-No assignment such as `pi.registerTool = value` is needed for either call to change state.
+No assignment such as `pi.on = value` or `pi.registerTool = value` is needed for these calls to change state.
 Assignment would replace a property on the API object.
 Calling a method can instead change data held behind the API capability.
 
@@ -33,7 +35,18 @@ Calling a method can instead change data held behind the API capability.
 
 The installed extension loader at
 `node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/loader.js`
-implements `registerTool` by updating `extension.tools` and refreshing the tool registry:
+implements `on` by appending the handler to `extension.handlers`:
+
+```js
+on(event, handler) {
+  runtime.assertActive();
+  const list = extension.handlers.get(event) ?? [];
+  list.push(handler);
+  extension.handlers.set(event, list);
+}
+```
+
+The same loader implements `registerTool` by updating `extension.tools` and refreshing the tool registry:
 
 ```js
 registerTool(tool) {
@@ -61,7 +74,7 @@ appendEntry: (customType, data) => {
 }
 ```
 
-Both methods therefore change state observable through Pi even though the local `pi` binding is never reassigned.
+These methods therefore change state observable through Pi even though the local `pi` binding is never reassigned.
 
 ## Resolution
 
@@ -71,12 +84,30 @@ now records exact receiver effects for:
 - package `@earendil-works/pi-coding-agent`;
 - package major `0`;
 - owner type `ExtensionAPI`;
-- members `appendEntry` and `registerTool`.
+- mutating members `appendEntry`,
+  `on`,
+  `registerTool`,
+  and `setThinkingLevel`;
+- observational member `getThinkingLevel`,
+  with no mutation targets.
 
 `packages/pi-plugins/auto-mode/src/register-propose-trust.ts` documents the known state changes with:
 
 ```ts
 @mutates pi - `pi.registerTool` changes registered tools; deferred `pi.appendEntry` calls append accepted trust state.
+```
+
+`packages/pi-plugins/current-time-context/src/index.ts` documents its registration effect with:
+
+```ts
+@mutates pi - `pi.on` stores the `before_agent_start` event registration in the Pi host
+```
+
+`packages/pi-plugins/thinking-defaults/src/index.ts` documents registration and active-level updates,
+without inventing a mutation effect for `getThinkingLevel`:
+
+```ts
+@mutates pi - `pi.on` registers lifecycle handlers and `pi.setThinkingLevel` changes active host state
 ```
 
 Unknown method calls now receive a method-specific diagnostic.
@@ -93,11 +124,15 @@ The diagnostic lists every supported remediation:
 The following checks passed:
 
 ```text
-mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types
-mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint
-mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit -- src/intrinsic-effect-catalog.unit.test.ts src/oxlint-no-restricted-syntax.unit.test.ts
+mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:types
+mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint
+mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:build:js:node
+mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
+mise run //packages/pi-plugins/current-time-context:lint:oxlint
+mise run //packages/pi-plugins/current-time-context:test:unit
+mise run //packages/pi-plugins/current-time-context:verify:extension
 ```
 
-The intrinsic test resolves both calls through the real Pi declaration provenance and verifies matching audited entries.
-A package-local auto-mode Oxlint run no longer reports the old `pi.appendEntry, pi.registerTool` uncertainty at
-`register-propose-trust.ts`.
+The intrinsic test resolves `appendEntry` and `registerTool` through real Pi declaration provenance,
+then verifies the exact `on` catalogue entry.
+Package-local Oxlint runs accept the documented effects in both auto-mode and current-time-context sources.
