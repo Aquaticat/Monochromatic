@@ -55,6 +55,12 @@ const FIXTURE_CONFIG = fixtureConfigPath({
   fileName: '.oxlintrc.fixture.json',
 },);
 
+/** Fixture config enabling only semantic readonly-effect rule. */
+const READONLY_FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-no-restricted-syntax',
+  fileName: '.oxlintrc.readonly.fixture.json',
+},);
+
 /**
  * Runs oxlint with the fixture config against a fixture path and returns
  * parsed diagnostics filtered to the no-restricted-syntax plugin.
@@ -86,6 +92,26 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
     fixtureSourceRoot: FIXTURES,
     fixturePath,
   },),);
+}
+
+/**
+ * Runs semantic readonly-effect rule against dedicated fixture source.
+ *
+ * @param fixturePath - Relative fixture path under source root.
+ *
+ * @returns readonly-rule diagnostics.
+ */
+async function lintReadonly(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
+  return runOxlintFixture({
+    codePrefix: 'no-restricted-syntax(',
+    configFlag: '-c',
+    fixtureConfig: READONLY_FIXTURE_CONFIG,
+    target: resolveFixtureTarget({
+      fixtureSourceRoot: FIXTURES,
+      fixturePath,
+    },),
+    threads: 1,
+  },);
 }
 
 /** Bare rule name for the low-information Symbol description rule. */
@@ -430,6 +456,43 @@ await describe({
               'valid/no-optional-escape.ts',
             );
             expect(diagnostics,).toEqual([],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'prefer-readonly-parameter-types diagnostics',
+      concurrency: 1,
+      children: [
+        it({
+          name: 'accepts honest readonly, declared mutation, capability reads, and bodyless contracts',
+          fn: async () => {
+            expect(await lintReadonly('readonly-valid.ts',),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'reports readonly, mutation, stale, dishonest, and opaque failures',
+          fn: async () => {
+            const diagnostics = await lintReadonly('readonly-invalid.ts',);
+            expect(diagnostics.length,).toBe(5,);
+            const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+              return diagnostic.message;
+            },);
+            expect(messages.some(function shouldReadonly(message,): boolean {
+              return message.includes('should be readonly',);
+            },),).toBe(true,);
+            expect(messages.some(function missingContract(message,): boolean {
+              return message.includes('lacks @mutates contract',);
+            },),).toBe(true,);
+            expect(messages.some(function staleContract(message,): boolean {
+              return message.includes('stale @mutates contract',);
+            },),).toBe(true,);
+            expect(messages.some(function dishonest(message,): boolean {
+              return message.includes('claims readonly semantics dishonestly',);
+            },),).toBe(true,);
+            expect(messages.some(function opaque(message,): boolean {
+              return message.includes('opaque effect boundary',);
+            },),).toBe(true,);
           },
         },),
       ],

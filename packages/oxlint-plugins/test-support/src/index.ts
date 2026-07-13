@@ -145,6 +145,10 @@ export type RunOxlintFixtureParams = {
    * Absolute path to target source file.
    */
   readonly target: string;
+  /**
+   * Optional Oxlint worker count for resource-sensitive plugin tests.
+   */
+  readonly threads?: number;
 };
 
 /**
@@ -348,6 +352,7 @@ export async function runOxlintFixture(
     configFlag,
     fixtureConfig,
     target,
+    threads,
   } = params;
   /**
    * Captures stdout from oxlint whether diagnostics make the process exit non-zero or not.
@@ -362,6 +367,10 @@ export async function runOxlintFixture(
       const { stdout, } = await spawn(
         'oxlint',
         [
+          ...threads === undefined ? [] : [
+            '--threads',
+            String(threads,),
+          ],
           '--format',
           'json',
           configFlag,
