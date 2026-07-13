@@ -519,8 +519,8 @@ Read-only shallow clones were used at these revisions:
   and Windows x64 artifacts instead of inferring platform support from package metadata.
 - Add TypeScript 7 as an explicit runtime dependency of the published plugin package and load the built plugin from a
   disposable external consumer.
-- Resolve the editor requirement:
-  `packages/config/oxlint/src/index.ts` records that Oxlint's language server does not support JavaScript plugins.
+- Treat CLI diagnostics as authoritative until Oxlint's language server supports JavaScript plugins;
+  do not retain an editor-only incumbent approximation or add a separate editor integration.
 - Verify `@mutates` preservation with the repository-installed declaration pipeline rather than inferring it from a
   newer upstream clone.
 
@@ -618,7 +618,7 @@ and wrappers built on TypeScript 6.
 Still open:
  acceptance gates,
 readonly projection authoring syntax,
-declaration-publication verification,
-and the editor-support policy branch.
+and declaration-publication verification.
+Editor integration is explicitly deferred until Oxlint's language server supports JavaScript plugins.
 Product implementation remains blocked until the audit finishes and the full plan reaches shared-understanding
 confirmation.

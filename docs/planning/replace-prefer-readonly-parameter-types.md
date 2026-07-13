@@ -795,9 +795,12 @@ The published `no-restricted-syntax` package must declare TypeScript 7 as a runt
 artifact resolves `typescript/unstable/sync` in a disposable external consumer.
 It may not rely on the monorepo root's development dependency.
 
-Oxlint's language server currently does not support JavaScript plugins,
-so editor diagnostics and code actions are an unresolved product-policy branch rather than a proven bridge property.
-Resolve that branch through one-question-at-a-time grilling before finalizing the plan.
+Oxlint's language server currently does not support JavaScript plugins.
+The CLI is the sole authority for this rule until Oxlint adds JavaScript-plugin language-server support.
+Do not retain the incumbent rule for editor-only approximation,
+build a separate editor integration,
+or block CLI rollout on the upstream capability.
+Live editor diagnostics and code actions for this rule are therefore explicitly deferred.
 
 ### Deferred readonly projection outcome
 
