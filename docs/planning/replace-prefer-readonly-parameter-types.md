@@ -632,6 +632,49 @@ A suggestion is emitted only when the semantic pipeline constructs one exact rep
 program against the relevant TypeScript projects.
 Ambiguous cases remain diagnostics without a suggestion.
 
+### Chosen rule identity and taxonomy
+
+Use one project rule:
+
+```text
+no-restricted-syntax/prefer-readonly-parameter-types
+```
+
+The recognizable basename preserves lineage from the retired native rule.
+One semantic analysis owns the complete layered readonly and effect contract.
+Distinct message IDs classify findings without independently configurable partial rules:
+
+- `shouldBeReadonly`;
+- `missingMutatesTag`;
+- `staleMutatesTag`;
+- `opaqueEffect`;
+- `dishonestReadonly`;
+- signature and overload effect inconsistencies discovered during implementation.
+
+Malformed tag names,
+duplicate targets,
+missing descriptions,
+and unknown parameter targets remain `tsdoc/*` diagnostics because they are documentation-grammar failures.
+
+The rule has no semantic-relaxation options.
+The public package may expose the fixed project policy,
+but consumers cannot configure away depth,
+effect verification,
+or opaque-boundary handling.
+
+### Resolved suggestion coverage
+
+Offer a suggestion only when the analyzer can generate a complete remediation without inventing human rationale:
+
+- replace a mutable type with one verified honest readonly form;
+- remove a stale `@mutates` block only after closed-world proof of no effect;
+- perform exact mechanical syntax normalization around an otherwise complete tag.
+
+Do not synthesize missing `@mutates` descriptions,
+external adapters,
+or effect rationales.
+Those diagnostics require authored design because project TSDoc requires comments to explain why.
+
 ### Awaiting decision
 
-The next policy decision concerns the replacement rule's public identity and diagnostic taxonomy.
+The next policy decision is the boundary of what `@mutates` means for interior and capability effects.
