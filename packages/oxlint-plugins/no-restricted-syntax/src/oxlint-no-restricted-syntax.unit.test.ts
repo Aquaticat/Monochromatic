@@ -528,7 +528,7 @@ await describe({
           name: 'reports readonly, mutation, stale, dishonest, and opaque failures',
           fn: async () => {
             const diagnostics = await lintReadonly('readonly-invalid.ts',);
-            expect(diagnostics.length,).toBe(9,);
+            expect(diagnostics.length,).toBe(10,);
             const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
               return diagnostic.message;
             },);
@@ -598,6 +598,11 @@ await describe({
                 + '\n@mutates inputName - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input'
                 + '\nReplace inputName with that function\'s actual input name.',
             );
+            expect(messages.some(function incompleteStringContract(message,): boolean {
+              return message.startsWith(
+                'The function input named "incomplete" is passed to global String while it may be an object.',
+              );
+            },),).toBe(true,);
           },
         },),
         it({

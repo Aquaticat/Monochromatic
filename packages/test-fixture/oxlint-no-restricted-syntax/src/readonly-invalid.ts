@@ -80,6 +80,19 @@ export function stringObjectCoercionEffect(error: unknown,): string {
 }
 
 /**
+ * Documents only part of global String's possible coercion behavior.
+ *
+ * @param incomplete - Unknown value with incompletely documented hooks.
+ *
+ * @returns coerced text.
+ *
+ * @mutates incomplete - String may invoke toString on this input.
+ */
+export function incompleteStringCoercionContract(incomplete: unknown,): string {
+  return String(incomplete,);
+}
+
+/**
  * Sends destructured inputs through unsafe serialization.
  *
  * @param state - Structured value sent to serializer.
