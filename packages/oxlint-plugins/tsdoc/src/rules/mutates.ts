@@ -114,6 +114,7 @@ export const checkMutates: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor({
       context,
+      includeTypeSignatures: true,
       handler: function checkMutatesHandler(
         node,
         result,

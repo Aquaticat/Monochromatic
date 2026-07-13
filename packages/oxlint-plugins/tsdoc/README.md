@@ -3,6 +3,7 @@
 Oxlint JS plugin providing TSDoc validation rules adapted from eslint-plugin-jsdoc's recommended-typescript config.
 Uses an in-house TSDoc comment scanner;
  no external dependency on `@microsoft/tsdoc`.
+A bounded process-local cache shares one parsed model for each exact comment body across participating rules.
 
 ## Motivation
 

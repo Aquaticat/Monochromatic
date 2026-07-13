@@ -45,7 +45,9 @@ export {
   FALLBACK_ELIGIBLE_TYPES,
   findTsdocComment,
   NO_TSDOC,
+  parseTsdocComment,
   parseTsdocForNode,
+  type ParsedCommentFacts,
   type TsdocParseResult,
 } from './tsdoc-comments.ts';
 

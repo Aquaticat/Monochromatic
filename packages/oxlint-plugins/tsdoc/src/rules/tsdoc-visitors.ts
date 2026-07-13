@@ -358,6 +358,10 @@ export type CreateFunctionTsdocVisitorParams = {
    */
   readonly includeArrowFunctions?: boolean;
   /**
+   * Whether bodyless TypeScript signature declarations should be visited.
+   */
+  readonly includeTypeSignatures?: boolean;
+  /**
    * Invoked with node and parsed TSDoc for each function-like node.
    */
   readonly handler: (
@@ -370,9 +374,9 @@ export type CreateFunctionTsdocVisitorParams = {
  * Creates a visitor for function-like nodes that have TSDoc comments, parsed
  * via {@link parseTsdocForNode}.
  *
- * Covers runtime callables and TypeScript signature nodes by default.
- * Callers whose rule cannot apply to arrow functions can pass
- * `includeArrowFunctions: false`.
+ * Covers runtime callables by default.
+ * Callers may include bodyless TypeScript signatures explicitly or exclude
+ * arrow functions.
  *
  * @param params - rule context, arrow-function toggle, and parsed-comment handler
  *
@@ -392,6 +396,7 @@ export function createFunctionTsdocVisitor(
   const {
     context,
     includeArrowFunctions = true,
+    includeTypeSignatures = false,
     handler,
   } = params;
   /**
@@ -435,12 +440,15 @@ export function createFunctionTsdocVisitor(
       ? { ArrowFunctionExpression: check, }
       : {},
     MethodDefinition: check,
-    TSAbstractMethodDefinition: check,
-    TSDeclareFunction: check,
-    TSFunctionType: check,
-    TSMethodSignature: check,
-    TSCallSignatureDeclaration: check,
-    TSConstructSignatureDeclaration: check,
+    ...includeTypeSignatures
+      ? {
+        TSAbstractMethodDefinition: check,
+        TSDeclareFunction: check,
+        TSMethodSignature: check,
+        TSCallSignatureDeclaration: check,
+        TSConstructSignatureDeclaration: check,
+      }
+      : {},
   } as VisitorWithHooks;
   return visitor;
 }

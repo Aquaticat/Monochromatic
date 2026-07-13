@@ -20,6 +20,30 @@ import { collectStructuralMessages, } from './tsdoc-structural-messages.ts';
 export type { TsdocParseResult, } from './tsdoc-doc-model.ts';
 
 /**
+ * Parsed comment facts cached independently from declaration ownership.
+ */
+export type ParsedCommentFacts = {
+  /**
+   * Scanned document model shared by every rule visiting comment.
+   */
+  readonly docComment: ParsedTsdocResult['docComment'];
+  /**
+   * Structural diagnostics shared by every rule visiting comment.
+   */
+  readonly messages: ParsedTsdocResult['messages'];
+};
+
+/**
+ * Maximum distinct comment bodies retained during one CLI process.
+ */
+const MAX_CACHED_COMMENT_TEXTS = 4_096;
+
+/**
+ * Bounded content cache shared across rule contexts whose host comment wrappers are not identity-stable.
+ */
+const PARSED_COMMENT_FACTS_BY_TEXT = new Map<string, ParsedCommentFacts>();
+
+/**
  * Absence marker meaning "node has no TSDoc comment"; never a real comment
  * or parse result.
  *
@@ -190,18 +214,72 @@ export function findTsdocComment({
 }
 
 /**
- * Extracts and parses the TSDoc comment for a given AST node, scanning it
- * with {@link splitDocComment} and {@link collectStructuralMessages}.
+ * Scans one TSDoc body once and reuses facts across sibling plugin rules.
  *
- * @returns parsed result, or {@link NO_TSDOC} when no TSDoc comment precedes the node
+ * @param comment - Host comment whose normalized body supplies cache key.
+ *
+ * @returns parsed document model and structural messages.
+ *
+ * @example
+ * ```ts
+ * const facts = parseTsdocComment(comment);
+ * console.log(facts.docComment.params.blocks.length);
+ * ```
+ */
+export function parseTsdocComment(comment: ReadonlyDeep<Comment>,): ParsedCommentFacts {
+  /**
+   * Exact comment body used because parsed facts are independent of absolute source location.
+   */
+  const cacheKey = comment.value;
+  /**
+   * Previously scanned facts for identical comment body.
+   */
+  const cached = PARSED_COMMENT_FACTS_BY_TEXT.get(cacheKey,);
+  if (cached !== undefined) {
+    PARSED_COMMENT_FACTS_BY_TEXT.delete(cacheKey,);
+    PARSED_COMMENT_FACTS_BY_TEXT.set(
+      cacheKey,
+      cached,
+    );
+    return cached;
+  }
+
+  /**
+   * Newly scanned facts retained in bounded least-recently-used order.
+   */
+  const parsed = {
+    docComment: splitDocComment({ comment, },),
+    messages: collectStructuralMessages({ comment, },),
+  };
+  PARSED_COMMENT_FACTS_BY_TEXT.set(
+    cacheKey,
+    parsed,
+  );
+  if (PARSED_COMMENT_FACTS_BY_TEXT.size > MAX_CACHED_COMMENT_TEXTS) {
+    /**
+     * Oldest insertion-order key evicted to bound CLI memory.
+     */
+    const oldest = PARSED_COMMENT_FACTS_BY_TEXT.keys()
+      .next()
+      .value;
+    if (oldest !== undefined)
+      PARSED_COMMENT_FACTS_BY_TEXT.delete(oldest,);
+  }
+  return parsed;
+}
+
+/**
+ * Extracts and caches parsed TSDoc facts for given declaration node.
+ *
+ * @param node - Declaration whose leading comment is resolved.
+ *
+ * @param context - Host context providing comments and filename.
+ *
+ * @returns parsed result or absence marker when declaration has no TSDoc.
  *
  * @example
  * ```ts
  * const result = parseTsdocForNode({ node, context });
- * if (result === NO_TSDOC) return;
- * for (const message of result.messages) {
- *   context.report({ node, message: message.toString() });
- * }
  * ```
  */
 export function parseTsdocForNode({
@@ -218,18 +296,8 @@ export function parseTsdocForNode({
   if (comment === NO_TSDOC)
     return NO_TSDOC;
 
-  /**
-   * Scanned doc model with param/returns facts and tag-presence flags.
-   */
-  const docComment = splitDocComment({ comment, },);
-  /**
-   * Structural diagnostics surfaced by the best-effort `valid-types` scan.
-   */
-  const messages = collectStructuralMessages({ comment, },);
-
   return {
     comment,
-    docComment,
-    messages,
+    ...parseTsdocComment(comment,),
   };
 }
