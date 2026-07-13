@@ -57,6 +57,23 @@ export function opaqueReadonlyEffect(state: { readonly value: string; },): strin
 }
 
 /**
+ * Sends destructured inputs through unsafe serialization.
+ *
+ * @param state - Structured value sent to serializer.
+ *
+ * @param label - Label packaged with structured value.
+ */
+export function destructuredOpaqueEffect({
+  state,
+  label,
+}: {
+  readonly state: { readonly value: string; };
+  readonly label: string;
+},): string {
+  return JSON.stringify({ state, label, },);
+}
+
+/**
  * Uses unrelated URL instead of naming opaque upstream callable.
  *
  * @param state - State sent through undocumented external boundary.

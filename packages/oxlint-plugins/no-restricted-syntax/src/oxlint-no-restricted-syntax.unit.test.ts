@@ -528,7 +528,7 @@ await describe({
           name: 'reports readonly, mutation, stale, dishonest, and opaque failures',
           fn: async () => {
             const diagnostics = await lintReadonly('readonly-invalid.ts',);
-            expect(diagnostics.length,).toBe(6,);
+            expect(diagnostics.length,).toBe(7,);
             const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
               return diagnostic.message;
             },);
@@ -544,8 +544,25 @@ await describe({
             expect(messages.some(function dishonest(message,): boolean {
               return message.includes('claims readonly semantics dishonestly',);
             },),).toBe(true,);
-            expect(messages.some(function opaque(message,): boolean {
-              return message.includes('opaque effect boundary',);
+            /** Plain-language uncertainty diagnostic for unsafe JSON serialization. */
+            const opaqueMessage = messages.find(function unsafeJson(message,): boolean {
+              return message.startsWith(
+                'The function input named "state" is used by these calls: JSON.stringify.',
+              );
+            },);
+            if (opaqueMessage === undefined)
+              throw new Error('Expected JSON.stringify uncertainty diagnostic.',);
+            expect(opaqueMessage,).toBe(
+              'The function input named "state" is used by these calls: JSON.stringify.'
+                + '\n\nThis rule cannot inspect enough of those calls to know what they might change. They could change the input itself, change an object stored inside it, call a function stored inside it, or arrange for one of those changes to happen later.'
+                + '\n\nMove these calls into a function in this repository. For each input that the calls might change, add its own @mutates line to that function\'s /** ... */ comment:'
+                + '\n@mutates inputName - explain what may change and name the call responsible'
+                + '\nReplace inputName with that function\'s actual input name. Then call that function here.',
+            );
+            expect(messages.some(function destructuredInput(message,): boolean {
+              return message.startsWith(
+                'The function inputs named "state" and "label" are used by these calls: JSON.stringify.',
+              );
             },),).toBe(true,);
           },
         },),
