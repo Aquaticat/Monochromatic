@@ -5,6 +5,7 @@ import type {
   Fixer,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import { extractParamsText, } from './arrow-function-params.ts';
 
@@ -47,9 +48,23 @@ export const noArrowFunction: CreateOnceRule = {
         'Arrow functions are banned. Use named function declarations or named function expressions instead.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      ArrowFunctionExpression(node: ESTree.ArrowFunctionExpression,): void {
+      ArrowFunctionExpression(
+        node: ForeignBorrowed<ESTree.ArrowFunctionExpression>,
+      ): void {
         /**
          * Only auto-fix when the arrow is the direct initializer of a variable declaration:
          * `const name = (...) => ...` or `export const name = (...) => ...`.
@@ -161,7 +176,7 @@ export const noArrowFunction: CreateOnceRule = {
         context.report({
           node,
           messageId: 'forbidden',
-          fix(fixer: Fixer,) {
+          fix(fixer: ForeignBorrowed<Fixer>,) {
             return fixer.replaceText(
               replaceNode,
               replacement,

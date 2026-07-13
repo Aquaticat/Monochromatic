@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 /**
  * Rule type values accepted by oxlint metadata.
@@ -13,7 +14,7 @@ type SimpleBanRuleType = 'layout' | 'problem' | 'suggestion';
 /**
  * Predicate for rules that only report some nodes of a visitor type.
  */
-type SimpleBanPredicate = (node: ESTree.Node) => boolean;
+type SimpleBanPredicate = (node: ForeignBorrowed<ESTree.Node>) => boolean;
 
 /**
  * Parameters for {@link simpleBanRule}.
@@ -86,7 +87,7 @@ export function simpleBanRule(params: SimpleBanRuleParams,): CreateOnceRule {
    *
    * @returns whether node should be reported
    */
-  function shouldReportNode(node: ESTree.Node,): boolean {
+  function shouldReportNode(node: ForeignBorrowed<ESTree.Node>,): boolean {
     if (shouldReport === undefined)
       return true;
     return shouldReport(node,);
@@ -103,9 +104,21 @@ export function simpleBanRule(params: SimpleBanRuleParams,): CreateOnceRule {
         [messageId]: message,
       },
     },
-    createOnce(context: Context,): VisitorWithHooks {
+    /**
+     * Handles foreign Oxlint callback.
+     *
+     * @param context - Foreign rule context receiving diagnostics.
+     *
+     * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+     *
+     * @example
+     * ```ts
+     * createOnce(context);
+     * ```
+     */
+    createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
       return {
-        [nodeType](node: ESTree.Node,): void {
+        [nodeType](node: ForeignBorrowed<ESTree.Node>,): void {
           if (!shouldReportNode(node,))
             return;
           context.report({

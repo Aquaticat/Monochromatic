@@ -2,6 +2,7 @@ import type {
   Context,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   CALL_PROPERTY_NAME,
@@ -50,10 +51,10 @@ function getObjectPrototypeToStringArgumentText(
   {
     context,
     call,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly call: ESTree.CallExpression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   if (call.optional)
     return NOT_ERROR_DETECTION;
@@ -134,11 +135,11 @@ function getWholeObjectTagComparisonArgumentText(
     context,
     unwrappedLeft,
     unwrappedRight,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly unwrappedLeft: ESTree.Expression;
     readonly unwrappedRight: ESTree.Expression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   if ((unwrappedLeft.type === 'Literal') && (unwrappedLeft.value === ERROR_OBJECT_TAG)) {
     if (unwrappedRight.type !== 'CallExpression')
@@ -177,7 +178,7 @@ function getWholeObjectTagComparisonArgumentText(
  * ```
  */
 function hasErrorObjectTagSuffixArgument(
-  { call, }: { readonly call: ESTree.CallExpression; },
+  { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): boolean {
   if (call.arguments
     .length
@@ -222,10 +223,10 @@ export function getObjectTagEndsWithArgumentText(
   {
     context,
     call,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly call: ESTree.CallExpression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   if (call.optional)
     return NOT_ERROR_DETECTION;
@@ -272,7 +273,7 @@ export function getObjectTagEndsWithArgumentText(
  * ```
  */
 function getStaticNumber(
-  { expression, }: { readonly expression: ESTree.Expression; },
+  { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
 ): number | typeof NOT_ERROR_DETECTION {
   /**
    * Expression without redundant parentheses.
@@ -310,7 +311,7 @@ function getStaticNumber(
  * ```
  */
 function hasObjectTagSliceArguments(
-  { call, }: { readonly call: ESTree.CallExpression; },
+  { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): boolean {
   if (call.arguments
     .length
@@ -351,10 +352,10 @@ function getParsedObjectTagArgumentText(
   {
     context,
     call,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly call: ESTree.CallExpression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   if (call.optional)
     return NOT_ERROR_DETECTION;
@@ -406,11 +407,11 @@ function getParsedObjectTagComparisonArgumentText(
     context,
     unwrappedLeft,
     unwrappedRight,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly unwrappedLeft: ESTree.Expression;
     readonly unwrappedRight: ESTree.Expression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   if ((unwrappedLeft.type === 'Literal')
     && (unwrappedLeft.value === ERROR_OBJECT_TAG_TYPE_NAME)) {
@@ -462,11 +463,11 @@ export function getObjectTagComparisonArgumentText(
     context,
     left,
     right,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly left: ESTree.Expression;
     readonly right: ESTree.Expression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   /**
    * Unwrapped left side for literal and call-shape inspection.

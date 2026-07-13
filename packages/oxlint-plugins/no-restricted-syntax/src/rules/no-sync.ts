@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import { getNodeSyncCalleeName, } from './no-sync.provenance.ts';
 
@@ -38,9 +39,21 @@ export const noSync: CreateOnceRule = {
         'Node sync API `{{name}}` is banned. Use the asynchronous API instead.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      CallExpression(node: ESTree.CallExpression,): void {
+      CallExpression(node: ForeignBorrowed<ESTree.CallExpression>,): void {
         /**
          * Node sync API name represented by this callee.
          */

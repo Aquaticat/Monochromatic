@@ -86,9 +86,7 @@ export type CallbackRelation = {
  */
 export type CallEdge = {
   readonly calleeKey: string;
-  readonly arguments: readonly (
-    number | typeof PARAMETER_INDEX_UNAVAILABLE
-  )[];
+  readonly arguments: readonly (readonly number[])[];
   readonly callbackKeys: readonly (
     string | typeof OWNED_CALLABLE_UNAVAILABLE
   )[];

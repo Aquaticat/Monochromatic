@@ -2,6 +2,7 @@ import type {
   Definition,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 /**
  * Sentinel for call-expression shapes that do not expose one ordinary argument.
@@ -31,7 +32,7 @@ export const NO_IMPORT_DECLARATION: unique symbol = Symbol('definition does not 
  * ```
  */
 export function getSingleNonSpreadArgument(
-  { call, }: { readonly call: ESTree.CallExpression; },
+  { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): ESTree.Expression | typeof NO_SINGLE_ARGUMENT {
   if (call.arguments
     .length
@@ -61,7 +62,7 @@ export function getSingleNonSpreadArgument(
  * ```
  */
 export function getStaticMemberName(
-  { member, }: { readonly member: ESTree.MemberExpression; },
+  { member, }: ForeignBorrowed<{ readonly member: ESTree.MemberExpression; }>,
 ): string | typeof NO_STATIC_MEMBER_NAME {
   if (member.property
     .type
@@ -97,7 +98,7 @@ export function getStaticMemberName(
  * ```
  */
 export function getStaticCallMemberName(
-  { call, }: { readonly call: ESTree.CallExpression; },
+  { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): string | typeof NO_STATIC_MEMBER_NAME {
   /**
    * Call target; only member calls qualify.
@@ -123,7 +124,7 @@ export function getStaticCallMemberName(
  * ```
  */
 export function getImportDeclarationForDefinition(
-  { definition, }: { readonly definition: Definition; },
+  { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
 ): ESTree.ImportDeclaration | typeof NO_IMPORT_DECLARATION {
   /**
    * Definition node itself for whole-declaration imports, or parent for individual specifiers.

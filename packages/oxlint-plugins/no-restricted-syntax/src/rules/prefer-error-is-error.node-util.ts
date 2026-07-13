@@ -2,6 +2,7 @@ import type {
   Context,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   IS_NATIVE_ERROR_PROPERTY_NAME,
@@ -87,10 +88,10 @@ function isNodeUtilImportIdentifier(
   {
     context,
     identifier,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly identifier: ESTree.IdentifierReference;
-  },
+  }>,
 ): boolean {
   /**
    * Import definition behind the identifier.
@@ -137,10 +138,10 @@ function isNodeUtilTypesImportIdentifier(
   {
     context,
     identifier,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly identifier: ESTree.IdentifierReference;
-  },
+  }>,
 ): boolean {
   /**
    * Import definition behind the identifier.
@@ -193,10 +194,10 @@ function isNodeUtilTypesExpression(
   {
     context,
     expression,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.Expression;
-  },
+  }>,
 ): boolean {
   /**
    * Expression without redundant parentheses.
@@ -248,10 +249,10 @@ function isDirectIsNativeErrorImport(
   {
     context,
     identifier,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly identifier: ESTree.IdentifierReference;
-  },
+  }>,
 ): boolean {
   /**
    * Import definition behind the direct callee.
@@ -301,10 +302,10 @@ export function getIsNativeErrorArgumentText(
   {
     context,
     call,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly call: ESTree.CallExpression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   if (call.optional)
     return NOT_ERROR_DETECTION;

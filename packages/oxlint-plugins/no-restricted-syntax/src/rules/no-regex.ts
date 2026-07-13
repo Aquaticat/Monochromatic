@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 //region Constants
 
@@ -48,7 +49,7 @@ const NO_STATIC_METHOD_NAME = Symbol('member property computed without a static 
  * isRegExpLiteral(node); // true for /token/g
  * ```
  */
-function isRegExpLiteral(node: ESTree.Node,): node is ESTree.RegExpLiteral {
+function isRegExpLiteral(node: ForeignBorrowed<ESTree.Node>,): node is ESTree.RegExpLiteral {
   if (node.type
     !== 'Literal')
     return false;
@@ -74,7 +75,7 @@ function isRegExpLiteral(node: ESTree.Node,): node is ESTree.RegExpLiteral {
  * ```
  */
 function isRegExpConstructorExpression(
-  node: ESTree.Node,
+  node: ForeignBorrowed<ESTree.Node>,
 ): node is ESTree.CallExpression | ESTree.NewExpression {
   if ((node.type
     !== 'CallExpression') && (node.type
@@ -101,7 +102,7 @@ function isRegExpConstructorExpression(
  * ```
  */
 function getStaticMethodName(
-  { node, }: { readonly node: ESTree.MemberExpression; },
+  { node, }: ForeignBorrowed<{ readonly node: ESTree.MemberExpression; }>,
 ): string | typeof NO_STATIC_METHOD_NAME {
   if (!node.computed) {
     if (node.property
@@ -158,7 +159,7 @@ function isRegexAcceptingStringMethod(
  * isInlineRegexExpression(node); // true for /x/ and new RegExp('x')
  * ```
  */
-function isInlineRegexExpression(node: ESTree.Node,): boolean {
+function isInlineRegexExpression(node: ForeignBorrowed<ESTree.Node>,): boolean {
   return isRegExpLiteral(node,)
     || isRegExpConstructorExpression(node,);
 }
@@ -182,7 +183,7 @@ function isInlineRegexExpression(node: ESTree.Node,): boolean {
  * isStringMethodRegexCall({ node }); // true for text.match(/x/)
  * ```
  */
-function isStringMethodRegexCall({ node, }: { readonly node: ESTree.CallExpression; },): boolean {
+function isStringMethodRegexCall({ node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,): boolean {
   if (node.callee
     .type
     !== 'MemberExpression')
@@ -217,7 +218,7 @@ function isStringMethodRegexCall({ node, }: { readonly node: ESTree.CallExpressi
  * stringRegexMethodName({ node }); // "replace"
  * ```
  */
-function stringRegexMethodName({ node, }: { readonly node: ESTree.CallExpression; },): string {
+function stringRegexMethodName({ node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,): string {
   if (node.callee
     .type
     !== 'MemberExpression')
@@ -245,7 +246,7 @@ function stringRegexMethodName({ node, }: { readonly node: ESTree.CallExpression
  * isCoveredByParentRegexDiagnostic({ node }); // true for /x/ in text.match(/x/)
  * ```
  */
-function isCoveredByParentRegexDiagnostic({ node, }: { readonly node: ESTree.Node; },): boolean {
+function isCoveredByParentRegexDiagnostic({ node, }: ForeignBorrowed<{ readonly node: ESTree.Node; }>,): boolean {
   /**
    * Parent expression that may own the more specific diagnostic.
    */
@@ -301,9 +302,21 @@ export const noRegex: CreateOnceRule = {
         'String#{{method}}() with an inline regex requires a scoped disable with justification. Explain why regex is clearer than a string API or parser, and what bounds matching cost.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      Literal(node,): void {
+      Literal(node: ForeignBorrowed<ESTree.Node>,): void {
         if (!isRegExpLiteral(node,))
           return;
         if (isCoveredByParentRegexDiagnostic({ node, },))
@@ -313,7 +326,7 @@ export const noRegex: CreateOnceRule = {
           messageId: 'regexLiteral',
         },);
       },
-      NewExpression(node,): void {
+      NewExpression(node: ForeignBorrowed<ESTree.NewExpression>,): void {
         if (!isRegExpConstructorExpression(node,))
           return;
         if (isCoveredByParentRegexDiagnostic({ node, },))
@@ -323,7 +336,7 @@ export const noRegex: CreateOnceRule = {
           messageId: 'regexpConstructor',
         },);
       },
-      CallExpression(node,): void {
+      CallExpression(node: ForeignBorrowed<ESTree.CallExpression>,): void {
         if (isRegExpConstructorExpression(node,)) {
           if (isCoveredByParentRegexDiagnostic({ node, },))
             return;

@@ -4,10 +4,14 @@
  * @module
  */
 
-import type { Checker, Project, } from 'typescript/unstable/sync';
+import type {
+  Checker,
+  Project,
+} from 'typescript/unstable/sync';
 import type { CallExpression, } from 'typescript/unstable/ast';
 
 import type { IntrinsicCallbackEffect, } from './intrinsic-effect-catalog.ts';
+import { isAuditedObservationalExpression, } from './effect-call-observation.ts';
 import {
   callableKey,
   type MutableEffectSummary,
@@ -100,6 +104,12 @@ export function addIntrinsicCallbackEffects({
         },);
       return;
     }
+    if (isAuditedObservationalExpression({
+      project,
+      checker,
+      expression: callbackArgument,
+    },))
+      return;
     /**
      * Owned callback declaration receiving receiver-reachable values.
      */
@@ -127,10 +137,10 @@ export function addIntrinsicCallbackEffects({
           .map(function callbackSource(
             _parameter,
             callbackArgumentIndex,
-          ): number | typeof PARAMETER_INDEX_UNAVAILABLE {
+          ): readonly number[] {
             return receiverIndexes.has(callbackArgumentIndex,)
-              ? receiverParameterIndex
-              : PARAMETER_INDEX_UNAVAILABLE;
+              ? [receiverParameterIndex,]
+              : [];
           },),
         callbackKeys: callback.parameters
           .map(function noNestedCallback(): typeof OWNED_CALLABLE_UNAVAILABLE {

@@ -4,6 +4,7 @@ import type {
   ESTree,
   Scope,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   getImportDeclarationForDefinition,
@@ -34,7 +35,7 @@ import {
  * ```
  */
 export function getStaticString(
-  { expression, }: { readonly expression: ESTree.Expression; },
+  { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
 ): StaticSource {
   if (expression.type !== 'Literal')
     return NO_STATIC_SOURCE;
@@ -56,7 +57,7 @@ export function getStaticString(
  * ```
  */
 export function getStaticPropertyName(
-  { key, }: { readonly key: ESTree.Node; },
+  { key, }: ForeignBorrowed<{ readonly key: ESTree.Node; }>,
 ): StaticSource {
   if (key.type === 'Identifier')
     return key.name;
@@ -82,7 +83,7 @@ export function getStaticPropertyName(
  * ```
  */
 export function getMemberName(
-  { member, }: { readonly member: ESTree.MemberExpression; },
+  { member, }: ForeignBorrowed<{ readonly member: ESTree.MemberExpression; }>,
 ): StaticSource {
   if (member.property
     .type
@@ -107,7 +108,7 @@ export function getMemberName(
  * ```
  */
 export function getSingleStringArgument(
-  { call, }: { readonly call: ESTree.CallExpression; },
+  { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): StaticSource {
   /**
    * Sole ordinary argument of the call, when the call shape is supported.
@@ -140,10 +141,10 @@ function findVariableInScope(
   {
     scope,
     name,
-  }: {
+  }: ForeignBorrowed<{
     readonly scope: Scope;
     readonly name: string;
-  },
+  }>,
 ): VariableLookup {
   /**
    * Binding registered in this scope, or absent when lookup must continue upward.
@@ -186,11 +187,11 @@ export function findVariable(
     context,
     node,
     name,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly node: ESTree.Node;
     readonly name: string;
-  },
+  }>,
 ): VariableLookup {
   return findVariableInScope({
     scope: context.sourceCode
@@ -215,7 +216,7 @@ export function findVariable(
  * ```
  */
 export function getImportDeclaration(
-  { definition, }: { readonly definition: Definition; },
+  { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
 ): ESTree.ImportDeclaration | typeof NO_VARIABLE {
   /**
    * Import declaration resolved from scope-manager definition metadata.
@@ -240,7 +241,7 @@ export function getImportDeclaration(
  * ```
  */
 export function getVariableDeclarator(
-  { definition, }: { readonly definition: Definition; },
+  { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
 ): ESTree.VariableDeclarator | typeof NO_VARIABLE {
   if (definition.node
     .type

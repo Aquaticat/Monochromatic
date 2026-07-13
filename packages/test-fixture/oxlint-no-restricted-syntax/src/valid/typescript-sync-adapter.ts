@@ -176,6 +176,32 @@ export function directSemanticEffect(directState: { value: string; },): void {
 }
 
 /**
+ * Mutates state packaged into destructured call argument.
+ *
+ * @param state - Mutable state unpacked from call argument object.
+ *
+ * @mutates state - Updates packaged caller state.
+ */
+function mutatePackagedState({
+  state,
+}: {
+  readonly state: { value: string; };
+},): void {
+  state.value = 'changed';
+}
+
+/**
+ * Propagates mutation through object-literal call packaging.
+ *
+ * @param state - Mutable caller state packaged for helper.
+ *
+ * @mutates state - Forwards state to packaged mutation helper.
+ */
+export function packagedSemanticEffect(state: { value: string; },): void {
+  mutatePackagedState({ state, },);
+}
+
+/**
  * Mutates parameter through cross-file helper.
  *
  * @param crossFileValues - Set forwarded to clearing helper.

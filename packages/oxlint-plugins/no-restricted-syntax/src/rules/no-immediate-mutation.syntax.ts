@@ -1,8 +1,8 @@
-import { isRecord, } from '@monochromatic-dev/config-oxlint-shared/ts';
 import type {
   Context,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import { NO_VARIABLE, } from './no-sync.constants.ts';
 import { findVariable, } from './no-sync.syntax.ts';
@@ -106,7 +106,7 @@ type PreviousStatementResult = ESTree.Node | typeof NO_PREVIOUS_STATEMENT;
  * ```
  */
 export function unwrapExpression(
-  { expression, }: { readonly expression: ESTree.Expression; },
+  { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
 ): ESTree.Expression {
   if (expression.type === 'ParenthesizedExpression')
     return unwrapExpression({ expression: expression.expression, },);
@@ -137,7 +137,7 @@ export function unwrapExpression(
  * ```
  */
 export function staticMemberName(
-  { member, }: { readonly member: ESTree.MemberExpression; },
+  { member, }: ForeignBorrowed<{ readonly member: ESTree.MemberExpression; }>,
 ): StaticMemberNameResult {
   if (member.computed)
     return NO_STATIC_MEMBER_NAME;
@@ -177,6 +177,17 @@ function isIdentifierNamed(
 }
 
 /**
+ * Narrows unknown foreign AST value to property-readable record.
+ *
+ * @param value - Unknown candidate supplied by AST traversal.
+ *
+ * @returns whether value is non-null object.
+ */
+function isAstRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
+  return (value !== null) && ((typeof value) === 'object');
+}
+
+/**
  * Conservatively checks whether AST-ish value references an identifier
  * name, matching nodes via {@link isIdentifierNamed} and recursing into
  * object/array children.
@@ -185,20 +196,28 @@ function isIdentifierNamed(
  *
  * @param name - Identifier name that would make a rewrite unsafe.
  *
+ * @param visitorKeys - Foreign parser child keys for each node type.
+ *
  * @returns Whether name appears in value.
  *
  * @example
  * ```ts
- * referencesIdentifier({ value: call.arguments, name: 'set' });
+ * referencesIdentifier({
+ *   value: call.arguments,
+ *   name: 'set',
+ *   visitorKeys: context.sourceCode.visitorKeys,
+ * });
  * ```
  */
 export function referencesIdentifier(
   {
     value,
     name,
+    visitorKeys,
   }: {
     readonly value: unknown;
     readonly name: string;
+    readonly visitorKeys: Readonly<Record<string, readonly string[]>>;
   },
 ): boolean {
   if (Array.isArray(value,))
@@ -206,26 +225,29 @@ export function referencesIdentifier(
       return referencesIdentifier({
         value: item,
         name,
+        visitorKeys,
       },);
     },);
-  if (!isRecord(value,))
+  if (!isAstRecord(value,))
     return false;
   if (isIdentifierNamed({
     value,
     name,
   },))
     return true;
-  return Object.entries(value,)
-    .some(function entryReferencesIdentifier([key, child,],): boolean {
-      if (key === 'parent')
-        return false;
-      if (key === 'type')
-        return false;
-      return referencesIdentifier({
-        value: child,
-        name,
-      },);
+  /**
+   * Parser-declared child fields for current node type.
+   */
+  const childKeys = (typeof value.type) === 'string'
+    ? visitorKeys[value.type] ?? []
+    : [];
+  return childKeys.some(function childReferencesIdentifier(key,): boolean {
+    return referencesIdentifier({
+      value: value[key],
+      name,
+      visitorKeys,
     },);
+  },);
 }
 
 //endregion Generic AST helpers
@@ -246,7 +268,7 @@ export function referencesIdentifier(
  * ```
  */
 function collectionNeedsSpreadTemp(
-  { expression, }: { readonly expression: ESTree.NewExpression; },
+  { expression, }: ForeignBorrowed<{ readonly expression: ESTree.NewExpression; }>,
 ): boolean {
   /**
    * Constructor arguments supplied to Set or Map.
@@ -290,10 +312,10 @@ function initializerKind(
   {
     context,
     expression,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.Expression;
-  },
+  }>,
 ): InitializerKindResult {
   /**
    * Transparent wrappers removed before syntax classification.
@@ -354,10 +376,10 @@ function initInfoFromDeclaration(
   {
     context,
     declaration,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly declaration: ESTree.VariableDeclaration;
-  },
+  }>,
 ): InitInfoResult {
   /**
    * Last declarator only, matching upstream unicorn/no-immediate-mutation behavior.
@@ -407,10 +429,10 @@ function initInfoFromAssignment(
   {
     assignment,
     context,
-  }: {
+  }: ForeignBorrowed<{
     readonly assignment: ESTree.AssignmentExpression;
     readonly context: Context;
-  },
+  }>,
 ): InitInfoResult {
   if (assignment.operator !== '=')
     return NO_INIT_INFO;
@@ -463,10 +485,10 @@ export function previousInitInfo(
   {
     context,
     statement,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly statement: ESTree.Node;
-  },
+  }>,
 ): InitInfoResult {
   if (statement.type === 'VariableDeclaration')
     return initInfoFromDeclaration({
@@ -505,7 +527,7 @@ export function previousInitInfo(
  * ```
  */
 function siblingStatements(
-  { parent, }: { readonly parent: ESTree.Node; },
+  { parent, }: ForeignBorrowed<{ readonly parent: ESTree.Node; }>,
 ): StatementListResult {
   if (parent.type === 'Program')
     return parent.body;
@@ -533,7 +555,7 @@ function siblingStatements(
  * ```
  */
 export function previousSiblingStatement(
-  { node, }: { readonly node: ESTree.ExpressionStatement; },
+  { node, }: ForeignBorrowed<{ readonly node: ESTree.ExpressionStatement; }>,
 ): PreviousStatementResult {
   /**
    * Sibling statement list from nearest statement-bearing parent.
@@ -544,7 +566,9 @@ export function previousSiblingStatement(
   /**
    * Current statement index by object identity.
    */
-  const currentIndex = statements.findIndex(function hasSameSpan(statement,): boolean {
+  const currentIndex = statements.findIndex(function hasSameSpan(
+    statement: ForeignBorrowed<ESTree.Node>,
+  ): boolean {
     return (statement.start === node.start) && (statement.end === node.end);
   },);
   if (currentIndex <= 0)

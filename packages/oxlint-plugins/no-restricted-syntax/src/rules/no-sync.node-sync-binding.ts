@@ -4,6 +4,7 @@ import type {
   ESTree,
   Variable,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   NOT_NODE_SYNC_CALLEE,
@@ -51,12 +52,12 @@ function getObjectPatternNodeSyncName(
     declarator,
     variable,
     seen,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly declarator: ESTree.VariableDeclarator;
     readonly variable: Variable;
     readonly seen: ReadonlySet<Variable>;
-  },
+  }>,
 ): NodeSyncCalleeName {
   if (declarator.id
     .type
@@ -97,10 +98,10 @@ function getObjectPatternNodeSyncPropertyName(
   {
     pattern,
     variable,
-  }: {
+  }: ForeignBorrowed<{
     readonly pattern: ESTree.ObjectPattern;
     readonly variable: Variable;
-  },
+  }>,
 ): NodeSyncCalleeName {
   for (const property of pattern.properties) {
     if (property.type === 'RestElement')
@@ -148,7 +149,7 @@ function getObjectPatternNodeSyncPropertyName(
  * ```
  */
 function getImportedNodeSyncName(
-  { definition, }: { readonly definition: Definition; },
+  { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
 ): NodeSyncCalleeName {
   if (definition.node
     .type
@@ -202,12 +203,12 @@ function getNodeSyncDeclaratorName(
     declarator,
     variable,
     seen,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly declarator: ESTree.VariableDeclarator;
     readonly variable: Variable;
     readonly seen: ReadonlySet<Variable>;
-  },
+  }>,
 ): NodeSyncCalleeName {
   /**
    * Sync API name from destructuring a Node builtin source object.
@@ -262,11 +263,11 @@ export function getNodeSyncFunctionVariableName(
     context,
     variable,
     seen,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly variable: Variable;
     readonly seen: ReadonlySet<Variable>;
-  },
+  }>,
 ): NodeSyncCalleeName {
   if (seen.has(variable,))
     return NOT_NODE_SYNC_CALLEE;

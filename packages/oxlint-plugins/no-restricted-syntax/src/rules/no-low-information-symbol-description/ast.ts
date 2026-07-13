@@ -1,4 +1,5 @@
 import type { ESTree, } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from '../foreign-borrowed.ts';
 
 import { getStaticMemberName, } from '../ast-shared.ts';
 
@@ -21,7 +22,7 @@ export const NO_STATIC_DESCRIPTION: unique symbol = Symbol('static Symbol descri
  * isSymbolCall({ node }); // true for Symbol('id')
  * ```
  */
-export function isSymbolCall({ node, }: { readonly node: ESTree.CallExpression; },): boolean {
+export function isSymbolCall({ node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,): boolean {
   /**
    * Callee of the call expression.
    */
@@ -42,7 +43,7 @@ export function isSymbolCall({ node, }: { readonly node: ESTree.CallExpression; 
  * isSymbolForCall({ node }); // true for Symbol.for('id')
  * ```
  */
-export function isSymbolForCall({ node, }: { readonly node: ESTree.CallExpression; },): boolean {
+export function isSymbolForCall({ node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,): boolean {
   /**
    * Callee of the call expression.
    */
@@ -75,7 +76,7 @@ export function isSymbolForCall({ node, }: { readonly node: ESTree.CallExpressio
  * ```
  */
 export function staticDescription(
-  { node, }: { readonly node: ESTree.CallExpression; },
+  { node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,
 ): string | typeof NO_STATIC_DESCRIPTION {
   /**
    * First argument node, the description position.

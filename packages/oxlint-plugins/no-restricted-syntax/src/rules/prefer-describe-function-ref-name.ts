@@ -12,6 +12,7 @@ import type {
   Variable,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 /* oxlint-disable no-restricted-syntax/no-regex -- binding names are parser-produced identifiers, source files are normal TypeScript modules, and the anchored constant-name grammar has no nested quantifiers. */
 /**
@@ -208,10 +209,10 @@ function isCallableBinding(
   {
     variable,
     currentFile,
-  }: {
+  }: ForeignBorrowed<{
     readonly variable: Variable;
     readonly currentFile: string;
-  },
+  }>,
 ): boolean {
   /**
    * First definition site of the binding; absent for implicit globals the rule does not target.
@@ -387,7 +388,19 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
         + 'with a justification.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Inspects a `describe(...)` call expression and reports when its
      * `name` property is a string literal that matches an in-scope
@@ -395,7 +408,7 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
      *
      * @param node - The `CallExpression` AST node.
      */
-    function checkCall(node: ESTree.CallExpression,): void {
+    function checkCall(node: ForeignBorrowed<ESTree.CallExpression>,): void {
       if ((node.callee
         .type
         !== 'Identifier') || (node.callee

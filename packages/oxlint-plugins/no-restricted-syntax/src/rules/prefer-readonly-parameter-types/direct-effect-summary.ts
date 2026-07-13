@@ -53,6 +53,8 @@ import {
  * @param summary - Summary receiving direct mutation.
  *
  * @param node - Write target expression.
+ *
+ * @mutates summary - Adds direct caller-observable write target.
  */
 function inspectDirectWrite({
   project,

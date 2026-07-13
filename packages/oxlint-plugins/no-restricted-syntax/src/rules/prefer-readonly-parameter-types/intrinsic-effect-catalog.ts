@@ -5,6 +5,7 @@
  */
 
 import { ECMASCRIPT_EFFECTS, } from './ecmascript-effect-catalog.ts';
+import { PACKAGE_EFFECTS, } from './package-effect-catalog.ts';
 
 /**
  * Intrinsic declaration provenance classes.
@@ -237,38 +238,6 @@ const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       member,
       evidence: '@types/node 26 stream.d.ts Writable declaration',
     },);
-  },),
-];
-
-/**
- * Package effects audited by exact current-lock major.
- */
-const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
-  ...[
-    'clearSourceFileCache',
-    'close',
-    'updateSnapshot',
-  ].map(function typescriptApiEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      provenance: {
-        kind: 'package',
-        packageName: 'typescript',
-        major: 7,
-      },
-      ownerType: 'API',
-      member,
-      evidence: 'typescript 7.0.2 dist/api/sync/api.d.ts API declaration',
-    },);
-  },),
-  receiverEffect({
-    provenance: {
-      kind: 'package',
-      packageName: 'typescript',
-      major: 7,
-    },
-    ownerType: 'Snapshot',
-    member: 'dispose',
-    evidence: 'typescript 7.0.2 dist/api/sync/api.d.ts Snapshot declaration',
   },),
 ];
 

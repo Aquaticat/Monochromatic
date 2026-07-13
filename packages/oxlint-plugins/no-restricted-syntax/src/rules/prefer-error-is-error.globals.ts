@@ -2,6 +2,7 @@ import type {
   Context,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   ERROR_CONSTRUCTOR_NAME,
@@ -39,10 +40,10 @@ export function isGlobalErrorConstructor(
   {
     context,
     expression,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.Expression;
-  },
+  }>,
 ): boolean {
   /**
    * Direct global Error identifier, if present.
@@ -105,10 +106,10 @@ export function isGlobalObjectConstructor(
   {
     context,
     expression,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.Expression;
-  },
+  }>,
 ): boolean {
   /**
    * Direct global Object identifier, if present.

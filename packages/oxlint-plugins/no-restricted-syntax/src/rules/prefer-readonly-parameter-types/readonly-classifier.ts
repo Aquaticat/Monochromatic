@@ -23,6 +23,7 @@ import {
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
+import { isForeignBorrowedType, } from './foreign-borrowed-classifier.ts';
 
 /**
  * Bit position of hidden TypeScript 7 mapped-property readonly state.
@@ -292,6 +293,16 @@ export function classifyReadonlyType({
         result,
       );
       return result;
+    }
+
+    if (isForeignBorrowedType({
+      project,
+      type: current,
+    },)) {
+      return finish({
+        kind: 'opaque-capability',
+        reason: 'foreign API dictates mutable borrowed handle contract',
+      },);
     }
 
     if (current.isUnionType() || current.isIntersectionType()) {

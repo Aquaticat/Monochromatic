@@ -2,6 +2,7 @@ import type {
   CreateOnceRule,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import { simpleBanRule, } from './_simple-ban-rule.ts';
 
@@ -49,7 +50,7 @@ export const requireDestructuredParams: CreateOnceRule = simpleBanRule({
     'Require function declarations with 2+ params to use a single destructured object parameter.',
   messageId: 'required',
   message: REQUIRE_DESTRUCTURED_PARAMS_MESSAGE,
-  shouldReport(node: ESTree.Node,): boolean {
+  shouldReport(node: ForeignBorrowed<ESTree.Node>,): boolean {
     /**
      * Minimum parameter count that triggers the rule.
      */

@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 /**
  * Bans function expressions assigned to variables.
@@ -39,9 +40,21 @@ export const noVariableFunctionExpression: CreateOnceRule = {
         'Function expressions assigned to variables are banned. Use a function declaration instead.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      VariableDeclaration(node: ESTree.VariableDeclaration,): void {
+      VariableDeclaration(node: ForeignBorrowed<ESTree.VariableDeclaration>,): void {
         for (const declarator of node.declarations) {
           if ((declarator.init
             !== null)

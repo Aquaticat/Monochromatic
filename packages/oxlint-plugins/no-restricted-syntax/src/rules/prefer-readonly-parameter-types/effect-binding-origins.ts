@@ -70,23 +70,21 @@ export function registerBindingOrigin({
     );
     return prior !== parameterIndex;
   }
-  return name.elements
-    .reduce(
-      function registerElement(
-        changed,
-        element,
-      ): boolean {
+  /**
+   * Whether any nested binding origin changed.
+   */
+  let changed = false;
+  for (const element of name.elements) {
     if ((!isBindingElement(element,)) || (element.name === undefined))
-      return changed;
-    return registerBindingOrigin({
+      continue;
+    changed = registerBindingOrigin({
       project,
       name: element.name,
       parameterIndex,
       bindingOriginBySymbolId,
     },) || changed;
-  },
-      false,
-    );
+  }
+  return changed;
 }
 
 /**

@@ -10,7 +10,13 @@ import type {
 } from 'typescript/unstable/sync';
 import type { Node, } from 'typescript/unstable/ast';
 import {
+  isArrayLiteralExpression,
   isIdentifier,
+  isObjectLiteralExpression,
+  isPropertyAssignment,
+  isShorthandPropertyAssignment,
+  isSpreadAssignment,
+  isSpreadElement,
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 
@@ -22,6 +28,11 @@ import {
   OWNED_CALLABLE_UNAVAILABLE,
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
+
+/**
+ * Sentinel selecting every property in packaged call argument.
+ */
+export const ALL_PACKAGED_PROPERTIES: unique symbol = Symbol('all packaged call argument properties',);
 
 /**
  * Maps expression root symbol to callable parameter index.
@@ -62,6 +73,113 @@ export function parameterIndex({
     return PARAMETER_INDEX_UNAVAILABLE;
   return bindingOriginBySymbolId.get(symbol.id,)
     ?? PARAMETER_INDEX_UNAVAILABLE;
+}
+
+/**
+ * Collects every caller parameter origin packaged inside one call argument.
+ *
+ * @param checker - TypeScript checker resolving root symbols.
+ *
+ * @param bindingOriginBySymbolId - Local binding symbols mapped to source parameters.
+ *
+ * @param node - Call argument whose object or array may package parameter values.
+ *
+ * @param includedPropertyNames - Object property names relevant to callee effect.
+ *
+ * @returns unique caller parameter indexes in authored order.
+ *
+ * @example
+ * ```ts
+ * parameterIndexes({
+ *   checker,
+ *   bindingOriginBySymbolId,
+ *   node,
+ *   includedPropertyNames: ALL_PACKAGED_PROPERTIES,
+ * });
+ * ```
+ */
+export function parameterIndexes({
+  checker,
+  bindingOriginBySymbolId,
+  node,
+  includedPropertyNames,
+}: {
+  readonly checker: Checker;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly node: Node;
+  readonly includedPropertyNames: ReadonlySet<string> | typeof ALL_PACKAGED_PROPERTIES;
+},): readonly number[] {
+  /**
+   * Unique origins discovered through bounded argument structure.
+   */
+  const origins = new Set<number>();
+  /**
+   * Visits only authored object and array packaging structure.
+   *
+   * @param current - Current packaged expression or direct parameter root.
+   *
+   */
+  function collect(current: Node,): void {
+    /**
+     * Direct parameter origin at current expression root.
+     */
+    const direct = parameterIndex({
+      checker,
+      bindingOriginBySymbolId,
+      node: current,
+    },);
+    if (direct !== PARAMETER_INDEX_UNAVAILABLE) {
+      origins.add(direct,);
+      return;
+    }
+    if (isObjectLiteralExpression(current,)) {
+      current.properties
+        .forEach(function collectProperty(property,): void {
+        if (isPropertyAssignment(property,)) {
+          /**
+           * Authored property name used to select callee-mutated target.
+           */
+          const propertyName = property.name
+            .getText();
+          if ((includedPropertyNames === ALL_PACKAGED_PROPERTIES)
+            || includedPropertyNames.has(propertyName,))
+            collect(property.initializer,);
+          return;
+        }
+        if (isShorthandPropertyAssignment(property,)) {
+          if ((includedPropertyNames !== ALL_PACKAGED_PROPERTIES)
+            && (!includedPropertyNames.has(property.name
+              .getText(),)))
+            return;
+          /**
+           * Value symbol hidden behind object shorthand property symbol.
+           */
+          const valueSymbol = checker.getShorthandAssignmentValueSymbol(property,);
+          if (valueSymbol !== undefined) {
+            /**
+             * Caller parameter origin represented by shorthand value.
+             */
+            const origin = bindingOriginBySymbolId.get(valueSymbol.id,);
+            if (origin !== undefined)
+              origins.add(origin,);
+          }
+          return;
+        }
+        if (isSpreadAssignment(property,)
+          && (includedPropertyNames === ALL_PACKAGED_PROPERTIES))
+          collect(property.expression,);
+        },);
+      return;
+    }
+    if (isArrayLiteralExpression(current,)) {
+      current.elements
+        .forEach(function collectElement(element,): void {
+        collect(isSpreadElement(element,) ? element.expression : element,);
+      },);
+    }
+  }
+  collect(node,);
+  return [...origins,];
 }
 
 /**

@@ -44,6 +44,8 @@ await describe({
         const index = buildEffectSummaryIndex({ project: session.project, },);
         const effects = [
           'directSemanticEffect',
+          'mutatePackagedState',
+          'packagedSemanticEffect',
           'crossFileSemanticEffect',
           'callbackSemanticEffect',
           'arrayCallbackSemanticEffect',
@@ -105,6 +107,16 @@ await describe({
         expect(effects,).toEqual([
           {
             functionName: 'directSemanticEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'mutatePackagedState',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'packagedSemanticEffect',
             mutated: [0,],
             opaque: [],
           },

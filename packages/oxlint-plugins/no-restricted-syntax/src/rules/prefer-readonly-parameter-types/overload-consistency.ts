@@ -8,6 +8,7 @@ import type {
   Context,
   LineColumn,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from '../foreign-borrowed.ts';
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
@@ -77,10 +78,10 @@ function equalIndexes({
 function declarationLocation({
   context,
   declaration,
-}: {
+}: ForeignBorrowed<{
   readonly context: Context;
   readonly declaration: EffectCallableDeclaration;
-},): {
+}>,): {
   start: LineColumn;
   end: LineColumn
 } {
@@ -133,18 +134,20 @@ function declarationLocation({
  * ```ts
  * verifyOverloadConsistency({ context, project, sourceFile, effectIndex });
  * ```
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 export function verifyOverloadConsistency({
   context,
   project,
   sourceFile,
   effectIndex,
-}: {
+}: ForeignBorrowed<{
   readonly context: Context;
   readonly project: Project;
   readonly sourceFile: Parameters<typeof collectAstNodes>[0];
   readonly effectIndex: EffectSummaryIndex;
-},): void {
+}>,): void {
   /**
    * Callable declarations grouped by resolved name symbol.
    */
@@ -170,7 +173,9 @@ export function verifyOverloadConsistency({
       ],
     );
   },);
-  declarationsBySymbol.forEach(function verifyGroup(declarations,): void {
+  declarationsBySymbol.forEach(function verifyGroup(
+    declarations: readonly EffectCallableDeclaration[],
+  ): void {
     /**
      * Implementation declarations carrying bodies.
      */
@@ -204,6 +209,17 @@ export function verifyOverloadConsistency({
      * Union of bodyless overload mutation contracts by parameter position.
      */
     const overloadEffects = overloads.reduce(
+      /**
+       * Unions one overload contract into accumulated parameter positions.
+       *
+       * @param effects - Mutable accumulator of affected positions.
+       *
+       * @param overload - Current bodyless overload declaration.
+       *
+       * @returns same accumulator after adding current overload effects.
+       *
+       * @mutates effects - Adds mutation contract positions from current overload.
+       */
       function union(
         effects,
         overload,

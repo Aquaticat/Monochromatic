@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   getStaticCallMemberName,
@@ -127,7 +128,7 @@ const MESSAGE_ID = 'directReference';
  * ```
  */
 function unwrapExpression(
-  { expression, }: { readonly expression: ESTree.Expression; },
+  { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
 ): ESTree.Expression {
   if (expression.type === 'ParenthesizedExpression')
     return unwrapExpression({ expression: expression.expression, },);
@@ -236,7 +237,7 @@ function isAllowedCallbackWrapperName({ name, }: { readonly name: string; },): b
  * isJqueryReceiverCall({ call: receiver });
  * ```
  */
-function isJqueryReceiverCall({ call, }: { readonly call: ESTree.CallExpression; },): boolean {
+function isJqueryReceiverCall({ call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,): boolean {
   /**
    * Callee expression with transparent wrappers removed.
    */
@@ -258,7 +259,7 @@ function isJqueryReceiverCall({ call, }: { readonly call: ESTree.CallExpression;
  * isIgnoredReceiver({ receiver: call.callee.object });
  * ```
  */
-function isIgnoredReceiver({ receiver, }: { readonly receiver: ESTree.Expression; },): boolean {
+function isIgnoredReceiver({ receiver, }: ForeignBorrowed<{ readonly receiver: ESTree.Expression; }>,): boolean {
   /**
    * Receiver with transparent wrappers removed.
    */
@@ -297,7 +298,7 @@ function isIgnoredReceiver({ receiver, }: { readonly receiver: ESTree.Expression
  * hasCallbackArity({ call });
  * ```
  */
-function hasCallbackArity({ call, }: { readonly call: ESTree.CallExpression; },): boolean {
+function hasCallbackArity({ call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,): boolean {
   /**
    * Arguments supplied to candidate call.
    */
@@ -322,7 +323,7 @@ function hasCallbackArity({ call, }: { readonly call: ESTree.CallExpression; },)
  * ```
  */
 function firstExpressionArgument(
-  { call, }: { readonly call: ESTree.CallExpression; },
+  { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): ESTree.Expression | typeof NO_CALLBACK_ARGUMENT {
   /**
    * Arguments supplied to candidate call.
@@ -352,7 +353,7 @@ function firstExpressionArgument(
  * ```
  */
 function isRelevantArrayCallbackCall(
-  { call, }: { readonly call: ESTree.CallExpression; },
+  { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): boolean {
   if (!hasCallbackArity({ call, },))
     return false;
@@ -396,7 +397,7 @@ function isRelevantArrayCallbackCall(
  * ```
  */
 function isAllowedCallbackWrapperCall(
-  { call, }: { readonly call: ESTree.CallExpression; },
+  { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): boolean {
   /**
    * Arguments supplied to the wrapper call.
@@ -443,10 +444,10 @@ function shouldReportCallback(
   {
     context,
     callback,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly callback: ESTree.Expression;
-  },
+  }>,
 ): boolean {
   /**
    * Callback expression with transparent wrappers removed.
@@ -524,9 +525,21 @@ export const noArrayCallbackReference: CreateOnceRule = {
       [MESSAGE_ID]: 'Avoid passing a multi-argument or unknown-arity function reference directly to iterator methods. Use a known unary function, an inline named function expression, or unary()/binary() to make callback arity explicit.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      CallExpression(node: ESTree.CallExpression,): void {
+      CallExpression(node: ForeignBorrowed<ESTree.CallExpression>,): void {
         if (!isRelevantArrayCallbackCall({ call: node, },))
           return;
         /**

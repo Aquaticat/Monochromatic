@@ -3,6 +3,7 @@ import type {
   ESTree,
   Variable,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   NOT_NODE_SYNC_CALLEE,
@@ -41,11 +42,11 @@ function getIdentifierNodeSyncCalleeName(
     context,
     expression,
     seen,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.IdentifierReference;
     readonly seen: ReadonlySet<Variable>;
-  },
+  }>,
 ): NodeSyncCalleeName {
   /**
    * Scope variable behind the direct function call.
@@ -89,11 +90,11 @@ function getMemberNodeSyncCalleeName(
     context,
     expression,
     seen,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.MemberExpression;
     readonly seen: ReadonlySet<Variable>;
-  },
+  }>,
 ): NodeSyncCalleeName {
   /**
    * Direct member call result.
@@ -139,10 +140,10 @@ export function getNodeSyncCalleeName(
   {
     context,
     expression,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.Expression;
-  },
+  }>,
 ): NodeSyncCalleeName {
   /**
    * Variables visited while resolving this callee.

@@ -3,6 +3,7 @@ import type {
   ESTree,
   Variable,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import { isNodeBuiltinSource, } from './no-sync.constants.ts';
 import {
@@ -33,10 +34,10 @@ export function seenWith(
   {
     seen,
     variable,
-  }: {
+  }: ForeignBorrowed<{
     readonly seen: ReadonlySet<Variable>;
     readonly variable: Variable;
-  },
+  }>,
 ): ReadonlySet<Variable> {
   /**
    * Fresh alias-visited set; keeps O(1) membership while isolating sibling branches.
@@ -74,10 +75,10 @@ function isNodeBuiltinSourceLoadCall(
   {
     context,
     call,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly call: ESTree.CallExpression;
-  },
+  }>,
 ): boolean {
   /**
    * Static source argument shared by both accepted call shapes.
@@ -142,10 +143,10 @@ function isUnshadowedGlobalIdentifier(
   {
     context,
     identifier,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly identifier: ESTree.IdentifierReference;
-  },
+  }>,
 ): boolean {
   /**
    * Scope variable behind the identifier, if oxlint scope metadata has one.
@@ -190,11 +191,11 @@ export function isNodeBuiltinSourceExpression(
     context,
     expression,
     seen,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.Expression;
     readonly seen: ReadonlySet<Variable>;
-  },
+  }>,
 ): boolean {
   if (expression.type === 'CallExpression')
     return isNodeBuiltinSourceLoadCall({
@@ -245,11 +246,11 @@ function isNodeBuiltinSourceVariable(
     context,
     variable,
     seen,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly variable: Variable;
     readonly seen: ReadonlySet<Variable>;
-  },
+  }>,
 ): boolean {
   if (seen.has(variable,))
     return false;

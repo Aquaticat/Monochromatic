@@ -2,6 +2,7 @@ import type {
   Context,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   CONSTRUCTOR_PROPERTY_NAME,
@@ -38,10 +39,10 @@ export function getInstanceofErrorArgumentText(
   {
     context,
     binary,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly binary: ESTree.BinaryExpression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   if (binary.operator !== 'instanceof')
     return NOT_ERROR_DETECTION;
@@ -83,11 +84,11 @@ function getConstructorComparisonArgumentText(
     context,
     left,
     right,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly left: ESTree.Expression;
     readonly right: ESTree.Expression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   /**
    * Unwrapped left side for member and constructor inspection.
@@ -187,10 +188,10 @@ export function getEqualityDetectorReplacement(
   {
     context,
     binary,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly binary: ESTree.BinaryExpression;
-  },
+  }>,
 ): ErrorDetectionReplacementResult {
   if (!isEqualityOperator({ operator: binary.operator, }))
     return NOT_ERROR_DETECTION;

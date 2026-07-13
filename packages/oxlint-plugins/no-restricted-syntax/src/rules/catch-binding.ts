@@ -2,6 +2,7 @@ import type {
   CreateOnceRule,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import { simpleBanRule, } from './_simple-ban-rule.ts';
 
@@ -41,7 +42,7 @@ export const catchBinding: CreateOnceRule = simpleBanRule({
     'catch without a binding is banned. Use `catch (error) {}` or another ',
     'named binding so the thrown value stays available.',
   ].join('',),
-  shouldReport(node: ESTree.Node,): boolean {
+  shouldReport(node: ForeignBorrowed<ESTree.Node>,): boolean {
     return (node.type === 'CatchClause') && (node.param === null);
   },
 },);

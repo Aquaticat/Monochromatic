@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 /**
  * Default suffix allowlist. A class passes the rule when either its direct
@@ -173,7 +174,19 @@ export const noClass: CreateOnceRule = {
       },
     ],
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Raw rule options; oxlint omits this until config is supplied.
      */
@@ -205,7 +218,7 @@ export const noClass: CreateOnceRule = {
      *
      * @param node - class declaration or class expression to check
      */
-    function checkClass(node: ESTree.Class,): void {
+    function checkClass(node: ForeignBorrowed<ESTree.Class>,): void {
       // `declare class` in ambient `.d.ts` files describes external types
       // and emits no runtime; the rule targets emitted classes only.
       if (node.declare

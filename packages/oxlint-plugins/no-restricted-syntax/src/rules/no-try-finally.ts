@@ -2,6 +2,7 @@ import type {
   CreateOnceRule,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import { simpleBanRule, } from './_simple-ban-rule.ts';
 
@@ -38,7 +39,7 @@ export const noTryFinally: CreateOnceRule = simpleBanRule({
   messageId: 'forbidden',
   message:
     'try...finally is banned. Use using/await using with Symbol.dispose for cleanup instead.',
-  shouldReport(node: ESTree.Node,): boolean {
+  shouldReport(node: ForeignBorrowed<ESTree.Node>,): boolean {
     return (node.type === 'TryStatement') && (node.finalizer !== null);
   },
 },);

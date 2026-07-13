@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 /**
  * Bans `let` declarations at module root scope.
@@ -66,7 +67,19 @@ export const noModuleRootLet: CreateOnceRule = {
         + '`oxlint-disable-next-line no-restricted-syntax/no-module-root-let` with a justification.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Reports a node if it is a non-ambient `let` VariableDeclaration.
      *
@@ -75,7 +88,7 @@ export const noModuleRootLet: CreateOnceRule = {
      * narrower `Directive | Statement` because an inline union of external alias
      * types flattens and cannot be allow-listed for prefer-readonly.
      */
-    function reportIfLet(decl: ESTree.Node,): void {
+    function reportIfLet(decl: ForeignBorrowed<ESTree.Node>,): void {
       if (decl.type
         !== 'VariableDeclaration')
         return;
@@ -92,7 +105,7 @@ export const noModuleRootLet: CreateOnceRule = {
     }
 
     return {
-      Program(node: ESTree.Program,): void {
+      Program(node: ForeignBorrowed<ESTree.Program>,): void {
         for (const stmt of node.body) {
           if (stmt.type
             === 'ExportNamedDeclaration') {

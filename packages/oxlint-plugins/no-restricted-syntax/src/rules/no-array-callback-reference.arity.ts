@@ -4,6 +4,7 @@ import type {
   ESTree,
   Variable,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   getStaticMemberName,
@@ -59,7 +60,7 @@ type ObjectPropertyNameSource = {
  * ```
  */
 function unwrapExpression(
-  { expression, }: { readonly expression: ESTree.Expression; },
+  { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
 ): ESTree.Expression {
   if (expression.type === 'ParenthesizedExpression')
     return unwrapExpression({ expression: expression.expression, },);
@@ -89,7 +90,7 @@ function unwrapExpression(
  * ```
  */
 function getObjectPropertyName(
-  { property, }: { readonly property: ObjectPropertyNameSource; },
+  { property, }: ForeignBorrowed<{ readonly property: ObjectPropertyNameSource; }>,
 ): string | typeof NO_STATIC_MEMBER_NAME {
   if (property.computed)
     return NO_STATIC_MEMBER_NAME;
@@ -122,7 +123,7 @@ function getObjectPropertyName(
  * isFunctionWithParams(definition.node);
  * ```
  */
-function isFunctionWithParams(node: ESTree.Node,): node is FunctionWithParams {
+function isFunctionWithParams(node: ForeignBorrowed<ESTree.Node>,): node is FunctionWithParams {
   return (node.type === 'FunctionDeclaration')
     || (node.type === 'FunctionExpression')
     || (node.type === 'TSDeclareFunction')
@@ -142,7 +143,7 @@ function isFunctionWithParams(node: ESTree.Node,): node is FunctionWithParams {
  * hasUnaryDeclaredArity({ fn: callbackDeclaration });
  * ```
  */
-function hasUnaryDeclaredArity({ fn, }: { readonly fn: FunctionWithParams; },): boolean {
+function hasUnaryDeclaredArity({ fn, }: ForeignBorrowed<{ readonly fn: FunctionWithParams; }>,): boolean {
   /**
    * Declared function parameters.
    */
@@ -171,7 +172,7 @@ function hasUnaryDeclaredArity({ fn, }: { readonly fn: FunctionWithParams; },): 
  * ```
  */
 function isDirectUnaryFunctionExpression(
-  { expression, }: { readonly expression: ESTree.Expression; },
+  { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
 ): boolean {
   /**
    * Runtime expression inside transparent wrappers.
@@ -199,7 +200,7 @@ function isDirectUnaryFunctionExpression(
  * ```
  */
 function isKnownUnaryDefinition(
-  { definition, }: { readonly definition: Definition; },
+  { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
 ): boolean {
   if (isFunctionWithParams(definition.node,))
     return hasUnaryDeclaredArity({ fn: definition.node, },);
@@ -247,11 +248,11 @@ function isKnownUnaryIdentifierReference(
     context,
     identifier,
     seen,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly identifier: ESTree.IdentifierReference;
     readonly seen: ReadonlySet<Variable>;
-  },
+  }>,
 ): boolean {
   /**
    * Scope variable behind the identifier.
@@ -275,7 +276,9 @@ function isKnownUnaryIdentifierReference(
    */
   const definitions = variable.defs;
   return definitions.some(
-    function definitionDeclaresUnaryArity(definition,): boolean {
+    function definitionDeclaresUnaryArity(
+      definition: ForeignBorrowed<Definition>,
+    ): boolean {
       return isKnownUnaryDefinition({ definition, },);
     },
   );
@@ -299,10 +302,10 @@ function getLocalObjectLiteral(
   {
     context,
     identifier,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly identifier: ESTree.IdentifierReference;
-  },
+  }>,
 ): ESTree.ObjectExpression | typeof NO_VARIABLE {
   /**
    * Scope variable behind object identifier.
@@ -365,10 +368,10 @@ export function isKnownUnaryFunctionExpression(
   {
     context,
     expression,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.Expression;
-  },
+  }>,
 ): boolean {
   /**
    * Runtime expression inside transparent wrappers.
@@ -417,7 +420,9 @@ export function isKnownUnaryFunctionExpression(
    * Property matching the static member name.
    */
   const property = properties.find(
-    function isMatchingProperty(candidate,): boolean {
+    function isMatchingProperty(
+      candidate: ForeignBorrowed<(typeof properties)[number]>,
+    ): boolean {
       return (candidate.type === 'Property')
         && (getObjectPropertyName({ property: candidate, }) === propertyName);
     },

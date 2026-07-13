@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 /**
  * Bans rest parameters (`...args`) in function declarations and expressions.
@@ -39,7 +40,19 @@ export const noRestParams: CreateOnceRule = {
       forbidden: 'Rest parameters are banned. Accept an array parameter instead.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Reports any RestElement found in the function's parameter list.
      *
@@ -48,7 +61,7 @@ export const noRestParams: CreateOnceRule = {
      *
      * @param node - AST node for a function declaration or expression
      */
-    function checkFunction(node: ESTree.Function,): void {
+    function checkFunction(node: ForeignBorrowed<ESTree.Function>,): void {
       for (const param of node.params) {
         if (param.type
           === 'RestElement') {

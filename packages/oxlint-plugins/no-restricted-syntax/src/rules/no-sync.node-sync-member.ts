@@ -3,6 +3,7 @@ import type {
   ESTree,
   Variable,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   NOT_NODE_SYNC_CALLEE,
@@ -39,11 +40,11 @@ export function getNodeSyncMemberName(
     context,
     expression,
     seen,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly expression: ESTree.Expression;
     readonly seen: ReadonlySet<Variable>;
-  },
+  }>,
 ): NodeSyncCalleeName {
   if (expression.type !== 'MemberExpression')
     return NOT_NODE_SYNC_CALLEE;

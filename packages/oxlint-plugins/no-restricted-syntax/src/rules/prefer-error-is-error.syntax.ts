@@ -3,6 +3,7 @@ import type {
   Definition,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   ERROR_IS_ERROR_CALLEE,
@@ -34,7 +35,7 @@ import { findVariable, } from './no-sync.syntax.ts';
  * ```
  */
 export function unwrapParentheses(
-  { expression, }: { readonly expression: ESTree.Expression; },
+  { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
 ): ESTree.Expression {
   if (expression.type !== 'ParenthesizedExpression')
     return expression;
@@ -61,10 +62,10 @@ export function getIdentifierNamed(
   {
     expression,
     name,
-  }: {
+  }: ForeignBorrowed<{
     readonly expression: ESTree.Expression;
     readonly name: string;
-  },
+  }>,
 ): ESTree.IdentifierReference | typeof NOT_ERROR_DETECTION {
   /**
    * Expression without redundant parentheses.
@@ -93,7 +94,7 @@ export function getIdentifierNamed(
  * ```
  */
 export function getStaticMemberName(
-  { member, }: { readonly member: ESTree.MemberExpression; },
+  { member, }: ForeignBorrowed<{ readonly member: ESTree.MemberExpression; }>,
 ): string | typeof NOT_ERROR_DETECTION {
   /**
    * Shared static member name result; mapped to this rule's sentinel below.
@@ -123,10 +124,10 @@ export function isStaticMemberNamed(
   {
     member,
     name,
-  }: {
+  }: ForeignBorrowed<{
     readonly member: ESTree.MemberExpression;
     readonly name: string;
-  },
+  }>,
 ): boolean {
   if (member.optional)
     return false;
@@ -156,10 +157,10 @@ export function isUnshadowedGlobalIdentifier(
   {
     context,
     identifier,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly identifier: ESTree.IdentifierReference;
-  },
+  }>,
 ): boolean {
   /**
    * Scope variable visible for the identifier.
@@ -196,10 +197,10 @@ export function getImportDefinition(
   {
     context,
     identifier,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly identifier: ESTree.IdentifierReference;
-  },
+  }>,
 ): Definition | typeof NOT_ERROR_DETECTION {
   /**
    * Scope variable for the identifier.
@@ -238,7 +239,7 @@ export function getImportDefinition(
  * ```
  */
 export function getImportSource(
-  { definition, }: { readonly definition: Definition; },
+  { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
 ): string | typeof NOT_ERROR_DETECTION {
   /**
    * Import declaration owning the binding definition.
@@ -268,10 +269,10 @@ export function isNamedImport(
   {
     definition,
     importedName,
-  }: {
+  }: ForeignBorrowed<{
     readonly definition: Definition;
     readonly importedName: string;
-  },
+  }>,
 ): boolean {
   if (definition.node
     .type
@@ -320,10 +321,10 @@ export function getSingleArgumentText(
   {
     context,
     call,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly call: ESTree.CallExpression;
-  },
+  }>,
 ): ErrorDetectionArgumentText {
   /**
    * Sole ordinary argument of the call, when the detector shape is supported.

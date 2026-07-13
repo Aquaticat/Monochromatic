@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   getStaticCallMemberName,
@@ -65,9 +66,21 @@ export const requireQueryselectorGeneric: CreateOnceRule = {
         '{{method}}() must specify a generic type parameter, e.g. {{method}}<HTMLElement>(...).',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      CallExpression(node: ESTree.CallExpression,): void {
+      CallExpression(node: ForeignBorrowed<ESTree.CallExpression>,): void {
         /**
          * Member-access identifier name; matched against {@link SELECTOR_METHODS}.
          */

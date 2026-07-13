@@ -2,6 +2,7 @@ import type {
   CreateOnceRule,
   ESTree,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import { simpleBanRule, } from './_simple-ban-rule.ts';
 
@@ -66,7 +67,7 @@ const NO_NULLISH_UNION_MESSAGE: string = [
  * isNullishMember(member); // true for the `undefined` in `string | undefined`
  * ```
  */
-function isNullishMember(member: ESTree.TSType,): boolean {
+function isNullishMember(member: ForeignBorrowed<ESTree.TSType>,): boolean {
   return NULLISH_KEYWORD_TYPES.has(member.type,);
 }
 
@@ -136,7 +137,7 @@ export const noNullishUnion: CreateOnceRule = simpleBanRule({
     'Disallow union types containing `null` or `undefined` (`T | null`, `T | undefined`). Ranked fixes: optional object property/field `foo?: T`; local `if` guard and early return; boundary `nonNullishOrThrow`; a domain-specific `unique symbol` sentinel for this exact absence condition or distinct non-empty domain value; or a justified scoped disable for genuine external API mirrors.',
   messageId: 'forbidden',
   message: NO_NULLISH_UNION_MESSAGE,
-  shouldReport(node: ESTree.Node,): boolean {
+  shouldReport(node: ForeignBorrowed<ESTree.Node>,): boolean {
     if (node.type !== 'TSUnionType')
       return false;
     return node.types

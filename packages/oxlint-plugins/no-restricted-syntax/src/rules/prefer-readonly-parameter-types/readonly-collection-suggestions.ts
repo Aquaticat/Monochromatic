@@ -9,6 +9,7 @@ import type {
   Fixer,
   Suggestion,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from '../foreign-borrowed.ts';
 import type { ParameterDeclaration, } from 'typescript/unstable/ast';
 import {
   isIdentifier,
@@ -50,11 +51,11 @@ export function readonlyCollectionSuggestions({
   context,
   parameter,
   project,
-}: {
+}: ForeignBorrowed<{
   readonly context: Context;
   readonly parameter: ParameterDeclaration;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-}): Suggestion[] {
+}>): Suggestion[] {
   if ((parameter.type === undefined)
     || (!isTypeReferenceNode(parameter.type,))
     || (!isIdentifier(parameter.type
@@ -159,7 +160,7 @@ export function readonlyCollectionSuggestions({
   return [
     {
       desc: `Replace ${authoredType} with ${replacement}.`,
-      fix(fixer: Fixer,): ReturnType<Fixer['replaceTextRange']> {
+      fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,
           replacement,

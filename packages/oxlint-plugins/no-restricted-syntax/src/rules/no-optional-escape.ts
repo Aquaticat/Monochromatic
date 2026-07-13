@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 //region Constants
 
@@ -62,7 +63,7 @@ const ALLOWED = 'exactOptionalPropertyTypes is on; faking optionality at the typ
  * isNonLiteralMember(member); // true for `string`, false for `0`
  * ```
  */
-function isNonLiteralMember(member: ESTree.TSType,): boolean {
+function isNonLiteralMember(member: ForeignBorrowed<ESTree.TSType>,): boolean {
   return member.type
     !== 'TSLiteralType';
 }
@@ -79,7 +80,7 @@ function isNonLiteralMember(member: ESTree.TSType,): boolean {
  * isOptionalTupleElement(element); // true for the `T?` in `[T?]`
  * ```
  */
-function isOptionalTupleElement(element: ESTree.TSTupleElement,): boolean {
+function isOptionalTupleElement(element: ForeignBorrowed<ESTree.TSTupleElement>,): boolean {
   return element.type
     === 'TSOptionalType';
 }
@@ -104,7 +105,7 @@ function isOptionalTupleElement(element: ESTree.TSTupleElement,): boolean {
  * falsyLiteralMessageId(member); // 'emptyStringUnion' for `T | ""`
  * ```
  */
-function falsyLiteralMessageId(member: ESTree.TSLiteralType,): string | typeof NO_MATCH {
+function falsyLiteralMessageId(member: ForeignBorrowed<ESTree.TSLiteralType>,): string | typeof NO_MATCH {
   /**
    * Literal node carried by this union member.
    */
@@ -189,10 +190,10 @@ function unionMemberMessageId(
   {
     member,
     hasNonLiteral,
-  }: {
+  }: ForeignBorrowed<{
     readonly member: ESTree.TSType;
     readonly hasNonLiteral: boolean;
-  },
+  }>,
 ): string | typeof NO_MATCH {
   if (member.type
     === 'TSVoidKeyword') {
@@ -242,7 +243,7 @@ function unionMemberMessageId(
  * tupleMessageId(node); // 'emptyTuple' for `[]`
  * ```
  */
-function tupleMessageId(node: ESTree.TSTupleType,): string | typeof NO_MATCH {
+function tupleMessageId(node: ForeignBorrowed<ESTree.TSTupleType>,): string | typeof NO_MATCH {
   if (node.elementTypes
     .length
     === 0) {
@@ -287,7 +288,7 @@ function tupleMessageId(node: ESTree.TSTupleType,): string | typeof NO_MATCH {
  * typeReferenceMessageId(node); // 'partial' for `Partial<T>`
  * ```
  */
-function typeReferenceMessageId(node: ESTree.TSTypeReference,): string | typeof NO_MATCH {
+function typeReferenceMessageId(node: ForeignBorrowed<ESTree.TSTypeReference>,): string | typeof NO_MATCH {
   if (node.typeName
     .type
     !== 'Identifier') {
@@ -407,9 +408,21 @@ export const noOptionalEscape: CreateOnceRule = {
       mappedOptional: `A mapped type that adds optionality (\`{ [K in keyof T]?: ... }\`) is a hand-rolled \`Partial\`, reopening the holes exactOptionalPropertyTypes closes. ${  ALLOWED}`,
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      TSUnionType(node: ESTree.TSUnionType,): void {
+      TSUnionType(node: ForeignBorrowed<ESTree.TSUnionType>,): void {
         /**
          * Whether the union has a non-literal member, gating falsy-literal sentinels.
          */
@@ -431,7 +444,7 @@ export const noOptionalEscape: CreateOnceRule = {
           }
         }
       },
-      TSTupleType(node: ESTree.TSTupleType,): void {
+      TSTupleType(node: ForeignBorrowed<ESTree.TSTupleType>,): void {
         /**
          * Matched fake-optional tuple form, or the no-match sentinel.
          */
@@ -443,7 +456,7 @@ export const noOptionalEscape: CreateOnceRule = {
           },);
         }
       },
-      TSNamedTupleMember(node: ESTree.TSNamedTupleMember,): void {
+      TSNamedTupleMember(node: ForeignBorrowed<ESTree.TSNamedTupleMember>,): void {
         if (node.optional) {
           context.report({
             node,
@@ -451,7 +464,7 @@ export const noOptionalEscape: CreateOnceRule = {
           },);
         }
       },
-      TSTypeReference(node: ESTree.TSTypeReference,): void {
+      TSTypeReference(node: ForeignBorrowed<ESTree.TSTypeReference>,): void {
         /**
          * Matched fake-optional utility form, or the no-match sentinel.
          */
@@ -463,7 +476,7 @@ export const noOptionalEscape: CreateOnceRule = {
           },);
         }
       },
-      TSMappedType(node: ESTree.TSMappedType,): void {
+      TSMappedType(node: ForeignBorrowed<ESTree.TSMappedType>,): void {
         if (node.optional
           === true) {
           context.report({

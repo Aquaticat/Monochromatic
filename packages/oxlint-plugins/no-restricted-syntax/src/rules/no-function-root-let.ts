@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 /**
  * Checks whether a function body matches the helper-function shape:
@@ -19,7 +20,7 @@ import type {
  *
  * @returns `true` when the function shape matches the helper pattern.
  */
-function isHelperShape(body: ESTree.FunctionBody,): boolean {
+function isHelperShape(body: ForeignBorrowed<ESTree.FunctionBody>,): boolean {
   /**
    * Direct statements of the function body; scanned for the trailing `return <identifier>` shape.
    */
@@ -154,7 +155,19 @@ export const noFunctionRootLet: CreateOnceRule = {
         + '`oxlint-disable-next-line no-restricted-syntax/no-function-root-let` with a justification.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Inspects a function node for `let` declarations at body-root scope.
      *
@@ -164,7 +177,7 @@ export const noFunctionRootLet: CreateOnceRule = {
      *
      * @param node - Function declaration or expression AST node.
      */
-    function checkFunction(node: ESTree.Function,): void {
+    function checkFunction(node: ForeignBorrowed<ESTree.Function>,): void {
       /**
        * Parent node and body block; both required for IIFE-callee and root-let scans.
        */

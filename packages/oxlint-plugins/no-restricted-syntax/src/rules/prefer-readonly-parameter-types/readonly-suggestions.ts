@@ -9,6 +9,7 @@ import type {
   Fixer,
   Suggestion,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from '../foreign-borrowed.ts';
 import type {
   ParameterDeclaration,
   SourceFile,
@@ -114,11 +115,11 @@ function readonlyArraySuggestions({
   context,
   parameter,
   project,
-}: {
+}: ForeignBorrowed<{
   readonly context: Context;
   readonly parameter: ParameterDeclaration;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-},): Suggestion[] {
+}>,): Suggestion[] {
   if ((parameter.type === undefined) || (!isArrayTypeNode(parameter.type,)))
     return [];
   /**
@@ -172,7 +173,7 @@ function readonlyArraySuggestions({
     {
       desc: `Replace ${parameter.type
         .getText(sourceFile,)} with ${replacement}.`,
-      fix(fixer: Fixer,): ReturnType<Fixer['replaceTextRange']> {
+      fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,
           replacement,
@@ -197,11 +198,11 @@ function readonlyDeepSuggestions({
   context,
   parameter,
   project,
-}: {
+}: ForeignBorrowed<{
   readonly context: Context;
   readonly parameter: ParameterDeclaration;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-},): Suggestion[] {
+}>,): Suggestion[] {
   if (parameter.type === undefined)
     return [];
   /**
@@ -271,7 +272,7 @@ function readonlyDeepSuggestions({
   return [
     {
       desc: `Wrap ${authoredType} with ${localName}.`,
-      fix(fixer: Fixer,): ReturnType<Fixer['replaceTextRange']> {
+      fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,
           replacement,
@@ -301,11 +302,11 @@ export function readonlyParameterSuggestions({
   context,
   parameter,
   project,
-}: {
+}: ForeignBorrowed<{
   readonly context: Context;
   readonly parameter: ParameterDeclaration;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-},): Suggestion[] {
+}>,): Suggestion[] {
   return [
     ...readonlyArraySuggestions({
       context,

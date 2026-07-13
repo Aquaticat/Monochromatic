@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   NO_INIT_INFO,
@@ -37,17 +38,19 @@ import {
  * ```ts
  * reportMethodMutation({ context, call, info });
  * ```
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportMethodMutation(
   {
     context,
     call,
     info,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly call: ESTree.CallExpression;
     readonly info: InitInfo;
-  },
+  }>,
 ): boolean {
   if (call.optional)
     return false;
@@ -74,6 +77,8 @@ function reportMethodMutation(
   if (referencesIdentifier({
     value: call.arguments,
     name: info.name,
+    visitorKeys: context.sourceCode
+      .visitorKeys,
   },))
     return true;
   /**
@@ -111,17 +116,19 @@ function reportMethodMutation(
  * ```ts
  * reportObjectAssignMutation({ context, call, info });
  * ```
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportObjectAssignMutation(
   {
     context,
     call,
     info,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly call: ESTree.CallExpression;
     readonly info: InitInfo;
-  },
+  }>,
 ): void {
   if (info.kind !== 'object')
     return;
@@ -174,6 +181,8 @@ function reportObjectAssignMutation(
   if (referencesIdentifier({
     value: sourceArguments,
     name: info.name,
+    visitorKeys: context.sourceCode
+      .visitorKeys,
   },))
     return;
   context.report({
@@ -197,17 +206,19 @@ function reportObjectAssignMutation(
  * ```ts
  * reportPropertyAssignmentMutation({ context, assignment, info });
  * ```
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportPropertyAssignmentMutation(
   {
     context,
     assignment,
     info,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly assignment: ESTree.AssignmentExpression;
     readonly info: InitInfo;
-  },
+  }>,
 ): void {
   if (info.kind !== 'object')
     return;
@@ -235,6 +246,8 @@ function reportPropertyAssignmentMutation(
     && referencesIdentifier({
       value: left.property,
       name: info.name,
+      visitorKeys: context.sourceCode
+        .visitorKeys,
     },))
   {
     return;
@@ -242,6 +255,8 @@ function reportPropertyAssignmentMutation(
   if (referencesIdentifier({
     value: assignment.right,
     name: info.name,
+    visitorKeys: context.sourceCode
+      .visitorKeys,
   },))
     return;
   context.report({
@@ -263,6 +278,8 @@ function reportPropertyAssignmentMutation(
  *
  * @param node - Expression statement being visited.
  *
+ * @mutates context - Emits immediate-mutation diagnostics through foreign context.
+ *
  * @example
  * ```ts
  * checkExpressionStatement({ context, node });
@@ -272,10 +289,10 @@ function checkExpressionStatement(
   {
     context,
     node,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly node: ESTree.ExpressionStatement;
-  },
+  }>,
 ): void {
   /**
    * Previous sibling statement that may initialize this mutation target.
@@ -352,9 +369,21 @@ export const noImmediateMutation: CreateOnceRule = {
       forbidden: 'Move this immediate mutation into the initializer. Clone-plus-mutate Set/Map patterns are allowed when avoiding mutation would require a temporary spread array.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Creates immediate-mutation visitor.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits immediate-mutation diagnostics through foreign context.
+   *
+   * @example
+   * ```ts
+   * noImmediateMutation.createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      ExpressionStatement(node: ESTree.ExpressionStatement,): void {
+      ExpressionStatement(node: ForeignBorrowed<ESTree.ExpressionStatement>,): void {
         checkExpressionStatement({
           context,
           node,

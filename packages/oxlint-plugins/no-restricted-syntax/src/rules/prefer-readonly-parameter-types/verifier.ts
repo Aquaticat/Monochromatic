@@ -10,6 +10,7 @@ import type {
   Fixer,
   LineColumn,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from '../foreign-borrowed.ts';
 
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
@@ -59,11 +60,11 @@ function semanticLocation({
   context,
   start,
   end,
-}: {
+}: ForeignBorrowed<{
   readonly context: Context;
   readonly start: number;
   readonly end: number;
-},): {
+}>,): {
   start: LineColumn;
   end: LineColumn
 } {
@@ -99,16 +100,18 @@ function semanticLocation({
  * @param block - Shared parsed mutation block.
  *
  * @param commentBodyStartOffset - Absolute source start of comment body.
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportStaleContract({
   context,
   block,
   commentBodyStartOffset,
-}: {
+}: ForeignBorrowed<{
   readonly context: Context;
   readonly block: ParsedMutationContractBlock;
   readonly commentBodyStartOffset: number;
-},): void {
+}>,): void {
   /**
    * Absolute Oxlint range for complete stale block.
    */
@@ -151,7 +154,7 @@ function reportStaleContract({
     suggest: [
       {
         desc: `Remove stale @mutates ${block.parameterName} block.`,
-        fix(fixer: Fixer,): ReturnType<Fixer['replaceTextRange']> {
+        fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
           return fixer.replaceTextRange(
             range,
             replacement,
@@ -177,18 +180,20 @@ function reportStaleContract({
  * ```ts
  * verifyReadonlyCallable({ context, declaration, effectSummary, project });
  * ```
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 export function verifyReadonlyCallable({
   context,
   declaration,
   effectSummary,
   project,
-}: {
+}: ForeignBorrowed<{
   readonly context: Context;
   readonly declaration: EffectCallableDeclaration;
   readonly effectSummary: CallableEffectSummary;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-},): void {
+}>,): void {
   /**
    * Source file owning callable and authored comments.
    */

@@ -5,6 +5,7 @@ import type {
   Fixer,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import type { ErrorDetectionFixKind, } from './prefer-error-is-error.constants.ts';
 import {
@@ -42,6 +43,8 @@ import { buildErrorIsErrorCall, } from './prefer-error-is-error.syntax.ts';
  *   fixKind: 'fix',
  * });
  * ```
+ *
+ * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportReplacement(
   {
@@ -50,13 +53,13 @@ function reportReplacement(
     argumentText,
     negated,
     fixKind,
-  }: {
+  }: ForeignBorrowed<{
     readonly context: Context;
     readonly node: ESTree.Node;
     readonly argumentText: string;
     readonly negated: boolean;
     readonly fixKind: ErrorDetectionFixKind;
-  },
+  }>,
 ): void {
   /**
    * Canonical Error.isError call replacement.
@@ -73,7 +76,7 @@ function reportReplacement(
       suggest: [
         {
           desc: 'Replace with Error.isError(value).',
-          fix(fixer: Fixer,): ReturnType<Fixer['replaceText']> {
+          fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceText']> {
             return fixer.replaceText(
               node,
               replacement,
@@ -87,7 +90,7 @@ function reportReplacement(
   context.report({
     node,
     messageId: 'forbidden',
-    fix(fixer: Fixer,): ReturnType<Fixer['replaceText']> {
+    fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceText']> {
       return fixer.replaceText(
         node,
         replacement,
@@ -136,9 +139,21 @@ export const preferErrorIsError: CreateOnceRule = {
         'Use Error.isError(value) instead of legacy Error detection methods.',
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Creates legacy Error detector visitor.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits replacement diagnostics through foreign context.
+   *
+   * @example
+   * ```ts
+   * preferErrorIsError.createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      BinaryExpression(node: ESTree.BinaryExpression,): void {
+      BinaryExpression(node: ForeignBorrowed<ESTree.BinaryExpression>,): void {
         /**
          * `value instanceof Error` argument text, if matched.
          */
@@ -173,7 +188,7 @@ export const preferErrorIsError: CreateOnceRule = {
           fixKind: equalityReplacement.fixKind,
         },);
       },
-      CallExpression(node: ESTree.CallExpression,): void {
+      CallExpression(node: ForeignBorrowed<ESTree.CallExpression>,): void {
         /**
          * Node isNativeError detector argument text, if matched.
          */

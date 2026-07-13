@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from '../foreign-borrowed.ts';
 
 import {
   isSymbolCall,
@@ -82,7 +83,19 @@ export const noLowInformationSymbolDescription: CreateOnceRule = {
         `Symbol description is a 3-word phrase with no specificity marker and no past-tense or continuous verb. Add a concrete technical token or describe the action, for example "average divisor is zero". ${IMMEDIATE_UNDERSTANDABILITY_HINT}`,
     },
   },
-  createOnce(context: Context,): VisitorWithHooks {
+  /**
+   * Handles foreign Oxlint callback.
+   *
+   * @param context - Foreign rule context receiving diagnostics.
+   *
+   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   *
+   * @example
+   * ```ts
+   * createOnce(context);
+   * ```
+   */
+  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Reports a Symbol or Symbol.for call, detected via {@link isSymbolCall}
      * and {@link isSymbolForCall}, whose static description (read via
@@ -91,7 +104,7 @@ export const noLowInformationSymbolDescription: CreateOnceRule = {
      *
      * @param node - call expression visited by oxlint
      */
-    function checkCallExpression(node: ESTree.CallExpression,): void {
+    function checkCallExpression(node: ForeignBorrowed<ESTree.CallExpression>,): void {
       if ((!isSymbolCall({ node, },)) && (!isSymbolForCall({ node, },)))
         return;
       /**

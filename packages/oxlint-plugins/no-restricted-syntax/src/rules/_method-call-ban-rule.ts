@@ -4,6 +4,7 @@ import type {
   ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ForeignBorrowed, } from './foreign-borrowed.ts';
 
 import {
   getStaticCallMemberName,
@@ -55,9 +56,21 @@ export function methodCallBanRule({
         forbidden: message,
       },
     },
-    createOnce(context: Context,): VisitorWithHooks {
+    /**
+     * Handles foreign Oxlint callback.
+     *
+     * @param context - Foreign rule context receiving diagnostics.
+     *
+     * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+     *
+     * @example
+     * ```ts
+     * createOnce(context);
+     * ```
+     */
+    createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
       return {
-        CallExpression(node: ESTree.CallExpression,): void {
+        CallExpression(node: ForeignBorrowed<ESTree.CallExpression>,): void {
           /**
            * Static member name for `x.methodName()` calls.
            */

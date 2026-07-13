@@ -4,7 +4,10 @@
  * @module
  */
 
-import type { Checker, Project, } from 'typescript/unstable/sync';
+import type {
+  Checker,
+  Project,
+} from 'typescript/unstable/sync';
 import type { CallExpression, } from 'typescript/unstable/ast';
 import {
   isIdentifier,
@@ -34,9 +37,15 @@ import {
 } from './effect-summary-model.ts';
 import {
   addOpaqueEffect,
+  ALL_PACKAGED_PROPERTIES,
   callableDeclaration,
   parameterIndex,
+  parameterIndexes,
 } from './effect-call-resolution.ts';
+import {
+  MUTATION_CONTRACT_UNAVAILABLE,
+  mutationContractsForDeclaration,
+} from './mutation-contract-query.ts';
 import { addIntrinsicCallbackEffects, } from './effect-intrinsic-callback.ts';
 
 /**
@@ -91,19 +100,22 @@ export function inspectEffectCall({
         /**
          * Source parameter passed to callback argument, when direct.
          */
-        const sourceParameterIndex = parameterIndex({
+        const sourceParameterIndexes = parameterIndexes({
           checker,
           bindingOriginBySymbolId,
           node: argument,
+          includedPropertyNames: ALL_PACKAGED_PROPERTIES,
         },);
-        if (sourceParameterIndex !== PARAMETER_INDEX_UNAVAILABLE) {
+        sourceParameterIndexes.forEach(function callbackSource(
+          sourceParameterIndex,
+        ): void {
           summary.relations
             .push({
               callbackParameterIndex,
               callbackArgumentIndex,
               sourceParameterIndex,
             },);
-        }
+        },);
       },);
     return;
   }
@@ -172,15 +184,19 @@ export function inspectEffectCall({
              * Call argument named by intrinsic target.
              */
             const argument = call.arguments[target.index];
-            addEffectIndex({
-              target: summary.directMutated,
-              value: argument === undefined
-                ? PARAMETER_INDEX_UNAVAILABLE
-                : parameterIndex({
-                  checker,
-                  bindingOriginBySymbolId,
-                  node: argument,
-                },),
+            if (argument === undefined)
+              return;
+            parameterIndexes({
+              checker,
+              bindingOriginBySymbolId,
+              node: argument,
+              includedPropertyNames: ALL_PACKAGED_PROPERTIES,
+            },)
+              .forEach(function intrinsicArgumentOrigin(origin,): void {
+              addEffectIndex({
+                target: summary.directMutated,
+                value: origin,
+              },);
             },);
           },);
         if (effect.callbacks !== undefined) {
@@ -231,15 +247,44 @@ export function inspectEffectCall({
   /**
    * Caller parameter roots corresponding to call arguments.
    */
-  const argumentIndexes = call.arguments
-    .map(function argumentIndex(argument,) {
-      return parameterIndex({
+  const allArgumentIndexes = call.arguments
+    .map(function argumentIndex(argument,): readonly number[] {
+      return parameterIndexes({
         checker,
         bindingOriginBySymbolId,
         node: argument,
+        includedPropertyNames: ALL_PACKAGED_PROPERTIES,
       },);
     },);
   if (callee !== OWNED_CALLABLE_UNAVAILABLE) {
+    /**
+     * Authored mutation contracts identifying destructured callee targets.
+     */
+    const contracts = mutationContractsForDeclaration({
+      declaration: callee,
+      sourceFile: callee.getSourceFile(),
+    },);
+    /**
+     * Object property names that callee declares as mutable.
+     */
+    const mutatedPropertyNames = contracts === MUTATION_CONTRACT_UNAVAILABLE
+      ? ALL_PACKAGED_PROPERTIES
+      : new Set(contracts.blocks
+        .map(function mutationTarget(block,): string {
+          return block.parameterName;
+        },),);
+    /**
+     * Caller origins narrowed to declared destructured mutation targets.
+     */
+    const argumentIndexes = call.arguments
+      .map(function ownedArgumentIndex(argument,): readonly number[] {
+        return parameterIndexes({
+          checker,
+          bindingOriginBySymbolId,
+          node: argument,
+          includedPropertyNames: mutatedPropertyNames,
+        },);
+      },);
     summary.calls
       .push({
         calleeKey: callableKey(callee,),
@@ -283,8 +328,8 @@ export function inspectEffectCall({
       : PARAMETER_INDEX_UNAVAILABLE,
     provenance: opaqueProvenance,
   },);
-  argumentIndexes.forEach(function opaqueArgument(
-    index,
+  allArgumentIndexes.forEach(function opaqueArgument(
+    indexes,
     argumentIndex,
   ): void {
     /**
@@ -297,10 +342,12 @@ export function inspectEffectCall({
         node: argument,
       },)))
       return;
-    addOpaqueEffect({
-      summary,
-      affectedParameterIndex: index,
-      provenance: opaqueProvenance,
+    indexes.forEach(function opaqueArgumentOrigin(index,): void {
+      addOpaqueEffect({
+        summary,
+        affectedParameterIndex: index,
+        provenance: opaqueProvenance,
+      },);
     },);
   },);
 }

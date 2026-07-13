@@ -173,6 +173,26 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...[
     'Map',
     'ReadonlyMap',
+    'Set',
+    'ReadonlySet',
+  ].flatMap(function collectionIteratorObservations(ownerType,): readonly IntrinsicEffectEntry[] {
+    return [
+      'entries',
+      'keys',
+      'values',
+    ].map(function collectionIteratorObservation(member,): IntrinsicEffectEntry {
+      return {
+        provenance: { kind: 'ecmascript', },
+        ownerType,
+        member,
+        targets: [],
+        evidence: 'ECMA-262 commit 1355a23e collection iterator operations',
+      };
+    },);
+  },),
+  ...[
+    'Map',
+    'ReadonlyMap',
   ].map(function mapGetObservation(ownerType,): IntrinsicEffectEntry {
     return {
       provenance: { kind: 'ecmascript', },

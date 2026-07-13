@@ -69,7 +69,7 @@ export const NO_EFFECT_SUMMARY: unique symbol = Symbol(
  *
  * @returns whether target changed.
  *
- * @mutates target - Adds caller parameter indexes carrying callee effects.
+ * @mutates target - Adds caller indexes affected by callee effects.
  */
 function propagateCalleeIndexes({
   target,
@@ -80,22 +80,23 @@ function propagateCalleeIndexes({
   readonly edge: CallEdge;
   readonly calleeIndexes: ReadonlySet<number>;
 },): boolean {
-  return [...calleeIndexes,].reduce(
-    function propagate(
-    changed,
-    calleeIndex,
-  ): boolean {
+  /**
+   * Whether any caller effect index was added.
+   */
+  let changed = false;
+  for (const calleeIndex of calleeIndexes) {
     /**
-     * Caller parameter passed to affected callee parameter.
+     * Caller parameters packaged into affected callee parameter.
      */
-    const callerIndex = edge.arguments[calleeIndex];
-    return addEffectIndex({
-      target,
-      value: callerIndex ?? PARAMETER_INDEX_UNAVAILABLE,
-    },) || changed;
-  },
-    false,
-  );
+    const callerIndexes = edge.arguments[calleeIndex] ?? [];
+    for (const callerIndex of callerIndexes) {
+      changed = addEffectIndex({
+        target,
+        value: callerIndex,
+      },) || changed;
+    }
+  }
+  return changed;
 }
 
 /**
@@ -151,7 +152,7 @@ function addOpaqueProvenance({
  *
  * @returns whether caller provenance changed.
  *
- * @mutates summary - Adds transitive opaque provenance.
+ * @mutates summary - Adds caller opaque provenance inherited from callee.
  */
 function propagateOpaqueProvenance({
   summary,
@@ -162,29 +163,30 @@ function propagateOpaqueProvenance({
   readonly calleeSummary: MutableEffectSummary;
   readonly edge: CallEdge;
 },): boolean {
-  return [...calleeSummary.opaque,].reduce(
-    function propagate(
-      changed,
-      calleeIndex,
-    ): boolean {
+  /**
+   * Whether any caller provenance fact was added.
+   */
+  let changed = false;
+  for (const calleeIndex of calleeSummary.opaque) {
     /**
-     * Caller parameter passed to opaque callee parameter.
+     * Caller parameters packaged into opaque callee parameter.
      */
-    const callerIndex = edge.arguments[calleeIndex] ?? PARAMETER_INDEX_UNAVAILABLE;
+    const callerIndexes = edge.arguments[calleeIndex] ?? [];
     /**
      * Provenance facts attached to opaque callee parameter.
      */
     const provenanceFacts = calleeSummary.opaqueProvenanceByParameter
       .get(calleeIndex,)
       ?? new Set<string>();
-    return addOpaqueProvenance({
-      target: summary.opaqueProvenanceByParameter,
-      parameterIndex: callerIndex,
-      provenanceFacts,
-    },) || changed;
-  },
-    false,
-  );
+    for (const callerIndex of callerIndexes) {
+      changed = addOpaqueProvenance({
+        target: summary.opaqueProvenanceByParameter,
+        parameterIndex: callerIndex,
+        provenanceFacts,
+      },) || changed;
+    }
+  }
+  return changed;
 }
 
 /**
@@ -213,75 +215,82 @@ function propagateCallbackRelations({
   readonly calleeSummary: MutableEffectSummary;
   readonly edge: CallEdge;
 },): boolean {
-  return calleeSummary.relations
-    .reduce(
-      function propagateRelation(
-    changed,
-    relation,
-  ): boolean {
+  /**
+   * Whether any callback relation changed caller summary.
+   */
+  let changed = false;
+  for (const relation of calleeSummary.relations) {
     /**
      * Callback declaration key passed to callback parameter.
      */
     const callbackKey = edge.callbackKeys[relation.callbackParameterIndex];
     if ((callbackKey === undefined)
       || (callbackKey === OWNED_CALLABLE_UNAVAILABLE))
-      return changed;
+      continue;
     /**
      * Summary for passed callback declaration.
      */
     const callbackSummary = summaries.get(callbackKey,);
     if (callbackSummary === undefined)
-      return changed;
+      continue;
     /**
-     * Caller parameter passed as callback source value.
+     * Caller parameters packaged as callback source value.
      */
-    const sourceCallerIndex = edge.arguments[relation.sourceParameterIndex]
-      ?? PARAMETER_INDEX_UNAVAILABLE;
+    const sourceCallerIndexes = edge.arguments[relation.sourceParameterIndex]
+      ?? [];
     /**
-     * Whether mutation propagation changed caller summary.
+     * Whether callback argument carries mutation effect.
      */
-    const mutationChanged = callbackSummary.mutated
-      .has(relation.callbackArgumentIndex,)
-      && addEffectIndex({
-        target: summary.mutated,
-        value: sourceCallerIndex,
-      },);
+    const callbackArgumentMutated = callbackSummary.mutated
+      .has(relation.callbackArgumentIndex,);
     /**
-     * Whether opaque propagation changed caller summary.
+     * Whether callback argument carries opaque effect.
      */
     const callbackArgumentOpaque = callbackSummary.opaque
       .has(relation.callbackArgumentIndex,);
-    /**
-     * Whether opaque propagation changed caller summary.
-     */
-    const opaqueChanged = callbackArgumentOpaque
-      && addEffectIndex({
-        target: summary.opaque,
-        value: sourceCallerIndex,
-      },);
-    /**
-     * Whether callback opaque provenance changed caller summary.
-     */
-    const opaqueProvenanceChanged = callbackArgumentOpaque
-      && addOpaqueProvenance({
-        target: summary.opaqueProvenanceByParameter,
-        parameterIndex: sourceCallerIndex,
-        provenanceFacts: callbackSummary.opaqueProvenanceByParameter
-          .get(relation.callbackArgumentIndex,)
-          ?? new Set<string>(),
-      },);
-    return changed || mutationChanged
-      || opaqueChanged
-      || opaqueProvenanceChanged;
-  },
-      false,
-    );
+    for (const sourceCallerIndex of sourceCallerIndexes) {
+      /**
+       * Whether mutation propagation changed caller summary.
+       */
+      const mutationChanged = callbackArgumentMutated
+        && addEffectIndex({
+          target: summary.mutated,
+          value: sourceCallerIndex,
+        },);
+      /**
+       * Whether opaque propagation changed caller summary.
+       */
+      const opaqueChanged = callbackArgumentOpaque
+        && addEffectIndex({
+          target: summary.opaque,
+          value: sourceCallerIndex,
+        },);
+      /**
+       * Whether callback opaque provenance changed caller summary.
+       */
+      const opaqueProvenanceChanged = callbackArgumentOpaque
+        && addOpaqueProvenance({
+          target: summary.opaqueProvenanceByParameter,
+          parameterIndex: sourceCallerIndex,
+          provenanceFacts: callbackSummary.opaqueProvenanceByParameter
+            .get(relation.callbackArgumentIndex,)
+            ?? new Set<string>(),
+        },);
+      changed = mutationChanged
+        || opaqueChanged
+        || opaqueProvenanceChanged
+        || changed;
+    }
+  }
+  return changed;
 }
 
 /**
  * Propagates direct, transitive, recursive, and higher-order effects to fixed point.
  *
  * @param summaries - Mutable summaries keyed by declaration.
+ *
+ * @mutates summaries - Propagates call effects to fixed point.
  */
 function propagateEffects(
   summaries: ReadonlyMap<string, MutableEffectSummary>,
@@ -308,38 +317,46 @@ function propagateEffects(
   while (state.changed && (state.pass <= effectBitCount)) {
     state.changed = false;
     state.pass++;
-    summaries.forEach(function propagateSummary(summary,): void {
-      summary.calls
-        .forEach(function propagateCall(edge,): void {
-        /**
-         * Summary for owned callee edge.
-         */
-        const calleeSummary = summaries.get(edge.calleeKey,);
-        if (calleeSummary === undefined)
-          return;
-        state.changed = propagateCalleeIndexes({
-          target: summary.mutated,
-          edge,
-          calleeIndexes: calleeSummary.mutated,
-        },) || state.changed;
-        state.changed = propagateCalleeIndexes({
-          target: summary.opaque,
-          edge,
-          calleeIndexes: calleeSummary.opaque,
-        },) || state.changed;
-        state.changed = propagateOpaqueProvenance({
-          summary,
-          calleeSummary,
-          edge,
-        },) || state.changed;
-        state.changed = propagateCallbackRelations({
-          summaries,
-          summary,
-          calleeSummary,
-          edge,
-        },) || state.changed;
+    summaries.forEach(
+      /**
+       * Propagates every owned call edge from one caller summary.
+       *
+       * @param summary - Caller summary receiving transitive effects.
+       *
+       * @mutates summary - Adds callee and callback effects.
+       */
+      function propagateSummary(summary,): void {
+        summary.calls
+          .forEach(function propagateCall(edge,): void {
+            /**
+             * Summary for owned callee edge.
+             */
+            const calleeSummary = summaries.get(edge.calleeKey,);
+            if (calleeSummary === undefined)
+              return;
+            state.changed = propagateCalleeIndexes({
+              target: summary.mutated,
+              edge,
+              calleeIndexes: calleeSummary.mutated,
+            },) || state.changed;
+            state.changed = propagateCalleeIndexes({
+              target: summary.opaque,
+              edge,
+              calleeIndexes: calleeSummary.opaque,
+            },) || state.changed;
+            state.changed = propagateOpaqueProvenance({
+              summary,
+              calleeSummary,
+              edge,
+            },) || state.changed;
+            state.changed = propagateCallbackRelations({
+              summaries,
+              summary,
+              calleeSummary,
+              edge,
+            },) || state.changed;
+          },);
       },);
-    },);
   }
 }
 

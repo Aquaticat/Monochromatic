@@ -25,10 +25,23 @@ const SOURCE = readFileSync(
   'utf8',
 );
 
+/** Project-owned foreign marker fixture source. */
+const FOREIGN_FIXTURE_PATH = fileURLToPath(new URL(
+  'rules/ast-shared.ts',
+  import.meta.url,
+),);
+
+/** Current foreign marker fixture text. */
+const FOREIGN_SOURCE = readFileSync(
+  FOREIGN_FIXTURE_PATH,
+  'utf8',
+);
+
 await describe({
   name: classifyReadonlyType.name,
   concurrency: 1,
   children: [
+    ...[
       {
         parameter: 'mutableObject:',
         expected: 'mutable',
@@ -92,4 +105,26 @@ await describe({
         },
       },);
     },),
+    it({
+      name: 'classifies exact foreign borrowed marker as capability',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: FOREIGN_FIXTURE_PATH,
+          sourceText: FOREIGN_SOURCE,
+          hasBOM: false,
+        },);
+        const parameterNode = session.nodeAtOffset(FOREIGN_SOURCE.indexOf('{ call, }: ForeignBorrowed',),);
+        const type = session.checker.getTypeAtLocation(parameterNode,);
+        if (type === undefined)
+          throw new Error('Expected semantic foreign borrowed type.',);
+        const classification = classifyReadonlyType({
+          checker: session.checker,
+          project: session.project,
+          type,
+        },);
+        closeSemanticBridge();
+        expect(classification.kind,).toBe('opaque-capability',);
+      },
+    },),
+  ],
 },);
