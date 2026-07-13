@@ -27,6 +27,7 @@ import {
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
 import { isAuditedObservationalCallable, } from './effect-call-observation.ts';
+import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
   callableKey,
@@ -407,6 +408,11 @@ export function inspectEffectCall({
   addOpaqueEffect({
     summary,
     affectedParameterIndex: isPropertyAccessExpression(call.expression,)
+      && expressionCanCarryMutableState({
+        checker,
+        node: call.expression
+          .expression,
+      },)
       ? parameterIndex({
         checker,
         bindingOriginBySymbolId,
@@ -416,7 +422,20 @@ export function inspectEffectCall({
       : PARAMETER_INDEX_UNAVAILABLE,
     provenance: opaqueProvenance,
   },);
-  argumentIndexes.forEach(function opaqueArgument(index,): void {
+  argumentIndexes.forEach(function opaqueArgument(
+    index,
+    argumentIndex,
+  ): void {
+    /**
+     * Argument expression corresponding to indexed parameter origin.
+     */
+    const argument = call.arguments[argumentIndex];
+    if ((argument === undefined)
+      || (!expressionCanCarryMutableState({
+        checker,
+        node: argument,
+      },)))
+      return;
     addOpaqueEffect({
       summary,
       affectedParameterIndex: index,

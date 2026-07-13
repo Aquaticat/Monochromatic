@@ -322,6 +322,17 @@ export function opaqueSemanticEffect(opaqueState: { readonly value: string; },):
 }
 
 /**
+ * Passes primitive through otherwise opaque callable without mutable state.
+ *
+ * @param value - Primitive value unavailable for caller-observable mutation.
+ *
+ * @returns serialized primitive.
+ */
+export function primitiveOpaqueArgumentEffect(value: string,): string {
+  return JSON.stringify(value,);
+}
+
+/**
  * Propagates opaque boundary through owned helper call.
  *
  * @param opaqueState - State forwarded to opaque helper.
