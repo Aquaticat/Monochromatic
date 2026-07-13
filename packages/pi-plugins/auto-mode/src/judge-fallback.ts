@@ -5,10 +5,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import {
-  budgetModelSlug,
-  NoBudgetModelError,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { NoBudgetModelError, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 import type {
   BudgetModel,
@@ -32,18 +29,47 @@ const l = tagged({
  * Successful fallback attempt paired with its source model for winner logging.
  */
 type FallbackJudgeResult = {
-  /** Judge that supplied the verdict. */
+  /**
+   * Judge that supplied the verdict.
+   */
   readonly judge: BudgetModel;
-  /** Parsed verdict that settled the fallback race. */
+  /**
+   * Parsed verdict that settled the fallback race.
+   */
   readonly verdict: Verdict;
 };
+
+/**
+ * Render canonical identity of a locally selected judge model.
+ *
+ * This local adapter reads only immutable identity fields, rather than handing
+ * Pi's mutable model record to external model-selection helpers.
+ *
+ * @param judge - selected judge model plus its authentication details
+ *
+ * @returns provider and model identifier separated by a slash
+ *
+ * @example
+ * ```typescript
+ * judgeModelSlug({ judge });
+ * ```
+ */
+function judgeModelSlug(
+  {
+    judge,
+  }: {
+    readonly judge: Readonly<BudgetModel>;
+  },
+): string {
+  return `${judge.model.provider}/${judge.model.id}`;
+}
 
 /**
  * Convert an unknown thrown value to stable diagnostic text.
  *
  * @param error - thrown value to describe
  *
- * @returns error message or stringified thrown value
+ * @returns error message or stable category for non-Error values
  *
  * @example
  * ```typescript
@@ -53,9 +79,25 @@ type FallbackJudgeResult = {
 function describeError(
   error: unknown,
 ): string {
-  return Error.isError(error,)
-    ? error.message
-    : String(error,);
+  if (Error.isError(error,))
+    return error.message;
+  if ((typeof error) === 'string')
+    return error;
+  if ((typeof error) === 'number')
+    return `${error}`;
+  if ((typeof error) === 'boolean')
+    return `${error}`;
+  if ((typeof error) === 'bigint')
+    return `${error}n`;
+  if (error === null)
+    return 'null';
+  if (error === undefined)
+    return 'undefined';
+  if ((typeof error) === 'symbol')
+    return 'symbol';
+  if ((typeof error) === 'function')
+    return 'function';
+  return 'non-Error object';
 }
 
 /**
@@ -118,7 +160,7 @@ async function resolveFreshFallback(
   /**
    * Canonical candidate identity used to prevent duplicate provider calls.
    */
-  const fallbackModelSlug = budgetModelSlug(fallbackJudge.model,);
+  const fallbackModelSlug = judgeModelSlug({ judge: fallbackJudge, },);
   if (excludedModelSlugs.includes(fallbackModelSlug,)) {
     throw new Error(
       `Fallback judge resolver selected an excluded model: ${fallbackModelSlug}`,
@@ -158,7 +200,7 @@ async function resolveFallbackRace(
   /**
    * Primary model identity excluded from every fallback selection.
    */
-  const firstModelSlug = budgetModelSlug(firstJudge.model,);
+  const firstModelSlug = judgeModelSlug({ judge: firstJudge, },);
   /**
    * First contender, selected without starting any fallback transport.
    */
@@ -173,7 +215,7 @@ async function resolveFallbackRace(
     const secondFallback = await resolveFreshFallback({
       excludedModelSlugs: [
         firstModelSlug,
-        budgetModelSlug(firstFallback.model,),
+        judgeModelSlug({ judge: firstFallback, },),
       ],
       resolveFallbackJudge,
     },);
@@ -215,7 +257,10 @@ async function runFallbackJudge(
   }: {
     readonly judge: BudgetModel;
     readonly callJudgeAttempt: (
-      options: { readonly judge: BudgetModel; readonly abortSignal?: AbortSignal; },
+      options: {
+        readonly judge: BudgetModel;
+        readonly abortSignal?: AbortSignal;
+      },
     ) => Promise<Verdict>;
     readonly abortSignal: AbortSignal;
   },
@@ -230,7 +275,7 @@ async function runFallbackJudge(
   /**
    * Canonical contender identity used in logs and errors.
    */
-  const modelSlug = budgetModelSlug(judge.model,);
+  const modelSlug = judgeModelSlug({ judge, },);
   innerL.debug(`starting fallback judge contender ${modelSlug}`,);
   try {
     return {
@@ -291,7 +336,10 @@ async function callJudgeWithFallback(
       options: { readonly excludedModelSlugs: readonly string[]; },
     ) => Promise<BudgetModel>;
     readonly callJudgeAttempt: (
-      options: { readonly judge: BudgetModel; readonly abortSignal?: AbortSignal; },
+      options: {
+        readonly judge: BudgetModel;
+        readonly abortSignal?: AbortSignal;
+      },
     ) => Promise<Verdict>;
   },
 ): Promise<Verdict> {
@@ -305,7 +353,7 @@ async function callJudgeWithFallback(
   /**
    * Canonical primary model identity used in diagnostics.
    */
-  const firstModelSlug = budgetModelSlug(firstJudge.model,);
+  const firstModelSlug = judgeModelSlug({ judge: firstJudge, },);
   try {
     return await callJudgeAttempt({ judge: firstJudge, },);
   }
@@ -341,7 +389,9 @@ async function callJudgeWithFallback(
     /**
      * Concurrent complete attempts, one per already-distinct fallback contender.
      */
-    const fallbackAttempts = fallbackJudges.map(function startFallbackJudge(judge,) {
+    const fallbackAttempts = fallbackJudges.map(function startFallbackJudge(
+      judge: Readonly<BudgetModel>,
+    ) {
       return runFallbackJudge({
         judge,
         callJudgeAttempt,
@@ -354,9 +404,11 @@ async function callJudgeWithFallback(
        */
       const winner = await Promise.any(fallbackAttempts,);
       raceController.abort();
-      innerL.debug(
-        `fallback judge race winner: ${budgetModelSlug(winner.judge.model,)}`,
-      );
+      /**
+       * Canonical identity of contender that returned the first valid verdict.
+       */
+      const winnerModelSlug = judgeModelSlug({ judge: winner.judge, },);
+      innerL.debug(`fallback judge race winner: ${winnerModelSlug}`,);
       return winner.verdict;
     }
     catch (fallbackRaceError) {
@@ -364,8 +416,10 @@ async function callJudgeWithFallback(
       throw new Error(
         `Judge model ${firstModelSlug} failed all retries: ${describeError(firstError,)}; fallback judge race models ${
           fallbackJudges
-            .map(function fallbackSlug(judge,) {
-              return budgetModelSlug(judge.model,);
+            .map(function fallbackSlug(
+              judge: Readonly<BudgetModel>,
+            ) {
+              return judgeModelSlug({ judge, },);
             },)
             .join(', ')
         } also failed all retries: ${describeRaceError(fallbackRaceError,)}`,

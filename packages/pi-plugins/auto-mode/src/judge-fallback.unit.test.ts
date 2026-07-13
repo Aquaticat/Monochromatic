@@ -228,7 +228,7 @@ await describe({
       name: 'aborts losing contender after another contender returns a verdict',
       fn: async function abortsLosingContender() {
         /** Whether the slower contender received the winner cancellation signal. */
-        let loserObservedAbort = false;
+        const loserAbortObservation = { observed: false, };
         /** Initially selected judge. */
         const firstJudge = judgeFixture({ id: 'first', },);
         /** Fast contender that supplies the race verdict. */
@@ -260,7 +260,7 @@ await describe({
               abortSignal,
               'abort',
             );
-            loserObservedAbort = abortSignal.aborted;
+            loserAbortObservation.observed = abortSignal.aborted;
             throw new Error('losing contender cancelled',);
           },
         },);
@@ -268,7 +268,7 @@ await describe({
         await Promise.resolve();
         await Promise.resolve();
         expect(result,).toEqual(APPROVE_VERDICT,);
-        expect(loserObservedAbort,).toBe(true,);
+        expect(loserAbortObservation.observed,).toBe(true,);
       },
     },),
     it({

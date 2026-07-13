@@ -379,10 +379,12 @@ async function callJudge(
    */
   const signal = abortSignal === undefined
     ? controller.signal
-    : AbortSignal.any([
-      controller.signal,
-      abortSignal,
-    ],);
+    : (function mergeFallbackAbortSignals(): AbortSignal {
+      return AbortSignal.any([
+        controller.signal,
+        abortSignal,
+      ],);
+    })();
 
   /**
    * API-specific forced tool-call selector for the initial judge invocation.
