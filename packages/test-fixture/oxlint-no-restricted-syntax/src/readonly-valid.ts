@@ -1,3 +1,5 @@
+import { opaqueExternalMutation, } from './readonly-external.fixture.js';
+
 /**
  * Reads honestly readonly data.
  *
@@ -40,3 +42,25 @@ export type ReadonlyFixtureMutator = {
    */
   (state: { value: string; },): void;
 };
+
+/**
+ * Documents uncatalogued external effect at local adapter boundary.
+ *
+ * @param state - State forwarded to external mutation boundary.
+ *
+ * @mutates state - Delegates caller state to opaqueExternalMutation.
+ */
+export function readonlyExternalAdapter(state: { value: string; },): void {
+  opaqueExternalMutation(state,);
+}
+
+/**
+ * Propagates verified local adapter effect to caller contract.
+ *
+ * @param state - State forwarded through verified adapter.
+ *
+ * @mutates state - Delegates caller state to readonlyExternalAdapter.
+ */
+export function callReadonlyExternalAdapter(state: { value: string; },): void {
+  readonlyExternalAdapter(state,);
+}

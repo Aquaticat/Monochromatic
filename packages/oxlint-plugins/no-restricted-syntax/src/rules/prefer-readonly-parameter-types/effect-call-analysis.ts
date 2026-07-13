@@ -127,6 +127,46 @@ function callableDeclaration({
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Mutable summary is intentional effect accumulator. */
+/**
+ * Records unresolved external effect and callable provenance.
+ *
+ * @param summary - Callable summary receiving opaque effect.
+ *
+ * @param affectedParameterIndex - Affected source parameter index.
+ *
+ * @param provenance - Authored external call expression text.
+ *
+ * @mutates summary - Adds opaque index and provenance evidence.
+ */
+function addOpaqueEffect({
+  summary,
+  affectedParameterIndex,
+  provenance,
+}: {
+  readonly summary: MutableEffectSummary;
+  readonly affectedParameterIndex: number | typeof PARAMETER_INDEX_UNAVAILABLE;
+  readonly provenance: string;
+},): void {
+  if (affectedParameterIndex === PARAMETER_INDEX_UNAVAILABLE)
+    return;
+  summary.directOpaque
+    .add(affectedParameterIndex,);
+  /**
+   * Existing provenance facts for parameter, or new accumulator.
+   */
+  const provenanceFacts = summary.opaqueProvenanceByParameter
+    .get(affectedParameterIndex,)
+    ?? new Set<string>();
+  provenanceFacts.add(provenance,);
+  summary.opaqueProvenanceByParameter
+    .set(
+      affectedParameterIndex,
+      provenanceFacts,
+    );
+}
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
+
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Project, Checker, and CallExpression mirror TypeScript semantic identities required for call effects. */
 /**
  * Classifies one call as callback relation, intrinsic effect, owned edge, or opaque boundary.
@@ -325,9 +365,14 @@ export function inspectEffectCall({
     return;
   }
 
-  addEffectIndex({
-    target: summary.directOpaque,
-    value: isPropertyAccessExpression(call.expression,)
+  /**
+   * Authored unresolved call target retained for adapter verification.
+   */
+  const opaqueProvenance = call.expression
+    .getText();
+  addOpaqueEffect({
+    summary,
+    affectedParameterIndex: isPropertyAccessExpression(call.expression,)
       ? parameterIndex({
         checker,
         bindingOriginBySymbolId,
@@ -335,11 +380,13 @@ export function inspectEffectCall({
           .expression,
       },)
       : PARAMETER_INDEX_UNAVAILABLE,
+    provenance: opaqueProvenance,
   },);
   argumentIndexes.forEach(function opaqueArgument(index,): void {
-    addEffectIndex({
-      target: summary.directOpaque,
-      value: index,
+    addOpaqueEffect({
+      summary,
+      affectedParameterIndex: index,
+      provenance: opaqueProvenance,
     },);
   },);
 }

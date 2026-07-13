@@ -23,6 +23,7 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
+import { applyVerifiedAdapterContracts, } from './effect-adapter.ts';
 import { inspectEffectCall, } from './effect-call-analysis.ts';
 import {
   MUTATION_CONTRACT_UNAVAILABLE,
@@ -274,6 +275,7 @@ export function directEffectSummary({
     bindingOriginBySymbolId,
     directMutated: new Set(),
     directOpaque: new Set(),
+    opaqueProvenanceByParameter: new Map(),
     mutated: new Set(),
     opaque: new Set(),
     relations: [],
@@ -366,6 +368,10 @@ export function directEffectSummary({
         summary,
       },);
     }
+  },);
+  applyVerifiedAdapterContracts({
+    declaration,
+    summary,
   },);
   summary.directMutated
     .forEach(function seed(index,): void {

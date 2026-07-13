@@ -32,6 +32,7 @@ import {
 export type CallableEffectSummary = {
   readonly mutatedParameterIndexes: ReadonlySet<number>;
   readonly opaqueParameterIndexes: ReadonlySet<number>;
+  readonly opaqueProvenanceByParameter: ReadonlyMap<number, ReadonlySet<string>>;
 };
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- FunctionLikeDeclaration mirrors TypeScript semantic identity required for exact lookup. */
@@ -294,6 +295,7 @@ export function buildEffectSummaryIndex({
       return {
         mutatedParameterIndexes: summary.mutated,
         opaqueParameterIndexes: summary.opaque,
+        opaqueProvenanceByParameter: summary.opaqueProvenanceByParameter,
       };
     },
   };

@@ -104,6 +104,7 @@ export type MutableEffectSummary = {
   readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
   readonly directMutated: Set<number>;
   readonly directOpaque: Set<number>;
+  readonly opaqueProvenanceByParameter: Map<number, Set<string>>;
   readonly mutated: Set<number>;
   readonly opaque: Set<number>;
   readonly relations: CallbackRelation[];
