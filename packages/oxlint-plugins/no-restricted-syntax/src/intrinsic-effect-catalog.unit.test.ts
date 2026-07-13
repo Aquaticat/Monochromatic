@@ -1,4 +1,12 @@
-import { readFileSync, } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
 import {
@@ -12,7 +20,9 @@ import {
   INTRINSIC_EFFECTS,
   intrinsicEffect,
   intrinsicEffectQuery,
+  intrinsicProvenance,
   NO_INTRINSIC_EFFECT,
+  NO_INTRINSIC_PROVENANCE,
   NO_INTRINSIC_QUERY,
   openSemanticFile,
 } from '../dist/final/node/index.mjs';
@@ -23,6 +33,28 @@ const FIXTURE_PATH = fileURLToPath(new URL(
   '../../../test-fixture/oxlint-no-restricted-syntax/src/valid/typescript-sync-adapter.ts',
   import.meta.url,
 ),);
+
+/** Disposable fake package installation root. */
+type PackageFixture = {
+  readonly path: string;
+  [Symbol.dispose]: () => void;
+};
+
+/**
+ * Creates disposable package provenance fixture.
+ *
+ * @returns disposable package fixture root.
+ */
+function createPackageFixture(): PackageFixture {
+  /** Unique package fixture root. */
+  const path = mkdtempSync(join(tmpdir(), 'intrinsic-package-',),);
+  return {
+    path,
+    [Symbol.dispose]: function removePackageFixture(): void {
+      rmSync(path, { recursive: true, force: true, },);
+    },
+  };
+}
 
 /** Current fixture source text. */
 const SOURCE = readFileSync(
@@ -148,6 +180,75 @@ await describe({
           },
         ],);
         expect(queries,).not.toContain(NO_INTRINSIC_QUERY,);
+      },
+    },),
+    it({
+      name: 'distinguishes duplicate majors aliases subpaths and missing metadata',
+      fn: async () => {
+        using fixture = createPackageFixture();
+        const session = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        /** Creates one fake installed package declaration path. */
+        function packageDeclarationPath({
+          directoryName,
+          packageName,
+          version,
+        }: {
+          readonly directoryName: string;
+          readonly packageName: string;
+          readonly version: string;
+        }): string {
+          /** Installed package root under disposable node_modules boundary. */
+          const packageRoot = join(
+            fixture.path,
+            directoryName,
+            'node_modules',
+            directoryName,
+          );
+          /** Nested declaration directory proving subpath support. */
+          const declarationDirectory = join(packageRoot, 'dist', 'subpath',);
+          mkdirSync(declarationDirectory, { recursive: true, },);
+          writeFileSync(
+            join(packageRoot, 'package.json',),
+            `${JSON.stringify({ name: packageName, version, },)}\n`,
+          );
+          return join(declarationDirectory, 'index.d.ts',);
+        }
+        /** Same package identity installed at major six. */
+        const majorSix = packageDeclarationPath({
+          directoryName: 'major-six',
+          packageName: 'canonical-runtime',
+          version: '6.4.0',
+        },);
+        /** Same package identity installed at major seven. */
+        const majorSeven = packageDeclarationPath({
+          directoryName: 'major-seven',
+          packageName: 'canonical-runtime',
+          version: '7.1.0',
+        },);
+        /** Alias directory whose manifest retains canonical package name. */
+        const aliased = packageDeclarationPath({
+          directoryName: 'runtime-alias',
+          packageName: 'canonical-runtime',
+          version: '7.2.0',
+        },);
+        expect([
+          intrinsicProvenance({ project: session.project, fileName: majorSix, },),
+          intrinsicProvenance({ project: session.project, fileName: majorSeven, },),
+          intrinsicProvenance({ project: session.project, fileName: aliased, },),
+        ],).toEqual([
+          { kind: 'package', packageName: 'canonical-runtime', major: 6, },
+          { kind: 'package', packageName: 'canonical-runtime', major: 7, },
+          { kind: 'package', packageName: 'canonical-runtime', major: 7, },
+        ],);
+        expect(intrinsicProvenance({
+          project: session.project,
+          fileName: join(fixture.path, 'missing', 'index.d.ts',),
+        },),).toBe(NO_INTRINSIC_PROVENANCE,);
+        closeSemanticBridge();
       },
     },),
     it({
