@@ -1,0 +1,61 @@
+name: readonly semantic bridge host evidence
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+    - 'packages/oxlint-plugins/no-restricted-syntax/**'
+    - 'packages/test-fixture/oxlint-no-restricted-syntax/**'
+    - 'pnpm-lock.yaml'
+    - '.github/workflows/readonly-semantic-bridge.yml'
+  merge_group:
+    branches: ['main']
+  push:
+    branches: ['main']
+    paths:
+    - 'packages/oxlint-plugins/no-restricted-syntax/**'
+    - 'packages/test-fixture/oxlint-no-restricted-syntax/**'
+    - 'pnpm-lock.yaml'
+    - '.github/workflows/readonly-semantic-bridge.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-bridge:
+    name: semantic bridge (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-latest
+        - windows-latest
+    runs-on: ${{ matrix.os }}
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Set up mise without repository-wide tool installation
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      with:
+        install: false
+
+    - name: Install package tools
+      run: mise install node pnpm
+
+    - name: Install semantic bridge dependency closure
+      run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/config-oxlint-no-restricted-syntax...
+
+    - name: Build semantic plugin artifact
+      run: mise run //packages/oxlint-plugins/no-restricted-syntax:build:js:node
+
+    - name: Verify native bridge lifecycle and platform paths
+      run: mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/typescript-sync-adapter.unit.test.ts
+
+    - name: Verify external consumer artifact
+      run: mise run buildAndTest -- packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts
