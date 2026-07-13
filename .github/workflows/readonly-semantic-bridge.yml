@@ -32,6 +32,9 @@ jobs:
         - macos-15-arm64
         - windows-latest
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     env:
       MISE_AUTO_INSTALL: 'false'
     steps:
