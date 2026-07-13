@@ -115,6 +115,10 @@ to registry consumers.
 - Recursive packing still validates the selected package's installed workspace links.
 - `npm pack` does not perform pnpm catalog substitution.
 - Re-running the root install did not create the package-local `config-typescript` link in this checkout.
+- A platform-filtered install did not expose `tsdown` when it was only a development dependency of the shared tsdown
+  configuration package.
+  The package invoking `tsdown` now declares it directly,
+  so Windows resolves the build binary without transitive development-dependency assumptions.
 - Manually creating a workspace link would mutate installation state and would not represent a reproducible consumer
   boundary.
 
