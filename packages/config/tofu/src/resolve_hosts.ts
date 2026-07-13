@@ -162,32 +162,6 @@ function isStringArray(value: unknown,): value is readonly string[] {
 }
 
 /**
- * Checks whether unknown value is a hostname-to-CIDR-list map.
- *
- * @param value - Candidate parsed seed or cache JSON.
- *
- * @returns Whether value maps every key to a string array.
- *
- * @example
- * ```ts
- * isCidrsByHost({ 'nginx.org': ['3.147.99.198/32'] }); // true
- * ```
- */
-function isCidrsByHost(value: unknown,): value is CidrsByHost {
-  if (!isRecord(value,))
-    return false;
-
-  /**
-   * Candidate CIDR lists to validate, one per hostname key.
-   */
-  const entries = Object.values(value,);
-
-  return entries.every(function isCidrList(entry,): entry is readonly string[] {
-    return isStringArray(entry,);
-  },);
-}
-
-/**
  * Validates and normalizes one configured hostname.
  *
  * @param hostname - Candidate hostname from `local.resolvable_hostnames`.
@@ -290,11 +264,20 @@ async function loadCidrMap(path: string,): Promise<CidrsByHost> {
    * Parsed file contents before runtime shape validation.
    */
   const parsed: unknown = JSON.parse(contents,);
+  if (!isRecord(parsed,))
+    return {};
 
-  if (isCidrsByHost(parsed,))
-    return parsed;
-
-  return {};
+  /**
+   * Validated hostname map rebuilt from JSON-owned entries so no caller-owned
+   * property access capability crosses this function boundary.
+   */
+  const cidrsByHost: CidrsByHost = {};
+  for (const [hostname, value,] of Object.entries(parsed,)) {
+    if (!isStringArray(value,))
+      return {};
+    cidrsByHost[hostname] = value;
+  }
+  return cidrsByHost;
 }
 
 /**
@@ -396,7 +379,15 @@ async function resolveHostCidrs(hostname: string,): Promise<readonly string[]> {
  * ```
  */
 function unionCidrs(lists: readonly (readonly string[])[],): readonly string[] {
-  return [...new Set(lists.flat(),),];
+  /**
+   * CIDRs accumulated through audited array iteration while preserving insertion order.
+   */
+  const cidrs = new Set<string>();
+  for (const list of lists) {
+    for (const cidr of list)
+      cidrs.add(cidr,);
+  }
+  return [...cidrs,];
 }
 
 /**

@@ -11,6 +11,7 @@ import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
  */
 export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   'appendEntry',
+  'on',
   'registerTool',
 ].map(function piExtensionApiEffect(member,): IntrinsicEffectEntry {
   return {

@@ -27,7 +27,8 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "dependencies": {
-    "@monochromatic-dev/module-current-time-context": "workspace:*"
+    "@monochromatic-dev/module-current-time-context": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "catalog:",

@@ -181,7 +181,7 @@ async function findFiles({
     ],
   )
     .then(
-      function extractStdout({ stdout, },) {
+      function extractStdout({ stdout, }: Readonly<{ stdout: string; }>,): string {
         return stdout;
       },
       function handleRgError(err: unknown,) {

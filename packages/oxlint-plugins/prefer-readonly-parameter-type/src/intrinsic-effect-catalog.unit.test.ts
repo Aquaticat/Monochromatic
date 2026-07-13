@@ -349,6 +349,24 @@ await describe({
           return (query !== NO_INTRINSIC_QUERY)
             && (intrinsicEffect(query,) !== NO_INTRINSIC_EFFECT);
         },),).toBe(true,);
+        expect(intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@earendil-works/pi-coding-agent',
+            major: 0,
+          },
+          ownerType: 'ExtensionAPI',
+          member: 'on',
+        },),).not.toBe(NO_INTRINSIC_EFFECT,);
+        expect(intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/module-current-time-context',
+            major: 0,
+          },
+          ownerType: 'globalThis',
+          member: 'formatTimeContext',
+        },),).not.toBe(NO_INTRINSIC_EFFECT,);
       },
     },),
     it({

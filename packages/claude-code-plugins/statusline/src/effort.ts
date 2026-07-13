@@ -27,48 +27,6 @@ const DEFAULT_EFFORT_LEVEL = 'high';
 //region Settings parser
 
 /**
- * Reads string property from a parsed settings value.
- *
- * @param value - parsed JSON settings value
- *
- * @param key - property key to read
- *
- * @returns property string, or empty string when missing
- *
- * @example
- * ```ts
- * readStringProperty({ value: { effortLevel: 'low' }, key: 'effortLevel' });
- * ```
- */
-function readStringProperty({
-  value,
-  key,
-}: Readonly<{
-  value: unknown;
-  key: string;
-}>,): string {
-  /**
-   * Whether parsed settings can have string properties.
-   */
-  const isReadableObject = ((typeof value) === 'object')
-    && (value !== null)
-    && (!Array.isArray(value,));
-  if (!isReadableObject)
-    return '';
-
-  /**
-   * Property value read through reflection so parsed JSON can remain unknown.
-   */
-  const property: unknown = Reflect.get(
-    value,
-    key,
-  );
-  return (typeof property) === 'string'
-    ? property
-    : '';
-}
-
-/**
  * Reads `effortLevel` from settings JSON text.
  *
  * @param raw - raw settings JSON text
@@ -87,13 +45,24 @@ function effortLevelFromSettings(raw: string,): string {
      */
     const parsed: unknown = JSON.parse(raw,);
     /**
-     * Optional effort level property.
+     * Whether JSON-owned settings can carry an effort-level property.
      */
-    const level = readStringProperty({
-      value: parsed,
-      key: 'effortLevel',
-    },);
-    return level.length > 0 ? level : DEFAULT_EFFORT_LEVEL;
+    const isReadableObject = ((typeof parsed) === 'object')
+      && (parsed !== null)
+      && (!Array.isArray(parsed,));
+    if (!isReadableObject)
+      return DEFAULT_EFFORT_LEVEL;
+
+    /**
+     * Optional effort level read from JSON-owned data with no caller-owned hooks.
+     */
+    const level: unknown = Reflect.get(
+      parsed,
+      'effortLevel',
+    );
+    return ((typeof level) === 'string') && (level.length > 0)
+      ? level
+      : DEFAULT_EFFORT_LEVEL;
   }
   catch (_error: unknown) {
     return DEFAULT_EFFORT_LEVEL;

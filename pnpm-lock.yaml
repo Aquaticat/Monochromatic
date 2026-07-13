@@ -2884,6 +2884,9 @@ importers:
       '@monochromatic-dev/module-current-time-context':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/current-time-context
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'

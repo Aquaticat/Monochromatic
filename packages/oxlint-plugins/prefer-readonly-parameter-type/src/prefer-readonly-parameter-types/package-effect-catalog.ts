@@ -125,6 +125,17 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   {
     provenance: {
       kind: 'package',
+      packageName: '@monochromatic-dev/module-current-time-context',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'formatTimeContext',
+    targets: [],
+    evidence: 'module-current-time-context 0.0.1 source reads Date local-time fields and formats primitive text',
+  },
+  {
+    provenance: {
+      kind: 'package',
       packageName: '@monochromatic-dev/module-or-throw',
       major: 0,
     },

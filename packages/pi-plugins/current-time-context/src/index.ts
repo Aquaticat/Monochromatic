@@ -8,6 +8,7 @@ import type {
   BeforeAgentStartEventResult,
   ExtensionAPI,
 } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
 import { formatTimeContext, } from './format-time-context.ts';
 
 //region Constants
@@ -29,13 +30,15 @@ const CURRENT_TIME_CONTEXT_TYPE = 'current-time-context';
  *
  * @param pi - pi extension API
  *
+ * @mutates pi - `pi.on` stores the `before_agent_start` event registration in the Pi host
+ *
  * @example
  * ```typescript
  * // In ~/.pi/agent/settings.json:
  * { "packages": ["./packages/pi-plugins/current-time-context"] }
  * ```
  */
-export default function currentTimeContext(pi: ExtensionAPI,): void {
+export default function currentTimeContext(pi: ForeignBorrowed<ExtensionAPI>,): void {
   pi.on(
     'before_agent_start',
     function handleBeforeAgentStart(): BeforeAgentStartEventResult {
