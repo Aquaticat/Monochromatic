@@ -223,6 +223,39 @@ await describe({
       },
     },),
     it({
+      name: 'returns the earliest successful contender verdict regardless of verdict kind',
+      fn: async function returnsEarliestSuccessfulVerdict() {
+        /** Initially selected judge. */
+        const firstJudge = judgeFixture({ id: 'first', },);
+        /** Contender that returns deny after a later contender approves. */
+        const delayedDenyFallback = judgeFixture({ id: 'fallback-one', },);
+        /** Contender that returns approve before the first contender resumes. */
+        const earlyApproveFallback = judgeFixture({ id: 'fallback-two', },);
+        /** Verdict selected by settlement order rather than verdict kind. */
+        const result = await callJudgeWithFallback({
+          firstJudge,
+          async resolveFallbackJudge({ excludedModelSlugs, },) {
+            return excludedModelSlugs.length === 1
+              ? delayedDenyFallback
+              : earlyApproveFallback;
+          },
+          async callJudgeAttempt({ judge, },) {
+            const slug = budgetModelSlug(judge.model,);
+            if (slug === budgetModelSlug(firstJudge.model,))
+              throw new Error('primary exhausted retries',);
+            if (slug === budgetModelSlug(delayedDenyFallback.model,)) {
+              await Promise.resolve();
+              await Promise.resolve();
+              return DENY_VERDICT;
+            }
+            return APPROVE_VERDICT;
+          },
+        },);
+
+        expect(result,).toEqual(APPROVE_VERDICT,);
+      },
+    },),
+    it({
       name: 'waits for every primary retry before resolving fallback contenders',
       fn: async function waitsForPrimaryRetries() {
         /** Initially selected judge whose streams never produce a verdict. */
