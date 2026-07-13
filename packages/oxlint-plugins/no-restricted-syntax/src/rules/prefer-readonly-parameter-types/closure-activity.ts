@@ -9,6 +9,7 @@ import {
   isCallExpression,
   isIdentifier,
   isReturnStatement,
+  isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
@@ -43,29 +44,57 @@ function resolvedCallable({
   readonly project: Project;
   readonly node: Node;
 }): EffectCallableDeclaration | typeof NESTED_CALLABLE_UNAVAILABLE {
-  if (isEffectCallableDeclaration(node,))
-    return node;
   /**
-   * Resolved symbol for expression reference.
+   * Cursor follows identifier and variable-initializer aliases iteratively.
    */
-  const symbol = isIdentifier(node,)
-    ? project.checker
-      .getResolvedSymbol(node,)
-    : project.checker
-      .getSymbolAtLocation(node,);
+  const cursor: { current: Node; } = { current: node, };
   /**
-   * Value declaration with first declaration fallback.
+   * Stable node keys prevent cyclic alias traversal.
    */
-  const handle = symbol?.valueDeclaration
-    ?? symbol?.declarations
-    .at(0,);
-  /**
-   * Resolved declaration in current project.
-   */
-  const declaration = handle?.resolve(project,);
-  return (declaration !== undefined) && isEffectCallableDeclaration(declaration,)
-    ? declaration
-    : NESTED_CALLABLE_UNAVAILABLE;
+  const visited = new Set<string>();
+  while (true) {
+    if (isEffectCallableDeclaration(cursor.current,))
+      return cursor.current;
+    /**
+     * Stable source span for alias-cycle detection.
+     */
+    const cursorKey = `${cursor.current
+      .getSourceFile()
+      .fileName}:${String(cursor.current
+        .pos,)}:${String(cursor.current
+          .end,)}`;
+    if (visited.has(cursorKey,))
+      return NESTED_CALLABLE_UNAVAILABLE;
+    visited.add(cursorKey,);
+    /**
+     * Resolved symbol for expression reference.
+     */
+    const symbol = isIdentifier(cursor.current,)
+      ? project.checker
+        .getResolvedSymbol(cursor.current,)
+      : project.checker
+        .getSymbolAtLocation(cursor.current,);
+    /**
+     * Value declaration with first declaration fallback.
+     */
+    const handle = symbol?.valueDeclaration
+      ?? symbol?.declarations
+      .at(0,);
+    /**
+     * Resolved declaration in current project.
+     */
+    const declaration = handle?.resolve(project,);
+    if (declaration === undefined)
+      return NESTED_CALLABLE_UNAVAILABLE;
+    if (isEffectCallableDeclaration(declaration,))
+      return declaration;
+    if (isVariableDeclaration(declaration,)
+      && (declaration.initializer !== undefined)) {
+      cursor.current = declaration.initializer;
+      continue;
+    }
+    return NESTED_CALLABLE_UNAVAILABLE;
+  }
 }
 
 /**

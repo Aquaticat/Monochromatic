@@ -56,6 +56,8 @@ await describe({
           'calledClosureSemanticEffect',
           'returnedClosureSemanticEffect',
           'passedClosureSemanticEffect',
+          'aliasedPassedClosureSemanticEffect',
+          'unusedFunctionExpressionSemanticEffect',
         ].map(function summaryFor(functionName,) {
           const nameNode = session.nodeAtOffset(SOURCE.indexOf(functionName,),);
           const declaration = nameNode.parent;
@@ -162,6 +164,16 @@ await describe({
           {
             functionName: 'passedClosureSemanticEffect',
             mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'aliasedPassedClosureSemanticEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'unusedFunctionExpressionSemanticEffect',
+            mutated: [],
             opaque: [],
           },
         ],);

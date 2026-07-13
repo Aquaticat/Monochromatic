@@ -328,3 +328,31 @@ export function passedClosureSemanticEffect(closureState: { value: string; },): 
     closureState.value = 'changed';
   },);
 }
+
+/**
+ * Passes aliased deferred closure that mutates captured parameter.
+ *
+ * @param closureState - State captured by aliased scheduled closure.
+ */
+export function aliasedPassedClosureSemanticEffect(
+  closureState: { value: string; },
+): void {
+  const scheduledMutation = function mutateAliasedScheduledState(): void {
+    closureState.value = 'changed';
+  };
+  queueMicrotask(scheduledMutation,);
+}
+
+/**
+ * Defines unused function expression that captures parameter.
+ *
+ * @param closureState - State captured only by dead function expression.
+ */
+export function unusedFunctionExpressionSemanticEffect(
+  closureState: { value: string; },
+): void {
+  const neverCalled = function mutateUnusedState(): void {
+    closureState.value = 'changed';
+  };
+  void neverCalled;
+}
