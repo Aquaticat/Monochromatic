@@ -825,6 +825,10 @@ run = [
 OXLINT_THREADS = "1"
 TSC_SINGLE_THREADED = "1"
 
+# Standalone repository-wide semantic Oxlint sweep for rule migrations and diagnostics baselines.
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
 [tasks."lint:dprint"]
 hide = true
 description = "Check formatting with dprint"
