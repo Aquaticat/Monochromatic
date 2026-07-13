@@ -6,6 +6,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
+import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
@@ -208,6 +209,41 @@ await describe({
             if (type === undefined)
               throw new Error('Expected symbolic-link source type.',);
             expect(session.checker.typeToString(type,),).toBe('string',);
+          },
+        },),
+        it({
+          name: 'rejects inferred project and recovers for next configured source',
+          fn: async () => {
+            /** Disposable source outside every configured project. */
+            const unconfiguredRoot = mkdtempSync(join(tmpdir(), 'semantic-unconfigured-',),);
+            using unconfigured: SemanticFixtureDirectory = {
+              path: unconfiguredRoot,
+              [Symbol.dispose]: function removeUnconfiguredFixture(): void {
+                rmSync(unconfiguredRoot, { recursive: true, force: true, },);
+              },
+            };
+            /** Unconfigured source path. */
+            const fileName = join(unconfigured.path, 'input.ts',);
+            /** Unconfigured source text. */
+            const sourceText = 'export const value: string = \'outside\';\n';
+            writeFileSync(fileName, sourceText,);
+            let caught: unknown;
+            try {
+              openSemanticFile({ fileName, sourceText, hasBOM: false, },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(caught,).toBeInstanceOf(Error,);
+            expect((caught as Error).message,).toContain('no configured project',);
+            const recovered = openSemanticFile({
+              fileName: FIXTURE_PATH,
+              sourceText: SOURCE,
+              hasBOM: false,
+            },);
+            expect(recovered.project.configFileName,).toContain(
+              'packages/test-fixture/oxlint-no-restricted-syntax/tsconfig.json',
+            );
           },
         },),
         it({

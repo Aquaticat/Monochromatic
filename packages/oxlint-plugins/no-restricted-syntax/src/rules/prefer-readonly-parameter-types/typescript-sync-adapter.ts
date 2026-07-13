@@ -59,6 +59,11 @@ const NO_ACTIVE_FILE: unique symbol = Symbol('TypeScript semantic bridge has no 
 const BYTE_ORDER_MARK = '\uFEFF';
 
 /**
+ * TypeScript project-service identity for source outside configured projects.
+ */
+const INFERRED_PROJECT_CONFIG = '/dev/null/inferred';
+
+/**
  * Mutable process-local bridge state hidden behind exported lifecycle functions.
  */
 const bridgeState: {
@@ -377,7 +382,20 @@ export function openSemanticFile({
    * Configured project identity after discovery narrowing.
    */
   const { configFileName, } = discoveredProject;
-  if (configFileName === undefined) {
+  if ((configFileName === undefined)
+    || (configFileName === INFERRED_PROJECT_CONFIG)) {
+    /**
+     * Snapshot closing temporary open-file association after failed discovery.
+     */
+    const releaseSnapshot = api.updateSnapshot({
+      closeFiles: [normalizedFileName,],
+    },);
+    releaseSnapshot.dispose();
+    if (discoverySnapshot !== NO_SNAPSHOT)
+      discoverySnapshot.dispose();
+    bridgeState.activeFileName = NO_ACTIVE_FILE;
+    bridgeState.overlays
+      .clear();
     throw new SemanticBridgeError({
       reason: 'project-not-found',
       message: `TypeScript found no configured project for ${normalizedFileName}.`,

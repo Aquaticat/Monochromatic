@@ -31,6 +31,41 @@ import { verifyReadonlyCallable, } from './prefer-readonly-parameter-types/verif
 const l = tagged({ tag: 'prefer-readonly-parameter-types', },);
 
 /**
+ * Enforced TypeScript source suffixes excluding declaration variants.
+ */
+const ENFORCED_SOURCE_SUFFIXES: readonly string[] = [
+  '.ts',
+  '.mts',
+  '.cts',
+  '.tsx',
+];
+
+/**
+ * Exempt declaration-file suffixes.
+ */
+const DECLARATION_SOURCE_SUFFIXES: readonly string[] = [
+  '.d.ts',
+  '.d.mts',
+  '.d.cts',
+];
+
+/**
+ * Tests whether host file belongs to semantic enforcement inputs.
+ *
+ * @param fileName - Oxlint source filename.
+ *
+ * @returns whether source is non-declaration TypeScript.
+ */
+function isEnforcedTypeScriptSource(fileName: string,): boolean {
+  return ENFORCED_SOURCE_SUFFIXES.some(function enforced(suffix,): boolean {
+    return fileName.endsWith(suffix,);
+  },)
+    && (!DECLARATION_SOURCE_SUFFIXES.some(function declaration(suffix,): boolean {
+      return fileName.endsWith(suffix,);
+    },));
+}
+
+/**
  * Enforces honest readonly parameter types and verified mutation contracts.
  *
  * @example
@@ -60,6 +95,8 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       Program(node: ESTree.Program,): void {
+        if (!isEnforcedTypeScriptSource(context.filename,))
+          return;
         /**
          * Function-tagged semantic rule logger.
          */
