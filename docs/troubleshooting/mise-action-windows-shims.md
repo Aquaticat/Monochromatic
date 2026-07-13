@@ -34,22 +34,23 @@ The fix was released in `mise-action` `4.1.0`.
 Update the pinned action to `4.2.0` commit `e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d`.
 This release contains the `mise-shim.exe` fix and remains pinned to an immutable commit.
 
-Each build or test step uses `mise run --tool node`.
-The external-consumer step also supplies `--tool pnpm` because it packs and installs the staged artifact.
-These options ask mise to add required tools to the task environment explicitly instead of depending on automatic
-Windows task-shell activation.
-The workflow runs the root `test` task after its explicit build rather than `buildAndTest`,
-which would launch a nested `mise` build from its Node task body.
-
-The semantic-plugin package also invokes its directly declared tsdown entry through Node:
+The plugin package provides host-acceptance tasks with separate Windows commands.
+Unix uses direct Node invocations.
+Windows invokes the action-installed mise executable through its stable `LOCALAPPDATA` location,
+then uses `mise exec` to activate Node and,
+for the external-consumer probe,
+pnpm:
 
 ```toml
 # packages/oxlint-plugins/no-restricted-syntax/mise.toml
-run = "node ../../../node_modules/tsdown/dist/run.mjs --config tsdown.node.config.ts"
+run = "node src/external-consumer.unit.test.ts"
+run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node pnpm -- node src/external-consumer.unit.test.ts'
 ```
 
-That package-local defense avoids relying on pnpm's bare-command shim for the build entry.
-Root `buildAndTest` depends on Node remaining visible because its configured task shell is Node.
+The build task uses the same Windows bootstrap and invokes the directly declared tsdown package entry through Node.
+This avoids both pnpm's bare-command shim and mise's automatic child-shell tool activation.
+The workflow runs these package tasks after its explicit build rather than `buildAndTest`,
+which would launch a nested `mise` build from its Node task body.
 
 ## Verification
 
@@ -63,7 +64,7 @@ The failing Windows jobs showed all of these facts in one log:
 The replacement workflow must pass these consumer-boundary steps on `windows-latest`:
 
 - build the plugin artifact through its package `mise` task;
-- run the TypeScript 7 lifecycle and path tests through root `buildAndTest`;
+- run the TypeScript 7 lifecycle and path tests through package host-acceptance task;
 - pack and exercise the artifact from an external consumer.
 
 ## What does not work
@@ -73,7 +74,9 @@ The replacement workflow must pass these consumer-boundary steps on `windows-lat
 - Wrapping `mise run` in `mise exec node --` does not help when the nested task shell reconstructs a Windows environment
   without the runtime path.
 - Invoking `mise` again inside a package task has the same nested-shell problem.
-- Invoking `node` directly inside a package task still fails unless the outer `mise run` includes `--tool node`.
+- `mise run --tool node` still left `node` undiscoverable in the observed Windows child task shell.
+- Invoking `node` directly inside a package task still fails unless the Windows command bootstraps it through absolute
+  mise executable.
 
 ## Upstream filing artifact
 
