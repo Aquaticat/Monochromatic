@@ -43,6 +43,25 @@ await describe({
             return 'coerced';
           },
         };
+        /** Thrown reference reaching valueOf after nonprimitive toString result. */
+        const valueOfValue = {
+          toString(): object {
+            return {};
+          },
+          valueOf(): string {
+            coercionCount++;
+            return 'coerced';
+          },
+        };
+        /** Number of caller-owned conversion-property getter reads. */
+        let getterReadCount = 0;
+        /** Thrown reference carrying observable conversion-property getter. */
+        const getterValue = {
+          get [Symbol.toPrimitive](): undefined {
+            getterReadCount++;
+            return undefined;
+          },
+        };
         /** Number of caller-owned proxy property reads. */
         let proxyReadCount = 0;
         /** Thrown proxy whose conversion-property lookup is observable. */
@@ -58,10 +77,17 @@ await describe({
         expect(caughtErrorMessage(exoticValue,),).toBe(
           'Non-Error thrown value of type object',
         );
+        expect(caughtErrorMessage(valueOfValue,),).toBe(
+          'Non-Error thrown value of type object',
+        );
+        expect(caughtErrorMessage(getterValue,),).toBe(
+          'Non-Error thrown value of type object',
+        );
         expect(caughtErrorMessage(proxyValue,),).toBe(
           'Non-Error thrown value of type object',
         );
         expect(coercionCount,).toBe(0,);
+        expect(getterReadCount,).toBe(0,);
         expect(proxyReadCount,).toBe(0,);
       },
     },),
