@@ -97,7 +97,7 @@ Model fallback:
  if the selected judge model still fails after its transport attempts,
 auto-mode excludes that model and resolves up to two distinct authenticated fallback models before sending any request.
  It runs every selected complete judge attempt concurrently;
-the first valid structured verdict wins and aborts the other contender.
+the first valid structured verdict settles the guard decision.
  When only one fallback model can be selected,
 that model runs alone.
  A rejected contender does not settle the race while another contender can still return a verdict.

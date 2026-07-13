@@ -41,7 +41,6 @@ import { parseVerdict, } from './judge-json.ts';
 import {
   buildStreamOptions,
   disposableTimeout,
-  mergeJudgeAbortSignals,
 } from './judge-runtime.ts';
 import { collectJudgeVerdictArgs, } from './judge-stream.ts';
 import type {
@@ -283,8 +282,6 @@ function streamJudgeSimple(
  *
  * @param batchContext - sibling actions already evaluated in this turn
  *
- * @param abortSignal - outer cancellation signal, used to stop a losing fallback contender
- *
  * @param streamSimpleFn - stream implementation used for model calls
  *
  * @returns judge's verdict
@@ -315,7 +312,6 @@ async function callJudge(
     timeoutMs,
     systemPrompt,
     batchContext,
-    abortSignal,
     streamSimpleFn,
   }: {
     readonly model: Model<Api>;
@@ -327,7 +323,6 @@ async function callJudge(
     readonly timeoutMs: number;
     readonly systemPrompt: string;
     readonly batchContext: readonly BatchEntry[];
-    readonly abortSignal?: AbortSignal;
     readonly streamSimpleFn?: JudgeStreamSimple;
   },
 ): Promise<Verdict> {
@@ -376,16 +371,6 @@ async function callJudge(
     },
   },);
   /**
-   * Signal that aborts when this model exhausts its own timeout or an outer fallback race settles.
-   */
-  const signal = abortSignal === undefined
-    ? controller.signal
-    : mergeJudgeAbortSignals({
-      timeout: controller.signal,
-      outer: abortSignal,
-    },);
-
-  /**
    * API-specific forced tool-call selector for the initial judge invocation.
    */
   const toolChoice = toolChoiceForApi(String(model.api,),);
@@ -403,7 +388,7 @@ async function callJudge(
     },
     options: buildStreamOptions({
       auth,
-      signal,
+      controller,
       toolChoice,
     },),
   },);
@@ -445,7 +430,7 @@ async function callJudge(
       },
       options: buildStreamOptions({
         auth,
-        signal,
+        controller,
       },),
     },);
   }

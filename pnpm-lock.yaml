@@ -2457,6 +2457,10 @@ importers:
         version: 7.0.2
 
   packages/module/throws:
+    dependencies:
+      '@monochromatic-dev/config-oxlint-shared':
+        specifier: workspace:*
+        version: link:../../oxlint-plugins/shared
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -2794,9 +2798,6 @@ importers:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
         version: 0.80.6
-      '@monochromatic-dev/config-oxlint-shared':
-        specifier: workspace:*
-        version: link:../../oxlint-plugins/shared
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown

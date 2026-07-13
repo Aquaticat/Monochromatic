@@ -4,8 +4,6 @@
  * @module
  */
 
-import { once, } from 'node:events';
-
 import type {
   Api,
   Model,
@@ -225,53 +223,6 @@ await describe({
       },
     },),
     it({
-      name: 'aborts losing contender after another contender returns a verdict',
-      fn: async function abortsLosingContender() {
-        /** Whether the slower contender received the winner cancellation signal. */
-        const loserAbortObservation = { observed: false, };
-        /** Initially selected judge. */
-        const firstJudge = judgeFixture({ id: 'first', },);
-        /** Fast contender that supplies the race verdict. */
-        const winningFallback = judgeFixture({ id: 'fallback-one', },);
-        /** Slower contender that must observe cancellation. */
-        const losingFallback = judgeFixture({ id: 'fallback-two', },);
-        /** Race result returned by the winner. */
-        const result = await callJudgeWithFallback({
-          firstJudge,
-          async resolveFallbackJudge({ excludedModelSlugs, },) {
-            return excludedModelSlugs.length === 1
-              ? winningFallback
-              : losingFallback;
-          },
-          async callJudgeAttempt({
-            judge,
-            abortSignal,
-          },) {
-            const slug = budgetModelSlug(judge.model,);
-            if (slug === budgetModelSlug(firstJudge.model,))
-              throw new Error('primary exhausted retries',);
-            if (slug === budgetModelSlug(winningFallback.model,)) {
-              await Promise.resolve();
-              return APPROVE_VERDICT;
-            }
-            if (abortSignal === undefined)
-              throw new Error('race contender received no cancellation signal',);
-            await once(
-              abortSignal,
-              'abort',
-            );
-            loserAbortObservation.observed = abortSignal.aborted;
-            throw new Error('losing contender cancelled',);
-          },
-        },);
-
-        await Promise.resolve();
-        await Promise.resolve();
-        expect(result,).toEqual(APPROVE_VERDICT,);
-        expect(loserAbortObservation.observed,).toBe(true,);
-      },
-    },),
-    it({
       name: 'waits for every primary retry before resolving fallback contenders',
       fn: async function waitsForPrimaryRetries() {
         /** Initially selected judge whose streams never produce a verdict. */
@@ -295,10 +246,7 @@ await describe({
               ? firstFallback
               : secondFallback;
           },
-          callJudgeAttempt({
-            judge,
-            abortSignal,
-          },) {
+          callJudgeAttempt({ judge, },) {
             return callJudge({
               model: judge.model,
               auth: judge.auth,
@@ -310,9 +258,6 @@ await describe({
               systemPrompt:
                 'You MUST call the render_verdict tool to submit your evaluation. Do not respond with text; use the tool.',
               batchContext: [],
-              ...(abortSignal !== undefined
-                ? { abortSignal, }
-                : {}),
               streamSimpleFn: function streamSimpleFn(
                 model: Model<Api>,
               ) {
@@ -390,7 +335,7 @@ await describe({
       },
     },),
     it({
-      name: 'reports selection failure without starting a fallback when none are available',
+      name: 'reports no available fallback judge without starting a race',
       fn: async function reportsNoFallbackModel() {
         /** Models that reached a judge attempt. */
         const attemptedSlugs: string[] = [];
@@ -412,9 +357,8 @@ await describe({
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'resolving up to two distinct fallback judge models failed',
+          'no fallback judge model is available',
         );
-        expect((caught as Error).message,).toContain('no fallback models available',);
         expect(attemptedSlugs,).toEqual(['test-provider/first',],);
       },
     },),

@@ -43,6 +43,7 @@ type FallbackJudgeResult = {
  * One or two authenticated fallback judges available after primary failure.
  */
 type FallbackJudgeContenders =
+  | readonly []
   | readonly [BudgetModel]
   | readonly [
     BudgetModel,
@@ -222,32 +223,39 @@ async function resolveFallbackRace(
    * Primary model identity excluded from every fallback selection.
    */
   const firstModelSlug = judgeModelSlug({ model: firstJudge.model, },);
-  /**
-   * First contender, selected without starting any fallback transport.
-   */
-  const firstFallback = await resolveFreshFallback({
-    excludedModelSlugs: [firstModelSlug,],
-    resolveFallbackJudge,
-  },);
   try {
     /**
-     * Second contender, selected after excluding primary plus first fallback.
+     * First contender, selected without starting any fallback transport.
      */
-    const secondFallback = await resolveFreshFallback({
-      excludedModelSlugs: [
-        firstModelSlug,
-        judgeModelSlug({ model: firstFallback.model, },),
-      ],
+    const firstFallback = await resolveFreshFallback({
+      excludedModelSlugs: [firstModelSlug,],
       resolveFallbackJudge,
     },);
-    return [
-      firstFallback,
-      secondFallback,
-    ];
+    try {
+      /**
+       * Second contender, selected after excluding primary plus first fallback.
+       */
+      const secondFallback = await resolveFreshFallback({
+        excludedModelSlugs: [
+          firstModelSlug,
+          judgeModelSlug({ model: firstFallback.model, },),
+        ],
+        resolveFallbackJudge,
+      },);
+      return [
+        firstFallback,
+        secondFallback,
+      ];
+    }
+    catch (error) {
+      if (error instanceof NoBudgetModelError)
+        return [firstFallback,];
+      throw error;
+    }
   }
   catch (error) {
     if (error instanceof NoBudgetModelError)
-      return [firstFallback,];
+      return [];
     throw error;
   }
 }
@@ -259,31 +267,24 @@ async function resolveFallbackRace(
  *
  * @param callJudgeAttempt - complete per-model judge attempt
  *
- * @param abortSignal - abort signal triggered after another contender returns a verdict
- *
  * @returns contender plus its valid verdict
  *
  * @throws Error labeled with the failed contender identity
  *
  * @example
  * ```typescript
- * const result = await runFallbackJudge({ judge, callJudgeAttempt, abortSignal });
+ * const result = await runFallbackJudge({ judge, callJudgeAttempt });
  * ```
  */
 async function runFallbackJudge(
   {
     judge,
     callJudgeAttempt,
-    abortSignal,
   }: {
     readonly judge: BudgetModel;
     readonly callJudgeAttempt: (
-      options: {
-        readonly judge: BudgetModel;
-        readonly abortSignal?: AbortSignal;
-      },
+      options: { readonly judge: BudgetModel; },
     ) => Promise<Verdict>;
-    readonly abortSignal: AbortSignal;
   },
 ): Promise<FallbackJudgeResult> {
   /**
@@ -301,21 +302,13 @@ async function runFallbackJudge(
   try {
     return {
       judge,
-      verdict: await callJudgeAttempt({
-        judge,
-        abortSignal,
-      },),
+      verdict: await callJudgeAttempt({ judge, },),
     };
   }
   catch (error) {
-    if (abortSignal.aborted) {
-      innerL.debug(`fallback judge contender ${modelSlug} cancelled after another verdict`,);
-    }
-    else {
-      innerL.error(
-        `fallback judge model ${modelSlug} failed all retries: ${describeError(error,)}`,
-      );
-    }
+    innerL.error(
+      `fallback judge model ${modelSlug} failed all retries: ${describeError(error,)}`,
+    );
     throw new Error(
       `fallback judge model ${modelSlug} failed all retries: ${describeError(error,)}`,
       { cause: error, },
@@ -357,10 +350,7 @@ async function callJudgeWithFallback(
       options: { readonly excludedModelSlugs: readonly string[]; },
     ) => Promise<BudgetModel>;
     readonly callJudgeAttempt: (
-      options: {
-        readonly judge: BudgetModel;
-        readonly abortSignal?: AbortSignal;
-      },
+      options: { readonly judge: BudgetModel; },
     ) => Promise<Verdict>;
   },
 ): Promise<Verdict> {
@@ -403,10 +393,11 @@ async function callJudgeWithFallback(
         );
       }
     })();
-    /**
-     * Shared cancellation source that stops the losing fallback request after a verdict wins.
-     */
-    const raceController = new AbortController();
+    if (fallbackJudges.length === 0) {
+      throw new Error(
+        `Judge model ${firstModelSlug} failed all retries; no fallback judge model is available.`,
+      );
+    }
     /**
      * Guaranteed first fallback contender after successful selection.
      */
@@ -420,7 +411,6 @@ async function callJudgeWithFallback(
     const firstFallbackAttempt = runFallbackJudge({
       judge: firstFallbackJudge,
       callJudgeAttempt,
-      abortSignal: raceController.signal,
     },);
     /**
      * Concurrent complete attempts, one per selected fallback contender.
@@ -432,7 +422,6 @@ async function callJudgeWithFallback(
         runFallbackJudge({
           judge: secondFallbackJudge,
           callJudgeAttempt,
-          abortSignal: raceController.signal,
         },),
       ];
     /**
@@ -449,7 +438,6 @@ async function callJudgeWithFallback(
        * First successfully parsed fallback verdict, ignoring rejected contenders.
        */
       const winner = await Promise.any(fallbackAttempts,);
-      raceController.abort();
       /**
        * Judge that returned the first valid verdict.
        */
@@ -462,7 +450,6 @@ async function callJudgeWithFallback(
       return winner.verdict;
     }
     catch (fallbackRaceError) {
-      raceController.abort();
       throw new Error(
         `Judge model ${firstModelSlug} failed all retries: ${describeError(firstError,)}; fallback judge race models ${
           fallbackModelSlugs.join(', ')

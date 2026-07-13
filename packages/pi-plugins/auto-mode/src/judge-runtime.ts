@@ -5,7 +5,6 @@
  */
 
 import type { SimpleStreamOptions, } from '@earendil-works/pi-ai';
-import type { ForeignBorrowed, } from '@monochromatic-dev/config-oxlint-shared/ts/foreign-borrowed.ts';
 import type { BudgetModelAuth, } from './types.ts';
 
 /**
@@ -13,7 +12,7 @@ import type { BudgetModelAuth, } from './types.ts';
  *
  * @param auth - API key and headers for the selected judge model
  *
- * @param signal - combined timeout and caller cancellation signal
+ * @param controller - abort controller enforcing the total judge timeout
  *
  * @param toolChoice - provider-specific forced tool choice for the first attempt
  *
@@ -21,17 +20,17 @@ import type { BudgetModelAuth, } from './types.ts';
  *
  * @example
  * ```typescript
- * buildStreamOptions({ auth: {}, signal: new AbortController().signal });
+ * buildStreamOptions({ auth: {}, controller: new AbortController() });
  * ```
  */
 function buildStreamOptions(
   {
     auth,
-    signal,
+    controller,
     toolChoice,
   }: {
     readonly auth: BudgetModelAuth;
-    readonly signal: AbortSignal;
+    readonly controller: AbortController;
     readonly toolChoice?: unknown;
   },
 ): SimpleStreamOptions {
@@ -39,7 +38,7 @@ function buildStreamOptions(
    * Provider-specific stream options assembled key-by-key so `auth` fields stay optional.
    */
   const opts: Record<string, unknown> = {
-    signal,
+    signal: controller.signal,
   };
   if (auth.apiKey
     !== undefined)
@@ -51,33 +50,6 @@ function buildStreamOptions(
     !== undefined)
     opts.toolChoice = toolChoice;
   return opts as SimpleStreamOptions;
-}
-
-/**
- * Combine a judge's private timeout with a foreign race cancellation handle.
- *
- * @param handles - timeout and outer cancellation handles borrowed from host APIs
- *
- * @returns signal that aborts after either input signal aborts
- *
- * @example
- * ```typescript
- * const signal = mergeJudgeAbortSignals({ timeout, outer });
- * ```
- */
-function mergeJudgeAbortSignals(
-  {
-    timeout,
-    outer,
-  }: ForeignBorrowed<{
-    readonly timeout: AbortSignal;
-    readonly outer: AbortSignal;
-  }>,
-): AbortSignal {
-  return AbortSignal.any([
-    timeout,
-    outer,
-  ],);
 }
 
 /**
@@ -120,5 +92,4 @@ function disposableTimeout(
 export {
   buildStreamOptions,
   disposableTimeout,
-  mergeJudgeAbortSignals,
 };

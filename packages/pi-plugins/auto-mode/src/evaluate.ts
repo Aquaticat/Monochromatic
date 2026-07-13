@@ -256,10 +256,7 @@ async function evaluate(
           excludedModelSlugs,
         },);
       },
-      callJudgeAttempt({
-        judge: selectedJudge,
-        abortSignal,
-      },) {
+      callJudgeAttempt({ judge: selectedJudge, },) {
         return callJudge({
           model: selectedJudge.model,
           auth: selectedJudge.auth,
@@ -270,9 +267,6 @@ async function evaluate(
           timeoutMs: config.judgeTimeoutMs,
           systemPrompt,
           batchContext,
-          ...(abortSignal !== undefined
-            ? { abortSignal, }
-            : {}),
         },);
       },
     },);
