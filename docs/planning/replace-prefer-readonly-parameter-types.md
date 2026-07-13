@@ -614,8 +614,24 @@ or existing file-class exemption instead of a comment bypass.
 An implementation branch may use a temporary warning only while its own migration commit series is incomplete.
 The merge-ready state has no active violations and error severity.
 
+### Chosen remediation fix kind
+
+Offer proven type rewrites as Oxlint suggestions.
+Do not attach them as direct fixes,
+so ordinary `--fix` and the repository's normal `format:oxlint` task cannot apply semantic signature changes.
+Suggestions remain available as editor code actions and through explicit `--fix-suggestions` or `--fix-dangerously` use.
+
+Oxlint 1.73 JavaScript plugins cannot mark a fix dangerous directly.
+Their protocol maps `Diagnostic.fix` to a normal fix and `Diagnostic.suggest` to a suggestion;
+there is no JavaScript dangerous-fix field.
+The verified source trace and disposable probe are recorded in
+[`docs/troubleshooting/oxlint-js-plugin-fix-kinds.md`](../troubleshooting/oxlint-js-plugin-fix-kinds.md).
+
+The rule sets `meta.hasSuggestions: true` and omits a direct `fix` for semantic rewrites.
+A suggestion is emitted only when the semantic pipeline constructs one exact replacement and verifies the rewritten
+program against the relevant TypeScript projects.
+Ambiguous cases remain diagnostics without a suggestion.
+
 ### Awaiting decision
 
-The next policy decision is whether proven remediations are automatic fixes,
-editor suggestions,
-or diagnostics only.
+The next policy decision concerns the replacement rule's public identity and diagnostic taxonomy.
