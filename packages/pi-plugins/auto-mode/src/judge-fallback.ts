@@ -40,10 +40,38 @@ type FallbackJudgeResult = {
 };
 
 /**
- * One or two authenticated fallback judges available after primary failure.
+ * Sentinel indicating that no authenticated fallback judge is available.
+ */
+const NO_FALLBACK_JUDGES: unique symbol = Symbol('no authenticated fallback judge',);
+
+/**
+ * Immutable view of a selected judge passed to complete judge attempts.
+ */
+type JudgeAttemptCandidate = {
+  /**
+   * Model record that callers may read but never mutate.
+   */
+  readonly model: Readonly<BudgetModel['model']>;
+  /**
+   * Credentials paired with selected model.
+   */
+  readonly auth: Readonly<BudgetModel['auth']>;
+};
+
+/**
+ * Complete judge attempt callable shared by primary and fallback execution.
+ */
+type JudgeAttempt = (
+  options: {
+    readonly judge: JudgeAttemptCandidate;
+  },
+) => Promise<Verdict>;
+
+/**
+ * Zero, one, or two authenticated fallback judges available after primary failure.
  */
 type FallbackJudgeContenders =
-  | readonly []
+  | typeof NO_FALLBACK_JUDGES
   | readonly [BudgetModel]
   | readonly [
     BudgetModel,
@@ -255,7 +283,7 @@ async function resolveFallbackRace(
   }
   catch (error) {
     if (error instanceof NoBudgetModelError)
-      return [];
+      return NO_FALLBACK_JUDGES;
     throw error;
   }
 }
@@ -282,9 +310,7 @@ async function runFallbackJudge(
     callJudgeAttempt,
   }: {
     readonly judge: BudgetModel;
-    readonly callJudgeAttempt: (
-      options: { readonly judge: BudgetModel; },
-    ) => Promise<Verdict>;
+    readonly callJudgeAttempt: JudgeAttempt;
   },
 ): Promise<FallbackJudgeResult> {
   /**
@@ -349,9 +375,7 @@ async function callJudgeWithFallback(
     readonly resolveFallbackJudge: (
       options: { readonly excludedModelSlugs: readonly string[]; },
     ) => Promise<BudgetModel>;
-    readonly callJudgeAttempt: (
-      options: { readonly judge: BudgetModel; },
-    ) => Promise<Verdict>;
+    readonly callJudgeAttempt: JudgeAttempt;
   },
 ): Promise<Verdict> {
   /**
@@ -393,9 +417,10 @@ async function callJudgeWithFallback(
         );
       }
     })();
-    if (fallbackJudges.length === 0) {
+    if (fallbackJudges === NO_FALLBACK_JUDGES) {
       throw new Error(
         `Judge model ${firstModelSlug} failed all retries; no fallback judge model is available.`,
+        { cause: firstError, },
       );
     }
     /**
