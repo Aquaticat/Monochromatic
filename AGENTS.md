@@ -132,6 +132,14 @@ Explain uncertainty and every valid remediation path.
 Avoid unexplained implementation terms;
  length is unconstrained.
 
+JCH:
+ Never use `@mutates` for absent effects.
+Move work to an ownership-known boundary,
+ pass its primitive result,
+ or improve proof.
+Contracts describe possible runtime effects,
+ not analyzer gaps.
+
 GAP:
  "I was expecting you to..." or spotted failure mode = doc gap:
  propose `AGENTS.md` edit + perform expected action,
