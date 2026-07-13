@@ -146,10 +146,12 @@ export async function discoverWorkspaceRoots(monorepoRoot: string,): Promise<str
      * Workspace package roots discovered per package category.
      */
     const rootsByCategory = await Promise.all(categories
-      .filter(function isDirectory(cat,): boolean {
+      .filter(function isDirectory(cat: Readonly<(typeof categories)[number]>,): boolean {
         return cat.isDirectory();
       },)
-      .map(async function readPackageCategory(cat,): Promise<readonly string[]> {
+      .map(async function readPackageCategory(
+        cat: Readonly<(typeof categories)[number]>,
+      ): Promise<readonly string[]> {
         /**
          * Absolute path to one category directory, scanned for the actual package folders.
          */
@@ -165,10 +167,10 @@ export async function discoverWorkspaceRoots(monorepoRoot: string,): Promise<str
           { withFileTypes: true, },
         );
         return pkgs
-          .filter(function isPackageDirectory(pkg,): boolean {
+          .filter(function isPackageDirectory(pkg: Readonly<(typeof pkgs)[number]>,): boolean {
             return pkg.isDirectory();
           },)
-          .map(function toPackageRoot(pkg,): string {
+          .map(function toPackageRoot(pkg: Readonly<(typeof pkgs)[number]>,): string {
             return join(
               catPath,
               pkg.name,

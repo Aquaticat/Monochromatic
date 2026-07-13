@@ -63,15 +63,15 @@ type TightenResult = {
   /**
    * Package name as it appears in the catalog key.
    */
-  name: string;
+  readonly name: string;
   /**
    * Original catalog range string, e.g. `">=1.2.0"`.
    */
-  oldRange: string;
+  readonly oldRange: string;
   /**
    * New tightened range string, e.g. `">=1.3.0"`.
    */
-  newRange: string;
+  readonly newRange: string;
 };
 
 /**
@@ -86,11 +86,11 @@ type ProbedCandidate = {
   /**
    * npm name that was looked up in node_modules.
    */
-  name: string;
+  readonly name: string;
   /**
    * Installed version; omitted when this name did not resolve.
    */
-  version?: string;
+  readonly version?: string;
 };
 
 //endregion Types
@@ -257,23 +257,23 @@ type CatalogSummary = {
   /**
    * Tightening results to write back to `pnpm-workspace.yaml`.
    */
-  results: TightenResult[];
+  readonly results: readonly TightenResult[];
   /**
    * Count of entries skipped (not `>=` ranges).
    */
-  skippedCount: number;
+  readonly skippedCount: number;
   /**
    * Count of entries where the installed version matched the catalog range (already tight).
    */
-  alreadyTightCount: number;
+  readonly alreadyTightCount: number;
   /**
    * Count of entries present in the pnpm store as a transitive dependency but declared directly by no live package.
    */
-  undeclaredCount: number;
+  readonly undeclaredCount: number;
   /**
    * Count of entries not installed anywhere in the workspace (no importer symlink and no store copy).
    */
-  notFoundCount: number;
+  readonly notFoundCount: number;
 };
 
 /**
@@ -337,7 +337,7 @@ const entrySummaries = await Promise.all(catalogEntries.map(
     /**
      * First npm name candidate whose installed version resolves.
      */
-    const resolved = probes.find(function hasVersion(r,): boolean {
+    const resolved = probes.find(function hasVersion(r: Readonly<ProbedCandidate>,): boolean {
       return r.version
         !== undefined;
     },);
@@ -432,8 +432,8 @@ const entrySummaries = await Promise.all(catalogEntries.map(
  */
 const summary: CatalogSummary = entrySummaries.reduce(
   function mergeSummary(
-    acc,
-    entrySummary,
+    acc: Readonly<CatalogSummary>,
+    entrySummary: Readonly<CatalogSummary>,
   ): CatalogSummary {
     return {
       results: [
