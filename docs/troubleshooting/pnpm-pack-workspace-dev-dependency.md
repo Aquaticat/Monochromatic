@@ -117,12 +117,10 @@ to registry consumers.
 - Re-running the root install did not create the package-local `config-typescript` link in this checkout.
 - A platform-filtered install did not expose `tsdown` when it was only a development dependency of the shared tsdown
   configuration package.
-  Declaring `tsdown` directly made the dependency explicit but did not make the bare command discoverable by the Windows
-  `mise` task shell,
-  even after a full install reported `tsdown 0.22.5` in root development dependencies.
-  The package task invokes `node ../../../node_modules/tsdown/dist/run.mjs` instead of relying on a Windows command shim.
-  The workflow also wraps the task in `mise exec node --` because Windows reported `mise-shim.exe` absent and did not
-  expose the installed `node` command to a plain `mise run` task.
+  The invoking package now declares `tsdown` directly.
+  A subsequent missing-command failure came from the separately diagnosed
+  [`mise-action` Windows shim defect](mise-action-windows-shims.md),
+  not pnpm dependency conversion.
 - Manually creating a workspace link would mutate installation state and would not represent a reproducible consumer
   boundary.
 
