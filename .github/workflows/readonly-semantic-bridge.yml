@@ -58,4 +58,4 @@ jobs:
       run: mise run --tool node test -- packages/oxlint-plugins/no-restricted-syntax/src/typescript-sync-adapter.unit.test.ts
 
     - name: Verify external consumer artifact
-      run: mise run --tool node test -- packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts
+      run: mise run --tool node --tool pnpm test -- packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts
