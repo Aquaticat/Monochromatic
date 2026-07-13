@@ -1,12 +1,36 @@
 # Replace `prefer-readonly-parameter-types` with a project rule
 
 Status:
- final plan complete,
-awaiting shared-understanding confirmation.
-No implementation is authorized until the user confirms.
+ implementation in progress after user confirmation on 2026-07-13.
 
 Last updated:
- 2026-07-12.
+ 2026-07-13.
+
+## Implementation progress
+
+The user confirmed shared understanding and authorized implementation.
+The TSDoc contract phase is complete:
+
+- commit `7c25431a6` specified parser and fixture behavior;
+- commit `dbde47701` registered and validated `@mutates`;
+- commit `0c7931fa0` documented external TSDoc registration behavior;
+- commit `cac9e6a1d` added bounded cross-rule parsed-body reuse;
+- commit `d6ea31e25` covered method,
+  call,
+  and ambient signatures.
+
+Verified package tasks:
+
+- `mise run buildAndTest --` with TSDoc parser,
+  cache,
+  and integration tests;
+- `mise run //packages/oxlint-plugins/tsdoc:lint:types`;
+- `mise run //packages/oxlint-plugins/tsdoc:lint:oxlint`;
+- `mise run //packages/config/oxlint:lint:types`;
+- `mise run //packages/config/oxlint:lint:oxlint`.
+
+Next action:
+build the TypeScript 7 semantic adapter and intrinsic effect catalog in the `no-restricted-syntax` plugin.
 
 ## Continuity contract
 
