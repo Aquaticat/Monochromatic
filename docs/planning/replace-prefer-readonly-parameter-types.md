@@ -363,6 +363,82 @@ and assertion trackers all have documented mutable contracts.
 The replacement must express these contracts without restoring a global type-name allow list or treating every method as
 readonly.
 
+### Chosen mutation-intent declaration
+
+Intentional parameter mutation uses a verified custom TSDoc block tag.
+Canonical proposed grammar:
+
+```typescript
+/**
+ * Clears shared traversal state before reuse.
+ *
+ * @param visited - Shared cycle detector retained across calls.
+ *
+ * @mutates visited - Clears caller-owned traversal state.
+ */
+function clearVisited(visited: Set<string>,): void {
+  visited.clear();
+}
+```
+
+One `@mutates` block names one top-level parameter or destructured parameter property,
+using the same naming rules as `@param`.
+The description states why mutation belongs to the function's contract.
+The semantic rule reports missing tags,
+stale tags,
+and mutation that reaches an undeclared parameter through aliases or callees.
+
+### Confirmed TSDoc ripple
+
+`@mutates` is not a standard TSDoc tag.
+The repository's TSDoc plugin currently hardcodes standard tags and carries only `@yields` as a custom tag.
+Supporting `@mutates` therefore requires coordinated changes rather than a one-line allow-list edit:
+
+- `packages/oxlint-plugins/tsdoc/src/rules/tag-names.ts`:
+  recognize the custom tag and correct its standard-only documentation;
+- `packages/oxlint-plugins/tsdoc/src/tsdoc-blocks.ts`:
+  terminate preceding blocks at `@mutates` and parse mutation blocks;
+- `packages/oxlint-plugins/tsdoc/src/tsdoc-doc-model.ts`:
+  represent target names and descriptions;
+- TSDoc parameter extraction:
+  validate mutation targets against plain,
+  rest,
+  defaulted,
+  and destructured parameters;
+- dedicated TSDoc rules:
+  reject missing names,
+  unknown names,
+  duplicate targets,
+  and missing descriptions independently of semantic mutation analysis;
+- `packages/oxlint-plugins/tsdoc/src/index.ts` and
+  `packages/config/oxlint/src/rules/tsdoc.ts`:
+  register and enable the new validation rules;
+- `packages/test-fixture/oxlint-tsdoc/` and TSDoc unit tests:
+  add valid,
+  malformed,
+  duplicate,
+  destructured,
+  fenced-example,
+  and unknown-tag cases;
+- `packages/oxlint-plugins/tsdoc/README.md` and shared config documentation:
+  disclose the project-specific TSDoc extension and its grammar;
+- the readonly rule:
+  consume the same parsed mutation blocks rather than implementing a second comment scanner.
+
+The TSDoc plugin owns tag grammar and signature-name validation.
+The readonly rule owns effect verification against types,
+body writes,
+aliases,
+and callee summaries.
+Shared parsing primitives must move behind one dependency seam,
+likely `@monochromatic-dev/config-oxlint-shared`,
+so the sibling plugins cannot drift.
+
+`tsdoc/tag-lines` already applies to every leading tag,
+so `@mutates` automatically requires a preceding blank line.
+`tsdoc/empty-tags` must not classify `@mutates` as a modifier because the new tag requires content.
+
 ### Awaiting decision
 
-The first unresolved policy decision is how intentional parameter mutation becomes explicit at the function boundary.
+The first unresolved policy decision is what happens when a function does not mutate a parameter but its declared
+TypeScript type remains structurally mutable.
