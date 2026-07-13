@@ -19,13 +19,24 @@ The audited outcomes are:
   and collection `has` checks are observational;
 - Array callback methods expose receiver-reachable values to callbacks,
   so callback effects propagate back to receiver origin;
+- `Array.prototype.with` allocates a copy and is observational;
+- `Array.prototype.reduce` exposes accumulator,
+  element,
+  index,
+  and receiver-reachable values through its callback relation;
 - `Array.prototype.join` is observational only when every reachable element is primitive;
 - `Error.isError(value)` is observational;
 - `JSON.stringify(value)` remains opaque because it can invoke `toJSON`,
    accessors,
    proxy behavior,
    and a replacer;
-- integrity and property reflection calls remain opaque when their abstract operations can dispatch proxy traps.
+- `Object.entries`,
+  `Object.getPrototypeOf`,
+  `Object.hasOwn`,
+  `Object.keys`,
+  and `Object.values` can dispatch caller-owned proxy or accessor hooks and therefore target argument 0;
+- `Object.freeze` changes supplied property descriptors and targets argument 0;
+- other integrity and property reflection calls remain opaque until audited individually.
 
 ## Root cause
 
@@ -165,7 +176,9 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
   `flatMap`,
   `forEach`,
   `map`,
+  `reduce`,
   and `some` calls propagate callback effects from receiver-reachable element and collection arguments.
+- Exact Array `with` returns a new array without changing its receiver.
 - Exact Map,
   Set,
   WeakMap,
@@ -185,6 +198,12 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
   callable `Symbol.toPrimitive`,
   `toString`,
   and `valueOf` values are then invoked.
+- `Object.entries`,
+  `Object.getPrototypeOf`,
+  `Object.hasOwn`,
+  `Object.keys`,
+  and `Object.values` retain argument-0 effects because proxy and accessor hooks are caller-owned code.
+- `Object.freeze` retains argument-0 mutation because it changes supplied descriptors.
 - `JSON.stringify(proxy)` invoked proxy behavior.
 - `JSON.stringify(state)` invoked authored `toJSON` and mutated `state.value`.
 - `JSON.stringify(value, replacer)` has an additional explicit callback path in `spec.html:48392`.
@@ -194,10 +213,11 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
 The rule catalog records exact standard-library owner and member identities with empty mutation targets.
 This covers `ArrayConstructor.isArray`,
 `ObjectConstructor.is`,
+`Array.prototype.with`,
 primitive String methods with primitive-only typed inputs and outputs,
 Array identity searches and iterators,
 collection membership and iterator operations,
-callback operations with explicit callback relations,
+callback operations with explicit callback relations including `reduce`,
 primitive-element Array `join`,
 and `ErrorConstructor.isError`.
 Exact declaration provenance prevents same-named project methods from inheriting this treatment.
@@ -270,8 +290,13 @@ Its contract must name `JSON.stringify` and every parameter whose reachable hook
   internal methods.
 - Treating callback methods as complete zero-effect observations misses mutation through callback parameters.
 - Treating Array `join` as unconditionally observational misses object coercion hooks.
-- Treating `Object.entries` over unknown values as observational misses getters and proxy traps.
-  Traverse foreign AST values through parser-declared visitor keys instead.
+- Treating `Object.entries`,
+  `Object.keys`,
+  `Object.values`,
+  `Object.getPrototypeOf`,
+  or `Object.hasOwn` over unknown values as observational misses accessors and proxy traps.
+  Their exact catalogue entries target argument 0.
+- Treating `Object.freeze` as observation misses descriptor mutation on supplied object.
 - Matching only member text such as `is` or `isArray` would bless unrelated project code.
    The catalog must retain owner,
   member,

@@ -9,6 +9,73 @@ Last updated:
 ## Implementation progress
 
 The user confirmed shared understanding and authorized implementation.
+
+### Current continuation state
+
+The user corrected the TOML migration on 2026-07-13:
+`ForeignBorrowed` is an ownership-boundary marker,
+not a type annotation to repeat on every AST descendant or callback.
+The correction is now recorded by `OWB` in `AGENTS.md`.
+
+The uncommitted continuation implements that correction in the semantic rule:
+
+- exact marker identity is separated from provenance analysis;
+- foreign provenance passes through property and element access,
+  nested destructuring,
+  aliases,
+  owned calls,
+  audited intrinsic callbacks,
+  and synchronous `for...of` bindings;
+- a callee parameter is foreign only when every owned inbound call supplies wholly foreign mutable state;
+  an ordinary owned call removes that guarantee;
+- object and array packages ignore primitive and honestly readonly siblings,
+  but one foreign field cannot hide an owned mutable sibling;
+- active nested-closure calls no longer create duplicate foreign inbound edges;
+- direct callback invocation is tracked separately from referent mutation;
+  unknown callback capabilities still require `@mutates`,
+  while pure and throwing owned callbacks no longer make captured readonly values dishonest;
+- focused fixtures cover callback,
+  property,
+  element,
+  destructuring,
+  synchronous iteration,
+  pure callback,
+  throwing callback,
+  and mixed foreign/owned inbound paths;
+- exact intrinsic evidence now includes Array `with` and `reduce`,
+  proxy-capable Object reflection,
+  mutating `Object.freeze`,
+  and receiver-only `TextDecoder.decode`.
+
+The TOML migration now marks parser ingress and retained foreign-handle storage,
+then relies on provenance instead of descendant aliases.
+The durable mechanism and verification record is the
+[foreign-provenance troubleshooting guide](../troubleshooting/oxlint-prefer-readonly-foreign-provenance.md).
+A direct-function builder replaced an attempted class because project lint prohibits ordinary classes.
+The latest `//packages/module/toml-edit:lint:types` run passes.
+The latest `//packages/module/toml-edit:lint:oxlint` run completed with status `1` and exactly 28 replacement-rule
+errors,
+with no additional lint category in that run.
+The package started this continuation at 105 replacement-rule diagnostics.
+The remaining findings are primarily honest recursive value-hook contracts,
+internal mutation propagation,
+one `path.map` callback uncertainty,
+and a fast-check `Arbitrary.chain` audit.
+
+Workspace packages must import one another through `/ts` source subpaths.
+A correction audit found 74 marker imports using the package root and 105 already using `/ts`.
+All 74 root imports were migrated.
+The active TypeScript source now has 179 marker `/ts` imports and no marker root import.
+`AGENTS.md` rule `ST3` records the workspace-wide convention,
+and file-enforcer synchronized `CLAUDE.md`.
+
+The current plugin passes `lint:types`,
+`lint:oxlint`,
+and `test:unit` after the import correction.
+The unit suite originally reached one stale expected-count assertion after callback invocation stopped producing a
+dishonest-readonly diagnostic;
+updating the assertion from 12 to 11 restored the complete suite.
+
 The TSDoc contract phase is complete:
 
 - commit `7c25431a6` specified parser and fixture behavior;
@@ -208,9 +275,10 @@ The semantic-rule implementation is functional and shared-configuration migratio
 - commit `d12de9816` resolves exact ambient `AbortSignal.any` identity,
   records its dependent-signal mutation,
   and propagates honest contracts through git-clone-size;
-- commit `3d90851aa` treats direct callback invocation as a known capability mutation,
+- commit `3d90851aa` originally treated direct callback invocation as a known capability mutation,
   applies nonzero imported-callable catalog targets,
   and expands exact Pi effect evidence;
+  the current continuation supersedes the function-object mutation model with a distinct invoked-capability effect;
 - commit `fe9e0b99e` migrates Advisor and shared model-selection capability contracts;
 - commit `3ee0ab774` limits imported callable effects to audited option fields
   and verifies each added Pi method against real Advisor source;
@@ -818,6 +886,11 @@ callback-bearing,
 branded,
 or capability types where a readonly projection would misrepresent the usable API or break required assignability,
 retain the original type only when whole-program effect analysis proves no mutation path.
+`ForeignBorrowed` appears only where foreign ownership enters or is deliberately retained.
+Descendants inherit that provenance through semantic dataflow;
+they do not repeat the marker.
+A parameter inherits foreign provenance only when every owned inbound call agrees,
+so one owned call path restores ordinary readonly enforcement.
 
 This is not a global type-name allow list.
 The decision is made per parameter from resolved declarations,
@@ -852,6 +925,9 @@ and inline callbacks.
 
 The rule infers effects to verify tags and propagate diagnostics,
 not to make internal mutation implicit.
+Callback-capability invocation and referent mutation are separate effects.
+Invoking an unknown callback requires an honest `@mutates` contract,
+but invocation alone does not claim that the function object or a pure owned callback's captures were mutated.
 Every call edge therefore has an inspectable contract.
 Moving a callable between local and exported scope does not change the requirement.
 

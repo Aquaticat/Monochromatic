@@ -897,8 +897,9 @@ ST2:
  Use `//region`/`//endregion` markers with purpose + explanation for logical sections.
 
 ST3:
- Cross-package workspace imports must resolve to TypeScript source,
- not built output.
+ Cross-package workspace imports use the package's `/ts` subpath,
+ which must resolve to TypeScript source,
+ never built output.
 
 ST5:
  Prefer named imports,
@@ -1039,6 +1040,15 @@ PPX:
  Composition over inheritance;
  `readonly` and `#private` by default;
  `unknown` over `any`.
+
+OWB:
+ `ForeignBorrowed` marks ownership boundaries only.
+Propagate provenance through aliases,
+ properties,
+ destructuring,
+ elements,
+ and callbacks;
+ never repeat marker on descendants.
 
 #### Regular expressions
 

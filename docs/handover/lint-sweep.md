@@ -16,6 +16,8 @@ STATUS:
  left for the user to revert or handle (not reverted,
  to avoid clobbering paused/split-session work).
  The sections below are the historical resume record.
+Readonly-specific allowlist and diagnostic-filter guidance is superseded by the project-owned semantic rule and must not
+be reused.
 
 Resume point for the workspace-wide lint sweep.
  A fresh agent should be able to continue from here with no prior conversation context.
@@ -110,38 +112,24 @@ Green and committed.
 Three reusable findings came out of the two stubborn `prefer-readonly-parameter-types` warnings (the earlier "2 remaining" count was an undercount;
  see lesson below):
 
-1. **h3 `app: H3` flagged despite `H3` being allow-listed = bundler-rename name mismatch.
-   ** h3's dist declares `class H3$1` and re-exports `type H3 = H3$1`,
-    so `app: H3` resolves to symbol `H3$1` and the plain `H3` allow entry never matches.
-    Fix:
-    add `H3$1` alongside `H3` in the `h3` package specifier (`packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-pkg.ts`,
-    committed `2cff7c8c`).
-    Same matcher family as the `Node$1`/`Root_` cases.
-    Full trace in [docs/troubleshooting/oxlint-prefer-readonly-estree.md](../troubleshooting/oxlint-prefer-readonly-estree.md).
+1. **h3 `app: H3` exposed a native-rule symbol-name mismatch.**
+   h3's dist declared `class H3$1` and re-exported `type H3 = H3$1`,
+   so the retired native allowlist could miss the surface name.
+   Do not recreate that allowlist entry.
+   The replacement uses exact declaration provenance and caller effects.
 
-2. **`focusOutline({ offset?: CssValue })` flagged = branded primitive nested in an object param,
-    working-as-intended.
-   ** A branded primitive (`string & { __brand }`) is exempt only at the TOP LEVEL of a param (`isTypeBrandedLiteralLike` runs once in the rule listener,
-    never in the readonly recursion);
-    nested it reports because `string`'s methods are not readonly.
-    This is identical in oxlint/tsgolint and typescript-eslint (TSE #1790/#11660;
-    nested non-readonly is "working as intended" per #2823).
-    `allow` cannot silence it either:
-    the recursed property type drops the alias,
-    so the name gate never matches.
-    Full trace + 5-constraint do-not-file audit in [docs/troubleshooting/oxlint-prefer-readonly-branded-nesting.md](../troubleshooting/oxlint-prefer-readonly-branded-nesting.md).
+2. **`focusOutline({ offset?: CssValue })` exposed a native-rule nested-brand limitation.**
+   The semantic replacement classifies the primitive and readonly brand constituents directly.
+   A 2026-07-13 package run produced no `focusOutline` or `CssValue` diagnostic while preserving unrelated findings.
+   See
+   [oxlint-prefer-readonly-branded-nesting.md](../troubleshooting/oxlint-prefer-readonly-branded-nesting.md).
 
-3. **New reusable mechanism:
-    the `task-oxlint` suppression registry.
-   ** When a diagnostic is a genuine false positive that `allow` and source changes cannot fix,
-    add an entry to `packages/dev-script/task-util/src/oxlint-suppress.ts` (`{ rule, snippetIncludes, pathIncludes?, reason }`).
-    The wrapper drops matching blocks,
-    recomputes the `Found N` summary,
-    and fails only when non-suppressed diagnostics remain (mirrors `tsgo-filter.ts`).
-    Committed `f74b0b97`.
-    Keep entries specific (substring match) and prefer source fixes;
-    this is the last resort,
-    and it diverges from raw oxlint (CI not routed through `task-oxlint` still reports).
+3. **Readonly diagnostics must remain authoritative.**
+   Do not add output filtering for the replacement rule.
+   Resolve exact external effects in the tested catalogue,
+   propagate real ownership through `ForeignBorrowed` boundaries,
+   or add an honest `@mutates` contract for caller-observable effects.
+   Oxlint reports unnecessary disable directives itself.
 
 Lessons for future sweeps:
 
@@ -216,10 +204,10 @@ Dispatch each leaf package to a `spawn-claude` child that fixes it to `mise run 
 Leaf packages still to fix:
 
 - `webapp-productivity/done`:
-   DONE,
-   committed `9741947c` (green via the task-oxlint suppression for the one branded-nesting false positive).
-   See the "Done:
-   webapp-productivity/done" section above for the reusable findings.
+   this historical package status predates the semantic replacement.
+   A 2026-07-13 package run returned status `1` with 35 replacement-rule findings,
+   but no `focusOutline` or `CssValue` finding.
+   See the branded-nesting troubleshooting document for the resolved native-rule false positive.
 - `pi/advisor` (33e)
 - `oxlint-plugins/tsdoc` (28w 37e):
    a config package;

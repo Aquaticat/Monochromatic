@@ -215,10 +215,23 @@ member,
 and targets for every added Pi method.
 The rule-level invalid fixture also proves that direct callback invocation without a contract
 reports the missing callback contract.
+The current continuation separates that invoked-capability fact from referent mutation.
+A pure or throwing owned callback no longer makes its function object or captured readonly input dishonest merely
+because another helper invokes it.
+Unknown or externally supplied callbacks still require an honest invocation contract because they can change captured
+state,
+schedule work,
+or exercise another capability.
 Package-local Oxlint accepts the documented effects in current-time-context,
 Advisor,
 shared model selection,
 and auto-mode.
+Those package checks passed before the invoked-capability refinement.
+After that refinement,
+the plugin's type check,
+Oxlint check,
+and complete unit suite pass.
+The unit assertion now expects 11 diagnostics rather than the obsolete referent-mutation count of 12.
 
 The subsequent root `mise run lint:oxlint` sweep completed its Oxlint run in `259.1` seconds.
 It returned status `1` because the repository still had `3,803` warnings and `1,714` errors across all rules,
@@ -251,8 +264,11 @@ Its tradeoff is contract propagation through local wrappers that forward the sam
 - Treating direct callback invocation as observational misses changes to captured state,
   invoked capabilities,
   and deferred work.
+- Treating callback invocation as proof that the function object or every captured value was mutated creates false
+  dishonest-readonly findings for pure and throwing local callbacks.
 - Keeping direct callback invocation opaque rejects a verified local wrapper even after its exact relation
   to supplied callback capability is documented.
+  The distinct invoked-capability effect preserves the contract without inventing referent mutation.
 - Checking only method names can match unrelated owners.
   Exact package major,
   owner type,

@@ -1,132 +1,179 @@
-# Oxlint flags identity helpers and registries that accept policy declarations
+# Semantic readonly checks for identity-preserving policy authoring APIs
 
 ## Symptom
 
-Cli-git's side-effect-free authoring helpers preserve caller-owned declarations by identity:
+Cli-git's authoring helpers preserve caller-provided declarations by identity:
 
-```ts
+```typescript
 const options = definePolicyOptions(schema);
 const policy = definePolicy(definition);
 ```
 
-Oxlint's `typescript/prefer-readonly-parameter-types` still reports both parameters after wrapping their surface types
-in `Readonly`.
-The same diagnostic applies to the policy engine's internal sequencing-test registry because it accepts the same
-callback-bearing declarations:
+A shallow `Readonly<T>` did not satisfy the former native
+`typescript/prefer-readonly-parameter-types` rule.
+The values contain Valibot schemas,
+callbacks,
+and generic input/output positions,
+so their complete structures are not deeply readonly.
 
-```text
-Parameter should be a readonly type.
-```
+The same issue appears in internal policy registries and adapters that retain executable callbacks for sequencing and
+failure-path tests.
 
 ## Root cause
 
-The repository config in
-`packages/config/oxlint/src/rules/prefer-readonly-parameter-types.ts`
-keeps `treatMethodsAsReadonly` disabled because enabling it would hide actual mutable class,
-map,
-and set inputs.
-It allows selected third-party symbols through
-`packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-pkg.ts`.
+These APIs make an ownership promise,
+not a structural immutability promise.
+The helper receives a caller-owned runtime capability and must return or store the same identity.
+Cloning,
+freezing,
+or projecting the value would change the API contract.
 
-Valibot 1.4.2 defines `GenericSchema` as an alias of `BaseSchema` in
-`node_modules/.pnpm/valibot@1.4.2_typescript@7.0.1-rc/node_modules/valibot/dist/index.d.mts:3141`.
-The schema contract includes function members and generic input/output positions whose complete structure is not deeply
-readonly.
-Cli-git's `PolicyDefinition` in `packages/git-policies/cli/src/api/policy-types.ts` contains that schema plus a policy callback.
+Valibot `1.4.2` defines `GenericSchema` as an alias of `BaseSchema` in its published `dist/index.d.mts`.
+That contract includes callable behavior and generic positions whose effects are not represented by `Readonly<T>`.
+Cli-git's `PolicyDefinition` in `packages/git-policies/api/src/policy-types.ts` combines a schema with an executable
+policy callback.
 
-The helpers cannot clone or transform these values:
-`packages/git-policies/cli/SPEC.md` requires each helper to return the exact input object,
-and Valibot consumers need the original schema type for parsing and output inference.
-The internal `registeredPolicies` adapter in
-`packages/git-policies/cli/src/policy-engine/engine.ts`,
-filesystem-failure adapter in
-`packages/git-policies/cli/src/policy-engine/commit-transaction-boundary.ts`,
-and command-facts adapter in
-`packages/git-policies/cli/src/policy-engine/pre-forward-engine.ts` must retain executable callbacks so tests can prove
-sequential order,
-keep-going behavior,
-immediate exception stopping,
-and fail-closed transaction setup with deterministic policies.
-They read the declarations and never mutate them.
+A type-name allowlist cannot prove that a particular function observes the capability without invoking or mutating it.
+Conversely,
+treating every method as readonly would hide genuine mutable map,
+set,
+and class state elsewhere.
+
+## Verified resolution
+
+The public authoring boundary states foreign ownership exactly once:
+
+```typescript
+export function definePolicyOptions<const TInput, const TOutput>(
+  schema: ForeignBorrowed<GenericSchema<TInput, TOutput>>,
+): GenericSchema<TInput, TOutput> {
+  return schema;
+}
+
+export function definePolicy<
+  const TOptions,
+  const TName extends string,
+>(
+  definition: ForeignBorrowed<PolicyDefinition<Readonly<TOptions>, TName>>,
+): PolicyDefinition<Readonly<TOptions>, TName> {
+  return definition;
+}
+```
+
+The corresponding sources are:
+
+- `packages/git-policies/api/src/authoring.ts`;
+- `packages/git-policies/cli/src/api/authoring.ts`.
+
+`ForeignBorrowed` records that the object and its reachable capabilities remain caller-owned.
+It does not claim structural immutability.
+The semantic rule still verifies direct mutations,
+callback invocation,
+unknown calls,
+and transitive effects.
+Actual caller-observable effects require complete `@mutates` contracts.
+
+Descendant properties,
+aliases,
+callback parameters,
+and internal helpers do not repeat the marker.
+Guaranteed foreign provenance flows through property and element access,
+destructuring,
+owned calls,
+audited callbacks,
+and synchronous iteration.
+A helper inherits that provenance only when every owned inbound call supplies wholly foreign mutable state.
 
 ## Verification
 
-`mise run //packages/git-policies/cli:lint:oxlint` reproduced the two warnings against:
+The original native-rule investigation established that:
 
-- `definePolicyOptions` with `Readonly<GenericSchema<TInput, TOutput>>`;
-- `definePolicy` with `Readonly<PolicyDefinition<Readonly<TOptions>, TName>>`.
+- `Readonly<GenericSchema<TInput, TOutput>>` still reported;
+- `Readonly<PolicyDefinition<Readonly<TOptions>, TName>>` still reported;
+- adding `GenericSchema` and resolved `BaseSchema` names to a package allowlist did not fix nested behavior.
 
-Adding both `GenericSchema` and its resolved `BaseSchema` symbol to the package allow list did not change either warning.
-Commits `9ced4d01e` and `e36b89d73` record that attempted configuration path;
-commit `0108b0db2` removes the ineffective global allowance.
-This demonstrates that the warning follows nested mutable structure rather than a directly exemptible parameter symbol.
+The current source check is:
 
-## Verified workaround
+```sh
+rg --line-number "ForeignBorrowed<GenericSchema|ForeignBorrowed<PolicyDefinition" \
+  packages/git-policies/api/src/authoring.ts \
+  packages/git-policies/cli/src/api/authoring.ts
+```
 
-Keep the parameter types honest and add a tightly scoped
-`typescript/prefer-readonly-parameter-types` disable/enable pair around each affected helper or internal engine
-boundary.
-Each justification must identify the identity or registry contract,
-the callback-bearing policy shape,
-and the fact that the function neither mutates nor clones its input.
+Both public authoring mirrors place the marker on the actual ingress parameter.
+The full cli-git semantic migration remains an active package in
+`docs/planning/replace-prefer-readonly-parameter-types.md`;
+this document does not claim that every cli-git finding is resolved.
 
-This is narrower than globally allowing Valibot or enabling `treatMethodsAsReadonly`.
-It preserves findings for ordinary mutable parameters everywhere else.
+The semantic rule's provenance fixtures separately cover:
+
+- property and element descendants;
+- nested destructuring and aliases;
+- owned helper calls;
+- audited array callbacks;
+- synchronous `for...of` elements;
+- mixed foreign and owned inbound paths.
 
 ## What does not work
 
-### Wrap the parameter in `Readonly`
+### Wrap the capability in `Readonly`
 
-`Readonly` changes only surface properties.
-It does not rewrite nested schema and callback structures,
-so the rule still reports the parameter.
+`Readonly` changes only surface property modifiers.
+It does not rewrite nested schemas,
+callbacks,
+or behavioral capabilities,
+and it can falsely suggest semantic immutability.
 
-### Add Valibot aliases to the package allow list
+### Add schema aliases to a global allowlist
 
-Both surface and resolved symbol names were tested.
-Neither suppresses the warning emitted for the complete identity-helper parameter.
-Keeping those entries would weaken global configuration without fixing this boundary.
+A type name does not establish ownership or effects at one call boundary.
+It would also exempt unrelated uses of the same capability type.
 
 ### Clone or deeply freeze the declaration
 
-That would violate the helper contract,
-change object identity,
-and risk changing third-party schema behavior.
+The authoring API promises exact identity.
+Transforming the value would violate that contract and could change third-party schema behavior.
 
-### Enable `treatMethodsAsReadonly`
+### Treat every method as readonly
 
-The linter configuration source documents why this hides legitimate mutation through maps,
+That broad setting can hide real mutation through maps,
 sets,
-and classes.
-Changing the repository-wide semantic would be disproportionate to two explicit identity boundaries.
+and stateful capabilities.
 
-## Local aliases hide allowlisted lib types
+### Mark every descendant `ForeignBorrowed`
 
-`packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-lib.ts`
-already allowlists `ReadonlyMap` and `ReadonlySet`,
-but the specifier matcher resolves the parameter's declared symbol.
-A repo-local alias such as `type IndexRecordMap = ReadonlyMap<string, string>`
-is a file-domain symbol,
-so the `from: 'lib'` entry no longer matches and the rule reports the parameter again.
+Repeating the marker obscures where foreign ownership entered and can hide a helper that also receives ordinary owned
+mutable input.
+The semantic provenance index must carry the boundary fact instead.
 
-Remediation:
-spell the lib type directly in parameter positions
-(`before: ReadonlyMap<string, string>`).
-The allowlist is correct;
-the alias indirection is the problem.
-Do not reach for a scoped `oxlint-disable`:
-`packages/git-policies/cli/src/policy-engine/add-staged-delta.ts` hit this in 2026-07
-and the direct spelling removed the warning with no suppression.
-Types genuinely outside our control that are still missing from the list
-belong in `prefer-readonly-parameter-types.allow-lib.ts`
-(or `.allow-pkg.ts` for package types),
-not behind per-site disables.
+### Use `@mutates` when no caller-observable effect exists
 
-## Upstream filing decision
+A contract must describe real effects,
+not an analyzer limitation.
+Identity helpers that only return their input need no invented mutation statement.
 
-No upstream issue should be filed.
-The rule correctly identifies that these external and callback-bearing structures are not deeply readonly.
-The mismatch is local:
-cli-git deliberately exposes identity helpers whose non-mutation guarantee is behavioral rather than expressible as a
-deep structural TypeScript type.
-The scoped suppression communicates that exception without asking Oxlint to weaken its rule.
+## Upstream filing artifact
+
+### Upstream filing decision
+
+1. **Is it really upstream's fault?** No. Structural readonly rules correctly cannot infer this repository's ownership
+   boundary from a third-party capability type.
+2. **Can upstream fix it?** Not without a project-specific ownership and effect model.
+3. **Are they supporting this use case?** The native rule supports structural type checks,
+   not exact identity-preserving capability contracts.
+4. **Would the repo welcome our contribution?** No generally applicable upstream change was identified.
+5. **Will they likely fix it?** Not applicable because no upstream defect is claimed.
+6. **Have we prototyped a minimal fix compatible with their architecture?** The project-owned marker,
+   TypeScript 7 semantic bridge,
+   provenance propagation,
+   and verified effect contracts are the implemented fix.
+
+Nothing should be filed upstream.
+
+## Source audit boundary
+
+The investigation followed the published Valibot declaration to cli-git's public authoring and policy-definition
+sources.
+A repository search found the related branded-nesting and ESTree documents;
+they cover different type-resolution mechanisms.
+No `.out-of-scope` directory applies to this documentation path.

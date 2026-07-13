@@ -28,10 +28,30 @@ Semantic-plugin lint and fix tasks use one Oxlint worker because TypeScript brid
 ## Ownership marker
 
 Externally dictated mutable values use
-`ForeignBorrowed<T>` from `@monochromatic-dev/ownership-marker-foreign-borrowed`.
+`ForeignBorrowed<T>` from `@monochromatic-dev/ownership-marker-foreign-borrowed/ts`.
 That zero-runtime package contains only the ownership marker.
 The marker records foreign ownership without claiming immutability,
 and direct or transitive mutation still requires `@mutates`.
+Place it only where foreign ownership enters or is deliberately retained.
+Properties,
+elements,
+destructured bindings,
+callback elements,
+synchronous iteration elements,
+and owned helper parameters inherit guaranteed provenance through semantic analysis.
+A helper parameter is foreign only when every owned inbound call supplies wholly foreign mutable state.
+One ordinary owned path restores normal readonly enforcement.
+
+See
+the [foreign-provenance guide](../../../docs/troubleshooting/oxlint-prefer-readonly-foreign-provenance.md).
+
+## Callback invocation
+
+Invoking a caller-provided callback is an affected capability and requires an honest mutation contract.
+Invocation alone does not prove mutation of the function object or every captured value.
+The rule tracks invoked capability separately from referent mutation,
+so pure and throwing owned callbacks do not make captured readonly values dishonest.
+Unknown and external callbacks remain fail-closed.
 
 ## Unknown calls
 
