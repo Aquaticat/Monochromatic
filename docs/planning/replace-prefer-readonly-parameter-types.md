@@ -2,8 +2,8 @@
 
 Status:
  design interview reopened after final-plan review.
-No implementation is authorized until the remaining capability-effect policy is resolved and the user confirms shared
-understanding.
+No implementation is authorized until the remaining package-catalog admission policy is resolved and the user confirms
+shared understanding.
 
 Last updated:
  2026-07-12.
@@ -174,6 +174,14 @@ and external callbacks.
 Run platform artifact probes on Linux x64,
 macOS arm64,
 and Windows x64 before completion.
+Add intrinsic-effect contract tests for exact ECMAScript,
+DOM,
+Node,
+and package symbols;
+package aliases and subpath exports;
+supported and unsupported majors;
+duplicate installed majors;
+and unresolved package metadata.
 
 ### Define the rule contract
 
@@ -314,7 +322,11 @@ All discovered policy branches are resolved:
 - preserve readonly type-contract semantics and add mutation effects;
 - require universal,
   verified `@mutates` contracts for owned mutation;
-- wrap external mutable effects locally;
+- recognize ECMAScript,
+  DOM,
+  Node,
+  and major-version-gated common-package effects intrinsically,
+  with local adapters as the fallback;
 - infer higher-order relationships rather than adding a TSDoc relation language;
 - enforce active production source while retaining test,
   benchmark,
@@ -553,11 +565,26 @@ with parameters mapped by resolved signature rather than assumed name equality.
 The TSDoc plugin validates each signature independently;
 the semantic rule validates cross-signature consistency.
 
-Raw external mutable-effect calls are isolated behind locally owned,
-documented adapters.
-Production code calls the adapters rather than maintaining a global package-symbol effect registry.
+The analyzer intrinsically recognizes effects for ECMAScript,
+DOM,
+Node,
+and common ecosystem packages.
+Package effects are keyed by resolved package identity and supported major version;
+an effect entry for one major must never apply to another major implicitly.
+The catalog records exact callable symbols,
+effect targets,
+source provenance,
+supported declaration versions,
+and tests proving both accepted and rejected major-version matches.
+Method names alone are never evidence.
+
+An uncatalogued package,
+unsupported major,
+or unresolved symbol falls back to a locally owned,
+documented adapter.
 Adapter tags state the external effect at the repository boundary and must name the upstream callable in their
 description or link.
+This supersedes the earlier adapter-only design while retaining adapters as the fail-closed boundary.
 
 `@mutates` means "may mutate,
 "
@@ -917,16 +944,11 @@ so it must not offer an import that would leave the source unresolved.
 
 ### Grilling status
 
-Final-plan review found one unresolved policy boundary:
-which bodyless standard-library and platform effects the analyzer may recognize intrinsically before requiring a local
-adapter.
-Resolve that boundary one question at a time.
-It determines operational readonly honesty for collections,
-typed arrays,
-DOM and Node capabilities,
-iterators,
-classes,
-accessors,
-callable objects,
-and package types.
-Implementation remains blocked until the user then confirms shared understanding.
+The intrinsic-effect boundary now includes ECMAScript,
+DOM,
+Node,
+and common ecosystem packages gated by resolved major version.
+One policy question remains:
+how packages qualify as common enough for the intrinsic catalog.
+Resolve that admission policy before requesting shared-understanding confirmation.
+Implementation remains blocked until the user then confirms.
