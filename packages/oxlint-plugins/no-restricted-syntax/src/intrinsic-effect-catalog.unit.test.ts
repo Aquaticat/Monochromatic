@@ -66,6 +66,18 @@ const SHARED_SOURCE_PATH = fileURLToPath(new URL(
   import.meta.url,
 ),);
 
+/** Pi extension source used for exact package method provenance. */
+const PI_EXTENSION_SOURCE_PATH = fileURLToPath(new URL(
+  '../../../pi-plugins/auto-mode/src/register-propose-trust.ts',
+  import.meta.url,
+),);
+
+/** Pi extension source text containing audited method calls. */
+const PI_EXTENSION_SOURCE = readFileSync(
+  PI_EXTENSION_SOURCE_PATH,
+  'utf8',
+);
+
 /** Current fixture source text. */
 const SOURCE = readFileSync(
   FIXTURE_PATH,
@@ -228,6 +240,63 @@ await describe({
           member: 'join',
         },);
         closeSemanticBridge();
+      },
+    },),
+    it({
+      name: 'resolves exact Pi extension API method provenance',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: PI_EXTENSION_SOURCE_PATH,
+          sourceText: PI_EXTENSION_SOURCE,
+          hasBOM: false,
+        },);
+        const queries = [
+          '  pi.registerTool({',
+          '        pi.appendEntry(',
+        ].map(function piMethodQuery(callText,) {
+          const memberOffset = PI_EXTENSION_SOURCE.indexOf(callText,)
+            + callText.indexOf('.',)
+            + 1;
+          const memberNode = session.nodeAtOffset(memberOffset,);
+          const propertyAccess = memberNode.parent;
+          if (!isPropertyAccessExpression(propertyAccess,))
+            throw new Error(`Expected Pi property access for ${callText}.`,);
+          const receiverType = session.checker.getTypeAtLocation(propertyAccess.expression,);
+          const memberSymbol = session.checker.getSymbolAtLocation(propertyAccess.name,);
+          if ((receiverType === undefined) || (memberSymbol === undefined))
+            throw new Error(`Expected Pi receiver and member for ${callText}.`,);
+          return intrinsicEffectQuery({
+            project: session.project,
+            receiverType,
+            memberSymbol,
+          },);
+        },);
+        closeSemanticBridge();
+
+        expect(queries,).toEqual([
+          {
+            provenance: {
+              kind: 'package',
+              packageName: '@earendil-works/pi-coding-agent',
+              major: 0,
+            },
+            ownerType: 'ExtensionAPI',
+            member: 'registerTool',
+          },
+          {
+            provenance: {
+              kind: 'package',
+              packageName: '@earendil-works/pi-coding-agent',
+              major: 0,
+            },
+            ownerType: 'ExtensionAPI',
+            member: 'appendEntry',
+          },
+        ],);
+        expect(queries.every(function catalogued(query,): boolean {
+          return (query !== NO_INTRINSIC_QUERY)
+            && (intrinsicEffect(query,) !== NO_INTRINSIC_EFFECT);
+        },),).toBe(true,);
       },
     },),
     it({

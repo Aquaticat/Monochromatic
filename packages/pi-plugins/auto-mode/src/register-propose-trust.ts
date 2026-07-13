@@ -96,6 +96,8 @@ const trustReasonParameterSchema = Type.Optional(
  *
  * @param pi - pi extension API the tool is registered on
  *
+ * @mutates pi - `pi.registerTool` changes registered tools; deferred `pi.appendEntry` calls append accepted trust state.
+ *
  * @example
  * ```typescript
  * registerProposeTrust(pi);

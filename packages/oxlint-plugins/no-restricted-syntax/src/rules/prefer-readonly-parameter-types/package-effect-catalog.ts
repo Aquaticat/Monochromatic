@@ -8,6 +8,7 @@ import type {
   IntrinsicEffectEntry,
   IntrinsicProvenance,
 } from './intrinsic-effect-catalog.ts';
+import { PI_PACKAGE_EFFECTS, } from './pi-package-effect-catalog.ts';
 
 /**
  * Shared receiver mutation target.
@@ -51,6 +52,7 @@ function receiverEffect({
  * Package effects audited by exact current-lock major.
  */
 export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  ...PI_PACKAGE_EFFECTS,
   receiverEffect({
     provenance: {
       kind: 'package',
