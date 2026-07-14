@@ -931,6 +931,9 @@ importers:
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       ignore:
         specifier: 'catalog:'
         version: 7.0.6
@@ -3183,6 +3186,9 @@ importers:
 
   packages/rolldown-plugins/import-attributes:
     dependencies:
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       rolldown:
         specifier: 'catalog:'
         version: 1.1.5
