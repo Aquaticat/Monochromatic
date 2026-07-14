@@ -102,7 +102,7 @@ export function* walk(root: ReadonlyDeep<Root>,): Generator<WalkEntry> {
     /**
      * Ancestor chain for this node's children: the current node appended.
      */
-    const childAncestors: readonly Parents[] = [
+    const childAncestors: readonly ReadonlyDeep<Parents>[] = [
       ...ancestors,
       node,
     ];

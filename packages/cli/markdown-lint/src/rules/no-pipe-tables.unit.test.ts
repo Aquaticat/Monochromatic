@@ -5,6 +5,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { Table, } from 'mdast';
+import type { ReadonlyDeep, } from 'type-fest';
 
 import {
   applyFixes,
@@ -44,7 +45,7 @@ function lintTables(
  *
  * @returns first table node
  */
-function firstTable(source: string,): Table {
+function firstTable(source: string,): ReadonlyDeep<Table> {
   for (const { node, } of walk(parse({
     source,
     mdx: false,
