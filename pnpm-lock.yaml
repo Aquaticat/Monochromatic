@@ -940,6 +940,9 @@ importers:
       satteri:
         specifier: 'catalog:'
         version: 0.9.5
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.8.0
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
