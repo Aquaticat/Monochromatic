@@ -163,6 +163,26 @@ function escapeForScriptTag(js: string,): string {
 //region Public API
 
 /**
+ * Serializes probe data embedded in report HTML.
+ *
+ * @param probes - Probe records that may expose serialization hooks.
+ *
+ * @returns compact JSON text.
+ *
+ * @mutates probes - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
+ * @example
+ * ```ts
+ * serializeProbes([]);
+ * ```
+ */
+function serializeProbes(
+  probes: readonly (PackageProbe & { catalogKey: string; })[],
+): string {
+  return JSON.stringify(probes,);
+}
+
+/**
  * Composes the full HTML report.
  *
  * @param probes - Resolved package probes for every catalog entry.
@@ -171,6 +191,8 @@ function escapeForScriptTag(js: string,): string {
  *   bundler. Tests override it to skip a multi-second real build.
  *
  * @returns Self-contained HTML document as a single string.
+ *
+ * @mutates probes - `JSON.stringify` may invoke hooks on probe records.
  *
  * @example
  * ```ts
@@ -183,7 +205,7 @@ export async function renderHtml(
     probes,
     bundle = bundleController,
   }: {
-    readonly probes: readonly PackageProbe[];
+    probes: readonly PackageProbe[];
     readonly bundle?: () => Promise<string>;
   },
 ): Promise<string> {
@@ -207,7 +229,7 @@ export async function renderHtml(
   /**
    * Probe array serialised for inlining as `globalThis.__PROBES__`; escaped below to neutralise `</script>` sequences.
    */
-  const probesJson = JSON.stringify(probes,);
+  const probesJson = serializeProbes(probes,);
   return `<!doctype html>
 <html lang="en">
 <head>

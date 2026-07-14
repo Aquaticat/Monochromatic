@@ -301,6 +301,8 @@ export function defaultState(
  *
  * @returns URL-safe encoded string.
  *
+ * @mutates state - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * const encoded = encodeState({ state });
@@ -308,7 +310,7 @@ export function defaultState(
  * ```
  */
 export function encodeState(
-  { state, }: { readonly state: AppState; },
+  { state, }: { state: AppState; },
 ): string {
   return encodeURIComponent(JSON.stringify(state,),);
 }
@@ -509,13 +511,15 @@ export function readStateFromHash(
  *
  * @returns Hash including the leading `#`.
  *
+ * @mutates state - `JSON.stringify` may invoke hooks on state values.
+ *
  * @example
  * ```ts
  * location.hash = writeStateToHash({ state });
  * ```
  */
 export function writeStateToHash(
-  { state, }: { readonly state: AppState; },
+  { state, }: { state: AppState; },
 ): string {
   return `#state=${
     encodeState({

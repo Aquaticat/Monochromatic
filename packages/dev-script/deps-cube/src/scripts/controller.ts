@@ -228,10 +228,12 @@ function rerenderLayers(
  * `history.replaceState` so the back stack stays clean.
  *
  * @param session - Source session.
+ *
+ * @mutates session - `JSON.stringify` may invoke hooks on state values.
  */
 function syncHash(
   { session, }: {
-    readonly session: Readonly<{
+    session: Readonly<{
       state: ReadonlyDeep<AppState>;
     }>;
   },
