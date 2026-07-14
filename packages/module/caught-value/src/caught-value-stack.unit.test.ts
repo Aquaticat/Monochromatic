@@ -33,7 +33,7 @@ await describe({
          * Error with stack explicitly absent.
          */
         const error = new Error('offline',);
-        error.stack = undefined;
+        delete error.stack;
         expect(caughtValueStack(error,),).toBe('offline',);
       },
     },),
