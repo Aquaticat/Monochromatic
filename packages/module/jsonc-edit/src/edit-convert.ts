@@ -1,7 +1,4 @@
-import type {
-  JsonValue,
-  ReadonlyDeep,
-} from 'type-fest';
+import type { JsonValue, } from 'type-fest';
 import type { JsoncValue, } from './value.ts';
 
 //region JS value to node
@@ -24,7 +21,7 @@ import type { JsoncValue, } from './value.ts';
 export function jsToNode({
   value,
 }: {
-  readonly value: ReadonlyDeep<JsonValue>;
+  readonly value: JsonValue;
 },): JsoncValue {
   if (value === null)
     return { kind: 'null', };
@@ -46,7 +43,7 @@ export function jsToNode({
   if (Array.isArray(value,))
     return {
       kind: 'array',
-      elements: value.map(function elementToNode(element: ReadonlyDeep<JsonValue>,): JsoncValue {
+      elements: value.map(function elementToNode(element: JsonValue,): JsoncValue {
         return jsToNode({ value: element, },);
       },),
     };
@@ -55,7 +52,7 @@ export function jsToNode({
     entries: Object.entries(value,)
       .map(function pairToEntry([key, child]: readonly [
         string,
-        ReadonlyDeep<JsonValue>
+        JsonValue
       ],) {
         return {
           key: { value: key, },
