@@ -56,15 +56,15 @@ const cacheEntrySchema = v.object({
  * On-disk cache structure at `.cache/build-manifest.json`.
  */
 export type BuildManifest = {
-  readonly pipelineHash: string;
+  pipelineHash: string;
   /**
    * HEAD commit SHA captured when this manifest was written.
    * Used to validate cached git-derived publication/update dates:
    * when the current HEAD matches, cached dates are reusable without
    * re-probing git. When HEAD has moved, dates are re-derived.
    */
-  readonly headSha: string;
-  readonly content: Readonly<Record<string, CacheEntry>>;
+  headSha: string;
+  content: Readonly<Record<string, CacheEntry>>;
 };
 
 /**
@@ -169,9 +169,7 @@ export async function readCache(
  * await writeCache(manifest);
  * ```
  */
-export async function writeCache(
-  manifest: BuildManifest & { content: BuildManifest['content']; },
-): Promise<void> {
+export async function writeCache(manifest: BuildManifest,): Promise<void> {
   await mkdir(
     dirname(CACHE_PATH,),
     { recursive: true, },
@@ -213,7 +211,7 @@ export function getCachedEntry(
     filePath,
     contentHash,
   }: {
-    readonly manifest: BuildManifest;
+    readonly manifest: Readonly<BuildManifest>;
     readonly filePath: string;
     readonly contentHash: string;
   },
