@@ -162,12 +162,16 @@ export async function readCache(
  *
  * @param manifest - build manifest to persist
  *
+ * @mutates manifest - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * await writeCache(manifest);
  * ```
  */
-export async function writeCache(manifest: BuildManifest,): Promise<void> {
+export async function writeCache(
+  manifest: BuildManifest & { content: BuildManifest['content']; },
+): Promise<void> {
   await mkdir(
     dirname(CACHE_PATH,),
     { recursive: true, },
