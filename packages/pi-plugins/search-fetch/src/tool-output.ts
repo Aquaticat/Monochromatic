@@ -236,6 +236,8 @@ const l = tagged({
  *
  * @returns Pi tool result with response content and structured details
  *
+ * @mutates options - `JSON.stringify` may invoke hooks on response value stored in options.
+ *
  * @example
  * ```ts
  * await createLinkupToolOutput({
@@ -306,6 +308,8 @@ async function createLinkupToolOutput(
  * @param options - value and optional truncation limits
  *
  * @returns content item and truncation metadata
+ *
+ * @mutates options - `JSON.stringify` may invoke hooks on response value stored in options.
  *
  * @example
  * ```ts

@@ -129,6 +129,8 @@ type ResultsArrayJsonlResponseText = string | typeof NOT_RESULTS_ARRAY_RESPONSE;
  *
  * @returns model-visible text, temp filename, and truncation label
  *
+ * @mutates options - `JSON.stringify` may invoke hooks on response value stored in options.
+ *
  * @example
  * ```ts
  * modelTextForLinkupResponse({ value: { markdown: '# Meow' }, renderResultsArrayAsJsonl: false });
@@ -220,6 +222,8 @@ function markdownOnlyResponseText(value: unknown,): MarkdownOnlyResponseText {
  *
  * @returns JSONL text when value contains object search results in an accepted envelope
  *
+ * @mutates value - `JSON.stringify` may invoke hooks on accepted result records.
+ *
  * @example
  * ```ts
  * searchResultsJsonlText({ results: [{ title: 'Meow' }] });
@@ -242,6 +246,8 @@ function searchResultsJsonlText(value: unknown,): ResultsArrayJsonlResponseText 
  * @param value - search response value
  *
  * @returns JSONL text when value has only an array results property
+ *
+ * @mutates value - `JSON.stringify` may invoke hooks on accepted result records.
  *
  * @example
  * ```ts
@@ -267,6 +273,8 @@ function resultsArrayJsonlText(value: unknown,): ResultsArrayJsonlResponseText {
  * @param value - search response value
  *
  * @returns JSONL text when value has exact metadata keys and object result items
+ *
+ * @mutates value - `JSON.stringify` may invoke hooks on accepted result records.
  *
  * @example
  * ```ts
@@ -299,6 +307,8 @@ function searchResultEnvelopeJsonlText(value: unknown,): ResultsArrayJsonlRespon
  *
  * @returns JSONL text when results is an array of records
  *
+ * @mutates value - `JSON.stringify` may invoke hooks on result records stored in value.
+ *
  * @example
  * ```ts
  * resultsPropertyJsonlText({ results: [{ title: 'Meow' }] });
@@ -324,9 +334,20 @@ function resultsPropertyJsonlText(value: Readonly<Record<string, unknown>>,): Re
     return NOT_RESULTS_ARRAY_RESPONSE;
 
   return resultItems
-    .map(function stringifyResult(result,) {
-      return stringifyJsonLineForModel(result,);
-    },)
+    .map(
+      /**
+       * Serializes one retained result record.
+       *
+       * @param result - Result record that may expose serialization hooks.
+       *
+       * @returns compact JSON line.
+       *
+       * @mutates result - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+       */
+      function stringifyResult(result,) {
+        return stringifyJsonLineForModel(result,);
+      },
+    )
     .join('\n',);
 }
 
@@ -403,6 +424,8 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
  * @param value - value to serialize
  *
  * @returns pretty JSON text, or JSON null when value is undefined
+ *
+ * @mutates value - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
  */
 function stringifyJsonForModel(value: unknown,): string {
   /**
@@ -422,6 +445,8 @@ function stringifyJsonForModel(value: unknown,): string {
  * @param value - object value to serialize
  *
  * @returns compact JSON text for one JSONL line
+ *
+ * @mutates value - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
  */
 function stringifyJsonLineForModel(value: Readonly<Record<string, unknown>>,): string {
   /**
