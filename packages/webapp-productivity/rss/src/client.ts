@@ -52,6 +52,8 @@ function resolveThreshold(
  *
  * @returns IntersectionObserver instance controlling the observation
  *
+ * @mutates scrollOptions - `DOM commit 5796f716 dispatchEvent invokes listeners with event` through `scrollOptions.element`; `observer.observe` retains element observation.
+ *
  * @example
  * ```ts
  * const observer = addScrollEvents({ element: myDiv });
@@ -95,17 +97,13 @@ function addScrollEvents(scrollOptions: {
    * IntersectionObserver bound to the closure state above so callbacks share lifecycle.
    */
   const observer = new IntersectionObserver(
-    function onIntersect(entries,) {
+    function onIntersect(entries: readonly IntersectionObserverEntry[],) {
       /**
        * First entry per spec, used as the source of the ratio reading.
        */
       const [entry,] = entries;
       if (!entry) {
-        console.error(
-          `empty entries for observer`,
-          entries,
-          observer,
-        );
+        console.error(`empty entries for observer; observed entry count: ${entries.length}`,);
         return;
       }
       /**
@@ -153,7 +151,14 @@ function addScrollEvents(scrollOptions: {
 const elements: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>(
   '.feed',
 );
-elements.forEach(function bindScrollIgnore(element,) {
+/**
+ * Binds one host-created feed element to observer and event-listener state.
+ *
+ * @param element - Feed element supplied by browser NodeList iteration.
+ *
+ * @mutates element - `DOM commit 5796f716 dispatchEvent invokes listeners with event`; `element.addEventListener` and `observer.observe` retain event or observation state.
+ */
+function bindScrollIgnore(element: HTMLElement,): void {
   addScrollEvents({ element, },);
   element.addEventListener(
     'scrolledOut',
@@ -223,7 +228,9 @@ elements.forEach(function bindScrollIgnore(element,) {
       })();
     },
   );
-},);
+}
+
+elements.forEach(bindScrollIgnore,);
 
 //endregion Feed element binding
 
