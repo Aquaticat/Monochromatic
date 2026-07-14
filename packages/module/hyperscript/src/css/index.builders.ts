@@ -109,13 +109,13 @@ function hasBlock(options: AtRuleOptions,): boolean {
  * // 'display:flex;background:url(a)'
  * ```
  */
-function renderBody<const Declarations extends object>(
+function renderBody(
   {
     decls,
     raw,
     children,
   }: {
-    readonly decls?: Declarations;
+    readonly decls?: AtRuleOptions['decls'] | RuleOptions['decls'];
     readonly raw?: string;
     readonly children?: readonly string[];
   },
