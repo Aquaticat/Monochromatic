@@ -17,9 +17,13 @@ import {
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 import {
+  addOpaqueEffect,
   ALL_PACKAGED_PROPERTIES,
   parameterIndexes,
 } from './effect-call-resolution.ts';
+import { addIntrinsicForwardedCallbackEffects, } from './effect-intrinsic-forwarded-callback.ts';
+import { addIntrinsicInvocations, } from './effect-intrinsic-invocation.ts';
+import { intrinsicTargetArguments, } from './intrinsic-target-arguments.ts';
 
 /**
  * Applies exact non-method callable effect when cataloged.
@@ -68,28 +72,71 @@ export function applyAuditedCallableEffect({
     return false;
   callableEffect.targets
     .forEach(function callableTarget(target,): void {
-      if (target.kind !== 'argument')
-        return;
-      /**
-       * Call argument selected by audited callable effect target.
-       */
-      const argument = call.arguments[target.index];
-      if (argument === undefined)
-        return;
-      parameterIndexes({
-        checker,
-        bindingOriginBySymbolId,
-        node: argument,
-        includedPropertyNames: target.propertyNames === undefined
-          ? ALL_PACKAGED_PROPERTIES
-          : new Set(target.propertyNames,),
+      intrinsicTargetArguments({
+        call,
+        target,
       },)
-        .forEach(function addCallableMutation(index,): void {
-          addEffectIndex({
-            target: summary.directMutated,
-            value: index,
-          },);
+        .forEach(function callableArgument(argument,): void {
+          parameterIndexes({
+            checker,
+            bindingOriginBySymbolId,
+            node: argument,
+            includedPropertyNames: (target.kind === 'receiver')
+              || (target.propertyNames === undefined)
+              ? ALL_PACKAGED_PROPERTIES
+              : new Set(target.propertyNames,),
+          },)
+            .forEach(function addCallableMutation(index,): void {
+              addEffectIndex({
+                target: summary.directMutated,
+                value: index,
+              },);
+            },);
         },);
     },);
+  callableEffect.opaqueTargets
+    ?.forEach(function opaqueCallableTarget(target,): void {
+      intrinsicTargetArguments({
+        call,
+        target,
+      },)
+        .forEach(function opaqueCallableArgument(argument,): void {
+          parameterIndexes({
+            checker,
+            bindingOriginBySymbolId,
+            node: argument,
+            includedPropertyNames: (target.kind === 'receiver')
+              || (target.propertyNames === undefined)
+              ? ALL_PACKAGED_PROPERTIES
+              : new Set(target.propertyNames,),
+          },)
+            .forEach(function opaqueCallableOrigin(origin,): void {
+              addOpaqueEffect({
+                summary,
+                affectedParameterIndex: origin,
+                provenance: callableEffect.evidence,
+              },);
+            },);
+        },);
+    },);
+  if (callableEffect.invokedArgumentIndexes !== undefined) {
+    addIntrinsicInvocations({
+      checker,
+      bindingOriginBySymbolId,
+      call,
+      argumentIndexes: callableEffect.invokedArgumentIndexes,
+      summary,
+    },);
+  }
+  if (callableEffect.forwardedCallbacks !== undefined) {
+    addIntrinsicForwardedCallbackEffects({
+      checker,
+      bindingOriginBySymbolId,
+      call,
+      effects: callableEffect.forwardedCallbacks,
+      provenance: callableEffect.evidence,
+      summary,
+    },);
+  }
   return true;
 }

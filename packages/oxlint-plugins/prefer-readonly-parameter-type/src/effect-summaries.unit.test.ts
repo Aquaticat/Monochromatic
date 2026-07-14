@@ -403,6 +403,54 @@ await describe({
       },
     },),
     it({
+      name: 'keeps deferred callback invocation separate from forwarded argument uncertainty',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Disposable configured source path. */
+        const inputPath = join(projectRoot.path, 'input.ts',);
+        /** Source forwarding payload to deferred callback. */
+        const inputSource = [
+          'export function schedule(callback: (payload: { value: string }) => void, payload: { value: string }): void {',
+          '  setTimeout(callback, 0, payload);',
+          '}',
+          '',
+        ].join('\n',);
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          `${JSON.stringify({ compilerOptions: { strict: true, lib: ['ESNext', 'DOM',], }, files: ['input.ts',], },)}\n`,
+        );
+        writeFileSync(inputPath, inputSource,);
+        const session = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /** Scheduled function declaration. */
+        const declaration = session.nodeAtOffset(inputSource.indexOf('schedule',),)
+          .parent;
+        if (!isFunctionLikeDeclaration(declaration,))
+          throw new Error('Expected scheduled function declaration.',);
+        /** Deferred callback effect summary. */
+        const summary = index.get(declaration,);
+        if (summary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected deferred callback effect summary.',);
+        expect([...summary.invokedParameterIndexes,],).toEqual([0,],);
+        expect([...summary.mutatedParameterIndexes,],).toEqual([0,],);
+        expect([...summary.referentMutatedParameterIndexes,],).toEqual([],);
+        expect([...summary.opaqueParameterIndexes,],).toEqual([1,],);
+        expect(summary.callbackRelations,).toEqual([{
+          callbackParameterIndex: 0,
+          callbackArgumentIndex: 0,
+          sourceParameterIndex: 1,
+        },],);
+        closeSemanticBridge();
+      },
+    },),
+    it({
       name: 'infers direct imported package effects from shipped implementation',
       fn: async () => {
         using projectRoot = disposableCacheDirectory();

@@ -21,5 +21,8 @@ export function intrinsicEffectIsObservational(
   const targetCount = effect.targets
     .length;
   return (targetCount === 0)
-    && (effect.callbacks === undefined);
+    && (effect.callbacks === undefined)
+    && (effect.forwardedCallbacks === undefined)
+    && (effect.invokedArgumentIndexes === undefined)
+    && (effect.opaqueTargets === undefined);
 }

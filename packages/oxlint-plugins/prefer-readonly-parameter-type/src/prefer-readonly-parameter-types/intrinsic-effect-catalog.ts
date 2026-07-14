@@ -4,7 +4,13 @@
  * @module
  */
 
+import { BROWSER_HOST_EFFECTS, } from './browser-host-effect-catalog.ts';
 import { ECMASCRIPT_EFFECTS, } from './ecmascript-effect-catalog.ts';
+import {
+  hostEffectAuthorityAvailable,
+  type HostEffectAuthority,
+} from './host-effect-authority.ts';
+import { NODE_EFFECTS, } from './node-effect-catalog.ts';
 import { PACKAGE_EFFECTS, } from './package-effect-catalog.ts';
 
 /**
@@ -18,7 +24,10 @@ import { PACKAGE_EFFECTS, } from './package-effect-catalog.ts';
 export type IntrinsicProvenance =
   | { readonly kind: 'ecmascript'; }
   | { readonly kind: 'dom'; }
-  | { readonly kind: 'node'; }
+  | {
+    readonly kind: 'node';
+    readonly declarationMajor: number;
+  }
   | {
     readonly kind: 'package';
     readonly packageName: string;
@@ -40,6 +49,11 @@ export type IntrinsicEffectTarget =
     readonly kind: 'argument';
     readonly index: number;
     readonly propertyNames?: readonly string[];
+  }
+  | {
+    readonly kind: 'arguments-from';
+    readonly startIndex: number;
+    readonly propertyNames?: readonly string[];
   };
 
 /**
@@ -59,6 +73,22 @@ export type IntrinsicCallbackEffect = {
 };
 
 /**
+ * Callback argument invoked with a variadic suffix of call arguments.
+ *
+ * @example
+ * ```ts
+ * const effect: IntrinsicForwardedCallbackEffect = {
+ *   callbackArgumentIndex: 0,
+ *   sourceArgumentStartIndex: 2,
+ * };
+ * ```
+ */
+export type IntrinsicForwardedCallbackEffect = {
+  readonly callbackArgumentIndex: number;
+  readonly sourceArgumentStartIndex: number;
+};
+
+/**
  * One audited callable effect keyed by owner symbol and exact declaration provenance.
  *
  * @example
@@ -68,7 +98,12 @@ export type IntrinsicCallbackEffect = {
  *   ownerType: 'Map',
  *   member: 'set',
  *   targets: [{ kind: 'receiver' }],
- *   evidence: 'TypeScript lib.es2015.collection.d.ts',
+ *   evidence: 'ECMA-262 Map.prototype.set algorithm',
+ *   authority: {
+ *     kind: 'standard-algorithm',
+ *     standard: 'ECMA-262',
+ *     revision: '1355a23e',
+ *   },
  * };
  * ```
  */
@@ -78,8 +113,12 @@ export type IntrinsicEffectEntry = {
   readonly member: string;
   readonly targets: readonly IntrinsicEffectTarget[];
   readonly callbacks?: readonly IntrinsicCallbackEffect[];
+  readonly forwardedCallbacks?: readonly IntrinsicForwardedCallbackEffect[];
+  readonly invokedArgumentIndexes?: readonly number[];
+  readonly opaqueTargets?: readonly IntrinsicEffectTarget[];
   readonly requiresPrimitiveReceiverElements?: boolean;
   readonly evidence: string;
+  readonly authority?: HostEffectAuthority;
 };
 
 /**
@@ -106,250 +145,17 @@ export type IntrinsicEffectQuery = {
 export const NO_INTRINSIC_EFFECT: unique symbol = Symbol('no IntrinsicEffect entry for resolved callable',);
 
 /**
- * Shared receiver mutation target.
- */
-const RECEIVER: IntrinsicEffectTarget = { kind: 'receiver', };
-
-/**
- * Creates receiver-mutating intrinsic entry.
- *
- * @param provenance - Exact platform or package origin.
- *
- * @param ownerType - Declaring receiver type symbol.
- *
- * @param member - Declaring callable member symbol.
- *
- * @param evidence - Audited declaration source.
- *
- * @returns intrinsic receiver effect.
- */
-function receiverEffect({
-  provenance,
-  ownerType,
-  member,
-  evidence,
-}: {
-  readonly provenance: IntrinsicProvenance;
-  readonly ownerType: string;
-  readonly member: string;
-  readonly evidence: string;
-},): IntrinsicEffectEntry {
-  return {
-    provenance,
-    ownerType,
-    member,
-    targets: [RECEIVER,],
-    evidence,
-  };
-}
-
-/**
- * DOM receiver effects audited against TypeScript 7 `lib.dom.d.ts` declarations.
- */
-const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
-  {
-    provenance: { kind: 'dom', },
-    ownerType: 'globalThis',
-    member: 'setTimeout',
-    targets: [{
-      kind: 'argument',
-      index: 0,
-    },],
-    evidence: 'HTML timers schedule supplied handler for deferred invocation without retaining delay input',
-  },
-  {
-    provenance: { kind: 'dom', },
-    ownerType: 'globalThis',
-    member: 'getComputedStyle',
-    targets: [],
-    evidence: 'CSSOM getComputedStyle returns live computed declaration without invoking caller-owned code',
-  },
-  {
-    provenance: { kind: 'dom', },
-    ownerType: 'CanvasRenderingContext2D',
-    member: 'measureText',
-    targets: [],
-    evidence: 'HTML Canvas measureText reads context font state and returns new TextMetrics',
-  },
-  {
-    provenance: { kind: 'dom', },
-    ownerType: 'TextEncoder',
-    member: 'encode',
-    targets: [],
-    evidence: 'WHATWG Encoding Standard commit a985b62a TextEncoder.encode creates a new Uint8Array from primitive input',
-  },
-  receiverEffect({
-    provenance: { kind: 'dom', },
-    ownerType: 'TextDecoder',
-    member: 'decode',
-    evidence: 'WHATWG Encoding Standard commit a985b62a TextDecoder.decode updates decoder state without changing input bytes',
-  },),
-  receiverEffect({
-    provenance: { kind: 'dom', },
-    ownerType: 'AbortController',
-    member: 'abort',
-    evidence: 'TypeScript 7 lib.dom.d.ts AbortController declaration',
-  },),
-  {
-    provenance: { kind: 'dom', },
-    ownerType: 'AbortSignal',
-    member: 'any',
-    targets: [{
-      kind: 'argument',
-      index: 0,
-    },],
-    evidence: 'DOM commit 5796f716 AbortSignal.any stores dependent-signal relations on supplied signals',
-  },
-  ...[
-    'addEventListener',
-    'dispatchEvent',
-    'removeEventListener',
-  ].map(function eventTargetEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      provenance: { kind: 'dom', },
-      ownerType: 'EventTarget',
-      member,
-      evidence: 'TypeScript 7 lib.dom.d.ts EventTarget declaration',
-    },);
-  },),
-  {
-    provenance: { kind: 'dom', },
-    ownerType: 'Node',
-    member: 'cloneNode',
-    targets: [],
-    evidence: 'DOM cloneNode creates a detached copy without changing source node',
-  },
-  ...[
-    'appendChild',
-    'insertBefore',
-    'removeChild',
-    'replaceChild',
-  ].map(function nodeEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      provenance: { kind: 'dom', },
-      ownerType: 'Node',
-      member,
-      evidence: 'TypeScript 7 lib.dom.d.ts Node declaration',
-    },);
-  },),
-  ...[
-    'preventDefault',
-    'stopImmediatePropagation',
-    'stopPropagation',
-  ].map(function eventEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      provenance: { kind: 'dom', },
-      ownerType: 'Event',
-      member,
-      evidence: 'DOM Event cancellation and propagation-state transition methods',
-    },);
-  },),
-  receiverEffect({
-    provenance: { kind: 'dom', },
-    ownerType: 'ParentNode',
-    member: 'replaceChildren',
-    evidence: 'DOM ParentNode.replaceChildren replaces receiver child list',
-  },),
-];
-
-/**
- * Node receiver effects audited against current lockfile `@types/node` major 26 declarations.
- */
-const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
-  ...[
-    'basename',
-    'dirname',
-    'extname',
-    'isAbsolute',
-    'join',
-    'matchesGlob',
-    'normalize',
-    'relative',
-    'resolve',
-    'toNamespacedPath',
-  ].map(function pathObservation(member,): IntrinsicEffectEntry {
-    return {
-      provenance: { kind: 'node', },
-      ownerType: 'node:path',
-      member,
-      targets: [],
-      evidence: '@types/node 26 path.d.ts primitive path operations',
-    };
-  },),
-  ...[
-    'isBlockDevice',
-    'isCharacterDevice',
-    'isDirectory',
-    'isFIFO',
-    'isFile',
-    'isSocket',
-    'isSymbolicLink',
-  ].map(function direntObservation(member,): IntrinsicEffectEntry {
-    return {
-      provenance: { kind: 'node', },
-      ownerType: 'Dirent',
-      member,
-      targets: [],
-      evidence: '@types/node 26 fs.d.ts Dirent file-type observation declarations',
-    };
-  },),
-  {
-    provenance: { kind: 'node', },
-    ownerType: 'node:url',
-    member: 'fileURLToPath',
-    targets: [],
-    evidence: '@types/node 26 url.d.ts file URL path conversion',
-  },
-  ...[
-    'addListener',
-    'emit',
-    'off',
-    'on',
-    'once',
-    'prependListener',
-    'prependOnceListener',
-    'removeAllListeners',
-    'removeListener',
-  ].map(function eventEmitterEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      provenance: { kind: 'node', },
-      ownerType: 'EventEmitter',
-      member,
-      evidence: '@types/node 26 events.d.ts EventEmitter declaration',
-    },);
-  },),
-  receiverEffect({
-    provenance: { kind: 'node', },
-    ownerType: 'Socket',
-    member: 'write',
-    evidence: '@types/node 26 net.d.ts Socket write declaration',
-  },),
-  ...[
-    'destroy',
-    'end',
-    'write',
-  ].map(function writableEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      provenance: { kind: 'node', },
-      ownerType: 'Writable',
-      member,
-      evidence: '@types/node 26 stream.d.ts Writable declaration',
-    },);
-  },),
-];
-
-/**
  * Complete audited intrinsic effect catalog.
  */
 export const INTRINSIC_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...ECMASCRIPT_EFFECTS,
-  ...DOM_EFFECTS,
+  ...BROWSER_HOST_EFFECTS,
   ...NODE_EFFECTS,
   ...PACKAGE_EFFECTS,
 ];
 
 /**
- * Tests exact provenance identity including package major.
+ * Tests exact provenance identity including package and Node declaration majors.
  *
  * @param left - Catalog provenance.
  *
@@ -363,13 +169,16 @@ function sameProvenance({
 }: {
   readonly left: IntrinsicProvenance;
   readonly right: IntrinsicProvenance;
-},): boolean {
+}): boolean {
   if (left.kind !== right.kind)
     return false;
-  if ((left.kind !== 'package') || (right.kind !== 'package'))
-    return true;
-  return (left.packageName === right.packageName)
-    && (left.major === right.major);
+  if ((left.kind === 'node') && (right.kind === 'node'))
+    return left.declarationMajor === right.declarationMajor;
+  if ((left.kind === 'package') && (right.kind === 'package')) {
+    return (left.packageName === right.packageName)
+      && (left.major === right.major);
+  }
+  return true;
 }
 
 /**
@@ -402,5 +211,21 @@ export function intrinsicEffect(
       && (entry.ownerType === query.ownerType)
       && (entry.member === query.member);
   },);
-  return matched ?? NO_INTRINSIC_EFFECT;
+  if (matched === undefined)
+    return NO_INTRINSIC_EFFECT;
+  /**
+   * Matched declaration provenance.
+   */
+  const { provenance, } = matched;
+  /**
+   * Host authority required outside packages.
+   */
+  const { authority, } = matched;
+  if (provenance.kind === 'package')
+    return matched;
+  if (authority === undefined)
+    return NO_INTRINSIC_EFFECT;
+  if (!hostEffectAuthorityAvailable(authority,))
+    return NO_INTRINSIC_EFFECT;
+  return matched;
 }

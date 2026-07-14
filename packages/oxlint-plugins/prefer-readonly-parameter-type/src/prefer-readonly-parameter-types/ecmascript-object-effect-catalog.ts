@@ -4,6 +4,7 @@
  * @module
  */
 
+import { ecma262Authority, } from './host-effect-authority.ts';
 import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 
 /**
@@ -16,6 +17,7 @@ export const ECMASCRIPT_OBJECT_EFFECTS: readonly IntrinsicEffectEntry[] = [
     member: 'is',
     targets: [],
     evidence: 'ECMA-262 commit 1355a23e Object.is and SameValue algorithms',
+    authority: ecma262Authority({ algorithm: 'Object.is', },),
   },
   ...[
     'entries',
@@ -33,6 +35,7 @@ export const ECMASCRIPT_OBJECT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         index: 0,
       },],
       evidence: 'ECMA-262 commit 1355a23e Object operation can invoke caller-owned proxy or accessor hooks',
+      authority: ecma262Authority({ algorithm: `Object.${member}`, },),
     };
   },),
   {
@@ -44,5 +47,6 @@ export const ECMASCRIPT_OBJECT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       index: 0,
     },],
     evidence: 'ECMA-262 commit 1355a23e Object.freeze changes supplied object property descriptors',
+    authority: ecma262Authority({ algorithm: 'Object.freeze', },),
   },
 ];

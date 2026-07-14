@@ -30,10 +30,8 @@ import {
 } from './external-callable-effect.ts';
 import { addOwnedCallEdge, } from './effect-owned-call-edge.ts';
 import { effectCallName, } from './effect-call-name.ts';
-import {
-  expressionCanCarryMutableState,
-  receiverElementsArePrimitive,
-} from './effect-primitive-origin.ts';
+import { applyIntrinsicEffect, } from './effect-intrinsic-application.ts';
+import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
   isEffectCallableDeclaration,
@@ -48,7 +46,6 @@ import {
   parameterIndex,
   parameterIndexes,
 } from './effect-call-resolution.ts';
-import { addIntrinsicCallbackEffects, } from './effect-intrinsic-callback.ts';
 import {
   isGlobalStringConversion,
   STRING_OBJECT_COERCION_PROVENANCE,
@@ -190,55 +187,18 @@ export function inspectEffectCall({
         ? NO_INTRINSIC_EFFECT
         : intrinsicEffect(query,);
       if ((effect !== NO_INTRINSIC_EFFECT)
-        && ((effect.requiresPrimitiveReceiverElements !== true)
-          || receiverElementsArePrimitive({
-            checker,
-            type: receiverType,
-          },))) {
-        effect.targets
-          .forEach(function intrinsicTarget(target,): void {
-            if (target.kind === 'receiver') {
-              addEffectIndex({
-                target: summary.directMutated,
-                value: receiverParameterIndex,
-              },);
-              return;
-            }
-            /**
-             * Call argument named by intrinsic target.
-             */
-            const argument = call.arguments[target.index];
-            if (argument === undefined)
-              return;
-            parameterIndexes({
-              checker,
-              bindingOriginBySymbolId,
-              node: argument,
-              includedPropertyNames: target.propertyNames === undefined
-                ? ALL_PACKAGED_PROPERTIES
-                : new Set(target.propertyNames,),
-            },)
-              .forEach(function intrinsicArgumentOrigin(origin,): void {
-              addEffectIndex({
-                target: summary.directMutated,
-                value: origin,
-              },);
-            },);
-          },);
-        if (effect.callbacks !== undefined) {
-          addIntrinsicCallbackEffects({
-            project,
-            checker,
-            bindingOriginBySymbolId,
-            call,
-            receiverParameterIndex,
-            callbackEffects: effect.callbacks,
-            summary,
-            foreignInbound,
-          },);
-        }
+        && applyIntrinsicEffect({
+          project,
+          checker,
+          bindingOriginBySymbolId,
+          call,
+          receiverType,
+          receiverParameterIndex,
+          effect,
+          summary,
+          foreignInbound,
+        },))
         return;
-      }
     }
   }
 

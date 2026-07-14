@@ -4,6 +4,7 @@
  * @module
  */
 
+import { ecma262Authority, } from './host-effect-authority.ts';
 import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 
 /**
@@ -36,5 +37,6 @@ export const ECMASCRIPT_DATE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     member,
     targets: [],
     evidence: 'ECMA-262 commit 1355a23e Date internal-slot observation algorithms',
+    authority: ecma262Authority({ algorithm: `Date.prototype.${member}`, },),
   };
 },);

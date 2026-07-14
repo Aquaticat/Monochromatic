@@ -17,6 +17,7 @@ import {
 
 import {
   closeSemanticBridge,
+  hostEffectAuthorityAvailable,
   INTRINSIC_EFFECTS,
   intrinsicCallableEffectQuery,
   intrinsicEffect,
@@ -183,7 +184,7 @@ await describe({
       },
     },),
     it({
-      name: 'records dependent-signal mutation for AbortSignal.any',
+      name: 'records dependent-signal relation uncertainty for AbortSignal.any',
       fn: async () => {
         const effect = intrinsicEffect({
           provenance: { kind: 'dom', },
@@ -193,10 +194,27 @@ await describe({
         expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
         if (effect === NO_INTRINSIC_EFFECT)
           throw new Error('Expected AbortSignal.any intrinsic effect.',);
-        expect(effect.targets,).toEqual([{
+        expect(effect.targets,).toEqual([],);
+        expect(effect.opaqueTargets,).toEqual([{
           kind: 'argument',
           index: 0,
         },],);
+      },
+    },),
+    it({
+      name: 'records dispatch listener uncertainty for receiver and event',
+      fn: async () => {
+        const effect = intrinsicEffect({
+          provenance: { kind: 'dom', },
+          ownerType: 'EventTarget',
+          member: 'dispatchEvent',
+        },);
+        if (effect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected EventTarget.dispatchEvent intrinsic effect.',);
+        expect(effect.opaqueTargets,).toEqual([
+          { kind: 'receiver', },
+          { kind: 'argument', index: 0, },
+        ],);
       },
     },),
     it({
@@ -396,10 +414,12 @@ await describe({
         const effect = intrinsicEffect(query,);
         if (effect === NO_INTRINSIC_EFFECT)
           throw new Error('Expected global setTimeout intrinsic effect.',);
-        expect(effect.targets,).toEqual([{
-          kind: 'argument',
-          index: 0,
+        expect(effect.targets,).toEqual([],);
+        expect(effect.forwardedCallbacks,).toEqual([{
+          callbackArgumentIndex: 0,
+          sourceArgumentStartIndex: 2,
         },],);
+        expect(effect.invokedArgumentIndexes,).toEqual([0,],);
         closeSemanticBridge();
       },
     },),
@@ -462,7 +482,7 @@ await describe({
           project: session.project,
           memberSymbol: symbol,
         },),).toEqual({
-          provenance: { kind: 'node', },
+          provenance: { kind: 'node', declarationMajor: 26, },
           ownerType: 'node:path',
           member: 'join',
         },);
@@ -696,11 +716,74 @@ await describe({
       },
     },),
     it({
-      name: 'records evidence for every audited entry',
+      name: 'records authoritative evidence for every audited host entry',
       fn: async () => {
         expect(INTRINSIC_EFFECTS.every(function hasEvidence(entry,): boolean {
           return entry.evidence.length > 0;
         },),).toBe(true,);
+        expect(INTRINSIC_EFFECTS
+          .filter(function isHostEntry(entry,): boolean {
+            return entry.provenance.kind !== 'package';
+          },)
+          .every(function hasAuthority(entry,): boolean {
+            if (entry.authority === undefined)
+              return false;
+            return hostEffectAuthorityAvailable(entry.authority,);
+          },),).toBe(true,);
+        expect(intrinsicEffect({
+          provenance: { kind: 'node', declarationMajor: 26, },
+          ownerType: 'node:path',
+          member: 'join',
+        },),).not.toBe(NO_INTRINSIC_EFFECT,);
+        expect(intrinsicEffect({
+          provenance: { kind: 'node', declarationMajor: 25, },
+          ownerType: 'node:path',
+          member: 'join',
+        },),).toBe(NO_INTRINSIC_EFFECT,);
+        expect(hostEffectAuthorityAvailable({
+          kind: 'standard-algorithm',
+          standard: 'ECMA-262',
+          revision: 'unrecognized',
+          sourceDigest: 'unrecognized',
+          algorithm: 'Set.prototype.add',
+        },),).toBe(false,);
+        expect(hostEffectAuthorityAvailable({
+          kind: 'standard-algorithm',
+          standard: 'ECMA-262',
+          revision: '1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1',
+          sourceDigest: '313826a4ff419145470a9d688b8da21e326374afb2a9c73aa9183fbc57162845',
+          algorithm: 'sec-not-a-real-algorithm',
+        },),).toBe(false,);
+        expect(hostEffectAuthorityAvailable({
+          kind: 'node-builtin-source',
+          nodeVersion: '0.0.0',
+          module: 'path',
+          sourceDigest: 'unrecognized',
+          definitionMarkers: [],
+          relatedSources: [],
+        },),).toBe(false,);
+        expect(hostEffectAuthorityAvailable({
+          kind: 'node-builtin-source',
+          nodeVersion: process.versions.node,
+          module: 'path',
+          sourceDigest: 'unrecognized',
+          definitionMarkers: [{
+            text: '\n  join(',
+            occurrenceCount: 2,
+          },],
+          relatedSources: [],
+        },),).toBe(false,);
+        expect(hostEffectAuthorityAvailable({
+          kind: 'node-builtin-source',
+          nodeVersion: process.versions.node,
+          module: 'path',
+          sourceDigest: 'dd326ecdc2d6ad2025c4991f4b480d76a9f1d52b7f6d0988a5dc0a1d02de5209',
+          definitionMarkers: [{
+            text: 'not an exported definition',
+            occurrenceCount: 1,
+          },],
+          relatedSources: [],
+        },),).toBe(false,);
       },
     },),
   ],

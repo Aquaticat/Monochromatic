@@ -47,6 +47,11 @@ export {
 } from './prefer-readonly-parameter-types/intrinsic-effect-query.ts';
 
 export {
+  hostEffectAuthorityAvailable,
+  type HostEffectAuthority,
+} from './prefer-readonly-parameter-types/host-effect-authority.ts';
+
+export {
   INTRINSIC_EFFECTS,
   intrinsicEffect,
   NO_INTRINSIC_EFFECT,

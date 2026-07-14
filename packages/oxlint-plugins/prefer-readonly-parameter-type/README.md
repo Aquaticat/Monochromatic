@@ -88,6 +88,26 @@ proxy traps,
 or `valueOf`.
 Deliberate object coercion is accepted through a complete contract naming those effects.
 
+## Host intrinsic evidence
+
+TypeScript library declarations establish host callable identity,
+not behavior.
+ECMAScript and browser-host entries therefore require exact standard commits,
+authoring-source digests,
+and algorithm identities.
+Node entries additionally require exact installed declaration major,
+runtime version,
+embedded JavaScript module,
+source digest,
+and callable-definition marker.
+Unavailable private source access,
+version drift,
+digest drift,
+native-only implementations,
+and unlisted APIs remain uncertain.
+See the
+[host intrinsic evidence troubleshooting guide](../../../docs/troubleshooting/oxlint-prefer-readonly-host-intrinsic-evidence.md).
+
 ## Verification
 
 Package acceptance includes:

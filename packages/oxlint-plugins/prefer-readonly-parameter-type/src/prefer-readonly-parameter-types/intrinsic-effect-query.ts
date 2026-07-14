@@ -329,8 +329,12 @@ export function intrinsicProvenance({
   const identity = packageIdentity(fileName,);
   if (identity === NO_PACKAGE_IDENTITY)
     return NO_INTRINSIC_PROVENANCE;
-  if (identity.packageName === '@types/node')
-    return { kind: 'node', };
+  if (identity.packageName === '@types/node') {
+    return {
+      kind: 'node',
+      declarationMajor: identity.major,
+    };
+  }
   return {
     kind: 'package',
     packageName: identity.packageName,

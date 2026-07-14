@@ -17,7 +17,7 @@ The user corrected the TOML migration on 2026-07-13:
 not a type annotation to repeat on every AST descendant or callback.
 The correction is now recorded by `OWB` in `AGENTS.md`.
 
-The uncommitted continuation implements that correction in the semantic rule:
+The implemented semantic rule applies that correction:
 
 - exact marker identity is separated from provenance analysis;
 - foreign provenance passes through property and element access,
@@ -104,7 +104,20 @@ Missing implementations,
 dynamic targets,
 unknown transitive calls,
 and unresolved callback data relations remain fail-closed.
-Authoritative native host inference remains the next incomplete layer.
+Host intrinsic resolution now requires structured authority in addition to exact declaration identity.
+ECMAScript and browser entries require exact standard commits,
+authoring-source digests,
+and algorithm identities.
+Node entries require exact `@types/node` major,
+runtime version,
+embedded JavaScript module,
+source digest,
+and callable-definition marker.
+Unknown host calls,
+native-only implementations,
+and authority drift remain fail-closed.
+The durable evidence constraints are recorded in the
+[host intrinsic evidence troubleshooting guide](../troubleshooting/oxlint-prefer-readonly-host-intrinsic-evidence.md).
 
 The TSDoc contract phase is complete:
 
@@ -1387,5 +1400,6 @@ DOM,
 Node,
 and package names present in the recorded current `pnpm-lock.yaml` baseline.
 Package entries remain gated by resolved major version and source audit.
-All currently known policy questions are resolved.
-Implementation remains blocked until the user confirms that this final plan reflects shared understanding.
+Host entries remain gated by audited standards revisions or exact Node embedded-source identities.
+All currently known policy questions are resolved,
+and the user confirmed the plan before implementation began.

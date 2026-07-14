@@ -4,51 +4,16 @@
  * @module
  */
 
-import type {
-  IntrinsicEffectEntry,
-  IntrinsicEffectTarget,
-} from './intrinsic-effect-catalog.ts';
+import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 import { ECMASCRIPT_DATE_EFFECTS, } from './ecmascript-date-effect-catalog.ts';
+import { ECMASCRIPT_MUTATION_EFFECTS, } from './ecmascript-mutation-effect-catalog.ts';
 import { ECMASCRIPT_OBJECT_EFFECTS, } from './ecmascript-object-effect-catalog.ts';
-
-/**
- * Shared receiver mutation target.
- */
-const RECEIVER: IntrinsicEffectTarget = { kind: 'receiver', };
+import { ecma262Authority, } from './host-effect-authority.ts';
 
 /**
  * Array callback parameter receiving original array.
  */
 const ARRAY_CALLBACK_ARRAY_PARAMETER_INDEX = 3;
-
-/**
- * Creates ECMAScript receiver-mutating entry.
- *
- * @param ownerType - Declaring receiver type symbol.
- *
- * @param member - Declaring callable member symbol.
- *
- * @param evidence - Audited declaration source.
- *
- * @returns ECMAScript receiver mutation effect.
- */
-function receiverEffect({
-  ownerType,
-  member,
-  evidence,
-}: {
-  readonly ownerType: string;
-  readonly member: string;
-  readonly evidence: string;
-}): IntrinsicEffectEntry {
-  return {
-    provenance: { kind: 'ecmascript', },
-    ownerType,
-    member,
-    targets: [RECEIVER,],
-    evidence,
-  };
-}
 
 /**
  * ECMAScript effects audited against ECMA-262 and TypeScript 7 libraries.
@@ -85,6 +50,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       member,
       targets: [],
       evidence: 'ECMA-262 commit 1355a23e string algorithms with primitive-only inputs and outputs',
+      authority: ecma262Authority({ algorithm: `String.prototype.${member}`, },),
     };
   },),
   ...[
@@ -111,6 +77,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         member,
         targets: [],
         evidence: 'ECMA-262 commit 1355a23e array observation and copy algorithms',
+        authority: ecma262Authority({ algorithm: `Array.prototype.${member}`, },),
       };
     },);
     /**
@@ -127,6 +94,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         targets: [],
         requiresPrimitiveReceiverElements: true,
         evidence: 'ECMA-262 commit 1355a23e array operations with primitive-only coercion and callback inputs',
+        authority: ecma262Authority({ algorithm: `Array.prototype.${member}`, },),
       };
     },);
     /**
@@ -157,6 +125,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
           ],
         },],
         evidence: 'ECMA-262 commit 1355a23e array iteration algorithms with callback effects',
+        authority: ecma262Authority({ algorithm: `Array.prototype.${member}`, },),
       };
     },);
     /**
@@ -175,6 +144,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         ],
       },],
       evidence: 'ECMA-262 commit 1355a23e Array.prototype.reduce callback relation',
+      authority: ecma262Authority({ algorithm: 'Array.prototype.reduce', },),
     };
     return [
       ...observations,
@@ -197,6 +167,10 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       member: 'has',
       targets: [],
       evidence: 'ECMA-262 commit 1355a23e collection identity-membership algorithms',
+      authority: ecma262Authority({ algorithm: `${ownerType.replace(
+        'Readonly',
+        '',
+      )}.prototype.has`, },),
     };
   },),
   ...[
@@ -216,6 +190,10 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         member,
         targets: [],
         evidence: 'ECMA-262 commit 1355a23e collection iterator operations',
+        authority: ecma262Authority({ algorithm: `${ownerType.replace(
+          'Readonly',
+          '',
+        )}.prototype.${member}`, },),
       };
     },);
   },),
@@ -230,6 +208,10 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       member: 'get',
       targets: [],
       evidence: 'ECMA-262 commit 1355a23e map value lookup algorithm',
+      authority: ecma262Authority({ algorithm: `${ownerType.replace(
+        'Readonly',
+        '',
+      )}.prototype.get`, },),
     };
   },),
   ...[
@@ -252,6 +234,10 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         ],
       },],
       evidence: 'ECMA-262 commit 1355a23e collection iteration algorithms with callback effects',
+      authority: ecma262Authority({ algorithm: `${ownerType.replace(
+        'Readonly',
+        '',
+      )}.prototype.forEach`, },),
     };
   },),
   ...ECMASCRIPT_DATE_EFFECTS,
@@ -261,6 +247,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
     member: 'isError',
     targets: [],
     evidence: 'ECMA-262 commit 1355a23e Error.isError algorithm',
+    authority: ecma262Authority({ algorithm: 'Error.isError', },),
   },
   {
     provenance: { kind: 'ecmascript', },
@@ -268,69 +255,8 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
     member: 'isArray',
     targets: [],
     evidence: 'ECMA-262 commit 1355a23e Array.isArray and IsArray algorithms',
+    authority: ecma262Authority({ algorithm: 'Array.isArray', },),
   },
   ...ECMASCRIPT_OBJECT_EFFECTS,
-  ...[
-    'copyWithin',
-    'fill',
-    'pop',
-    'push',
-    'reverse',
-    'shift',
-    'sort',
-    'splice',
-    'unshift',
-  ].map(function arrayEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      ownerType: 'Array',
-      member,
-      evidence: 'TypeScript 7 lib.es5.d.ts Array declarations',
-    },);
-  },),
-  ...[
-    'delete',
-    'set',
-  ].map(function mapEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      ownerType: 'Map',
-      member,
-      evidence: 'TypeScript 7 lib.es2015.collection.d.ts Map declarations',
-    },);
-  },),
-  receiverEffect({
-    ownerType: 'Map',
-    member: 'clear',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts Map declarations',
-  },),
-  ...[
-    'add',
-    'clear',
-    'delete',
-  ].map(function setEffect(member,): IntrinsicEffectEntry {
-    return receiverEffect({
-      ownerType: 'Set',
-      member,
-      evidence: 'TypeScript 7 lib.es2015.collection.d.ts Set declarations',
-    },);
-  },),
-  receiverEffect({
-    ownerType: 'WeakMap',
-    member: 'set',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts WeakMap declarations',
-  },),
-  receiverEffect({
-    ownerType: 'WeakMap',
-    member: 'delete',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts WeakMap declarations',
-  },),
-  receiverEffect({
-    ownerType: 'WeakSet',
-    member: 'add',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts WeakSet declarations',
-  },),
-  receiverEffect({
-    ownerType: 'WeakSet',
-    member: 'delete',
-    evidence: 'TypeScript 7 lib.es2015.collection.d.ts WeakSet declarations',
-  },),
+  ...ECMASCRIPT_MUTATION_EFFECTS,
 ];
