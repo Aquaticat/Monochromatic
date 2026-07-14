@@ -178,6 +178,8 @@ const OMIT = Symbol('morph compact message omitted from context',);
  *
  * @returns LLM-compatible message, or {@link OMIT} when the message is excluded
  *   from context (e.g. `bashExecution` with `excludeFromContext`)
+ *
+ * @mutates m - `JSON.stringify` may invoke hooks when an unsupported message is reported.
  */
 function toLlmMessage(
   m: AgentMessage,
@@ -261,6 +263,8 @@ function toLlmMessage(
  *
  * @returns filtered list of LLM-compatible messages
  *
+ * @mutates messages - `JSON.stringify` may invoke hooks when unsupported messages are reported.
+ *
  * @example
  * ```typescript
  * convertToLlm(branchEntries.map(e => e.message));
@@ -268,12 +272,23 @@ function toLlmMessage(
  * ```
  */
 export function convertToLlm(
-  messages: readonly AgentMessage[],
+  messages: readonly (AgentMessage & { role: AgentMessage['role']; })[],
 ): Message[] {
   return messages
-    .map(function mapToLlm(m,) {
-      return toLlmMessage(m,);
-    },)
+    .map(
+      /**
+       * Converts one agent message into an LLM message or omission sentinel.
+       *
+       * @param m - Message that may expose hooks during unsupported-role reporting.
+       *
+       * @returns converted message or omission sentinel.
+       *
+       * @mutates m - `JSON.stringify` may invoke hooks when an unsupported message is reported.
+       */
+      function mapToLlm(m,) {
+        return toLlmMessage(m,);
+      },
+    )
     .filter(function isMessage(m,): m is Message {
       return m !== OMIT;
     },);
@@ -378,9 +393,24 @@ export function serializeConversation(
            */
           const argsStr = Object
             .entries(block.arguments,)
-            .map(function fmtArg([key, value,],) {
-              return `${key}=${JSON.stringify(value,)}`;
-            },)
+            .map(
+              /**
+               * Formats one tool argument for transcript output.
+               *
+               * @param entry - Tool argument key and potentially effectful value.
+               *
+               * @returns key and serialized value text.
+               *
+               * @mutates entry - `JSON.stringify` may invoke hooks on argument value.
+               */
+              function fmtArg(entry,) {
+                /**
+                 * Tool argument key and value.
+                 */
+                const [key, value,] = entry;
+                return `${key}=${JSON.stringify(value,)}`;
+              },
+            )
             .join(', ',);
           toolCalls.push(`${block.name}(${argsStr})`,);
         }
