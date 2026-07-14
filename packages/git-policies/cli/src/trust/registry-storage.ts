@@ -3,6 +3,7 @@
  *
  * @module
  */
+import type { ReadonlyDeep, } from 'type-fest';
 import { randomUUID, } from 'node:crypto';
 import {
   mkdir,
@@ -305,7 +306,9 @@ export async function prepareMjsRecord({
      * Cleanup failures retained in preparation error.
      */
     const cleanupFailures = cleanupResults
-      .filter(function isCleanupFailure(result,) {
+      .filter(function isCleanupFailure(
+        result: ReadonlyDeep<(typeof cleanupResults)[number]>,
+      ) {
         return result.status === 'rejected';
       },)
       .map(function cleanupFailureReason(result,) {

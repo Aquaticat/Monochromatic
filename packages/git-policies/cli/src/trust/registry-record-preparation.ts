@@ -1,6 +1,7 @@
 /**
  * Generic private trust record preparation and validation. @module
  */
+import type { ReadonlyDeep, } from 'type-fest';
 import { randomUUID, } from 'node:crypto';
 import {
   mkdir,
@@ -118,7 +119,9 @@ async function preparationFailure({
    * Cleanup failures retained in preparation error.
    */
   const cleanupFailures = cleanupResults
-    .filter(function isCleanupFailure(result,) { return result.status === 'rejected'; },)
+    .filter(function isCleanupFailure(
+      result: ReadonlyDeep<(typeof cleanupResults)[number]>,
+    ) { return result.status === 'rejected'; },)
     .map(function cleanupFailureReason(result,) { return String(result.reason,); },);
   throw new TrustStorageError(
     cleanupFailures.length === 0

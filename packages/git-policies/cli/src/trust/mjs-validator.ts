@@ -5,6 +5,7 @@
  */
 import { isBuiltin, } from 'node:module';
 import { parse, } from 'acorn';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Rejected MJS artifact.
@@ -157,7 +158,7 @@ export function validateMjs({
    */
   const nodeBuiltins = new Set<string>();
   program.body
-    .forEach(function inspectTopLevelNode(node,) {
+    .forEach(function inspectTopLevelNode(node: ForeignBorrowed<StaticNodeInput>,) {
     /**
      * Static dependency specifier when declaration has one.
      */

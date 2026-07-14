@@ -44,6 +44,13 @@ export async function mapBounded<const Value, Result>({
   if (laneCount === 0)
     return [];
   /**
+   * Indexed input retaining value capability under readonly containing properties.
+   */
+  type IndexedValue = Readonly<{
+    index: number;
+    value: Value;
+  }>;
+  /**
    * Indexed value lanes retaining deterministic input positions.
    */
   const lanes = Array.from(
@@ -55,7 +62,7 @@ export async function mapBounded<const Value, Result>({
       return values.flatMap(function assignValue(
         value,
         index,
-      ) {
+      ): readonly IndexedValue[] {
         return (index % laneCount) === laneIndex
           ? [{
             index,
@@ -68,14 +75,16 @@ export async function mapBounded<const Value, Result>({
   /**
    * Independently mapped lanes with asynchronous work sequenced per lane.
    */
-  const loadedLanes = await Promise.all(lanes.map(async function mapLane(lane,) {
+  const loadedLanes = await Promise.all(lanes.map(async function mapLane(
+    lane: readonly IndexedValue[],
+  ) {
     /**
      * Results accumulated in current lane order.
      */
-    const loaded: {
+    const loaded: Readonly<{
       index: number;
       result: Result;
-    }[] = [];
+    }>[] = [];
     /* oxlint-disable no-await-in-loop -- Each bounded lane deliberately sequences asynchronous resource use. */
     for (const entry of lane) {
       loaded.push({

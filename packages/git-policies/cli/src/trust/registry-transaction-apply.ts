@@ -1,6 +1,7 @@
 /**
  * Provenance transaction lock and record application. @module
  */
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   mkdir,
   rename,
@@ -69,13 +70,17 @@ async function acquireLocks({
   /**
    * Successfully acquired lock subset.
    */
-  const acquired = results.flatMap(function fulfilledLock(result,) {
+  const acquired = results.flatMap(function fulfilledLock(
+    result: ReadonlyDeep<(typeof results)[number]>,
+  ) {
     return result.status === 'fulfilled' ? [result.value,] : [];
   },);
   /**
    * First lock failure when contention occurred.
    */
-  const failure = results.find(function rejectedLock(result,) {
+  const failure = results.find(function rejectedLock(
+    result: ReadonlyDeep<(typeof results)[number]>,
+  ) {
     return result.status === 'rejected';
   },);
   if (failure === undefined)

@@ -1,6 +1,7 @@
 /**
  * Installed trust-record catalog and ancestry queries. @module
  */
+import type { Dirent, } from 'node:fs';
 import {
   lstat,
   readdir,
@@ -10,6 +11,7 @@ import {
   join,
   relative,
 } from 'node:path';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { readRecord, } from './record-validation.ts';
 import {
   assertSafeRegistryDirectory,
@@ -113,7 +115,7 @@ async function walkCatalog({
     directory,
     { withFileTypes: true, },
   );
-  if (entries.some(function isRecordFile(entry,) {
+  if (entries.some(function isRecordFile(entry: ForeignBorrowed<Dirent>,) {
     return (entry.name === 'record.json') && entry.isFile();
   },)) {
     return [{
@@ -125,7 +127,7 @@ async function walkCatalog({
     },];
   }
   return (await Promise.all(entries
-    .filter(function isCatalogDirectory(entry,) {
+    .filter(function isCatalogDirectory(entry: ForeignBorrowed<Dirent>,) {
       return entry.isDirectory() && (!entry.isSymbolicLink())
         && (!entry.name
           .includes('.tmp-'))
@@ -136,7 +138,7 @@ async function walkCatalog({
         && (!entry.name
           .endsWith('.lock'));
     },)
-    .map(async function walkChild(entry,) {
+    .map(async function walkChild(entry: ForeignBorrowed<Dirent>,) {
       /**
        * Child path validated before recursive traversal.
        */

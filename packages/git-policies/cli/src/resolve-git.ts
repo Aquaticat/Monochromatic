@@ -9,6 +9,7 @@ import {
   win32,
 } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Logger root for cli-git after removing the package log shim.
@@ -93,7 +94,7 @@ function commonGitPathsForPlatform({
   /**
    * Environment containing Windows installation roots.
    */
-  readonly environment?: NodeJS.ProcessEnv;
+  readonly environment?: ForeignBorrowed<NodeJS.ProcessEnv>;
 },): readonly string[] {
   if (platform === 'win32') {
     /**

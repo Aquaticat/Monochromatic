@@ -97,7 +97,7 @@ export async function cleanupHkGitConfig({
     .filter(function omitTerminalEmpty(
       field,
       index,
-      fields,
+      fields: readonly string[],
     ) {
       return (field !== '') || (index < (fields.length - 1));
     },);

@@ -50,6 +50,7 @@
     "acorn": "catalog:",
     "nano-spawn": "catalog:",
     "rolldown": "catalog:",
+    "type-fest": "catalog:",
     "typescript": "catalog:",
     "valibot": "catalog:"
   },

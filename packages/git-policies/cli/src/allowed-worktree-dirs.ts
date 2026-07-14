@@ -7,6 +7,7 @@ import {
   sep,
 } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Logger root for cli-git after removing the package log shim.
@@ -35,7 +36,7 @@ type ResolveUvCacheDirOptions = {
   /**
    * Environment read for uv cache hints; defaults to the process environment, injectable for tests.
    */
-  readonly env?: NodeJS.ProcessEnv;
+  readonly env?: ForeignBorrowed<NodeJS.ProcessEnv>;
 };
 
 /**

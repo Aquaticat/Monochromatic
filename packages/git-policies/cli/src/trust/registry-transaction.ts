@@ -2,11 +2,13 @@
  * Recoverable multi-record provenance transaction coordination. @module
  */
 import { randomUUID, } from 'node:crypto';
+import type { Dirent, } from 'node:fs';
 import {
   mkdir,
   readdir,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   assertSafeRegistryDirectory,
   DIRECTORY_MODE,
@@ -124,8 +126,8 @@ export async function recoverProvenanceTransactions({
     { withFileTypes: true, },
   ))
     .toSorted(function byName(
-      left,
-      right,
+      left: ForeignBorrowed<Dirent>,
+      right: ForeignBorrowed<Dirent>,
     ) {
       return left.name
         .localeCompare(right.name,);
@@ -133,7 +135,7 @@ export async function recoverProvenanceTransactions({
   await entries.reduce<Promise<void>>(
     async function recoverAfter(
       previous,
-      entry,
+      entry: ForeignBorrowed<Dirent>,
     ) {
     await previous;
     if (!entry.isFile())
