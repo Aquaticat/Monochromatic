@@ -51,6 +51,8 @@ function contentSignals(
  *
  * @returns `true` if any pattern matches
  *
+ * @mutates config - `pattern.test` can change `lastIndex` on configured global or sticky regular expressions.
+ *
  * @example
  * ```typescript
  * textSignals({ text: "run sudo apt-get install" }); // true
@@ -63,7 +65,7 @@ function textSignals(
     config,
   }: {
     readonly text: string;
-    readonly config?: MergedConfig;
+    config?: MergedConfig;
   },
 ): boolean {
   for (const pattern of BUILTIN_TEXT_PATTERNS) {

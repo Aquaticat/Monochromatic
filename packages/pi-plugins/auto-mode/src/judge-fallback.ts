@@ -123,6 +123,10 @@ function judgeModelSlug(
  *
  * @returns semicolon-delimited contender diagnostics
  *
+ * @mutates error - Array `map callback`
+ *   (https://tc39.es/ecma262/#sec-array.prototype.map)
+ *   forwards race errors to string conversion hooks.
+ *
  * @example
  * ```typescript
  * describeRaceError(new AggregateError([new Error('one'), new Error('two')]));
