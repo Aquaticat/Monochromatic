@@ -733,6 +733,73 @@ await describe({
       },
     },),
     it({
+      name: 'does not reuse an index that excluded the next active external-classified source',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Disposable persistent cache root separated from TypeScript inputs. */
+        const cacheRoot = join(projectRoot.path, '.effect-cache',);
+        /** Root-owned source used to build first fixed-point index. */
+        const rootInputPath = join(projectRoot.path, 'input.ts',);
+        /** Installed package directory classified as external by root project. */
+        const nestedRoot = join(
+          projectRoot.path,
+          'node_modules',
+          'effect-cache-probe',
+        );
+        /** Package callable omitted from first root-project effect index. */
+        const nestedInputPath = join(nestedRoot, 'index.ts',);
+        mkdirSync(nestedRoot, { recursive: true, },);
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"module":"NodeNext","moduleResolution":"NodeNext","strict":true},"include":["input.ts"]}\n',
+        );
+        writeFileSync(
+          join(nestedRoot, 'package.json',),
+          '{"name":"effect-cache-probe","type":"module","exports":"./index.ts"}\n',
+        );
+        writeFileSync(
+          rootInputPath,
+          "import { nestedValue, } from 'effect-cache-probe';\nexport const rootValue: string = nestedValue('root');\n",
+        );
+        writeFileSync(
+          nestedInputPath,
+          'export function nestedValue(value: string): string { return value; }\n',
+        );
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const session = openSemanticFile({
+          fileName: rootInputPath,
+          sourceText: readFileSync(rootInputPath, 'utf8',),
+          hasBOM: false,
+        },);
+        /** Nested source decoded in root program but classified as external. */
+        const nestedSource = session.project.program.getSourceFile(nestedInputPath,);
+        if (nestedSource === undefined)
+          throw new Error('Expected root project to decode nested source.',);
+        expect(session.project.program.isSourceFileFromExternalLibrary(nestedSource,),).toBe(true,);
+        buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+          cacheRootOverride: cacheRoot,
+        },);
+        /** Index rebuilt with nested external-classified source as active target. */
+        const nestedIndex = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: nestedSource,
+          cacheRootOverride: cacheRoot,
+        },);
+        /** Nested function declaration requiring exact summary lookup. */
+        const [nestedDeclaration,] = nestedSource.statements;
+        if ((nestedDeclaration === undefined)
+          || (!isFunctionLikeDeclaration(nestedDeclaration,)))
+          throw new Error('Expected nested function declaration.',);
+        expect(nestedIndex.get(nestedDeclaration,),).not.toBe(NO_EFFECT_SUMMARY,);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'invalidates unchanged caller summaries when dependency changes across bridge lifecycle',
       fn: async () => {
         using projectRoot = disposableCacheDirectory();

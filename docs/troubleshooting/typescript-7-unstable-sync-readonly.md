@@ -147,6 +147,20 @@ always indexes that source regardless of external-library metadata,
 and applies external-library filtering only to other project sources.
 Its direct-summary cache also rejects exact-text hits that omit any callable key present in current source wrapper.
 
+A later process-local fixed-point cache reintroduced the same failure.
+Its key covered the configured project and optional package-analysis root,
+but not the active-source exception.
+The root `tsconfig.json` decodes workspace package sources while classifying them as external libraries.
+An index built for a root config source therefore excluded `bin.ts`.
+The unchanged file list and source signatures then let the cache return that index when `bin.ts` became active.
+
+The fixed-point cache key now adds the active source path only when TypeScript classifies that active source as external.
+Ordinary project sources retain cross-file index reuse.
+An external-classified active source gets the distinct index required by its forced inclusion.
+A regression creates an installed TypeScript package,
+builds an index that excludes it,
+then proves that making its source active builds a summary for its callable.
+
 A repeat one-worker workspace sweep reported zero semantic bridge failures across 1,315 replacement-rule diagnostics.
 Package type lint,
 Oxlint,

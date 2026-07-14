@@ -183,9 +183,17 @@ export function buildEffectSummaryIndex({
   readonly analysisRoot?: string;
 },): EffectSummaryIndex {
   /**
-   * Process cache identity including optional external analysis scope.
+   * Active-source identity needed only when project metadata would otherwise
+   * exclude current source from completed summary index.
    */
-  const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}`;
+  const activeExternalSourceIdentity = project.program
+    .isSourceFileFromExternalLibrary(activeSourceFile,)
+    ? activeSourceFile.fileName
+    : '';
+  /**
+   * Process cache identity including analysis and active inclusion scopes.
+   */
+  const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}\0${activeExternalSourceIdentity}`;
   /**
    * Stable configured project membership for process-local reuse.
    */
