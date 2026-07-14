@@ -73,8 +73,14 @@ function typeDefinitelyCallable({
         type: constraint,
       },);
   }
-  return checker.getSignaturesOfType(type, SignatureKind.Call,)
-    .length > 0;
+  /**
+   * Callable signatures exposed by nonunion candidate type.
+   */
+  const signatures = checker.getSignaturesOfType(
+    type,
+    SignatureKind.Call,
+  );
+  return signatures.length > 0;
 }
 
 /**
