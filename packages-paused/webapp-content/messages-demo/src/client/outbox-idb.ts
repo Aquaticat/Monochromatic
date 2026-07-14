@@ -59,7 +59,6 @@ export function openOutboxDb(): Promise<IDBDatabase> {
   },);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `IDBDatabase` is an external SDK class whose `transaction` mutates connection state by design */
 
 /**
  * Reads every persisted upload back into a queue, ordered by
@@ -197,4 +196,3 @@ export async function deleteAcked(
   store.delete(range,);
   await idbTransactionDone(tx,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

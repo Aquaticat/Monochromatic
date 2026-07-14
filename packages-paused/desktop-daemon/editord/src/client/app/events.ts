@@ -104,7 +104,6 @@ async function loadFileAndRefreshHints({
     refreshInlayHints();
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- select wiring consumes live DOM custom elements whose EventTarget listener APIs are mutable platform handles */
 /**
  * Wires file-select, result-select, and reference-select event handlers.
  *
@@ -214,9 +213,7 @@ export function wireSelectEvents(
     },
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- file watching installs the FileTree onDirExpanded callback and consumes live mutable websocket/file-tree handles */
 /**
  * Wires file-watching event handlers.
  *
@@ -276,4 +273,3 @@ export function wireFileWatching({
     }
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

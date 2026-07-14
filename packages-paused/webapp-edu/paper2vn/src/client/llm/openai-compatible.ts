@@ -29,7 +29,6 @@ const DEFAULT_TEMPERATURE = 0.7;
  */
 const ERROR_BODY_PREVIEW_CHARS = 500;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` so deep-readonly cannot apply; the function only reads. */
 /**
  * POSTs to an OpenAI-compatible chat completions endpoint.
  *
@@ -162,4 +161,3 @@ export async function chatOpenAICompatible(
     ?? '';
   return content;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

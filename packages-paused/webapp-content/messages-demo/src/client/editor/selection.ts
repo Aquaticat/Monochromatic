@@ -19,7 +19,6 @@
  * `data-line` index attribute we use to recover its line number.
  */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM editor surface: every entry point takes a `Node`/`HTMLElement` (or wraps one), which has mutating DOM methods by design; readonly wrappers would misdescribe the API contract */
 
 /**
  * Sentinel for an unresolved selection position: no selection in the
@@ -421,4 +420,3 @@ export function mountSelection(
     },
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

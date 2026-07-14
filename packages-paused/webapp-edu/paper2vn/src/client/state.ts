@@ -360,7 +360,6 @@ export function getActiveSave(): SaveData | undefined {
   return store.activeSave;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `save` is stored verbatim in the module-scoped store; the function does not mutate it but its nested `log` array carries non-readonly internals from the persisted JSON shape. */
 /**
  * Sets the active save in memory; does not write through to disk yet.
  *
@@ -377,7 +376,6 @@ export function setActiveSave(save: SaveData,): void {
   store.activeSaveId = save.id;
   emit();
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Clears the active save (does not delete the persisted slot).
@@ -506,7 +504,6 @@ export function deleteSave(id: string,): void {
   emit();
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `patch` is spread into the store and never mutated; its inner `log` array is a non-readonly tuple coming from the persisted JSON shape. */
 /**
  * Mutates the active save in memory (does not persist).
  *
@@ -527,4 +524,3 @@ export function patchActiveSave(patch: Partial<SaveData>,): void {
   };
   emit();
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

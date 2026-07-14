@@ -73,7 +73,6 @@ const TIER_DEBOUNCE_MS = 500;
  */
 const DECIMAL_RADIX = 10;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM composer: every entry takes a `HTMLFormElement`/`HTMLTextAreaElement`/`HTMLElement` (or an event), all of which expose mutating DOM methods by design; readonly wrappers would misdescribe the API contract */
 
 /**
  * Bootstraps the composer. Idempotent: if called multiple times on the
@@ -469,4 +468,3 @@ export async function bootstrap(): Promise<void> {
     caps,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

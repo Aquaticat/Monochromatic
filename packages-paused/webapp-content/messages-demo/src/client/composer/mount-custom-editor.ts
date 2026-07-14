@@ -11,7 +11,6 @@
 import { mountEditor, } from '../editor/index.ts';
 import type { ComposerState, } from './state.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `form`/`textarea` are `HTMLFormElement`/`HTMLTextAreaElement` with mutating DOM methods; `state.editor` is mutated to hold the new editor handle */
 /**
  * Mounts the custom editor and wires its change events to mirror
  * text into the (now hidden) textarea. Call only when
@@ -82,4 +81,3 @@ export async function mountCustomEditor(
     },
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

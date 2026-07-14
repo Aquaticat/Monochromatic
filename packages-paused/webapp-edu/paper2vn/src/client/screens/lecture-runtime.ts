@@ -66,7 +66,6 @@ export function currentBeat(): DialogueBeat | undefined {
     ?.dialogue[live.beatIndex];
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `chapterCard` is a live HTMLElement that this function mutates by replacing children and writing `hidden`; deep-readonly cannot describe the DOM-mount contract. */
 /**
  * Renders the chapter card overlay for `chapter`.
  *
@@ -122,9 +121,7 @@ export function showChapterCard(
 export function hideChapterCard(chapterCard: HTMLElement,): void {
   chapterCard.hidden = true;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- callbacks are function values that deep-readonly cannot describe; the bag is only read. */
 /**
  * Moves the active save to the next beat, the first beat of the next
  * chapter, or parks at the end of the paper.
@@ -231,4 +228,3 @@ export function regressBeat(
     onRegressed();
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

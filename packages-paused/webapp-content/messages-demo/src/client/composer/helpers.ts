@@ -27,7 +27,6 @@ export const NEW_MESSAGE: unique symbol = Symbol('messages-demo:new-message',);
  */
 export const NO_PARENT: unique symbol = Symbol('messages-demo:no-parent',);
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `state.editor` is mutated via `setText`; `textarea` is a `HTMLTextAreaElement` with mutating DOM methods by design */
 /**
  * Writes `text` into the body surface, updating both the hidden
  * textarea (which downstream code reads synchronously) and the custom
@@ -58,7 +57,6 @@ export function writeBody(
       .editor
       .setText(input.text,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Range for the random-id fallback when `crypto.randomUUID` is unavailable.
@@ -268,7 +266,6 @@ export function appendStatusElement(form: HTMLFormElement,): HTMLElement {
   return status;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `status` is `HTMLElement` whose `textContent` is mutated below */
 /**
  * Updates the composer's status indicator. The composer uses this for
  * "saved", "uploading", "error", etc.
@@ -289,7 +286,6 @@ export function setStatus(
   input.status
     .textContent = input.message;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Adds the "volatile mode" badge when persistent storage is unavailable

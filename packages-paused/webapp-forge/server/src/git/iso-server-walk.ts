@@ -69,7 +69,6 @@ export async function collectReachable(row: {
   return [...visited,];
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `bag` is a Set that this helper deliberately mutates as the BFS accumulator; the rule cannot model that contract. */
 /**
  * Marks every commit, tree, and blob reachable from `oid` into `bag`.
  * Stops at any oid already present in `excluded`.
@@ -193,4 +192,3 @@ async function markTree(row: {
     // Submodule entries (`type === 'commit'`) live in another repo; skip.
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

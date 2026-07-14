@@ -33,7 +33,6 @@ type OllamaResponse = {
   message: { content: string; };
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` so deep-readonly cannot apply; the function never reassigns opts. */
 /**
  * Ollama provider implementation.
  */
@@ -132,4 +131,3 @@ export const ollama: Provider = {
       .content;
   },
 };
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

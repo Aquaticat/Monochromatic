@@ -9,7 +9,6 @@ import { isWithinRoot, } from '../operations/assert-within-root.ts';
 import type { LspClient, } from './lsp-client.ts';
 import { rootFromPoolKey, } from './lsp-pool-config.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- shutdown-for-path removes matching entries from the mutable pool Map after shutdown */
 /**
  * Shuts down and removes all pooled LSP servers whose project root
  * contains the given path. Used to release file locks on Windows
@@ -89,7 +88,6 @@ export async function shutdownPoolForPath({
   for (const key of toRemove)
     pool.delete(key,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Gracefully shuts down all pooled LSP servers concurrently and resolves

@@ -9,7 +9,6 @@
  * domain logic.
  */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `IDBRequest`/`IDBTransaction`/`IDBDatabase` are external SDK classes whose methods mutate connection / cursor state by design */
 /**
  * Awaits a single `IDBRequest`, returning its `result` on success or
  * rejecting with its `error` on failure.
@@ -141,4 +140,3 @@ export function idbOpen(
     );
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

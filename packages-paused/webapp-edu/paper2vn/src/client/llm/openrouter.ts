@@ -15,7 +15,6 @@ import type {
  */
 const DEFAULT_BASE = 'https://openrouter.ai/api/v1';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` so deep-readonly cannot apply; the call delegates without mutation. */
 /**
  * OpenRouter provider implementation.
  */
@@ -34,4 +33,3 @@ export const openrouter: Provider = {
     },);
   },
 };
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

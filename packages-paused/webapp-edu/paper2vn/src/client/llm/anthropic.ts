@@ -63,7 +63,6 @@ type MessagesResponse = {
  *
  * @returns assistant text from the first text content block
  */
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` (browser SDK with mutating methods); deep-readonly cannot apply, and the function never mutates opts.
 async function callAnthropic(opts: ChatOptions,): Promise<string> {
   if (opts.apiKey
     === '')

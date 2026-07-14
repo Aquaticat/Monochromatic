@@ -57,7 +57,6 @@ function relevantClients(
   return clients;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- didOpen owns the mutable document lifecycle Map and registers new document state */
 /**
  * Registers a file as open and notifies relevant LSP servers.
  *
@@ -119,9 +118,7 @@ export function didOpen({
     },);
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- didChange mutates tracked document version and text before notifying relevant servers */
 /**
  * Pushes a full-content change to relevant LSP servers and bumps the version.
  *
@@ -171,7 +168,6 @@ export function didChange({
     },);
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Notifies relevant LSP servers that a file was saved.
@@ -213,7 +209,6 @@ export function didSave({
   }
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- didClose removes document state from the lifecycle Map before notifying servers */
 /**
  * Removes a file from tracking and notifies relevant LSP servers.
  *
@@ -254,4 +249,3 @@ export function didClose({
     },);
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -70,7 +70,6 @@ function row(
   return `<div class="composer-metrics-row"><span>${input.label}</span><span>${input.value}</span></div>`;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `parent` is `HTMLElement` with mutating DOM methods (append); `state.metrics` is mutated in place */
 /**
  * Builds the overlay DOM and returns a function that re-renders it
  * from the latest `state.metrics` snapshot.
@@ -145,7 +144,6 @@ function mountMetricsOverlay(
     }`;
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Folded shape of the worker `metrics` payload after type narrowing.
@@ -231,7 +229,6 @@ function foldCounters(
   return next;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `parent` is `HTMLElement` with mutating DOM methods (append); `state.metrics` is mutated in place */
 /**
  * Attaches the metrics overlay and seeds `state.metrics`. Returns
  * helpers the composer holds onto for the worker / promotion sites
@@ -354,4 +351,3 @@ export function attachMetricsOverlay(
     },
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

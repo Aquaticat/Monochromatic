@@ -36,7 +36,6 @@ const DISPATCHABLE_KINDS: ReadonlySet<EventKind> = new Set<EventKind>([
  */
 const DEFAULT_BATCH_SIZE = 256;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Storage and WriteBuffer are sinks with mutator methods (`put`, `enqueue`, `flush`) by design; we delegate to them through the same contract. */
 /**
  * Drains every event newer than `afterEventId`, dispatching each one in
  * id order, then waits for the write buffer to flush.
@@ -132,7 +131,6 @@ export async function dispatchAndFlush(row: {
     .flush();
   return cursor;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Extracts the `commentId` field from a `comment.created` event's

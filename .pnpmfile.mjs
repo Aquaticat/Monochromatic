@@ -144,7 +144,6 @@ function warnOnce(params,) {
  * @param {{ readonly pkg: PnpmPackage }} params
  * @returns {PnpmPackage}
  */
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- pnpm passes a mutable manifest object, and dependency rewrites mutate nested dependency maps in place.
 function applyBlocklist(params,) {
   const { pkg, } = params;
   const dependentName = (typeof pkg.name) === 'string' ? pkg.name : '<unknown>';
@@ -188,7 +187,6 @@ export const hooks = {
    * @param {PnpmPackage} pkg
    * @returns {PnpmPackage}
    */
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- pnpm passes a mutable manifest object, and the hook must return that same object after in-place dependency rewrites.
   readPackage(pkg,) {
     return applyBlocklist({ pkg, },);
   },

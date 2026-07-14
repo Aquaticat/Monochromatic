@@ -25,7 +25,6 @@ export type PendingLspRequest = {
   timeoutId: ReturnType<typeof setTimeout> | null;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- JSON-RPC routing consumes and deletes entries from the pending request Map */
 /**
  * Routes an incoming JSON-RPC message to the appropriate handler.
  * Responses are matched to pending requests by ID.
@@ -123,4 +122,3 @@ export function routeJsonRpcMessage({
     },);
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

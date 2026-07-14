@@ -27,7 +27,6 @@ import type {
   StoragePutItem,
 } from './adapter.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `fetch` signature follows the platform fetch API contract; `Request` and `RequestInit` carry mutator methods by spec. */
 /**
  * HTTP client used to issue signed S3 requests.
  */
@@ -47,7 +46,6 @@ export type S3FetchClient = {
     init?: RequestInit,
   ): Promise<Response>;
 };
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Options accepted by {@link createS3Storage}.
@@ -277,7 +275,6 @@ async function throwOnError(row: {
   );
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `client` is the platform fetch client whose `fetch` method has mutable signature; we only call `.fetch`. */
 /**
  * Issues a single ListObjectsV2 page request.
  *
@@ -355,9 +352,7 @@ async function listOnePage(row: {
     nextToken: parseContinuationToken(xml,),
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `options.client` is the platform fetch client; the Storage methods accept `Uint8Array` bodies the interface guarantees as read-only. */
 /**
  * Creates an S3-compatible Storage adapter.
  *
@@ -619,4 +614,3 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
     list,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -63,7 +63,6 @@ export function isProviderReady(): boolean {
   return true;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `signal` is a Web `AbortSignal` (external SDK with mutating methods); deep-readonly cannot apply, and the function only reads the bag before forwarding to the provider. */
 /**
  * Sends a chat completion through the active provider.
  *
@@ -126,7 +125,6 @@ export function chat(
     temperature: undefined,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Re-exports for callers that want the locale string to bind to messages.

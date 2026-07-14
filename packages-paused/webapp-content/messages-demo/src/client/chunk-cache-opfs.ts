@@ -25,7 +25,6 @@ export function opfsName(key: ChunkCacheKey,): string {
   return `${String(key.messageId,)}-${String(key.revision,)}-${String(key.idx,)}.html`;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `FileSystemDirectoryHandle` is an external SDK class whose methods mutate filesystem state by design */
 /**
  * Lists every file in the cache directory whose `messageId` matches
  * `key` but whose `revision` differs, and removes them. Bounded by the
@@ -84,4 +83,3 @@ export async function evictOpfsStale(
     }
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

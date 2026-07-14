@@ -75,7 +75,6 @@ export type Provider = {
    */
   id: string;
 
-  /* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` (browser SDK with mutating methods) so deep-readonly cannot apply; the function never reassigns or mutates the opts object. */
   /**
    * Sends a chat completion request.
    *
@@ -86,5 +85,4 @@ export type Provider = {
    * @throws when the HTTP call fails or the response shape is unexpected
    */
   chat: (opts: ChatOptions,) => Promise<string>;
-  /* oxlint-enable typescript/prefer-readonly-parameter-types */
 };

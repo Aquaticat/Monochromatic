@@ -20,7 +20,6 @@ import { join, } from 'node:path';
 import { assertWithinRoot, } from './operations/assert-within-root.ts';
 import { getContentType, } from './operations/file-kind.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- h3 route registration mutates the external app/router instance by design */
 /**
  * Registers all HTTP routes on the h3 application instance.
  *
@@ -177,4 +176,3 @@ export function registerRoutes({
 
   //endregion Raw file serving
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

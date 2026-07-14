@@ -56,7 +56,6 @@ function rejectUnauthenticated(
   peer.close();
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- websocket handler mutates the live connectedPeers Set on open and close */
 /**
  * Creates a WebSocket event handler that authenticates via token and dispatches operations.
  *
@@ -166,4 +165,3 @@ export function createWsHandler(
     };
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

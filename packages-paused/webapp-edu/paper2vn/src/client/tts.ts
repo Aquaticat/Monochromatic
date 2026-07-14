@@ -151,7 +151,6 @@ export async function speak(text: string,): Promise<void> {
       );
       utterance.addEventListener(
         'error',
-        // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is a Web `SpeechSynthesisErrorEvent` (external DOM SDK with mutating methods); deep-readonly cannot apply, and the handler only reads `event.error`.
         function onError(event: SpeechSynthesisErrorEvent,): void {
           console.error(
             '[tts] error',

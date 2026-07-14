@@ -39,7 +39,6 @@ import {
  */
 type InputCleanup = () => void;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM input layer: every handler takes a `HTMLElement`, `InputEvent`, `CompositionEvent`, or `ClipboardEvent`, all of which expose mutating DOM methods by design; readonly wrappers would misdescribe the API contract */
 
 /**
  * Attaches input handlers to the surface. Returns a cleanup function
@@ -468,4 +467,3 @@ export function attachInput(
     );
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -111,7 +111,6 @@ function isTransientDirName({ name, }: { readonly name: string; },): boolean {
   );
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- prefetch cache owner mutates Map entries during eviction; ReadonlyMap would misdescribe delete() */
 /**
  * Evicts the oldest entries from the prefetch cache when it exceeds the size limit.
  * Map iteration order is insertion order, so the first entries are the oldest.
@@ -138,9 +137,7 @@ function evictPrefetchCache({ cache, }: { readonly cache: Map<string, readonly D
   for (const key of keysToEvict)
     cache.delete(key,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- prefetch warmup writes to the shared Map cache and evicts entries after concurrent fetches settle */
 /**
  * Fetches direct children of all directory entries concurrently
  * and stores them in the prefetch cache. Evicts oldest entries
@@ -198,4 +195,3 @@ export async function preloadChildren({
   );
   evictPrefetchCache({ cache: prefetchCache, },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

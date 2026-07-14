@@ -136,7 +136,6 @@ export type Generation = {
   chapters: readonly Chapter[];
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `signal` is a Web `AbortSignal` (external SDK with mutating methods); deep-readonly cannot apply, and the function only reads the bag before forwarding to `chat`. */
 /**
  * Sends the paper text to the LLM and returns parsed chapters.
  *
@@ -262,7 +261,6 @@ export async function generateChapters(
     chapters,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Strips Markdown JSON code fences (lines starting with three backticks)

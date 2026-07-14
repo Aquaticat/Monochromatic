@@ -11,7 +11,6 @@
  */
 import { el, } from '../dom.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `onActivate` is a callback function; deep-readonly cannot describe function values, and the bag is only read. */
 /**
  * Builds a toolbar button with a primary or ghost variant.
  *
@@ -52,4 +51,3 @@ export function toolbarButton(
     children: [label,],
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

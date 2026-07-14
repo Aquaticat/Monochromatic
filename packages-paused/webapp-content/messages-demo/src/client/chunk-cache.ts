@@ -281,7 +281,6 @@ function createNoopCache(): ChunkCache {
 
 //region IDB helpers
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `IDBDatabase` is an external SDK class whose methods (`transaction`, etc.) mutate connection state by design */
 /**
  * 9 007 199 254 740 991 (`Number.MAX_SAFE_INTEGER`); ceiling for revision/idx in the messageId-only key range.
  */
@@ -522,6 +521,5 @@ async function evictIdbStale(
   );
   await idbTransactionDone(tx,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion

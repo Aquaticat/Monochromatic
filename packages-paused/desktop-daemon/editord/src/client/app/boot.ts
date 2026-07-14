@@ -20,7 +20,6 @@ import type {
   SearchOverlayHandle,
 } from './types.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- boot orchestrates live editor, file-tree, search overlay, and recent-files state owners during session restore */
 /**
  * Performs session restore and initial state setup after WebSocket is ready.
  *
@@ -103,4 +102,3 @@ export async function bootSession(
       === 'text'))
     refreshInlayHints();
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

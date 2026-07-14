@@ -53,7 +53,6 @@ export type Table = {
   length: number;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- every helper mutates `Table` (pieces array, add buffer, length cache) in place by design; the piece-table primitive is the source of truth for the editor worker */
 /**
  * Resets `table` to a single original piece for `text`. Caller is
  * responsible for clearing any associated undo / redo stacks.
@@ -447,4 +446,3 @@ export function applyToTable(
     insert: removed,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

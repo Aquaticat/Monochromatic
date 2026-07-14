@@ -165,7 +165,6 @@ function detach(promise: Promise<unknown>,): void {
   }());
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `storage: Storage` has mutator methods (`put`, `delete`) by interface contract; we delegate to them through the same contract. */
 /**
  * Creates a write buffer in front of a storage adapter.
  *
@@ -337,4 +336,3 @@ export function createWriteBuffer({
     },
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

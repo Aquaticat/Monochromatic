@@ -410,7 +410,6 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | typeof 
   return PUT_FAILED;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `IDBDatabase` is an external SDK class whose `transaction` mutates connection state by design; `queue` is mutated in place by `splice` below */
 /**
  * Drops every queue entry whose `(draftId, seq)` is implied by the
  * server's ack (`seq <= ack`) and removes the same entries from IDB.
@@ -463,4 +462,3 @@ async function dropAcked(
     ack: input.ack,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

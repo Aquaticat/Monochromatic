@@ -26,7 +26,6 @@ import { saveCurrentTier3Chunk, } from './tier3.ts';
  */
 const PREVIEW_MAX_LENGTH = 200;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM edit send: `status` is `HTMLElement` and `state.tier3` is mutated by the inherit-walk; readonly wrappers would misdescribe the API contract */
 
 /**
  * Inline-edit send: build a child draft from the new body and POST the
@@ -308,4 +307,3 @@ export async function sendTier3Edit(
   globalThis.location
     .assign(result.location,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -75,7 +75,6 @@ export type Viewport = {
   },): number;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM viewport: every entry takes a `HTMLElement` (host) or wraps DOM mutations; readonly wrappers would misdescribe the API contract */
 
 /**
  * Mounts the viewport DOM into `host` and renders `initialText`.
@@ -406,4 +405,3 @@ export function mountViewport(
     },
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

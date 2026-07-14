@@ -65,7 +65,6 @@ export type ProcessEventResult = {
   readonly discarded: number;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `sink: Storage | WriteBuffer` has mutator methods (`put`, `enqueue`) by interface contract; we delegate to them through the same contract. */
 /**
  * Turns one event into rebuilds.
  *
@@ -221,7 +220,6 @@ export async function processEvent(row: {
     discarded: counters.discarded,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Loads the metadata that the dependency graph needs for an issue event.

@@ -14,7 +14,6 @@ import {
 } from './helpers.ts';
 import type { ComposerState, } from './state.ts';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM tier-3 composer: every entry takes a `HTMLFormElement`/`HTMLTextAreaElement`/`HTMLElement` (or wraps mutating ComposerState fields); readonly wrappers would misdescribe the API contract */
 
 /**
  * Sets up tier-3 prev/next/save buttons inside the composer form. Used
@@ -352,4 +351,3 @@ export async function saveCurrentTier3Chunk(
     message: `saved chunk ${String(seq + 1,)}`,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

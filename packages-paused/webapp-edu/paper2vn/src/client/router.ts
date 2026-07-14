@@ -68,7 +68,6 @@ const routerState: {
   currentTeardown: undefined,
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `module` carries mount/unmount function values that deep-readonly cannot describe; the function only reads the bag before registering. */
 /**
  * Registers a screen so {@link navigate} can mount it later.
  *
@@ -95,7 +94,6 @@ export function registerScreen(
     module,
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Switches to the named screen.

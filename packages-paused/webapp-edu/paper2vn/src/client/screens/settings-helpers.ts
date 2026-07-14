@@ -77,7 +77,6 @@ export function hint(text: string,): HTMLElement {
   },);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `control` is a live `HTMLElement` appended into the field DOM tree; deep-readonly cannot describe a mountable element. */
 /**
  * Field row: label + control with optional hint.
  *
@@ -124,9 +123,7 @@ export function field(
     children,
   },);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `onValue` is a function callback that deep-readonly cannot describe; the bag is only read. */
 /**
  * Builds a labeled `<input type="range">` slider.
  *
@@ -189,7 +186,6 @@ export function range(
   );
   return input;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Builds the language `<select>` element with the four supported locales.
@@ -329,7 +325,6 @@ export function providerSelect(
   },);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `onValue` is a function callback that deep-readonly cannot describe; the bag is only read. */
 /**
  * Builds a labelled `<input>` element of type text or password and wires
  * an `input` listener that forwards the new value.
@@ -391,9 +386,7 @@ export function providerInput(
   );
   return input;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `onChange` is a function callback that deep-readonly cannot describe; the bag is only read. */
 /**
  * Builds a `<input type="checkbox">` element wired to a change listener.
  *
@@ -441,9 +434,7 @@ export function checkbox(
   );
   return input;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `onAcknowledge` is a function callback that deep-readonly cannot describe; the bag is only read. */
 /**
  * Builds the Anthropic dangerous-browser-access opt-in nodes, or an empty
  * array when the active provider is not Anthropic.
@@ -508,4 +499,3 @@ export function anthropicWarningNodes(
     },),
   ];
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

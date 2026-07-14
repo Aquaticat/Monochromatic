@@ -144,7 +144,6 @@ type WorkerMessage =
  */
 type ChangeListener = (changeset: Changeset,) => void;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM editor entry point: takes a `HTMLElement` host and proxies a `Worker`/`MessageEvent`; both have mutating SDK methods (postMessage, terminate, etc.) by design */
 
 /**
  * Mounts the custom editor on a host element. Spawns the buffer
@@ -546,7 +545,6 @@ type WorkerInbound =
     readonly id: number;
   };
 
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Idempotency map: one editor per host element.
