@@ -271,27 +271,20 @@ function toLlmMessage(
  * // [{ role: 'user', content: [...], timestamp: ... }, ...]
  * ```
  */
-export function convertToLlm(
-  messages: readonly (AgentMessage & { role: AgentMessage['role']; })[],
-): Message[] {
-  return messages
-    .map(
-      /**
-       * Converts one agent message into an LLM message or omission sentinel.
-       *
-       * @param m - Message that may expose hooks during unsupported-role reporting.
-       *
-       * @returns converted message or omission sentinel.
-       *
-       * @mutates m - `JSON.stringify` may invoke hooks when an unsupported message is reported.
-       */
-      function mapToLlm(m,) {
-        return toLlmMessage(m,);
-      },
-    )
-    .filter(function isMessage(m,): m is Message {
-      return m !== OMIT;
-    },);
+export function convertToLlm(messages: AgentMessage[],): Message[] {
+  /**
+   * Converted messages retained after omission filtering.
+   */
+  const converted: Message[] = [];
+  for (const message of messages) {
+    /**
+     * Converted message or omission sentinel for current input.
+     */
+    const candidate = toLlmMessage(message,);
+    if (candidate !== OMIT)
+      converted.push(candidate,);
+  }
+  return converted;
 }
 
 //endregion
@@ -337,15 +330,15 @@ function userTextFromContent(
  *
  * @returns multi-paragraph string suitable as Morph Compact input
  *
+ * @mutates messages - `JSON.stringify` may invoke hooks on tool-call argument values.
+ *
  * @example
  * ```typescript
  * serializeConversation(convertToLlm(allMessages));
  * // '[User]: hello\\n\\n[Assistant]: hi'
  * ```
  */
-export function serializeConversation(
-  messages: readonly Message[],
-): string {
+export function serializeConversation(messages: Message[],): string {
   /**
    * Top-level accumulator joined into the final serialized transcript.
    */
