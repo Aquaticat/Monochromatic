@@ -1,4 +1,4 @@
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { colorizeJson, } from './color.ts';
 import type { EstimateSnapshot, } from './types.ts';

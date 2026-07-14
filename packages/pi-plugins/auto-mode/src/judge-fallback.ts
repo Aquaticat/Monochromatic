@@ -5,7 +5,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { NoBudgetModelError, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 import type {

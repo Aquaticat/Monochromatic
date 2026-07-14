@@ -1,4 +1,4 @@
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Replaces an element's parent's content with clones of that element, each

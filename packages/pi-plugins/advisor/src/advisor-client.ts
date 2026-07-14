@@ -25,7 +25,7 @@ import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completi
 import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
 import type {

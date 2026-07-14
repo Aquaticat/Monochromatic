@@ -9,7 +9,7 @@ import type {
   ToolCall,
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { extractJsonVerdict, } from './judge-json.ts';
 

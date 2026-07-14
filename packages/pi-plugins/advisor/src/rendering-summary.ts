@@ -5,7 +5,7 @@
  */
 
 import type { Theme, } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import type { AdvisorDetails, } from './types.ts';
 

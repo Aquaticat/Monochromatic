@@ -15,7 +15,7 @@ import {
   NO_OVERRIDE_MODEL,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Logger root for auto-mode after removing the package log shim.

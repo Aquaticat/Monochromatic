@@ -13,7 +13,7 @@ import type {
   ExtensionContext,
   SessionMessageEntry,
 } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   isTrustEntry,

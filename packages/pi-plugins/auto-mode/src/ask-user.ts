@@ -14,7 +14,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import nanoSpawn from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { formatModelBlockReason, } from './model-feedback.ts';
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';

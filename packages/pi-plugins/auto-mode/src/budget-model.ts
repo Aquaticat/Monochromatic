@@ -15,7 +15,7 @@ import {
   resolveBudgetModelOverride,
   selectBudgetModel,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   findBudgetOverrideModel,
   hasConfiguredBudgetAuth,

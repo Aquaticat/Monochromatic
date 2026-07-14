@@ -5,7 +5,7 @@
  */
 
 import type { SimpleStreamOptions, } from '@earendil-works/pi-ai';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { BudgetModelAuth, } from './types.ts';
 
 /**

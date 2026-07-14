@@ -17,7 +17,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { Type, } from 'typebox';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { getTrustDirectives, } from './context.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';

@@ -8,7 +8,7 @@
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { applyThinkingDefault, } from './apply-thinking-default.ts';
 import { restoreGlobalDefaultThinkingLevel, } from './global-settings.ts';
 import type {

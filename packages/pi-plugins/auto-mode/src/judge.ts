@@ -27,7 +27,7 @@ import { openAICodexResponsesApi, } from '@earendil-works/pi-ai/api/openai-codex
 import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completions.lazy';
 import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   toolChoiceForApi,

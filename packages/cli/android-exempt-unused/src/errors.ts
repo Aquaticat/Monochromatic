@@ -8,7 +8,7 @@
  * @module
  */
 
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Base class for every adb-related failure raised by this CLI. Catch this to

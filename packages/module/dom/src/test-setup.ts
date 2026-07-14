@@ -16,7 +16,7 @@ import { join, } from 'node:path';
 import { pathToFileURL, } from 'node:url';
 
 import type { Page, } from '@playwright/test';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 declare global {
   /**

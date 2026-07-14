@@ -6,7 +6,7 @@
  * splitting runs through plain string methods.
  */
 
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Shared segmenter for grapheme-cluster splitting, via {@link splitGraphemes}.

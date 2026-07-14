@@ -13,7 +13,7 @@ import {
   Text,
 } from '@earendil-works/pi-tui';
 import type { ReadonlyDeep, } from 'type-fest';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   fallbackDetails,
   isAdvisorDetails,

@@ -7,7 +7,7 @@
  * the Firefox ESR baseline, so the growth is scripted).
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 // Imported from page-stats directly, never from ../page.ts: page.ts
 // imports the favicon generator, whose sharp/node imports must stay

@@ -9,7 +9,7 @@ import type {
   ExtensionCommandContext,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
