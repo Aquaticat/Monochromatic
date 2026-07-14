@@ -9,7 +9,12 @@
  * ```
  */
 
-import { parseSync, } from 'oxc-parser';
+import {
+  type OxcError,
+  parseSync,
+} from 'oxc-parser';
+
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   lineStarts,
@@ -143,7 +148,7 @@ export function enumerateMutants(options: {
     > 0)
     throw new Error(
       `parse of ${options.file} failed: ${parsed.errors
-        .map(function toMessage(error,): string {
+        .map(function toMessage(error: ForeignBorrowed<OxcError>,): string {
           return error.message;
         },)
         .join('; ',)}`,

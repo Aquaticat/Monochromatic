@@ -11,6 +11,7 @@
  * ```
  */
 
+import type { Dirent, } from 'node:fs';
 import { createHash, } from 'node:crypto';
 import {
   readdir,
@@ -21,6 +22,7 @@ import { join, } from 'node:path';
 import spawn from 'nano-spawn';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Module logger for host-side image management.
@@ -76,7 +78,7 @@ async function listFilesSorted(dir: string,): Promise<readonly string[]> {
    * Files from this level and below.
    */
   const nested = await Promise.all(entries.map(
-    async function collect(entry,): Promise<readonly string[]> {
+    async function collect(entry: ForeignBorrowed<Dirent>,): Promise<readonly string[]> {
       /**
        * Absolute path of this entry.
        */

@@ -13,6 +13,7 @@
  * ```
  */
 
+import type { Dirent, } from 'node:fs';
 import {
   access,
   mkdir,
@@ -24,6 +25,7 @@ import { join, } from 'node:path';
 import spawn from 'nano-spawn';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   BAKED_ROOT,
@@ -244,10 +246,10 @@ async function symlinkWorkspacePackageNodeModules(): Promise<void> {
     { withFileTypes: true, },
   );
   await Promise.all(packageCategories
-    .filter(function isDirectory(category,): boolean {
+    .filter(function isDirectory(category: ForeignBorrowed<Dirent>,): boolean {
       return category.isDirectory();
     },)
-    .map(async function symlinkCategory(category,): Promise<void> {
+    .map(async function symlinkCategory(category: ForeignBorrowed<Dirent>,): Promise<void> {
       /**
        * Package directories under current category.
        */
@@ -260,10 +262,10 @@ async function symlinkWorkspacePackageNodeModules(): Promise<void> {
         { withFileTypes: true, },
       );
       await Promise.all(packages
-        .filter(function isDirectory(packageEntry,): boolean {
+        .filter(function isDirectory(packageEntry: ForeignBorrowed<Dirent>,): boolean {
           return packageEntry.isDirectory();
         },)
-        .map(async function symlinkPackage(packageEntry,): Promise<void> {
+        .map(async function symlinkPackage(packageEntry: ForeignBorrowed<Dirent>,): Promise<void> {
           await symlinkPackageNodeModules({
             category: category.name,
             packageName: packageEntry.name,

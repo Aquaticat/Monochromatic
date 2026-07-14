@@ -7,10 +7,12 @@
  * ```
  */
 
+import type { Dirent, } from 'node:fs';
 import { readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Module logger for host-side selection.
@@ -77,7 +79,7 @@ async function listTsFiles(options: {
    * Files collected from this level and subdirectories.
    */
   const nested = await Promise.all(entries.map(
-    async function collect(entry,): Promise<readonly string[]> {
+    async function collect(entry: ForeignBorrowed<Dirent>,): Promise<readonly string[]> {
       /**
        * Package-relative path of this entry.
        */
