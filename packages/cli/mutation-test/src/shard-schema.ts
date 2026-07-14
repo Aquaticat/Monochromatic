@@ -33,13 +33,13 @@ export const SHARD_SCHEMA_VERSION = 1;
  * One shard's worth of work, written by the host.
  */
 export type ShardManifest = {
-  readonly schemaVersion: typeof SHARD_SCHEMA_VERSION;
-  readonly shardId: string;
-  readonly packagePath: string;
-  readonly mutants: readonly Mutant[];
-  readonly tests: readonly string[];
-  readonly timeoutFloorMs: number;
-  readonly timeoutFactor: number;
+  schemaVersion: typeof SHARD_SCHEMA_VERSION;
+  shardId: string;
+  packagePath: string;
+  mutants: readonly Mutant[];
+  tests: readonly string[];
+  timeoutFloorMs: number;
+  timeoutFactor: number;
 };
 
 /**
@@ -73,10 +73,10 @@ export type ShardBaseline = {
  * reshards them into fresh containers.
  */
 export type ShardReport = {
-  readonly schemaVersion: typeof SHARD_SCHEMA_VERSION;
-  readonly shardId: string;
-  readonly baseline: ShardBaseline;
-  readonly results: readonly ShardMutantResult[];
-  readonly unrun: readonly string[];
-  readonly anomaly: string;
+  schemaVersion: typeof SHARD_SCHEMA_VERSION;
+  shardId: string;
+  baseline: ShardBaseline;
+  results: readonly ShardMutantResult[];
+  unrun: readonly string[];
+  anomaly: string;
 };

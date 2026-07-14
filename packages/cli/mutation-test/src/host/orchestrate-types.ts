@@ -41,13 +41,13 @@ export type RunOutcome = {
  * Options controlling one orchestrated run.
  */
 export type OrchestrateOptions = EnumerationInputs & {
-  readonly shardSize: number;
-  readonly containers: number;
-  readonly resources: ShardResources;
-  readonly selinuxRelabel: boolean;
-  readonly skipImageBuild: boolean;
-  readonly timeoutFloorMs: number;
-  readonly timeoutFactor: number;
+  shardSize: number;
+  containers: number;
+  resources: ShardResources;
+  selinuxRelabel: boolean;
+  skipImageBuild: boolean;
+  timeoutFloorMs: number;
+  timeoutFactor: number;
 };
 
 /**

@@ -24,10 +24,10 @@ import type { MutantGroup, } from './shards.ts';
  * Inputs shared with the orchestrator for one run.
  */
 export type EnumerationInputs = {
-  readonly repoRoot: string;
-  readonly packagePath: string;
-  readonly sourceFiles: readonly string[];
-  readonly fullSuite: boolean;
+  repoRoot: string;
+  packagePath: string;
+  sourceFiles: readonly string[];
+  fullSuite: boolean;
 };
 
 /**
@@ -42,7 +42,7 @@ export type EnumerationInputs = {
  * const { groups, ignored } = await enumeratePackage(options);
  * ```
  */
-export async function enumeratePackage(options: EnumerationInputs,): Promise<{
+export async function enumeratePackage(options: Readonly<EnumerationInputs>,): Promise<{
   readonly groups: readonly MutantGroup[];
   readonly ignored: readonly IgnoredMutant[];
 }> {

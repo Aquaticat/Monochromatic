@@ -94,7 +94,7 @@ export function effectiveTimeoutMs(options: {
  */
 export async function runMutantLoop(options: {
   readonly packageCwd: string;
-  readonly manifest: ShardManifest;
+  readonly manifest: Readonly<ShardManifest>;
   readonly baselineTestsMs: number;
 },): Promise<MutantLoopOutput> {
   /**

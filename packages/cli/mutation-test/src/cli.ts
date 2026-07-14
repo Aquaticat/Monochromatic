@@ -46,9 +46,7 @@ const l = tagged({ tag: 'mutation-test', },);
  * await runCli(parseCliOptions(['--package', 'packages/module/fs-path']));
  * ```
  */
-export async function runCli(
-  options: CliOptions & { sourceFiles: readonly string[]; },
-): Promise<void> {
+export async function runCli(options: CliOptions,): Promise<void> {
   /**
    * Logger scoped to this invocation.
    */

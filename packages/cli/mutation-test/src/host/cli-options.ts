@@ -48,8 +48,8 @@ const DEFAULT_PIDS_LIMIT = 512;
  * Parsed CLI options plus run mode.
  */
 export type CliOptions = OrchestrateOptions & {
-  readonly dryRun: boolean;
-  readonly reportFile: string;
+  dryRun: boolean;
+  reportFile: string;
 };
 
 /**

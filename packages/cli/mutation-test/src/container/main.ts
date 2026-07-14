@@ -152,9 +152,7 @@ export async function readManifest(): Promise<ShardManifest> {
  * await writeReport(report);
  * ```
  */
-async function writeReport(
-  report: ShardReport & { shardId: string; },
-): Promise<void> {
+async function writeReport(report: ShardReport,): Promise<void> {
   /**
    * Report destination path on the report mount.
    */

@@ -71,9 +71,7 @@ const MAX_SINGLE_RETRIES = 1;
  * const outcome = await orchestrateRun(options);
  * ```
  */
-export async function orchestrateRun(
-  options: OrchestrateOptions & { sourceFiles: readonly string[]; },
-): Promise<RunOutcome> {
+export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunOutcome> {
   /**
    * Logger scoped to the run.
    */
@@ -250,9 +248,7 @@ export async function orchestrateRun(
    *
    * @mutates manifests - `JSON.stringify` may invoke hooks on shard manifests.
    */
-  async function runRound(
-    manifests: readonly (ShardManifest & { shardId: string; })[],
-  ): Promise<readonly string[]> {
+  async function runRound(manifests: readonly ShardManifest[],): Promise<readonly string[]> {
     /**
      * Reports from every shard in this round.
      */
