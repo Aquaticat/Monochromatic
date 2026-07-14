@@ -299,7 +299,7 @@ function isMiseBackendPackage(effname: string,): boolean {
  */
 type RepologyProject = {
   readonly effname: string;
-  readonly repos: Readonly<Record<string, string>>;
+  readonly repos: Record<string, string>;
 };
 
 /**
@@ -311,7 +311,7 @@ type RepologyProject = {
  *
  * @returns TypeScript source code
  */
-function generateTypeScript(projects: readonly RepologyProject[],): string {
+function generateTypeScript(projects: RepologyProject[],): string {
   /**
    * Date portion of the current ISO timestamp; used in the generated file header.
    */

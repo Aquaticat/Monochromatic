@@ -155,7 +155,7 @@ export function omitJsonKey(
     key,
   }: {
     readonly key: string;
-    readonly object: Readonly<JsonObject>
+    readonly object: JsonObject
   },
 ): JsonObject {
   /**
@@ -200,9 +200,9 @@ export function mergeFlatJson(
     set,
     arrayUnion,
   }: {
-    readonly arrayUnion?: Readonly<Record<string, readonly string[]>>;
-    readonly base: Readonly<JsonObject>;
-    readonly set?: Readonly<Record<string, JsonValue>>;
+    readonly arrayUnion?: Record<string, readonly string[]>;
+    readonly base: JsonObject;
+    readonly set?: Record<string, JsonValue>;
   },
 ): JsonObject {
   /**
@@ -271,8 +271,8 @@ export function mergeObjectDefaults(
     base,
     defaults,
   }: {
-    readonly base: Readonly<JsonObject>;
-    readonly defaults: Readonly<Record<string, JsonValue>>
+    readonly base: JsonObject;
+    readonly defaults: Record<string, JsonValue>
   },
 ): JsonObject {
   /**
