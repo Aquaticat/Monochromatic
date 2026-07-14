@@ -335,7 +335,7 @@ overrides:
 
 packageExtensionsChecksum: sha256-gD9T//+G7LgmfrdkuAns6+OIpwGt5qZWZRqAB+4BK00=
 
-pnpmfileChecksum: sha256-+JgUg3IiJaGDQMDLnqPUSEZvBb2N6C46c2sr2EmD/+w=
+pnpmfileChecksum: sha256-j5yFm96r4eLvmMa/RIYwA/SYuEpfI4nJb9VbUVfDilE=
 
 importers:
 
@@ -3009,6 +3009,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -3040,6 +3043,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -3071,6 +3077,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
