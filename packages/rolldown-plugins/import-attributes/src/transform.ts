@@ -13,6 +13,7 @@ import {
   parseSync,
   Visitor,
 } from 'rolldown/utils';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   extractTypeFromAttributes,
@@ -83,7 +84,7 @@ export function transformImportAttributes({
    * AST visitor that records replacements for each kind of attribute-bearing declaration.
    */
   const visitor = new Visitor({
-    ImportDeclaration(node: ESTree.ImportDeclaration,): void {
+    ImportDeclaration(node: ForeignBorrowed<ESTree.ImportDeclaration>,): void {
       if (node.attributes
         .length
         === 0)
@@ -102,7 +103,7 @@ export function transformImportAttributes({
       },),);
     },
 
-    ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
+    ExportNamedDeclaration(node: ForeignBorrowed<ESTree.ExportNamedDeclaration>,): void {
       if ((node.source
         === null) || (node.attributes
           .length
@@ -122,7 +123,7 @@ export function transformImportAttributes({
       },),);
     },
 
-    ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
+    ExportAllDeclaration(node: ForeignBorrowed<ESTree.ExportAllDeclaration>,): void {
       if (node.attributes
         .length
         === 0)
@@ -141,7 +142,7 @@ export function transformImportAttributes({
       },),);
     },
 
-    ImportExpression(node: ESTree.ImportExpression,): void {
+    ImportExpression(node: ForeignBorrowed<ESTree.ImportExpression>,): void {
       if (node.options
         === null)
         return;

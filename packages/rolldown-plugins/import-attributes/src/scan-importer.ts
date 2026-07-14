@@ -16,6 +16,7 @@ import {
   parseSync,
   Visitor,
 } from 'rolldown/utils';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   extractTypeFromAttributes,
@@ -107,7 +108,7 @@ export async function scanImporterForAttribute({
    * AST visitor that records the attribute type on the first matching specifier.
    */
   const visitor = new Visitor({
-    ImportDeclaration(node: ESTree.ImportDeclaration,): void {
+    ImportDeclaration(node: ForeignBorrowed<ESTree.ImportDeclaration>,): void {
       if (found !== NO_ATTR_TYPE)
         return;
       if ((node.source
@@ -119,7 +120,7 @@ export async function scanImporterForAttribute({
       found = extractTypeFromAttributes(node.attributes,);
     },
 
-    ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
+    ExportNamedDeclaration(node: ForeignBorrowed<ESTree.ExportNamedDeclaration>,): void {
       if (found !== NO_ATTR_TYPE)
         return;
       if ((node.source
@@ -136,7 +137,7 @@ export async function scanImporterForAttribute({
       found = extractTypeFromAttributes(node.attributes,);
     },
 
-    ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
+    ExportAllDeclaration(node: ForeignBorrowed<ESTree.ExportAllDeclaration>,): void {
       if (found !== NO_ATTR_TYPE)
         return;
       if ((node.source
@@ -148,7 +149,7 @@ export async function scanImporterForAttribute({
       found = extractTypeFromAttributes(node.attributes,);
     },
 
-    ImportExpression(node: ESTree.ImportExpression,): void {
+    ImportExpression(node: ForeignBorrowed<ESTree.ImportExpression>,): void {
       if (found !== NO_ATTR_TYPE)
         return;
       if (node.options
