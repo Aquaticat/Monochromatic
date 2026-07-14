@@ -170,14 +170,15 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
    */
   const matchers = buildAsyncMatchers(getRejection,);
 
-  /**
-   * Checks rejected value against optional expectation.
-   *
-   * @param expected - Optional string, regular expression, or constructor expectation.
-   *
-   * @mutates expected - `chaiExpect(error,).to.be.instanceOf` and `chaiExpect(message,).to.match` may inspect caller hooks.
-   */
-  matchers.toThrow = async function rejectsToThrow(
+  matchers.toThrow =
+    /**
+     * Checks rejected value against optional expectation.
+     *
+     * @param expected - Optional string, regular expression, or constructor expectation.
+     *
+     * @mutates expected - `chaiExpect(error,).to.be.instanceOf` and `chaiExpect(message,).to.match` may inspect caller hooks.
+     */
+    async function rejectsToThrow(
     expected?: string | RegExp | (abstract new(...args: never) => unknown),
   ): Promise<void> {
     /**
@@ -385,40 +386,41 @@ expectImpl.stringContaining = function stringContaining(str: string,): SinonMatc
   return sinonMatch(str,);
 };
 
-/**
- * Matches any string that matches the given regular expression.
- * For use inside `toHaveBeenCalledWith` and similar matchers.
- *
- * @param pattern - Regular expression to match against
- *
- * @returns sinon matcher that checks regex match
- *
- * @mutates pattern - `sinonMatch` may inspect regular-expression state or caller-defined hooks.
- *
- * @example
- * ```ts
- * expect(spy).toHaveBeenCalledWith(expect.stringMatching(/^hello/));
- * ```
- */
-expectImpl.stringMatching = function stringMatching(pattern: RegExp,): SinonMatcher {
+expectImpl.stringMatching =
+  /**
+   * Matches any string that matches given regular expression.
+   *
+   * @param pattern - Regular expression to match against.
+   *
+   * @returns Sinon matcher that checks regular-expression match.
+   *
+   * @mutates pattern - `sinonMatch` may inspect regular-expression state or caller-defined hooks.
+   *
+   * @example
+   * ```ts
+   * expect(spy).toHaveBeenCalledWith(expect.stringMatching(/^hello/));
+   * ```
+   */
+  function stringMatching(pattern: RegExp,): SinonMatcher {
   return sinonMatch(pattern,);
 };
 
-/**
- * Matches any object that deeply includes the given subset.
- *
- * @param obj - Partial object to match against
- *
- * @returns sinon matcher that checks for partial object match
- *
- * @mutates obj - `sinonMatch` may inspect object properties, getters, or proxy traps.
- *
- * @example
- * ```ts
- * expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
- * ```
- */
-expectImpl.objectContaining = function objectContaining(
+expectImpl.objectContaining =
+  /**
+   * Matches any object that deeply includes given subset.
+   *
+   * @param obj - Partial object to match against.
+   *
+   * @returns Sinon matcher that checks for partial object match.
+   *
+   * @mutates obj - `sinonMatch` may inspect object properties, getters, or proxy traps.
+   *
+   * @example
+   * ```ts
+   * expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
+   * ```
+   */
+  function objectContaining(
   obj: Readonly<Record<string, unknown>>,
 ): SinonMatcher {
   return sinonMatch(obj,);
@@ -438,42 +440,43 @@ expectImpl.anything = function anything(): SinonMatcher {
   return sinonMatch.any;
 };
 
-/**
- * Matches any instance of the given constructor.
- *
- * @param ctor - Constructor function to match against
- *
- * @returns sinon matcher that checks `instanceof`
- *
- * @mutates ctor - `sinonMatch.instanceOf` may inspect or retain caller-provided constructor capability.
- *
- * @example
- * ```ts
- * expect(spy).toHaveBeenCalledWith(expect.any(Error));
- * ```
- */
-expectImpl.any = function any(
+expectImpl.any =
+  /**
+   * Matches any instance of given constructor.
+   *
+   * @param ctor - Constructor function to match against.
+   *
+   * @returns Sinon matcher that checks `instanceof`.
+   *
+   * @mutates ctor - `sinonMatch.instanceOf` may inspect or retain caller-provided constructor capability.
+   *
+   * @example
+   * ```ts
+   * expect(spy).toHaveBeenCalledWith(expect.any(Error));
+   * ```
+   */
+  function any(
   ctor: abstract new(...args: never) => unknown,
 ): SinonMatcher {
   return sinonMatch.instanceOf(ctor,);
 };
 
-/**
- * Matches any array that contains all elements of the given array,
- * in any order.
- *
- * @param arr - Elements that must be present in the matched array
- *
- * @returns sinon matcher that checks array containment
- *
- * @mutates arr - `arr.join` may invoke caller-defined array accessors or proxy traps.
- *
- * @example
- * ```ts
- * expect(spy).toHaveBeenCalledWith(expect.arrayContaining([1, 2]));
- * ```
- */
-expectImpl.arrayContaining = function arrayContaining(
+expectImpl.arrayContaining =
+  /**
+   * Matches any array containing all expected elements in any order.
+   *
+   * @param arr - Elements that must be present in matched array.
+   *
+   * @returns Sinon matcher that checks array containment.
+   *
+   * @mutates arr - `arr.join` may invoke caller-defined array accessors or proxy traps.
+   *
+   * @example
+   * ```ts
+   * expect(spy).toHaveBeenCalledWith(expect.arrayContaining([1, 2]));
+   * ```
+   */
+  function arrayContaining(
   arr: readonly unknown[],
 ): SinonMatcher {
   return sinonMatch(

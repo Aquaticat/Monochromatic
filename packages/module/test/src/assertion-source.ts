@@ -506,8 +506,6 @@ async function readSourceText({
  *
  * @returns map from each error node to its rendered assertion site
  *
- * @mutates value - `Reflect.get` may invoke getters or proxy traps on thrown error values.
- *
  * @example
  * ```ts
  * const sites = await readAssertionSites(caughtAssertionError);
@@ -575,7 +573,17 @@ export async function readAssertionSites(
         pending.push(member,);
   }
 
-  await Promise.all(nodes.map(function recordNode(node,) {
+  await Promise.all(nodes.map(
+    /**
+     * Records assertion site for one retained error node.
+     *
+     * @param node - Error node whose stack getter may be invoked.
+     *
+     * @returns completion after optional source read.
+     *
+     * @mutates node - `Reflect.get` may invoke getters or proxy traps on error-like value.
+     */
+    function recordNode(node,) {
     return recordSiteForError({
       node,
       sites,

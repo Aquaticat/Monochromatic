@@ -147,7 +147,7 @@ export function buildMatchers(
        *
        * @param args - Expected call arguments inspected by Chai.
        *
-       * @mutates args - `chaiExpect(spy.firstCall.args,).to.deep.equal` may inspect caller getters or proxy traps.
+       * @mutates args - `chaiExpect(firstCallArgs,).to.deep.equal` may inspect caller getters or proxy traps.
        */
       function toHaveBeenCalledExactlyOnceWith(
       ...args: readonly unknown[]
@@ -165,8 +165,12 @@ export function buildMatchers(
       )
         .to
         .equal(1,);
-      chaiExpect(spy.firstCall
-        .args,)
+      /**
+       * First spy-call arguments retained before assertion formatting.
+       */
+      const firstCallArgs = spy.firstCall
+        .args;
+      chaiExpect(firstCallArgs,)
         .to
         .deep
         .equal([...args,],);

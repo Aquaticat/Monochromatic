@@ -13,7 +13,6 @@
  */
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Symbol-keyed dispatch method. Parent suites call this on each child
@@ -119,8 +118,8 @@ export function makeDescriptor<T,>(
      */
     // oxlint-disable-next-line no-thenable -- a thenable is the entire point of TestDescriptor; awaiting drives lazy execution
     then<R1 = T, R2 = never,>(
-      onfulfilled?: ForeignBorrowed<(value: T,) => R1 | PromiseLike<R1>>,
-      onrejected?: ForeignBorrowed<(reason: unknown,) => R2 | PromiseLike<R2>>,
+      onfulfilled?: (value: T,) => R1 | PromiseLike<R1>,
+      onrejected?: (reason: unknown,) => R2 | PromiseLike<R2>,
     ): PromiseLike<R1 | R2> {
       return run({ effectiveConcurrency: DEFAULT_CONCURRENCY, },)
         .then(

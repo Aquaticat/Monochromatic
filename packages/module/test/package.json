@@ -24,7 +24,6 @@
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-numeric-format": "workspace:*",
-    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "chai": "catalog:",
     "expect-type": "catalog:",
     "chai-as-promised": "catalog:",
