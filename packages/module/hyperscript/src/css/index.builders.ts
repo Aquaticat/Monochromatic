@@ -19,6 +19,15 @@ export type {
 //region Helpers
 
 /**
+ * At-rule fields needed only to decide whether block syntax is present.
+ */
+type AtRuleBlockPresence = {
+  readonly decls?: unknown;
+  readonly raw?: unknown;
+  readonly children?: readonly unknown[];
+};
+
+/**
  * Serializes a declarations record into a CSS declaration string.
  *
  * Accepts any declarations object: {@link StrictCssDeclarations}, at-rule descriptor
@@ -67,7 +76,7 @@ function serializeDecls(
  *
  * @returns `true` when the at-rule should produce a `{ }` block
  */
-function hasBlock(options: AtRuleOptions,): boolean {
+function hasBlock(options: AtRuleBlockPresence,): boolean {
   if (options.decls
     !== undefined)
     return true;
