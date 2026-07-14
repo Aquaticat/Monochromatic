@@ -14,6 +14,7 @@ import {
   tagged,
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   PLAIN_USAGE_WARNING_STYLE,
@@ -167,7 +168,7 @@ function clearStatus({
  * { "packages": ["./packages/pi-plugins/statusline"] }
  * ```
  */
-export default function statusline(pi: ExtensionAPI,): void {
+export default function statusline(pi: ForeignBorrowed<ExtensionAPI>,): void {
   /**
    * Entry-point logger tagged by function name.
    */

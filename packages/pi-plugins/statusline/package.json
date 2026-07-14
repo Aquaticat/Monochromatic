@@ -28,7 +28,8 @@
   },
   "dependencies": {
     "@monochromatic-dev/agent-harnesses-shared-usage-projection": "workspace:*",
-    "@monochromatic-dev/module-logger": "workspace:*"
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "catalog:",
