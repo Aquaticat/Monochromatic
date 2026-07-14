@@ -971,6 +971,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -1038,6 +1041,9 @@ importers:
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.8.0
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -1410,6 +1416,9 @@ importers:
       '@monochromatic-dev/module-pnpm-workspace-catalog':
         specifier: workspace:*
         version: link:../../module/pnpm-workspace-catalog
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1422,6 +1431,9 @@ importers:
       string-dedent:
         specifier: 'catalog:'
         version: 3.0.2
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.8.0
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -1709,6 +1721,9 @@ importers:
       rolldown:
         specifier: 'catalog:'
         version: 1.1.5
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.8.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -1749,6 +1764,9 @@ importers:
       '@monochromatic-dev/git-policy-api':
         specifier: workspace:*
         version: link:../api
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -3287,6 +3305,9 @@ importers:
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       farmhashjs:
         specifier: 'catalog:'
         version: 1.0.1
@@ -3317,6 +3338,9 @@ importers:
       tiny-readdir-glob:
         specifier: 'catalog:'
         version: 2.0.0
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.8.0
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
@@ -3610,6 +3634,9 @@ importers:
       h3:
         specifier: 'catalog:'
         version: 2.0.1-rc.24
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.8.0
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
