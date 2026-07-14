@@ -558,16 +558,31 @@ export function createEngineFailureEvent({
  *
  * @returns empty string or one LF-terminated line per event
  *
+ * @mutates events - `JSON.stringify` may invoke hooks on event records.
+ *
  * @example
  * ```ts
  * renderPolicyEvents([]); // ''
  * ```
  */
-export function renderPolicyEvents(events: readonly PolicyEvent[],): string {
+export function renderPolicyEvents(
+  events: readonly (PolicyEvent & { schemaVersion: number; })[],
+): string {
   if (events.length === 0)
     return '';
-  return `${events.map(function serializePolicyEvent(event,) {
-    return JSON.stringify(event,);
-  },)
+  return `${events.map(
+    /**
+     * Serializes one policy event.
+     *
+     * @param event - Event that may expose serialization hooks.
+     *
+     * @returns compact event JSON.
+     *
+     * @mutates event - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+     */
+    function serializePolicyEvent(event,) {
+      return JSON.stringify(event,);
+    },
+  )
     .join('\n',)}\n`;
 }

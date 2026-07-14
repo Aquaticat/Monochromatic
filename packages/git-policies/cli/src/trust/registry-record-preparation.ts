@@ -142,6 +142,8 @@ async function preparationFailure({
  *
  * @returns disposable candidate with explicit commit operation
  *
+ * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * await using prepared = await prepareTrustRecord({ registryRoot, record, snapshots });
@@ -151,11 +153,11 @@ export async function prepareTrustRecord({
   registryRoot,
   record,
   snapshots,
-}: Readonly<{
-  registryRoot: string;
+}: {
+  readonly registryRoot: string;
   record: TrustRecord;
-  snapshots: ReadonlyMap<string, Uint8Array>;
-}>,): Promise<PreparedTrustRecord> {
+  readonly snapshots: ReadonlyMap<string, Uint8Array>;
+},): Promise<PreparedTrustRecord> {
   await ensureRegistryRoot(registryRoot,);
   /**
    * Permanent exact identity directory.

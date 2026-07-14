@@ -110,16 +110,18 @@ async function acquireLocks({
  * @param transactionId - journal transaction ID
  *
  * @param operation - final record state
+ *
+ * @mutates operation - `JSON.stringify` may invoke hooks on retained authorizing roots.
  */
 async function applyOperation({
   registryRoot,
   transactionId,
   operation,
-}: Readonly<{
-  registryRoot: string;
-  transactionId: string;
+}: {
+  readonly registryRoot: string;
+  readonly transactionId: string;
   operation: ProvenanceOperation;
-}>,): Promise<void> {
+},): Promise<void> {
   /**
    * Exact record directory.
    */
@@ -205,6 +207,8 @@ async function applyOperation({
  *
  * @param recovering - whether prior owner terminated
  *
+ * @mutates journal - `JSON.stringify` may invoke hooks on retained authorizing roots.
+ *
  * @example
  * ```ts
  * await settleProvenanceJournal(input);
@@ -215,12 +219,12 @@ export async function settleProvenanceJournal({
   journalPath,
   journal,
   recovering,
-}: Readonly<{
-  registryRoot: string;
-  journalPath: string;
+}: {
+  readonly registryRoot: string;
+  readonly journalPath: string;
   journal: TransactionJournal;
-  recovering: boolean;
-}>,): Promise<void> {
+  readonly recovering: boolean;
+},): Promise<void> {
   /**
    * Exact validated transaction journal parent.
    */
@@ -273,13 +277,24 @@ export async function settleProvenanceJournal({
     },
   };
   await Promise.all(journal.operations
-    .map(function applyJournalOperation(operation,) {
-    return applyOperation({
-      registryRoot,
-      transactionId: journal.transactionId,
-      operation,
-    },);
-  },),);
+    .map(
+      /**
+       * Applies one retained journal operation.
+       *
+       * @param operation - Operation that may expose serialization hooks.
+       *
+       * @mutates operation - `JSON.stringify` may invoke hooks on retained authorizing roots.
+       */
+      function applyJournalOperation(
+        operation: ProvenanceOperation & { identity: ProvenanceOperation['identity']; },
+      ): Promise<void> {
+        return applyOperation({
+          registryRoot,
+          transactionId: journal.transactionId,
+          operation,
+        },);
+      },
+    ),);
   await assertSafeRegistryDirectory({
     registryRoot,
     targetDirectory: journalDirectory,
