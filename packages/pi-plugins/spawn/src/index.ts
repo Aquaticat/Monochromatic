@@ -8,6 +8,7 @@ import type {
   AgentEndEvent,
   ExtensionAPI,
   ExtensionContext,
+  SessionStartEvent,
 } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -81,7 +82,7 @@ export default function spawnPi(pi: ForeignBorrowed<ExtensionAPI>,): void {
   pi.on(
     'session_start',
     async function handleSessionStart(
-      _event,
+      _event: ForeignBorrowed<SessionStartEvent>,
       ctx,
     ): Promise<void> {
       await registerSession({
@@ -105,7 +106,7 @@ export default function spawnPi(pi: ForeignBorrowed<ExtensionAPI>,): void {
   pi.on(
     'agent_end',
     async function handleAgentEnd(
-      event,
+      event: ForeignBorrowed<AgentEndEvent>,
       ctx,
     ): Promise<void> {
       await reportChildCompletion({
