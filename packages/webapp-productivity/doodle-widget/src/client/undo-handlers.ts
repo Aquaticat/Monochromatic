@@ -62,6 +62,8 @@ export type UndoHandlerDeps = {
  *
  * @param deps - DOM elements and shared state accessors, see {@link UndoHandlerDeps}
  *
+ * @mutates deps - `undoBtn.addEventListener` and `redoBtn.addEventListener` change event targets and retain handlers.
+ *
  * @returns {@link pushSnapshot} to call after state-changing actions,
  *   {@link updateUndoButtons} to refresh button disabled state
  *

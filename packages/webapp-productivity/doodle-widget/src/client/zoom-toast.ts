@@ -39,6 +39,8 @@ const timerState: { current: ToastTimer; } = { current: { kind: 'idle', }, };
  *
  * @param toast - popover element to show
  *
+ * @mutates toast - `toast.showPopover` and deferred `toast.hidePopover` change popover state and can dispatch events to retained listeners.
+ *
  * @example
  * ```ts
  * showZoomToast(document.getElementById('zoom-toast'));

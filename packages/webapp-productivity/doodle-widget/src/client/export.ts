@@ -356,22 +356,26 @@ export async function renderBaseCanvas({
  * Creates a temporary object URL and anchor element to initiate
  * the download, then immediately revokes the URL.
  *
- * @param blob - file content as a Blob
+ * @param options - Blob content and suggested download filename.
  *
- * @param filename - suggested download filename
+ * @mutates options - File API commit cd1d1da9 createObjectURL retains blob in host blob URL store until `URL.revokeObjectURL` removes it.
  *
  * @example
  * ```ts
  * triggerDownload({ blob: pngBlob, filename: 'doodle.png' });
  * ```
  */
-export function triggerDownload({
-  blob,
-  filename,
-}: {
+export function triggerDownload(options: {
   readonly blob: Blob;
   readonly filename: string;
 },): void {
+  /**
+   * Download values retained under one named contract input.
+   */
+  const {
+    blob,
+    filename,
+  } = options;
   /**
    * Temporary object URL revoked once the anchor click has fired.
    */

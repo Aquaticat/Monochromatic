@@ -56,6 +56,8 @@ export type WidgetDeps = {
  *
  * @param deps - all DOM elements and state accessors, see {@link WidgetDeps}
  *
+ * @mutates deps - `clearBtn.addEventListener`, `colorPicker.addEventListener`, `exportBtn.addEventListener`, `pageToggle.addEventListener`, `redoBtn.addEventListener`, `sizeSlider.addEventListener`, `textLayer.addEventListener`, `undoBtn.addEventListener`, `uploadBtn.addEventListener`, and `uploadInput.addEventListener` change event targets and retain handlers; `new ResizeObserver(sizeCanvas,).observe` retains `sizeCanvas` and observes its target; `uploadInput.click` can dispatch retained listeners.
+ *
  * @example
  * ```ts
  * setupWidget(deps);

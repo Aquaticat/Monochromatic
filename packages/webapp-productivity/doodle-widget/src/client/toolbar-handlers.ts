@@ -145,6 +145,8 @@ type ToolbarHandlerDeps = {
  *
  * @param deps - toolbar elements and shared state accessors, see {@link ToolbarHandlerDeps}
  *
+ * @mutates deps - `clearBtn.addEventListener`, `colorPicker.addEventListener`, `exportBtn.addEventListener`, `sizeSlider.addEventListener`, `uploadBtn.addEventListener`, and `uploadInput.addEventListener` change event targets and retain handlers; `uploadInput.click` can dispatch retained listeners.
+ *
  * @example
  * ```ts
  * setupToolbarHandlers(deps);

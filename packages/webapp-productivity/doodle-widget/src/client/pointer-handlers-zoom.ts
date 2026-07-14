@@ -53,6 +53,8 @@ type DownEvent =
  *
  * @param deps - shared state and element references, see {@link PointerHandlerDeps}
  *
+ * @mutates deps - `canvas.addEventListener` changes the event target and retains handlers; `canvas.setPointerCapture` changes pointer capture state.
+ *
  * @example
  * ```ts
  * setupZoomPointerHandlers(deps);
