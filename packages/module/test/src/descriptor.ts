@@ -112,9 +112,9 @@ export function makeDescriptor<T,>(
      *
      * @returns chained PromiseLike resolving to the handler result
      *
-     * @mutates onfulfilled - `Promise.then` may retain and invoke supplied resolution handler.
+     * @mutates onfulfilled - `run({ effectiveConcurrency: DEFAULT_CONCURRENCY, },).then` may retain and invoke supplied resolution handler.
      *
-     * @mutates onrejected - `Promise.then` may retain and invoke supplied rejection handler.
+     * @mutates onrejected - `run({ effectiveConcurrency: DEFAULT_CONCURRENCY, },).then` may retain and invoke supplied rejection handler.
      */
     // oxlint-disable-next-line no-thenable -- a thenable is the entire point of TestDescriptor; awaiting drives lazy execution
     then<R1 = T, R2 = never,>(

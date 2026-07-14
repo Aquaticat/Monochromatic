@@ -95,7 +95,7 @@ async function resolveWorkspacePrefix(): Promise<string> {
  * @returns single-line string description, or `<unrepresentable>`
  *   when stringification throws
  *
- * @mutates value - Global `String` may invoke caller-defined coercion getters, proxy traps, or methods.
+ * @mutates value - `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf`.
  *
  * @example
  * ```ts
@@ -307,7 +307,7 @@ function readStackFrames({
  * @returns one line for this node followed by lines for all of its
  *   descendants in walk order (cause first, then aggregate members)
  *
- * @mutates value - Error formatting may invoke coercion hooks on non-Error caller values.
+ * @mutates value - `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf` on non-Error values.
  */
 function formatNode({
   headerPrefix,

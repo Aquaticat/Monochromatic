@@ -105,7 +105,7 @@ export type MatcherSet = {
  *
  * @returns object with Jest-compatible matcher methods
  *
- * @mutates a - Sinon-Chai assertion chains may change assertion state and inspect caller-defined hooks.
+ * @mutates a - `a.to.be.a`, `a.to.be.above`, `a.to.be.at.least`, `a.to.be.at.most`, `a.to.be.below`, `a.to.be.closeTo`, `a.to.be.instanceOf`, `a.to.deep.equal`, `a.to.deep.include`, `a.to.equal`, `a.to.have.been.calledWith`, `a.to.have.callCount`, `a.to.have.lengthOf`, `a.to.have.nested.property`, `a.to.have.returned`, `a.to.include`, `a.to.match`, `a.to.satisfy`, and `a.to.throw` may change assertion state or inspect caller hooks.
  *
  * @example
  * ```ts
