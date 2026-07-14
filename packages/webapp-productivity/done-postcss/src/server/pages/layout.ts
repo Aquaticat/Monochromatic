@@ -38,6 +38,8 @@ type LayoutOptions = {
  *
  * @returns Escaped JSON string safe for embedding in HTML
  *
+ * @mutates data - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * const json = serializePageData({ key: 'value' });
@@ -65,6 +67,8 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
  * @param options - Page title, heading, script path, and serialized data
  *
  * @returns HTML response with the rendered page
+ *
+ * @mutates options - `JSON.stringify` may invoke hooks on page data stored in options.
  *
  * @example
  * ```ts
