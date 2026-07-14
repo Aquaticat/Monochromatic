@@ -20,75 +20,75 @@ export type TaskRow = {
   /**
    * Primary key UUID.
    */
-  id: string;
+  readonly id: string;
   /**
    * Task title text.
    */
-  title: string;
+  readonly title: string;
   /**
    * Optional task description.
    */
-  description: string | null;
+  readonly description: string | null;
   /**
    * JSON-encoded string array (`'["tag1","tag2"]'`).
    */
-  tags: string;
+  readonly tags: string;
   /**
    * JSON-encoded string array.
    */
-  locations: string;
+  readonly locations: string;
   /**
    * Task priority level or null.
    */
-  priority: TaskPriority | null;
+  readonly priority: TaskPriority | null;
   /**
    * ISO date string for due date or null.
    */
-  due_date: string | null;
+  readonly due_date: string | null;
   /**
    * Task complexity level or null.
    */
-  complexity: TaskComplexity | null;
+  readonly complexity: TaskComplexity | null;
   /**
    * JSON-encoded string array.
    */
-  reminders: string;
+  readonly reminders: string;
   /**
    * JSON-encoded string array of blocker task IDs.
    */
-  blocked_by: string;
+  readonly blocked_by: string;
   /**
    * Total tracked seconds.
    */
-  tracked_time: number;
+  readonly tracked_time: number;
   /**
    * ISO timestamp when timer was started, or null.
    */
-  timer_started_at: string | null;
+  readonly timer_started_at: string | null;
   /**
    * Current task workflow status.
    */
-  status: TaskStatus;
+  readonly status: TaskStatus;
   /**
    * Source system that created this task.
    */
-  source: Task['source'];
+  readonly source: Task['source'];
   /**
    * External source identifier.
    */
-  source_id: string | null;
+  readonly source_id: string | null;
   /**
    * Additional source metadata as JSON.
    */
-  source_meta: string | null;
+  readonly source_meta: string | null;
   /**
    * ISO timestamp of creation.
    */
-  created_at: string;
+  readonly created_at: string;
   /**
    * ISO timestamp of last update.
    */
-  updated_at: string;
+  readonly updated_at: string;
 };
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 

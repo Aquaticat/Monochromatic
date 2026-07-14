@@ -10,8 +10,8 @@ import db from '../db.ts';
  * Raw database row shape for the settings table.
  */
 type SettingRow = {
-  key: string;
-  value: string;
+  readonly key: string;
+  readonly value: string;
 };
 
 /**

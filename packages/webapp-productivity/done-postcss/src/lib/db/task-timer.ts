@@ -158,8 +158,8 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
    */
   const blockingRows = (await (await db.prepare(SQL_SELECT_BLOCKERS,))
     .all(id,)) as {
-    blocker_id: string;
-    blocker_title: string;
+    readonly blocker_id: string;
+    readonly blocker_title: string;
   }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /**

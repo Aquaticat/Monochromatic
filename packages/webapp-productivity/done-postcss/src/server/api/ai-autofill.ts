@@ -190,7 +190,7 @@ async function listAllLocations(): Promise<string[]> {
     .prepare(
       'SELECT DISTINCT loc.value AS loc FROM tasks, json_each(tasks.locations) AS loc ORDER BY loc.value ASC',
     ))
-    .all()) as { loc: string; }[];
+    .all()) as { readonly loc: string; }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function extractLoc(row,) {
     return row.loc;
