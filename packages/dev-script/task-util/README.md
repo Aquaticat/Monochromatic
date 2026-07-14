@@ -5,7 +5,7 @@ CLI utilities for mise task orchestration:
 a file append helper,
  a make-style dependency checker,
 a `tsc` wrapper that filters `node_modules` diagnostics,
-and an `oxlint` wrapper that augments diagnostics and suppresses documented false positives.
+and an `oxlint` wrapper that augments diagnostics while preserving every finding and exit status.
 
 ## Binaries
 
@@ -159,11 +159,10 @@ for the full root cause analysis.
 ### task-oxlint
 
 Wrapper for `oxlint` that augments diagnostics with extra guidance
-(`oxlint-augment.ts`) and suppresses documented false positives the linter cannot
-be configured to ignore (`oxlint-suppress.ts`).
- The repo runs lint through this
-wrapper,
- so the mise `lint:oxlint` task is the boundary that matters.
+from `oxlint-augment.ts`.
+The repository runs lint through this wrapper,
+so the mise `lint:oxlint` task is the consumer boundary that matters.
+The wrapper never removes diagnostics or converts Oxlint failures to success.
 
 ```sh
 # Type-aware lint (what the mise lint:oxlint task runs)
@@ -183,57 +182,14 @@ this list exists so they are not mistaken for bugs.
 **Forces `--format=default`.
 **
 The wrapper prepends `--format=default` unless the caller passes an explicit
-`--format`/`-f`.
- oxlint's piped default reporter is not stable across versions
-(1.65 emitted the graphical block format when piped,
- 1.67 emits a compact
-one-line `path:line:col: severity plugin(rule): message` format),
- and the
-suppression filter parses the graphical block format.
- Pinning keeps suppression
-working regardless of oxlint version or TTY state.
- Consequence:
- `task-oxlint`
-output is always the graphical reporter,
- even when piped,
- where raw `oxlint`
-would emit the compact form.
-
-**Suppression only applies to the graphical format.
-**
-Because the filter parses graphical blocks,
- passing an explicit non-graphical
-format (`task-oxlint --format=json`) bypasses suppression:
- the suppressed false
-positive reappears and the run exits non-zero.
- The `lint:oxlint` task passes no
-`--format`,
- so it receives the pin and suppression fires.
-
-**Diverges from raw oxlint.
-**
-A direct `oxlint` invocation (or CI not routed through `task-oxlint`) still
-reports the suppressed diagnostic.
- The `Found N warnings and M errors.` summary is
-recomputed from post-suppression counts,
- so it can differ from what oxlint
-originally printed.
-
-**Converts failure to success only for purely-suppressed runs.
-**
-The wrapper substitutes exit 0 for oxlint's non-zero exit only when every parsed
-diagnostic block was suppressed,
- oxlint exited with its ordinary diagnostics code
-(`1`),
- and stderr was empty.
- If real diagnostics survive,
- nothing was suppressed,
-oxlint exited with another code,
- or anything reached stderr (a config error or
-panic that coincides with a suppressible block),
- the original failure is
-preserved.
- A suppressed false positive can never hide a real fault.
+`--format` or `-f`.
+Oxlint's piped default reporter is not stable across versions.
+The guidance injector needs graphical diagnostic boundaries to place notes beside their matching findings.
+Consequently,
+`task-oxlint` uses the graphical reporter even when piped,
+while an explicit format always wins.
+Non-graphical formats may not receive added guidance,
+but their diagnostics and exit status still pass through unchanged.
 
 **`OXLINT_THREADS` overrides thread count.
 **
@@ -243,9 +199,6 @@ When set,
 `RAYON_NUM_THREADS`,
  so this env var is the only way to pin threads without
 editing every call site.
-
-The only suppressed false positive today is the `CssValue` branded-nesting case;
-see `docs/troubleshooting/oxlint-prefer-readonly-branded-nesting.md`.
 
 ## Why task-depends over mise native `depends`
 

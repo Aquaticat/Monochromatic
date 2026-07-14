@@ -205,7 +205,7 @@ function isExecutionFailure(result: OxlintRunResult,): boolean {
  * change. This drives the early `clean` stop and is sound across severities,
  * unlike oxlint's exit code, which is zero whenever no errors remain even if a
  * fixable warning is still pending. Reuses {@link extractRuleName} so the same
- * `x rule(...)` / `! rule(...)` parsing as the suppression stage decides what
+ * `x rule(...)` or `! rule(...)` parsing used by output augmentation decides what
  * counts as a diagnostic block opener; summary, context, and blank lines do not.
  *
  * @param stdout - raw oracle stdout
@@ -255,9 +255,8 @@ export type FixUntilStableOptions = {
  * pass's oracle (a fixpoint with unfixable diagnostics remaining), or it matches
  * a non-adjacent earlier pass (two fixes oscillating a file back and forth, which
  * would never settle), or an execution failure occurs, or the cap is hit.
- * The returned (final) oracle result is what flows through the wrapper's
- * suppression and augmentation stages; the `--fix` passes exist only to apply
- * fixes.
+ * The returned final oracle result flows through the wrapper's augmentation and
+ * exit-preserving output stage; the `--fix` passes exist only to apply fixes.
  *
  * The oracle is required because `oxlint --fix` reveals file changes through
  * neither its exit code nor its stdout: a pass can exit zero with unchanged
