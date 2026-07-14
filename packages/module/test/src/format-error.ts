@@ -24,7 +24,6 @@
  */
 
 import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   type AssertionSite,
@@ -134,7 +133,7 @@ function safeString(value: unknown,): string {
  * readMessage({ message: 42 })   // '<unknown message>'
  * ```
  */
-function readMessage(error: object,): string {
+function readMessage<const ErrorLike extends object>(error: ErrorLike,): string {
   /**
    * Defensively-read `.message`; held in a local so the getter fires at most once.
    */
@@ -164,7 +163,7 @@ function readMessage(error: object,): string {
  * readErrorLabel({})                 // 'Error'
  * ```
  */
-function readErrorLabel(error: object,): string {
+function readErrorLabel<const ErrorLike extends object>(error: ErrorLike,): string {
   /**
    * Defensively-read `.name`; held in a local so the getter fires at most once.
    */
@@ -232,12 +231,12 @@ function stripWorkspacePrefix({
  * }) // ['at fn (packages/foo/file.ts:9:19)']
  * ```
  */
-function readStackFrames({
+function readStackFrames<const ErrorLike extends object>({
   error,
   message,
   workspacePrefix,
 }: {
-  readonly error: object;
+  readonly error: ErrorLike;
   readonly message: string;
   readonly workspacePrefix: string;
 },): readonly string[] {
@@ -487,9 +486,7 @@ function formatNode({
  * //   Caused by: Error: root at root (file:5:1) at ...
  * ```
  */
-export async function formatErrorDeep(
-  value: ForeignBorrowed<unknown>,
-): Promise<readonly string[]> {
+export async function formatErrorDeep(value: unknown,): Promise<readonly string[]> {
   /**
    * Shared cycle-detection set so a self-referential `.cause` does not recurse forever.
    */

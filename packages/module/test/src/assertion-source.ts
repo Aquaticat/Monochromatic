@@ -25,8 +25,6 @@
  * @module
  */
 
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-
 import {
   isHarnessInternalFrame,
   readProperty,
@@ -334,12 +332,12 @@ function isNodeRuntime(): boolean {
  *
  * @mutates node - `Reflect.get` may invoke getters or proxy traps on error-like value.
  */
-async function recordSiteForError({
+async function recordSiteForError<const ErrorLike extends object>({
   node,
   sites,
   readFile,
 }: {
-  readonly node: object;
+  readonly node: ErrorLike;
   readonly sites: WeakMap<object, AssertionSite>;
   readonly readFile: (
     path: string,
@@ -517,7 +515,7 @@ async function readSourceText({
  * ```
  */
 export async function readAssertionSites(
-  value: ForeignBorrowed<unknown>,
+  value: unknown,
 ): Promise<WeakMap<object, AssertionSite>> {
   /**
    * Result map; stays empty in the browser and when no node yields a readable source line.
