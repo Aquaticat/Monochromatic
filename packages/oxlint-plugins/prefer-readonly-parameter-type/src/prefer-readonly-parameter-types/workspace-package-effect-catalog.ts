@@ -11,6 +11,58 @@ import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
  */
 export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...[
+    'debug',
+    'error',
+    'fatal',
+    'flush',
+    'info',
+    'trace',
+    'warn',
+  ].map(function loggerCapabilityEffect(member,): IntrinsicEffectEntry {
+    return {
+      provenance: {
+        kind: 'package',
+        packageName: '@monochromatic-dev/module-logger',
+        major: 0,
+      },
+      ownerType: 'Logger',
+      member,
+      targets: [{ kind: 'receiver', },],
+      evidence: 'module-logger 0.0.1 invokes stateful sink-backed logger capability',
+    };
+  },),
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@monochromatic-dev/agent-harnesses-shared-usage-projection',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'projectUsagePercent',
+    targets: [],
+    evidence: 'agent-harnesses-shared-usage-projection 0.0.1 reads numeric snapshot fields',
+  },
+  ...[
+    'formatRateLimitSegment',
+    'formatRateLimitStatus',
+  ].map(function usageProjectionStyleEffect(member,): IntrinsicEffectEntry {
+    return {
+      provenance: {
+        kind: 'package',
+        packageName: '@monochromatic-dev/agent-harnesses-shared-usage-projection',
+        major: 0,
+      },
+      ownerType: 'globalThis',
+      member,
+      targets: [],
+      invokedArgumentProperties: [{
+        argumentIndex: 0,
+        propertyNames: ['style',],
+      },],
+      evidence: 'agent-harnesses-shared-usage-projection 0.0.1 invokes supplied style callbacks',
+    };
+  },),
+  ...[
     'isRecord',
     'parseMutationContractBlocks',
   ].map(function sharedPluginObservation(member,): IntrinsicEffectEntry {

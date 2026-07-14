@@ -42,6 +42,18 @@ const HELPER_PATH = fileURLToPath(new URL(
   import.meta.url,
 ),);
 
+/** Statusline source proving audited object-property callback invocation. */
+const STATUSLINE_USAGE_PATH = fileURLToPath(new URL(
+  '../../../pi-plugins/statusline/src/usage-warning.ts',
+  import.meta.url,
+),);
+
+/** Current statusline usage source text. */
+const STATUSLINE_USAGE_SOURCE = readFileSync(
+  STATUSLINE_USAGE_PATH,
+  'utf8',
+);
+
 /** Built package entry exercised by independent process probe. */
 const BUILT_ENTRY_URL = new URL(
   '../dist/final/node/index.mjs',
@@ -79,6 +91,37 @@ await describe({
   name: buildEffectSummaryIndex.name,
   concurrency: 1,
   children: [
+    it({
+      name: 'records audited object-property callback invocation without unresolved effects',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: STATUSLINE_USAGE_PATH,
+          sourceText: STATUSLINE_USAGE_SOURCE,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        const nameNode = session.nodeAtOffset(
+          STATUSLINE_USAGE_SOURCE.indexOf('function formatUsageWarningStatus',)
+            + 'function '.length,
+        );
+        const declaration = nameNode.parent;
+        if (!isFunctionLikeDeclaration(declaration,))
+          throw new Error('Expected statusline usage function declaration.',);
+        const summary = index.get(declaration,);
+        if (summary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected statusline usage effect summary.',);
+        /** Audited invocation indexes retained before bridge cleanup. */
+        const invoked = [...summary.invokedParameterIndexes,];
+        /** Audited unresolved indexes retained before bridge cleanup. */
+        const opaque = [...summary.opaqueParameterIndexes,];
+        closeSemanticBridge();
+        expect(invoked,).toEqual([0,],);
+        expect(opaque,).toEqual([],);
+      },
+    },),
     it({
       name: 'propagates direct, cross-file, and immediate callback mutation',
       fn: async () => {

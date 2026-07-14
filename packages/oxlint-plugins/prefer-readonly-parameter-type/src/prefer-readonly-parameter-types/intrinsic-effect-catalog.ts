@@ -91,6 +91,22 @@ export type IntrinsicForwardedCallbackEffect = {
 };
 
 /**
+ * Callable properties invoked from one object argument.
+ *
+ * @example
+ * ```ts
+ * const effect: IntrinsicArgumentPropertyInvocation = {
+ *   argumentIndex: 0,
+ *   propertyNames: ['style'],
+ * };
+ * ```
+ */
+export type IntrinsicArgumentPropertyInvocation = {
+  readonly argumentIndex: number;
+  readonly propertyNames: readonly string[];
+};
+
+/**
  * One audited callable effect keyed by owner symbol and exact declaration provenance.
  *
  * @example
@@ -117,6 +133,7 @@ export type IntrinsicEffectEntry = {
   readonly callbacks?: readonly IntrinsicCallbackEffect[];
   readonly forwardedCallbacks?: readonly IntrinsicForwardedCallbackEffect[];
   readonly invokedArgumentIndexes?: readonly number[];
+  readonly invokedArgumentProperties?: readonly IntrinsicArgumentPropertyInvocation[];
   readonly opaqueTargets?: readonly IntrinsicEffectTarget[];
   /**
    * Comparator argument that must be definitely callable to avoid opaque receiver coercion.

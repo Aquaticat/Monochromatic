@@ -314,6 +314,36 @@ await describe({
           index: 0,
           propertyNames: ['ctx',],
         },],);
+        const usageEffect = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/agent-harnesses-shared-usage-projection',
+            major: 0,
+          },
+          ownerType: 'globalThis',
+          member: 'formatRateLimitStatus',
+        },);
+        expect(usageEffect,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (usageEffect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected shared usage formatting effect.',);
+        expect(usageEffect.targets,).toEqual([],);
+        expect(usageEffect.invokedArgumentProperties,).toEqual([{
+          argumentIndex: 0,
+          propertyNames: ['style',],
+        },],);
+        const loggerEffect = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/module-logger',
+            major: 0,
+          },
+          ownerType: 'Logger',
+          member: 'debug',
+        },);
+        expect(loggerEffect,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (loggerEffect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected logger capability effect.',);
+        expect(loggerEffect.targets,).toEqual([{ kind: 'receiver', },],);
       },
     },),
     it({

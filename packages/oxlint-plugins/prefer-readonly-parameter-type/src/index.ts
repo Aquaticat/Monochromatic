@@ -55,6 +55,7 @@ export {
   INTRINSIC_EFFECTS,
   intrinsicEffect,
   NO_INTRINSIC_EFFECT,
+  type IntrinsicArgumentPropertyInvocation,
   type IntrinsicEffectEntry,
   type IntrinsicEffectQuery,
   type IntrinsicEffectTarget,

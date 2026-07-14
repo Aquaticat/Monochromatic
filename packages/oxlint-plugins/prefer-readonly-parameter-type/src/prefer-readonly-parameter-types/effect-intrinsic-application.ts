@@ -21,6 +21,7 @@ import {
 import { addIntrinsicCallbackEffects, } from './effect-intrinsic-callback.ts';
 import { addIntrinsicForwardedCallbackEffects, } from './effect-intrinsic-forwarded-callback.ts';
 import { addIntrinsicInvocations, } from './effect-intrinsic-invocation.ts';
+import { addIntrinsicPropertyInvocations, } from './effect-intrinsic-property-invocation.ts';
 import { receiverElementsArePrimitive, } from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
@@ -258,6 +259,15 @@ export function applyIntrinsicEffect({
       bindingOriginBySymbolId,
       call,
       argumentIndexes: effect.invokedArgumentIndexes,
+      summary,
+    },);
+  }
+  if (effect.invokedArgumentProperties !== undefined) {
+    addIntrinsicPropertyInvocations({
+      checker,
+      bindingOriginBySymbolId,
+      call,
+      effects: effect.invokedArgumentProperties,
       summary,
     },);
   }

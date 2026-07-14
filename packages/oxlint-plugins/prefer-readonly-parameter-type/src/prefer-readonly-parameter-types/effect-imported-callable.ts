@@ -23,6 +23,7 @@ import {
 } from './effect-call-resolution.ts';
 import { addIntrinsicForwardedCallbackEffects, } from './effect-intrinsic-forwarded-callback.ts';
 import { addIntrinsicInvocations, } from './effect-intrinsic-invocation.ts';
+import { addIntrinsicPropertyInvocations, } from './effect-intrinsic-property-invocation.ts';
 import { intrinsicTargetArguments, } from './intrinsic-target-arguments.ts';
 
 /**
@@ -125,6 +126,15 @@ export function applyAuditedCallableEffect({
       bindingOriginBySymbolId,
       call,
       argumentIndexes: callableEffect.invokedArgumentIndexes,
+      summary,
+    },);
+  }
+  if (callableEffect.invokedArgumentProperties !== undefined) {
+    addIntrinsicPropertyInvocations({
+      checker,
+      bindingOriginBySymbolId,
+      call,
+      effects: callableEffect.invokedArgumentProperties,
       summary,
     },);
   }
