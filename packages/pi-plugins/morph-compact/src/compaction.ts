@@ -119,15 +119,13 @@ export function chooseCompressionRatio(
  * Returns `{ kind: "success", result }` on success, or `{ kind: "fallback" }`
  * when pi's default compaction should be used instead.
  *
- * @param event - the session_before_compact event
- *
- * @param contextUsage - current context usage for adaptive compression ratio
- *
- * @param apiKey - Morph API key (from env or mcp.json fallback)
+ * @param options - Compaction event, usage snapshot, and Morph credential.
  *
  * @returns compaction attempt result
  *
  * @throws {@link MorphApiError} when the Morph Compact API call fails
+ *
+ * @mutates options - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain `options.event.signal`.
  *
  * @example
  * ```typescript
@@ -141,15 +139,21 @@ export function chooseCompressionRatio(
  * }
  * ```
  */
-export async function attemptMorphCompaction({
-  event,
-  contextUsage,
-  apiKey,
-}: {
-  readonly event: SessionBeforeCompactEvent;
-  readonly contextUsage?: Readonly<ContextUsage>;
-  readonly apiKey: string;
-},): Promise<MorphCompactionAttempt> {
+export async function attemptMorphCompaction(
+  options: {
+    readonly event: SessionBeforeCompactEvent;
+    readonly contextUsage?: Readonly<ContextUsage>;
+    readonly apiKey: string;
+  },
+): Promise<MorphCompactionAttempt> {
+  /**
+   * Compaction inputs named after the effect-bearing options boundary.
+   */
+  const {
+    event,
+    contextUsage,
+    apiKey,
+  } = options;
   /**
    * Destructured event surface used throughout the attempt body.
    */

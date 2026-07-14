@@ -405,24 +405,28 @@ function buildRequestBody(input: CompactInput,): Record<string, unknown> {
  * Combine optional caller-supplied signal with request timeout signal so
  * either source can cancel the in-flight `fetch`.
  *
- * @param caller - signal from outer caller (user cancel, parent abort)
- *
- * @param timeoutMs - hard timeout in milliseconds
+ * @param options - Optional caller signal and hard timeout.
  *
  * @returns single signal that aborts on first source to fire
+ *
+ * @mutates options - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain `options.caller`.
  *
  * @example
  * ```typescript
  * const signal = buildSignal({ caller: userSignal, timeoutMs: 60000 });
  * ```
  */
-function buildSignal({
-  caller,
-  timeoutMs,
-}: {
+function buildSignal(options: {
   readonly caller?: AbortSignal;
   readonly timeoutMs: number;
 },): AbortSignal {
+  /**
+   * Signal and primitive timeout extracted after naming effect boundary.
+   */
+  const {
+    caller,
+    timeoutMs,
+  } = options;
   /**
    * Hard ceiling so a hung request cannot block compaction indefinitely.
    */

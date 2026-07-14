@@ -8,7 +8,6 @@
  * @module
  */
 
-import type { ReadonlyDeep, } from 'type-fest';
 import { randomUUID, } from 'node:crypto';
 import { unlink, } from 'node:fs/promises';
 import {
@@ -20,6 +19,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 //region Module logger
 
@@ -149,6 +149,13 @@ export function createOneShotSocketServer(
   }
 
   handles.server = createServer(
+    /**
+     * Serves text through accepted host socket.
+     *
+     * @param socket - Accepted Unix socket.
+     *
+     * @mutates socket - `socket.write` and `socket.end` advance and close stream state.
+     */
     function handleConnection(
       socket,
     ): void {
@@ -242,17 +249,21 @@ export function readFromUnixSocket(
       /**
        * Settle the promise with either an error or a result.
        *
-       * @param error - error to reject with, or null for success
+       * @param settlement - Error or result selected by one socket lifecycle event.
        *
-       * @param result - resolved value when error is null
+       * @mutates settlement - Promise rejection retains `settlement.error` as its rejection reason.
        */
-      function finish({
-        error,
-        result,
-      }: {
+      function finish(settlement: {
         readonly error?: Error;
         readonly result?: string;
       },): void {
+        /**
+         * Settlement fields read after naming effect boundary.
+         */
+        const {
+          error,
+          result,
+        } = settlement;
         if (settled)
           return;
         settled = true;
@@ -288,8 +299,15 @@ export function readFromUnixSocket(
           );
           socket.on(
             'error',
+            /**
+             * Settles read with host socket failure.
+             *
+             * @param err - Host-owned socket error.
+             *
+             * @mutates err - Promise rejection retains error as its rejection reason.
+             */
             function onError(
-              err: ReadonlyDeep<Error>,
+              err: ForeignBorrowed<Error>,
             ): void {
               finish({ error: err, },);
             },
@@ -299,8 +317,15 @@ export function readFromUnixSocket(
 
       socket.on(
         'error',
+        /**
+         * Settles connection with host socket failure.
+         *
+         * @param err - Host-owned connection error.
+         *
+         * @mutates err - Promise rejection retains error as its rejection reason.
+         */
         function onError(
-          err: ReadonlyDeep<Error>,
+          err: ForeignBorrowed<Error>,
         ): void {
           finish({ error: err, },);
         },

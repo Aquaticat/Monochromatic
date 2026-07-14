@@ -9,12 +9,13 @@
  * @module
  */
 
-import type { ReadonlyDeep, } from 'type-fest';
 import {
   createConnection as createTcpConnection,
   createServer as createTcpServer,
   type Server,
 } from 'node:net';
+
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 //region Constants
 
@@ -124,6 +125,13 @@ export async function createOneShotTcpServer(
       reject,
     ): void {
       handles.server = createTcpServer(
+        /**
+         * Serves text through accepted host socket.
+         *
+         * @param socket - Accepted TCP socket.
+         *
+         * @mutates socket - `socket.write` and `socket.end` advance and close stream state.
+         */
         function handleConnection(
           socket,
         ): void {
@@ -151,6 +159,13 @@ export async function createOneShotTcpServer(
       handles.server
         .on(
         'error',
+        /**
+         * Rejects listening operation with host error.
+         *
+         * @param err - TCP server failure retained as rejection reason.
+         *
+         * @mutates err - Promise rejection retains error as its rejection reason.
+         */
         function handleError(
           err: Error,
         ): void {
@@ -250,17 +265,21 @@ export function readFromTcpSocket(
       /**
        * Settle the promise with either an error or a result.
        *
-       * @param error - error to reject with, or null for success
+       * @param settlement - Error or result selected by one socket lifecycle event.
        *
-       * @param result - resolved value when error is null
+       * @mutates settlement - Promise rejection retains `settlement.error` as its rejection reason.
        */
-      function finish({
-        error,
-        result,
-      }: {
+      function finish(settlement: {
         readonly error?: Error;
         readonly result?: string;
       },): void {
+        /**
+         * Settlement fields read after naming effect boundary.
+         */
+        const {
+          error,
+          result,
+        } = settlement;
         if (settled)
           return;
         settled = true;
@@ -299,8 +318,15 @@ export function readFromTcpSocket(
           );
           socket.on(
             'error',
+            /**
+             * Settles read with host socket failure.
+             *
+             * @param err - Host-owned socket error.
+             *
+             * @mutates err - Promise rejection retains error as its rejection reason.
+             */
             function onError(
-              err: ReadonlyDeep<Error>,
+              err: ForeignBorrowed<Error>,
             ): void {
               finish({ error: err, },);
             },
@@ -310,8 +336,15 @@ export function readFromTcpSocket(
 
       socket.on(
         'error',
+        /**
+         * Settles connection with host socket failure.
+         *
+         * @param err - Host-owned connection error.
+         *
+         * @mutates err - Promise rejection retains error as its rejection reason.
+         */
         function onError(
-          err: ReadonlyDeep<Error>,
+          err: ForeignBorrowed<Error>,
         ): void {
           finish({ error: err, },);
         },

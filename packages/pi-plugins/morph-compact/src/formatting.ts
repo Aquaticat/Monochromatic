@@ -3,10 +3,7 @@
  */
 
 import type { ReadonlyDeep, } from 'type-fest';
-import type {
-  SessionEntry,
-  SessionMessageEntry,
-} from '@earendil-works/pi-coding-agent';
+import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
 
 //region Text content extraction
 
@@ -150,22 +147,13 @@ export function extractLatestQuery({
     const entry = branchEntries[loopIndex];
     if (entry === undefined)
       continue;
-    if (entry.type
-      !== 'message')
+    if ((entry.type
+      !== 'message') || (!('message' in entry)))
       continue;
     /**
-     * Narrowed alias used to access the message payload.
+     * Message payload exposed only by structurally verified message entries.
      */
-    const msgEntry = entry as SessionMessageEntry;
-    /**
-     * Loosely typed payload so role/content/command fields can be queried.
-     */
-    const message = msgEntry.message as {
-      role?: string;
-      content?: unknown;
-      command?: string;
-      output?: string;
-    };
+    const { message, } = entry;
     if (message.role
       === 'user') {
       /**

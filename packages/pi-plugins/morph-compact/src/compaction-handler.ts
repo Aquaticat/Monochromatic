@@ -59,6 +59,8 @@ export function resetMissingKeyWarning(): void {
  *
  * @returns compaction result, cancellation, or undefined to fall through
  *
+ * @mutates event - Compaction can retain `event.signal` through a dependent `AbortSignal.any` relation.
+ *
  * @example
  * ```typescript
  * pi.on("session_before_compact", (event, ctx) => handleBeforeCompact({ event, ctx }));

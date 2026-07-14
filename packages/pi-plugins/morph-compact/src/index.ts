@@ -261,6 +261,17 @@ export default function morphCompact(
 
   pi.on(
     'session_before_compact',
+    /**
+     * Bridges host compaction event into Morph workflow.
+     *
+     * @param event - Host-owned compaction event.
+     *
+     * @param ctx - Active extension context.
+     *
+     * @returns Morph compaction, cancellation, or fallthrough signal.
+     *
+     * @mutates event - Compaction can retain `event.signal` through a dependent `AbortSignal.any` relation.
+     */
     async function bridgeBeforeCompact(
       event: ForeignBorrowed<SessionBeforeCompactEvent>,
       ctx,
