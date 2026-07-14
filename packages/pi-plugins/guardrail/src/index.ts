@@ -13,6 +13,7 @@ import type {
   ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { evaluateBashGuard, } from './bash-guard.ts';
 import { loadGuardrailConfig, } from './config.ts';
@@ -124,7 +125,7 @@ async function registerGuardrail(
   pi.on(
     'tool_call',
     function handleToolCall(
-      event: ToolCallEvent,
+      event: ForeignBorrowed<ToolCallEvent>,
       ctx: ExtensionContext,
     ) {
       /**

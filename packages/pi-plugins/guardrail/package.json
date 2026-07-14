@@ -35,6 +35,7 @@
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "ignore": "catalog:"
   },
   "devDependencies": {
