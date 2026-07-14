@@ -176,7 +176,19 @@ function fakePiApi(): FakePiApiHarness {
       if (event === 'session_start') {
         handlers
           .sessionStart
-          .push(async function callSessionStartHandler(
+          .push(
+            /**
+             * Invokes captured extension callback for fake session start.
+             *
+             * @param sessionStartEvent - Caller-provided fake host event.
+             *
+             * @param ctx - Caller-provided fake extension context.
+             *
+             * @mutates sessionStartEvent - `handler` can retain or change supplied event state.
+             *
+             * @mutates ctx - `handler` can invoke or change supplied context capabilities.
+             */
+            async function callSessionStartHandler(
             sessionStartEvent,
             ctx,
           ): Promise<void> {
@@ -184,12 +196,25 @@ function fakePiApi(): FakePiApiHarness {
               sessionStartEvent,
               ctx,
             );
-          },);
+          },
+          );
       }
       if (event === 'session_shutdown') {
         handlers
           .sessionShutdown
-          .push(async function callSessionShutdownHandler(
+          .push(
+            /**
+             * Invokes captured extension callback for fake session shutdown.
+             *
+             * @param sessionShutdownEvent - Caller-provided fake host event.
+             *
+             * @param ctx - Caller-provided fake extension context.
+             *
+             * @mutates sessionShutdownEvent - `handler` can retain or change supplied event state.
+             *
+             * @mutates ctx - `handler` can invoke or change supplied context capabilities.
+             */
+            async function callSessionShutdownHandler(
             sessionShutdownEvent,
             ctx,
           ): Promise<void> {
@@ -197,12 +222,25 @@ function fakePiApi(): FakePiApiHarness {
               sessionShutdownEvent,
               ctx,
             );
-          },);
+          },
+          );
       }
       if (event === 'agent_end') {
         handlers
           .agentEnd
-          .push(async function callAgentEndHandler(
+          .push(
+            /**
+             * Invokes captured extension callback for fake agent completion.
+             *
+             * @param agentEndEvent - Caller-provided fake host event.
+             *
+             * @param ctx - Caller-provided fake extension context.
+             *
+             * @mutates agentEndEvent - `handler` can retain or change supplied event state.
+             *
+             * @mutates ctx - `handler` can invoke or change supplied context capabilities.
+             */
+            async function callAgentEndHandler(
             agentEndEvent,
             ctx,
           ): Promise<void> {
@@ -210,7 +248,8 @@ function fakePiApi(): FakePiApiHarness {
               agentEndEvent,
               ctx,
             );
-          },);
+          },
+          );
       }
     },
     registerTool(tool: { readonly name: string; },) {

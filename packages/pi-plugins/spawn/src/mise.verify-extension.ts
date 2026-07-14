@@ -99,6 +99,8 @@ const execFileAsync = promisify(execFile,);
  *
  * @throws when invocation exits non-zero or fails to spawn.
  *
+ * @mutates args - `execFileAsync` may inspect or retain argument storage across native process launch.
+ *
  * @example
  * ```typescript
  * await runHelpOrThrow({ command: '/pkg/cli.mjs', args: ['--help'], label: 'spawn-pi --help' });
@@ -111,7 +113,7 @@ async function runHelpOrThrow(
     label,
   }: {
     readonly command: string;
-    readonly args: readonly string[];
+    args: string[];
     readonly label: string;
   },
 ): Promise<void> {

@@ -109,9 +109,18 @@ export default function spawnPi(pi: ForeignBorrowed<ExtensionAPI>,): void {
       event: ForeignBorrowed<AgentEndEvent>,
       ctx,
     ): Promise<void> {
+      /**
+       * Spawn identifier inherited by child Pi process.
+       */
+      const spawnId = process.env[SPAWN_ID_ENV];
+      if (spawnId === undefined)
+        return;
       await reportChildCompletion({
-        event,
-        ctx,
+        spawnId,
+        sessionId: ctx
+          .sessionManager
+          .getSessionId(),
+        lastMessage: extractLastAssistantText(event.messages,),
       },);
     },
   );
@@ -139,10 +148,10 @@ async function registerSession(
   {
     ctx,
     extensionPath,
-  }: Readonly<{
-    readonly ctx: Readonly<ExtensionContext>;
+  }: {
+    ctx: ExtensionContext;
     readonly extensionPath: string;
-  }>,
+  },
 ): Promise<void> {
   process.env[SPAWN_EXTENSION_PATH_ENV] = extensionPath;
 
@@ -207,42 +216,32 @@ async function registerSession(
  * Reports first completed child Pi agent loop into spawn state via {@link completeSpawn}, extracting
  * the final assistant message with {@link extractLastAssistantText}.
  *
- * @param event - Pi agent-end event containing generated messages.
+ * @param spawnId - Child spawn identifier from host environment.
  *
- * @param ctx - current child {@link ExtensionContext}.
+ * @param sessionId - Primitive session identity read at host boundary.
+ *
+ * @param lastMessage - Primitive assistant text extracted at host boundary.
  *
  * @example
  * ```typescript
- * reportChildCompletion({ event, ctx });
+ * reportChildCompletion({ spawnId, sessionId, lastMessage });
  * ```
  */
 async function reportChildCompletion(
   {
-    event,
-    ctx,
+    spawnId,
+    sessionId,
+    lastMessage,
   }: Readonly<{
-    readonly event: Readonly<AgentEndEvent>;
-    readonly ctx: Readonly<ExtensionContext>;
+    spawnId: string;
+    sessionId: string;
+    lastMessage: string;
   }>,
 ): Promise<void> {
-  /**
-   * Spawn identifier inherited by child Pi process.
-   */
-  const spawnId = process.env[SPAWN_ID_ENV];
-  if (spawnId === undefined)
-    return;
-
-  /**
-   * Pi session identifier owning completed child state.
-   */
-  const sessionId = ctx
-    .sessionManager
-    .getSessionId();
-
   await completeSpawn({
     spawnId,
     sessionId,
-    lastMessage: extractLastAssistantText(event.messages,),
+    lastMessage,
   },);
 }
 

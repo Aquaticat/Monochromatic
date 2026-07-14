@@ -186,12 +186,14 @@ function cliPathFromExtensionPath(extensionPath: string,): string {
  *
  * @returns whether `which spawn-pi` succeeds.
  *
+ * @mutates env - `execFileAsync` may inspect or retain environment storage while launching `which`.
+ *
  * @example
  * ```typescript
  * if (await cliIsOnPath()) return;
  * ```
  */
-async function cliIsOnPath(env: Readonly<NodeJS.ProcessEnv> = process.env,): Promise<boolean> {
+async function cliIsOnPath(env: NodeJS.ProcessEnv = process.env,): Promise<boolean> {
   try {
     await execFileAsync(
       'which',
@@ -220,6 +222,8 @@ async function cliIsOnPath(env: Readonly<NodeJS.ProcessEnv> = process.env,): Pro
  *
  * @returns warning text, or {@link NO_CLI_SETUP_WARNING} when setup is complete.
  *
+ * @mutates env - `cliIsOnPath` can pass environment storage across native process launch.
+ *
  * @example
  * ```typescript
  * await autoSetupCli({ extensionPath: '/pkg/dist/final/node/index.mjs' });
@@ -231,7 +235,7 @@ async function autoSetupCli(
     env = process.env,
   }: {
     readonly extensionPath: string;
-    readonly env?: Readonly<NodeJS.ProcessEnv>;
+    env?: NodeJS.ProcessEnv;
   },
 ): Promise<string | typeof NO_CLI_SETUP_WARNING> {
   if (await cliIsOnPath(env,))

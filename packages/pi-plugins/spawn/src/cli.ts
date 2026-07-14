@@ -87,11 +87,9 @@ const args = runSync(
 /**
  * Launches terminal-exec as a detached visible child process.
  *
- * @param cwd - working directory for terminal-exec.
+ * @param options - Working directory, environment, and terminal invocation.
  *
- * @param env - environment variables inherited by terminal-exec.
- *
- * @param invocation - {@link TerminalInvocation} command and arguments to spawn.
+ * @mutates options - `spawn` may read or retain environment and invocation storage across native process launch.
  *
  * @example
  * ```typescript
@@ -99,16 +97,20 @@ const args = runSync(
  * ```
  */
 function launchDetachedTerminal(
-  {
+  options: {
+    readonly cwd: string;
+    env: NodeJS.ProcessEnv;
+    invocation: TerminalInvocation;
+  },
+): void {
+  /**
+   * Launch values extracted after naming native process boundary.
+   */
+  const {
     cwd,
     env,
     invocation,
-  }: {
-    readonly cwd: string;
-    readonly env: Readonly<NodeJS.ProcessEnv>;
-    readonly invocation: TerminalInvocation;
-  },
-): void {
+  } = options;
   /**
    * Detached terminal-exec process for visible child Pi session.
    */
