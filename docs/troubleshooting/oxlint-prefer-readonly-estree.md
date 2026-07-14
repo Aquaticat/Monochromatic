@@ -80,7 +80,8 @@ intrinsic declaration provenance,
 and external-consumer publication.
 
 Workspace package imports use `/ts` source subpaths.
-The marker-import correction leaves 179 active TypeScript imports using `/ts` and no marker root import.
+Commit `300ccac29` corrects 58 standalone marker imports;
+current plugin changes also use the `/ts` spelling.
 
 ## What does not work
 
@@ -144,4 +145,7 @@ provenance fixtures,
 and current plugin verification.
 A repository search found the branded-nesting and authoring-identity documents;
 they cover different mechanisms.
-No `.out-of-scope` directory applies to this documentation path.
+A root `.out-of-scope` search for readonly,
+Oxlint,
+TSDoc,
+and foreign-ownership topics found no applicable entry.

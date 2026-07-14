@@ -176,4 +176,7 @@ The investigation followed the published Valibot declaration to cli-git's public
 sources.
 A repository search found the related branded-nesting and ESTree documents;
 they cover different type-resolution mechanisms.
-No `.out-of-scope` directory applies to this documentation path.
+A root `.out-of-scope` search for readonly,
+Oxlint,
+TSDoc,
+and foreign-ownership topics found no applicable entry.

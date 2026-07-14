@@ -32,8 +32,7 @@ The semantic rule propagates guaranteed provenance through those paths.
 A helper parameter inherits foreign provenance only when every owned inbound call supplies wholly foreign mutable state.
 
 Workspace consumers import the package's `/ts` subpath so cross-package resolution targets TypeScript source.
-A 2026-07-13 audit corrected 74 package-root imports;
-active TypeScript source now has 179 `/ts` imports and no root import for this marker.
+Do not import the package root from another workspace package.
 
 The package contains one type declaration,
 no runtime code,

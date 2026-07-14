@@ -72,8 +72,11 @@ Descendant `AST.*` parameters remain ordinary types.
 The removed `BorrowedTomlAst` alias must not return.
 
 Workspace packages import the marker through its `/ts` subpath.
-A correction audit migrated 74 package-root imports;
-the active TypeScript source now has 179 marker `/ts` imports and no marker root import.
+A working-tree `rg` scan over TypeScript file extensions found 74 package-root imports and 105 `/ts` imports before
+correction;
+the same scan now finds 179 `/ts` imports and no marker root import.
+Commit `300ccac29` records 58 standalone rewrites,
+while corrected imports embedded in the current plugin and TOML changes remain with those changes.
 `AGENTS.md` rule `ST3` records the workspace-wide source-subpath requirement.
 
 ## Callback capability distinction
@@ -209,4 +212,7 @@ A repository search found related authoring-identity,
 ESTree,
 and Pi method-effect documents;
 none covers guaranteed descendant provenance across owned call edges.
-No `.out-of-scope` directory applies to this documentation path.
+A root `.out-of-scope` search for readonly,
+Oxlint,
+TSDoc,
+and foreign-ownership topics found no applicable entry.

@@ -63,9 +63,14 @@ one `path.map` callback uncertainty,
 and a fast-check `Arbitrary.chain` audit.
 
 Workspace packages must import one another through `/ts` source subpaths.
-A correction audit found 74 marker imports using the package root and 105 already using `/ts`.
-All 74 root imports were migrated.
-The active TypeScript source now has 179 marker `/ts` imports and no marker root import.
+A working-tree `rg` scan over `.ts`,
+`.mts`,
+`.cts`,
+and `.tsx` files found 74 marker imports using the package root and 105 already using `/ts`.
+After correction,
+the same scan finds 179 `/ts` imports and no marker root import.
+Commit `300ccac29` records 58 standalone rewrites;
+the remaining corrected sites belong to the current semantic-plugin and TOML changes.
 `AGENTS.md` rule `ST3` records the workspace-wide convention,
 and file-enforcer synchronized `CLAUDE.md`.
 

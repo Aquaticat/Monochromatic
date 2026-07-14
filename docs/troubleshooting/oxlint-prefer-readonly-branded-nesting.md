@@ -163,4 +163,7 @@ The investigation read the deciding tsgolint and typescript-eslint rule and read
 not only CLI output.
 A repository search found the related authoring-identity and ESTree troubleshooting documents;
 neither duplicates the nested branded-primitive mechanism.
-No `.out-of-scope` directory applies to this documentation path.
+A root `.out-of-scope` search for readonly,
+Oxlint,
+TSDoc,
+and foreign-ownership topics found no applicable entry.
