@@ -55,6 +55,14 @@ await describe({
         expected: 'opaque-capability',
       },
       {
+        parameter: 'callableValue:',
+        expected: 'opaque-capability',
+      },
+      {
+        parameter: 'constructorValue:',
+        expected: 'opaque-capability',
+      },
+      {
         parameter: 'unknownValue:',
         expected: 'opaque-capability',
       },

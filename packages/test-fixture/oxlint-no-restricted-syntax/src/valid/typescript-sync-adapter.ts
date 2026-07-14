@@ -96,6 +96,26 @@ export function classifyBroadObjectCapability(objectValue: object,): void {
 }
 
 /**
+ * Accepts direct callable capability for classifier fixture.
+ *
+ * @param callableValue - Caller-defined behavior.
+ */
+export function classifyCallableCapability(callableValue: () => void,): void {
+  void callableValue;
+}
+
+/**
+ * Accepts constructable capability for classifier fixture.
+ *
+ * @param constructorValue - Caller-defined constructor behavior.
+ */
+export function classifyConstructorCapability(
+  constructorValue: abstract new() => object,
+): void {
+  void constructorValue;
+}
+
+/**
  * Accepts unknown runtime capability for classifier fixture.
  *
  * @param unknownValue - Value whose runtime capabilities are not known.

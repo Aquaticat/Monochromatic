@@ -287,6 +287,13 @@ export function classifyReadonlyType({
         reason: 'broad object type may carry caller-defined properties, accessors, or proxy capability',
       },);
     }
+    if ((checker.getSignaturesOfType(current, SignatureKind.Call,).length > 0)
+      || (checker.getSignaturesOfType(current, SignatureKind.Construct,).length > 0)) {
+      return finish({
+        kind: 'opaque-capability',
+        reason: 'callable or constructable input can execute caller-defined behavior',
+      },);
+    }
     if (!current.isObjectType())
       return finish(HONEST_READONLY,);
     /**
