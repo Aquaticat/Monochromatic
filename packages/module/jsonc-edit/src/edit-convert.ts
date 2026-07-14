@@ -24,7 +24,7 @@ import type { JsoncValue, } from './value.ts';
 export function jsToNode({
   value,
 }: {
-  readonly value: ReadonlyDeep<JsonValue>;
+  readonly value: JsonValue;
 },): JsoncValue {
   if (value === null)
     return { kind: 'null', };
