@@ -35,7 +35,9 @@ export type {
  * // 'display:flex;gap:1rem'
  * ```
  */
-function serializeDecls<const Declarations extends object>(decls: Declarations,): string {
+function serializeDecls(
+  decls: NonNullable<AtRuleOptions['decls'] | RuleOptions['decls']>,
+): string {
   /**
    * Accumulates property:value fragments so they can be joined with `;` once at the end.
    */
