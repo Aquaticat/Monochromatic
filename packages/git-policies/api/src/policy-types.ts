@@ -57,32 +57,32 @@ export type CandidateChange = 'added' | 'modified' | 'deleted';
 /**
  * Committed or mutable candidate. @example `const file = await context.git.candidates().then(files => files[0]);`
  */
-export type CandidateFile = Readonly<{
+export type CandidateFile = {
   /**
    * Invocation-local opaque target ID.
    */
-  targetId: string;
+  readonly targetId: string;
   /**
    * Repository-relative path.
    */
-  path: RepositoryPath;
+  readonly path: RepositoryPath;
   /**
    * Revision ID, or shared absence sentinel for mutable content.
    */
-  revision: GitObjectId | AbsentGitValue;
+  readonly revision: GitObjectId | AbsentGitValue;
   /**
    * Git file mode.
    */
-  mode: CandidateFileMode;
+  readonly mode: CandidateFileMode;
   /**
    * Change relative to comparison baseline.
    */
-  change: CandidateChange;
+  readonly change: CandidateChange;
   /**
    * Loads fresh exact candidate bytes.
    */
-  bytes: () => Promise<Uint8Array>;
-}>;
+  readonly bytes: () => Promise<Uint8Array>;
+};
 
 /**
  * Facts about the triggering command. @example `const args = context.command.transformedArgs;`
@@ -117,28 +117,28 @@ export type PolicyCommandFacts = Readonly<{
 /**
  * Complete context supplied to a policy. @example `const version = context.candidateVersion;`
  */
-export type PolicyContext = Readonly<{
+export type PolicyContext = {
   /**
    * Monotonic candidate-state version.
    */
-  candidateVersion: number;
+  readonly candidateVersion: number;
   /**
    * Current lifecycle trigger.
    */
-  trigger: PolicyTrigger;
+  readonly trigger: PolicyTrigger;
   /**
    * Command facts.
    */
-  command: PolicyCommandFacts;
+  readonly command: PolicyCommandFacts;
   /**
    * Lazy Git facts memoized for current version only.
    */
-  git: LazyPolicyGitFacts;
+  readonly git: LazyPolicyGitFacts;
   /**
    * Engine cancellation signal.
    */
-  signal: AbortSignal;
-}>;
+  readonly signal: AbortSignal;
+};
 
 /**
  * Byte range within candidate content. @example `const location: FindingLocation = { byteStart: 0, byteEnd: 1 };`
@@ -237,29 +237,29 @@ export type NamedPolicyDefinition = Readonly<{
 export type PolicyDefinition<
   TOptions = undefined,
   TName extends string = string,
-> = Readonly<{
+> = {
   /**
    * Namespace-local policy name.
    */
-  name: TName;
+  readonly name: TName;
   /**
    * Default severity activated by plugin registration.
    */
-  defaultSeverity: PolicySeverity;
+  readonly defaultSeverity: PolicySeverity;
   /**
    * Whether warnings preserve enforcement semantics.
    */
-  warnSafe: boolean;
+  readonly warnSafe: boolean;
   /**
    * Lifecycle triggers checked by policy.
    */
-  triggers: readonly PolicyTrigger[];
+  readonly triggers: readonly PolicyTrigger[];
   /**
    * Optional Valibot options schema.
    */
-  options?: Readonly<GenericSchema<unknown, TOptions>>;
+  readonly options?: Readonly<GenericSchema<unknown, TOptions>>;
   /**
    * Finds every violation for one candidate state.
    */
-  check: (input: ForeignBorrowed<PolicyCheckInput<TOptions>>) => Promise<readonly PolicyFinding[]>;
-}>;
+  readonly check: (input: ForeignBorrowed<PolicyCheckInput<TOptions>>) => Promise<readonly PolicyFinding[]>;
+};
