@@ -8,6 +8,10 @@ import type {
   CallExpression,
   Expression,
 } from 'typescript/unstable/ast';
+import {
+  isArrayLiteralExpression,
+  isObjectLiteralExpression,
+} from 'typescript/unstable/ast/is';
 
 import type { IntrinsicEffectTarget, } from './intrinsic-effect-catalog.ts';
 
@@ -34,12 +38,20 @@ export function intrinsicTargetArguments({
 }): readonly Expression[] {
   if (target.kind === 'receiver')
     return [];
-  if (target.kind === 'arguments-from')
-    return call.arguments
-      .slice(target.startIndex,);
   /**
-   * Fixed call argument named by intrinsic target.
+   * Arguments selected by fixed position or variadic suffix.
    */
-  const argument = call.arguments[target.index];
-  return argument === undefined ? [] : [argument,];
+  const selected = target.kind === 'arguments-from'
+    ? call.arguments
+      .slice(target.startIndex,)
+    : [call.arguments[target.index],]
+      .filter(function present(argument,): argument is Expression {
+        return argument !== undefined;
+      },);
+  if (target.freshContainerShieldsContents !== true)
+    return selected;
+  return selected.filter(function callerOwnedContainer(argument,): boolean {
+    return (!isObjectLiteralExpression(argument,))
+      && (!isArrayLiteralExpression(argument,));
+  },);
 }

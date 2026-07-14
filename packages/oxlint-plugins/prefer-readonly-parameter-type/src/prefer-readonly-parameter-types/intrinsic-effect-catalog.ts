@@ -49,11 +49,13 @@ export type IntrinsicEffectTarget =
     readonly kind: 'argument';
     readonly index: number;
     readonly propertyNames?: readonly string[];
+    readonly freshContainerShieldsContents?: boolean;
   }
   | {
     readonly kind: 'arguments-from';
     readonly startIndex: number;
     readonly propertyNames?: readonly string[];
+    readonly freshContainerShieldsContents?: boolean;
   };
 
 /**

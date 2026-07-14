@@ -451,6 +451,58 @@ await describe({
       },
     },),
     it({
+      name: 'treats a fresh frozen copy as separate from caller-owned input',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Disposable configured source path. */
+        const inputPath = join(projectRoot.path, 'input.ts',);
+        /** Source freezing a fresh shallow copy instead of caller-owned input. */
+        const inputSource = [
+          'export function freezeCopy(options: { nested: { value: string } }): void {',
+          '  Object.freeze({ ...options });',
+          '}',
+          '',
+        ].join('\n',);
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          `${JSON.stringify({ compilerOptions: { strict: true, lib: ['ESNext',], }, files: ['input.ts',], },)}\n`,
+        );
+        writeFileSync(inputPath, inputSource,);
+        const session = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /** Fresh-copy function declaration. */
+        const declaration = session.nodeAtOffset(inputSource.indexOf('freezeCopy',),)
+          .parent;
+        if (!isFunctionLikeDeclaration(declaration,))
+          throw new Error('Expected fresh-copy function declaration.',);
+        /** Fresh-copy effect summary. */
+        const summary = index.get(declaration,);
+        if (summary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected fresh-copy effect summary.',);
+        expect({
+          mutated: [...summary.mutatedParameterIndexes,],
+          referentMutated: [...summary.referentMutatedParameterIndexes,],
+          invoked: [...summary.invokedParameterIndexes,],
+          opaque: [...summary.opaqueParameterIndexes,],
+          callbackRelations: summary.callbackRelations,
+        },).toEqual({
+          mutated: [],
+          referentMutated: [],
+          invoked: [],
+          opaque: [],
+          callbackRelations: [],
+        },);
+        closeSemanticBridge();
+      },
+    },),
+    it({
       name: 'infers direct imported package effects from shipped implementation',
       fn: async () => {
         using projectRoot = disposableCacheDirectory();

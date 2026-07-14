@@ -45,6 +45,7 @@ export const ECMASCRIPT_OBJECT_EFFECTS: readonly IntrinsicEffectEntry[] = [
     targets: [{
       kind: 'argument',
       index: 0,
+      freshContainerShieldsContents: true,
     },],
     evidence: 'ECMA-262 commit 1355a23e Object.freeze changes supplied object property descriptors',
     authority: ecma262Authority({ algorithm: 'Object.freeze', },),
