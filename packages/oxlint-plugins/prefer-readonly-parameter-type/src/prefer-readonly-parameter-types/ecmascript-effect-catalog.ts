@@ -127,7 +127,9 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
             2,
           ],
         },],
-        ...((member === 'filter') || (member === 'find') || (member === 'findLast'))
+        ...((member === 'filter')
+          || (member === 'find')
+          || (member === 'findLast'))
           ? { receiverValuesReachResult: true, }
           : {},
         evidence: 'ECMA-262 commit 1355a23e array iteration algorithms with callback effects',

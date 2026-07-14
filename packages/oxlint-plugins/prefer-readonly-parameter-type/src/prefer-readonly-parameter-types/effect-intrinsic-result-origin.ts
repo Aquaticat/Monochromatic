@@ -63,7 +63,7 @@ export function intrinsicReceiverParameterIndex({
     /**
      * Current expression retained for stable TypeScript narrowing.
      */
-    const current = cursor.current;
+    const { current, } = cursor;
     /**
      * Direct parameter or local-alias origin at current expression.
      */
@@ -78,9 +78,13 @@ export function intrinsicReceiverParameterIndex({
       || (!isPropertyAccessExpression(current.expression,)))
       return PARAMETER_INDEX_UNAVAILABLE;
     /**
+     * Narrowed intrinsic method access for current call.
+     */
+    const { expression: method, } = current;
+    /**
      * Receiver whose reachable values may flow into current call result.
      */
-    const receiver = current.expression.expression;
+    const { expression: receiver, } = method;
     /**
      * Exact semantic receiver type.
      */
@@ -88,7 +92,7 @@ export function intrinsicReceiverParameterIndex({
     /**
      * Exact intrinsic member symbol.
      */
-    const memberSymbol = checker.getSymbolAtLocation(current.expression.name,);
+    const memberSymbol = checker.getSymbolAtLocation(method.name,);
     if ((receiverType === undefined) || (memberSymbol === undefined))
       return PARAMETER_INDEX_UNAVAILABLE;
     /**
