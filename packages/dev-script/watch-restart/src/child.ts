@@ -397,7 +397,7 @@ function defaultWriteClear(): void {
  * const { code, signal, } = await exited;
  * ```
  */
-function waitForExit(handle: Readonly<SpawnedChildHandle>,): Promise<ExitResult> {
+function waitForExit(handle: SpawnedChildHandle,): Promise<ExitResult> {
   // oxlint-disable-next-line promise/avoid-new -- EventEmitter -> Promise bridge needs the constructor form
   return new Promise(function captureExit(resolve,) {
     handle.once(
@@ -734,7 +734,7 @@ export class Child {
    * @param signal - signal name to deliver
    */
   #sendSignal(
-    handle: Readonly<SpawnedChildHandle>,
+    handle: SpawnedChildHandle,
     signal: NodeJS.Signals,
   ): void {
     if (this.#processGroup

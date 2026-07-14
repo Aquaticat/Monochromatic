@@ -109,11 +109,10 @@ export type WatchCtx = {
   readonly signal: AbortSignal;
   /**
    * Shared content-hash cache; read by `contentHashFilter`, written by the watcher.
-   * Typed `Readonly<HashCache>` so this context is deeply readonly (the cache's
-   * mutating methods stay callable; only reassignment of the binding is barred),
-   * which keeps {@link WatchFilter} and every filter that destructures it
+   * Readonly property prevents cache replacement while preserving its intentional
+   * stateful capability methods.
    */
-  readonly hashCache: Readonly<HashCache>;
+  readonly hashCache: HashCache;
 };
 
 /**
