@@ -157,10 +157,10 @@ function parseHit(line: string,): ScannerHit {
 export function parseScannerOutput({
   stderr,
   candidateForPath,
-}: Readonly<{
-  stderr: string;
-  candidateForPath: (path: string) => CandidateFile;
-}>): readonly PolicyFinding[] {
+}: {
+  readonly stderr: string;
+  readonly candidateForPath: (path: string) => CandidateFile;
+}): readonly PolicyFinding[] {
   return stderr.split('\n',)
     .filter(function isOutputLine(line,): boolean {
       return line.length > 0;
