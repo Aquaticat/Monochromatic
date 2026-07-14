@@ -11,9 +11,34 @@ import type {
 import {
   isArrayLiteralExpression,
   isObjectLiteralExpression,
+  isSpreadAssignment,
+  isSpreadElement,
 } from 'typescript/unstable/ast/is';
 
 import type { IntrinsicEffectTarget, } from './intrinsic-effect-catalog.ts';
+
+/**
+ * Whether a fresh literal is closed over authored values rather than spread evaluation.
+ *
+ * @returns Whether intrinsic mutation of the new container cannot reach spread-source state.
+ */
+function closedFreshContainer({ argument, }: { readonly argument: Expression; },): boolean {
+  if (isObjectLiteralExpression(argument,)) {
+    for (const property of argument.properties) {
+      if (isSpreadAssignment(property,))
+        return false;
+    }
+    return true;
+  }
+  if (isArrayLiteralExpression(argument,)) {
+    for (const element of argument.elements) {
+      if (isSpreadElement(element,))
+        return false;
+    }
+    return true;
+  }
+  return false;
+}
 
 /**
  * Selects call arguments named by one intrinsic effect target.
@@ -51,7 +76,6 @@ export function intrinsicTargetArguments({
   if (target.freshContainerShieldsContents !== true)
     return selected;
   return selected.filter(function callerOwnedContainer(argument,): boolean {
-    return (!isObjectLiteralExpression(argument,))
-      && (!isArrayLiteralExpression(argument,));
+    return !closedFreshContainer({ argument, },);
   },);
 }

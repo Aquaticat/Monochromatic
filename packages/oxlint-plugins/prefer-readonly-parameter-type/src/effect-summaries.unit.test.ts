@@ -459,7 +459,7 @@ await describe({
         /** Source freezing a fresh shallow copy instead of caller-owned input. */
         const inputSource = [
           'export function freezeCopy(options: { nested: { value: string } }): void {',
-          '  Object.freeze({ ...options });',
+          '  Object.freeze({ nested: options.nested });',
           '}',
           '',
         ].join('\n',);

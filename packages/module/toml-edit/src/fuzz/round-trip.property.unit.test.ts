@@ -169,19 +169,28 @@ await describe({
       timeout: RUN.timeout,
       fn: async () => {
         expect(staticSemanticOracleSupports({ source: 'value = 1\n', },)).toBe(true,);
+        expect(semanticEquals({
+          left: semanticModel({ source: '[constructor.prototype]\nvalue = 1\n', },),
+          right: {
+            constructor: {
+              prototype: { value: 1, },
+            },
+          },
+        },)).toBe(true,);
         expect(staticSemanticOracleSupports({
           source: UPSTREAM_PROTOTYPE_SOURCE,
         },)).toBe(false,);
         /** Upstream projection that loses the own key and changes nested object prototype. */
         const unsupportedModel = semanticModel({ source: UPSTREAM_PROTOTYPE_SOURCE, },);
-        if ((typeof unsupportedModel !== 'object')
+        if (((typeof unsupportedModel) !== 'object')
           || (unsupportedModel === null)
           || Array.isArray(unsupportedModel,)
-          || (unsupportedModel instanceof Date))
+          || (unsupportedModel instanceof Date)
+          || (!('value' in unsupportedModel)))
           throw new Error('Expected projected root object.',);
         /** Nested inline-table projection altered by inherited `__proto__` setter. */
         const unsupportedTable = unsupportedModel.value;
-        if ((typeof unsupportedTable !== 'object')
+        if (((typeof unsupportedTable) !== 'object')
           || (unsupportedTable === null)
           || Array.isArray(unsupportedTable,))
           throw new Error('Expected projected inline table.',);
@@ -192,7 +201,7 @@ await describe({
           edit: parseTomlEdit({ source: UPSTREAM_PROTOTYPE_SOURCE, },),
           path: ['value',],
         },);
-        if ((typeof materializedTable !== 'object')
+        if (((typeof materializedTable) !== 'object')
           || (materializedTable === null)
           || Array.isArray(materializedTable,))
           throw new Error('Expected materialized inline table.',);

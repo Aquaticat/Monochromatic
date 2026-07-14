@@ -200,8 +200,15 @@ export function parseTomlEdit(
     comments: program.comments,
     mode,
     canonical: Object.freeze({
-      ...DEFAULT_CANONICAL_OPTIONS,
-      ...canonical,
+      indent: canonical?.indent ?? DEFAULT_CANONICAL_OPTIONS.indent,
+      arrayInlineThreshold: canonical?.arrayInlineThreshold
+        ?? DEFAULT_CANONICAL_OPTIONS.arrayInlineThreshold,
+      arrayInlineMaxColumns: canonical?.arrayInlineMaxColumns
+        ?? DEFAULT_CANONICAL_OPTIONS.arrayInlineMaxColumns,
+      preferDottedKeysForCreate: canonical?.preferDottedKeysForCreate
+        ?? DEFAULT_CANONICAL_OPTIONS.preferDottedKeysForCreate,
+      trailingNewline: canonical?.trailingNewline
+        ?? DEFAULT_CANONICAL_OPTIONS.trailingNewline,
     },),
   };
 }
