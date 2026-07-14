@@ -39,12 +39,16 @@ const l = tagged({ tag: 'mutation-test', },);
  *
  * @throws Error on infra failure (red baseline, unresolved mutants).
  *
+ * @mutates options - `JSON.stringify` may invoke hooks on report data derived from options.
+ *
  * @example
  * ```ts
  * await runCli(parseCliOptions(['--package', 'packages/module/fs-path']));
  * ```
  */
-export async function runCli(options: CliOptions,): Promise<void> {
+export async function runCli(
+  options: CliOptions & { sourceFiles: readonly string[]; },
+): Promise<void> {
   /**
    * Logger scoped to this invocation.
    */

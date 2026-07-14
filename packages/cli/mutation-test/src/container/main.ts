@@ -145,12 +145,16 @@ export async function readManifest(): Promise<ShardManifest> {
  *
  * @param report - Completed shard report.
  *
+ * @mutates report - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * await writeReport(report);
  * ```
  */
-async function writeReport(report: ShardReport,): Promise<void> {
+async function writeReport(
+  report: ShardReport & { shardId: string; },
+): Promise<void> {
   /**
    * Report destination path on the report mount.
    */

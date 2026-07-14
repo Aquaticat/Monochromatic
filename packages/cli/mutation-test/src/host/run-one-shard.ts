@@ -44,13 +44,15 @@ const MANIFEST_FILE_NAME = 'shard-manifest.json';
  *
  * @returns Shard report, real or synthetic.
  *
+ * @mutates options - `JSON.stringify` may invoke hooks on manifest stored in options.
+ *
  * @example
  * ```ts
  * const report = await runOneShard({ manifest, image, repoRoot, resources, selinuxRelabel: false });
  * ```
  */
 export async function runOneShard(options: {
-  readonly manifest: ShardManifest;
+  manifest: ShardManifest;
   readonly image: string;
   readonly repoRoot: string;
   readonly resources: ShardResources;

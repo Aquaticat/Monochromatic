@@ -64,12 +64,16 @@ const MAX_SINGLE_RETRIES = 1;
  * @throws Error when a shard reports results for unknown mutant ids or
  * mutants remain unresolved after all rounds.
  *
+ * @mutates options - `JSON.stringify` may invoke hooks on shard manifests derived from options.
+ *
  * @example
  * ```ts
  * const outcome = await orchestrateRun(options);
  * ```
  */
-export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunOutcome> {
+export async function orchestrateRun(
+  options: OrchestrateOptions & { sourceFiles: readonly string[]; },
+): Promise<RunOutcome> {
   /**
    * Logger scoped to the run.
    */
@@ -243,12 +247,25 @@ export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunO
    * @param manifests - Manifests for this round.
    *
    * @returns Mutant ids to reshard.
+   *
+   * @mutates manifests - `JSON.stringify` may invoke hooks on shard manifests.
    */
-  async function runRound(manifests: readonly ShardManifest[],): Promise<readonly string[]> {
+  async function runRound(
+    manifests: readonly (ShardManifest & { shardId: string; })[],
+  ): Promise<readonly string[]> {
     /**
      * Reports from every shard in this round.
      */
     const reports = await Promise.all(manifests.map(
+      /**
+       * Runs one manifest through bounded container concurrency.
+       *
+       * @param manifest - Shard manifest that may expose serialization hooks.
+       *
+       * @returns completed shard report.
+       *
+       * @mutates manifest - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+       */
       async function runLimited(manifest,): Promise<ShardReport> {
         counters.shards += 1;
         return await limit(
