@@ -462,8 +462,8 @@ function collectIgnoredKeys(
     input,
     supportedKeys,
   }: {
-    readonly input: object;
-    readonly supportedKeys: readonly string[];
+    input: object;
+    supportedKeys: readonly string[];
   },
 ): readonly string[] {
   /**
