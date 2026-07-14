@@ -166,8 +166,6 @@ export function getConfigPaths(
  * @param configs - config files in merge order, with {@link NO_CONFIG_FILE} entries skipped
  *
  * @returns merged runtime config without source metadata
- *
- * @mutates configs - `configs.reduce` can invoke caller-defined array accessors or proxy traps
  */
 function mergeConfigFiles(
   {
