@@ -65,6 +65,8 @@ export function emitScalar({
  *
  * @returns Canonical JSON text.
  *
+ * @mutates json - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * emitPlainJson({ json: { a: 1 }, indent: 0 });
@@ -75,7 +77,7 @@ export function emitPlainJson({
   json,
   indent,
 }: {
-  readonly json: ReadonlyDeep<JsonValue>;
+  json: ReadonlyDeep<JsonValue>;
   readonly indent: number;
 },): string {
   /**

@@ -54,11 +54,13 @@ export class JsoncPathNotFoundError extends Error {
 
   /**
    * @param path - Path segments that failed to resolve.
+   *
+   * @mutates path - `JSON.stringify` may invoke array accessors or proxy traps.
    */
   constructor({
     path,
   }: {
-    readonly path: readonly (string | number)[];
+    path: readonly (string | number)[];
   },) {
     super(`no JSONC node at path ${JSON.stringify(path,)}`,);
     this.name = 'JsoncPathNotFoundError';

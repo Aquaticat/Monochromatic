@@ -35,6 +35,8 @@ const INDENT_UNIT = '  ';
  *
  * @returns Value text.
  *
+ * @mutates node - `JSON.stringify` may invoke hooks on embedded plain JSON values.
+ *
  * @example
  * ```ts
  * emitBare({ node: { kind: 'boolean', value: true }, indent: 0 }); // => 'true'
@@ -44,7 +46,7 @@ function emitBare({
   node,
   indent,
 }: {
-  readonly node: JsoncValue;
+  node: JsoncValue;
   readonly indent: number;
 },): string {
   if (node.kind === 'record')
@@ -79,6 +81,8 @@ function emitBare({
  *
  * @returns Entry text, ending with a trailing comma.
  *
+ * @mutates entry - `JSON.stringify` may invoke hooks on embedded plain JSON values.
+ *
  * @example
  * ```ts
  * emitEntry({ entry: { key: { value: 'a' }, value: { kind: 'number', value: 1 } }, indent: 1 });
@@ -89,7 +93,7 @@ function emitEntry({
   entry,
   indent,
 }: {
-  readonly entry: JsoncRecordEntry;
+  entry: JsoncRecordEntry;
   readonly indent: number;
 },): string {
   /**
@@ -150,6 +154,8 @@ function emitEntry({
  *
  * @returns Record text.
  *
+ * @mutates node - `JSON.stringify` may invoke hooks on embedded plain JSON values.
+ *
  * @example
  * ```ts
  * emitRecord({ node: { kind: 'record', entries: [] }, indent: 0 }); // => '{}'
@@ -159,7 +165,7 @@ function emitRecord({
   node,
   indent,
 }: {
-  readonly node: JsoncRecord;
+  node: JsoncRecord;
   readonly indent: number;
 },): string {
   if (node.entries
@@ -170,12 +176,25 @@ function emitRecord({
    * Entry lines joined with newlines.
    */
   const inner = node.entries
-    .map(function emitOneEntry(entry: JsoncRecordEntry,): string {
-      return emitEntry({
-        entry,
-        indent: indent + 1,
-      },);
-    },)
+    .map(
+      /**
+       * Emits one record entry.
+       *
+       * @param entry - Entry that may contain effectful plain JSON.
+       *
+       * @returns canonical entry text.
+       *
+       * @mutates entry - `JSON.stringify` may invoke hooks on embedded plain JSON values.
+       */
+      function emitOneEntry(
+        entry: JsoncRecordEntry & { value: JsoncValue; },
+      ): string {
+        return emitEntry({
+          entry,
+          indent: indent + 1,
+        },);
+      },
+    )
     .join('\n',);
   return `{\n${inner}\n${INDENT_UNIT.repeat(indent,)}}`;
 }
@@ -190,6 +209,8 @@ function emitRecord({
  *
  * @returns Element text, ending with a trailing comma.
  *
+ * @mutates element - `JSON.stringify` may invoke hooks on embedded plain JSON values.
+ *
  * @example
  * ```ts
  * emitElement({ element: { kind: 'number', value: 1 }, indent: 1 }); // => '  1,'
@@ -199,7 +220,7 @@ function emitElement({
   element,
   indent,
 }: {
-  readonly element: JsoncValue;
+  element: JsoncValue;
   readonly indent: number;
 },): string {
   /**
@@ -240,6 +261,8 @@ function emitElement({
  *
  * @returns Array text.
  *
+ * @mutates node - `JSON.stringify` may invoke hooks on embedded plain JSON values.
+ *
  * @example
  * ```ts
  * emitArray({ node: { kind: 'array', elements: [] }, indent: 0 }); // => '[]'
@@ -249,7 +272,7 @@ function emitArray({
   node,
   indent,
 }: {
-  readonly node: JsoncArray;
+  node: JsoncArray;
   readonly indent: number;
 },): string {
   if (node.elements
@@ -260,12 +283,25 @@ function emitArray({
    * Element lines joined with newlines.
    */
   const inner = node.elements
-    .map(function emitOneElement(element: JsoncValue,): string {
-      return emitElement({
-        element,
-        indent: indent + 1,
-      },);
-    },)
+    .map(
+      /**
+       * Emits one array element.
+       *
+       * @param element - Element that may contain effectful plain JSON.
+       *
+       * @returns canonical element text.
+       *
+       * @mutates element - `JSON.stringify` may invoke hooks on embedded plain JSON values.
+       */
+      function emitOneElement(
+        element: JsoncValue & { kind: JsoncValue['kind']; },
+      ): string {
+        return emitElement({
+          element,
+          indent: indent + 1,
+        },);
+      },
+    )
     .join('\n',);
   return `[\n${inner}\n${INDENT_UNIT.repeat(indent,)}]`;
 }
@@ -284,6 +320,8 @@ function emitArray({
  *
  * @returns Canonical JSONC text.
  *
+ * @mutates value - `JSON.stringify` may invoke hooks on embedded plain JSON values.
+ *
  * @example
  * ```ts
  * emitJsoncValue({ value: parseJsonc({ source: '{"a":1}' as StringJsonc }) });
@@ -293,7 +331,7 @@ function emitArray({
 export function emitJsoncValue({
   value,
 }: {
-  readonly value: JsoncValue;
+  value: JsoncValue;
 },): string {
   /**
    * Leading lines for a top-level document comment.

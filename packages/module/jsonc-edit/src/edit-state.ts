@@ -89,6 +89,8 @@ export function parseJsoncEdit({
  *
  * @returns Canonical JSONC text.
  *
+ * @mutates state - `JSON.stringify` may invoke hooks on embedded plain JSON values.
+ *
  * @example
  * ```ts
  * jsoncStringify({ state: parseJsoncEdit({ source: '{"a":1}' as StringJsonc }) });
@@ -98,7 +100,7 @@ export function parseJsoncEdit({
 export function jsoncStringify({
   state,
 }: {
-  readonly state: JsoncEditState;
+  state: JsoncEditState;
 },): string {
   return emitJsoncValue({ value: state.root, },);
 }
