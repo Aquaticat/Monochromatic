@@ -434,6 +434,27 @@ The semantic-rule implementation and shared-configuration migration are complete
   archive writes,
   or root configuration writes;
   the host/provider and residual phases own those mixed boundaries;
+- the coercion phase centralizes arbitrary caught-value rendering in
+  `@monochromatic-dev/module-caught-value`;
+  `caughtValueText` preserves `Error.message` and exact JavaScript string conversion,
+  while `caughtValueStack` preserves available stack detail;
+  both expose conversion hooks through one authoritative `@mutates` contract;
+- the audited workspace-package catalogue maps both caught-value helpers to their exact first-argument effect,
+  so package-local semantic projects preserve fail-closed behavior without package-local formatter implementations;
+- `no-restricted-syntax/prefer-caught-value-text` rejects duplicate Error-and-fallback formatters while accepting
+  domain-specific alternate branches;
+- stable root process `proc_26` reports 239 opaque-effect diagnostics and no readonly preference,
+  dishonest declaration,
+  missing contract,
+  stale contract,
+  semantic bridge failure,
+  omitted callable summary,
+  global `String` coercion finding,
+  or duplicate caught-value formatter finding;
+  the full Oxlint command still fails on remaining opaque findings and broader current workspace diagnostics,
+  which belong to the host-provider,
+  residual,
+  and final-verification phases;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,
@@ -484,6 +505,8 @@ Verified package tasks:
 - `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types`;
 - `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint`;
 - `mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit`;
+- `mise run //packages/module/caught-value:buildAndTest`;
+- built-package consumer import and calls from `packages/dev-script/page-weight`;
 - `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:build:js:node`;
 - `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:types`;
 - `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint`;
@@ -505,11 +528,11 @@ Verified package tasks:
 - `mise run //packages/module/jsonc-edit:buildAndTest`;
 - `mise run //packages/git-policies/cli:build`;
 - `mise run //packages/git-policies/cli:test:unit`;
-- `OXLINT_THREADS=1 mise run lint:oxlint` in stable root process `proc_21`.
+- `OXLINT_THREADS=1 mise run lint:oxlint` in stable root processes `proc_21` and `proc_26`.
 
 Next action:
-resolve coercion effects,
-then host-provider and residual package effects;
+resolve host-provider effects,
+then residual package effects;
 rerun the repository sweep after those measured phases and complete consumer acceptance.
 
 ## Continuity contract
