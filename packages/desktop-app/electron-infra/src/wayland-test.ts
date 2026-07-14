@@ -103,6 +103,8 @@ function assertLinuxWaylandHost(): void {
  *
  * @param step - Boundary-test step to execute.
  *
+ * @mutates step - `JSON.stringify` may invoke accessors or proxy traps on expected state when timeout is reported.
+ *
  * @example
  * ```ts
  * await runBoundaryStep({ socketPath: '/tmp/nws.sock', statePath: '/tmp/state.json', step: { expected: { count: 0 } } });
@@ -181,6 +183,8 @@ async function captureBoundaryScreenshot(
  * @param statePathEnvironmentVariable - Environment variable receiving test state path.
  *
  * @param steps - State checkpoints and optional control commands.
+ *
+ * @mutates steps - `JSON.stringify` may invoke accessors or proxy traps on foreign expected state.
  *
  * @example
  * ```ts

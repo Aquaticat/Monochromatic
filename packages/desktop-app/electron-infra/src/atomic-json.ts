@@ -39,6 +39,8 @@ export type JsonObject = Record<string, JsonScalar>;
  *
  * @param value - JSON object to serialize.
  *
+ * @mutates value - `JSON.stringify` may invoke record accessors or proxy traps.
+ *
  * @example
  * ```ts
  * await writeJsonFileAtomically({ filePath: '/tmp/state.json', value: { ready: true } });

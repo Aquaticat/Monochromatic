@@ -184,6 +184,8 @@ function stateMatches(
  *
  * @param statePath - State file path written by Electron main process.
  *
+ * @mutates expected - `JSON.stringify` may invoke record accessors or proxy traps when timeout is reported.
+ *
  * @example
  * ```ts
  * await waitForObservedState({ statePath: '/tmp/state.json', expected: { count: 1 } });
