@@ -173,29 +173,19 @@ function emitRecord({
     === 0)
     return '{}';
   /**
+   * Canonical entry lines accumulated without another effect boundary.
+   */
+  const entryLines: string[] = [];
+  for (const entry of node.entries) {
+    entryLines.push(emitEntry({
+      entry,
+      indent: indent + 1,
+    },),);
+  }
+  /**
    * Entry lines joined with newlines.
    */
-  const inner = node.entries
-    .map(
-      /**
-       * Emits one record entry.
-       *
-       * @param entry - Entry that may contain effectful plain JSON.
-       *
-       * @returns canonical entry text.
-       *
-       * @mutates entry - `JSON.stringify` may invoke hooks on embedded plain JSON values.
-       */
-      function emitOneEntry(
-        entry: JsoncRecordEntry & { value: JsoncValue; },
-      ): string {
-        return emitEntry({
-          entry,
-          indent: indent + 1,
-        },);
-      },
-    )
-    .join('\n',);
+  const inner = entryLines.join('\n',);
   return `{\n${inner}\n${INDENT_UNIT.repeat(indent,)}}`;
 }
 
@@ -280,29 +270,19 @@ function emitArray({
     === 0)
     return '[]';
   /**
+   * Canonical element lines accumulated without another effect boundary.
+   */
+  const elementLines: string[] = [];
+  for (const element of node.elements) {
+    elementLines.push(emitElement({
+      element,
+      indent: indent + 1,
+    },),);
+  }
+  /**
    * Element lines joined with newlines.
    */
-  const inner = node.elements
-    .map(
-      /**
-       * Emits one array element.
-       *
-       * @param element - Element that may contain effectful plain JSON.
-       *
-       * @returns canonical element text.
-       *
-       * @mutates element - `JSON.stringify` may invoke hooks on embedded plain JSON values.
-       */
-      function emitOneElement(
-        element: JsoncValue & { kind: JsoncValue['kind']; },
-      ): string {
-        return emitElement({
-          element,
-          indent: indent + 1,
-        },);
-      },
-    )
-    .join('\n',);
+  const inner = elementLines.join('\n',);
   return `[\n${inner}\n${INDENT_UNIT.repeat(indent,)}]`;
 }
 
