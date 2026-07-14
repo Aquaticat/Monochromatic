@@ -5,7 +5,6 @@
  */
 
 import {
-  SignatureKind,
   SymbolFlags,
   TypeFlags,
   type Checker,
@@ -30,6 +29,10 @@ import {
   typeClaimsReadonlyProjection,
 } from './readonly-owner.ts';
 import { declarationIsReadonly, } from './readonly-declaration.ts';
+import {
+  CALLABLE_CAPABILITY,
+  typeHasCallableCapability,
+} from './readonly-callable-capability.ts';
 
 /**
  * Bit position of hidden TypeScript 7 mapped-property readonly state.
@@ -287,13 +290,8 @@ export function classifyReadonlyType({
         reason: 'broad object type may carry caller-defined properties, accessors, or proxy capability',
       },);
     }
-    if ((checker.getSignaturesOfType(current, SignatureKind.Call,).length > 0)
-      || (checker.getSignaturesOfType(current, SignatureKind.Construct,).length > 0)) {
-      return finish({
-        kind: 'opaque-capability',
-        reason: 'callable or constructable input can execute caller-defined behavior',
-      },);
-    }
+    if (typeHasCallableCapability({ checker, type: current, },))
+      return finish(CALLABLE_CAPABILITY,);
     if (!current.isObjectType())
       return finish(HONEST_READONLY,);
     /**
