@@ -19,24 +19,24 @@ import {
 /**
  * Fixed-transform dependencies exposed for deterministic failure tests.
  */
-export type FixedTransformDependencies = Readonly<{
+export type FixedTransformDependencies = {
   /**
    * Atomic-push transform.
    */
-  atomicPush: typeof atomicPush;
+  readonly atomicPush: typeof atomicPush;
   /**
    * Commit-only transform.
    */
-  commitOnly: typeof commitOnly;
+  readonly commitOnly: typeof commitOnly;
   /**
    * Commit escape detector.
    */
-  hasCommitOnlyEscapeHatch: typeof hasCommitOnlyEscapeHatch;
+  readonly hasCommitOnlyEscapeHatch: typeof hasCommitOnlyEscapeHatch;
   /**
    * Status-hints transform.
    */
-  statusHintsOff: typeof statusHintsOff;
-}>;
+  readonly statusHintsOff: typeof statusHintsOff;
+};
 
 /**
  * Canonical production fixed-transform dependencies.

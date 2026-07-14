@@ -57,11 +57,11 @@ function requiredDiffPart({
   parts,
   index,
   createError,
-}: Readonly<{
-  parts: readonly string[];
-  index: number;
-  createError: (message: string) => Error;
-}>,): string {
+}: {
+  readonly parts: readonly string[];
+  readonly index: number;
+  readonly createError: (message: string) => Error;
+},): string {
   /**
    * Metadata field at required position.
    */
@@ -94,10 +94,10 @@ function requiredDiffPart({
 export function parseRawDiffRecords({
   text,
   createError,
-}: Readonly<{
-  text: string;
-  createError: (message: string) => Error;
-}>,): readonly RawDiffRecord[] {
+}: {
+  readonly text: string;
+  readonly createError: (message: string) => Error;
+},): readonly RawDiffRecord[] {
   /**
    * Alternating metadata and path tokens, excluding terminal empty token.
    */

@@ -171,14 +171,14 @@ async function loadRelaxedTypeScript({
   record,
   recordedAt,
   warn,
-}: Readonly<{
-  registryRoot: string;
-  recordDirectory: string;
-  candidate: TrustCandidate;
-  record: TrustRecord;
-  recordedAt: string;
-  warn: (warning: TrustWarning,) => void;
-}>,): Promise<LoadedTrustedConfig> {
+}: {
+  readonly registryRoot: string;
+  readonly recordDirectory: string;
+  readonly candidate: TrustCandidate;
+  readonly record: TrustRecord;
+  readonly recordedAt: string;
+  readonly warn: (warning: TrustWarning,) => void;
+},): Promise<LoadedTrustedConfig> {
   if (await typeScriptMetadataUnchanged({
     candidate,
     record,
@@ -272,14 +272,14 @@ export async function loadRelaxedConfig({
   record,
   recordedAt,
   warn,
-}: Readonly<{
-  registryRoot: string;
-  recordDirectory: string;
-  candidate: TrustCandidate;
-  record: TrustRecord;
-  recordedAt: string;
-  warn: (warning: TrustWarning,) => void;
-}>,): Promise<LoadedTrustedConfig> {
+}: {
+  readonly registryRoot: string;
+  readonly recordDirectory: string;
+  readonly candidate: TrustCandidate;
+  readonly record: TrustRecord;
+  readonly recordedAt: string;
+  readonly warn: (warning: TrustWarning,) => void;
+},): Promise<LoadedTrustedConfig> {
   return record.format === 'mjs'
     ? await loadRelaxedMjs({
       registryRoot,

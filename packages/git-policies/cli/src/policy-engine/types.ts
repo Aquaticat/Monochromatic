@@ -17,35 +17,35 @@ import type { PolicyEvent, } from './events.ts';
 /**
  * Runtime-erased policy after option validation.
  */
-export type RuntimePolicyDefinition = Readonly<{
+export type RuntimePolicyDefinition = {
   /**
    * Effective built-in or namespaced policy ID.
    */
-  name: string;
+  readonly name: string;
   /**
    * Declared default severity.
    */
-  defaultSeverity: PolicySeverity;
+  readonly defaultSeverity: PolicySeverity;
   /**
    * Whether warning preserves enforcement semantics.
    */
-  warnSafe: boolean;
+  readonly warnSafe: boolean;
   /**
    * Applicable lifecycle triggers.
    */
-  triggers: readonly PolicyTrigger[];
+  readonly triggers: readonly PolicyTrigger[];
   /**
    * Optional runtime options schema.
    */
-  options?: Readonly<GenericSchema<unknown, unknown>>;
+  readonly options?: GenericSchema<unknown, unknown>;
   /**
    * Runtime policy callback receiving validated options.
    */
-  check: (input: Readonly<{
+  readonly check: (input: Readonly<{
     context: PolicyContext;
     options: unknown;
   }>,) => Promise<readonly PolicyFinding[]>;
-}>;
+};
 
 /**
  * Configuration accepted by engine invocation.

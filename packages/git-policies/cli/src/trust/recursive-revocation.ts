@@ -169,11 +169,11 @@ export async function revokeRecursiveTrust({
   registryRoot,
   identities,
   disclose,
-}: Readonly<{
-  registryRoot: string;
-  identities: readonly TrustIdentity[];
-  disclose: (text: string,) => void;
-}>,): Promise<RecursiveUntrustResult> {
+}: {
+  readonly registryRoot: string;
+  readonly identities: readonly TrustIdentity[];
+  readonly disclose: (text: string,) => void;
+},): Promise<RecursiveUntrustResult> {
   /**
    * Registry-wide lock serializes revocation against descendant enrollment.
    */

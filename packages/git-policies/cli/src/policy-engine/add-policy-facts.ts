@@ -46,36 +46,36 @@ const PRIVATE_DIRECTORY_MODE = 0o700;
 /**
  * Scoped private add candidate state.
  */
-export type AddPolicyFactsScope = Readonly<{
+export type AddPolicyFactsScope = {
   /**
    * Canonical repository root.
    */
-  repositoryRoot: string;
+  readonly repositoryRoot: string;
   /**
    * Exact would-be-index candidate facts.
    */
-  gitFacts: LazyPolicyGitFacts;
+  readonly gitFacts: LazyPolicyGitFacts;
   /**
    * Private workspace directory.
    */
-  directory: string;
+  readonly directory: string;
   /**
    * Private candidate index path.
    */
-  indexPath: string;
+  readonly indexPath: string;
   /**
    * Real index path that must remain unchanged during direct fix.
    */
-  realIndexPath: string;
+  readonly realIndexPath: string;
   /**
    * Candidate paths selected by caller scope.
    */
-  paths: readonly string[];
+  readonly paths: readonly string[];
   /**
    * Removes private index state.
    */
-  [Symbol.asyncDispose]: () => Promise<void>;
-}>;
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
+};
 
 /**
  * Resolves absolute Git administrative path.

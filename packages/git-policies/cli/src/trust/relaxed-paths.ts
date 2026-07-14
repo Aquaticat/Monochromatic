@@ -71,11 +71,11 @@ function entryMatches({
   entry,
   identity,
   warn,
-}: Readonly<{
-  entry: string;
-  identity: TrustIdentity;
-  warn: (warning: TrustWarning,) => void;
-}>,): boolean {
+}: {
+  readonly entry: string;
+  readonly identity: TrustIdentity;
+  readonly warn: (warning: TrustWarning,) => void;
+},): boolean {
   /**
    * First identity/path separator.
    */
@@ -139,11 +139,11 @@ export function relaxedPathMatches({
   raw,
   identity,
   warn,
-}: Readonly<{
-  raw?: string;
-  identity: TrustIdentity;
-  warn: (warning: TrustWarning,) => void;
-}>,): boolean {
+}: {
+  readonly raw?: string;
+  readonly identity: TrustIdentity;
+  readonly warn: (warning: TrustWarning,) => void;
+},): boolean {
   if ((raw === undefined) || (raw.length === 0))
     return false;
   return raw.split(',')

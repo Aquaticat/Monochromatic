@@ -24,14 +24,14 @@ export async function mapBounded<const Value, Result>({
   values,
   concurrency,
   map,
-}: Readonly<{
-  values: readonly Value[];
-  concurrency: number;
-  map: (input: Readonly<{
+}: {
+  readonly values: readonly Value[];
+  readonly concurrency: number;
+  readonly map: (input: Readonly<{
     value: Value;
     index: number;
   }>) => Promise<Result>;
-}>,): Promise<readonly Result[]> {
+},): Promise<readonly Result[]> {
   if ((concurrency < 1) || (!Number.isInteger(concurrency)))
     throw new TypeError('Bounded map concurrency must be a positive integer.',);
   /**

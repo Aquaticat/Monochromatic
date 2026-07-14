@@ -66,20 +66,20 @@ type HookCapture = Readonly<{
 /**
  * Disposable private probe directory.
  */
-type ProbeDirectory = Readonly<{
+type ProbeDirectory = {
   /**
    * Captured hook records directory.
    */
-  captureDirectory: string;
+  readonly captureDirectory: string;
   /**
    * Private hooks directory.
    */
-  hooksDirectory: string;
+  readonly hooksDirectory: string;
   /**
    * Removes complete probe state.
    */
-  [Symbol.asyncDispose]: () => Promise<void>;
-}>;
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
+};
 
 /**
  * Creates disposable private hook and capture directories.

@@ -178,12 +178,12 @@ export async function loadTrustedConfig({
   relaxedValue = process.env
     .CLI_GIT_NO_PARANOID,
   warn = emitTrustWarning,
-}: Readonly<{
-  discovered: DiscoveredConfig;
-  registryRoot: string;
-  relaxedValue?: string;
-  warn?: (warning: TrustWarning,) => void;
-}>,): Promise<LoadedTrustedConfig> {
+}: {
+  readonly discovered: DiscoveredConfig;
+  readonly registryRoot: string;
+  readonly relaxedValue?: string;
+  readonly warn?: (warning: TrustWarning,) => void;
+},): Promise<LoadedTrustedConfig> {
   await recoverProvenanceTransactions({ registryRoot, },);
   /**
    * Fresh live candidate compared with exact stored bytes.
@@ -359,11 +359,11 @@ export async function untrustConfig({
   discovered,
   registryRoot,
   disclose = omitUntrustDisclosure,
-}: Readonly<{
-  discovered: DiscoveredConfig;
-  registryRoot: string;
-  disclose?: TrustConsentAdapters['disclose'];
-}>,): Promise<RecursiveUntrustResult> {
+}: {
+  readonly discovered: DiscoveredConfig;
+  readonly registryRoot: string;
+  readonly disclose?: TrustConsentAdapters['disclose'];
+},): Promise<RecursiveUntrustResult> {
   /**
    * Fresh identity candidate used without execution.
    */
@@ -395,11 +395,11 @@ export async function untrustRepository({
   repositoryRoot,
   registryRoot,
   disclose = omitUntrustDisclosure,
-}: Readonly<{
-  repositoryRoot: string;
-  registryRoot: string;
-  disclose?: TrustConsentAdapters['disclose'];
-}>,): Promise<RecursiveUntrustResult> {
+}: {
+  readonly repositoryRoot: string;
+  readonly registryRoot: string;
+  readonly disclose?: TrustConsentAdapters['disclose'];
+},): Promise<RecursiveUntrustResult> {
   await recoverProvenanceTransactions({ registryRoot, },);
   /**
    * Exact records historically installed for repository root.
