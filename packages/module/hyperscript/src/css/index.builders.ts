@@ -35,7 +35,7 @@ export type {
  * // 'display:flex;gap:1rem'
  * ```
  */
-function serializeDecls(decls: object,): string {
+function serializeDecls<const Declarations extends object>(decls: Declarations,): string {
   /**
    * Accumulates property:value fragments so they can be joined with `;` once at the end.
    */
@@ -109,13 +109,13 @@ function hasBlock(options: AtRuleOptions,): boolean {
  * // 'display:flex;background:url(a)'
  * ```
  */
-function renderBody(
+function renderBody<const Declarations extends object>(
   {
     decls,
     raw,
     children,
   }: {
-    readonly decls?: object;
+    readonly decls?: Declarations;
     readonly raw?: string;
     readonly children?: readonly string[];
   },

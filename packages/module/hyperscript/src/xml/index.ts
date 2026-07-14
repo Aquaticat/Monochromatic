@@ -110,7 +110,7 @@ type XmlOptions = {
   /**
    * Attributes set as key="value" pairs (values are XML-escaped)
    */
-  readonly attrs?: Readonly<Record<string, string>>;
+  readonly attrs?: Record<string, string>;
   /**
    * Child XML strings to concatenate inside the element
    */
