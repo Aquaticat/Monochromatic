@@ -167,9 +167,7 @@ export type RefUpdatedMarker = Readonly<{
  *
  * @mutates value - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
  */
-function encodeJournal(
-  value: (PreparedTransactionJournal | RefUpdatedMarker) & { version: 1; },
-): Uint8Array {
+function encodeJournal(value: object,): Uint8Array {
   return new TextEncoder().encode(`${JSON.stringify(value,)}\n`,);
 }
 

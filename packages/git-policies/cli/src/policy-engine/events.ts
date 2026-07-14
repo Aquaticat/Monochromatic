@@ -24,7 +24,7 @@ const SCHEMA_VERSION = 1;
  * const event: FindingEvent = { schemaVersion: 1, sequence: 0, type: 'finding', trigger: 'pre-forward', policyId: 'require-root', severity: 'error', code: 'require-root/not-at-root', message: 'Not at root', fix: 'none' };
  * ```
  */
-export type FindingEvent = Readonly<{
+export type FindingEvent = {
   /**
    * Schema version.
    */
@@ -69,7 +69,7 @@ export type FindingEvent = Readonly<{
    * Whether correction remains available.
    */
   fix: 'none' | 'available';
-}>;
+};
 
 /**
  * Stable engine failure classification.
@@ -102,7 +102,7 @@ export type EngineFailureCode =
  * const event: EngineFailureEvent = { schemaVersion: 1, sequence: 0, type: 'engine-failure', code: 'policy-incomplete', message: 'Policy failed' };
  * ```
  */
-export type EngineFailureEvent = Readonly<{
+export type EngineFailureEvent = {
   /**
    * Schema version.
    */
@@ -135,7 +135,7 @@ export type EngineFailureEvent = Readonly<{
    * Repository path responsible for path-specific failure.
    */
   path?: RepositoryPath;
-}>;
+};
 
 /**
  * Landed commit retained after post-commit gate blocks backup.
@@ -145,7 +145,7 @@ export type EngineFailureEvent = Readonly<{
  * const event: CommitLandedEvent = { schemaVersion: 1, sequence: 1, type: 'commit-landed', oid: 'abc', outcome: 'post-commit-blocked', message: 'Commit remains local.' };
  * ```
  */
-export type CommitLandedEvent = Readonly<{
+export type CommitLandedEvent = {
   /**
    * Schema version.
    */
@@ -174,7 +174,7 @@ export type CommitLandedEvent = Readonly<{
    * Explicit retry-safe state explanation.
    */
   message: string;
-}>;
+};
 
 /**
  * Expected non-configurable fixed-core rejection.
@@ -184,7 +184,7 @@ export type CommitLandedEvent = Readonly<{
  * const event: CoreFindingEvent = { schemaVersion: 1, sequence: 0, type: 'core-finding', trigger: 'pre-forward', coreId: 'commit-only', code: 'commit-only/pathspec-required', message: 'Name a path.' };
  * ```
  */
-export type CoreFindingEvent = Readonly<{
+export type CoreFindingEvent = {
   /**
    * Schema version.
    */
@@ -217,7 +217,7 @@ export type CoreFindingEvent = Readonly<{
    * Human-readable rejection.
    */
   message: string;
-}>;
+};
 
 /**
  * Non-blocking warning about unsafe severity configuration.
@@ -227,7 +227,7 @@ export type CoreFindingEvent = Readonly<{
  * const event: ConfigurationWarningEvent = { schemaVersion: 1, sequence: 0, type: 'configuration-warning', trigger: 'pre-forward', policyId: 'add-explicit', code: 'warn-unsafe', message: 'Policy is warn-unsafe.' };
  * ```
  */
-export type ConfigurationWarningEvent = Readonly<{
+export type ConfigurationWarningEvent = {
   /**
    * Schema version.
    */
@@ -256,7 +256,7 @@ export type ConfigurationWarningEvent = Readonly<{
    * Human-readable warning.
    */
   message: string;
-}>;
+};
 
 /**
  * Successful policy correction summary.
@@ -266,7 +266,7 @@ export type ConfigurationWarningEvent = Readonly<{
  * const event: FixSummaryEvent = { schemaVersion: 1, sequence: 0, type: 'fix-summary', trigger: 'direct-fix', passes: 1, changedPaths: ['a.txt'] };
  * ```
  */
-export type FixSummaryEvent = Readonly<{
+export type FixSummaryEvent = {
   /**
    * Schema version.
    */
@@ -295,7 +295,7 @@ export type FixSummaryEvent = Readonly<{
    * Unique changed paths in Git byte order.
    */
   changedPaths: readonly RepositoryPath[];
-}>;
+};
 
 /**
  * Policy event supported by first engine slice.
@@ -318,7 +318,7 @@ export type PolicyEvent = CommitLandedEvent | ConfigurationWarningEvent | CoreFi
  *
  * @param changedPaths - unique Git-byte-ordered paths
  *
- * @returns immutable summary event
+ * @returns fresh summary event
  *
  * @example
  * ```ts
@@ -330,7 +330,7 @@ export function createFixSummaryEvent({
   trigger,
   passes,
   changedPaths,
-}: Omit<FixSummaryEvent, 'schemaVersion' | 'type'>,): FixSummaryEvent {
+}: Readonly<Omit<FixSummaryEvent, 'schemaVersion' | 'type'>>,): FixSummaryEvent {
   return {
     schemaVersion: SCHEMA_VERSION,
     sequence,
@@ -362,7 +362,7 @@ export function createFixSummaryEvent({
  *
  * @param fix - whether correction remains available
  *
- * @returns immutable event value
+ * @returns fresh event value
  *
  * @example
  * ```ts
@@ -379,7 +379,7 @@ export function createFindingEvent({
   path,
   location,
   fix,
-}: Omit<FindingEvent, 'schemaVersion' | 'type'>,): FindingEvent {
+}: Readonly<Omit<FindingEvent, 'schemaVersion' | 'type'>>,): FindingEvent {
   return {
     schemaVersion: SCHEMA_VERSION,
     sequence,
@@ -409,7 +409,7 @@ export function createFindingEvent({
  *
  * @param oid - exact landed commit object ID
  *
- * @returns immutable landed-commit event
+ * @returns fresh landed-commit event
  *
  * @example
  * ```ts
@@ -482,7 +482,7 @@ export function createCoreFindingEvent({
  *
  * @param policyId - warn-unsafe policy identifier
  *
- * @returns immutable warning event
+ * @returns fresh warning event
  *
  * @example
  * ```ts
@@ -524,7 +524,7 @@ export function createConfigurationWarningEvent({
  *
  * @param path - optional repository path responsible for failure
  *
- * @returns immutable event value
+ * @returns fresh event value
  *
  * @example
  * ```ts
@@ -538,7 +538,7 @@ export function createEngineFailureEvent({
   trigger,
   policyId,
   path,
-}: Omit<EngineFailureEvent, 'schemaVersion' | 'type'>,): EngineFailureEvent {
+}: Readonly<Omit<EngineFailureEvent, 'schemaVersion' | 'type'>>,): EngineFailureEvent {
   return {
     schemaVersion: SCHEMA_VERSION,
     sequence,
@@ -565,24 +565,14 @@ export function createEngineFailureEvent({
  * renderPolicyEvents([]); // ''
  * ```
  */
-export function renderPolicyEvents(
-  events: readonly (PolicyEvent & { schemaVersion: number; })[],
-): string {
+export function renderPolicyEvents(events: readonly PolicyEvent[],): string {
   if (events.length === 0)
     return '';
-  return `${events.map(
-    /**
-     * Serializes one policy event.
-     *
-     * @param event - Event that may expose serialization hooks.
-     *
-     * @returns compact event JSON.
-     *
-     * @mutates event - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
-     */
-    function serializePolicyEvent(event,) {
-      return JSON.stringify(event,);
-    },
-  )
-    .join('\n',)}\n`;
+  /**
+   * Compact event lines accumulated without another effect boundary.
+   */
+  const lines: string[] = [];
+  for (const event of events)
+    lines.push(JSON.stringify(event,),);
+  return `${lines.join('\n',)}\n`;
 }

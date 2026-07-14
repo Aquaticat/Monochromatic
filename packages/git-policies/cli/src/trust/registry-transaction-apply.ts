@@ -276,25 +276,18 @@ export async function settleProvenanceJournal({
       },),);
     },
   };
-  await Promise.all(journal.operations
-    .map(
-      /**
-       * Applies one retained journal operation.
-       *
-       * @param operation - Operation that may expose serialization hooks.
-       *
-       * @mutates operation - `JSON.stringify` may invoke hooks on retained authorizing roots.
-       */
-      function applyJournalOperation(
-        operation: ProvenanceOperation & { identity: ProvenanceOperation['identity']; },
-      ): Promise<void> {
-        return applyOperation({
-          registryRoot,
-          transactionId: journal.transactionId,
-          operation,
-        },);
-      },
-    ),);
+  /**
+   * Concurrent operation applications accumulated without another effect boundary.
+   */
+  const operationApplications: Promise<void>[] = [];
+  for (const operation of journal.operations) {
+    operationApplications.push(applyOperation({
+      registryRoot,
+      transactionId: journal.transactionId,
+      operation,
+    },),);
+  }
+  await Promise.all(operationApplications,);
   await assertSafeRegistryDirectory({
     registryRoot,
     targetDirectory: journalDirectory,

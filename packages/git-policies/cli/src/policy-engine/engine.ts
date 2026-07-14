@@ -306,7 +306,7 @@ export async function runPolicyEngine({
    * Whether fixed core produced expected blocking rejection.
    */
   const coreBlocked = fixedStage.events
-    .some(function isCoreFinding(event,) {
+    .some(function isCoreFinding(event: Readonly<PolicyEvent>,) {
     return event.type === 'core-finding';
   },);
   if ((!fixedStage.complete) || (coreBlocked && (!controls.keepGoing))) {
@@ -365,7 +365,7 @@ export async function runPolicyEngine({
   /**
    * Whether stable pass contains any blocking policy or core finding.
    */
-  const hasError = events.some(function isBlockingEvent(event,) {
+  const hasError = events.some(function isBlockingEvent(event: Readonly<PolicyEvent>,) {
     return (event.type === 'core-finding')
       || ((event.type === 'finding') && (event.severity === 'error'));
   },);
