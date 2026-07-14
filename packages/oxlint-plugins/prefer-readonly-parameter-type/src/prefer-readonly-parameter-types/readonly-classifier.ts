@@ -34,6 +34,10 @@ import {
   CALLABLE_CAPABILITY,
   typeHasCallableCapability,
 } from './readonly-callable-capability.ts';
+import {
+  combineClassifications,
+  HONEST_READONLY,
+} from './readonly-classification-combine.ts';
 
 /**
  * Bit position of hidden TypeScript 7 mapped-property readonly state.
@@ -105,11 +109,6 @@ export type ReadonlyClassification =
   };
 
 /**
- * Honest readonly singleton result.
- */
-const HONEST_READONLY: ReadonlyClassification = { kind: 'honest-readonly', };
-
-/**
  * Determines whether property symbol is declared or mapped readonly.
  *
  * @param project - TypeScript project resolving declaration handles.
@@ -155,28 +154,6 @@ export function propertyIsReadonly({
       return (declaration !== undefined)
         && declarationIsReadonly(declaration,);
     },);
-}
-
-/**
- * Combines constituent classifications by diagnostic priority.
- *
- * @param classifications - Results from union or intersection constituents.
- *
- * @returns highest-priority non-readonly classification or honest readonly.
- */
-function combineClassifications(
-  classifications: readonly ReadonlyClassification[],
-): ReadonlyClassification {
-  return classifications.find(function dishonest(result,): boolean {
-    return result.kind === 'dishonest-readonly';
-  },)
-    ?? classifications.find(function opaque(result,): boolean {
-      return result.kind === 'opaque-capability';
-    },)
-    ?? classifications.find(function mutable(result,): boolean {
-      return result.kind === 'mutable';
-    },)
-    ?? HONEST_READONLY;
 }
 
 /**
@@ -291,7 +268,10 @@ export function classifyReadonlyType({
         reason: 'broad object type may carry caller-defined properties, accessors, or proxy capability',
       },);
     }
-    if (typeHasCallableCapability({ checker, type: current, },))
+    if (typeHasCallableCapability({
+      checker,
+      type: current,
+    },))
       return finish(CALLABLE_CAPABILITY,);
     if (!current.isObjectType())
       return finish(HONEST_READONLY,);
