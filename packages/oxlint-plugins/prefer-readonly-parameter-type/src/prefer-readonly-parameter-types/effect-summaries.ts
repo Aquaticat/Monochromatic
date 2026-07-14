@@ -183,17 +183,9 @@ export function buildEffectSummaryIndex({
   readonly analysisRoot?: string;
 },): EffectSummaryIndex {
   /**
-   * Active-source identity needed only when project metadata would otherwise
-   * exclude current source from completed summary index.
+   * Process cache identity including optional external analysis scope.
    */
-  const activeExternalSourceIdentity = project.program
-    .isSourceFileFromExternalLibrary(activeSourceFile,)
-    ? activeSourceFile.fileName
-    : '';
-  /**
-   * Process cache identity including analysis and active inclusion scopes.
-   */
-  const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}\0${activeExternalSourceIdentity}`;
+  const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}`;
   /**
    * Stable configured project membership for process-local reuse.
    */
@@ -203,9 +195,38 @@ export function buildEffectSummaryIndex({
     activeSourceFile.fileName,
   ],),].toSorted();
   /**
-   * Project file-list identity checked without rescanning semantic bodies.
+   * Exact source set admitted by current ownership and active-source policy.
    */
-  const fileListDigest = contentDigest(fileNames.join('\0',),);
+  const indexedSourceFiles = fileNames.flatMap(function retainIndexedSource(fileName,): SourceFile[] {
+    /**
+     * Program source matching configured path or exact active wrapper.
+     */
+    const sourceFile = fileName === activeSourceFile.fileName
+      ? activeSourceFile
+      : project.program
+        .getSourceFile(fileName,);
+    if ((sourceFile === undefined) || sourceFile.isDeclarationFile)
+      return [];
+    if (sourceFile.fileName === activeSourceFile.fileName)
+      return [sourceFile,];
+    if (!project
+      .program
+      .isSourceFileFromExternalLibrary(sourceFile,))
+      return [sourceFile,];
+    if ((analysisRoot !== undefined) && fileName.startsWith(analysisRoot,))
+      return [sourceFile,];
+    return [];
+  },);
+  /**
+   * Complete inclusion-scope identity for process-local final index.
+   */
+  const indexedFileListDigest = contentDigest(
+    indexedSourceFiles
+      .map(function sourceIdentity(sourceFile,): string {
+        return sourceFile.fileName;
+      },)
+      .join('\0',),
+  );
   /**
    * Current process snapshot signatures for every project source.
    */
@@ -219,7 +240,7 @@ export function buildEffectSummaryIndex({
    */
   const cachedIndex = cachedFinalEffectIndex({
     projectKey: cacheProjectKey,
-    fileListDigest,
+    fileListDigest: indexedFileListDigest,
     sourceSignatures,
   },);
   if (cachedIndex !== FINAL_EFFECT_INDEX_CACHE_MISS)
@@ -245,31 +266,11 @@ export function buildEffectSummaryIndex({
    * Current owned source paths used to prune rename and deletion residue.
    */
   const activeFiles = new Set<string>();
-  fileNames.forEach(function gatherSource(fileName,): void {
+  indexedSourceFiles.forEach(function gatherSource(sourceFile,): void {
     /**
-     * Program source file matching configured file name, using active wrapper
-     * shared with verifier when identities match.
+     * Exact source path participating in direct and propagated summaries.
      */
-    const sourceFile = fileName === activeSourceFile.fileName
-      ? activeSourceFile
-      : project.program
-        .getSourceFile(fileName,);
-    if ((sourceFile === undefined) || sourceFile.isDeclarationFile)
-      return;
-    /**
-     * Whether source is current lint target whose ownership is already proven
-     * by configured-project discovery.
-     */
-    const isActiveSource = sourceFile.fileName === activeSourceFile.fileName;
-    /**
-     * Whether configured dependency source belongs to external library graph.
-     */
-    const isExternalLibrary = project.program
-      .isSourceFileFromExternalLibrary(sourceFile,);
-    if ((!isActiveSource)
-      && isExternalLibrary
-      && ((analysisRoot === undefined) || (!fileName.startsWith(analysisRoot,))))
-      return;
+    const { fileName, } = sourceFile;
     activeFiles.add(fileName,);
     /**
      * Direct summaries reused when exact source text remains unchanged.
@@ -369,7 +370,7 @@ export function buildEffectSummaryIndex({
   };
   cacheFinalEffectIndex({
     projectKey: cacheProjectKey,
-    fileListDigest: projectFingerprint.fileListDigest,
+    fileListDigest: indexedFileListDigest,
     sourceSignatures,
     index,
   },);

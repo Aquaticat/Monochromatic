@@ -154,9 +154,12 @@ The root `tsconfig.json` decodes workspace package sources while classifying the
 An index built for a root config source therefore excluded `bin.ts`.
 The unchanged file list and source signatures then let the cache return that index when `bin.ts` became active.
 
-The fixed-point cache key now adds the active source path only when TypeScript classifies that active source as external.
-Ordinary project sources retain cross-file index reuse.
-An external-classified active source gets the distinct index required by its forced inclusion.
+Fixed-point cache validity now fingerprints the exact source set admitted by ownership,
+external-library,
+active-source,
+and package-analysis policies.
+Ordinary project sources retain cross-file index reuse because their admitted set is stable.
+Making an external-classified source active changes that set and forces a new index without retaining one full index per active path.
 A regression creates an installed TypeScript package,
 builds an index that excludes it,
 then proves that making its source active builds a summary for its callable.
