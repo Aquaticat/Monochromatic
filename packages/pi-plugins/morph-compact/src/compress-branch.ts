@@ -11,7 +11,7 @@
  * which is unavailable outside it. The new session starts fresh without it.
  */
 
-import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type {
   CompactionEntry,
   ContextUsage,
@@ -166,7 +166,7 @@ function walkBranch(branchEntries: readonly SessionEntry[],): {
  * ```
  */
 export async function compressBranch(
-  params: ReadonlyDeep<CompressBranchParams>,
+  params: ForeignBorrowed<CompressBranchParams>,
 ): Promise<string> {
   /**
    * Destructured caller params used in the compression body.

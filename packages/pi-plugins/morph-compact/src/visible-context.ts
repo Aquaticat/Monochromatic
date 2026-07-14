@@ -7,6 +7,7 @@
 import type {
   ContextEvent,
   ExtensionAPI,
+  MessageRenderer,
   Theme,
 } from '@earendil-works/pi-coding-agent';
 import {
@@ -14,6 +15,7 @@ import {
   type Component,
   Text,
 } from '@earendil-works/pi-tui';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 
 //region Constants
@@ -249,7 +251,7 @@ export function sendVisibleCompactContext(
  * isVisibleMorphContextMessage(message);
  * ```
  */
-function isVisibleMorphContextMessage(message: ReadonlyDeep<ContextMessage>,): boolean {
+function isVisibleMorphContextMessage(message: ForeignBorrowed<ContextMessage>,): boolean {
   return (message.role
     === 'custom')
     && (message.customType
@@ -275,7 +277,7 @@ function isVisibleMorphContextMessage(message: ReadonlyDeep<ContextMessage>,): b
 export function filterVisibleContextMessages(
   {
     messages,
-  }: ReadonlyDeep<Readonly<{
+  }: ForeignBorrowed<Readonly<{
     readonly messages: readonly ContextMessage[];
   }>>,
 ): ContextMessages {
@@ -439,8 +441,8 @@ export function registerVisibleContextRenderer(
   pi.registerMessageRenderer<MorphContextMessageDetails>(
     MORPH_CONTEXT_MESSAGE_TYPE,
     function renderMessage(
-      message,
-      options,
+      message: ForeignBorrowed<Parameters<MessageRenderer<MorphContextMessageDetails>>[0]>,
+      options: ForeignBorrowed<Parameters<MessageRenderer<MorphContextMessageDetails>>[1]>,
       theme,
     ) {
       return renderVisibleContextMessage({
