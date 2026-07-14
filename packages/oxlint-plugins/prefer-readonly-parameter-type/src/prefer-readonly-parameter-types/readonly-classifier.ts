@@ -5,7 +5,6 @@
  */
 
 import {
-  ModifierFlags,
   SignatureKind,
   SymbolFlags,
   TypeFlags,
@@ -30,6 +29,7 @@ import {
   readonlyOwnerName,
   typeClaimsReadonlyProjection,
 } from './readonly-owner.ts';
+import { declarationIsReadonly, } from './readonly-declaration.ts';
 
 /**
  * Bit position of hidden TypeScript 7 mapped-property readonly state.
@@ -104,24 +104,6 @@ export type ReadonlyClassification =
  * Honest readonly singleton result.
  */
 const HONEST_READONLY: ReadonlyClassification = { kind: 'honest-readonly', };
-
-/**
- * Reads declaration modifier flags without assuming every node supports modifiers.
- *
- * @param value - TypeScript declaration node.
- *
- * @returns whether declaration carries readonly modifier.
- */
-function declarationIsReadonly(value: object,): boolean {
-  if (!('modifierFlags' in value))
-    return false;
-  /**
-   * Runtime-narrowed modifier flags on declaration node.
-   */
-  const { modifierFlags, } = value;
-  return ((typeof modifierFlags) === 'number')
-    && ((modifierFlags & ModifierFlags.Readonly) !== 0);
-}
 
 /**
  * Determines whether property symbol is declared or mapped readonly.
