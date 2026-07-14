@@ -27,6 +27,7 @@
     "@lezer/xml": "catalog:",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-toml-edit": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "chokidar": "catalog:",
     "dot-prop": "catalog:",
     "find-up": "catalog:",

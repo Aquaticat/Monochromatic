@@ -231,7 +231,7 @@ export function scopedConfigObject(
   const omitted = (scoped.configOmitKeys ?? [])
     .reduce<JsonObject>(
       function dropKey(
-        accumulator,
+        accumulator: Readonly<JsonObject>,
         key,
       ): JsonObject {
       return omitJsonKey({

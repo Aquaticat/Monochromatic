@@ -1,9 +1,12 @@
+import type { Dirent, } from 'node:fs';
 import { readdir, } from 'node:fs/promises';
 import { homedir, } from 'node:os';
 import {
   basename,
   join,
 } from 'node:path';
+
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { caughtErrorHasCode, } from '../io/error.ts';
 import { trackGlob, } from '../tracker.ts';
@@ -273,10 +276,10 @@ async function trackedProductDirectories(
      * Absolute paths of the product subdirectories.
      */
     const paths = entries
-      .filter(function keepDirectory(entry,): boolean {
+      .filter(function keepDirectory(entry: ForeignBorrowed<Dirent>,): boolean {
         return entry.isDirectory();
       },)
-      .map(function toProductDirectory(entry,): string {
+      .map(function toProductDirectory(entry: ForeignBorrowed<Dirent>,): string {
         return join(
           jetBrainsConfigDirectory,
           entry.name,

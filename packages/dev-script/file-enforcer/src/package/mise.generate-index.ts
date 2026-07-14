@@ -299,7 +299,7 @@ function isMiseBackendPackage(effname: string,): boolean {
  */
 type RepologyProject = {
   readonly effname: string;
-  readonly repos: Record<string, string>;
+  readonly repos: Readonly<Record<string, string>>;
 };
 
 /**
