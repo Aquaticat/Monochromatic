@@ -183,20 +183,20 @@ export type TrustWarning = Readonly<{
 /**
  * Trust consent and output adapters.
  */
-export type TrustConsentAdapters = Readonly<{
+export type TrustConsentAdapters = {
   /**
    * Writes human-readable disclosure to stderr boundary.
    */
-  disclose: (text: string,) => void;
+  readonly disclose: (text: string,) => void;
   /**
    * Requests explicit interactive affirmative response.
    */
-  prompt: () => Promise<boolean>;
+  readonly prompt: () => Promise<boolean>;
   /**
    * Supplies audit timestamp.
    */
-  now: () => Date;
-}>;
+  readonly now: () => Date;
+};
 /**
  * Loaded trusted configuration ready for policy execution.
  */

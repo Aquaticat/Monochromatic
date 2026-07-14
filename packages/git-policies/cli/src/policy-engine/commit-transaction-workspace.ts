@@ -40,68 +40,68 @@ export const TRANSACTION_DIRECTORY_NAME = 'cli-git-transaction';
 /**
  * Owned private transaction state.
  */
-export type CommitTransactionWorkspace = Readonly<{
+export type CommitTransactionWorkspace = {
   /**
    * Durable transaction directory outside worktree content.
    */
-  directory: string;
+  readonly directory: string;
   /**
    * Private commit index.
    */
-  commitIndexPath: string;
+  readonly commitIndexPath: string;
   /**
    * Prepared post-commit index.
    */
-  postIndexPath: string;
+  readonly postIndexPath: string;
   /**
    * Exact original index snapshot.
    */
-  originalIndexPath: string;
+  readonly originalIndexPath: string;
   /**
    * Durable transaction journal.
    */
-  journalPath: string;
+  readonly journalPath: string;
   /**
    * Private nonce-bearing reflog action for post-crash attribution.
    */
-  reflogAction: string;
+  readonly reflogAction: string;
   /**
    * Real index path.
    */
-  realIndexPath: string;
+  readonly realIndexPath: string;
   /**
    * Real Git lock path.
    */
-  lockPath: string;
+  readonly lockPath: string;
   /**
    * Filesystem identity of owned lock.
    */
-  lockFsId: string;
+  readonly lockFsId: string;
   /**
    * Device identity of owned lock object.
    */
-  lockDevice: string;
+  readonly lockDevice: string;
   /**
    * Inode identity of owned lock object.
    */
-  lockInode: string;
+  readonly lockInode: string;
   /**
    * Marks ref advancement so disposal preserves recovery artifacts.
    */
-  preserveForRecovery: () => void;
+  readonly preserveForRecovery: () => void;
   /**
    * Marks durable completion so disposal removes recovery artifacts.
    */
-  finishTransaction: () => void;
+  readonly finishTransaction: () => void;
   /**
    * Atomically installs private index through held Git lock.
    */
-  installIndex: (sourcePath: string) => Promise<void>;
+  readonly installIndex: (sourcePath: string) => Promise<void>;
   /**
    * Removes private state unless recovery owns it.
    */
-  [Symbol.asyncDispose]: () => Promise<void>;
-}>;
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
+};
 
 /**
  * Resolves absolute Git-provided path.

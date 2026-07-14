@@ -46,21 +46,21 @@ export type PushUpdate = Readonly<{
 /**
  * Lazy Git facts memoized for one candidate-state version. @example `const candidates = await context.git.candidates();`
  */
-export type LazyPolicyGitFacts = Readonly<{
+export type LazyPolicyGitFacts = {
   /**
    * Loads candidate files.
    */
-  candidates: () => Promise<readonly CandidateFile[]>;
+  readonly candidates: () => Promise<readonly CandidateFile[]>;
   /**
    * Loads HEAD object ID, or absence sentinel before first commit.
    */
-  headOid: () => Promise<GitObjectId | AbsentGitValue>;
+  readonly headOid: () => Promise<GitObjectId | AbsentGitValue>;
   /**
    * Loads landed commit ID, or absence sentinel before command completion.
    */
-  landedCommitOid: () => Promise<GitObjectId | AbsentGitValue>;
+  readonly landedCommitOid: () => Promise<GitObjectId | AbsentGitValue>;
   /**
    * Loads push updates.
    */
-  pushUpdates: () => Promise<readonly PushUpdate[]>;
-}>;
+  readonly pushUpdates: () => Promise<readonly PushUpdate[]>;
+};

@@ -56,15 +56,15 @@ export type PreparedPair = Readonly<{
 /**
  * Scenario requiring fresh state before each command pair.
  */
-export type PreparedPairedScenario = Readonly<{
+export type PreparedPairedScenario = {
   /**
    * Stable scenario identity.
    */
-  id: LifecycleScenarioId;
+  readonly id: LifecycleScenarioId;
   /**
    * Builds next equivalent direct and wrapped requests.
    */
-  prepare: (input: Readonly<{
+  readonly prepare: (input: Readonly<{
     /**
      * Unique state sequence.
      */
@@ -74,7 +74,7 @@ export type PreparedPairedScenario = Readonly<{
      */
     fixture: LifecycleFixture;
   }>,) => Promise<PreparedPair>;
-}>;
+};
 
 /**
  * Creates one same-command pair over prepared repository state.
