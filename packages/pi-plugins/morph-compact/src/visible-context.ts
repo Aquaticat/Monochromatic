@@ -277,9 +277,9 @@ function isVisibleMorphContextMessage(message: ForeignBorrowed<ContextMessage>,)
 export function filterVisibleContextMessages(
   {
     messages,
-  }: ForeignBorrowed<Readonly<{
-    readonly messages: readonly ContextMessage[];
-  }>>,
+  }: Readonly<{
+    readonly messages: ForeignBorrowed<readonly ContextMessage[]>;
+  }>,
 ): ContextMessages {
   return messages.filter(function keepNonVisibleMorphContextMessage(message,) {
     return !isVisibleMorphContextMessage(message,);
