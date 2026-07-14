@@ -108,8 +108,12 @@ export function createOpfsSink(): Sink {
    * Writes a single record as a JSONL line to the OPFS stream.
    *
    * @param record - Log record to write.
+   *
+   * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
-  async function write(record: LogRecord,): Promise<void> {
+  async function write(
+    record: LogRecord & { message: LogRecord['message']; },
+  ): Promise<void> {
     if (!state.writable)
       return;
 

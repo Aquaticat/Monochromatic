@@ -271,8 +271,12 @@ export function createFileSink(): Sink {
    * Writes a single record as a JSONL line to the resolved log file.
    *
    * @param record - Log record to write.
+   *
+   * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
-  async function write(record: LogRecord,): Promise<void> {
+  async function write(
+    record: LogRecord & { message: LogRecord['message']; },
+  ): Promise<void> {
     // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath/appendFile are optional (unset before verification); checking presence
     if ((!state.filePath) || (!state.appendFile))
       return;

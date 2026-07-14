@@ -211,8 +211,12 @@ export function createSessionStorageSink(): Sink {
    * needed here.
    *
    * @param record - Log record to persist.
+   *
+   * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
-  function write(record: LogRecord,): Promise<void> {
+  function write(
+    record: LogRecord & { message: LogRecord['message']; },
+  ): Promise<void> {
     /**
      * Serialized record; computed once so eviction retries re-set the same value without re-stringifying.
      */
