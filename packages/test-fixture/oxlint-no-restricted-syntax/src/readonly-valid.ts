@@ -129,6 +129,25 @@ export function filterAliasedForeignFixtureTree(
 }
 
 /**
+ * Sorts and filters foreign descendants while preserving ownership.
+ *
+ * @param tree - Root handle supplied by foreign parser-like API.
+ *
+ * @returns sorted children carrying non-empty values.
+ */
+export function sortForeignFixtureTree(
+  tree: ForeignBorrowed<ForeignFixtureTree>,
+): readonly ForeignFixtureChild[] {
+  return tree.children
+    .toSorted(function byValueLength(left, right,) {
+      return left.value.length - right.value.length;
+    },)
+    .filter(function retainSortedNonEmptyChild(child,) {
+      return child.value.length > 0;
+    },);
+}
+
+/**
  * Reads first foreign descendant reached through synchronous iteration.
  *
  * @param tree - Root handle supplied by foreign parser-like API.

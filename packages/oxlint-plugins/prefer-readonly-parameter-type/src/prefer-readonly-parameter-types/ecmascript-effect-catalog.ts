@@ -89,7 +89,6 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
      */
     const primitiveElementObservations = [
       'join',
-      'toSorted',
     ].map(function primitiveArrayObservation(member,): IntrinsicEffectEntry {
       return {
         provenance: { kind: 'ecmascript', },
@@ -138,6 +137,27 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       };
     },);
     /**
+     * Sorted copy whose comparator receives receiver values while default
+     * comparison may invoke opaque element coercion hooks.
+     */
+    const sortedCopyObservation: IntrinsicEffectEntry = {
+      provenance: { kind: 'ecmascript', },
+      ownerType,
+      member: 'toSorted',
+      targets: [],
+      opaqueTargets: [{ kind: 'receiver', },],
+      callbacks: [{
+        argumentIndex: 0,
+        receiverParameterIndexes: [
+          0,
+          1,
+        ],
+      },],
+      receiverValuesReachResult: true,
+      evidence: 'ECMA-262 commit 1355a23e Array.prototype.toSorted copy, comparator, and default coercion algorithms',
+      authority: ecma262Authority({ algorithm: 'Array.prototype.toSorted', },),
+    };
+    /**
      * Array reduction whose callback receives current receiver value and array.
      */
     const reduceObservation: IntrinsicEffectEntry = {
@@ -159,6 +179,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ...observations,
       ...primitiveElementObservations,
       ...callbackObservations,
+      sortedCopyObservation,
       reduceObservation,
     ];
   },),

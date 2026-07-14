@@ -131,9 +131,9 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.some(function helperRemainsOwned(message,): boolean {
+      expect(messages.filter(function ownedChildDiagnostic(message,): boolean {
         return message.startsWith('Parameter "child" should be readonly',);
-      },),).toBe(true,);
+      },).length,).toBe(2,);
       expect(messages.some(function boundaryRemainsOwned(message,): boolean {
         return message.startsWith('Parameter "tree" should be readonly',);
       },),).toBe(true,);
