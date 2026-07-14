@@ -9,6 +9,8 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
 import {
   SPAWN_EXTENSION_PATH_ENV,
   SPAWN_ID_ENV,
@@ -75,7 +77,7 @@ const monitorTimers = new WeakMap<ExtensionAPI, ReturnType<typeof setInterval>>(
  * { "packages": ["./packages/pi-plugins/spawn"] }
  * ```
  */
-export default function spawnPi(pi: ExtensionAPI,): void {
+export default function spawnPi(pi: ForeignBorrowed<ExtensionAPI>,): void {
   pi.on(
     'session_start',
     async function handleSessionStart(
