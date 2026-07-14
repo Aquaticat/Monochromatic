@@ -78,6 +78,17 @@ export function composeAbortSignals(signals: readonly AbortSignal[],): AbortSign
 }
 
 /**
+ * Creates a signal from a primitive timeout delay.
+ *
+ * @param milliseconds - Delay before abort.
+ *
+ * @returns Owned timeout signal.
+ */
+export function timeoutAbortSignal(milliseconds: number,): AbortSignal {
+  return AbortSignal.timeout(milliseconds,);
+}
+
+/**
  * Accepts mutable structural data for classifier fixture.
  *
  * @param mutableObject - Writable structural data.

@@ -1,4 +1,4 @@
-# TypeScript 7.0.2 anonymous constructor typing hides `AbortSignal.any` effects from exact Oxlint matching
+# TypeScript 7.0.2 anonymous constructor typing hides `AbortSignal.any` and `timeout` effects from exact Oxlint matching
 
 ## Symptom
 
@@ -19,6 +19,11 @@ A second problem remains after exact identity recovery:
 `AbortSignal.any` changes hidden dependency state on supplied signals.
 It is not an observational zero-effect call.
 
+The same anonymous constructor owns `AbortSignal.timeout`.
+Without its own audited entry,
+the rule reported primitive delay inputs as unresolved host effects
+even though the delay cannot carry caller-owned state.
+
 ## Root cause
 
 TypeScript commit `168e7015edf98244febc8f4ae450b673b5d195d7` declares the constructor object as an ambient variable
@@ -31,14 +36,19 @@ declare var AbortSignal: {
     new(): AbortSignal;
 ```
 
-The `any` member is inside that anonymous type literal at
-`internal/bundled/libs/lib.dom.d.ts:3418` to `3422`:
+The `any` and `timeout` members are inside that anonymous type literal at
+`internal/bundled/libs/lib.dom.d.ts:3418` to `3428`:
 
 ```typescript
 /**
  * The **`AbortSignal.any()`** static method takes an iterable of abort signals and returns an AbortSignal.
  */
 any(signals: AbortSignal[]): AbortSignal;
+/**
+ * The **`AbortSignal.timeout()`** static method returns an AbortSignal that will automatically abort
+ * after a specified time.
+ */
+timeout(milliseconds: number): AbortSignal;
 ```
 
 As a result,
@@ -78,6 +88,23 @@ The rule must therefore target the supplied signal argument.
 That proven effect permits a mutable parameter type without requiring `@mutates`;
 a present contract must describe the dependency relation accurately.
 
+The same DOM source defines `AbortSignal.timeout` at `dom.bs:2027` to `2045`:
+
+```html
+<p>The static <dfn method for=AbortSignal><code>timeout(<var>milliseconds</var>)</code></dfn> method
+steps are:
+
+<ol>
+ <li><p>Let <var>signal</var> be a new {{AbortSignal}} object.
+...
+ <li><p>Return <var>signal</var>.
+</ol>
+```
+
+The algorithm allocates and schedules an owned signal from a primitive delay.
+It neither mutates nor retains caller-owned object state,
+so its exact catalog target list is empty.
+
 ## Verification
 
 The external sources under test are:
@@ -97,6 +124,7 @@ mise run //packages/cli/git-clone-size:lint:oxlint
 ### Patterns that now work
 
 - Exact `AbortSignal.any` resolves to DOM owner `AbortSignal` and member `any`.
+- Exact `AbortSignal.timeout` resolves to the same owner with no caller-owned effect target.
 - Exact `TaskSignal.any` cannot match the `AbortSignal` entry merely because both use an anonymous inline type.
 - Package-local anonymous `const` fixtures retain owner `__type` and existing package catalog identities.
 - `packages/cli/git-clone-size/src/stream.ts` declares the dependency mutation on `options.signal`,
@@ -110,15 +138,22 @@ mise run //packages/cli/git-clone-size:lint:oxlint
 
 ## Verified workarounds
 
-Use exact ambient-owner recovery plus an argument mutation target:
+Use exact ambient-owner recovery with distinct effects for both methods:
 
 ```typescript
 {
   provenance: { kind: 'dom' },
   ownerType: 'AbortSignal',
   member: 'any',
-  targets: [{ kind: 'argument', index: 0 }],
+  opaqueTargets: [{ kind: 'argument', index: 0 }],
   evidence: 'DOM commit 5796f716 AbortSignal.any stores dependent-signal relations on supplied signals',
+},
+{
+  provenance: { kind: 'dom' },
+  ownerType: 'AbortSignal',
+  member: 'timeout',
+  targets: [],
+  evidence: 'DOM commit 5796f716 AbortSignal.timeout creates an owned signal from primitive delay',
 }
 ```
 
@@ -137,7 +172,8 @@ Its tradeoff is maintaining a public effect contract that the rule does not requ
 
 - Cataloging DOM owner `__type` and member `any` can bless unrelated anonymous constructor methods.
 - Recovering every enclosing variable declaration changes package-local anonymous `const` identities.
-- Recording no mutation targets hides the source signal's dependent-signal state.
+- Recording no uncertainty target for `AbortSignal.any` hides the source signal's dependent-signal state.
+- Giving `AbortSignal.timeout` the same target as `any` invents caller-owned state on a primitive delay.
 - Claiming `Readonly<AbortSignal>` proves immutability is dishonest because it retains behavioral capabilities.
 - Suppressing the diagnostic discards both exact provenance and contract verification.
 

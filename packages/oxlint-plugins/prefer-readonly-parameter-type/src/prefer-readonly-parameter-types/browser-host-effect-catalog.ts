@@ -4,6 +4,7 @@
  * @module
  */
 
+import { BROWSER_HOST_ABORT_EFFECTS, } from './browser-host-abort-effect-catalog.ts';
 import {
   WEB_SOURCES,
   webAuthority,
@@ -23,8 +24,6 @@ const RECEIVER: IntrinsicEffectTarget = { kind: 'receiver', };
  * Source-derived browser method anchor hashes by catalog identity.
  */
 const WEB_ALGORITHM_ANCHORS = {
-  abortControllerAbort: 'sha256:405c8ef94b7c685123b021107f00578994e4aef4bef80c0a8580ce76629d79c7',
-  abortSignalAny: 'sha256:a0f0637ca30beb66d5eaea24d677a9f80e7d01434eacb16533347a0e7d8e3aab',
   appendChild: 'sha256:5d063a8b82179b815e00eae7ed1cc5b3fcc3eabf9f2bc742218a647e95ad675a',
   cloneNode: 'sha256:82deb73db8f82c01434816211f17baef753591b66a1ef67271455d7515e62d96',
   dispatchEvent: 'sha256:513c877a5321849e995571d84d86a278124d857343cd680c5ee4affff3995d73',
@@ -140,36 +139,7 @@ export const BROWSER_HOST_EFFECTS: readonly IntrinsicEffectEntry[] = [
       algorithm: WEB_ALGORITHM_ANCHORS.decode,
     },),
   },),
-  {
-    provenance: { kind: 'dom', },
-    ownerType: 'AbortController',
-    member: 'abort',
-    targets: [RECEIVER,],
-    opaqueTargets: [{
-      kind: 'argument',
-      index: 0,
-    },],
-    evidence: 'DOM commit 5796f716 AbortController abort steps retain reason',
-    authority: webAuthority({
-      source: WEB_SOURCES.dom,
-      algorithm: WEB_ALGORITHM_ANCHORS.abortControllerAbort,
-    },),
-  },
-  {
-    provenance: { kind: 'dom', },
-    ownerType: 'AbortSignal',
-    member: 'any',
-    targets: [],
-    opaqueTargets: [{
-      kind: 'argument',
-      index: 0,
-    },],
-    evidence: 'DOM commit 5796f716 AbortSignal.any dependent-signal relations',
-    authority: webAuthority({
-      source: WEB_SOURCES.dom,
-      algorithm: WEB_ALGORITHM_ANCHORS.abortSignalAny,
-    },),
-  },
+  ...BROWSER_HOST_ABORT_EFFECTS,
   {
     provenance: { kind: 'dom', },
     ownerType: 'EventTarget',

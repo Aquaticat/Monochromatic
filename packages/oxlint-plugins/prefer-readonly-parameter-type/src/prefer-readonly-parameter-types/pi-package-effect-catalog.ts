@@ -216,6 +216,7 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     evidence: '@earendil-works/pi-coding-agent 0.80.6 returns a fresh path array without changing session state',
   },
   ...[
+    'bg',
     'bold',
     'fg',
   ].map(function piThemeObservation(member,): IntrinsicEffectEntry {

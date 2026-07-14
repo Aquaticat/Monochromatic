@@ -199,6 +199,16 @@ await describe({
           kind: 'argument',
           index: 0,
         },],);
+        const timeoutEffect = intrinsicEffect({
+          provenance: { kind: 'dom', },
+          ownerType: 'AbortSignal',
+          member: 'timeout',
+        },);
+        expect(timeoutEffect,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (timeoutEffect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected AbortSignal.timeout intrinsic effect.',);
+        expect(timeoutEffect.targets,).toEqual([],);
+        expect(timeoutEffect.opaqueTargets,).toBe(undefined,);
       },
     },),
     it({
@@ -318,6 +328,7 @@ await describe({
           'values.add',
           'controller.abort',
           'AbortSignal.any',
+          'AbortSignal.timeout',
           'encoder.encode',
           'Array.isArray',
           'Object.is',
@@ -356,6 +367,11 @@ await describe({
             provenance: { kind: 'dom', },
             ownerType: 'AbortSignal',
             member: 'any',
+          },
+          {
+            provenance: { kind: 'dom', },
+            ownerType: 'AbortSignal',
+            member: 'timeout',
           },
           {
             provenance: { kind: 'dom', },

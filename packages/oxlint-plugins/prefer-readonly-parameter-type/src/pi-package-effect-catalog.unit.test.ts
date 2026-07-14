@@ -83,6 +83,14 @@ const PROBES: readonly PiCallProbe[] = [
     targets: [],
   },
   {
+    pluginDirectory: 'morph-compact',
+    relativePath: 'visible-context.ts',
+    callText: 'theme.bg',
+    ownerType: 'Theme',
+    member: 'bg',
+    targets: [],
+  },
+  {
     relativePath: 'commands.ts',
     callText: '.ui\n        .notify(',
     ownerType: 'ExtensionUIContext',
