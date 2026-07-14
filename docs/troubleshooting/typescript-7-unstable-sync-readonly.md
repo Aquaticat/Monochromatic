@@ -213,10 +213,55 @@ Creating the same disposable source under a non-hidden directory inside the conf
 Semantic integration fixtures must therefore verify configured-project inclusion,
 not infer inclusion merely from filesystem ancestry.
 
-The TypeScript native API process can print `context canceled` while Oxlint exits successfully after the adapter's
-process-exit cleanup closes the synchronous RPC channel.
-Treat Oxlint's exit status and diagnostics as authoritative;
-the shutdown line alone did not indicate a lint failure in the verified fixture runs.
+### Process `exit` cleanup races TypeScript's native child shutdown
+
+The TypeScript sync channel registers its own process-exit listener at
+`dist/api/syncChannel.js:31` to `40`:
+
+```js
+const liveChildren = new Set();
+process.on("exit", () => {
+    for (const child of liveChildren) {
+        try {
+            child.kill();
+        }
+        catch {
+        }
+    }
+    liveChildren.clear();
+});
+```
+
+The default `child.kill()` signal is `SIGTERM`.
+The native server handles that signal by cancelling its context at
+`cmd/tsgo/api.go:51` to `57`:
+
+```go
+ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+defer stop()
+
+if err := s.Run(ctx); err != nil {
+    fmt.Fprintln(os.Stderr, err)
+    return 1
+}
+```
+
+The resulting error text is the bare line:
+
+```text
+context canceled
+```
+
+The adapter originally registered another `exit` listener after creating the TypeScript client.
+TypeScript's listener ran first,
+sent `SIGTERM`,
+and allowed the native server to print the cancellation error before adapter cleanup ran.
+Accepting or filtering that line was incorrect because successful lint output must not contain unexplained shutdown errors.
+
+The adapter now registers `closeSemanticBridge` on `beforeExit`.
+That callback invokes the normal channel close while the Node event loop can still drain,
+removes the child from TypeScript's `liveChildren` set,
+and leaves no child for TypeScript's later `exit` listener to terminate.
 
 ### Mapped readonly state is exposed only as an unnamed number
 
@@ -326,6 +371,10 @@ DeepReadonly<Mutable<string>>
 true
 ```
 
+The published-consumer regression opens the same API without calling `closeSemanticBridge` explicitly.
+It asserts that natural process shutdown produces the semantic result on stdout and an empty stderr stream.
+A package Oxlint run captured after the fix also contained no `context canceled` line on either output stream.
+
 ### Working catalog
 
 - `API.updateSnapshot({ openProjects })` loads configured projects.
@@ -337,6 +386,7 @@ true
 - virtual filesystem overlays plus configured-project snapshots and `fileChanges.changed` update semantic results;
 - temporary `openFiles` discovery followed by `openProjects` and `closeFiles` avoids stale API-open-file semantics.
 - TypeScript source offsets map to exact Oxlint diagnostic locations.
+- `beforeExit` bridge cleanup closes the native child before TypeScript's `exit` kill handler runs.
 
 ### Failing or unsupported catalog
 
@@ -367,12 +417,12 @@ Use `openFiles` only for ancestor `tsconfig.json` discovery.
 Open that configured project,
 close the temporary file association,
 and create replacement project snapshots with `fileChanges.changed` whenever current source changes.
-Dispose superseded snapshots and close the API client at process shutdown when the host provides a lifecycle hook.
+Dispose superseded snapshots and close the API client during Node `beforeExit` when the host provides no explicit lifecycle hook.
 
 Tradeoff:
 Oxlint does not currently expose an explicit plugin shutdown callback,
-so process exit owns final client cleanup.
-Tests must detect leaked child processes and stale overlays.
+so the adapter depends on Node's natural event-loop shutdown.
+A captured-stderr lifecycle test must guard against regressions to noisy `exit` cleanup.
 
 ### Keep syntax effects in the Oxlint traversal
 
@@ -408,6 +458,11 @@ and parser-recovery span cases.
 - **Using the asynchronous unstable API inside an Oxlint visitor:
   ** Oxlint JavaScript rule callbacks are synchronous and
   cannot await semantic results before reporting.
+- **Closing the bridge from a process `exit` listener:
+  ** TypeScript's earlier listener sends `SIGTERM` first,
+  and the native server prints `context canceled` to stderr.
+- **Filtering `context canceled` from command output:
+  ** it hides a lifecycle defect and can also hide a real cancellation failure.
 
 ## Upstream filing decision
 

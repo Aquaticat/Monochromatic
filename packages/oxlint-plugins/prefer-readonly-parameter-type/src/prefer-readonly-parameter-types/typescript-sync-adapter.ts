@@ -71,14 +71,14 @@ const bridgeState: {
   readonly overlays: Map<string, string>;
   readonly projectByRoot: Map<string, string>;
   activeFileName: string | typeof NO_ACTIVE_FILE;
-  exitHookRegistered: boolean;
+  beforeExitHookRegistered: boolean;
 } = {
   api: NO_API,
   snapshot: NO_SNAPSHOT,
   overlays: new Map(),
   projectByRoot: new Map(),
   activeFileName: NO_ACTIVE_FILE,
-  exitHookRegistered: false,
+  beforeExitHookRegistered: false,
 };
 
 /**
@@ -220,12 +220,12 @@ function getApi(): API {
     },);
   }
 
-  if (!bridgeState.exitHookRegistered) {
+  if (!bridgeState.beforeExitHookRegistered) {
     process.once(
-      'exit',
+      'beforeExit',
       closeSemanticBridge,
     );
-    bridgeState.exitHookRegistered = true;
+    bridgeState.beforeExitHookRegistered = true;
   }
   return bridgeState.api;
 }
@@ -482,7 +482,7 @@ export function semanticBridgeCacheStats(): SemanticBridgeCacheStats {
 /**
  * Disposes active snapshot and native TypeScript API process.
  *
- * Idempotent so tests and process exit may both invoke cleanup.
+ * Idempotent so tests and natural process shutdown may both invoke cleanup.
  *
  * @example
  * ```ts

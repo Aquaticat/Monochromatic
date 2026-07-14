@@ -118,13 +118,14 @@ await describe({
           '{"compilerOptions":{"strict":true},"include":["input.ts"]}\n',
         );
         /** Runtime probe imported only from installed publication artifact. */
-        const probeSource = `import plugin, { closeSemanticBridge, openSemanticFile, } from '@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type';\nimport { readFileSync, } from 'node:fs';\nimport { resolve, } from 'node:path';\nconst fileName = resolve('input.ts');\nconst sourceText = readFileSync(fileName, 'utf8');\nconst session = openSemanticFile({ fileName, sourceText, hasBOM: false });\nconst node = session.nodeAtOffset(sourceText.indexOf('value:'));\nconst type = session.checker.getTypeAtLocation(node);\nif (type === undefined) throw new Error('Expected external consumer type.');\nconsole.log(JSON.stringify({ hasRule: 'prefer-readonly-parameter-types' in plugin.rules, type: session.checker.typeToString(type) }));\ncloseSemanticBridge();\n`;
+        const probeSource = `import plugin, { openSemanticFile, } from '@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type';\nimport { readFileSync, } from 'node:fs';\nimport { resolve, } from 'node:path';\nconst fileName = resolve('input.ts');\nconst sourceText = readFileSync(fileName, 'utf8');\nconst session = openSemanticFile({ fileName, sourceText, hasBOM: false });\nconst node = session.nodeAtOffset(sourceText.indexOf('value:'));\nconst type = session.checker.getTypeAtLocation(node);\nif (type === undefined) throw new Error('Expected external consumer type.');\nconsole.log(JSON.stringify({ hasRule: 'prefer-readonly-parameter-types' in plugin.rules, type: session.checker.typeToString(type) }));\n`;
         const probePath = join(consumer.path, 'probe.mjs',);
         writeFileSync(probePath, probeSource,);
         const result = await spawn('node', [probePath,], { cwd: consumer.path, },);
         expect(result.stdout.trim(),).toBe(
           '{"hasRule":true,"type":"{ readonly text: string; }"}',
         );
+        expect(result.stderr.trim(),).toBe('',);
         /** Installed package metadata proving runtime dependency availability. */
         const installedManifest = readFileSync(
           join(
