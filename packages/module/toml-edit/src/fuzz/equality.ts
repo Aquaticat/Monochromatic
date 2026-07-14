@@ -5,10 +5,11 @@
  * texts mean the same thing", not "are they the same bytes". The model here
  * is the parser's own `getStaticTOMLValue` projection: tables and dotted keys
  * collapse to nested objects, arrays-of-tables to arrays of objects, and
- * scalars to native JS values. Both sides of every comparison pass through
- * the same projection, so its known lossiness (datetimes collapse to host-zone
- * `Date`s, integers past 2^53 lose precision) is symmetric and never causes a
- * spurious inequality between two texts that round-trip through this package.
+ * scalars to native JS values. Both sides of supported comparisons pass through
+ * the same projection,
+ * so datetime and large-integer lossiness remains symmetric.
+ * Sources containing `__proto__` keys are classified before projection because
+ * the upstream ordinary-object assignment changes prototypes instead of preserving that TOML key.
  *
  * Comparison is structural and iterative (a work stack of left/right pairs),
  * never recursive: the value tree can only be as deep as the parser already
@@ -21,6 +22,8 @@ import {
   getStaticTOMLValue,
   parseTOML,
 } from '@monochromatic-dev/module-toml-edit';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { AST, } from 'toml-eslint-parser';
 
 import type { TomlEditOptions, } from '../types.ts';
 
@@ -34,6 +37,89 @@ export type SemanticValue =
   | Date
   | readonly SemanticValue[]
   | { readonly [key: string]: SemanticValue; };
+
+/**
+ * Key whose ordinary property assignment changes a plain object's prototype.
+ */
+const PROTOTYPE_SETTER_KEY = '__proto__';
+
+/**
+ * Whether `toml-eslint-parser` can faithfully project a source through
+ * `getStaticTOMLValue`.
+ *
+ * Version 1.0.3 assigns table keys into ordinary objects.
+ * A `__proto__` segment therefore invokes the inherited prototype setter instead
+ * of creating an own TOML property,
+ * so semantic comparisons must discard that upstream-oracle case.
+ *
+ * @returns Whether every authored key avoids the upstream prototype setter.
+ *
+ * @example
+ * ```ts
+ * staticSemanticOracleSupports({ source: 'value = 1\n', }); // true
+ * staticSemanticOracleSupports({ source: 'value = { "__proto__" = 1 }\n', }); // false
+ * ```
+ */
+export function staticSemanticOracleSupports(
+  {
+    source,
+    tomlVersion,
+  }: {
+    readonly source: string;
+    readonly tomlVersion?: TomlEditOptions['tomlVersion'];
+  },
+): boolean {
+  /**
+   * Parsed document inspected before invoking the lossy projection.
+   */
+  const program: ForeignBorrowed<AST.TOMLProgram> = parseTOML(
+    source,
+    tomlVersion === undefined ? undefined : { tomlVersion, },
+  );
+  /**
+   * Structural work stack avoiding recursion over nested array and table spines.
+   */
+  const pending: AST.TOMLNode[] = [program,];
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (node.type === 'TOMLKey') {
+      for (const segment of node.keys) {
+        /**
+         * Authored key-segment text.
+         */
+        const key = segment.type === 'TOMLBare'
+          ? segment.name
+          : segment.value;
+        if (key === PROTOTYPE_SETTER_KEY)
+          return false;
+      }
+    }
+    if ((node.type === 'Program')
+      || (node.type === 'TOMLTopLevelTable')
+      || (node.type === 'TOMLInlineTable')) {
+      for (const child of node.body)
+        pending.push(child,);
+      continue;
+    }
+    if (node.type === 'TOMLTable') {
+      pending.push(node.key,);
+      for (const child of node.body)
+        pending.push(child,);
+      continue;
+    }
+    if (node.type === 'TOMLKeyValue') {
+      pending.push(
+        node.key,
+        node.value,
+      );
+      continue;
+    }
+    if (node.type === 'TOMLArray') {
+      for (const child of node.elements)
+        pending.push(child,);
+    }
+  }
+  return true;
+}
 
 /**
  * Parse `source` and project it to the native semantic model.

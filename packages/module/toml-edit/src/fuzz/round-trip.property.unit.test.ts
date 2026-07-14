@@ -21,6 +21,7 @@ import {
   asyncProperty,
   constantFrom,
   oneof,
+  pre,
 } from 'fast-check';
 
 import {
@@ -30,6 +31,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   parseTomlEdit,
+  tomlGetValue,
   tomlStringify,
 } from '@monochromatic-dev/module-toml-edit';
 
@@ -45,6 +47,7 @@ import {
 import {
   semanticEquals,
   semanticModel,
+  staticSemanticOracleSupports,
 } from './equality.ts';
 
 //region Setup
@@ -58,6 +61,14 @@ const RUN = fuzzRunPlan();
  * Upper bound on live repository TOML files pulled into the campaign corpus.
  */
 const REPO_CORPUS_LIMIT = 300;
+
+/** Inherited setter name mishandled by upstream static projection. */
+const UPSTREAM_PROTOTYPE_KEY = '__proto__';
+
+/**
+ * Minimized source whose `__proto__` datetime triggers upstream static-oracle prototype assignment.
+ */
+const UPSTREAM_PROTOTYPE_SOURCE = `value = { "${UPSTREAM_PROTOTYPE_KEY}" = 1979-05-27T07:32:00Z }\n`;
 
 /**
  * Whether the package accepts `source` under the default dialect.
@@ -154,11 +165,42 @@ await describe({
     },),
 
     it({
-      name: 'canonical mode round-trips through the semantic model',
+      name: 'classifies the upstream oracle boundary and round-trips supported semantic models',
       timeout: RUN.timeout,
       fn: async () => {
+        expect(staticSemanticOracleSupports({ source: 'value = 1\n', },)).toBe(true,);
+        expect(staticSemanticOracleSupports({
+          source: UPSTREAM_PROTOTYPE_SOURCE,
+        },)).toBe(false,);
+        /** Upstream projection that loses the own key and changes nested object prototype. */
+        const unsupportedModel = semanticModel({ source: UPSTREAM_PROTOTYPE_SOURCE, },);
+        if ((typeof unsupportedModel !== 'object')
+          || (unsupportedModel === null)
+          || Array.isArray(unsupportedModel,)
+          || (unsupportedModel instanceof Date))
+          throw new Error('Expected projected root object.',);
+        /** Nested inline-table projection altered by inherited `__proto__` setter. */
+        const unsupportedTable = unsupportedModel.value;
+        if ((typeof unsupportedTable !== 'object')
+          || (unsupportedTable === null)
+          || Array.isArray(unsupportedTable,))
+          throw new Error('Expected projected inline table.',);
+        expect(Object.hasOwn(unsupportedTable, UPSTREAM_PROTOTYPE_KEY,),).toBe(false,);
+        expect(Object.getPrototypeOf(unsupportedTable,) instanceof Date,).toBe(true,);
+        /** Package-owned materialization of the same inline table. */
+        const materializedTable = tomlGetValue({
+          edit: parseTomlEdit({ source: UPSTREAM_PROTOTYPE_SOURCE, },),
+          path: ['value',],
+        },);
+        if ((typeof materializedTable !== 'object')
+          || (materializedTable === null)
+          || Array.isArray(materializedTable,))
+          throw new Error('Expected materialized inline table.',);
+        expect(Object.hasOwn(materializedTable, UPSTREAM_PROTOTYPE_KEY,),).toBe(true,);
+        expect(Object.getPrototypeOf(materializedTable,),).toBe(Object.prototype,);
         await assert(
           asyncProperty(validSourceArbitrary, async function preserves(source,) {
+            pre(staticSemanticOracleSupports({ source, },),);
             /**
              * Canonical re-emission, rebuilt from the AST rather than spliced.
              */
@@ -189,6 +231,7 @@ await describe({
             validSourceArbitrary,
             constantFrom(...TRANSFORMS,),
             async function invariant(source, tag,) {
+              pre(staticSemanticOracleSupports({ source, },),);
               /**
                * Transformed source whose meaning must equal the original.
                */
