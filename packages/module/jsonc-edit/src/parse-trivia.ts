@@ -240,7 +240,7 @@ export function captureTrailing({
  * // => { kind: 'null', comment: { type: 'inline', text: 'x' } }
  * ```
  */
-export function prependComments<const N extends { comment?: JsoncComment; },>({
+export function prependComments<const N extends { readonly comment?: JsoncComment; },>({
   node,
   comments,
 }: {
@@ -284,7 +284,7 @@ export function prependComments<const N extends { comment?: JsoncComment; },>({
  * // => { kind: 'null', comment: { type: 'inline', text: 'x' } }
  * ```
  */
-export function appendComments<const N extends { comment?: JsoncComment; },>({
+export function appendComments<const N extends { readonly comment?: JsoncComment; },>({
   node,
   comments,
 }: {
