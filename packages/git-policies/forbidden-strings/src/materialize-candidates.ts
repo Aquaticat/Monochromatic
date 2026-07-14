@@ -80,6 +80,14 @@ export type MaterializedCandidates = Readonly<{
 }>;
 
 /**
+ * Candidate paired with plugin-owned temporary path.
+ */
+type IndexedCandidate = Readonly<{
+  candidate: CandidateFile;
+  path: string;
+}>;
+
+/**
  * Materializes exact non-deleted candidate bytes under syntax-free names.
  *
  * @param candidates - exact lazy Git candidates
@@ -125,7 +133,7 @@ export async function materializeCandidates(
   const indexedCandidates = contentCandidates.map(function indexCandidate(
     candidate,
     index,
-  ) {
+  ): IndexedCandidate {
     return {
       candidate,
       path: paths[index] ?? '',
@@ -155,7 +163,9 @@ export async function materializeCandidates(
       },);
     },
   );
-  await Promise.all(lanes.map(async function writeLane(lane,): Promise<void> {
+  await Promise.all(lanes.map(async function writeLane(
+    lane: readonly IndexedCandidate[],
+  ): Promise<void> {
     /* oxlint-disable no-await-in-loop -- Each bounded lane deliberately sequences process-backed reads and temporary writes to cap process and file-descriptor pressure. */
     for (const entry of lane) {
       /**

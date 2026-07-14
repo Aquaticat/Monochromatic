@@ -21,6 +21,7 @@
   ],
   "dependencies": {
     "@monochromatic-dev/git-policy-api": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "nano-spawn": "catalog:",
     "valibot": "catalog:"
   },

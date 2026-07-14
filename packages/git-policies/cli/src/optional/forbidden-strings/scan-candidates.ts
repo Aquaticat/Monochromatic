@@ -14,6 +14,7 @@ import type {
   CandidateFile,
   PolicyFinding,
 } from '../../api/index.ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 import { ForbiddenStringsPluginError, } from './errors.ts';
 import { materializeCandidates, } from './materialize-candidates.ts';
@@ -52,7 +53,7 @@ function configuredRulesCandidatePath({
   environment,
 }: Readonly<{
   repositoryRoot: string;
-  environment: NodeJS.ProcessEnv;
+  environment: ForeignBorrowed<NodeJS.ProcessEnv>;
 }>,): string | typeof RULES_PATH_OUTSIDE_REPOSITORY {
   /**
    * Scanner rules source selected through existing environment precedence.
@@ -100,7 +101,7 @@ function scannerEligibleCandidates({
   candidates,
 }: Readonly<{
   repositoryRoot: string;
-  environment: NodeJS.ProcessEnv;
+  environment: ForeignBorrowed<NodeJS.ProcessEnv>;
   candidates: readonly CandidateFile[];
 }>,): readonly CandidateFile[] {
   /**
