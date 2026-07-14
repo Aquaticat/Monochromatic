@@ -51,6 +51,10 @@ await describe({
         expected: 'honest-readonly',
       },
       {
+        parameter: 'objectValue:',
+        expected: 'opaque-capability',
+      },
+      {
         parameter: 'unknownValue:',
         expected: 'opaque-capability',
       },

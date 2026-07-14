@@ -87,6 +87,15 @@ export function classifyMutableObject(mutableObject: { value: string; },): void 
 }
 
 /**
+ * Accepts broad nonprimitive object capability for classifier fixture.
+ *
+ * @param objectValue - Value whose properties and proxy behavior are not known.
+ */
+export function classifyBroadObjectCapability(objectValue: object,): void {
+  void objectValue;
+}
+
+/**
  * Accepts unknown runtime capability for classifier fixture.
  *
  * @param unknownValue - Value whose runtime capabilities are not known.

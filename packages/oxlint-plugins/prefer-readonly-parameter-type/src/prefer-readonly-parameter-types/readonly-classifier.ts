@@ -299,6 +299,12 @@ export function classifyReadonlyType({
         }
         : classify(constraint,),);
     }
+    if ((current.flags & TypeFlags.NonPrimitive) !== 0) {
+      return finish({
+        kind: 'opaque-capability',
+        reason: 'broad object type may carry caller-defined properties, accessors, or proxy capability',
+      },);
+    }
     if (!current.isObjectType())
       return finish(HONEST_READONLY,);
     /**
