@@ -412,7 +412,7 @@ export function buildAdvisorSystemPrompt(
  *
  * @returns combined abort signal
  *
- * @mutates signal - `AbortSignal.any` stores a dependent-signal relation on supplied caller signal
+ * @mutates signal - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain supplied caller signal
  */
 function combinedSignal(
   {

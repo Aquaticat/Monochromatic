@@ -299,7 +299,7 @@ async function readJsonFile(
  *
  * @returns validated config file
  *
- * @mutates raw - `v.safeParse` can invoke getters or proxy traps while traversing parsed configuration
+ * @mutates raw - `valibot@1.4.2 . safeParse` can invoke getters or proxy traps while traversing parsed configuration
  */
 function parseConfigFile(
   {
