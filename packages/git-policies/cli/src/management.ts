@@ -10,6 +10,7 @@ import {
   or,
   runParserSync,
 } from '@optique/core';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { DIRECT_MANAGEMENT_PARSER, } from './management-direct-parser.ts';
 import {
   createEngineFailureEvent,
@@ -277,10 +278,7 @@ export async function runManagementCommand({
       .write(renderPolicyEvents([createEngineFailureEvent({
       sequence: 0,
       code,
-      message: Error.isError(runtimeResolution.error,)
-        ? runtimeResolution.error
-          .message
-        : String(runtimeResolution.error,),
+      message: caughtValueText(runtimeResolution.error,),
     },),],),);
     return 2;
   }

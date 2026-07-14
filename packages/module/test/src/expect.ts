@@ -9,6 +9,8 @@ import {
   type SinonMatcher,
 } from 'sinon';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import {
   buildMatchers,
   chaiExpect,
@@ -195,7 +197,7 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
       /**
        * Stringified rejection used for substring containment when an expected string was supplied.
        */
-      const message = Error.isError(error,) ? error.message : String(error,);
+      const message = caughtValueText(error,);
       chaiExpect(message,)
         .to
         .include(expected,);
@@ -204,7 +206,7 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
       /**
        * Stringified rejection used for regex matching when an expected pattern was supplied.
        */
-      const message = Error.isError(error,) ? error.message : String(error,);
+      const message = caughtValueText(error,);
       chaiExpect(message,)
         .to
         .match(expected,);

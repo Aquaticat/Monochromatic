@@ -3,6 +3,8 @@
  *
  * @module
  */
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import type {
   PolicyContext,
   PolicyFinding,
@@ -217,8 +219,7 @@ export async function runPolicyStage({
       events.push(createEngineFailureEvent({
         sequence: sequence + events.length,
         code: 'plugin-threw',
-        message: Error.isError(checkResult.error,) ? checkResult.error
-          .message : String(checkResult.error,),
+        message: caughtValueText(checkResult.error,),
         trigger,
         policyId: policy.name,
       },),);
@@ -289,7 +290,7 @@ export async function runPolicyStage({
       events.push(createEngineFailureEvent({
         sequence: sequence + events.length,
         code: 'policy-incomplete',
-        message: Error.isError(error,) ? error.message : String(error,),
+        message: caughtValueText(error,),
         trigger,
         policyId: policy.name,
       },),);

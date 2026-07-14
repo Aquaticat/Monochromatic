@@ -17,6 +17,7 @@ import {
 import { connect } from 'node:net';
 
 import { wait } from '@monochromatic-dev/module-async-time';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { encode } from '@msgpack/msgpack';
 
 import { NoNvimSocketError } from './errors.ts';
@@ -119,7 +120,7 @@ export async function findNewestNvimSocket(): Promise<string> {
         /**
          * Message for a socket that vanished between readdir and stat.
          */
-        const message = Error.isError(error) ? error.message : String(error);
+        const message = caughtValueText(error,);
         console.error(`[key-helper] skipping nvim socket ${full}: ${message}`);
         return [];
       }
@@ -199,7 +200,7 @@ export async function sendNvimInput(keys: string): Promise<boolean> {
     /**
      * Message for a no-socket, connect, or write failure.
      */
-    const message = Error.isError(error) ? error.message : String(error);
+    const message = caughtValueText(error,);
     console.error(`[key-helper] nvim send failed: ${message}`);
     return false;
   }

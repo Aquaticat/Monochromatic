@@ -6,6 +6,8 @@
 
 import { basename, } from 'node:path';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import {
   CONFIG_KEY_SET,
   LEGACY_CONFIG_KEY_SET,
@@ -180,9 +182,7 @@ function normalizeConfigBlocklist(
     /**
      * Local value for detail.
      */
-    const detail = Error.isError(error,)
-      ? error.message
-      : String(error,);
+    const detail = caughtValueText(error,);
     throw new Error(
       `${basename(configPath,)} blocklist normalization failed at ${configPath}: ${detail}`,
       { cause: error, },

@@ -1,5 +1,6 @@
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   logger,
   tagged,
@@ -117,7 +118,7 @@ export async function spawnResult(
      * Abort or other non-subprocess failure: report as a failed result so the
      * probe degrades to a wider range rather than crashing.
      */
-    const message = Error.isError(error,) ? error.message : String(error,);
+    const message = caughtValueText(error,);
     rl.debug(`aborted/failed: ${message}`,);
     return {
       exitCode: FAILED_EXIT_CODE,

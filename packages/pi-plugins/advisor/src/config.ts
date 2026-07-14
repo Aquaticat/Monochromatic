@@ -7,6 +7,7 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import * as v from 'valibot';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   type AdvisorConfigFile,
@@ -280,7 +281,7 @@ async function readJsonFile(
       return undefined;
     throw new Error(
       `advisor: failed to read ${label} config at ${path}: ${
-        Error.isError(error,) ? error.message : String(error,)
+        caughtValueText(error,)
       }`,
       { cause: error, },
     );

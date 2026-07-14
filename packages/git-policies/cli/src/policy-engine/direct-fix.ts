@@ -3,6 +3,8 @@
  *
  * @module
  */
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import { resolveGit, } from '../resolve-git.ts';
 import {
   ADD_POLICY_FACTS_NOT_APPLICABLE,
@@ -210,7 +212,7 @@ export async function runDirectFix({
       policyResult: initialTransactionFailure({
         args: gitGlobalArgs,
         code: 'transaction-failed',
-        message: Error.isError(error,) ? error.message : String(error,),
+        message: caughtValueText(error,),
         trigger: 'direct-fix',
       },),
       changedPaths: [],

@@ -3,6 +3,8 @@
  *
  * @module
  */
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import { atomicPush, } from '../rules/atomic-push.ts';
 import {
   commitOnly,
@@ -135,7 +137,7 @@ export async function applyFixedTransforms({
       events: [createEngineFailureEvent({
         sequence,
         code: 'core-incomplete',
-        message: Error.isError(error,) ? error.message : String(error,),
+        message: caughtValueText(error,),
       },),],
       complete: false,
     };

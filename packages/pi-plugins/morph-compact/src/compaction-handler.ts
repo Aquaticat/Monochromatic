@@ -8,6 +8,8 @@
  * @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import type {
   ExtensionContext,
   SessionBeforeCompactEvent,
@@ -213,9 +215,7 @@ export async function handleBeforeCompact({
     /**
      * Best-effort diagnostic forwarded into the UI notify body.
      */
-    const message = Error.isError(error,)
-      ? error.message
-      : 'Unknown Morph compaction error';
+    const message = caughtValueText(error,);
     ctx.ui
       .notify(
       `Morph Compact failed: ${message}; falling back to pi default`,

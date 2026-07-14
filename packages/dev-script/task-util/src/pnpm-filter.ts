@@ -17,6 +17,7 @@
  */
 
 import spawn from 'nano-spawn';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import { filterPnpmOutput, } from './pnpm-output-filter.ts';
 
@@ -142,7 +143,7 @@ catch (error) {
   else {
     console.error(
       `[task-pnpm] failed to execute pnpm: ${
-        Error.isError(error,) ? error.message : String(error,)
+        caughtValueText(error,)
       }`,
     );
     process.exitCode = 1;

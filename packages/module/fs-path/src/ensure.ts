@@ -15,6 +15,7 @@ import {
 } from 'node:fs/promises';
 import { posix, } from 'node:path';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
@@ -106,7 +107,7 @@ export async function ensureDir(path: string,): Promise<string> {
     l.info(`${path} is accessible`,);
   }
   catch (error: unknown) {
-    l.info(`${path} not accessible (${(Error.isError(error,)) ? error.message : String(error,)}), adjusting permissions`,);
+    l.info(`${path} not accessible (${caughtValueText(error,)}), adjusting permissions`,);
     await chmod(
       path,
       constants.R_OK
@@ -176,7 +177,7 @@ export async function ensureFile(path: string,): Promise<string> {
     l.info(`${path} is accessible`,);
   }
   catch (error: unknown) {
-    l.info(`${path} not accessible (${(Error.isError(error,)) ? error.message : String(error,)}), adjusting permissions`,);
+    l.info(`${path} not accessible (${caughtValueText(error,)}), adjusting permissions`,);
     await chmod(
       path,
       constants.R_OK

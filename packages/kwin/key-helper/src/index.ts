@@ -16,6 +16,7 @@
 import { promisify } from 'node:util';
 
 import { sessionBus } from '@homebridge/dbus-native';
+import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
 
 import {
   DBUS_PATH,
@@ -119,7 +120,7 @@ try {
   /**
    * Stack or message for a fatal startup failure.
    */
-  const message = Error.isError(error,) ? (error.stack ?? error.message) : String(error);
+  const message = caughtValueStack(error,);
   console.error(`[key-helper] fatal: ${message}`);
   process.exitCode = 1;
 }

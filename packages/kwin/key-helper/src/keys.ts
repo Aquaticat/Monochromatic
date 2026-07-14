@@ -12,6 +12,7 @@
 
 import { execFile } from 'node:child_process';
 import { once } from 'node:events';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import { UnknownKeyError } from './errors.ts';
 
@@ -156,7 +157,7 @@ export async function sendKeys(keys: string): Promise<void> {
     /**
      * Best-effort message extracted from a thrown value of unknown type.
      */
-    const message = Error.isError(error) ? error.message : String(error);
+    const message = caughtValueText(error,);
     console.error(`[key-helper] ydotool/key error: ${message}`);
   }
 }

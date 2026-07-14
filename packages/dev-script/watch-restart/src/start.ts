@@ -1,3 +1,4 @@
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   tagged,
   type Logger,
@@ -508,9 +509,7 @@ export async function startWatchRestart(
             /**
              * Human-readable error string used in the restart-failure log line.
              */
-            const message = Error.isError(error,)
-              ? error.message
-              : String(error,);
+            const message = caughtValueText(error,);
             startLogger.error(`restart failed: ${message}`,);
           }
         })();
@@ -543,9 +542,7 @@ export async function startWatchRestart(
       /**
        * Human-readable error string used in the filter-failure log line.
        */
-      const message = Error.isError(error,)
-        ? error.message
-        : String(error,);
+      const message = caughtValueText(error,);
       startLogger.error(
         `filter chain failed for ${event.path}: ${message}`,
       );

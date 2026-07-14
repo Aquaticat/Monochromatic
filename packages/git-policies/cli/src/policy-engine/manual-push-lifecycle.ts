@@ -4,6 +4,7 @@
  * @module
  */
 import nanoSpawn from 'nano-spawn';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   ABSENT_GIT_VALUE,
   type LazyPolicyGitFacts,
@@ -223,7 +224,7 @@ export async function runManualPushLifecycle({
         sequence: 0,
         code: 'content-unavailable',
         trigger: 'manual-push',
-        message: Error.isError(error,) ? error.message : String(error,),
+        message: caughtValueText(error,),
       },),],
       patches: [],
       exitCode: 2,

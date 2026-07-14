@@ -15,6 +15,8 @@ import {
   dirname,
 } from 'node:path';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import {
   CONFIG_JSON_INDENT_SPACES,
   FILE_NOT_FOUND_CODE,
@@ -179,9 +181,7 @@ function parseConfigJson(
     /**
      * Local value for detail.
      */
-    const detail = Error.isError(error,)
-      ? error.message
-      : String(error,);
+    const detail = caughtValueText(error,);
     throw new Error(
       `${basename(configPath,)} parsing failed at ${configPath}: ${detail}`,
       { cause: error, },

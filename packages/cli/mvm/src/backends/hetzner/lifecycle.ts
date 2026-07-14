@@ -10,6 +10,7 @@
  *
  * @module
  */
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { VM_PREFIX, } from '../../config.ts';
@@ -314,7 +315,7 @@ async function safeDeleteImage(
   catch (error: unknown) {
     rl.info(
       `snapshot ${String(id,)} cleanup failed: ${
-        Error.isError(error,) ? error.message : String(error,)
+        caughtValueText(error,)
       }`,
     );
   }

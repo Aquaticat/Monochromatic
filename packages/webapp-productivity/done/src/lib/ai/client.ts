@@ -6,6 +6,7 @@
  * cannot overwhelm the shared inference server.
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type {
   ChatCompletionResponse,
   ChatMessage,
@@ -235,9 +236,7 @@ export async function chatCompletion(
     /**
      * Human-readable error text extracted whether the cause is an Error or a raw throw.
      */
-    const message = Error.isError(caughtError,)
-      ? caughtError.message
-      : String(caughtError,);
+    const message = caughtValueText(caughtError,);
     console.error(
       'AI chat completion failed:',
       caughtError,

@@ -4,6 +4,7 @@
  * @module
  */
 import { createInterface, } from 'node:readline/promises';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   createEngineFailureEvent,
   type EngineFailureCode,
@@ -254,9 +255,7 @@ export async function runTrustManagement({
       code: error instanceof TrustedConfigError
         ? error.code
         : 'trust-failed',
-      message: Error.isError(error,)
-        ? error.message
-        : String(error,),
+      message: caughtValueText(error,),
     },);
   }
 }

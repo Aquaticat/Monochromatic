@@ -21,6 +21,7 @@
  */
 
 import spawn from 'nano-spawn';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import { augmentOxlintOutput, } from './oxlint-augment.ts';
 import {
@@ -175,7 +176,7 @@ async function runOxlint(args: readonly string[],): Promise<OxlintRunResult> {
     return {
       stdout: '',
       stderr: '',
-      executionError: Error.isError(error,) ? error.message : String(error,),
+      executionError: caughtValueText(error,),
     };
   }
 }

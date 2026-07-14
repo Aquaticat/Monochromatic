@@ -1,3 +1,5 @@
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import type { WatchRestartHandle, } from './start.ts';
 
 /**
@@ -38,9 +40,7 @@ export function installShutdownHandler(
           /**
            * Human-readable error string used in the shutdown-failure stderr line.
            */
-          const message = Error.isError(error,)
-            ? error.message
-            : String(error,);
+          const message = caughtValueText(error,);
           console.error(`shutdown failed: ${message}`,);
           process.exit(1,);
         }

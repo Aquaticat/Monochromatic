@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/build-tool-css": "workspace:*",
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-llm-types": "workspace:*",

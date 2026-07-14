@@ -4,6 +4,7 @@
  * @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
@@ -128,7 +129,7 @@ function safeParse(
     // overflow on pathologically deep `[`/`{` nesting; wrapping it (rather than
     // leaking the raw exception) keeps `parseTomlEdit` total over arbitrary text.
     throw new TomlEditError(
-      `Failed to parse TOML: ${Error.isError(e,) ? e.message : String(e,)}`,
+      `Failed to parse TOML: ${caughtValueText(e,)}`,
       { cause: e, },
     );
   }

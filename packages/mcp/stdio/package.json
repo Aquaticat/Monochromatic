@@ -2,7 +2,7 @@
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/mcp-stdio",
   "version": "0.1.0",
-  "description": "Minimal MCP server framework for stdio transport. Zero dependencies.",
+  "description": "Minimal MCP server framework for stdio transport.",
   "type": "module",
   "private": true,
   "module": "dist/final/node/index.mjs",
@@ -13,6 +13,9 @@
     },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

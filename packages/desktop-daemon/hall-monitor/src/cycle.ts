@@ -1,3 +1,4 @@
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 
 import {
@@ -184,7 +185,7 @@ export async function cycle(): Promise<void> {
     /**
      * Normalised error string so both Error instances and arbitrary throws log readable output.
      */
-    const message = Error.isError(err,) ? err.message : String(err,);
+    const message = caughtValueText(err,);
     console.error(`[error] ${message}`,);
     log.error(`[error] ${message}`,);
     try {
@@ -194,9 +195,7 @@ export async function cycle(): Promise<void> {
       /**
        * Cleanup failure string for best-effort GPU process shutdown logging.
        */
-      const cleanupMessage = Error.isError(cleanupError,)
-        ? cleanupError.message
-        : String(cleanupError,);
+      const cleanupMessage = caughtValueText(cleanupError,);
       log.debug(`[cleanup] ${cleanupMessage}`,);
     }
   }

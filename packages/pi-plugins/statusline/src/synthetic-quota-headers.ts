@@ -6,6 +6,7 @@
  * @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -96,9 +97,7 @@ function parseSyntheticQuotasHeader(
     /**
      * Rendered caught value; malformed quotas JSON is treated as a missing header.
      */
-    const detail = Error.isError(error,)
-      ? error.message
-      : String(error,);
+    const detail = caughtValueText(error,);
     log.debug(`ignoring invalid quotas header JSON: ${detail}`,);
     return INVALID_VALUE;
   }

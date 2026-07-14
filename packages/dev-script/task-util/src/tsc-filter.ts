@@ -37,6 +37,7 @@ import {
 } from 'node:fs/promises';
 
 import spawn from 'nano-spawn';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import {
   buildTscArgs,
@@ -562,7 +563,7 @@ async function main(): Promise<void> {
       // Non-subprocess error (e.g. tsc not found)
       console.error(
         `[task-tsc] failed to execute tsc: ${
-          Error.isError(error,) ? error.message : String(error,)
+          caughtValueText(error,)
         }`,
       );
       process.exitCode = 1;

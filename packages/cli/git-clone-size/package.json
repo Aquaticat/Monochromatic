@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-async-time": "workspace:*",
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-numeric-format": "workspace:*",

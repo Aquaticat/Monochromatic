@@ -18,6 +18,7 @@ import {
   readFile,
 } from 'node:fs/promises';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
@@ -196,7 +197,7 @@ export async function findShiftDevices(): Promise<readonly Device[]> {
         /**
          * Message for an unreadable or malformed device, which is expected.
          */
-        const message = Error.isError(error) ? error.message : String(error);
+        const message = caughtValueText(error,);
         console.error(`[key-helper] skipping input device ${path}: ${message}`);
         return [];
       }

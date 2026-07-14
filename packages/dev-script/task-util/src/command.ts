@@ -48,6 +48,7 @@ import { runSync, } from '@optique/run';
 import spawn from 'nano-spawn';
 import dedent from 'string-dedent';
 import { match, } from 'ts-pattern';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 export {};
 
@@ -170,7 +171,7 @@ catch (error) {
     .otherwise(function handleUnknownError(): void {
       console.error(
         `Failed to execute command: ${
-          Error.isError(error,) ? error.message : String(error,)
+          caughtValueText(error,)
         }`,
       );
       match(args.allowFailure,)

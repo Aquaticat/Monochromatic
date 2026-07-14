@@ -6,6 +6,7 @@
 
 import { readFile, } from 'node:fs/promises';
 import { basename, } from 'node:path';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import { FILE_NOT_FOUND_CODE, } from './constants.ts';
 
@@ -138,9 +139,7 @@ function parseConfigJson(
     /**
      * Human-readable parse error detail.
      */
-    const detail = Error.isError(error,)
-      ? error.message
-      : String(error,);
+    const detail = caughtValueText(error,);
     throw new Error(
       `${basename(configPath,)} parsing failed at ${configPath}: ${detail}`,
       { cause: error, },

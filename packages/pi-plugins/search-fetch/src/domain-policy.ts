@@ -1,3 +1,4 @@
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
@@ -453,9 +454,7 @@ function parsePolicyUrl(url: string,): URL {
     /**
      * Local value for detail.
      */
-    const detail = Error.isError(error,)
-      ? error.message
-      : String(error,);
+    const detail = caughtValueText(error,);
     throw new Error(
       `Invalid URL for pi-search-fetch blocklist check: ${url}. ${detail}`,
       { cause: error, },

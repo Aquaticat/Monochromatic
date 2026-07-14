@@ -10,6 +10,7 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import * as v from 'valibot';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -299,7 +300,7 @@ async function readJsonFile(
       return undefined;
     throw new Error(
       `auto-mode: failed to read ${label} config at ${path}: ${
-        Error.isError(err,) ? err.message : String(err,)
+        caughtValueText(err,)
       }`,
       { cause: err, },
     );
@@ -334,7 +335,7 @@ function compilePatterns(
       catch (err) {
         throw new Error(
           `auto-mode: invalid regex in ${label} patterns: "${p}": ${
-            Error.isError(err,) ? err.message : String(err,)
+            caughtValueText(err,)
           }`,
           { cause: err, },
         );

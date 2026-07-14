@@ -1,4 +1,5 @@
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { autoPush, } from './auto-push.ts';
@@ -202,10 +203,7 @@ try {
       .write(renderPolicyEvents([createEngineFailureEvent({
       sequence: 0,
       code,
-      message: Error.isError(runtimeResolution.error,)
-        ? runtimeResolution.error
-          .message
-        : String(runtimeResolution.error,),
+      message: caughtValueText(runtimeResolution.error,),
     },),],),);
     throw new PolicyDecisionError(2,);
   }

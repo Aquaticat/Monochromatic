@@ -30,6 +30,7 @@ import type {
   SessionBeforeCompactEvent,
 } from '@earendil-works/pi-coding-agent';
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec/ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   NO_MORPH_KEY,
@@ -166,9 +167,7 @@ async function handleMorphCompactCommand({
     /**
      * Best-effort diagnostic surfaced to the user via UI notify.
      */
-    const message = Error.isError(error,)
-      ? error.message
-      : String(error,);
+    const message = caughtValueText(error,);
     ctx.ui
       .notify(
       `Morph Compact failed: ${message}`,

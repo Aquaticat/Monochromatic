@@ -22,6 +22,7 @@
 
 import { readFile, } from 'node:fs/promises';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /* oxlint-disable import/no-cycle -- barrel re-export cycle; dirname and resolve are fully initialized before findPackageRoot runs */
@@ -96,7 +97,7 @@ export async function findPackageRoot(
       return dir;
   }
   catch (error: unknown) {
-    findPackageRootLogger.debug(`skipping package manifest candidate ${candidate}: ${(Error.isError(error,)) ? error.message : String(error,)}`,);
+    findPackageRootLogger.debug(`skipping package manifest candidate ${candidate}: ${caughtValueText(error,)}`,);
   }
   /**
    * Next directory to inspect; equal to `dir` only at the filesystem root, which terminates recursion.

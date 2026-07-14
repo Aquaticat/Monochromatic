@@ -22,6 +22,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "type-fest": "catalog:",
     "valibot": "catalog:",

@@ -1,5 +1,7 @@
 // Dispatches tools/call requests to registered tool handlers.
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import {
   JSON_RPC_INTERNAL_ERROR,
   JSON_RPC_INVALID_PARAMS,
@@ -105,7 +107,7 @@ export async function handleToolCall(
     /**
      * Human-readable error text; falls back to `String(error)` when the thrown value is not an `Error`.
      */
-    const message = (Error.isError(error,)) ? error.message : String(error,);
+    const message = caughtValueText(error,);
     console.error(
       `[mcp-stdio] tool "${toolName}" threw:`,
       error,

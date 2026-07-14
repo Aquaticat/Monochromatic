@@ -10,6 +10,7 @@
  */
 
 import { randomBytes, } from 'node:crypto';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { ExecResult, } from '../exec.ts';
@@ -123,7 +124,7 @@ export async function ephemeralRun(
     catch (err: unknown) {
       rl.info(
         `cleanup failed for ${name}: ${
-          Error.isError(err,) ? err.message : String(err,)
+          caughtValueText(err,)
         }`,
       );
     }

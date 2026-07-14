@@ -3,6 +3,8 @@
  *
  * @module
  */
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import type { PolicySeverity, } from '../api/policy-types.ts';
 import { BUILT_IN_POLICIES, } from './built-ins.ts';
 import {
@@ -171,7 +173,7 @@ export async function runPostCommitLifecycle({
     const failure = createEngineFailureEvent({
       sequence: 0,
       code: 'content-unavailable',
-      message: Error.isError(error,) ? error.message : String(error,),
+      message: caughtValueText(error,),
       trigger: 'post-commit',
     },);
     return {

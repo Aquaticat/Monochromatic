@@ -7,6 +7,7 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import * as v from 'valibot';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 /**
  * Sentinel returned by internal {@link loadSettingsFile} when a settings file is
@@ -263,7 +264,7 @@ async function readJsonFile(
       return undefined;
     throw new Error(
       `${errorPrefix}: failed to read ${label} settings at ${path}: ${
-        Error.isError(error,) ? error.message : String(error,)
+        caughtValueText(error,)
       }`,
       { cause: error, },
     );

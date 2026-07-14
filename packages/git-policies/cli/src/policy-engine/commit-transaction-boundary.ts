@@ -3,6 +3,8 @@
  *
  * @module
  */
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import { runCommitTransaction, } from './commit-transaction.ts';
 import type { CommitTransactionPolicyOptions, } from './commit-transaction-types.ts';
 import { CommitTransactionGitError, } from './commit-transaction-git.ts';
@@ -46,7 +48,7 @@ export async function runCommitTransactionBoundary({
     return {
       policyResult: initialTransactionFailure({
         args,
-        message: Error.isError(error,) ? error.message : String(error,),
+        message: caughtValueText(error,),
       },),
       committed: false,
     };

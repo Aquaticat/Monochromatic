@@ -222,10 +222,7 @@ async function evaluate(
   if (!judgeResult.ok) {
     innerL.error(
       `judge model resolution failed: ${
-        Error.isError(judgeResult.err,)
-          ? judgeResult.err
-            .message
-          : String(judgeResult.err,)
+        caughtValueText(judgeResult.err,)
       }`,
     );
     return {

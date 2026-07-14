@@ -7,6 +7,7 @@
  * @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -515,7 +516,7 @@ export async function resolveRootFilesystem(): Promise<RootFilesystem> {
     }
   }
   catch (error: unknown) {
-    rootDiscoveryLogger.debug(`happy-opfs import failed during root discovery setup: ${(Error.isError(error,)) ? error.message : String(error,)}`,);
+    rootDiscoveryLogger.debug(`happy-opfs import failed during root discovery setup: ${caughtValueText(error,)}`,);
   }
 
   backendCache.fs = resolveEmptyRootFilesystem();

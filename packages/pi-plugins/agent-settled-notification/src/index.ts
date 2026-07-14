@@ -5,6 +5,7 @@
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import nanoSpawn from 'nano-spawn';
@@ -311,10 +312,7 @@ function registerAgentSettledNotification(
       /**
        * Safe error summary that preserves diagnostics without throwing from Pi's lifecycle hook.
        */
-      const failure = Error.isError(delivery.error,)
-        ? delivery.error
-          .message
-        : String(delivery.error,);
+      const failure = caughtValueText(delivery.error,);
       if (!hasWarnedAboutUnavailableNotification) {
         hasWarnedAboutUnavailableNotification = true;
         innerLogger.warn(`settled-agent desktop notification unavailable: ${failure}`,);
