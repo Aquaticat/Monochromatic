@@ -25,6 +25,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
 import {
   isHarnessInternalFrame,
   readProperty,
@@ -329,6 +331,8 @@ function isNodeRuntime(): boolean {
  *
  * @param readFile - `node:fs/promises` `readFile`, injected so the
  *   dynamic import happens once in {@link readAssertionSites}
+ *
+ * @mutates node - `Reflect.get` may invoke getters or proxy traps on error-like value.
  */
 async function recordSiteForError({
   node,
@@ -504,6 +508,8 @@ async function readSourceText({
  *
  * @returns map from each error node to its rendered assertion site
  *
+ * @mutates value - `Reflect.get` may invoke getters or proxy traps on thrown error values.
+ *
  * @example
  * ```ts
  * const sites = await readAssertionSites(caughtAssertionError);
@@ -511,7 +517,7 @@ async function readSourceText({
  * ```
  */
 export async function readAssertionSites(
-  value: unknown,
+  value: ForeignBorrowed<unknown>,
 ): Promise<WeakMap<object, AssertionSite>> {
   /**
    * Result map; stays empty in the browser and when no node yields a readable source line.

@@ -13,6 +13,8 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
 //region Getter-safe property read
 
 /**
@@ -43,7 +45,7 @@ export function readProperty({
   source,
   key,
 }: {
-  readonly source: object;
+  readonly source: ForeignBorrowed<object>;
   readonly key: string;
 },): unknown {
   try {

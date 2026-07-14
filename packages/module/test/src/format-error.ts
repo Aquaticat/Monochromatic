@@ -24,6 +24,7 @@
  */
 
 import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   type AssertionSite,
@@ -124,6 +125,8 @@ function safeString(value: unknown,): string {
  *
  * @returns message string or fallback marker
  *
+ * @mutates error - `Reflect.get` may invoke getters or proxy traps on error-like value.
+ *
  * @example
  * ```ts
  * readMessage(new Error('boom')) // 'boom'
@@ -152,6 +155,8 @@ function readMessage(error: object,): string {
  *
  * @returns class label such as `TypeError`, `AggregateError`, or
  *   `Error` as the default
+ *
+ * @mutates error - `Reflect.get` may invoke getters or proxy traps on error-like value.
  *
  * @example
  * ```ts
@@ -215,6 +220,8 @@ function stripWorkspacePrefix({
  *
  * @returns trimmed, prefix-stripped, harness-filtered stack frames;
  *   empty when `.stack` is missing or not a string
+ *
+ * @mutates error - `Reflect.get` may invoke getters or proxy traps on error-like value.
  *
  * @example
  * ```ts
@@ -307,7 +314,7 @@ function readStackFrames({
  * @returns one line for this node followed by lines for all of its
  *   descendants in walk order (cause first, then aggregate members)
  *
- * @mutates value - `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf` on non-Error values.
+ * @mutates value - `Reflect.get` and `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf` on error-like values.
  */
 function formatNode({
   headerPrefix,
@@ -406,7 +413,19 @@ function formatNode({
    * Recursively rendered aggregate members, appended after `causeLines` to keep walk order stable.
    */
   const errorLines: readonly string[] = Array.isArray(errorsField,)
-    ? errorsField.flatMap(function formatAggregateMember(
+    ? errorsField.flatMap(
+      /**
+       * Formats one retained aggregate error member.
+       *
+       * @param member - Aggregate member inspected through error formatting.
+       *
+       * @param index - Aggregate member position.
+       *
+       * @returns formatted lines for aggregate member.
+       *
+       * @mutates member - `Reflect.get` and `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf`.
+       */
+      function formatAggregateMember(
       member,
       index,
     ) {
@@ -452,6 +471,8 @@ function formatNode({
  * @returns single-line strings; see {@link formatFailure} for the
  *   common pattern of fusing the first line with a `FAIL` summary
  *
+ * @mutates value - `Reflect.get` and `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf` on thrown values.
+ *
  * @example
  * ```ts
  * try {
@@ -466,7 +487,9 @@ function formatNode({
  * //   Caused by: Error: root at root (file:5:1) at ...
  * ```
  */
-export async function formatErrorDeep(value: unknown,): Promise<readonly string[]> {
+export async function formatErrorDeep(
+  value: ForeignBorrowed<unknown>,
+): Promise<readonly string[]> {
   /**
    * Shared cycle-detection set so a self-referential `.cause` does not recurse forever.
    */
@@ -503,6 +526,8 @@ export async function formatErrorDeep(value: unknown,): Promise<readonly string[
  * @param value - thrown value to format
  *
  * @returns multi-line string suitable for `l.error(result)`
+ *
+ * @mutates value - `Reflect.get` and `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf` on thrown values.
  *
  * @example
  * ```ts
