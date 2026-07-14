@@ -317,6 +317,8 @@ export async function readConfig(name: string,): Promise<VmsyncConfig> {
  *
  * @param config - {@link VmsyncConfig} to persist
  *
+ * @mutates config - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * await writeConfig({ name: 'alpine', config });
@@ -328,7 +330,7 @@ export async function writeConfig(
     config,
   }: {
     readonly name: string;
-    readonly config: Omit<VmsyncConfig, 'state'> & {
+    config: Omit<VmsyncConfig, 'state'> & {
       readonly state: Readonly<SyncState>;
     };
   },
