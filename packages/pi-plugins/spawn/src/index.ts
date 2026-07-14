@@ -279,10 +279,10 @@ async function startCompletedChildMonitor(
   {
     pi,
     ctx,
-  }: Readonly<{
-    readonly pi: Readonly<ExtensionAPI>;
-    readonly ctx: Readonly<ExtensionContext>;
-  }>,
+  }: {
+    readonly pi: ExtensionAPI;
+    readonly ctx: ExtensionContext;
+  },
 ): Promise<void> {
   stopCompletedChildMonitor({ pi, },);
 
@@ -358,10 +358,10 @@ async function deliverCompletedChildren(
   {
     pi,
     ctx,
-  }: Readonly<{
-    readonly pi: Readonly<ExtensionAPI>;
-    readonly ctx: Readonly<ExtensionContext>;
-  }>,
+  }: {
+    readonly pi: ExtensionAPI;
+    readonly ctx: ExtensionContext;
+  },
 ): Promise<boolean> {
   /**
    * Parent session identifier whose children should be delivered.
