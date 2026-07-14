@@ -30,7 +30,7 @@ export type JsonScalar = boolean | number | string;
  * const state: JsonObject = { count: 1 };
  * ```
  */
-export type JsonObject = Readonly<Record<string, JsonScalar>>;
+export type JsonObject = Record<string, JsonScalar>;
 
 /**
  * Writes a JSON file through a same-directory temporary file and rename.

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@electron/packager": "catalog:",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "electron": "catalog:"
   },
   "devDependencies": {

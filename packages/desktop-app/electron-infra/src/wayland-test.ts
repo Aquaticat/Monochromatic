@@ -13,6 +13,8 @@
 
 import { join, } from 'node:path';
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
 import {
   defaultAppDir,
   defaultNestedWaylandBinary,
@@ -44,7 +46,7 @@ import {
  */
 export type WaylandBoundaryStep = {
   readonly commands?: readonly string[];
-  readonly expected: ExpectedObservedState;
+  readonly expected: ForeignBorrowed<ExpectedObservedState>;
 };
 
 /**
