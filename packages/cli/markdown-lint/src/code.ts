@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import type { Code, } from 'mdast';
 
 import { sliceOf, } from './node-source.ts';
@@ -44,7 +45,7 @@ export type IsFencedCodeParams = {
 export function isFencedCode({
   node,
   source,
-}: IsFencedCodeParams,): boolean {
+}: ReadonlyDeep<IsFencedCodeParams>,): boolean {
   /**
    * Code source with any leading indentation removed.
    */

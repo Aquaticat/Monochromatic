@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import type {
   Nodes,
   Text,
@@ -19,7 +20,7 @@ import type {
  * collectText(headingNode); // 'Section 2: Setup'
  * ```
  */
-export function collectText(root: Nodes,): string {
+export function collectText(root: ReadonlyDeep<Nodes>,): string {
   /**
    * Text fragments gathered in document order; joined on return.
    */
@@ -65,7 +66,7 @@ export function collectText(root: Nodes,): string {
  * textNodes(headingNode).at(-1); // last text node, for an end-of-heading edit
  * ```
  */
-export function textNodes(root: Nodes,): readonly Text[] {
+export function textNodes(root: ReadonlyDeep<Nodes>,): readonly Text[] {
   /**
    * Text nodes gathered in document order.
    */

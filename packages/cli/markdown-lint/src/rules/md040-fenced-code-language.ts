@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import type { Code, } from 'mdast';
 
 import { isFencedCode, } from '../code.ts';
@@ -64,7 +65,7 @@ function fenceMarkerLength(markerAndRest: string,): number {
 function languageInsertOffset({
   node,
   source,
-}: LanguageInsertOffsetParams,): number {
+}: ReadonlyDeep<LanguageInsertOffsetParams>,): number {
   /**
    * Opening fence start offset.
    */

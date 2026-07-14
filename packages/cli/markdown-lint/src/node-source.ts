@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { Nodes, } from 'mdast';
 import type { Position, } from 'unist';
@@ -21,7 +22,7 @@ import type {
  * positionOf(node).start.offset; // 0-based start offset
  * ```
  */
-export function positionOf(node: Nodes,): Position {
+export function positionOf(node: ReadonlyDeep<Nodes>,): Position {
   return nonNullishOrThrow(node.position,);
 }
 
@@ -37,7 +38,7 @@ export function positionOf(node: Nodes,): Position {
  * offsetsOf(node); // { start: 30, end: 91 }
  * ```
  */
-export function offsetsOf(node: Nodes,): {
+export function offsetsOf(node: ReadonlyDeep<Nodes>,): {
   readonly start: number;
   readonly end: number;
 } {
@@ -86,7 +87,7 @@ export type SliceOfParams = {
 export function sliceOf({
   node,
   source,
-}: SliceOfParams,): string {
+}: ReadonlyDeep<SliceOfParams>,): string {
   /**
    * Node's half-open source offsets.
    */
@@ -145,7 +146,7 @@ export function diagnose({
   message,
   node,
   fix,
-}: DiagnoseParams,): Diagnostic {
+}: ReadonlyDeep<DiagnoseParams>,): Diagnostic {
   /**
    * Resolved node position, for the start point.
    */

@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { Parents, } from 'mdast';
 
@@ -79,7 +80,7 @@ type ContinuationPrefixParams = {
 function continuationPrefix({
   paragraph,
   source,
-}: ContinuationPrefixParams,): string {
+}: ReadonlyDeep<ContinuationPrefixParams>,): string {
   /**
    * Paragraph start point.
    */
@@ -146,7 +147,7 @@ function checkSemanticLineBreaks({
     if (node.type !== 'text') {
       continue;
     }
-    if (ancestors.some(function isSkip(ancestor: Parents,): boolean {
+    if (ancestors.some(function isSkip(ancestor: ReadonlyDeep<Parents>,): boolean {
       return SKIP_ANCESTORS.has(ancestor.type,);
     },)) {
       continue;
@@ -154,7 +155,7 @@ function checkSemanticLineBreaks({
     /**
      * Nearest paragraph ancestor, the prose container.
      */
-    const paragraph = ancestors.findLast(function isParagraph(ancestor: Parents,): boolean {
+    const paragraph = ancestors.findLast(function isParagraph(ancestor: ReadonlyDeep<Parents>,): boolean {
       return ancestor.type === 'paragraph';
     },);
     if (paragraph === undefined) {

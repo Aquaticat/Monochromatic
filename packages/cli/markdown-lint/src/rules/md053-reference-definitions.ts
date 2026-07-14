@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   diagnose,
   offsetsOf,
@@ -49,7 +50,7 @@ type RemovalFixParams = {
 function removalFix({
   definition,
   source,
-}: RemovalFixParams,): Fix {
+}: ReadonlyDeep<RemovalFixParams>,): Fix {
   /**
    * Definition's source offsets.
    */

@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import type {
   AlignType,
   Table,
@@ -36,9 +37,9 @@ type CellContext = {
 function cellRawContent({
   cell,
   source,
-}: CellContext & {
+}: ReadonlyDeep<CellContext & {
   readonly cell: TableCell;
-},): string {
+}>,): string {
   /**
    * Cell source including its leading pipe and any padding.
    */
@@ -111,10 +112,10 @@ function rowCellLines({
   tag,
   aligns,
   source,
-}: RowCellLinesParams,): readonly string[] {
+}: ReadonlyDeep<RowCellLinesParams>,): readonly string[] {
   return row.children
     .map(function cellLine(
-      cell: TableCell,
+      cell: ReadonlyDeep<TableCell>,
       column: number,
     ): string {
     /**
@@ -165,7 +166,7 @@ export type ToHtmlTableParams = CellContext & {
 export function toHtmlTable({
   table,
   source,
-}: ToHtmlTableParams,): readonly string[] {
+}: ReadonlyDeep<ToHtmlTableParams>,): readonly string[] {
   /**
    * Per-column alignment, shared by header and body cells.
    */
@@ -198,7 +199,7 @@ export function toHtmlTable({
     ? []
     : [
       '<tbody>',
-      ...bodyRows.flatMap(function bodyRowLines(row: TableRow,): readonly string[] {
+      ...bodyRows.flatMap(function bodyRowLines(row: ReadonlyDeep<TableRow>,): readonly string[] {
         return [
           '<tr>',
           ...rowCellLines({

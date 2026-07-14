@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import type {
   Nodes,
   Root,
@@ -138,7 +139,7 @@ export type CorrectAstralOffsetsParams = {
 export function correctAstralOffsets({
   tree,
   source,
-}: CorrectAstralOffsetsParams,): Root {
+}: ReadonlyDeep<CorrectAstralOffsetsParams>,): Root {
   /**
    * Code-point-index to UTF-16-index map for this source.
    */

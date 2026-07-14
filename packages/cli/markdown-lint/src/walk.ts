@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import type {
   Nodes,
   Parents,
@@ -42,7 +43,7 @@ export type WalkEntry = {
  *
  * @returns whether the node has a `children` array
  */
-function isParent(node: Nodes,): node is Parents {
+function isParent(node: ReadonlyDeep<Nodes>,): node is Parents {
   return 'children' in node;
 }
 
@@ -64,7 +65,7 @@ function isParent(node: Nodes,): node is Parents {
  * }
  * ```
  */
-export function* walk(root: Root,): Generator<WalkEntry> {
+export function* walk(root: ReadonlyDeep<Root>,): Generator<WalkEntry> {
   /**
    * Pending nodes paired with the ancestors above them. Seeded with the root's
    * children so the root itself is never yielded.
