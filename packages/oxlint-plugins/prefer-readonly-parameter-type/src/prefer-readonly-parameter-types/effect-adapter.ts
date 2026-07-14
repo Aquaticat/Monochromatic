@@ -72,13 +72,13 @@ function descriptionDocumentsBoundary({
 }
 
 /**
- * Converts documented direct opaque boundary into verified adapter mutation.
+ * Converts documented direct opaque boundary into conservative uncertainty.
  *
  * @param declaration - Callable whose contracts describe boundary.
  *
  * @param summary - Summary containing direct opaque provenance.
  *
- * @mutates summary - Reclassifies fully documented opaque indexes as mutation.
+ * @mutates summary - Reclassifies fully documented opaque indexes as documented uncertainty.
  *
  * @example
  * ```ts
@@ -143,7 +143,7 @@ export function applyVerifiedAdapterContracts({
       return;
     summary.directOpaque
       .delete(affectedParameterIndex,);
-    summary.directMutated
+    summary.directDocumentedUncertain
       .add(affectedParameterIndex,);
   },);
 }

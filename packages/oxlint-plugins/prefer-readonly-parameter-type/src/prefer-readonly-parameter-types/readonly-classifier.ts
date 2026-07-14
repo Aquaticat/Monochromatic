@@ -25,7 +25,7 @@ import {
 } from './intrinsic-effect-query.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 import { intrinsicEffectIsObservational, } from './intrinsic-effect-observation.ts';
-import { isForeignBorrowedType, } from './foreign-borrowed-classifier.ts';
+import { isForeignBorrowedType, } from './foreign-borrowed-identity.ts';
 import {
   readonlyOwnerName,
   typeClaimsReadonlyProjection,

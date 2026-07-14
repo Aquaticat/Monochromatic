@@ -71,7 +71,9 @@ The semantic rule still verifies direct mutations,
 callback invocation,
 unknown calls,
 and transitive effects.
-Actual caller-observable effects require complete `@mutates` contracts.
+Proven caller-observable effects permit mutable types without requiring `@mutates`.
+A present contract must remain accurate,
+and unresolved possible effects require complete contracts.
 
 Descendant properties,
 aliases,

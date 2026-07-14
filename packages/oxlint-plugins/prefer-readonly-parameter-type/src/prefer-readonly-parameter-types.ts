@@ -1,5 +1,5 @@
 /**
- * Project readonly parameter and mutation-effect contract rule.
+ * Project readonly parameter preference and uncertain-effect contract rule.
  *
  * @module
  */
@@ -84,9 +84,18 @@ const UNKNOWN_CALL_REMEDIATION = '\n\nChoose the remediation that matches the ca
   + '\nReplace inputName with that function\'s actual input name.';
 
 /**
+ * Remediation for readonly types contradicted by documented uncertainty.
+ */
+const DOCUMENTED_UNCERTAINTY_READONLY_REMEDIATION = '\n\nChoose the remediation that matches the intended contract:'
+  + '\n1. Keep the complete @mutates documentation and use a mutable parameter type.'
+  + '\n2. Remove or rewrite the uncertain call so semantic analysis can prove the input is only observed.'
+  + '\n3. Include repository-owned implementation in the nearest tsconfig.json so the rule can inspect it.'
+  + '\n4. Audit the exact external callable and add a tested effect-catalogue entry proving its effects.';
+
+/**
  * Every supported remediation for object-capable global String conversion.
  */
-const STRING_OBJECT_COERCION_REMEDIATION = '\n\nChoose the remediation that preserves the intended output:'
+const STRING_OBJECT_COERCION_REMEDIATION =  '\n\nChoose the remediation that preserves the intended output:'
   + '\n1. Narrow the input to string, number, bigint, boolean, symbol, null, or undefined before calling String. Primitive conversion cannot run caller-owned hooks.'
   + '\n2. Read a known primitive field and convert that field instead of converting its containing object.'
   + '\n3. For error or logging fallbacks, return known strings directly and describe other values by a noncoercing fact such as typeof value.'
@@ -96,7 +105,7 @@ const STRING_OBJECT_COERCION_REMEDIATION = '\n\nChoose the remediation that pres
   + '\nReplace inputName with that function\'s actual input name.';
 
 /**
- * Enforces honest readonly parameter types and verified mutation contracts.
+ * Prefers readonly parameters and requires documentation for unresolved effects.
  *
  * @example
  * ```ts
@@ -109,17 +118,18 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
     fixable: 'code',
     hasSuggestions: true,
     docs: {
-      description: 'Require honest readonly parameter types and verified @mutates effects.',
+      description: 'Require readonly parameter types when proven sufficient and @mutates documentation for unresolved effects.',
       recommended: true,
     },
     messages: {
       shouldBeReadonly: 'Parameter "{{parameterName}}" should be readonly: {{reason}}.',
-      missingMutatesTag: 'Parameter "{{parameterName}}" is mutated but lacks @mutates contract.',
+      missingUncertaintyContract: 'Parameter "{{parameterName}}" has documented uncertainty propagated from {{boundaries}} but lacks its own @mutates contract.',
       staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
       opaqueEffect: `{{inputSubject}} used by these calls: {{boundaries}}.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       opaqueMethodEffect: `{{inputSubject}} used as the object for these method calls: {{boundaries}}.\n\nA method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       stringObjectCoercionEffect: `{{inputSubject}} passed to global String while it may be an object. String does not reassign the input. Object conversion reads input[Symbol.toPrimitive], input.toString, and input.valueOf; those reads can run getters or proxy traps, and callable values are then invoked. That caller-owned code can change the input, reachable state, or another system. This rule does not report String conversion when the input is provably primitive.${STRING_OBJECT_COERCION_REMEDIATION}`,
       dishonestReadonly: 'Parameter "{{parameterName}}" claims readonly semantics dishonestly: {{reason}}.',
+      uncertainReadonly: `Parameter "{{parameterName}}" cannot be verified as readonly because its documented possible effects come from: {{boundaries}}.${DOCUMENTED_UNCERTAINTY_READONLY_REMEDIATION}`,
       inconsistentMutatesContract: 'Mutation contracts disagree across callable signatures.',
       semanticBridgeUnavailable: 'Readonly semantic analysis unavailable: {{reason}}.',
     },

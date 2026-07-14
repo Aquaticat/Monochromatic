@@ -20,6 +20,9 @@ export const ECMASCRIPT_OBJECT_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...[
     'entries',
     'getPrototypeOf',
+    'hasOwn',
+    'keys',
+    'values',
   ].map(function objectHookObservation(member,): IntrinsicEffectEntry {
     return {
       provenance: { kind: 'ecmascript', },

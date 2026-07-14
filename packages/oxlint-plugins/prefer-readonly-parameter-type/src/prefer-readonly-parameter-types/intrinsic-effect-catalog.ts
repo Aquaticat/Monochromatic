@@ -180,6 +180,12 @@ const DOM_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },
   receiverEffect({
     provenance: { kind: 'dom', },
+    ownerType: 'TextDecoder',
+    member: 'decode',
+    evidence: 'WHATWG Encoding Standard commit a985b62a TextDecoder.decode updates decoder state without changing input bytes',
+  },),
+  receiverEffect({
+    provenance: { kind: 'dom', },
     ownerType: 'AbortController',
     member: 'abort',
     evidence: 'TypeScript 7 lib.dom.d.ts AbortController declaration',

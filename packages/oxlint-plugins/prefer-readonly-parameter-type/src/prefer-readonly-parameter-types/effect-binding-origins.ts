@@ -7,12 +7,14 @@
 import type {
   BinaryExpression,
   BindingName,
+  ForOfStatement,
   Node,
   VariableDeclaration,
 } from 'typescript/unstable/ast';
 import {
   isBindingElement,
   isIdentifier,
+  isVariableDeclarationList,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
@@ -137,24 +139,28 @@ export function expressionOrigin({
  *
  * @param aliasAssignments - Simple assignments eligible for aliasing.
  *
+ * @param forOfStatements - Iterations binding elements from parameter-owned iterables.
+ *
  * @param bindingOriginBySymbolId - Origin map receiving aliases.
  *
  * @mutates bindingOriginBySymbolId - Adds aliases rooted in parameter state.
  *
  * @example
  * ```ts
- * discoverAliasOrigins({ project, variableDeclarations, aliasAssignments, bindingOriginBySymbolId });
+ * discoverAliasOrigins({ project, variableDeclarations, aliasAssignments, forOfStatements, bindingOriginBySymbolId });
  * ```
  */
 export function discoverAliasOrigins({
   project,
   variableDeclarations,
   aliasAssignments,
+  forOfStatements,
   bindingOriginBySymbolId,
 }: {
   readonly project: Project;
   readonly variableDeclarations: readonly VariableDeclaration[];
   readonly aliasAssignments: readonly BinaryExpression[];
+  readonly forOfStatements: readonly ForOfStatement[];
   readonly bindingOriginBySymbolId: Map<number, number>;
 },): void {
   /**
@@ -165,7 +171,8 @@ export function discoverAliasOrigins({
     pass: 0,
   };
   while (state.changed
-    && (state.pass <= (variableDeclarations.length + aliasAssignments.length))) {
+    && (state.pass <= (variableDeclarations.length + aliasAssignments.length
+      + forOfStatements.length))) {
     state.changed = false;
     state.pass++;
     variableDeclarations.forEach(function discover(declaration,): void {
@@ -187,6 +194,41 @@ export function discoverAliasOrigins({
         parameterIndex,
         bindingOriginBySymbolId,
       },) || state.changed;
+    },);
+    forOfStatements.forEach(function discoverIteration(statement,): void {
+      /**
+       * Parameter origin of iterated expression.
+       */
+      const parameterIndex = expressionOrigin({
+        project,
+        bindingOriginBySymbolId,
+        node: statement.expression,
+      },);
+      if (parameterIndex === PARAMETER_INDEX_UNAVAILABLE)
+        return;
+      if (isVariableDeclarationList(statement.initializer,)) {
+        /**
+         * Declarations receiving iterated elements.
+         */
+        const { declarations, } = statement.initializer;
+        declarations.forEach(function registerIterationDeclaration(declaration,): void {
+            state.changed = registerBindingOrigin({
+              project,
+              name: declaration.name,
+              parameterIndex,
+              bindingOriginBySymbolId,
+            },) || state.changed;
+        },);
+        return;
+      }
+      if (isIdentifier(statement.initializer,)) {
+        state.changed = registerBindingOrigin({
+          project,
+          name: statement.initializer,
+          parameterIndex,
+          bindingOriginBySymbolId,
+        },) || state.changed;
+      }
     },);
     aliasAssignments.forEach(function discoverAssignment(assignment,): void {
       /**

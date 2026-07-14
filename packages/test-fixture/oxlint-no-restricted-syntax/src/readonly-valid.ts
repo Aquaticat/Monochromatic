@@ -1,3 +1,5 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
 import {
   opaqueExternalMutation,
   opaqueExternalValues,
@@ -24,12 +26,126 @@ export function clearReadonlyFixture(values: Set<string>,): void {
 }
 
 /**
+ * Clears caller-owned set through effect proven by local implementation.
+ *
+ * @param values - Mutable caller collection.
+ */
+export function clearWithoutMutationContract(values: Set<string>,): void {
+  values.clear();
+}
+
+/**
+ * Invokes callback through effect proven by local implementation.
+ *
+ * @param callback - Caller callback capability.
+ */
+export function invokeWithoutMutationContract(callback: () => void,): void {
+  callback();
+}
+
+/**
  * Reads capability without invoking mutation.
  *
  * @param controller - Cancellation capability inspected without transition.
  */
 export function readControllerSignal(controller: AbortController,): AbortSignal {
   return controller.signal;
+}
+
+/** Mutable foreign child shape imposed by parser-like upstream API. */
+type ForeignFixtureChild = {
+  value: string;
+};
+
+/** Mutable foreign tree shape imposed by parser-like upstream API. */
+type ForeignFixtureTree = {
+  children: ForeignFixtureChild[];
+};
+
+/**
+ * Reads child reached only through marked ownership boundary.
+ *
+ * @param child - Child carrying propagated foreign provenance.
+ *
+ * @returns child value.
+ */
+function readForeignFixtureChild(child: ForeignFixtureChild,): string {
+  return child.value;
+}
+
+/**
+ * Reads foreign descendants through property access, destructuring, elements,
+ * callbacks, and an owned helper call without repeating marker.
+ *
+ * @param tree - Root handle supplied by foreign parser-like API.
+ *
+ * @returns joined child values.
+ */
+export function readForeignFixtureTree(
+  tree: ForeignBorrowed<ForeignFixtureTree>,
+): string {
+  const { children, } = tree;
+  return children
+    .map(function readChild(child,) {
+      return readForeignFixtureChild(child,);
+    },)
+    .join(',',);
+}
+
+/**
+ * Reads first foreign descendant reached through synchronous iteration.
+ *
+ * @param tree - Root handle supplied by foreign parser-like API.
+ *
+ * @returns first child value or empty string.
+ */
+export function readForeignFixtureForOf(
+  tree: ForeignBorrowed<ForeignFixtureTree>,
+): string {
+  for (const child of tree.children)
+    return readForeignFixtureChild(child,);
+  return '';
+}
+
+/**
+ * Invokes caller callback capability.
+ *
+ * @param callback - Operation selected by caller.
+ *
+ * @returns callback result.
+ *
+ * @mutates callback - Invoking callback can change captured or otherwise reachable state.
+ */
+function invokeFixtureCallback(callback: () => string,): string {
+  return callback();
+}
+
+/**
+ * Passes pure local callback without treating captured readonly state as mutated.
+ *
+ * @param state - Readonly state captured for observation.
+ *
+ * @returns captured value.
+ */
+export function invokePureFixtureCallback(
+  state: { readonly value: string; },
+): string {
+  return invokeFixtureCallback(function readValue() {
+    return state.value;
+  },);
+}
+
+/**
+ * Passes throwing local callback without claiming mutation.
+ *
+ * @returns unreachable callback result.
+ *
+ * @throws Error unconditionally from local callback.
+ */
+export function invokeThrowingFixtureCallback(): string {
+  return invokeFixtureCallback(function throwValue() {
+    throw new Error('fixture',);
+  },);
 }
 
 /** Unique type-only brand for primitive String conversion coverage. */

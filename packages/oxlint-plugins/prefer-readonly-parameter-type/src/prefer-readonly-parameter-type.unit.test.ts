@@ -118,33 +118,53 @@ name: 'prefer-readonly-parameter-types diagnostics',
 concurrency: 1,
 children: [
   it({
-    name: 'accepts honest readonly, declared mutation, capability reads, and bodyless contracts',
+    name: 'accepts readonly inputs, proven effects without contracts, documented uncertainty, and bodyless contracts',
     fn: async () => {
       expect(await lintReadonly('readonly-valid.ts',),).toEqual([],);
     },
   },),
   it({
-    name: 'reports readonly, mutation, stale, dishonest, and opaque failures',
+    name: 'keeps owned call paths separate from propagated foreign provenance',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-foreign-provenance-invalid.ts',);
+      expect(diagnostics.length,).toBe(2,);
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      expect(messages.some(function helperRemainsOwned(message,): boolean {
+        return message.startsWith('Parameter "child" should be readonly',);
+      },),).toBe(true,);
+      expect(messages.some(function boundaryRemainsOwned(message,): boolean {
+        return message.startsWith('Parameter "tree" should be readonly',);
+      },),).toBe(true,);
+    },
+  },),
+  it({
+    name: 'reports readonly preference, stale contracts, dishonest types, and undocumented uncertainty',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-invalid.ts',);
-      expect(diagnostics.length,).toBe(12,);
+      expect(diagnostics.length,).toBe(11,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
       expect(messages.some(function shouldReadonly(message,): boolean {
         return message.includes('should be readonly',);
       },),).toBe(true,);
-      expect(messages.some(function missingContract(message,): boolean {
-        return message.includes('lacks @mutates contract',);
-      },),).toBe(true,);
-      expect(messages.some(function directCallbackContract(message,): boolean {
-        return message.startsWith('Parameter "callback" is mutated but lacks @mutates contract.',);
+      expect(messages.some(function missingUncertaintyContract(message,): boolean {
+        return message.startsWith(
+          'Parameter "state" has documented uncertainty propagated from JSON.stringify but lacks its own @mutates contract.',
+        );
       },),).toBe(true,);
       expect(messages.some(function staleContract(message,): boolean {
         return message.includes('stale @mutates contract',);
       },),).toBe(true,);
       expect(messages.some(function dishonest(message,): boolean {
         return message.includes('claims readonly semantics dishonestly',);
+      },),).toBe(true,);
+      expect(messages.some(function uncertainReadonly(message,): boolean {
+        return message.startsWith(
+          'Parameter "state" cannot be verified as readonly because its documented possible effects come from: JSON.stringify.',
+        );
       },),).toBe(true,);
       /** Plain-language uncertainty diagnostic for unsafe JSON serialization. */
       const opaqueMessage = messages.find(function unsafeJson(message,): boolean {

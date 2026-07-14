@@ -8,21 +8,39 @@ import type { SourceFile, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
+import { propagateCallbackRelations, } from './effect-callback-relation.ts';
+import {
+  cachedFinalEffectIndex,
+  cacheFinalEffectIndex,
+  FINAL_EFFECT_INDEX_CACHE_MISS,
+} from './effect-final-index-cache.ts';
+import { effectProjectFingerprint, } from './effect-project-fingerprint.ts';
 import {
   directSummariesForSource,
   pruneDirectSummaryCache,
 } from './effect-summary-cache.ts';
+import { contentDigest, } from './effect-summary-cache-identity.ts';
+import { propagateInvokedCapabilities, } from './effect-invoked-capability.ts';
+import { propagateCalleeIndexes, } from './effect-propagation-indexes.ts';
 import {
-  addEffectIndex,
   callableKey,
-  type CallEdge,
   collectAstNodes,
   type EffectCallableDeclaration,
   isEffectCallableDeclaration,
   type MutableEffectSummary,
-  OWNED_CALLABLE_UNAVAILABLE,
-  PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
+import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
+import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
+
+/**
+ * Mutable effect dimensions propagated per parameter.
+ */
+const EFFECT_DIMENSION_COUNT = 4;
+
+/**
+ * Empty exclusion set for ordinary effect propagation.
+ */
+const NO_EXCLUDED_EFFECT_INDEXES: ReadonlySet<number> = new Set();
 
 /**
  * Readonly effect summary exposed to rule verification.
@@ -36,8 +54,12 @@ import {
  */
 export type CallableEffectSummary = {
   readonly mutatedParameterIndexes: ReadonlySet<number>;
+  readonly referentMutatedParameterIndexes: ReadonlySet<number>;
+  readonly invokedParameterIndexes: ReadonlySet<number>;
+  readonly documentedUncertainParameterIndexes: ReadonlySet<number>;
   readonly opaqueParameterIndexes: ReadonlySet<number>;
   readonly opaqueProvenanceByParameter: ReadonlyMap<number, ReadonlySet<string>>;
+  readonly foreignBorrowedParameterIndexes: ReadonlySet<number>;
 };
 
 /**
@@ -60,233 +82,6 @@ export const NO_EFFECT_SUMMARY: unique symbol = Symbol(
 );
 
 /**
- * Maps callee parameter effects through one call edge.
- *
- * @param target - Caller effect set receiving propagated index.
- *
- * @param edge - Call edge with caller argument roots.
- *
- * @param calleeIndexes - Callee parameter indexes carrying effect.
- *
- * @returns whether target changed.
- *
- * @mutates target - Adds caller indexes affected by callee effects.
- */
-function propagateCalleeIndexes({
-  target,
-  edge,
-  calleeIndexes,
-}: {
-  readonly target: Set<number>;
-  readonly edge: CallEdge;
-  readonly calleeIndexes: ReadonlySet<number>;
-},): boolean {
-  /**
-   * Whether any caller effect index was added.
-   */
-  let changed = false;
-  for (const calleeIndex of calleeIndexes) {
-    /**
-     * Caller parameters packaged into affected callee parameter.
-     */
-    const callerIndexes = edge.arguments[calleeIndex] ?? [];
-    for (const callerIndex of callerIndexes) {
-      changed = addEffectIndex({
-        target,
-        value: callerIndex,
-      },) || changed;
-    }
-  }
-  return changed;
-}
-
-/**
- * Adds opaque provenance facts for one caller parameter.
- *
- * @param target - Caller provenance map receiving facts.
- *
- * @param parameterIndex - Caller parameter affected by opaque boundary.
- *
- * @param provenanceFacts - Callee provenance facts to propagate.
- *
- * @returns whether target changed.
- *
- * @mutates target - Adds previously unseen provenance facts.
- */
-function addOpaqueProvenance({
-  target,
-  parameterIndex,
-  provenanceFacts,
-}: {
-  readonly target: Map<number, Set<string>>;
-  readonly parameterIndex: number | typeof PARAMETER_INDEX_UNAVAILABLE;
-  readonly provenanceFacts: ReadonlySet<string>;
-},): boolean {
-  if (parameterIndex === PARAMETER_INDEX_UNAVAILABLE)
-    return false;
-  /**
-   * Existing caller provenance or new accumulator.
-   */
-  const callerFacts = target.get(parameterIndex,) ?? new Set<string>();
-  /**
-   * Size before union detects fixed-point progress.
-   */
-  const priorSize = callerFacts.size;
-  provenanceFacts.forEach(function add(provenance,): void {
-    callerFacts.add(provenance,);
-  },);
-  target.set(
-    parameterIndex,
-    callerFacts,
-  );
-  return callerFacts.size !== priorSize;
-}
-
-/**
- * Maps opaque provenance through one owned call edge.
- *
- * @param summary - Caller summary receiving provenance.
- *
- * @param calleeSummary - Callee summary providing opaque facts.
- *
- * @param edge - Caller-to-callee argument mapping.
- *
- * @returns whether caller provenance changed.
- *
- * @mutates summary - Adds caller opaque provenance inherited from callee.
- */
-function propagateOpaqueProvenance({
-  summary,
-  calleeSummary,
-  edge,
-}: {
-  readonly summary: MutableEffectSummary;
-  readonly calleeSummary: MutableEffectSummary;
-  readonly edge: CallEdge;
-},): boolean {
-  /**
-   * Whether any caller provenance fact was added.
-   */
-  let changed = false;
-  for (const calleeIndex of calleeSummary.opaque) {
-    /**
-     * Caller parameters packaged into opaque callee parameter.
-     */
-    const callerIndexes = edge.arguments[calleeIndex] ?? [];
-    /**
-     * Provenance facts attached to opaque callee parameter.
-     */
-    const provenanceFacts = calleeSummary.opaqueProvenanceByParameter
-      .get(calleeIndex,)
-      ?? new Set<string>();
-    for (const callerIndex of callerIndexes) {
-      changed = addOpaqueProvenance({
-        target: summary.opaqueProvenanceByParameter,
-        parameterIndex: callerIndex,
-        provenanceFacts,
-      },) || changed;
-    }
-  }
-  return changed;
-}
-
-/**
- * Propagates callback relation through one owned call edge.
- *
- * @param summaries - All owned callable summaries.
- *
- * @param summary - Caller summary receiving propagated effect.
- *
- * @param calleeSummary - Callee summary defining callback relation.
- *
- * @param edge - Caller-to-callee argument edge.
- *
- * @returns whether caller summary changed.
- *
- * @mutates summary - Adds effects propagated through callback relation.
- */
-function propagateCallbackRelations({
-  summaries,
-  summary,
-  calleeSummary,
-  edge,
-}: {
-  readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
-  readonly summary: MutableEffectSummary;
-  readonly calleeSummary: MutableEffectSummary;
-  readonly edge: CallEdge;
-},): boolean {
-  /**
-   * Whether any callback relation changed caller summary.
-   */
-  let changed = false;
-  for (const relation of calleeSummary.relations) {
-    /**
-     * Callback declaration key passed to callback parameter.
-     */
-    const callbackKey = edge.callbackKeys[relation.callbackParameterIndex];
-    if ((callbackKey === undefined)
-      || (callbackKey === OWNED_CALLABLE_UNAVAILABLE))
-      continue;
-    /**
-     * Summary for passed callback declaration.
-     */
-    const callbackSummary = summaries.get(callbackKey,);
-    if (callbackSummary === undefined)
-      continue;
-    /**
-     * Caller parameters packaged as callback source value.
-     */
-    const sourceCallerIndexes = edge.arguments[relation.sourceParameterIndex]
-      ?? [];
-    /**
-     * Whether callback argument carries mutation effect.
-     */
-    const callbackArgumentMutated = callbackSummary.mutated
-      .has(relation.callbackArgumentIndex,);
-    /**
-     * Whether callback argument carries opaque effect.
-     */
-    const callbackArgumentOpaque = callbackSummary.opaque
-      .has(relation.callbackArgumentIndex,);
-    for (const sourceCallerIndex of sourceCallerIndexes) {
-      /**
-       * Whether mutation propagation changed caller summary.
-       */
-      const mutationChanged = callbackArgumentMutated
-        && addEffectIndex({
-          target: summary.mutated,
-          value: sourceCallerIndex,
-        },);
-      /**
-       * Whether opaque propagation changed caller summary.
-       */
-      const opaqueChanged = callbackArgumentOpaque
-        && addEffectIndex({
-          target: summary.opaque,
-          value: sourceCallerIndex,
-        },);
-      /**
-       * Whether callback opaque provenance changed caller summary.
-       */
-      const opaqueProvenanceChanged = callbackArgumentOpaque
-        && addOpaqueProvenance({
-          target: summary.opaqueProvenanceByParameter,
-          parameterIndex: sourceCallerIndex,
-          provenanceFacts: callbackSummary.opaqueProvenanceByParameter
-            .get(relation.callbackArgumentIndex,)
-            ?? new Set<string>(),
-        },);
-      changed = mutationChanged
-        || opaqueChanged
-        || opaqueProvenanceChanged
-        || changed;
-    }
-  }
-  return changed;
-}
-
-/**
  * Propagates direct, transitive, recursive, and higher-order effects to fixed point.
  *
  * @param summaries - Mutable summaries keyed by declaration.
@@ -304,7 +99,7 @@ function propagateEffects(
     totalCount,
     summary,
   ): number {
-    return totalCount + (summary.parameterCount * 2);
+    return totalCount + (summary.parameterCount * EFFECT_DIMENSION_COUNT);
   },
     0,
   );
@@ -335,20 +130,41 @@ function propagateEffects(
             const calleeSummary = summaries.get(edge.calleeKey,);
             if (calleeSummary === undefined)
               return;
+            state.changed = propagateInvokedCapabilities({
+              summaries,
+              summary,
+              calleeSummary,
+              edge,
+            },) || state.changed;
             state.changed = propagateCalleeIndexes({
               target: summary.mutated,
               edge,
               calleeIndexes: calleeSummary.mutated,
+              excludedIndexes: calleeSummary.invoked,
             },) || state.changed;
             state.changed = propagateCalleeIndexes({
               target: summary.opaque,
               edge,
               calleeIndexes: calleeSummary.opaque,
+              excludedIndexes: NO_EXCLUDED_EFFECT_INDEXES,
             },) || state.changed;
-            state.changed = propagateOpaqueProvenance({
+            state.changed = propagateCalleeIndexes({
+              target: summary.documentedUncertain,
+              edge,
+              calleeIndexes: calleeSummary.documentedUncertain,
+              excludedIndexes: NO_EXCLUDED_EFFECT_INDEXES,
+            },) || state.changed;
+            state.changed = propagateUncertaintyProvenance({
               summary,
               calleeSummary,
               edge,
+              calleeIndexes: calleeSummary.opaque,
+            },) || state.changed;
+            state.changed = propagateUncertaintyProvenance({
+              summary,
+              calleeSummary,
+              edge,
+              calleeIndexes: calleeSummary.documentedUncertain,
             },) || state.changed;
             state.changed = propagateCallbackRelations({
               summaries,
@@ -368,6 +184,8 @@ function propagateEffects(
  *
  * @param activeSourceFile - Current overlay source wrapper used by verifier.
  *
+ * @param cacheRootOverride - Optional disposable persistent cache root used by tests.
+ *
  * @returns exact declaration summary lookup.
  *
  * @example
@@ -378,10 +196,46 @@ function propagateEffects(
 export function buildEffectSummaryIndex({
   project,
   activeSourceFile,
+  cacheRootOverride,
 }: {
   readonly project: Project;
   readonly activeSourceFile: SourceFile;
+  readonly cacheRootOverride?: string;
 },): EffectSummaryIndex {
+  /**
+   * Stable configured project membership for process-local reuse.
+   */
+  const fileNames = [...new Set([
+    ...project.program
+      .getSourceFileNames(),
+    activeSourceFile.fileName,
+  ],),].toSorted();
+  /**
+   * Project file-list identity checked without rescanning semantic bodies.
+   */
+  const fileListDigest = contentDigest(fileNames.join('\0',),);
+  /**
+   * Current overlay source identity checked against cached project snapshot.
+   */
+  const activeSourceDigest = contentDigest(activeSourceFile.text,);
+  /**
+   * Final fixed-point index reusable for unchanged project snapshot.
+   */
+  const cachedIndex = cachedFinalEffectIndex({
+    projectKey: project.configFileName,
+    fileListDigest,
+    activeFileName: activeSourceFile.fileName,
+    activeSourceDigest,
+  },);
+  if (cachedIndex !== FINAL_EFFECT_INDEX_CACHE_MISS)
+    return cachedIndex;
+  /**
+   * Complete configured-project identity used by persistent direct summaries.
+   */
+  const projectFingerprint = effectProjectFingerprint({
+    project,
+    activeSourceFile,
+  },);
   /**
    * Mutable summaries keyed by stable declaration identity.
    */
@@ -390,12 +244,7 @@ export function buildEffectSummaryIndex({
    * Current owned source paths used to prune rename and deletion residue.
    */
   const activeFiles = new Set<string>();
-  new Set([
-    ...project.program
-      .getSourceFileNames(),
-    activeSourceFile.fileName,
-  ],)
-    .forEach(function gatherSource(fileName,): void {
+  fileNames.forEach(function gatherSource(fileName,): void {
     /**
      * Program source file matching configured file name, using active wrapper
      * shared with verifier when identities match.
@@ -420,28 +269,22 @@ export function buildEffectSummaryIndex({
       return;
     activeFiles.add(fileName,);
     /**
-     * Callable declarations present in current decoded source wrapper.
-     */
-    const declarations = collectAstNodes(sourceFile,)
-      .filter(function retainEffectCallable(node,): node is EffectCallableDeclaration {
-        return isEffectCallableDeclaration(node,);
-      },);
-    /**
-     * Stable callable identities required from any exact-text cache hit.
-     */
-    const expectedKeys = new Set(declarations
-      .map(function declarationKey(declaration,): string {
-        return callableKey(declaration,);
-      },),);
-    /**
-     * Direct summaries reused when exact source text and declarations remain unchanged.
+     * Direct summaries reused when exact source text remains unchanged.
      */
     const fileSummaries = directSummariesForSource({
       projectKey: project.configFileName,
+      projectDigest: projectFingerprint.digest,
       fileName,
       sourceText: sourceFile.text,
-      expectedKeys,
+      ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
       create(): ReadonlyMap<string, MutableEffectSummary> {
+        /**
+         * Callable declarations decoded only after both cache layers miss.
+         */
+        const declarations = collectAstNodes(sourceFile,)
+          .filter(function retainEffectCallable(node,): node is EffectCallableDeclaration {
+            return isEffectCallableDeclaration(node,);
+          },);
         return new Map(declarations.map(function gatherCallable(declaration,): [
           string,
           MutableEffectSummary,
@@ -471,19 +314,45 @@ export function buildEffectSummaryIndex({
     activeFiles,
   },);
   propagateEffects(summaries,);
-  return {
+  /**
+   * Guaranteed foreign provenance indexed independently from mutable effects.
+   */
+  const foreignByCallable = propagateForeignBorrowed(summaries,);
+  /**
+   * Immutable lookup over completed fixed-point summaries.
+   */
+  const index: EffectSummaryIndex = {
     get(declaration,): CallableEffectSummary | typeof NO_EFFECT_SUMMARY {
+      /**
+       * Stable identity shared by effect and provenance indexes.
+       */
+      const key = callableKey(declaration,);
       /**
        * Internal summary matching declaration identity.
        */
-      const summary = summaries.get(callableKey(declaration,),);
+      const summary = summaries.get(key,);
       if (summary === undefined)
         return NO_EFFECT_SUMMARY;
       return {
-        mutatedParameterIndexes: summary.mutated,
+        mutatedParameterIndexes: new Set([
+          ...summary.mutated,
+          ...summary.invoked,
+          ...summary.documentedUncertain,
+        ],),
+        referentMutatedParameterIndexes: summary.mutated,
+        invokedParameterIndexes: summary.invoked,
+        documentedUncertainParameterIndexes: summary.documentedUncertain,
         opaqueParameterIndexes: summary.opaque,
         opaqueProvenanceByParameter: summary.opaqueProvenanceByParameter,
+        foreignBorrowedParameterIndexes: foreignByCallable.get(key,) ?? new Set<number>(),
       };
     },
   };
+  cacheFinalEffectIndex({
+    projectKey: project.configFileName,
+    fileListDigest: projectFingerprint.fileListDigest,
+    sourceDigests: projectFingerprint.sourceDigests,
+    index,
+  },);
+  return index;
 }

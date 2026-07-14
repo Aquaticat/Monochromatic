@@ -202,9 +202,40 @@ cache invalidation,
 editor lifecycle,
 and consumer-boundary behavior.
 Parser or declaration throughput alone does not prove that a candidate can answer deep readonly queries.
-The candidates are not yet selected,
-rejected,
-or performance-qualified for this repository.
+The repository selected TypeScript 7's synchronous unstable API after the separate technology audit in
+`docs/audit/tech-readonly-parameter-semantic-bridge-vet-2026-07-12.md`.
+
+### Persist semantic summaries outside one plugin process
+
+Oxlint's JavaScript host keeps module state while linting files in one process.
+At Oxc commit `8de6fcaac7037d37e7f971e67a474b3ae442513a`,
+`apps/oxlint/src-js/plugins/lint.ts` defines module-level `buffers` and `afterHooks` stores and explicitly reuses the
+hook array for every file.
+`apps/oxlint/src/run.rs` creates the external JavaScript linter during each CLI process startup.
+A later CLI invocation therefore cannot reuse ordinary JavaScript module state from the prior process.
+
+The semantic rule uses both scopes deliberately:
+
+- a process-local final-index cache reuses completed fixed-point propagation across unchanged files in one run;
+- content-addressed data-only JSON persists direct summaries across processes;
+- the persistent identity includes analyzer code,
+  TypeScript version,
+  compiler options,
+  complete project source and declaration contents,
+  governing lockfile,
+  source path,
+  and source text;
+- complete nested validation,
+  entry-size limits,
+  atomic publication,
+  and periodic age/count/byte eviction turn corrupt or stale data into misses.
+
+Package tests run the built analyzer in independent Node processes and prove that the second process reads persistent
+summaries without rebuilding direct summaries.
+Separate tests change an imported implementation while leaving the caller unchanged and corrupt a nested payload;
+both cases miss conservatively.
+This is a project-side performance workaround,
+not an Oxlint cache API.
 
 ## What does not work
 

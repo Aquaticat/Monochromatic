@@ -17,6 +17,7 @@
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "toml-eslint-parser": "catalog:"
   },
   "devDependencies": {

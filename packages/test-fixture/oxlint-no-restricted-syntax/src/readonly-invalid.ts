@@ -20,15 +20,6 @@ export function mutableReadonlyFixture(state: { value: string; },): string {
 }
 
 /**
- * Mutates collection without publishing effect contract.
- *
- * @param values - Caller collection cleared by body.
- */
-export function missingMutationContract(values: Set<string>,): void {
-  values.clear();
-}
-
-/**
  * Claims mutation that implementation does not perform.
  *
  * @param controller - Capability inspected without transition.
@@ -57,6 +48,45 @@ export function dishonestReadonlyCapability(
  */
 export function opaqueReadonlyEffect(state: { readonly value: string; },): string {
   return JSON.stringify(state,);
+}
+
+/**
+ * Documents uncertainty while retaining contradictory readonly type.
+ *
+ * @param state - Readonly state crossing unresolved serializer.
+ *
+ * @returns serialized state.
+ *
+ * @mutates state - JSON.stringify may invoke caller-owned accessors, proxy traps, or toJSON hooks.
+ */
+export function documentedUncertaintyReadonly(
+  state: { readonly value: string; },
+): string {
+  return JSON.stringify(state,);
+}
+
+/**
+ * Documents direct unresolved effect for transitive propagation fixture.
+ *
+ * @param state - Mutable state crossing unresolved serializer.
+ *
+ * @returns serialized state.
+ *
+ * @mutates state - JSON.stringify may invoke caller-owned accessors, proxy traps, or toJSON hooks.
+ */
+function documentedUncertaintyAdapter(state: { value: string; },): string {
+  return JSON.stringify(state,);
+}
+
+/**
+ * Forwards documented uncertainty without its own required contract.
+ *
+ * @param state - Mutable state forwarded to uncertain adapter.
+ *
+ * @returns serialized state.
+ */
+export function undocumentedUncertaintyWrapper(state: { value: string; },): string {
+  return documentedUncertaintyAdapter(state,);
 }
 
 /**
@@ -108,15 +138,6 @@ export function destructuredOpaqueEffect({
   readonly label: string;
 },): string {
   return JSON.stringify({ state, label, },);
-}
-
-/**
- * Invokes caller callback without declaring captured-state effects.
- *
- * @param callback - Caller callback whose closure can change state.
- */
-export function missingCallbackContract(callback: () => void,): void {
-  callback();
 }
 
 /**

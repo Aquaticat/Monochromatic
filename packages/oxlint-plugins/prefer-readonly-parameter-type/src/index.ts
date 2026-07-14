@@ -26,6 +26,12 @@ export {
 } from './prefer-readonly-parameter-types/effect-summary-cache.ts';
 
 export {
+  clearFinalEffectIndexCache,
+  finalEffectIndexCacheStats,
+  type FinalEffectIndexCacheStats,
+} from './prefer-readonly-parameter-types/effect-final-index-cache.ts';
+
+export {
   buildEffectSummaryIndex,
   NO_EFFECT_SUMMARY,
   type CallableEffectSummary,

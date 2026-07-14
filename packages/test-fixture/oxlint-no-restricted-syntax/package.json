@@ -6,6 +6,7 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "type-fest": "catalog:"
   },
   "files": [

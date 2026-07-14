@@ -76,10 +76,24 @@ and file-enforcer synchronized `CLAUDE.md`.
 
 The current plugin passes `lint:types`,
 `lint:oxlint`,
-and `test:unit` after the import correction.
-The unit suite originally reached one stale expected-count assertion after callback invocation stopped producing a
-dishonest-readonly diagnostic;
-updating the assertion from 12 to 11 restored the complete suite.
+and `test:unit`.
+Direct summaries use content-addressed persistent JSON keyed by analyzer implementation,
+TypeScript version,
+project graph,
+lockfile,
+compiler options,
+source path,
+and source contents.
+Full nested payload validation,
+entry-size limits,
+atomic writes,
+and age/count/byte maintenance make malformed or stale entries conservative misses.
+A process-local final-index cache avoids repeated fixed-point propagation for unchanged project snapshots.
+Focused tests cover independent-process hits,
+project-dependency invalidation,
+and corrupt nested payload rejection.
+Invocation-time external implementation inference remains the next incomplete layer;
+the persistent cache does not broaden current catalog coverage.
 
 The TSDoc contract phase is complete:
 
@@ -912,14 +926,18 @@ destructuring,
 closures,
 and callee arguments.
 Unknown external or dynamic effects fail closed:
-the implementation must obtain an explicit effect summary or require `@mutates` rather than assuming safety.
+the implementation must obtain an explicit effect summary or require complete `@mutates` documentation rather than
+assuming safety.
 
-The absence of `@mutates` is a verified negative effect contract,
-but it does not replace an honest TypeScript readonly type where one is available.
+The absence of `@mutates` is valid when analysis proves observation or a caller-observable effect.
+Observation still requires an honest deep-readonly type where one is available.
+Proven effects permit mutable types,
+and a present contract must remain accurate.
+Unresolved possible effects require complete contracts naming each uncertain boundary and affected input.
 
 ### Chosen callable coverage
 
-Every callable that intentionally mutates a parameter requires `@mutates`:
+Every callable participates in the same three-state analysis:
 exported functions,
 local helpers,
 methods,
@@ -928,13 +946,15 @@ getters or setters with parameters,
 function expressions,
 and inline callbacks.
 
-The rule infers effects to verify tags and propagate diagnostics,
-not to make internal mutation implicit.
+The rule infers effects to decide whether readonly is sufficient,
+to verify optional present tags,
+and to propagate diagnostics.
 Callback-capability invocation and referent mutation are separate effects.
-Invoking an unknown callback requires an honest `@mutates` contract,
+Proven callback invocation permits a mutable capability without requiring `@mutates`.
+Invoking an unknown callback requires an honest complete contract,
 but invocation alone does not claim that the function object or a pure owned callback's captures were mutated.
-Every call edge therefore has an inspectable contract.
-Moving a callable between local and exported scope does not change the requirement.
+Every call edge therefore has an inspectable effect summary or explicit uncertainty contract.
+Moving a callable between local and exported scope does not change the analysis.
 
 The TSDoc plugin already visits function expressions and arrow functions as documentable nodes.
 The implementation must add mutation-tag fixtures for direct declarations,
@@ -993,16 +1013,17 @@ not "always mutates.
 "
 The effect analyzer uses three outcomes:
 
-- proven mutation requires the tag;
-- proven absence rejects a stale tag;
-- possible mutation through an opaque external boundary reports `opaqueEffect` unless it occurs inside a verified local
-  adapter.
+- proven observation requires an honest deep-readonly type and rejects a stale tag;
+- proven caller-observable effect permits a mutable type and makes an accurate tag optional;
+- possible effect through an opaque external boundary reports `opaqueEffect` unless complete local documentation
+  accounts for every affected input and uncertain boundary.
 
 A local adapter is verified structurally:
 every opaque effect must map to a parameter carrying `@mutates`,
 and no opaque effect target may remain unaccounted for.
-The adapter's generated summary retains the opaque upstream provenance for diagnostics and audit output.
-A tag on an arbitrary production callable does not by itself waive `opaqueEffect`.
+Its summary retains documented uncertainty separately from proven mutation,
+plus upstream provenance for diagnostics and audit output.
+A partial tag does not waive `opaqueEffect`.
 This permits explicit external adapters without pretending their implementation was proved from unavailable source.
 
 ### Rejected higher-order TSDoc relation DSL

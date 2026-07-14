@@ -543,6 +543,36 @@ export function opaqueSemanticEffect(opaqueState: { readonly value: string; },):
 }
 
 /**
+ * Documents possible effects from an unresolved serializer.
+ *
+ * @param uncertainState - Mutable state crossing unresolved serializer.
+ *
+ * @returns serialized state.
+ *
+ * @mutates uncertainState - JSON.stringify may invoke caller-owned accessors, proxy traps, or toJSON hooks.
+ */
+export function documentedUncertainSemanticEffect(
+  uncertainState: { value: string; },
+): string {
+  return JSON.stringify(uncertainState,);
+}
+
+/**
+ * Propagates documented uncertainty through owned helper call.
+ *
+ * @param uncertainState - State forwarded to documented uncertain helper.
+ *
+ * @returns serialized state.
+ *
+ * @mutates uncertainState - documentedUncertainSemanticEffect delegates possible JSON.stringify hooks.
+ */
+export function transitiveDocumentedUncertainSemanticEffect(
+  uncertainState: { value: string; },
+): string {
+  return documentedUncertainSemanticEffect(uncertainState,);
+}
+
+/**
  * Passes primitive through otherwise opaque callable without mutable state.
  *
  * @param value - Primitive value unavailable for caller-observable mutation.

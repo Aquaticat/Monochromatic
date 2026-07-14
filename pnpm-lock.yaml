@@ -2567,6 +2567,9 @@ importers:
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       toml-eslint-parser:
         specifier: 'catalog:'
         version: 1.0.3
@@ -3415,6 +3418,9 @@ importers:
 
   packages/test-fixture/oxlint-no-restricted-syntax:
     devDependencies:
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       type-fest:
         specifier: 'catalog:'
         version: 5.8.0

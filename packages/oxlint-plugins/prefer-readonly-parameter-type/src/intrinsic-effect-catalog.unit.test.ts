@@ -140,18 +140,22 @@ await describe({
     it({
       name: 'records exact Object hooks and Array copy or callback effects',
       fn: async () => {
-        const objectEntries = intrinsicEffect({
-          provenance: { kind: 'ecmascript', },
-          ownerType: 'ObjectConstructor',
-          member: 'entries',
-        },);
-        expect(objectEntries,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if (objectEntries === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected Object.entries intrinsic effect.',);
-        expect(objectEntries.targets,).toEqual([{
-          kind: 'argument',
-          index: 0,
-        },],);
+        expect([
+          'entries',
+          'hasOwn',
+          'keys',
+          'values',
+        ].every(function hasObjectHookEffect(member,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'ecmascript', },
+            ownerType: 'ObjectConstructor',
+            member,
+          },);
+          return (effect !== NO_INTRINSIC_EFFECT)
+            && (effect.targets.length === 1)
+            && (effect.targets[0]?.kind === 'argument')
+            && (effect.targets[0].index === 0);
+        },),).toBe(true,);
         const arrayWith = intrinsicEffect({
           provenance: { kind: 'ecmascript', },
           ownerType: 'ReadonlyArray',
@@ -207,6 +211,15 @@ await describe({
         if (arrayCheck === NO_INTRINSIC_EFFECT)
           throw new Error('Expected Array.isArray observational effect.',);
         expect(arrayCheck.targets,).toEqual([],);
+        const textDecoder = intrinsicEffect({
+          provenance: { kind: 'dom', },
+          ownerType: 'TextDecoder',
+          member: 'decode',
+        },);
+        expect(textDecoder,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (textDecoder === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected TextDecoder.decode receiver effect.',);
+        expect(textDecoder.targets,).toEqual([{ kind: 'receiver', },],);
         expect([
           {
             provenance: { kind: 'dom', } as const,

@@ -13,20 +13,19 @@ import type {
 } from '@oxlint/plugins';
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
-import {
-  everyBoundaryIsInputMethod,
-  inputMethodUsageSubject,
-  inputUsageSubject,
-} from './input-diagnostic-description.ts';
+import { inputUsageSubject, } from './input-diagnostic-description.ts';
 import {
   MUTATION_CONTRACT_UNAVAILABLE,
   mutationContractsForDeclaration,
   mutationTargetIndexes,
 } from './mutation-contract-query.ts';
+import {
+  opaqueEffectReport,
+  uncertaintyBoundaries,
+} from './opaque-effect-diagnostic.ts';
 import { classifyReadonlyType, } from './readonly-classifier.ts';
 import { readonlyParameterSuggestions, } from './readonly-suggestions.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
-import { STRING_OBJECT_COERCION_PROVENANCE, } from './string-coercion-effect.ts';
 
 /**
  * Converts TypeScript source offset to Oxlint source offset.
@@ -281,6 +280,12 @@ export function verifyReadonlyCallable({
       type: parameterType,
     },);
     /**
+     * Whether exact ownership marker provenance reaches current parameter from
+     * boundary, property, element, destructuring, callback, or owned call.
+     */
+    const foreignBorrowed = effectSummary.foreignBorrowedParameterIndexes
+      .has(parameterIndex,);
+    /**
      * Report location spanning parameter binding.
      */
     const loc = semanticLocation({
@@ -295,72 +300,55 @@ export function verifyReadonlyCallable({
      */
     const parameterBlocks = blocksByParameter.get(parameterIndex,) ?? [];
     /**
-     * Whether analyzer proved caller-observable mutation.
+     * Whether analyzer found proven or documented caller-observable effects.
      */
-    const mutated = effectSummary.mutatedParameterIndexes
+    const affected = effectSummary.mutatedParameterIndexes
+      .has(parameterIndex,);
+    /**
+     * Whether analyzer proved mutation of referent rather than invocation alone.
+     */
+    const mutated = effectSummary.referentMutatedParameterIndexes
       .has(parameterIndex,);
     /**
      * Whether analyzer found unresolved external effect.
      */
     const opaque = effectSummary.opaqueParameterIndexes
       .has(parameterIndex,);
+    /**
+     * Whether unresolved possible effects have complete local documentation.
+     */
+    const documentedUncertain = effectSummary.documentedUncertainParameterIndexes
+      .has(parameterIndex,);
+    /**
+     * Human-readable provenance for unresolved or documented uncertainty.
+     */
+    const uncertainty = uncertaintyBoundaries({
+      effectSummary,
+      parameterIndex,
+    },);
 
     if (opaque) {
-      /**
-       * Sorted upstream boundary names retained by effect propagation.
-       */
-      const boundaryFacts = [
-        ...effectSummary.opaqueProvenanceByParameter
-          .get(parameterIndex,)
-          ?? [],
-      ].toSorted();
-      /**
-       * Human-readable list of unresolved calls.
-       */
-      const boundaries = boundaryFacts.join(', ',);
-      /**
-       * Whether only exact global String object conversion remains unresolved.
-       */
-      const onlyStringObjectCoercion = (boundaryFacts.length === 1)
-        && (boundaryFacts[0] === STRING_OBJECT_COERCION_PROVENANCE);
-      /**
-       * Whether every unknown call is a method on one current input binding.
-       */
-      const onlyInputMethods = everyBoundaryIsInputMethod({
-        boundaries: boundaryFacts,
+      context.report(opaqueEffectReport({
+        loc,
+        inputSubject,
         targetIndexes,
         parameterIndex,
-      },);
-      context.report({
-        loc,
-        messageId: onlyStringObjectCoercion
-          ? 'stringObjectCoercionEffect'
-          : onlyInputMethods
-            ? 'opaqueMethodEffect'
-            : 'opaqueEffect',
-        data: {
-          inputSubject: onlyInputMethods
-            ? inputMethodUsageSubject({
-              boundaries: boundaryFacts,
-              targetIndexes,
-              parameterIndex,
-            },)
-            : inputSubject,
-          boundaries: boundaries === ''
-            ? 'a call whose name this rule could not determine'
-            : boundaries,
-        },
-      },);
+        uncertainty,
+      },),);
       return;
     }
-    if (mutated && (parameterBlocks.length === 0)) {
+    if (documentedUncertain && (parameterBlocks.length === 0)) {
       context.report({
         loc,
-        messageId: 'missingMutatesTag',
-        data: { parameterName, },
+        messageId: 'missingUncertaintyContract',
+        data: {
+          parameterName,
+          boundaries: uncertainty.names,
+        },
       },);
     }
     if (mutated
+      && (!foreignBorrowed)
       && ((classification.kind === 'honest-readonly')
         || (classification.kind === 'dishonest-readonly'))) {
       context.report({
@@ -375,7 +363,21 @@ export function verifyReadonlyCallable({
       },);
       return;
     }
-    if ((!mutated) && (classification.kind === 'dishonest-readonly')) {
+    if (documentedUncertain
+      && (!foreignBorrowed)
+      && (classification.kind === 'honest-readonly')) {
+      context.report({
+        loc,
+        messageId: 'uncertainReadonly',
+        data: {
+          parameterName,
+          boundaries: uncertainty.names,
+        },
+      },);
+      return;
+    }
+    if ((!mutated) && (!foreignBorrowed)
+      && (classification.kind === 'dishonest-readonly')) {
       context.report({
         loc,
         messageId: 'dishonestReadonly',
@@ -385,7 +387,10 @@ export function verifyReadonlyCallable({
         },
       },);
     }
-    if ((!mutated) && (classification.kind === 'mutable')) {
+    if ((!mutated)
+      && (!documentedUncertain)
+      && (!foreignBorrowed)
+      && (classification.kind === 'mutable')) {
       /**
        * Verified semantic type suggestions available for current syntax.
        */
@@ -406,7 +411,7 @@ export function verifyReadonlyCallable({
         ...suggestions.length === 0 ? {} : { suggest: suggestions, },
       },);
     }
-    if (hasBody && (!mutated)
+    if (hasBody && (!affected)
       && (contracts !== MUTATION_CONTRACT_UNAVAILABLE)) {
       parameterBlocks.forEach(function stale(block,): void {
         reportStaleContract({

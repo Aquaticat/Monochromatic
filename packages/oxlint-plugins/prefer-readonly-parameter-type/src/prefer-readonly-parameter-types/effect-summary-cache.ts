@@ -4,9 +4,14 @@
  * @module
  */
 
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
+import {
+  PERSISTENT_EFFECT_CACHE_MISS,
+  readPersistentEffectSummaries,
+  writePersistentEffectSummaries,
+} from './effect-summary-persistent-cache.ts';
 
 /**
  * Scanner producing direct summaries for one source.
@@ -17,6 +22,7 @@ type DirectSummaryFactory = () => ReadonlyMap<string, MutableEffectSummary>;
  * Cached direct summaries for one exact source text.
  */
 type CachedSourceSummaries = {
+  readonly projectDigest: string;
   readonly sourceText: string;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
 };
@@ -32,6 +38,8 @@ const summariesByProject = new Map<string, Map<string, CachedSourceSummaries>>()
 const counters = {
   directSummaryBuildCount: 0,
   sourceCacheHitCount: 0,
+  persistentSourceCacheHitCount: 0,
+  persistentCacheWriteCount: 0,
 };
 
 /**
@@ -45,6 +53,8 @@ const counters = {
 export type EffectSummaryCacheStats = {
   readonly directSummaryBuildCount: number;
   readonly sourceCacheHitCount: number;
+  readonly persistentSourceCacheHitCount: number;
+  readonly persistentCacheWriteCount: number;
 };
 
 /**
@@ -59,7 +69,9 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
     parameterCount: summary.parameterCount,
     bindingOriginBySymbolId: new Map(summary.bindingOriginBySymbolId,),
     directMutated: new Set(summary.directMutated,),
+    directInvoked: new Set(summary.directInvoked,),
     directOpaque: new Set(summary.directOpaque,),
+    directDocumentedUncertain: new Set(summary.directDocumentedUncertain,),
     opaqueProvenanceByParameter: new Map(
       [...summary.opaqueProvenanceByParameter
         .entries(),]
@@ -74,33 +86,13 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
         },),
     ),
     mutated: new Set(summary.mutated,),
+    invoked: new Set(summary.invoked,),
     opaque: new Set(summary.opaque,),
+    documentedUncertain: new Set(summary.documentedUncertain,),
+    directForeignBorrowed: new Set(summary.directForeignBorrowed,),
     relations: [...summary.relations,],
     calls: [...summary.calls,],
   };
-}
-
-/**
- * Tests whether cached summaries contain every current callable key.
- *
- * @param expectedKeys - Current callable keys required by source wrapper.
- *
- * @param summaries - Cached direct summaries keyed by callable identity.
- *
- * @returns whether cache covers every current callable.
- */
-function containsEveryExpectedKey({
-  expectedKeys,
-  summaries,
-}: {
-  readonly expectedKeys: ReadonlySet<string>;
-  readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
-},): boolean {
-  for (const key of expectedKeys) {
-    if (!summaries.has(key,))
-      return false;
-  }
-  return true;
 }
 
 /**
@@ -128,34 +120,38 @@ function runSummaryFactory(
  *
  * @param projectKey - Configured project identity.
  *
+ * @param projectDigest - Exact configured project semantic identity.
+ *
  * @param fileName - Source path within project.
  *
  * @param sourceText - Exact semantic snapshot source text.
  *
- * @param expectedKeys - Callable keys present in current source wrapper.
+ * @param cacheRootOverride - Optional disposable persistent root used by tests.
  *
- * @param create - Scanner producing direct summaries on cache miss or incomplete hit.
+ * @param create - Scanner producing direct summaries on cache miss.
  *
  * @returns independent direct summaries safe for propagation.
  *
- * @mutates create - invokes caller scanner callback on cache miss or incomplete hit
+ * @mutates create - invokes caller scanner callback on process and persistent cache miss
  *
  * @example
  * ```ts
- * directSummariesForSource({ projectKey, fileName, sourceText, expectedKeys, create });
+ * directSummariesForSource({ projectKey, fileName, sourceText, create });
  * ```
  */
 export function directSummariesForSource({
   projectKey,
+  projectDigest,
   fileName,
   sourceText,
-  expectedKeys,
+  cacheRootOverride,
   create,
 }: ForeignBorrowed<Readonly<{
   projectKey: string;
+  projectDigest: string;
   fileName: string;
   sourceText: string;
-  expectedKeys: ReadonlySet<string>;
+  cacheRootOverride?: string;
   create: DirectSummaryFactory;
 }>>): ReadonlyMap<string, MutableEffectSummary> {
   /**
@@ -168,11 +164,8 @@ export function directSummariesForSource({
    */
   const cached = projectCache.get(fileName,);
   if ((cached !== undefined)
-    && (cached.sourceText === sourceText)
-    && containsEveryExpectedKey({
-      expectedKeys,
-      summaries: cached.summaries,
-    },)) {
+    && (cached.projectDigest === projectDigest)
+    && (cached.sourceText === sourceText)) {
     counters.sourceCacheHitCount++;
     return new Map(
       [...cached.summaries
@@ -189,6 +182,45 @@ export function directSummariesForSource({
     );
   }
   /**
+   * Persistent cache address for exact source snapshot.
+   */
+  const persistentAddress = {
+    projectKey,
+    projectDigest,
+    fileName,
+    sourceText,
+    ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
+  };
+  /**
+   * Direct summaries persisted by prior Oxlint process.
+   */
+  const persistent = readPersistentEffectSummaries(persistentAddress,);
+  if (persistent !== PERSISTENT_EFFECT_CACHE_MISS) {
+    counters.persistentSourceCacheHitCount++;
+    projectCache.set(
+      fileName,
+      {
+        projectDigest,
+        sourceText,
+        summaries: persistent,
+      },
+    );
+    summariesByProject.set(
+      projectKey,
+      projectCache,
+    );
+    return new Map([...persistent.entries(),]
+      .map(function clonePersistentEntry([key, summary,],): [
+        string,
+        MutableEffectSummary
+      ] {
+        return [
+          key,
+          cloneSummary(summary,),
+        ];
+      },),);
+  }
+  /**
    * Fresh semantic direct summaries for changed or uncached source.
    */
   const created = runSummaryFactory(create,);
@@ -196,6 +228,7 @@ export function directSummariesForSource({
   projectCache.set(
     fileName,
     {
+      projectDigest,
       sourceText,
       summaries: new Map(
         [...created.entries(),]
@@ -215,6 +248,11 @@ export function directSummariesForSource({
     projectKey,
     projectCache,
   );
+  writePersistentEffectSummaries({
+    address: persistentAddress,
+    summaries: created,
+  },);
+  counters.persistentCacheWriteCount++;
   return created;
 }
 
@@ -275,4 +313,6 @@ export function clearEffectSummaryCache(): void {
   summariesByProject.clear();
   counters.directSummaryBuildCount = 0;
   counters.sourceCacheHitCount = 0;
+  counters.persistentSourceCacheHitCount = 0;
+  counters.persistentCacheWriteCount = 0;
 }

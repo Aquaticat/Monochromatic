@@ -87,6 +87,9 @@ export type CallbackRelation = {
 export type CallEdge = {
   readonly calleeKey: string;
   readonly arguments: readonly (readonly number[])[];
+  readonly foreignArguments: readonly (readonly number[])[];
+  readonly directForeignArguments: readonly boolean[];
+  readonly foreignInbound: boolean;
   readonly callbackKeys: readonly (
     string | typeof OWNED_CALLABLE_UNAVAILABLE
   )[];
@@ -99,10 +102,15 @@ export type MutableEffectSummary = {
   readonly parameterCount: number;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
   readonly directMutated: Set<number>;
+  readonly directInvoked: Set<number>;
   readonly directOpaque: Set<number>;
+  readonly directDocumentedUncertain: Set<number>;
   readonly opaqueProvenanceByParameter: Map<number, Set<string>>;
   readonly mutated: Set<number>;
+  readonly invoked: Set<number>;
   readonly opaque: Set<number>;
+  readonly documentedUncertain: Set<number>;
+  readonly directForeignBorrowed: ReadonlySet<number>;
   readonly relations: CallbackRelation[];
   readonly calls: CallEdge[];
 };

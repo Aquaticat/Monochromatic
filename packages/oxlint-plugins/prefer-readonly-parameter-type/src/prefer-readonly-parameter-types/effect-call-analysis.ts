@@ -23,6 +23,7 @@ import {
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
 import { applyAuditedCallableEffect, } from './effect-imported-callable.ts';
+import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 import { effectCallName, } from './effect-call-name.ts';
 import {
   expressionCanCarryMutableState,
@@ -66,6 +67,8 @@ import {
  *
  * @param summary - Current callable summary receiving facts.
  *
+ * @param foreignInbound - Whether call belongs directly to summary callable.
+ *
  * @mutates summary - Adds call, mutation, callback, or opaque effect facts.
  *
  * @example
@@ -79,12 +82,14 @@ export function inspectEffectCall({
   bindingOriginBySymbolId,
   call,
   summary,
+  foreignInbound,
 }: {
   readonly project: Project;
   readonly checker: Checker;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
   readonly call: CallExpression;
   readonly summary: MutableEffectSummary;
+  readonly foreignInbound: boolean;
 },): void {
   /**
    * Index when direct callee identifier is current callback parameter.
@@ -98,7 +103,7 @@ export function inspectEffectCall({
     : PARAMETER_INDEX_UNAVAILABLE;
   if (callbackParameterIndex !== PARAMETER_INDEX_UNAVAILABLE) {
     addEffectIndex({
-      target: summary.directMutated,
+      target: summary.directInvoked,
       value: callbackParameterIndex,
     },);
     call.arguments
@@ -221,6 +226,7 @@ export function inspectEffectCall({
             receiverParameterIndex,
             callbackEffects: effect.callbacks,
             summary,
+            foreignInbound,
           },);
         }
         return;
@@ -312,6 +318,15 @@ export function inspectEffectCall({
       .push({
         calleeKey: callableKey(callee,),
         arguments: argumentIndexes,
+        foreignArguments: allArgumentIndexes,
+        directForeignArguments: call.arguments
+          .map(function foreignArgument(argument,): boolean {
+            return expressionContainsForeignBorrowed({
+              project,
+              node: argument,
+            },);
+          },),
+        foreignInbound,
         callbackKeys: call.arguments
           .map(function callbackKey(argument,) {
             /**

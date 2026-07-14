@@ -6,6 +6,7 @@
 
 import {
   type BinaryExpression,
+  type ForOfStatement,
   type Node,
   SyntaxKind,
   type VariableDeclaration,
@@ -30,6 +31,7 @@ import {
   expressionOrigin,
   registerBindingOrigin,
 } from './effect-binding-origins.ts';
+import { bindingContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 import { inspectEffectCall, } from './effect-call-analysis.ts';
 import {
   MUTATION_CONTRACT_UNAVAILABLE,
@@ -38,8 +40,10 @@ import {
 } from './mutation-contract-query.ts';
 import {
   addEffectIndex,
+  callableKey,
   type EffectCallableDeclaration,
   collectAstNodes,
+  isEffectCallableDeclaration,
   type MutableEffectSummary,
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
@@ -78,6 +82,43 @@ function inspectDirectWrite({
       node,
     },),
   },);
+}
+
+/**
+ * Tests whether call belongs to declaration rather than active nested closure.
+ *
+ * @param node - Call node whose nearest callable owner is resolved.
+ *
+ * @param declaration - Summary declaration expected as direct owner.
+ *
+ * @returns whether declaration directly owns call.
+ */
+function declarationDirectlyOwnsNode({
+  node,
+  declaration,
+}: {
+  readonly node: Node;
+  readonly declaration: EffectCallableDeclaration;
+},): boolean {
+  /**
+   * Stable identity of expected direct owner.
+   */
+  const declarationIdentity = callableKey(declaration,);
+  /**
+   * Parent cursor seeking nearest callable declaration.
+   */
+  const cursor: { current: Node; } = { current: node.parent, };
+  while (true) {
+    if (isEffectCallableDeclaration(cursor.current,))
+      return callableKey(cursor.current,) === declarationIdentity;
+    /**
+     * Next parent or self-parented source boundary.
+     */
+    const { parent, } = cursor.current;
+    if (parent === cursor.current)
+      return false;
+    cursor.current = parent;
+  }
 }
 
 /**
@@ -122,6 +163,22 @@ export function directEffectSummary({
     },);
   },);
   /**
+   * Parameter indexes explicitly carrying exact foreign ownership marker.
+   */
+  const directForeignBorrowed = new Set<number>();
+  /**
+   * Parameter entries paired with declaration indexes.
+   */
+  const parameterEntries = declaration.parameters
+    .entries();
+  for (const [parameterIndex, parameter,] of parameterEntries) {
+    if (bindingContainsForeignBorrowed({
+      project,
+      name: parameter.name,
+    },))
+      directForeignBorrowed.add(parameterIndex,);
+  }
+  /**
    * Mutable summary receiving direct and propagated effects.
    */
   const summary: MutableEffectSummary = {
@@ -129,10 +186,15 @@ export function directEffectSummary({
       .length,
     bindingOriginBySymbolId,
     directMutated: new Set(),
+    directInvoked: new Set(),
     directOpaque: new Set(),
+    directDocumentedUncertain: new Set(),
     opaqueProvenanceByParameter: new Map(),
     mutated: new Set(),
+    invoked: new Set(),
     opaque: new Set(),
+    documentedUncertain: new Set(),
+    directForeignBorrowed,
     relations: [],
     calls: [],
   };
@@ -186,10 +248,17 @@ export function directEffectSummary({
         .kind
         === SyntaxKind.EqualsToken);
   },);
+  /**
+   * Iteration statements binding elements reached through parameter-owned iterables.
+   */
+  const forOfStatements = allBodyNodes.filter(function forOfStatement(node,): node is ForOfStatement {
+    return isForOfStatement(node,);
+  },);
   discoverAliasOrigins({
     project,
     variableDeclarations,
     aliasAssignments,
+    forOfStatements,
     bindingOriginBySymbolId,
   },);
   /**
@@ -250,6 +319,10 @@ export function directEffectSummary({
         bindingOriginBySymbolId,
         call: node,
         summary,
+        foreignInbound: declarationDirectlyOwnsNode({
+          node,
+          declaration,
+        },),
       },);
     }
   },);
@@ -262,9 +335,19 @@ export function directEffectSummary({
     summary.mutated
       .add(index,);
   },);
+  summary.directInvoked
+    .forEach(function seedInvocation(index,): void {
+    summary.invoked
+      .add(index,);
+  },);
   summary.directOpaque
-    .forEach(function seed(index,): void {
+    .forEach(function seedOpacity(index,): void {
     summary.opaque
+      .add(index,);
+  },);
+  summary.directDocumentedUncertain
+    .forEach(function seedDocumentedUncertainty(index,): void {
+    summary.documentedUncertain
       .add(index,);
   },);
   return summary;

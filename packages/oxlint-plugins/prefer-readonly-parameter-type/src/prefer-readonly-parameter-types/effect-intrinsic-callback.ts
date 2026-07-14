@@ -41,6 +41,8 @@ import {
  *
  * @param summary - Current callable summary receiving callback edges.
  *
+ * @param foreignInbound - Whether intrinsic call belongs directly to summary callable.
+ *
  * @mutates summary - Adds owned calls, higher-order relations, or opaque callback provenance.
  *
  * @example
@@ -64,6 +66,7 @@ export function addIntrinsicCallbackEffects({
   receiverParameterIndex,
   callbackEffects,
   summary,
+  foreignInbound,
 }: {
   readonly project: Project;
   readonly checker: Checker;
@@ -72,6 +75,7 @@ export function addIntrinsicCallbackEffects({
   readonly receiverParameterIndex: number | typeof PARAMETER_INDEX_UNAVAILABLE;
   readonly callbackEffects: readonly IntrinsicCallbackEffect[];
   readonly summary: MutableEffectSummary;
+  readonly foreignInbound: boolean;
 },): void {
   if (receiverParameterIndex === PARAMETER_INDEX_UNAVAILABLE)
     return;
@@ -130,18 +134,28 @@ export function addIntrinsicCallbackEffects({
      * Callback parameter positions receiving receiver-reachable values.
      */
     const receiverIndexes = new Set(callbackEffect.receiverParameterIndexes,);
+    /**
+     * Caller receiver origin mapped to callback value parameters.
+     */
+    const callbackSources = callback.parameters
+      .map(function callbackSource(
+        _parameter,
+        callbackArgumentIndex,
+      ): readonly number[] {
+        return receiverIndexes.has(callbackArgumentIndex,)
+          ? [receiverParameterIndex,]
+          : [];
+      },);
     summary.calls
       .push({
         calleeKey: callableKey(callback,),
-        arguments: callback.parameters
-          .map(function callbackSource(
-            _parameter,
-            callbackArgumentIndex,
-          ): readonly number[] {
-            return receiverIndexes.has(callbackArgumentIndex,)
-              ? [receiverParameterIndex,]
-              : [];
+        arguments: callbackSources,
+        foreignArguments: callbackSources,
+        directForeignArguments: callback.parameters
+          .map(function noDirectForeignArgument(): boolean {
+            return false;
           },),
+        foreignInbound,
         callbackKeys: callback.parameters
           .map(function noNestedCallback(): typeof OWNED_CALLABLE_UNAVAILABLE {
             return OWNED_CALLABLE_UNAVAILABLE;

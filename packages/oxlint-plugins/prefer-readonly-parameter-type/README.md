@@ -8,7 +8,8 @@ Oxlint JavaScript plugin containing the project-owned
 The rule combines TypeScript 7 semantic types with whole-project mutation summaries:
 
 - nonmutating structural data requires an honest deep-readonly type;
-- mutable capabilities remain writable and require complete repeatable `@mutates` contracts;
+- proven caller-observable effects permit mutable parameter types and make `@mutates` optional;
+- unresolved possible effects require complete repeatable `@mutates` contracts;
 - exact platform and package effects are audited by owner,
   member,
   declaration provenance,
@@ -30,8 +31,11 @@ Semantic-plugin lint and fix tasks use one Oxlint worker because TypeScript brid
 Externally dictated mutable values use
 `ForeignBorrowed<T>` from `@monochromatic-dev/ownership-marker-foreign-borrowed/ts`.
 That zero-runtime package contains only the ownership marker.
-The marker records foreign ownership without claiming immutability,
-and direct or transitive mutation still requires `@mutates`.
+The marker records foreign ownership without claiming immutability.
+Proven direct or transitive effects permit mutable types without requiring `@mutates`;
+when a contract is present,
+it must remain accurate.
+Unresolved effects still require complete contracts.
 Place it only where foreign ownership enters or is deliberately retained.
 Properties,
 elements,
@@ -47,7 +51,9 @@ the [foreign-provenance guide](../../../docs/troubleshooting/oxlint-prefer-reado
 
 ## Callback invocation
 
-Invoking a caller-provided callback is an affected capability and requires an honest mutation contract.
+Invoking a caller-provided callback is an affected capability.
+Proven invocation permits a mutable capability without requiring a contract;
+unknown or unresolved invocation requires complete `@mutates` documentation.
 Invocation alone does not prove mutation of the function object or every captured value.
 The rule tracks invoked capability separately from referent mutation,
 so pure and throwing owned callbacks do not make captured readonly values dishonest.

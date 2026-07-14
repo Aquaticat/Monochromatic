@@ -74,7 +74,9 @@ Creating that dependent signal appends the result to each source signal's depend
 ```
 
 The stored relationship later propagates abort state.
-The rule must therefore target the supplied signal argument and require an honest `@mutates` contract.
+The rule must therefore target the supplied signal argument.
+That proven effect permits a mutable parameter type without requiring `@mutates`;
+a present contract must describe the dependency relation accurately.
 
 ## Verification
 
@@ -98,13 +100,13 @@ mise run //packages/cli/git-clone-size:lint:oxlint
 - Exact `TaskSignal.any` cannot match the `AbortSignal` entry merely because both use an anonymous inline type.
 - Package-local anonymous `const` fixtures retain owner `__type` and existing package catalog identities.
 - `packages/cli/git-clone-size/src/stream.ts` declares the dependency mutation on `options.signal`,
-  and its exported `estimate` boundary propagates that contract.
+  and its exported `estimate` boundary propagates that optional accurate contract.
 
 ### Patterns that fail closed
 
 - An uncatalogued anonymous DOM constructor member remains unresolved.
-- `AbortSignal.any` without a matching `@mutates` contract reports a missing mutation contract.
-- A stale contract reports when the exact dependency-producing call is removed.
+- `AbortSignal.any` without a matching `@mutates` contract remains valid because exact evidence proves the effect.
+- An inaccurate or stale present contract reports when it disagrees with the exact dependency-producing call.
 
 ## Verified workarounds
 
@@ -120,7 +122,7 @@ Use exact ambient-owner recovery plus an argument mutation target:
 }
 ```
 
-Document each affected caller boundary:
+Optionally document each affected caller boundary:
 
 ```typescript
 /**
@@ -129,7 +131,7 @@ Document each affected caller boundary:
 ```
 
 This preserves cancellation semantics and exposes the deferred relationship.
-Its tradeoff is a public effect contract on callers that forward the same options capability.
+Its tradeoff is maintaining a public effect contract that the rule does not require once the effect is proven.
 
 ## What does not work
 

@@ -108,6 +108,20 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     };
   },),
   ...WORKSPACE_PACKAGE_EFFECTS,
+  {
+    provenance: {
+      kind: 'package',
+      packageName: 'toml-eslint-parser',
+      major: 1,
+    },
+    ownerType: 'globalThis',
+    member: 'getStaticTOMLValue',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+    },],
+    evidence: 'toml-eslint-parser 1.0.3 source reads parser AST fields and can invoke caller-owned hooks',
+  },
   ...[
     'isArrayLiteralExpression',
     'isArrayTypeNode',
@@ -118,6 +132,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'isConstructSignatureDeclaration',
     'isConstructorTypeNode',
     'isDeleteExpression',
+    'isElementAccessExpression',
     'isFunctionLikeDeclaration',
     'isFunctionTypeNode',
     'isForOfStatement',
@@ -137,6 +152,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'isStringLiteral',
     'isTypeReferenceNode',
     'isVariableDeclaration',
+    'isVariableDeclarationList',
   ].map(function typescriptAstObservation(member,): IntrinsicEffectEntry {
     return {
       provenance: {
