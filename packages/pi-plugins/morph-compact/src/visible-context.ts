@@ -249,7 +249,7 @@ export function sendVisibleCompactContext(
  * isVisibleMorphContextMessage(message);
  * ```
  */
-function isVisibleMorphContextMessage(message: ContextMessage,): boolean {
+function isVisibleMorphContextMessage(message: ReadonlyDeep<ContextMessage>,): boolean {
   return (message.role
     === 'custom')
     && (message.customType
@@ -275,9 +275,9 @@ function isVisibleMorphContextMessage(message: ContextMessage,): boolean {
 export function filterVisibleContextMessages(
   {
     messages,
-  }: Readonly<{
+  }: ReadonlyDeep<Readonly<{
     readonly messages: readonly ContextMessage[];
-  }>,
+  }>>,
 ): ContextMessages {
   return messages.filter(function keepNonVisibleMorphContextMessage(message,) {
     return !isVisibleMorphContextMessage(message,);
