@@ -553,6 +553,11 @@ async function assertForbiddenRootContextAbsent(): Promise<void> {
 type BrowserslistResolver = typeof browserslist;
 
 /**
+ * Query sections observed by checked-in Browserslist configuration generator.
+ */
+type ObservedBrowserslistConfig = Readonly<Record<string, readonly string[]>>;
+
+/**
  * Imports Browserslist at runtime so generators use the installed package data.
  *
  * @returns {@link BrowserslistResolver} from dynamic package import.
@@ -589,7 +594,7 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
  * ```
  */
 function selectBrowserslistQueries(
-  { config, }: { readonly config: browserslist.Config; },
+  { config, }: { readonly config: ObservedBrowserslistConfig; },
 ): readonly string[] {
   return config[BROWSERSLIST_CONFIG_ENVIRONMENT]
     ?? config.defaults;
