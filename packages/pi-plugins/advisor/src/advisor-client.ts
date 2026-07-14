@@ -246,7 +246,7 @@ function caughtMessage(error: unknown,): string {
 export async function completeAdvisor(
   options: CompleteAdvisorOptions,
 ): Promise<AssistantMessage> {
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai APIs require non-readonly Model; prefer-readonly-parameter-types forces our parent type to be deep-readonly. */
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai accepts mutable Model while this boundary retains the selected model without changing it. */
   /**
    * Mutable view of the advisor model for external pi-ai API calls.
    */

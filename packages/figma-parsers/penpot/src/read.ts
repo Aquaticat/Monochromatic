@@ -22,9 +22,8 @@ export const SKIP: unique symbol = Symbol('Penpot input has no convertible count
 /**
  * Read-only view of a decoded Figma node or struct.
  *
- * Conversion functions only read their Figma inputs; this alias keeps the
- * read-only intent in the signature and satisfies
- * `prefer-readonly-parameter-types`.
+ * Conversion functions only read their Figma inputs;
+ * this alias records that observer contract at each conversion boundary.
  */
 export type FigmaRecord = Readonly<Record<string, unknown>>;
 

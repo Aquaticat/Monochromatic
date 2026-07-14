@@ -43,11 +43,10 @@ export type TomlEditMode = 'splice' | 'canonical';
  * The `type` field is always `'Block'` despite TOML having no block-comment
  * syntax; this mirrors the ESTree shape the parser implements.
  *
- * Declared as a deeply-readonly structural view of `AST.Comment` (whose
- * `range` tuple and `loc` object are mutable upstream) so consumers and
- * internal helpers can pass comment arrays without tripping
- * `prefer-readonly-parameter-types`. A parser `AST.Comment` assigns into
- * this view because mutable members satisfy readonly targets.
+ * Declared as a deeply readonly structural view of `AST.Comment`,
+ * whose `range` tuple and `loc` object are mutable upstream.
+ * The projection preserves immutable edit-state ownership while parser comments
+ * remain structurally assignable because mutable members satisfy readonly targets.
  */
 export type TomlComment = {
   readonly type: AST.Comment['type'];

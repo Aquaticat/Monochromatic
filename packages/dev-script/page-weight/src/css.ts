@@ -32,11 +32,9 @@ const TOKEN_DATA_INDEX = 4;
  *
  * The four token kinds this module reads (`Url`, `String`, `Function`,
  * `AtKeyword`) all expose their unescaped payload at tuple index
- * {@link TOKEN_DATA_INDEX}. `prefer-readonly-parameter-types` rejects the
- * upstream token types directly because they extend the mutable `Array`
- * interface, so the reader takes this readonly-array intersection instead;
- * every concrete token type is assignable to it (mutable to readonly is
- * covariant).
+ * {@link TOKEN_DATA_INDEX}. Upstream token types extend mutable `Array`,
+ * while this observer needs only an immutable indexed view of that payload.
+ * Every concrete token type remains structurally assignable to the narrower view.
  */
 type ValueToken =
   & readonly unknown[]

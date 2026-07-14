@@ -281,10 +281,10 @@ async function bundleAsGlobalAssignment(): Promise<string> {
 
 /**
  * Structural subset of Playwright `Page` covering only the methods
- * {@link loadHarness} calls. A full `Page` carries nested mutable members
- * (`keyboard`, `mouse`) that `prefer-readonly-parameter-types` cannot accept
- * as a readonly parameter; this readonly method-only view is genuinely
- * immutable yet a real `Page` satisfies it structurally at every call site.
+ * {@link loadHarness} calls.
+ * A full `Page` carries unrelated mutable members such as `keyboard` and `mouse`;
+ * this view keeps the harness boundary limited to capabilities it actually invokes.
+ * A real `Page` satisfies the view structurally at every call site.
  */
 type HarnessPage = Readonly<{
   /**

@@ -13,10 +13,12 @@ export { showToast, } from '../components/toast-message.ts';
 /**
  * Subset of fetch request configuration accepted by {@link api}.
  *
- * Deeply readonly (and narrower than `RequestInit`, which carries inherently
- * mutable nested members) so the destructured parameter satisfies
- * `prefer-readonly-parameter-types`. Covers exactly the fields the callers use:
- * a method, a JSON-string body, and optional extra headers.
+ * Deeply readonly and narrower than `RequestInit`,
+ * which carries mutable nested capabilities this wrapper never consumes.
+ * Covers exactly the fields callers use:
+ * a method,
+ * a JSON-string body,
+ * and optional extra headers.
  */
 export type ApiRequestOptions = {
   /**
