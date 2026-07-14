@@ -1,5 +1,12 @@
 # Audit: unused oxlint-disable directives across the workspace
 
+## Supersession
+
+This report preserves the measured pre-remediation directive baseline.
+The later semantic-readonly migration retired the native readonly rule and removed its remaining authored directives,
+including ignored `packages-paused/` sources.
+Current code must use the project-owned rule's honest types and effect contracts instead of suppression.
+
 ## Summary
 
 oxlint reports 301 unused oxlint-disable directives spread across 38 packages,

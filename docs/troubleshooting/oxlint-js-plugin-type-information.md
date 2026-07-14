@@ -1,5 +1,12 @@
 # Oxlint 1.73 does not supply TypeScript type information to JavaScript plugins, so custom rules need an independent semantic bridge
 
+## Supersession
+
+The Oxlint host limitation remains current,
+but retaining the native readonly rule is no longer the repository remedy.
+The project-owned rule now loads TypeScript 7's synchronous unstable API as an independent semantic bridge,
+and shared configuration disables the retired native rule.
+
 ## Symptom
 
 A custom Oxlint JavaScript rule can visit a TypeScript parameter and inspect its annotation syntax,

@@ -57,8 +57,9 @@ audited callbacks,
 synchronous iteration,
 and owned calls.
 A helper is foreign only when every owned inbound call supplies wholly foreign mutable state.
-The ongoing plugin migration still needs to remove any marker that is not a real host callback or retained-origin
-boundary.
+The completed migration keeps markers only at parser ingress,
+retained AST storage,
+and exported AST-emission boundaries.
 
 ## Verification
 

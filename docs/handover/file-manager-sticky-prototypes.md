@@ -110,6 +110,10 @@ Update this file whenever a work unit lands so the context survives auto-compact
 
 ## Repo-rule notes that bit during this session
 
+The native readonly-rule allowlist and scoped-disable advice in this historical handover is superseded.
+The repository now uses the project-owned semantic rule,
+which requires honest types or accurate effect contracts and prohibits inline suppression.
+
 - `no-nullish-union` (repo oxlint): no `T | null` / `T | undefined` annotations; use optional
   properties, guards, or exported `unique symbol` sentinels (pattern now in
   `file-manager-electron/src/strip-types.ts`).
