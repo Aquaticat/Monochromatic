@@ -299,7 +299,7 @@ function isMiseBackendPackage(effname: string,): boolean {
  */
 type RepologyProject = {
   readonly effname: string;
-  readonly repos: Readonly<Record<string, string>>;
+  readonly repos: Record<string, string>;
 };
 
 /**
@@ -477,7 +477,9 @@ console.log(`[generate-index] extracted ${projects.length} projects from Repolog
  * Step 6: Filter out mise-installable packages
  */
 const filtered = projects.filter(
-  function notMiseInstallable(project,): boolean {
+  function notMiseInstallable(
+    project: Pick<RepologyProject, 'effname'>,
+  ): boolean {
     if (miseTools.has(project.effname
       .toLowerCase(),))
       return false;
