@@ -66,7 +66,15 @@ export function buildCoreMatchers(
   },
 ): CoreMatcherSet {
   return {
-    toBe: function toBe(expected: unknown,): void {
+    toBe:
+      /**
+       * Compares strict equality through Chai.
+       *
+       * @param expected - Expected value inspected by Chai.
+       *
+       * @mutates expected - `a.to.equal` may inspect caller getters or proxy traps.
+       */
+      function toBe(expected: unknown,): void {
       a.to
         .equal(expected,);
     },
