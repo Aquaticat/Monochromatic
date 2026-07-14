@@ -48,17 +48,28 @@ function errorDetectorIdentifier(
 ): string | typeof NO_IDENTIFIER {
   if (expression.type !== 'CallExpression')
     return NO_IDENTIFIER;
-  if (expression.callee.type !== 'MemberExpression')
+  /**
+   * Potential Error.isError member call target.
+   */
+  const { callee, } = expression;
+  if (callee.type !== 'MemberExpression')
     return NO_IDENTIFIER;
-  if (expression.callee.computed)
+  if (callee.computed)
     return NO_IDENTIFIER;
-  if (expression.callee.object.type !== 'Identifier')
+  /**
+   * Potential Error constructor and isError property.
+   */
+  const {
+    object,
+    property,
+  } = callee;
+  if (object.type !== 'Identifier')
     return NO_IDENTIFIER;
-  if (expression.callee.object.name !== 'Error')
+  if (object.name !== 'Error')
     return NO_IDENTIFIER;
-  if (expression.callee.property.type !== 'Identifier')
+  if (property.type !== 'Identifier')
     return NO_IDENTIFIER;
-  if (expression.callee.property.name !== 'isError')
+  if (property.name !== 'isError')
     return NO_IDENTIFIER;
   /**
    * Value tested by Error.isError.
@@ -100,12 +111,19 @@ function readsErrorField(
     return false;
   if (expression.computed)
     return false;
-  if (expression.object.type !== 'Identifier')
+  /**
+   * Potential Error value and field name.
+   */
+  const {
+    object,
+    property: memberProperty,
+  } = expression;
+  if (object.type !== 'Identifier')
     return false;
-  if (expression.object.name !== identifier)
+  if (object.name !== identifier)
     return false;
-  return (expression.property.type === 'Identifier')
-    && (expression.property.name === property);
+  return (memberProperty.type === 'Identifier')
+    && (memberProperty.name === property);
 }
 
 /**
@@ -210,13 +228,19 @@ function returnsErrorDiagnostic(
  */
 function duplicatesCaughtValueFormatter(
   { node, }: ForeignBorrowed<{
-    readonly node: ESTree.FunctionDeclaration | ESTree.FunctionExpression;
+    readonly node: ESTree.Function;
   }>,
 ): boolean {
+  if (node.body === null)
+    return false;
   /**
    * First body statement where compact formatter implementations test Error.
    */
-  const [firstStatement,] = node.body.body;
+  const { body, } = node.body;
+  /**
+   * Leading function statement.
+   */
+  const [firstStatement,] = body;
   if ((firstStatement === undefined) || (firstStatement.type !== 'IfStatement'))
     return false;
   /**
@@ -268,8 +292,6 @@ export const preferCaughtValueText: CreateOnceRule = {
      * Reports duplicate formatter syntax.
      *
      * @param node - Duplicated formatter node.
-     *
-     * @mutates context - Emits diagnostic through foreign rule context.
      */
     function reportDuplicate(node: ForeignBorrowed<ESTree.Node>,): void {
       context.report({
@@ -292,11 +314,11 @@ export const preferCaughtValueText: CreateOnceRule = {
         },))
           reportDuplicate(node,);
       },
-      FunctionDeclaration(node: ForeignBorrowed<ESTree.FunctionDeclaration>,): void {
+      FunctionDeclaration(node: ForeignBorrowed<ESTree.Function>,): void {
         if (duplicatesCaughtValueFormatter({ node, },))
           reportDuplicate(node,);
       },
-      FunctionExpression(node: ForeignBorrowed<ESTree.FunctionExpression>,): void {
+      FunctionExpression(node: ForeignBorrowed<ESTree.Function>,): void {
         if (duplicatesCaughtValueFormatter({ node, },))
           reportDuplicate(node,);
       },
