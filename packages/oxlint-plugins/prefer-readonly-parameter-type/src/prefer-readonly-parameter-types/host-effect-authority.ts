@@ -94,6 +94,7 @@ export function ecma262Authority({
  * Pinned authoring-source digests accepted for standard evidence.
  */
 const STANDARD_SOURCE_DIGESTS: Readonly<Record<string, string>> = {
+  'CSSOM View@0222af95924db44c8e10d993b614596cd6f35cbb': '462ce76726254774db4d7ebb35b620bab95af445872af234391a0342ac043c19',
   'CSSOM@0222af95924db44c8e10d993b614596cd6f35cbb': '5a0b6a2f116ad450c22a202241c997c4a64d9c13bb9e011c5a0bcc4345f89668',
   'DOM@5796f716c857f0a563d11d32e0ca6b49232191be': 'f977c54983bdd54104e3860d5ef62f973ec9907ea8226858f5270fea502ebe52',
   'ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1': '313826a4ff419145470a9d688b8da21e326374afb2a9c73aa9183fbc57162845',

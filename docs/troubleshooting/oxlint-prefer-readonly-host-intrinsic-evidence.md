@@ -53,6 +53,17 @@ and rejects unknown anchor hashes.
 TypeScript `lib.dom.d.ts` and `lib.webworker.d.ts` files establish only declaration identity.
 Unknown browser APIs remain opaque rather than inheriting behavior from a same-named method.
 
+The element-method audit distinguishes mutation from layout or selector observation:
+
+- DOM `ParentNode.append` changes its receiver and can move supplied nodes from an existing parent;
+- DOM `Element.setAttribute` and `DOMTokenList.toggle` change receiver state;
+- DOM `ParentNode.querySelector` and `ParentNode.querySelectorAll` only select descendants;
+- CSSOM View `Element.getBoundingClientRect` computes and returns a rectangle without changing caller-owned input.
+
+Each entry uses the exact source-derived `<dfn method>` hash from the pinned DOM or CSSOM View authoring source.
+The CSSOM View source is pinned separately from CSSOM because they are distinct authored specifications even though
+both sources share one CSSWG repository revision.
+
 ### Node
 
 Node embeds JavaScript built-in module source in its executable.
@@ -131,11 +142,15 @@ or Node.
 - [Ecmarkup effects][ecmarkup-effects]
 - [ECMA-262 authoring source][ecma-source]
 - [Web IDL standard][web-idl]
+- [DOM Standard][dom-standard]
+- [CSSOM View Module][cssom-view]
 - [Node `BuiltinLoader` source for v26.5.0][node-builtins]
 - [Node deprecation `DEP0111`][node-dep0111]
 
 [ecmarkup-effects]: https://tc39.es/ecmarkup/#effects
 [ecma-source]: https://raw.githubusercontent.com/tc39/ecma262/master/spec.html
 [web-idl]: https://webidl.spec.whatwg.org/
+[dom-standard]: https://dom.spec.whatwg.org/
+[cssom-view]: https://drafts.csswg.org/cssom-view/
 [node-builtins]: https://github.com/nodejs/node/blob/v26.5.0/src/node_builtins.h
 [node-dep0111]: https://nodejs.org/docs/latest-v26.x/api/deprecations.html#dep0111-processbinding

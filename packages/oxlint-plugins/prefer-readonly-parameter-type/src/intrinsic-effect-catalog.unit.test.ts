@@ -224,6 +224,49 @@ await describe({
       },
     },),
     it({
+      name: 'records audited DOM element effects',
+      fn: async () => {
+        const appendEffect = intrinsicEffect({
+          provenance: { kind: 'dom', },
+          ownerType: 'ParentNode',
+          member: 'append',
+        },);
+        if (appendEffect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected ParentNode.append intrinsic effect.',);
+        expect(appendEffect.targets,).toEqual([
+          { kind: 'receiver', },
+          { kind: 'arguments-from', startIndex: 0, },
+        ],);
+        expect([
+          { ownerType: 'ParentNode', member: 'querySelector', },
+          { ownerType: 'ParentNode', member: 'querySelectorAll', },
+          { ownerType: 'Element', member: 'getBoundingClientRect', },
+        ].every(function elementObservation(query,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'dom', },
+            ...query,
+          },);
+          if (effect === NO_INTRINSIC_EFFECT)
+            return false;
+          return effect.targets.length === 0;
+        },),).toBe(true,);
+        expect([
+          { ownerType: 'Element', member: 'setAttribute', },
+          { ownerType: 'DOMTokenList', member: 'toggle', },
+        ].every(function elementMutation(query,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'dom', },
+            ...query,
+          },);
+          if (effect === NO_INTRINSIC_EFFECT)
+            return false;
+          if (effect.targets.length !== 1)
+            return false;
+          return effect.targets[0]?.kind === 'receiver';
+        },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'records dispatch listener uncertainty for receiver and event',
       fn: async () => {
         const effect = intrinsicEffect({

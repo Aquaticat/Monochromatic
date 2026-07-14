@@ -5,6 +5,7 @@
  */
 
 import { BROWSER_HOST_ABORT_EFFECTS, } from './browser-host-abort-effect-catalog.ts';
+import { BROWSER_HOST_ELEMENT_EFFECTS, } from './browser-host-element-effect-catalog.ts';
 import {
   WEB_SOURCES,
   webAuthority,
@@ -140,6 +141,7 @@ export const BROWSER_HOST_EFFECTS: readonly IntrinsicEffectEntry[] = [
     },),
   },),
   ...BROWSER_HOST_ABORT_EFFECTS,
+  ...BROWSER_HOST_ELEMENT_EFFECTS,
   {
     provenance: { kind: 'dom', },
     ownerType: 'EventTarget',
