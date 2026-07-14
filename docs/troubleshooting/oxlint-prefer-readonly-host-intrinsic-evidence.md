@@ -82,6 +82,10 @@ The File API audit keeps immutable byte observation separate from host retention
 - `URL.createObjectURL` retains its blob in the host blob URL store until revocation,
   so the blob remains an opaque relation rather than a direct mutation target.
 
+The Fetch audit records `Body.json` and `Body.text` as receiver effects.
+Both fully read the body and disturb its stream before parsing or decoding the bytes.
+The returned JSON or text does not preserve caller-owned input provenance.
+
 ### Node
 
 Node embeds JavaScript built-in module source in its executable.
@@ -163,6 +167,7 @@ or Node.
 - [DOM Standard][dom-standard]
 - [CSSOM View Module][cssom-view]
 - [File API][file-api]
+- [Fetch Standard][fetch-standard]
 - [Node `BuiltinLoader` source for v26.5.0][node-builtins]
 - [Node deprecation `DEP0111`][node-dep0111]
 
@@ -172,5 +177,6 @@ or Node.
 [dom-standard]: https://dom.spec.whatwg.org/
 [cssom-view]: https://drafts.csswg.org/cssom-view/
 [file-api]: https://w3c.github.io/FileAPI/
+[fetch-standard]: https://fetch.spec.whatwg.org/
 [node-builtins]: https://github.com/nodejs/node/blob/v26.5.0/src/node_builtins.h
 [node-dep0111]: https://nodejs.org/docs/latest-v26.x/api/deprecations.html#dep0111-processbinding

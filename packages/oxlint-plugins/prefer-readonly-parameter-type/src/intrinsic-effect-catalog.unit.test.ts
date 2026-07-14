@@ -249,6 +249,26 @@ await describe({
       },
     },),
     it({
+      name: 'records audited Fetch body receiver effects',
+      fn: async () => {
+        expect([
+          'json',
+          'text',
+        ].every(function bodyConsumption(member,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'dom', },
+            ownerType: 'Body',
+            member,
+          },);
+          if (effect === NO_INTRINSIC_EFFECT)
+            return false;
+          if (effect.targets.length !== 1)
+            return false;
+          return effect.targets[0]?.kind === 'receiver';
+        },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'records audited File API effects',
       fn: async () => {
         expect([
