@@ -404,18 +404,31 @@ export function textEncoderObservationEffect({
 }
 
 /**
- * Keeps object-element sorting conservative until callback presence is specialized.
+ * Sorts object elements through an explicitly analyzable comparator.
  *
  * @param values - Object values whose sort callback may expose state.
  *
  * @returns sorted object copy.
  */
-export function objectArraySortOpaqueEffect(
+export function objectArraySortCallbackEffect(
   values: readonly { readonly value: string; }[],
 ): readonly { readonly value: string; }[] {
   return values.toSorted(function ascending(left, right,): number {
     return left.value.localeCompare(right.value,);
   },);
+}
+
+/**
+ * Keeps default object-element sorting opaque because coercion hooks may run.
+ *
+ * @param values - Object values exposed to default string coercion.
+ *
+ * @returns sorted object copy.
+ */
+export function objectArrayDefaultSortOpaqueEffect(
+  values: { readonly value: string; }[],
+): readonly { readonly value: string; }[] {
+  return values.toSorted();
 }
 
 /**
