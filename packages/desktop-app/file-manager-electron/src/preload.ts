@@ -12,6 +12,7 @@
  * ```
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   contextBridge,
   ipcRenderer,
@@ -114,6 +115,34 @@ function parseRootReply({ value, }: { readonly value: unknown; },): string {
 }
 
 /**
+ * Reports rendered strip state through Electron IPC.
+ *
+ * @param state - Renderer-owned state entering preload bridge.
+ *
+ * @mutates state - `ipcRenderer.send` serializes state and may invoke caller-owned property accessors while copying it.
+ *
+ * @example
+ * ```ts
+ * reportState({
+ *   activePath: '/',
+ *   columnCount: 1,
+ *   overlapCount: 0,
+ *   paneCount: 1,
+ *   ready: true,
+ *   rootPinned: false,
+ *   scrolledDown: false,
+ *   scrollTopPx: 0,
+ * });
+ * ```
+ */
+function reportState(state: ForeignBorrowed<ObservedStripState>,): void {
+  ipcRenderer.send(
+    REPORT_STATE_CHANNEL,
+    state,
+  );
+}
+
+/**
  * Bridge implementation forwarded over IPC to the main process.
  */
 const bridge: FileManagerBridge = {
@@ -136,12 +165,7 @@ const bridge: FileManagerBridge = {
 
     return parseListingReply({ value: reply, },);
   },
-  reportState: function reportState(state: ObservedStripState,): void {
-    ipcRenderer.send(
-      REPORT_STATE_CHANNEL,
-      state,
-    );
-  },
+  reportState,
 };
 
 contextBridge.exposeInMainWorld(
