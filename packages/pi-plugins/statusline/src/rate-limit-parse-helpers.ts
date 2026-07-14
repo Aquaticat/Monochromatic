@@ -48,7 +48,7 @@ type UnknownRecord = Readonly<Record<string, unknown>>;
  * ```
  */
 function normalizeHeaders(
-  headers: Readonly<Record<string, string>>,
+  headers: Record<string, string>,
 ): Record<string, string> {
   /**
    * Mutable accumulator filled with lowercase header names.

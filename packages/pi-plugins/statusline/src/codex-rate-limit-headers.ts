@@ -252,7 +252,7 @@ function codexSnapshotLabel({
  * codexPrefixes({ 'x-codex-primary-used-percent': '50' });
  * ```
  */
-function codexPrefixes(headers: Readonly<Record<string, string>>,): readonly string[] {
+function codexPrefixes(headers: Record<string, string>,): readonly string[] {
   /**
    * Mutable unique prefix set seeded with the default Codex family.
    */
@@ -447,10 +447,10 @@ function codexWindowSnapshot({
 function parseCodexRateLimitSnapshots({
   headers,
   nowMs,
-}: Readonly<{
-  headers: Readonly<Record<string, string>>;
-  nowMs: number;
-}>,): readonly RateLimitSnapshot[] {
+}: {
+  readonly headers: Record<string, string>;
+  readonly nowMs: number;
+},): readonly RateLimitSnapshot[] {
   /**
    * Mutable Codex snapshots collected from all discovered prefixes.
    */

@@ -32,10 +32,10 @@ import type { RateLimitSnapshot, } from './rate-limit-types.ts';
 function parseRateLimitSnapshots({
   headers,
   nowMs,
-}: Readonly<{
-  headers: Readonly<Record<string, string>>;
-  nowMs: number;
-}>,): readonly RateLimitSnapshot[] {
+}: {
+  readonly headers: Record<string, string>;
+  readonly nowMs: number;
+},): readonly RateLimitSnapshot[] {
   /**
    * Headers keyed by lowercase name so providers may vary casing.
    */
