@@ -9,6 +9,7 @@
  * @module
  */
 
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   createConnection as createTcpConnection,
   createServer as createTcpServer,
@@ -299,7 +300,7 @@ export function readFromTcpSocket(
           socket.on(
             'error',
             function onError(
-              err: Error,
+              err: ReadonlyDeep<Error>,
             ): void {
               finish({ error: err, },);
             },
@@ -310,7 +311,7 @@ export function readFromTcpSocket(
       socket.on(
         'error',
         function onError(
-          err: Error,
+          err: ReadonlyDeep<Error>,
         ): void {
           finish({ error: err, },);
         },

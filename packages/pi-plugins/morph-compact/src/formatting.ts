@@ -2,6 +2,7 @@
  * Query extraction and input/output formatting for Morph Compact.
  */
 
+import type { ReadonlyDeep, } from 'type-fest';
 import type {
   SessionEntry,
   SessionMessageEntry,
@@ -130,10 +131,10 @@ export function textFromContent(
 export function extractLatestQuery({
   branchEntries,
   customInstructions,
-}: {
+}: ReadonlyDeep<{
   readonly branchEntries: readonly SessionEntry[];
   readonly customInstructions?: string;
-},): string {
+}>,): string {
   /**
    * User-supplied instructions short-circuit branch scanning when present.
    */

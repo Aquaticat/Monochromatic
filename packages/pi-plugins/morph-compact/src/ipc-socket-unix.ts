@@ -8,6 +8,7 @@
  * @module
  */
 
+import type { ReadonlyDeep, } from 'type-fest';
 import { randomUUID, } from 'node:crypto';
 import { unlink, } from 'node:fs/promises';
 import {
@@ -288,7 +289,7 @@ export function readFromUnixSocket(
           socket.on(
             'error',
             function onError(
-              err: Error,
+              err: ReadonlyDeep<Error>,
             ): void {
               finish({ error: err, },);
             },
@@ -299,7 +300,7 @@ export function readFromUnixSocket(
       socket.on(
         'error',
         function onError(
-          err: Error,
+          err: ReadonlyDeep<Error>,
         ): void {
           finish({ error: err, },);
         },

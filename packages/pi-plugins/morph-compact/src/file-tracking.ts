@@ -3,6 +3,7 @@
  * Reimplemented because pi doesn't export computeFileLists or formatFileOperations.
  */
 
+import type { ReadonlyDeep, } from 'type-fest';
 import type { FileOperations, } from '@earendil-works/pi-coding-agent';
 
 /**
@@ -19,7 +20,7 @@ import type { FileOperations, } from '@earendil-works/pi-coding-agent';
  * ```
  */
 export function computeFileLists(
-  fileOps: FileOperations,
+  fileOps: ReadonlyDeep<FileOperations>,
 ): {
   readFiles: string[];
   modifiedFiles: string[];

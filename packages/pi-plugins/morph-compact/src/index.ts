@@ -24,10 +24,13 @@
  */
 
 import type {
+  ContextEvent,
   ExtensionAPI,
   ExtensionCommandContext,
+  SessionBeforeCompactEvent,
 } from '@earendil-works/pi-coding-agent';
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   NO_MORPH_KEY,
   resetApiKeyCache,
@@ -215,7 +218,7 @@ async function handleSessionStart(): Promise<void> {
  * @param pi - the pi extension API
  */
 export default function morphCompact(
-  pi: ExtensionAPI,
+  pi: ForeignBorrowed<ExtensionAPI>,
 ): void {
   extensionApiSlot.set(
     'value',
@@ -248,7 +251,7 @@ export default function morphCompact(
 
   pi.on(
     'context',
-    function hideVisibleContextMarkerFromAgent(event,) {
+    function hideVisibleContextMarkerFromAgent(event: ForeignBorrowed<ContextEvent>,) {
       return {
         messages: filterVisibleContextMessages({
           messages: event.messages,
@@ -260,7 +263,7 @@ export default function morphCompact(
   pi.on(
     'session_before_compact',
     async function bridgeBeforeCompact(
-      event,
+      event: ForeignBorrowed<SessionBeforeCompactEvent>,
       ctx,
     ) {
       /**

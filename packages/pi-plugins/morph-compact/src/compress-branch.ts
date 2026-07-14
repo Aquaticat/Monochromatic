@@ -11,6 +11,7 @@
  * which is unavailable outside it. The new session starts fresh without it.
  */
 
+import type { ReadonlyDeep, } from 'type-fest';
 import type {
   CompactionEntry,
   ContextUsage,
@@ -165,7 +166,7 @@ function walkBranch(branchEntries: readonly SessionEntry[],): {
  * ```
  */
 export async function compressBranch(
-  params: CompressBranchParams,
+  params: ReadonlyDeep<CompressBranchParams>,
 ): Promise<string> {
   /**
    * Destructured caller params used in the compression body.
