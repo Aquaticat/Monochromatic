@@ -1,3 +1,4 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { Root, } from 'mdast';
 
 /**
@@ -57,7 +58,7 @@ export type RuleContext = {
   /**
    * mdast tree for the file under lint.
    */
-  readonly tree: Root;
+  readonly tree: ForeignBorrowed<Root>;
   /**
    * Original on-disk source, indexed by the offsets in node positions.
    */
