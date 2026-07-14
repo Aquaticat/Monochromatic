@@ -118,6 +118,10 @@ export type IntrinsicEffectEntry = {
   readonly forwardedCallbacks?: readonly IntrinsicForwardedCallbackEffect[];
   readonly invokedArgumentIndexes?: readonly number[];
   readonly opaqueTargets?: readonly IntrinsicEffectTarget[];
+  /**
+   * Argument whose absence exposes nonprimitive receiver elements to opaque coercion.
+   */
+  readonly opaqueReceiverWhenArgumentAbsentUnlessElementsPrimitive?: number;
   readonly requiresPrimitiveReceiverElements?: boolean;
   /**
    * Whether call result retains values reachable from receiver.

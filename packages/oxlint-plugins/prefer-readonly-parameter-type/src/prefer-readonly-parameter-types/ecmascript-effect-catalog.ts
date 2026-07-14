@@ -145,7 +145,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType,
       member: 'toSorted',
       targets: [],
-      opaqueTargets: [{ kind: 'receiver', },],
+      opaqueReceiverWhenArgumentAbsentUnlessElementsPrimitive: 0,
       callbacks: [{
         argumentIndex: 0,
         receiverParameterIndexes: [

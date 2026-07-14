@@ -161,6 +161,23 @@ export function applyIntrinsicEffect({
             },);
         },);
     },);
+  /**
+   * Optional callback omission that exposes nonprimitive receiver coercion hooks.
+   */
+  const coercionGuardArgumentIndex =
+    effect.opaqueReceiverWhenArgumentAbsentUnlessElementsPrimitive;
+  if ((coercionGuardArgumentIndex !== undefined)
+    && (call.arguments[coercionGuardArgumentIndex] === undefined)
+    && (!receiverElementsArePrimitive({
+      checker,
+      type: receiverType,
+    }))) {
+    addOpaqueEffect({
+      summary,
+      affectedParameterIndex: receiverParameterIndex,
+      provenance: effect.evidence,
+    },);
+  }
   if (effect.invokedArgumentIndexes !== undefined) {
     addIntrinsicInvocations({
       checker,
