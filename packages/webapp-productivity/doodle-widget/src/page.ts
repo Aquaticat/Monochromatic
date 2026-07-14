@@ -68,6 +68,8 @@ function renderCanvasContainer(): string {
  *
  * @returns complete HTML document string
  *
+ * @mutates svgBackgrounds - `JSON.stringify` may invoke array accessors or proxy traps.
+ *
  * @example
  * ```ts
  * const html = renderPage({ css: 'body {}', js: 'console.log("ok")', svgBackgrounds: [], sourceUrl: 'https://github.com/...' });
@@ -82,7 +84,7 @@ export function renderPage(
   }: {
     readonly css: string;
     readonly js: string;
-    readonly svgBackgrounds: readonly string[];
+    svgBackgrounds: readonly string[];
     readonly sourceUrl: string;
   },
 ): string {
