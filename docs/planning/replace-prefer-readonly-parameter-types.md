@@ -1,8 +1,8 @@
 # Replace `prefer-readonly-parameter-types` with a project rule
 
 Status:
- replacement implementation and source migration complete;
- repository semantic sweep in progress.
+ replacement implementation and capability plus observational migration complete;
+ opaque-effect migration in progress.
 
 Last updated:
  2026-07-14.
@@ -366,6 +366,42 @@ The semantic-rule implementation and shared-configuration migration are complete
   direct callback invocation moved previously hidden effects into enforceable missing contracts,
   Advisor and shared model selection each reported zero diagnostics,
   and no semantic bridge failure was present;
+- capability declarations were corrected before observational data contracts;
+  mapped readonly projections were removed from callable and stateful capabilities,
+  while genuine host,
+  provider,
+  parser,
+  filesystem,
+  and retained callback ingress uses exact `ForeignBorrowed` boundaries;
+- observational inputs now use explicit readonly data structures or `ReadonlyDeep` only when the complete reachable value
+  is capability-free;
+  exported hyperscript and Penpot option bags retain their mutable public declarations,
+  and reflective `Object.entries`,
+  JSON,
+  and state inputs retain honest mutable effects;
+- audited intrinsic result provenance now distinguishes pure receiver-value copies from mixed results:
+  `slice`,
+  `filter`,
+  `find`,
+  `findLast`,
+  `toReversed`,
+  and `toSorted` preserve receiver-value ownership,
+  while `with` does not claim receiver-only provenance;
+  aliases retain audited result origins;
+- `toSorted` analyzes definitely callable comparators,
+  preserves result ownership,
+  and fails closed for absent,
+  explicitly undefined,
+  maybe-undefined,
+  unresolved,
+  or otherwise non-callable comparators when receiver elements are nonprimitive;
+- the immutable root sweep recorded in process `proc_17` reported exactly 360 opaque-effect diagnostics and no readonly
+  preference,
+  dishonest declaration,
+  missing contract,
+  stale contract,
+  semantic bridge failure,
+  or omitted callable summary;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,
@@ -396,7 +432,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   `packages/cli/terminal-exec`,
   and `packages/webapp-productivity/wc` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
 
-Remaining gates are active workspace source migration,
+Remaining gates are complete opaque-effect resolution,
 migrated consumer acceptance,
 and final publication and workspace verification.
 
@@ -429,7 +465,11 @@ Verified package tasks:
 - `mise run //packages/pi-plugins/auto-mode:test:unit`.
 
 Next action:
-migrate remaining packages from the measured 1,014-diagnostic baseline,
+resolve the measured 360 opaque effects in separate test-harness,
+serialization,
+coercion,
+host-provider,
+and residual package phases;
 then rerun the repository sweep and complete consumer acceptance.
 
 ## Continuity contract
