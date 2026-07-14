@@ -2489,9 +2489,6 @@ importers:
       '@monochromatic-dev/module-numeric-format':
         specifier: workspace:*
         version: link:../numeric-format
-      '@monochromatic-dev/ownership-marker-foreign-borrowed':
-        specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
       chai:
         specifier: 'catalog:'
         version: 6.2.2
