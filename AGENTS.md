@@ -132,12 +132,6 @@ Explain uncertainty and every valid remediation path.
 Avoid unexplained implementation terms;
  length is unconstrained.
 
-DFX:
- Unknown-value diagnostics preserve value text.
-If exact text needs coercion,
-retain it and document possible hooks;
-never replace it with a type-only fallback merely to satisfy effect analysis.
-
 JCH:
  Never use `@mutates` for absent effects.
 Move work to an ownership-known boundary,
