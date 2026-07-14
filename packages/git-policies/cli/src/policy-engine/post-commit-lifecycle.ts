@@ -21,24 +21,24 @@ import type { RuntimePolicyDefinition, } from './types.ts';
 /**
  * Injectable post-commit dependencies for deterministic failure tests.
  */
-export type PostCommitLifecycleDependencies = Readonly<{
+export type PostCommitLifecycleDependencies = {
   /**
    * Exact landed OID resolver.
    */
-  resolveLandedCommitOid: typeof resolveLandedCommitOid;
+  readonly resolveLandedCommitOid: typeof resolveLandedCommitOid;
   /**
    * Canonical repository root resolver.
    */
-  resolvePostCommitRepositoryRoot: typeof resolvePostCommitRepositoryRoot;
+  readonly resolvePostCommitRepositoryRoot: typeof resolvePostCommitRepositoryRoot;
   /**
    * Landed tree fact builder.
    */
-  createPostCommitGitFacts: typeof createPostCommitGitFacts;
+  readonly createPostCommitGitFacts: typeof createPostCommitGitFacts;
   /**
    * Policy engine entry point.
    */
-  runPolicyEngine: typeof runPolicyEngine;
-}>;
+  readonly runPolicyEngine: typeof runPolicyEngine;
+};
 
 /**
  * Canonical production post-commit dependencies.
