@@ -173,6 +173,8 @@ async function parseApiError(
  *
  * @throws {@link HetznerApiError} when the response status is not ok
  *
+ * @mutates body - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * const { servers } = await hcloud<{ servers: HetznerServer[] }>({ method: 'GET', path: '/servers' });
