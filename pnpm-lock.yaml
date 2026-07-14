@@ -1266,6 +1266,9 @@ importers:
       '@electron/packager':
         specifier: 'catalog:'
         version: 20.0.2
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-markers/foreign-borrowed
       electron:
         specifier: 'catalog:'
         version: 43.1.0
