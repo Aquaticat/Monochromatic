@@ -36,13 +36,15 @@ const l = tagged({
  *
  * @returns Parsed user options.
  *
+ * @mutates argv - `JSON.stringify` may invoke array accessors or proxy traps.
+ *
  * @example
  * ```ts
  * parseArgs({ argv: ['--title=My Shell', '--', 'bash', '-l'] })
  * // { title: 'My Shell', command: ['bash', '-l'], appId: '', dir: '', hold: false }
  * ```
  */
-export function parseArgs({ argv, }: { readonly argv: readonly string[]; },): UserOptions {
+export function parseArgs({ argv, }: { argv: readonly string[]; },): UserOptions {
   /**
    * Option accumulator mutated by the parse loop below; let because reassigned conditionally.
    */
