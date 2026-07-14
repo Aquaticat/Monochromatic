@@ -7,9 +7,9 @@
  */
 
 import type {
-  AfterProviderResponseEvent,
   ExtensionAPI,
   ExtensionContext,
+  ExtensionEvent,
   SessionShutdownEvent,
   SessionStartEvent,
 } from '@earendil-works/pi-coding-agent';
@@ -209,7 +209,7 @@ export default function statusline(pi: ForeignBorrowed<ExtensionAPI>,): void {
   pi.on(
     'after_provider_response',
     function handleAfterProviderResponse(
-      event: ForeignBorrowed<AfterProviderResponseEvent>,
+      event: ForeignBorrowed<Extract<ExtensionEvent, { type: 'after_provider_response'; }>>,
       ctx,
     ) {
       /**
