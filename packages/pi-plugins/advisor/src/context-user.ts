@@ -28,8 +28,6 @@ export const NO_USER_PROMPT: unique symbol = Symbol('advisor/no-user-prompt',);
  *
  * @returns latest user prompt excerpt, or {@link NO_USER_PROMPT} when none
  *
- * @mutates branch - `branch.toReversed` can invoke caller-defined array index accessors or proxy traps
- *
  * @example
  * ```typescript
  * latestUserPromptExcerpt(branch);

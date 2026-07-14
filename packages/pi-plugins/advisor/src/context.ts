@@ -109,8 +109,6 @@ export type MaxContextCharsForAdvisorModelOptions = {
  *
  * @returns serialized context and metadata
  *
- * @mutates options - `latestUserPromptExcerpt` calls `branch.toReversed`, which can invoke array accessors or proxy traps
- *
  * @example
  * ```typescript
  * const context = buildAdvisorContext({ branch, config, advisorSystemPrompt });
