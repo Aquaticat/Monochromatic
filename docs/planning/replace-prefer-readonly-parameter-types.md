@@ -402,6 +402,19 @@ The semantic-rule implementation and shared-configuration migration are complete
   stale contract,
   semantic bridge failure,
   or omitted callable summary;
+- commits `9df97a944` and `c4575ccf5` correct readonly classification for broad `object` and direct callable or
+  constructable capabilities;
+  these types can expose caller-defined behavior even without statically named mutable properties;
+- the test-harness phase resolves its measured 35 opaque effects through exact Chai,
+  Sinon,
+  Promise-handler,
+  reflection,
+  coercion,
+  and formatting contracts;
+  `packages/module/test` now passes type lint,
+  Oxlint with no findings,
+  build,
+  and unit tests;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,
@@ -416,6 +429,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   `packages/module/pnpm-workspace-catalog`,
   `packages/module/fs-id`,
   `packages/module/dom`,
+  `packages/module/test`,
   `packages/dev-script/catalog-tighten`,
   `packages/agent-harnesses-shared/terminal-title`,
   `packages/cli/git-clone-size`,
@@ -462,15 +476,17 @@ Verified package tasks:
 - `mise run //packages/pi-plugins/advisor:verify:extension`;
 - `mise run //packages/pi-plugins/auto-mode:lint:oxlint`;
 - `mise run //packages/pi-plugins/auto-mode:build:js:node`;
-- `mise run //packages/pi-plugins/auto-mode:test:unit`.
+- `mise run //packages/pi-plugins/auto-mode:test:unit`;
+- `mise run //packages/module/test:lint:types`;
+- `mise run //packages/module/test:lint:oxlint`;
+- `mise run //packages/module/test:buildAndTest`.
 
 Next action:
-resolve the measured 360 opaque effects in separate test-harness,
-serialization,
-coercion,
+resolve serialization effects,
+then coercion,
 host-provider,
-and residual package phases;
-then rerun the repository sweep and complete consumer acceptance.
+and residual package effects;
+rerun the repository sweep after those measured phases and complete consumer acceptance.
 
 ## Continuity contract
 
