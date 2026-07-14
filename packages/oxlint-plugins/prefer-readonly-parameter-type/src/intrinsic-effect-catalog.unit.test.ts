@@ -625,6 +625,24 @@ await describe({
           ownerType: 'globalThis',
           member: 'formatTimeContext',
         },),).not.toBe(NO_INTRINSIC_EFFECT,);
+        /**
+         * Audited caught-value conversion effect.
+         */
+        const caughtValueEffect = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/module-caught-value',
+            major: 0,
+          },
+          ownerType: 'globalThis',
+          member: 'caughtValueText',
+        },);
+        if (caughtValueEffect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected caught-value formatter intrinsic effect.',);
+        expect(caughtValueEffect.targets,).toEqual([{
+          kind: 'argument',
+          index: 0,
+        },],);
       },
     },),
     it({

@@ -87,6 +87,25 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     },],
     evidence: 'pi-shared-model-selection 0.0.1 reads scope and invokes options.modelRegistry.getAll',
   },
+  ...[
+    'caughtValueStack',
+    'caughtValueText',
+  ].map(function caughtValueConversion(member,): IntrinsicEffectEntry {
+    return {
+      provenance: {
+        kind: 'package',
+        packageName: '@monochromatic-dev/module-caught-value',
+        major: 0,
+      },
+      ownerType: 'globalThis',
+      member,
+      targets: [{
+        kind: 'argument',
+        index: 0,
+      },],
+      evidence: 'module-caught-value 0.0.1 preserves Error fields or invokes standard string-conversion hooks',
+    };
+  },),
   {
     provenance: {
       kind: 'package',
