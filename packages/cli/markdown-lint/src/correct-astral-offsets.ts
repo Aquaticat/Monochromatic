@@ -1,4 +1,4 @@
-import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type {
   Nodes,
   Root,
@@ -107,7 +107,7 @@ export type CorrectAstralOffsetsParams = {
   /**
    * Tree whose node offsets are rewritten in place.
    */
-  readonly tree: Root;
+  readonly tree: ForeignBorrowed<Root>;
   /**
    * Source the tree was parsed from.
    */
@@ -139,7 +139,7 @@ export type CorrectAstralOffsetsParams = {
 export function correctAstralOffsets({
   tree,
   source,
-}: ReadonlyDeep<CorrectAstralOffsetsParams>,): Root {
+}: CorrectAstralOffsetsParams,): Root {
   /**
    * Code-point-index to UTF-16-index map for this source.
    */

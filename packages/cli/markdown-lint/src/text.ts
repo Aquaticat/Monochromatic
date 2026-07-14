@@ -28,7 +28,7 @@ export function collectText(root: ReadonlyDeep<Nodes>,): string {
   /**
    * Work-stack of nodes still to inspect, seeded with the root.
    */
-  const stack: Nodes[] = [root,];
+  const stack: ReadonlyDeep<Nodes>[] = [root,];
   while (stack.length > 0) {
     /**
      * Node currently inspected; the loop guard guarantees it exists.
@@ -66,15 +66,15 @@ export function collectText(root: ReadonlyDeep<Nodes>,): string {
  * textNodes(headingNode).at(-1); // last text node, for an end-of-heading edit
  * ```
  */
-export function textNodes(root: ReadonlyDeep<Nodes>,): readonly Text[] {
+export function textNodes(root: ReadonlyDeep<Nodes>,): readonly ReadonlyDeep<Text>[] {
   /**
    * Text nodes gathered in document order.
    */
-  const found: Text[] = [];
+  const found: ReadonlyDeep<Text>[] = [];
   /**
    * Work-stack of nodes still to inspect, seeded with the root.
    */
-  const stack: Nodes[] = [root,];
+  const stack: ReadonlyDeep<Nodes>[] = [root,];
   while (stack.length > 0) {
     /**
      * Node currently inspected; the loop guard guarantees it exists.

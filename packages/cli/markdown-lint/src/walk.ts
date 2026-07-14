@@ -28,11 +28,11 @@ export type WalkEntry = {
   /**
    * Visited node, in document (pre-order) position.
    */
-  readonly node: Nodes;
+  readonly node: ReadonlyDeep<Nodes>;
   /**
    * Ancestors from the root down to the immediate parent, never empty.
    */
-  readonly ancestors: readonly Parents[];
+  readonly ancestors: readonly ReadonlyDeep<Parents>[];
 };
 
 /**
@@ -43,7 +43,7 @@ export type WalkEntry = {
  *
  * @returns whether the node has a `children` array
  */
-function isParent(node: ReadonlyDeep<Nodes>,): node is Parents {
+function isParent(node: ReadonlyDeep<Nodes>,): node is ReadonlyDeep<Parents> {
   return 'children' in node;
 }
 

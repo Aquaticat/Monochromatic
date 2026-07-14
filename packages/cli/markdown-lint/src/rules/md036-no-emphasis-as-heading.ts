@@ -1,4 +1,3 @@
-import type { ReadonlyDeep, } from 'type-fest';
 import { diagnose, } from '../node-source.ts';
 import { collectText, } from '../text.ts';
 import type {
