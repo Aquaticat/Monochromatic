@@ -19,6 +19,7 @@ import {
   Type,
 } from 'typebox';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type {
   LinkupConfig,
@@ -268,7 +269,7 @@ function createLinkupWebSearchTool(
     parameters: LinkupWebSearchParametersSchema,
     async execute(
       _toolCallId: string,
-      params: LinkupWebSearchParams,
+      params: ForeignBorrowed<LinkupWebSearchParams>,
       // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute requires positional signal before later context args, so optionality cannot move to a trailing parameter.
       signal: AbortSignal | undefined,
       // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute provides onUpdate as callback-or-undefined in a fixed positional signature.
@@ -365,7 +366,7 @@ function createLinkupWebFetchTool(
     parameters: LinkupWebFetchParametersSchema,
     async execute(
       _toolCallId: string,
-      params: LinkupWebFetchParams,
+      params: ForeignBorrowed<LinkupWebFetchParams>,
       // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute requires positional signal before later context args, so optionality cannot move to a trailing parameter.
       signal: AbortSignal | undefined,
       // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi ToolDefinition.execute provides onUpdate as callback-or-undefined in a fixed positional signature.
