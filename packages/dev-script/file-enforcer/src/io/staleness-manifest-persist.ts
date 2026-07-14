@@ -144,7 +144,7 @@ export async function writeMergedManifest(
     manifestPath,
     manifest,
   }: {
-    readonly manifest: PersistableStalenessManifest;
+    readonly manifest: Readonly<PersistableStalenessManifest>;
     readonly manifestPath: string;
   },
 ): Promise<StalenessManifest> {

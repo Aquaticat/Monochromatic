@@ -13,19 +13,19 @@ import {
 } from './staleness-types.ts';
 
 /**
- * Read-only manifest shape accepted by persistence helpers.
+ * Manifest shape accepted by persistence helpers that may serialize caller hooks.
  */
-export type PersistableStalenessManifest = Readonly<{
+export type PersistableStalenessManifest = {
   /**
    * Manifest schema version.
    */
-  readonly version: number;
+  version: number;
 
   /**
-   * Read-only entry map for serialization and merge.
+   * Entry map for serialization and merge.
    */
-  readonly entries: Readonly<Record<string, StalenessEntry>>;
-}>;
+  entries: Readonly<Record<string, StalenessEntry>>;
+};
 
 //region Manifest parsing and serialization
 
@@ -60,9 +60,7 @@ export function emptyManifest(): StalenessManifest {
  * const text = serializeManifest(manifest);
  * ```
  */
-export function serializeManifest(
-  manifest: PersistableStalenessManifest & { entries: PersistableStalenessManifest['entries']; },
-): string {
+export function serializeManifest(manifest: PersistableStalenessManifest,): string {
   return `${JSON.stringify(
     manifest,
     null,
