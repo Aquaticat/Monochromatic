@@ -221,12 +221,18 @@ export function applyIntrinsicEffect({
      */
     const comparator = call.arguments[coercionGuardArgumentIndex];
     /**
+     * Semantic comparator type when expression resolves.
+     */
+    const comparatorType = comparator === undefined
+      ? undefined
+      : checker.getTypeAtLocation(comparator,);
+    /**
      * Whether comparator is guaranteed callable rather than absent or nullish.
      */
-    const comparatorIsDefinitelyCallable = (comparator !== undefined)
+    const comparatorIsDefinitelyCallable = (comparatorType !== undefined)
       && typeDefinitelyCallable({
         checker,
-        type: checker.getTypeAtLocation(comparator,),
+        type: comparatorType,
       },);
     if ((!comparatorIsDefinitelyCallable)
       && (!receiverElementsArePrimitive({
