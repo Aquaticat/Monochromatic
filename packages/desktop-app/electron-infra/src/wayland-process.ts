@@ -204,11 +204,11 @@ function formatExitStatus(
     code,
     signal,
   }: {
-    readonly code: unknown;
-    readonly signal: unknown;
+    readonly code: number | string;
+    readonly signal: string;
   },
 ): string {
-  return `code ${String(code,)} signal ${String(signal,)}`;
+  return `code ${code} signal ${signal}`;
 }
 
 /**
@@ -238,14 +238,14 @@ function isReadonlyUnknownArray(value: unknown,): value is readonly unknown[] {
  *
  * @example
  * ```ts
- * parseExitEvent({ value: [0, undefined] });
+ * parseExitEvent({ value: [0, null] });
  * ```
  */
 function parseExitEvent(
   { value, }: { readonly value: unknown; },
 ): {
-  readonly code: unknown;
-  readonly signal: unknown;
+  readonly code: number | string;
+  readonly signal: string;
 } {
   if (!isReadonlyUnknownArray(value,))
     throw new Error('Child-process exit event payload was not an array.',);
@@ -254,10 +254,14 @@ function parseExitEvent(
    * Raw exit code and signal payloads from Node's `exit` event.
    */
   const [code, signal,] = value;
+  if ((code !== null) && ((typeof code) !== 'number'))
+    throw new Error('Child-process exit code was neither a number nor null.',);
+  if ((signal !== null) && ((typeof signal) !== 'string'))
+    throw new Error('Child-process exit signal was neither a string nor null.',);
 
   return {
-    code,
-    signal,
+    code: code === null ? 'null' : code,
+    signal: signal === null ? 'null' : signal,
   };
 }
 

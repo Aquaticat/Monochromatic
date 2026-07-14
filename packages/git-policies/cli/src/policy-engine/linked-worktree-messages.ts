@@ -18,6 +18,22 @@ type CommandMessageOptions = {
 };
 
 /**
+ * Throws for an exhaustively impossible guarded command.
+ *
+ * @param command - Command value narrowed to `never` by callers.
+ *
+ * @throws Error unconditionally for impossible runtime input.
+ *
+ * @example
+ * ```ts
+ * if (false) unhandledGuardedCommand('stash' as never);
+ * ```
+ */
+function unhandledGuardedCommand(command: never,): never {
+  throw new Error('cli-git: unhandled linked-worktree command.', { cause: command, },);
+}
+
+/**
  * Builds outside-worktree diagnostic for guarded command.
  *
  * @param command - Guarded git subcommand.
@@ -49,7 +65,7 @@ export function outsideWorktreeMessage({ command, }: CommandMessageOptions,): st
       + 'cd to a linked worktree root or pass -C <linked-worktree-root> before reset.';
   }
 
-  throw new Error(`cli-git: unhandled linked-worktree command ${String(command,)}.`,);
+  return unhandledGuardedCommand(command,);
 }
 
 /**
@@ -84,7 +100,7 @@ export function mainWorktreeMessage({ command, }: CommandMessageOptions,): strin
       + 'Use a linked worktree for destructive reset operations.';
   }
 
-  throw new Error(`cli-git: unhandled linked-worktree command ${String(command,)}.`,);
+  return unhandledGuardedCommand(command,);
 }
 
 //endregion Linked worktree diagnostics

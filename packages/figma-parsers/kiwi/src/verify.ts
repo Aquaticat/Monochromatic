@@ -236,7 +236,7 @@ function verifyDocument(
   },
 ): VerifyResult {
   if (document.type !== 'MessageType.NODE_CHANGES')
-    return fail({ message: `expected MessageType.NODE_CHANGES, got ${String(document.type,)}`, },);
+    return fail({ message: `expected MessageType.NODE_CHANGES, got ${caughtErrorMessage(document.type,)}`, },);
   /**
    * Candidate node changes value.
    */

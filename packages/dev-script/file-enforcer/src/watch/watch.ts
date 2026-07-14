@@ -2,6 +2,7 @@ import {
   join,
   resolve,
 } from 'node:path';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { setActiveConfigPath, } from '../context.ts';
@@ -83,7 +84,7 @@ export function startWatching(configPath: string,): Promise<never> {
       await import(`${absoluteConfig}?v=${String(Date.now(),)}`);
     }
     catch (importError: unknown) {
-      rl.error(`config execution failed: ${String(importError,)}`,);
+      rl.error(`config execution failed: ${caughtValueText(importError,)}`,);
       return;
     }
     rl.info('re-run complete',);
@@ -104,7 +105,7 @@ export function startWatching(configPath: string,): Promise<never> {
       await rerun(batch.paths,);
     },
     onError: function logWatchRerunError(runError: unknown,): void {
-      rl.error(`watch rerun failed: ${String(runError,)}`,);
+      rl.error(`watch rerun failed: ${caughtValueText(runError,)}`,);
     },
   },);
 
