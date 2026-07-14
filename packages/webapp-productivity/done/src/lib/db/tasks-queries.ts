@@ -85,7 +85,7 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
    */
   const rows = (await (await db
     .prepare(SQL_SELECT_BLOCKED_INBOX,))
-    .all()) as (TaskRow & { blocker_id: string; })[];
+    .all()) as (TaskRow & { readonly blocker_id: string; })[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toBlockedLink(row,) {
     return {

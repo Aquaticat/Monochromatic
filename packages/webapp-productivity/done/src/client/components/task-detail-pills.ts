@@ -92,7 +92,7 @@ export function buildPillElements({
           .length,)}`
         : 'blockedBy: none',
     },
-  ];
+  ] as const;
 
   return pillData.map(function toPillElement(pill,) {
     /**
