@@ -37,6 +37,27 @@ function isToolTitleTextMissing(
 }
 
 /**
+ * Tests whether object owns a question field.
+ *
+ * @param value - Runtime question candidate.
+ *
+ * @returns whether question field exists directly on candidate.
+ *
+ * @mutates value - `Object.hasOwn` may invoke caller-owned proxy hooks.
+ *
+ * @example
+ * ```ts
+ * hasOwnQuestion({ question: 'Continue?' });
+ * ```
+ */
+function hasOwnQuestion(value: object,): value is { readonly question: unknown; } {
+  return Object.hasOwn(
+    value,
+    'question',
+  );
+}
+
+/**
  * Extracts first question text from AskUserQuestion input.
  *
  * @param input - because AskUserQuestion nests text inside questions array
@@ -66,15 +87,12 @@ function firstQuestionText(input: ToolTitleInput,): string | typeof TOOL_TITLE_T
   const [first,] = unknownQuestions;
   if ((first === null) || ((typeof first) !== 'object'))
     return TOOL_TITLE_TEXT_MISSING;
-  if (!Object.hasOwn(
-    first,
-    'question',
-  ))
+  if (!hasOwnQuestion(first,))
     return TOOL_TITLE_TEXT_MISSING;
   /**
    * Question text from first question object.
    */
-  const { question, } = first as { readonly question: unknown; };
+  const { question, } = first;
   if ((typeof question) === 'string')
     return question;
   return TOOL_TITLE_TEXT_MISSING;

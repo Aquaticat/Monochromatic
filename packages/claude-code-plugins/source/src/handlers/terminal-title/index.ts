@@ -59,8 +59,10 @@ const OSC_STRING_TERMINATOR = '\u0007';
  * @param event - PreToolUse or PostToolUse hook event payload
  *
  * @returns descriptive lifecycle title without prefix
+ *
+ * @mutates event - `buildToolTitle` may invoke registry formatters with `event.tool_input`.
  */
-function titleForTool(event: ReadonlyDeep<PreToolUseInput | PostToolUseInput>,): string {
+function titleForTool(event: PreToolUseInput | PostToolUseInput,): string {
   /**
    * Tool name and input pulled from hook event for downstream formatting.
    */
@@ -118,8 +120,10 @@ function unexpectedHookEvent(hookEvent: never,): never {
  * @param hookEvent - parsed hook event payload
  *
  * @returns short descriptive title body for terminal tab
+ *
+ * @mutates hookEvent - Tool events delegate to `buildToolTitle` registry formatters.
  */
-function titleForEvent(hookEvent: ReadonlyDeep<HookInput>,): string {
+function titleForEvent(hookEvent: HookInput,): string {
   if ((hookEvent.hook_event_name === 'PreToolUse')
     || (hookEvent.hook_event_name === 'PostToolUse'))
   {
@@ -204,12 +208,14 @@ type TerminalTitleOutput = void;
  *
  * @returns prefixed title payload text safe to place inside an OSC 0 sequence
  *
+ * @mutates event - Tool events can invoke `buildToolTitle` registry formatters.
+ *
  * @example
  * ```ts
  * terminalTitleForEvent({ hook_event_name: 'Stop', session_id: 's', transcript_path: 't', cwd: '.' });
  * ```
  */
-function terminalTitleForEvent(event: ReadonlyDeep<HookInput>,): string {
+function terminalTitleForEvent(event: HookInput,): string {
   return safeTerminalTitlePayload({
     value: buildTerminalTitle({
       prefix: TITLE_PREFIX,
@@ -225,12 +231,14 @@ function terminalTitleForEvent(event: ReadonlyDeep<HookInput>,): string {
  *
  * @returns nothing; title is set as side effect via `/dev/tty`
  *
+ * @mutates event - Tool events can invoke `buildToolTitle` registry formatters.
+ *
  * @example
  * ```ts
  * await terminalTitleHandler(event);
  * ```
  */
-async function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): Promise<TerminalTitleOutput> {
+async function terminalTitleHandler(event: HookInput,): Promise<TerminalTitleOutput> {
   await setTerminalTitlePayload(terminalTitleForEvent(event,),);
 }
 
