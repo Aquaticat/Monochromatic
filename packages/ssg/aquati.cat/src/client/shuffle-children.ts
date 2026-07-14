@@ -64,10 +64,17 @@ function shuffleChildren(): void {
       continue;
 
     /**
+     * Child paired with immutable random rank for sorting.
+     */
+    type RankedChild = Readonly<{
+      child: Element;
+      rank: number;
+    }>;
+    /**
      * Permutation produced by attaching a random rank then sorting by it.
      */
     const shuffled = children
-      .map(function attachRank(child,) {
+      .map(function attachRank(child,): RankedChild {
         return {
           child,
           rank: Math.random(),

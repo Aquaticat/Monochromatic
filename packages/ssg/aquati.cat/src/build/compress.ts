@@ -142,12 +142,19 @@ if (isMainThread) {
         .endsWith('.zst',);
     },);
   /**
+   * Observational regular-file classification.
+   */
+  type MarkedPath = Readonly<{
+    entryPath: string;
+    isRegularFile: boolean;
+  }>;
+  /**
    * Each non-`.zst` path paired with whether it is a regular file, resolved
    * concurrently. `lstat` (not `stat`) keeps symlinks out so recursion can't
    * escape dist/.
    */
   const markedPaths = await Promise.all(
-    distPaths.map(async function markRegularFile(entryPath,) {
+    distPaths.map(async function markRegularFile(entryPath,): Promise<MarkedPath> {
       return {
         entryPath,
         isRegularFile: (await lstat(entryPath,))

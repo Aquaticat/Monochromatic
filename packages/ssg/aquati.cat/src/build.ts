@@ -12,6 +12,7 @@
  *
  * Run via `mise run build:site` or `node src/build.ts`.
  */
+import type { ReadonlyDeep, } from 'type-fest';
 import { relative, } from 'node:path';
 
 import {
@@ -26,6 +27,7 @@ import { generatePages, } from './build/pages.ts';
 import {
   buildManifest,
   CACHE_MISS,
+  type CacheEntry,
   computePipelineFingerprint,
   createCacheEntry,
   getCachedEntry,
@@ -199,7 +201,14 @@ const posts = attachDates({
 /**
  * Results from processing each post: rendered HTML and cache entry.
  */
-const processResults = await Promise.all(posts.map(async function processPost(post,) {
+const processResults = await Promise.all(posts.map(async function processPost(
+  post,
+): Promise<ReadonlyDeep<{
+  contentKey: string;
+  cacheKey: string;
+  entry: CacheEntry;
+  fromCache: boolean;
+}>> {
   /**
    * Repo-relative path used as the manifest key for this post.
    */

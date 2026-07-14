@@ -7,6 +7,7 @@
  *
  * Run via `mise run format:images`.
  */
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   basename,
   dirname,
@@ -70,7 +71,9 @@ const scanResults = await Promise.all(
 /**
  * Conversion tasks for all discovered raster images across all scanned directories.
  */
-const tasks = scanResults.flatMap(function buildTasks(result,) {
+const tasks = scanResults.flatMap(function buildTasks(
+  result: ReadonlyDeep<(typeof scanResults)[number]>,
+) {
   return result.files
     .map(function createTask(filePath,) {
     /**

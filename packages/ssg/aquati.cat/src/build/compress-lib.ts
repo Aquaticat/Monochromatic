@@ -234,6 +234,17 @@ async function physicalCoreCount(): Promise<PhysicalCores | typeof CORES_UNDETEC
   if ((typeof cpuinfo) === 'symbol')
     return CORES_UNDETECTED;
   /**
+   * Sentinel for absent CPU topology field.
+   */
+  const CPU_FIELD_ABSENT: unique symbol = Symbol('CPU topology field absent',);
+  /**
+   * Observational CPU topology fields before completeness filtering.
+   */
+  type CpuFields = Readonly<{
+    socket: string | typeof CPU_FIELD_ABSENT;
+    core: string | typeof CPU_FIELD_ABSENT;
+  }>;
+  /**
    * Distinct `<physical id>|<core id>` keys; one per physical core.
    */
   const coreKeys = new Set(
@@ -247,20 +258,20 @@ async function physicalCoreCount(): Promise<PhysicalCores | typeof CORES_UNDETEC
         return {
           socket: lines.find(function isSocket(line,) {
             return line.startsWith('physical id',);
-          },),
+          },) ?? CPU_FIELD_ABSENT,
           core: lines.find(function isCore(line,) {
             return line.startsWith('core id',);
-          },),
-        };
+          },) ?? CPU_FIELD_ABSENT,
+        } satisfies CpuFields;
       },)
       .filter(function hasBothFields(
-        fields,
+        fields: CpuFields,
       ): fields is {
         readonly socket: string;
         readonly core: string;
       } {
-        return (fields.socket !== undefined)
-          && (fields.core !== undefined);
+        return (fields.socket !== CPU_FIELD_ABSENT)
+          && (fields.core !== CPU_FIELD_ABSENT);
       },)
       .map(function keyForFields(fields,) {
         return `${fields.socket}|${fields.core}`;

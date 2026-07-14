@@ -12,6 +12,7 @@
     "@monochromatic-dev/module-i18n-compose": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "farmhashjs": "catalog:",
     "feedsmith": "catalog:",
     "yaml": "catalog:",
@@ -25,6 +26,7 @@
     "wawoff2": "catalog:",
     "woff2-encode-wasm": "catalog:",
     "tiny-readdir-glob": "catalog:",
+    "type-fest": "catalog:",
     "valibot": "catalog:"
   },
   "devDependencies": {

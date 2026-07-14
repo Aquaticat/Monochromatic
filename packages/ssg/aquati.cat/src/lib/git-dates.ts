@@ -385,7 +385,7 @@ async function ghApiFirstCommitDate(
       .flatMap(function parseChunk(
         chunk,
         i,
-        arr,
+        arr: readonly string[],
       ) {
         /**
          * Opening bracket re-inserted on every chunk except the first to rebuild the JSON array boundary.

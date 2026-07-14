@@ -37,6 +37,7 @@ import type {
   ElementContent,
   Root,
 } from 'hast';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   HIGHLIGHT_GROUPS,
@@ -109,7 +110,7 @@ const NO_LANGUAGE: unique symbol = Symbol('code block language class missing',);
  *
  * @returns concatenated text of all descendant text nodes
  */
-function extractText(node: ElementContent,): string {
+function extractText(node: ForeignBorrowed<ElementContent>,): string {
   if (node.type
     === 'text')
     return node.value;
@@ -127,7 +128,7 @@ function extractText(node: ElementContent,): string {
  *
  * @returns language name, or {@link NO_LANGUAGE} when no `language-*` class is found
  */
-function getLanguage(codeElement: Element,): string | typeof NO_LANGUAGE {
+function getLanguage(codeElement: ForeignBorrowed<Element>,): string | typeof NO_LANGUAGE {
   /**
    * Destructured class-list property; rehype puts the language as a `language-*` token here.
    */
@@ -222,7 +223,7 @@ function annotateCodeBlock({
  *
  * @param node - hast node to visit
  */
-function visitNode(node: Root | Element,): void {
+function visitNode(node: ForeignBorrowed<Root | Element>,): void {
   for (const child of node.children) {
     if (child.type
       !== 'element')
@@ -295,8 +296,8 @@ function visitNode(node: Root | Element,): void {
  *   .use(rehypeStringify);
  * ```
  */
-export default function rehypeHighlight(): (tree: Root,) => void {
-  return function transform(tree: Root,): void {
+export default function rehypeHighlight(): (tree: ForeignBorrowed<Root>,) => void {
+  return function transform(tree: ForeignBorrowed<Root>,): void {
     visitNode(tree,);
   };
 }
