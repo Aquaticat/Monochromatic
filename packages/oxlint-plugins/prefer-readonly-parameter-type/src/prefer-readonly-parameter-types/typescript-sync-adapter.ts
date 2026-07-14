@@ -28,6 +28,11 @@ import {
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 import { normalizeSemanticFileName, } from './semantic-file-name.ts';
 import {
+  assertTypeScriptSeven,
+  configureNativeApiChildShutdown,
+  nativeApiChild,
+} from './typescript-sync-native-shutdown.ts';
+import {
   findNodeAtOffset,
   typescriptOffset,
 } from './typescript-node-map.ts';
@@ -166,24 +171,6 @@ function reportOverlayPresenceOrDelegate(
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /**
- * Verifies installed compiler belongs to selected unstable major.
- *
- * @throws {@link SemanticBridgeError} when runtime compiler major is not 7.
- */
-function assertTypeScriptSeven(): void {
-  /**
-   * Major component before first version separator.
-   */
-  const [major,] = typescriptVersion.split('.',);
-  if (major !== '7') {
-    throw new SemanticBridgeError({
-      reason: 'api-unavailable',
-      message: `Expected TypeScript 7 semantic bridge, received ${typescriptVersion}.`,
-    },);
-  }
-}
-
-/**
  * Starts native synchronous API once and registers process cleanup.
  *
  * @returns reusable TypeScript API client.
@@ -203,13 +190,22 @@ function getApi(): API {
   },);
   assertTypeScriptSeven();
   try {
-    bridgeState.api = new API({
+    /**
+     * Newly created API configured before process lifecycle hooks observe it.
+     */
+    const api = new API({
       cwd: process.cwd(),
       fs: {
         readFile: readFileFromOverlayOrDelegate,
         fileExists: reportOverlayPresenceOrDelegate,
       },
     },);
+    /**
+     * Native child whose TypeScript-owned cleanup signal must remain quiet.
+     */
+    const child = nativeApiChild(api,);
+    configureNativeApiChildShutdown(child,);
+    bridgeState.api = api;
     rl.debug(`started TypeScript ${typescriptVersion} synchronous API`,);
   }
   catch (error) {

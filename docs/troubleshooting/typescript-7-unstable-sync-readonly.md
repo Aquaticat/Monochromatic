@@ -258,10 +258,36 @@ sent `SIGTERM`,
 and allowed the native server to print the cancellation error before adapter cleanup ran.
 Accepting or filtering that line was incorrect because successful lint output must not contain unexplained shutdown errors.
 
-The adapter now registers `closeSemanticBridge` on `beforeExit`.
-That callback invokes the normal channel close while the Node event loop can still drain,
-removes the child from TypeScript's `liveChildren` set,
-and leaves no child for TypeScript's later `exit` listener to terminate.
+Moving adapter cleanup to `beforeExit` fixed natural one-process shutdown,
+but parallel unit processes still reproduced the line intermittently.
+TypeScript's explicit channel close at `dist/api/syncChannel.js:160` to `177` destroys both streams
+and immediately sends the same default signal:
+
+```js
+close() {
+    try {
+        liveChildren.delete(this.child);
+        this.child.stdout?.destroy();
+        this.child.stdin?.destroy();
+        this.child.kill();
+        this.readFd = -1;
+        this.writeFd = -1;
+    }
+    catch {
+    }
+}
+```
+
+Under concurrent process load,
+the native child could handle `SIGTERM` before pipe EOF ended the server cleanly.
+The deterministic adapter now guards TypeScript 7.0.2's unstable `API.client.channel.child` shape
+and replaces that child's `kill` operation with the same operation forced to `SIGKILL`.
+TypeScript still owns stream cleanup,
+child tracking,
+and invocation timing.
+The native server cannot handle `SIGKILL`,
+so it cannot print a cancellation error.
+The `beforeExit` hook remains so TypeScript's later `exit` listener finds no live child.
 
 ### Mapped readonly state is exposed only as an unnamed number
 
@@ -373,7 +399,8 @@ true
 
 The published-consumer regression opens the same API without calling `closeSemanticBridge` explicitly.
 It asserts that natural process shutdown produces the semantic result on stdout and an empty stderr stream.
-A package Oxlint run captured after the fix also contained no `context canceled` line on either output stream.
+A full parallel package unit run after the forced-signal fix produced no `context canceled` line on either captured stream.
+A package Oxlint run captured after the fix also contained no cancellation line.
 
 ### Working catalog
 
@@ -386,6 +413,7 @@ A package Oxlint run captured after the fix also contained no `context canceled`
 - virtual filesystem overlays plus configured-project snapshots and `fileChanges.changed` update semantic results;
 - temporary `openFiles` discovery followed by `openProjects` and `closeFiles` avoids stale API-open-file semantics.
 - TypeScript source offsets map to exact Oxlint diagnostic locations.
+- guarded TypeScript 7.0.2 child control forces channel-owned termination to `SIGKILL`;
 - `beforeExit` bridge cleanup closes the native child before TypeScript's `exit` kill handler runs.
 
 ### Failing or unsupported catalog
@@ -418,11 +446,14 @@ Open that configured project,
 close the temporary file association,
 and create replacement project snapshots with `fileChanges.changed` whenever current source changes.
 Dispose superseded snapshots and close the API client during Node `beforeExit` when the host provides no explicit lifecycle hook.
+For TypeScript 7.0.2,
+guard the unstable native-child shape
+and force TypeScript's channel-owned kill operation to use `SIGKILL` before exposing the API to callers.
 
 Tradeoff:
-Oxlint does not currently expose an explicit plugin shutdown callback,
-so the adapter depends on Node's natural event-loop shutdown.
-A captured-stderr lifecycle test must guard against regressions to noisy `exit` cleanup.
+the adapter depends on pinned TypeScript channel internals until upstream treats cancellation as clean shutdown.
+Shape checks fail closed on a changed implementation.
+Captured-stderr lifecycle and parallel-run tests must guard against noisy cleanup and leaked children.
 
 ### Keep syntax effects in the Oxlint traversal
 
@@ -461,6 +492,8 @@ and parser-recovery span cases.
 - **Closing the bridge from a process `exit` listener:
   ** TypeScript's earlier listener sends `SIGTERM` first,
   and the native server prints `context canceled` to stderr.
+- **Relying only on pipe destruction before TypeScript's default kill:
+  ** parallel runs can deliver `SIGTERM` before the native server observes EOF.
 - **Filtering `context canceled` from command output:
   ** it hides a lifecycle defect and can also hide a real cancellation failure.
 
