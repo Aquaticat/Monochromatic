@@ -110,6 +110,25 @@ export function filterForeignFixtureTree(
 }
 
 /**
+ * Filters aliased foreign descendants after audited shallow copy.
+ *
+ * @param tree - Root handle supplied by foreign parser-like API.
+ *
+ * @returns children carrying non-empty values.
+ */
+export function filterAliasedForeignFixtureTree(
+  tree: ForeignBorrowed<ForeignFixtureTree>,
+): readonly ForeignFixtureChild[] {
+  /**
+   * Shallow copy retaining foreign descendant provenance.
+   */
+  const copied = tree.children.slice();
+  return copied.filter(function retainAliasedNonEmptyChild(child,) {
+    return child.value.length > 0;
+  },);
+}
+
+/**
  * Reads first foreign descendant reached through synchronous iteration.
  *
  * @param tree - Root handle supplied by foreign parser-like API.

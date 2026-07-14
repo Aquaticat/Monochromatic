@@ -42,3 +42,24 @@ export function readForeignTree(tree: ForeignBorrowed<Tree>,): string {
 export function readOwnedTree(tree: Tree,): string {
   return readChild(tree.child,);
 }
+
+/**
+ * Combines owned replacement with foreign array before observing result.
+ *
+ * @param replacement - Caller-owned value inserted into copied array.
+ *
+ * @returns reader accepting foreign array values.
+ */
+export function readerWithOwnedReplacement(
+  replacement: Child,
+): (values: ForeignBorrowed<readonly Child[]>,) => readonly Child[] {
+  return function readMixedValues(
+    values: ForeignBorrowed<readonly Child[]>,
+  ): readonly Child[] {
+    return values
+      .with(0, replacement,)
+      .filter(function retainNonEmptyMixedChild(child,) {
+        return child.value.length > 0;
+      },);
+  };
+}

@@ -68,6 +68,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       'keys',
       'lastIndexOf',
       'slice',
+      'toReversed',
       'values',
       'with',
     ].map(function arrayObservation(member,): IntrinsicEffectEntry {
@@ -76,7 +77,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         ownerType,
         member,
         targets: [],
-        ...((member === 'slice') || (member === 'with'))
+        ...((member === 'slice') || (member === 'toReversed'))
           ? { receiverValuesReachResult: true, }
           : {},
         evidence: 'ECMA-262 commit 1355a23e array observation and copy algorithms',

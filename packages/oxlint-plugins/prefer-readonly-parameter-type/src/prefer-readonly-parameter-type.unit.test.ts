@@ -127,7 +127,7 @@ children: [
     name: 'keeps owned call paths separate from propagated foreign provenance',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-foreign-provenance-invalid.ts',);
-      expect(diagnostics.length,).toBe(2,);
+      expect(diagnostics.length,).toBe(4,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
@@ -136,6 +136,12 @@ children: [
       },),).toBe(true,);
       expect(messages.some(function boundaryRemainsOwned(message,): boolean {
         return message.startsWith('Parameter "tree" should be readonly',);
+      },),).toBe(true,);
+      expect(messages.some(function replacementRemainsOwned(message,): boolean {
+        return message.startsWith('Parameter "replacement" should be readonly',);
+      },),).toBe(true,);
+      expect(messages.some(function mixedResultRemainsOwned(message,): boolean {
+        return message.startsWith('Parameter "child" should be readonly',);
       },),).toBe(true,);
     },
   },),

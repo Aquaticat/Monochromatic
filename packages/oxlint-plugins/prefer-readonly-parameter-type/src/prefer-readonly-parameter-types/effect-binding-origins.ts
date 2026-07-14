@@ -22,6 +22,7 @@ import {
   expressionRoot,
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
+import { intrinsicReceiverParameterIndex, } from './effect-intrinsic-result-origin.ts';
 
 /**
  * Registers every identifier bound by one parameter or destructuring pattern.
@@ -118,16 +119,27 @@ export function expressionOrigin({
    * Root node after property and element access removal.
    */
   const root = expressionRoot(node,);
-  if (!isIdentifier(root,))
-    return PARAMETER_INDEX_UNAVAILABLE;
-  /**
-   * Root symbol used for origin lookup.
-   */
-  const symbol = project.checker
-    .getSymbolAtLocation(root,);
-  return symbol === undefined
-    ? PARAMETER_INDEX_UNAVAILABLE
-    : bindingOriginBySymbolId.get(symbol.id,) ?? PARAMETER_INDEX_UNAVAILABLE;
+  if (isIdentifier(root,)) {
+    /**
+     * Root symbol used for direct parameter or alias lookup.
+     */
+    const symbol = project.checker
+      .getSymbolAtLocation(root,);
+    /**
+     * Direct origin resolved before audited result traversal.
+     */
+    const directOrigin = symbol === undefined
+      ? PARAMETER_INDEX_UNAVAILABLE
+      : bindingOriginBySymbolId.get(symbol.id,) ?? PARAMETER_INDEX_UNAVAILABLE;
+    if (directOrigin !== PARAMETER_INDEX_UNAVAILABLE)
+      return directOrigin;
+  }
+  return intrinsicReceiverParameterIndex({
+    project,
+    checker: project.checker,
+    bindingOriginBySymbolId,
+    node,
+  },);
 }
 
 /**
