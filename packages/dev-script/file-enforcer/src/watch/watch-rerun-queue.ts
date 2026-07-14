@@ -1,3 +1,4 @@
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   tagged,
   type Logger,
@@ -144,13 +145,13 @@ function reportWatchRerunError(
     /**
      * Last-chance message for a failing error reporter.
      */
-    const message = `watch rerun error reporter failed after rerun failure: rerun=${String(runError,)} reporter=${String(reportError,)}`;
+    const message = `watch rerun error reporter failed after rerun failure: rerun=${caughtValueText(runError,)} reporter=${caughtValueText(reportError,)}`;
     try {
       logger.error(message,);
     }
     catch (loggerError: unknown) {
       process.emitWarning(
-        `${message}; logger=${String(loggerError,)}`,
+        `${message}; logger=${caughtValueText(loggerError,)}`,
       );
     }
   }
@@ -182,7 +183,7 @@ function reportWatchRerunError(
  *     await rerun(batch.paths);
  *   },
  *   onError: function logError(error) {
- *     logger.error(String(error));
+ *     logger.error(caughtValueText(error,));
  *   },
  * });
  * await queue.enqueue({ paths: ['/repo/src.ts'], protectedPaths: [] });
