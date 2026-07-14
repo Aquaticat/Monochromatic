@@ -876,6 +876,9 @@ importers:
       '@monochromatic-dev/module-async-time':
         specifier: workspace:*
         version: link:../../module/async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -925,6 +928,9 @@ importers:
 
   packages/cli/markdown-lint:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1020,6 +1026,9 @@ importers:
       '@monochromatic-dev/module-async-time':
         specifier: workspace:*
         version: link:../../module/async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -1088,6 +1097,9 @@ importers:
 
   packages/cli/terminal-exec:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1232,6 +1244,9 @@ importers:
 
   packages/desktop-app/electron-counter:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1294,6 +1309,9 @@ importers:
 
   packages/desktop-app/file-manager-electron:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1325,6 +1343,9 @@ importers:
 
   packages/desktop-daemon/hall-monitor:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -1416,6 +1437,9 @@ importers:
       '@luma.gl/engine':
         specifier: 'catalog:'
         version: 9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6))
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -1465,6 +1489,9 @@ importers:
       '@lezer/xml':
         specifier: 'catalog:'
         version: 1.0.6
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1514,6 +1541,9 @@ importers:
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.0
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -1545,6 +1575,9 @@ importers:
 
   packages/dev-script/task-util:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -1585,6 +1618,9 @@ importers:
       '@monochromatic-dev/dev-script-file-enforcer':
         specifier: workspace:*
         version: link:../file-enforcer
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-fs-path':
         specifier: workspace:*
         version: link:../../module/fs-path
@@ -1610,6 +1646,9 @@ importers:
       '@monochromatic-dev/module-async-time':
         specifier: workspace:*
         version: link:../../module/async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -1652,6 +1691,10 @@ importers:
         version: 26.1.1
 
   packages/figma-parsers/kiwi:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -1674,6 +1717,9 @@ importers:
       '@monochromatic-dev/figma-kiwi':
         specifier: workspace:*
         version: link:../kiwi
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-zip-writer':
         specifier: workspace:*
         version: link:../../module/zip-writer
@@ -1721,6 +1767,9 @@ importers:
 
   packages/git-policies/cli:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-markers/foreign-borrowed
@@ -1845,6 +1894,9 @@ importers:
       '@monochromatic-dev/module-async-time':
         specifier: workspace:*
         version: link:../../module/async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-markers/foreign-borrowed
@@ -1876,6 +1928,9 @@ importers:
       '@monochromatic-dev/mcp-stdio':
         specifier: workspace:*
         version: link:../stdio
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -1897,6 +1952,10 @@ importers:
         version: 2.1.0
 
   packages/mcp/stdio:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -1950,6 +2009,24 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  packages/module/caught-value:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   packages/module/const:
     devDependencies:
       '@monochromatic-dev/config-tsdown':
@@ -1986,6 +2063,9 @@ importers:
 
   packages/module/fs-id:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -2017,6 +2097,9 @@ importers:
 
   packages/module/fs-path:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -2288,6 +2371,10 @@ importers:
         version: 7.0.2
 
   packages/module/logger:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -2480,6 +2567,9 @@ importers:
       '@monochromatic-dev/module-async-time':
         specifier: workspace:*
         version: link:../async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
       '@monochromatic-dev/module-fs-path':
         specifier: workspace:*
         version: link:../fs-path
@@ -2603,6 +2693,9 @@ importers:
 
   packages/module/toml-edit:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -2853,6 +2946,9 @@ importers:
 
   packages/pi-plugins/advisor:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -2896,6 +2992,9 @@ importers:
 
   packages/pi-plugins/agent-settled-notification:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -2927,6 +3026,9 @@ importers:
       '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/shell-command-analyzer
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -2995,6 +3097,9 @@ importers:
       '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/shell-command-analyzer
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -3023,6 +3128,9 @@ importers:
 
   packages/pi-plugins/morph-compact:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -3054,6 +3162,9 @@ importers:
 
   packages/pi-plugins/search-fetch:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -3122,6 +3233,9 @@ importers:
       '@monochromatic-dev/agent-harnesses-shared-usage-projection':
         specifier: workspace:*
         version: link:../../agent-harnesses-shared/usage-projection
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -3197,6 +3311,9 @@ importers:
 
   packages/pi-shared/model-selection:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-markers/foreign-borrowed
@@ -3484,6 +3601,9 @@ importers:
 
   packages/test-fixture/oxlint-no-restricted-syntax:
     devDependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-markers/foreign-borrowed
@@ -3517,6 +3637,9 @@ importers:
 
   packages/webapp-productivity/done:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -3557,6 +3680,9 @@ importers:
       '@monochromatic-dev/build-tool-css':
         specifier: workspace:*
         version: link:../../build-tool/css
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
