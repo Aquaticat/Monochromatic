@@ -174,7 +174,17 @@ export function collectionMatchersPlugin(chai: Chai.ChaiStatic,): void {
         /**
          * Whether every element deep-equals the anchor.
          */
-        const allEqual = rest.every(function isDeepEqual(value,) {
+        const allEqual = rest.every(
+          /**
+           * Compares one retained assertion value with anchor.
+           *
+           * @param value - Retained value inspected by Chai.
+           *
+           * @returns whether value deeply equals anchor.
+           *
+           * @mutates value - `chaiUtil.eql` may inspect caller getters or proxy traps.
+           */
+          function isDeepEqual(value,) {
           return chaiUtil.eql(
             value,
             first,
@@ -185,7 +195,17 @@ export function collectionMatchersPlugin(chai: Chai.ChaiStatic,): void {
           'expected every value to deep-equal #{exp}',
           'expected values not to all deep-equal #{exp}',
           first,
-          values.find(function isDeepDifferent(value,) {
+          values.find(
+            /**
+             * Finds first retained assertion value differing from anchor.
+             *
+             * @param value - Retained value inspected by Chai.
+             *
+             * @returns whether value differs from anchor.
+             *
+             * @mutates value - `chaiUtil.eql` may inspect caller getters or proxy traps.
+             */
+            function isDeepDifferent(value,) {
             return !chaiUtil.eql(
               value,
               first,

@@ -79,24 +79,56 @@ export function buildCoreMatchers(
         .equal(expected,);
     },
 
-    toEqual: function toEqual(expected: unknown,): void {
+    toEqual:
+      /**
+       * Compares deep equality through Chai.
+       *
+       * @param expected - Expected value inspected by Chai.
+       *
+       * @mutates expected - `a.to.deep.equal` may inspect caller getters or proxy traps.
+       */
+      function toEqual(expected: unknown,): void {
       a.to
         .deep
         .equal(expected,);
     },
 
-    toContain: function toContain(expected: unknown,): void {
+    toContain:
+      /**
+       * Checks containment through Chai.
+       *
+       * @param expected - Contained value inspected by Chai.
+       *
+       * @mutates expected - `a.to.include` may inspect caller getters or proxy traps.
+       */
+      function toContain(expected: unknown,): void {
       a.to
         .include(expected,);
     },
 
-    toContainEqual: function toContainEqual(expected: unknown,): void {
+    toContainEqual:
+      /**
+       * Checks deep containment through Chai.
+       *
+       * @param expected - Contained value inspected by Chai.
+       *
+       * @mutates expected - `a.to.deep.include` may inspect caller getters or proxy traps.
+       */
+      function toContainEqual(expected: unknown,): void {
       a.to
         .deep
         .include(expected,);
     },
 
-    toThrow: function toThrow(
+    toThrow:
+      /**
+       * Checks thrown value through Chai.
+       *
+       * @param expected - Optional message, expression, or constructor inspected by Chai.
+       *
+       * @mutates expected - `a.to.throw` may inspect regular-expression or constructor hooks.
+       */
+      function toThrow(
       expected?: string | RegExp | (abstract new(...args: never) => unknown),
     ): void {
       if (expected === undefined) {
@@ -225,7 +257,17 @@ export function buildCoreMatchers(
         .lengthOf(expected,);
     },
 
-    toHaveProperty: function toHaveProperty(
+    toHaveProperty:
+      /**
+       * Checks nested property through Chai.
+       *
+       * @param path - Nested property path.
+       *
+       * @param value - Optional expected value inspected by Chai.
+       *
+       * @mutates value - `a.to.have.nested.property` may inspect caller getters or proxy traps.
+       */
+      function toHaveProperty(
       path: string,
       value?: unknown,
     ): void {
@@ -252,13 +294,29 @@ export function buildCoreMatchers(
         .match(expected instanceof RegExp ? expected : new RegExp(expected,),);
     },
 
-    toMatchObject: function toMatchObject(expected: Readonly<Record<string, unknown>>,): void {
+    toMatchObject:
+      /**
+       * Checks partial deep object match through Chai.
+       *
+       * @param expected - Expected object inspected by Chai.
+       *
+       * @mutates expected - `a.to.deep.include` may inspect caller getters or proxy traps.
+       */
+      function toMatchObject(expected: Readonly<Record<string, unknown>>,): void {
       a.to
         .deep
         .include(expected,);
     },
 
-    toBeInstanceOf: function toBeInstanceOf(
+    toBeInstanceOf:
+      /**
+       * Checks constructor identity through Chai.
+       *
+       * @param expected - Constructor inspected by Chai.
+       *
+       * @mutates expected - `a.to.be.instanceOf` may inspect caller constructor hooks.
+       */
+      function toBeInstanceOf(
       expected: abstract new(...args: never) => unknown,
     ): void {
       a.to
@@ -266,12 +324,28 @@ export function buildCoreMatchers(
         .instanceOf(expected,);
     },
 
-    toSatisfy: function toSatisfy(predicate: (value: unknown,) => boolean,): void {
+    toSatisfy:
+      /**
+       * Invokes caller predicate through Chai.
+       *
+       * @param predicate - Predicate retained and invoked by Chai.
+       *
+       * @mutates predicate - `a.to.satisfy` invokes caller-provided capability.
+       */
+      function toSatisfy(predicate: (value: unknown,) => boolean,): void {
       a.to
         .satisfy(predicate,);
     },
 
-    toStrictEqual: function toStrictEqual(expected: unknown,): void {
+    toStrictEqual:
+      /**
+       * Compares deep strict equality through Chai.
+       *
+       * @param expected - Expected value inspected by Chai.
+       *
+       * @mutates expected - `a.to.deep.equal` may inspect caller getters or proxy traps.
+       */
+      function toStrictEqual(expected: unknown,): void {
       a.to
         .deep
         .equal(expected,);

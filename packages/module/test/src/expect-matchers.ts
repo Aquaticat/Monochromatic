@@ -141,7 +141,15 @@ export function buildMatchers(
         .called;
     },
 
-    toHaveBeenCalledExactlyOnceWith: function toHaveBeenCalledExactlyOnceWith(
+    toHaveBeenCalledExactlyOnceWith:
+      /**
+       * Checks first spy call arguments through Chai.
+       *
+       * @param args - Expected call arguments inspected by Chai.
+       *
+       * @mutates args - `chaiExpect(spy.firstCall.args,).to.deep.equal` may inspect caller getters or proxy traps.
+       */
+      function toHaveBeenCalledExactlyOnceWith(
       ...args: readonly unknown[]
     ): void {
       /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
@@ -179,7 +187,15 @@ export function buildMatchers(
         .calledWith(...args,);
     },
 
-    toHaveBeenLastCalledWith: function toHaveBeenLastCalledWith(
+    toHaveBeenLastCalledWith:
+      /**
+       * Checks latest spy call arguments through Chai.
+       *
+       * @param args - Expected call arguments inspected by Chai.
+       *
+       * @mutates args - `chaiExpect(lastCall.args,).to.deep.equal` may inspect caller getters or proxy traps.
+       */
+      function toHaveBeenLastCalledWith(
       ...args: readonly unknown[]
     ): void {
       /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy with lastCall property */
@@ -206,7 +222,17 @@ export function buildMatchers(
         .equal([...args,],);
     },
 
-    toHaveBeenNthCalledWith: function toHaveBeenNthCalledWith(
+    toHaveBeenNthCalledWith:
+      /**
+       * Checks indexed spy call arguments through Chai.
+       *
+       * @param n - One-based call index.
+       *
+       * @param args - Expected call arguments inspected by Chai.
+       *
+       * @mutates args - `chaiExpect(nthCall.args,).to.deep.equal` may inspect caller getters or proxy traps.
+       */
+      function toHaveBeenNthCalledWith(
       n: number,
       ...args: readonly unknown[]
     ): void {
@@ -286,13 +312,29 @@ export function buildMatchers(
         .equal(count,);
     },
 
-    toHaveReturnedWith: function toHaveReturnedWith(expected: unknown,): void {
+    toHaveReturnedWith:
+      /**
+       * Checks any spy return through Sinon-Chai.
+       *
+       * @param expected - Expected return value inspected by Sinon-Chai.
+       *
+       * @mutates expected - `a.to.have.returned` may inspect caller getters or proxy traps.
+       */
+      function toHaveReturnedWith(expected: unknown,): void {
       a.to
         .have
         .returned(expected,);
     },
 
-    toHaveLastReturnedWith: function toHaveLastReturnedWith(expected: unknown,): void {
+    toHaveLastReturnedWith:
+      /**
+       * Checks latest spy return through Chai.
+       *
+       * @param expected - Expected return value inspected by Chai.
+       *
+       * @mutates expected - `chaiExpect(lastCall.returnValue,).to.deep.equal` may inspect caller getters or proxy traps.
+       */
+      function toHaveLastReturnedWith(expected: unknown,): void {
       /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
       /**
        * Captured spy reference so the `lastCall` destructure below reads from a typed value.
@@ -317,7 +359,17 @@ export function buildMatchers(
         .equal(expected,);
     },
 
-    toHaveNthReturnedWith: function toHaveNthReturnedWith(
+    toHaveNthReturnedWith:
+      /**
+       * Checks indexed spy return through Chai.
+       *
+       * @param n - One-based call index.
+       *
+       * @param expected - Expected return value inspected by Chai.
+       *
+       * @mutates expected - `chaiExpect(nthCall.returnValue,).to.deep.equal` may inspect caller getters or proxy traps.
+       */
+      function toHaveNthReturnedWith(
       n: number,
       expected: unknown,
     ): void {
