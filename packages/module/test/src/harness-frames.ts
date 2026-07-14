@@ -39,11 +39,11 @@
  * readProperty({ source: {}, key: 'message', })                // undefined
  * ```
  */
-export function readProperty<const Source extends object>({
+export function readProperty({
   source,
   key,
 }: {
-  readonly source: Source;
+  readonly source: object;
   readonly key: string;
 },): unknown {
   try {

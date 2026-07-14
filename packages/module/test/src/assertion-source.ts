@@ -332,12 +332,12 @@ function isNodeRuntime(): boolean {
  *
  * @mutates node - `Reflect.get` may invoke getters or proxy traps on error-like value.
  */
-async function recordSiteForError<const ErrorLike extends object>({
+async function recordSiteForError({
   node,
   sites,
   readFile,
 }: {
-  readonly node: ErrorLike;
+  readonly node: object;
   readonly sites: WeakMap<object, AssertionSite>;
   readonly readFile: (
     path: string,

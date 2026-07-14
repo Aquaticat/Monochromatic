@@ -133,7 +133,7 @@ function safeString(value: unknown,): string {
  * readMessage({ message: 42 })   // '<unknown message>'
  * ```
  */
-function readMessage<const ErrorLike extends object>(error: ErrorLike,): string {
+function readMessage(error: object,): string {
   /**
    * Defensively-read `.message`; held in a local so the getter fires at most once.
    */
@@ -163,7 +163,7 @@ function readMessage<const ErrorLike extends object>(error: ErrorLike,): string 
  * readErrorLabel({})                 // 'Error'
  * ```
  */
-function readErrorLabel<const ErrorLike extends object>(error: ErrorLike,): string {
+function readErrorLabel(error: object,): string {
   /**
    * Defensively-read `.name`; held in a local so the getter fires at most once.
    */
@@ -231,12 +231,12 @@ function stripWorkspacePrefix({
  * }) // ['at fn (packages/foo/file.ts:9:19)']
  * ```
  */
-function readStackFrames<const ErrorLike extends object>({
+function readStackFrames({
   error,
   message,
   workspacePrefix,
 }: {
-  readonly error: ErrorLike;
+  readonly error: object;
   readonly message: string;
   readonly workspacePrefix: string;
 },): readonly string[] {
