@@ -1,10 +1,11 @@
 # Replace `prefer-readonly-parameter-types` with a project rule
 
 Status:
- implementation in progress after user confirmation on 2026-07-13.
+ replacement implementation and source migration complete;
+ repository semantic sweep in progress.
 
 Last updated:
- 2026-07-13.
+ 2026-07-14.
 
 ## Implementation progress
 
@@ -47,20 +48,22 @@ The implemented semantic rule applies that correction:
   mutating `Object.freeze`,
   and receiver-only `TextDecoder.decode`.
 
-The TOML migration now marks parser ingress and retained foreign-handle storage,
-then relies on provenance instead of descendant aliases.
+The completed TOML migration marks parser ingress,
+retained AST storage,
+and exported AST-emission seams,
+then relies on provenance instead of descendant markers.
 The durable mechanism and verification record is the
 [foreign-provenance troubleshooting guide](../troubleshooting/oxlint-prefer-readonly-foreign-provenance.md).
-A direct-function builder replaced an attempted class because project lint prohibits ordinary classes.
-The latest `//packages/module/toml-edit:lint:types` run passes.
-The latest `//packages/module/toml-edit:lint:oxlint` run completed with status `1` and exactly 28 replacement-rule
-errors,
-with no additional lint category in that run.
-The package started this continuation at 105 replacement-rule diagnostics.
-The remaining findings are primarily honest recursive value-hook contracts,
-internal mutation propagation,
-one `path.map` callback uncertainty,
-and a fast-check `Arbitrary.chain` audit.
+The package now passes type lint,
+Oxlint with no findings,
+the unit suite,
+TOML 1.0 and 1.1 conformance,
+and the deterministic fuzz-coverage gate.
+A campaign exposed the known `toml-eslint-parser` static-value prototype-setter limitation;
+the oracle now classifies that unsupported input explicitly while regression-testing the package's prototype-safe
+materializer.
+The diagnosis is recorded in the
+[`toml-eslint-parser` prototype-setter guide](../troubleshooting/toml-eslint-parser-static-value-prototype-setter.md).
 
 Workspace packages must import one another through `/ts` source subpaths.
 A working-tree `rg` scan over `.ts`,
@@ -149,7 +152,7 @@ The semantic-bridge foundation is complete:
   commit `a53861211` names both callbacks and return types by overlay and delegation behavior,
   and commit `07d2c6934` records that naming standard in `XNC`.
 
-The semantic-rule implementation is functional and shared-configuration migration is in progress:
+The semantic-rule implementation and shared-configuration migration are complete:
 
 - commits `d2d6b8521` and `c76f39219` added exact intrinsic lookup and recursive readonly classification;
 - commit `353f2fd9a` added direct,
@@ -542,23 +545,29 @@ The complete technology vet and remaining implementation acceptance gates are re
 
 ## Architecture
 
-The implementation location is settled by the request:
+The implementation is split at its runtime and policy boundaries:
 
-- rule implementation:
-  `packages/oxlint-plugins/no-restricted-syntax/src/rules/`;
-- plugin registration:
-  `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`;
-- shared config entry:
+- semantic rule implementation and tests:
+  `packages/oxlint-plugins/prefer-readonly-parameter-type/`;
+- shared parser and mutation-contract model:
+  `packages/oxlint-plugins/shared/`;
+- exact ownership marker:
+  `packages/ownership-markers/foreign-borrowed/`;
+- shared-config sidecar and error-level policy:
+  `packages/config/oxlint/src/plugin-prefer-readonly-parameter-type.ts` and
   `packages/config/oxlint/src/rules/restriction.ts`;
-- fixture config and source cases:
+- bypass-prevention rule and fixtures:
+  `packages/oxlint-plugins/no-restricted-syntax/` and
   `packages/test-fixture/oxlint-no-restricted-syntax/`;
-- integration tests:
-  `packages/oxlint-plugins/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`;
-- user-facing rule contract:
-  `packages/oxlint-plugins/no-restricted-syntax/README.md`.
+- user-facing contracts:
+  the dedicated plugin README,
+  ownership-marker README,
+  and TSDoc plugin README.
 
 The semantic contract is the layered readonly-type and mutation-effect model recorded in the decision log.
-The plugin package adds direct runtime dependencies on TypeScript 7 and the existing shared plugin package.
+The dedicated plugin owns TypeScript 7 runtime access,
+package and host evidence,
+and semantic caches.
 Packages receiving `ReadonlyDeep` projections declare `type-fest` directly through the pnpm catalog.
 
 ## Implementation sequence after approval
