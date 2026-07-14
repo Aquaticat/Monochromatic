@@ -61,6 +61,24 @@ const SKIPPED_CHILD: unique symbol = Symbol('spawn-pi/child-skipped-during-scan'
 //region PID mapping
 
 /**
+ * Serializes state that may expose JSON hooks.
+ *
+ * @param value - State value to serialize.
+ *
+ * @returns compact JSON text.
+ *
+ * @mutates value - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
+ * @example
+ * ```typescript
+ * serializeStateValue({ ready: true });
+ * ```
+ */
+function serializeStateValue(value: unknown,): string {
+  return JSON.stringify(value,) ?? 'null';
+}
+
+/**
  * Writes parent process identity so spawn-pi CLI can find current Pi session.
  *
  * @param pid - process id to map.
@@ -68,6 +86,8 @@ const SKIPPED_CHILD: unique symbol = Symbol('spawn-pi/child-skipped-during-scan'
  * @param mapping - Pi session {@link PidMapping} identity to write.
  *
  * @param env - {@link Environment} values controlling destination directory.
+ *
+ * @mutates mapping - `JSON.stringify` may invoke hooks on PID mapping values.
  *
  * @example
  * ```typescript
@@ -81,7 +101,7 @@ async function writePidMapping(
     env = process.env,
   }: {
     readonly pid: number;
-    readonly mapping: PidMapping;
+    mapping: PidMapping;
     readonly env?: Environment;
   },
 ): Promise<void> {
@@ -98,7 +118,7 @@ async function writePidMapping(
       dir,
       String(pid,),
     ),
-    JSON.stringify(mapping,),
+    serializeStateValue(mapping,),
   );
 }
 
@@ -113,6 +133,8 @@ async function writePidMapping(
  *
  * @param env - {@link Environment} values controlling destination directory.
  *
+ * @mutates state - `JSON.stringify` may invoke hooks on spawn state values.
+ *
  * @example
  * ```typescript
  * writeInitialSpawnState({ state });
@@ -123,7 +145,7 @@ async function writeInitialSpawnState(
     state,
     env = process.env,
   }: {
-    readonly state: SpawnState;
+    state: SpawnState;
     readonly env?: Environment;
   },
 ): Promise<void> {
@@ -136,7 +158,7 @@ async function writeInitialSpawnState(
       spawnId: state.spawnId,
       env,
     },),
-    JSON.stringify(state,),
+    serializeStateValue(state,),
   );
 }
 
