@@ -197,6 +197,112 @@ function readsErrorDiagnostic(
 }
 
 /**
+ * Tests whether expression is a duplicated non-Error diagnostic fallback.
+ *
+ * @param expression - Alternate branch expression.
+ *
+ * @param identifier - Detector input name.
+ *
+ * @returns whether branch stringifies or categorizes detector input.
+ *
+ * @example
+ * ```ts
+ * isDuplicateFallback({ expression, identifier: 'error' });
+ * ```
+ */
+function isDuplicateFallback(
+  {
+    expression,
+    identifier,
+  }: ForeignBorrowed<{
+    readonly expression: ESTree.Expression;
+    readonly identifier: string;
+  }>,
+): boolean {
+  if (expression.type === 'Identifier')
+    return expression.name === identifier;
+  if (expression.type === 'StringLiteral')
+    return true;
+  if (expression.type === 'UnaryExpression') {
+    return (expression.operator === 'typeof')
+      && (identifierName({ expression: expression.argument, },) === identifier);
+  }
+  if (expression.type === 'TemplateLiteral') {
+    return expression.expressions.some(
+      function isTypeofDetectorInput(templateExpression,): boolean {
+        return (templateExpression.type === 'UnaryExpression')
+          && (templateExpression.operator === 'typeof')
+          && (identifierName({ expression: templateExpression.argument, },) === identifier);
+      },
+    );
+  }
+  if (expression.type !== 'CallExpression')
+    return false;
+  if (expression.callee.type !== 'Identifier')
+    return false;
+  if (expression.callee.name !== 'String')
+    return false;
+  /**
+   * Value passed to direct String conversion.
+   */
+  const [argument, ...remainingArguments] = expression.arguments;
+  return (remainingArguments.length === 0)
+    && (argument !== undefined)
+    && (argument.type !== 'SpreadElement')
+    && (identifierName({ expression: argument, },) === identifier);
+}
+
+/**
+ * Tests whether statement returns a duplicated fallback.
+ *
+ * @param statement - Potential fallback statement.
+ *
+ * @param identifier - Detector input name.
+ *
+ * @returns whether statement returns categorized detector input.
+ *
+ * @example
+ * ```ts
+ * returnsDuplicateFallback({ statement, identifier: 'error' });
+ * ```
+ */
+function returnsDuplicateFallback(
+  {
+    statement,
+    identifier,
+  }: ForeignBorrowed<{
+    readonly statement: ESTree.Statement;
+    readonly identifier: string;
+  }>,
+): boolean {
+  if (statement.type === 'ReturnStatement') {
+    return (statement.argument !== null)
+      && isDuplicateFallback({
+        expression: statement.argument,
+        identifier,
+      },);
+  }
+  if (statement.type === 'IfStatement') {
+    return returnsDuplicateFallback({
+      statement: statement.consequent,
+      identifier,
+    },) || ((statement.alternate !== null)
+      && returnsDuplicateFallback({
+        statement: statement.alternate,
+        identifier,
+      },));
+  }
+  if (statement.type !== 'BlockStatement')
+    return false;
+  return statement.body.some(function hasDuplicateFallback(childStatement,): boolean {
+    return returnsDuplicateFallback({
+      statement: childStatement,
+      identifier,
+    },);
+  },);
+}
+
+/**
  * Tests whether statement returns Error diagnostic field.
  *
  * @param statement - Consequent statement.
@@ -275,10 +381,25 @@ function duplicatesCaughtValueFormatter(
   const identifier = errorDetectorIdentifier({ expression: firstStatement.test, },);
   if ((typeof identifier) === 'symbol')
     return false;
-  return returnsErrorDiagnostic({
+  if (!returnsErrorDiagnostic({
     statement: firstStatement.consequent,
     identifier,
-  },);
+  },))
+    return false;
+  if (firstStatement.alternate !== null) {
+    return returnsDuplicateFallback({
+      statement: firstStatement.alternate,
+      identifier,
+    },);
+  }
+  return body
+    .slice(1,)
+    .some(function hasDuplicateFallback(statement,): boolean {
+      return returnsDuplicateFallback({
+        statement,
+        identifier,
+      },);
+    },);
 }
 
 /**
@@ -336,8 +457,13 @@ export const preferCaughtValueText: CreateOnceRule = {
         const identifier = errorDetectorIdentifier({ expression: node.test, },);
         if ((typeof identifier) === 'symbol')
           return;
-        if (readsErrorDiagnostic({
+        if (!readsErrorDiagnostic({
           expression: node.consequent,
+          identifier,
+        },))
+          return;
+        if (isDuplicateFallback({
+          expression: node.alternate,
           identifier,
         },))
           reportDuplicate(node,);
