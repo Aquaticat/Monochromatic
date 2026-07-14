@@ -15,6 +15,35 @@ export function readReadonlyState(state: { readonly value: string; },): string {
 }
 
 /**
+ * Ignores broad object capability without pretending `Readonly<object>` constrains it.
+ *
+ * @param value - Broad capability with unknown properties or traps.
+ */
+export function ignoreBroadObjectCapability(value: object,): void {
+  void value;
+}
+
+/**
+ * Retains direct callable type when callback is not invoked.
+ *
+ * @param callback - Caller-defined behavior left untouched.
+ */
+export function ignoreCallableCapability(callback: () => void,): void {
+  void callback;
+}
+
+/**
+ * Retains direct constructable type when constructor is not invoked.
+ *
+ * @param constructorValue - Caller-defined constructor left untouched.
+ */
+export function ignoreConstructableCapability(
+  constructorValue: abstract new() => object,
+): void {
+  void constructorValue;
+}
+
+/**
  * Clears caller-owned set intentionally.
  *
  * @param values - Mutable caller collection.
