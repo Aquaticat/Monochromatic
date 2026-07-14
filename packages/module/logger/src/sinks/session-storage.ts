@@ -1,10 +1,7 @@
 import { reportLoggerInternalError, } from '../error-format.ts';
 import { detectSessionStorageQuotaChars, } from './session-storage-quota.ts';
 
-import type {
-  LogRecord,
-  Sink,
-} from '../types.ts';
+import type { Sink, } from '../types.ts';
 
 /**
  * Prefix for sessionStorage keys to namespace log entries.
@@ -214,9 +211,7 @@ export function createSessionStorageSink(): Sink {
    *
    * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
-  function write(
-    record: LogRecord & { message: LogRecord['message']; },
-  ): Promise<void> {
+  function write(record: object,): Promise<void> {
     /**
      * Serialized record; computed once so eviction retries re-set the same value without re-stringifying.
      */

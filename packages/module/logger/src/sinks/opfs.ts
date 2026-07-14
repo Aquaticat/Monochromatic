@@ -1,9 +1,6 @@
 import { reportLoggerInternalError, } from '../error-format.ts';
 
-import type {
-  LogRecord,
-  Sink,
-} from '../types.ts';
+import type { Sink, } from '../types.ts';
 
 /**
  * Builds an OPFS sink that appends JSONL records to a per-session file in the
@@ -111,9 +108,7 @@ export function createOpfsSink(): Sink {
    *
    * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
-  async function write(
-    record: LogRecord & { message: LogRecord['message']; },
-  ): Promise<void> {
+  async function write(record: object,): Promise<void> {
     if (!state.writable)
       return;
 

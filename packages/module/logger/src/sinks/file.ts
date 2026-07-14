@@ -6,10 +6,7 @@ import type {
 
 import { reportLoggerInternalError, } from '../error-format.ts';
 
-import type {
-  LogRecord,
-  Sink,
-} from '../types.ts';
+import type { Sink, } from '../types.ts';
 
 /**
  * Sentinel returned by {@link findNodeModulesUp} when no ancestor directory
@@ -274,9 +271,7 @@ export function createFileSink(): Sink {
    *
    * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
-  async function write(
-    record: LogRecord & { message: LogRecord['message']; },
-  ): Promise<void> {
+  async function write(record: object,): Promise<void> {
     // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath/appendFile are optional (unset before verification); checking presence
     if ((!state.filePath) || (!state.appendFile))
       return;
