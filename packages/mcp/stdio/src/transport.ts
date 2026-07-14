@@ -44,6 +44,15 @@ export type StdoutWriter = {
  */
 function processStdoutWriter(): StdoutWriter {
   return {
+    /**
+     * Writes one byte chunk to process stdout.
+     *
+     * @param data - Bytes passed to Node stream.
+     *
+     * @returns Number of accepted bytes.
+     *
+     * @mutates data - `process.stdout.write` may retain byte storage until output consumption completes.
+     */
     write(data: Uint8Array,): number {
       process.stdout
         .write(data,);
