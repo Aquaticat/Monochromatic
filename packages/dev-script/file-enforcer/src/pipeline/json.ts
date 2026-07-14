@@ -121,12 +121,14 @@ export function parseJsonObject(
  *
  * @returns Indented JSON text.
  *
+ * @mutates value - `JSON.stringify` may invoke record accessors or proxy traps.
+ *
  * @example
  * ```ts
  * formatJsonObject({ value: { a: 1 } });
  * ```
  */
-export function formatJsonObject({ value, }: { readonly value: Readonly<JsonObject>; },): string {
+export function formatJsonObject({ value, }: { value: JsonObject; },): string {
   return JSON.stringify(
     value,
     null,

@@ -16,6 +16,8 @@ const INSPECT_PREVIEW_LENGTH = 200;
  *
  * @returns Same value, unmodified
  *
+ * @mutates value - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps for non-string values.
+ *
  * @example
  * ```ts
  * const result = inspect(await readCached('./src/index.ts'));

@@ -42,6 +42,8 @@ const TEMP_FILE_SUFFIX = '.tmp';
  *
  * @param manifest - Manifest to serialize.
  *
+ * @mutates manifest - `JSON.stringify` may invoke hooks on manifest entries.
+ *
  * @example
  * ```ts
  * await writeManifestTempFile({ tempPath, manifest });
@@ -52,7 +54,7 @@ async function writeManifestTempFile(
     tempPath,
     manifest,
   }: {
-    readonly manifest: PersistableStalenessManifest;
+    manifest: PersistableStalenessManifest;
     readonly tempPath: string;
   },
 ): Promise<void> {
@@ -70,6 +72,8 @@ async function writeManifestTempFile(
  *
  * @param manifest - Manifest to persist.
  *
+ * @mutates manifest - `JSON.stringify` may invoke hooks on manifest entries.
+ *
  * @example
  * ```ts
  * await writeManifestAtomically({ manifestPath, manifest });
@@ -80,7 +84,7 @@ async function writeManifestAtomically(
     manifestPath,
     manifest,
   }: {
-    readonly manifest: PersistableStalenessManifest;
+    manifest: PersistableStalenessManifest;
     readonly manifestPath: string;
   },
 ): Promise<void> {

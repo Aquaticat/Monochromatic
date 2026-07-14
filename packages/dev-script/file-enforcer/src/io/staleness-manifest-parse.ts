@@ -53,12 +53,16 @@ export function emptyManifest(): StalenessManifest {
  *
  * @returns Manifest JSON text.
  *
+ * @mutates manifest - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * const text = serializeManifest(manifest);
  * ```
  */
-export function serializeManifest(manifest: PersistableStalenessManifest,): string {
+export function serializeManifest(
+  manifest: PersistableStalenessManifest & { entries: PersistableStalenessManifest['entries']; },
+): string {
   return `${JSON.stringify(
     manifest,
     null,

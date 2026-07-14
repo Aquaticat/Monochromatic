@@ -31,6 +31,9 @@ export function hashContent(content: string,): string {
  *
  * @returns SHA-256 hex digest for source metadata.
  *
+ * @mutates sourceFiles - `JSON.stringify` may invoke array or entry accessors and proxy traps.
+ * @mutates sourceGlobs - `JSON.stringify` may invoke array or entry accessors and proxy traps.
+ *
  * @example
  * ```ts
  * const hash = hashSourceSet({ sourceFiles, sourceGlobs });
@@ -41,8 +44,8 @@ export function hashSourceSet(
     sourceFiles,
     sourceGlobs,
   }: {
-    readonly sourceFiles: readonly FileStamp[];
-    readonly sourceGlobs: readonly GlobStamp[];
+    sourceFiles: readonly FileStamp[];
+    sourceGlobs: readonly GlobStamp[];
   },
 ): string {
   return hashContent(JSON.stringify({
