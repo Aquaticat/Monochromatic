@@ -31,6 +31,7 @@ import {
 import { addOwnedCallEdge, } from './effect-owned-call-edge.ts';
 import { effectCallName, } from './effect-call-name.ts';
 import { applyIntrinsicEffect, } from './effect-intrinsic-application.ts';
+import { intrinsicReceiverParameterIndex, } from './effect-intrinsic-result-origin.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
@@ -157,7 +158,8 @@ export function inspectEffectCall({
     /**
      * Current parameter owning receiver, when direct or nested.
      */
-    const receiverParameterIndex = parameterIndex({
+    const receiverParameterIndex = intrinsicReceiverParameterIndex({
+      project,
       checker,
       bindingOriginBySymbolId,
       node: receiver,

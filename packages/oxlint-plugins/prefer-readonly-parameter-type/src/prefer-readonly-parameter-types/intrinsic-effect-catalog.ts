@@ -119,6 +119,10 @@ export type IntrinsicEffectEntry = {
   readonly invokedArgumentIndexes?: readonly number[];
   readonly opaqueTargets?: readonly IntrinsicEffectTarget[];
   readonly requiresPrimitiveReceiverElements?: boolean;
+  /**
+   * Whether call result retains values reachable from receiver.
+   */
+  readonly receiverValuesReachResult?: boolean;
   readonly evidence: string;
   readonly authority?: HostEffectAuthority;
 };

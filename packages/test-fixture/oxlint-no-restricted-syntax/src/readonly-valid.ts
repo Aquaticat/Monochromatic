@@ -93,6 +93,23 @@ export function readForeignFixtureTree(
 }
 
 /**
+ * Filters foreign descendants through one shallow copy without repeating marker.
+ *
+ * @param tree - Root handle supplied by foreign parser-like API.
+ *
+ * @returns children carrying non-empty values.
+ */
+export function filterForeignFixtureTree(
+  tree: ForeignBorrowed<ForeignFixtureTree>,
+): readonly ForeignFixtureChild[] {
+  return tree.children
+    .slice()
+    .filter(function retainNonEmptyChild(child,) {
+      return child.value.length > 0;
+    },);
+}
+
+/**
  * Reads first foreign descendant reached through synchronous iteration.
  *
  * @param tree - Root handle supplied by foreign parser-like API.

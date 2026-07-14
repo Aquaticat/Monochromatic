@@ -76,6 +76,9 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
         ownerType,
         member,
         targets: [],
+        ...((member === 'slice') || (member === 'with'))
+          ? { receiverValuesReachResult: true, }
+          : {},
         evidence: 'ECMA-262 commit 1355a23e array observation and copy algorithms',
         authority: ecma262Authority({ algorithm: `Array.prototype.${member}`, },),
       };
@@ -124,6 +127,9 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
             2,
           ],
         },],
+        ...((member === 'filter') || (member === 'find') || (member === 'findLast'))
+          ? { receiverValuesReachResult: true, }
+          : {},
         evidence: 'ECMA-262 commit 1355a23e array iteration algorithms with callback effects',
         authority: ecma262Authority({ algorithm: `Array.prototype.${member}`, },),
       };
