@@ -9,6 +9,7 @@
  */
 
 import type { FigmaFile, } from '@monochromatic-dev/figma-kiwi/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { convertFigmaToPenpot, } from './document.ts';
 import type { ConvertOptions, } from './types.ts';
@@ -58,9 +59,9 @@ export async function figmaToPenpot(
     outputPath,
     options = {},
   }: {
-    figmaFile: FigmaFile;
-    outputPath?: string;
-    options?: ConvertOptions;
+    readonly figmaFile: ForeignBorrowed<FigmaFile>;
+    readonly outputPath?: string;
+    readonly options?: ConvertOptions;
   },
 ): Promise<Uint8Array> {
   /**

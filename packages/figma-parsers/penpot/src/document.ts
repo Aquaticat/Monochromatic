@@ -8,6 +8,7 @@ import {
   FIGMA_DOCUMENT_ABSENT,
   type FigmaFile,
 } from '@monochromatic-dev/figma-kiwi/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { figmaColorToHex, } from './color.ts';
 import {
@@ -372,8 +373,8 @@ export function convertFigmaToPenpot(
     figmaFile,
     options = {},
   }: {
-    figmaFile: FigmaFile;
-    options?: ConvertOptions;
+    readonly figmaFile: ForeignBorrowed<FigmaFile>;
+    readonly options?: ConvertOptions;
   },
 ): PenpotDocument {
   /**

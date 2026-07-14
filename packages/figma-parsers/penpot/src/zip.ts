@@ -66,9 +66,9 @@ function addJson(
     path,
     value,
   }: {
-    zip: ZipWriter;
-    path: string;
-    value: unknown
+    readonly zip: ZipWriter;
+    readonly path: string;
+    readonly value: unknown
   },
 ): void {
   zip.add(
@@ -104,10 +104,10 @@ function addPageShapes(
     pageId,
     pageDir,
   }: {
-    zip: ZipWriter;
-    doc: PenpotDocument;
-    pageId: string;
-    pageDir: string;
+    readonly zip: ZipWriter;
+    readonly doc: PenpotDocument;
+    readonly pageId: string;
+    readonly pageDir: string;
   },
 ): void {
   /**

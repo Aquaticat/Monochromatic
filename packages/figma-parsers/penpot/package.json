@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "@monochromatic-dev/figma-kiwi": "workspace:*",
-    "@monochromatic-dev/module-zip-writer": "workspace:*"
+    "@monochromatic-dev/module-zip-writer": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

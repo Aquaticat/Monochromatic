@@ -296,9 +296,9 @@ export type ConvertOptions = {
   /**
    * File name override (defaults to Figma meta.fileName).
    */
-  fileName?: string;
+  readonly fileName?: string;
   /**
    * Generator string for manifest.
    */
-  generatedBy?: string;
+  readonly generatedBy?: string;
 };
