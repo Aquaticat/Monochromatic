@@ -257,7 +257,7 @@ export type PolicyDefinition<
   /**
    * Optional Valibot options schema.
    */
-  readonly options?: Readonly<GenericSchema<unknown, TOptions>>;
+  readonly options?: GenericSchema<unknown, TOptions>;
   /**
    * Finds every violation for one candidate state.
    */
