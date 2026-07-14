@@ -115,14 +115,16 @@ async function fetchAndParseFeeds(
    * Fetched OPML text paired with its source outline for later parsing.
    */
   type TextWOutline = {
-    text: string;
-    outline: DeepReadonly<InnerOutlineWUrl>;
+    readonly text: string;
+    readonly outline: DeepReadonly<InnerOutlineWUrl>;
   };
   /**
    * Fetched feed texts paired with outlines, filtered down to the successful subset.
    */
   const textsWOutline: TextWOutline[] = (await mapIterableAsync({
-    fn: async function fetchFeed(outline: DeepReadonly<InnerOutlineWUrl>,) {
+    fn: async function fetchFeed(
+      outline: DeepReadonly<InnerOutlineWUrl>,
+    ): Promise<TextWOutline | typeof DISCARD> {
       /**
        * Single Response held so status check and text read share one network round trip.
        */

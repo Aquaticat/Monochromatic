@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import type {
   Atom,
   Rss,
@@ -95,8 +96,8 @@ export function getSortedItems(feeds: readonly FeedWOutline[],): ItemWDate[] {
    * Date-sorted copy returned, preserving the input array's identity for callers.
    */
   const result = dated.toSorted(function byDate(
-    itemA,
-    itemB,
+    itemA: ReadonlyDeep<ItemWDate>,
+    itemB: ReadonlyDeep<ItemWDate>,
   ) {
     return itemB.pubDateDate
       .getTime()

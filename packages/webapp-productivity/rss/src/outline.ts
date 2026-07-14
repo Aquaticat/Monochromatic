@@ -1,3 +1,4 @@
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   type Opml,
   parseOpml,
@@ -140,7 +141,7 @@ export async function getOutlinesFromOpmls(
  *
  * @returns Successfully parsed OPML documents
  */
-function parseSafe(texts: readonly string[],): Opml.Document<string>[] {
+function parseSafe(texts: readonly string[],): ReadonlyDeep<Opml.Document<string>>[] {
   /**
    * Inner logger tagged with this function name for traceable log lines.
    */
