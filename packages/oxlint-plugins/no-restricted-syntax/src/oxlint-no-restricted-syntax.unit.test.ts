@@ -266,6 +266,7 @@ const SUBSTANTIVE_RULES = [
   'no-try-finally',
   'no-variable-function-expression',
   'prefer-describe-function-ref-name',
+  'prefer-caught-value-text',
   'prefer-error-is-error',
   'require-destructured-params',
   'require-queryselector-generic',
@@ -414,6 +415,15 @@ await describe({
           },
         },),
         it({
+          name: 'prefer-caught-value-text accepts shared helpers and predicate checks',
+          fn: async () => {
+            const diagnostics = await lint(
+              'valid/prefer-caught-value-text.ts',
+            );
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
           name: 'prefer-error-is-error accepts Error.isError and non-Node lookalikes',
           fn: async () => {
             const diagnostics = await lint(
@@ -556,6 +566,23 @@ await describe({
               ),
             );
             expect(actualCounts,).toEqual(expectedCounts,);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'prefer-caught-value-text forms',
+      children: [
+        it({
+          name: 'reports conditional and branching duplicate formatters',
+          fn: async () => {
+            const diagnostics = await lint('invalid/prefer-caught-value-text.ts',);
+            const preferCaughtValueText = diagnostics.filter(
+              function isPreferCaughtValueText(diagnostic,): boolean {
+                return diagnostic.code === 'no-restricted-syntax(prefer-caught-value-text)';
+              },
+            );
+            expect(preferCaughtValueText.length,).toBe(2,);
           },
         },),
       ],

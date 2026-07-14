@@ -33,6 +33,7 @@
     "no-restricted-syntax/no-try-finally": "error",
     "no-restricted-syntax/no-variable-function-expression": "error",
     "no-restricted-syntax/prefer-describe-function-ref-name": "error",
+    "no-restricted-syntax/prefer-caught-value-text": "error",
     "no-restricted-syntax/prefer-error-is-error": "error",
     "no-restricted-syntax/require-destructured-params": "error",
     "no-restricted-syntax/require-queryselector-generic": "error",

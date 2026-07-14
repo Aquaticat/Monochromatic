@@ -76,6 +76,8 @@ This plugin provides individual rules for each banned syntax pattern instead.
    use a function declaration instead
 - **prefer-describe-function-ref-name**:
    requires `describe({ name: fn.name })` when a test suite name mirrors an in-scope function binding
+- **prefer-caught-value-text**:
+   requires the shared `caughtValueText` or `caughtValueStack` helper instead of local Error-and-fallback formatters
 - **prefer-error-is-error**:
    bans legacy Error detection (`instanceof Error`,
    `Object.prototype.toString` tags,

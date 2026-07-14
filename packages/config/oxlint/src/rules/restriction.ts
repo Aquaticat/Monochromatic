@@ -74,6 +74,9 @@ export const restrictionRules: DummyRuleMap = {
   // Bind catch values instead of using `catch {}` so failures stay inspectable.
   'no-restricted-syntax/catch-binding': 'error',
 
+  // Keep unknown caught-value coercion and its effect contract in one shared module.
+  'no-restricted-syntax/prefer-caught-value-text': 'error',
+
   // Prefer Error.isError() over realm-fragile instanceof checks, string tag
   // checks, constructor comparisons, and deprecated Node util.types.isNativeError().
   // Initial severity is warn because the workspace has existing violations;
