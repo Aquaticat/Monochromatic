@@ -160,7 +160,7 @@ export const dottedKeyArbitrary: Arbitrary<DottedKey> = uniqueArray(
     selector: function byName(segment,) { return segment.name; },
   },
 )
-  .map(function build(segments,) {
+  .map(function build(segments: readonly KeySegment[],) {
   return {
     text: segments.map(function each(segment,) { return segment.text; },)
       .join('.',),

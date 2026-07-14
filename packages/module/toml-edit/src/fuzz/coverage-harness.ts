@@ -12,6 +12,7 @@
  * @module
  */
 
+
 import {
   parseTomlEdit,
   TomlEditError,
@@ -74,6 +75,8 @@ function recordRejected(): void {
  *
  * @throws Error for any non-{@link TomlEditError} thrown by `thunk`.
  *
+ * @mutates thunk - Invoking caller-supplied operation can change captured or otherwise reachable state.
+ *
  * @example
  * ```ts
  * attempt({ thunk: function once() { tomlStringify({ edit, },); }, },);
@@ -100,6 +103,8 @@ export function attempt({ thunk, }: { readonly thunk: () => void; },): void {
  * @returns The thunk result, or `fallback` when the operation was rejected.
  *
  * @throws Error for any non-{@link TomlEditError} thrown by `thunk`.
+ *
+ * @mutates thunk - Invoking caller-supplied operation can change captured or otherwise reachable state.
  *
  * @example
  * ```ts

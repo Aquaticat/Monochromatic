@@ -11,6 +11,7 @@
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { AST, } from 'toml-eslint-parser';
 
 import { emitStringValue, } from './emit-value-string.ts';
@@ -34,7 +35,7 @@ export function emitContentNode(
     options,
     depth = 0,
   }: {
-    readonly node: AST.TOMLNode;
+    readonly node: ForeignBorrowed<AST.TOMLNode>;
     readonly options: CanonicalOptions;
     readonly depth?: number;
   },
@@ -96,7 +97,7 @@ function emitArray(
    * Per-element text so the assembler can join into inline or multi-line form.
    */
   const parts = node.elements
-    .map(function each(el,) {
+    .map(function each(el: AST.TOMLNode,) {
     return emitContentNode({
       node: el,
       options,
@@ -131,7 +132,7 @@ export function emitArrayWithoutIndex(
     options,
     depth,
   }: {
-    readonly array: AST.TOMLArray;
+    readonly array: ForeignBorrowed<AST.TOMLArray>;
     readonly skipIndex: number;
     readonly options: CanonicalOptions;
     readonly depth: number;
@@ -142,18 +143,17 @@ export function emitArrayWithoutIndex(
    */
   const parts = array
     .elements
-    .filter(function notSkipped(
-      _el,
-      i,
+    .flatMap(function each(
+      el: AST.TOMLNode,
+      index,
     ) {
-      return i !== skipIndex;
-    },)
-    .map(function each(el,) {
-      return emitContentNode({
+      if (index === skipIndex)
+        return [];
+      return [emitContentNode({
         node: el,
         options,
         depth: depth + 1,
-      },);
+      },),];
     },);
   return assembleArrayParts({
     parts,
@@ -236,7 +236,7 @@ export function emitArrayWithSkipPath(
    */
   const parts = array.elements
     .map(function each(
-    el,
+    el: AST.TOMLNode,
     i,
   ) {
     if (i !== head) {
@@ -387,7 +387,7 @@ export function emitInlineTableWithExtra(
     extraKey,
     extraValue,
   }: {
-    readonly node: AST.TOMLNode;
+    readonly node: ForeignBorrowed<AST.TOMLNode>;
     readonly options: CanonicalOptions;
     readonly depth: number;
     readonly extraKey: string;
@@ -430,14 +430,14 @@ function emitInlineTableBodyParts(
     readonly depth: number;
   },
 ): readonly string[] {
-  return body.map(function each(kv,) {
+  return body.map(function each(kv: AST.TOMLKeyValue,) {
     /**
      * Encoded key chain joined with `.` so dotted keys reuse their original spelling.
      */
     const keyText = kv
       .key
       .keys
-      .map(function each2(k,) {
+      .map(function each2(k: AST.TOMLBare | AST.TOMLQuoted,) {
         return encodeKey({ key: k.type
           === 'TOMLBare' ? k.name : k.value, },);
       },)

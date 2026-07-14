@@ -50,19 +50,38 @@ function isJsonTable(value: unknown,): value is Record<string, unknown> {
  * @throws {@link TomlTypeError} when an entry is not representable as TOML, which the
  *         caller turns into a non-zero exit.
  *
+ * @mutates root - `Object.entries` and recursive tagged conversion can invoke caller-owned proxy and accessor hooks.
+ *
  * @example
  * ```ts
  * buildToml({ root: { a: { type: 'bool', value: 'true' } }, }); // 'a = true\n'
  * ```
  */
-function buildToml({ root, }: { readonly root: Readonly<Record<string, unknown>>; },): string {
+function buildToml({ root, }: { readonly root: Record<string, unknown>; },): string {
   return tomlStringify({
     edit: Object.entries(root,)
       .reduce(
+        /**
+         * Applies one tagged entry to immutable edit state.
+         *
+         * @param current - Edit state returned by previous reduction step.
+         *
+         * @param entry - Tagged key and child pair.
+         *
+         * @returns Next immutable edit state.
+         *
+         * @mutates current - Built-package `tomlSet` boundary may inspect caller-reachable edit state.
+         *
+         * @mutates entry - Tagged child conversion may invoke proxy and accessor hooks recursively.
+         */
         function applyEntry(
           current,
-          [key, child,],
+          entry,
         ) {
+          /**
+           * Tagged key and child selected by current entry.
+           */
+          const [key, child,] = entry;
           return tomlSet({
             edit: current,
             path: [key,],

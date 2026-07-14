@@ -30,6 +30,8 @@ import { isPlainObject, } from './value-encoders.ts';
  * @returns The value narrowed to a record.
  *
  * @throws {@link TomlTypeError} when `value` is not a plain object.
+ *
+ * @mutates value - Plain-object validation can invoke caller-owned proxy prototype hooks.
  */
 function requireObject(
   {
@@ -52,6 +54,8 @@ function requireObject(
  * New synthetic key-value blocks for each entry of `value`.
  *
  * @returns Computed blocks.
+ *
+ * @mutates value - `Object.entries` and recursive value building can invoke caller-owned proxy and accessor hooks.
  */
 function entryBlocks(
   {
@@ -59,7 +63,7 @@ function entryBlocks(
     prefix,
     options,
   }: {
-    readonly value: Readonly<Record<string, unknown>>;
+    readonly value: Record<string, unknown>;
     readonly prefix: readonly string[];
     readonly options: TomlEditState['canonical'];
   },
@@ -83,6 +87,8 @@ function entryBlocks(
  * @returns Fresh {@link TomlEditState}.
  *
  * @throws {@link TomlTypeError} when `value` is not a plain object.
+ *
+ * @mutates value - Validation and entry building can invoke caller-owned proxy and accessor hooks.
  *
  * @example
  * ```ts
@@ -135,6 +141,8 @@ export function doTableReplace(
  * @returns Fresh {@link TomlEditState}.
  *
  * @throws {@link TomlTypeError} when `value` is not a plain object.
+ *
+ * @mutates value - Validation and entry building can invoke caller-owned proxy and accessor hooks.
  *
  * @example
  * ```ts
@@ -228,6 +236,8 @@ export function isImplicitConstituent(
  *
  * @throws {@link TomlTypeError} when `value` is not a plain object.
  *
+ * @mutates value - Validation and entry building can invoke caller-owned proxy and accessor hooks.
+ *
  * @example
  * ```ts
  * doImplicitReplace({ edit, path: ['a'], value: { b: 1, }, },);
@@ -254,7 +264,9 @@ export function doImplicitReplace(
   /**
    * String-form prefix so the new dotted keys extend the parent path.
    */
-  const prefix = path.map(String,);
+  const prefix = path.map(function stringifySegment(segment,) {
+    return (typeof segment) === 'number' ? String(segment,) : segment;
+  },);
   /**
    * Blocks with the implicit parent's constituents removed.
    */

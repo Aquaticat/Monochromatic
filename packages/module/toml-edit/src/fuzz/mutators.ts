@@ -266,6 +266,11 @@ export const corruptedDocumentArbitrary: Arbitrary<string> = record({
   },),
   token: constantFrom(...DISRUPTIVE_TOKENS,),
 },)
-  .map(function corrupt(plan,) {
+  .map(function corrupt(plan: {
+    readonly source: string;
+    readonly kind: CorruptionKind;
+    readonly fraction: number;
+    readonly token: string;
+  },) {
   return applyCorruption(plan,);
 },);

@@ -55,7 +55,7 @@ export function materializeDocument(
   return edit.blocks
     .reduce<Record<string, unknown>>(
     function step(
-      root,
+      root: Readonly<Record<string, unknown>>,
       block,
     ) {
       if (block.kind
@@ -163,7 +163,7 @@ function foldTable(
   },);
   return bodyKvs.reduce<Record<string, unknown>>(
     function foldKv(
-      acc,
+      acc: Readonly<Record<string, unknown>>,
       kv,
     ) {
       return setDeep({
@@ -189,6 +189,8 @@ function foldTable(
  *
  * @returns Value at the path, or {@link MISSING}.
  *
+ * @mutates root - `Object.hasOwn` can invoke caller-owned proxy descriptor hooks while navigating.
+ *
  * @example
  * ```ts
  * navigate({ root, path: ['tools', 'bun'], },);
@@ -199,7 +201,7 @@ export function navigate(
     root,
     path,
   }: {
-    readonly root: Readonly<Record<string, unknown>>;
+    readonly root: Record<string, unknown>;
     readonly path: TomlPath;
   },
 ): unknown {

@@ -15,6 +15,7 @@ import {
   array,
   constantFrom,
   letrec,
+  type LetrecTypedTie,
   oneof,
   record,
   uniqueArray,
@@ -128,7 +129,17 @@ type TextGrammar = {
  * Recursive value-text grammar: leaves are scalars; compounds are inline arrays
  * and inline tables, both capped in depth and width.
  */
-const valueGrammar = letrec<TextGrammar>(function grammar(tie,) {
+const valueGrammar = letrec<TextGrammar>(
+  /**
+   * Constructs recursive grammar through fast-check tie capability.
+   *
+   * @param tie - fast-check resolver for recursive grammar branches.
+   *
+   * @returns Arbitraries for every recursive grammar branch.
+   *
+   * @mutates tie - Invoking fast-check resolver can change caller-owned generation state.
+   */
+  function grammar(tie: LetrecTypedTie<TextGrammar>,) {
   return {
     value: oneof(
       { maxDepth: MAX_VALUE_DEPTH, },
@@ -141,7 +152,7 @@ const valueGrammar = letrec<TextGrammar>(function grammar(tie,) {
       tie('value',),
       { maxLength: MAX_COMPOUND_WIDTH, },
     )
-      .map(function assemble(parts,) { return renderArray({ parts, },); },),
+      .map(function assemble(parts: readonly string[],) { return renderArray({ parts, },); },),
     inlineTable: uniqueArray(
       record({
         key: keySegmentArbitrary,
@@ -152,7 +163,7 @@ const valueGrammar = letrec<TextGrammar>(function grammar(tie,) {
         selector: inlineEntryName,
       },
     )
-      .map(function assemble(entries,) { return renderInlineTable({ entries, },); },),
+      .map(function assemble(entries: readonly InlineEntry[],) { return renderInlineTable({ entries, },); },),
   };
 },);
 

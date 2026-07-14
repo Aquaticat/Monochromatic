@@ -34,6 +34,8 @@ import {
  *
  * @throws {@link TomlTypeError} for `null`, `undefined`, or an unencodable value.
  *
+ * @mutates input - Recursive build can invoke caller-owned proxy, getter, and prototype hooks.
+ *
  * @example
  * ```ts
  * buildValueFromInput({ input: { x: 1, }, options, },);

@@ -14,6 +14,8 @@ import {
   parseTOML,
   parseTomlEdit,
 } from '@monochromatic-dev/module-toml-edit';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { AST, } from 'toml-eslint-parser';
 
 import {
   failAdapter,
@@ -122,14 +124,16 @@ function parseToTree(
       source,
       ...versionOption(),
     },);
+    /**
+     * Root parser result crossing from foreign AST ownership into projection.
+     */
+    const program: ForeignBorrowed<AST.TOMLProgram> = parseTOML(
+      source,
+      versionOption(),
+    );
     return {
       ok: true,
-      tree: documentToTagged({
-        program: parseTOML(
-          source,
-          versionOption(),
-        ),
-      },),
+      tree: documentToTagged({ program, },),
     };
   }
   catch (caught: unknown) {

@@ -6,9 +6,9 @@
  * would emit.
  *
  * Materialized objects are built immutably and prototype-safely: every key is
- * written through {@link Object.defineProperty} (never plain assignment) and
- * every read goes through {@link Object.hasOwn}, so a `__proto__` key becomes a
- * normal own property instead of mutating a prototype.
+ * written through a computed object property (never plain assignment) and every
+ * read goes through {@link Object.hasOwn}, so a `__proto__` key becomes a normal
+ * own property instead of mutating a prototype.
  *
  * @module
  */
@@ -57,10 +57,10 @@ export function isUnknownArray(value: unknown,): value is readonly unknown[] {
  * Return a shallow clone of `source` with `key` set to `value` as an own data
  * property.
  *
- * Uses {@link Object.defineProperty} rather than assignment so a `__proto__`
- * key becomes an own property instead of invoking the prototype setter; the
- * object spread likewise copies an existing own `__proto__` (via
- * data-property creation, not the setter), keeping the clone prototype-safe.
+ * Uses a computed object property rather than assignment so a `__proto__` key
+ * becomes an own property instead of invoking the prototype setter. Object
+ * spread likewise copies an existing own `__proto__` through data-property
+ * creation, keeping the clone prototype-safe.
  *
  * @param source - Object cloned so the update stays immutable.
  *
@@ -86,16 +86,10 @@ function assocOwn(
     readonly value: unknown;
   },
 ): Record<string, unknown> {
-  return Object.defineProperty(
-    { ...source, },
-    key,
-    {
-      value,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    },
-  );
+  return {
+    ...source,
+    [key]: value,
+  };
 }
 
 /**
@@ -129,6 +123,10 @@ type DescentFrame = {
  *
  * @returns Fresh root object with the addressed value transformed.
  *
+ * @mutates container - `Object.hasOwn` can invoke caller-owned proxy descriptor hooks while descending.
+ *
+ * @mutates update - Invoking caller-supplied updater can change captured or otherwise reachable state.
+ *
  * @example
  * ```ts
  * updateDeep({ container: {}, path: ['a', 'b'], update: () => 1, },); // { a: { b: 1 } }
@@ -140,7 +138,7 @@ export function updateDeep(
     path,
     update,
   }: {
-    readonly container: Readonly<Record<string, unknown>>;
+    readonly container: Record<string, unknown>;
     readonly path: readonly (string | number)[];
     readonly update: (existing: unknown) => unknown;
   },
@@ -160,11 +158,25 @@ export function updateDeep(
     -1,
   )
     .reduce<{
-      readonly cursor: Readonly<Record<string, unknown>>;
+      readonly cursor: Record<string, unknown>;
       readonly frames: readonly DescentFrame[];
     }>(
+    /**
+     * Descends one path segment through own properties.
+     *
+     * @param acc - Cursor and immutable rebuild frames.
+     *
+     * @param seg - Path segment being resolved.
+     *
+     * @returns Next cursor and appended rebuild frame.
+     *
+     * @mutates acc - `Object.hasOwn` can invoke proxy descriptor hooks reachable through cursor.
+     */
     function step(
-      acc,
+      acc: {
+        readonly cursor: Record<string, unknown>;
+        readonly frames: readonly DescentFrame[];
+      },
       seg,
     ) {
       /**
@@ -235,7 +247,7 @@ export function updateDeep(
   return descent.frames
     .reduceRight<Record<string, unknown>>(
     function rebuild(
-      child,
+      child: Readonly<Record<string, unknown>>,
       frame,
     ) {
       return assocOwn({
@@ -321,7 +333,7 @@ export function materializeValue({ value, }: { readonly value: ValueNode; },): u
   return value.entries
     .reduce<Record<string, unknown>>(
     function step(
-      acc,
+      acc: Readonly<Record<string, unknown>>,
       entry,
     ) {
       return setDeep({

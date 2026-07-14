@@ -5,6 +5,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   type AST,
   ParseError,
@@ -97,7 +98,7 @@ function normalizeNewlines({ source, }: { readonly source: string; },): string {
 /**
  * Parse `source` and wrap `ParseError` in a {@link TomlEditError}.
  *
- * @returns Computed result (`AST.TOMLProgram`).
+ * @returns Root parser result retaining foreign AST ownership provenance.
  */
 function safeParse(
   {
@@ -107,7 +108,7 @@ function safeParse(
     readonly source: string;
     readonly tomlVersion: TomlEditOptions['tomlVersion'];
   },
-): AST.TOMLProgram {
+): ForeignBorrowed<AST.TOMLProgram> {
   try {
     return parseTOML(
       source,

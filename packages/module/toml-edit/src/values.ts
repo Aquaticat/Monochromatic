@@ -8,6 +8,7 @@
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { AST, } from 'toml-eslint-parser';
 
 import { TomlTypeError, } from './errors.ts';
@@ -26,14 +27,11 @@ export { isPlainObject, } from './value-encoders.ts';
 /**
  * Optional existing AST node carrier.
  *
- * Wraps the node in an object so the `AST.TOMLNode` alias sits at a property
- * position. A bare `AST.TOMLNode | undefined` would flatten the alias into
- * its constituents (re-exposing `TOMLInlineTable`, which is not on the
- * `prefer-readonly-parameter-types` allow-list); nesting it keeps the alias
- * intact and the parameter readonly.
+ * Marks parser-owned AST ingress once so observation helpers preserve foreign
+ * ownership provenance without repeating markers on descendants.
  */
 export type ExistingNode = {
-  readonly node: AST.TOMLNode;
+  readonly node: ForeignBorrowed<AST.TOMLNode>;
 };
 
 /**
@@ -46,6 +44,8 @@ export type ExistingNode = {
  *
  * @throws {@link TomlTypeError} for `null`, `undefined`, symbols, functions, or
  *         circular structures.
+ *
+ * @mutates input - Recursive encoding can invoke caller-owned proxy, getter, prototype, and serialization hooks.
  *
  * @example
  * ```ts
@@ -85,6 +85,8 @@ export function jsValueToTomlText(
  * @throws {@link TomlTypeError} for `null`, `undefined`, or any other value
  *         that is not a wrapped input, string, boolean, bigint, number,
  *         `Date`, array, or plain object.
+ *
+ * @mutates input - Recursive encoding can invoke caller-owned proxy, getter, prototype, and serialization hooks.
  */
 function encodeValue(
   {
@@ -338,6 +340,8 @@ function encodeArray(
  * Encode a JS plain object as a TOML inline table `{ k = v, ... }`.
  *
  * @returns Computed string.
+ *
+ * @mutates input - `Object.entries` and recursive encoding can invoke caller-owned proxy and accessor hooks.
  */
 function encodeInlineTable(
   {
@@ -345,7 +349,7 @@ function encodeInlineTable(
     options,
     depth,
   }: {
-    readonly input: Readonly<Record<string, unknown>>;
+    readonly input: Record<string, unknown>;
     readonly options: CanonicalOptions;
     readonly depth: number;
   },

@@ -14,6 +14,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+
 import {
   type CoverageMap,
   type V8Function,
@@ -183,6 +184,8 @@ function createSourceReader(): (absPath: string,) => Promise<string> {
  * @param readSource - cached source reader for this aggregation run
  *
  * @returns projected target with source and covered lines
+ *
+ * @mutates readSource - Invoking cached source reader can change its caller-owned cache and asynchronous state.
  */
 async function projectTarget(
   {

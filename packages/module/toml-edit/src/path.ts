@@ -41,7 +41,7 @@ export function keyNameOf({ key, }: { readonly key: AST.TOMLBare | AST.TOMLQuote
  */
 export function keysOf({ key, }: { readonly key: AST.TOMLKey; },): readonly string[] {
   return key.keys
-    .map(function nameOf(k,) {
+    .map(function nameOf(k: AST.TOMLBare | AST.TOMLQuoted,) {
     return keyNameOf({ key: k, },);
   },);
 }

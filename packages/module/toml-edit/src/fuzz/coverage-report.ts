@@ -22,6 +22,7 @@ import {
 } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
+
 import { aggregateCoverage, } from './coverage-aggregate.ts';
 import type { CoverageMap, } from './coverage-v8.ts';
 
@@ -77,8 +78,10 @@ function isBaseline(value: unknown,): value is Baseline {
  * with keys sorted so the on-disk baseline diffs cleanly.
  *
  * @returns Baseline keyed by sorted package-relative path.
+ *
+ * @mutates map - `Object.keys` can invoke caller-owned proxy own-key and descriptor hooks.
  */
-function toBaseline({ map, }: { readonly map: CoverageMap; },): Baseline {
+function toBaseline({ map, }: { map: Record<string, CoverageMap[string]>; },): Baseline {
   return Object.fromEntries(
     Object.keys(map,)
       .toSorted()
@@ -100,8 +103,10 @@ function toBaseline({ map, }: { readonly map: CoverageMap; },): Baseline {
  * trailing newline) so a refreeze produces a minimal diff.
  *
  * @returns JSON text for the baseline file.
+ *
+ * @mutates baseline - `JSON.stringify` can invoke getters, proxy traps, `toJSON`, replacer, and coercion hooks.
  */
-function serializeBaseline({ baseline, }: { readonly baseline: Baseline; },): string {
+function serializeBaseline({ baseline, }: { baseline: Record<string, number>; },): string {
   return `${JSON.stringify(
     baseline,
     undefined,
@@ -144,6 +149,8 @@ async function loadBaseline({ baselinePath, }: { readonly baselinePath: string; 
  * including a baseline file the current run no longer covers at all.
  *
  * @returns Regressions in sorted path order; empty when nothing regressed.
+ *
+ * @mutates baseline - `Object.keys` can invoke caller-owned proxy own-key and descriptor hooks.
  */
 function findRegressions(
   {
@@ -151,7 +158,7 @@ function findRegressions(
     baseline,
   }: {
     readonly map: CoverageMap;
-    readonly baseline: Baseline;
+    baseline: Record<string, number>;
   },
 ): readonly Regression[] {
   return Object.keys(baseline,)
@@ -228,13 +235,15 @@ function formatFileLine(
  * Build the full human summary: a per-file table plus a totals line.
  *
  * @returns Multi-line summary text for CI logs and local runs.
+ *
+ * @mutates map - `Object.keys` and `Object.values` can invoke caller-owned proxy hooks.
  */
 function formatSummary(
   {
     map,
     baseline,
   }: {
-    readonly map: CoverageMap;
+    map: Record<string, CoverageMap[string]>;
     readonly baseline: Baseline;
   },
 ): string {
@@ -260,7 +269,10 @@ function formatSummary(
   const totals = Object.values(map,)
     .reduce(
     function sum(
-      acc,
+      acc: {
+        readonly covered: number;
+        readonly total: number;
+      },
       coverage,
     ) {
       return {

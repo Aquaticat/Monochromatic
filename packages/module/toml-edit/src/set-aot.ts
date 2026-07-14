@@ -55,7 +55,9 @@ export function doAotReplace(
   /**
    * Header segments as strings so each new instance shares one header spelling.
    */
-  const header = path.map(String,);
+  const header = path.map(function segmentText(segment,): string {
+    return `${segment}`;
+  },);
   /**
    * One synthetic `[[header]]` block per array element.
    */

@@ -19,6 +19,7 @@
 
 import type { AST, } from 'toml-eslint-parser';
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 /**
  * Half-open `[start, end)` char-offset span into the immutable source.
  */
@@ -41,7 +42,7 @@ export type Origin =
   | {
     readonly kind: 'clean';
     readonly range: Span;
-    readonly astNode: AST.TOMLNode;
+    readonly astNode: ForeignBorrowed<AST.TOMLNode>;
   }
   | { readonly kind: 'synthetic'; };
 

@@ -61,23 +61,6 @@ function isLeaf(node: TaggedTree,): node is TaggedValue {
  */
 type AbsolutePath = readonly (string | number)[];
 
-/**
- * Builder surface: the growing root plus its two insertion entry points.
- */
-type DocumentBuilder = {
-  readonly root: BuildTable;
-  readonly addKeyValue: (args: {
-    readonly path: AbsolutePath;
-    readonly content: AST.TOMLNode
-  },) => void;
-  readonly addTable: (
-    args: {
-      readonly resolvedKey: AbsolutePath;
-      readonly entries: readonly AST.TOMLKeyValue[]
-    },
-  ) => void;
-};
-
 //endregion Builder model
 
 //region Key resolution
@@ -96,7 +79,9 @@ type DocumentBuilder = {
  */
 function keyPath({ key, }: { readonly key: AST.TOMLKey; },): readonly string[] {
   return key.keys
-    .map(function keySegment(segment,) {
+    .map(function keySegment(
+      segment: AST.TOMLBare | AST.TOMLQuoted,
+    ) {
       return (segment.type === 'TOMLBare') ? segment.name : segment.value;
     },);
 }
@@ -106,25 +91,19 @@ function keyPath({ key, }: { readonly key: AST.TOMLKey; },): readonly string[] {
 //region Document builder
 
 /**
- * Create a tagged-tree builder that inserts by absolute path.
+ * Creates document root for direct insertion helpers.
  *
- * The single mutable root is held in the closure, so descent and insertion
- * mutate that captured value and local cursors rather than passing mutable
- * containers between functions.
- *
- * @returns Builder exposing its root and the two insertion entry points.
+ * @returns Empty mutable build table.
  *
  * @example
  * ```ts
- * const b = createBuilder();
- * b.addKeyValue({ path: ['a'], content: valueNode, });
+ * const root = createBuilder();
+ * addKeyValue({ root, path: ['a'], content: valueNode, });
  * ```
  */
-function createBuilder(): DocumentBuilder {
-  /**
-   * Document root accumulating every key-value and table.
-   */
-  const root: BuildTable = {};
+function createBuilder(): BuildTable {
+  return {};
+}
 
   /**
    * Descend to the container holding `path`'s final segment, creating missing
@@ -141,13 +120,32 @@ function createBuilder(): DocumentBuilder {
    * descend(['a', 'b']); // container at `a`
    * ```
    */
-  function descend(path: AbsolutePath,): BuildContainer {
+function descend({
+  root,
+  path,
+}: {
+  readonly root: BuildTable;
+  readonly path: AbsolutePath;
+},): BuildContainer {
     return path
       .slice(
         0,
         -1,
       )
       .reduce<BuildContainer>(
+        /**
+         * Descends one path segment and creates missing child container.
+         *
+         * @param current - Mutable builder container at current path prefix.
+         *
+         * @param seg - Current path segment.
+         *
+         * @param index - Segment offset used to inspect next segment kind.
+         *
+         * @returns Child container for next step.
+         *
+         * @mutates current - Stores newly created child container when path prefix is absent.
+         */
         function step(
           current,
           seg,
@@ -173,9 +171,9 @@ function createBuilder(): DocumentBuilder {
             throw new Error('conformance decode: path descends through a scalar',);
           return child;
         },
-        root,
-      );
-  }
+      root,
+    );
+}
 
   /**
    * Insert one key-value's tagged content at its absolute path.
@@ -189,13 +187,15 @@ function createBuilder(): DocumentBuilder {
    * addKeyValue({ path: ['a'], content: valueNode, });
    * ```
    */
-  function addKeyValue({
-    path,
-    content,
-  }: {
-    readonly path: AbsolutePath;
-    readonly content: AST.TOMLNode
-  },): void {
+function addKeyValue({
+  root,
+  path,
+  content,
+}: {
+  readonly root: BuildTable;
+  readonly path: AbsolutePath;
+  readonly content: AST.TOMLNode
+},): void {
     /**
      * Tagged value to place, computed before navigation.
      */
@@ -203,7 +203,10 @@ function createBuilder(): DocumentBuilder {
     /**
      * Container holding the final segment.
      */
-    const parent = descend(path,);
+    const parent = descend({
+      root,
+      path,
+    },);
     /**
      * Final path segment.
      */
@@ -227,19 +230,24 @@ function createBuilder(): DocumentBuilder {
    * addTable({ resolvedKey: ['a'], entries: [], });
    * ```
    */
-  function addTable(
-    {
-      resolvedKey,
-      entries,
-    }: {
-      readonly resolvedKey: AbsolutePath;
-      readonly entries: readonly AST.TOMLKeyValue[]
-    },
-  ): void {
+function addTable(
+  {
+    root,
+    resolvedKey,
+    entries,
+  }: {
+    readonly root: BuildTable;
+    readonly resolvedKey: AbsolutePath;
+    readonly entries: readonly AST.TOMLKeyValue[]
+  },
+): void {
     /**
      * Container holding the table's final segment.
      */
-    const parent = descend(resolvedKey,);
+    const parent = descend({
+      root,
+      path: resolvedKey,
+    },);
     /**
      * Final segment naming the table within its parent.
      */
@@ -250,19 +258,13 @@ function createBuilder(): DocumentBuilder {
     else if (((typeof last) === 'string') && (parent[last] === undefined)) parent[last] = {};
     for (const entry of entries)
       addKeyValue({
+        root,
         path: [
           ...resolvedKey,
           ...keyPath({ key: entry.key, },),
         ],
         content: entry.value,
       },);
-  }
-
-  return {
-    root,
-    addKeyValue,
-    addTable,
-  };
 }
 
 //endregion Document builder
@@ -290,7 +292,7 @@ function contentToTagged({ node, }: { readonly node: AST.TOMLNode; },): BuildNod
     return leafToTagged({ node, },);
   if (node.type === 'TOMLArray')
     return node.elements
-      .map(function each(element,) {
+      .map(function each(element: AST.TOMLNode,) {
         return contentToTagged({ node: element, },);
       },);
   if (node.type === 'TOMLInlineTable') {
@@ -299,11 +301,12 @@ function contentToTagged({ node, }: { readonly node: AST.TOMLNode; },): BuildNod
      */
     const inline = createBuilder();
     for (const entry of node.body)
-      inline.addKeyValue({
+      addKeyValue({
+        root: inline,
         path: keyPath({ key: entry.key, },),
         content: entry.value,
       },);
-    return inline.root;
+    return inline;
   }
   throw new Error('conformance decode: unexpected content node',);
 }
@@ -320,7 +323,11 @@ function contentToTagged({ node, }: { readonly node: AST.TOMLNode; },): BuildNod
  * documentToTagged({ program, }); // { a: { type: 'integer', value: '42' } }
  * ```
  */
-export function documentToTagged({ program, }: { readonly program: AST.TOMLProgram; },): TaggedTree {
+export function documentToTagged({
+  program,
+}: {
+  readonly program: AST.TOMLProgram;
+},): TaggedTree {
   /**
    * Builder accumulating every key-value and table.
    */
@@ -328,18 +335,20 @@ export function documentToTagged({ program, }: { readonly program: AST.TOMLProgr
   for (const item of program.body[0]
     .body) {
     if (item.type === 'TOMLKeyValue') {
-      builder.addKeyValue({
+      addKeyValue({
+        root: builder,
         path: keyPath({ key: item.key, },),
         content: item.value,
       },);
       continue;
     }
-    builder.addTable({
+    addTable({
+      root: builder,
       resolvedKey: item.resolvedKey,
       entries: item.body,
     },);
   }
-  return builder.root;
+  return builder;
 }
 
 //endregion Content and document walk

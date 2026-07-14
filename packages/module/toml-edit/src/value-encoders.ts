@@ -117,6 +117,8 @@ export function isWrappedInput(value: unknown,): value is TomlWrappedInput {
  * @returns True when `value` is a plain object literal (excludes `Date`, class
  *          instances, `Map`, `Set`, etc.).
  *
+ * @mutates value - `Object.getPrototypeOf` can invoke caller-owned proxy prototype hooks.
+ *
  * @example
  * ```ts
  * isPlainObject({ a: 1, },);    // true

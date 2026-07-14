@@ -30,10 +30,12 @@ export class TomlEditError extends Error {
    *
    * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
    *                  underlying error.
+   *
+   * @mutates options - Error construction can read caller-owned cause getter or proxy trap through `super`.
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ErrorOptions,
   ) {
     super(
       message,
@@ -55,10 +57,12 @@ export class TomlPathNotFoundError extends TomlEditError {
    *
    * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
    *                  underlying error.
+   *
+   * @mutates options - Error construction can read caller-owned cause getter or proxy trap through `super`.
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ErrorOptions,
   ) {
     super(
       message,
@@ -80,10 +84,12 @@ export class TomlSpliceUnavailableError extends TomlEditError {
    *
    * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
    *                  underlying error.
+   *
+   * @mutates options - Error construction can read caller-owned cause getter or proxy trap through `super`.
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ErrorOptions,
   ) {
     super(
       message,
@@ -105,10 +111,12 @@ export class TomlTypeError extends TomlEditError {
    *
    * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
    *                  underlying error.
+   *
+   * @mutates options - Error construction can read caller-owned cause getter or proxy trap through `super`.
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ErrorOptions,
   ) {
     super(
       message,
@@ -131,10 +139,12 @@ export class TomlImmutableNodeError extends TomlEditError {
    *
    * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
    *                  underlying error.
+   *
+   * @mutates options - Error construction can read caller-owned cause getter or proxy trap through `super`.
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ErrorOptions,
   ) {
     super(
       message,

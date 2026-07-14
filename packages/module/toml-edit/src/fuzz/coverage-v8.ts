@@ -356,7 +356,10 @@ export function fileCoverageFrom(
   const tally = source.split('\n',)
     .reduce(
     function fold(
-      acc,
+      acc: {
+        readonly covered: number;
+        readonly total: number;
+      },
       line,
       index,
     ) {

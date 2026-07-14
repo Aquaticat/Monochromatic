@@ -22,6 +22,8 @@ import {
  *
  * @returns Arbitrary of the drawn results in `items` order.
  *
+ * @mutates make - Invoking caller-supplied factory can change captured or otherwise reachable state.
+ *
  * @example
  * ```ts
  * drawEach({ items: ['a', 'b',], make: (name,) => keyBlockArbitrary({ owner: name, },), },);
@@ -39,23 +41,25 @@ export function drawEach<T, R,>(
     ) => Arbitrary<R>;
   },
 ): Arbitrary<readonly R[]> {
-  return items.reduce< Arbitrary<readonly R[]>>(
-    function step(
-      accumulated,
-      item,
-      index,
-    ) {
-      return accumulated.chain(function append(collected,) {
-        return make(
-          item,
-          index,
-        )
-          .map(function push(next,) { return [
-            ...collected,
-            next,
-          ]; },);
-      },);
-    },
-    constant([] as readonly R[],),
-  );
+  /**
+   * Arbitrary accumulated across input items.
+   */
+  let accumulated = constant([] as readonly R[],);
+  for (const [index, item,] of items.entries()) {
+    /**
+     * Prior arbitrary captured independently of reassignment.
+     */
+    const prior = accumulated;
+    accumulated = prior.chain(function append(collected,) {
+      return make(
+        item,
+        index,
+      )
+        .map(function push(next,) { return [
+          ...collected,
+          next,
+        ]; },);
+    },);
+  }
+  return accumulated;
 }

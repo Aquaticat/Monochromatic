@@ -103,7 +103,7 @@ const tableBodyArbitrary: Arbitrary<string> = uniqueArray(
   selector: segmentName,
 },
 )
-  .chain(function fill(keys,) {
+  .chain(function fill(keys: readonly KeySegment[],) {
   return drawEach({
     items: keys,
     make: tableEntryLine,
@@ -135,7 +135,10 @@ function keyValueBlockArbitrary({ owner, }: { readonly owner: string; },): Arbit
       },),
     );
   },)
-    .chain(function withComment(entry,) {
+    .chain(function withComment(entry: {
+      readonly key: string;
+      readonly valueText: string;
+    },) {
     return trailingCommentArbitrary.map(function render(comment,) {
       return `${entry.key} = ${entry.valueText}${comment}\n`;
     },);
@@ -167,7 +170,7 @@ function arrayOfTablesBlockArbitrary({ owner, }: { readonly owner: string; },): 
     selector: segmentName,
   },
   )
-    .chain(function instances(markers,) {
+    .chain(function instances(markers: readonly KeySegment[],) {
     return drawEach({
       items: markers,
       make: function instance() {
@@ -257,7 +260,7 @@ export const documentArbitrary: Arbitrary<string> = uniqueArray(
   maxLength: MAX_BLOCKS,
 },
 )
-  .chain(function build(owners,) {
+  .chain(function build(owners: readonly string[],) {
   return drawEach({
     items: owners,
     make: function block(owner,) { return blockArbitrary({ owner, },); },

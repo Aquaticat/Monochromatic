@@ -26,6 +26,8 @@ import { keysOf, } from './path.ts';
  *
  * @returns Computed {@link ValueNode}.
  *
+ * @mutates node - `getStaticTOMLValue` can invoke caller-owned AST hooks while reading scalar value
+ *
  * @example
  * ```ts
  * buildValue({ node: keyValue.value, },);
@@ -39,7 +41,17 @@ export function buildValue(
     return {
       kind: 'array',
       elements: node.elements
-        .map(function each(el,) {
+        .map(
+        /**
+         * Builds one array element recursively.
+         *
+         * @param el - Parser-owned TOML content node.
+         *
+         * @returns Built value node.
+         *
+         * @mutates el - Recursive build can invoke caller-owned AST hooks through `getStaticTOMLValue`.
+         */
+        function each(el: AST.TOMLContentNode,) {
         return buildValue({ node: el, },);
       },),
       origin: {
@@ -54,7 +66,7 @@ export function buildValue(
     return {
       kind: 'inline-table',
       entries: node.body
-        .map(function each(kv,) {
+        .map(function each(kv: AST.TOMLKeyValue,) {
         return buildInlineKeyValue({ kv, },);
       },),
       origin: {
@@ -80,6 +92,8 @@ export function buildValue(
  * Build a {@link KeyValueNode} for an inline-table entry (no line, no comments).
  *
  * @returns Computed {@link KeyValueNode}.
+ *
+ * @mutates kv - Recursive value build can invoke caller-owned AST hooks through `getStaticTOMLValue`.
  *
  * @example
  * ```ts

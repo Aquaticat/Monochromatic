@@ -68,7 +68,9 @@ export function buildBlocks(
   /**
    * Each child built with its physical span so the tiler can interleave fillers.
    */
-  const built = children.map(function each(child,) {
+  const built = children.map(function each(
+    child: AST.TOMLKeyValue | AST.TOMLTable,
+  ) {
     return child.type
       === 'TOMLTable'
       ? buildTable({
@@ -145,6 +147,8 @@ function tile(
  * Build a top-level or table-body key-value entry with its physical span.
  *
  * @returns Built key-value with span.
+ *
+ * @mutates kv - Value construction can invoke caller-owned AST hooks through `getStaticTOMLValue`.
  */
 function buildKeyValue(
   {
@@ -232,7 +236,7 @@ function buildTable(
    * Body entries built with spans so the body tiler can interleave fillers.
    */
   const bodyBuilt = table.body
-    .map(function each(kv,) {
+    .map(function each(kv: AST.TOMLKeyValue,) {
     return buildKeyValue({
       source,
       comments,

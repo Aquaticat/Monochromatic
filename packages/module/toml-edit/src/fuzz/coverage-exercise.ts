@@ -139,6 +139,8 @@ function exerciseComments({ edit, }: { readonly edit: TomlEditState; },): void {
  * Drive the unstable `_` seam exports directly: key encoding, value encoding,
  * and parsed-node re-emission.
  *
+ * @mutates jsonValues - Value encoding can invoke caller-owned proxy, accessor, and coercion hooks.
+ *
  * @example
  * ```ts
  * exerciseSeams({ keyNames: [ 'a', ], jsonValues: [ 1, ], scalarTexts: [ '1', ], canonicalOptions, },);

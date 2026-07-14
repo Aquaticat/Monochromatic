@@ -166,6 +166,8 @@ function scalarToInput(
  *
  * @throws Error when a node is neither a tagged scalar, an array, nor a table.
  *
+ * @mutates tree - Traversal can invoke caller-owned array, proxy, and property-access hooks recursively.
+ *
  * @example
  * ```ts
  * taggedToInput({ tree: { a: { type: 'bool', value: 'true', } }, }); // { a: true }
@@ -173,9 +175,20 @@ function scalarToInput(
  */
 export function taggedToInput({ tree, }: { readonly tree: unknown; },): unknown {
   if (Array.isArray(tree,))
-    return tree.map(function element(child,) {
-      return taggedToInput({ tree: child, },);
-    },);
+    return tree.map(
+      /**
+       * Converts one tagged array child recursively.
+       *
+       * @param child - Tagged child value.
+       *
+       * @returns converted TOML input.
+       *
+       * @mutates child - Recursive traversal can invoke caller-owned array, proxy, and accessor hooks.
+       */
+      function element(child,) {
+        return taggedToInput({ tree: child, },);
+      },
+    );
   if (isRecord(tree,)) {
     if (isTaggedScalar(tree,))
       return scalarToInput({
@@ -184,7 +197,21 @@ export function taggedToInput({ tree, }: { readonly tree: unknown; },): unknown 
       },);
     return Object.fromEntries(
       Object.entries(tree,)
-        .map(function entry([key, child,],) {
+        .map(
+          /**
+           * Converts one tagged table entry recursively.
+           *
+           * @param taggedEntry - Tagged table key and child pair.
+           *
+           * @returns converted key and TOML input pair.
+           *
+           * @mutates taggedEntry - Recursive child traversal can invoke caller-owned array, proxy, and accessor hooks.
+           */
+          function entry(taggedEntry,) {
+          /**
+           * Tagged key and child selected by current entry.
+           */
+          const [key, child,] = taggedEntry;
           return [
             key,
             taggedToInput({ tree: child, },),
