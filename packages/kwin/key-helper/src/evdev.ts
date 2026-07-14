@@ -18,6 +18,8 @@ import {
   readFile,
 } from 'node:fs/promises';
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
 import {
   INITIAL_SHIFT_STATE,
   parseBitmap,
@@ -324,7 +326,7 @@ export async function startEvdevMonitor({
 
   stream.on(
     'error',
-    function onError(error: Error): void {
+    function onError(error: ForeignBorrowed<Error>): void {
     console.error(`[key-helper] evdev read error: ${error.message}`);
   }
   );
