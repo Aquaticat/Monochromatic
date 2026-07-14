@@ -19,11 +19,14 @@
  * ```
  */
 
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   Deck,
   type OrbitView,
   type PickingInfo,
+  type ViewStateChangeParameters,
 } from '@deck.gl/core';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   buildLayers,
@@ -124,7 +127,9 @@ const NO_PICKED_PROBE: unique symbol = Symbol('deps-cube/no-picked-probe',);
  *
  * @returns Picked probe, or {@link NO_PICKED_PROBE} when no probe is under the cursor.
  */
-function pickedProbe(info: PickingInfo,): PackageProbe | typeof NO_PICKED_PROBE {
+function pickedProbe(
+  info: ForeignBorrowed<PickingInfo>,
+): PackageProbe | typeof NO_PICKED_PROBE {
   if ((info.object
     === undefined) || (info.object
       === null))
@@ -225,7 +230,11 @@ function rerenderLayers(
  * @param session - Source session.
  */
 function syncHash(
-  { session, }: { session: Session; },
+  { session, }: {
+    readonly session: Readonly<{
+      state: ReadonlyDeep<AppState>;
+    }>;
+  },
 ): void {
   history.replaceState(
     null,
@@ -248,7 +257,9 @@ function syncHash(
  *
  * @returns `{ html }` for hovered probes, `null` otherwise.
  */
-function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
+function getTooltipForInfo(
+  info: ForeignBorrowed<PickingInfo>,
+): { html: string; } | null {
   /**
    * Probe under the cursor, or {@link NO_PICKED_PROBE} for hover-over-empty-space.
    */
@@ -269,7 +280,7 @@ function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
  *
  * @param info - deck.gl picking info.
  */
-function onCanvasClick(info: PickingInfo,): void {
+function onCanvasClick(info: ForeignBorrowed<PickingInfo>,): void {
   /**
    * Probe under the click, or {@link NO_PICKED_PROBE} for miss-clicks that should unpin instead of pin.
    */
@@ -373,7 +384,9 @@ function createSession(
     deck,
   };
   deck.setProps({
-    onViewStateChange: function onViewStateChange(params,) {
+    onViewStateChange: function onViewStateChange(
+      params: ForeignBorrowed<ViewStateChangeParameters>,
+    ) {
       /**
        * Latest view-state delta from deck.gl; copied into the session so hash sync can serialise it.
        */

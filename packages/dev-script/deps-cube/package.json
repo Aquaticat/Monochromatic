@@ -34,9 +34,11 @@
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-pnpm-workspace-catalog": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "nano-spawn": "catalog:",
     "p-limit": "catalog:",
-    "rolldown": "catalog:"
+    "rolldown": "catalog:",
+    "type-fest": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

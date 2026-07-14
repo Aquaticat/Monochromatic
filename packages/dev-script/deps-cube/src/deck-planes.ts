@@ -22,6 +22,7 @@
  * ```
  */
 
+import type { ReadonlyDeep, } from 'type-fest';
 import type { Layer, } from '@deck.gl/core';
 import {
   PathLayer,
@@ -37,7 +38,7 @@ import type { DimMapping, } from './scripts/filter.ts';
  * Data shape for the PolygonLayer (coordinate planes); mutable arrays per deck.gl typings.
  */
 type PolygonDatum = {
-  polygon: [
+  readonly polygon: [
     number,
     number,
     number,
@@ -48,7 +49,7 @@ type PolygonDatum = {
  * Data shape for the PathLayer (threshold guides); mutable arrays per deck.gl typings.
  */
 type PathDatum = {
-  path: [
+  readonly path: [
     number,
     number,
     number,
@@ -145,8 +146,16 @@ const THRESHOLD_LINE_WIDTH = 1.5;
  * new SolidPolygonLayer<PolygonDatum>({ getPolygon, ... });
  * ```
  */
-function getPolygonAccessor(d: PolygonDatum,): PolygonDatum['polygon'] {
-  return d.polygon;
+function getPolygonAccessor(
+  d: ReadonlyDeep<PolygonDatum>,
+): PolygonDatum['polygon'] {
+  return d.polygon.map(function copyPoint(point,): [
+    number,
+    number,
+    number,
+  ] {
+    return [...point,];
+  },);
 }
 
 /**
@@ -161,8 +170,14 @@ function getPolygonAccessor(d: PolygonDatum,): PolygonDatum['polygon'] {
  * new PathLayer<PathDatum>({ getPath: getPathAccessor, ... });
  * ```
  */
-function getPathAccessor(d: PathDatum,): PathDatum['path'] {
-  return d.path;
+function getPathAccessor(d: ReadonlyDeep<PathDatum>,): PathDatum['path'] {
+  return d.path.map(function copyPoint(point,): [
+    number,
+    number,
+    number,
+  ] {
+    return [...point,];
+  },);
 }
 
 //endregion Accessors

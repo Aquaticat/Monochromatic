@@ -117,15 +117,15 @@ function buildProbeLayer(
     bake,
     positionOverride,
   }: {
-    datum: ScatterDatum;
-    state: AppState;
-    bounds: SceneBounds;
-    visibleIndices: ReadonlySet<number>;
-    mesh: Geometry;
-    shape: MeshShape;
-    idPrefix: string;
-    bake: boolean;
-    positionOverride?: readonly [
+    readonly datum: ScatterDatum;
+    readonly state: AppState;
+    readonly bounds: SceneBounds;
+    readonly visibleIndices: ReadonlySet<number>;
+    readonly mesh: Geometry;
+    readonly shape: MeshShape;
+    readonly idPrefix: string;
+    readonly bake: boolean;
+    readonly positionOverride?: readonly [
       number,
       number,
       number,

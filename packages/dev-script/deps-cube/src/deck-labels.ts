@@ -46,12 +46,12 @@ import type { ChromeColors, } from './scripts/scheme.ts';
  * Data shape for the TextLayer.
  */
 type TextDatum = {
-  position: [
+  readonly position: [
     number,
     number,
     number,
   ];
-  text: string;
+  readonly text: string;
 };
 
 //endregion Types

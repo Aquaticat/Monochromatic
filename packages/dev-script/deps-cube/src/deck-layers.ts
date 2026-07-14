@@ -27,6 +27,7 @@
  * ```
  */
 
+import type { ReadonlyDeep, } from 'type-fest';
 import type { Layer, } from '@deck.gl/core';
 import { PathLayer, } from '@deck.gl/layers';
 import { SimpleMeshLayer, } from '@deck.gl/mesh-layers';
@@ -45,7 +46,7 @@ import type { ChromeColors, } from './scripts/scheme.ts';
  * Data shape for the axis-shaft PathLayer; deck.gl expects mutable nested arrays.
  */
 export type PathDatum = {
-  path: [
+  readonly path: [
     number,
     number,
     number,
@@ -56,7 +57,7 @@ export type PathDatum = {
  * Data shape for arrowhead mesh-layer instances.
  */
 type ArrowheadDatum = {
-  position: [
+  readonly position: [
     number,
     number,
     number,
@@ -82,12 +83,18 @@ type ArrowheadDatum = {
  * getDatumPath({ path: [[0, 0, 0], [1, 0, 0]] }); // [[0, 0, 0], [1, 0, 0]]
  * ```
  */
-export function getDatumPath(d: PathDatum,): [
+export function getDatumPath(d: ReadonlyDeep<PathDatum>,): [
   number,
   number,
   number,
 ][] {
-  return d.path;
+  return d.path.map(function copyPoint(point,): [
+    number,
+    number,
+    number,
+  ] {
+    return [...point,];
+  },);
 }
 
 /**

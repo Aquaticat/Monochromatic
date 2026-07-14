@@ -184,7 +184,7 @@ export function computeNameBakeSet(
     .map(function withIndex(
       probe,
       originalIndex,
-    ) {
+    ): ScatterDatum {
       return {
         probe,
         originalIndex,
