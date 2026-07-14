@@ -314,13 +314,15 @@ function isShallowScalarRecord(
  *
  * @param state - Shallow scalar state snapshot.
  *
+ * @mutates state - `JSON.stringify` may invoke record accessors or proxy traps.
+ *
  * @example
  * ```ts
  * await writeObservedState({ state: { ready: true } });
  * ```
  */
 async function writeObservedState(
-  { state, }: { readonly state: Readonly<Record<string, string | number | boolean>>; },
+  { state, }: { state: Readonly<Record<string, string | number | boolean>>; },
 ): Promise<void> {
   /**
    * Optional state path used only by automated boundary tests.
@@ -355,6 +357,8 @@ async function writeObservedState(
  * inside the emitter, because Electron does not await async listeners.
  *
  * @param payload - Raw renderer-supplied state payload.
+ *
+ * @mutates payload - `JSON.stringify` may invoke record accessors or proxy traps after shape validation.
  *
  * @example
  * ```ts
@@ -404,6 +408,15 @@ function registerIpcHandlers(): void {
   );
   ipcMain.on(
     REPORT_STATE_CHANNEL,
+    /**
+     * Receives renderer state for asynchronous persistence.
+     *
+     * @param _event - Electron event unused by state persistence.
+     *
+     * @param payload - Renderer payload that may expose serialization hooks.
+     *
+     * @mutates payload - `JSON.stringify` may invoke record accessors or proxy traps after shape validation.
+     */
     function handleReportState(
       _event: unknown,
       payload: unknown,
