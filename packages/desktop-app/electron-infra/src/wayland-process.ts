@@ -260,8 +260,8 @@ function parseExitEvent(
     throw new Error('Child-process exit signal was neither a string nor null.',);
 
   return {
-    code: code === null ? 'null' : code,
-    signal: signal === null ? 'null' : signal,
+    code: code ?? 'null',
+    signal: signal ?? 'null',
   };
 }
 
