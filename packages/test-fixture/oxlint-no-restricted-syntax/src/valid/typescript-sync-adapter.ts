@@ -432,6 +432,41 @@ export function objectArrayDefaultSortOpaqueEffect(
 }
 
 /**
+ * Keeps explicitly undefined object sorting opaque because default coercion may run.
+ *
+ * @param values - Object values exposed to default string coercion.
+ *
+ * @returns sorted object copy.
+ */
+export function objectArrayUndefinedSortOpaqueEffect(
+  values: { readonly value: string; }[],
+): readonly { readonly value: string; }[] {
+  return values.toSorted(undefined,);
+}
+
+/**
+ * Keeps maybe-undefined comparator sorting opaque because default coercion may run.
+ *
+ * @param values - Object values exposed to optional comparator.
+ *
+ * @param compare - Comparator that may be absent at runtime.
+ *
+ * @returns sorted object copy.
+ */
+export function objectArrayOptionalSortOpaqueEffect({
+  values,
+  compare,
+}: {
+  readonly values: { readonly value: string; }[];
+  readonly compare?: (
+    left: { readonly value: string; },
+    right: { readonly value: string; },
+  ) => number;
+}): readonly { readonly value: string; }[] {
+  return values.toSorted(compare,);
+}
+
+/**
  * Observes primitive path through audited Node operation.
  *
  * @param path - Path joined without caller mutation.

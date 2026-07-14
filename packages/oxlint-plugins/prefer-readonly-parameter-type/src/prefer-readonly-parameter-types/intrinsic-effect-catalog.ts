@@ -119,9 +119,9 @@ export type IntrinsicEffectEntry = {
   readonly invokedArgumentIndexes?: readonly number[];
   readonly opaqueTargets?: readonly IntrinsicEffectTarget[];
   /**
-   * Argument whose absence exposes nonprimitive receiver elements to opaque coercion.
+   * Comparator argument that must be definitely callable to avoid opaque receiver coercion.
    */
-  readonly opaqueReceiverWhenArgumentAbsentUnlessElementsPrimitive?: number;
+  readonly opaqueReceiverUnlessCallableArgumentOrPrimitiveElements?: number;
   readonly requiresPrimitiveReceiverElements?: boolean;
   /**
    * Whether call result retains values reachable from receiver.

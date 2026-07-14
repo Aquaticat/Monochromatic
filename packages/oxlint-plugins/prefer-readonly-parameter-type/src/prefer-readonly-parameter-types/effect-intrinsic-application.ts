@@ -5,10 +5,12 @@
  */
 
 import type { CallExpression, } from 'typescript/unstable/ast';
-import type {
-  Checker,
-  Project,
-  Type,
+import {
+  type Checker,
+  type Project,
+  SignatureKind,
+  type Type,
+  TypeFlags,
 } from 'typescript/unstable/sync';
 
 import {
@@ -27,6 +29,53 @@ import {
 } from './effect-summary-model.ts';
 import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 import { intrinsicTargetArguments, } from './intrinsic-target-arguments.ts';
+
+/**
+ * Tests whether semantic type is definitely callable at runtime.
+ *
+ * @param checker - TypeScript checker resolving constraints and signatures.
+ *
+ * @param type - Candidate callback type.
+ *
+ * @returns whether every runtime constituent is callable.
+ *
+ * @example
+ * ```ts
+ * typeDefinitelyCallable({ checker, type });
+ * ```
+ */
+function typeDefinitelyCallable({
+  checker,
+  type,
+}: {
+  readonly checker: Checker;
+  readonly type: Type;
+}): boolean {
+  if ((type.flags & TypeFlags.AnyOrUnknown) !== 0)
+    return false;
+  if (type.isUnionType()) {
+    return type.getTypes()
+      .every(function unionConstituentCallable(constituent,): boolean {
+        return typeDefinitelyCallable({
+          checker,
+          type: constituent,
+        },);
+      },);
+  }
+  if (type.isTypeParameter()) {
+    /**
+     * Constraint proving callable shape when present.
+     */
+    const constraint = checker.getBaseConstraintOfType(type,);
+    return (constraint !== undefined)
+      && typeDefinitelyCallable({
+        checker,
+        type: constraint,
+      },);
+  }
+  return checker.getSignaturesOfType(type, SignatureKind.Call,)
+    .length > 0;
+}
 
 /**
  * Applies one exact receiver intrinsic effect to current summary.
@@ -162,21 +211,34 @@ export function applyIntrinsicEffect({
         },);
     },);
   /**
-   * Optional callback omission that exposes nonprimitive receiver coercion hooks.
+   * Comparator position whose absence or nullable type permits default coercion.
    */
   const coercionGuardArgumentIndex =
-    effect.opaqueReceiverWhenArgumentAbsentUnlessElementsPrimitive;
-  if ((coercionGuardArgumentIndex !== undefined)
-    && (call.arguments[coercionGuardArgumentIndex] === undefined)
-    && (!receiverElementsArePrimitive({
-      checker,
-      type: receiverType,
-    }))) {
-    addOpaqueEffect({
-      summary,
-      affectedParameterIndex: receiverParameterIndex,
-      provenance: effect.evidence,
-    },);
+    effect.opaqueReceiverUnlessCallableArgumentOrPrimitiveElements;
+  if (coercionGuardArgumentIndex !== undefined) {
+    /**
+     * Comparator expression when supplied.
+     */
+    const comparator = call.arguments[coercionGuardArgumentIndex];
+    /**
+     * Whether comparator is guaranteed callable rather than absent or nullish.
+     */
+    const comparatorIsDefinitelyCallable = (comparator !== undefined)
+      && typeDefinitelyCallable({
+        checker,
+        type: checker.getTypeAtLocation(comparator,),
+      },);
+    if ((!comparatorIsDefinitelyCallable)
+      && (!receiverElementsArePrimitive({
+        checker,
+        type: receiverType,
+      }))) {
+      addOpaqueEffect({
+        summary,
+        affectedParameterIndex: receiverParameterIndex,
+        provenance: effect.evidence,
+      },);
+    }
   }
   if (effect.invokedArgumentIndexes !== undefined) {
     addIntrinsicInvocations({
