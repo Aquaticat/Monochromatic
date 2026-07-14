@@ -24,6 +24,9 @@ import type { ChatMessage, } from './client.ts';
  *
  * @returns Chat messages ready for {@link chatCompletion}
  *
+ * @mutates existingTags - `JSON.stringify` may invoke array accessors or proxy traps.
+ * @mutates existingLocations - `JSON.stringify` may invoke array accessors or proxy traps.
+ *
  * @example
  * ```ts
  * const messages = buildAutofillMessages({
@@ -39,8 +42,8 @@ export function buildAutofillMessages({
   existingLocations,
 }: {
   readonly title: string;
-  readonly existingTags: readonly string[];
-  readonly existingLocations: readonly string[];
+  existingTags: readonly string[];
+  existingLocations: readonly string[];
 },): ChatMessage[] {
   /**
    * Schema-bearing system message; passed back as the first element of the chat array.
@@ -97,6 +100,8 @@ For consistency, prefer these existing locations when applicable: ${
  *
  * @returns Chat messages ready for {@link chatCompletion}
  *
+ * @mutates tasks - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps on task summaries.
+ *
  * @example
  * ```ts
  * const messages = buildSuggestionMessages({
@@ -111,7 +116,7 @@ export function buildSuggestionMessages({
   currentLocation,
   focusDirective,
 }: {
-  readonly tasks: readonly {
+  tasks: readonly {
     readonly id: string;
     readonly title: string;
     readonly tags: readonly string[];
