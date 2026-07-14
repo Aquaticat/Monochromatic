@@ -12,6 +12,32 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 const NO_IDENTIFIER: unique symbol = Symbol('prefer-caught-value-text identifier not found',);
 
 /**
+ * Canonical implementation path exempt from duplicate-implementation reports.
+ */
+const CANONICAL_FORMATTER_PATH = 'packages/module/caught-value/src/index.ts';
+
+/**
+ * Tests whether current file owns canonical formatter implementation.
+ *
+ * @param fileName - Absolute or workspace-relative lint target path.
+ *
+ * @returns whether target is canonical implementation module.
+ *
+ * @example
+ * ```ts
+ * isCanonicalFormatterFile('/repo/packages/module/caught-value/src/index.ts');
+ * ```
+ */
+function isCanonicalFormatterFile(fileName: string,): boolean {
+  return fileName
+    .replaceAll(
+      '\\',
+      '/',
+    )
+    .endsWith(CANONICAL_FORMATTER_PATH,);
+}
+
+/**
  * Reads an identifier name from an expression.
  *
  * @param expression - Expression candidate.
@@ -288,6 +314,9 @@ export const preferCaughtValueText: CreateOnceRule = {
    * ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
+    if (isCanonicalFormatterFile(context.filename,))
+      return {};
+
     /**
      * Reports duplicate formatter syntax.
      *
