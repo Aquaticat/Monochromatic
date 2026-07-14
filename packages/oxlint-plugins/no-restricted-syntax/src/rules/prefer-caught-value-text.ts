@@ -314,9 +314,6 @@ export const preferCaughtValueText: CreateOnceRule = {
    * ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
-    if (isCanonicalFormatterFile(context.filename,))
-      return {};
-
     /**
      * Reports duplicate formatter syntax.
      *
@@ -331,6 +328,8 @@ export const preferCaughtValueText: CreateOnceRule = {
 
     return {
       ConditionalExpression(node: ForeignBorrowed<ESTree.ConditionalExpression>,): void {
+        if (isCanonicalFormatterFile(context.filename,))
+          return;
         /**
          * Identifier tested by conditional Error branch.
          */
@@ -344,10 +343,14 @@ export const preferCaughtValueText: CreateOnceRule = {
           reportDuplicate(node,);
       },
       FunctionDeclaration(node: ForeignBorrowed<ESTree.Function>,): void {
+        if (isCanonicalFormatterFile(context.filename,))
+          return;
         if (duplicatesCaughtValueFormatter({ node, },))
           reportDuplicate(node,);
       },
       FunctionExpression(node: ForeignBorrowed<ESTree.Function>,): void {
+        if (isCanonicalFormatterFile(context.filename,))
+          return;
         if (duplicatesCaughtValueFormatter({ node, },))
           reportDuplicate(node,);
       },
