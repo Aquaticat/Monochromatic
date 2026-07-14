@@ -244,9 +244,9 @@ export async function ensureWinFsp(): Promise<string> {
    */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- GitHub API response
   const release = await releaseResponse.json() as {
-    assets: {
-      name: string;
-      browser_download_url: string;
+    readonly assets: readonly {
+      readonly name: string;
+      readonly browser_download_url: string;
     }[];
   };
   /**

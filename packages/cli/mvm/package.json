@@ -36,7 +36,8 @@
     "@monochromatic-dev/module-async-time": "workspace:*",
     "nano-spawn": "catalog:",
     "@optique/core": "catalog:",
-    "@optique/run": "catalog:"
+    "@optique/run": "catalog:",
+    "type-fest": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

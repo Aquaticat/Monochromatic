@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import type { ReadonlyDeep, } from 'type-fest';
 import { message, } from '@optique/core/message';
 import { runSync, } from '@optique/run';
 
@@ -171,7 +172,7 @@ else if (args.cmd
      * Column width for aligned output.
      */
     const NAME_COL_WIDTH = 24;
-    vms.forEach(function printVm(vm,) {
+    vms.forEach(function printVm(vm: ReadonlyDeep<(typeof vms)[number]>,) {
       console.log(`${vm.name
         .padEnd(NAME_COL_WIDTH,)} ${vm.state}`,);
     },);

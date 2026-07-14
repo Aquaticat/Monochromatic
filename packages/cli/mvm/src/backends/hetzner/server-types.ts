@@ -21,6 +21,14 @@ import type { HetznerServerType, } from './types.ts';
 const NOT_OFFERED = Number.POSITIVE_INFINITY;
 
 /**
+ * Observational server candidate paired with cheapest offered price.
+ */
+type PricedServerCandidate = {
+  readonly name: string;
+  readonly price: number;
+};
+
+/**
  * Whether a server type is current (not deprecated). Hetzner sends `null` for
  * current types and an object for deprecated ones.
  *
@@ -126,7 +134,7 @@ export async function resolveCheapestServerType(
     .filter(function archMatches(type,) {
       return (architecture === undefined) || (type.architecture === architecture);
     },)
-    .map(function withPrice(type,) {
+    .map(function withPrice(type,): PricedServerCandidate {
       return {
         name: type.name,
         price: minHourlyPrice({
