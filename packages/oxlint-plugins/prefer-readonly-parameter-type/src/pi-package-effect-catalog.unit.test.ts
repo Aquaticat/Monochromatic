@@ -21,7 +21,7 @@ import {
  * Real Pi plugin call used to verify exact declaration identity.
  */
 type PiCallProbe = {
-  readonly pluginDirectory?: 'auto-mode';
+  readonly pluginDirectory?: 'auto-mode' | 'morph-compact' | 'spawn';
   readonly relativePath: string;
   readonly callText: string;
   readonly ownerType: string;
@@ -115,6 +115,54 @@ const PROBES: readonly PiCallProbe[] = [
     ownerType: 'SessionManager',
     member: 'getBranch',
     targets: [],
+  },
+  {
+    pluginDirectory: 'spawn',
+    relativePath: 'index.ts',
+    callText: '.getSessionId()',
+    ownerType: 'SessionManager',
+    member: 'getSessionId',
+    targets: [],
+  },
+  {
+    pluginDirectory: 'spawn',
+    relativePath: 'index.ts',
+    callText: '.getSessionFile()',
+    ownerType: 'SessionManager',
+    member: 'getSessionFile',
+    targets: [],
+  },
+  {
+    pluginDirectory: 'morph-compact',
+    relativePath: 'index.ts',
+    callText: 'ctx.getContextUsage',
+    ownerType: 'ExtensionContext',
+    member: 'getContextUsage',
+    targets: [],
+  },
+  {
+    pluginDirectory: 'morph-compact',
+    relativePath: 'index.ts',
+    callText: 'pi.registerFlag',
+    ownerType: 'ExtensionAPI',
+    member: 'registerFlag',
+    targets: [{ kind: 'receiver', },],
+  },
+  {
+    pluginDirectory: 'morph-compact',
+    relativePath: 'ipc-launch.ts',
+    callText: 'api.getFlag',
+    ownerType: 'ExtensionAPI',
+    member: 'getFlag',
+    targets: [],
+  },
+  {
+    pluginDirectory: 'morph-compact',
+    relativePath: 'ipc-launch.ts',
+    callText: 'api.sendUserMessage',
+    ownerType: 'ExtensionAPI',
+    member: 'sendUserMessage',
+    targets: [{ kind: 'receiver', },],
   },
   {
     pluginDirectory: 'auto-mode',

@@ -25,10 +25,12 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'appendEntry',
     'on',
     'registerCommand',
+    'registerFlag',
     'registerMessageRenderer',
     'registerShortcut',
     'registerTool',
     'sendMessage',
+    'sendUserMessage',
     'setActiveTools',
     'setThinkingLevel',
   ].map(function piExtensionApiEffect(member,): IntrinsicEffectEntry {
@@ -59,6 +61,17 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: '@earendil-works/pi-coding-agent 0.80.6 changes active command session state',
     };
   },),
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@earendil-works/pi-coding-agent',
+      major: 0,
+    },
+    ownerType: 'ExtensionContext',
+    member: 'getContextUsage',
+    targets: [],
+    evidence: '@earendil-works/pi-coding-agent 0.80.6 computes usage from current session entries without host mutation',
+  },
   {
     provenance: {
       kind: 'package',
@@ -175,6 +188,22 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     },],
     evidence: '@earendil-works/pi-coding-agent 0.80.6 reads supplied model fields without refreshing auth',
   },
+  ...[
+    'getSessionFile',
+    'getSessionId',
+  ].map(function piSessionIdentityObservation(member,): IntrinsicEffectEntry {
+    return {
+      provenance: {
+        kind: 'package',
+        packageName: '@earendil-works/pi-coding-agent',
+        major: 0,
+      },
+      ownerType: 'SessionManager',
+      member,
+      targets: [],
+      evidence: '@earendil-works/pi-coding-agent 0.80.6 reads primitive session identity fields',
+    };
+  },),
   {
     provenance: {
       kind: 'package',
@@ -204,6 +233,7 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },),
   ...[
     'getActiveTools',
+    'getFlag',
     'getThinkingLevel',
   ].map(function piExtensionApiObservation(member,): IntrinsicEffectEntry {
     return {
