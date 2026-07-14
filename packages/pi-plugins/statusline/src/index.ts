@@ -7,8 +7,11 @@
  */
 
 import type {
+  AfterProviderResponseEvent,
   ExtensionAPI,
   ExtensionContext,
+  SessionShutdownEvent,
+  SessionStartEvent,
 } from '@earendil-works/pi-coding-agent';
 import {
   tagged,
@@ -180,7 +183,7 @@ export default function statusline(pi: ForeignBorrowed<ExtensionAPI>,): void {
   pi.on(
     'session_start',
     function handleSessionStart(
-      _event,
+      _event: ForeignBorrowed<SessionStartEvent>,
       ctx,
     ) {
       clearStatus({
@@ -193,7 +196,7 @@ export default function statusline(pi: ForeignBorrowed<ExtensionAPI>,): void {
   pi.on(
     'session_shutdown',
     function handleSessionShutdown(
-      _event,
+      _event: ForeignBorrowed<SessionShutdownEvent>,
       ctx,
     ) {
       clearStatus({
@@ -206,7 +209,7 @@ export default function statusline(pi: ForeignBorrowed<ExtensionAPI>,): void {
   pi.on(
     'after_provider_response',
     function handleAfterProviderResponse(
-      event,
+      event: ForeignBorrowed<AfterProviderResponseEvent>,
       ctx,
     ) {
       /**
