@@ -11,14 +11,8 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { version as typescriptVersion, } from 'typescript';
 import {
   API,
-  type Checker,
-  type Project,
   type Snapshot,
 } from 'typescript/unstable/sync';
-import type {
-  Node,
-  SourceFile,
-} from 'typescript/unstable/ast';
 
 import { resetSemanticEffectCaches, } from './effect-cache-lifecycle.ts';
 import {
@@ -26,16 +20,16 @@ import {
   type SemanticBridgeCacheStats,
 } from './semantic-bridge-cache.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
+import {
+  semanticFileSession,
+  type SemanticFileSession,
+} from './semantic-file-session.ts';
 import { normalizeSemanticFileName, } from './semantic-file-name.ts';
 import {
   assertTypeScriptSeven,
   configureNativeApiChildShutdown,
   nativeApiChild,
 } from './typescript-sync-native-shutdown.ts';
-import {
-  findNodeAtOffset,
-  typescriptOffset,
-} from './typescript-node-map.ts';
 
 /**
  * Package logger for semantic bridge lifecycle.
@@ -84,38 +78,6 @@ const bridgeState: {
   projectByRoot: new Map(),
   activeFileName: NO_ACTIVE_FILE,
   beforeExitHookRegistered: false,
-};
-
-/**
- * Semantic handles for one current source snapshot.
- *
- * @example
- * ```ts
- * const session = openSemanticFile({ fileName, sourceText, hasBOM: false });
- * const type = session.checker.getTypeAtLocation(session.nodeAtOffset(10));
- * ```
- */
-export type SemanticFileSession = {
-  /**
-   * Canonical absolute source path used by TypeScript project service.
-   */
-  readonly fileName: string;
-  /**
-   * Configured or inferred project selected for source.
-   */
-  readonly project: Project;
-  /**
-   * Project checker tied to active snapshot.
-   */
-  readonly checker: Checker;
-  /**
-   * Source tree including current virtual overlay.
-   */
-  readonly sourceFile: SourceFile;
-  /**
-   * Maps Oxlint range offset to deepest TypeScript node.
-   */
-  readonly nodeAtOffset: (offset: number) => Node;
 };
 
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- TypeScript FileSystem callbacks require undefined fallback sentinels. */
@@ -307,13 +269,6 @@ export function openSemanticFile({
     );
 
   /**
-   * Native API client reused across all linted files in process.
-   */
-  const api = getApi();
-  // Invalidate client-decoded source objects before native server reports changed overlay.
-  api
-    .clearSourceFileCache();
-  /**
    * Previously discovered configured project path for source.
    */
   const knownProject = cachedProjectForFile({
@@ -321,15 +276,46 @@ export function openSemanticFile({
     projectByRoot: bridgeState.projectByRoot,
   },);
   /**
+   * Project already materialized in current immutable snapshot.
+   */
+  const snapshotProject = (knownProject === undefined)
+    || (bridgeState.snapshot === NO_SNAPSHOT)
+    ? undefined
+    : bridgeState
+      .snapshot
+      .getProject(knownProject,);
+  /**
+   * Source already materialized in current immutable snapshot.
+   */
+  const snapshotSourceFile = snapshotProject
+    ?.program
+    .getSourceFile(normalizedFileName,);
+  if ((deletedFiles.length === 0)
+    && (snapshotProject !== undefined)
+    && (snapshotSourceFile !== undefined)
+    && (snapshotSourceFile.text === sourceWithBOM({
+      sourceText,
+      hasBOM,
+    },))) {
+    rl.debug(`reused unchanged snapshot for ${normalizedFileName} through ${snapshotProject.configFileName}`,);
+    return semanticFileSession({
+      fileName: normalizedFileName,
+      project: snapshotProject,
+      sourceFile: snapshotSourceFile,
+      hasBOM,
+    },);
+  }
+  /**
+   * Native API client reused across all linted files in process.
+   */
+  const api = getApi();
+  // Invalidate client-decoded source objects before native server reports changed overlay.
+  api
+    .clearSourceFileCache();
+  /**
    * Whether active snapshot already contains current source path.
    */
-  const sourcePreviouslyKnown = (knownProject !== undefined)
-    && (bridgeState.snapshot !== NO_SNAPSHOT)
-    && (bridgeState.snapshot
-      .getProject(knownProject,)
-      ?.program
-      .getSourceFile(normalizedFileName,)
-      !== undefined);
+  const sourcePreviouslyKnown = snapshotSourceFile !== undefined;
   /**
    * Whether current source requires open-file project association.
    */
@@ -437,24 +423,16 @@ export function openSemanticFile({
   }
   rl.debug(`opened ${normalizedFileName} through ${project.configFileName}`,);
 
-  return {
+  return semanticFileSession({
     fileName: normalizedFileName,
     project,
-    checker: project.checker,
     sourceFile,
-    nodeAtOffset(offset: number,): Node {
-      return findNodeAtOffset({
-        sourceFile,
-        offset: typescriptOffset({
-          offset,
-          hasBOM,
-        },),
-      },);
-    },
-  };
+    hasBOM,
+  },);
 }
 
 export type { SemanticBridgeCacheStats, } from './semantic-bridge-cache.ts';
+export type { SemanticFileSession, } from './semantic-file-session.ts';
 
 /**
  * Reads bounded cache counts without exposing mutable bridge storage.

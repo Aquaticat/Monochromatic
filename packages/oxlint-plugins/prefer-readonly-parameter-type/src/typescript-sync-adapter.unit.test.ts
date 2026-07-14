@@ -114,6 +114,56 @@ await describe({
           },
         },),
         it({
+          name: 'reuses importer from snapshot refreshed by dependency overlay',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Imported source changed only through virtual overlay. */
+            const dependencyPath = join(directory.path, 'dependency.ts',);
+            /** Unchanged importing source reused from refreshed snapshot. */
+            const importerPath = join(directory.path, 'importer.ts',);
+            /** Dependency text retained on disk. */
+            const dependencySource = 'export type Value = { readonly before: string; };\n';
+            /** Importer whose parameter reflects dependency overlay. */
+            const importerSource = "import type { Value } from './dependency.ts';\nexport function read(value: Value,): Value { return value; }\n";
+            writeFileSync(dependencyPath, dependencySource,);
+            writeFileSync(importerPath, importerSource,);
+            openSemanticFile({
+              fileName: importerPath,
+              sourceText: importerSource,
+              hasBOM: false,
+            },);
+            const dependencySession = openSemanticFile({
+              fileName: dependencyPath,
+              sourceText: 'export type Value = { readonly after: number; };\n',
+              hasBOM: false,
+            },);
+            /** Importer source retained by dependency-refreshed snapshot. */
+            const importerFromDependencySnapshot = dependencySession
+              .project
+              .program
+              .getSourceFile(importerPath,);
+            const refreshed = openSemanticFile({
+              fileName: importerPath,
+              sourceText: importerSource,
+              hasBOM: false,
+            },);
+            expect(refreshed.sourceFile,).toBe(importerFromDependencySnapshot,);
+            const parameter = refreshed.nodeAtOffset(importerSource.indexOf('value:',),);
+            const type = refreshed.checker.getTypeAtLocation(parameter,);
+            if (type === undefined)
+              throw new Error('Expected importer parameter type after dependency overlay.',);
+            expect(refreshed.checker.typeToString(type,),).toBe('Value',);
+            expect(
+              refreshed.checker
+                .getPropertiesOfType(type,)
+                .map(function propertyName(property,): string {
+                  return property.name;
+                },),
+            ).toEqual(['after',],);
+          },
+        },),
+        it({
           name: 'fails closed when offset is outside source tree',
           fn: async () => {
             const session = openSemanticFile({
@@ -306,8 +356,17 @@ await describe({
           name: 'bounds overlays by active file and projects by configured root',
           fn: async () => {
             closeSemanticBridge();
-            openSemanticFile({ fileName: FIXTURE_PATH, sourceText: SOURCE, hasBOM: false, },);
-            openSemanticFile({ fileName: FIXTURE_PATH, sourceText: SOURCE, hasBOM: false, },);
+            const first = openSemanticFile({
+              fileName: FIXTURE_PATH,
+              sourceText: SOURCE,
+              hasBOM: false,
+            },);
+            const second = openSemanticFile({
+              fileName: FIXTURE_PATH,
+              sourceText: SOURCE,
+              hasBOM: false,
+            },);
+            expect(second.sourceFile,).toBe(first.sourceFile,);
             expect(semanticBridgeCacheStats(),).toEqual({
               overlayCount: 1,
               projectRootCount: 1,

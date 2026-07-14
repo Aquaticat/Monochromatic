@@ -455,6 +455,13 @@ The semantic-rule implementation and shared-configuration migration are complete
   which belong to the host-provider,
   residual,
   and final-verification phases;
+- the TypeScript sync adapter reuses byte-identical sources from its current immutable snapshot instead of clearing
+  TypeScript's decoded-source cache and issuing one synchronous snapshot RPC per linted file;
+  dependency-overlay regression coverage proves unchanged importers reuse the refreshed snapshot;
+  final one-worker warm checks completed the semantic plugin package in 6,411 ms and 6,394 ms,
+  `packages/git-policies/cli` in 4,261 ms and 4,231 ms,
+  and file-manager Electron in 6,887 ms and 6,896 ms;
+  cold runs after analyzer or project source changes still rebuild content-addressed effect summaries;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,

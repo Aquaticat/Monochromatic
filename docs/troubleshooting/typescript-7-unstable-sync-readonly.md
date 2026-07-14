@@ -64,6 +64,43 @@ apiRequest(method, params) {
 This shape fits Oxlint's synchronous JavaScript-rule visitors,
 but the client must be process-scoped and reused rather than recreated per parameter or source file.
 
+### Unchanged files must reuse their immutable snapshot
+
+TypeScript's installed sync adapter sends every `updateSnapshot` call through synchronous RPC.
+It then retains decoded source files that the server reports as unchanged.
+`node_modules/.pnpm/typescript@7.0.2/node_modules/typescript/dist/api/sync/api.js:66-76` contains both operations:
+
+```js
+updateSnapshot(params) {
+    this.ensureInitialized();
+    const requestParams = toUpdateSnapshotRequest(params);
+    const data = this.client.apiRequest("updateSnapshot", requestParams);
+    // Retain cached source files from previous snapshot for unchanged files
+    if (this.latestSnapshot) {
+        this.sourceFileCache.retainForSnapshot(data.snapshot, this.latestSnapshot.id, data.changes);
+```
+
+The first semantic adapter sent `fileChanges.changed` for every Oxlint source and called
+`clearSourceFileCache()` immediately before every update.
+One worker therefore paid one synchronous native request per source and discarded the decoded-source reuse that
+TypeScript provides.
+On the semantic plugin package,
+three unchanged sequential package runs took 13,260 ms,
+13,214 ms,
+and 13,331 ms.
+
+[`typescript-sync-adapter.ts:282-308`][adapter-reuse] now looks up the already materialized project and source.
+When the source text is byte-for-byte equal and no prior path was deleted,
+it returns handles over that immutable snapshot without clearing TypeScript's source cache or issuing another update.
+Changed overlays,
+created files,
+deleted files,
+and project discovery still take the update path.
+
+The earlier 29.4 and 39.0 second observations came from several package lint processes running concurrently.
+`OXLINT_THREADS=1` limits each Oxlint process to one worker;
+it does not serialize separate `mise run` processes or their native TypeScript children.
+
 ### Snapshots provide the project and unsaved-file lifecycle
 
 The installed `typescript@7.0.2/dist/api/sync/api.d.ts:39` exposes `API.updateSnapshot`.
@@ -402,6 +439,18 @@ It asserts that natural process shutdown produces the semantic result on stdout 
 A full parallel package unit run after the forced-signal fix produced no `context canceled` line on either captured stream.
 A package Oxlint run captured after the fix also contained no cancellation line.
 
+A regression opens the same unchanged source twice and requires both sessions to expose the same decoded
+`SourceFile` object.
+The existing overlay,
+rename,
+nested-project,
+and parser-recovery cases continue to verify that inputs requiring a new snapshot do not take the reuse path.
+Warm one-thread package timing is verified with three sequential unchanged invocations of
+`mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint`.
+The final measured runs completed in 6,610 ms,
+6,476 ms,
+and 6,668 ms.
+
 ### Working catalog
 
 - `API.updateSnapshot({ openProjects })` loads configured projects.
@@ -411,6 +460,7 @@ A package Oxlint run captured after the fix also contained no cancellation line.
 - direct declaration modifiers classify ordinary readonly properties.
 - `symbol.checkFlags & (1 << 3)` classifies the tested recursively mapped readonly property.
 - virtual filesystem overlays plus configured-project snapshots and `fileChanges.changed` update semantic results;
+- byte-identical sources reuse the current immutable snapshot and decoded `SourceFile` object;
 - temporary `openFiles` discovery followed by `openProjects` and `closeFiles` avoids stale API-open-file semantics.
 - TypeScript source offsets map to exact Oxlint diagnostic locations.
 - guarded TypeScript 7.0.2 child control forces channel-owned termination to `SIGKILL`;
@@ -445,6 +495,10 @@ Use `openFiles` only for ancestor `tsconfig.json` discovery.
 Open that configured project,
 close the temporary file association,
 and create replacement project snapshots with `fileChanges.changed` whenever current source changes.
+Before updating,
+compare current source text with the source already materialized in the immutable snapshot.
+Reuse that project and source when they are identical and no deletion requires invalidation.
+Only clear the decoded-source cache and send `fileChanges` when the source or project lifecycle actually changed.
 Dispose superseded snapshots and close the API client during Node `beforeExit` when the host provides no explicit lifecycle hook.
 For TypeScript 7.0.2,
 guard the unstable native-child shape
@@ -496,12 +550,20 @@ and parser-recovery span cases.
   ** parallel runs can deliver `SIGTERM` before the native server observes EOF.
 - **Filtering `context canceled` from command output:
   ** it hides a lifecycle defect and can also hide a real cancellation failure.
+- **Calling `clearSourceFileCache()` and `updateSnapshot()` for every unchanged lint source:
+  ** it defeats TypeScript's decoded-source retention and adds one synchronous native request per source.
+- **Treating `OXLINT_THREADS=1` as a global process limit:
+  ** separately launched package tasks still compete through distinct Oxlint and TypeScript processes.
 
 ## Upstream filing decision
 
 `.out-of-scope/` contains no matching exemption.
 The existing [typescript-go issue 4080][readonly-issue] requests a supported readonly-symbol API,
 so a new issue would be a duplicate.
+The unchanged-snapshot performance defect was in this repository's adapter,
+not TypeScript:
+the installed API already retains decoded unchanged sources.
+No upstream performance issue should be filed.
 
 The filing constraints resolve as follows:
 
@@ -543,5 +605,6 @@ I verified the result through an Oxlint JavaScript plugin using snapshot updates
 This investigation and draft used AI assistance and was reviewed against the installed package and current Go source.
 ~~~
 
+[adapter-reuse]: ../../packages/oxlint-plugins/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/typescript-sync-adapter.ts#L282-L308
 [readonly-issue]: https://github.com/microsoft/typescript-go/issues/4080
 [typescript-7-announcement]: https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/
