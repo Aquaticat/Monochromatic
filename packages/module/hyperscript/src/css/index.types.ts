@@ -40,23 +40,23 @@ type TypedAtRuleOptions = {
     /**
      * At-rule name: narrows `decls` to the matching descriptor type
      */
-    readonly at: K;
+    at: K;
     /**
      * At-rule prelude/parameters (e.g. `'--color-fg'` for `@property`)
      */
-    readonly params?: string;
+    params?: string;
     /**
      * At-rule descriptors with editor intellisense per at-rule type
      */
-    readonly decls?: AtRuleDeclsMap[K];
+    decls?: AtRuleDeclsMap[K];
     /**
      * Raw CSS string to inject inside the block (NOT escaped; caller responsible)
      */
-    readonly raw?: string;
+    raw?: string;
     /**
      * Nested rules or at-rules inside this block
      */
-    readonly children?: readonly string[];
+    children?: readonly string[];
   };
 }[keyof AtRuleDeclsMap];
 
@@ -76,23 +76,23 @@ type UntypedAtRuleOptions = {
   /**
    * At-rule name: standard names get autocomplete, arbitrary strings accepted via `(string & {})`
    */
-  readonly at: UntypedAtRuleName | (string & {});
+  at: UntypedAtRuleName | (string & {});
   /**
    * At-rule prelude/parameters (e.g. `'(prefers-color-scheme: dark)'` for `@media`)
    */
-  readonly params?: string;
+  params?: string;
   /**
    * At-rule descriptor declarations (untyped for at-rules without csstype descriptors)
    */
-  readonly decls?: Record<string, string>;
+  decls?: Record<string, string>;
   /**
    * Raw CSS string to inject inside the block (NOT escaped; caller responsible)
    */
-  readonly raw?: string;
+  raw?: string;
   /**
    * Nested rules or at-rules inside this block
    */
-  readonly children?: readonly string[];
+  children?: readonly string[];
 };
 
 /**
@@ -126,19 +126,19 @@ export type RuleOptions = {
   /**
    * CSS selector (e.g. `'.card'`, `'&:hover'`, `':root'`)
    */
-  readonly rule: string;
+  rule: string;
   /**
    * CSS declarations: strict property names, strict values, custom properties
    */
-  readonly decls?: StrictCssDeclarations;
+  decls?: StrictCssDeclarations;
   /**
    * Raw CSS string to inject inside the block (NOT escaped; caller responsible)
    */
-  readonly raw?: string;
+  raw?: string;
   /**
    * Nested rules or at-rules inside this block
    */
-  readonly children?: readonly string[];
+  children?: readonly string[];
 };
 
 /**
