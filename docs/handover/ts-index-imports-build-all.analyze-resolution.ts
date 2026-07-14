@@ -198,12 +198,12 @@ const re = new RegExp(
 );
 
 type Finding = {
-  file: string;
-  importer: string;
-  specifier: string;
-  subkey: string;
-  resolved: string | null;
-  bucket: string
+  readonly file: string;
+  readonly importer: string;
+  readonly specifier: string;
+  readonly subkey: string;
+  readonly resolved: string | null;
+  readonly bucket: string
 };
 const findings: Finding[] = [];
 const names = [...pkgByName.keys()].map(n => n.slice(SCOPE.length))

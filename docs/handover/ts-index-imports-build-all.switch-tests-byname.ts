@@ -111,8 +111,8 @@ function isOwnSourceImport({
   spec,
   fileDir,
 }: {
-  spec: string;
-  fileDir: string
+  readonly spec: string;
+  readonly fileDir: string
 },): boolean {
   if (!spec.startsWith('.',)) {
     return false;
