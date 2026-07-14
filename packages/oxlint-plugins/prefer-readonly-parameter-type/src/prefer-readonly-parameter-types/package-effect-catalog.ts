@@ -75,6 +75,21 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     evidence: '@oxlint/plugins 1.73 Context report diagnostic emission',
   },),
   ...[
+    'add',
+    'test',
+  ].map(function ignoreMatcherMutation(member,): IntrinsicEffectEntry {
+    return receiverEffect({
+      provenance: {
+        kind: 'package',
+        packageName: 'ignore',
+        major: 7,
+      },
+      ownerType: 'Ignore',
+      member,
+      evidence: 'ignore 7.0.6 shipped implementation updates matcher rules or result caches',
+    },);
+  },),
+  ...[
     'getAllComments',
     'getCommentsBefore',
     'getCommentsInside',

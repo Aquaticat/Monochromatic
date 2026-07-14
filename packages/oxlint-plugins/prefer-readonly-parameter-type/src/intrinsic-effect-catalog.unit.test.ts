@@ -115,6 +115,18 @@ const MCP_STDIO_SOURCE = readFileSync(
   'utf8',
 );
 
+/** Guardrail source used for exact ignore matcher provenance. */
+const GUARDRAIL_SOURCE_PATH = fileURLToPath(new URL(
+  '../../../pi-plugins/guardrail/src/path-guard.ts',
+  import.meta.url,
+),);
+
+/** Guardrail source text containing audited matcher calls. */
+const GUARDRAIL_SOURCE = readFileSync(
+  GUARDRAIL_SOURCE_PATH,
+  'utf8',
+);
+
 /** Current fixture source text. */
 const SOURCE = readFileSync(
   FIXTURE_PATH,
@@ -344,6 +356,72 @@ await describe({
         if (loggerEffect === NO_INTRINSIC_EFFECT)
           throw new Error('Expected logger capability effect.',);
         expect(loggerEffect.targets,).toEqual([{ kind: 'receiver', },],);
+        const ignoreTestEffect = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: 'ignore',
+            major: 7,
+          },
+          ownerType: 'Ignore',
+          member: 'test',
+        },);
+        expect(ignoreTestEffect,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (ignoreTestEffect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected ignore matcher cache effect.',);
+        expect(ignoreTestEffect.targets,).toEqual([{ kind: 'receiver', },],);
+      },
+    },),
+    it({
+      name: 'resolves exact ignore matcher owner and package provenance',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: GUARDRAIL_SOURCE_PATH,
+          sourceText: GUARDRAIL_SOURCE,
+          hasBOM: false,
+        },);
+        const memberOffsets = [
+          GUARDRAIL_SOURCE.indexOf('matcher.add',) + 'matcher.'.length,
+          GUARDRAIL_SOURCE.indexOf(
+            '.test(relativePath',
+            GUARDRAIL_SOURCE.indexOf('ruleMatcher.ignore',),
+          ) + 1,
+        ];
+        const queries = memberOffsets.map(function matcherQuery(offset,) {
+          const memberNode = session.nodeAtOffset(offset,);
+          const propertyAccess = memberNode.parent;
+          if (!isPropertyAccessExpression(propertyAccess,))
+            throw new Error('Expected ignore matcher property access.',);
+          const receiverType = session.checker.getTypeAtLocation(propertyAccess.expression,);
+          const memberSymbol = session.checker.getSymbolAtLocation(propertyAccess.name,);
+          if ((receiverType === undefined) || (memberSymbol === undefined))
+            throw new Error('Expected ignore matcher semantic identity.',);
+          return intrinsicEffectQuery({
+            project: session.project,
+            receiverType,
+            memberSymbol,
+          },);
+        },);
+        closeSemanticBridge();
+        expect(queries,).toEqual([
+          {
+            provenance: {
+              kind: 'package',
+              packageName: 'ignore',
+              major: 7,
+            },
+            ownerType: 'Ignore',
+            member: 'add',
+          },
+          {
+            provenance: {
+              kind: 'package',
+              packageName: 'ignore',
+              major: 7,
+            },
+            ownerType: 'Ignore',
+            member: 'test',
+          },
+        ],);
       },
     },),
     it({
