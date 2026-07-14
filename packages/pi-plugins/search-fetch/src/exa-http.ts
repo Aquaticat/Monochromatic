@@ -56,6 +56,12 @@ const l = tagged({
  *
  * @returns parsed JSON response
  *
+ * @mutates runtime - `sendExaRequest` invokes configured fetch provider capability.
+ *
+ * @mutates body - `JSON.stringify` may invoke conversion hooks on request data.
+ *
+ * @mutates signal - Configured fetch provider may retain signal and register abort listeners.
+ *
  * @example
  * ```ts
  * await postExaJson({ runtime, endpoint: '/search', body: { query: 'docs' } });
@@ -114,37 +120,34 @@ async function postExaJson(
 /**
  * Send Exa fetch request and normalize abort or network failures.
  *
- * @param runtime - client runtime dependencies
- *
- * @param endpoint - endpoint path for diagnostics
- *
- * @param requestUrl - full URL to call
- *
- * @param apiKey - Exa API key
- *
- * @param body - JSON body
- *
- * @param signal - optional abort signal
+ * @param request - Runtime capability and Exa request values.
  *
  * @returns fetch response
+ *
+ * @mutates request - `runtime.fetchImpl` may invoke provider behavior and retain request state;
+ *   `JSON.stringify` may invoke hooks on `request.body`.
  */
 async function sendExaRequest(
-  {
+  request: {
+    runtime: ExaClientRuntime;
+    readonly endpoint: string;
+    readonly requestUrl: string;
+    readonly apiKey: string;
+    body: unknown;
+    signal?: AbortSignal;
+  },
+): Promise<Response> {
+  /**
+   * Request values extracted after naming provider effect boundary.
+   */
+  const {
     runtime,
     endpoint,
     requestUrl,
     apiKey,
     body,
     signal,
-  }: {
-    readonly runtime: ExaClientRuntime;
-    readonly endpoint: string;
-    readonly requestUrl: string;
-    readonly apiKey: string;
-    readonly body: unknown;
-    readonly signal?: AbortSignal;
-  },
-): Promise<Response> {
+  } = request;
   try {
     /**
      * Fetch request init without undefined optional properties.

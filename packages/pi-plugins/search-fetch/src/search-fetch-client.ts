@@ -7,6 +7,7 @@
 
 import { caughtValueText as errorMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   DEFAULT_LINKUP_BASE_URL,
@@ -60,7 +61,9 @@ const l = tagged({
  * const client = createSearchFetchClient({ exaApiKey: 'key', blocklist: [] });
  * ```
  */
-function createSearchFetchClient(clientOptions: SearchFetchClientOptions,): SearchFetchClient {
+function createSearchFetchClient(
+  clientOptions: ForeignBorrowed<SearchFetchClientOptions>,
+): SearchFetchClient {
   /**
    * Runtime dependencies captured by client methods.
    */
@@ -92,7 +95,7 @@ function createSearchFetchClient(clientOptions: SearchFetchClientOptions,): Sear
   },);
 
   return Object.freeze({
-    search(searchOptions: SearchOptions,): Promise<ProviderResponse> {
+    search(searchOptions: ForeignBorrowed<SearchOptions>,): Promise<ProviderResponse> {
       return searchWithFallback({
         runtime,
         exaClient,
@@ -100,7 +103,7 @@ function createSearchFetchClient(clientOptions: SearchFetchClientOptions,): Sear
         options: searchOptions,
       },);
     },
-    fetch(fetchOptions: FetchOptions,): Promise<ProviderResponse> {
+    fetch(fetchOptions: ForeignBorrowed<FetchOptions>,): Promise<ProviderResponse> {
       return fetchWithFallback({
         runtime,
         exaClient,

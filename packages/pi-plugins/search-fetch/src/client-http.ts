@@ -55,6 +55,12 @@ const l = tagged({
  *
  * @returns parsed JSON response
  *
+ * @mutates runtime - `sendRequest` invokes configured fetch provider capability.
+ *
+ * @mutates body - `JSON.stringify` may invoke conversion hooks on request data.
+ *
+ * @mutates signal - Configured fetch provider may retain signal and register abort listeners.
+ *
  * @example
  * ```ts
  * await postJson({ runtime, endpoint: '/search', body: { q: 'docs' } });
@@ -113,37 +119,34 @@ async function postJson(
 /**
  * Send fetch request and normalize abort or network failures.
  *
- * @param runtime - client runtime dependencies
- *
- * @param endpoint - endpoint path for diagnostics
- *
- * @param requestUrl - full URL to call
- *
- * @param apiKey - Linkup API key
- *
- * @param body - JSON body
- *
- * @param signal - optional abort signal
+ * @param request - Runtime capability and Linkup request values.
  *
  * @returns fetch response
+ *
+ * @mutates request - `runtime.fetchImpl` may invoke provider behavior and retain request state;
+ *   `JSON.stringify` may invoke hooks on `request.body`.
  */
 async function sendRequest(
-  {
+  request: {
+    runtime: ClientRuntime;
+    readonly endpoint: string;
+    readonly requestUrl: string;
+    readonly apiKey: string;
+    body: unknown;
+    signal?: AbortSignal;
+  },
+): Promise<Response> {
+  /**
+   * Request values extracted after naming provider effect boundary.
+   */
+  const {
     runtime,
     endpoint,
     requestUrl,
     apiKey,
     body,
     signal,
-  }: {
-    readonly runtime: ClientRuntime;
-    readonly endpoint: string;
-    readonly requestUrl: string;
-    readonly apiKey: string;
-    readonly body: unknown;
-    readonly signal?: AbortSignal;
-  },
-): Promise<Response> {
+  } = request;
   try {
     /**
      * Fetch request init without undefined optional properties.

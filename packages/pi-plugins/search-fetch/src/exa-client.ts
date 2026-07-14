@@ -5,6 +5,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type {
   FetchOptions,
@@ -85,7 +86,7 @@ const l = tagged({
  * const client = createExaClient({ apiKey: 'key', blocklist: [] });
  * ```
  */
-function createExaClient(clientOptions: ExaClientOptions,): ExaClient {
+function createExaClient(clientOptions: ForeignBorrowed<ExaClientOptions>,): ExaClient {
   /**
    * Runtime dependencies captured by client methods.
    */
@@ -97,13 +98,31 @@ function createExaClient(clientOptions: ExaClientOptions,): ExaClient {
   };
 
   return Object.freeze({
-    search(searchOptions: SearchOptions,): Promise<unknown> {
+    /**
+     * Runs one caller-owned Exa search request.
+     *
+     * @param searchOptions - Search input and optional signal.
+     *
+     * @returns Parsed Exa response.
+     *
+     * @mutates searchOptions - Provider request may retain signal and invoke configured fetch capability.
+     */
+    search(searchOptions: ForeignBorrowed<SearchOptions>,): Promise<unknown> {
       return searchExa({
         runtime,
         options: searchOptions,
       },);
     },
-    fetch(fetchOptions: FetchOptions,): Promise<unknown> {
+    /**
+     * Runs one caller-owned Exa contents request.
+     *
+     * @param fetchOptions - Fetch input and optional signal.
+     *
+     * @returns Parsed Exa response.
+     *
+     * @mutates fetchOptions - Provider request may retain signal and invoke configured fetch capability.
+     */
+    fetch(fetchOptions: ForeignBorrowed<FetchOptions>,): Promise<unknown> {
       return fetchExa({
         runtime,
         options: fetchOptions,
@@ -122,6 +141,10 @@ function createExaClient(clientOptions: ExaClientOptions,): ExaClient {
  * @returns parsed Exa response object
  *
  * @throws when API key is absent, Exa rejects, JSON parsing fails, or request aborts
+ *
+ * @mutates runtime - Provider request invokes `runtime.fetchImpl` and reads retained blocklist data.
+ *
+ * @mutates options - Provider request may retain `options.signal` and register abort listeners.
  */
 function searchExa(
   {
@@ -175,6 +198,10 @@ function searchExa(
  * @returns parsed Exa response object
  *
  * @throws when API key is absent, Exa rejects, JSON parsing fails, or request aborts
+ *
+ * @mutates runtime - Provider request invokes `runtime.fetchImpl`.
+ *
+ * @mutates options - Provider request may retain `options.signal` and register abort listeners.
  */
 function fetchExa(
   {

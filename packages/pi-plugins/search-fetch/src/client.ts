@@ -4,6 +4,7 @@
  * @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   DEFAULT_LINKUP_BASE_URL,
@@ -58,7 +59,7 @@ const l = tagged({
  * const client = createLinkupClient({ apiKey: 'key', blocklist: [] });
  * ```
  */
-function createLinkupClient(clientOptions: LinkupClientOptions,): LinkupClient {
+function createLinkupClient(clientOptions: ForeignBorrowed<LinkupClientOptions>,): LinkupClient {
   /**
    * Runtime dependencies captured by client methods.
    */
@@ -70,13 +71,31 @@ function createLinkupClient(clientOptions: LinkupClientOptions,): LinkupClient {
   };
 
   return Object.freeze({
-    search: function search(searchOptions: SearchOptions,): Promise<unknown> {
+    /**
+     * Runs one caller-owned Linkup search request.
+     *
+     * @param searchOptions - Search input and optional signal.
+     *
+     * @returns Parsed Linkup response.
+     *
+     * @mutates searchOptions - Provider request may retain signal and invoke configured fetch capability.
+     */
+    search(searchOptions: ForeignBorrowed<SearchOptions>,): Promise<unknown> {
       return searchLinkup({
         runtime,
         options: searchOptions,
       },);
     },
-    fetch: function fetch(fetchOptions: FetchOptions,): Promise<unknown> {
+    /**
+     * Runs one caller-owned Linkup fetch request.
+     *
+     * @param fetchOptions - Fetch input and optional signal.
+     *
+     * @returns Parsed Linkup response.
+     *
+     * @mutates fetchOptions - Provider request may retain signal and invoke configured fetch capability.
+     */
+    fetch(fetchOptions: ForeignBorrowed<FetchOptions>,): Promise<unknown> {
       return fetchLinkup({
         runtime,
         options: fetchOptions,
@@ -95,6 +114,10 @@ function createLinkupClient(clientOptions: LinkupClientOptions,): LinkupClient {
  * @returns parsed Linkup response object
  *
  * @throws when API key is absent, Linkup rejects, JSON parsing fails, or request aborts
+ *
+ * @mutates runtime - Provider request invokes `runtime.fetchImpl` and reads retained blocklist data.
+ *
+ * @mutates options - Provider request may retain `options.signal` and register abort listeners.
  */
 function searchLinkup(
   {
@@ -148,6 +171,10 @@ function searchLinkup(
  * @returns parsed Linkup response object
  *
  * @throws when API key is absent, Linkup rejects, JSON parsing fails, or request aborts
+ *
+ * @mutates runtime - Provider request invokes `runtime.fetchImpl`.
+ *
+ * @mutates options - Provider request may retain `options.signal` and register abort listeners.
  */
 function fetchLinkup(
   {
