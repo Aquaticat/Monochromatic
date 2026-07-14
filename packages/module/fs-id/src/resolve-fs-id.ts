@@ -14,7 +14,7 @@ import { resolve, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import nanoSpawn from 'nano-spawn';
 
-import { caughtMessage, } from './caught-message.ts';
+import { caughtValueText as caughtMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import { UnsupportedFsIdPlatformError, } from './errors.ts';
 import {
   resolveDarwinFsId,

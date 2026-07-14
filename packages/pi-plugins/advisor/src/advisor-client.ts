@@ -25,6 +25,7 @@ import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completi
 import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
+import { caughtValueText as caughtMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
@@ -200,30 +201,6 @@ export type CompleteAdvisorOptions = ForeignBorrowed<{
 }>;
 
 //endregion Types
-
-//region Error formatting
-
-/**
- * Formats caught provider failures without invoking unknown coercion hooks.
- *
- * @param error - Caught provider value.
- *
- * @returns Error message, primitive string, or noncoercing value category.
- *
- * @example
- * ```typescript
- * caughtMessage(new Error('offline'));
- * ```
- */
-function caughtMessage(error: unknown,): string {
-  if (Error.isError(error,))
-    return error.message;
-  if ((typeof error) === 'string')
-    return error;
-  return `Non-Error value of type ${typeof error}`;
-}
-
-//endregion Error formatting
 
 //region Public API
 

@@ -14,7 +14,7 @@ import {
   zstdDecompress,
 } from 'node:zlib';
 
-import { caughtErrorMessage, } from './error-format.ts';
+import { caughtValueText as caughtErrorMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import type { FigmaFileType, } from './types.ts';
 
 /**

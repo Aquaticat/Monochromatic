@@ -25,6 +25,7 @@
   "dependencies": {
     "@lezer/common": "catalog:",
     "@lezer/xml": "catalog:",
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-toml-edit": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",

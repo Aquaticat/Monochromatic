@@ -23,7 +23,7 @@ import {
 } from 'node:path';
 
 import { generateDomainXml, } from './domain-xml.ts';
-import { caughtErrorMessage, } from './error-format.ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 /**
  * Libvirt domain name.
@@ -128,7 +128,7 @@ async function run(
 /**
  * Destroys and undefines an existing libvirt domain if it exists.
  * No-op when the domain is not defined; the existence probe's failure is
- * logged via {@link caughtErrorMessage}.
+ * logged via {@link caughtValueText}.
  *
  * @param name - Libvirt domain name to remove
  */
@@ -146,7 +146,7 @@ async function undefineVmIfExists(name: string,): Promise<void> {
   }
   catch (error) {
     console.warn(
-      `[vm-builder] libvirt domain '${name}' existence probe failed; skipping removal: ${caughtErrorMessage(error,)}`,
+      `[vm-builder] libvirt domain '${name}' existence probe failed; skipping removal: ${caughtValueText(error,)}`,
     );
     return;
   }
@@ -229,7 +229,7 @@ async function importVm(name: string,): Promise<void> {
 /**
  * Grants the virt-manager Flatpak read-write access to {@link OUTPUT_DIR}.
  * No-op if virt-manager is not installed as a Flatpak; the probe's failure
- * is logged via {@link caughtErrorMessage}.
+ * is logged via {@link caughtValueText}.
  */
 async function grantFlatpakAccess(): Promise<void> {
   try {
@@ -243,7 +243,7 @@ async function grantFlatpakAccess(): Promise<void> {
   }
   catch (error) {
     console.warn(
-      `[vm-builder] virt-manager Flatpak probe failed; skipping filesystem override: ${caughtErrorMessage(error,)}`,
+      `[vm-builder] virt-manager Flatpak probe failed; skipping filesystem override: ${caughtValueText(error,)}`,
     );
     return;
   }

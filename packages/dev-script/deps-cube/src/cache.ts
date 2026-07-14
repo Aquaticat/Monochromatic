@@ -40,7 +40,7 @@ import {
   join,
 } from 'node:path';
 
-import { caughtErrorMessage, } from './error-format.ts';
+import { caughtValueText as caughtErrorMessage, } from '@monochromatic-dev/module-caught-value/ts';
 
 //region Types
 

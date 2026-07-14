@@ -1,7 +1,6 @@
-export {
-  caughtErrorHasCode,
-  caughtErrorMessage,
-} from './error.ts';
+export { caughtValueText as caughtErrorMessage, } from '@monochromatic-dev/module-caught-value/ts';
+
+export { caughtErrorHasCode, } from './error.ts';
 
 //region Error type and unknown-error helpers
 

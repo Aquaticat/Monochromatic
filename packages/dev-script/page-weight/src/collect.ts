@@ -10,7 +10,7 @@ import { extname, } from 'node:path';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { extractCssUrls, } from './css.ts';
-import { caughtErrorMessage, } from './error-format.ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { extractHtmlRefs, } from './html.ts';
 import {
   resolveReference,
@@ -81,7 +81,7 @@ async function readCssOrAbsent(absolutePath: string,): Promise<string | typeof C
   }
   catch (error) {
     console.warn(
-      `[page-weight] CSS read failed for ${absolutePath}: ${caughtErrorMessage(error,)}`,
+      `[page-weight] CSS read failed for ${absolutePath}: ${caughtValueText(error,)}`,
     );
     return CSS_UNREADABLE;
   }

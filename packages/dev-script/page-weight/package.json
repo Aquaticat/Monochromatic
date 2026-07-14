@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@csstools/css-tokenizer": "catalog:",
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "rehype-parse": "catalog:",

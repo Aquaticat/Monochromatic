@@ -4,7 +4,7 @@
  * @module
  */
 
-import { caughtMessage, } from './caught-message.ts';
+import { caughtValueText as caughtMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import { FsIdResolutionError, } from './errors.ts';
 import {
   createFsId,

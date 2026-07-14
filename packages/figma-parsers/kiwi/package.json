@@ -39,6 +39,9 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/figma-parsers/kiwi"
   },
+  "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*"
+  },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/config-tsdown": "workspace:*",

@@ -7,6 +7,8 @@
  * ```
  */
 
+import { caughtValueText as caughtErrorMessage, } from '@monochromatic-dev/module-caught-value/ts';
+
 import {
   FIGMA_DOCUMENT_ABSENT,
   parseFigmaFile,
@@ -51,25 +53,6 @@ const TEST_FILES = [
 type VerifyResult = {
   readonly ok: boolean;
 };
-
-/**
- * Formats unknown caught value for logging.
- *
- * @param error - Unknown caught value.
- *
- * @returns Error message when available.
- *
- * @example
- * ```ts
- * caughtErrorMessage(new Error('missing'));
- * // 'missing'
- * ```
- */
-function caughtErrorMessage(error: unknown,): string {
-  if (Error.isError(error,))
-    return error.message;
-  return String(error,);
-}
 
 /**
  * Verifies every fixture and prints summary.

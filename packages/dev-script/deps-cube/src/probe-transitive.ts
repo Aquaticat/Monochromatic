@@ -25,7 +25,7 @@ import {
   type Cache,
   CACHE_MISS,
 } from './cache.ts';
-import { caughtErrorMessage, } from './error-format.ts';
+import { caughtValueText as caughtErrorMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   type NpmPackage,
   probePackageManifest,

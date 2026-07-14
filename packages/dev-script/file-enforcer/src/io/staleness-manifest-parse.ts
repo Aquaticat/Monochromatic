@@ -1,9 +1,10 @@
 import { readFile, } from 'node:fs/promises';
 
 import { isStalenessManifest, } from './staleness-guards.ts';
+import { caughtValueText as caughtErrorMessage, } from '@monochromatic-dev/module-caught-value/ts';
+
 import {
   caughtErrorHasCode,
-  caughtErrorMessage,
   StalenessManifestPersistenceError,
 } from './staleness-manifest-error.ts';
 import {

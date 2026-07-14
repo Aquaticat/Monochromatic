@@ -8,7 +8,7 @@
  */
 import { stat, } from 'node:fs/promises';
 
-import { caughtErrorMessage, } from './error-format.ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 /**
  * Sentinel returned by {@link wireSize} when neither the requested asset nor
@@ -44,7 +44,7 @@ async function fileReadable(
   }
   catch (error) {
     console.warn(
-      `[page-weight] file readability probe failed for ${absolutePath}: ${caughtErrorMessage(error,)}`,
+      `[page-weight] file readability probe failed for ${absolutePath}: ${caughtValueText(error,)}`,
     );
     return false;
   }

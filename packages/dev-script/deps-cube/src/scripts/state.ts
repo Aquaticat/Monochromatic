@@ -20,7 +20,7 @@
  * ```
  */
 
-import { caughtErrorMessage, } from '../error-format.ts';
+import { caughtValueText as caughtErrorMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import type { PackageProbe, } from '../probe.ts';
 import {
   type ChannelKey,
