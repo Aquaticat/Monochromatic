@@ -38,59 +38,59 @@ export type WatchRerunReporterLogger = Pick<Logger, 'error'>;
 /**
  * Serial queue for watch reruns.
  */
-export type WatchRerunQueue = Readonly<{
+export type WatchRerunQueue = {
   /**
    * Adds one rerun batch and resolves when that batch has been processed.
    */
-  enqueue: (batch: WatchRerunBatch) => Promise<void>;
+  readonly enqueue: (batch: WatchRerunBatch) => Promise<void>;
 
   /**
    * Returns number of batches waiting behind any active rerun.
    */
-  pendingCount: () => number;
+  readonly pendingCount: () => number;
 
   /**
    * Returns whether a rerun is currently active.
    */
-  running: () => boolean;
-}>;
+  readonly running: () => boolean;
+};
 
 //region Watch rerun queue internals
 
 /**
  * Options used to create a serial watch rerun queue.
  */
-type WatchRerunQueueOptions = Readonly<{
+type WatchRerunQueueOptions = {
   /**
    * Handler invoked for each batch in queue order.
    */
-  run: WatchRerunHandler;
+  readonly run: WatchRerunHandler;
 
   /**
    * Error reporter used when one handler throws.
    */
-  onError: WatchRerunErrorHandler;
+  readonly onError: WatchRerunErrorHandler;
 
   /**
    * Logger used when error reporter itself throws.
    */
-  logger?: WatchRerunReporterLogger;
-}>;
+  readonly logger?: WatchRerunReporterLogger;
+};
 
 /**
  * Internal queue entry paired with its completion resolver.
  */
-type QueuedWatchRerun = Readonly<{
+type QueuedWatchRerun = {
   /**
    * Event batch to pass to the rerun handler.
    */
-  batch: WatchRerunBatch;
+  readonly batch: WatchRerunBatch;
 
   /**
    * Completion resolver for callers waiting on this queued batch.
    */
-  resolve: () => void;
-}>;
+  readonly resolve: () => void;
+};
 
 /**
  * Returns whether queue drain is currently active.
