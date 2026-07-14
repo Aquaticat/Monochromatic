@@ -415,6 +415,25 @@ The semantic-rule implementation and shared-configuration migration are complete
   Oxlint with no findings,
   build,
   and unit tests;
+- the serialization phase resolves every isolated `JSON.stringify` boundary through complete local contracts and honest
+  mutable persistence DTOs;
+  observational consumers retain readonly views,
+  broad sink-only serializers accept `object`,
+  callback boundaries were flattened where they only propagated serialization uncertainty,
+  and no shallow mutable intersection is used to evade classification;
+- terminal-title exhaustiveness retains its `never` proof and fixed fallback message instead of coercing an impossible
+  runtime value;
+- stable root process `proc_21` reports 263 opaque-effect diagnostics and no readonly preference,
+  dishonest declaration,
+  missing contract,
+  stale contract,
+  semantic bridge failure,
+  or omitted callable summary;
+  seven findings still mention serialization only because they share a boundary with `Response.json`,
+  provider fetch,
+  archive writes,
+  or root configuration writes;
+  the host/provider and residual phases own those mixed boundaries;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,
@@ -430,6 +449,8 @@ The semantic-rule implementation and shared-configuration migration are complete
   `packages/module/fs-id`,
   `packages/module/dom`,
   `packages/module/test`,
+  `packages/module/jsonc-edit`,
+  `packages/cli/mutation-test`,
   `packages/dev-script/catalog-tighten`,
   `packages/agent-harnesses-shared/terminal-title`,
   `packages/cli/git-clone-size`,
@@ -479,13 +500,16 @@ Verified package tasks:
 - `mise run //packages/pi-plugins/auto-mode:test:unit`;
 - `mise run //packages/module/test:lint:types`;
 - `mise run //packages/module/test:lint:oxlint`;
-- `mise run //packages/module/test:buildAndTest`.
+- `mise run //packages/module/test:buildAndTest`;
+- `mise run //packages/cli/mutation-test:buildAndTest`;
+- `mise run //packages/module/jsonc-edit:buildAndTest`;
+- `mise run //packages/git-policies/cli:build`;
+- `mise run //packages/git-policies/cli:test:unit`;
+- `OXLINT_THREADS=1 mise run lint:oxlint` in stable root process `proc_21`.
 
 Next action:
-resolve serialization effects,
-then coercion,
-host-provider,
-and residual package effects;
+resolve coercion effects,
+then host-provider and residual package effects;
 rerun the repository sweep after those measured phases and complete consumer acceptance.
 
 ## Continuity contract
