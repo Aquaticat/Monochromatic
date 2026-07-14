@@ -11,7 +11,8 @@
     "./ts/*": "./src/*"
   },
   "dependencies": {
-    "@monochromatic-dev/module-logger": "workspace:*"
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/desktop-app-electron-infra": "workspace:*",

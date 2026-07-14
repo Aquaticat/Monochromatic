@@ -11,6 +11,7 @@
  * ```
  */
 
+import type { Dirent, } from 'node:fs';
 import {
   readdir,
   rename,
@@ -22,6 +23,8 @@ import {
   resolve,
   sep,
 } from 'node:path';
+
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   app,
@@ -260,7 +263,9 @@ async function listDirectory({ path, }: { readonly path: string; },): Promise<re
   );
 
   return sortBridgeEntries({
-    entries: dirents.map(function toBridgeEntry(dirent,): BridgeFileEntry {
+    entries: dirents.map(function toBridgeEntry(
+      dirent: ForeignBorrowed<Dirent>,
+    ): BridgeFileEntry {
       return {
         kind: kindOfDirent({
           directory: dirent.isDirectory(),
