@@ -3,7 +3,7 @@
  * Reimplemented because pi doesn't export computeFileLists or formatFileOperations.
  */
 
-import type { ReadonlyDeep, } from 'type-fest';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { FileOperations, } from '@earendil-works/pi-coding-agent';
 
 /**
@@ -20,7 +20,7 @@ import type { FileOperations, } from '@earendil-works/pi-coding-agent';
  * ```
  */
 export function computeFileLists(
-  fileOps: ReadonlyDeep<FileOperations>,
+  fileOps: ForeignBorrowed<FileOperations>,
 ): {
   readFiles: string[];
   modifiedFiles: string[];

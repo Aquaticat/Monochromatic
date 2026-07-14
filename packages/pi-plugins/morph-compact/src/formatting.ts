@@ -27,8 +27,8 @@ import type {
 function isTextContentItem(
   item: unknown,
 ): item is {
-  type: string;
-  text: string;
+  readonly type: string;
+  readonly text: string;
 } {
   if (((typeof item) !== 'object') || (item === null))
     return false;

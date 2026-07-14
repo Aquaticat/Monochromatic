@@ -81,7 +81,7 @@ const NO_COMPACTION_INDEX = -1;
  * const { previousSummary, messages } = walkBranch(entries);
  * ```
  */
-function walkBranch(branchEntries: readonly SessionEntry[],): {
+function walkBranch(branchEntries: ForeignBorrowed<readonly SessionEntry[]>,): {
   previousSummary?: string;
   messages: BranchMessage[];
 } {
