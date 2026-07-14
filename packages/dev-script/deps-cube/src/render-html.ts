@@ -176,9 +176,7 @@ function escapeForScriptTag(js: string,): string {
  * serializeProbes([]);
  * ```
  */
-function serializeProbes(
-  probes: readonly (PackageProbe & { catalogKey: string; })[],
-): string {
+function serializeProbes(probes: object,): string {
   return JSON.stringify(probes,);
 }
 
