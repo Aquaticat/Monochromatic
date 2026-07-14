@@ -68,10 +68,10 @@ export type WatcherOptions = {
   readonly paths: readonly string[];
   /**
    * Shared content-hash cache; pre-populated during the initial walk.
-   * Typed `Readonly<HashCache>` so the options object is deeply readonly
-   * (the cache's mutating methods stay callable); keeps the {@link Watcher}
+   * Readonly property prevents replacement while preserving intentional
+   * stateful capability methods.
    */
-  readonly hashCache: Readonly<HashCache>;
+  readonly hashCache: HashCache;
   /**
    * Predicates that skip files/directories during traversal (efficiency only; not a filter substitute).
    */
