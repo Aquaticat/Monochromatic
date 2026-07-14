@@ -47,7 +47,7 @@ type WriteFilteredOptions = {
   /**
    * Target writable stream
    */
-  readonly stream: NodeJS.WriteStream;
+  stream: NodeJS.WriteStream;
 };
 
 /**
@@ -58,7 +58,7 @@ type WriteFilteredOptions = {
  *
  * @param stream - Target writable stream
  *
- * @mutates stream - Writes non-empty filtered output to stream.
+ * @mutates stream - `stream.write` sends non-empty filtered output to caller-owned stream state.
  *
  * @example
  * ```ts

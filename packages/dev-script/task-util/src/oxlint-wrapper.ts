@@ -28,10 +28,6 @@ import {
   MAX_AUTOFIX_PASSES,
   type OxlintRunResult,
 } from './oxlint-fix-loop.ts';
-import {
-  filterOxlintOutput,
-  shouldForceSuccess,
-} from './oxlint-suppress.ts';
 
 //region Argument construction
 
@@ -55,12 +51,10 @@ const threadOverride = process.env
 /**
  * Whether the caller already passed an explicit output format flag.
  *
- * The wrapper pins `--format=default` so the suppression parser always receives
- * oxlint's stable graphical block reporter. oxlint's piped default reporter
- * varies by version: 1.67 emits a compact one-line format that the block parser
- * cannot classify, silently defeating suppression (the focusOutline false
- * positive then fails the lint). An explicit caller `--format`/`-f` must win, so
- * the pin is skipped when one is present.
+ * The wrapper pins `--format=default` so diagnostic augmentation always receives
+ * Oxlint's graphical block reporter. Oxlint's piped default reporter varies by
+ * version and can emit a compact one-line format that has no source-context
+ * boundary for guidance injection. An explicit caller `--format`/`-f` wins.
  */
 const hasExplicitFormat = process.argv
   .slice(2,)
@@ -189,11 +183,9 @@ async function runOxlint(args: readonly string[],): Promise<OxlintRunResult> {
 /**
  * Writes a normalized oxlint result to the parent streams and sets the exit code.
  *
- * Mirrors the original single-pass behavior: a clean run passes augmented
- * output through; a diagnostics run drops known false-positive blocks via
- * {@link filterOxlintOutput}, augments the survivors via {@link augmentOxlintOutput},
- * and forces success only when the failure was caused solely by suppressed
- * diagnostics ({@link shouldForceSuccess}); an execution failure reports and exits 1.
+ * Mirrors Oxlint's result exactly: standard output receives diagnostic guidance,
+ * standard error passes through, and every nonzero exit remains nonzero.
+ * An execution failure reports and exits with status one.
  *
  * @param result - final run result from the loop or a single pass
  */
@@ -219,17 +211,10 @@ function finalizeResult(result: OxlintRunResult,): void {
   }
 
   /**
-   * oxlint diagnostics with known false-positive blocks dropped and the summary recomputed.
+   * Oxlint diagnostics with wrapper guidance appended.
    */
-  const suppressed = filterOxlintOutput({ output: result.stdout, },);
-
-  /**
-   * oxlint diagnostics with the wrapper's extra guidance appended, ready for the parent stdout.
-   */
-  const augmentedStdout = augmentOxlintOutput(suppressed.filtered,);
-
-  if (augmentedStdout.length
-    > 0) {
+  const augmentedStdout = augmentOxlintOutput(result.stdout,);
+  if (augmentedStdout.length > 0) {
     process.stdout
       .write(augmentedStdout,);
     if (!augmentedStdout.endsWith('\n',))
@@ -248,35 +233,8 @@ function finalizeResult(result: OxlintRunResult,): void {
         .write('\n',);
   }
 
-  /**
-   * Total blocks dropped this run; zero means the filter changed nothing, so oxlint's failure stands.
-   */
-  const totalSuppressed = suppressed.suppressedWarnings
-    + suppressed.suppressedErrors;
-  /**
-   * oxlint's reported exit code; absent (e.g. signal termination) never qualifies as a forced success.
-   */
-  const { exitCode, } = result;
-  /**
-   * Whether to convert oxlint's non-zero exit into success.
-   *
-   * True only when the failure was caused solely by suppressed diagnostics:
-   * something was dropped, nothing real survived, oxlint used its ordinary
-   * diagnostics exit code, and stderr was empty. A config error or panic that
-   * coincides with a suppressible block (non-1 exit or stderr text) keeps
-   * oxlint's failure, so a real fault is never hidden by a suppression.
-   */
-  const forceSuccess = (exitCode !== undefined)
-    && shouldForceSuccess({
-      hasRemainingDiagnostics: suppressed.hasRemainingDiagnostics,
-      totalSuppressed,
-      exitCode,
-      stderr: result.stderr,
-    },);
-  if (!forceSuccess) {
-    process.exitCode = exitCode
-      ?? 1;
-  }
+  process.exitCode = result.exitCode
+    ?? 1;
 
   if ((result.signalName
     !== undefined)

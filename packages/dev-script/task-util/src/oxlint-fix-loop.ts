@@ -29,11 +29,11 @@
  * @module
  */
 
-import { stripAnsi, } from './oxlint-augment.ts';
 import {
-  classifyHeader,
-  NOT_DIAGNOSTIC_HEADER,
-} from './oxlint-suppress.ts';
+  extractRuleName,
+  NO_RULE,
+  stripAnsi,
+} from './oxlint-augment.ts';
 
 //region Types and constants
 
@@ -204,7 +204,7 @@ function isExecutionFailure(result: OxlintRunResult,): boolean {
  * A file with zero diagnostics is a guaranteed fixpoint: `--fix` has nothing to
  * change. This drives the early `clean` stop and is sound across severities,
  * unlike oxlint's exit code, which is zero whenever no errors remain even if a
- * fixable warning is still pending. Reuses {@link classifyHeader} so the same
+ * fixable warning is still pending. Reuses {@link extractRuleName} so the same
  * `x rule(...)` / `! rule(...)` parsing as the suppression stage decides what
  * counts as a diagnostic block opener; summary, context, and blank lines do not.
  *
@@ -216,7 +216,7 @@ function hasDiagnostics(stdout: string,): boolean {
   return stdout
     .split('\n',)
     .some(function isDiagnosticHeader(line,): boolean {
-      return classifyHeader(line,) !== NOT_DIAGNOSTIC_HEADER;
+      return extractRuleName(line,) !== NO_RULE;
     },);
 }
 
