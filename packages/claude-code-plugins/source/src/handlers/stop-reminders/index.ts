@@ -150,12 +150,14 @@ function stopRemindersParser(raw: string,): StopInput {
  *
  * @returns JSON string for stdout
  *
+ * @mutates output - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * process.stdout.write(stopRemindersWriter({}));
  * ```
  */
-function stopRemindersWriter(output: ReadonlyDeep<StopRemindersOutput>,): string {
+function stopRemindersWriter(output: StopRemindersOutput,): string {
   return JSON.stringify(output,);
 }
 

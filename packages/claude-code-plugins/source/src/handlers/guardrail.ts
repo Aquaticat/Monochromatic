@@ -129,12 +129,14 @@ function guardrailParser(raw: string,): PreToolUseInput {
  *
  * @returns JSON string for stdout
  *
+ * @mutates output - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * process.stdout.write(guardrailWriter({}));
  * ```
  */
-function guardrailWriter(output: ReadonlyDeep<GuardrailOutput>,): string {
+function guardrailWriter(output: GuardrailOutput,): string {
   return JSON.stringify(output,);
 }
 

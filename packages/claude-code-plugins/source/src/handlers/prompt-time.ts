@@ -76,12 +76,14 @@ function promptTimeParser(raw: string,): UserPromptSubmitInput {
  *
  * @returns JSON string for stdout
  *
+ * @mutates output - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * process.stdout.write(promptTimeWriter(output));
  * ```
  */
-function promptTimeWriter(output: ReadonlyDeep<PromptTimeOutput>,): string {
+function promptTimeWriter(output: PromptTimeOutput,): string {
   return JSON.stringify(output,);
 }
 

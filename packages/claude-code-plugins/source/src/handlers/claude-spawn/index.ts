@@ -290,12 +290,14 @@ function claudeSpawnParser(raw: string,): HookInput {
  *
  * @returns text payload to write to stdout
  *
+ * @mutates output - `JSON.stringify` may invoke hooks on JSON payload values.
+ *
  * @example
  * ```ts
  * process.stdout.write(claudeSpawnWriter({ kind: 'json', payload: {} }));
  * ```
  */
-function claudeSpawnWriter(output: ReadonlyDeep<ClaudeSpawnOutput>,): string {
+function claudeSpawnWriter(output: ClaudeSpawnOutput,): string {
   if (output.kind
     === 'raw')
     return output.text;

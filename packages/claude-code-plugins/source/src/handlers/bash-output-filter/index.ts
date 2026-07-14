@@ -135,12 +135,14 @@ function bashOutputFilterParser(raw: string,): PreToolUseInput {
  *
  * @returns JSON string for stdout
  *
+ * @mutates output - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * process.stdout.write(bashOutputFilterWriter({}));
  * ```
  */
-function bashOutputFilterWriter(output: ReadonlyDeep<BashOutputFilterOutput>,): string {
+function bashOutputFilterWriter(output: BashOutputFilterOutput,): string {
   return JSON.stringify(output,);
 }
 

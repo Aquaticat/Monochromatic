@@ -246,13 +246,15 @@ function correctionReminderParser(raw: string,): UserPromptSubmitInput {
  *
  * @returns JSON-encoded payload for Claude Code's hook reader
  *
+ * @mutates output - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ *
  * @example
  * ```ts
  * correctionReminderWriter({ hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: '' } });
  * // => '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":""}}'
  * ```
  */
-function correctionReminderWriter(output: ReadonlyDeep<CorrectionReminderOutput>,): string {
+function correctionReminderWriter(output: CorrectionReminderOutput,): string {
   return JSON.stringify(output,);
 }
 
