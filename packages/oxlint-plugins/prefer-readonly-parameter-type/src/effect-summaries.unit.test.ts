@@ -1,4 +1,5 @@
 import {
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -32,6 +33,12 @@ import {
 /** Effect summary semantic fixture. */
 const FIXTURE_PATH = fileURLToPath(new URL(
   '../../../test-fixture/oxlint-no-restricted-syntax/src/valid/typescript-sync-adapter.ts',
+  import.meta.url,
+),);
+
+/** Second configured source used to verify cross-file final-index reuse. */
+const HELPER_PATH = fileURLToPath(new URL(
+  '../../../test-fixture/oxlint-no-restricted-syntax/src/valid/semantic-effects-helper.ts',
   import.meta.url,
 ),);
 
@@ -396,6 +403,164 @@ await describe({
       },
     },),
     it({
+      name: 'infers direct imported package effects from shipped implementation',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Disposable package root under ordinary Node resolution boundary. */
+        const packageRoot = join(projectRoot.path, 'node_modules', 'effect-probe',);
+        mkdirSync(packageRoot, { recursive: true, },);
+        writeFileSync(
+          join(projectRoot.path, 'package.json',),
+          '{"name":"effect-consumer","private":true,"type":"module"}\n',
+        );
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true,"module":"NodeNext","moduleResolution":"NodeNext"},"include":["input.ts"]}\n',
+        );
+        writeFileSync(
+          join(projectRoot.path, 'pnpm-lock.yaml',),
+          "lockfileVersion: '9.0'\npackages:\n  effect-probe@1.2.3: {}\n",
+        );
+        writeFileSync(
+          join(packageRoot, 'package.json',),
+          '{"name":"effect-probe","version":"1.2.3","type":"module","exports":{".":{"types":"./index.d.ts","node":"./node.js","import":"./index.js"},"./typed":{"types":"./typed.d.ts","import":"./typed.ts"},"./missing":{"types":"./missing.d.ts","import":"./missing.js"}}}\n',
+        );
+        writeFileSync(
+          join(packageRoot, 'index.d.ts',),
+          'export declare function observe(value: { text: string; }): string;\nexport declare function observe(value: { text: string; }, fallback: string): string;\nexport declare function mutate(value: { text: string; }): string;\nexport declare const toolkit: { mutate(value: { text: string; }): string; };\nexport declare class Toolkit { static mutate(value: { text: string; }): string; mutate(value: { text: string; }): string; }\nexport declare function visit(value: { text: string; }, callback: (value: { text: string; }) => void): void;\n',
+        );
+        writeFileSync(
+          join(packageRoot, 'node.js',),
+          "export { mutate, observe, Toolkit, toolkit, visit, } from './internal.js';\n//# sourceMappingURL=node.js.map\n",
+        );
+        writeFileSync(
+          join(packageRoot, 'node.js.map',),
+          '{"version":3,"file":"node.js","sources":["source.js"],"names":[],"mappings":""}\n',
+        );
+        writeFileSync(
+          join(packageRoot, 'index.js',),
+          "export { observe, Toolkit, toolkit, visit, } from './internal.js';\nexport function mutate(value) { return value.text; }\n",
+        );
+        writeFileSync(
+          join(packageRoot, 'source.js',),
+          "export { mutate, observe, Toolkit, toolkit, visit, } from './internal.js';\n",
+        );
+        writeFileSync(
+          join(packageRoot, 'internal.js',),
+          "export function observe(value) { return value.text; }\nexport function mutate(value) { value.text = 'changed'; return value.text; }\nexport const toolkit = { mutate(value) { value.text = 'object'; return value.text; } };\nexport class Toolkit { static mutate(value) { value.text = 'static'; return value.text; } mutate(value) { value.text = 'instance'; return value.text; } }\nexport function visit(value, callback) { callback(value); }\n",
+        );
+        writeFileSync(
+          join(packageRoot, 'typed.d.ts',),
+          'export declare function typedMutate(value: { text: string; }): string;\n',
+        );
+        writeFileSync(
+          join(packageRoot, 'typed.ts',),
+          "export function typedMutate(value: { text: string; }): string { value.text = 'typed'; return value.text; }\n",
+        );
+        writeFileSync(
+          join(packageRoot, 'missing.d.ts',),
+          'export declare function missing(value: { text: string; }): string;\n',
+        );
+        /** Consumer wrappers covering re-exported JS, overloads, shipped TS, and missing implementation. */
+        const inputSource = "import { mutate, observe, Toolkit, toolkit, visit, } from 'effect-probe';\nimport { missing, } from 'effect-probe/missing';\nimport { typedMutate, } from 'effect-probe/typed';\nexport function observed(value: { text: string; }): string { return observe(value); }\nexport function mutated(value: { text: string; }): string { return mutate(value); }\nexport function objectMutated(value: { text: string; }): string { return toolkit.mutate(value); }\nconst toolkitInstance = new Toolkit();\nexport function staticMutated(value: { text: string; }): string { return Toolkit.mutate(value); }\nexport function instanceMutated(value: { text: string; }): string { return toolkitInstance.mutate(value); }\nexport function typedMutated(value: { text: string; }): string { return typedMutate(value); }\nexport function visited(value: { text: string; }, callback: (value: { text: string; }) => void): void { visit(value, callback); }\nexport function unresolved(value: { text: string; }): string { return missing(value); }\n";
+        /** Consumer source path. */
+        const inputPath = join(projectRoot.path, 'input.ts',);
+        writeFileSync(inputPath, inputSource,);
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const session = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        const effects = [
+          'observed',
+          'mutated',
+          'objectMutated',
+          'staticMutated',
+          'instanceMutated',
+          'typedMutated',
+          'unresolved',
+        ].map(function wrapperEffect(functionName,) {
+          const nameNode = session.nodeAtOffset(inputSource.indexOf(functionName,),);
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected package wrapper ${functionName}.`,);
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected package wrapper summary ${functionName}.`,);
+          return {
+            functionName,
+            mutated: [...summary.referentMutatedParameterIndexes,],
+            opaque: [...summary.opaqueParameterIndexes,],
+          };
+        },);
+        expect(effects,).toEqual([
+          {
+            functionName: 'observed',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'mutated',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'objectMutated',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'staticMutated',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'instanceMutated',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'typedMutated',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'unresolved',
+            mutated: [],
+            opaque: [0,],
+          },
+        ],);
+        /** Wrapper declaration for unresolved external callback relation. */
+        const visitedName = session.nodeAtOffset(inputSource.indexOf('visited',),);
+        /** Function declaration receiving callback and forwarded value. */
+        const visitedDeclaration = visitedName.parent;
+        if (!isFunctionLikeDeclaration(visitedDeclaration,))
+          throw new Error('Expected visited package wrapper.',);
+        /** Summary retaining callback invocation and fail-closed source relation. */
+        const visitedSummary = index.get(visitedDeclaration,);
+        if (visitedSummary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected visited package wrapper summary.',);
+        expect({
+          referentMutated: [...visitedSummary.referentMutatedParameterIndexes,],
+          invoked: [...visitedSummary.invokedParameterIndexes,],
+          opaque: [...visitedSummary.opaqueParameterIndexes,],
+        },).toEqual({
+          referentMutated: [],
+          invoked: [1,],
+          opaque: [0,],
+        },);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'reuses direct scans in process and through persistent cache',
       fn: async () => {
         using cache = disposableCacheDirectory();
@@ -448,13 +613,27 @@ await describe({
         expect(processStats.directSummaryBuildCount,).toBe(0,);
         expect(processStats.sourceCacheHitCount,).toBe(persistentStats.sourceCacheHitCount,);
         expect(finalStats.hitCount > 0,).toBe(true,);
+        /** Different active source from same unchanged configured project. */
+        const helperSession = openSemanticFile({
+          fileName: HELPER_PATH,
+          sourceText: readFileSync(HELPER_PATH, 'utf8',),
+          hasBOM: false,
+        },);
+        buildEffectSummaryIndex({
+          project: helperSession.project,
+          activeSourceFile: helperSession.sourceFile,
+          cacheRootOverride: cache.path,
+        },);
+        /** Fixed-point cache counters after changing only active source path. */
+        const crossFileStats = finalEffectIndexCacheStats();
+        expect(crossFileStats.hitCount > finalStats.hitCount,).toBe(true,);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
       },
     },),
     it({
-      name: 'invalidates unchanged caller summaries when project dependency changes',
+      name: 'invalidates unchanged caller summaries when dependency changes across bridge lifecycle',
       fn: async () => {
         using projectRoot = disposableCacheDirectory();
         /** Disposable persistent cache root separated from TypeScript inputs. */
@@ -493,7 +672,6 @@ await describe({
           'export function inspect(value: { text: string; },): string { value.text = value.text.trim(); return value.text; }\n',
         );
         clearEffectSummaryCache();
-        clearFinalEffectIndexCache();
         const changedSession = openSemanticFile({
           fileName: inputPath,
           sourceText: readFileSync(inputPath, 'utf8',),
@@ -506,7 +684,10 @@ await describe({
         },);
         /** Counters proving project fingerprint rejected stale caller entry. */
         const changedStats = effectSummaryCacheStats();
+        /** Final-index writes proving new semantic lifecycle recomputed project. */
+        const changedFinalStats = finalEffectIndexCacheStats();
         expect(changedStats.directSummaryBuildCount > 0,).toBe(true,);
+        expect(changedFinalStats.writeCount,).toBe(1,);
         expect(changedStats.persistentSourceCacheHitCount,).toBe(0,);
         closeSemanticBridge();
         clearEffectSummaryCache();

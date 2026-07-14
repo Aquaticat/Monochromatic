@@ -216,7 +216,8 @@ A later CLI invocation therefore cannot reuse ordinary JavaScript module state f
 
 The semantic rule uses both scopes deliberately:
 
-- a process-local final-index cache reuses completed fixed-point propagation across unchanged files in one run;
+- a process-local final-index cache reuses completed fixed-point propagation across unchanged files in one stable
+  Oxlint input snapshot;
 - content-addressed data-only JSON persists direct summaries across processes;
 - the persistent identity includes analyzer code,
   TypeScript version,
@@ -229,6 +230,11 @@ The semantic rule uses both scopes deliberately:
   entry-size limits,
   atomic publication,
   and periodic age/count/byte eviction turn corrupt or stale data into misses.
+
+`closeSemanticBridge()` closes external implementation projects and clears every process-local effect,
+lockfile,
+and final-index cache.
+This lifecycle boundary prevents a later invocation in the same host process from inheriting prior snapshot state.
 
 Package tests run the built analyzer in independent Node processes and prove that the second process reads persistent
 summaries without rebuilding direct summaries.

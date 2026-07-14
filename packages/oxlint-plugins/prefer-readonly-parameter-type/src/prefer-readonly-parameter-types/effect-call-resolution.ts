@@ -216,6 +216,8 @@ export function parameterIndexes({
  *
  * @param node - Callee or callback expression.
  *
+ * @param analysisRoot - Optional external implementation root accepted as inspectable source.
+ *
  * @returns owned function-like declaration or sentinel.
  *
  * @example
@@ -226,9 +228,11 @@ export function parameterIndexes({
 export function callableDeclaration({
   project,
   node,
+  analysisRoot,
 }: {
   readonly project: Project;
   readonly node: Node;
+  readonly analysisRoot?: string;
 },): EffectCallableDeclaration | typeof OWNED_CALLABLE_UNAVAILABLE {
   /**
    * Cursor follows callable variable aliases iteratively.
@@ -285,11 +289,15 @@ export function callableDeclaration({
    * Source file used to reject declaration and external-library boundaries.
    */
   const sourceFile = declaration.getSourceFile();
-  return sourceFile.isDeclarationFile
-    || project.program
-    .isSourceFileFromExternalLibrary(sourceFile,)
-    ? OWNED_CALLABLE_UNAVAILABLE
-    : declaration;
+  if (sourceFile.isDeclarationFile)
+    return OWNED_CALLABLE_UNAVAILABLE;
+  if ((!project.program
+    .isSourceFileFromExternalLibrary(sourceFile,))
+    || ((analysisRoot !== undefined)
+      && sourceFile.fileName
+      .startsWith(analysisRoot,)))
+    return declaration;
+  return OWNED_CALLABLE_UNAVAILABLE;
 }
 
 /**

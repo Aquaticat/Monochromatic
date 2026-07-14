@@ -23,7 +23,12 @@ import {
   NO_INTRINSIC_QUERY,
 } from './intrinsic-effect-query.ts';
 import { applyAuditedCallableEffect, } from './effect-imported-callable.ts';
-import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
+import { applyExternalEffect, } from './effect-external-application.ts';
+import {
+  type ExternalCallableEffectResolver,
+  EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE,
+} from './external-callable-effect.ts';
+import { addOwnedCallEdge, } from './effect-owned-call-edge.ts';
 import { effectCallName, } from './effect-call-name.ts';
 import {
   expressionCanCarryMutableState,
@@ -31,7 +36,6 @@ import {
 } from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
-  callableKey,
   isEffectCallableDeclaration,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
@@ -44,10 +48,6 @@ import {
   parameterIndex,
   parameterIndexes,
 } from './effect-call-resolution.ts';
-import {
-  MUTATION_CONTRACT_UNAVAILABLE,
-  mutationContractsForDeclaration,
-} from './mutation-contract-query.ts';
 import { addIntrinsicCallbackEffects, } from './effect-intrinsic-callback.ts';
 import {
   isGlobalStringConversion,
@@ -69,6 +69,10 @@ import {
  *
  * @param foreignInbound - Whether call belongs directly to summary callable.
  *
+ * @param analysisRoot - Optional external implementation root accepted for owned call edges.
+ *
+ * @param externalEffectResolver - Demand-driven package implementation analyzer.
+ *
  * @mutates summary - Adds call, mutation, callback, or opaque effect facts.
  *
  * @example
@@ -83,6 +87,8 @@ export function inspectEffectCall({
   call,
   summary,
   foreignInbound,
+  analysisRoot,
+  externalEffectResolver,
 }: {
   readonly project: Project;
   readonly checker: Checker;
@@ -90,6 +96,8 @@ export function inspectEffectCall({
   readonly call: CallExpression;
   readonly summary: MutableEffectSummary;
   readonly foreignInbound: boolean;
+  readonly analysisRoot?: string;
+  readonly externalEffectResolver: ExternalCallableEffectResolver;
 },): void {
   /**
    * Index when direct callee identifier is current callback parameter.
@@ -252,6 +260,7 @@ export function inspectEffectCall({
     ? callableDeclaration({
       project,
       node: resolvedDeclaration,
+      ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },)
     : OWNED_CALLABLE_UNAVAILABLE;
   /**
@@ -261,6 +270,7 @@ export function inspectEffectCall({
     ? callableDeclaration({
       project,
       node: call.expression,
+      ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },)
     : signatureCallee;
   /**
@@ -275,72 +285,37 @@ export function inspectEffectCall({
         includedPropertyNames: ALL_PACKAGED_PROPERTIES,
       },);
     },);
-  if (callee !== OWNED_CALLABLE_UNAVAILABLE) {
+  if ((callee === OWNED_CALLABLE_UNAVAILABLE)
+    && (resolvedDeclaration !== undefined)) {
     /**
-     * Authored mutation contracts identifying destructured callee targets.
+     * Demand-driven effect inferred from exact shipped package implementation.
      */
-    const contracts = mutationContractsForDeclaration({
-      declaration: callee,
-      sourceFile: callee.getSourceFile(),
+    const externalEffect = externalEffectResolver({
+      consumerProject: project,
+      call,
+      declaration: resolvedDeclaration,
     },);
-    /**
-     * Object property names that callee declares as mutable.
-     */
-    const mutatedPropertyNames = contracts === MUTATION_CONTRACT_UNAVAILABLE
-      ? ALL_PACKAGED_PROPERTIES
-      : new Set(contracts.blocks
-        .map(function mutationTarget(block,): string {
-          return block.parameterName;
-        },),);
-    /**
-     * Caller origins narrowed to declared destructured mutation targets.
-     */
-    const argumentIndexes = call.arguments
-      .map(function ownedArgumentIndex(
-        argument,
-        argumentIndex,
-      ): readonly number[] {
-        /**
-         * Callee parameter receiving current argument.
-         */
-        const parameter = callee.parameters[argumentIndex];
-        return parameterIndexes({
-          checker,
-          bindingOriginBySymbolId,
-          node: argument,
-          includedPropertyNames: (parameter !== undefined)
-            && isIdentifier(parameter.name,)
-            ? ALL_PACKAGED_PROPERTIES
-            : mutatedPropertyNames,
-        },);
+    if (externalEffect !== EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE) {
+      applyExternalEffect({
+        externalEffect,
+        argumentIndexes: allArgumentIndexes,
+        summary,
       },);
-    summary.calls
-      .push({
-        calleeKey: callableKey(callee,),
-        arguments: argumentIndexes,
-        foreignArguments: allArgumentIndexes,
-        directForeignArguments: call.arguments
-          .map(function foreignArgument(argument,): boolean {
-            return expressionContainsForeignBorrowed({
-              project,
-              node: argument,
-            },);
-          },),
-        foreignInbound,
-        callbackKeys: call.arguments
-          .map(function callbackKey(argument,) {
-            /**
-             * Owned callback declaration for current argument.
-             */
-            const callback = callableDeclaration({
-              project,
-              node: argument,
-            },);
-            return callback === OWNED_CALLABLE_UNAVAILABLE
-              ? OWNED_CALLABLE_UNAVAILABLE
-              : callableKey(callback,);
-          },),
-      },);
+      return;
+    }
+  }
+  if (callee !== OWNED_CALLABLE_UNAVAILABLE) {
+    addOwnedCallEdge({
+      project,
+      checker,
+      bindingOriginBySymbolId,
+      call,
+      callee,
+      allArgumentIndexes,
+      summary,
+      foreignInbound,
+      ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+    },);
     return;
   }
 

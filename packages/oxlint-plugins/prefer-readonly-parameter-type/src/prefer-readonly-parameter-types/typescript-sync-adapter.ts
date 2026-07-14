@@ -20,6 +20,7 @@ import type {
   SourceFile,
 } from 'typescript/unstable/ast';
 
+import { resetSemanticEffectCaches, } from './effect-cache-lifecycle.ts';
 import {
   cachedProjectForFile,
   type SemanticBridgeCacheStats,
@@ -489,6 +490,7 @@ export function semanticBridgeCacheStats(): SemanticBridgeCacheStats {
  * ```
  */
 export function closeSemanticBridge(): void {
+  resetSemanticEffectCaches();
   /**
    * Function-tagged cleanup lifecycle logger.
    */

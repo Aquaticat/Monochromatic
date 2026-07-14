@@ -88,12 +88,23 @@ Full nested payload validation,
 entry-size limits,
 atomic writes,
 and age/count/byte maintenance make malformed or stale entries conservative misses.
-A process-local final-index cache avoids repeated fixed-point propagation for unchanged project snapshots.
+A process-local final-index cache avoids repeated fixed-point propagation within one stable Oxlint input snapshot.
+Closing the semantic bridge clears process caches before another lifecycle.
 Focused tests cover independent-process hits,
 project-dependency invalidation,
 and corrupt nested payload rejection.
-Invocation-time external implementation inference remains the next incomplete layer;
-the persistent cache does not broaden current catalog coverage.
+Invocation-time locked-package inference now resolves package exports,
+shipped JavaScript or TypeScript,
+runtime re-exports,
+overloads,
+source-map evidence,
+object methods,
+and static or instance class methods.
+Missing implementations,
+dynamic targets,
+unknown transitive calls,
+and unresolved callback data relations remain fail-closed.
+Authoritative native host inference remains the next incomplete layer.
 
 The TSDoc contract phase is complete:
 

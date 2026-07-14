@@ -4,7 +4,7 @@
  * @module
  */
 
-import type { EffectSummaryIndex, } from './effect-summaries.ts';
+import type { EffectSummaryIndex, } from './effect-summary-index.ts';
 
 /**
  * Sentinel when process-local project index cannot be reused.
@@ -18,7 +18,7 @@ export const FINAL_EFFECT_INDEX_CACHE_MISS: unique symbol = Symbol(
  */
 type CachedFinalEffectIndex = {
   readonly fileListDigest: string;
-  readonly sourceDigests: ReadonlyMap<string, string>;
+  readonly sourceSignatures: ReadonlyMap<string, string>;
   readonly index: EffectSummaryIndex;
 };
 
@@ -44,33 +44,54 @@ export type FinalEffectIndexCacheStats = {
 };
 
 /**
- * Reads final index when project membership and active source remain exact.
+ * Tests whether every project source signature remains unchanged.
+ *
+ * @param left - Cached source signatures.
+ *
+ * @param right - Current source signatures.
+ *
+ * @returns whether maps contain identical keys and values.
+ */
+function sourceSignaturesEqual({
+  left,
+  right,
+}: {
+  readonly left: ReadonlyMap<string, string>;
+  readonly right: ReadonlyMap<string, string>;
+}): boolean {
+  if (left.size !== right.size)
+    return false;
+  for (const [fileName, signature,] of left) {
+    if (right.get(fileName,) !== signature)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * Reads final index when project membership and every source remain exact.
  *
  * @param projectKey - Configured TypeScript project identity.
  *
  * @param fileListDigest - Current sorted project-file identity.
  *
- * @param activeFileName - Current Oxlint source path.
- *
- * @param activeSourceDigest - Current source-text identity.
+ * @param sourceSignatures - Current project source snapshot signatures.
  *
  * @returns reusable final index or miss sentinel.
  *
  * @example
  * ```ts
- * cachedFinalEffectIndex({ projectKey, fileListDigest, activeFileName, activeSourceDigest });
+ * cachedFinalEffectIndex({ projectKey, fileListDigest, sourceSignatures });
  * ```
  */
 export function cachedFinalEffectIndex({
   projectKey,
   fileListDigest,
-  activeFileName,
-  activeSourceDigest,
+  sourceSignatures,
 }: {
   readonly projectKey: string;
   readonly fileListDigest: string;
-  readonly activeFileName: string;
-  readonly activeSourceDigest: string;
+  readonly sourceSignatures: ReadonlyMap<string, string>;
 }): EffectSummaryIndex | typeof FINAL_EFFECT_INDEX_CACHE_MISS {
   /**
    * Prior fixed-point index for configured project.
@@ -78,9 +99,10 @@ export function cachedFinalEffectIndex({
   const cached = finalIndexByProject.get(projectKey,);
   if ((cached === undefined)
     || (cached.fileListDigest !== fileListDigest)
-    || (cached.sourceDigests
-      .get(activeFileName,)
-      !== activeSourceDigest))
+    || (!sourceSignaturesEqual({
+      left: cached.sourceSignatures,
+      right: sourceSignatures,
+    },)))
     return FINAL_EFFECT_INDEX_CACHE_MISS;
   counters.hitCount++;
   return cached.index;
@@ -93,31 +115,31 @@ export function cachedFinalEffectIndex({
  *
  * @param fileListDigest - Sorted project-file identity.
  *
- * @param sourceDigests - Exact source identities from full fingerprint.
+ * @param sourceSignatures - Current project source snapshot signatures.
  *
  * @param index - Immutable final summary lookup.
  *
  * @example
  * ```ts
- * cacheFinalEffectIndex({ projectKey, fileListDigest, sourceDigests, index });
+ * cacheFinalEffectIndex({ projectKey, fileListDigest, sourceSignatures, index });
  * ```
  */
 export function cacheFinalEffectIndex({
   projectKey,
   fileListDigest,
-  sourceDigests,
+  sourceSignatures,
   index,
 }: {
   readonly projectKey: string;
   readonly fileListDigest: string;
-  readonly sourceDigests: ReadonlyMap<string, string>;
+  readonly sourceSignatures: ReadonlyMap<string, string>;
   readonly index: EffectSummaryIndex;
 }): void {
   finalIndexByProject.set(
     projectKey,
     {
       fileListDigest,
-      sourceDigests: new Map(sourceDigests,),
+      sourceSignatures: new Map(sourceSignatures,),
       index,
     },
   );

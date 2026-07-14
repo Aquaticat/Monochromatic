@@ -14,13 +14,17 @@ import {
   cacheFinalEffectIndex,
   FINAL_EFFECT_INDEX_CACHE_MISS,
 } from './effect-final-index-cache.ts';
-import { effectProjectFingerprint, } from './effect-project-fingerprint.ts';
+import {
+  effectProjectFingerprint,
+  effectProjectSourceSignatures,
+} from './effect-project-fingerprint.ts';
 import {
   directSummariesForSource,
   pruneDirectSummaryCache,
 } from './effect-summary-cache.ts';
 import { contentDigest, } from './effect-summary-cache-identity.ts';
 import { propagateInvokedCapabilities, } from './effect-invoked-capability.ts';
+import { externalCallableEffect, } from './external-callable-effect.ts';
 import { propagateCalleeIndexes, } from './effect-propagation-indexes.ts';
 import {
   callableKey,
@@ -30,6 +34,11 @@ import {
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
+import {
+  type CallableEffectSummary,
+  type EffectSummaryIndex,
+  NO_EFFECT_SUMMARY,
+} from './effect-summary-index.ts';
 import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
 
 /**
@@ -42,44 +51,11 @@ const EFFECT_DIMENSION_COUNT = 4;
  */
 const NO_EXCLUDED_EFFECT_INDEXES: ReadonlySet<number> = new Set();
 
-/**
- * Readonly effect summary exposed to rule verification.
- *
- * @example
- * ```ts
- * if (summary.mutatedParameterIndexes.has(0)) {
- *   // first parameter may be mutated
- * }
- * ```
- */
-export type CallableEffectSummary = {
-  readonly mutatedParameterIndexes: ReadonlySet<number>;
-  readonly referentMutatedParameterIndexes: ReadonlySet<number>;
-  readonly invokedParameterIndexes: ReadonlySet<number>;
-  readonly documentedUncertainParameterIndexes: ReadonlySet<number>;
-  readonly opaqueParameterIndexes: ReadonlySet<number>;
-  readonly opaqueProvenanceByParameter: ReadonlyMap<number, ReadonlySet<string>>;
-  readonly foreignBorrowedParameterIndexes: ReadonlySet<number>;
-};
-
-/**
- * Whole-project effect lookup tied to one TypeScript snapshot project.
- */
-export type EffectSummaryIndex = {
-  /**
-   * Looks up summary for exact callable declaration node.
-   */
-  readonly get: (
-    declaration: EffectCallableDeclaration,
-  ) => CallableEffectSummary | typeof NO_EFFECT_SUMMARY;
-};
-
-/**
- * Sentinel when declaration is outside indexed owned source.
- */
-export const NO_EFFECT_SUMMARY: unique symbol = Symbol(
-  'declaration lacks indexed CallableEffectSummary',
-);
+export {
+  type CallableEffectSummary,
+  type EffectSummaryIndex,
+  NO_EFFECT_SUMMARY,
+} from './effect-summary-index.ts';
 
 /**
  * Propagates direct, transitive, recursive, and higher-order effects to fixed point.
@@ -186,6 +162,8 @@ function propagateEffects(
  *
  * @param cacheRootOverride - Optional disposable persistent cache root used by tests.
  *
+ * @param analysisRoot - Optional external implementation root included despite library classification.
+ *
  * @returns exact declaration summary lookup.
  *
  * @example
@@ -197,11 +175,17 @@ export function buildEffectSummaryIndex({
   project,
   activeSourceFile,
   cacheRootOverride,
+  analysisRoot,
 }: {
   readonly project: Project;
   readonly activeSourceFile: SourceFile;
   readonly cacheRootOverride?: string;
+  readonly analysisRoot?: string;
 },): EffectSummaryIndex {
+  /**
+   * Process cache identity including optional external analysis scope.
+   */
+  const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}`;
   /**
    * Stable configured project membership for process-local reuse.
    */
@@ -215,17 +199,20 @@ export function buildEffectSummaryIndex({
    */
   const fileListDigest = contentDigest(fileNames.join('\0',),);
   /**
-   * Current overlay source identity checked against cached project snapshot.
+   * Current process snapshot signatures for every project source.
    */
-  const activeSourceDigest = contentDigest(activeSourceFile.text,);
+  const sourceSignatures = effectProjectSourceSignatures({
+    project,
+    activeSourceFile,
+    fileNames,
+  },);
   /**
    * Final fixed-point index reusable for unchanged project snapshot.
    */
   const cachedIndex = cachedFinalEffectIndex({
-    projectKey: project.configFileName,
+    projectKey: cacheProjectKey,
     fileListDigest,
-    activeFileName: activeSourceFile.fileName,
-    activeSourceDigest,
+    sourceSignatures,
   },);
   if (cachedIndex !== FINAL_EFFECT_INDEX_CACHE_MISS)
     return cachedIndex;
@@ -236,6 +223,12 @@ export function buildEffectSummaryIndex({
     project,
     activeSourceFile,
   },);
+  /**
+   * Direct-summary identity including analysis-scope policy.
+   */
+  const projectDigest = contentDigest(
+    `${projectFingerprint.digest}\0${analysisRoot ?? ''}`,
+  );
   /**
    * Mutable summaries keyed by stable declaration identity.
    */
@@ -265,7 +258,9 @@ export function buildEffectSummaryIndex({
      */
     const isExternalLibrary = project.program
       .isSourceFileFromExternalLibrary(sourceFile,);
-    if ((!isActiveSource) && isExternalLibrary)
+    if ((!isActiveSource)
+      && isExternalLibrary
+      && ((analysisRoot === undefined) || (!fileName.startsWith(analysisRoot,))))
       return;
     activeFiles.add(fileName,);
     /**
@@ -273,7 +268,7 @@ export function buildEffectSummaryIndex({
      */
     const fileSummaries = directSummariesForSource({
       projectKey: project.configFileName,
-      projectDigest: projectFingerprint.digest,
+      projectDigest,
       fileName,
       sourceText: sourceFile.text,
       ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
@@ -294,6 +289,21 @@ export function buildEffectSummaryIndex({
             directEffectSummary({
               project,
               declaration,
+              ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+              externalEffectResolver({
+                consumerProject,
+                call,
+                declaration: externalDeclaration,
+              },) {
+                return externalCallableEffect({
+                  consumerProject,
+                  call,
+                  declaration: externalDeclaration,
+                  buildIndex(options,) {
+                    return buildEffectSummaryIndex(options,);
+                  },
+                },);
+              },
             },),
           ];
         },),);
@@ -345,13 +355,14 @@ export function buildEffectSummaryIndex({
         opaqueParameterIndexes: summary.opaque,
         opaqueProvenanceByParameter: summary.opaqueProvenanceByParameter,
         foreignBorrowedParameterIndexes: foreignByCallable.get(key,) ?? new Set<number>(),
+        callbackRelations: [...summary.relations,],
       };
     },
   };
   cacheFinalEffectIndex({
-    projectKey: project.configFileName,
+    projectKey: cacheProjectKey,
     fileListDigest: projectFingerprint.fileListDigest,
-    sourceDigests: projectFingerprint.sourceDigests,
+    sourceSignatures,
     index,
   },);
   return index;

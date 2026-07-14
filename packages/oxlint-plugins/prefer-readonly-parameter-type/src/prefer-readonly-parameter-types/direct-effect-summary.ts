@@ -33,6 +33,7 @@ import {
 } from './effect-binding-origins.ts';
 import { bindingContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 import { inspectEffectCall, } from './effect-call-analysis.ts';
+import type { ExternalCallableEffectResolver, } from './external-callable-effect.ts';
 import {
   MUTATION_CONTRACT_UNAVAILABLE,
   mutationContractsForDeclaration,
@@ -128,6 +129,10 @@ function declarationDirectlyOwnsNode({
  *
  * @param declaration - Callable declaration to inspect.
  *
+ * @param analysisRoot - Optional external implementation root accepted for transitive calls.
+ *
+ * @param externalEffectResolver - Demand-driven package implementation analyzer.
+ *
  * @returns mutable summary seeded with direct effects.
  *
  * @example
@@ -138,9 +143,13 @@ function declarationDirectlyOwnsNode({
 export function directEffectSummary({
   project,
   declaration,
+  analysisRoot,
+  externalEffectResolver,
 }: {
   readonly project: Project;
   readonly declaration: EffectCallableDeclaration;
+  readonly analysisRoot?: string;
+  readonly externalEffectResolver: ExternalCallableEffectResolver;
 },): MutableEffectSummary {
   /**
    * TypeScript checker for current project.
@@ -319,6 +328,8 @@ export function directEffectSummary({
         bindingOriginBySymbolId,
         call: node,
         summary,
+        ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+        externalEffectResolver,
         foreignInbound: declarationDirectlyOwnsNode({
           node,
           declaration,

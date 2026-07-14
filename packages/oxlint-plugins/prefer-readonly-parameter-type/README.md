@@ -10,11 +10,11 @@ The rule combines TypeScript 7 semantic types with whole-project mutation summar
 - nonmutating structural data requires an honest deep-readonly type;
 - proven caller-observable effects permit mutable parameter types and make `@mutates` optional;
 - unresolved possible effects require complete repeatable `@mutates` contracts;
-- exact platform and package effects are audited by owner,
+- locked package calls resolve lazily through package exports to shipped JavaScript or TypeScript implementations;
+- exact native platform effects use audited owner,
   member,
   declaration provenance,
-  evidence,
-  and package major;
+  and evidence;
 - unresolved calls fail closed with diagnostics naming affected inputs,
   calls,
   uncertainty,
@@ -25,6 +25,9 @@ The rule combines TypeScript 7 semantic types with whole-project mutation summar
 
 CLI diagnostics are authoritative because Oxlint's language server does not execute JavaScript plugins.
 Semantic-plugin lint and fix tasks use one Oxlint worker because TypeScript bridge state is process-local.
+Process-local final-index reuse assumes Oxlint's input snapshot stays stable for one bridge lifecycle.
+`closeSemanticBridge()` clears every process cache;
+persistent cache entries use complete content fingerprints across later Oxlint processes.
 
 ## Ownership marker
 
@@ -65,7 +68,7 @@ Unknown calls list every supported remediation:
 
 - remove or rewrite the call;
 - include repository-owned implementation in the nearest TypeScript project;
-- audit exact external callable and add a tested catalogue entry;
+- expose an inspectable locked package implementation or audit an exact native callable with tested evidence;
 - document every actual possible effect with `@mutates`.
 
 Never add `@mutates` for effects known to be absent.
