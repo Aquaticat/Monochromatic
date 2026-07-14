@@ -5,7 +5,9 @@
  */
 
 import { BROWSER_HOST_ABORT_EFFECTS, } from './browser-host-abort-effect-catalog.ts';
+import { BROWSER_HOST_CANVAS_EFFECTS, } from './browser-host-canvas-effect-catalog.ts';
 import { BROWSER_HOST_ELEMENT_EFFECTS, } from './browser-host-element-effect-catalog.ts';
+import { BROWSER_HOST_FILE_EFFECTS, } from './browser-host-file-effect-catalog.ts';
 import {
   WEB_SOURCES,
   webAuthority,
@@ -141,7 +143,9 @@ export const BROWSER_HOST_EFFECTS: readonly IntrinsicEffectEntry[] = [
     },),
   },),
   ...BROWSER_HOST_ABORT_EFFECTS,
+  ...BROWSER_HOST_CANVAS_EFFECTS,
   ...BROWSER_HOST_ELEMENT_EFFECTS,
+  ...BROWSER_HOST_FILE_EFFECTS,
   {
     provenance: { kind: 'dom', },
     ownerType: 'EventTarget',

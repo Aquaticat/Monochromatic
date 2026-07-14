@@ -64,6 +64,24 @@ Each entry uses the exact source-derived `<dfn method>` hash from the pinned DOM
 The CSSOM View source is pinned separately from CSSOM because they are distinct authored specifications even though
 both sources share one CSSWG repository revision.
 
+The canvas audit uses HTML's source algorithms and TypeScript's declaration mixin owners:
+
+- `HTMLCanvasElement.getContext` and `OffscreenCanvas.getContext` change canvas context mode and return the rendering
+  context;
+- `CanvasRect.clearRect` erases receiver bitmap pixels;
+- `CanvasDrawPath.beginPath` and `CanvasPath.moveTo` or `lineTo` change the receiver's current path;
+- `CanvasDrawPath.stroke` and `CanvasDrawImage.drawImage` paint the receiver canvas bitmap.
+
+Every operation is a receiver effect.
+`drawImage` observes its source image argument but does not claim to mutate or retain it.
+
+The File API audit keeps immutable byte observation separate from host retention:
+
+- `Blob.text` reads blob bytes without changing caller-owned state;
+- `FileList.item` returns one indexed file without changing the list;
+- `URL.createObjectURL` retains its blob in the host blob URL store until revocation,
+  so the blob remains an opaque relation rather than a direct mutation target.
+
 ### Node
 
 Node embeds JavaScript built-in module source in its executable.
@@ -144,6 +162,7 @@ or Node.
 - [Web IDL standard][web-idl]
 - [DOM Standard][dom-standard]
 - [CSSOM View Module][cssom-view]
+- [File API][file-api]
 - [Node `BuiltinLoader` source for v26.5.0][node-builtins]
 - [Node deprecation `DEP0111`][node-dep0111]
 
@@ -152,5 +171,6 @@ or Node.
 [web-idl]: https://webidl.spec.whatwg.org/
 [dom-standard]: https://dom.spec.whatwg.org/
 [cssom-view]: https://drafts.csswg.org/cssom-view/
+[file-api]: https://w3c.github.io/FileAPI/
 [node-builtins]: https://github.com/nodejs/node/blob/v26.5.0/src/node_builtins.h
 [node-dep0111]: https://nodejs.org/docs/latest-v26.x/api/deprecations.html#dep0111-processbinding

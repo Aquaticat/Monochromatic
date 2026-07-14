@@ -224,6 +224,56 @@ await describe({
       },
     },),
     it({
+      name: 'records audited canvas receiver effects',
+      fn: async () => {
+        expect([
+          { ownerType: 'HTMLCanvasElement', member: 'getContext', },
+          { ownerType: 'OffscreenCanvas', member: 'getContext', },
+          { ownerType: 'CanvasRect', member: 'clearRect', },
+          { ownerType: 'CanvasDrawImage', member: 'drawImage', },
+          { ownerType: 'CanvasDrawPath', member: 'beginPath', },
+          { ownerType: 'CanvasDrawPath', member: 'stroke', },
+          { ownerType: 'CanvasPath', member: 'lineTo', },
+          { ownerType: 'CanvasPath', member: 'moveTo', },
+        ].every(function canvasMutation(query,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'dom', },
+            ...query,
+          },);
+          if (effect === NO_INTRINSIC_EFFECT)
+            return false;
+          if (effect.targets.length !== 1)
+            return false;
+          return effect.targets[0]?.kind === 'receiver';
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'records audited File API effects',
+      fn: async () => {
+        expect([
+          { ownerType: 'Blob', member: 'text', },
+          { ownerType: 'FileList', member: 'item', },
+        ].every(function fileObservation(query,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'dom', },
+            ...query,
+          },);
+          if (effect === NO_INTRINSIC_EFFECT)
+            return false;
+          return effect.targets.length === 0;
+        },),).toBe(true,);
+        const objectUrl = intrinsicEffect({
+          provenance: { kind: 'dom', },
+          ownerType: 'URL',
+          member: 'createObjectURL',
+        },);
+        if (objectUrl === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected URL.createObjectURL intrinsic effect.',);
+        expect(objectUrl.opaqueTargets,).toEqual([{ kind: 'argument', index: 0, },],);
+      },
+    },),
+    it({
       name: 'records audited DOM element effects',
       fn: async () => {
         const appendEffect = intrinsicEffect({

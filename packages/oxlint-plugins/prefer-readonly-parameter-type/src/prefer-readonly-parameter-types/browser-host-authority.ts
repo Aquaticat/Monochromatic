@@ -22,7 +22,7 @@ export type BrowserStandardSource = {
  * Audited standards revisions for browser-host algorithms.
  */
 export const WEB_SOURCES: Readonly<Record<
-  'cssom' | 'cssomView' | 'dom' | 'encoding' | 'html',
+  'cssom' | 'cssomView' | 'dom' | 'encoding' | 'fileApi' | 'html',
   BrowserStandardSource
 >> = {
   cssom: {
@@ -44,6 +44,11 @@ export const WEB_SOURCES: Readonly<Record<
     standard: 'Encoding',
     revision: 'a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a',
     sourceDigest: '90bd4f43b965186afd34661d5ad0f45d35f9a178da895dcc9f08f610cc031c55',
+  },
+  fileApi: {
+    standard: 'File API',
+    revision: 'cd1d1da9a5375af0622af4b36e76c6e6bd9d130b',
+    sourceDigest: '64953b2ad6f187e21ad316d4a5f40b050023b75f4ff4d7e18ccf763558eb99ab',
   },
   html: {
     standard: 'HTML',
