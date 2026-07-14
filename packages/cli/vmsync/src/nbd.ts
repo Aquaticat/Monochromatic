@@ -68,6 +68,13 @@ export async function findFreeNbdDevice(): Promise<string> {
   },);
 
   /**
+   * Immutable paths identifying one candidate NBD device.
+   */
+  type NbdCandidate = Readonly<{
+    device: string;
+    sysfsSize: string;
+  }>;
+  /**
    * Check all candidate devices concurrently and return the first free one.
    */
   const candidates = Array.from(
@@ -75,7 +82,7 @@ export async function findFreeNbdDevice(): Promise<string> {
     function buildCandidate(
       _,
       i,
-    ) {
+    ): NbdCandidate {
       return {
         device: `/dev/nbd${String(i,)}`,
         sysfsSize: `/sys/block/nbd${String(i,)}/size`,

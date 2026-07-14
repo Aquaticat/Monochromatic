@@ -4,6 +4,7 @@
  * @module
  */
 
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   access,
   readdir,
@@ -18,7 +19,10 @@ import {
   DATA_DIR,
   readConfig,
 } from './config.ts';
-import { CONFIG_FILENAME, } from './types.ts';
+import {
+  CONFIG_FILENAME,
+  type VmsyncConfig,
+} from './types.ts';
 
 /**
  * Logger root for vmsync after removing the package log shim.
@@ -172,7 +176,7 @@ export async function printVmList(): Promise<void> {
   );
 
   configs.forEach(
-    function printRow(config,) {
+    function printRow(config: ReadonlyDeep<VmsyncConfig>,) {
       /**
        * Sync state label.
        */
