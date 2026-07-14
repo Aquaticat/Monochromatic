@@ -18,7 +18,11 @@ await describe({
     it({
       name: 'returns Error message text',
       fn: async () => {
-        expect(caughtValueText(new Error('offline'),),).toBe('offline',);
+        /**
+         * Error carrying expected message.
+         */
+        const error = new Error('offline',);
+        expect(caughtValueText(error,),).toBe('offline',);
       },
     },),
     it({
@@ -59,7 +63,7 @@ await describe({
         /**
          * Error whose message is supplied by a getter.
          */
-        const error = new Error();
+        const error = new Error('replaced by getter',);
         /**
          * Number of message getter invocations.
          */
