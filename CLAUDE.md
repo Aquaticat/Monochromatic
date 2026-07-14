@@ -1165,6 +1165,11 @@ TC2:
  compare test names against implementation branches,
  confirm no untested path.
 
+CXL:
+ Semantic plugin/process cleanup must not emit bare shutdown errors such as `context canceled`.
+ Capture stderr in lifecycle tests and fix hook ordering;
+ do not filter accepted noise.
+
 ### Verify at the user boundary
 
 VUB:
