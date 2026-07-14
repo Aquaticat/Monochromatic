@@ -80,6 +80,8 @@ const MIN_ALL_EQUAL_VALUES = 2;
  *
  * @throws RangeError when an all-equal actual has fewer than two elements
  *
+ * @mutates chai - Chai plugin registration and assertion utilities may change framework state or inspect caller hooks.
+ *
  * @example
  * ```ts
  * use(collectionMatchersPlugin);
@@ -104,6 +106,8 @@ export function collectionMatchersPlugin(chai: Chai.ChaiStatic,): void {
    * @throws TypeError when the actual is not an array
    *
    * @throws RangeError when the actual has fewer than two elements
+   *
+   * @mutates assertion - Chai flag lookup may inspect assertion state and caller-defined hooks.
    */
   function readAllEqualActual(assertion: Chai.AssertionStatic,): readonly unknown[] {
     /**

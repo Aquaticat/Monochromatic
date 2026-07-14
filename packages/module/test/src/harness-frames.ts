@@ -31,6 +31,8 @@
  *
  * @returns property value, or `undefined` when absent or unreadable
  *
+ * @mutates source - `Reflect.get` may invoke caller-defined getters or proxy traps.
+ *
  * @example
  * ```ts
  * readProperty({ source: new Error('boom'), key: 'message', }) // 'boom'

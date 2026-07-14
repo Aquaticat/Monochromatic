@@ -105,6 +105,8 @@ export type MatcherSet = {
  *
  * @returns object with Jest-compatible matcher methods
  *
+ * @mutates a - Sinon-Chai assertion chains may change assertion state and inspect caller-defined hooks.
+ *
  * @example
  * ```ts
  * const matchers = buildMatchers({ a: chaiExpect(value), actual: value });

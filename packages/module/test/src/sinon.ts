@@ -21,6 +21,8 @@ export type DisposableSandbox = SinonSandbox & {
  *
  * @returns sandbox with dispose symbols attached
  *
+ * @mutates config - Sinon sandbox construction may inspect or retain caller-provided configuration capabilities.
+ *
  * @example
  * ```ts
  * await using sandbox = createSinon();

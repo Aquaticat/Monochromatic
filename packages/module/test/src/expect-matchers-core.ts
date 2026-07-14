@@ -50,6 +50,8 @@ export type CoreMatcherSet = Pick<
  *
  * @returns object with the value-comparison matcher methods
  *
+ * @mutates a - Chai assertion chains may change assertion state and inspect caller-defined hooks.
+ *
  * @example
  * ```ts
  * const coreMatchers = buildCoreMatchers({ a: chaiExpect(42) });

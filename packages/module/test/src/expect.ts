@@ -170,6 +170,13 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
    */
   const matchers = buildAsyncMatchers(getRejection,);
 
+  /**
+   * Checks rejected value against optional expectation.
+   *
+   * @param expected - Optional string, regular expression, or constructor expectation.
+   *
+   * @mutates expected - Chai matching may inspect caller-defined regular-expression or constructor hooks.
+   */
   matchers.toThrow = async function rejectsToThrow(
     expected?: string | RegExp | (abstract new(...args: never) => unknown),
   ): Promise<void> {
@@ -326,6 +333,8 @@ type Expect = ((actual: unknown,) => ExpectResult) & ExpectStatic;
  *
  * @returns object with Jest-compatible matcher methods, `.not`, `.rejects`, `.resolves`
  *
+ * @mutates actual - Chai expectation creation may inspect caller-defined hooks or retain assertion state.
+ *
  * @example
  * ```ts
  * expect(add(1, 2)).toBe(3);
@@ -384,6 +393,8 @@ expectImpl.stringContaining = function stringContaining(str: string,): SinonMatc
  *
  * @returns sinon matcher that checks regex match
  *
+ * @mutates pattern - Sinon matcher construction may inspect regular-expression state or caller-defined hooks.
+ *
  * @example
  * ```ts
  * expect(spy).toHaveBeenCalledWith(expect.stringMatching(/^hello/));
@@ -399,6 +410,8 @@ expectImpl.stringMatching = function stringMatching(pattern: RegExp,): SinonMatc
  * @param obj - Partial object to match against
  *
  * @returns sinon matcher that checks for partial object match
+ *
+ * @mutates obj - Sinon matcher construction may inspect object properties, getters, or proxy traps.
  *
  * @example
  * ```ts
@@ -432,6 +445,8 @@ expectImpl.anything = function anything(): SinonMatcher {
  *
  * @returns sinon matcher that checks `instanceof`
  *
+ * @mutates ctor - Sinon matcher construction may inspect or retain caller-provided constructor capability.
+ *
  * @example
  * ```ts
  * expect(spy).toHaveBeenCalledWith(expect.any(Error));
@@ -450,6 +465,8 @@ expectImpl.any = function any(
  * @param arr - Elements that must be present in the matched array
  *
  * @returns sinon matcher that checks array containment
+ *
+ * @mutates arr - Sinon matcher construction may inspect array accessors or proxy traps.
  *
  * @example
  * ```ts
@@ -629,6 +646,8 @@ export function createScopedExpect(): readonly [
    * @param actual - Value or spy to assert against
    *
    * @returns expect result with counted matchers
+   *
+   * @mutates actual - Chai expectation creation may inspect caller-defined hooks or retain assertion state.
    */
   function scopedExpectImpl(actual: unknown,): ExpectResult {
     /**
