@@ -221,14 +221,18 @@ function isDuplicateFallback(
 ): boolean {
   if (expression.type === 'Identifier')
     return expression.name === identifier;
-  if (expression.type === 'StringLiteral')
-    return true;
+  if (expression.type === 'Literal')
+    return (typeof expression.value) === 'string';
   if (expression.type === 'UnaryExpression') {
     return (expression.operator === 'typeof')
       && (identifierName({ expression: expression.argument, },) === identifier);
   }
   if (expression.type === 'TemplateLiteral') {
-    return expression.expressions.some(
+    /**
+     * Dynamic template expressions inspected for typeof categorization.
+     */
+    const { expressions, } = expression;
+    return expressions.some(
       function isTypeofDetectorInput(templateExpression,): boolean {
         return (templateExpression.type === 'UnaryExpression')
           && (templateExpression.operator === 'typeof')
@@ -238,9 +242,13 @@ function isDuplicateFallback(
   }
   if (expression.type !== 'CallExpression')
     return false;
-  if (expression.callee.type !== 'Identifier')
+  /**
+   * Potential direct global String call target.
+   */
+  const { callee, } = expression;
+  if (callee.type !== 'Identifier')
     return false;
-  if (expression.callee.name !== 'String')
+  if (callee.name !== 'String')
     return false;
   /**
    * Value passed to direct String conversion.
@@ -294,7 +302,11 @@ function returnsDuplicateFallback(
   }
   if (statement.type !== 'BlockStatement')
     return false;
-  return statement.body.some(function hasDuplicateFallback(childStatement,): boolean {
+  /**
+   * Nested block statements searched for fallback returns.
+   */
+  const { body, } = statement;
+  return body.some(function hasDuplicateFallback(childStatement,): boolean {
     return returnsDuplicateFallback({
       statement: childStatement,
       identifier,
