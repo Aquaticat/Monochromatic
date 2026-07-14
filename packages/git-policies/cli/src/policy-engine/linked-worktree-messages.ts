@@ -30,7 +30,10 @@ type CommandMessageOptions = {
  * ```
  */
 function unhandledGuardedCommand(command: never,): never {
-  throw new Error('cli-git: unhandled linked-worktree command.', { cause: command, },);
+  throw new Error(
+    'cli-git: unhandled linked-worktree command.',
+    { cause: command, },
+  );
 }
 
 /**
