@@ -100,7 +100,7 @@ type RawRule = {
  *  treats `]` as a class terminator unless it appears in the
  *  literal-`]` position immediately after `[` or `[^`.
  */
-function escapeResharpOnlyMeta({ pattern, }: { pattern: string; },): string {
+function escapeResharpOnlyMeta({ pattern, }: { readonly pattern: string; },): string {
   /**
    * Accumulator for the rewritten pattern, built char-by-char.
    */
@@ -184,7 +184,7 @@ function escapeResharpOnlyMeta({ pattern, }: { pattern: string; },): string {
  * Convert a betterleaks-style PCRE regex to resharp-compatible form, finishing
  * with {@link escapeResharpOnlyMeta} for the resharp-only meta characters.
  */
-function pcreToResharp({ pattern, }: { pattern: string; },): string {
+function pcreToResharp({ pattern, }: { readonly pattern: string; },): string {
   /**
    * Working copy threaded through the three rewrite passes below.
    */
@@ -217,7 +217,7 @@ function pcreToResharp({ pattern, }: { pattern: string; },): string {
  * Parse the betterleaks TOML and yield the subset of fields we care about,
  * one {@link RawRule} per parsed entry.
  */
-function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
+function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] {
   /**
    * Line-split TOML so the parser can step line-by-line via index `i`.
    */
@@ -233,7 +233,7 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
 
   /** Read a triple-quoted string starting at `lines[i]` after the `=`.
    *  Advances `i` past the closing `'''` line. */
-  function readTripleQuoted({ initial, }: { initial: string; },): string {
+  function readTripleQuoted({ initial, }: { readonly initial: string; },): string {
     // initial is the substring after `'''` on the opening line.
     if (initial.includes("'''",)) {
       /**
@@ -470,7 +470,7 @@ const DROPPED_BY_ID: ReadonlyMap<string, string> = new Map([
  * Render one rule as a forbidden-strings entry (comments + regex line),
  * applying any {@link RELAXATIONS} entry before converting via {@link pcreToResharp}.
  */
-function renderRule({ rule, }: { rule: RawRule; },): string {
+function renderRule({ rule, }: { readonly rule: RawRule; },): string {
   /**
    * Accumulator for the output block; joined with newlines at the end.
    */
