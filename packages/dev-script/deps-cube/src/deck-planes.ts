@@ -22,8 +22,8 @@
  * ```
  */
 
-import type { ReadonlyDeep, } from 'type-fest';
 import type { Layer, } from '@deck.gl/core';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   PathLayer,
   SolidPolygonLayer,
@@ -147,15 +147,9 @@ const THRESHOLD_LINE_WIDTH = 1.5;
  * ```
  */
 function getPolygonAccessor(
-  d: ReadonlyDeep<PolygonDatum>,
+  d: ForeignBorrowed<PolygonDatum>,
 ): PolygonDatum['polygon'] {
-  return d.polygon.map(function copyPoint(point,): [
-    number,
-    number,
-    number,
-  ] {
-    return [...point,];
-  },);
+  return d.polygon;
 }
 
 /**
@@ -170,14 +164,8 @@ function getPolygonAccessor(
  * new PathLayer<PathDatum>({ getPath: getPathAccessor, ... });
  * ```
  */
-function getPathAccessor(d: ReadonlyDeep<PathDatum>,): PathDatum['path'] {
-  return d.path.map(function copyPoint(point,): [
-    number,
-    number,
-    number,
-  ] {
-    return [...point,];
-  },);
+function getPathAccessor(d: ForeignBorrowed<PathDatum>,): PathDatum['path'] {
+  return d.path;
 }
 
 //endregion Accessors

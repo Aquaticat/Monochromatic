@@ -21,7 +21,6 @@
 import pLimit from 'p-limit';
 
 import { MS_PER_DAY, } from '@monochromatic-dev/module-const/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { Cache, } from './cache.ts';
 import type { CatalogEntry, } from './catalog.ts';
@@ -204,7 +203,7 @@ function failedProbe(
     err,
   }: {
     readonly entry: CatalogEntry;
-    readonly err: ForeignBorrowed<Error>;
+    readonly err: Readonly<Pick<Error, 'message'>>;
   },
 ): PackageProbe {
   console.error(`[probe] FAILED ${entry.npmName}: ${err.message}`,);

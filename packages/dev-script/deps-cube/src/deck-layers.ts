@@ -27,8 +27,8 @@
  * ```
  */
 
-import type { ReadonlyDeep, } from 'type-fest';
 import type { Layer, } from '@deck.gl/core';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { PathLayer, } from '@deck.gl/layers';
 import { SimpleMeshLayer, } from '@deck.gl/mesh-layers';
 
@@ -83,18 +83,12 @@ type ArrowheadDatum = {
  * getDatumPath({ path: [[0, 0, 0], [1, 0, 0]] }); // [[0, 0, 0], [1, 0, 0]]
  * ```
  */
-export function getDatumPath(d: ReadonlyDeep<PathDatum>,): [
+export function getDatumPath(d: ForeignBorrowed<PathDatum>,): [
   number,
   number,
   number,
 ][] {
-  return d.path.map(function copyPoint(point,): [
-    number,
-    number,
-    number,
-  ] {
-    return [...point,];
-  },);
+  return d.path;
 }
 
 /**
