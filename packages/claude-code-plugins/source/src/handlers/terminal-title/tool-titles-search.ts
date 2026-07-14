@@ -17,26 +17,6 @@ import {
 //region AskUserQuestion helpers
 
 /**
- * Checks whether object owns question field.
- *
- * @param value - because AskUserQuestion array items are untyped payload objects
- *
- * @returns whether value exposes question field for safe reading
- *
- * @example
- * ```ts
- * hasQuestionField({ question: 'Continue?' });
- * // true
- * ```
- */
-function hasQuestionField(value: object,): value is { readonly question: unknown } {
-  return Object.hasOwn(
-    value,
-    'question',
-  );
-}
-
-/**
  * Checks whether title formatter result is text-missing sentinel.
  *
  * @param value - because formatter result can be title text or sentinel
@@ -86,12 +66,15 @@ function firstQuestionText(input: ToolTitleInput,): string | typeof TOOL_TITLE_T
   const [first,] = unknownQuestions;
   if ((first === null) || ((typeof first) !== 'object'))
     return TOOL_TITLE_TEXT_MISSING;
-  if (!hasQuestionField(first,))
+  if (!Object.hasOwn(
+    first,
+    'question',
+  ))
     return TOOL_TITLE_TEXT_MISSING;
   /**
    * Question text from first question object.
    */
-  const { question, } = first;
+  const { question, } = first as { readonly question: unknown; };
   if ((typeof question) === 'string')
     return question;
   return TOOL_TITLE_TEXT_MISSING;
