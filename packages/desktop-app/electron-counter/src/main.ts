@@ -21,6 +21,7 @@ import {
   app,
   BrowserWindow,
 } from 'electron';
+import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger';
 
 import {
@@ -81,25 +82,6 @@ const rendererHtmlPath = join(
   import.meta.dirname,
   'index.html',
 );
-
-/**
- * Converts an unknown caught value to a loggable string.
- *
- * @param error - Caught value from an error path.
- *
- * @returns Diagnostic text safe for log output.
- *
- * @example
- * ```ts
- * stringifyError({ error: new Error('boom') });
- * ```
- */
-function stringifyError({ error, }: { readonly error: unknown; },): string {
-  if (Error.isError(error,))
-    return error.stack ?? error.message;
-
-  return String(error,);
-}
 
 /**
  * Adds Chromium switches required for pure Wayland operation on Linux.
@@ -210,7 +192,7 @@ function observeCounterTitleFromEvent({ title, }: { readonly title: string; },):
     }
     catch (error: unknown) {
       mainLogger.error(
-        `Failed to observe renderer title: ${stringifyError({ error, },)}`,
+        `Failed to observe renderer title: ${caughtValueStack(error,)}`,
       );
     }
   })();
@@ -281,7 +263,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
  */
 function logActivationCreateError({ error, }: { readonly error: unknown; },): void {
   mainLogger.error(
-    `Failed to create activated main window: ${stringifyError({ error, },)}`,
+    `Failed to create activated main window: ${caughtValueStack(error,)}`,
   );
 }
 
@@ -346,7 +328,7 @@ function installAppLifecycleHandlers(): void {
  */
 function logStartupError({ error, }: { readonly error: unknown; },): void {
   mainLogger.error(
-    `Failed to start Electron counter app: ${stringifyError({ error, },)}`,
+    `Failed to start Electron counter app: ${caughtValueStack(error,)}`,
   );
 }
 

@@ -14,6 +14,7 @@ import {
   NO_AUTH,
   NO_OVERRIDE_MODEL,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -101,7 +102,7 @@ async function resolveBudgetAuth(
     },);
     innerL.error(
       `getApiKeyAndHeaders failed for ${model.provider}/${model.id}: ${
-        Error.isError(error,) ? error.message : `non-Error ${typeof error}`
+        caughtValueText(error,)
       }`,
     );
     return NO_AUTH;

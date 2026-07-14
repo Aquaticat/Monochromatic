@@ -2,6 +2,7 @@
  * Generic private trust record preparation and validation. @module
  */
 import type { ReadonlyDeep, } from 'type-fest';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { randomUUID, } from 'node:crypto';
 import {
   mkdir,
@@ -122,7 +123,20 @@ async function preparationFailure({
     .filter(function isCleanupFailure(
       result: ReadonlyDeep<(typeof cleanupResults)[number]>,
     ) { return result.status === 'rejected'; },)
-    .map(function cleanupFailureReason(result,) { return String(result.reason,); },);
+    .map(
+      /**
+       * Preserves one cleanup rejection reason.
+       *
+       * @param result - Rejected cleanup result.
+       *
+       * @returns diagnostic reason text.
+       *
+       * @mutates result - `caughtValueText` may invoke hooks on rejection reason.
+       */
+      function cleanupFailureReason(result,) {
+        return caughtValueText(result.reason,);
+      },
+    );
   throw new TrustStorageError(
     cleanupFailures.length === 0
       ? 'Unable to prepare private trust record.'

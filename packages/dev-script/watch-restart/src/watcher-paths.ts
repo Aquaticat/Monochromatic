@@ -124,25 +124,3 @@ export function relativePathForRoots(
     absPath,
   );
 }
-
-/**
- * Coerces an unknown thrown value into a printable string for logging.
- *
- * Lives alongside {@link sortRootsByLengthDesc} and {@link isPathUnderRoot}
- * because all three are module-scope pure helpers consumed by the watcher
- * adapter; co-locating them keeps the watcher file under the max-lines
- * cap without inventing a one-off "errors" module for a five-line helper.
- *
- * @param error - thrown value of unknown shape
- *
- * @returns human-readable error description
- *
- * @example
- * ```ts
- * try { await readFile(p,); }
- * catch (error) { logger.error(describeError(error,),); }
- * ```
- */
-export function describeError(error: unknown,): string {
-  return Error.isError(error,) ? error.message : String(error,);
-}

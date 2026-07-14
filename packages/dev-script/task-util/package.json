@@ -20,6 +20,7 @@
     "@types/node": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "string-dedent": "catalog:",
     "@monochromatic-dev/module-const": "workspace:*",
     "@optique/core": "catalog:",

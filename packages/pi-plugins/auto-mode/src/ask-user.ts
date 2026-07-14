@@ -13,6 +13,7 @@ import type {
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import nanoSpawn from 'nano-spawn';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -162,7 +163,7 @@ async function notifyAsk(
   }
   catch (error) {
     innerL.warn(
-      `approval notification unavailable: ${Error.isError(error,) ? error.message : `non-Error ${typeof error}`}`,
+      `approval notification unavailable: ${caughtValueText(error,)}`,
     );
   }
 }

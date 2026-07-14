@@ -31,6 +31,7 @@ import {
   BrowserWindow,
   ipcMain,
 } from 'electron';
+import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger';
 
 import type {
@@ -100,25 +101,6 @@ const preloadPath = join(
 const rootDirectory = resolve(
   process.env[ROOT_DIRECTORY_ENVIRONMENT_VARIABLE] ?? homedir(),
 );
-
-/**
- * Converts an unknown caught value to a loggable string.
- *
- * @param error - Caught value from an error path.
- *
- * @returns Diagnostic text safe for log output.
- *
- * @example
- * ```ts
- * stringifyError({ error: new Error('boom') });
- * ```
- */
-function stringifyError({ error, }: { readonly error: unknown; },): string {
-  if (Error.isError(error,))
-    return error.stack ?? error.message;
-
-  return String(error,);
-}
 
 /**
  * Adds Chromium switches required for pure Wayland operation on Linux.
@@ -374,7 +356,7 @@ function observeStateFromEvent({ payload, }: { readonly payload: unknown; },): v
       await writeObservedState({ state: payload, },);
     }
     catch (error: unknown) {
-      mainLogger.error(`Failed to persist renderer state: ${stringifyError({ error, },)}`,);
+      mainLogger.error(`Failed to persist renderer state: ${caughtValueStack(error,)}`,);
     }
   })();
 }
@@ -479,7 +461,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
  * ```
  */
 function logActivationCreateError({ error, }: { readonly error: unknown; },): void {
-  mainLogger.error(`Failed to create activated main window: ${stringifyError({ error, },)}`,);
+  mainLogger.error(`Failed to create activated main window: ${caughtValueStack(error,)}`,);
 }
 
 /**
@@ -542,7 +524,7 @@ function installAppLifecycleHandlers(): void {
  * ```
  */
 function logStartupError({ error, }: { readonly error: unknown; },): void {
-  mainLogger.error(`Failed to start file-manager app: ${stringifyError({ error, },)}`,);
+  mainLogger.error(`Failed to start file-manager app: ${caughtValueStack(error,)}`,);
 }
 
 /**

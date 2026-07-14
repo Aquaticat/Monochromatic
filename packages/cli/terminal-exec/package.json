@@ -28,6 +28,7 @@
     "@types/node": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*"
   },
   "version": "0.0.1",

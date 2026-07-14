@@ -4,6 +4,8 @@ import {
 } from 'node:fs/promises';
 import { relative, } from 'node:path';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import { fixSource, } from './fix.ts';
 import { runRules, } from './lint.ts';
 import {
@@ -244,37 +246,25 @@ function fileStartDiagnostic({
 }
 
 /**
- * Render an unknown thrown value into a stable one-line message.
- *
- * @param error - value caught from file processing
- *
- * @returns human-readable message
- */
-function errorMessage(error: unknown,): string {
-  if (Error.isError(error,)) {
-    /**
-     * Error class name used when the message is empty.
-     */
-    const errorName = error.constructor
-      .name;
-    return error.message === ''
-      ? errorName
-      : error.message;
-  }
-  return String(error,);
-}
-
-/**
  * Diagnostic for a file-processing failure.
  *
  * @param error - value caught from file processing
  *
  * @returns synthetic diagnostic for the report
+ *
+ * @mutates error - `caughtValueText` may invoke string-conversion hooks.
  */
 function processingErrorDiagnostic(error: unknown,): Diagnostic {
+  /**
+   * Error text preserving empty-message class names from existing CLI output.
+   */
+  const errorText = Error.isError(error,) && (error.message === '')
+    ? error.constructor
+      .name
+    : caughtValueText(error,);
   return fileStartDiagnostic({
     ruleId: PROCESSING_ERROR_RULE_ID,
-    message: `Could not process file: ${errorMessage(error,)}`,
+    message: `Could not process file: ${errorText}`,
   },);
 }
 

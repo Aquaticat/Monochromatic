@@ -4,6 +4,7 @@ import {
 } from 'chokidar';
 import { once, } from 'node:events';
 import { extname, } from 'node:path';
+import { caughtValueText as describeError, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   tagged,
   type Logger,
@@ -19,7 +20,6 @@ import type {
   WatchEventKind,
 } from './types.ts';
 import {
-  describeError,
   relativePathForRoots,
   sortRootsByLengthDesc,
 } from './watcher-paths.ts';

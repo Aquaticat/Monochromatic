@@ -4,6 +4,7 @@
  * @module
  */
 
+import { caughtValueText as describeError, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { NoBudgetModelError, } from '@monochromatic-dev/pi-shared-model-selection/ts';
@@ -113,42 +114,6 @@ function judgeModelSlug(
    */
   const { id, } = model;
   return `${provider}/${id}`;
-}
-
-/**
- * Convert an unknown thrown value to stable diagnostic text.
- *
- * @param error - thrown value to describe
- *
- * @returns error message or stable category for non-Error values
- *
- * @example
- * ```typescript
- * describeError(new Error('unavailable'));
- * ```
- */
-function describeError(
-  error: unknown,
-): string {
-  if (Error.isError(error,))
-    return error.message;
-  if ((typeof error) === 'string')
-    return error;
-  if ((typeof error) === 'number')
-    return `${error}`;
-  if ((typeof error) === 'boolean')
-    return `${error}`;
-  if ((typeof error) === 'bigint')
-    return `${error}n`;
-  if (error === null)
-    return 'null';
-  if (error === undefined)
-    return 'undefined';
-  if ((typeof error) === 'symbol')
-    return 'symbol';
-  if ((typeof error) === 'function')
-    return 'function';
-  return 'non-Error object';
 }
 
 /**

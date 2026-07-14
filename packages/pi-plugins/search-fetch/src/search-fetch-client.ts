@@ -5,6 +5,7 @@
  * @module
  */
 
+import { caughtValueText as errorMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -334,6 +335,8 @@ async function fetchExaFallback(
  * @param finalError - final provider error
  *
  * @returns combined provider failure
+ *
+ * @mutates finalError - `errorMessage` may invoke string-conversion hooks.
  */
 function combinedFallbackError(
   {
@@ -367,19 +370,6 @@ function combinedFallbackError(
  */
 function hasCredential({ value, }: { readonly value: string; }): boolean {
   return value.trim() !== '';
-}
-
-/**
- * Convert unknown error to message text.
- *
- * @param error - unknown error value
- *
- * @returns error message text
- */
-function errorMessage(error: unknown,): string {
-  return Error.isError(error,)
-    ? error.message
-    : String(error,);
 }
 
 //endregion Utility helpers

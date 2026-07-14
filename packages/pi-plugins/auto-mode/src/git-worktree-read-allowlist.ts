@@ -10,6 +10,7 @@ import {
 } from 'node:path';
 
 import nanoSpawn from 'nano-spawn';
+import { caughtValueText as formatError, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
@@ -129,25 +130,6 @@ type LinkedWorktreeReadAllowlistedDirsOptions = {
    */
   readonly cwd: string;
 };
-
-/**
- * Formats unknown caught values for debug logs.
- *
- * @param error - Caught value from filesystem or subprocess call.
- *
- * @returns Human-readable error message.
- *
- * @example
- * ```ts
- * formatError(new Error('missing'));
- * // => 'missing'
- * ```
- */
-function formatError(error: unknown,): string {
-  if (Error.isError(error,))
-    return error.message;
-  return `non-Error ${typeof error}`;
-}
 
 /**
  * Removes one trailing line break from git stdout while preserving path text.

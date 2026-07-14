@@ -4,6 +4,7 @@
  * @module
  */
 
+import { caughtValueText as errorMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -327,19 +328,6 @@ function isAbortError(
     return true;
   return (Error.isError(error,))
     && (error.name === ABORT_ERROR_NAME);
-}
-
-/**
- * Convert unknown error to message text.
- *
- * @param error - unknown error value
- *
- * @returns error message text
- */
-function errorMessage(error: unknown,): string {
-  return Error.isError(error,)
-    ? error.message
-    : String(error,);
 }
 
 /**

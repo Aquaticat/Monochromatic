@@ -14,6 +14,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -366,7 +367,7 @@ async function evaluate(
     /**
      * Normalised error message so both `Error` instances and non-`Error` throws produce a string.
      */
-    const msg = Error.isError(err,) ? err.message : `non-Error ${typeof err}`;
+    const msg = caughtValueText(err,);
     innerL.error(`judge error: ${msg}`,);
     return {
       decision: await askUser({

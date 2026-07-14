@@ -17,6 +17,7 @@
  */
 
 import spawn from 'nano-spawn';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 //region Types
 
@@ -194,7 +195,7 @@ function dumpAndHandleError({
   // Non-subprocess error (e.g. command not found)
   console.error(
     `[task-depends] failed to execute command: ${
-      Error.isError(error,) ? error.message : 'unknown non-Error value'
+      caughtValueText(error,)
     }`,
   );
 

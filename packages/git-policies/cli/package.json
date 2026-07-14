@@ -45,6 +45,7 @@
     "@types/node": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@optique/core": "catalog:",
     "acorn": "catalog:",

@@ -3,6 +3,8 @@
  * @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 //region Types: response shape definitions
 
 /**
@@ -64,6 +66,8 @@ export function textResponse(text: string,): TextResponse {
  *
  * @returns MCP response with `isError: true`.
  *
+ * @mutates err - `caughtValueText` may invoke string-conversion hooks.
+ *
  * @example
  * ```ts
  * catch (err: unknown) { return errorResponse({ tag: 'exec_in_vm', err }); }
@@ -77,13 +81,9 @@ export function errorResponse({
   readonly tag: string;
 },): ErrorResponse {
   /**
-   * Human-readable text that avoids invoking conversion hooks on unknown values.
+   * Human-readable text preserving caller-provided diagnostics.
    */
-  const message = Error.isError(err,)
-    ? err.message
-    : ((typeof err) === 'string'
-      ? err
-      : `non-Error ${typeof err}`);
+  const message = caughtValueText(err,);
   console.error(`[mcp-mvm] ${tag} failed: ${message}`,);
   return {
     content: [{

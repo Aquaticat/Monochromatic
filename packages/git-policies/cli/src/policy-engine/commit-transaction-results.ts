@@ -3,6 +3,8 @@
  *
  * @module
  */
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import type { PolicyTrigger, } from '../api/policy-types.ts';
 import { CommitTransactionGitError, } from './commit-transaction-git.ts';
 import {
@@ -185,6 +187,8 @@ export function patchTargetFailure({
  *
  * @returns blocking classified patch result
  *
+ * @mutates error - `caughtValueText` may invoke string-conversion hooks.
+ *
  * @example
  * ```ts
  * patchApplicationFailure({ previous, trigger: 'direct-fix', path: 'a.txt', error });
@@ -204,7 +208,7 @@ export function patchApplicationFailure({
   return transactionFailure({
     previous,
     code: error instanceof CommitTransactionGitError ? 'patch-conflict' : 'patch-invalid',
-    message: Error.isError(error,) ? error.message : String(error,),
+    message: caughtValueText(error,),
     trigger,
     path,
   },);

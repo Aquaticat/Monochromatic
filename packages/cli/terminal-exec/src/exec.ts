@@ -6,6 +6,7 @@
  */
 
 import { spawn, } from 'node:child_process';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
@@ -80,13 +81,18 @@ export function execvp({ command, }: { readonly command: readonly string[]; },):
   );
   proc.on(
     'error',
+    /**
+     * Reports a process-spawn failure.
+     *
+     * @param err - Failure emitted by Node.
+     *
+     * @mutates err - `caughtValueText` may invoke string-conversion hooks.
+     */
     function onError(err: unknown,) {
       /**
-       * Noncoercing failure detail from Node spawn error.
+       * Failure detail preserving arbitrary thrown-value text.
        */
-      const detail = Error.isError(err,)
-        ? err.message
-        : `non-Error ${typeof err}`;
+      const detail = caughtValueText(err,);
       console.error(`terminal-exec: failed to execute '${executable}': ${detail}`,);
       process.exitCode = EXIT_NOT_FOUND;
     },
