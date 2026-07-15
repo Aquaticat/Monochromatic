@@ -29,7 +29,7 @@ run = "tsdown --config tsdown.main.config.ts"
 
 [tasks."build:js:preload"]
 description = "Bundle the sandboxed preload script to CommonJS"
-run = "tsdown --config tsdown.preload.config.ts"
+run = "rolldown --configLoader native --config rolldown.preload.config.ts"
 
 [tasks."build:ts:tools"]
 description = "Bundle build and Wayland test tools"
