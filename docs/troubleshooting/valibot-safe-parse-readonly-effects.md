@@ -36,7 +36,9 @@ but input hooks can change state while the validator observes them.
 ## Resolution
 
 The engine keeps `safeParse` fail-closed rather than adding an observational package-catalog entry.
-Its boundary contract names `valibot@1.4.2 . safeParse` and documents schema property access,
+Its boundary contract links the audited Valibot source,
+names `safeParse`,
+and documents schema property access,
 getter or proxy hooks,
 and schema callbacks.
 
