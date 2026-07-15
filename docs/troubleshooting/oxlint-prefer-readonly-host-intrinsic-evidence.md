@@ -131,6 +131,12 @@ For example,
 The exact JavaScript module digest is
 `dd602adcb3c1fc6f1877782cef9ed3e6da5b32bf4a5b159f882d10a9d21d103c`,
 but that source cannot prove the native boundary never affects supplied storage.
+`Buffer.from` is also overload-sensitive:
+typed arrays are copied,
+ArrayBuffer inputs can share memory,
+and object inputs can invoke conversion hooks.
+A generic observational entry would erase those distinctions,
+so typed-array call sites retain local conversion and byte-access contracts.
 Such calls retain local boundary contracts.
 Node APIs without audited embedded JavaScript evidence remain opaque.
 

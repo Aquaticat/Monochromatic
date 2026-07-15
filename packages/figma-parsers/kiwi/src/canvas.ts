@@ -215,6 +215,8 @@ export async function parseCanvasFig(canvasData: Uint8Array,): Promise<CanvasFig
  *
  * @param data - Zstd-compressed frame bytes.
  *
+ * @mutates data through Buffer.from value conversion and native byte access
+ *
  * @returns Decompressed document bytes.
  *
  * @example
@@ -334,6 +336,8 @@ function zstdMagicMatches(
  * Inflates schema bytes and logs failures before rethrowing.
  *
  * @param compressedSchema - Compressed schema bytes.
+ *
+ * @mutates compressedSchema through Buffer.from value conversion and native byte access
  *
  * @returns Decompressed schema bytes.
  *

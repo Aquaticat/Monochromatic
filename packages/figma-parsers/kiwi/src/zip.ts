@@ -496,6 +496,8 @@ async function readEntryContent(
  *
  * @param fileName - Entry filename.
  *
+ * @mutates compressedData through Buffer.from value conversion and native byte access
+ *
  * @returns Decompressed data.
  *
  * @example
