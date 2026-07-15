@@ -2,7 +2,7 @@
 
 ## Problem
 
-The `semantic-line-breaks` rule in `packages/cli/markdown-lint` breaks prose after each break-point character (`,` `.` `;` `:` `?` `!`).
+The `semantic-line-breaks` rule in `package/cli/markdown-lint` breaks prose after each break-point character (`,` `.` `;` `:` `?` `!`).
 Filenames written bare in prose contain a period,
  so the autofix splits them mid-token:
  `AGENTS.md` becomes `AGENTS.` at end of line with `md` starting the next.

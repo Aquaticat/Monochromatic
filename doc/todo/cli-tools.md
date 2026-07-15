@@ -19,7 +19,7 @@
 
 **Status**:
  Deprecated;
- superseded by `packages/dev-script/file-enforcer`
+ superseded by `package/dev-script/file-enforcer`
 
 ### `increase-version`
 
@@ -36,7 +36,7 @@
 ## Monochromatic CLI Development
 
 **Current state**:
- Dedicated CLI packages live under `packages/cli/`.
+ Dedicated CLI packages live under `package/cli/`.
 The old `monochromatic new ...` scaffolding ideas remain unimplemented.
 
 ### `monochromatic new <monorepo-name>`
@@ -70,13 +70,13 @@ endif
 @startuml
 start
 
-if (packages/<package-category> exists?) then (yes)
+if (package/<package-category> exists?) then (yes)
   :DO NOTHING;
 else (no)
-  :create folder packages/<package-category>;
+  :create folder package/<package-category>;
 endif
 
-:cd packages/<package-category>;
+:cd package/<package-category>;
 
 if (<package-name> exists?) then (yes)
   :throw error;
@@ -107,7 +107,7 @@ endif
 
 **Status**:
  Done;
- shipped as `task-append` in `packages/dev-script/task-util/src/append.ts`,
+ shipped as `task-append` in `package/dev-script/task-util/src/append.ts`,
  with bin entry,
  README section,
  and unit tests covering create/append/multiline/permission-error cases.
@@ -187,7 +187,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
    unreadable,
    unfamiliar)
 - When scripts are needed,
-   create TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`
+   create TypeScript files as `mise.<action>.ts` in `package/module/es/src/`
 - Use Node to execute TypeScript scripts directly
 - Avoid creating main() functions
   - Instead of wrapping code in a main() function,

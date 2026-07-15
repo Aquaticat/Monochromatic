@@ -53,7 +53,7 @@ if (watch) {
 
 Second,
  Rolldown's convenience `build` API writes by default.
-`rolldown/rolldown` `packages/rolldown/src/api/build.ts:58-68` contains:
+`rolldown/rolldown` `package/rolldown/src/api/build.ts:58-68` contains:
 
 ```ts
 if (Array.isArray(options)) {
@@ -290,7 +290,7 @@ footer/index.mjs: 2
 ## Repository decision
 
 The shared tsdown producer remains byte-transparent.
-All 18 tracked files under `packages/claude-code-plugin/*/dist/final/node/` have zero final LF bytes,
+All 18 tracked files under `package/claude-code-plugin/*/dist/final/node/` have zero final LF bytes,
 which saves 18 bytes compared with mandatory one-LF output.
 
 Cli-git's core `final-newline` policy excludes `**/dist/final/node/**` from commit,

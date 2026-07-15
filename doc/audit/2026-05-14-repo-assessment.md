@@ -14,7 +14,7 @@ Evidence sources:
 
 - `tokei` with heavy directories and `pnpm-lock.yaml` excluded.
 - `find packages -mindepth 3 -maxdepth 3 -name package.json` for package count.
-- Node one-off scripts over `packages/*/*/package.json`,
+- Node one-off scripts over `package/*/*/package.json`,
    `mise.toml`,
    and `src` trees.
 - Direct reads of `README.md`,
@@ -34,7 +34,7 @@ Evidence sources:
 
 Measured facts:
 
-- The repository contains 96 workspace packages under `packages/*/*`.
+- The repository contains 96 workspace packages under `package/*/*`.
 - `tokei` counted 3,211 files,
    197,824 code lines,
    139,387 comment lines,
@@ -121,21 +121,21 @@ Risks:
 
 Strengths:
 
-- `packages/mcp/stdio/src/server.ts` is a deep module:
+- `package/mcp/stdio/src/server.ts` is a deep module:
   it exposes `createMcpServer()` and hides JSON-RPC dispatch,
    initialization,
   tool listing,
    and tool call handling behind a small immutable server handle.
-- `packages/build-tool/css/src/index.ts` provides useful public interfaces:
+- `package/build-tool/css/src/index.ts` provides useful public interfaces:
   `build()` and `applyMixins()` hide PostCSS parsing,
    import inlining,
   mixin collection,
    nested mixin expansion,
    apply expansion,
    and output writing.
-- `packages/oxlint-plugin/no-restricted-syntax/src/index.ts` encodes repository
+- `package/oxlint-plugin/no-restricted-syntax/src/index.ts` encodes repository
   conventions as custom Oxlint plugin rules rather than relying only on prose.
-- `packages/git-policy/cli/src/index.ts` uses an explicit rule pipeline for wrapper behavior:
+- `package/git-policy/cli/src/index.ts` uses an explicit rule pipeline for wrapper behavior:
   root requirement,
    add restrictions,
    push restrictions,
@@ -144,27 +144,27 @@ Strengths:
 
 Risks:
 
-- `packages/build-tool/css/src/index.ts` clears a shared `mixins` registry in both
+- `package/build-tool/css/src/index.ts` clears a shared `mixins` registry in both
   public APIs.
    Concurrent in-process calls can interfere if two builds or string
   expansions run at the same time.
-- `packages/webapp-forge/server/src/server/runtime.ts` stores process-wide storage,
+- `package/webapp-forge/server/src/server/runtime.ts` stores process-wide storage,
   write-buffer,
    and event cursor state.
    The file documents this as phase-1 design,
   so the risk is understood,
    but it remains a concurrency and deployment constraint.
-- `packages/module/es/package.json` exposes deep taxonomy paths such as `./ts/*`
+- `package/module/es/package.json` exposes deep taxonomy paths such as `./ts/*`
   and selected concrete implementation paths.
    That gives callers access,
    but it
   also makes the interface close to the implementation.
-- `packages/module/es/README.md` carries a stale-warning dated 2026-05-13.
+- `package/module/es/README.md` carries a stale-warning dated 2026-05-13.
   That warning is useful honesty,
    but it means the package's public overview is
   not a dependable guide to the current export taxonomy.
 
-Measured code-quality signals from TypeScript scans under `packages/**/*.ts`:
+Measured code-quality signals from TypeScript scans under `package/**/*.ts`:
 
 - 1,199 lint suppression matches.
 - 49 TypeScript suppression matches.
@@ -188,7 +188,7 @@ They should be treated as audit targets,
 
 Strengths:
 
-- `packages/module/test/README.md` documents a custom runtime-neutral test harness
+- `package/module/test/README.md` documents a custom runtime-neutral test harness
   with `describe`,
    `it`,
    `expect`,
@@ -200,11 +200,11 @@ Strengths:
    and expected-failure support.
 - The repository has 256 test files.
 - Test files are concentrated in core utility and tooling areas:
-  `packages/module` has 118 test files,
-   `packages/dev-script` has 50,
-  `packages/webapp-forge` has 20,
-   `packages/pi-plugin` has 17,
-   and `packages/cli` has 16.
+  `package/module` has 118 test files,
+   `package/dev-script` has 50,
+  `package/webapp-forge` has 20,
+   `package/pi-plugin` has 17,
+   and `package/cli` has 16.
 - Root `mise.toml` defines unit,
    browser,
    e2e,
@@ -215,15 +215,15 @@ Risks:
 
 - 38 packages with source files have no colocated tests by my scan.
 - The largest package without colocated tests by non-test source-file count is
-  `packages/dev-script/inference-canary`,
+  `package/dev-script/inference-canary`,
    with 1,303 non-test TypeScript files.
   This count includes generated or artifact-like source files under the package.
 - Other notable source packages without colocated tests include
-  `packages/desktop-daemon/editord`,
-   `packages/webapp-productivity/done`,
-  `packages/webapp-productivity/done-postcss`,
-   `packages/ssg/aquati.cat`,
-  and `packages/cli/terminal-exec`.
+  `package/desktop-daemon/editord`,
+   `package/webapp-productivity/done`,
+  `package/webapp-productivity/done-postcss`,
+   `package/ssg/aquati.cat`,
+  and `package/cli/terminal-exec`.
 - Browser and e2e test counts are small relative to the number of web application packages.
 
 ## Security and dependency governance

@@ -15,7 +15,7 @@ Upstream:
 Pi-safeguard version:
  2.0.1.
  Source:
-`packages/safeguard/src/signals.ts`.
+`package/safeguard/src/signals.ts`.
  Date 2026-04-28.
 
 ### Symptom
@@ -42,7 +42,7 @@ pi -p "Read README.md"
 
 ### Root cause
 
-`pathSignals` in `packages/safeguard/src/signals.ts:95-101`:
+`pathSignals` in `package/safeguard/src/signals.ts:95-101`:
 
 ```ts
 const SYSTEM_PREFIXES = ['/etc', '/usr', '/var', '/boot', '/sys', '/proc',
@@ -85,12 +85,12 @@ a `SYSTEM_PREFIXES` entry.
 
 Source citations in the yapp monorepo:
 
-- `packages/safeguard/src/signals.ts:95-101`:
+- `package/safeguard/src/signals.ts:95-101`:
    `pathSignals`
   function.
-- `packages/safeguard/src/signals.ts:122-125`:
+- `package/safeguard/src/signals.ts:122-125`:
   `SYSTEM_PREFIXES` array.
-- `packages/safeguard/src/signals.ts:127-129`:
+- `package/safeguard/src/signals.ts:127-129`:
   `isSystemPath` function.
 
 ### Verification
@@ -207,7 +207,7 @@ The `isSystemPath` check is redundant for paths already confirmed to be under cw
 
 **Suggested fix**:
 
-Remove `if (isSystemPath(resolved)) return true;` from `pathSignals` in `packages/safeguard/src/signals.ts:95-101`. The `!isUnder` check already handles paths outside the project directory, which covers the actual system-path threat model.
+Remove `if (isSystemPath(resolved)) return true;` from `pathSignals` in `package/safeguard/src/signals.ts:95-101`. The `!isUnder` check already handles paths outside the project directory, which covers the actual system-path threat model.
 ```
 
 ---
@@ -350,7 +350,7 @@ Pi-safeguard version:
 Pi-coding-agent version:
  0.70.6.
  Source:
-`packages/budget-model/src/index.ts`.
+`package/budget-model/src/index.ts`.
  Date 2026-04-28.
 
 ### Symptom
@@ -437,7 +437,7 @@ missing model.
 
 Source locations:
 
-- `packages/budget-model/src/index.ts`:
+- `package/budget-model/src/index.ts`:
    four calls to
   `ctx.modelRegistry.getApiKey(model)`.
 - `@earendil-works/pi-coding-agent`
@@ -445,7 +445,7 @@ Source locations:
    `ModelRegistry` class has
   `getApiKeyAndHeaders` and `getApiKeyForProvider` but no
   `getApiKey`.
-- `packages/safeguard/src/index.ts`:
+- `package/safeguard/src/index.ts`:
    bare `catch` block in
   `evaluate` that swallows the TypeError.
 

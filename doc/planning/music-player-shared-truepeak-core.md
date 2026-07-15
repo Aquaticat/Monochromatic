@@ -47,7 +47,7 @@ so the desktop and Android paths now disagree about measurement policy,
 
 This plan replaces those separate paths with one shared Rust true-peak package:
 
-- `packages/music-player/truepeak-core`
+- `package/music-player/truepeak-core`
 
 The package should own the true-peak meter,
  the probe policy,
@@ -84,7 +84,7 @@ and cache the result.
 
 The desktop app has a Rust true-peak implementation in:
 
-- `packages/music-player/desktop-app/src/truepeak.rs`
+- `package/music-player/desktop-app/src/truepeak.rs`
 
 It uses a Catmull-Rom inter-sample estimator.
 It scans decoded interleaved `f32` samples,
@@ -96,9 +96,9 @@ and records the largest absolute value.
 
 Desktop also already uses Turso for a peak cache:
 
-- `packages/music-player/desktop-app/src/peakcache.rs`
-- `packages/music-player/desktop-app/src/peakcache_service.rs`
-- `packages/music-player/desktop-app/src/peakcache_handle.rs`
+- `package/music-player/desktop-app/src/peakcache.rs`
+- `package/music-player/desktop-app/src/peakcache_service.rs`
+- `package/music-player/desktop-app/src/peakcache_handle.rs`
 
 That cache currently stores raw peak rows keyed by an opaque fingerprint.
 It does not store a shared true-peak policy version,
@@ -106,7 +106,7 @@ and it cannot distinguish an exact full scan from a probe-derived estimate.
 
 Desktop current-track behavior lives mainly in:
 
-- `packages/music-player/desktop-app/src/peak_swap.rs`
+- `package/music-player/desktop-app/src/peak_swap.rs`
 
 On a cache miss,
 it starts playback with a conservative temporary gain,
@@ -115,7 +115,7 @@ then swaps to the measured gain when it arrives.
 
 Background warming lives in:
 
-- `packages/music-player/desktop-app/src/measure.rs`
+- `package/music-player/desktop-app/src/measure.rs`
 
 It scans uncached queue tracks in the background.
 
@@ -123,7 +123,7 @@ It scans uncached queue tracks in the background.
 
 Android has a Rust true-peak implementation in:
 
-- `packages/music-player/android-app/rust/src/truepeak.rs`
+- `package/music-player/android-app/rust/src/truepeak.rs`
 
 It shares the Catmull-Rom meter shape,
 but it also contains an Android-specific long-track window policy:
@@ -138,21 +138,21 @@ It is not the policy this plan should ship.
 
 Android stores peaks through Kotlin JSON code:
 
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PeakCacheStore.kt`
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/PeakCache.kt`
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PeakCacheStore.kt`
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/PeakCache.kt`
 
 Android gain math also still has Kotlin helpers in:
 
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/Normalization.kt`
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/Normalization.kt`
 
 Current Android playback asks Kotlin to resolve a normalization gain in:
 
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/RustEngine.kt`
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/RustEngine.kt`
 
 Android measurement entry points call native Rust through:
 
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PeakMeasurer.kt`
-- `packages/music-player/android-app/rust/src/lib.rs`
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PeakMeasurer.kt`
+- `package/music-player/android-app/rust/src/lib.rs`
 
 The new design moves cache lookup,
  true-peak policy,
@@ -541,9 +541,9 @@ The policy never amplifies.
 
 The first implementation stage should add these packages:
 
-- `packages/music-player/truepeak-core`
-- `packages/music-player/truepeak-core.bench`
-- `packages/music-player/truepeak-core.fuzz`
+- `package/music-player/truepeak-core`
+- `package/music-player/truepeak-core.bench`
+- `package/music-player/truepeak-core.fuzz`
 
 The core crate owns production behavior.
 The bench sidecar owns corpus measurement and parameter search.
@@ -658,9 +658,9 @@ The first shared-policy run starts from a cold shared cache.
 Desktop should stop using its local peak-cache actor.
 Remove or retire:
 
-- `packages/music-player/desktop-app/src/peakcache_service.rs`
-- `packages/music-player/desktop-app/src/peakcache_handle.rs`
-- raw-peak-only logic in `packages/music-player/desktop-app/src/peakcache.rs`
+- `package/music-player/desktop-app/src/peakcache_service.rs`
+- `package/music-player/desktop-app/src/peakcache_handle.rs`
+- raw-peak-only logic in `package/music-player/desktop-app/src/peakcache.rs`
 
 Replace them with the shared true-peak service handle.
 
@@ -709,7 +709,7 @@ Current Kotlin pieces to retire or narrow:
 Kotlin may keep sample clamp helpers if they are still useful as output-stage test or UI references,
 but they must not define the true-peak policy.
 
-The native Rust crate should depend on `packages/music-player/truepeak-core` by path.
+The native Rust crate should depend on `package/music-player/truepeak-core` by path.
 It should expose JNI functions that call the shared service.
 
 The Android native build must prove Turso works for both native ABIs:
@@ -786,7 +786,7 @@ because the too-quiet side is the only audible cost inside the bounds.
 
 ### Stage two evidence and the feasible no-classifier finding
 
-The Stage-two bench sidecar (`packages/music-player/truepeak-core.bench`) was built on the
+The Stage-two bench sidecar (`package/music-player/truepeak-core.bench`) was built on the
 shared `truepeak-core` meter,
  gain,
  window-placement,
@@ -1006,7 +1006,7 @@ Remaining Stage-two work:
 
 ## Bench sidecar
 
-`packages/music-player/truepeak-core.bench` should own corpus-scale measurement and parameter search.
+`package/music-player/truepeak-core.bench` should own corpus-scale measurement and parameter search.
 
 It should be able to:
 
@@ -1026,7 +1026,7 @@ The planning and verification docs may include full paths because that was expli
 
 ## Fuzz sidecar
 
-`packages/music-player/truepeak-core.fuzz` should test invariants that do not need the real library.
+`package/music-player/truepeak-core.fuzz` should test invariants that do not need the real library.
 
 Useful fuzz targets include:
 
@@ -1270,7 +1270,7 @@ A reviewer should check that the first-stage adapter boundary does not make late
 
 The fallback gain is `normalization_gain(1.0)`,
 which is `-1 dB` of attenuation (linear `0.8912509`),
-confirmed in `packages/music-player/desktop-app/src/peak_swap.rs`.
+confirmed in `package/music-player/desktop-app/src/peak_swap.rs`.
 That gain is correct only for a track whose true peak is `0 dBTP`.
 A hot master with inter-sample peaks above `+1 dBTP` (linear above `1.122`)
 still sits above `0 dBFS` after the fallback gain,
@@ -1287,7 +1287,7 @@ so it is a limitation to document,
 
 The plan uses `fingerprint` throughout but never defines its inputs.
 Desktop currently derives it as a one-way hash of `(path, size, mtime)`
-in `packages/music-player/desktop-app/src/peakcache.rs`.
+in `package/music-player/desktop-app/src/peakcache.rs`.
 The shared package should state the exact fingerprint inputs,
 because the choice has correctness consequences:
 
@@ -1312,7 +1312,7 @@ and uses "full-track truth" as the benchmark label.
 The meter samples Catmull-Rom interpolation at one quarter,
  one half,
  and three quarters between samples
-in `packages/music-player/desktop-app/src/truepeak.rs`,
+in `package/music-player/desktop-app/src/truepeak.rs`,
 not the oversampling filter of ITU-R BS.
 1770 true-peak metering.
 Both probe and full scan share that meter,
@@ -1504,7 +1504,7 @@ because the service API depends on Turso being viable on Android:
   app-private path are all proven by the spike on the Pixel 6 and the emulator.
 - Stage one (done):
    shared meter crate.
-  `packages/music-player/truepeak-core` ships the meter,
+  `package/music-player/truepeak-core` ships the meter,
    gain math,
    `TruePeakSource`,
    window
@@ -1514,7 +1514,7 @@ because the service API depends on Turso being viable on Android:
 - Stage two (engine done,
    search ongoing):
    durable evidence.
-  `packages/music-player/truepeak-core.bench` evaluates and searches on the shared meter;
+  `package/music-player/truepeak-core.bench` evaluates and searches on the shared meter;
    its
   run produced the feasible no-classifier finding above.
   The finer-bin shared-meter `collect` regeneration and exact-window verification remain.
@@ -1567,7 +1567,7 @@ Produce a report proving exact corpus fit.
 
 ### Stage two: shared core crate
 
-Create `packages/music-player/truepeak-core`.
+Create `package/music-player/truepeak-core`.
 Implement the shared meter,
  gain math,
  window policy,

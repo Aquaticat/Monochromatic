@@ -266,7 +266,7 @@ This approach addresses the core psychological and workflow barriers:
 ## Integration Points
 
 - [ ] **mise workspace integration**
-  - Add as a new package under `packages/build/ai-commit/`
+  - Add as a new package under `package/build/ai-commit/`
   - Use existing TypeScript configuration
   - Leverage shared utilities from `module-es`
   - Follow project's coding standards

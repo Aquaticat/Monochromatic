@@ -1,7 +1,7 @@
 # winit-based Rust GUI toolkits (Slint, Bevy, Iced, egui) have no native Wayland drag-and-drop; only native toolkits (GTK4, Qt) do
 
 Choosing a Rust GUI toolkit for an app that needs OS drag-and-drop on a pure
-Wayland session (the file-manager prototype, `packages/desktop-app/file-manager/`)
+Wayland session (the file-manager prototype, `package/desktop-app/file-manager/`)
 runs into a gap that is easy to misattribute to one toolkit. It is not
 Slint-specific: it is inherited from winit, which every one of the popular Rust
 toolkits (Slint, Bevy, Iced, egui) uses for windowing. This doc records the gap,
@@ -45,7 +45,7 @@ Because the toolkits delegate windowing to winit, they inherit the gap:
 
 The workaround every winit-based app must use is to drive the Wayland
 `wl_data_device` protocol by hand on the app's own connection (the file manager
-does this in `packages/desktop-app/file-manager/src/dnd_wayland.rs`, sharing
+does this in `package/desktop-app/file-manager/src/dnd_wayland.rs`, sharing
 winit's connection via `Backend::from_foreign_display`). That hand-rolled
 adapter is inherent to the winit family, not to Slint.
 
@@ -72,7 +72,7 @@ compositor-integrated widget toolkits with first-class drag-and-drop:
 - Reproduced directly for Slint: the file manager receives no OS drop on Wayland
   until the hand-rolled `wl_data_device` adapter is added, and that adapter works
   under a compositor that delivers drags correctly (verified via the Smithay
-  nested compositor's `drop-file` command in `packages/cli/nested-wayland-session`).
+  nested compositor's `drop-file` command in `package/cli/nested-wayland-session`).
 
 ## Full framework survey: native Wayland OS file drag-and-drop
 

@@ -1,0 +1,56 @@
+{
+  "name": "@monochromatic-dev/oxlint-plugin-tsdoc",
+  "version": "0.0.1",
+  "private": false,
+  "keywords": [
+    "oxlint",
+    "tsdoc",
+    "config",
+    "monochromatic"
+  ],
+  "dependencies": {
+    "@monochromatic-dev/oxlint-plugin-shared": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "@oxlint/plugins": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/oxlint-plugin-test-support": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "nano-spawn": "catalog:",
+    "type-fest": "catalog:"
+  },
+  "type": "module",
+  "files": [
+    "src",
+    "dist/final",
+    "LICENSES"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "package/oxlint-plugin/tsdoc"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "description": "Oxlint JS plugin providing TSDoc validation rules adapted from eslint-plugin-jsdoc recommended config.",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

@@ -53,12 +53,12 @@ safeSendMessage(pi, {
 ```
 
 Pi receives that custom extension message in
-`packages/coding-agent/src/core/agent-session.ts:1388-1410`.
+`package/coding-agent/src/core/agent-session.ts:1388-1410`.
 During streaming it queues the message as steering; otherwise a `triggerTurn` update starts another agent
 prompt:
 
 ```ts
-// pi v0.80.6, packages/coding-agent/src/core/agent-session.ts:1403-1410
+// pi v0.80.6, package/coding-agent/src/core/agent-session.ts:1403-1410
 } else if (this.isStreaming) {
   if (options?.deliverAs === "followUp") {
     this.agent.followUp(appMessage);
@@ -71,10 +71,10 @@ prompt:
 ```
 
 Pi converts every custom message into an LLM `user` message in
-`packages/coding-agent/src/core/messages.ts:162-167`:
+`package/coding-agent/src/core/messages.ts:162-167`:
 
 ```ts
-// pi v0.80.6, packages/coding-agent/src/core/messages.ts:162-167
+// pi v0.80.6, package/coding-agent/src/core/messages.ts:162-167
 case "custom": {
   const content = typeof m.content === "string" ? [{ type: "text" as const, text: m.content }] : m.content;
   return {
@@ -86,12 +86,12 @@ case "custom": {
 ```
 
 The active global Pi settings select `transport: "auto"`. The Codex provider attempts WebSocket transport
-when the setting is not `"sse"` (`packages/ai/src/api/openai-codex-responses.ts:272-278`) and treats
+when the setting is not `"sse"` (`package/ai/src/api/openai-codex-responses.ts:272-278`) and treats
 `"auto"` as cached WebSocket context (`:1394-1398`). For a matching continuation it sends only the delta
 plus `previous_response_id` (`:1343-1352`):
 
 ```ts
-// pi v0.80.6, packages/ai/src/api/openai-codex-responses.ts:1394-1398,1343-1352
+// pi v0.80.6, package/ai/src/api/openai-codex-responses.ts:1394-1398,1343-1352
 const useCachedContext = options?.transport === "websocket-cached" || options?.transport === "auto";
 const requestBody = useCachedContext && entry ? buildCachedWebSocketRequestBody(entry, fullBody) : fullBody;
 
@@ -146,7 +146,7 @@ Known-working cases:
 
 - The same session contains process-update messages that are not attached to a continuation diagnostic.
 - Pi's mocked regression test
-  `packages/ai/test/openai-codex-stream.test.ts:1554-1696` accepts a normal cached-WebSocket continuation
+  `package/ai/test/openai-codex-stream.test.ts:1554-1696` accepts a normal cached-WebSocket continuation
   whose response delta begins with one `user` message.
 
 Known-failing cases:

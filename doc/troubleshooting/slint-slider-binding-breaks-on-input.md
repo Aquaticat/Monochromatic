@@ -1,7 +1,7 @@
 # Slint 1.17 Slider: a one-way `value:` binding is destroyed the first time the user touches the slider, freezing the seek bar
 
 Tool under test: Slint 1.17.0 (`slint`, `i-slint-backend-winit`, `slint-build` all pinned to `1.17.0` in
-`packages/music-player/desktop-app/Cargo.toml`). Surface trigger: a std-widgets `Slider` whose `value` is set with
+`package/music-player/desktop-app/Cargo.toml`). Surface trigger: a std-widgets `Slider` whose `value` is set with
 a one-way binding (`value: root.position`) while the same property is also driven from Rust. Failure mode: after any
 click, drag, or arrow-key on that slider, later writes to the bound property no longer move the thumb.
 
@@ -26,7 +26,7 @@ from a widget reacting to user input) replaces that binding with a constant. A o
 survive the first imperative write. Two-way bindings (`<=>`) alias the two storage slots together and do survive.
 
 The consuming code used one-way bindings. Before the fix,
-`packages/music-player/desktop-app/ui/app.slint` had:
+`package/music-player/desktop-app/ui/app.slint` had:
 
 ```slint
 // seek bar
@@ -46,7 +46,7 @@ Slider {
 The engine drives `position` from the event-loop thread on every position tick:
 
 ```rust
-// packages/music-player/desktop-app/src/main.rs:787 (apply_update, Update::Position arm)
+// package/music-player/desktop-app/src/main.rs:787 (apply_update, Update::Position arm)
 app.set_position(*secs as f32);
 ```
 
@@ -110,7 +110,7 @@ Version under test: `slint` 1.17.0 from crates.io (`Cargo.lock`:
 Compile check that the two-way fix builds:
 
 ```sh
-mise run //packages/music-player/desktop-app:lint   # cargo check, runs the Slint compiler over app.slint
+mise run //package/music-player/desktop-app:lint   # cargo check, runs the Slint compiler over app.slint
 # => Finished `dev` profile ... in ~9s (no errors)
 ```
 
@@ -120,7 +120,7 @@ Behavioral reproduction with the real GUI (a real Wayland session with XWayland 
 # 200s tone so the thumb has room to travel
 ffmpeg -y -f lavfi -i "sine=frequency=220:duration=200" -ac 2 -ar 44100 /tmp/music/longtone.wav
 
-mise run //packages/music-player/desktop-app:build:debug
+mise run //package/music-player/desktop-app:build:debug
 # run under XWayland so xdotool/import can drive it
 env -u WAYLAND_DISPLAY DISPLAY=:0 ./target/debug/music-player --start-playing /tmp/music/longtone.wav
 ```
@@ -141,7 +141,7 @@ Two-way binding (applied). Change the one-way `value:` binding to `value <=>` an
 `in-out` so the alias is legal in both directions:
 
 ```slint
-// packages/music-player/desktop-app/ui/app.slint:225, :285
+// package/music-player/desktop-app/ui/app.slint:225, :285
 in-out property <float> position: 0;   // was: in property <float> position: 0;
 // ...
 value <=> root.position;               // was: value: root.position;

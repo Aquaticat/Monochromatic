@@ -100,7 +100,7 @@ and the same query returns `"none"`.
 
 ### Place `[hidden]` after layout rules in source order
 
-In paper2vn's `packages/webapp-edu/paper2vn/src/styles.ts`,
+In paper2vn's `package/webapp-edu/paper2vn/src/styles.ts`,
  the
 `[hidden]` rule lives at the very end of the stylesheet:
 

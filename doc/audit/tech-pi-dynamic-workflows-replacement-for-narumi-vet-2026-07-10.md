@@ -279,7 +279,7 @@ Git metadata where stated:
 - terms `pi-subagents`, `dynamic-workflows`, and `subagent` across `.agents`, `.pi`, `docs`, and manifests;
 - candidate reports under `doc/audit/`;
 - relevant decisions under `doc/decision/`;
-- parallel orchestration implementations under `packages/pi-plugin/`;
+- parallel orchestration implementations under `package/pi-plugin/`;
 - installed package manifests and lock entries under `/var/home/user/.pi/agent/npm/`.
 
 ### Expansion round
@@ -392,10 +392,10 @@ The uncapped local searches produced:
 - `10` fixed-string incumbent matches across the repository;
 - `112` broader subagent or workflow matches in `.agents`, `.pi`, `docs`, and manifests;
 - `42` relevant report, decision, and handover paths;
-- `854` orchestration-related matches under `packages/pi-plugin/`;
+- `854` orchestration-related matches under `package/pi-plugin/`;
 - `100` incumbent package and lock matches under `/var/home/user/.pi/agent/npm/`.
 
-The local source class is exhausted for the frozen paths. The existing implementation at `packages/pi-plugin/spawn/`
+The local source class is exhausted for the frozen paths. The existing implementation at `package/pi-plugin/spawn/`
 and prior `doc/handover/subagent-extension-audit.md` evidence remain parallel-system inputs, not ready-made replacements.
 
 ### Expansion execution

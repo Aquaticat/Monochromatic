@@ -126,7 +126,7 @@ This read is preliminary and must be confirmed by actually building each on macO
 ### Qt (cxx-qt) — works, with an accepted on-exit crash
 
 - cxx-qt 0.9.1 against system Qt 6.11.1. Native Wayland QML window verified on KWin
-  (`xdg_toplevel`, no XWayland). Package: `packages/desktop-app/file-manager-qt`.
+  (`xdg_toplevel`, no XWayland). Package: `package/desktop-app/file-manager-qt`.
 - Fast scroll needs `ListView { reuseItems: true }`: naive create/destroy delegates hit
   11 fps at fast scroll, `reuseItems` + async incubation + cacheBuffer holds 60 fps (after
   a ~3 s warmup). Measured with the standalone `qml` runtime, not yet the integrated
@@ -151,7 +151,7 @@ This read is preliminary and must be confirmed by actually building each on macO
 ### GTK4 (gtk4-rs) — cleanest so far
 
 - gtk4-rs 0.11 (feature `v4_10`) against system GTK 4.22. Package:
-  `packages/desktop-app/file-manager-gtk`. About 90 lines.
+  `package/desktop-app/file-manager-gtk`. About 90 lines.
 - Verified end to end on this KWin session:
   - Native Wayland window (`xdg_toplevel`, 114 protocol msgs, no xcb/XWayland).
   - Virtualized `ListView` over a 100000-row model (only ~28 rows realized; screenshot).
@@ -325,5 +325,5 @@ engine stack, have no Wayland DnD).
 
 ## How to run the spikes
 
-- Qt: `mise run //packages/desktop-app/file-manager-qt:run` (forces `QT_QPA_PLATFORM=wayland`).
-- GTK: `mise run //packages/desktop-app/file-manager-gtk:run` (forces `GDK_BACKEND=wayland`).
+- Qt: `mise run //package/desktop-app/file-manager-qt:run` (forces `QT_QPA_PLATFORM=wayland`).
+- GTK: `mise run //package/desktop-app/file-manager-gtk:run` (forces `GDK_BACKEND=wayland`).

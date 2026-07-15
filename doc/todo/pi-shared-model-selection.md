@@ -2,7 +2,7 @@
 
 ## Decisions captured here
 
-- Keep the package at `packages/pi-shared/model-selection/` with package name
+- Keep the package at `package/pi-shared/model-selection/` with package name
   `@monochromatic-dev/pi-shared-model-selection`.
 - Use one shared package,
    but split its public surface by dependency tier with subpath exports.
@@ -119,17 +119,17 @@ A package belongs there when it is intended for two or more pi packages and its 
 one extension's command,
  rendering,
  or config surface.
-Actual pi extensions stay under `packages/pi-plugin/`.
+Actual pi extensions stay under `package/pi-plugin/`.
 
-The repository has a nested-category precedent in `packages/claude-code-plugin/hook-type/`,
+The repository has a nested-category precedent in `package/claude-code-plugin/hook-type/`,
  consumed by
-`packages/claude-code-plugin/source/`.
+`package/claude-code-plugin/source/`.
 This plan intentionally chooses a top-level `pi-shared` category instead,
  so the category rule above is part of
 the extraction and should be kept with the package README.
 
 - Directory:
-   `packages/pi-shared/model-selection/`
+   `package/pi-shared/model-selection/`
 - Package name:
    `@monochromatic-dev/pi-shared-model-selection`
 - Description:
@@ -363,7 +363,7 @@ Move budget selection strategy into shared while keeping host-specific auth in a
 Budget selection must accept callbacks instead of importing auto-mode context directly:
 
 ```typescript
-// packages/pi-shared/model-selection/src/budget-selection.ts
+// package/pi-shared/model-selection/src/budget-selection.ts
 export type ResolveBudgetAuth<TModel> = (
   options: { readonly model: TModel; },
 ) => Promise<Maybe<BudgetModelAuth>>;
@@ -500,7 +500,7 @@ Add characterization tests before rewiring imports:
 
 ## Migration steps
 
-1.  Scaffold `packages/pi-shared/model-selection/` with `package.json`,
+1.  Scaffold `package/pi-shared/model-selection/` with `package.json`,
      `mise.toml`,
     `tsdown.node.config.ts`,
      `README.md`,
@@ -537,10 +537,10 @@ Add characterization tests before rewiring imports:
      update auto-mode to a thin
     registry-auth adapter.
 15. Move or rewrite unit tests for every shared module.
-16. Run `mise run //packages/pi-shared/model-selection:buildAndTest`.
-17. Run `mise run //packages/pi-plugin/advisor:buildAndTest`.
-18. Run `mise run //packages/pi-plugin/auto-mode:buildAndTest`.
-19. Run `mise run //packages/pi-plugin/thinking-default:buildAndTest`.
+16. Run `mise run //package/pi-shared/model-selection:buildAndTest`.
+17. Run `mise run //package/pi-plugin/advisor:buildAndTest`.
+18. Run `mise run //package/pi-plugin/auto-mode:buildAndTest`.
+19. Run `mise run //package/pi-plugin/thinking-default:buildAndTest`.
 20. Run type checks for the shared package and three consumers.
 21. Run advisor and thinking-defaults extension verification tasks.
 22. Remove local files that became empty wrappers only after import rewiring and tests pass.
@@ -550,7 +550,7 @@ Add characterization tests before rewiring imports:
 - New top-level category:
    `pi-shared` differs from the nested `hook-types` precedent.
   Mitigation:
-   document the category rule in the package README and keep actual extensions in `packages/pi-plugin/`.
+   document the category rule in the package README and keep actual extensions in `package/pi-plugin/`.
 - Single package with optional platform peers:
    broad root exports could make lightweight consumers pay for
   pi-ai or pi-coding-agent.

@@ -1,0 +1,41 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:node"]
+extends = "build:js:node"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:js"]
+extends = "watch:build:js"
+
+[tasks."watch:build:js:node"]
+extends = "watch:build:js:node"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."lint:oxlint:fix"]
+description = "Auto-fix this package with Oxlint (type-aware)"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', '--type-aware'])
+"""
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks."test:unit"]
+extends = "test:unit"

@@ -13,7 +13,7 @@ delegate; the workaround is to forward the right-press from the row's
 
 ## Symptom
 
-In the prototype at `packages/desktop-app/file-manager/`, each directory pane is a
+In the prototype at `package/desktop-app/file-manager/`, each directory pane is a
 custom `ListView` whose row delegate is a `Rectangle` containing a `TouchArea`
 (for hover and selection).
 The whole strip is wrapped in a `ContextMenuArea` with a `Menu` of
@@ -119,8 +119,8 @@ Reproduction harness:
 build the prototype with the embedded Slint MCP server and drive it headless.
 
 ```bash
-# packages/desktop-app/file-manager
-mise run //packages/desktop-app/file-manager:mcp   # binds 127.0.0.1:9317
+# package/desktop-app/file-manager
+mise run //package/desktop-app/file-manager:mcp   # binds 127.0.0.1:9317
 ```
 
 Fails (built-in path on a row):
@@ -199,10 +199,10 @@ key-pressed(event) => {
 }
 ```
 
-The implementation is `packages/desktop-app/file-manager/ui/app.slint` (the
+The implementation is `package/desktop-app/file-manager/ui/app.slint` (the
 `context-menu` area, the row `touch` `pointer-event`, and the pane `FocusScope`
 `key-pressed`), with the Rust identity plumbing in
-`packages/desktop-app/file-manager/src/menu.rs`.
+`package/desktop-app/file-manager/src/menu.rs`.
 
 Tradeoffs:
 

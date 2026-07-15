@@ -472,7 +472,7 @@ Any root sentinel exists:
 
 GCW:
  `git-policy-cli` worktree-guard reviews:
- baked-in allowlist `DEFAULT_ALLOWED_WORKTREE_DIRS` (`packages/git-policy/cli/src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass guard.
+ baked-in allowlist `DEFAULT_ALLOWED_WORKTREE_DIRS` (`package/git-policy/cli/src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass guard.
 
 ### Research tools
 
@@ -626,15 +626,15 @@ No suitable task:
 CM4:
  Never substitute `bun test` for missing mise task;
  it misreports under `@monochromatic-dev/module-test`.
-Use `mise run //packages/<path>:test:unit`,
+Use `mise run //package/<path>:test:unit`,
  or `node <file>` when no task exists.
 
 CM5:
  Read root + package `mise.toml` for available commands.
-Run package task via `mise run //packages/path:task` (not `mise run --cd`).
+Run package task via `mise run //package/path:task` (not `mise run --cd`).
 
 CM6:
- Run `mise run //packages/<path>:lint:types` manually after editing TypeScript;
+ Run `mise run //package/<path>:lint:types` manually after editing TypeScript;
  no automated type-check yet.
 
 WC2:
@@ -1101,7 +1101,7 @@ LFW:
 ### Adding new packages
 
 AP1:
- Create directory under the appropriate category in `packages/`.
+ Create directory under the appropriate category in `package/`.
 
 AP2:
  Add `mise.toml` with task definitions mirroring sibling packages.

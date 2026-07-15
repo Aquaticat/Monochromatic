@@ -3,18 +3,18 @@
 ## Current human instructions
 
 - Fix repo-wide `mise run lint` failures until the root lint task passes.
-- The earlier `packages/dev-script/catalog-tighten` skip is superseded.
+- The earlier `package/dev-script/catalog-tighten` skip is superseded.
   The human said catalog-tighten work is finished and asked to fix all lint issues.
   Issue #259 is historical context only now.
 - Do not stage unrelated human changes.
   Earlier known human-owned files were
-  `packages/dev-script/catalog-tighten.matrix/README.md` and
-  `packages/dev-script/catalog-tighten.matrix/src/combos.ts`.
+  `package/dev-script/catalog-tighten.matrix/README.md` and
+  `package/dev-script/catalog-tighten.matrix/src/combos.ts`.
   `git status --short` was clean immediately before this handover edit,
   but check again on resume.
 - Do not satisfy `catch-binding` with an unused `catch (error)`.
   Log the caught value or rethrow it.
-- `packages/module/test` remains a special stdout/stderr case:
+- `package/module/test` remains a special stdout/stderr case:
   for expected fallback catches,
   use `catch (error: unknown) { if (!Error.isError(error,)) throw error; ... }`
   instead of logging expected failures.
@@ -71,14 +71,14 @@ They changed no-restricted-syntax behavior and explain why root lint now surface
 
 ## Verified package progress
 
-- `mise run //packages/dev-script/mutation-test:lint` passed after mutation-test fixes.
-- `mise run //packages/dev-script/vm-builder:lint` passed after vm-builder fixes.
-- `mise run //packages/dev-script/deps-cube:lint` passed after deps-cube fixes.
-- `mise run //packages/dev-script/page-weight:lint` passed after page-weight fixes.
-- `mise run //packages/figma/kiwi:lint` and
-  `node packages/figma/kiwi/src/index.unit.test.ts` passed after `f36c3efd3`.
+- `mise run //package/dev-script/mutation-test:lint` passed after mutation-test fixes.
+- `mise run //package/dev-script/vm-builder:lint` passed after vm-builder fixes.
+- `mise run //package/dev-script/deps-cube:lint` passed after deps-cube fixes.
+- `mise run //package/dev-script/page-weight:lint` passed after page-weight fixes.
+- `mise run //package/figma/kiwi:lint` and
+  `node package/figma/kiwi/src/index.unit.test.ts` passed after `f36c3efd3`.
   Current root lint lists kiwi failing again under newer rules.
-- `mise run //packages/figma/to-penpot:lint //packages/mcp/stdio:lint` passed after `ff6490a2a`.
+- `mise run //package/figma/to-penpot:lint //package/mcp/stdio:lint` passed after `ff6490a2a`.
 - Targeted module lints passed for dom,
   fs-path,
   i18n-compose,
@@ -90,7 +90,7 @@ They changed no-restricted-syntax behavior and explain why root lint now surface
   test,
   toml-edit,
   and zip-writer.
-- `mise run //packages/module/toml-edit:lint` passed immediately before commit `b8a050712`.
+- `mise run //package/module/toml-edit:lint` passed immediately before commit `b8a050712`.
 
 ## Latest root lint results
 
@@ -99,12 +99,12 @@ A full root lint was started after the toml-edit split as process
 It failed.
 Visible failures in that run included:
 
-- `//packages/oxlint-plugin/tsdoc:lint`:
+- `//package/oxlint-plugin/tsdoc:lint`:
   `method-signature-style` and `unicorn/prefer-export-from` warnings.
-- `//packages/oxlint-plugin/stylistic:lint`:
+- `//package/oxlint-plugin/stylistic:lint`:
   one `method-signature-style` warning and seven `catch-binding` errors in
   `src/oxlint-stylistic.unit.test.ts`.
-- `//packages/pi-plugin/linkup:lint`:
+- `//package/pi-plugin/linkup:lint`:
   many `unicorn/prefer-export-from` warnings,
   `readFileSync` in `src/config.ts`,
   and an unbound catch in `src/domain-policy.ts`.
@@ -124,27 +124,27 @@ That command failed with full output at:
 The aggregate failed package list from that run was:
 
 ```txt
-//packages/config/tofu:lint
-//packages/figma/kiwi:lint
-//packages/oxlint-plugin/tsdoc:lint
-//packages/pi-shared/model-selection:lint
-//packages/pi-plugin/current-time-context:lint
-//packages/oxlint-plugin/stylistic:lint
-//packages/pi-plugin/morph-compact:lint
-//packages/pi-plugin/auto-mode:lint
-//packages/pi-plugin/terminal-title:lint
-//packages/pi-plugin/statusline:lint
-//packages/pi-plugin/spawn:lint
-//packages/rust-module/forbidden-regex.bench:lint
-//packages/rolldown-plugin/import-attributes:lint
-//packages/pi-plugin/linkup:lint
-//packages/pi-plugin/thinking-default:lint
-//packages/typeface/aquaticat:lint
-//packages/ssg/aquati.cat:lint
-//packages/webapp-productivity/done-postcss:lint
-//packages/webapp-productivity/done:lint
-//packages/webapp-productivity/rss:lint
-//packages/webapp-productivity/doodle-widget:lint
+//package/config/tofu:lint
+//package/figma/kiwi:lint
+//package/oxlint-plugin/tsdoc:lint
+//package/pi-shared/model-selection:lint
+//package/pi-plugin/current-time-context:lint
+//package/oxlint-plugin/stylistic:lint
+//package/pi-plugin/morph-compact:lint
+//package/pi-plugin/auto-mode:lint
+//package/pi-plugin/terminal-title:lint
+//package/pi-plugin/statusline:lint
+//package/pi-plugin/spawn:lint
+//package/rust-module/forbidden-regex.bench:lint
+//package/rolldown-plugin/import-attributes:lint
+//package/pi-plugin/linkup:lint
+//package/pi-plugin/thinking-default:lint
+//package/typeface/aquaticat:lint
+//package/ssg/aquati.cat:lint
+//package/webapp-productivity/done-postcss:lint
+//package/webapp-productivity/done:lint
+//package/webapp-productivity/rss:lint
+//package/webapp-productivity/doodle-widget:lint
 ```
 
 Visible diagnostic themes in the human run:
@@ -163,14 +163,14 @@ Visible diagnostic themes in the human run:
   Symbol descriptions must be self-explanatory phrases,
   not short tags such as `discard`, `no-timer`, or `task-not-found`.
 - `unicorn/prefer-export-from` warnings for import-then-re-export patterns.
-- `packages/webapp-productivity/done` and `done-postcss` have both oxlint and type failures.
+- `package/webapp-productivity/done` and `done-postcss` have both oxlint and type failures.
   The visible type errors come from calling `.get`, `.all`, or `.run` on `db.prepare(...)`
   where `prepare` is now typed as returning `Promise<Statement>`.
   Await the prepared statement before calling statement methods.
-- `packages/webapp-productivity/rss` has unbound catches,
+- `package/webapp-productivity/rss` has unbound catches,
   sync filesystem checks,
   and low-information Symbol descriptions.
-- `packages/webapp-productivity/doodle-widget` has unbound catches,
+- `package/webapp-productivity/doodle-widget` has unbound catches,
   low-information Symbol descriptions,
   and `prefer-number-coercion` warnings for `Number.parseFloat`.
 

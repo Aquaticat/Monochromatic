@@ -110,7 +110,7 @@ Nice-to-have features and experimental improvements.
 ### Active development (March 2026)
 
 - **MCP packages**:
-   Building mcp-stdio and mcp-nvim → packages/mcp/
+   Building mcp-stdio and mcp-nvim → package/mcp/
 - **Build System**:
    Fixing ordering issues for fresh clones → [Build System Todo](build-system.md#fresh-clone-setup-problems)
 - **Security**:

@@ -121,7 +121,7 @@ Source:
 yaml:
 10 (dart:
 ffi mapped);
- packages/flutter_tools/templates/plugin_ffi/ (ffiPlugin scaffold:
+ package/flutter_tools/templates/plugin_ffi/ (ffiPlugin scaffold:
  ios.
 tmpl/projectName.
 podspec.
@@ -229,7 +229,7 @@ Rust core reuse:
  no AVAudioEngine rewrite.
  cpal 0.18 already ships an iOS CoreAudio (RemoteIO AudioUnit) backend,
  and symphonia+libopus are pure Rust.
- The whole packages/music-player/desktop-app Rust core (symphonia decode,
+ The whole package/music-player/desktop-app Rust core (symphonia decode,
  true-peak normalization,
  on-disk peak cache,
  two-axis paginated folder queue,

@@ -96,7 +96,7 @@ re-reading its own diff.
    You would script one as a fresh,
    headless pi run (print or JSON mode) handed
   just the push diff plus a review prompt.
-   Note that your `packages/pi-plugin/advisor` extension is not the tool
+   Note that your `package/pi-plugin/advisor` extension is not the tool
   for this:
    it reviews the current session's conversation with a secondary model (modelled after Claude
   Code's Advisor),

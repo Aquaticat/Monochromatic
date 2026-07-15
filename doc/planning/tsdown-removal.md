@@ -10,7 +10,7 @@ tsdown is absent from the catalog,
 lockfile,
 mise files,
 and every active package;
-`packages/config/tsdown` is deleted.
+`package/config/tsdown` is deleted.
 Outstanding follow-ups live under "Open items".
 
 ## Driver
@@ -44,8 +44,8 @@ those were considered and ranked below layer reduction.
   with type-surface-equivalent output that type-checks clean under TypeScript 7 strict.
   TypeScript 6 and the `tsc` backend are deprecated for this repository.
 - Scope:
-  active `packages/*/*` plus root infra and docs.
-  `packages-paused/` (eight stale configs) and `packages-deprecated/` (one) stay untouched;
+  active `package/*/*` plus root infra and docs.
+  `package-paused/` (eight stale configs) and `package-deprecated/` (one) stay untouched;
   they are outside the workspace glob,
   so catalog removal cannot break their installs.
   Paused packages migrate at resume time.
@@ -62,7 +62,7 @@ those were considered and ranked below layer reduction.
 
 ## Behavior inventory config-rolldown must replicate
 
-Read from `packages/config/tsdown/src/` on 2026-07-15:
+Read from `package/config/tsdown/src/` on 2026-07-15:
 
 - Workspace-dep inlining:
   bundle `@monochromatic-dev/**` always;
@@ -107,7 +107,7 @@ Read from `packages/config/tsdown/src/` on 2026-07-15:
 ## Execution plan
 
 1. Pilot in a fresh worktree off `main`:
-   create `packages/config/rolldown`,
+   create `package/config/rolldown`,
    migrate six representative packages,
    verify each at the user boundary (VUB):
    - `oxlint-plugin/tsdoc`: node flavor, published, dist types consumed by `oxlint.config.ts`.
@@ -122,7 +122,7 @@ Read from `packages/config/tsdown/src/` on 2026-07-15:
    outliers (`tools`, `main`, `preload`; five configs).
 3. Final commits:
    remove `tsdown` from the pnpm catalog,
-   delete `packages/config/tsdown`,
+   delete `package/config/tsdown`,
    update docs.
 4. Docs updates:
    supersede "Bundler: tsdown > raw rolldown" in `doc/philosophy/tool-choices.md`

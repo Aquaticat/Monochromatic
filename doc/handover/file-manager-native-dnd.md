@@ -1,7 +1,7 @@
 # Handover: file-manager native drag-and-drop
 
 Cross-session state for building hand-written per-OS native drag-and-drop into the
-file-manager prototype (`packages/desktop-app/file-manager/`), so files can be
+file-manager prototype (`package/desktop-app/file-manager/`), so files can be
 dragged between the app and the OS file manager.
 Started 2026-07-05.
 Update this doc after each milestone.
@@ -201,7 +201,7 @@ app behaves the same, so the adapter is not breaking anything.
 ## Automated inbound DnD test in the nested compositor (BUILT, PASSING)
 
 Manual drags on the real kwin desktop gave no clean signal, so DnD testing is now
-automatic in `packages/cli/nested-wayland-session` (a Smithay nested compositor that
+automatic in `package/cli/nested-wayland-session` (a Smithay nested compositor that
 hosts one app, injects input via its own seat over a Unix-socket control API, and
 screenshots). Committed as `28e9bb00a`.
 
@@ -228,7 +228,7 @@ What was built:
   as unvalidated; releasing synchronously in the same call fails. The payload lives in
   `Compositor::pending_dnd_uri_list` so `send` (which only has `&mut Compositor`) can
   reach it.
-- Build in the Fedora container (`mise run //packages/cli/nested-wayland-session:...`;
+- Build in the Fedora container (`mise run //package/cli/nested-wayland-session:...`;
   host lacks `wayland-server` headers). `cargo check`, rust linter, 15 tests
   (incl. the `drop-file` parse test), and clippy (`-D warnings`) all pass.
 
@@ -238,9 +238,9 @@ nested winit client, per its README):
 ```sh
 printf 'hello\n' > /tmp/hello.txt
 RUST_LOG=info \
-  packages/cli/nested-wayland-session/target/debug/monochromatic-nested-wayland-session \
+  package/cli/nested-wayland-session/target/debug/monochromatic-nested-wayland-session \
   --socket /tmp/nws.sock --size 1280x720 -- \
-  packages/desktop-app/file-manager/target/debug/monochromatic-file-manager \
+  package/desktop-app/file-manager/target/debug/monochromatic-file-manager \
   > /tmp/nws.log 2>&1 &
 # wait for: native DnD: data device bound on shared seat
 printf 'drop-file /tmp/hello.txt\n' | socat - UNIX-CONNECT:/tmp/nws.sock   # => ok
@@ -275,14 +275,14 @@ Smithay clone for reference (throwaway, re-clone if gone):
 
 ## Key files and commands
 
-- `packages/desktop-app/file-manager/src/dnd_native.rs`: raw-handle extraction +
+- `package/desktop-app/file-manager/src/dnd_native.rs`: raw-handle extraction +
   per-OS `start` dispatch.
-- `packages/desktop-app/file-manager/src/dnd_wayland.rs`: the Wayland
+- `package/desktop-app/file-manager/src/dnd_wayland.rs`: the Wayland
   `wl_data_device` adapter (Linux only).
-- `packages/desktop-app/file-manager/src/app.rs`: single-shot timer calls
+- `package/desktop-app/file-manager/src/app.rs`: single-shot timer calls
   `dnd_native::start(app.window())` once the window is realized.
-- Build/lint/test: `mise run //packages/desktop-app/file-manager:{lint:clippy,lint:rust,test}`.
-- Run the GUI (needs the Wayland session): `mise run //packages/desktop-app/file-manager:run`.
+- Build/lint/test: `mise run //package/desktop-app/file-manager:{lint:clippy,lint:rust,test}`.
+- Run the GUI (needs the Wayland session): `mise run //package/desktop-app/file-manager:run`.
   The binary is `monochromatic-file-manager`; stop it with
   `pkill -f monochromatic-file-manager`.
 

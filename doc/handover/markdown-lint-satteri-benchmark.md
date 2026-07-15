@@ -6,7 +6,7 @@ pursue the plugin rewrite (variant 3).
 ## Goal
 
 Measure, not guess, the speed of three ways to run the repo's Markdown/MDX
-linting (`@monochromatic-dev/cli-markdown-lint`, `packages/cli/markdown-lint`),
+linting (`@monochromatic-dev/cli-markdown-lint`, `package/cli/markdown-lint`),
 to decide whether and how to migrate to Sätteri (https://satteri.bruits.org/,
 version 0.9.4), a Rust Markdown/MDX engine with JavaScript plugins:
 
@@ -36,7 +36,7 @@ hazards, so it is not worth its much larger cost and risk.
 ## Corpus
 
 Fixed snapshot of every `.md`/`.mdx` the linter would process (gitignore-style
-exclusions: `node_modules`, `packages-paused`, `packages-deprecated`,
+exclusions: `node_modules`, `package-paused`, `package-deprecated`,
 `.out-of-scope`).
 
 - Files: 642 (36 MDX), about 7.24 MB; largest `doc/audit/em-dash.md` (~212 KB).
@@ -137,7 +137,7 @@ files. The residual difference is an irreducible parser-semantics divergence: fo
 `1. 3.1.1 **Testing**` (an ordered-list item whose content starts with a number),
 Sätteri's pulldown-cmark parser folds the `1. ` marker into a text node and
 mis-bounds the following `**strong**`, while micromark parses a clean list item.
-This affects `packages/webapp-productivity/rss/TODO.index.md` only (25
+This affects `package/webapp-productivity/rss/TODO.index.md` only (25
 diagnostics, 0.5%). Sätteri documents such divergences from the unified
 ecosystem; a real migration should re-run the rule unit tests against Sätteri's
 tree and record the accepted divergences.
@@ -166,7 +166,7 @@ be updated for the new `trailing` parameter.
 
 Adopt variant 2, the parser swap:
 
-- Replace the body of `packages/cli/markdown-lint/src/parse.ts` with Sätteri's
+- Replace the body of `package/cli/markdown-lint/src/parse.ts` with Sätteri's
   `markdownToMdast` / `mdxToMdast` (features `{ gfm: true, frontmatter: true }`);
   keep every rule, the `Diagnostic`/`Fix` model, the fixpoint fixer, the
   reporters, and the CLI unchanged.

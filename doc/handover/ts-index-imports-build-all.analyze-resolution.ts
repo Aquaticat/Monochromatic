@@ -3,7 +3,7 @@
 //   bun doc/handover/ts-index-imports-build-all.analyze-resolution.ts
 //
 // For every `@monochromatic-dev/<pkg>[/subpath]` specifier in import/export
-// context under packages/**, resolve the subpath against the TARGET package's
+// context under package/**, resolve the subpath against the TARGET package's
 // `exports` and classify the resolved file as `src` or `dist`. Reports any
 // CROSS-package (importer != target), NON-exempt import that still resolves to
 // `dist`. The locked task is done when that count is 0.
@@ -22,7 +22,7 @@ import {
   join
 } from 'node:path';
 
-// Archived beside doc/handover/ts-index-imports-build-all.md; the packages/
+// Archived beside doc/handover/ts-index-imports-build-all.md; the package/
 // tree this scans lives two directories up from doc/handover/.
 const root = join(
   import.meta.dir,
@@ -57,14 +57,14 @@ function isExemptTarget(unscoped: string): boolean {
   return false;
 }
 
-// --- Build name -> { dir, exports } map from every package.json under packages/.
+// --- Build name -> { dir, exports } map from every package.json under package/.
 type Pkg = {
   name: string;
   dir: string;
   exports: unknown
 };
 const pkgByName = new Map<string, Pkg>();
-for (const rel of new Glob('packages/**/package.json').scanSync(root)) {
+for (const rel of new Glob('package/**/package.json').scanSync(root)) {
   if (rel.includes('/node_modules/') || rel.includes('/dist/')) continue;
   const file = join(
     root,
@@ -212,7 +212,7 @@ const names = [...pkgByName.keys()].map(n => n.slice(SCOPE.length))
     b
   ) => b.length - a.length);
 
-for (const rel of new Glob('packages/**/*.{ts,tsx,mts,cts}').scanSync(root)) {
+for (const rel of new Glob('package/**/*.{ts,tsx,mts,cts}').scanSync(root)) {
   if (rel.includes('/dist/') || rel.includes('/node_modules/')) continue;
   const file = join(
     root,

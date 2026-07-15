@@ -177,14 +177,14 @@ Versions under test:
 - `hb-subset-wasm` 0.4.0 (npm), from the pnpm catalog
 - Inter variable woff2 `Version 4.001;git-9221beed3`,
   sha256 `693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3`
-  (`packages/webapp-productivity/wc/fonts-source/inter.woff2`)
+  (`package/webapp-productivity/wc/fonts-source/inter.woff2`)
 - Firefox 151.0 / Chromium 149.0.7827.55 (playwright 1.61.1's bundled
   browsers, run in the `monochromatic-playwright` podman image)
 
 ### Harness: dump retained vs referenced name IDs
 
 Save as `stat-nameid-repro.tmp.mjs` inside
-`packages/webapp-productivity/wc` (module resolution follows the
+`package/webapp-productivity/wc` (module resolution follows the
 script's location) and run `node stat-nameid-repro.tmp.mjs`:
 
 ```js
@@ -302,7 +302,7 @@ Two catalogs fall out of the output:
 
 ### Harness: browser-level check
 
-`packages/webapp-productivity/wc/src/page.browser.test.ts` collects
+`package/webapp-productivity/wc/src/page.browser.test.ts` collects
 every error-level console message and asserts the list is empty; run
 `mise run test:browser:firefox -- webapp-productivity/wc` from the
 repo root. With the defect present it fails with both messages quoted
@@ -323,7 +323,7 @@ await subset(sfnt, { text, layoutFeatures: '*', dropTables: ['STAT'] });
 Output woff2: 41,136 bytes vs 41,172 for the defaults. No sanitizer
 messages; `fvar`/`gvar`/`avar` still carry the variable axes, so CSS
 `font-weight: 100 900` keeps working. This is what
-`packages/webapp-productivity/wc/src/subset-fonts.ts` ships.
+`package/webapp-productivity/wc/src/subset-fonts.ts` ships.
 
 Tradeoffs: the subset is no longer a spec-conformant variable font
 (the OpenType spec expects variable fonts to carry `STAT`), and any

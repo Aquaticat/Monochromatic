@@ -7,7 +7,7 @@ blocking CI.
  After every file in this document has been migrated or
 justified,
  flip the severity to `'error'` in
-`packages/config/oxlint/src/rule/restriction.ts`.
+`package/config/oxlint/src/rule/restriction.ts`.
 
 ## Rule summary
 
@@ -152,40 +152,40 @@ fixtures.
 
 ### Group A: stateful coordinators (production)
 
-1. `packages/dev-script/watch-restart/src/watcher.ts` -- `Watcher`
-1. `packages/dev-script/watch-restart/src/child.ts` -- `Child`
-1. `packages/dev-script/watch-restart/src/hash-cache.ts` -- `HashCache`
-1. `packages/pi-plugin/morph-compact/src/morph-client.ts` -- `MorphCompactClient`
-1. `packages/module/zip-writer/src/index.ts` -- `ZipWriter`
-1. `packages/figma/kiwi/src/index.ts` -- `BinaryReader` (see "Lint blind spot" below)
+1. `package/dev-script/watch-restart/src/watcher.ts` -- `Watcher`
+1. `package/dev-script/watch-restart/src/child.ts` -- `Child`
+1. `package/dev-script/watch-restart/src/hash-cache.ts` -- `HashCache`
+1. `package/pi-plugin/morph-compact/src/morph-client.ts` -- `MorphCompactClient`
+1. `package/module/zip-writer/src/index.ts` -- `ZipWriter`
+1. `package/figma/kiwi/src/index.ts` -- `BinaryReader` (see "Lint blind spot" below)
 
 ### Completed in editord
 
 Migrated on 2026-05-20:
 
-1. `packages/desktop-daemon/editord/src/server/lsp/lsp-pool.ts` -- `LspPool`
-1. `packages/desktop-daemon/editord/src/server/lsp/lsp-client.ts` -- `LspClient`
-1. `packages/desktop-daemon/editord/src/server/lsp/diagnostic-store.ts` -- `DiagnosticStore`
-1. `packages/desktop-daemon/editord/src/server/operations/watch-filesystem.ts` -- `DirWatcher`
-1. `packages/desktop-daemon/editord/src/client/ws/client.ts` -- `EditorWsClient`
-1. `packages/desktop-daemon/editord/src/client/context-menu/context-menu.ts` -- `ContextMenu`
-1. `packages/webapp-productivity/done/src/client/components/task-detail-autofill.ts` -- `AutofillManager`
-1. `packages/webapp-productivity/done-postcss/src/client/components/task-detail-autofill.ts` -- `AutofillController`
+1. `package/desktop-daemon/editord/src/server/lsp/lsp-pool.ts` -- `LspPool`
+1. `package/desktop-daemon/editord/src/server/lsp/lsp-client.ts` -- `LspClient`
+1. `package/desktop-daemon/editord/src/server/lsp/diagnostic-store.ts` -- `DiagnosticStore`
+1. `package/desktop-daemon/editord/src/server/operations/watch-filesystem.ts` -- `DirWatcher`
+1. `package/desktop-daemon/editord/src/client/ws/client.ts` -- `EditorWsClient`
+1. `package/desktop-daemon/editord/src/client/context-menu/context-menu.ts` -- `ContextMenu`
+1. `package/webapp-productivity/done/src/client/components/task-detail-autofill.ts` -- `AutofillManager`
+1. `package/webapp-productivity/done-postcss/src/client/components/task-detail-autofill.ts` -- `AutofillController`
 
 ### Group B: test-fixture Disposables
 
-1. `packages/dev-script/watch-restart/src/start.unit.test.ts` -- `FakeChild`
-1. `packages/dev-script/watch-restart/src/child.unit.test.ts` -- `FakeChild`
-1. `packages/webapp-forge/server/src/server/routes/git.cli.unit.test.ts` -- `DisposableServer`
-1. `packages/pi-plugin/morph-compact/src/ipc-socket-tcp.unit.test.ts` -- `TcpServerDisposable`
-1. `packages/pi-plugin/morph-compact/src/api-key.unit.test.ts` -- `EnvRestore`
-1. `packages/pi-plugin/morph-compact/src/ipc-file.unit.test.ts` -- `FileDisposable`
-1. `packages/pi-plugin/morph-compact/src/ipc-socket-unix.unit.test.ts` -- `SocketServerDisposable`
-1. `packages/module/test/src/sinon.unit.test.ts` -- `Greeter`
+1. `package/dev-script/watch-restart/src/start.unit.test.ts` -- `FakeChild`
+1. `package/dev-script/watch-restart/src/child.unit.test.ts` -- `FakeChild`
+1. `package/webapp-forge/server/src/server/routes/git.cli.unit.test.ts` -- `DisposableServer`
+1. `package/pi-plugin/morph-compact/src/ipc-socket-tcp.unit.test.ts` -- `TcpServerDisposable`
+1. `package/pi-plugin/morph-compact/src/api-key.unit.test.ts` -- `EnvRestore`
+1. `package/pi-plugin/morph-compact/src/ipc-file.unit.test.ts` -- `FileDisposable`
+1. `package/pi-plugin/morph-compact/src/ipc-socket-unix.unit.test.ts` -- `SocketServerDisposable`
+1. `package/module/test/src/sinon.unit.test.ts` -- `Greeter`
 
 ## Lint blind spot
 
-`packages/figma/kiwi` does not declare a `lint:oxlint` mise task;
+`package/figma/kiwi` does not declare a `lint:oxlint` mise task;
  its
 `mise.toml` only wires up `build`,
  `watch:build`,
@@ -222,9 +222,9 @@ For each file:
 1. Update all call sites:
     `new Foo(...)` becomes `createFoo(...)`.
 1. Run the package's tests:
-    `mise run //packages/<path>:test:unit`.
+    `mise run //package/<path>:test:unit`.
 1. Run the package's lint:
-    `mise run //packages/<path>:lint`.
+    `mise run //package/<path>:lint`.
 1. Commit (one logical unit per AGENTS.
    md).
 
@@ -254,32 +254,32 @@ Counts produced by running `mise run //<pkg>:lint:oxlint` against each
 package below,
  sum = 15 remaining caught warnings plus 1 unlinted class (BinaryReader):
 
-- `packages/dev-script/watch-restart`:
+- `package/dev-script/watch-restart`:
    5 (`Watcher`,
    `Child`,
    `HashCache`,
    `FakeChild` x2)
-- `packages/pi-plugin/morph-compact`:
+- `package/pi-plugin/morph-compact`:
    5 (`MorphCompactClient`,
    `EnvRestore`,
    `FileDisposable`,
    `TcpServerDisposable`,
    `SocketServerDisposable`)
-- `packages/webapp-productivity/done`:
+- `package/webapp-productivity/done`:
    1 (`AutofillManager`)
-- `packages/webapp-productivity/done-postcss`:
+- `package/webapp-productivity/done-postcss`:
    1 (`AutofillController`)
-- `packages/module/zip-writer`:
+- `package/module/zip-writer`:
    1 (`ZipWriter`)
-- `packages/module/test`:
+- `package/module/test`:
    1 (`Greeter`)
-- `packages/webapp-forge/server`:
+- `package/webapp-forge/server`:
    1 (`DisposableServer`)
-- `packages/figma/kiwi`:
+- `package/figma/kiwi`:
    1 (`BinaryReader`,
    lint-blind)
 
-Existing `*Error` classes in `packages/module/toml-edit/src/errors.ts` pass
+Existing `*Error` classes in `package/module/toml-edit/src/errors.ts` pass
 via the suffix allowlist and are not in scope.
  The 32 web-component
 classes across `editord` and `webapp-productivity` pass via `Element`
@@ -292,7 +292,7 @@ disable comment:
 
 1. Run `mise run lint` from the repo root and confirm zero warnings from
    `no-restricted-syntax/no-class`.
-1. Edit `packages/config/oxlint/src/rule/restriction.ts`:
+1. Edit `package/config/oxlint/src/rule/restriction.ts`:
     change
    `'no-restricted-syntax/no-class': 'warn'` to `'error'`.
     Remove the
@@ -307,7 +307,7 @@ disable comment:
 If a future case needs an additional allowlist suffix (e.g. a project
 adopts `EventTarget` subclassing as a pattern),
  override the rule's
-options in `packages/config/oxlint/src/rule/restriction.ts`:
+options in `package/config/oxlint/src/rule/restriction.ts`:
 
 ```ts
 'no-restricted-syntax/no-class': [
@@ -316,5 +316,5 @@ options in `packages/config/oxlint/src/rule/restriction.ts`:
 ],
 ```
 
-Per-package overrides go in `packages/config/oxlint/src/overrides.ts`
+Per-package overrides go in `package/config/oxlint/src/overrides.ts`
 using the same shape.

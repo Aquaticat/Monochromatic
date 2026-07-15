@@ -92,7 +92,7 @@ directives.push(
 ```
 
 `@eslint/plugin-kit` v0.7.2 documents the field as text after `--` in
-`packages/plugin-kit/src/config-comment-parser.js:66`:
+`package/plugin-kit/src/config-comment-parser.js:66`:
 
 ```js
 // /tmp/agent/eslint-rewrite-plugin-kit-20260606/packages/plugin-kit/src/config-comment-parser.js
@@ -104,7 +104,7 @@ justification = "";
 ```
 
 The parser splits only on `\s-{2,}\s` in
-`packages/plugin-kit/src/config-comment-parser.js:210`.
+`package/plugin-kit/src/config-comment-parser.js:210`.
  That means the
 separator must have whitespace before it,
  at least two hyphens,
@@ -128,7 +128,7 @@ after it:
 ```
 
 `parseDirective()` then parses only the directive part before that separator,
-from `packages/plugin-kit/src/config-comment-parser.js:228-244`:
+from `package/plugin-kit/src/config-comment-parser.js:228-244`:
 
 ```js
 // /tmp/agent/eslint-rewrite-plugin-kit-20260606/packages/plugin-kit/src/config-comment-parser.js

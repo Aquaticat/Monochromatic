@@ -22,7 +22,7 @@ This file tracks improvements needed across different packages in the monorepo,
 
 ---
 
-## Module Library (packages/module/es)
+## Module Library (package/module/es)
 
 ### High Priority
 
@@ -165,7 +165,7 @@ This file tracks improvements needed across different packages in the monorepo,
 
 ## Configuration Packages
 
-### TypeScript Configuration (packages/config/typescript)
+### TypeScript Configuration (package/config/typescript)
 
 #### High Priority
 
@@ -187,7 +187,7 @@ This file tracks improvements needed across different packages in the monorepo,
 
 ## Style Packages
 
-### Monochromatic CSS Framework (packages/style/monochromatic)
+### Monochromatic CSS Framework (package/style/monochromatic)
 
 #### High Priority
 
@@ -217,7 +217,7 @@ This file tracks improvements needed across different packages in the monorepo,
 
 ## Site Packages
 
-### Documentation Site (packages/site/astro-test)
+### Documentation Site (package/site/astro-test)
 
 #### High Priority
 
@@ -234,13 +234,13 @@ This file tracks improvements needed across different packages in the monorepo,
 - [ ] Add performance monitoring for documentation site
 - [ ] Create multi-language support for documentation
 
-### RSS Reader (packages/webapp-productivity/rss)
+### RSS Reader (package/webapp-productivity/rss)
 
 **Note**:
  RSS package has comprehensive TODO files already.
  See:
 
-- [`packages/webapp-productivity/rss/TODO.index.md`](../../packages/webapp-productivity/rss/TODO.index.md) for overview
+- [`package/webapp-productivity/rss/TODO.index.md`](../../package/webapp-productivity/rss/TODO.index.md) for overview
 - Individual TODO files for testing,
    performance,
    caching,
@@ -250,7 +250,7 @@ This file tracks improvements needed across different packages in the monorepo,
 
 ## Figma Plugins
 
-### CSS Variables Plugin (packages/figma-plugin/css-variables)
+### CSS Variables Plugin (package/figma-plugin/css-variables)
 
 #### High Priority
 
@@ -281,7 +281,7 @@ This file tracks improvements needed across different packages in the monorepo,
 
 ## Build Utilities
 
-### Backup Path Utility (packages/build/backup-path)
+### Backup Path Utility (package/build/backup-path)
 
 #### Medium Priority
 
@@ -290,7 +290,7 @@ This file tracks improvements needed across different packages in the monorepo,
 - [ ] Add compression support for large backup files
 - [ ] Create restore functionality with conflict resolution
 
-### Dependency Checker (packages/build/ensure-dependencies)
+### Dependency Checker (package/build/ensure-dependencies)
 
 #### High Priority
 
@@ -299,7 +299,7 @@ This file tracks improvements needed across different packages in the monorepo,
 - [ ] Add license compatibility checking
 - [ ] Create dependency update automation with testing
 
-### Time Utilities (packages/build/time)
+### Time Utilities (package/build/time)
 
 #### Low Priority
 

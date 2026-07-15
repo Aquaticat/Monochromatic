@@ -63,11 +63,11 @@ where the old `.split(' ')` tore space-containing paths into two arguments.
 Shipped across three commits:
 
 - Per-package `run` and `count` tasks:
-   `packages/cli/{fy,git,terminal-exec,rgffplay,vmsync,git-clone-size,mvm,markdown-lint}/mise.toml`
-   and `packages/module/token-count/mise.toml`.
+   `package/cli/{fy,git,terminal-exec,rgffplay,vmsync,git-clone-size,mvm,markdown-lint}/mise.toml`
+   and `package/module/token-count/mise.toml`.
 - Root `page:weight` (its entry validates a missing arg itself) and
   `lint:markdown` / `format:markdown` (the `.` default already lives in
-  `packages/cli/markdown-lint/src/run.ts`,
+  `package/cli/markdown-lint/src/run.ts`,
    so the mise-body default was redundant).
 - Root `catalog:tighten` (its entry reads `--dry-run` from argv;
    matches the
@@ -135,7 +135,7 @@ Against that ~18 ms per call:
    and a forgotten `await` silently
   no-ops the task rather than failing loudly.
    It would also force rewriting
-  `packages/dev-script/task-util/src/tsgo-filter.ts`'s working `import.meta.main`
+  `package/dev-script/task-util/src/tsgo-filter.ts`'s working `import.meta.main`
   guard to the `argv[1]` idiom,
    and commit the codebase to a convention ("no
   dispatched entry may use `import.meta.main`") that one entry currently violates.

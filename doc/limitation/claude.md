@@ -75,8 +75,8 @@ suitable for After Effects Duik rigging and animation.
  No approach produced usable results.
 
 **Status (2026-05-14):
-** the failed packages (`packages/duik/teto`,
-`packages/duik/teto-generated`) were removed for quality reasons.
+** the failed packages (`package/duik/teto`,
+`package/duik/teto-generated`) were removed for quality reasons.
 This entry is preserved so future sessions do not retry the same approaches.
 
 ### Attempt 1: Blender 3D modeling

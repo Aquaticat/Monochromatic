@@ -3,14 +3,14 @@
 ## Purpose
 
 This proposal records a maintainable decomposition for
-`packages/oxlint-plugin/no-restricted-syntax/`.
+`package/oxlint-plugin/no-restricted-syntax/`.
 It does not select a new public namespace or authorize an implementation.
 
 ## Current shape
 
 The plugin registers 45 rules in `src/index.ts`:
 26 substantive code rules and 19 directive-governance rules.
-`packages/config/oxlint/src/rule/restriction.ts` configures 43 of them.
+`package/config/oxlint/src/rule/restriction.ts` configures 43 of them.
 `no-disable-max-lines` and `no-disable-no-misused-promises` are registered but not enabled there.
 
 All rule configuration is centralized in `restrictionRules`.

@@ -282,7 +282,7 @@ is sufficient.
 Running dprint produces warnings such as:
 
 ```text
-warn: Non-relative path "packages/config/oxlint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
+warn: Non-relative path "package/config/oxlint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
 ```
 
 Formatting still completes;

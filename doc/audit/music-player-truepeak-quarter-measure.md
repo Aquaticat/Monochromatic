@@ -169,9 +169,9 @@ I set down the numbers plainly, so you need not take my word.
 The evidence, the tools to reproduce it, and the roads I walked are recorded in the plan at
 `doc/planning/music-player-shared-truepeak-core.md`, in its Stage-two section.
 The meter, the gain, and the shipped policy live in the crate
-`packages/music-player/truepeak-core`.
+`package/music-player/truepeak-core`.
 The measurer that hears the library and writes down each song's crest and its per-tenth-second
-loudnesses is `packages/music-player/truepeak-core.bench`, its collector; and the same package,
+loudnesses is `package/music-player/truepeak-core.bench`, its collector; and the same package,
 run with the word `--proportional`, reproduces every number in the ledger above from that
 measurement, without hearing the library again.
 

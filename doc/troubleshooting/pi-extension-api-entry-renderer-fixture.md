@@ -2,14 +2,14 @@
 
 ## Symptom
 
-`mise run //packages/pi-plugin/search-fetch:lint:types` failed while checking the built-extension verifier:
+`mise run //package/pi-plugin/search-fetch:lint:types` failed while checking the built-extension verifier:
 
 ```text
 src/mise.verify-extension.ts(154,9): error TS2741: Property 'registerEntryRenderer' is missing in type '{ ... }'
 but required in type 'ExtensionAPI'.
 ```
 
-The same omission made `mise run //packages/pi-plugin/search-fetch:lint:oxlint` fail with
+The same omission made `mise run //package/pi-plugin/search-fetch:lint:oxlint` fail with
 `typescript(TS2741)`.
 
 The trigger is an object literal explicitly typed as `ExtensionAPI` that implements prior API members but omits
@@ -20,7 +20,7 @@ The trigger is an object literal explicitly typed as `ExtensionAPI` that impleme
 Pi's `ExtensionAPI` declares `registerEntryRenderer` as a required method.
  The Pi 0.80.6 source clone at commit
 `bc469b03389135edf5d179ab7718c2085cdfd3a9` has this contract in
-`packages/coding-agent/src/core/extensions/types.ts:1258-1259`:
+`package/coding-agent/src/core/extensions/types.ts:1258-1259`:
 
 ```ts
 /** Register a custom renderer for CustomEntry. Custom entries do not participate in LLM context. */
@@ -28,7 +28,7 @@ registerEntryRenderer<T = unknown>(customType: string, renderer: EntryRenderer<T
 ```
 
 Pi's API loader provides the method in
-`packages/coding-agent/src/core/extensions/loader.ts:273-276`,
+`package/coding-agent/src/core/extensions/loader.ts:273-276`,
  so it is an implemented host API rather than an
 optional extension capability:
 
@@ -40,10 +40,10 @@ registerEntryRenderer<T>(customType: string, renderer: EntryRenderer<T>): void {
 },
 ```
 
-`packages/pi-plugin/search-fetch/src/mise.verify-extension.ts:154` assigns the fake API object to
+`package/pi-plugin/search-fetch/src/mise.verify-extension.ts:154` assigns the fake API object to
 `ExtensionAPI`.
  That structural assignment exposed the stale fixture.
- The consumer-side repair in `packages/pi-plugin/search-fetch/src/mise.verify-extension.ts`
+ The consumer-side repair in `package/pi-plugin/search-fetch/src/mise.verify-extension.ts`
 now supplies the required no-op registration method:
 
 ```ts
@@ -73,9 +73,9 @@ extension itself registers only its two tools:
 
 ```sh
 # /var/home/user/Monochromatic
-mise run //packages/pi-plugin/search-fetch:lint:types
-mise run //packages/pi-plugin/search-fetch:lint:oxlint
-mise run //packages/pi-plugin/search-fetch:verify:extension
+mise run //package/pi-plugin/search-fetch:lint:types
+mise run //package/pi-plugin/search-fetch:lint:oxlint
+mise run //package/pi-plugin/search-fetch:verify:extension
 ```
 
 Observed output ends with:

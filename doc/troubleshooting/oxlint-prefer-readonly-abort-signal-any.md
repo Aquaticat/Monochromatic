@@ -60,7 +60,7 @@ Recovering every enclosing variable name is also wrong.
 fixture types.
 Changing their owner identity would break existing package catalog matches and couple the catalog to implementation
 names.
-`packages/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/intrinsic-effect-owner.ts`
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/intrinsic-effect-owner.ts`
 therefore recovers only named type aliases and ambient `var` declarations.
 
 The WHATWG DOM Standard commit `5796f716c857f0a563d11d32e0ca6b49232191be` defines
@@ -116,9 +116,9 @@ The external sources under test are:
 Run the focused checks:
 
 ```sh
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
-mise run //packages/cli/git-clone-size:lint:oxlint
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit
+mise run //package/cli/git-clone-size:lint:oxlint
 ```
 
 ### Patterns that now work
@@ -127,7 +127,7 @@ mise run //packages/cli/git-clone-size:lint:oxlint
 - Exact `AbortSignal.timeout` resolves to the same owner with no caller-owned effect target.
 - Exact `TaskSignal.any` cannot match the `AbortSignal` entry merely because both use an anonymous inline type.
 - Package-local anonymous `const` fixtures retain owner `__type` and existing package catalog identities.
-- `packages/cli/git-clone-size/src/stream.ts` declares the dependency mutation on `options.signal`,
+- `package/cli/git-clone-size/src/stream.ts` declares the dependency mutation on `options.signal`,
   and its exported `estimate` boundary propagates that optional accurate contract.
 
 ### Patterns that fail closed

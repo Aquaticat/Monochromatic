@@ -33,11 +33,11 @@ or moving broad ingest to the server.
 
 Searches run in the repo found current `sharp` imports in:
 
-- `packages/webapp-productivity/wc/src/favicon.ts`
-- `packages/webapp-productivity/wc/src/favicon.unit.test.ts`
-- `packages/webapp-productivity/wc/src/page.browser.test.ts`
-- `packages/ssg/aquati.cat/src/images/convert.ts`
-- `packages/ssg/aquati.cat/src/build/render.ts`
+- `package/webapp-productivity/wc/src/favicon.ts`
+- `package/webapp-productivity/wc/src/favicon.unit.test.ts`
+- `package/webapp-productivity/wc/src/page.browser.test.ts`
+- `package/ssg/aquati.cat/src/images/convert.ts`
+- `package/ssg/aquati.cat/src/build/render.ts`
 
 Some of those files were already modified or untracked when searched.
 Treat them as concurrent work unless the current task explicitly requires editing them.
@@ -150,22 +150,22 @@ Spot-read paths and behavior:
   - `.github/workflows/ci.yml`: lint, build, unit tests, and packaging across Linux glibc, Linux musl,
     macOS, Windows, ARM, x64, and Wasm-related targets.
 - `jimp`
-  - `packages/jimp/src/index.ts`: default formats are BMP, GIF, JPEG, PNG, TIFF;
+  - `package/jimp/src/index.ts`: default formats are BMP, GIF, JPEG, PNG, TIFF;
     default plugins include resize, crop, cover, contain, rotate, blur, color, print, quantize, etc.
-  - `packages/core/src/index.ts`: `Jimp.read` accepts Buffer, ArrayBuffer, path, or URL;
+  - `package/core/src/index.ts`: `Jimp.read` accepts Buffer, ArrayBuffer, path, or URL;
     buffer format detection uses `file-type`; decoding delegates to configured formats.
   - `plugins/plugin-resize/src/index.ts`: resize option validation via zod and JS resize implementation.
   - `plugins/js-png/src/index.ts`: PNG uses `pngjs` sync encode/decode.
   - `.github/workflows/build.yml`: build, lint, test, and browser tests.
 - `@napi-rs/image`
-  - `packages/binding/index.js`: generated NAPI-RS native binding loader with platform optional packages
+  - `package/binding/index.js`: generated NAPI-RS native binding loader with platform optional packages
     and version checks.
-  - `packages/binding/src/transformer.rs`: decodes HEIC, AVIF, SVG, and image-crate formats,
+  - `package/binding/src/transformer.rs`: decodes HEIC, AVIF, SVG, and image-crate formats,
     tracks metadata, EXIF orientation, resize, fast resize, encode paths.
-  - `packages/binding/src/jpeg.rs`: JPEG optimize/compress via `mozjpeg_sys` with unsafe FFI and cleanup.
-  - `packages/binding/src/png.rs`: PNG encode, oxipng lossless compression, quantization.
-  - `packages/binding/src/avif.rs`: AVIF encode via libavif.
-  - `packages/binding/__test__/transformer.spec.mjs`: metadata, PNG/JPEG/SVG, orientation,
+  - `package/binding/src/jpeg.rs`: JPEG optimize/compress via `mozjpeg_sys` with unsafe FFI and cleanup.
+  - `package/binding/src/png.rs`: PNG encode, oxipng lossless compression, quantization.
+  - `package/binding/src/avif.rs`: AVIF encode via libavif.
+  - `package/binding/__test__/transformer.spec.mjs`: metadata, PNG/JPEG/SVG, orientation,
     staged transform regression tests.
   - `.github/workflows/CI.yml`: broad build matrix across macOS, Windows, Linux glibc, Linux musl,
     Android, and Wasm WASI.
@@ -340,7 +340,7 @@ These are selection factors, not exact code-size claims for all published artifa
 - `rastermill`: six source-ish files, 5,575 lines.
   Very readable API, but it extends trust to Photon and optional external tools.
 - `jimp`: one hundred sixty-two source-ish files, 10,372 lines.
-  Pure JS and modular, but many packages/plugins.
+  Pure JS and modular, but many package/plugins.
 - `ImageScript`: sixty-eight source-ish files, 11,786 lines.
   Mostly one large API plus codec modules.
 - `imgkit`: seventy-eight source-ish files, 16,704 lines.
@@ -442,7 +442,7 @@ Upstream validation commands and outcomes:
   - Retried with `--memory=2g --cpus=2 --userns=keep-id --security-opt label=disable`.
   - Native `@napi-rs/image` release build then succeeded.
   - Whole-monorepo `build:ts` failed on an unrelated TypeScript 6 diagnostic:
-    `packages/rollup-plugin/tsconfig.json` still uses deprecated `moduleResolution=node10`.
+    `package/rollup-plugin/tsconfig.json` still uses deprecated `moduleResolution=node10`.
   - Root AVA test command `node .yarn/releases/yarn-4.17.0.cjs test` passed after native build.
   - Scratch integration also passed.
 - `imgkit`

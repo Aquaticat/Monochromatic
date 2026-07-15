@@ -37,7 +37,7 @@ timeout.
 
 `typesafe-i18n` parses every translation lazily on first
 access using a regex defined in
-`packages/parser/src/basic.mts:117` (compiled into
+`package/parser/src/basic.mts:117` (compiled into
 `dist/i18n.object.js`):
 
 ```js
@@ -51,7 +51,7 @@ Source path in node_modules:
 line 60;
  both wrong.
  The actual source-of-truth is
-`packages/parser/src/basic.mts:117`,
+`package/parser/src/basic.mts:117`,
  bundled to `dist/i18n.object.js:58`,
 verified against `codingcommons/typesafe-i18n` HEAD at tag
 `5.27.1` commit `462f7118`.
@@ -412,7 +412,7 @@ All 5 constraints hold:
    itself so that the inner alternation no longer has a
    shared left-factor with a nested quantifier.
     One-line
-   change to `packages/parser/src/basic.mts:117`.
+   change to `package/parser/src/basic.mts:117`.
 3. **Are they supporting this use case?
    ** Yes;
     the library
@@ -425,7 +425,7 @@ All 5 constraints hold:
 5. **Have we prototyped a minimal fix?
    ** Yes.
     One-line
-   regex change at `packages/parser/src/basic.mts:117`.
+   regex change at `package/parser/src/basic.mts:117`.
    Preserves matching contract:
     45/45 parser tests,
     122/122
@@ -487,7 +487,7 @@ attached.
 
 ### Description
 
-`REGEX_BRACKETS_SPLIT` at `packages/parser/src/basic.mts:117` (bundled to `dist/i18n.object.js:58`) exhibits catastrophic backtracking on translation values that contain literal `{}` interleaved with non-brace text past one level of nesting. The hang is engine-dependent: JavaScriptCore (Bun, Safari) returns sub-millisecond; V8 (Chrome, Edge, Node) pins a CPU and does not return within practical timeouts.
+`REGEX_BRACKETS_SPLIT` at `package/parser/src/basic.mts:117` (bundled to `dist/i18n.object.js:58`) exhibits catastrophic backtracking on translation values that contain literal `{}` interleaved with non-brace text past one level of nesting. The hang is engine-dependent: JavaScriptCore (Bun, Safari) returns sub-millisecond; V8 (Chrome, Edge, Node) pins a CPU and does not return within practical timeouts.
 
 The pattern is `/(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g`. The two alternatives in the inner non-capturing group share `[^{}]+`, and the nested `(?:[^{}]+)*` introduces a second layer of unbounded quantification; together they let the engine explore exponentially many splittings of non-brace text when no overall match exists.
 

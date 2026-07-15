@@ -1,8 +1,8 @@
 # Singular dir names and the package name path invariant
 
-Status: decided, awaiting execution go-ahead.
-Decisions below were made by the user during a grilling session on 2026-07-15;
-measurements were taken the same session and must be re-run at execution time.
+Status: executed 2026-07-15, all eleven batches landed.
+Decisions below were made by the user during a grilling session on 2026-07-15.
+Deviations and residue are recorded at the end of this doc.
 
 ## Motivation and reframing
 
@@ -165,3 +165,26 @@ rather than one entry per package name.
   the sweep updates them so docs stay canonical, with this doc recording the mapping.
 - The final `packages/` rename changes every mise task address;
   open terminals and muscle memory go stale at once.
+
+## Execution deviations and residue
+
+- The guard CLI's runtime identifiers stay `cli-git`
+  (`cli-git.config.ts` discovery name, `.git/cli-git-transaction`,
+  JSONL prefixes, logger tags, the `git cli-git` management subcommand):
+  renaming them would invalidate user-global trust registries.
+- Marketplace plugin `name` fields in `.claude-plugin/marketplace.json` stay:
+  they are installed-plugin identities, like skill names.
+- The rust linter's implementations dir became `src/builtin`
+  (not `src/rule`) because `rule.rs` already owned the singular name.
+- The `seeds` to `seed` rename initially bypassed the hardcoded final-newline
+  exclusion prefix and the policy appended newlines to 3374 fuzz seed files;
+  exclusions were updated and the corpus bytes restored, verified byte-identical.
+- `package-paused/` internals keep their plural dirs: the tree is
+  workspace-inert and frozen; only stale renamed-package references were swept.
+- Forbidden-strings entries for retired identifiers were skipped by user decision.
+- The `dev-script-file-enforcer` generated-policy-contracts test fails for a
+  preexisting reason unrelated to the renames:
+  canonical policy sources lack the lazy-provider mutation contract
+  since before this work (predates batch 1).
+- User-global configs updated: `~/.pi/agent/settings.json` plugin paths and
+  `~/.claude/settings.json` statusline path point at `package/...`.

@@ -18,7 +18,7 @@ import {
 const target = process.argv[2];
 if ((!target) || target.startsWith('--')) throw new Error('usage: bun mise.detect-merge-sites.ts <target-unscoped>');
 
-// Archived beside doc/handover/ts-index-imports-build-all.md; the packages/
+// Archived beside doc/handover/ts-index-imports-build-all.md; the package/
 // tree this scans lives two directories up from doc/handover/.
 const root = join(
   import.meta.dir,
@@ -118,7 +118,7 @@ const mergeFiles: {
   valueCount: number;
   typeCount: number
 }[] = [];
-for (const rel of new Glob('packages/**/*.{ts,tsx,mts}').scanSync(root)) {
+for (const rel of new Glob('package/**/*.{ts,tsx,mts}').scanSync(root)) {
   if (rel.includes('/dist/') || rel.includes('/node_modules/')) continue;
   const file = join(
     root,

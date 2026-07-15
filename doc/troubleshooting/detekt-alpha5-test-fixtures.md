@@ -7,7 +7,7 @@ with a plain Gradle dependency
 fails during `testRuntimeClasspath` resolution:
 
 ```text
-# packages/linter/kotlin, command output from `mise run //packages/linter/kotlin:test`
+# package/linter/kotlin, command output from `mise run //package/linter/kotlin:test`
 Could not resolve dev.detekt:detekt-api:2.0.0-alpha.5.
 No matching variant of dev.detekt:detekt-api:2.0.0-alpha.5 with capability
 'dev.detekt:detekt-api-test-fixtures' was found.
@@ -16,7 +16,7 @@ No matching variant of dev.detekt:detekt-api:2.0.0-alpha.5 with capability
 The trigger pattern is:
 
 ```kotlin
-// packages/linter/kotlin/build.gradle.kts, failing shape
+// package/linter/kotlin/build.gradle.kts, failing shape
 dependencies {
     testImplementation("dev.detekt:detekt-test:2.0.0-alpha.5")
 }
@@ -27,7 +27,7 @@ removes its transitive request for the unpublished fixture capability,
 and adds the normal API jar explicitly:
 
 ```kotlin
-// packages/linter/kotlin/build.gradle.kts, working shape
+// package/linter/kotlin/build.gradle.kts, working shape
 dependencies {
     testImplementation("dev.detekt:detekt-test:2.0.0-alpha.5") {
         exclude(group = "dev.detekt", module = "detekt-api")
@@ -132,7 +132,7 @@ Version under test:
 
 - detekt `2.0.0-alpha.5`
 - Gradle `9.5.1`,
-  via `packages/linter/kotlin/gradlew`
+  via `package/linter/kotlin/gradlew`
 - Kotlin Gradle plugin `2.4.0`
 - JDK `21`,
   via mise Temurin
@@ -140,16 +140,16 @@ Version under test:
 Failing catalog:
 
 - Plain `testImplementation("dev.detekt:detekt-test:2.0.0-alpha.5")` fails
-  `mise run //packages/linter/kotlin:test`
+  `mise run //package/linter/kotlin:test`
   during `:testRuntimeClasspath` resolution
   with the `detekt-api-test-fixtures` no-matching-variant error quoted above.
 
 Working catalog:
 
-- Current `packages/linter/kotlin/build.gradle.kts` excludes `dev.detekt:detekt-api`
+- Current `package/linter/kotlin/build.gradle.kts` excludes `dev.detekt:detekt-api`
   from `detekt-test`
   and adds `testImplementation("dev.detekt:detekt-api:$detektVersion")` explicitly.
-- `mise run //packages/linter/kotlin:test` passed after the workaround:
+- `mise run //package/linter/kotlin:test` passed after the workaround:
 
 ```text
 # /var/home/user/Monochromatic
@@ -157,7 +157,7 @@ BUILD SUCCESSFUL in 5s
 5 actionable tasks: 1 executed, 4 up-to-date
 ```
 
-- `mise run //packages/linter/kotlin:lint` passed:
+- `mise run //package/linter/kotlin:lint` passed:
 
 ```text
 # /var/home/user/Monochromatic
@@ -165,7 +165,7 @@ BUILD SUCCESSFUL in 3s
 4 actionable tasks: 4 up-to-date
 ```
 
-- `mise run //packages/linter/kotlin:lint:detekt` passed,
+- `mise run //package/linter/kotlin:lint:detekt` passed,
   exercising the detekt 2 CLI with the custom plugin jar:
 
 ```text
@@ -322,7 +322,7 @@ BUILD SUCCESSFUL in 6s
 Patch:
 
 ```diff
-# packages/linter/kotlin/build.gradle.kts
+# package/linter/kotlin/build.gradle.kts
  dependencies {
 -    testImplementation("dev.detekt:detekt-test:$detektVersion")
 +    testImplementation("dev.detekt:detekt-test:$detektVersion") {
@@ -339,7 +339,7 @@ Tradeoff:
   if the consumer uses `detekt-test` APIs that reference `dev.detekt.api.testfixtures`.
   For example,
   `FileProcessListenerExtensions.kt` imports `dev.detekt.api.testfixtures.TestDetektion`.
-- It is safe for `packages/linter/kotlin`
+- It is safe for `package/linter/kotlin`
   because the tests only call the rule `lint` helper and `TestConfig`.
 
 ### Pinning an older alpha

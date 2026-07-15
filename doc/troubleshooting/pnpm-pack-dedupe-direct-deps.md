@@ -12,7 +12,7 @@ because this dependency is not installed. Try running "pnpm install".
 
 A normal filtered install and a forced filtered install both left that direct development dependency linked only at the
 workspace root.
-`packages/git-policy/cli/node_modules/@monochromatic-dev` did not contain `config-typescript`.
+`package/git-policy/cli/node_modules/@monochromatic-dev` did not contain `config-typescript`.
 
 Using `npm pack` instead created a tarball,
 but its manifest retained `catalog:` dependency specifiers.
@@ -50,7 +50,7 @@ pnpm pack --pack-destination dist/pack
 ```
 
 After the first command,
-`packages/git-policy/cli/node_modules/@monochromatic-dev/config-typescript` existed.
+`package/git-policy/cli/node_modules/@monochromatic-dev/config-typescript` existed.
 The second command produced a tarball whose manifest contained ordinary registry versions instead of `catalog:` or
 `workspace:` protocols.
 
@@ -62,7 +62,7 @@ and forwarded `git --version` successfully.
 
 ## Verified workaround
 
-`packages/git-policy/cli/mise.toml` makes `pack:npm` perform a forced package-filtered install with
+`package/git-policy/cli/mise.toml` makes `pack:npm` perform a forced package-filtered install with
 `dedupe-direct-deps=false` immediately before `pnpm pack`.
 The override is command-local;
 it does not weaken workspace-wide deduplication.

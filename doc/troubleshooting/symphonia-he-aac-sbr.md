@@ -49,20 +49,20 @@ A narrower reproduction over only the `Fate` folder produced the same single fai
 
 The app selects the first known audio track and sends non-Opus audio to Symphonia.
 That part is not the failure.
-`packages/music-player/desktop-app/src/decode.rs:388-400` selects the audio track:
+`package/music-player/desktop-app/src/decode.rs:388-400` selects the audio track:
 
 ```rust
-// packages/music-player/desktop-app/src/decode.rs:388-400
+// package/music-player/desktop-app/src/decode.rs:388-400
 let track = format
     .first_track_known_codec(TrackType::Audio)
     .ok_or_else(|| PlayerError::Unsupported("no audio track".to_string()))?;
 ```
 
-`packages/music-player/desktop-app/src/decode.rs:415-435` reads the audio codec parameters and records whether
+`package/music-player/desktop-app/src/decode.rs:415-435` reads the audio codec parameters and records whether
 this is Opus:
 
 ```rust
-// packages/music-player/desktop-app/src/decode.rs:415-435
+// package/music-player/desktop-app/src/decode.rs:415-435
 let audio_params = track
     .codec_params
     .as_ref()
@@ -74,10 +74,10 @@ let audio_params = track
 (track.id, audio_params.codec == CODEC_ID_OPUS, track.clone())
 ```
 
-`packages/music-player/desktop-app/src/decode.rs:446-463` routes non-Opus audio through `SymphoniaSource`:
+`package/music-player/desktop-app/src/decode.rs:446-463` routes non-Opus audio through `SymphoniaSource`:
 
 ```rust
-// packages/music-player/desktop-app/src/decode.rs:446-463
+// package/music-player/desktop-app/src/decode.rs:446-463
 if is_opus {
     let source = OpusSource::new(format, track, track_id)?;
     Ok(Box::new(source))

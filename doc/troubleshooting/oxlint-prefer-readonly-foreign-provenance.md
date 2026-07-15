@@ -2,7 +2,7 @@
 
 ## Symptom
 
-An early `packages/module/toml-edit` migration wrapped many parser AST descendants and callback parameters in
+An early `package/module/toml-edit` migration wrapped many parser AST descendants and callback parameters in
 `ForeignBorrowed<T>`.
 That reduced diagnostics,
 but it repeated an ownership claim at every traversal step and made it difficult to see where foreign ownership entered.
@@ -110,10 +110,10 @@ Focused fixture coverage includes:
 The current plugin commands are:
 
 ```sh
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:types
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 ```
 
 Type lint,
@@ -133,8 +133,8 @@ and external-consumer checks.
 The TOML package commands are:
 
 ```sh
-mise run //packages/module/toml-edit:lint:types
-mise run //packages/module/toml-edit:lint:oxlint
+mise run //package/module/toml-edit:lint:types
+mise run //package/module/toml-edit:lint:oxlint
 ```
 
 Type lint passes after the `/ts` import correction.

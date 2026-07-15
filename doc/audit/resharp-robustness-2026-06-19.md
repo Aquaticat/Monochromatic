@@ -2,7 +2,7 @@
 
 Assessment of whether `ieviev/resharp` (RE#,
  the Rust crate this workspace
-depends on via `packages/cli/forbidden-strings`) is "bulletproof,
+depends on via `package/cli/forbidden-strings`) is "bulletproof,
 " at
 `resharp 0.6.13` (the published version we ship).
  Synthesizes the consumer-side
@@ -260,8 +260,8 @@ any robustness claim can be.
    the `catch_unwind`
   wrappers,
    and the pre-validators
-  (`packages/cli/forbidden-strings/Cargo.toml`,
-  `packages/cli/forbidden-strings/src/rule/engine.rs`).
+  (`package/cli/forbidden-strings/Cargo.toml`,
+  `package/cli/forbidden-strings/src/rule/engine.rs`).
    None should be reverted
   on the strength of "the known bugs are fixed.
   "

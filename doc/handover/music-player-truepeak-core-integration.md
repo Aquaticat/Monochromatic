@@ -3,7 +3,7 @@
 Status: in progress, started 2026-07-01.
 Owner-of-record for this handover: whoever picks up the next stage.
 
-This handover tracks the work of making `packages/music-player/truepeak-core` an actually
+This handover tracks the work of making `package/music-player/truepeak-core` an actually
 consumed shared crate, rather than a built-but-unwired one. It is the living record the
 requester asked to be updated as the migration proceeds; the progress log at the bottom is
 the part that changes each session.
@@ -28,10 +28,10 @@ was untrue; those were corrected to describe the staged reality before this work
 
 - Plan: `doc/planning/music-player-shared-truepeak-core.md` (the authoritative staging is
   its "Revised staging" section).
-- Broader vision: `packages/music-player/PROPOSAL.shared-core.md` (one shared core plus a
+- Broader vision: `package/music-player/PROPOSAL.shared-core.md` (one shared core plus a
   future cross-platform UI package). That is a separate, larger effort; this handover is
   scoped to the true-peak slice only.
-- Crate surface: `packages/music-player/truepeak-core/README.md` and `src/lib.rs`.
+- Crate surface: `package/music-player/truepeak-core/README.md` and `src/lib.rs`.
 
 ## Where the plan stands
 
@@ -65,7 +65,7 @@ Order of execution, most-verifiable first:
     desktop-specific decode opener. Fully verifiable on this Linux host (build plus tests).
 2.  Android native migration. The analogous swap in `android-app/rust/src/truepeak.rs`,
     verified by cross-compiling the `.so` for both ABIs with `mise run
-    //packages/music-player/android-app:build:native`. Requires reading the Android meter
+    //package/music-player/android-app:build:native`. Requires reading the Android meter
     first to confirm the swap is a refactor and not a hidden behavior change (its file
     carries a windowed scan and a `1.26` safety factor the shared crate does not ship).
 3.  Later stages (not in this work): the shared Turso service, deleting the Kotlin
@@ -90,14 +90,14 @@ Order of execution, most-verifiable first:
 
 ## Verification
 
-- Desktop: `mise run //packages/music-player/desktop-app:lint` (cargo check), then
+- Desktop: `mise run //package/music-player/desktop-app:lint` (cargo check), then
   `:test` (nextest), then `:lint:clippy` and `:lint:rust`. A user-boundary playback check
   is the ideal, but the meter-only swap is value-preserving on whole-frame input, so the
   fixture decode test plus the shared crate's own meter and gain tests cover it.
-- Android native: `mise run //packages/music-player/android-app:build:native` cross-compiles
+- Android native: `mise run //package/music-player/android-app:build:native` cross-compiles
   and links the `.so` for `arm64-v8a` and `x86_64`. Full APK assembly and on-device
   playback need a device and are out of scope for this host; note that in the log.
-- Shared crate itself: `mise run //packages/music-player/truepeak-core:test`, `:lint:clippy`,
+- Shared crate itself: `mise run //package/music-player/truepeak-core:test`, `:lint:clippy`,
   `:lint:rust`.
 
 ## Remaining after this work

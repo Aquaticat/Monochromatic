@@ -8,10 +8,10 @@ the missing files appear correlated with spaces in directory paths:
 
 ```bash
 # Returns 3 files -- all in paths without spaces
-rg --glob '*.test.ts' -l '\.test\.' packages/
+rg --glob '*.test.ts' -l '\.test\.' package/
 
 # Returns 81 files -- including paths with spaces
-rg --files --glob '*.test.ts' packages/
+rg --files --glob '*.test.ts' package/
 ```
 
 The spaces are a red herring;
@@ -53,13 +53,13 @@ Demonstrate the two operations are independent:
 
 ```bash
 # Files whose NAME matches the glob (no content predicate)
-rg --files --glob '*.test.ts' packages/
+rg --files --glob '*.test.ts' package/
 
 # Files whose CONTENTS match the regex (no name predicate)
-rg -l '\.test\.' packages/
+rg -l '\.test\.' package/
 
 # Intersection: name matches glob AND content matches regex
-rg --glob '*.test.ts' -l '\.test\.' packages/
+rg --glob '*.test.ts' -l '\.test\.' package/
 ```
 
 The first and second commands return supersets of the third by
@@ -76,10 +76,10 @@ Use the operation that matches the intent:
 
 ```bash
 # List files whose NAME matches *.test.ts (no content search)
-rg --files --glob '*.test.ts' packages/
+rg --files --glob '*.test.ts' package/
 
 # Search file CONTENTS for "test" in files named *.test.ts
-rg --glob '*.test.ts' -l 'test' packages/
+rg --glob '*.test.ts' -l 'test' package/
 ```
 
 Tradeoff:

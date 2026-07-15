@@ -165,11 +165,11 @@ The same built test then returned `Readonly<SemanticFixtureBox<string>>` while c
 ### Active source metadata can disagree with configured ownership
 
 A one-worker workspace sweep repeatedly failed only on
-`packages/git-policy/cli/src/bin.ts` with:
+`package/git-policy/cli/src/bin.ts` with:
 
 ```text
 node-not-found: Effect summary index omitted owned callable declaration
-/var/home/user/Monochromatic/packages/git-policy/cli/src/bin.ts:3407:12786:263.
+/var/home/user/Monochromatic/package/git-policy/cli/src/bin.ts:3407:12786:263.
 ```
 
 A package-local run indexed the same `runCliGit` function declaration.
@@ -214,7 +214,7 @@ while TypeScript returned the source as a lowercase-drive path with forward slas
 
 ```text
 D:\a\Monochromatic\Monochromatic\packages\...
-d:/a/Monochromatic/Monochromatic/packages/...
+d:/a/Monochromatic/Monochromatic/package/...
 ```
 
 The virtual overlay map used Node's platform `resolve()` result as its key.
@@ -461,7 +461,7 @@ rename,
 nested-project,
 and parser-recovery cases continue to verify that inputs requiring a new snapshot do not take the reuse path.
 Warm one-thread package timing is verified with three sequential unchanged invocations of
-`mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint`.
+`mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint`.
 The final measured runs completed in 6,610 ms,
 6,476 ms,
 and 6,668 ms.
@@ -684,6 +684,6 @@ I verified the result through an Oxlint JavaScript plugin using snapshot updates
 This investigation and draft used AI assistance and was reviewed against the installed package and current Go source.
 ~~~
 
-[adapter-reuse]: ../../packages/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/typescript-sync-adapter.ts#L282-L308
+[adapter-reuse]: ../../package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/typescript-sync-adapter.ts#L282-L308
 [readonly-issue]: https://github.com/microsoft/typescript-go/issues/4080
 [typescript-7-announcement]: https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/

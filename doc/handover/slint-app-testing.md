@@ -6,8 +6,8 @@ How a future session drives,
  and
 writes regression tests for UI behavior.
  Two apps use Slint:
- `packages/music-player/desktop-app` and
-`packages/desktop-app/terminal`.
+ `package/music-player/desktop-app` and
+`package/desktop-app/terminal`.
  Every seam below is wired and was verified end to end.
 
 Mechanism internals and the traps behind these seams live in
@@ -24,10 +24,10 @@ mock renderer,
  no display.
 
 - Run:
-   `mise run //packages/music-player/desktop-app:test` (the whole `cargo nextest` suite,
+   `mise run //package/music-player/desktop-app:test` (the whole `cargo nextest` suite,
    UI tests included).
 - Where:
-   `packages/music-player/desktop-app/src/ui_binding_tests.rs`,
+   `package/music-player/desktop-app/src/ui_binding_tests.rs`,
    a `#[cfg(test)]` bin module wired from
   `main.rs`.
    It uses `i-slint-backend-testing` (dev-dependency,
@@ -61,8 +61,8 @@ Launch the app (each `mcp` task builds `--features slint/mcp`,
 and loads paused so no audio plays):
 
 ```bash
-mise run //packages/music-player/desktop-app:mcp -- fixtures   # binds 127.0.0.1:9315
-mise run //packages/desktop-app/terminal:mcp                   # binds 127.0.0.1:9316
+mise run //package/music-player/desktop-app:mcp -- fixtures   # binds 127.0.0.1:9315
+mise run //package/desktop-app/terminal:mcp                   # binds 127.0.0.1:9316
 ```
 
 Run from the repo root with the pinned `//path:mcp` task id;
@@ -118,8 +118,8 @@ Best for a fast markup compile-check and a default-state layout snapshot.
  no backend.
 
 ```bash
-mise run //packages/music-player/desktop-app:lint:slint    # slint-viewer --check ui/app.slint
-mise run //packages/music-player/desktop-app:screenshot    # -> target/app.slint.png (headless software render)
+mise run //package/music-player/desktop-app:lint:slint    # slint-viewer --check ui/app.slint
+mise run //package/music-player/desktop-app:screenshot    # -> target/app.slint.png (headless software render)
 ```
 
 The terminal package has the same two tasks.
@@ -168,7 +168,7 @@ Issue #272 tracks replacing this dependency with a repo-owned minimal nested Way
    WAYLAND_DISPLAY=wayland-1 \
      NIRI_SOCKET=/run/user/1000/niri.wayland-1.<pid>.sock \
      SLINT_BACKEND= SLINT_MCP_PORT=9315 \
-     mise run //packages/music-player/desktop-app:mcp -- fixtures
+     mise run //package/music-player/desktop-app:mcp -- fixtures
    ```
 
 3. Capture the nested compositor output with niri IPC:

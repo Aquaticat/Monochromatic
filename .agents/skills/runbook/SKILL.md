@@ -268,7 +268,7 @@ and keeps the `HANDOVER.<topic>.md` form,
 
 ## Canonical example
 
-`packages/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md` is the reference runbook.
+`package/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md` is the reference runbook.
 Match its shape:
  status markers per section,
 what-this-proves intent at the top,

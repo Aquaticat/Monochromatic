@@ -5,14 +5,14 @@ classpath state on a different filesystem spelling from the editor file when thi
 `/home/user/Monochromatic` while Gradle and VCS state canonicalize to
 `/var/home/user/Monochromatic`.
 In that split state,
- `packages/linter/kotlin/build.gradle.kts` can show red imports even though Gradle
+ `package/linter/kotlin/build.gradle.kts` can show red imports even though Gradle
 CLI compilation succeeds.
 
 ## Symptom
 
 The user-visible symptoms in this repo were:
 
-- `packages/linter/kotlin/build.gradle.kts` showed
+- `package/linter/kotlin/build.gradle.kts` showed
   `Unresolved reference 'CommandLineArgumentProvider'` for
   `org.gradle.process.CommandLineArgumentProvider`.
 - After the Gradle API import recovered,
@@ -29,7 +29,7 @@ This command passed before and after the IDE recovery:
 
 ```shell
 # /var/home/user/Monochromatic
-mise run //packages/linter/kotlin:lint
+mise run //package/linter/kotlin:lint
 ```
 
 ```text
@@ -80,7 +80,7 @@ canonical spelling:
 
 ```text
 InlinePromptListener is installed to editor=EditorImpl[
-  file:///home/user/Monochromatic/packages/linter/kotlin/build.gradle.kts
+  file:///home/user/Monochromatic/package/linter/kotlin/build.gradle.kts
 ]
 Symlink mapping for VCS is used,
   original file: file:///home/user/Monochromatic/...
@@ -94,9 +94,9 @@ After reopening the root project with the canonical spelling,
 Opening existing project with .idea at /var/home/user/Monochromatic
 Gradle project sync
   phase = SCRIPT_MODEL_PHASE
-  projectPath = /var/home/user/Monochromatic/packages/linter/kotlin
+  projectPath = /var/home/user/Monochromatic/package/linter/kotlin
 InlinePromptListener is installed to editor=EditorImpl[
-  file:///var/home/user/Monochromatic/packages/linter/kotlin/build.gradle.kts
+  file:///var/home/user/Monochromatic/package/linter/kotlin/build.gradle.kts
 ]
 ```
 
@@ -207,13 +207,13 @@ The successful recovery sequence was:
 
 ```shell
 # /var/home/user/Monochromatic
-rm --recursive --force packages/linter/kotlin/.idea
+rm --recursive --force package/linter/kotlin/.idea
 idea /var/home/user/Monochromatic
 ```
 
 Then reload the Gradle project from IDEA.
 Let IDEA own the Gradle module metadata it writes under `.idea/`.
-Do not hand-add duplicate module entries for `packages/linter/kotlin`.
+Do not hand-add duplicate module entries for `package/linter/kotlin`.
 
 The committed project metadata now keeps the nested Gradle build linked from the root project:
 
@@ -243,7 +243,7 @@ A temporary worktree tested source-side alternatives:
    but it only hid the IDE issue and made the build script worse.
 
 Do not open the nested package as its own IDEA project while debugging this root project.
-That created `packages/linter/kotlin/.idea` and duplicate Gradle entries.
+That created `package/linter/kotlin/.idea` and duplicate Gradle entries.
 Remove that nested `.idea` directory and link the package Gradle build from the root project instead.
 
 Do not use `idea invalidateCaches --help` to inspect the command.
@@ -294,7 +294,7 @@ After recovering IDEA,
 ```shell
 # /var/home/user/Monochromatic
 xmllint --noout .idea/vcs.xml .idea/gradle.xml
-mise run //packages/linter/kotlin:lint
+mise run //package/linter/kotlin:lint
 git status --short --untracked-files=all
 ```
 
@@ -308,7 +308,7 @@ Also verify the user boundary in IDEA:
 
 - Open `/var/home/user/Monochromatic`,
    not `/home/user/Monochromatic`.
-- Open `packages/linter/kotlin/build.gradle.kts`.
+- Open `package/linter/kotlin/build.gradle.kts`.
 - Confirm `org.gradle.process.CommandLineArgumentProvider` and
   `org.jetbrains.kotlin.gradle.dsl.JvmTarget` are not red.
 - Confirm the Gradle tool window shows the linked package build once.
@@ -563,7 +563,7 @@ stat /home -> '/home' -> 'var/home'
 ```
 
 Opening a Gradle Kotlin DSL project through `/home/user/Monochromatic` caused valid imports in
-`packages/linter/kotlin/build.gradle.kts` to be marked unresolved in the editor, even though the Gradle CLI build
+`package/linter/kotlin/build.gradle.kts` to be marked unresolved in the editor, even though the Gradle CLI build
 succeeded.
 
 Observed red imports:
@@ -576,7 +576,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 Command-line verification from the same project succeeded:
 
 ```shell
-mise run //packages/linter/kotlin:lint
+mise run //package/linter/kotlin:lint
 ```
 
 ```text
@@ -588,14 +588,14 @@ Relevant IDEA log evidence before recovery showed the editor using `/home` while
 
 ```text
 InlinePromptListener is installed to editor=EditorImpl[
-  file:///home/user/Monochromatic/packages/linter/kotlin/build.gradle.kts
+  file:///home/user/Monochromatic/package/linter/kotlin/build.gradle.kts
 ]
 Symlink mapping for VCS is used,
   original file: file:///home/user/Monochromatic/...
   canonical file: file:///var/home/user/Monochromatic/...
 ```
 
-After closing the nested package project, deleting `packages/linter/kotlin/.idea`, and reopening the root project
+After closing the nested package project, deleting `package/linter/kotlin/.idea`, and reopening the root project
 as `/var/home/user/Monochromatic`, the same file no longer showed the Kotlin import as red.
 The log then showed the project and editor using the canonical root:
 
@@ -603,9 +603,9 @@ The log then showed the project and editor using the canonical root:
 Opening existing project with .idea at /var/home/user/Monochromatic
 Gradle project sync
   phase = SCRIPT_MODEL_PHASE
-  projectPath = /var/home/user/Monochromatic/packages/linter/kotlin
+  projectPath = /var/home/user/Monochromatic/package/linter/kotlin
 InlinePromptListener is installed to editor=EditorImpl[
-  file:///var/home/user/Monochromatic/packages/linter/kotlin/build.gradle.kts
+  file:///var/home/user/Monochromatic/package/linter/kotlin/build.gradle.kts
 ]
 ```
 
@@ -634,7 +634,7 @@ succeeded.
 
 Workaround:
 Open the project through the canonical `/var/home/user/...` path and let IDEA regenerate the Gradle link metadata.
-For this repo, also remove an accidentally created nested `packages/linter/kotlin/.idea` before reloading Gradle.
+For this repo, also remove an accidentally created nested `package/linter/kotlin/.idea` before reloading Gradle.
 
 Suggested fix direction:
 Audit path identity across project open, VCS symlink resolution, Gradle script model import, and Kotlin script

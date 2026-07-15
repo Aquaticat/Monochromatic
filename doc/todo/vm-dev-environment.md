@@ -64,7 +64,7 @@ Two artifacts define the entire environment:
   reproducible,
    KDE is part of the base not a fragile layer
 - **Dotfiles baked into image**:
-   `packages/config/dotfiles/` package with subdirectories
+   `package/config/dotfiles/` package with subdirectories
   (ghostty,
    mise).
    COPYed into `~/.config/` at image build time via widened build context.
@@ -123,13 +123,13 @@ Two artifacts define the entire environment:
 Based on [ublue-os/image-template][image-template] pattern.
 Uses `ghcr.io/ublue-os/ucore-hci:stable` as base.
 
-Lives at `packages/dev-script/vm-builder/` in this monorepo.
+Lives at `package/dev-script/vm-builder/` in this monorepo.
 Run via:
- `mise run //packages/dev-script/vm-builder:run`
+ `mise run //package/dev-script/vm-builder:run`
 
 [image-template]: https://github.com/ublue-os/image-template
 
-- [x] Create package at `packages/dev-script/vm-builder/` in this monorepo
+- [x] Create package at `package/dev-script/vm-builder/` in this monorepo
 - [x] Write Containerfile (single-stage,
        rpm-ostree install on ucore-hci base)
 - [x] Fill in `build-and-import.ts` orchestration (build,
@@ -182,7 +182,7 @@ Infrastructure:
 - [x] User account `user` with password `password`,
        `wheel` group,
        passwordless sudo
-- [x] Dotfiles baked into image from `packages/config/dotfiles/` (ghostty,
+- [x] Dotfiles baked into image from `package/config/dotfiles/` (ghostty,
        mise configs)
 - [x] bootc install config:
        btrfs root filesystem (`/usr/lib/bootc/install/00-ucore-dev.toml`)
@@ -190,7 +190,7 @@ Infrastructure:
 ### Build and convert
 
 - [x] Fill in Containerfile,
-       verify `mise run //packages/dev-script/vm-builder:run` succeeds end-to-end
+       verify `mise run //package/dev-script/vm-builder:run` succeeds end-to-end
 - [x] Write `disk_config/disk.toml` (40 GiB root,
        btrfs)
 - [x] Boot the qcow2,
@@ -270,17 +270,17 @@ No `src/provision.ts` or `:provision` mise task exists yet.
  Dotfiles are baked into the
 image by `Containerfile`,
  and image-time mise installs only the global tools declared in
-`packages/config/dotfiles/mise/config.toml`.
+`package/config/dotfiles/mise/config.toml`.
  A future first-login provisioner still needs
 to be created if flatpak or user-layer setup remains required.
 
 ### Dotfiles package
 
-Lives at `packages/config/dotfiles/` in this monorepo.
+Lives at `package/config/dotfiles/` in this monorepo.
 Only two configs needed:
  ghostty and mise.
 
-- [x] Create `packages/config/dotfiles/` with:
+- [x] Create `package/config/dotfiles/` with:
   - `ghostty/config`
   - `mise/config.toml` (global mise config)
 - [x] ~~Archive `Aquaticat/nvim`~~:
@@ -323,7 +323,7 @@ cd ~/Monochromatic
 mise trust && mise install
 
 # 4. Future, not implemented yet: run first-login provisioner if one is added
-# mise run //packages/dev-script/vm-builder:provision
+# mise run //package/dev-script/vm-builder:provision
 ```
 
 ## Phase 3: verification
@@ -380,7 +380,7 @@ No image rebuild needed:
    future provisioner belongs in the vm-builder package;
    no file exists yet
 - [x] Custom image repo:
-       `packages/dev-script/vm-builder/` in this monorepo
+       `package/dev-script/vm-builder/` in this monorepo
 - [x] ~~KDE Plasma package set~~:
    `plasma-workspace` meta-package (full desktop)
 - [x] ~~Which flatpaks?
@@ -400,6 +400,6 @@ No image rebuild needed:
 - [x] ~~Nvim repo~~:
    nvim deprecated by editord
 - [x] ~~Cosign key setup~~:
-   key pair at `packages/config/cosign/`,
+   key pair at `package/config/cosign/`,
    signing step in build-and-import.
   ts

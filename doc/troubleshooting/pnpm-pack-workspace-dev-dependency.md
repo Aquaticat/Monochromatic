@@ -67,7 +67,7 @@ The earlier idea that a production-only filter would skip development dependency
 
 The behavior was reproduced with pnpm `11.11.0` against this package after
 `mise run prepare:pnpm:install`.
-`packages/oxlint-plugin/no-restricted-syntax/node_modules/@monochromatic-dev/config-typescript` was absent while the
+`package/oxlint-plugin/no-restricted-syntax/node_modules/@monochromatic-dev/config-typescript` was absent while the
 workspace-root link existed.
 
 ### Commands that fail
@@ -86,7 +86,7 @@ An `npm pack` tarball installs unsuccessfully outside the workspace because its 
 
 ### Path that works
 
-`packages/oxlint-plugin/no-restricted-syntax/src/external-consumer.unit.test.ts` creates a disposable publication
+`package/oxlint-plugin/no-restricted-syntax/src/external-consumer.unit.test.ts` creates a disposable publication
 workspace containing:
 
 - built `dist/final` artifacts;

@@ -11,7 +11,7 @@ The pre-validators and `catch_unwind` net both remain load-bearing.
 ## Post-compact verification (resharp 0.6.0, 2026-05-16)
 
 - Bumped `resharp = "0.5.2"` → `resharp = "0.6"` in
-  `packages/cli/forbidden-strings/Cargo.toml`.
+  `package/cli/forbidden-strings/Cargo.toml`.
    Clean build (19s),
   no API breakage;
    `Regex::new` / `find_all` / `is_match` / `Match`
@@ -54,7 +54,7 @@ The pre-validators and `catch_unwind` net both remain load-bearing.
   (intersection with `\w` and `$`,
    overflow-checks-load-bearing).
 - Version-pinned comments in
-  `packages/cli/forbidden-strings/src/{rules.rs,rules/engine.rs,
+  `package/cli/forbidden-strings/src/{rules.rs,rules/engine.rs,
   rules/engine_tests.rs,lib.rs}` updated to read "resharp 0.5.
   x
   through 0.6.
@@ -147,8 +147,8 @@ md Bug E for the full writeup).
    Sync src first,
     clear stale timeout artifacts:
    ```text
-   cp /var/home/user/Monochromatic/packages/cli/forbidden-strings/src/{fuzz_api,rules}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/
-   cp /var/home/user/Monochromatic/packages/cli/forbidden-strings/src/rule/{engine,engine_tests}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/rule/
+   cp /var/home/user/Monochromatic/package/cli/forbidden-strings/src/{fuzz_api,rules}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/
+   cp /var/home/user/Monochromatic/package/cli/forbidden-strings/src/rule/{engine,engine_tests}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/rule/
    rm /tmp/fs-soundness-revert/packages/cli/forbidden-strings/fuzz/artifacts/fuzz_extract_gate_soundness/timeout-*
    cd /tmp/fs-soundness-revert/packages/cli/forbidden-strings
    mise run fuzz:run fuzz_extract_gate_soundness -max_total_time=120 -timeout=10
@@ -528,7 +528,7 @@ historical context only:
 
 ## What's landed in the working tree (uncommitted)
 
-### `packages/cli/forbidden-strings/Cargo.toml`
+### `package/cli/forbidden-strings/Cargo.toml`
 
 `[profile.release]` changed:
 
@@ -556,7 +556,7 @@ wrappers landed,
  crash 2 would still silently corrupt rules in
 production builds.
 
-### `packages/cli/forbidden-strings/src/rule.rs`
+### `package/cli/forbidden-strings/src/rule.rs`
 
 - Added `use std::panic::{catch_unwind, AssertUnwindSafe};` import
   with the rationale block above it.
@@ -575,7 +575,7 @@ production builds.
    every error is still
   prefixed with `rule on line N (resharp): ...` by the outer loader.
 
-### `packages/cli/forbidden-strings/src/rule/engine.rs`
+### `package/cli/forbidden-strings/src/rule/engine.rs`
 
 - Added `use std::panic::{catch_unwind, AssertUnwindSafe};`.
    The
@@ -615,7 +615,7 @@ Both detectors are single-pass byte walkers,
  and skip escaped sequences and
 character-class interiors.
 
-### `packages/cli/forbidden-strings/src/rule/engine_tests.rs`
+### `package/cli/forbidden-strings/src/rule/engine_tests.rs`
 
 6 new tests at the end of the file:
 
@@ -632,7 +632,7 @@ character-class interiors.
   `CompiledRegex::find_all`;
    asserts no panic propagates)
 
-`mise run //packages/cli/forbidden-strings:test` reports 121 unit
+`mise run //package/cli/forbidden-strings:test` reports 121 unit
 tests passing (was 115 pre-patch).
  `cargo check` + `clippy --release
 -- -D warnings` both clean.
@@ -709,13 +709,13 @@ consider a wash,
 **
 
 ```bash
-cd packages/cli/forbidden-strings
+cd package/cli/forbidden-strings
 # Read upstream changelog before bumping; the API surface may have
 # changed (Regex::new signature, find_all return shape, error type).
 cargo update -p resharp --precise 6.0.0   # or `cargo add resharp@6` if needed
-mise run //packages/cli/forbidden-strings:build
-mise run //packages/cli/forbidden-strings:lint:clippy
-mise run //packages/cli/forbidden-strings:test
+mise run //package/cli/forbidden-strings:build
+mise run //package/cli/forbidden-strings:lint:clippy
+mise run //package/cli/forbidden-strings:test
 ```
 
 Likely fallout to expect:
@@ -816,19 +816,19 @@ load-bearing claim.
 ## Verification commands that pass right now (against resharp 0.5.x)
 
 ```bash
-mise run //packages/cli/forbidden-strings:build          # 18s clean compile
-mise run //packages/cli/forbidden-strings:lint           # 0.2s
-mise run //packages/cli/forbidden-strings:lint:clippy    # 0.2s, no warnings
-mise run //packages/cli/forbidden-strings:test           # 121 unit + 19 integration, 0 fail
+mise run //package/cli/forbidden-strings:build          # 18s clean compile
+mise run //package/cli/forbidden-strings:lint           # 0.2s
+mise run //package/cli/forbidden-strings:lint:clippy    # 0.2s, no warnings
+mise run //package/cli/forbidden-strings:test           # 121 unit + 19 integration, 0 fail
 ```
 
 ## Files touched (uncommitted)
 
 ```text
-modified:   packages/cli/forbidden-strings/Cargo.toml
-modified:   packages/cli/forbidden-strings/src/rule.rs
-modified:   packages/cli/forbidden-strings/src/rule/engine.rs
-modified:   packages/cli/forbidden-strings/src/rule/engine_tests.rs
+modified:   package/cli/forbidden-strings/Cargo.toml
+modified:   package/cli/forbidden-strings/src/rule.rs
+modified:   package/cli/forbidden-strings/src/rule/engine.rs
+modified:   package/cli/forbidden-strings/src/rule/engine_tests.rs
 new file:   HANDOVER.resharp-panic-fix.md
 ```
 

@@ -1,11 +1,11 @@
 # KWin 6.7.1 delivers a Wayland drag only to a client's first `wl_data_device`, so a winit/Slint app's separately-bound drag-and-drop device never receives file drops
 
 A file dragged from Dolphin onto the Slint file-manager prototype
-(`packages/desktop-app/file-manager/`) on a native KWin Wayland session does
+(`package/desktop-app/file-manager/`) on a native KWin Wayland session does
 nothing: no drop, and the drag cursor shows the "forbidden" (no-drop) icon while
 hovering the app. The identical app receives the same drag correctly under the
 project's Smithay-based nested compositor
-(`packages/cli/nested-wayland-session`, its `drop-file` command). The difference
+(`package/cli/nested-wayland-session`, its `drop-file` command). The difference
 is not the app: it is how KWin selects which of a client's `wl_data_device`
 objects receives a drag.
 
@@ -132,7 +132,7 @@ Under test:
 - KWin / Plasma `6.7.1`, native Wayland session (not XWayland).
 - KWin source: clone of `KDE/kwin`, HEAD `4303c6b42` (master), key logic
   re-confirmed at tag `v6.7.1`.
-- App: `packages/desktop-app/file-manager` debug build; Slint 1.17.0 via
+- App: `package/desktop-app/file-manager` debug build; Slint 1.17.0 via
   `copypasta` -> `smithay-clipboard` 0.7.3; `smithay-client-toolkit` 0.19.2.
 - Drag source: Dolphin (KDE `kioworker` file manager).
 
@@ -144,7 +144,7 @@ input on a multi-monitor session):
 mkdir -p /tmp/dnd-src && printf 'hello\n' > /tmp/dnd-src/hello.txt
 
 # 2. Run the app with Wayland protocol tracing + info logs.
-FM=packages/desktop-app/file-manager/target/debug/monochromatic-file-manager
+FM=package/desktop-app/file-manager/target/debug/monochromatic-file-manager
 WAYLAND_DEBUG=1 RUST_LOG=info "$FM" > /tmp/fm.log 2>&1 &
 
 # 3. Open Dolphin on the folder, then drag hello.txt onto a file-manager pane.

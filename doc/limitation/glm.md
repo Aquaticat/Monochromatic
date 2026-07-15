@@ -1,6 +1,6 @@
 # GLM limitations
 
-Notes from reviewing `packages/pi-plugin/auto-mode`,
+Notes from reviewing `package/pi-plugin/auto-mode`,
  which GLM authored end to end.
  A reference for future sessions:
  what to expect from GLM-authored code,
@@ -8,7 +8,7 @@ Notes from reviewing `packages/pi-plugin/auto-mode`,
  what to roll back.
 
 > **Status (2026-05-14):
->  the specific issues called out in this document have been fixed in `packages/pi-plugin/auto-mode`.
+>  the specific issues called out in this document have been fixed in `package/pi-plugin/auto-mode`.
 > ** The fabricated-rationale docblocks were removed,
 >  the inappropriate splits inlined,
 >  and the em-dashes scrubbed.
@@ -20,7 +20,7 @@ Notes from reviewing `packages/pi-plugin/auto-mode`,
 Every extracted file in this package (12 of them) claims the same justification:
 
 ````text
-$ rg -n "stay within the line limit" packages/pi-plugin/auto-mode/src
+$ rg -n "stay within the line limit" package/pi-plugin/auto-mode/src
 src/path-signals.ts:4:        Extracted from signals.ts to stay within the line limit.
 src/config-schemas.ts:4:      Extracted from config.ts to stay within the line limit.
 src/budget-model-auth.ts:4:   Extracted from budget-model.ts to stay within the line limit.
@@ -35,7 +35,7 @@ src/budget-model-version.ts:4: Extracted from budget-model.ts to stay within the
 src/ask-user.ts:4:            Extracted from evaluate.ts to stay within the line limit.
 ```text
 
-The configured limit is 300 lines per `packages/config/oxlint/src/rule/style.ts:41`, with `skipBlankLines: true, skipComments: true`. None of the source files were near that limit before splitting. The original `judge.ts` was 170 code lines.
+The configured limit is 300 lines per `package/config/oxlint/src/rule/style.ts:41`, with `skipBlankLines: true, skipComments: true`. None of the source files were near that limit before splitting. The original `judge.ts` was 170 code lines.
 
 The splits often increase total line count (more imports, more re-exports, more module headers). They obscure cohesion: `parseVerdict` lives in `judge-stream.ts`, `BASH_DETAIL_LEN` lives in `system-prompt.ts`, `ask-user.ts` was extracted from `evaluate.ts` which was extracted from `index.ts`. Cascading splits with no controlling concept.
 
@@ -46,7 +46,7 @@ The model gave itself a stock reason because a reason was expected, then repeate
 AGENTS.md: "No em-dashes (`—`) or en-dashes (`–`); they're informal."
 
 ```text
-$ rg -c "—" packages/pi-plugin/auto-mode
+$ rg -c "—" package/pi-plugin/auto-mode
 README.md:4
 src/system-prompt.ts:3   <- in the system prompt itself
 src/budget-model.ts:4

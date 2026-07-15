@@ -4,7 +4,7 @@
 
 This report preserves the measured pre-remediation directive baseline.
 The later semantic-readonly migration retired the native readonly rule and removed its remaining authored directives,
-including ignored `packages-paused/` sources.
+including ignored `package-paused/` sources.
 Current code must use the project-owned rule's honest types and effect contracts instead of suppression.
 
 ## Summary
@@ -44,13 +44,13 @@ pre-remediation state.
 
 ## How they surface
 
-`packages/config/oxlint/src/index.ts:40` sets `reportUnusedDisableDirectives: 'warn'`,
+`package/config/oxlint/src/index.ts:40` sets `reportUnusedDisableDirectives: 'warn'`,
 and `index.ts:39` sets `denyWarnings: true`.
 Together,
  every unused directive is a warning that `denyWarnings` promotes to a failure.
 
 The real per-package task confirms this.
-Running `mise run //packages/module/es:lint:oxlint` reports 19 unused directives and ends with
+Running `mise run //package/module/es:lint:oxlint` reports 19 unused directives and ends with
 `ERROR task failed` (253 warnings,
  0 errors,
  denied).
@@ -135,21 +135,21 @@ The categories that explain them:
     Authors disabled `prefer-readonly-parameter-types` or `no-unsafe-type-assertion`
    expecting a complaint that never comes.
     Example:
-   `packages/module/es/src/types/t function/f/t function/memoize/r a/p n/index.ts:223`
+   `package/module/es/src/types/t function/f/t function/memoize/r a/p n/index.ts:223`
    disables `no-unsafe-type-assertion` above `return memoized as MemoizedAsyncFunction<...>`,
    but tsgolint considers that assertion safe after the property assignments above it.
    Many sit on `Array.prototype.filter` and `.map` callbacks whose parameter the rule exempts
-   (for example `packages/webapp-forge/server/src/worker/render.ts:234`).
+   (for example `package/webapp-forge/server/src/worker/render.ts:234`).
 2. Disabling a rule that is turned off in config.
    `typescript/no-unnecessary-condition` is `'off'` at
-   `packages/config/oxlint/src/rule/correctness.ts:44`,
+   `package/config/oxlint/src/rule/correctness.ts:44`,
     so all 24 directives targeting it are dead.
    Example:
-    `packages/config/tofu/fetch_ips.ts:76` disables it above `while (true)`.
+    `package/config/tofu/fetch_ips.ts:76` disables it above `while (true)`.
 3. Dead `oxlint-disable`/`oxlint-enable` block pairs where the rule never fires inside.
    72 of the 301 are `/* oxlint-enable ... */` lines (232 are `oxlint-disable` lines).
    Example:
-    `packages/webapp-forge/server/src/storage/adapter.ts:78`.
+    `package/webapp-forge/server/src/storage/adapter.ts:78`.
    oxlint flags only the enable for such a block;
     the paired disable reports unused only after
    the enable is gone (removing the enable extends the disable to end-of-file,
@@ -171,10 +171,10 @@ The categories that explain them:
 
 ## The tofu exception
 
-`packages/config/tofu` is an OpenTofu/Terraform package with `.tf` files plus a couple of
+`package/config/tofu` is an OpenTofu/Terraform package with `.tf` files plus a couple of
 root-level TypeScript scripts and no `mise.toml` and no `src/`.
 It has no per-package lint task,
- so `mise run //packages/config/tofu:lint:oxlint` does nothing
+ so `mise run //package/config/tofu:lint:oxlint` does nothing
 and its `fetch_ips.ts` directives surface only in a root-level whole-tree scan.
 This is the one place where a per-package task and a root scan disagree on the count.
 
@@ -188,7 +188,7 @@ task-oxlint --report-unused-disable-directives 2>&1 | rg -c "Unused oxlint-disab
 task-oxlint --type-aware --report-unused-disable-directives 2>&1 | rg -c "Unused oxlint-disable directive"
 
 # a real per-package task, already failing
-mise run //packages/module/es:lint:oxlint
+mise run //package/module/es:lint:oxlint
 ```
 
 ## Remediation (applied)

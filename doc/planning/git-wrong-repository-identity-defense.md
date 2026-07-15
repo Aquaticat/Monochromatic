@@ -76,28 +76,28 @@ Pi 0.80.6 validates known Bash properties but preserves unknown properties.
 `dist/core/tools/bash.js` executes only the command and timeout values,
 so the unsupported `cwd` property has no effect.
 
-`packages/pi-plugin/guardrail/src/index.ts` already owns the deterministic `tool_call` refusal seam.
-Its Bash rule in `packages/pi-plugin/guardrail/src/bash-guard.ts` currently detects only `bun test`.
+`package/pi-plugin/guardrail/src/index.ts` already owns the deterministic `tool_call` refusal seam.
+Its Bash rule in `package/pi-plugin/guardrail/src/bash-guard.ts` currently detects only `bun test`.
 The package is documented for global installation,
 but `/home/user/.pi/agent/settings.json` does not currently install it.
 Project `.pi/settings.json` intentionally has no packages.
 
-`packages/pi-plugin/auto-mode` is installed globally,
+`package/pi-plugin/auto-mode` is installed globally,
 but it is not an invariant layer:
 it reasons about command text and permits explicit bypass.
 
 ### Git command boundary
 
-`packages/git-policy/cli/src/index.ts` evaluates a pre-spawn rule pipeline before invoking real Git.
+`package/git-policy/cli/src/index.ts` evaluates a pre-spawn rule pipeline before invoking real Git.
 That is the deterministic seam for command-level repository safeguards.
 
-`packages/git-policy/cli/src/effective-target.ts` already replays global repository-selection options and inherited
+`package/git-policy/cli/src/effective-target.ts` already replays global repository-selection options and inherited
 `GIT_DIR` or `GIT_WORK_TREE` state through real Git.
 The new rules must reuse that seam rather than independently guessing the target repository.
 
 Current gaps include:
 
-- `packages/git-policy/cli/src/rules/require-root.ts` exempts `git init`.
+- `package/git-policy/cli/src/rules/require-root.ts` exempts `git init`.
 - No rule rejects reinitialization of an existing worktree.
 - No rule rejects writes to `user.name`,
    `user.email`,
@@ -157,7 +157,7 @@ and GitHub boundaries.
 
 ### Module interface
 
-The implementation home is `packages/git-policy/cli/src/repository-safety/`.
+The implementation home is `package/git-policy/cli/src/repository-safety/`.
 It exposes three concepts:
 
 ```ts
@@ -188,7 +188,7 @@ Implement identity checks as cli-git policy and lifecycle modules bundled into t
 Pre-forward checks cover commit-producing commands;
 post-commit checks gate automatic push;
 manual-push checks consume cli-git's Git-native authoritative push updates and candidate ranges.
-All internal Git subprocesses reuse `packages/git-policy/cli/src/resolve-git.ts` and a sanitized environment,
+All internal Git subprocesses reuse `package/git-policy/cli/src/resolve-git.ts` and a sanitized environment,
 so verification cannot recurse into cli-git.
 
 A linked-worktree and clean-clone fixture must prove the built shadow `git` resolves from the active package installation
@@ -243,7 +243,7 @@ GitHub's vigilant-mode documentation likewise distinguishes author from committe
 
 ### Layer A: fail closed on unsupported Bash input
 
-Extend `packages/pi-plugin/guardrail` so Bash tool-call input is shape-checked before any command policy.
+Extend `package/pi-plugin/guardrail` so Bash tool-call input is shape-checked before any command policy.
 
 Accepted top-level properties for the current Pi Bash tool are:
 
@@ -262,12 +262,12 @@ If a future Pi release adds a real Bash property,
 the guardrail must be updated and verified before that property is accepted locally.
 
 After building and testing the package,
-install `packages/pi-plugin/guardrail` in `/home/user/.pi/agent/settings.json` as documented in its README.
+install `package/pi-plugin/guardrail` in `/home/user/.pi/agent/settings.json` as documented in its README.
 Keep project `.pi/settings.json` package-free.
 
 ### Layer B: reject dangerous Git invocations before spawn
 
-Add non-bypassable rules to the existing `packages/git-policy/cli` rule pipeline.
+Add non-bypassable rules to the existing `package/git-policy/cli` rule pipeline.
 
 #### Existing-repository initialization
 
@@ -913,15 +913,15 @@ The work is complete only when:
 - Incident diagnosis:
   `doc/troubleshooting/pi-bash-ignored-cwd-git-signature-verification.md`
 - Pi guardrail:
-  `packages/pi-plugin/guardrail/README.md`
+  `package/pi-plugin/guardrail/README.md`
 - cli-git entry point:
-  `packages/git-policy/cli/src/index.ts`
+  `package/git-policy/cli/src/index.ts`
 - cli-git root rule:
-  `packages/git-policy/cli/src/rules/require-root.ts`
+  `package/git-policy/cli/src/rules/require-root.ts`
 - Cli-git manual-push lifecycle:
-  `packages/git-policy/cli/src/policy-engine/manual-push-lifecycle.ts`
+  `package/git-policy/cli/src/policy-engine/manual-push-lifecycle.ts`
 - Cli-git post-commit lifecycle:
-  `packages/git-policy/cli/src/policy-engine/post-commit-lifecycle.ts`
+  `package/git-policy/cli/src/policy-engine/post-commit-lifecycle.ts`
 - GitHub commit signature verification:
   <https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification>
 - GitHub repository rules API:

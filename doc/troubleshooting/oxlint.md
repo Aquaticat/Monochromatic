@@ -54,7 +54,7 @@ Reproduce:
 mise run lint:oxlint
 
 # Compare: run per-package; same files now flagged
-mise run //packages/<some-pkg>:lint:oxlint
+mise run //package/<some-pkg>:lint:oxlint
 ```
 
 The diagnostic count differs between the two invocations even though
@@ -593,7 +593,7 @@ when oxlint is invoked from a subdirectory with `-c` pointing to a config elsewh
 ```text
 repo/
   .oxlintrc.json          # { "ignorePatterns": ["**/test-fixture/**"] }
-  packages/
+  package/
     test-fixture/
       my-pkg/
         src/
@@ -603,7 +603,7 @@ repo/
 ```bash
 ## From repo root -- works correctly (file ignored, 0 files linted)
 cd repo
-oxlint -c .oxlintrc.json packages/test-fixture/my-pkg/src/file.ts
+oxlint -c .oxlintrc.json package/test-fixture/my-pkg/src/file.ts
 ## -> Found 0 warnings and 0 errors. Finished on 0 files.
 
 ## From subdirectory with -c -- BROKEN (file linted, violation reported)
@@ -639,14 +639,14 @@ let mut builder = GitignoreBuilder::new(base_root);
 ```
 
 `GitignoreBuilder::new(root)` resolves all patterns relative to `root`.
-When `root` is CWD (e.g. `packages/test-fixture/my-pkg/`),
+When `root` is CWD (e.g. `package/test-fixture/my-pkg/`),
 the discovered file path `src/file.ts` is matched against `**/test-fixture/**`
 relative to that CWD.
  Since `src/file.ts` does not contain `test-fixture/`,
 the pattern never matches.
 
 When `root` is the config file's parent directory (the repo root),
-the path becomes `packages/test-fixture/my-pkg/src/file.ts`,
+the path becomes `package/test-fixture/my-pkg/src/file.ts`,
 which correctly matches `**/test-fixture/**`.
 
 The **LSP implementation gets this right**:

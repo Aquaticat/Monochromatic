@@ -2,12 +2,12 @@
 
 ## Symptom
 
-`node src/build-font.ts` (this repo's `packages/typeface/aquaticat` `build:font`
+`node src/build-font.ts` (this repo's `package/typeface/aquaticat` `build:font`
 task) threw at the first constructor call:
 
 ```text
 TypeError: opentype.Path is not a constructor
-    at .../packages/typeface/aquaticat/src/build-font.ts:87
+    at .../package/typeface/aquaticat/src/build-font.ts:87
 ```
 
 with the import written as a namespace import:
@@ -180,7 +180,7 @@ warns whenever a default-imported binding's property access matches one of
 those names, on the theory that the author meant to write
 `import { Path } from '...'` instead.
 
-In this repo, `packages/typeface/aquaticat/src/env.d.ts` is the ambient module
+In this repo, `package/typeface/aquaticat/src/env.d.ts` is the ambient module
 declaration that supplies opentype.js's types (the package ships none). It
 necessarily declares `Path`, `Glyph`, `Font` as named exports too, because two
 sibling files (`build-font-paths.ts`, `build-font-paths-stroked.ts`) use
@@ -221,7 +221,7 @@ Patterns and their outcome against the installed `opentype.js@2.0.0`:
 
 ### Default import plus a type-only named import (applied in this repo)
 
-`packages/typeface/aquaticat/src/build-font.ts`:
+`package/typeface/aquaticat/src/build-font.ts`:
 
 ```ts
 // before
@@ -236,7 +236,7 @@ import type { Glyph, } from 'opentype.js';
 ): Glyph[] {
 ```
 
-`packages/typeface/aquaticat/src/env.d.ts` gains a default export matching the
+`package/typeface/aquaticat/src/env.d.ts` gains a default export matching the
 real runtime shape of `module.exports`:
 
 ```ts

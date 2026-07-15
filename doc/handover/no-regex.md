@@ -21,9 +21,9 @@ Three packages are paused at the user's direction;
 "Status:
  development paused" section in its README pointing back here:
 
-- `packages/webapp-edu/paper2vn` -- 5 sites
-- `packages/webapp-content/messages-demo` -- 13 sites
-- `packages/webapp-forge/server` -- 13 sites
+- `package/webapp-edu/paper2vn` -- 5 sites
+- `package/webapp-content/messages-demo` -- 13 sites
+- `package/webapp-forge/server` -- 13 sites
 
 To resume any of those,
  apply the patterns documented below (the
@@ -82,22 +82,22 @@ db8a7293 refactor(plugins,terminal-title): clear final require-regex sites
 All pass with 0 warnings,
  0 errors:
 
-- `//packages/dev-script/task-util`
-- `//packages/dev-script/watch-restart`
-- `//packages/dev-script/inference-canary`
-- `//packages/module/dom`
-- `//packages/module/hyperscript`
-- `//packages/module/image-diff`
-- `//packages/module/matrix`
-- `//packages/module/es`
-- `//packages/module/or-throw`
-- `//packages/module/test`
-- `//packages/module/toml-edit`
-- `//packages/module/zip-writer`
-- `//packages/pi-plugin/auto-mode`
-- `//packages/pi-plugin/morph-compact`
-- `//packages/pi-plugin/terminal-title`
-- `//packages/rolldown-plugin/import-attributes`
+- `//package/dev-script/task-util`
+- `//package/dev-script/watch-restart`
+- `//package/dev-script/inference-canary`
+- `//package/module/dom`
+- `//package/module/hyperscript`
+- `//package/module/image-diff`
+- `//package/module/matrix`
+- `//package/module/es`
+- `//package/module/or-throw`
+- `//package/module/test`
+- `//package/module/toml-edit`
+- `//package/module/zip-writer`
+- `//package/pi-plugin/auto-mode`
+- `//package/pi-plugin/morph-compact`
+- `//package/pi-plugin/terminal-title`
+- `//package/rolldown-plugin/import-attributes`
 
 Plus everything previously cleared (listed in earlier handover sections
 above;
@@ -224,8 +224,8 @@ above;
   (e.g. length cap),
    (c) name the backtracking-safety story.
    Example
-  in `packages/dev-script/deps-cube/src/scripts/filter.ts` and
-  `packages/dev-script/watch-restart/src/cli-helpers.ts`.
+  in `package/dev-script/deps-cube/src/scripts/filter.ts` and
+  `package/dev-script/watch-restart/src/cli-helpers.ts`.
 - **`array-element-per-line`** fires on multi-element arrays even when
   using `[...acc, token]`.
    Restructure to per-line:
@@ -263,7 +263,7 @@ above;
   option; add a scoped`eslint-plugin-unicorn/prefer-string-raw`
   disable with the reason.
 - **`chai`'s `.to.throw(string)` does substring matching** (verified in
-  `packages/module/test/src/expect.unit.test.ts:99-105`).
+  `package/module/test/src/expect.unit.test.ts:99-105`).
    So
   `.toThrow(/foo/,)` swaps cleanly to `.toThrow('foo',)`.
    Similarly
@@ -290,11 +290,11 @@ this task;
 
 - `.pnpmfile.mjs`
 - `AGENTS.md`
-- `packages/claude-code-plugin/session-start-housekeeping/dist/final/node/index.mjs`
-- `packages/cli/forbidden-strings/README.md`
-- `packages/cli/forbidden-strings/fuzz/Cargo.toml`
-- `packages/cli/forbidden-strings/fuzz/dictionaries/forbidden-strings.dict`
-- `packages/figma/to-penpot/src/index.ts`
+- `package/claude-code-plugin/session-start-housekeeping/dist/final/node/index.mjs`
+- `package/cli/forbidden-strings/README.md`
+- `package/cli/forbidden-strings/fuzz/Cargo.toml`
+- `package/cli/forbidden-strings/fuzz/dictionaries/forbidden-strings.dict`
+- `package/figma/to-penpot/src/index.ts`
 - `pnpm-lock.yaml`
 
 Every file I changed for this task is committed;
@@ -355,25 +355,25 @@ unless the user asks otherwise.
 
 ### Files where source-of-truth IS regex (kept with disables)
 
-- `packages/dev-script/deps-cube/src/scripts/filter.ts` (user-typed
+- `package/dev-script/deps-cube/src/scripts/filter.ts` (user-typed
   regex search;
    bounded to 256 chars).
-- `packages/dev-script/watch-restart/src/cli-helpers.ts:compileRegex`
+- `package/dev-script/watch-restart/src/cli-helpers.ts:compileRegex`
   (user-typed CLI regex source).
-- `packages/module/es/src/types/t object/t regexp/...` (entire
+- `package/module/es/src/types/t object/t regexp/...` (entire
   regex-tooling subtree).
-- `packages/pi-plugin/auto-mode/src/constants.ts` (secret-detection patterns;
+- `package/pi-plugin/auto-mode/src/constants.ts` (secret-detection patterns;
   block disable around the content-signal region).
-- `packages/pi-plugin/auto-mode/src/budget-model-version.ts` (model-id
+- `package/pi-plugin/auto-mode/src/budget-model-version.ts` (model-id
   tokeniser;
    block disable).
-- `packages/pi-plugin/auto-mode/src/config.ts:compilePatterns` (user-supplied
+- `package/pi-plugin/auto-mode/src/config.ts:compilePatterns` (user-supplied
   config patterns).
-- `packages/pi-plugin/terminal-title/src/formatter-utils.ts:COMMAND_NOISE_RE`
+- `package/pi-plugin/terminal-title/src/formatter-utils.ts:COMMAND_NOISE_RE`
   (negative lookahead disambiguating `--foo=bar` from `FOO=bar`).
-- `packages/dev-script/inference-canary-viewer` (the `\p{Upper}`/
+- `package/dev-script/inference-canary-viewer` (the `\p{Upper}`/
   `\p{Lower}` Unicode property classes have no string-API equivalent).
-- `packages/module/test/src/expect-matchers.ts:toMatch` (the matcher's
+- `package/module/test/src/expect-matchers.ts:toMatch` (the matcher's
   contract is RegExp).
 
 ### If a downstream test fails

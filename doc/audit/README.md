@@ -63,7 +63,7 @@ The discussion continues in stylelint/stylelint#8051 and stylelint/stylelint#892
 and was never affected by these CVEs.
 
 **`openai@6.33.0`:
- direct dep of `packages/dev-script/inference-canary`:
+ direct dep of `package/dev-script/inference-canary`:
 **
 Socket flags this as `potentialVulnerability` (medium behavioral risk).
 The `bin/cli` file defines a `migrate` subcommand that calls `spawnSync` to download and execute
@@ -95,10 +95,10 @@ in `node_modules/.bin`.
 #### Unpopular packages (4)
 
 - `lezer-toml@1.0.0`:
-   direct dep of `packages/desktop-daemon/editord`;
+   direct dep of `package/desktop-daemon/editord`;
    niche Lezer grammar for TOML
 - `@mitata/counters@0.0.8`:
-   direct dep of `packages/test-fixture/file-enforcer-perf`;
+   direct dep of `package/test-fixture/file-enforcer-perf`;
    companion to mitata benchmarking
 - `@tursodatabase/database-darwin-arm64@0.5.3`:
    transitive platform binary for turso
@@ -437,7 +437,7 @@ Remaining dependencies to audit,
 - [ ] preact
 - [ ] preact-render-to-string
 - ~~watcher~~:
-   rejected 2026-05 for `packages/dev-script/watch-restart/`;
+   rejected 2026-05 for `package/dev-script/watch-restart/`;
    chokidar adopted instead (atomic-save + `awaitWriteFinish` stability window,
    larger production track record,
    active maintenance whereas watcher's last commit was 2024-07)
@@ -446,13 +446,13 @@ Remaining dependencies to audit,
 - [ ] serialize-error
 - [x] chokidar;
        evaluated 2026-05;
-       adopted by `packages/dev-script/watch-restart/` (one transitive dep `readdirp`,
+       adopted by `package/dev-script/watch-restart/` (one transitive dep `readdirp`,
        `atomic: true` for rename+create,
        `awaitWriteFinish` for chunked writes,
        cross-platform recursion via FSEvents/inotify/ReadDirectoryChangesW)
 - [x] ignore (kaelzhang/node-ignore):
        evaluated 2026-05;
-       adopted by `packages/dev-script/watch-restart/src/filters/gitignore.ts` for `--gitignore` / `--ignore-file` parsing (zero runtime deps,
+       adopted by `package/dev-script/watch-restart/src/filters/gitignore.ts` for `--gitignore` / `--ignore-file` parsing (zero runtime deps,
        mirrors git's own semantics including negation `!`,
        anchored leading `/`,
        directory-only trailing `/`,
@@ -468,10 +468,10 @@ Remaining dependencies to audit,
 - [ ] @total-typescript/ts-reset
 - [x] @ungap/structured-clone;
        evaluated 2026-05-17;
-       replaced via workspace shim `packages/shim/ungap-structured-clone/` that re-exports `globalThis.structuredClone` (native on Node 17+,
+       replaced via workspace shim `package/shim/ungap-structured-clone/` that re-exports `globalThis.structuredClone` (native on Node 17+,
        Bun,
        and every browser at the Firefox ESR 140 baseline).
-       Reached transitively from `packages/ssg/aquati.cat/` through `mdast-util-to-hast` (4 default-export call sites in `lib/state.js`,
+       Reached transitively from `package/ssg/aquati.cat/` through `mdast-util-to-hast` (4 default-export call sites in `lib/state.js`,
        `lib/footer.js`) and `rehype-autolink-headings` (1 call site in `lib/index.js`);
        both use `structuredClone(value)` with one argument,
        so re-exporting native is API-equivalent.
@@ -479,7 +479,7 @@ Remaining dependencies to audit,
        clearing the upstream `CWE-502 - Update to 1.3.1 or higher` deprecation.
        Catalog pin and root `devDependencies` entry removed;
        no workspace package imported the upstream directly.
-       See `packages/shim/ungap-structured-clone/README.md`.
+       See `package/shim/ungap-structured-clone/README.md`.
 - ~~remark-lint-*~~:
    removed;
    replaced by markdownlint-cli2 + dprint-plugin-markdown

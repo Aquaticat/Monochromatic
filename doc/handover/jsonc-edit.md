@@ -6,9 +6,9 @@ Updated as the package is scaffolded and implemented.
 ## Goal
 
 Extract the hand-written comment-preserving JSONC parser from
-`packages-paused/module/es` into a new active package `packages/module/jsonc-edit`
+`package-paused/module/es` into a new active package `package/module/jsonc-edit`
 (`private: true`), and build a full read, edit, and write API on top, shaped after
-`packages/module/toml-edit`.
+`package/module/toml-edit`.
 Performance is an explicit goal (the native `JSON.parse` fast-path).
 
 ## Where this work lives
@@ -56,18 +56,18 @@ Summary:
 ```bash
 # from /var/home/user/worktrees/jsonc-edit
 mise i                                                    # install pinned toolchain (done once)
-mise run //packages/module/jsonc-edit:build
-mise run //packages/module/jsonc-edit:lint:oxlint
-mise run //packages/module/jsonc-edit:lint:types
-mise run //packages/module/jsonc-edit:test:unit          # co-located unit tests
-mise run //packages/module/jsonc-edit:test:mutation -- --full-suite
+mise run //package/module/jsonc-edit:build
+mise run //package/module/jsonc-edit:lint:oxlint
+mise run //package/module/jsonc-edit:lint:types
+mise run //package/module/jsonc-edit:test:unit          # co-located unit tests
+mise run //package/module/jsonc-edit:test:mutation -- --full-suite
 
 # Non-runtime tooling lives in per-concern sidecar packages:
-mise run //packages/module/jsonc-edit.fuzz:test:unit      # property tests (default budget)
-mise run //packages/module/jsonc-edit.fuzz:fuzz           # longer fast-check campaign
-mise run //packages/module/jsonc-edit.fuzz:fuzz:coverage  # V8 reachability gate
-mise run //packages/module/jsonc-edit.bench:bench         # parse benchmark
-mise run //packages/module/jsonc-edit.conformance:test:conformance
+mise run //package/module/jsonc-edit.fuzz:test:unit      # property tests (default budget)
+mise run //package/module/jsonc-edit.fuzz:fuzz           # longer fast-check campaign
+mise run //package/module/jsonc-edit.fuzz:fuzz:coverage  # V8 reachability gate
+mise run //package/module/jsonc-edit.bench:bench         # parse benchmark
+mise run //package/module/jsonc-edit.conformance:test:conformance
 ```
 
 ## Status
@@ -76,7 +76,7 @@ Complete and merged to `main`. The runtime package builds, type-checks, and lint
 (zero errors, zero warnings); its co-located unit tests pass; the fuzz, bench, and
 conformance sidecars pass; the coverage gate reports all 17 runtime source files reachable.
 Both original follow-ups are done (logger OPFS fix picked up via merge; the troubleshooting
-docs repointed to `packages/module/jsonc-edit`).
+docs repointed to `package/module/jsonc-edit`).
 
 The non-runtime tooling now lives in per-concern sidecar packages so the runtime package's
 `src/` is pure production code, which scopes a whole-package mutation run to real runtime
@@ -86,7 +86,7 @@ files:
 - `module-jsonc-edit.bench`: parse benchmark.
 - `module-jsonc-edit.conformance`: curated JSONC conformance corpus.
 
-Mutation testing is wired via `//packages/module/jsonc-edit:test:mutation` (container-isolated
+Mutation testing is wired via `//package/module/jsonc-edit:test:mutation` (container-isolated
 Stryker, mirroring file-enforcer). `--full-suite` is required because the unit tests are
 organized by API surface (`parse`, `stringify`, `edit`, `comment`), not per source file, so the
 harness's filename-stem test selection would otherwise pick no tests for files like `scan.ts`.
@@ -224,7 +224,7 @@ final verify.
 ## Source of truth for behavior
 
 The original parser and its tests under
-`packages-paused/module/es/src/types/t object/t jsonc/` are the behavioral spec.
+`package-paused/module/es/src/types/t object/t jsonc/` are the behavioral spec.
 The rewrite preserves their invariants;
 it does not preserve their structure or style.
 

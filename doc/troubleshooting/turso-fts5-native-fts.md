@@ -14,7 +14,7 @@ A migration that creates an FTS5 virtual table throws:
 Error: failed to consume stmt: Parse error: no such module: fts5
 ```
 
-In `packages/webapp-productivity/done` the migration runs as an import side effect
+In `package/webapp-productivity/done` the migration runs as an import side effect
 (`src/server.ts` side-effect-imports `./lib/db.ts`, whose module body calls
 `runMigrations` via top-level `await`), so the failure crashes startup before any
 route is served rather than surfacing on first search.
@@ -83,7 +83,7 @@ Version under test: `@tursodatabase/database@0.6.1`,
 `sha512-qg6LO1XHA9kc2s97crg0/nHiKFk3xTzylRuZPYggO0vA4hx2rp8fk0Je2vFGOkfVv+ZmzsXOIb+DBHmdrG+72A==`.
 
 Minimal harness (run from a directory that resolves the package, e.g. inside
-`packages/webapp-productivity/done`):
+`package/webapp-productivity/done`):
 
 ```js
 // probe.mjs
@@ -149,7 +149,7 @@ Fails:
 
 ## Verified workarounds
 
-The remediation landed in `packages/webapp-productivity/done` and `done-postcss`.
+The remediation landed in `package/webapp-productivity/done` and `done-postcss`.
 
 1. Replace the FTS5 virtual table plus sync triggers plus backfill with one native
    index, and open the connection with `experimental: ['index_method']`:

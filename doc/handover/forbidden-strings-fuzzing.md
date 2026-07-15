@@ -18,7 +18,7 @@ written;
 
 ## Overall task
 
-Implement coverage-guided fuzzing for `packages/cli/forbidden-strings`
+Implement coverage-guided fuzzing for `package/cli/forbidden-strings`
 using cargo-fuzz,
  a `fuzz_api` Cargo feature,
  a structured generator,
@@ -47,7 +47,7 @@ Plan path:
 - `mise run lint`,
    `mise run lint:clippy`,
    and `mise run test` for
-  `packages/cli/forbidden-strings` all pass with the lib extraction and
+  `package/cli/forbidden-strings` all pass with the lib extraction and
   fuzz_api in place.
 
 ## Commits landed (in order, most recent first)
@@ -143,7 +143,7 @@ cfc33f68 refactor(forbidden-strings): extract library boundary with run_cli_from
 ## What's in the scaffolded fuzz/ directory right now
 
 ```text
-packages/cli/forbidden-strings/fuzz/
+package/cli/forbidden-strings/fuzz/
 ├── .gitignore          # ignores target, artifacts, coverage, corpus/*/* (except seed-*)
 ├── Cargo.lock          # ✅ tracked directly; Cargo lockfiles are not gitignored
 ├── Cargo.toml          # wired with libfuzzer-sys (arbitrary-derive), arbitrary, sha2,
@@ -289,14 +289,14 @@ lands.
 1. Root `mise.toml` `[tools]` — add `"cargo:cargo-fuzz" = "0.13.1"`
    next to the existing `"cargo:fastmod"`.
 2. Per-package nightly pinning — either add to
-   `packages/cli/forbidden-strings/mise.toml` `[tools]` (preferred per
+   `package/cli/forbidden-strings/mise.toml` `[tools]` (preferred per
    plan),
     or set `RUSTUP_TOOLCHAIN=nightly` per fuzz task as the
    fallback.
     The simpler fallback is fine;
     nightly is currently
    installed system-wide.
-3. Add to `packages/cli/forbidden-strings/mise.toml` `[tasks.fuzz:list]`,
+3. Add to `package/cli/forbidden-strings/mise.toml` `[tasks.fuzz:list]`,
    `[tasks.fuzz:build]`,
     `[tasks.fuzz:smoke]`,
     `[tasks.fuzz:run]`,
@@ -305,11 +305,11 @@ lands.
 4. **DO NOT** add a `fuzz:install` task — mise's tool system handles
    installation (per plan §9.4).
 5. Document the bounded container wrapper in README:
-   `podman run --memory=2g --cpus=2 --rm -v "$PWD":/work -w /work <image> mise run //packages/cli/forbidden-strings:fuzz:build`.
+   `podman run --memory=2g --cpus=2 --rm -v "$PWD":/work -w /work <image> mise run //package/cli/forbidden-strings:fuzz:build`.
 
 ### Step E — Documentation (phase 10)
 
-Update `packages/cli/forbidden-strings/README.md` with the sections in
+Update `package/cli/forbidden-strings/README.md` with the sections in
 plan §10.1.
  Split into a dedicated `FUZZING.md` only if README exceeds
 120 lines after the additions.
@@ -327,16 +327,16 @@ needed.
 
 Run in order:
 
-1. `mise run //packages/cli/forbidden-strings:build`
-2. `mise run //packages/cli/forbidden-strings:test`
-3. `mise run //packages/cli/forbidden-strings:lint`
-4. `mise run //packages/cli/forbidden-strings:lint:clippy`
+1. `mise run //package/cli/forbidden-strings:build`
+2. `mise run //package/cli/forbidden-strings:test`
+3. `mise run //package/cli/forbidden-strings:lint`
+4. `mise run //package/cli/forbidden-strings:lint:clippy`
 5. Release binary CLI smoke (any temp file with a known rule).
-6. `mise run //packages/cli/forbidden-strings:fuzz:build` inside the
+6. `mise run //package/cli/forbidden-strings:fuzz:build` inside the
    container wrapper.
-7. `mise run //packages/cli/forbidden-strings:fuzz:smoke` inside the
+7. `mise run //package/cli/forbidden-strings:fuzz:smoke` inside the
    container wrapper.
-8. `git check-ignore -v packages/fuzz/forbidden-strings/Cargo.lock`
+8. `git check-ignore -v package/fuzz/forbidden-strings/Cargo.lock`
    must return no match.
    Cargo lockfiles are not gitignored.
 9. Sentinel commands from AGENTS.
@@ -348,7 +348,7 @@ Run in order:
     - In the worktree,
        `git revert --no-commit e49d8694` (the `(?u)`
       extraction skip fix).
-    - Run `mise run //packages/cli/forbidden-strings:fuzz:run -- fuzz_extract_gate_soundness -max_total_time=120`.
+    - Run `mise run //package/cli/forbidden-strings:fuzz:run -- fuzz_extract_gate_soundness -max_total_time=120`.
     - Confirm the target reports a soundness failure with a redacted
       reproducer (no raw secret-like bytes).
     - Remove the worktree.
@@ -452,7 +452,7 @@ prototypes and stay deferred.
    (worktree exists,
     was reverted of `e49d8694`).
     Sync sources first:
-   `cp /var/home/user/Monochromatic/packages/cli/forbidden-strings/src/{fuzz_api,rules}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/` then `cp src/rules/{engine,engine_tests}.rs .../src/rules/`.
+   `cp /var/home/user/Monochromatic/package/cli/forbidden-strings/src/{fuzz_api,rules}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/` then `cp src/rules/{engine,engine_tests}.rs .../src/rules/`.
    Clear stale timeout:
     `rm /tmp/fs-soundness-revert/packages/cli/forbidden-strings/fuzz/artifacts/fuzz_extract_gate_soundness/timeout-*`.
    Run:
@@ -970,13 +970,13 @@ quant + trailing literal" case.
 - Decision doc:
    `doc/decision/forbidden-strings-fuzzing.md`
 - Lib boundary:
-   `packages/cli/forbidden-strings/src/lib.rs`
+   `package/cli/forbidden-strings/src/lib.rs`
 - Fuzz API surface:
-   `packages/cli/forbidden-strings/src/fuzz_api.rs`
+   `package/cli/forbidden-strings/src/fuzz_api.rs`
 - Fuzz scaffold:
-   `packages/cli/forbidden-strings/fuzz/`
+   `package/cli/forbidden-strings/fuzz/`
 - Test fixture sources the seeder must read:
-  `packages/cli/forbidden-strings/src/rule/{extract_tests,atom_tests,engine_tests,algebra_tests}.rs`
+  `package/cli/forbidden-strings/src/rule/{extract_tests,atom_tests,engine_tests,algebra_tests}.rs`
 - The bug-fix commits motivating the soundness target:
   `e49d8694` (`(?u)` extraction skip),
    `e100659f` (bare `_` as wildcard
@@ -1242,7 +1242,7 @@ integration tests = all green.
 
 - `find . -maxdepth 1 \( -name HEAD -o -name config -o ... \)` -- no
   fuzz output escaped gitignore.
-- `git check-ignore -v packages/fuzz/forbidden-strings/Cargo.lock`
+- `git check-ignore -v package/fuzz/forbidden-strings/Cargo.lock`
   exits 1.
   This is correct because Cargo lockfiles are not ignored by root `.gitignore`.
 - The post-fix fuzz log shows the panic immediately after

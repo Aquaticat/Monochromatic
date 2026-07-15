@@ -5,7 +5,7 @@ Re-run of every reproducer from this campaign (`README.md`,
 v0.6.12) plus the two older `doc/handover/resharp-panic-fix.md` shapes,
  against
 the **published `resharp = "=0.6.13"`** (the version this workspace ships;
-`packages/cli/forbidden-strings/Cargo.lock` pins `resharp 0.6.13`).
+`package/cli/forbidden-strings/Cargo.lock` pins `resharp 0.6.13`).
 
 Date:
  2026-06-19.

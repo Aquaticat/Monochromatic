@@ -76,7 +76,7 @@ Both consuming apps install their own platform. The music player builds the wini
 hook and sets it as the process platform:
 
 ```rust
-// packages/music-player/desktop-app/src/main.rs (before the fix)
+// package/music-player/desktop-app/src/main.rs (before the fix)
 let backend = builder.build()?;
 slint::platform::set_platform(Box::new(backend))
     .expect("no Slint platform should already be set");
@@ -114,7 +114,7 @@ Version under test: `slint`/`i-slint-backend-winit`/`slint-build` 1.17.0 (crates
 from a shallow clone of `slint-ui/slint` whose `CHANGELOG.md` top section is `## [1.17.0] - 2026-06-24`
 (`CHANGELOG.md:120` records `Added MCP server feature. (#11542)`).
 
-Harness (from `packages/music-player/desktop-app`):
+Harness (from `package/music-player/desktop-app`):
 
 ```bash
 # FAILS to bind before the fix (explicit set_platform runs unconditionally):
@@ -155,11 +155,11 @@ Gate the explicit `set_platform` on `SLINT_MCP_PORT` being unset, so Slint creat
 MCP server, honoring `SLINT_BACKEND`) whenever the port is set:
 
 ```rust
-// packages/music-player/desktop-app/src/main.rs
+// package/music-player/desktop-app/src/main.rs
 if std::env::var_os("SLINT_MCP_PORT").is_none() {
     // ... build the winit backend with the app-id hook and set_platform ...
 }
-// packages/desktop-app/terminal/src/main.rs: install_backend() early-returns Ok(()) when the port is set.
+// package/desktop-app/terminal/src/main.rs: install_backend() early-returns Ok(()) when the port is set.
 ```
 
 Tradeoff: in MCP mode the Wayland `app_id` hook is dropped, so KDE taskbar grouping and taskbar progress do not apply
@@ -180,7 +180,7 @@ the `mcp`/`test` tasks and the production `build`/`run` tasks.
 Isolate the test instance's state so it never collides with a running installed app. The music player opens a Turso
 cache at `~/.config/musicplayer/peaks.db`; a second instance hits
 `Locking error: Failed locking file ... locked by another process` (logged, non-fatal, from
-`packages/music-player/desktop-app/src/peakcache_service.rs`). The `mise run mcp` task points
+`package/music-player/desktop-app/src/peakcache_service.rs`). The `mise run mcp` task points
 `XDG_CONFIG_HOME`/`XDG_CACHE_HOME`/`XDG_DATA_HOME` at a throwaway `target/mcp-xdg` so it never touches the user's real
 session or cache.
 

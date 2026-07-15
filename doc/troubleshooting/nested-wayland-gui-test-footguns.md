@@ -1,8 +1,8 @@
 # nested-wayland-session 0.1.1: keystrokes sent before the hosted app maps its window are silently dropped, plus two operational traps when driving the compositor by hand
 
 Cluster of footguns hit while writing keyboard-driven boundary tests against
-`packages/cli/nested-wayland-session` (repo-owned tool) for
-`packages/desktop-app/file-manager-gtk-sticky` and during manual driving of the compositor.
+`package/cli/nested-wayland-session` (repo-owned tool) for
+`package/desktop-app/file-manager-gtk-sticky` and during manual driving of the compositor.
 
 ## Symptom
 
@@ -79,7 +79,7 @@ session.
    the boundary test waits for
   `ready: true` before its first key.
    Test passes repeatedly in under a second
-  (`mise run //packages/desktop-app/file-manager-gtk-sticky:test:wayland`).
+  (`mise run //package/desktop-app/file-manager-gtk-sticky:test:wayland`).
 - AF_UNIX:
    `python3 -c "import socket; s=socket.socket(socket.AF_UNIX); s.connect('<108+ byte path>')"`
   raises `AF_UNIX path too long`;

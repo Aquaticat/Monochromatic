@@ -1,0 +1,49 @@
+{
+  "name": "@monochromatic-dev/pi-plugin-guardrail",
+  "description": "Tool-call guardrails for pi: block misleading bun test invocations and config-driven edits or writes to protected paths",
+  "type": "module",
+  "private": true,
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "package/pi-plugin/guardrail"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts"
+  },
+  "pi": {
+    "extensions": ["./dist/final/node/index.mjs"]
+  },
+  "files": [
+    "dist/final",
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "guardrail"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-shell-command-analyzer": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "ignore": "catalog:"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "catalog:",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:"
+  }
+}

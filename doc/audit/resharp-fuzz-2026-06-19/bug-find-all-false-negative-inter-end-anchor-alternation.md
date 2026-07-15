@@ -187,7 +187,7 @@ actually matches.
 
 Consumer scope (crate vs forbidden-strings):
  this does NOT affect our consumer.
-`forbidden-strings` rules (`packages/cli/forbidden-strings/data/`,
+`forbidden-strings` rules (`package/cli/forbidden-strings/data/`,
 betterleaks-style) are ordinary leftmost patterns;
  a search for intersection (`&`)
 co-occurring with `$`/`\z` in the rule set finds none,

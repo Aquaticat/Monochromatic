@@ -311,7 +311,7 @@ The diagnostic names those operations and lists every supported remediation rath
 unknown external call.
 
 First narrow primitive branches and format nonprimitive values without coercion.
-`packages/dev-script/page-weight/src/error-format.ts` returns `Error.message` for errors,
+`package/dev-script/page-weight/src/error-format.ts` returns `Error.message` for errors,
 returns thrown strings directly,
 and reports only runtime category for other values.
 Its regression test proves ordinary `toString`,
@@ -345,7 +345,7 @@ For `JSON.stringify`,
 first move serialization to the boundary where value ownership or construction is known,
 then pass serialized primitive text through generic transports.
 This avoids falsely declaring that a transport mutates a message which its caller already proved to be plain data.
-`packages/mcp/stdio/src/transport.ts` follows this shape:
+`package/mcp/stdio/src/transport.ts` follows this shape:
 call sites serialize owned response values,
 while `writeSerializedMessage` receives only text and documents only output-writer mutation.
 

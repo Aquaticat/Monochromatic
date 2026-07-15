@@ -11,12 +11,12 @@ Review date:
 >  and `desktop-daemon/` now exist).
 > Treat the package list and proposed migration below as historical input,
 > not current state.
->  Re-audit with the current `packages/` tree before acting.
+>  Re-audit with the current `package/` tree before acting.
 
 ## Current layout
 
 ```text
-packages/
+package/
   build/
     backup-path      @monochromatic-dev/build-backup-path
     css              @monochromatic-dev/build-css
@@ -49,7 +49,7 @@ packages/
 ## Structural constraint
 
 All packages must live exactly two levels deep:
- `packages/<category>/<name>`.
+ `package/<category>/<name>`.
 Category names are hyphenated multi-word when needed for clarity.
 The `package.json` "name" field follows `@monochromatic-dev/<category>-<name>`.
 
@@ -204,7 +204,7 @@ Add meaningful `description` fields to the remaining packages listed above.
 ### Proposed final layout
 
 ```text
-packages/
+package/
   build-tool/
     css                          @monochromatic-dev/build-tool-css
   config/

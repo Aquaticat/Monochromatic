@@ -8,7 +8,7 @@ scanning (caused by a Tor relay,
  Each consequence
 gets its own canonical section.
  The config lives in
-`packages/config/tofu/hetzner.tf`.
+`package/config/tofu/hetzner.tf`.
 
 The shape matches the rest of TROUBLESHOOTING.
 * even though there
@@ -34,7 +34,7 @@ the exposure that motivated the firewall in the first place.
 The Hetzner firewall has a 500-rule cap.
  The `tor_out_rules`
 local in `hetzner.tf` builds an allowlist from a JSON file
-written by `packages/config/tofu/src/fetch_tor_relays.ts`,
+written by `package/config/tofu/src/fetch_tor_relays.ts`,
  which
 fetches Onionoo's consensus top-N (limit=500) guards filtered to
 ORPort 443.
@@ -50,15 +50,15 @@ lifts `tofu` from ~50 to ~200 effective rules,
 
 ```bash
 # Refresh the cache (delete it, then re-run so the external data source refetches):
-rm packages/config/tofu/src/cache_tor_relays.txt
+rm package/config/tofu/src/cache_tor_relays.txt
 tofu plan
 
 # Count effective IPs (the cache is a comma-separated CIDR list, not JSON):
-tr ',' '\n' < packages/config/tofu/src/cache_tor_relays.txt | grep -c .
+tr ',' '\n' < package/config/tofu/src/cache_tor_relays.txt | grep -c .
 ```
 
 The script caches Onionoo responses for one hour at
-`packages/config/tofu/src/cache_tor_relays.txt`;
+`package/config/tofu/src/cache_tor_relays.txt`;
  delete to force a
 fresh fetch.
 
@@ -410,7 +410,7 @@ as IPs or CIDRs,
 expressed directly in the firewall rule.
 
 The implemented rule resolves configured concrete Storage Box hostnames
-through `packages/config/tofu/src/resolve_storagebox_hosts.ts`,
+through `package/config/tofu/src/resolve_storagebox_hosts.ts`,
  combines
 them with optional explicit `storagebox_destination_ips`,
  summarizes
@@ -418,7 +418,7 @@ those CIDRs,
  chunks them,
  and adds outbound TCP 445 rules to
 `hcloud_firewall.tofu` via `storagebox_smb_out_rules` in
-`packages/config/tofu/hetzner.tf`.
+`package/config/tofu/hetzner.tf`.
 
 ### Verification
 
@@ -448,14 +448,14 @@ an empty hostname list,
  and resolves a concrete hostname through DNS:
 
 ```bash
-mise run //packages/config/tofu:test:storagebox-resolver
-mise run //packages/config/tofu:test:storagebox-resolver:network u123456.your-storagebox.de
+mise run //package/config/tofu:test:storagebox-resolver
+mise run //package/config/tofu:test:storagebox-resolver:network u123456.your-storagebox.de
 ```
 
 Configuration validation passes through the package task:
 
 ```bash
-mise run //packages/config/tofu:lint
+mise run //package/config/tofu:lint
 ```
 
 ### Verified workaround (the design itself)
@@ -536,7 +536,7 @@ That violated both the 100-CIDR rule input cap and the 500-effective-rule
 firewall cap.
 
 The current design encodes the Hetzner limits directly in
-`packages/config/tofu/hetzner.tf:443-448`:
+`package/config/tofu/hetzner.tf:443-448`:
 
 ```hcl
 firewall_count              = 5
@@ -548,7 +548,7 @@ firewall_indexes            = range(local.firewall_count)
 ```
 
 Inbound home ISP and SSH source ranges are chunked before rule emission
-at `packages/config/tofu/hetzner.tf:561-571`:
+at `package/config/tofu/hetzner.tf:561-571`:
 
 ```hcl
 home_isp_ips_summarized = length(local.home_isp_ips) == 0 ? [] : (
@@ -579,7 +579,7 @@ rule's effective-rule cost,
  then assigns them
 through a snake pattern across the five firewalls.
  The key sorting lives
-at `packages/config/tofu/hetzner.tf:699-715`:
+at `package/config/tofu/hetzner.tf:699-715`:
 
 ```hcl
 weighted_firewall_rule_keys = sort([
@@ -620,7 +620,7 @@ hcloud_firewall.tofu["4"] rules 24 effective 404 max_src 20 max_dst 20
 Package validation also passes:
 
 ```bash
-mise run //packages/config/tofu:lint
+mise run //package/config/tofu:lint
 ```
 
 ### Verified workaround (the design itself)
@@ -639,7 +639,7 @@ to the server because Hetzner combines their allow rules.
 `firewall_server_ids` or `firewall_label_selectors` so OpenTofu manages
 those attachments without using the Hetzner web UI.
  The attachment
-resources are declared at `packages/config/tofu/hetzner.tf:768-774`.
+resources are declared at `package/config/tofu/hetzner.tf:768-774`.
 
 ### What does not work
 

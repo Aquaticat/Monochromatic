@@ -29,7 +29,7 @@ The local wrapper is not rewriting the query into Grokipedia.
 It forwards the model's query as Linkup `q`, fixes the search mode to `standard`, and sends the configured blocklist as
 `excludeDomains`.
 
-`packages/pi-plugin/linkup/src/client.ts:122` to `packages/pi-plugin/linkup/src/client.ts:129`:
+`package/pi-plugin/linkup/src/client.ts:122` to `package/pi-plugin/linkup/src/client.ts:129`:
 
 ```ts
 const body: LinkupSearchRequestBody = {
@@ -46,7 +46,7 @@ const body: LinkupSearchRequestBody = {
 The wrapper then applies a second local blocklist filter after Linkup responds.
 This is why raw transcript details can contain Grokipedia-family URLs while the visible output omits those exact hosts.
 
-`packages/pi-plugin/linkup/src/tools.ts:321` to `packages/pi-plugin/linkup/src/tools.ts:334`:
+`package/pi-plugin/linkup/src/tools.ts:321` to `package/pi-plugin/linkup/src/tools.ts:334`:
 
 ```ts
 const filtered = filterBlockedSearchResults({
@@ -69,7 +69,7 @@ return createLinkupToolOutput({
 The local filter only removes results whose URL host matches a configured host suffix.
 It does not remove pages on other hosts that discuss the blocked site.
 
-`packages/pi-plugin/linkup/src/domain-policy.ts:512` to `packages/pi-plugin/linkup/src/domain-policy.ts:544`:
+`package/pi-plugin/linkup/src/domain-policy.ts:512` to `package/pi-plugin/linkup/src/domain-policy.ts:544`:
 
 ```ts
 const filteredResults = rawResults.filter(function keepAllowedResult(result,) {
@@ -123,7 +123,7 @@ Another commenter reported the same behavior on Kagi.
 
 Version and surfaces checked:
 
-- `@monochromatic-dev/pi-linkup` package version: `0.0.1`, from `packages/pi-plugin/linkup/package.json`.
+- `@monochromatic-dev/pi-linkup` package version: `0.0.1`, from `package/pi-plugin/linkup/package.json`.
 - Linkup API surface: `POST https://api.linkup.so/v1/search`, checked on 2026-07-04.
 - Pi transcript:
 

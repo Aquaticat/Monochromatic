@@ -645,14 +645,14 @@ TypeError: Failed to resolve module specifier
 "@monochromatic-dev/module-hyperscript/ts".
 ```
 
-The failed artifact was `packages/webapp-productivity/done-postcss/dist/client/inbox.js`.
+The failed artifact was `package/webapp-productivity/done-postcss/dist/client/inbox.js`.
 
 ### Root cause
 
 The behavior was the composition of package metadata and tsdown's documented dependency policy,
 not a Rolldown resolution failure.
 
-`packages/webapp-productivity/done-postcss/package.json` listed `postcss` as a production dependency,
+`package/webapp-productivity/done-postcss/package.json` listed `postcss` as a production dependency,
 even though its source imported PostCSS only through `@monochromatic-dev/build-tool-css`.
 tsdown `0.22.5` collects root production dependencies in `getProductionDeps()`
 and `externalStrategy()` externalizes an exact package name or its subpaths.
@@ -681,14 +681,14 @@ Its source digest is
 The repair keeps each ownership boundary explicit:
 
 - Removed the redundant root `postcss` dependency from
-  `packages/webapp-productivity/done-postcss/package.json`.
+  `package/webapp-productivity/done-postcss/package.json`.
   `@monochromatic-dev/build-tool-css` remains the package that owns PostCSS.
-- Added `packages/build-tool/css/src/apply-mixins.ts` as a browser-compatible entry
+- Added `package/build-tool/css/src/apply-mixins.ts` as a browser-compatible entry
   that excludes file-system and package-resolution code from the client graph.
-- Changed `packages/webapp-productivity/done-postcss/src/client/css.ts`
+- Changed `package/webapp-productivity/done-postcss/src/client/css.ts`
   to import `@monochromatic-dev/build-tool-css/ts/apply-mixins`.
 - Set `platform: 'browser'` in
-  `packages/webapp-productivity/done-postcss/tsdown.client.config.ts`
+  `package/webapp-productivity/done-postcss/tsdown.client.config.ts`
   so PostCSS's published browser substitutions apply.
 - Preserved `base.deps.alwaysBundle` and set `deps.onlyBundle`
   to `nanoid`,
@@ -696,14 +696,14 @@ The repair keeps each ownership boundary explicit:
   and `postcss`,
   the dependencies observed in the generated bundle.
 
-`mise run //packages/webapp-productivity/done-postcss:build` then completed
+`mise run //package/webapp-productivity/done-postcss:build` then completed
 without unresolved imports or dependency hints.
 A text scan found no remaining bare package imports in `dist/client`.
 
 Browser verification used an in-memory database and exercised the generated page entries:
 
 ```text
-DB_PATH=:memory: mise run //packages/webapp-productivity/done-postcss:serve:site
+DB_PATH=:memory: mise run //package/webapp-productivity/done-postcss:serve:site
 ```
 
 Chromium loaded Inbox,

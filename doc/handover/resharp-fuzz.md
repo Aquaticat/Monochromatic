@@ -1254,7 +1254,7 @@ command),
 other bugs.
  Commit eagerly with `docs(resharp-fuzz): ...`,
  explicit pathspec (the
-working tree has concurrent external "unbash" changes in `packages/` and
+working tree has concurrent external "unbash" changes in `package/` and
 `AGENTS.md`;
  never stage those,
  they are not ours).

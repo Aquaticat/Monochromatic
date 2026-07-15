@@ -12,7 +12,7 @@ Decision record for the agentic context-management plugin wired into this Pi har
    do not use `npm:pi-context`.
    Removed from `~/.pi/agent/settings.json` on 2026-06-15.
 - **Interaction note**:
-   this repo also installs `/var/home/user/Monochromatic/packages/pi-plugin/morph-compact`,
+   this repo also installs `/var/home/user/Monochromatic/package/pi-plugin/morph-compact`,
    which replaces Pi's default compaction.
    Any future context-management plugin must be checked against that package before installation.
 

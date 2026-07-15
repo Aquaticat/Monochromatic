@@ -42,8 +42,8 @@ Affected names are the experimental builtins removed from the default register:
  `FlexboxLayoutWrap`,
 `FlexboxLayoutAlignSelf`).
  The two desktop-app packages
-(`packages/desktop-app/terminal`,
- `packages/music-player/desktop-app`) already
+(`package/desktop-app/terminal`,
+ `package/music-player/desktop-app`) already
 set `SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"` in their `mise.toml [env]` for the
 build,
  so `FlexboxLayout` compiles there;

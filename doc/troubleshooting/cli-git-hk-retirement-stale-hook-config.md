@@ -70,7 +70,7 @@ but cli-git still ran its manual-push policies because `--no-verify` is not a cl
 The push succeeded.
 This bridge is suitable only until the owning user runs the explicit cleanup.
 
-`mise run //packages/git-policy/cli:test:hk-config-cleanup` verifies:
+`mise run //package/git-policy/cli:test:hk-config-cleanup` verifies:
 
 - absent local and global config;
 - configured local and global hk keys;

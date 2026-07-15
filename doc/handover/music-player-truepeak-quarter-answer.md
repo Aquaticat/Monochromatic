@@ -13,7 +13,7 @@ clamp count) while decoding no more than a quarter of the library's seconds
 - The letter: `doc/audit/music-player-truepeak-quarter-measure.md`.
 - Evidence + prior roads: `doc/planning/music-player-shared-truepeak-core.md`,
   Stage-two section (from line ~787).
-- Ground truth corpus: `packages/music-player/truepeak-core.bench/out/tracks-fine.jsonl`
+- Ground truth corpus: `package/music-player/truepeak-core.bench/out/tracks-fine.jsonl`
   (95 MB JSONL; per track: path, duration_secs, full_peak linear, bin_seconds=0.1,
   bin_peaks = per-0.1s Catmull-Rom window peaks). Any probe policy simulates offline
   against this; no re-decoding needed.

@@ -1,6 +1,6 @@
 # DRY violations audit
 
-Generated 2026-05-09 from a mechanical sweep of the 83 packages under `packages/`.
+Generated 2026-05-09 from a mechanical sweep of the 83 packages under `package/`.
 
 This audit covers behaviorally equivalent code or config copies (DRY).
 Structural drift across same-class files (package naming,
@@ -40,7 +40,7 @@ Excluded by construction:
   `forbidden-strings.append.local.txt`,
    `.factory/skills/*/*.md`,
    `.claude/skills/*/*.md`
-- `packages/test-fixture/*` where duplicate inputs are the point of the fixture
+- `package/test-fixture/*` where duplicate inputs are the point of the fixture
 - Cross-runtime `*.browser.ts` / `*.node.ts` variants where the platform forces separate code
 - `pnpm-lock.yaml` and other lockfiles
 
@@ -79,7 +79,7 @@ candidate function names were enumerated by utility-shape patterns
 and each candidate's body inspected to confirm primitive-in / primitive-out shape
 and absence of package-specific dependencies.
  The current `module/es` taxonomy
-(via `find packages/module/es/src -type d`) was checked first so candidates already
+(via `find package/module/es/src -type d`) was checked first so candidates already
 covered by an existing export were excluded.
 
 Every finding cites file paths and where applicable line numbers,
@@ -109,8 +109,8 @@ duplication,
 **Resolved 2026-05-09**:
  each package's bare `tsdown.config.ts` was renamed to the
 platform-suffixed form matching its declared mise tasks.
-`packages/module/hyperscript/` now has `tsdown.browser.config.ts` only;
-`packages/figma/{kiwi,penpot}/` now have both `tsdown.browser.config.ts` and
+`package/module/hyperscript/` now has `tsdown.browser.config.ts` only;
+`package/figma/{kiwi,penpot}/` now have both `tsdown.browser.config.ts` and
 `tsdown.node.config.ts`.
  `dist/final/{neutral,node}/` populates accordingly.
 
@@ -119,13 +119,13 @@ task children whose root templates pass `--config tsdown.<platform>.config.ts`,
  but the
 matching config file does not exist on disk:
 
-- `packages/module/hyperscript/mise.toml` declares `build:js:browser`;
+- `package/module/hyperscript/mise.toml` declares `build:js:browser`;
    only
   `tsdown.config.ts` is present
-- `packages/figma/kiwi/mise.toml` declares `build:js:browser` and
+- `package/figma/kiwi/mise.toml` declares `build:js:browser` and
   `build:js:node`;
    only `tsdown.config.ts` is present
-- `packages/figma/to-penpot/mise.toml` declares `build:js:browser` and
+- `package/figma/to-penpot/mise.toml` declares `build:js:browser` and
   `build:js:node`;
    only `tsdown.config.ts` is present
 
@@ -147,18 +147,18 @@ is wanted.
 `tsdown.client.config.ts` appears in seven packages as a thin override of
 `@monochromatic-dev/config-tsdown/.client.ts`.
  Two are byte-identical
-(`packages/webapp-productivity/rss/tsdown.client.config.ts` and
-`packages/webapp-search/exa-search/tsdown.client.config.ts`);
+(`package/webapp-productivity/rss/tsdown.client.config.ts` and
+`package/webapp-search/exa-search/tsdown.client.config.ts`);
  the remaining five differ
 only in their `entry` arrays:
 
-- `packages/webapp-productivity/done/tsdown.client.config.ts`
-- `packages/webapp-productivity/done-h-css-test/tsdown.client.config.ts`
-- `packages/webapp-productivity/doodle-widget/tsdown.client.config.ts`
-- `packages/webapp-productivity/syllable-break-demo/tsdown.client.config.ts`
-- `packages/webapp-edu/paper2vn/tsdown.client.config.ts`
-- `packages/ssg/aquati.cat/tsdown.client.config.ts`
-- `packages/webapp-content/messages-demo/tsdown.client.config.ts`
+- `package/webapp-productivity/done/tsdown.client.config.ts`
+- `package/webapp-productivity/done-h-css-test/tsdown.client.config.ts`
+- `package/webapp-productivity/doodle-widget/tsdown.client.config.ts`
+- `package/webapp-productivity/syllable-break-demo/tsdown.client.config.ts`
+- `package/webapp-edu/paper2vn/tsdown.client.config.ts`
+- `package/ssg/aquati.cat/tsdown.client.config.ts`
+- `package/webapp-content/messages-demo/tsdown.client.config.ts`
 
 Suggested resolution:
  this is the third structural duplication of the same shape
@@ -230,9 +230,9 @@ honest at full-app scale.
 Both directories implement the same terminal-title generation logic for two consumer
 runtimes (pi extension and Claude Code plugin):
 
-- `packages/pi-plugin/terminal-title/src/formatter-utils.ts`:
+- `package/pi-plugin/terminal-title/src/formatter-utils.ts`:
    219 lines
-- `packages/claude-code-plugin/source/src/handler/terminal-title/formatter-utils.ts`:
+- `package/claude-code-plugin/source/src/handler/terminal-title/formatter-utils.ts`:
    154 lines
 - 132 lines of diff between them
 
@@ -256,7 +256,7 @@ Functions duplicated across both forks:
 
 Suggested resolution:
  extract the formatter and title-builder into a new
-`packages/module/terminal-title-core/` package with a runtime-agnostic public API.
+`package/module/terminal-title-core/` package with a runtime-agnostic public API.
 Both consumers wrap it with their respective hook adapter.
 
 #### Four `webapp-forge/stress/scenarios/*.ts` files share a scenario shell
@@ -274,7 +274,7 @@ The four scenarios (`force-push.ts`,
 
 Suggested resolution:
  lift the constants and the `readConfig` shape into
-`packages/webapp-forge/stress/src/scenarios/shared.ts` (which already exists).
+`package/webapp-forge/stress/src/scenarios/shared.ts` (which already exists).
 
 #### Four single-page-app `build.ts` files duplicate the inline-bundling shell
 
@@ -282,10 +282,10 @@ These files all use the same shape (`PACKAGE_DIR -> dist/final/index.html` with 
 JS+CSS),
  differing only in package name and the specific assets bundled:
 
-- `packages/webapp-edu/paper2vn/src/build.ts` (90 lines)
-- `packages/webapp-productivity/syllable-break-demo/src/build.ts` (76 lines)
-- `packages/webapp-productivity/doodle-widget/src/build.ts` (99 lines)
-- `packages/dev-script/inference-canary-viewer/src/build.ts` (199 lines,
+- `package/webapp-edu/paper2vn/src/build.ts` (90 lines)
+- `package/webapp-productivity/syllable-break-demo/src/build.ts` (76 lines)
+- `package/webapp-productivity/doodle-widget/src/build.ts` (99 lines)
+- `package/dev-script/inference-canary-viewer/src/build.ts` (199 lines,
    with extras)
 
 `paper2vn` and `syllable-break-demo` differ by only 69 lines of diff out of 90/76 lines
@@ -299,11 +299,11 @@ All four declare:
 
 Suggested resolution:
  extract a `build-single-page-app(...)` helper into
-`packages/build-tool/css/` or a new sibling `packages/build-tool/inline-html/`.
+`package/build-tool/css/` or a new sibling `package/build-tool/inline-html/`.
 
 #### Six `paper2vn` screen modules each redefine `mount(root)` with the same signature
 
-`packages/webapp-edu/paper2vn/src/client/screens/{menu,saves,log,settings,lecture,select-topic}.ts`
+`package/webapp-edu/paper2vn/src/client/screens/{menu,saves,log,settings,lecture,select-topic}.ts`
 each declare `function mount(root: HTMLElement,): void`.
  The bodies are screen-specific,
 but the entry-point pattern (a single `mount` per screen) is duplicated six times.
@@ -319,11 +319,11 @@ exports a `Screen` value rather than a free function.
 
 Verbatim 12-line bodies (one variant uses env only):
 
-- `packages/webapp-forge/server/src/index.ts`
-- `packages/webapp-content/messages-demo/src/server.ts`
-- `packages/webapp-productivity/done/src/server.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server.ts`
-- `packages/desktop-daemon/editord/src/server/index.ts` (env-only variant)
+- `package/webapp-forge/server/src/index.ts`
+- `package/webapp-content/messages-demo/src/server.ts`
+- `package/webapp-productivity/done/src/server.ts`
+- `package/webapp-productivity/done-h-css-test/src/server.ts`
+- `package/desktop-daemon/editord/src/server/index.ts` (env-only variant)
 
 Each parses `--port=` from `process.argv` (via `getArgumentValue`),
  falls back to
@@ -331,22 +331,22 @@ Each parses `--port=` from `process.argv` (via `getArgumentValue`),
  and finally to `DEFAULT_PORT`.
 
 Suggested home:
- `packages/module/es/src/path/` already hosts cross-package helpers;
+ `package/module/es/src/path/` already hosts cross-package helpers;
  add
-`packages/module/es/src/server/resolve-port.ts` (or similar).
+`package/module/es/src/server/resolve-port.ts` (or similar).
 
 #### `getArgumentValue` (or `getFlag`) is reimplemented in five files
 
 Four `lib/args.ts` files declare an identical `getArgumentValue(name: string)`
 helper that scans `process.argv` for `--name=value`:
 
-- `packages/webapp-forge/server/src/lib/args.ts`
-- `packages/webapp-productivity/done/src/lib/args.ts`
-- `packages/webapp-productivity/done-h-css-test/src/lib/args.ts`
-- `packages/webapp-content/messages-demo/src/lib/args.ts`
+- `package/webapp-forge/server/src/lib/args.ts`
+- `package/webapp-productivity/done/src/lib/args.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/args.ts`
+- `package/webapp-content/messages-demo/src/lib/args.ts`
 
 A fifth file,
- `packages/webapp-forge/stress/src/scenarios/shared.ts:getFlag`,
+ `package/webapp-forge/stress/src/scenarios/shared.ts:getFlag`,
 declares the same logic under a different name (`getFlag` instead of
 `getArgumentValue`).
 
@@ -365,19 +365,19 @@ local extraction but `webapp-forge/server` does not import from it shows the
 within-`webapp-forge/` boundary is itself porous.
 
 Suggested home:
- `packages/module/es/src/cli/get-argument-value.ts`.
+ `package/module/es/src/cli/get-argument-value.ts`.
 
 #### `requireParam` is reimplemented in four files
 
-- `packages/webapp-content/messages-demo/src/server.ts`
-- `packages/webapp-forge/server/src/server/routes/helpers.ts`
-- `packages/webapp-productivity/done/src/server.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server-api-routes.ts`
+- `package/webapp-content/messages-demo/src/server.ts`
+- `package/webapp-forge/server/src/server/routes/helpers.ts`
+- `package/webapp-productivity/done/src/server.ts`
+- `package/webapp-productivity/done-h-css-test/src/server-api-routes.ts`
 
 Each takes a `URLPattern.exec` result and throws if a named group is missing.
 
 Suggested home:
- a small `packages/module/es/src/web/` route helper,
+ a small `package/module/es/src/web/` route helper,
  since the function
 is HTTP-route-agnostic.
 
@@ -387,18 +387,18 @@ Two equivalent shapes:
 
 Shape A (`typeof === 'object' && !== null`):
 
-- `packages/webapp-productivity/doodle-widget/src/source-url.ts`
-- `packages/webapp-edu/paper2vn/src/client/dialogue/generator.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server/api/tasks-parse.ts`
-- `packages/webapp-productivity/done/src/server/api/task-validation.ts`
+- `package/webapp-productivity/doodle-widget/src/source-url.ts`
+- `package/webapp-edu/paper2vn/src/client/dialogue/generator.ts`
+- `package/webapp-productivity/done-h-css-test/src/server/api/tasks-parse.ts`
+- `package/webapp-productivity/done/src/server/api/task-validation.ts`
 
 Shape B (also rules out arrays):
 
-- `packages/webapp-content/messages-demo/src/server/api/messages.ts`
-- `packages/webapp-content/messages-demo/src/server/api/drafts.ts`
+- `package/webapp-content/messages-demo/src/server/api/messages.ts`
+- `package/webapp-content/messages-demo/src/server/api/drafts.ts`
 
 Suggested home:
- `packages/module/es/src/types/t object/` already houses similar guards;
+ `package/module/es/src/types/t object/` already houses similar guards;
 add `is-record.ts` as a public export.
 
 #### `stringField` is reimplemented in four files
@@ -406,23 +406,23 @@ add `is-record.ts` as a public export.
 Each takes `(input, key)` and returns the string value at `input[key]` if it is a
 string:
 
-- `packages/pi-plugin/terminal-title/src/formatter-utils.ts`
-- `packages/claude-code-plugin/source/src/handler/terminal-title/formatter-utils.ts`
-- `packages/webapp-content/messages-demo/src/server/api/messages.ts`
-- `packages/webapp-content/messages-demo/src/server/api/drafts.ts`
+- `package/pi-plugin/terminal-title/src/formatter-utils.ts`
+- `package/claude-code-plugin/source/src/handler/terminal-title/formatter-utils.ts`
+- `package/webapp-content/messages-demo/src/server/api/messages.ts`
+- `package/webapp-content/messages-demo/src/server/api/drafts.ts`
 
 Suggested home:
- `packages/module/es/src/types/t object/`.
+ `package/module/es/src/types/t object/`.
 
 #### `parseStringArray` is reimplemented in four files
 
 Two shapes (one parses JSON-encoded strings,
  one validates `unknown` input):
 
-- `packages/webapp-productivity/done/src/server/api/task-validation.ts`
-- `packages/webapp-productivity/done/src/lib/db/task-mapping.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server/api/tasks-parse.ts`
-- `packages/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts`
+- `package/webapp-productivity/done/src/server/api/task-validation.ts`
+- `package/webapp-productivity/done/src/lib/db/task-mapping.ts`
+- `package/webapp-productivity/done-h-css-test/src/server/api/tasks-parse.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts`
 
 Suggested resolution:
  hoist the validation form into `task-validation` shared with
@@ -440,9 +440,9 @@ imports `escapeHtml` from `@monochromatic-dev/module-hyperscript/ts`.
  Only the
 canonical source remains.
 
-- `packages/module/hyperscript/src/html/index.ts:escapeHtml` (canonical)
-- `packages/webapp-content/messages-demo/src/server/pages/_layout.ts:escapeHtml`
-- `packages/ssg/aquati.cat/src/client/search.ts:escapeHtml`
+- `package/module/hyperscript/src/html/index.ts:escapeHtml` (canonical)
+- `package/webapp-content/messages-demo/src/server/pages/_layout.ts:escapeHtml`
+- `package/ssg/aquati.cat/src/client/search.ts:escapeHtml`
 
 Each replaces `&`,
  `<`,
@@ -458,28 +458,28 @@ canonical source) in the two consumers.
 The signature varies,
  but each returns an HTML document around app-specific content:
 
-- `packages/webapp-content/messages-demo/src/server/pages/_layout.ts`
-- `packages/webapp-edu/paper2vn/src/page.ts`
-- `packages/webapp-productivity/syllable-break-demo/src/page.ts`
-- `packages/dev-script/inference-canary-viewer/src/html/page.ts`
-- `packages/webapp-productivity/doodle-widget/src/page.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server/pages/layout.ts`
-- `packages/webapp-productivity/done/src/server/pages/layout.ts`
+- `package/webapp-content/messages-demo/src/server/pages/_layout.ts`
+- `package/webapp-edu/paper2vn/src/page.ts`
+- `package/webapp-productivity/syllable-break-demo/src/page.ts`
+- `package/dev-script/inference-canary-viewer/src/html/page.ts`
+- `package/webapp-productivity/doodle-widget/src/page.ts`
+- `package/webapp-productivity/done-h-css-test/src/server/pages/layout.ts`
+- `package/webapp-productivity/done/src/server/pages/layout.ts`
 
 Suggested resolution:
  extract a `renderHtmlShell({title, body, ...})` helper into
-`packages/module/hyperscript/` or a new `packages/module/html-shell/`.
+`package/module/hyperscript/` or a new `package/module/html-shell/`.
 
 #### `jsonResponse` is reimplemented in three files
 
 Each wraps `Response.json(payload, { status })`:
 
-- `packages/webapp-productivity/done/src/server/api/http-utils.ts:jsonResponse`
-- `packages/webapp-productivity/done-h-css-test/src/server/api/timer.ts:jsonResponse`
-- `packages/webapp-productivity/done-h-css-test/src/server/api/tasks.ts:jsonResponse`
+- `package/webapp-productivity/done/src/server/api/http-utils.ts:jsonResponse`
+- `package/webapp-productivity/done-h-css-test/src/server/api/timer.ts:jsonResponse`
+- `package/webapp-productivity/done-h-css-test/src/server/api/tasks.ts:jsonResponse`
 
 Suggested resolution:
- hoist into `packages/module/es/src/web/json-response.ts`.
+ hoist into `package/module/es/src/web/json-response.ts`.
  Note that
 the wrapper itself is one line;
  the duplication exists because each module wants
@@ -487,10 +487,10 @@ the wrapper itself is one line;
 
 #### `buildHeader` is reimplemented in four files (with different signatures)
 
-- `packages/webapp-search/exa-search/src/asset-header.ts:buildHeader`
-- `packages/webapp-productivity/done-h-css-test/src/client/components/side-drawer-helpers.ts:buildHeader`
-- `packages/mcp/nvim/src/tool-helpers.ts:buildHeader`
-- `packages/webapp-productivity/done/src/client/components/side-drawer-nav.ts:buildHeader`
+- `package/webapp-search/exa-search/src/asset-header.ts:buildHeader`
+- `package/webapp-productivity/done-h-css-test/src/client/components/side-drawer-helpers.ts:buildHeader`
+- `package/mcp/nvim/src/tool-helpers.ts:buildHeader`
+- `package/webapp-productivity/done/src/client/components/side-drawer-nav.ts:buildHeader`
 
 The two `done` forks share a signature;
  the others diverge.
@@ -501,10 +501,10 @@ this is more "name collision" than DRY violation.
 
 Each `lib/db.ts` (or equivalent) defines all three of these with the same signatures:
 
-- `packages/webapp-productivity/done/src/lib/db.ts`
-- `packages/webapp-productivity/done-h-css-test/src/lib/db.ts`
-- `packages/webapp-forge/server/src/data/db.ts`
-- `packages/webapp-content/messages-demo/src/lib/db.ts`
+- `package/webapp-productivity/done/src/lib/db.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/db.ts`
+- `package/webapp-forge/server/src/data/db.ts`
+- `package/webapp-content/messages-demo/src/lib/db.ts`
 
 The three functions together form a complete database-path bootstrap routine.
  With the
@@ -513,13 +513,13 @@ current spread,
 
 Suggested resolution:
  extract a `resolveSqliteDatabase({ defaultPath })` helper into
-`packages/module/es/` or a new `packages/module/sqlite-bootstrap/`.
+`package/module/es/` or a new `package/module/sqlite-bootstrap/`.
 
 #### `runMigrations` is reimplemented in three files
 
-- `packages/webapp-productivity/done/src/lib/db/migrations.ts`
-- `packages/webapp-productivity/done-h-css-test/src/lib/db-migrations.ts`
-- `packages/webapp-content/messages-demo/src/lib/db/migrations.ts`
+- `package/webapp-productivity/done/src/lib/db/migrations.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/db-migrations.ts`
+- `package/webapp-content/messages-demo/src/lib/db/migrations.ts`
 
 Each iterates a list of SQL statements and runs them sequentially against a
 `Database` instance.
@@ -532,12 +532,12 @@ SQLite-bootstrap module proposed above.
 
 #### `completeTask` and `openTask` duplicated across the `done` fork
 
-- `packages/webapp-productivity/done/src/lib/db/task-timer.ts:completeTask` and
-  `packages/webapp-productivity/done-h-css-test/src/lib/db/tasks-timer.ts:completeTask`
-- `packages/webapp-productivity/done/src/client/inbox.ts:completeTask` and
-  `packages/webapp-productivity/done-h-css-test/src/client/inbox.ts:completeTask`
-- `packages/webapp-productivity/done/src/client/{search,in-progress,inbox}.ts:openTask`
-  and `packages/webapp-productivity/done-h-css-test/src/client/inbox.ts:openTask`
+- `package/webapp-productivity/done/src/lib/db/task-timer.ts:completeTask` and
+  `package/webapp-productivity/done-h-css-test/src/lib/db/tasks-timer.ts:completeTask`
+- `package/webapp-productivity/done/src/client/inbox.ts:completeTask` and
+  `package/webapp-productivity/done-h-css-test/src/client/inbox.ts:completeTask`
+- `package/webapp-productivity/done/src/client/{search,in-progress,inbox}.ts:openTask`
+  and `package/webapp-productivity/done-h-css-test/src/client/inbox.ts:openTask`
 
 These collapse if the `done` fork is consolidated (see fork finding above).
 
@@ -554,9 +554,9 @@ imports were deleted;
  the latent ostree bug is fixed by using the shared
 helper's normalization.
 
-`packages/ssg/aquati.cat/src/lib/git-dates.ts:56` defines `findRepoRoot()`
+`package/ssg/aquati.cat/src/lib/git-dates.ts:56` defines `findRepoRoot()`
 walking up looking for `.git`.
- `packages/module/es/src/path/find-monorepo-root.ts:199`
+ `package/module/es/src/path/find-monorepo-root.ts:199`
 already exports `findMiseMonorepoRoot` walking up looking for `mise.toml` containing
 `[monorepo]`,
  plus normalizes `/home/...` to `/var/home/...` for Fedora ostree.
@@ -577,8 +577,8 @@ the function-level section.
 
 #### `which(name)` reimplemented in two files in `cli/terminal-exec`
 
-- `packages/cli/terminal-exec/src/validate.ts:which`
-- `packages/cli/terminal-exec/src/windows.ts:which`
+- `package/cli/terminal-exec/src/validate.ts:which`
+- `package/cli/terminal-exec/src/windows.ts:which`
 
 Both return the absolute path of the named binary or `null`.
  The two implementations
@@ -599,9 +599,9 @@ from `@monochromatic-dev/module-logger/types`;
  the `ReturnType<typeof tagged>`
 alias and the `tagged` import were removed.
 
-- `packages/module/logger/src/types.ts:6` (canonical,
+- `package/module/logger/src/types.ts:6` (canonical,
    structural)
-- `packages/ssg/aquati.cat/src/lib/types.ts` (`ReturnType<typeof tagged>`)
+- `package/ssg/aquati.cat/src/lib/types.ts` (`ReturnType<typeof tagged>`)
 
 Suggested resolution:
  replace the `ReturnType<typeof tagged>` with a direct import.
@@ -614,7 +614,7 @@ Suggested resolution:
 local type now reads `type CommandResult = Pick<Result, 'stdout' | 'stderr'>`
 with `Result` imported from `nano-spawn`.
 
-`packages/ssg/aquati.cat/src/lib/git-dates.ts:31` defines a local
+`package/ssg/aquati.cat/src/lib/git-dates.ts:31` defines a local
 `{ stdout, stderr }` type matching the public type returned by `nano-spawn`.
 
 Suggested resolution:
@@ -622,28 +622,28 @@ Suggested resolution:
 
 #### `ChatMessage` type declared in five places
 
-- `packages/webapp-productivity/done/src/lib/ai/client.ts`
-- `packages/webapp-productivity/done-h-css-test/src/lib/ai/client.ts`
-- `packages/module/image-diff/src/describe.ts`
-- `packages/dev-script/inference-canary/src/runner-types.ts`
-- `packages/desktop-daemon/hall-monitor/src/analyze.ts`
+- `package/webapp-productivity/done/src/lib/ai/client.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/ai/client.ts`
+- `package/module/image-diff/src/describe.ts`
+- `package/dev-script/inference-canary/src/runner-types.ts`
+- `package/desktop-daemon/hall-monitor/src/analyze.ts`
 
 Each represents an OpenAI-compatible message envelope with `role` and `content`.
  Five
 implementations track to four different LLM client patterns.
 
 Suggested resolution:
- a `packages/module/llm-type/` package or a section in
-`packages/module/es/src/types/`.
+ a `package/module/llm-type/` package or a section in
+`package/module/es/src/types/`.
  Useful given the recurring openai/anthropic/openrouter
 client pattern.
 
 #### `ChatCompletionResponse` type declared in four places
 
-- `packages/webapp-productivity/done-h-css-test/src/lib/ai/client.ts`
-- `packages/webapp-productivity/done/src/lib/ai/client.ts`
-- `packages/webapp-edu/paper2vn/src/client/llm/openai-compatible.ts`
-- `packages/module/image-diff/src/describe.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/ai/client.ts`
+- `package/webapp-productivity/done/src/lib/ai/client.ts`
+- `package/webapp-edu/paper2vn/src/client/llm/openai-compatible.ts`
+- `package/module/image-diff/src/describe.ts`
 
 Same justification as `ChatMessage`.
  The two `done`-fork copies fold into the fork
@@ -651,35 +651,35 @@ consolidation.
 
 #### `JsonRpcRequest`, `JsonRpcNotification`, `JsonRpcResponse` declared in two packages
 
-- `packages/mcp/stdio/src/json-rpc.ts` (used by MCP server scaffolding)
-- `packages/desktop-daemon/editord/src/server/lsp/json-rpc-encode.ts` (used by LSP)
+- `package/mcp/stdio/src/json-rpc.ts` (used by MCP server scaffolding)
+- `package/desktop-daemon/editord/src/server/lsp/json-rpc-encode.ts` (used by LSP)
 
 Both protocols use JSON-RPC 2.0 wire format;
  the type definitions are the same
 substring.
 
 Suggested resolution:
- extract `packages/module/json-rpc/` (or place under
-`packages/module/es/src/protocol/json-rpc/`).
+ extract `package/module/json-rpc/` (or place under
+`package/module/es/src/protocol/json-rpc/`).
 
 #### `BlockerSummary` declared in six places (done fork)
 
-- `packages/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts`
-- `packages/webapp-productivity/done-h-css-test/src/client/task-details.ts`
-- `packages/webapp-productivity/done-h-css-test/src/client/components/task-detail-types.ts`
-- `packages/webapp-productivity/done/src/lib/db/task-timer.ts`
-- `packages/webapp-productivity/done/src/client/task-details.ts`
-- `packages/webapp-productivity/done/src/client/components/task-detail-types.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts`
+- `package/webapp-productivity/done-h-css-test/src/client/task-details.ts`
+- `package/webapp-productivity/done-h-css-test/src/client/components/task-detail-types.ts`
+- `package/webapp-productivity/done/src/lib/db/task-timer.ts`
+- `package/webapp-productivity/done/src/client/task-details.ts`
+- `package/webapp-productivity/done/src/client/components/task-detail-types.ts`
 
 Three copies per fork.
  Folds into the fork consolidation.
 
 #### `RenderResult` declared in four places
 
-- `packages/webapp-forge/server/src/worker/render-phase2.ts`
-- `packages/webapp-forge/server/src/worker/render.ts`
-- `packages/webapp-productivity/done/src/client/components/task-detail-render.ts`
-- `packages/webapp-productivity/done-h-css-test/src/client/components/task-detail-render.ts`
+- `package/webapp-forge/server/src/worker/render-phase2.ts`
+- `package/webapp-forge/server/src/worker/render.ts`
+- `package/webapp-productivity/done/src/client/components/task-detail-render.ts`
+- `package/webapp-productivity/done-h-css-test/src/client/components/task-detail-render.ts`
 
 The two webapp-forge copies are intra-package;
  the two done copies fold into the fork
@@ -688,10 +688,10 @@ consolidation.
 
 #### `AutofillResult` declared in four places
 
-- `packages/webapp-productivity/done/src/server/api/ai-autofill.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server/api/ai-autofill.ts`
-- `packages/webapp-productivity/done/src/client/components/task-detail-types.ts`
-- `packages/webapp-productivity/done-h-css-test/src/client/components/task-detail-types.ts`
+- `package/webapp-productivity/done/src/server/api/ai-autofill.ts`
+- `package/webapp-productivity/done-h-css-test/src/server/api/ai-autofill.ts`
+- `package/webapp-productivity/done/src/client/components/task-detail-types.ts`
+- `package/webapp-productivity/done-h-css-test/src/client/components/task-detail-types.ts`
 
 Two pairs (server-side and client-side type for the same payload).
  Folds into the
@@ -699,21 +699,21 @@ fork consolidation.
 
 #### `Translations`, `RootTranslation`, `TranslationFunctions` declared in two packages
 
-- `packages/webapp-edu/paper2vn/src/client/i18n/i18n-types.ts`
-- `packages/ssg/aquati.cat/src/i18n/i18n-types.ts`
+- `package/webapp-edu/paper2vn/src/client/i18n/i18n-types.ts`
+- `package/ssg/aquati.cat/src/i18n/i18n-types.ts`
 
 Two consumers of `typesafe-i18n` each declare the same wrapper triple.
 
 Suggested resolution:
- extract a `packages/module/typesafe-i18n-types/` package,
+ extract a `package/module/typesafe-i18n-types/` package,
  or
 expose the types from a single existing helper module.
 
 #### `HighlightGroup` type and `HIGHLIGHT_GROUPS` array declared in three packages
 
-- `packages/dev-script/inference-canary-viewer/src/client/tags.ts:HIGHLIGHT_GROUPS`
-- `packages/desktop-daemon/editord/src/client/highlight/tags.ts:HIGHLIGHT_GROUPS`
-- `packages/ssg/aquati.cat/src/client/highlight-groups.ts:HIGHLIGHT_GROUPS`
+- `package/dev-script/inference-canary-viewer/src/client/tags.ts:HIGHLIGHT_GROUPS`
+- `package/desktop-daemon/editord/src/client/highlight/tags.ts:HIGHLIGHT_GROUPS`
+- `package/ssg/aquati.cat/src/client/highlight-groups.ts:HIGHLIGHT_GROUPS`
 
 The first two share a 7-entry list (`keyword, string, comment, number, type, function,
 property`).
@@ -726,20 +726,20 @@ byte-near-identical;
  they should share the export.
 
 Suggested resolution:
- extract a `packages/module/highlight-groups/` package exporting a
+ extract a `package/module/highlight-groups/` package exporting a
 configurable group set (or two presets).
 
 #### `TaskStatus`, `TaskPriority`, `TaskComplexity`, `TaskRow`, `TaskCreateInput`, `TaskUpdateInput`, `TaskCardOptions` declared in `done` fork
 
-Each appears in `packages/webapp-productivity/done/src/lib/types.ts` (or
+Each appears in `package/webapp-productivity/done/src/lib/types.ts` (or
 `task-card-render.ts`) and the corresponding paths under `done-h-css-test/`.
  All fold
 into the fork consolidation.
 
 #### `LayoutOptions` declared in two places
 
-- `packages/webapp-productivity/done/src/server/pages/layout.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server/pages/layout.ts`
+- `package/webapp-productivity/done/src/server/pages/layout.ts`
+- `package/webapp-productivity/done-h-css-test/src/server/pages/layout.ts`
 
 Folds into the fork consolidation.
 
@@ -760,13 +760,13 @@ await runHookPlugin({ parser, handler, writer });
 
 Files:
 
-- `packages/claude-code-plugin/prompt-time/src/index.ts` (36 lines)
-- `packages/claude-code-plugin/guardrail/src/index.ts` (35 lines)
-- `packages/claude-code-plugin/bash-output-filter/src/index.ts` (38 lines)
-- `packages/claude-code-plugin/stop-reminder/src/index.ts` (36 lines)
-- `packages/claude-code-plugin/terminal-title/src/index.ts` (27 lines)
-- `packages/claude-code-plugin/claude-spawn/src/index.ts` (26 lines)
-- `packages/claude-code-plugin/session-start-housekeeping/src/index.ts` (36 lines)
+- `package/claude-code-plugin/prompt-time/src/index.ts` (36 lines)
+- `package/claude-code-plugin/guardrail/src/index.ts` (35 lines)
+- `package/claude-code-plugin/bash-output-filter/src/index.ts` (38 lines)
+- `package/claude-code-plugin/stop-reminder/src/index.ts` (36 lines)
+- `package/claude-code-plugin/terminal-title/src/index.ts` (27 lines)
+- `package/claude-code-plugin/claude-spawn/src/index.ts` (26 lines)
+- `package/claude-code-plugin/session-start-housekeeping/src/index.ts` (36 lines)
 
 Per-file diff is ~12 lines (handler name in 4 imports,
  command alias in the example
@@ -795,7 +795,7 @@ mechanical.
 
 #### MCP server base correctly extracted via `@monochromatic-dev/mcp-stdio`
 
-Both `packages/mcp/nvim/` and `packages/mcp/mvm/` declare
+Both `package/mcp/nvim/` and `package/mcp/mvm/` declare
 `@monochromatic-dev/mcp-stdio` as a workspace dependency and import server-side helpers
 (`defineTool`,
  `runStdioServer`,
@@ -810,7 +810,7 @@ the three MCP packages for duplication.
 
 Already covered in the type-level section.
  The JSON-RPC base could host this triple
-(or a `packages/module/json-rpc-types/` package) so that LSP code can also consume the
+(or a `package/module/json-rpc-types/` package) so that LSP code can also consume the
 shared definitions instead of redeclaring them.
 
 ### Documentation duplication
@@ -885,25 +885,25 @@ Listed as a positive finding.
 
 The single value `1_000` (one second in milliseconds) is redeclared as a named const in:
 
-- `packages/webapp-content/messages-demo/src/server/pages/feed.ts`
-- `packages/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts`
-- `packages/webapp-content/messages-demo/src/lib/db/sweep.ts`
-- `packages/dev-script/task-util/src/depends-parse.ts`
-- `packages/dev-script/inference-canary-viewer/src/html/overlay-meta.ts`
-- `packages/dev-script/inference-canary/src/linter-artifacts-timestamp.ts`
-- `packages/test-fixture/file-enforcer-perf/src/validate-resources.ts`
-- `packages/cli/mvm/src/virsh-wait.ts`
-- `packages/webapp-productivity/done-h-css-test/src/client/lib/task-card.ts`
-- `packages/dev-script/inference-canary/src/runner-stream-helpers.ts`
-- `packages/webapp-productivity/rss/src/interval.ts`
-- `packages/dev-script/inference-canary/src/runner-probe.ts`
-- `packages/webapp-productivity/done/src/lib/db/task-timer.ts`
-- `packages/desktop-daemon/hall-monitor/src/index.ts`
-- `packages/desktop-daemon/hall-monitor/src/analyze/memory.ts`
-- `packages/webapp-productivity/done/src/client/lib/format-tracked-time.ts`
+- `package/webapp-content/messages-demo/src/server/pages/feed.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts`
+- `package/webapp-content/messages-demo/src/lib/db/sweep.ts`
+- `package/dev-script/task-util/src/depends-parse.ts`
+- `package/dev-script/inference-canary-viewer/src/html/overlay-meta.ts`
+- `package/dev-script/inference-canary/src/linter-artifacts-timestamp.ts`
+- `package/test-fixture/file-enforcer-perf/src/validate-resources.ts`
+- `package/cli/mvm/src/virsh-wait.ts`
+- `package/webapp-productivity/done-h-css-test/src/client/lib/task-card.ts`
+- `package/dev-script/inference-canary/src/runner-stream-helpers.ts`
+- `package/webapp-productivity/rss/src/interval.ts`
+- `package/dev-script/inference-canary/src/runner-probe.ts`
+- `package/webapp-productivity/done/src/lib/db/task-timer.ts`
+- `package/desktop-daemon/hall-monitor/src/index.ts`
+- `package/desktop-daemon/hall-monitor/src/analyze/memory.ts`
+- `package/webapp-productivity/done/src/client/lib/format-tracked-time.ts`
 
 Suggested home:
- a `packages/module/es/src/time/units.ts` exporting `MS_PER_SECOND`,
+ a `package/module/es/src/time/units.ts` exporting `MS_PER_SECOND`,
 `SECONDS_PER_MINUTE`,
  `MINUTES_PER_HOUR`,
  `HOURS_PER_DAY`.
@@ -912,43 +912,43 @@ Suggested home:
 
 Used as the second argument to `Number.parseInt`:
 
-- `packages/webapp-forge/stress/src/scenarios/shared.ts`
-- `packages/webapp-forge/seed/src/cli.ts`
-- `packages/webapp-forge/server/src/index.ts`
-- `packages/desktop-daemon/editord/src/server/index.ts`
-- `packages/webapp-content/messages-demo/src/server.ts`
-- `packages/webapp-content/messages-demo/src/client/composer.ts`
-- `packages/webapp-content/messages-demo/src/client/composer/helpers.ts`
-- `packages/webapp-content/messages-demo/src/server/api/messages.ts`
-- `packages/webapp-content/messages-demo/src/server/api/drafts.ts`
-- `packages/webapp-content/messages-demo/src/lib/seed.ts`
-- `packages/webapp-content/messages-demo/src/lib/pagination.ts`
-- `packages/webapp-forge/server/src/server/routes/me.ts`
-- `packages/webapp-forge/server/src/server/routes/helpers.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server.ts`
-- `packages/webapp-productivity/done/src/server.ts`
+- `package/webapp-forge/stress/src/scenarios/shared.ts`
+- `package/webapp-forge/seed/src/cli.ts`
+- `package/webapp-forge/server/src/index.ts`
+- `package/desktop-daemon/editord/src/server/index.ts`
+- `package/webapp-content/messages-demo/src/server.ts`
+- `package/webapp-content/messages-demo/src/client/composer.ts`
+- `package/webapp-content/messages-demo/src/client/composer/helpers.ts`
+- `package/webapp-content/messages-demo/src/server/api/messages.ts`
+- `package/webapp-content/messages-demo/src/server/api/drafts.ts`
+- `package/webapp-content/messages-demo/src/lib/seed.ts`
+- `package/webapp-content/messages-demo/src/lib/pagination.ts`
+- `package/webapp-forge/server/src/server/routes/me.ts`
+- `package/webapp-forge/server/src/server/routes/helpers.ts`
+- `package/webapp-productivity/done-h-css-test/src/server.ts`
+- `package/webapp-productivity/done/src/server.ts`
 
 Suggested home:
- `packages/module/es/src/types/t string/t parse-int/`.
+ `package/module/es/src/types/t string/t parse-int/`.
 
 #### `SECONDS_PER_MINUTE = 60` declared in 10 files
 
-- `packages/claude-code-plugin/statusline/statusline.ts`
-- `packages/dev-script/inference-canary/src/linter-artifacts-timestamp.ts`
-- `packages/dev-script/inference-canary/src/runner-probe.ts`
-- `packages/webapp-content/messages-demo/src/server/pages/feed.ts`
-- `packages/webapp-content/messages-demo/src/lib/db/sweep.ts`
-- `packages/webapp-productivity/done-h-css-test/src/client/lib/task-card-helpers.ts`
-- `packages/webapp-productivity/rss/src/interval.ts`
-- `packages/webapp-productivity/done/src/client/lib/format-tracked-time.ts`
-- `packages/desktop-daemon/hall-monitor/src/index.ts`
-- `packages/desktop-daemon/hall-monitor/src/analyze/memory.ts`
+- `package/claude-code-plugin/statusline/statusline.ts`
+- `package/dev-script/inference-canary/src/linter-artifacts-timestamp.ts`
+- `package/dev-script/inference-canary/src/runner-probe.ts`
+- `package/webapp-content/messages-demo/src/server/pages/feed.ts`
+- `package/webapp-content/messages-demo/src/lib/db/sweep.ts`
+- `package/webapp-productivity/done-h-css-test/src/client/lib/task-card-helpers.ts`
+- `package/webapp-productivity/rss/src/interval.ts`
+- `package/webapp-productivity/done/src/client/lib/format-tracked-time.ts`
+- `package/desktop-daemon/hall-monitor/src/index.ts`
+- `package/desktop-daemon/hall-monitor/src/analyze/memory.ts`
 
 Folds into the proposed `time/units.ts` module.
 
 #### `FULL_PERCENT = 100` declared in 10 files (all in done-h-css-test)
 
-All 10 are inside `packages/webapp-productivity/done-h-css-test/src/client/`,
+All 10 are inside `package/webapp-productivity/done-h-css-test/src/client/`,
  mostly in
 component style modules:
 
@@ -969,7 +969,7 @@ without a circular import in some cases,
  so each file declares its own.
 
 Suggested home:
- a `packages/webapp-productivity/done-h-css-test/src/client/constants.ts`
+ a `package/webapp-productivity/done-h-css-test/src/client/constants.ts`
 local module,
  or hoist into `module-hyperscript`.
 
@@ -995,88 +995,88 @@ Already in scope.
    `test-fixture/file-enforcer-perf/src/validate-benchmarks.ts`
 
 Suggested home:
- `packages/module/es/src/types/t number/t bytes/`.
+ `package/module/es/src/types/t number/t bytes/`.
 
 #### `HEX_RADIX = 16` declared in 7 files
 
-- `packages/webapp-forge/seed/src/generate-phase2-helpers.ts`
-- `packages/webapp-forge/server/src/git/pkt-line.ts`
-- `packages/webapp-productivity/doodle-widget/src/client/export-pdf.ts`
-- `packages/desktop-daemon/editord/src/server/operations/hex-dump.ts`
-- `packages/ssg/aquati.cat/src/components/question-radio.ts`
-- `packages/ssg/aquati.cat/src/components/question-checkbox.ts`
-- `packages/ssg/aquati.cat/src/lib/icons/codepoints.ts`
+- `package/webapp-forge/seed/src/generate-phase2-helpers.ts`
+- `package/webapp-forge/server/src/git/pkt-line.ts`
+- `package/webapp-productivity/doodle-widget/src/client/export-pdf.ts`
+- `package/desktop-daemon/editord/src/server/operations/hex-dump.ts`
+- `package/ssg/aquati.cat/src/components/question-radio.ts`
+- `package/ssg/aquati.cat/src/components/question-checkbox.ts`
+- `package/ssg/aquati.cat/src/lib/icons/codepoints.ts`
 
 Folds into the parse-int helper proposal.
 
 #### `HOURS_PER_DAY = 24` declared in 5 files
 
-- `packages/dev-script/inference-canary/src/linter-artifacts-timestamp.ts`
-- `packages/webapp-productivity/done-h-css-test/src/client/lib/task-card-helpers.ts`
-- `packages/webapp-content/messages-demo/src/server/pages/feed.ts`
-- `packages/webapp-productivity/done/src/client/lib/format-tracked-time.ts`
-- `packages/webapp-content/messages-demo/src/lib/db/sweep.ts`
+- `package/dev-script/inference-canary/src/linter-artifacts-timestamp.ts`
+- `package/webapp-productivity/done-h-css-test/src/client/lib/task-card-helpers.ts`
+- `package/webapp-content/messages-demo/src/server/pages/feed.ts`
+- `package/webapp-productivity/done/src/client/lib/format-tracked-time.ts`
+- `package/webapp-content/messages-demo/src/lib/db/sweep.ts`
 
 Folds into the proposed `time/units.ts` module.
 
 #### `SECONDS_PER_HOUR = 3_600` declared in 4 files
 
-- `packages/webapp-content/messages-demo/src/server/pages/feed.ts`
+- `package/webapp-content/messages-demo/src/server/pages/feed.ts`
   (composes from `MINUTES_PER_HOUR * SECONDS_PER_MINUTE`)
-- `packages/claude-code-plugin/statusline/statusline.ts`
-- `packages/webapp-productivity/done-h-css-test/src/client/lib/task-card-helpers.ts`
-- `packages/webapp-productivity/done/src/client/lib/format-tracked-time.ts`
+- `package/claude-code-plugin/statusline/statusline.ts`
+- `package/webapp-productivity/done-h-css-test/src/client/lib/task-card-helpers.ts`
+- `package/webapp-productivity/done/src/client/lib/format-tracked-time.ts`
 
 Folds into the proposed `time/units.ts` module.
 
 #### `HALF`, `QUARTER`, `THREE_QUARTERS` declared in 4 packages
 
-- `packages/webapp-edu/paper2vn/src/styles/tokens.ts`
-- `packages/webapp-productivity/doodle-widget/src/style-tokens.ts`
-- `packages/dev-script/inference-canary-viewer/src/chart/axis.ts`
-- `packages/desktop-daemon/editord/src/client/binary-viewer/media.styles.ts` (HALF only)
+- `package/webapp-edu/paper2vn/src/styles/tokens.ts`
+- `package/webapp-productivity/doodle-widget/src/style-tokens.ts`
+- `package/dev-script/inference-canary-viewer/src/chart/axis.ts`
+- `package/desktop-daemon/editord/src/client/binary-viewer/media.styles.ts` (HALF only)
 
 These are forced by the project rule "compose fractional values from -2 to 2".
  The
 constants themselves can still be exported once.
 
 Suggested home:
- `packages/module/es/src/types/t number/t fraction/`.
+ `package/module/es/src/types/t number/t fraction/`.
 
 #### HTTP status code constants declared across at least four files
 
-- `packages/webapp-forge/server/src/lib/http.ts` (canonical 7 codes)
-- `packages/webapp-content/messages-demo/src/lib/http.ts` (canonical 7 codes)
-- `packages/webapp-productivity/done/src/server/api/http-utils.ts` (4 codes)
-- `packages/webapp-productivity/done-h-css-test/src/{server-api-routes,client/lib/api,
+- `package/webapp-forge/server/src/lib/http.ts` (canonical 7 codes)
+- `package/webapp-content/messages-demo/src/lib/http.ts` (canonical 7 codes)
+- `package/webapp-productivity/done/src/server/api/http-utils.ts` (4 codes)
+- `package/webapp-productivity/done-h-css-test/src/{server-api-routes,client/lib/api,
   server/api/timer,server/api/tasks}.ts` (each declares the codes it uses inline)
-- `packages/webapp-forge/server/src/storage/adapter-s3.ts` (HTTP_NOT_FOUND,
+- `package/webapp-forge/server/src/storage/adapter-s3.ts` (HTTP_NOT_FOUND,
    HTTP_OK)
 
 The first two `lib/http.ts` files are byte-near-identical with self-acknowledging
 docblocks ("Mirrors the pattern from
-`packages/webapp-content/messages-demo/src/lib/http.ts`").
+`package/webapp-content/messages-demo/src/lib/http.ts`").
 
 Suggested home:
- `packages/module/es/src/web/http-status.ts`.
+ `package/module/es/src/web/http-status.ts`.
 
 #### `DEFAULT_PORT` declared in 8 packages with 4 different values
 
-- `packages/webapp-forge/server/src/index.ts`:
+- `package/webapp-forge/server/src/index.ts`:
    3000
-- `packages/webapp-productivity/done/src/server.ts`:
+- `package/webapp-productivity/done/src/server.ts`:
    3000
-- `packages/webapp-productivity/done-h-css-test/src/server.ts`:
+- `package/webapp-productivity/done-h-css-test/src/server.ts`:
    3000
-- `packages/webapp-content/messages-demo/src/server.ts`:
+- `package/webapp-content/messages-demo/src/server.ts`:
    3000
-- `packages/desktop-daemon/editord/src/server/index.ts`:
+- `package/desktop-daemon/editord/src/server/index.ts`:
    4400
-- `packages/webapp-search/ai-tree/src/index.ts`:
+- `package/webapp-search/ai-tree/src/index.ts`:
    4111
-- `packages/webapp-search/exa-search/src/port.ts`:
+- `package/webapp-search/exa-search/src/port.ts`:
    4115
-- `packages/webapp-productivity/rss/src/port.ts`:
+- `package/webapp-productivity/rss/src/port.ts`:
    4112
 
 Four packages use the same default (3000) and would collide if running together.
@@ -1092,16 +1092,16 @@ shared module is needed;
 
 #### `DEFAULT_DATABASE_PATH` declared in 5 files
 
-- `packages/webapp-content/messages-demo/src/lib/db.ts`:
+- `package/webapp-content/messages-demo/src/lib/db.ts`:
    `./data/messages-demo.db`
-- `packages/webapp-forge/server/src/lib/auth.ts`:
+- `package/webapp-forge/server/src/lib/auth.ts`:
    `./data/forge.db`
-- `packages/webapp-forge/server/src/data/db.ts`:
+- `package/webapp-forge/server/src/data/db.ts`:
    `./data/forge.db` (duplicated within
   webapp-forge-server)
-- `packages/webapp-productivity/done-h-css-test/src/lib/db.ts`:
+- `package/webapp-productivity/done-h-css-test/src/lib/db.ts`:
    `./data/done.db`
-- `packages/webapp-productivity/done/src/lib/db.ts`:
+- `package/webapp-productivity/done/src/lib/db.ts`:
    `./data/done.db`
 
 The two `webapp-forge-server` copies should be merged regardless of whether anything
@@ -1109,7 +1109,7 @@ else changes.
 
 #### `PREVIEW_MAX_LENGTH = 200` declared in 6 files (all in messages-demo)
 
-- `packages/webapp-content/messages-demo/src/{client/composer.worker,
+- `package/webapp-content/messages-demo/src/{client/composer.worker,
   lib/seed, client/composer/compile, client/composer/send, client/composer/edit,
   server/api/import}.ts`
 
@@ -1119,16 +1119,16 @@ Six files in one package each declare the same constant.
 
 #### `REPO_SEED_FACTOR = 1_000_000` declared in 4 files (all in webapp-forge)
 
-- `packages/webapp-forge/stress/src/scenarios/{wide-service, hot-repo}.ts`
-- `packages/webapp-forge/seed/src/{dataset, generate}.ts`
+- `package/webapp-forge/stress/src/scenarios/{wide-service, hot-repo}.ts`
+- `package/webapp-forge/seed/src/{dataset, generate}.ts`
 
 Suggested home:
- `packages/webapp-forge/seed/src/lib/constants.ts` (a single shared
+ `package/webapp-forge/seed/src/lib/constants.ts` (a single shared
 constants module across the seed and stress sibling packages).
 
 #### `DEFAULT_BURST_DURATION_MS = 1_000` declared in all 4 stress scenarios
 
-- `packages/webapp-forge/stress/src/scenarios/{force-push, wide-service, hot-repo,
+- `package/webapp-forge/stress/src/scenarios/{force-push, wide-service, hot-repo,
   bursty-comment}.ts`
 
 Same value,
@@ -1149,13 +1149,13 @@ Listed for completeness so the next audit does not re-flag it.
 
 #### `LINE_HEIGHT` declared with mixed values in 4 files
 
-- `packages/desktop-daemon/editord/src/client/editor/editor-pane.styles.ts`:
+- `package/desktop-daemon/editord/src/client/editor/editor-pane.styles.ts`:
    `(2 + 1) / 2`
-- `packages/desktop-daemon/editord/src/client/inlay/styles.ts`:
+- `package/desktop-daemon/editord/src/client/inlay/styles.ts`:
    `(2 + 1) / 2`
-- `packages/webapp-productivity/done-h-css-test/src/client/components/top-nav-styles.ts`:
+- `package/webapp-productivity/done-h-css-test/src/client/components/top-nav-styles.ts`:
   `1 / 2 / 2`
-- `packages/ssg/aquati.cat/src/styles/constants.ts`:
+- `package/ssg/aquati.cat/src/styles/constants.ts`:
    `1.6`
 
 Same name,
@@ -1170,11 +1170,11 @@ is wrong in at least two of the four.
 
 #### `TOUCH_TARGET` declared with mixed values in 3 files
 
-- `packages/desktop-daemon/editord/src/client/styles/fullscreen-fab.styles.ts`:
+- `package/desktop-daemon/editord/src/client/styles/fullscreen-fab.styles.ts`:
    `2 + 1`
-- `packages/webapp-productivity/done-h-css-test/src/client/mixins.ts`:
+- `package/webapp-productivity/done-h-css-test/src/client/mixins.ts`:
    `3`
-- `packages/ssg/aquati.cat/src/styles/constants.ts`:
+- `package/ssg/aquati.cat/src/styles/constants.ts`:
    `3` (exported)
 
 Two values match;
@@ -1184,17 +1184,17 @@ single export.
 
 #### `DEBOUNCE_MS` declared with three different values in 4 files
 
-- `packages/dev-script/file-enforcer/src/watch/watch-dir.ts:DEBOUNCE_MS = 100` (exported)
-- `packages/desktop-daemon/editord/src/client/search/search.ts:DEBOUNCE_MS = 150`
-- `packages/desktop-daemon/editord/src/server/operations/watch-filesystem-filter.ts:DEBOUNCE_MS = 200` (exported)
-- `packages/ssg/aquati.cat/src/client/search.ts:DEBOUNCE_MS = 200`
+- `package/dev-script/file-enforcer/src/watch/watch-dir.ts:DEBOUNCE_MS = 100` (exported)
+- `package/desktop-daemon/editord/src/client/search/search.ts:DEBOUNCE_MS = 150`
+- `package/desktop-daemon/editord/src/server/operations/watch-filesystem-filter.ts:DEBOUNCE_MS = 200` (exported)
+- `package/ssg/aquati.cat/src/client/search.ts:DEBOUNCE_MS = 200`
 
 Listed so reviewers can decide whether the values reflect deliberate choice (likely yes)
 or copy-paste drift.
 
 #### `VERTICAL_OFFSET` declared with mixed values in 4 places (all in editord)
 
-- `packages/desktop-daemon/editord/src/client/{rename/rename-input, toast/toast,
+- `package/desktop-daemon/editord/src/client/{rename/rename-input, toast/toast,
   completion/completion-popup, hover/hover-popup}.ts`
 
 Three of four use `4`;
@@ -1212,10 +1212,10 @@ Both are intra-package and would dedupe via a `client/style-tokens.ts` import.
 
 #### `lib/args.ts` files in four webapps duplicate the same module
 
-- `packages/webapp-forge/server/src/lib/args.ts`
-- `packages/webapp-productivity/done/src/lib/args.ts`
-- `packages/webapp-productivity/done-h-css-test/src/lib/args.ts`
-- `packages/webapp-content/messages-demo/src/lib/args.ts`
+- `package/webapp-forge/server/src/lib/args.ts`
+- `package/webapp-productivity/done/src/lib/args.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/args.ts`
+- `package/webapp-content/messages-demo/src/lib/args.ts`
 
 Each contains the same `getArgumentValue` (already noted) plus identical companion
 helpers (`hasArgument`).
@@ -1223,8 +1223,8 @@ helpers (`hasArgument`).
 
 #### `lib/http.ts` files in two webapps duplicate the same module
 
-- `packages/webapp-forge/server/src/lib/http.ts`
-- `packages/webapp-content/messages-demo/src/lib/http.ts`
+- `package/webapp-forge/server/src/lib/http.ts`
+- `package/webapp-content/messages-demo/src/lib/http.ts`
 
 Both define the same 7 HTTP status code constants.
  The second file's docblock cites
@@ -1232,9 +1232,9 @@ the first as the pattern source.
 
 #### `lib/db.ts` files in three webapps duplicate the same bootstrap
 
-- `packages/webapp-productivity/done/src/lib/db.ts` (82 lines)
-- `packages/webapp-productivity/done-h-css-test/src/lib/db.ts` (85 lines)
-- `packages/webapp-content/messages-demo/src/lib/db.ts` (165 lines)
+- `package/webapp-productivity/done/src/lib/db.ts` (82 lines)
+- `package/webapp-productivity/done-h-css-test/src/lib/db.ts` (85 lines)
+- `package/webapp-content/messages-demo/src/lib/db.ts` (165 lines)
 
 Each defines `DEFAULT_DATABASE_PATH`,
  `normalizeDatabasePath`,
@@ -1246,16 +1246,16 @@ Each defines `DEFAULT_DATABASE_PATH`,
 
 Byte-identical (all `declare module '*.css' { ... }`):
 
-- `packages/webapp-productivity/done/src/env.d.ts`
-- `packages/webapp-productivity/done-h-css-test/src/env.d.ts`
-- `packages/webapp-productivity/rss/src/env.d.ts`
-- `packages/webapp-search/exa-search/src/env.d.ts`
+- `package/webapp-productivity/done/src/env.d.ts`
+- `package/webapp-productivity/done-h-css-test/src/env.d.ts`
+- `package/webapp-productivity/rss/src/env.d.ts`
+- `package/webapp-search/exa-search/src/env.d.ts`
 
 Distinct (each declares its own `process.env` and asset modules):
 
-- `packages/webapp-forge/{server, seed, stress}/src/env.d.ts`
-- `packages/webapp-content/messages-demo/src/env.d.ts`
-- `packages/typeface/aquaticat/src/env.d.ts`
+- `package/webapp-forge/{server, seed, stress}/src/env.d.ts`
+- `package/webapp-content/messages-demo/src/env.d.ts`
+- `package/typeface/aquaticat/src/env.d.ts`
 
 Suggested resolution:
  extract the `*.css` declaration into a shared
@@ -1288,13 +1288,13 @@ Resolution path is not obvious:
  The
 catalog already deduplicates version pins.
  A generator script (in
-`packages/dev-script/file-enforcer/`) could enforce one of the three shapes per package
+`package/dev-script/file-enforcer/`) could enforce one of the three shapes per package
 type,
  but this is informational rather than actionable today.
 
 #### Vendored copy of `pi-coding-agent` helpers in morph-compact
 
-`packages/pi-plugin/morph-compact/src/pi-utils.ts:1-485` reimplements `convertToLlm` and
+`package/pi-plugin/morph-compact/src/pi-utils.ts:1-485` reimplements `convertToLlm` and
 `serializeConversation` from the upstream `@earendil-works/pi-coding-agent` package.
 
 The file's own docblock declares the duplication explicit and intentional (avoiding a
@@ -1321,9 +1321,9 @@ saying "this should not be here long-term".
 
 #### `webapp-forge/server/src/fragments/jsx-runtime.ts` is an inline copy of `ssg-test/src/lib/jsx-to-html.ts`
 
-Stated explicitly at line 4 of `packages/webapp-forge/server/src/fragments/jsx-runtime.ts`:
+Stated explicitly at line 4 of `package/webapp-forge/server/src/fragments/jsx-runtime.ts`:
 
-> Inline copy of `packages/ssg/aquati.cat/src/lib/jsx-to-html.ts`.
+> Inline copy of `package/ssg/aquati.cat/src/lib/jsx-to-html.ts`.
 > Kept inline (not factored to a workspace package) per the design plan
 > so each surface can pin its own escape semantics.
 
@@ -1353,11 +1353,11 @@ later,
 Both files implement the identical 4-step Mulberry32 algorithm (verified by both
 referencing the magic constant `0x6D_2B_79_F5`):
 
-- `packages/webapp-forge/seed/src/rng.ts:rng` (exported)
-- `packages/webapp-content/messages-demo/src/lib/seed.ts:rng` (file-local)
+- `package/webapp-forge/seed/src/rng.ts:rng` (exported)
+- `package/webapp-content/messages-demo/src/lib/seed.ts:rng` (file-local)
 
 The first file's docblock states "Mirrors
-`packages/webapp-content/messages-demo/src/lib/seed.ts`".
+`package/webapp-content/messages-demo/src/lib/seed.ts`".
 
 `webapp-forge/seed/src/rng.ts` also exports `rngInt` and `rngPick` companion helpers,
 which `messages-demo` does not have.
@@ -1366,17 +1366,17 @@ which `messages-demo` does not have.
 
 #### `webapp-forge/server/src/lib/auth.ts` mirrors `data/db.ts`'s database resolution
 
-`packages/webapp-forge/server/src/lib/auth.ts` declares its own
+`package/webapp-forge/server/src/lib/auth.ts` declares its own
 `DEFAULT_DATABASE_PATH = './data/forge.db'` and recomputes the same
 `--db argument -> DB_PATH env -> default` priority chain that already lives in
-`packages/webapp-forge/server/src/data/db.ts`.
+`package/webapp-forge/server/src/data/db.ts`.
  The auth.
 ts docblock acknowledges this:
 
 > Mirrors `data/db.ts` so both libraries point at the same file.
 > Mirrors `data/db.ts`'s priority chain so both libraries point at the same path.
 
-Both files exist within `packages/webapp-forge/server/`,
+Both files exist within `package/webapp-forge/server/`,
  so the natural fix is to lift
 the resolution into a shared `lib/database-path.ts` module within the package.
 
@@ -1387,11 +1387,11 @@ For completeness,
 already covered by earlier findings:
 
 - `webapp-forge/server/src/lib/http.ts` ("Mirrors the pattern from
-  `packages/webapp-content/messages-demo/src/lib/http.ts`"):
+  `package/webapp-content/messages-demo/src/lib/http.ts`"):
    covered by the
   `lib/http.ts` finding.
 - `webapp-forge/server/src/lib/args.ts` ("Mirrors
-  `packages/webapp-content/messages-demo/src/lib/args.ts`"):
+  `package/webapp-content/messages-demo/src/lib/args.ts`"):
    covered by the
   `lib/args.ts` finding.
 - `ssg/aquati.cat/src/client/tags.ts` ("Mirrors the mapping used by editord
@@ -1425,10 +1425,10 @@ zip-writer cases pass.
  Four
 files still use the `node:child_process` + `node:util` `promisify(execFile)` pattern:
 
-- `packages/ssg/aquati.cat/src/lib/git-dates.ts:14`
-- `packages/figma/kiwi/src/index.ts`
-- `packages/webapp-forge/server/src/server/routes/git.cli.unit.test.ts`
-- `packages/module/zip-writer/src/index.unit.test.ts`
+- `package/ssg/aquati.cat/src/lib/git-dates.ts:14`
+- `package/figma/kiwi/src/index.ts`
+- `package/webapp-forge/server/src/server/routes/git.cli.unit.test.ts`
+- `package/module/zip-writer/src/index.unit.test.ts`
 
 `execa` does not appear in source.
 
@@ -1448,10 +1448,10 @@ drive-by edit.
 
 #### `process.exitCode = 1` idiom appears in 10+ CLI catch blocks
 
-- `packages/webapp-forge/stress/src/cli.ts` (twice)
-- `packages/dev-script/catalog-tighten/src/index.ts`
-- `packages/dev-script/task-util/src/{tsgo-filter, pnpm-filter, oxlint-wrapper}.ts`
-- `packages/claude-code-plugin/source/src/cli/spawn-claude.ts`
+- `package/webapp-forge/stress/src/cli.ts` (twice)
+- `package/dev-script/catalog-tighten/src/index.ts`
+- `package/dev-script/task-util/src/{tsgo-filter, pnpm-filter, oxlint-wrapper}.ts`
+- `package/claude-code-plugin/source/src/cli/spawn-claude.ts`
 - plus more
 
 This conforms to the project rule "never `process.exit()`:
@@ -1465,7 +1465,7 @@ next audit does not re-flag the pattern.
 
 #### `question-radio.ts` and `question-checkbox.ts` share 224 of 396/390 lines
 
-`packages/ssg/aquati.cat/src/components/question-{radio,checkbox}.ts` are
+`package/ssg/aquati.cat/src/components/question-{radio,checkbox}.ts` are
 sibling React-style components (radio button group vs checkbox group).
  Combined size
 786 lines;
@@ -1506,8 +1506,8 @@ or into `module/es`.
 
 #### `summarize` declared in two places
 
-- `packages/dev-script/page-weight/src/stats.ts:summarize` (statistics summary)
-- `packages/webapp-forge/server/src/fragments/merge-status.ts:summarize` (merge status)
+- `package/dev-script/page-weight/src/stats.ts:summarize` (statistics summary)
+- `package/webapp-forge/server/src/fragments/merge-status.ts:summarize` (merge status)
 
 Different domains,
  different signatures.
@@ -1517,15 +1517,15 @@ collision rather than DRY duplication.
 
 #### `validate` declared in two places
 
-- `packages/ssg/aquati.cat/src/components/question-radio.ts:validate`
-- `packages/ssg/aquati.cat/src/components/question-checkbox.ts:validate`
+- `package/ssg/aquati.cat/src/components/question-radio.ts:validate`
+- `package/ssg/aquati.cat/src/components/question-checkbox.ts:validate`
 
 Folds into the question-radio/checkbox sibling finding above.
 
 #### `done` and `done-h-css-test` migrations share 88 of 103/106 lines
 
-`packages/webapp-productivity/done/src/lib/db/migrations.ts` vs
-`packages/webapp-productivity/done-h-css-test/src/lib/db-migrations.ts`:
+`package/webapp-productivity/done/src/lib/db/migrations.ts` vs
+`package/webapp-productivity/done-h-css-test/src/lib/db-migrations.ts`:
  15-line diff
 out of ~104 lines.
  Same `tasks` / `attachments` / `settings` tables with the same
@@ -1537,7 +1537,7 @@ schema,
 
 #### `messages-demo/src/server/api/messages.ts` and `api/drafts.ts` share substantial structure
 
-`packages/webapp-content/messages-demo/src/server/api/messages.ts` (257 lines) and
+`package/webapp-content/messages-demo/src/server/api/messages.ts` (257 lines) and
 `api/drafts.ts` (379 lines) both:
 
 - Declare local `isRecord` and `stringField` helpers
@@ -1557,17 +1557,17 @@ work.
 
 #### `done` timer endpoint and `done-h-css-test` timer endpoint diverge by 55 lines
 
-`packages/webapp-productivity/done/src/server/api/timer.ts` (96 lines) vs
-`packages/webapp-productivity/done-h-css-test/src/server/api/timer.ts` (123 lines).
+`package/webapp-productivity/done/src/server/api/timer.ts` (96 lines) vs
+`package/webapp-productivity/done-h-css-test/src/server/api/timer.ts` (123 lines).
 Same start-stop-reset timer endpoints.
  Folds into the fork finding.
 
 #### `done` task-validation modules duplicated across the fork
 
-- `packages/webapp-productivity/done/src/server/api/task-validation.ts`
-- `packages/webapp-productivity/done/src/server/api/task-validation-update.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server/api/tasks-parse.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server/api/tasks-parse-update.ts`
+- `package/webapp-productivity/done/src/server/api/task-validation.ts`
+- `package/webapp-productivity/done/src/server/api/task-validation-update.ts`
+- `package/webapp-productivity/done-h-css-test/src/server/api/tasks-parse.ts`
+- `package/webapp-productivity/done-h-css-test/src/server/api/tasks-parse-update.ts`
 
 Four files;
  two pairs (create + update) per fork side.
@@ -1585,13 +1585,13 @@ category.
 
 #### `import.meta.dirname` used in 12 test files for fixture path resolution
 
-- `packages/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts`
-- `packages/rolldown-plugin/import-attributes/src/import-attributes.unit.test.ts`
-- `packages/dev-script/task-util/src/{tsgo-filter, depends, command, append}.unit.test.ts`
-- `packages/dev-script/file-enforcer/src/integration.unit.test.ts`
-- `packages/dev-script/inference-canary-viewer/src/dashboard.e2e.test.ts`
-- `packages/build-tool/css/src/build.unit.test.ts`
-- `packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`
+- `package/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts`
+- `package/rolldown-plugin/import-attributes/src/import-attributes.unit.test.ts`
+- `package/dev-script/task-util/src/{tsgo-filter, depends, command, append}.unit.test.ts`
+- `package/dev-script/file-enforcer/src/integration.unit.test.ts`
+- `package/dev-script/inference-canary-viewer/src/dashboard.e2e.test.ts`
+- `package/build-tool/css/src/build.unit.test.ts`
+- `package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`
 - plus a couple more
 
 The pattern (`import.meta.dirname` used to resolve fixture paths relative to the test
@@ -1626,7 +1626,7 @@ two sections.
 
 #### `formatBytes` in one place, but generally needed everywhere
 
-`packages/cli/mvm/src/download-progress.ts:45` defines
+`package/cli/mvm/src/download-progress.ts:45` defines
 `formatBytes(bytes: number): string` returning a human-readable size string
 ("1.0 MiB",
  "123 KiB").
@@ -1650,7 +1650,7 @@ a one-line import.
 
 #### `formatMs` and `formatNumber` in one place each
 
-`packages/dev-script/inference-canary-viewer/src/html/overlay-meta.ts:31` defines
+`package/dev-script/inference-canary-viewer/src/html/overlay-meta.ts:31` defines
 `formatMs(ms: number): string` returning "1.2s" for >= 1000ms and "123ms" otherwise.
 The same file also defines `formatNumber(num: number): string` (locale-formatted
 thousands separators).
@@ -1668,14 +1668,14 @@ the call site,
 
 Two callsites with the same conceptual function but different output strings:
 
-- `packages/webapp-content/messages-demo/src/server/pages/feed.ts`:
+- `package/webapp-content/messages-demo/src/server/pages/feed.ts`:
    returns
   "just now",
    "5m ago",
    "2h ago",
    "3d ago",
    or ISO-date prefix
-- `packages/claude-code-plugin/statusline/statusline.ts`:
+- `package/claude-code-plugin/statusline/statusline.ts`:
    returns
   "now",
    "30s",
@@ -1700,8 +1700,8 @@ already in the audit.
 
 #### `nowIso` defined twice (DRY violation; weak fold-out case)
 
-- `packages/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts`
-- `packages/webapp-productivity/done/src/lib/db/task-mapping.ts`
+- `package/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts`
+- `package/webapp-productivity/done/src/lib/db/task-mapping.ts`
 
 Both `export function nowIso(): string { return new Date().toISOString(); }`.
  This is
@@ -1719,7 +1719,7 @@ function-level section.
 
 #### `parseMemoryToBytes` (inverse of `formatBytes`) in one place
 
-`packages/cli/vmsync/src/boot.ts` exports `parseMemoryToBytes(memory: string): number`
+`package/cli/vmsync/src/boot.ts` exports `parseMemoryToBytes(memory: string): number`
 which accepts strings like `"4G"` or `"2048M"` and returns bytes.
  Includes its own
 inline `GIB` and `MIB` constants.
@@ -1744,12 +1744,12 @@ The same loop (precompute total length,
 in six separate files (counts the implementation only,
  not callers):
 
-- `packages/webapp-forge/server/src/git/iso-server.ts:concatChunks`
-- `packages/webapp-forge/server/src/git/iso-server-advertisement.ts:concatChunks`
-- `packages/webapp-forge/server/src/git/iso-server.unit.test.ts:concat`
-- `packages/webapp-forge/server/src/git/pack-protocol.unit.test.ts:concat`
-- `packages/webapp-forge/server/src/git/pkt-line.unit.test.ts:concat`
-- `packages/webapp-forge/stress/src/scenarios/force-push.ts:concat`
+- `package/webapp-forge/server/src/git/iso-server.ts:concatChunks`
+- `package/webapp-forge/server/src/git/iso-server-advertisement.ts:concatChunks`
+- `package/webapp-forge/server/src/git/iso-server.unit.test.ts:concat`
+- `package/webapp-forge/server/src/git/pack-protocol.unit.test.ts:concat`
+- `package/webapp-forge/server/src/git/pkt-line.unit.test.ts:concat`
+- `package/webapp-forge/stress/src/scenarios/force-push.ts:concat`
 
 Bodies are identical except for the variable name `concat` vs `concatChunks`;
  the
@@ -1767,7 +1767,7 @@ imports.
 
 #### `randomId` (UUID with non-crypto fallback) in one place
 
-`packages/webapp-content/messages-demo/src/client/composer/helpers.ts:randomId` returns
+`package/webapp-content/messages-demo/src/client/composer/helpers.ts:randomId` returns
 `crypto.randomUUID()` when available,
  otherwise a `${Date.now()}-${random}` synthetic
 ID.
@@ -1787,12 +1787,12 @@ The same closure-counter pattern,
  identical body,
  in:
 
-- `packages/webapp-forge/server/src/worker/dispatcher.unit.test.ts`
-- `packages/webapp-forge/server/src/worker/dispatcher-phase2.unit.test.ts`
-- `packages/webapp-forge/server/src/data/queries-phase2-events.unit.test.ts`
-- `packages/webapp-forge/server/src/data/queries-phase2-resources.unit.test.ts`
-- `packages/webapp-content/messages-demo/src/lib/db/sweep.unit.test.ts`
-- `packages/webapp-content/messages-demo/src/lib/db/messages.unit.test.ts`
+- `package/webapp-forge/server/src/worker/dispatcher.unit.test.ts`
+- `package/webapp-forge/server/src/worker/dispatcher-phase2.unit.test.ts`
+- `package/webapp-forge/server/src/data/queries-phase2-events.unit.test.ts`
+- `package/webapp-forge/server/src/data/queries-phase2-resources.unit.test.ts`
+- `package/webapp-content/messages-demo/src/lib/db/sweep.unit.test.ts`
+- `package/webapp-content/messages-demo/src/lib/db/messages.unit.test.ts`
 
 Each file has a top-level `let counter = 0;` and a `function uniqueId(tag) { counter
 += 1; return \`prefix-${tag}-${counter}\`;
@@ -1813,13 +1813,13 @@ prefix string literal.
 Anonymous-named filter-callback typeguards repeating the same body,
  in seven files:
 
-- `packages/webapp-productivity/done/src/server/pages/task-details.ts`
-- `packages/webapp-productivity/done-h-css-test/src/server/pages/task-details.ts`
-- `packages/cli/vmsync/src/list.ts`
-- `packages/cli/vmsync/src/nbd.ts`
-- `packages/dev-script/inference-canary/src/codegen/fix-prompt.ts`
-- `packages/dev-script/inference-canary/src/codegen/probe-factory-additional-diagnostics.ts`
-- `packages/pi-plugin/morph-compact/src/pi-utils.ts`
+- `package/webapp-productivity/done/src/server/pages/task-details.ts`
+- `package/webapp-productivity/done-h-css-test/src/server/pages/task-details.ts`
+- `package/cli/vmsync/src/list.ts`
+- `package/cli/vmsync/src/nbd.ts`
+- `package/dev-script/inference-canary/src/codegen/fix-prompt.ts`
+- `package/dev-script/inference-canary/src/codegen/probe-factory-additional-diagnostics.ts`
+- `package/pi-plugin/morph-compact/src/pi-utils.ts`
 
 Each occurrence is `.filter(function isDefined(x): x is T { return x !== undefined; })`.
 The standard library has no built-in narrowing typeguard for this;
@@ -1840,11 +1840,11 @@ the inline typeguard.
 
 #### `concat`-style helpers also exist for strings/lines (one place but shape is generic)
 
-`packages/webapp-edu/paper2vn/src/client/state.ts:readJson` defines
+`package/webapp-edu/paper2vn/src/client/state.ts:readJson` defines
 `function readJson<T,>(key: string, fallback: T): T` reading and parsing JSON from
 `localStorage` with a fallback on any failure.
  A second `readJson` exists in
-`packages/webapp-content/messages-demo/src/client/json-fetch.ts` but operates on
+`package/webapp-content/messages-demo/src/client/json-fetch.ts` but operates on
 `Response`,
  not `localStorage`:
  different signature,
@@ -1866,8 +1866,8 @@ to extract.
 
 Two callsites:
 
-- `packages/webapp-productivity/done/src/client/lib/page-data.ts`
-- `packages/webapp-productivity/done-h-css-test/src/client/lib/page-data.ts`
+- `package/webapp-productivity/done/src/client/lib/page-data.ts`
+- `package/webapp-productivity/done-h-css-test/src/client/lib/page-data.ts`
 
 Both byte-identical:
  read the `<script id="page-data">` element,
@@ -1881,14 +1881,14 @@ not specific to the productivity app.
 Suggested resolution:
  lift to a shared client-side utilities module (one does not
 exist yet:
- create it as `packages/module/dom-utils` or similar,
+ create it as `package/module/dom-utils` or similar,
  or add it to
 `module/dom` which already has DOM helpers).
  Both done variants import.
 
 #### `requireElement<T>(selector): T` in one place; codified in TROUBLESHOOTING.typescript.md
 
-`packages/webapp-productivity/doodle-widget/src/client/dom-refs.ts:requireElement`
+`package/webapp-productivity/doodle-widget/src/client/dom-refs.ts:requireElement`
 exports a typed `querySelector` that throws on null.
  The pattern is the workaround
 for the TypeScript narrowing-into-function-declarations limitation,
@@ -1909,12 +1909,12 @@ instead of showing the inline definition.
 
 Three near-identical wrappers around `mkdir(..., { recursive: true })`:
 
-- `packages/dev-script/file-enforcer/src/io/write.ts:ensureDir(filePath: string)`:
+- `package/dev-script/file-enforcer/src/io/write.ts:ensureDir(filePath: string)`:
   takes a file path,
    calls `mkdir(dirname(filePath), { recursive: true })`
-- `packages/claude-code-plugin/source/src/handler/session-start-housekeeping.ts:ensureDir(dirPath)`:
+- `package/claude-code-plugin/source/src/handler/session-start-housekeeping.ts:ensureDir(dirPath)`:
   takes a directory path directly
-- `packages/ssg/aquati.cat/src/build/assets.ts:ensureDir(dir)`:
+- `package/ssg/aquati.cat/src/build/assets.ts:ensureDir(dir)`:
    inline
   callback inside a `Promise.all(map)` chain
 
@@ -1932,8 +1932,8 @@ imports.
 
 #### `intFlag` / `getFlag` argument-parsing helpers in two places
 
-`packages/webapp-forge/stress/src/scenarios/shared.ts:intFlag` and
-`packages/webapp-forge/seed/src/cli.ts:intFlag` are byte-identical implementations of
+`package/webapp-forge/stress/src/scenarios/shared.ts:intFlag` and
+`package/webapp-forge/seed/src/cli.ts:intFlag` are byte-identical implementations of
 "parse `--name=value` from `process.argv`,
  fall back to a default on missing or
 non-finite".
@@ -1962,8 +1962,8 @@ implementations and the two `intFlag` copies all collapse to imports.
 
 #### `truncate(value, maxLength)` with ellipsis; one fork has two copies
 
-`packages/pi-plugin/terminal-title/src/formatter-utils.ts:truncate` and the corresponding
-copy in `packages/claude-code-plugin/source/src/handler/terminal-title/formatter-utils.ts`
+`package/pi-plugin/terminal-title/src/formatter-utils.ts:truncate` and the corresponding
+copy in `package/claude-code-plugin/source/src/handler/terminal-title/formatter-utils.ts`
 are the two truncate implementations the audit's terminal-title fork section already
 covers.
  The body is generic ("if longer than max,
@@ -1982,11 +1982,11 @@ than just consolidating the fork.
 
 **Resolved 2026-05-09**:
  both wrappers were deleted from
-`packages/dev-script/page-weight/src/index.ts`;
+`package/dev-script/page-weight/src/index.ts`;
  the eight call sites now use
 `text.padEnd(width)` and `text.padStart(width)` directly.
 
-`packages/dev-script/page-weight/src/index.ts` defines both `padLeft({text, width})`
+`package/dev-script/page-weight/src/index.ts` defines both `padLeft({text, width})`
 and `padRight({text, width})` as object-parameter wrappers around `padStart` and
 `padEnd`.
  The wrappers do not add behaviour;
@@ -2013,8 +2013,8 @@ of moving to a shared module) but the source signal was the same.
 Two near-identical implementations splitting a glob pattern into its non-meta prefix
 and the relative-glob suffix:
 
-- `packages/dev-script/file-enforcer/src/io/glob.ts:splitGlob`
-- `packages/dev-script/task-util/src/depends-resolve-glob.ts:splitGlob`
+- `package/dev-script/file-enforcer/src/io/glob.ts:splitGlob`
+- `package/dev-script/task-util/src/depends-resolve-glob.ts:splitGlob`
 
 Both use a `GLOB_META` regex to find the first metacharacter,
  then partition.
@@ -2035,7 +2035,7 @@ Suggested resolution:
 
 #### `round1` (round to one decimal place) in two places
 
-`packages/test-fixture/file-enforcer-perf/src/{validate-benchmarks,bench-in-container}.ts`
+`package/test-fixture/file-enforcer-perf/src/{validate-benchmarks,bench-in-container}.ts`
 both define `round1(value): number => Math.round(value * 10) / 10`.
  Same body,
  no
@@ -2056,7 +2056,7 @@ for number utilities).
 
 #### `encodeS3Key(key)` (per-segment URI encoding) in one place
 
-`packages/webapp-forge/server/src/storage/adapter-s3.ts:encodeS3Key` URI-encodes each
+`package/webapp-forge/server/src/storage/adapter-s3.ts:encodeS3Key` URI-encodes each
 `/`-separated segment of an S3 key while preserving the separator.
  Generic enough
 to belong outside the S3 adapter;
@@ -2073,7 +2073,7 @@ Suggested resolution:
 
 #### `escapeString` in one place
 
-`packages/dev-script/file-enforcer/src/package/mise.generate-index.ts:escapeString`
+`package/dev-script/file-enforcer/src/package/mise.generate-index.ts:escapeString`
 escapes `\` and `'` for embedding into single-quoted TypeScript string literals,
 the canonical operation for codegen tools that emit TS source.
  Single caller today,
@@ -2099,14 +2099,14 @@ the escape sets differ.
 timeout or backend rejection still maps to `false`.
  The local timer wiring is
 deleted.
- Verified by `mise run //packages/webapp-content/messages-demo:build`
+ Verified by `mise run //package/webapp-content/messages-demo:build`
 producing the firefox140 client bundle without warnings.
 
-`packages/webapp-content/messages-demo/src/client/storage-probe.ts:withTimeout`
+`package/webapp-content/messages-demo/src/client/storage-probe.ts:withTimeout`
 implements timeout-via-`Promise.race`-with-`setTimeout`.
  The codebase already exports
 `withTimeout` from `@monochromatic-dev/module-es/with-timeout` (verified at
-`packages/module/es/src/types/t object/t promise/f/t object/withTimeout/r a/p p/index.ts`).
+`package/module/es/src/types/t object/t promise/f/t object/withTimeout/r a/p p/index.ts`).
 The local copy hardcodes a `PROBE_TIMEOUT_MS` and resolves with `false` instead of
 rejecting;
  it is a domain-specific specialization,
@@ -2154,19 +2154,19 @@ Five separate `groupBy`-shaped functions across two packages,
  each implementing the
 same one-pass partition-by-key with different key types and result shapes:
 
-- `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByLang(posts)`:
+- `package/ssg/aquati.cat/src/lib/content-group.ts:groupByLang(posts)`:
   delegates to `Map.groupBy`,
    returns `Partial<Record<Locales, Post[]>>`
-- `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByName(posts)`:
+- `package/ssg/aquati.cat/src/lib/content-group.ts:groupByName(posts)`:
   delegates to `Map.groupBy`,
    returns `Record<string, Post[]>`
-- `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByTag(posts)`:
+- `package/ssg/aquati.cat/src/lib/content-group.ts:groupByTag(posts)`:
   walks `allTags(posts)`,
    returns `Record<string, Post[]>`
-- `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByLangThenTag(posts)`:
+- `package/ssg/aquati.cat/src/lib/content-group.ts:groupByLangThenTag(posts)`:
   composition of the previous two,
    returns `Partial<Record<Locales, Record<string, Post[]>>>`
-- `packages/desktop-daemon/editord/src/client/inlay/group-by-line.ts:groupByLine<T>({items, keyFn})`:
+- `package/desktop-daemon/editord/src/client/inlay/group-by-line.ts:groupByLine<T>({items, keyFn})`:
   generic,
    returns `Map<number, T[]>`,
    hand-rolled (does not use `Map.groupBy`)
@@ -2258,7 +2258,7 @@ during a future drive-by.
 
 #### `module/es` barrel re-export files
 
-`packages/module/es/src/types/...` is organized as a deeply nested directory tree
+`package/module/es/src/types/...` is organized as a deeply nested directory tree
 following the package's own taxonomy.
  Each level has a one-line `index.ts` that
 re-exports the next level.

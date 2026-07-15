@@ -2,7 +2,7 @@
 
 ## Decision
 
-Cargo work for `packages/desktop-app/terminal` and `packages/music-player/desktop-app` runs on the host when the
+Cargo work for `package/desktop-app/terminal` and `package/music-player/desktop-app` runs on the host when the
 native development libraries are present,
  and falls back to a Fedora podman container (see each package's
 `Containerfile`) otherwise.
@@ -84,7 +84,7 @@ the container,
 Run both at once from the repository root with the monorepo glob:
 
 ```bash
-mise run '//packages/desktop-app/...:verify:container'
+mise run '//package/desktop-app/...:verify:container'
 ```
 
 The host path uses the repo-wide mise toolchain (currently nightly Rust),

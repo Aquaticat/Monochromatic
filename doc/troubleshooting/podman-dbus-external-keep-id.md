@@ -11,7 +11,7 @@ with `--userns=keep-id` fixes both.
 
 ## Symptom
 
-Launching the GUI through the container (`mise run //packages/music-player/desktop-app:run`)
+Launching the GUI through the container (`mise run //package/music-player/desktop-app:run`)
 prints,
  on stderr:
 
@@ -206,7 +206,7 @@ podman run --rm --userns=keep-id localhost/monochromatic/music-player id
 ## Verified workarounds
 
 Add `--userns=keep-id` to the `podman run` invocation in the `run` task
-(`packages/music-player/desktop-app/mise.toml`).
+(`package/music-player/desktop-app/mise.toml`).
  The host uid maps identically
 into the container,
  so zbus asserts 1000,

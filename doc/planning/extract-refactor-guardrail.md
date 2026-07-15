@@ -6,8 +6,8 @@ Status:
 
 ## The problem
 
-Previous session was extracting the logger out of `packages/module/es` into a new
-`packages/module/logger`.
+Previous session was extracting the logger out of `package/module/es` into a new
+`package/module/logger`.
  Claude started modifying `module/es` before
 `module/logger` was verified end-to-end and committed as a standalone addition.
 When interrupted,
@@ -60,7 +60,7 @@ md:
 > `lint:types` task automatically;
 >  until that hook exists,
 >  run
-> `mise run //packages/<path>:lint:types` manually after editing TypeScript.
+> `mise run //package/<path>:lint:types` manually after editing TypeScript.
 
 Extended idea:
  run `:lint` (not just `:lint:types`;
@@ -109,8 +109,8 @@ Empirically verified in this repo (pnpm 11.0.0-rc.
    Used for "what might break if I
   edit this package?
   ".
-  - `...{packages/module/es}` → 40 packages (module/es + 39 dependents).
-  - `...{packages/module/logger}` → 39 packages (because `module/es` already
+  - `...{package/module/es}` → 40 packages (module/es + 39 dependents).
+  - `...{package/module/logger}` → 39 packages (because `module/es` already
     lists `@monochromatic-dev/module-logger` in its `package.json:50`,
      so
     logger transitively inherits all of module/es's dependents).
@@ -166,12 +166,12 @@ User paused to sleep before answering.
 
 ## Critical files if we do implement
 
-- `packages/module/es/src/mise.post-edit-typecheck.ts`:
+- `package/module/es/src/mise.post-edit-typecheck.ts`:
    new script
   (AGENTS.
   md requires `mise.<action>.ts` in this dir,
    no shell).
-- `packages/module/es/mise.toml`:
+- `package/module/es/mise.toml`:
    new `post-edit-typecheck` task.
 - `.claude/settings.local.json`:
    new entry under `hooks.PostToolUse`

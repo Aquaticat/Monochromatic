@@ -273,7 +273,7 @@ change).
 
 **Description**:
 
-The behaviour that `<h1>heading</h1>` in MDX source is preserved as a literal tag and does NOT resolve through `useMDXComponents()` (while `# heading` DOES) is intentional and explained by the comment at `packages/mdx/lib/plugin/recma-jsx-rewrite.js:177-180`.
+The behaviour that `<h1>heading</h1>` in MDX source is preserved as a literal tag and does NOT resolve through `useMDXComponents()` (while `# heading` DOES) is intentional and explained by the comment at `package/mdx/lib/plugin/recma-jsx-rewrite.js:177-180`.
 
 This is not clearly called out in the user-facing documentation at <https://mdxjs.com/docs/using-mdx/#components>. The current docs imply any element can be overridden via the components map, without distinguishing markdown-produced elements from author-written JSX.
 

@@ -5,7 +5,7 @@ name: toml-edit-fuzz
 # changes that touch the package, its shared fixtures, or the fuzzing decision
 # doc. The same *.property.unit.test.ts files run bounded in test:unit and as a
 # short per-property campaign through the package fuzz task. See
-# packages/module/toml-edit/HANDOVER.fuzzing.md and
+# package/module/toml-edit/HANDOVER.fuzzing.md and
 # doc/decision/toml-edit-fuzzing.md.
 #
 # push and pull_request are path-filtered to toml-edit. merge_group cannot be
@@ -17,8 +17,8 @@ on:
   pull_request:
     branches: ['main']
     paths:
-    - 'packages/module/toml-edit/**'
-    - 'packages/test-fixture/toml-edit/**'
+    - 'package/module/toml-edit/**'
+    - 'package/test-fixture/toml-edit/**'
     - 'doc/decision/toml-edit-fuzzing.md'
     - '.github/workflows/toml-edit-fuzz.yml'
   merge_group:
@@ -26,8 +26,8 @@ on:
   push:
     branches: ['main']
     paths:
-    - 'packages/module/toml-edit/**'
-    - 'packages/test-fixture/toml-edit/**'
+    - 'package/module/toml-edit/**'
+    - 'package/test-fixture/toml-edit/**'
     - 'doc/decision/toml-edit-fuzzing.md'
     - '.github/workflows/toml-edit-fuzz.yml'
 
@@ -62,7 +62,7 @@ jobs:
         run=true
         if [ "${{ github.event_name }}" = 'merge_group' ]; then
           changed=$(git diff --name-only --diff-filter=ACMRT origin/main...HEAD || true)
-          if ! printf '%s\n' "$changed" | grep -qE '^(packages/(module|test-fixture)/toml-edit/|doc/decision/toml-edit-fuzzing\.md|\.github/workflows/toml-edit-fuzz\.yml)'; then
+          if ! printf '%s\n' "$changed" | grep -qE '^(package/(module|test-fixture)/toml-edit/|doc/decision/toml-edit-fuzzing\.md|\.github/workflows/toml-edit-fuzz\.yml)'; then
             run=false
             echo 'No toml-edit files in the merge group; skipping the fuzz steps.'
           fi
@@ -93,33 +93,33 @@ jobs:
       # Build before type-check: the test and conformance files import the built
       # `@monochromatic-dev/module-toml-edit`, so its dist .d.mts must exist for
       # tsgo to resolve them on a fresh checkout.
-      run: mise run //packages/module/toml-edit:build
+      run: mise run //package/module/toml-edit:build
 
     - name: Type-check
       if: steps.scope.outputs.run == 'true'
-      run: mise run //packages/module/toml-edit:lint:types
+      run: mise run //package/module/toml-edit:lint:types
 
     - name: Unit suite (bounded property runs plus fixtures)
       if: steps.scope.outputs.run == 'true'
-      run: mise run //packages/module/toml-edit:test:unit
+      run: mise run //package/module/toml-edit:test:unit
 
     - name: Fuzz smoke (short per-property campaign)
       if: steps.scope.outputs.run == 'true'
       # A short per-property budget, not the 60s local default, keeps the smoke
       # bounded while still exploring well past the bounded-mode run count.
-      run: mise run //packages/module/toml-edit:fuzz --budget 3000
+      run: mise run //package/module/toml-edit:fuzz --budget 3000
 
     - name: Conformance (toml-test decode and encode for 1.0 and 1.1)
       if: steps.scope.outputs.run == 'true'
       # Follows the latest upstream toml-test runner through mise (a deliberate
       # moving oracle); the task logs the resolved runner version.
-      run: mise run //packages/module/toml-edit:test:conformance
+      run: mise run //package/module/toml-edit:test:conformance
 
     - name: Coverage gate (no per-file src reachability regression)
       if: steps.scope.outputs.run == 'true'
       # The committed baseline is a V8-coverage artifact. This repo always tracks
       # the latest node, so a node release that shifts V8 coverage is handled by
       # refreezing the baseline with
-      # `mise run //packages/module/toml-edit:fuzz:coverage --write`, not by
+      # `mise run //package/module/toml-edit:fuzz:coverage --write`, not by
       # pinning node.
-      run: mise run //packages/module/toml-edit:fuzz:coverage
+      run: mise run //package/module/toml-edit:fuzz:coverage

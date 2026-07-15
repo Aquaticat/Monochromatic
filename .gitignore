@@ -202,21 +202,21 @@ captures/
 # Astro and project data generated at runtime
 .astro/
 /data/
-/packages/webapp-forge/*/data/
-/packages-paused/webapp-forge/*/data/
+/package/webapp-forge/*/data/
+/package-paused/webapp-forge/*/data/
 
 # Package-specific generated files unsafe to generalize
-/packages/desktop-daemon/hall-monitor/**/hall-monitor
-/packages/kwin/key-helper/key-helper-service
-/packages/music-player/android-app/build/
+/package/desktop-daemon/hall-monitor/**/hall-monitor
+/package/kwin/key-helper/key-helper-service
+/package/music-player/android-app/build/
 **/app/build/
 **/linter/kotlin/build/
-/packages/music-player/android-app/**/.idea/
+/package/music-player/android-app/**/.idea/
 
 # Fuzzing scratch corpora; committed seeds live in tracked seeds/<target>/ siblings
 # passed to libFuzzer as a second corpus dir.
-/packages/fuzz/forbidden-strings/corpus/
-/packages/rust-module/forbidden-regex.fuzz/corpus/
+/package/fuzz/forbidden-strings/corpus/
+/package/rust-module/forbidden-regex.fuzz/corpus/
 
 # cargo-mutants report output (written into the crate dir by the containerized run)
 mutants.out/

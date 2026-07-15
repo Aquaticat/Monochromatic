@@ -27,7 +27,7 @@ const dry = process.argv
   .includes('--dry');
 if ((!target) || target.startsWith('--')) throw new Error('usage: bun mise.rewrite-ts-imports.ts <target-unscoped> [--dry]');
 
-// Archived beside doc/handover/ts-index-imports-build-all.md; the packages/
+// Archived beside doc/handover/ts-index-imports-build-all.md; the package/
 // tree this scans lives two directories up from doc/handover/.
 const root = join(
   import.meta.dir,
@@ -90,7 +90,7 @@ const re = new RegExp(
 
 const changed: string[] = [];
 let totalHits = 0;
-for (const rel of new Glob('packages/**/*.{ts,tsx,mts}').scanSync(root)) {
+for (const rel of new Glob('package/**/*.{ts,tsx,mts}').scanSync(root)) {
   if (rel.includes('/dist/') || rel.includes('/node_modules/')) continue;
   const file = join(
     root,

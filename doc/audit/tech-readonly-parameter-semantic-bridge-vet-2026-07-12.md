@@ -446,9 +446,9 @@ not production budgets.
 
 `updateSnapshot({ openFiles })` discovered these separate configured projects from repository source paths:
 
-- `packages/oxlint-plugin/no-restricted-syntax/tsconfig.json`,
+- `package/oxlint-plugin/no-restricted-syntax/tsconfig.json`,
   containing 406 source files in the returned program;
-- `packages/module/jsonc-edit/tsconfig.json`,
+- `package/module/jsonc-edit/tsconfig.json`,
   containing 571 source files in the returned program.
 
 Each queried source file returned zero semantic diagnostics.

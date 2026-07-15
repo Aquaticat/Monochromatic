@@ -28,7 +28,7 @@ maintained release branches.
 
 In scope:
 
-- Code in this repository (`packages/`,
+- Code in this repository (`package/`,
    root configs,
    workflows)
 - Build,

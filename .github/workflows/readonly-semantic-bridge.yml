@@ -4,12 +4,12 @@ on:
   pull_request:
     branches: ['main']
     paths:
-    - 'packages/config/oxlint/**'
-    - 'packages/ownership-markers/foreign-borrowed/**'
-    - 'packages/oxlint-plugin/no-restricted-syntax/**'
-    - 'packages/oxlint-plugin/prefer-readonly-parameter-type/**'
-    - 'packages/oxlint-plugin/shared/**'
-    - 'packages/test-fixture/oxlint-no-restricted-syntax/**'
+    - 'package/config/oxlint/**'
+    - 'package/ownership-markers/foreign-borrowed/**'
+    - 'package/oxlint-plugin/no-restricted-syntax/**'
+    - 'package/oxlint-plugin/prefer-readonly-parameter-type/**'
+    - 'package/oxlint-plugin/shared/**'
+    - 'package/test-fixture/oxlint-no-restricted-syntax/**'
     - 'pnpm-lock.yaml'
     - '.github/workflows/readonly-semantic-bridge.yml'
   merge_group:
@@ -17,12 +17,12 @@ on:
   push:
     branches: ['main']
     paths:
-    - 'packages/config/oxlint/**'
-    - 'packages/ownership-markers/foreign-borrowed/**'
-    - 'packages/oxlint-plugin/no-restricted-syntax/**'
-    - 'packages/oxlint-plugin/prefer-readonly-parameter-type/**'
-    - 'packages/oxlint-plugin/shared/**'
-    - 'packages/test-fixture/oxlint-no-restricted-syntax/**'
+    - 'package/config/oxlint/**'
+    - 'package/ownership-markers/foreign-borrowed/**'
+    - 'package/oxlint-plugin/no-restricted-syntax/**'
+    - 'package/oxlint-plugin/prefer-readonly-parameter-type/**'
+    - 'package/oxlint-plugin/shared/**'
+    - 'package/test-fixture/oxlint-no-restricted-syntax/**'
     - 'pnpm-lock.yaml'
     - '.github/workflows/readonly-semantic-bridge.yml'
 
@@ -60,10 +60,10 @@ jobs:
       run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
     - name: Build semantic plugin artifact
-      run: mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
+      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
 
     - name: Verify native bridge lifecycle and platform paths
-      run: mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host
+      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host
 
     - name: Verify external consumer artifact
-      run: mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host
+      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host

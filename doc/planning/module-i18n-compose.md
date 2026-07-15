@@ -34,12 +34,12 @@ This plan supersedes the earlier brainstorm for `PLANNING.module-i18n-compose.md
 
 ## Implementation status
 
-Phases 1 through 5 plus Phase 7 (cleanup and docs) landed under `packages/module/i18n-compose/`.
+Phases 1 through 5 plus Phase 7 (cleanup and docs) landed under `package/module/i18n-compose/`.
  The package type-checks,
  lints with zero errors and zero warnings,
  and all tests pass.
  Phase 6 (`ssg-test` migration) has since landed:
- `packages/ssg/aquati.cat` renders every static UI label through this package via an app-local
+ `package/ssg/aquati.cat` renders every static UI label through this package via an app-local
  `src/i18n/index.ts`,
  the generated `typesafe-i18n` files plus the `build:i18n` generator task and devDependency are removed,
  the cache pipeline glob covers `src/i18n`,
@@ -49,7 +49,7 @@ What shipped (file layout,
  not the plan's flat `locales/{ca,en,zh}.ts`):
 
 ```txt
-packages/module/i18n-compose/
+package/module/i18n-compose/
 ├── README.md
 ├── mise.toml
 ├── package.json
@@ -236,7 +236,7 @@ These trapped the first implementation and will trap the next contributor unless
    `//:format` task fails on unrelated `figma/kiwi` lint errors before reaching the fixer.
    Run the package-local fixer directly when working on this package;
     the fix is autofixable.
-   `unicorn/no-nested-ternary` is disabled in `packages/config/oxlint/src/rule/style.ts` to match the existing
+   `unicorn/no-nested-ternary` is disabled in `package/config/oxlint/src/rule/style.ts` to match the existing
    project preference for nested ternaries.
 
 7. **Plan §11 short-form examples are wrong;
@@ -260,12 +260,12 @@ These trapped the first implementation and will trap the next contributor unless
 
 These are the bits that did not get written down inside the package itself:
 
-- The `ssg-test` cache pipeline glob at `packages/ssg/aquati.cat/src/build.ts:72` (`PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts'`) **does not include `src/i18n/`**.
+- The `ssg-test` cache pipeline glob at `package/ssg/aquati.cat/src/build.ts:72` (`PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts'`) **does not include `src/i18n/`**.
    Phase 6 acceptance says i18n source changes must invalidate cached rendered output (§13 Phase 6 / §15).
    Widen the glob (or add a separate i18n fingerprint) before declaring the migration done.
 - `ssg-test`'s `package.json` does not yet depend on `@monochromatic-dev/module-i18n-compose`.
    Phase 6 must add `"@monochromatic-dev/module-i18n-compose": "workspace:*"` to `dependencies` and remove `"typesafe-i18n"` from `devDependencies`.
-- The existing call sites use `const t = i18nObject(lang); t.siteName()` — across roughly ten files (rg `'i18nObject'` from `packages/ssg/aquati.cat/src`).
+- The existing call sites use `const t = i18nObject(lang); t.siteName()` — across roughly ten files (rg `'i18nObject'` from `package/ssg/aquati.cat/src`).
    The plan's §3 forbids exporting a `bindLocale` / `t(locale)` accessor from the shared package.
    Rewrites must become explicit `i18n.label(lang, 'siteName')` calls;
    an app-local thin wrapper is allowed if call-site noise becomes painful,
@@ -288,7 +288,7 @@ These are the bits that did not get written down inside the package itself:
    `formatters.ts` is a thin stub that currently returns an empty object;
    nothing depends on it semantically.
 - The `build:i18n` mise task (`typesafe-i18n --no-watch`) and the `typesafe-i18n` devDependency both go away.
-- Test the migration via `mise run //packages/ssg/aquati.cat:build` (or whatever the equivalent task names are when you read this — `mise tasks -C packages/ssg/aquati.cat` lists them).
+- Test the migration via `mise run //package/ssg/aquati.cat:build` (or whatever the equivalent task names are when you read this — `mise tasks -C package/ssg/aquati.cat` lists them).
    Rendered output diff should either be empty or every diff line should have a one-line explanation.
 
 ## 1. Goal
@@ -296,7 +296,7 @@ These are the bits that did not get written down inside the package itself:
 Build a workspace package at:
 
 ```txt
-packages/module/i18n-compose/
+package/module/i18n-compose/
 ```
 
 The package provides a small,
@@ -1097,7 +1097,7 @@ If locale-specific order is needed,
 ## 12. Package layout
 
 ```txt
-packages/module/i18n-compose/
+package/module/i18n-compose/
 ├── README.md
 ├── mise.toml
 ├── package.json
@@ -1124,7 +1124,7 @@ packages/module/i18n-compose/
 
 ### Phase 1: package skeleton
 
-- Create `packages/module/i18n-compose/`.
+- Create `package/module/i18n-compose/`.
 - Add `package.json`,
    `tsconfig.json`,
    and `mise.toml` consistent with nearby workspace modules.

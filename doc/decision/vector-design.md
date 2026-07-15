@@ -845,25 +845,25 @@ Rejected for v1:
 ## D9. Package category name: `vector-design`
 
 Picked:
- `packages/vector-design/` as the category,
+ `package/vector-design/` as the category,
 with `engine/` and `app/` as subpackages
-(parallels `packages/figma/{kiwi,penpot}` in pattern).
+(parallels `package/figma/{kiwi,penpot}` in pattern).
 
 Rejected:
 
-- **`packages/editor/`**.
+- **`package/editor/`**.
   Too generic;
    a monorepo of this size will accumulate other "editors"
   (rich-text,
    code,
    configuration) that have nothing to do with vector design.
-- **`packages/desktop-app/`**.
+- **`package/desktop-app/`**.
   Mirrors `desktop-daemon/` but is too generic for the same reason.
   We may have multiple desktop apps over time.
-- **`packages/figma-alt/`**.
+- **`package/figma-alt/`**.
   Specific to the comparison;
   ties the category name to a competitor whose design we may diverge from.
-- **`packages/design-tool/`**.
+- **`package/design-tool/`**.
   Reasonable alternative.
   Picked `vector-design` because it names the technology family (vector graphics)
   not the use case;

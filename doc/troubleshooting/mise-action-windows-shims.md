@@ -42,7 +42,7 @@ for the external-consumer probe,
 pnpm:
 
 ```toml
-# packages/oxlint-plugin/no-restricted-syntax/mise.toml
+# package/oxlint-plugin/no-restricted-syntax/mise.toml
 run = "node src/external-consumer.unit.test.ts"
 run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node pnpm -- node src/external-consumer.unit.test.ts'
 ```

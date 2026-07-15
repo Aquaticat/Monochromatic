@@ -11,9 +11,9 @@ so the previous title remains in the terminal tab or window.
 
 In this repository the affected surfaces are terminal-title integrations:
 
-- `packages/pi-plugin/terminal-title/src/index.ts`,
+- `package/pi-plugin/terminal-title/src/index.ts`,
   which sends title text through `ctx.ui.setTitle()`.
-- `packages/claude-code-plugin/source/src/handlers/terminal-title/index.ts`,
+- `package/claude-code-plugin/source/src/handlers/terminal-title/index.ts`,
   which writes OSC 0 title sequences to `/dev/tty`.
 
 ## Root cause
@@ -102,9 +102,9 @@ Repository verification for the workaround:
 
 ```sh
 cd /var/home/user/Monochromatic
-mise run //packages/agent-harness-shared/terminal-title:buildAndTest
-mise run //packages/pi-plugin/terminal-title:test:unit
-mise run //packages/claude-code-plugin/source:test:unit
+mise run //package/agent-harness-shared/terminal-title:buildAndTest
+mise run //package/pi-plugin/terminal-title:test:unit
+mise run //package/claude-code-plugin/source:test:unit
 ```
 
 These tests cover ASCII over the limit,

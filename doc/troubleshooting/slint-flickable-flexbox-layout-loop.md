@@ -225,7 +225,7 @@ Failing patterns:
 - One shared `Flickable` containing one wrapping `FlexboxLayout` root for both
   the page-button grid and the selected page rows.
    Command:
-  `RUST_BACKTRACE=1 mise run //packages/music-player/desktop-app:run`.
+  `RUST_BACKTRACE=1 mise run //package/music-player/desktop-app:run`.
   Result:
    release build finished,
    then `Recursion detected` panicked at
@@ -233,7 +233,7 @@ Failing patterns:
 - Breakpointed content while keeping `flick := Flickable` as a child of a
   `HorizontalLayout` with a scrollbar sibling.
    Command:
-  `RUST_BACKTRACE=1 mise run //packages/music-player/desktop-app:run`.
+  `RUST_BACKTRACE=1 mise run //package/music-player/desktop-app:run`.
   Result:
    build emitted the `root.layoutinfo-h -> content.layoutinfo-h ->
   content.max-width -> flick.max-width` loop warning quoted above.
@@ -256,7 +256,7 @@ Working pattern:
 Verification command for the working pattern:
 
 ```sh
-RUST_BACKTRACE=1 mise run //packages/music-player/desktop-app:run
+RUST_BACKTRACE=1 mise run //package/music-player/desktop-app:run
 ```
 
 Observed output after the fix:
@@ -274,7 +274,7 @@ The process stayed running after startup,
 
 ### Explicitly position the Flickable
 
-Patch shape in `packages/music-player/desktop-app/ui/app.slint:412-418`:
+Patch shape in `package/music-player/desktop-app/ui/app.slint:412-418`:
 
 ```slint
 flick := Flickable {
@@ -295,7 +295,7 @@ future scrollbar width changes need the subtraction updated with it.
 
 ### Use breakpointed content branches inside the shared Flickable
 
-Patch shape in `packages/music-player/desktop-app/ui/app.slint:424`,
+Patch shape in `package/music-player/desktop-app/ui/app.slint:424`,
  `:500`,
 `:517`,
  and `:522`:
@@ -321,7 +321,7 @@ narrow viewports show all page buttons above the selected tracks.
    this removes one
   child-size dependency,
    but `RUST_BACKTRACE=1 mise run
-  //packages/music-player/desktop-app:run` still panicked with
+  //package/music-player/desktop-app:run` still panicked with
   `Recursion detected`.
 - Pinning `x: 0px` and `y: 0px` on the content or wrapping the content in an
   extra rectangle:

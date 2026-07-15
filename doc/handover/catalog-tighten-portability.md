@@ -117,14 +117,14 @@ next sessions pick up the manager-specific issues.
 #258 is three defects,
  not one:
 
-1.  Parse (`packages/module/pnpm-workspace-catalog/src/parse.ts`):
+1.  Parse (`package/module/pnpm-workspace-catalog/src/parse.ts`):
     the shared YAML parser handles single quotes,
     double quotes,
     comments,
     default catalogs,
     and named catalogs while retaining raw values for callers that need them.
-2.  Resolve (`packages/dev-script/catalog-tighten/src/version-resolve.ts`,
-    `packages/dev-script/catalog-tighten/src/version-read.ts`):
+2.  Resolve (`package/dev-script/catalog-tighten/src/version-resolve.ts`,
+    `package/dev-script/catalog-tighten/src/version-read.ts`):
     even after the quote fix,
      122 of 134 entries still miss.
     They are sub-package deps not hoisted to root `node_modules`,
@@ -133,7 +133,7 @@ next sessions pick up the manager-specific issues.
     The store-scan fallback exists for this case
     but scans `node_modules/.bun/` (Bun),
      which does not exist in this pnpm repo (`.pnpm/`).
-3.  Write-back (`packages/dev-script/catalog-tighten/src/index.ts`):
+3.  Write-back (`package/dev-script/catalog-tighten/src/index.ts`):
     the rewrite only matches `"name": "range"` (double quotes),
     so on the single-quoted file the real (non-dry-run) command silently writes nothing.
     Invisible to the issue's acceptance criteria,
@@ -151,7 +151,7 @@ next sessions pick up the manager-specific issues.
    38 tighten,
    61 already tight,
    35 not found.
-- The remaining 35 are consumed only by `packages-paused/**` packages (not installed,
+- The remaining 35 are consumed only by `package-paused/**` packages (not installed,
    no active symlink)
   or are transitive-only.
   Neither should be tightened:
@@ -208,7 +208,7 @@ next sessions pick up the manager-specific issues.
        log a warning and skip the entry,
        preserving the rest of the catalog.
 6.  README rewrite:
-    `packages/dev-script/catalog-tighten/README.md` currently misdescribes the source
+    `package/dev-script/catalog-tighten/README.md` currently misdescribes the source
     as the root `package.json` `workspaces.catalog`;
     the code reads `pnpm-workspace.yaml` `catalog:`.
 
@@ -268,14 +268,14 @@ The layouts that break any `node_modules`-reading strategy:
 ## E2e test infrastructure
 
 - Mechanism:
-   a bespoke sidecar package `packages/dev-script/catalog-tighten.matrix`
+   a bespoke sidecar package `package/dev-script/catalog-tighten.matrix`
   (`.<suffix>` is the repo's sidecar convention,
    as in `forbidden-regex.fuzz` and `truepeak-core.bench`;
   those are Rust with no `package.json`,
    so this is the first TypeScript sidecar
   and gets a `package.json` with `workspace:*` deps per AP1 to AP5),
-  borrowing `packages/module/matrix`'s cartesian-product and `describe`/`it` reporting shape
-  and `packages/dev-script/mutation-test`'s isolation
+  borrowing `package/module/matrix`'s cartesian-product and `describe`/`it` reporting shape
+  and `package/dev-script/mutation-test`'s isolation
   (baked node+pnpm image,
    fixture mounted read-only,
    tmpfs `node_modules`,
@@ -326,17 +326,17 @@ The layouts that break any `node_modules`-reading strategy:
 
 ## Key files
 
-- `packages/module/pnpm-workspace-catalog/src/parse.ts`:
+- `package/module/pnpm-workspace-catalog/src/parse.ts`:
    shared catalog parser and #195 hardening.
-- `packages/module/pnpm-workspace-catalog/src/read.ts`:
+- `package/module/pnpm-workspace-catalog/src/read.ts`:
    located-file reader retaining raw content.
-- `packages/dev-script/catalog-tighten/src/version-resolve.ts`:
+- `package/dev-script/catalog-tighten/src/version-resolve.ts`:
    installed-version resolution (#258 defect 2).
-- `packages/dev-script/catalog-tighten/src/version-read.ts`:
+- `package/dev-script/catalog-tighten/src/version-read.ts`:
    store scan to be removed.
-- `packages/dev-script/catalog-tighten/src/index.ts`:
+- `package/dev-script/catalog-tighten/src/index.ts`:
    top-level run and write-back (#258 defect 3).
-- `packages/dev-script/catalog-tighten/README.md`:
+- `package/dev-script/catalog-tighten/README.md`:
    to rewrite.
 - `doc/troubleshooting/pnpm-modules-cache.md`:
    stale-orphan hazard rationale.

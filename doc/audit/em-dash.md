@@ -120,13 +120,13 @@ Intentional content (preserved by exclusion list):
  `AUDIT.em-dash.md` itself
 (self-references),
  `PLANNING.forbidden-strings-em-dash.md`,
-`packages/cli/forbidden-strings/README.md`,
+`package/cli/forbidden-strings/README.md`,
  `AGENTS.md` (rule statement in
 backticks),
  `GLM_LIMITATIONS.md` (documents model violations),
 `HANDOVER.em-dash-sweep-issue-55.md` (handover doc with em-dash examples
 in backticks),
- and `packages/module/hyperscript/src/css/index.unit.test.ts`
+ and `package/module/hyperscript/src/css/index.unit.test.ts`
 (en-dash as CSS counter-style symbol).
  The MD `--` sweep also excluded
 `TODO.claude-code-words.md` and `TODO.forbidden-strings.md` because both
@@ -310,25 +310,25 @@ Replace with paired commas,
    When you need to understand why something was done a certain way,
    trace the code — don't assume a summary file w
 
-### packages/build-tool/css/src/import.ts
+### package/build-tool/css/src/import.ts
 
 - Line 77:
    // Try relative first — CSS treats `@import 'foo.css'` as relative.
 
-### packages/build-tool/css/src/index.ts
+### package/build-tool/css/src/index.ts
 
 - Line 149:
    // Write output — uses dynamic import so browser callers don't pull in node:
   fs
 
-### packages/build-tool/css/src/mixin-registry.ts
+### package/build-tool/css/src/mixin-registry.ts
 
 - Line 1:
    // Slightly over 100 lines — splitting the type guard or expandApplyInNodes into
 - Line 140:
    `Mixin expansion exceeded ${MAX_PASSES} passes — likely caused by circular @apply references between mixins`,
 
-### packages/build-tool/css/src/mixin.ts
+### package/build-tool/css/src/mixin.ts
 
 - Line 10:
    // Re-export from the registry so consumers import from mixin.
@@ -336,25 +336,25 @@ Replace with paired commas,
 - Line 100:
    `@apply ${mixinName} is missing its source location — parsed nodes should always have one, so PostCSS may have received a programmatically constructed node instead of a parsed one`
 
-### packages/build-tool/css/src/package-resolver.ts
+### package/build-tool/css/src/package-resolver.ts
 
 - Line 224:
    // subpath starts with '.
   /' — strip it for join
 
-### packages/claude-code-plugin/claude-spawn/TODO.md
+### package/claude-code-plugin/claude-spawn/TODO.md
 
 - Line 212:
    screen to look at — need `grim` screenshot capture for remote debugging,
 
-### packages/cli/terminal-exec/src/exec.ts
+### package/cli/terminal-exec/src/exec.ts
 
 - Line 41:
    throw new Error('execvp:
    unreachable — length checked above',
   );
 
-### packages/cli/terminal-exec/src/tokenize.ts
+### package/cli/terminal-exec/src/tokenize.ts
 
 - Line 83:
    break;
@@ -363,100 +363,100 @@ Replace with paired commas,
    break;
    // unreachable — length checked above
 
-### packages/cli/terminal-exec/src/validate.ts
+### package/cli/terminal-exec/src/validate.ts
 
 - Line 177:
    throw new Error('unreachable — length checked above',
   );
 
-### packages/config/tsdown/src/index.node.ts
+### package/config/tsdown/src/index.node.ts
 
 - Line 32:
    // Pi extension peer deps — provided by the pi runtime at load time.
 - Line 37:
    // Pi AI providers — provided by the pi runtime at load time.
 
-### packages/desktop-daemon/editord/src/client/editor/editor-pane.ts
+### package/desktop-daemon/editord/src/client/editor/editor-pane.ts
 
 - Line 421:
    /** MutationObserver callback — dispatches `contentchange` on any editor DOM mutation.
    */
 
-### packages/desktop-daemon/editord/src/client/editor/line-ops.ts
+### package/desktop-daemon/editord/src/client/editor/line-ops.ts
 
 - Line 40:
    /** Single line — clear it instead of removing.
    */
 
-### packages/desktop-daemon/editord/src/client/editor/text-resolve.ts
+### package/desktop-daemon/editord/src/client/editor/text-resolve.ts
 
 - Line 63:
    /** Offset past end — clamp to last text node's end.
    */
 
-### packages/desktop-daemon/editord/src/client/file-tree/load.ts
+### package/desktop-daemon/editord/src/client/file-tree/load.ts
 
 - Line 83:
    // Always verify with a fresh fetch — prefetch cache can be stale
 
-### packages/desktop-daemon/editord/src/client/highlight/collect.ts
+### package/desktop-daemon/editord/src/client/highlight/collect.ts
 
 - Line 93:
    // Skip empty lines — text node is '\n' placeholder with no visible text
 
-### packages/desktop-daemon/editord/src/client/selection/expand.ts
+### package/desktop-daemon/editord/src/client/selection/expand.ts
 
 - Line 71:
    /** No selection or collapsed — apply the innermost range.
    */
 
-### packages/desktop-daemon/editord/src/client/selection/shrink.ts
+### package/desktop-daemon/editord/src/client/selection/shrink.ts
 
 - Line 104:
    /** No smaller range — collapse to cursor.
    */
 
-### packages/desktop-daemon/editord/src/client/ws/client.ts
+### package/desktop-daemon/editord/src/client/ws/client.ts
 
 - Line 239:
    // Push notifications — no request ID
 
-### packages/desktop-daemon/editord/src/protocol.ts
+### package/desktop-daemon/editord/src/protocol.ts
 
 - Line 154:
    //region Re-exports — message types split to stay under max-lines
 
-### packages/desktop-daemon/editord/src/server/index-routes.ts
+### package/desktop-daemon/editord/src/server/index-routes.ts
 
 - Line 71:
    //region Static asset serving — built client bundles from dist/client/
 - Line 119:
    //region Raw file serving — media files via HTTP for native browser rendering
 
-### packages/desktop-daemon/editord/src/server/index.ts
+### package/desktop-daemon/editord/src/server/index.ts
 
 - Line 187:
    //region WebSocket — editor communication
 
-### packages/desktop-daemon/editord/src/server/lsp/json-rpc.ts
+### package/desktop-daemon/editord/src/server/lsp/json-rpc.ts
 
 - Line 59:
    /** Consolidated buffer — rebuilt from chunks only when needed for parsing.
    */
 
-### packages/desktop-daemon/editord/src/server/lsp/lsp-features-rename.ts
+### package/desktop-daemon/editord/src/server/lsp/lsp-features-rename.ts
 
 - Line 90:
    /** Plain Range response — extract the symbol text from the range as placeholder.
    */
 
-### packages/desktop-daemon/editord/src/server/operations/apply-workspace-edit.ts
+### package/desktop-daemon/editord/src/server/operations/apply-workspace-edit.ts
 
 - Line 206:
    /** Skip disk write for the current file — the client applies those edits.
    */
 
-### packages/desktop-daemon/hall-monitor/README.md
+### package/desktop-daemon/hall-monitor/README.md
 
 - Line 8:
    All computation runs locally — no data leaves the machine.
@@ -490,7 +490,7 @@ Replace with paired commas,
 - Line 26:
    - [distrobox] — container to run llama-server (used here for AMD GPU overrides)
 
-### packages/desktop-daemon/hall-monitor/src/analyze.ts
+### package/desktop-daemon/hall-monitor/src/analyze.ts
 
 - Line 15:
    2.
@@ -500,7 +500,7 @@ Replace with paired commas,
    or chair is empty.
    Looking at the ceiling or the wall does
 
-### packages/desktop-daemon/hall-monitor/src/cycle.ts
+### package/desktop-daemon/hall-monitor/src/cycle.ts
 
 - Line 77:
    // Skip the entire cycle when the session is locked — no point capturing
@@ -509,7 +509,7 @@ Replace with paired commas,
   debug('[cycle] Screen is locked — skipping cycle',
   );
 
-### packages/desktop-daemon/hall-monitor/src/index.ts
+### package/desktop-daemon/hall-monitor/src/index.ts
 
 - Line 79:
    '[hall-monitor] Starting — capturing every 5 minutes,
@@ -520,7 +520,7 @@ Replace with paired commas,
   max(INTERVAL_MS,
    60_000))
 
-### packages/dev-script/inference-canary-viewer/src/chart/axis.ts
+### package/dev-script/inference-canary-viewer/src/chart/axis.ts
 
 - Line 148:
    /** ISO format:
@@ -531,17 +531,17 @@ Replace with paired commas,
    // Same year:
    show MM-DD only — skip "YYYY-" prefix
 
-### packages/dev-script/inference-canary-viewer/src/chart/data-table.ts
+### package/dev-script/inference-canary-viewer/src/chart/data-table.ts
 
 - Line 90:
    * Missing fix scores distinguish between failed runs ("not run" — fix was
 
-### packages/dev-script/inference-canary-viewer/src/html/view-overview.ts
+### package/dev-script/inference-canary-viewer/src/html/view-overview.ts
 
 - Line 68:
    // Summary table — status is shown inline rather than in its own column
 
-### packages/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/css-mixin-transpiler-initial-2026-03-06T23-36-23.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/css-mixin-transpiler-initial-2026-03-06T23-36-23.000Z/canary.ts
 
 - Line 143:
    // Skip the entire @mixin block — do not emit it.
@@ -550,7 +550,7 @@ Replace with paired commas,
 - Line 173:
    // Unknown at-rule — emit '@' and re-scan from the next character so the
 
-### packages/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/css-mixin-transpiler-initial-2026-03-16T18-27-52.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/css-mixin-transpiler-initial-2026-03-16T18-27-52.000Z/canary.ts
 
 - Line 157:
    // CSS block comment — pass through unchanged
@@ -562,14 +562,14 @@ Replace with paired commas,
 - Line 200:
    // @apply — replace with mixin body
 
-### packages/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/css-mixin-transpiler-initial-2026-03-19T16-04-48.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/css-mixin-transpiler-initial-2026-03-19T16-04-48.000Z/canary.ts
 
 - Line 29:
    * Return value from {@link parseNodes} — the collected nodes and the position after the stop character.
 - Line 159:
    // Quoted strings — do not interpret { } @ inside them
 
-### packages/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/csv-rfc4180-initial-2026-03-07T19-14-56.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/csv-rfc4180-initial-2026-03-07T19-14-56.000Z/canary.ts
 
 - Line 18:
    // End of input — emit the last (possibly empty) field and stop
@@ -578,58 +578,58 @@ Replace with paired commas,
    newline,
    or end
 
-### packages/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/expr-eval-initial-2026-03-11T14-48-24.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/expr-eval-initial-2026-03-11T14-48-24.000Z/canary.ts
 
 - Line 162:
    // Satisfy import/unambiguous requirement — this file is a module with side effects via stdin.
 
-### packages/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/stak-interpreter-fix-2026-04-18T00-32-58.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/stak-interpreter-fix-2026-04-18T00-32-58.000Z/canary.ts
 
 - Line 1:
    /** Stak interpreter — reads a program from stdin and writes output to stdout.
    */
 
-### packages/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/sudoku-solver-fix-2026-05-06T23-31-32.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/sudoku-solver-fix-2026-05-06T23-31-32.000Z/canary.ts
 
 - Line 1:
    /** Sudoku solver CLI — reads puzzles from stdin,
    solves via backtracking.
    */
 
-### packages/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/sudoku-solver-initial-2026-04-04T07-17-24.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Sonnet 4.6/sudoku-solver-initial-2026-04-04T07-17-24.000Z/canary.ts
 
 - Line 1:
    /** Sudoku solver CLI — reads puzzles from stdin,
    writes solutions to stdout.
    */
 
-### packages/dev-script/inference-canary/src/stak/interpreter-ops.ts
+### package/dev-script/inference-canary/src/stak/interpreter-ops.ts
 
 - Line 33:
    throw new Error('stack underflow — unreachable',
   );
 
-### packages/dev-script/task-util/README.md
+### package/dev-script/task-util/README.md
 
 - Line 91:
    This is intentional — `composite` provides valuable constraints
 - Line 159:
    Empty globs contribute no timestamps — the aggregation strategy returns `-Infinity`
 
-### packages/dev-script/task-util/src/append.unit.test.ts
+### package/dev-script/task-util/src/append.unit.test.ts
 
 - Line 176:
    // If we get here,
    permissions aren't enforced — skip assertion
 
-### packages/dev-script/task-util/src/tsgo-filter.ts
+### package/dev-script/task-util/src/tsgo-filter.ts
 
 - Line 276:
    // tsgo #2666 — stale .
   tsbuildinfo causes false negatives;
    clean before each build
 
-### packages/figma/to-penpot/src/index.ts
+### package/figma/to-penpot/src/index.ts
 
 - Line 770:
    // For decks,
@@ -640,28 +640,28 @@ Replace with paired commas,
 - Line 789:
    // Skip "Internal Only Canvas" — it's a Figma internal canvas
 
-### packages/module/es/TODO.testing.md
+### package/module/es/TODO.testing.md
 
 - Line 8:
    but `onLoadRedirectingTo` is not a direct named export — it is nested
 
-### packages/module/es/src/path/fallbacks.ts
+### package/module/es/src/path/fallbacks.ts
 
 - Line 185:
    /** Current working directory — falls back to `/` in browser */
 
-### packages/module/es/src/types/t object/t array/f/t iterable/map/r a/p p/index.ts
+### package/module/es/src/types/t object/t array/f/t iterable/map/r a/p p/index.ts
 
 - Line 38:
    // `Promise.all` only collects already-running results — it does not "activate" them.
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.startsWithComment.unit.test.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.startsWithComment.unit.test.ts
 
 - Line 727:
    // In JSONC,
    */ always terminates a block comment — quotes have no special meaning inside comments
 
-### packages/module/hyperscript/src/css/disallowed-properties.ts
+### package/module/hyperscript/src/css/disallowed-properties.ts
 
 - Line 33:
    // Shorthand properties — always use longhand
@@ -670,7 +670,7 @@ Replace with paired commas,
 - Line 73:
    // Non-logical direction properties — use logical equivalents
 
-### packages/module/hyperscript/src/css/index.types.ts
+### package/module/hyperscript/src/css/index.types.ts
 
 - Line 40:
    /** At-rule name — narrows `decls` to the matching descriptor type */
@@ -688,12 +688,12 @@ Replace with paired commas,
 - Line 103:
    /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
 
-### packages/module/hyperscript/src/css/values.constructors.ts
+### package/module/hyperscript/src/css/values.constructors.ts
 
 - Line 102:
    * `ch` is the advance width of the `0` glyph in the element's font —
 
-### packages/module/hyperscript/src/xml/index.ts
+### package/module/hyperscript/src/xml/index.ts
 
 - Line 102:
    /** Raw inner XML (NOT escaped — caller is responsible for well-formedness) */
@@ -701,20 +701,20 @@ Replace with paired commas,
    // XML has no void elements — instead,
    childless elements self-close.
 
-### packages/module/image-diff/src/client.multi.compare.ts
+### package/module/image-diff/src/client.multi.compare.ts
 
 - Line 85:
    throw new Error('unreachable — allResults is non-empty',
   );
 
-### packages/module/test/README.md
+### package/module/test/README.md
 
 - Line 9:
    Vitest was evaluated and rejected — it requires substantial configuration
 - Line 21:
    so tests run on any JavaScript runtime that supports ESM — including browsers.
 
-### packages/module/test/src/it.ts
+### package/module/test/src/it.ts
 
 - Line 184:
    // — the parent awaits each `it()` promise,
@@ -732,12 +732,12 @@ Replace with paired commas,
 - Line 247:
    `FAIL${runLabel} — expected at least one assertion but none were called (${
 
-### packages/module/test/src/sinon.unit.test.ts
+### package/module/test/src/sinon.unit.test.ts
 
 - Line 137:
    // Sequential execution required — tests stub the same
 
-### packages/pi-plugin/morph-compact/README.md
+### package/pi-plugin/morph-compact/README.md
 
 - Line 3:
    Morph Compact integration for pi — replaces default LLM summarization with line-deletion compression at 33K tok/s.
@@ -753,14 +753,14 @@ Replace with paired commas,
    **Drift reduction** — every compaction cycle loses some information.
    Preserving
 
-### packages/pi-plugin/morph-compact/src/api-key.ts
+### package/pi-plugin/morph-compact/src/api-key.ts
 
 - Line 78:
    // File doesn't exist,
    unreadable,
    or invalid JSON — not an error
 
-### packages/pi-plugin/morph-compact/src/compaction-handler.ts
+### package/pi-plugin/morph-compact/src/compaction-handler.ts
 
 - Line 104:
    'Morph Compact:
@@ -768,7 +768,7 @@ Replace with paired commas,
 - Line 156:
    `Morph Compact failed: ${message} — falling back to pi default`,
 
-### packages/pi-plugin/morph-compact/src/compress-branch.ts
+### package/pi-plugin/morph-compact/src/compress-branch.ts
 
 - Line 164:
    'Nothing to compress — session has no messages and no previous compaction',
@@ -777,7 +777,7 @@ Replace with paired commas,
 - Line 203:
    'Morph Compact returned empty output — compression failed',
 
-### packages/pi-plugin/morph-compact/src/compress-branch.unit.test.ts
+### package/pi-plugin/morph-compact/src/compress-branch.unit.test.ts
 
 - Line 61:
    /** Minimal params without messages — nothing to compress.
@@ -787,14 +787,14 @@ Replace with paired commas,
   prototype.
   compact
 
-### packages/pi-plugin/morph-compact/src/index.ts
+### package/pi-plugin/morph-compact/src/index.ts
 
 - Line 109:
    // Tier 1:
    argv — simplest path,
    zero cleanup
 
-### packages/pi-plugin/morph-compact/src/ipc-launch.ts
+### package/pi-plugin/morph-compact/src/ipc-launch.ts
 
 - Line 109:
    // Tier 4:
@@ -802,7 +802,7 @@ Replace with paired commas,
 - Line 183:
    // Best-effort cleanup — temp files in /tmp are ephemeral
 
-### packages/pi-plugin/morph-compact/src/ipc-socket-tcp.ts
+### package/pi-plugin/morph-compact/src/ipc-socket-tcp.ts
 
 - Line 27:
    /** Loopback address — no remote access.
@@ -810,35 +810,35 @@ Replace with paired commas,
 - Line 115:
    // Close server after writing — one-shot
 
-### packages/pi-plugin/morph-compact/src/ipc-socket-tcp.unit.test.ts
+### package/pi-plugin/morph-compact/src/ipc-socket-tcp.unit.test.ts
 
 - Line 111:
    // Second connection should fail — server is closed
 
-### packages/pi-plugin/morph-compact/src/ipc-socket-unix.ts
+### package/pi-plugin/morph-compact/src/ipc-socket-unix.ts
 
 - Line 118:
    // Close server after writing — one-shot
 
-### packages/pi-plugin/morph-compact/src/ipc-socket-unix.unit.test.ts
+### package/pi-plugin/morph-compact/src/ipc-socket-unix.unit.test.ts
 
 - Line 114:
    // Second connection should fail — server is closed
 
-### packages/pi-plugin/terminal-title/README.md
+### package/pi-plugin/terminal-title/README.md
 
 - Line 3:
    Terminal tab title extension for pi — shows current tool,
    session state,
    and user prompt in the terminal window title.
 
-### packages/pi-plugin/terminal-title/src/index.ts
+### package/pi-plugin/terminal-title/src/index.ts
 
 - Line 30:
    /** Minimal context shape needed by all event handlers — just `ui.setTitle()`.
    */
 
-### packages/ssg/aquati.cat/src/content/en/link-vs-button-quiz.mdx (54 occurrences, first 20 shown)
+### package/ssg/aquati.cat/src/content/en/link-vs-button-quiz.mdx (54 occurrences, first 20 shown)
 
 - Line 2:
    title:
@@ -936,13 +936,13 @@ Replace with paired commas,
    the browser scrolls to the top of the page because <code>#top</code> is a spe
 - ... and 34 more
 
-### packages/ssg/aquati.cat/src/pages/tag.ts
+### package/ssg/aquati.cat/src/pages/tag.ts
 
 - Line 73:
    description:
    `${t.siteDescription()} — ${tag}`,
 
-### packages/ssg/aquati.cat/src/templates/head.ts
+### package/ssg/aquati.cat/src/templates/head.ts
 
 - Line 59:
    //region Capo.
@@ -963,7 +963,7 @@ Replace with paired commas,
    //region Capo.
   js priority 0 — remaining meta and links
 
-### packages/webapp-edu/paper2vn/README.md
+### package/webapp-edu/paper2vn/README.md
 
 - Line 58:
    The live-LLM tier inside the same file uses `test.skip(!env, reason)` so those tests skip silently here — no API key is threaded into the container.
@@ -971,22 +971,22 @@ Replace with paired commas,
    The Bun smoke validates the prompt-to-parsed-chapters pipeline without the cost of spinning up a headless browser,
    which makes it a good pre-commit check while developing prompts.
 
-### packages/webapp-forge/server/TROUBLESHOOTING.isomorphic-git.md
+### package/webapp-forge/server/TROUBLESHOOTING.isomorphic-git.md
 
 - Line 48:
    \| Sideband multiplex (pack/progress/error onto channels 1/2/3) \| **missing — `GitSideBand.mux` is commented out** at `src/models/GitSideBand.js:82` \| must vendor
 
-### packages/webapp-forge/server/src/server/routes/git.unit.test.ts
+### package/webapp-forge/server/src/server/routes/git.unit.test.ts
 
 - Line 177:
    // The triplet has zero/zero — that's a no-op delete-when-not-present.
 
-### packages/webapp-productivity/done-h-css-test/README.md
+### package/webapp-productivity/done-h-css-test/README.md
 
 - Line 43:
    Adopting Drizzle would mean writing some queries with the query builder and others as raw `sql` template escape hatches — two query styles in one codebase.
 
-### packages/webapp-productivity/done/README.md
+### package/webapp-productivity/done/README.md
 
 - Line 44:
    Adopting Drizzle would mean writing some queries with the query builder and others as raw `sql` template escape hatches — two query styles in one codebase.
@@ -1006,7 +1006,7 @@ Replace with "to" for ranges,
    docstrings,
    and string literals sent to other models.
 
-### packages/module/hyperscript/src/css/index.unit.test.ts
+### package/module/hyperscript/src/css/index.unit.test.ts
 
 - Line 235:
    decls:
@@ -1027,7 +1027,7 @@ Replace with "to" for ranges,
   " "}',
   );
 
-### packages/ssg/aquati.cat/src/components/question-radio.ts
+### package/ssg/aquati.cat/src/components/question-radio.ts
 
 - Line 11:
    * hardcoded A–E letter scheme.
@@ -1073,12 +1073,12 @@ Replace with proper punctuation or restructure sentence.
    allocate once,
    copy each chunk in -- appears
 - Line 1395:
-   exist yet -- create it as `packages/module/dom-utils` or similar,
+   exist yet -- create it as `package/module/dom-utils` or similar,
    or add it to
 - Line 1415:
-   - `packages/dev-script/file-enforcer/src/io/write.ts:ensureDir(filePath: string)` --
+   - `package/dev-script/file-enforcer/src/io/write.ts:ensureDir(filePath: string)` --
 - Line 1417:
-   - `packages/claude-code-plugin/source/src/handlers/session-start-housekeeping.ts:ensureDir(dirPath)` --
+   - `package/claude-code-plugin/source/src/handlers/session-start-housekeeping.ts:ensureDir(dirPath)` --
 - Line 1435:
    to back the parsing -- the audit's existing function-level section already lists
 - Line 1466:
@@ -1095,15 +1095,15 @@ Replace with proper punctuation or restructure sentence.
 - Line 1565:
    helper -- either as a new tiny package (e.g. `module/spawn-tagged`) or as an export
 - Line 1574:
-   - `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByLang(posts)` --
+   - `package/ssg/aquati.cat/src/lib/content-group.ts:groupByLang(posts)` --
 - Line 1576:
-   - `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByName(posts)` --
+   - `package/ssg/aquati.cat/src/lib/content-group.ts:groupByName(posts)` --
 - Line 1578:
-   - `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByTag(posts)` --
+   - `package/ssg/aquati.cat/src/lib/content-group.ts:groupByTag(posts)` --
 - Line 1580:
-   - `packages/ssg/aquati.cat/src/lib/content-group.ts:groupByLangThenTag(posts)` --
+   - `package/ssg/aquati.cat/src/lib/content-group.ts:groupByLangThenTag(posts)` --
 - Line 1582:
-   - `packages/desktop-daemon/editord/src/client/inlay/group-by-line.ts:groupByLine<T>({items, keyFn})` --
+   - `package/desktop-daemon/editord/src/client/inlay/group-by-line.ts:groupByLine<T>({items, keyFn})` --
 - Line 1652:
    export * as positional from '.
   /p p/index.
@@ -1137,7 +1137,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 91:
    -- dropped 56 false positives in the deeply nested type-system barrel files
 - Line 218:
-   `packages/*/*/mise.toml` for `bun <path>` invocations -- a future iteration.
+   `package/*/*/mise.toml` for `bun <path>` invocations -- a future iteration.
 - Line 284:
    - `bunx fallow --save-baseline foo.json` and `--baseline foo.json` --
 - Line 329:
@@ -1242,7 +1242,7 @@ Replace with proper punctuation or restructure sentence.
    `cargo:fastmod`,
    `cargo:llmfit` --
 - Line 125:
-   The monorepo already has [file-enforcer](../../packages/dev-script/file-enforcer) --
+   The monorepo already has [file-enforcer](../../package/dev-script/file-enforcer) --
 - Line 147:
    send/receive,
    and compression -- encrypted data stays encrypted in snapshots and
@@ -1660,12 +1660,12 @@ Replace with proper punctuation or restructure sentence.
 - Line 7:
    * Uses spread instead of `extends` because `extends` only merges rules --
 
-### packages/audit/oph-common-look-and-feel/README.md
+### package/audit/oph-common-look-and-feel/README.md
 
 - Line 19:
    All screenshots are embedded as base64 AVIF data URIs -- no server required.
 
-### packages/build-tool/css/README.md
+### package/build-tool/css/README.md
 
 - Line 9:
    1.
@@ -1708,23 +1708,23 @@ Replace with proper punctuation or restructure sentence.
    5.
    **Write output** -- final CSS string written to disk
 
-### packages/build-tool/css/src/cli.ts
+### package/build-tool/css/src/cli.ts
 
 - Line 11:
    //region CLI -- parses args and runs the build
 
-### packages/build-tool/css/src/index.ts
+### package/build-tool/css/src/index.ts
 
 - Line 31:
    //region Re-exports -- public API surface for consumers importing from build.
   ts
 
-### packages/build-tool/css/src/mixin-registry.ts
+### package/build-tool/css/src/mixin-registry.ts
 
 - Line 23:
    //region Mixin Registry -- stores mixin definitions and expands nested @apply references
 
-### packages/claude-code-plugin/README.md
+### package/claude-code-plugin/README.md
 
 - Line 97:
    1.
@@ -1765,7 +1765,7 @@ Replace with proper punctuation or restructure sentence.
    runtime shared across plugins,
    tests colocated with handlers -- is achieved
 
-### packages/claude-code-plugin/bash-output-filter/README.md
+### package/claude-code-plugin/bash-output-filter/README.md
 
 - Line 40:
    1.
@@ -1786,7 +1786,7 @@ Replace with proper punctuation or restructure sentence.
    5.
    **Trailing whitespace** -- spaces and tabs at end of lines are removed
 
-### packages/claude-code-plugin/bash-output-filter/TROUBLESHOOTING.md
+### package/claude-code-plugin/bash-output-filter/TROUBLESHOOTING.md
 
 - Line 31:
    `{` alone is not a valid command -- it must be parsed as part of `{ ...; }` compound syntax,
@@ -1795,7 +1795,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 173:
    This is the same behavior as the original approach and all subsequent attempts --
 
-### packages/claude-code-plugin/guardrail/README.md
+### package/claude-code-plugin/guardrail/README.md
 
 - Line 17:
    1.
@@ -1806,7 +1806,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 42:
    **`ccgr`** -- Claude Code GuardRail
 
-### packages/claude-code-plugin/prompt-time/README.md
+### package/claude-code-plugin/prompt-time/README.md
 
 - Line 39:
    The format intentionally omits seconds,
@@ -1814,12 +1814,12 @@ Replace with proper punctuation or restructure sentence.
    and timezone -- Claude already has the date in the system prompt,
    and seconds add noise without value at human conversation cadence.
 
-### packages/claude-code-plugin/research-agent/README.md
+### package/claude-code-plugin/research-agent/README.md
 
 - Line 21:
    It does **not** replace Explore for local codebase searches --
 
-### packages/claude-code-plugin/research-agent/TROUBLESHOOTING.md
+### package/claude-code-plugin/research-agent/TROUBLESHOOTING.md
 
 - Line 16:
    4.
@@ -1828,7 +1828,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 31:
    This is a model-level behavior -- Haiku optimizes for speed and confidence over accuracy.
 
-### packages/claude-code-plugin/research-agent/agents/research.md
+### package/claude-code-plugin/research-agent/agents/research.md
 
 - Line 8:
    Do NOT use for simple local codebase searches -- use Grep/Glob directly for those.
@@ -1836,18 +1836,18 @@ Replace with proper punctuation or restructure sentence.
    fail to load discussion comments -- they return "Uh oh!
    There was an error while loading" placeholders.
 
-### packages/claude-code-plugin/source/src/handlers/bash-output-filter/filter.ts
+### package/claude-code-plugin/source/src/handlers/bash-output-filter/filter.ts
 
 - Line 80:
    /* stdin already consumed or unavailable -- nothing to pass through */
 
-### packages/claude-code-plugin/source/src/handlers/bash-output-filter/index.ts
+### package/claude-code-plugin/source/src/handlers/bash-output-filter/index.ts
 
 - Line 32:
    * filter script.
    The filter script lives next to the bundled hook entry --
 
-### packages/claude-code-plugin/source/src/handlers/claude-spawn/hook-session-start.ts
+### package/claude-code-plugin/source/src/handlers/claude-spawn/hook-session-start.ts
 
 - Line 94:
    /** Genuine child -- claim ownership by filling in session identity.
@@ -1859,27 +1859,27 @@ Replace with proper punctuation or restructure sentence.
 - Line 113:
    // Not on PATH -- attempt auto-setup.
 
-### packages/claude-code-plugin/source/src/handlers/claude-spawn/index.ts
+### package/claude-code-plugin/source/src/handlers/claude-spawn/index.ts
 
 - Line 80:
    /** File missing (already `.reported`) or unreadable -- skip.
    */
 
-### packages/claude-code-plugin/source/src/handlers/claude-spawn/inject.ts
+### package/claude-code-plugin/source/src/handlers/claude-spawn/inject.ts
 
 - Line 59:
    * invocations.
    When `consume` is false,
    reads the state without renaming --
 
-### packages/claude-code-plugin/source/src/handlers/claude-spawn/session-finder.ts
+### package/claude-code-plugin/source/src/handlers/claude-spawn/session-finder.ts
 
 - Line 52:
    // No coordination file for this PID -- walk up to its parent.
 - Line 73:
    // Cannot read /proc -- platform limitation or process already exited.
 
-### packages/claude-code-plugin/source/src/handlers/guardrail.ts
+### package/claude-code-plugin/source/src/handlers/guardrail.ts
 
 - Line 70:
    'Specialized agent types (Explore,
@@ -1890,19 +1890,19 @@ Replace with proper punctuation or restructure sentence.
    'Do not poll or resume running agents -- wait for the notification.
   ',
 
-### packages/claude-code-plugin/source/src/handlers/stop-reminders/index.ts
+### package/claude-code-plugin/source/src/handlers/stop-reminders/index.ts
 
 - Line 59:
    'This may be a false positive -- use your judgement.
   ',
 
-### packages/claude-code-plugin/source/src/handlers/terminal-title/index.ts
+### package/claude-code-plugin/source/src/handlers/terminal-title/index.ts
 
 - Line 110:
    /* /dev/tty unavailable -- running inside sandbox or non-interactive context.
    */
 
-### packages/claude-code-plugin/statusline/README.md
+### package/claude-code-plugin/statusline/README.md
 
 - Line 120:
    When everything is comfortable,
@@ -1914,7 +1914,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 186:
    supports only the `agent` and `subagentStatusLine` keys --
 
-### packages/claude-code-plugin/statusline/statusline.ts
+### package/claude-code-plugin/statusline/statusline.ts
 
 - Line 266:
    //region Activity word -- gerund extraction from transcript
@@ -1922,18 +1922,18 @@ Replace with proper punctuation or restructure sentence.
    * and finds the last gerund in it.
    No JSON parsing needed --
 
-### packages/claude-code-plugin/terminal-title/README.md
+### package/claude-code-plugin/terminal-title/README.md
 
 - Line 9:
    Tool titles reflect tense -- present during execution (PreToolUse),
    past after completion (PostToolUse).
 
-### packages/claude-code-plugin/verbose-tool-output/WONTFIX.md
+### package/claude-code-plugin/verbose-tool-output/WONTFIX.md
 
 - Line 82:
    The data is already present in the conversation -- only the renderer suppresses it.
 
-### packages/cli/fy/src/cli.unit.test.ts
+### package/cli/fy/src/cli.unit.test.ts
 
 - Line 75:
    //region Function calls -- calling exported functions with arguments
@@ -1950,7 +1950,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 202:
    //region Missing arguments -- verifies parser errors
 
-### packages/cli/fy/src/index.ts
+### package/cli/fy/src/index.ts
 
 - Line 21:
    //region Arg parsing -- positional:
@@ -1961,14 +1961,14 @@ Replace with proper punctuation or restructure sentence.
    call,
    print
 
-### packages/git-policy/cli/README.md
+### package/git-policy/cli/README.md
 
 - Line 7:
    **Require root** -- rejects commands when the working directory is not the root
 - Line 11:
    **Atomic push** -- injects `--atomic` into `git push` commands automatically,
 
-### packages/git-policy/cli/src/index.ts
+### package/git-policy/cli/src/index.ts
 
 - Line 14:
    //region Rule pipeline -- validate and transform args before forwarding to real git
@@ -1977,14 +1977,14 @@ Replace with proper punctuation or restructure sentence.
    apply rules,
    spawn
 
-### packages/git-policy/cli/src/rules/require-root.ts
+### package/git-policy/cli/src/rules/require-root.ts
 
 - Line 76:
    rl.
   debug('config with global/system/list flag -- exempt',
   );
 
-### packages/cli/mvm/README.md
+### package/cli/mvm/README.md
 
 - Line 5:
    VMs exist from creation until destruction -- no pause,
@@ -1994,7 +1994,7 @@ Replace with proper punctuation or restructure sentence.
    2.
    Install `qemu-guest-agent` inside the guest and enable it to start on boot --
 
-### packages/cli/mvm/TROUBLESHOOTING.virtiofs-windows.md
+### package/cli/mvm/TROUBLESHOOTING.virtiofs-windows.md
 
 - Line 12:
    1.
@@ -2007,17 +2007,17 @@ Replace with proper punctuation or restructure sentence.
    `msiexec` never launched.
    Not "launched and failed" -- never launched.
 
-### packages/cli/mvm/src/index-parsers-cmds.ts
+### package/cli/mvm/src/index-parsers-cmds.ts
 
 - Line 39:
    //region Shared value parsers -- reusable metavar-labeled string parsers
 
-### packages/cli/mvm/src/index-parsers.ts
+### package/cli/mvm/src/index-parsers.ts
 
 - Line 24:
    //region Result types -- discriminated union for subcommand dispatch
 
-### packages/cli/mvm/src/index.ts
+### package/cli/mvm/src/index.ts
 
 - Line 24:
    //region Verbose flag -- stripped before parsing;
@@ -2026,12 +2026,12 @@ Replace with proper punctuation or restructure sentence.
 - Line 64:
    //region Dispatch -- parse argv and route to the appropriate handler
 
-### packages/cli/mvm/src/virsh-wait.ts
+### package/cli/mvm/src/virsh-wait.ts
 
 - Line 127:
    // This is expected behavior -- the VM is shutting down.
 
-### packages/cli/rgffplay/src/index.ts
+### package/cli/rgffplay/src/index.ts
 
 - Line 28:
    //region Glob pattern construction -- case-insensitive first letter per word
@@ -2044,14 +2044,14 @@ Replace with proper punctuation or restructure sentence.
    find files,
    play
 
-### packages/cli/terminal-exec/src/launch.ts
+### package/cli/terminal-exec/src/launch.ts
 
 - Line 101:
    /** Resolve on next tick -- if spawn failed,
    the error event fires synchronously.
    */
 
-### packages/cli/vmsync/HANDOVER.md
+### package/cli/vmsync/HANDOVER.md
 
 - Line 28:
    1.
@@ -2064,19 +2064,19 @@ Replace with proper punctuation or restructure sentence.
    3.
    **VirtioFsSvc drive mapping** -- the Windows test assumes virtiofs maps to `Z:\`.
 
-### packages/cli/vmsync/README.md
+### package/cli/vmsync/README.md
 
 - Line 42:
    2.
    QEMU boots from the overlay -- all writes go to the overlay,
    reads fall through to the base
 
-### packages/cli/vmsync/src/boot.unit.test.ts
+### package/cli/vmsync/src/boot.unit.test.ts
 
 - Line 9:
    //region parseMemoryToBytes -- converts human-readable memory strings to byte counts
 
-### packages/cli/vmsync/src/config.unit.test.ts
+### package/cli/vmsync/src/config.unit.test.ts
 
 - Line 15:
    //region validateName -- rejects unsafe VM names,
@@ -2088,17 +2088,17 @@ Replace with proper punctuation or restructure sentence.
 - Line 289:
    //region detectHypervisor -- platform-based hypervisor detection
 
-### packages/cli/vmsync/src/import.unit.test.ts
+### package/cli/vmsync/src/import.unit.test.ts
 
 - Line 9:
    //region nameFromPath -- derives VM names from image file paths
 
-### packages/cli/vmsync/src/index-parsers.ts
+### package/cli/vmsync/src/index-parsers.ts
 
 - Line 21:
    //region Result types -- discriminated union for subcommand dispatch
 
-### packages/cli/vmsync/src/index.ts
+### package/cli/vmsync/src/index.ts
 
 - Line 22:
    //region Verbose flag -- stripped before parsing;
@@ -2107,30 +2107,30 @@ Replace with proper punctuation or restructure sentence.
 - Line 61:
    //region Dispatch -- parse argv and route to the appropriate handler
 
-### packages/cli/vmsync/src/lifecycle.expensive.unit.test.ts
+### package/cli/vmsync/src/lifecycle.expensive.unit.test.ts
 
 - Line 451:
    // only runs during boot,
    not status -- but the binary runs on Windows,
 
-### packages/cli/vmsync/src/sync.ts
+### package/cli/vmsync/src/sync.ts
 
 - Line 86:
    /** Regions at depth 0 with actual data -- these were written during the boot session.
    */
 
-### packages/cli/vmsync/src/types.ts
+### package/cli/vmsync/src/types.ts
 
 - Line 17:
    //region VM configuration -- persisted as vmsync.
   jsonc
 
-### packages/oxlint-plugin/no-restricted-syntax/src/rule/no-variable-function-expression.ts
+### package/oxlint-plugin/no-restricted-syntax/src/rule/no-variable-function-expression.ts
 
 - Line 11:
    * Patterns like `const myFn = function myFn() {}` are redundant --
 
-### packages/oxlint-plugin/stylistic/README.md
+### package/oxlint-plugin/stylistic/README.md
 
 - Line 38:
    **Union/intersection types excluded** -- a `union-per-line` rule was prototyped but dropped.
@@ -2139,7 +2139,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 45:
    **Shared implementation** -- all rules delegate to `checkItemsPerLine` in the utility layer.
 
-### packages/oxlint-plugin/stylistic/TODO.md
+### package/oxlint-plugin/stylistic/TODO.md
 
 - Line 15:
    4.
@@ -2149,12 +2149,12 @@ Replace with proper punctuation or restructure sentence.
    Look at the `afterEach` cleanup -- `unlinkSync` on a non-existent file in the catch block should be fine,
    but verify
 
-### packages/oxlint-plugin/stylistic/src/index.ts
+### package/oxlint-plugin/stylistic/src/index.ts
 
 - Line 40:
    //region Per-line rules -- enforce one item per line in multi-element constructs
 
-### packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts
+### package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts
 
 - Line 85:
    // oxlint exits non-zero when violations are found -- capture stdout from the error
@@ -2163,7 +2163,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 179:
    //region Invalid fixtures -- expect specific violations
 
-### packages/oxlint-plugin/tsdoc/src/oxlint-tsdoc.unit.test.ts
+### package/oxlint-plugin/tsdoc/src/oxlint-tsdoc.unit.test.ts
 
 - Line 60:
    // oxlint exits non-zero when violations are found -- capture stdout from the error
@@ -2172,7 +2172,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 134:
    //region Invalid fixtures -- expect specific violations
 
-### packages/oxlint-plugin/tsdoc/src/rule/jsdoc-map.ts
+### package/oxlint-plugin/tsdoc/src/rule/jsdoc-map.ts
 
 - Line 23:
    'Remove @type -- TypeScript handles types.
@@ -2247,12 +2247,12 @@ Replace with proper punctuation or restructure sentence.
    'Remove @interface -- use TypeScript interface instead.
   ',
 
-### packages/config/oxlint/README.md
+### package/config/oxlint/README.md
 
 - Line 18:
    Uses spread instead of `extends` because `extends` only merges rules --
 
-### packages/config/oxlint/src/overrides.ts
+### package/config/oxlint/src/overrides.ts
 
 - Line 66:
    //region import -- Declaration files are ambient;
@@ -2266,12 +2266,12 @@ Replace with proper punctuation or restructure sentence.
 - Line 104:
    //region tsdoc -- Ambient declarations are often trivial stubs.
 
-### packages/config/oxlint/src/rule/correctness.ts
+### package/config/oxlint/src/rule/correctness.ts
 
 - Line 17:
    //region jest -- Suppress leaked jest rules from vitest plugin internals.
 
-### packages/config/oxlint/src/rule/restriction.ts
+### package/config/oxlint/src/rule/restriction.ts
 
 - Line 117:
    // No eval() or Function() constructor -- arbitrary code execution.
@@ -2293,12 +2293,12 @@ Replace with proper punctuation or restructure sentence.
    // No instanceof Array -- use Array.
   isArray() which works across realms.
 
-### packages/config/oxlint/src/rule/style.ts
+### package/config/oxlint/src/rule/style.ts
 
 - Line 151:
    //region stylistic -- one-item-per-line enforcement
 
-### packages/config/oxlint/src/rule/tsdoc.ts
+### package/config/oxlint/src/rule/tsdoc.ts
 
 - Line 44:
    // Only TSDoc-standard tags allowed.
@@ -2306,14 +2306,14 @@ Replace with proper punctuation or restructure sentence.
 - Line 53:
    // No JSDoc-style {Type} annotations in TSDoc -- TypeScript handles types.
 
-### packages/desktop-daemon/editord/PHILOSOPHY.md
+### package/desktop-daemon/editord/PHILOSOPHY.md
 
 - Line 100:
    and click-outside dismissal -- the browser handles all three natively.
 - Line 109:
    not per mount path -- remounting the same disk at a different path
 
-### packages/desktop-daemon/editord/README.md
+### package/desktop-daemon/editord/README.md
 
 - Line 23:
    The browser's compositor thread owns scroll entirely -- no `preventDefault`,
@@ -2323,30 +2323,30 @@ Replace with proper punctuation or restructure sentence.
    no CRDT,
    no sync protocol.
 
-### packages/desktop-daemon/editord/TODO.md
+### package/desktop-daemon/editord/TODO.md
 
 - Line 5:
    - ~~**scoping search to last focused directory**~~ --
 - Line 8:
    - ~~**Escape requires two presses to close search overlay**~~ --
 
-### packages/desktop-daemon/editord/src/client/editor/auto-indent.ts
+### package/desktop-daemon/editord/src/client/editor/auto-indent.ts
 
 - Line 103:
    // into a single undo entry -- one Ctrl+Z undoes both.
    The grouping mechanism
 
-### packages/desktop-daemon/editord/src/client/editor/editor-pane-commands.ts
+### package/desktop-daemon/editord/src/client/editor/editor-pane-commands.ts
 
 - Line 11:
    * on `EditorPane` that did nothing but forward `{ pane: this }` --
 
-### packages/desktop-daemon/editord/src/client/editor/query.ts
+### package/desktop-daemon/editord/src/client/editor/query.ts
 
 - Line 9:
    * live here because they are read-only queries over protocol types --
 
-### packages/desktop-daemon/editord/src/client/keybinding/keyboard-lock.ts
+### package/desktop-daemon/editord/src/client/keybinding/keyboard-lock.ts
 
 - Line 21:
    //region Keyboard Lock API type augmentation -- not yet in lib.
@@ -2354,7 +2354,7 @@ Replace with proper punctuation or restructure sentence.
   d.
   ts
 
-### packages/desktop-daemon/editord/src/server/lsp/tsconfig-includes.ts
+### package/desktop-daemon/editord/src/server/lsp/tsconfig-includes.ts
 
 - Line 8:
    * tsgo that fall outside the project's declared include scope --
@@ -2362,7 +2362,7 @@ Replace with proper punctuation or restructure sentence.
    /** Return empty array on failure -- caller should allow the file through as a safe fallback.
    */
 
-### packages/desktop-daemon/editord/src/server/operations/token-file.ts
+### package/desktop-daemon/editord/src/server/operations/token-file.ts
 
 - Line 8:
    * {@link FRESHNESS_THRESHOLD_MS} of now,
@@ -2370,7 +2370,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 38:
    * to be considered "fresh" -- i.e. left by a process that was alive
 
-### packages/dev-script/catalog-tighten/src/version-parse.ts
+### package/dev-script/catalog-tighten/src/version-parse.ts
 
 - Line 125:
    // Same major.
@@ -2379,24 +2379,24 @@ Replace with proper punctuation or restructure sentence.
 - Line 130:
    // Installed is a prerelease of the same triple -- not greater
 
-### packages/dev-script/catalog-tighten/src/version-resolve.ts
+### package/dev-script/catalog-tighten/src/version-resolve.ts
 
 - Line 119:
-   // packages/ dir not found -- return empty
+   // package/ dir not found -- return empty
 
-### packages/dev-script/file-enforcer/README.md
+### package/dev-script/file-enforcer/README.md
 
 - Line 4:
    Uses direct async function calls instead of a descriptor/engine pattern -- each call reads and writes immediately.
 
-### packages/dev-script/file-enforcer/TODO.md
+### package/dev-script/file-enforcer/TODO.md
 
 - Line 21:
    No graceful shutdown on SIGINT/SIGTERM -- open file watchers and AbortControllers are never cleaned up.
 - Line 36:
    The current direct execution model was chosen explicitly to avoid this complexity -- add only if there is a real use case.
 
-### packages/dev-script/file-enforcer/src/cli.ts
+### package/dev-script/file-enforcer/src/cli.ts
 
 - Line 5:
    //region CLI entry point -- finds and imports file-enforcer.
@@ -2406,12 +2406,12 @@ Replace with proper punctuation or restructure sentence.
 - Line 29:
    // Importing the config executes it -- the config uses top-level await
 
-### packages/dev-script/file-enforcer/src/io/cache.unit.test.ts
+### package/dev-script/file-enforcer/src/io/cache.unit.test.ts
 
 - Line 55:
    // Modify file on disk -- cache should still return old content
 
-### packages/dev-script/file-enforcer/src/io/glob.ts
+### package/dev-script/file-enforcer/src/io/glob.ts
 
 - Line 41:
    // No wildcards -- treat entire pattern as a literal path
@@ -2421,35 +2421,35 @@ Replace with proper punctuation or restructure sentence.
    // Walk the source path,
    peeling off fixed prefixes to isolate wildcard captures --
 
-### packages/dev-script/file-enforcer/src/io/write.unit.test.ts
+### package/dev-script/file-enforcer/src/io/write.unit.test.ts
 
 - Line 109:
    /** Same content now -- should NOT record timestamp */
 
-### packages/dev-script/file-enforcer/src/package/ensure-package.unit.matrix.test.ts
+### package/dev-script/file-enforcer/src/package/ensure-package.unit.matrix.test.ts
 
 - Line 38:
    /** Shape:
    string shorthand -- binary = effname = package name everywhere */
 
-### packages/dev-script/file-enforcer/src/package/mise.generate-index.ts
+### package/dev-script/file-enforcer/src/package/mise.generate-index.ts
 
 - Line 272:
    ' * Do not edit manually -- run the index generator to rebuild.
   ',
 
-### packages/dev-script/file-enforcer/src/watch/notify.ts
+### package/dev-script/file-enforcer/src/watch/notify.ts
 
 - Line 26:
    * Result is cached for the lifetime of the process --
 
-### packages/dev-script/file-enforcer/src/watch/watch-dir.ts
+### package/dev-script/file-enforcer/src/watch/watch-dir.ts
 
 - Line 53:
    // for-await is the only way to consume an AsyncIterable from fs.
   watch --
 
-### packages/dev-script/file-enforcer/src/watch/watch-filter.unit.test.ts
+### package/dev-script/file-enforcer/src/watch/watch-filter.unit.test.ts
 
 - Line 164:
    /** Now modify the file -- its mtime will be "now",
@@ -2457,14 +2457,14 @@ Replace with proper punctuation or restructure sentence.
 - Line 189:
    // No trackWriteTime -- simulates content-based skip
 
-### packages/dev-script/file-enforcer/src/watch/watch.ts
+### package/dev-script/file-enforcer/src/watch/watch.ts
 
 - Line 58:
    // Debounce state -- `let` needed because the timer is replaced on each event
 - Line 164:
    // Block forever -- watch mode runs until the process is killed.
 
-### packages/cli/forbidden-strings/PERF.md
+### package/cli/forbidden-strings/PERF.md
 
 - Line 4:
    Numbers below are not aspirational targets -- they are reproducible measurements
@@ -2503,7 +2503,7 @@ Replace with proper punctuation or restructure sentence.
    Do not re-derive that analysis on every session -- read the plan,
    then decide.
 
-### packages/cli/forbidden-strings/README.md
+### package/cli/forbidden-strings/README.md
 
 - Line 6:
    That breaks down when the forbidden literals would themselves leak if committed --
@@ -2527,22 +2527,22 @@ Replace with proper punctuation or restructure sentence.
 - Line 195:
    and the opaque rule index appear in failure output -- otherwise a failing CI log
 
-### packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts
+### package/cli/forbidden-strings/src/port-betterleaks-relaxations.ts
 
 - Line 20:
    // Trailing `\b` arm in `(?:[X]\|...\|\b)` -- resharp rejects \b as a
 
-### packages/dev-script/inference-canary-viewer/README.md
+### package/dev-script/inference-canary-viewer/README.md
 
 - Line 15:
    Syntax highlighting uses the CSS Custom Highlight API via Lezer tokenization --
 
-### packages/dev-script/inference-canary-viewer/src/data/diff.ts
+### package/dev-script/inference-canary-viewer/src/data/diff.ts
 
 - Line 58:
    // Exit code 1 means files differ -- expected behavior
 
-### packages/dev-script/inference-canary/README.md
+### package/dev-script/inference-canary/README.md
 
 - Line 27:
    This is intentional -- a submission full of lint violations and type errors is not production-quality code,
@@ -2556,7 +2556,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 132:
    Gitignored -- local to each machine.
 
-### packages/dev-script/inference-canary/RESEARCH.md
+### package/dev-script/inference-canary/RESEARCH.md
 
 - Line 40:
    Without activation-level ground truth,
@@ -2574,64 +2574,64 @@ Replace with proper punctuation or restructure sentence.
    the quantization level,
    o
 
-### packages/dev-script/inference-canary/TODO.md
+### package/dev-script/inference-canary/TODO.md
 
 - Line 143:
    Status:
    stable spec,
    but the IPv4 parser sub-spec is genuinely obscure -- models know about
 
-### packages/dev-script/inference-canary/src/canary-lint/Haiku 4.5/css-mixin-transpiler-initial-2026-03-16T18-07-02.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Haiku 4.5/css-mixin-transpiler-initial-2026-03-16T18-07-02.000Z/canary.ts
 
 - Line 115:
    pos += 2;
    // Skip --
 
-### packages/dev-script/inference-canary/src/canary-lint/Kimi K2.5/css-mixin-transpiler-initial-2026-03-14T23-20-05.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Kimi K2.5/css-mixin-transpiler-initial-2026-03-14T23-20-05.000Z/canary.ts
 
 - Line 41:
    if (i === pos + 2) return null;
    // No name after --
 
-### packages/dev-script/inference-canary/src/canary-lint/Kimi K2.5/css-mixin-transpiler-initial-2026-03-16T18-27-51.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Kimi K2.5/css-mixin-transpiler-initial-2026-03-16T18-27-51.000Z/canary.ts
 
 - Line 267:
    // Name must start with --
 - Line 327:
    // Name must start with --
 
-### packages/dev-script/inference-canary/src/canary-lint/MiniMax M2.5/css-mixin-transpiler-fix-2026-03-19T16-04-46.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/MiniMax M2.5/css-mixin-transpiler-fix-2026-03-19T16-04-46.000Z/canary.ts
 
 - Line 198:
    // Must start with --
 
-### packages/dev-script/inference-canary/src/canary-lint/MiniMax M2.5/css-mixin-transpiler-initial-2026-03-06T23-36-23.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/MiniMax M2.5/css-mixin-transpiler-initial-2026-03-06T23-36-23.000Z/canary.ts
 
 - Line 186:
    // Must start with --
 
-### packages/dev-script/inference-canary/src/canary-lint/MiniMax M2.5/css-mixin-transpiler-initial-2026-03-19T16-04-46.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/MiniMax M2.5/css-mixin-transpiler-initial-2026-03-19T16-04-46.000Z/canary.ts
 
 - Line 205:
    // Must start with --
 
-### packages/dev-script/inference-canary/src/canary-lint/Qwen 3.5 OSS/css-mixin-transpiler-fix-2026-03-16T18-07-02.000Z/canary.ts
+### package/dev-script/inference-canary/src/canary-lint/Qwen 3.5 OSS/css-mixin-transpiler-fix-2026-03-16T18-07-02.000Z/canary.ts
 
 - Line 19:
    /** The mixin name (including -- prefix).
    */
 
-### packages/dev-script/inference-canary/src/codegen/css-mixin-test-css.ts
+### package/dev-script/inference-canary/src/codegen/css-mixin-test-css.ts
 
 - Line 37:
    // Top-level @apply -- mixin body expands directly into the stylesheet
 
-### packages/dev-script/inference-canary/src/codegen/css-mixin-verify.ts
+### package/dev-script/inference-canary/src/codegen/css-mixin-verify.ts
 
 - Line 90:
    // Later property overrides mixin property -- either both present in order or only winner kept
 
-### packages/dev-script/inference-canary/src/codegen/css-mixin.ts
+### package/dev-script/inference-canary/src/codegen/css-mixin.ts
 
 - Line 97:
    '5.
@@ -2643,28 +2643,28 @@ Replace with proper punctuation or restructure sentence.
    'Example 2 -- top-level apply:
   ',
 
-### packages/dev-script/inference-canary/src/codegen/perf-test-data/mise.generate-expr-perf.ts
+### package/dev-script/inference-canary/src/codegen/perf-test-data/mise.generate-expr-perf.ts
 
 - Line 100:
    // Might or might not be zero -- compute to find out
 
-### packages/dev-script/inference-canary/src/codegen/probe-factory-additional-diagnostics.ts
+### package/dev-script/inference-canary/src/codegen/probe-factory-additional-diagnostics.ts
 
 - Line 92:
    // Main run was fine but additional runs failed -- build standalone prompt
 
-### packages/dev-script/inference-canary/src/codegen/probe-factory-build-fix.ts
+### package/dev-script/inference-canary/src/codegen/probe-factory-build-fix.ts
 
 - Line 97:
    // No lint/runtime issues but perf is slow -- create a standalone perf fix prompt
 
-### packages/dev-script/inference-canary/src/codegen/probe-factory-run-score.ts
+### package/dev-script/inference-canary/src/codegen/probe-factory-run-score.ts
 
 - Line 194:
    // Combine main and additional run correctness via Math.
   min --
 
-### packages/dev-script/inference-canary/src/codegen/sudoku-puzzles.ts
+### package/dev-script/inference-canary/src/codegen/sudoku-puzzles.ts
 
 - Line 12:
    //region Normal mode puzzles -- solvable,
@@ -2677,7 +2677,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 196:
    //region Assembled inputs -- stdin strings combining puzzles for each mode
 
-### packages/dev-script/inference-canary/src/codegen/sudoku-solver-verify.ts
+### package/dev-script/inference-canary/src/codegen/sudoku-solver-verify.ts
 
 - Line 34:
    //region Normal mode verification -- 4 checks:
@@ -2690,7 +2690,7 @@ Replace with proper punctuation or restructure sentence.
    many-solution bounded,
    unsolvable
 
-### packages/dev-script/inference-canary/src/codegen/sudoku-solver.ts
+### package/dev-script/inference-canary/src/codegen/sudoku-solver.ts
 
 - Line 6:
    * enumerate every valid solution.
@@ -2698,13 +2698,13 @@ Replace with proper punctuation or restructure sentence.
 - Line 21:
    //region Prompt -- instructs the model to build a backtracking solver with --all support
 
-### packages/dev-script/inference-canary/src/container-base.ts
+### package/dev-script/inference-canary/src/container-base.ts
 
 - Line 10:
    /** Result of a spawned command -- never throws,
    callers inspect exitCode */
 
-### packages/dev-script/inference-canary/src/container-runtime.ts
+### package/dev-script/inference-canary/src/container-runtime.ts
 
 - Line 15:
    //region Configuration -- timeout,
@@ -2714,7 +2714,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 29:
    //region Runtime detection -- uses `which` to locate executables on PATH
 
-### packages/dev-script/inference-canary/src/container.ts
+### package/dev-script/inference-canary/src/container.ts
 
 - Line 30:
    //region Staging directory -- uses LINT_DIR instead of os.
@@ -2722,7 +2722,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 67:
    //region Public API -- runInContainer is the sole entry point for executing generated code
 
-### packages/dev-script/inference-canary/src/index-cli.ts
+### package/dev-script/inference-canary/src/index-cli.ts
 
 - Line 16:
    //region Parser definition -- defines all recognized CLI flags and their value parsers
@@ -2730,7 +2730,7 @@ Replace with proper punctuation or restructure sentence.
    //region Parsed arguments -- module-level exports consumed by index.
   ts
 
-### packages/dev-script/inference-canary/src/index.ts
+### package/dev-script/inference-canary/src/index.ts
 
 - Line 44:
    //region API key resolution -- validates INFERENCE_VALIDATION_OPENROUTER_API_KEY before any network calls
@@ -2741,7 +2741,7 @@ Replace with proper punctuation or restructure sentence.
    runs canary,
    throws on degradation
 
-### packages/dev-script/inference-canary/src/linter-artifacts-recent.ts
+### package/dev-script/inference-canary/src/linter-artifacts-recent.ts
 
 - Line 77:
    //region Failure artifact detection -- whole-model failures like 429 or auth errors
@@ -2754,13 +2754,13 @@ Replace with proper punctuation or restructure sentence.
    // Missing or malformed meta.
   json -- skip
 
-### packages/dev-script/inference-canary/src/linter-artifacts.ts
+### package/dev-script/inference-canary/src/linter-artifacts.ts
 
 - Line 31:
    //region Artifact writing -- writes generated source and meta.
   json sidecar for oxlint/tsgo to consume
 
-### packages/dev-script/inference-canary/src/linter-oxlint.ts
+### package/dev-script/inference-canary/src/linter-oxlint.ts
 
 - Line 20:
    //region Types -- oxlint JSON output shape and the parsed result type returned to callers
@@ -2769,7 +2769,7 @@ Replace with proper punctuation or restructure sentence.
    handles non-zero exits (oxlint exits 1 on violations),
    returns OxlintResult
 
-### packages/dev-script/inference-canary/src/linter.ts
+### package/dev-script/inference-canary/src/linter.ts
 
 - Line 19:
    //region Types -- severity counts,
@@ -2781,12 +2781,12 @@ Replace with proper punctuation or restructure sentence.
    runs oxlint + tsgo,
    returns combined result
 
-### packages/dev-script/inference-canary/src/mise.migrate-labels.ts
+### package/dev-script/inference-canary/src/mise.migrate-labels.ts
 
 - Line 110:
    // Missing or malformed -- skip
 
-### packages/dev-script/inference-canary/src/models.ts
+### package/dev-script/inference-canary/src/models.ts
 
 - Line 11:
    //region Model config type -- per-model overrides for verbosity and display label
@@ -2802,7 +2802,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 108:
    // replacement the same day a competitor was punished for holding firm -- does not inspire
 
-### packages/dev-script/inference-canary/src/probes.ts
+### package/dev-script/inference-canary/src/probes.ts
 
 - Line 21:
    //region Simple probes -- cheap text-only checks,
@@ -2810,18 +2810,18 @@ Replace with proper punctuation or restructure sentence.
 - Line 51:
    /** Checks JSON output compliance -- degraded models often break structure */
 
-### packages/dev-script/inference-canary/src/runner-stream-helpers.ts
+### package/dev-script/inference-canary/src/runner-stream-helpers.ts
 
 - Line 23:
    //region PartialCompletionError -- thrown on stream abort,
    carries whatever data was collected before cancellation
 
-### packages/dev-script/inference-canary/src/runner-stream.ts
+### package/dev-script/inference-canary/src/runner-stream.ts
 
 - Line 131:
    // OpenRouter surfaces reasoning via `reasoning_details` on the delta -- an array of
 
-### packages/dev-script/inference-canary/src/runner-types.ts
+### package/dev-script/inference-canary/src/runner-types.ts
 
 - Line 8:
    //region Shared branded types -- template-literal types used across runner,
@@ -2834,32 +2834,32 @@ Replace with proper punctuation or restructure sentence.
 - Line 96:
    //region Probe and report result types -- ProbeResult (per-probe) and CanaryReport (per-model) returned by runCanary
 
-### packages/dev-script/inference-canary/src/server-time.ts
+### package/dev-script/inference-canary/src/server-time.ts
 
 - Line 23:
    /** OpenRouter models endpoint -- lightweight,
    public,
    no auth required */
 
-### packages/dev-script/page-weight/README.md
+### package/dev-script/page-weight/README.md
 
 - Line 43:
    The script accepts any dist directory -- use it against any SSG output,
 
-### packages/dev-script/page-weight/src/html.ts
+### package/dev-script/page-weight/src/html.ts
 
 - Line 59:
    * Returns `null` for missing attributes,
    non-string values,
    or the empty string --
 
-### packages/dev-script/task-util/README.md
+### package/dev-script/task-util/README.md
 
 - Line 135:
    Mise does offer `sources`/`outputs` for staleness checking,
    but these only work with files --
 
-### packages/dev-script/task-util/TROUBLESHOOTING.mise-sources.md
+### package/dev-script/task-util/TROUBLESHOOTING.mise-sources.md
 
 - Line 50:
    hash always matches,
@@ -2867,24 +2867,24 @@ Replace with proper punctuation or restructure sentence.
 - Line 71:
    comparison (check 2) should still catch this -- but only if the glob patterns
 
-### packages/dev-script/task-util/src/append.ts
+### package/dev-script/task-util/src/append.ts
 
 - Line 108:
    //region Parser definition -- required --to option and variadic positional text lines
 
-### packages/dev-script/task-util/src/append.unit.test.ts
+### package/dev-script/task-util/src/append.unit.test.ts
 
 - Line 20:
    //region Fixture Setup -- Per-test fixtures
 
-### packages/dev-script/task-util/src/command.ts
+### package/dev-script/task-util/src/command.ts
 
 - Line 54:
    //region Parser definition -- defines CLI flags and rest arguments after --
 - Line 91:
    No command specified after --
 
-### packages/dev-script/task-util/src/command.unit.test.ts
+### package/dev-script/task-util/src/command.unit.test.ts
 
 - Line 34:
    //region Fixture Setup -- Per-test fixtures
@@ -2892,17 +2892,17 @@ Replace with proper punctuation or restructure sentence.
    name:
    'fails when only -- is provided without command',
 
-### packages/dev-script/task-util/src/depends-exec.ts
+### package/dev-script/task-util/src/depends-exec.ts
 
 - Line 49:
    //region Execution -- run command with collapsed output
 
-### packages/dev-script/task-util/src/depends-resolve.ts
+### package/dev-script/task-util/src/depends-resolve.ts
 
 - Line 23:
    //region Item resolution -- resolve individual items to timestamps
 
-### packages/dev-script/task-util/src/depends.ts
+### package/dev-script/task-util/src/depends.ts
 
 - Line 22:
    * task-depends -s "src/*.
@@ -2928,7 +2928,7 @@ Replace with proper punctuation or restructure sentence.
    task-depends -o "sh:
   podman image exists img" -- command args...
 
-### packages/dev-script/task-util/src/depends.unit.test.ts
+### package/dev-script/task-util/src/depends.unit.test.ts
 
 - Line 19:
    //region Fixture Setup -- temp directory with controllable source and output files
@@ -3047,27 +3047,27 @@ Replace with proper punctuation or restructure sentence.
    `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "sh:
   echo Infinity" -- ${
 
-### packages/dev-script/task-util/src/oxlint-augment.ts
+### package/dev-script/task-util/src/oxlint-augment.ts
 
 - Line 54:
    //region Rule guidance -- enhanced messages for specific lint rules
 
-### packages/dev-script/task-util/src/oxlint-augment.unit.test.ts
+### package/dev-script/task-util/src/oxlint-augment.unit.test.ts
 
 - Line 326:
    // Only one note injected -- for no-misused-promises
 
-### packages/dev-script/task-util/src/pnpm-output-filter.ts
+### package/dev-script/task-util/src/pnpm-output-filter.ts
 
 - Line 6:
    * pnpm lacks a per-package allowlist for cycle warnings --
 
-### packages/dev-script/task-util/src/tsgo-filter.unit.test.ts
+### package/dev-script/task-util/src/tsgo-filter.unit.test.ts
 
 - Line 359:
    // Should not reach here -- tsgo should fail on the type error
 
-### packages/dev-script/vm-builder/README.md
+### package/dev-script/vm-builder/README.md
 
 - Line 26:
    1.
@@ -3080,7 +3080,7 @@ Replace with proper punctuation or restructure sentence.
    **Fix ownership** -- restores `output/` from root:
   root to current user
 
-### packages/dev-script/vm-builder/src/build-and-import.ts
+### package/dev-script/vm-builder/src/build-and-import.ts
 
 - Line 100:
    /** libvirt session URI -- connects to the user's QEMU/KVM daemon (no sudo needed).
@@ -3090,13 +3090,13 @@ Replace with proper punctuation or restructure sentence.
 - Line 352:
    // virt-manager is not a Flatpak -- no override needed.
 
-### packages/dev-script/vm-builder/src/import.ts
+### package/dev-script/vm-builder/src/import.ts
 
 - Line 74:
    /** libvirt session URI -- no sudo needed.
    */
 
-### packages/figma/kiwi/RESEARCH.md
+### package/figma/kiwi/RESEARCH.md
 
 - Line 27:
    There is NO custom header -- the first bytes `AF 04` are simply the
@@ -3104,64 +3104,64 @@ Replace with proper punctuation or restructure sentence.
    difference -- type is unused for enum fields anyway.
    The rest matches exactly.
 
-### packages/figma/kiwi/src/index.ts
+### package/figma/kiwi/src/index.ts
 
 - Line 592:
    // Unknown tag -- cannot skip without knowing the type.
 
-### packages/figma/to-penpot/TROUBLESHOOTING.import.md
+### package/figma/to-penpot/TROUBLESHOOTING.import.md
 
 - Line 220:
    5.
    This approach was partially implemented -- hex loading works,
 
-### packages/mcp/mvm/src/index.ts
+### package/mcp/mvm/src/index.ts
 
 - Line 30:
    //region Server setup -- create and serve the MCP server
 
-### packages/mcp/mvm/src/response.ts
+### package/mcp/mvm/src/response.ts
 
 - Line 6:
    //region Types -- response shape definitions
 - Line 25:
    //region Response builders -- construct MCP-compliant response objects
 
-### packages/mcp/mvm/src/tools-exec.ts
+### package/mcp/mvm/src/tools-exec.ts
 
 - Line 18:
    //region Execution tools -- run commands inside VMs
 
-### packages/mcp/mvm/src/tools-lifecycle-mutate.ts
+### package/mcp/mvm/src/tools-lifecycle-mutate.ts
 
 - Line 21:
    //region Mutation tools -- VM creation and destruction
 
-### packages/mcp/mvm/src/tools-lifecycle.ts
+### package/mcp/mvm/src/tools-lifecycle.ts
 
 - Line 17:
    //region Lifecycle tools -- VM listing and template updates
 
-### packages/mcp/mvm/src/tools-transfer.ts
+### package/mcp/mvm/src/tools-transfer.ts
 
 - Line 19:
    //region Transfer tools -- move files between host and guest VMs
 
-### packages/mcp/nvim/README.md
+### package/mcp/nvim/README.md
 
 - Line 16:
    **get_diagnostics** --
 - Line 20:
    **get_all_diagnostics** --
 
-### packages/mcp/nvim/src/dedup.ts
+### package/mcp/nvim/src/dedup.ts
 
 - Line 3:
    //region Dedup key -- builds a string key for comparing diagnostics across sources
 - Line 28:
    //region Public API -- merge and deduplicate diagnostics
 
-### packages/mcp/nvim/src/dedup.unit.test.ts
+### package/mcp/nvim/src/dedup.unit.test.ts
 
 - Line 14:
    //region helpers -- factory for test diagnostics
@@ -3170,12 +3170,12 @@ Replace with proper punctuation or restructure sentence.
 - Line 206:
    //region uniqueDiagnostics -- removes duplicates within a single array
 
-### packages/mcp/nvim/src/format.unit.test.ts
+### package/mcp/nvim/src/format.unit.test.ts
 
 - Line 12:
    //region formatDiagnostic -- formats a diagnostic into a human-readable line
 
-### packages/mcp/nvim/src/lint-runner.ts
+### package/mcp/nvim/src/lint-runner.ts
 
 - Line 16:
    //region Types -- lint result shape
@@ -3186,17 +3186,17 @@ Replace with proper punctuation or restructure sentence.
 - Line 170:
    //region Utilities -- map merging
 
-### packages/mcp/nvim/src/lint-runner.unit.test.ts
+### package/mcp/nvim/src/lint-runner.unit.test.ts
 
 - Line 10:
    //region parseOxlintOutput -- converts oxlint JSON to grouped Diagnostic maps
 
-### packages/mcp/nvim/src/nvim-client.ts
+### package/mcp/nvim/src/nvim-client.ts
 
 - Line 36:
    //region Public API -- query diagnostics and file info across all Neovim instances
 
-### packages/mcp/nvim/src/nvim-client.unit.test.ts
+### package/mcp/nvim/src/nvim-client.unit.test.ts
 
 - Line 12:
    //region SEVERITY_MAP -- maps vim.
@@ -3205,19 +3205,19 @@ Replace with proper punctuation or restructure sentence.
 - Line 62:
    //region normalizeMessage -- reformats embedded help text from LSP diagnostics
 
-### packages/mcp/nvim/src/nvim-connection.ts
+### package/mcp/nvim/src/nvim-connection.ts
 
 - Line 17:
    //region Connection management -- discover and cache connections to all Neovim instances
 
-### packages/mcp/nvim/src/nvim-lua.ts
+### package/mcp/nvim/src/nvim-lua.ts
 
 - Line 16:
    //region Raw diagnostic mapping -- converts Lua msgpack output to typed Diagnostics
 - Line 56:
    //region Lua snippets -- shared Lua code executed via nvim_exec_lua
 
-### packages/mcp/nvim/src/nvim-types.ts
+### package/mcp/nvim/src/nvim-types.ts
 
 - Line 10:
    //region Severity mapping -- vim.
@@ -3226,31 +3226,31 @@ Replace with proper punctuation or restructure sentence.
 - Line 22:
    //region Types -- diagnostic and file metadata shapes
 
-### packages/mcp/nvim/src/oxlint-parse.ts
+### package/mcp/nvim/src/oxlint-parse.ts
 
 - Line 22:
    //region Directory walking -- find config files by walking up the filesystem
 - Line 61:
    //region Parsing -- convert oxlint JSON diagnostics to our Diagnostic type
 
-### packages/mcp/nvim/src/oxlint-spawn.ts
+### package/mcp/nvim/src/oxlint-spawn.ts
 
 - Line 23:
    //region Process spawning -- low-level oxlint invocation
 
-### packages/mcp/nvim/src/oxlint-types.ts
+### package/mcp/nvim/src/oxlint-types.ts
 
 - Line 10:
    //region Types -- oxlint JSON output shape
 - Line 103:
    //region Severity mapping -- oxlint lowercase to our uppercase format
 
-### packages/mcp/nvim/src/tool-helpers.ts
+### package/mcp/nvim/src/tool-helpers.ts
 
 - Line 12:
    //region Helper functions -- build response text for tool handlers
 
-### packages/mcp/stdio/src/json-rpc.ts
+### package/mcp/stdio/src/json-rpc.ts
 
 - Line 6:
    //region JSON-RPC 2.0 base types -- foundation for all MCP message exchange
@@ -3259,31 +3259,31 @@ Replace with proper punctuation or restructure sentence.
 - Line 127:
    //region Message validation -- type guard for untrusted JSON parsed from stdin
 
-### packages/mcp/stdio/src/json-rpc.unit.test.ts
+### package/mcp/stdio/src/json-rpc.unit.test.ts
 
 - Line 15:
    //region isJsonRpcMessage -- validates minimum JSON-RPC 2.0 shape
 - Line 112:
    //region error code constants -- verify expected values
 
-### packages/mcp/stdio/src/line-reader.unit.test.ts
+### package/mcp/stdio/src/line-reader.unit.test.ts
 
 - Line 9:
    //region helpers -- create ReadableStream from string content
 - Line 62:
    //region readLines -- async generator yielding newline-delimited lines
 
-### packages/mcp/stdio/src/protocol.ts
+### package/mcp/stdio/src/protocol.ts
 
 - Line 49:
    //region Tool definitions and handlers -- describes tools exposed to MCP clients
 
-### packages/mcp/stdio/src/server-define-tool.ts
+### package/mcp/stdio/src/server-define-tool.ts
 
 - Line 5:
    //region defineTool -- convenience for declaring tool entries
 
-### packages/mcp/stdio/src/server-types.ts
+### package/mcp/stdio/src/server-types.ts
 
 - Line 14:
    //region Tool entry -- pairs a name with its options for immutable registration
@@ -3294,7 +3294,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 76:
    //region Server handle -- returned by createMcpServer
 
-### packages/mcp/stdio/src/server.ts
+### package/mcp/stdio/src/server.ts
 
 - Line 29:
    //region createMcpServer -- builds an immutable server from config and tool entries
@@ -3305,7 +3305,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 168:
    //region Public handle -- single dispatch function exposed to the transport
 
-### packages/mcp/stdio/src/server.unit.test.ts
+### package/mcp/stdio/src/server.unit.test.ts
 
 - Line 31:
    //region defineTool -- bundles name with tool entry options
@@ -3324,7 +3324,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 442:
    //region notifications -- returns undefined for notifications
 
-### packages/mcp/stdio/src/transport.ts
+### package/mcp/stdio/src/transport.ts
 
 - Line 12:
    //region Output writer abstraction -- supports both Bun FileSink and standard WritableStream
@@ -3336,18 +3336,18 @@ Replace with proper punctuation or restructure sentence.
 - Line 155:
    //region Message serialization -- writes JSON-RPC responses to stdout
 
-### packages/mcp/stdio/src/transport.unit.test.ts
+### package/mcp/stdio/src/transport.unit.test.ts
 
 - Line 18:
    //region helpers -- test doubles for stdin/stdout and server handle
 
-### packages/module/dom/src/prompt.ts
+### package/module/dom/src/prompt.ts
 
 - Line 1:
    // Prompt Dialog Polyfill -- Drop-in replacement for window.
   prompt using dialog element
 
-### packages/module/es/src/path/fallbacks.ts
+### package/module/es/src/path/fallbacks.ts
 
 - Line 6:
    //region normalize -- resolve `.` and `..`,
@@ -3359,7 +3359,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 148:
    //region resolveFallback -- browser fallback for resolve
 
-### packages/module/es/src/path/find-monorepo-root.ts
+### package/module/es/src/path/find-monorepo-root.ts
 
 - Line 65:
    'using OPFS for monorepo root discovery -- mise.
@@ -3371,24 +3371,24 @@ Replace with proper punctuation or restructure sentence.
 - Line 116:
    /* happy-opfs import failed -- fall through to empty stub */
 
-### packages/module/es/src/path/index.ts
+### package/module/es/src/path/index.ts
 
 - Line 37:
    //region Node delegation -- use real node:
   path/posix when the runtime has it
 
-### packages/module/es/src/types/t boolean/t is/t p string/f/t unknown/r s/p p/index.ts
+### package/module/es/src/types/t boolean/t is/t p string/f/t unknown/r s/p p/index.ts
 
 - Line 3:
    //region General String Types -- General utility string types
 
-### packages/module/es/src/types/t function/f/t function/memoize/r s/p p/index.unit.test.ts
+### package/module/es/src/types/t function/f/t function/memoize/r s/p p/index.unit.test.ts
 
 - Line 179:
    // Now add 4 -- should evict 2 (oldest after refresh),
    not 1
 
-### packages/module/es/src/types/t function/t is/t/r s/p p/behaviorTest/genericsSchema.behaviorTest.ts
+### package/module/es/src/types/t function/t is/t/r s/p p/behaviorTest/genericsSchema.behaviorTest.ts
 
 - Line 582:
    // @ts-expect-error -- StringToNumberSchema is not assignable to RealSchema<unknown,
@@ -3450,7 +3450,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 1079:
    // @ts-expect-error -- ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
 
-### packages/module/es/src/types/t function/t is/t/r s/p p/behaviorTest/simplifiedSchema.behaviorTest.ts
+### package/module/es/src/types/t function/t is/t/r s/p p/behaviorTest/simplifiedSchema.behaviorTest.ts
 
 - Line 317:
    // @ts-expect-error -- unknown input narrowed to Schema,
@@ -3485,14 +3485,14 @@ Replace with proper punctuation or restructure sentence.
   extraStuff;
    // Preserved -- Unknown pattern now retains original properties
 
-### packages/module/es/src/types/t object/t array/t p string/t typeof/f/t unknown/r s/p p/index.ts
+### package/module/es/src/types/t object/t array/t p string/t typeof/f/t unknown/r s/p p/index.ts
 
 - Line 219:
    // @ts-expect-error -- Might be Async Iterable
 - Line 227:
    // @ts-expect-error -- Might be Iterable
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.array.unit.test.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.array.unit.test.ts
 
 - Line 19:
    //region Empty arrays -- basic and with comments
@@ -3507,7 +3507,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 116:
    //region Array-level vs first-item comments -- semantics for outside/inside comments
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.arrayCore.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.arrayCore.ts
 
 - Line 21:
    //region Array elements -- Recursive,
@@ -3519,19 +3519,19 @@ Replace with proper punctuation or restructure sentence.
 - Line 146:
    //region Element recursion -- Delegate to exported pure helper
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.arrayHelpers.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.arrayHelpers.ts
 
 - Line 10:
    //region Array header -- Consume '[' then leading comments to capture array-level comment
 - Line 41:
    //region Array separators -- Determine end of array or next element start
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.parseValue.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.parseValue.ts
 
 - Line 22:
    //region Value dispatcher -- Single entry to parse one value from the start (MUTUALLY RECURSIVE)
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.record.unit.test.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.record.unit.test.ts
 
 - Line 19:
    //region Empty objects -- basic and with comments
@@ -3544,7 +3544,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 132:
    //region Errors -- malformed structures
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.recordCore.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.recordCore.ts
 
 - Line 24:
    //region Record value parsing -- Parse value with leading comment after colon (MUTUALLY RECURSIVE)
@@ -3554,7 +3554,7 @@ Replace with proper punctuation or restructure sentence.
    //region Record members -- Recursive,
    immutable member parsing for records (MUTUALLY RECURSIVE)
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.recordHelpers.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.recordHelpers.ts
 
 - Line 12:
    //region Record header -- Consume '{' then extract record-level comment from context
@@ -3566,12 +3566,12 @@ Replace with proper punctuation or restructure sentence.
    //region Colon expectation -- Verify ':
   ' after key
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.tokenizers.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.tokenizers.ts
 
 - Line 9:
    //region Value tokenizers -- Pure helpers for literals and numbers with explicit contracts
 
-### packages/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/index.ts
+### package/module/es/src/types/t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/index.ts
 
 - Line 8:
    //region Imports and aliases -- External types/helpers and local aliases used by the parser
@@ -3586,27 +3586,27 @@ Replace with proper punctuation or restructure sentence.
 - Line 166:
    //region Re-exports -- Surface helpers for testing and external use
 
-### packages/module/es/src/types/t object/t record/f/t record/omit/p n/index.unit.test.ts
+### package/module/es/src/types/t object/t record/f/t record/omit/p n/index.unit.test.ts
 
 - Line 74:
    // @ts-expect-error -- intentionally passing non-existent key to test runtime error
 
-### packages/module/es/src/types/t object/t record/f/t record/pick/p n/index.unit.test.ts
+### package/module/es/src/types/t object/t record/f/t record/pick/p n/index.unit.test.ts
 
 - Line 53:
    // @ts-expect-error -- intentionally passing non-existent key to test runtime error
 
-### packages/module/es/src/types/t object/t regexp/t global/t/index.ts
+### package/module/es/src/types/t object/t regexp/t global/t/index.ts
 
 - Line 11:
    // @ts-expect-error -- Isn't global
 
-### packages/module/es/src/types/t object/t store/consensus.ts
+### package/module/es/src/types/t object/t store/consensus.ts
 
 - Line 2:
    // BackendResult with string values and numeric priority tiers -- store
 
-### packages/module/es/src/types/t string/t char/t/index.ts
+### package/module/es/src/types/t string/t char/t/index.ts
 
 - Line 28:
    // @ts-expect-error -- Type 'string' is not assignable to type '$'.
@@ -3621,18 +3621,18 @@ Replace with proper punctuation or restructure sentence.
    }'.
   ts(2322)
 
-### packages/module/es/src/types/t string/t nonEmpty/t/index.ts
+### package/module/es/src/types/t string/t nonEmpty/t/index.ts
 
 - Line 25:
    // @ts-expect-error -- Type '""' is not assignable to type '`${any}${string}`'.
   ts(2322)
 
-### packages/module/image-diff/src/describe.ts
+### package/module/image-diff/src/describe.ts
 
 - Line 132:
    // Prefer the native Gemini API -- avoids the OpenRouter proxy overhead
 
-### packages/module/logger/README.md
+### package/module/logger/README.md
 
 - Line 4:
    Works immediately at import -- auto-discovers available backends for the current runtime
@@ -3643,13 +3643,13 @@ Replace with proper punctuation or restructure sentence.
 - Line 85:
    Async sinks are fire-and-forget -- the log call never blocks the caller.
 
-### packages/module/logger/src/logger.ts
+### package/module/logger/src/logger.ts
 
 - Line 91:
    /** Eager initialization promise -- throws at module load if no backends available.
    */
 
-### packages/module/logger/src/sinks/file.ts
+### package/module/logger/src/sinks/file.ts
 
 - Line 88:
    /* ENOENT or similar -- keep walking up */
@@ -3658,12 +3658,12 @@ Replace with proper punctuation or restructure sentence.
   js modules -- cache appendFile for use in fileSink.
   write
 
-### packages/module/matrix/README.md
+### package/module/matrix/README.md
 
 - Line 100:
    but does not affect execution -- the process runs as the current user.
 
-### packages/module/test/README.md
+### package/module/test/README.md
 
 - Line 29:
    `Promise.allSettled` is the most portable concurrency primitive available --
@@ -3739,28 +3739,28 @@ Replace with proper punctuation or restructure sentence.
 - Line 1009:
    This harness has no file-level parallelism --
 
-### packages/module/test/src/describe.ts
+### package/module/test/src/describe.ts
 
 - Line 70:
    * Set to empty string to make this level invisible in output --
 
-### packages/module/test/src/expect.ts
+### package/module/test/src/expect.ts
 
 - Line 215:
    /** Negated matchers -- every method asserts the opposite.
    */
 
-### packages/module/token-count/README.md
+### package/module/token-count/README.md
 
 - Line 11:
    Content is never sent to a model for generation --
 
-### packages/module/token-count/src/cli.ts
+### package/module/token-count/src/cli.ts
 
 - Line 16:
    //region CLI -- parses args and counts tokens in files
 
-### packages/module/token-count/src/types.ts
+### package/module/token-count/src/types.ts
 
 - Line 13:
    /** Claude model for tokenization;
@@ -3768,13 +3768,13 @@ Replace with proper punctuation or restructure sentence.
    Only selects the tokenizer -- no inference is performed.
    */
 
-### packages/module/zip-writer/src/index.ts
+### package/module/zip-writer/src/index.ts
 
 - Line 11:
    * only stored files.
    The write-only design has minimal attack surface --
 
-### packages/pi-plugin/auto-mode/src/command-parser.unit.test.ts
+### package/pi-plugin/auto-mode/src/command-parser.unit.test.ts
 
 - Line 88:
    name:
@@ -3785,7 +3785,7 @@ Replace with proper punctuation or restructure sentence.
    // -f after -- should be a positional arg,
    not a flag
 
-### packages/pi-plugin/auto-mode/src/signals.unit.test.ts
+### package/pi-plugin/auto-mode/src/signals.unit.test.ts
 
 - Line 193:
    name:
@@ -3812,7 +3812,7 @@ Replace with proper punctuation or restructure sentence.
    // rm -- -f by itself should not flag (no -rf,
    no -f flag before --)
 
-### packages/rolldown-plugin/import-attributes/README.md
+### package/rolldown-plugin/import-attributes/README.md
 
 - Line 51:
    1.
@@ -3822,25 +3822,25 @@ Replace with proper punctuation or restructure sentence.
    **`resolveId` hook** -- for dynamic imports,
    rolldown's Rust scanner discovers
 
-### packages/runtime-error/bun/src/infinite-loop.ts
+### package/runtime-error/bun/src/infinite-loop.ts
 
 - Line 10:
    // intentional busy loop -- no yield,
    no sleep,
    no exit
 
-### packages/runtime-error/bun/src/oom.ts
+### package/runtime-error/bun/src/oom.ts
 
 - Line 9:
    /** Number of mebibytes per allocation chunk -- large enough to exhaust memory in a few iterations.
    */
 
-### packages/test-fixture/data-sequence/src/array.0to999.ts
+### package/test-fixture/data-sequence/src/array.0to999.ts
 
 - Line 1:
    /* v8 ignore file -- @preserve */
 
-### packages/test-fixture/data-sequence/src/generator.0to999.ts
+### package/test-fixture/data-sequence/src/generator.0to999.ts
 
 - Line 1:
    /* v8 ignore file -- @preserve */
@@ -3850,7 +3850,7 @@ Replace with proper punctuation or restructure sentence.
    error handling,
    and p
 
-### packages/test-fixture/data-sequence/src/promises.0to999.ts
+### package/test-fixture/data-sequence/src/promises.0to999.ts
 
 - Line 1:
    /* v8 ignore file -- @preserve */
@@ -3859,12 +3859,12 @@ Replace with proper punctuation or restructure sentence.
    concurrent processing,
    and performance char
 
-### packages/test-fixture/data-sequence/src/script.ts
+### package/test-fixture/data-sequence/src/script.ts
 
 - Line 3:
    //region Fixture Data Generation Utility -- Provides manual generation logic for creating fixture data arrays and promises used in testing scenarios
 
-### packages/test-fixture/file-enforcer-perf/src/bench-in-container.ts
+### package/test-fixture/file-enforcer-perf/src/bench-in-container.ts
 
 - Line 136:
    // Warm runs -- content unchanged,
@@ -3878,7 +3878,7 @@ Replace with proper punctuation or restructure sentence.
    invalidate its cache entry,
    re-run.
 
-### packages/test-fixture/file-enforcer-perf/src/perf.bench.test.ts
+### package/test-fixture/file-enforcer-perf/src/perf.bench.test.ts
 
 - Line 154:
    //region I/O benchmarks -- glob expansion,
@@ -3887,7 +3887,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 187:
    //region Pure computation benchmarks -- string/JSON operations
 
-### packages/test-fixture/file-enforcer-perf/src/perf.config.ts
+### package/test-fixture/file-enforcer-perf/src/perf.config.ts
 
 - Line 51:
    //region All rules -- single Promise.
@@ -3904,12 +3904,12 @@ Replace with proper punctuation or restructure sentence.
 - Line 175:
    // Deep glob -- mirror 6-level nested files
 
-### packages/test-fixture/file-enforcer-perf/src/run-constrained-utils.ts
+### package/test-fixture/file-enforcer-perf/src/run-constrained-utils.ts
 
 - Line 79:
    // Walk backwards to find the JSON line -- it starts with '{'
 
-### packages/test-fixture/file-enforcer-perf/src/validate-resources.ts
+### package/test-fixture/file-enforcer-perf/src/validate-resources.ts
 
 - Line 64:
    //region Serial CPU benchmark -- SHA-256 hashing,
@@ -3921,62 +3921,62 @@ Replace with proper punctuation or restructure sentence.
 - Line 111:
    //region IO benchmark -- write + read small files to detect throttling
 
-### packages/typeface/aquaticat/src/build-font-paths.ts
+### package/typeface/aquaticat/src/build-font-paths.ts
 
 - Line 47:
    // -- let needed because we reduce across multiple paths and their points
 
-### packages/typeface/aquaticat/src/build-font-resolve-points.ts
+### package/typeface/aquaticat/src/build-font-resolve-points.ts
 
 - Line 34:
    // -- let needed because M/L/H/V each update different axes of the cursor
 
-### packages/typeface/aquaticat/src/parse-svg.ts
+### package/typeface/aquaticat/src/parse-svg.ts
 
 - Line 6:
    //region Types -- data extracted from the master SVG
 - Line 168:
    // -- let needed because the regex loop reassigns on each command letter encountered
 
-### packages/webapp-content/messages-demo/README.md
+### package/webapp-content/messages-demo/README.md
 
 - Line 68:
    cooldown that drives this in production is not exercised here -- only the underlying
 
-### packages/webapp-content/messages-demo/src/client/composer.worker.ts
+### package/webapp-content/messages-demo/src/client/composer.worker.ts
 
 - Line 310:
    // Retry loop with exponential backoff -- each attempt depends on the
 
-### packages/webapp-content/messages-demo/src/client/composer/send.ts
+### package/webapp-content/messages-demo/src/client/composer/send.ts
 
 - Line 56:
    'empty -- nothing to send',
 
-### packages/webapp-content/messages-demo/src/client/editor/index.ts
+### package/webapp-content/messages-demo/src/client/editor/index.ts
 
 - Line 333:
    // the browser's selection Range -- without restoring,
    every
 
-### packages/webapp-content/messages-demo/src/client/outbox.ts
+### package/webapp-content/messages-demo/src/client/outbox.ts
 
 - Line 185:
    /** Online/visibility listener -- kicks the drain when conditions improve.
    */
 
-### packages/webapp-content/messages-demo/src/client/outbox.unit.test.ts
+### package/webapp-content/messages-demo/src/client/outbox.unit.test.ts
 
 - Line 5:
    * 2.
    "IDB requested but absent" -- `idbAvailable: true` in a Bun env
 
-### packages/webapp-content/messages-demo/src/lib/db/migrations.ts
+### package/webapp-content/messages-demo/src/lib/db/migrations.ts
 
 - Line 109:
    // for concurrent re-execution with different params -- doing so silently
 
-### packages/webapp-content/messages-demo/src/lib/http.ts
+### package/webapp-content/messages-demo/src/lib/http.ts
 
 - Line 9:
    /** 200 OK -- request succeeded.
@@ -4020,19 +4020,19 @@ Replace with proper punctuation or restructure sentence.
    /** 500 Internal Server Error -- handler crashed.
    */
 
-### packages/webapp-content/messages-demo/src/server.ts
+### package/webapp-content/messages-demo/src/server.ts
 
 - Line 112:
    'dist/client/index.
   js missing -- run `mise run build:js:client` to enable the composer',
 
-### packages/webapp-content/messages-demo/src/server/api/drafts.ts
+### package/webapp-content/messages-demo/src/server/api/drafts.ts
 
 - Line 302:
    //region Local validation helpers -- thin wrappers,
    no library
 
-### packages/ssg/aquati.cat/README.md
+### package/ssg/aquati.cat/README.md
 
 - Line 60:
    - Authoring a post without committing is undefined behavior --
@@ -4057,13 +4057,13 @@ Replace with proper punctuation or restructure sentence.
    3.
    **Reference rewriting** -- replace original basenames with hashed basenames in all HTML files and `manifest.webmanifest`
 
-### packages/ssg/aquati.cat/TODO.generalize-ssg.md
+### package/ssg/aquati.cat/TODO.generalize-ssg.md
 
 - Line 189:
    The risk is low -- no architectural changes,
    just plumbing a config object through existing code.
 
-### packages/ssg/aquati.cat/src/build.ts
+### package/ssg/aquati.cat/src/build.ts
 
 - Line 48:
    // File justification:
@@ -4074,12 +4074,12 @@ Replace with proper punctuation or restructure sentence.
    processes MDX,
    generates pages and assets
 
-### packages/ssg/aquati.cat/src/build/favicon.ts
+### package/ssg/aquati.cat/src/build/favicon.ts
 
 - Line 169:
    //region Standalone execution -- allows running via `mise run generate:favicons`
 
-### packages/ssg/aquati.cat/src/build/postprocess.ts
+### package/ssg/aquati.cat/src/build/postprocess.ts
 
 - Line 151:
    //region Phase 1 -- fingerprint leaf assets
@@ -4091,7 +4091,7 @@ Replace with proper punctuation or restructure sentence.
    * -- neither branch touches HTML,
    so they race on disjoint files.
 
-### packages/ssg/aquati.cat/src/client/search.ts
+### package/ssg/aquati.cat/src/client/search.ts
 
 - Line 118:
    // resolved at bundle time -- it must be a runtime import.
@@ -4099,7 +4099,7 @@ Replace with proper punctuation or restructure sentence.
    // @ts-expect-error -- Pagefind bundle is generated at build time by `pagefind --site dist`;
    no type declarations exist
 
-### packages/ssg/aquati.cat/src/components/site-footer.ts
+### package/ssg/aquati.cat/src/components/site-footer.ts
 
 - Line 29:
    // Cookie Clicker -- the game's newsticker has this news
@@ -4124,7 +4124,7 @@ Replace with proper punctuation or restructure sentence.
    // Phil Karlton -- There are only two hard things in Computer Science:
    cache invalidation and naming things.
 
-### packages/ssg/aquati.cat/src/content/en/about.mdx
+### package/ssg/aquati.cat/src/content/en/about.mdx
 
 - Line 11:
    Aquaticat -- UI/UX Designer and Developer.
@@ -4136,7 +4136,7 @@ Replace with proper punctuation or restructure sentence.
    Algonquin College,
    2023 -- 2026
 
-### packages/ssg/aquati.cat/src/content/en/portfolio-done.mdx
+### package/ssg/aquati.cat/src/content/en/portfolio-done.mdx
 
 - Line 2:
    title:
@@ -4149,13 +4149,13 @@ Replace with proper punctuation or restructure sentence.
    Developed visual moodboards establishing the geometric,
    minimal aesthetic --
 
-### packages/ssg/aquati.cat/src/content/en/portfolio-monochromatic.mdx
+### package/ssg/aquati.cat/src/content/en/portfolio-monochromatic.mdx
 
 - Line 2:
    title:
    "Monochromatic -- Open-Source Design System and Monorepo"
 
-### packages/ssg/aquati.cat/src/content/en/portfolio-morph-apply.mdx
+### package/ssg/aquati.cat/src/content/en/portfolio-morph-apply.mdx
 
 - Line 2:
    title:
@@ -4176,24 +4176,24 @@ Replace with proper punctuation or restructure sentence.
    5.
    **Presentation** -- Pitched the design to stakeholders with supporting research
 
-### packages/ssg/aquati.cat/src/content/en/portfolio-website.mdx
+### package/ssg/aquati.cat/src/content/en/portfolio-website.mdx
 
 - Line 62:
    -- for example,
    `backdrop-filter: blur(...)` --
 
-### packages/ssg/aquati.cat/src/images/convert.ts
+### package/ssg/aquati.cat/src/images/convert.ts
 
 - Line 31:
    * Returns `false` on **any** access error,
    not only missing files --
 
-### packages/ssg/aquati.cat/src/images/format.ts
+### package/ssg/aquati.cat/src/images/format.ts
 
 - Line 53:
    //region Top-level conversion pipeline -- scans directories and converts raster images to AVIF
 
-### packages/ssg/aquati.cat/src/lib/cache.ts
+### package/ssg/aquati.cat/src/lib/cache.ts
 
 - Line 27:
    // File justification:
@@ -4201,13 +4201,13 @@ Replace with proper punctuation or restructure sentence.
    I/O,
    and lookup form a
 
-### packages/ssg/aquati.cat/src/lib/content-group.ts
+### package/ssg/aquati.cat/src/lib/content-group.ts
 
 - Line 7:
    // File justification:
    104 lines -- grouping functions share the same type
 
-### packages/ssg/aquati.cat/src/lib/jsx-to-html.ts
+### package/ssg/aquati.cat/src/lib/jsx-to-html.ts
 
 - Line 20:
    * components) are called with their props and return `SafeHtml` directly --
@@ -4216,13 +4216,13 @@ Replace with proper punctuation or restructure sentence.
 - Line 217:
    //endregion Public API -- JSX runtime exports
 
-### packages/ssg/aquati.cat/src/styles/icons.ts
+### package/ssg/aquati.cat/src/styles/icons.ts
 
 - Line 17:
    * -- is what makes tight subsetting possible:
    harfbuzz only retains
 
-### packages/webapp-edu/paper2vn/README.md
+### package/webapp-edu/paper2vn/README.md
 
 - Line 20:
    Single self-contained HTML file -- the build assembles CSS,
@@ -4232,7 +4232,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 123:
    The bundled sprite pack uses its own license -- see `src/assets/sprites/manifest.json`.
 
-### packages/webapp-edu/paper2vn/TODO.lint-cleanup.md
+### package/webapp-edu/paper2vn/TODO.lint-cleanup.md
 
 - Line 61:
    Mostly auto-fixable formatting -- `dprint` should handle this once configured for the package.
@@ -4244,13 +4244,13 @@ Replace with proper punctuation or restructure sentence.
    Add missing TSDoc -- volume work,
    but mechanical.
 
-### packages/webapp-edu/paper2vn/src/client/dialogue/generator.ts
+### package/webapp-edu/paper2vn/src/client/dialogue/generator.ts
 
 - Line 127:
    }\n\n[TRUNCATED -- ${paperText.
   length} total chars]`
 
-### packages/webapp-edu/paper2vn/src/client/i18n/ru/index.ts
+### package/webapp-edu/paper2vn/src/client/i18n/ru/index.ts
 
 - Line 52:
    baseUrlHint:
@@ -4277,7 +4277,7 @@ Replace with proper punctuation or restructure sentence.
    string,
    "dial
 
-### packages/webapp-edu/paper2vn/src/client/llm/anthropic.ts
+### package/webapp-edu/paper2vn/src/client/llm/anthropic.ts
 
 - Line 107:
    `anthropic:
@@ -4285,7 +4285,7 @@ Replace with proper punctuation or restructure sentence.
   status} ${res.
   statusText} -- ${
 
-### packages/webapp-edu/paper2vn/src/client/llm/ollama.ts
+### package/webapp-edu/paper2vn/src/client/llm/ollama.ts
 
 - Line 69:
    `ollama:
@@ -4293,7 +4293,7 @@ Replace with proper punctuation or restructure sentence.
   status} ${res.
   statusText} -- ${
 
-### packages/webapp-edu/paper2vn/src/client/llm/openai-compatible.ts
+### package/webapp-edu/paper2vn/src/client/llm/openai-compatible.ts
 
 - Line 86:
    `openai-compatible:
@@ -4301,12 +4301,12 @@ Replace with proper punctuation or restructure sentence.
   status} ${res.
   statusText} -- ${
 
-### packages/webapp-edu/paper2vn/src/client/parse/pdf.ts
+### package/webapp-edu/paper2vn/src/client/parse/pdf.ts
 
 - Line 34:
    // unconfigured -- pdfjs falls back to a fake worker that runs on
 
-### packages/webapp-edu/paper2vn/src/client/screens/lecture.ts
+### package/webapp-edu/paper2vn/src/client/screens/lecture.ts
 
 - Line 53:
    /** Beat-runtime state -- kept on the screen instance.
@@ -4314,19 +4314,19 @@ Replace with proper punctuation or restructure sentence.
 - Line 363:
    // End of paper -- park on the last beat.
 
-### packages/webapp-edu/paper2vn/src/client/storage-keys.ts
+### package/webapp-edu/paper2vn/src/client/storage-keys.ts
 
 - Line 15:
    /** Save slots index -- list of `{ id, label, paperTitle, updatedAt }`.
    */
 
-### packages/webapp-edu/paper2vn/src/client/types.ts
+### package/webapp-edu/paper2vn/src/client/types.ts
 
 - Line 22:
    /** A generated chapter -- one logical section of the paper.
    */
 
-### packages/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts
+### package/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts
 
 - Line 53:
    /** Provider config (full or partial -- merged into defaults inside the page).
@@ -4336,7 +4336,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 534:
    //region Tier 2 -- live LLM round-trip
 
-### packages/webapp-edu/paper2vn/src/styles/tokens.ts
+### package/webapp-edu/paper2vn/src/styles/tokens.ts
 
 - Line 61:
    /** Quarter rem -- smallest spacing unit */
@@ -4347,7 +4347,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 88:
    /** Eighth rem -- shadow offset */
 
-### packages/webapp-forge/PHASE-2-DEFERRED.md
+### package/webapp-forge/PHASE-2-DEFERRED.md
 
 - Line 115:
    mechanical now that `iso-server.ts` exists -- the renderers read git
@@ -4357,30 +4357,30 @@ Replace with proper punctuation or restructure sentence.
    sessions,
    magic links" --
 
-### packages/webapp-forge/server/src/data/queries-phase2-resources.unit.test.ts
+### package/webapp-forge/server/src/data/queries-phase2-resources.unit.test.ts
 
 - Line 298:
    // Guard against unused import warning -- exercise insertLabel here too
 
-### packages/webapp-forge/server/src/server/routes/git.cli.unit.test.ts
+### package/webapp-forge/server/src/server/routes/git.cli.unit.test.ts
 
 - Line 472:
    // like a clone would,
    but without writing the pack -- it's the
 
-### packages/webapp-forge/server/src/storage/adapter-s3.ts
+### package/webapp-forge/server/src/storage/adapter-s3.ts
 
 - Line 14:
    * Path style:
    `${endpoint}/${bucket}/${key}`.
    Keys may contain `/` --
 
-### packages/webapp-forge/stress/src/scenarios/force-push.ts
+### package/webapp-forge/stress/src/scenarios/force-push.ts
 
 - Line 18:
    * - "only affected blob/diff fragments rebuild" -- the dependency graph
 
-### packages/webapp-productivity/done-h-css-test/FRAMEWORK_EVALUATION.md
+### package/webapp-productivity/done-h-css-test/FRAMEWORK_EVALUATION.md
 
 - Line 37:
    2.
@@ -4433,7 +4433,7 @@ Replace with proper punctuation or restructure sentence.
    we'll rewrite Done's UI layer in multiple frameworks and compare empirically.
    The codebase is structur
 
-### packages/webapp-productivity/done-h-css-test/PLAN.md
+### package/webapp-productivity/done-h-css-test/PLAN.md
 
 - Line 182:
    The schema below is the complete initial migration -- run it once on first startup.
@@ -4483,7 +4483,7 @@ Replace with proper punctuation or restructure sentence.
    7.4,
    7.5
 
-### packages/webapp-productivity/done-h-css-test/README.md
+### package/webapp-productivity/done-h-css-test/README.md
 
 - Line 20:
    1.
@@ -4509,7 +4509,7 @@ Replace with proper punctuation or restructure sentence.
    reads server-embedded JSON from `<script id="page-data">`,
    builds DOM imperatively
 
-### packages/webapp-productivity/done-h-css-test/SPEC.md
+### package/webapp-productivity/done-h-css-test/SPEC.md
 
 - Line 14:
    The orchestrator handles everything:
@@ -4576,7 +4576,7 @@ Replace with proper punctuation or restructure sentence.
    not `tasks.id`.
    This is correct but easy to confuse -- be careful in implementation.
 
-### packages/webapp-productivity/done-h-css-test/TODO.figma-audit.md
+### package/webapp-productivity/done-h-css-test/TODO.figma-audit.md
 
 - Line 85:
    1.
@@ -4615,19 +4615,19 @@ Replace with proper punctuation or restructure sentence.
    6.
    **"Attach file" / "Take photo" buttons** -- missing paperclip and camera icons
 
-### packages/webapp-productivity/done-h-css-test/src/client/components/search-bar.ts
+### package/webapp-productivity/done-h-css-test/src/client/components/search-bar.ts
 
 - Line 53:
    // HTMLElement creation -- SVG elements require the SVG namespace.
 
-### packages/webapp-productivity/done-h-css-test/src/client/components/side-drawer.ts
+### package/webapp-productivity/done-h-css-test/src/client/components/side-drawer.ts
 
 - Line 117:
    //region Inline sidebar -- visible in sidebar mode
 - Line 132:
    //region Popover panel -- visible via hamburger in stacked mode
 
-### packages/webapp-productivity/done-h-css-test/src/client/components/task-detail-autofill.ts
+### package/webapp-productivity/done-h-css-test/src/client/components/task-detail-autofill.ts
 
 - Line 17:
    /** Mutable metadata state -- autofill writes directly into this object.
@@ -4636,35 +4636,35 @@ Replace with proper punctuation or restructure sentence.
    /** Clears all pending state -- call on reconfigure.
    */
 
-### packages/webapp-productivity/done-h-css-test/src/client/components/task-detail-render.ts
+### package/webapp-productivity/done-h-css-test/src/client/components/task-detail-render.ts
 
 - Line 59:
    // elements -- SVG requires the SVG namespace.
 
-### packages/webapp-productivity/done-h-css-test/src/client/components/task-detail-types.ts
+### package/webapp-productivity/done-h-css-test/src/client/components/task-detail-types.ts
 
 - Line 53:
    /** Component mode -- `"create"` for new tasks,
    `"edit"` (default) for existing.
    */
 
-### packages/webapp-productivity/done-h-css-test/src/client/in-progress.ts
+### package/webapp-productivity/done-h-css-test/src/client/in-progress.ts
 
 - Line 87:
    // Live timer updates -- correlate each card with its task by DOM order
 
-### packages/webapp-productivity/done-h-css-test/src/client/inbox.ts
+### package/webapp-productivity/done-h-css-test/src/client/inbox.ts
 
 - Line 125:
    //region New-task dialog -- FAB opens a modal <dialog> with task-detail in create mode
 
-### packages/webapp-productivity/done-h-css-test/src/client/styles-tokens-dark.ts
+### package/webapp-productivity/done-h-css-test/src/client/styles-tokens-dark.ts
 
 - Line 9:
    /** Dark mode overrides -- swaps foreground/background primitives.
    */
 
-### packages/webapp-productivity/done-h-css-test/src/client/styles-tokens.ts
+### package/webapp-productivity/done-h-css-test/src/client/styles-tokens.ts
 
 - Line 13:
    //region Primitive color tokens -- Raw color values that never change between modes.
@@ -4674,7 +4674,7 @@ Replace with proper punctuation or restructure sentence.
    //region Dark mode -- re-exported from styles-tokens-dark.
   ts
 
-### packages/webapp-productivity/done-h-css-test/src/lib/ai/client.ts
+### package/webapp-productivity/done-h-css-test/src/lib/ai/client.ts
 
 - Line 19:
    //region Rate limiter -- sliding-window counter
@@ -4682,26 +4682,26 @@ Replace with proper punctuation or restructure sentence.
    error:
    'Rate limit exceeded -- try again in a moment',
 
-### packages/webapp-productivity/done-h-css-test/src/lib/ai/prompts.ts
+### package/webapp-productivity/done-h-css-test/src/lib/ai/prompts.ts
 
 - Line 11:
    //region Autofill -- infer metadata from a task title
 - Line 74:
    //region Suggestion ranking -- rank tasks by relevance to user context
 
-### packages/webapp-productivity/done-h-css-test/src/lib/db-migrations.ts
+### package/webapp-productivity/done-h-css-test/src/lib/db-migrations.ts
 
 - Line 8:
    //region Migration SQL -- separated for readability;
    executed once at startup
 
-### packages/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts
+### package/webapp-productivity/done-h-css-test/src/lib/db/tasks-helpers.ts
 
 - Line 64:
    /** Outcome of a `completeTask()` call -- carries blockers when completion is refused.
    */
 
-### packages/webapp-productivity/done-h-css-test/src/lib/types.ts
+### package/webapp-productivity/done-h-css-test/src/lib/types.ts
 
 - Line 81:
    /** Payload accepted by `createTask()` -- only `title` is required;
@@ -4711,7 +4711,7 @@ Replace with proper punctuation or restructure sentence.
    /** Partial update payload accepted by `updateTask()` -- omitted fields stay unchanged.
    */
 
-### packages/webapp-productivity/done-h-css-test/src/server.ts
+### package/webapp-productivity/done-h-css-test/src/server.ts
 
 - Line 72:
    //region Page routes -- return full HTML documents (via renderPage / inline HTML)
@@ -4720,7 +4720,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 121:
    //region Static asset serving -- bundled JS from dist/client/
 
-### packages/webapp-productivity/done/FRAMEWORK_EVALUATION.md
+### package/webapp-productivity/done/FRAMEWORK_EVALUATION.md
 
 - Line 37:
    2.
@@ -4773,7 +4773,7 @@ Replace with proper punctuation or restructure sentence.
    we'll rewrite Done's UI layer in multiple frameworks and compare empirically.
    The codebase is structur
 
-### packages/webapp-productivity/done/PLAN.md
+### package/webapp-productivity/done/PLAN.md
 
 - Line 182:
    The schema below is the complete initial migration -- run it once on first startup.
@@ -4823,7 +4823,7 @@ Replace with proper punctuation or restructure sentence.
    7.4,
    7.5
 
-### packages/webapp-productivity/done/README.md
+### package/webapp-productivity/done/README.md
 
 - Line 21:
    1.
@@ -4849,7 +4849,7 @@ Replace with proper punctuation or restructure sentence.
    reads server-embedded JSON from `<script id="page-data">`,
    builds DOM imperatively
 
-### packages/webapp-productivity/done/SPEC.md
+### package/webapp-productivity/done/SPEC.md
 
 - Line 14:
    The orchestrator handles everything:
@@ -4916,7 +4916,7 @@ Replace with proper punctuation or restructure sentence.
    not `tasks.id`.
    This is correct but easy to confuse -- be careful in implementation.
 
-### packages/webapp-productivity/done/TODO.figma-audit.md
+### package/webapp-productivity/done/TODO.figma-audit.md
 
 - Line 85:
    1.
@@ -4955,29 +4955,29 @@ Replace with proper punctuation or restructure sentence.
    6.
    **"Attach file" / "Take photo" buttons** -- missing paperclip and camera icons
 
-### packages/webapp-productivity/done/src/client/components/search-bar.ts
+### package/webapp-productivity/done/src/client/components/search-bar.ts
 
 - Line 92:
    // HTMLElement creation -- SVG elements require the SVG namespace.
 
-### packages/webapp-productivity/done/src/client/components/side-drawer.ts
+### package/webapp-productivity/done/src/client/components/side-drawer.ts
 
 - Line 126:
    //region Inline sidebar -- visible in sidebar mode
 - Line 141:
    //region Popover panel -- visible via hamburger in stacked mode
 
-### packages/webapp-productivity/done/src/client/components/task-detail-render.ts
+### package/webapp-productivity/done/src/client/components/task-detail-render.ts
 
 - Line 59:
    // elements -- SVG requires the SVG namespace.
 
-### packages/webapp-productivity/done/src/client/in-progress.ts
+### package/webapp-productivity/done/src/client/in-progress.ts
 
 - Line 88:
    // Live timer updates -- correlate each card with its task by DOM order
 
-### packages/webapp-productivity/done/src/lib/ai/client.ts
+### package/webapp-productivity/done/src/lib/ai/client.ts
 
 - Line 19:
    //region Rate limiter -- sliding-window counter
@@ -4985,20 +4985,20 @@ Replace with proper punctuation or restructure sentence.
    error:
    'Rate limit exceeded -- try again in a moment',
 
-### packages/webapp-productivity/done/src/lib/ai/prompts.ts
+### package/webapp-productivity/done/src/lib/ai/prompts.ts
 
 - Line 11:
    //region Autofill -- infer metadata from a task title
 - Line 74:
    //region Suggestion ranking -- rank tasks by relevance to user context
 
-### packages/webapp-productivity/done/src/lib/db/task-timer.ts
+### package/webapp-productivity/done/src/lib/db/task-timer.ts
 
 - Line 29:
    /** Outcome of a `completeTask()` call -- carries blockers when completion is refused.
    */
 
-### packages/webapp-productivity/done/src/lib/types.ts
+### package/webapp-productivity/done/src/lib/types.ts
 
 - Line 81:
    /** Payload accepted by `createTask()` -- only `title` is required;
@@ -5008,58 +5008,58 @@ Replace with proper punctuation or restructure sentence.
    /** Partial update payload accepted by `updateTask()` -- omitted fields stay unchanged.
    */
 
-### packages/webapp-productivity/rss/src/client.ts
+### package/webapp-productivity/rss/src/client.ts
 
 - Line 7:
    //region Scroll event observer -- Tracks element visibility and dispatches custom scroll lifecycle events
 - Line 97:
    //region Feed element binding -- Connects scroll events to the ignore API for auto-dismissal
 
-### packages/webapp-productivity/rss/src/feed.ts
+### package/webapp-productivity/rss/src/feed.ts
 
 - Line 30:
    //region Feed fetching and sorting -- Retrieves feeds from URLs,
    parses them,
    and sorts by date
 
-### packages/webapp-productivity/rss/src/handler.ts
+### package/webapp-productivity/rss/src/handler.ts
 
 - Line 21:
    //region HTTP handlers -- Serve rendered HTML and persist ignored items
 
-### packages/webapp-productivity/rss/src/ignore.ts
+### package/webapp-productivity/rss/src/ignore.ts
 
 - Line 18:
    //region Ignore content loading -- Reads raw JSONL content for salt derivation and link filtering
 
-### packages/webapp-productivity/rss/src/index.ts
+### package/webapp-productivity/rss/src/index.ts
 
 - Line 30:
    //region Memoized pipeline -- Pull-based feed processing with content-derived cache invalidation
 - Line 100:
    //region h3 application -- Maps HTTP method + path to handler functions
 
-### packages/webapp-productivity/rss/src/item.ts
+### package/webapp-productivity/rss/src/item.ts
 
 - Line 24:
    //region Item extraction and normalization -- Converts feed entries to a uniform dated format
 
-### packages/webapp-productivity/rss/src/opml-text.ts
+### package/webapp-productivity/rss/src/opml-text.ts
 
 - Line 25:
    //region OPML text fetching -- Retrieves raw OPML content from HTTP and file URLs
 
-### packages/webapp-productivity/rss/src/outline.ts
+### package/webapp-productivity/rss/src/outline.ts
 
 - Line 25:
    //region OPML parsing and outline extraction -- Converts raw XML into validated feed outline structures
 
-### packages/webapp-search/ai-tree/src/index.ts
+### package/webapp-search/ai-tree/src/index.ts
 
 - Line 56:
    // @ts-expect-error -- mcp_servers not yet in SDK types
 
-### packages/webapp-search/exa-search/src/asset.ts
+### package/webapp-search/exa-search/src/asset.ts
 
 - Line 37:
    //region HTML structure -- Declarative page composition via h-html
@@ -5426,12 +5426,12 @@ Replace with proper punctuation or restructure sentence.
 - Line 149:
    - `any.test.ts` - stored undefined result before testing
 - Line 153:
-   - `packages/figma-plugin/css-variables/src/iframe/index.ts` - replaced window.
+   - `package/figma-plugin/css-variables/src/iframe/index.ts` - replaced window.
   getComputedStyle and window.
   parent.
   postMessage
 - Line 154:
-   - `packages/figma-plugin/css-variables/src/frontend/index.ts` - replaced window.
+   - `package/figma-plugin/css-variables/src/frontend/index.ts` - replaced window.
   parent.
   postMessage and window.
   addEventListener
@@ -5842,7 +5842,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 170:
    **FALSE** - `any` still gets narrowed by typeguards.
 
-### packages/dev-script/inference-canary-viewer/README.md
+### package/dev-script/inference-canary-viewer/README.md
 
 - Line 47:
    4.
@@ -5850,12 +5850,12 @@ Replace with proper punctuation or restructure sentence.
    floored at 0.3,
    minimum 3 samples)
 
-### packages/dev-script/inference-canary/README.md
+### package/dev-script/inference-canary/README.md
 
 - Line 131:
    Used for statistical threshold computation (mean - 2 * stddev).
 
-### packages/dev-script/inference-canary/src/canary-lint/Kimi K2.5/stak-interpreter-initial-2026-03-14T23-20-05.000Z/response.txt
+### package/dev-script/inference-canary/src/canary-lint/Kimi K2.5/stak-interpreter-initial-2026-03-14T23-20-05.000Z/response.txt
 
 - Line 132:
    const value = stack[stack.
@@ -5868,7 +5868,7 @@ Replace with proper punctuation or restructure sentence.
   push(a - b * Math.
   floor(a / b));
 
-### packages/dev-script/inference-canary/src/canary-lint/MiniMax M2.5/css-mixin-transpiler-initial-2026-03-14T22-39-24.000Z/response.txt
+### package/dev-script/inference-canary/src/canary-lint/MiniMax M2.5/css-mixin-transpiler-initial-2026-03-14T22-39-24.000Z/response.txt
 
 - Line 781:
    Still has some issues - let me reconsider and rewrite with a cleaner approach:
@@ -5888,7 +5888,7 @@ Replace with proper punctuation or restructure sentence.
    5.
    Top-level `@apply` - handled with braceDepth check
 
-### packages/dev-script/inference-canary/src/canary-lint/Nvidia Nemotron 3 Super/css-mixin-transpiler-initial-2026-03-19T17-45-20.000Z/response.txt
+### package/dev-script/inference-canary/src/canary-lint/Nvidia Nemotron 3 Super/css-mixin-transpiler-initial-2026-03-19T17-45-20.000Z/response.txt
 
 - Line 289:
    // - Take the mixin body string for applyName,
@@ -5897,7 +5897,7 @@ Replace with proper punctuation or restructure sentence.
    // - But we are in the middle of the input token stream.
    We cannot easily go back to re-tokenize the stored mixin body string.
 
-### packages/figma/to-penpot/PENPOT_FORMAT.md
+### package/figma/to-penpot/PENPOT_FORMAT.md
 
 - Line 75:
    - `data` (optional - the actual design data,
@@ -5933,7 +5933,7 @@ Replace with proper punctuation or restructure sentence.
    `backend/src/app/binfile/common.clj` - `file-attrs`,
    shared utilities
 
-### packages/module/es/README.md (52 occurrences, first 20 shown)
+### package/module/es/README.md (52 occurrences, first 20 shown)
 
 - Line 20:
    - **Boolean utilities** - Equality,
@@ -6012,7 +6012,7 @@ Replace with proper punctuation or restructure sentence.
    shape operations
 - ... and 32 more
 
-### packages/module/es/TODO.2-week-presentability.md
+### package/module/es/TODO.2-week-presentability.md
 
 - Line 5:
    **Timeline**:
@@ -6041,7 +6041,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 177:
    - Focus is on quality over quantity - 10 excellent functions vs 50 mediocre ones
 
-### packages/module/es/TODO.3-month-aggressive-plan.md
+### package/module/es/TODO.3-month-aggressive-plan.md
 
 - Line 5:
    **Timeline**:
@@ -6093,7 +6093,7 @@ Replace with proper punctuation or restructure sentence.
    **Status**:
    Unification phase - critical for launch readiness
 
-### packages/module/es/TODO.api-refactors.md
+### package/module/es/TODO.api-refactors.md
 
 - Line 15:
    **Status**:
@@ -6129,7 +6129,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 494:
    - [**Main Build System**](../../TODO.build-system.md) - Build system implications of major refactors
 
-### packages/module/es/TODO.code-review.md
+### package/module/es/TODO.code-review.md
 
 - Line 13:
    - `t object/t logger/f/t never/r s/p p/index.ts:100` - Uses `.catch()` callback pattern which is banned by project rules ("No `.then()`,
@@ -6151,7 +6151,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 66:
    - `t object/t logger/t sink/t file/p p/index.ts` - Writes log files to `node_modules/.monochromatic/` which is unconventional and will be wiped on `npm install`.
 - Line 69:
-   resolved in `packages/module/throws`;
+   resolved in `package/module/throws`;
    the old module-es expression-position helper TODO was removed.
 - Line 73:
    - `t object/t logger/t sink/t sessionStorage/r s/p p/index.ts:43` - `lineCounter++` uses postfix increment which is a mutation without justification.
@@ -6160,7 +6160,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 79:
    - `path/index.ts` - The `dirnameFallback` function uses a `for` loop with `let charIndex` and mutable `lastSlash`.
 
-### packages/module/es/TODO.development-workflow.md (159 occurrences, first 20 shown)
+### package/module/es/TODO.development-workflow.md (159 occurrences, first 20 shown)
 
 - Line 9:
    **Status**:
@@ -6210,7 +6210,7 @@ Replace with proper punctuation or restructure sentence.
    - [ ] **Integration validation** - Verify function works well with others
 - ... and 139 more
 
-### packages/module/es/TODO.ecosystem-integration.md (154 occurrences, first 20 shown)
+### package/module/es/TODO.ecosystem-integration.md (154 occurrences, first 20 shown)
 
 - Line 9:
    **Status**:
@@ -6260,7 +6260,7 @@ Replace with proper punctuation or restructure sentence.
   js LTS versions
 - ... and 134 more
 
-### packages/module/es/TODO.exports-fixes.md
+### package/module/es/TODO.exports-fixes.md
 
 - Line 7:
    **Status**:
@@ -6299,7 +6299,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 98:
    - [**Code Quality Todo**](../../TODO.code-quality.md#typescript-compilation-errors) - TypeScript error resolution
 
-### packages/module/es/TODO.governance-strategy.md (175 occurrences, first 20 shown)
+### package/module/es/TODO.governance-strategy.md (175 occurrences, first 20 shown)
 
 - Line 9:
    **Status**:
@@ -6349,7 +6349,7 @@ Replace with proper punctuation or restructure sentence.
    - [ ] **Documentation standards** - Comprehensive documentation requirements
 - ... and 155 more
 
-### packages/module/es/TODO.improvements.md
+### package/module/es/TODO.improvements.md
 
 - Line 9:
    - [ ] **[`boolean.equal.ts`](src/boolean.equal.ts:174)** - [`equal()`](src/boolean.equal.ts:174) function
@@ -6416,7 +6416,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 228:
    - [**Code Quality Todo**](../../TODO.code-quality.md#typescript-standards-and-patterns) - Code quality standards
 
-### packages/module/es/TODO.md (53 occurrences, first 20 shown)
+### package/module/es/TODO.md (53 occurrences, first 20 shown)
 
 - Line 15:
    - [**Export Fixes**](TODO.exports-fixes.md) - Critical TypeScript compilation errors
@@ -6469,7 +6469,7 @@ Replace with proper punctuation or restructure sentence.
    - [ ] **Performance benchmark leadership** - Fastest and most efficient implementations
 - ... and 33 more
 
-### packages/module/es/TODO.missing-implementations.md (404 occurrences, first 20 shown)
+### package/module/es/TODO.missing-implementations.md (404 occurrences, first 20 shown)
 
 - Line 13:
    **Status**:
@@ -6514,7 +6514,7 @@ Replace with proper punctuation or restructure sentence.
    - [ ] **`object.isEmpty(obj)`** - Type-safe empty object checking
 - ... and 384 more
 
-### packages/module/es/TODO.package-infrastructure.md (108 occurrences, first 20 shown)
+### package/module/es/TODO.package-infrastructure.md (108 occurrences, first 20 shown)
 
 - Line 9:
    **Status**:
@@ -6567,7 +6567,7 @@ Replace with proper punctuation or restructure sentence.
    - [ ] **Enhanced error handling** - Better error messages and recovery
 - ... and 88 more
 
-### packages/module/es/TODO.testing.md (128 occurrences, first 20 shown)
+### package/module/es/TODO.testing.md (128 occurrences, first 20 shown)
 
 - Line 18:
    **Status**:
@@ -6620,7 +6620,7 @@ Replace with proper punctuation or restructure sentence.
    - [ ] **`array.type.test.ts`** - Type tests for all array functions and types
 - ... and 108 more
 
-### packages/module/es/TODO.tsdoc-improvements.md (53 occurrences, first 20 shown)
+### package/module/es/TODO.tsdoc-improvements.md (53 occurrences, first 20 shown)
 
 - Line 9:
    - [ ] **[`any.echo.ts`](src/any.echo.ts:26)** - [`echo()`](src/any.echo.ts:26)
@@ -6664,7 +6664,7 @@ Replace with proper punctuation or restructure sentence.
    - [ ] **[`error.throw.ts`](src/error.throw.ts:34)** - Multiple functions need enhancement:
 - ... and 33 more
 
-### packages/module/es/TODO.typeguard-refactor.md
+### package/module/es/TODO.typeguard-refactor.md
 
 - Line 256:
    - [ ] `string.is.ts` - `isString`
@@ -6711,7 +6711,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 282:
    - [ ] `schema.basic.ts` - Refactor to new pattern
 
-### packages/module/es/src/types/README.md
+### package/module/es/src/types/README.md
 
 - Line 73:
    - `type string/` - Functions returning `string` or `Promise<string>`
@@ -6787,7 +6787,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 1256:
    - ⏳ **Full coverage** - Complete migration of all 500+ utilities planned
 
-### packages/module/es/src/types/t string/t hasQuotedSyntax/README.md
+### package/module/es/src/types/t string/t hasQuotedSyntax/README.md
 
 - Line 18:
    - **`hasQuotedSyntax`** - A branded string type indicating the presence of quoted syntax
@@ -6798,18 +6798,18 @@ Replace with proper punctuation or restructure sentence.
 - Line 24:
    - **`backtick`** - Strings containing backticks/template literals (`` ` ``)
 
-### packages/ssg/aquati.cat/src/content/en/magicbread.mdx
+### package/ssg/aquati.cat/src/content/en/magicbread.mdx
 
 - Line 135:
    need to consider the market - the potential customers.
 
-### packages/ssg/aquati.cat/src/content/en/mdx.mdx
+### package/ssg/aquati.cat/src/content/en/mdx.mdx
 
 - Line 36:
    This HTML output is stolen from MDN,
    Adding Captions and Subtitles to Video
 
-### packages/ssg/aquati.cat/src/content/en/web-resources.mdx
+### package/ssg/aquati.cat/src/content/en/web-resources.mdx
 
 - Line 10:
    [Web Typography - A handbook for designing beautiful and effective responsive typography](https://book.webtypography.net/)
@@ -6818,7 +6818,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 56:
    [adactio - Jeremy Keith](https://adactio.com)
 
-### packages/ssg/aquati.cat/src/content/en/wolf-icons.mdx
+### package/ssg/aquati.cat/src/content/en/wolf-icons.mdx
 
 - Line 3:
    description:
@@ -6828,25 +6828,25 @@ Replace with proper punctuation or restructure sentence.
    It's not?
   "
 
-### packages/ssg/aquati.cat/src/content/zh/mdx.mdx
+### package/ssg/aquati.cat/src/content/zh/mdx.mdx
 
 - Line 36:
    This HTML output is stolen from MDN,
    Adding Captions and Subtitles to Video
 
-### packages/webapp-productivity/rss/TODO.code-organization.md
+### package/webapp-productivity/rss/TODO.code-organization.md
 
 - Line 30:
    - [ ] 2.1.1.3 Create `outline.types.ts` - OPML/Outline types
 - Line 31:
    - [ ] 2.1.1.4 Create `api.types.ts` - API request/response types
 
-### packages/webapp-productivity/rss/TODO.configuration.md
+### package/webapp-productivity/rss/TODO.configuration.md
 
 - Line 137:
    - [ ] 3.4.6 `opmls.ts` - OPML path
 
-### packages/webapp-productivity/rss/TODO.index.md
+### package/webapp-productivity/rss/TODO.index.md
 
 - Line 45:
    1.
@@ -6887,7 +6887,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 73:
    - 5.5 **Fork-friendly** - Simple enough for customization
 
-### packages/webapp-search/exa-search/README.md
+### package/webapp-search/exa-search/README.md
 
 - Line 49:
    - `index.html` - Main HTML structure (at package root)

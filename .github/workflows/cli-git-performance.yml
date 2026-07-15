@@ -40,12 +40,12 @@ jobs:
       run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/cli-git...
 
     - name: Enforce measured lifecycle budgets
-      run: mise run //packages/git-policy/cli:perf:lifecycle-latency
+      run: mise run //package/git-policy/cli:perf:lifecycle-latency
 
     - name: Upload raw lifecycle samples
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: cli-git-lifecycle-latency-${{ github.run_attempt }}
-        path: packages/git-policy/cli/dist/perf/lifecycle-latency.json
+        path: package/git-policy/cli/dist/perf/lifecycle-latency.json
         if-no-files-found: error
         retention-days: 30

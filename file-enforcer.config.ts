@@ -107,8 +107,8 @@ type PackageLicenseTextId = keyof typeof PACKAGE_LICENSE_TEXT_SOURCES;
  * ```
  */
 const PACKAGE_LICENSE_MANIFEST_GLOBS = [
-  './packages/*/*/package.json',
-  './packages/*/*/Cargo.toml',
+  './package/*/*/package.json',
+  './package/*/*/Cargo.toml',
 ] as const;
 
 /**
@@ -293,7 +293,7 @@ function licenseTextIdsForExpression(
  *
  * @example
  * ```ts
- * await packageJsonLicenseExpression({ manifestPath: './packages/module/test/package.json' });
+ * await packageJsonLicenseExpression({ manifestPath: './package/module/test/package.json' });
  * ```
  */
 async function packageJsonLicenseExpression(
@@ -320,7 +320,7 @@ async function packageJsonLicenseExpression(
  *
  * @example
  * ```ts
- * await cargoTomlLicenseExpression({ manifestPath: './packages/cli/forbidden-strings/Cargo.toml' });
+ * await cargoTomlLicenseExpression({ manifestPath: './package/cli/forbidden-strings/Cargo.toml' });
  * ```
  */
 async function cargoTomlLicenseExpression(
@@ -349,7 +349,7 @@ async function cargoTomlLicenseExpression(
  *
  * @example
  * ```ts
- * packageDirFromManifest({ manifestPath: './packages/cli/forbidden-strings/Cargo.toml' });
+ * packageDirFromManifest({ manifestPath: './package/cli/forbidden-strings/Cargo.toml' });
  * ```
  */
 function packageDirFromManifest(
@@ -368,7 +368,7 @@ function packageDirFromManifest(
  *
  * @example
  * ```ts
- * await unlinkIfExists({ filePath: './packages/example/name/LICENSES/GPL-3.0-or-later.txt' });
+ * await unlinkIfExists({ filePath: './package/example/name/LICENSES/GPL-3.0-or-later.txt' });
  * ```
  */
 async function unlinkIfExists(
@@ -396,7 +396,7 @@ async function unlinkIfExists(
  *
  * @example
  * ```ts
- * addPackageLicenseExpression({ packageLicenseExpressions: new Map(), packageDir: './packages/x/y', expression: 'LGPL-3.0-or-later' });
+ * addPackageLicenseExpression({ packageLicenseExpressions: new Map(), packageDir: './package/x/y', expression: 'LGPL-3.0-or-later' });
  * ```
  */
 function addPackageLicenseExpression(
@@ -622,7 +622,7 @@ ${
     [
       ...new Set([
         'node_modules/.bin',
-        ...(await Array.fromAsync(glob('packages/*/*/node_modules/.bin',),)).toSorted(),
+        ...(await Array.fromAsync(glob('package/*/*/node_modules/.bin',),)).toSorted(),
       ]),
     ]
       .map(function quote(dir,): string {
@@ -718,7 +718,7 @@ async function generateForbiddenStringsRules(): Promise<void> {
       `# Generated from forbidden-strings.append.txt + forbidden-strings.append.local.txt by file-enforcer.
 # Do not edit manually. Baseline credential rules are NOT in this file: they
 # ship inside the forbidden-strings binary and repo invocations pass
-# --builtin-rules (edit packages/cli/forbidden-strings/src/mise.port-betterleaks.ts
+# --builtin-rules (edit package/cli/forbidden-strings/src/mise.port-betterleaks.ts
 # to change them). To add shared (non-sensitive) rules, edit
 # forbidden-strings.append.txt. To add sensitive rules, edit
 # forbidden-strings.append.local.txt.
@@ -1484,19 +1484,19 @@ const CARGO_PROFILE_FUZZ: CargoProfileSpec = {
  *
  * @example
  * ```ts
- * console.log(CARGO_PROFILE_BY_DIR['packages/linter/rust']);
+ * console.log(CARGO_PROFILE_BY_DIR['package/linter/rust']);
  * ```
  */
 const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
-  'packages/cli/forbidden-strings': CARGO_PROFILE_SCANNER,
-  'packages/rust-module/forbidden-regex': CARGO_PROFILE_SCANNER,
-  'packages/cli/nested-wayland-session': CARGO_PROFILE_OVERFLOW,
-  'packages/linter/rust': CARGO_PROFILE_LINTER,
-  'packages/rust-module/forbidden-regex.bench': CARGO_PROFILE_BENCH,
-  'packages/music-player/truepeak-core.bench': CARGO_PROFILE_BENCH,
-  'packages/music-player/desktop-app': CARGO_PROFILE_MUSIC,
-  'packages/rust-module/forbidden-regex.fuzz': CARGO_PROFILE_FUZZ,
-  'packages/fuzz/forbidden-strings': CARGO_PROFILE_FUZZ,
+  'package/cli/forbidden-strings': CARGO_PROFILE_SCANNER,
+  'package/rust-module/forbidden-regex': CARGO_PROFILE_SCANNER,
+  'package/cli/nested-wayland-session': CARGO_PROFILE_OVERFLOW,
+  'package/linter/rust': CARGO_PROFILE_LINTER,
+  'package/rust-module/forbidden-regex.bench': CARGO_PROFILE_BENCH,
+  'package/music-player/truepeak-core.bench': CARGO_PROFILE_BENCH,
+  'package/music-player/desktop-app': CARGO_PROFILE_MUSIC,
+  'package/rust-module/forbidden-regex.fuzz': CARGO_PROFILE_FUZZ,
+  'package/fuzz/forbidden-strings': CARGO_PROFILE_FUZZ,
 };
 
 /**
@@ -1535,7 +1535,7 @@ const CARGO_STATIC_ENFORCEMENTS: readonly CargoEnforcement[] = [
  *
  * @example
  * ```ts
- * cargoPackageDir({ manifestPath: 'packages/linter/rust/Cargo.toml' }); // 'packages/linter/rust'
+ * cargoPackageDir({ manifestPath: 'package/linter/rust/Cargo.toml' }); // 'package/linter/rust'
  * ```
  */
 function cargoPackageDir({ manifestPath, }: { readonly manifestPath: string; },): string {
@@ -1554,7 +1554,7 @@ function cargoPackageDir({ manifestPath, }: { readonly manifestPath: string; },)
  *
  * @example
  * ```ts
- * cargoHomepage({ manifestPath: 'packages/linter/rust/Cargo.toml' });
+ * cargoHomepage({ manifestPath: 'package/linter/rust/Cargo.toml' });
  * ```
  */
 function cargoHomepage({ manifestPath, }: { readonly manifestPath: string; },): string {
@@ -1570,7 +1570,7 @@ function cargoHomepage({ manifestPath, }: { readonly manifestPath: string; },): 
  *
  * @example
  * ```ts
- * cargoProfileEnforcements({ manifestPath: 'packages/linter/rust/Cargo.toml' });
+ * cargoProfileEnforcements({ manifestPath: 'package/linter/rust/Cargo.toml' });
  * ```
  */
 function cargoProfileEnforcements(
@@ -1605,7 +1605,7 @@ function cargoProfileEnforcements(
  *
  * @example
  * ```ts
- * buildCargoManifestPlan({ manifestPath: 'packages/linter/rust/Cargo.toml' });
+ * buildCargoManifestPlan({ manifestPath: 'package/linter/rust/Cargo.toml' });
  * ```
  */
 function buildCargoManifestPlan(
@@ -1641,8 +1641,8 @@ function buildCargoManifestPlan(
 async function generateCargoManifests(): Promise<void> {
   await manageCargoManifests({
     manifestGlobs: [
-      'packages/*/*/Cargo.toml',
-      'packages/*/*/*/Cargo.toml',
+      'package/*/*/Cargo.toml',
+      'package/*/*/*/Cargo.toml',
     ],
     spec: buildCargoManifestPlan,
   },);
@@ -1684,9 +1684,9 @@ ${await cat(['./AGENTS.md',],)}`,
   generateForbiddenStringsRules(),
 
   overwrite({
-    dest: './packages/git-policy/cli/src/optional/repository-policy.ts',
-    content: `// Generated from \`packages/git-policy/repository/src/index.ts\` by file-enforcer; edit canonical source owner.\n${(await cat([
-      './packages/git-policy/repository/src/index.ts',
+    dest: './package/git-policy/cli/src/optional/repository-policy.ts',
+    content: `// Generated from \`package/git-policy/repository/src/index.ts\` by file-enforcer; edit canonical source owner.\n${(await cat([
+      './package/git-policy/repository/src/index.ts',
     ],))
       .replace(
         '@monochromatic-dev/git-policy-api/ts',
@@ -1706,9 +1706,9 @@ ${await cat(['./AGENTS.md',],)}`,
     'scanner-output.ts',
   ].map(async function mirrorForbiddenStringsPolicy(fileName,) {
     return overwrite({
-      dest: `./packages/git-policy/cli/src/optional/forbidden-strings/${fileName}`,
-      content: `// Generated from \`packages/git-policy/forbidden-strings/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
-        `./packages/git-policy/forbidden-strings/src/${fileName}`,
+      dest: `./package/git-policy/cli/src/optional/forbidden-strings/${fileName}`,
+      content: `// Generated from \`package/git-policy/forbidden-strings/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
+        `./package/git-policy/forbidden-strings/src/${fileName}`,
       ],))
         .replace(
           '@monochromatic-dev/git-policy-api/ts',

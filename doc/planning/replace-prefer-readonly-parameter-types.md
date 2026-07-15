@@ -360,9 +360,9 @@ The semantic-rule implementation and shared-configuration migration are complete
   host acceptance,
   publication acceptance,
   namespace,
-  and shared-config sidecar under `packages/oxlint-plugin/prefer-readonly-parameter-type`;
+  and shared-config sidecar under `package/oxlint-plugin/prefer-readonly-parameter-type`;
 - the same commit satisfies the user's narrow ubiquitous-dependency requirement through
-  `packages/ownership-marker/foreign-borrowed`,
+  `package/ownership-marker/foreign-borrowed`,
   which contains one type declaration,
   no runtime code,
   and no runtime dependencies;
@@ -482,7 +482,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   reflection,
   coercion,
   and formatting contracts;
-  `packages/module/test` now passes type lint,
+  `package/module/test` now passes type lint,
   Oxlint with no findings,
   build,
   and unit tests;
@@ -530,7 +530,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   TypeScript's decoded-source cache and issuing one synchronous snapshot RPC per linted file;
   dependency-overlay regression coverage proves unchanged importers reuse the refreshed snapshot;
   final one-worker warm checks completed the semantic plugin package in 6,411 ms and 6,394 ms,
-  `packages/git-policy/cli` in 4,261 ms and 4,231 ms,
+  `package/git-policy/cli` in 4,261 ms and 4,231 ms,
   and file-manager Electron in 6,887 ms and 6,896 ms;
   cold runs after analyzer or project source changes still rebuild content-addressed effect summaries;
 - commits `1622488ad` and `619e0682d` audit ECMA-402 date formatting,
@@ -660,42 +660,42 @@ The semantic-rule implementation and shared-configuration migration are complete
   two-argument and three-argument `child_process.spawn` behavior is covered by the semantic fixture;
 - `3e1851bc7` and `a52f7ea13` remove the reverse development dependency from
   `module-caught-value` to `module-test`;
-  caught-value consumer tests now live in `packages/module/test` and the caught-value package task delegates to those
+  caught-value consumer tests now live in `package/module/test` and the caught-value package task delegates to those
   exact tests;
 - commits `c3a01aa05` through `f815b434b` make `prefer-caught-value-text` resolve global `Error` and `String`
   bindings before reporting and cover block-bodied arrow formatters without exceeding the source-line limit;
-- `packages/dev-script/task-util`,
-  `packages/oxlint-plugin/no-restricted-syntax`,
-  `packages/oxlint-plugin/prefer-readonly-parameter-type`,
-  `packages/oxlint-plugin/tsdoc`,
-  `packages/oxlint-plugin/stylistic`,
-  `packages/module/or-throw`,
-  `packages/dev-script/page-weight`,
-  `packages/module/image-diff`,
-  `packages/mcp/stdio`,
-  `packages/mcp/mvm`,
-  `packages/module/zip-writer`,
-  `packages/module/pnpm-workspace-catalog`,
-  `packages/module/fs-id`,
-  `packages/module/dom`,
-  `packages/module/test`,
-  `packages/module/jsonc-edit`,
-  `packages/cli/mutation-test`,
-  `packages/dev-script/catalog-tighten`,
-  `packages/agent-harness-shared/terminal-title`,
-  `packages/cli/git-clone-size`,
-  `packages/pi-shared/model-selection`,
-  `packages/pi-plugin/advisor`,
-  `packages/pi-plugin/auto-mode`,
-  `packages/pi-plugin/current-time-context`,
-  `packages/pi-plugin/terminal-title`,
-  `packages/pi-plugin/agent-settled-notification`,
-  `packages/pi-plugin/thinking-default`,
-  `packages/agent-harness-shared/session-discovery`,
-  `packages/typeface/aquaticat`,
-  `packages/cli/android-exempt-unused`,
-  `packages/cli/terminal-exec`,
-  and `packages/webapp-productivity/wc` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
+- `package/dev-script/task-util`,
+  `package/oxlint-plugin/no-restricted-syntax`,
+  `package/oxlint-plugin/prefer-readonly-parameter-type`,
+  `package/oxlint-plugin/tsdoc`,
+  `package/oxlint-plugin/stylistic`,
+  `package/module/or-throw`,
+  `package/dev-script/page-weight`,
+  `package/module/image-diff`,
+  `package/mcp/stdio`,
+  `package/mcp/mvm`,
+  `package/module/zip-writer`,
+  `package/module/pnpm-workspace-catalog`,
+  `package/module/fs-id`,
+  `package/module/dom`,
+  `package/module/test`,
+  `package/module/jsonc-edit`,
+  `package/cli/mutation-test`,
+  `package/dev-script/catalog-tighten`,
+  `package/agent-harness-shared/terminal-title`,
+  `package/cli/git-clone-size`,
+  `package/pi-shared/model-selection`,
+  `package/pi-plugin/advisor`,
+  `package/pi-plugin/auto-mode`,
+  `package/pi-plugin/current-time-context`,
+  `package/pi-plugin/terminal-title`,
+  `package/pi-plugin/agent-settled-notification`,
+  `package/pi-plugin/thinking-default`,
+  `package/agent-harness-shared/session-discovery`,
+  `package/typeface/aquaticat`,
+  `package/cli/android-exempt-unused`,
+  `package/cli/terminal-exec`,
+  and `package/webapp-productivity/wc` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
 
 Final root semantic,
 consumer,
@@ -709,37 +709,37 @@ Verified package tasks:
 - `mise run buildAndTest --` with TSDoc parser,
   cache,
   and integration tests;
-- `mise run //packages/oxlint-plugin/tsdoc:lint:types`;
-- `mise run //packages/oxlint-plugin/tsdoc:lint:oxlint`;
-- `mise run //packages/config/oxlint:lint:types`;
-- `mise run //packages/config/oxlint:lint:oxlint`;
-- `mise run //packages/dev-script/task-util:lint:oxlint`;
-- `mise run //packages/oxlint-plugin/no-restricted-syntax:lint:types`;
-- `mise run //packages/oxlint-plugin/no-restricted-syntax:lint:oxlint`;
-- `mise run //packages/oxlint-plugin/no-restricted-syntax:test:unit`;
-- `mise run //packages/module/caught-value:buildAndTest`;
-- built-package consumer import and calls from `packages/dev-script/page-weight`;
-- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node`;
-- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types`;
-- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint`;
-- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit`;
-- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host`;
-- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host`;
-- `mise run //packages/pi-shared/model-selection:lint:oxlint`;
-- `mise run //packages/pi-shared/model-selection:test:unit`;
-- `mise run //packages/pi-plugin/advisor:lint:oxlint`;
-- `mise run //packages/pi-plugin/advisor:test:unit`;
-- `mise run //packages/pi-plugin/advisor:verify:extension`;
-- `mise run //packages/pi-plugin/auto-mode:lint:oxlint`;
-- `mise run //packages/pi-plugin/auto-mode:build:js:node`;
-- `mise run //packages/pi-plugin/auto-mode:test:unit`;
-- `mise run //packages/module/test:lint:types`;
-- `mise run //packages/module/test:lint:oxlint`;
-- `mise run //packages/module/test:buildAndTest`;
-- `mise run //packages/cli/mutation-test:buildAndTest`;
-- `mise run //packages/module/jsonc-edit:buildAndTest`;
-- `mise run //packages/git-policy/cli:build`;
-- `mise run //packages/git-policy/cli:test:unit`;
+- `mise run //package/oxlint-plugin/tsdoc:lint:types`;
+- `mise run //package/oxlint-plugin/tsdoc:lint:oxlint`;
+- `mise run //package/config/oxlint:lint:types`;
+- `mise run //package/config/oxlint:lint:oxlint`;
+- `mise run //package/dev-script/task-util:lint:oxlint`;
+- `mise run //package/oxlint-plugin/no-restricted-syntax:lint:types`;
+- `mise run //package/oxlint-plugin/no-restricted-syntax:lint:oxlint`;
+- `mise run //package/oxlint-plugin/no-restricted-syntax:test:unit`;
+- `mise run //package/module/caught-value:buildAndTest`;
+- built-package consumer import and calls from `package/dev-script/page-weight`;
+- `mise run //package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node`;
+- `mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:types`;
+- `mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint`;
+- `mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit`;
+- `mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host`;
+- `mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host`;
+- `mise run //package/pi-shared/model-selection:lint:oxlint`;
+- `mise run //package/pi-shared/model-selection:test:unit`;
+- `mise run //package/pi-plugin/advisor:lint:oxlint`;
+- `mise run //package/pi-plugin/advisor:test:unit`;
+- `mise run //package/pi-plugin/advisor:verify:extension`;
+- `mise run //package/pi-plugin/auto-mode:lint:oxlint`;
+- `mise run //package/pi-plugin/auto-mode:build:js:node`;
+- `mise run //package/pi-plugin/auto-mode:test:unit`;
+- `mise run //package/module/test:lint:types`;
+- `mise run //package/module/test:lint:oxlint`;
+- `mise run //package/module/test:buildAndTest`;
+- `mise run //package/cli/mutation-test:buildAndTest`;
+- `mise run //package/module/jsonc-edit:buildAndTest`;
+- `mise run //package/git-policy/cli:build`;
+- `mise run //package/git-policy/cli:test:unit`;
 - `OXLINT_THREADS=1 mise run lint:oxlint` in stable root processes `proc_21` and `proc_26`.
 
 Next action:
@@ -810,13 +810,13 @@ A repository scan on 2026-07-12 found:
 
 - 372 textual references to `prefer-readonly-parameter-types`;
 - 154 `oxlint-disable` directives naming the rule across 113 files;
-- 55 active files with those directives after excluding `packages-paused/`;
+- 55 active files with those directives after excluding `package-paused/`;
 - 809 lines across the four dedicated config and allow-list files;
 - 363 allowed type names,
    comprising 190 TypeScript library names and 173 package type names;
 - 122 uses of `ReadonlyDeep` across the repository;
 - one output-level false-positive suppression in
-  `packages/dev-script/task-util/src/oxlint-suppress.ts`.
+  `package/dev-script/task-util/src/oxlint-suppress.ts`.
 
 The active disable reasons include external SDK types,
 mutable-by-design accumulators and caches,
@@ -861,17 +861,17 @@ The complete technology vet and remaining implementation acceptance gates are re
 The implementation is split at its runtime and policy boundaries:
 
 - semantic rule implementation and tests:
-  `packages/oxlint-plugin/prefer-readonly-parameter-type/`;
+  `package/oxlint-plugin/prefer-readonly-parameter-type/`;
 - shared parser and mutation-contract model:
-  `packages/oxlint-plugin/shared/`;
+  `package/oxlint-plugin/shared/`;
 - exact ownership marker:
-  `packages/ownership-marker/foreign-borrowed/`;
+  `package/ownership-marker/foreign-borrowed/`;
 - shared-config sidecar and error-level policy:
-  `packages/config/oxlint/src/plugin-prefer-readonly-parameter-type.ts` and
-  `packages/config/oxlint/src/rule/restriction.ts`;
+  `package/config/oxlint/src/plugin-prefer-readonly-parameter-type.ts` and
+  `package/config/oxlint/src/rule/restriction.ts`;
 - bypass-prevention rule and fixtures:
-  `packages/oxlint-plugin/no-restricted-syntax/` and
-  `packages/test-fixture/oxlint-no-restricted-syntax/`;
+  `package/oxlint-plugin/no-restricted-syntax/` and
+  `package/test-fixture/oxlint-no-restricted-syntax/`;
 - user-facing contracts:
   the dedicated plugin README,
   ownership-marker README,
@@ -948,7 +948,7 @@ a syntax-only or body-analysis rule must not be documented as deep type immutabi
 ### Build the rule test-first
 
 Add invalid and valid fixture files under
-`packages/test-fixture/oxlint-no-restricted-syntax/src/`.
+`package/test-fixture/oxlint-no-restricted-syntax/src/`.
 Extend the dedicated fixture config and integration test so the new diagnostic appears under
 `no-restricted-syntax/<settled-rule-name>`.
 
@@ -986,9 +986,9 @@ Verify that the shared parser performs one parse per comment for all participati
 ### Switch shared configuration
 
 Add the project rule to
-`packages/config/oxlint/src/rule/restriction.ts` at the agreed rollout severity.
+`package/config/oxlint/src/rule/restriction.ts` at the agreed rollout severity.
 Remove `typescript/prefer-readonly-parameter-types` from
-`packages/config/oxlint/src/rule/correctness.ts`.
+`package/config/oxlint/src/rule/correctness.ts`.
 Update overrides so test and external-signature behavior matches the settled policy rather than inheriting the old
 rule's exemptions accidentally.
 
@@ -996,14 +996,14 @@ rule's exemptions accidentally.
 
 Delete the obsolete dedicated configuration files:
 
-- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.ts`;
-- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-lib.ts`;
-- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg.ts`;
-- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg-unbash.ts`.
+- `package/config/oxlint/src/rule/prefer-readonly-parameter-types.ts`;
+- `package/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-lib.ts`;
+- `package/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg.ts`;
+- `package/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg-unbash.ts`.
 
 Remove the obsolete output suppression and its dedicated test cases from
-`packages/dev-script/task-util/src/oxlint-suppress.ts` and
-`packages/dev-script/task-util/src/oxlint-suppress.unit.test.ts`.
+`package/dev-script/task-util/src/oxlint-suppress.ts` and
+`package/dev-script/task-util/src/oxlint-suppress.unit.test.ts`.
 
 ### Migrate source directives and explanatory types
 
@@ -1018,7 +1018,7 @@ Classify every active directive before deleting it:
 - historical troubleshooting documents remain as historical evidence but gain a supersession note when their remedy is
   no longer current.
 
-Keep `packages-paused/`,
+Keep `package-paused/`,
 generated,
 fixture,
 invalid,
@@ -1197,11 +1197,11 @@ and mutation that reaches an undeclared parameter through aliases or callees.
 The repository's TSDoc plugin currently hardcodes standard tags and carries only `@yields` as a custom tag.
 Supporting `@mutates` therefore requires coordinated changes rather than a one-line allow-list edit:
 
-- `packages/oxlint-plugin/tsdoc/src/rule/tag-names.ts`:
+- `package/oxlint-plugin/tsdoc/src/rule/tag-names.ts`:
   recognize the custom tag and correct its standard-only documentation;
-- `packages/oxlint-plugin/tsdoc/src/tsdoc-blocks.ts`:
+- `package/oxlint-plugin/tsdoc/src/tsdoc-blocks.ts`:
   terminate preceding blocks at `@mutates` and parse mutation blocks;
-- `packages/oxlint-plugin/tsdoc/src/tsdoc-doc-model.ts`:
+- `package/oxlint-plugin/tsdoc/src/tsdoc-doc-model.ts`:
   represent target names and descriptions;
 - TSDoc parameter extraction:
   validate mutation targets against plain,
@@ -1213,17 +1213,17 @@ Supporting `@mutates` therefore requires coordinated changes rather than a one-l
   unknown names,
   duplicate targets,
   and missing descriptions independently of semantic mutation analysis;
-- `packages/oxlint-plugin/tsdoc/src/index.ts` and
-  `packages/config/oxlint/src/rule/tsdoc.ts`:
+- `package/oxlint-plugin/tsdoc/src/index.ts` and
+  `package/config/oxlint/src/rule/tsdoc.ts`:
   register and enable the new validation rules;
-- `packages/test-fixture/oxlint-tsdoc/` and TSDoc unit tests:
+- `package/test-fixture/oxlint-tsdoc/` and TSDoc unit tests:
   add valid,
   malformed,
   duplicate,
   destructured,
   fenced-example,
   and unknown-tag cases;
-- `packages/oxlint-plugin/tsdoc/README.md` and shared config documentation:
+- `package/oxlint-plugin/tsdoc/README.md` and shared config documentation:
   disclose the project-specific TSDoc extension and its grammar;
 - the readonly rule:
   consume the same parsed mutation blocks rather than implementing a second comment scanner.

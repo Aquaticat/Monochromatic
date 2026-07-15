@@ -150,7 +150,7 @@ Refuted hypotheses (do not re-derive these):
 - Version under test: `qt6-qtdeclarative-6.11.1-2.fc44`. Source cross-checked against
   `qt/qtdeclarative` tag `v6.11.1` (`qqmldelegatemodel.cpp` blob
   `52d9db5da0c5db0207f40bf4b3b6b1310d7cdc20`).
-- Harness: `packages/desktop-app/file-manager-qt/bench/strip-virtualization.qml`.
+- Harness: `package/desktop-app/file-manager-qt/bench/strip-virtualization.qml`.
   Headless repro:
 
 ```sh
@@ -160,7 +160,7 @@ QT_QPA_PLATFORM=offscreen QT_FORCE_STDERR_LOGGING=1 \
 ```
 
 - Crash-threshold catalog (headless, `QT_QPA_PLATFORM=offscreen`, deterministic over 5
-  runs each; repro files in `packages/desktop-app/file-manager-qt/bench/`):
+  runs each; repro files in `package/desktop-app/file-manager-qt/bench/`):
   - Clean, `rc=0`: 1-level single `ListView` + `reuseItems` + 100000 rows (`min1.qml`).
   - Clean, `rc=0`: 2-level plain columns-of-row-lists + `reuseItems` (`min2.qml`).
   - SIGSEGV, `rc=139`: 2-level, mixed column types (row `ListView` vs preview, by

@@ -9,8 +9,8 @@ STATUS:
  `module/es` remains excluded (still fails by design;
  being split in a later session).
  The cli-git guard was verified intact on a throwaway repo after its own lint fix.
- Remaining uncommitted working-tree changes are out-of-scope `mise run format` churn in `packages-paused/*`,
- `packages/module/es/*`,
+ Remaining uncommitted working-tree changes are out-of-scope `mise run format` churn in `package-paused/*`,
+ `package/module/es/*`,
  and root `oxlint-require-tsdoc.ts`,
  plus 11 harmless `dist/final` build-artifact files and `pnpm-lock.yaml`;
  left for the user to revert or handle (not reverted,
@@ -34,8 +34,8 @@ Fix all lint issues across active packages so `mise run lint` exits 0.
 
 - Formatting:
    `chain-per-line` autofix and `mise run format` converged (style commits).
-- Two new custom oxlint rules in `packages/oxlint-plugin/no-restricted-syntax`,
-   both enabled at `error` in `packages/config/oxlint/src/rule/restriction.ts`:
+- Two new custom oxlint rules in `package/oxlint-plugin/no-restricted-syntax`,
+   both enabled at `error` in `package/config/oxlint/src/rule/restriction.ts`:
     - `no-nullish-union`:
        bans `T | undefined` and `T | null` (commit 5954a771).
     - `no-optional-escape`:
@@ -92,7 +92,7 @@ Fix all lint issues across active packages so `mise run lint` exits 0.
 
 Green and committed.
  The optionality/readonly sweep landed as `fix(done): resolve lint issues` (`9741947c`),
- mirroring the lint-clean sibling `packages/webapp-productivity/done-postcss` (commit 926ef363,
+ mirroring the lint-clean sibling `package/webapp-productivity/done-postcss` (commit 926ef363,
  the gold blueprint).
  Patterns applied:
  domain types `T | null` -> `readonly foo?: T`;
@@ -196,7 +196,7 @@ kv-store contract note:
 
 ## Remaining work
 
-Dispatch each leaf package to a `spawn-claude` child that fixes it to `mise run //packages/<PATH>:lint` exit 0.
+Dispatch each leaf package to a `spawn-claude` child that fixes it to `mise run //package/<PATH>:lint` exit 0.
  Counts are warnings/errors as of the last enumeration (`/tmp/lint-all4.log`),
  so treat them as approximate;
  the child should re-check its own package.
@@ -322,7 +322,7 @@ After all leaves:
    If that file is gone,
    reconstruct it from the forbidden/allowed lists above plus:
    each child fixes ONE package (or a small named batch) to lint-zero,
-   commits with a SCOPED pathspec (`git add packages/<PATH>` then `git commit packages/<PATH> -m ...`),
+   commits with a SCOPED pathspec (`git add package/<PATH>` then `git commit package/<PATH> -m ...`),
    uses NO `--no-enforce-bulk-add` or `--no-enforce-only` flags,
    and reports tersely.
 - NEVER run a `config/oxlint*` package (`oxlint`,
@@ -427,7 +427,7 @@ After all leaves:
 ## References
 
 - Optionality rules:
-   `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-nullish-union.ts`,
+   `package/oxlint-plugin/no-restricted-syntax/src/rule/no-nullish-union.ts`,
    `no-optional-escape.ts`.
 - Research:
    `doc/research/optionality-enforcement.md`.

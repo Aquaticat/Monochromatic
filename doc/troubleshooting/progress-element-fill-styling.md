@@ -253,7 +253,7 @@ was also user-observed in desktop Firefox (dark scheme).
 ### Harness
 
 Save the probe below as
-`packages/webapp-productivity/wc/src/progress-probe.browser.test.ts`
+`package/webapp-productivity/wc/src/progress-probe.browser.test.ts`
 (the path matters: `playwright.browser.config.ts` matches
 `webapp-productivity/wc/src/**/*.browser.test.ts`), run it with
 
@@ -402,7 +402,7 @@ recorded here so they do not get re-derived.
 
 ### Style the fallback deliberately (shipped in wc)
 
-`packages/webapp-productivity/wc/src/styles-results.ts` accepts the
+`package/webapp-productivity/wc/src/styles-results.ts` accepts the
 fallback path (the design needs a transparent track, which is author
 styling) and pins every box in it:
 
@@ -418,7 +418,7 @@ styling) and pins every box in it:
 ```
 
 Pixel-verified in both engines by
-`packages/webapp-productivity/wc/src/page.browser.test.ts`.
+`package/webapp-productivity/wc/src/page.browser.test.ts`.
 
 Tradeoffs: the fill relies on nonstandard vendor pseudo-elements, one
 rule per engine, and other engines (WebKit/Safari was not tested here)

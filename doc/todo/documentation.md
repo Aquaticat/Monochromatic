@@ -98,7 +98,7 @@ README for the full pipeline.
 #### Set Default Modified Date by Git Log
 
 **Status**:
- Done in `packages/ssg/aquati.cat`.
+ Done in `package/ssg/aquati.cat`.
 
 The SSG derives publication and modification dates from git history,
 renders them on content pages,
@@ -106,7 +106,7 @@ renders them on content pages,
  and warns
 when legacy hand-authored date frontmatter diverges from git.
  See
-`packages/ssg/aquati.cat/README.md`.
+`package/ssg/aquati.cat/README.md`.
 
 #### Enhanced Git Integration
 

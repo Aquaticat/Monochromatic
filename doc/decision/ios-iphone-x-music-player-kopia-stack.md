@@ -37,7 +37,7 @@ never receives iOS 17):
    so the app stands up a local S3/HTTP endpoint that kopia
   targets and translates to pCloud,
    streaming bytes through rather than buffering.
-- `packages/music-player/desktop-app`,
+- `package/music-player/desktop-app`,
    a Rust plus Slint native player (symphonia plus libopus decode,
   always-on true-peak normalization with an on-disk peak cache,
    a folder-scanned queue with two-axis

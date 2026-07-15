@@ -2,7 +2,7 @@
 
 ## Decision
 
-`packages/music-player/desktop-app` is distributed as a signed macOS `.app` and a signed Windows `.exe`.
+`package/music-player/desktop-app` is distributed as a signed macOS `.app` and a signed Windows `.exe`.
  Each binary
 is built on its own operating system,
  and the bundling,

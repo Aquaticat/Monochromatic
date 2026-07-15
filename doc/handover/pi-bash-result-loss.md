@@ -38,7 +38,7 @@ An early error terminated Pi;
 a finalization error rejected the Bash promise before result recording.
 Three concurrent overflowing commands therefore showed `No result provided` together.
 
-`packages/coding-agent/src/core/bash-executor.ts` independently duplicated the same unguarded pattern for direct
+`package/coding-agent/src/core/bash-executor.ts` independently duplicated the same unguarded pattern for direct
 `!` Bash and RPC execution.
 
 ## Removed local fix

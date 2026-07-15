@@ -10,7 +10,7 @@ User wants two outcomes:
   For now this includes only Node sync methods.
 
 User explicitly said not to fix existing code,
-so do not change the current `parseSync` callsites in `packages/git-policy/cli/src/parsers/`.
+so do not change the current `parseSync` callsites in `package/git-policy/cli/src/parsers/`.
 
 ## Work completed
 
@@ -74,22 +74,22 @@ Custom rule implementation is present and targeted verification passed.
 
 Changed files:
 
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.constants.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.syntax.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.provenance.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.node-builtin-source.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.node-sync-binding.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.node-sync-member.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/index.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
-- `packages/test-fixture/oxlint-no-restricted-syntax/.oxlintrc.fixture.json`
-- `packages/test-fixture/oxlint-no-restricted-syntax/src/invalid/no-sync.ts`
-- `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-sync.ts`
-- `packages/config/oxlint/src/rule/restriction.ts`
-- `packages/config/oxlint/src/overrides.ts`
-- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/README.md`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.constants.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.syntax.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.provenance.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.node-builtin-source.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.node-sync-binding.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.node-sync-member.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/index.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
+- `package/test-fixture/oxlint-no-restricted-syntax/.oxlintrc.fixture.json`
+- `package/test-fixture/oxlint-no-restricted-syntax/src/invalid/no-sync.ts`
+- `package/test-fixture/oxlint-no-restricted-syntax/src/valid/no-sync.ts`
+- `package/config/oxlint/src/rule/restriction.ts`
+- `package/config/oxlint/src/overrides.ts`
+- `package/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg.ts`
+- `package/oxlint-plugin/no-restricted-syntax/README.md`
 
 Policy shape:
 
@@ -112,28 +112,28 @@ Policy shape:
 Passed:
 
 ```bash
-mise run //packages/oxlint-plugin/no-restricted-syntax:format:oxlint
-mise run //packages/oxlint-plugin/no-restricted-syntax:lint:oxlint
-mise run //packages/oxlint-plugin/no-restricted-syntax:lint:types
-mise run //packages/oxlint-plugin/no-restricted-syntax:build
-mise run //packages/oxlint-plugin/no-restricted-syntax:test:unit
-mise run //packages/config/oxlint:lint:oxlint
-mise run //packages/config/oxlint:lint:types
+mise run //package/oxlint-plugin/no-restricted-syntax:format:oxlint
+mise run //package/oxlint-plugin/no-restricted-syntax:lint:oxlint
+mise run //package/oxlint-plugin/no-restricted-syntax:lint:types
+mise run //package/oxlint-plugin/no-restricted-syntax:build
+mise run //package/oxlint-plugin/no-restricted-syntax:test:unit
+mise run //package/config/oxlint:lint:oxlint
+mise run //package/config/oxlint:lint:types
 ```
 
 Boundary check:
 
 ```bash
-mise run //packages/git-policy/cli:lint:oxlint
+mise run //package/git-policy/cli:lint:oxlint
 ```
 
 This now reports zero warnings and no `parseSync` findings.
-It still fails on two unrelated existing `catch-binding` errors in `packages/git-policy/cli`.
+It still fails on two unrelated existing `catch-binding` errors in `package/git-policy/cli`.
 
 Dirty unrelated files left for caller awareness:
 
 - `mise.lock` has a CMake `4.3.3` to `4.3.4` update from mise tool resolution.
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`,
-  `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.ts`,
-  and `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-immediate-mutation.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`,
+  `package/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.ts`,
+  and `package/test-fixture/oxlint-no-restricted-syntax/src/valid/no-immediate-mutation.ts`
   are modified by concurrent work and were not touched for this task.

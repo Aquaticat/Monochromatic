@@ -9,8 +9,8 @@ Status:
 
 The repo has fifteen `Cargo.toml` files and no Cargo workspace.
  Every crate is its own workspace root, several with an explicit empty
- `[workspace]` table (`packages/music-player/truepeak-core/Cargo.toml`,
- `packages/music-player/android-app/rust/Cargo.toml`).
+ `[workspace]` table (`package/music-player/truepeak-core/Cargo.toml`,
+ `package/music-player/android-app/rust/Cargo.toml`).
  The no-workspace architecture is deliberate:
  the Android crate is a Gradle island, standalone crates keep their own
  `target/` and `Cargo.lock`, and path dependencies do not require workspace
@@ -120,7 +120,7 @@ Because ownership is self-healing, a shared dependency can no longer be diverged
 
 - Generic engine (`manageCargoManifests`, compare-before-set, guarded keyed
   enforcement, block insertion):
-   `packages/dev-script/file-enforcer/src/cargo/`, exported from the package
+   `package/dev-script/file-enforcer/src/cargo/`, exported from the package
    index, with unit tests.
 - Repo-specific canonical spec (edition, lint keys, dependency registry, profile
   presets, metadata):
@@ -128,7 +128,7 @@ Because ownership is self-healing, a shared dependency can no longer be diverged
    (`**/*.config.*`) and is the established home for repo file-enforcer policy
    (mirroring `manageLsp4ijServerSettings`'s data).
 - Discovery:
-   bounded-depth globs `packages/*/*/Cargo.toml` and `packages/*/*/*/Cargo.toml`
+   bounded-depth globs `package/*/*/Cargo.toml` and `package/*/*/*/Cargo.toml`
    (covering the two-level crates and the three-level Android crate) so
    traversal never descends into the deep gitignored `target/` trees (the
    terminal crate's `target/` vendors many manifests); a `target/` and

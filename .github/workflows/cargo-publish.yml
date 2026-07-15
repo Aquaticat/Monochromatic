@@ -17,8 +17,8 @@ on:
   push:
     branches: ['main']
     paths:
-    - 'packages/cli/forbidden-strings/Cargo.toml'
-    - 'packages/cli/nested-wayland-session/Cargo.toml'
+    - 'package/cli/forbidden-strings/Cargo.toml'
+    - 'package/cli/nested-wayland-session/Cargo.toml'
 
 permissions:
   contents: read
@@ -53,7 +53,7 @@ jobs:
         INPUT_CRATE: ${{ github.event.inputs.crate }}
       run: |
         set -euo pipefail
-        cargo_toml='packages/cli/forbidden-strings/Cargo.toml'
+        cargo_toml='package/cli/forbidden-strings/Cargo.toml'
         after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
         before=''
         if [ -n "${BEFORE_SHA:-}" ] \
@@ -112,8 +112,8 @@ jobs:
         path: |
           ~/.cargo/registry
           ~/.cargo/git
-          packages/cli/forbidden-strings/target
-        key: cargo-publish-${{ runner.os }}-${{ hashFiles('packages/cli/forbidden-strings/Cargo.lock') }}
+          package/cli/forbidden-strings/target
+        key: cargo-publish-${{ runner.os }}-${{ hashFiles('package/cli/forbidden-strings/Cargo.lock') }}
 
     # `cargo package` verifies by compiling the packaged crate and leaves
     # the .crate at target/package/. We attest THESE bytes, then upload
@@ -124,14 +124,14 @@ jobs:
     # .crate as part of its post-upload cleanup when --no-verify is NOT
     # passed; that was the 0.1.6 failure mode.
     - name: Build .crate package (verifies by compile)
-      working-directory: packages/cli/forbidden-strings
+      working-directory: package/cli/forbidden-strings
       run: mise exec rust -- cargo package
 
     - name: Attest .crate provenance
       if: ${{ !inputs.dry-run }}
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
       with:
-        subject-path: 'packages/cli/forbidden-strings/target/package/forbidden-strings-${{ needs.detect.outputs.version }}.crate'
+        subject-path: 'package/cli/forbidden-strings/target/package/forbidden-strings-${{ needs.detect.outputs.version }}.crate'
 
     - name: Authenticate with crates.io (Trusted Publishing)
       if: ${{ !inputs.dry-run }}
@@ -140,12 +140,12 @@ jobs:
 
     - name: Publish (dry run)
       if: ${{ inputs.dry-run }}
-      working-directory: packages/cli/forbidden-strings
+      working-directory: package/cli/forbidden-strings
       run: mise exec rust -- cargo publish --dry-run --no-verify
 
     - name: Publish
       if: ${{ !inputs.dry-run }}
-      working-directory: packages/cli/forbidden-strings
+      working-directory: package/cli/forbidden-strings
       env:
         CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
       run: mise exec rust -- cargo publish --no-verify
@@ -194,7 +194,7 @@ jobs:
 
     - name: Build binary
       shell: bash
-      working-directory: packages/cli/forbidden-strings
+      working-directory: package/cli/forbidden-strings
       run: cargo build --release --target ${{ matrix.target }}
 
     - name: Package binary archive
@@ -212,11 +212,11 @@ jobs:
         esac
         stage_dir="forbidden-strings-${VERSION}-${TARGET}"
         mkdir -p "dist/${stage_dir}"
-        cp "packages/cli/forbidden-strings/target/${TARGET}/release/${bin}${ext}" "dist/${stage_dir}/"
+        cp "package/cli/forbidden-strings/target/${TARGET}/release/${bin}${ext}" "dist/${stage_dir}/"
         # README is decoration; if it ever moves or is renamed, ship the
         # binary anyway rather than failing the whole release pipeline.
-        if [ -f packages/cli/forbidden-strings/README.md ]; then
-          cp packages/cli/forbidden-strings/README.md "dist/${stage_dir}/"
+        if [ -f package/cli/forbidden-strings/README.md ]; then
+          cp package/cli/forbidden-strings/README.md "dist/${stage_dir}/"
         fi
         case "$TARGET" in
           *windows*)
@@ -311,7 +311,7 @@ jobs:
         INPUT_CRATE: ${{ github.event.inputs.crate }}
       run: |
         set -euo pipefail
-        cargo_toml='packages/cli/nested-wayland-session/Cargo.toml'
+        cargo_toml='package/cli/nested-wayland-session/Cargo.toml'
         after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
         before=''
         if [ -n "${BEFORE_SHA:-}" ] \
@@ -380,18 +380,18 @@ jobs:
         path: |
           ~/.cargo/registry
           ~/.cargo/git
-          packages/cli/nested-wayland-session/target
-        key: cargo-publish-nws-${{ runner.os }}-${{ hashFiles('packages/cli/nested-wayland-session/Cargo.lock') }}
+          package/cli/nested-wayland-session/target
+        key: cargo-publish-nws-${{ runner.os }}-${{ hashFiles('package/cli/nested-wayland-session/Cargo.lock') }}
 
     - name: Build .crate package (verifies by compile)
-      working-directory: packages/cli/nested-wayland-session
+      working-directory: package/cli/nested-wayland-session
       run: mise exec rust -- cargo package
 
     - name: Attest .crate provenance
       if: ${{ !inputs.dry-run }}
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
       with:
-        subject-path: 'packages/cli/nested-wayland-session/target/package/monochromatic-nested-wayland-session-${{ needs.nws-detect.outputs.version }}.crate'
+        subject-path: 'package/cli/nested-wayland-session/target/package/monochromatic-nested-wayland-session-${{ needs.nws-detect.outputs.version }}.crate'
 
     - name: Authenticate with crates.io (Trusted Publishing)
       if: ${{ !inputs.dry-run }}
@@ -400,7 +400,7 @@ jobs:
 
     - name: Publish (dry run)
       if: ${{ inputs.dry-run }}
-      working-directory: packages/cli/nested-wayland-session
+      working-directory: package/cli/nested-wayland-session
       run: mise exec rust -- cargo publish --dry-run --no-verify
 
     - name: Publish (skips if this version is already on crates.io)
@@ -409,7 +409,7 @@ jobs:
       # idempotent: it skips when the version is already present, so re-running
       # to (re)build the release binaries never fails on a duplicate upload.
       if: ${{ !inputs.dry-run }}
-      working-directory: packages/cli/nested-wayland-session
+      working-directory: package/cli/nested-wayland-session
       env:
         CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
         VERSION: ${{ needs.nws-detect.outputs.version }}
@@ -458,7 +458,7 @@ jobs:
 
     - name: Build binary
       shell: bash
-      working-directory: packages/cli/nested-wayland-session
+      working-directory: package/cli/nested-wayland-session
       run: cargo build --release --target ${{ matrix.target }}
 
     - name: Package binary archive
@@ -472,9 +472,9 @@ jobs:
         bin='monochromatic-nested-wayland-session'
         stage_dir="monochromatic-nested-wayland-session-${VERSION}-${TARGET}"
         mkdir -p "dist/${stage_dir}"
-        cp "packages/cli/nested-wayland-session/target/${TARGET}/release/${bin}" "dist/${stage_dir}/"
-        if [ -f packages/cli/nested-wayland-session/README.md ]; then
-          cp packages/cli/nested-wayland-session/README.md "dist/${stage_dir}/"
+        cp "package/cli/nested-wayland-session/target/${TARGET}/release/${bin}" "dist/${stage_dir}/"
+        if [ -f package/cli/nested-wayland-session/README.md ]; then
+          cp package/cli/nested-wayland-session/README.md "dist/${stage_dir}/"
         fi
         archive="${stage_dir}.tar.gz"
         (cd dist && tar czf "${archive}" "${stage_dir}")

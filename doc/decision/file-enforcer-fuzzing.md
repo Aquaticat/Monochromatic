@@ -6,11 +6,11 @@ Accepted.
 Plan:
  `~/.claude/plans/add-fuzzing-to-file-enforcer-calm-gem.md`.
 Handover:
- `packages/dev-script/file-enforcer/HANDOVER.fuzzing.md`.
+ `package/dev-script/file-enforcer/HANDOVER.fuzzing.md`.
 
 ## Context
 
-`packages/dev-script/file-enforcer` parses and transforms structured,
+`package/dev-script/file-enforcer` parses and transforms structured,
 often untrusted input across several surfaces:
  flat JSON (`src/pipeline/json.ts`),
 TOML wrappers (`src/pipeline/toml.ts`),
@@ -53,9 +53,9 @@ documented "only where absent" contract.
 
 Use `fast-check` property tests,
  the established TypeScript precedent in this
-repo (`packages/module/test/src/format-error.property.unit.test.ts`).
+repo (`package/module/test/src/format-error.property.unit.test.ts`).
  The
-Rust `cargo-fuzz` setup in `packages/fuzz/forbidden-strings` does not apply
+Rust `cargo-fuzz` setup in `package/fuzz/forbidden-strings` does not apply
 to a TypeScript package.
 
 One set of files,
@@ -103,7 +103,7 @@ Supporting choices:
   and boundary inputs that generative testing reaches;
    the proto and null
   defects above had sat undetected behind passing example tests.
-- A separate `packages/fuzz/file-enforcer` package mirroring the Rust one.
+- A separate `package/fuzz/file-enforcer` package mirroring the Rust one.
    A
   cross-package consumer can only reach the public API,
    so the internal

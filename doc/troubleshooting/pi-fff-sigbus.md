@@ -28,7 +28,7 @@ or auto-mode. Installed package metadata identifies `@ff-labs/pi-fff` and
 
 The v0.9.6 source trace is:
 
-1. `packages/pi-fff/src/index.ts:633-645` calls `f.grep(...)` for Pi's
+1. `package/pi-fff/src/index.ts:633-645` calls `f.grep(...)` for Pi's
    `ffgrep` tool:
 
    ```ts
@@ -39,7 +39,7 @@ The v0.9.6 source trace is:
    });
    ```
 
-2. `packages/fff-node/src/ffi.ts:1352-1397` maps that call to native
+2. `package/fff-node/src/ffi.ts:1352-1397` maps that call to native
    `fff_live_grep` through `ffi-rs`:
 
    ```ts

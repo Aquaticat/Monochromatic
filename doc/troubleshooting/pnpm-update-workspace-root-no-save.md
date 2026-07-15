@@ -219,7 +219,7 @@ The current settings page was fetched on 2026-06-26.
 It documents `recursiveInstall` as a pnpm version 11 `pnpm-workspace.yaml` setting with default `true`.
 It also says `recursiveInstall: false` makes `pnpm install` exclusively build the package in the current directory.
 A disposable workspace shows the implementation is broader than that wording:
- when `packages/a` depends on workspace package `b`,
+ when `package/a` depends on workspace package `b`,
  `recursiveInstall: false` still selects both `a` and `b`.
 
 ```shell
@@ -267,7 +267,7 @@ importers:
         specifier: 'catalog:'
         version: 26.0.1
 
-  packages/build-tool/css:
+  package/build-tool/css:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -300,7 +300,7 @@ The same throwaway run updated the lockfile catalog snapshot and package importe
 -      version: 26.0.0
 +      version: 26.0.1
 @@
-   packages/build-tool/css:
+   package/build-tool/css:
 @@
        '@types/node':
          specifier: 'catalog:'
@@ -350,7 +350,7 @@ Do not combine `--recursive` with `--workspace-root` unless the intended target 
 `pnpm update -i -w --no-save` does not inspect workspace packages.
 `-w` means the workspace root package.
 It is useful when the root importer is the target,
- not when every package in `packages/*/*` is the target.
+ not when every package in `package/*/*` is the target.
 
 `pnpm update --no-save` from the repository root also does not inspect every workspace package.
 It selects the root package because the command is not recursive.

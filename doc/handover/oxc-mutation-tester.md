@@ -13,8 +13,8 @@ Update this file whenever a milestone lands or a decision changes.
 
 - Deliverable: plan, then implement in the same arc; close issue 247 explicitly when done.
 - Full parity including the TypeScript type-check filter, not MVP-without-filter.
-- Ground-up rewrite of everything; `packages/dev-script/mutation-test` deleted at the end.
-- New home: `packages/cli/mutation-test`, npm `@monochromatic-dev/cli-mutation-test`, bin `mutation-test`,
+- Ground-up rewrite of everything; `package/dev-script/mutation-test` deleted at the end.
+- New home: `package/cli/mutation-test`, npm `@monochromatic-dev/cli-mutation-test`, bin `mutation-test`,
   single package (engine plus orchestrator together).
 - Architecture: sharded disposable containers with taint-aware re-runs.
   Trust model: once the first mutant executes in a container, that container is untrusted.
@@ -24,7 +24,7 @@ Update this file whenever a milestone lands or a decision changes.
 - Confirmation always on, no flag: every Survived and final Timeout re-verified as mutant number 1
   in a fresh container. Killed accepted from any position.
 - Type-check filter: spawn `tsgo --noEmit --incremental --project` per mutant in-container
-  (warm `.tsbuildinfo` from baseline). Measured 0.125 s warm on `packages/module/test`.
+  (warm `.tsbuildinfo` from baseline). Measured 0.125 s warm on `package/module/test`.
   Watch-daemon approach rejected on evidence: tsgo 7.0.1-rc watch output has no completion terminator
   and fanotify failed on the dev host.
 - No mutation score anywhere. Native versioned JSON report: statuses killed/survived/timeout/compileError/runtimeError,
@@ -45,7 +45,7 @@ Update this file whenever a milestone lands or a decision changes.
 
 ## Checklist
 
-- [x] Stryker reference run captured: `packages/module/fs-path` (NOT async-time: old tool needs
+- [x] Stryker reference run captured: `package/module/fs-path` (NOT async-time: old tool needs
       module-logger+module-test deps). Reports for 7 of 8 files in scratchpad
       `stryker-reference-fs-path/` (totals: 9 killed / 319 survived / 2 timeout / 109 compileError);
       `find-monorepo-root.ts` has environment-dependent tests that fail in-container (red baseline),
@@ -64,8 +64,8 @@ Update this file whenever a milestone lands or a decision changes.
       to confirmed survivors, native report without score, CLI with dry-run).
 - [x] Runtime image module (content-hash tag over pnpm-lock + Containerfile, podman build reuse);
       root `mise.toml` PATH update folded into the deletion task.
-- [x] Fixture sidecar `packages/cli/mutation-test.fixture` (naming rule: fixture packages live in
-      the same category under the same name plus `.fixture` suffix, NOT packages/test-fixture/)
+- [x] Fixture sidecar `package/cli/mutation-test.fixture` (naming rule: fixture packages live in
+      the same category under the same name plus `.fixture` suffix, NOT package/test-fixture/)
       plus `test:integration` mise task asserting kill/survive/short-circuit expectations.
 - [x] Verification on `fs-path` (not async-time): end-to-end run green (14 killed / 470 survived /
       2 timeout / 37 compileError / 0 runtimeError, 17 shards, 0 infra). Parity vs Stryker reference:
@@ -95,7 +95,7 @@ Update this file whenever a milestone lands or a decision changes.
   `node <file>` with process-group kill on timeout (timeout = max(floor, factor x baseline test ms)),
   restore original file bytes, record result. First anomaly (timeout/spawn failure/restore failure)
   stops the loop; remainder goes to `unrun`.
-- New package's engine exports live in `packages/cli/mutation-test/src/index.ts`; container code
+- New package's engine exports live in `package/cli/mutation-test/src/index.ts`; container code
   must import via relative paths (same package), not the package name, to run from baked source.
 
 ## Late design pivot: in-container build per mutant (user directive)
@@ -113,10 +113,10 @@ Update this file whenever a milestone lands or a decision changes.
 
 ## Gotchas for future sessions
 
-- The reference run must happen while the old tool still works; do not delete `packages/dev-script/mutation-test`
+- The reference run must happen while the old tool still works; do not delete `package/dev-script/mutation-test`
   before the report is captured and the comparison is done.
 - `rg` reminder: `-r` is `--replace`, not recursive; use long-form flags.
-- Old tool invocation surface: bin `mutation-test` from `packages/dev-script/mutation-test/node_modules/.bin`
-  (on PATH via root `mise.toml`); requires its dist to be built (`mise run //packages/dev-script/mutation-test:build`).
+- Old tool invocation surface: bin `mutation-test` from `package/dev-script/mutation-test/node_modules/.bin`
+  (on PATH via root `mise.toml`); requires its dist to be built (`mise run //package/dev-script/mutation-test:build`).
 - tsgo probe artifacts: a stray `dist/final/types/tsconfig.tsbuildinfo` write happened in
-  `packages/module/test` during the timing probe (gitignored build cache, harmless).
+  `package/module/test` during the timing probe (gitignored build cache, harmless).

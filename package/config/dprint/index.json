@@ -1,0 +1,137 @@
+{
+  /* This is just the schema for dprint cli options.
+     Find schemas for individual plugins on their own release pages.
+     For example: https://github.com/dprint/dprint-plugin-typescript/releases/download/0.90.3/schema.json
+     TODO: Write a schema merger. */
+  "$schema": "https://dprint.dev/schemas/v0.json",
+  "excludes": [
+    "**/node_modules/**/*.*",
+    "**/dist/**/*.*",
+    "**/.dist/**/*.*",
+    "**/bak/**/*.*",
+    "**/.astro/**/*.*",
+    "**/pnpm-lock.yaml",
+    "**/src/i18n/**",
+    "**/test-fixture/*/src/invalid/**/*.*",
+    "package/test-fixture/toml-edit/src/valid/date01-leading-zero-input.toml",
+    "package/test-fixture/toml-edit/src/valid/datetime01-input.toml",
+    "package/test-fixture/toml-edit/src/valid/date-time03-min-input.toml",
+    "package/test-fixture/toml-edit/src/valid/inline-table-sample01-1.1-input.toml",
+    "package/test-fixture/toml-edit/src/valid/leap-second01-input.toml",
+    "package/test-fixture/toml-edit/src/valid/local-date-time-sample02-omitted-seconds-input.toml",
+    "package/test-fixture/toml-edit/src/valid/local-time-sample02-omitted-seconds-input.toml",
+    "package/test-fixture/toml-edit/src/valid/number-exponent01-with-sign-input.toml",
+    "package/test-fixture/toml-edit/src/valid/offset-date-time-sample03-omitted-seconds-input.toml",
+    "package/test-fixture/toml-edit/src/valid/string-sample01-1.1-basic-strings-input.toml",
+    "package/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid24-newline-in-inline-table-input.toml",
+    "package/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid25-newline-in-inline-table-input.toml",
+    "package/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid26-newline-in-inline-table-input.toml",
+    "package/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid27-newline-in-inline-table-input.toml",
+    "package/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid28-inline-table-trailing-comma-input.toml"
+  ],
+  "lineWidth": 90,
+  "useTabs": false,
+  "indentWidth": 2,
+  "newLineKind": "lf",
+  "plugins": [
+    "https://plugins.dprint.dev/toml-0.7.0.wasm",
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.23.1.wasm",
+    // Disabled: to be replaced by our oxlint-stylistic
+    //    "https://plugins.dprint.dev/typescript-0.95.9.wasm",
+    "https://plugins.dprint.dev/g-plane/malva-v0.14.1.wasm",
+    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm",
+    "https://plugins.dprint.dev/json-0.20.0.wasm"
+    // Disabled: Formats ordered list markers wrongly.
+    //    "https://plugins.dprint.dev/markdown-0.21.1.wasm"
+  ],
+  /*  "markdown": {
+    "lineWidth": 80,
+    "textWrap": "maintain",
+    "emphasisKind": "asterisks",
+    "strongKind": "asterisks",
+    "unorderedListKind": "dashes"
+  },*/
+  "toml": {
+    "comment.forceLeadingSpace": false
+  },
+  "json": {
+    "commentLine.forceSpaceAfterSlashes": false,
+    "jsonTrailingCommaFiles": [
+      "tsconfig.json",
+      "**/.vscode/settings.json",
+      "**/dprint/index.json",
+      "**/oxlint/index.json"
+    ]
+  },
+  "malva": {
+    "printWidth": 90,
+    "hexColorLength": "short",
+    "quotes": "preferSingle",
+    "operatorLinebreak": "before",
+    "blockSelectorLinebreak": "always",
+    "trailingComma": true,
+    "linebreakInPseudoParens": true,
+    "ignoreCommentDirective": "formatter-ignore"
+  },
+  "markup": {
+    "printWidth": 90,
+    "quotes": "single",
+    "closingBracketSameLine": true,
+    "closingTagLineBreakForEmpty": "always",
+    "maxAttrsPerLine": 1,
+    "astroAttrShorthand": true,
+    "vBindStyle": "short",
+    "vOnStyle": "short",
+    "vForDelimiterStyle": "of",
+    "vSlotStyle": "vSlot",
+    "vBindSameNameShortHand": true,
+    "associations": [
+      /* mdx files get messed up.
+         Mainly, the frontmatter is flattened into a single line.
+         Disabled until author adds support for mdx. */
+      // "**/*.mdx",
+      "**/*.vue",
+      "**/*.astro",
+      "**/*.html"
+    ]
+    // [dprint_plugin_markup]: Unknown property in configuration (ignoreCommentDirective)[dprint_plugin_markup]: Error initializing from configuration file. Had 1 diagnostic(s).Had 1 error formatting.
+    // "ignoreCommentDirective": "formatter-ignore",
+  },
+  "yaml": {
+    "quotes": "preferSingle",
+    "indentBlockSequenceInMap": false,
+    "ignoreCommentDirective": "formatter-ignore"
+  }
+  /* "typescript": {
+    "semiColons": "always",
+    "quoteStyle": "preferSingle",
+    "quoteProps": "asNeeded",
+    "jsx.quoteStyle": "preferSingle",
+    "useBraces": "preferNone",
+    "singleBodyPosition": "nextLine",
+    "nextControlFlowPosition": "nextLine",
+    "trailingCommas": "always",
+    "preferHanging": true,
+
+    // For jsx (tsx) compatibility.
+    "typeParameters.trailingCommas": "always",
+
+    "arrowFunction.useParentheses": "preferNone",
+
+    "binaryExpression.linePerExpression": true,
+    "memberExpression.linePerExpression": true,
+
+    "jsx.bracketPosition": "sameLine",
+    "commentLine.forceSpaceAfterSlashes": false,
+
+    "ignoreNodeCommentText": "formatter-ignore",
+    "ignoreFileCommentText": "formatter-ignore-file",
+
+    "exportDeclaration.forceMultiLine": "whenMultiple",
+    "importDeclaration.forceMultiLine": "whenMultiple",
+
+    "typeParameters.preferHanging": "always",
+    "arguments.preferHanging": "always",
+    "parameters.preferHanging": "always"
+  }*/
+}

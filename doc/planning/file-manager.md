@@ -4,7 +4,7 @@ Status:
  accepted stack direction.
  Product decisions resolved in a grilling session on 2026-07-05.
  Column-strip virtualization spike built and passed on Linux (2026-07-05);
- see `packages/desktop-app/file-manager/` and the spike result below.
+ see `package/desktop-app/file-manager/` and the spike result below.
  Row context-menu spike built and passed on Linux (2026-07-05);
  see the context-menu spike result below.
  Drag-and-drop spike built on Linux (2026-07-05):
@@ -45,7 +45,7 @@ and update channels are deferred.
 - The same handover records minimal Slint `cargo check` success on `m1` for macOS
   and `x13-win` for Windows.
 - This repo already ships two Slint desktop apps:
-  `packages/desktop-app/terminal` and `packages/music-player/desktop-app`,
+  `package/desktop-app/terminal` and `package/music-player/desktop-app`,
   both on Slint 1.17.0 with the explicit winit backend and femtovg renderer.
   Their conventions (slint-build pipeline,
   `directories` for per-user paths,
@@ -217,8 +217,8 @@ It is a set of responsibility boundaries:
   Designed as an interface in v1;
   only the personal-machine path is implemented.
 
-The package lives at `packages/desktop-app/file-manager/`,
-function-named and stack-agnostic like its sibling `packages/desktop-app/terminal`,
+The package lives at `package/desktop-app/file-manager/`,
+function-named and stack-agnostic like its sibling `package/desktop-app/terminal`,
 because bundle identifiers and registry restore values baked in by the native spikes must survive a stack fallback.
 A product display name can be layered on later without moving anything.
 
@@ -470,7 +470,7 @@ Result (2026-07-05):
 PASSED on Linux.
 
 - Prototype path:
-  `packages/desktop-app/file-manager/`
+  `package/desktop-app/file-manager/`
   (function-named package,
   built as the plan's designated home rather than a throwaway crate).
 - Operating systems tested:
@@ -563,12 +563,12 @@ or compare Qt before committing to Slint.
 
 #### Result: internal drag passes, OS file drag-and-drop unavailable (2026-07-05)
 
-Folded into the same prototype (`packages/desktop-app/file-manager/`).
+Folded into the same prototype (`package/desktop-app/file-manager/`).
 Full source trace, verification, and the upstream do-not-file decision are in
 `doc/troubleshooting/slint-drag-and-drop-file-lists.md`.
 
 - Prototype path:
-  `packages/desktop-app/file-manager/`
+  `package/desktop-app/file-manager/`
   (`src/drag_drop.rs`, `ui/app.slint` `DragArea`/`DropArea`, `src/drag_drop_tests.rs`).
 - Operating systems tested:
   Linux only (winit backend, headless MCP);
@@ -648,7 +648,7 @@ avoid affected Slint widgets or patch Slint before building production file-list
 
 #### Result: passed on Linux (2026-07-05)
 
-Folded into the same prototype (`packages/desktop-app/file-manager/`) on the
+Folded into the same prototype (`package/desktop-app/file-manager/`) on the
 custom `ListView` row delegate, not `StandardTableView`.
 Issue `#12354` reproduces exactly as filed:
 the row's own `TouchArea` grabs the right-press, so the wrapping
@@ -714,7 +714,7 @@ because a file manager is keyboard-primary software.
 
 ### Foundation
 
-Create the Rust package at `packages/desktop-app/file-manager/`,
+Create the Rust package at `package/desktop-app/file-manager/`,
 Slint build pipeline,
 logging,
 settings storage,

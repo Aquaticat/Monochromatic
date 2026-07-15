@@ -4,7 +4,7 @@ Date:
  2026-05-10
 
 Investigation into using `forbidden-strings`
-(the resharp-based deny-list scanner at `packages/cli/forbidden-strings/`)
+(the resharp-based deny-list scanner at `package/cli/forbidden-strings/`)
 to enforce the AGENTS.
 md ban on em-dashes (`—`),
  en-dashes (`–`),
@@ -33,7 +33,7 @@ Bare literal lines for `—` and `–` in the rule file work directly:
 
 The 7-byte boundary check does not fire on multibyte non-word characters,
 so the literal substring-matches anywhere.
-Verified by reading `packages/cli/forbidden-strings/src/rule/atom.rs:21`
+Verified by reading `package/cli/forbidden-strings/src/rule/atom.rs:21`
 and the README's "non-ASCII characters ... gate correctly" note.
 
 Empirical test against `/tmp/em-dash-fixture.md` (constructed during investigation):
@@ -62,7 +62,7 @@ since the goal is detection,
 Rule 2 catches `--` between alphabetic words
 on lines that do not contain `npm` or `git`.
 The `&` and `~()` operators route this rule through resharp
-(`packages/cli/forbidden-strings/src/rule/engine.rs:204` `requires_resharp`),
+(`package/cli/forbidden-strings/src/rule/engine.rs:204` `requires_resharp`),
 which supports the set-algebra needed for the line-level complements.
 Since commit `67e844df`,
  the same routing predicate also detects
@@ -105,10 +105,10 @@ Top hit files:
 - `AUDIT.em-dash.md` (533) — intentional self-violations
 - `TODO.claude-code-words.md` (117) — true positives
 - `.agents/skills/code-review/SKILL.md` (79)
-- `packages/audit/oph-common-look-and-feel/src/index.html` (33)
-- `packages/module/es/src/types/.../simplifiedSchema.behaviorTest.ts` (25)
-- `packages/webapp-productivity/done/PLAN.md` (19)
-- `packages/cli/forbidden-strings/src/rule.rs` (12)
+- `package/audit/oph-common-look-and-feel/src/index.html` (33)
+- `package/module/es/src/types/.../simplifiedSchema.behaviorTest.ts` (25)
+- `package/webapp-productivity/done/PLAN.md` (19)
+- `package/cli/forbidden-strings/src/rule.rs` (12)
 - `mise.toml` (9)
 
 ## What does not work
@@ -201,7 +201,7 @@ Plus `AGENTS.md` (states the rule),
 `TROUBLESHOOTING.*.md` files quoting external output.
 
 The scanner's only path-level exclusion is
-`is_skipped_file` at `packages/cli/forbidden-strings/src/main.rs:171-193`,
+`is_skipped_file` at `package/cli/forbidden-strings/src/main.rs:171-193`,
 a hardcoded `matches!` over five exact basenames.
 No glob,
  no path prefix,
@@ -362,7 +362,7 @@ Out of scope for the current investigation.
 - Resharp syntax docs:
    `/tmp/resharp/docs/syntax.md`
 - Forbidden-strings source:
-   `packages/cli/forbidden-strings/`
+   `package/cli/forbidden-strings/`
 - Existing audit data:
    `AUDIT.em-dash.md` (untracked at investigation time)
 - AGENTS.

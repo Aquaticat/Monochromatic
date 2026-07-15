@@ -70,7 +70,7 @@ Source citations (rolldown `main` as of 2026-03-15):
   place `asserted_module_type` is set.
 - `crates/rolldown_common/src/types/import_record.rs:31`:
   `asserted_module_type: Option<ModuleType>`.
-- `packages/rolldown/src/plugin/index.ts:132-157`:
+- `package/rolldown/src/plugin/index.ts:132-157`:
   `ResolveIdExtraOptions` lacks `attributes`.
 
 ### Verification
@@ -589,7 +589,7 @@ const nodePath = hasNodeRuntime
 ```
 
 The workspace previously referenced
-`packages/module/es/src/path/index.ts` as a call site for
+`package/module/es/src/path/index.ts` as a call site for
 this pattern;
  that path no longer exists,
  so the pattern may

@@ -42,7 +42,7 @@ return outputOptions
 Rolldown 1.1.5 then interprets the deprecated alias.
 At tag `v1.1.5`,
 commit `f09947ab017d6df74299f691853dcfc4f4f0f86e`,
-`packages/rolldown/src/utils/bindingify-output-options.ts:208-246` contains:
+`package/rolldown/src/utils/bindingify-output-options.ts:208-246` contains:
 
 ```ts
 if (codeSplitting === false) {
@@ -66,7 +66,7 @@ The important semantic fact is explicit in that branch:
 The new option therefore preserves the required one-bundle behavior rather than weakening it.
 
 Rolldown also keeps a regression test for the warning.
-`packages/rolldown/tests/utils/bindingify-code-splitting.test.ts:83-94` contains:
+`package/rolldown/tests/utils/bindingify-code-splitting.test.ts:83-94` contains:
 
 ```ts
 test('codeSplitting: undefined with inlineDynamicImports shows deprecation warning', async () => {
@@ -152,7 +152,7 @@ one JavaScript chunk.
   The verification invocation demonstrates that the warning comes from Rolldown option normalization rather than
   tsdown's normal build reporting.
 - Setting both options does not provide compatibility without noise.
-  `packages/rolldown/src/utils/bindingify-output-options.ts:209-214` explicitly warns that
+  `package/rolldown/src/utils/bindingify-output-options.ts:209-214` explicitly warns that
   `inlineDynamicImports` is ignored when `codeSplitting: false` is present.
 - Keeping the deprecated spelling merely because the original cli-git decision named it produces avoidable stderr
   output.

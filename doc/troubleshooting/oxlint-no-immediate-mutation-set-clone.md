@@ -334,9 +334,9 @@ It allows Set and Map clone-plus-mutate patterns when folding would require a te
 Verification commands run after the replacement:
 
 ```bash
-mise run //packages/oxlint-plugin/no-restricted-syntax:lint:types
-mise run //packages/oxlint-plugin/no-restricted-syntax:lint:oxlint
-mise run //packages/oxlint-plugin/no-restricted-syntax:test:unit
+mise run //package/oxlint-plugin/no-restricted-syntax:lint:types
+mise run //package/oxlint-plugin/no-restricted-syntax:lint:oxlint
+mise run //package/oxlint-plugin/no-restricted-syntax:test:unit
 ```
 
 Observed unit-test output included:

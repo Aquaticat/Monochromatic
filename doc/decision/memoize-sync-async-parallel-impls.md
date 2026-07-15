@@ -41,5 +41,5 @@ The two variants share only the internal cache-key encoder (`src/cache-key.ts`)
 and the types module (`src/types.ts`).
 
 This decision is paired with the deepening plan at
-`packages/module/memoize/PLAN.deepen-cache-key-seam.md`,
+`package/module/memoize/PLAN.deepen-cache-key-seam.md`,
 which keeps that shared encoder private and injective while leaving the two variants parallel.

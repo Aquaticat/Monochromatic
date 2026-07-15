@@ -16,22 +16,22 @@ The two alternatives (silent stub and pure removal) both fail under at least one
 
 ## First-party callers
 
-`rg -n -e "AuthStorage|SettingsManager|FileAuthStorageBackend|InMemoryAuthStorageBackend|proper-lockfile|lockfile" /var/home/user/Monochromatic/packages/` returns zero matches.
+`rg -n -e "AuthStorage|SettingsManager|FileAuthStorageBackend|InMemoryAuthStorageBackend|proper-lockfile|lockfile" /var/home/user/Monochromatic/package/` returns zero matches.
 Every `@earendil-works/pi-coding-agent` import across the workspace is `import type { ... }`:
 
-- `packages/pi-plugin/auto-mode/src/index.ts:12-17`:
+- `package/pi-plugin/auto-mode/src/index.ts:12-17`:
    `import type { ExtensionAPI, ExtensionContext, ToolCallEvent, ToolCallEventResult }`
-- `packages/pi-plugin/auto-mode/src/{ask-user.ts:14, budget-model.ts:15, budget-model-auth.ts:13, context.ts:18, evaluate.ts:16, index.unit.test.ts:8, signals.ts:15, tool-helpers.ts:18}`:
+- `package/pi-plugin/auto-mode/src/{ask-user.ts:14, budget-model.ts:15, budget-model-auth.ts:13, context.ts:18, evaluate.ts:16, index.unit.test.ts:8, signals.ts:15, tool-helpers.ts:18}`:
    type-only
-- `packages/pi-plugin/morph-compact/src/{compaction.ts, compaction-handler.ts, compress-branch.ts, file-tracking.ts, formatting.ts, index.ts, ipc-launch.ts, types.ts}`:
+- `package/pi-plugin/morph-compact/src/{compaction.ts, compaction-handler.ts, compress-branch.ts, file-tracking.ts, formatting.ts, index.ts, ipc-launch.ts, types.ts}`:
    type-only
-- `packages/pi-plugin/morph-compact/src/{compress-branch.unit.test.ts, file-tracking.unit.test.ts, formatting.unit.test.ts}`:
+- `package/pi-plugin/morph-compact/src/{compress-branch.unit.test.ts, file-tracking.unit.test.ts, formatting.unit.test.ts}`:
    type-only
-- `packages/pi-plugin/terminal-title/src/{index.ts:27, index.unit.test.ts:13}`:
+- `package/pi-plugin/terminal-title/src/{index.ts:27, index.unit.test.ts:13}`:
    type-only
 
 All three workspace pi packages declare `@earendil-works/pi-coding-agent` only under `peerDependencies` + `devDependencies`,
- never `dependencies` (see `packages/pi-plugin/auto-mode/package.json:26-37`).
+ never `dependencies` (see `package/pi-plugin/auto-mode/package.json:26-37`).
 
 No first-party source constructs `AuthStorage`,
  `FileAuthStorageBackend`,
@@ -41,7 +41,7 @@ No first-party source constructs `AuthStorage`,
 
 ## pi-coding-agent runtime callers
 
-The package is consumed at runtime because `packages/pi-plugin/auto-mode` ships at `dist/final/node/index.mjs` and is loaded by the pi CLI binary (the host).
+The package is consumed at runtime because `package/pi-plugin/auto-mode` ships at `dist/final/node/index.mjs` and is loaded by the pi CLI binary (the host).
 The relevant call sites inside the installed `@earendil-works/pi-coding-agent@0.74.0` dist:
 
 - `dist/main.js:377`:
@@ -68,7 +68,7 @@ Both the sync and async lock paths are exercised during normal pi startup,
 
 ## Silent-stub semantics
 
-`packages/stub/silent/index.cjs` is a `Proxy` over a no-op function whose `get` trap returns `module.exports` for every property;
+`package/stub/silent/index.cjs` is a `Proxy` over a no-op function whose `get` trap returns `module.exports` for every property;
  including `then`.
 That makes the stub a thenable:
  `await stub` enters the Promise resolution machinery,
@@ -91,7 +91,7 @@ Consequence for the pi-coding-agent chain:
    `release = await lockfile.lock(...)` hangs on the thenable trap.
   pi hangs on startup model lookup.
 
-A `then` carve-out in `packages/stub/silent/` would fix this,
+A `then` carve-out in `package/stub/silent/` would fix this,
  but the current implementation does not have one.
 Editing the silent stub to add the carve-out for one consumer weakens the stub contract for every other policy entry,
  and is out of scope here.
@@ -106,7 +106,7 @@ Editing the silent stub to add the carve-out for one consumer weakens the stub c
    Both sync and async startup paths execute correctly,
     including `await release()`.
    Decoupled from the silent stub's thenable trap.
-   Matches the precedent at `packages/shim/node-domexception/` and `packages/shim/readable-stream/`.
+   Matches the precedent at `package/shim/node-domexception/` and `package/shim/readable-stream/`.
 
    - Pros:
       every existing call site keeps working;
@@ -135,7 +135,7 @@ Editing the silent stub to add the carve-out for one consumer weakens the stub c
    Causes `auth-storage.js:12` and `settings-manager.js:4` to throw `MODULE_NOT_FOUND` at module load.
    Since `dist/index.js:6,22` statically re-exports both,
     pi-coding-agent itself fails to load.
-   The runtime extension load chain (`packages/pi-plugin/auto-mode` -> host pi -> `pi-coding-agent/dist/index.js`) breaks.
+   The runtime extension load chain (`package/pi-plugin/auto-mode` -> host pi -> `pi-coding-agent/dist/index.js`) breaks.
 
    - Pros:
       smallest possible install footprint.
@@ -154,7 +154,7 @@ Ranking:
 ## Shim package layout
 
 Package root:
- `packages/shim/proper-lockfile/`.
+ `package/shim/proper-lockfile/`.
 
 - `package.json`:
    private,
@@ -232,12 +232,12 @@ A single line in the `overrides` block:
 
 ```yaml
 overrides:
-  'proper-lockfile': 'link:packages/shim/proper-lockfile'
+  'proper-lockfile': 'link:package/shim/proper-lockfile'
 ```
 
 The `link:` protocol is path-based,
  so pnpm substitutes the symlinked path regardless of which version a transitive dependent declared,
- identical to how the existing `'node-domexception': 'link:packages/shim/node-domexception'` line handles every upstream `node-domexception` request.
+ identical to how the existing `'node-domexception': 'link:package/shim/node-domexception'` line handles every upstream `node-domexception` request.
 No version-qualified entry is needed.
 
 The entry is placed adjacent to the existing `node-domexception` and `readable-stream` shim entries inside `overrides` (between them,
@@ -255,7 +255,7 @@ After wiring (`pnpm-workspace.yaml` override added,
 1. **Install reshapes the graph.
    **
    `mise run prepare:pnpm:install` outside sandbox.
-   `pnpm why proper-lockfile` should show resolution through `link:packages/shim/proper-lockfile`,
+   `pnpm why proper-lockfile` should show resolution through `link:package/shim/proper-lockfile`,
     not `proper-lockfile@4.1.2`.
    The `node_modules/.pnpm/proper-lockfile@*` directory should no longer exist.
 2. **Shim loads and exports the right shape.

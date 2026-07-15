@@ -486,7 +486,7 @@ xcframework).
     not a fabrication.
 
 NOTE:
- The RN repo itself contains NO JIT-entitlement handling code (grep for useJIT/MAP_JIT/allow-jit/dynamic-codesigning returned zero hits in packages/react-native).
+ The RN repo itself contains NO JIT-entitlement handling code (grep for useJIT/MAP_JIT/allow-jit/dynamic-codesigning returned zero hits in package/react-native).
  That is expected (it is OS-level behavior),
  and the audit correctly sources that sub-claim to external Apple/saagarjha references rather than the repo.
 
@@ -533,7 +533,7 @@ The HN corroborating citation (id 40726948) could not be fetched (HTTP 429 rate-
    public jsi:
   :
   Runtime - CONFIRMED engine path);
-   rg over packages/react-native for useJIT|MAP_JIT|dynamic-codesigning|allow-jit - ZERO hits (JIT-gating is correctly sourced externally,
+   rg over package/react-native for useJIT|MAP_JIT|dynamic-codesigning|allow-jit - ZERO hits (JIT-gating is correctly sourced externally,
    not from repo);
    <https://reactnative.dev/docs/hermes> (CONFIRMED verbatim:
    'Hermes is used by default by React Native and no additional configuration is required to enable it.

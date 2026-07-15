@@ -161,7 +161,7 @@ Practical notes:
 ## Reproduction
 
 Everything reproduces from the recorded corpus without re-decoding the library. On the
-branch `truepeak-quarter-answer`, in `packages/music-player/truepeak-core.bench`:
+branch `truepeak-quarter-answer`, in `package/music-player/truepeak-core.bench`:
 
 - Decided composite: regenerate side files with `node analysis/tags-sweep.mjs` and
   `node analysis/flac-bones.mjs extract`, then run the bench with the corpus,

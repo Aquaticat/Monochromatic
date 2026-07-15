@@ -33,10 +33,10 @@ changed).
   markdownlint-cli2 loads),
    not the source.
    The user mandated testing against the built artifact.
-- Housed under `packages/markdownlint-plugins/` (a lint rule is a plugin,
+- Housed under `package/markdownlint-plugins/` (a lint rule is a plugin,
    not config;
    precedent
-  `packages/oxlint-plugin/*`).
+  `package/oxlint-plugin/*`).
 - AGENTS.
   md line 529 ("No tables;
    use headings or lists instead") stays UNCHANGED on purpose;
@@ -221,7 +221,7 @@ changed).
    `dist/**`) are anchored at the start,
    so they match only TOP-LEVEL dirs,
    not
-  `packages/*/node_modules` or `packages/*/dist`.
+  `package/*/node_modules` or `package/*/dist`.
    Do not drop `gitignore: true` without first adding
   `**/node_modules/**`,
    `**/dist/**`,
@@ -233,14 +233,14 @@ changed).
 Build the rule before any whole-tree `lint:markdownlint`/`format:markdownlint` run (dist is gitignored,
 no build preamble;
  see #231):
- `mise run //packages/markdownlint-plugins/no-pipe-tables:build`.
+ `mise run //package/markdownlint-plugins/no-pipe-tables:build`.
 
 ### Task 4: migrate existing pipe tables -- BLOCKED on a scope decision
 
 CRITICAL,
  not yet resolved:
  expanding `globs` to `**/*.md` subjects EVERY previously-unlinted `.md`
-(hundreds across `packages/**` and `doc/**`) to ALL the enabled built-in rules (MD001,
+(hundreds across `package/**` and `doc/**`) to ALL the enabled built-in rules (MD001,
  MD014,
  MD024,
 MD025,

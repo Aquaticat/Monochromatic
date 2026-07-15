@@ -86,7 +86,7 @@ For deeper background,
 - [Android port decision](../decisions/music-player-android-port.md)
 - [Live-update rescan decision](../decisions/music-player-live-update-rescan.md)
 - [Session source-root decision](../decisions/music-player-session-source-root.md)
-- [Package context](../../packages/music-player/android-app/CONTEXT.md)
+- [Package context](../../package/music-player/android-app/CONTEXT.md)
 
 ## The two problems
 
@@ -136,7 +136,7 @@ sort the whole list by display path at the very end,
 and return the finished list:
 
 ```kotlin
-// packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/SafTreeSource.kt
+// package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/SafTreeSource.kt
 suspend fun query(resolver: ContentResolver, treeUri: Uri): List<Track> = withContext(Dispatchers.IO) {
     // walk every directory under treeUri, appending audio files to `tracks`
     // ...
@@ -164,7 +164,7 @@ The spinner only appears while the queue is empty and a load is in progress,
 and that gate lives only inside the track list:
 
 ```kotlin
-// packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt
+// package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt
 if (state.queueSize == 0) {
     if (state.loading) {
         LoadingNotice()
@@ -209,7 +209,7 @@ and then,
  starts the load:
 
 ```kotlin
-// packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
+// package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
 controller.onPersist = { saveSession() }   // line 467
 // ...
 ensureLibraryLoaded()                      // line 527
@@ -222,7 +222,7 @@ That repaint fires `onPersist`,
  which calls `saveSession()`:
 
 ```kotlin
-// packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
+// package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
 fun saveSession() {
     if (!libraryLoaded) return   // line 903: passes, libraryLoaded is already true
     SessionStore.save(this, controller.currentSession())
@@ -320,7 +320,7 @@ So the gate goes inside the per-directory cursor loop instead,
 and `scanDirectory` is made cancellation-safe so a superseding load is not swallowed:
 
 ```kotlin
-// packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/SafTreeSource.kt
+// package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/SafTreeSource.kt
 try {
     // cursor loop: append each audio file, then:
     maybeEmitBatch()   // suspends to hop to the main thread; can throw CancellationException
@@ -335,7 +335,7 @@ The scan runs on a background thread,
 so the callback hops to the main thread before touching the screen state:
 
 ```kotlin
-// packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
+// package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
 val tracks = LibrarySource.load(this@PlaybackService) { batch ->
     withContext(Dispatchers.Main) { controller.reconcileLibrary(batch) }
 }
@@ -364,7 +364,7 @@ Add a flag that becomes true only when a library has actually been delivered to 
 and gate `saveSession` on that instead of on `libraryLoaded`:
 
 ```kotlin
-// packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
+// package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
 private var sessionRestored: Boolean = false
 
 fun saveSession() {
@@ -394,7 +394,7 @@ the user can override,
 then start the load:
 
 ```kotlin
-// packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
+// package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
 val session = SessionStore.load(this)   // read first; nothing has saved over it
 controller.applySettings(session)       // shuffle, repeat, volume now (not at the end)
 controller.beginLoad()                  // isLoading = true; repaint
@@ -430,7 +430,7 @@ The service flips `sessionRestored` only after `finishLoad` returns,
 and saves immediately only on the kept-tap path:
 
 ```kotlin
-// packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
+// package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt
 val result = controller.finishLoad(tracks, session)
 sessionRestored = true
 if (result == FinishLoadResult.KeptUserSelectionDuringLoad) {
@@ -657,7 +657,7 @@ the first two layers landed as host-JVM JUnit tests
  `PlayerControllerTest` plus a `FakeAudioEngine` for the
 controller logic,
  including the page-by-label preservation),
- and pass under `mise run //packages/music-player/android-app:test:unit`.
+ and pass under `mise run //package/music-player/android-app:test:unit`.
 The third layer (Robolectric persistence gating and source-walk cancellation) is deliberately deferred:
 it is the only layer needing new test infrastructure (`Context`,
  `SharedPreferences`,
@@ -698,21 +698,21 @@ so the build is installed and the user drives it.
 
 ## Files this will touch
 
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/SafTreeSource.kt`:
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/SafTreeSource.kt`:
   add the batch callback;
    emit by count inside the per-directory cursor loop;
   make `scanDirectory` a `suspend` function that rethrows `CancellationException`.
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MediaStoreSource.kt`:
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MediaStoreSource.kt`:
   add the batch callback;
    emit by count inside the cursor loop.
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/LibrarySource.kt`:
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/LibrarySource.kt`:
   forward the callback through `load` and `scanRoot`.
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlayerController.kt`:
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlayerController.kt`:
   add `applySettings`,
    split `restoreLibrary` into settings-only and track-only halves,
   add `finishLoad` returning `FinishLoadResult`,
   and preserve the viewed page by label while streaming with no current track.
-- `packages/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt`:
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlaybackService.kt`:
   read the session and apply settings before the load,
    stream the cold-start load,
   add the `sessionRestored` flag,

@@ -5,19 +5,19 @@ Update this file whenever a work unit lands so the context survives auto-compact
 
 ## What exists and is committed
 
-- `packages/desktop-app/file-manager-electron`: sticky-flow Electron prototype.
+- `package/desktop-app/file-manager-electron`: sticky-flow Electron prototype.
   Model is a TS port of the original's `model.rs` (tests ported case for case);
   layout is `overflow: auto` plus `position: sticky` with flow numbers from `src/bands.ts`.
   Complete: README, zero oxlint findings, unit tests pass, nested-Wayland boundary test passes
-  (`mise run //packages/desktop-app/file-manager-electron:test:wayland`).
-- `packages/desktop-app/file-manager-gtk-sticky`: GTK variant.
+  (`mise run //package/desktop-app/file-manager-electron:test:wayland`).
+- `package/desktop-app/file-manager-gtk-sticky`: GTK variant.
   Reuses the original crate's public `model`/`fs`/`types` via path dependency;
   the lane engine plus solver is replaced by `src/band.rs`
   (`y = band_top + clamp(scroll - band_top, 0, band_height - PANE_HEIGHT)`).
   One absolute `GtkFixed` canvas (per-column canvases were stretched by hexpand propagation).
   Complete: README, clippy plus repo rust-linter clean, 8 unit tests pass,
   boundary test passes in under a second
-  (`mise run //packages/desktop-app/file-manager-gtk-sticky:test:wayland`).
+  (`mise run //package/desktop-app/file-manager-gtk-sticky:test:wayland`).
 - `doc/audit/file-manager-sticky-flow.md`: first version of the audit (committed),
   currently references other docs; being expanded to fully self-contained with diagrams.
 
@@ -118,9 +118,9 @@ which requires honest types or accurate effect contracts and prohibits inline su
   properties, guards, or exported `unique symbol` sentinels (pattern now in
   `file-manager-electron/src/strip-types.ts`).
 - `typescript/prefer-readonly-parameter-types` cannot model branded primitive intersections
-  (precedent: `packages/module/jsonc-edit/src/edit-state.ts`); allow-list is only for types we
+  (precedent: `package/module/jsonc-edit/src/edit-state.ts`); allow-list is only for types we
   do NOT control (user instruction); mutable-by-design carriers use scoped disable regions
-  (precedent: `packages/rolldown-plugin/import-attributes/src/scan-importer.ts`).
+  (precedent: `package/rolldown-plugin/import-attributes/src/scan-importer.ts`).
 - Boundary-test state files: shallow scalar objects only; assert equality on booleans/counts,
   never raw floats; make every step's expectation distinguishable from the previous state
   (e.g. `activePath` flips) so polling cannot false-pass.

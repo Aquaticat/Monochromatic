@@ -251,7 +251,7 @@ End-to-end result:
 
 - IDEA was closed before editing `jdk.table.xml`.
 - The global Android SDK entry was updated from `android-36` paths to installed `android-37.0` paths.
-- IDEA was reopened on `packages/music-player/android-app`.
+- IDEA was reopened on `package/music-player/android-app`.
 - The user confirmed `Pixel_9_Pro_Fold` appeared in Device Manager.
 
 ## Verified workarounds

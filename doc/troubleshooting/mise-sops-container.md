@@ -79,7 +79,7 @@ commit `d6ccee0b98933300be1ee79cfdf6d1c41f192e35`; reproduced on
 Failing harness (repo copy including `.env.local.json`, no age key):
 
 ```bash
-podman build --file packages/cli/mutation-test/runtime/Containerfile \
+podman build --file package/cli/mutation-test/runtime/Containerfile \
   --tag localhost/mutation-test-runtime:probe /path/to/repo-with-env-local
 # fails at the RUN step that invokes mise, with the symptom above
 ```
@@ -87,8 +87,8 @@ podman build --file packages/cli/mutation-test/runtime/Containerfile \
 Working harness (identical build with the secrets file excluded):
 
 ```bash
-podman build --file packages/cli/mutation-test/runtime/Containerfile \
-  --ignorefile packages/cli/mutation-test/runtime/containerignore \
+podman build --file package/cli/mutation-test/runtime/Containerfile \
+  --ignorefile package/cli/mutation-test/runtime/containerignore \
   --tag localhost/mutation-test-runtime:probe /path/to/repo
 # mise trust + mise install + pnpm install complete
 ```
@@ -101,7 +101,7 @@ invocations where the age identity is available.
 ## Verified workarounds
 
 - Exclude `.env.local.json` (and `mise.local.toml`) from the container
-  build context: `packages/cli/mutation-test/runtime/containerignore`,
+  build context: `package/cli/mutation-test/runtime/containerignore`,
   passed via `podman build --ignorefile` and hashed into the image tag.
   Verified by the working harness above and by the subsequent green
   mutation runs. Tradeoff: no secrets exist in-container, so anything

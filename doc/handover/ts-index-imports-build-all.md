@@ -21,7 +21,7 @@ pathspecs (`cli-git` rejects `git add -A`/`.`).
 
 ## Goal and locked decisions
 
-Make every non-exempt cross-package import in `packages/` resolve to TypeScript source via the package index only:
+Make every non-exempt cross-package import in `package/` resolve to TypeScript source via the package index only:
 `@monochromatic-dev/<pkg>/ts`.
  Then build every package that has a source-to-dist transformation.
 
@@ -57,7 +57,7 @@ Make every non-exempt cross-package import in `packages/` resolve to TypeScript 
 4. Everything with a source-to-dist transformation must build a dist,
     even though the workspace consumes `/ts` source.
 5. Tree scope:
-    `packages/` only.
+    `package/` only.
 6. `config-oxlint` family:
     builds a `node` dist like any source-to-dist package (decision 4 applies).
     Its consumers,
@@ -114,7 +114,7 @@ Its imports are not rewritten to `/ts`,
 ## Verification helpers
 
 - Per-package type-check:
-   `mise run //packages/<path>:lint:types`.
+   `mise run //package/<path>:lint:types`.
    Lint:
    `:lint:oxlint`.
 - `mise.toml` is GENERATED from `mise.no-env.toml` by file-enforcer.
@@ -126,7 +126,7 @@ Its imports are not rewritten to `/ts`,
   md.
   )
 - Resolution analysis (the measurement script used throughout):
-   a Node script that walks `packages/**/*.ts`,
+   a Node script that walks `package/**/*.ts`,
    resolves
   each `@monochromatic-dev/*` specifier against the target's `package.json` `exports`,
    classifies src/dist,
@@ -209,7 +209,7 @@ itself by name,
  Prints the
 changed-file list to stdout,
  a summary to stderr.
- Walks `packages/**/*.{ts,tsx,mts}` (skips `dist`,
+ Walks `package/**/*.{ts,tsx,mts}` (skips `dist`,
  `node_modules`),
 skips files OWNED by the target (self-imports),
  rewrites `@monochromatic-dev/<target>[/sub]` to `.../ts` ONLY in
@@ -283,7 +283,7 @@ The active rule is `eslint/no-duplicate-imports`,
  and the earlier "separate value/type is
 fine under prefer-inline:
 false" note was WRONG.
- Validated by running scoped `mise run //packages/git-policy/cli:lint:oxlint`
+ Validated by running scoped `mise run //package/git-policy/cli:lint:oxlint`
 on a hand-merged pilot file:
 
 - A separate `import type { X } from '.../ts'` alongside a value `import { ... } from '.../ts'` (same specifier) IS a
@@ -302,7 +302,7 @@ on a hand-merged pilot file:
   from the same specifier (validated:
    `inference-canary-viewer/src/data/viewer-types.ts` has both,
    oxlint clean).
-- dprint `importDeclaration.forceMultiLine: "whenMultiple"` (packages/config/dprint/index.
+- dprint `importDeclaration.forceMultiLine: "whenMultiple"` (package/config/dprint/index.
   json):
    a multi-specifier
   import MUST be multi-line,
@@ -402,8 +402,8 @@ Removed feature-named (and `<feature>/ts`) export entries,
  `./ts/*` (where it existed).
  Verified by
 the resolution sweep (still 0 in-scope non-`/ts` cross-package imports) + a repo-wide non-`.ts` reference grep (0
-references in `packages/` to any removed entry;
- the only hits are `packages-paused/` (out of scope),
+references in `package/` to any removed entry;
+ the only hits are `package-paused/` (out of scope),
  `doc/`,
  READMEs,
 and the throwaway tool) + a JSON-parse/keys check on each edited file.
@@ -541,7 +541,7 @@ Everything imports `/ts`,
 5. `pnpm install` (links the new config-tsdown devDep;
     updates root `pnpm-lock.yaml`).
 6. Gate:
-    `mise run //packages/<path>:buildAndTest` (build emits `dist/final/neutral`,
+    `mise run //package/<path>:buildAndTest` (build emits `dist/final/neutral`,
     tests pass against it).
 7. Commit:
     `git add <tsdown.config>` (untracked),
@@ -579,7 +579,7 @@ Everything imports `/ts`,
    inherent to the precedent's pattern.
   )
 - First-with-deps bundling CONFIRMED:
-   the neutral config (`packages/config/tsdown/src/index.ts`) sets
+   the neutral config (`package/config/tsdown/src/index.ts`) sets
   `deps: { alwaysBundle: ['@monochromatic-dev/**'] }`,
    so workspace deps are INLINED into the self-contained bundle
   (verified:
@@ -609,7 +609,7 @@ Everything imports `/ts`,
    Do NOT reclassify a package's existing deps without reason;
    respect its split + the config
   overrides.
-- NODE config (`packages/config/tsdown/src/index.node.ts`):
+- NODE config (`package/config/tsdown/src/index.node.ts`):
    `platform: 'node'`,
    `outDir: dist/final/node`,
   `alwaysBundle: ['@monochromatic-dev/**', 'find-up', 'nano-spawn']` (find-up/nano-spawn force-bundled despite being
@@ -1016,7 +1016,7 @@ LIB+BIN (BOTH `.`/`./ts` exports AND a bin from a SEPARATE entry -- DUAL-ENTRY):
 run).
  Recipe (PROVEN on module-image-diff;
  in-repo precedent
-`packages/dev-script/deps-cube/tsdown.node.config.ts` is the same dual-entry shape):
+`package/dev-script/deps-cube/tsdown.node.config.ts` is the same dual-entry shape):
 1. Confirm lib AND bin share a platform (else two configs -- the hardest shape;
     avoid for the first pilot).
     Check with
@@ -1130,12 +1130,12 @@ ALL per-package conversions are DONE and committed.
 Invocation note:
  there is NO root `lint:types`/`build`/`test:unit` task by that bare name;
  use the package glob form
-`mise run '//packages/...:lint:types'` (and `:build`,
+`mise run '//package/...:lint:types'` (and `:build`,
  `:test:unit`).
  The root `//:lint`/`//:build`/`//:test` fan out too.
 
 Gate status:
-- Repo-wide `mise run '//packages/...:lint:types'`:
+- Repo-wide `mise run '//package/...:lint:types'`:
    PASS (exit 0,
    ~21s;
    all packages incl.
@@ -1144,17 +1144,17 @@ Gate status:
   changes).
    RE-RUN this once more at the very end as the final confirmation.
 - TODO:
-   repo-wide `mise run '//packages/...:build'` (every package emits its dist;
+   repo-wide `mise run '//package/...:build'` (every package emits its dist;
    watch for any isolatedDeclarations
   gaps newly exercised by dist emit).
 - TODO:
-   repo-wide `mise run '//packages/...:test:unit'` (default tier excludes `*.expensive.*`;
+   repo-wide `mise run '//package/...:test:unit'` (default tier excludes `*.expensive.*`;
    the relocated
   tsgo-filter + build-tool-css races are out of this tier).
    Some packages use a custom `test` aggregator instead of
   `test:unit` (numeric-format,
    const,
-   fs-path) — those run via `mise run '//packages/...:test'` or their own task.
+   fs-path) — those run via `mise run '//package/...:test'` or their own task.
 - TODO:
    re-run the resolution analysis.
    Criterion:
@@ -1197,7 +1197,7 @@ The whole repo-wide gate now passes.
    Wrote `mise.analyze-resolution.ts` (root,
    untracked):
    builds a package-name -> exports
-  map from every `packages/**/package.json`,
+  map from every `package/**/package.json`,
    scans every `@monochromatic-dev/<pkg>[/sub]` import-context specifier,
   resolves each against the target's `exports`,
    and buckets it.
@@ -1220,7 +1220,7 @@ The whole repo-wide gate now passes.
   (a name no package owns;
    real name is `...-plugins-hook-types`).
    Fixed to the canonical `/ts` form (commit d452c277).
-- Repo-wide `mise run '//packages/...:build'`:
+- Repo-wide `mise run '//package/...:build'`:
    PASS (exit 0,
    ~43s).
    Two non-import issues surfaced and were fixed:
@@ -1254,12 +1254,12 @@ The whole repo-wide gate now passes.
      Behaviorally identical;
      refreshed so a clean checkout matches a fresh build (commit 6f5ab59e).
     User authorized the scope expansion.
-- Repo-wide `mise run '//packages/...:test:unit'`:
+- Repo-wide `mise run '//package/...:test:unit'`:
    PASS (exit 0,
    ~27s;
    default tier,
    excludes `*.expensive.*`).
-- Repo-wide `mise run '//packages/...:lint:types'`:
+- Repo-wide `mise run '//package/...:lint:types'`:
    PASS (exit 0,
    ~16s) as final confirmation.
    oxlint on the one

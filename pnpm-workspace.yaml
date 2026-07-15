@@ -169,10 +169,10 @@ overrides:
   # (pi-ai/dist/index.js, pi-coding-agent/dist/index.js, pi-tui/dist/index.js)
   # must stay installed or the package crashes at module load with
   # `Cannot find package ...`.
-  # `packages/pi-plugin/auto-mode` imports both pi-ai and pi-coding-agent at runtime;
-  # `packages/pi-plugin/{morph-compact,terminal-title}` use pi-coding-agent type-only
+  # `package/pi-plugin/auto-mode` imports both pi-ai and pi-coding-agent at runtime;
+  # `package/pi-plugin/{morph-compact,terminal-title}` use pi-coding-agent type-only
   # and re-implement the runtime helpers locally in
-  # `packages/pi-plugin/morph-compact/src/pi-utils.ts`.
+  # `package/pi-plugin/morph-compact/src/pi-utils.ts`.
   # See doc/troubleshooting/dependencies.md for the audit.
   '@earendil-works/pi-ai>@aws-sdk/client-bedrock-runtime': '-'
   '@earendil-works/pi-ai>@google/genai': '-'
@@ -193,7 +193,7 @@ overrides:
   # Bun, and every browser meeting the Firefox ESR 140 baseline). The
   # upstream is a ponyfill carrying a published CWE-502 deprecation
   # ("Potential CWE-502 - Update to 1.3.1 or higher") and is reached
-  # transitively from packages/ssg/aquati.cat through
+  # transitively from package/ssg/aquati.cat through
   # mdast-util-to-hast (lib/state.js lines 263, 271, 381; lib/footer.js
   # line 235) and rehype-autolink-headings (lib/index.js line 156). Both
   # consumers import the default export and call it as structuredClone(value)
@@ -202,9 +202,9 @@ overrides:
   # construction. Only the default export is consumed; named serialize /
   # deserialize are intentionally omitted and can be added if a future
   # transitive dep reaches in.
-  # See packages/shim/ungap-structured-clone/README.md and
+  # See package/shim/ungap-structured-clone/README.md and
   # doc/troubleshooting/dependencies.md for the audit trail.
-  '@ungap/structured-clone': 'link:packages/shim/ungap-structured-clone'
+  '@ungap/structured-clone': 'link:package/shim/ungap-structured-clone'
   # Remove abort-controller globally. It is a polyfill of the WHATWG
   # AbortController for Node < 15. Our supported runtimes (Node 22+, Bun)
   # all ship a native AbortController on globalThis. The only transitive
@@ -225,8 +225,8 @@ overrides:
   # has itself left the graph: it is substituted with the throwing stub via the
   # `js-yaml` policy in .pnpmfile.policies.json, so it no longer ships argparse.
   # The workspace does not consume js-yaml at all; YAML parsing uses the `yaml`
-  # package (see packages/dev-script/deps-cube/src/catalog.ts and
-  # packages/ssg/aquati.cat/src/lib/content.ts). Removing argparse
+  # package (see package/dev-script/deps-cube/src/catalog.ts and
+  # package/ssg/aquati.cat/src/lib/content.ts). Removing argparse
   # leaves the library APIs intact and drops 4214 LOC of supply-chain surface
   # (last commit 2022-05).
   # See doc/troubleshooting/dependencies.md and doc/dependency-blocklist.md.
@@ -241,7 +241,7 @@ overrides:
   # adds `dprint` to a package.json, pnpm silently drops it and the binary
   # never reaches node_modules, surfacing as a clear `Cannot find package`
   # error at the call site. See doc/troubleshooting/dprint.md (Bug 1) and
-  # packages/config/dprint/README.md for the policy and VSCode-extension
+  # package/config/dprint/README.md for the policy and VSCode-extension
   # workaround. Refs #163.
   'dprint': '-'
   # Patch GHSA-v39h-62p7-jpjc / CVE-2026-6322: <=3.1.1 decodes percent-encoded
@@ -267,7 +267,7 @@ overrides:
   # is API-identical-by-construction, eliminating pnpm's install-time
   # deprecation warning without altering runtime behaviour.
   # See doc/troubleshooting/dependencies.md and doc/dependency-blocklist.md.
-  'node-domexception': 'link:packages/shim/node-domexception'
+  'node-domexception': 'link:package/shim/node-domexception'
   'postcss': 'catalog:'
   # Substitute proper-lockfile@4.1.2 with a workspace shim that implements
   # lockSync/lock via node:fs.mkdirSync atomic-dir locking. The upstream is
@@ -283,7 +283,7 @@ overrides:
   # (including .then) as a self-return.
   # See doc/decision/proper-lockfile-removal.md and
   # doc/troubleshooting/dependencies.md.
-  'proper-lockfile': 'link:packages/shim/proper-lockfile'
+  'proper-lockfile': 'link:package/shim/proper-lockfile'
   # Substitute readable-stream@3 (winston, winston-transport) and
   # readable-stream@4 (isomorphic-git) with a single workspace shim that
   # re-exports node:stream. Both upstream versions are userland mirrors of
@@ -304,7 +304,7 @@ overrides:
   # the 'abort-controller': '-' override above.
   # See doc/decision/readable-stream-shim.md for the full audit, including
   # the enumerated consumer surface and the verification plan.
-  'readable-stream': 'link:packages/shim/readable-stream'
+  'readable-stream': 'link:package/shim/readable-stream'
   # Patch [ERR_PNPM_TRUST_DOWNGRADE]: semver@6.3.1 failed verification with possible package takeover.
   'semver': '>=7.8.5'
   # Patch GHSA-38rv-x7px-6hhq / CVE-2026-9675,
@@ -338,7 +338,7 @@ packageExtensions:
       '@mitata/counters': 'catalog:'
 packageImportMethod: clone-or-copy
 packages:
-  - 'packages/*/*'
+  - 'package/*/*'
 peerDependencyRules: {}
 pmOnFail: ignore
 preferWorkspacePackages: true

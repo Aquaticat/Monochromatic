@@ -246,7 +246,7 @@ Observed current-library summary:
 - Target is `439889.5` seconds.
 
 The full measurement uses copied production decoder code from
-`packages/music-player/desktop-app/src/decode.rs`,
+`package/music-player/desktop-app/src/decode.rs`,
  `opus.rs`,
  `error.rs`,
  and Catmull-Rom true-peak logic.

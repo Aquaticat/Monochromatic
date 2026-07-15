@@ -35,7 +35,7 @@ The consolidated target, after several rounds of refinement:
   notes stay grep-able markdown, not ciphertext blobs to decrypt on demand.
 - Co-located (hard requirement):
   a note may sit next to the code it annotates
-  (`packages/foo/design.local.md`),
+  (`package/foo/design.local.md`),
   not forced into a single collector directory.
 - Reuse existing tooling where practical.
 
@@ -180,7 +180,7 @@ The requested v1 scope is the full surface:
 
 Per repository conventions:
 
-- A Node CLI package under `packages/cli/<name>/`,
+- A Node CLI package under `package/cli/<name>/`,
   bin with a `#!/usr/bin/env node` shebang.
 - `mise.toml` task definitions mirroring a sibling CLI package.
 - TSDoc on declarations, tests covering each command path, and a `README.md`

@@ -8,7 +8,7 @@ Status:
 
 ## Context
 
-The `packages/music-player/desktop-app` app is a Rust plus Slint native music player (symphonia plus libopus
+The `package/music-player/desktop-app` app is a Rust plus Slint native music player (symphonia plus libopus
 decode,
  always-on true-peak normalization with an on-disk peak cache,
  an ad-hoc folder-scanned queue with
@@ -307,7 +307,7 @@ end-to-end via `testTag`.
 ## Lower-priority defaults
 
 - Placement:
-   a new `packages/music-player/android-app/` category alongside `desktop-app` and `desktop-daemon`,
+   a new `package/music-player/android-app/` category alongside `desktop-app` and `desktop-daemon`,
    a
   Gradle project wrapped by mise tasks shelling to the Gradle wrapper (the kopia vet established this island
   pattern;

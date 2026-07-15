@@ -34,7 +34,7 @@ jobs:
       run: |
         set -euo pipefail
 
-        cargo_toml='packages/cli/forbidden-strings/Cargo.toml'
+        cargo_toml='package/cli/forbidden-strings/Cargo.toml'
         version=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
         tag="forbidden-strings-v${version}"
         if ! gh release view "$tag" --repo "$REPO" >/dev/null 2>&1; then

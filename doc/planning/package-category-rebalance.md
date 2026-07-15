@@ -4,7 +4,7 @@ Status:
  decided roadmap,
  partially executing.
 The `current-time-context` shared formatter path move has landed under
-`packages/agent-harness-shared/current-time-context`.
+`package/agent-harness-shared/current-time-context`.
 Remaining package moves are recorded as decisions and sequencing.
 
 This plan explains how to apply the Rush-style two-level category model to this monorepo,
@@ -16,7 +16,7 @@ It is written for a reader who has not seen the repository before.
 The repository should keep the invariant:
 
 ```text
-packages/<category>/<project>
+package/<category>/<project>
 ```
 
 The important word is **category**.
@@ -28,7 +28,7 @@ It can also be a product or subsystem owner when several buildable units share o
 That means this is good:
 
 ```text
-packages/music-player/
+package/music-player/
   desktop-app/
   android-app/
   native-core/
@@ -37,29 +37,29 @@ packages/music-player/
 This is clunkier because shared product code has no natural owner:
 
 ```text
-packages/desktop-app/music-player/
-packages/android-app/music-player/
-packages/module/music-player-core/
+package/desktop-app/music-player/
+package/android-app/music-player/
+package/module/music-player-core/
 ```
 
 The plan recommends these near-term moves;
 the decision state section gives each one a status and a first action.
 
-- Keep `packages/claude-code-plugin/*` as the template for a healthy product or host cluster.
-- Keep `packages/agent-harness-shared/*` for utilities shared by multiple agent harnesses;
+- Keep `package/claude-code-plugin/*` as the template for a healthy product or host cluster.
+- Keep `package/agent-harness-shared/*` for utilities shared by multiple agent harnesses;
   `current-time-context` lives there now.
-- Add a shared native core to `packages/music-player/*`,
+- Add a shared native core to `package/music-player/*`,
    starting with `truepeak`.
-- Build a `packages/mvm/*` product cluster:
+- Build a `package/mvm/*` product cluster:
    extract a core first,
    then move paths.
-- Build a `packages/oxlint/*` subsystem cluster from `config/oxlint`,
+- Build a `package/oxlint/*` subsystem cluster from `config/oxlint`,
    `oxlint-plugin/*`,
    and the oxlint fixture packages.
-- Build a `packages/done/*` product cluster (`app` plus `variant-postcss`),
+- Build a `package/done/*` product cluster (`app` plus `variant-postcss`),
    keeping `done-postcss`.
-- Build a `packages/forbidden-strings/*` product cluster from `cli/forbidden-strings` and `fuzz/forbidden-strings`.
-- Keep `packages/pi-shared/*` as a deliberate extension-versus-infrastructure boundary;
+- Build a `package/forbidden-strings/*` product cluster from `cli/forbidden-strings` and `fuzz/forbidden-strings`.
+- Keep `package/pi-shared/*` as a deliberate extension-versus-infrastructure boundary;
    do not fold it into `pi`.
 - Keep broad independent utility buckets such as `module`,
    `config`,
@@ -90,10 +90,10 @@ remaining entries document the roadmap.
   probably `tsdoc`.
 - `done`:
   proceed;
-  first action is moving the canonical app to `packages/done/app` and `done-postcss` to `packages/done/variant-postcss`.
+  first action is moving the canonical app to `package/done/app` and `done-postcss` to `package/done/variant-postcss`.
 - `forbidden-strings`:
   proceed;
-  first action is moving its cli and fuzz crates into `packages/forbidden-strings/{cli,fuzz}`.
+  first action is moving its cli and fuzz crates into `package/forbidden-strings/{cli,fuzz}`.
 - `pi-shared`:
   keep;
   affirmed as an extension-versus-infrastructure boundary,
@@ -172,7 +172,7 @@ lines 223 to 235.
 
 The key lesson is not the literal folder name `packages`.
 Rush measures depth from the repository root;
-this repository's enforced shape is `packages/` plus a fixed two-level category and project model.
+this repository's enforced shape is `package/` plus a fixed two-level category and project model.
 The lesson is that depth stays fixed,
  and category names are periodically rebalanced through discussion.
 At the cited commit,
@@ -195,17 +195,17 @@ That proves the first segment can be a product area,
 
 Current measured state from the active tree:
 
-- `packages/` contains 27 direct category directories,
-  but one (`packages/android-app/`) is an empty directory that shadows the `music-player/android-app` project name,
+- `package/` contains 27 direct category directories,
+  but one (`package/android-app/`) is an empty directory that shadows the `music-player/android-app` project name,
   so the live category count is effectively 26;
   Phase 1 removes it.
-- `packages/` contains 105 directories with `package.json`.
-- `packages/` contains 109 directories with `mise.toml`.
-- `packages-deprecated/` contains 1 package directory.
-- `packages-paused/` contains 11 package directories.
+- `package/` contains 105 directories with `package.json`.
+- `package/` contains 109 directories with `mise.toml`.
+- `package-deprecated/` contains 1 package directory.
+- `package-paused/` contains 11 package directories.
 
 Important nuance:
-not every `packages/*/*` directory is an npm workspace package.
+not every `package/*/*` directory is an npm workspace package.
 Some are Rust,
  Gradle,
  or tooling islands with `mise.toml` but no `package.json`.
@@ -213,32 +213,32 @@ Those are still active project roots for this repository.
 
 The active non-`package.json` project roots are:
 
-- `packages/cli/forbidden-strings`
-- `packages/desktop-app/terminal`
-- `packages/fuzz/forbidden-strings`
-- `packages/linter/rust`
-- `packages/music-player/android-app`
-- `packages/music-player/desktop-app`
+- `package/cli/forbidden-strings`
+- `package/desktop-app/terminal`
+- `package/fuzz/forbidden-strings`
+- `package/linter/rust`
+- `package/music-player/android-app`
+- `package/music-player/desktop-app`
 
-The active `packages/*/*` directories without `package.json` and without `mise.toml` are:
+The active `package/*/*` directories without `package.json` and without `mise.toml` are:
 
-- `packages/claude-code-plugin/research-agent`
-- `packages/claude-code-plugin/statusline`
-- `packages/claude-code-plugin/verbose-tool-output`
+- `package/claude-code-plugin/research-agent`
+- `package/claude-code-plugin/statusline`
+- `package/claude-code-plugin/verbose-tool-output`
 
 Before changing layout,
 read these files as the current source of truth:
 
 - `pnpm-workspace.yaml`:
-  declares `packages/*/*` and `packages-deprecated/*/*` as pnpm workspace globs.
+  declares `package/*/*` and `package-deprecated/*/*` as pnpm workspace globs.
 - `mise.no-env.toml`:
-  declares `packages/*/*` as active mise config roots,
+  declares `package/*/*` as active mise config roots,
   sets `task.monorepo_depth = 3`,
-  and intentionally excludes `packages-deprecated/*/*` from the active task graph.
+  and intentionally excludes `package-deprecated/*/*` from the active task graph.
 - `file-enforcer.config.ts`:
-  generates `mise.toml` and scans `packages/*/*/node_modules/.bin` for PATH entries.
-- `packages/claude-code-plugin/source/src/handlers/session-start-housekeeping.ts`:
-  scans `packages/*/*/dist/final` for cleanup.
+  generates `mise.toml` and scans `package/*/*/node_modules/.bin` for PATH entries.
+- `package/claude-code-plugin/source/src/handlers/session-start-housekeeping.ts`:
+  scans `package/*/*/dist/final` for cleanup.
 
 Verified task names for common migration cleanup:
 
@@ -267,16 +267,16 @@ so reverify them before acting on this plan.
 
 The repository has separate trees for package lifecycle state:
 
-- `packages/`:
+- `package/`:
   active projects.
-- `packages-deprecated/`:
+- `package-deprecated/`:
   packages that remain installable or referenceable but are no longer maintained.
-- `packages-paused/`:
+- `package-paused/`:
   packages intentionally removed from active workspace and task fanout.
 
 Do not solve status by inventing category names such as `old`,
  `paused`,
- or `deprecated` under `packages/`.
+ or `deprecated` under `package/`.
 Use the status trees.
 
 ## Category ownership reference
@@ -403,7 +403,7 @@ Status note:
 
 ### Category
 
-The first segment under `packages/`.
+The first segment under `package/`.
 It is the ownership and grouping boundary.
 Examples:
 `music-player`,
@@ -415,7 +415,7 @@ Examples:
 
 ### Project
 
-The second segment under `packages/`.
+The second segment under `package/`.
 It is a buildable or task-addressable unit.
 It may be an npm package,
  a Rust crate,
@@ -477,7 +477,7 @@ Use a product category when a product has multiple adapters,
 Good:
 
 ```text
-packages/mvm/
+package/mvm/
   cli/
   mcp/
   core/
@@ -486,9 +486,9 @@ packages/mvm/
 Avoid for growing products:
 
 ```text
-packages/cli/mvm/
-packages/mcp/mvm/
-packages/module/mvm-core/
+package/cli/mvm/
+package/mcp/mvm/
+package/module/mvm-core/
 ```
 
 ### Rule 3: host clusters beat generic plugin buckets
@@ -499,7 +499,7 @@ the host should usually be the category.
 Good:
 
 ```text
-packages/claude-code-plugin/
+package/claude-code-plugin/
   source/
   hook-types/
   guardrail/
@@ -508,7 +508,7 @@ packages/claude-code-plugin/
 Good:
 
 ```text
-packages/oxlint/
+package/oxlint/
   config/
   plugin-tsdoc/
   fixture-tsdoc/
@@ -517,9 +517,9 @@ packages/oxlint/
 Less good when the host grows:
 
 ```text
-packages/config/oxlint/
-packages/oxlint-plugin/tsdoc/
-packages/test-fixture/oxlint-tsdoc/
+package/config/oxlint/
+package/oxlint-plugin/tsdoc/
+package/test-fixture/oxlint-tsdoc/
 ```
 
 ### Rule 4: keep independent utility buckets broad
@@ -543,34 +543,34 @@ sense outside it.
 Do not create active package roots like:
 
 ```text
-packages/music-player/shared/native-core/
-packages/oxlint/plugins/tsdoc/
+package/music-player/shared/native-core/
+package/oxlint/plugins/tsdoc/
 ```
 
-The tooling is intentionally built around `packages/*/*`.
+The tooling is intentionally built around `package/*/*`.
 If a name needs more words,
 put them in the second segment:
 
 ```text
-packages/music-player/native-core/
-packages/oxlint/plugin-tsdoc/
+package/music-player/native-core/
+package/oxlint/plugin-tsdoc/
 ```
 
 This rule governs active project roots,
-the task-addressable units at `packages/*/*` (`monorepo_depth = 3`).
+the task-addressable units at `package/*/*` (`monorepo_depth = 3`).
 Build-internal units nested deeper are exempt.
-`packages/music-player/android-app/rust` is a `cdylib` crate,
-and `packages/music-player/android-app/app` is a Gradle module;
+`package/music-player/android-app/rust` is a `cdylib` crate,
+and `package/music-player/android-app/app` is a Gradle module;
 both are owned and built by `android-app`,
 are not addressed independently by pnpm or mise,
 and so do not count as third-level active packages.
-A nested unit must become a `packages/<category>/<project>` root only when it needs independent task identity.
+A nested unit must become a `package/<category>/<project>` root only when it needs independent task identity.
 
 ### Rule 6: path migration and package-name migration are separate
 
 Moving a project path does not require renaming the npm package in the same commit.
 For example,
-`packages/cli/mvm` could move to `packages/mvm/cli` while temporarily keeping
+`package/cli/mvm` could move to `package/mvm/cli` while temporarily keeping
 `@monochromatic-dev/cli-mvm`.
 
 Rename package names only after checking:
@@ -634,7 +634,7 @@ plus the buckets and dependency edges deliberately left unclustered.
 Current active roots:
 
 ```text
-packages/music-player/
+package/music-player/
   desktop-app/
   android-app/
 ```
@@ -647,14 +647,14 @@ Both roots are project roots with `mise.toml`,
 
 Evidence of shared-code pressure:
 
-- `packages/music-player/desktop-app/src/decode.rs`
-- `packages/music-player/android-app/rust/src/decode.rs`
-- `packages/music-player/desktop-app/src/opus.rs`
-- `packages/music-player/android-app/rust/src/opus.rs`
-- `packages/music-player/desktop-app/src/truepeak.rs`
-- `packages/music-player/android-app/rust/src/truepeak.rs`
-- `packages/music-player/desktop-app/src/engine.rs`
-- `packages/music-player/android-app/rust/src/engine.rs`
+- `package/music-player/desktop-app/src/decode.rs`
+- `package/music-player/android-app/rust/src/decode.rs`
+- `package/music-player/desktop-app/src/opus.rs`
+- `package/music-player/android-app/rust/src/opus.rs`
+- `package/music-player/desktop-app/src/truepeak.rs`
+- `package/music-player/android-app/rust/src/truepeak.rs`
+- `package/music-player/desktop-app/src/engine.rs`
+- `package/music-player/android-app/rust/src/engine.rs`
 
 The matching file names are not small.
 Measured line totals across the desktop and Android copies were:
@@ -670,8 +670,8 @@ Measured line totals across the desktop and Android copies were:
 
 The product glossary already recognizes the shared product language:
 
-- `packages/music-player/desktop-app/CONTEXT.md`
-- `packages/music-player/android-app/CONTEXT.md`
+- `package/music-player/desktop-app/CONTEXT.md`
+- `package/music-player/android-app/CONTEXT.md`
 
 Relevant cross-platform decisions already apply to both roots:
 
@@ -684,7 +684,7 @@ Relevant cross-platform decisions already apply to both roots:
 Add shared Rust crates under the same product category:
 
 ```text
-packages/music-player/
+package/music-player/
   desktop-app/
   android-app/
   native-core/
@@ -694,7 +694,7 @@ If the shared surface later splits cleanly,
 allow more product-owned second-level projects:
 
 ```text
-packages/music-player/
+package/music-player/
   native-decode/
   native-truepeak/
   domain-core/
@@ -762,19 +762,19 @@ Keep these adapter-owned:
 
 #### Migration sketch
 
-1. Create `packages/music-player/native-core/Cargo.toml` and `src/lib.rs`.
+1. Create `package/music-player/native-core/Cargo.toml` and `src/lib.rs`.
 2. Move one pure module first,
    probably `truepeak.rs`,
    because it is pure DSP and has clear tests.
 3. Add path dependencies:
 
    ```toml
-   # packages/music-player/desktop-app/Cargo.toml
+   # package/music-player/desktop-app/Cargo.toml
    music-player-native-core = { path = "../native-core" }
    ```
 
    ```toml
-   # packages/music-player/android-app/rust/Cargo.toml
+   # package/music-player/android-app/rust/Cargo.toml
    music-player-native-core = { path = "../../native-core" }
    ```
 
@@ -796,10 +796,10 @@ Keep these adapter-owned:
 Run at minimum:
 
 ```sh
-mise run //packages/music-player/desktop-app:test
-mise run //packages/music-player/desktop-app:lint
-mise run //packages/music-player/android-app:test:unit
-mise run //packages/music-player/android-app:lint
+mise run //package/music-player/desktop-app:test
+mise run //package/music-player/desktop-app:lint
+mise run //package/music-player/android-app:test:unit
+mise run //package/music-player/android-app:lint
 ```
 
 For Android native changes,
@@ -812,7 +812,7 @@ run the package's native build task and a device boundary check before declaring
 Current cluster:
 
 ```text
-packages/claude-code-plugin/
+package/claude-code-plugin/
   source/
   hook-types/
   bash-output-filter/
@@ -832,7 +832,7 @@ This should remain as-is.
 It is the best existing example of the desired category model.
 
 Evidence:
-`packages/claude-code-plugin/README.md` documents the cluster explicitly.
+`package/claude-code-plugin/README.md` documents the cluster explicitly.
 The per-plugin packages are thin shims.
 `source/` owns shared runtime and handler logic.
 `hook-types/` owns canonical hook protocol types.
@@ -842,7 +842,7 @@ The per-plugin packages are thin shims.
 Keep:
 
 ```text
-packages/claude-code-plugin/
+package/claude-code-plugin/
   source/
   hook-types/
   <plugin>/
@@ -863,7 +863,7 @@ Decide for each whether it is:
 
 - a real project root that should have `mise.toml` and documentation,
 - package content that should live under another project,
-- paused or abandoned content that should move to `packages-paused/`,
+- paused or abandoned content that should move to `package-paused/`,
 - obsolete content that should be deleted after reading it.
 
 ### Pi extensions
@@ -873,7 +873,7 @@ Decide for each whether it is:
 Current active roots:
 
 ```text
-packages/pi-plugin/
+package/pi-plugin/
   advisor/
   auto-mode/
   current-time-context/
@@ -883,30 +883,30 @@ packages/pi-plugin/
   terminal-title/
   thinking-defaults/
 
-packages/pi-shared/
+package/pi-shared/
   model-selection/
 ```
 
-`packages/pi-shared/model-selection/README.md` says it lives under `pi-shared` because it is reusable Pi extension
+`package/pi-shared/model-selection/README.md` says it lives under `pi-shared` because it is reusable Pi extension
 infrastructure and not a Pi extension itself.
 Current measured consumers are:
 
-- `packages/pi-plugin/advisor`
-- `packages/pi-plugin/auto-mode`
-- `packages/pi-plugin/thinking-default`
+- `package/pi-plugin/advisor`
+- `package/pi-plugin/auto-mode`
+- `package/pi-plugin/thinking-default`
 
 #### Recommendation
 
 Keep `pi-shared` as its own category.
 Do not fold it into `pi`.
 
-`packages/pi-shared/model-selection/README.md` makes the boundary explicit:
+`package/pi-shared/model-selection/README.md` makes the boundary explicit:
 the category holds reusable Pi-extension infrastructure that is not itself a Pi extension,
 must be intended for at least two Pi packages,
 and must expose APIs that make sense outside one extension command,
  renderer,
  or config surface.
-Actual Pi extensions stay under `packages/pi-plugin/`.
+Actual Pi extensions stay under `package/pi-plugin/`.
 
 The boundary is by kind,
  not by consumer count.
@@ -943,11 +943,11 @@ Until then,
 Current roots:
 
 ```text
-packages/cli/mvm/
-packages/mcp/mvm/
+package/cli/mvm/
+package/mcp/mvm/
 ```
 
-`packages/mcp/mvm/README.md` says the MCP server exposes `mvm` VM management operations over stdio.
+`package/mcp/mvm/README.md` says the MCP server exposes `mvm` VM management operations over stdio.
 The package dependency graph confirms `mcp/mvm` depends on `cli/mvm` and `mcp/stdio`.
 
 This is a product with multiple adapters:
@@ -968,7 +968,7 @@ so one adapter depends on another adapter's internals.
 Move to a product cluster:
 
 ```text
-packages/mvm/
+package/mvm/
   cli/
   mcp/
   core/
@@ -1017,7 +1017,7 @@ step 2 moves the paths.
 Step 1:
  extract a core.
 
-1. Extract backend logic into internal source modules inside the existing `packages/cli/mvm` package first,
+1. Extract backend logic into internal source modules inside the existing `package/cli/mvm` package first,
    not a new third-level project.
 2. Make `cli/mvm` a thin adapter over those core modules.
 3. Make `mcp/mvm` import the core modules rather than CLI internals,
@@ -1027,7 +1027,7 @@ Step 1:
 Step 2:
  move the paths.
 
-1. Create `packages/mvm/{cli,mcp,core}` and `git mv` each project once the dependency direction is clean.
+1. Create `package/mvm/{cli,mcp,core}` and `git mv` each project once the dependency direction is clean.
 2. Make `core` its own package consumed by both adapters.
 3. Update docs and task names.
 
@@ -1039,10 +1039,10 @@ Do not verify destroy/reset behavior against real shared VM state.
 Minimum checks:
 
 ```sh
-mise run //packages/cli/mvm:test:unit
-mise run //packages/mcp/mvm:test:unit
-mise run //packages/cli/mvm:lint
-mise run //packages/mcp/mvm:lint
+mise run //package/cli/mvm:test:unit
+mise run //package/mcp/mvm:test:unit
+mise run //package/cli/mvm:lint
+mise run //package/mcp/mvm:lint
 ```
 
 After a path move,
@@ -1055,16 +1055,16 @@ run the equivalent new task names.
 Current active roots:
 
 ```text
-packages/config/oxlint/
-packages/oxlint-plugin/no-restricted-syntax/
-packages/oxlint-plugin/stylistic/
-packages/oxlint-plugin/tsdoc/
-packages/test-fixture/oxlint-no-restricted-syntax/
-packages/test-fixture/oxlint-stylistic/
-packages/test-fixture/oxlint-tsdoc/
+package/config/oxlint/
+package/oxlint-plugin/no-restricted-syntax/
+package/oxlint-plugin/stylistic/
+package/oxlint-plugin/tsdoc/
+package/test-fixture/oxlint-no-restricted-syntax/
+package/test-fixture/oxlint-stylistic/
+package/test-fixture/oxlint-tsdoc/
 ```
 
-`packages/config/oxlint/README.md` says the config package depends on the three plugin packages,
+`package/config/oxlint/README.md` says the config package depends on the three plugin packages,
 and its built entry bundles plugin sidecars.
 The plugin READMEs point at matching fixture packages.
 
@@ -1083,7 +1083,7 @@ Move the config,
  and fixtures into one subsystem cluster:
 
 ```text
-packages/oxlint/
+package/oxlint/
   config/
   plugin-no-restricted-syntax/
   plugin-stylistic/
@@ -1109,7 +1109,7 @@ The current names under `@monochromatic-dev/oxlint-plugin-*` may be worth keepin
 Each fixture is referenced by filesystem path from exactly one plugin's test,
 with no import by package name,
 but each carries its own `mise` tasks.
-The decision is to keep them as first-class `packages/oxlint/fixture-*` packages,
+The decision is to keep them as first-class `package/oxlint/fixture-*` packages,
 preserving their independent build and lint tasks,
 which isolate the deliberately rule-violating fixture code from the plugins' own linting.
 
@@ -1135,16 +1135,16 @@ otherwise fold it into the owning plugin as package-local test data.
 Minimum checks after each plugin move:
 
 ```sh
-mise run //packages/config/oxlint:build
-mise run //packages/config/oxlint:lint
-mise run //packages/oxlint-plugin/tsdoc:test:unit
-mise run //packages/oxlint-plugin/tsdoc:lint
+mise run //package/config/oxlint:build
+mise run //package/config/oxlint:lint
+mise run //package/oxlint-plugin/tsdoc:test:unit
+mise run //package/oxlint-plugin/tsdoc:lint
 ```
 
 `config/oxlint` has no test task today;
 verify it with `build` and `lint`.
 After path moves,
-replace task paths with the new `packages/oxlint/...` paths.
+replace task paths with the new `package/oxlint/...` paths.
 Also run a root oxlint check because the root config consumes the built config package.
 
 ### Done product and comparison variants
@@ -1154,12 +1154,12 @@ Also run a root oxlint check because the root config consumes the built config p
 Current roots:
 
 ```text
-packages/webapp-productivity/done/
-packages/webapp-productivity/done-postcss/
+package/webapp-productivity/done/
+package/webapp-productivity/done-postcss/
 ```
 
-`packages/webapp-productivity/done/README.md` says `done-postcss` is a sibling comparison package.
-`packages/webapp-productivity/done-postcss/README.md` says it implements the same product with a different CSS
+`package/webapp-productivity/done/README.md` says `done-postcss` is a sibling comparison package.
+`package/webapp-productivity/done-postcss/README.md` says it implements the same product with a different CSS
 authoring pipeline and is not intended to ship.
 
 This is a product plus variant.
@@ -1172,7 +1172,7 @@ Done is a near-term go.
 Build the product cluster now:
 
 ```text
-packages/done/
+package/done/
   app/
   variant-postcss/
 ```
@@ -1181,7 +1181,7 @@ Leave room for more members later (`variant-tailwind`,
  `fixture-data`),
 but only `app` and `variant-postcss` move now.
 Use `app` for the canonical shipped product because the category name is the product name.
-Do not call the canonical project `done` under `packages/done/done`.
+Do not call the canonical project `done` under `package/done/done`.
 
 `done-postcss` stays.
 `doc/audit/dry.md` already records it as an intentional fork:
@@ -1190,7 +1190,7 @@ Do not call the canonical project `done` under `packages/done/done`.
 
 #### What belongs in the cluster
 
-Belongs in `packages/done/*`:
+Belongs in `package/done/*`:
 
 - the canonical Done app,
 - CSS framework comparison variants,
@@ -1211,8 +1211,8 @@ Those stay in `build-tool`,
 
 #### Migration sketch
 
-1. Move the canonical app to `packages/done/app`.
-2. Move `done-postcss` to `packages/done/variant-postcss`.
+1. Move the canonical app to `package/done/app`.
+2. Move `done-postcss` to `package/done/variant-postcss`.
 3. Update README cross-links from `../done` to `../app`.
 4. Update deployment and root convenience tasks that mention the old path.
 5. Leave the other `webapp-productivity` apps where they are;
@@ -1225,8 +1225,8 @@ Those stay in `build-tool`,
 Current roots:
 
 ```text
-packages/cli/forbidden-strings/
-packages/fuzz/forbidden-strings/
+package/cli/forbidden-strings/
+package/fuzz/forbidden-strings/
 ```
 
 `cli/forbidden-strings` is a Rust scanner for forbidden literal strings and regex patterns,
@@ -1244,7 +1244,7 @@ Forbidden-strings is a near-term go.
 Move both crates into a product cluster:
 
 ```text
-packages/forbidden-strings/
+package/forbidden-strings/
   cli/
   fuzz/
 ```
@@ -1261,8 +1261,8 @@ staged separately from the path move.
 
 #### Migration sketch
 
-1. Create `packages/forbidden-strings/` and `git mv` the cli crate to `packages/forbidden-strings/cli`.
-2. `git mv` the fuzz crate to `packages/forbidden-strings/fuzz`.
+1. Create `package/forbidden-strings/` and `git mv` the cli crate to `package/forbidden-strings/cli`.
+2. `git mv` the fuzz crate to `package/forbidden-strings/fuzz`.
 3. Update the fuzz crate's `path` dependency to point at the new cli location.
 4. Update task references and any docs that name `cli/forbidden-strings` or `fuzz/forbidden-strings`.
 5. Remove the now-empty `fuzz/` category.
@@ -1270,14 +1270,14 @@ staged separately from the path move.
 #### Verification
 
 ```sh
-mise run //packages/cli/forbidden-strings:test
-mise run //packages/cli/forbidden-strings:lint
-mise run //packages/fuzz/forbidden-strings:test
+mise run //package/cli/forbidden-strings:test
+mise run //package/cli/forbidden-strings:lint
+mise run //package/fuzz/forbidden-strings:test
 ```
 
 After the move,
- run the equivalent `packages/forbidden-strings/...` task names,
-and run one fuzz target (`mise run //packages/forbidden-strings/fuzz:run -- -max_total_time=30`)
+ run the equivalent `package/forbidden-strings/...` task names,
+and run one fuzz target (`mise run //package/forbidden-strings/fuzz:run -- -max_total_time=30`)
 to confirm the `path` dependency still resolves.
 
 ### Figma parsers
@@ -1287,8 +1287,8 @@ to confirm the `path` dependency still resolves.
 Current roots:
 
 ```text
-packages/figma/kiwi/
-packages/figma/to-penpot/
+package/figma/kiwi/
+package/figma/to-penpot/
 ```
 
 `penpot` depends on `kiwi`.
@@ -1304,7 +1304,7 @@ This is already a domain category.
 Potential future shape:
 
 ```text
-packages/figma/
+package/figma/
   kiwi/
   penpot/
   cli/
@@ -1321,12 +1321,12 @@ Only add `fixtures` if shared fixtures need an independent workspace boundary.
 Current relevant roots:
 
 ```text
-packages/agent-harness-shared/current-time-context/
-packages/pi-plugin/current-time-context/
-packages/claude-code-plugin/source/
+package/agent-harness-shared/current-time-context/
+package/pi-plugin/current-time-context/
+package/claude-code-plugin/source/
 ```
 
-`packages/agent-harness-shared/current-time-context/README.md` says the package exists because Claude Code
+`package/agent-harness-shared/current-time-context/README.md` says the package exists because Claude Code
 hooks and Pi extensions inject the same coarse local time context.
 The Pi extension consumes the shared package.
 Claude Code plugin logic lives in the Claude Code plugin source cluster.
@@ -1339,9 +1339,9 @@ so the shared suffix convention is more discoverable than the broad `module` buc
 Keep host adapters in their host categories:
 
 ```text
-packages/agent-harness-shared/current-time-context/
-packages/pi-plugin/current-time-context/
-packages/claude-code-plugin/source/
+package/agent-harness-shared/current-time-context/
+package/pi-plugin/current-time-context/
+package/claude-code-plugin/source/
 ```
 
 Do not create a `current-time-context` product category unless it grows beyond a tiny formatter plus host adapters.
@@ -1361,7 +1361,7 @@ as it did for `current-time-context`.
 
 #### Module
 
-Keep `packages/module/*` broad.
+Keep `package/module/*` broad.
 It currently holds general-purpose TypeScript utilities such as logging,
 path helpers,
 test helpers,
@@ -1371,13 +1371,13 @@ and token counting.
 
 Move a module out only when it becomes product-owned.
 Example:
-a future `mvm-core` should live under `packages/mvm/core`,
-not `packages/module/mvm-core`,
+a future `mvm-core` should live under `package/mvm/core`,
+not `package/module/mvm-core`,
 because MVM owns it.
 
 #### Config
 
-Keep `packages/config/*` broad for host-neutral tool presets.
+Keep `package/config/*` broad for host-neutral tool presets.
 Examples:
 TypeScript,
  tsdown,
@@ -1392,7 +1392,7 @@ packages and fixtures.
 
 #### Dev-script
 
-Keep `packages/dev-script/*` broad for independent repository automation.
+Keep `package/dev-script/*` broad for independent repository automation.
 Do not move a script into a product cluster unless it only serves that product.
 
 Example:
@@ -1401,14 +1401,14 @@ A hypothetical `music-player-release-prep` should live under `music-player` if i
 
 #### Test-fixture
 
-Keep `packages/test-fixture/*` for cross-cutting fixture packages.
+Keep `package/test-fixture/*` for cross-cutting fixture packages.
 Move fixtures closer to owners when ownership is specific.
 
 Likely owner-specific fixture candidates:
 
 - `test-fixture/oxlint-*`:
   owned by the oxlint subsystem;
-  they move with it as `packages/oxlint/fixture-*` packages per this plan.
+  they move with it as `package/oxlint/fixture-*` packages per this plan.
 - `test-fixture/css-imported`,
    `css-imported-no-exports`,
    `css-importing`,
@@ -1431,7 +1431,7 @@ Move them when test ownership or path clarity improves.
 
 #### Shim and stub
 
-Keep `packages/shim/*` and `packages/stub/*` broad.
+Keep `package/shim/*` and `package/stub/*` broad.
 They describe dependency-management roles,
 not product ownership.
 
@@ -1446,7 +1446,7 @@ This document is Phase 0,
 and its decisions are adopted.
 The rules below are the agreed policy:
 
-- `packages/<category>/<project>` remains mandatory for active project roots.
+- `package/<category>/<project>` remains mandatory for active project roots.
 - Category means ownership boundary.
 - Product and host categories are allowed.
 - Artifact-type categories remain useful for independent utilities.
@@ -1460,12 +1460,12 @@ so future agents see the rule before creating packages.
 
 Handle low-risk cleanup first:
 
-1. Remove or explain empty `packages/android-app/`.
+1. Remove or explain empty `package/android-app/`.
 2. Decide the status of non-package Claude Code plugin dirs:
    `research-agent`,
     `statusline`,
     `verbose-tool-output`.
-3. Decide whether every active `packages/*/*` directory must have one of:
+3. Decide whether every active `package/*/*` directory must have one of:
    `package.json`,
     `Cargo.toml`,
     Gradle settings,
@@ -1483,7 +1483,7 @@ unless one of them becomes independently urgent.
 
 Recommended order:
 
-1. Create `packages/music-player/native-core` as a standalone path-dependency crate.
+1. Create `package/music-player/native-core` as a standalone path-dependency crate.
 2. Extract `truepeak` first.
 3. Prove both desktop and Android consume it.
 4. Extract `opus` only after the first shared crate lands cleanly.
@@ -1509,11 +1509,11 @@ and revisit only if a non-Pi host consumes `model-selection`.
 ### Phase 4: Build the MVM product cluster
 
 Two steps.
-First extract a `core` inside `packages/cli/mvm` so `mcp/mvm` stops importing `cli` internals.
+First extract a `core` inside `package/cli/mvm` so `mcp/mvm` stops importing `cli` internals.
 Then move paths:
 
 ```text
-packages/mvm/
+package/mvm/
   core/
   cli/
   mcp/
@@ -1526,7 +1526,7 @@ Do the core extraction before the path move.
 End state:
 
 ```text
-packages/oxlint/
+package/oxlint/
   config/
   plugin-no-restricted-syntax/
   plugin-stylistic/
@@ -1542,14 +1542,14 @@ Do not rename every package at once.
 
 ### Phase 6: Build the Done product cluster
 
-Move the canonical app to `packages/done/app` and `done-postcss` to `packages/done/variant-postcss`.
+Move the canonical app to `package/done/app` and `done-postcss` to `package/done/variant-postcss`.
 Keep `done-postcss`;
 its value is already recorded in `doc/audit/dry.md`.
 Leave the other `webapp-productivity` apps in place.
 
 ### Phase 7: Build the forbidden-strings product cluster
 
-Move `cli/forbidden-strings` and `fuzz/forbidden-strings` into `packages/forbidden-strings/{cli,fuzz}`,
+Move `cli/forbidden-strings` and `fuzz/forbidden-strings` into `package/forbidden-strings/{cli,fuzz}`,
 update the fuzz crate's `path` dependency,
 and retire the now-empty `fuzz/` category.
 
@@ -1605,7 +1605,7 @@ update at least:
 - Gradle settings and native build scripts for `music-player/android-app`,
 - pnpm catalog and `overrides` entries in `pnpm-workspace.yaml` that name the old path,
 - `.github/CODEOWNERS` entries,
-- task references such as `mise run //packages/old/path:task`,
+- task references such as `mise run //package/old/path:task`,
 - test fixture path constants,
 - CI workflow path filters,
 - generated config inputs if file-enforcer owns them.
@@ -1649,7 +1649,7 @@ Treat a zero-result search as valid only after checking the command actually sea
 
 The plan is complete when all accepted moves satisfy these conditions:
 
-- Every active project root is exactly `packages/<category>/<project>`.
+- Every active project root is exactly `package/<category>/<project>`.
 - Each first-level category has a one-sentence ownership explanation in this document's category ownership reference,
   updated whenever a category is added or removed.
 - Product and subsystem clusters own their shared cores,
@@ -1662,7 +1662,7 @@ The plan is complete when all accepted moves satisfy these conditions:
   not product fragments that change together.
 - No active project requires a third-level package root;
   build-internal nested units such as `music-player/android-app/rust` are exempt.
-- `packages-deprecated/` and `packages-paused/` remain the only status trees.
+- `package-deprecated/` and `package-paused/` remain the only status trees.
 - Package names either match the new category or have documented compatibility reasons.
 - Root generated files are in sync.
 - Package-specific tests pass for every moved package and every direct dependent.
@@ -1674,7 +1674,7 @@ The plan is complete when all accepted moves satisfy these conditions:
 A repository check that rejected stray or third-level project roots was considered and rejected.
 
 - The mechanical part is already enforced.
-  pnpm's `packages/*/*` workspace glob and mise's `packages/*/*` config roots (`monorepo_depth = 3`)
+  pnpm's `package/*/*` workspace glob and mise's `package/*/*` config roots (`monorepo_depth = 3`)
   only recognize two-level project roots,
   so a non-conforming directory is simply not picked up as a workspace or task root.
 - The meaningful part cannot be mechanized.
@@ -1727,8 +1727,8 @@ answer these in order:
    keep it near the owner unless it needs a workspace boundary.
 5. Is this paused or deprecated?
    If yes,
-   use `packages-paused/` or `packages-deprecated/`,
-    not a category name under `packages/`.
-6. Would the package path need three segments below `packages/`?
+   use `package-paused/` or `package-deprecated/`,
+    not a category name under `package/`.
+6. Would the package path need three segments below `package/`?
    If yes,
    rename the second segment instead of adding depth.

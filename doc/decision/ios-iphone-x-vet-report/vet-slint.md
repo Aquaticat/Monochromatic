@@ -132,7 +132,7 @@ bash:
 rs:
 153 (fn main -> component.
 run());
- UI AOT via slint-build (packages/music-player/desktop-app/Cargo.
+ UI AOT via slint-build (package/music-player/desktop-app/Cargo.
 toml:
 143)
 
@@ -269,7 +269,7 @@ target_os="tvos")) coreaudio deps) and Cargo.
 toml:
 234 (aarch64-apple-ios listed target);
  reuse path:
- /var/home/user/Monochromatic/packages/music-player/desktop-app/src/output_cpal.
+ /var/home/user/Monochromatic/package/music-player/desktop-app/src/output_cpal.
 rs + Cargo.
 toml:
 111
@@ -414,7 +414,7 @@ Toolchain:
   234 (aarch64-apple-ios)
 - music-player already targets CoreAudio via cpal 0.18 on non-Linux and pins Slint winit;
    femtovg+software renderers (femtovg unused on iOS):
-   /var/home/user/Monochromatic/packages/music-player/desktop-app/Cargo.
+   /var/home/user/Monochromatic/package/music-player/desktop-app/Cargo.
   toml:
   75 (slint git pin,
    renderer-femtovg+software),
@@ -540,15 +540,15 @@ Toolchain:
    /tmp/agent/slint-audit-20260612/internal/interpreter/ (no JIT/cranelift/PROT_EXEC;
    tree-walking eval.
   rs);
-   /var/home/user/Monochromatic/packages/music-player/desktop-app/Cargo.
+   /var/home/user/Monochromatic/package/music-player/desktop-app/Cargo.
   toml (line 143 slint-build git pin confirmed;
    line 75 slint git pin;
    no interpreter/jit deps);
-   /var/home/user/Monochromatic/packages/music-player/desktop-app/build.
+   /var/home/user/Monochromatic/package/music-player/desktop-app/build.
   rs (line 5 slint_build:
   :
   compile);
-   /var/home/user/Monochromatic/packages/music-player/desktop-app/src/main.
+   /var/home/user/Monochromatic/package/music-player/desktop-app/src/main.
   rs (line 19 include_modules!
   ;
    line 1181 fn main;

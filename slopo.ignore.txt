@@ -11,12 +11,12 @@
 40d7339c9902
 
 # ── Deliberately NOT dismissed: music-player android/desktop drift ──
-# The android app (Kotlin, packages/music-player/android-app/app/src/main/kotlin/.../core)
-# and the desktop app (Rust, packages/music-player/desktop-app/src) carry parallel core
+# The android app (Kotlin, package/music-player/android-app/app/src/main/kotlin/.../core)
+# and the desktop app (Rust, package/music-player/desktop-app/src) carry parallel core
 # logic (Queue, Pagination, RelPath, AudioExtensions, Normalization, PlayerController) that
 # slopo flags as cross-language pairs. Those clusters are intentionally left OUT of this
 # ignore list so they keep surfacing in the report. The duplication is real and drifting;
-# it is tracked in packages/music-player/PROPOSAL.shared-core.md, whose plan is to rewrite
+# it is tracked in package/music-player/PROPOSAL.shared-core.md, whose plan is to rewrite
 # the Android core in Rust and delete the Kotlin copy. The visible clusters are the standing
 # reminder that the drift is still open. Do NOT dismiss them until Android is rewritten and
 # the Kotlin/Rust divergence is gone. (Cross-language code cannot share a function, so these

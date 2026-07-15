@@ -117,9 +117,9 @@ The repo already treats `fd` and `rg` as baseline tools:
   `aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo`.
 - Root `mise.toml` configures `ripgrep = "latest"`.
 - `mise.lock` pins ripgrep `15.1.0` artifacts by platform with SHA-256 checksums.
-- `packages/dev-script/file-enforcer/data/packages.overrides.ts` maps the `rg` binary
+- `package/dev-script/file-enforcer/data/packages.overrides.ts` maps the `rg` binary
   to the `ripgrep` package name.
-- `packages/dev-script/watch-restart/src/filters/hidden.ts` explicitly cites `fd` and `rg`
+- `package/dev-script/watch-restart/src/filters/hidden.ts` explicitly cites `fd` and `rg`
   ergonomics for default hidden-file exclusion.
 
 No repo file matched `television` before this audit.

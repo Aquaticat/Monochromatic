@@ -199,11 +199,11 @@ Verification after switching from the git pin to crates.
 io Slint 1.17.0 and
 renaming `FlexboxLayout.align-items` to `cross-axis-alignment`:
 
-- `mise run //packages/music-player/desktop-app:lint` passes.
-- `mise run //packages/desktop-app/terminal:lint` passes.
-- `mise run //packages/music-player/desktop-app:test` passes,
+- `mise run //package/music-player/desktop-app:lint` passes.
+- `mise run //package/desktop-app/terminal:lint` passes.
+- `mise run //package/music-player/desktop-app:test` passes,
    `78` tests.
-- `mise run //packages/desktop-app/terminal:test` passes,
+- `mise run //package/desktop-app/terminal:test` passes,
    `16` tests.
 
 Trade-offs:

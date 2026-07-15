@@ -33,7 +33,7 @@ mise is large and we lean on it everywhere.
    about 103k lines of Rust and 980 crate dependencies (measured against the
   `310e325` clone with `tokei` and the `Cargo.lock` package count).
 - Our reliance:
-   the `config_roots = ["packages/*/*"]` layout,
+   the `config_roots = ["package/*/*"]` layout,
    every package's
   `mise.toml` task definitions,
    tool provisioning,

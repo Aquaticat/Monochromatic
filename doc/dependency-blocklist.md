@@ -16,7 +16,7 @@ They differ in what lands in `node_modules` after the install.
     or an API-compatible shim on disk**:
     edit the `overrides` block in `pnpm-workspace.yaml`.
    pnpm's native `"name": "-"` primitive removes the package from the resolved graph entirely.
-   The same block also accepts `link:packages/shim/<name>` to substitute the package with a workspace shim that re-exports the real API.
+   The same block also accepts `link:package/shim/<name>` to substitute the package with a workspace shim that re-exports the real API.
 
 The split is intentional.
 pnpm has a first-class removal primitive;
@@ -32,7 +32,7 @@ It does not walk `devDependencies` or `peerDependencies`:
 
 - `devDependencies` on a transitive package are not installed by pnpm,
    so iterating them would produce noisy substitution warnings for entries that never reach `node_modules`.
-- `devDependencies` on a direct workspace package (`packages/<x>/package.json`) are read from disk by pnpm,
+- `devDependencies` on a direct workspace package (`package/<x>/package.json`) are read from disk by pnpm,
    not via the `readPackage` hook,
    so the policy does not see them either.
 - `peerDependencies` are not auto-installed in this repo (`pnpm-workspace.yaml` sets `autoInstallPeers: false`);
@@ -82,7 +82,7 @@ Pick the lightest action that surfaces the problem at the right place.
    and `new` invocations all return the stub itself.
   `in` checks return `false`.
 
-- **API-compatible shim** (create `packages/shim/<name>/`,
+- **API-compatible shim** (create `package/shim/<name>/`,
    wire via `pnpm-workspace.yaml` `overrides`):
    an importer hard-imports the package and relies on its constructor or function shape,
    the package is deprecated or unwanted as a direct source,
@@ -164,7 +164,7 @@ See `TROUBLESHOOTING.dependencies.md` for the audit trail behind each one.
 
 ## How to add an API-compatible shim
 
-Create a workspace package under `packages/shim/<name>/` with five files (mirror `packages/shim/node-domexception/`):
+Create a workspace package under `package/shim/<name>/` with five files (mirror `package/shim/node-domexception/`):
 
 - `package.json`:
    private,
@@ -189,7 +189,7 @@ Wire the substitution by adding one line to `pnpm-workspace.yaml`'s `overrides` 
 
 ```yaml
 overrides:
-  '<blocked-name>': 'link:packages/shim/<name>'
+  '<blocked-name>': 'link:package/shim/<name>'
 ```
 
 pnpm rewrites every transitive edge that resolved `<blocked-name>` to point at the workspace path;
@@ -276,7 +276,7 @@ Consumers wrapping `require('fsevents')` in try/catch continue working.
 The upstream package is deprecated but its runtime behaviour on Node 17+ and Bun is `module.exports = globalThis.DOMException`,
  which is trivially reproducible.
 
-The shim package lives at `packages/shim/node-domexception/`.
+The shim package lives at `package/shim/node-domexception/`.
 Its `index.cjs` is a single line:
 
 ```js
@@ -287,7 +287,7 @@ module.exports = globalThis.DOMException;
 
 ```yaml
 overrides:
-  'node-domexception': 'link:packages/shim/node-domexception'
+  'node-domexception': 'link:package/shim/node-domexception'
 ```
 
 After install,
@@ -306,7 +306,7 @@ Consumers (`fetch-blob`,
 Both versions exist purely for back-compat with retired Node releases;
  on Node 22+ the platform's `node:stream` module covers every API both versions expose.
 
-The shim at `packages/shim/readable-stream/` re-exports `node:stream`:
+The shim at `package/shim/readable-stream/` re-exports `node:stream`:
 
 ```js
 'use strict';
@@ -345,7 +345,7 @@ A single override entry covers both upstream versions because `link:` is a path 
 
 ```yaml
 overrides:
-  'readable-stream': 'link:packages/shim/readable-stream'
+  'readable-stream': 'link:package/shim/readable-stream'
 ```
 
 After install,
@@ -411,13 +411,13 @@ The substitution unifies `instanceof` identity across the workspace (every consu
    global removals,
    parent-scoped removals,
    and `link:` substitutions to workspace shims.
-- `packages/stub/throwing/`:
+- `package/stub/throwing/`:
    the workspace stub used by `action: 'throw'`.
-- `packages/stub/silent/`:
+- `package/stub/silent/`:
    the workspace stub used by `action: 'silent'`.
-- `packages/shim/<name>/`:
+- `package/shim/<name>/`:
    workspace shims for API-compatible substitution;
-   current entries are `packages/shim/node-domexception/` and `packages/shim/readable-stream/`.
+   current entries are `package/shim/node-domexception/` and `package/shim/readable-stream/`.
 - `TROUBLESHOOTING.dependencies.md`:
    the audit trail for the existing parent-scoped overrides;
    cross-link entries here when a substitution replaces or augments one of those overrides.

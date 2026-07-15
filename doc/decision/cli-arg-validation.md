@@ -18,17 +18,17 @@ decision doc covering value-level validation.
 Current state when this decision was made:
 
 - Three CLIs use Optique:
-  `packages/cli/fy/`,
-   `packages/cli/mvm/`,
-   `packages/cli/vmsync/`.
+  `package/cli/fy/`,
+   `package/cli/mvm/`,
+   `package/cli/vmsync/`.
   All three rely on `@optique/core/valueparser`'s built-in primitives
   (`string({metavar})`,
    `integer()`) and `@optique/core/constructs`'
   `map()` for shape transforms.
 - Three CLIs are not on Optique:
-  `packages/git-policy/cli/`,
-   `packages/cli/rgffplay/`,
-   `packages/cli/terminal-exec/`.
+  `package/git-policy/cli/`,
+   `package/cli/rgffplay/`,
+   `package/cli/terminal-exec/`.
   They parse `process.argv` directly.
    The reasons they are not on Optique
   are project-specific and not recorded here;
@@ -47,8 +47,8 @@ Current state when this decision was made:
    `valibot@>=1.4.0`,
    Standard
   Schema-compatible).
-   It is used in `packages/pi-plugin/advisor/` and
-  `packages/ssg/aquati.cat/`,
+   It is used in `package/pi-plugin/advisor/` and
+  `package/ssg/aquati.cat/`,
    but never in a CLI package.
 
 `@optique/valibot` is Optique's adapter that lets a Valibot schema act as

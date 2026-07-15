@@ -50,10 +50,10 @@ Only removing the shortcut's success removes the behavior.
 The repo already converted three other shortcut classes from prose into deterministic locks:
 
 -   `bun test` is blocked by a PreToolUse guard
-    (`packages/claude-code-plugin/source/src/handlers/guardrail.ts`).
+    (`package/claude-code-plugin/source/src/handlers/guardrail.ts`).
 -   Bulk `git add -A`/`.` is rejected by the `cli-git` enforcement guard.
 -   Hedge phrases and trailing questions are rejected at send time by the Stop hook
-    (`packages/claude-code-plugin/source/src/handlers/stop-reminders/`).
+    (`package/claude-code-plugin/source/src/handlers/stop-reminders/`).
 
 The lint-shortcut class is the same shape and has not been mechanized.
 The PreToolUse path in `guardrail.ts` checks only `bun test`,
@@ -160,15 +160,15 @@ which is the real improvement over restating the principle each session.
 
 ## Critical files if implemented
 
--   `packages/claude-code-plugin/source/src/handlers/guardrail.ts`:
+-   `package/claude-code-plugin/source/src/handlers/guardrail.ts`:
      add the suppression/config check
     (or a sibling handler),
      mirroring the existing deny pattern.
--   `packages/claude-code-plugin/source/src/handlers/guardrail.unit.test.ts`:
+-   `package/claude-code-plugin/source/src/handlers/guardrail.unit.test.ts`:
      cover allow and deny cases.
 -   `.claude/settings.local.json`:
      wire the PostToolUse `:lint` entry near the existing Bash-matched hooks.
--   `packages/module/es/src/mise.post-edit-typecheck.ts` and its `mise.toml` task:
+-   `package/module/es/src/mise.post-edit-typecheck.ts` and its `mise.toml` task:
     the post-edit lint runner (no shell script;
      `mise.<action>.ts` per AGENTS.
     md).

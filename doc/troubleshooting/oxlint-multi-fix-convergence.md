@@ -32,8 +32,8 @@ duplicate (see "Why we do not file this upstream" near the end).
 Running the combined fixture once:
 
 ```bash
-oxlint --fix -c packages/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json \
-  packages/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts
+oxlint --fix -c package/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json \
+  package/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts
 ```
 
 on this source
@@ -67,7 +67,7 @@ const r = a + (b * obj.d
 
 and the file is clean.
  The convergence test in
-`packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`
+`package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`
 loops `oxlint --fix` twice for exactly this reason
 (`oxlint-stylistic.unit.test.ts:586-606`):
 
@@ -169,7 +169,7 @@ let mut fix = Fix::new(output, Span::new(start, end));
 ```
 
 For `no-mixed-operators` on `b * obj.d.e.f`
-(`packages/oxlint-plugin/stylistic/src/rule/no-mixed-operators.ts:93-114`),
+(`package/oxlint-plugin/stylistic/src/rule/no-mixed-operators.ts:93-114`),
 the rule emits
 
 ```ts
@@ -231,7 +231,7 @@ After `no-mixed-operators` applies with span `[b_start, f_end]`,
  `chain-per-line`'s merged fix for `obj.d.e.f` has
 span `[e_dot, f_dot]` (the bounding box of the two `\n + indent`
 insertions,
- see `packages/oxlint-plugin/stylistic/src/rule/chain-per-line.ts:259-267`).
+ see `package/oxlint-plugin/stylistic/src/rule/chain-per-line.ts:259-267`).
 Its `start = e_dot` satisfies `last_pos >= start` (since `f_end >
 e_dot`),
  so the chain-per-line message is pushed into
@@ -291,7 +291,7 @@ is below the plugin layer.
 ### Reproduction
 
 The combined fixture
-`packages/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts`
+`package/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts`
 is the minimal case:
 
 ```ts
@@ -306,13 +306,13 @@ export { r, };
 
 with `stylistic/no-mixed-operators` and `stylistic/chain-per-line`
 both enabled in
-`packages/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`.
+`package/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`.
 
 Single-pass run (run from repo root):
 
 ```bash
-cp packages/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts /tmp/cam-test.ts
-oxlint --fix -c packages/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json /tmp/cam-test.ts
+cp package/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts /tmp/cam-test.ts
+oxlint --fix -c package/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json /tmp/cam-test.ts
 cat /tmp/cam-test.ts
 ```
 
@@ -360,7 +360,7 @@ combined fixture,
 combined cases need a second `--fix` run.
 
 ```ts
-// packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts:586-606
+// package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts:586-606
 for (const _pass of [0, 1]) {
   try {
     // oxlint-disable-next-line eslint/no-await-in-loop -- second pass must read the first pass's output from disk
@@ -576,7 +576,7 @@ Tradeoffs:
 ### F. task-oxlint fix-until-stable wrapper (current state for the command path)
 
 `task-oxlint` (the `oxlint` wrapper at
-`packages/dev-script/task-util/src/oxlint-wrapper.ts`) loops `oxlint --fix` to a
+`package/dev-script/task-util/src/oxlint-wrapper.ts`) loops `oxlint --fix` to a
 fixpoint when the caller passes `--fix`,
  so a single `task-oxlint --fix` (and the
 `format:oxlint` task that calls it) applies the overlapping and fix-induced fixes
@@ -669,11 +669,11 @@ baseline.
  because the
 plain-lint oracle is not verified to track suggestion-applied changes.
  The loop
-lives in `packages/dev-script/task-util/src/oxlint-fix-loop.ts` with unit tests
+lives in `package/dev-script/task-util/src/oxlint-fix-loop.ts` with unit tests
 in `oxlint-fix-loop.unit.test.ts`.
 
 This workspace has a real autofix oscillation that the loop surfaces.
-`packages-paused/webapp-forge/server/src/data/db.ts` flips between two states on
+`package-paused/webapp-forge/server/src/data/db.ts` flips between two states on
 every `--fix`:
  two stylistic rules disagree on the continuation indent of a
 chained `.includes(...)` call (four spaces versus six),
@@ -845,10 +845,10 @@ Re-evaluate this decision when:
 - ESLint's behaviour we are diverging from:
   [ESLint custom-rules docs][eslint-iter].
 - Our rules and tests:
-  - `packages/oxlint-plugin/stylistic/src/rule/no-mixed-operators.ts:93-114`
-  - `packages/oxlint-plugin/stylistic/src/rule/chain-per-line.ts:251-268`
-  - `packages/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts`
-  - `packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts:566-617`
+  - `package/oxlint-plugin/stylistic/src/rule/no-mixed-operators.ts:93-114`
+  - `package/oxlint-plugin/stylistic/src/rule/chain-per-line.ts:251-268`
+  - `package/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts`
+  - `package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts:566-617`
 - Issue this implementation closed:
    [Aquaticat/Monochromatic#209][issue-209].
 

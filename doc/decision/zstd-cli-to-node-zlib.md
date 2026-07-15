@@ -11,7 +11,7 @@ nested lists or code fences. This is a deliberate, documented exception.
 
 Two places in the workspace shell out to the external `zstd` command-line tool:
 
-- `packages/figma/kiwi/src/index.ts`,
+- `package/figma/kiwi/src/index.ts`,
    function `decompressZstd`,
    decompresses the
   zstd-compressed document section of a Figma `.fig` / `.deck` / `.jam` export.
@@ -20,13 +20,13 @@ Two places in the workspace shell out to the external `zstd` command-line tool:
    never declared as a dependency) and otherwise spawns
   `zstd -d` through `nano-spawn`,
    shuttling data through temp files.
-- `packages/ssg/aquati.cat/mise.toml`,
+- `package/ssg/aquati.cat/mise.toml`,
    task `build:compress`,
    runs
   `zstd -z -f --no-check -T0 --exclude-compressed --no-content-size -r --adapt dist` to write a
   `<file>.zst` companion next to every compressible asset in `dist/`.
    The companions are read by
-  `packages/dev-script/page-weight/src/size.ts` (`wireSize`) and exist for precompressed serving.
+  `package/dev-script/page-weight/src/size.ts` (`wireSize`) and exist for precompressed serving.
 
 Both depend on the `zstd` binary being installed,
  which the workspace declares as a mise tool
@@ -1042,7 +1042,7 @@ Not yet applied.
 
 ### Figma decompression
 
-In `packages/figma/kiwi/src/index.ts`,
+In `package/figma/kiwi/src/index.ts`,
  `decompressZstd` collapses to:
 
 ```ts
@@ -1057,15 +1057,15 @@ async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
 It stays `async` to preserve the public call contract,
  mirroring the `inflateRawSync` schema decode
 already in the same function.
- Remove `nano-spawn` from `packages/figma/kiwi/package.json`
+ Remove `nano-spawn` from `package/figma/kiwi/package.json`
 (its only use was the removed fallback).
  Verify with the package's existing integration test,
  which
-decodes real `.fig` / `.deck` / `.jam` files (`bun packages/figma/kiwi/src/index.unit.test.ts`).
+decodes real `.fig` / `.deck` / `.jam` files (`bun package/figma/kiwi/src/index.unit.test.ts`).
 
 ### ssg compression
 
-Add `packages/ssg/aquati.cat/src/build/compress.ts` beside `postprocess.ts`,
+Add `package/ssg/aquati.cat/src/build/compress.ts` beside `postprocess.ts`,
  and change the
 `build:compress` task from the `zstd` shell command to `node src/build/compress.ts` (Node,
  since Bun
@@ -1228,7 +1228,7 @@ versions in the environment table;
 To reproduce the headline comparison directly:
 
 ```sh
-# build dist first (mise run //packages/ssg/aquati.cat:build:site), then:
+# build dist first (mise run //package/ssg/aquati.cat:build:site), then:
 hyperfine --warmup 3 --runs 12 --prepare 'rm -rf /tmp/out && mkdir -p /tmp/out' \
   --command-name current 'cd dist && zstd -q -z -f --no-check --no-content-size -T0 --adapt -r . --output-dir-mirror /tmp/out' \
   --command-name 'cli-matched-L19' 'cd dist && zstd -q -19 --ultra --no-check --no-content-size -T0 -r . --output-dir-mirror /tmp/out -f' \

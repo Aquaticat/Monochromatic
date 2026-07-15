@@ -3,7 +3,7 @@
 ## Status: replaced by cli-markdown-lint
 
 `markdownlint-cli2` has been retired from this repo in favour of
-`@monochromatic-dev/cli-markdown-lint` (`packages/cli/markdown-lint`),
+`@monochromatic-dev/cli-markdown-lint` (`package/cli/markdown-lint`),
  a
 purpose-built Markdown and MDX linter.
  The root `lint`/`format` tasks now call
@@ -45,10 +45,10 @@ with no extra arguments,
 positional arguments via `mise run lint:markdownlint -- <path>`:
 
 ```text
-$ mise run lint:markdownlint -- packages/oxlint-plugin/stylistic/README.md
-[//:lint:markdownlint] $ markdownlint-cli2 . packages/oxlint-plugin/stylistic/R...
+$ mise run lint:markdownlint -- package/oxlint-plugin/stylistic/README.md
+[//:lint:markdownlint] $ markdownlint-cli2 . package/oxlint-plugin/stylistic/R...
 markdownlint-cli2 v0.22.1 (markdownlint v0.40.0)
-Finding: . packages/oxlint-plugin/stylistic/README.md !node_modules/** !dist/** !.dist/** !bak/**
+Finding: . package/oxlint-plugin/stylistic/README.md !node_modules/** !dist/** !.dist/** !bak/**
 <--- Last few GCs --->
 [927285:0x285b2000]    26112 ms: Mark-Compact 4016.7 (4124.1) -> 3992.6 (4127.6) MB, ...
 FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
@@ -58,11 +58,11 @@ Reproducible with the binary directly,
  no mise involvement needed:
 
 ```sh
-markdownlint-cli2 . packages/oxlint-plugin/stylistic/README.md  # OOMs
+markdownlint-cli2 . package/oxlint-plugin/stylistic/README.md  # OOMs
 markdownlint-cli2 . README.md                                   # OOMs
 markdownlint-cli2 . .                                           # OOMs
 markdownlint-cli2 .                                             # works
-markdownlint-cli2 packages/oxlint-plugin/stylistic/README.md    # works
+markdownlint-cli2 package/oxlint-plugin/stylistic/README.md    # works
 ```
 
 The failure shape is any time `.` appears alongside another positional argument.
@@ -82,7 +82,7 @@ no `--version` option:
 $ mise exec -- markdownlint-cli2 --version
 markdownlint-cli2 v0.22.1 (markdownlint v0.40.0)
 Finding: --version **/*.md !node_modules/** !dist/** !.dist/** !bak/**
-  !packages-paused/** !packages-deprecated/** !.out-of-scope/**
+  !package-paused/** !package-deprecated/** !.out-of-scope/**
 ```
 
 Direct file linting through the current task is fast because the task passes
@@ -92,7 +92,7 @@ Direct file linting through the current task is fast because the task passes
 $ mise run lint:markdownlint -- README.md
 markdownlint-cli2 v0.22.1 (markdownlint v0.40.0)
 Finding: README.md !**/node_modules/** !node_modules/** !dist/** !.dist/**
-  !bak/** !packages-paused/** !packages-deprecated/** !.out-of-scope/**
+  !bak/** !package-paused/** !package-deprecated/** !.out-of-scope/**
 Linting: 1 file(s)
 Summary: 0 error(s)
 ```
@@ -158,7 +158,7 @@ const files = [
 
 In this repo,
  the dot-plus-arg walk pulled in a 3.97 GB qcow2 VM disk image at
-`packages/dev-script/vm-builder/output/qcow2/disk.qcow2` plus other
+`package/dev-script/vm-builder/output/qcow2/disk.qcow2` plus other
 multi-megabyte binaries.
  Reading the qcow2 into a string allocates about 4 GB on
 V8's heap,
@@ -213,14 +213,14 @@ This repo has workspace package `node_modules` symlinks that can loop back into
 other workspace packages:
 
 ```text
-packages/module/test/node_modules/@monochromatic-dev/config-tsdown -> ../../../../config/tsdown
-packages/config/tsdown/node_modules/@monochromatic-dev/module-test -> ../../../../module/test
+package/module/test/node_modules/@monochromatic-dev/config-tsdown -> ../../../../config/tsdown
+package/config/tsdown/node_modules/@monochromatic-dev/module-test -> ../../../../module/test
 ```
 
-The repeated path exists and resolves back to `packages/config/tsdown`:
+The repeated path exists and resolves back to `package/config/tsdown`:
 
 ```text
-packages/module/test/node_modules/@monochromatic-dev/config-tsdown
+package/module/test/node_modules/@monochromatic-dev/config-tsdown
   /node_modules/@monochromatic-dev/module-test
   /node_modules/@monochromatic-dev/config-tsdown
 ```
@@ -318,7 +318,7 @@ Patterns that work cleanly:
 
 - `markdownlint-cli2 .` (lone argument,
    remap applies)
-- `markdownlint-cli2 packages/oxlint-plugin/stylistic/README.md`
+- `markdownlint-cli2 package/oxlint-plugin/stylistic/README.md`
 - `markdownlint-cli2 README.md AGENTS.md`
 - `markdownlint-cli2 --no-globs README.md`
 - `mise run lint:markdownlint -- README.md`,
@@ -346,7 +346,7 @@ Patterns that hung in recursive discovery before the nested `node_modules` fix:
    because `--version` is an
   input pattern
 - direct globby probe with `['**/*.md', '!node_modules/**', '!dist/**',
-  '!.dist/**', '!bak/**', '!packages-paused/**', '!packages-deprecated/**',
+  '!.dist/**', '!bak/**', '!package-paused/**', '!package-deprecated/**',
   '!.out-of-scope/**']`,
    which timed out at 60 to 120 seconds
 
@@ -425,8 +425,8 @@ Tradeoffs:
   "dist/**",
   ".dist/**",
   "bak/**",
-  "packages-paused/**",
-  "packages-deprecated/**",
+  "package-paused/**",
+  "package-deprecated/**",
   ".out-of-scope/**",
 ],
 ```
@@ -457,7 +457,7 @@ Tradeoffs:
 
 ## What does not work
 
-- Adding `!packages/dev-script/vm-builder/output/**` and `!**/*.qcow2` to the
+- Adding `!package/dev-script/vm-builder/output/**` and `!**/*.qcow2` to the
   config `ignores`:
    tested,
    still OOMs.

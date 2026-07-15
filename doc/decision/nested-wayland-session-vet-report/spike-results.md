@@ -7,7 +7,7 @@ do on the hardware, not what the source implies.
 
 ## The app presents through dmabuf, not SHM (decisive)
 
-Ran the prebuilt `packages/music-player/desktop-app/target/release/music-player` against the fixtures folder in
+Ran the prebuilt `package/music-player/desktop-app/target/release/music-player` against the fixtures folder in
 the host's real GPU session with `WAYLAND_DEBUG=1` and `SLINT_BACKEND=` (winit + femtovg), isolating XDG dirs,
 loaded paused. Counting the protocol dump:
 

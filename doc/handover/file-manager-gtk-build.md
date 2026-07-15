@@ -20,7 +20,7 @@ separate, finished doc (`file-manager-toolkit-exploration.md`); this one tracks 
 
 ## Locked decisions
 
-- Package: the GTK4 app reclaims the canonical, function-named `packages/desktop-app/file-manager/`
+- Package: the GTK4 app reclaims the canonical, function-named `package/desktop-app/file-manager/`
   (planning doc mandates it so bundle IDs survive a stack fallback). The old Slint sources and their
   fork `[patch.crates-io]` are deleted outright (task #30); nothing salvaged from them. The
   `file-manager-gtk` spike package is retired into this one. `file-manager-qt` is kept as evidence.
@@ -43,7 +43,7 @@ bulk-close gestures early. Keyboard-primary throughout.
 
 ## Module map (as built)
 
-`packages/desktop-app/file-manager/src/`: `main.rs` (thin bin) + `lib.rs` (bootstrap, tracing,
+`package/desktop-app/file-manager/src/`: `main.rs` (thin bin) + `lib.rs` (bootstrap, tracing,
 `GDK_DEBUG=dcomp` on Windows, module wiring, controllers kept alive for the app lifetime);
 `constants.rs`, `types.rs` (domain data), `model.rs` (`PaneStripState` spawn/dedup/close state
 machine), `fs.rs` (reads/metadata/sort); `window.rs` (top-level window + inbound drop target);
@@ -57,10 +57,10 @@ separate `spawn.rs`/`keys.rs`.
 
 ## How to build / run
 
-`mise run //packages/desktop-app/file-manager:run` (debug build, runs on native Wayland via
-`GDK_BACKEND=wayland`). Tests: `//packages/desktop-app/file-manager:test`. Rust linter (max-lines +
-require-rustdoc): `//packages/desktop-app/file-manager:lint:rust`. Types/clippy:
-`//packages/desktop-app/file-manager:lint:clippy`.
+`mise run //package/desktop-app/file-manager:run` (debug build, runs on native Wayland via
+`GDK_BACKEND=wayland`). Tests: `//package/desktop-app/file-manager:test`. Rust linter (max-lines +
+require-rustdoc): `//package/desktop-app/file-manager:lint:rust`. Types/clippy:
+`//package/desktop-app/file-manager:lint:clippy`.
 
 ## Progress log
 

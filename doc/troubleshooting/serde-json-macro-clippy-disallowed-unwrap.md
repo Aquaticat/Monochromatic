@@ -9,7 +9,7 @@ INSIDE the macro expansion and attributes the error to the caller's crate,
  failing
 `cargo clippy -- --deny warnings` on code that contains no visible `unwrap`.
 
-Found while building `packages/desktop-app/file-manager-gtk-sticky`'s observed-state writer.
+Found while building `package/desktop-app/file-manager-gtk-sticky`'s observed-state writer.
 
 ## Symptom
 

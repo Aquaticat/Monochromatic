@@ -1,8 +1,8 @@
 # File manager sticky flow: how two prototypes replaced a layout engine
 
-This audit records how `packages/desktop-app/file-manager-electron` and
-`packages/desktop-app/file-manager-gtk-sticky` were derived from the original GTK file manager
-(`packages/desktop-app/file-manager`),
+This audit records how `package/desktop-app/file-manager-electron` and
+`package/desktop-app/file-manager-gtk-sticky` were derived from the original GTK file manager
+(`package/desktop-app/file-manager`),
  and exactly where their behavior differs from it.
 It is self-contained:
  everything needed to understand the layout is in this document,
@@ -22,7 +22,7 @@ Both prototypes are complete packages:
  carry unit tests for every pure
 function,
  and pass an automated end-user test that runs the real app inside this repo's nested
-Wayland compositor (`packages/cli/nested-wayland-session`),
+Wayland compositor (`package/cli/nested-wayland-session`),
  drives it with synthetic keyboard
 input,
  and asserts the app's observed state.
@@ -130,7 +130,7 @@ containers:
  every child is placed at explicit x/y coordinates and nothing lays anything out
 for you.
 On top of that,
- in `packages/desktop-app/file-manager/src/layout.rs` and `layout/lane.rs`,
+ in `package/desktop-app/file-manager/src/layout.rs` and `layout/lane.rs`,
  it
 implements by hand:
 
@@ -288,7 +288,7 @@ model change (never during scrolling):
 ```
 
 The whole scroll-time behavior is two declarations in
-`packages/desktop-app/file-manager-electron/src/styles.css`:
+`package/desktop-app/file-manager-electron/src/styles.css`:
 
 ```css
 .strip { overflow: auto; }
@@ -597,17 +597,17 @@ activation conventions match user intuition) or fails loudly where GTK fails sil
 ## Where the pieces live
 
 - Original:
-   `packages/desktop-app/file-manager` (lane engine under `src/layout*`).
+   `package/desktop-app/file-manager` (lane engine under `src/layout*`).
 - Electron prototype:
-   `packages/desktop-app/file-manager-electron` (`src/bands.ts`,
+   `package/desktop-app/file-manager-electron` (`src/bands.ts`,
   `src/styles.css`,
    model port in `src/strip.ts`).
 - GTK sticky prototype:
-   `packages/desktop-app/file-manager-gtk-sticky` (`src/band.rs`,
+   `package/desktop-app/file-manager-gtk-sticky` (`src/band.rs`,
   adapter in `src/layout.rs`,
    shared model via the `file-manager` crate).
 - Compositor test host:
-   `packages/cli/nested-wayland-session`.
+   `package/cli/nested-wayland-session`.
 - Approved-baseline history:
    `doc/handover/file-manager-gtk-build.md`.
 - Interactive companion:

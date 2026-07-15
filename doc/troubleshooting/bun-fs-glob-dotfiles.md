@@ -165,15 +165,15 @@ console.log(dotMatches,);
 
 Two files used `Bun.Glob`:
 
-- `packages/dev-script/file-enforcer/src/io/glob.ts`:
+- `package/dev-script/file-enforcer/src/io/glob.ts`:
   `expandGlob()` requires `dot: true` to match hidden files.
   **Cannot migrate** to `fs.glob` due to this bug.
    Kept on
   `Bun.Glob`.
-- `packages/claude-code-plugin/session-start-housekeeping/src/index.ts`
+- `package/claude-code-plugin/session-start-housekeeping/src/index.ts`
   ;
    matches named directories only
-  (`packages/*/*/dist/final`);
+  (`package/*/*/dist/final`);
    no dot-file concern.
    **Migrated**
   to `node:fs/promises` glob.
@@ -271,7 +271,7 @@ entries at all,
 - `src/bun.js/api/glob.zig:70`:
    `ScanOpts` defaults `.dot =
   false`.
-- `packages/bun-types/bun.d.ts:7646-7650`:
+- `package/bun-types/bun.d.ts:7646-7650`:
    type definition
   confirms `dot` defaults to `false`.
 - `src/js/node/fs.ts`:

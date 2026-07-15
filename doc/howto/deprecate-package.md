@@ -24,7 +24,7 @@ to be able to keep using it.
    config migrations).
 
 If only the third holds,
- a `packages-deprecated/` move plus a README banner
+ a `package-deprecated/` move plus a README banner
 is enough.
  Skip the npm publish steps.
 
@@ -40,8 +40,8 @@ giving users an unambiguous signal.
 
 ## Mental model
 
-The `packages-deprecated/<category>/<name>/` directory mirrors `packages/<category>/<name>/`.
-Both globs (`packages-deprecated/*/*` and `packages/*/*`) appear in
+The `package-deprecated/<category>/<name>/` directory mirrors `package/<category>/<name>/`.
+Both globs (`package-deprecated/*/*` and `package/*/*`) appear in
 `pnpm-workspace.yaml` (so workspace dep resolution still works) and in
 `mise.no-env.toml#config_roots` (so the package's mise tasks are still discoverable
 for a one-time rebuild).
@@ -116,7 +116,7 @@ managed by mise.
 
 2. Add build mise tasks to the package's `mise.toml`.
     Mirror the pattern
-   in `packages/module/matrix/mise.toml`:
+   in `package/module/matrix/mise.toml`:
 
    ```toml
    [tasks.build]
@@ -159,7 +159,7 @@ managed by mise.
     so the
    published bin runs on any Node ≥ 18 host without Bun installed.
 
-5. `pnpm install` then `mise run //packages/<cat>/<name>:build`.
+5. `pnpm install` then `mise run //package/<cat>/<name>:build`.
     Confirm
    `dist/final/node/index.mjs` exists,
     has the right shebang,
@@ -183,16 +183,16 @@ managed by mise.
     This is its own logical unit;
     the deprecation move is separate.
 
-### 2. Move source to `packages-deprecated/`
+### 2. Move source to `package-deprecated/`
 
-The `packages-deprecated/<category>/<name>/` mirror is the deprecation
+The `package-deprecated/<category>/<name>/` mirror is the deprecation
 signal.
  From repo root:
 
 ```sh
-rm -rf packages/<cat>/<name>/node_modules packages/<cat>/<name>/dist
-mkdir -p packages-deprecated/<cat>
-git mv packages/<cat>/<name> packages-deprecated/<cat>/<name>
+rm -rf package/<cat>/<name>/node_modules package/<cat>/<name>/dist
+mkdir -p package-deprecated/<cat>
+git mv package/<cat>/<name> package-deprecated/<cat>/<name>
 ```
 
 The `rm` is so git's rename detection isn't confused by stale node_modules
@@ -204,8 +204,8 @@ symlinks and dist artifacts.
 
 ```yaml
 packages:
-- 'packages/*/*'
-- 'packages-deprecated/*/*'
+- 'package/*/*'
+- 'package-deprecated/*/*'
 ```
 
 `mise.no-env.toml#monorepo.config_roots`:
@@ -213,8 +213,8 @@ packages:
 ```toml
 [monorepo]
 config_roots = [
-  "packages/*/*",
-  "packages-deprecated/*/*",
+  "package/*/*",
+  "package-deprecated/*/*",
 ]
 ```
 
@@ -226,13 +226,13 @@ mise run file-enforcer
 
 ### 4. Mark the package for publish
 
-In `packages-deprecated/<cat>/<name>/package.json`:
+In `package-deprecated/<cat>/<name>/package.json`:
 
 - `"private": false`
 - `"description"`:
    prefix with `DEPRECATED.` (this becomes the
   human-readable summary on the npm page)
-- `"repository": { "type": "git", "url": "...", "directory": "packages-deprecated/<cat>/<name>" }`
+- `"repository": { "type": "git", "url": "...", "directory": "package-deprecated/<cat>/<name>" }`
 - `"publishConfig": { "access": "public" }` for scoped packages
   (`@monochromatic-dev/...` is scoped;
    npm defaults scoped packages to
@@ -247,7 +247,7 @@ Prepend a deprecation block before any other content:
 > **Deprecated.** [One sentence on why we stopped maintaining it.] The
 > published version on npm remains installable indefinitely under npm's
 > no-unpublish policy, and the source stays in
-> `packages-deprecated/<cat>/<name>/` for reference. Use at your own risk;
+> `package-deprecated/<cat>/<name>/` for reference. Use at your own risk;
 > no further updates are planned.
 ```
 
@@ -260,18 +260,18 @@ clone-the-monorepo path.
 
 ```sh
 pnpm install
-mise run //packages-deprecated/<cat>/<name>:build
+mise run //package-deprecated/<cat>/<name>:build
 ```
 
 Verify the bundle from the new location is identical in shape to the old.
-Commit (single cohesive `feat(<pkg>): deprecate to packages-deprecated/`
+Commit (single cohesive `feat(<pkg>): deprecate to package-deprecated/`
 commit;
  the cleanups from step 7 below go in a follow-up).
 
 ### 7. Pre-publish dry run
 
 ```sh
-cd packages-deprecated/<cat>/<name>
+cd package-deprecated/<cat>/<name>
 pnpm publish --dry-run
 ```
 
@@ -295,7 +295,7 @@ non-TTY contexts.
 
 ```sh
 terminal-exec -- bash -c '
-  cd packages-deprecated/<cat>/<name>
+  cd package-deprecated/<cat>/<name>
   pnpm publish
   echo "exit=$?"
   echo "Press Enter to close..."
@@ -344,7 +344,7 @@ The deprecation message format that worked here:
 
 ```text
 No longer maintained. <one sentence on why>. Source archived at
-https://github.com/Aquaticat/Monochromatic/tree/main/packages-deprecated/<cat>/<name> ;
+https://github.com/Aquaticat/Monochromatic/tree/main/package-deprecated/<cat>/<name> ;
 use at your own risk.
 ```
 
@@ -509,7 +509,7 @@ flagging if the deprecated package is supposed to stay tiny.
 - [ ] Registry HTTP returns the deprecation message on the published
       version
 - [ ] README's DEPRECATED block is present and correct
-- [ ] `mise run //packages-deprecated/<cat>/<name>:build` still works
+- [ ] `mise run //package-deprecated/<cat>/<name>:build` still works
       from the repo root (regression check on the move + glob updates)
 - [ ] Any other workspace packages that depended on this package via
       `workspace:*` were updated or accept the deprecation

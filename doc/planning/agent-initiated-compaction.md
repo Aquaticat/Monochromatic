@@ -53,7 +53,7 @@ Mechanism:
 1. New CLI tool,
     "context compressor",
     likely under
-   `packages/dev-script/context-compressor/`.
+   `package/dev-script/context-compressor/`.
     Reads the active transcript
    from `~/.claude/projects/.../sessions/<id>.jsonl`,
     hands it to a

@@ -168,8 +168,8 @@ This questioning pattern teaches:
 - Write a corresponding test file (using `@monochromatic-dev/module-test`) that aims for 100% test coverage
 - Tests can only be run from workspace root using `mise run test`
 - To run tests for specific patterns:
-  - `mise run test:unit -- packages/module/es/src/boolean.equal.unit.test.ts`
-  - `mise run test:browser -- packages/module/es/src/boolean.equal.browser.test.ts`
+  - `mise run test:unit -- package/module/es/src/boolean.equal.unit.test.ts`
+  - `mise run test:browser -- package/module/es/src/boolean.equal.browser.test.ts`
 
 **Cross-Reference**:
  See [Automation Todo](automation.md#testing-automation) for comprehensive testing automation.

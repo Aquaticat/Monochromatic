@@ -114,7 +114,7 @@ Implementation evidence for the passing axes:
    and direct function calls.
   Evidence:
    `file-enforcer.config.ts`,
-   `packages/dev-script/file-enforcer/src/cli.ts`.
+   `package/dev-script/file-enforcer/src/cli.ts`.
 - A2:
    `cat()` records every read,
    glob expansions are tracked,
@@ -164,13 +164,13 @@ Implementation evidence for the passing axes:
    the config is repo TypeScript;
    there is no descriptor collection phase and no engine interpreter.
   Evidence:
-   `packages/dev-script/file-enforcer/README.md`.
+   `package/dev-script/file-enforcer/README.md`.
 
 The two gaps,
  with the package's own acknowledgement:
 
 - A7 check or verify mode:
-   `packages/dev-script/file-enforcer/TODO.md` records "No dry-run mode" and frames it as
+   `package/dev-script/file-enforcer/TODO.md` records "No dry-run mode" and frames it as
   needing a descriptor pattern.
   The roadmap section below shows why that framing overstates the cost.
 - A8 marker-region management:
@@ -189,13 +189,13 @@ The two gaps,
 Measured footprint,
  for scale,
  on 2026-06-15:
-`packages/dev-script/file-enforcer/src` holds seventy-one production TypeScript files,
+`package/dev-script/file-enforcer/src` holds seventy-one production TypeScript files,
 fifty-one unit-test files,
  seven property-test files,
  and one container test.
 The package also defines fuzz and container-isolated mutation tasks.
 Evidence:
- `packages/dev-script/file-enforcer/mise.toml`,
+ `package/dev-script/file-enforcer/mise.toml`,
  `doc/decision/file-enforcer-fuzzing.md`.
 
 ## Method
@@ -432,8 +432,8 @@ This cluster is the direct evidence for the project rule that a tool managing on
    the fix writer writes `path.join(pkg.dir, "package.json")` exclusively.
   Evidence:
    `/tmp/agent/fe-wsconsist-manypkg-20260615` at `97e2ab9bc64e45af099f63f25c515f3792738cfb` (2026-06-10),
-  `packages/cli/src/utils.ts`,
-   `packages/cli/src/checks/index.ts`.
+  `package/cli/src/utils.ts`,
+   `package/cli/src/checks/index.ts`.
   It splits `check` from `fix`,
    the same check-mode shape syncpack has.
 - `sherif` (`QuiiBz/sherif`):
@@ -462,8 +462,8 @@ This cluster is the direct evidence for the project rule that a tool managing on
   persisted through `persistManifest`.
   The official documentation states it does not support arbitrary file writing.
   Evidence tier documentation plus targeted source read at `master` (2026-06-15):
-  `packages/yarnpkg-types/sources/constraints.ts`,
-  `packages/plugin-constraints/sources/commands/constraints.ts`,
+  `package/yarnpkg-types/sources/constraints.ts`,
+  `package/plugin-constraints/sources/commands/constraints.ts`,
   and <https://yarnpkg.com/features/constraints>.
   The lesson here is the load-bearing one for the whole audit:
    programmable rules are not the same as general file
@@ -483,7 +483,7 @@ This cluster is the direct evidence for the project rule that a tool managing on
    so it cannot enforce a derived file even though it can edit one.
   Evidence:
    `/tmp/agent/fe-wsconsist-knip-20260615` at `e265d281b031783dd7f92dfc0db29f60f7138d5b` (2026-06-15),
-  `packages/knip/src/IssueFixer.ts`.
+  `package/knip/src/IssueFixer.ts`.
 
 ### Configuration loaders
 
@@ -546,7 +546,7 @@ They generate no content and protect no destination,
   This is a dependency file-enforcer consumes,
    not a competitor.
   Evidence:
-   `chokidar` in `packages/dev-script/file-enforcer/package.json`.
+   `chokidar` in `package/dev-script/file-enforcer/package.json`.
 
 ### Structured-data editors and TOML tooling, the A4 layer
 
@@ -769,7 +769,7 @@ incremental graph.
    `/tmp/agent/fe-buildgraph-turbo-20260615` at `a562e78a4ee598670675d5b5cd72219ce0e3cfd0` (2026-06-15),
   `crates/turborepo-task-executor/src/command.rs`,
    `crates/turborepo-scm/src/hash_object.rs`,
-  `packages/turbo-types/schemas/schema.json`.
+  `package/turbo-types/schemas/schema.json`.
 
 Axis scoring for the cluster,
  against file-enforcer's checklist:
@@ -917,8 +917,8 @@ model;
    so write behavior could not be verified.
   Evidence:
    `/tmp/agent/fe-region-mdmagic-20260615` at `62b616e573882208412538bb62ded4e122af1673` (2026-06-15),
-  `packages/core/src/index.js`,
-   `packages/block-parser/src/syntax.js`.
+  `package/core/src/index.js`,
+   `package/block-parser/src/syntax.js`.
   Axes:
    passes A8 and a partial A1;
    lacks A7,
@@ -1153,7 +1153,7 @@ Those are catalogued after the roadmap,
     arriving,
      behind the existing watch supervisor.
     Evidence:
-     `packages/dev-script/file-enforcer/TODO.md`,
+     `package/dev-script/file-enforcer/TODO.md`,
      `src/watch/watch-supervisor.ts`.
 
 3.  Marker-region management in unstructured text,
@@ -1297,7 +1297,7 @@ A short absorption roadmap should not be read as an empty backlog.
    for example per-package configs merged at the root.
 
 Evidence:
- `packages/dev-script/file-enforcer/TODO.md`.
+ `package/dev-script/file-enforcer/TODO.md`.
 
 ### What file-enforcer should not absorb
 

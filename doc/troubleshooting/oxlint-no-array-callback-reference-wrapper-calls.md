@@ -127,7 +127,7 @@ the first argument is an `Expression::CallExpression`,
 ## Verification
 
 The replacement rule is covered by fixtures in
-`packages/test-fixture/oxlint-no-restricted-syntax/src/`:
+`package/test-fixture/oxlint-no-restricted-syntax/src/`:
 
 - `invalid/no-array-callback-reference.ts` keeps the unsafe cases:
   multi-parameter `findIndex(hasIndexFootgun,)`,
@@ -145,7 +145,7 @@ The package unit test command exercised both catalogs:
 
 ```sh
 # /var/home/user/Monochromatic
-mise run //packages/oxlint-plugin/no-restricted-syntax:test:unit
+mise run //package/oxlint-plugin/no-restricted-syntax:test:unit
 ```
 
 Observed passing suites included:
@@ -159,8 +159,8 @@ The implementation also passed the package oxlint and type checks:
 
 ```sh
 # /var/home/user/Monochromatic
-mise run //packages/oxlint-plugin/no-restricted-syntax:lint:oxlint
-mise run //packages/oxlint-plugin/no-restricted-syntax:lint:types
+mise run //package/oxlint-plugin/no-restricted-syntax:lint:oxlint
+mise run //package/oxlint-plugin/no-restricted-syntax:lint:types
 ```
 
 Both completed with zero reported lint and type errors.
@@ -172,7 +172,7 @@ Both completed with zero reported lint and type errors.
 The landed workaround disables the built-in rule and enables a project-owned JS plugin rule:
 
 ```typescript
-// packages/config/oxlint/src/rule/restriction.ts
+// package/config/oxlint/src/rule/restriction.ts
 'unicorn/no-array-callback-reference': 'off',
 'no-restricted-syntax/no-array-callback-reference': 'warn',
 ```

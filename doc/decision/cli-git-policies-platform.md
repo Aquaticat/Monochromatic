@@ -8,13 +8,13 @@ The public package is prepared for npm distribution,
 but registry publication remains indefinitely deferred in #358.
 
 The canonical implementation interface is
-`packages/git-policy/cli/SPEC.md`.
+`package/git-policy/cli/SPEC.md`.
 The execution record is
 `doc/handover/cli-git-policies-platform.md`.
 
 ## Decision
 
-Turn `packages/git-policy/cli` into a pluggable Git policies platform modeled on Oxlint.
+Turn `package/git-policy/cli` into a pluggable Git policies platform modeled on Oxlint.
 Keep the existing shadowing `git` executable as the enforcement point.
 Expose configurable built-in and third-party policies,
 fixed command transforms,
@@ -111,7 +111,7 @@ Lazy values are memoized for one candidate-state version only.
 Applying a patch invalidates candidate-dependent memoized data before another policy runs.
 
 Exact public TypeScript declarations and invariants live in
-`packages/git-policy/cli/SPEC.md`.
+`package/git-policy/cli/SPEC.md`.
 
 ## Policy identifiers and configuration
 
@@ -471,7 +471,7 @@ The cascade intentionally removes inherited authority from sibling subtrees and 
 
 Policy findings use stable JSON Lines.
 The schema version is frozen in
-`packages/git-policy/cli/SPEC.md`.
+`package/git-policy/cli/SPEC.md`.
 Every finding includes a human-readable message.
 Public output contains only findings from the final stable pass.
 Changed-pass findings are provisional and never emitted as authoritative results.
@@ -687,12 +687,12 @@ Empty and binary-looking files remain byte-identical.
 
 Exact exclusion families are:
 
-- `packages/fuzz/forbidden-strings/seeds/**`
+- `package/fuzz/forbidden-strings/seeds/**`
   (originally `corpus/**`;
    renamed when committed seeds moved to tracked `seeds/<target>/` dirs,
    see `doc/decision/gitignore-negations.md`);
-- `packages/rust-module/forbidden-regex.fuzz/seeds/**`;
-- `packages/test-fixture/toml-edit/src/**`;
+- `package/rust-module/forbidden-regex.fuzz/seeds/**`;
+- `package/test-fixture/toml-edit/src/**`;
 - `**/dist/final/node/**`;
 - `**/bundle/node/**`
   (committed Claude Code plugin bundles,
@@ -819,15 +819,15 @@ Consumer lockfiles and self-contained builds govern plugin inputs.
 
 ## References
 
-- `packages/git-policy/cli/SPEC.md`:
+- `package/git-policy/cli/SPEC.md`:
   canonical implementation interface and verification contract.
 - `doc/handover/cli-git-policies-platform.md`:
   implementation state and evidence.
-- `packages/git-policy/cli/README.md` and `packages/git-policy/cli/src/index.ts`:
+- `package/git-policy/cli/README.md` and `package/git-policy/cli/src/index.ts`:
   current wrapper behavior.
-- `packages/git-policy/cli/src/escape-hatch.ts`:
+- `package/git-policy/cli/src/escape-hatch.ts`:
   parser-based invocation escape hatches.
-- `packages/module/fs-id/README.md`:
+- `package/module/fs-id/README.md`:
   implemented filesystem identity prerequisite and verified platform behavior.
 - `doc/planning/final-newline-normalization.md`:
   final-newline behavior and exclusions.

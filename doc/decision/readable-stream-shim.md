@@ -17,7 +17,7 @@ The package is large,
  occasionally flagged by audit tooling for transitive churn (the recent `abort-controller` purge passed through `readable-stream@4`'s fallback guards),
  and ships a parallel class hierarchy that breaks `instanceof` identity against `node:stream` for any consumer that happens to mix the two.
 
-The workspace already has a precedent for replacing userland mirrors of platform APIs with a `link:packages/shim/<name>` override (see `packages/shim/node-domexception/`).
+The workspace already has a precedent for replacing userland mirrors of platform APIs with a `link:package/shim/<name>` override (see `package/shim/node-domexception/`).
 The same mechanism applies cleanly here:
  a single workspace package that re-exports `node:stream`,
  wired in via `pnpm-workspace.yaml > overrides`,
@@ -39,10 +39,10 @@ The outcome:
 ## Shim package layout
 
 Package root:
- `packages/shim/readable-stream/`.
+ `package/shim/readable-stream/`.
 Five top-level files plus a `lib/` directory of five 3-line re-exports.
 
-### `packages/shim/readable-stream/package.json`
+### `package/shim/readable-stream/package.json`
 
 ```json
 {
@@ -81,7 +81,7 @@ Five top-level files plus a `lib/` directory of five 3-line re-exports.
 
 Notes:
 
-- Fields mirror `packages/shim/node-domexception/package.json` (`private`,
+- Fields mirror `package/shim/node-domexception/package.json` (`private`,
    `type: "commonjs"`,
    `main` + `types`,
    explicit `exports`,
@@ -94,7 +94,7 @@ Notes:
   If a future consumer requires an additional subpath,
    the remediation is a one-line `exports` entry plus a 1-line file under `lib/`.
 
-### `packages/shim/readable-stream/index.cjs`
+### `package/shim/readable-stream/index.cjs`
 
 ```js
 'use strict';
@@ -154,7 +154,7 @@ For the v4 surface (`compose`,
 all are properties of `node:stream` on Node 22+,
  so all are defined as own properties on the default export by the `Object.keys(Stream)` enumeration without having to spell them out.
 
-### `packages/shim/readable-stream/index.d.cts`
+### `package/shim/readable-stream/index.d.cts`
 
 ```ts
 import Stream = require('node:stream');
@@ -170,7 +170,7 @@ A more precise declaration mirroring the runtime shape (a `Readable`-typed calla
  etc. by name,
  which the namespace export provides.
 
-### `packages/shim/readable-stream/lib/_stream_writable.js`
+### `package/shim/readable-stream/lib/_stream_writable.js`
 
 ```js
 'use strict';
@@ -178,7 +178,7 @@ A more precise declaration mirroring the runtime shape (a `Readable`-typed calla
 module.exports = require('node:stream',).Writable;
 ```
 
-### `packages/shim/readable-stream/lib/_stream_readable.js`
+### `package/shim/readable-stream/lib/_stream_readable.js`
 
 ```js
 'use strict';
@@ -186,7 +186,7 @@ module.exports = require('node:stream',).Writable;
 module.exports = require('node:stream',).Readable;
 ```
 
-### `packages/shim/readable-stream/lib/_stream_transform.js`
+### `package/shim/readable-stream/lib/_stream_transform.js`
 
 ```js
 'use strict';
@@ -194,7 +194,7 @@ module.exports = require('node:stream',).Readable;
 module.exports = require('node:stream',).Transform;
 ```
 
-### `packages/shim/readable-stream/lib/_stream_duplex.js`
+### `package/shim/readable-stream/lib/_stream_duplex.js`
 
 ```js
 'use strict';
@@ -202,7 +202,7 @@ module.exports = require('node:stream',).Transform;
 module.exports = require('node:stream',).Duplex;
 ```
 
-### `packages/shim/readable-stream/lib/_stream_passthrough.js`
+### `package/shim/readable-stream/lib/_stream_passthrough.js`
 
 ```js
 'use strict';
@@ -218,7 +218,7 @@ Only `lib/_stream_writable.js` is currently imported by reachable code (`winston
 The other four are provided defensively to match the full set of `_stream_*.js` files shipped by `readable-stream@3.6.2`;
  this costs five 3-line files and keeps the shim useful if a future winston-transport or third-party patch reaches for another subpath.
 
-### `packages/shim/readable-stream/mise.toml`
+### `package/shim/readable-stream/mise.toml`
 
 ```toml
 [tasks.lint]
@@ -231,7 +231,7 @@ extends = "lint:oxlint"
 extends = "lint:types"
 ```
 
-Identical to `packages/shim/node-domexception/mise.toml`.
+Identical to `package/shim/node-domexception/mise.toml`.
 
 ## Upstream package.json fields and shim coverage
 
@@ -322,18 +322,18 @@ Not included in the shim.
 Add one line to the `overrides` block:
 
 ```yaml
-'readable-stream': 'link:packages/shim/readable-stream'
+'readable-stream': 'link:package/shim/readable-stream'
 ```
 
 A single override entry suffices for both v3.6.2 and v4.7.0.
 The `link:` protocol is a path resolver,
  not a semver resolver:
  pnpm substitutes the symlinked path regardless of which version a transitive dependent declared,
- identical to how the existing `'node-domexception': 'link:packages/shim/node-domexception'` line handles every upstream `node-domexception` request.
+ identical to how the existing `'node-domexception': 'link:package/shim/node-domexception'` line handles every upstream `node-domexception` request.
 No version-qualified entry (`readable-stream@3`,
  `readable-stream@4`) is needed.
 
-Place the new line adjacent to the existing `'node-domexception': 'link:packages/shim/node-domexception'` entry inside `overrides`,
+Place the new line adjacent to the existing `'node-domexception': 'link:package/shim/node-domexception'` entry inside `overrides`,
  in alphabetical position (after `'node-domexception'`).
 
 ## Verification plan
@@ -347,7 +347,7 @@ After wiring (`pnpm-workspace.yaml` override added,
       `winston@3.15.0`,
       `winston-transport@4.9.0`,
       `isomorphic-git@1.37.6`),
-      each pointing at `../../../../packages/shim/readable-stream`.
+      each pointing at `../../../../package/shim/readable-stream`.
    - Two orphan store directories may linger at `node_modules/.pnpm/readable-stream@3.6.2/` and `node_modules/.pnpm/readable-stream@4.7.0/`.
       They are inert:
       no consumer's symlink resolves through them,
@@ -357,10 +357,10 @@ After wiring (`pnpm-workspace.yaml` override added,
      The primary signal that the override is live is the three consumer symlinks above;
       the orphan dirs disappear on the next full `node_modules` rebuild.
 2. Type-check and lint the shim package itself.
-   - `mise run //packages/shim/readable-stream:lint:types`
-   - `mise run //packages/shim/readable-stream:lint:oxlint`
+   - `mise run //package/shim/readable-stream:lint:types`
+   - `mise run //package/shim/readable-stream:lint:oxlint`
 3. Exercise winston via the mcp/nvim chain.
-   - `mise run //packages/mcp/nvim:lint:types` (the package depends on `neovim`,
+   - `mise run //package/mcp/nvim:lint:types` (the package depends on `neovim`,
       which depends on `winston`;
       type-check confirms the type shape of the shim matches what winston's `.d.ts` files expect).
    - Runtime is untested at the `mcp/nvim → neovim → winston` integration boundary:
@@ -378,8 +378,8 @@ After wiring (`pnpm-workspace.yaml` override added,
      `winston-transport@4.9.0/modern.js`'s deep import of `readable-stream/lib/_stream_writable.js` resolved without `ERR_PACKAGE_PATH_NOT_EXPORTED`.
      A future MCP host integration test would close this gap.
 4. Exercise isomorphic-git via webapp-forge/server.
-   - `mise run //packages/webapp-forge/server:lint:types`
-   - `mise run //packages/webapp-forge/server:dev` (which expands to `mise watch -w src -r -- start:server`,
+   - `mise run //package/webapp-forge/server:lint:types`
+   - `mise run //package/webapp-forge/server:dev` (which expands to `mise watch -w src -r -- start:server`,
       then `bun src/index.ts`).
      Hit an endpoint that drives `src/git/iso-server.ts` (the file identified as the iso-git entry point) and look for:
      - successful HTTP responses;
@@ -389,8 +389,8 @@ After wiring (`pnpm-workspace.yaml` override added,
      - on a clone or fetch operation,
         pack data streams without truncation (full object count returned).
 5. Exercise isomorphic-git via webapp-forge/stress.
-   - `mise run //packages/webapp-forge/stress:lint:types`
-   - `mise run //packages/webapp-forge/stress:stress:hot-repo` (the hot-repo scenario uses iso-git heavily through `src/scenarios/force-push.ts`).
+   - `mise run //package/webapp-forge/stress:lint:types`
+   - `mise run //package/webapp-forge/stress:stress:hot-repo` (the hot-repo scenario uses iso-git heavily through `src/scenarios/force-push.ts`).
      Look for:
       scenario completes its declared iteration count;
       no stream-related errors in the scenario output;
@@ -402,11 +402,11 @@ After wiring (`pnpm-workspace.yaml` override added,
      All three should print `true`.
      The third confirms the `module.exports.Stream = Stream` assignment took effect.
 7. Final build-and-test pass across the affected packages.
-   - `mise run //packages/mcp/nvim:test` (if a test task exists;
+   - `mise run //package/mcp/nvim:test` (if a test task exists;
       the read showed only lint tasks,
       so this may be a no-op).
-   - `mise run //packages/webapp-forge/server:test:unit`
-   - `mise run //packages/webapp-forge/stress:test:unit`
+   - `mise run //package/webapp-forge/server:test:unit`
+   - `mise run //package/webapp-forge/stress:test:unit`
 
 The verification crosses the integration boundary in steps 3 to 5 (running the consumer,
  observing real I/O).

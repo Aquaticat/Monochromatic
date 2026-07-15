@@ -1,7 +1,7 @@
 # Keep dist committed for Claude Code plugin bundles
 
 Records the decision not to strip the `dist/` carve-out in `.gitignore` that allows the eight Claude Code plugins
-under `packages/claude-code-plugin/` to ship their built bundles inside this repo.
+under `package/claude-code-plugin/` to ship their built bundles inside this repo.
 Future sessions consult this before re-proposing a clean-up of "dist in git" against this carve-out.
 
 This document is appended to,
@@ -14,7 +14,7 @@ When new constraints force re-evaluation,
 
 The repo distributes Claude Code plugins through `.claude-plugin/marketplace.json`,
  which points consumers at
-directories such as `./packages/claude-code-plugin/terminal-title`.
+directories such as `./package/claude-code-plugin/terminal-title`.
 Each plugin's `.claude-plugin/plugin.json` declares hooks of the form:
 
 ```json
@@ -105,7 +105,7 @@ and the standalone CLI bundles
  `ccsr.js`,
  `cctt.js`) that those plugins reference.
 
-Each plugin's `package.json` (verified at e.g. `packages/claude-code-plugin/terminal-title/package.json:18`)
+Each plugin's `package.json` (verified at e.g. `package/claude-code-plugin/terminal-title/package.json:18`)
 depends on:
 
 - `@monochromatic-dev/claude-code-plugin-source` via `workspace:*` (runtime).
@@ -158,7 +158,7 @@ The cost the carve-out is paying is also bounded:
    isolated from human-edited code.
 - Each plugin's `dist/final/` is a deterministic `tsdown` bundle.
 - `.gitignore` denies new `dist/` paths anywhere else.
-  The carve-out stays scoped to `packages/claude-code-plugin/*/dist/`,
+  The carve-out stays scoped to `package/claude-code-plugin/*/dist/`,
   with `.js` shims re-included because the global `*.js` rule would otherwise hide them.
 - The `session-start-housekeeping` plugin already cleans stale dist artifacts on session start,
   reducing the "forgot to rebuild" risk for the workspace's own consumption.
@@ -246,7 +246,7 @@ Rejected because:
 
 ### Move the plugins to a separate distribution repo
 
-Split `packages/claude-code-plugin/` into its own repository,
+Split `package/claude-code-plugin/` into its own repository,
  publish dist there,
  keep this monorepo
 free of any committed dist.

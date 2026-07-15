@@ -3,7 +3,7 @@
 ## Purpose
 
 Implement a new `stylistic/comma-dangle` rule in
-`packages/oxlint-plugin/stylistic`.
+`package/oxlint-plugin/stylistic`.
 The rule should require trailing commas everywhere oxlint's JavaScript plugin
 AST exposes a comma-delimited list where a trailing comma is valid.
 It should support only the `always` behavior and no options.
@@ -25,24 +25,24 @@ Do not edit the upstream `oxc` Rust crates for this task.
 
 Relevant files:
 
-- `packages/oxlint-plugin/stylistic/src/index.ts`:
+- `package/oxlint-plugin/stylistic/src/index.ts`:
    plugin entry point.
-- `packages/oxlint-plugin/stylistic/src/rule/semi.ts`:
+- `package/oxlint-plugin/stylistic/src/rule/semi.ts`:
    closest existing
   always-only,
    no-options,
    auto-fixable rule.
-- `packages/oxlint-plugin/stylistic/src/rule/argument-per-line.ts`:
+- `package/oxlint-plugin/stylistic/src/rule/argument-per-line.ts`:
    simple
   visitor shape and local structural node typing.
-- `packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`:
+- `package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`:
   fixture-based diagnostics and autofix tests.
-- `packages/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`:
+- `package/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`:
    all plugin
   rules enabled for fixtures.
-- `packages/test-fixture/oxlint-stylistic/src/valid/`:
+- `package/test-fixture/oxlint-stylistic/src/valid/`:
    valid fixtures.
-- `packages/test-fixture/oxlint-stylistic/src/invalid/`:
+- `package/test-fixture/oxlint-stylistic/src/invalid/`:
    invalid and autofix
   fixtures.
 
@@ -101,14 +101,14 @@ port of the full ESLint rule.
 
 The existing fixtures confirm this design fits established repo convention rather
 than imposing a new one.
-`packages/test-fixture/oxlint-stylistic/src/valid/single-item.ts` already places a
+`package/test-fixture/oxlint-stylistic/src/valid/single-item.ts` already places a
 trailing comma on every single-item construct (`[1,]`,
  `{ host: 'localhost', }`,
 `[string,]`,
  `export { identity, }`,
  `identity(x: number,)`),
  and
-`packages/test-fixture/oxlint-stylistic/src/invalid/fixable-trailing-comma.ts`
+`package/test-fixture/oxlint-stylistic/src/invalid/fixable-trailing-comma.ts`
 exists solely to assert that `--fix` preserves trailing commas.
 The repo already mandates trailing commas everywhere,
  so always-only with no
@@ -204,7 +204,7 @@ The current package already covers the same TypeScript function-like set in
 
 ## Implementation outline
 
-Create `packages/oxlint-plugin/stylistic/src/rule/comma-dangle.ts`.
+Create `package/oxlint-plugin/stylistic/src/rule/comma-dangle.ts`.
 Use `semi.ts` as the style reference for no-options metadata and reporting.
 Use small local structural types,
  as the existing rules do,
@@ -214,7 +214,7 @@ to model the whole ESTree graph.
 Expected rule shape:
 
 ```typescript
-// packages/oxlint-plugin/stylistic/src/rule/comma-dangle.ts
+// package/oxlint-plugin/stylistic/src/rule/comma-dangle.ts
 import type {
   Context,
   CreateOnceRule,
@@ -240,7 +240,7 @@ const CLOSE_DELIMITERS = new Set([
 Use helpers shaped like this:
 
 ```typescript
-// packages/oxlint-plugin/stylistic/src/rule/comma-dangle.ts
+// package/oxlint-plugin/stylistic/src/rule/comma-dangle.ts
 /** Parameters for trailing-comma checks. */
 type CheckTrailingCommaParams = {
   /** Rule context used for token lookup and reporting. */
@@ -328,7 +328,7 @@ Use `context.report` with a typed fixer callback,
  matching `semi.ts`.
 
 ```typescript
-// packages/oxlint-plugin/stylistic/src/rule/comma-dangle.ts
+// package/oxlint-plugin/stylistic/src/rule/comma-dangle.ts
 context.report({
   node: lastItem,
   messageId: 'missingComma',
@@ -398,20 +398,20 @@ being asserted.
 
 Add:
 
-- `packages/oxlint-plugin/stylistic/src/rule/comma-dangle.ts`.
-- `packages/test-fixture/oxlint-stylistic/src/valid/comma-dangle.ts`.
-- `packages/test-fixture/oxlint-stylistic/src/invalid/comma-dangle.ts`.
+- `package/oxlint-plugin/stylistic/src/rule/comma-dangle.ts`.
+- `package/test-fixture/oxlint-stylistic/src/valid/comma-dangle.ts`.
+- `package/test-fixture/oxlint-stylistic/src/invalid/comma-dangle.ts`.
 
 Update:
 
-- `packages/oxlint-plugin/stylistic/src/index.ts`:
+- `package/oxlint-plugin/stylistic/src/index.ts`:
   import `commaDangle` and register `'comma-dangle': commaDangle`.
-- `packages/oxlint-plugin/stylistic/README.md`:
+- `package/oxlint-plugin/stylistic/README.md`:
   add a rule entry under a new or existing layout section.
   Mention no options and always-only semantics.
-- `packages/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`:
+- `package/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`:
   enable `stylistic/comma-dangle`.
-- `packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`:
+- `package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`:
   add diagnostic and autofix assertions.
 - Existing valid and invalid fixtures as needed;
    see "Existing fixture impact"
@@ -421,7 +421,7 @@ Update:
 
 Measured surface at handoff:
  23 fixtures in
-`packages/test-fixture/oxlint-stylistic/src/invalid/`,
+`package/test-fixture/oxlint-stylistic/src/invalid/`,
  7 in `src/valid/`.
 Enabling `stylistic/comma-dangle` globally in `.oxlintrc.fixture.json` affects them
 as follows.
@@ -546,7 +546,7 @@ surrounding whitespace or comments.
 Include at least one comment case:
 
 ```typescript
-// packages/test-fixture/oxlint-stylistic/src/invalid/comma-dangle.ts
+// package/test-fixture/oxlint-stylistic/src/invalid/comma-dangle.ts
 const value = {
   one: 1 // keep comment
 };
@@ -555,7 +555,7 @@ const value = {
 Expected fixed shape:
 
 ```typescript
-// packages/test-fixture/oxlint-stylistic/src/invalid/comma-dangle.ts
+// package/test-fixture/oxlint-stylistic/src/invalid/comma-dangle.ts
 const value = {
   one: 1, // keep comment
 };
@@ -566,7 +566,7 @@ const value = {
 Add a valid fixture test:
 
 ```typescript
-// packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts
+// package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts
 it({
   name: 'comma-dangle valid cases produce no violations',
   fn: async () => {
@@ -581,7 +581,7 @@ Do not assert the full diagnostics array if the fixture also triggers existing
 rules.
 
 ```typescript
-// packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts
+// package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts
 it({
   name: 'reports missing trailing commas',
   fn: async () => {
@@ -600,7 +600,7 @@ it({
 Add an option rejection test mirroring the `semi` test if practical:
 
 ```jsonc
-// packages/test-fixture/oxlint-stylistic/.oxlintrc.comma-dangle-configured.fixture.json
+// package/test-fixture/oxlint-stylistic/.oxlintrc.comma-dangle-configured.fixture.json
 {
   "$schema": "../../../node_modules/oxlint/configuration_schema.json",
   "jsPlugins": [
@@ -641,13 +641,13 @@ Run package-scoped tasks,
 The available package tasks were measured with `mise tasks ls --all --name-only`:
 
 ```bash
-mise run //packages/oxlint-plugin/stylistic:lint:types; mise run //packages/oxlint-plugin/stylistic:test:unit
+mise run //package/oxlint-plugin/stylistic:lint:types; mise run //package/oxlint-plugin/stylistic:test:unit
 ```
 
 Also run package oxlint after TypeScript passes:
 
 ```bash
-mise run //packages/oxlint-plugin/stylistic:lint:oxlint
+mise run //package/oxlint-plugin/stylistic:lint:oxlint
 ```
 
 If a targeted real-oxlint boundary check is needed,
@@ -667,6 +667,6 @@ The next session is done when:
 - Existing fixture tests account for the new rule's diagnostics and autofix
   output.
 - `README.md` documents the rule.
-- `mise run //packages/oxlint-plugin/stylistic:lint:types` passes.
-- `mise run //packages/oxlint-plugin/stylistic:test:unit` passes.
-- `mise run //packages/oxlint-plugin/stylistic:lint:oxlint` passes.
+- `mise run //package/oxlint-plugin/stylistic:lint:types` passes.
+- `mise run //package/oxlint-plugin/stylistic:test:unit` passes.
+- `mise run //package/oxlint-plugin/stylistic:lint:oxlint` passes.

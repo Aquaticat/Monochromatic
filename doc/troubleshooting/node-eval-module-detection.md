@@ -86,8 +86,8 @@ The two symptom variants are the two exits of that catch:
 A falsified hypothesis,
  recorded so nobody re-derives it:
  the nearest `package.json` `"type": "module"` field does **not** govern `--eval`.
-Both the failing package (`packages/claude-code-plugin/source`)
- and a passing one (`packages/pi-plugin/auto-mode`) declare `"type": "module"`;
+Both the failing package (`package/claude-code-plugin/source`)
+ and a passing one (`package/pi-plugin/auto-mode`) declare `"type": "module"`;
  the behavior difference tracked the detection flag alone,
  and a bare `node -e` body with top-level `await` ran fine
  from a scratch directory whose `package.json` had no `type` field (detection on).
@@ -109,7 +109,7 @@ Fails (detection off,
 ```bash
 export NODE_OPTIONS='--no-experimental-detect-module'
 node -e 'const { existsSync } = await import("node:fs")'
-mise run //packages/claude-code-plugin/source:lint:types   # before commit fa20a73a7
+mise run //package/claude-code-plugin/source:lint:types   # before commit fa20a73a7
 ```
 
 Works:
@@ -119,7 +119,7 @@ node -e 'const { existsSync } = await import("node:fs")'   # detection on (defau
 node --input-type=module -e 'const { existsSync } = await import("node:fs")'
 export NODE_OPTIONS='--no-experimental-detect-module'
 node --input-type=module-typescript -e 'const t: string = "ok"; await import("node:fs")'
-mise run //packages/claude-code-plugin/source:lint:types   # after commit fa20a73a7
+mise run //package/claude-code-plugin/source:lint:types   # after commit fa20a73a7
 ```
 
 CommonJS-style bodies (`require(...)`,

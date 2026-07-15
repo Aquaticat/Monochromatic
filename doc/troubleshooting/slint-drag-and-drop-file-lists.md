@@ -17,7 +17,7 @@ carry structured app-local data", "copy and move are distinguishable") pass.
 
 ## Symptom
 
-In the prototype at `packages/desktop-app/file-manager/`, dragging a directory
+In the prototype at `package/desktop-app/file-manager/`, dragging a directory
 row onto another pane works end to end:
 the row's `DragArea` payload (its `(pane, row)` identity) reaches the target
 pane's `DropArea`, and the negotiated move/copy action is recorded.
@@ -186,8 +186,8 @@ Reproduction harness:
 build the prototype with the embedded Slint MCP server and drive it headless.
 
 ```bash
-# packages/desktop-app/file-manager
-mise run //packages/desktop-app/file-manager:mcp   # binds 127.0.0.1:9317
+# package/desktop-app/file-manager
+mise run //package/desktop-app/file-manager:mcp   # binds 127.0.0.1:9317
 ```
 
 Works (internal pane-to-pane drag, this prototype):
@@ -227,7 +227,7 @@ free of text and image, so the drag stays in-window on every backend and behaves
 deterministically:
 
 ```rust
-// packages/desktop-app/file-manager/src/drag_drop.rs
+// package/desktop-app/file-manager/src/drag_drop.rs
 let mut transfer = DataTransfer::default();
 transfer.set_user_data(Rc::new(DragIdentity { source_pane_id, source_row }));
 // no set_plain_text / set_image
@@ -235,7 +235,7 @@ transfer
 ```
 
 ```slint
-// packages/desktop-app/file-manager/ui/app.slint
+// package/desktop-app/file-manager/ui/app.slint
 drag := DragArea {
     data: root.make-drag-data(pane.pane-id, row.index);
     allow-copy: true;

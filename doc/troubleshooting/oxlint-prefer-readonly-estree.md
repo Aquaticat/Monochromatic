@@ -33,13 +33,13 @@ It is not the current semantic rule's resolution path.
 
 The repository retired:
 
-- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.ts`;
-- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg.ts`.
+- `package/config/oxlint/src/rule/prefer-readonly-parameter-types.ts`;
+- `package/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg.ts`.
 
 Both files are absent in the current tree.
 The replacement rule is
 `prefer-readonly-parameter-type/prefer-readonly-parameter-types` in
-`packages/oxlint-plugin/prefer-readonly-parameter-type`.
+`package/oxlint-plugin/prefer-readonly-parameter-type`.
 
 Oxlint visitor nodes are foreign-owned values supplied by the plugin host.
 Actual visitor ingress can use
@@ -68,9 +68,9 @@ A direct path check confirmed that both retired configuration files are absent.
 Current semantic-plugin acceptance uses:
 
 ```sh
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:types
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 ```
 
 All three tasks pass after the invoked-capability and foreign-provenance changes.

@@ -36,7 +36,7 @@ behaviourally verified at v0.6.9 (`264e85b`,
 Update (2026-06-19,
  resharp v0.6.13,
  the version now pinned in
-`packages/cli/forbidden-strings/Cargo.lock`):
+`package/cli/forbidden-strings/Cargo.lock`):
  every known crash and soundness
 reproducer from the 2026-06-04 and 2026-06-11 campaigns was re-run against
 published v0.6.13 in both debug and release.
@@ -81,7 +81,7 @@ forbidden-strings consumer guards.
   `lookaround_in_alternation_with_sibling`,
   `complement_intersection_quantified_group`,
   `nested_lookahead_in_quantified_group`) in
-  `packages/cli/forbidden-strings/src/rule/engine.rs` stay as
+  `package/cli/forbidden-strings/src/rule/engine.rs` stay as
   belt-and-suspenders;
    over-rejection is fail-closed-safe.
 - Bug G (deep-nesting stack-overflow abort),
@@ -108,7 +108,7 @@ forbidden-strings consumer guards.
   rather than an absolute budget.
    The consumer-side `nesting_depth`
   pre-validator (cap 1,000) in
-  `packages/cli/forbidden-strings/src/rule/nesting.rs` stays
+  `package/cli/forbidden-strings/src/rule/nesting.rs` stays
   belt-and-suspenders even though `max_depth` is now upstream.
 - The 0.6.8 "compile-time timeout on small patterns" finding was a fork
   fuzz-harness measurement artifact (six compiles per libFuzzer unit under
@@ -361,7 +361,7 @@ published 2026-05-09) via a synthetic Rust crate calling
 `resharp::Regex::new` directly on each pattern,
  and against `resharp 0.5.1`
 via the forbidden-strings 0.1.0 release binary
-(`packages/cli/forbidden-strings/target/release/forbidden-strings`).
+(`package/cli/forbidden-strings/target/release/forbidden-strings`).
 The `0.5.1`-to-`0.5.2` upstream delta is streaming/seeking,
  aarch64+wasm
 build targets,
@@ -425,7 +425,7 @@ Test harness (binary route):
 ```bash
 cd /tmp
 touch probe-input.txt
-FS=/var/home/user/Monochromatic/packages/cli/forbidden-strings/target/release/forbidden-strings
+FS=/var/home/user/Monochromatic/package/cli/forbidden-strings/target/release/forbidden-strings
 echo '<rule>' > probe-rule.txt
 $FS --rules probe-rule.txt probe-input.txt
 echo "EXIT=$?"   # 0: compile + scan OK; 2: rule error

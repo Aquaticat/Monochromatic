@@ -154,12 +154,12 @@ Builds and runs that pass with the `+aes` config in place:
 
 ```bash
 # Desktop: gxhash compiles under +aes (the compile_error stays silent), tests pass on x86_64.
-mise run //packages/music-player/desktop-app:lint        # cargo check
-mise run //packages/music-player/desktop-app:test         # 77 tests pass (debug, x86_64)
-mise run //packages/music-player/desktop-app:lint:clippy  # -D warnings, clean
+mise run //package/music-player/desktop-app:lint        # cargo check
+mise run //package/music-player/desktop-app:test         # 77 tests pass (debug, x86_64)
+mise run //package/music-player/desktop-app:lint:clippy  # -D warnings, clean
 
 # Android: cross-compile both ABIs (the compile_error canary) and run the fingerprint on device.
-mise run //packages/music-player/android-app:build:native # gxhash v3.5.0 compiles for arm64 + x86_64
+mise run //package/music-player/android-app:build:native # gxhash v3.5.0 compiles for arm64 + x86_64
 adb shell am instrument -w \
   -e class 'dev.monochromatic.musicplayer.NativeBridgeTest#fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice' \
   dev.monochromatic.musicplayer.test/androidx.test.runner.AndroidJUnitRunner   # OK (1 test) on a Pixel 6

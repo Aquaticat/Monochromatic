@@ -20,7 +20,7 @@ matches the canonical shape.
 You see warnings when running dprint or other tools:
 
 ```txt
-warn: Non-relative path "packages/config/oxlint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
+warn: Non-relative path "package/config/oxlint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
 ```
 
 ### Solution
@@ -830,7 +830,7 @@ exists in a directory covered by a `tsconfig.json`:
 
 ```txt
 panic: ScriptKind must be specified when parsing source file:
-  /var/home/user/Monochromatic/packages/module/test/architecture.svg
+  /var/home/user/Monochromatic/package/module/test/architecture.svg
 ```
 
 ### Root cause

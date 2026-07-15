@@ -5,7 +5,7 @@ Status:
  implementation not yet started.
  Date:
  2026-06-13.
-Applies to both `packages/music-player/desktop-app` and `packages/music-player/android-app`.
+Applies to both `package/music-player/desktop-app` and `package/music-player/android-app`.
 
 ## Context
 

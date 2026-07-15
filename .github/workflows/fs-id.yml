@@ -4,12 +4,12 @@ on:
   pull_request:
     branches: ['main']
     paths:
-    - 'packages/module/fs-id/**'
+    - 'package/module/fs-id/**'
     - '.github/workflows/fs-id.yml'
   push:
     branches: ['main']
     paths:
-    - 'packages/module/fs-id/**'
+    - 'package/module/fs-id/**'
     - '.github/workflows/fs-id.yml'
 
 permissions:
@@ -39,4 +39,4 @@ jobs:
         package-manager-cache: false
 
     - name: Resolve preferred identity
-      run: node packages/module/fs-id/src/host-evidence.ts
+      run: node package/module/fs-id/src/host-evidence.ts

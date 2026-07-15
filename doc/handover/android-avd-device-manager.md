@@ -22,7 +22,7 @@ to installed Android 37.0 paths.
 Editing `.idea/deviceManager.xml` did not help and was not part of the final fix.
 
 AGP incompatibility is a verified Android sync failure,
-because `packages/music-player/android-app` uses AGP 9.2.1 and the current IDEA Android plugin reports latest
+because `package/music-player/android-app` uses AGP 9.2.1 and the current IDEA Android plugin reports latest
 supported AGP 9.0.0.
 That likely explains missing Android model, Android facets, or run-target behavior tied to this project.
 It is no longer proven as the sole explanation for an empty Device Manager inventory:
@@ -237,11 +237,11 @@ Opened the Android package root as a separate IDEA project after user approval:
 
 ```sh
 /var/home/user/.local/share/JetBrains/Toolbox/scripts/idea \
-  /var/home/user/Monochromatic/packages/music-player/android-app
+  /var/home/user/Monochromatic/package/music-player/android-app
 ```
 
 `idea.log` then showed a new `Project(name=android-app, ...)`,
-project root `/var/home/user/Monochromatic/packages/music-player/android-app`,
+project root `/var/home/user/Monochromatic/package/music-player/android-app`,
 ADB status retrieval from the Android plugin, and Gradle project sync updates for that path.
 User checked Device Manager in the new `android-app` IDEA window before the SDK table fix.
 Result then: it still did not show the AVD.
@@ -257,7 +257,7 @@ Latest supported version is AGP 9.0.0
 The package declares AGP 9.2.1 here:
 
 ```kotlin
-// packages/music-player/android-app/build.gradle.kts
+// package/music-player/android-app/build.gradle.kts
 plugins {
     id("com.android.application") version "9.2.1" apply false
 }
@@ -462,7 +462,7 @@ Check whether the root project has Android facet metadata:
 ```sh
 rg --line-number --ignore-case \
   'android|facet|gradle' \
-  .idea modules.xml packages/music-player/android-app
+  .idea modules.xml package/music-player/android-app
 ```
 
 Launch standalone emulator with software rendering:

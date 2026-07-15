@@ -33,7 +33,7 @@ Pass criteria:
    or `tty=true`.
 - Does not use `spawn-claude` for Codex.
 - Does not probe `terminal-exec` with `--help`;
-   source evidence is `packages/cli/terminal-exec/src/cli.ts`,
+   source evidence is `package/cli/terminal-exec/src/cli.ts`,
    where unknown options are ignored.
 
 Fail examples:
@@ -106,7 +106,7 @@ Fail examples:
 Prompt:
 
 ```text
-I changed one unit test under packages/module/es/src. Verify it without running the whole monorepo test suite.
+I changed one unit test under package/module/es/src. Verify it without running the whole monorepo test suite.
 ```
 
 Pass criteria:
@@ -172,7 +172,7 @@ Fail examples:
 2026-05-14:
  the active Codex session failed Case 1 during suite creation by running `terminal-exec --help`,
  which opened Ghostty instead of printing help.
- The parser behavior is documented in `packages/cli/terminal-exec/src/cli.ts`:
+ The parser behavior is documented in `package/cli/terminal-exec/src/cli.ts`:
  supported options are `--app-id=`,
  `--title=`,
  `--dir=`,

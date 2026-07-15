@@ -74,7 +74,7 @@ creating TOML:
 [
   ...new Set([
     'node_modules/.bin',
-    ...(await Array.fromAsync(glob('packages/*/*/node_modules/.bin',),)).toSorted(),
+    ...(await Array.fromAsync(glob('package/*/*/node_modules/.bin',),)).toSorted(),
   ]),
 ]
   .map(function quote(dir,): string {
@@ -132,8 +132,8 @@ The current installation has thirteen duplicate executable names among the
 materialized package bins.
 For example,
  the sorted order makes
-`packages/pi-plugin/advisor/node_modules/.bin` win for `pi` and
-`packages/cli/git-clone-size/node_modules/.bin` win for `tsc`.
+`package/pi-plugin/advisor/node_modules/.bin` win for `pi` and
+`package/cli/git-clone-size/node_modules/.bin` win for `tsc`.
 
 ## What does not work
 
@@ -144,7 +144,7 @@ For example,
   `file-enforcer.config.ts` owns and rewrites the `_.path` section.
 - Sorting and deduplication do not fix membership drift.
   Different dependency installation states can produce a different set of
-  existing `packages/*/*/node_modules/.bin` directories.
+  existing `package/*/*/node_modules/.bin` directories.
   Canonical metadata,
    rather than the installed filesystem,
    would be needed if

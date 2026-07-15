@@ -11,7 +11,7 @@ write our own lean Linkup-only extension.
  Build deferred at the user's request;
 when implemented,
  the extension will live as a package in this monorepo under
-`packages/` and install into `~/.pi/agent`.
+`package/` and install into `~/.pi/agent`.
  Build approach (fresh,
  recommended,
 versus fork) still to be confirmed at that time.
@@ -642,7 +642,7 @@ alone.
 - Build is deferred at the user's request.
    When implemented,
    the extension
-  lives as a package in this monorepo under `packages/` and installs into
+  lives as a package in this monorepo under `package/` and installs into
   `~/.pi/agent` (matching how the incumbent is deployed).
    The build approach is
   still to be confirmed then:

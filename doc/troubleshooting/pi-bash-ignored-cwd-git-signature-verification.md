@@ -104,7 +104,7 @@ The clone was created under a private `/tmp/agent/` directory,
 inspection.
 
 The built-in Bash schema has only `command` and `timeout`.
-`packages/coding-agent/src/core/tools/bash.ts:40-43` contains:
+`package/coding-agent/src/core/tools/bash.ts:40-43` contains:
 
 ```ts
 const bashSchema = Type.Object({
@@ -116,7 +116,7 @@ const bashSchema = Type.Object({
 This object schema does not set `additionalProperties: false`.
 Pi's general validator clones and converts arguments,
  then returns them whenever the schema validator accepts them.
-`packages/ai/src/utils/validation.ts:278-299` contains:
+`package/ai/src/utils/validation.ts:278-299` contains:
 
 ```ts
 export function validateToolArguments(tool: Tool, toolCall: ToolCall): any {
@@ -144,7 +144,7 @@ A direct v0.80.6 probe confirmed that validation preserves the unsupported field
 
 The Bash executor then destructures only the supported fields and supplies the factory-time session directory to the
 spawn context.
-`packages/coding-agent/src/core/tools/bash.ts:304-312` contains:
+`package/coding-agent/src/core/tools/bash.ts:304-312` contains:
 
 ```ts
 async execute(

@@ -1,7 +1,7 @@
 # Audit: `TODO.generalize-ssg.md`
 
 Generated 2026-05-28 from a critical review of
-[`packages/ssg/aquati.cat/TODO.generalize-ssg.md`](../../packages/ssg/aquati.cat/TODO.generalize-ssg.md),
+[`package/ssg/aquati.cat/TODO.generalize-ssg.md`](../../package/ssg/aquati.cat/TODO.generalize-ssg.md),
 the plan to extract `ssg-test` into a publishable,
  general-purpose static site generator
 (`@monochromatic-dev/ssg`) with the Aquaticat content split into a new `site-aquaticat` package.
@@ -79,9 +79,9 @@ These are verified against the source,
     stated twice) names the wrong library.
    The repo standardized on valibot (`src/lib/content.ts:21,162`;
     the `config-schemas.ts` convention
-   in `packages/pi-plugin/advisor`,
-    `packages/pi-plugin/auto-mode`,
-    `packages/webapp-productivity/rss`;
+   in `package/pi-plugin/advisor`,
+    `package/pi-plugin/auto-mode`,
+    `package/webapp-productivity/rss`;
    `doc/migration/zod-to-valibot.md`).
     zod is not a dependency.
    `src/lib/content.ts:5` even carries a stale "validates with Zod" comment over valibot code;
@@ -146,9 +146,9 @@ These are verified against the source,
     None of that holds for an arbitrary npm consumer.
 
 14. The rename creates an unflagged name-to-path mismatch.
-    Package names encode the directory path (`packages/git-policy/cli` to `cli-git`,
-    `packages/module/i18n-compose` to `module-i18n-compose`).
-    Phase 4 renames to `@monochromatic-dev/ssg` while keeping the package at `packages/webapp-content/ssg/`,
+    Package names encode the directory path (`package/git-policy/cli` to `cli-git`,
+    `package/module/i18n-compose` to `module-i18n-compose`).
+    Phase 4 renames to `@monochromatic-dev/ssg` while keeping the package at `package/webapp-content/ssg/`,
     where the convention yields `@monochromatic-dev/webapp-content-ssg`.
     The plan never acknowledges the inconsistency or resolves which of the name or the path should change.
 
@@ -168,7 +168,7 @@ These are verified against the source,
     yaml if the path is listed explicitly.
     "
     There is a live functional reference at `mise.toml:619`
-    (`packages/ssg/aquati.cat/node_modules/.bin` in a PATH list),
+    (`package/ssg/aquati.cat/node_modules/.bin` in a PATH list),
     plus rationale comments in `pnpm-workspace.yaml:243,309,313`.
     The vague phrasing invites missing the functional one.
 
@@ -234,7 +234,7 @@ These are judgment calls,
    The plan does not weigh this.
 - Category placement.
    A general-purpose,
-   publishable build tool living under `packages/webapp-content/`
+   publishable build tool living under `package/webapp-content/`
   (the content and site category,
    beside site-aquaticat) is arguably miscategorized;
   build tools live under `cli/` or `module/`.

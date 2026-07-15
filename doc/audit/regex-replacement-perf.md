@@ -320,7 +320,7 @@ spec),
   unrelated out-of-scope modifications,
    see `HANDOVER.no-regex.md`).
 - Children run package-scoped lint and test only
-  (`mise run //packages/<pkg>:lint`,
+  (`mise run //package/<pkg>:lint`,
    `:test:unit`),
    never workspace-wide
   `mise run //:lint`,

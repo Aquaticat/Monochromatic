@@ -42,7 +42,7 @@ integration.
 mise run buildAndTest  # alias: bt
 
 # Build, then run a specific unit test file
-mise run buildAndTest -- packages/module/async-time/src/wait.unit.test.ts
+mise run buildAndTest -- package/module/async-time/src/wait.unit.test.ts
 
 # Run tests only when dist is already fresh
 mise run test          # alias: t

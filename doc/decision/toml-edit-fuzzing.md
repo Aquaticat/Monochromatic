@@ -9,7 +9,7 @@ lands;
  and the bugs
 found so far.
  The full implementation plan and status live at
-`packages/module/toml-edit/HANDOVER.fuzzing.md`.
+`package/module/toml-edit/HANDOVER.fuzzing.md`.
 
 ## Method
 
@@ -23,7 +23,7 @@ a bounded run in the normal unit suite,
  and a time-budgeted campaign through the
 package `fuzz` task (`TOML_EDIT_FUZZ_BUDGET_MS`).
  See
-`packages/module/toml-edit/src/fuzz-budget.ts`.
+`package/module/toml-edit/src/fuzz-budget.ts`.
 
 Every property file imports the built package entry point
 (`@monochromatic-dev/module-toml-edit`),
@@ -35,18 +35,18 @@ builds before running.
 
 The oracle stack so far:
 
-- A semantic-equality oracle (`packages/module/toml-edit/src/fuzz/equality.ts`)
+- A semantic-equality oracle (`package/module/toml-edit/src/fuzz/equality.ts`)
   over the parser's `getStaticTOMLValue` projection.
 - Grammar-complete generators for every value,
    key,
    and document shape
-  (`packages/module/toml-edit/src/fuzz/arb-*.ts`),
+  (`package/module/toml-edit/src/fuzz/arb-*.ts`),
    with an independent string
-  escaper (`packages/module/toml-edit/src/fuzz/escape.ts`) so generator encoding
+  escaper (`package/module/toml-edit/src/fuzz/escape.ts`) so generator encoding
   never reuses the emitter under test.
 - Structure-aware corruption mutators
-  (`packages/module/toml-edit/src/fuzz/mutators.ts`).
-- A corpus loader (`packages/module/toml-edit/src/fuzz/corpus.ts`):
+  (`package/module/toml-edit/src/fuzz/mutators.ts`).
+- A corpus loader (`package/module/toml-edit/src/fuzz/corpus.ts`):
    committed
   fixtures always,
    live repository discovery only in campaign mode,
@@ -58,7 +58,7 @@ The oracle stack so far:
 Property files exercise internal encoders and emitters through the built artifact
 rather than sibling source imports.
  Where a seam is not part of the public API,
-it is re-exported from `packages/module/toml-edit/src/index.ts` with an
+it is re-exported from `package/module/toml-edit/src/index.ts` with an
 underscore prefix:
  `_encodeKey`,
  `_jsValueToTomlText`,
@@ -157,7 +157,7 @@ newline without any `CR` branch.
 
 ## Conformance (phase 6)
 
-Package-local node adapters under `packages/module/toml-edit/src/conformance/`
+Package-local node adapters under `package/module/toml-edit/src/conformance/`
 satisfy the upstream `toml-test` runner's decoder (TOML to tagged JSON) and
 encoder (tagged JSON to TOML) interfaces,
  exercising the built package across the
@@ -290,7 +290,7 @@ so a future change that silently stops exercising a parser,
 branch fails the gate rather than passing green-but-weaker.
 
 A reachability driver
-(`packages/module/toml-edit/src/fuzz/coverage-driver.ts`) imports the package
+(`package/module/toml-edit/src/fuzz/coverage-driver.ts`) imports the package
 implementation from source (`../index.ts`),
  not the built artifact,
  and replays
@@ -299,7 +299,7 @@ and every `_` seam at a fixed fast-check seed and run count.
  Run under
 `NODE_V8_COVERAGE`,
  that attributes coverage to the `src` files the gate watches.
-The reader (`packages/module/toml-edit/src/fuzz/coverage-v8.ts`) projects the raw
+The reader (`package/module/toml-edit/src/fuzz/coverage-v8.ts`) projects the raw
 V8 block ranges to per-file covered-line counts:
  it paints a per-character bitmap
 with the innermost range's count winning (the longest range painted first),
@@ -310,9 +310,9 @@ offset.
  so a V8 range offset
 indexes the on-disk `.ts` one-to-one.
  The gate
-(`packages/module/toml-edit/src/fuzz/coverage-report.ts`) compares per-file
+(`package/module/toml-edit/src/fuzz/coverage-report.ts`) compares per-file
 covered-line counts against a committed baseline
-(`packages/module/toml-edit/coverage-baseline.json`) and fails on any per-file
+(`package/module/toml-edit/coverage-baseline.json`) and fails on any per-file
 decrease.
  The `fuzz:coverage` task runs it;
  `--write` refreezes the baseline.
@@ -380,7 +380,7 @@ node-version-bound.
  This repository deliberately tracks the latest node rather
 than pinning,
  so a node release that shifts V8 coverage is handled by refreezing
-the baseline with `mise run //packages/module/toml-edit:fuzz:coverage --write`,
+the baseline with `mise run //package/module/toml-edit:fuzz:coverage --write`,
 the same maintenance the latest-node policy already implies;
  the gate is not a
 reason to pin node.

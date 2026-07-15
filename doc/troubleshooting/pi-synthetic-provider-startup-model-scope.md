@@ -62,7 +62,7 @@ before the `session_start` refresh is visible.
 GLM-5.2 is live in Synthetic,
 but it is not in the provider's startup fallback catalog,
 so the exact scoped-model pattern misses and Pi emits the warning.
-Line references under `packages/pi-synthetic-provider/` refer to upstream clone commit
+Line references under `package/pi-synthetic-provider/` refer to upstream clone commit
 `a14dbe2ba398271392483f31d0f5f62e3cb33a98` unless otherwise noted.
 
 ### Step 1: Pi reads an exact scoped-model pattern
@@ -82,7 +82,7 @@ not fuzzy and not a glob:
 
 ### Step 2: the provider's startup registration uses only fallback models
 
-`packages/pi-synthetic-provider/extensions/index.ts:73-83` registers the provider
+`package/pi-synthetic-provider/extensions/index.ts:73-83` registers the provider
 synchronously with `getFallbackModels()`:
 
 ```typescript
@@ -124,7 +124,7 @@ extensionsResult.runtime.pendingProviderRegistrations = [];
 
 ### Step 3: the provider's live refresh is not visible to startup model matching
 
-`packages/pi-synthetic-provider/extensions/index.ts:85-109` fetches live models only
+`package/pi-synthetic-provider/extensions/index.ts:85-109` fetches live models only
 inside `session_start`:
 
 ```typescript
@@ -217,7 +217,7 @@ export async function resolveModelScope(patterns, modelRegistry) {
 
 ### Step 5: the live fetch would include GLM-5.2, but the fallback list cannot
 
-`packages/pi-synthetic-provider/extensions/models.ts:13-24` fetches the live endpoint,
+`package/pi-synthetic-provider/extensions/models.ts:13-24` fetches the live endpoint,
 and `models.ts:34-40` includes every model that is always-on and supports tools:
 
 ```typescript
@@ -242,7 +242,7 @@ export async function fetchSyntheticModels(apiKey?: string): Promise<ProviderMod
 			if (model.supported_features && !model.supported_features.includes("tools")) continue;
 ```
 
-`packages/pi-synthetic-provider/extensions/models.ts:78-89` documents the fallback
+`package/pi-synthetic-provider/extensions/models.ts:78-89` documents the fallback
 catalog as Kimi-K2.6,
 MiniMax-M2.5,
 Nemotron,
@@ -264,7 +264,7 @@ and GLM-5.1:
 ```
 
 The fallback implementation includes GLM-5.1 at
-`packages/pi-synthetic-provider/extensions/models.ts:137-151`,
+`package/pi-synthetic-provider/extensions/models.ts:137-151`,
 not GLM-5.2:
 
 ```typescript
@@ -555,7 +555,7 @@ exactly as Pi's custom-provider documentation recommends.
 #### Are they supporting this use case
 
 Yes.
-`packages/pi-synthetic-provider/README.md:7-13` advertises dynamic model discovery
+`package/pi-synthetic-provider/README.md:7-13` advertises dynamic model discovery
 at session start and graceful degradation through fallback models.
 Pi's custom-provider docs explicitly support async factory registration for dynamic
 catalogs that must be visible to startup and `pi --list-models`.
@@ -592,7 +592,7 @@ The prototype was verified with `PI_CODING_AGENT_DIR` pointing at the patched cl
 `pi --list-models GLM-5.2` listed GLM-5.2 without the warning.
 Tradeoff:
 startup now waits for the model-catalog fetch.
-`packages/pi-synthetic-provider/extensions/models.ts:13-24` has no explicit timeout,
+`package/pi-synthetic-provider/extensions/models.ts:13-24` has no explicit timeout,
 so an upstream patch should consider a bounded fetch if startup latency matters.
 
 ### Draft issue
@@ -647,13 +647,13 @@ synthetic  hf:zai-org/GLM-5.1                                 196.6K   65.5K    
 
 ## Source trace
 
-`packages/pi-synthetic-provider/extensions/index.ts:73-83` registers the provider
+`package/pi-synthetic-provider/extensions/index.ts:73-83` registers the provider
 at extension-load time with `getFallbackModels()`.
-That fallback list in `packages/pi-synthetic-provider/extensions/models.ts:78-89`
+That fallback list in `package/pi-synthetic-provider/extensions/models.ts:78-89`
 contains Kimi-K2.6, MiniMax-M2.5, Nemotron, and GLM-5.1, but not GLM-5.2.
 
 The live catalog fetch is deferred to the `session_start` handler at
-`packages/pi-synthetic-provider/extensions/index.ts:85-109`.
+`package/pi-synthetic-provider/extensions/index.ts:85-109`.
 That is too late for Pi startup model-scope resolution and `pi --list-models`.
 Pi's custom-provider docs say dynamic model discovery should happen in an async
 extension factory when the provider must be available during startup and to

@@ -83,7 +83,7 @@ Tradeoff:
  more scripts to maintain in TypeScript instead of
 one-liner shell invocations.
  The TS files are short and live
-in `packages/module/es/src/`;
+in `package/module/es/src/`;
  the maintainability win comes
 with the speed win because the scripts are typed.
 

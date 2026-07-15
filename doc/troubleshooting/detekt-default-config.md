@@ -75,13 +75,13 @@ Version under test:
 - detekt `2.0.0-alpha.5`
 - upstream tag `v2.0.0-alpha.5`,
   commit `9c6ced63392cb451b7091dda25a9653875d275b6`
-- repo task `packages/linter/kotlin/build.gradle.kts`,
+- repo task `package/linter/kotlin/build.gradle.kts`,
   runner arguments at lines 76 to 80
 
 The current check task passes `--build-upon-default-config`:
 
 ```kotlin
-// packages/linter/kotlin/build.gradle.kts:76-80
+// package/linter/kotlin/build.gradle.kts:76-80
 "--input", inputPath.get(),
 "--config", configFile,
 "--build-upon-default-config",

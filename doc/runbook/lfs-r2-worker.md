@@ -5,7 +5,7 @@ not from GitHub LFS.
 The repo-root `.lfsconfig` points every clone at the Worker,
 so `git clone` and `git lfs pull` fetch objects from R2 (free egress)
 instead of GitHub's metered LFS bandwidth.
-Background and rationale live in `packages/config/lfs-r2-worker/README.md`.
+Background and rationale live in `package/config/lfs-r2-worker/README.md`.
 
 This runbook is the operator procedure for the parts a human runs by hand:
 deploy or redeploy the Worker,
@@ -96,7 +96,7 @@ TODO
 1. Run the deploy task from anywhere in the repo.
 
    ```sh
-   mise run "//packages/config/lfs-r2-worker:deploy"
+   mise run "//package/config/lfs-r2-worker:deploy"
    ```
 
    Expected:
@@ -108,7 +108,7 @@ TODO
     run the dry run instead.
 
    ```sh
-   mise run "//packages/config/lfs-r2-worker:build"
+   mise run "//package/config/lfs-r2-worker:build"
    ```
 
    Expected:
@@ -125,7 +125,7 @@ or set it on first provisioning.
 
    ```sh
    printf '%s' "$(openssl rand -hex 32)" \
-     | mise run "//packages/config/lfs-r2-worker:secret:write-token"
+     | mise run "//package/config/lfs-r2-worker:secret:write-token"
    ```
 
    The task runs `wrangler secret put LFS_WRITE_TOKEN`.

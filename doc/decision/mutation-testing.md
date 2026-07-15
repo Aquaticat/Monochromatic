@@ -4,14 +4,14 @@
 
 Accepted.
 First consumer:
- `packages/dev-script/file-enforcer`.
+ `package/dev-script/file-enforcer`.
 Second consumer:
- `packages/module/jsonc-edit` (parser, serializer, immutable edit API, comment-as-data API).
+ `package/module/jsonc-edit` (parser, serializer, immutable edit API, comment-as-data API).
  Its unit tests are organized by API surface, not per source file, so it runs with
  `--full-suite`; its non-runtime tooling lives in sidecar packages so a whole-package run
  stays scoped to real runtime files.
 Reusable package:
- `packages/dev-script/mutation-test`.
+ `package/dev-script/mutation-test`.
 
 ## Context
 
@@ -127,7 +127,7 @@ mutated work-tree source.
 ## Consequences
 
 Mutation testing is opt-in through
-`mise run //packages/dev-script/file-enforcer:test:mutation`.
+`mise run //package/dev-script/file-enforcer:test:mutation`.
  The default run can
 be expensive because it type-checks mutants and runs one Stryker session per
 source file.

@@ -140,7 +140,7 @@ sharing the same string title.
 running them directly:
 
 ```bash
-mise run test -- packages/module/es/src/function.tryCatch.unit.test.ts
+mise run test -- package/module/es/src/function.tryCatch.unit.test.ts
 ```
 
 Use `test.only('case under investigation', () => { /* ... */ })`
@@ -314,7 +314,7 @@ Decision:
 
 - Run a single test file:
   ```bash
-  mise run test -- packages/module/es/src/function.tryCatch.unit.test.ts
+  mise run test -- package/module/es/src/function.tryCatch.unit.test.ts
   ```
 - Build and test together to avoid stale artifacts:
   ```bash

@@ -1070,7 +1070,7 @@ corrected A/B/C numbers are from the post-double-compile-fix binaries (A branch 
  B/C re-baked on top).
  The
 betterleaks corpus regenerates from
-`packages/cli/forbidden-strings/data/betterleaks-default-config.toml`.
+`package/cli/forbidden-strings/data/betterleaks-default-config.toml`.
  Linux kernel:
  depth-1 clone
 of torvalds/linux (88 k indexed files).

@@ -9,7 +9,7 @@ the new level.
 `v4_10` starts failing `cargo clippy -- --deny warnings` at `v4_12` with no code change of its
 own.
 
-Found while building `packages/desktop-app/file-manager-gtk-sticky`.
+Found while building `package/desktop-app/file-manager-gtk-sticky`.
 
 ## Symptom
 

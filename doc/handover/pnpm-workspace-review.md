@@ -27,9 +27,9 @@ Unrelated dirty worktree state observed before creating this file:
 - `pnpm-workspace.yaml`
 - `pnpm-lock.yaml`
 - Root `package.json`
-- Active package manifests under `packages/*/*/package.json`
-- Deprecated workspace package manifests under `packages-deprecated/*/*/package.json`
-- Paused package manifests under `packages-paused/*/*/package.json`,
+- Active package manifests under `package/*/*/package.json`
+- Deprecated workspace package manifests under `package-deprecated/*/*/package.json`
+- Paused package manifests under `package-paused/*/*/package.json`,
    only to explain stale catalog entries
 
 ## Commands and checks already run
@@ -58,7 +58,7 @@ Unrelated dirty worktree state observed before creating this file:
   saves a local workspace dependency as a plain version,
    not `workspace:*`.
 - A throwaway workspace verified default `catalogMode` saves non-catalog additions as direct versions.
-- From `packages/pi-plugin/auto-mode`,
+- From `package/pi-plugin/auto-mode`,
    importing `@earendil-works/pi-ai/google`,
    `/mistral`,
    and
@@ -139,19 +139,19 @@ Unrelated dirty worktree state observed before creating this file:
   Throwaway verification saved local workspace deps as plain versions rather than `workspace:*`.
 - Publishable packages depend on private workspace packages.
    Verified manifests:
-  `packages/dev-script/watch-restart/package.json` depends on private `module-logger`,
-  `packages/module/test/package.json` depends on private `module-fs-path` and `module-logger`,
+  `package/dev-script/watch-restart/package.json` depends on private `module-logger`,
+  `package/module/test/package.json` depends on private `module-fs-path` and `module-logger`,
    and
-  `packages/module/toml-edit/package.json` depends on private `module-logger`.
+  `package/module/toml-edit/package.json` depends on private `module-logger`.
   pnpm converts `workspace:*` before publish,
    so those public packages would point consumers at
   unpublished private packages.
 - `pnpm install --lockfile-only --frozen-lockfile` warns about workspace cycles involving
-  `packages/config/tsdown`,
-   `packages/module/test`,
-   `packages/module/numeric-format`,
+  `package/config/tsdown`,
+   `package/module/test`,
+   `package/module/numeric-format`,
    and
-  `packages/module/or-throw`.
+  `package/module/or-throw`.
 
 ### Nits or cleanup candidates
 
@@ -201,7 +201,7 @@ Unrelated dirty worktree state observed before creating this file:
 - `ws` override is currently unused.
 - `node-domexception` shim override is currently unused.
 - 34 catalog entries are unused by active workspace/root packages.
-  Most correspond to `packages-paused`,
+  Most correspond to `package-paused`,
    which is intentionally outside `packages:` globs.
 - `minimumReleaseAgeStrict: true` relies on pnpm 11 default `minimumReleaseAge: 1440`.
   If one-day strict maturity is policy,
@@ -221,7 +221,7 @@ from pathlib import Path
 import json, yaml
 catalog = yaml.safe_load(Path('pnpm-workspace.yaml').read_text()).get('catalog', {})
 usage = {name: [] for name in catalog}
-for package_path in [Path('package.json'), *sorted(Path('packages').glob('*/*/package.json')), *sorted(Path('packages-deprecated').glob('*/*/package.json'))]:
+for package_path in [Path('package.json'), *sorted(Path('packages').glob('*/*/package.json')), *sorted(Path('package-deprecated').glob('*/*/package.json'))]:
     data = json.loads(package_path.read_text())
     for section in ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']:
         for name, spec in data.get(section, {}).items():

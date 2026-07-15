@@ -635,7 +635,7 @@ It will turn `>=` in `package.json` into exact versions.
 `pnpm install` previously emitted `[WARN] 1 deprecated subdependencies found: node-domexception@1.0.0`.
 Install-time only;
  runtime was unaffected.
-The override `'node-domexception': 'link:packages/shim/node-domexception'` in `pnpm-workspace.yaml`
+The override `'node-domexception': 'link:package/shim/node-domexception'` in `pnpm-workspace.yaml`
 now substitutes the deprecated upstream package with a workspace shim whose `index.cjs` is the
 single line `module.exports = globalThis.DOMException`.
  The warning is gone;
@@ -731,7 +731,7 @@ read by pnpm at install time.
 
 #### Workaround applied
 
-`packages/shim/node-domexception/` is the workspace shim package.
+`package/shim/node-domexception/` is the workspace shim package.
 Files:
  `package.json` (private,
  name `@monochromatic-dev/shim-node-domexception`,
@@ -744,7 +744,7 @@ CJS,
 plus `mise.toml` and `README.md`.
 
 `pnpm-workspace.yaml`'s `overrides` block wires it in with
-`'node-domexception': 'link:packages/shim/node-domexception'`.
+`'node-domexception': 'link:package/shim/node-domexception'`.
  pnpm rewrites
 every transitive `node-domexception` edge to point at the workspace path;
  the
@@ -803,7 +803,7 @@ absent:
 #### What stops working
 
 Nothing in normal operation.
- `packages/pi-plugin/auto-mode` only references the
+ `package/pi-plugin/auto-mode` only references the
 Google APIs by string identifier in `src/judge-tool.ts:83`
 (`toolChoiceForApi`) and the matching unit tests,
  which never touch
@@ -820,7 +820,7 @@ block but cannot be suppressed:
 statically imports `partial-json`,
  and that module is re-exported from
 pi-ai's entry (`dist/index.js:12: export * from "./utils/json-parse.js"`).
-Any consumer importing pi-ai (including `packages/pi-plugin/auto-mode`) crashes
+Any consumer importing pi-ai (including `package/pi-plugin/auto-mode`) crashes
 at module load when `partial-json` is absent.
  The override was removed
 to restore the runtime contract.
@@ -940,9 +940,9 @@ of which the dist statically imports.
 Windows-only fallback described above.
 
 After this cleanup,
- `mise run //packages/pi-plugin/{auto-mode,morph-compact}:test:unit`
+ `mise run //package/pi-plugin/{auto-mode,morph-compact}:test:unit`
 both pass.
- `packages/pi-plugin/terminal-title:test:unit` fails on unrelated string
+ `package/pi-plugin/terminal-title:test:unit` fails on unrelated string
 assertions (`expected '✳ X' to equal 'π X'`) that predate the override
 work;
  those are test-fixture issues to fix separately.
@@ -1017,7 +1017,7 @@ Neither path uses the string-parser overload (`ms('2 days')`) or the
   replacement.
 - Silent stub (`POLICY` entry with `action: 'silent'` in `.pnpmfile.mjs`):
   the call returns the callable Proxy defined in
-  `packages/stub/silent/index.cjs:3-19`.
+  `package/stub/silent/index.cjs:3-19`.
   Embedding the result in a template literal (the consumer pattern at
   `logform/ms.js:15`) triggers primitive coercion.
   Every Proxy `get` returns the Proxy itself,
@@ -1025,11 +1025,11 @@ Neither path uses the string-parser overload (`ms('2 days')`) or the
   so coercion fails with
   `TypeError: Cannot convert object to primitive value`.
   The build does not stay green.
-- API-compatible shim (`packages/shim/ms/` wired via a `link:` override in
+- API-compatible shim (`package/shim/ms/` wired via a `link:` override in
   `pnpm-workspace.yaml`):
   the pattern works technically;
    the precedent is
-  `packages/shim/node-domexception/`.
+  `package/shim/node-domexception/`.
   The cost is one new workspace package (implementation,
    type declaration,
   tests,
@@ -1095,7 +1095,7 @@ of `@earendil-works/pi-coding-agent@0.74.0`:
 `proper-lockfile@4.1.2 → @earendil-works/pi-coding-agent → @monochromatic-dev/pi-plugin-auto-mode`.
 `pnpm why proper-lockfile` reproduces the chain.
 
-The override `'proper-lockfile': 'link:packages/shim/proper-lockfile'` in
+The override `'proper-lockfile': 'link:package/shim/proper-lockfile'` in
 `pnpm-workspace.yaml` substitutes the abandoned upstream with a workspace shim
 whose `index.cjs` implements `lockSync(path, options)` and
 `lock(path, options)` via `node:fs.mkdirSync` on a sibling `.<basename>.lock`
@@ -1124,12 +1124,12 @@ Both modules are re-exported from the package's barrel:
 
 A `'proper-lockfile': '-'` override removes the package from the install but
 leaves the static import in `auth-storage.js` and `settings-manager.js` --
-loading `@earendil-works/pi-coding-agent` from `packages/pi-plugin/auto-mode` crashes
+loading `@earendil-works/pi-coding-agent` from `package/pi-plugin/auto-mode` crashes
 with `Cannot find package 'proper-lockfile'` before any first-party code runs.
 
 #### Why the silent stub does not work
 
-`packages/stub/silent/index.cjs` is a `Proxy` over a no-op function whose
+`package/stub/silent/index.cjs` is a `Proxy` over a no-op function whose
 `get` trap returns `module.exports` for every property.
  That makes the stub
 a thenable:
@@ -1296,11 +1296,11 @@ package at runtime,
 └─┬ @stryker-mutator/core@9.6.1
   └─┬ @stryker-mutator/instrumenter@9.6.1
     └─┬ @babel/core@7.29.7
-      └── convert-source-map  (substituted: link:packages/stub/throwing)
+      └── convert-source-map  (substituted: link:package/stub/throwing)
 ```
 
 `@babel/core@7.29.7` is the sole consumer (`pnpm-lock.yaml:6129`,
-`convert-source-map: link:packages/stub/throwing`).
+`convert-source-map: link:package/stub/throwing`).
  No workspace package depends on
 `@babel/core` directly;
  it arrives only through the Stryker instrumenter.
@@ -1392,7 +1392,7 @@ plugin or reporter is added that transforms code.
 
 `grep convert-source-map pnpm-lock.yaml` shows only the `@babel/core` edge.
  A real
-mutation run (for example `mise run //packages/dev-script/file-enforcer:test:mutation`)
+mutation run (for example `mise run //package/dev-script/file-enforcer:test:mutation`)
 completes and reports killed and survived mutants without any `convert-source-map`
 error.
  See `doc/troubleshooting/stryker-container-runtime.md` for the Stryker runtime
@@ -1407,8 +1407,8 @@ transitively by `stylelint@17.6.0` through `cosmiconfig@9.0.1`.
  The workspace does
 not consume it:
  all YAML parsing uses the `yaml` package
-(`packages/dev-script/deps-cube/src/catalog.ts`,
-`packages/ssg/aquati.cat/src/lib/content.ts`).
+(`package/dev-script/deps-cube/src/catalog.ts`,
+`package/ssg/aquati.cat/src/lib/content.ts`).
  The `action: 'throw'` policy
 substitutes it with `@monochromatic-dev/stub-throwing`,
  removing the real js-yaml
@@ -1421,7 +1421,7 @@ package,
 ```text
 stylelint@17.6.0
 └─┬ cosmiconfig@9.0.1
-  └── js-yaml  (substituted: link:packages/stub/throwing)
+  └── js-yaml  (substituted: link:package/stub/throwing)
 ```
 
 `cosmiconfig` is the sole consumer of js-yaml in the tree (verified against every
@@ -1501,7 +1501,7 @@ at `doc/dependency-blocklist.md`,
 
 #### Verification
 
-`rg js-yaml pnpm-lock.yaml` shows only the `link:packages/stub/throwing` redirect
+`rg js-yaml pnpm-lock.yaml` shows only the `link:package/stub/throwing` redirect
 under cosmiconfig,
  with no `js-yaml@4.1.1` resolution block.
  The argparse edge
@@ -1515,7 +1515,7 @@ reference.
 
 `dbus-next@0.10.2` (last published 2022-04-28, effectively unmaintained) was the
 sole source of a burst of Dependabot advisories reached only through
-`packages/kwin/key-helper`.
+`package/kwin/key-helper`.
  It was first mitigated with two `pnpm.overrides` (commit 516980e19) and then
 retired for good by migrating the daemon to `@homebridge/dbus-native` (#369),
  which removes the vulnerable chain at its root.
@@ -1564,13 +1564,13 @@ loads `xml2js`, whose parser does `require('sax')` at module load.
 without `xml2js`, so `sax.parser()` is never reached at runtime.
  The shipped `index.d.ts` types only the client path, so the server surface used
 here (`sessionBus`, `MessageBus.exportInterface`, `MessageBus.requestName`) is
-declared locally in `packages/kwin/key-helper/src/dbus-native.d.ts`.
+declared locally in `package/kwin/key-helper/src/dbus-native.d.ts`.
 
 #### Verification
 
 `grep -c dbus-next pnpm-lock.yaml` is zero and `pnpm why request node-gyp usocket
 tar -r` finds none under `@homebridge/dbus-native`.
- `mise run //packages/kwin/key-helper:lint:types`, `:lint:oxlint`,
+ `mise run //package/kwin/key-helper:lint:types`, `:lint:oxlint`,
 `:build:js:node`, and `:test:unit` all pass.
  The rebuilt SEA binary was run against the live KDE session bus: it registered
 `org.monochromatic.KeyHelper`, `gdbus introspect` listed all five methods with

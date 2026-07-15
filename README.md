@@ -10,7 +10,7 @@ developer tooling,
 ## Highlights
 
 **Minimal MCP server**:
-[`mcp-stdio`](packages/mcp/stdio/) implements the Model Context Protocol
+[`mcp-stdio`](package/mcp/stdio/) implements the Model Context Protocol
 in 800 lines with zero runtime dependencies.
 The official `@modelcontextprotocol/sdk` pulls 5.8 MB and 17 dependencies
 (Express,
@@ -26,7 +26,7 @@ this package implements only JSON-RPC 2.0,
  and `ping`.
 
 **Inference canary**:
-[`inference-canary`](packages-paused/dev-script/inference-canary/) runs five
+[`inference-canary`](package-paused/dev-script/inference-canary/) runs five
 code-generation probes (CSV parser,
  expression evaluator,
  CSS mixin transpiler,
@@ -54,18 +54,18 @@ See [`PHILOSOPHY.tool-choices.md`](doc/philosophy/tool-choices.md) for the full
 analysis of h3 vs Elysia vs Hono.
 
 **Custom Oxlint plugins**:
-[`oxlint-tsdoc`](packages/oxlint-plugin/tsdoc/) enforces TSDoc correctness
+[`oxlint-tsdoc`](package/oxlint-plugin/tsdoc/) enforces TSDoc correctness
 across 20+ rules with 23 fixture-based tests,
  replacing the slow
 eslint-plugin-jsdoc integration that previously required ESLint.
-[`oxlint-no-restricted-syntax`](packages/oxlint-plugin/no-restricted-syntax/)
+[`oxlint-no-restricted-syntax`](package/oxlint-plugin/no-restricted-syntax/)
 encodes 13 monorepo-specific AST rules (no arrow functions,
  no switch statements,
 require destructured params for 2+ args) that Oxlint's lack of AST selectors
 demands as dedicated rule implementations.
 
 **Monorepo-aware CSS build tool**:
-[`build-tool-css`](packages/build-tool/css/) resolves `@import` through
+[`build-tool-css`](package/build-tool/css/) resolves `@import` through
 `package.json` exports mappings and `node_modules`,
  processes custom
 `@mixin`/`@apply` syntax,
@@ -73,7 +73,7 @@ demands as dedicated rule implementations.
 all without native binaries.
 
 **OpenTofu firewall automation**:
-[`config-tofu`](packages/config/tofu/) dynamically aggregates CIDR ranges
+[`config-tofu`](package/config/tofu/) dynamically aggregates CIDR ranges
 from 7 CDN sources (Cloudflare,
  CloudFront,
  Fastly,
@@ -86,7 +86,7 @@ and caches ASN lookups for 30 days with graceful fallback to expired cache
 on fetch failure.
 
 **Custom typeface from SVG geometry**:
-[`typeface-aquaticat`](packages/typeface/aquaticat/) parses a master glyph strip
+[`typeface-aquaticat`](package/typeface/aquaticat/) parses a master glyph strip
 SVG,
  expands stroked outlines into filled contours using polygon offset math,
 assembles an OpenType font via opentype.
@@ -122,7 +122,7 @@ mise trust
 ```
 
 Trusting the monorepo root implicitly trusts all descendant `mise.toml` files
-under `packages/`.
+under `package/`.
  See [mise trust docs](https://mise.jdx.dev/cli/trust.html)
 for details on what this enables and why it is required.
 
@@ -157,7 +157,7 @@ mise run test
 mise run buildAndTest
 
 # Build and test a specific file
-mise run buildAndTest -- packages/module/async-time/src/wait.unit.test.ts
+mise run buildAndTest -- package/module/async-time/src/wait.unit.test.ts
 
 # Format all files
 mise run format
@@ -173,14 +173,14 @@ mise run watch:test
 Run a task in a specific package with the monorepo path prefix:
 
 ```sh
-mise run //packages/module/async-time:test
-mise run //packages/webapp-productivity/done:build
+mise run //package/module/async-time:test
+mise run //package/webapp-productivity/done:build
 ```
 
 ## Project structure
 
 ```text
-packages/
+package/
   audit/                    Compliance audits (1 package)
   build-tool/               Build tooling (CSS processor)
   claude-code-plugin/      Claude Code plugins and shared hook source (10 packages)

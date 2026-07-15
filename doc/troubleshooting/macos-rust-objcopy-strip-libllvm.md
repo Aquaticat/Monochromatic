@@ -2,7 +2,7 @@
 
 ## Symptom
 
-A `cargo build --release` of `packages/music-player/desktop-app` on the Apple
+A `cargo build --release` of `package/music-player/desktop-app` on the Apple
 Silicon Mac (`ssh m1`,
  rustc 1.98.0-nightly,
  `nightly-aarch64-apple-darwin`)

@@ -2,7 +2,7 @@
 
 ## Symptom
 
-`mise run //packages/git-policy/cli:lint:oxlint` reports `node(no-sync)` warnings for Optique CLI parser calls:
+`mise run //package/git-policy/cli:lint:oxlint` reports `node(no-sync)` warnings for Optique CLI parser calls:
 
 ```text
 ! node(no-sync): Unexpected sync method: 'parseSync'.
@@ -16,20 +16,20 @@
 
 The same diagnostic appears at these package paths:
 
-- `packages/git-policy/cli/src/parsers/stash.ts:121`
-- `packages/git-policy/cli/src/parsers/add.ts:289`
-- `packages/git-policy/cli/src/parsers/reset.ts:149`
-- `packages/git-policy/cli/src/parsers/clean.ts:161`
-- `packages/git-policy/cli/src/parsers/commit.ts:244`
-- `packages/git-policy/cli/src/parsers/push.ts:67`
-- `packages/git-policy/cli/src/parsers/status.ts:102`
-- `packages/git-policy/cli/src/parsers/status.ts:158`
+- `package/git-policy/cli/src/parsers/stash.ts:121`
+- `package/git-policy/cli/src/parsers/add.ts:289`
+- `package/git-policy/cli/src/parsers/reset.ts:149`
+- `package/git-policy/cli/src/parsers/clean.ts:161`
+- `package/git-policy/cli/src/parsers/commit.ts:244`
+- `package/git-policy/cli/src/parsers/push.ts:67`
+- `package/git-policy/cli/src/parsers/status.ts:102`
+- `package/git-policy/cli/src/parsers/status.ts:158`
 
 The import is not a Node builtin API.
-`packages/git-policy/cli/src/parsers/push.ts:3` imports it from Optique:
+`package/git-policy/cli/src/parsers/push.ts:3` imports it from Optique:
 
 ```ts
-// packages/git-policy/cli/src/parsers/push.ts:3
+// package/git-policy/cli/src/parsers/push.ts:3
 import { parseSync, } from '@optique/core/parser';
 ```
 
@@ -128,7 +128,7 @@ Version under test:
 Runnable harness:
 
 ```bash
-mise run //packages/git-policy/cli:lint:oxlint
+mise run //package/git-policy/cli:lint:oxlint
 ```
 
 Observed output includes eight `node(no-sync)` warnings for Optique `parseSync` calls,
@@ -343,7 +343,7 @@ and workaround before filing.
 Command:
 
 ```bash
-mise run //packages/git-policy/cli:lint:oxlint
+mise run //package/git-policy/cli:lint:oxlint
 ```
 
 Config:

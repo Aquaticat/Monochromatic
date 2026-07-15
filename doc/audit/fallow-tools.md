@@ -67,7 +67,7 @@ Four invocation modes:
 4. **file-enforcer-generated config**:
     the prototype on branch `fallow-wrap-prototype`,
    where `file-enforcer.config.ts` adds a `generateFallowConfig()` step that
-   globs `packages/*/*/tsdown.*.config.ts`,
+   globs `package/*/*/tsdown.*.config.ts`,
     extracts each config's `entry` array
    (literal arrays via regex,
     plus base-config re-exports inferred from the
@@ -110,7 +110,7 @@ Across the four invocation modes:
    The default config is
   too minimal to affect anything;
    it sets `unused-dependencies` to `warn`
-  and declares `packages/*/*` as the workspace pattern,
+  and declares `package/*/*` as the workspace pattern,
    both of which fallow
   already infers.
 - **Hand-tuned `.fallowrc.json`**:
@@ -144,11 +144,11 @@ The prototype's improvement over the hand-tuned config came from three sources:
 - Disabling `unresolved-imports` at the rule level (matches oxc's stance
   that the rule is inherently noisy):
    dropped 47 false positives
-- Adding `unused-files: 'off'` to the override for `packages/module/es/src/types/**`:
+- Adding `unused-files: 'off'` to the override for `package/module/es/src/types/**`:
   dropped 56 false positives in the deeply nested type-system barrel files
 - Dynamic discovery of tsdown config entries;
    caught secondary entries like
-  `packages/claude-code-plugin/bash-output-filter/src/filter.ts` that the
+  `package/claude-code-plugin/bash-output-filter/src/filter.ts` that the
   built-in tsdown plugin missed,
    plus `**/src/cli.ts` as a static entry pattern
   for CLI scripts
@@ -157,20 +157,20 @@ The prototype's improvement over the hand-tuned config came from three sources:
 
 ### Cross-package code clones
 
-- `packages/cli/mvm/src/index.ts:22-70` and `packages/cli/vmsync/src/index.ts:20-67`
+- `package/cli/mvm/src/index.ts:22-70` and `package/cli/vmsync/src/index.ts:20-67`
   share 49 lines of bootstrap logic
-- `packages/cli/mvm/src/spawn.ts:1-45` and `packages/cli/vmsync/src/spawn.ts:7-51`
+- `package/cli/mvm/src/spawn.ts:1-45` and `package/cli/vmsync/src/spawn.ts:7-51`
   share a 45-line spawn helper
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-hasownproperty.ts`,
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-hasownproperty.ts`,
   `no-promise-catch.ts`,
    and `no-promise-finally.ts` share 23 lines of rule scaffolding
-- `packages/desktop-daemon/editord/src/client/highlight/tags.ts:56-147` and
-  `packages/ssg/aquati.cat/src/client/tags.ts:35-126`
+- `package/desktop-daemon/editord/src/client/highlight/tags.ts:56-147` and
+  `package/ssg/aquati.cat/src/client/tags.ts:35-126`
   duplicate 92 lines of highlight tag wiring
 
 ### Dead dependencies
 
-- `the-new-css-reset` declared in `packages/stylesheet/monochromatic/package.json` but unused
+- `the-new-css-reset` declared in `package/stylesheet/monochromatic/package.json` but unused
 - `rehype-parse`,
    `rehype-stringify`,
    `unified`,
@@ -178,7 +178,7 @@ The prototype's improvement over the hand-tuned config came from three sources:
   that do not import them but are used in **other** packages,
    suggesting
   the declarations belong with those consumers
-- `@mitata/counters` unused in `packages/test-fixture/file-enforcer-perf`
+- `@mitata/counters` unused in `package/test-fixture/file-enforcer-perf`
 
 ### Unlisted dependencies
 
@@ -207,8 +207,8 @@ These are public methods,
 
 ### Circular dependency
 
-`packages/module/es/src/path/find-monorepo-root.ts` imports `dirname` from
-`packages/module/es/src/path/index.ts`,
+`package/module/es/src/path/find-monorepo-root.ts` imports `dirname` from
+`package/module/es/src/path/index.ts`,
  which re-exports `find-monorepo-root.ts`.
 The cycle is **already documented and accepted** in source via
 `// oxlint-disable-next-line import/no-cycle -- barrel re-export cycle;
@@ -235,7 +235,7 @@ The plugin does not match those filenames,
 to discover declared `entry` arrays.
 
 The prototype closes this gap with a generator in `file-enforcer.config.ts`
-that globs all `packages/*/*/tsdown.*.config.ts`,
+that globs all `package/*/*/tsdown.*.config.ts`,
  extracts each config's
 `entry` array,
  and merges discovered paths into the fallow config.
@@ -244,7 +244,7 @@ For configs that re-export the shared base
 the generator infers the entry from which base is re-exported
 (`.client.ts` -> `src/client.ts`,
  others -> `src/index.ts`,
-matching `packages/config/tsdown/src/index*.ts`).
+matching `package/config/tsdown/src/index*.ts`).
 
 20 of the 29 tsdown configs in this repo are re-export style;
  the other 9
@@ -252,17 +252,17 @@ declare literal `entry` arrays.
 
 ### Test fixtures are flagged as unused exports by default
 
-`packages/test-fixture/oxlint-stylistic/src/{valid,invalid}/*.ts` and
-`packages/test-fixture/oxlint-tsdoc/src/{valid,invalid}/*.ts` exist
+`package/test-fixture/oxlint-stylistic/src/{valid,invalid}/*.ts` and
+`package/test-fixture/oxlint-tsdoc/src/{valid,invalid}/*.ts` exist
 specifically to be linted by tests.
 The prototype config disables `unused-exports`,
  `unused-files`,
 `unused-types`,
- and `duplicate-exports` for `packages/test-fixture/**`.
+ and `duplicate-exports` for `package/test-fixture/**`.
 
 ### Barrel re-exports across the type-system folder structure
 
-`packages/module/es/src/types/...` has hundreds of `index.ts` files in a
+`package/module/es/src/types/...` has hundreds of `index.ts` files in a
 deeply nested signature-encoding folder structure.
 Names like `from`,
  `is`,
@@ -297,7 +297,7 @@ as inherently noisy.
 
 Per-package `mise.toml` files declare task entries like
 `run = "bun src/abort.ts"`.
- The 8 files in `packages/runtime-error/bun/src/*.ts`
+ The 8 files in `package/runtime-error/bun/src/*.ts`
 are flagged as unused because nothing imports them as modules and no
 tsdown config or `package.json` field references them;
  the only references
@@ -306,7 +306,7 @@ The prototype handles the root `mise.toml` by adding `**/src/cli.ts` as a
 catchall entry,
  but does not parse package-level `mise.toml` files.
 Closing this gap would extend the generator to scan every
-`packages/*/*/mise.toml` for `bun <path>` invocations,
+`package/*/*/mise.toml` for `bun <path>` invocations,
  a future iteration.
 
 ### Bare `tsdown.config.ts` files
@@ -339,7 +339,7 @@ existing `file-enforcer.config.ts` with two functions:
   array,
    or infers the entry from a base-config re-export
 - `generateFallowConfig()`:
-   globs all `packages/*/*/tsdown.*.config.ts`,
+   globs all `package/*/*/tsdown.*.config.ts`,
   resolves each declared entry relative to its package directory,
   merges the results into a static base config,
    writes `.fallowrc.json`
@@ -372,9 +372,9 @@ The static base in `generateFallowConfig()` includes:
    `**/dist/**`,
    `**/node_modules/**`,
   and known generated subtrees
-- Workspace pattern `packages/*/*` (matches `pnpm-workspace.yaml`)
+- Workspace pattern `package/*/*` (matches `pnpm-workspace.yaml`)
 - Overrides disabling unused-* and duplicate-* rules for
-  `packages/test-fixture/**` and `packages/module/es/src/types/**`
+  `package/test-fixture/**` and `package/module/es/src/types/**`
 - Rule-level toggles:
    `circular-dependencies: off` (oxlint covers it),
   `unresolved-imports: off` (matching oxc's stance),
@@ -535,7 +535,7 @@ Suggested cleanup sequence after adoption:
 2. Remove the 4 truly dead dependencies
 3. Move the 6 misplaced devDep declarations to the packages that import them
 4. Delete the 9 unused class members in editord LSP code
-5. Decide whether to extract `packages/cli/_shared/` (or similar) for the
+5. Decide whether to extract `package/cli/_shared/` (or similar) for the
    mvm/vmsync clones,
     or accept them
 6. After each cleanup batch,

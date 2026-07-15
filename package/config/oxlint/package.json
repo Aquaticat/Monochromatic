@@ -1,0 +1,48 @@
+{
+  "name": "@monochromatic-dev/config-oxlint",
+  "private": false,
+  "keywords": [
+    "oxlint",
+    "config",
+    "monochromatic"
+  ],
+  "dependencies": {
+    "@monochromatic-dev/oxlint-plugin-no-restricted-syntax": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-stylistic": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-tsdoc": "workspace:*",
+    "oxlint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/node": "catalog:"
+  },
+  "type": "module",
+  "files": [
+    "src",
+    "dist/final",
+    "LICENSES"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "package/config/oxlint"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "description": "Shared oxlint configuration for Monochromatic repositories, exported as a typed OxlintConfig object."
+}

@@ -16,7 +16,7 @@ Pi showed related failures on Linux during July 10,
   }
   ```
 
-- Two later `mise run //packages/git-policy/cli:test:unit` calls remained as an assistant `bash`
+- Two later `mise run //package/git-policy/cli:test:unit` calls remained as an assistant `bash`
   tool call plus an `auto-mode:verdict` entry.
   No matching `toolResult` was appended before Pi was restarted.
 - A `gh repo clone` under `/tmp/agent` ended Pi with the same `write` diagnostic.
@@ -59,7 +59,7 @@ These current values do not replace the incident-time measurement.
 ### Pi spills complete truncated Bash output below `os.tmpdir()`
 
 In `earendil-works/pi` tag `v0.80.6`,
-`packages/coding-agent/src/core/tools/output-accumulator.ts:19-22`
+`package/coding-agent/src/core/tools/output-accumulator.ts:19-22`
 selects `os.tmpdir()` for every overflow file:
 
 ```ts
@@ -69,7 +69,7 @@ function defaultTempFilePath(prefix: string): string {
 }
 ```
 
-`packages/coding-agent/src/core/tools/output-accumulator.ts:71-75` writes each
+`package/coding-agent/src/core/tools/output-accumulator.ts:71-75` writes each
 chunk after output exceeds its byte or line bound:
 
 ```ts
@@ -108,7 +108,7 @@ the Bash promise rejected before its result was recorded.
 A concurrent batch then showed missing results for every call.
 
 Direct `!` Bash and RPC had a second copy of the problem.
-`packages/coding-agent/src/core/bash-executor.ts:67-72` created the stream,
+`package/coding-agent/src/core/bash-executor.ts:67-72` created the stream,
 lines `88-91` wrote without an error listener,
 and lines `118-120` called `end()` without awaiting `finish` or `error`.
 

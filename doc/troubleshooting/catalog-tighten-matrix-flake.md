@@ -13,7 +13,7 @@ pnpm drift section.
 ## Symptom
 
 Running the full matrix
-(`mise run //packages/dev-script/catalog-tighten.matrix:test:matrix`), which runs
+(`mise run //package/dev-script/catalog-tighten.matrix:test:matrix`), which runs
 the scenarios in containers at concurrency 2, the `stale orphan` scenario failed
 once:
 
@@ -46,12 +46,12 @@ For the matrix fixture, `catalog-tighten` is deterministic given the on-disk
 layout, so a correct install can only yield `tighten`. The fixture's
 `pnpm-workspace.yaml` declares a single catalog entry (`picomatch`), so there is
 no cross-entry concurrency: `catalogEntries.map` in
-`packages/dev-script/catalog-tighten/src/index.ts:297` folds over exactly one
+`package/dev-script/catalog-tighten/src/index.ts:297` folds over exactly one
 entry.
 
 Resolution reads a fixed importer list in a fixed order and returns the first
 hit, with no shared mutable state, in
-`packages/dev-script/catalog-tighten/src/version-resolve.ts:242`:
+`package/dev-script/catalog-tighten/src/version-resolve.ts:242`:
 
 ```ts
 const candidateDirs = [
@@ -80,7 +80,7 @@ reads `4.0.2` and the tool tightens. The `stale-orphan` mutation seeds a higher
 `picomatch@4.0.4` into `node_modules/.pnpm` with no symlink and runs after
 install; it never touches the consumer symlinks, and the resolver above never
 reads `.pnpm` on the tighten path. So the only way `stale orphan` reaches the
-miss branch (`packages/dev-script/catalog-tighten/src/index.ts:347`) is if a
+miss branch (`package/dev-script/catalog-tighten/src/index.ts:347`) is if a
 consumer's `picomatch` manifest was unreadable at read time, which requires the
 install layout to have been incomplete despite `pnpm install` exiting 0.
 
@@ -111,11 +111,11 @@ Reproduction command (the exact original condition):
 
 ```sh
 # /var/home/user/Monochromatic
-mise run //packages/dev-script/catalog-tighten.matrix:test:matrix
+mise run //package/dev-script/catalog-tighten.matrix:test:matrix
 ```
 
 The assertion already embeds the full tool output in its error
-(`packages/dev-script/catalog-tighten.matrix/src/in-container.ts`, the
+(`package/dev-script/catalog-tighten.matrix/src/in-container.ts`, the
 `expected ... got:\n${output}` throws), so a recurrence in CI or a captured run
 is diagnosable from the logs without extra instrumentation; the original loss
 was terminal truncation, not missing data.

@@ -1,6 +1,6 @@
-# Host-native builds of packages/desktop-app crates on immutable Fedora (Bazzite 44)
+# Host-native builds of package/desktop-app crates on immutable Fedora (Bazzite 44)
 
-Two host-only build failures hit `packages/music-player/desktop-app` and `packages/desktop-app/terminal` when
+Two host-only build failures hit `package/music-player/desktop-app` and `package/desktop-app/terminal` when
 building natively instead of in the podman container (see `../decisions/desktop-app-podman-build.md`).
 Both are specific to the immutable-Fedora host layout (Bazzite 44,
  ostree) and do not occur in the container,
@@ -87,10 +87,10 @@ fc44,
 
 ```bash
 # FAIL: no resource-dir -> stdbool.h not found (above)
-mise run //packages/music-player/desktop-app:lint
+mise run //package/music-player/desktop-app:lint
 
 # PASS: point clang at the lib-side resource dir
-BINDGEN_EXTRA_CLANG_ARGS="-resource-dir=/usr/lib/clang/22" mise run //packages/music-player/desktop-app:lint
+BINDGEN_EXTRA_CLANG_ARGS="-resource-dir=/usr/lib/clang/22" mise run //package/music-player/desktop-app:lint
 # -> Checking pipewire v0.10.0 ... compiles (libspa-sys bindgen succeeds)
 ```
 
@@ -148,7 +148,7 @@ codegen step.
  Verbatim:
 
 ```text
-error: failed to spawn and capture stdio from ./../../../../../../var/home/user/Monochromatic/packages/desktop-app/terminal/target/release/build/libghostty-vt-sys-c49e05344848fff5/out/ghostty-src/.zig-cache/o/c2021477bddae9a9776f08e7b1136e99/uucode_build_tables: FileNotFound
+error: failed to spawn and capture stdio from ./../../../../../../var/home/user/Monochromatic/package/desktop-app/terminal/target/release/build/libghostty-vt-sys-c49e05344848fff5/out/ghostty-src/.zig-cache/o/c2021477bddae9a9776f08e7b1136e99/uucode_build_tables: FileNotFound
 
 run exe uucode_build_tables (tables.zig) failure
 ...
@@ -232,7 +232,7 @@ Versions under test:
  Ghostty pin `bebca84`.
 
 ```bash
-cd packages/desktop-app/terminal
+cd package/desktop-app/terminal
 # FAIL: fresh default cache under the symlinked HOME, no override (proves it is not a one-time poisoned cache)
 rm -rf /home/user/.cache/zig
 rm -rf target/release/build/libghostty-vt-sys-*
@@ -271,7 +271,7 @@ including JetBrains IDEA Rust run configurations:
 ```toml
 # .cargo/config.toml
 [env]
-ZIG_GLOBAL_CACHE_DIR = { value = "packages/desktop-app/terminal/target/zig-global-cache", relative = true }
+ZIG_GLOBAL_CACHE_DIR = { value = "package/desktop-app/terminal/target/zig-global-cache", relative = true }
 SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 ```
 
@@ -279,7 +279,7 @@ SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
  Cargo resolves the value through the config file's real path,
 so opening the repo through `/home/user/Monochromatic` still yields a physical `/var/home/user/Monochromatic/...`
 cache path.
- Verified with `cargo check --manifest-path packages/desktop-app/terminal/Cargo.toml` from the repo root;
+ Verified with `cargo check --manifest-path package/desktop-app/terminal/Cargo.toml` from the repo root;
 the direct Cargo path completed successfully after this config was added.
 
 Tradeoff:

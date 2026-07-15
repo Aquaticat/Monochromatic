@@ -92,7 +92,7 @@ Both projections can lose the key,
 but a prototype change can also alter runtime classification or silently make two lossy objects compare equal.
 
 The package-owned materializer does not use ordinary assignment.
-`packages/module/toml-edit/src/value-materialize.ts:78-92` creates a fresh object with a computed property:
+`package/module/toml-edit/src/value-materialize.ts:78-92` creates a fresh object with a computed property:
 
 ```typescript
 return {
@@ -114,7 +114,7 @@ The verified dependency inputs are:
 - Node 26.5.0.
 
 The permanent reproduction is in
-`packages/module/toml-edit/src/fuzz/round-trip.property.unit.test.ts`.
+`package/module/toml-edit/src/fuzz/round-trip.property.unit.test.ts`.
 It verifies all of these facts for the minimized source:
 
 - `getStaticTOMLValue` does not create an own `__proto__` property;
@@ -125,13 +125,13 @@ It verifies all of these facts for the minimized source:
 Run the bounded reproduction with:
 
 ```sh
-mise run //packages/module/toml-edit:test:unit
+mise run //package/module/toml-edit:test:unit
 ```
 
 Run the campaign boundary with:
 
 ```sh
-mise run //packages/module/toml-edit:fuzz
+mise run //package/module/toml-edit:fuzz
 ```
 
 ### Inputs that project cleanly
@@ -153,7 +153,7 @@ because primitives are lost and objects can replace the projection prototype.
 
 ### Classify the AST before using the oracle
 
-`staticSemanticOracleSupports` in `packages/module/toml-edit/src/fuzz/equality.ts` parses the source,
+`staticSemanticOracleSupports` in `package/module/toml-edit/src/fuzz/equality.ts` parses the source,
 walks authored key nodes iteratively,
 and rejects a source containing any `__proto__` key segment before calling `getStaticTOMLValue`.
 

@@ -105,8 +105,8 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1162 filtered out; f
 
 Main custom rule files were implemented and verified:
 
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
 
 The custom rule currently:
 
@@ -134,17 +134,17 @@ The custom rule currently:
 
 The custom rule was wired into:
 
-- `packages/oxlint-plugin/no-restricted-syntax/src/index.ts`
-- `packages/test-fixture/oxlint-no-restricted-syntax/.oxlintrc.fixture.json`
-- `packages/config/oxlint/src/rule/restriction.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
-- `packages/test-fixture/oxlint-no-restricted-syntax/src/invalid/no-immediate-mutation.ts`
-- `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-immediate-mutation.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/index.ts`
+- `package/test-fixture/oxlint-no-restricted-syntax/.oxlintrc.fixture.json`
+- `package/config/oxlint/src/rule/restriction.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
+- `package/test-fixture/oxlint-no-restricted-syntax/src/invalid/no-immediate-mutation.ts`
+- `package/test-fixture/oxlint-no-restricted-syntax/src/valid/no-immediate-mutation.ts`
 
 Implementation was split across:
 
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
-- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
 
 Repo commit `079cef1aa` records this checkpoint.
 
@@ -155,14 +155,14 @@ Repo commit `079cef1aa` records this checkpoint.
     locally-shadowed Set/Map fixture coverage,
     and an exact `seenWith` fixture shape.
 2. Latest focused verification passed:
-   `mise run //packages/oxlint-plugin/no-restricted-syntax:format:oxlint`,
-   `mise run //packages/oxlint-plugin/no-restricted-syntax:lint:types`,
-   `mise run //packages/oxlint-plugin/no-restricted-syntax:lint:oxlint`,
+   `mise run //package/oxlint-plugin/no-restricted-syntax:format:oxlint`,
+   `mise run //package/oxlint-plugin/no-restricted-syntax:lint:types`,
+   `mise run //package/oxlint-plugin/no-restricted-syntax:lint:oxlint`,
     and
-   `mise run //packages/oxlint-plugin/no-restricted-syntax:test:unit`.
+   `mise run //package/oxlint-plugin/no-restricted-syntax:test:unit`.
 3. Config package verification also passed after the config changes:
-   `mise run //packages/config/oxlint:lint:types` and
-   `mise run //packages/config/oxlint:lint:oxlint`.
+   `mise run //package/config/oxlint:lint:types` and
+   `mise run //package/config/oxlint:lint:oxlint`.
 4. Grep for `unicorn/no-immediate-mutation` outside the new docs found no remaining disable directives.
 5. Commits recorded so far:
    `079cef1aa feat(no-restricted-syntax): add no-immediate-mutation clone exception`,

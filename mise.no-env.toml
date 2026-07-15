@@ -5,7 +5,7 @@
 # After cloning, run `mise trust` to mark this file as trustworthy.
 # Mise refuses to evaluate env vars, templates, and `path:` plugin versions
 # in untrusted config files. Trusting the monorepo root implicitly trusts
-# all descendant config files (packages/**/mise.toml).
+# all descendant config files (package/**/mise.toml).
 # https://mise.jdx.dev/cli/trust.html
 
 # Enables monorepo task discovery: tasks in subdirectories are auto-discovered
@@ -14,13 +14,13 @@
 experimental_monorepo_root = true
 
 [monorepo]
-# Each packages/*/* directory with a mise.toml becomes its own config root,
+# Each package/*/* directory with a mise.toml becomes its own config root,
 # giving it its own tools, env, and tasks while inheriting from the root.
-# packages-deprecated/*/* is intentionally excluded: archived packages remain
+# package-deprecated/*/* is intentionally excluded: archived packages remain
 # installable (e.g. via npm) but should not be discovered as task config roots,
 # so their tasks stay out of the active task graph.
 config_roots = [
-  "packages/*/*",
+  "package/*/*",
 ]
 
 [tools]
@@ -41,7 +41,7 @@ ripgrep = "latest"
 # Replacing strings
 "cargo:fastmod" = "latest"
 
-# Coverage-guided fuzzing for forbidden-strings (see packages/fuzz/forbidden-strings/).
+# Coverage-guided fuzzing for forbidden-strings (see package/fuzz/forbidden-strings/).
 # Pinned to 0.13.2 because the API around `--fuzzing-workspace=true` and
 # the libfuzzer-sys integration has shifted across point releases; this
 # version is what was verified locally for the rollout.
@@ -79,7 +79,7 @@ age = "latest"
 # For reliable timeout
 # Rust toolchain, managed repo-wide here (no per-package override).
 # Pinned to nightly because cargo-fuzz (coverage-guided fuzzing under
-# packages/fuzz/forbidden-strings/) injects `-Cllvm-args=-sanitizer-coverage-*`
+# package/fuzz/forbidden-strings/) injects `-Cllvm-args=-sanitizer-coverage-*`
 # RUSTFLAGS that only compile on nightly; a single root toolchain keeps every
 # crate on one channel rather than forking stable/nightly per directory.
 # Floating "nightly" tracks the latest; pin to a dated channel
@@ -98,7 +98,7 @@ cargo-binstall = "latest"
 # per-test process isolation model, faster parallel scheduling, and clearer
 # output. The `cargo:` backend resolves through cargo-binstall (installed just
 # above) to a prebuilt binary, so no slow source build. Inherited by child
-# config roots (e.g. packages/fuzz/forbidden-strings), so the nightly fuzz
+# config roots (e.g. package/fuzz/forbidden-strings), so the nightly fuzz
 # crate gets the same runner without its own entry. The two podman-built
 # desktop apps install nextest inside their Containerfiles instead, since the
 # container filesystem does not see host mise tools.
@@ -106,7 +106,7 @@ cargo-binstall = "latest"
 
 # CMake for building vendored C libraries from Rust -sys crates. music-player's
 # `opus` dependency (pinned to opus-rs git HEAD in
-# packages/music-player/desktop-app/Cargo.toml) uses opusic-sys, whose `bundled`
+# package/music-player/desktop-app/Cargo.toml) uses opusic-sys, whose `bundled`
 # feature is on by default and compiles libopus 1.6.1 from source via CMake on
 # every platform. The Linux host carries no system cmake, so mise provides it
 # here; the two podman-built desktop apps install cmake inside their Containerfiles
@@ -117,7 +117,7 @@ cargo-binstall = "latest"
 cmake = "latest"
 
 # rcodesign (the `apple-codesign` crate) signs, notarizes, and staples the
-# packages/music-player/desktop-app macOS .app from Linux (the Mach-O is still
+# package/music-player/desktop-app macOS .app from Linux (the Mach-O is still
 # built on the Mac; only signing is cross-platform). Installed from crates.io by
 # crate name through the cargo backend, consistent with the other Rust CLIs in
 # this list. The crate's single binary is named `rcodesign` (not after the
@@ -128,7 +128,7 @@ cmake = "latest"
 # doc/decision/desktop-app-code-signing.md and the package's sign:macos task.
 "cargo:apple-codesign" = "latest"
 
-# Zig toolchain for packages/desktop-app/terminal: its libghostty-vt-sys
+# Zig toolchain for package/desktop-app/terminal: its libghostty-vt-sys
 # build-dependency compiles vendored Ghostty with Zig and requires Zig 0.15.x
 # (Fedora packages an older 0.14). Pinned to 0.15.2 to match the version the
 # terminal Containerfile fetches (ENV ZIG_VERSION=0.15.2) and
@@ -148,7 +148,7 @@ zig = "0.15.2"
 # the old cargo-git rev/ref path that made mise.lock oscillate.
 "cargo:slint-viewer" = "latest"
 
-# AI inference server for local development (packages/webapp-productivity/done).
+# AI inference server for local development (package/webapp-productivity/done).
 # Pinned (not "latest") because llama.cpp's release pipeline tags before the
 # Linux build finishes uploading, so any "latest" install run during that
 # window fails to find a ubuntu-x64 asset. Bump manually after verifying the
@@ -161,18 +161,18 @@ hcloud = "latest"
 "cargo:coreutils" = { version = "latest", features = "unix" }
 "npm:socket" = "latest"
 
-# Cloudflare Workers CLI. Deploys packages/config/lfs-r2-worker, this repo's
+# Cloudflare Workers CLI. Deploys package/config/lfs-r2-worker, this repo's
 # Git LFS server backed by R2 (anonymous read, token-gated write). Invoked only
 # as a CLI (`wrangler deploy`), so it lives here rather than as a pnpm dependency.
 "npm:wrangler" = "latest"
 
-# Static-site search index generator for packages/ssg/aquati.cat (run as
+# Static-site search index generator for package/ssg/aquati.cat (run as
 # `pagefind --site dist` in that package's build:postprocess). A CLI tool, so it
 # lives in the mise tool set rather than as a pnpm dependency.
 "npm:pagefind" = "latest"
 betterleaks = "latest"
 
-# === Android toolchain (packages/music-player/android-app) ===
+# === Android toolchain (package/music-player/android-app) ===
 # Hoisted here so the whole repo provisions from one tool manifest; the package's
 # mise.toml carries only tasks. This replaces the former dependency on a
 # machine-local Android SDK under /var/tmp (a reapable path) referenced from a
@@ -247,7 +247,7 @@ disable_backends = [
 
 status.missing_tools = "always"
 
-# Matches the packages/*/* directory depth (e.g. packages/module/logger = 3 segments).
+# Matches the package/*/* directory depth (e.g. package/module/logger = 3 segments).
 task.monorepo_depth = 3
 
 # Skip the extra Tera template pass that collects arg()/option()/flag() from run scripts.
@@ -305,7 +305,7 @@ const failed = children.filter((name, index) => exits[index][0] !== 0)
 if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.join(', ')}`) }
 """
 # node -e cross-package fanout: the JS replacement for the native `mise
-# '//packages/...:<task>'` monorepo glob, which is unreliable (aborts the
+# '//package/...:<task>'` monorepo glob, which is unreliable (aborts the
 # aggregate while child fanout work is still in flight; see
 # doc/handover/lint-fix-2026-06.md). Mirrors the intra-package `fanout` var
 # above, but selects every PACKAGE task whose suffix matches, rather than the
@@ -329,7 +329,7 @@ const suffix = process.env.FANOUT_TASK ?? (taskName.startsWith('//:') ? taskName
 // as the task graph grows.
 const MISE_TASKS_JSON_MAX_BUFFER = 16 * 1024 * 1024
 const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8', maxBuffer: MISE_TASKS_JSON_MAX_BUFFER }))
-const targets = tasks.map((task) => task.name).filter((name) => name.startsWith('//packages/') && name.slice(name.indexOf(':') + 1) === suffix)
+const targets = tasks.map((task) => task.name).filter((name) => name.startsWith('//package/') && name.slice(name.indexOf(':') + 1) === suffix)
 if (targets.length === 0) { throw new Error(`no package tasks matched ${suffix}`) }
 const limit = suffix.startsWith('watch') ? targets.length : Math.max(1, Math.min(availableParallelism(), targets.length))
 const failed = []
@@ -379,8 +379,8 @@ const newestMtime = (path) => {
     return newest
   }, stats.mtimeMs)
 }
-const oxlintConfigPackageDir = join(monorepoRoot, 'packages', 'config', 'oxlint')
-const oxlintPluginPackagesDir = join(monorepoRoot, 'packages', 'oxlint-plugins')
+const oxlintConfigPackageDir = join(monorepoRoot, 'package', 'config', 'oxlint')
+const oxlintPluginPackagesDir = join(monorepoRoot, 'package', 'oxlint-plugin')
 const oxlintPluginPackageDirs = existsSync(oxlintPluginPackagesDir)
   ? readdirSync(oxlintPluginPackagesDir, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
@@ -414,7 +414,7 @@ const shouldBuildOxlintConfig = () => {
   return newestSourceMtime > oldestOutputMtime
 }
 const ensureOxlintConfig = () => {
-  if (shouldBuildOxlintConfig()) { execFileSync('mise', ['run', '//packages/config/oxlint:build:js:node'], { stdio: 'inherit' }) }
+  if (shouldBuildOxlintConfig()) { execFileSync('mise', ['run', '//package/config/oxlint:build:js:node'], { stdio: 'inherit' }) }
 }
 """
 # Shell-word parser for mise's usage_args, which arrives as a single shell-escaped
@@ -552,7 +552,7 @@ const { join } = await import('node:path')
 const args = parseUsageArgs(process.env.usage_args ?? '')
 const all = (process.env.usage_all ?? '').trim() === 'true'
 if (all && args.length > 0) { throw new Error('--all cannot be combined with file paths') }
-const isInactiveTest = (file) => file.includes('/deprecated/') || file.startsWith('packages-deprecated/') || file.includes('/packages-deprecated/') || file.startsWith('packages-paused/') || file.includes('/packages-paused/')
+const isInactiveTest = (file) => file.includes('/deprecated/') || file.startsWith('package-deprecated/') || file.includes('/package-deprecated/') || file.startsWith('package-paused/') || file.includes('/package-paused/')
 let files
 if (args.length === 0) {
   files = []
@@ -583,7 +583,7 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
 ensureOxlintConfig()
-runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware'])
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--type-aware'])
 """
 [task_templates."lint:oxlint".env]
 # JavaScript semantic plugins own process-local native analysis state, so every source must share one Oxlint worker.
@@ -595,7 +595,7 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
 ensureOxlintConfig()
-runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware', '--fix'])
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--type-aware', '--fix'])
 """
 [task_templates."format:oxlint".env]
 # Match lint worker identity so semantic diagnostics stay stable across fixpoint passes.
@@ -606,7 +606,7 @@ description = "TypeScript"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
-runWorkspaceNode('packages/dev-script/task-util', 'tsc-filter', ['--build'])
+runWorkspaceNode('package/dev-script/task-util', 'tsc-filter', ['--build'])
 """
 
 [task_templates."watch:lint:types"]
@@ -645,7 +645,7 @@ usage = '''
 flag "--local" help="Clean current repository configuration"
 flag "--global" help="Clean per-user global configuration"
 '''
-run = "node packages/git-policy/cli/src/maintenance/hk-config-cleanup-command.ts"
+run = "node package/git-policy/cli/src/maintenance/hk-config-cleanup-command.ts"
 
 #endregion Utility Tasks
 
@@ -756,7 +756,7 @@ const { spawn } = await import('node:child_process')
 const { once } = await import('node:events')
 const { glob } = await import('node:fs/promises')
 const args = parseUsageArgs(process.env.usage_args ?? '')
-const isInactiveTest = (file) => file.includes('/deprecated/') || file.startsWith('packages-deprecated/') || file.includes('/packages-deprecated/') || file.startsWith('packages-paused/') || file.includes('/packages-paused/')
+const isInactiveTest = (file) => file.includes('/deprecated/') || file.startsWith('package-deprecated/') || file.includes('/package-deprecated/') || file.startsWith('package-paused/') || file.includes('/package-paused/')
 let files
 if (args.length === 0) {
   files = []
@@ -795,7 +795,7 @@ if (args.length === 0) {
   // Build only the package containing the first test file, not every package in the monorepo.
   const first = args[0].startsWith('./') ? args[0].slice(2) : args[0]
   const parts = first.split('/')
-  if (parts.length >= 3 && parts[0] === 'packages') {
+  if (parts.length >= 3 && parts[0] === 'package') {
     const buildTask = `//${parts.slice(0, 3).join('/')}:build`
     // `mise tasks --all --json` is intentionally large in this monorepo;
     // raise execFileSync's default 1 MiB stdout cap so package lookup keeps working
@@ -869,8 +869,8 @@ hide = true
 description = "Lint Markdown and MDX with cli-markdown-lint, optionally restricted to specific files"
 # No usage spec: mise appends post-`--` args to the command as a real argv vector
 # (preserving spaces). The cli defaults to walking `.` when no paths are given
-# (see packages/cli/markdown-lint/src/run.ts).
-run = "node packages/cli/markdown-lint/src/cli.ts"
+# (see package/cli/markdown-lint/src/run.ts).
+run = "node package/cli/markdown-lint/src/cli.ts"
 
 [tasks."lint:rust"]
 description = "Enforce the code-line budget and required rustdoc on .rs via monochromatic-rust-linter, fanned out per package"
@@ -889,7 +889,7 @@ description = "Enforce KDoc on Kotlin via the custom detekt rule set (kotlin-lin
 # aggregate: `mise run lint` already reaches every package's lint:detekt through step 1.
 # Fans out (via the JS cross-package fanout) to each package's own `lint:detekt`, which
 # scans only that package's Kotlin source root. detekt-cli is not gitignore-aware, so
-# a single scan over packages/ would walk ~200k node_modules/build files to find ~50
+# a single scan over package/ would walk ~200k node_modules/build files to find ~50
 # .kt; per-package scans keep the input tiny.
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout_packages}}"
@@ -933,8 +933,8 @@ hide = true
 description = "Apply cli-markdown-lint autofixes, optionally restricted to specific files"
 # No usage spec: mise appends post-`--` args after `--fix` as a real argv vector.
 # The cli defaults to walking `.` when no paths are given
-# (see packages/cli/markdown-lint/src/run.ts).
-run = "node packages/cli/markdown-lint/src/cli.ts --fix"
+# (see package/cli/markdown-lint/src/run.ts).
+run = "node package/cli/markdown-lint/src/cli.ts --fix"
 
 #region Validation and Check Tasks
 
@@ -1002,10 +1002,10 @@ description = "Build Playwright container image via podman"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
-runWorkspaceNode('packages/dev-script/task-util', 'depends', ['--sources', 'sh:echo Infinity', '--outputs', 'sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity', '--', 'podman', 'build', '-t', 'monochromatic-playwright', '-f', 'playwright.Dockerfile', '.'])
+runWorkspaceNode('package/dev-script/task-util', 'depends', ['--sources', 'sh:echo Infinity', '--outputs', 'sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity', '--', 'podman', 'build', '-t', 'monochromatic-playwright', '-f', 'playwright.Dockerfile', '.'])
 """
 
-# Android SDK components for packages/music-player/android-app. The android-sdk
+# Android SDK components for package/music-player/android-app. The android-sdk
 # tool (in [tools]) installs only the command-line tools; the platform, build-tools,
 # NDK, and platform-tools are not declarable as mise tools, so sdkmanager installs
 # them into $ANDROID_HOME here. A depth-2 `prepare:*` task, so the `prepare` umbrella
@@ -1013,7 +1013,7 @@ runWorkspaceNode('packages/dev-script/task-util', 'depends', ['--sources', 'sh:e
 # Triple-SINGLE-quoted so the `\n` license-acceptance newlines reach node literally
 # (a triple-double-quoted body would have TOML pre-expand them and break the JS).
 [tasks."prepare:android"]
-description = "Install the Android SDK components packages/music-player/android-app needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android (devices) and x86_64-linux-android (emulators) rustup targets. EXPENSIVE: ~2.9 GB on disk (the NDK alone is ~2.4 GB), and the `prepare` umbrella auto-runs it for every developer, not just Android ones; this cost is intended and tolerated. Idempotent: a no-op once provisioned."
+description = "Install the Android SDK components package/music-player/android-app needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android (devices) and x86_64-linux-android (emulators) rustup targets. EXPENSIVE: ~2.9 GB on disk (the NDK alone is ~2.4 GB), and the `prepare` umbrella auto-runs it for every developer, not just Android ones; this cost is intended and tolerated. Idempotent: a no-op once provisioned."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { existsSync, readdirSync } = require("node:fs");
@@ -1096,11 +1096,11 @@ run = "caddy run --config Caddyfile --adapter caddyfile"
 [tasks."sync:files"]
 alias = "file-enforcer"
 description = "Sync derived files (CLAUDE.md, oxlint config, etc.) via file-enforcer"
-run = "node packages/dev-script/file-enforcer/src/cli.ts"
+run = "node package/dev-script/file-enforcer/src/cli.ts"
 
 [tasks."watch:sync:files"]
 description = "Watch source files and re-sync on changes"
-run = "node packages/dev-script/file-enforcer/src/cli.ts --watch"
+run = "node package/dev-script/file-enforcer/src/cli.ts --watch"
 
 #endregion File Enforcer
 
@@ -1126,7 +1126,7 @@ description = "Tighten catalog >=x.y.z ranges to match installed node_modules ve
 # No usage spec: mise appends post-`--` args as a real argv vector. The entry
 # reads `--dry-run` from argv itself (src/index.ts), matching the README's
 # documented `mise run catalog:tighten -- --dry-run`.
-run = "node packages/dev-script/catalog-tighten/src/index.ts"
+run = "node package/dev-script/catalog-tighten/src/index.ts"
 
 #endregion Catalog Tighten
 
@@ -1136,7 +1136,7 @@ run = "node packages/dev-script/catalog-tighten/src/index.ts"
 description = "Report per-page transfer size (min, max, mean, median) for a dist directory"
 # No usage spec: mise appends the post-`--` dist path as a real argv vector. The
 # entry validates a missing dist arg itself (EXIT_USAGE in src/index.ts).
-run = "node packages/dev-script/page-weight/src/index.ts"
+run = "node package/dev-script/page-weight/src/index.ts"
 
 #endregion Page Weight
 
@@ -1155,9 +1155,9 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 #endregion Fix Tasks
 
 # Forge shortcut tasks (forge:dev, forge:seed, forge:stress, prepare:garage) were removed when
-# webapp-forge moved to packages-paused/. Re-add them on un-pause.
+# webapp-forge moved to package-paused/. Re-add them on un-pause.
 
-# The canary task was removed when inference-canary moved to packages-paused/
+# The canary task was removed when inference-canary moved to package-paused/
 # (superseded by marginlab.ai). Re-add it on un-pause.
 
 #endregion tasks

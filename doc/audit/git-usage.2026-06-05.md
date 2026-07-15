@@ -179,13 +179,13 @@ The largest blobs ever committed (still in history,
  still shipped on every clone):
 
 ```txt
-2.5 MB  packages/site/astro-test/src/collections/blog/glass-house.jpg
-2.4 MB  packages/module/es/src/arrayLike.type.ints.ts   (generated giant type file)
+2.5 MB  package/site/astro-test/src/collections/blog/glass-house.jpg
+2.4 MB  package/module/es/src/arrayLike.type.ints.ts   (generated giant type file)
 1.9 MB  winter-tree.jpg
 1.5 MB  .eslintcache                                      (a cache file, never belongs in git)
 1.3 MB  glass-collection.jpg
-1.2 MB  packages/.../packages.generated.ts               (committed twice)
-        packages/theme/subtle/dist/temp/cache/compress/...(build cache)
+1.2 MB  package/.../packages.generated.ts               (committed twice)
+        package/theme/subtle/dist/temp/cache/compress/...(build cache)
         screenshots/*.png, resume-no-pii.pdf
 ```
 
@@ -202,7 +202,7 @@ caches reached `index` at least once before `.gitignore` caught up.
 Worth saying clearly,
  because it looks like the same smell but is not:
  the 21 tracked
-`packages/claude-code-plugin/*/dist/final/...` files are intentional.
+`package/claude-code-plugin/*/dist/final/...` files are intentional.
  `.gitignore:322-328` explicitly
 un-ignores them because marketplace distribution requires committed bundles.
  That is fine;

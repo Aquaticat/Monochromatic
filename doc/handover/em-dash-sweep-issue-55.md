@@ -98,12 +98,12 @@ The sweep scripts skip these files entirely:
 - `AUDIT.em-dash.md` -- the audit itself,
    contains self-references.
 - `PLANNING.forbidden-strings-em-dash.md` -- forbidden-strings investigation.
-- `packages/cli/forbidden-strings/README.md` -- forbidden-strings docs.
+- `package/cli/forbidden-strings/README.md` -- forbidden-strings docs.
 - `AGENTS.md` -- the rule statement (in backticks).
 - `GLM_LIMITATIONS.md` -- documents model violations as examples.
 - `TODO.claude-code-words.md` -- intentional dictionary-style definitions.
 - `TODO.forbidden-strings.md` -- forbidden-strings infrastructure.
-- `packages/module/hyperscript/src/css/index.unit.test.ts` -- en-dash as
+- `package/module/hyperscript/src/css/index.unit.test.ts` -- en-dash as
   CSS counter-style test data.
 
 ## Replacement heuristics (for reference)

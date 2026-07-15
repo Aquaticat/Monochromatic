@@ -600,13 +600,13 @@ definition.
 
 ### Symptom
 
-`mise run //packages/desktop-daemon/editord:dev` does not return to the
+`mise run //package/desktop-daemon/editord:dev` does not return to the
 terminal on Ctrl+C.
  Three processes survive the signal and block the
 terminal indefinitely:
 
 ```text
-mise run //packages/desktop-daemon/editord:dev
+mise run //package/desktop-daemon/editord:dev
 └── sh -c watchexec -w src/server --no-meta -j @src/server/content-changed.jaq -r -- bun src/server/index.ts
     └── watchexec ...
 ```
@@ -817,7 +817,7 @@ Earlier alternatives considered:
     deep-tree signal propagation) were
    weighed against the implementation cost.
     Lives at
-   `packages/dev-script/watch-restart/`;
+   `package/dev-script/watch-restart/`;
     see its README for the chokidar
    - custom `child_process.spawn` rationale.
 

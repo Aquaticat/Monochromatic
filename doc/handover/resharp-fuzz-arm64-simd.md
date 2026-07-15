@@ -308,7 +308,7 @@ than fixing the engine;
    `docs(resharp-fuzz): ...`,
    EXPLICIT scoped pathspecs.
    The
-  working tree carries concurrent external "unbash" changes in `packages/` and
+  working tree carries concurrent external "unbash" changes in `package/` and
   `AGENTS.md`;
    never stage those.
    `cli-git` rejects `-A`/`.`/pathspec-less

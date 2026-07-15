@@ -69,7 +69,7 @@ objc2-app-kit = { version = "0.3", features = [
 The drag (`mac_drag.rs`):
 
 ```rust
-// packages/desktop-app/file-manager-gtk/src/mac_drag.rs
+// package/desktop-app/file-manager-gtk/src/mac_drag.rs
 use objc2::rc::Retained;
 use objc2::runtime::{AnyObject, ProtocolObject};
 use objc2::{AnyThread, MainThreadMarker, MainThreadOnly, define_class, msg_send};

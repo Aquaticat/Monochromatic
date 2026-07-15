@@ -6,7 +6,7 @@ Accepted,
  Phase 0 design only.
  Implementation pending.
 Plan:
- `packages/module/logger/bulletproofing.plan.md`.
+ `package/module/logger/bulletproofing.plan.md`.
 
 This doc records the owner decisions resolved during a design grilling.
  The plan
@@ -29,7 +29,7 @@ but not bulletproof.
 write that never settles,
  and a log call can throw when no backend is available.
 The goal is to reach the verification bar already set by
-`packages/module/toml-edit` (a budgeted property campaign,
+`package/module/toml-edit` (a budgeted property campaign,
  a strong model oracle,
 a committed coverage-reachability gate,
  CI wiring,

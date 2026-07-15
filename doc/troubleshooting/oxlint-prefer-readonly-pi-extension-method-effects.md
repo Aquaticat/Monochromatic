@@ -119,7 +119,7 @@ These methods therefore have different exact effects even though none reassigns 
 
 ## Resolution
 
-`packages/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/pi-package-effect-catalog.ts`
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/pi-package-effect-catalog.ts`
 now records exact receiver effects for:
 
 - package `@earendil-works/pi-coding-agent`;
@@ -156,19 +156,19 @@ The shared model-selection entries target only `ctx` for `resolveEffectiveScope`
 and `scope` plus `modelRegistry` for `resolveRequestedModel`.
 They do not mark unrelated values stored in either options bag.
 
-`packages/pi-plugin/auto-mode/src/register-propose-trust.ts` documents the known state changes with:
+`package/pi-plugin/auto-mode/src/register-propose-trust.ts` documents the known state changes with:
 
 ```ts
 @mutates pi - `pi.registerTool` changes registered tools; deferred `pi.appendEntry` calls append accepted trust state.
 ```
 
-`packages/pi-plugin/current-time-context/src/index.ts` documents its registration effect with:
+`package/pi-plugin/current-time-context/src/index.ts` documents its registration effect with:
 
 ```ts
 @mutates pi - `pi.on` stores the `before_agent_start` event registration in the Pi host
 ```
 
-`packages/pi-plugin/thinking-default/src/index.ts` documents registration and active-level updates,
+`package/pi-plugin/thinking-default/src/index.ts` documents registration and active-level updates,
 without inventing a mutation effect for `getThinkingLevel`:
 
 ```ts
@@ -189,26 +189,26 @@ The diagnostic lists every supported remediation:
 The following checks passed:
 
 ```text
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
-mise run //packages/pi-plugin/current-time-context:lint:oxlint
-mise run //packages/pi-plugin/current-time-context:test:unit
-mise run //packages/pi-plugin/current-time-context:verify:extension
-mise run //packages/pi-shared/model-selection:lint:oxlint
-mise run //packages/pi-shared/model-selection:test:unit
-mise run //packages/pi-plugin/advisor:lint:oxlint
-mise run //packages/pi-plugin/advisor:test:unit
-mise run //packages/pi-plugin/advisor:verify:extension
-mise run //packages/pi-plugin/auto-mode:lint:types
-mise run //packages/pi-plugin/auto-mode:lint:oxlint
-mise run //packages/pi-plugin/auto-mode:build:js:node
-mise run //packages/pi-plugin/auto-mode:test:unit
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:types
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit
+mise run //package/pi-plugin/current-time-context:lint:oxlint
+mise run //package/pi-plugin/current-time-context:test:unit
+mise run //package/pi-plugin/current-time-context:verify:extension
+mise run //package/pi-shared/model-selection:lint:oxlint
+mise run //package/pi-shared/model-selection:test:unit
+mise run //package/pi-plugin/advisor:lint:oxlint
+mise run //package/pi-plugin/advisor:test:unit
+mise run //package/pi-plugin/advisor:verify:extension
+mise run //package/pi-plugin/auto-mode:lint:types
+mise run //package/pi-plugin/auto-mode:lint:oxlint
+mise run //package/pi-plugin/auto-mode:build:js:node
+mise run //package/pi-plugin/auto-mode:test:unit
 ```
 
 The intrinsic test resolves `appendEntry` and `registerTool` through real Pi declaration provenance.
-`packages/oxlint-plugin/prefer-readonly-parameter-type/src/pi-package-effect-catalog.unit.test.ts`
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/pi-package-effect-catalog.unit.test.ts`
 opens real Advisor sources through the TypeScript bridge and verifies exact package provenance,
 owner,
 member,

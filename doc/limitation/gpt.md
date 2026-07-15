@@ -14,9 +14,9 @@ after oxlint already printed a `help:` line.
 **Files involved:
 **
 
-- `packages/dev-script/task-util/src/oxlint-augment.ts`
-- `packages/dev-script/task-util/src/oxlint-guidance.ts`
-- `packages/dev-script/task-util/src/oxlint-augment.unit.test.ts`
+- `package/dev-script/task-util/src/oxlint-augment.ts`
+- `package/dev-script/task-util/src/oxlint-guidance.ts`
+- `package/dev-script/task-util/src/oxlint-augment.unit.test.ts`
 
 ### Mistakes
 

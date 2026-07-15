@@ -258,7 +258,7 @@ device,
  streaming HTTPS to pCloud,
  background transfer,
  kopia as a linked static lib)
-and `packages/music-player/desktop-app` (Rust + Slint,
+and `package/music-player/desktop-app` (Rust + Slint,
  to port to iOS).
 
 Owner-stated hard constraints (these decide outcomes):

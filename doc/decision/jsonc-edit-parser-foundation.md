@@ -7,9 +7,9 @@ Accepted,
 
 ## Context
 
-`packages/module/jsonc-edit` is the comment-preserving JSONC read, edit, and write
-package, split out of the paused `packages-paused/module/es` taxonomy and shaped after
-its sibling `packages/module/toml-edit`.
+`package/module/jsonc-edit` is the comment-preserving JSONC read, edit, and write
+package, split out of the paused `package-paused/module/es` taxonomy and shaped after
+its sibling `package/module/toml-edit`.
 The goal is full edit parity with `toml-edit`: a free-function edit API over an immutable
 state, with a serializer.
 

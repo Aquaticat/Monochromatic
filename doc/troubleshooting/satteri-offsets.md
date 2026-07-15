@@ -9,7 +9,7 @@ offsets, or writes edits at them, corrupts output on documents containing
 multibyte or astral (emoji) characters.
 
 This was found while evaluating a migration of the repo's Markdown linter
-(`packages/cli/markdown-lint`) from `mdast-util-from-markdown` to Sätteri. The
+(`package/cli/markdown-lint`) from `mdast-util-from-markdown` to Sätteri. The
 linter recovers exact written forms and applies fixes at node offsets, so wrong
 offsets misplace slices and edits.
 
@@ -109,7 +109,7 @@ repeat them:
 - "The divergence is a list-marker parse difference." The minimal input
   `1. 3.1.1 **Testing**` parses identically in Sätteri and mdast-util (marker
   consumed, `text: "3.1.1 "`). The real cause is Bug B: the affected file
-  (`packages/webapp-productivity/rss/TODO.index.md`) contains emoji, and the
+  (`package/webapp-productivity/rss/TODO.index.md`) contains emoji, and the
   node's `value` is correct (`"3.1.1 "`) while its `position` offset is 3 short
   (three emoji precede it). Value-versus-slice mismatch, not a parse difference.
 - "The materialized path is correct; only the visitor path is buggy." False:

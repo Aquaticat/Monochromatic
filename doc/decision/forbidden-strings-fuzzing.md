@@ -8,7 +8,7 @@ Accepted.
 
 ## Context
 
-`packages/cli/forbidden-strings` is a deny-list scanner that mixes a custom
+`package/cli/forbidden-strings` is a deny-list scanner that mixes a custom
 regex prefix extractor,
  Aho-Corasick gates,
  a hybrid `regex` + `resharp`
@@ -97,7 +97,7 @@ content slice or the rule source.
 - a SHA-256 hex digest of the content slice;
 - a one-line label naming the invariant that failed.
 
-Seeders read test sources only (`packages/cli/forbidden-strings/src/rule/extract_tests.rs`
+Seeders read test sources only (`package/cli/forbidden-strings/src/rule/extract_tests.rs`
 and siblings).
  They never read `forbidden-strings.local.txt` or any
 other deny-list file;

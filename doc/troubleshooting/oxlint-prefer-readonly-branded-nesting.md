@@ -44,8 +44,8 @@ The `allow` entry therefore could not match.
 
 The corresponding typescript-eslint implementation at commit `f891c29` had the same division:
 
-- `packages/eslint-plugin/src/rules/prefer-readonly-parameter-types.ts` applied the brand exemption to the parameter;
-- `packages/type-utils/src/isTypeReadonly.ts` recursively classified properties without a branded-primitive check.
+- `package/eslint-plugin/src/rules/prefer-readonly-parameter-types.ts` applied the brand exemption to the parameter;
+- `package/type-utils/src/isTypeReadonly.ts` recursively classified properties without a branded-primitive check.
 
 This behavior belongs to the retired native rule.
 The repository-owned semantic rule does not use its type-name allowlist or its top-level-only branded exemption.
@@ -89,7 +89,7 @@ On 2026-07-13,
 the current package command was rerun:
 
 ```sh
-mise run //packages/webapp-productivity/done:lint:oxlint
+mise run //package/webapp-productivity/done:lint:oxlint
 ```
 
 The command returned status `1` with 35 replacement-rule findings elsewhere in the package.
@@ -100,9 +100,9 @@ uncertain inputs remain enforced.
 Focused semantic-rule verification uses:
 
 ```sh
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
-mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:types
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
+mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 ```
 
 The type task,

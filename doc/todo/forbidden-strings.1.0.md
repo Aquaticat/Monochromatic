@@ -1,6 +1,6 @@
 # Forbidden strings: road to 1.0
 
-Release-readiness checklist for promoting `packages/cli/forbidden-strings` from `0.1.8` to a
+Release-readiness checklist for promoting `package/cli/forbidden-strings` from `0.1.8` to a
 `1.0` we would be comfortable publishing and asking others to pin against.
 
 This complements the original design rationale in [forbidden-strings.md](./forbidden-strings.md);

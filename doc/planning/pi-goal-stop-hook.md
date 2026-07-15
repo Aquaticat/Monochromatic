@@ -11,7 +11,7 @@ Tracking issue:
 ## Goal
 
 Replace the globally installed `npm:@narumitw/pi-goal` package with a private,
-repository-owned Pi extension at `packages/pi-plugin/goal/`.
+repository-owned Pi extension at `package/pi-plugin/goal/`.
 The package name will be `@monochromatic-dev/pi-goal`.
 
 The extension is a stop hook for one active objective.
@@ -52,7 +52,7 @@ The main issue changes are:
 
 The issue requirements that remain authoritative include:
 
-- Repository ownership under `packages/pi-plugin/goal/`.
+- Repository ownership under `package/pi-plugin/goal/`.
 - Session custom-entry persistence and active-branch reconstruction.
 - Generation validation for stale completion and delayed callbacks.
 - No goal-state `tool_call` blocker.
@@ -87,14 +87,14 @@ The plan is based on these inspected sources:
 - Pi package behavior:
   `node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/
   @earendil-works/pi-coding-agent/docs/packages.md`.
-- Existing repository Pi package conventions under `packages/pi-plugin/`.
+- Existing repository Pi package conventions under `package/pi-plugin/`.
 - Existing highest-expected-cost secondary-model selection in
-  `packages/pi-plugin/advisor/` and
-  `packages/pi-shared/model-selection/`.
+  `package/pi-plugin/advisor/` and
+  `package/pi-shared/model-selection/`.
 - Structured judge transport and fallback behavior in
-  `packages/pi-plugin/auto-mode/src/judge.ts`,
-  `packages/pi-plugin/auto-mode/src/judge-stream.ts`,
-  and `packages/pi-plugin/auto-mode/src/judge-fallback.ts`.
+  `package/pi-plugin/auto-mode/src/judge.ts`,
+  `package/pi-plugin/auto-mode/src/judge-stream.ts`,
+  and `package/pi-plugin/auto-mode/src/judge-fallback.ts`.
 - Prior failed grilling assumptions and user corrections in
   `doc/limitation/kimi.md`.
 
@@ -802,7 +802,7 @@ Depending directly on auto-mode's extension entry point would couple one deploya
 Create reusable Pi infrastructure instead:
 
 ```text
-packages/pi-shared/model-review/
+package/pi-shared/model-review/
 ```
 
 Package name:
@@ -811,7 +811,7 @@ Package name:
 @monochromatic-dev/pi-shared-model-review
 ```
 
-This placement follows the documented `packages/pi-shared/` rule:
+This placement follows the documented `package/pi-shared/` rule:
 it is Pi extension infrastructure intended for at least two Pi packages,
 not an extension itself.
 
@@ -880,7 +880,7 @@ and ask-user flow.
 
 Move or generalize the implementation currently owned by:
 
-- `packages/pi-plugin/auto-mode/src/judge-fallback.ts`
+- `package/pi-plugin/auto-mode/src/judge-fallback.ts`
 - shared transport portions of `judge.ts`
 - shared stream collection portions of `judge-stream.ts`
 - shared JSON extraction portions of `judge-json.ts`
@@ -903,7 +903,7 @@ A later effort may migrate it if a genuinely shared interface emerges.
 
 ## Goal package shape
 
-Create `packages/pi-plugin/goal/` with:
+Create `package/pi-plugin/goal/` with:
 
 - Package name `@monochromatic-dev/pi-goal`.
 - `private: true`.
@@ -1220,7 +1220,7 @@ and `review_unavailable`.
 Add package tasks equivalent to sibling Pi plugins:
 
 ```toml
-# packages/pi-plugin/goal/mise.toml
+# package/pi-plugin/goal/mise.toml
 [tasks."verify:extension"]
 depends = ["build"]
 run = "node src/mise.verify-extension.ts"
@@ -1269,25 +1269,25 @@ run targeted tasks through mise.
 The shared extraction must be verified before goal consumes it.
 
 ```bash
-mise run //packages/pi-shared/model-review:build
-mise run //packages/pi-shared/model-review:lint:types
-mise run //packages/pi-shared/model-review:lint:oxlint
-mise run //packages/pi-shared/model-review:test:unit
+mise run //package/pi-shared/model-review:build
+mise run //package/pi-shared/model-review:lint:types
+mise run //package/pi-shared/model-review:lint:oxlint
+mise run //package/pi-shared/model-review:test:unit
 
-mise run //packages/pi-plugin/auto-mode:build
-mise run //packages/pi-plugin/auto-mode:lint:types
-mise run //packages/pi-plugin/auto-mode:lint:oxlint
-mise run //packages/pi-plugin/auto-mode:test:unit
+mise run //package/pi-plugin/auto-mode:build
+mise run //package/pi-plugin/auto-mode:lint:types
+mise run //package/pi-plugin/auto-mode:lint:oxlint
+mise run //package/pi-plugin/auto-mode:test:unit
 
-mise run //packages/pi-plugin/goal:build
-mise run //packages/pi-plugin/goal:lint:types
-mise run //packages/pi-plugin/goal:lint:oxlint
-mise run //packages/pi-plugin/goal:test:unit
-mise run //packages/pi-plugin/goal:verify:extension
-mise run //packages/pi-plugin/goal:verify:pi-runtime
+mise run //package/pi-plugin/goal:build
+mise run //package/pi-plugin/goal:lint:types
+mise run //package/pi-plugin/goal:lint:oxlint
+mise run //package/pi-plugin/goal:test:unit
+mise run //package/pi-plugin/goal:verify:extension
+mise run //package/pi-plugin/goal:verify:pi-runtime
 ```
 
-Run `mise run //packages/pi-plugin/goal:lint:types` manually after every TypeScript editing stage.
+Run `mise run //package/pi-plugin/goal:lint:types` manually after every TypeScript editing stage.
 Do not substitute raw `tsc`,
 `tsdown`,
 or `bun test`.
@@ -1334,7 +1334,7 @@ and custom tool execution must succeed through Pi.
 Do not change real global settings until all disposable verification passes.
 Do not change project-local `.pi/settings.json` at any point.
 
-Document the local package installation in `packages/pi-plugin/goal/README.md`.
+Document the local package installation in `package/pi-plugin/goal/README.md`.
 The final global package list must remove:
 
 ```text
@@ -1344,7 +1344,7 @@ npm:@narumitw/pi-goal
 and add:
 
 ```text
-/var/home/user/Monochromatic/packages/pi-plugin/goal
+/var/home/user/Monochromatic/package/pi-plugin/goal
 ```
 
 Use Pi's package commands or an equivalent scoped settings edit that preserves every unrelated package entry.
@@ -1362,7 +1362,7 @@ After migration:
 
 Implementation is incomplete until it includes:
 
-- `packages/pi-plugin/goal/README.md`
+- `package/pi-plugin/goal/README.md`
 - shared model-review `README.md`
 - updated auto-mode documentation naming shared review infrastructure
 - troubleshooting documentation for the stale global tool blocker
@@ -1380,7 +1380,7 @@ It must explain that no pre-goal or abandoned-branch context is sent.
 Implementation should proceed in independently verifiable stages.
 Commit each stage before starting the next.
 
-1. Add `packages/pi-shared/model-review/` with generic structured-review and fallback behavior.
+1. Add `package/pi-shared/model-review/` with generic structured-review and fallback behavior.
 2. Migrate auto-mode to the shared module without changing observable behavior.
 3. Add goal package scaffold,
    README,

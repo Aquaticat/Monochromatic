@@ -210,7 +210,7 @@ human auditability,
 ### @benvargas/pi-synthetic-provider (v1.1.14) - selected
 
 Cloned to `/tmp/agent/pi-packages-benvargas` (subpackage at
-`packages/pi-synthetic-provider`).
+`package/pi-synthetic-provider`).
 
 Maintenance:
 - Repo github.

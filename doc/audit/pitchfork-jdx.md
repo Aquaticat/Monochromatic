@@ -83,11 +83,11 @@ code.
   `crates/cli/src/args/command.rs`,
    and `crates/cli/src/args/events.rs`.
 - Watch-restart docs and source checked:
-   `packages/dev-script/watch-restart/README.md`,
-  `packages/dev-script/watch-restart/package.json`,
-  `packages/dev-script/watch-restart/src/start.ts`,
-  `packages/dev-script/watch-restart/src/watcher.ts`,
-  `packages/dev-script/watch-restart/src/child.ts`,
+   `package/dev-script/watch-restart/README.md`,
+  `package/dev-script/watch-restart/package.json`,
+  `package/dev-script/watch-restart/src/start.ts`,
+  `package/dev-script/watch-restart/src/watcher.ts`,
+  `package/dev-script/watch-restart/src/child.ts`,
    and
   `doc/troubleshooting/mise-watch.md`.
 - Validation run:
@@ -526,10 +526,10 @@ configurable first signal,
  SIGKILL escalation,
  and a reusable library API
 (`startWatchRestart`) for workspace dev servers (repo paths
-`packages/dev-script/watch-restart/README.md`,
-`packages/dev-script/watch-restart/src/start.ts`,
-`packages/dev-script/watch-restart/src/watcher.ts`,
-`packages/dev-script/watch-restart/src/child.ts`).
+`package/dev-script/watch-restart/README.md`,
+`package/dev-script/watch-restart/src/start.ts`,
+`package/dev-script/watch-restart/src/watcher.ts`,
+`package/dev-script/watch-restart/src/child.ts`).
 
 Cons:
  it is intentionally narrower than Pitchfork.
@@ -840,10 +840,10 @@ avoid learning systemd for services that actually belong to the host.
   [Foreman][foreman],
    [Overmind][overmind].
 - Internal watch-restart evidence:
-   `packages/dev-script/watch-restart/README.md`,
-  `packages/dev-script/watch-restart/src/start.ts`,
-  `packages/dev-script/watch-restart/src/watcher.ts`,
-  `packages/dev-script/watch-restart/src/child.ts`,
+   `package/dev-script/watch-restart/README.md`,
+  `package/dev-script/watch-restart/src/start.ts`,
+  `package/dev-script/watch-restart/src/watcher.ts`,
+  `package/dev-script/watch-restart/src/child.ts`,
    and
   `doc/troubleshooting/mise-watch.md`.
 

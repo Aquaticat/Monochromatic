@@ -7,7 +7,7 @@ Status:
 
 ## The problem
 
-Many `packages/*/*/mise.toml` files are very similar (or could be),
+Many `package/*/*/mise.toml` files are very similar (or could be),
  but each is
 hand-maintained.
  Two consequences:
@@ -51,7 +51,7 @@ The boilerplate is structural to mise,
 
 ## file-enforcer capabilities surveyed
 
-Current API (`packages/dev-script/file-enforcer/src/index.ts`):
+Current API (`package/dev-script/file-enforcer/src/index.ts`):
 
 - `cat`,
    `overwrite`,
@@ -133,7 +133,7 @@ toml from kind + this module.
 entire task set as data and rendering once.
 
 Cons:
- developers can't `cat packages/X/Y/mise.toml` to see custom tasks;
+ developers can't `cat package/X/Y/mise.toml` to see custom tasks;
  an
 indirection layer (TS module) sits between developer and the file mise reads;
 comments live in TS,
@@ -143,7 +143,7 @@ Superseded by D once dragon 1 is gone.
 
 ### D -- Augment in place via `overwriteTomlKey` (current leading candidate)
 
-`file-enforcer.config.ts` walks `packages/*/*`,
+`file-enforcer.config.ts` walks `package/*/*`,
  probes filesystem signals
 (`tsdown.browser.config.ts`,
  `Cargo.toml`,
@@ -154,7 +154,7 @@ package by kind,
 
 ```ts
 await overwriteTomlKey({
-  dest: 'packages/X/Y/mise.toml',
+  dest: 'package/X/Y/mise.toml',
   path: ['tasks', taskName,],
   value: { extends: taskName, },
 },);
@@ -181,7 +181,7 @@ No second file.
 
 Kind detection from filesystem signals is ambiguous in real cases:
 
-- `packages/git-policy/cli` is both a CLI (custom `run` task on `src/index.ts`) and
+- `package/git-policy/cli` is both a CLI (custom `run` task on `src/index.ts`) and
   extends `build:js:node`,
    `lint`,
    `lint:types`,
@@ -189,15 +189,15 @@ Kind detection from filesystem signals is ambiguous in real cases:
   Kind `ts-cli` is not "no extends";
    it's "extends some + adds run.
   "
-- `packages/cli/forbidden-strings` is Rust (cargo-based),
+- `package/cli/forbidden-strings` is Rust (cargo-based),
    extends nothing from
   root,
    has its own `build`/`lint`/`test` shapes.
-- `packages/module/test` is `ts-library-browser` and defines a standalone `test`
+- `package/module/test` is `ts-library-browser` and defines a standalone `test`
   task with `depends = ["build"]`.
    The kind cannot emit `[tasks.test]` here
   because the package owns it.
-- `packages/test-fixture/css-imported` and three siblings have empty mise.
+- `package/test-fixture/css-imported` and three siblings have empty mise.
   toml.
   Are they intentionally empty (fixture target for a test) or just unfinished?
   Probe must distinguish.
@@ -276,7 +276,7 @@ Generator must explicitly never touch `*/mise.local.toml`.
 
 ## Verified-but-not-superseded dragons from earlier rounds
 
-- The four empty `mise.toml` files in `packages/test-fixture/css-*` are real and
+- The four empty `mise.toml` files in `package/test-fixture/css-*` are real and
   may or may not be intentional.
    Decide before classifying them.
 - Node vs deno runtime is not assumed by any kind today;
@@ -323,7 +323,7 @@ Generator must explicitly never touch `*/mise.local.toml`.
     re-probe on every file-enforcer run,
     or cache?
    **
-   Probing is `glob('packages/*/*/<signal-file>')` calls -- cheap.
+   Probing is `glob('package/*/*/<signal-file>')` calls -- cheap.
     Probably
    re-probe every run;
     the cost is sub-second.
@@ -339,10 +339,10 @@ Generator must explicitly never touch `*/mise.local.toml`.
   toml task naming" section listing the quoting
   drift and four empty mise.
   toml files.
-- `packages/dev-script/file-enforcer/README.md` -- API reference;
+- `package/dev-script/file-enforcer/README.md` -- API reference;
    the TOML
   section is the load-bearing change.
-- `packages/module/toml-edit/README.md` -- splice vs canonical mode semantics,
+- `package/module/toml-edit/README.md` -- splice vs canonical mode semantics,
   v1 limitation on canonical-from-parsed-source.
 - `file-enforcer.config.ts` -- existing root config;
    D adds a fourth top-level

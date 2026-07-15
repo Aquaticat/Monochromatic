@@ -6,14 +6,14 @@ After `pnpm-lock.yaml` moved rolldown-plugin-dts from 0.27.1 to 0.27.2,
 any package lint that needed to refresh the shared oxlint build failed before oxlint started:
 
 ```sh
-mise run //packages/pi-plugin/auto-mode:lint:oxlint
+mise run //package/pi-plugin/auto-mode:lint:oxlint
 ```
 
 The lint task calls `ensureOxlintConfig()`,
 which ran:
 
 ```sh
-mise run //packages/config/oxlint:build:js:node
+mise run //package/config/oxlint:build:js:node
 ```
 
 Tsdown then failed with one error for each plugin sidecar source:
@@ -21,15 +21,15 @@ Tsdown then failed with one error for each plugin sidecar source:
 ```text
 [plugin rolldown-plugin-dts:generate]
 Error: tsgo did not generate dts file for
-.../packages/oxlint-plugin/stylistic/src/index.ts, please check your tsconfig.
+.../package/oxlint-plugin/stylistic/src/index.ts, please check your tsconfig.
 
 [plugin rolldown-plugin-dts:generate]
 Error: tsgo did not generate dts file for
-.../packages/oxlint-plugin/tsdoc/src/index.ts, please check your tsconfig.
+.../package/oxlint-plugin/tsdoc/src/index.ts, please check your tsconfig.
 
 [plugin rolldown-plugin-dts:generate]
 Error: tsgo did not generate dts file for
-.../packages/oxlint-plugin/no-restricted-syntax/src/index.ts, please check your tsconfig.
+.../package/oxlint-plugin/no-restricted-syntax/src/index.ts, please check your tsconfig.
 ```
 
 The failing declaration catalog is specific:
@@ -118,7 +118,7 @@ commit `dd7e8fc6a88aba4107dd20975682233df5e5d3a5`.
      dtsMap.set(dtsId, { code, id, isEntry, jsFile })
    ```
 
-   The three sidecars in `packages/config/oxlint/src/plugin-*.ts` deliberately re-export plugin package `/ts`
+   The three sidecars in `package/config/oxlint/src/plugin-*.ts` deliberately re-export plugin package `/ts`
    source subpaths.
    The JavaScript build uses `deps.alwaysBundle` for `@monochromatic-dev/**`,
    so Rolldown traverses and inlines those external workspace source files.
@@ -225,13 +225,13 @@ Versions and source revisions:
 The minimized harness was:
 
 ```sh
-mise run //packages/config/oxlint:build:js:node
+mise run //package/config/oxlint:build:js:node
 ```
 
 The user-facing harness was:
 
 ```sh
-mise run //packages/pi-plugin/auto-mode:lint:oxlint
+mise run //package/pi-plugin/auto-mode:lint:oxlint
 ```
 
 The failure reproduced on consecutive minimized runs and once through the complete lint task.
@@ -414,7 +414,7 @@ dts: {
 },
 ```
 
-in `packages/config/tsdown/src/index.node.ts` and `packages/config/tsdown/src/index.ts`.
+in `package/config/tsdown/src/index.node.ts` and `package/config/tsdown/src/index.ts`.
 
 Tradeoffs:
 

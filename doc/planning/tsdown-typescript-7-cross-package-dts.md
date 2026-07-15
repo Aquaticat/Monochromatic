@@ -29,7 +29,7 @@ The implementation must preserve these existing behaviors:
 
 - `ensureOxlintConfig()` rebuilds the shared configuration when any bundled oxlint package source is newer than its
   outputs.
-- `packages/config/oxlint/dist/final/node/index.mjs` and its three plugin sidecars remain self-contained.
+- `package/config/oxlint/dist/final/node/index.mjs` and its three plugin sidecars remain self-contained.
 - Source exports under each plugin package's `/ts` subpath remain usable for in-repository development.
 - Package builds and lint tasks continue to run through mise.
 
@@ -37,13 +37,13 @@ The implementation must preserve these existing behaviors:
 
 The current task graph is:
 
-1. `packages/pi-plugin/auto-mode/mise.toml` extends the root `lint:oxlint` task template.
+1. `package/pi-plugin/auto-mode/mise.toml` extends the root `lint:oxlint` task template.
 2. The template in `mise.toml` calls `ensureOxlintConfig()` before invoking the oxlint wrapper.
-3. `ensureOxlintConfig()` considers source and configuration files from `packages/config/oxlint` and every package under
-   `packages/oxlint-plugin`.
+3. `ensureOxlintConfig()` considers source and configuration files from `package/config/oxlint` and every package under
+   `package/oxlint-plugin`.
 4. A missing or stale output triggers
-   `mise run //packages/config/oxlint:build:js:node`.
-5. `packages/config/oxlint/tsdown.node.config.ts` builds one config entry and three plugin sidecar entries.
+   `mise run //package/config/oxlint:build:js:node`.
+5. `package/config/oxlint/tsdown.node.config.ts` builds one config entry and three plugin sidecar entries.
 6. Each sidecar re-exports a plugin package's TypeScript `/ts` source subpath so the JavaScript bundle can inline it.
 7. Declaration generation fails for the external plugin package `src/index.ts` files before the lint process starts.
 
@@ -72,10 +72,10 @@ Its generated `dist/index.mjs` does the following:
   expects tsgo to have emitted a corresponding declaration into the temporary directory.
 - Throws `tsgo did not generate dts file for <source>` when that expected file is absent.
 
-`packages/config/oxlint/tsconfig.json` extends the shared configuration whose `include` paths are scoped through
+`package/config/oxlint/tsconfig.json` extends the shared configuration whose `include` paths are scoped through
 `${configDir}` to the consuming package.
 The three plugin source files reported by the failure are outside that package directory.
-The user-provided TSFILE list contains declarations for `packages/config/oxlint` files,
+The user-provided TSFILE list contains declarations for `package/config/oxlint` files,
 but none for the three external plugin package entry files.
 
 An independent reproduction ran at commit `ebc4a04d3c02e7dbe2c4268d14846566749a4d1d`
@@ -83,14 +83,14 @@ in a disposable Git worktree.
 The minimized command was:
 
 ```sh
-mise run //packages/config/oxlint:build:js:node
+mise run //package/config/oxlint:build:js:node
 ```
 
 It failed on two consecutive runs with the same three missing declaration paths.
 The complete user-facing command also reproduced independently:
 
 ```sh
-mise run //packages/pi-plugin/auto-mode:lint:oxlint
+mise run //package/pi-plugin/auto-mode:lint:oxlint
 ```
 
 The full task reached `ensureOxlintConfig()`,
@@ -278,7 +278,7 @@ and the aggregate project beats prebuild orchestration because it at least prese
 
 ### Shared declaration generator
 
-1. In `packages/config/tsdown/src/index.node.ts`,
+1. In `package/config/tsdown/src/index.node.ts`,
    replace `dts: true` in `baseOptions` with:
 
    ```typescript
@@ -287,9 +287,9 @@ and the aggregate project beats prebuild orchestration because it at least prese
    },
    ```
 
-2. Apply the same change to the neutral preset in `packages/config/tsdown/src/index.ts`.
-3. Leave `packages/config/tsdown/src/index.client.ts` at `dts: false`.
-4. Update `packages/config/tsdown/README.md` to state that Node and neutral presets explicitly use Oxc because the
+2. Apply the same change to the neutral preset in `package/config/tsdown/src/index.ts`.
+3. Leave `package/config/tsdown/src/index.client.ts` at `dts: false`.
+4. Update `package/config/tsdown/README.md` to state that Node and neutral presets explicitly use Oxc because the
    shared TypeScript policy enforces `isolatedDeclarations`,
    while type lint remains responsible for semantic checking.
 5. Do not add an isolated unit test for the option object.
@@ -305,7 +305,7 @@ and the aggregate project beats prebuild orchestration because it at least prese
 
 Once config-oxlint builds,
 the original lint command reaches three pre-existing TSDoc diagnostics in
-`packages/pi-plugin/auto-mode/src/ask-user.ts`.
+`package/pi-plugin/auto-mode/src/ask-user.ts`.
 The implementation must fix them so the requested user-facing command is actually green:
 
 1. For `invokeTerminalNotification`,
@@ -344,17 +344,17 @@ not against the main checkout's ignored build outputs.
 2. Run config-tsdown checks:
 
    ```sh
-   mise run //packages/config/tsdown:lint:types
-   mise run //packages/config/tsdown:lint:oxlint
-   mise run //packages/config/tsdown:test:unit
+   mise run //package/config/tsdown:lint:types
+   mise run //package/config/tsdown:lint:oxlint
+   mise run //package/config/tsdown:test:unit
    ```
 
 3. Before each aggregate build in the disposable worktree,
    remove only its generated output directory:
 
    ```sh
-   rm --recursive --force packages/config/oxlint/dist/final/node
-   mise run //packages/config/oxlint:build:js:node
+   rm --recursive --force package/config/oxlint/dist/final/node
+   mise run //package/config/oxlint:build:js:node
    ```
 
    Run this fresh-output sequence twice.
@@ -364,23 +364,23 @@ not against the main checkout's ignored build outputs.
 4. Exercise one direct Node consumer and one direct neutral consumer:
 
    ```sh
-   mise run //packages/oxlint-plugin/stylistic:build:js:node
-   mise run //packages/module/const:build:js:browser
+   mise run //package/oxlint-plugin/stylistic:build:js:node
+   mise run //package/module/const:build:js:browser
    ```
 
 5. Run config-oxlint checks:
 
    ```sh
-   mise run //packages/config/oxlint:lint:types
-   mise run //packages/config/oxlint:lint:oxlint
+   mise run //package/config/oxlint:lint:types
+   mise run //package/config/oxlint:lint:oxlint
    ```
 
 6. Run auto-mode checks after the TSDoc correction:
 
    ```sh
-   mise run //packages/pi-plugin/auto-mode:lint:types
-   mise run //packages/pi-plugin/auto-mode:test:unit
-   mise run //packages/pi-plugin/auto-mode:lint:oxlint
+   mise run //package/pi-plugin/auto-mode:lint:types
+   mise run //package/pi-plugin/auto-mode:test:unit
+   mise run //package/pi-plugin/auto-mode:lint:oxlint
    ```
 
    The final command is the end-user boundary from the original report and must report zero warnings and zero errors.
@@ -412,7 +412,7 @@ Verification ran in a clean disposable worktree at commit `5bdc39e4a`:
   tsdown 0.22.4,
   Rolldown 1.1.5,
   and rolldown-plugin-dts 0.27.4.
-- Two builds after removing `packages/config/oxlint/dist/final/node` each produced ten files with identical SHA-256
+- Two builds after removing `package/config/oxlint/dist/final/node` each produced ten files with identical SHA-256
   catalogs.
 - All five comparable JavaScript hashes matched the pre-repair Oxc outputs.
 - Config-tsdown type lint,
@@ -451,13 +451,13 @@ The implementation is complete because:
 - Config-tsdown lint,
   type lint,
   and unit tests pass with zero warnings or errors.
-- `mise run //packages/config/oxlint:build:js:node` succeeds twice from a fresh-output fixture and produces all ten
+- `mise run //package/config/oxlint:build:js:node` succeeds twice from a fresh-output fixture and produces all ten
   expected outputs.
 - Representative Node and neutral consumer builds pass.
 - Config-oxlint lint and type lint pass.
 - Auto-mode's exposed TSDoc diagnostics are corrected without runtime changes;
   its type lint and unit tests pass.
-- `mise run //packages/pi-plugin/auto-mode:lint:oxlint` reaches real oxlint and reports zero warnings and zero errors.
+- `mise run //package/pi-plugin/auto-mode:lint:oxlint` reaches real oxlint and reports zero warnings and zero errors.
 - Touching a bundled plugin source makes `ensureOxlintConfig()` rebuild the shared outputs.
 - No plugin prebuild is required.
 - Every comparable JavaScript output retains its recorded SHA-256 hash,

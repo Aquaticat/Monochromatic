@@ -24,8 +24,8 @@ deleted,
 symlink,
 and submodule candidates.
 The exact hk exclusion families remain unchanged:
-`packages/fuzz/forbidden-strings/corpus/**`,
-`packages/test-fixture/toml-edit/src/**`,
+`package/fuzz/forbidden-strings/corpus/**`,
+`package/test-fixture/toml-edit/src/**`,
 and `**/dist/final/node/**`.
 Tsdown outputs therefore keep producer-native missing final LF.
 Git continues to track actual bytes;
@@ -65,14 +65,14 @@ and 1,547 non-empty text-like violations.
 
 The violations split by ownership:
 
-- 1,344 files under `packages/fuzz/forbidden-strings/corpus/`.
+- 1,344 files under `package/fuzz/forbidden-strings/corpus/`.
   These are fuzz inputs whose bytes are data,
   not source formatting.
-- 52 TOML inputs under `packages/test-fixture/toml-edit/src/`.
+- 52 TOML inputs under `package/test-fixture/toml-edit/src/`.
   Missing final newlines can be part of parser behavior under test.
 - 123 copies of `GPL-3.0-or-later.txt`.
   `file-enforcer.config.ts` copies package-local license texts verbatim from the canonical root source.
-- 18 tracked outputs under `packages/claude-code-plugin/*/dist/final/node/`.
+- 18 tracked outputs under `package/claude-code-plugin/*/dist/final/node/`.
   Tsdown 0.22.4 emits these JavaScript and declaration files without a final LF;
   the implementation amendment reclassified them as intentional compact-output exemptions.
 - 10 ordinary source or configuration files.
@@ -140,8 +140,8 @@ local finalNewline = (Builtins.newlines) {
   batch = true
   exclude = List(
     "**/dist/final/node/**",
-    "packages/fuzz/forbidden-strings/corpus/**",
-    "packages/test-fixture/toml-edit/src/**",
+    "package/fuzz/forbidden-strings/corpus/**",
+    "package/test-fixture/toml-edit/src/**",
   )
 }
 ```
@@ -153,7 +153,7 @@ The batched prototype split the tree into bounded invocations and completed.
 
 The fixture exclusions are deliberately narrow.
 A generic `**/corpus/**` exclusion would silently exempt future corpora that may contain ordinary text.
-A broad `packages/test-fixture/**` exclusion would exempt source and metadata that are not byte-sensitive.
+A broad `package/test-fixture/**` exclusion would exempt source and metadata that are not byte-sensitive.
 
 The output exclusion is intentionally directory-wide.
 The shared tsdown Node config owns `dist/final/node`,
@@ -280,21 +280,21 @@ The ordinary files identified during planning were:
 
 - `.idea/modules.xml`
 - `.remarkignore`
-- `packages-paused/webapp-content/messages-demo/src/server.ts`
-- `packages/cli/mutation-test/src/host/cli-options.ts`
-- `packages/linter/kotlin/build.gradle.kts`
-- `packages/module/toml-edit/src/fuzz/coverage-v8.ts`
-- `packages/module/toml-edit/src/values.ts`
-- `packages/pi-plugin/auto-mode/src/git-worktree-read-allowlist.ts`
-- `packages/ssg/aquati.cat/public/manifest.webmanifest`
-- `packages/ssg/aquati.cat/src/content/en/on-humanity.mdx`
+- `package-paused/webapp-content/messages-demo/src/server.ts`
+- `package/cli/mutation-test/src/host/cli-options.ts`
+- `package/linter/kotlin/build.gradle.kts`
+- `package/module/toml-edit/src/fuzz/coverage-v8.ts`
+- `package/module/toml-edit/src/values.ts`
+- `package/pi-plugin/auto-mode/src/git-worktree-read-allowlist.ts`
+- `package/ssg/aquati.cat/public/manifest.webmanifest`
+- `package/ssg/aquati.cat/src/content/en/on-humanity.mdx`
 
 The implementation must trust the fresh scan over this historical list if the tree has changed.
 
 ## Architecture tradeoff and migration
 
 The migration selected cli-git as the durable owner.
-`packages/git-policy/cli/src/policy-engine/final-newline-policy.ts` owns policy registration and lifecycle behavior;
+`package/git-policy/cli/src/policy-engine/final-newline-policy.ts` owns policy registration and lifecycle behavior;
 `final-newline-normalize.ts` owns exact-byte classification;
 `final-newline-patch.ts` owns destination-grammar Git patch generation.
 The shared commit transaction applies pre-forward patches only to a private index.

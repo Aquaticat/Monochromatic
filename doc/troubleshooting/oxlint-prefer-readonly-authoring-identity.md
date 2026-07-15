@@ -30,7 +30,7 @@ or projecting the value would change the API contract.
 
 Valibot `1.4.2` defines `GenericSchema` as an alias of `BaseSchema` in its published `dist/index.d.mts`.
 That contract includes callable behavior and generic positions whose effects are not represented by `Readonly<T>`.
-Cli-git's `PolicyDefinition` in `packages/git-policy/api/src/policy-types.ts` combines a schema with an executable
+Cli-git's `PolicyDefinition` in `package/git-policy/api/src/policy-types.ts` combines a schema with an executable
 policy callback.
 
 A type-name allowlist cannot prove that a particular function observes the capability without invoking or mutating it.
@@ -62,8 +62,8 @@ export function definePolicy<
 
 The corresponding sources are:
 
-- `packages/git-policy/api/src/authoring.ts`;
-- `packages/git-policy/cli/src/api/authoring.ts`.
+- `package/git-policy/api/src/authoring.ts`;
+- `package/git-policy/cli/src/api/authoring.ts`.
 
 `ForeignBorrowed` records that the object and its reachable capabilities remain caller-owned.
 It does not claim structural immutability.
@@ -98,8 +98,8 @@ The current source check is:
 
 ```sh
 rg --line-number "ForeignBorrowed<GenericSchema|ForeignBorrowed<PolicyDefinition" \
-  packages/git-policy/api/src/authoring.ts \
-  packages/git-policy/cli/src/api/authoring.ts
+  package/git-policy/api/src/authoring.ts \
+  package/git-policy/cli/src/api/authoring.ts
 ```
 
 Both public authoring mirrors place the marker on the actual ingress parameter.

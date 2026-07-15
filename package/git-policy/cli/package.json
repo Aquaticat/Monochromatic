@@ -1,0 +1,65 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/git-policy-cli",
+  "description": "Policy-aware Git wrapper and side-effect-free policy authoring API.",
+  "type": "module",
+  "sideEffects": false,
+  "private": false,
+  "main": "dist/final/node/index.mjs",
+  "types": "dist/final/node/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "import": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts"
+  },
+  "bin": {
+    "git": "dist/final/node/index.mjs"
+  },
+  "files": [
+    "dist/final/node",
+    "src",
+    "!src/**/*.unit.test.ts",
+    "!src/maintenance",
+    "!src/trust/fixture",
+    "!src/**/*.host-evidence.ts",
+    "LICENSES",
+    "README.md"
+  ],
+  "engines": {
+    "node": "^22.18.0 || >=24.11.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/git-policy-repository": "workspace:*",
+    "@monochromatic-dev/module-async-time": "workspace:*",
+    "@monochromatic-dev/module-fs-id": "workspace:*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "@optique/core": "catalog:",
+    "acorn": "catalog:",
+    "nano-spawn": "catalog:",
+    "rolldown": "catalog:",
+    "type-fest": "catalog:",
+    "typescript": "catalog:",
+    "valibot": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "package/git-policy/cli"
+  },
+  "sideEffects": false
+}

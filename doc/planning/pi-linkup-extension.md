@@ -9,7 +9,7 @@ Status:
 ## Goal
 
 Build a fresh Pi package that replaces the installed `@aliou/pi-linkup`
-package with a smaller Linkup-only extension under `packages/pi-plugin/linkup/`.
+package with a smaller Linkup-only extension under `package/pi-plugin/linkup/`.
 The package keeps the current Linkup-prefixed tool names that the user expects,
 but removes web-answer and balance surfaces.
 
@@ -32,7 +32,7 @@ and not a Linkup account-management UI.
   because none satisfies the web-answer and global-blocklist constraints together.
 - Pi package docs say packages declare resources under `package.json#pi`,
   and existing repo Pi packages use `pi.extensions` pointing at `dist/final/node/index.mjs`.
-- Existing Pi packages in this repo live under `packages/pi-plugin/<slug>/`,
+- Existing Pi packages in this repo live under `package/pi-plugin/<slug>/`,
   with package names such as `@monochromatic-dev/pi-plugin-advisor`
   and `@monochromatic-dev/pi-plugin-terminal-title`.
 - Pi extension docs describe `pi.registerTool()` and `prepareArguments()`;
@@ -73,7 +73,7 @@ and not a Linkup account-management UI.
 
 ## Package shape
 
-Create `packages/pi-plugin/linkup/` with these package properties:
+Create `package/pi-plugin/linkup/` with these package properties:
 
 - Package name:
    `@monochromatic-dev/pi-linkup`.
@@ -435,11 +435,11 @@ Built-extension tests:
 Run package-scoped tasks only:
 
 ```bash
-mise run //packages/pi-plugin/linkup:build
-mise run //packages/pi-plugin/linkup:lint:types
-mise run //packages/pi-plugin/linkup:lint:oxlint
-mise run //packages/pi-plugin/linkup:test:unit
-mise run //packages/pi-plugin/linkup:verify:extension
+mise run //package/pi-plugin/linkup:build
+mise run //package/pi-plugin/linkup:lint:types
+mise run //package/pi-plugin/linkup:lint:oxlint
+mise run //package/pi-plugin/linkup:test:unit
+mise run //package/pi-plugin/linkup:verify:extension
 ```
 
 After package tests pass,

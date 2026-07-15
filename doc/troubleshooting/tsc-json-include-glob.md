@@ -10,7 +10,7 @@ despite being valid input for whatever actually reads it.
 
 ## Symptom
 
-`mise run //packages/<pkg>:lint:types` (and the type-aware `lint:oxlint`, which drives
+`mise run //package/<pkg>:lint:types` (and the type-aware `lint:oxlint`, which drives
 `oxlint-tsgolint@0.24.0`) fail on a `.json` file that nothing imports, with a cascade of
 parser errors anchored to `line 1`:
 
@@ -24,7 +24,7 @@ src/cache_AS41231.json(1,15): error TS1328: Property value can only be string li
 The trigger is a `.json` file whose bytes are not strict JSON, placed anywhere under a
 directory that a tsconfig `include` glob covers with an explicit `*.json` pattern.
 In this repo it surfaced when tofu external-data caches (raw comma-joined CIDR strings
-written as `writeFile(CACHE_FILE, result)` in `packages/config/tofu/src/fetch_ips.ts:418`)
+written as `writeFile(CACHE_FILE, result)` in `package/config/tofu/src/fetch_ips.ts:418`)
 were relocated under `src/`, where the shared include glob matched them for the first time.
 
 ## Root cause
@@ -32,7 +32,7 @@ were relocated under `src/`, where the shared include glob matched them for the 
 Two conditions combine.
 
 First, the shared tsconfig carried an explicit JSON glob.
-`packages/config/typescript/tsconfig.options.json` listed, before this fix:
+`package/config/typescript/tsconfig.options.json` listed, before this fix:
 
 ```jsonc
 "include": [
@@ -51,7 +51,7 @@ Files matched by `include` become program roots, so `tsc` loads and parses each 
 Second, `resolveJsonModule` is on:
 
 ```jsonc
-// packages/config/typescript/tsconfig.options.json:67
+// package/config/typescript/tsconfig.options.json:67
 "resolveJsonModule": true,
 ```
 
@@ -148,7 +148,7 @@ Working catalog B, keep the glob but make the file strict JSON
 ```
 
 The same failure and both fixes reproduced in-repo: relocating the raw tofu caches under
-`src/` broke `//packages/config/tofu:lint:types`, and removing the shared `*.json` glob
+`src/` broke `//package/config/tofu:lint:types`, and removing the shared `*.json` glob
 returned it to exit 0 with no other package affected.
 
 ## Verified workarounds

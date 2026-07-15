@@ -1,0 +1,21 @@
+[tasks.build]
+description = "Build the truepeak-core bench in release mode"
+run = "cargo build --release"
+
+[tasks.run]
+description = "Evaluate + search a corpus: pass the tracks.jsonl path after --"
+# Example: mise run //package/music-player/truepeak-core.bench:run -- out/tracks.jsonl
+run = "cargo run --release --"
+
+[tasks.lint]
+description = "cargo check (no codegen)"
+run = "cargo check"
+
+[tasks."lint:clippy"]
+description = "Run clippy with warnings denied"
+run = "cargo clippy --release -- -D warnings"
+
+[tasks."lint:rust"]
+description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
+# Same host linter the core crate uses; .gitignore-aware walking skips target/.
+run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."

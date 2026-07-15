@@ -264,7 +264,7 @@ graphemes (which is acceptable for CJK).
 
 ### Use a release build
 
-`mise run //packages/music-player/desktop-app:run` builds `--release`,
+`mise run //package/music-player/desktop-app:run` builds `--release`,
  where the
 icu_provider shim is already a no-op,
  so the flood never appears.

@@ -43,7 +43,7 @@ section #1 is the recommended fix until upstream republishes
 
 A `pi` session in this workspace (`pi` 0.75.4,
  installed via
-`packages/pi-plugin/current-time-context/node_modules/.bin/pi`) exits with
+`package/pi-plugin/current-time-context/node_modules/.bin/pi`) exits with
 an `uncaughtException` shortly after startup when `@ifi/pi-plan` is
 present in `~/.pi/agent/npm/node_modules/`.
  The crash fires from a
@@ -263,42 +263,42 @@ Beyond the loader,
 `1979b3a9` (head of `main`,
  2026-05-17) spans 16 package
 manifests and roughly 15 direct `import ... from "@mariozechner/pi-tui"`
-statements across `packages/subagents/`,
- `packages/spec/extension/`,
-`packages/providers/`,
+statements across `package/subagents/`,
+ `package/spec/extension/`,
+`package/providers/`,
  and the shared-qna README.
  Inventory captured
 from a fresh clone:
 
 ```text
-packages/shared-qna/package.json:    peerDeps "@mariozechner/pi-tui": "*"
-packages/subagents/package.json:     peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/spec/package.json:          peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/providers/package.json:     peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/plan/package.json:          peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/extensions/package.json:    peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/diagnostics/package.json:   peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/oh-pi-context/package.json: peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/ollama/package.json:        peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/pi-bash-live-view/package.json: peerDeps
-packages/pi-pretty/package.json:     peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/adaptive-routing/package.json: peerDeps
-packages/cursor/package.json:        peerDeps "@mariozechner/pi-tui": ">=0.56.1"
-packages/pi-remote-tailscale/package.json: peerDeps
-packages/analytics-extension/package.json: peerDeps
-packages/background-tasks/package.json: peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/shared-qna/package.json:    peerDeps "@mariozechner/pi-tui": "*"
+package/subagents/package.json:     peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/spec/package.json:          peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/providers/package.json:     peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/plan/package.json:          peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/extensions/package.json:    peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/diagnostics/package.json:   peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/oh-pi-context/package.json: peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/ollama/package.json:        peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/pi-bash-live-view/package.json: peerDeps
+package/pi-pretty/package.json:     peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/adaptive-routing/package.json: peerDeps
+package/cursor/package.json:        peerDeps "@mariozechner/pi-tui": ">=0.56.1"
+package/pi-remote-tailscale/package.json: peerDeps
+package/analytics-extension/package.json: peerDeps
+package/background-tasks/package.json: peerDeps "@mariozechner/pi-tui": ">=0.56.1"
 
-packages/subagents/agent-manager.ts:    import { ... } from "@mariozechner/pi-tui";
-packages/subagents/agent-manager-list.ts:    import { ... } from "@mariozechner/pi-tui";
-packages/subagents/agent-manager-parallel.ts: import { ... } from "@mariozechner/pi-tui";
-packages/subagents/agent-manager-detail.ts:   import { ... } from "@mariozechner/pi-tui";
-packages/subagents/agent-manager-edit.ts:     import { ... } from "@mariozechner/pi-tui";
-packages/subagents/chain-clarify.ts:    import { ... } from "@mariozechner/pi-tui";
-packages/subagents/index.ts:            import { Text } from "@mariozechner/pi-tui";
-packages/subagents/render-helpers.ts:   import { visibleWidth } from "@mariozechner/pi-tui";
-packages/subagents/text-editor.ts:      import { matchesKey } from "@mariozechner/pi-tui";
-packages/providers/index.ts:            import { ... } from "@mariozechner/pi-tui";
-packages/spec/extension/index.ts:       import { Text } from "@mariozechner/pi-tui";
+package/subagents/agent-manager.ts:    import { ... } from "@mariozechner/pi-tui";
+package/subagents/agent-manager-list.ts:    import { ... } from "@mariozechner/pi-tui";
+package/subagents/agent-manager-parallel.ts: import { ... } from "@mariozechner/pi-tui";
+package/subagents/agent-manager-detail.ts:   import { ... } from "@mariozechner/pi-tui";
+package/subagents/agent-manager-edit.ts:     import { ... } from "@mariozechner/pi-tui";
+package/subagents/chain-clarify.ts:    import { ... } from "@mariozechner/pi-tui";
+package/subagents/index.ts:            import { Text } from "@mariozechner/pi-tui";
+package/subagents/render-helpers.ts:   import { visibleWidth } from "@mariozechner/pi-tui";
+package/subagents/text-editor.ts:      import { matchesKey } from "@mariozechner/pi-tui";
+package/providers/index.ts:            import { ... } from "@mariozechner/pi-tui";
+package/spec/extension/index.ts:       import { Text } from "@mariozechner/pi-tui";
 ```
 
 A complete upstream fix is therefore not one-line;
@@ -319,7 +319,7 @@ patch) and the auto-prototype audit in
 ### Versions under test
 
 - Failing pi binary:
-   `/var/home/user/Monochromatic/packages/pi-plugin/current-time-context/node_modules/.bin/pi` (`pi --version` = `0.75.4`)
+   `/var/home/user/Monochromatic/package/pi-plugin/current-time-context/node_modules/.bin/pi` (`pi --version` = `0.75.4`)
 - Failing extension:
    `@ifi/pi-plan@0.5.1`,
    installed at `~/.pi/agent/npm/node_modules/@ifi/pi-plan/`,
@@ -569,7 +569,7 @@ Tradeoffs:
    deprecated package without supplying that deprecated package.
 2. **Can upstream fix it?
    ** Yes for the loader (one file in
-   `packages/shared-qna/`);
+   `package/shared-qna/`);
     sorta-yes for the full migration
    (~16 package manifests + ~15 direct imports — mechanical
    rename,
@@ -617,7 +617,7 @@ Tradeoffs:
    ** Yes — see the loader patch at
    [`pi-extensions-pi-tui-rename.patch`](pi-extensions-pi-tui-rename.patch).
    The patch:
-   - Touches one file (`packages/shared-qna/pi-tui-loader.ts`).
+   - Touches one file (`package/shared-qna/pi-tui-loader.ts`).
    - Preserves the public function signatures
      (`requirePiTuiModule`,
       `getPiTuiFallbackPaths`) and the
@@ -733,7 +733,7 @@ bun "$VERIFY/verify.ts"
 
 ## Suggested fix
 
-Minimal one-file change in `packages/shared-qna/pi-tui-loader.ts`:
+Minimal one-file change in `package/shared-qna/pi-tui-loader.ts`:
 try `@earendil-works/pi-tui` first, fall back to
 `@mariozechner/pi-tui`, and search Bun-global locations under both
 scopes. The patch preserves the public function signatures
@@ -750,8 +750,8 @@ the linked downstream investigation; happy to open a PR if useful.
 
 For a complete migration, also update the 16 package manifests
 that pin the deprecated name in `peerDependencies` and the ~15
-source files in `packages/subagents/`, `packages/providers/`, and
-`packages/spec/extension/` that have direct
+source files in `package/subagents/`, `package/providers/`, and
+`package/spec/extension/` that have direct
 `import ... from "@mariozechner/pi-tui"` statements. The
 shared-qna loader change alone restores `@ifi/pi-plan`
 functionality, which is the most visible crash, so it can land

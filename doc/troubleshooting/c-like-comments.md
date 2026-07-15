@@ -2,7 +2,7 @@
 
 ## Symptom
 
-The comment-preserving JSONC parser in `packages/module/jsonc-edit` terminates a
+The comment-preserving JSONC parser in `package/module/jsonc-edit` terminates a
 block comment at the **first** `*/` it encounters, regardless of whether that
 `*/` sits inside a `//` line comment or a quoted string written within the
 enclosing `/* */` block:
@@ -29,7 +29,7 @@ comment body.
 A comment is the shape `/* … */` where `…` is "any characters up to, but not
 including, the first `*/`".
 
-`packages/module/jsonc-edit/src/scan.ts` implements exactly that, with no
+`package/module/jsonc-edit/src/scan.ts` implements exactly that, with no
 heuristic to second-guess it:
 
 ```ts
@@ -88,7 +88,7 @@ JSONC configuration in this workspace favors `//` already, so the cost is small.
 
 ## Why we do not file this upstream
 
-The parser is in-tree (`packages/module/jsonc-edit`); there is no external
+The parser is in-tree (`package/module/jsonc-edit`); there is no external
 upstream.
 The behavior matches every C-family language and is intentional: the first `*/`
 wins, by design.
@@ -96,7 +96,7 @@ The limitation is accepted and documented here rather than worked around.
 
 ## Related
 
-- `packages/module/jsonc-edit/src/scan.ts`:
+- `package/module/jsonc-edit/src/scan.ts`:
   `scanBlockComment` (the `indexOf('*/')` close) and `scanLineComment`
   (line comments terminate at end of line, so they have no nesting hazard).
 - `doc/troubleshooting/toml.md`:

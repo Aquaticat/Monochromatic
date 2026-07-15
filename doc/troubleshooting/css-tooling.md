@@ -175,12 +175,12 @@ $ pnpm list --filter @monochromatic-dev/build-css
 dependencies:
   oxc-resolver 11.16.4
 
-$ ls packages/build/css/node_modules/
+$ ls package/build/css/node_modules/
 lightningcss/
 postcss/
                         ← oxc-resolver missing
 
-$ bun packages/build/css/src/index.ts
+$ bun package/build/css/src/index.ts
 Error: Cannot find package 'oxc-resolver'
 ```
 
@@ -307,7 +307,7 @@ depends on LightningCSS or oxc-resolver;
  neither appears in
 any `package.json` or in the lockfile.
 
-- CSS build package lives at `packages/build-tool/css/`
+- CSS build package lives at `package/build-tool/css/`
   (`@monochromatic-dev/build-tool-css`).
 - Pipeline is pure JS,
    PostCSS only,
@@ -333,7 +333,7 @@ any `package.json` or in the lockfile.
    nested mixin expansion,
    and `@apply` inlining
   all pass unit tests
-  (`mise run //packages/build-tool/css:buildAndTest`).
+  (`mise run //package/build-tool/css:buildAndTest`).
 - The two earlier blockers no longer apply:
    the LightningCSS
   `customAtRules`/`var()` defect (#1081) is irrelevant

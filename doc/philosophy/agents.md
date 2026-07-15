@@ -315,12 +315,12 @@ md should name concrete forks agents face,
  The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of import,
  so `bun test <file>` prints `PASS` log lines (from the harness) and then reports `0 pass / 0 fail` (bun's runner finds no `bun:test` registrations).
  The misleading summary suggests the run was broken when in fact every test passed.
- Use `mise run //packages/<path>:test:unit`;
+ Use `mise run //package/<path>:test:unit`;
  if no such task exists,
  run the file directly with `node <file>`,
  matching the Node-based test task template.
  A `PreToolUse` hook (`ccgr`,
- source at `packages/claude-code-plugin/source/src/handlers/guardrail.ts`) blocks the call when configured.
+ source at `package/claude-code-plugin/source/src/handlers/guardrail.ts`) blocks the call when configured.
 
 #### Type system: why `const` narrowing does not reach function declarations
 
@@ -352,7 +352,7 @@ API:
 #### Git cleanup and worktree safety reviews: the cli-git tool-cache allowlist
 
 When the review touches `cli-git`'s linked-worktree guard,
- account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/git-policy/cli/src/allowed-worktree-dirs.ts`,
+ account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `package/git-policy/cli/src/allowed-worktree-dirs.ts`,
  currently uv's git cache):
  repositories whose git-dir resolves under an allowed dir bypass that guard,
  so destructive git is not actually blocked there.
@@ -433,9 +433,9 @@ Remediate a max-lines violation by splitting:
  constants to `constants.ts`,
  types to `types.ts`.
  Pattern examples:
- `packages/module/hyperscript/src/index.ts` (76 lines,
+ `package/module/hyperscript/src/index.ts` (76 lines,
  pure re-exports),
- `packages/module/image-diff/src/index.ts` (75 lines,
+ `package/module/image-diff/src/index.ts` (75 lines,
  pure re-exports).
 
 #### Name the verification step: the inline-citation examples
@@ -739,9 +739,9 @@ The helper-shape allowlist suppresses the report when a function ends in `return
 
 #### Variables and values: why VA6 stops at object-literal property values
 
-`no-magic-numbers` ships with `detectObjects: false` (`packages/config/oxlint/src/rule/style.ts`), so a numeric literal used directly as an object-literal property value is never flagged by the tool. Before this exemption, VA6's plain wording ("magic literals as named const") read as a blanket requirement, with nothing marking object-literal values as already covered by the tool's own default.
+`no-magic-numbers` ships with `detectObjects: false` (`package/config/oxlint/src/rule/style.ts`), so a numeric literal used directly as an object-literal property value is never flagged by the tool. Before this exemption, VA6's plain wording ("magic literals as named const") read as a blanket requirement, with nothing marking object-literal values as already covered by the tool's own default.
 
-Failure that produced this rule: a redesign of `packages/webapp-productivity/wc/src/styles-colors.ts` extracted five inline `l` channel values inside `cssOklch({...})` calls (e.g. `l: 0.16,`) into standalone named constants (`L_BLACK`, `L_NEAR_BLACK`, `L_MID`, `L_NEAR_WHITE`, `L_WHITE`), each referenced exactly once, on the assumption the linter required it. `detectObjects: false` had already exempted that exact pattern for months (since commit `3515cd5cb`), so the extraction served no lint-compliance purpose and added five single-use constants of pure ceremony. VA6 now spells out the exemption so a future session checks the tool's actual config before over-complying with the rule's plain-language reading.
+Failure that produced this rule: a redesign of `package/webapp-productivity/wc/src/styles-colors.ts` extracted five inline `l` channel values inside `cssOklch({...})` calls (e.g. `l: 0.16,`) into standalone named constants (`L_BLACK`, `L_NEAR_BLACK`, `L_MID`, `L_NEAR_WHITE`, `L_WHITE`), each referenced exactly once, on the assumption the linter required it. `detectObjects: false` had already exempted that exact pattern for months (since commit `3515cd5cb`), so the extraction served no lint-compliance purpose and added five single-use constants of pure ceremony. VA6 now spells out the exemption so a future session checks the tool's actual config before over-complying with the rule's plain-language reading.
 
 #### Security: why source escapes are not portable across a syntax boundary
 
@@ -807,8 +807,8 @@ A name-based reference (rule tag,
  because it does not depend on where the referenced content currently sits.
 The rule reaches TSDoc and code comments,
  not only markdown prose:
- this is the exact failure fixed in `packages/desktop-app/terminal/Cargo.toml` and
-`packages/music-player/desktop-app/Cargo.toml`,
+ this is the exact failure fixed in `package/desktop-app/terminal/Cargo.toml` and
+`package/music-player/desktop-app/Cargo.toml`,
  where "the slint dependency above" became "the slint dependency in this file".
 
 #### Before claiming inability: why one failed probe is not proof of absence (RPB)

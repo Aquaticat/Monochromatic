@@ -67,7 +67,7 @@ windows = { version = "0.58", features = [
 The drag (`win_drag.rs`):
 
 ```rust
-// packages/desktop-app/file-manager-gtk/src/win_drag.rs
+// package/desktop-app/file-manager-gtk/src/win_drag.rs
 use std::path::Path;
 
 use windows::Win32::System::Com::IDataObject;

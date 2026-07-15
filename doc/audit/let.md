@@ -1,6 +1,6 @@
 # Audit: `let` usage across the monorepo
 
-Generated 2026-05-10 from a static survey of TypeScript sources under `packages/`,
+Generated 2026-05-10 from a static survey of TypeScript sources under `package/`,
 excluding `dist`,
  `node_modules`,
  and generated files.
@@ -245,7 +245,7 @@ the pattern is established but rare.
 
 ### Already on
 
-- `eslint/prefer-const: 'warn'` (in `packages/config/oxlint/src/rule/restriction.ts:112`).
+- `eslint/prefer-const: 'warn'` (in `package/config/oxlint/src/rule/restriction.ts:112`).
   Catches `let` declarations that are never reassigned;
   any surviving `let` in the codebase is one that does reassign.
 - `eslint/init-declarations: 'off'` (in overrides);
@@ -532,7 +532,7 @@ The codebase has 19 custom no-restricted-syntax rules already
 Adding more fits the established pattern;
 the cost is per-rule plugin code,
  which is mechanical given the existing examples
-(see `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-variable-function-expression.ts`).
+(see `package/oxlint-plugin/no-restricted-syntax/src/rule/no-variable-function-expression.ts`).
 
 ### `no-disable-*` companion rule
 
@@ -611,7 +611,7 @@ deciding on the permanent rule is easier with the refactored codebase as the sta
 ## Implementation status
 
 2026-05-10:
- Option B (function-body-root) and Option C (module-level) shipped as two separate oxlint rules in `packages/oxlint-plugin/no-restricted-syntax/`:
+ Option B (function-body-root) and Option C (module-level) shipped as two separate oxlint rules in `package/oxlint-plugin/no-restricted-syntax/`:
 
 - `no-function-root-let` (`src/rules/no-function-root-let.ts`):
    visits `FunctionDeclaration` and `FunctionExpression`;
@@ -625,7 +625,7 @@ deciding on the permanent rule is easier with the refactored codebase as the sta
       the function body ends with `return <Identifier>` where the identifier resolves to a function-body-root binding (`let`,
       `const`,
       or `function`).
-      `concat()` in `packages/webapp-forge/stress/src/scenarios/force-push.ts` is the paradigm.
+      `concat()` in `package/webapp-forge/stress/src/scenarios/force-push.ts` is the paradigm.
       Conservative on purpose:
       `return total * 2` or `return { a, b }` does NOT match.
 - `no-module-root-let` (`src/rules/no-module-root-let.ts`):
@@ -636,8 +636,8 @@ deciding on the permanent rule is easier with the refactored codebase as the sta
 
 Both rules:
 
-- Registered in `packages/oxlint-plugin/no-restricted-syntax/src/index.ts`.
-- Enabled at `'error'` in `packages/config/oxlint/src/rule/restriction.ts` (shipped at `'warn'`;
+- Registered in `package/oxlint-plugin/no-restricted-syntax/src/index.ts`.
+- Enabled at `'error'` in `package/config/oxlint/src/rule/restriction.ts` (shipped at `'warn'`;
    flipped to `'error'` 2026-06-01 after the migration reached zero reports across the linted tree).
 - Have no corresponding `no-disable-*` companion rule;
    disable-with-justification is the contracted escape.
@@ -669,7 +669,7 @@ Spot-check 10 reports per rule.
    or helper-shape function (those would be heuristic bugs and block further migration until fixed).
 - None is inside generated code,
    test fixtures,
-   or third-party vendored files that should be added to a per-package override in `packages/config/oxlint/src/overrides.ts`.
+   or third-party vendored files that should be added to a per-package override in `package/config/oxlint/src/overrides.ts`.
 
 Record the counts in the "Status table" below.
 
@@ -705,10 +705,10 @@ Neither pattern needs a disable comment if the AST shape matches the heuristic.
 
 Sites where neither refactor nor allowlist-shape applies:
 
-- Genuine multi-let state machines (Mulberry32 PRNG step in `packages/webapp-content/messages-demo/src/lib/seed.ts:143`;
-   the kiwi binary parser in `packages/figma/kiwi/src/index.ts`).
-- Parsers with conditional-init fields and side-effecting branches (the TOML rule parser in `packages/cli/forbidden-strings/src/mise.port-betterleaks.ts:225-231`).
-- Module-level memoization caches that have no clean Map/memoize replacement (`packages/module/logger/src/sinks/console.ts:8,11,100,160`).
+- Genuine multi-let state machines (Mulberry32 PRNG step in `package/webapp-content/messages-demo/src/lib/seed.ts:143`;
+   the kiwi binary parser in `package/figma/kiwi/src/index.ts`).
+- Parsers with conditional-init fields and side-effecting branches (the TOML rule parser in `package/cli/forbidden-strings/src/mise.port-betterleaks.ts:225-231`).
+- Module-level memoization caches that have no clean Map/memoize replacement (`package/module/logger/src/sinks/console.ts:8,11,100,160`).
 
 Each disable comment must name the specific constraint:
 
@@ -730,7 +730,7 @@ A bare `-- needed` or omitted justification is not acceptable;
 Once the warning count is zero (every report is refactored,
  allowlist-shaped,
  or carries a justified disable comment),
- change both entries in `packages/config/oxlint/src/rule/restriction.ts` from `'warn'` to `'error'`.
+ change both entries in `package/config/oxlint/src/rule/restriction.ts` from `'warn'` to `'error'`.
 
 ### Status table
 
@@ -754,7 +754,7 @@ Once the warning count is zero (every report is refactored,
 <td>1: baseline capture</td>
 <td>DONE</td>
 <td>2026-06-01</td>
-<td>Whole-repo `mise '//packages/...:lint:oxlint'` reports zero instances of either rule. Plugin firing confirmed against a throwaway violator probe (both rules reported as expected) and against the live disable inventory. No open reports remained to spot-check; the existing justified-disable directives stand in as the audited residue.</td>
+<td>Whole-repo `mise '//package/...:lint:oxlint'` reports zero instances of either rule. Plugin firing confirmed against a throwaway violator probe (both rules reported as expected) and against the live disable inventory. No open reports remained to spot-check; the existing justified-disable directives stand in as the audited residue.</td>
 </tr>
 <tr>
 <td>2: mechanical refactors</td>
@@ -788,16 +788,16 @@ Once the warning count is zero (every report is refactored,
 These targets were defined against the 2026-05-10 tree.
  By the 2026-06-01 flip they had all converged to zero open reports:
 
-- `packages/webapp-forge/stress/src/scenarios/force-push.ts` (`concat()`):
+- `package/webapp-forge/stress/src/scenarios/force-push.ts` (`concat()`):
    NO REPORT (helper shape,
    returns root const `out`).
-- `packages/webapp-content/messages-demo/src/lib/seed.ts` (`rng()`):
+- `package/webapp-content/messages-demo/src/lib/seed.ts` (`rng()`):
    the Mulberry32 PRNG is now a justified block disable (`seed.ts:204-226`) naming the two-variable state-machine constraint.
-- `packages/module/logger/src/sinks/console.ts`:
+- `package/module/logger/src/sinks/console.ts`:
    refactored;
    module state moved into a `const` container with a `Symbol` sentinel,
    so no module-root `let` remains.
-- `packages/module/es/src/path/fallbacks.ts`:
+- `package/module/es/src/path/fallbacks.ts`:
    NO REPORT (helper shape).
 
 Heuristic firing was reconfirmed on 2026-06-01 with a throwaway probe (one function-root and one module-root `let`):
@@ -806,7 +806,7 @@ Heuristic firing was reconfirmed on 2026-06-01 with a throwaway probe (one funct
 
 Coverage gap noted during the 2026-06-01 baseline:
  packages without a `lint:oxlint` task are never checked by these rules.
- `packages/figma/to-penpot` is one such package and still holds a module-root `let uuidCounter` in `src/index.ts`.
+ `package/figma/to-penpot` is one such package and still holds a module-root `let uuidCounter` in `src/index.ts`.
  Closing that gap is a separate lint-coverage task,
  not part of this migration.
 

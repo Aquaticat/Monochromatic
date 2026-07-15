@@ -87,7 +87,7 @@ snapshot scan,
 
 ## Package shape
 
-Create `packages/cli/kopia-source-watch/`.
+Create `package/cli/kopia-source-watch/`.
 
 The package exposes a CLI named `kopia-source-watch` with these commands:
 
@@ -537,9 +537,9 @@ repository.
 
 ## Open questions
 
-- Should `kopia-source-watch` live under `packages/cli/` or `packages/dev-script/`?
+- Should `kopia-source-watch` live under `package/cli/` or `package/dev-script/`?
    Current plan
-  uses `packages/cli/` because the result is an operator-facing command.
+  uses `package/cli/` because the result is an operator-facing command.
 - Should the daemon include its own periodic `run-all` loop later,
    or should systemd keep owning
   the safety-net timer?
