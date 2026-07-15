@@ -27,10 +27,28 @@ export const CLIENT_ALWAYS_BUNDLE: readonly string[] = [
 ];
 
 /**
+ * Build the client flavor external list for a custom bundle-inclusion set.
+ *
+ * @param alwaysBundle - Patterns whose matching dependencies must stay inline.
+ *
+ * @returns Regex list for rolldown's `external` input option.
+ *
+ * @example
+ * ```ts
+ * external: await clientExternalFor({ alwaysBundle: [...CLIENT_ALWAYS_BUNDLE, 'hyphen**',], },),
+ * ```
+ */
+export async function clientExternalFor({ alwaysBundle, }: {
+  readonly alwaysBundle: readonly string[];
+},): Promise<RegExp[]> {
+  return packageExternals({ alwaysBundle, },);
+}
+
+/**
  * Externals shared by every client bundle produced from the consuming
  * package's manifest at import time.
  */
-const clientExternal = await packageExternals({ alwaysBundle: CLIENT_ALWAYS_BUNDLE, },);
+const clientExternal = await clientExternalFor({ alwaysBundle: CLIENT_ALWAYS_BUNDLE, },);
 
 /**
  * Build one client bundle config with overridable inputs.
@@ -43,6 +61,14 @@ const clientExternal = await packageExternals({ alwaysBundle: CLIENT_ALWAYS_BUND
  *
  * @param input - Client entry paths; defaults to the package client index.
  *
+ * @param platform - Resolution platform; browser apps override neutral.
+ *
+ * @param extraPlugins - Additional rolldown plugins, e.g. import-attributes
+ *   for `with { type: 'text' }` CSS imports.
+ *
+ * @param external - Replacement external list from {@link clientExternalFor}
+ *   for consumers with custom bundle-inclusion patterns.
+ *
  * @returns Client flavor rolldown config producing self-contained scripts.
  *
  * @example
@@ -52,12 +78,23 @@ const clientExternal = await packageExternals({ alwaysBundle: CLIENT_ALWAYS_BUND
  * export default clientConfig({ input: ['./src/client/main.ts',], },);
  * ```
  */
-export function clientConfig({ input = ['./src/client.ts',], }: {
-  readonly input?: readonly string[];
-} = {},): RolldownOptions {
+export function clientConfig(
+  {
+    input = ['./src/client.ts',],
+    platform = 'neutral',
+    extraPlugins = [],
+    external,
+  }: {
+    readonly input?: readonly string[];
+    readonly platform?: 'neutral' | 'browser';
+    readonly extraPlugins?: RolldownOptions['plugins'];
+    readonly external?: readonly RegExp[];
+  } = {},
+): RolldownOptions {
   return defineConfig({
     input: [...input,],
-    platform: 'neutral',
+    plugins: extraPlugins,
+    platform,
     resolve: {
       mainFields: [
         'module',
@@ -71,7 +108,7 @@ export function clientConfig({ input = ['./src/client.ts',], }: {
         ),
       },
     },
-    external: clientExternal,
+    external: external === undefined ? clientExternal : [...external,],
     transform: { target: [...target,], },
     output: {
       dir: 'dist/client',

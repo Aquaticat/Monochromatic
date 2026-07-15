@@ -8,7 +8,7 @@ Converts MDX content into flat HTML pages served by Caddy with clean URLs.
 The build pipeline runs as a sequence of mise tasks (`mise run build`):
 
 1. **Client JS** (`build:js:client`):
-    bundle client-side scripts via tsdown.
+    bundle client-side scripts via rolldown.
     Localized UI text is rendered at build time via `@monochromatic-dev/module-i18n-compose`
     (no codegen step),
     with per-locale label tables in `src/i18n/`

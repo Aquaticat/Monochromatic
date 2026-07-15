@@ -23,7 +23,8 @@
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@types/node": "catalog:",
     "nano-spawn": "catalog:",
-    "tsdown": "catalog:"
+    "rolldown": "catalog:",
+    "rolldown-plugin-dts": "catalog:"
   },
   "type": "module",
   "files": [

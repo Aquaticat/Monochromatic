@@ -1,29 +1,19 @@
-import base from '@monochromatic-dev/config-tsdown/.client.ts';
+import { clientConfig, } from '@monochromatic-dev/config-rolldown/.client.ts';
 import {
   importAttributesPlugin,
 } from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
-import {
-  defineConfig,
-  type UserConfig,
-} from 'tsdown';
 
 /**
  * Client-side browser bundle config for the Done productivity app.
  * Bundles five page entry points into `dist/client/*.js`.
  * Uses the import-attributes plugin so client code can import
- * pre-built CSS via `with { type: 'text' }`.
+ * pre-built CSS via `with { type: 'text' }`. The postcss stack
+ * (nanoid, picocolors, postcss) is undeclared in dependencies,
+ * so it bundles by omission; declared server-only deps never enter
+ * the client graph.
  */
-const config: UserConfig = defineConfig({
-  ...base,
-  deps: {
-    ...base.deps,
-    onlyBundle: [
-      'nanoid',
-      'picocolors',
-      'postcss',
-    ],
-  },
-  entry: [
+const config = clientConfig({
+  input: [
     './src/client/inbox.ts',
     './src/client/in-progress.ts',
     './src/client/task-details.ts',
@@ -31,6 +21,6 @@ const config: UserConfig = defineConfig({
     './src/client/settings.ts',
   ],
   platform: 'browser',
-  plugins: [importAttributesPlugin(),],
+  extraPlugins: [importAttributesPlugin(),],
 },);
 export default config;

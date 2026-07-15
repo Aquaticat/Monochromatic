@@ -39,7 +39,7 @@
     "@lezer/rust": "catalog:",
     "@lezer/xml": "catalog:",
     "@lezer/yaml": "catalog:",
-    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
     "@types/hast": "catalog:",

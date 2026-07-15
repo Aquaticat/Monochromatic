@@ -308,12 +308,37 @@ Mitigation:
  Elysia usage in this repo is minimal (two experimental packages with basic routing).
 Migration surface is small enough that any h3 v2 API changes are trivial to absorb.
 
-## Bundler: tsdown > raw rolldown
+## Bundler: raw rolldown (superseded tsdown on 2026-07-15)
+
+Raw rolldown drives every build flavor through the repo-owned
+`@monochromatic-dev/config-rolldown` package.
+Decision record and pilot evidence:
+`docs/planning/tsdown-removal.md`.
+
+Driver: layer reduction.
+tsdown's value to this repo compressed into small owned glue
+(externals from package.json, `.mjs` filename templates,
+a shebang chmod plugin, task-level clean),
+while its unused subsystems,
+hidden timers,
+and lifecycle management caused unaccountable delays.
+The first revisit trigger below fired (rolldown 1.0.0 stable, 2026-05-07).
+tsdown meanwhile moved into the rolldown org as the official library layer;
+we removed it anyway because official upstream ownership does not shrink
+the unused machinery it carries here.
+Declarations stay on `rolldown-plugin-dts` with `generator: 'oxc'`
+(benched 2026-07-15:
+the tsgo backend cannot emit across inlined workspace sources
+and costs four times oxc's declaration increment where it does build).
+
+The section below records the superseded 2026-03-01 decision for history.
+
+### Superseded: tsdown > raw rolldown (2026-03-01)
 
 tsdown (v0.20.3) is a ~5,000-line config translator and plugin orchestrator on top of rolldown.
 Full source audit completed 2026-03-01.
 
-### Why not raw rolldown
+#### Why not raw rolldown
 
 Rolldown's primary customer is Vite (application bundling).
 Library bundling is a secondary concern for the rolldown team.
@@ -341,7 +366,7 @@ tsdown fills the gap with:
   falls back to `unrun` otherwise.
    No jiti/esbuild for config loading.
 
-### What tsdown does that we don't use but is fine to carry
+#### What tsdown does that we don't use but is fine to carry
 
 - Workspace mode (92 lines,
    half-baked:
@@ -363,7 +388,7 @@ tsdown fills the gap with:
 - CSS handling (160 lines).
    Admitted workaround until rolldown supports CSS syntax lowering natively.
 
-### Known weaknesses (accepted)
+#### Known weaknesses (accepted)
 
 - Test coverage skews toward utils;
    core pipeline (`build.ts`,
@@ -374,7 +399,7 @@ tsdown fills the gap with:
 - Six files exceed 200 lines;
    `resolveUserConfig` is a ~200-line procedural block.
 
-### Why we're cautious about dropping it
+#### Why we're cautious about dropping it
 
 - sxzz (Kevin Deng) is the author of both tsdown and `rolldown-plugin-dts`,
    a Vite team member,
@@ -395,7 +420,7 @@ tsdown fills the gap with:
   engineering tradeoffs,
    not red flags.
 
-### When to revisit
+#### When to revisit
 
 - Rolldown 1.0 stable ships (currently rc.
   6 as of 2026-02-26).

@@ -21,7 +21,6 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
     "electron": "catalog:",
-    "tsdown": "catalog:",
     "rolldown": "catalog:",
     "typescript": "catalog:"
   },
