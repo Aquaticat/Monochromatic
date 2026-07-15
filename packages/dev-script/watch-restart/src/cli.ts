@@ -154,7 +154,7 @@ const parser = object({
  *
  * @returns parsed args matching {@link ParsedArgs}
  *
- * @mutates options through `runSync` output and exit callback capabilities
+ * @mutates options through @optique/run@1.1.1 . runSync output and exit callback capabilities
  *
  * @example
  * ```ts
