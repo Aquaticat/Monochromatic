@@ -276,7 +276,9 @@ async function* estimateRemote(
    */
   const signal = combineProbeSignals({
     budgetSignal,
-    callerSignal: options.signal,
+    ...options.signal === undefined
+      ? {}
+      : { callerSignal: options.signal, },
   },);
   /**
    * Single shallow clone, shared by the shallow and deepen tasks.
