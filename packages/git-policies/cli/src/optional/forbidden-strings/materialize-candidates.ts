@@ -12,6 +12,7 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import type { CandidateFile, } from '../../api/index.ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Maximum simultaneous candidate reads and temporary-file writes.
@@ -81,14 +82,6 @@ export type MaterializedCandidates = Readonly<{
 }>;
 
 /**
- * Candidate paired with plugin-owned temporary path.
- */
-type IndexedCandidate = Readonly<{
-  candidate: CandidateFile;
-  path: string;
-}>;
-
-/**
  * Materializes exact non-deleted candidate bytes under syntax-free names.
  *
  * @param candidates - exact lazy Git candidates
@@ -101,7 +94,7 @@ type IndexedCandidate = Readonly<{
  * ```
  */
 export async function materializeCandidates(
-  candidates: readonly CandidateFile[],
+  candidates: ForeignBorrowed<readonly CandidateFile[]>,
 ): Promise<MaterializedCandidates> {
   /**
    * Private plugin-owned temporary directory.
@@ -129,23 +122,20 @@ export async function materializeCandidates(
     );
   },);
   /**
-   * Candidate and generated path pairs before bounded lane assignment.
+   * Primitive indexes partitioned into bounded sequential lanes.
    */
-  const indexedCandidates = contentCandidates.map(function indexCandidate(
-    candidate,
+  const candidateIndexes = contentCandidates.map(function candidateIndex(
+    _candidate,
     index,
-  ): IndexedCandidate {
-    return {
-      candidate,
-      path: paths[index] ?? '',
-    };
+  ): number {
+    return index;
   },);
   /**
    * Active lane count never exceeds candidate count or fixed process-safe cap.
    */
   const laneCount = Math.min(
     MATERIALIZATION_CONCURRENCY,
-    indexedCandidates.length,
+    candidateIndexes.length,
   );
   /**
    * Deterministic independent lanes avoid an unbounded `Promise.all` fan-out.
@@ -156,31 +146,51 @@ export async function materializeCandidates(
       _unused,
       laneIndex,
     ) {
-      return indexedCandidates.filter(function assignedToLane(
-        _candidate,
+      return candidateIndexes.filter(function assignedToLane(
         candidateIndex,
       ): boolean {
         return (candidateIndex % laneCount) === laneIndex;
       },);
     },
   );
-  await Promise.all(lanes.map(async function writeLane(
-    lane: readonly IndexedCandidate[],
-  ): Promise<void> {
+  /**
+   * Processes one bounded primitive-index lane while candidate ownership remains at this boundary.
+   *
+   * @param lane - Candidate indexes assigned to one sequential lane.
+   */
+  async function writeLane(lane: readonly number[],): Promise<void> {
     /* oxlint-disable no-await-in-loop -- Each bounded lane deliberately sequences process-backed reads and temporary writes to cap process and file-descriptor pressure. */
-    for (const entry of lane) {
+    for (const candidateIndex of lane) {
+      /**
+       * Exact candidate loaded from inherited foreign-owned collection.
+       */
+      const candidate = contentCandidates[candidateIndex];
+      if (candidate === undefined)
+        throw new Error('Candidate lane index was not aligned.',);
+      /**
+       * Plugin-owned temporary path aligned with candidate index.
+       */
+      const path = paths[candidateIndex];
+      if (path === undefined)
+        throw new Error('Candidate path index was not aligned.',);
       /**
        * Exact candidate bytes loaded only when current bounded lane reaches entry.
        */
-      const bytes = await entry.candidate
-        .bytes();
+      const bytes = await candidate.bytes();
       await writeFile(
-        entry.path,
+        path,
         bytes,
       );
     }
     /* oxlint-enable no-await-in-loop */
-  },),);
+  }
+  /**
+   * Concurrent lane jobs built at the marked candidate ownership boundary.
+   */
+  const laneWrites: Promise<void>[] = [];
+  for (const lane of lanes)
+    laneWrites.push(writeLane(lane,),);
+  await Promise.all(laneWrites,);
   return {
     paths,
     candidatesByPath: new Map(paths.map(function mapCandidate(

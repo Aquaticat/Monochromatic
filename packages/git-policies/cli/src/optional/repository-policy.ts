@@ -69,6 +69,8 @@ export const forbiddenRootContext: PolicyDefinition<undefined, 'forbidden-root-c
    * @param context - Policy context exposing lazy Git facts.
    *
    * @returns findings for forbidden root context file.
+   *
+   * @mutates context through context.git.candidates lazy provider invocation
    */
   async check({ context, }: {
     readonly context: ForeignBorrowed<PolicyContext>;
