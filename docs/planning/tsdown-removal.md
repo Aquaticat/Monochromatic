@@ -151,10 +151,17 @@ All six representative cells pass on raw rolldown 1.1.5 with
 - `webapp-productivity/wc` (client): page assembled and driven via
   `agent-browser`, zero console errors, live stats computed.
 - `desktop-app/file-manager-electron` (preload CJS): built through the
-  swapped mise task; wayland boundary test reaches exact parity with
-  the main checkout (both blocked by agent-session display access,
-  no module or bridge errors). Interactive confirmation in the user's
-  real session remains outstanding.
+  swapped mise task; the wayland boundary test passes on the merged
+  tree (four consecutive exit-0 runs with the rolldown-built
+  `preload.cjs` staged). The sweep-time failures were load-induced:
+  the harness's ten-second observed-state deadline missed while the
+  repo-wide build fanout and cargo release builds saturated the
+  machine, on the tsdown-built main checkout and the branch alike.
+  The earlier "blocked by agent-session display access" reading was
+  wrong: the session has real Wayland access, and the
+  `Fatal Wayland communication error: Broken pipe` lines appear in
+  passing runs too; they are electron teardown noise after the
+  compositor's `quit`, not a failure signal.
 
 Pilot findings folded into the design:
 
