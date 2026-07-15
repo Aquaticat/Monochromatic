@@ -29,6 +29,7 @@ The audited outcomes are:
   and receiver-reachable values through its callback relation;
 - `Array.prototype.join` is observational only when every reachable element is primitive;
 - `Error.isError(value)` is observational;
+- Error construction with an options object can invoke `cause` proxy or getter behavior;
 - `Date.prototype.toLocaleString()` observes the receiver's `[[DateValue]]`;
   supplied locales and options remain opaque;
 - `JSON.stringify(value)` remains opaque because it can invoke `toJSON`,
@@ -91,6 +92,14 @@ The source clause IDs are
 `sec-%typedarray%.prototype.includes`,
 `sec-%typedarray%.prototype.indexof`,
 and `sec-%typedarray%.prototype.subarray`.
+
+Error construction delegates options handling to `InstallErrorCause` in
+`sec-installerrorcause`.
+That algorithm calls `HasProperty(options, "cause")` and then `Get(options, "cause")` when present.
+Those operations do not directly change the options object,
+but proxy traps or a `cause` getter can execute caller-owned behavior.
+The project contract therefore records possible effects through `super` rather than classifying constructor options as
+observational.
 
 `Object.is` delegates only to `SameValue` (`spec.html:31394`):
 
@@ -238,6 +247,7 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
 - Exact Array `join` observes primitive elements,
   while object-element coercion remains opaque.
 - Exact `Error.isError` inspects error identity without mutating its argument.
+- Error construction options remain effectful because `cause` presence and value reads can invoke caller-owned hooks.
 
 ### Calls verified as effectful or opaque
 
