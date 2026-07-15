@@ -538,9 +538,9 @@ shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."test:unit"]
-description = "Run *.unit.test.ts in parallel via node (excludes inactive package trees and *.expensive.* unless --all); pass file paths to filter"
+description = "Run active-tree *.unit.test.ts in parallel via node (excludes *.expensive.* unless --all); pass file paths to filter"
 usage = """
-flag "--all" help="Include inactive-tree and *.expensive.* files; cannot be combined with file paths"
+flag "--all" help="Include active-tree *.expensive.* files; cannot be combined with file paths"
 arg "[args]" var=#true help="Test file paths to run (when provided, only those files run); cannot be combined with --all"
 """
 shell = "node --input-type=module-typescript -e"
@@ -558,7 +558,7 @@ let files
 if (args.length === 0) {
   files = []
   for await (const file of glob('**/*.unit.test.ts', { exclude: (name) => name.includes('node_modules') })) {
-    if (all || (!isInactiveTest(file) && !file.includes('.expensive.'))) { files.push(file) }
+    if (!isInactiveTest(file) && (all || !file.includes('.expensive.'))) { files.push(file) }
   }
 } else {
   // Package-scoped tasks run with cwd = MISE_CONFIG_ROOT (the package dir), so a repo-root-relative
