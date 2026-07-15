@@ -5,6 +5,7 @@
  */
 
 import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
+import { OPTIQUE_PACKAGE_EFFECTS, } from './optique-package-effect-catalog.ts';
 import { receiverEffect, } from './package-receiver-effect.ts';
 import { PI_PACKAGE_EFFECTS, } from './pi-package-effect-catalog.ts';
 import { POSTCSS_PACKAGE_EFFECTS, } from './postcss-package-effect-catalog.ts';
@@ -15,6 +16,7 @@ import { WORKSPACE_PACKAGE_EFFECTS, } from './workspace-package-effect-catalog.t
  * Package effects audited by exact current-lock major.
  */
 export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  ...OPTIQUE_PACKAGE_EFFECTS,
   ...PI_PACKAGE_EFFECTS,
   ...POSTCSS_PACKAGE_EFFECTS,
   ...TURSO_PACKAGE_EFFECTS,
