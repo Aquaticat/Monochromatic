@@ -55,7 +55,7 @@ export function mtypeToExtension(mtype: string,): string {
  *
  * @param value - JSON-serializable value
  *
- * @mutates value through JSON.stringify serialization hooks and module-zip-writer 0.0.1 index.ts sha256 8f8368a6425fa203195cc48ec66396d1a47684f3fdd1ef4103583febfa2e1dff mutates receiver entries and retains Uint8Array content
+ * @mutates value through JSON.stringify serialization hooks
  *
  * @example
  * ```ts
@@ -98,7 +98,7 @@ function addJson(
  *
  * @param pageDir - archive directory prefix for the page
  *
- * @mutates doc through JSON.stringify hooks and module-zip-writer 0.0.1 index.ts sha256 8f8368a6425fa203195cc48ec66396d1a47684f3fdd1ef4103583febfa2e1dff mutates receiver entries and retains Uint8Array content
+ * @mutates doc through JSON.stringify hooks
  *
  * @example
  * ```ts
@@ -150,7 +150,7 @@ function addPageShapes(
  *
  * @returns ZIP archive bytes
  *
- * @mutates doc through JSON.stringify hooks and module-zip-writer 0.0.1 index.ts sha256 8f8368a6425fa203195cc48ec66396d1a47684f3fdd1ef4103583febfa2e1dff mutates receiver entries and retains Uint8Array content
+ * @mutates doc through JSON.stringify hooks
  *
  * @example
  * ```ts

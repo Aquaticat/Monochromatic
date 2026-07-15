@@ -142,8 +142,6 @@ type ParsedZipEntry = {
  *
  * @param buffer - Raw ZIP file content.
  *
- * @mutates buffer through Buffer.from value conversion and native byte access
- *
  * @returns Map from entry name to decompressed content.
  *
  * @example
@@ -234,8 +232,6 @@ function findEocdOffset(
  *
  * @param centralDirectoryEntries - Entry count.
  *
- * @mutates buffer through Buffer.from value conversion and native byte access
- *
  * @returns {@link ZipEntryPair} entries for map construction.
  *
  * @example
@@ -284,8 +280,6 @@ function parseCentralDirectory(
  * @param view - ZIP DataView.
  *
  * @param offset - Central entry offset.
- *
- * @mutates buffer through Buffer.from value conversion and native byte access
  *
  * @returns {@link ParsedZipEntry} with next offset.
  *
@@ -427,8 +421,6 @@ async function zipEntryPair({ parsed, }: { readonly parsed: ParsedZipEntry; },):
  *
  * @param localHeaderOffset - Local header offset.
  *
- * @mutates buffer through Buffer.from value conversion and native byte access
- *
  * @returns Decompressed entry content.
  *
  * @example
@@ -503,8 +495,6 @@ async function readEntryContent(
  * @param compressedData - Compressed data.
  *
  * @param fileName - Entry filename.
- *
- * @mutates compressedData through Buffer.from value conversion and native byte access
  *
  * @returns Decompressed data.
  *
