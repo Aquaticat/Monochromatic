@@ -121,6 +121,10 @@ const EDIT_SEQUENCE: readonly EditStep[] = [
  * Apply one edit step, materializing by reparse so the next step resolves
  * against a real document. A by-design rejection leaves the state unchanged.
  *
+ * @mutates edit through the `tomlSet` value-traversal boundary
+ *
+ * @mutates step through the `tomlSet` value-traversal boundary
+ *
  * @returns Next state, or the input state when the step was rejected.
  */
 function applyStep({
@@ -183,6 +187,8 @@ export function exerciseEditSequence({ base, }: { readonly base: TomlEditState; 
  * ```ts
  * exerciseValueEncoding({ values: [ 1, 'a', { x: 1, }, ], },);
  * ```
+ *
+ * @mutates values through `tomlSet` value traversal
  */
 export function exerciseValueEncoding({ values, }: { readonly values: readonly unknown[]; },): void {
   for (const value of values) {

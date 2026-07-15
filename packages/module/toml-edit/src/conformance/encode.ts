@@ -70,8 +70,6 @@ function buildToml({ root, }: { readonly root: Record<string, unknown>; },): str
          *
          * @returns Next immutable edit state.
          *
-         * @mutates current - Built-package `tomlSet` boundary may inspect caller-reachable edit state.
-         *
          * @mutates entry - Tagged child conversion may invoke proxy and accessor hooks recursively.
          */
         function applyEntry(
