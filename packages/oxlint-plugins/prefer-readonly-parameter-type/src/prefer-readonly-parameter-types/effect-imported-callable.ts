@@ -21,6 +21,7 @@ import {
   ALL_PACKAGED_PROPERTIES,
   parameterIndexes,
 } from './effect-call-resolution.ts';
+import { expressionIsPlainData, } from './plain-data-classifier.ts';
 import { addIntrinsicForwardedCallbackEffects, } from './effect-intrinsic-forwarded-callback.ts';
 import { addIntrinsicInvocations, } from './effect-intrinsic-invocation.ts';
 import { addIntrinsicPropertyInvocations, } from './effect-intrinsic-property-invocation.ts';
@@ -145,6 +146,14 @@ export function applyAuditedCallableEffect({
                 : { propertyNames: target.propertyNames, },
               condition: target.typeCondition,
             })))
+            return;
+          /* Opaque targets record traversal-hook uncertainty, not proven
+           * mutation; statically plain data carries no hooks to invoke. */
+          if (expressionIsPlainData({
+            checker,
+            project,
+            node: argument,
+          },))
             return;
           parameterIndexes({
             checker,

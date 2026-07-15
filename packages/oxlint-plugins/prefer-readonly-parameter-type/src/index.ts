@@ -12,6 +12,11 @@ export {
 } from './prefer-readonly-parameter-types/readonly-classifier.ts';
 
 export {
+  expressionIsPlainData,
+  typeIsPlainData,
+} from './prefer-readonly-parameter-types/plain-data-classifier.ts';
+
+export {
   closeSemanticBridge,
   openSemanticFile,
   semanticBridgeCacheStats,

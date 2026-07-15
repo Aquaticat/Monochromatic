@@ -51,6 +51,7 @@ import {
   isGlobalStringConversion,
   STRING_OBJECT_COERCION_PROVENANCE,
 } from './string-coercion-effect.ts';
+import { expressionIsPlainData, } from './plain-data-classifier.ts';
 
 /**
  * Classifies one call as callback relation, intrinsic effect, owned edge, or opaque boundary.
@@ -321,6 +322,15 @@ export function inspectEffectCall({
         checker,
         node: argument,
       },)))
+      return;
+    /* Exact global String never mutates its input; its only effect class is
+     * coercion hooks, which statically plain data cannot carry. */
+    if ((opaqueProvenance === STRING_OBJECT_COERCION_PROVENANCE)
+      && expressionIsPlainData({
+        checker,
+        project,
+        node: argument,
+      },))
       return;
     indexes.forEach(function opaqueArgumentOrigin(index,): void {
       addOpaqueEffect({

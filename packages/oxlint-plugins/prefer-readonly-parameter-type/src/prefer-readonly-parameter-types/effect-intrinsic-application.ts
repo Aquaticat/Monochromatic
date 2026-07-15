@@ -24,6 +24,10 @@ import { addIntrinsicInvocations, } from './effect-intrinsic-invocation.ts';
 import { addIntrinsicPropertyInvocations, } from './effect-intrinsic-property-invocation.ts';
 import { receiverElementsArePrimitive, } from './effect-primitive-origin.ts';
 import {
+  expressionIsPlainData,
+  typeIsPlainData,
+} from './plain-data-classifier.ts';
+import {
   addEffectIndex,
   type MutableEffectSummary,
   type PARAMETER_INDEX_UNAVAILABLE,
@@ -220,6 +224,14 @@ export function applyIntrinsicEffect({
       },))
         return;
       if (target.kind === 'receiver') {
+        /* Opaque targets record traversal-hook uncertainty, not proven
+         * mutation; statically plain data carries no hooks to invoke. */
+        if (typeIsPlainData({
+          checker,
+          project,
+          type: receiverType,
+        },))
+          return;
         addOpaqueEffect({
           summary,
           affectedParameterIndex: receiverParameterIndex,
@@ -241,6 +253,12 @@ export function applyIntrinsicEffect({
                 : { propertyNames: target.propertyNames, },
               condition: target.typeCondition,
             })))
+            return;
+          if (expressionIsPlainData({
+            checker,
+            project,
+            node: argument,
+          },))
             return;
           parameterIndexes({
             checker,
