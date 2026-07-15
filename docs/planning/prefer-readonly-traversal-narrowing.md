@@ -176,6 +176,50 @@ Definition of done:
   suppression ban,
   and fail-closed posture for non-plain types.
 
+## Progress log
+
+- 2026-07-15 `20a993421`:
+  strict structural plain-data classifier
+  (`plain-data-classifier.ts`) gating catalog opaque targets and
+  global String coercion;
+  classifier unit tests cover 18 shapes including branded intersections,
+  recursive TOML-like unions,
+  and readonly tuple references
+  (`checker.isTupleType` resolves references, the Type method does not).
+- 2026-07-15 `132bd4fe8`:
+  `traversalHookOnly` marker on Object/Reflect enumeration targets;
+  `join` and `toSorted` element-coercion guards widened to plain data
+  (fields renamed to `requiresPlainReceiverElements` and
+  `opaqueReceiverUnlessCallableArgumentOrPlainElements`);
+  behavioral fixtures `readonly-plain-data-valid.ts` and
+  `readonly-plain-data-invalid.ts` prove both gate sides.
+  Note:
+  the Object hook family records hook uncertainty as `targets`,
+  not `opaqueTargets`,
+  so the marker distinguishes hook-class from mutation-class targets.
+- 2026-07-15 `dc2d6f5f8`:
+  workspace source resolution.
+  Root cause found empirically:
+  workspace imports resolve through pnpm symlinks to real repository paths
+  and TypeScript flags them `isSourceFileFromExternalLibrary`,
+  which was the only barrier;
+  the resolved signature declaration already pointed at live source.
+  `isWorkspaceSourceFileName` (no `node_modules` segment) admits them in
+  `callableDeclaration` and the summary-index scope.
+  `workspace-package-effect-catalog.ts` deleted entirely.
+  Regression test `workspace-source-effect.unit.test.ts` pins the
+  `setIfDiffers`/`applyEnforcement`/`applyCargoPlan` chain to zero effects.
+  Observed cost:
+  cold `buildEffectSummaryIndex` for `apply-plan.ts` took 54 seconds
+  (enlarged fixed-point scope);
+  warm and persistent caches must carry the load,
+  measure against recorded baselines before accepting.
+  Capability-accounting shift:
+  style-callback invocation for `formatRateLimitStatus` consumers now
+  proves inside the analyzed workspace callee;
+  caller summaries no longer carry audited `invoked` markings
+  (statusline caller lint output verified unchanged).
+
 ## Open questions
 
 - Exact classifier treatment of index signatures whose value type is plain data:
