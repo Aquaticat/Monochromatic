@@ -113,6 +113,10 @@ The rule uses that private path only as fail-closed evidence:
 - marker occurrence count must equal the audited source-to-callable mapping;
 - public `node:fs` and `node:url` source digests plus import/export markers must map internal definitions back to
   declaration-facing exports;
+- `node:buffer.isUtf8` is accepted only for the exact embedded `buffer` implementation,
+  whose digest is `1b15446290915577350455b136d69041b6b9900f72946ec3ef8340240c9e706b`;
+- `fs.StatsBase` file-type predicates are accepted only through their exact `internal/fs/utils` definitions and
+  public `fs.Stats` binding chain;
 - missing binding,
   missing source,
   version drift,

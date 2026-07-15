@@ -17,6 +17,11 @@ import type {
  * Exact Node 26.5.0 embedded JavaScript source identities.
  */
 const NODE_SOURCES = {
+  buffer: {
+    nodeVersion: '26.5.0',
+    module: 'buffer',
+    sourceDigest: '1b15446290915577350455b136d69041b6b9900f72946ec3ef8340240c9e706b',
+  },
   fileSystem: {
     nodeVersion: '26.5.0',
     module: 'fs',
@@ -107,6 +112,29 @@ function nodeSourceAuthority({
  * and callable-definition identities.
  */
 export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  {
+    provenance: NODE_PROVENANCE,
+    ownerType: 'node:buffer',
+    member: 'isUtf8',
+    targets: [],
+    evidence: 'Node 26.5.0 embedded buffer JavaScript and native binding implementation',
+    authority: nodeSourceAuthority({
+      source: NODE_SOURCES.buffer,
+      definitionMarker: '\nfunction isUtf8(input) {',
+      occurrenceCount: 1,
+      bindingMarkers: [
+        {
+          text: '\n  isUtf8,\n',
+          occurrenceCount: 1,
+        },
+        {
+          text: '\nmodule.exports = {',
+          occurrenceCount: 1,
+        },
+      ],
+      relatedSources: [],
+    },),
+  },
   ...[
     'basename',
     'dirname',
@@ -182,6 +210,48 @@ export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
             },
             {
               text: '  Dirent,\n  getDirent,',
+              occurrenceCount: 1,
+            },
+            {
+              text: '\n  Dirent,\n  Stats,',
+              occurrenceCount: 1,
+            },
+          ],
+        },],
+      },),
+    };
+  },),
+  ...[
+    'isBlockDevice',
+    'isCharacterDevice',
+    'isDirectory',
+    'isFIFO',
+    'isFile',
+    'isSocket',
+    'isSymbolicLink',
+  ].map(function statsObservation(member,): IntrinsicEffectEntry {
+    return {
+      provenance: NODE_PROVENANCE,
+      ownerType: 'StatsBase',
+      member,
+      targets: [],
+      evidence: 'Node 26.5.0 embedded internal/fs/utils StatsBase implementation',
+      authority: nodeSourceAuthority({
+        source: NODE_SOURCES.fileSystemUtilities,
+        definitionMarker: `\nStatsBase.prototype.${member} = function() {`,
+        occurrenceCount: 1,
+        bindingMarkers: [{
+          text: "\n  Stats: deprecate(Stats, 'fs.Stats constructor is deprecated.', 'DEP0180'),",
+          occurrenceCount: 1,
+        },],
+        relatedSources: [{
+          module: NODE_SOURCES.fileSystem
+            .module,
+          sourceDigest: NODE_SOURCES.fileSystem
+            .sourceDigest,
+          definitionMarkers: [
+            {
+              text: "} = require('internal/fs/utils');",
               occurrenceCount: 1,
             },
             {

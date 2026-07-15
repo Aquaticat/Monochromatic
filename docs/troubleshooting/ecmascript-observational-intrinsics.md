@@ -19,6 +19,9 @@ The audited outcomes are:
   and collection `has` checks are observational;
 - Array callback methods expose receiver-reachable values to callbacks,
   so callback effects propagate back to receiver origin;
+- TypedArray identity searches and indexed reads are observational;
+  TypedArray callback methods propagate receiver-reachable values,
+  and `subarray` preserves receiver provenance through its shared view;
 - `Array.prototype.with` allocates a copy and is observational;
 - `Array.prototype.reduce` exposes accumulator,
   element,
@@ -70,6 +73,23 @@ Array and collection callback operations do not mutate their receiver directly,
 but they call user code with receiver-reachable values.
 The catalog therefore records callback argument positions separately from direct mutation targets.
 A zero-target callback operation is not complete until call analysis propagates callback mutation and opacity.
+
+The same distinction applies to `%TypedArray%` algorithms.
+The pinned clauses for `at`,
+`includes`,
+and `indexOf` inspect integer-indexed elements without changing them.
+`every` and `findLastIndex` call user code with element,
+index,
+and receiver values.
+`subarray` creates a new view over the same buffer,
+so it is nonmutating but its result retains receiver provenance.
+The source clause IDs are
+`sec-%typedarray%.prototype.at`,
+`sec-%typedarray%.prototype.every`,
+`sec-%typedarray%.prototype.findlastindex`,
+`sec-%typedarray%.prototype.includes`,
+`sec-%typedarray%.prototype.indexof`,
+and `sec-%typedarray%.prototype.subarray`.
 
 `Object.is` delegates only to `SameValue` (`spec.html:31394`):
 
@@ -200,6 +220,11 @@ console.log(JSON.stringify({ json: JSON.stringify(state), valueAfter: state.valu
   `reduce`,
   and `some` calls propagate callback effects from receiver-reachable element and collection arguments.
 - Exact Array `with` returns a new array without changing its receiver.
+- Exact TypedArray `at`,
+  `includes`,
+  and `indexOf` calls observe indexed values;
+  `every` and `findLastIndex` propagate callback effects;
+  `subarray` returns a shared view without directly mutating the receiver.
 - Exact Map,
   Set,
   WeakMap,

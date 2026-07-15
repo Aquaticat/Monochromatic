@@ -69,23 +69,45 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     provenance: POSTCSS_PROVENANCE,
     ownerType: 'AtRule_',
     member: 'clone',
-    targets: [{ kind: 'receiver', },],
+    targets: [],
+    opaqueTargets: [
+      { kind: 'receiver', },
+      { kind: 'argument', index: 0, },
+    ],
     receiverValuesReachResult: true,
-    evidence: `${NODE_EVIDENCE}; cloneNode reads enumerable receiver state, invokes constructors or accessors, recursively clones values, and retains source identity`,
+    evidence: `${NODE_EVIDENCE}; cloneNode observes enumerable receiver and override state through constructors, accessors, or proxy traps and retains source identity without mutating the receiver`,
   },
-  ...[
-    'error',
-    'remove',
-    'toString',
-  ].map(function postcssNodeReceiverEffect(member,): IntrinsicEffectEntry {
-    return {
-      provenance: POSTCSS_PROVENANCE,
-      ownerType: 'Node_',
-      member,
-      targets: [{ kind: 'receiver', },],
-      evidence: `${NODE_EVIDENCE}; ${member} reads or changes Node state and receiver-reachable source or parent state`,
-    };
-  },),
+  {
+    provenance: POSTCSS_PROVENANCE,
+    ownerType: 'Node_',
+    member: 'error',
+    targets: [],
+    opaqueTargets: [
+      { kind: 'receiver', },
+      { kind: 'argument', index: 1, },
+    ],
+    evidence: `${NODE_EVIDENCE}; error observes receiver-reachable source and input state and option properties while constructing a CssSyntaxError`,
+  },
+  {
+    provenance: POSTCSS_PROVENANCE,
+    ownerType: 'Node_',
+    member: 'remove',
+    targets: [{ kind: 'receiver', },],
+    evidence: `${NODE_EVIDENCE}; remove updates parent structure and receiver parent state`,
+  },
+  {
+    provenance: POSTCSS_PROVENANCE,
+    ownerType: 'Node_',
+    member: 'toString',
+    targets: [],
+    opaqueTargets: [{ kind: 'receiver', },],
+    callbacks: [{
+      argumentIndex: 0,
+      receiverParameterIndexes: [0,],
+    },],
+    invokedArgumentIndexes: [0,],
+    evidence: `${NODE_EVIDENCE}; toString observes receiver state and invokes a supplied stringifier with the receiver`,
+  },
   {
     provenance: POSTCSS_PROVENANCE,
     ownerType: 'Node_',

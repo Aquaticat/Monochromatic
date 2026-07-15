@@ -35,25 +35,32 @@ The `lastEach` counter remains changed.
 
 `Node.remove` changes its parent container and receiver parent link.
 `Node.replaceWith` also adopts supplied nodes through parent insertion methods.
-`Node.error` reads receiver-reachable input state and delegates to its error constructor.
-`Node.toString` invokes the selected stringifier over receiver state.
+`Node.error` reads receiver-reachable input state and options while constructing an error,
+but does not directly change the receiver.
+`Node.toString` invokes the selected stringifier over receiver state,
+but does not directly change the receiver.
 
-`Node.clone` walks enumerable receiver state,
+`Node.clone` walks enumerable receiver and override state,
 invokes constructors and property reads,
 recursively copies nested values,
 and preserves the original `source` reference in the result.
-The clone result therefore retains receiver-derived provenance.
+It does not directly change the receiver.
+Constructor calls,
+accessors,
+and proxy traps remain caller-observable uncertainty,
+and the clone result retains receiver-derived provenance.
 
 ## Implementation
 
 `postcss-package-effect-catalog.ts` records exact package-major and declaration-owner entries:
 
 - `Container_.walkAtRules` affects the receiver and invokes a callback with receiver children;
-- `AtRule_.clone` affects the receiver and returns a value retaining receiver provenance;
-- `Node_.error`,
-  `Node_.remove`,
-  and `Node_.toString` affect receiver-reachable state;
-- `Node_.replaceWith` affects the receiver and supplied nodes.
+- `AtRule_.clone` has opaque receiver and override observation,
+  and returns a value retaining receiver provenance;
+- `Node_.error` has opaque receiver and options observation;
+- `Node_.toString` has opaque receiver observation and invokes a supplied stringifier;
+- `Node_.remove` changes its receiver;
+- `Node_.replaceWith` changes the receiver and supplied nodes.
 
 PostCSS overloads place the callback at argument `0` for a one-argument call
 and argument `1` for a two-argument call.

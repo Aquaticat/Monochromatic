@@ -151,6 +151,57 @@ await describe({
       },
     },),
     it({
+      name: 'records TypedArray observation and callback effects',
+      fn: async () => {
+        const subarray = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'Uint8Array',
+          member: 'subarray',
+        },);
+        expect(subarray,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (subarray === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Uint8Array.subarray intrinsic effect.',);
+        expect(subarray.targets,).toEqual([],);
+        expect(subarray.receiverValuesReachResult,).toBe(true,);
+        const every = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'Uint8Array',
+          member: 'every',
+        },);
+        expect(every,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (every === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Uint8Array.every intrinsic effect.',);
+        expect(every.targets,).toEqual([],);
+        expect(every.callbacks,).toEqual([{
+          argumentIndex: 0,
+          receiverParameterIndexes: [0, 2,],
+        },],);
+      },
+    },),
+    it({
+      name: 'records Node buffer and Stats observations',
+      fn: async () => {
+        const isUtf8 = intrinsicEffect({
+          provenance: { kind: 'node', declarationMajor: 26, },
+          ownerType: 'node:buffer',
+          member: 'isUtf8',
+        },);
+        expect(isUtf8,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (isUtf8 === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected node:buffer.isUtf8 intrinsic effect.',);
+        expect(isUtf8.targets,).toEqual([],);
+        const isDirectory = intrinsicEffect({
+          provenance: { kind: 'node', declarationMajor: 26, },
+          ownerType: 'StatsBase',
+          member: 'isDirectory',
+        },);
+        expect(isDirectory,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (isDirectory === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected StatsBase.isDirectory intrinsic effect.',);
+        expect(isDirectory.targets,).toEqual([],);
+      },
+    },),
+    it({
       name: 'records exact Object hooks and Array copy or callback effects',
       fn: async () => {
         expect([

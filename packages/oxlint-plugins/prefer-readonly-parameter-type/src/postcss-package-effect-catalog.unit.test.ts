@@ -146,7 +146,11 @@ await describe({
         expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
         if (effect === NO_INTRINSIC_EFFECT)
           throw new Error('Expected PostCSS clone effect.',);
-        expect(effect.targets,).toEqual([{ kind: 'receiver', },],);
+        expect(effect.targets,).toEqual([],);
+        expect(effect.opaqueTargets,).toEqual([
+          { kind: 'receiver', },
+          { kind: 'argument', index: 0, },
+        ],);
         expect(effect.receiverValuesReachResult,).toBe(true,);
         expect(intrinsicEffect({
           provenance: {
@@ -157,6 +161,54 @@ await describe({
           ownerType: 'AtRule_',
           member: 'clone',
         },),).toBe(NO_INTRINSIC_EFFECT,);
+      },
+    },),
+    it({
+      name: 'distinguishes PostCSS observation uncertainty from mutation',
+      fn: async () => {
+        const error = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: 'postcss',
+            major: 8,
+          },
+          ownerType: 'Node_',
+          member: 'error',
+        },);
+        const remove = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: 'postcss',
+            major: 8,
+          },
+          ownerType: 'Node_',
+          member: 'remove',
+        },);
+        const toString = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: 'postcss',
+            major: 8,
+          },
+          ownerType: 'Node_',
+          member: 'toString',
+        },);
+        expect(error,).not.toBe(NO_INTRINSIC_EFFECT,);
+        expect(remove,).not.toBe(NO_INTRINSIC_EFFECT,);
+        expect(toString,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if ((error === NO_INTRINSIC_EFFECT)
+          || (remove === NO_INTRINSIC_EFFECT)
+          || (toString === NO_INTRINSIC_EFFECT))
+          throw new Error('Expected PostCSS Node effects.',);
+        expect(error.targets,).toEqual([],);
+        expect(error.opaqueTargets,).toEqual([
+          { kind: 'receiver', },
+          { kind: 'argument', index: 1, },
+        ],);
+        expect(remove.targets,).toEqual([{ kind: 'receiver', },],);
+        expect(toString.targets,).toEqual([],);
+        expect(toString.opaqueTargets,).toEqual([{ kind: 'receiver', },],);
+        expect(toString.invokedArgumentIndexes,).toEqual([0,],);
       },
     },),
     it({
