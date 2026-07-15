@@ -77,6 +77,8 @@ export function getTomlProperty(
  *
  * @param value - JS value to write
  *
+ * @mutates value through https://github.com/Aquaticat/Monochromatic tomlSet value getter or proxy effects
+ *
  * @returns Updated TOML text
  *
  * @throws Error from {@link parseTomlEdit} when content is not valid TOML

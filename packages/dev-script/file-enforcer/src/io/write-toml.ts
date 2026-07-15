@@ -30,6 +30,8 @@ import {
  *
  * @param value - JS value to write at the path
  *
+ * @mutates value through https://github.com/Aquaticat/Monochromatic tomlSet value getter or proxy effects
+ *
  * @throws Error when dest does not exist
  *
  * @throws Error from {@link parseTomlEdit} when the existing file is not valid TOML

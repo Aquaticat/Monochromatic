@@ -52,6 +52,8 @@ export function isJsonObject(value: unknown,): value is JsonObject {
  *
  * @param value - JSON value to store.
  *
+ * @mutates target through Object.defineProperty property creation, proxy hooks, and value retention
+ *
  * @example
  * ```ts
  * setOwnJsonValue({ target: {}, key: '__proto__', value: 1 });

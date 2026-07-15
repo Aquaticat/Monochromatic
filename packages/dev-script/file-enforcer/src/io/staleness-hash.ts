@@ -32,6 +32,7 @@ export function hashContent(content: string,): string {
  * @returns SHA-256 hex digest for source metadata.
  *
  * @mutates sourceFiles - `JSON.stringify` may invoke array or entry accessors and proxy traps.
+ *
  * @mutates sourceGlobs - `JSON.stringify` may invoke array or entry accessors and proxy traps.
  *
  * @example

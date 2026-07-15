@@ -20,6 +20,8 @@ export class StalenessManifestPersistenceError extends Error {
    *
    * @param options - Optional error cause.
    *
+   * @mutates options through super options.cause getter or proxy effects
+   *
    * @example
    * ```ts
    * new StalenessManifestPersistenceError('Invalid staleness manifest');
@@ -27,7 +29,7 @@ export class StalenessManifestPersistenceError extends Error {
    */
   constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ErrorOptions,
   ) {
     super(
       message,

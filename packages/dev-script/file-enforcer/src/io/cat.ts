@@ -47,11 +47,10 @@ export function globResults(
     readonly results: readonly GlobResult[];
   },
 ): GlobResults {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- branded type construction requires double assertion
-  return Object.assign(
-    [...results,],
-    { sourceGlob, },
-  ) as unknown as GlobResults;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- branded array gains required property immediately after construction
+  const brandedResults = [...results,] as unknown as GlobResult[] & { sourceGlob: string; };
+  brandedResults.sourceGlob = sourceGlob;
+  return brandedResults;
 }
 
 /**
