@@ -32,7 +32,6 @@ import {
   buildLayers,
   computeSceneBounds,
   orbitView,
-  type SceneBounds,
 } from '../deck-config.ts';
 import type { PackageProbe, } from '../probe.ts';
 import { syncDomFromState, } from './controller-dom.ts';
@@ -51,9 +50,11 @@ import {
 } from './controller-tooltip.ts';
 import { computeVisibleIndices, } from './filter.ts';
 import {
-  type ChromeColors,
-  detectScheme,
-} from './scheme.ts';
+  recomputeVisibility,
+  rerenderLayers,
+} from './controller-render.ts';
+import type { Session, } from './controller-session-types.ts';
+import { detectScheme, } from './scheme.ts';
 import {
   type AppState,
   defaultState,
@@ -71,21 +72,6 @@ declare global {
 }
 
 //endregion Globals
-
-//region Types
-
-/**
- * Mutable working state of the controller. The binding is `const`.
- */
-type Session = {
-  state: AppState;
-  bounds: SceneBounds;
-  visibleIndices: ReadonlySet<number>;
-  chrome: ChromeColors;
-  deck: Deck<OrbitView>;
-};
-
-//endregion Types
 
 //region Helpers
 
@@ -148,82 +134,6 @@ function pickedProbe(
 //endregion Helpers
 
 //region Render path
-
-/**
- * Recomputes `visibleIndices` from the current state, updates the
- * visibility counter, and writes the result back into the session.
- *
- * @param session - Mutable session.
- *
- * @param probes - Source probes.
- */
-function recomputeVisibility(
-  {
-    session,
-    probes,
-  }: {
-    session: Session;
-    probes: readonly PackageProbe[];
-  },
-): void {
-  session.visibleIndices = computeVisibleIndices({
-    probes,
-    toggles: session.state
-      .toggles,
-    ranges: session.state
-      .ranges,
-    search: session.state
-      .search,
-    dimMapping: session.state
-      .dimMapping,
-  },);
-  /**
-   * Counter element under the canvas; missing in tests / partial pages, so we no-op when absent.
-   */
-  const counter = document.querySelector<HTMLElement>('#visibility-counter',);
-  if (counter !== null) {
-    counter.textContent =
-      `${session.visibleIndices
-        .size
-        .toString()} of ${probes.length
-          .toString()} visible`;
-  }
-}
-
-/**
- * Pushes the freshly-built layer list into the live `Deck` via
- * `setProps`.
- *
- * @param session - Mutable session.
- *
- * @param probes - Source probes.
- *
- * @mutates session through session.deck.setProps renderer capability
- */
-function rerenderLayers(
-  {
-    session,
-    probes,
-  }: {
-    session: Session;
-    probes: readonly PackageProbe[];
-  },
-): void {
-  /**
-   * Layer list rebuilt from current session inputs; pushed to `Deck` via `setProps`.
-   */
-  const layers = buildLayers({
-    probes,
-    state: session.state,
-    visibleIndices: session.visibleIndices,
-    bounds: session.bounds,
-    chrome: session.chrome,
-  },);
-  session.deck
-    .setProps({
-    layers: [...layers,],
-  },);
-}
 
 /**
  * Serialises the current state into the URL hash via
