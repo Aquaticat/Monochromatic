@@ -185,12 +185,12 @@ await describe({
       },
     },),
     it({
-      name: 'records DataView integer observations',
+      name: 'records DataView integer reads and writes',
       fn: async () => {
         [
           'getUint16',
           'getUint32',
-        ].forEach(function dataViewEffect(member,) {
+        ].forEach(function dataViewRead(member,) {
           const effect = intrinsicEffect({
             provenance: { kind: 'ecmascript', },
             ownerType: 'DataView',
@@ -200,6 +200,20 @@ await describe({
           if (effect === NO_INTRINSIC_EFFECT)
             throw new Error(`Expected DataView.${member} effect.`,);
           expect(effect.targets,).toEqual([],);
+        },);
+        [
+          'setUint16',
+          'setUint32',
+        ].forEach(function dataViewWrite(member,) {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'ecmascript', },
+            ownerType: 'DataView',
+            member,
+          },);
+          expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
+          if (effect === NO_INTRINSIC_EFFECT)
+            throw new Error(`Expected DataView.${member} effect.`,);
+          expect(effect.targets,).toEqual([{ kind: 'receiver', },],);
         },);
       },
     },),
@@ -254,6 +268,28 @@ await describe({
           throw new Error('Expected Node Buffer observation effects.',);
         expect(concat.targets,).toEqual([],);
         expect(isUtf8.targets,).toEqual([],);
+        expect([
+          'readInt32LE',
+          'readUInt16LE',
+          'toString',
+        ].every(function bufferObservation(member,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'node', declarationMajor: 26, },
+            ownerType: 'Buffer',
+            member,
+          },);
+          return (effect !== NO_INTRINSIC_EFFECT)
+            && (effect.targets.length === 0);
+        },),).toBe(true,);
+        const copy = intrinsicEffect({
+          provenance: { kind: 'node', declarationMajor: 26, },
+          ownerType: 'Buffer',
+          member: 'copy',
+        },);
+        expect(copy,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (copy === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Buffer.copy intrinsic effect.',);
+        expect(copy.targets,).toEqual([{ kind: 'argument', index: 0, },],);
         const isDirectory = intrinsicEffect({
           provenance: { kind: 'node', declarationMajor: 26, },
           ownerType: 'StatsBase',
@@ -346,6 +382,13 @@ await describe({
           { ownerType: 'OffscreenCanvas', member: 'getContext', },
           { ownerType: 'CanvasRect', member: 'clearRect', },
           { ownerType: 'CanvasDrawImage', member: 'drawImage', },
+          { ownerType: 'CanvasRect', member: 'fillRect', },
+          { ownerType: 'CanvasText', member: 'fillText', },
+          { ownerType: 'CanvasText', member: 'strokeText', },
+          { ownerType: 'CanvasState', member: 'save', },
+          { ownerType: 'CanvasState', member: 'restore', },
+          { ownerType: 'CanvasTransform', member: 'rotate', },
+          { ownerType: 'CanvasTransform', member: 'translate', },
           { ownerType: 'CanvasDrawPath', member: 'beginPath', },
           { ownerType: 'CanvasDrawPath', member: 'stroke', },
           { ownerType: 'CanvasPath', member: 'lineTo', },
@@ -549,7 +592,7 @@ await describe({
           },
           {
             provenance: { kind: 'dom', } as const,
-            ownerType: 'CanvasRenderingContext2D',
+            ownerType: 'CanvasText',
             member: 'measureText',
           },
         ].every(function domObservation(query,): boolean {

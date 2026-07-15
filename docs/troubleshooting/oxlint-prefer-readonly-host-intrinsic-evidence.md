@@ -72,7 +72,13 @@ The canvas audit uses HTML's source algorithms and TypeScript's declaration mixi
   context;
 - `CanvasRect.clearRect` erases receiver bitmap pixels;
 - `CanvasDrawPath.beginPath` and `CanvasPath.moveTo` or `lineTo` change the receiver's current path;
-- `CanvasDrawPath.stroke` and `CanvasDrawImage.drawImage` paint the receiver canvas bitmap.
+- `CanvasDrawPath.stroke` and `CanvasDrawImage.drawImage` paint the receiver canvas bitmap;
+- `CanvasRect.fillRect`,
+  `CanvasText.fillText`,
+  and `CanvasText.strokeText` paint the receiver bitmap;
+- `CanvasState.save` and `restore` change the receiver drawing-state stack;
+- `CanvasTransform.rotate` and `translate` change the receiver transformation matrix;
+- `CanvasText.measureText` observes receiver text state through its TypeScript declaration mixin owner.
 
 Every operation is a receiver effect.
 `drawImage` observes its source image argument but does not claim to mutate or retain it.
@@ -118,6 +124,12 @@ The rule uses that private path only as fail-closed evidence:
 - `node:buffer.isUtf8` and `Buffer.concat` are accepted only for the exact embedded `buffer` implementation,
   whose digest is `1b15446290915577350455b136d69041b6b9900f72946ec3ef8340240c9e706b`;
   `Buffer.concat` validates each `Uint8Array` and copies bytes into a newly allocated buffer;
+- `Buffer.copy` observes receiver bytes and writes argument 0;
+  `Buffer.toString`,
+  `readInt32LE`,
+  and `readUInt16LE` observe receiver bytes;
+  the internal buffer source digest is
+  `ce1f2b80ecaf7f4d8ef3ff5d40e77e48c4413760e1a743c8c1b24cabfc1c25d8`;
 - `fs.StatsBase` file-type predicates are accepted only through their exact `internal/fs/utils` definitions and
   public `fs.Stats` binding chain;
 - missing binding,

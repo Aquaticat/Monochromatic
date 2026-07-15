@@ -24,6 +24,10 @@ const RECEIVER: IntrinsicEffectTarget = { kind: 'receiver', };
 const CANVAS_ALGORITHM_ANCHORS = {
   beginPath: 'sha256:3a89df2abbfa728f8b3b73fc85440817b4e46d50eae8f6959e46f7ee0f74519d',
   clearRect: 'sha256:d88d05ce8037b68a44b7122fe34ba024454dcb077b050463ccfbd1e79204dede',
+  fillRect: 'sha256:a424a68b34e76aa862cc8981d32bd329245d53fe95dbe541c6ea253cdcb9e261',
+  textDrawing: 'sha256:e92976a23b5bca20dbeee7708168fd67b88864615906f0fec99daef645644a9e',
+  stateStack: 'sha256:1a569219c07ef4ffbf49790eb19904ff42b4082f65a38838e522998ce86868c8',
+  transformations: 'sha256:638d382ab6690af8f082c44017007df2004a6f5b658737fa26e914655e3870e6',
   drawImage: 'sha256:8f514e766f4f3f04c78e4ff6d6347f595e1914c26afa08afd4bb55c8758c1d3c',
   getContext: 'sha256:26faf4ce5f2be1e534f79d0a101f44736b95ca09eca5951b5d5c3d41ee6a495b',
   lineTo: 'sha256:ca46c6c397391ecef054be5c34f5e3f54ba2e245c4bb6153c503c1a248049b77',
@@ -69,6 +73,72 @@ export const BROWSER_HOST_CANVAS_EFFECTS: readonly IntrinsicEffectEntry[] = [
       algorithm: CANVAS_ALGORITHM_ANCHORS.clearRect,
     },),
   },
+  ...[
+    {
+      ownerType: 'CanvasRect',
+      member: 'fillRect',
+      algorithm: CANVAS_ALGORITHM_ANCHORS.fillRect,
+      evidence: 'fills receiver canvas bitmap',
+    },
+    {
+      ownerType: 'CanvasText',
+      member: 'fillText',
+      algorithm: CANVAS_ALGORITHM_ANCHORS.textDrawing,
+      evidence: 'fills text glyphs into receiver canvas bitmap',
+    },
+    {
+      ownerType: 'CanvasText',
+      member: 'strokeText',
+      algorithm: CANVAS_ALGORITHM_ANCHORS.textDrawing,
+      evidence: 'strokes text glyphs into receiver canvas bitmap',
+    },
+    {
+      ownerType: 'CanvasState',
+      member: 'save',
+      algorithm: CANVAS_ALGORITHM_ANCHORS.stateStack,
+      evidence: 'pushes receiver drawing state',
+    },
+    {
+      ownerType: 'CanvasState',
+      member: 'restore',
+      algorithm: CANVAS_ALGORITHM_ANCHORS.stateStack,
+      evidence: 'pops and restores receiver drawing state',
+    },
+    {
+      ownerType: 'CanvasTransform',
+      member: 'rotate',
+      algorithm: CANVAS_ALGORITHM_ANCHORS.transformations,
+      evidence: 'changes receiver current transformation matrix',
+    },
+    {
+      ownerType: 'CanvasTransform',
+      member: 'translate',
+      algorithm: CANVAS_ALGORITHM_ANCHORS.transformations,
+      evidence: 'changes receiver current transformation matrix',
+    },
+  ].map(function canvasReceiverMutation({
+    ownerType,
+    member,
+    algorithm,
+    evidence,
+  }: Readonly<{
+    ownerType: string;
+    member: string;
+    algorithm: string;
+    evidence: string;
+  }>,): IntrinsicEffectEntry {
+    return {
+      provenance: { kind: 'dom', },
+      ownerType,
+      member,
+      targets: [RECEIVER,],
+      evidence: `HTML commit 255188e5 ${evidence}`,
+      authority: webAuthority({
+        source: WEB_SOURCES.html,
+        algorithm,
+      },),
+    };
+  },),
   {
     provenance: { kind: 'dom', },
     ownerType: 'CanvasDrawImage',

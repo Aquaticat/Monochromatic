@@ -23,6 +23,7 @@ The audited outcomes are:
   TypedArray callback methods propagate receiver-reachable values,
   and `subarray` preserves receiver provenance through its shared view;
 - `DataView.prototype.getUint16` and `getUint32` read viewed bytes without changing them;
+  `setUint16` and `setUint32` write viewed bytes and therefore mutate the receiver view;
 - `Array.prototype.with` allocates a copy and is observational;
 - `Array.prototype.reduce` exposes accumulator,
   element,
@@ -79,7 +80,10 @@ A zero-target callback operation is not complete until call analysis propagates 
 
 `DataView.prototype.getUint16` and `getUint32` delegate to `GetViewValue`,
 which validates the receiver and reads bytes from its viewed buffer.
-Neither operation writes receiver or buffer state.
+Neither read operation writes receiver or buffer state.
+`DataView.prototype.setUint16` and `setUint32` instead delegate to `SetViewValue`,
+which writes numeric bytes into the viewed buffer.
+Their catalogue entries therefore target the receiver.
 
 The same distinction applies to `%TypedArray%` algorithms.
 The pinned clauses for `at`,

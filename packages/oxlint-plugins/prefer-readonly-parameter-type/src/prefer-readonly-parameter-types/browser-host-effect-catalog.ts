@@ -115,7 +115,7 @@ export const BROWSER_HOST_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },
   {
     provenance: { kind: 'dom', },
-    ownerType: 'CanvasRenderingContext2D',
+    ownerType: 'CanvasText',
     member: 'measureText',
     targets: [],
     evidence: 'HTML commit 255188e5 Canvas measureText algorithm',
