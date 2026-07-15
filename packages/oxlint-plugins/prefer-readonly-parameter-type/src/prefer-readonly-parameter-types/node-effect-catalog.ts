@@ -4,117 +4,14 @@
  * @module
  */
 
-import type {
-  NodeSourceEffectAuthority,
-  NodeSourceEvidence,
-} from './host-effect-authority.ts';
-import type {
-  IntrinsicEffectEntry,
-  IntrinsicProvenance,
-} from './intrinsic-effect-catalog.ts';
-
-/**
- * Exact Node 26.5.0 embedded JavaScript source identities.
- */
-const NODE_SOURCES = {
-  buffer: {
-    nodeVersion: '26.5.0',
-    module: 'buffer',
-    sourceDigest: '1b15446290915577350455b136d69041b6b9900f72946ec3ef8340240c9e706b',
-  },
-  childProcess: {
-    nodeVersion: '26.5.0',
-    module: 'child_process',
-    sourceDigest: 'fc85eea664a8db6e5492850961f9b2b84d553dde0217978ec60f304a0cd23585',
-  },
-  internalBuffer: {
-    nodeVersion: '26.5.0',
-    module: 'internal/buffer',
-    sourceDigest: 'ce1f2b80ecaf7f4d8ef3ff5d40e77e48c4413760e1a743c8c1b24cabfc1c25d8',
-  },
-  fileSystem: {
-    nodeVersion: '26.5.0',
-    module: 'fs',
-    sourceDigest: '54c166b19956a792f167722bd8b7a7dcec3c9b91accc9479f8b009e11ff5d202',
-  },
-  fileSystemUtilities: {
-    nodeVersion: '26.5.0',
-    module: 'internal/fs/utils',
-    sourceDigest: '36f07c79a6c2708bf4fe7b7f6cc8c7acbff3f19e80ac93cc75016fbdbda63141',
-  },
-  path: {
-    nodeVersion: '26.5.0',
-    module: 'path',
-    sourceDigest: 'dd326ecdc2d6ad2025c4991f4b480d76a9f1d52b7f6d0988a5dc0a1d02de5209',
-  },
-  publicUrl: {
-    nodeVersion: '26.5.0',
-    module: 'url',
-    sourceDigest: '9037c1cae0efe6af02ea18da109ff0c406496cccaf9df4c3308ef057d009150f',
-  },
-  url: {
-    nodeVersion: '26.5.0',
-    module: 'internal/url',
-    sourceDigest: '5a78dbb1282692302e7eeaf75ddd48472c2b1141117cefdc169b07d5b28c5552',
-  },
-} as const;
-
-/**
- * Exact installed Node declaration major audited with runtime sources.
- */
-const NODE_PROVENANCE: IntrinsicProvenance = {
-  kind: 'node',
-  declarationMajor: 26,
-};
-
-/**
- * Creates exact Node source authority for one callable definition marker.
- *
- * @param source - Exact embedded module source identity.
- *
- * @param definitionMarker - Exact callable definition marker.
- *
- * @param occurrenceCount - Audited definition count in module source.
- *
- * @param bindingMarkers - Exact internal export or owner binding markers.
- *
- * @param relatedSources - Exact public-module import and export chain.
- *
- * @returns source and definition identity accepted by host gate.
- */
-function nodeSourceAuthority({
-  source,
-  definitionMarker,
-  occurrenceCount,
-  bindingMarkers,
-  relatedSources,
-}: {
-  readonly source: {
-    readonly nodeVersion: string;
-    readonly module: string;
-    readonly sourceDigest: string;
-  };
-  readonly definitionMarker: string;
-  readonly occurrenceCount: number;
-  readonly bindingMarkers: readonly {
-    readonly text: string;
-    readonly occurrenceCount: number;
-  }[];
-  readonly relatedSources: readonly NodeSourceEvidence[];
-}): NodeSourceEffectAuthority {
-  return {
-    kind: 'node-builtin-source',
-    ...source,
-    relatedSources,
-    definitionMarkers: [
-      {
-        text: definitionMarker,
-        occurrenceCount,
-      },
-      ...bindingMarkers,
-    ],
-  };
-}
+import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
+import { NODE_BUFFER_EFFECTS, } from './node-buffer-effect-catalog.ts';
+import { NODE_CHILD_PROCESS_EFFECTS, } from './node-child-process-effect-catalog.ts';
+import {
+  NODE_PROVENANCE,
+  NODE_SOURCES,
+  nodeSourceAuthority,
+} from './node-effect-authority.ts';
 
 /**
  * Node effects accepted only for exact declaration,
@@ -122,212 +19,8 @@ function nodeSourceAuthority({
  * and callable-definition identities.
  */
 export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
-  {
-    provenance: NODE_PROVENANCE,
-    ownerType: 'node:child_process',
-    member: 'spawn',
-    targets: [],
-    opaqueTargets: [
-      {
-        kind: 'argument',
-        index: 1,
-        callArgumentCount: 2,
-        freshContainerShieldsContents: true,
-      },
-      {
-        kind: 'argument',
-        index: 1,
-        callArgumentCount: 2,
-        propertyNames: [
-          'cwd',
-          'env',
-          'signal',
-          'stdio',
-        ],
-      },
-      {
-        kind: 'argument',
-        index: 2,
-        callArgumentCount: 3,
-        freshContainerShieldsContents: true,
-      },
-      {
-        kind: 'argument',
-        index: 2,
-        callArgumentCount: 3,
-        propertyNames: [
-          'cwd',
-          'env',
-          'signal',
-          'stdio',
-        ],
-      },
-    ],
-    evidence: 'Node 26.5.0 child_process.spawn copies the command arguments while options can expose hooks, environment, signals, and stdio capabilities',
-    authority: nodeSourceAuthority({
-      source: NODE_SOURCES.childProcess,
-      definitionMarker: '\nfunction spawn(file, args, options) {',
-      occurrenceCount: 1,
-      bindingMarkers: [
-        {
-          text: '\nmodule.exports = {',
-          occurrenceCount: 1,
-        },
-        {
-          text: '\n  spawn,\n',
-          occurrenceCount: 1,
-        },
-      ],
-      relatedSources: [],
-    },),
-  },
-  {
-    provenance: NODE_PROVENANCE,
-    ownerType: 'BufferConstructor',
-    member: 'concat',
-    targets: [],
-    evidence: 'Node 26.5.0 embedded buffer JavaScript copies validated Uint8Array values into a new Buffer',
-    authority: nodeSourceAuthority({
-      source: NODE_SOURCES.buffer,
-      definitionMarker: '\nBuffer.concat = function concat(list, length) {',
-      occurrenceCount: 1,
-      bindingMarkers: [
-        {
-          text: '\n  Buffer,\n',
-          occurrenceCount: 1,
-        },
-        {
-          text: '\nmodule.exports = {',
-          occurrenceCount: 1,
-        },
-      ],
-      relatedSources: [],
-    },),
-  },
-  {
-    provenance: NODE_PROVENANCE,
-    ownerType: 'Buffer',
-    member: 'copy',
-    targets: [{ kind: 'argument', index: 0, },],
-    evidence: 'Node 26.5.0 Buffer.copy copies receiver bytes into target argument',
-    authority: nodeSourceAuthority({
-      source: NODE_SOURCES.buffer,
-      definitionMarker: '\nBuffer.prototype.copy =\n  function copy(target, targetStart, sourceStart, sourceEnd) {',
-      occurrenceCount: 1,
-      bindingMarkers: [
-        {
-          text: '\n  Buffer,\n',
-          occurrenceCount: 1,
-        },
-        {
-          text: '\nmodule.exports = {',
-          occurrenceCount: 1,
-        },
-      ],
-      relatedSources: [],
-    },),
-  },
-  {
-    provenance: NODE_PROVENANCE,
-    ownerType: 'Buffer',
-    member: 'toString',
-    targets: [],
-    evidence: 'Node 26.5.0 Buffer.toString observes receiver bytes',
-    authority: nodeSourceAuthority({
-      source: NODE_SOURCES.buffer,
-      definitionMarker: '\nBuffer.prototype.toString = function toString(encoding, start, end) {',
-      occurrenceCount: 1,
-      bindingMarkers: [
-        {
-          text: '\n  Buffer,\n',
-          occurrenceCount: 1,
-        },
-        {
-          text: '\nmodule.exports = {',
-          occurrenceCount: 1,
-        },
-      ],
-      relatedSources: [],
-    },),
-  },
-  ...[
-    {
-      member: 'readInt32LE',
-      definitionMarker: '\nfunction readInt32LE(buf, offset = 0) {',
-      bindingMarker: '  proto.readInt32LE = function(offset) { return readInt32LE(this, offset); };',
-    },
-    {
-      member: 'readUInt16LE',
-      definitionMarker: '\nfunction readUInt16LE(buf, offset = 0) {',
-      bindingMarker: '  proto.readUInt16LE = function(offset) { return readUInt16LE(this, offset); };',
-    },
-  ].map(function bufferIntegerRead({
-    member,
-    definitionMarker,
-    bindingMarker,
-  }: Readonly<{
-    member: string;
-    definitionMarker: string;
-    bindingMarker: string;
-  }>,): IntrinsicEffectEntry {
-    return {
-      provenance: NODE_PROVENANCE,
-      ownerType: 'Buffer',
-      member,
-      targets: [],
-      evidence: `Node 26.5.0 ${member} observes receiver bytes`,
-      authority: nodeSourceAuthority({
-        source: NODE_SOURCES.internalBuffer,
-        definitionMarker,
-        occurrenceCount: 1,
-        bindingMarkers: [{
-          text: bindingMarker,
-          occurrenceCount: 1,
-        },],
-        relatedSources: [{
-          module: NODE_SOURCES.buffer.module,
-          sourceDigest: NODE_SOURCES.buffer.sourceDigest,
-          definitionMarkers: [
-            {
-              text: "} = require('internal/buffer');",
-              occurrenceCount: 1,
-            },
-            {
-              text: '\naddBufferPrototypeMethods(Buffer.prototype);',
-              occurrenceCount: 1,
-            },
-            {
-              text: '\n  Buffer,\n',
-              occurrenceCount: 1,
-            },
-          ],
-        },],
-      },),
-    };
-  },),
-  {
-    provenance: NODE_PROVENANCE,
-    ownerType: 'node:buffer',
-    member: 'isUtf8',
-    targets: [],
-    evidence: 'Node 26.5.0 embedded buffer JavaScript and native binding implementation',
-    authority: nodeSourceAuthority({
-      source: NODE_SOURCES.buffer,
-      definitionMarker: '\nfunction isUtf8(input) {',
-      occurrenceCount: 1,
-      bindingMarkers: [
-        {
-          text: '\n  isUtf8,\n',
-          occurrenceCount: 1,
-        },
-        {
-          text: '\nmodule.exports = {',
-          occurrenceCount: 1,
-        },
-      ],
-      relatedSources: [],
-    },),
-  },
+  ...NODE_BUFFER_EFFECTS,
+  ...NODE_CHILD_PROCESS_EFFECTS,
   ...[
     'basename',
     'dirname',
@@ -392,10 +85,8 @@ export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
           occurrenceCount: 1,
         },],
         relatedSources: [{
-          module: NODE_SOURCES.fileSystem
-            .module,
-          sourceDigest: NODE_SOURCES.fileSystem
-            .sourceDigest,
+          module: NODE_SOURCES.fileSystem.module,
+          sourceDigest: NODE_SOURCES.fileSystem.sourceDigest,
           definitionMarkers: [
             {
               text: "} = require('internal/fs/utils');",
@@ -438,10 +129,8 @@ export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
           occurrenceCount: 1,
         },],
         relatedSources: [{
-          module: NODE_SOURCES.fileSystem
-            .module,
-          sourceDigest: NODE_SOURCES.fileSystem
-            .sourceDigest,
+          module: NODE_SOURCES.fileSystem.module,
+          sourceDigest: NODE_SOURCES.fileSystem.sourceDigest,
           definitionMarkers: [
             {
               text: "} = require('internal/fs/utils');",
@@ -471,10 +160,8 @@ export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
         occurrenceCount: 1,
       },],
       relatedSources: [{
-        module: NODE_SOURCES.publicUrl
-          .module,
-        sourceDigest: NODE_SOURCES.publicUrl
-          .sourceDigest,
+        module: NODE_SOURCES.publicUrl.module,
+        sourceDigest: NODE_SOURCES.publicUrl.sourceDigest,
         definitionMarkers: [
           {
             text: "} = require('internal/url');",
