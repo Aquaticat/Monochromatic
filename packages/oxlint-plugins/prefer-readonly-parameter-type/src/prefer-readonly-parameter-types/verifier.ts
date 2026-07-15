@@ -289,17 +289,10 @@ export function verifyReadonlyCallable({
       },),);
       return;
     }
-    if (documentedUncertain && (parameterBlocks.length === 0)) {
-      context.report({
-        loc,
-        messageId: 'missingUncertaintyContract',
-        data: {
-          parameterName,
-          boundaries: uncertainty.names,
-          parsedContracts,
-        },
-      },);
-    }
+    /* Inherited documented uncertainty needs no re-documentation: the
+     * boundary function's complete @mutates contract is the audit, exactly
+     * as deleted catalog entries were. Readonly-typed callers still get
+     * uncertainReadonly naming the located boundary. */
     if (mutated
       && (!foreignBorrowed)
       && ((classification.kind === 'honest-readonly')

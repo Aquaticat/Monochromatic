@@ -191,20 +191,18 @@ children: [
     name: 'reports readonly preference, stale contracts, dishonest types, and undocumented uncertainty',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-invalid.ts',);
-      expect(diagnostics.length,).toBe(11,);
+      expect(diagnostics.length,).toBe(10,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
       expect(messages.some(function shouldReadonly(message,): boolean {
         return message.includes('should be readonly',);
       },),).toBe(true,);
-      expect(messages.some(function missingUncertaintyContract(message,): boolean {
-        return message.startsWith(
-          'Parameter "state" has documented uncertainty propagated from JSON.stringify [',
-        )
-          && message.includes('but lacks its own @mutates contract.',)
-          && message.includes('Parsed @mutates contracts on this function:',);
-      },),).toBe(true,);
+      /* Inherited documented uncertainty no longer demands per-level
+       * contracts; the boundary contract is the audit. */
+      expect(messages.some(function inheritedUncertainty(message,): boolean {
+        return message.includes('but lacks its own @mutates contract',);
+      },),).toBe(false,);
       expect(messages.some(function staleContract(message,): boolean {
         return message.includes('stale @mutates contract',);
       },),).toBe(true,);

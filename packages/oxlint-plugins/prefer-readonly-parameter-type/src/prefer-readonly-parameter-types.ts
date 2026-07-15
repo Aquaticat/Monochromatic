@@ -125,7 +125,6 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
     },
     messages: {
       shouldBeReadonly: 'Parameter "{{parameterName}}" should be readonly: {{reason}}.',
-      missingUncertaintyContract: 'Parameter "{{parameterName}}" has documented uncertainty propagated from {{boundaries}} but lacks its own @mutates contract. Parsed @mutates contracts on this function: {{parsedContracts}}.',
       staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
       redundantForeignBorrowed:
         'Parameter "{{parameterName}}" carries a ForeignBorrowed marker that no longer affects any classification: the underlying type is already deeply readonly and no effect reaches this parameter. Remove the marker, or mark the genuinely mutable foreign type instead.',
