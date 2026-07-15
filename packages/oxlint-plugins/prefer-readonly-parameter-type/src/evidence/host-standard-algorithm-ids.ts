@@ -4,6 +4,8 @@
  * @module
  */
 
+import { HOST_STANDARD_TYPED_ARRAY_ALGORITHM_IDS, } from './host-standard-typed-array-algorithm-ids.ts';
+
 /**
  * Exact standard source and algorithm identity keys.
  */
@@ -96,12 +98,7 @@ export const HOST_STANDARD_ALGORITHM_IDS: ReadonlySet<string> = new Set([
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-array.prototype.unshift",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-array.prototype.values",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-array.prototype.with",
-  "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-%typedarray%.prototype.at",
-  "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-%typedarray%.prototype.every",
-  "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-%typedarray%.prototype.findlastindex",
-  "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-%typedarray%.prototype.includes",
-  "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-%typedarray%.prototype.indexof",
-  "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-%typedarray%.prototype.subarray",
+  ...HOST_STANDARD_TYPED_ARRAY_ALGORITHM_IDS,
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-date.now",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-date.parse",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-date.prototype",

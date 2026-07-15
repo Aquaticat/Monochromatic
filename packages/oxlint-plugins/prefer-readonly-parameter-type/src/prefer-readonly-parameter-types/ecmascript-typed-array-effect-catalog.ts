@@ -70,9 +70,16 @@ export const ECMASCRIPT_TYPED_ARRAY_EFFECTS: readonly IntrinsicEffectEntry[] = [
           ownerType,
           member,
           targets: [],
+          opaqueTargets: [{
+            kind: 'argument',
+            index: 1,
+          },],
           callbacks: [{
             argumentIndex: 0,
-            receiverParameterIndexes: [0, 2,],
+            receiverParameterIndexes: [
+              0,
+              2,
+            ],
           },],
           evidence: `ECMA-262 %TypedArray%.prototype.${member}`,
           authority: ecma262Authority({

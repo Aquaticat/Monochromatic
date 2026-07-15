@@ -81,6 +81,7 @@ and `indexOf` inspect integer-indexed elements without changing them.
 `every` and `findLastIndex` call user code with element,
 index,
 and receiver values.
+An optional `thisArg` remains opaque because the callback receives it as its `this` value.
 `subarray` creates a new view over the same buffer,
 so it is nonmutating but its result retains receiver provenance.
 The source clause IDs are

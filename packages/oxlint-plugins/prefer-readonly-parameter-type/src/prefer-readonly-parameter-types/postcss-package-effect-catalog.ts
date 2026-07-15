@@ -33,14 +33,12 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     provenance: POSTCSS_PROVENANCE,
     ownerType: 'Container_',
     member: 'walkAtRules',
-    targets: [
-      { kind: 'receiver', },
-      {
-        kind: 'argument',
-        index: 0,
-        callArgumentCount: 2,
-      },
-    ],
+    targets: [{ kind: 'receiver', },],
+    opaqueTargets: [{
+      kind: 'argument',
+      index: 0,
+      callArgumentCount: 2,
+    },],
     callbacks: [
       {
         argumentIndex: 0,
@@ -63,7 +61,7 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
         callArgumentCount: 2,
       },
     ],
-    evidence: `${CONTAINER_EVIDENCE}; walkAtRules delegates to walk and each, updates iterator state, and invokes selected callback with receiver children`,
+    evidence: `${CONTAINER_EVIDENCE}; walkAtRules delegates to walk and each, updates receiver iterator state, can change a RegExp selector lastIndex, and invokes selected callback with receiver children`,
   },
   {
     provenance: POSTCSS_PROVENANCE,
@@ -72,7 +70,10 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     targets: [],
     opaqueTargets: [
       { kind: 'receiver', },
-      { kind: 'argument', index: 0, },
+      {
+        kind: 'argument',
+        index: 0,
+      },
     ],
     receiverValuesReachResult: true,
     evidence: `${NODE_EVIDENCE}; cloneNode observes enumerable receiver and override state through constructors, accessors, or proxy traps and retains source identity without mutating the receiver`,
@@ -84,7 +85,10 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     targets: [],
     opaqueTargets: [
       { kind: 'receiver', },
-      { kind: 'argument', index: 1, },
+      {
+        kind: 'argument',
+        index: 1,
+      },
     ],
     evidence: `${NODE_EVIDENCE}; error observes receiver-reachable source and input state and option properties while constructing a CssSyntaxError`,
   },

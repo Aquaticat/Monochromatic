@@ -46,8 +46,14 @@ export const OPTIQUE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     member: 'parseSync',
     targets: [],
     opaqueTargets: [
-      { kind: 'argument', index: 0, },
-      { kind: 'argument', index: 2, },
+      {
+        kind: 'argument',
+        index: 0,
+      },
+      {
+        kind: 'argument',
+        index: 2,
+      },
     ],
     invokedArgumentProperties: PARSER_METHOD_INVOCATION,
     evidence: `${PARSER_EVIDENCE}; parser methods receive a readonly argument buffer, while parser and options capabilities remain opaque`,
@@ -58,8 +64,14 @@ export const OPTIQUE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     member: 'runParserSync',
     targets: [],
     opaqueTargets: [
-      { kind: 'argument', index: 0, },
-      { kind: 'argument', index: 3, },
+      {
+        kind: 'argument',
+        index: 0,
+      },
+      {
+        kind: 'argument',
+        index: 3,
+      },
     ],
     invokedArgumentProperties: [
       ...PARSER_METHOD_INVOCATION,

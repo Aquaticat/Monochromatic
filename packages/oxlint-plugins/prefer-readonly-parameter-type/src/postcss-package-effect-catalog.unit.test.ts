@@ -105,14 +105,12 @@ await describe({
         expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
         if (effect === NO_INTRINSIC_EFFECT)
           throw new Error('Expected PostCSS traversal effect.',);
-        expect(effect.targets,).toEqual([
-          { kind: 'receiver', },
-          {
-            kind: 'argument',
-            index: 0,
-            callArgumentCount: 2,
-          },
-        ],);
+        expect(effect.targets,).toEqual([{ kind: 'receiver', },],);
+        expect(effect.opaqueTargets,).toEqual([{
+          kind: 'argument',
+          index: 0,
+          callArgumentCount: 2,
+        },],);
         expect(effect.invokedArguments,).toEqual([
           { argumentIndex: 0, callArgumentCount: 1, },
           { argumentIndex: 1, callArgumentCount: 2, },

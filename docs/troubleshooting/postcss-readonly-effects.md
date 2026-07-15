@@ -32,6 +32,9 @@ Audited files:
 updates it while invoking the selected callback with receiver children,
 and deletes the active index afterward.
 The `lastEach` counter remains changed.
+A two-argument selector can be a `RegExp`;
+its `test` call can change `lastIndex`,
+so that selector position remains opaque rather than being classified as proven mutation for every selector type.
 
 `Node.remove` changes its parent container and receiver parent link.
 `Node.replaceWith` also adopts supplied nodes through parent insertion methods.
@@ -47,8 +50,10 @@ and preserves the original `source` reference in the result.
 It does not directly change the receiver.
 Constructor calls,
 accessors,
-and proxy traps remain caller-observable uncertainty,
-and the clone result retains receiver-derived provenance.
+and proxy traps remain caller-observable uncertainty.
+The implementation intentionally preserves only `source` identity,
+but current result-origin modeling is not property-sensitive,
+so the clone result conservatively retains receiver-derived provenance.
 
 ## Implementation
 

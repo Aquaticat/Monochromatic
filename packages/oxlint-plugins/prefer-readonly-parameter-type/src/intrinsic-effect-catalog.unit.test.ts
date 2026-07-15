@@ -172,6 +172,10 @@ await describe({
         if (every === NO_INTRINSIC_EFFECT)
           throw new Error('Expected Uint8Array.every intrinsic effect.',);
         expect(every.targets,).toEqual([],);
+        expect(every.opaqueTargets,).toEqual([{
+          kind: 'argument',
+          index: 1,
+        },],);
         expect(every.callbacks,).toEqual([{
           argumentIndex: 0,
           receiverParameterIndexes: [0, 2,],
