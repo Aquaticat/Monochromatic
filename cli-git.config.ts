@@ -27,7 +27,7 @@ const config: CliGitConfig = defineConfig({
     'security/forbidden-strings': [
       'error',
       {
-        executable: './packages/cli/forbidden-strings/target/release/forbidden-strings',
+        executable: './package/cli/forbidden-strings/target/release/forbidden-strings',
         // The betterleaks baseline ships inside the scanner binary and the
         // policy passes --builtin-rules; the FORBIDDEN_STRINGS_RULES scratch
         // file carries only the repo appendixes
