@@ -135,12 +135,21 @@ async function resolveRemoteOids({
   /**
    * Updates grouped by exact destination location.
    */
-  const byLocation = Map.groupBy(
-    updates,
-    function remoteLocation(update,) {
-    return update.remoteLocation;
-  },
-  );
+  const byLocation = new Map<string, ProbedPushUpdate[]>();
+  for (const update of updates) {
+    /**
+     * Existing updates for current exact destination.
+     */
+    const locationUpdates = byLocation.get(update.remoteLocation,);
+    if (locationUpdates === undefined) {
+      byLocation.set(
+        update.remoteLocation,
+        [update,],
+      );
+      continue;
+    }
+    locationUpdates.push(update,);
+  }
   /**
    * Concurrent authority queries, one per destination.
    */
