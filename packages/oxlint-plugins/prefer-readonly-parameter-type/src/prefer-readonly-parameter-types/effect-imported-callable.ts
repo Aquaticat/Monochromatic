@@ -150,6 +150,9 @@ export function applyAuditedCallableEffect({
      */
     const argumentIndexes = callableEffect.invokedArguments
       .filter(function matchingInvocationArity(invocation,): boolean {
+        /**
+         * Optional exact arity selecting this invocation position.
+         */
         const { callArgumentCount, } = invocation;
         return (callArgumentCount === undefined)
           || (callArgumentCount === actualArgumentCount);

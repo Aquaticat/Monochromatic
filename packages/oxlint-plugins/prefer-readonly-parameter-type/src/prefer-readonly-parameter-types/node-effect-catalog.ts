@@ -85,8 +85,10 @@ export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
           occurrenceCount: 1,
         },],
         relatedSources: [{
-          module: NODE_SOURCES.fileSystem.module,
-          sourceDigest: NODE_SOURCES.fileSystem.sourceDigest,
+          module: NODE_SOURCES.fileSystem
+            .module,
+          sourceDigest: NODE_SOURCES.fileSystem
+            .sourceDigest,
           definitionMarkers: [
             {
               text: "} = require('internal/fs/utils');",
@@ -129,8 +131,10 @@ export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
           occurrenceCount: 1,
         },],
         relatedSources: [{
-          module: NODE_SOURCES.fileSystem.module,
-          sourceDigest: NODE_SOURCES.fileSystem.sourceDigest,
+          module: NODE_SOURCES.fileSystem
+            .module,
+          sourceDigest: NODE_SOURCES.fileSystem
+            .sourceDigest,
           definitionMarkers: [
             {
               text: "} = require('internal/fs/utils');",
@@ -160,8 +164,10 @@ export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
         occurrenceCount: 1,
       },],
       relatedSources: [{
-        module: NODE_SOURCES.publicUrl.module,
-        sourceDigest: NODE_SOURCES.publicUrl.sourceDigest,
+        module: NODE_SOURCES.publicUrl
+          .module,
+        sourceDigest: NODE_SOURCES.publicUrl
+          .sourceDigest,
         definitionMarkers: [
           {
             text: "} = require('internal/url');",

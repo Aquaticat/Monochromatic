@@ -42,7 +42,10 @@ export const NODE_BUFFER_EFFECTS: readonly IntrinsicEffectEntry[] = [
     provenance: NODE_PROVENANCE,
     ownerType: 'Buffer',
     member: 'copy',
-    targets: [{ kind: 'argument', index: 0, },],
+    targets: [{
+      kind: 'argument',
+      index: 0,
+    },],
     evidence: 'Node 26.5.0 Buffer.copy copies receiver bytes into target argument',
     authority: nodeSourceAuthority({
       source: NODE_SOURCES.buffer,
@@ -119,8 +122,10 @@ export const NODE_BUFFER_EFFECTS: readonly IntrinsicEffectEntry[] = [
           occurrenceCount: 1,
         },],
         relatedSources: [{
-          module: NODE_SOURCES.buffer.module,
-          sourceDigest: NODE_SOURCES.buffer.sourceDigest,
+          module: NODE_SOURCES.buffer
+            .module,
+          sourceDigest: NODE_SOURCES.buffer
+            .sourceDigest,
           definitionMarkers: [
             {
               text: "} = require('internal/buffer');",

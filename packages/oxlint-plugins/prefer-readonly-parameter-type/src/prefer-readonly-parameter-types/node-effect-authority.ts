@@ -78,6 +78,11 @@ export const NODE_PROVENANCE: IntrinsicProvenance = {
  * @param relatedSources - Exact public-module import and export chain.
  *
  * @returns source and definition identity accepted by host gate.
+ *
+ * @example
+ * ```ts
+ * nodeSourceAuthority({ source, definitionMarker, occurrenceCount: 1, bindingMarkers: [], relatedSources: [] });
+ * ```
  */
 export function nodeSourceAuthority({
   source,
