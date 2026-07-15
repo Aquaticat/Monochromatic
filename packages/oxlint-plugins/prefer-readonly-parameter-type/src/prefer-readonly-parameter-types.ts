@@ -81,7 +81,8 @@ const UNKNOWN_CALL_REMEDIATION = '\n\nChoose the remediation that matches the ca
   + '\n3. If the exact external function or method has been audited, add an entry with evidence and tests to the rule\'s audited-call catalogue. Package calls belong in package-effect-catalog.ts; JavaScript, DOM, and Node calls belong in their matching platform catalogue. The entry must record every input or object the call can change; an empty list is allowed only when the audit proves it changes no state that code outside this function can observe.'
   + '\n4. Otherwise, document the possible change here or in a dedicated function that contains the calls. For each input that might be changed, add its own line to the function\'s /** ... */ comment:'
   + '\n@mutates inputName - explain what may change and name every listed call responsible'
-  + '\nReplace inputName with that function\'s actual input name.';
+  + '\nReplace inputName with that function\'s actual input name.'
+  + '\n\nParsed @mutates contracts on this function: {{parsedContracts}}.';
 
 /**
  * Remediation for readonly types contradicted by documented uncertainty.
@@ -102,7 +103,8 @@ const STRING_OBJECT_COERCION_REMEDIATION =  '\n\nChoose the remediation that pre
   + '\n4. Remove the conversion when its text is not required.'
   + '\n5. If invoking object coercion hooks is intentional, document every affected input with its own line in the function\'s /** ... */ comment. An object type alone cannot prove that runtime hooks are absent:'
   + '\n@mutates inputName - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input'
-  + '\nReplace inputName with that function\'s actual input name.';
+  + '\nReplace inputName with that function\'s actual input name.'
+  + '\n\nParsed @mutates contracts on this function: {{parsedContracts}}.';
 
 /**
  * Prefers readonly parameters and requires documentation for unresolved effects.
@@ -123,7 +125,7 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
     },
     messages: {
       shouldBeReadonly: 'Parameter "{{parameterName}}" should be readonly: {{reason}}.',
-      missingUncertaintyContract: 'Parameter "{{parameterName}}" has documented uncertainty propagated from {{boundaries}} but lacks its own @mutates contract.',
+      missingUncertaintyContract: 'Parameter "{{parameterName}}" has documented uncertainty propagated from {{boundaries}} but lacks its own @mutates contract. Parsed @mutates contracts on this function: {{parsedContracts}}.',
       staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
       redundantForeignBorrowed:
         'Parameter "{{parameterName}}" carries a ForeignBorrowed marker that no longer affects any classification: the underlying type is already deeply readonly and no effect reaches this parameter. Remove the marker, or mark the genuinely mutable foreign type instead.',

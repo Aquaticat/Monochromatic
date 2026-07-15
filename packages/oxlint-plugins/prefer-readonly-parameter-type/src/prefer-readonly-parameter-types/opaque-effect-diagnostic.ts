@@ -12,6 +12,7 @@ import {
   inputMethodUsageSubject,
 } from './input-diagnostic-description.ts';
 import { STRING_OBJECT_COERCION_PROVENANCE, } from './string-coercion-effect.ts';
+import { originBoundaryName, } from './effect-origin-location.ts';
 
 /**
  * Sorted uncertainty provenance and display text for one parameter.
@@ -92,6 +93,7 @@ export function opaqueEffectReport({
   targetIndexes,
   parameterIndex,
   uncertainty,
+  parsedContracts,
 }: {
   readonly loc: {
     readonly start: {
@@ -107,6 +109,7 @@ export function opaqueEffectReport({
   readonly targetIndexes: ReadonlyMap<string, number>;
   readonly parameterIndex: number;
   readonly uncertainty: UncertaintyBoundaries;
+  readonly parsedContracts: string;
 },): Parameters<Context['report']>[0] {
   /**
    * Number of unresolved provenance facts.
@@ -121,7 +124,7 @@ export function opaqueEffectReport({
    * Whether only exact global String object conversion remains unresolved.
    */
   const onlyStringObjectCoercion = (factCount === 1)
-    && (firstFact === STRING_OBJECT_COERCION_PROVENANCE);
+    && (originBoundaryName(firstFact ?? '',) === STRING_OBJECT_COERCION_PROVENANCE);
   /**
    * Whether every unknown call is a method on one current input binding.
    */
@@ -146,6 +149,7 @@ export function opaqueEffectReport({
         },)
         : inputSubject,
       boundaries: uncertainty.names,
+      parsedContracts,
     },
   };
 }

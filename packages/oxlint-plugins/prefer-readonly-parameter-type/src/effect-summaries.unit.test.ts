@@ -450,15 +450,28 @@ await describe({
             opaque: [0,],
           },
         ],);
-        expect(transitiveProvenance,).toEqual(['JSON.stringify',],);
-        expect(documentedEffects,).toEqual([
+        /* Provenance facts carry origin-call locations so surfaced
+         * diagnostics name where each remediation applies. */
+        expect(transitiveProvenance.length,).toBe(1,);
+        expect(transitiveProvenance[0]?.startsWith('JSON.stringify [',),).toBe(true,);
+        expect(documentedEffects.map(function withoutProvenance({
+          provenance,
+          ...rest
+        },) {
+          return {
+            ...rest,
+            provenanceShape: provenance.map(function factShape(fact,): boolean {
+              return fact.startsWith('JSON.stringify [',) && fact.endsWith(']',);
+            },),
+          };
+        },),).toEqual([
           {
             functionName: 'documentedUncertainSemanticEffect',
             affected: [0,],
             referentMutated: [],
             documentedUncertain: [0,],
             opaque: [],
-            provenance: ['JSON.stringify',],
+            provenanceShape: [true,],
           },
           {
             functionName: 'transitiveDocumentedUncertainSemanticEffect',
@@ -466,7 +479,7 @@ await describe({
             referentMutated: [],
             documentedUncertain: [0,],
             opaque: [],
-            provenance: ['JSON.stringify',],
+            provenanceShape: [true,],
           },
         ],);
       },

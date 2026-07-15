@@ -52,6 +52,7 @@ import {
   STRING_OBJECT_COERCION_PROVENANCE,
 } from './string-coercion-effect.ts';
 import { expressionIsPlainData, } from './plain-data-classifier.ts';
+import { effectOriginLocation, } from './effect-origin-location.ts';
 
 /**
  * Classifies one call as callback relation, intrinsic effect, owned edge, or opaque boundary.
@@ -292,6 +293,10 @@ export function inspectEffectCall({
   },)
     ? STRING_OBJECT_COERCION_PROVENANCE
     : effectCallName(call.expression,);
+  /**
+   * Origin call location naming where each remediation applies.
+   */
+  const originLocation = effectOriginLocation({ node: call, },);
   addOpaqueEffect({
     summary,
     affectedParameterIndex: isPropertyAccessExpression(call.expression,)
@@ -307,7 +312,7 @@ export function inspectEffectCall({
           .expression,
       },)
       : PARAMETER_INDEX_UNAVAILABLE,
-    provenance: opaqueProvenance,
+    provenance: `${opaqueProvenance} [${originLocation}]`,
   },);
   allArgumentIndexes.forEach(function opaqueArgument(
     indexes,
@@ -336,7 +341,7 @@ export function inspectEffectCall({
       addOpaqueEffect({
         summary,
         affectedParameterIndex: index,
-        provenance: opaqueProvenance,
+        provenance: `${opaqueProvenance} [${originLocation}]`,
       },);
     },);
   },);

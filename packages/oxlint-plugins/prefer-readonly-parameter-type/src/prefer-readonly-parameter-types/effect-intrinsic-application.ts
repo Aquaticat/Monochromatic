@@ -12,6 +12,7 @@ import type {
 } from 'typescript/unstable/sync';
 
 import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
+import { effectOriginLocation, } from './effect-origin-location.ts';
 
 import {
   addOpaqueEffect,
@@ -199,7 +200,7 @@ export function applyIntrinsicEffect({
         addOpaqueEffect({
           summary,
           affectedParameterIndex: receiverParameterIndex,
-          provenance: effect.evidence,
+          provenance: `${effect.evidence} [${effectOriginLocation({ node: call, },)}]`,
         },);
         return;
       }
@@ -236,7 +237,7 @@ export function applyIntrinsicEffect({
               addOpaqueEffect({
                 summary,
                 affectedParameterIndex: origin,
-                provenance: effect.evidence,
+                provenance: `${effect.evidence} [${effectOriginLocation({ node: call, },)}]`,
               },);
             },);
         },);
@@ -274,7 +275,7 @@ export function applyIntrinsicEffect({
       addOpaqueEffect({
         summary,
         affectedParameterIndex: receiverParameterIndex,
-        provenance: effect.evidence,
+        provenance: `${effect.evidence} [${effectOriginLocation({ node: call, },)}]`,
       },);
     }
   }

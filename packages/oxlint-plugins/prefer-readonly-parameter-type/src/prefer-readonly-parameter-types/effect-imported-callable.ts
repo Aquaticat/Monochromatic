@@ -22,6 +22,7 @@ import {
   parameterIndexes,
 } from './effect-call-resolution.ts';
 import { expressionIsPlainData, } from './plain-data-classifier.ts';
+import { effectOriginLocation, } from './effect-origin-location.ts';
 import { addIntrinsicForwardedCallbackEffects, } from './effect-intrinsic-forwarded-callback.ts';
 import { addIntrinsicInvocations, } from './effect-intrinsic-invocation.ts';
 import { addIntrinsicPropertyInvocations, } from './effect-intrinsic-property-invocation.ts';
@@ -177,7 +178,7 @@ export function applyAuditedCallableEffect({
               addOpaqueEffect({
                 summary,
                 affectedParameterIndex: origin,
-                provenance: callableEffect.evidence,
+                provenance: `${callableEffect.evidence} [${effectOriginLocation({ node: call, },)}]`,
               },);
             },);
         },);

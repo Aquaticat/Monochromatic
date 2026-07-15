@@ -200,8 +200,10 @@ children: [
       },),).toBe(true,);
       expect(messages.some(function missingUncertaintyContract(message,): boolean {
         return message.startsWith(
-          'Parameter "state" has documented uncertainty propagated from JSON.stringify but lacks its own @mutates contract.',
-        );
+          'Parameter "state" has documented uncertainty propagated from JSON.stringify [',
+        )
+          && message.includes('but lacks its own @mutates contract.',)
+          && message.includes('Parsed @mutates contracts on this function:',);
       },),).toBe(true,);
       expect(messages.some(function staleContract(message,): boolean {
         return message.includes('stale @mutates contract',);
@@ -211,20 +213,25 @@ children: [
       },),).toBe(true,);
       expect(messages.some(function uncertainReadonly(message,): boolean {
         return message.startsWith(
-          'Parameter "state" cannot be verified as readonly because its documented possible effects come from: JSON.stringify.',
+          'Parameter "state" cannot be verified as readonly because its documented possible effects come from: JSON.stringify [',
         );
       },),).toBe(true,);
       /** Plain-language uncertainty diagnostic for unsafe JSON serialization. */
       const opaqueMessage = messages.find(function unsafeJson(message,): boolean {
         return message.startsWith(
-          'The function input named "state" is used by these calls: JSON.stringify.',
+          'The function input named "state" is used by these calls: JSON.stringify [',
         );
       },);
       if (opaqueMessage === undefined)
         throw new Error('Expected JSON.stringify uncertainty diagnostic.',);
-      expect(opaqueMessage,).toBe(
-        'The function input named "state" is used by these calls: JSON.stringify.'
-          + '\n\nThis rule cannot inspect enough of those calls to know what they might change. They could change the input itself, change an object stored inside it, call a function stored inside it, or arrange for one of those changes to happen later.'
+      /* Boundaries carry origin locations and the tail echoes parsed
+       * contracts, so the exact message asserts stable structure around
+       * the fixture-dependent location. */
+      expect(opaqueMessage.includes(
+        'src/readonly-invalid.ts:',
+      ),).toBe(true,);
+      expect(opaqueMessage.includes(
+        '\n\nThis rule cannot inspect enough of those calls to know what they might change. They could change the input itself, change an object stored inside it, call a function stored inside it, or arrange for one of those changes to happen later.'
           + '\n\nChoose the remediation that matches the call:'
           + '\n1. Remove the call or rewrite the code so this input is not given to code the rule cannot inspect.'
           + '\n2. If the called code is in this repository but missing from its TypeScript project, update the nearest tsconfig.json so the rule can inspect that source.'
@@ -232,16 +239,19 @@ children: [
           + '\n4. Otherwise, document the possible change here or in a dedicated function that contains the calls. For each input that might be changed, add its own line to the function\'s /** ... */ comment:'
           + '\n@mutates inputName - explain what may change and name every listed call responsible'
           + '\nReplace inputName with that function\'s actual input name.',
-      );
+      ),).toBe(true,);
+      expect(opaqueMessage.includes(
+        'Parsed @mutates contracts on this function: none.',
+      ),).toBe(true,);
       expect(messages.some(function destructuredInput(message,): boolean {
         return message.startsWith(
-          'The function inputs named "state" and "label" are used by these calls: JSON.stringify.',
+          'The function inputs named "state" and "label" are used by these calls: JSON.stringify [',
         );
       },),).toBe(true,);
       /** Method-specific diagnostic explaining state changes without assignment. */
       const methodMessage = messages.find(function unknownMethod(message,): boolean {
         return message.startsWith(
-          'The function input named "service" is used as the object for these method calls: service.write.',
+          'The function input named "service" is used as the object for these method calls: service.write [',
         );
       },);
       if (methodMessage === undefined)
@@ -266,7 +276,8 @@ children: [
           + '\n4. Remove the conversion when its text is not required.'
           + '\n5. If invoking object coercion hooks is intentional, document every affected input with its own line in the function\'s /** ... */ comment. An object type alone cannot prove that runtime hooks are absent:'
           + '\n@mutates inputName - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input'
-          + '\nReplace inputName with that function\'s actual input name.',
+          + '\nReplace inputName with that function\'s actual input name.'
+          + '\n\nParsed @mutates contracts on this function: none.',
       );
       expect(messages.some(function incompleteStringContract(message,): boolean {
         return message.startsWith(
@@ -281,7 +292,7 @@ children: [
       const diagnostics = await lintReadonly('readonly-string-lookalike-invalid.ts',);
       expect(diagnostics.length,).toBe(1,);
       expect(diagnostics[0]?.message.startsWith(
-        'The function input named "value" is used by these calls: String.',
+        'The function input named "value" is used by these calls: String [',
       ),).toBe(true,);
       expect(diagnostics[0]?.message.includes(
         'passed to global String',

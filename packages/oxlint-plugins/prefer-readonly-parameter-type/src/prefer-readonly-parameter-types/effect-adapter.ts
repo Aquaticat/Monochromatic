@@ -14,6 +14,7 @@ import {
   mutationTargetIndexes,
 } from './mutation-contract-query.ts';
 import { STRING_OBJECT_COERCION_PROVENANCE, } from './string-coercion-effect.ts';
+import { originBoundaryName, } from './effect-origin-location.ts';
 
 /**
  * Terms required for deliberate global String object-coercion contract.
@@ -52,20 +53,24 @@ function descriptionDocumentsBoundary({
   readonly description: string;
   readonly provenance: string;
 },): boolean {
-  if (provenance === STRING_OBJECT_COERCION_PROVENANCE)
+  /**
+   * Boundary name compared without origin-location enrichment.
+   */
+  const boundaryName = originBoundaryName(provenance,);
+  if (boundaryName === STRING_OBJECT_COERCION_PROVENANCE)
     return STRING_COERCION_CONTRACT_TERMS.every(function includesTerm(term,): boolean {
       return description.includes(term,);
     },);
-  if (description.includes(provenance,))
+  if (description.includes(boundaryName,))
     return true;
   /**
    * Final callable member retained for matching documentation links.
    */
-  const finalMemberSeparator = provenance.lastIndexOf('.',);
+  const finalMemberSeparator = boundaryName.lastIndexOf('.',);
   /**
    * Callable member text after final property separator.
    */
-  const member = provenance.slice(finalMemberSeparator + 1,);
+  const member = boundaryName.slice(finalMemberSeparator + 1,);
   return (description.includes('https://')
       || description.includes('http://'))
     && description.includes(member,);

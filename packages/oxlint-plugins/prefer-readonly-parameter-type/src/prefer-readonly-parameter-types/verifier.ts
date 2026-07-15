@@ -176,6 +176,21 @@ export function verifyReadonlyCallable({
     );
   },);
   /**
+   * Parsed contract echo naming every authored block including names
+   * matching no input;
+   * a silently dropped typo was previously indistinguishable from an
+   * unparsed contract.
+   */
+  const parsedContracts = blocks.length === 0
+    ? 'none'
+    : blocks
+      .map(function echoBlock(block,): string {
+        return targetIndexes.has(block.parameterName,)
+          ? `@mutates ${block.parameterName}`
+          : `@mutates ${block.parameterName} (matches no input name)`;
+      },)
+      .join(', ',);
+  /**
    * Whether callable has analyzable implementation body.
    */
   const hasBody = ('body' in declaration) && (declaration.body !== undefined);
@@ -270,6 +285,7 @@ export function verifyReadonlyCallable({
         targetIndexes,
         parameterIndex,
         uncertainty,
+        parsedContracts,
       },),);
       return;
     }
@@ -280,6 +296,7 @@ export function verifyReadonlyCallable({
         data: {
           parameterName,
           boundaries: uncertainty.names,
+          parsedContracts,
         },
       },);
     }
