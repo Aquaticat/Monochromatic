@@ -15,7 +15,7 @@ export class TypeScriptBuildError extends Error {
    *
    * @param options - optional cause
    *
-   * @mutates options through global Error options cause access
+   * @mutates options through super global Error options cause access
    */
   public constructor(
     message: string,

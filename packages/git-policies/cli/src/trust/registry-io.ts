@@ -3,6 +3,7 @@
  *
  * @module
  */
+import type { Stats, } from 'node:fs';
 import {
   chmod,
   constants,
@@ -82,7 +83,7 @@ export class TrustStorageError extends Error {
    *
    * @param options - optional underlying cause
    *
-   * @mutates options through global Error options cause access
+   * @mutates options through super global Error options cause access
    */
   public constructor(
     message: string,
@@ -334,7 +335,7 @@ export async function assertSafeRegistryDirectory({
     return lstat(path,);
   },),);
   metadataEntries.forEach(function validateMetadata(
-    metadata: Readonly<Awaited<ReturnType<typeof lstat>>>,
+    metadata: Readonly<Stats>,
     index,
   ) {
     /**
