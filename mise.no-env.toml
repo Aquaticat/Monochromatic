@@ -448,13 +448,24 @@ const parseUsageArgs = (raw) => {
   return argv
 }
 """
-# Runs a list of test files as `node [nodeArgs] <file>` subprocesses, bounded to
-# availableParallelism() at a time, and throws listing any that exited non-zero.
+# Runs test files from their nearest package task root as `node [nodeArgs] <file>`
+# subprocesses, bounded to availableParallelism(), and lists non-zero exits.
 # Interpolated into the test tasks; each sets `shell = "node --input-type=module-typescript -e"`.
 run_test_files = """
 const { spawn } = await import('node:child_process')
 const { once } = await import('node:events')
 const { availableParallelism } = await import('node:os')
+const { dirname, join: joinTestPath, resolve: resolveTestPath } = await import('node:path')
+const { existsSync: testPathExists } = await import('node:fs')
+const testFileCwd = (file) => {
+  let current = dirname(resolveTestPath(file))
+  while (true) {
+    if (testPathExists(joinTestPath(current, 'mise.toml'))) { return current }
+    const parent = dirname(current)
+    if (parent === current) { return process.cwd() }
+    current = parent
+  }
+}
 const runTestFiles = async (files, nodeArgs) => {
   if (files.length === 0) { return }
   const limit = Math.max(1, Math.min(availableParallelism(), files.length))
@@ -462,9 +473,9 @@ const runTestFiles = async (files, nodeArgs) => {
   let next = 0
   const worker = async () => {
     while (next < files.length) {
-      const file = files[next]
+      const file = resolveTestPath(files[next])
       next += 1
-      const proc = spawn('node', [...nodeArgs, file], { stdio: 'inherit' })
+      const proc = spawn('node', [...nodeArgs, file], { cwd: testFileCwd(file), stdio: 'inherit' })
       const [code] = await once(proc, 'exit')
       if (code !== 0) { failures.push(file) }
     }
