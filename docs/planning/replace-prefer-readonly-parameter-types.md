@@ -30,10 +30,13 @@ The migration-specific acceptance gate is complete.
   The 64 inactive-tree tests leak into neither selection.
 - Package type fanout checked 122 supported package tasks with no failures.
   The semantic-host and disposable external-consumer tasks passed in `proc_274` and `proc_273`.
-- The semantic plugin's final type,
+- The semantic plugin's final build,
+  type,
   unit,
-  and Oxlint tasks passed again in `proc_320` to `proc_322`.
-  An unchanged single-worker package run in `proc_297` completed in 6.3 seconds with zero findings.
+  and Oxlint tasks passed in `proc_352` and `proc_362` to `proc_364`.
+  Commits `65e7e5cdb` and `466ca8955` index 479 audited effects by owner and member before exact provenance matching,
+  then verify every catalogue entry through that index.
+  Repeated unchanged single-worker runs `proc_365` and `proc_366` completed in 9.3 and 9.4 seconds with zero findings.
   Commit `c0b403dc6` isolates the independent-process persistent-cache test from concurrently changing fixture projects.
 - TypeScript synchronous API shutdown now guards both the main semantic client and demand-driven external-project
   clients.
