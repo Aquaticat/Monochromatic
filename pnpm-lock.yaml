@@ -404,9 +404,9 @@ importers:
       '@monochromatic-dev/module-image-diff':
         specifier: workspace:*
         version: link:packages/module/image-diff
-      '@monochromatic-dev/pi-spawn':
+      '@monochromatic-dev/pi-plugin-spawn':
         specifier: workspace:*
-        version: link:packages/pi-plugins/spawn
+        version: link:packages/pi-plugin/spawn
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.73.0
@@ -2920,7 +2920,7 @@ importers:
         specifier: 'catalog:'
         version: 5.8.0
 
-  packages/pi-plugins/advisor:
+  packages/pi-plugin/advisor:
     dependencies:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
@@ -2966,7 +2966,7 @@ importers:
         specifier: 'catalog:'
         version: 1.3.6
 
-  packages/pi-plugins/agent-settled-notification:
+  packages/pi-plugin/agent-settled-notification:
     dependencies:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
@@ -2997,7 +2997,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/pi-plugins/auto-mode:
+  packages/pi-plugin/auto-mode:
     dependencies:
       '@monochromatic-dev/agent-harness-shared-shell-command-analyzer':
         specifier: workspace:*
@@ -3043,7 +3043,7 @@ importers:
         specifier: 'catalog:'
         version: 1.3.6
 
-  packages/pi-plugins/current-time-context:
+  packages/pi-plugin/current-time-context:
     dependencies:
       '@monochromatic-dev/agent-harness-shared-current-time-context':
         specifier: workspace:*
@@ -3068,7 +3068,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/pi-plugins/guardrail:
+  packages/pi-plugin/guardrail:
     dependencies:
       '@monochromatic-dev/agent-harness-shared-shell-command-analyzer':
         specifier: workspace:*
@@ -3102,7 +3102,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/pi-plugins/morph-compact:
+  packages/pi-plugin/morph-compact:
     dependencies:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
@@ -3136,7 +3136,7 @@ importers:
         specifier: 'catalog:'
         version: 5.8.0
 
-  packages/pi-plugins/search-fetch:
+  packages/pi-plugin/search-fetch:
     dependencies:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
@@ -3167,7 +3167,7 @@ importers:
         specifier: 'catalog:'
         version: 1.3.6
 
-  packages/pi-plugins/spawn:
+  packages/pi-plugin/spawn:
     dependencies:
       '@monochromatic-dev/agent-harness-shared-session-discovery':
         specifier: workspace:*
@@ -3204,7 +3204,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/pi-plugins/statusline:
+  packages/pi-plugin/statusline:
     dependencies:
       '@monochromatic-dev/agent-harness-shared-usage-projection':
         specifier: workspace:*
@@ -3235,7 +3235,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/pi-plugins/terminal-title:
+  packages/pi-plugin/terminal-title:
     dependencies:
       '@monochromatic-dev/agent-harness-shared-terminal-title':
         specifier: workspace:*
@@ -3260,7 +3260,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/pi-plugins/thinking-defaults:
+  packages/pi-plugin/thinking-default:
     dependencies:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*

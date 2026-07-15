@@ -230,7 +230,7 @@ honest at full-app scale.
 Both directories implement the same terminal-title generation logic for two consumer
 runtimes (pi extension and Claude Code plugin):
 
-- `packages/pi-plugins/terminal-title/src/formatter-utils.ts`:
+- `packages/pi-plugin/terminal-title/src/formatter-utils.ts`:
    219 lines
 - `packages/claude-code-plugins/source/src/handler/terminal-title/formatter-utils.ts`:
    154 lines
@@ -406,7 +406,7 @@ add `is-record.ts` as a public export.
 Each takes `(input, key)` and returns the string value at `input[key]` if it is a
 string:
 
-- `packages/pi-plugins/terminal-title/src/formatter-utils.ts`
+- `packages/pi-plugin/terminal-title/src/formatter-utils.ts`
 - `packages/claude-code-plugins/source/src/handler/terminal-title/formatter-utils.ts`
 - `packages/webapp-content/messages-demo/src/server/api/messages.ts`
 - `packages/webapp-content/messages-demo/src/server/api/drafts.ts`
@@ -1294,7 +1294,7 @@ type,
 
 #### Vendored copy of `pi-coding-agent` helpers in morph-compact
 
-`packages/pi-plugins/morph-compact/src/pi-utils.ts:1-485` reimplements `convertToLlm` and
+`packages/pi-plugin/morph-compact/src/pi-utils.ts:1-485` reimplements `convertToLlm` and
 `serializeConversation` from the upstream `@earendil-works/pi-coding-agent` package.
 
 The file's own docblock declares the duplication explicit and intentional (avoiding a
@@ -1819,7 +1819,7 @@ Anonymous-named filter-callback typeguards repeating the same body,
 - `packages/cli/vmsync/src/nbd.ts`
 - `packages/dev-script/inference-canary/src/codegen/fix-prompt.ts`
 - `packages/dev-script/inference-canary/src/codegen/probe-factory-additional-diagnostics.ts`
-- `packages/pi-plugins/morph-compact/src/pi-utils.ts`
+- `packages/pi-plugin/morph-compact/src/pi-utils.ts`
 
 Each occurrence is `.filter(function isDefined(x): x is T { return x !== undefined; })`.
 The standard library has no built-in narrowing typeguard for this;
@@ -1962,7 +1962,7 @@ implementations and the two `intFlag` copies all collapse to imports.
 
 #### `truncate(value, maxLength)` with ellipsis; one fork has two copies
 
-`packages/pi-plugins/terminal-title/src/formatter-utils.ts:truncate` and the corresponding
+`packages/pi-plugin/terminal-title/src/formatter-utils.ts:truncate` and the corresponding
 copy in `packages/claude-code-plugins/source/src/handler/terminal-title/formatter-utils.ts`
 are the two truncate implementations the audit's terminal-title fork section already
 covers.

@@ -155,7 +155,7 @@ fixtures.
 1. `packages/dev-script/watch-restart/src/watcher.ts` -- `Watcher`
 1. `packages/dev-script/watch-restart/src/child.ts` -- `Child`
 1. `packages/dev-script/watch-restart/src/hash-cache.ts` -- `HashCache`
-1. `packages/pi-plugins/morph-compact/src/morph-client.ts` -- `MorphCompactClient`
+1. `packages/pi-plugin/morph-compact/src/morph-client.ts` -- `MorphCompactClient`
 1. `packages/module/zip-writer/src/index.ts` -- `ZipWriter`
 1. `packages/figma/kiwi/src/index.ts` -- `BinaryReader` (see "Lint blind spot" below)
 
@@ -177,10 +177,10 @@ Migrated on 2026-05-20:
 1. `packages/dev-script/watch-restart/src/start.unit.test.ts` -- `FakeChild`
 1. `packages/dev-script/watch-restart/src/child.unit.test.ts` -- `FakeChild`
 1. `packages/webapp-forge/server/src/server/routes/git.cli.unit.test.ts` -- `DisposableServer`
-1. `packages/pi-plugins/morph-compact/src/ipc-socket-tcp.unit.test.ts` -- `TcpServerDisposable`
-1. `packages/pi-plugins/morph-compact/src/api-key.unit.test.ts` -- `EnvRestore`
-1. `packages/pi-plugins/morph-compact/src/ipc-file.unit.test.ts` -- `FileDisposable`
-1. `packages/pi-plugins/morph-compact/src/ipc-socket-unix.unit.test.ts` -- `SocketServerDisposable`
+1. `packages/pi-plugin/morph-compact/src/ipc-socket-tcp.unit.test.ts` -- `TcpServerDisposable`
+1. `packages/pi-plugin/morph-compact/src/api-key.unit.test.ts` -- `EnvRestore`
+1. `packages/pi-plugin/morph-compact/src/ipc-file.unit.test.ts` -- `FileDisposable`
+1. `packages/pi-plugin/morph-compact/src/ipc-socket-unix.unit.test.ts` -- `SocketServerDisposable`
 1. `packages/module/test/src/sinon.unit.test.ts` -- `Greeter`
 
 ## Lint blind spot
@@ -259,7 +259,7 @@ package below,
    `Child`,
    `HashCache`,
    `FakeChild` x2)
-- `packages/pi-plugins/morph-compact`:
+- `packages/pi-plugin/morph-compact`:
    5 (`MorphCompactClient`,
    `EnvRestore`,
    `FileDisposable`,

@@ -87,7 +87,7 @@ A falsified hypothesis,
  recorded so nobody re-derives it:
  the nearest `package.json` `"type": "module"` field does **not** govern `--eval`.
 Both the failing package (`packages/claude-code-plugins/source`)
- and a passing one (`packages/pi-plugins/auto-mode`) declare `"type": "module"`;
+ and a passing one (`packages/pi-plugin/auto-mode`) declare `"type": "module"`;
  the behavior difference tracked the detection flag alone,
  and a bare `node -e` body with top-level `await` ran fine
  from a scratch directory whose `package.json` had no `type` field (detection on).

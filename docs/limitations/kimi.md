@@ -9,7 +9,7 @@ so future sessions do not repeat the same pattern.
 Run a `/grilling` session on
 [issue 360](https://github.com/Aquaticat/Monochromatic/issues/360),
 which proposes replacing the installed `npm:@narumitw/pi-goal` extension with a
-repository-owned Pi extension package at `packages/pi-plugins/goal`.
+repository-owned Pi extension package at `packages/pi-plugin/goal`.
 The replacement should preserve useful `/goal` persistence and explicit
 `goal_complete` behavior, but remove the upstream global stale-tool-call latch
 that can deadlock an agent after an interruption.
@@ -30,7 +30,7 @@ Kimi did look up relevant facts before responding:
 time, wait for feedback, offer a recommended answer, and not enact the plan until
 shared understanding is reached.
 - Fetched issue 360 with `gh issue view 360`.
-- Listed sibling Pi plugins under `packages/pi-plugins/` to understand package
+- Listed sibling Pi plugins under `packages/pi-plugin/` to understand package
 conventions.
 - Read the Pi extension lifecycle docs at
 `/var/home/user/Monochromatic/node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/docs/extensions.md`.

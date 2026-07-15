@@ -14,7 +14,7 @@ The visible one-line symptom happens when the response starts with Markdown head
 ## Root cause
 
 The collapsed renderer intentionally shows a header plus one summary line.
-`packages/pi-plugins/advisor/src/rendering-summary.ts:47` calls `firstAdvisoryLine` when `expanded` is false:
+`packages/pi-plugin/advisor/src/rendering-summary.ts:47` calls `firstAdvisoryLine` when `expanded` is false:
 
 ```typescript
 const firstLine = firstAdvisoryLine(text,);
@@ -28,7 +28,7 @@ For Markdown-shaped advisor responses,
 not an actual finding.
 
 The fixed implementation keeps the collapsed behavior but skips Markdown ATX headings before choosing the summary line.
-`packages/pi-plugins/advisor/src/rendering-summary.ts:96` normalizes non-empty lines and chooses the first non-heading body line:
+`packages/pi-plugin/advisor/src/rendering-summary.ts:96` normalizes non-empty lines and chooses the first non-heading body line:
 
 ```typescript
 return nonEmptyLines
@@ -39,7 +39,7 @@ return nonEmptyLines
   ?? '(advisor returned no text)';
 ```
 
-`packages/pi-plugins/advisor/src/rendering-summary.ts:194` detects heading lines by checking leading hash markers followed by a space:
+`packages/pi-plugin/advisor/src/rendering-summary.ts:194` detects heading lines by checking leading hash markers followed by a space:
 
 ```typescript
 const firstNonMarkerIndex = firstNonHeadingMarkerIndex(trimmedLine,);
@@ -52,7 +52,7 @@ return (firstNonMarkerIndex > 0)
 Version under test:
  commit `058b16777`.
 
-The regression test is `packages/pi-plugins/advisor/src/rendering-summary.unit.test.ts`.
+The regression test is `packages/pi-plugin/advisor/src/rendering-summary.unit.test.ts`.
 It reproduces the old behavior with this input:
 
 ```markdown
@@ -72,7 +72,7 @@ AssertionError: expected '## Advisor review' to equal '1. **Assumption** Check t
 The fixed run passes:
 
 ```bash
-mise run //packages/pi-plugins/advisor:test:unit packages/pi-plugins/advisor/src/rendering-summary.unit.test.ts
+mise run //packages/pi-plugin/advisor:test:unit packages/pi-plugin/advisor/src/rendering-summary.unit.test.ts
 ```
 
 ```text
@@ -82,10 +82,10 @@ mise run //packages/pi-plugins/advisor:test:unit packages/pi-plugins/advisor/src
 Full package verification also passed:
 
 ```bash
-mise run //packages/pi-plugins/advisor:test:unit
-mise run //packages/pi-plugins/advisor:lint:types
-mise run //packages/pi-plugins/advisor:lint:oxlint
-mise run //packages/pi-plugins/advisor:verify:extension
+mise run //packages/pi-plugin/advisor:test:unit
+mise run //packages/pi-plugin/advisor:lint:types
+mise run //packages/pi-plugin/advisor:lint:oxlint
+mise run //packages/pi-plugin/advisor:verify:extension
 ```
 
 ## Verified workaround

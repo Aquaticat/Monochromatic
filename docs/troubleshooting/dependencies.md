@@ -803,7 +803,7 @@ absent:
 #### What stops working
 
 Nothing in normal operation.
- `packages/pi-plugins/auto-mode` only references the
+ `packages/pi-plugin/auto-mode` only references the
 Google APIs by string identifier in `src/judge-tool.ts:83`
 (`toolChoiceForApi`) and the matching unit tests,
  which never touch
@@ -820,7 +820,7 @@ block but cannot be suppressed:
 statically imports `partial-json`,
  and that module is re-exported from
 pi-ai's entry (`dist/index.js:12: export * from "./utils/json-parse.js"`).
-Any consumer importing pi-ai (including `packages/pi-plugins/auto-mode`) crashes
+Any consumer importing pi-ai (including `packages/pi-plugin/auto-mode`) crashes
 at module load when `partial-json` is absent.
  The override was removed
 to restore the runtime contract.
@@ -940,9 +940,9 @@ of which the dist statically imports.
 Windows-only fallback described above.
 
 After this cleanup,
- `mise run //packages/pi-plugins/{auto-mode,morph-compact}:test:unit`
+ `mise run //packages/pi-plugin/{auto-mode,morph-compact}:test:unit`
 both pass.
- `packages/pi-plugins/terminal-title:test:unit` fails on unrelated string
+ `packages/pi-plugin/terminal-title:test:unit` fails on unrelated string
 assertions (`expected '✳ X' to equal 'π X'`) that predate the override
 work;
  those are test-fixture issues to fix separately.
@@ -1092,7 +1092,7 @@ The upstream `proper-lockfile@4.1.2` (moxystudio/node-proper-lockfile,
 commit 2021-01) is abandoned.
  It enters the resolved graph as a transitive
 of `@earendil-works/pi-coding-agent@0.74.0`:
-`proper-lockfile@4.1.2 → @earendil-works/pi-coding-agent → @monochromatic-dev/pi-auto-mode`.
+`proper-lockfile@4.1.2 → @earendil-works/pi-coding-agent → @monochromatic-dev/pi-plugin-auto-mode`.
 `pnpm why proper-lockfile` reproduces the chain.
 
 The override `'proper-lockfile': 'link:packages/shim/proper-lockfile'` in
@@ -1124,7 +1124,7 @@ Both modules are re-exported from the package's barrel:
 
 A `'proper-lockfile': '-'` override removes the package from the install but
 leaves the static import in `auth-storage.js` and `settings-manager.js` --
-loading `@earendil-works/pi-coding-agent` from `packages/pi-plugins/auto-mode` crashes
+loading `@earendil-works/pi-coding-agent` from `packages/pi-plugin/auto-mode` crashes
 with `Cannot find package 'proper-lockfile'` before any first-party code runs.
 
 #### Why the silent stub does not work

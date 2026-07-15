@@ -5,7 +5,7 @@
 `packages/pi-shared/model-selection/src/scope-patterns.ts` resolves pi model-scope glob patterns against in-memory
 model slugs and bare model ids.
  Advisor consumes that shared package through
-`packages/pi-plugins/advisor/package.json`,
+`packages/pi-plugin/advisor/package.json`,
  which previously also declared an unused direct matcher dependency.
 
 The matcher must handle string matching only.
@@ -96,7 +96,7 @@ an in-repo matcher because existing glob implementations carry more edge-case co
 ## Consequences
 
 - `packages/pi-shared/model-selection/package.json` declares `zeptomatch` from the pnpm catalog.
-- `packages/pi-plugins/advisor/package.json` no longer declares a matcher dependency directly.
+- `packages/pi-plugin/advisor/package.json` no longer declares a matcher dependency directly.
 - Scope-pattern tests cover case-insensitive canonical-slug and bare-id glob matching.
 - Scope-pattern tests cover brace,
    character-class,

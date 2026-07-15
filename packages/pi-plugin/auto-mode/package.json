@@ -1,0 +1,48 @@
+{
+  "name": "@monochromatic-dev/pi-plugin-auto-mode",
+  "description": "LLM-as-judge guardrail for pi: replaces pi-safeguard with fixed path handling and structured-output judge",
+  "type": "module",
+  "private": true,
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/pi-plugin/auto-mode"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts"
+  },
+  "pi": {
+    "extensions": ["./dist/final/node/index.mjs"]
+  },
+  "files": [
+    "dist/final",
+    "src"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-shell-command-analyzer": "workspace:*",
+    "@monochromatic-dev/pi-shared-model-selection": "workspace:*",
+    "nano-spawn": "catalog:",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-ai": "catalog:",
+    "@earendil-works/pi-coding-agent": "catalog:",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "typebox": "catalog:"
+  }
+}

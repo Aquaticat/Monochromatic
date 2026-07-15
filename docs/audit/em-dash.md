@@ -737,7 +737,7 @@ Replace with paired commas,
 - Line 137:
    // Sequential execution required — tests stub the same
 
-### packages/pi-plugins/morph-compact/README.md
+### packages/pi-plugin/morph-compact/README.md
 
 - Line 3:
    Morph Compact integration for pi — replaces default LLM summarization with line-deletion compression at 33K tok/s.
@@ -753,14 +753,14 @@ Replace with paired commas,
    **Drift reduction** — every compaction cycle loses some information.
    Preserving
 
-### packages/pi-plugins/morph-compact/src/api-key.ts
+### packages/pi-plugin/morph-compact/src/api-key.ts
 
 - Line 78:
    // File doesn't exist,
    unreadable,
    or invalid JSON — not an error
 
-### packages/pi-plugins/morph-compact/src/compaction-handler.ts
+### packages/pi-plugin/morph-compact/src/compaction-handler.ts
 
 - Line 104:
    'Morph Compact:
@@ -768,7 +768,7 @@ Replace with paired commas,
 - Line 156:
    `Morph Compact failed: ${message} — falling back to pi default`,
 
-### packages/pi-plugins/morph-compact/src/compress-branch.ts
+### packages/pi-plugin/morph-compact/src/compress-branch.ts
 
 - Line 164:
    'Nothing to compress — session has no messages and no previous compaction',
@@ -777,7 +777,7 @@ Replace with paired commas,
 - Line 203:
    'Morph Compact returned empty output — compression failed',
 
-### packages/pi-plugins/morph-compact/src/compress-branch.unit.test.ts
+### packages/pi-plugin/morph-compact/src/compress-branch.unit.test.ts
 
 - Line 61:
    /** Minimal params without messages — nothing to compress.
@@ -787,14 +787,14 @@ Replace with paired commas,
   prototype.
   compact
 
-### packages/pi-plugins/morph-compact/src/index.ts
+### packages/pi-plugin/morph-compact/src/index.ts
 
 - Line 109:
    // Tier 1:
    argv — simplest path,
    zero cleanup
 
-### packages/pi-plugins/morph-compact/src/ipc-launch.ts
+### packages/pi-plugin/morph-compact/src/ipc-launch.ts
 
 - Line 109:
    // Tier 4:
@@ -802,7 +802,7 @@ Replace with paired commas,
 - Line 183:
    // Best-effort cleanup — temp files in /tmp are ephemeral
 
-### packages/pi-plugins/morph-compact/src/ipc-socket-tcp.ts
+### packages/pi-plugin/morph-compact/src/ipc-socket-tcp.ts
 
 - Line 27:
    /** Loopback address — no remote access.
@@ -810,29 +810,29 @@ Replace with paired commas,
 - Line 115:
    // Close server after writing — one-shot
 
-### packages/pi-plugins/morph-compact/src/ipc-socket-tcp.unit.test.ts
+### packages/pi-plugin/morph-compact/src/ipc-socket-tcp.unit.test.ts
 
 - Line 111:
    // Second connection should fail — server is closed
 
-### packages/pi-plugins/morph-compact/src/ipc-socket-unix.ts
+### packages/pi-plugin/morph-compact/src/ipc-socket-unix.ts
 
 - Line 118:
    // Close server after writing — one-shot
 
-### packages/pi-plugins/morph-compact/src/ipc-socket-unix.unit.test.ts
+### packages/pi-plugin/morph-compact/src/ipc-socket-unix.unit.test.ts
 
 - Line 114:
    // Second connection should fail — server is closed
 
-### packages/pi-plugins/terminal-title/README.md
+### packages/pi-plugin/terminal-title/README.md
 
 - Line 3:
    Terminal tab title extension for pi — shows current tool,
    session state,
    and user prompt in the terminal window title.
 
-### packages/pi-plugins/terminal-title/src/index.ts
+### packages/pi-plugin/terminal-title/src/index.ts
 
 - Line 30:
    /** Minimal context shape needed by all event handlers — just `ui.setTitle()`.
@@ -3774,7 +3774,7 @@ Replace with proper punctuation or restructure sentence.
    * only stored files.
    The write-only design has minimal attack surface --
 
-### packages/pi-plugins/auto-mode/src/command-parser.unit.test.ts
+### packages/pi-plugin/auto-mode/src/command-parser.unit.test.ts
 
 - Line 88:
    name:
@@ -3785,7 +3785,7 @@ Replace with proper punctuation or restructure sentence.
    // -f after -- should be a positional arg,
    not a flag
 
-### packages/pi-plugins/auto-mode/src/signals.unit.test.ts
+### packages/pi-plugin/auto-mode/src/signals.unit.test.ts
 
 - Line 193:
    name:

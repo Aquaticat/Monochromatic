@@ -12,7 +12,7 @@ Decision record for the agentic context-management plugin wired into this Pi har
    do not use `npm:pi-context`.
    Removed from `~/.pi/agent/settings.json` on 2026-06-15.
 - **Interaction note**:
-   this repo also installs `/var/home/user/Monochromatic/packages/pi-plugins/morph-compact`,
+   this repo also installs `/var/home/user/Monochromatic/packages/pi-plugin/morph-compact`,
    which replaces Pi's default compaction.
    Any future context-management plugin must be checked against that package before installation.
 
@@ -246,7 +246,7 @@ Reject `npm:pi-context` for this Pi profile:
     no repository `LICENSE` file,
     and a single maintainer.
 3. **Interaction risk**:
-    this profile already installs `@monochromatic-dev/pi-morph-compact`,
+    this profile already installs `@monochromatic-dev/pi-plugin-morph-compact`,
     a local compaction replacement.
     Running two compaction-touching plugins together is untested and risks session-tree corruption.
 4. **Prefer alternatives if the need returns**:

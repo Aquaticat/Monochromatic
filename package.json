@@ -25,7 +25,7 @@
     "@monochromatic-dev/claude-code-plugins-correction-reminder": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-source": "workspace:*",
     "@monochromatic-dev/module-image-diff": "workspace:*",
-    "@monochromatic-dev/pi-spawn": "workspace:*",
+    "@monochromatic-dev/pi-plugin-spawn": "workspace:*",
     "@monochromatic-dev/dev-script-task-util": "workspace:*",
     "@oxlint/plugins": "catalog:",
     "oxlint-tsgolint": "catalog:",

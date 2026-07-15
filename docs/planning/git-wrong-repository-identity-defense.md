@@ -76,13 +76,13 @@ Pi 0.80.6 validates known Bash properties but preserves unknown properties.
 `dist/core/tools/bash.js` executes only the command and timeout values,
 so the unsupported `cwd` property has no effect.
 
-`packages/pi-plugins/guardrail/src/index.ts` already owns the deterministic `tool_call` refusal seam.
-Its Bash rule in `packages/pi-plugins/guardrail/src/bash-guard.ts` currently detects only `bun test`.
+`packages/pi-plugin/guardrail/src/index.ts` already owns the deterministic `tool_call` refusal seam.
+Its Bash rule in `packages/pi-plugin/guardrail/src/bash-guard.ts` currently detects only `bun test`.
 The package is documented for global installation,
 but `/home/user/.pi/agent/settings.json` does not currently install it.
 Project `.pi/settings.json` intentionally has no packages.
 
-`packages/pi-plugins/auto-mode` is installed globally,
+`packages/pi-plugin/auto-mode` is installed globally,
 but it is not an invariant layer:
 it reasons about command text and permits explicit bypass.
 
@@ -243,7 +243,7 @@ GitHub's vigilant-mode documentation likewise distinguishes author from committe
 
 ### Layer A: fail closed on unsupported Bash input
 
-Extend `packages/pi-plugins/guardrail` so Bash tool-call input is shape-checked before any command policy.
+Extend `packages/pi-plugin/guardrail` so Bash tool-call input is shape-checked before any command policy.
 
 Accepted top-level properties for the current Pi Bash tool are:
 
@@ -262,7 +262,7 @@ If a future Pi release adds a real Bash property,
 the guardrail must be updated and verified before that property is accepted locally.
 
 After building and testing the package,
-install `packages/pi-plugins/guardrail` in `/home/user/.pi/agent/settings.json` as documented in its README.
+install `packages/pi-plugin/guardrail` in `/home/user/.pi/agent/settings.json` as documented in its README.
 Keep project `.pi/settings.json` package-free.
 
 ### Layer B: reject dangerous Git invocations before spawn
@@ -913,7 +913,7 @@ The work is complete only when:
 - Incident diagnosis:
   `docs/troubleshooting/pi-bash-ignored-cwd-git-signature-verification.md`
 - Pi guardrail:
-  `packages/pi-plugins/guardrail/README.md`
+  `packages/pi-plugin/guardrail/README.md`
 - cli-git entry point:
   `packages/git-policy/cli/src/index.ts`
 - cli-git root rule:

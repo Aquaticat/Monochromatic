@@ -104,7 +104,7 @@ Visible failures in that run included:
 - `//packages/oxlint-plugin/stylistic:lint`:
   one `method-signature-style` warning and seven `catch-binding` errors in
   `src/oxlint-stylistic.unit.test.ts`.
-- `//packages/pi-plugins/linkup:lint`:
+- `//packages/pi-plugin/linkup:lint`:
   many `unicorn/prefer-export-from` warnings,
   `readFileSync` in `src/config.ts`,
   and an unbound catch in `src/domain-policy.ts`.
@@ -128,17 +128,17 @@ The aggregate failed package list from that run was:
 //packages/figma/kiwi:lint
 //packages/oxlint-plugin/tsdoc:lint
 //packages/pi-shared/model-selection:lint
-//packages/pi-plugins/current-time-context:lint
+//packages/pi-plugin/current-time-context:lint
 //packages/oxlint-plugin/stylistic:lint
-//packages/pi-plugins/morph-compact:lint
-//packages/pi-plugins/auto-mode:lint
-//packages/pi-plugins/terminal-title:lint
-//packages/pi-plugins/statusline:lint
-//packages/pi-plugins/spawn:lint
+//packages/pi-plugin/morph-compact:lint
+//packages/pi-plugin/auto-mode:lint
+//packages/pi-plugin/terminal-title:lint
+//packages/pi-plugin/statusline:lint
+//packages/pi-plugin/spawn:lint
 //packages/rust-module/forbidden-regex.bench:lint
 //packages/rolldown-plugin/import-attributes:lint
-//packages/pi-plugins/linkup:lint
-//packages/pi-plugins/thinking-defaults:lint
+//packages/pi-plugin/linkup:lint
+//packages/pi-plugin/thinking-default:lint
 //packages/typeface/aquaticat:lint
 //packages/ssg/aquati.cat:lint
 //packages/webapp-productivity/done-postcss:lint

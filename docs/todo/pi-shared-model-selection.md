@@ -119,7 +119,7 @@ A package belongs there when it is intended for two or more pi packages and its 
 one extension's command,
  rendering,
  or config surface.
-Actual pi extensions stay under `packages/pi-plugins/`.
+Actual pi extensions stay under `packages/pi-plugin/`.
 
 The repository has a nested-category precedent in `packages/claude-code-plugins/hook-types/`,
  consumed by
@@ -538,9 +538,9 @@ Add characterization tests before rewiring imports:
     registry-auth adapter.
 15. Move or rewrite unit tests for every shared module.
 16. Run `mise run //packages/pi-shared/model-selection:buildAndTest`.
-17. Run `mise run //packages/pi-plugins/advisor:buildAndTest`.
-18. Run `mise run //packages/pi-plugins/auto-mode:buildAndTest`.
-19. Run `mise run //packages/pi-plugins/thinking-defaults:buildAndTest`.
+17. Run `mise run //packages/pi-plugin/advisor:buildAndTest`.
+18. Run `mise run //packages/pi-plugin/auto-mode:buildAndTest`.
+19. Run `mise run //packages/pi-plugin/thinking-default:buildAndTest`.
 20. Run type checks for the shared package and three consumers.
 21. Run advisor and thinking-defaults extension verification tasks.
 22. Remove local files that became empty wrappers only after import rewiring and tests pass.
@@ -550,7 +550,7 @@ Add characterization tests before rewiring imports:
 - New top-level category:
    `pi-shared` differs from the nested `hook-types` precedent.
   Mitigation:
-   document the category rule in the package README and keep actual extensions in `packages/pi-plugins/`.
+   document the category rule in the package README and keep actual extensions in `packages/pi-plugin/`.
 - Single package with optional platform peers:
    broad root exports could make lightweight consumers pay for
   pi-ai or pi-coding-agent.

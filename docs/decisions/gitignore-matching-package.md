@@ -9,7 +9,7 @@ Accepted,
 
 The workspace uses `ignore` for gitignore-style matching in three places:
 
-- `packages/pi-plugins/guardrail/src/path-guard.ts` protects paths before pi edit/write tools run.
+- `packages/pi-plugin/guardrail/src/path-guard.ts` protects paths before pi edit/write tools run.
 - `packages/dev-script/watch-restart/src/filters/gitignore.ts` filters watched file events.
 - `packages/cli/markdown-lint/src/walk-files.ts` applies nested `.gitignore` layers while walking Markdown files.
 
@@ -18,7 +18,7 @@ It runs inside a coding-agent tool boundary,
 controls writes to protected paths,
 and needs both final gitignore state and rule provenance for useful refusal messages.
 The current guardrail implementation uses `ignore().add({ pattern, mark })` and `.test(relativePath)`;
-`packages/pi-plugins/guardrail/src/path-guard.ts` also rebuilds single-pattern matchers to select the last matching message rule.
+`packages/pi-plugin/guardrail/src/path-guard.ts` also rebuilds single-pattern matchers to select the last matching message rule.
 
 The replacement constraints were:
 

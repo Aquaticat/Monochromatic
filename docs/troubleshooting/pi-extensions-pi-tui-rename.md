@@ -43,7 +43,7 @@ section #1 is the recommended fix until upstream republishes
 
 A `pi` session in this workspace (`pi` 0.75.4,
  installed via
-`packages/pi-plugins/current-time-context/node_modules/.bin/pi`) exits with
+`packages/pi-plugin/current-time-context/node_modules/.bin/pi`) exits with
 an `uncaughtException` shortly after startup when `@ifi/pi-plan` is
 present in `~/.pi/agent/npm/node_modules/`.
  The crash fires from a
@@ -319,7 +319,7 @@ patch) and the auto-prototype audit in
 ### Versions under test
 
 - Failing pi binary:
-   `/var/home/user/Monochromatic/packages/pi-plugins/current-time-context/node_modules/.bin/pi` (`pi --version` = `0.75.4`)
+   `/var/home/user/Monochromatic/packages/pi-plugin/current-time-context/node_modules/.bin/pi` (`pi --version` = `0.75.4`)
 - Failing extension:
    `@ifi/pi-plan@0.5.1`,
    installed at `~/.pi/agent/npm/node_modules/@ifi/pi-plan/`,

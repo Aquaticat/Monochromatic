@@ -685,12 +685,12 @@ The semantic-rule implementation and shared-configuration migration are complete
   `packages/agent-harness-shared/terminal-title`,
   `packages/cli/git-clone-size`,
   `packages/pi-shared/model-selection`,
-  `packages/pi-plugins/advisor`,
-  `packages/pi-plugins/auto-mode`,
-  `packages/pi-plugins/current-time-context`,
-  `packages/pi-plugins/terminal-title`,
-  `packages/pi-plugins/agent-settled-notification`,
-  `packages/pi-plugins/thinking-defaults`,
+  `packages/pi-plugin/advisor`,
+  `packages/pi-plugin/auto-mode`,
+  `packages/pi-plugin/current-time-context`,
+  `packages/pi-plugin/terminal-title`,
+  `packages/pi-plugin/agent-settled-notification`,
+  `packages/pi-plugin/thinking-default`,
   `packages/agent-harness-shared/session-discovery`,
   `packages/typeface/aquaticat`,
   `packages/cli/android-exempt-unused`,
@@ -727,12 +727,12 @@ Verified package tasks:
 - `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host`;
 - `mise run //packages/pi-shared/model-selection:lint:oxlint`;
 - `mise run //packages/pi-shared/model-selection:test:unit`;
-- `mise run //packages/pi-plugins/advisor:lint:oxlint`;
-- `mise run //packages/pi-plugins/advisor:test:unit`;
-- `mise run //packages/pi-plugins/advisor:verify:extension`;
-- `mise run //packages/pi-plugins/auto-mode:lint:oxlint`;
-- `mise run //packages/pi-plugins/auto-mode:build:js:node`;
-- `mise run //packages/pi-plugins/auto-mode:test:unit`;
+- `mise run //packages/pi-plugin/advisor:lint:oxlint`;
+- `mise run //packages/pi-plugin/advisor:test:unit`;
+- `mise run //packages/pi-plugin/advisor:verify:extension`;
+- `mise run //packages/pi-plugin/auto-mode:lint:oxlint`;
+- `mise run //packages/pi-plugin/auto-mode:build:js:node`;
+- `mise run //packages/pi-plugin/auto-mode:test:unit`;
 - `mise run //packages/module/test:lint:types`;
 - `mise run //packages/module/test:lint:oxlint`;
 - `mise run //packages/module/test:buildAndTest`;

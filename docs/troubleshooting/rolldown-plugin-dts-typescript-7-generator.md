@@ -6,7 +6,7 @@ After `pnpm-lock.yaml` moved rolldown-plugin-dts from 0.27.1 to 0.27.2,
 any package lint that needed to refresh the shared oxlint build failed before oxlint started:
 
 ```sh
-mise run //packages/pi-plugins/auto-mode:lint:oxlint
+mise run //packages/pi-plugin/auto-mode:lint:oxlint
 ```
 
 The lint task calls `ensureOxlintConfig()`,
@@ -231,7 +231,7 @@ mise run //packages/config/oxlint:build:js:node
 The user-facing harness was:
 
 ```sh
-mise run //packages/pi-plugins/auto-mode:lint:oxlint
+mise run //packages/pi-plugin/auto-mode:lint:oxlint
 ```
 
 The failure reproduced on consecutive minimized runs and once through the complete lint task.

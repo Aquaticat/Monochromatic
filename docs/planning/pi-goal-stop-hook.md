@@ -11,7 +11,7 @@ Tracking issue:
 ## Goal
 
 Replace the globally installed `npm:@narumitw/pi-goal` package with a private,
-repository-owned Pi extension at `packages/pi-plugins/goal/`.
+repository-owned Pi extension at `packages/pi-plugin/goal/`.
 The package name will be `@monochromatic-dev/pi-goal`.
 
 The extension is a stop hook for one active objective.
@@ -52,7 +52,7 @@ The main issue changes are:
 
 The issue requirements that remain authoritative include:
 
-- Repository ownership under `packages/pi-plugins/goal/`.
+- Repository ownership under `packages/pi-plugin/goal/`.
 - Session custom-entry persistence and active-branch reconstruction.
 - Generation validation for stale completion and delayed callbacks.
 - No goal-state `tool_call` blocker.
@@ -87,14 +87,14 @@ The plan is based on these inspected sources:
 - Pi package behavior:
   `node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/
   @earendil-works/pi-coding-agent/docs/packages.md`.
-- Existing repository Pi package conventions under `packages/pi-plugins/`.
+- Existing repository Pi package conventions under `packages/pi-plugin/`.
 - Existing highest-expected-cost secondary-model selection in
-  `packages/pi-plugins/advisor/` and
+  `packages/pi-plugin/advisor/` and
   `packages/pi-shared/model-selection/`.
 - Structured judge transport and fallback behavior in
-  `packages/pi-plugins/auto-mode/src/judge.ts`,
-  `packages/pi-plugins/auto-mode/src/judge-stream.ts`,
-  and `packages/pi-plugins/auto-mode/src/judge-fallback.ts`.
+  `packages/pi-plugin/auto-mode/src/judge.ts`,
+  `packages/pi-plugin/auto-mode/src/judge-stream.ts`,
+  and `packages/pi-plugin/auto-mode/src/judge-fallback.ts`.
 - Prior failed grilling assumptions and user corrections in
   `docs/limitations/kimi.md`.
 
@@ -880,7 +880,7 @@ and ask-user flow.
 
 Move or generalize the implementation currently owned by:
 
-- `packages/pi-plugins/auto-mode/src/judge-fallback.ts`
+- `packages/pi-plugin/auto-mode/src/judge-fallback.ts`
 - shared transport portions of `judge.ts`
 - shared stream collection portions of `judge-stream.ts`
 - shared JSON extraction portions of `judge-json.ts`
@@ -903,7 +903,7 @@ A later effort may migrate it if a genuinely shared interface emerges.
 
 ## Goal package shape
 
-Create `packages/pi-plugins/goal/` with:
+Create `packages/pi-plugin/goal/` with:
 
 - Package name `@monochromatic-dev/pi-goal`.
 - `private: true`.
@@ -1220,7 +1220,7 @@ and `review_unavailable`.
 Add package tasks equivalent to sibling Pi plugins:
 
 ```toml
-# packages/pi-plugins/goal/mise.toml
+# packages/pi-plugin/goal/mise.toml
 [tasks."verify:extension"]
 depends = ["build"]
 run = "node src/mise.verify-extension.ts"
@@ -1274,20 +1274,20 @@ mise run //packages/pi-shared/model-review:lint:types
 mise run //packages/pi-shared/model-review:lint:oxlint
 mise run //packages/pi-shared/model-review:test:unit
 
-mise run //packages/pi-plugins/auto-mode:build
-mise run //packages/pi-plugins/auto-mode:lint:types
-mise run //packages/pi-plugins/auto-mode:lint:oxlint
-mise run //packages/pi-plugins/auto-mode:test:unit
+mise run //packages/pi-plugin/auto-mode:build
+mise run //packages/pi-plugin/auto-mode:lint:types
+mise run //packages/pi-plugin/auto-mode:lint:oxlint
+mise run //packages/pi-plugin/auto-mode:test:unit
 
-mise run //packages/pi-plugins/goal:build
-mise run //packages/pi-plugins/goal:lint:types
-mise run //packages/pi-plugins/goal:lint:oxlint
-mise run //packages/pi-plugins/goal:test:unit
-mise run //packages/pi-plugins/goal:verify:extension
-mise run //packages/pi-plugins/goal:verify:pi-runtime
+mise run //packages/pi-plugin/goal:build
+mise run //packages/pi-plugin/goal:lint:types
+mise run //packages/pi-plugin/goal:lint:oxlint
+mise run //packages/pi-plugin/goal:test:unit
+mise run //packages/pi-plugin/goal:verify:extension
+mise run //packages/pi-plugin/goal:verify:pi-runtime
 ```
 
-Run `mise run //packages/pi-plugins/goal:lint:types` manually after every TypeScript editing stage.
+Run `mise run //packages/pi-plugin/goal:lint:types` manually after every TypeScript editing stage.
 Do not substitute raw `tsc`,
 `tsdown`,
 or `bun test`.
@@ -1334,7 +1334,7 @@ and custom tool execution must succeed through Pi.
 Do not change real global settings until all disposable verification passes.
 Do not change project-local `.pi/settings.json` at any point.
 
-Document the local package installation in `packages/pi-plugins/goal/README.md`.
+Document the local package installation in `packages/pi-plugin/goal/README.md`.
 The final global package list must remove:
 
 ```text
@@ -1344,7 +1344,7 @@ npm:@narumitw/pi-goal
 and add:
 
 ```text
-/var/home/user/Monochromatic/packages/pi-plugins/goal
+/var/home/user/Monochromatic/packages/pi-plugin/goal
 ```
 
 Use Pi's package commands or an equivalent scoped settings edit that preserves every unrelated package entry.
@@ -1362,7 +1362,7 @@ After migration:
 
 Implementation is incomplete until it includes:
 
-- `packages/pi-plugins/goal/README.md`
+- `packages/pi-plugin/goal/README.md`
 - shared model-review `README.md`
 - updated auto-mode documentation naming shared review infrastructure
 - troubleshooting documentation for the stale global tool blocker

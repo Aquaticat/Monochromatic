@@ -142,7 +142,7 @@ The estimate uses Tokei code lines so comments and blank lines do not distort co
   per-child timeout and complete live history.
 - `jwu/pi-subagents`: 1,800 production and 2,311 test code lines. It lacks targeted operator
   interruption and per-child timeout.
-- Existing local `packages/pi-plugins/spawn`: 1,659 production and 1,236 test code lines.
+- Existing local `packages/pi-plugin/spawn`: 1,659 production and 1,236 test code lines.
   Its documentation-heavy project style occupies 3,424 physical production lines, which is a
   useful warning that physical line count will be materially higher than code-only count.
 - Local `packages/cli/mutation-test` plus its fixture: 4,718 current code lines excluding

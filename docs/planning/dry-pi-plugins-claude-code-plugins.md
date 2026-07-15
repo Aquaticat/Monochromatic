@@ -6,7 +6,7 @@ Status:
 
 ## Goal
 
-Remove duplicated logic between `packages/pi-plugins/*` and
+Remove duplicated logic between `packages/pi-plugin/*` and
 `packages/claude-code-plugins/*` by lifting genuinely shared agent-harness logic
 into `packages/agent-harness-shared/*`,
 following the pattern already proven there three times.
@@ -47,22 +47,22 @@ shared packages, each consumed by both clusters:
 
 - `agent-harness-shared/terminal-title`
   (`@monochromatic-dev/agent-harness-shared-terminal-title`):
-  consumed by `packages/pi-plugins/terminal-title` and
+  consumed by `packages/pi-plugin/terminal-title` and
   `packages/claude-code-plugins/source`.
   Both sides are reduced to a host adapter table mapping tool names
   (`bash`/`Bash`, `read`/`Read`) to shared `ToolTitleEntry` builders.
   DRY complete.
 - `agent-harness-shared/current-time-context`
   (`@monochromatic-dev/agent-harness-shared-current-time-context`):
-  consumed by `packages/pi-plugins/current-time-context` (a thin
+  consumed by `packages/pi-plugin/current-time-context` (a thin
   `pi.on('before_agent_start')` wrapper) and
   `packages/claude-code-plugins/source` (the `prompt-time` handler re-exports
   the same `formatTimeContext`).
   DRY complete.
 - `agent-harness-shared/shell-command-analyzer`
   (`@monochromatic-dev/agent-harness-shared-shell-command-analyzer`):
-  consumed by `packages/pi-plugins/guardrail`,
-  `packages/pi-plugins/auto-mode`, and
+  consumed by `packages/pi-plugin/guardrail`,
+  `packages/pi-plugin/auto-mode`, and
   `packages/claude-code-plugins/source` (guardrail).
   Owns `analyzeShellCommand`, `extractParamRefs`, `looksLikePath`.
   Shell-command parsing DRY complete.
@@ -99,7 +99,7 @@ Nothing to do.
 Parsing already shared via `agent-harnesses-shell-command-analyzer`.
 One verbatim duplicate remains:
 `invokesBunTest` is identical in
-`packages/pi-plugins/guardrail/src/bash-guard.ts` and
+`packages/pi-plugin/guardrail/src/bash-guard.ts` and
 `packages/claude-code-plugins/source/src/handlers/guardrail.ts`,
 same JSDoc, same
 `info.name === 'bun' && info.args[0] === 'test'` predicate over
@@ -122,7 +122,7 @@ Both files even import `splitWhitespace` from their own `text-scan`.
 Only the `PidMapping` payload shape (pi session path versus claude session path)
 and a couple of signatures differ.
 `text-scan`:
-`packages/pi-plugins/spawn/src/text-scan.ts` is an 85-line subset
+`packages/pi-plugin/spawn/src/text-scan.ts` is an 85-line subset
 (`isWhitespace` plus `splitWhitespace`) of
 `packages/claude-code-plugins/source/src/lib/text-scan.ts` (535 lines,
 used by five handlers).
@@ -136,11 +136,11 @@ Conceptual overlap only; the shared kernel is narrow.
 The two sides parse different input shapes:
 pi reads HTTP response headers from the `after_provider_response` event into a
 generic `RateLimitSnapshot` with `usedPercent`, `windowSeconds`, `paceScale`,
-`sampledAtMs` (`packages/pi-plugins/statusline/src/rate-limit-parse-helpers.ts`);
+`sampledAtMs` (`packages/pi-plugin/statusline/src/rate-limit-parse-helpers.ts`);
 claude reads JSON `rate_limits.five_hour` and `rate_limits.seven_day` tiers and
 derives `elapsed = windowSeconds - (resets_at - now)` at render time
 (`packages/claude-code-plugins/statusline/src/statusline.ts`).
-`packages/pi-plugins/statusline/README.md` already states it "ports only the
+`packages/pi-plugin/statusline/README.md` already states it "ports only the
 projected-overflow warning behavior from `claude-code-plugins/statusline`."
 The genuinely shared kernel is the projected-overrun model, the `->N%` marker,
 relative-time formatting, and threshold constants.
@@ -182,10 +182,10 @@ Steps:
    `packages/agent-harness-shared/shell-command-analyzer/src/`, exported from
    its `src/index.ts`, with unit tests.
 3. Commit as a standalone, verified, green-tree addition.
-4. Migrate `packages/pi-plugins/guardrail/src/bash-guard.ts` to import
+4. Migrate `packages/pi-plugin/guardrail/src/bash-guard.ts` to import
    `invokesBunTest` and `BUN_TEST_BAN_REASON` from the shared package; delete
    the local predicate and local ban-reason constant.
-   Run `mise run //packages/pi-plugins/guardrail:lint:types` and the guardrail
+   Run `mise run //packages/pi-plugin/guardrail:lint:types` and the guardrail
    tests.
 5. Migrate
    `packages/claude-code-plugins/source/src/handlers/guardrail.ts` the same way;
@@ -194,7 +194,7 @@ Steps:
 
 Optional in the original plan, now decided:
 the deny prose is byte-identical across both hosts (the same seven-line string
-in `packages/pi-plugins/guardrail/src/constants.ts` as `BUN_TEST_BLOCK_REASON`
+in `packages/pi-plugin/guardrail/src/constants.ts` as `BUN_TEST_BLOCK_REASON`
 and in `packages/claude-code-plugins/source/src/handlers/guardrail.ts` as
 `BUN_TEST_DENY_OUTPUT.permissionDecisionReason`). Dedup it.
 Co-locate the reason with the predicate that detects the violation:
@@ -281,7 +281,7 @@ Reconcile the four divergences found during verification:
 Steps follow the additive-first discipline:
 add `packages/agent-harness-shared/session-discovery` with tests, generic
 over `TMapping`;
-migrate `packages/pi-plugins/spawn/src/session-finder.ts` to a host adapter
+migrate `packages/pi-plugin/spawn/src/session-finder.ts` to a host adapter
 that resolves `byPidDir` and supplies the pi `PidMapping` parser;
 migrate
 `packages/claude-code-plugins/source/src/handlers/claude-spawn/session-finder.ts`
@@ -319,7 +319,7 @@ hiding distinct concepts.
 Lift the claude superset (535 lines) into the shared package.
 This is a one-directional relocation of Claude's broader text-scanning library,
 not a symmetric merge of equal duplicate files:
-`packages/pi-plugins/spawn/src/text-scan.ts` is an 85-line subset that only needs
+`packages/pi-plugin/spawn/src/text-scan.ts` is an 85-line subset that only needs
 `isWhitespace` and `splitWhitespace`.
 Delete the Pi file after migrating its two call sites to direct imports from the
 shared package.

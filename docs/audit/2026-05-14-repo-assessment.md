@@ -203,7 +203,7 @@ Strengths:
   `packages/module` has 118 test files,
    `packages/dev-script` has 50,
   `packages/webapp-forge` has 20,
-   `packages/pi-plugins` has 17,
+   `packages/pi-plugin` has 17,
    and `packages/cli` has 16.
 - Root `mise.toml` defines unit,
    browser,

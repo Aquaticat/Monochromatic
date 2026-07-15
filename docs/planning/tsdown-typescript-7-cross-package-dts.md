@@ -37,7 +37,7 @@ The implementation must preserve these existing behaviors:
 
 The current task graph is:
 
-1. `packages/pi-plugins/auto-mode/mise.toml` extends the root `lint:oxlint` task template.
+1. `packages/pi-plugin/auto-mode/mise.toml` extends the root `lint:oxlint` task template.
 2. The template in `mise.toml` calls `ensureOxlintConfig()` before invoking the oxlint wrapper.
 3. `ensureOxlintConfig()` considers source and configuration files from `packages/config/oxlint` and every package under
    `packages/oxlint-plugin`.
@@ -90,7 +90,7 @@ It failed on two consecutive runs with the same three missing declaration paths.
 The complete user-facing command also reproduced independently:
 
 ```sh
-mise run //packages/pi-plugins/auto-mode:lint:oxlint
+mise run //packages/pi-plugin/auto-mode:lint:oxlint
 ```
 
 The full task reached `ensureOxlintConfig()`,
@@ -305,7 +305,7 @@ and the aggregate project beats prebuild orchestration because it at least prese
 
 Once config-oxlint builds,
 the original lint command reaches three pre-existing TSDoc diagnostics in
-`packages/pi-plugins/auto-mode/src/ask-user.ts`.
+`packages/pi-plugin/auto-mode/src/ask-user.ts`.
 The implementation must fix them so the requested user-facing command is actually green:
 
 1. For `invokeTerminalNotification`,
@@ -378,9 +378,9 @@ not against the main checkout's ignored build outputs.
 6. Run auto-mode checks after the TSDoc correction:
 
    ```sh
-   mise run //packages/pi-plugins/auto-mode:lint:types
-   mise run //packages/pi-plugins/auto-mode:test:unit
-   mise run //packages/pi-plugins/auto-mode:lint:oxlint
+   mise run //packages/pi-plugin/auto-mode:lint:types
+   mise run //packages/pi-plugin/auto-mode:test:unit
+   mise run //packages/pi-plugin/auto-mode:lint:oxlint
    ```
 
    The final command is the end-user boundary from the original report and must report zero warnings and zero errors.
@@ -457,7 +457,7 @@ The implementation is complete because:
 - Config-oxlint lint and type lint pass.
 - Auto-mode's exposed TSDoc diagnostics are corrected without runtime changes;
   its type lint and unit tests pass.
-- `mise run //packages/pi-plugins/auto-mode:lint:oxlint` reaches real oxlint and reports zero warnings and zero errors.
+- `mise run //packages/pi-plugin/auto-mode:lint:oxlint` reaches real oxlint and reports zero warnings and zero errors.
 - Touching a bundled plugin source makes `ensureOxlintConfig()` rebuild the shared outputs.
 - No plugin prebuild is required.
 - Every comparable JavaScript output retains its recorded SHA-256 hash,

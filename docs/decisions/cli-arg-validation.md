@@ -47,7 +47,7 @@ Current state when this decision was made:
    `valibot@>=1.4.0`,
    Standard
   Schema-compatible).
-   It is used in `packages/pi-plugins/advisor/` and
+   It is used in `packages/pi-plugin/advisor/` and
   `packages/ssg/aquati.cat/`,
    but never in a CLI package.
 

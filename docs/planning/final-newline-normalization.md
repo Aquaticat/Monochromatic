@@ -285,7 +285,7 @@ The ordinary files identified during planning were:
 - `packages/linter/kotlin/build.gradle.kts`
 - `packages/module/toml-edit/src/fuzz/coverage-v8.ts`
 - `packages/module/toml-edit/src/values.ts`
-- `packages/pi-plugins/auto-mode/src/git-worktree-read-allowlist.ts`
+- `packages/pi-plugin/auto-mode/src/git-worktree-read-allowlist.ts`
 - `packages/ssg/aquati.cat/public/manifest.webmanifest`
 - `packages/ssg/aquati.cat/src/content/en/on-humanity.mdx`
 

@@ -19,19 +19,19 @@ The two alternatives (silent stub and pure removal) both fail under at least one
 `rg -n -e "AuthStorage|SettingsManager|FileAuthStorageBackend|InMemoryAuthStorageBackend|proper-lockfile|lockfile" /var/home/user/Monochromatic/packages/` returns zero matches.
 Every `@earendil-works/pi-coding-agent` import across the workspace is `import type { ... }`:
 
-- `packages/pi-plugins/auto-mode/src/index.ts:12-17`:
+- `packages/pi-plugin/auto-mode/src/index.ts:12-17`:
    `import type { ExtensionAPI, ExtensionContext, ToolCallEvent, ToolCallEventResult }`
-- `packages/pi-plugins/auto-mode/src/{ask-user.ts:14, budget-model.ts:15, budget-model-auth.ts:13, context.ts:18, evaluate.ts:16, index.unit.test.ts:8, signals.ts:15, tool-helpers.ts:18}`:
+- `packages/pi-plugin/auto-mode/src/{ask-user.ts:14, budget-model.ts:15, budget-model-auth.ts:13, context.ts:18, evaluate.ts:16, index.unit.test.ts:8, signals.ts:15, tool-helpers.ts:18}`:
    type-only
-- `packages/pi-plugins/morph-compact/src/{compaction.ts, compaction-handler.ts, compress-branch.ts, file-tracking.ts, formatting.ts, index.ts, ipc-launch.ts, types.ts}`:
+- `packages/pi-plugin/morph-compact/src/{compaction.ts, compaction-handler.ts, compress-branch.ts, file-tracking.ts, formatting.ts, index.ts, ipc-launch.ts, types.ts}`:
    type-only
-- `packages/pi-plugins/morph-compact/src/{compress-branch.unit.test.ts, file-tracking.unit.test.ts, formatting.unit.test.ts}`:
+- `packages/pi-plugin/morph-compact/src/{compress-branch.unit.test.ts, file-tracking.unit.test.ts, formatting.unit.test.ts}`:
    type-only
-- `packages/pi-plugins/terminal-title/src/{index.ts:27, index.unit.test.ts:13}`:
+- `packages/pi-plugin/terminal-title/src/{index.ts:27, index.unit.test.ts:13}`:
    type-only
 
 All three workspace pi packages declare `@earendil-works/pi-coding-agent` only under `peerDependencies` + `devDependencies`,
- never `dependencies` (see `packages/pi-plugins/auto-mode/package.json:26-37`).
+ never `dependencies` (see `packages/pi-plugin/auto-mode/package.json:26-37`).
 
 No first-party source constructs `AuthStorage`,
  `FileAuthStorageBackend`,
@@ -41,7 +41,7 @@ No first-party source constructs `AuthStorage`,
 
 ## pi-coding-agent runtime callers
 
-The package is consumed at runtime because `packages/pi-plugins/auto-mode` ships at `dist/final/node/index.mjs` and is loaded by the pi CLI binary (the host).
+The package is consumed at runtime because `packages/pi-plugin/auto-mode` ships at `dist/final/node/index.mjs` and is loaded by the pi CLI binary (the host).
 The relevant call sites inside the installed `@earendil-works/pi-coding-agent@0.74.0` dist:
 
 - `dist/main.js:377`:
@@ -135,7 +135,7 @@ Editing the silent stub to add the carve-out for one consumer weakens the stub c
    Causes `auth-storage.js:12` and `settings-manager.js:4` to throw `MODULE_NOT_FOUND` at module load.
    Since `dist/index.js:6,22` statically re-exports both,
     pi-coding-agent itself fails to load.
-   The runtime extension load chain (`packages/pi-plugins/auto-mode` -> host pi -> `pi-coding-agent/dist/index.js`) breaks.
+   The runtime extension load chain (`packages/pi-plugin/auto-mode` -> host pi -> `pi-coding-agent/dist/index.js`) breaks.
 
    - Pros:
       smallest possible install footprint.

@@ -1,6 +1,6 @@
 # GLM limitations
 
-Notes from reviewing `packages/pi-plugins/auto-mode`,
+Notes from reviewing `packages/pi-plugin/auto-mode`,
  which GLM authored end to end.
  A reference for future sessions:
  what to expect from GLM-authored code,
@@ -8,7 +8,7 @@ Notes from reviewing `packages/pi-plugins/auto-mode`,
  what to roll back.
 
 > **Status (2026-05-14):
->  the specific issues called out in this document have been fixed in `packages/pi-plugins/auto-mode`.
+>  the specific issues called out in this document have been fixed in `packages/pi-plugin/auto-mode`.
 > ** The fabricated-rationale docblocks were removed,
 >  the inappropriate splits inlined,
 >  and the em-dashes scrubbed.
@@ -20,7 +20,7 @@ Notes from reviewing `packages/pi-plugins/auto-mode`,
 Every extracted file in this package (12 of them) claims the same justification:
 
 ````text
-$ rg -n "stay within the line limit" packages/pi-plugins/auto-mode/src
+$ rg -n "stay within the line limit" packages/pi-plugin/auto-mode/src
 src/path-signals.ts:4:        Extracted from signals.ts to stay within the line limit.
 src/config-schemas.ts:4:      Extracted from config.ts to stay within the line limit.
 src/budget-model-auth.ts:4:   Extracted from budget-model.ts to stay within the line limit.
@@ -46,7 +46,7 @@ The model gave itself a stock reason because a reason was expected, then repeate
 AGENTS.md: "No em-dashes (`—`) or en-dashes (`–`); they're informal."
 
 ```text
-$ rg -c "—" packages/pi-plugins/auto-mode
+$ rg -c "—" packages/pi-plugin/auto-mode
 README.md:4
 src/system-prompt.ts:3   <- in the system prompt itself
 src/budget-model.ts:4

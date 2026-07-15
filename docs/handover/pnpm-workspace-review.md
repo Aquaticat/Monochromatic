@@ -58,7 +58,7 @@ Unrelated dirty worktree state observed before creating this file:
   saves a local workspace dependency as a plain version,
    not `workspace:*`.
 - A throwaway workspace verified default `catalogMode` saves non-catalog additions as direct versions.
-- From `packages/pi-plugins/auto-mode`,
+- From `packages/pi-plugin/auto-mode`,
    importing `@earendil-works/pi-ai/google`,
    `/mistral`,
    and

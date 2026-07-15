@@ -132,7 +132,7 @@ The current installation has thirteen duplicate executable names among the
 materialized package bins.
 For example,
  the sorted order makes
-`packages/pi-plugins/advisor/node_modules/.bin` win for `pi` and
+`packages/pi-plugin/advisor/node_modules/.bin` win for `pi` and
 `packages/cli/git-clone-size/node_modules/.bin` win for `tsc`.
 
 ## What does not work

@@ -82,7 +82,7 @@ and later debugging can recover exactly what happened.
 
 ## Recommended architecture
 
-Use one extension package under `packages/pi-plugins/agentic-context-management/`.
+Use one extension package under `packages/pi-plugin/agentic-context-management/`.
 The package registers one model-callable tool named `acm`
 and one `context` event handler.
 
@@ -471,7 +471,7 @@ Create:
 
 ```text
 # docs/planning/agentic-context-management-pi-extension.md
-packages/pi-plugins/agentic-context-management/
+packages/pi-plugin/agentic-context-management/
   package.json
   mise.toml
   src/index.ts
@@ -485,13 +485,13 @@ packages/pi-plugins/agentic-context-management/
 
 Use sibling pi packages as templates:
 
-- `packages/pi-plugins/current-time-context/` for simple extension package metadata,
+- `packages/pi-plugin/current-time-context/` for simple extension package metadata,
   build tasks,
   and verify task shape.
-- `packages/pi-plugins/morph-compact/` for a more complex extension with commands,
+- `packages/pi-plugin/morph-compact/` for a more complex extension with commands,
   event handlers,
   and renderer helpers.
-- `packages/pi-plugins/spawn/src/pi-test-harness.ts` for a fake `ExtensionAPI` harness pattern.
+- `packages/pi-plugin/spawn/src/pi-test-harness.ts` for a fake `ExtensionAPI` harness pattern.
 
 Expected package metadata:
 
