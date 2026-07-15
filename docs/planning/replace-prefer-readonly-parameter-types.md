@@ -528,12 +528,24 @@ The semantic-rule implementation and shared-configuration migration are complete
   `67592dce1`,
   `efb6b7b8f`,
   `99a536320`,
-  and `def95c837` audit DataView reads and propagate Buffer conversion effects through Kiwi canvas and ZIP parsing;
+  and `def95c837` audit `DataView` reads and propagate `Buffer` conversion effects through Kiwi canvas and ZIP parsing;
   Kiwi passes type lint,
   Oxlint,
   and build;
   it has no package unit-test task;
-- no post-change root count exists yet because processes `proc_52` and `proc_53` were terminated without output;
+- host and provider task 33 is complete;
+- stable root process `proc_117` reports exactly 40 readonly semantic diagnostics,
+  down from 168 in `proc_38`,
+  with no semantic bridge failure,
+  omitted callable summary,
+  or duplicate caught-value formatter finding;
+  the remaining Git,
+  parser,
+  archive,
+  graphics,
+  callback,
+  response,
+  and runtime boundaries belong to residual task 34;
   package-level host-provider migration continues before the next root sweep;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
