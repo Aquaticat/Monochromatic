@@ -8,6 +8,8 @@ description = "Minimal Wayland + PipeWire music player built with Slint. Ad-hoc 
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 [lib]
 name = "music_player"
@@ -45,14 +47,6 @@ directories = "5"
 # default (non-hybrid) build compiles on STABLE Rust; the `hybrid`/AVX2 feature is
 # nightly-only and left OFF. See docs/troubleshooting/gxhash-aes-target-feature.md.
 gxhash = "3"
-# The logging facade and its subscriber (src/logging.rs). tracing mirrors the shared
-# truepeak-core logging; tracing-subscriber installs the stderr sink with an env-filter
-# (RUST_LOG, default `info`). Both already resolve transitively (turso -> tracing), so this
-# only promotes them to direct deps. We deliberately do NOT bridge the `log` facade (no
-# tracing-log init): ICU's `log`-routed CJK-segmentation warnings must stay silent, exactly
-# as today with no subscriber (see the icu_provider note below).
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Same Slint release family as the slint dependency in this file: the winit
 # backend is constructed explicitly (not via the default backend selector) so a
 # window-attributes hook can set the Wayland app_id, which KDE needs to attach
@@ -120,6 +114,14 @@ symphonia = { version = "0.6", features = ["all"] }
 # queued writes). NOT `rt-multi-thread`: one actor thread is enough and the spike
 # confirmed a current-thread runtime drives Turso's local futures.
 tokio = { version = "1", features = ["rt", "sync", "macros"] }
+# The logging facade and its subscriber (src/logging.rs). tracing mirrors the shared
+# truepeak-core logging; tracing-subscriber installs the stderr sink with an env-filter
+# (RUST_LOG, default `info`). Both already resolve transitively (turso -> tracing), so this
+# only promotes them to direct deps. We deliberately do NOT bridge the `log` facade (no
+# tracing-log init): ICU's `log`-routed CJK-segmentation warnings must stay silent, exactly
+# as today with no subscriber (see the icu_provider note below).
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Shared true-peak core: the Catmull-Rom meter and attenuate-only normalization gain
 # (src/truepeak.rs), plus, behind the `service` feature, the whole persistent decision
 # cache (`DecisionCache`) and the policy resolvers (`resolve_decision`, `resolve_full_scan`)
@@ -241,3 +243,7 @@ strip = "symbols"
 # stays at the default. Release builds run ~2 min vs ~10s unoptimised; the
 # run-debug mise task is the fast-iteration path. panic stays "unwind" (default).
 lto = true
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[workspace]

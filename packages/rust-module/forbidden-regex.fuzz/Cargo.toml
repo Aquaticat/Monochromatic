@@ -6,6 +6,8 @@ publish = false
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 [package.metadata]
 cargo-fuzz = true

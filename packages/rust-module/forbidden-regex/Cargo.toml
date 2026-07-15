@@ -19,6 +19,8 @@ description = "Restricted byte-oriented regex engine for line-at-a-time secret s
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 [lib]
 name = "forbidden_regex"
@@ -80,3 +82,7 @@ opt-level = 3
 panic = "unwind"
 overflow-checks = true
 strip = true
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[workspace]

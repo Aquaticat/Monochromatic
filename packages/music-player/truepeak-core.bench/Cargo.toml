@@ -14,6 +14,8 @@ description = "Corpus evaluation and corrected-target parameter search for the s
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 # Standalone crate, its own workspace root, matching the core crate and the Android
 # island so no ancestor Cargo.toml absorbs it.

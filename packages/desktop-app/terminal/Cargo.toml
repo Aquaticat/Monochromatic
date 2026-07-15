@@ -8,6 +8,8 @@ description = "Slint desktop terminal prototype backed by Ghostty's libghostty-v
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 [lib]
 name = "terminal_app"
@@ -50,3 +52,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # versioned together. "1.17.0" here is Cargo's default caret requirement
 # (">=1.17.0, <2.0.0"), not an exact pin.
 slint-build = "1.17.0"
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[workspace]

@@ -1,11 +1,13 @@
 [package]
 name = "musicplayer-native"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 publish = false
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 # Standalone crate: this Android package is a Gradle island that no parent cargo
 # workspace owns. An empty [workspace] table pins this crate as its own root, so a
@@ -84,6 +86,6 @@ tokio = { version = "1", features = ["rt", "sync", "macros"] }
 # once behind a OnceLock. env-filter reads RUST_LOG (default info). paranoid-android reaches
 # logcat through ndk-sys 0.5, which does NOT request `-llog`, so build.rs links liblog; the
 # `api-30` feature is left OFF to keep min SDK 26.
+paranoid-android = "0.2.2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-paranoid-android = "0.2.2"

@@ -19,6 +19,8 @@ description = "Pluggable Rust linter written in Rust. First rule: max-lines, a p
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 [lib]
 name = "monochromatic_rust_linter"
@@ -62,3 +64,7 @@ lto = true
 codegen-units = 1
 opt-level = 3
 strip = true
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[workspace]

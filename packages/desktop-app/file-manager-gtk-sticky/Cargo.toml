@@ -24,10 +24,20 @@ file-manager = { path = "../file-manager" }
 # `ListView::scroll_to`, used to initialize each list's keyboard cursor so the first Enter
 # activates the selected row (keyboard parity with the Electron prototype's boundary test).
 gtk4 = { version = "0.11", features = ["v4_12"] }
-# Non-blocking logging, same pattern as the original.
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-appender = "0.2"
 # Machine-readable observed-state output for the nested-Wayland boundary test; the same shallow
 # JSON schema the Electron prototype's main process writes, so both tests share assertions.
 serde_json = "1"
+# Non-blocking logging, same pattern as the original.
+tracing = "0.1"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Canonical lint policy, enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[lints.clippy]
+disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[workspace]

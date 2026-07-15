@@ -19,6 +19,8 @@ description = "Minimal single-app nested Wayland compositor for GUI testing: hos
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 # Library holds the display-independent logic (control protocol parsing, the
 # US-layout char-to-keycode table, argument parsing) so it can be unit-tested
@@ -103,3 +105,7 @@ codegen-units = 1
 opt-level = 3
 overflow-checks = true
 strip = true
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[workspace]

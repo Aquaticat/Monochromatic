@@ -10,6 +10,8 @@ description = "Throughput benchmark comparing forbidden-regex against the regex 
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 [[bin]]
 name = "forbidden-regex-bench"
@@ -48,3 +50,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 lto = true
 codegen-units = 1
 opt-level = 3
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[workspace]

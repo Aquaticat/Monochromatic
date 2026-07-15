@@ -8,6 +8,8 @@ description = "Qt/cxx-qt desktop file-manager: native Wayland drag-and-drop, suc
 
 [lints.clippy]
 disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
 
 [[bin]]
 name = "monochromatic-file-manager-qt"
@@ -29,10 +31,14 @@ cxx-qt-lib = { version = "0.9.1", features = ["full"] }
 # (see src/qt_log.cpp) routes Qt's own qDebug/qCDebug into the same off-thread sink, so
 # Qt-internal logs cannot block a frame either. Never enable QSG_RENDER_TIMING in production.
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [build-dependencies]
 # `link_qt_object_files` links the QML module's generated object files (the qrc
 # resource embedding qml/main.qml and the registered QObject) into the binary.
 cxx-qt-build = { version = "0.9.1", features = ["link_qt_object_files"] }
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[workspace]
