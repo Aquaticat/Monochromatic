@@ -1,0 +1,53 @@
+{
+  "name": "@monochromatic-dev/config-rolldown",
+  "version": "0.0.1",
+  "private": false,
+  "keywords": [
+    "rolldown",
+    "config",
+    "monochromatic"
+  ],
+  "dependencies": {
+    "browserslist": "catalog:",
+    "rolldown": "catalog:",
+    "rolldown-plugin-dts": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "type": "module",
+  "files": [
+    "src",
+    "LICENSES"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/config/rolldown"
+  },
+  "exports": {
+    "./.ts": {
+      "default": "./src/index.ts"
+    },
+    "./.node.ts": {
+      "default": "./src/index.node.ts"
+    },
+    "./.client.ts": {
+      "default": "./src/index.client.ts"
+    }
+  },
+  "description": "Shared raw-rolldown build configuration for Monochromatic packages.",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
