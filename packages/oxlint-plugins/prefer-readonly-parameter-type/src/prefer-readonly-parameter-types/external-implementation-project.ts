@@ -26,6 +26,10 @@ import {
   contentDigest,
   effectCacheRoot,
 } from './effect-summary-cache-identity.ts';
+import {
+  configureNativeApiChildShutdown,
+  nativeApiChild,
+} from './typescript-sync-native-shutdown.ts';
 
 /**
  * Generated external configured-project schema.
@@ -231,6 +235,7 @@ export function openExternalImplementation({
    * Independent TypeScript API avoids invalidating caller snapshot mid-analysis.
    */
   const api = new API({ cwd: dirname(configPath,), },);
+  configureNativeApiChildShutdown(nativeApiChild(api,),);
   /**
    * Configured project snapshot for shipped implementation.
    */
