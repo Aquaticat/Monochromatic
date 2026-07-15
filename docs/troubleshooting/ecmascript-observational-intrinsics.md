@@ -46,6 +46,8 @@ The audited outcomes are:
   `Object.keys`,
   and `Object.values` can dispatch caller-owned proxy or accessor hooks and therefore target argument 0;
 - `Object.freeze` changes supplied property descriptors and targets argument 0;
+- `Reflect.get` and `Reflect.ownKeys` can dispatch target proxy or accessor hooks;
+  three-argument `Reflect.get` can also expose its explicit receiver to accessors;
 - other integrity and property reflection calls remain opaque until audited individually.
 
 ## Root cause

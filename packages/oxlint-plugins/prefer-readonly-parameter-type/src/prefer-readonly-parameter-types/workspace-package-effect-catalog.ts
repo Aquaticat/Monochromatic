@@ -188,6 +188,21 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   {
     provenance: {
       kind: 'package',
+      packageName: '@monochromatic-dev/dev-script-file-enforcer',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'overwriteEach',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+      propertyNames: ['files',],
+    },],
+    evidence: 'dev-script-file-enforcer 0.0.1 io/write.ts sha256 4a01fcd2e1ac1a43365c3591b3d477f6fd2d4be0d2fe8798c10df4046c353842 invokes source capture and stores mirrored file state',
+  },
+  {
+    provenance: {
+      kind: 'package',
       packageName: '@monochromatic-dev/module-zip-writer',
       major: 0,
     },

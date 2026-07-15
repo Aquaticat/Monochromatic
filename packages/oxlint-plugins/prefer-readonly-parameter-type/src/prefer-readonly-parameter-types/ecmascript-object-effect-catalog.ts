@@ -40,6 +40,35 @@ export const ECMASCRIPT_OBJECT_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },),
   {
     provenance: { kind: 'ecmascript', },
+    ownerType: 'Reflect',
+    member: 'get',
+    targets: [
+      {
+        kind: 'argument',
+        index: 0,
+      },
+      {
+        kind: 'argument',
+        index: 2,
+        callArgumentCount: 3,
+      },
+    ],
+    evidence: 'ECMA-262 commit 1355a23e Reflect.get invokes target get semantics and optional receiver accessors',
+    authority: ecma262Authority({ algorithm: 'Reflect.get', },),
+  },
+  {
+    provenance: { kind: 'ecmascript', },
+    ownerType: 'Reflect',
+    member: 'ownKeys',
+    targets: [{
+      kind: 'argument',
+      index: 0,
+    },],
+    evidence: 'ECMA-262 commit 1355a23e Reflect.ownKeys invokes target own-property-key semantics',
+    authority: ecma262Authority({ algorithm: 'Reflect.ownKeys', },),
+  },
+  {
+    provenance: { kind: 'ecmascript', },
     ownerType: 'ObjectConstructor',
     member: 'freeze',
     targets: [{

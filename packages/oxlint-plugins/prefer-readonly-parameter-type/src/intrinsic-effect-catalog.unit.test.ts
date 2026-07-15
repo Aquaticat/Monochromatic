@@ -201,6 +201,23 @@ await describe({
           throw new Error('Expected ZipWriter.add effect.',);
         expect(effect.targets,).toEqual([{ kind: 'receiver', },],);
         expect(effect.opaqueTargets,).toEqual([{ kind: 'argument', index: 1, },],);
+        const overwriteEach = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/dev-script-file-enforcer',
+            major: 0,
+          },
+          ownerType: 'globalThis',
+          member: 'overwriteEach',
+        },);
+        expect(overwriteEach,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (overwriteEach === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected overwriteEach effect.',);
+        expect(overwriteEach.targets,).toEqual([{
+          kind: 'argument',
+          index: 0,
+          propertyNames: ['files',],
+        },],);
       },
     },),
     it({
@@ -353,6 +370,25 @@ await describe({
             && (effect.targets[0]?.kind === 'argument')
             && (effect.targets[0].index === 0);
         },),).toBe(true,);
+        const reflectGet = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'Reflect',
+          member: 'get',
+        },);
+        const reflectOwnKeys = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'Reflect',
+          member: 'ownKeys',
+        },);
+        expect(reflectGet,).not.toBe(NO_INTRINSIC_EFFECT,);
+        expect(reflectOwnKeys,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if ((reflectGet === NO_INTRINSIC_EFFECT) || (reflectOwnKeys === NO_INTRINSIC_EFFECT))
+          throw new Error('Expected Reflect hook effects.',);
+        expect(reflectGet.targets,).toEqual([
+          { kind: 'argument', index: 0, },
+          { kind: 'argument', index: 2, callArgumentCount: 3, },
+        ],);
+        expect(reflectOwnKeys.targets,).toEqual([{ kind: 'argument', index: 0, },],);
         const arrayWith = intrinsicEffect({
           provenance: { kind: 'ecmascript', },
           ownerType: 'ReadonlyArray',
