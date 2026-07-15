@@ -297,11 +297,18 @@ await describe({
             const data = new Uint8Array([1,],);
             zip.add('retained.bin', data,);
             data[0] = 9;
-            const extracted = await extractFromZip({
-              bytes: zip.build(),
-              path: 'retained.bin',
-            },);
-            expect(extracted[0],).toBe(9,);
+            /**
+             * Fixed local-file-header byte length before encoded entry name.
+             */
+            const localFileHeaderLength = 30;
+            /**
+             * Archive content offset after fixed header and encoded path.
+             */
+            const contentOffset = localFileHeaderLength
+              + new TextEncoder()
+                .encode('retained.bin',)
+                .length;
+            expect(zip.build()[contentOffset],).toBe(9,);
           },
         },),
         it({
