@@ -1,8 +1,9 @@
 # Replace `prefer-readonly-parameter-types` with a project rule
 
 Status:
- replacement implementation and capability plus observational migration complete;
- opaque-effect migration in progress.
+ replacement implementation,
+ migration,
+ and migration-specific verification complete.
 
 Last updated:
  2026-07-14.
@@ -10,6 +11,58 @@ Last updated:
 ## Implementation progress
 
 The user confirmed shared understanding and authorized implementation.
+
+### Final verification record
+
+The migration-specific acceptance gate is complete.
+
+- Final single-worker root process `proc_287` ran `OXLINT_THREADS=1 mise run lint:oxlint` over 2,545 files.
+  It reported 3,792 warnings and 665 errors from existing non-readonly workspace findings.
+  Its captured output contains zero occurrences of the replacement rule ID,
+  `SemanticBridgeError`,
+  the omitted-owned-callable failure,
+  or `context canceled`.
+- Root process `proc_288` ran `mise run test:unit` successfully from each test's nearest package task root.
+  Default discovery selected 506 tests,
+  found 64 inactive-tree tests available only to explicit discovery,
+  and leaked zero deprecated or paused tests into the default selection.
+- Package type fanout checked 122 supported package tasks with no failures.
+  The semantic-host and disposable external-consumer tasks passed in `proc_274` and `proc_273`.
+- The semantic plugin's final type,
+  unit,
+  and Oxlint tasks passed in `proc_283` to `proc_285`.
+  An unchanged single-worker package run in `proc_297` completed in 6.3 seconds with zero findings.
+- TypeScript synchronous API shutdown now guards both the main semantic client and demand-driven external-project
+  clients.
+  The final root sweep and package tests contain no native-child cancellation output.
+- Done's self-contained browser bundle passed create and search flows against `DB_PATH=:memory:` with no console or page
+  errors.
+- File-enforcer now stages lock-owner metadata privately and publishes it by same-directory rename.
+  Commit `d2240c4c5` adds a deterministic pause at the stage-to-publish boundary,
+  where contenders observe no owner before publication and a live complete owner afterward.
+- Commit `764a3a766` guards the intended generated-policy boundary:
+  canonical repository and forbidden-string policies retain the lazy-provider contract,
+  while generated Git CLI mirrors omit the stale inlined contract.
+  Final file-enforcer build,
+  type,
+  unit,
+  and Oxlint tasks passed in `proc_290` and `proc_294` to `proc_296`.
+- Generated files are synchronized and idempotent.
+  `git diff --check` passed,
+  and working-tree review preserved unrelated desktop,
+  Cargo,
+  lockfile,
+  Slopo,
+  audit,
+  and license changes.
+
+Root dprint,
+Stylelint,
+Markdown,
+and type-aware Oxlint still have pre-existing findings outside this migration.
+They remain separate work rather than being hidden,
+suppressed,
+or rewritten as readonly acceptance failures.
 
 ### Current continuation state
 
@@ -626,9 +679,12 @@ The semantic-rule implementation and shared-configuration migration are complete
   `packages/cli/terminal-exec`,
   and `packages/webapp-productivity/wc` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
 
-Remaining gates are final root semantic baseline,
-migrated consumer acceptance,
-and publication and workspace verification.
+Final root semantic,
+consumer,
+publication,
+browser,
+performance,
+and workspace verification gates are complete.
 
 Verified package tasks:
 
@@ -669,12 +725,8 @@ Verified package tasks:
 - `OXLINT_THREADS=1 mise run lint:oxlint` in stable root processes `proc_21` and `proc_26`.
 
 Next action:
-run the final repository semantic sweep,
-then complete root tests,
-consumer acceptance,
-browser verification,
-performance checks,
-and working-tree review.
+keep unrelated workspace lint baselines and inactive-tree `--all` dependency restoration outside this completed
+migration.
 
 ## Continuity contract
 

@@ -326,6 +326,14 @@ The native server cannot handle `SIGKILL`,
 so it cannot print a cancellation error.
 The `beforeExit` hook remains so TypeScript's later `exit` listener finds no live child.
 
+Demand-driven external package analysis creates separate `API` clients in
+`external-implementation-project.ts`.
+The first shutdown correction guarded only the main client in `typescript-sync-adapter.ts`,
+so a final root sweep could still print one cancellation line when an external-project client exited.
+Both construction sites now immediately pass their native child through
+`configureNativeApiChildShutdown(nativeApiChild(api))`.
+A repository search confirms those are the only `new API(...)` sites in the semantic package.
+
 ### Mapped readonly state is exposed only as an unnamed number
 
 `typescript@7.0.2/dist/api/sync/api.d.ts:387` exposes this field:
@@ -438,6 +446,10 @@ The published-consumer regression opens the same API without calling `closeSeman
 It asserts that natural process shutdown produces the semantic result on stdout and an empty stderr stream.
 A full parallel package unit run after the forced-signal fix produced no `context canceled` line on either captured stream.
 A package Oxlint run captured after the fix also contained no cancellation line.
+Final root process `proc_287` ran the single-worker workspace Oxlint task after both client sites were guarded.
+Its stdout and stderr contain zero occurrences of `context canceled`,
+`SemanticBridgeError`,
+or the omitted-owned-callable failure.
 
 A regression opens the same unchanged source twice and requires both sessions to expose the same decoded
 `SourceFile` object.
@@ -463,7 +475,8 @@ and 6,668 ms.
 - byte-identical sources reuse the current immutable snapshot and decoded `SourceFile` object;
 - temporary `openFiles` discovery followed by `openProjects` and `closeFiles` avoids stale API-open-file semantics.
 - TypeScript source offsets map to exact Oxlint diagnostic locations.
-- guarded TypeScript 7.0.2 child control forces channel-owned termination to `SIGKILL`;
+- every main or demand-driven external `API` client immediately receives guarded TypeScript 7.0.2 child control;
+- guarded child control forces channel-owned termination to `SIGKILL`;
 - `beforeExit` bridge cleanup closes the native child before TypeScript's `exit` kill handler runs.
 
 ### Failing or unsupported catalog
@@ -565,7 +578,70 @@ not TypeScript:
 the installed API already retains decoded unchanged sources.
 No upstream performance issue should be filed.
 
-The filing constraints resolve as follows:
+GitHub issue searches for `"context canceled" API`,
+`SIGTERM sync API close`,
+and `API shutdown cancellation` found no matching TypeScript Go report.
+The shutdown noise is upstream behavior:
+the shipped sync client sends `SIGTERM` during `close()`,
+and the shipped server reports expected signal cancellation as an error on stderr.
+Upstream can fix it by treating cancellation during an explicit API shutdown as successful termination or by giving the
+client a quiet shutdown operation.
+A focused upstream report is warranted,
+but none was published because opening an external issue requires the user's authorization.
+The repository workaround remains pinned and shape-guarded until that report or an upstream fix lands.
+
+### Shutdown noise filing constraints
+
+1.  **Is it really upstream's fault?
+    ** Yes.
+    Both signal delivery and cancellation-error printing are in the shipped TypeScript sync client and API server.
+2.  **Can upstream fix it?
+    ** Yes.
+    Explicit shutdown can use a quiet protocol or treat expected shutdown cancellation as success.
+3.  **Are they supporting this use case?
+    ** The subpath is intentionally unstable,
+    but TypeScript ships the client,
+    server,
+    and explicit `close()` operation together.
+4.  **Would the repository welcome the report?
+    ** `CONTRIBUTING.md` permits focused,
+    human-reviewed bug reports and specifically disclosed AI assistance.
+5.  **Will they fix it?
+    ** Unknown.
+    No matching issue or stated shutdown policy was found.
+6.  **Was a minimal fix prototyped?
+    ** No upstream patch was produced.
+    The consumer-side forced-signal workaround isolates the emitting path and removes the diagnostic.
+
+Suggested issue title:
+`typescript/unstable/sync API close can print context canceled to stderr`.
+
+Suggested report body:
+
+~~~md
+With `typescript@7.0.2`, concurrent users of `typescript/unstable/sync` can emit a bare
+`context canceled` line to stderr during otherwise successful shutdown.
+
+`dist/api/syncChannel.js` destroys the channel streams and calls `child.kill()`,
+which sends `SIGTERM`.
+`cmd/tsgo/api.go` builds its server context with `signal.NotifyContext` and prints the resulting cancellation error to
+stderr before returning status 1.
+Under concurrent process load,
+the child can observe `SIGTERM` before pipe EOF ends the server cleanly.
+
+Expected:
+closing a successfully used sync API client produces no stderr output.
+
+Actual:
+shutdown can print `context canceled` even though all semantic requests completed successfully.
+
+A consumer workaround that forces the channel-owned child termination to `SIGKILL` removes the line,
+but it depends on private unstable client fields.
+Could explicit client shutdown use a quiet protocol operation,
+or could the API server treat signal cancellation during expected shutdown as success?
+~~~
+
+### Readonly API gap filing constraints
 
 1.  **Is it really upstream's fault?
     ** No for API instability,
