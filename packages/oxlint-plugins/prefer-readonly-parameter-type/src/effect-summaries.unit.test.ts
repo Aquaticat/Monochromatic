@@ -1020,19 +1020,31 @@ await describe({
     it({
       name: 'reuses persistent summaries across independent Node processes',
       fn: async () => {
-        using cache = disposableCacheDirectory();
+        using project = disposableCacheDirectory();
+        /** Persistent cache isolated from concurrently changing fixture projects. */
+        const cacheRoot = join(project.path, '.effect-cache',);
+        /** Single-source project analyzed identically by both processes. */
+        const inputPath = join(project.path, 'input.ts',);
         /** Independent process probe importing only built package API. */
-        const probePath = join(cache.path, 'persistent-probe.mjs',);
+        const probePath = join(project.path, 'persistent-probe.mjs',);
+        writeFileSync(
+          join(project.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["input.ts"]}\n',
+        );
+        writeFileSync(
+          inputPath,
+          'export function inspect(value: { text: string; }): string { return value.text; }\n',
+        );
         /** Probe source printing cache counters for exact fixture analysis. */
         const probeSource = `import { readFileSync } from 'node:fs';\nimport { buildEffectSummaryIndex, closeSemanticBridge, effectSummaryCacheStats, openSemanticFile } from ${JSON.stringify(BUILT_ENTRY_URL)};\nconst [fileName, cacheRoot] = process.argv.slice(2);\nconst sourceText = readFileSync(fileName, 'utf8');\nconst session = openSemanticFile({ fileName, sourceText, hasBOM: false });\nbuildEffectSummaryIndex({ project: session.project, activeSourceFile: session.sourceFile, cacheRootOverride: cacheRoot });\nconsole.log(JSON.stringify(effectSummaryCacheStats()));\ncloseSemanticBridge();\n`;
         writeFileSync(probePath, probeSource,);
         const first = await spawn(
           'node',
-          [probePath, FIXTURE_PATH, cache.path,],
+          [probePath, inputPath, cacheRoot,],
         );
         const second = await spawn(
           'node',
-          [probePath, FIXTURE_PATH, cache.path,],
+          [probePath, inputPath, cacheRoot,],
         );
         /** Cold-process counters showing direct analysis and writes. */
         const coldStats = JSON.parse(first.stdout.trim(),) as {
