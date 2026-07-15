@@ -225,8 +225,6 @@ function combineProbeSignals({
  * @param options - runtime options
  *
  * @returns async generator of snapshots
- *
- * @mutates options - DOM commit 5796f716 AbortSignal.any dependent-signal relations.
  */
 async function* estimateRemote(
   {
@@ -348,8 +346,6 @@ async function* estimateRemote(
  * @param options - runtime options
  *
  * @returns async generator of progressive snapshots
- *
- * @mutates options - DOM commit 5796f716 AbortSignal.any dependent-signal relations.
  *
  * @example
  * ```ts
