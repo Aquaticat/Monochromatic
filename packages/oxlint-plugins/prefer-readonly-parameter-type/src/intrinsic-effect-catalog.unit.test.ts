@@ -799,19 +799,24 @@ await describe({
         if (loggerEffect === NO_INTRINSIC_EFFECT)
           throw new Error('Expected logger capability effect.',);
         expect(loggerEffect.targets,).toEqual([{ kind: 'receiver', },],);
-        const ignoreTestEffect = intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: 'ignore',
-            major: 7,
-          },
-          ownerType: 'Ignore',
-          member: 'test',
-        },);
-        expect(ignoreTestEffect,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if (ignoreTestEffect === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected ignore matcher cache effect.',);
-        expect(ignoreTestEffect.targets,).toEqual([{ kind: 'receiver', },],);
+        expect([
+          'add',
+          'ignores',
+          'test',
+        ].every(function ignoreCacheEffect(member,): boolean {
+          const effect = intrinsicEffect({
+            provenance: {
+              kind: 'package',
+              packageName: 'ignore',
+              major: 7,
+            },
+            ownerType: 'Ignore',
+            member,
+          },);
+          return (effect !== NO_INTRINSIC_EFFECT)
+            && (effect.targets.length === 1)
+            && (effect.targets[0]?.kind === 'receiver');
+        },),).toBe(true,);
       },
     },),
     it({

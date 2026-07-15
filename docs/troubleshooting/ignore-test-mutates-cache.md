@@ -50,6 +50,14 @@ return cache[path] = parent.ignored
   : this._rules.test(path, checkUnignored, MODE_IGNORE)
 ```
 
+`index.js:728` to `730` passes `_ignoreCache` into the same mutating path:
+
+```js
+ignores (path) {
+  return this._test(path, this._ignoreCache, false).ignored
+}
+```
+
 Finally,
 `index.js:741` to `743` passes the receiver's `_testCache` into that mutating path:
 
@@ -59,7 +67,9 @@ test (path) {
 }
 ```
 
-Therefore both `add` and `test` have proven receiver effects.
+Therefore `add`,
+`ignores`,
+and `test` have proven receiver effects.
 The mutation is internal cache or rule state rather than mutation of the path string argument.
 
 ## Verification
@@ -85,7 +95,7 @@ Observed output:
 ### Patterns that work
 
 - Catalog `Ignore.add` as a receiver effect.
-- Catalog `Ignore.test` as a receiver effect.
+- Catalog `Ignore.ignores` and `Ignore.test` as receiver effects.
 - Keep path strings outside the mutation target because they cannot carry caller-owned object state.
 
 ### Patterns that fail closed
@@ -112,7 +122,7 @@ and member entries:
 }
 ```
 
-Apply the same receiver target to `add`.
+Apply the same receiver target to `add` and `ignores`.
 This preserves matcher caching and exposes its real state transition.
 The tradeoff is maintaining an audited catalog entry when the installed package major changes.
 

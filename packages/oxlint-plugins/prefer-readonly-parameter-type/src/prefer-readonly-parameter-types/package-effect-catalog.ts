@@ -44,6 +44,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },),
   ...[
     'add',
+    'ignores',
     'test',
   ].map(function ignoreMatcherMutation(member,): IntrinsicEffectEntry {
     return receiverEffect({
