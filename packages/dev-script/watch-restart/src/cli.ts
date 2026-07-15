@@ -154,7 +154,7 @@ const parser = object({
  *
  * @returns parsed args matching {@link ParsedArgs}
  *
- * @mutates options through \@optique/run\@1.1.1 . runSync output and exit callback capabilities
+ * @mutates options through https://github.com/dahlia/optique/blob/b8d39082fdeb37bb16c68b2dc2396d4c9c45b1d5/packages/run/src/run.ts runSync output and exit callback capabilities
  *
  * @example
  * ```ts
