@@ -63,6 +63,8 @@ const TARGETS = [
  *
  * @param l - parent logger for tagged output
  *
+ * @mutates parentLogger through tagged logger retention
+ *
  * @example
  * ```ts
  * await ensureFavicons({ l: rootLogger });

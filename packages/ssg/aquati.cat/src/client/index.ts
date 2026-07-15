@@ -42,6 +42,8 @@ type TextEntry = {
  *
  * @param element - container element to walk
  *
+ * @mutates element through document.createTreeWalker root retention and traversal
+ *
  * @returns array of text nodes with their start offsets
  */
 function collectTextNodes(element: HTMLElement,): TextEntry[] {

@@ -36,6 +36,8 @@ import { writePage, } from './write-page.ts';
  *
  * @param l - parent logger for tagged output
  *
+ * @mutates parentLogger through tagged logger retention
+ *
  * @example
  * ```ts
  * await generatePages({ posts, renderedContent, siteUrl: 'https://example.com', byLang, validLangs, l: rootLogger });

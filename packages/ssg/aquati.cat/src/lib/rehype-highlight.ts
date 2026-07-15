@@ -139,7 +139,7 @@ function getLanguage(codeElement: ForeignBorrowed<Element>,): string | typeof NO
     /**
      * Per-iteration string cast since className entries may be numbers in the hast spec.
      */
-    const name = String(cls,);
+    const name = cls;
     if (name.startsWith(LANGUAGE_PREFIX,))
       return name.slice(LANGUAGE_PREFIX.length,);
   }

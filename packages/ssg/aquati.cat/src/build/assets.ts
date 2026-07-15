@@ -97,6 +97,8 @@ async function copyTreeToDist(
  *
  * @param l - parent logger for tagged output
  *
+ * @mutates parentLogger through tagged logger retention
+ *
  * @example
  * ```ts
  * await generateAssets({ siteUrl: 'https://example.com', contentDir: 'src/content', byLang, validLangs, l: rootLogger });

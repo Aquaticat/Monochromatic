@@ -13,6 +13,44 @@ import type { Post, } from './content.ts';
 //region By language and name
 
 /**
+ * Groups posts by one primitive key while preserving encounter order.
+ *
+ * @param posts - posts to group
+ *
+ * @param keyForPost - key selector
+ *
+ * @returns mutable buckets in encounter order
+ */
+function groupPostsBy<const Key,>({
+  posts,
+  keyForPost,
+}: {
+  readonly posts: readonly Post[];
+  readonly keyForPost: (post: Post,) => Key;
+}): Map<Key, Post[]> {
+  /**
+   * Encounter-ordered groups under construction.
+   */
+  const groups = new Map<Key, Post[]>();
+  for (const post of posts) {
+    /**
+     * Existing bucket for current post key.
+     */
+    const key = keyForPost(post,);
+    const existing = groups.get(key,);
+    if (existing === undefined) {
+      groups.set(
+        key,
+        [post,],
+      );
+      continue;
+    }
+    existing.push(post,);
+  }
+  return groups;
+}
+
+/**
  * Groups posts by language code.
  *
  * @param posts - all loaded posts
@@ -26,12 +64,12 @@ import type { Post, } from './content.ts';
  * ```
  */
 export function groupByLang(posts: readonly Post[],): ReadonlyMap<Locale, Post[]> {
-  return Map.groupBy(
+  return groupPostsBy({
     posts,
-    function byLang(post,) {
+    keyForPost: function byLang(post,) {
       return post.lang;
     },
-  );
+  },);
 }
 
 /**
@@ -48,14 +86,12 @@ export function groupByLang(posts: readonly Post[],): ReadonlyMap<Locale, Post[]
  * ```
  */
 export function groupByName(posts: readonly Post[],): Record<string, Post[]> {
-  return Object.fromEntries(
-    Map.groupBy(
-      posts,
-      function byName(post,) {
-        return post.name;
-      },
-    ),
-  );
+  return Object.fromEntries(groupPostsBy({
+    posts,
+    keyForPost: function byName(post,) {
+      return post.name;
+    },
+  },),);
 }
 
 //endregion By language and name

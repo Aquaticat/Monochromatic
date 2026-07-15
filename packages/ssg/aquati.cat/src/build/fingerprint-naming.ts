@@ -16,6 +16,8 @@ const HASH_LENGTH = 10;
  *
  * @param input - binary data to hash
  *
+ * @mutates input through createHash('sha256',).update native-boundary byte access
+ *
  * @returns hex-encoded SHA-256 digest
  *
  * @example
