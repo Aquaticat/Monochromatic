@@ -63,7 +63,7 @@ const TARGETS = [
  *
  * @param l - parent logger for tagged output
  *
- * @mutates parentLogger through tagged logger retention
+ * @mutates l through tagged logger retention
  *
  * @example
  * ```ts
@@ -71,12 +71,16 @@ const TARGETS = [
  * ```
  */
 export async function ensureFavicons(
-  { l: parentLogger, }: { readonly l: Logger; },
+  { l, }: { readonly l: Logger; },
 ): Promise<void> {
+  /**
+   * Parent logger retained by tagged wrapper.
+   */
+  const parentLogger = l;
   /**
    * Function-scoped logger tagged with the caller name for traceable log lines.
    */
-  const l = tagged({
+  const childLogger = tagged({
     tag: ensureFavicons.name,
     l: parentLogger,
   },);
@@ -96,11 +100,11 @@ export async function ensureFavicons(
   );
 
   if (checks.every(Boolean,)) {
-    l.info('all favicon files present',);
+    childLogger.info('all favicon files present',);
     return;
   }
 
-  l.info('generating favicon files from SVG source',);
+  childLogger.info('generating favicon files from SVG source',);
 
   /**
    * Rasterised PNG buffers prepared in parallel for the favicon family and PWA icons.
@@ -193,7 +197,7 @@ export async function ensureFavicons(
     ),
   ],);
 
-  l.info('favicon files generated',);
+  childLogger.info('favicon files generated',);
 }
 
 //region Standalone execution: allows running via `mise run generate:favicons`

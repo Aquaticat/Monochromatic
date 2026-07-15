@@ -97,7 +97,7 @@ async function copyTreeToDist(
  *
  * @param l - parent logger for tagged output
  *
- * @mutates parentLogger through tagged logger retention
+ * @mutates l through tagged logger retention
  *
  * @example
  * ```ts
@@ -110,7 +110,7 @@ export async function generateAssets(
     contentDir,
     byLang,
     validLangs,
-    l: parentLogger,
+    l,
   }: {
     readonly siteUrl: string;
     readonly contentDir: string;
@@ -120,9 +120,13 @@ export async function generateAssets(
   },
 ): Promise<void> {
   /**
+   * Parent logger retained by tagged wrapper.
+   */
+  const parentLogger = l;
+  /**
    * Function-scoped logger tagged with the caller name for traceable log lines.
    */
-  const l = tagged({
+  const childLogger = tagged({
     tag: generateAssets.name,
     l: parentLogger,
   },);
@@ -194,5 +198,5 @@ export async function generateAssets(
     },),
   ],);
 
-  l.info('generated CSS, RSS, robots.txt, and static assets',);
+  childLogger.info('generated CSS, RSS, robots.txt, and static assets',);
 }

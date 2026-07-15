@@ -13,6 +13,28 @@ import type { Post, } from './content.ts';
 //region By language and name
 
 /**
+ * Returns locale grouping key for one post.
+ *
+ * @param post - post to group
+ *
+ * @returns post locale
+ */
+function postLanguage(post: Post,): Locale {
+  return post.lang;
+}
+
+/**
+ * Returns slug grouping key for one post.
+ *
+ * @param post - post to group
+ *
+ * @returns post slug
+ */
+function postName(post: Post,): string {
+  return post.name;
+}
+
+/**
  * Groups posts by one primitive key while preserving encounter order.
  *
  * @param posts - posts to group
@@ -37,6 +59,9 @@ function groupPostsBy<const Key,>({
      * Existing bucket for current post key.
      */
     const key = keyForPost(post,);
+    /**
+     * Existing group for current key.
+     */
     const existing = groups.get(key,);
     if (existing === undefined) {
       groups.set(
@@ -66,9 +91,7 @@ function groupPostsBy<const Key,>({
 export function groupByLang(posts: readonly Post[],): ReadonlyMap<Locale, Post[]> {
   return groupPostsBy({
     posts,
-    keyForPost: function byLang(post,) {
-      return post.lang;
-    },
+    keyForPost: postLanguage,
   },);
 }
 
@@ -88,9 +111,7 @@ export function groupByLang(posts: readonly Post[],): ReadonlyMap<Locale, Post[]
 export function groupByName(posts: readonly Post[],): Record<string, Post[]> {
   return Object.fromEntries(groupPostsBy({
     posts,
-    keyForPost: function byName(post,) {
-      return post.name;
-    },
+    keyForPost: postName,
   },),);
 }
 

@@ -126,6 +126,12 @@ The rule uses that private path only as fail-closed evidence:
   or digest drift rejects the entry.
 
 The gate does not claim that arbitrary native C++ bindings are analyzable.
+For example,
+`Hash.update` in embedded `internal/crypto/hash` delegates caller-owned bytes to a native handle.
+The exact JavaScript module digest is
+`dd602adcb3c1fc6f1877782cef9ed3e6da5b32bf4a5b159f882d10a9d21d103c`,
+but that source cannot prove the native boundary never affects supplied storage.
+Such calls retain local boundary contracts.
 Node APIs without audited embedded JavaScript evidence remain opaque.
 
 ## Resolution

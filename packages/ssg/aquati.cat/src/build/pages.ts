@@ -36,7 +36,7 @@ import { writePage, } from './write-page.ts';
  *
  * @param l - parent logger for tagged output
  *
- * @mutates parentLogger through tagged logger retention
+ * @mutates l through tagged logger retention
  *
  * @example
  * ```ts
@@ -50,7 +50,7 @@ export async function generatePages(
     siteUrl,
     byLang,
     validLangs,
-    l: parentLogger,
+    l,
   }: {
     readonly posts: readonly Post[];
     readonly renderedContent: ReadonlyMap<string, string>;
@@ -61,9 +61,13 @@ export async function generatePages(
   },
 ): Promise<void> {
   /**
+   * Parent logger retained by tagged wrapper.
+   */
+  const parentLogger = l;
+  /**
    * Function-scoped logger tagged with the caller name for traceable log lines.
    */
-  const l = tagged({
+  const childLogger = tagged({
     tag: generatePages.name,
     l: parentLogger,
   },);
@@ -179,5 +183,5 @@ export async function generatePages(
   ];
 
   await Promise.all(writes,);
-  l.info(`generated ${writes.length} pages`,);
+  childLogger.info(`generated ${writes.length} pages`,);
 }
