@@ -1121,6 +1121,14 @@ AP5:
  `build:js:client` task,
  `@monochromatic-dev/config-tsdown` devDependency.
 
+SGD:
+ Dir segments singular;
+ package name = `@monochromatic-dev/` + path,
+ `/` -> `-`.
+Rename dir + name + consumers together.
+Exemptions:
+ `docs/planning/singular-dir-name-invariant.md`.
+
 ## Before declaring work complete
 
 ### Package completeness

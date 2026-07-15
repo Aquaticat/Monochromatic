@@ -107,16 +107,15 @@ Everything in the exemption decisions:
 tool-mandated dirs, terms of art, skill identities, acronyms, non-plural `s`-enders,
 and all Rust crate names.
 
-## New AGENTS.md rules (drafts)
+## New AGENTS.md rule
 
-- `SGD`: Repo-chosen dir segments use singular nouns.
-  Exempt: tool-mandated names, acronyms, skill identities,
-  established terms of art (`dotfiles`, `forbidden-strings`, `import-attributes`).
-- `PNP`: Workspace package name equals `@monochromatic-dev/` plus
-  the path under the workspace packages root with `/` replaced by `-`.
-  Rename dir and name together; update every consumer in the same change.
-
-Tag codes `SGD` and `PNP` were checked free in `AGENTS.md` at decision time.
+One merged rule, `SGD` (the user folded the planned `PNP` into it):
+dir segments singular;
+package name equals `@monochromatic-dev/` plus the package path with `/` replaced by `-`;
+rename dir, name, and consumers together.
+This doc is the rule's exemption inventory:
+tool-mandated names, acronyms, skill identities,
+established terms of art (`dotfiles`, `forbidden-strings`, `import-attributes`).
 
 ## Batch order
 
