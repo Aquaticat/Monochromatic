@@ -812,7 +812,7 @@ The shift is **unrelated to the walker fix**:
   ~2700 to 2860 (+5%);
    tracked byte volume shifted from ~21 MiB to
   19.8 MiB.
-   New content under `packages/pi-plugins/auto-mode/src/` triggers
+   New content under `packages/pi-plugin/auto-mode/src/` triggers
   two true rule violations (rules 104 and 319 in
   `signals.unit.test.ts`) and apparently more AC prefix-match queueing
   that drives extra per-file `find_all` invocations.

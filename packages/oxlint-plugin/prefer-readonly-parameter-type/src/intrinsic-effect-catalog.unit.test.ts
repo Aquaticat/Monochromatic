@@ -69,7 +69,7 @@ const SHARED_SOURCE_PATH = fileURLToPath(new URL(
 
 /** Auto-mode tool source used for exact Pi predicate provenance. */
 const AUTO_MODE_TOOL_SOURCE_PATH = fileURLToPath(new URL(
-  '../../../pi-plugins/auto-mode/src/tool-helpers.ts',
+  '../../../pi-plugin/auto-mode/src/tool-helpers.ts',
   import.meta.url,
 ),);
 
@@ -81,7 +81,7 @@ const AUTO_MODE_TOOL_SOURCE = readFileSync(
 
 /** Auto-mode runtime source used for exact global timer provenance. */
 const AUTO_MODE_RUNTIME_SOURCE_PATH = fileURLToPath(new URL(
-  '../../../pi-plugins/auto-mode/src/judge-runtime.ts',
+  '../../../pi-plugin/auto-mode/src/judge-runtime.ts',
   import.meta.url,
 ),);
 
@@ -93,7 +93,7 @@ const AUTO_MODE_RUNTIME_SOURCE = readFileSync(
 
 /** Pi extension source used for exact package method provenance. */
 const PI_EXTENSION_SOURCE_PATH = fileURLToPath(new URL(
-  '../../../pi-plugins/auto-mode/src/register-propose-trust.ts',
+  '../../../pi-plugin/auto-mode/src/register-propose-trust.ts',
   import.meta.url,
 ),);
 
@@ -117,7 +117,7 @@ const MCP_STDIO_SOURCE = readFileSync(
 
 /** Guardrail source used for exact ignore matcher provenance. */
 const GUARDRAIL_SOURCE_PATH = fileURLToPath(new URL(
-  '../../../pi-plugins/guardrail/src/path-guard.ts',
+  '../../../pi-plugin/guardrail/src/path-guard.ts',
   import.meta.url,
 ),);
 

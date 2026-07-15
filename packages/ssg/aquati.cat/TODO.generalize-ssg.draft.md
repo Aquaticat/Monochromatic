@@ -75,7 +75,7 @@ The SSG looks for `site.config.ts` in the current working directory by conventio
 
 - [ ] Create `src/config/schema.ts` with a valibot schema (the workspace standard;
        see `src/lib/content.ts:21`
-      and the `config-schemas.ts` convention in `packages/pi-plugins/advisor` and `packages/pi-plugins/auto-mode`).
+      and the `config-schemas.ts` convention in `packages/pi-plugin/advisor` and `packages/pi-plugin/auto-mode`).
       Do not use zod;
        it is not a dependency and was migrated away (`docs/migration/zod-to-valibot.md`).
 - [ ] Export `SupportedLocale` (`'ca' | 'en' | 'zh'`) and the UI label key union from the package.

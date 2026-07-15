@@ -272,7 +272,7 @@ await describe({
            * Real Pi plugin source path containing current call.
            */
           const fileName = fileURLToPath(new URL(
-            `../../../pi-plugins/${probe.pluginDirectory ?? 'advisor'}/src/${probe.relativePath}`,
+            `../../../pi-plugin/${probe.pluginDirectory ?? 'advisor'}/src/${probe.relativePath}`,
             import.meta.url,
           ),);
           /**

@@ -44,7 +44,7 @@ const HELPER_PATH = fileURLToPath(new URL(
 
 /** Statusline source proving audited object-property callback invocation. */
 const STATUSLINE_USAGE_PATH = fileURLToPath(new URL(
-  '../../../pi-plugins/statusline/src/usage-warning.ts',
+  '../../../pi-plugin/statusline/src/usage-warning.ts',
   import.meta.url,
 ),);
 
