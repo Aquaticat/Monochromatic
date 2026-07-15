@@ -10,21 +10,14 @@ import {
   join,
   resolve,
 } from 'node:path';
-import { fileURLToPath, } from 'node:url';
-
-import spawn from 'nano-spawn';
+import { rolldown, } from 'rolldown';
+import { dts, } from 'rolldown-plugin-dts';
 
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-/** Workspace-installed tsdown executable driving declaration bundler. */
-const TSDOWN_BIN = fileURLToPath(new URL(
-  '../../../../node_modules/.bin/tsdown',
-  import.meta.url,
-),);
 
 /** Disposable declaration fixture workspace. */
 type DeclarationFixture = {
@@ -102,19 +95,20 @@ export type ClearCallable = {
         );
         /** Declaration output directory. */
         const outDir = join(fixture.path, 'dist',);
-        await spawn(
-          TSDOWN_BIN,
-          [
-            entryPath,
-            '--no-config',
-            '--dts',
-            '--out-dir',
-            outDir,
-            '--tsconfig',
-            tsconfigPath,
-          ],
-          { cwd: fixture.path, },
-        );
+        /** Declaration-bundling build driven through the rolldown JS API. */
+        const declarationBuild = await rolldown({
+          input: entryPath,
+          cwd: fixture.path,
+          plugins: [dts({
+            generator: 'oxc',
+            tsconfig: tsconfigPath,
+          },),],
+        },);
+        await declarationBuild.write({
+          dir: outDir,
+          format: 'es',
+        },);
+        await declarationBuild.close();
         /** Bundled declaration filename selected independent of module suffix. */
         const declarationName = readdirSync(outDir,)
           .find(function declarationFile(fileName,): boolean {

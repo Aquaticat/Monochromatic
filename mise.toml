@@ -405,7 +405,7 @@ const shouldBuildOxlintConfig = () => {
       join(packageDir, 'src'),
       join(packageDir, 'package.json'),
       join(packageDir, 'tsconfig.json'),
-      join(packageDir, 'tsdown.node.config.ts'),
+      join(packageDir, 'rolldown.node.config.ts'),
     ]),
     join(monorepoRoot, 'pnpm-lock.yaml'),
     join(monorepoRoot, 'pnpm-workspace.yaml'),
@@ -508,13 +508,13 @@ shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."build:js:browser"]
-run = "tsdown --config tsdown.browser.config.ts"
+run = "rolldown --configLoader native --config rolldown.browser.config.ts"
 
 [task_templates."build:js:client"]
-run = "tsdown --config tsdown.client.config.ts"
+run = "rolldown --configLoader native --config rolldown.client.config.ts"
 
 [task_templates."build:js:node"]
-run = "tsdown --config tsdown.node.config.ts"
+run = "rolldown --configLoader native --config rolldown.node.config.ts"
 
 [task_templates."watch:build"]
 shell = "node --input-type=module-typescript -e"
@@ -525,13 +525,13 @@ shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."watch:build:js:browser"]
-run = "tsdown --watch --config tsdown.browser.config.ts"
+run = "rolldown --watch --configLoader native --config rolldown.browser.config.ts"
 
 [task_templates."watch:build:js:client"]
-run = "tsdown --watch --config tsdown.client.config.ts"
+run = "rolldown --watch --configLoader native --config rolldown.client.config.ts"
 
 [task_templates."watch:build:js:node"]
-run = "tsdown --watch --config tsdown.node.config.ts"
+run = "rolldown --watch --configLoader native --config rolldown.node.config.ts"
 
 [task_templates.test]
 shell = "node --input-type=module-typescript -e"
@@ -842,36 +842,6 @@ TSC_SINGLE_THREADED = "1"
 # Standalone repository-wide semantic Oxlint sweep for rule migrations and diagnostics baselines.
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
-
-# Parallel whole-repository Oxlint: fans out per-package lint:oxlint through the
-# bounded worker pool (each instance stays single-threaded because the semantic
-# bridge is process-local), then covers root-level files the package scopes
-# never reach. Wall time approaches the slowest package instead of the serial
-# whole-repo sweep; the single-process `lint:oxlint` above stays authoritative
-# for migration baselines.
-[tasks."lint:oxlint:fanout"]
-description = "Oxlint every package in parallel single-threaded instances, then root-level files"
-shell = "node --input-type=module-typescript -e"
-run = [
-  "{{vars.fanout_packages}}",
-  { tasks = ["lint:oxlint:rootfiles"] },
-]
-[tasks."lint:oxlint:fanout".env]
-FANOUT_TASK = "lint:oxlint"
-OXLINT_THREADS = "1"
-
-# Root-level remainder for the fanout: everything the per-package scopes do not
-# cover (root *.config.ts and non-package trees).
-[tasks."lint:oxlint:rootfiles"]
-hide = true
-description = "Oxlint root-level files outside package lint scopes"
-shell = "node --input-type=module-typescript -e"
-run = """
-const { execFileSync } = await import('node:child_process')
-execFileSync('node', ['packages/dev-script/task-util/dist/final/node/oxlint-wrapper.mjs', '--type-aware', '--ignore-pattern', 'packages'], { stdio: 'inherit' })
-"""
-[tasks."lint:oxlint:rootfiles".env]
-OXLINT_THREADS = "1"
 
 [tasks."lint:dprint"]
 hide = true
@@ -1211,14 +1181,10 @@ _.path = [
   "packages/claude-code-plugins/session-start-housekeeping/node_modules/.bin",
   "packages/claude-code-plugins/stop-reminders/node_modules/.bin",
   "packages/claude-code-plugins/terminal-title/node_modules/.bin",
-  "packages/config/stylelint/node_modules/.bin",
   "packages/desktop-app/electron-counter/node_modules/.bin",
   "packages/desktop-app/electron-infra/node_modules/.bin",
   "packages/desktop-app/file-manager-electron/node_modules/.bin",
-  "packages/dev-script/deps-cube/node_modules/.bin",
-  "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/git-policies/cli/node_modules/.bin",
-  "packages/git-policies/repository/node_modules/.bin",
   "packages/kwin/key-helper/node_modules/.bin",
   "packages/mcp/mvm/node_modules/.bin",
   "packages/module/pnpm-workspace-catalog/node_modules/.bin",
@@ -1235,7 +1201,6 @@ _.path = [
   "packages/pi-plugins/terminal-title/node_modules/.bin",
   "packages/pi-plugins/thinking-defaults/node_modules/.bin",
   "packages/pi-shared/model-selection/node_modules/.bin",
-  "packages/rolldown-plugins/import-attributes/node_modules/.bin",
   "packages/ssg/aquati.cat/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
   "packages/webapp-productivity/done-postcss/node_modules/.bin",

@@ -14,10 +14,9 @@
     "h3": "catalog:"
   },
   "devDependencies": {
-    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }

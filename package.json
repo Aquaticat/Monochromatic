@@ -37,7 +37,7 @@
     "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",
     "stylelint": "catalog:",
     "typescript": "catalog:",
-    "tsdown": "catalog:",
+    "rolldown": "catalog:",
     "@playwright/test": "catalog:",
     "postcss-html": "catalog:",
     "@types/node": "catalog:",

@@ -13,11 +13,11 @@ This plugin bridges the gap.
 ## Usage
 
 ```ts
-// tsdown.node.config.ts
+// rolldown.node.config.ts
 import {
   importAttributesPlugin,
 } from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
-import { defineConfig, } from 'tsdown';
+import { defineConfig, } from 'rolldown';
 
 export default defineConfig({
   plugins: [importAttributesPlugin(),],

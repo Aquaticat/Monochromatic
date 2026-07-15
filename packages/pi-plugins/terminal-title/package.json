@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "catalog:",
-    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:"

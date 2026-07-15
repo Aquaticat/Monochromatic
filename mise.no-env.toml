@@ -404,7 +404,7 @@ const shouldBuildOxlintConfig = () => {
       join(packageDir, 'src'),
       join(packageDir, 'package.json'),
       join(packageDir, 'tsconfig.json'),
-      join(packageDir, 'tsdown.node.config.ts'),
+      join(packageDir, 'rolldown.node.config.ts'),
     ]),
     join(monorepoRoot, 'pnpm-lock.yaml'),
     join(monorepoRoot, 'pnpm-workspace.yaml'),
@@ -507,13 +507,13 @@ shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."build:js:browser"]
-run = "tsdown --config tsdown.browser.config.ts"
+run = "rolldown --configLoader native --config rolldown.browser.config.ts"
 
 [task_templates."build:js:client"]
-run = "tsdown --config tsdown.client.config.ts"
+run = "rolldown --configLoader native --config rolldown.client.config.ts"
 
 [task_templates."build:js:node"]
-run = "tsdown --config tsdown.node.config.ts"
+run = "rolldown --configLoader native --config rolldown.node.config.ts"
 
 [task_templates."watch:build"]
 shell = "node --input-type=module-typescript -e"
@@ -524,13 +524,13 @@ shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."watch:build:js:browser"]
-run = "tsdown --watch --config tsdown.browser.config.ts"
+run = "rolldown --watch --configLoader native --config rolldown.browser.config.ts"
 
 [task_templates."watch:build:js:client"]
-run = "tsdown --watch --config tsdown.client.config.ts"
+run = "rolldown --watch --configLoader native --config rolldown.client.config.ts"
 
 [task_templates."watch:build:js:node"]
-run = "tsdown --watch --config tsdown.node.config.ts"
+run = "rolldown --watch --configLoader native --config rolldown.node.config.ts"
 
 [task_templates.test]
 shell = "node --input-type=module-typescript -e"

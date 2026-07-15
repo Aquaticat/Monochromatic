@@ -13,11 +13,10 @@
     "@msgpack/msgpack": "catalog:"
   },
   "devDependencies": {
-    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:"
+    "rolldown": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

@@ -16,12 +16,11 @@
     "@monochromatic-dev/config-oxlint-shared": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@monochromatic-dev/config-oxlint-test-support": "workspace:*",
-    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
-    "nano-spawn": "catalog:",
-    "tsdown": "catalog:"
+    "nano-spawn": "catalog:"
   },
   "type": "module",
   "files": [

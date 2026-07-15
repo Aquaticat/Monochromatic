@@ -21,7 +21,7 @@ packages/claude-code-plugins/
     package.json                       Slim; declares bin name and depends on source
     mise.toml                          Slim; lint tasks only
     tsconfig.json                      One-line extends
-    tsdown.node.config.ts              Spreads the shared .node.ts config; overrides outDir
+    rolldown.node.config.ts              Spreads the shared .node.ts config; overrides outDir
     bundle/node/index.mjs              Committed bundled entry; what marketplace install runs
     README.md                          Per-plugin documentation
   statusline/                          Not a Claude Code plugin; configured directly in
@@ -66,9 +66,9 @@ await runHookPlugin({
 },);
 ```
 
-The standard tsdown build bundles the shim with the source package contents
+The standard rolldown build bundles the shim with the source package contents
 inlined via `alwaysBundle: [/^@monochromatic-dev\//]` in
-`@monochromatic-dev/config-tsdown/.node.ts`.
+`@monochromatic-dev/config-rolldown/.node.ts`.
  The bundled output goes to
 `bundle/node/index.mjs` (a tracked directory,
  unlike gitignored `dist/`;
@@ -159,18 +159,26 @@ source package:
 `source/src/runtime/handler-runtime.ts` absorbs the equivalent
 `readStdin`/`writeOutput` logic.
 
-## ADR; per-plugin tsdown wrappers, not multi-entry from source
+## ADR; per-plugin rolldown config wrappers, not multi-entry from source
+
+Recorded against the tsdown toolchain;
+tsdown was replaced by raw rolldown through
+`@monochromatic-dev/config-rolldown` on 2026-07-15
+(`docs/planning/tsdown-removal.md`).
+The decision's shape carries over unchanged
+(per-plugin config wrappers, `perEntryNodeConfig`, committed `bundle/node/`),
+so tsdown mentions in the alternatives below are historical.
 
 ### Decision
 
-Each plugin keeps its own `tsdown.node.config.ts` (a few lines,
+Each plugin keeps its own `rolldown.node.config.ts` (a few lines,
  spreading the
-shared `@monochromatic-dev/config-tsdown/.node.ts` with the committed
+shared `@monochromatic-dev/config-rolldown/.node.ts` with the committed
 `bundle/node` outDir override).
  The source package is
 source-only;
  it does not own a build orchestrator.
- A full build runs N tsdown
+ A full build runs N rolldown
 invocations in parallel via `mise`'s task fanout.
 
 ### Context
@@ -180,13 +188,13 @@ Three layouts were considered for bundling N plugins from one source package:
 1. **Per-plugin tsdown wrappers (chosen).
    ** Each plugin has its own one-line
    tsdown config.
-    Build runs N tsdown invocations in parallel.
+    Build runs N rolldown invocations in parallel.
     Per-plugin
    directory contains:
     minimal `package.json`,
     `mise.toml`,
     `tsconfig.json`,
-   `tsdown.node.config.ts`,
+   `rolldown.node.config.ts`,
     `.claude-plugin/plugin.json`,
     `README.md`,
    `src/index.ts` (shim),
@@ -290,7 +298,7 @@ without any of the trade-offs of options 2 or 3.
 
 ### Consequences
 
-- Per-plugin directories continue to contain their own `tsdown.node.config.ts`,
+- Per-plugin directories continue to contain their own `rolldown.node.config.ts`,
   `tsconfig.json`,
    `mise.toml`,
    and `package.json`.

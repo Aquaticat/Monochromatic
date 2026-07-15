@@ -24,11 +24,11 @@ run = "tsc --project tsconfig.build.json"
 
 [tasks."build:js:main"]
 description = "Bundle Electron main process to self-contained ESM"
-run = "tsdown --config tsdown.main.config.ts"
+run = "rolldown --configLoader native --config rolldown.main.config.ts"
 
 [tasks."build:ts:tools"]
 description = "Bundle build, distribution, and Wayland test tools"
-run = "tsdown --config tsdown.tools.config.ts"
+run = "rolldown --configLoader native --config rolldown.tools.config.ts"
 
 [tasks."build:stage"]
 description = "Copy static assets and write the staged app package manifest"
