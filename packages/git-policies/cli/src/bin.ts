@@ -83,7 +83,7 @@ type WrapperRuntimeResolution =
  *
  * @returns loaded config or captured failure
  *
- * @mutates args through trusted runtime configuration discovery
+ * @mutates args through resolveRuntimeConfig trusted configuration discovery
  */
 async function resolveWrapperRuntime(args: readonly string[],): Promise<WrapperRuntimeResolution> {
   try {
