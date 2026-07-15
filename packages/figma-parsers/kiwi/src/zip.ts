@@ -283,6 +283,8 @@ function parseCentralDirectory(
  *
  * @param offset - Central entry offset.
  *
+ * @mutates buffer through Buffer.from value conversion and native byte access
+ *
  * @returns {@link ParsedZipEntry} with next offset.
  *
  * @example
