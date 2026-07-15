@@ -61,7 +61,7 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
         callArgumentCount: 2,
       },
     ],
-    evidence: `${CONTAINER_EVIDENCE}; walkAtRules delegates to walk and each, updates receiver iterator state, can change a RegExp selector lastIndex, and invokes selected callback with receiver children`,
+    evidence: `${CONTAINER_EVIDENCE}; delegates to walk and each, updates receiver iterator state, can change a RegExp selector lastIndex, and invokes selected callback with receiver children; postcss.Container_.walkAtRules`,
   },
   {
     provenance: POSTCSS_PROVENANCE,
@@ -76,7 +76,7 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       },
     ],
     receiverValuesReachResult: true,
-    evidence: `${NODE_EVIDENCE}; cloneNode observes enumerable receiver and override state through constructors, accessors, or proxy traps and retains source identity without mutating the receiver`,
+    evidence: `${NODE_EVIDENCE}; cloneNode observes enumerable receiver and override state through constructors, accessors, or proxy traps and retains source identity without mutating the receiver; postcss.AtRule_.clone`,
   },
   {
     provenance: POSTCSS_PROVENANCE,
@@ -90,7 +90,7 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
         index: 1,
       },
     ],
-    evidence: `${NODE_EVIDENCE}; error observes receiver-reachable source and input state and option properties while constructing a CssSyntaxError`,
+    evidence: `${NODE_EVIDENCE}; observes receiver-reachable source and input state and option properties while constructing a CssSyntaxError; postcss.Node_.error`,
   },
   {
     provenance: POSTCSS_PROVENANCE,
@@ -110,7 +110,7 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       receiverParameterIndexes: [0,],
     },],
     invokedArgumentIndexes: [0,],
-    evidence: `${NODE_EVIDENCE}; toString observes receiver state and invokes a supplied stringifier with the receiver`,
+    evidence: `${NODE_EVIDENCE}; observes receiver state and invokes a supplied stringifier with the receiver; postcss.Node_.toString`,
   },
   {
     provenance: POSTCSS_PROVENANCE,
