@@ -497,6 +497,20 @@ The semantic-rule implementation and shared-configuration migration are complete
   Oxlint,
   build,
   and unit tests;
+- commits `01cb2752f`,
+  `db1b51186`,
+  `f17220bcf`,
+  `20d7d40d3`,
+  and `9f537124b` audit Lezer and workspace TOML observations,
+  remove dishonest watcher option projections,
+  and propagate timer,
+  async-context,
+  rejection,
+  and edit effects through file-enforcer;
+  file-enforcer passes type lint,
+  Oxlint,
+  build,
+  and unit tests;
 - no post-change root count exists yet because processes `proc_52` and `proc_53` were terminated without output;
   package-level host-provider migration continues before the next root sweep;
 - `packages/dev-script/task-util`,
