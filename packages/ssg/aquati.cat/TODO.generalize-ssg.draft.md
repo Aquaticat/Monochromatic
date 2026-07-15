@@ -207,10 +207,10 @@ Replace each hardcoded site-specific constant with a value read from the validat
    `:44,51`);
    thread `config.url`.
 - [ ] Branding (closes the half-fixed token claim in the prior plan):
-  - [ ] `src/styles/tokens.ts:120-121` defines `--primary-light: #bf97e3` and `--primary-dark: #4e318f`.
+  - [ ] `src/style/tokens.ts:120-121` defines `--primary-light: #bf97e3` and `--primary-dark: #4e318f`.
         Source these from `config.brand` when present,
      default to the current values otherwise.
-  - [ ] `src/templates/head.ts:151-163` hardcodes the same two colors as `theme-color` meta tags.
+  - [ ] `src/template/head.ts:151-163` hardcodes the same two colors as `theme-color` meta tags.
         These are not CSS custom properties,
      so they need their own threading from `config.brand`.
 - [ ] Site identity strings flow through the i18n label tables,

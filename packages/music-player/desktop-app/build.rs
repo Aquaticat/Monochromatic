@@ -61,9 +61,9 @@ fn embed_windows_icon() {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // resource.setIcon("assets/music-player.ico");
+    // resource.setIcon("asset/music-player.ico");
     // ```
-    resource.set_icon("assets/music-player.ico");
+    resource.set_icon("asset/music-player.ico");
 
     // What:     `.compile()` runs the Windows resource compiler (rc.exe / llvm-rc
     //           from the installed toolchain) to turn the recorded resources into

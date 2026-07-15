@@ -27,12 +27,12 @@ Relevant files:
 
 - `packages/oxlint-plugins/stylistic/src/index.ts`:
    plugin entry point.
-- `packages/oxlint-plugins/stylistic/src/rules/semi.ts`:
+- `packages/oxlint-plugins/stylistic/src/rule/semi.ts`:
    closest existing
   always-only,
    no-options,
    auto-fixable rule.
-- `packages/oxlint-plugins/stylistic/src/rules/argument-per-line.ts`:
+- `packages/oxlint-plugins/stylistic/src/rule/argument-per-line.ts`:
    simple
   visitor shape and local structural node typing.
 - `packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts`:
@@ -204,7 +204,7 @@ The current package already covers the same TypeScript function-like set in
 
 ## Implementation outline
 
-Create `packages/oxlint-plugins/stylistic/src/rules/comma-dangle.ts`.
+Create `packages/oxlint-plugins/stylistic/src/rule/comma-dangle.ts`.
 Use `semi.ts` as the style reference for no-options metadata and reporting.
 Use small local structural types,
  as the existing rules do,
@@ -214,7 +214,7 @@ to model the whole ESTree graph.
 Expected rule shape:
 
 ```typescript
-// packages/oxlint-plugins/stylistic/src/rules/comma-dangle.ts
+// packages/oxlint-plugins/stylistic/src/rule/comma-dangle.ts
 import type {
   Context,
   CreateOnceRule,
@@ -240,7 +240,7 @@ const CLOSE_DELIMITERS = new Set([
 Use helpers shaped like this:
 
 ```typescript
-// packages/oxlint-plugins/stylistic/src/rules/comma-dangle.ts
+// packages/oxlint-plugins/stylistic/src/rule/comma-dangle.ts
 /** Parameters for trailing-comma checks. */
 type CheckTrailingCommaParams = {
   /** Rule context used for token lookup and reporting. */
@@ -328,7 +328,7 @@ Use `context.report` with a typed fixer callback,
  matching `semi.ts`.
 
 ```typescript
-// packages/oxlint-plugins/stylistic/src/rules/comma-dangle.ts
+// packages/oxlint-plugins/stylistic/src/rule/comma-dangle.ts
 context.report({
   node: lastItem,
   messageId: 'missingComma',
@@ -398,7 +398,7 @@ being asserted.
 
 Add:
 
-- `packages/oxlint-plugins/stylistic/src/rules/comma-dangle.ts`.
+- `packages/oxlint-plugins/stylistic/src/rule/comma-dangle.ts`.
 - `packages/test-fixture/oxlint-stylistic/src/valid/comma-dangle.ts`.
 - `packages/test-fixture/oxlint-stylistic/src/invalid/comma-dangle.ts`.
 

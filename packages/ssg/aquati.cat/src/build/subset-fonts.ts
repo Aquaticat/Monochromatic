@@ -45,7 +45,7 @@ import {
   init as initWoff2,
 } from 'woff2-encode-wasm';
 
-import { ICON_CODEPOINTS, } from '../lib/icons/codepoints.ts';
+import { ICON_CODEPOINTS, } from '../lib/icon/codepoints.ts';
 
 export {}; // module boundary marker
 

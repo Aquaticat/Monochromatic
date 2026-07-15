@@ -355,24 +355,24 @@ const specs = [
   { ext: 'alac.m4a', args: ['-c:a', 'alac'] },
 ]
 for (const spec of specs) {
-  const out = `fixtures/tone.${spec.ext}`
+  const out = `fixture/tone.${spec.ext}`
   console.log(`generating ${out}`)
   execFileSync('ffmpeg', ['-y', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=0.3', '-ac', '2', '-ar', '48000', ...spec.args, out], { stdio: 'inherit' })
 }
 // offset.opus: a remux of tone.opus with a +0.5s timestamp offset so its first
 // audio frame is NOT frame 0, reproducing the Ogg/Opus seek-to-start bug that the
 // seek_to_start_of_offset_opus regression test depends on.
-console.log('generating fixtures/offset.opus')
-execFileSync('ffmpeg', ['-y', '-i', 'fixtures/tone.opus', '-c', 'copy', '-output_ts_offset', '0.5', 'fixtures/offset.opus'], { stdio: 'inherit' })
+console.log('generating fixture/offset.opus')
+execFileSync('ffmpeg', ['-y', '-i', 'fixture/tone.opus', '-c', 'copy', '-output_ts_offset', '0.5', 'fixture/offset.opus'], { stdio: 'inherit' })
 """
 
 [tasks."gen:icons"]
-description = "Regenerate the macOS .icns + Windows .ico from assets/icon.svg (run once, commit results)"
+description = "Regenerate the macOS .icns + Windows .ico from asset/icon.svg (run once, commit results)"
 # The host (immutable Fedora) carries none of the icon tools, so generation runs
 # in the Containerfile.icons image (built first; layer-cached after the first
 # run). rsvg-convert renders the SVG to PNG at each size; png2icns packs the macOS
 # set, icotool packs the Windows set. The PNGs are throwaway (under dist/,
-# gitignored); the committed outputs are assets/music-player.{icns,ico}.
+# gitignored); the committed outputs are asset/music-player.{icns,ico}.
 shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
@@ -383,11 +383,11 @@ const mount = `${process.cwd()}:/work`
 const inContainer = (toolArgs) => execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', '-v', mount, '-w', '/work', img, ...toolArgs], { stdio: 'inherit' })
 mkdirSync('dist/icons', { recursive: true })
 for (const size of [16, 32, 48, 64, 128, 256, 512, 1024]) {
-  inContainer(['rsvg-convert', '-w', String(size), '-h', String(size), 'assets/icon.svg', '-o', `dist/icons/icon-${size}.png`])
+  inContainer(['rsvg-convert', '-w', String(size), '-h', String(size), 'asset/icon.svg', '-o', `dist/icons/icon-${size}.png`])
 }
-inContainer(['png2icns', 'assets/music-player.icns', 'dist/icons/icon-16.png', 'dist/icons/icon-32.png', 'dist/icons/icon-48.png', 'dist/icons/icon-128.png', 'dist/icons/icon-256.png', 'dist/icons/icon-512.png', 'dist/icons/icon-1024.png'])
-inContainer(['icotool', '-c', '-o', 'assets/music-player.ico', 'dist/icons/icon-16.png', 'dist/icons/icon-32.png', 'dist/icons/icon-48.png', 'dist/icons/icon-64.png', 'dist/icons/icon-128.png', 'dist/icons/icon-256.png'])
-console.log('regenerated assets/music-player.icns and assets/music-player.ico; commit them')
+inContainer(['png2icns', 'asset/music-player.icns', 'dist/icons/icon-16.png', 'dist/icons/icon-32.png', 'dist/icons/icon-48.png', 'dist/icons/icon-128.png', 'dist/icons/icon-256.png', 'dist/icons/icon-512.png', 'dist/icons/icon-1024.png'])
+inContainer(['icotool', '-c', '-o', 'asset/music-player.ico', 'dist/icons/icon-16.png', 'dist/icons/icon-32.png', 'dist/icons/icon-48.png', 'dist/icons/icon-64.png', 'dist/icons/icon-128.png', 'dist/icons/icon-256.png'])
+console.log('regenerated asset/music-player.icns and asset/music-player.ico; commit them')
 """
 
 # Distribution / code signing.
@@ -406,7 +406,7 @@ console.log('regenerated assets/music-player.icns and assets/music-player.ico; c
 description = "Assemble dist/Music Player.app around the macOS Mach-O (synced from the Mac)"
 # Runs on Linux. MP_MACOS_BINARY (default dist/music-player) is the Mach-O built
 # on the Mac. Info.plist is a template: __MP_VERSION__ is replaced with the
-# Cargo.toml version; assets/music-player.icns is the committed bundle icon.
+# Cargo.toml version; asset/music-player.icns is the committed bundle icon.
 shell = "node --input-type=module-typescript -e"
 run = """
 const { existsSync, rmSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, chmodSync } = await import('node:fs')
@@ -422,7 +422,7 @@ copyFileSync(bin, `${app}/Contents/MacOS/music-player`)
 chmodSync(`${app}/Contents/MacOS/music-player`, 0o755)
 const plist = readFileSync('macos/Info.plist', 'utf8').split('__MP_VERSION__').join(ver)
 writeFileSync(`${app}/Contents/Info.plist`, plist)
-copyFileSync('assets/music-player.icns', `${app}/Contents/Resources/music-player.icns`)
+copyFileSync('asset/music-player.icns', `${app}/Contents/Resources/music-player.icns`)
 console.log(`assembled ${app} version ${ver}`)
 """
 

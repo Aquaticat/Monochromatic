@@ -1,0 +1,1 @@
+compile_rule_src on slow-unit took {elapsed:?}; expected <100ms

@@ -87,11 +87,11 @@ import {
   handleStartTimer,
   handleStopTimer,
 } from './server/api/timer';
-import { inProgressPage, } from './server/pages/in-progress';
-import { inboxPage, } from './server/pages/inbox';
-import { searchPage, } from './server/pages/search';
-import { settingsPage, } from './server/pages/settings';
-import { taskDetailsPage, } from './server/pages/task-details';
+import { inProgressPage, } from './server/page/in-progress';
+import { inboxPage, } from './server/page/inbox';
+import { searchPage, } from './server/page/search';
+import { settingsPage, } from './server/page/settings';
+import { taskDetailsPage, } from './server/page/task-details';
 // ... other API imports
 
 // Step 1: Process CSS -- resolves @import, expands @mixin/@apply into plain CSS.
@@ -169,7 +169,7 @@ Each page handler queries the DB,
  injected at runtime) so no `<link>` tag is needed.
 
 ```ts
-// src/server/pages/inbox.ts
+// src/server/page/inbox.ts
 export async function inboxPage(): Promise<Response> {
   const tasks = await getInboxTasks(db,);
   const settings = await getAllSettings(db,);
@@ -1117,7 +1117,7 @@ When the autofill response includes a non-null `splitSuggestion`,
 
 ### 2.1 Layout shell and navigation (~2h) **done**
 
-- (0.5h) Create shared HTML shell function (`src/server/pages/layout.ts`):
+- (0.5h) Create shared HTML shell function (`src/server/page/layout.ts`):
    returns the `<!DOCTYPE html>` wrapper with nav drawer,
    styles,
    and script tag slot
@@ -1128,7 +1128,7 @@ When the autofill response includes a non-null `splitSuggestion`,
    Hamburger toggle.
    Pure HTML + CSS (no JS needed for drawer;
    use `<details>` or checkbox hack).
-- (0.5h) Create FAB function in `src/client/components/fab.ts`:
+- (0.5h) Create FAB function in `src/client/component/fab.ts`:
    creates a fixed-position button element,
    wires click to open new-task form
 - (0.5h) Set up `src/client/styles.css` with `@import 'mixin.css'` and `@apply` rules.
@@ -1141,13 +1141,13 @@ When the autofill response includes a non-null `splitSuggestion`,
 
 ### 2.2 Inbox screen (~2.5h) **done**
 
-- (0.5h) Create `src/server/pages/inbox.ts`:
+- (0.5h) Create `src/server/page/inbox.ts`:
    queries unblocked inbox tasks,
    embeds as JSON,
    returns HTML
 - (0.5h) Create `src/server/api/tasks.ts`:
    POST handler for creating tasks (validates with zod-mini)
-- (0.5h) Create `<task-card>` custom element (`src/client/components/task-card.ts`):
+- (0.5h) Create `<task-card>` custom element (`src/client/component/task-card.ts`):
    displays title,
    tags,
    tracked time,
@@ -1164,7 +1164,7 @@ When the autofill response includes a non-null `splitSuggestion`,
 
 ### 2.3 Task details screen (~2.5h) **done**
 
-- (0.5h) Create `src/server/pages/task-details.ts`:
+- (0.5h) Create `src/server/page/task-details.ts`:
    queries single task + attachments,
    embeds as JSON,
    returns HTML
@@ -1213,7 +1213,7 @@ When the autofill response includes a non-null `splitSuggestion`,
 
 ### 3.2 In Progress screen (~2.5h) `priority:low` **done**
 
-- (0.5h) Create `src/server/pages/in-progress.ts`:
+- (0.5h) Create `src/server/page/in-progress.ts`:
    queries all tasks where `status = 'in_progress'`,
    embeds as JSON
 - (0.5h) Create `src/client/in-progress.ts`:
@@ -1242,7 +1242,7 @@ When the autofill response includes a non-null `splitSuggestion`,
 
 ### 3.4 Search screen (~1.5h) `priority:low` **done**
 
-- (0.5h) Create `src/server/pages/search.ts`:
+- (0.5h) Create `src/server/page/search.ts`:
    runs FTS5 query from `?q=` param,
    embeds results with `is_blocked` flag
 - (0.5h) Create `src/client/search.ts`:
@@ -1639,7 +1639,7 @@ volumes:
 
 ### 6.6 Settings screen (~1.5h) `priority:low` **partial** (UI skeleton only; no API route, no DB persistence)
 
-- (0.5h) Create `src/server/pages/settings.ts`:
+- (0.5h) Create `src/server/page/settings.ts`:
    queries all settings,
    embeds as JSON
 - (0.5h) Create `src/client/settings.ts`:

@@ -14,7 +14,7 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-import type { TextStats, } from './stats/index.ts';
+import type { TextStats, } from './stat/index.ts';
 
 /**
  * Sub-stat of a tile: the "longest" line under the headline count.

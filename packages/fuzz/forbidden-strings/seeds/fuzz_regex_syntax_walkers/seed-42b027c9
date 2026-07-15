@@ -1,1 +1,0 @@
-BUG 10: gating substring {:?} must not contain bare `_` (resharp wildcard)

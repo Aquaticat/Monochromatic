@@ -26,7 +26,7 @@ use truepeak_core::DecisionKind;
 //           cannot give, because it does not own the desktop decoder).
 #[test]
 fn resolve_full_of_fixture_is_sane() {
-    // What:     `let decision = resolve_full(Path::new("fixtures/tone.flac")).unwrap();`.
+    // What:     `let decision = resolve_full(Path::new("fixture/tone.flac")).unwrap();`.
     //           Full-scan the committed 440 Hz tone. `Path::new(...)` borrows a path from the
     //           string literal; `.unwrap()` extracts the `Ok` value and fails the test on an
     //           error.
@@ -34,9 +34,9 @@ fn resolve_full_of_fixture_is_sane() {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const decision = resolveFull("fixtures/tone.flac"); // throws on decode error
+    // const decision = resolveFull("fixture/tone.flac"); // throws on decode error
     // ```
-    let decision = resolve_full(Path::new("fixtures/tone.flac")).unwrap();
+    let decision = resolve_full(Path::new("fixture/tone.flac")).unwrap();
     // What:     `assert_eq!(decision.kind, DecisionKind::ShortFullScan);`. The tiny fixture is
     //           short, so the exact scan tags it short.
     // Why:      Confirm the desktop adapter reports a real duration the policy reads as short.

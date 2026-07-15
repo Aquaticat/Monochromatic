@@ -47,10 +47,10 @@ fn temp_cache(tag: &str) -> PathBuf {
 // What:     `fn fixture() -> &'static Path`. Return the committed FLAC fixture path.
 // Why:      Multiple tests need a real decodable file.
 fn fixture() -> &'static Path {
-    // What:     `Path::new("fixtures/tone.flac")`. Borrow a static string as a path.
+    // What:     `Path::new("fixture/tone.flac")`. Borrow a static string as a path.
     //           Tail expression returns it.
     // Why:      Existing true-peak tests already use this quiet fixture.
-    Path::new("fixtures/tone.flac")
+    Path::new("fixture/tone.flac")
 }
 
 // What:     `fn test_cache(path: &Path) -> CacheHandle`. Build a cache handle backed by a

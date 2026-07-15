@@ -11,11 +11,11 @@
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../lib/types.ts';
-import type { TaskDetail, } from './components/task-detail.ts';
+import type { TaskDetail, } from './component/task-detail.ts';
 import { api, } from './lib/api.ts';
 // Side-effect import: registers the `<task-detail>` custom element
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/task-detail.ts';
+import './component/task-detail.ts';
 
 /**
  * Blank task template used when creating a new task; optional fields stay absent.

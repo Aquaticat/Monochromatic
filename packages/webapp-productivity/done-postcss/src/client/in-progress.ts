@@ -15,9 +15,9 @@ import {
   formatRunningTrackedTime,
 } from './lib/task-card.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/side-drawer.ts';
+import './component/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/top-nav.ts';
+import './component/top-nav.ts';
 
 /**
  * Shape of the JSON blob embedded in the in-progress page by the server.

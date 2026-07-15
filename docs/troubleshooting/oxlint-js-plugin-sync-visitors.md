@@ -4,7 +4,7 @@
 
 A custom oxlint JS rule sometimes needs data from a file other than the file currently being linted.
 In this repo,
-`packages/oxlint-plugins/no-restricted-syntax/src/rules/prefer-describe-function-ref-name.ts`
+`packages/oxlint-plugins/no-restricted-syntax/src/rule/prefer-describe-function-ref-name.ts`
 classifies relative imports to decide whether a `describe({ name: 'x' })` string should become
 `describe({ name: x.name })`.
 
@@ -386,7 +386,7 @@ Use `readFileSync` only inside a tiny helper,
 then memoize by absolute path:
 
 ```typescript
-// packages/oxlint-plugins/no-restricted-syntax/src/rules/prefer-describe-function-ref-name.ts
+// packages/oxlint-plugins/no-restricted-syntax/src/rule/prefer-describe-function-ref-name.ts
 const sourceTextByPath = new Map<string, string>();
 
 function readSourceTextOrEmpty(sourcePath: string,): string {

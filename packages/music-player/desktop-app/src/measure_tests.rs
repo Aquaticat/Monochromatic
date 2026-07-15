@@ -48,9 +48,9 @@ fn spawn_queue_measurement_populates_cache() {
     // What:     cache handle backed by the temp database.
     // Why:      The sweep writes here.
     let cache = CacheHandle::open_at(path.clone());
-    // What:     `let fixture = PathBuf::from("fixtures/tone.flac");`. The track to sweep.
+    // What:     `let fixture = PathBuf::from("fixture/tone.flac");`. The track to sweep.
     // Why:      A real file the sweep can measure.
-    let fixture = PathBuf::from("fixtures/tone.flac");
+    let fixture = PathBuf::from("fixture/tone.flac");
 
     // What:     `spawn_queue_measurement(vec![fixture.clone()], Arc::clone(&cache));`.
     //           Start the detached sweep over a one-track queue.
@@ -116,13 +116,13 @@ fn parallel_sweep_measures_every_track() {
     // What:     several real, decodable fixtures across codecs.
     // Why:      Give the workers enough distinct tracks to run concurrently.
     let tracks = vec![
-        PathBuf::from("fixtures/tone.flac"),
-        PathBuf::from("fixtures/tone.mp3"),
-        PathBuf::from("fixtures/tone.ogg"),
-        PathBuf::from("fixtures/tone.wav"),
-        PathBuf::from("fixtures/tone.opus"),
-        PathBuf::from("fixtures/tone.aac.m4a"),
-        PathBuf::from("fixtures/tone.alac.m4a"),
+        PathBuf::from("fixture/tone.flac"),
+        PathBuf::from("fixture/tone.mp3"),
+        PathBuf::from("fixture/tone.ogg"),
+        PathBuf::from("fixture/tone.wav"),
+        PathBuf::from("fixture/tone.opus"),
+        PathBuf::from("fixture/tone.aac.m4a"),
+        PathBuf::from("fixture/tone.alac.m4a"),
     ];
 
     // What:     run the parallel sweep over all tracks.

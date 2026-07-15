@@ -96,7 +96,7 @@ Status:
 Status:
  TODO
 
-1. Run `./target/debug/music-player fixtures/tone.flac`.
+1. Run `./target/debug/music-player fixture/tone.flac`.
     Expected:
     a music-player
    **window** opens on screen,

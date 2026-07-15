@@ -140,7 +140,7 @@ One demux path (symphonia) feeds two decode paths:
   decoder is an empty stub,
    so the dedicated library handles it.
 
-Per-codec decode is covered by one test each over the committed `fixtures/` tones.
+Per-codec decode is covered by one test each over the committed `fixture/` tones.
 
 ## Layout
 
@@ -814,7 +814,7 @@ mise run //packages/music-player/desktop-app:sign:windows
 # self-signed end-to-end smoke test of the whole pipeline (no real credentials)
 mise run //packages/music-player/desktop-app:verify:signing
 
-# regenerate the app icon (.icns + .ico) after editing assets/icon.svg
+# regenerate the app icon (.icns + .ico) after editing asset/icon.svg
 mise run //packages/music-player/desktop-app:gen:icons
 ```
 

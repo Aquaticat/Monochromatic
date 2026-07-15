@@ -152,7 +152,7 @@ of the same basename.
  EXR,
  HDR;
  see `RASTER_GLOB` in
-`src/images/format.ts`) and generates missing AVIFs via `src/images/convert.ts`.
+`src/image/format.ts`) and generates missing AVIFs via `src/image/convert.ts`.
 
 Both the source raster and its AVIF are copied to `dist/` and fingerprinted independently.
 Pages reference the AVIF for transfer efficiency;
@@ -218,13 +218,13 @@ are committed alongside source.
 Icons render by **PUA codepoint**,
  not by ligature.
  A site-local helper
-at `src/lib/icons/icon.ts` resolves a ligature name (e.g. `'info'`) to
+at `src/lib/icon/icon.ts` resolves a ligature name (e.g. `'info'`) to
 the single-codepoint string it maps to in the upstream Material Symbols
-codepoints table (`src/lib/icons/material-symbols-outlined.codepoints`,
+codepoints table (`src/lib/icon/material-symbols-outlined.codepoints`,
 one `name hex` pair per line):
 
 ```ts
-import { icon, } from '../lib/icons/icon.ts';
+import { icon, } from '../lib/icon/icon.ts';
 
 h({
   tag: 'span',

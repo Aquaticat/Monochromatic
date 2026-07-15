@@ -2125,7 +2125,7 @@ Replace with proper punctuation or restructure sentence.
    //region VM configuration -- persisted as vmsync.
   jsonc
 
-### packages/oxlint-plugins/no-restricted-syntax/src/rules/no-variable-function-expression.ts
+### packages/oxlint-plugins/no-restricted-syntax/src/rule/no-variable-function-expression.ts
 
 - Line 11:
    * Patterns like `const myFn = function myFn() {}` are redundant --
@@ -2172,7 +2172,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 134:
    //region Invalid fixtures -- expect specific violations
 
-### packages/oxlint-plugins/tsdoc/src/rules/jsdoc-map.ts
+### packages/oxlint-plugins/tsdoc/src/rule/jsdoc-map.ts
 
 - Line 23:
    'Remove @type -- TypeScript handles types.
@@ -2266,12 +2266,12 @@ Replace with proper punctuation or restructure sentence.
 - Line 104:
    //region tsdoc -- Ambient declarations are often trivial stubs.
 
-### packages/config/oxlint/src/rules/correctness.ts
+### packages/config/oxlint/src/rule/correctness.ts
 
 - Line 17:
    //region jest -- Suppress leaked jest rules from vitest plugin internals.
 
-### packages/config/oxlint/src/rules/restriction.ts
+### packages/config/oxlint/src/rule/restriction.ts
 
 - Line 117:
    // No eval() or Function() constructor -- arbitrary code execution.
@@ -2293,12 +2293,12 @@ Replace with proper punctuation or restructure sentence.
    // No instanceof Array -- use Array.
   isArray() which works across realms.
 
-### packages/config/oxlint/src/rules/style.ts
+### packages/config/oxlint/src/rule/style.ts
 
 - Line 151:
    //region stylistic -- one-item-per-line enforcement
 
-### packages/config/oxlint/src/rules/tsdoc.ts
+### packages/config/oxlint/src/rule/tsdoc.ts
 
 - Line 44:
    // Only TSDoc-standard tags allowed.

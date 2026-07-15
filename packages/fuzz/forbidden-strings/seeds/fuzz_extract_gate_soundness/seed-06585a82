@@ -1,1 +1,0 @@
-BUG 10 regression: escaped \_ must keep the underscore as literal

@@ -69,7 +69,7 @@ run = "node src/build/subset-fonts.ts"
 
 [tasks."format:images"]
 description = "Convert non-AVIF raster images to AVIF counterparts"
-run = "node src/images/format.ts"
+run = "node src/image/format.ts"
 
 [tasks."audit:weight"]
 description = "Report per-page transfer size (min, max, mean, median) for dist/"

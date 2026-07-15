@@ -245,7 +245,7 @@ the pattern is established but rare.
 
 ### Already on
 
-- `eslint/prefer-const: 'warn'` (in `packages/config/oxlint/src/rules/restriction.ts:112`).
+- `eslint/prefer-const: 'warn'` (in `packages/config/oxlint/src/rule/restriction.ts:112`).
   Catches `let` declarations that are never reassigned;
   any surviving `let` in the codebase is one that does reassign.
 - `eslint/init-declarations: 'off'` (in overrides);
@@ -532,7 +532,7 @@ The codebase has 19 custom no-restricted-syntax rules already
 Adding more fits the established pattern;
 the cost is per-rule plugin code,
  which is mechanical given the existing examples
-(see `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-variable-function-expression.ts`).
+(see `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-variable-function-expression.ts`).
 
 ### `no-disable-*` companion rule
 
@@ -637,7 +637,7 @@ deciding on the permanent rule is easier with the refactored codebase as the sta
 Both rules:
 
 - Registered in `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`.
-- Enabled at `'error'` in `packages/config/oxlint/src/rules/restriction.ts` (shipped at `'warn'`;
+- Enabled at `'error'` in `packages/config/oxlint/src/rule/restriction.ts` (shipped at `'warn'`;
    flipped to `'error'` 2026-06-01 after the migration reached zero reports across the linted tree).
 - Have no corresponding `no-disable-*` companion rule;
    disable-with-justification is the contracted escape.
@@ -730,7 +730,7 @@ A bare `-- needed` or omitted justification is not acceptable;
 Once the warning count is zero (every report is refactored,
  allowlist-shaped,
  or carries a justified disable comment),
- change both entries in `packages/config/oxlint/src/rules/restriction.ts` from `'warn'` to `'error'`.
+ change both entries in `packages/config/oxlint/src/rule/restriction.ts` from `'warn'` to `'error'`.
 
 ### Status table
 

@@ -1,0 +1,1 @@
+AC should find at least one match -- this is the soundness invariant the UTF-8 bug broke

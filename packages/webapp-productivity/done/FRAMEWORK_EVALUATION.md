@@ -352,7 +352,7 @@ The above is coherent reasoning but still speculation.
  sync),
  `orchestrator/`,
  and Docker setup are all framework-agnostic.
- Only `src/server/pages/`,
+ Only `src/server/page/`,
  `src/client/`,
  and the router change per framework.
  Planned rewrites:

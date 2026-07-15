@@ -38,11 +38,11 @@ import {
   getArgumentValue,
 } from './lib/args.ts';
 import { registerApiRoutes, } from './server-api-routes.ts';
-import { inProgressPage, } from './server/pages/in-progress.ts';
-import { inboxPage, } from './server/pages/inbox.ts';
-import { searchPage, } from './server/pages/search.ts';
-import { settingsPage, } from './server/pages/settings.ts';
-import { taskDetailsPage, } from './server/pages/task-details.ts';
+import { inProgressPage, } from './server/page/in-progress.ts';
+import { inboxPage, } from './server/page/inbox.ts';
+import { searchPage, } from './server/page/search.ts';
+import { settingsPage, } from './server/page/settings.ts';
+import { taskDetailsPage, } from './server/page/task-details.ts';
 
 /**
  * Default HTTP port when neither `--port=` nor `PORT` env var is provided.

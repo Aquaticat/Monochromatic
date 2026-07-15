@@ -21,7 +21,7 @@ import type { Locale, } from '../i18n/index.ts';
 import type { Post, } from '../lib/content.ts';
 import { generateLanguageRss, } from '../lib/rss.ts';
 import type { Logger, } from '../lib/types.ts';
-import { generateSiteCss, } from '../styles/base.ts';
+import { generateSiteCss, } from '../style/base.ts';
 import {
   DIST,
   writePage,

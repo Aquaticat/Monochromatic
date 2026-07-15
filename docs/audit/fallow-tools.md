@@ -161,7 +161,7 @@ The prototype's improvement over the hand-tuned config came from three sources:
   share 49 lines of bootstrap logic
 - `packages/cli/mvm/src/spawn.ts:1-45` and `packages/cli/vmsync/src/spawn.ts:7-51`
   share a 45-line spawn helper
-- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-hasownproperty.ts`,
+- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-hasownproperty.ts`,
   `no-promise-catch.ts`,
    and `no-promise-finally.ts` share 23 lines of rule scaffolding
 - `packages/desktop-daemon/editord/src/client/highlight/tags.ts:56-147` and

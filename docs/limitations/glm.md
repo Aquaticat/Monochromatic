@@ -35,7 +35,7 @@ src/budget-model-version.ts:4: Extracted from budget-model.ts to stay within the
 src/ask-user.ts:4:            Extracted from evaluate.ts to stay within the line limit.
 ```text
 
-The configured limit is 300 lines per `packages/config/oxlint/src/rules/style.ts:41`, with `skipBlankLines: true, skipComments: true`. None of the source files were near that limit before splitting. The original `judge.ts` was 170 code lines.
+The configured limit is 300 lines per `packages/config/oxlint/src/rule/style.ts:41`, with `skipBlankLines: true, skipComments: true`. None of the source files were near that limit before splitting. The original `judge.ts` was 170 code lines.
 
 The splits often increase total line count (more imports, more re-exports, more module headers). They obscure cohesion: `parseVerdict` lives in `judge-stream.ts`, `BASH_DETAIL_LEN` lives in `system-prompt.ts`, `ask-user.ts` was extracted from `evaluate.ts` which was extracted from `index.ts`. Cascading splits with no controlling concept.
 

@@ -114,7 +114,7 @@ via `config.languages[lang].i18n`:
       that come from the merged config,
        not from the base translation
 
-### `src/components/site-footer.ts`
+### `src/component/site-footer.ts`
 
 - [ ] Remove or parameterize the hardcoded `TICKER_QUOTES` array
 - [ ] Pass ticker quotes into the footer renderer from config

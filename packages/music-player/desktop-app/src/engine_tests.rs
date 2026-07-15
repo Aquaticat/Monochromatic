@@ -88,14 +88,14 @@ fn idle_root_emits_no_extra_queue_updates() {
     // What:     `std::fs::create_dir_all(&dir).unwrap();`. Create it before opening.
     // Why:      The Source Root must exist to be scanned and watched.
     std::fs::create_dir_all(&dir).unwrap();
-    // What:     `for name in [...] { std::fs::copy(manifest/fixtures/name, dir/name) }`. Copy
+    // What:     `for name in [...] { std::fs::copy(manifest/fixture/name, dir/name) }`. Copy
     //           two REAL fixtures (not empty files) into the root. `CARGO_MANIFEST_DIR` is the
-    //           package dir, so `fixtures/` resolves regardless of the test's working directory.
+    //           package dir, so `fixture/` resolves regardless of the test's working directory.
     // Why:      The peak measurement must actually decode (read) the files to reproduce the
     //           read-driven watcher events that the loop fed on; empty files decode to nothing.
     let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     for name in ["tone.flac", "tone.opus"] {
-        std::fs::copy(manifest.join("fixtures").join(name), dir.join(name)).unwrap();
+        std::fs::copy(manifest.join("fixture").join(name), dir.join(name)).unwrap();
     }
 
     // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of list-update lengths.

@@ -169,7 +169,7 @@ let mut fix = Fix::new(output, Span::new(start, end));
 ```
 
 For `no-mixed-operators` on `b * obj.d.e.f`
-(`packages/oxlint-plugins/stylistic/src/rules/no-mixed-operators.ts:93-114`),
+(`packages/oxlint-plugins/stylistic/src/rule/no-mixed-operators.ts:93-114`),
 the rule emits
 
 ```ts
@@ -231,7 +231,7 @@ After `no-mixed-operators` applies with span `[b_start, f_end]`,
  `chain-per-line`'s merged fix for `obj.d.e.f` has
 span `[e_dot, f_dot]` (the bounding box of the two `\n + indent`
 insertions,
- see `packages/oxlint-plugins/stylistic/src/rules/chain-per-line.ts:259-267`).
+ see `packages/oxlint-plugins/stylistic/src/rule/chain-per-line.ts:259-267`).
 Its `start = e_dot` satisfies `last_pos >= start` (since `f_end >
 e_dot`),
  so the chain-per-line message is pushed into
@@ -845,8 +845,8 @@ Re-evaluate this decision when:
 - ESLint's behaviour we are diverging from:
   [ESLint custom-rules docs][eslint-iter].
 - Our rules and tests:
-  - `packages/oxlint-plugins/stylistic/src/rules/no-mixed-operators.ts:93-114`
-  - `packages/oxlint-plugins/stylistic/src/rules/chain-per-line.ts:251-268`
+  - `packages/oxlint-plugins/stylistic/src/rule/no-mixed-operators.ts:93-114`
+  - `packages/oxlint-plugins/stylistic/src/rule/chain-per-line.ts:251-268`
   - `packages/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts`
   - `packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts:566-617`
 - Issue this implementation closed:

@@ -218,7 +218,7 @@ i-slint-backend-testing = "=1.17.0"
 # (">=1.17.0, <2.0.0"), not an exact pin.
 slint-build = "1.17.0"
 
-# Windows-only build dependency: embeds assets/music-player.ico into the .exe so
+# Windows-only build dependency: embeds asset/music-player.ico into the .exe so
 # Explorer, the taskbar, and Alt-Tab show the app icon (the macOS icon lives in
 # the .app bundle, Linux in the .desktop Icon= name). Gated to cfg(windows) so it
 # is absent from the Linux and macOS dependency graphs entirely, matching the

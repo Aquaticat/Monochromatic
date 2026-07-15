@@ -20,7 +20,7 @@ import {
   splitWords,
   type FrequencyEntry,
   type TextStats,
-} from '../stats/index.ts';
+} from '../stat/index.ts';
 
 /**
  * Idle period after the last keystroke before stats/frequency recompute.

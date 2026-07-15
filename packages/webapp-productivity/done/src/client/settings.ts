@@ -8,11 +8,11 @@ import { injectCSS, } from './lib/inject-css.ts';
 import { readPageData, } from './lib/page-data.ts';
 import { globalStyles, } from './styles.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/side-drawer.ts';
+import './component/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/top-nav.ts';
+import './component/top-nav.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/setting-group.ts';
+import './component/setting-group.ts';
 
 /**
  * Shape of the JSON blob embedded in the settings page by the server.

@@ -12,7 +12,7 @@ Generates a single self-contained HTML file with a canvas-based doodling widget.
    PNG,
    etc.)
 - Upload custom background images via the toolbar
-- Ships with a default SVG background (`src/assets/default-bg.svg`)
+- Ships with a default SVG background (`src/asset/default-bg.svg`)
 - Strokes survive window resizes (stored in normalized coordinates)
 
 ## How it works

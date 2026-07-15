@@ -35,7 +35,7 @@ Fix all lint issues across active packages so `mise run lint` exits 0.
 - Formatting:
    `chain-per-line` autofix and `mise run format` converged (style commits).
 - Two new custom oxlint rules in `packages/oxlint-plugins/no-restricted-syntax`,
-   both enabled at `error` in `packages/config/oxlint/src/rules/restriction.ts`:
+   both enabled at `error` in `packages/config/oxlint/src/rule/restriction.ts`:
     - `no-nullish-union`:
        bans `T | undefined` and `T | null` (commit 5954a771).
     - `no-optional-escape`:
@@ -427,7 +427,7 @@ After all leaves:
 ## References
 
 - Optionality rules:
-   `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-nullish-union.ts`,
+   `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-nullish-union.ts`,
    `no-optional-escape.ts`.
 - Research:
    `docs/research/optionality-enforcement.md`.

@@ -167,7 +167,7 @@ chevron at 60, near-white ink on the near-black palette stop) as an SVG
 document, which sharp rasterizes to a PNG so the raster can never drift
 from the vector; both ship as data-URI `<link rel="icon">` entries, the
 SVG (`sizes="any"`) for engines that take vector icons and the PNG as
-the fallback. `src/stats/` holds the pure, framework-free
+the fallback. `src/stat/` holds the pure, framework-free
 tokenization and analysis logic (unit tested independently of the DOM);
 `src/client/main.ts` wires a debounced `input` listener on the textarea to
 that logic, writes results into the page, and auto-grows the textarea. It

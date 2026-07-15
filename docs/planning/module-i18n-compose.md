@@ -236,7 +236,7 @@ These trapped the first implementation and will trap the next contributor unless
    `//:format` task fails on unrelated `figma-parsers/kiwi` lint errors before reaching the fixer.
    Run the package-local fixer directly when working on this package;
     the fix is autofixable.
-   `unicorn/no-nested-ternary` is disabled in `packages/config/oxlint/src/rules/style.ts` to match the existing
+   `unicorn/no-nested-ternary` is disabled in `packages/config/oxlint/src/rule/style.ts` to match the existing
    project preference for nested ternaries.
 
 7. **Plan §11 short-form examples are wrong;

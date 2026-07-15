@@ -48,13 +48,13 @@ const targets = execFileSync('cargo', ['fuzz', 'list', '--fuzz-dir', '.'], { enc
 for (const target of targets) {
   console.log(`--- ${target} ---`)
   // Dual corpus: gitignored scratch first (libFuzzer writes new discoveries
-  // only to the first dir), committed seeds/<target> second (read-only in
+  // only to the first dir), committed seed/<target> second (read-only in
   // practice). Explicit corpus positionals replace cargo-fuzz's default
   // corpus/<target>, and cargo-fuzz only auto-creates the default, so both
   // dirs are created here before the run.
   mkdirSync(`corpus/${target}`, { recursive: true })
-  mkdirSync(`seeds/${target}`, { recursive: true })
-  execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', `corpus/${target}`, `seeds/${target}`, '--', '-max_total_time=30', '-rss_limit_mb=2048', '-dict=dictionaries/forbidden-strings.dict'], { stdio: 'inherit' })
+  mkdirSync(`seed/${target}`, { recursive: true })
+  execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', `corpus/${target}`, `seed/${target}`, '--', '-max_total_time=30', '-rss_limit_mb=2048', '-dict=dictionary/forbidden-strings.dict'], { stdio: 'inherit' })
 }
 """
 
@@ -83,7 +83,7 @@ arg "[args]" var=#true help="libFuzzer flags (-flag=v) and/or input paths to rep
 # flags go after `--`. With no input, continuous fuzzing runs over the
 # dual corpus: gitignored scratch corpus/<target> first (libFuzzer
 # writes new discoveries only to the first dir), committed
-# seeds/<target> second. Both dirs are created up front because
+# seed/<target> second. Both dirs are created up front because
 # cargo-fuzz only auto-creates its default corpus positional.
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -94,14 +94,14 @@ const target = process.env.usage_target
 const extras = parseUsageArgs(process.env.usage_args ?? '')
 const flags = extras.filter((part) => part.startsWith('-'))
 const replays = extras.filter((part) => !part.startsWith('-'))
-const corpusDirs = [`corpus/${target}`, `seeds/${target}`]
+const corpusDirs = [`corpus/${target}`, `seed/${target}`]
 if (replays.length === 0) {
   for (const dir of corpusDirs) {
     mkdirSync(dir, { recursive: true })
   }
 }
 const inputs = replays.length === 0 ? corpusDirs : replays
-execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', ...inputs, '--', '-dict=dictionaries/forbidden-strings.dict', ...flags], { stdio: 'inherit' })
+execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', ...inputs, '--', '-dict=dictionary/forbidden-strings.dict', ...flags], { stdio: 'inherit' })
 """
 
 [tasks.seed]

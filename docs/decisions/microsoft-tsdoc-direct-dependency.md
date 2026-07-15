@@ -15,10 +15,10 @@ replacement survey.
   `TSDocConfiguration`,
    parser result types,
    and message types.
-- `packages/oxlint-plugins/tsdoc/src/rules/tag-names.ts` imports `StandardTags`.
-- `packages/oxlint-plugins/tsdoc/src/rules/param-validation.ts` and
-  `packages/oxlint-plugins/tsdoc/src/rules/returns-description.ts` import `PlainTextEmitter`.
-- `packages/config/oxlint/src/rules/tsdoc.ts` enables `tsdoc/valid-types`,
+- `packages/oxlint-plugins/tsdoc/src/rule/tag-names.ts` imports `StandardTags`.
+- `packages/oxlint-plugins/tsdoc/src/rule/param-validation.ts` and
+  `packages/oxlint-plugins/tsdoc/src/rule/returns-description.ts` import `PlainTextEmitter`.
+- `packages/config/oxlint/src/rule/tsdoc.ts` enables `tsdoc/valid-types`,
    which surfaces parser
   diagnostics from `@microsoft/tsdoc`.
 

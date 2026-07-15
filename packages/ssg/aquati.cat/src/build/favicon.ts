@@ -15,7 +15,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
-import { fileExists, } from '../images/convert.ts';
+import { fileExists, } from '../image/convert.ts';
 import type { Logger, } from '../lib/types.ts';
 import { createIco, } from './ico.ts';
 import {

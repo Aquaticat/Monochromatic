@@ -33,8 +33,8 @@ It is not the current semantic rule's resolution path.
 
 The repository retired:
 
-- `packages/config/oxlint/src/rules/prefer-readonly-parameter-types.ts`;
-- `packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-pkg.ts`.
+- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.ts`;
+- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg.ts`.
 
 Both files are absent in the current tree.
 The replacement rule is

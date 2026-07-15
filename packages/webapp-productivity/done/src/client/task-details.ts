@@ -11,11 +11,11 @@ import { injectCSS, } from './lib/inject-css.ts';
 import { readPageData, } from './lib/page-data.ts';
 import { globalStyles, } from './styles.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/side-drawer.ts';
-import type { TaskDetail, } from './components/task-detail.ts';
+import './component/side-drawer.ts';
+import type { TaskDetail, } from './component/task-detail.ts';
 // Side-effect import: registers the `<task-detail>` custom element
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/task-detail.ts';
+import './component/task-detail.ts';
 
 /**
  * Minimal task info shown in the blocker picker dropdown.

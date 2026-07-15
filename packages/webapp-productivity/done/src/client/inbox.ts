@@ -17,17 +17,17 @@ import { createNewTaskDialog, } from './new-task-dialog.ts';
 import { globalStyles, } from './styles.ts';
 // Side-effect imports: register custom elements so the browser recognizes them in the DOM
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/side-drawer.ts';
+import './component/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/top-nav.ts';
+import './component/top-nav.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/section-heading.ts';
+import './component/section-heading.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/toggle-switch.ts';
+import './component/toggle-switch.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/focus-dropdown.ts';
+import './component/focus-dropdown.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/fab-button.ts';
+import './component/fab-button.ts';
 
 injectCSS(globalStyles,);
 injectCSS(inboxStyles,);

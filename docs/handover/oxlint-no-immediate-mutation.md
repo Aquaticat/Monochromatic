@@ -105,8 +105,8 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1162 filtered out; f
 
 Main custom rule files were implemented and verified:
 
-- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.syntax.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
 
 The custom rule currently:
 
@@ -136,15 +136,15 @@ The custom rule was wired into:
 
 - `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`
 - `packages/test-fixture/oxlint-no-restricted-syntax/.oxlintrc.fixture.json`
-- `packages/config/oxlint/src/rules/restriction.ts`
+- `packages/config/oxlint/src/rule/restriction.ts`
 - `packages/oxlint-plugins/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
 - `packages/test-fixture/oxlint-no-restricted-syntax/src/invalid/no-immediate-mutation.ts`
 - `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-immediate-mutation.ts`
 
 Implementation was split across:
 
-- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-immediate-mutation.syntax.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
 
 Repo commit `079cef1aa` records this checkpoint.
 

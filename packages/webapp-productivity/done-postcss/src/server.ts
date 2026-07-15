@@ -35,11 +35,11 @@ import {
   handleStartTimer,
   handleStopTimer,
 } from './server/api/timer.ts';
-import { inProgressPage, } from './server/pages/in-progress.ts';
-import { inboxPage, } from './server/pages/inbox.ts';
-import { searchPage, } from './server/pages/search.ts';
-import { settingsPage, } from './server/pages/settings.ts';
-import { taskDetailsPage, } from './server/pages/task-details.ts';
+import { inProgressPage, } from './server/page/in-progress.ts';
+import { inboxPage, } from './server/page/inbox.ts';
+import { searchPage, } from './server/page/search.ts';
+import { settingsPage, } from './server/page/settings.ts';
+import { taskDetailsPage, } from './server/page/task-details.ts';
 import { staticHandler, } from './server/static.ts';
 
 /**

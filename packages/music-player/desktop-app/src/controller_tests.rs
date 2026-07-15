@@ -241,12 +241,12 @@ fn background_sweep_skips_current_track() {
     //           controller's peak cache with a temp-backed handle.
     // Why:      Background sweep writes to disposable state.
     controller.peaks = CacheHandle::open_at(cache_path.clone());
-    // What:     `let current = PathBuf::from("fixtures/tone.flac");`. First queue track.
+    // What:     `let current = PathBuf::from("fixture/tone.flac");`. First queue track.
     // Why:      Queue starts at index 0, so this is the current track to skip.
-    let current = PathBuf::from("fixtures/tone.flac");
-    // What:     `let other = PathBuf::from("fixtures/tone.mp3");`. Second queue track.
+    let current = PathBuf::from("fixture/tone.flac");
+    // What:     `let other = PathBuf::from("fixture/tone.mp3");`. Second queue track.
     // Why:      Background sweep should measure this non-current track.
-    let other = PathBuf::from("fixtures/tone.mp3");
+    let other = PathBuf::from("fixture/tone.mp3");
     // What:     `controller.queue.set_tracks(vec![current.clone(), other.clone()]);`.
     //           Replace queue with two owned fixture paths.
     // Why:      Establish current plus non-current tracks.

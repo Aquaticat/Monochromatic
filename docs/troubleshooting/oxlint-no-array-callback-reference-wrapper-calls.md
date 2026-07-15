@@ -172,7 +172,7 @@ Both completed with zero reported lint and type errors.
 The landed workaround disables the built-in rule and enables a project-owned JS plugin rule:
 
 ```typescript
-// packages/config/oxlint/src/rules/restriction.ts
+// packages/config/oxlint/src/rule/restriction.ts
 'unicorn/no-array-callback-reference': 'off',
 'no-restricted-syntax/no-array-callback-reference': 'warn',
 ```

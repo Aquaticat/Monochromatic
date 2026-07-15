@@ -6,9 +6,9 @@
  */
 import { HTTP_NO_CONTENT, } from '@monochromatic-dev/module-const/ts';
 
-import { showToast, } from '../components/toast-message.ts';
+import { showToast, } from '../component/toast-message.ts';
 
-export { showToast, } from '../components/toast-message.ts';
+export { showToast, } from '../component/toast-message.ts';
 
 /**
  * Subset of fetch request configuration accepted by {@link api}.

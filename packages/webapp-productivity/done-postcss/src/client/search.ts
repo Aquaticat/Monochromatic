@@ -14,9 +14,9 @@ import { readPageData, } from './lib/page-data.ts';
 import { createTaskCard, } from './lib/task-card.ts';
 import { searchStyles, } from './search-styles.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/side-drawer.ts';
+import './component/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/search-bar.ts';
+import './component/search-bar.ts';
 
 /**
  * Shape of the JSON blob embedded in the search page by the server.

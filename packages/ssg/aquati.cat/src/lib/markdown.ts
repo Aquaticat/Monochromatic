@@ -17,7 +17,7 @@ import rehypeSlug from 'rehype-slug-custom-id';
 import remarkGfm from 'remark-gfm';
 import remarkSectionize from 'remark-sectionize';
 
-import * as mdxComponents from '../components/index.ts';
+import * as mdxComponents from '../component/index.ts';
 
 import {
   Fragment,

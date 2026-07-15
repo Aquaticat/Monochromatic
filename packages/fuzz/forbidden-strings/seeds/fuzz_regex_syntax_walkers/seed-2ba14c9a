@@ -1,1 +1,0 @@
-BUG 1 (symmetric): inline (?-i) must clear the outer (?i) for subsequent literals

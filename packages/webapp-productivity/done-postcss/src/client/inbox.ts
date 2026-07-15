@@ -22,17 +22,17 @@ import { readPageData, } from './lib/page-data.ts';
 import { createTaskCard, } from './lib/task-card.ts';
 import { createNewTaskDialog, } from './new-task-dialog.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/side-drawer.ts';
+import './component/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/top-nav.ts';
+import './component/top-nav.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/section-heading.ts';
+import './component/section-heading.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/toggle-switch.ts';
+import './component/toggle-switch.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/focus-dropdown.ts';
+import './component/focus-dropdown.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import './components/fab-button.ts';
+import './component/fab-button.ts';
 
 /**
  * Shape of the JSON blob embedded in the inbox page by the server.

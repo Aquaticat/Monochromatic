@@ -52,10 +52,10 @@ with a redacted reproducer (pattern source + content SHA-256,
 raw bytes).
 
 All seven targets share a single tuned dictionary at
-`dictionaries/forbidden-strings.dict` (one dictionary,
+`dictionary/forbidden-strings.dict` (one dictionary,
  not per-target).
  Each
-target has its own per-target seed corpus under `seeds/<target>/`
+target has its own per-target seed corpus under `seed/<target>/`
 (tracked),
  separate from the gitignored scratch corpus under
 `corpus/<target>/`;
@@ -155,7 +155,7 @@ prebuilt image isn't handy.
 
 ## Corpus and artifact policy
 
-- `seeds/<target>/seed-*` -- curated seed files committed
+- `seed/<target>/seed-*` -- curated seed files committed
   to the repo (tracked plainly;
    no `.gitignore` re-include needed).
    192 unique
@@ -166,7 +166,7 @@ prebuilt image isn't handy.
 - `corpus/<target>/` -- libFuzzer's corpus growth (scratch).
   Wholly ignored.
    The smoke and run tasks pass
-  `corpus/<target> seeds/<target>` as explicit corpus dirs;
+  `corpus/<target> seed/<target>` as explicit corpus dirs;
   libFuzzer reads both and writes new discoveries only to the
   first.
 - `artifacts/` -- libFuzzer's crash reproducers.
@@ -265,7 +265,7 @@ the `extract_tests.rs`,
 
 ```bash
 mise run //packages/fuzz/forbidden-strings:seed
-git add packages/fuzz/forbidden-strings/seeds/
+git add packages/fuzz/forbidden-strings/seed/
 ```
 
 Without the refresh,

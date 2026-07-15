@@ -142,7 +142,7 @@ The categories that explain them:
    (for example `packages/webapp-forge/server/src/worker/render.ts:234`).
 2. Disabling a rule that is turned off in config.
    `typescript/no-unnecessary-condition` is `'off'` at
-   `packages/config/oxlint/src/rules/correctness.ts:44`,
+   `packages/config/oxlint/src/rule/correctness.ts:44`,
     so all 24 directives targeting it are dead.
    Example:
     `packages/config/tofu/fetch_ips.ts:76` disables it above `while (true)`.

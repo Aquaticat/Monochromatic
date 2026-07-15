@@ -70,11 +70,11 @@ fn decode_all(path: &Path) -> Result<(AudioSpec, Vec<f32>), PlayerError> {
 //           a fixture file and check the output is sane.
 // Why:      One body reused by every per-codec test below.
 fn check_fixture(name: &str) {
-    // What:     `let path = Path::new("fixtures").join(name);`. `Path::new`
+    // What:     `let path = Path::new("fixture").join(name);`. `Path::new`
     //           borrows a `&str` as a `&Path`; `.join(name)` returns an owned
-    //           `PathBuf` ("fixtures/<name>").
+    //           `PathBuf` ("fixture/<name>").
     // Why:      Build the path to the committed test file.
-    let path = Path::new("fixtures").join(name);
+    let path = Path::new("fixture").join(name);
 
     // What:     `let (spec, samples) = decode_all(&path).expect(...)`. Call the
     //           helper (lending `&path`); `.expect(msg)` UNWRAPS `Ok`, or
@@ -154,7 +154,7 @@ fn decodes_opus() {
 
 // What:     `#[test]` regression for seeking to the very beginning of an Ogg/Opus
 //           stream whose first audio frame is NOT frame 0.
-// Why:      `fixtures/offset.opus` is an Opus file remuxed with a +0.5s timestamp
+// Why:      `fixture/offset.opus` is an Opus file remuxed with a +0.5s timestamp
 //           offset, so its track `start_ts` is non-zero (~23352 frames). The old
 //           seek used `SeekTo::Time { 0s }`, which maps to frame 0; the Ogg
 //           demuxer rejects any frame below `start_ts` with
@@ -164,10 +164,10 @@ fn decodes_opus() {
 //           bug) if the seek is ever reverted to `SeekTo::Time`.
 #[test]
 fn seek_to_start_of_offset_opus_succeeds() {
-    // What:     `let path = Path::new("fixtures").join("offset.opus");`. Build the
+    // What:     `let path = Path::new("fixture").join("offset.opus");`. Build the
     //           path to the committed offset fixture (see `gen:fixtures`).
     // Why:      This is the only fixture with a non-zero start frame.
-    let path = Path::new("fixtures").join("offset.opus");
+    let path = Path::new("fixture").join("offset.opus");
 
     // What:     `let mut source = open(&path).expect("offset.opus should open");`.
     //           `open(&path)` lends the path and returns `Result<Box<dyn Source>>`;

@@ -14,11 +14,11 @@ import {
 } from '../lib/content-group.ts';
 import type { Post, } from '../lib/content.ts';
 import type { Logger, } from '../lib/types.ts';
-import { indexPage, } from '../pages/index.ts';
-import { langPage, } from '../pages/lang.ts';
-import { namePage, } from '../pages/name.ts';
-import { postPage, } from '../pages/post.ts';
-import { tagPage, } from '../pages/tag.ts';
+import { indexPage, } from '../page/index.ts';
+import { langPage, } from '../page/lang.ts';
+import { namePage, } from '../page/name.ts';
+import { postPage, } from '../page/post.ts';
+import { tagPage, } from '../page/tag.ts';
 import { writePage, } from './write-page.ts';
 
 /**

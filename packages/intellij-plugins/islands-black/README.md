@@ -9,7 +9,7 @@ producing true black backgrounds across all UI panels,
  and editor areas.
 Warnings retain their yellow underline but lose the olive background fill.
 
-![Islands Black theme](screenshots/islands-black.png)
+![Islands Black theme](screenshot/islands-black.png)
 
 ## Installation
 

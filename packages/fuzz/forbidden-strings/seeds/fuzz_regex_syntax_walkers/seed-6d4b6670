@@ -1,1 +1,0 @@
-BUG 1: ci must be true after the inline (?i) flag; pre-fix this was false
