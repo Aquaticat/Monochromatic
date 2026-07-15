@@ -151,6 +151,40 @@ await describe({
       },
     },),
     it({
+      name: 'records workspace TOML observation and value uncertainty',
+      fn: async () => {
+        const getValue = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/module-toml-edit',
+            major: 0,
+          },
+          ownerType: 'globalThis',
+          member: 'tomlGetValue',
+        },);
+        const setValue = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/module-toml-edit',
+            major: 0,
+          },
+          ownerType: 'globalThis',
+          member: 'tomlSet',
+        },);
+        expect(getValue,).not.toBe(NO_INTRINSIC_EFFECT,);
+        expect(setValue,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if ((getValue === NO_INTRINSIC_EFFECT) || (setValue === NO_INTRINSIC_EFFECT))
+          throw new Error('Expected workspace TOML effects.',);
+        expect(getValue.targets,).toEqual([],);
+        expect(setValue.targets,).toEqual([],);
+        expect(setValue.opaqueTargets,).toEqual([{
+          kind: 'argument',
+          index: 0,
+          propertyNames: ['value',],
+        },],);
+      },
+    },),
+    it({
       name: 'records TypedArray observation and callback effects',
       fn: async () => {
         const subarray = intrinsicEffect({

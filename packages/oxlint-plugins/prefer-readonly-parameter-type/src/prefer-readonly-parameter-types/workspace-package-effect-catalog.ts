@@ -161,6 +161,33 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   {
     provenance: {
       kind: 'package',
+      packageName: '@monochromatic-dev/module-toml-edit',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'tomlGetValue',
+    targets: [],
+    evidence: 'module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-get-value.ts sha256 1bd3965418b617460193cb60538a628e1b49ed89f56ec4bb709a55bae7532b6d materializes fresh values without mutating edit or path',
+  },
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@monochromatic-dev/module-toml-edit',
+      major: 0,
+    },
+    ownerType: 'globalThis',
+    member: 'tomlSet',
+    targets: [],
+    opaqueTargets: [{
+      kind: 'argument',
+      index: 0,
+      propertyNames: ['value',],
+    },],
+    evidence: 'module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-set.ts sha256 ff0a3c732c17a64769744646c0e7ee2436b5cb698dce1f4586709eef90c4edf3 returns fresh state while value traversal can invoke caller hooks; moduleTomlEdit.tomlSet',
+  },
+  {
+    provenance: {
+      kind: 'package',
       packageName: '@monochromatic-dev/module-current-time-context',
       major: 0,
     },
