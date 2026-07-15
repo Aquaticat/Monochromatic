@@ -106,7 +106,7 @@ async function resolveGlob({
   /**
    * Modification times in milliseconds, projected from the stat results so the caller does not need stat metadata.
    */
-  const mtimes = stats.map(function extractMtime(fileStat,) {
+  const mtimes = stats.map(function extractMtime(fileStat: Readonly<{ mtimeMs: number; }>,): number {
     return fileStat.mtimeMs;
   },);
 
