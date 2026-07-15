@@ -270,7 +270,7 @@ function parseExitEvent(
  *
  * @param child - Process to observe.
  *
- * @mutates child through timeout termination and exit-listener registration
+ * @mutates child through child.kill timeout termination and once exit-listener registration
  *
  * @example
  * ```ts
