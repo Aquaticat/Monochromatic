@@ -260,6 +260,20 @@ Verified on 2026-07-15 with:
 - Installed and tagged `goal.ts` SHA-256
   `429491a073d4d0648dddb5044075349bae849baaf87fb8cacbce03baf647bb41`.
 
+The upstream repository was cloned read-only with `gh repo clone` into
+`/var/home/user/temp/agent/pi-extensions-2026-07-15/`.
+The verified remotes and refs were:
+
+- Origin `https://github.com/narumiruna/pi-extensions.git`.
+- `v0.12.0` commit `345e291a5fb307a1afc785effb6563b4d827b2cc`.
+- `v0.15.1` commit `fcb8d15ec5d63604309b69f083870f2d5b5a5979`.
+
+No upstream file was modified.
+Tag contents were read with `git show`,
+and the clone remained an inspection-only third-party source checkout.
+The README and source excerpts for `v0.15.1` were extracted directly from that tag,
+not inferred from the later main-branch checkout.
+
 The harness uses Pi's real TypeScript extension loader with an injected runtime and disposable agent directory.
 It does not read or write real Pi sessions or settings.
 
@@ -269,16 +283,21 @@ Save this as `/tmp/agent/pi-goal-reproduce.mjs`:
 
 ```javascript
 // /tmp/agent/pi-goal-reproduce.mjs
-import { createEventBus } from 'file:///var/home/user/Monochromatic/node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/dist/index.js';
-import {
+import { pathToFileURL } from 'node:url';
+
+const repoRoot = process.env.REPO_ROOT;
+const source = process.env.PI_GOAL_SOURCE;
+const agentDir = process.env.REPRO_AGENT_DIR;
+if (!repoRoot || !source || !agentDir) {
+  throw new Error('REPO_ROOT, PI_GOAL_SOURCE, and REPRO_AGENT_DIR are required');
+}
+process.env.PI_CODING_AGENT_DIR = agentDir;
+const piPackage = `${repoRoot}/node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/dist`;
+const { createEventBus } = await import(pathToFileURL(`${piPackage}/index.js`).href);
+const {
   createExtensionRuntime,
   loadExtensions,
-} from 'file:///var/home/user/Monochromatic/node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/loader.js';
-
-const source = '/var/home/user/.pi/agent/npm/node_modules/@narumitw/pi-goal/src/goal.ts';
-const agentDir = process.env.REPRO_AGENT_DIR;
-if (!agentDir) throw new Error('REPRO_AGENT_DIR is required');
-process.env.PI_CODING_AGENT_DIR = agentDir;
+} = await import(pathToFileURL(`${piPackage}/core/extensions/loader.js`).href);
 
 const runtime = createExtensionRuntime();
 runtime.appendEntry = () => {};
@@ -321,48 +340,69 @@ const context = {
 const command = extension.commands.get('goal');
 if (!command) throw new Error('/goal command not loaded');
 await handler('session_start')({ type: 'session_start', reason: 'startup' }, context);
-await command.handler('reproduce stale blocker', context);
 const toolCall = handler('tool_call');
 const decision = async (toolName) =>
   (await toolCall({ type: 'tool_call', toolName, toolCallId: toolName, input: {} }, context))
     ?.reason ?? 'allowed';
+const abortGoal = async () => {
+  await handler('agent_end')({
+    type: 'agent_end',
+    messages: [{
+      role: 'assistant',
+      content: [],
+      api: 'openai-responses',
+      provider: 'fixture',
+      model: 'fixture',
+      usage: {
+        input: 0,
+        output: 0,
+        cacheRead: 0,
+        cacheWrite: 0,
+        totalTokens: 0,
+        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+      },
+      stopReason: 'aborted',
+      timestamp: Date.now(),
+    }],
+  }, context);
+};
+
+await command.handler('reproduce stale blocker', context);
 const beforeAbort = await decision('read');
-await handler('agent_end')({
-  type: 'agent_end',
-  messages: [{
-    role: 'assistant',
-    content: [],
-    api: 'openai-responses',
-    provider: 'fixture',
-    model: 'fixture',
-    usage: {
-      input: 0,
-      output: 0,
-      cacheRead: 0,
-      cacheWrite: 0,
-      totalTokens: 0,
-      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
-    },
-    stopReason: 'aborted',
-    timestamp: Date.now(),
-  }],
-}, context);
+await abortGoal();
 const afterAbort = Object.fromEntries(
   await Promise.all(['read', 'bash', 'edit', 'custom_fixture'].map(async (name) => [name, await decision(name)])),
 );
+await command.handler('replacement goal', context);
+const afterReplacement = await decision('read');
+await abortGoal();
+await command.handler('resume', context);
+const afterResume = await decision('read');
+await abortGoal();
 await handler('input')({ type: 'input', source: 'interactive', text: 'inspect state' }, context);
 const afterHumanInput = await decision('read');
+await abortGoal();
 await command.handler('clear', context);
 const afterClear = await decision('read');
-console.log(JSON.stringify({ beforeAbort, afterAbort, afterHumanInput, afterClear }, null, 2));
+console.log(JSON.stringify({
+  beforeAbort,
+  afterAbort,
+  afterReplacement,
+  afterResume,
+  afterHumanInput,
+  afterClear,
+}, null, 2));
 ```
 
-Run it with a disposable agent directory:
+Run it with a disposable agent directory and explicit local paths:
 
 ```bash
 mkdir --parents /tmp/agent/pi-goal-reproduction
 chmod 700 /tmp/agent/pi-goal-reproduction
-REPRO_AGENT_DIR=/tmp/agent/pi-goal-reproduction node /tmp/agent/pi-goal-reproduce.mjs
+REPO_ROOT=/var/home/user/Monochromatic \
+PI_GOAL_SOURCE=/var/home/user/.pi/agent/npm/node_modules/@narumitw/pi-goal/src/goal.ts \
+REPRO_AGENT_DIR=/tmp/agent/pi-goal-reproduction \
+node /tmp/agent/pi-goal-reproduce.mjs
 ```
 
 Observed output:
@@ -376,6 +416,8 @@ Observed output:
     "edit": "Blocked stale /goal tool call after the goal was paused or interrupted.",
     "custom_fixture": "Blocked stale /goal tool call after the goal was paused or interrupted."
   },
+  "afterReplacement": "allowed",
+  "afterResume": "allowed",
   "afterHumanInput": "allowed",
   "afterClear": "allowed"
 }
@@ -384,6 +426,8 @@ Observed output:
 ### Patterns that work cleanly
 
 - `read` before interruption returns no block decision.
+- `read` after goal replacement returns no block decision.
+- `read` after `/goal resume` returns no block decision.
 - `read` after a non-extension interactive input returns no block decision.
 - `read` after `/goal clear` returns no block decision.
 
@@ -402,8 +446,9 @@ The identical failure across built-in and custom names confirms that tool identi
 
 ### Submit fresh non-extension input
 
-Any interactive or RPC user input reaching the extension with a source other than `extension` clears the latch.
+A non-extension interactive input clears the latch.
 The harness verifies that `read` is allowed immediately after this event.
+RPC event behavior was not exercised and is not claimed here.
 
 Tradeoffs:
 
@@ -412,6 +457,30 @@ Tradeoffs:
 - The goal remains paused,
   so goal continuation does not resume automatically.
 - The fresh prompt may start a model turn before the user has inspected the failure.
+
+### Replace the goal
+
+Starting a replacement goal clears recovery state and the stale-tool latch before installing the new active goal.
+The harness verifies that `read` is allowed after replacement.
+
+Tradeoffs:
+
+- It discards the old active objective.
+- It immediately starts different goal work.
+- It does not provide a neutral state-inspection window.
+
+### Run `/goal resume`
+
+`/goal resume` clears recovery state and the stale-tool latch,
+rotates the goal identifier,
+and resumes automatic goal work.
+The harness verifies that `read` is allowed after resume.
+
+Tradeoffs:
+
+- It deliberately restarts the automation that the interruption stopped.
+- It is unsuitable when the user wants ordinary recovery work without goal enforcement.
+- It rotates the stale completion guard identifier.
 
 ### Run `/goal clear`
 
@@ -429,22 +498,23 @@ Tradeoffs:
 - It does not preserve autonomous goal continuation.
 - A later goal must be started again with a new identifier.
 
-### Disable the package before another session
+The repository-owned replacement planned in
+[`docs/planning/pi-goal-stop-hook.md`](../planning/pi-goal-stop-hook.md)
+is the durable consumer-side fix,
+but it is not yet implemented or verified and is therefore not listed as a verified workaround.
 
-Removing `npm:@narumitw/pi-goal` from global Pi packages and reloading Pi prevents this extension from registering its `tool_call` handler.
-Use Pi's package-removal command rather than editing installed npm source.
+## Inferred operational escape hatch
+
+Removing `npm:@narumitw/pi-goal` from global Pi packages and reloading Pi should prevent this extension from registering its `tool_call` handler.
+This follows Pi package-loading behavior,
+but no real settings mutation or reload was run during this investigation.
+Treat it as an unverified operational escape hatch.
 
 Tradeoffs:
 
 - `/goal` and `goal_complete` disappear entirely.
 - Existing active goal state is no longer managed by the extension.
-- This is an operational escape hatch,
-  not feature parity.
-
-The repository-owned replacement planned in
-[`docs/planning/pi-goal-stop-hook.md`](../planning/pi-goal-stop-hook.md)
-is the durable consumer-side fix,
-but it is not yet implemented or verified and is therefore not listed as a verified workaround.
+- It is not feature parity.
 
 ## What does not work
 
@@ -559,7 +629,9 @@ Do not post the draft as-is.
 
 The related issue already exists,
 so retain an additive comment rather than a duplicate new issue.
-This draft is intentionally not posted because the contribution gate fails:
+This draft is not eligible for posting because the contribution gate fails.
+Issue #124's compaction defect was already fixed,
+and the remaining aborted-turn behavior is a different product-policy disagreement:
 
 ~~~md
 I reproduced a broader path than overflow compaction against `@narumitw/pi-goal@0.12.0`.
