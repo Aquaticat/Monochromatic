@@ -11,7 +11,6 @@ import { receiverEffect, } from './package-receiver-effect.ts';
 import { PI_PACKAGE_EFFECTS, } from './pi-package-effect-catalog.ts';
 import { POSTCSS_PACKAGE_EFFECTS, } from './postcss-package-effect-catalog.ts';
 import { TURSO_PACKAGE_EFFECTS, } from './turso-package-effect-catalog.ts';
-import { WORKSPACE_PACKAGE_EFFECTS, } from './workspace-package-effect-catalog.ts';
 
 /**
  * Package effects audited by exact current-lock major.
@@ -22,16 +21,6 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...PI_PACKAGE_EFFECTS,
   ...POSTCSS_PACKAGE_EFFECTS,
   ...TURSO_PACKAGE_EFFECTS,
-  receiverEffect({
-    provenance: {
-      kind: 'package',
-      packageName: '@monochromatic-dev/mcp-stdio',
-      major: 0,
-    },
-    ownerType: 'StdoutWriter',
-    member: 'write',
-    evidence: 'mcp-stdio 0.1.0 StdoutWriter contract writes bytes to output stream state',
-  },),
   receiverEffect({
     provenance: {
       kind: 'package',
@@ -91,7 +80,6 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       evidence: '@oxlint/plugins 1.73 index.d.ts source and fixer descriptor operations',
     };
   },),
-  ...WORKSPACE_PACKAGE_EFFECTS,
   {
     provenance: {
       kind: 'package',

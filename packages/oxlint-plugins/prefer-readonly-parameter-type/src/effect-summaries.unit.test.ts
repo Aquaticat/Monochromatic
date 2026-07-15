@@ -113,12 +113,14 @@ await describe({
         const summary = index.get(declaration,);
         if (summary === NO_EFFECT_SUMMARY)
           throw new Error('Expected statusline usage effect summary.',);
-        /** Audited invocation indexes retained before bridge cleanup. */
+        /** Invocation indexes retained before bridge cleanup. */
         const invoked = [...summary.invokedParameterIndexes,];
-        /** Audited unresolved indexes retained before bridge cleanup. */
+        /** Unresolved indexes retained before bridge cleanup. */
         const opaque = [...summary.opaqueParameterIndexes,];
         closeSemanticBridge();
-        expect(invoked,).toEqual([0,],);
+        /* Style-callback invocation now proves inside the analyzed workspace
+         * callee instead of an audited caller-side catalog marking. */
+        expect(invoked,).toEqual([],);
         expect(opaque,).toEqual([],);
       },
     },),

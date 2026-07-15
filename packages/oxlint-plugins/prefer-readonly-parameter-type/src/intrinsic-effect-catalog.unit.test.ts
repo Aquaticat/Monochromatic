@@ -151,78 +151,17 @@ await describe({
       },
     },),
     it({
-      name: 'records workspace TOML observation and value uncertainty',
+      name: 'keeps workspace packages out of the audited catalog',
       fn: async () => {
-        const getValue = intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@monochromatic-dev/module-toml-edit',
-            major: 0,
-          },
-          ownerType: 'globalThis',
-          member: 'tomlGetValue',
-        },);
-        const setValue = intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@monochromatic-dev/module-toml-edit',
-            major: 0,
-          },
-          ownerType: 'globalThis',
-          member: 'tomlSet',
-        },);
-        expect(getValue,).not.toBe(NO_INTRINSIC_EFFECT,);
-        expect(setValue,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if ((getValue === NO_INTRINSIC_EFFECT) || (setValue === NO_INTRINSIC_EFFECT))
-          throw new Error('Expected workspace TOML effects.',);
-        expect(getValue.targets,).toEqual([],);
-        expect(setValue.targets,).toEqual([],);
-        expect(setValue.opaqueTargets,).toEqual([{
-          kind: 'argument',
-          index: 0,
-          propertyNames: ['value',],
-        },],);
-      },
-    },),
-    it({
-      name: 'records workspace ZIP writer storage effects',
-      fn: async () => {
-        const effect = intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@monochromatic-dev/module-zip-writer',
-            major: 0,
-          },
-          ownerType: 'ZipWriter',
-          member: 'add',
-        },);
-        expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if (effect === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected ZipWriter.add effect.',);
-        expect(effect.targets,).toEqual([{ kind: 'receiver', },],);
-        expect(effect.opaqueTargets,).toEqual([{
-          kind: 'argument',
-          index: 1,
-          typeCondition: { kind: 'not-definitely-string', },
-        },],);
-        const overwriteEach = intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@monochromatic-dev/dev-script-file-enforcer',
-            major: 0,
-          },
-          ownerType: 'globalThis',
-          member: 'overwriteEach',
-        },);
-        expect(overwriteEach,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if (overwriteEach === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected overwriteEach effect.',);
-        expect(overwriteEach.targets,).toEqual([],);
-        expect(overwriteEach.invokedArgumentProperties,).toEqual([{
-          argumentIndex: 0,
-          propertyNames: ['files',],
-          typeCondition: { kind: 'may-be-callable', },
-        },],);
+        /* Workspace calls resolve through live source analysis; audited
+         * entries would rot against mutable in-repo implementations. */
+        expect(INTRINSIC_EFFECTS.some(function workspaceEntry(entry,): boolean {
+          return (entry.provenance.kind === 'package')
+            && entry
+              .provenance
+              .packageName
+              .startsWith('@monochromatic-dev/',);
+        },),).toBe(false,);
       },
     },),
     it({
@@ -851,53 +790,6 @@ await describe({
           ownerType: 'API',
           member: 'updateSnapshot',
         },),).toBe(NO_INTRINSIC_EFFECT,);
-        const scopeEffect = intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@monochromatic-dev/pi-shared-model-selection',
-            major: 0,
-          },
-          ownerType: 'globalThis',
-          member: 'resolveEffectiveScope',
-        },);
-        expect(scopeEffect,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if (scopeEffect === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected model-scope capability effect.',);
-        expect(scopeEffect.targets,).toEqual([{
-          kind: 'argument',
-          index: 0,
-          propertyNames: ['ctx',],
-        },],);
-        const usageEffect = intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@monochromatic-dev/agent-harnesses-shared-usage-projection',
-            major: 0,
-          },
-          ownerType: 'globalThis',
-          member: 'formatRateLimitStatus',
-        },);
-        expect(usageEffect,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if (usageEffect === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected shared usage formatting effect.',);
-        expect(usageEffect.targets,).toEqual([],);
-        expect(usageEffect.invokedArgumentProperties,).toEqual([{
-          argumentIndex: 0,
-          propertyNames: ['style',],
-        },],);
-        const loggerEffect = intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@monochromatic-dev/module-logger',
-            major: 0,
-          },
-          ownerType: 'Logger',
-          member: 'debug',
-        },);
-        expect(loggerEffect,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if (loggerEffect === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected logger capability effect.',);
-        expect(loggerEffect.targets,).toEqual([{ kind: 'receiver', },],);
         expect([
           'add',
           'ignores',
@@ -1287,33 +1179,6 @@ await describe({
             member,
           },) !== NO_INTRINSIC_EFFECT;
         },),).toBe(true,);
-        expect(intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@monochromatic-dev/module-current-time-context',
-            major: 0,
-          },
-          ownerType: 'globalThis',
-          member: 'formatTimeContext',
-        },),).not.toBe(NO_INTRINSIC_EFFECT,);
-        /**
-         * Audited caught-value conversion effect.
-         */
-        const caughtValueEffect = intrinsicEffect({
-          provenance: {
-            kind: 'package',
-            packageName: '@monochromatic-dev/module-caught-value',
-            major: 0,
-          },
-          ownerType: 'globalThis',
-          member: 'caughtValueText',
-        },);
-        if (caughtValueEffect === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected caught-value formatter intrinsic effect.',);
-        expect(caughtValueEffect.targets,).toEqual([{
-          kind: 'argument',
-          index: 0,
-        },],);
       },
     },),
     it({

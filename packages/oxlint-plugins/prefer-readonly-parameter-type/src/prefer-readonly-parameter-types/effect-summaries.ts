@@ -40,6 +40,7 @@ import {
   NO_EFFECT_SUMMARY,
 } from './effect-summary-index.ts';
 import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
+import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
 
 /**
  * Mutable effect dimensions propagated per parameter.
@@ -212,6 +213,10 @@ export function buildEffectSummaryIndex({
     if (!project
       .program
       .isSourceFileFromExternalLibrary(sourceFile,))
+      return [sourceFile,];
+    /* Symlink-resolved workspace dependencies classify as external while
+     * living at repository paths; their source joins the indexed scope. */
+    if (isWorkspaceSourceFileName(fileName,))
       return [sourceFile,];
     if ((analysisRoot !== undefined) && fileName.startsWith(analysisRoot,))
       return [sourceFile,];

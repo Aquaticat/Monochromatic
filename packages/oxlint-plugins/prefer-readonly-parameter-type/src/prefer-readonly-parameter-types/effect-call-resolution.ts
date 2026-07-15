@@ -24,6 +24,7 @@ import {
   expressionCanCarryMutableState,
   receiverElementsArePrimitive,
 } from './effect-primitive-origin.ts';
+import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
 import {
   type EffectCallableDeclaration,
   expressionRoot,
@@ -293,6 +294,9 @@ export function callableDeclaration({
     return OWNED_CALLABLE_UNAVAILABLE;
   if ((!project.program
     .isSourceFileFromExternalLibrary(sourceFile,))
+    /* Symlink-resolved workspace dependencies classify as external while
+     * living at repository paths; their source stays inspectable. */
+    || isWorkspaceSourceFileName(sourceFile.fileName,)
     || ((analysisRoot !== undefined)
       && sourceFile.fileName
       .startsWith(analysisRoot,)))
