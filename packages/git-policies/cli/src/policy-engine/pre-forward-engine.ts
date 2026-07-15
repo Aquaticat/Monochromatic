@@ -22,7 +22,7 @@ import type {
  *
  * @param gitPath - resolved real Git executable
  *
- * @mutates options through https://github.com/open-circle/valibot safeParse schema property access, getter or proxy hooks, and schema callbacks
+ * @mutates options through https://github.com/open-circle/valibot safeParse access to options.config getters, proxy hooks, and schema callbacks
  *
  * @returns settled policy result
  *

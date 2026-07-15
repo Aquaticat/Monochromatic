@@ -234,7 +234,7 @@ export async function createManualPushCandidates({
      *
      * @returns candidate with lazy byte provider
      *
-     * @mutates descriptor through Promise.resolve thenable assimilation of descriptor content bytes
+     * @mutates descriptor through Promise.resolve then getter or callback effects while assimilating descriptor content bytes
      */
     function materializeDescriptor(descriptor,): CandidateFile {
       /**

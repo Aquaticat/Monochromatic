@@ -44,7 +44,7 @@ export class TrustedConfigError extends Error {
    *
    * @param options - optional underlying cause
    *
-   * @mutates options through super global Error options cause access
+   * @mutates options through super options.cause getter or proxy effects
    */
   public constructor(
     code: TrustedConfigFailureCode,

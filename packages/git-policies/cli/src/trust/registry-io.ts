@@ -83,7 +83,7 @@ export class TrustStorageError extends Error {
    *
    * @param options - optional underlying cause
    *
-   * @mutates options through super global Error options cause access
+   * @mutates options through super options.cause getter or proxy effects
    */
   public constructor(
     message: string,
@@ -364,7 +364,7 @@ export async function assertSafeRegistryDirectory({
  *
  * @param bytes - exact file bytes
  *
- * @mutates bytes through handle.writeFile native-boundary access
+ * @mutates bytes through handle.writeFile configured VFS handler or native-boundary access
  *
  * @example
  * ```ts

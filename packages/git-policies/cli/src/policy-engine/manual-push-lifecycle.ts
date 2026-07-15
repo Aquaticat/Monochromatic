@@ -43,7 +43,7 @@ function absentOid(): Promise<typeof ABSENT_GIT_VALUE> {
  *
  * @param updates - authoritative push updates
  *
- * @mutates updates through Promise.resolve thenable assimilation
+ * @mutates updates through Promise.resolve then getter or callback effects during thenable assimilation
  *
  * @returns lazy lifecycle facts
  */
