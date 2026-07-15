@@ -95,7 +95,8 @@ export function applyAuditedCallableEffect({
         target,
       },)
         .forEach(function callableArgument(argument,): void {
-          if ((target.typeCondition !== undefined)
+          if ((target.kind !== 'receiver')
+            && (target.typeCondition !== undefined)
             && (!intrinsicExpressionMatchesTypeCondition({
               checker,
               expression: argument,
@@ -134,7 +135,8 @@ export function applyAuditedCallableEffect({
         target,
       },)
         .forEach(function opaqueCallableArgument(argument,): void {
-          if ((target.typeCondition !== undefined)
+          if ((target.kind !== 'receiver')
+            && (target.typeCondition !== undefined)
             && (!intrinsicExpressionMatchesTypeCondition({
               checker,
               expression: argument,

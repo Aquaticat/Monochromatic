@@ -264,9 +264,15 @@ export function intrinsicCallMatchesTypeConditions({
     const argument = call.arguments[argumentCondition.argumentIndex];
     if (argument === undefined)
       return false;
+    /**
+     * Semantic argument type when TypeScript resolved it.
+     */
+    const argumentType = checker.getTypeAtLocation(argument,);
+    if (argumentType === undefined)
+      return argumentCondition.condition.kind !== 'definitely-owner';
     return intrinsicTypeConditionMatches({
       checker,
-      type: checker.getTypeAtLocation(argument,),
+      type: argumentType,
       condition: argumentCondition.condition,
     },);
   },);
@@ -310,6 +316,8 @@ export function intrinsicExpressionMatchesTypeCondition({
    * Semantic root argument type.
    */
   const expressionType = checker.getTypeAtLocation(expression,);
+  if (expressionType === undefined)
+    return condition.kind !== 'definitely-owner';
   if (propertyNames === undefined) {
     return intrinsicTypeConditionMatches({
       checker,
@@ -328,12 +336,18 @@ export function intrinsicExpressionMatchesTypeCondition({
       return selectedPropertyNames.has(property.name,);
     },)
     .some(function propertyMatches(property,): boolean {
+      /**
+       * Semantic selected-property type when TypeScript resolved it.
+       */
+      const propertyType = checker.getTypeOfSymbolAtLocation(
+        property,
+        expression,
+      );
+      if (propertyType === undefined)
+        return condition.kind !== 'definitely-owner';
       return intrinsicTypeConditionMatches({
         checker,
-        type: checker.getTypeOfSymbolAtLocation(
-          property,
-          expression,
-        ),
+        type: propertyType,
         condition,
       },);
     },);

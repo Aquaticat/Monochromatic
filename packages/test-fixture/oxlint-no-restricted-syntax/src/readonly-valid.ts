@@ -95,7 +95,7 @@ export function launchReadonlyArguments(args: readonly string[],): void {
  *
  * @param options - Caller-owned launch options exposed to native process creation.
  *
- * @mutates options - Node 26.5.0 child_process.spawn may observe option getters, environment state, signals, and stdio capabilities.
+ * @mutates options - Node 26.5.0 child_process.spawn copies the command arguments while options can expose hooks, environment, signals, and stdio capabilities.
  */
 export function launchReadonlyOptions(options: SpawnOptions,): void {
   void spawn(
