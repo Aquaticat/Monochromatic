@@ -117,6 +117,13 @@ export function createWatchModeLifecycle(): WatchModeLifecycle {
       return watchModeFailureState.has('failed',);
     },
 
+    /**
+     * Fails watch mode once and closes active watchers.
+     *
+     * @param failureError - rejection reason retained by failure promise
+     *
+     * @mutates failureError through watchModeFailure.reject rejection retention
+     */
     fail(failureError: unknown,): void {
       if (watchModeFailureState.has('failed',))
         return;

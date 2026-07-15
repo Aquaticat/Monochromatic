@@ -44,6 +44,8 @@ export const DEBOUNCE_MS = 100;
  *
  * @param onEvent - Callback receiving the event kind and the changed filename
  *
+ * @mutates signal through signal.addEventListener and signal.removeEventListener listener lifecycle
+ *
  * @example
  * ```ts
  * const controller = new AbortController();

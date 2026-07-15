@@ -147,6 +147,8 @@ function capturedGlobs(globs: ReadonlyMap<string, readonly string[]>,): readonly
  *
  * @param fn - Callback whose calls to {@link cat} and {@link addWatchedPaths} should be captured.
  *
+ * @mutates fn through sourceCaptureStorage.run callback invocation
+ *
  * @returns Callback result plus captured sources.
  *
  * @example

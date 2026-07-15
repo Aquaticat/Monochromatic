@@ -28,7 +28,7 @@ type WatchSupervisorLogger = Pick<Logger, 'error' | 'info'>;
 /**
  * Options for one supervised watcher loop.
  */
-type SupervisedWatcherOptions = Readonly<{
+type SupervisedWatcherOptions = {
   /**
    * Directory path passed to chokidar.
    */
@@ -76,7 +76,7 @@ type SupervisedWatcherOptions = Readonly<{
    * Delay between restart attempts.
    */
   restartDelayMs?: number;
-}>;
+};
 
 /**
  * Returns attempt ordinals for initial watcher start and bounded restarts.
@@ -159,6 +159,8 @@ function watcherRestartLimitError(
  * @param delayMs - Restart delay in milliseconds.
  *
  * @param signal - Abort signal for normal watcher teardown.
+ *
+ * @mutates signal through wait abort-listener registration and retention
  *
  * @example
  * ```ts

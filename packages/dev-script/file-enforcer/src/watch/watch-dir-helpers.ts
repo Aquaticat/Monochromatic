@@ -7,7 +7,7 @@ import type { EventKind, } from './watch-filter.ts';
 /**
  * Arguments accepted by watchDirectory.
  */
-export type WatchDirectoryOptions = Readonly<{
+export type WatchDirectoryOptions = {
   /**
    * Absolute directory path to watch.
    */
@@ -35,7 +35,7 @@ export type WatchDirectoryOptions = Readonly<{
    * Optional callback fired after chokidar reports its initial scan is ready.
    */
   onReady?: () => void;
-}>;
+};
 
 /**
  * Lifecycle helper for one chokidar-backed watchDirectory call.
@@ -235,6 +235,8 @@ export function createWatchDirectoryLifecycle(): WatchDirectoryLifecycle {
    * Rejects completion after closing chokidar for watcher failure paths.
    *
    * @param watchError - Failure that should reject the watch loop.
+   *
+   * @mutates watchError through completion.reject rejection retention
    *
    * @example
    * ```ts
