@@ -40,6 +40,8 @@ const EXIT_NOT_FOUND = 127;
  *
  * @throws Error when the command array is empty.
  *
+ * @mutates command through the native process-launch boundary
+ *
  * @example
  * ```ts
  * execvp(\{ command: ['/usr/bin/ghostty', '--gtk-single-instance=true', '-e', 'bash'] \})
@@ -87,8 +89,10 @@ export function execvp({ command, }: { readonly command: readonly string[]; },):
      * @param err - Failure emitted by Node.
      *
      * @mutates err - `caughtValueText` may invoke string-conversion hooks.
+     *
+     * @returns Nothing; event handler reports through stderr and exit code.
      */
-    function onError(err: unknown,) {
+    function onError(err: unknown,): void {
       /**
        * Failure detail preserving arbitrary thrown-value text.
        */
