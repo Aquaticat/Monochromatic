@@ -238,6 +238,24 @@ different clothing;
 `caught-value` and logger consumers would have needed contracts at
 every transitive call level after catalog deletion.
 
+### Root-lint baseline context
+
+The pre-refactor acceptance record
+(`docs/planning/replace-prefer-readonly-parameter-types.md`,
+"Final verification record")
+shows root `lint:oxlint` reporting 3,792 warnings and 665 errors of
+existing non-readonly findings over 2,548 files,
+with zero readonly-rule findings,
+at the point the migration was accepted.
+Root scope includes `.mjs` bench and analysis files that per-package
+gates exclude.
+The sweep's green target is therefore:
+zero `prefer-readonly-parameter-type` findings repo-wide,
+per-package gates green,
+and no unexplained growth over that recorded root baseline;
+the baseline's pre-existing non-readonly debt is a separate backlog,
+not part of this refactor.
+
 ### Perf numbers so far
 
 - Cold `buildEffectSummaryIndex` for file-enforcer `apply-plan.ts`:
