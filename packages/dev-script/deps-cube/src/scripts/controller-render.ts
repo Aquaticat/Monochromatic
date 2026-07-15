@@ -15,6 +15,11 @@ import { computeVisibleIndices, } from './filter.ts';
  * @param session - Mutable session receiving computed visibility.
  *
  * @param probes - Source probes.
+ *
+ * @example
+ * ```ts
+ * recomputeVisibility({ session, probes, });
+ * ```
  */
 export function recomputeVisibility({
   session,
@@ -25,17 +30,24 @@ export function recomputeVisibility({
 }): void {
   session.visibleIndices = computeVisibleIndices({
     probes,
-    toggles: session.state.toggles,
-    ranges: session.state.ranges,
-    search: session.state.search,
-    dimMapping: session.state.dimMapping,
+    toggles: session.state
+      .toggles,
+    ranges: session.state
+      .ranges,
+    search: session.state
+      .search,
+    dimMapping: session.state
+      .dimMapping,
   },);
   /**
    * Counter element absent from tests and partial pages.
    */
   const counter = document.querySelector<HTMLElement>('#visibility-counter',);
   if (counter !== null) {
-    counter.textContent = `${session.visibleIndices.size.toString()} of ${probes.length.toString()} visible`;
+    counter.textContent = `${session.visibleIndices
+      .size
+      .toString()} of ${probes.length
+      .toString()} visible`;
   }
 }
 
@@ -47,6 +59,11 @@ export function recomputeVisibility({
  * @param probes - Source probes.
  *
  * @mutates session through session.deck.setProps renderer capability
+ *
+ * @example
+ * ```ts
+ * rerenderLayers({ session, probes, });
+ * ```
  */
 export function rerenderLayers({
   session,
@@ -65,5 +82,6 @@ export function rerenderLayers({
     bounds: session.bounds,
     chrome: session.chrome,
   },);
-  session.deck.setProps({ layers: [...layers,], },);
+  session.deck
+    .setProps({ layers: [...layers,], },);
 }
