@@ -8,9 +8,9 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test/ts';
+} from '@monochromatic-dev/module-test';
 
-import { caughtValueText, } from '../dist/final/neutral/index.mjs';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value';
 
 await describe({
   name: caughtValueText.name,

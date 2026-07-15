@@ -29,8 +29,9 @@ extends = "format:oxlint"
 extends = "lint:types"
 
 [tasks."test:unit"]
-extends = "test:unit"
+description = "Run caught-value consumer tests through module-test without a reverse package dependency"
+run = "mise run //packages/module/test:test:unit -- packages/module/test/src/caught-value-text.unit.test.ts packages/module/test/src/caught-value-stack.unit.test.ts"
 
 [tasks.buildAndTest]
-description = "Build the neutral bundle, then run unit tests against the built dist"
+description = "Build the neutral bundle, then run consumer unit tests against the built dist"
 run = ["mise run build", "mise run test:unit"]
