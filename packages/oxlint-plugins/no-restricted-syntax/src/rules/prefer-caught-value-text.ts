@@ -446,7 +446,7 @@ function duplicatesCaughtValueFormatter(
     node,
   }: ForeignBorrowed<{
     readonly context: Context;
-    readonly node: ESTree.Function;
+    readonly node: ESTree.Function | ESTree.ArrowFunctionExpression;
   }>,
 ): boolean {
   if ((node.body === null) || (node.body.type !== 'BlockStatement'))
@@ -563,7 +563,7 @@ export const preferCaughtValueText: CreateOnceRule = {
         },))
           reportDuplicate(node,);
       },
-      ArrowFunctionExpression(node: ForeignBorrowed<ESTree.Function>,): void {
+      ArrowFunctionExpression(node: ForeignBorrowed<ESTree.ArrowFunctionExpression>,): void {
         if (isCanonicalFormatterFile(context.filename,))
           return;
         if (duplicatesCaughtValueFormatter({ context, node, },))
