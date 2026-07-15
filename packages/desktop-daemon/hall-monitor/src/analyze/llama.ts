@@ -156,8 +156,6 @@ export async function stop(): Promise<void> {
      *
      * @param resolve - Promise settlement callback.
      *
-     * @returns Nothing; child exit invokes settlement later.
-     *
      * @mutates resolve through currentServer.on listener retention and invocation
      */
     function awaitExit(resolve,): void {
