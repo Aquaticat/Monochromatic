@@ -499,8 +499,7 @@ async function generatePackageLicenseTexts(): Promise<void> {
           await unlinkIfExists({ filePath: `${packageDir}/LICENSES/${textId}.txt`, },);
         },),);
 
-      await Promise.all(Array.from(
-        textIds,
+      await Promise.all([...textIds,].map(
         async function writeLicenseText(textId,): Promise<void> {
           await overwrite({
             dest: `${packageDir}/LICENSES/${textId}.txt`,
@@ -868,6 +867,8 @@ function isCanonicalSkillPath({ filePath, }: { readonly filePath: string; }): bo
  *
  * @param manifestPath - source path used in validation errors.
  *
+ * @mutates value through `Reflect.ownKeys` and `Reflect.get` proxy or accessor hooks
+ *
  * @example
  * ```ts
  * assertSkillMirrorManifest({ value: {}, manifestPath: 'manifest.json', });
@@ -1011,6 +1012,8 @@ function mirrorDestinationPath(
  * @param skills - canonical file-enforcer glob results.
  *
  * @param manifest - current canonical path and hash mapping.
+ *
+ * @mutates manifest through `JSON.stringify` serialization hooks
  *
  * @example
  * ```ts
