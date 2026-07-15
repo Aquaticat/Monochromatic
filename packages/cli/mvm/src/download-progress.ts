@@ -110,6 +110,8 @@ async function pollProgress({
  *
  * @param rl - Logger for status messages
  *
+ * @mutates response through `Readable.from` asynchronous body iteration
+ *
  * @example
  * ```ts
  * await writeWithProgress({ response, destPath: '/tmp/image.img', rl: logger });
