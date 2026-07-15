@@ -132,10 +132,12 @@ function typeMayBeCallable({
         type: constraint,
       },);
   }
-  return checker.getSignaturesOfType(
-    type,
-    SignatureKind.Call,
-  ).length > 0;
+  return checker
+    .getSignaturesOfType(
+      type,
+      SignatureKind.Call,
+    )
+    .length > 0;
 }
 
 /**
@@ -259,9 +261,16 @@ export function intrinsicCallMatchesTypeConditions({
 }): boolean {
   return conditions.every(function argumentConditionMatches(argumentCondition,): boolean {
     /**
+     * Argument position and semantic condition selected by catalog entry.
+     */
+    const {
+      argumentIndex,
+      condition,
+    } = argumentCondition;
+    /**
      * Call argument selected by condition.
      */
-    const argument = call.arguments[argumentCondition.argumentIndex];
+    const argument = call.arguments[argumentIndex];
     if (argument === undefined)
       return false;
     /**
@@ -269,11 +278,11 @@ export function intrinsicCallMatchesTypeConditions({
      */
     const argumentType = checker.getTypeAtLocation(argument,);
     if (argumentType === undefined)
-      return argumentCondition.condition.kind !== 'definitely-owner';
+      return condition.kind !== 'definitely-owner';
     return intrinsicTypeConditionMatches({
       checker,
       type: argumentType,
-      condition: argumentCondition.condition,
+      condition,
     },);
   },);
 }
