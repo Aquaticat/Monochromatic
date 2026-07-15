@@ -22,11 +22,12 @@ import { TASK_NOT_FOUND, } from '../../lib/types.ts';
 /**
  * Wraps a payload in a JSON `Response` with the correct content type.
  *
- * @param payload - Serializable value
- *
- * @param status - HTTP status code (defaults to 200)
+ * @param options - Serializable payload and HTTP status.
  *
  * @returns JSON response
+ *
+ * @mutates options - `Fetch commit 586cd2a4 Response.json serializes data and reads response initialization`
+ * may invoke serialization hooks reachable from `options.payload`.
  *
  * @example
  * ```ts
@@ -34,13 +35,17 @@ import { TASK_NOT_FOUND, } from '../../lib/types.ts';
  * return jsonResponse({ payload: { error: 'not found', }, status: HTTP_NOT_FOUND, });
  * ```
  */
-function jsonResponse({
-  payload,
-  status = HTTP_OK,
-}: {
+function jsonResponse(options: {
   readonly payload: unknown;
   readonly status?: number;
 },): Response {
+  /**
+   * Response fields separated after boundary contract attaches to their containing input.
+   */
+  const {
+    payload,
+    status = HTTP_OK,
+  } = options;
   return Response.json(
     payload,
     { status, },

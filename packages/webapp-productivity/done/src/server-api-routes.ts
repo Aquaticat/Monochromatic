@@ -69,6 +69,8 @@ function requireParam({
  *
  * @param app - h3 application instance to attach routes to
  *
+ * @mutates app - `app.delete`, `app.post`, and `app.put` register and retain route handlers.
+ *
  * @example
  * ```ts
  * registerApiRoutes(app);

@@ -206,15 +206,31 @@ registerApiRoutes(app,);
 
 app.get(
   '/dist/client/**',
-  defineHandler(function handleStaticAsset(event,) {
-    return serveStatic(
-      event,
-      {
-        getContents: readStaticContents,
-        getMeta: getStaticMetadata,
-      },
-    );
-  },),
+  defineHandler(
+    /**
+     * Serves one event through h3 static-response state.
+     *
+     * @param event - Incoming h3 event.
+     *
+     * @returns static response when an asset exists.
+     *
+     * @mutates event - `h3@2.0.1-rc.24 . serveStatic` may affect event through bundled path and header operations.
+     *
+     * @example
+     * ```ts
+     * await handleStaticAsset(event);
+     * ```
+     */
+    function handleStaticAsset(event,) {
+      return serveStatic(
+        event,
+        {
+          getContents: readStaticContents,
+          getMeta: getStaticMetadata,
+        },
+      );
+    },
+  ),
 );
 
 //endregion Static asset serving

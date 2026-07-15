@@ -16,9 +16,14 @@ extends = "watch:build:js"
 [tasks."watch:build:js:client"]
 extends = "watch:build:js:client"
 
+[tasks."serve:site"]
+hide = true
+description = "Start Done once"
+run = "node src/server.ts"
+
 [tasks."dev:site"]
 description = "Start Done in watch mode"
-run = "mise watch -w src -r -- node src/server.ts"
+run = "mise watch --watch src --restart serve:site"
 
 # start:site intentionally omitted -- production is managed by the
 # orchestrator container, not by mise (see PLAN.md section 7).
