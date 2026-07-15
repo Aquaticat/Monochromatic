@@ -1,9 +1,0 @@
-{
-  "extends": "@monochromatic-dev/config-typescript/dom",
-  "compilerOptions": {},
-  "include": [
-    "src/**/*.ts",
-    "scripts/**/*.ts",
-    "*.config.ts",
-  ],
-}
