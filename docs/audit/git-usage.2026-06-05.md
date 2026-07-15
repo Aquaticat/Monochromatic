@@ -202,7 +202,7 @@ caches reached `index` at least once before `.gitignore` caught up.
 Worth saying clearly,
  because it looks like the same smell but is not:
  the 21 tracked
-`packages/claude-code-plugins/*/dist/final/...` files are intentional.
+`packages/claude-code-plugin/*/dist/final/...` files are intentional.
  `.gitignore:322-328` explicitly
 un-ignores them because marketplace distribution requires committed bundles.
  That is fine;

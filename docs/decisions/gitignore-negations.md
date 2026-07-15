@@ -42,7 +42,7 @@ Four negation lines protected nothing and were deleted outright:
 - `!/packages/rust-module/forbidden-regex.fuzz/corpus/*/seed-*`:
   the corpus directories exist but contain zero committed seeds.
   The seeds design below makes the pattern permanently unnecessary.
-- `!/packages/claude-code-plugins/*/dist/final/*.js`:
+- `!/packages/claude-code-plugin/*/dist/final/*.js`:
   the committed bundles are `.mjs` files under `dist/final/node/`,
   so this pattern never matched anything.
 
@@ -85,7 +85,7 @@ The committed Claude Code plugin bundles leave `dist/` for a distinct tracked di
 Each plugin's tsdown config already spreads the shared base config,
  so the change per plugin is a one-line `outDir` override.
 
-This retires the `!/packages/claude-code-plugins/*/dist/` carve-out
+This retires the `!/packages/claude-code-plugin/*/dist/` carve-out
  and makes `dist/` mean the same thing everywhere in the repo:
  regenerable scratch output,
  always ignored.

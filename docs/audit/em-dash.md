@@ -342,7 +342,7 @@ Replace with paired commas,
    // subpath starts with '.
   /' — strip it for join
 
-### packages/claude-code-plugins/claude-spawn/TODO.md
+### packages/claude-code-plugin/claude-spawn/TODO.md
 
 - Line 212:
    screen to look at — need `grim` screenshot capture for remote debugging,
@@ -1078,7 +1078,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 1415:
    - `packages/dev-script/file-enforcer/src/io/write.ts:ensureDir(filePath: string)` --
 - Line 1417:
-   - `packages/claude-code-plugins/source/src/handlers/session-start-housekeeping.ts:ensureDir(dirPath)` --
+   - `packages/claude-code-plugin/source/src/handlers/session-start-housekeeping.ts:ensureDir(dirPath)` --
 - Line 1435:
    to back the parsing -- the audit's existing function-level section already lists
 - Line 1466:
@@ -1724,7 +1724,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 23:
    //region Mixin Registry -- stores mixin definitions and expands nested @apply references
 
-### packages/claude-code-plugins/README.md
+### packages/claude-code-plugin/README.md
 
 - Line 97:
    1.
@@ -1765,7 +1765,7 @@ Replace with proper punctuation or restructure sentence.
    runtime shared across plugins,
    tests colocated with handlers -- is achieved
 
-### packages/claude-code-plugins/bash-output-filter/README.md
+### packages/claude-code-plugin/bash-output-filter/README.md
 
 - Line 40:
    1.
@@ -1786,7 +1786,7 @@ Replace with proper punctuation or restructure sentence.
    5.
    **Trailing whitespace** -- spaces and tabs at end of lines are removed
 
-### packages/claude-code-plugins/bash-output-filter/TROUBLESHOOTING.md
+### packages/claude-code-plugin/bash-output-filter/TROUBLESHOOTING.md
 
 - Line 31:
    `{` alone is not a valid command -- it must be parsed as part of `{ ...; }` compound syntax,
@@ -1795,7 +1795,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 173:
    This is the same behavior as the original approach and all subsequent attempts --
 
-### packages/claude-code-plugins/guardrail/README.md
+### packages/claude-code-plugin/guardrail/README.md
 
 - Line 17:
    1.
@@ -1806,7 +1806,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 42:
    **`ccgr`** -- Claude Code GuardRail
 
-### packages/claude-code-plugins/prompt-time/README.md
+### packages/claude-code-plugin/prompt-time/README.md
 
 - Line 39:
    The format intentionally omits seconds,
@@ -1814,12 +1814,12 @@ Replace with proper punctuation or restructure sentence.
    and timezone -- Claude already has the date in the system prompt,
    and seconds add noise without value at human conversation cadence.
 
-### packages/claude-code-plugins/research-agent/README.md
+### packages/claude-code-plugin/research-agent/README.md
 
 - Line 21:
    It does **not** replace Explore for local codebase searches --
 
-### packages/claude-code-plugins/research-agent/TROUBLESHOOTING.md
+### packages/claude-code-plugin/research-agent/TROUBLESHOOTING.md
 
 - Line 16:
    4.
@@ -1828,7 +1828,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 31:
    This is a model-level behavior -- Haiku optimizes for speed and confidence over accuracy.
 
-### packages/claude-code-plugins/research-agent/agents/research.md
+### packages/claude-code-plugin/research-agent/agents/research.md
 
 - Line 8:
    Do NOT use for simple local codebase searches -- use Grep/Glob directly for those.
@@ -1836,18 +1836,18 @@ Replace with proper punctuation or restructure sentence.
    fail to load discussion comments -- they return "Uh oh!
    There was an error while loading" placeholders.
 
-### packages/claude-code-plugins/source/src/handlers/bash-output-filter/filter.ts
+### packages/claude-code-plugin/source/src/handlers/bash-output-filter/filter.ts
 
 - Line 80:
    /* stdin already consumed or unavailable -- nothing to pass through */
 
-### packages/claude-code-plugins/source/src/handlers/bash-output-filter/index.ts
+### packages/claude-code-plugin/source/src/handlers/bash-output-filter/index.ts
 
 - Line 32:
    * filter script.
    The filter script lives next to the bundled hook entry --
 
-### packages/claude-code-plugins/source/src/handlers/claude-spawn/hook-session-start.ts
+### packages/claude-code-plugin/source/src/handlers/claude-spawn/hook-session-start.ts
 
 - Line 94:
    /** Genuine child -- claim ownership by filling in session identity.
@@ -1859,27 +1859,27 @@ Replace with proper punctuation or restructure sentence.
 - Line 113:
    // Not on PATH -- attempt auto-setup.
 
-### packages/claude-code-plugins/source/src/handlers/claude-spawn/index.ts
+### packages/claude-code-plugin/source/src/handlers/claude-spawn/index.ts
 
 - Line 80:
    /** File missing (already `.reported`) or unreadable -- skip.
    */
 
-### packages/claude-code-plugins/source/src/handlers/claude-spawn/inject.ts
+### packages/claude-code-plugin/source/src/handlers/claude-spawn/inject.ts
 
 - Line 59:
    * invocations.
    When `consume` is false,
    reads the state without renaming --
 
-### packages/claude-code-plugins/source/src/handlers/claude-spawn/session-finder.ts
+### packages/claude-code-plugin/source/src/handlers/claude-spawn/session-finder.ts
 
 - Line 52:
    // No coordination file for this PID -- walk up to its parent.
 - Line 73:
    // Cannot read /proc -- platform limitation or process already exited.
 
-### packages/claude-code-plugins/source/src/handlers/guardrail.ts
+### packages/claude-code-plugin/source/src/handlers/guardrail.ts
 
 - Line 70:
    'Specialized agent types (Explore,
@@ -1890,19 +1890,19 @@ Replace with proper punctuation or restructure sentence.
    'Do not poll or resume running agents -- wait for the notification.
   ',
 
-### packages/claude-code-plugins/source/src/handlers/stop-reminders/index.ts
+### packages/claude-code-plugin/source/src/handlers/stop-reminders/index.ts
 
 - Line 59:
    'This may be a false positive -- use your judgement.
   ',
 
-### packages/claude-code-plugins/source/src/handlers/terminal-title/index.ts
+### packages/claude-code-plugin/source/src/handlers/terminal-title/index.ts
 
 - Line 110:
    /* /dev/tty unavailable -- running inside sandbox or non-interactive context.
    */
 
-### packages/claude-code-plugins/statusline/README.md
+### packages/claude-code-plugin/statusline/README.md
 
 - Line 120:
    When everything is comfortable,
@@ -1914,7 +1914,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 186:
    supports only the `agent` and `subagentStatusLine` keys --
 
-### packages/claude-code-plugins/statusline/statusline.ts
+### packages/claude-code-plugin/statusline/statusline.ts
 
 - Line 266:
    //region Activity word -- gerund extraction from transcript
@@ -1922,13 +1922,13 @@ Replace with proper punctuation or restructure sentence.
    * and finds the last gerund in it.
    No JSON parsing needed --
 
-### packages/claude-code-plugins/terminal-title/README.md
+### packages/claude-code-plugin/terminal-title/README.md
 
 - Line 9:
    Tool titles reflect tense -- present during execution (PreToolUse),
    past after completion (PostToolUse).
 
-### packages/claude-code-plugins/verbose-tool-output/WONTFIX.md
+### packages/claude-code-plugin/verbose-tool-output/WONTFIX.md
 
 - Line 82:
    The data is already present in the conversation -- only the renderer suppresses it.

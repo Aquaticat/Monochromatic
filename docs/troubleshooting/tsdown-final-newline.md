@@ -253,7 +253,7 @@ single-line scratch fixture:
 ```sh
 mkdir --parents /tmp/tsdown-final-newline/src
 printf '%s\n' 'export const value: number = 1;' > /tmp/tsdown-final-newline/src/index.ts
-REPRO_PACKAGE_DIR="$PWD/packages/claude-code-plugins/prompt-time" \
+REPRO_PACKAGE_DIR="$PWD/packages/claude-code-plugin/prompt-time" \
 REPRO_OUTPUT_DIR=/tmp/tsdown-final-newline/dist \
 REPRO_ENTRY=/tmp/tsdown-final-newline/src/index.ts \
 mise exec -- tsdown --config /tmp/tsdown-final-newline/tsdown.config.mjs
@@ -290,7 +290,7 @@ footer/index.mjs: 2
 ## Repository decision
 
 The shared tsdown producer remains byte-transparent.
-All 18 tracked files under `packages/claude-code-plugins/*/dist/final/node/` have zero final LF bytes,
+All 18 tracked files under `packages/claude-code-plugin/*/dist/final/node/` have zero final LF bytes,
 which saves 18 bytes compared with mandatory one-LF output.
 
 Cli-git's core `final-newline` policy excludes `**/dist/final/node/**` from commit,

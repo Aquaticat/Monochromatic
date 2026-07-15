@@ -225,14 +225,14 @@ of the surfaces being compared.
  The non-CSS overlap is the cost of keeping the comparison
 honest at full-app scale.
 
-#### `pi/terminal-title` and `claude-code-plugins/source/handler/terminal-title` are forks
+#### `pi/terminal-title` and `claude-code-plugin/source/handler/terminal-title` are forks
 
 Both directories implement the same terminal-title generation logic for two consumer
 runtimes (pi extension and Claude Code plugin):
 
 - `packages/pi-plugin/terminal-title/src/formatter-utils.ts`:
    219 lines
-- `packages/claude-code-plugins/source/src/handler/terminal-title/formatter-utils.ts`:
+- `packages/claude-code-plugin/source/src/handler/terminal-title/formatter-utils.ts`:
    154 lines
 - 132 lines of diff between them
 
@@ -243,7 +243,7 @@ Plus parallel files:
    160-line diff)
 - `title-builder.ts` (179 lines,
    no exact peer;
-   the claude-code-plugins fork splits it
+   the claude-code-plugin fork splits it
   into `tool-titles-search.ts` and `tool-titles-extended.ts`)
 
 Functions duplicated across both forks:
@@ -407,7 +407,7 @@ Each takes `(input, key)` and returns the string value at `input[key]` if it is 
 string:
 
 - `packages/pi-plugin/terminal-title/src/formatter-utils.ts`
-- `packages/claude-code-plugins/source/src/handler/terminal-title/formatter-utils.ts`
+- `packages/claude-code-plugin/source/src/handler/terminal-title/formatter-utils.ts`
 - `packages/webapp-content/messages-demo/src/server/api/messages.ts`
 - `packages/webapp-content/messages-demo/src/server/api/drafts.ts`
 
@@ -745,7 +745,7 @@ Folds into the fork consolidation.
 
 ### Plugin and protocol entry shells
 
-#### Seven `claude-code-plugins/<plugin>/src/index.ts` files duplicate the same shell
+#### Seven `claude-code-plugin/<plugin>/src/index.ts` files duplicate the same shell
 
 Each plugin entry-point file is 26 to 38 lines,
  follows the same template:
@@ -753,20 +753,20 @@ Each plugin entry-point file is 26 to 38 lines,
 ```ts
 #!/usr/bin/env bun
 /** doc */
-import { <plugin>Handler, <plugin>Parser, <plugin>Writer } from '@monochromatic-dev/claude-code-plugins-source/handler/<plugin>';
-import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugins-source/runtime';
+import { <plugin>Handler, <plugin>Parser, <plugin>Writer } from '@monochromatic-dev/claude-code-plugin-source/handler/<plugin>';
+import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugin-source/runtime';
 await runHookPlugin({ parser, handler, writer });
 ```
 
 Files:
 
-- `packages/claude-code-plugins/prompt-time/src/index.ts` (36 lines)
-- `packages/claude-code-plugins/guardrail/src/index.ts` (35 lines)
-- `packages/claude-code-plugins/bash-output-filter/src/index.ts` (38 lines)
-- `packages/claude-code-plugins/stop-reminders/src/index.ts` (36 lines)
-- `packages/claude-code-plugins/terminal-title/src/index.ts` (27 lines)
-- `packages/claude-code-plugins/claude-spawn/src/index.ts` (26 lines)
-- `packages/claude-code-plugins/session-start-housekeeping/src/index.ts` (36 lines)
+- `packages/claude-code-plugin/prompt-time/src/index.ts` (36 lines)
+- `packages/claude-code-plugin/guardrail/src/index.ts` (35 lines)
+- `packages/claude-code-plugin/bash-output-filter/src/index.ts` (38 lines)
+- `packages/claude-code-plugin/stop-reminder/src/index.ts` (36 lines)
+- `packages/claude-code-plugin/terminal-title/src/index.ts` (27 lines)
+- `packages/claude-code-plugin/claude-spawn/src/index.ts` (26 lines)
+- `packages/claude-code-plugin/session-start-housekeeping/src/index.ts` (36 lines)
 
 Per-file diff is ~12 lines (handler name in 4 imports,
  command alias in the example
@@ -933,7 +933,7 @@ Suggested home:
 
 #### `SECONDS_PER_MINUTE = 60` declared in 10 files
 
-- `packages/claude-code-plugins/statusline/statusline.ts`
+- `packages/claude-code-plugin/statusline/statusline.ts`
 - `packages/dev-script/inference-canary/src/linter-artifacts-timestamp.ts`
 - `packages/dev-script/inference-canary/src/runner-probe.ts`
 - `packages/webapp-content/messages-demo/src/server/pages/feed.ts`
@@ -1023,7 +1023,7 @@ Folds into the proposed `time/units.ts` module.
 
 - `packages/webapp-content/messages-demo/src/server/pages/feed.ts`
   (composes from `MINUTES_PER_HOUR * SECONDS_PER_MINUTE`)
-- `packages/claude-code-plugins/statusline/statusline.ts`
+- `packages/claude-code-plugin/statusline/statusline.ts`
 - `packages/webapp-productivity/done-h-css-test/src/client/lib/task-card-helpers.ts`
 - `packages/webapp-productivity/done/src/client/lib/format-tracked-time.ts`
 
@@ -1269,7 +1269,7 @@ Suggested resolution:
 Shape A `{ config-tsdown, config-typescript, @types/bun }` (11 packages):
 `backup-path, inference-canary-viewer, paper2vn, cli/git`,
  plus all 7
-`claude-code-plugins/*` (excluding `source` itself).
+`claude-code-plugin/*` (excluding `source` itself).
 
 Shape B `{ config-typescript, @types/bun }` (9 packages):
 `config/oxlint, oxlint-plugin/no-restricted-syntax, dev-script/{catalog-tighten,
@@ -1278,7 +1278,7 @@ cli/{terminal-exec, rgffplay}`.
 
 Shape C `{ config-typescript, module-test, @types/bun }` (6 packages):
 `oxlint-plugin/stylistic, dev-script/task-util, mcp/{nvim, stdio}, cli/mvm,
-claude-code-plugins/source`.
+claude-code-plugin/source`.
 
 Version pins (`workspace:*`,
  `catalog:`) are also identical.
@@ -1451,7 +1451,7 @@ drive-by edit.
 - `packages/webapp-forge/stress/src/cli.ts` (twice)
 - `packages/dev-script/catalog-tighten/src/index.ts`
 - `packages/dev-script/task-util/src/{tsgo-filter, pnpm-filter, oxlint-wrapper}.ts`
-- `packages/claude-code-plugins/source/src/cli/spawn-claude.ts`
+- `packages/claude-code-plugin/source/src/cli/spawn-claude.ts`
 - plus more
 
 This conforms to the project rule "never `process.exit()`:
@@ -1675,7 +1675,7 @@ Two callsites with the same conceptual function but different output strings:
    "2h ago",
    "3d ago",
    or ISO-date prefix
-- `packages/claude-code-plugins/statusline/statusline.ts`:
+- `packages/claude-code-plugin/statusline/statusline.ts`:
    returns
   "now",
    "30s",
@@ -1912,7 +1912,7 @@ Three near-identical wrappers around `mkdir(..., { recursive: true })`:
 - `packages/dev-script/file-enforcer/src/io/write.ts:ensureDir(filePath: string)`:
   takes a file path,
    calls `mkdir(dirname(filePath), { recursive: true })`
-- `packages/claude-code-plugins/source/src/handler/session-start-housekeeping.ts:ensureDir(dirPath)`:
+- `packages/claude-code-plugin/source/src/handler/session-start-housekeeping.ts:ensureDir(dirPath)`:
   takes a directory path directly
 - `packages/ssg/aquati.cat/src/build/assets.ts:ensureDir(dir)`:
    inline
@@ -1963,7 +1963,7 @@ implementations and the two `intFlag` copies all collapse to imports.
 #### `truncate(value, maxLength)` with ellipsis; one fork has two copies
 
 `packages/pi-plugin/terminal-title/src/formatter-utils.ts:truncate` and the corresponding
-copy in `packages/claude-code-plugins/source/src/handler/terminal-title/formatter-utils.ts`
+copy in `packages/claude-code-plugin/source/src/handler/terminal-title/formatter-utils.ts`
 are the two truncate implementations the audit's terminal-title fork section already
 covers.
  The body is generic ("if longer than max,

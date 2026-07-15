@@ -239,8 +239,8 @@ Leaf packages still to fix:
 - `rolldown-plugin/import-attributes` (8e),
    `build-tool/css` (4e)
 - `desktop-daemon/hall-monitor` (7w 6e)
-- `claude-code-plugins/hook-types` (3e),
-   `claude-code-plugins/source` (3w 24e)
+- `claude-code-plugin/hook-type` (3e),
+   `claude-code-plugin/source` (3w 24e)
 - `dev-script/inference-canary-viewer` (2e),
    `ssg/aquati.cat` (4e)
 - `module/memoize` (2e):
@@ -420,7 +420,7 @@ After all leaves:
    never raise the limit);
    `no-class` (prefer factory closures);
    `consistent-function-scoping` (hoist non-capturing inner functions).
-- `claude-code-plugins/*/dist/*.mjs` showing as modified is harmless build-artifact churn from rebuilds.
+- `claude-code-plugin/*/dist/*.mjs` showing as modified is harmless build-artifact churn from rebuilds.
    Leave it uncommitted for the user;
    do not commit hook infrastructure during the autonomous sweep.
 

@@ -3,7 +3,7 @@
 Pi extension that adds one footer status for provider usage pressure.
 
 It uses the shared usage-projection formatter also used by
-`packages/claude-code-plugins/statusline`:
+`packages/claude-code-plugin/statusline`:
 warnings render when remaining capacity is low or projected burn rate exceeds the window.
 
 ## What it displays

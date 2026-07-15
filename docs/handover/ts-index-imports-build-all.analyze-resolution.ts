@@ -46,8 +46,8 @@ const EXEMPT_EXACT = new Set([
   'config-oxlint-no-restricted-syntax',
   'config-oxlint-stylistic',
   'config-oxlint-tsdoc',
-  'claude-code-plugins-source',
-  'claude-code-plugins-hook-types',
+  'claude-code-plugin-source',
+  'claude-code-plugin-hook-type',
 ]);
 function isExemptTarget(unscoped: string): boolean {
   if (EXEMPT_EXACT.has(unscoped)) return true;

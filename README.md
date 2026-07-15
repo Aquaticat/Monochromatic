@@ -183,7 +183,7 @@ mise run //packages/webapp-productivity/done:build
 packages/
   audit/                    Compliance audits (1 package)
   build-tool/               Build tooling (CSS processor)
-  claude-code-plugins/      Claude Code plugins and shared hook source (10 packages)
+  claude-code-plugin/      Claude Code plugins and shared hook source (10 packages)
   cli/                      CLI tools (git wrapper, mvm, vmsync,
                               terminal-exec, cli-fy, rgffplay)
   config/                   Shared configurations (dprint, oxlint,

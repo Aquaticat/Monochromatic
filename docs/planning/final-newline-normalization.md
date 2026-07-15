@@ -72,7 +72,7 @@ The violations split by ownership:
   Missing final newlines can be part of parser behavior under test.
 - 123 copies of `GPL-3.0-or-later.txt`.
   `file-enforcer.config.ts` copies package-local license texts verbatim from the canonical root source.
-- 18 tracked outputs under `packages/claude-code-plugins/*/dist/final/node/`.
+- 18 tracked outputs under `packages/claude-code-plugin/*/dist/final/node/`.
   Tsdown 0.22.4 emits these JavaScript and declaration files without a final LF;
   the implementation amendment reclassified them as intentional compact-output exemptions.
 - 10 ordinary source or configuration files.

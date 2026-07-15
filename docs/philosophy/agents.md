@@ -320,7 +320,7 @@ md should name concrete forks agents face,
  run the file directly with `node <file>`,
  matching the Node-based test task template.
  A `PreToolUse` hook (`ccgr`,
- source at `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
+ source at `packages/claude-code-plugin/source/src/handlers/guardrail.ts`) blocks the call when configured.
 
 #### Type system: why `const` narrowing does not reach function declarations
 

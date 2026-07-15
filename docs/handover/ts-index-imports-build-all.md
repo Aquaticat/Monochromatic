@@ -94,7 +94,7 @@ Not built AND not rewritten (pure data or curated source,
  `config-tofu`,
  `config-dotfiles`;
 `config-tsdown` (circular);
- `claude-code-plugins-source` (curated source named subpaths consumed by sibling plugin
+ `claude-code-plugin-source` (curated source named subpaths consumed by sibling plugin
 bins);
  `test-fixture-*`;
  `shim-*`;
@@ -154,7 +154,7 @@ Commits on the branch (newest last):
    `module-token-count`,
   `module-fs-path` (also keeps its `./find-monorepo-root`/`./find-package-root` feature entries for now),
   `mcp-stdio`,
-   `claude-code-plugins-hook-types`,
+   `claude-code-plugin-hook-type`,
    `cli-terminal-exec` (its `.`/`./ts` point at `src/launch.ts`,
    the
   library entry;
@@ -339,8 +339,8 @@ types GREEN after each):
    `module-numeric-format`,
    `module-toml-edit`,
    `mcp-stdio`,
-  `claude-code-plugins-hook-types` (note:
-   package NAME is `@monochromatic-dev/claude-code-plugins-hook-types`),
+  `claude-code-plugin-hook-type` (note:
+   package NAME is `@monochromatic-dev/claude-code-plugin-hook-type`),
   `cli-terminal-exec`.
 - Wave 2,
    bare imports of built packages (dist->src flip,
@@ -386,7 +386,7 @@ TSDoc/README `@example` blocks still show old import forms.
  `module/or-throw/README.md` (bare),
 `module/logger/src/tagged.ts:17` (`/tagged`,
  escaped `\@`),
- `claude-code-plugins/hook-types/src/index.ts:11`
+ `claude-code-plugin/hook-type/src/index.ts:11`
 (`@monochromatic-dev/claude-code-hook-types` — ALSO a WRONG package name,
  missing `plugins`).
  These do not affect
@@ -856,7 +856,7 @@ Everything imports `/ts`,
    (module-test runs it-blocks within a
   describe concurrently — a key gotcha for any test sharing mutable disk/registry state.
   )
-- `claude-code-plugins-hook-types` — DECIDED EXEMPT (pure types,
+- `claude-code-plugin-hook-type` — DECIDED EXEMPT (pure types,
    zero value exports;
    the `.d.mts` IS the source,
    no
@@ -900,7 +900,7 @@ Relocate any flaky/slow/network/VM test that the new `test:unit` glob activates 
 NEUTRAL,
  no bin:
  ALL DONE.
- `claude-code-plugins-hook-types` is DECIDED EXEMPT:
+ `claude-code-plugin-hook-type` is DECIDED EXEMPT:
  its `src/` is pure type declarations
 (common.
 ts + event/tool-input types;
@@ -1098,7 +1098,7 @@ GENERAL:
  `dev-script-inference-canary`'s would be `src/canary.ts` (already split in
 Phase A,
  but inference-canary is a dev tool -- assess separately).
- (`claude-code-plugins-source` is exempt.
+ (`claude-code-plugin-source` is exempt.
 )
 
 NORMALIZE:
@@ -1245,7 +1245,7 @@ The whole repo-wide gate now passes.
     `--no-index` paths are absolute so the cwd shift is inert to the diff (commit fa4e18ed).
      User authorized this
     out-of-task-set fix.
-  - `claude-code-plugins-terminal-title`:
+  - `claude-code-plugin-terminal-title`:
      the gate regenerated this tracked hook artifact from unchanged source;
      the
     committed copy was stale (older toolchain downleveled `using` via a `_usingCtx()` polyfill,

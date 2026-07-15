@@ -344,33 +344,33 @@ importers:
       '@monochromatic-dev/build-tool-css':
         specifier: workspace:*
         version: link:packages/build-tool/css
-      '@monochromatic-dev/claude-code-plugins-bash-output-filter':
+      '@monochromatic-dev/claude-code-plugin-bash-output-filter':
         specifier: workspace:*
-        version: link:packages/claude-code-plugins/bash-output-filter
-      '@monochromatic-dev/claude-code-plugins-claude-spawn':
+        version: link:packages/claude-code-plugin/bash-output-filter
+      '@monochromatic-dev/claude-code-plugin-claude-spawn':
         specifier: workspace:*
-        version: link:packages/claude-code-plugins/claude-spawn
-      '@monochromatic-dev/claude-code-plugins-correction-reminder':
+        version: link:packages/claude-code-plugin/claude-spawn
+      '@monochromatic-dev/claude-code-plugin-correction-reminder':
         specifier: workspace:*
-        version: link:packages/claude-code-plugins/correction-reminder
-      '@monochromatic-dev/claude-code-plugins-guardrail':
+        version: link:packages/claude-code-plugin/correction-reminder
+      '@monochromatic-dev/claude-code-plugin-guardrail':
         specifier: workspace:*
-        version: link:packages/claude-code-plugins/guardrail
-      '@monochromatic-dev/claude-code-plugins-prompt-time':
+        version: link:packages/claude-code-plugin/guardrail
+      '@monochromatic-dev/claude-code-plugin-prompt-time':
         specifier: workspace:*
-        version: link:packages/claude-code-plugins/prompt-time
-      '@monochromatic-dev/claude-code-plugins-session-start-housekeeping':
+        version: link:packages/claude-code-plugin/prompt-time
+      '@monochromatic-dev/claude-code-plugin-session-start-housekeeping':
         specifier: workspace:*
-        version: link:packages/claude-code-plugins/session-start-housekeeping
-      '@monochromatic-dev/claude-code-plugins-source':
+        version: link:packages/claude-code-plugin/session-start-housekeeping
+      '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
-        version: link:packages/claude-code-plugins/source
-      '@monochromatic-dev/claude-code-plugins-stop-reminders':
+        version: link:packages/claude-code-plugin/source
+      '@monochromatic-dev/claude-code-plugin-stop-reminder':
         specifier: workspace:*
-        version: link:packages/claude-code-plugins/stop-reminders
-      '@monochromatic-dev/claude-code-plugins-terminal-title':
+        version: link:packages/claude-code-plugin/stop-reminder
+      '@monochromatic-dev/claude-code-plugin-terminal-title':
         specifier: workspace:*
-        version: link:packages/claude-code-plugins/terminal-title
+        version: link:packages/claude-code-plugin/terminal-title
       '@monochromatic-dev/cli-git-clone-size':
         specifier: workspace:*
         version: link:packages/cli/git-clone-size
@@ -613,9 +613,9 @@ importers:
         specifier: 'catalog:'
         version: 2.1.0
 
-  packages/claude-code-plugins/bash-output-filter:
+  packages/claude-code-plugin/bash-output-filter:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-source':
+      '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
     devDependencies:
@@ -629,9 +629,9 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/claude-code-plugins/claude-spawn:
+  packages/claude-code-plugin/claude-spawn:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-source':
+      '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
     devDependencies:
@@ -645,9 +645,9 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/claude-code-plugins/correction-reminder:
+  packages/claude-code-plugin/correction-reminder:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-source':
+      '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
     devDependencies:
@@ -661,9 +661,9 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/claude-code-plugins/guardrail:
+  packages/claude-code-plugin/guardrail:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-source':
+      '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
     devDependencies:
@@ -677,15 +677,15 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/claude-code-plugins/hook-types:
+  packages/claude-code-plugin/hook-type:
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
 
-  packages/claude-code-plugins/prompt-time:
+  packages/claude-code-plugin/prompt-time:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-source':
+      '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
     devDependencies:
@@ -699,9 +699,9 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/claude-code-plugins/session-start-housekeeping:
+  packages/claude-code-plugin/session-start-housekeeping:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-source':
+      '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
     devDependencies:
@@ -715,7 +715,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/claude-code-plugins/source:
+  packages/claude-code-plugin/source:
     dependencies:
       '@monochromatic-dev/agent-harness-shared-current-time-context':
         specifier: workspace:*
@@ -732,9 +732,9 @@ importers:
       '@monochromatic-dev/agent-harness-shared-text-scan':
         specifier: workspace:*
         version: link:../../agent-harness-shared/text-scan
-      '@monochromatic-dev/claude-code-plugins-hook-types':
+      '@monochromatic-dev/claude-code-plugin-hook-type':
         specifier: workspace:*
-        version: link:../hook-types
+        version: link:../hook-type
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -758,7 +758,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/claude-code-plugins/statusline:
+  packages/claude-code-plugin/statusline:
     dependencies:
       '@monochromatic-dev/agent-harness-shared-usage-projection':
         specifier: workspace:*
@@ -780,9 +780,9 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/claude-code-plugins/stop-reminders:
+  packages/claude-code-plugin/stop-reminder:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-source':
+      '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
     devDependencies:
@@ -796,9 +796,9 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/claude-code-plugins/terminal-title:
+  packages/claude-code-plugin/terminal-title:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-source':
+      '@monochromatic-dev/claude-code-plugin-source':
         specifier: workspace:*
         version: link:../source
     devDependencies:

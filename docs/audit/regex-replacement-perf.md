@@ -144,12 +144,12 @@ Leave alone (not the target;
    `acc: acc + c`.
    O(n^2) time,
    O(n) stack.
-- `claude-code-plugins/source/src/lib/text-scan.ts` strip walker:
+- `claude-code-plugin/source/src/lib/text-scan.ts` strip walker:
   recursive `walk`,
    `acc + text.slice(...)`.
    O(n^2) time,
    O(n) stack.
-- `claude-code-plugins/source/src/handlers/bash-output-filter/filter-transforms.ts`:
+- `claude-code-plugin/source/src/handlers/bash-output-filter/filter-transforms.ts`:
   recursive `walk` plus a nested recursive `findRunEnd` that recurses
   once per character of a run.
    The function exists to collapse long
@@ -193,7 +193,7 @@ spec),
  fixes the string-scanning sites,
  and leaves structural recursion.
 
-- `claude-code-plugins/source`:
+- `claude-code-plugin/source`:
    `lib/text-scan.ts`,
   `handlers/bash-output-filter/{filter-patterns,filter-transforms,validation}.ts`,
   `handlers/guardrail.ts`,
@@ -256,7 +256,7 @@ spec),
 
 - High (arbitrary or large input,
    real stack-overflow exposure):
-  `claude-code-plugins/source` (tool output,
+  `claude-code-plugin/source` (tool output,
    assistant responses),
   `page-weight` (HTML),
    `task-util` (compiler output),

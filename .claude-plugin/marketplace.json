@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "terminal-title",
-      "source": "./packages/claude-code-plugins/terminal-title",
+      "source": "./packages/claude-code-plugin/terminal-title",
       "description": "Sets the terminal tab title to reflect current Claude Code activity.",
       "version": "0.0.1",
       "category": "productivity",
@@ -19,7 +19,7 @@
     },
     {
       "name": "stop-reminders",
-      "source": "./packages/claude-code-plugins/stop-reminders",
+      "source": "./packages/claude-code-plugin/stop-reminder",
       "description": "Detects uncertain language in Claude's responses and reminds it to investigate before guessing.",
       "version": "0.0.1",
       "category": "quality",
@@ -27,7 +27,7 @@
     },
     {
       "name": "session-start-housekeeping",
-      "source": "./packages/claude-code-plugins/session-start-housekeeping",
+      "source": "./packages/claude-code-plugin/session-start-housekeeping",
       "description": "Creates temp directories, cleans stale dist artifacts, and removes ephemeral config files on session start.",
       "version": "0.0.1",
       "category": "maintenance",
@@ -35,7 +35,7 @@
     },
     {
       "name": "guardrail",
-      "source": "./packages/claude-code-plugins/guardrail",
+      "source": "./packages/claude-code-plugin/guardrail",
       "description": "Blocks general-purpose Agent calls (redirecting to spawn-claude) and Agent resume calls (preventing polling loops).",
       "version": "0.0.1",
       "category": "quality",
@@ -43,7 +43,7 @@
     },
     {
       "name": "bash-output-filter",
-      "source": "./packages/claude-code-plugins/bash-output-filter",
+      "source": "./packages/claude-code-plugin/bash-output-filter",
       "description": "Strips wasteful patterns from Bash tool output (git boilerplate, long lines, repeated diagnostics) to save tokens.",
       "version": "0.0.1",
       "category": "productivity",
@@ -51,7 +51,7 @@
     },
     {
       "name": "claude-spawn",
-      "source": "./packages/claude-code-plugins/claude-spawn",
+      "source": "./packages/claude-code-plugin/claude-spawn",
       "description": "Spawns steerable child Claude Code sessions in terminal windows with automatic result forwarding via hooks. Requires the spawn-claude CLI to be on PATH.",
       "version": "0.0.1",
       "category": "productivity",
@@ -59,7 +59,7 @@
     },
     {
       "name": "prompt-time",
-      "source": "./packages/claude-code-plugins/prompt-time",
+      "source": "./packages/claude-code-plugin/prompt-time",
       "description": "Injects the current local system time into Claude's context as <time>HH:MM</time> on every user prompt.",
       "version": "0.0.1",
       "category": "productivity",
@@ -67,7 +67,7 @@
     },
     {
       "name": "correction-reminder",
-      "source": "./packages/claude-code-plugins/correction-reminder",
+      "source": "./packages/claude-code-plugin/correction-reminder",
       "description": "Detects correction phrases in user prompts and reminds Claude to call advisor before its next substantive response.",
       "version": "0.0.1",
       "category": "quality",
@@ -75,7 +75,7 @@
     },
     {
       "name": "research-agent",
-      "source": "./packages/claude-code-plugins/research-agent",
+      "source": "./packages/claude-code-plugin/research-agent",
       "description": "Provides a research subagent with anti-hallucination guardrails for investigating external projects, GitHub discussions, and technical questions.",
       "version": "0.0.1",
       "category": "quality",

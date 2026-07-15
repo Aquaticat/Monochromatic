@@ -5,7 +5,7 @@ Regex-free text-scanning helpers shared by agent harness integrations.
 This package lives under `packages/agent-harness-shared/` because current
 consumers are Pi and Claude Code plugin code paths.
 It is a holding package for the DRY extraction in
-`docs/planning/dry-pi-plugins-claude-code-plugins.md`.
+`docs/planning/dry-pi-plugins-claude-code-plugin.md`.
 Long-term generic module splits are tracked in GitHub issue #276.
 
 ## Exports

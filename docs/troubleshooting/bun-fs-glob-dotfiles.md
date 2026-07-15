@@ -170,7 +170,7 @@ Two files used `Bun.Glob`:
   **Cannot migrate** to `fs.glob` due to this bug.
    Kept on
   `Bun.Glob`.
-- `packages/claude-code-plugins/session-start-housekeeping/src/index.ts`
+- `packages/claude-code-plugin/session-start-housekeeping/src/index.ts`
   ;
    matches named directories only
   (`packages/*/*/dist/final`);

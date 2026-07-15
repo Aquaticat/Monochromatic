@@ -111,7 +111,7 @@ Read from `packages/config/tsdown/src/` on 2026-07-15:
    migrate six representative packages,
    verify each at the user boundary (VUB):
    - `oxlint-plugin/tsdoc`: node flavor, published, dist types consumed by `oxlint.config.ts`.
-   - `claude-code-plugins/correction-reminder`: committed `bundle/node` output, exercised through Claude Code.
+   - `claude-code-plugin/correction-reminder`: committed `bundle/node` output, exercised through Claude Code.
    - `git-policies/cli`: bin with shebang, run a real command.
    - `module/toml-edit`: neutral flavor, inlined workspace deps, tests green.
    - `webapp-productivity/wc`: client flavor, page loaded via `agent-browser`.
@@ -143,7 +143,7 @@ All six representative cells pass on raw rolldown 1.1.5 with
   byte-exact roundtrip), unit tests green.
 - `oxlint-plugin/tsdoc` (node): plugin dist shape valid (22 rules),
   unit tests green, repo oxlint chain clean end to end.
-- `claude-code-plugins/correction-reminder` (committed bundle):
+- `claude-code-plugin/correction-reminder` (committed bundle):
   output byte- and mode-identical to the tsdown artifact,
   hook exercised directly with valid JSON response.
 - `git-policies/cli` (bin): unminified single chunk, shebang and exec

@@ -1,7 +1,7 @@
 # Keep dist committed for Claude Code plugin bundles
 
 Records the decision not to strip the `dist/` carve-out in `.gitignore` that allows the eight Claude Code plugins
-under `packages/claude-code-plugins/` to ship their built bundles inside this repo.
+under `packages/claude-code-plugin/` to ship their built bundles inside this repo.
 Future sessions consult this before re-proposing a clean-up of "dist in git" against this carve-out.
 
 This document is appended to,
@@ -14,7 +14,7 @@ When new constraints force re-evaluation,
 
 The repo distributes Claude Code plugins through `.claude-plugin/marketplace.json`,
  which points consumers at
-directories such as `./packages/claude-code-plugins/terminal-title`.
+directories such as `./packages/claude-code-plugin/terminal-title`.
 Each plugin's `.claude-plugin/plugin.json` declares hooks of the form:
 
 ```json
@@ -87,8 +87,8 @@ The `.gitignore` carve-out for the workspace currently looks like this:
 
 ```gitignore
 # Claude Code plugin bundles. Marketplace distribution requires committed built files.
-!/packages/claude-code-plugins/*/dist/
-!/packages/claude-code-plugins/*/dist/final/*.js
+!/packages/claude-code-plugin/*/dist/
+!/packages/claude-code-plugin/*/dist/final/*.js
 ```
 
 The carve-out covers 21 files across eight plugins:
@@ -105,10 +105,10 @@ and the standalone CLI bundles
  `ccsr.js`,
  `cctt.js`) that those plugins reference.
 
-Each plugin's `package.json` (verified at e.g. `packages/claude-code-plugins/terminal-title/package.json:18`)
+Each plugin's `package.json` (verified at e.g. `packages/claude-code-plugin/terminal-title/package.json:18`)
 depends on:
 
-- `@monochromatic-dev/claude-code-plugins-source` via `workspace:*` (runtime).
+- `@monochromatic-dev/claude-code-plugin-source` via `workspace:*` (runtime).
 - `@monochromatic-dev/config-tsdown` via `workspace:*` (devDependency,
    build).
 - `@monochromatic-dev/config-typescript` via `workspace:*` (devDependency,
@@ -140,7 +140,7 @@ The specific blocker for this workspace is the dependency shape of its plugins,
 The current bundled `dist/final/node/index.mjs` files do two things that no individual move replicates
 without other costs:
 
-1. Inline the workspace's shared plugin source (`@monochromatic-dev/claude-code-plugins-source`) into each
+1. Inline the workspace's shared plugin source (`@monochromatic-dev/claude-code-plugin-source`) into each
    plugin without that source needing to exist on npm.
 2. Inline the rest of the runtime dependency tree so the consumer needs only the Node binary,
     with no
@@ -158,7 +158,7 @@ The cost the carve-out is paying is also bounded:
    isolated from human-edited code.
 - Each plugin's `dist/final/` is a deterministic `tsdown` bundle.
 - `.gitignore` denies new `dist/` paths anywhere else.
-  The carve-out stays scoped to `packages/claude-code-plugins/*/dist/`,
+  The carve-out stays scoped to `packages/claude-code-plugin/*/dist/`,
   with `.js` shims re-included because the global `*.js` rule would otherwise hide them.
 - The `session-start-housekeeping` plugin already cleans stale dist artifacts on session start,
   reducing the "forgot to rebuild" risk for the workspace's own consumption.
@@ -177,7 +177,7 @@ Runtime hooks then invoke `node` against either the installed package or the sou
 Rejected because:
 
 - Every plugin depends on workspace-only packages
-  (`@monochromatic-dev/claude-code-plugins-source` and the two `config-*` packages).
+  (`@monochromatic-dev/claude-code-plugin-source` and the two `config-*` packages).
   None are on npm.
   `npm install` from the cached plugin directory would fail to resolve them.
 - Publishing those workspace packages to npm to unblock this path means adding three new release surfaces
@@ -207,7 +207,7 @@ Bun reads TypeScript directly and resolves imports at runtime.
 Rejected because:
 
 - The plugins' imports still resolve to workspace-only packages.
-  Bun cannot pull `@monochromatic-dev/claude-code-plugins-source` out of thin air.
+  Bun cannot pull `@monochromatic-dev/claude-code-plugin-source` out of thin air.
   The same workspace-publishing or source-inlining problem from the previous alternative applies.
 - Even if the imports resolved,
    every consumer would need Bun on `PATH`.
@@ -246,7 +246,7 @@ Rejected because:
 
 ### Move the plugins to a separate distribution repo
 
-Split `packages/claude-code-plugins/` into its own repository,
+Split `packages/claude-code-plugin/` into its own repository,
  publish dist there,
  keep this monorepo
 free of any committed dist.
@@ -275,7 +275,7 @@ Rejected because:
 
 Reconsider this decision only if at least one of the following becomes true:
 
-1. The workspace begins publishing `@monochromatic-dev/claude-code-plugins-source` and its build-config
+1. The workspace begins publishing `@monochromatic-dev/claude-code-plugin-source` and its build-config
    peers to npm,
     eliminating the workspace-only dependency blocker.
    At that point the SessionStart-install pattern becomes practical and the trade reopens.

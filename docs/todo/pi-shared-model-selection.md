@@ -121,9 +121,9 @@ one extension's command,
  or config surface.
 Actual pi extensions stay under `packages/pi-plugin/`.
 
-The repository has a nested-category precedent in `packages/claude-code-plugins/hook-types/`,
+The repository has a nested-category precedent in `packages/claude-code-plugin/hook-type/`,
  consumed by
-`packages/claude-code-plugins/source/`.
+`packages/claude-code-plugin/source/`.
 This plan intentionally chooses a top-level `pi-shared` category instead,
  so the category rule above is part of
 the extraction and should be kept with the package README.

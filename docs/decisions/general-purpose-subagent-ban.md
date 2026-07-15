@@ -13,7 +13,7 @@ The repo previously blocked general-purpose Agent subagents at three layers:
 
 - `.claude/settings.local.json` permission deny `Agent(general-purpose)`,
    the hard gate.
-- The `ccgr` PreToolUse guardrail (`packages/claude-code-plugins/source/src/handlers/guardrail.ts`),
+- The `ccgr` PreToolUse guardrail (`packages/claude-code-plugin/source/src/handlers/guardrail.ts`),
   which denied the call and redirected to `spawn-claude`.
 - A line in the generated `CLAUDE.md` preamble (source `file-enforcer.config.ts`):
   "General purpose agents are banned because of bugs.

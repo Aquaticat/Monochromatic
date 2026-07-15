@@ -42,7 +42,7 @@ package that has a `test:unit` task and was directly touched.
 ## All commits landed (in order)
 
 ```text
-21b9acfd feat(claude-code-plugins/source): add text-scan helper module
+21b9acfd feat(claude-code-plugin/source): add text-scan helper module
 041221a3 docs(handover): require-regex-justification refactor state pre-compact
 f0f7aeb0 refactor(mvm): replace regex with inline string-API parsers
 98dec9b1 refactor(terminal-exec): replace regex with char-walker + recursive trim
@@ -290,7 +290,7 @@ this task;
 
 - `.pnpmfile.mjs`
 - `AGENTS.md`
-- `packages/claude-code-plugins/session-start-housekeeping/dist/final/node/index.mjs`
+- `packages/claude-code-plugin/session-start-housekeeping/dist/final/node/index.mjs`
 - `packages/cli/forbidden-strings/README.md`
 - `packages/cli/forbidden-strings/fuzz/Cargo.toml`
 - `packages/cli/forbidden-strings/fuzz/dictionaries/forbidden-strings.dict`

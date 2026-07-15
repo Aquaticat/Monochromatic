@@ -148,7 +148,7 @@ The prototype's improvement over the hand-tuned config came from three sources:
   dropped 56 false positives in the deeply nested type-system barrel files
 - Dynamic discovery of tsdown config entries;
    caught secondary entries like
-  `packages/claude-code-plugins/bash-output-filter/src/filter.ts` that the
+  `packages/claude-code-plugin/bash-output-filter/src/filter.ts` that the
   built-in tsdown plugin missed,
    plus `**/src/cli.ts` as a static entry pattern
   for CLI scripts

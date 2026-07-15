@@ -45,7 +45,7 @@ packages/module/music-player-core/
 The plan recommends these near-term moves;
 the decision state section gives each one a status and a first action.
 
-- Keep `packages/claude-code-plugins/*` as the template for a healthy product or host cluster.
+- Keep `packages/claude-code-plugin/*` as the template for a healthy product or host cluster.
 - Keep `packages/agent-harness-shared/*` for utilities shared by multiple agent harnesses;
   `current-time-context` lives there now.
 - Add a shared native core to `packages/music-player/*`,
@@ -73,7 +73,7 @@ Most package sets below are a near-term go.
 The `agent-harness-shared/current-time-context` move has landed;
 remaining entries document the roadmap.
 
-- `claude-code-plugins`:
+- `claude-code-plugin`:
   keep as-is;
   first action is the Phase 1 cleanup of its non-package directories.
 - `music-player`:
@@ -119,7 +119,7 @@ The package layout currently mixes two category styles:
    `webapp-productivity`.
 - Product or subsystem categories:
   `music-player`,
-   `claude-code-plugins`,
+   `claude-code-plugin`,
    `figma`,
    `pi`.
 
@@ -222,9 +222,9 @@ The active non-`package.json` project roots are:
 
 The active `packages/*/*` directories without `package.json` and without `mise.toml` are:
 
-- `packages/claude-code-plugins/research-agent`
-- `packages/claude-code-plugins/statusline`
-- `packages/claude-code-plugins/verbose-tool-output`
+- `packages/claude-code-plugin/research-agent`
+- `packages/claude-code-plugin/statusline`
+- `packages/claude-code-plugin/verbose-tool-output`
 
 Before changing layout,
 read these files as the current source of truth:
@@ -237,7 +237,7 @@ read these files as the current source of truth:
   and intentionally excludes `packages-deprecated/*/*` from the active task graph.
 - `file-enforcer.config.ts`:
   generates `mise.toml` and scans `packages/*/*/node_modules/.bin` for PATH entries.
-- `packages/claude-code-plugins/source/src/handlers/session-start-housekeeping.ts`:
+- `packages/claude-code-plugin/source/src/handlers/session-start-housekeeping.ts`:
   scans `packages/*/*/dist/final` for cleanup.
 
 Verified task names for common migration cleanup:
@@ -290,7 +290,7 @@ Product,
  domain,
  and subsystem categories:
 
-- `claude-code-plugins`:
+- `claude-code-plugin`:
   the Claude Code plugin host cluster;
   `source` and `hook-types` own shared runtime and protocol types,
   the rest are per-plugin shims.
@@ -407,7 +407,7 @@ The first segment under `packages/`.
 It is the ownership and grouping boundary.
 Examples:
 `music-player`,
- `claude-code-plugins`,
+ `claude-code-plugin`,
  `module`,
  `config`,
  `mvm`,
@@ -437,7 +437,7 @@ CLI adapter,
 
 A project that owns shared logic consumed by multiple adapters or apps.
 Examples:
-`claude-code-plugins/source`,
+`claude-code-plugin/source`,
  future `music-player/native-core`,
  future `mvm/core`.
 
@@ -499,7 +499,7 @@ the host should usually be the category.
 Good:
 
 ```text
-packages/claude-code-plugins/
+packages/claude-code-plugin/
   source/
   hook-types/
   guardrail/
@@ -812,7 +812,7 @@ run the package's native build task and a device boundary check before declaring
 Current cluster:
 
 ```text
-packages/claude-code-plugins/
+packages/claude-code-plugin/
   source/
   hook-types/
   bash-output-filter/
@@ -832,7 +832,7 @@ This should remain as-is.
 It is the best existing example of the desired category model.
 
 Evidence:
-`packages/claude-code-plugins/README.md` documents the cluster explicitly.
+`packages/claude-code-plugin/README.md` documents the cluster explicitly.
 The per-plugin packages are thin shims.
 `source/` owns shared runtime and handler logic.
 `hook-types/` owns canonical hook protocol types.
@@ -842,7 +842,7 @@ The per-plugin packages are thin shims.
 Keep:
 
 ```text
-packages/claude-code-plugins/
+packages/claude-code-plugin/
   source/
   hook-types/
   <plugin>/
@@ -1323,7 +1323,7 @@ Current relevant roots:
 ```text
 packages/agent-harness-shared/current-time-context/
 packages/pi-plugin/current-time-context/
-packages/claude-code-plugins/source/
+packages/claude-code-plugin/source/
 ```
 
 `packages/agent-harness-shared/current-time-context/README.md` says the package exists because Claude Code
@@ -1341,7 +1341,7 @@ Keep host adapters in their host categories:
 ```text
 packages/agent-harness-shared/current-time-context/
 packages/pi-plugin/current-time-context/
-packages/claude-code-plugins/source/
+packages/claude-code-plugin/source/
 ```
 
 Do not create a `current-time-context` product category unless it grows beyond a tiny formatter plus host adapters.
@@ -1349,8 +1349,8 @@ This category captures the expected family of many shared agent-harness utilitie
 its own product.
 
 The same holds for other concepts that appear once per host.
-`statusline` and `terminal-title` each exist under both `pi/` and `claude-code-plugins/`,
-and `spawn` appears as `pi/spawn` and `claude-code-plugins/claude-spawn`.
+`statusline` and `terminal-title` each exist under both `pi/` and `claude-code-plugin/`,
+and `spawn` appears as `pi/spawn` and `claude-code-plugin/claude-spawn`.
 They share a concept but no code,
  and they bind to different host APIs,
 so each stays under its host cluster.

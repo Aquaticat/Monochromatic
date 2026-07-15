@@ -11,19 +11,19 @@ md,
  `mise.toml`,
  and `README.md`.
 
-- `claude-code-plugins/verbose-tool-output`:
+- `claude-code-plugin/verbose-tool-output`:
    missing **all three** (package.
   json,
    mise.
   toml,
    README.
   md)
-- `claude-code-plugins/statusline`:
+- `claude-code-plugin/statusline`:
    missing package.
   json,
    mise.
   toml
-- `claude-code-plugins/research-agent`:
+- `claude-code-plugin/research-agent`:
    missing package.
   json,
    mise.
@@ -95,7 +95,7 @@ README `# heading` lines use at least four different conventions for the same ki
  `# clauce-code-plugins-terminal-title` (typo:
  "clauce")
 
-The typo `clauce` in `claude-code-plugins/terminal-title/README.md` heading is worth fixing regardless of which convention is chosen.
+The typo `clauce` in `claude-code-plugin/terminal-title/README.md` heading is worth fixing regardless of which convention is chosen.
 
 Packages with **blank/empty** README first lines:
  `config/stylelint`,
@@ -146,21 +146,21 @@ No package explicitly sets `private: false`.
 
 Packages without `private` that look like they should be private
 (dev-scripts,
- claude-code-plugins,
+ claude-code-plugin,
  single-use configs):
 `dev-script/file-enforcer`,
  `dev-script/backup-path`,
  `dev-script/inference-canary`,
 `dev-script/inference-canary-viewer`,
  `dev-script/catalog-tighten`,
-`claude-code-plugins/terminal-title`,
- `claude-code-plugins/hook-types`,
-`claude-code-plugins/session-start-housekeeping`,
- `claude-code-plugins/stop-reminders`,
-`claude-code-plugins/hook-utils`,
- `claude-code-plugins/bash-output-filter`,
-`claude-code-plugins/claude-spawn`,
- `claude-code-plugins/guardrail`.
+`claude-code-plugin/terminal-title`,
+ `claude-code-plugin/hook-type`,
+`claude-code-plugin/session-start-housekeeping`,
+ `claude-code-plugin/stop-reminder`,
+`claude-code-plugin/hook-utils`,
+ `claude-code-plugin/bash-output-filter`,
+`claude-code-plugin/claude-spawn`,
+ `claude-code-plugin/guardrail`.
 
 Packages without `private` that are likely intended for publishing (have `files` field):
 `config/dprint`,
@@ -197,11 +197,11 @@ Three different states with no clear pattern by package type:
 - `false` (4 packages):
    dev-script/file-enforcer,
    dev-script/backup-path,
-   claude-code-plugins/hook-types,
-   claude-code-plugins/hook-utils
+   claude-code-plugin/hook-type,
+   claude-code-plugin/hook-utils
 - `true` (19 packages):
    all CLIs,
-   all claude-code-plugins (except hook-types/hook-utils),
+   all claude-code-plugin (except hook-types/hook-utils),
    dev-scripts,
    desktop-daemon/hall-monitor
 - missing (45 packages):
