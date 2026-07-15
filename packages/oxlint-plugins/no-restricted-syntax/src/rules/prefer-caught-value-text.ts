@@ -6,6 +6,8 @@ import type {
 } from '@oxlint/plugins';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { findVariable, } from './no-sync.syntax.ts';
+
 /**
  * Sentinel returned when an expression is not a supported identifier.
  */
@@ -58,7 +60,45 @@ function identifierName(
 }
 
 /**
+ * Tests whether identifier resolves to global binding rather than local shadow.
+ *
+ * @param context - Oxlint context providing lexical scope metadata.
+ *
+ * @param identifier - Identifier reference to resolve.
+ *
+ * @returns whether identifier is unresolved or global without local definitions.
+ *
+ * @example
+ * ```ts
+ * isUnshadowedGlobalIdentifier({ context, identifier });
+ * ```
+ */
+function isUnshadowedGlobalIdentifier(
+  {
+    context,
+    identifier,
+  }: ForeignBorrowed<{
+    readonly context: Context;
+    readonly identifier: ESTree.IdentifierReference;
+  }>,
+): boolean {
+  /**
+   * Scope variable behind identifier when metadata includes one.
+   */
+  const variable = findVariable({
+    context,
+    node: identifier,
+    name: identifier.name,
+  },);
+  if ((typeof variable) === 'symbol')
+    return true;
+  return variable.defs.length === 0;
+}
+
+/**
  * Reads identifier tested by a direct `Error.isError` call.
+ *
+ * @param context - Oxlint context resolving global Error binding.
  *
  * @param expression - Potential detector call.
  *
@@ -66,11 +106,17 @@ function identifierName(
  *
  * @example
  * ```ts
- * errorDetectorIdentifier({ expression });
+ * errorDetectorIdentifier({ context, expression });
  * ```
  */
 function errorDetectorIdentifier(
-  { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
+  {
+    context,
+    expression,
+  }: ForeignBorrowed<{
+    readonly context: Context;
+    readonly expression: ESTree.Expression;
+  }>,
 ): string | typeof NO_IDENTIFIER {
   if (expression.type !== 'CallExpression')
     return NO_IDENTIFIER;
@@ -92,6 +138,11 @@ function errorDetectorIdentifier(
   if (object.type !== 'Identifier')
     return NO_IDENTIFIER;
   if (object.name !== 'Error')
+    return NO_IDENTIFIER;
+  if (!isUnshadowedGlobalIdentifier({
+    context,
+    identifier: object,
+  },))
     return NO_IDENTIFIER;
   if (property.type !== 'Identifier')
     return NO_IDENTIFIER;
@@ -199,6 +250,8 @@ function readsErrorDiagnostic(
 /**
  * Tests whether expression is a duplicated non-Error diagnostic fallback.
  *
+ * @param context - Oxlint context resolving global String binding.
+ *
  * @param expression - Alternate branch expression.
  *
  * @param identifier - Detector input name.
@@ -207,14 +260,16 @@ function readsErrorDiagnostic(
  *
  * @example
  * ```ts
- * isDuplicateFallback({ expression, identifier: 'error' });
+ * isDuplicateFallback({ context, expression, identifier: 'error' });
  * ```
  */
 function isDuplicateFallback(
   {
+    context,
     expression,
     identifier,
   }: ForeignBorrowed<{
+    readonly context: Context;
     readonly expression: ESTree.Expression;
     readonly identifier: string;
   }>,
@@ -250,6 +305,11 @@ function isDuplicateFallback(
     return false;
   if (callee.name !== 'String')
     return false;
+  if (!isUnshadowedGlobalIdentifier({
+    context,
+    identifier: callee,
+  },))
+    return false;
   /**
    * Value passed to direct String conversion.
    */
@@ -263,6 +323,8 @@ function isDuplicateFallback(
 /**
  * Tests whether statement returns a duplicated fallback.
  *
+ * @param context - Oxlint context resolving fallback globals.
+ *
  * @param statement - Potential fallback statement.
  *
  * @param identifier - Detector input name.
@@ -271,14 +333,16 @@ function isDuplicateFallback(
  *
  * @example
  * ```ts
- * returnsDuplicateFallback({ statement, identifier: 'error' });
+ * returnsDuplicateFallback({ context, statement, identifier: 'error' });
  * ```
  */
 function returnsDuplicateFallback(
   {
+    context,
     statement,
     identifier,
   }: ForeignBorrowed<{
+    readonly context: Context;
     readonly statement: ESTree.Statement;
     readonly identifier: string;
   }>,
@@ -286,16 +350,19 @@ function returnsDuplicateFallback(
   if (statement.type === 'ReturnStatement') {
     return (statement.argument !== null)
       && isDuplicateFallback({
+        context,
         expression: statement.argument,
         identifier,
       },);
   }
   if (statement.type === 'IfStatement') {
     return returnsDuplicateFallback({
+      context,
       statement: statement.consequent,
       identifier,
     },) || ((statement.alternate !== null)
       && returnsDuplicateFallback({
+        context,
         statement: statement.alternate,
         identifier,
       },));
@@ -308,6 +375,7 @@ function returnsDuplicateFallback(
   const { body, } = statement;
   return body.some(function hasDuplicateFallback(childStatement,): boolean {
     return returnsDuplicateFallback({
+      context,
       statement: childStatement,
       identifier,
     },);
@@ -361,21 +429,27 @@ function returnsErrorDiagnostic(
 /**
  * Tests whether function starts a local caught-value formatter implementation.
  *
+ * @param context - Oxlint context resolving detector and fallback globals.
+ *
  * @param node - Function declaration or expression.
  *
  * @returns whether body duplicates shared formatter behavior.
  *
  * @example
  * ```ts
- * duplicatesCaughtValueFormatter({ node });
+ * duplicatesCaughtValueFormatter({ context, node });
  * ```
  */
 function duplicatesCaughtValueFormatter(
-  { node, }: ForeignBorrowed<{
+  {
+    context,
+    node,
+  }: ForeignBorrowed<{
+    readonly context: Context;
     readonly node: ESTree.Function;
   }>,
 ): boolean {
-  if (node.body === null)
+  if ((node.body === null) || (node.body.type !== 'BlockStatement'))
     return false;
   /**
    * First body statement where compact formatter implementations test Error.
@@ -390,7 +464,10 @@ function duplicatesCaughtValueFormatter(
   /**
    * Identifier tested by leading Error branch.
    */
-  const identifier = errorDetectorIdentifier({ expression: firstStatement.test, },);
+  const identifier = errorDetectorIdentifier({
+    context,
+    expression: firstStatement.test,
+  },);
   if ((typeof identifier) === 'symbol')
     return false;
   if (!returnsErrorDiagnostic({
@@ -400,6 +477,7 @@ function duplicatesCaughtValueFormatter(
     return false;
   if (firstStatement.alternate !== null) {
     return returnsDuplicateFallback({
+      context,
       statement: firstStatement.alternate,
       identifier,
     },);
@@ -408,6 +486,7 @@ function duplicatesCaughtValueFormatter(
     .slice(1,)
     .some(function hasDuplicateFallback(statement,): boolean {
       return returnsDuplicateFallback({
+        context,
         statement,
         identifier,
       },);
@@ -466,7 +545,10 @@ export const preferCaughtValueText: CreateOnceRule = {
         /**
          * Identifier tested by conditional Error branch.
          */
-        const identifier = errorDetectorIdentifier({ expression: node.test, },);
+        const identifier = errorDetectorIdentifier({
+          context,
+          expression: node.test,
+        },);
         if ((typeof identifier) === 'symbol')
           return;
         if (!readsErrorDiagnostic({
@@ -475,21 +557,28 @@ export const preferCaughtValueText: CreateOnceRule = {
         },))
           return;
         if (isDuplicateFallback({
+          context,
           expression: node.alternate,
           identifier,
         },))
           reportDuplicate(node,);
       },
+      ArrowFunctionExpression(node: ForeignBorrowed<ESTree.Function>,): void {
+        if (isCanonicalFormatterFile(context.filename,))
+          return;
+        if (duplicatesCaughtValueFormatter({ context, node, },))
+          reportDuplicate(node,);
+      },
       FunctionDeclaration(node: ForeignBorrowed<ESTree.Function>,): void {
         if (isCanonicalFormatterFile(context.filename,))
           return;
-        if (duplicatesCaughtValueFormatter({ node, },))
+        if (duplicatesCaughtValueFormatter({ context, node, },))
           reportDuplicate(node,);
       },
       FunctionExpression(node: ForeignBorrowed<ESTree.Function>,): void {
         if (isCanonicalFormatterFile(context.filename,))
           return;
-        if (duplicatesCaughtValueFormatter({ node, },))
+        if (duplicatesCaughtValueFormatter({ context, node, },))
           reportDuplicate(node,);
       },
     };

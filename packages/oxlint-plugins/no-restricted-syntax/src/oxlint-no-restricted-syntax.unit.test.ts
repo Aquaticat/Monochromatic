@@ -574,7 +574,7 @@ await describe({
       name: 'prefer-caught-value-text forms',
       children: [
         it({
-          name: 'reports conditional and branching duplicate formatters',
+          name: 'reports conditional, branching, and arrow duplicate formatters',
           fn: async () => {
             const diagnostics = await lint('invalid/prefer-caught-value-text.ts',);
             const preferCaughtValueText = diagnostics.filter(
@@ -582,7 +582,7 @@ await describe({
                 return diagnostic.code === 'no-restricted-syntax(prefer-caught-value-text)';
               },
             );
-            expect(preferCaughtValueText.length,).toBe(2,);
+            expect(preferCaughtValueText.length,).toBe(3,);
           },
         },),
       ],

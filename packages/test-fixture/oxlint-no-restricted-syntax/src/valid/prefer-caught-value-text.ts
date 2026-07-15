@@ -32,7 +32,25 @@ function domainFormatter(error: unknown,): string {
     : providerFallback(error,);
 }
 
+/** Keeps local Error-like detector outside global formatter pattern. */
+function shadowedErrorFormatter(error: unknown,): string {
+  const Error = { isError: globalThis.Error.isError, };
+  return Error.isError(error,)
+    ? error.message
+    : String(error,);
+}
+
+/** Keeps local String fallback outside global coercion pattern. */
+function shadowedStringFormatter(error: unknown,): string {
+  const String = providerFallback;
+  return Error.isError(error,)
+    ? error.message
+    : String(error,);
+}
+
 message('failure',);
 stack('failure',);
 isError('failure',);
 domainFormatter('failure',);
+shadowedErrorFormatter('failure',);
+shadowedStringFormatter('failure',);

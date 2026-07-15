@@ -14,5 +14,13 @@ function branchingFormatter(error: unknown,): string {
   return `non-Error ${typeof error}`;
 }
 
+/** Duplicate arrow block formatter. */
+const arrowFormatter = (error: unknown,): string => {
+  if (Error.isError(error,))
+    return error.message;
+  return String(error,);
+};
+
 conditionalFormatter('failure',);
 branchingFormatter('failure',);
+arrowFormatter('failure',);
