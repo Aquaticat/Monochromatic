@@ -843,6 +843,36 @@ TSC_SINGLE_THREADED = "1"
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
 
+# Parallel whole-repository Oxlint: fans out per-package lint:oxlint through the
+# bounded worker pool (each instance stays single-threaded because the semantic
+# bridge is process-local), then covers root-level files the package scopes
+# never reach. Wall time approaches the slowest package instead of the serial
+# whole-repo sweep; the single-process `lint:oxlint` above stays authoritative
+# for migration baselines.
+[tasks."lint:oxlint:fanout"]
+description = "Oxlint every package in parallel single-threaded instances, then root-level files"
+shell = "node --input-type=module-typescript -e"
+run = [
+  "{{vars.fanout_packages}}",
+  { tasks = ["lint:oxlint:rootfiles"] },
+]
+[tasks."lint:oxlint:fanout".env]
+FANOUT_TASK = "lint:oxlint"
+OXLINT_THREADS = "1"
+
+# Root-level remainder for the fanout: everything the per-package scopes do not
+# cover (root *.config.ts and non-package trees).
+[tasks."lint:oxlint:rootfiles"]
+hide = true
+description = "Oxlint root-level files outside package lint scopes"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+execFileSync('node', ['packages/dev-script/task-util/dist/final/node/oxlint-wrapper.mjs', '--type-aware', '--ignore-pattern', 'packages'], { stdio: 'inherit' })
+"""
+[tasks."lint:oxlint:rootfiles".env]
+OXLINT_THREADS = "1"
+
 [tasks."lint:dprint"]
 hide = true
 description = "Check formatting with dprint"

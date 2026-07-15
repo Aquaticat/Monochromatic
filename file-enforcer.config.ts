@@ -1024,6 +1024,8 @@ function mirrorDestinationPath(
  *
  * @param manifestText - serialized current ownership manifest.
  *
+ * @mutates skills - mirror writes run inside the file-enforcer capture boundary (sourceCaptureStorage.run), which may invoke lazy glob builders reachable from these results.
+ *
  * @example
  * ```ts
  * await mirrorSkillsToDestination({ canonicalPaths, destinationRoot, manifestText, skills, });
@@ -1039,7 +1041,7 @@ async function mirrorSkillsToDestination(
     readonly canonicalPaths: ReadonlySet<string>;
     readonly destinationRoot: string;
     readonly manifestText: string;
-    readonly skills: GlobResults;
+    skills: GlobResults;
   },
 ): Promise<void> {
   /**
