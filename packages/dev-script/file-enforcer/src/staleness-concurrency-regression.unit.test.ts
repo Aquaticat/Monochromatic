@@ -42,6 +42,11 @@ const WAIT_POLL_MS = 10;
 const WAIT_ATTEMPTS = 200;
 
 /**
+ * Simultaneous writers needed to exercise lock release and successor acquisition.
+ */
+const CONCURRENT_WRITER_COUNT = 8;
+
+/**
  * Creates an isolated temp directory for concurrency regression tests.
  *
  * @returns Temp directory path.
@@ -155,21 +160,29 @@ await describe({
           tempDir,
           'release',
         );
-        const readyAPath = join(
-          tempDir,
-          'ready-a',
-        );
-        const readyBPath = join(
-          tempDir,
-          'ready-b',
-        );
-        const configAPath = join(
-          tempDir,
-          'config-a.ts',
-        );
-        const configBPath = join(
-          tempDir,
-          'config-b.ts',
+        /**
+         * One coordinated writer process fixture.
+         */
+        type ConcurrentWriterFixture = Readonly<{
+          readonly configPath: string;
+          readonly content: string;
+          readonly dest: string;
+          readonly readyPath: string;
+        }>;
+        /**
+         * Writer fixtures released together to contend on one manifest lock.
+         */
+        const writers: readonly ConcurrentWriterFixture[] = Array.from(
+          { length: CONCURRENT_WRITER_COUNT, },
+          function createWriterFixture(_unused, index,): ConcurrentWriterFixture {
+            const identity = String(index,);
+            return {
+              configPath: join(tempDir, `config-${identity}.ts`,),
+              content: `content-${identity}`,
+              dest: `./output-${identity}.txt`,
+              readyPath: join(tempDir, `ready-${identity}`,),
+            };
+          },
         );
 
         /**
@@ -217,28 +230,19 @@ while (!existsSync(${jsString(releasePath,)})) {
 }
 `;
         }
-        await writeFile(
-          configAPath,
-          childConfig({
-            dest: './a.txt',
-            content: 'alpha',
-            readyPath: readyAPath,
-          },),
-        );
-        await writeFile(
-          configBPath,
-          childConfig({
-            dest: './b.txt',
-            content: 'bravo',
-            readyPath: readyBPath,
-          },),
-        );
+        await Promise.all(writers.map(async function writeWriterConfig(writer,): Promise<void> {
+          await writeFile(
+            writer.configPath,
+            childConfig(writer,),
+          );
+        },),);
 
-        const childRuns = Promise.all([
-          spawn('node', [configAPath,], { cwd: tempDir, },),
-          spawn('node', [configBPath,], { cwd: tempDir, },),
-        ],);
-        await waitForPaths([readyAPath, readyBPath,],);
+        const childRuns = Promise.all(writers.map(function runWriterConfig(writer,) {
+          return spawn('node', [writer.configPath,], { cwd: tempDir, },);
+        },),);
+        await waitForPaths(writers.map(function selectReadyPath(writer,): string {
+          return writer.readyPath;
+        },),);
         await writeFile(
           releasePath,
           'go',
@@ -248,10 +252,13 @@ while (!existsSync(${jsString(releasePath,)})) {
         const manifest = JSON.parse(await readFile(manifestPath, 'utf8',),) as {
           readonly entries?: Record<string, unknown>;
         };
-        expect(Object.keys(manifest.entries ?? {},).toSorted(),).toEqual([
-          `single:${resolve(tempDir, 'a.txt',)}`,
-          `single:${resolve(tempDir, 'b.txt',)}`,
-        ],);
+        expect(Object.keys(manifest.entries ?? {},).toSorted(),).toEqual(
+          writers
+            .map(function expectedEntry(writer,): string {
+              return `single:${resolve(tempDir, writer.dest,)}`;
+            },)
+            .toSorted(),
+        );
       },
     },),
   ],
