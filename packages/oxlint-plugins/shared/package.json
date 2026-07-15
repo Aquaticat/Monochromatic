@@ -6,7 +6,7 @@
   "description": "Shared runtime primitives for Monochromatic oxlint plugin packages.",
   "dependencies": {},
   "devDependencies": {
-    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:"

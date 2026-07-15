@@ -163,23 +163,34 @@ export default _default_1;
  *
  * @param entries - Source input paths, one self-contained bundle emitted per path.
  *
+ * @param outputDir - Shared output directory; committed Claude Code plugin
+ *   bundles override this to `bundle/node`.
+ *
  * @returns One single-input rolldown config per entry.
  *
  * @example
  * ```ts
  * // rolldown.node.config.ts
  * import { perEntryNodeConfig, } from '\@monochromatic-dev/config-rolldown/.node.ts';
- * export default perEntryNodeConfig(['./src/index.ts', './src/filter.ts',],);
+ * export default perEntryNodeConfig({ entries: ['./src/index.ts', './src/filter.ts',], },);
  * ```
  */
-export function perEntryNodeConfig(entries: readonly string[],): RolldownOptions[] {
+export function perEntryNodeConfig(
+  {
+    entries,
+    outputDir = 'dist/final/node',
+  }: {
+    readonly entries: readonly string[];
+    readonly outputDir?: string;
+  },
+): RolldownOptions[] {
   return defineConfig(entries.map(function toSingleEntryConfig(entry: string,): RolldownOptions {
     return {
       ...baseOptions,
       input: [entry,],
       output: {
         ...baseOutput,
-        dir: 'dist/final/node',
+        dir: outputDir,
         cleanDir: false,
       },
     };

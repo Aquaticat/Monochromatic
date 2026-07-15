@@ -16,7 +16,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-oxlint-shared": "workspace:*",
     "@monochromatic-dev/config-oxlint-test-support": "workspace:*",
-    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
