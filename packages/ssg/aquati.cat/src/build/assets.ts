@@ -97,7 +97,6 @@ async function copyTreeToDist(
  *
  * @param l - parent logger for tagged output
  *
- * @mutates l through tagged logger retention
  *
  * @example
  * ```ts

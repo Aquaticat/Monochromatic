@@ -13,7 +13,7 @@
 import {
   parseTOML,
   parseTomlEdit,
-} from '@monochromatic-dev/module-toml-edit';
+} from '../index.ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { AST, } from 'toml-eslint-parser';
 

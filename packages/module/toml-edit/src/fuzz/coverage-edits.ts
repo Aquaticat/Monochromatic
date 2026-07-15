@@ -121,9 +121,7 @@ const EDIT_SEQUENCE: readonly EditStep[] = [
  * Apply one edit step, materializing by reparse so the next step resolves
  * against a real document. A by-design rejection leaves the state unchanged.
  *
- * @mutates edit through module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-set.ts sha256 ff0a3c732c17a64769744646c0e7ee2436b5cb698dce1f4586709eef90c4edf3 returns fresh state while value traversal can invoke caller hooks; moduleTomlEdit.tomlSet
  *
- * @mutates step through module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-set.ts sha256 ff0a3c732c17a64769744646c0e7ee2436b5cb698dce1f4586709eef90c4edf3 returns fresh state while value traversal can invoke caller hooks; moduleTomlEdit.tomlSet
  *
  * @returns Next state, or the input state when the step was rejected.
  */
@@ -175,9 +173,7 @@ export function exerciseEditSequence({ base, }: { readonly base: TomlEditState; 
      *
      * @returns Edit state after current operation.
      *
-     * @mutates current through module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-set.ts sha256 ff0a3c732c17a64769744646c0e7ee2436b5cb698dce1f4586709eef90c4edf3 returns fresh state while value traversal can invoke caller hooks; moduleTomlEdit.tomlSet
      *
-     * @mutates editStep through module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-set.ts sha256 ff0a3c732c17a64769744646c0e7ee2436b5cb698dce1f4586709eef90c4edf3 returns fresh state while value traversal can invoke caller hooks; moduleTomlEdit.tomlSet
      */
     function step(
       current,
@@ -201,7 +197,6 @@ export function exerciseEditSequence({ base, }: { readonly base: TomlEditState; 
  * exerciseValueEncoding({ values: [ 1, 'a', { x: 1, }, ], },);
  * ```
  *
- * @mutates values through module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-set.ts sha256 ff0a3c732c17a64769744646c0e7ee2436b5cb698dce1f4586709eef90c4edf3 returns fresh state while value traversal can invoke caller hooks; moduleTomlEdit.tomlSet
  */
 export function exerciseValueEncoding({ values, }: { readonly values: readonly unknown[]; },): void {
   for (const value of values) {

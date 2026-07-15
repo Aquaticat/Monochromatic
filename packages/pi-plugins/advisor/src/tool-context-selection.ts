@@ -143,7 +143,6 @@ type AdvisorContextCandidate = {
  *
  * @returns selected model and serialized context
  *
- * @mutates options - `resolveRequestedModel` can invoke registry callbacks and context building can invoke branch accessors
  *
  * @example
  * ```typescript

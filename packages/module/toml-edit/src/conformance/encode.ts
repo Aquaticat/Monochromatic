@@ -14,7 +14,7 @@ import {
   emptyTomlEdit,
   tomlSet,
   tomlStringify,
-} from '@monochromatic-dev/module-toml-edit';
+} from '../index.ts';
 
 import {
   failAdapter,

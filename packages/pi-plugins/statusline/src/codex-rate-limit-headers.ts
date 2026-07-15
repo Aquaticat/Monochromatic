@@ -252,7 +252,7 @@ function codexSnapshotLabel({
  * codexPrefixes({ 'x-codex-primary-used-percent': '50' });
  * ```
  */
-function codexPrefixes(headers: Record<string, string>,): readonly string[] {
+function codexPrefixes(headers: Readonly<Record<string, string>>,): readonly string[] {
   /**
    * Mutable unique prefix set seeded with the default Codex family.
    */

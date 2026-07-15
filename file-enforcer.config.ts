@@ -594,10 +594,11 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
  * ```
  */
 function selectBrowserslistQueries(
-  { config, }: { readonly config: browserslist.Config; },
+  { config, }: { readonly config: Readonly<Record<string, readonly string[]>>; },
 ): readonly string[] {
   return config[BROWSERSLIST_CONFIG_ENVIRONMENT]
-    ?? config.defaults;
+    ?? config['defaults']
+    ?? [];
 }
 
 /**

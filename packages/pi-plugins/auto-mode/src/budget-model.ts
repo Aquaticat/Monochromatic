@@ -256,7 +256,6 @@ async function findBudgetModel(
      *
      * @returns Whether model remains eligible.
      *
-     * @mutates model - `budgetModelSlug` reads can invoke caller-owned model hooks.
      */
     function modelHasNotFailed(model: ForeignBorrowed<Model<Api>>,) {
       return !excludedSlugs.has(budgetModelSlug(model,),);

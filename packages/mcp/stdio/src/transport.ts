@@ -208,7 +208,6 @@ export async function serve(
  *
  * @param serialized - JSON-RPC response already serialized where value ownership is known.
  *
- * @mutates writer - writer.write changes output stream state.
  *
  * @example
  * ```ts

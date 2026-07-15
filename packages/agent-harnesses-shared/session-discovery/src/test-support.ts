@@ -107,7 +107,6 @@ function mappingJson(sessionId: string,): string {
  *
  * @returns fake IO seam
  *
- * @mutates files - deferred `Object.keys` may invoke own-key and property-descriptor proxy traps
  *
  * @example
  * ```ts

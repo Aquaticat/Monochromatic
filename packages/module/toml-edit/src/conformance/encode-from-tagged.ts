@@ -10,7 +10,7 @@
  * @module
  */
 
-import type { TomlWrappedInput, } from '@monochromatic-dev/module-toml-edit';
+import type { TomlWrappedInput, } from '../index.ts';
 
 import type { TaggedType, } from './tagged-types.ts';
 

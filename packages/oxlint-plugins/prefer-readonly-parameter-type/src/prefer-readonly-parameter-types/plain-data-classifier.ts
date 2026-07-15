@@ -168,12 +168,17 @@ export function typeIsPlainData({
     if ((ownerSymbol !== undefined)
       && ((ownerSymbol.flags & SymbolFlags.Class) !== 0))
       return false;
-    /* checker.isTupleType resolves references to readonly tuple targets;
-     * the Type method answers false on the reference itself. */
-    if ((checker.isTupleType(current,) || checker.isArrayType(current,))
-      && current.isTypeReference()) {
-      return checker.getTypeArguments(current,)
-        .every(classify,);
+    if (current.isTypeReference()) {
+      /* The target's local objectFlags check detects tuple references
+       * without the checker.isTupleType native request, whose tuple cast
+       * panics on exotic references during whole-repository lint. */
+      if (current
+        .getTarget()
+        .isTupleType()
+        || checker.isArrayType(current,)) {
+        return checker.getTypeArguments(current,)
+          .every(classify,);
+      }
     }
     /**
      * Whether every named property is a plain data slot.

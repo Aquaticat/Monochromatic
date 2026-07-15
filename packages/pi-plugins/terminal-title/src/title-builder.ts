@@ -69,7 +69,6 @@ type EventData = {
  *
  * @returns formatted title body without prefix
  *
- * @mutates args - `buildToolTitle` may read property getters or proxy traps and invoke
  * selected registry formatter behavior against tool arguments
  *
  * @example

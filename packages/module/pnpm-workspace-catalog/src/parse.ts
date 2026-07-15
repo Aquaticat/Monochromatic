@@ -302,7 +302,6 @@ export function parseCatalogFromYaml(content: string,): CatalogDocument {
  *
  * @returns raw catalog entries in deterministic default-then-named order
  *
- * @mutates document - `Object.entries` may invoke own-property getters or proxy enumeration traps
  * on catalog maps
  *
  * @example

@@ -78,7 +78,6 @@ export const forbiddenStringsPolicy: PolicyDefinition<
    *
    * @returns Scanner findings for selected candidates.
    *
-   * @mutates context through context.git.candidates lazy provider invocation
    */
   async check({
     context,

@@ -79,9 +79,8 @@ function isBaseline(value: unknown,): value is Baseline {
  *
  * @returns Baseline keyed by sorted package-relative path.
  *
- * @mutates map - `Object.keys` can invoke caller-owned proxy own-key and descriptor hooks.
  */
-function toBaseline({ map, }: { map: Record<string, CoverageMap[string]>; },): Baseline {
+function toBaseline({ map, }: { readonly map: Readonly<Record<string, CoverageMap[string]>>; },): Baseline {
   return Object.fromEntries(
     Object.keys(map,)
       .toSorted()
@@ -150,7 +149,6 @@ async function loadBaseline({ baselinePath, }: { readonly baselinePath: string; 
  *
  * @returns Regressions in sorted path order; empty when nothing regressed.
  *
- * @mutates baseline - `Object.keys` can invoke caller-owned proxy own-key and descriptor hooks.
  */
 function findRegressions(
   {
@@ -236,7 +234,6 @@ function formatFileLine(
  *
  * @returns Multi-line summary text for CI logs and local runs.
  *
- * @mutates map - `Object.keys` and `Object.values` can invoke caller-owned proxy hooks.
  */
 function formatSummary(
   {

@@ -45,7 +45,6 @@ export type CurrentMainModelIdentity = Pick<AdvisorModelSelection['selected']['m
  *
  * @returns selected Advisor model
  *
- * @mutates modelRegistry - `resolveRequestedModel` can invoke supplied registry `getAll` capability
  *
  * @example
  * ```typescript
