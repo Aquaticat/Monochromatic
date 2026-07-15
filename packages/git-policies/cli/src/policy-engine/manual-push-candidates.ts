@@ -237,16 +237,16 @@ export async function createManualPushCandidates({
       revision: descriptor.revision,
       mode: descriptor.mode,
       change: descriptor.change,
-      bytes(): Promise<Uint8Array> {
+      async bytes(): Promise<Uint8Array> {
         if (content.kind === 'inline')
-          return Promise.resolve(content.bytes,);
+          return content.bytes;
         /**
          * Exact shared blob view loaded by the single batch subprocess.
          */
         const bytes = blobBytes.get(content.oid,);
         if (bytes === undefined)
           throw new ManualPushProbeError(`Git blob batch omitted requested object ${content.oid}.`,);
-        return Promise.resolve(bytes,);
+        return bytes;
       },
     };
   },);

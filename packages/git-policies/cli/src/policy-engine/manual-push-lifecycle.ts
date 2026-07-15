@@ -69,8 +69,8 @@ function createManualPushFacts({
     },
     headOid: absentOid,
     landedCommitOid: absentOid,
-    pushUpdates: function pushUpdates() {
-      return Promise.resolve(updates,);
+    pushUpdates: async function pushUpdates() {
+      return updates;
     },
   };
 }
