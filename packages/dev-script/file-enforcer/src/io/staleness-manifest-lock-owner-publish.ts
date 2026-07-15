@@ -1,5 +1,7 @@
 import {
   rename,
+  rmdir,
+  unlink,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -100,6 +102,24 @@ export async function publishLockOwnerPublication(lockPath: string,): Promise<vo
     pendingLockOwnerPath(lockPath,),
     publishedLockOwnerPath(lockPath,),
   );
+}
+
+/**
+ * Removes published owner and its lock directory with one-shot operations.
+ *
+ * Avoiding recursive path removal prevents a completed release from revisiting
+ * and deleting a successor lock created at the same path.
+ *
+ * @param lockPath - Lock directory path owned by caller.
+ *
+ * @example
+ * ```ts
+ * await removeLockOwnerPublication('/tmp/manifest.json.lock');
+ * ```
+ */
+export async function removeLockOwnerPublication(lockPath: string,): Promise<void> {
+  await unlink(publishedLockOwnerPath(lockPath,),);
+  await rmdir(lockPath,);
 }
 
 //endregion Lock owner publication lifecycle

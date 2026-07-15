@@ -6,6 +6,7 @@ import { dirname, } from 'node:path';
 import { setTimeout as wait, } from 'node:timers/promises';
 
 import { recoverStaleManifestLock, } from './staleness-manifest-lock-recovery.ts';
+import { removeLockOwnerPublication, } from './staleness-manifest-lock-owner-publish.ts';
 import { writeLockOwner, } from './staleness-manifest-lock-owner.ts';
 import {
   caughtErrorHasCode,
@@ -103,13 +104,7 @@ async function recordLockOwner(lockPath: string,): Promise<void> {
 function lockReleaseHandle(lockPath: string,): AsyncDisposable {
   return {
     async [Symbol.asyncDispose](): Promise<void> {
-      await rm(
-        lockPath,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
+      await removeLockOwnerPublication(lockPath,);
     },
   };
 }
