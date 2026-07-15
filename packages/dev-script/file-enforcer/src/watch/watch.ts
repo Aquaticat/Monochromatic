@@ -179,6 +179,8 @@ export function startWatching(configPath: string,): Promise<never> {
    *
    * @param onReady - Callback fired after chokidar reports initial scan readiness.
    *
+   * @mutates controller through wait abort-listener registration on controller.signal
+   *
    * @example
    * ```ts
    * await monitorWatcher({ dir: '/repo/src', controller, onReady });

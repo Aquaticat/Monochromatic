@@ -176,6 +176,8 @@ const writeIfChangedForLazy: WriteIfChanged = writeIfChanged;
  *
  * @param manifestPath - Optional staleness manifest path override
  *
+ * @mutates content through sourceCaptureStorage.run callback invocation
+ *
  * @example
  * ```ts
  * await overwrite({
@@ -296,6 +298,8 @@ export async function overwriteIfNotExists(
  * @param destGlob - Destination glob pattern with positional wildcards
  *
  * @param files - Glob results carrying the source pattern and file contents
+ *
+ * @mutates files through sourceCaptureStorage.run callback invocation
  *
  * @example
  * ```ts
