@@ -25,6 +25,11 @@ const ABSENT_LOCK_DIRECTORY_AGE: unique symbol = Symbol('file-enforcer/io/stalen
  */
 type LockDirectoryAge = number | typeof ABSENT_LOCK_DIRECTORY_AGE;
 
+/**
+ * Action selected from one observed lock directory generation.
+ */
+type LockDirectoryRecoveryState = 'absent' | 'held' | 'recoverable';
+
 //region Stale lock recovery helpers
 
 /**
@@ -68,36 +73,40 @@ async function lockDirectoryAgeMs(lockPath: string,): Promise<LockDirectoryAge> 
  *
  * @param lockPath - Lock directory path.
  *
- * @returns Whether lock should be removed before retrying acquisition.
+ * @returns Whether lock is absent, held, or recoverable.
  *
  * @example
  * ```ts
  * const stale = await lockDirectoryIsRecoverable('/tmp/manifest.json.lock');
  * ```
  */
-async function lockDirectoryIsRecoverable(lockPath: string,): Promise<boolean> {
+async function lockDirectoryRecoveryState(lockPath: string,): Promise<LockDirectoryRecoveryState> {
   /**
    * Liveness state reported by lock owner metadata.
    */
   const ownerState = await lockOwnerState(lockPath,);
   if (ownerState === 'dead')
-    return true;
+    return 'recoverable';
   if (ownerState === 'live')
-    return false;
+    return 'held';
 
   /**
    * Lock age from directory metadata.
    */
   const ageMs = await lockDirectoryAgeMs(lockPath,);
   if (ageMs === ABSENT_LOCK_DIRECTORY_AGE)
-    return true;
+    return 'absent';
+  if (ageMs >= LOCK_STALE_AFTER_MS)
+    return 'recoverable';
 
-  return ageMs >= LOCK_STALE_AFTER_MS;
+  return 'held';
 }
 
 /**
- * Removes stale lock directory when {@link lockDirectoryIsRecoverable} says
+ * Removes stale lock directory when {@link lockDirectoryRecoveryState} says
  * it is safe to reclaim.
+ * A lock that disappeared during observation retries without path removal,
+ * so a successor created at the same path cannot be deleted.
  *
  * @param lockPath - Lock directory path.
  *
@@ -109,8 +118,15 @@ async function lockDirectoryIsRecoverable(lockPath: string,): Promise<boolean> {
  * ```
  */
 export async function recoverStaleManifestLock(lockPath: string,): Promise<boolean> {
-  if (!await lockDirectoryIsRecoverable(lockPath,))
+  /**
+   * Recovery action for observed lock directory generation.
+   */
+  const recoveryState = await lockDirectoryRecoveryState(lockPath,);
+  if (recoveryState === 'held')
     return false;
+  if (recoveryState === 'absent')
+    return true;
+
   await rm(
     lockPath,
     {
