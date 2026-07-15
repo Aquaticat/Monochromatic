@@ -125,6 +125,8 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
       shouldBeReadonly: 'Parameter "{{parameterName}}" should be readonly: {{reason}}.',
       missingUncertaintyContract: 'Parameter "{{parameterName}}" has documented uncertainty propagated from {{boundaries}} but lacks its own @mutates contract.',
       staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
+      redundantForeignBorrowed:
+        'Parameter "{{parameterName}}" carries a ForeignBorrowed marker that no longer affects any classification: the underlying type is already deeply readonly and no effect reaches this parameter. Remove the marker, or mark the genuinely mutable foreign type instead.',
       opaqueEffect: `{{inputSubject}} used by these calls: {{boundaries}}.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       opaqueMethodEffect: `{{inputSubject}} used as the object for these method calls: {{boundaries}}.\n\nA method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       stringObjectCoercionEffect: `{{inputSubject}} passed to global String while it may be an object. String does not reassign the input. Object conversion reads input[Symbol.toPrimitive], input.toString, and input.valueOf; those reads can run getters or proxy traps, and callable values are then invoked. That caller-owned code can change the input, reachable state, or another system. This rule does not report String conversion when the input is provably primitive.${STRING_OBJECT_COERCION_REMEDIATION}`,

@@ -180,6 +180,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },),
   ...[
     'getAliasSymbol',
+    'getAliasTypeArguments',
     'getSymbol',
     'isIntersectionType',
     'isObjectType',

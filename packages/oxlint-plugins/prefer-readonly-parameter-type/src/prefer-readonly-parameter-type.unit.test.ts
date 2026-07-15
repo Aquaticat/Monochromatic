@@ -124,6 +124,17 @@ children: [
     },
   },),
   it({
+    name: 'reports inert ForeignBorrowed markers over deeply readonly types',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-redundant-marker-invalid.ts',);
+      expect(diagnostics.length,).toBe(1,);
+      expect(diagnostics[0]?.message
+        .startsWith(
+          'Parameter "state" carries a ForeignBorrowed marker that no longer affects any classification',
+        ),).toBe(true,);
+    },
+  },),
+  it({
     name: 'skips traversal-hook effects for statically plain data',
     fn: async () => {
       expect(await lintReadonly('readonly-plain-data-valid.ts',),).toEqual([],);

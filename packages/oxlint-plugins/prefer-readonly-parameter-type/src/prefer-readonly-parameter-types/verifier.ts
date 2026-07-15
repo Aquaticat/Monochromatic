@@ -9,7 +9,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type {
   Context,
   Fixer,
-  LineColumn,
 } from '@oxlint/plugins';
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
@@ -24,77 +23,14 @@ import {
   uncertaintyBoundaries,
 } from './opaque-effect-diagnostic.ts';
 import { classifyReadonlyType, } from './readonly-classifier.ts';
+import { reportRedundantForeignBorrowed, } from './redundant-marker-report.ts';
 import { readonlyParameterSuggestions, } from './readonly-suggestions.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 
-/**
- * Converts TypeScript source offset to Oxlint source offset.
- *
- * @param offset - TypeScript UTF-16 source offset.
- *
- * @param hasBOM - Whether Oxlint removed leading byte-order mark.
- *
- * @returns Oxlint source offset.
- */
-function oxlintOffset({
-  offset,
-  hasBOM,
-}: {
-  readonly offset: number;
-  readonly hasBOM: boolean;
-},): number {
-  return hasBOM ? Math.max(
-    0,
-    offset - 1,
-  ) : offset;
-}
-
-/**
- * Builds Oxlint report location from TypeScript source span.
- *
- * @param context - Rule context providing source location mapping.
- *
- * @param start - TypeScript span start.
- *
- * @param end - TypeScript span end.
- *
- * @returns copied mutable report location.
- */
-function semanticLocation({
-  context,
-  start,
-  end,
-}: ForeignBorrowed<{
-  readonly context: Context;
-  readonly start: number;
-  readonly end: number;
-}>,): {
-  start: LineColumn;
-  end: LineColumn
-} {
-  /**
-   * Oxlint source start after optional BOM normalization.
-   */
-  const oxlintStart = oxlintOffset({
-    offset: start,
-    hasBOM: context.sourceCode
-      .hasBOM,
-  },);
-  /**
-   * Oxlint source end after optional BOM normalization.
-   */
-  const oxlintEnd = oxlintOffset({
-    offset: end,
-    hasBOM: context.sourceCode
-      .hasBOM,
-  },);
-  return {
-    start: { ...context.sourceCode
-      .getLocFromIndex(oxlintStart,), },
-    end: { ...context.sourceCode
-      .getLocFromIndex(oxlintEnd,), },
-  };
-}
+import {
+  oxlintOffset,
+  semanticLocation,
+} from './semantic-location.ts';
 
 /**
  * Reports stale mutation block with verified removal suggestion.
@@ -419,6 +355,17 @@ export function verifyReadonlyCallable({
           block,
           commentBodyStartOffset: contracts.commentBodyStartOffset,
         },);
+      },);
+    }
+    if (foreignBorrowed
+      && (!affected)
+      && (!documentedUncertain)) {
+      reportRedundantForeignBorrowed({
+        context,
+        project,
+        parameterType,
+        parameterName,
+        loc,
       },);
     }
   },);
