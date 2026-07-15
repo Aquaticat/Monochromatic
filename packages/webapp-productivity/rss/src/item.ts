@@ -1,7 +1,7 @@
 import type { ReadonlyDeep, } from 'type-fest';
 import type {
-  Atom,
-  Rss,
+  AtomFeed,
+  RssFeed,
 } from 'feedsmith';
 import * as v from 'valibot';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -138,7 +138,7 @@ function extractItems(feeds: readonly FeedWOutline[],): Item[] {
         /**
          * Narrowed Atom feed so the entries split below reads typed fields.
          */
-        const atomFeed = feed as Atom.Feed<string>;
+        const atomFeed = feed as AtomFeed.Feed<string>;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
         /**
          * Destructured to separate entries from feed metadata reused per item.
@@ -165,7 +165,7 @@ function extractItems(feeds: readonly FeedWOutline[],): Item[] {
       /**
        * Narrowed RSS feed so the items split below reads typed fields.
        */
-      const rssFeed = feed as Rss.Feed<string>;
+      const rssFeed = feed as RssFeed.Feed<string>;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       /**
        * Destructured to separate items from feed metadata reused per item.
@@ -243,7 +243,10 @@ function getNormalizedItem(item: Item,): NormalizedItem {
   /**
    * Output item object built up incrementally to preserve only defined fields.
    */
-  const newItem: Record<string, string | Atom.Link<string> | Atom.Category[]> = {};
+  const newItem: Record<
+    string,
+    string | AtomFeed.Link<string> | AtomFeed.Category[]
+  > = {};
   if (atomEntry.title
     !== undefined)
     newItem.title = atomEntry.title;

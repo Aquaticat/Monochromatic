@@ -45,13 +45,15 @@ export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
  *
  * @returns Array of outlines with validated HTTP(S) xmlUrl properties
  *
+ * @mutates opmls - `getOPMLTexts(opmls)` delegates to `mapIterableAsync`, which may invoke caller-owned iterator capabilities and passes reachable source values to `fetchOpml`.
+ *
  * @example
  * ```ts
  * const outlines = await getOutlinesFromOpmls(getOpmls());
  * ```
  */
 export async function getOutlinesFromOpmls(
-  opmls: readonly string[],
+  opmls: string[],
 ): Promise<InnerOutlineWUrl[]> {
   /**
    * Inner logger tagged with this function name for traceable log lines.

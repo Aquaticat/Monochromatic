@@ -1,11 +1,11 @@
 // 105 lines: fetch, parse, and sort are a single pipeline; splitting obscures the data flow
 import { mapIterableAsync, } from '@monochromatic-dev/module-async-iter/ts';
 import {
-  type Atom,
+  type AtomFeed,
   type Opml,
   parseAtomFeed,
   parseRssFeed,
-  type Rss,
+  type RssFeed,
 } from 'feedsmith';
 import * as v from 'valibot';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -37,7 +37,7 @@ const l = tagged({
  * Deeply readonly because the sort and extract steps only read these values.
  */
 export type FeedWOutline = DeepReadonly<{
-  feed: Rss.Feed<string> | Atom.Feed<string>;
+  feed: RssFeed.Feed<string> | AtomFeed.Feed<string>;
   outline: Opml.Outline<string>;
 }>;
 
@@ -52,6 +52,8 @@ export type FeedWOutline = DeepReadonly<{
  * @param outlines - Outlines with validated xmlUrl properties
  *
  * @returns Feeds sorted by publication date (newest first)
+ *
+ * @mutates outlines - `fetchAndParseFeeds(outlines)` delegates to `mapIterableAsync`, which may invoke caller-owned iterator capabilities and passes reachable outline values to `fetchFeed`.
  *
  * @example
  * ```ts
@@ -96,6 +98,8 @@ export async function getSortedFeeds(
  * @param outlines - Outlines with xmlUrl properties
  *
  * @returns Successfully fetched and parsed feeds
+ *
+ * @mutates outlines - `mapIterableAsync` may invoke caller-owned iterator capabilities and passes reachable outline values to `fetchFeed`.
  */
 async function fetchAndParseFeeds(
   outlines: readonly DeepReadonly<InnerOutlineWUrl>[],
@@ -212,7 +216,7 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
     /**
      * Narrowed feed view used to read the Atom-specific `updated` field.
      */
-    const atomFeed = feed as Atom.Feed<string>;
+    const atomFeed = feed as AtomFeed.Feed<string>;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return v.parse(
       coerceDateSchema,
@@ -224,7 +228,7 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
   /**
    * Narrowed feed view used to read the RSS-specific `pubDate` field.
    */
-  const rssFeed = feed as Rss.Feed<string>;
+  const rssFeed = feed as RssFeed.Feed<string>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return v.parse(
     coerceDateSchema,

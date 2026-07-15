@@ -1,7 +1,7 @@
 import type {
-  Atom,
+  AtomFeed,
   Opml,
-  Rss,
+  RssFeed,
 } from 'feedsmith';
 import type { DeepReadonly, } from './types.ts';
 
@@ -10,9 +10,9 @@ import type { DeepReadonly, } from './types.ts';
  * Deeply readonly because the pipeline only reads these parsed values.
  */
 export type Item = DeepReadonly<{
-  feed: Omit<Rss.Feed<string> | Atom.Feed<string>, 'entries' | 'items'>;
+  feed: Omit<RssFeed.Feed<string> | AtomFeed.Feed<string>, 'entries' | 'items'>;
   outline: Opml.Outline<string>;
-  item: Rss.Item<string> | Atom.Entry<string>;
+  item: RssFeed.Item<string> | AtomFeed.Entry<string>;
 }>;
 
 /**
@@ -21,11 +21,11 @@ export type Item = DeepReadonly<{
  * Deeply readonly because the renderers only read these values.
  */
 export type NormalizedItem = DeepReadonly<{
-  feed: Omit<Rss.Feed<string>, 'items'>;
-  originalFeed?: Omit<Rss.Feed<string> | Atom.Feed<string>, 'entries' | 'items'>;
+  feed: Omit<RssFeed.Feed<string>, 'items'>;
+  originalFeed?: Omit<RssFeed.Feed<string> | AtomFeed.Feed<string>, 'entries' | 'items'>;
   outline: Opml.Outline<string>;
-  item: Rss.Item<string>;
-  originalItem?: Rss.Item<string> | Atom.Entry<string>;
+  item: RssFeed.Item<string>;
+  originalItem?: RssFeed.Item<string> | AtomFeed.Entry<string>;
 }>;
 
 /**
@@ -33,9 +33,9 @@ export type NormalizedItem = DeepReadonly<{
  * Deeply readonly because normalization only reads these fields.
  */
 export type AtomItem = DeepReadonly<{
-  feed: Omit<Atom.Feed<string>, 'entries'>;
+  feed: Omit<AtomFeed.Feed<string>, 'entries'>;
   outline: Opml.Outline<string>;
-  item: Atom.Entry<string>;
+  item: AtomFeed.Entry<string>;
 }>;
 
 /**

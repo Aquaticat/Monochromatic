@@ -42,13 +42,15 @@ const l = tagged({
  *
  * @returns Array of raw OPML XML strings
  *
+ * @mutates opmls - `mapIterableAsync` may invoke caller-owned iterator capabilities and passes reachable source values to `fetchOpml`.
+ *
  * @example
  * ```ts
  * const texts = await getOPMLTexts(getOpmls());
  * ```
  */
 export async function getOPMLTexts(
-  opmls: readonly string[],
+  opmls: string[],
 ): Promise<string[]> {
   /**
    * Inner logger tagged with this function name for traceable log lines.
