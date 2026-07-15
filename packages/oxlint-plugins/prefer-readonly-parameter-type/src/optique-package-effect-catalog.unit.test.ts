@@ -22,7 +22,7 @@ import { isIdentifier, } from 'typescript/unstable/ast/is';
 const CALL_SITES = [
   {
     fileName: fileURLToPath(new URL(
-      '../../git-policies/cli/src/parsers/status.ts',
+      '../../../git-policies/cli/src/parsers/status.ts',
       import.meta.url,
     ),),
     member: 'parseSync',
@@ -31,7 +31,7 @@ const CALL_SITES = [
   },
   {
     fileName: fileURLToPath(new URL(
-      '../../git-policies/cli/src/management.ts',
+      '../../../git-policies/cli/src/management.ts',
       import.meta.url,
     ),),
     member: 'runParserSync',
