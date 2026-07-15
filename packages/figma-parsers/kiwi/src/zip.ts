@@ -234,6 +234,8 @@ function findEocdOffset(
  *
  * @param centralDirectoryEntries - Entry count.
  *
+ * @mutates buffer through Buffer.from value conversion and native byte access
+ *
  * @returns {@link ZipEntryPair} entries for map construction.
  *
  * @example
