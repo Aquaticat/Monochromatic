@@ -347,8 +347,10 @@ await describe({
               sourceText,
               hasBOM: false,
             },);
-            expect(session.project.configFileName,).toBe(
-              join(directory.path, 'tsconfig.json',),
+            expect(
+              session.project.configFileName.replaceAll('\\', '/',).toLowerCase(),
+            ).toBe(
+              join(directory.path, 'tsconfig.json',).replaceAll('\\', '/',).toLowerCase(),
             );
           },
         },),
