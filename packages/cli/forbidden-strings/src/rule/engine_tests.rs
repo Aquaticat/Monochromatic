@@ -5,7 +5,7 @@
 //           that is what the function carries because external callers
 //           re-export it).
 // Why:      Compile-time gated by `#[cfg(test)]` in the parent module
-//           (`rules.rs`); contributes nothing to the release binary.
+//           (`rule.rs`); contributes nothing to the release binary.
 //           A separate file (rather than inline `mod tests` inside
 //           `engine.rs`) keeps the production source small and lets
 //           the test file carry its own dum-dum-non-ts comment density.
@@ -559,7 +559,7 @@ fn is_match_returns_result_ok_for_match_resharp() {
 //           through `super::engine::*` rather than the crate-public
 //           re-exports because the pre-validators are sibling items
 //           in the same submodule -- `super` is the natural reach
-//           and avoids a longer `crate::rules::...` path.
+//           and avoids a longer `crate::rule::...` path.
 // Why:      Each detector is one cheap byte walk over the source;
 //           tests should exercise the positive trigger AND the
 //           negative cases that look superficially similar (escaped
@@ -723,14 +723,14 @@ fn intersection_with_word_end_alternation_skips_safe_shapes() {
 // ```
 #[test]
 fn compile_rule_src_does_not_panic_on_known_bad_shapes() {
-    // What:     `use crate::rules::compile_rule_src;`. Pull the
+    // What:     `use crate::rule::compile_rule_src;`. Pull the
     //           top-level loader-and-fuzzer entry point into scope.
     //           Sibling: the test could call `Regex::new` directly
     //           and wrap with `catch_unwind`, but that would not
     //           exercise the production code path the fix is for.
     // Why:      Drive the actual API so the assertion proves what
     //           we care about: end users do not see panics.
-    use crate::rules::compile_rule_src;
+    use crate::rule::compile_rule_src;
     let cases = [
         // Crash 1: runtime intersection-with-lookbehind shape.
         // Compile path returns Err via pre-validator (we do not
@@ -941,7 +941,7 @@ fn compile_rule_src_rejects_fuzz_slow_unit_fast() {
     // fuzz/artifacts/fuzz_extract_gate_soundness/slow-unit-0cfbc4b8b9945074fe5214a96c503f6e994e3b97.
     let src = "(?iu)\\D{5,11}{5,11}{5,11}{5,11}{5,11}\\D*****aa";
     let started = Instant::now();
-    let result = crate::rules::compile_rule_src(src);
+    let result = crate::rule::compile_rule_src(src);
     let elapsed = started.elapsed();
     let err = match result {
         Ok(_) => panic!("expected stacked-quantifier rejection, got Ok"),
@@ -1268,7 +1268,7 @@ fn compile_rule_src_rejects_alt_lookaround_sibling_shape() {
     use std::time::Instant;
     let src = "(a|(?![_]))(?!a)";
     let started = Instant::now();
-    let result = crate::rules::compile_rule_src(src);
+    let result = crate::rule::compile_rule_src(src);
     let elapsed = started.elapsed();
     let err = match result {
         Ok(_) => panic!("expected rejection, got Ok"),
@@ -1305,7 +1305,7 @@ fn compile_rule_src_rejects_grouped_fuzz_slow_unit_fast() {
     // (?:) wrapping comes from Node::Quant's renderer.
     let src = "(?iu)(?:(?:(?:(?:(?:\\d){5,11}){5,11}){5,11}){5,11}){5,11}(?:(?:(?:(?:(?:\\d)*)*)*)*)*aa";
     let started = Instant::now();
-    let result = crate::rules::compile_rule_src(src);
+    let result = crate::rule::compile_rule_src(src);
     let elapsed = started.elapsed();
     let err = match result {
         Ok(_) => panic!("expected nested-grouped-quantifier rejection, got Ok"),
@@ -1424,7 +1424,7 @@ fn compile_rule_src_rejects_bug_f_shape_fast() {
     use std::time::Instant;
     let src = "(?:(?:(?!\\?)){1,5}){2,4}";
     let started = Instant::now();
-    let result = crate::rules::compile_rule_src(src);
+    let result = crate::rule::compile_rule_src(src);
     let elapsed = started.elapsed();
     let err = match result {
         Ok(_) => panic!("expected nested-lookahead rejection, got Ok"),
@@ -1549,7 +1549,7 @@ fn compile_rule_src_rejects_bug_f_trailing_shape_fast() {
     use std::time::Instant;
     let src = "(?:(?!abc)){4,12}a";
     let started = Instant::now();
-    let result = crate::rules::compile_rule_src(src);
+    let result = crate::rule::compile_rule_src(src);
     let elapsed = started.elapsed();
     let err = match result {
         Ok(_) => panic!("expected quantified-lookahead-with-trailing rejection, got Ok"),
@@ -1656,7 +1656,7 @@ fn compile_rule_src_rejects_wildcard_chain_slow_shape_fast() {
     use std::time::Instant;
     let src = "(?:(?:a|(?:(?:(?:(?:_){5,6}){5,12})+|(?:\\s|(?:(?:_){5,6})+)|(?:(?:(?:_){5,6}){5,6}){5,6}))){5,6}";
     let started = Instant::now();
-    let result = crate::rules::compile_rule_src(src);
+    let result = crate::rule::compile_rule_src(src);
     let elapsed = started.elapsed();
     let err = match result {
         Ok(_) => panic!("expected wildcard-chain rejection, got Ok"),
@@ -1764,7 +1764,7 @@ fn compile_rule_src_rejects_lookaround_chain_slow_shape_fast() {
     // distilled to its load-bearing chain-in-lookaround.
     let src = "(?!(?:(?:(?:a){5,14}){5,14}){4,12})";
     let started = Instant::now();
-    let result = crate::rules::compile_rule_src(src);
+    let result = crate::rule::compile_rule_src(src);
     let elapsed = started.elapsed();
     let err = match result {
         Ok(_) => panic!("expected lookaround-chain rejection, got Ok"),
@@ -1857,7 +1857,7 @@ fn compile_rule_src_rejects_nested_complement_timeout_shape_fast() {
     use std::time::Instant;
     let src = "(?-i)(?:~(~((?:(?:\\s){5,14}){3,10}))){3,10}";
     let started = Instant::now();
-    let result = crate::rules::compile_rule_src(src);
+    let result = crate::rule::compile_rule_src(src);
     let elapsed = started.elapsed();
     let err = match result {
         Ok(_) => panic!("expected nested-complement rejection, got Ok"),

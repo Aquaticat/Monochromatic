@@ -7,7 +7,7 @@
  * example:
  *
  * ```sh
- * HCLOUD_TOKEN=... node packages/cli/mvm/src/backends/hetzner/provision.expensive.unit.test.ts
+ * HCLOUD_TOKEN=... node packages/cli/mvm/src/backend/hetzner/provision.expensive.unit.test.ts
  * ```
  *
  * It provisions a throwaway server, execs a command, round-trips a file,
@@ -32,7 +32,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { selectBackend, } from '@monochromatic-dev/cli-mvm/ts/backends/registry.ts';
+import { selectBackend, } from '@monochromatic-dev/cli-mvm/ts/backend/registry.ts';
 
 /**
  * Whether a token is present to run the live, billed flow.

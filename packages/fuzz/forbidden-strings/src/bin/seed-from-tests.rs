@@ -1,6 +1,6 @@
 // What:     `seed-from-tests` is a small helper binary. It reads
 //           the four test fixture files in
-//           `packages/cli/forbidden-strings/src/rules/{extract,atom,engine,algebra}_tests.rs`,
+//           `packages/cli/forbidden-strings/src/rule/{extract,atom,engine,algebra}_tests.rs`,
 //           extracts every double-quoted string literal, and
 //           writes each unique one as a raw-byte seed file under
 //           `seeds/<target>/seed-<sha8>` (relative to this fuzz
@@ -38,10 +38,10 @@ use std::process::Command;
 //           the count up front -- a slice is fine here.
 // Why:      Single source of truth for what to seed from.
 const TEST_FILES: &[&str] = &[
-    "../../cli/forbidden-strings/src/rules/extract_tests.rs",
-    "../../cli/forbidden-strings/src/rules/atom_tests.rs",
-    "../../cli/forbidden-strings/src/rules/engine_tests.rs",
-    "../../cli/forbidden-strings/src/rules/algebra_tests.rs",
+    "../../cli/forbidden-strings/src/rule/extract_tests.rs",
+    "../../cli/forbidden-strings/src/rule/atom_tests.rs",
+    "../../cli/forbidden-strings/src/rule/engine_tests.rs",
+    "../../cli/forbidden-strings/src/rule/algebra_tests.rs",
 ];
 
 // What:     `const FORBIDDEN_LOCAL: &str = "../../cli/forbidden-strings/forbidden-strings.local.txt";`.

@@ -16,7 +16,7 @@ import {
   resolveLocations,
   serverTypeOverride,
   validateHetznerName,
-} from '@monochromatic-dev/cli-mvm/ts/backends/hetzner/config.ts';
+} from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/config.ts';
 
 /**
  * Sets an env var for the duration of a `using` scope, restoring it after.

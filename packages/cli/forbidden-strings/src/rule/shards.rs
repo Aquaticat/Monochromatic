@@ -28,7 +28,7 @@ use super::types::ResidualShard;
 //           for API compatibility with callers that already match on
 //           `load_ruleset`'s overall Result.
 // Why:      Wrapping the infallible inner work in an outer `Result` keeps
-//           `rules.rs::load_ruleset` composition unchanged.
+//           `rule.rs::load_ruleset` composition unchanged.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -247,7 +247,7 @@ fn try_compile_combined(
         // Try unicode-off for the speedup; fall back to unicode-on if
         // any rule in the chunk requires unicode semantics (e.g.
         // `\p{...}`, multi-byte chars in `[...]` classes). Mirrors
-        // the per-rule compile in `rules.rs::compile_plain_rule`.
+        // the per-rule compile in `rule.rs::compile_plain_rule`.
         if let Ok(re) = regex::bytes::RegexBuilder::new(&combined)
             .unicode(false)
             .size_limit(256 * 1024 * 1024)

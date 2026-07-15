@@ -261,7 +261,7 @@ any robustness claim can be.
   wrappers,
    and the pre-validators
   (`packages/cli/forbidden-strings/Cargo.toml`,
-  `packages/cli/forbidden-strings/src/rules/engine.rs`).
+  `packages/cli/forbidden-strings/src/rule/engine.rs`).
    None should be reverted
   on the strength of "the known bugs are fixed.
   "

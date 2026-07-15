@@ -148,7 +148,7 @@ md Bug E for the full writeup).
     clear stale timeout artifacts:
    ```text
    cp /var/home/user/Monochromatic/packages/cli/forbidden-strings/src/{fuzz_api,rules}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/
-   cp /var/home/user/Monochromatic/packages/cli/forbidden-strings/src/rules/{engine,engine_tests}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/rules/
+   cp /var/home/user/Monochromatic/packages/cli/forbidden-strings/src/rule/{engine,engine_tests}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/rule/
    rm /tmp/fs-soundness-revert/packages/cli/forbidden-strings/fuzz/artifacts/fuzz_extract_gate_soundness/timeout-*
    cd /tmp/fs-soundness-revert/packages/cli/forbidden-strings
    mise run fuzz:run fuzz_extract_gate_soundness -max_total_time=120 -timeout=10
@@ -556,7 +556,7 @@ wrappers landed,
  crash 2 would still silently corrupt rules in
 production builds.
 
-### `packages/cli/forbidden-strings/src/rules.rs`
+### `packages/cli/forbidden-strings/src/rule.rs`
 
 - Added `use std::panic::{catch_unwind, AssertUnwindSafe};` import
   with the rationale block above it.
@@ -575,7 +575,7 @@ production builds.
    every error is still
   prefixed with `rule on line N (resharp): ...` by the outer loader.
 
-### `packages/cli/forbidden-strings/src/rules/engine.rs`
+### `packages/cli/forbidden-strings/src/rule/engine.rs`
 
 - Added `use std::panic::{catch_unwind, AssertUnwindSafe};`.
    The
@@ -615,7 +615,7 @@ Both detectors are single-pass byte walkers,
  and skip escaped sequences and
 character-class interiors.
 
-### `packages/cli/forbidden-strings/src/rules/engine_tests.rs`
+### `packages/cli/forbidden-strings/src/rule/engine_tests.rs`
 
 6 new tests at the end of the file:
 
@@ -826,9 +826,9 @@ mise run //packages/cli/forbidden-strings:test           # 121 unit + 19 integra
 
 ```text
 modified:   packages/cli/forbidden-strings/Cargo.toml
-modified:   packages/cli/forbidden-strings/src/rules.rs
-modified:   packages/cli/forbidden-strings/src/rules/engine.rs
-modified:   packages/cli/forbidden-strings/src/rules/engine_tests.rs
+modified:   packages/cli/forbidden-strings/src/rule.rs
+modified:   packages/cli/forbidden-strings/src/rule/engine.rs
+modified:   packages/cli/forbidden-strings/src/rule/engine_tests.rs
 new file:   HANDOVER.resharp-panic-fix.md
 ```
 

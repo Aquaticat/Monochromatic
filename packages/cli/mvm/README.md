@@ -177,12 +177,12 @@ Notes:
 
 A live,
  billed integration test lives at
-`src/backends/hetzner/provision.expensive.unit.test.ts`.
+`src/backend/hetzner/provision.expensive.unit.test.ts`.
  It is excluded from
 `test:unit` (the `.expensive.` marker) and only runs when `HCLOUD_TOKEN` is set:
 
 ```sh
-HCLOUD_TOKEN=... node packages/cli/mvm/src/backends/hetzner/provision.expensive.unit.test.ts
+HCLOUD_TOKEN=... node packages/cli/mvm/src/backend/hetzner/provision.expensive.unit.test.ts
 ```
 
 ## Custom templates

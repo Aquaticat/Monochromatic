@@ -29,7 +29,7 @@ use anyhow::{anyhow, Result};
 // What:     `use std::panic::{catch_unwind, AssertUnwindSafe};` brings
 //           the panic-recovery primitives into scope for the
 //           compile-time wrap on `Regex::new`. Full primer at the
-//           same import in `src/rules/engine.rs`. Short version:
+//           same import in `src/rule/engine.rs`. Short version:
 //           `catch_unwind(closure)` runs the closure with an unwind
 //           barrier; an inner `panic!` becomes the outer `Err` arm
 //           instead of propagating through the call stack.

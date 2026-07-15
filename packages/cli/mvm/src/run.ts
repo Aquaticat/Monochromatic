@@ -1,4 +1,4 @@
-import { ephemeralRun, } from './backends/ephemeral-run.ts';
+import { ephemeralRun, } from './backend/ephemeral-run.ts';
 import { clone, } from './clone.ts';
 import { create, } from './create.ts';
 import { destroy, } from './destroy.ts';

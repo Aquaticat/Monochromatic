@@ -1,7 +1,7 @@
 //! rules engine support for the forbidden-strings scanner.
 /// Registers the `compiled` child module.
 // What:     Engine submodule wiring. Each `mod foo;` declares a sibling
-//           file under `src/rules/engine/foo.rs`, and each `pub use`
+//           file under `src/rule/engine/foo.rs`, and each `pub use`
 //           re-exports the public helper through `super::engine::*`.
 // Why:      The max-lines Rust linter budgets code lines per file, so
 //           engine dispatch, routing, and pre-validators live in

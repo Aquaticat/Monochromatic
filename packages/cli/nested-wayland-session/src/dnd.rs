@@ -6,7 +6,7 @@
 //! server pointer grab that, as the pointer moves over the hosted app's surface, sends
 //! the app a `wl_data_offer` + `enter`, then (on button release) a `drop`. The app
 //! then requests the data, which arrives in `ServerDndGrabHandler::send` (see
-//! `handlers.rs`). This module drives that sequence from a `drop-file` control command,
+//! `handler.rs`). This module drives that sequence from a `drop-file` control command,
 //! giving a deterministic, single-app inbound-drop test with no file manager involved.
 //!
 //! Why the release is deferred: Wayland DnD requires the target client to `accept` a

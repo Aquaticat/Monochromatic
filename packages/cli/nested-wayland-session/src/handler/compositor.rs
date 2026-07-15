@@ -114,11 +114,11 @@ impl CompositorHandler for Compositor {
             }
         }
 
-        // What:     `crate::handlers::xdg_shell::handle_commit(&mut self.popups,
+        // What:     `crate::handler::xdg_shell::handle_commit(&mut self.popups,
         //           &self.space, surface);`. Delegate the configure-on-first-commit and
         //           popup handling to the xdg-shell module.
         // Why:      Keep xdg-specific commit logic beside the rest of xdg-shell.
-        crate::handlers::xdg_shell::handle_commit(&mut self.popups, &self.space, surface);
+        crate::handler::xdg_shell::handle_commit(&mut self.popups, &self.space, surface);
     }
 }
 

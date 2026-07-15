@@ -93,7 +93,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
 # "abort" + default-off overflow checks:
 #
-# `src/rules/engine.rs` and `src/rules.rs` use `std::panic::catch_unwind`
+# `src/rule/engine.rs` and `src/rule.rs` use `std::panic::catch_unwind`
 # to intercept panics inside the resharp algebra / engine. The specific
 # fuzzer-discovered shapes that motivated this combo are all resolved
 # upstream as of resharp 0.6.9 (behaviourally re-verified 2026-06-04;
@@ -124,7 +124,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 #    fixed that upstream with a parser depth cap
 #    (`DEFAULT_MAX_DEPTH = 1_000`, rejecting over-deep rules with a clean
 #    `Parse` error instead of overflowing), and the consumer-side depth
-#    pre-validator (`src/rules/nesting.rs`, same 1_000 cap) stays as
+#    pre-validator (`src/rule/nesting.rs`, same 1_000 cap) stays as
 #    belt-and-suspenders. Neither relies on this profile.
 #
 # 2. `overflow-checks = true`: an algebra overflow is Rust's standard
@@ -141,7 +141,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # of OFF. Some resharp postcondition checks live behind `debug_assert!`
 # (the historical `strip_lb` assertion was one), so with debug-assertions
 # OFF a future such shape returns wrong matches rather than panicking, and
-# catch_unwind cannot help. The pre-validators in `src/rules/engine.rs`
+# catch_unwind cannot help. The pre-validators in `src/rule/engine.rs`
 # (and the fuzz targets, which run with debug-assertions ON) are the
 # durable cover for that class. We do not turn debug-assertions on in
 # release because the `regex`, `ignore`, and `rayon` deps have hot-path
@@ -149,7 +149,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # CI gate.
 #
 # See docs/troubleshooting/resharp.md for the full per-bug status at 0.6.9
-# and the pre-validator coverage in `src/rules.rs` / `src/rules/engine.rs`.
+# and the pre-validator coverage in `src/rule.rs` / `src/rule/engine.rs`.
 [profile.release]
 lto = true
 codegen-units = 1

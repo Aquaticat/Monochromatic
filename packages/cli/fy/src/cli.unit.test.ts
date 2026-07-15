@@ -137,7 +137,7 @@ await describe({
       name: 'prints default export value from a local fixture',
       fn: async () => {
         const result = await runCliFy({
-          args: ['./packages/cli/fy/src/fixtures/return1.ts', 'default',],
+          args: ['./packages/cli/fy/src/fixture/return1.ts', 'default',],
         },);
         expect(result.stdout,).toBe('1',);
         expect(result.exitCode,).toBe(0,);
@@ -148,7 +148,7 @@ await describe({
       name: 'calls default export function and prints its return value',
       fn: async () => {
         const result = await runCliFy({
-          args: ['./packages/cli/fy/src/fixtures/return1-fn.ts', 'default',],
+          args: ['./packages/cli/fy/src/fixture/return1-fn.ts', 'default',],
         },);
         expect(result.stdout,).toBe('1',);
         expect(result.exitCode,).toBe(0,);

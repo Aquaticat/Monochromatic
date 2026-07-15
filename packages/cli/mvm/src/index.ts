@@ -12,12 +12,12 @@
  * @module
  */
 
-export * from './backends/registry.ts';
+export * from './backend/registry.ts';
 export type {
   Backend,
   BackendKind,
   BackendMeta,
-} from './backends/types.ts';
+} from './backend/types.ts';
 export * from './clone.ts';
 export * from './create.ts';
 export * from './destroy.ts';

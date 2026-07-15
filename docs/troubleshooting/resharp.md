@@ -81,7 +81,7 @@ forbidden-strings consumer guards.
   `lookaround_in_alternation_with_sibling`,
   `complement_intersection_quantified_group`,
   `nested_lookahead_in_quantified_group`) in
-  `packages/cli/forbidden-strings/src/rules/engine.rs` stay as
+  `packages/cli/forbidden-strings/src/rule/engine.rs` stay as
   belt-and-suspenders;
    over-rejection is fail-closed-safe.
 - Bug G (deep-nesting stack-overflow abort),
@@ -108,7 +108,7 @@ forbidden-strings consumer guards.
   rather than an absolute budget.
    The consumer-side `nesting_depth`
   pre-validator (cap 1,000) in
-  `packages/cli/forbidden-strings/src/rules/nesting.rs` stays
+  `packages/cli/forbidden-strings/src/rule/nesting.rs` stays
   belt-and-suspenders even though `max_depth` is now upstream.
 - The 0.6.8 "compile-time timeout on small patterns" finding was a fork
   fuzz-harness measurement artifact (six compiles per libFuzzer unit under

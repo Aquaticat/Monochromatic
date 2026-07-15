@@ -13,7 +13,7 @@ import {
   type FileReport,
   type ReporterName,
 } from './reporters.ts';
-import { rules, } from './rules/index.ts';
+import { rules, } from './rule/index.ts';
 import type { Diagnostic, } from './types.ts';
 import {
   discoverFiles,

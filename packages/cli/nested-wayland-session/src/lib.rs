@@ -107,14 +107,14 @@ pub mod screenshot;
 /// ```
 pub mod cli;
 
-/// What:     `pub mod handlers;`. Declares the Wayland protocol handler module tree.
+/// What:     `pub mod handler;`. Declares the Wayland protocol handler module tree.
 /// Why:      Implements the compositor/xdg-shell/shm/seat/dmabuf behaviour.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export * as handlers from "./handlers";
+/// export * as handler from "./handler";
 /// ```
-pub mod handlers;
+pub mod handler;
 
 /// What:     `pub mod render;`. Declares the rendering module.
 /// Why:      Composites the hosted window into the nested framebuffer each frame.

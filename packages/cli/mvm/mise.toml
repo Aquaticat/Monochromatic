@@ -52,5 +52,5 @@ const tfvars = '../../config/tofu/hetzner.auto.tfvars'
 const tokenLine = readFileSync(tfvars, 'utf8').split('\\n').find((line) => line.trimStart().startsWith('hcloud_token'))
 if (tokenLine === undefined) { throw new Error(`hcloud_token not found in ${tfvars}`) }
 const token = tokenLine.slice(tokenLine.indexOf('"') + 1, tokenLine.lastIndexOf('"'))
-execFileSync('node', ['src/backends/hetzner/provision.expensive.unit.test.ts'], { stdio: 'inherit', env: { ...process.env, HCLOUD_TOKEN: token } })
+execFileSync('node', ['src/backend/hetzner/provision.expensive.unit.test.ts'], { stdio: 'inherit', env: { ...process.env, HCLOUD_TOKEN: token } })
 """

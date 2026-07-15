@@ -28,7 +28,7 @@ use super::extract::extract_gating_substrings;
 //           literal-matcher type from the `aho-corasick` crate
 //           (already a project dependency).
 // Why:      Build an AC from the extracted substrings and search
-//           content; this is exactly what `rules.rs` does in the
+//           content; this is exactly what `rule.rs` does in the
 //           real loader.
 //
 // In TS you'd write (pseudocode):

@@ -1,10 +1,10 @@
 //! rules support for the forbidden-strings scanner.
 /// Registers the `atom` child module.
 // What:     Module-tree wiring. Each `mod foo;` declares that
-//           `src/rules/foo.rs` exists and should be compiled as
-//           `crate::rules::foo`. The submodules carry the actual
+//           `src/rule/foo.rs` exists and should be compiled as
+//           `crate::rule::foo`. The submodules carry the actual
 //           code; this file is the public face plus `load_ruleset`.
-// Why:      `rules.rs` was 2000+ lines with tightly coupled but
+// Why:      `rule.rs` was 2000+ lines with tightly coupled but
 //           topically distinct sections (engine dispatch, parsing,
 //           types, walker, atom-scan, regex-syntax helpers, residual
 //           sharding, loader). Splitting along those seams keeps
@@ -43,7 +43,7 @@ mod walker;
 //           attribute is a conditional-compilation gate -- equivalent
 //           to `#ifdef TEST` in C.
 // Why:      Tests for `pub(super)` items (e.g. `atom::walk_literal_bytes`)
-//           must live in a sibling module under `rules/` because they
+//           must live in a sibling module under `rule/` because they
 //           need the parent-module visibility. Splitting tests into
 //           their own files (rather than inline `#[cfg(test)] mod tests`
 //           inside `atom.rs`) keeps the production source small and
@@ -71,14 +71,14 @@ mod nesting_tests;
 
 /// Imports dependencies used by this module.
 // What:     Public surface re-exports so external callers (`scan.rs`,
-//           `main.rs`) can keep using `crate::rules::Foo` without
+//           `main.rs`) can keep using `crate::rule::Foo` without
 //           knowing which submodule actually defines `Foo`.
-// Why:      Preserves the existing `crate::rules::*` API. Renaming
+// Why:      Preserves the existing `crate::rule::*` API. Renaming
 //           call sites would have been a massive diff for no benefit.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// export { CompiledRegex, ScanMatch, requiresResharp } from "./rules/engine";
+// export { CompiledRegex, ScanMatch, requiresResharp } from "./rule/engine";
 // ```
 pub use compile::compile_rule_src;
 /// Imports dependencies used by this module.
@@ -113,7 +113,7 @@ pub use types::{is_word_byte, AcMeta, RegexRule, ResidualShard, RuleSet, SUBSTRI
 // What:     Crate-local re-exports gated behind the `fuzzing` Cargo
 //           feature. Each item is a `pub(crate)` helper inside the
 //           rules submodule; the re-export pulls it up to
-//           `crate::rules::*` so `crate::fuzz_api` can import it
+//           `crate::rule::*` so `crate::fuzz_api` can import it
 //           without learning the submodule layout. Production
 //           consumers compile with this feature off and see no
 //           change to the public API surface.

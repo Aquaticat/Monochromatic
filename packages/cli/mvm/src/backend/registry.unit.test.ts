@@ -15,7 +15,7 @@ import {
   isBackendAvailable,
   resolveBackendKind,
   selectBackend,
-} from '@monochromatic-dev/cli-mvm/ts/backends/registry.ts';
+} from '@monochromatic-dev/cli-mvm/ts/backend/registry.ts';
 
 /**
  * Sets an env var for the duration of a `using` scope, restoring it after.

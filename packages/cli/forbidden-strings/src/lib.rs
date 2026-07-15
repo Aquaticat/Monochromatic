@@ -36,7 +36,7 @@ mod cli;
 // // No equivalent. Closest: TypeScript automatically picks up files
 // // in `include` paths; Rust requires explicit `mod` declarations.
 // ```
-mod rules;
+mod rule;
 /// Registers the `scan` child module.
 mod scan;
 /// Registers the `scan_format` child module.
@@ -192,9 +192,9 @@ use crate::cli::Cli;
 // import { scanContent } from "./scan";
 // import { listFiles } from "./walk";
 // ```
-use crate::rules::load_ruleset;
+use crate::rule::load_ruleset;
 /// Imports dependencies used by this module.
-use crate::rules::load_ruleset_with_builtin;
+use crate::rule::load_ruleset_with_builtin;
 /// Imports dependencies used by this module.
 use crate::scan::scan_content;
 /// Imports dependencies used by this module.
@@ -296,7 +296,7 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
         "packages/cli/forbidden-strings/data/betterleaks-default-config.toml",
         "packages/cli/forbidden-strings/data/builtin-rules.txt",
         "packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts",
-        "packages/cli/forbidden-strings/src/rules/algebra_tests.rs",
+        "packages/cli/forbidden-strings/src/rule/algebra_tests.rs",
     ];
     for k in canonical_self_match_paths {
         if let Ok(p) = std::fs::canonicalize(k) {
@@ -691,14 +691,14 @@ pub fn run_cli_from_env() -> Result<i32> {
     };
 
     if env::var("FORBIDDEN_STRINGS_DEBUG_BUCKETS").is_ok() {
-        let ac_cs_pat = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rules::AcMeta::RegexPrefix { .. })).count();
-        let ac_cs_lit = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rules::AcMeta::Literal { .. })).count();
+        let ac_cs_pat = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rule::AcMeta::RegexPrefix { .. })).count();
+        let ac_cs_lit = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rule::AcMeta::Literal { .. })).count();
         let ac_ci_pat = ruleset.ac_meta_ci.len();
         let residual_count: usize = ruleset.residual_shards.iter().map(|s| match s {
-            crate::rules::ResidualShard::Single { .. } => 1,
-            crate::rules::ResidualShard::Combined { positions, .. } => positions.len(),
+            crate::rule::ResidualShard::Single { .. } => 1,
+            crate::rule::ResidualShard::Combined { positions, .. } => positions.len(),
         }).sum();
-        let single_shard_count = ruleset.residual_shards.iter().filter(|s| matches!(s, crate::rules::ResidualShard::Single { .. })).count();
+        let single_shard_count = ruleset.residual_shards.iter().filter(|s| matches!(s, crate::rule::ResidualShard::Single { .. })).count();
         let combined_shard_count = ruleset.residual_shards.len() - single_shard_count;
         // eprintln, not tracing: an opt-in developer bucket report gated by
         // FORBIDDEN_STRINGS_DEBUG_BUCKETS; kept as one cohesive direct-stderr dump rather than
@@ -710,8 +710,8 @@ pub fn run_cli_from_env() -> Result<i32> {
         if env::var("FORBIDDEN_STRINGS_DEBUG_RESIDUAL_LIST").is_ok() {
             for shard in &ruleset.residual_shards {
                 let positions: Vec<usize> = match shard {
-                    crate::rules::ResidualShard::Single { rule_pos } => vec![*rule_pos],
-                    crate::rules::ResidualShard::Combined { positions, .. } => positions.clone(),
+                    crate::rule::ResidualShard::Single { rule_pos } => vec![*rule_pos],
+                    crate::rule::ResidualShard::Combined { positions, .. } => positions.clone(),
                 };
                 for pos in positions {
                     let r = &ruleset.regex_rules[pos];

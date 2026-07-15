@@ -33,7 +33,7 @@ Bare literal lines for `—` and `–` in the rule file work directly:
 
 The 7-byte boundary check does not fire on multibyte non-word characters,
 so the literal substring-matches anywhere.
-Verified by reading `packages/cli/forbidden-strings/src/rules/atom.rs:21`
+Verified by reading `packages/cli/forbidden-strings/src/rule/atom.rs:21`
 and the README's "non-ASCII characters ... gate correctly" note.
 
 Empirical test against `/tmp/em-dash-fixture.md` (constructed during investigation):
@@ -62,7 +62,7 @@ since the goal is detection,
 Rule 2 catches `--` between alphabetic words
 on lines that do not contain `npm` or `git`.
 The `&` and `~()` operators route this rule through resharp
-(`packages/cli/forbidden-strings/src/rules/engine.rs:204` `requires_resharp`),
+(`packages/cli/forbidden-strings/src/rule/engine.rs:204` `requires_resharp`),
 which supports the set-algebra needed for the line-level complements.
 Since commit `67e844df`,
  the same routing predicate also detects
@@ -108,7 +108,7 @@ Top hit files:
 - `packages/audit/oph-common-look-and-feel/src/index.html` (33)
 - `packages/module/es/src/types/.../simplifiedSchema.behaviorTest.ts` (25)
 - `packages/webapp-productivity/done/PLAN.md` (19)
-- `packages/cli/forbidden-strings/src/rules.rs` (12)
+- `packages/cli/forbidden-strings/src/rule.rs` (12)
 - `mise.toml` (9)
 
 ## What does not work
@@ -193,7 +193,7 @@ No clean regex workaround.
 ## Self-match issues for unicode rules
 
 A bare `—` rule fires inside the forbidden-strings package itself:
-roughly 40 occurrences in `src/rules/atom_tests.rs` (test inputs),
+roughly 40 occurrences in `src/rule/atom_tests.rs` (test inputs),
 `atom.rs` and `extract.rs` (doc comments explaining em-dash handling),
 and `README.md` line 169.
 Plus `AGENTS.md` (states the rule),
@@ -215,7 +215,7 @@ Three options for handling these self-matches:
    including the betterleaks-ported credential rules.
    Whether that gap is acceptable on those specific files is a policy call.
 2. Add per-rule path-prefix exclusion to the rule grammar.
-   Real scanner change touching `rules.rs` and the per-file scan loop.
+   Real scanner change touching `rule.rs` and the per-file scan loop.
 3. Relocate test-fixture em-dashes into a `data/` file outside scan scope
    and rewrite docs to reference `U+2014` instead of literal characters.
    Costly across roughly 40 sites;

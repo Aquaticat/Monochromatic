@@ -12,7 +12,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { createWithFallback, } from '@monochromatic-dev/cli-mvm/ts/backends/hetzner/lifecycle.ts';
+import { createWithFallback, } from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/lifecycle.ts';
 
 /**
  * One recorded fetch invocation.

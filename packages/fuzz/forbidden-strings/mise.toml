@@ -105,5 +105,5 @@ execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 
 """
 
 [tasks.seed]
-description = "Regenerate the curated corpus from forbidden-strings rules/<area>_tests.rs"
+description = "Regenerate the curated corpus from forbidden-strings rule/<area>_tests.rs"
 run = "cargo run --release --bin seed-from-tests"

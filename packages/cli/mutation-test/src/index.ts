@@ -21,7 +21,7 @@ export { findOperatorToken, } from './engine/operator-token.ts';
 export {
   allOperators,
   type OperatorFn,
-} from './engine/operators/index.ts';
+} from './engine/operator/index.ts';
 export { spliceReplacement, } from './engine/splice.ts';
 export {
   matchingSuppressions,

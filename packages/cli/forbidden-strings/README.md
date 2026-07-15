@@ -316,7 +316,7 @@ Empty lines are ignored.
 
 The 7-byte threshold has a coincidence-rate justification;
  see Architecture below
-for the derivation and `SUBSTRING_THRESHOLD` in `src/rules/types.rs` for the constant.
+for the derivation and `SUBSTRING_THRESHOLD` in `src/rule/types.rs` for the constant.
 
 **One known regression** under these semantics:
  a short literal rule will not match a
@@ -332,7 +332,7 @@ plural matching is needed,
 
 - **Whitespace and comments.
   ** Lines are `trim()`'d before parsing
-  (`src/rules/parse.rs:64`).
+  (`src/rule/parse.rs:64`).
    A line containing only whitespace is ignored.
    A line whose
   first non-whitespace byte is `#` is a comment (`:78`).
@@ -508,7 +508,7 @@ issue:
   resharp's reverse pass overflows past three nesting levels.
 - **Intersection plus lookbehind.
   ** Rejected by `intersection_with_lookbehind` in
-  `src/rules/engine.rs`.
+  `src/rule/engine.rs`.
    The underlying resharp shape silently returns wrong
   matches in release builds (the debug-asserted bound is OFF in release),
    so
@@ -766,7 +766,7 @@ Exit codes:
   - `packages/cli/forbidden-strings/data/betterleaks-default-config.toml`
   - `packages/cli/forbidden-strings/data/builtin-rules.txt`
   - `packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts`
-  - `packages/cli/forbidden-strings/src/rules/algebra_tests.rs`
+  - `packages/cli/forbidden-strings/src/rule/algebra_tests.rs`
 
   The generated-source paths are package-anchored (NOT root-anchored).
    Skip is via
@@ -941,7 +941,7 @@ guidance,
   `packages/cli/forbidden-strings/data/builtin-rules.txt`,
   `packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts`,
   and the rules-engine test-fixture file
-  `packages/cli/forbidden-strings/src/rules/algebra_tests.rs` which
+  `packages/cli/forbidden-strings/src/rule/algebra_tests.rs` which
   documents an example match for the bundled set-algebra demo rule).
   Skip is path-anchored via `std::fs::canonicalize`,
    not basename-anchored,
@@ -979,4 +979,4 @@ guidance,
    which becomes borderline once a repo has multiple
   GB of dense content or 100+ deny-list rules.
    The constant `SUBSTRING_THRESHOLD` lives
-  in `src/rules/types.rs`.
+  in `src/rule/types.rs`.

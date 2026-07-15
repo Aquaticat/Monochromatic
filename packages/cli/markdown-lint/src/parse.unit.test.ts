@@ -7,7 +7,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { fixSource, } from './fix.ts';
 import { runRules, } from './lint.ts';
-import { noPipeTables, } from './rules/no-pipe-tables.ts';
+import { noPipeTables, } from './rule/no-pipe-tables.ts';
 import type { Diagnostic, } from './types.ts';
 
 /**

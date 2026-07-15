@@ -3,7 +3,7 @@
 //           function via `super::atom::...` (sibling modules under
 //           the same parent share that visibility scope).
 // Why:      Compile-time gated by `#[cfg(test)]` in the parent module
-//           (`rules.rs`), so this file contributes nothing to the
+//           (`rule.rs`), so this file contributes nothing to the
 //           release binary. Keeping tests in a separate file (rather
 //           than inline `mod tests` in `atom.rs`) preserves the
 //           production file's focus.

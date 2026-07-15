@@ -7,7 +7,7 @@
 //           `fuzzing` off and sees the same surface as before.
 // Why:      The plan requires fuzz internals to live behind a
 //           feature gate, not be merged into the production `pub use`
-//           block in `rules.rs`. This module is the single import
+//           block in `rule.rs`. This module is the single import
 //           surface every fuzz target points at; if we need to
 //           expose a new helper, it gets re-exported here once and
 //           every target picks it up.
@@ -32,7 +32,7 @@
 // ```
 
 /// Imports dependencies used by this module.
-// What:     `pub use crate::rules::{...};` re-exports the rules-
+// What:     `pub use crate::rule::{...};` re-exports the rules-
 //           module symbols the fuzz targets need. Every name is
 //           already public-or-pub(crate) inside `crate::rules`;
 //           re-exporting them here narrows fuzz target imports to
@@ -52,7 +52,7 @@
 //   isWordByte, SUBSTRING_THRESHOLD, ParsedRule, parseRuleSource,
 // } from "./rules";
 // ```
-pub use crate::rules::{
+pub use crate::rule::{
     build_residual_shards,
     complement_intersection_quantified_group,
     compile_rule_src,

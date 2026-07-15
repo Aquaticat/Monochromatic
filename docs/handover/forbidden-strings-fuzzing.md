@@ -976,7 +976,7 @@ quant + trailing literal" case.
 - Fuzz scaffold:
    `packages/cli/forbidden-strings/fuzz/`
 - Test fixture sources the seeder must read:
-  `packages/cli/forbidden-strings/src/rules/{extract_tests,atom_tests,engine_tests,algebra_tests}.rs`
+  `packages/cli/forbidden-strings/src/rule/{extract_tests,atom_tests,engine_tests,algebra_tests}.rs`
 - The bug-fix commits motivating the soundness target:
   `e49d8694` (`(?u)` extraction skip),
    `e100659f` (bare `_` as wildcard

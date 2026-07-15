@@ -122,7 +122,7 @@ The release profile is `lto = true`,
  `strip = true`.
  The unwind +
 overflow-checks pair is load-bearing for the resharp-panic safety wrapper in
-`src/rules/engine.rs` and `src/rules.rs`:
+`src/rule/engine.rs` and `src/rule.rs`:
  under `panic = "abort"` the process
 dies before `catch_unwind` runs (silent fail-open on a corrupt rule);
 without overflow checks Rust's `+` silently wraps and resharp builds a wrong
@@ -353,7 +353,7 @@ ruleset (`forbidden-strings.local.example.txt`,
  853 total
 lines).
  One rule fired on existing test fixture content
-(`./packages/cli/forbidden-strings/src/rules/algebra_tests.rs:119:32..43 rule=849`,
+(`./packages/cli/forbidden-strings/src/rule/algebra_tests.rs:119:32..43 rule=849`,
 an AWS access key prefix in an assertion);
  bench used `--ignore-failure` to
 absorb the resulting non-zero exit.
@@ -655,8 +655,8 @@ hardware (AMD Ryzen 7 8700F,
  16 threads).
  Binary:
 `packages/cli/forbidden-strings/target/release/forbidden-strings` built from
-this package's `src/` after `src/rules/atom.rs` started treating `~(...)`
-complement operands as non-contributing gates and `src/rules/walker.rs`
+this package's `src/` after `src/rule/atom.rs` started treating `~(...)`
+complement operands as non-contributing gates and `src/rule/walker.rs`
 started treating `&` as a transparent intersection separator.
 
 ### 2026-05-15 realistic ruleset on Monochromatic, 30 runs
@@ -764,7 +764,7 @@ growing to 47.2 MiB.
  same hardware
 (AMD Ryzen 7 8700F,
  16 threads).
- The walker fix in `src/rules/atom.rs`
+ The walker fix in `src/rule/atom.rs`
 rewrites `walk_literal_bytes` to iterate by `char` rather than casting
 each `u8` to `char` (the former silently mojibake'd non-ASCII multi-byte
 UTF-8 into wrong codepoints).
@@ -912,8 +912,8 @@ silently dropping into the residual gate (or worse,
 mojibake pattern that AC never matches).
 
 Test coverage:
- 22 tests in `src/rules/atom_tests.rs` and
-`src/rules/extract_tests.rs` cover 1 / 2 / 3 / 4-byte UTF-8 widths,
+ 22 tests in `src/rule/atom_tests.rs` and
+`src/rule/extract_tests.rs` cover 1 / 2 / 3 / 4-byte UTF-8 widths,
 the escape branch,
  the alternation branch,
  anchor strip,
@@ -938,7 +938,7 @@ The "realistic" ruleset is the betterleaks-port baseline:
 rules + 3 literals (851 total lines).
 
 The current numbers reflect the hybrid engine (`CompiledRegex::{Resharp,Plain}`
-in `src/rules/engine.rs`:
+in `src/rule/engine.rs`:
  257 of 259 rules compile via the standard `regex`
 crate,
  ~100x faster than resharp;
@@ -1262,7 +1262,7 @@ The hot path runs **two** Aho-Corasick `find_overlapping_iter` passes per file:
 Shipped optimisations in load order:
 
 - **Substring-extracting prefix walker.
-  ** `rules.rs::extract_required_prefix`
+  ** `rule.rs::extract_required_prefix`
   walks the regex source past optional/required atoms (character classes,
   perl-classes,
    `(?:...)` groups),
@@ -1318,7 +1318,7 @@ Shipped optimisations in load order:
    phase 1 (classify + per-rule compile) drops from
   ~2 s on resharp-only to ~440 ms on hybrid.
    Live in
-  `src/rules/engine.rs`.
+  `src/rule/engine.rs`.
 - **Unicode-off compile with try-and-fallback.
   ** Each non-set-algebra
   rule compiles first with `unicode(false)`;
@@ -1346,11 +1346,11 @@ Shipped optimisations in load order:
   byte sequence,
    so they take the fast path.
    Lives in
-  `src/rules.rs::compile_plain_rule` and the matching combined-gate
-  fallback in `src/rules/shards.rs::try_compile_combined`.
+  `src/rule.rs::compile_plain_rule` and the matching combined-gate
+  fallback in `src/rule/shards.rs::try_compile_combined`.
 - **Greedy combine-partition for residual shards.
   **
-  `src/rules/shards.rs::build_residual_shards` now uses divide-and-
+  `src/rule/shards.rs::build_residual_shards` now uses divide-and-
   conquer:
    try compiling all positions into one combined-alternation
   gate;
@@ -1838,7 +1838,7 @@ Re-run the commands above and append a dated block to **Last benched** /
   five-line wrapper around `run_cli_from_env`),
    `src/scan.rs` (per-file scan logic),
   `src/walk.rs` (walker + gix-index union),
-   or `src/rules.rs` (rule loading and
+   or `src/rule.rs` (rule loading and
   bucketing)
 - A change touches `Cargo.toml` profile or dependency versions
 - The repo grows past ~5000 tracked files or ~100 MiB total

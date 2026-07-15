@@ -5,7 +5,7 @@
 //! data-device), the desktop `Space` the one window lives on, the winit rendering
 //! backend, and the dmabuf import state. Smithay compositors are structured as one
 //! big owning struct like this; the per-protocol behaviour is split into the
-//! `handlers` module.
+//! `handler` module.
 
 /// What:     `use std::{ffi::OsString, process::Child, sync::Arc};`. Three std types:
 ///             - `OsString`: an owned, OS-native string (bytes the OS uses for names;

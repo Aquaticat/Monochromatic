@@ -272,7 +272,7 @@ await describe({
           'packages/cli/forbidden-strings/data/betterleaks-default-config.toml',
           'packages/cli/forbidden-strings/data/builtin-rules.txt',
           'packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts',
-          'packages/cli/forbidden-strings/src/rules/algebra_tests.rs',
+          'packages/cli/forbidden-strings/src/rule/algebra_tests.rs',
         ] as const;
         /** Candidates whose bytes must remain unread. */
         const excludedCandidates = excludedPaths.map(function excludedCandidate(path,): CandidateFile {

@@ -12,12 +12,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { waitForAction, } from '@monochromatic-dev/cli-mvm/ts/backends/hetzner/api.ts';
+import { waitForAction, } from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/api.ts';
 import {
   createServer,
   deleteServer,
   getMvmServerByName,
-} from '@monochromatic-dev/cli-mvm/ts/backends/hetzner/api-resources.ts';
+} from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/api-resources.ts';
 
 /**
  * One recorded fetch invocation.

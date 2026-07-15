@@ -12,7 +12,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { resolveHetznerImage, } from '@monochromatic-dev/cli-mvm/ts/backends/hetzner/images.ts';
+import { resolveHetznerImage, } from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/images.ts';
 
 /**
  * Sets HCLOUD_TOKEN for a `using` scope so requireToken passes, restoring after.

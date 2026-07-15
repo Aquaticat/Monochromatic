@@ -56,10 +56,10 @@ use std::collections::BTreeSet;
 use std::sync::OnceLock;
 
 /// Imports dependencies used by this module.
-// What:     `use crate::rules::{is_word_byte, AcMeta, RuleSet};` imports
+// What:     `use crate::rule::{is_word_byte, AcMeta, RuleSet};` imports
 //           the top-level rules container, the per-AC-pattern metadata
 //           tag, and the word-character classifier from the sibling
-//           `rules.rs` module. `{...}` is a list import.
+//           `rule.rs` module. `{...}` is a list import.
 // Why:      `scan_content` dispatches on `AcMeta` to decide whether an
 //           AC hit emits a literal-rule violation directly or queues a
 //           regex rule for full evaluation; `is_word_byte` is the
@@ -70,7 +70,7 @@ use std::sync::OnceLock;
 // ```ts
 // import { isWordByte, AcMeta, type RuleSet } from "./rules";
 // ```
-use crate::rules::{is_word_byte, AcMeta, ResidualShard, RuleSet};
+use crate::rule::{is_word_byte, AcMeta, ResidualShard, RuleSet};
 /// Imports dependencies used by this module.
 use crate::scan_format::{build_line_index, emit_hit};
 
@@ -199,7 +199,7 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
                     //           `SUBSTRING_THRESHOLD` bytes long --
                     //           long literals are distinctive enough
                     //           that coincidental substring match is
-                    //           negligible (math in `rules.rs`).
+                    //           negligible (math in `rule.rs`).
                     // Why:      The original "any AC hit fires" semantics
                     //           false-positived on coincidental
                     //           substrings inside base64 blobs and
@@ -331,7 +331,7 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
     // Residual bucket: regex rules whose gating substrings could NOT be
     // extracted. Sharded so each shard's combined-alternation Regex
     // stays under resharp's parse/algebra cliff (see
-    // `rules.rs::build_residual_shards`). The shard variants:
+    // `rule.rs::build_residual_shards`). The shard variants:
     //
     // - `Single { rule_pos }`: the rule's own Regex IS the gate -- skip
     //   the redundant gate.is_match and call find_all directly on the

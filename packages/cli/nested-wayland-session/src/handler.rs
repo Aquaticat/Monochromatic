@@ -6,12 +6,12 @@
 //! handlers live in the submodules declared below.
 
 /// What:     `pub mod compositor;`. Declares the `compositor` submodule from
-///           `src/handlers/compositor.rs` and re-exports it publicly.
+///           `src/handler/compositor.rs` and re-exports it publicly.
 /// Why:      Holds the surface-commit and shared-memory handlers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export * as compositor from "./handlers/compositor";
+/// export * as compositor from "./handler/compositor";
 /// ```
 pub mod compositor;
 
@@ -20,7 +20,7 @@ pub mod compositor;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export * as xdgShell from "./handlers/xdg_shell";
+/// export * as xdgShell from "./handler/xdg_shell";
 /// ```
 pub mod xdg_shell;
 
@@ -29,7 +29,7 @@ pub mod xdg_shell;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export * as dmabuf from "./handlers/dmabuf";
+/// export * as dmabuf from "./handler/dmabuf";
 /// ```
 pub mod dmabuf;
 

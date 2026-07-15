@@ -122,7 +122,7 @@ mise run //packages/fuzz/forbidden-strings:smoke
 # Single-target campaign with passthrough libFuzzer args.
 mise run //packages/fuzz/forbidden-strings:run fuzz_extract_gate_soundness -- -max_total_time=120
 
-# Regenerate the curated corpus from rules/<area>_tests.rs.
+# Regenerate the curated corpus from rule/<area>_tests.rs.
 mise run //packages/fuzz/forbidden-strings:seed
 ```
 
@@ -161,7 +161,7 @@ prebuilt image isn't handy.
    192 unique
   literals per target,
    extracted from
-  `rules/{extract,atom,engine,algebra}_tests.rs` by
+  `rule/{extract,atom,engine,algebra}_tests.rs` by
   `seed-from-tests`.
 - `corpus/<target>/` -- libFuzzer's corpus growth (scratch).
   Wholly ignored.
@@ -257,7 +257,7 @@ pre-validators do not yet cover.
 ## Corpus refresh trigger
 
 Re-run the seeder whenever a test file under
-`packages/cli/forbidden-strings/src/rules/` changes (specifically
+`packages/cli/forbidden-strings/src/rule/` changes (specifically
 the `extract_tests.rs`,
  `atom_tests.rs`,
  `engine_tests.rs`,

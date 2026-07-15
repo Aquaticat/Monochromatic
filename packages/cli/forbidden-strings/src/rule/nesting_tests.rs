@@ -185,7 +185,7 @@ fn nesting_depth_ignores_escaped_and_class_parens() {
 // ```
 #[test]
 fn compile_rule_src_rejects_deeply_nested_complement() {
-    // What:     `use crate::rules::compile_rule_src;` brings the pipeline
+    // What:     `use crate::rule::compile_rule_src;` brings the pipeline
     //           entry point into this function's scope (absolute path from
     //           the crate root).
     // Why:      Exercise the real routing: `~(` makes the rule require
@@ -195,7 +195,7 @@ fn compile_rule_src_rejects_deeply_nested_complement() {
     // ```ts
     // import { compileRuleSrc } from "../rules";
     // ```
-    use crate::rules::compile_rule_src;
+    use crate::rule::compile_rule_src;
     // What:     `"~(".repeat(1001)` builds 1,001 complement-group opens
     //           (`~(`), each contributing one `(`, so depth reaches 1,001.
     // Why:      A complement-nested shape both requires resharp and exceeds

@@ -12,7 +12,7 @@ export {
 export {
   rules,
   rulesById,
-} from './rules/index.ts';
+} from './rule/index.ts';
 export type {
   Diagnostic,
   Fix,

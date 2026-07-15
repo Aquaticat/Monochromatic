@@ -21,7 +21,7 @@ import {
   positionAt,
 } from './lines.ts';
 import { mutantId, } from './mutant-id.ts';
-import { allOperators, } from './operators/index.ts';
+import { allOperators, } from './operator/index.ts';
 import {
   matchingSuppressions,
   suppressionRules,

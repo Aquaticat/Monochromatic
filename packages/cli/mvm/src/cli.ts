@@ -6,7 +6,7 @@ import { runSync, } from '@optique/run';
 import {
   resolveBackendKind,
   selectBackend,
-} from './backends/registry.ts';
+} from './backend/registry.ts';
 import { parser, } from './index-parsers.ts';
 
 export {};

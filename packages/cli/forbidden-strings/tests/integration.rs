@@ -787,7 +787,7 @@ fn env_var_supplies_rules_when_no_flag() {
 //           "see ACR here" but miss "ACRYLIC" (trailing 'Y' is a word
 //           char, no boundary).
 // Why:      README "Match semantics depend on length" + `SUBSTRING_
-//           THRESHOLD` in `src/rules/types.rs`. A regression that drops
+//           THRESHOLD` in `src/rule/types.rs`. A regression that drops
 //           the conditional word-boundary check would suddenly fire on
 //           every short acronym occurring inside any longer
 //           identifier -- silent flood of false positives.

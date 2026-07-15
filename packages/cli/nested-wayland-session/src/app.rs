@@ -38,7 +38,7 @@ use crate::{
     child::{register_exit_poll, spawn_child},
     cli::Config,
     control,
-    handlers::xdg_shell::reconfigure_fullscreen,
+    handler::xdg_shell::reconfigure_fullscreen,
     render::redraw,
     state::Compositor,
     systemd::Isolation,
