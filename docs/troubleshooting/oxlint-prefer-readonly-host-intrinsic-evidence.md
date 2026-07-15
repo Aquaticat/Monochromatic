@@ -82,6 +82,11 @@ The canvas audit uses HTML's source algorithms and TypeScript's declaration mixi
 
 Every operation is a receiver effect.
 `drawImage` observes its source image argument but does not claim to mutate or retain it.
+The added canvas anchors hash complete pinned-source algorithm blocks:
+`CanvasState.save` plus `restore` at source lines 71020 to 71029,
+`CanvasTransform.rotate` plus `translate` at lines 73344 to 73371,
+`CanvasRect.fillRect` at lines 74217 to 74230,
+and `CanvasText.fillText` plus `strokeText` at lines 74305 to 74351.
 
 The File API audit keeps immutable byte observation separate from host retention:
 
