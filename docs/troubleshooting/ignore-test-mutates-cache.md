@@ -1,4 +1,4 @@
-# `ignore` 7.0.6 `test` calls mutate matcher caches and trigger unresolved readonly effects
+# `ignore` 7.0.6 matcher calls mutate caches and trigger unresolved readonly effects
 
 ## Symptom
 
