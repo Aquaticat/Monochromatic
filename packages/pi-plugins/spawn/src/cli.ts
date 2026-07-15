@@ -89,8 +89,6 @@ const args = runSync(
  *
  * @param options - Working directory, environment, and terminal invocation.
  *
- * @mutates options - `spawn` may read or retain environment and invocation storage across native process launch.
- *
  * @example
  * ```typescript
  * launchDetachedTerminal({ cwd: '/repo', env: process.env, invocation });
@@ -99,8 +97,8 @@ const args = runSync(
 function launchDetachedTerminal(
   options: {
     readonly cwd: string;
-    env: NodeJS.ProcessEnv;
-    invocation: TerminalInvocation;
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly invocation: TerminalInvocation;
   },
 ): void {
   /**
