@@ -511,6 +511,26 @@ The semantic-rule implementation and shared-configuration migration are complete
   Oxlint,
   build,
   and unit tests;
+- commits `728fdfbde`,
+  `43401eb56`,
+  and `68a0e2f71` audit locale date formatting and Buffer concatenation,
+  replace unsupported `Map.groupBy` calls with encounter-ordered grouping,
+  and expose DOM,
+  crypto,
+  and logger retention effects in Aquati.cat;
+  the package passes type lint,
+  Oxlint,
+  build,
+  and unit tests;
+- commits `4160b27a1`,
+  `67592dce1`,
+  `efb6b7b8f`,
+  `99a536320`,
+  and `def95c837` audit DataView reads and propagate Buffer conversion effects through Kiwi canvas and ZIP parsing;
+  Kiwi passes type lint,
+  Oxlint,
+  and build;
+  it has no package unit-test task;
 - no post-change root count exists yet because processes `proc_52` and `proc_53` were terminated without output;
   package-level host-provider migration continues before the next root sweep;
 - `packages/dev-script/task-util`,
