@@ -1,3 +1,5 @@
+import { spawn, } from 'node:child_process';
+
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
@@ -70,6 +72,19 @@ export function clearWithoutMutationContract(values: Set<string>,): void {
  */
 export function invokeWithoutMutationContract(callback: () => void,): void {
   callback();
+}
+
+/**
+ * Launches a process after Node copies a readonly argument list.
+ *
+ * @param args - Primitive command arguments observed by process launch.
+ */
+export function launchReadonlyArguments(args: readonly string[],): void {
+  void spawn(
+    'printf',
+    args,
+    { stdio: 'ignore', },
+  );
 }
 
 /**

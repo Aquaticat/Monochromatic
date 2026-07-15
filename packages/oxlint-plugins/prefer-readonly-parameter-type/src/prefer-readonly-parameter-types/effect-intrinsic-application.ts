@@ -28,11 +28,9 @@ import {
   type MutableEffectSummary,
   type PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
-import type {
-  IntrinsicEffectEntry,
-  IntrinsicEffectTarget,
-} from './intrinsic-effect-catalog.ts';
+import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 import { intrinsicTargetArguments, } from './intrinsic-target-arguments.ts';
+import { targetMatchesCallArity, } from './effect-intrinsic-target-arity.ts';
 
 /**
  * Tests whether semantic type is definitely callable at runtime.
@@ -85,40 +83,6 @@ function typeDefinitelyCallable({
     SignatureKind.Call,
   );
   return signatures.length > 0;
-}
-
-/**
- * Tests whether an effect target applies to current overloaded call arity.
- *
- * @param target - Audited receiver or argument target
- *
- * @param call - Exact intrinsic call
- *
- * @returns Whether target has no arity guard or matches current call
- *
- * @example
- * ```ts
- * targetMatchesCallArity({ target, call });
- * ```
- */
-function targetMatchesCallArity({
-  target,
-  call,
-}: {
-  readonly target: IntrinsicEffectTarget;
-  readonly call: CallExpression;
-}): boolean {
-  /**
-   * Optional exact arity attached to target.
-   */
-  const { callArgumentCount, } = target;
-  if (callArgumentCount === undefined)
-    return true;
-  /**
-   * Actual number of arguments supplied by current call.
-   */
-  const { length: actualArgumentCount, } = call.arguments;
-  return callArgumentCount === actualArgumentCount;
 }
 
 /**

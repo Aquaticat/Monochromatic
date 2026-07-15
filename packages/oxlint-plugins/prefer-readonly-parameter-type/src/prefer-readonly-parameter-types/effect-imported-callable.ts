@@ -25,6 +25,7 @@ import { addIntrinsicForwardedCallbackEffects, } from './effect-intrinsic-forwar
 import { addIntrinsicInvocations, } from './effect-intrinsic-invocation.ts';
 import { addIntrinsicPropertyInvocations, } from './effect-intrinsic-property-invocation.ts';
 import { intrinsicTargetArguments, } from './intrinsic-target-arguments.ts';
+import { targetMatchesCallArity, } from './effect-intrinsic-target-arity.ts';
 
 /**
  * Applies exact non-method callable effect when cataloged.
@@ -73,6 +74,11 @@ export function applyAuditedCallableEffect({
     return false;
   callableEffect.targets
     .forEach(function callableTarget(target,): void {
+      if (!targetMatchesCallArity({
+        target,
+        call,
+      },))
+        return;
       intrinsicTargetArguments({
         call,
         target,
@@ -97,6 +103,11 @@ export function applyAuditedCallableEffect({
     },);
   callableEffect.opaqueTargets
     ?.forEach(function opaqueCallableTarget(target,): void {
+      if (!targetMatchesCallArity({
+        target,
+        call,
+      },))
+        return;
       intrinsicTargetArguments({
         call,
         target,
@@ -126,6 +137,31 @@ export function applyAuditedCallableEffect({
       bindingOriginBySymbolId,
       call,
       argumentIndexes: callableEffect.invokedArgumentIndexes,
+      summary,
+    },);
+  }
+  if (callableEffect.invokedArguments !== undefined) {
+    /**
+     * Actual number of arguments supplied by current call.
+     */
+    const { length: actualArgumentCount, } = call.arguments;
+    /**
+     * Argument positions invoked by overload matching current call arity.
+     */
+    const argumentIndexes = callableEffect.invokedArguments
+      .filter(function matchingInvocationArity(invocation,): boolean {
+        const { callArgumentCount, } = invocation;
+        return (callArgumentCount === undefined)
+          || (callArgumentCount === actualArgumentCount);
+      },)
+      .map(function invokedArgumentIndex(invocation,): number {
+        return invocation.argumentIndex;
+      },);
+    addIntrinsicInvocations({
+      checker,
+      bindingOriginBySymbolId,
+      call,
+      argumentIndexes,
       summary,
     },);
   }
