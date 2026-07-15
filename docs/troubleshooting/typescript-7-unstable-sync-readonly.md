@@ -446,11 +446,11 @@ The published-consumer regression opens the same API without calling `closeSeman
 It asserts that natural process shutdown produces the semantic result on stdout and an empty stderr stream.
 A full parallel package unit run after the forced-signal fix produced no `context canceled` line on either captured stream.
 A package Oxlint run captured after the fix also contained no cancellation line.
-Final root process `proc_287` ran the single-worker workspace Oxlint task after both client sites were guarded.
+Final root process `proc_367` ran the single-worker workspace Oxlint task after both client sites were guarded.
 Its stdout and stderr contain zero occurrences of `context canceled`,
 `SemanticBridgeError`,
 or the omitted-owned-callable failure.
-GitHub Actions run `29394108524` passed the native lifecycle and disposable external-consumer tasks on Ubuntu,
+GitHub Actions run `29396066153` passed the native lifecycle and disposable external-consumer tasks on Ubuntu,
 macOS 15,
 and Windows after the shutdown change.
 

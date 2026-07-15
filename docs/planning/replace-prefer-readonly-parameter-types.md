@@ -16,7 +16,8 @@ The user confirmed shared understanding and authorized implementation.
 
 The migration-specific acceptance gate is complete.
 
-- Final single-worker root process `proc_287` ran `OXLINT_THREADS=1 mise run lint:oxlint` over 2,545 files.
+- Final single-worker root process `proc_367` ran `OXLINT_THREADS=1 mise run lint:oxlint` over 2,548 files in
+  816.5 seconds.
   It reported 3,792 warnings and 665 errors from existing non-readonly workspace findings.
   Its captured output contains zero occurrences of the replacement rule ID,
   `SemanticBridgeError`,
@@ -41,7 +42,7 @@ The migration-specific acceptance gate is complete.
 - TypeScript synchronous API shutdown now guards both the main semantic client and demand-driven external-project
   clients.
   The final root sweep and package tests contain no native-child cancellation output.
-  GitHub Actions run `29394108524` passed native lifecycle,
+  GitHub Actions run `29396066153` passed native lifecycle,
   platform path,
   and external-consumer verification on Ubuntu,
   macOS 15,
