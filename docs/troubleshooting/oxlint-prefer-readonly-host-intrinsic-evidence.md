@@ -208,6 +208,18 @@ without that guard,
 This is intentionally demand-driven at lookup time.
 The repository does not generate a complete catalog of every host API.
 
+Since
+[the traversal-narrowing refactor](../planning/prefer-readonly-traversal-narrowing.md)
+the catalog covers only external packages and host intrinsics;
+workspace packages analyze from live repository source and never carry
+audited entries.
+External package evidence embedding
+`shipped <path> sha256 <digest>` claims is machine-validated against
+installed pnpm-store content by
+`external-evidence.unit.test.ts`,
+so a version bump or content drift fails the plugin suite and forces
+re-audit.
+
 ## Upstream filing decision
 
 No upstream issue was filed.

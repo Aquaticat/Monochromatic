@@ -220,6 +220,35 @@ Definition of done:
   caller summaries no longer carry audited `invoked` markings
   (statusline caller lint output verified unchanged).
 
+### Inherited documented uncertainty needs no re-documentation
+
+Decided during the sweep (commit `bd72572d6`):
+a boundary function's complete `@mutates` contract is the audit,
+exactly as deleted workspace catalog entries were.
+Callers inherit the documented effect
+(the parameter stays affected,
+permitting mutable types)
+without adding their own contracts;
+the `missingUncertaintyContract` finding is removed.
+Readonly-typed callers still get `uncertainReadonly`
+naming the origin-located boundary.
+Rationale:
+the per-level contract chain was the burned-session spiral in
+different clothing;
+`caught-value` and logger consumers would have needed contracts at
+every transitive call level after catalog deletion.
+
+### Perf numbers so far
+
+- Cold `buildEffectSummaryIndex` for file-enforcer `apply-plan.ts`:
+  54 seconds (enlarged workspace-source scope).
+- `git-policies/cli` warm one-worker lint:
+  6.1 s and 5.9 s against the recorded 4.26 s baseline
+  (about 1.4 times warm regression;
+  elevated,
+  not fallback territory;
+  re-measure after the sweep).
+
 ## Open questions
 
 - Exact classifier treatment of index signatures whose value type is plain data:

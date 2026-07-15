@@ -216,3 +216,18 @@ A root `.out-of-scope` search for readonly,
 Oxlint,
 TSDoc,
 and foreign-ownership topics found no applicable entry.
+
+## Traversal-narrowing era changes (2026-07-15)
+
+The rule contract changed with
+[the traversal-narrowing refactor](../planning/prefer-readonly-traversal-narrowing.md):
+
+- traversal of statically plain data is no longer a caller-observable effect,
+  so hook-class findings on TOML-like and JSON-like values disappear;
+- workspace package calls analyze live repository source;
+  the workspace effect catalog and its commit-plus-sha evidence are gone;
+- a boundary function's complete `@mutates` contract absorbs the
+  uncertainty for its callers;
+  transitive callers no longer add their own contracts;
+- a `ForeignBorrowed` marker whose underlying type is already deeply
+  readonly is reported as inert with a removal instruction.

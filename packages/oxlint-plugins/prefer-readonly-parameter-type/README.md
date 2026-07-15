@@ -9,16 +9,39 @@ The rule combines TypeScript 7 semantic types with whole-project mutation summar
 
 - nonmutating structural data requires an honest deep-readonly type;
 - proven caller-observable effects permit mutable parameter types and make `@mutates` optional;
-- unresolved possible effects require complete repeatable `@mutates` contracts;
+- traversal of statically plain data
+  (primitives including branded intersections,
+  literals,
+  and arrays,
+  tuples,
+  records,
+  object types,
+  and unions composed only of those)
+  is not a caller-observable effect;
+  a runtime `Proxy` or getter-backed object satisfying a plain type is out of
+  model by design because static analysis cannot observe it;
+- workspace package calls resolve through symlinked repository source and are
+  analyzed live;
+  workspace packages never appear in the audited catalog;
+- unresolved possible effects require complete repeatable `@mutates` contracts
+  at the boundary function that contains them;
+  callers inherit the documented effect without re-documenting it,
+  exactly as an audited catalog entry would behave;
 - locked package calls resolve lazily through package exports to shipped JavaScript or TypeScript implementations;
 - exact native platform effects use audited owner,
   member,
   declaration provenance,
   and evidence;
+  external package evidence digests are machine-validated against installed
+  content so version bumps force re-audit;
 - unresolved calls fail closed with diagnostics naming affected inputs,
-  calls,
+  calls with bracketed origin locations,
   uncertainty,
-  and every valid remediation;
+  every valid remediation,
+  and an echo of every parsed `@mutates` block including names matching no
+  input;
+- inert `ForeignBorrowed` markers over deeply readonly types and stale
+  `@mutates` contracts are reported for removal;
 - ordinary `--fix` does not alter signatures or contracts;
 - semantic rewrites remain suggestion-only;
 - inline suppression is prohibited by the companion no-restricted-syntax rule.
@@ -67,9 +90,12 @@ Unknown and external callbacks remain fail-closed.
 Unknown calls list every supported remediation:
 
 - remove or rewrite the call;
-- include repository-owned implementation in the nearest TypeScript project;
-- expose an inspectable locked package implementation or audit an exact native callable with tested evidence;
-- document every actual possible effect with `@mutates`.
+- include repository-owned implementation in the nearest TypeScript project
+  (workspace dependency source resolves automatically through `/ts` subpaths);
+- expose an inspectable locked package implementation or audit an exact
+  external native callable with tested evidence;
+- document every actual possible effect with `@mutates` at the boundary
+  function containing the call.
 
 Never add `@mutates` for effects known to be absent.
 Move work to an ownership-known site,
@@ -80,7 +106,8 @@ or improve semantic proof instead.
 
 Exact global `String(value)` accepts primitive unions,
 `symbol`,
-and branded primitives.
+branded primitives,
+and statically plain structured data whose traversal is hook-free.
 Object-capable values may dispatch getters,
 proxy traps,
 `Symbol.toPrimitive`,
