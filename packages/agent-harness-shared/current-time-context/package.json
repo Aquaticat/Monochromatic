@@ -1,22 +1,20 @@
 {
   "license": "LGPL-3.0-or-later",
-  "name": "@monochromatic-dev/module-terminal-title",
-  "description": "Shared terminal title formatting helpers for agent harness integrations.",
+  "name": "@monochromatic-dev/agent-harness-shared-current-time-context",
+  "description": "Formatter for hidden current local wall-clock time context payloads.",
   "type": "module",
   "version": "0.0.1",
   "private": false,
-  "module": "dist/final/node/index.mjs",
+  "module": "dist/final/neutral/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/final/node/index.d.mts",
-      "default": "./dist/final/node/index.mjs"
+      "types": "./dist/final/neutral/index.d.mts",
+      "default": "./dist/final/neutral/index.mjs"
     },
-    "./ts": "./src/index.ts"
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
   },
-  "dependencies": {
-    "@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer": "workspace:*",
-    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
@@ -32,7 +30,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/agent-harnesses-shared/terminal-title"
+    "directory": "packages/agent-harness-shared/current-time-context"
   },
   "publishConfig": {
     "access": "public",

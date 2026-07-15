@@ -9,7 +9,7 @@ import {
   staticTitleEntry,
   textTitleEntry,
   type ToolTitleEntry,
-} from '@monochromatic-dev/module-terminal-title/ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 /**
  * Built-in tool names held in the extended registry segment.

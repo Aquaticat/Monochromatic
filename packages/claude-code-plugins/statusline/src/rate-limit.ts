@@ -9,7 +9,7 @@ import {
   type RateLimitSnapshot,
   type RateLimitStatus,
   type RateLimitStyle,
-} from '@monochromatic-dev/agent-harnesses-shared-usage-projection/ts';
+} from '@monochromatic-dev/agent-harness-shared-usage-projection/ts';
 
 import {
   GREEN,

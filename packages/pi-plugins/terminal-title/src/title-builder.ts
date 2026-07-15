@@ -12,7 +12,7 @@ import {
   buildToolTitle,
   type ToolTitleInput,
   type ToolTitleTense,
-} from '@monochromatic-dev/module-terminal-title/ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 import { TOOL_TITLES, } from './tool-titles.ts';
 
 /**

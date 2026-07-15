@@ -4,7 +4,7 @@ Status:
  decided roadmap,
  partially executing.
 The `current-time-context` shared formatter path move has landed under
-`packages/agent-harnesses-shared/current-time-context`.
+`packages/agent-harness-shared/current-time-context`.
 Remaining package moves are recorded as decisions and sequencing.
 
 This plan explains how to apply the Rush-style two-level category model to this monorepo,
@@ -46,7 +46,7 @@ The plan recommends these near-term moves;
 the decision state section gives each one a status and a first action.
 
 - Keep `packages/claude-code-plugins/*` as the template for a healthy product or host cluster.
-- Keep `packages/agent-harnesses-shared/*` for utilities shared by multiple agent harnesses;
+- Keep `packages/agent-harness-shared/*` for utilities shared by multiple agent harnesses;
   `current-time-context` lives there now.
 - Add a shared native core to `packages/music-player/*`,
    starting with `truepeak`.
@@ -70,7 +70,7 @@ the decision state section gives each one a status and a first action.
 ## Decision state
 
 Most package sets below are a near-term go.
-The `agent-harnesses-shared/current-time-context` move has landed;
+The `agent-harness-shared/current-time-context` move has landed;
 remaining entries document the roadmap.
 
 - `claude-code-plugins`:
@@ -304,7 +304,7 @@ Product,
   reusable Pi-extension infrastructure (currently only `model-selection`);
   a deliberate extension-versus-infrastructure boundary,
   kept separate from `pi`.
-- `agent-harnesses-shared`:
+- `agent-harness-shared`:
   utilities shared by multiple agent harness hosts;
   category name follows the shared suffix convention for cross-host agent infrastructure.
 - `figma`:
@@ -1321,25 +1321,25 @@ Only add `fixtures` if shared fixtures need an independent workspace boundary.
 Current relevant roots:
 
 ```text
-packages/agent-harnesses-shared/current-time-context/
+packages/agent-harness-shared/current-time-context/
 packages/pi-plugins/current-time-context/
 packages/claude-code-plugins/source/
 ```
 
-`packages/agent-harnesses-shared/current-time-context/README.md` says the package exists because Claude Code
+`packages/agent-harness-shared/current-time-context/README.md` says the package exists because Claude Code
 hooks and Pi extensions inject the same coarse local time context.
 The Pi extension consumes the shared package.
 Claude Code plugin logic lives in the Claude Code plugin source cluster.
 
 #### Recommendation
 
-Keep the shared formatter in `agent-harnesses-shared/current-time-context`.
+Keep the shared formatter in `agent-harness-shared/current-time-context`.
 It is host-neutral but specifically shared across agent harness hosts,
 so the shared suffix convention is more discoverable than the broad `module` bucket.
 Keep host adapters in their host categories:
 
 ```text
-packages/agent-harnesses-shared/current-time-context/
+packages/agent-harness-shared/current-time-context/
 packages/pi-plugins/current-time-context/
 packages/claude-code-plugins/source/
 ```
@@ -1354,7 +1354,7 @@ and `spawn` appears as `pi/spawn` and `claude-code-plugins/claude-spawn`.
 They share a concept but no code,
  and they bind to different host APIs,
 so each stays under its host cluster.
-Extract an `agent-harnesses-shared/` package only if real shared agent-harness logic emerges,
+Extract an `agent-harness-shared/` package only if real shared agent-harness logic emerges,
 as it did for `current-time-context`.
 
 ### Broad utility categories

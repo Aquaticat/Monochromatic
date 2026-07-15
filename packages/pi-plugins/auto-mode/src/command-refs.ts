@@ -7,4 +7,4 @@
 export {
   extractParamRefs,
   looksLikePath,
-} from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
+} from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';

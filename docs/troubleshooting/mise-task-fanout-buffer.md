@@ -12,7 +12,7 @@ spawnargs: [ 'tasks', '--all', '--hidden', '--json' ]
 The failing surface was:
 
 ```sh
-mise run //packages/agent-harnesses-shared/terminal-title:buildAndTest
+mise run //packages/agent-harness-shared/terminal-title:buildAndTest
 ```
 
 The failure happened before `tsdown` ran because the task fanout helper could not read
@@ -64,7 +64,7 @@ node --input-type=module --eval "import { execFileSync } from 'node:child_proces
 The workspace verification that originally failed now passes:
 
 ```sh
-cd /var/home/user/Monochromatic && mise run buildAndTest -- packages/agent-harnesses-shared/terminal-title/src/index.unit.test.ts
+cd /var/home/user/Monochromatic && mise run buildAndTest -- packages/agent-harness-shared/terminal-title/src/index.unit.test.ts
 # Build complete
 # PASS truncate, shortPath, stringField, field, pathFormat, quotedFormat, shortCommand,
 # stripCommandNoise, lookupToolTitleEntry, formatToolTitle, prefixedTitle
@@ -123,4 +123,4 @@ Nothing to file upstream.
   Yes,
   the workspace-side fix was applied in `mise.no-env.toml`,
   regenerated into `mise.toml`,
-  and verified with `mise run buildAndTest -- packages/agent-harnesses-shared/terminal-title/src/index.unit.test.ts`.
+  and verified with `mise run buildAndTest -- packages/agent-harness-shared/terminal-title/src/index.unit.test.ts`.

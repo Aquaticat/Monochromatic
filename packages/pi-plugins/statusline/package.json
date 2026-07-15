@@ -27,7 +27,7 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "dependencies": {
-    "@monochromatic-dev/agent-harnesses-shared-usage-projection": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-usage-projection": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"

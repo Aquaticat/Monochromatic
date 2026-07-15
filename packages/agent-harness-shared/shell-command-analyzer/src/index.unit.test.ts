@@ -13,7 +13,7 @@ import {
   analyzeShellCommand,
   extractParamRefs,
   looksLikePath,
-} from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer';
+} from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer';
 
 await describe({
   name: 'shell command analyzer',

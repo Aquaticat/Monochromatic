@@ -6,7 +6,7 @@
 
 import {
   SECONDS_PER_MINUTE,
-} from '@monochromatic-dev/agent-harnesses-shared-usage-projection/ts';
+} from '@monochromatic-dev/agent-harness-shared-usage-projection/ts';
 
 /**
  * Anthropic token rate-limit header window in seconds.
@@ -60,7 +60,7 @@ export {
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
   SECONDS_PER_WEEK,
-} from '@monochromatic-dev/agent-harnesses-shared-usage-projection/ts';
+} from '@monochromatic-dev/agent-harness-shared-usage-projection/ts';
 
 export { RATE_LIMIT_WINDOW_SECONDS, };
 
@@ -68,6 +68,6 @@ export type {
   RateLimitSnapshot,
   RateLimitStatus as UsageWarningStatus,
   RateLimitStyle as UsageWarningStyle,
-} from '@monochromatic-dev/agent-harnesses-shared-usage-projection/ts';
+} from '@monochromatic-dev/agent-harness-shared-usage-projection/ts';
 
 export type { RateLimitHeaderFamily, };

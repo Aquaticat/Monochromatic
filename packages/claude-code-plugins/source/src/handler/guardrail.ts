@@ -5,7 +5,7 @@ import type {
 import {
   BUN_TEST_BAN_REASON,
   invokesBunTest,
-} from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
+} from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 
 /**

@@ -447,7 +447,7 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/agent-harnesses-shared/current-time-context:
+  packages/agent-harness-shared/current-time-context:
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -465,9 +465,9 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/agent-harnesses-shared/session-discovery:
+  packages/agent-harness-shared/session-discovery:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shared-text-scan':
+      '@monochromatic-dev/agent-harness-shared-text-scan':
         specifier: workspace:*
         version: link:../text-scan
       '@monochromatic-dev/module-logger':
@@ -493,7 +493,7 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/agent-harnesses-shared/shell-command-analyzer:
+  packages/agent-harness-shared/shell-command-analyzer:
     dependencies:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
@@ -521,9 +521,9 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/agent-harnesses-shared/terminal-title:
+  packages/agent-harness-shared/terminal-title:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
+      '@monochromatic-dev/agent-harness-shared-shell-command-analyzer':
         specifier: workspace:*
         version: link:../shell-command-analyzer
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
@@ -546,7 +546,7 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/agent-harnesses-shared/text-scan:
+  packages/agent-harness-shared/text-scan:
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -564,7 +564,7 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/agent-harnesses-shared/usage-projection:
+  packages/agent-harness-shared/usage-projection:
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -717,27 +717,27 @@ importers:
 
   packages/claude-code-plugins/source:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shared-session-discovery':
+      '@monochromatic-dev/agent-harness-shared-current-time-context':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/session-discovery
-      '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
+        version: link:../../agent-harness-shared/current-time-context
+      '@monochromatic-dev/agent-harness-shared-session-discovery':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/shell-command-analyzer
-      '@monochromatic-dev/agent-harnesses-shared-text-scan':
+        version: link:../../agent-harness-shared/session-discovery
+      '@monochromatic-dev/agent-harness-shared-shell-command-analyzer':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/text-scan
+        version: link:../../agent-harness-shared/shell-command-analyzer
+      '@monochromatic-dev/agent-harness-shared-terminal-title':
+        specifier: workspace:*
+        version: link:../../agent-harness-shared/terminal-title
+      '@monochromatic-dev/agent-harness-shared-text-scan':
+        specifier: workspace:*
+        version: link:../../agent-harness-shared/text-scan
       '@monochromatic-dev/claude-code-plugins-hook-types':
         specifier: workspace:*
         version: link:../hook-types
-      '@monochromatic-dev/module-current-time-context':
-        specifier: workspace:*
-        version: link:../../agent-harnesses-shared/current-time-context
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
-      '@monochromatic-dev/module-terminal-title':
-        specifier: workspace:*
-        version: link:../../agent-harnesses-shared/terminal-title
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -760,9 +760,9 @@ importers:
 
   packages/claude-code-plugins/statusline:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shared-usage-projection':
+      '@monochromatic-dev/agent-harness-shared-usage-projection':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/usage-projection
+        version: link:../../agent-harness-shared/usage-projection
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -2999,9 +2999,9 @@ importers:
 
   packages/pi-plugins/auto-mode:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
+      '@monochromatic-dev/agent-harness-shared-shell-command-analyzer':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/shell-command-analyzer
+        version: link:../../agent-harness-shared/shell-command-analyzer
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../../module/caught-value
@@ -3045,9 +3045,9 @@ importers:
 
   packages/pi-plugins/current-time-context:
     dependencies:
-      '@monochromatic-dev/module-current-time-context':
+      '@monochromatic-dev/agent-harness-shared-current-time-context':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/current-time-context
+        version: link:../../agent-harness-shared/current-time-context
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed
@@ -3070,9 +3070,9 @@ importers:
 
   packages/pi-plugins/guardrail:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer':
+      '@monochromatic-dev/agent-harness-shared-shell-command-analyzer':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/shell-command-analyzer
+        version: link:../../agent-harness-shared/shell-command-analyzer
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../../module/caught-value
@@ -3169,12 +3169,12 @@ importers:
 
   packages/pi-plugins/spawn:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shared-session-discovery':
+      '@monochromatic-dev/agent-harness-shared-session-discovery':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/session-discovery
-      '@monochromatic-dev/agent-harnesses-shared-text-scan':
+        version: link:../../agent-harness-shared/session-discovery
+      '@monochromatic-dev/agent-harness-shared-text-scan':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/text-scan
+        version: link:../../agent-harness-shared/text-scan
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -3206,9 +3206,9 @@ importers:
 
   packages/pi-plugins/statusline:
     dependencies:
-      '@monochromatic-dev/agent-harnesses-shared-usage-projection':
+      '@monochromatic-dev/agent-harness-shared-usage-projection':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/usage-projection
+        version: link:../../agent-harness-shared/usage-projection
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../../module/caught-value
@@ -3237,9 +3237,9 @@ importers:
 
   packages/pi-plugins/terminal-title:
     dependencies:
-      '@monochromatic-dev/module-terminal-title':
+      '@monochromatic-dev/agent-harness-shared-terminal-title':
         specifier: workspace:*
-        version: link:../../agent-harnesses-shared/terminal-title
+        version: link:../../agent-harness-shared/terminal-title
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed

@@ -1,7 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
-  "name": "@monochromatic-dev/agent-harnesses-shared-session-discovery",
-  "description": "Shared process-tree and PID-directory session discovery for agent harness spawners.",
+  "name": "@monochromatic-dev/agent-harness-shared-shell-command-analyzer",
+  "description": "Shared unbash-backed shell command analyzer for agent harness guardrails.",
   "type": "module",
   "version": "0.0.1",
   "private": false,
@@ -15,9 +15,9 @@
     "./ts/*": "./src/*"
   },
   "dependencies": {
-    "@monochromatic-dev/agent-harnesses-shared-text-scan": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
+    "unbash": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
@@ -34,7 +34,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/agent-harnesses-shared/session-discovery"
+    "directory": "packages/agent-harness-shared/shell-command-analyzer"
   },
   "publishConfig": {
     "access": "public",

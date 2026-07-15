@@ -8,7 +8,7 @@ Status:
 
 Remove duplicated logic between `packages/pi-plugins/*` and
 `packages/claude-code-plugins/*` by lifting genuinely shared agent-harness logic
-into `packages/agent-harnesses-shared/*`,
+into `packages/agent-harness-shared/*`,
 following the pattern already proven there three times.
 Host-specific adapters and protocol types stay in their host clusters.
 
@@ -21,7 +21,7 @@ two clusters:
 > `claude-code-plugins/`, and `spawn` appears as `pi/spawn` and
 > `claude-code-plugins/claude-spawn`. They share a concept but no code, and they
 > bind to different host APIs, so each stays under its host cluster. Extract an
-> `agent-harnesses-shared/` package only if real shared agent-harness logic
+> `agent-harness-shared/` package only if real shared agent-harness logic
 > emerges, as it did for `current-time-context`.
 
 The bar is **real shared agent-harness logic emerged**, not "same concept."
@@ -42,25 +42,25 @@ defect to fix:
 
 ## Current state inventory
 
-The DRY vehicle already exists at `packages/agent-harnesses-shared/` with three
+The DRY vehicle already exists at `packages/agent-harness-shared/` with three
 shared packages, each consumed by both clusters:
 
-- `agent-harnesses-shared/terminal-title`
-  (`@monochromatic-dev/module-terminal-title`):
+- `agent-harness-shared/terminal-title`
+  (`@monochromatic-dev/agent-harness-shared-terminal-title`):
   consumed by `packages/pi-plugins/terminal-title` and
   `packages/claude-code-plugins/source`.
   Both sides are reduced to a host adapter table mapping tool names
   (`bash`/`Bash`, `read`/`Read`) to shared `ToolTitleEntry` builders.
   DRY complete.
-- `agent-harnesses-shared/current-time-context`
-  (`@monochromatic-dev/module-current-time-context`):
+- `agent-harness-shared/current-time-context`
+  (`@monochromatic-dev/agent-harness-shared-current-time-context`):
   consumed by `packages/pi-plugins/current-time-context` (a thin
   `pi.on('before_agent_start')` wrapper) and
   `packages/claude-code-plugins/source` (the `prompt-time` handler re-exports
   the same `formatTimeContext`).
   DRY complete.
-- `agent-harnesses-shared/shell-command-analyzer`
-  (`@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer`):
+- `agent-harness-shared/shell-command-analyzer`
+  (`@monochromatic-dev/agent-harness-shared-shell-command-analyzer`):
   consumed by `packages/pi-plugins/guardrail`,
   `packages/pi-plugins/auto-mode`, and
   `packages/claude-code-plugins/source` (guardrail).
@@ -68,7 +68,7 @@ shared packages, each consumed by both clusters:
   Shell-command parsing DRY complete.
 
 Established pattern, proven three times:
-shared pure-logic module in `agent-harnesses-shared/` plus thin host adapters
+shared pure-logic module in `agent-harness-shared/` plus thin host adapters
 that own the protocol boundary (event shape in, decision shape out) and the
 tool-name or input-field vocabulary.
 
@@ -163,9 +163,9 @@ through the new entry, require byte-equal stdout).
 
 This adds no new package, but first renames the existing package to fix its
 known naming mistake.
-The path stays `packages/agent-harnesses-shared/shell-command-analyzer`; the
+The path stays `packages/agent-harness-shared/shell-command-analyzer`; the
 package name becomes
-`@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer`.
+`@monochromatic-dev/agent-harness-shared-shell-command-analyzer`.
 `invokesBunTest` is a predicate over `analyzeShellCommand` output, so it belongs
 alongside `extractParamRefs` and `looksLikePath` in that existing shared package,
 which is already a dependency of both guardrails.
@@ -173,13 +173,13 @@ which is already a dependency of both guardrails.
 Steps:
 
 1. Rename the package in
-   `packages/agent-harnesses-shared/shell-command-analyzer/package.json` and all
+   `packages/agent-harness-shared/shell-command-analyzer/package.json` and all
    workspace dependency/import sites from
    `@monochromatic-dev/agent-harnesses-shell-command-analyzer` to
-   `@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer`.
+   `@monochromatic-dev/agent-harness-shared-shell-command-analyzer`.
    Run the affected package type checks and commit the pure rename separately.
 2. Add `invokesBunTest(command)` and `BUN_TEST_BAN_REASON` to
-   `packages/agent-harnesses-shared/shell-command-analyzer/src/`, exported from
+   `packages/agent-harness-shared/shell-command-analyzer/src/`, exported from
    its `src/index.ts`, with unit tests.
 3. Commit as a standalone, verified, green-tree addition.
 4. Migrate `packages/pi-plugins/guardrail/src/bash-guard.ts` to import
@@ -199,7 +199,7 @@ and in `packages/claude-code-plugins/source/src/handlers/guardrail.ts` as
 `BUN_TEST_DENY_OUTPUT.permissionDecisionReason`). Dedup it.
 Co-locate the reason with the predicate that detects the violation:
 export a `BUN_TEST_BAN_REASON` constant from
-`@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer` alongside
+`@monochromatic-dev/agent-harness-shared-shell-command-analyzer` alongside
 `invokesBunTest`.
 Both guardrails import the predicate and the reason as a pair.
 Each host still wraps the reason in its own protocol-specific deny shape
@@ -217,7 +217,7 @@ new package.
 Highest payoff.
 Two related lifts.
 
-### E2a: `agent-harnesses-shared/session-discovery`
+### E2a: `agent-harness-shared/session-discovery`
 
 Decision:
 extract, with a generic interface.
@@ -225,7 +225,7 @@ Path name:
 `session-discovery`, not `spawn-session-finder`, because the concept is
 "resolve the calling agent session," which spawn consumes but does not own.
 Package name:
-`@monochromatic-dev/agent-harnesses-shared-session-discovery`.
+`@monochromatic-dev/agent-harness-shared-session-discovery`.
 
 The mechanism (procfs parent walk, `.by-pid/` directory scan, newest-mtime
 fallback, tree-then-fallback composition) is deep and identical across both
@@ -236,7 +236,7 @@ adapters.
 Generic interface:
 
 ```ts
-// packages/agent-harnesses-shared/session-discovery
+// packages/agent-harness-shared/session-discovery
 type SessionDiscoveryIo = {
   readonly readParentPid?: (pid: number) => Promise<number | typeof SESSION_NOT_FOUND>;
   readonly readDir?: (path: string) => Promise<readonly string[]>;
@@ -279,7 +279,7 @@ Reconcile the four divergences found during verification:
    the rest.
 
 Steps follow the additive-first discipline:
-add `packages/agent-harnesses-shared/session-discovery` with tests, generic
+add `packages/agent-harness-shared/session-discovery` with tests, generic
 over `TMapping`;
 migrate `packages/pi-plugins/spawn/src/session-finder.ts` to a host adapter
 that resolves `byPidDir` and supplies the pi `PidMapping` parser;
@@ -295,8 +295,8 @@ Delete each host's local copies of the shared functions once migrated.
 #### E2b: text-scan placement
 
 Decision:
-land in `packages/agent-harnesses-shared/text-scan` as a holding place.
-The package name is `@monochromatic-dev/agent-harnesses-shared-text-scan`.
+land in `packages/agent-harness-shared/text-scan` as a holding place.
+The package name is `@monochromatic-dev/agent-harness-shared-text-scan`.
 It builds as a neutral TypeScript package because the implementation is pure
 string scanning with no Node APIs.
 The corrected shell-command-analyzer package name includes the `shared` segment;
@@ -312,7 +312,7 @@ Tracked in GitHub issue #276:
 split the primitives into purposeful `packages/module/` packages organized by
 concern (character classification, token splitting, word-boundary phrase
 lookup, delimiter-range stripping), migrate consumers, then delete
-`agent-harnesses-shared/text-scan`.
+`agent-harness-shared/text-scan`.
 Act on #276 once a non-harness consumer appears or once the generic name starts
 hiding distinct concepts.
 
@@ -346,8 +346,8 @@ Claude Code plugins cannot contribute a main `statusLine` setting.
 It remains installed through user-scope Claude settings, not through
 `.claude-plugin/plugin.json`.
 
-Lift into `packages/agent-harnesses-shared/usage-projection` as
-`@monochromatic-dev/agent-harnesses-shared-usage-projection`:
+Lift into `packages/agent-harness-shared/usage-projection` as
+`@monochromatic-dev/agent-harness-shared-usage-projection`:
 `RateLimitSnapshot`, the unified rate-limit segment formatter, projected-overrun
 computation, the `→N%` marker rendering, relative-time formatting, severity
 selection, and threshold constants.
@@ -368,7 +368,7 @@ reader that builds snapshots from the statusline JSON. Both feed the shared
 formatter.
 
 Sizing:
-a dedicated `agent-harnesses-shared/usage-projection` package is justified
+a dedicated `agent-harness-shared/usage-projection` package is justified
 because the projection model, formatter, marker, severity policy, style seam, and
 threshold set are substantial enough not to fold into another shared package.
 
@@ -432,25 +432,25 @@ All resolved during grilling:
 
 - E1:
   first rename the existing package to
-  `@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer`, then fold
+  `@monochromatic-dev/agent-harness-shared-shell-command-analyzer`, then fold
   `invokesBunTest` plus the byte-identical ban prose (as `BUN_TEST_BAN_REASON`)
   into it.
 - E2a:
-  extract as `agent-harnesses-shared/session-discovery` with package name
-  `@monochromatic-dev/agent-harnesses-shared-session-discovery`, generic over the
+  extract as `agent-harness-shared/session-discovery` with package name
+  `@monochromatic-dev/agent-harness-shared-session-discovery`, generic over the
   host `PidMapping`; adopt pi's env-injection, claude's `Promise.all`
   stat-plus-read concurrency, iterative tree walk, injectable fake-IO seams, and
   adapter plus CLI-oriented verification.
 - E2b:
-  land in `agent-harnesses-shared/text-scan` with package name
-  `@monochromatic-dev/agent-harnesses-shared-text-scan` as a neutral holding
+  land in `agent-harness-shared/text-scan` with package name
+  `@monochromatic-dev/agent-harness-shared-text-scan` as a neutral holding
   package; lift the Claude superset; delete Pi's local `text-scan.ts` after
   direct imports; long-term split into purposeful `packages/module/` packages
   tracked in GitHub issue #276.
 - E3:
   make `packages/claude-code-plugins/statusline` a real package named
   `@monochromatic-dev/claude-code-plugins-statusline`; extract the unified full
-  formatter as `@monochromatic-dev/agent-harnesses-shared-usage-projection`;
+  formatter as `@monochromatic-dev/agent-harness-shared-usage-projection`;
   adopt the Claude remaining-capacity-or-projection policy for both hosts;
   use separate sample and render times plus host style callbacks.
 - Sequencing:

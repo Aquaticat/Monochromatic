@@ -9,7 +9,7 @@ import {
   formatRateLimitStatus,
   formatRelativeTime as formatSharedRelativeTime,
   projectUsagePercent as projectSharedUsagePercent,
-} from '@monochromatic-dev/agent-harnesses-shared-usage-projection/ts';
+} from '@monochromatic-dev/agent-harness-shared-usage-projection/ts';
 
 import { parseRateLimitSnapshots, } from './rate-limit-headers.ts';
 import type {

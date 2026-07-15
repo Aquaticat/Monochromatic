@@ -2,9 +2,9 @@
 
 Formatter for hidden current local wall-clock time context payloads.
 
-This package lives under `packages/agent-harnesses-shared/` because it is shared
+This package lives under `packages/agent-harness-shared/` because it is shared
 by multiple agent harness integrations.
-It is currently published as `@monochromatic-dev/module-current-time-context`;
+It is currently published as `@monochromatic-dev/agent-harness-shared-current-time-context`;
 the path move is separate from any package-name migration.
 
 The package exports `formatTimeContext()`,
@@ -32,7 +32,7 @@ It zero-pads hour and minute and omits seconds,
 ```ts
 import {
   formatTimeContext,
-} from '@monochromatic-dev/module-current-time-context';
+} from '@monochromatic-dev/agent-harness-shared-current-time-context';
 
 formatTimeContext(new Date(2_026, 4, 1, 20, 48,),);
 // '<time>20:48</time>'
@@ -43,6 +43,6 @@ formatTimeContext(new Date(2_026, 4, 1, 20, 48,),);
 Run package validation from the repository root:
 
 ```sh
-mise run //packages/agent-harnesses-shared/current-time-context:test:unit
-mise run //packages/agent-harnesses-shared/current-time-context:lint
+mise run //packages/agent-harness-shared/current-time-context:test:unit
+mise run //packages/agent-harness-shared/current-time-context:lint
 ```

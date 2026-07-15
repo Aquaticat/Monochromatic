@@ -1,8 +1,8 @@
-# agent-harnesses-shared-text-scan
+# agent-harness-shared-text-scan
 
 Regex-free text-scanning helpers shared by agent harness integrations.
 
-This package lives under `packages/agent-harnesses-shared/` because current
+This package lives under `packages/agent-harness-shared/` because current
 consumers are Pi and Claude Code plugin code paths.
 It is a holding package for the DRY extraction in
 `docs/planning/dry-pi-plugins-claude-code-plugins.md`.
@@ -33,7 +33,7 @@ The package exports:
 ```ts
 import {
   splitWhitespace,
-} from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
+} from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
 
 splitWhitespace('  a b  ');
 // ['a', 'b']
@@ -44,6 +44,6 @@ splitWhitespace('  a b  ');
 Run package validation from the repository root:
 
 ```sh
-mise run //packages/agent-harnesses-shared/text-scan:test:unit
-mise run //packages/agent-harnesses-shared/text-scan:lint
+mise run //packages/agent-harness-shared/text-scan:test:unit
+mise run //packages/agent-harness-shared/text-scan:lint
 ```

@@ -12,7 +12,7 @@ import {
   containsAnyOfWordBounded,
   isWhitespace,
   PHRASE_NOT_FOUND,
-} from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
+} from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
 import { lineHasCitation, } from './uncertainty-citations.ts';
 import {
   containsErThanMost,

@@ -6,7 +6,7 @@
 
 import {
   formatTimeContext as sharedFormatTimeContext,
-} from '@monochromatic-dev/module-current-time-context/ts';
+} from '@monochromatic-dev/agent-harness-shared-current-time-context/ts';
 
 //region Formatting
 

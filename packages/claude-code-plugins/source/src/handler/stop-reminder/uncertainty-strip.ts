@@ -11,7 +11,7 @@
 import {
   stripBetweenDelims,
   stripLinesStartingWith,
-} from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
+} from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
 
 /**
  * Strips fenced code blocks (triple-backtick) so uncertainty scans don't

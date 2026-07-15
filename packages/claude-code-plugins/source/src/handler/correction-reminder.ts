@@ -7,7 +7,7 @@ import type { ReadonlyDeep, } from 'type-fest';
 import {
   containsAnyOfWordBounded,
   PHRASE_NOT_FOUND,
-} from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
+} from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
 
 //region Patterns
 

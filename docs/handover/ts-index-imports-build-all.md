@@ -145,7 +145,7 @@ Commits on the branch (newest last):
   `module-or-throw`,
    `module-const`,
    `module-async-time`,
-   `module-current-time-context`,
+   `agent-harness-shared-current-time-context` (renamed from `module-current-time-context`),
    `module-numeric-format`,
   `module-function-arity`,
    `module-i18n-compose`,
@@ -335,7 +335,7 @@ types GREEN after each):
    `module-or-throw`,
    `module-const`,
    `module-async-time`,
-  `module-current-time-context`,
+  `agent-harness-shared-current-time-context` (renamed from `module-current-time-context`),
    `module-numeric-format`,
    `module-toml-edit`,
    `mcp-stdio`,
@@ -660,7 +660,7 @@ Everything imports `/ts`,
 - `module-function-arity` (`test:unit`;
    test already by-name,
    NO test edit) — `build(module-function-arity): produce neutral dist`.
-- `module-current-time-context` (`test:unit`;
+- `agent-harness-shared-current-time-context` (`test:unit`;
    1 test switched to by-name) — `build(module-current-time-context): produce neutral dist`.
 - `module-numeric-format` (custom `test` aggregator;
    3 leaf tests switched to by-name;

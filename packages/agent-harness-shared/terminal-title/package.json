@@ -1,20 +1,22 @@
 {
   "license": "LGPL-3.0-or-later",
-  "name": "@monochromatic-dev/agent-harnesses-shared-usage-projection",
-  "description": "Shared usage projection and rate-limit segment formatting for agent harness statuslines.",
+  "name": "@monochromatic-dev/agent-harness-shared-terminal-title",
+  "description": "Shared terminal title formatting helpers for agent harness integrations.",
   "type": "module",
   "version": "0.0.1",
   "private": false,
-  "module": "dist/final/neutral/index.mjs",
+  "module": "dist/final/node/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/final/neutral/index.d.mts",
-      "default": "./dist/final/neutral/index.mjs"
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
     },
-    "./ts": "./src/index.ts",
-    "./ts/*": "./src/*"
+    "./ts": "./src/index.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@monochromatic-dev/agent-harness-shared-shell-command-analyzer": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
+  },
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
@@ -30,7 +32,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/agent-harnesses-shared/usage-projection"
+    "directory": "packages/agent-harness-shared/terminal-title"
   },
   "publishConfig": {
     "access": "public",

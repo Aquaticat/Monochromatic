@@ -17,7 +17,7 @@ import {
 import {
   MAX_TERMINAL_TITLE_UTF8_BYTES,
   terminalTitleUtf8ByteLength,
-} from '@monochromatic-dev/module-terminal-title/ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 //region Mock infrastructure
 

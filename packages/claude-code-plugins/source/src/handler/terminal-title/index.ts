@@ -8,7 +8,7 @@ import {
   buildToolTitle,
   safeTerminalTitlePayload,
   terminalTitlePath,
-} from '@monochromatic-dev/module-terminal-title/ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 import { open, } from 'node:fs/promises';

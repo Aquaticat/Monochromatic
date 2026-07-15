@@ -1,9 +1,9 @@
-# agent-harnesses-shared-session-discovery
+# agent-harness-shared-session-discovery
 
 Shared process-tree and PID-directory session discovery for agent harness
 spawners.
 
-This package lives under `packages/agent-harnesses-shared/` because Pi spawn and
+This package lives under `packages/agent-harness-shared/` because Pi spawn and
 Claude Code spawn both resolve the calling parent session with the same deep
 mechanism:
 walk parent PIDs,
@@ -32,7 +32,7 @@ and tree-then-fallback composition.
 import {
   findCallingSession,
   SESSION_NOT_FOUND,
-} from '@monochromatic-dev/agent-harnesses-shared-session-discovery/ts';
+} from '@monochromatic-dev/agent-harness-shared-session-discovery/ts';
 
 const mapping = await findCallingSession({
   byPidDir: '/tmp/spawn-results/.by-pid',
@@ -49,6 +49,6 @@ if (mapping === SESSION_NOT_FOUND)
 Run package validation from the repository root:
 
 ```sh
-mise run //packages/agent-harnesses-shared/session-discovery:test:unit
-mise run //packages/agent-harnesses-shared/session-discovery:lint
+mise run //packages/agent-harness-shared/session-discovery:test:unit
+mise run //packages/agent-harness-shared/session-discovery:lint
 ```

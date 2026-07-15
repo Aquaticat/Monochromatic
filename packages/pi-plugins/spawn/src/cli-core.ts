@@ -8,7 +8,7 @@ import type {
   PidMapping,
   SpawnState,
 } from './paths.ts';
-import { splitWhitespace, } from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
+import { splitWhitespace, } from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
 
 //region Constants
 

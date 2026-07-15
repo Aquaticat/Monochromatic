@@ -25,7 +25,7 @@ import type {
   SessionShutdownEvent,
   SessionStartEvent,
 } from '@earendil-works/pi-coding-agent';
-import { safeTerminalTitlePayload, } from '@monochromatic-dev/module-terminal-title/ts';
+import { safeTerminalTitlePayload, } from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { titleForEvent, } from './title-builder.ts';
 

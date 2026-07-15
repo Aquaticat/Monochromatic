@@ -7,7 +7,7 @@
 import {
   BUN_TEST_BAN_REASON,
   invokesBunTest,
-} from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
+} from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';
 import {
   GUARDRAIL_NOT_BLOCKED,
   type GuardrailDecision,

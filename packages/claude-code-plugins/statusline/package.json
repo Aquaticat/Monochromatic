@@ -23,7 +23,7 @@
     "src"
   ],
   "dependencies": {
-    "@monochromatic-dev/agent-harnesses-shared-usage-projection": "workspace:*"
+    "@monochromatic-dev/agent-harness-shared-usage-projection": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",

@@ -15,7 +15,7 @@
  *   buildToolTerminalTitle,
  *   pathTitleEntry,
  *   safeTerminalTitlePayload,
- * } from '@monochromatic-dev/module-terminal-title';
+ * } from '@monochromatic-dev/agent-harness-shared-terminal-title';
  * ```
  *
  * @packageDocumentation

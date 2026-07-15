@@ -4,7 +4,7 @@
  * @module
  */
 
-import { splitWhitespace, } from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
+import { splitWhitespace, } from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { readTextFile, } from './io.ts';

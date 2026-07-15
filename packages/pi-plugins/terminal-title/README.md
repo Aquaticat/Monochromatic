@@ -74,4 +74,4 @@ src/
   tool-titles.ts     # Tool name to title-entry registry using pi tool names
 ```
 
-Shared terminal-title engine helpers live in `@monochromatic-dev/module-terminal-title`.
+Shared terminal-title engine helpers live in `@monochromatic-dev/agent-harness-shared-terminal-title`.

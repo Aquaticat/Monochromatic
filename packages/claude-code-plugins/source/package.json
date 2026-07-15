@@ -28,13 +28,13 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@monochromatic-dev/agent-harnesses-shared-session-discovery": "workspace:*",
-    "@monochromatic-dev/agent-harnesses-shared-text-scan": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-session-discovery": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-text-scan": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
-    "@monochromatic-dev/module-current-time-context": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-current-time-context": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/module-terminal-title": "workspace:*",
-    "@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-terminal-title": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-shell-command-analyzer": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",
     "type-fest": "catalog:"

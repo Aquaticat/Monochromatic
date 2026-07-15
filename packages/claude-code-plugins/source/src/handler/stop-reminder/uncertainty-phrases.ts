@@ -6,7 +6,7 @@
  * @module
  */
 
-import { isWordChar, } from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
+import { isWordChar, } from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
 
 //region Apostrophe normalisation
 

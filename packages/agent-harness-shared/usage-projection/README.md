@@ -1,4 +1,4 @@
-# agent-harnesses-shared-usage-projection
+# agent-harness-shared-usage-projection
 
 Shared rate-limit usage projection and statusline segment formatting for agent harness integrations.
 
@@ -22,7 +22,7 @@ They convert host data into `RateLimitSnapshot` values and pass host style callb
 import {
   PLAIN_RATE_LIMIT_STYLE,
   formatRateLimitStatus,
-} from '@monochromatic-dev/agent-harnesses-shared-usage-projection/ts';
+} from '@monochromatic-dev/agent-harness-shared-usage-projection/ts';
 
 const status = formatRateLimitStatus({
   snapshots: [
@@ -46,7 +46,7 @@ const status = formatRateLimitStatus({
 Run package validation from the repository root:
 
 ```sh
-mise run //packages/agent-harnesses-shared/usage-projection:lint
-mise run //packages/agent-harnesses-shared/usage-projection:test:unit
-mise run //packages/agent-harnesses-shared/usage-projection:build
+mise run //packages/agent-harness-shared/usage-projection:lint
+mise run //packages/agent-harness-shared/usage-projection:test:unit
+mise run //packages/agent-harness-shared/usage-projection:build
 ```

@@ -4,7 +4,7 @@ import type {
 } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 
-import { formatTimeContext, } from '@monochromatic-dev/module-current-time-context/ts';
+import { formatTimeContext, } from '@monochromatic-dev/agent-harness-shared-current-time-context/ts';
 
 /**
  * Output of the prompt-time handler, a {@link UserPromptSubmitOutput}.
@@ -89,7 +89,7 @@ function promptTimeWriter(output: PromptTimeOutput,): string {
 
 export type { PromptTimeOutput, };
 
-export { formatTimeContext, } from '@monochromatic-dev/module-current-time-context/ts';
+export { formatTimeContext, } from '@monochromatic-dev/agent-harness-shared-current-time-context/ts';
 
 export {
   promptTimeHandler,

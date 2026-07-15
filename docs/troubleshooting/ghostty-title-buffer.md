@@ -102,7 +102,7 @@ Repository verification for the workaround:
 
 ```sh
 cd /var/home/user/Monochromatic
-mise run //packages/agent-harnesses-shared/terminal-title:buildAndTest
+mise run //packages/agent-harness-shared/terminal-title:buildAndTest
 mise run //packages/pi-plugins/terminal-title:test:unit
 mise run //packages/claude-code-plugins/source:test:unit
 ```
@@ -118,11 +118,11 @@ and existing short-title behavior.
 
 ### Cap final title payload text to 255 UTF-8 bytes
 
-Use `safeTerminalTitlePayload()` from `@monochromatic-dev/module-terminal-title/ts`
+Use `safeTerminalTitlePayload()` from `@monochromatic-dev/agent-harness-shared-terminal-title/ts`
 at the final terminal-title output boundary:
 
 ```ts
-import { safeTerminalTitlePayload } from '@monochromatic-dev/module-terminal-title/ts';
+import { safeTerminalTitlePayload } from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 const payload = safeTerminalTitlePayload({ value: title });
 ```

@@ -24,7 +24,7 @@
     "src"
   ],
   "dependencies": {
-    "@monochromatic-dev/module-terminal-title": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-terminal-title": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
   },
   "peerDependencies": {

@@ -27,13 +27,13 @@ import {
   pathTitleEntry,
   safeTerminalTitlePayload,
   shellCommandTitleEntry,
-} from '@monochromatic-dev/module-terminal-title';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title';
 ```
 
 Source imports are also available for workspace packages:
 
 ```ts
-import { buildToolTitle } from '@monochromatic-dev/module-terminal-title/ts';
+import { buildToolTitle } from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 ```
 
 ## Engine shape
@@ -44,7 +44,7 @@ import {
   pathTitleEntry,
   shellCommandTitleEntry,
   type ToolTitleRegistry,
-} from '@monochromatic-dev/module-terminal-title/ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 const registry: ToolTitleRegistry = {
   bash: shellCommandTitleEntry({ field: 'command' }),
@@ -74,7 +74,7 @@ The helper replaces OSC-breaking controls with visible control pictures,
 then caps payload text to 255 UTF-8 bytes by default.
 
 ```ts
-import { safeTerminalTitlePayload } from '@monochromatic-dev/module-terminal-title/ts';
+import { safeTerminalTitlePayload } from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 const payload = safeTerminalTitlePayload({ value: title });
 ```

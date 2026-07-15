@@ -12,7 +12,7 @@ import {
   findCallingSession as findSharedCallingSession,
   SESSION_NOT_FOUND as SHARED_SESSION_NOT_FOUND,
   walkProcessTreeFrom as walkSharedProcessTreeFrom,
-} from '@monochromatic-dev/agent-harnesses-shared-session-discovery/ts';
+} from '@monochromatic-dev/agent-harness-shared-session-discovery/ts';
 
 import {
   byPidDir,

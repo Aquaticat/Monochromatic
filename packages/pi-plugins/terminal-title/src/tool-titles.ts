@@ -13,7 +13,7 @@ import {
   shellCommandTitleEntry,
   textTitleEntry,
   type ToolTitleEntry,
-} from '@monochromatic-dev/module-terminal-title/ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 /**
  * Tool title entries for pi built-in tools.
@@ -80,4 +80,4 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
 
 export { TOOL_TITLES, };
 
-export type { ToolTitleEntry, } from '@monochromatic-dev/module-terminal-title/ts';
+export type { ToolTitleEntry, } from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';

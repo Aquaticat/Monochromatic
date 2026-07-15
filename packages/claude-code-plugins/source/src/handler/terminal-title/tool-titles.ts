@@ -11,7 +11,7 @@ import {
   shellCommandTitleEntry,
   textTitleEntry,
   type ToolTitleEntry,
-} from '@monochromatic-dev/module-terminal-title/ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 import type { BuiltInToolName, } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import { EXTENDED_TOOL_TITLES, } from './tool-titles-extended.ts';
 import { SEARCH_TOOL_TITLES, } from './tool-titles-search.ts';
@@ -94,6 +94,6 @@ const TOOL_TITLES: Record<BuiltInToolName, ToolTitleEntry> = {
   ...EXTENDED_TOOL_TITLES,
 };
 
-export type { ToolTitleEntry, } from '@monochromatic-dev/module-terminal-title/ts';
+export type { ToolTitleEntry, } from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 export { TOOL_TITLES, };

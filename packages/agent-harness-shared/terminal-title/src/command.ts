@@ -4,7 +4,7 @@
  * @module
  */
 
-import { analyzeShellCommand, } from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
+import { analyzeShellCommand, } from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';
 import {
   commandTokensFromInfo,
   formatCommandTokens,

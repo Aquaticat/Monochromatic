@@ -27,7 +27,7 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "dependencies": {
-    "@monochromatic-dev/module-current-time-context": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-current-time-context": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
   },
   "devDependencies": {

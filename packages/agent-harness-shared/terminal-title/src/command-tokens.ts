@@ -4,7 +4,7 @@
  * @module
  */
 
-import type { ShellCommandInfo, } from '@monochromatic-dev/agent-harnesses-shared-shell-command-analyzer/ts';
+import type { ShellCommandInfo, } from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';
 
 //region Token model
 

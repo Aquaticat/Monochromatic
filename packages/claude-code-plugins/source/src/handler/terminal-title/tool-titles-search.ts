@@ -12,7 +12,7 @@ import {
   TOOL_TITLE_TEXT_MISSING,
   type ToolTitleEntry,
   type ToolTitleInput,
-} from '@monochromatic-dev/module-terminal-title/ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 //region AskUserQuestion helpers
 
