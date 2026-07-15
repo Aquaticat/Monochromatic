@@ -1011,24 +1011,26 @@ function mirrorDestinationPath(
  *
  * @param skills - canonical file-enforcer glob results.
  *
- * @param manifest - current canonical path and hash mapping.
+ * @param canonicalPaths - current canonical paths used to identify removed mirrors.
  *
- * @mutates manifest through `JSON.stringify` serialization hooks
+ * @param manifestText - serialized current ownership manifest.
  *
  * @example
  * ```ts
- * await mirrorSkillsToDestination({ destinationRoot, skills, manifest, });
+ * await mirrorSkillsToDestination({ canonicalPaths, destinationRoot, manifestText, skills, });
  * ```
  */
 async function mirrorSkillsToDestination(
   {
+    canonicalPaths,
     destinationRoot,
+    manifestText,
     skills,
-    manifest,
   }: {
+    readonly canonicalPaths: ReadonlySet<string>;
     readonly destinationRoot: string;
+    readonly manifestText: string;
     readonly skills: GlobResults;
-    readonly manifest: SkillMirrorManifest;
   },
 ): Promise<void> {
   /**
@@ -1039,10 +1041,6 @@ async function mirrorSkillsToDestination(
    * Prior ownership controls the only destination paths eligible for pruning.
    */
   const priorManifest = await readSkillMirrorManifest({ manifestPath, },);
-  /**
-   * Current canonical path set used to find removed owned counterparts.
-   */
-  const canonicalPaths = new Set(Object.keys(manifest,),);
 
   await Promise.all(Object.keys(priorManifest,)
     .filter(function isRemovedCanonicalPath(canonicalPath,): boolean {
@@ -1060,7 +1058,7 @@ async function mirrorSkillsToDestination(
   },);
   await overwrite({
     dest: manifestPath,
-    content: `${JSON.stringify(manifest, null, 2,)}\n`,
+    content: manifestText,
   },);
 }
 
@@ -1107,13 +1105,22 @@ async function mirrorSkills(): Promise<void> {
       ];
     },
   ),);
+  /**
+   * Current canonical path set shared by every destination pruning pass.
+   */
+  const canonicalPaths = new Set(Object.keys(manifest,),);
+  /**
+   * Serialized ownership manifest produced once at local ownership boundary.
+   */
+  const manifestText = `${JSON.stringify(manifest, null, 2,)}\n`;
 
   await Promise.all(SKILL_MIRROR_DESTINATION_ROOTS.map(
     async function syncDestination(destinationRoot,): Promise<void> {
       await mirrorSkillsToDestination({
+        canonicalPaths,
         destinationRoot,
+        manifestText,
         skills,
-        manifest,
       },);
     },
   ),);
