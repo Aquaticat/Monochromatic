@@ -237,27 +237,28 @@ export async function createManualPushCandidates({
      * @mutates descriptor through Promise.resolve thenable assimilation of descriptor content bytes
      */
     function materializeDescriptor(descriptor,): CandidateFile {
-    /**
-     * Narrowed content source captured by lazy candidate callback.
-     */
-    const { content, } = descriptor;
-    return {
-      targetId: descriptor.targetId,
-      path: descriptor.path,
-      revision: descriptor.revision,
-      mode: descriptor.mode,
-      change: descriptor.change,
-      bytes(): Promise<Uint8Array> {
-        if (content.kind === 'inline')
-          return Promise.resolve(content.bytes,);
-        /**
-         * Exact shared blob view loaded by the single batch subprocess.
-         */
-        const bytes = blobBytes.get(content.oid,);
-        if (bytes === undefined)
-          throw new ManualPushProbeError(`Git blob batch omitted requested object ${content.oid}.`,);
-        return Promise.resolve(bytes,);
-      },
-    };
-  },);
+      /**
+       * Narrowed content source captured by lazy candidate callback.
+       */
+      const { content, } = descriptor;
+      return {
+        targetId: descriptor.targetId,
+        path: descriptor.path,
+        revision: descriptor.revision,
+        mode: descriptor.mode,
+        change: descriptor.change,
+        bytes(): Promise<Uint8Array> {
+          if (content.kind === 'inline')
+            return Promise.resolve(content.bytes,);
+          /**
+           * Exact shared blob view loaded by the single batch subprocess.
+           */
+          const bytes = blobBytes.get(content.oid,);
+          if (bytes === undefined)
+            throw new ManualPushProbeError(`Git blob batch omitted requested object ${content.oid}.`,);
+          return Promise.resolve(bytes,);
+        },
+      };
+    },
+  );
 }
