@@ -128,8 +128,11 @@ Because ownership is self-healing, a shared dependency can no longer be diverged
    (`**/*.config.*`) and is the established home for repo file-enforcer policy
    (mirroring `manageLsp4ijServerSettings`'s data).
 - Discovery:
-   all `packages/**/Cargo.toml`, filtering any path under `target/` or
-   `node_modules/` (the terminal crate's `target/` vendors many manifests).
+   bounded-depth globs `packages/*/*/Cargo.toml` and `packages/*/*/*/Cargo.toml`
+   (covering the two-level crates and the three-level Android crate) so
+   traversal never descends into the deep gitignored `target/` trees (the
+   terminal crate's `target/` vendors many manifests); a `target/` and
+   `node_modules/` fragment filter stays as a safety net.
 
 ## Follow-on work
 

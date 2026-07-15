@@ -13,12 +13,18 @@ import {
   addWatchedPaths,
   cat,
   getTomlProperty,
+  manageCargoManifests,
   manageLsp4ijServerSettings,
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
-import type { GlobResults, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
+import type {
+  CanonicalTomlValue,
+  CargoEnforcement,
+  CargoManifestPlan,
+  GlobResults,
+} from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
 import type browserslist from 'browserslist';
 
@@ -552,11 +558,6 @@ async function assertForbiddenRootContextAbsent(): Promise<void> {
 type BrowserslistResolver = typeof browserslist;
 
 /**
- * Query sections observed by checked-in Browserslist configuration generator.
- */
-type ObservedBrowserslistConfig = Readonly<Record<string, readonly string[]>>;
-
-/**
  * Imports Browserslist at runtime so generators use the installed package data.
  *
  * @returns {@link BrowserslistResolver} from dynamic package import.
@@ -593,7 +594,7 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
  * ```
  */
 function selectBrowserslistQueries(
-  { config, }: { readonly config: ObservedBrowserslistConfig; },
+  { config, }: { readonly config: browserslist.Config; },
 ): readonly string[] {
   return config[BROWSERSLIST_CONFIG_ENVIRONMENT]
     ?? config.defaults;
@@ -861,20 +862,26 @@ function isCanonicalSkillPath({ filePath, }: { readonly filePath: string; }): bo
 }
 
 /**
- * Narrows parsed JSON to a safe canonical skill ownership manifest.
+ * Validates parsed JSON and returns it as a safe canonical skill ownership
+ * manifest. A returning validator, not an `asserts` predicate, because an
+ * assertion signature cannot reference a destructured parameter element (TS1230).
  *
  * @param value - parsed JSON value.
  *
  * @param manifestPath - source path used in validation errors.
  *
+ * @returns value narrowed to a validated {@link SkillMirrorManifest}.
+ *
+ * @throws {@link SkillMirrorManifestError} when value is not a flat string map of canonical skill paths.
+ *
  * @mutates value through `Reflect.ownKeys` and `Reflect.get` proxy or accessor hooks
  *
  * @example
  * ```ts
- * assertSkillMirrorManifest({ value: {}, manifestPath: 'manifest.json', });
+ * const manifest = toSkillMirrorManifest({ value: {}, manifestPath: 'manifest.json', });
  * ```
  */
-function assertSkillMirrorManifest(
+function toSkillMirrorManifest(
   {
     value,
     manifestPath,
@@ -882,7 +889,7 @@ function assertSkillMirrorManifest(
     readonly value: unknown;
     readonly manifestPath: string;
   },
-): asserts value is SkillMirrorManifest {
+): SkillMirrorManifest {
   if (value === null
     || (typeof value) !== 'object'
     || Array.isArray(value,))
@@ -897,6 +904,8 @@ function assertSkillMirrorManifest(
         reason: `unsafe ownership entry ${String(key,)}`,
       },);
   }
+
+  return value as SkillMirrorManifest;
 }
 
 /**
@@ -944,8 +953,7 @@ async function readSkillMirrorManifest(
       reason: `invalid JSON: ${String(parseError,)}`,
     },);
   }
-  assertSkillMirrorManifest({ value: parsed, manifestPath, },);
-  return parsed;
+  return toSkillMirrorManifest({ value: parsed, manifestPath, },);
 }
 
 /**
@@ -1230,6 +1238,413 @@ async function manageHarperLsp4ij(): Promise<void> {
   },);
 }
 
+/**
+ * Canonical Rust edition enforced on every crate (`AGENTS.md`: fleet is 2024).
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_CANONICAL_EDITION);
+ * ```
+ */
+const CARGO_CANONICAL_EDITION = '2024';
+
+/**
+ * Canonical SPDX license for crates that declare one (present-seeded).
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_CANONICAL_LICENSE);
+ * ```
+ */
+const CARGO_CANONICAL_LICENSE = 'LGPL-3.0-or-later';
+
+/**
+ * Git repository URL shared by every published crate manifest.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_REPOSITORY_URL);
+ * ```
+ */
+const CARGO_REPOSITORY_URL = 'https://github.com/Aquaticat/Monochromatic.git';
+
+/**
+ * GitHub tree base used to derive each published crate's homepage from its path.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_HOMEPAGE_TREE_BASE);
+ * ```
+ */
+const CARGO_HOMEPAGE_TREE_BASE = 'https://github.com/Aquaticat/Monochromatic/tree/main';
+
+/**
+ * Canonical readme filename for published crates.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_README_FILENAME);
+ * ```
+ */
+const CARGO_README_FILENAME = 'README.md';
+
+/**
+ * Canonical `[lints.clippy]` block appended to crates lacking it. Denies
+ * `Result::unwrap` (the root `clippy.toml` supplies the disallowed-methods
+ * list), denies implicit returns, and allows explicit returns.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_LINTS_BLOCK);
+ * ```
+ */
+const CARGO_LINTS_BLOCK = `# Canonical lint policy, enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[lints.clippy]
+disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
+`;
+
+/**
+ * Canonical empty `[workspace]` block appended to crates lacking one, pinning
+ * each crate as its own workspace root so no ancestor `Cargo.toml` absorbs it.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_WORKSPACE_BLOCK);
+ * ```
+ */
+const CARGO_WORKSPACE_BLOCK = `# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+[workspace]
+`;
+
+/**
+ * Clippy lint keys the canonical policy sets inside an existing `[lints.clippy]`.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_LINTS_CLIPPY_KEYS.implicit_return);
+ * ```
+ */
+const CARGO_LINTS_CLIPPY_KEYS = {
+  disallowed_methods: 'deny',
+  implicit_return: 'deny',
+  needless_return: 'allow',
+} as const satisfies Record<string, CanonicalTomlValue>;
+
+/**
+ * One owned shared dependency: its table, name, and single fleet-wide requirement.
+ *
+ * @example
+ * ```ts
+ * const dep: CargoSharedDependency = { table: 'dependencies', name: 'anyhow', value: '1' };
+ * ```
+ */
+type CargoSharedDependency = {
+  readonly table: 'dependencies' | 'build-dependencies';
+  readonly name: string;
+  readonly value: CanonicalTomlValue;
+};
+
+/**
+ * Shared dependency requirements owned across crates: every dependency whose
+ * exact requirement is identical wherever it appears (single fleet-wide form).
+ * `tokio` is excluded because `truepeak-core` declares an `optional` variant;
+ * `image`, `gtk4`, and `windows` carry genuinely divergent per-crate forms.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_SHARED_DEPENDENCIES.length);
+ * ```
+ */
+const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
+  { table: 'dependencies', name: 'aho-corasick', value: '1', },
+  { table: 'dependencies', name: 'anyhow', value: '1', },
+  { table: 'dependencies', name: 'arbitrary', value: { version: '1', features: ['derive',], }, },
+  { table: 'dependencies', name: 'clap', value: { version: '4', features: ['derive',], }, },
+  { table: 'dependencies', name: 'gxhash', value: '3', },
+  { table: 'dependencies', name: 'i-slint-backend-winit', value: '1.17.0', },
+  { table: 'dependencies', name: 'ignore', value: '0.4', },
+  { table: 'dependencies', name: 'libfuzzer-sys', value: { version: '0.4', features: ['arbitrary-derive',], }, },
+  { table: 'dependencies', name: 'memchr', value: '2', },
+  {
+    table: 'dependencies',
+    name: 'opus',
+    value: { git: 'https://github.com/SpaceManiac/opus-rs', rev: '559876660603dc8079a053e03e6438766f669e69', },
+  },
+  { table: 'dependencies', name: 'rayon', value: '1', },
+  { table: 'dependencies', name: 'regex', value: '1', },
+  { table: 'dependencies', name: 'ringbuf', value: '0.4', },
+  { table: 'dependencies', name: 'serde', value: { version: '1', features: ['derive',], }, },
+  { table: 'dependencies', name: 'serde_json', value: '1', },
+  {
+    table: 'dependencies',
+    name: 'slint',
+    value: { version: '1.17.0', features: ['backend-winit', 'renderer-femtovg', 'renderer-software',], },
+  },
+  { table: 'dependencies', name: 'symphonia', value: { version: '0.6', features: ['all',], }, },
+  { table: 'dependencies', name: 'tracing', value: '0.1', },
+  { table: 'dependencies', name: 'tracing-appender', value: '0.2', },
+  { table: 'dependencies', name: 'tracing-subscriber', value: { version: '0.3', features: ['env-filter',], }, },
+  { table: 'build-dependencies', name: 'slint-build', value: '1.17.0', },
+];
+
+/**
+ * Release/dev profile tables mapped to their canonical key/value settings.
+ *
+ * @example
+ * ```ts
+ * const preset: CargoProfileSpec = { release: { lto: true } };
+ * ```
+ */
+type CargoProfileSpec = {
+  readonly [profileName: string]: { readonly [key: string]: CanonicalTomlValue; };
+};
+
+/**
+ * Scanner profile: full optimization plus fail-closed panic/overflow behavior.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_PROFILE_SCANNER.release);
+ * ```
+ */
+const CARGO_PROFILE_SCANNER: CargoProfileSpec = {
+  release: { lto: true, 'codegen-units': 1, 'opt-level': 3, panic: 'unwind', 'overflow-checks': true, strip: true, },
+};
+
+/**
+ * Overflow-checked profile: full optimization with overflow checks but default panic.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_PROFILE_OVERFLOW.release);
+ * ```
+ */
+const CARGO_PROFILE_OVERFLOW: CargoProfileSpec = {
+  release: { lto: true, 'codegen-units': 1, 'opt-level': 3, 'overflow-checks': true, strip: true, },
+};
+
+/**
+ * Linter profile: full optimization, stripped, without panic/overflow overrides.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_PROFILE_LINTER.release);
+ * ```
+ */
+const CARGO_PROFILE_LINTER: CargoProfileSpec = {
+  release: { lto: true, 'codegen-units': 1, 'opt-level': 3, strip: true, },
+};
+
+/**
+ * Bench profile: full optimization, unstripped so symbolized profiles stay usable.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_PROFILE_BENCH.release);
+ * ```
+ */
+const CARGO_PROFILE_BENCH: CargoProfileSpec = {
+  release: { lto: true, 'codegen-units': 1, 'opt-level': 3, },
+};
+
+/**
+ * Music-player profile: symbol strip plus fat LTO, tuned in that crate's manifest.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_PROFILE_MUSIC.release);
+ * ```
+ */
+const CARGO_PROFILE_MUSIC: CargoProfileSpec = {
+  release: { strip: 'symbols', lto: true, },
+};
+
+/**
+ * Fuzz profile: unwinding panics in release and dev so libFuzzer captures crashes.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_PROFILE_FUZZ.dev);
+ * ```
+ */
+const CARGO_PROFILE_FUZZ: CargoProfileSpec = {
+  release: { panic: 'unwind', },
+  dev: { panic: 'unwind', },
+};
+
+/**
+ * Crate directory to profile preset (present-seeded: only crates that already
+ * declare a `[profile.*]` table appear here).
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_PROFILE_BY_DIR['packages/linter/rust']);
+ * ```
+ */
+const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
+  'packages/cli/forbidden-strings': CARGO_PROFILE_SCANNER,
+  'packages/rust-module/forbidden-regex': CARGO_PROFILE_SCANNER,
+  'packages/cli/nested-wayland-session': CARGO_PROFILE_OVERFLOW,
+  'packages/linter/rust': CARGO_PROFILE_LINTER,
+  'packages/rust-module/forbidden-regex.bench': CARGO_PROFILE_BENCH,
+  'packages/music-player/truepeak-core.bench': CARGO_PROFILE_BENCH,
+  'packages/music-player/desktop-app': CARGO_PROFILE_MUSIC,
+  'packages/rust-module/forbidden-regex.fuzz': CARGO_PROFILE_FUZZ,
+  'packages/fuzz/forbidden-strings': CARGO_PROFILE_FUZZ,
+};
+
+/**
+ * Guarded enforcements identical for every crate: edition, license, publish,
+ * the three lint keys, the shared dependency requirements, and the
+ * published-crate repository and readme.
+ *
+ * @example
+ * ```ts
+ * console.log(CARGO_STATIC_ENFORCEMENTS.length);
+ * ```
+ */
+const CARGO_STATIC_ENFORCEMENTS: readonly CargoEnforcement[] = [
+  { guardPath: ['package',], path: ['package', 'edition',], value: CARGO_CANONICAL_EDITION, },
+  { guardPath: ['package', 'license',], path: ['package', 'license',], value: CARGO_CANONICAL_LICENSE, },
+  { guardPath: ['package', 'publish',], path: ['package', 'publish',], value: false, },
+  ...Object.entries(CARGO_LINTS_CLIPPY_KEYS,)
+    .map(function lintsEnforcement([key, value,],): CargoEnforcement {
+      return { guardPath: ['lints', 'clippy',], path: ['lints', 'clippy', key,], value, };
+    },),
+  ...CARGO_SHARED_DEPENDENCIES.map(function dependencyEnforcement(
+    { table, name, value, },
+  ): CargoEnforcement {
+    return { guardPath: [table, name,], path: [table, name,], value, };
+  },),
+  { guardPath: ['package', 'repository',], path: ['package', 'repository',], value: CARGO_REPOSITORY_URL, },
+  { guardPath: ['package', 'repository',], path: ['package', 'readme',], value: CARGO_README_FILENAME, },
+];
+
+/**
+ * Directory of a crate manifest (path without the trailing `/Cargo.toml`).
+ *
+ * @param manifestPath - Repo-relative manifest path from discovery
+ *
+ * @returns Crate directory path
+ *
+ * @example
+ * ```ts
+ * cargoPackageDir({ manifestPath: 'packages/linter/rust/Cargo.toml' }); // 'packages/linter/rust'
+ * ```
+ */
+function cargoPackageDir({ manifestPath, }: { readonly manifestPath: string; },): string {
+  return manifestPath.slice(
+    0,
+    manifestPath.lastIndexOf('/',),
+  );
+}
+
+/**
+ * Derives a published crate's homepage from its directory.
+ *
+ * @param manifestPath - Repo-relative manifest path from discovery
+ *
+ * @returns GitHub tree URL for that crate's directory
+ *
+ * @example
+ * ```ts
+ * cargoHomepage({ manifestPath: 'packages/linter/rust/Cargo.toml' });
+ * ```
+ */
+function cargoHomepage({ manifestPath, }: { readonly manifestPath: string; },): string {
+  return `${CARGO_HOMEPAGE_TREE_BASE}/${cargoPackageDir({ manifestPath, },)}`;
+}
+
+/**
+ * Profile enforcements for one crate, empty when it declares no profile.
+ *
+ * @param manifestPath - Repo-relative manifest path from discovery
+ *
+ * @returns Guarded enforcements for the crate's mapped profile preset
+ *
+ * @example
+ * ```ts
+ * cargoProfileEnforcements({ manifestPath: 'packages/linter/rust/Cargo.toml' });
+ * ```
+ */
+function cargoProfileEnforcements(
+  { manifestPath, }: { readonly manifestPath: string; },
+): readonly CargoEnforcement[] {
+  /**
+   * Mapped preset for this crate directory, absent when the crate owns no profile.
+   */
+  const preset = CARGO_PROFILE_BY_DIR[cargoPackageDir({ manifestPath, },)];
+  if (preset === undefined)
+    return [];
+
+  return Object.entries(preset,)
+    .flatMap(function profileTableEnforcements([profileName, keys,],): readonly CargoEnforcement[] {
+      return Object.entries(keys,)
+        .map(function profileKeyEnforcement([key, value,],): CargoEnforcement {
+          return {
+            guardPath: ['profile', profileName,],
+            path: ['profile', profileName, key,],
+            value,
+          };
+        },);
+    },);
+}
+
+/**
+ * Builds the canonical enforcement plan for one crate manifest.
+ *
+ * @param manifestPath - Repo-relative manifest path from discovery
+ *
+ * @returns Plan of guarded enforcements plus absent-block insertions
+ *
+ * @example
+ * ```ts
+ * buildCargoManifestPlan({ manifestPath: 'packages/linter/rust/Cargo.toml' });
+ * ```
+ */
+function buildCargoManifestPlan(
+  { manifestPath, }: { readonly manifestPath: string; },
+): CargoManifestPlan {
+  return {
+    enforcements: [
+      ...CARGO_STATIC_ENFORCEMENTS,
+      {
+        guardPath: ['package', 'repository',],
+        path: ['package', 'homepage',],
+        value: cargoHomepage({ manifestPath, },),
+      },
+      ...cargoProfileEnforcements({ manifestPath, },),
+    ],
+    blocks: [
+      { absentPath: ['lints', 'clippy',], text: CARGO_LINTS_BLOCK, },
+      { absentPath: ['workspace',], text: CARGO_WORKSPACE_BLOCK, },
+    ],
+  };
+}
+
+/**
+ * Enforces the canonical Cargo manifest spec across every first-party crate.
+ * Bounded-depth globs cover the two-level crates and the three-level Android
+ * crate without descending into gitignored `target/` trees.
+ *
+ * @example
+ * ```ts
+ * await generateCargoManifests();
+ * ```
+ */
+async function generateCargoManifests(): Promise<void> {
+  await manageCargoManifests({
+    manifestGlobs: [
+      'packages/*/*/Cargo.toml',
+      'packages/*/*/*/Cargo.toml',
+    ],
+    spec: buildCargoManifestPlan,
+  },);
+}
+
 await assertForbiddenRootContextAbsent();
 
 await Promise.all([
@@ -1304,6 +1719,8 @@ ${await cat(['./AGENTS.md',],)}`,
   },),),
 
   generatePackageLicenseTexts(),
+
+  generateCargoManifests(),
 
   generateResolvedBrowserslistTargets(),
 

@@ -1,6 +1,7 @@
 
 export { manageCargoManifests, } from './cargo/manage-cargo-manifests.ts';
 export type {
+  CanonicalTomlValue,
   CargoBlockInsertion,
   CargoEnforcement,
   CargoManifestPlan,

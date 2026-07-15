@@ -101,36 +101,48 @@ async function enforceManifest(
  * source and destination; the content-skip in {@link overwrite} prevents a
  * write/watch loop once converged).
  *
- * @param manifestGlob - Discovery glob (recursive), for example `packages/​**​/Cargo.toml`
+ * Discovery uses explicit-depth globs rather than a recursive `**` so traversal
+ * never descends into the deep gitignored `target/` trees (which vendor many
+ * dependency manifests); the fragment filter stays as a safety net.
+ *
+ * @param manifestGlobs - Bounded-depth discovery globs, for example `packages/​*​/​*​/Cargo.toml`
  *
  * @param spec - Plan builder describing every owned edit
  *
  * @example
  * ```ts
- * await manageCargoManifests({ manifestGlob: 'packages/​**​/Cargo.toml', spec, });
+ * await manageCargoManifests({
+ *   manifestGlobs: ['packages/​*​/​*​/Cargo.toml', 'packages/​*​/​*​/​*​/Cargo.toml'],
+ *   spec,
+ * });
  * ```
  */
 export async function manageCargoManifests(
   {
-    manifestGlob,
+    manifestGlobs,
     spec,
   }: {
-    readonly manifestGlob: string;
+    readonly manifestGlobs: readonly string[];
     readonly spec: CargoManifestSpec;
   },
 ): Promise<void> {
   /**
-   * First-party manifest paths, sorted for deterministic logging.
+   * First-party manifest paths gathered across every discovery glob.
    */
   const manifestPaths: string[] = [];
-  for await (const manifestPath of glob(manifestGlob,)) {
-    if (isFirstPartyManifest(manifestPath,))
-      manifestPaths.push(manifestPath,);
+  for (const manifestGlob of manifestGlobs) {
+    for await (const manifestPath of glob(manifestGlob,)) {
+      if (isFirstPartyManifest(manifestPath,))
+        manifestPaths.push(manifestPath,);
+    }
   }
-  manifestPaths.sort();
-  addWatchedPaths(manifestPaths,);
+  /**
+   * Unique paths, sorted for deterministic logging and safe from overlapping globs.
+   */
+  const uniqueManifestPaths = [...new Set(manifestPaths,),].sort();
+  addWatchedPaths(uniqueManifestPaths,);
 
-  await Promise.all(manifestPaths.map(async function enforceOne(manifestPath,): Promise<void> {
+  await Promise.all(uniqueManifestPaths.map(async function enforceOne(manifestPath,): Promise<void> {
     await enforceManifest({
       manifestPath,
       spec,
