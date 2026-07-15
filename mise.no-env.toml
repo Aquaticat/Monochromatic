@@ -645,7 +645,7 @@ usage = '''
 flag "--local" help="Clean current repository configuration"
 flag "--global" help="Clean per-user global configuration"
 '''
-run = "node packages/git-policies/cli/src/maintenance/hk-config-cleanup-command.ts"
+run = "node packages/git-policy/cli/src/maintenance/hk-config-cleanup-command.ts"
 
 #endregion Utility Tasks
 

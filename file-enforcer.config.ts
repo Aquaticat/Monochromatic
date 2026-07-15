@@ -1684,9 +1684,9 @@ ${await cat(['./AGENTS.md',],)}`,
   generateForbiddenStringsRules(),
 
   overwrite({
-    dest: './packages/git-policies/cli/src/optional/repository-policy.ts',
-    content: `// Generated from \`packages/git-policies/repository/src/index.ts\` by file-enforcer; edit canonical source owner.\n${(await cat([
-      './packages/git-policies/repository/src/index.ts',
+    dest: './packages/git-policy/cli/src/optional/repository-policy.ts',
+    content: `// Generated from \`packages/git-policy/repository/src/index.ts\` by file-enforcer; edit canonical source owner.\n${(await cat([
+      './packages/git-policy/repository/src/index.ts',
     ],))
       .replace(
         '@monochromatic-dev/git-policy-api/ts',
@@ -1706,9 +1706,9 @@ ${await cat(['./AGENTS.md',],)}`,
     'scanner-output.ts',
   ].map(async function mirrorForbiddenStringsPolicy(fileName,) {
     return overwrite({
-      dest: `./packages/git-policies/cli/src/optional/forbidden-strings/${fileName}`,
-      content: `// Generated from \`packages/git-policies/forbidden-strings/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
-        `./packages/git-policies/forbidden-strings/src/${fileName}`,
+      dest: `./packages/git-policy/cli/src/optional/forbidden-strings/${fileName}`,
+      content: `// Generated from \`packages/git-policy/forbidden-strings/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
+        `./packages/git-policy/forbidden-strings/src/${fileName}`,
       ],))
         .replace(
           '@monochromatic-dev/git-policy-api/ts',

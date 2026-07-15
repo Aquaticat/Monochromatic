@@ -352,7 +352,7 @@ API:
 #### Git cleanup and worktree safety reviews: the cli-git tool-cache allowlist
 
 When the review touches `cli-git`'s linked-worktree guard,
- account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/git-policies/cli/src/allowed-worktree-dirs.ts`,
+ account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/git-policy/cli/src/allowed-worktree-dirs.ts`,
  currently uv's git cache):
  repositories whose git-dir resolves under an allowed dir bypass that guard,
  so destructive git is not actually blocked there.

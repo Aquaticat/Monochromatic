@@ -56,8 +56,8 @@ regardless of whether `/home` was an ostree alias for `/var/home`.
 On the Ubuntu runner,
 this changed an existing repository root into a different path identity.
 
-`packages/git-policies/cli/src/trust/config-discovery.ts:142` then accepted that transformed root.
-`packages/git-policies/cli/src/trust/config-discovery.ts:149` joined `cli-git.config.mjs` to it.
+`packages/git-policy/cli/src/trust/config-discovery.ts:142` then accepted that transformed root.
+`packages/git-policy/cli/src/trust/config-discovery.ts:149` joined `cli-git.config.mjs` to it.
 The resulting nonexistent candidate was treated as config absence,
 which made trust return `trust-failed`.
 

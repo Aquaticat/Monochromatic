@@ -146,7 +146,7 @@ These are verified against the source,
     None of that holds for an arbitrary npm consumer.
 
 14. The rename creates an unflagged name-to-path mismatch.
-    Package names encode the directory path (`packages/git-policies/cli` to `cli-git`,
+    Package names encode the directory path (`packages/git-policy/cli` to `cli-git`,
     `packages/module/i18n-compose` to `module-i18n-compose`).
     Phase 4 renames to `@monochromatic-dev/ssg` while keeping the package at `packages/webapp-content/ssg/`,
     where the convention yields `@monochromatic-dev/webapp-content-ssg`.

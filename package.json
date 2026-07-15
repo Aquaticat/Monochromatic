@@ -12,7 +12,7 @@
   "devDependencies": {
     "h3": "catalog:",
     "@monochromatic-dev/cli-mvm": "workspace:*",
-    "@monochromatic-dev/cli-git": "workspace:*",
+    "@monochromatic-dev/git-policy-cli": "workspace:*",
     "@monochromatic-dev/cli-git-clone-size": "workspace:*",
     "@monochromatic-dev/cli-terminal-exec": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-terminal-title": "workspace:*",

@@ -8,13 +8,13 @@ The public package is prepared for npm distribution,
 but registry publication remains indefinitely deferred in #358.
 
 The canonical implementation interface is
-`packages/git-policies/cli/SPEC.md`.
+`packages/git-policy/cli/SPEC.md`.
 The execution record is
 `docs/handover/cli-git-policies-platform.md`.
 
 ## Decision
 
-Turn `packages/git-policies/cli` into a pluggable Git policies platform modeled on Oxlint.
+Turn `packages/git-policy/cli` into a pluggable Git policies platform modeled on Oxlint.
 Keep the existing shadowing `git` executable as the enforcement point.
 Expose configurable built-in and third-party policies,
 fixed command transforms,
@@ -111,7 +111,7 @@ Lazy values are memoized for one candidate-state version only.
 Applying a patch invalidates candidate-dependent memoized data before another policy runs.
 
 Exact public TypeScript declarations and invariants live in
-`packages/git-policies/cli/SPEC.md`.
+`packages/git-policy/cli/SPEC.md`.
 
 ## Policy identifiers and configuration
 
@@ -220,7 +220,7 @@ Documentation must state this behavior change.
 
 ## Distribution
 
-Prepare `@monochromatic-dev/cli-git` as a public npm-ready Node package.
+Prepare `@monochromatic-dev/git-policy-cli` as a public npm-ready Node package.
 The package installs the shadowing `git` bin and exports side-effect-free authoring modules from the same package.
 Importing authoring helpers must not execute CLI startup code.
 
@@ -243,7 +243,7 @@ and command forms without a subcommand.
 This represents domain absence without nullable unions and is never serialized to JSONL.
 
 Repo-owned policies retain separate workspace source packages but are bundled into the single public cli-git MJS
-artifact and exported from `@monochromatic-dev/cli-git`.
+artifact and exported from `@monochromatic-dev/git-policy-cli`.
 Importing a shipped policy does not register or enable it;
 consumer config must register the plugin under a chosen namespace.
 The public tarball contains every runtime needed by those exports except explicitly documented external executables
@@ -471,7 +471,7 @@ The cascade intentionally removes inherited authority from sibling subtrees and 
 
 Policy findings use stable JSON Lines.
 The schema version is frozen in
-`packages/git-policies/cli/SPEC.md`.
+`packages/git-policy/cli/SPEC.md`.
 Every finding includes a human-readable message.
 Public output contains only findings from the final stable pass.
 Changed-pass findings are provisional and never emitted as authoritative results.
@@ -819,13 +819,13 @@ Consumer lockfiles and self-contained builds govern plugin inputs.
 
 ## References
 
-- `packages/git-policies/cli/SPEC.md`:
+- `packages/git-policy/cli/SPEC.md`:
   canonical implementation interface and verification contract.
 - `docs/handover/cli-git-policies-platform.md`:
   implementation state and evidence.
-- `packages/git-policies/cli/README.md` and `packages/git-policies/cli/src/index.ts`:
+- `packages/git-policy/cli/README.md` and `packages/git-policy/cli/src/index.ts`:
   current wrapper behavior.
-- `packages/git-policies/cli/src/escape-hatch.ts`:
+- `packages/git-policy/cli/src/escape-hatch.ts`:
   parser-based invocation escape hatches.
 - `packages/module/fs-id/README.md`:
   implemented filesystem identity prerequisite and verified platform behavior.

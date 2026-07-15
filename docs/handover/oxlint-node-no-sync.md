@@ -10,7 +10,7 @@ User wants two outcomes:
   For now this includes only Node sync methods.
 
 User explicitly said not to fix existing code,
-so do not change the current `parseSync` callsites in `packages/git-policies/cli/src/parsers/`.
+so do not change the current `parseSync` callsites in `packages/git-policy/cli/src/parsers/`.
 
 ## Work completed
 
@@ -124,11 +124,11 @@ mise run //packages/config/oxlint:lint:types
 Boundary check:
 
 ```bash
-mise run //packages/git-policies/cli:lint:oxlint
+mise run //packages/git-policy/cli:lint:oxlint
 ```
 
 This now reports zero warnings and no `parseSync` findings.
-It still fails on two unrelated existing `catch-binding` errors in `packages/git-policies/cli`.
+It still fails on two unrelated existing `catch-binding` errors in `packages/git-policy/cli`.
 
 Dirty unrelated files left for caller awareness:
 

@@ -530,7 +530,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   TypeScript's decoded-source cache and issuing one synchronous snapshot RPC per linted file;
   dependency-overlay regression coverage proves unchanged importers reuse the refreshed snapshot;
   final one-worker warm checks completed the semantic plugin package in 6,411 ms and 6,394 ms,
-  `packages/git-policies/cli` in 4,261 ms and 4,231 ms,
+  `packages/git-policy/cli` in 4,261 ms and 4,231 ms,
   and file-manager Electron in 6,887 ms and 6,896 ms;
   cold runs after analyzer or project source changes still rebuild content-addressed effect summaries;
 - commits `1622488ad` and `619e0682d` audit ECMA-402 date formatting,
@@ -738,8 +738,8 @@ Verified package tasks:
 - `mise run //packages/module/test:buildAndTest`;
 - `mise run //packages/cli/mutation-test:buildAndTest`;
 - `mise run //packages/module/jsonc-edit:buildAndTest`;
-- `mise run //packages/git-policies/cli:build`;
-- `mise run //packages/git-policies/cli:test:unit`;
+- `mise run //packages/git-policy/cli:build`;
+- `mise run //packages/git-policy/cli:test:unit`;
 - `OXLINT_THREADS=1 mise run lint:oxlint` in stable root processes `proc_21` and `proc_26`.
 
 Next action:

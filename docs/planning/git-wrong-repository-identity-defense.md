@@ -88,16 +88,16 @@ it reasons about command text and permits explicit bypass.
 
 ### Git command boundary
 
-`packages/git-policies/cli/src/index.ts` evaluates a pre-spawn rule pipeline before invoking real Git.
+`packages/git-policy/cli/src/index.ts` evaluates a pre-spawn rule pipeline before invoking real Git.
 That is the deterministic seam for command-level repository safeguards.
 
-`packages/git-policies/cli/src/effective-target.ts` already replays global repository-selection options and inherited
+`packages/git-policy/cli/src/effective-target.ts` already replays global repository-selection options and inherited
 `GIT_DIR` or `GIT_WORK_TREE` state through real Git.
 The new rules must reuse that seam rather than independently guessing the target repository.
 
 Current gaps include:
 
-- `packages/git-policies/cli/src/rules/require-root.ts` exempts `git init`.
+- `packages/git-policy/cli/src/rules/require-root.ts` exempts `git init`.
 - No rule rejects reinitialization of an existing worktree.
 - No rule rejects writes to `user.name`,
    `user.email`,
@@ -157,7 +157,7 @@ and GitHub boundaries.
 
 ### Module interface
 
-The implementation home is `packages/git-policies/cli/src/repository-safety/`.
+The implementation home is `packages/git-policy/cli/src/repository-safety/`.
 It exposes three concepts:
 
 ```ts
@@ -188,7 +188,7 @@ Implement identity checks as cli-git policy and lifecycle modules bundled into t
 Pre-forward checks cover commit-producing commands;
 post-commit checks gate automatic push;
 manual-push checks consume cli-git's Git-native authoritative push updates and candidate ranges.
-All internal Git subprocesses reuse `packages/git-policies/cli/src/resolve-git.ts` and a sanitized environment,
+All internal Git subprocesses reuse `packages/git-policy/cli/src/resolve-git.ts` and a sanitized environment,
 so verification cannot recurse into cli-git.
 
 A linked-worktree and clean-clone fixture must prove the built shadow `git` resolves from the active package installation
@@ -267,7 +267,7 @@ Keep project `.pi/settings.json` package-free.
 
 ### Layer B: reject dangerous Git invocations before spawn
 
-Add non-bypassable rules to the existing `packages/git-policies/cli` rule pipeline.
+Add non-bypassable rules to the existing `packages/git-policy/cli` rule pipeline.
 
 #### Existing-repository initialization
 
@@ -915,13 +915,13 @@ The work is complete only when:
 - Pi guardrail:
   `packages/pi-plugins/guardrail/README.md`
 - cli-git entry point:
-  `packages/git-policies/cli/src/index.ts`
+  `packages/git-policy/cli/src/index.ts`
 - cli-git root rule:
-  `packages/git-policies/cli/src/rules/require-root.ts`
+  `packages/git-policy/cli/src/rules/require-root.ts`
 - Cli-git manual-push lifecycle:
-  `packages/git-policies/cli/src/policy-engine/manual-push-lifecycle.ts`
+  `packages/git-policy/cli/src/policy-engine/manual-push-lifecycle.ts`
 - Cli-git post-commit lifecycle:
-  `packages/git-policies/cli/src/policy-engine/post-commit-lifecycle.ts`
+  `packages/git-policy/cli/src/policy-engine/post-commit-lifecycle.ts`
 - GitHub commit signature verification:
   <https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification>
 - GitHub repository rules API:

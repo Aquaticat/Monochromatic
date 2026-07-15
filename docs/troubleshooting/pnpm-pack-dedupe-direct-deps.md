@@ -2,7 +2,7 @@
 
 ## Symptom
 
-Packing `@monochromatic-dev/cli-git` with pnpm 11.10.0 failed:
+Packing `@monochromatic-dev/git-policy-cli` with pnpm 11.10.0 failed:
 
 ```text
 ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL
@@ -12,7 +12,7 @@ because this dependency is not installed. Try running "pnpm install".
 
 A normal filtered install and a forced filtered install both left that direct development dependency linked only at the
 workspace root.
-`packages/git-policies/cli/node_modules/@monochromatic-dev` did not contain `config-typescript`.
+`packages/git-policy/cli/node_modules/@monochromatic-dev` did not contain `config-typescript`.
 
 Using `npm pack` instead created a tarball,
 but its manifest retained `catalog:` dependency specifiers.
@@ -45,12 +45,12 @@ so it is not a valid replacement for packaging this repository's source manifest
 The following sequence was tested against the cli-git package:
 
 ```text
-pnpm install --force --config.dedupe-direct-deps=false --filter @monochromatic-dev/cli-git
+pnpm install --force --config.dedupe-direct-deps=false --filter @monochromatic-dev/git-policy-cli
 pnpm pack --pack-destination dist/pack
 ```
 
 After the first command,
-`packages/git-policies/cli/node_modules/@monochromatic-dev/config-typescript` existed.
+`packages/git-policy/cli/node_modules/@monochromatic-dev/config-typescript` existed.
 The second command produced a tarball whose manifest contained ordinary registry versions instead of `catalog:` or
 `workspace:` protocols.
 
@@ -62,7 +62,7 @@ and forwarded `git --version` successfully.
 
 ## Verified workaround
 
-`packages/git-policies/cli/mise.toml` makes `pack:npm` perform a forced package-filtered install with
+`packages/git-policy/cli/mise.toml` makes `pack:npm` perform a forced package-filtered install with
 `dedupe-direct-deps=false` immediately before `pnpm pack`.
 The override is command-local;
 it does not weaken workspace-wide deduplication.

@@ -34,12 +34,12 @@ const moduleLogger = tagged({
 /**
  * Package name used by cli-git shims that delegate to this workspace's wrapper.
  */
-const CLI_GIT_PACKAGE_NAME = '@monochromatic-dev/cli-git';
+const CLI_GIT_PACKAGE_NAME = '@monochromatic-dev/git-policy-cli';
 
 /**
  * Built cli-git entry marker used by pnpm shims that do not name package metadata.
  */
-const CLI_GIT_BUNDLED_ENTRY_MARKER = 'packages/git-policies/cli/dist/final/node/index.mjs';
+const CLI_GIT_BUNDLED_ENTRY_MARKER = 'packages/git-policy/cli/dist/final/node/index.mjs';
 
 /**
  * Text markers that identify scripts delegating to the workspace git wrapper.
@@ -170,7 +170,7 @@ function stripTrailingLineBreak(output: string,): string {
  * @example
  * ```ts
  * await isCliGitShimForSelf('/repo/node_modules/.bin/git');
- * // => true when the shim points at \@monochromatic-dev/cli-git
+ * // => true when the shim points at \@monochromatic-dev/git-policy-cli
  * ```
  */
 async function isCliGitShimForSelf(candidatePath: string,): Promise<boolean> {

@@ -15,7 +15,7 @@ Pkl snippet,
 and rollout step in this document is historical evidence rather than current setup guidance.
 Current commands and architecture live in `packages/cli/forbidden-strings/README.md`,
 `packages/cli/forbidden-strings/PERF.md`,
-`packages/git-policies/cli/README.md`,
+`packages/git-policy/cli/README.md`,
 and `.github/workflows/forbidden-strings.yml`.
 
 This record explains the original plan for blocking enumerable literal/regex strings from being introduced in commits,

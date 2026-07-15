@@ -33,7 +33,7 @@ TODO | DONE
 Status:
 TODO | DONE
 
-1. Run `mise run //packages/git-policies/cli:test:hk-config-cleanup`.
+1. Run `mise run //packages/git-policy/cli:test:hk-config-cleanup`.
    Expect logs for unconfigured,
    configured,
    repeated,

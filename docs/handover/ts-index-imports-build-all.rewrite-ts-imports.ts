@@ -8,7 +8,7 @@
 //
 // Safety: only rewrites specifiers in import/export context (preceded by a
 // word-boundaried `from`, `import`, or `import(`), so bare string-literal
-// package names (e.g. `const X = '@monochromatic-dev/cli-git'`, oxlint rule
+// package names (e.g. `const X = '@monochromatic-dev/git-policy-cli'`, oxlint rule
 // config `package: '@monochromatic-dev/module-logger/types'`) are untouched.
 // Skips files owned by the target itself (self-imports).
 import { Glob } from 'bun';

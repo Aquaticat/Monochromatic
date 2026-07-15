@@ -371,9 +371,6 @@ importers:
       '@monochromatic-dev/claude-code-plugins-terminal-title':
         specifier: workspace:*
         version: link:packages/claude-code-plugins/terminal-title
-      '@monochromatic-dev/cli-git':
-        specifier: workspace:*
-        version: link:packages/git-policies/cli
       '@monochromatic-dev/cli-git-clone-size':
         specifier: workspace:*
         version: link:packages/cli/git-clone-size
@@ -401,6 +398,9 @@ importers:
       '@monochromatic-dev/dev-script-task-util':
         specifier: workspace:*
         version: link:packages/dev-script/task-util
+      '@monochromatic-dev/git-policy-cli':
+        specifier: workspace:*
+        version: link:packages/git-policy/cli
       '@monochromatic-dev/module-image-diff':
         specifier: workspace:*
         version: link:packages/module/image-diff
@@ -1740,7 +1740,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/git-policies/api:
+  packages/git-policy/api:
     dependencies:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
@@ -1762,7 +1762,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/git-policies/cli:
+  packages/git-policy/cli:
     dependencies:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
@@ -1820,7 +1820,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/git-policies/forbidden-strings:
+  packages/git-policy/forbidden-strings:
     dependencies:
       '@monochromatic-dev/git-policy-api':
         specifier: workspace:*
@@ -1851,7 +1851,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/git-policies/repository:
+  packages/git-policy/repository:
     dependencies:
       '@monochromatic-dev/git-policy-api':
         specifier: workspace:*

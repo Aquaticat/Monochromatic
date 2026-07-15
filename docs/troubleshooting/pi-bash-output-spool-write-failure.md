@@ -16,7 +16,7 @@ Pi showed related failures on Linux during July 10,
   }
   ```
 
-- Two later `mise run //packages/git-policies/cli:test:unit` calls remained as an assistant `bash`
+- Two later `mise run //packages/git-policy/cli:test:unit` calls remained as an assistant `bash`
   tool call plus an `auto-mode:verdict` entry.
   No matching `toolResult` was appended before Pi was restarted.
 - A `gh repo clone` under `/tmp/agent` ended Pi with the same `write` diagnostic.

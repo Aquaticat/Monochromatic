@@ -12,7 +12,7 @@ and `docs/troubleshooting/pi-bash-output-spool-write-failure.md`.
 The canonical decision is
 `docs/decisions/cli-git-policies-platform.md`.
 The implementation interface is
-`packages/git-policies/cli/SPEC.md`.
+`packages/git-policy/cli/SPEC.md`.
 This handover remains the current execution-state and evidence record.
 
 Earlier checkpoint sections are retained as chronological evidence;
@@ -25,7 +25,7 @@ or otherwise disturb them.
 
 ## Original implementation objective
 
-Turn `packages/git-policies/cli` into a standalone pluggable Git policy platform,
+Turn `packages/git-policy/cli` into a standalone pluggable Git policy platform,
 migrate the current cli-git safeguards and hk-managed checks,
 then retire hk and Pkl after parity,
 performance,
@@ -37,15 +37,15 @@ absolute path.
 
 ## Verified current-state facts
 
-- `packages/git-policies/cli/package.json` maps both its package import and `git` binary to the same
+- `packages/git-policy/cli/package.json` maps both its package import and `git` binary to the same
   `dist/final/node/index.mjs` artifact.
 - The package-root import exposes authoring declarations and `repositoryPolicyPlugin` without starting cli-git or enabling
   the optional policy.
-- `packages/git-policies/repository/src/index.ts` remains the canonical repository-policy source.
-  File-enforcer generates `packages/git-policies/cli/src/optional/repository-policy.ts` for self-contained source-level
+- `packages/git-policy/repository/src/index.ts` remains the canonical repository-policy source.
+  File-enforcer generates `packages/git-policy/cli/src/optional/repository-policy.ts` for self-contained source-level
   trusted config bundling.
-- `packages/git-policies/api` owns the cycle-free policy contract used by separately owned policy source packages.
-- `packages/git-policies/cli/src/bin.ts` runs the configurable policy engine before a sequential fixed-transform `RULES` array.
+- `packages/git-policy/api` owns the cycle-free policy contract used by separately owned policy source packages.
+- `packages/git-policy/cli/src/bin.ts` runs the configurable policy engine before a sequential fixed-transform `RULES` array.
 - Current policy order is:
   - `require-root`
   - `linked-worktree-only`
@@ -56,7 +56,7 @@ absolute path.
   - `commitOnly`
   - `statusHintsOff`
 - `branch-worktree-only` is active,
-  documented in `packages/git-policies/cli/README.md`,
+  documented in `packages/git-policy/cli/README.md`,
   and tested,
   but the source decision omitted it from the supposedly complete behavior classification.
 - Current Git is 2.54.0 on this host.
@@ -206,7 +206,7 @@ Fixed transforms must be idempotent because a changed candidate tree restarts th
 
 ### Distribution
 
-`@monochromatic-dev/cli-git` becomes npm-ready instead of remaining private.
+`@monochromatic-dev/git-policy-cli` becomes npm-ready instead of remaining private.
 The prepared artifact is the Node package only;
 standalone native executables are out of the first platform release.
 Actual npm registry publication is recorded in #358 and deferred indefinitely until a maintainer explicitly resumes
@@ -219,7 +219,7 @@ including `defineConfig`,
 Valibot-backed option helpers,
 and public types.
 Importing an API entry point must never execute bin startup code.
-Third-party plugins peer-depend on the compatible `@monochromatic-dev/cli-git` API version;
+Third-party plugins peer-depend on the compatible `@monochromatic-dev/git-policy-cli` API version;
 there is no separate API or types package.
 External non-mise users install the npm package and put its bin directory before real Git on `PATH`.
 
@@ -878,7 +878,7 @@ Unless later grilling changes them:
   unsafe permissions,
   changed bytes,
   and management exits.
-- `mise run //packages/git-policies/cli:test:built:trust` builds the unpublished tarball and passed in a bounded disposable
+- `mise run //packages/git-policy/cli:test:built:trust` builds the unpublished tarball and passed in a bounded disposable
   Node container.
   It installs the package's actual shadowing `git` bin and verifies pure JSONL first-use and changed-byte failures,
   trust disclosure,
@@ -1439,7 +1439,7 @@ Unless later grilling changes them:
   code.
   The maintained fixture now asserts `mono/forbidden-root-context/root-context-forbidden`.
 - The final packed fixture installs both the cli-git and repository-policy tarballs.
-  Trusted config imports the real `@monochromatic-dev/cli-git/ts` and
+  Trusted config imports the real `@monochromatic-dev/git-policy-cli/ts` and
   `@monochromatic-dev/git-policy-repository/ts` subpaths,
   and direct check covers explicit pathspec plus `--all` scope.
 - The final packed container emitted `built-trust-consumer-ok`.
@@ -1469,10 +1469,10 @@ Unless later grilling changes them:
 ### Issue #354 forbidden-strings policy decisions
 
 - The policy implementation lives in a separate private source package under
-  `packages/git-policies/forbidden-strings/`.
+  `packages/git-policy/forbidden-strings/`.
   It does not broaden `@monochromatic-dev/git-policy-repository`.
 - Repo-owned policy source packages are statically bundled into cli-git's single public MJS artifact and exported from
-  `@monochromatic-dev/cli-git`.
+  `@monochromatic-dev/git-policy-cli`.
   The same artifact is the executable bin and the side-effect-free import target.
   It contains no secondary chunks or cli-git-owned package-relative dynamic imports.
   Dynamic imports retained inside bundled libraries are exempt.
@@ -1506,9 +1506,9 @@ Unless later grilling changes them:
   or blob state.
   Stale negotiation and indeterminate required content fail closed;
   explicit dry runs bypass manual-push policies and pure deletion remains contentless.
-- Canonical policy source lives in `packages/git-policies/forbidden-strings/`.
+- Canonical policy source lives in `packages/git-policy/forbidden-strings/`.
   File-enforcer maintains its cli-local mirror under
-  `packages/git-policies/cli/src/optional/forbidden-strings/` so the single cli-git MJS artifact exports the inert
+  `packages/git-policy/cli/src/optional/forbidden-strings/` so the single cli-git MJS artifact exports the inert
   plugin without a package cycle or secondary runtime chunk.
 - Root `cli-git.config.ts` registers `forbiddenStringsPlugin` under namespace `security` and points it at the repository's
   release scanner binary.
@@ -1528,7 +1528,7 @@ Unless later grilling changes them:
   manual pushes of externally created history,
   warning severity,
   and every scanner failure class.
-  `mise run //packages/git-policies/cli:test:built:trust` completed with `built-trust-consumer-ok` after the source export
+  `mise run //packages/git-policy/cli:test:built:trust` completed with `built-trust-consumer-ok` after the source export
   declared `nano-spawn` as a packed runtime dependency.
 - A disposable repository copied the exact root config and used the real Rust scanner through the built artifact.
   Direct check and pre-forward findings blocked,
@@ -1544,7 +1544,7 @@ Unless later grilling changes them:
   cli-git policy median was 269.900 ms,
   and wrapper-added median was 267.907 ms.
   This slice-specific measurement remained a baseline rather than a budget;
-  raw samples live in `packages/git-policies/cli/perf/forbidden-strings-2026-07-10.json`.
+  raw samples live in `packages/git-policy/cli/perf/forbidden-strings-2026-07-10.json`.
   Issue `#356` later added and hosted-verified the complete enforced lifecycle budget matrix.
 - The first real repository push exposed unbounded process fan-out in manual-push candidate loading.
   Each lazy historical blob launched `git cat-file blob` inside an unbounded `Promise.all`,
@@ -1565,8 +1565,8 @@ Unless later grilling changes them:
   added p95 was 1,152.066 ms,
   and worst added latency was 1,205.014 ms.
   Every sample remained below the strict 2,000 ms ceiling.
-  The committed harness is `packages/git-policies/cli/perf/manual-push-latency-benchmark.ts`;
-  raw samples live in `packages/git-policies/cli/perf/manual-push-latency-2026-07-10.json`.
+  The committed harness is `packages/git-policy/cli/perf/manual-push-latency-benchmark.ts`;
+  raw samples live in `packages/git-policy/cli/perf/manual-push-latency-2026-07-10.json`.
 - The latest hosted forbidden-strings workflow at pre-integration `origin/main` revision `ef179a737` failed on one
   credential-shaped patch-context line and credential-shaped literals in the concurrently landed forbidden-regex tests.
   Commits `c35e012b6` and `a8baa6024` preserve the tests' runtime bytes and patch applicability while removing those
@@ -1648,7 +1648,7 @@ Unless later grilling changes them:
 ### Issue #341 contract
 
 - Reconciled `docs/decisions/cli-git-policies-platform.md` with every settled grilling revision.
-- Added canonical implementation interface `packages/git-policies/cli/SPEC.md`.
+- Added canonical implementation interface `packages/git-policy/cli/SPEC.md`.
 - A disposable TypeScript 7.0.1-rc consumer compiled both authoring examples and proved statically known unknown policy IDs
   and wrong option values are rejected.
 - An Optique 1.1.1 fixture parsed every documented management form and rejected missing,
@@ -1750,13 +1750,13 @@ Troubleshooting evidence lives in
 `docs/troubleshooting/cli-git-windows-nested-registry-acls.md`.
 
 The measured lifecycle baseline is
-`packages/git-policies/cli/perf/lifecycle-latency-2026-07-11.json`.
+`packages/git-policy/cli/perf/lifecycle-latency-2026-07-11.json`.
 Its scenario-specific ceilings are derived as twice the measured maximum rounded to 25 milliseconds,
 and every ceiling is below 2,000 milliseconds.
 The performance workflow stores each run's complete raw-sample JSON as a retained CI artifact.
 The artifact from run `29171565793` was downloaded and parsed successfully:
 all required scenarios contain 30 direct and wrapped samples and use the wrapper-added metric.
-The final review also broadened trust workflow triggers to the complete `packages/git-policies/**`,
+The final review also broadened trust workflow triggers to the complete `packages/git-policy/**`,
 fs-id,
 and fs-path dependency scope.
 The dirty-worktree commit path improved from 18.64 seconds to 0.74 seconds after post-commit content policies were
@@ -1959,7 +1959,7 @@ a later phase does not wait to record an earlier phase's work.
   `definePlugin`,
   `definePolicy`,
   Valibot-backed helpers,
-  and public types from `@monochromatic-dev/cli-git`.
+  and public types from `@monochromatic-dev/git-policy-cli`.
 - Make the package manifest npm-ready,
   add publication metadata without enabling registry upload,
   and include only required build artifacts,

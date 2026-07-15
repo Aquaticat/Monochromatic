@@ -471,8 +471,8 @@ Any root sentinel exists:
  safe cleanup path is part of design under review.
 
 GCW:
- `cli-git` worktree-guard reviews:
- baked-in allowlist `DEFAULT_ALLOWED_WORKTREE_DIRS` (`packages/git-policies/cli/src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass guard.
+ `git-policy-cli` worktree-guard reviews:
+ baked-in allowlist `DEFAULT_ALLOWED_WORKTREE_DIRS` (`packages/git-policy/cli/src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass guard.
 
 ### Research tools
 
@@ -1391,7 +1391,7 @@ Surface it,
  never silently let it stand.
 
 CLG:
- Never preemptively bypass `cli-git` guards (they reject bulk staging + pathspec-less commits).
+ Never preemptively bypass `git-policy-cli` guards (they reject bulk staging + pathspec-less commits).
 Stage explicit scoped pathspecs.
 `--no-enforce-*` only when no scoped pathspec fits the change.
 

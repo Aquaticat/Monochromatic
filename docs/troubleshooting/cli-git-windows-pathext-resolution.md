@@ -19,7 +19,7 @@ The same workflow passed on `ubuntu-latest` and `macos-latest`.
 
 ## Diagnosis
 
-`packages/git-policies/cli/src/resolve-git.ts` split `PATH` correctly with Node's platform delimiter,
+`packages/git-policy/cli/src/resolve-git.ts` split `PATH` correctly with Node's platform delimiter,
 but constructed only an extensionless `git` candidate in every directory.
 
 Windows GitHub runners expose Git as an executable such as `git.exe`.
@@ -29,7 +29,7 @@ Cli-git used `fs.access` on the extensionless path,
 so every otherwise valid Windows PATH entry appeared absent.
 
 The hosted log identified the exact failing boundary:
-`resolveGit` threw at `packages/git-policies/cli/src/resolve-git.ts`
+`resolveGit` threw at `packages/git-policy/cli/src/resolve-git.ts`
 before `trust-service.unit.test.ts` created any trust fixture.
 
 ## Root cause

@@ -294,7 +294,7 @@ The implementation must trust the fresh scan over this historical list if the tr
 ## Architecture tradeoff and migration
 
 The migration selected cli-git as the durable owner.
-`packages/git-policies/cli/src/policy-engine/final-newline-policy.ts` owns policy registration and lifecycle behavior;
+`packages/git-policy/cli/src/policy-engine/final-newline-policy.ts` owns policy registration and lifecycle behavior;
 `final-newline-normalize.ts` owns exact-byte classification;
 `final-newline-patch.ts` owns destination-grammar Git patch generation.
 The shared commit transaction applies pre-forward patches only to a private index.

@@ -165,11 +165,11 @@ The same built test then returned `Readonly<SemanticFixtureBox<string>>` while c
 ### Active source metadata can disagree with configured ownership
 
 A one-worker workspace sweep repeatedly failed only on
-`packages/git-policies/cli/src/bin.ts` with:
+`packages/git-policy/cli/src/bin.ts` with:
 
 ```text
 node-not-found: Effect summary index omitted owned callable declaration
-/var/home/user/Monochromatic/packages/git-policies/cli/src/bin.ts:3407:12786:263.
+/var/home/user/Monochromatic/packages/git-policy/cli/src/bin.ts:3407:12786:263.
 ```
 
 A package-local run indexed the same `runCliGit` function declaration.

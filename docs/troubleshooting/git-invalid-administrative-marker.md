@@ -22,7 +22,7 @@ The wrapper therefore overrode Git based only on a filesystem name that Git did 
 ## Root cause
 
 `packages/module/fs-path/src/find-monorepo-root.ts` previously treated existence of any `.git` entry as sufficient.
-`packages/git-policies/cli/src/rules/require-root.ts` independently used `find-up` with `type: 'both'` and made the same
+`packages/git-policy/cli/src/rules/require-root.ts` independently used `find-up` with `type: 'both'` and made the same
 assumption.
 Neither path inspected directory signatures or gitfile content.
 
@@ -45,7 +45,7 @@ The diagnosis began with deterministic failing tests at both affected seams:
 - `packages/module/fs-path/src/find-monorepo-root.unit.test.ts` expected empty directories,
   malformed gitfiles,
   and missing gitfile targets to be rejected;
-- `packages/git-policies/cli/src/rules/require-root.unit.test.ts` expected invalid ancestors to pass through to real Git.
+- `packages/git-policy/cli/src/rules/require-root.unit.test.ts` expected invalid ancestors to pass through to real Git.
 
 Before the fix,
 the fs-path tests reported that all invalid markers unexpectedly passed,

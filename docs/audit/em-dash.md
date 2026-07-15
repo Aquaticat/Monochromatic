@@ -1961,14 +1961,14 @@ Replace with proper punctuation or restructure sentence.
    call,
    print
 
-### packages/git-policies/cli/README.md
+### packages/git-policy/cli/README.md
 
 - Line 7:
    **Require root** -- rejects commands when the working directory is not the root
 - Line 11:
    **Atomic push** -- injects `--atomic` into `git push` commands automatically,
 
-### packages/git-policies/cli/src/index.ts
+### packages/git-policy/cli/src/index.ts
 
 - Line 14:
    //region Rule pipeline -- validate and transform args before forwarding to real git
@@ -1977,7 +1977,7 @@ Replace with proper punctuation or restructure sentence.
    apply rules,
    spawn
 
-### packages/git-policies/cli/src/rules/require-root.ts
+### packages/git-policy/cli/src/rules/require-root.ts
 
 - Line 76:
    rl.

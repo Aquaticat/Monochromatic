@@ -13,7 +13,7 @@ but the native Git and hk path completed in less than one second in the same dis
 
 The reproducer used:
 
-- cli-git from `packages/git-policies/cli`;
+- cli-git from `packages/git-policy/cli`;
 - hk pre-commit stashing with five unstaged files;
 - one staged `README.md` change;
 - the enabled-by-default `final-newline` policy;
@@ -52,11 +52,11 @@ and proved that rebuilding the executable alone could not update already-trusted
 ## Diagnosis
 
 The wrapper runs a post-commit lifecycle after native Git succeeds.
-`packages/git-policies/cli/src/policy-engine/post-commit-facts.ts` exposed every file in the landed tree
+`packages/git-policy/cli/src/policy-engine/post-commit-facts.ts` exposed every file in the landed tree
 as an immutable candidate,
 but labeled every candidate `unchanged`.
 
-`packages/git-policies/cli/src/policy-engine/final-newline-policy.ts` then read every regular candidate.
+`packages/git-policy/cli/src/policy-engine/final-newline-policy.ts` then read every regular candidate.
 Each lazy byte read invoked `git cat-file` separately.
 The landed tree therefore turned one changed-file commit into repository-wide subprocess fan-out.
 

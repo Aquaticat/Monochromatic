@@ -646,7 +646,7 @@ usage = '''
 flag "--local" help="Clean current repository configuration"
 flag "--global" help="Clean per-user global configuration"
 '''
-run = "node packages/git-policies/cli/src/maintenance/hk-config-cleanup-command.ts"
+run = "node packages/git-policy/cli/src/maintenance/hk-config-cleanup-command.ts"
 
 #endregion Utility Tasks
 
@@ -1186,8 +1186,7 @@ _.path = [
   "packages/desktop-app/electron-infra/node_modules/.bin",
   "packages/desktop-app/file-manager-electron/node_modules/.bin",
   "packages/dev-script/file-enforcer/node_modules/.bin",
-  "packages/git-policies/cli/node_modules/.bin",
-  "packages/git-policies/repository/node_modules/.bin",
+  "packages/git-policy/cli/node_modules/.bin",
   "packages/kwin/key-helper/node_modules/.bin",
   "packages/mcp/mvm/node_modules/.bin",
   "packages/module/pnpm-workspace-catalog/node_modules/.bin",

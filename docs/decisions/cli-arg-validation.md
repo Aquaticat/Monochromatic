@@ -26,7 +26,7 @@ Current state when this decision was made:
    `integer()`) and `@optique/core/constructs`'
   `map()` for shape transforms.
 - Three CLIs are not on Optique:
-  `packages/git-policies/cli/`,
+  `packages/git-policy/cli/`,
    `packages/cli/rgffplay/`,
    `packages/cli/terminal-exec/`.
   They parse `process.argv` directly.

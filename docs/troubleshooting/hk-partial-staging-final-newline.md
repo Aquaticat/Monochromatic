@@ -49,13 +49,13 @@ and verifies that the real index bytes are unchanged.
 `git cli-git check` and manual push remain read-only.
 
 The packed acceptance fixture in
-`packages/git-policies/cli/src/trust/fixtures/built-final-newline-consumer.ts`
+`packages/git-policy/cli/src/trust/fixtures/built-final-newline-consumer.ts`
 exercises direct check,
 direct fix,
 commit correction,
 and rejected manual push through the shipped shadow `git` executable.
 The transaction fixture in
-`packages/git-policies/cli/src/trust/fixtures/built-autofix-transaction-consumer.ts`
+`packages/git-policy/cli/src/trust/fixtures/built-autofix-transaction-consumer.ts`
 retains the exact partial-staging regression coverage.
 Independent final-newline workflow run `29171565809` passed typed Node orchestration and direct policy checking.
 Issues `#356` and `#357` completed release readiness and removed hk/Pkl infrastructure.

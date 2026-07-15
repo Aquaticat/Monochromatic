@@ -283,7 +283,7 @@ The active rule is `eslint/no-duplicate-imports`,
  and the earlier "separate value/type is
 fine under prefer-inline:
 false" note was WRONG.
- Validated by running scoped `mise run //packages/git-policies/cli:lint:oxlint`
+ Validated by running scoped `mise run //packages/git-policy/cli:lint:oxlint`
 on a hand-merged pilot file:
 
 - A separate `import type { X } from '.../ts'` alongside a value `import { ... } from '.../ts'` (same specifier) IS a
