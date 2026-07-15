@@ -258,6 +258,8 @@ async function loadRelaxedTypeScript({
  *
  * @param warn - prominent warning sink
  *
+ * @mutates candidate through handle.writeFile native-boundary access to candidate.bytes
+ *
  * @returns old or refreshed loaded config
  *
  * @throws {@link TrustedConfigError} or build error when refresh fails
