@@ -1,10 +1,10 @@
 /**
- * In-container package build via tsdown, once per mutant.
+ * In-container package build via rolldown, once per mutant.
  *
  * Tests exercise built output (repo convention), so every mutant must be
  * built before tests can observe it; the build also emits declaration
  * files (oxc isolatedDeclarations), which the tsgo gate needs for
- * package self-reference imports. Packages without tsdown configs (like
+ * package self-reference imports. Packages without rolldown configs (like
  * the fixture) skip the step: their tests import source directly.
  *
  * @example
@@ -29,12 +29,12 @@ import { WORK_MOUNT, } from '../mounts.ts';
 const l = tagged({ tag: 'mutation-test-container', },);
 
 /**
- * Root tsdown bin inside the work tree; shims resolve through the
+ * Root rolldown bin inside the work tree; shims resolve through the
  * symlinked pnpm store into the baked layer.
  */
-const TSDOWN_BIN = join(
+const ROLLDOWN_BIN = join(
   WORK_MOUNT,
-  'node_modules/.bin/tsdown',
+  'node_modules/.bin/rolldown',
 );
 
 /**
@@ -48,7 +48,7 @@ export type BuildOutcome = {
 };
 
 /**
- * Lists tsdown config files in one package directory.
+ * Lists rolldown config files in one package directory.
  *
  * @param packageCwd - Package working directory.
  *
@@ -56,24 +56,24 @@ export type BuildOutcome = {
  *
  * @example
  * ```ts
- * await listTsdownConfigs('/work/packages/module/fs-path');
- * // ['tsdown.browser.config.ts']
+ * await listRolldownConfigs('/work/packages/module/fs-path');
+ * // ['rolldown.browser.config.ts']
  * ```
  */
-export async function listTsdownConfigs(packageCwd: string,): Promise<readonly string[]> {
+export async function listRolldownConfigs(packageCwd: string,): Promise<readonly string[]> {
   /**
    * Directory entries of the package root.
    */
   const entries = await readdir(packageCwd,);
   return entries
-    .filter(function isTsdownConfig(name,): boolean {
-      return name.startsWith('tsdown.',) && name.endsWith('.config.ts',);
+    .filter(function isRolldownConfig(name,): boolean {
+      return name.startsWith('rolldown.',) && name.endsWith('.config.ts',);
     },)
     .toSorted();
 }
 
 /**
- * Builds one package by running every tsdown config sequentially.
+ * Builds one package by running every rolldown config sequentially.
  *
  * @param options - Package working directory.
  *
@@ -99,16 +99,16 @@ export async function runBuildStep(options: {
    */
   const startedAt = performance.now();
   /**
-   * tsdown config files declared by the package.
+   * rolldown config files declared by the package.
    */
-  const configs = await listTsdownConfigs(options.packageCwd,);
+  const configs = await listRolldownConfigs(options.packageCwd,);
 
   if (configs.length === 0)
     return {
       built: false,
       clean: true,
       durationMs: performance.now() - startedAt,
-      detail: 'no tsdown configs; build step skipped',
+      detail: 'no rolldown configs; build step skipped',
     };
 
   /* oxlint-disable no-await-in-loop */
@@ -116,8 +116,10 @@ export async function runBuildStep(options: {
   for (const config of configs) {
     try {
       await spawn(
-        TSDOWN_BIN,
+        ROLLDOWN_BIN,
         [
+          '--configLoader',
+          'native',
           '--config',
           config,
         ],

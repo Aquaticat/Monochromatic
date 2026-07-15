@@ -131,3 +131,9 @@ export function clientConfig(
  */
 const _default_1: RolldownOptions = clientConfig();
 export default _default_1;
+
+/**
+ * Consumer-facing alias for client flavor config values, so package configs
+ * can annotate their exported const without depending on rolldown directly.
+ */
+export type ClientFlavorConfig = RolldownOptions;

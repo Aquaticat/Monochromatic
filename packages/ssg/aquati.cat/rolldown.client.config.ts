@@ -1,11 +1,13 @@
-import { clientConfig, } from '@monochromatic-dev/config-rolldown/.client.ts';
+import { clientConfig,
+  type ClientFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.client.ts';
 
 /**
  * Client-side browser bundle config for the SSG.
  * Bundles all client-side scripts (syntax highlighting, etc.)
  * into `dist/client/index.js`.
  */
-const config = clientConfig({
+const config: ClientFlavorConfig = clientConfig({
   input: [
     './src/client/index.ts',
   ],

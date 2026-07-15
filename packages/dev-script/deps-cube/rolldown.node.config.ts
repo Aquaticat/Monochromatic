@@ -1,4 +1,6 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { nodeConfig,
+  type NodeFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node-side rolldown build for `deps-cube`.
@@ -15,7 +17,7 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
  * `src/` is shipped via `files: ["src"]` so the runtime bundler can
  * still see the controller source after a build.
  */
-const config = nodeConfig({
+const config: NodeFlavorConfig = nodeConfig({
   input: [
       './src/index.ts',
       './src/cli.ts',

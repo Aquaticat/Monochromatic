@@ -2,6 +2,7 @@ import {
   CLIENT_ALWAYS_BUNDLE,
   clientConfig,
   clientExternalFor,
+  type ClientFlavorConfig,
 } from '@monochromatic-dev/config-rolldown/.client.ts';
 
 /**
@@ -10,7 +11,7 @@ import {
  * for HTML embedding. The `hyphen**` pattern keeps every hyphenation package
  * (`hyphen`, `hyphen-en`, and siblings) inline.
  */
-const config = clientConfig({
+const config: ClientFlavorConfig = clientConfig({
   input: ['./src/client/main.ts',],
   external: await clientExternalFor({
     alwaysBundle: [

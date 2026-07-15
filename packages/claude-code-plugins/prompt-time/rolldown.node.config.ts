@@ -1,4 +1,6 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { nodeConfig,
+  type NodeFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node build for this Claude Code plugin.
@@ -9,6 +11,6 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
  * the bundle must be committed at the path `plugin.json` hooks reference. See
  * `docs/decisions/gitignore-negations.md`.
  */
-const config = nodeConfig({ outputDir: 'bundle/node', },);
+const config: NodeFlavorConfig = nodeConfig({ outputDir: 'bundle/node', },);
 
 export default config;

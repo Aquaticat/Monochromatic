@@ -223,3 +223,14 @@ export function perEntryNodeConfig(
     };
   },),);
 }
+
+/**
+ * Consumer-facing alias for Node flavor config values, so package configs
+ * can annotate their exported const without depending on rolldown directly.
+ */
+export type NodeFlavorConfig = RolldownOptions;
+
+/**
+ * Consumer-facing alias for per-entry Node flavor config arrays.
+ */
+export type NodeFlavorConfigs = RolldownOptions[];

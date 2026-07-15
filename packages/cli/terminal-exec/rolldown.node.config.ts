@@ -1,4 +1,6 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { nodeConfig,
+  type NodeFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node-side rolldown build for `cli-terminal-exec`.
@@ -10,7 +12,7 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
  * (bin). Uses `node:child_process`, so the bundle is node-only.
  * `package.json#bin` points at `dist/final/node/index.mjs`.
  */
-const config = nodeConfig({
+const config: NodeFlavorConfig = nodeConfig({
   input: [
       './src/launch.ts',
       './src/index.ts',

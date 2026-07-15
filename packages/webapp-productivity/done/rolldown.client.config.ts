@@ -1,11 +1,13 @@
-import { clientConfig, } from '@monochromatic-dev/config-rolldown/.client.ts';
+import { clientConfig,
+  type ClientFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.client.ts';
 
 /**
  * Client-side browser bundle config for the Done h-css test variant.
  * Bundles five page entry points into `dist/client/*.js`.
  * No import-attributes plugin needed: h-css generates styles at runtime.
  */
-const config = clientConfig({
+const config: ClientFlavorConfig = clientConfig({
   input: [
     './src/client/inbox.ts',
     './src/client/in-progress.ts',

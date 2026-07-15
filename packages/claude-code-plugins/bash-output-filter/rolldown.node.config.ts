@@ -1,4 +1,6 @@
-import { perEntryNodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { perEntryNodeConfig,
+  type NodeFlavorConfigs,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Build config for bash-output-filter, built via {@link perEntryNodeConfig}.
@@ -14,7 +16,7 @@ import { perEntryNodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts
  * `docs/decisions/gitignore-negations.md`. The owning mise task pre-cleans the
  * shared directory once; per-entry configs never clean it themselves.
  */
-const config = perEntryNodeConfig({
+const config: NodeFlavorConfigs = perEntryNodeConfig({
   entries: [
     './src/index.ts',
     './src/filter.ts',

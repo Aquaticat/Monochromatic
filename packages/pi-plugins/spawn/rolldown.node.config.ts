@@ -1,4 +1,6 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { nodeConfig,
+  type NodeFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node-side rolldown build for `pi-spawn`.
@@ -12,7 +14,7 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
  * export default config;
  * ```
  */
-const config = nodeConfig({
+const config: NodeFlavorConfig = nodeConfig({
   input: [
       './src/index.ts',
       './src/cli.ts',

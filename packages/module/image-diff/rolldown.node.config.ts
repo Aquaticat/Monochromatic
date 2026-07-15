@@ -1,4 +1,6 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { nodeConfig,
+  type NodeFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node-side rolldown build for `module-image-diff`.
@@ -10,7 +12,7 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
  * points at `dist/final/node/cli.mjs` so the bin runs without a
  * source-time TypeScript loader.
  */
-const config = nodeConfig({
+const config: NodeFlavorConfig = nodeConfig({
   input: [
       './src/index.ts',
       './src/cli.ts',

@@ -1,4 +1,6 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { nodeConfig,
+  type NodeFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node-side rolldown build for `dev-script-task-util`.
@@ -12,7 +14,7 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
  * file directly when present, otherwise the matching TypeScript source, so they
  * do not depend on pnpm `.bin` shims.
  */
-const config = nodeConfig({
+const config: NodeFlavorConfig = nodeConfig({
   input: [
       './src/command.ts',
       './src/append.ts',

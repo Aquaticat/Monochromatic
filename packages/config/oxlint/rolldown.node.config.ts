@@ -1,6 +1,7 @@
 import {
   nodeConfig,
   nodeExternal,
+  type NodeFlavorConfig,
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
@@ -13,7 +14,7 @@ import {
  * not declare it as a runtime dependency); the base `@monochromatic-dev/**` glob
  * already inlines the plugin source and its workspace deps.
  */
-const config = nodeConfig({
+const config: NodeFlavorConfig = nodeConfig({
   input: {
     index: './src/index.node.ts',
     'plugin-tsdoc': './src/plugin-tsdoc.ts',

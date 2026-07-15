@@ -1,4 +1,6 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { nodeConfig,
+  type NodeFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node-side rolldown build for `dev-script-vm-builder`.
@@ -10,7 +12,7 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
  * the bundle is node-only. The auxiliary `import.ts`/`sign-and-push.ts`
  * dev scripts are not bins and stay source-run via their mise tasks.
  */
-const config = nodeConfig({
+const config: NodeFlavorConfig = nodeConfig({
   input: [
       './src/build-and-import.ts',
     ],

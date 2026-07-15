@@ -1,4 +1,6 @@
-import { clientConfig, } from '@monochromatic-dev/config-rolldown/.client.ts';
+import { clientConfig,
+  type ClientFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.client.ts';
 import {
   importAttributesPlugin,
 } from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
@@ -12,7 +14,7 @@ import {
  * so it bundles by omission; declared server-only deps never enter
  * the client graph.
  */
-const config = clientConfig({
+const config: ClientFlavorConfig = clientConfig({
   input: [
     './src/client/inbox.ts',
     './src/client/in-progress.ts',

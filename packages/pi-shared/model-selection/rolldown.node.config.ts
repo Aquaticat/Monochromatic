@@ -1,4 +1,6 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { nodeConfig,
+  type NodeFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node build configuration: a single `src/index.ts` entry that re-exports
@@ -8,7 +10,7 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
  * (no consumer imports a feature subpath). pi peer deps stay external via the
  * base config's `neverBundle`.
  */
-const config = nodeConfig({
+const config: NodeFlavorConfig = nodeConfig({
   input: [
       './src/index.ts',
     ],

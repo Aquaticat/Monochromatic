@@ -1,4 +1,6 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { nodeConfig,
+  type NodeFlavorConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node build for the statusline plugin.
@@ -7,6 +9,6 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
  * so the build maps that file to the emitted `statusline.mjs` instead of the
  * usual `index.mjs` entry.
  */
-const config = nodeConfig({ input: ['./src/statusline.ts',], },);
+const config: NodeFlavorConfig = nodeConfig({ input: ['./src/statusline.ts',], },);
 
 export default config;
