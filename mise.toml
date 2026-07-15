@@ -527,9 +527,9 @@ shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout}}"
 
 [task_templates."test:unit"]
-description = "Run *.unit.test.ts in parallel via node (excludes deprecated trees and *.expensive.* unless --all); pass file paths to filter"
+description = "Run *.unit.test.ts in parallel via node (excludes inactive package trees and *.expensive.* unless --all); pass file paths to filter"
 usage = """
-flag "--all" help="Include deprecated-tree and *.expensive.* files; cannot be combined with file paths"
+flag "--all" help="Include inactive-tree and *.expensive.* files; cannot be combined with file paths"
 arg "[args]" var=#true help="Test file paths to run (when provided, only those files run); cannot be combined with --all"
 """
 shell = "node --input-type=module-typescript -e"
@@ -542,12 +542,12 @@ const { join } = await import('node:path')
 const args = parseUsageArgs(process.env.usage_args ?? '')
 const all = (process.env.usage_all ?? '').trim() === 'true'
 if (all && args.length > 0) { throw new Error('--all cannot be combined with file paths') }
-const isDeprecatedTest = (file) => file.includes('/deprecated/') || file.startsWith('packages-deprecated/') || file.includes('/packages-deprecated/')
+const isInactiveTest = (file) => file.includes('/deprecated/') || file.startsWith('packages-deprecated/') || file.includes('/packages-deprecated/') || file.startsWith('packages-paused/') || file.includes('/packages-paused/')
 let files
 if (args.length === 0) {
   files = []
   for await (const file of glob('**/*.unit.test.ts', { exclude: (name) => name.includes('node_modules') })) {
-    if (all || (!isDeprecatedTest(file) && !file.includes('.expensive.'))) { files.push(file) }
+    if (all || (!isInactiveTest(file) && !file.includes('.expensive.'))) { files.push(file) }
   }
 } else {
   // Package-scoped tasks run with cwd = MISE_CONFIG_ROOT (the package dir), so a repo-root-relative
@@ -746,12 +746,12 @@ const { spawn } = await import('node:child_process')
 const { once } = await import('node:events')
 const { glob } = await import('node:fs/promises')
 const args = parseUsageArgs(process.env.usage_args ?? '')
-const isDeprecatedTest = (file) => file.includes('/deprecated/') || file.startsWith('packages-deprecated/') || file.includes('/packages-deprecated/')
+const isInactiveTest = (file) => file.includes('/deprecated/') || file.startsWith('packages-deprecated/') || file.includes('/packages-deprecated/') || file.startsWith('packages-paused/') || file.includes('/packages-paused/')
 let files
 if (args.length === 0) {
   files = []
   for await (const file of glob('**/*.unit.test.ts', { exclude: (name) => name.includes('node_modules') })) {
-    if (!isDeprecatedTest(file)) { files.push(file) }
+    if (!isInactiveTest(file)) { files.push(file) }
   }
 } else {
   files = args
