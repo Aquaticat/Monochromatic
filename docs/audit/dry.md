@@ -110,7 +110,7 @@ duplication,
  each package's bare `tsdown.config.ts` was renamed to the
 platform-suffixed form matching its declared mise tasks.
 `packages/module/hyperscript/` now has `tsdown.browser.config.ts` only;
-`packages/figma-parsers/{kiwi,penpot}/` now have both `tsdown.browser.config.ts` and
+`packages/figma/{kiwi,penpot}/` now have both `tsdown.browser.config.ts` and
 `tsdown.node.config.ts`.
  `dist/final/{neutral,node}/` populates accordingly.
 
@@ -122,10 +122,10 @@ matching config file does not exist on disk:
 - `packages/module/hyperscript/mise.toml` declares `build:js:browser`;
    only
   `tsdown.config.ts` is present
-- `packages/figma-parsers/kiwi/mise.toml` declares `build:js:browser` and
+- `packages/figma/kiwi/mise.toml` declares `build:js:browser` and
   `build:js:node`;
    only `tsdown.config.ts` is present
-- `packages/figma-parsers/penpot/mise.toml` declares `build:js:browser` and
+- `packages/figma/to-penpot/mise.toml` declares `build:js:browser` and
   `build:js:node`;
    only `tsdown.config.ts` is present
 
@@ -1426,7 +1426,7 @@ zip-writer cases pass.
 files still use the `node:child_process` + `node:util` `promisify(execFile)` pattern:
 
 - `packages/ssg/aquati.cat/src/lib/git-dates.ts:14`
-- `packages/figma-parsers/kiwi/src/index.ts`
+- `packages/figma/kiwi/src/index.ts`
 - `packages/webapp-forge/server/src/server/routes/git.cli.unit.test.ts`
 - `packages/module/zip-writer/src/index.unit.test.ts`
 
@@ -1586,7 +1586,7 @@ category.
 #### `import.meta.dirname` used in 12 test files for fixture path resolution
 
 - `packages/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts`
-- `packages/rolldown-plugins/import-attributes/src/import-attributes.unit.test.ts`
+- `packages/rolldown-plugin/import-attributes/src/import-attributes.unit.test.ts`
 - `packages/dev-script/task-util/src/{tsgo-filter, depends, command, append}.unit.test.ts`
 - `packages/dev-script/file-enforcer/src/integration.unit.test.ts`
 - `packages/dev-script/inference-canary-viewer/src/dashboard.e2e.test.ts`

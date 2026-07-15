@@ -120,7 +120,7 @@ which requires honest types or accurate effect contracts and prohibits inline su
 - `typescript/prefer-readonly-parameter-types` cannot model branded primitive intersections
   (precedent: `packages/module/jsonc-edit/src/edit-state.ts`); allow-list is only for types we
   do NOT control (user instruction); mutable-by-design carriers use scoped disable regions
-  (precedent: `packages/rolldown-plugins/import-attributes/src/scan-importer.ts`).
+  (precedent: `packages/rolldown-plugin/import-attributes/src/scan-importer.ts`).
 - Boundary-test state files: shallow scalar objects only; assert equality on booleans/counts,
   never raw floats; make every step's expectation distinguishable from the previous state
   (e.g. `activePath` flips) so polling cannot false-pass.

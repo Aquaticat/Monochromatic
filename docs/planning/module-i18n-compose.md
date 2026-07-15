@@ -233,7 +233,7 @@ These trapped the first implementation and will trap the next contributor unless
     not errors) want one property/element per line regardless.
    `mise run //:format:oxlint` (or `oxlint --fix` directly) auto-fixes both rules,
     but the full-tree
-   `//:format` task fails on unrelated `figma-parsers/kiwi` lint errors before reaching the fixer.
+   `//:format` task fails on unrelated `figma/kiwi` lint errors before reaching the fixer.
    Run the package-local fixer directly when working on this package;
     the fix is autofixable.
    `unicorn/no-nested-ternary` is disabled in `packages/config/oxlint/src/rule/style.ts` to match the existing

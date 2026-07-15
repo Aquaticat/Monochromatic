@@ -673,7 +673,7 @@ Rejected:
   not directly portable to native Rust plus Bevy.
   Replacing the renderer is most of the work being undertaken;
   porting Penpot's data model costs more than building one fresh
-  given that we have figma-parsers/penpot to read Penpot files later if needed.
+  given that we have figma/to-penpot to read Penpot files later if needed.
 - **Spike Penpot first to calibrate the wall** (load 100k nodes,
    measure).
   Worth doing as a calibration exercise to learn where existing tools break,
@@ -847,7 +847,7 @@ Rejected for v1:
 Picked:
  `packages/vector-design/` as the category,
 with `engine/` and `app/` as subpackages
-(parallels `packages/figma-parsers/{kiwi,penpot}` in pattern).
+(parallels `packages/figma/{kiwi,penpot}` in pattern).
 
 Rejected:
 

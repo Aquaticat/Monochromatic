@@ -339,7 +339,7 @@ The `tsgo` failure on both cross-package cells was:
 
 ```text
 Error: tsgo did not generate dts file for
-<worktree>/packages/ownership-markers/foreign-borrowed/src/index.ts,
+<worktree>/packages/ownership-marker/foreign-borrowed/src/index.ts,
 please check your tsconfig.
 ```
 

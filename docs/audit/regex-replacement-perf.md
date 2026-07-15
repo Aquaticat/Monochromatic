@@ -249,7 +249,7 @@ spec),
 - `oxlint-plugins/stylistic`:
    `src/utility/chain.ts`,
   `src/utility/indent.ts`
-- `rolldown-plugins/import-attributes`:
+- `rolldown-plugin/import-attributes`:
    `src/transform-helpers.ts`
 
 ## Severity

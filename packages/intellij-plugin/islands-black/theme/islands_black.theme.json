@@ -1,0 +1,14 @@
+{
+  "name": "Islands Black",
+  "dark": true,
+  "author": "Monochromatic",
+  "parentTheme": "Islands Dark",
+  "editorScheme": "/scheme/Islands_Black.xml",
+  "colors": {
+    "gray-10": "#000000",
+    "gray-20": "#000000",
+    "gray-30": "#000000",
+    "gray-40": "#000000"
+  },
+  "ui": {}
+}

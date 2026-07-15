@@ -157,7 +157,7 @@ fixtures.
 1. `packages/dev-script/watch-restart/src/hash-cache.ts` -- `HashCache`
 1. `packages/pi-plugins/morph-compact/src/morph-client.ts` -- `MorphCompactClient`
 1. `packages/module/zip-writer/src/index.ts` -- `ZipWriter`
-1. `packages/figma-parsers/kiwi/src/index.ts` -- `BinaryReader` (see "Lint blind spot" below)
+1. `packages/figma/kiwi/src/index.ts` -- `BinaryReader` (see "Lint blind spot" below)
 
 ### Completed in editord
 
@@ -185,7 +185,7 @@ Migrated on 2026-05-20:
 
 ## Lint blind spot
 
-`packages/figma-parsers/kiwi` does not declare a `lint:oxlint` mise task;
+`packages/figma/kiwi` does not declare a `lint:oxlint` mise task;
  its
 `mise.toml` only wires up `build`,
  `watch:build`,
@@ -275,7 +275,7 @@ package below,
    1 (`Greeter`)
 - `packages/webapp-forge/server`:
    1 (`DisposableServer`)
-- `packages/figma-parsers/kiwi`:
+- `packages/figma/kiwi`:
    1 (`BinaryReader`,
    lint-blind)
 

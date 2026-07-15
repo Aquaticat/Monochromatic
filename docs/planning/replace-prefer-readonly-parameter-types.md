@@ -362,7 +362,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   namespace,
   and shared-config sidecar under `packages/oxlint-plugins/prefer-readonly-parameter-type`;
 - the same commit satisfies the user's narrow ubiquitous-dependency requirement through
-  `packages/ownership-markers/foreign-borrowed`,
+  `packages/ownership-marker/foreign-borrowed`,
   which contains one type declaration,
   no runtime code,
   and no runtime dependencies;
@@ -865,7 +865,7 @@ The implementation is split at its runtime and policy boundaries:
 - shared parser and mutation-contract model:
   `packages/oxlint-plugins/shared/`;
 - exact ownership marker:
-  `packages/ownership-markers/foreign-borrowed/`;
+  `packages/ownership-marker/foreign-borrowed/`;
 - shared-config sidecar and error-level policy:
   `packages/config/oxlint/src/plugin-prefer-readonly-parameter-type.ts` and
   `packages/config/oxlint/src/rule/restriction.ts`;

@@ -75,10 +75,10 @@ They changed no-restricted-syntax behavior and explain why root lint now surface
 - `mise run //packages/dev-script/vm-builder:lint` passed after vm-builder fixes.
 - `mise run //packages/dev-script/deps-cube:lint` passed after deps-cube fixes.
 - `mise run //packages/dev-script/page-weight:lint` passed after page-weight fixes.
-- `mise run //packages/figma-parsers/kiwi:lint` and
-  `node packages/figma-parsers/kiwi/src/index.unit.test.ts` passed after `f36c3efd3`.
+- `mise run //packages/figma/kiwi:lint` and
+  `node packages/figma/kiwi/src/index.unit.test.ts` passed after `f36c3efd3`.
   Current root lint lists kiwi failing again under newer rules.
-- `mise run //packages/figma-parsers/penpot:lint //packages/mcp/stdio:lint` passed after `ff6490a2a`.
+- `mise run //packages/figma/to-penpot:lint //packages/mcp/stdio:lint` passed after `ff6490a2a`.
 - Targeted module lints passed for dom,
   fs-path,
   i18n-compose,
@@ -125,7 +125,7 @@ The aggregate failed package list from that run was:
 
 ```txt
 //packages/config/tofu:lint
-//packages/figma-parsers/kiwi:lint
+//packages/figma/kiwi:lint
 //packages/oxlint-plugins/tsdoc:lint
 //packages/pi-shared/model-selection:lint
 //packages/pi-plugins/current-time-context:lint
@@ -136,7 +136,7 @@ The aggregate failed package list from that run was:
 //packages/pi-plugins/statusline:lint
 //packages/pi-plugins/spawn:lint
 //packages/rust-module/forbidden-regex.bench:lint
-//packages/rolldown-plugins/import-attributes:lint
+//packages/rolldown-plugin/import-attributes:lint
 //packages/pi-plugins/linkup:lint
 //packages/pi-plugins/thinking-defaults:lint
 //packages/typeface/aquaticat:lint

@@ -1,0 +1,38 @@
+{
+  "name": "@monochromatic-dev/ownership-marker-foreign-borrowed",
+  "version": "0.0.1",
+  "private": false,
+  "type": "module",
+  "description": "Zero-runtime TypeScript ownership marker for borrowed foreign values.",
+  "sideEffects": false,
+  "files": [
+    "src",
+    "LICENSES"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts"
+    },
+    "./ts": {
+      "types": "./src/index.ts"
+    }
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*"
+  },
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/ownership-marker/foreign-borrowed"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

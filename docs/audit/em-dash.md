@@ -629,7 +629,7 @@ Replace with paired commas,
   tsbuildinfo causes false negatives;
    clean before each build
 
-### packages/figma-parsers/penpot/src/index.ts
+### packages/figma/to-penpot/src/index.ts
 
 - Line 770:
    // For decks,
@@ -3096,7 +3096,7 @@ Replace with proper punctuation or restructure sentence.
    /** libvirt session URI -- no sudo needed.
    */
 
-### packages/figma-parsers/kiwi/RESEARCH.md
+### packages/figma/kiwi/RESEARCH.md
 
 - Line 27:
    There is NO custom header -- the first bytes `AF 04` are simply the
@@ -3104,12 +3104,12 @@ Replace with proper punctuation or restructure sentence.
    difference -- type is unused for enum fields anyway.
    The rest matches exactly.
 
-### packages/figma-parsers/kiwi/src/index.ts
+### packages/figma/kiwi/src/index.ts
 
 - Line 592:
    // Unknown tag -- cannot skip without knowing the type.
 
-### packages/figma-parsers/penpot/TROUBLESHOOTING.import.md
+### packages/figma/to-penpot/TROUBLESHOOTING.import.md
 
 - Line 220:
    5.
@@ -3812,7 +3812,7 @@ Replace with proper punctuation or restructure sentence.
    // rm -- -f by itself should not flag (no -rf,
    no -f flag before --)
 
-### packages/rolldown-plugins/import-attributes/README.md
+### packages/rolldown-plugin/import-attributes/README.md
 
 - Line 51:
    1.
@@ -5897,7 +5897,7 @@ Replace with proper punctuation or restructure sentence.
    // - But we are in the middle of the input token stream.
    We cannot easily go back to re-tokenize the stored mixin body string.
 
-### packages/figma-parsers/penpot/PENPOT_FORMAT.md
+### packages/figma/to-penpot/PENPOT_FORMAT.md
 
 - Line 75:
    - `data` (optional - the actual design data,

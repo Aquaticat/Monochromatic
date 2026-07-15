@@ -97,7 +97,7 @@ All pass with 0 warnings,
 - `//packages/pi-plugins/auto-mode`
 - `//packages/pi-plugins/morph-compact`
 - `//packages/pi-plugins/terminal-title`
-- `//packages/rolldown-plugins/import-attributes`
+- `//packages/rolldown-plugin/import-attributes`
 
 Plus everything previously cleared (listed in earlier handover sections
 above;
@@ -186,7 +186,7 @@ above;
   TSDoc will bind to your new helper and the original function will be
   reported as missing TSDoc.
    (Hit again this session in
-  `rolldown-plugins/import-attributes/transform-helpers.ts`.
+  `rolldown-plugin/import-attributes/transform-helpers.ts`.
   )
 - **stylelint accepts regex-shaped strings** (`'/^max-/'`,
    etc.).
@@ -294,7 +294,7 @@ this task;
 - `packages/cli/forbidden-strings/README.md`
 - `packages/cli/forbidden-strings/fuzz/Cargo.toml`
 - `packages/cli/forbidden-strings/fuzz/dictionaries/forbidden-strings.dict`
-- `packages/figma-parsers/penpot/src/index.ts`
+- `packages/figma/to-penpot/src/index.ts`
 - `pnpm-lock.yaml`
 
 Every file I changed for this task is committed;

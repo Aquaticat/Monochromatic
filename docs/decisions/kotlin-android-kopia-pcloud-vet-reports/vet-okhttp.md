@@ -31,7 +31,7 @@ runtime consumer:
  or Zig.
  The only `.kt`/`.gradle`
 files in the tree are inside a vendored zig-cache imgui example,
- and the one `intellij-plugins`
+ and the one `intellij-plugin`
 package (`islands-black`) is a static theme `.jar` built with TypeScript tooling,
  with no
 Kotlin/Java source and no HTTP need.

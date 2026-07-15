@@ -120,7 +120,7 @@ The package layout currently mixes two category styles:
 - Product or subsystem categories:
   `music-player`,
    `claude-code-plugins`,
-   `figma-parsers`,
+   `figma`,
    `pi`.
 
 Both styles are valid.
@@ -307,7 +307,7 @@ Product,
 - `agent-harnesses-shared`:
   utilities shared by multiple agent harness hosts;
   category name follows the shared suffix convention for cross-host agent infrastructure.
-- `figma-parsers`:
+- `figma`:
   domain pipeline that parses Figma export formats and converts them to Penpot.
 - `webapp-productivity`:
   productivity web apps;
@@ -320,7 +320,7 @@ Product,
   design-audit references for external sites.
 - `typeface`:
   custom fonts.
-- `intellij-plugins`:
+- `intellij-plugin`:
   themes and plugins for JetBrains IDEs.
 
 Artifact-type and utility categories:
@@ -355,7 +355,7 @@ Artifact-type and utility categories:
 - `oxlint-plugins`:
   custom oxlint plugins;
   moves into the new `oxlint` subsystem cluster per this plan.
-- `rolldown-plugins`:
+- `rolldown-plugin`:
   custom Rolldown bundler plugins.
 - `runtime-error`:
   scripts that deliberately trigger runtime errors for error-handling tests.
@@ -1287,8 +1287,8 @@ to confirm the `path` dependency still resolves.
 Current roots:
 
 ```text
-packages/figma-parsers/kiwi/
-packages/figma-parsers/penpot/
+packages/figma/kiwi/
+packages/figma/to-penpot/
 ```
 
 `penpot` depends on `kiwi`.
@@ -1304,7 +1304,7 @@ This is already a domain category.
 Potential future shape:
 
 ```text
-packages/figma-parsers/
+packages/figma/
   kiwi/
   penpot/
   cli/

@@ -236,7 +236,7 @@ Leaf packages still to fix:
    `dev-script/task-util` (11w 6e),
    `dev-script/catalog-tighten` (4w 6e),
    `dev-script/vm-builder` (7w)
-- `rolldown-plugins/import-attributes` (8e),
+- `rolldown-plugin/import-attributes` (8e),
    `build-tool/css` (4e)
 - `desktop-daemon/hall-monitor` (7w 6e)
 - `claude-code-plugins/hook-types` (3e),

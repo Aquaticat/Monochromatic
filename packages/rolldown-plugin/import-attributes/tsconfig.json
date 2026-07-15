@@ -1,0 +1,10 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/dom",
+  "exclude": [
+    "dist",
+    "bak",
+    "node_modules",
+    "**/deprecated/**",
+    "src/fixture/**",
+  ],
+}

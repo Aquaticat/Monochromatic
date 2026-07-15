@@ -67,7 +67,7 @@ How many files have N `let` declarations:
    5 files
 
 The long tail is short:
- the top 5 files (`figma-parsers/kiwi/src/index.ts` with 19,
+ the top 5 files (`figma/kiwi/src/index.ts` with 19,
 `forbidden-strings/src/mise.port-betterleaks.ts` with 19,
 `messages-demo/src/lib/seed.ts` with 13,
 `messages-demo/src/client/composer.worker.ts` with 13,
@@ -94,7 +94,7 @@ Top contributors (total `let` count per package):
    28
 - `module/logger`:
    24
-- `figma-parsers/kiwi`:
+- `figma/kiwi`:
    24
 - `ssg/aquati.cat`:
    23
@@ -383,7 +383,7 @@ Alternatives:
 
 ### State machines and parsers
 
-The kiwi binary parser (`figma-parsers/kiwi/src/index.ts`) shows the legitimate end of the spectrum:
+The kiwi binary parser (`figma/kiwi/src/index.ts`) shows the legitimate end of the spectrum:
 varint reading,
  length-prefixed strings,
  ZIP central-directory scans.
@@ -706,7 +706,7 @@ Neither pattern needs a disable comment if the AST shape matches the heuristic.
 Sites where neither refactor nor allowlist-shape applies:
 
 - Genuine multi-let state machines (Mulberry32 PRNG step in `packages/webapp-content/messages-demo/src/lib/seed.ts:143`;
-   the kiwi binary parser in `packages/figma-parsers/kiwi/src/index.ts`).
+   the kiwi binary parser in `packages/figma/kiwi/src/index.ts`).
 - Parsers with conditional-init fields and side-effecting branches (the TOML rule parser in `packages/cli/forbidden-strings/src/mise.port-betterleaks.ts:225-231`).
 - Module-level memoization caches that have no clean Map/memoize replacement (`packages/module/logger/src/sinks/console.ts:8,11,100,160`).
 
@@ -806,7 +806,7 @@ Heuristic firing was reconfirmed on 2026-06-01 with a throwaway probe (one funct
 
 Coverage gap noted during the 2026-06-01 baseline:
  packages without a `lint:oxlint` task are never checked by these rules.
- `packages/figma-parsers/penpot` is one such package and still holds a module-root `let uuidCounter` in `src/index.ts`.
+ `packages/figma/to-penpot` is one such package and still holds a module-root `let uuidCounter` in `src/index.ts`.
  Closing that gap is a separate lint-coverage task,
  not part of this migration.
 

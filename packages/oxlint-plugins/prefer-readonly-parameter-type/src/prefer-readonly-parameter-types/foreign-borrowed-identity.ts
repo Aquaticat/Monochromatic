@@ -49,6 +49,6 @@ export function isForeignBorrowedType({
           '\\',
           '/',
         )
-        .endsWith('/ownership-markers/foreign-borrowed/src/index.ts',);
+        .endsWith('/ownership-marker/foreign-borrowed/src/index.ts',);
     },);
 }

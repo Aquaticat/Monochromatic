@@ -11,7 +11,7 @@ nested lists or code fences. This is a deliberate, documented exception.
 
 Two places in the workspace shell out to the external `zstd` command-line tool:
 
-- `packages/figma-parsers/kiwi/src/index.ts`,
+- `packages/figma/kiwi/src/index.ts`,
    function `decompressZstd`,
    decompresses the
   zstd-compressed document section of a Figma `.fig` / `.deck` / `.jam` export.
@@ -1042,7 +1042,7 @@ Not yet applied.
 
 ### Figma decompression
 
-In `packages/figma-parsers/kiwi/src/index.ts`,
+In `packages/figma/kiwi/src/index.ts`,
  `decompressZstd` collapses to:
 
 ```ts
@@ -1057,11 +1057,11 @@ async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
 It stays `async` to preserve the public call contract,
  mirroring the `inflateRawSync` schema decode
 already in the same function.
- Remove `nano-spawn` from `packages/figma-parsers/kiwi/package.json`
+ Remove `nano-spawn` from `packages/figma/kiwi/package.json`
 (its only use was the removed fallback).
  Verify with the package's existing integration test,
  which
-decodes real `.fig` / `.deck` / `.jam` files (`bun packages/figma-parsers/kiwi/src/index.unit.test.ts`).
+decodes real `.fig` / `.deck` / `.jam` files (`bun packages/figma/kiwi/src/index.unit.test.ts`).
 
 ### ssg compression
 

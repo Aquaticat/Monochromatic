@@ -150,8 +150,8 @@ established terms of art (`dotfiles`, `forbidden-strings`, `import-attributes`).
 Proposed handling of renamed-away names:
 add forbidden-strings entries for the ten retired category-level identifiers
 (`pi-plugins`, `claude-code-plugins`, `oxlint-plugins`, `agent-harnesses-shared`,
-`figma-parsers`, `git-policies`, `intellij-plugins`, `rolldown-plugins`,
-`ownership-markers`, `cli-git`)
+`figma`, `git-policies`, `intellij-plugin`, `rolldown-plugin`,
+`ownership-marker`, `cli-git`)
 rather than one entry per package name.
 
 ## Risks

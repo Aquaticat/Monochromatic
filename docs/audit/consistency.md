@@ -28,7 +28,7 @@ md,
   json,
    mise.
   toml
-- `intellij-plugins/islands-black`:
+- `intellij-plugin/islands-black`:
    missing package.
   json,
    mise.
@@ -56,9 +56,9 @@ except one:
 - `test-fixture/file-enforcer-perf` is named `@monochromatic-dev/fixture-file-enforcer-perf`
   (uses `fixture-` instead of `test-fixture-`)
 
-### Singular vs plural category in rolldown-plugins
+### Singular vs plural category in rolldown-plugin
 
-The directory is `rolldown-plugins/import-attributes` (plural)
+The directory is `rolldown-plugin/import-attributes` (plural)
 but the package name is `@monochromatic-dev/rolldown-plugin-import-attributes` (singular).
 No other multi-word category has this singular/plural mismatch.
 
@@ -174,7 +174,7 @@ Packages without `private` that are likely intended for publishing (have `files`
  `module/es`,
  `module/hyperscript`,
  `build-tool/css`,
-`rolldown-plugins/import-attributes`,
+`rolldown-plugin/import-attributes`,
  `stylesheet/monochromatic`.
 
 The ambiguity means `pnpm publish` behavior for these packages is undefined.

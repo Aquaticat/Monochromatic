@@ -475,7 +475,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -500,7 +500,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       unbash:
         specifier: 'catalog:'
         version: 4.0.2
@@ -528,7 +528,7 @@ importers:
         version: link:../shell-command-analyzer
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -822,7 +822,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -893,7 +893,7 @@ importers:
         version: link:../../module/or-throw
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -936,7 +936,7 @@ importers:
         version: link:../../module/or-throw
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       ignore:
         specifier: 'catalog:'
         version: 7.0.6
@@ -976,7 +976,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -1283,7 +1283,7 @@ importers:
         version: 20.0.2
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       electron:
         specifier: 'catalog:'
         version: 43.1.0
@@ -1314,7 +1314,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
@@ -1448,7 +1448,7 @@ importers:
         version: link:../../module/pnpm-workspace-catalog
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1497,7 +1497,7 @@ importers:
         version: link:../../module/toml-edit
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       chokidar:
         specifier: 'catalog:'
         version: 5.0.0
@@ -1687,7 +1687,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/figma-parsers/kiwi:
+  packages/figma/kiwi:
     dependencies:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
@@ -1709,7 +1709,7 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/figma-parsers/penpot:
+  packages/figma/to-penpot:
     dependencies:
       '@monochromatic-dev/figma-kiwi':
         specifier: workspace:*
@@ -1722,7 +1722,7 @@ importers:
         version: link:../../module/zip-writer
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -1744,7 +1744,7 @@ importers:
     dependencies:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
@@ -1769,7 +1769,7 @@ importers:
         version: link:../../module/caught-value
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -1827,7 +1827,7 @@ importers:
         version: link:../api
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1858,7 +1858,7 @@ importers:
         version: link:../api
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -1873,7 +1873,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/intellij-plugins/islands-black:
+  packages/intellij-plugin/islands-black:
     dependencies:
       '@monochromatic-dev/module-zip-writer':
         specifier: workspace:*
@@ -1896,7 +1896,7 @@ importers:
         version: link:../../module/caught-value
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@msgpack/msgpack':
         specifier: 'catalog:'
         version: 3.1.3
@@ -2040,7 +2040,7 @@ importers:
     dependencies:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -2062,7 +2062,7 @@ importers:
         version: link:../logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2154,7 +2154,7 @@ importers:
     dependencies:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -2182,7 +2182,7 @@ importers:
         version: link:../logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -2517,7 +2517,7 @@ importers:
         version: link:../logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       find-up:
         specifier: 'catalog:'
         version: 8.0.0
@@ -2612,7 +2612,7 @@ importers:
     dependencies:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -2680,7 +2680,7 @@ importers:
         version: link:../or-throw
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       toml-eslint-parser:
         specifier: 'catalog:'
         version: 1.0.3
@@ -2711,7 +2711,7 @@ importers:
     dependencies:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -2732,7 +2732,7 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/ownership-markers/foreign-borrowed:
+  packages/ownership-marker/foreign-borrowed:
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
@@ -2764,7 +2764,7 @@ importers:
         version: link:../../module/test
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
@@ -2801,7 +2801,7 @@ importers:
         version: link:../../module/test
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
@@ -2840,7 +2840,7 @@ importers:
         version: link:../../module/or-throw
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.73.0
@@ -2890,7 +2890,7 @@ importers:
         version: link:../shared
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.73.0
@@ -2930,7 +2930,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@monochromatic-dev/pi-shared-model-selection':
         specifier: workspace:*
         version: link:../../pi-shared/model-selection
@@ -2976,7 +2976,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -3010,7 +3010,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@monochromatic-dev/pi-shared-model-selection':
         specifier: workspace:*
         version: link:../../pi-shared/model-selection
@@ -3050,7 +3050,7 @@ importers:
         version: link:../../agent-harnesses-shared/current-time-context
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -3081,7 +3081,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       ignore:
         specifier: 'catalog:'
         version: 7.0.6
@@ -3112,7 +3112,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -3146,7 +3146,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -3180,7 +3180,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@optique/core':
         specifier: 'catalog:'
         version: 1.1.1
@@ -3217,7 +3217,7 @@ importers:
         version: link:../../module/logger
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -3242,7 +3242,7 @@ importers:
         version: link:../../agent-harnesses-shared/terminal-title
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -3264,7 +3264,7 @@ importers:
     dependencies:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@monochromatic-dev/pi-shared-model-selection':
         specifier: workspace:*
         version: link:../../pi-shared/model-selection
@@ -3292,7 +3292,7 @@ importers:
         version: link:../../module/caught-value
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       type-fest:
         specifier: 'catalog:'
         version: 5.8.0
@@ -3322,11 +3322,11 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  packages/rolldown-plugins/import-attributes:
+  packages/rolldown-plugin/import-attributes:
     dependencies:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       rolldown:
         specifier: 'catalog:'
         version: 1.1.5
@@ -3421,7 +3421,7 @@ importers:
         version: link:../../module/or-throw
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       farmhashjs:
         specifier: 'catalog:'
         version: 1.0.1
@@ -3579,7 +3579,7 @@ importers:
         version: link:../../module/caught-value
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       type-fest:
         specifier: 'catalog:'
         version: 5.8.0
@@ -3597,7 +3597,7 @@ importers:
         version: link:../../config/typescript
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
@@ -3680,7 +3680,7 @@ importers:
         version: link:../../module/test
       '@monochromatic-dev/rolldown-plugin-import-attributes':
         specifier: workspace:*
-        version: link:../../rolldown-plugins/import-attributes
+        version: link:../../rolldown-plugin/import-attributes
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
@@ -3791,7 +3791,7 @@ importers:
         version: link:../../module/hyperscript
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
-        version: link:../../ownership-markers/foreign-borrowed
+        version: link:../../ownership-marker/foreign-borrowed
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*

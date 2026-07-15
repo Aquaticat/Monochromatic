@@ -191,12 +191,12 @@ packages/
   desktop-daemon/           Background services (editord, hall-monitor)
   dev-script/               Developer utilities (file-enforcer, inference-canary,
                               catalog-tighten, page-weight, task utilities)
-  figma-parsers/            Figma and Penpot parsing experiments
+  figma/                    Figma and Penpot tooling (kiwi parser, to-penpot converter)
   mcp/                      Model Context Protocol servers (stdio, nvim, mvm)
   module/                   Core libraries (functional utilities, test harness,
                               logger, path helpers, image diff, TOML editing)
   pi/                       Pi coding-agent extensions and utilities
-  rolldown-plugins/         Rolldown/tsdown plugins (import-attributes)
+  rolldown-plugin/          Rolldown/tsdown plugins (import-attributes)
   runtime-error/            Runtime error reproductions (bun)
   shim/                     API-compatible dependency shims
   stub/                     Dependency blocklist stubs
