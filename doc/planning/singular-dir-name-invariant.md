@@ -184,7 +184,8 @@ rather than one entry per package name.
 - Forbidden-strings entries for retired identifiers were skipped by user decision.
 - The `dev-script-file-enforcer` generated-policy-contracts test fails for a
   preexisting reason unrelated to the renames:
-  canonical policy sources lack the lazy-provider mutation contract
-  since before this work (predates batch 1).
+  commit b979593d5 (readonly-rule findings sweep, earlier the same day)
+  removed the lazy-provider mutation contract from canonical policy sources
+  while the test still asserts it; verified via git log -S.
 - User-global configs updated: `~/.pi/agent/settings.json` plugin paths and
   `~/.claude/settings.json` statusline path point at `package/...`.
