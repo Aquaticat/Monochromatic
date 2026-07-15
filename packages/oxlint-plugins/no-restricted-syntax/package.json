@@ -20,8 +20,7 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
-    "nano-spawn": "catalog:",
-    "tsdown": "catalog:"
+    "nano-spawn": "catalog:"
   },
   "type": "module",
   "files": [

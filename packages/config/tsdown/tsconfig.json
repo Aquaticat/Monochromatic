@@ -1,5 +1,0 @@
-{
-  "extends": "@monochromatic-dev/config-typescript/dom",
-  "compilerOptions": {
-  },
-}

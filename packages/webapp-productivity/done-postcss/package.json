@@ -19,7 +19,6 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@monochromatic-dev/rolldown-plugin-import-attributes": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }
