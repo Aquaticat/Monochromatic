@@ -283,7 +283,7 @@ Create `packages/webapp-content/site-aquaticat/` containing only Aquaticat conte
 
 The previous plan never said how a consumer triggers a build whose entry lives in `node_modules`.
 
-- [ ] Add a `bin` entry to the SSG `package.json` (modeled on `packages/git-policies/cli/package.json:8`),
+- [ ] Add a `bin` entry to the SSG `package.json` (modeled on `packages/git-policy/cli/package.json:8`),
       for example `{ "mono-ssg": "dist/final/node/index.mjs" }`,
        with subcommands `build`,
        `dev`,

@@ -42,12 +42,12 @@ type PolicyMirrorContractFixture = Readonly<{
  */
 const POLICY_MIRROR_CONTRACT_FIXTURES = [
   {
-    canonicalPath: 'packages/git-policies/repository/src/index.ts',
-    generatedPath: 'packages/git-policies/cli/src/optional/repository-policy.ts',
+    canonicalPath: 'packages/git-policy/repository/src/index.ts',
+    generatedPath: 'packages/git-policy/cli/src/optional/repository-policy.ts',
   },
   {
-    canonicalPath: 'packages/git-policies/forbidden-strings/src/index.ts',
-    generatedPath: 'packages/git-policies/cli/src/optional/forbidden-strings/index.ts',
+    canonicalPath: 'packages/git-policy/forbidden-strings/src/index.ts',
+    generatedPath: 'packages/git-policy/cli/src/optional/forbidden-strings/index.ts',
   },
 ] as const satisfies readonly PolicyMirrorContractFixture[];
 
