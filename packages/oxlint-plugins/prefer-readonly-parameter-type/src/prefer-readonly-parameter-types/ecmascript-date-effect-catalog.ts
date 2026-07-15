@@ -56,7 +56,10 @@ export const ECMASCRIPT_DATE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ].map(function localeDateObservation({
     member,
     algorithm,
-  },): IntrinsicEffectEntry {
+  }: Readonly<{
+    member: string;
+    algorithm: string;
+  }>,): IntrinsicEffectEntry {
     return {
       provenance: { kind: 'ecmascript', },
       ownerType: 'Date',
