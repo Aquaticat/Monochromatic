@@ -141,11 +141,11 @@ type HOptions = {
   /**
    * Attributes set as key="value" pairs (values are HTML-escaped)
    */
-  readonly attrs?: Record<string, string>;
+  readonly attrs?: Readonly<Record<string, string>>;
   /**
    * Inline style properties (camelCase or kebab-case keys)
    */
-  readonly style?: Record<string, string>;
+  readonly style?: Readonly<Record<string, string>>;
   /**
    * Child HTML strings to concatenate inside the element
    */

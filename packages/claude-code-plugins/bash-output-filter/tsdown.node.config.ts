@@ -14,14 +14,20 @@ import type { UserConfig, } from 'tsdown';
  * live in the tracked `bundle/node/` directory, not gitignored `dist/`; see
  * `docs/decisions/gitignore-negations.md`.
  */
-const config: UserConfig[] = perEntryNodeConfig([
+/**
+ * Per-entry configs before the bundle-directory override.
+ */
+const entryConfigs: UserConfig[] = perEntryNodeConfig([
   './src/index.ts',
   './src/filter.ts',
-],).map(function intoBundleDir(entryConfig: UserConfig,): UserConfig {
-  return {
-    ...entryConfig,
-    outDir: 'bundle/node',
-  };
-},);
+],);
+
+const config: UserConfig[] = entryConfigs
+  .map(function intoBundleDir(entryConfig: UserConfig,): UserConfig {
+    return {
+      ...entryConfig,
+      outDir: 'bundle/node',
+    };
+  },);
 
 export default config;
