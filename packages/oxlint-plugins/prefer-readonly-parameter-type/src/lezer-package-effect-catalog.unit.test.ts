@@ -11,6 +11,7 @@ import {
   intrinsicEffect,
   intrinsicEffectQuery,
   NO_INTRINSIC_EFFECT,
+  NO_INTRINSIC_QUERY,
   openSemanticFile,
 } from '../dist/final/node/index.mjs';
 import { isPropertyAccessExpression, } from 'typescript/unstable/ast/is';
@@ -46,11 +47,17 @@ await describe({
         const propertyAccess = member.parent;
         if (!isPropertyAccessExpression(propertyAccess,))
           throw new Error('Expected Lezer property access.',);
+        const receiverType = session.checker.getTypeAtLocation(propertyAccess.expression,);
+        const memberSymbol = session.checker.getSymbolAtLocation(propertyAccess.name,);
+        if ((receiverType === undefined) || (memberSymbol === undefined))
+          throw new Error('Expected Lezer semantic identity.',);
         const query = intrinsicEffectQuery({
           project: session.project,
-          receiverType: session.checker.getTypeAtLocation(propertyAccess.expression,),
-          memberSymbol: session.checker.getSymbolAtLocation(propertyAccess.name,),
+          receiverType,
+          memberSymbol,
         },);
+        if (query === NO_INTRINSIC_QUERY)
+          throw new Error('Expected Lezer intrinsic query.',);
         const effect = intrinsicEffect(query,);
         closeSemanticBridge();
         expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
