@@ -1,4 +1,11 @@
 
+export { manageCargoManifests, } from './cargo/manage-cargo-manifests.ts';
+export type {
+  CargoBlockInsertion,
+  CargoEnforcement,
+  CargoManifestPlan,
+  CargoManifestSpec,
+} from './cargo/types.ts';
 export {
   invalidatePaths,
   readCache,

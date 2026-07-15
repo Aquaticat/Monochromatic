@@ -176,6 +176,17 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       major: 0,
     },
     ownerType: 'globalThis',
+    member: 'tomlHas',
+    targets: [],
+    evidence: 'module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-has.ts sha256 81e22b8fd772d6bf5ae4a4c73cc437fda674fe05f90e69a162bad27209d3a2f5 materializes a fresh document view and navigates to a boolean without mutating edit or path',
+  },
+  {
+    provenance: {
+      kind: 'package',
+      packageName: '@monochromatic-dev/module-toml-edit',
+      major: 0,
+    },
+    ownerType: 'globalThis',
     member: 'tomlSet',
     targets: [],
     opaqueTargets: [{
