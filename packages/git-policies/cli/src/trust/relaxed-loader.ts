@@ -57,6 +57,8 @@ async function executeExisting({
  *
  * @param recordedAt - refresh timestamp
  *
+ * @mutates candidate through handle.writeFile native-boundary access to candidate.bytes
+ *
  * @returns old or refreshed loaded config
  */
 async function loadRelaxedMjs({

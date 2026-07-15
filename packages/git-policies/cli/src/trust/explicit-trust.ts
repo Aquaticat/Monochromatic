@@ -140,6 +140,8 @@ function recursiveDisclosure(repositoryRoot: string,): string {
  *
  * @param recordedAt - audit timestamp
  *
+ * @mutates candidate through handle.writeFile native-boundary access to candidate.bytes
+ *
  * @returns runtime-validated config
  */
 async function validatePrivateCandidate({

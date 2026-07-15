@@ -93,6 +93,8 @@ async function assertAuthorizersCurrent({
  *
  * @param recordedAt - audit timestamp
  *
+ * @mutates candidate through handle.writeFile native-boundary access to candidate.bytes
+ *
  * @returns loaded installed config
  */
 async function enrollMjs({
