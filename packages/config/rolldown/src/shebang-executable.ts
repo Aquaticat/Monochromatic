@@ -29,11 +29,23 @@ const EXECUTABLE_MODE = 0o755;
 export function shebangExecutablePlugin(): Plugin {
   return {
     name: 'monochromatic:shebang-executable',
-    async writeBundle(options, bundle,) {
-      await Promise.all(Object.entries(bundle,).map(
+    async writeBundle(
+      options,
+      bundle,
+    ) {
+      await Promise.all(Object.entries(bundle,)
+        .map(
         async function markExecutable([fileName, output,],): Promise<void> {
-          if (output.type === 'chunk' && output.code.startsWith('#!',)) {
-            await chmod(join(options.dir ?? '.', fileName,), EXECUTABLE_MODE,);
+          if ((output.type === 'chunk')
+            && output.code
+            .startsWith('#!',)) {
+            await chmod(
+              join(
+                options.dir ?? '.',
+                fileName,
+              ),
+              EXECUTABLE_MODE,
+            );
           }
         },
       ),);

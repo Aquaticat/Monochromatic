@@ -90,8 +90,10 @@ const baseOutput = {
  * Build one Node flavor config with overridable input and output directory.
  *
  * @param input - Source input paths; defaults to the package index.
+ *
  * @param outputDir - Output directory; committed Claude Code plugin bundles
  *   override this to `bundle/node` (see `docs/decisions/gitignore-negations.md`).
+ *
  * @param outputOverrides - Shallow output-option overrides for consumers
  *   needing e.g. `minify: false` or `codeSplitting: false`.
  *
@@ -105,7 +107,11 @@ const baseOutput = {
  * ```
  */
 export function nodeConfig(
-  { input = ['./src/index.ts',], outputDir = 'dist/final/node', outputOverrides = {}, }: {
+  {
+    input = ['./src/index.ts',],
+    outputDir = 'dist/final/node',
+    outputOverrides = {},
+  }: {
     readonly input?: readonly string[];
     readonly outputDir?: string;
     readonly outputOverrides?: OutputOptions;

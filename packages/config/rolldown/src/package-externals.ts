@@ -11,7 +11,7 @@ import { join } from 'node:path';
  *
  * @example
  * ```ts
- * const patterns: readonly BundlePattern[] = ['@monochromatic-dev/**', 'find-up'];
+ * const patterns: readonly BundlePattern[] = ['\@monochromatic-dev/**', 'find-up'];
  * ```
  */
 export type BundlePattern = string;
@@ -41,24 +41,34 @@ export type PackageManifestDependencies = {
  * anything else matches exactly.
  *
  * @param name - Bare dependency name from the consuming manifest.
+ *
  * @param pattern - Bundle-inclusion pattern in one of three supported forms.
  *
  * @returns Whether name falls under pattern and must stay bundled.
  *
  * @example
  * ```ts
- * matchesBundlePattern({ name: '@monochromatic-dev/module-logger', pattern: '@monochromatic-dev/**' });
+ * matchesBundlePattern({ name: '\@monochromatic-dev/module-logger', pattern: '\@monochromatic-dev/**' });
  * ```
  */
-export function matchesBundlePattern({ name, pattern }: {
+export function matchesBundlePattern({
+  name,
+  pattern
+}: {
   readonly name: string;
   readonly pattern: BundlePattern;
 }): boolean {
   if (pattern.endsWith('/**')) {
-    return name.startsWith(`${pattern.slice(0, -'**'.length)}`);
+    return name.startsWith(pattern.slice(
+      0,
+      -'**'.length
+    ));
   }
   if (pattern.endsWith('**')) {
-    return name.startsWith(pattern.slice(0, -'**'.length));
+    return name.startsWith(pattern.slice(
+      0,
+      -'**'.length
+    ));
   }
   return name === pattern;
 }
@@ -72,12 +82,15 @@ export function matchesBundlePattern({ name, pattern }: {
  *
  * @example
  * ```ts
- * escapePackageNameForRegExp('@scope/pkg');
+ * escapePackageNameForRegExp('\@scope/pkg');
  * ```
  */
 function escapePackageNameForRegExp(name: string): string {
   // oxlint-disable-next-line no-restricted-syntax/no-regex -- Escaping metacharacters in a short bare package name; input bounded by manifest dependency keys; single linear character-class pass, no backtracking.
-  return name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return name.replaceAll(
+    /[.*+?^${}()|[\]\\]/gu,
+    String.raw`\$&`
+  );
 }
 
 /**
@@ -90,16 +103,64 @@ function escapePackageNameForRegExp(name: string): string {
  *
  * @example
  * ```ts
- * anchoredExternal('@earendil-works/pi-ai');
+ * anchoredExternal('\@earendil-works/pi-ai');
  * ```
  */
 export function anchoredExternal(name: string,): RegExp {
-  return new RegExp(`^${escapePackageNameForRegExp(name)}(/|$)`);
+  // oxlint-disable-next-line no-restricted-syntax/no-regex -- Dynamic source is one metacharacter-escaped bare package name anchored at both ends; input bounded by manifest dependency keys; no repetition beyond the literal name, no backtracking.
+  return new RegExp(
+    `^${escapePackageNameForRegExp(name)}(/|$)`,
+    'u',
+  );
 }
 
 //endregion Pattern matching and regex construction
 
 //region Externals resolution
+
+/**
+ * Narrow an unknown parsed manifest to its dependency-bearing shape.
+ *
+ * Validates only what {@link packageExternals} reads:
+ * a plain object whose optional dependency maps are objects.
+ *
+ * @param value - Parsed package.json content to narrow.
+ *
+ * @returns Nothing; success narrows value for the caller.
+ *
+ * @throws Error when value is not manifest-shaped.
+ *
+ * @example
+ * ```ts
+ * assertPackageManifestDependencies(JSON.parse('{}'));
+ * ```
+ */
+function assertPackageManifestDependencies(
+  value: unknown,
+): asserts value is PackageManifestDependencies {
+  if (((typeof value) !== 'object') || (value === null)) {
+    throw new Error('package.json must parse to an object',);
+  }
+  /**
+   * Manifest object exposing only the optional dependency maps to validate.
+   */
+  const withDependencyMaps = value as {
+    readonly dependencies?: unknown;
+    readonly peerDependencies?: unknown;
+  };
+  /**
+   * Optional dependency maps in validation order.
+   */
+  const dependencyMaps = [
+    withDependencyMaps.dependencies,
+    withDependencyMaps.peerDependencies,
+  ];
+  if (dependencyMaps.some(function isInvalidMap(map: unknown,): boolean {
+    return (map !== undefined) && (((typeof map) !== 'object') || (map === null));
+  },)) {
+    throw new Error('package.json dependency maps must be objects when present',);
+  }
+}
 
 /**
  * Build the rolldown `external` array for one consuming package.
@@ -116,35 +177,61 @@ export function anchoredExternal(name: string,): RegExp {
  * and the array form avoids rolldown's per-module JS callback overhead.
  *
  * @param packageDir - Directory holding the consuming package.json; defaults to the build cwd.
+ *
  * @param alwaysBundle - Patterns whose matching dependencies must stay inline.
  *
  * @returns Regex list for rolldown's `external` input option.
  *
  * @example
  * ```ts
- * const external = await packageExternals({ alwaysBundle: ['@monochromatic-dev/**'] });
+ * const external = await packageExternals({ alwaysBundle: ['\@monochromatic-dev/**'] });
  * ```
  */
-export async function packageExternals({ packageDir = process.cwd(), alwaysBundle }: {
+export async function packageExternals({
+  packageDir = process.cwd(),
+  alwaysBundle
+}: {
   readonly packageDir?: string;
   readonly alwaysBundle: readonly BundlePattern[];
 }): Promise<RegExp[]> {
-  const manifest = JSON.parse(
-    await readFile(join(packageDir, 'package.json'), 'utf8'),
-  ) as PackageManifestDependencies;
+  /**
+   * Raw parsed manifest before shape narrowing.
+   */
+  const parsedManifest: unknown = JSON.parse(
+    await readFile(
+      join(
+        packageDir,
+        'package.json'
+      ),
+      'utf8'
+    ),
+  );
+  assertPackageManifestDependencies(parsedManifest,);
 
+  /**
+   * Dependency-bearing manifest slice of the consuming package.
+   */
+  const manifest = parsedManifest;
+
+  /**
+   * Declared dependency names staying external after bundle patterns apply.
+   */
   const externalNames = Object.keys({
     ...manifest.dependencies,
     ...manifest.peerDependencies,
-  }).filter(function isExternalName(name: string): boolean {
+  })
+    .filter(function isExternalName(name: string): boolean {
     return !alwaysBundle.some(function matchesName(pattern: BundlePattern): boolean {
-      return matchesBundlePattern({ name, pattern });
+      return matchesBundlePattern({
+        name,
+        pattern
+      });
     });
   });
 
   return [
     // oxlint-disable-next-line no-restricted-syntax/no-regex -- Anchored protocol prefix test for node builtins; input is one bare import specifier; no repetition, no backtracking.
-    /^node:/,
+    /^node:/u,
     ...externalNames.map(function toAnchoredMatcher(name: string): RegExp {
       return anchoredExternal(name,);
     }),
