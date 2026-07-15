@@ -106,7 +106,7 @@ function importAttributesPlugin(): Plugin {
      * scanner before transform ran (for dynamic imports where the scanner
      * processes the original AST).
      *
-     * @mutates options through the Rolldown resolver capability
+     * @mutates options through the this.resolve Rolldown capability
      *
      * For untagged specifiers, scans the importer's source via
      * {@link scanImporterForAttribute} to check whether the import had a
