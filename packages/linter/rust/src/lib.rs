@@ -2,7 +2,7 @@
 
 // What:     Six `pub mod ...;` lines declare the crate's submodules, each living
 //           in the matching file (`cli.rs`, `config.rs`, `context.rs`,
-//           `diagnostic.rs`, `rule.rs`, and the `rules/` folder). `mod` is what
+//           `diagnostic.rs`, `rule.rs`, and the `rule/` folder). `mod` is what
 //           compiles a file into the crate at all; `pub` re-exposes it to outside
 //           consumers and to the binary half.
 // Why:      Split the linter into small, separately commentable files.
@@ -22,7 +22,7 @@ pub mod diagnostic;
 /// Rule trait and enabled-rule registry.
 pub mod rule;
 /// Built-in lint rule implementations.
-pub mod rules;
+pub mod builtin;
 
 // What:     `use std::fs;` imports the standard filesystem module (we call
 //           `fs::read_to_string`).

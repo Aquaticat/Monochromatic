@@ -3,67 +3,67 @@ import {
   type Plugin,
 } from '@oxlint/plugins';
 
-import { noArrowFunction, } from './rules/no-arrow-function.ts';
+import { noArrowFunction, } from './rule/no-arrow-function.ts';
 import {
   noArrayCallbackReference,
-} from './rules/no-array-callback-reference.ts';
-import { noClass, } from './rules/no-class.ts';
-import { noDisableMaxLines, } from './rules/no-disable-max-lines.ts';
-import { noDisableNoArrowFunction, } from './rules/no-disable-no-arrow-function.ts';
-import { noDisableNoEnum, } from './rules/no-disable-no-enum.ts';
-import { noDisableNoForIn, } from './rules/no-disable-no-for-in.ts';
-import { noDisableNoHasownproperty, } from './rules/no-disable-no-hasownproperty.ts';
-import { noDisableNoMisusedPromises, } from './rules/no-disable-no-misused-promises.ts';
+} from './rule/no-array-callback-reference.ts';
+import { noClass, } from './rule/no-class.ts';
+import { noDisableMaxLines, } from './rule/no-disable-max-lines.ts';
+import { noDisableNoArrowFunction, } from './rule/no-disable-no-arrow-function.ts';
+import { noDisableNoEnum, } from './rule/no-disable-no-enum.ts';
+import { noDisableNoForIn, } from './rule/no-disable-no-for-in.ts';
+import { noDisableNoHasownproperty, } from './rule/no-disable-no-hasownproperty.ts';
+import { noDisableNoMisusedPromises, } from './rule/no-disable-no-misused-promises.ts';
 import {
   noDisableNoNonNullAssertion,
-} from './rules/no-disable-no-non-null-assertion.ts';
-import { noDisableNoPromiseCatch, } from './rules/no-disable-no-promise-catch.ts';
-import { noDisableNoPromiseFinally, } from './rules/no-disable-no-promise-finally.ts';
-import { noDisableNoRestParams, } from './rules/no-disable-no-rest-params.ts';
-import { noDisableNoSwitch, } from './rules/no-disable-no-switch.ts';
-import { noDisableNoTrimLeftRight, } from './rules/no-disable-no-trim-left-right.ts';
-import { noDisableNoTryFinally, } from './rules/no-disable-no-try-finally.ts';
-import { noDisableNoUselessReturn, } from './rules/no-disable-no-useless-return.ts';
+} from './rule/no-disable-no-non-null-assertion.ts';
+import { noDisableNoPromiseCatch, } from './rule/no-disable-no-promise-catch.ts';
+import { noDisableNoPromiseFinally, } from './rule/no-disable-no-promise-finally.ts';
+import { noDisableNoRestParams, } from './rule/no-disable-no-rest-params.ts';
+import { noDisableNoSwitch, } from './rule/no-disable-no-switch.ts';
+import { noDisableNoTrimLeftRight, } from './rule/no-disable-no-trim-left-right.ts';
+import { noDisableNoTryFinally, } from './rule/no-disable-no-try-finally.ts';
+import { noDisableNoUselessReturn, } from './rule/no-disable-no-useless-return.ts';
 import {
   noDisableNoVariableFunctionExpression,
-} from './rules/no-disable-no-variable-function-expression.ts';
-import { noDisablePreferReadonlyParameterTypes, } from './rules/no-disable-prefer-readonly-parameter-types.ts';
-import { noDisablePreferRegexpExec, } from './rules/no-disable-prefer-regexp-exec.ts';
+} from './rule/no-disable-no-variable-function-expression.ts';
+import { noDisablePreferReadonlyParameterTypes, } from './rule/no-disable-prefer-readonly-parameter-types.ts';
+import { noDisablePreferRegexpExec, } from './rule/no-disable-prefer-regexp-exec.ts';
 import {
   noDisableRequireDestructuredParams,
-} from './rules/no-disable-require-destructured-params.ts';
-import { noDisableRequireReturns, } from './rules/no-disable-require-returns.ts';
-import { noDisableRequireTsdoc, } from './rules/no-disable-require-tsdoc.ts';
-import { noEnum, } from './rules/no-enum.ts';
-import { noForIn, } from './rules/no-for-in.ts';
-import { noFunctionRootLet, } from './rules/no-function-root-let.ts';
-import { noHasownproperty, } from './rules/no-hasownproperty.ts';
-import { noImmediateMutation, } from './rules/no-immediate-mutation.ts';
+} from './rule/no-disable-require-destructured-params.ts';
+import { noDisableRequireReturns, } from './rule/no-disable-require-returns.ts';
+import { noDisableRequireTsdoc, } from './rule/no-disable-require-tsdoc.ts';
+import { noEnum, } from './rule/no-enum.ts';
+import { noForIn, } from './rule/no-for-in.ts';
+import { noFunctionRootLet, } from './rule/no-function-root-let.ts';
+import { noHasownproperty, } from './rule/no-hasownproperty.ts';
+import { noImmediateMutation, } from './rule/no-immediate-mutation.ts';
 import {
   noLowInformationSymbolDescription,
-} from './rules/no-low-information-symbol-description/index.ts';
-import { noModuleRootLet, } from './rules/no-module-root-let.ts';
-import { noNullishUnion, } from './rules/no-nullish-union.ts';
-import { catchBinding, } from './rules/catch-binding.ts';
-import { noOptionalEscape, } from './rules/no-optional-escape.ts';
-import { noPromiseCatch, } from './rules/no-promise-catch.ts';
-import { noPromiseFinally, } from './rules/no-promise-finally.ts';
-import { noRegex, } from './rules/no-regex.ts';
-import { noRestParams, } from './rules/no-rest-params.ts';
-import { noSwitch, } from './rules/no-switch.ts';
-import { noSync, } from './rules/no-sync.ts';
-import { noTrimLeftRight, } from './rules/no-trim-left-right.ts';
-import { noTryFinally, } from './rules/no-try-finally.ts';
+} from './rule/no-low-information-symbol-description/index.ts';
+import { noModuleRootLet, } from './rule/no-module-root-let.ts';
+import { noNullishUnion, } from './rule/no-nullish-union.ts';
+import { catchBinding, } from './rule/catch-binding.ts';
+import { noOptionalEscape, } from './rule/no-optional-escape.ts';
+import { noPromiseCatch, } from './rule/no-promise-catch.ts';
+import { noPromiseFinally, } from './rule/no-promise-finally.ts';
+import { noRegex, } from './rule/no-regex.ts';
+import { noRestParams, } from './rule/no-rest-params.ts';
+import { noSwitch, } from './rule/no-switch.ts';
+import { noSync, } from './rule/no-sync.ts';
+import { noTrimLeftRight, } from './rule/no-trim-left-right.ts';
+import { noTryFinally, } from './rule/no-try-finally.ts';
 import {
   noVariableFunctionExpression,
-} from './rules/no-variable-function-expression.ts';
+} from './rule/no-variable-function-expression.ts';
 import {
   preferDescribeFunctionRefName,
-} from './rules/prefer-describe-function-ref-name.ts';
-import { preferCaughtValueText, } from './rules/prefer-caught-value-text.ts';
-import { preferErrorIsError, } from './rules/prefer-error-is-error.ts';
-import { requireDestructuredParams, } from './rules/require-destructured-params.ts';
-import { requireQueryselectorGeneric, } from './rules/require-queryselector-generic.ts';
+} from './rule/prefer-describe-function-ref-name.ts';
+import { preferCaughtValueText, } from './rule/prefer-caught-value-text.ts';
+import { preferErrorIsError, } from './rule/prefer-error-is-error.ts';
+import { requireDestructuredParams, } from './rule/require-destructured-params.ts';
+import { requireQueryselectorGeneric, } from './rule/require-queryselector-generic.ts';
 
 /**
  * Oxlint JS plugin implementing `no-restricted-syntax` rules

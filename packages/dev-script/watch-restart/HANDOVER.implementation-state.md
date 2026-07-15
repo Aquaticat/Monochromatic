@@ -92,15 +92,15 @@ Done:
    No filter or watcher wiring yet;
    that lands in tasks 14 / 16 / 17 / 18 / 19.
 - ~~Task 14 (commit `a1ae08b5`)~~:
-   added `src/filters/regex.ts` exporting `regexFilter({include, exclude})`;
+   added `src/filter/regex.ts` exporting `regexFilter({include, exclude})`;
    sibling-to-`globFilter` shape (`event.relativePath` match,
    exclude-beats-include,
    both-empty vacuous-pass-all).
    Wired into `buildInternalFilter` in `start.ts` after the glob block,
    gated by "any includeRegex or excludeRegex present" (same shape as the glob gate at lines 219-227).
-   Tests in `src/filters/regex.unit.test.ts` mirror `glob.unit.test.ts`'s five cases plus an extra case proving anchored alternation (`\.(test|spec|fixture)\.[jt]sx?$`) is expressible through this filter where picomatch cannot express it.
+   Tests in `src/filter/regex.unit.test.ts` mirror `glob.unit.test.ts`'s five cases plus an extra case proving anchored alternation (`\.(test|spec|fixture)\.[jt]sx?$`) is expressible through this filter where picomatch cannot express it.
 - ~~Task 16 (commit `4450355d`)~~:
-   added `src/filters/hidden.ts` exporting `hiddenFilter({allowHidden?})`.
+   added `src/filter/hidden.ts` exporting `hiddenFilter({allowHidden?})`.
    Default-off (rejection):
    any segment of `event.relativePath` starting with `.` and followed by a non-dot non-separator char drops the event;
    `.` / `..` navigators do not count (the regex `(?:^|[/\\])\.[^./\\]` matches separator-or-start + literal-dot + non-dot-non-separator).
@@ -108,7 +108,7 @@ Done:
    the orchestrator additionally elides the filter from the chain entirely when `options.hidden === true` so the zero-cost path stays zero-cost.
    Wired into `buildInternalFilter` in `start.ts` after the regex block,
    gated by `options.hidden !== true` (default-on rejection).
-   Tests in `src/filters/hidden.unit.test.ts` cover:
+   Tests in `src/filter/hidden.unit.test.ts` cover:
    root dotfile rejection,
    nested dotfile rejection (swap,
    `.git/index`,
@@ -121,7 +121,7 @@ Done:
 - ~~Task 17 (commit `5cc6c293`)~~:
    added `ignore@7.0.5` (kaelzhang/node-ignore) to the pnpm catalog and the package's `dependencies` (uses `import ignore, { type Ignore } from 'ignore'`:
    `esModuleInterop` handles the CJS `export = ignore` form).
-   `src/filters/gitignore.ts` exports `gitignoreFilter({roots, extraFiles?}): Promise<WatchFilter>`;
+   `src/filter/gitignore.ts` exports `gitignoreFilter({roots, extraFiles?}): Promise<WatchFilter>`;
    async factory reads each `<root>/.gitignore` and each `extraFiles` path in parallel via `Promise.all`;
    ENOENT collapses to "no patterns" while other read errors propagate.
    Made `buildInternalFilter` in `start.ts` async;
@@ -130,7 +130,7 @@ Done:
   ts:
    `gitignoreRoots = options.gitignore === false ? [] : options.paths` and `gitignoreExtraFiles = options.ignoreFiles ?? []`;
    the filter is only pushed when at least one source has patterns.
-   Tests in `src/filters/gitignore.unit.test.ts` use temp-dir fixtures with `.gitignore` files;
+   Tests in `src/filter/gitignore.unit.test.ts` use temp-dir fixtures with `.gitignore` files;
    cases cover vacuous-no-gitignore,
    directory pattern,
    glob pattern,
@@ -197,7 +197,7 @@ Done:
    Tests list expanded with the ten new Q6 cases.
    AUDIT.
   md ticks `ignore` (kaelzhang/node-ignore) as adopted,
-   pointing at `packages/dev-script/watch-restart/src/filters/gitignore.ts` and naming the gitignore-semantics points the library handles (negation `!`,
+   pointing at `packages/dev-script/watch-restart/src/filter/gitignore.ts` and naming the gitignore-semantics points the library handles (negation `!`,
    anchored leading `/`,
    directory-only trailing `/`,
    `**`).
@@ -424,7 +424,7 @@ The task list IDs match `TaskList` entries.
 
 ~~5. Implement `child.ts` + tests.~~ **Done.** Class `Child` lives at `src/child.ts`; injectable `SpawnFn` factory keeps the state-machine tests pure. 13 tests pass.
 
-~~6. Implement built-in filters + tests.~~ **Done.** Four files under `src/filters/`: `content-hash.ts`, `ext.ts`, `glob.ts`, `compose.ts`. `WatchFilter` changed to single-destructured-arg shape; `composeFilters` / `anyFilter` take array (not rest). `globFilter` matches `event.relativePath`. 23 filter tests pass. Local `src/picomatch.d.ts` shim covers picomatch's missing types.
+~~6. Implement built-in filters + tests.~~ **Done.** Four files under `src/filter/`: `content-hash.ts`, `ext.ts`, `glob.ts`, `compose.ts`. `WatchFilter` changed to single-destructured-arg shape; `composeFilters` / `anyFilter` take array (not rest). `globFilter` matches `event.relativePath`. 23 filter tests pass. Local `src/picomatch.d.ts` shim covers picomatch's missing types.
 
 ~~7. Implement `start.ts` + tests.~~ **Done.** `startWatchRestart(options)` at `src/start.ts`; filter chain compiled inline (`buildInternalFilter`, `buildEventKindFilter` helpers stay module-local). Handle's `stop()` aborts the signal first, clears the debounce timer, then stops watcher + child. 9 tests pass covering initial/no-initial, byte-identical skip, --no-content-changed override, debounce coalesce across files, ext/exclude flags, stop teardown, idempotent stop.
 

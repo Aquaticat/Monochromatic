@@ -22,7 +22,7 @@ import type {
   ChannelKey,
   DataDimKey,
   ToggleKey,
-} from './scripts/filter.ts';
+} from './script/filter.ts';
 
 //region Types
 

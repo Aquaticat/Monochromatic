@@ -22,7 +22,7 @@ import { resolveGit, } from '../resolve-git.ts';
 /** Real Git binary for disposable management repository. */
 const REAL_GIT = await resolveGit();
 /** Internal management subprocess runner. */
-const RUNNER = join(import.meta.dirname, 'fixtures', 'management-runner.ts',);
+const RUNNER = join(import.meta.dirname, 'fixture', 'management-runner.ts',);
 /** Self-contained direct-check plugin. */
 const CONFIG_SOURCE = `
 export default {

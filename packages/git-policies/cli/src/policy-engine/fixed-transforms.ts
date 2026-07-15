@@ -5,13 +5,13 @@
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
-import { atomicPush, } from '../rules/atomic-push.ts';
+import { atomicPush, } from '../rule/atomic-push.ts';
 import {
   commitOnly,
   CommitOnlyViolationError,
   hasCommitOnlyEscapeHatch,
-} from '../rules/commit-only.ts';
-import { statusHintsOff, } from '../rules/status-hints-off.ts';
+} from '../rule/commit-only.ts';
+import { statusHintsOff, } from '../rule/status-hints-off.ts';
 import {
   createCoreFindingEvent,
   createEngineFailureEvent,

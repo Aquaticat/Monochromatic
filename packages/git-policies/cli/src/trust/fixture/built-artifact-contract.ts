@@ -223,7 +223,7 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
     return path.endsWith('.unit.test.ts',)
       || path.endsWith('.host-evidence.ts',)
       || path.startsWith('maintenance/',)
-      || path.startsWith('trust/fixtures/',);
+      || path.startsWith('trust/fixture/',);
   },))
     throw new Error('packed cli-git retained development-only TypeScript source',);
   /**

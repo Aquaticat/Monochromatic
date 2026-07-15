@@ -1,7 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { parseGlobalOptions, } from '../parse-global-options.ts';
-import { parseStatusPreRegion, } from '../parsers/status.ts';
+import { parseStatusPreRegion, } from '../parser/status.ts';
 
 /**
  * Logger root for cli-git after removing the package log shim.

@@ -121,7 +121,7 @@ inside `impl Trait for Type` must still carry its own doc comment,
 
 Mirroring the max-lines rule (minus its fixtures carve-out,
  so this linter's own
-`fixtures/` inputs are enforced too),
+`fixture/` inputs are enforced too),
  the rule skips:
 
 - any file under a `tests/` directory
@@ -208,9 +208,9 @@ mise run //packages/linter/rust:run -- --max 200 some/path
    `Severity`,
    `Diagnostic`,
    and its renderer.
-- `src/rules/max_lines.rs`:
+- `src/rule/max_lines.rs`:
    the `max-lines` rule.
-- `src/rules/require_rustdoc.rs`:
+- `src/rule/require_rustdoc.rs`:
    the `require-rustdoc` rule.
 
 ## Adding a rule

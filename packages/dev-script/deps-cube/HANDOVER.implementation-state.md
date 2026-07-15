@@ -123,13 +123,13 @@ gl source:
 - `src/deck-planes.ts`:
    swapped `PolygonLayer` for `SolidPolygonLayer` and passed `_full3d: true` on each of the three plane layers.
    Bumped `COORDINATE_PLANE_COLOR` alpha from 30 to 60 so the planes read clearly without dominating the data.
-- `src/scripts/state.ts`:
+- `src/script/state.ts`:
    `DEFAULT_DISPLAY_TOGGLES.showThresholdPlanes` flipped from `true` to `false`.
    The brown threshold guide lines were confusing default-on chrome;
    they're an opt-in heuristic overlay now.
-- New `src/scripts/scheme.ts`:
+- New `src/script/scheme.ts`:
    exports `ChromeColors` type and `detectScheme()` that branches on `globalThis.matchMedia('(prefers-color-scheme: dark)').matches` to return either a light-on-dark or dark-on-light palette for the chrome (axes / ticks / capitals / origin / name labels).
-- `src/scripts/controller.ts`:
+- `src/script/controller.ts`:
    `createSession` calls `detectScheme()` once and stores the palette on the session;
    passed through to every `buildLayers` call via the existing render path.
    New `chrome: ChromeColors` field on the `Session` type.
@@ -185,7 +185,7 @@ Pending:
 - `src/deck-accessors.ts`:
    `RADIUS_MIN_WORLD_FRACTION` 0.005 → 0.0025 and `RADIUS_MAX_WORLD_FRACTION` 0.03 → 0.015;
    halved diagonal fractions used by `probeRadiusWorld` so every mesh-layer glyph renders at half its previous world-space size.
-- `src/scripts/state.ts`:
+- `src/script/state.ts`:
    `DEFAULT_DISPLAY_TOGGLES.nameLabels` flipped from `'none'` to `'all'`.
    The radio control still offers `none` / `topN` / `all`;
    the default is just no longer hidden.
@@ -456,7 +456,7 @@ Done:
    `src/probe.ts` (orchestrator) + `src/probe-fields.ts` (per-field probes + helpers) + `src/probe-transitive.ts` (depth-bounded dep walk).
    Failed entries return a stub via `failedProbe` with `unknownReason: 'private-or-404'`.
 - ~~Task 6 (filter + state)~~:
-   `src/scripts/filter.ts` exports `computeVisibleIndices`,
+   `src/script/filter.ts` exports `computeVisibleIndices`,
    `extractDim`,
    `derivedBool`,
    `searchMatches`,
@@ -467,7 +467,7 @@ Done:
    `ChannelKey`,
    `DimMapping`,
    `RangeState`).
-   `src/scripts/state.ts` exports `defaultState({ probes })`,
+   `src/script/state.ts` exports `defaultState({ probes })`,
    `encodeState`/`decodeState` (URL-encoded JSON,
    no base64),
    `readStateFromHash`/`writeStateToHash`,
@@ -504,7 +504,7 @@ Done:
    `size` accepts continuous only.
 - ~~Task 9 (browser-side controller)~~:
    split across four files to stay under the line cap:
-  - `src/scripts/controller.ts`:
+  - `src/script/controller.ts`:
      entry point.
      Reads `globalThis.__PROBES__`,
      runs `defaultState` overlaid with URL-hash state,
@@ -517,7 +517,7 @@ Done:
      runs `syncDomFromState`,
      defines a `commit` closure capturing `session` + `probes`,
      then calls every `wire*` function with that closure.
-  - `src/scripts/controller-events.ts`:
+  - `src/script/controller-events.ts`:
      six `wire*` functions (`wireDimDropdowns`,
      `wireToggles`,
      `wireRanges`,
@@ -528,20 +528,20 @@ Done:
      Declares its own `Session` shape *without* the `deck` field,
      so the controller's full `Session` is structurally assignable with no cast.
      Dim swap also recomputes scene bounds and resets the channel's slider min/max/value to the new dim's extent.
-  - `src/scripts/controller-dom.ts`:
+  - `src/script/controller-dom.ts`:
      `el` / `elInput` / `elSelect` typed accessors using `instanceof` (no `as HTMLInputElement` casts at call sites),
      plus `syncDomFromState` which writes every state value back into the DOM after a reset / URL-hash overwrite.
-  - `src/scripts/controller-tooltip.ts`:
+  - `src/script/controller-tooltip.ts`:
      `formatTooltipHtml` (10-row tooltip table with HTML-escaped probe fields) + lazy-initialised `<aside id="pinned-tooltip">` with a close button,
      exposed as `pinTooltip` / `unpinTooltip`.
      Used by the deck.
     gl `getTooltip` hover callback (transient) and the `onClick` handler (pinned).
-  - **`src/scripts/state.ts` change**:
+  - **`src/script/state.ts` change**:
      `ViewState.target` is now mutable `[number, number, number]` instead of `readonly`,
      because deck.
     gl's `OrbitViewState.target` requires mutable.
   - **Bundle smoke test**:
-     `rolldown src/scripts/controller.ts --format=iife --minify` produces a 754KB bundle (513 modules,
+     `rolldown src/script/controller.ts --format=iife --minify` produces a 754KB bundle (513 modules,
      including `@luma.gl/core` transitives).
      About 2× the audit estimate (~400KB);
      the extra comes from luma.
@@ -642,7 +642,7 @@ Done:
      the controller passes `canvas: 'deck-canvas'` to `new Deck<OrbitView>({...})` so deck.
     gl uses the pre-existing canvas instead of creating its own attached to `document.body`.
      **Controller change**:
-     `src/scripts/controller.ts` `createSession` now passes `canvas: 'deck-canvas'` to the `Deck` constructor (no other changes).
+     `src/script/controller.ts` `createSession` now passes `canvas: 'deck-canvas'` to the `Deck` constructor (no other changes).
 
 Done (continued):
 

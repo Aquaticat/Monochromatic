@@ -7,7 +7,7 @@
  *
  * @example
  * ```typescript
- * import { tsdocRules } from './rules/tsdoc.ts';
+ * import { tsdocRules } from './rule/tsdoc.ts';
  * // spread into the main config's `rules` field
  * ```
  */

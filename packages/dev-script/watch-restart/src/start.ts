@@ -8,14 +8,14 @@ import {
   Child,
   type SpawnFn,
 } from './child.ts';
-import { composeFilters, } from './filters/compose.ts';
-import { contentHashFilter, } from './filters/content-hash.ts';
-import { extFilter, } from './filters/ext.ts';
-import { gitignoreFilter, } from './filters/gitignore.ts';
-import { globFilter, } from './filters/glob.ts';
-import { hiddenFilter, } from './filters/hidden.ts';
-import { regexFilter, } from './filters/regex.ts';
-import { typeFilter, } from './filters/type.ts';
+import { composeFilters, } from './filter/compose.ts';
+import { contentHashFilter, } from './filter/content-hash.ts';
+import { extFilter, } from './filter/ext.ts';
+import { gitignoreFilter, } from './filter/gitignore.ts';
+import { globFilter, } from './filter/glob.ts';
+import { hiddenFilter, } from './filter/hidden.ts';
+import { regexFilter, } from './filter/regex.ts';
+import { typeFilter, } from './filter/type.ts';
 import {
   DEFAULT_MAX_HASH_SIZE_BYTES,
   HashCache,

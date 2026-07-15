@@ -22,7 +22,7 @@ import {
   getDatumPath,
   type PathDatum,
 } from './deck-layers.ts';
-import type { ChromeColors, } from './scripts/scheme.ts';
+import type { ChromeColors, } from './script/scheme.ts';
 
 //region Constants
 

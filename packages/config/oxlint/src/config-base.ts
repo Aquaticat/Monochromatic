@@ -11,10 +11,10 @@
 import type { OxlintConfig, } from 'oxlint';
 
 import { overrides, } from './overrides.ts';
-import { correctnessRules, } from './rules/correctness.ts';
-import { restrictionRules, } from './rules/restriction.ts';
-import { styleRules, } from './rules/style.ts';
-import { tsdocRules, } from './rules/tsdoc.ts';
+import { correctnessRules, } from './rule/correctness.ts';
+import { restrictionRules, } from './rule/restriction.ts';
+import { styleRules, } from './rule/style.ts';
+import { tsdocRules, } from './rule/tsdoc.ts';
 
 /**
  * Shared oxlint configuration shared by every entry, minus `jsPlugins`.

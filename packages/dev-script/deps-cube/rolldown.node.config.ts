@@ -11,7 +11,7 @@ import { nodeConfig,
  * points at `dist/final/node/cli.mjs` so the bin runs without a
  * source-time TypeScript loader.
  *
- * The browser-side `src/scripts/controller.ts` is NOT a rolldown entry:
+ * The browser-side `src/script/controller.ts` is NOT a rolldown entry:
  * it is bundled at run time by rolldown inside `render-html.ts`,
  * with the source path resolved from `PACKAGE_ROOT`. The package's
  * `src/` is shipped via `files: ["src"]` so the runtime bundler can

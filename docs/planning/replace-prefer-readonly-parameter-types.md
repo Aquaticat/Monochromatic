@@ -868,7 +868,7 @@ The implementation is split at its runtime and policy boundaries:
   `packages/ownership-markers/foreign-borrowed/`;
 - shared-config sidecar and error-level policy:
   `packages/config/oxlint/src/plugin-prefer-readonly-parameter-type.ts` and
-  `packages/config/oxlint/src/rules/restriction.ts`;
+  `packages/config/oxlint/src/rule/restriction.ts`;
 - bypass-prevention rule and fixtures:
   `packages/oxlint-plugins/no-restricted-syntax/` and
   `packages/test-fixture/oxlint-no-restricted-syntax/`;
@@ -986,9 +986,9 @@ Verify that the shared parser performs one parse per comment for all participati
 ### Switch shared configuration
 
 Add the project rule to
-`packages/config/oxlint/src/rules/restriction.ts` at the agreed rollout severity.
+`packages/config/oxlint/src/rule/restriction.ts` at the agreed rollout severity.
 Remove `typescript/prefer-readonly-parameter-types` from
-`packages/config/oxlint/src/rules/correctness.ts`.
+`packages/config/oxlint/src/rule/correctness.ts`.
 Update overrides so test and external-signature behavior matches the settled policy rather than inheriting the old
 rule's exemptions accidentally.
 
@@ -996,10 +996,10 @@ rule's exemptions accidentally.
 
 Delete the obsolete dedicated configuration files:
 
-- `packages/config/oxlint/src/rules/prefer-readonly-parameter-types.ts`;
-- `packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-lib.ts`;
-- `packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-pkg.ts`;
-- `packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-pkg-unbash.ts`.
+- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.ts`;
+- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-lib.ts`;
+- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg.ts`;
+- `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg-unbash.ts`.
 
 Remove the obsolete output suppression and its dedicated test cases from
 `packages/dev-script/task-util/src/oxlint-suppress.ts` and
@@ -1197,7 +1197,7 @@ and mutation that reaches an undeclared parameter through aliases or callees.
 The repository's TSDoc plugin currently hardcodes standard tags and carries only `@yields` as a custom tag.
 Supporting `@mutates` therefore requires coordinated changes rather than a one-line allow-list edit:
 
-- `packages/oxlint-plugins/tsdoc/src/rules/tag-names.ts`:
+- `packages/oxlint-plugins/tsdoc/src/rule/tag-names.ts`:
   recognize the custom tag and correct its standard-only documentation;
 - `packages/oxlint-plugins/tsdoc/src/tsdoc-blocks.ts`:
   terminate preceding blocks at `@mutates` and parse mutation blocks;
@@ -1214,7 +1214,7 @@ Supporting `@mutates` therefore requires coordinated changes rather than a one-l
   duplicate targets,
   and missing descriptions independently of semantic mutation analysis;
 - `packages/oxlint-plugins/tsdoc/src/index.ts` and
-  `packages/config/oxlint/src/rules/tsdoc.ts`:
+  `packages/config/oxlint/src/rule/tsdoc.ts`:
   register and enable the new validation rules;
 - `packages/test-fixture/oxlint-tsdoc/` and TSDoc unit tests:
   add valid,

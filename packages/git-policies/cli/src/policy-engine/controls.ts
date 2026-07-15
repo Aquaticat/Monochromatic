@@ -2,8 +2,8 @@
  * Wrapper policy control parsing and escape compatibility. @module
  */
 import { parseGlobalOptions, } from '../parse-global-options.ts';
-import { consumesNextValue, } from '../parsers/branch-create-dispatch.ts';
-import type { BranchCreationSubcommand, } from '../parsers/branch-create-types.ts';
+import { consumesNextValue, } from '../parser/branch-create-dispatch.ts';
+import type { BranchCreationSubcommand, } from '../parser/branch-create-types.ts';
 import type { ParsedPolicyControls, } from './types.ts';
 
 /**

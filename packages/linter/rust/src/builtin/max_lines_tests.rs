@@ -1,6 +1,6 @@
 // What:     Unit tests for the max-lines rule and the code-line classifier it
 //           relies on. This is a sibling test module gated by `#[cfg(test)]` in
-//           `rules/mod.rs`, so it never reaches the release binary.
+//           `rule/mod.rs`, so it never reaches the release binary.
 // Why:      Lock in the oxlint-matching semantics: blank lines and comments do
 //           not count, code-with-trailing-comment does, and `//`/`/* */` inside
 //           a string literal must NOT be mistaken for a comment.
@@ -34,7 +34,7 @@ use crate::config::{max_lines_exempt, Config};
 use crate::context::LintContext;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rule::Rule;
-use crate::rules::max_lines::MaxLines;
+use crate::builtin::max_lines::MaxLines;
 
 // What:     `fn code_lines(source: &str) -> usize`. Helper that builds a
 //           `LintContext` for a fixed fake path and returns its code-line count.
@@ -153,13 +153,13 @@ fn classifier_counts_code_lines() {
 
 // What:     `#[test] fn exemptions_match_oxlint_overrides() { ... }`. Checks the
 //           path-based skip predicate.
-// Why:      Tests, `*_tests.rs`, fuzz, `build.rs`, and the `fixture/`, `fixtures/`,
+// Why:      Tests, `*_tests.rs`, fuzz, `build.rs`, and the `fixture/`, `fixture/`,
 //           `test-fixture/`, `invalid/` sample directories must be exempt; ordinary
 //           source must not be.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// it("exempts tests/fuzz/fixtures/build.rs", () => { ... });
+// it("exempts tests/fuzz/fixture/build.rs", () => { ... });
 // ```
 #[test]
 fn exemptions_match_oxlint_overrides() {
@@ -177,7 +177,7 @@ fn exemptions_match_oxlint_overrides() {
     assert!(max_lines_exempt(Path::new("a/fuzz/target.rs")), "fuzz/ dir");
     assert!(max_lines_exempt(Path::new("build.rs")), "build.rs");
     assert!(max_lines_exempt(Path::new("a/fixture/x.rs")), "fixture/ dir");
-    assert!(max_lines_exempt(Path::new("a/fixtures/x.rs")), "fixtures/ dir");
+    assert!(max_lines_exempt(Path::new("a/fixture/x.rs")), "fixture/ dir");
     assert!(max_lines_exempt(Path::new("a/test-fixture/x.rs")), "test-fixture/ dir");
     assert!(max_lines_exempt(Path::new("a/invalid/x.rs")), "invalid/ dir");
 

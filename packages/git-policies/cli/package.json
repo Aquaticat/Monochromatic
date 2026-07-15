@@ -22,7 +22,7 @@
     "src",
     "!src/**/*.unit.test.ts",
     "!src/maintenance",
-    "!src/trust/fixtures",
+    "!src/trust/fixture",
     "!src/**/*.host-evidence.ts",
     "LICENSES",
     "README.md"

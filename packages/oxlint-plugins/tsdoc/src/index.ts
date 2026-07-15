@@ -3,20 +3,20 @@ import {
   type Plugin,
 } from '@oxlint/plugins';
 
-import { checkMutates, } from './rules/mutates.ts';
+import { checkMutates, } from './rule/mutates.ts';
 import {
   checkParamNames,
   requireParam,
   requireParamDescription,
   requireParamName,
-} from './rules/params.ts';
-import { requireExample, } from './rules/require-example.ts';
-import { requireTsdoc, } from './rules/require-tsdoc.ts';
+} from './rule/params.ts';
+import { requireExample, } from './rule/require-example.ts';
+import { requireTsdoc, } from './rule/require-tsdoc.ts';
 import {
   requireReturns,
   requireReturnsCheck,
   requireReturnsDescription,
-} from './rules/returns.ts';
+} from './rule/returns.ts';
 import {
   checkAlignment,
   emptyTags,
@@ -24,17 +24,17 @@ import {
   multilineBlocks,
   noMultiAsterisks,
   tagLines,
-} from './rules/structural.ts';
+} from './rule/structural.ts';
 import {
   checkAccess,
   checkTagNames,
   noTypes,
   validTypes,
-} from './rules/tag-validation.ts';
+} from './rule/tag-validation.ts';
 import {
   requireYields,
   requireYieldsCheck,
-} from './rules/yields.ts';
+} from './rule/yields.ts';
 
 /**
  * Oxlint JS plugin providing TSDoc validation rules.

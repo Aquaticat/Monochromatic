@@ -38,7 +38,7 @@ import {
   coneGeometryY,
   coneGeometryZ,
 } from './deck-geometries.ts';
-import type { ChromeColors, } from './scripts/scheme.ts';
+import type { ChromeColors, } from './script/scheme.ts';
 
 //region Types
 

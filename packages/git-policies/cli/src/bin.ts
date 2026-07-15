@@ -5,7 +5,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
 import { runManagementCommand, } from './management.ts';
-import { parseCommitRegion, } from './parsers/commit.ts';
+import { parseCommitRegion, } from './parser/commit.ts';
 import { printPostCommandOutput, } from './post-command-output.ts';
 import { COMMIT_TRANSACTION_NOT_APPLICABLE, } from './policy-engine/commit-transaction.ts';
 import { runCommitTransactionBoundary, } from './policy-engine/commit-transaction-boundary.ts';

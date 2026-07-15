@@ -27,8 +27,8 @@ import type { PackageProbe, } from './probe.ts';
 import {
   DIM_UNKNOWN,
   extractDim,
-} from './scripts/filter.ts';
-import type { AppState, } from './scripts/state.ts';
+} from './script/filter.ts';
+import type { AppState, } from './script/state.ts';
 
 //region Constants
 

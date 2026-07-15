@@ -739,7 +739,7 @@ The helper-shape allowlist suppresses the report when a function ends in `return
 
 #### Variables and values: why VA6 stops at object-literal property values
 
-`no-magic-numbers` ships with `detectObjects: false` (`packages/config/oxlint/src/rules/style.ts`), so a numeric literal used directly as an object-literal property value is never flagged by the tool. Before this exemption, VA6's plain wording ("magic literals as named const") read as a blanket requirement, with nothing marking object-literal values as already covered by the tool's own default.
+`no-magic-numbers` ships with `detectObjects: false` (`packages/config/oxlint/src/rule/style.ts`), so a numeric literal used directly as an object-literal property value is never flagged by the tool. Before this exemption, VA6's plain wording ("magic literals as named const") read as a blanket requirement, with nothing marking object-literal values as already covered by the tool's own default.
 
 Failure that produced this rule: a redesign of `packages/webapp-productivity/wc/src/styles-colors.ts` extracted five inline `l` channel values inside `cssOklch({...})` calls (e.g. `l: 0.16,`) into standalone named constants (`L_BLACK`, `L_NEAR_BLACK`, `L_MID`, `L_NEAR_WHITE`, `L_WHITE`), each referenced exactly once, on the assumption the linter required it. `detectObjects: false` had already exempted that exact pattern for months (since commit `3515cd5cb`), so the extraction served no lint-compliance purpose and added five single-use constants of pure ceremony. VA6 now spells out the exemption so a future session checks the tool's actual config before over-complying with the rule's plain-language reading.
 

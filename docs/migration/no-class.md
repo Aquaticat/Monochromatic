@@ -7,7 +7,7 @@ blocking CI.
  After every file in this document has been migrated or
 justified,
  flip the severity to `'error'` in
-`packages/config/oxlint/src/rules/restriction.ts`.
+`packages/config/oxlint/src/rule/restriction.ts`.
 
 ## Rule summary
 
@@ -292,7 +292,7 @@ disable comment:
 
 1. Run `mise run lint` from the repo root and confirm zero warnings from
    `no-restricted-syntax/no-class`.
-1. Edit `packages/config/oxlint/src/rules/restriction.ts`:
+1. Edit `packages/config/oxlint/src/rule/restriction.ts`:
     change
    `'no-restricted-syntax/no-class': 'warn'` to `'error'`.
     Remove the
@@ -307,7 +307,7 @@ disable comment:
 If a future case needs an additional allowlist suffix (e.g. a project
 adopts `EventTarget` subclassing as a pattern),
  override the rule's
-options in `packages/config/oxlint/src/rules/restriction.ts`:
+options in `packages/config/oxlint/src/rule/restriction.ts`:
 
 ```ts
 'no-restricted-syntax/no-class': [

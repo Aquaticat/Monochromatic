@@ -17,7 +17,7 @@ import {
   probePosition,
 } from './deck-accessors.ts';
 import type { PackageProbe, } from './probe.ts';
-import type { AppState, } from './scripts/state.ts';
+import type { AppState, } from './script/state.ts';
 
 //region Types
 

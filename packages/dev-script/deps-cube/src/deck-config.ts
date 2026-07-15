@@ -47,9 +47,9 @@ import {
   DIM_UNKNOWN,
   type DimMapping,
   extractDim,
-} from './scripts/filter.ts';
-import type { ChromeColors, } from './scripts/scheme.ts';
-import type { AppState, } from './scripts/state.ts';
+} from './script/filter.ts';
+import type { ChromeColors, } from './script/scheme.ts';
+import type { AppState, } from './script/state.ts';
 
 //region Types
 

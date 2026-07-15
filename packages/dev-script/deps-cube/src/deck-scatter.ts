@@ -54,7 +54,7 @@ import {
   type Rgba,
 } from './deck-textures.ts';
 import type { PackageProbe, } from './probe.ts';
-import type { AppState, } from './scripts/state.ts';
+import type { AppState, } from './script/state.ts';
 
 //region Constants
 

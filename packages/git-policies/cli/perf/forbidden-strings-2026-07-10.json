@@ -20,11 +20,11 @@
       "packages/git-policies/cli/src/policy-engine/engine.unit.test.ts",
       "packages/git-policies/cli/src/policy-engine/events.ts",
       "packages/git-policies/cli/src/policy-engine/policy-stage.ts",
-      "packages/git-policies/cli/src/trust/fixtures/built-forbidden-strings-failure-consumer.ts",
-      "packages/git-policies/cli/src/trust/fixtures/built-forbidden-strings-helpers.ts",
-      "packages/git-policies/cli/src/trust/fixtures/built-forbidden-strings-lifecycle-consumer.ts",
-      "packages/git-policies/cli/src/trust/fixtures/built-forbidden-strings-policy-consumer.ts",
-      "packages/git-policies/cli/src/trust/fixtures/built-trust-consumer.ts",
+      "packages/git-policies/cli/src/trust/fixture/built-forbidden-strings-failure-consumer.ts",
+      "packages/git-policies/cli/src/trust/fixture/built-forbidden-strings-helpers.ts",
+      "packages/git-policies/cli/src/trust/fixture/built-forbidden-strings-lifecycle-consumer.ts",
+      "packages/git-policies/cli/src/trust/fixture/built-forbidden-strings-policy-consumer.ts",
+      "packages/git-policies/cli/src/trust/fixture/built-trust-consumer.ts",
       "pnpm-lock.yaml"
     ]
   },

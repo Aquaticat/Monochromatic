@@ -17,7 +17,7 @@ import {
 
 import type { PackageProbe, } from './probe.ts';
 import { renderControls, } from './render-controls.ts';
-import { defaultState, } from './scripts/state.ts';
+import { defaultState, } from './script/state.ts';
 
 /**
  * Minimal two-probe fixture; richness isn't required for structural tests.

@@ -30,7 +30,7 @@ import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 
 import type { PackageProbe, } from './probe.ts';
 import { renderControls, } from './render-controls.ts';
-import { defaultState, } from './scripts/state.ts';
+import { defaultState, } from './script/state.ts';
 
 //region Constants
 
@@ -51,7 +51,7 @@ const PACKAGE_ROOT = await findPackageRootCached({
  * Absolute path to the browser-side controller source entry point.
  *
  * Anchored on {@link PACKAGE_ROOT} so it points at
- * `<pkg>/src/scripts/controller.ts` regardless of where this module
+ * `<pkg>/src/script/controller.ts` regardless of where this module
  * is evaluated from: an `import.meta.url`-relative path would resolve
  * to `<pkg>/dist/final/node/scripts/controller.ts` after tsdown
  * bundles this file into a single `cli.mjs`, and that target doesn't

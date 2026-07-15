@@ -350,7 +350,7 @@ keeping those rule files minimal.
 - `index.ts`:
    plugin entry point;
    assembles all rules into the oxlint plugin object
-- `rules/`:
+- `rule/`:
    one file per rule,
    each exporting a `CreateOnceRule`
 - `utility/item-per-line.ts`:

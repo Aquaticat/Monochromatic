@@ -3,23 +3,23 @@ import {
   type Plugin,
 } from '@oxlint/plugins';
 
-import { argumentPerLine, } from './rules/argument-per-line.ts';
-import { arrayElementPerLine, } from './rules/array-element-per-line.ts';
-import { blockBodyNewline, } from './rules/block-body-newline.ts';
-import { chainPerLine, } from './rules/chain-per-line.ts';
-import { commaDangle, } from './rules/comma-dangle.ts';
-import { destructurePerLine, } from './rules/destructure-per-line.ts';
-import { exportPerLine, } from './rules/export-per-line.ts';
-import { importPerLine, } from './rules/import-per-line.ts';
-import { invocationDepthPerLine, } from './rules/invocation-depth-per-line.ts';
-import { maxStatementsPerLine, } from './rules/max-statements-per-line.ts';
-import { noMixedOperators, } from './rules/no-mixed-operators.ts';
-import { objectPropertyPerLine, } from './rules/object-property-per-line.ts';
-import { oneVarDeclarationPerLine, } from './rules/one-var-declaration-per-line.ts';
-import { paramPerLine, } from './rules/param-per-line.ts';
-import { semi, } from './rules/semi.ts';
-import { tuplePerLine, } from './rules/tuple-per-line.ts';
-import { typePropertyPerLine, } from './rules/type-property-per-line.ts';
+import { argumentPerLine, } from './rule/argument-per-line.ts';
+import { arrayElementPerLine, } from './rule/array-element-per-line.ts';
+import { blockBodyNewline, } from './rule/block-body-newline.ts';
+import { chainPerLine, } from './rule/chain-per-line.ts';
+import { commaDangle, } from './rule/comma-dangle.ts';
+import { destructurePerLine, } from './rule/destructure-per-line.ts';
+import { exportPerLine, } from './rule/export-per-line.ts';
+import { importPerLine, } from './rule/import-per-line.ts';
+import { invocationDepthPerLine, } from './rule/invocation-depth-per-line.ts';
+import { maxStatementsPerLine, } from './rule/max-statements-per-line.ts';
+import { noMixedOperators, } from './rule/no-mixed-operators.ts';
+import { objectPropertyPerLine, } from './rule/object-property-per-line.ts';
+import { oneVarDeclarationPerLine, } from './rule/one-var-declaration-per-line.ts';
+import { paramPerLine, } from './rule/param-per-line.ts';
+import { semi, } from './rule/semi.ts';
+import { tuplePerLine, } from './rule/tuple-per-line.ts';
+import { typePropertyPerLine, } from './rule/type-property-per-line.ts';
 
 /**
  * Oxlint JS plugin for TypeScript stylistic rules: one-item-per-line

@@ -4,7 +4,7 @@
  * @module
  */
 import { parseGlobalOptions, } from './parse-global-options.ts';
-import { hasExplicitStatusHintsOverride, } from './rules/status-hints-off.ts';
+import { hasExplicitStatusHintsOverride, } from './rule/status-hints-off.ts';
 
 /**
  * Git flags that request version output before subcommand.

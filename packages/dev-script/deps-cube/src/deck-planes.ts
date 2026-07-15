@@ -30,7 +30,7 @@ import {
 } from '@deck.gl/layers';
 
 import type { SceneBounds, } from './deck-config.ts';
-import type { DimMapping, } from './scripts/filter.ts';
+import type { DimMapping, } from './script/filter.ts';
 
 //region Types
 

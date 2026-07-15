@@ -1,5 +1,5 @@
 // What:     Integration tests that drive the compiled `rust-linter` binary as a
-//           subprocess over the fixtures in `fixtures/`. Files under `tests/` are
+//           subprocess over the fixtures in `fixture/`. Files under `tests/` are
 //           compiled by cargo into a separate test binary, not into the library.
 // Why:      Exercise the real end-user path (argv in, exit code and stdout out),
 //           not just internal functions.
@@ -48,7 +48,7 @@ fn run_with_stderr(args: &[&str]) -> (i32, String, String) {
     // What:     `let manifest_dir = env!("CARGO_MANIFEST_DIR");`. Compile-time path
     //           of the crate root (where `Cargo.toml` lives).
     // Why:      Run the binary with the crate root as the working directory so the
-    //           relative `fixtures/...` paths resolve.
+    //           relative `fixture/...` paths resolve.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -68,7 +68,7 @@ fn run_with_stderr(args: &[&str]) -> (i32, String, String) {
 
     // What:     `command.current_dir(manifest_dir);`. Set the child's working
     //           directory.
-    // Why:      So `fixtures/sample.rs` is found relative to the crate root.
+    // Why:      So `fixture/sample.rs` is found relative to the crate root.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -183,7 +183,7 @@ fn run(args: &[&str]) -> (i32, String) {
 //           directory, then lints that copy through the binary. `&str` is a
 //           borrowed string slice; `&[&str]` a borrowed slice of borrowed slices;
 //           the returned tuple is `(exit_code, stdout)`.
-// Why:      The fixtures live under `fixtures/`, which both rules now exempt, so a
+// Why:      The fixtures live under `fixture/`, which both rules now exempt, so a
 //           rule-firing test cannot lint them in place. Relocating the SAME bytes
 //           to a non-exempt temp path proves the rule still fires, while the
 //           committed fixture stays the single source of the sample content (the
@@ -354,18 +354,18 @@ fn run_relocated(fixture_rel: &str, extra_args: &[&str]) -> (i32, String) {
 // ```
 #[test]
 fn over_budget_exits_nonzero() {
-    // What:     `let (code, stdout) = run_relocated("fixtures/sample.rs", &["--max",
+    // What:     `let (code, stdout) = run_relocated("fixture/sample.rs", &["--max",
     //           "2"]);`. Destructure the returned tuple; `&[...]` lends the extra
     //           flag arguments. The sample has three code lines, so a budget of 2
     //           fails. The helper relocates the sample to a non-exempt temp path so
-    //           the rule is not short-circuited by the `fixtures/` directory.
+    //           the rule is not short-circuited by the `fixture/` directory.
     // Why:      Trigger and observe a max-lines violation through the binary.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const { code, stdout } = runRelocated("fixtures/sample.rs", ["--max", "2"]);
+    // const { code, stdout } = runRelocated("fixture/sample.rs", ["--max", "2"]);
     // ```
-    let (code, stdout) = run_relocated("fixtures/sample.rs", &["--max", "2"]);
+    let (code, stdout) = run_relocated("fixture/sample.rs", &["--max", "2"]);
 
     // What:     `assert_eq!(code, 1, ...)`. Exit code must be 1 (violations found).
     // Why:      Lint failures are signalled by exit 1.
@@ -387,11 +387,11 @@ fn over_budget_exits_nonzero() {
 // ```
 #[test]
 fn under_budget_exits_zero() {
-    // What:     `let (code, stdout) = run_relocated("fixtures/sample.rs", &["--max",
+    // What:     `let (code, stdout) = run_relocated("fixture/sample.rs", &["--max",
     //           "5"]);`. Budget 5 over three code lines, linted at a non-exempt temp
     //           path so the budget is genuinely applied (not skipped as a fixture).
     // Why:      Observe the passing path where the rule runs but finds nothing.
-    let (code, stdout) = run_relocated("fixtures/sample.rs", &["--max", "5"]);
+    let (code, stdout) = run_relocated("fixture/sample.rs", &["--max", "5"]);
 
     // What:     two assertions: exit 0 and empty stdout.
     // Why:      Clean runs print nothing and succeed.
@@ -410,7 +410,7 @@ fn under_budget_exits_zero() {
 // ```
 #[test]
 fn joined_max_value_exits_zero() {
-    // What:     `let (code, stdout) = run_relocated("fixtures/sample.rs",
+    // What:     `let (code, stdout) = run_relocated("fixture/sample.rs",
     //           &["--max=5"]);`. The `=` keeps the flag name and value in one argv
     //           token; the sample is relocated to a non-exempt temp path so budget 5
     //           is really applied over its three code lines.
@@ -418,9 +418,9 @@ fn joined_max_value_exits_zero() {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const { code, stdout } = runRelocated("fixtures/sample.rs", ["--max=5"]);
+    // const { code, stdout } = runRelocated("fixture/sample.rs", ["--max=5"]);
     // ```
-    let (code, stdout) = run_relocated("fixtures/sample.rs", &["--max=5"]);
+    let (code, stdout) = run_relocated("fixture/sample.rs", &["--max=5"]);
 
     // What:     two assertions: exit 0 and empty stdout.
     // Why:      The joined spelling should be equivalent to `--max 5`.
@@ -468,14 +468,14 @@ fn help_exits_zero_and_mentions_max() {
 #[test]
 fn invalid_max_exits_two_on_stderr() {
     // What:     `let (code, stdout, stderr) = run_with_stderr(&["--max", "nope",
-    //           "fixtures/sample.rs"]);`. The `nope` token cannot parse as `usize`.
+    //           "fixture/sample.rs"]);`. The `nope` token cannot parse as `usize`.
     // Why:      Exercise clap's typed-value validation through the compiled binary.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const result = runWithStderr(["--max", "nope", "fixtures/sample.rs"]);
+    // const result = runWithStderr(["--max", "nope", "fixture/sample.rs"]);
     // ```
-    let (code, stdout, stderr) = run_with_stderr(&["--max", "nope", "fixtures/sample.rs"]);
+    let (code, stdout, stderr) = run_with_stderr(&["--max", "nope", "fixture/sample.rs"]);
 
     // What:     assertions over clap's parse error: exit 2, no stdout, useful
     //           stderr mentioning `--max`.
@@ -488,7 +488,7 @@ fn invalid_max_exits_two_on_stderr() {
 
 // What:     `#[test] fn exempt_file_is_skipped() { ... }`. An over-budget sample
 //           whose name ends in `_tests.rs`, linted at a non-exempt temp path.
-// Why:      Isolate the NAME-based exemption: relocated out of `fixtures/`, the only
+// Why:      Isolate the NAME-based exemption: relocated out of `fixture/`, the only
 //           reason it stays clean is its `*_tests.rs` name, even at a tiny budget.
 //
 // In TS you'd write (pseudocode):
@@ -497,12 +497,12 @@ fn invalid_max_exits_two_on_stderr() {
 // ```
 #[test]
 fn exempt_file_is_skipped() {
-    // What:     `let (code, _stdout) = run_relocated("fixtures/foo_tests.rs",
+    // What:     `let (code, _stdout) = run_relocated("fixture/foo_tests.rs",
     //           &["--max", "1"]);`. The leading `_` on `_stdout` marks it
     //           intentionally unused. The temp copy keeps the `*_tests.rs` name, so
     //           its directory is non-exempt but its name still is.
     // Why:      Budget 1 would fail any real file; this one is exempt by name alone.
-    let (code, _stdout) = run_relocated("fixtures/foo_tests.rs", &["--max", "1"]);
+    let (code, _stdout) = run_relocated("fixture/foo_tests.rs", &["--max", "1"]);
 
     // What:     `assert_eq!(code, 0, ...)`. Exempt path means a clean exit.
     // Why:      Confirm the exemption holds end to end through the binary.
@@ -521,18 +521,18 @@ fn exempt_file_is_skipped() {
 // ```
 #[test]
 fn undocumented_fixture_exits_nonzero() {
-    // What:     `let (code, stdout) = run_relocated("fixtures/undocumented.rs",
+    // What:     `let (code, stdout) = run_relocated("fixture/undocumented.rs",
     //           &[]);`. No `--max`, so the default budget applies and only the
     //           rustdoc rule can fire (the file is tiny). `&[]` is an empty slice of
-    //           extra flags. The helper relocates the sample out of `fixtures/` so
+    //           extra flags. The helper relocates the sample out of `fixture/` so
     //           the rule is not short-circuited.
     // Why:      Trigger and observe a require-rustdoc violation.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const { code, stdout } = runRelocated("fixtures/undocumented.rs", []);
+    // const { code, stdout } = runRelocated("fixture/undocumented.rs", []);
     // ```
-    let (code, stdout) = run_relocated("fixtures/undocumented.rs", &[]);
+    let (code, stdout) = run_relocated("fixture/undocumented.rs", &[]);
 
     // What:     `assert_eq!(code, 1, ...)`. Exit code must be 1 (violations found).
     // Why:      Rustdoc failures are signalled by exit 1.
@@ -556,11 +556,11 @@ fn undocumented_fixture_exits_nonzero() {
 // ```
 #[test]
 fn documented_fixture_exits_zero() {
-    // What:     `let (code, stdout) = run_relocated("fixtures/documented.rs", &[]);`.
+    // What:     `let (code, stdout) = run_relocated("fixture/documented.rs", &[]);`.
     //           Every item in this sample carries rustdoc; `&[]` is an empty slice
-    //           of extra flags. Relocated out of `fixtures/`, so the rule runs.
+    //           of extra flags. Relocated out of `fixture/`, so the rule runs.
     // Why:      Observe the passing path where the rule runs but finds nothing.
-    let (code, stdout) = run_relocated("fixtures/documented.rs", &[]);
+    let (code, stdout) = run_relocated("fixture/documented.rs", &[]);
 
     // What:     two assertions: exit 0 and empty stdout.
     // Why:      A documented, under-budget file is clean for every rule.
@@ -569,10 +569,10 @@ fn documented_fixture_exits_zero() {
 }
 
 // What:     `#[test] fn undocumented_fixture_in_place_is_exempt() { ... }`. Run the
-//           binary over the REAL `fixtures/undocumented.rs` in place, without
+//           binary over the REAL `fixture/undocumented.rs` in place, without
 //           relocating it.
 // Why:      Direct end-to-end proof of the fix: linted from its committed
-//           `fixtures/` path, the undocumented sample is exempt, so it reports
+//           `fixture/` path, the undocumented sample is exempt, so it reports
 //           nothing and exits 0 even though it would emit four require-rustdoc
 //           findings anywhere else. This also gives the committed fixture a live
 //           purpose (otherwise no test reads it in place).
@@ -583,15 +583,15 @@ fn documented_fixture_exits_zero() {
 // ```
 #[test]
 fn undocumented_fixture_in_place_is_exempt() {
-    // What:     `let (code, stdout) = run(&["fixtures/undocumented.rs"]);`. Lint the
-    //           committed fixture at its real `fixtures/` path (not a temp copy).
+    // What:     `let (code, stdout) = run(&["fixture/undocumented.rs"]);`. Lint the
+    //           committed fixture at its real `fixture/` path (not a temp copy).
     // Why:      Exercise the exemption exactly as `lint:rust` reaches the file.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const { code, stdout } = run(["fixtures/undocumented.rs"]);
+    // const { code, stdout } = run(["fixture/undocumented.rs"]);
     // ```
-    let (code, stdout) = run(&["fixtures/undocumented.rs"]);
+    let (code, stdout) = run(&["fixture/undocumented.rs"]);
 
     // What:     two assertions: exit 0 and empty stdout.
     // Why:      A fixture-directory file is exempt, so the linter reports nothing.

@@ -35,7 +35,7 @@ import {
   unknownClusterPosition,
 } from './deck-accessors.ts';
 import type { PackageProbe, } from './probe.ts';
-import { defaultState, } from './scripts/state.ts';
+import { defaultState, } from './script/state.ts';
 
 /**
  * Healthy GH-hosted leaf with known spatial coords.

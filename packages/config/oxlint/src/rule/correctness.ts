@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { correctnessRules } from './rules/correctness.ts';
+ * import { correctnessRules } from './rule/correctness.ts';
  * ```
  */
 

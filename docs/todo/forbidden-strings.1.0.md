@@ -417,7 +417,7 @@ or,
     regex;
      `/foo/I` is a literal match for the six-byte string `/foo/I`,
      with no load-time error
-    (the classifier rejects non-`[a-z]` flags at `src/rules/parse.rs:150` and falls through to
+    (the classifier rejects non-`[a-z]` flags at `src/rule/parse.rs:150` and falls through to
     literal handling at `:209`).
      A rule author who fat-fingers a capital flag gets silently wrong
     behavior.

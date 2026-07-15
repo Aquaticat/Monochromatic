@@ -1,5 +1,5 @@
 // What:     Unit tests for the require-rustdoc rule. Sibling test module gated by
-//           `#[cfg(test)]` in `rules/mod.rs`, so it never reaches the release
+//           `#[cfg(test)]` in `rule/mod.rs`, so it never reaches the release
 //           binary.
 // Why:      Lock in the policy: every listed item kind must carry a rustdoc
 //           comment (`///` / `//!` / `/** */`), a plain `//` comment does NOT
@@ -24,7 +24,7 @@ use crate::config::Config;
 use crate::context::LintContext;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rule::Rule;
-use crate::rules::require_rustdoc::RequireRustdoc;
+use crate::builtin::require_rustdoc::RequireRustdoc;
 
 // What:     `const FILE_MESSAGE: &str = "Missing rustdoc on file.";`. The exact
 //           message emitted for a file whose root carries no `//!` module doc.
@@ -328,16 +328,16 @@ fn exempt_paths_are_skipped() {
     // What:     Seven `assert!(run_rule(..., exempt_path).is_empty(), ...)` checks.
     //           An undocumented fn on each exempt path must produce nothing.
     // Why:      Confirm the exemption short-circuits the whole rule for test, fuzz,
-    //           and fixture/invalid sample paths. The `fixture/`, `fixtures/`,
+    //           and fixture/invalid sample paths. The `fixture/`, `fixture/`,
     //           `test-fixture/`, and `invalid/` directories hold the linter's own
-    //           deliberate negative samples (such as `fixtures/undocumented.rs`),
+    //           deliberate negative samples (such as `fixture/undocumented.rs`),
     //           so requiring rustdoc on them would defeat their purpose; this
     //           mirrors oxlint's `ignorePatterns`.
     assert!(run_rule("fn a() {}\n", "src/foo_tests.rs").is_empty(), "*_tests.rs");
     assert!(run_rule("fn a() {}\n", "a/tests/x.rs").is_empty(), "tests/ dir");
     assert!(run_rule("fn a() {}\n", "a/fuzz/x.rs").is_empty(), "fuzz/ dir");
     assert!(run_rule("fn a() {}\n", "a/fixture/x.rs").is_empty(), "fixture/ dir");
-    assert!(run_rule("fn a() {}\n", "a/fixtures/x.rs").is_empty(), "fixtures/ dir");
+    assert!(run_rule("fn a() {}\n", "a/fixture/x.rs").is_empty(), "fixture/ dir");
     assert!(run_rule("fn a() {}\n", "a/test-fixture/x.rs").is_empty(), "test-fixture/ dir");
     assert!(run_rule("fn a() {}\n", "a/invalid/x.rs").is_empty(), "invalid/ dir");
 

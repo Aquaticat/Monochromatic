@@ -4,7 +4,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { BRANCH_WORKTREE_ESCAPE_HATCH, } from '../parsers/branch-create.ts';
+import { BRANCH_WORKTREE_ESCAPE_HATCH, } from '../parser/branch-create.ts';
 import { checkBranchWorktree as branchWorktreeOnly, } from './branch-worktree-check.ts';
 
 /**

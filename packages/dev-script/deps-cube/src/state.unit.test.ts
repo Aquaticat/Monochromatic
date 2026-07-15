@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import type { PackageProbe, } from './probe.ts';
-import { extractDim, } from './scripts/filter.ts';
+import { extractDim, } from './script/filter.ts';
 import {
   type AppState,
   decodeState,
@@ -29,7 +29,7 @@ import {
   STATE_INVALID,
   TOGGLE_KEYS,
   writeStateToHash,
-} from './scripts/state.ts';
+} from './script/state.ts';
 
 /**
  * Three probes spanning the data range so extent computations have

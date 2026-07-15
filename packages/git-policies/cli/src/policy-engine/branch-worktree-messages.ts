@@ -1,7 +1,7 @@
 import {
   BRANCH_WORKTREE_ESCAPE_HATCH,
   type BranchCreationSubcommand,
-} from '../parsers/branch-create.ts';
+} from '../parser/branch-create.ts';
 
 //region Branch worktree diagnostics
 

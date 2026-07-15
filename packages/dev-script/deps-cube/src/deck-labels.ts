@@ -27,7 +27,7 @@
  * @example
  * ```ts
  * import { buildAxisCapitalsLayer } from './deck-labels.ts';
- * import { detectScheme } from './scripts/scheme.ts';
+ * import { detectScheme } from './script/scheme.ts';
  * const layer = buildAxisCapitalsLayer({ bounds, chrome: detectScheme() });
  * ```
  */
@@ -37,8 +37,8 @@ import { TextLayer, } from '@deck.gl/layers';
 
 import type { SceneBounds, } from './deck-config.ts';
 import { DIM_DISPLAY_NAMES, } from './dim-meta.ts';
-import type { DimMapping, } from './scripts/filter.ts';
-import type { ChromeColors, } from './scripts/scheme.ts';
+import type { DimMapping, } from './script/filter.ts';
+import type { ChromeColors, } from './script/scheme.ts';
 
 //region Types
 

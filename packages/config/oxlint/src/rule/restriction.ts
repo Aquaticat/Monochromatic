@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { restrictionRules } from './rules/restriction.ts';
+ * import { restrictionRules } from './rule/restriction.ts';
  * ```
  */
 

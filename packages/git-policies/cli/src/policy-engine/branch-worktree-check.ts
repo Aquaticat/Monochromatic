@@ -5,7 +5,7 @@ import {
   parseBranchCreationRegion,
   stripBranchCreationEscapeHatch,
   type BranchCreationSubcommand,
-} from '../parsers/branch-create.ts';
+} from '../parser/branch-create.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { resolveGit, } from '../resolve-git.ts';
 import { branchCreationMessage, } from './branch-worktree-messages.ts';

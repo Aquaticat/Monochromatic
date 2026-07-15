@@ -9,7 +9,7 @@ import type { RuntimePolicyDefinition, } from './types.ts';
 import {
   requireRoot,
   RequireRootViolationError,
-} from '../rules/require-root.ts';
+} from '../rule/require-root.ts';
 
 /**
  * Configurable require-root built-in.

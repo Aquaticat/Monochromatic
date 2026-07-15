@@ -9,12 +9,12 @@ import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
   cleanChangesWorktree,
   parseCleanRegion,
-} from '../parsers/clean.ts';
+} from '../parser/clean.ts';
 import {
   parseResetRegion,
   resetChangesWorktree,
-} from '../parsers/reset.ts';
-import { parseStashRegion, } from '../parsers/stash.ts';
+} from '../parser/reset.ts';
+import { parseStashRegion, } from '../parser/stash.ts';
 import {
   CLEAN_SUBCOMMAND,
   type GuardedCommand,

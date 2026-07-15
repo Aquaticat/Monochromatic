@@ -211,27 +211,27 @@ Files matching these extensions are skipped by all rules:
    parsed doc-model and message types
 - `tsdoc-utils.ts`:
    compatibility barrel for rules that need shared TSDoc helpers
-- `rules/tsdoc-visitors.ts`:
+- `rule/tsdoc-visitors.ts`:
    shared visitor factories,
    ignored-file handling,
    and report-location helpers
-- `rules/require-tsdoc.ts` and `rules/require-example.ts`:
+- `rule/require-tsdoc.ts` and `rule/require-example.ts`:
    presence rules for declarations and exported function examples
-- `rules/params.ts`,
-  `rules/mutates.ts`,
-  `rules/returns.ts`,
-  and `rules/yields.ts`:
+- `rule/params.ts`,
+  `rule/mutates.ts`,
+  `rule/returns.ts`,
+  and `rule/yields.ts`:
    callable documentation rules
-- `rules/structural.ts` and `rules/tag-validation.ts`:
+- `rule/structural.ts` and `rule/tag-validation.ts`:
    aggregate entry points for structural and tag-validation rules
-- `rules/asterisk-validation.ts`,
-  `rules/structural-tags.ts`,
-  `rules/empty-tags.ts`,
-  `rules/tag-escaping.ts`,
-  `rules/tag-names.ts`,
-  `rules/tag-types.ts`,
-  `rules/type-annotations.ts`,
-  and `rules/jsdoc-map.ts`:
+- `rule/asterisk-validation.ts`,
+  `rule/structural-tags.ts`,
+  `rule/empty-tags.ts`,
+  `rule/tag-escaping.ts`,
+  `rule/tag-names.ts`,
+  `rule/tag-types.ts`,
+  `rule/type-annotations.ts`,
+  and `rule/jsdoc-map.ts`:
    focused helpers behind the aggregate structural and tag-validation rules
 
 ## Tests

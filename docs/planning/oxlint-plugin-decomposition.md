@@ -10,7 +10,7 @@ It does not select a new public namespace or authorize an implementation.
 
 The plugin registers 45 rules in `src/index.ts`:
 26 substantive code rules and 19 directive-governance rules.
-`packages/config/oxlint/src/rules/restriction.ts` configures 43 of them.
+`packages/config/oxlint/src/rule/restriction.ts` configures 43 of them.
 `no-disable-max-lines` and `no-disable-no-misused-promises` are registered but not enabled there.
 
 All rule configuration is centralized in `restrictionRules`.
@@ -80,7 +80,7 @@ The final catalog must document each rule's local rationale or upstream behavior
 ### Directive governance
 
 Do not create a `lint-directives` package containing 19 nearly identical wrappers.
-`src/rules/_ban-disable-factory.ts` shows that the behavior is one rule family with a data catalog.
+`src/rule/_ban-disable-factory.ts` shows that the behavior is one rule family with a data catalog.
 
 Replace the wrapper rules with one configurable `aquaticat` directive-governance rule.
 Its options should name protected rule IDs and messages.
@@ -94,7 +94,7 @@ The target decomposition justifies only two published plugins:
 `no-restricted-syntax` and the small `aquaticat` residue.
 
 The TypeScript semantic support under
-`src/rules/prefer-readonly-parameter-types/` remains an internal subsystem initially.
+`src/rule/prefer-readonly-parameter-types/` remains an internal subsystem initially.
 Extract it only when its dependencies, performance characteristics,
 compatibility requirements, or consumers diverge from the `aquaticat` residue.
 

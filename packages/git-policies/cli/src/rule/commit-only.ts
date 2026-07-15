@@ -4,7 +4,7 @@ import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
   COMMIT_ESCAPE_HATCH,
   parseCommitRegion,
-} from '../parsers/commit.ts';
+} from '../parser/commit.ts';
 import {
   type CheckIndexDiffersFromHead,
   indexDiffersFromHead,

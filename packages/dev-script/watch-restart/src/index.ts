@@ -20,11 +20,11 @@ export {
 export {
   anyFilter,
   composeFilters,
-} from './filters/compose.ts';
-export { contentHashFilter, } from './filters/content-hash.ts';
-export { extFilter, } from './filters/ext.ts';
-export { globFilter, } from './filters/glob.ts';
-export { typeFilter, } from './filters/type.ts';
+} from './filter/compose.ts';
+export { contentHashFilter, } from './filter/content-hash.ts';
+export { extFilter, } from './filter/ext.ts';
+export { globFilter, } from './filter/glob.ts';
+export { typeFilter, } from './filter/type.ts';
 export {
   DEFAULT_MAX_HASH_SIZE_BYTES,
   HashCache,

@@ -7,7 +7,7 @@
  *
  * @example
  * ```typescript
- * import { styleRules } from './rules/style.ts';
+ * import { styleRules } from './rule/style.ts';
  * ```
  */
 

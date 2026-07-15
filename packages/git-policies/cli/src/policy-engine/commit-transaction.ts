@@ -5,7 +5,7 @@
  */
 import { join, } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
-import { parseCommitRegion, } from '../parsers/commit.ts';
+import { parseCommitRegion, } from '../parser/commit.ts';
 import { applyPolicyPatches, } from './apply-policy-patches.ts';
 import {
   containsExactCandidateSnapshot,

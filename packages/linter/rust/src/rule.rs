@@ -85,8 +85,8 @@ pub trait Rule {
 pub fn all_rules() -> Vec<Box<dyn Rule>> {
     // What:     `vec![Box::new(...) as Box<dyn Rule>, Box::new(...)]`. `vec![...]`
     //           builds a `Vec`. `Box::new(value)` moves `value` onto the heap and
-    //           yields the owning pointer. `crate::rules::max_lines::MaxLines` and
-    //           `crate::rules::require_rustdoc::RequireRustdoc` are the unit structs
+    //           yields the owning pointer. `crate::builtin::max_lines::MaxLines` and
+    //           `crate::builtin::require_rustdoc::RequireRustdoc` are the unit structs
     //           (zero-field types) for the two rules. The `as Box<dyn Rule>` on the
     //           first entry "forgets" its concrete type so the list's element type
     //           is the trait object; the second entry then coerces to match. Tail
@@ -101,7 +101,7 @@ pub fn all_rules() -> Vec<Box<dyn Rule>> {
     // return [new MaxLines(), new RequireRustdoc()];
     // ```
     vec![
-        Box::new(crate::rules::max_lines::MaxLines) as Box<dyn Rule>,
-        Box::new(crate::rules::require_rustdoc::RequireRustdoc),
+        Box::new(crate::builtin::max_lines::MaxLines) as Box<dyn Rule>,
+        Box::new(crate::builtin::require_rustdoc::RequireRustdoc),
     ]
 }

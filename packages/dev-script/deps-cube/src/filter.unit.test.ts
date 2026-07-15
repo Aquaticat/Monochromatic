@@ -26,7 +26,7 @@ import {
   type RangeState,
   searchMatches,
   type ToggleState,
-} from './scripts/filter.ts';
+} from './script/filter.ts';
 
 /**
  * Default dim mapping mirroring the plan's recommended channel binding.

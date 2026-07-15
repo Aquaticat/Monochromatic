@@ -5,7 +5,7 @@
  */
 import type { PolicySeverity, } from '../api/policy-types.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
-import { parsePushRegion, } from '../parsers/push.ts';
+import { parsePushRegion, } from '../parser/push.ts';
 import {
   hasManualPushPolicy,
   runManualPushLifecycle,

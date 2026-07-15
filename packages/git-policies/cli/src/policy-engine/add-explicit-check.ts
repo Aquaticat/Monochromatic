@@ -4,7 +4,7 @@ import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
   ADD_ESCAPE_HATCH,
   parseAddRegion,
-} from '../parsers/add.ts';
+} from '../parser/add.ts';
 
 /**
  * Logger root for cli-git after removing the package log shim.
