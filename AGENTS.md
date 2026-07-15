@@ -319,6 +319,11 @@ OPI:
  because ..." explaining each adjacent step,
  not just top pick.
 
+ODM:
+ Option examples must demonstrate every concept the question asks the user to compare.
+If a concept lacks a concrete sketch,
+ explain why before asking.
+
 ### Exhaust evidence layers when assessing system usage
 
 EVL:
