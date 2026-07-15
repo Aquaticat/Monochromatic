@@ -1,5 +1,6 @@
 import {
   readFile,
+  rename,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -16,6 +17,11 @@ import {
  * Metadata file written inside each acquired lock directory.
  */
 const LOCK_OWNER_FILE_NAME = 'owner.json';
+
+/**
+ * Private staging file renamed atomically after complete owner serialization.
+ */
+const LOCK_OWNER_PENDING_FILE_NAME = 'owner.pending.json';
 
 /**
  * Minimum valid operating-system process id.
@@ -138,13 +144,24 @@ export async function writeLockOwner(lockPath: string,): Promise<void> {
     pid: process.pid,
     createdAt: new Date().toISOString(),
   };
+  /**
+   * Private staging path prevents contenders from reading partial JSON.
+   */
+  const pendingOwnerPath = join(
+    lockPath,
+    LOCK_OWNER_PENDING_FILE_NAME,
+  );
   await writeFile(
-    lockOwnerPath(lockPath,),
+    pendingOwnerPath,
     `${JSON.stringify(
       owner,
       null,
       2,
     )}\n`,
+  );
+  await rename(
+    pendingOwnerPath,
+    lockOwnerPath(lockPath,),
   );
 }
 
