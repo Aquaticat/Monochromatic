@@ -142,6 +142,8 @@ type ParsedZipEntry = {
  *
  * @param buffer - Raw ZIP file content.
  *
+ * @mutates buffer through Buffer.from value conversion and native byte access
+ *
  * @returns Map from entry name to decompressed content.
  *
  * @example
@@ -420,6 +422,8 @@ async function zipEntryPair({ parsed, }: { readonly parsed: ParsedZipEntry; },):
  * @param uncompressedSize - Uncompressed byte length.
  *
  * @param localHeaderOffset - Local header offset.
+ *
+ * @mutates buffer through Buffer.from value conversion and native byte access
  *
  * @returns Decompressed entry content.
  *

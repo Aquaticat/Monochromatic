@@ -166,6 +166,8 @@ export function parseCanvasHeader(data: Uint8Array,): CanvasHeader {
  *
  * @param canvasData - Raw canvas.fig bytes.
  *
+ * @mutates canvasData through Buffer.from value conversion and native byte access
+ *
  * @returns parsed {@link CanvasFigSections} (file type, schema bytes, and document bytes).
  *
  * @example
