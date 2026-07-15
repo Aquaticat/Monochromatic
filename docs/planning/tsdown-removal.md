@@ -127,6 +127,41 @@ Read from `packages/config/tsdown/src/` on 2026-07-15:
    (root causes live on in `rolldown-plugin-dts`);
    add a resume-time migration note for paused packages.
 
+## Pilot results (2026-07-15, branch `tsdown-removal`)
+
+All six representative cells pass on raw rolldown 1.1.5 with
+`rolldown-plugin-dts` 0.27.9 (`generator: 'oxc'`):
+
+- `module/toml-edit` (neutral): built, dist smoke-verified (parse plus
+  byte-exact roundtrip), unit tests green.
+- `oxlint-plugins/tsdoc` (node): plugin dist shape valid (22 rules),
+  unit tests green, repo oxlint chain clean end to end.
+- `claude-code-plugins/correction-reminder` (committed bundle):
+  output byte- and mode-identical to the tsdown artifact,
+  hook exercised directly with valid JSON response.
+- `git-policies/cli` (bin): unminified single chunk, shebang and exec
+  bit preserved, real commands exercised from the built bin.
+- `webapp-productivity/wc` (client): page assembled and driven via
+  `agent-browser`, zero console errors, live stats computed.
+- `desktop-app/file-manager-electron` (preload CJS): built through the
+  swapped mise task; wayland boundary test reaches exact parity with
+  the main checkout (both blocked by agent-session display access,
+  no module or bridge errors). Interactive confirmation in the user's
+  real session remains outstanding.
+
+Pilot findings folded into the design:
+
+- Raw rolldown does not set the executable bit on shebang outputs;
+  `config-rolldown` ships a `writeBundle` chmod plugin.
+- `--configLoader native` is required: the default bundle loader's temp
+  file resolves bare imports from the package dir,
+  which strict pnpm isolation rejects;
+  the native loader mirrors tsdown's per-file resolution chain.
+- `config-rolldown` quality gates pass:
+  zero oxlint findings, types clean, ported browserslist tests green.
+  Unit tests for the new `package-externals` and `shebang-executable`
+  helpers are still owed before the package counts as complete (PKG).
+
 ## Open items
 
 - Identify the source of truth for `mise.toml` versus `mise.no-env.toml`
