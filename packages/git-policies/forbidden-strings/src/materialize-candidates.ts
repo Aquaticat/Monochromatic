@@ -11,6 +11,7 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import type { CandidateFile, } from '@monochromatic-dev/git-policy-api/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Maximum simultaneous candidate reads and temporary-file writes.
@@ -100,7 +101,7 @@ type IndexedCandidate = Readonly<{
  * ```
  */
 export async function materializeCandidates(
-  candidates: readonly CandidateFile[],
+  candidates: ForeignBorrowed<readonly CandidateFile[]>,
 ): Promise<MaterializedCandidates> {
   /**
    * Private plugin-owned temporary directory.

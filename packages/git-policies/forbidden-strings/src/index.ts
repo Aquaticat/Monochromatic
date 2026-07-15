@@ -69,6 +69,17 @@ export const forbiddenStringsPolicy: PolicyDefinition<
     'direct-check',
   ],
   options: forbiddenStringsOptions,
+  /**
+   * Scans lifecycle-selected candidate bytes.
+   *
+   * @param context - Policy context exposing lazy Git candidates.
+   *
+   * @param options - Scanner command and built-in-rule options.
+   *
+   * @returns Scanner findings for selected candidates.
+   *
+   * @mutates context through the lazy Git candidate provider
+   */
   async check({
     context,
     options,
