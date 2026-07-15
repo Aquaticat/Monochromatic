@@ -154,6 +154,8 @@ const parser = object({
  *
  * @returns parsed args matching {@link ParsedArgs}
  *
+ * @mutates options through `runSync` output and exit callback capabilities
+ *
  * @example
  * ```ts
  * const args = parseArgs({ argv: process.argv.slice(2,), },);

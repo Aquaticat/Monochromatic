@@ -451,6 +451,8 @@ export class Watcher {
    * tracking set. Uses `allSettled` so a rejected job still cleans up.
    *
    * @param job - the job promise to drain
+   *
+   * @mutates job through `Promise.allSettled` promise assimilation
    */
   async #drainPrePopulateJob(job: Promise<void>,): Promise<void> {
     await Promise.allSettled([job,],);

@@ -36,6 +36,15 @@ invoking parser methods,
 and potentially invoking configured output or error callbacks.
 Configuration objects can also expose getters or proxies.
 
+The same commit's `@optique/run` `runSync` implementation delegates to `runImpl` or `runWithSync`.
+It reads `RunOptions` fields and can invoke configured `onExit`,
+`stdout`,
+and `stderr` callbacks.
+The authored `packages/run/src/run.ts` digest is
+`64cc52ec2b2b34bc849d55fd1aba66573c485a156e19b2216dd69b3b87b32663`.
+The shipped `dist/run.js` digest is
+`0ff2e1dd543f6b45d507ae52d33effdf830bf15323c1b22b0bab82d52f304978`.
+
 ## Resolution
 
 The exact package-major catalog records:
@@ -50,6 +59,11 @@ The exact package-major catalog records:
 
 This separation permits readonly CLI argument arrays without claiming that parser or option objects are pure.
 Unknown versions and unmatched call identities remain fail-closed.
+
+The watch-restart CLI keeps a narrow local `@mutates options` contract around `runSync`.
+A package-wide entry would need to model every `RunOptions` field,
+context capability,
+and callback path rather than only this call site's three optional callbacks.
 
 ## Verification
 
@@ -69,6 +83,8 @@ not a defect in Optique.
 
 - [Optique `parseSync` source][parse-source]
 - [Optique `runParserSync` source][facade-source]
+- [Optique `runSync` source][run-source]
 
 [parse-source]: https://github.com/dahlia/optique/blob/b8d39082fdeb37bb16c68b2dc2396d4c9c45b1d5/packages/core/src/internal/parser.ts
 [facade-source]: https://github.com/dahlia/optique/blob/b8d39082fdeb37bb16c68b2dc2396d4c9c45b1d5/packages/core/src/facade.ts
+[run-source]: https://github.com/dahlia/optique/blob/b8d39082fdeb37bb16c68b2dc2396d4c9c45b1d5/packages/run/src/run.ts
