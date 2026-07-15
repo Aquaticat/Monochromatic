@@ -13,10 +13,10 @@ import {
 
 import { createI18n, } from './create-i18n.ts';
 import type { LocaleSpec, } from './locale-spec.ts';
-import { defineCatalanLocale, } from './locales/ca/index.ts';
-import { defineCustomLocale, } from './locales/custom.ts';
-import { defineEnglishLocale, } from './locales/en/index.ts';
-import { defineChineseLocale, } from './locales/zh/index.ts';
+import { defineCatalanLocale, } from './locale/ca/index.ts';
+import { defineCustomLocale, } from './locale/custom.ts';
+import { defineEnglishLocale, } from './locale/en/index.ts';
+import { defineChineseLocale, } from './locale/zh/index.ts';
 import {
   caLabels,
   caNouns,

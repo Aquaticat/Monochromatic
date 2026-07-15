@@ -60,7 +60,7 @@ type Writer<TOutput,> = (output: TOutput,) => WriterOutput;
  * ```ts
  * #!/usr/bin/env node
  * import { runHookPlugin } from '../runtime/handler-runtime.ts';
- * import { guardrailHandler, guardrailParser, guardrailWriter } from '../handlers/guardrail.ts';
+ * import { guardrailHandler, guardrailParser, guardrailWriter } from '../handler/guardrail.ts';
  * await runHookPlugin({
  *   parser: guardrailParser,
  *   handler: guardrailHandler,

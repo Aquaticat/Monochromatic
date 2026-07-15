@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { defineChineseLocale, } from './locales/zh/index.ts';
+import { defineChineseLocale, } from './locale/zh/index.ts';
 import {
   zhLabels,
   zhNouns,

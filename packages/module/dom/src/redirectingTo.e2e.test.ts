@@ -1,7 +1,7 @@
 /**
  * E2e tests for `onLoadRedirectingTo`.
  *
- * The match path navigates to `test/fixtures/redirect-target.html` so
+ * The match path navigates to `test/fixture/redirect-target.html` so
  * `page.waitForURL` can confirm `location.replace` fired with the anchor's href.
  *
  * @module
@@ -18,7 +18,7 @@ import { loadHarness, } from './test-setup.ts';
 
 /** Absolute file URL of the redirect target used by the match-path test. */
 const TARGET_URL = pathToFileURL(
-  join(import.meta.dirname, '..', 'test', 'fixtures', 'redirect-target.html',),
+  join(import.meta.dirname, '..', 'test', 'fixture', 'redirect-target.html',),
 )
   .href;
 

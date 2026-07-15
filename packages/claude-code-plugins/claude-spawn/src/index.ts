@@ -5,7 +5,7 @@
  *
  * Thin shim; handler logic, parser, writer, the SessionStart helper, and the
  * spawn-state coordination modules live in
- * `@monochromatic-dev/claude-code-plugins-source/handlers/claude-spawn`.
+ * `@monochromatic-dev/claude-code-plugins-source/handler/claude-spawn`.
  * This file exists so the standard tsdown build produces an installable plugin
  * entry at `bundle/node/index.mjs` for Claude Code's marketplace install.
  *
@@ -16,7 +16,7 @@ import {
   claudeSpawnHandler,
   claudeSpawnParser,
   claudeSpawnWriter,
-} from '@monochromatic-dev/claude-code-plugins-source/handlers/claude-spawn';
+} from '@monochromatic-dev/claude-code-plugins-source/handler/claude-spawn';
 import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugins-source/runtime';
 
 await runHookPlugin({

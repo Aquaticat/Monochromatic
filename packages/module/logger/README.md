@@ -242,19 +242,19 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
    default singleton built by applying `createLogger` to the default sinks
 - `src/tagged.ts`:
    `tagged()` wrapper for composable prefixes
-- `src/sinks/console.ts`:
+- `src/sink/console.ts`:
    `createConsoleSink()`,
    verbose-mode gating and microtask batching
-- `src/sinks/file.ts`:
+- `src/sink/file.ts`:
    `createFileSink()`,
    Node.
   js file sink (JSONL via `appendFile`)
-- `src/sinks/opfs.ts`:
+- `src/sink/opfs.ts`:
    `createOpfsSink()`,
    browser OPFS sink with persistent writable stream
-- `src/sinks/session-storage.ts`:
+- `src/sink/session-storage.ts`:
    `createSessionStorageSink()`,
    browser sessionStorage sink
-- `src/sinks/noop.ts`:
+- `src/sink/noop.ts`:
    `createNoopSink()`,
    discards all records

@@ -8,7 +8,7 @@ import type {
   NounEntry,
   SubjectEntry,
 } from '../entries.ts';
-import type { EnglishVerbEntry, } from '../locales/en/index.ts';
+import type { EnglishVerbEntry, } from '../locale/en/index.ts';
 import type {
   TestLabel,
   TestNoun,

@@ -116,20 +116,20 @@ export {
   defineEnglishLocale,
   type DefineEnglishLocaleInput,
   type EnglishVerbEntry,
-} from './locales/en/index.ts';
+} from './locale/en/index.ts';
 
 export {
   type ChineseVerbEntry,
   defineChineseLocale,
   type DefineChineseLocaleInput,
-} from './locales/zh/index.ts';
+} from './locale/zh/index.ts';
 
 export {
   type CatalanVerbEntry,
   defineCatalanLocale,
   type DefineCatalanLocaleInput,
-} from './locales/ca/index.ts';
+} from './locale/ca/index.ts';
 
-export { defineCustomLocale, } from './locales/custom.ts';
+export { defineCustomLocale, } from './locale/custom.ts';
 
 //endregion Locale builders

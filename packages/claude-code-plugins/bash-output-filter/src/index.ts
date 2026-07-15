@@ -5,7 +5,7 @@
  * to strip wasteful patterns (git boilerplate, long lines, repeated diagnostics).
  *
  * Thin shim; handler logic, validation, and the filter pipeline live in
- * `@monochromatic-dev/claude-code-plugins-source/handlers/bash-output-filter`.
+ * `@monochromatic-dev/claude-code-plugins-source/handler/bash-output-filter`.
  * This file exists so the standard tsdown build produces an installable plugin
  * entry at `bundle/node/index.mjs`. The companion shim `src/filter.ts`
  * builds to `bundle/node/filter.mjs`, which the rewritten command pipes
@@ -28,7 +28,7 @@ import {
   bashOutputFilterHandler,
   bashOutputFilterParser,
   bashOutputFilterWriter,
-} from '@monochromatic-dev/claude-code-plugins-source/handlers/bash-output-filter';
+} from '@monochromatic-dev/claude-code-plugins-source/handler/bash-output-filter';
 import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugins-source/runtime';
 
 await runHookPlugin({

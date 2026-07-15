@@ -1,8 +1,8 @@
 import { createLogger, } from './create-logger.ts';
-import { createConsoleSink, } from './sinks/console.ts';
-import { createFileSink, } from './sinks/file.ts';
-import { createOpfsSink, } from './sinks/opfs.ts';
-import { createSessionStorageSink, } from './sinks/session-storage.ts';
+import { createConsoleSink, } from './sink/console.ts';
+import { createFileSink, } from './sink/file.ts';
+import { createOpfsSink, } from './sink/opfs.ts';
+import { createSessionStorageSink, } from './sink/session-storage.ts';
 import type {
   Logger,
   Sink,

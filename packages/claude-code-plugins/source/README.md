@@ -20,8 +20,8 @@ the cluster-level README documents that shim pattern and the migration history.
 ```text
 src/
   runtime/handler-runtime.ts            Generic stdin parse, dispatch, write shell
-  handlers/{plugin}.ts                  Per-plugin handler, parser, writer triple
-  handlers/{plugin}/index.ts            Same, when the plugin spans multiple files
+  handler/{plugin}.ts                  Per-plugin handler, parser, writer triple
+  handler/{plugin}/index.ts            Same, when the plugin spans multiple files
   cli/spawn-claude.ts                   CLI bin that spawns child Claude sessions
 ```
 
@@ -38,7 +38,7 @@ and the `HookHandler`,
  `Parser`,
  `Writer` types.
 
-### handlers/
+### handler/
 
 One handler module per plugin.
 Each module exports three named functions following the convention
@@ -50,8 +50,8 @@ Each module exports three named functions following the convention
 - `Handler` (sync or async) maps the event to the response payload.
 - `Writer` serialises the response payload to the stdout string.
 
-Larger plugins split their internal helpers across sibling files under `handlers/{plugin}/`;
-only the `index.ts` (or flat `handlers/{plugin}.ts`) is exposed via the package's `exports` map.
+Larger plugins split their internal helpers across sibling files under `handler/{plugin}/`;
+only the `index.ts` (or flat `handler/{plugin}.ts`) is exposed via the package's `exports` map.
 
 ### cli/
 
@@ -74,7 +74,7 @@ import {
   guardrailHandler,
   guardrailParser,
   guardrailWriter,
-} from '@monochromatic-dev/claude-code-plugins-source/handlers/guardrail';
+} from '@monochromatic-dev/claude-code-plugins-source/handler/guardrail';
 import {
   runHookPlugin,
 } from '@monochromatic-dev/claude-code-plugins-source/runtime';
@@ -114,12 +114,12 @@ The `exports` map in `package.json` is the package's full public surface:
 
 - `./runtime`:
    the runtime shell and types.
-- `./handlers/{plugin}`:
+- `./handler/{plugin}`:
    the per-plugin handler trio for every cluster plugin.
-- `./handlers/bash-output-filter/filter`:
+- `./handler/bash-output-filter/filter`:
    the standalone filter function used by the `ccbof-filter` pipe target.
 - `./cli/spawn-claude`:
    the CLI module (also exposed as the `spawn-claude` bin).
 
 External consumers should import only via these subpaths;
-the internal layout under `src/handlers/{plugin}/` is private and may change.
+the internal layout under `src/handler/{plugin}/` is private and may change.

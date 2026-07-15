@@ -13,7 +13,7 @@ import type {
   PersonNumberKey,
   Tense,
 } from '../grammar-primitives.ts';
-import type { CatalanVerbEntry, } from '../locales/ca/index.ts';
+import type { CatalanVerbEntry, } from '../locale/ca/index.ts';
 import type {
   TestLabel,
   TestNoun,

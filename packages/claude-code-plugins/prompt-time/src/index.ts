@@ -5,7 +5,7 @@
  * time into Claude's conversation context as `<time>HH:MM</time>`.
  *
  * Thin shim; handler logic, parser, and writer live in
- * `@monochromatic-dev/claude-code-plugins-source/handlers/prompt-time`.
+ * `@monochromatic-dev/claude-code-plugins-source/handler/prompt-time`.
  * This file exists so the standard tsdown build produces an installable plugin
  * entry at `bundle/node/index.mjs` for Claude Code's marketplace install.
  *
@@ -26,7 +26,7 @@ import {
   promptTimeHandler,
   promptTimeParser,
   promptTimeWriter,
-} from '@monochromatic-dev/claude-code-plugins-source/handlers/prompt-time';
+} from '@monochromatic-dev/claude-code-plugins-source/handler/prompt-time';
 import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugins-source/runtime';
 
 await runHookPlugin({

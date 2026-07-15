@@ -11,9 +11,9 @@ packages/claude-code-plugins/
   source/                              Workspace package; owns handler logic, runtime, types
     src/
       runtime/handler-runtime.ts       Generic stdin -> parse -> handle -> writeOutput shell
-      handlers/{plugin}.ts             Per-plugin handler function + parser + writer
+      handler/{plugin}.ts             Per-plugin handler function + parser + writer
       test-fixtures/hook-events/       Shared hook-event fixtures (per handler)
-    package.json                       Exports `./runtime` and `./handlers/{plugin}`
+    package.json                       Exports `./runtime` and `./handler/{plugin}`
   hook-types/                          Canonical hook-protocol type definitions
   {plugin}/                            One per Claude Code plugin in marketplace.json
     .claude-plugin/plugin.json         Hand-maintained plugin manifest (hooks config, name, etc.)
@@ -35,7 +35,7 @@ this cluster.
 
 ## How a plugin is structured
 
-The handler logic for each plugin lives in `source/src/handlers/{plugin}.ts`,
+The handler logic for each plugin lives in `source/src/handler/{plugin}.ts`,
 exported as three named functions:
 
 - `{plugin}Handler`:
@@ -54,7 +54,7 @@ import {
   guardrailHandler,
   guardrailParser,
   guardrailWriter,
-} from '@monochromatic-dev/claude-code-plugins-source/handlers/guardrail';
+} from '@monochromatic-dev/claude-code-plugins-source/handler/guardrail';
 import {
   runHookPlugin,
 } from '@monochromatic-dev/claude-code-plugins-source/runtime';
@@ -88,7 +88,7 @@ source package:
     Store them under
    `$TMPDIR/{plugin}-baseline/{NN-name}.in.json` and `.out.json`.
 3. In the source package,
-    create `src/handlers/{plugin}.ts` exporting three
+    create `src/handler/{plugin}.ts` exporting three
    named functions:
     `{plugin}Handler`,
     `{plugin}Parser`,
@@ -96,7 +96,7 @@ source package:
    Move all handler logic,
     helper modules,
     and constants here.
-4. Add `"./handlers/{plugin}": "./src/handlers/{plugin}.ts"` to the source
+4. Add `"./handler/{plugin}": "./src/handler/{plugin}.ts"` to the source
    package's `exports` map.
 5. In the per-plugin directory,
     replace `src/index.ts` with the four-line shim

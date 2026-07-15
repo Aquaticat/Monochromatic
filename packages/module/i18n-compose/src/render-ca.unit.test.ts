@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { defineCatalanLocale, } from './locales/ca/index.ts';
+import { defineCatalanLocale, } from './locale/ca/index.ts';
 import {
   caLabels,
   caNouns,

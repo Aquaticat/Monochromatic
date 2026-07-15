@@ -8,7 +8,7 @@ import type {
   NounEntry,
   SubjectEntry,
 } from '../entries.ts';
-import type { ChineseVerbEntry, } from '../locales/zh/index.ts';
+import type { ChineseVerbEntry, } from '../locale/zh/index.ts';
 import type {
   TestLabel,
   TestNoun,

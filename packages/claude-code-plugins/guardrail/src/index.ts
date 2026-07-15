@@ -4,7 +4,7 @@
  * Claude Code PreToolUse hook that guards Agent tool calls.
  *
  * Thin shim; handler logic, parser, and writer live in
- * `@monochromatic-dev/claude-code-plugins-source/handlers/guardrail`.
+ * `@monochromatic-dev/claude-code-plugins-source/handler/guardrail`.
  * This file exists so the standard tsdown build produces an installable plugin
  * entry at `bundle/node/index.mjs` for Claude Code's marketplace install.
  *
@@ -25,7 +25,7 @@ import {
   guardrailHandler,
   guardrailParser,
   guardrailWriter,
-} from '@monochromatic-dev/claude-code-plugins-source/handlers/guardrail';
+} from '@monochromatic-dev/claude-code-plugins-source/handler/guardrail';
 import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugins-source/runtime';
 
 await runHookPlugin({

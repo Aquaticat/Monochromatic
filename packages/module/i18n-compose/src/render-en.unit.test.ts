@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { defineEnglishLocale, } from './locales/en/index.ts';
+import { defineEnglishLocale, } from './locale/en/index.ts';
 import {
   enLabels,
   enNouns,

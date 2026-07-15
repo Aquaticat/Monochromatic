@@ -32,11 +32,11 @@ import { runSync, } from '@optique/run';
 import {
   SPAWNS_DIR,
   type SpawnState,
-} from '../handlers/claude-spawn/paths.ts';
+} from '../handler/claude-spawn/paths.ts';
 import {
   findCallingSession,
   SESSION_NOT_FOUND,
-} from '../handlers/claude-spawn/session-finder.ts';
+} from '../handler/claude-spawn/session-finder.ts';
 import { splitWhitespace, } from '@monochromatic-dev/agent-harnesses-shared-text-scan/ts';
 
 /**

@@ -52,7 +52,7 @@ traps.
    so every fix in `create-logger.ts` automatically applies to
   tagged loggers.
    Do not duplicate logic here.
-- `src/sinks/console.ts`,
+- `src/sink/console.ts`,
    `file.ts`,
    `opfs.ts`,
    `session-storage.ts`,
@@ -122,7 +122,7 @@ waiting whole seconds of real wall-clock,
 4.  Gap A3 transient-with-retire failure counter.
 5.  Gap B remove the throw.
 6.  Gap C startup ring buffer and dropped-count marker.
-7.  Gap D console escape classifier (a new sibling module under `src/sinks/`).
+7.  Gap D console escape classifier (a new sibling module under `src/sink/`).
 
 Each step lands with a direct regression test that fails against the code before
 the step and passes after.
@@ -737,7 +737,7 @@ Pass criteria:
 Each concrete sink gets properties over its own logic,
  using the host fakes.
 
-- console (`src/sinks/console.ts`):
+- console (`src/sink/console.ts`):
    contiguous same-level runs collapse to one
   `console.*` call and level transitions split (the `groupRuns` invariant);
   verbose gating drops debug and trace unless `MONOCHROMATIC_VERBOSE`,
@@ -749,7 +749,7 @@ Each concrete sink gets properties over its own logic,
   non-callable `console.*` never throws;
    the formatted line is exactly
   `[level] [iso] message`.
-- file (`src/sinks/file.ts`):
+- file (`src/sink/file.ts`):
    `findNodeModulesUp` finds the nearest ancestor and
   returns the sentinel when none exists,
    over generated path trees;
@@ -758,7 +758,7 @@ Each concrete sink gets properties over its own logic,
    a rejecting `appendFile` is swallowed;
    concurrent appends
   of small JSONL lines do not interleave mid-line.
-- opfs (`src/sinks/opfs.ts`):
+- opfs (`src/sink/opfs.ts`):
    verify round-trips a probe;
    concurrent writes to
   the kept-open `FileSystemWritableFileStream` serialize in order and never
@@ -768,12 +768,12 @@ Each concrete sink gets properties over its own logic,
    this
   property asserts that behavior against the fake stream rather than trusting the
   reading.
-- sessionStorage (`src/sinks/session-storage.ts`):
+- sessionStorage (`src/sink/session-storage.ts`):
    keys increment and namespace
   correctly;
    a throwing `setItem` (quota full) is swallowed;
    verify round-trips.
-- noop (`src/sinks/noop.ts`):
+- noop (`src/sink/noop.ts`):
    always available,
    discards,
    exposes no flush.
@@ -1241,17 +1241,17 @@ Seams needing direct properties or named coverage blocks:
    throw,
    flush,
    pending-write tracking)
-- `src/sinks/console.ts` (`groupRuns`,
+- `src/sink/console.ts` (`groupRuns`,
    verbose detection,
    MONOCHROMATIC_WARN gating,
    batching)
-- `src/sinks/file.ts` (`findNodeModulesUp`,
+- `src/sink/file.ts` (`findNodeModulesUp`,
    verify round-trip,
    write guard)
-- `src/sinks/opfs.ts` (verify,
+- `src/sink/opfs.ts` (verify,
    kept-open stream,
    concurrent write ordering)
-- `src/sinks/session-storage.ts` (key counter,
+- `src/sink/session-storage.ts` (key counter,
    quota handling)
 - `src/tagged.ts` (root-first composition,
    deep nesting)

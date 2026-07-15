@@ -5,7 +5,7 @@
  * in Claude's responses.
  *
  * Thin shim; handler logic, parser, and writer live in
- * `@monochromatic-dev/claude-code-plugins-source/handlers/stop-reminders`.
+ * `@monochromatic-dev/claude-code-plugins-source/handler/stop-reminders`.
  * This file exists so the standard tsdown build produces an installable plugin
  * entry at `bundle/node/index.mjs` for Claude Code's marketplace install.
  *
@@ -26,7 +26,7 @@ import {
   stopRemindersHandler,
   stopRemindersParser,
   stopRemindersWriter,
-} from '@monochromatic-dev/claude-code-plugins-source/handlers/stop-reminders';
+} from '@monochromatic-dev/claude-code-plugins-source/handler/stop-reminders';
 import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugins-source/runtime';
 
 await runHookPlugin({

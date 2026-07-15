@@ -225,14 +225,14 @@ of the surfaces being compared.
  The non-CSS overlap is the cost of keeping the comparison
 honest at full-app scale.
 
-#### `pi/terminal-title` and `claude-code-plugins/source/handlers/terminal-title` are forks
+#### `pi/terminal-title` and `claude-code-plugins/source/handler/terminal-title` are forks
 
 Both directories implement the same terminal-title generation logic for two consumer
 runtimes (pi extension and Claude Code plugin):
 
 - `packages/pi-plugins/terminal-title/src/formatter-utils.ts`:
    219 lines
-- `packages/claude-code-plugins/source/src/handlers/terminal-title/formatter-utils.ts`:
+- `packages/claude-code-plugins/source/src/handler/terminal-title/formatter-utils.ts`:
    154 lines
 - 132 lines of diff between them
 
@@ -407,7 +407,7 @@ Each takes `(input, key)` and returns the string value at `input[key]` if it is 
 string:
 
 - `packages/pi-plugins/terminal-title/src/formatter-utils.ts`
-- `packages/claude-code-plugins/source/src/handlers/terminal-title/formatter-utils.ts`
+- `packages/claude-code-plugins/source/src/handler/terminal-title/formatter-utils.ts`
 - `packages/webapp-content/messages-demo/src/server/api/messages.ts`
 - `packages/webapp-content/messages-demo/src/server/api/drafts.ts`
 
@@ -753,7 +753,7 @@ Each plugin entry-point file is 26 to 38 lines,
 ```ts
 #!/usr/bin/env bun
 /** doc */
-import { <plugin>Handler, <plugin>Parser, <plugin>Writer } from '@monochromatic-dev/claude-code-plugins-source/handlers/<plugin>';
+import { <plugin>Handler, <plugin>Parser, <plugin>Writer } from '@monochromatic-dev/claude-code-plugins-source/handler/<plugin>';
 import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugins-source/runtime';
 await runHookPlugin({ parser, handler, writer });
 ```
@@ -1912,7 +1912,7 @@ Three near-identical wrappers around `mkdir(..., { recursive: true })`:
 - `packages/dev-script/file-enforcer/src/io/write.ts:ensureDir(filePath: string)`:
   takes a file path,
    calls `mkdir(dirname(filePath), { recursive: true })`
-- `packages/claude-code-plugins/source/src/handlers/session-start-housekeeping.ts:ensureDir(dirPath)`:
+- `packages/claude-code-plugins/source/src/handler/session-start-housekeeping.ts:ensureDir(dirPath)`:
   takes a directory path directly
 - `packages/ssg/aquati.cat/src/build/assets.ts:ensureDir(dir)`:
    inline
@@ -1963,7 +1963,7 @@ implementations and the two `intFlag` copies all collapse to imports.
 #### `truncate(value, maxLength)` with ellipsis; one fork has two copies
 
 `packages/pi-plugins/terminal-title/src/formatter-utils.ts:truncate` and the corresponding
-copy in `packages/claude-code-plugins/source/src/handlers/terminal-title/formatter-utils.ts`
+copy in `packages/claude-code-plugins/source/src/handler/terminal-title/formatter-utils.ts`
 are the two truncate implementations the audit's terminal-title fork section already
 covers.
  The body is generic ("if longer than max,
