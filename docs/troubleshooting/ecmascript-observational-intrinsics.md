@@ -32,6 +32,7 @@ The audited outcomes are:
 - `Array.prototype.join` is observational only when every reachable element is primitive;
 - `Error.isError(value)` is observational;
 - Error construction with an options object can invoke `cause` proxy or getter behavior;
+- `RegExp.prototype.test` can change receiver `lastIndex` for global or sticky expressions;
 - `Date.prototype.toLocaleString()` and `Date.prototype.toLocaleDateString()` observe the receiver's
   `[[DateValue]]`;
   supplied locales and options remain opaque;

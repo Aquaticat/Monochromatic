@@ -112,4 +112,9 @@ export const ECMASCRIPT_MUTATION_EFFECTS: readonly IntrinsicEffectEntry[] = [
     member: 'delete',
     evidence: 'ECMA-262 commit 1355a23e WeakSet delete algorithm',
   },),
+  receiverEffect({
+    ownerType: 'RegExp',
+    member: 'test',
+    evidence: 'ECMA-262 commit 1355a23e RegExp test can update lastIndex through RegExpBuiltinExec',
+  },),
 ];

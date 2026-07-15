@@ -218,6 +218,20 @@ await describe({
       },
     },),
     it({
+      name: 'records RegExp test receiver mutation',
+      fn: async () => {
+        const effect = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'RegExp',
+          member: 'test',
+        },);
+        expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (effect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected RegExp.test effect.',);
+        expect(effect.targets,).toEqual([{ kind: 'receiver', },],);
+      },
+    },),
+    it({
       name: 'records TypedArray observation and callback effects',
       fn: async () => {
         const subarray = intrinsicEffect({
