@@ -88,7 +88,7 @@ await describe({
         // engines into their unthemed fallback rendering where
         // accent-color is inert (kept anyway for engines that honor
         // it there); the vendor pseudos below style that fallback.
-        // See docs/troubleshooting/progress-element-fill-styling.md.
+        // See doc/troubleshooting/progress-element-fill-styling.md.
         expect(css,).toContain('accent-color:var(--color-fg-strong)',);
         expect(css,).toContain('background-color:transparent',);
         // Chromium's fallback is a green fill on a gray track, so

@@ -8,7 +8,7 @@
 //           `volume` AFTER the user first touches the slider. Slint destroys a
 //           ONE-WAY binding (`value: root.position`) on the first imperative
 //           `set-value`, which froze the seek bar mid-playback
-//           (docs/troubleshooting/slint-slider-binding-breaks-on-input.md). The fix
+//           (doc/troubleshooting/slint-slider-binding-breaks-on-input.md). The fix
 //           switched to two-way `value <=> root.position`; this file is the
 //           executable guard that keeps it that way, and the first proof that the
 //           in-process `i-slint-backend-testing` seam can drive this app's UI.

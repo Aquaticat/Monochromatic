@@ -64,7 +64,7 @@ traps.
    `Sink`,
    `LogRecord`,
    `Level` types.
-- `DECISIONS.md` (in this package) and `docs/decisions/logger-fuzzing.md`:
+- `DECISIONS.md` (in this package) and `doc/decision/logger-fuzzing.md`:
    why the
   current and the new contracts are what they are.
    Read both before changing a
@@ -247,7 +247,7 @@ testing your change;
 Distilled from `packages/module/toml-edit/` (`HANDOVER.fuzzing.md`,
 `mise.toml`,
  `coverage-baseline.json`,
- `docs/decisions/toml-edit-fuzzing.md`):
+ `doc/decision/toml-edit-fuzzing.md`):
 
 - A budgeted property-fuzz campaign:
    shared `fuzz-budget.ts` with a bounded
@@ -369,7 +369,7 @@ new ones.
  Each is a finding from the prior assessment.
  The owner decisions that
 shaped these fixes are resolved and recorded in
-`docs/decisions/logger-fuzzing.md`;
+`doc/decision/logger-fuzzing.md`;
  this section states the resulting contracts.
 
 ### Failure stance (resolves the direction of every gap below)
@@ -582,7 +582,7 @@ Deliverables:
    Add `fast-check: catalog:` to devDependencies.
 - `src/fuzz/smoke.property.unit.test.ts` importing the built entry point and
   proving bounded and campaign mode both run under node.
-- The seed and counterexample policy from `docs/decisions/fast-check.md`:
+- The seed and counterexample policy from `doc/decision/fast-check.md`:
    random
   seeds in both modes,
    every discovered counterexample pinned as `examples`.
@@ -957,7 +957,7 @@ Deliverables:
    not raw
   node pasted into workflow logic.
    Prove the path filter with a real run.
-- `docs/decisions/logger-fuzzing.md` recording the method,
+- `doc/decision/logger-fuzzing.md` recording the method,
    the `fast-check` and
   `module-async-time` dependency decisions,
    the rejected differential oracle,
@@ -1004,7 +1004,7 @@ These were owner decisions with more than one valid answer;
 resolved and recorded in full,
  with options and rationale,
  in
-`docs/decisions/logger-fuzzing.md`.
+`doc/decision/logger-fuzzing.md`.
  The resulting contracts are written into
 Phase 0 above.
  In brief:
@@ -1213,7 +1213,7 @@ here so the per-phase text stays readable while nothing is lost.
 - Every counterexample from the campaign is fixed in scope and pinned as an
   `examples` entry or a corpus seed;
    deeper defects get a tracked issue.
-- `docs/decisions/logger-fuzzing.md` records the method,
+- `doc/decision/logger-fuzzing.md` records the method,
    the dependency and
   oracle decisions,
    the resolved owner decisions,
@@ -1278,7 +1278,7 @@ This plan was sharpened against current repository state,
 - `fast-check` is in the catalog at `>=4.8.0` (`pnpm-workspace.yaml`),
    so the
   dependency is available.
-- `docs/decisions/` already hosts the `*-fuzzing.md` family (`toml-edit-fuzzing.md`,
+- `doc/decision/` already hosts the `*-fuzzing.md` family (`toml-edit-fuzzing.md`,
   `file-enforcer-fuzzing.md`,
    `forbidden-strings-fuzzing.md`,
    `fast-check.md`),

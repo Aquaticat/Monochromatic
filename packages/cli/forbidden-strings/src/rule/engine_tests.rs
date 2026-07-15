@@ -581,7 +581,7 @@ use super::engine::{
 //           message format includes the source so a failing test
 //           pinpoints which case regressed.
 // Why:      Positive triggers: every minimal panic-shape bisected
-//           in docs/troubleshooting/resharp.md must keep firing.
+//           in doc/troubleshooting/resharp.md must keep firing.
 #[test]
 fn intersection_with_lookbehind_fires_on_minimal_shape() {
     let cases = [
@@ -653,7 +653,7 @@ fn intersection_with_word_end_alternation_fires_on_minimal_shape() {
         // What:     Minimum bisected shape for the compile panic at
         //           `resharp-algebra/src/lib.rs:2470`
         //           (`attempt to add with overflow`). Bisection
-        //           details in docs/troubleshooting/resharp.md.
+        //           details in doc/troubleshooting/resharp.md.
         // Why:      Anchor the detector on the trigger combination
         //           `& + \w + $`.
         "(?:\\w|$)(?:(?![1g]\\_X)& a)",
@@ -792,7 +792,7 @@ fn find_all_catches_runtime_panic_via_catch_unwind() {
     //           so the shape never reaches find_all. Both outcomes
     //           satisfy the invariant; the wrapper stays in find_all
     //           as a hedge for unknown future shapes (see
-    //           docs/troubleshooting/resharp.md, "Fixed upstream, now
+    //           doc/troubleshooting/resharp.md, "Fixed upstream, now
     //           spent").
     if let Ok(re) = resharp::Regex::new("(?:(?=a)&(?<=_))") {
         let cr = CompiledRegex::Resharp(re);

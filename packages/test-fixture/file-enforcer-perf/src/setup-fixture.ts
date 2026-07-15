@@ -27,7 +27,7 @@ const FIXTURE_DIR = join(tmpdir(), 'file-enforcer-perf',);
 /** Number of simulated packages to create */
 const PACKAGE_COUNT = 20;
 
-/** Document file basenames inside each package's docs/ directory */
+/** Document file basenames inside each package's doc/ directory */
 const DOC_NAMES = ['readme', 'guide', 'api', 'changelog', 'contributing',] as const;
 
 /** TypeScript file basenames inside each package's lib/ directory */

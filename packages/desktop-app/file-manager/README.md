@@ -7,11 +7,11 @@ child pane in the next column and focuses it (a directory spawns a listing pane;
 preview pane); Enter or double-click opens a file with the OS default. Panes are deduplicated by
 location and die only on explicit close.
 
-The full product specification is `docs/planning/file-manager.md`. This package reclaims the
+The full product specification is `doc/planning/file-manager.md`. This package reclaims the
 canonical, function-named `packages/desktop-app/file-manager/` path from an earlier Slint
 prototype; the toolkit is now GTK4 (gtk4-rs), chosen for native Wayland drag-and-drop on a pure
-KWin session (see `docs/handover/file-manager-toolkit-exploration.md` for the decision and
-`docs/handover/file-manager-gtk-build.md` for live build state).
+KWin session (see `doc/handover/file-manager-toolkit-exploration.md` for the decision and
+`doc/handover/file-manager-gtk-build.md` for live build state).
 
 ## Why GTK4
 
@@ -29,7 +29,7 @@ Enter (Ctrl forces a duplicate), with a per-pane close button and Left/Right col
 navigation; off-thread image thumbnail decoding into a byte-bounded evicting cache for preview
 panes; and file drag-and-drop (a native inbound drop target, native outbound drag on Wayland, with
 Windows OLE and macOS AppKit shims for outbound elsewhere). See
-`docs/handover/file-manager-gtk-build.md` for the build log and exactly what is verified versus
+`doc/handover/file-manager-gtk-build.md` for the build log and exactly what is verified versus
 still manual.
 
 Deferred (designed, not yet built): session-restore persistence, single-instance IPC, `fff-core`

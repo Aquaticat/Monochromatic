@@ -8,7 +8,7 @@
 //! pane at absolute `(column * stride, sticky_y)` coordinates, so inflated natural sizes cannot
 //! displace anything (per-column canvases were stretched off the grid by pane-header labels whose
 //! ellipsized text still requests full width as natural size; see
-//! docs/troubleshooting/gtk4-label-ellipsize-natural-width.md).
+//! doc/troubleshooting/gtk4-label-ellipsize-natural-width.md).
 
 /// What: imports cells for closure-captured GTK state.
 /// Why: focus state and the scroll callback mutate from signal handlers.

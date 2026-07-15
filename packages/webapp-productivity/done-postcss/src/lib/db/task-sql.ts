@@ -136,7 +136,7 @@ export const SQL_SELECT_ALL_TAGS =
  * Uses Turso's native `fts_match`/`fts_score` functions against the `tasks_fts`
  * index method. The bound query reuses the `?1` numbered parameter across both
  * functions. `fts_score` is unreliable on the pinned build (often 0 or tied across
- * multiple matches; see `docs/troubleshooting/turso-fts5-native-fts.md`), so
+ * multiple matches; see `doc/troubleshooting/turso-fts5-native-fts.md`), so
  * `updated_at` is a deterministic tiebreaker; genuine relevance ordering activates
  * once upstream scoring is fixed.
  */

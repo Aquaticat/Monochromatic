@@ -1,6 +1,6 @@
 ---
 name: troubleshooting-doc
-description: Use when investigating an external tool's behavior, bug, quirk, capability gap, or fix difficulty; proactively write the troubleshooting doc the moment you finish diagnosing or working around one, even when the user did not ask; also use when writing or updating a docs/troubleshooting/<topic>.md file. The write-up is a required completion step, not an offer.
+description: Use when investigating an external tool's behavior, bug, quirk, capability gap, or fix difficulty; proactively write the troubleshooting doc the moment you finish diagnosing or working around one, even when the user did not ask; also use when writing or updating a doc/troubleshooting/<topic>.md file. The write-up is a required completion step, not an offer.
 ---
 
 # Writing a troubleshooting file
@@ -26,7 +26,7 @@ defer:
  and do not say "I could document
 this" or "want me to write it up?
 ",
- until docs/troubleshooting/<topic>.
+ until doc/troubleshooting/<topic>.
 md
 exists.
  Walk this skill end-to-end whenever you write or update one.
@@ -55,12 +55,12 @@ reproduce,
  verify,
  and act on every claim.
  The canonical worked example
-is [docs/troubleshooting/resharp.md](../../../docs/troubleshooting/resharp.md);
+is [doc/troubleshooting/resharp.md](../../../doc/troubleshooting/resharp.md);
 match its shape unless the topic genuinely lacks a section.
 
 ## File naming
 
-`docs/troubleshooting/<topic>.md`.
+`doc/troubleshooting/<topic>.md`.
  `<topic>` is kebab-case,
 specific enough to distinguish from sibling docs (`bun-fetch-streaming`,
 not `bun`).
@@ -360,7 +360,7 @@ disposable upstream clone.
     or long enough that inline embedding would crowd
    the doc),
     save it beside the doc as
-   `docs/troubleshooting/<topic>.patch` (matching the doc's `<topic>`,
+   `doc/troubleshooting/<topic>.patch` (matching the doc's `<topic>`,
    prefix dropped since the directory names the family) and link to it
    from the doc with a relative path (the bare filename,
     same directory).
@@ -431,7 +431,7 @@ Before filing or drafting an upstream issue/comment,
 for the tool or bug class.
  A listed exemption means upstream tracking is
 out of scope:
- still write or update `docs/troubleshooting/<topic>.md`,
+ still write or update `doc/troubleshooting/<topic>.md`,
 still record symptoms,
  root cause,
  verification,

@@ -229,7 +229,7 @@ They work with lists of display strings,
  selected pages,
  Compose snapshots,
  and content URI identities.
-`docs/decisions/music-player-android-port.md` records a real library size of 3,857 files,
+`doc/decision/music-player-android-port.md` records a real library size of 3,857 files,
 which is a normal Kotlin collection workload.
 Moving this to Rust would mean copying track lists,
  page entries,

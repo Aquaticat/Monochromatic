@@ -168,7 +168,7 @@ const CORRECTION_REMINDER_TEXT = [
   'Before your next substantive response, re-check the claim against primary',
   'sources, local files, logs, or command output. Do not run a same-session',
   'self-review or write an `Advisor pass: ...` line; self-review is not',
-  'independent evidence. See `docs/agents/self-review.md`.',
+  'independent evidence. See `doc/agent/self-review.md`.',
   '</correction-detected>',
 ]
   .join('\n',);

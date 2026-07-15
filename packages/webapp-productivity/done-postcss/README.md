@@ -126,7 +126,7 @@ This package is reference scaffolding.
    etc.).
 - **Retired**:
    deleted once its comparison value is exhausted.
-  Record the rejection reason in a decision doc under `docs/decisions/`.
+  Record the rejection reason in a decision doc under `doc/decision/`.
 
 Until retired,
  mirror behaviour changes from `../done` only when the comparison's

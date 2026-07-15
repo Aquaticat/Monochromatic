@@ -12,7 +12,7 @@ Naming note:
 gl (WebGL),
  not an UpSet plot.
  UpSet binarises continuous attributes that are more useful at full resolution.
- See `../../../docs/decisions/deps-cube.md` for the design rationale.
+ See `../../../doc/decisions/deps-cube.md` for the design rationale.
 
 ## Usage
 

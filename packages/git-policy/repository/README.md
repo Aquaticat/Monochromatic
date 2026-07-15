@@ -7,7 +7,7 @@ Consumers choose the effective namespace when registering `repositoryPolicyPlugi
 
 `forbiddenRootContext` rejects a non-deleted root `CONTEXT.md` candidate during pre-forward add/commit checks and direct
 checks.
-A nested path such as `docs/CONTEXT.md` does not match.
+A nested path such as `doc/CONTEXT.md` does not match.
 The policy defaults to error and is warning-safe.
 
 ```ts

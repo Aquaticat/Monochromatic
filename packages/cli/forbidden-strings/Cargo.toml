@@ -63,7 +63,7 @@ rayon = "1"
 regex = "1"
 # Floor raised to 0.6.13. 0.6.11 landed three further upstream fixes filed by
 # this project against the 2026-06-04 fuzz campaign
-# (docs/audit/resharp-fuzz-2026-06-04/), all merged to ieviev/resharp main:
+# (doc/audit/resharp-fuzz-2026-06-04/), all merged to ieviev/resharp main:
 #   - PR #15 (bug-07): the parser negates the byte class for ASCII `\D`/`\S`/
 #     `\W`, so a negated Perl class is no longer spuriously nullable;
 #   - PR #14 (regression-01): `find_all` registers each null position once,
@@ -80,7 +80,7 @@ regex = "1"
 # deep-nesting stack-overflow, the `rw_active` re-entrancy guard, and the
 # `find_all` boundary zero-width fix) and re-admitted the `\A`/`\z`-inside-
 # complement workaround; the Bug B/C/E/F fixes landed in 0.6.4 and remain.
-# See docs/troubleshooting/resharp.md. Caret semantics keep this within
+# See doc/troubleshooting/resharp.md. Caret semantics keep this within
 # 0.6.x (`>=0.6.13, <0.7`).
 resharp = "0.6.13"
 # The logging facade and its subscriber. tracing routes the compiler's rule-rejection
@@ -97,7 +97,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # to intercept panics inside the resharp algebra / engine. The specific
 # fuzzer-discovered shapes that motivated this combo are all resolved
 # upstream as of resharp 0.6.9 (behaviourally re-verified 2026-06-04;
-# see docs/troubleshooting/resharp.md, "Fixed upstream, now spent"):
+# see doc/troubleshooting/resharp.md, "Fixed upstream, now spent"):
 #   - `attempt to add with overflow` in `attempt_rw_concat_2`
 #     (`resharp-algebra`) on shapes like `(?:\w|$)(?:(?![1g]\_X)& a)`
 #     (intersection + `\w` + end-anchor) and the nested-lookahead-in-
@@ -148,7 +148,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # debug_asserts and the perf cost was not measured to be acceptable on the
 # CI gate.
 #
-# See docs/troubleshooting/resharp.md for the full per-bug status at 0.6.9
+# See doc/troubleshooting/resharp.md for the full per-bug status at 0.6.9
 # and the pre-validator coverage in `src/rule.rs` / `src/rule/engine.rs`.
 [profile.release]
 lto = true
@@ -159,5 +159,5 @@ overflow-checks = true
 strip = true
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
-# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+# Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [workspace]

@@ -97,7 +97,7 @@ export {
  * the property-based fuzz suite can exercise internal encoders and emitters
  * through the built package artifact rather than sibling source imports. Their
  * signatures may change without a major version bump. Do not depend on them
- * from application code. See `docs/decisions/toml-edit-fuzzing.md`.
+ * from application code. See `doc/decision/toml-edit-fuzzing.md`.
  */
 export { encodeKey as _encodeKey, } from './keys.ts';
 

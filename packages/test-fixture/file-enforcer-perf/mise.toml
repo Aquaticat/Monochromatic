@@ -46,7 +46,7 @@ execFileSync('sudo', ['setcap', '-r', nodeBin], { stdio: 'inherit' })
 console.log(`removed file capabilities from ${nodeBin}`)
 """
 
-# lint:oxlint omitted -- see docs/troubleshooting/oxlint.md
+# lint:oxlint omitted -- see doc/troubleshooting/oxlint.md
 
 [tasks.lint]
 extends = "lint"

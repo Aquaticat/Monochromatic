@@ -10,7 +10,7 @@ It keeps the package focused on suite and assertion primitives.
   File discovery,
   per-file process isolation,
   and aggregate execution belong to the root `mise` `test:unit` template.
-  This is recorded in `docs/adr/0001-module-test-suite-primitive.md`.
+  This is recorded in `doc/adr/0001-module-test-suite-primitive.md`.
 - Scheduling stays numeric through `describe({ concurrency })`.
   Shared-state meaning remains caller-owned documentation and test structure.
 - Matcher declarations stay explicit across `MatcherSet`,

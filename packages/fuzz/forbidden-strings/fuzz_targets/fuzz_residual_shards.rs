@@ -38,7 +38,7 @@ fuzz_target!(|input: RulesetAndContent| {
         //           unbounded algebra-distribution recursion (mk_union /
         //           mk_inter / attempt_rw_inter_2 / attempt_rw_union_2)
         //           and overflows the stack inside `Regex::new`
-        //           (uncatchable; see docs/troubleshooting/resharp.md,
+        //           (uncatchable; see doc/troubleshooting/resharp.md,
         //           "intersection over alternation"). Each member compiles
         //           alone, so the earlier filter does not catch it; the
         //           blowup is created by the combination. Drop `&`-rules

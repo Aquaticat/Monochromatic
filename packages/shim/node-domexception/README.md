@@ -10,4 +10,4 @@ Its `index.cjs` is a single line:
 `pnpm-workspace.yaml` substitutes the deprecated upstream package with this shim via `overrides: { 'node-domexception': 'link:packages/shim/node-domexception' }`.
 The substitution silences pnpm's install-time deprecation warning while keeping `fetch-blob`'s `import DOMException from 'node-domexception'` (and its `new DOMException(...)` throw site) working unchanged on Node 17+ and Bun.
 
-See `TROUBLESHOOTING.dependencies.md` for the audit trail and `docs/dependency-blocklist.md` for when to reach for a shim package versus a generic stub or removal.
+See `TROUBLESHOOTING.dependencies.md` for the audit trail and `doc/dependency-blocklist.md` for when to reach for a shim package versus a generic stub or removal.

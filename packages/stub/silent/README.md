@@ -22,4 +22,4 @@ For a loud failure,
 For optional dependencies that consumers handle via `try { require } catch`,
  use global removal in `pnpm-workspace.yaml`.
 
-See `docs/dependency-blocklist.md` for the full mechanism and decision rule.
+See `doc/dependency-blocklist.md` for the full mechanism and decision rule.

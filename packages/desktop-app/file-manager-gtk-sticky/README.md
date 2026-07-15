@@ -18,7 +18,7 @@ Non-overlap needs no solver because the tidy tree layout makes bands within a co
 the unit tests sweep scroll offsets to hold that invariant and the boundary test asserts it live.
 
 The derivation, and the behavioral differences against the original, are recorded in
-`docs/audit/file-manager-sticky-flow.md`.
+`doc/audit/file-manager-sticky-flow.md`.
 
 ## What is deliberately out of scope
 

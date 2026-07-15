@@ -2,7 +2,7 @@
 //!
 //! GDK's Win32 backend leaves the file-to-"Shell IDList Array" conversion unimplemented, so a
 //! `GtkDragSource` cannot deliver files to Explorer (see
-//! docs/troubleshooting/gtk4-windows-outbound-file-drag.md). This drives the native OLE drag
+//! doc/troubleshooting/gtk4-windows-outbound-file-drag.md). This drives the native OLE drag
 //! directly: build shell PIDLs for the paths, wrap them in an `IDataObject`, and run `SHDoDragDrop`
 //! on the GTK main thread (already an OLE STA because GDK calls `OleInitialize`). Compiled only on
 //! Windows.

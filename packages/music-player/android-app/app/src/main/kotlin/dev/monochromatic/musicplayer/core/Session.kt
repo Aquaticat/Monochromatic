@@ -21,7 +21,7 @@ package dev.monochromatic.musicplayer.core
 // current index, it persists the opened directory ("Source Root") plus the single
 // SELECTED TRACK, and re-derives the queue by scanning the root on restore (so a
 // file added, removed, or renamed since last run self-corrects). See
-// `docs/decisions/music-player-session-source-root.md`.
+// `doc/decision/music-player-session-source-root.md`.
 //
 // Android differs from desktop in ONE field: it does NOT persist the Source Root.
 // On Android the source is re-resolved every launch by `LibrarySource.load` (a held

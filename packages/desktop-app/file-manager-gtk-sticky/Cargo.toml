@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 license = "LGPL-3.0-or-later"
 publish = false
-description = "Sticky-band variant of the GTK file manager: the original's lane engine and collision solver replaced by one per-pane clamp, y = band_top + clamp(scroll - band_top, 0, band_height - PANE_HEIGHT), the same rule CSS position: sticky applies. See docs/audit/file-manager-sticky-flow.md."
+description = "Sticky-band variant of the GTK file manager: the original's lane engine and collision solver replaced by one per-pane clamp, y = band_top + clamp(scroll - band_top, 0, band_height - PANE_HEIGHT), the same rule CSS position: sticky applies. See doc/audit/file-manager-sticky-flow.md."
 
 # Lib+bin split so the pure band math unit-tests without spinning up GTK, matching the sibling
 # desktop apps. The bin is a thin wrapper over the library `run`.
@@ -32,12 +32,12 @@ tracing = "0.1"
 tracing-appender = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
-# Canonical lint policy, enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+# Canonical lint policy, enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [lints.clippy]
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
-# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+# Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [workspace]

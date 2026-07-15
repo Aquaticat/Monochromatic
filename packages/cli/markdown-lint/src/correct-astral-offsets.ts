@@ -123,7 +123,7 @@ export type CorrectAstralOffsetsParams = {
  * explicit work-stack so a degenerate spine cannot overflow the call stack.
  * Columns are left as Sätteri reports them (code-point based); the fixer edits
  * at offsets, so only offsets need correcting. See
- * `docs/troubleshooting/satteri-offsets.md`.
+ * `doc/troubleshooting/satteri-offsets.md`.
  *
  * @param tree - tree whose node offsets are rewritten in place
  *

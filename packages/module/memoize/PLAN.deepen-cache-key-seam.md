@@ -9,7 +9,7 @@ Produced by an architecture grilling session;
  every decision below is locked.
 
 The companion decision `keep memoize sync and async as parallel implementations`
-lives at `docs/decisions/memoize-sync-async-parallel-impls.md`.
+lives at `doc/decision/memoize-sync-async-parallel-impls.md`.
 
 ## Why
 
@@ -147,7 +147,7 @@ The interface is the test surface;
 - [ ] Add a fast-check property:
        distinct `(argKey, salt)` pairs produce distinct keys
       (the repo already uses fast-check;
-       see `docs/decisions/fast-check.md`).
+       see `doc/decision/fast-check.md`).
 - [ ] Keep the behavioral cases:
        cache hit,
        salt-change recompute,

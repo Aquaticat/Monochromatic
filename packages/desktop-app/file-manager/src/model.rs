@@ -1,6 +1,6 @@
 //! The pane-strip state machine: a tree of panes laid out on a `(column, row)` grid.
 //!
-//! Pure and GTK-free so the Niri spawn/dedup/close rules (docs/planning/file-manager.md) unit-test
+//! Pure and GTK-free so the Niri spawn/dedup/close rules (doc/planning/file-manager.md) unit-test
 //! directly. Each pane knows its parent; `column` is lineage depth and `row` is assigned by a tidy
 //! tree layout so a child aligns to its parent's row and a sibling starts below the previous
 //! sibling's whole subtree. Any spawn or close re-lays-out, so existing panes shift down as

@@ -25,7 +25,7 @@ json `exports`,
  `node_modules`,
  workspace packages).
 
-See [docs/troubleshooting/css-tooling.md](../../../docs/troubleshooting/css-tooling.md) for the full chronicle.
+See [doc/troubleshooting/css-tooling.md](../../../doc/troubleshooting/css-tooling.md) for the full chronicle.
 
 ## Usage
 

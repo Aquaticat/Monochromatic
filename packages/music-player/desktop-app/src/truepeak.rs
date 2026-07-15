@@ -9,7 +9,7 @@
 //! two openers that hand that adapter to the shared resolvers. Foreground playback resolves a
 //! probe-or-full decision quickly ([`resolve_current`]); background warming upgrades to an
 //! exact full scan ([`resolve_full`]). See
-//! ../../../docs/handover/music-player-truepeak-core-integration.md.
+//! ../../../doc/handover/music-player-truepeak-core-integration.md.
 
 /// What:     `use std::path::Path;`. Borrowed filesystem-path type (sibling: the owned
 ///           `PathBuf`, like `&str` vs `String`).

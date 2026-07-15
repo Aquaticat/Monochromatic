@@ -63,7 +63,7 @@ the real native binary,
 even when the native binary itself returns in under 100ms. Running `dprint`
 through mise bypasses the wrapper.
  See
-[`TROUBLESHOOTING.dprint.md`](../../../docs/troubleshooting/dprint.md#bug-1-dprint-installed-as-a-workspace-dev-dependency-causes-5-second-startup-overhead)
+[`TROUBLESHOOTING.dprint.md`](../../../doc/troubleshooting/dprint.md#bug-1-dprint-installed-as-a-workspace-dev-dependency-causes-5-second-startup-overhead)
 for the full diagnosis and measurements.
 
 To enforce this decision,
@@ -103,5 +103,5 @@ paste the absolute path.
  Reload the VSCode window after editing.
 
 See
-[`TROUBLESHOOTING.dprint.md`](../../../docs/troubleshooting/dprint.md#bug-2-dprint-vs-code-extension-cannot-find-dprint-in-wsl-with-pnpm-isolated-installs)
+[`TROUBLESHOOTING.dprint.md`](../../../doc/troubleshooting/dprint.md#bug-2-dprint-vs-code-extension-cannot-find-dprint-in-wsl-with-pnpm-isolated-installs)
 for the full diagnosis and alternative workarounds.

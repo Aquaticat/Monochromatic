@@ -12,7 +12,7 @@
 //! (i-slint-backend-winit `xdg_desktop_settings.rs`), so it is the fallback at window
 //! creation and only becomes real once the portal answers, which flips the `.slint`
 //! `os-font-size` (= 1rem) and fires the `probe-os-font` callback wired below.
-//! See `docs/troubleshooting/slint-rem-binding-loop.md`.
+//! See `doc/troubleshooting/slint-rem-binding-loop.md`.
 
 /// What:     `use crate::AppWindow;`. The generated Slint window type, which only
 ///           exists in this binary crate (same as the sibling `ui_page` module).

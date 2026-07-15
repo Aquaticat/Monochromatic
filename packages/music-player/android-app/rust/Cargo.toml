@@ -34,7 +34,7 @@ jni = "0.21"
 # -C target-feature=+aes for the Android target triples, and the arm64 device must
 # carry the ARMv8 crypto extensions (a SIGILL at runtime otherwise). Builds on
 # STABLE Rust (the nightly-only `hybrid` feature is left OFF). See
-# ../../../docs/troubleshooting/gxhash-aes-target-feature.md.
+# ../../../doc/troubleshooting/gxhash-aes-target-feature.md.
 gxhash = "3"
 
 # libopus via opus-rs HEAD: its opusic-sys backend bundles libopus 1.6.1 and

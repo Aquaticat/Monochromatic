@@ -11,7 +11,7 @@
  * outside-to-close is not provided (an Esc handler is also not added);
  * the user toggles by clicking the summary again. This is an
  * intentional trade-off for shipping without JS; see
- * `docs/tech-debt/lang-switcher.md`.
+ * `doc/tech-debt/lang-switcher.md`.
  */
 import {
   cssCalc,

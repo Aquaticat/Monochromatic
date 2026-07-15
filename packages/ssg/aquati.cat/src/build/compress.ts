@@ -15,7 +15,7 @@
  *
  * Run via `mise run build:compress` or `node src/build/compress.ts`.
  *
- * @see docs/decisions/zstd-cli-to-node-zlib.md for the engine, level, and threading evidence.
+ * @see doc/decision/zstd-cli-to-node-zlib.md for the engine, level, and threading evidence.
  */
 import { once, } from 'node:events';
 import {

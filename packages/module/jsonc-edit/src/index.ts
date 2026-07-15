@@ -4,7 +4,7 @@
  * A free-function edit API over an immutable `JsoncEditState`, with a canonical
  * serializer that treats comments as first-class, queryable data. Sibling of
  * `@monochromatic-dev/module-toml-edit`; see
- * `docs/decisions/jsonc-edit-parser-foundation.md` for why this package keeps a
+ * `doc/decision/jsonc-edit-parser-foundation.md` for why this package keeps a
  * hand-written parser rather than wrapping a library.
  *
  * @packageDocumentation

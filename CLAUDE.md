@@ -8,7 +8,7 @@ you cannot enumerate how many subagents are running,
 and SendMessage steering is unreliable,
 so fan out general-purpose subagents only in interactive sessions where the user watches and steers them in the Claude Code UI.
 Rationale:
-`docs/decisions/general-purpose-subagent-ban.md`.
+`doc/decision/general-purpose-subagent-ban.md`.
 
 Use `spawn-claude` outside sandbox to launch a steerable child Claude Code session in a visible terminal window.
 The child runs independently,
@@ -30,7 +30,7 @@ Cross-cutting reference:
 Rationale,
  mechanisms,
  examples:
- `docs/philosophy/agents.md`.
+ `doc/philosophy/agents.md`.
 
 TAG:
  Every rule carries unique `[A-Z0-9]{3}` shortcode prefix (`CODE: `):
@@ -134,7 +134,7 @@ EXT:
  CLI options,
  conf syntax,
  API capabilities:
- fetch current docs/src before responding.
+ fetch current doc/src before responding.
 "Does X support Y" = research task,
  not recall.
 
@@ -269,7 +269,7 @@ CKB:
  re-read primary sources,
  run commands,
  or use separate reviewer.
-Never same-session self-review (`docs/agents/self-review.md`).
+Never same-session self-review (`doc/agent/self-review.md`).
 
 ### Measure-vs-ask
 
@@ -436,9 +436,9 @@ RBK:
  User must execute manually:
  invoke `runbook` skill for the document.
 Repo-wide runbooks:
- `docs/runbook/<topic>.md`;
+ `doc/runbook/<topic>.md`;
  handovers:
- `docs/handover/<topic>.md`;
+ `doc/handover/<topic>.md`;
  package-specific ones stay beside code.
 
 FCH:
@@ -685,7 +685,7 @@ IWT:
  installs,
  builds,
  autofixes);
- docs/reports OK.
+ doc/reports OK.
 Reproduce/experiment in fork:
  `git worktree add <path> HEAD`,
  remove after.
@@ -1149,7 +1149,7 @@ SGD:
  `/` -> `-`.
 Rename dir + name + consumers together.
 Exemptions:
- `docs/planning/singular-dir-name-invariant.md`.
+ `doc/planning/singular-dir-name-invariant.md`.
 
 ## Before declaring work complete
 
@@ -1322,13 +1322,13 @@ WRP:
  code tokens in Markdown prose;
  `semantic-line-breaks` autofix splits bare dotted tokens mid-token.
 Backlog:
- `docs/todo/backtick-split-filenames.md`.
+ `doc/todo/backtick-split-filenames.md`.
 
 ### Doc placement
 
 DPL:
  Repo-wide docs:
- `docs/<family>/`.
+ `doc/<family>/`.
 Root keeps only `README.md`,
  `SECURITY.md`,
  `AGENTS.md`,
@@ -1339,18 +1339,18 @@ Root keeps only `README.md`,
 Package docs stay beside code.
 
 DL1:
- `PREFIX.rest.md` becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`,
+ `PREFIX.rest.md` becomes `doc/<prefix-lowercased>/<rest-lowercased>.md`,
  dropping redundant prefix;
  second dotted segment stays flat in filename;
  kebab-case for multi-word topics.
 
 DL2:
  Hubs:
- bare `PREFIX.md` index becomes `docs/<family>/README.md`,
+ bare `PREFIX.md` index becomes `doc/<family>/README.md`,
  keeping curated prose.
 
 DL3:
- Bug reports fold into most relevant `docs/troubleshooting/<topic>.md` as section,
+ Bug reports fold into most relevant `doc/troubleshooting/<topic>.md` as section,
  not own family.
 
 DL4:
@@ -1462,15 +1462,15 @@ SK1:
  GitHub Issues via `gh`.
 "Resolve issue N" authorizes fix + commit;
  `Closes #N` in the commit body auto-closes on auto-push.
-See `docs/agents/issue-tracker.md`.
+See `doc/agent/issue-tracker.md`.
 
 SK2:
  **Triage labels**:
  canonical roles with default label strings.
-See `docs/agents/triage-labels.md`.
+See `doc/agent/triage-labels.md`.
 
 SK3:
  **Domain docs**:
  no context files;
  agents read fresh code on every probe.
-See `docs/agents/domain.md`.
+See `doc/agent/domain.md`.

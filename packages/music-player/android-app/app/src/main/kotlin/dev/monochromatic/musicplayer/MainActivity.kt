@@ -1209,7 +1209,7 @@ class MainActivity : ComponentActivity() {
         //           (`reconcileLibrary`), preserving the playing track.
         // Why:      Pick up files added/removed/renamed while the app was away, non-blockingly
         //           (the desktop "Rescan" analog; see
-        //           docs/decisions/music-player-live-update-rescan.md). `rescan` itself no-ops
+        //           doc/decision/music-player-live-update-rescan.md). `rescan` itself no-ops
         //           before the first load or while a load is in flight, so a foreground arriving
         //           during the cold-start restore cannot disturb it.
         //

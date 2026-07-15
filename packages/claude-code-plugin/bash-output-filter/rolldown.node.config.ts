@@ -13,7 +13,7 @@ import { perEntryNodeConfig,
  *
  * Every entry targets the tracked `bundle/node/` directory because committed
  * plugin bundles live there, not gitignored `dist/`; see
- * `docs/decisions/gitignore-negations.md`. The owning mise task pre-cleans the
+ * `doc/decision/gitignore-negations.md`. The owning mise task pre-cleans the
  * shared directory once; per-entry configs never clean it themselves.
  */
 const config: NodeFlavorConfigs = perEntryNodeConfig({

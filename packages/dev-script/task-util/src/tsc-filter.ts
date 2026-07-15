@@ -19,7 +19,7 @@
  * 4. Drops continuation lines (indented lines following a dropped diagnostic)
  * 5. Exits non-zero only if non-suppressed errors remain
  *
- * See `docs/troubleshooting/typescript.md` section
+ * See `doc/troubleshooting/typescript.md` section
  * "JSR packages ship `.ts` source files that `skipLibCheck` cannot skip"
  * for full root cause analysis.
  *

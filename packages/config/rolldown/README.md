@@ -2,8 +2,8 @@
 
 Shared raw-rolldown build configuration for Monochromatic packages.
 Successor to `@monochromatic-dev/config-tsdown`;
-see `docs/planning/tsdown-removal.md` for the migration record
-and `docs/philosophy/tool-choices.md` for the bundler decision.
+see `doc/planning/tsdown-removal.md` for the migration record
+and `doc/philosophy/tool-choices.md` for the bundler decision.
 
 ## Flavors
 

@@ -9,7 +9,7 @@ This prototype renders the same pane model as normal-flow HTML and lets two CSS 
 No script runs during scrolling.
 
 The full derivation and the behavioral differences against the original are recorded in
-`docs/audit/file-manager-sticky-flow.md`.
+`doc/audit/file-manager-sticky-flow.md`.
 
 ## How the layout works
 

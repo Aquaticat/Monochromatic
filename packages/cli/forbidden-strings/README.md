@@ -175,7 +175,7 @@ rule bodies never enter version control.
 
 Inside the Monochromatic monorepo,
  no rules file exists at the repository root
-(see `docs/decisions/gitignore-negations.md`).
+(see `doc/decision/gitignore-negations.md`).
 The pieces:
 
 - The betterleaks baseline ships inside the scanner binary

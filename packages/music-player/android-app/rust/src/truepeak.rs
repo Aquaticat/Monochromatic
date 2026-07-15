@@ -10,7 +10,7 @@
 //! Android `decode::Source`, and two resolvers that drive an already-opened source (the JNI
 //! opens it from a `content://` fd). The native service handle (`src/service.rs`) calls these
 //! and caches the resulting decisions. See
-//! ../../../docs/handover/music-player-truepeak-core-integration.md.
+//! ../../../doc/handover/music-player-truepeak-core-integration.md.
 
 /// What:     `use crate::decode::Source;`. The decoder trait, named by the adapter's `inner`
 ///           field and driven through its `spec`/`next_chunk`/`seek` methods.

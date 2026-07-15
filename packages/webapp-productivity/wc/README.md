@@ -56,7 +56,7 @@ requests after the page loads.
   blue-tinted border), so the fill is pinned on
   `::-webkit-progress-value` and `::-moz-progress-bar`, which style
   exactly that fallback, and the tinted Firefox border is removed
-  (details in `docs/troubleshooting/progress-element-fill-styling.md`);
+  (details in `doc/troubleshooting/progress-element-fill-styling.md`);
   all of it pixel-verified in both engines by
   `src/page.browser.test.ts` in the playwright container. The header
   row is visually hidden by
@@ -109,7 +109,7 @@ reference while passing STAT through, Firefox's font sanitizer logged
 the dangling nameIDs as console errors before discarding the table
 anyway, and no browser renders from STAT (fvar/gvar carry the variable
 axes); the full trace lives in
-`docs/troubleshooting/hb-subset-stat-dangling-nameids.md`. That subset
+`doc/troubleshooting/hb-subset-stat-dangling-nameids.md`. That subset
 is committed, and `src/build.ts` inlines it into the final HTML as a
 base64 data URI. Re-run `format:fonts` after adding non-ASCII page text (the
 scan picks up literal characters, not escape sequences). Inter is

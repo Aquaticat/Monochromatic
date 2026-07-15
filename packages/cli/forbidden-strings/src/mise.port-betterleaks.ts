@@ -3,7 +3,7 @@
 //           configuration TOML stored verbatim under `data/`; output is
 //           written to `<package>/data/builtin-rules.txt` at run time,
 //           where `lib.rs` embeds it into the binary via `include_str!`
-//           (see docs/decisions/gitignore-negations.md).
+//           (see doc/decision/gitignore-negations.md).
 // Why:      Forbidden-strings is rules-out-of-band by design, but most
 //           teams want a sane starting deny-list of common credential
 //           shapes. Rather than maintain that list ourselves, we port
@@ -603,7 +603,7 @@ const FOOTER = `# === resharp set-algebra demonstrations (engine-specific) ===
 # placeholder is written as 16 concatenated unquantified
 # \`(de|ad|be|ef)\` groups (32 chars total). Either form avoids
 # resharp Bug E (intersection co-occurring with a \`)\`-quantifier
-# hangs \`calc_prefix_sets_inner\`; see docs/troubleshooting/resharp.md
+# hangs \`calc_prefix_sets_inner\`; see doc/troubleshooting/resharp.md
 # Bug E) and is enforced by the
 # \`complement_intersection_quantified_group\` pre-validator.
 /RELEASE_TAG_[a-f0-9]{32}&~(RELEASE_TAG_0{32})&~(RELEASE_TAG_${

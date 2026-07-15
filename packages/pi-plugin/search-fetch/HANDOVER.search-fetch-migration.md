@@ -44,7 +44,7 @@ Use these when the matching work starts:
 
 Relevant prior artifacts:
 
-- `docs/troubleshooting/linkup-grokipedia-results.md` records the Linkup pollution diagnosis,
+- `doc/troubleshooting/linkup-grokipedia-results.md` records the Linkup pollution diagnosis,
   the Linkup `fast` comparison, and the initial Exa comparison.
 - Commits already made for the troubleshooting doc:
   - `f0d91077b`

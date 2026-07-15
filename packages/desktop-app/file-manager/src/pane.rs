@@ -61,7 +61,7 @@ const PREVIEW_ICON_SIZE: i32 = 96;
 ///       when a row is single-clicked or Enter-activated (`force_dup` true when Ctrl was held), and
 ///       `on_close` when the header close button is pressed.
 /// Why: single-click-activate makes selecting a row the spawn trigger; Ctrl forces a duplicate pane
-///      (docs/planning/file-manager.md). Arrow keys only move selection, so browsing never spawns.
+///      (doc/planning/file-manager.md). Arrow keys only move selection, so browsing never spawns.
 pub fn build_listing_pane<A, C>(snapshot: &DirectorySnapshot, on_activate: A, on_close: C) -> GtkBox
 where
     A: Fn(&FileEntry, bool) + 'static,

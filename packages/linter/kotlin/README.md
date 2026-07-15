@@ -71,7 +71,7 @@ and test sources (`**/src/test/**`,
 
 `detekt.yml` activates `require-kdoc` and leaves findings at detekt 2's default `error` severity,
 so missing KDoc fails the run.
-See the [default-config troubleshooting note](../../../docs/troubleshooting/detekt-default-config.md)
+See the [default-config troubleshooting note](../../../doc/troubleshooting/detekt-default-config.md)
 for the source trace.
 The `allowOverride` rule option (default false) can let `override` members inherit documentation.
 

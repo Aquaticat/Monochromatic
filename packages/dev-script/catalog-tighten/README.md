@@ -98,4 +98,4 @@ crafted key cannot become a result-map entry.
 This tool currently targets pnpm and its node-modules linkers (isolated and
 hoisted). Support for pnpm's PnP linker and for other package managers that
 have catalogs (Bun, Yarn Berry, Deno, vlt) is tracked as separate issues; see
-`docs/handover/catalog-tighten-portability.md`.
+`doc/handover/catalog-tighten-portability.md`.

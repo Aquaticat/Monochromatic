@@ -91,7 +91,7 @@ RESHARP LIMITATIONS (0.5.x through 0.6.x):\n\
     or any user-explicit lookaround. Use `\\W` or literal whitespace for\n\
     `\\b`; `\\A`/`\\z` for `^`/`$` when whole-content semantics fit; or\n\
     lift the boundary check outside the complement. Loader rejects every\n\
-    failing shape with a named-trigger error. See docs/troubleshooting/resharp.md.\n\
+    failing shape with a named-trigger error. See doc/troubleshooting/resharp.md.\n\
 \n\
 OUTPUT:\n\
     PATH:LINE:COL_START..COL_END rule=N    (matched substring is NEVER printed)\n\

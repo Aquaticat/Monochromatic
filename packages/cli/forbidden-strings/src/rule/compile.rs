@@ -478,7 +478,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex> {
         //           the structural trigger for the two shapes we
         //           have bisected and let the author rewrite the
         //           rule into a supported form. See
-        //           docs/troubleshooting/resharp.md for the bisection
+        //           doc/troubleshooting/resharp.md for the bisection
         //           record and rewrite recipes.
         //
         // In TS you'd write (pseudocode):
@@ -594,7 +594,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex> {
         //           "long-uniform-trail" shape `(?:(?!X)){m,n}aaa`,
         //           but full coverage is required to keep the fuzz
         //           target moving past Bug F. See
-        //           docs/handover/forbidden-strings-fuzzing.md for the
+        //           doc/handover/forbidden-strings-fuzzing.md for the
         //           trade-off discussion.
         // Why:      Without this guard the soundness-by-revert phase
         //           11 fuzz run halts on the trailing-content Bug F
@@ -749,7 +749,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex> {
             Ok(Ok(re)) => Ok(CompiledRegex::Resharp(re)),
             Ok(Err(e)) => Err(anyhow!("(resharp): {:?}", e)),
             Err(_) => Err(anyhow!(
-                "(resharp): panic during compile (upstream resharp 0.5.x through 0.6.x bug). See docs/troubleshooting/resharp.md."
+                "(resharp): panic during compile (upstream resharp 0.5.x through 0.6.x bug). See doc/troubleshooting/resharp.md."
             )),
         };
     }

@@ -3,7 +3,7 @@
 # per-second bin peaks) and simulates any window policy WITHOUT re-decoding, scoring it
 # with the SHARED truepeak-core gain, window-placement, and policy math so the evidence
 # cannot diverge from production behavior. See README.md and
-# ../../../docs/planning/music-player-shared-truepeak-core.md.
+# ../../../doc/planning/music-player-shared-truepeak-core.md.
 [package]
 name = "truepeak-core-bench"
 version = "0.1.0"

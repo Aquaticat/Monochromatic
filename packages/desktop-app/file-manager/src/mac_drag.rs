@@ -5,7 +5,7 @@
 //! the `NSPasteboard` as an `NSURL`. Here we start a real AppKit dragging session from the GTK
 //! window's `NSView`, with the file's `NSURL` as the pasteboard writer, so Finder accepts the
 //! drop. Everything runs on the GTK main thread, which is also the AppKit main thread. Compiled
-//! only on macOS. See docs/troubleshooting/gtk4-macos-file-dnd.md.
+//! only on macOS. See doc/troubleshooting/gtk4-macos-file-dnd.md.
 
 /// What: imports the retained smart pointer for Objective-C objects.
 /// Why: the drag source is owned as a `Retained<DragSource>`.

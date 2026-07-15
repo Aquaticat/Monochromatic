@@ -49,7 +49,7 @@ cloud key over PKCS#11,
 ## Background: why this is not the cheap individual cert
 
 Two constraints shape the choice (see
-`../../../docs/troubleshooting/windows-code-signing-hardware-key-requirement.md`):
+`../../../doc/troubleshooting/windows-code-signing-hardware-key-requirement.md`):
 
 - Since 2023-06-01,
    OV/EV code-signing private keys must live in certified

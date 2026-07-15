@@ -46,7 +46,7 @@ export {
  */
 const TEXT_ENCODER = new TextEncoder();
 
-/* oxlint-disable no-restricted-syntax/no-class -- ZipWriter is consumed via `new ZipWriter()` by packages/figma/to-penpot (src/index.ts:1534); migrating to a factory requires a coordinated call-site update tracked in docs/migration/no-class.md, out of scope for this package-local lint sweep */
+/* oxlint-disable no-restricted-syntax/no-class -- ZipWriter is consumed via `new ZipWriter()` by packages/figma/to-penpot (src/index.ts:1534); migrating to a factory requires a coordinated call-site update tracked in doc/migration/no-class.md, out of scope for this package-local lint sweep */
 /**
  * Builder for STORE-only ZIP archives. Add files with {@link ZipWriter.add}
  * then call {@link ZipWriter.build} to produce the final byte sequence.

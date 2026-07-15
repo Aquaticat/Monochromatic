@@ -15,7 +15,7 @@ so the linter now carries that one native dependency.
 Sätteri reports node offsets as code points;
 they are corrected to UTF-16 code units before the offset-based fixer runs,
 so edits land correctly on documents with emoji or other astral characters
-(see `docs/troubleshooting/satteri-offsets.md`).
+(see `doc/troubleshooting/satteri-offsets.md`).
 
 ## Why it exists
 
@@ -34,7 +34,7 @@ so edits land correctly on documents with emoji or other astral characters
 markdown-lint
 
 # Lint specific files or directories
-markdown-lint docs/ README.md
+markdown-lint doc/ README.md
 
 # Apply fixes in place; report only what stays unfixed
 markdown-lint --fix
@@ -47,7 +47,7 @@ During development,
  run it from source through the package task:
 
 ```sh
-mise run //packages/cli/markdown-lint:run -- --fix docs/
+mise run //packages/cli/markdown-lint:run -- --fix doc/
 ```
 
 Exit codes:

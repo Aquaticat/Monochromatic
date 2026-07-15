@@ -260,7 +260,7 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
 //           changes the simplified node form that enters
 //           `select_prefix`, making the derivative chain visit
 //           `BOT` early. Documented as Bug E in
-//           docs/troubleshooting/resharp.md; prototyped and folded into the
+//           doc/troubleshooting/resharp.md; prototyped and folded into the
 //           merged upstream issue (`resharp-merged-issue.local.md`), filed upstream as ieviev/resharp#5.
 //
 //           The pre-validator uses a coarse structural heuristic:
@@ -343,7 +343,7 @@ pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
             }
             if has_intersection && has_quantified_group {
                 return Some(format!(
-                    "intersection (`&`) co-occurring with a quantified group (`(...)`*/+/?/{{N}}) triggers a known resharp 0.5.x through 0.6.x prefix-loop non-termination during `Regex::new` (see docs/troubleshooting/resharp.md Bug E -- `calc_prefix_sets_inner` lacks a visited-set update on each iteration). The compile does not terminate within libFuzzer's per-input timeout. Reproducers: `abc~(\\w)&(?:aaa)*` and `(?i) ###(?:\\s&üü)(?:####)+...`. Rewrite the rule to inline the quantified group's body into the intersection operand, or remove one of the two operators. {}",
+                    "intersection (`&`) co-occurring with a quantified group (`(...)`*/+/?/{{N}}) triggers a known resharp 0.5.x through 0.6.x prefix-loop non-termination during `Regex::new` (see doc/troubleshooting/resharp.md Bug E -- `calc_prefix_sets_inner` lacks a visited-set update on each iteration). The compile does not terminate within libFuzzer's per-input timeout. Reproducers: `abc~(\\w)&(?:aaa)*` and `(?i) ###(?:\\s&üü)(?:####)+...`. Rewrite the rule to inline the quantified group's body into the intersection operand, or remove one of the two operators. {}",
                     TROUBLESHOOT_REF
                 ));
             }

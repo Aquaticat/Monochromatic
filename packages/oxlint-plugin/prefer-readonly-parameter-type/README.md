@@ -73,7 +73,7 @@ A helper parameter is foreign only when every owned inbound call supplies wholly
 One ordinary owned path restores normal readonly enforcement.
 
 See
-the [foreign-provenance guide](../../../docs/troubleshooting/oxlint-prefer-readonly-foreign-provenance.md).
+the [foreign-provenance guide](../../../doc/troubleshooting/oxlint-prefer-readonly-foreign-provenance.md).
 
 ## Callback invocation
 
@@ -133,7 +133,7 @@ digest drift,
 native-only implementations,
 and unlisted APIs remain uncertain.
 See the
-[host intrinsic evidence troubleshooting guide](../../../docs/troubleshooting/oxlint-prefer-readonly-host-intrinsic-evidence.md).
+[host intrinsic evidence troubleshooting guide](../../../doc/troubleshooting/oxlint-prefer-readonly-host-intrinsic-evidence.md).
 
 ## Verification
 

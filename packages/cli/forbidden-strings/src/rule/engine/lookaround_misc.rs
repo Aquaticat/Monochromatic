@@ -31,7 +31,7 @@ use super::constants::TROUBLESHOOT_REF;
 //           process alive; this pre-validator gives the rule
 //           author a clean message ("intersection involving a
 //           lookbehind") instead of a generic engine-error
-//           synthetic hit. Bisection (see docs/troubleshooting/resharp.md)
+//           synthetic hit. Bisection (see doc/troubleshooting/resharp.md)
 //           narrowed the trigger to "intersection (`&` outside
 //           class) where at least one operand contains a
 //           lookbehind `(?<=` or `(?<!`". The two-lookahead
@@ -386,7 +386,7 @@ pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
 //           class followed by additional literal bytes. The
 //           overflow happens during DFA derivative construction,
 //           reached from `Regex::new`.
-// Why:      Bisection (see docs/troubleshooting/resharp.md) showed
+// Why:      Bisection (see doc/troubleshooting/resharp.md) showed
 //           the trigger is robust to the specific lookahead
 //           class contents and the surrounding scoped-flag wrap.
 //           The cheapest stable signal is "intersection (`&`

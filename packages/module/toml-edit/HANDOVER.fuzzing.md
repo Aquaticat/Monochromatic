@@ -51,7 +51,7 @@ the shared `src/basic-escape.ts`,
  the
 seam exports in `src/index.ts`,
  the decision doc
-`docs/decisions/toml-edit-fuzzing.md`,
+`doc/decision/toml-edit-fuzzing.md`,
  and the workflow
 `.github/workflows/toml-edit-fuzz.yml`.
 
@@ -638,9 +638,9 @@ Use built-artifact imports for fuzzing:
    TSDoc at each export declaration,
   `packages/module/toml-edit/README.md`,
    and
-  `docs/decisions/toml-edit-fuzzing.md`.
+  `doc/decision/toml-edit-fuzzing.md`.
 
-Document this choice in `docs/decisions/toml-edit-fuzzing.md`,
+Document this choice in `doc/decision/toml-edit-fuzzing.md`,
  because it is a
 surprising deviation from the previous plan and from hiding internals.
 
@@ -770,7 +770,7 @@ under the package,
 ### Reusable checklist
 
 Record the reusable fuzz-target checklist as a section in
-`docs/decisions/toml-edit-fuzzing.md` first.
+`doc/decision/toml-edit-fuzzing.md` first.
  Do not create a project-local
 `fuzzing` skill in this plan.
  A skill becomes worthwhile after the checklist is
@@ -1062,7 +1062,7 @@ Pass criteria:
 
 Deliverables:
 
-- Source-audit record in `docs/decisions/toml-edit-fuzzing.md` for the selected parser and
+- Source-audit record in `doc/decision/toml-edit-fuzzing.md` for the selected parser and
   rejected alternatives.
 - A semantic normalizer for the selected parser's output.
 - A disagreement classifier with three outcomes:
@@ -1094,7 +1094,7 @@ Deliverables:
   effective-value,
    and resolve files.
 - Committed baseline after the first complete strong campaign.
-- Checklist section in `docs/decisions/toml-edit-fuzzing.md`.
+- Checklist section in `doc/decision/toml-edit-fuzzing.md`.
 
 Pass criteria:
 
@@ -1220,7 +1220,7 @@ Internal seams that need direct properties or named coverage blocks:
   Separate issues are reserved for explicit package-contract changes,
    not ordinary
   discovered bugs.
-- `docs/decisions/toml-edit-fuzzing.md` records the method,
+- `doc/decision/toml-edit-fuzzing.md` records the method,
    the dependency vetting
   record,
    rejected alternatives,

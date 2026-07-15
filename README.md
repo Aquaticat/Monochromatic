@@ -43,14 +43,14 @@ Statistical threshold detection (mean - 2*stddev) flags model degradation
 before it affects development.
 
 **Security-audited dependency selection**:
-[`AUDIT.md`](docs/audit/README.md) documents source-code audits with dates and verdicts
+[`AUDIT.md`](doc/audit/README.md) documents source-code audits with dates and verdicts
 for every non-trivial dependency.
 Framework selection rejected Elysia after discovering an RCE vulnerability chain
 through `new Function()` code generation
 ([GHSA-8vch-m3f4-q8jf](https://github.com/advisories/GHSA-8vch-m3f4-q8jf))
 and measuring a 45x performance regression (3,853 vs 175,951 req/s)
 when AOT compilation was disabled.
-See [`PHILOSOPHY.tool-choices.md`](docs/philosophy/tool-choices.md) for the full
+See [`PHILOSOPHY.tool-choices.md`](doc/philosophy/tool-choices.md) for the full
 analysis of h3 vs Elysia vs Hono.
 
 **Custom Oxlint plugins**:

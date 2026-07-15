@@ -180,4 +180,4 @@ They exist for observability and the property-based fuzz suite,
  which exercises them through the built artifact.
 Their signatures may change without a major version bump,
  so application code must not depend on them.
-See `docs/decisions/toml-edit-fuzzing.md`.
+See `doc/decision/toml-edit-fuzzing.md`.

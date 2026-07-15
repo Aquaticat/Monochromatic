@@ -425,7 +425,7 @@ and `--no-enforce-only`.
 
 Issue `#357` retired hk and Pkl.
 A machine with stale `hook.hk-*` Git configuration can follow
-`docs/runbook/remove-retired-hk-git-config.md` and run the explicit `cleanup:hk-git-config` task.
+`doc/runbook/remove-retired-hk-git-config.md` and run the explicit `cleanup:hk-git-config` task.
 The task removes only requested local or global hk namespaces;
 disposable fixtures prove unrelated hook keys remain unchanged.
 

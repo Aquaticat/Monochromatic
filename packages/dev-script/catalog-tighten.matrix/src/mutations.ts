@@ -58,7 +58,7 @@ async function removePath(path: string,): Promise<void> {
 /**
  * Seeds {@link FIXTURE_PACKAGE} at the higher {@link FIXTURE_ORPHAN} version
  * into the virtual store, with no symlink pointing at it, reproducing the
- * post-downgrade leftover from `docs/troubleshooting/pnpm-modules-cache.md`.
+ * post-downgrade leftover from `doc/troubleshooting/pnpm-modules-cache.md`.
  * The resolver must ignore it.
  *
  * @example

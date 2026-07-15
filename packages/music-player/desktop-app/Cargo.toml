@@ -45,7 +45,7 @@ directories = "5"
 # time. .cargo/config.toml therefore sets `-C target-feature=+aes` for each desktop
 # target triple; without it gxhash refuses to compile (a `compile_error!`). The
 # default (non-hybrid) build compiles on STABLE Rust; the `hybrid`/AVX2 feature is
-# nightly-only and left OFF. See docs/troubleshooting/gxhash-aes-target-feature.md.
+# nightly-only and left OFF. See doc/troubleshooting/gxhash-aes-target-feature.md.
 gxhash = "3"
 # Same Slint release family as the slint dependency in this file: the winit
 # backend is constructed explicitly (not via the default backend selector) so a
@@ -70,7 +70,7 @@ i-slint-backend-winit = "1.17.0"
 # facade too (silent with no subscriber installed), so the flood stops in both.
 # RUST_LOG cannot suppress it (the eprintln shim ignores log filtering). The
 # version must stay compatible with the transitive pin so cargo unifies, not
-# duplicates. See docs/troubleshooting/slint-parley-icu-cjk-segmentation.md.
+# duplicates. See doc/troubleshooting/slint-parley-icu-cjk-segmentation.md.
 icu_provider = { version = "2", features = ["logging"] }
 # Recursive Source Root file watcher (src/watch.rs). debouncer-mini coalesces raw
 # notify events into a debounced batch; we ignore the event details and just send
@@ -93,7 +93,7 @@ notify-debouncer-mini = "0.7"
 # src/opus.rs and error.rs need no edits. The rev is pinned (not branch=master) so
 # `cargo update` cannot move it, and the committed Cargo.lock records the resolved
 # git source. Revert to a crates.io `version` once a release with the opusic-sys backend ships.
-# See ../../../docs/troubleshooting/audiopus-cmake4-libopus-min-version.md.
+# See ../../../doc/troubleshooting/audiopus-cmake4-libopus-min-version.md.
 opus = { git = "https://github.com/SpaceManiac/opus-rs", rev = "559876660603dc8079a053e03e6438766f669e69" }
 rfd = "0.15"
 ringbuf = "0.4"
@@ -245,5 +245,5 @@ strip = "symbols"
 lto = true
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
-# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+# Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [workspace]

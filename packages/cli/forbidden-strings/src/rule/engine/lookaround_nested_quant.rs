@@ -80,7 +80,7 @@ use super::constants::TROUBLESHOOT_REF;
 //           decode to a quantified group containing a lookahead
 //           inside another quantified group, with the outer
 //           quantifier's min >= 2. Documented as Bug F in
-//           docs/troubleshooting/resharp.md; prototyped (shared saturating_add
+//           doc/troubleshooting/resharp.md; prototyped (shared saturating_add
 //           with Bug C) and folded into the merged upstream issue
 //           (`resharp-merged-issue.local.md`), filed upstream as ieviev/resharp#5.
 //
@@ -265,7 +265,7 @@ pub fn nested_lookahead_in_quantified_group(src: &str) -> Option<String> {
                 && !frame.has_alternation
             {
                 return Some(format!(
-                    "nested lookahead inside a quantified group with outer quantifier min >= 2 (e.g. `(?:(?:(?!X)){{1,5}}){{2,4}}`) triggers a known resharp 0.5.x through 0.6.x algebra-overflow panic during `Regex::new` (see docs/troubleshooting/resharp.md Bug F -- `attempt to add with overflow` at `resharp-algebra/src/lib.rs:2479`; the lookahead-chain `rel` length saturates to u32::MAX and the next add overflows under debug assertions). Production builds without debug-assertions silently wrap to 0 (likely producing wrong matches). Reproducers: `(?:(?:(?!\\?)){{1,5}}){{2,4}}` and `(?:(?!\\?){{1,2}}){{3}}`. Either lower the outer quantifier's min below 2, drop the inner quantifier wrap, or insert a literal / alt sibling alongside the lookahead-bearing inner group. {}",
+                    "nested lookahead inside a quantified group with outer quantifier min >= 2 (e.g. `(?:(?:(?!X)){{1,5}}){{2,4}}`) triggers a known resharp 0.5.x through 0.6.x algebra-overflow panic during `Regex::new` (see doc/troubleshooting/resharp.md Bug F -- `attempt to add with overflow` at `resharp-algebra/src/lib.rs:2479`; the lookahead-chain `rel` length saturates to u32::MAX and the next add overflows under debug assertions). Production builds without debug-assertions silently wrap to 0 (likely producing wrong matches). Reproducers: `(?:(?:(?!\\?)){{1,5}}){{2,4}}` and `(?:(?!\\?){{1,2}}){{3}}`. Either lower the outer quantifier's min below 2, drop the inner quantifier wrap, or insert a literal / alt sibling alongside the lookahead-bearing inner group. {}",
                     TROUBLESHOOT_REF
                 ));
             }

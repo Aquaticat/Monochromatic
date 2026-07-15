@@ -23,7 +23,7 @@ Layout and settings (expect tighten):
 - Stale orphan: a higher `picomatch@4.0.4` is seeded into the virtual store with
   no symlink; the tool must tighten to the active `4.0.2`, never the orphan. This
   is the regression proving the old store-scan removal was correct
-  (see `docs/troubleshooting/pnpm-modules-cache.md`).
+  (see `doc/troubleshooting/pnpm-modules-cache.md`).
 
 Missing-X robustness:
 

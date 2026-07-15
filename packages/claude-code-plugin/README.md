@@ -72,7 +72,7 @@ inlined via `alwaysBundle: [/^@monochromatic-dev\//]` in
  The bundled output goes to
 `bundle/node/index.mjs` (a tracked directory,
  unlike gitignored `dist/`;
- see `docs/decisions/gitignore-negations.md`),
+ see `doc/decision/gitignore-negations.md`),
  which is the path declared in
 `.claude-plugin/plugin.json`.
 
@@ -164,7 +164,7 @@ source package:
 Recorded against the tsdown toolchain;
 tsdown was replaced by raw rolldown through
 `@monochromatic-dev/config-rolldown` on 2026-07-15
-(`docs/planning/tsdown-removal.md`).
+(`doc/planning/tsdown-removal.md`).
 The decision's shape carries over unchanged
 (per-plugin config wrappers, `perEntryNodeConfig`, committed `bundle/node/`),
 so tsdown mentions in the alternatives below are historical.

@@ -33,7 +33,7 @@ export const correctnessRules: DummyRuleMap = {
   //endregion jest
 
   // False positives on generic functions with nullable params (e.g. nonNullishOrThrow).
-  // See docs/troubleshooting/tsgolint-no-unnecessary-type-assertion.md
+  // See doc/troubleshooting/tsgolint-no-unnecessary-type-assertion.md
   'typescript/no-unnecessary-type-assertion': 'off',
 
   // Disabled: oxlint's type-aware analysis produces false positives on DOM types

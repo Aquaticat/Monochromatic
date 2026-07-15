@@ -225,7 +225,7 @@ class Queue private constructor(private val rng: Random) {
     //           exhausted the scope, `cycleStart` advances to `order.size` so the next
     //           pick begins a fresh cycle. Under `ShuffleMode.OFF` it is unused
     //           (sequential order needs no play history). Mirrors the desktop
-    //           `queue.rs` `cycle_start`. See `docs/decisions/music-player-jit-shuffle.md`.
+    //           `queue.rs` `cycle_start`. See `doc/decision/music-player-jit-shuffle.md`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -800,7 +800,7 @@ class Queue private constructor(private val rng: Random) {
             //           starting a fresh just-in-time cycle at that track.
             // Why:      A deliberate jump under shuffle restarts the without-replacement
             //           cycle from the chosen track (the accepted cycle reset; see
-            //           `docs/decisions/music-player-jit-shuffle.md`).
+            //           `doc/decision/music-player-jit-shuffle.md`).
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -1156,7 +1156,7 @@ class Queue private constructor(private val rng: Random) {
     //           cycle (without replacement); when the cycle has exhausted the scope it
     //           starts a fresh cycle (advancing `cycleStart`) that avoids an immediate
     //           repeat of `current`. Mirrors desktop `queue.rs` `pick_next_shuffle`.
-    //           See `docs/decisions/music-player-jit-shuffle.md`.
+    //           See `doc/decision/music-player-jit-shuffle.md`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1477,7 +1477,7 @@ class Queue private constructor(private val rng: Random) {
             //           the anchor.
             // Why:      A rebuild (open, restore, shuffle toggle, jump) begins a new
             //           without-replacement cycle at the anchor (the accepted cycle
-            //           reset; see `docs/decisions/music-player-jit-shuffle.md`).
+            //           reset; see `doc/decision/music-player-jit-shuffle.md`).
             //
             // In TS you'd write (pseudocode):
             // ```ts

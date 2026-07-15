@@ -7,8 +7,8 @@ import {
   defineConfig,
   forbiddenStringsPlugin,
   repositoryPolicyPlugin,
-} from '@monochromatic-dev/cli-git/ts';
-import type { CliGitConfig, } from '@monochromatic-dev/cli-git/ts';
+} from '@monochromatic-dev/git-policy-cli/ts';
+import type { CliGitConfig, } from '@monochromatic-dev/git-policy-cli/ts';
 
 /**
  * Exact trusted repository policy configuration.
@@ -31,7 +31,7 @@ const config: CliGitConfig = defineConfig({
         // The betterleaks baseline ships inside the scanner binary and the
         // policy passes --builtin-rules; the FORBIDDEN_STRINGS_RULES scratch
         // file carries only the repo appendixes
-        // (docs/decisions/gitignore-negations.md). Stated explicitly (it is the
+        // (doc/decision/gitignore-negations.md). Stated explicitly (it is the
         // schema default) because AllowedPolicySetting checks against the
         // policy's resolved-options type, in which builtinRules is required.
         builtinRules: true,

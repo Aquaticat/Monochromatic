@@ -12,7 +12,7 @@
  * Design rationale (same-dir temp, hidden + `~`-suffixed name, no fallback to
  * a non-atomic write) is documented in
  * `/home/user/.claude/plans/1-migrate-editord-to-wiggly-tome.md` and the
- * root-level `docs/troubleshooting/claude-code-edit-non-atomic-fallback.md`.
+ * root-level `doc/troubleshooting/claude-code-edit-non-atomic-fallback.md`.
  */
 
 import { randomBytes, } from 'node:crypto';
@@ -42,7 +42,7 @@ import {
  * Symlink protection for the **target** path is enforced separately by the
  * `lstat` check in {@link refuseIfSymlink}; without it, `rename(temp, target)`
  * would silently replace a symlinked target with a regular file. See
- * `docs/troubleshooting/claude-code-edit-non-atomic-fallback.md` for the
+ * `doc/troubleshooting/claude-code-edit-non-atomic-fallback.md` for the
  * Claude Code `PRH` pattern this mirrors.
  */
 const TEMP_OPEN_FLAGS = fsConstants.O_WRONLY
@@ -207,7 +207,7 @@ async function cleanupTemp(tempPath: string,): Promise<void> {
  *
  * Does **not** fall back to a non-atomic write on failure: surface the error
  * to the caller instead. The fallback path is the bug documented in
- * `docs/troubleshooting/claude-code-edit-non-atomic-fallback.md`; editord has no
+ * `doc/troubleshooting/claude-code-edit-non-atomic-fallback.md`; editord has no
  * scenario where a torn write is preferable to a propagated error.
  *
  * @param path - absolute path of the target file

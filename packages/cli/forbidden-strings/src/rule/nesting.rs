@@ -11,9 +11,9 @@
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const TROUBLESHOOT_REF = "See docs/troubleshooting/resharp.md for workarounds.";
+// const TROUBLESHOOT_REF = "See doc/troubleshooting/resharp.md for workarounds.";
 // ```
-const TROUBLESHOOT_REF: &str = "See docs/troubleshooting/resharp.md for workarounds.";
+const TROUBLESHOOT_REF: &str = "See doc/troubleshooting/resharp.md for workarounds.";
 
 /// Defines the `MAX_NESTING_DEPTH` constant.
 // What:     `const MAX_NESTING_DEPTH: usize = 1_000`. `usize` is the
@@ -56,7 +56,7 @@ const MAX_NESTING_DEPTH: usize = 1_000;
 //           `catch_unwind` cannot intercept. resharp 0.6.9 fixed this
 //           upstream: the parser now caps recursion at
 //           `DEFAULT_MAX_DEPTH = 1_000`, rejecting over-deep rules with a
-//           clean `Parse` error (Bug G in docs/troubleshooting/resharp.md).
+//           clean `Parse` error (Bug G in doc/troubleshooting/resharp.md).
 //           This cheap source-text scan keeps the same 1_000 cap as
 //           belt-and-suspenders, rejecting the rule before resharp ever
 //           sees it; over-rejection is fail-closed-safe because the

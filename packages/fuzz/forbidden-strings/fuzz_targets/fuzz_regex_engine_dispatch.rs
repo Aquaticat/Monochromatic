@@ -81,7 +81,7 @@ fuzz_target!(|input: RuleAndContent| {
     //           guard broad enough to catch it also rejects real rules
     //           like the AWS-key line `(?:A3T...|AKIA|...)&~(AKIA2{16})`,
     //           which use a positive alternation under intersection and
-    //           compile fine. See docs/troubleshooting/resharp.md
+    //           compile fine. See doc/troubleshooting/resharp.md
     //           ("intersection over alternation"). The check is crude
     //           (it counts `&`/`|` even inside classes); over-skipping is
     //           safe here because it only drops the dispatch comparison

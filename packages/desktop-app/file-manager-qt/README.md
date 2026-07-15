@@ -4,7 +4,7 @@ Qt/cxx-qt desktop file-manager. Successor to the Slint prototype, chosen because
 real Qt/QtQuick UI provides native OS drag-and-drop on every target platform,
 including native Wayland, which the winit-based toolkits (Slint, Bevy, Iced, egui)
 lack. Rationale and the full cross-platform survey live in
-[winit-toolkits-no-wayland-drag-and-drop.md](../../../docs/troubleshooting/winit-toolkits-no-wayland-drag-and-drop.md).
+[winit-toolkits-no-wayland-drag-and-drop.md](../../../doc/troubleshooting/winit-toolkits-no-wayland-drag-and-drop.md).
 
 ## Status
 

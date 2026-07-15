@@ -11,6 +11,6 @@
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// pub(super) const TROUBLESHOOT_REF = "See docs/troubleshooting/resharp.md for workarounds.";
+// pub(super) const TROUBLESHOOT_REF = "See doc/troubleshooting/resharp.md for workarounds.";
 // ```
-pub(super) const TROUBLESHOOT_REF: &str = "See docs/troubleshooting/resharp.md for workarounds.";
+pub(super) const TROUBLESHOOT_REF: &str = "See doc/troubleshooting/resharp.md for workarounds.";

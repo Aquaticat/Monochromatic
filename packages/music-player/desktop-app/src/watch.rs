@@ -2,7 +2,7 @@
 //! on any debounced filesystem change, sends `Command::Rescan` so the queue is
 //! re-derived from disk. It deliberately ignores the event details (which file,
 //! what kind): the queue is the scan of the root, so any change just means "rescan".
-//! See `docs/decisions/music-player-live-update-rescan.md`.
+//! See `doc/decision/music-player-live-update-rescan.md`.
 
 /// What:     `use std::path::{Path, PathBuf};`. Borrowed path view and owned path buffer.
 /// Why:      `watch` takes a borrowed `&Path`; the currently-watched root is stored owned.

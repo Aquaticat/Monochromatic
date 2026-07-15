@@ -27,7 +27,7 @@
 # containerCargo directly to force the podman path regardless of host libraries;
 # verify:container is the umbrella assertion.
 # Why podman and not mise-managed deps (conda route rejected):
-# see ../../../docs/decisions/desktop-app-podman-build.md
+# see ../../../doc/decisions/desktop-app-podman-build.md
 
 [env]
 # Slint's experimental builtins (FlexboxLayout in the page-tab bar) must be
@@ -400,7 +400,7 @@ console.log('regenerated asset/music-player.icns and asset/music-player.ico; com
 # from env vars and, when absent, a throwaway self-signed identity is used so the
 # pipeline runs end to end (those artifacts are NOT distributable). See
 # HANDOVER.macos-signing-credentials.md, HANDOVER.windows-signing-credentials.md,
-# and docs/decisions/desktop-app-code-signing.md.
+# and doc/decision/desktop-app-code-signing.md.
 
 [tasks."bundle:macos"]
 description = "Assemble dist/Music Player.app around the macOS Mach-O (synced from the Mac)"

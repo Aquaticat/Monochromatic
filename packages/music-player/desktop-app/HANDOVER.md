@@ -122,7 +122,7 @@ The host is an immutable-style Fedora (`/home` -> `var/home`) and the user refus
   to a crates.
   io `version` once a Slint release including #11338 ships.
    See
-  `docs/troubleshooting/slint-flickable-smooth-scroll.md`.
+  `doc/troubleshooting/slint-flickable-smooth-scroll.md`.
 - `mise.toml` tasks wrap `podman run` (mount package dir at `/work`,
    cargo registry in named volume `music-player-cargo`,
   `--security-opt label=disable`):
@@ -249,7 +249,7 @@ to confirm `command`/`queue`/`session`/`error` compile (high confidence;
     then clippy clean (`lint:clippy`,
     `-D warnings`).
     Write
-   `docs/troubleshooting/opus-symphonia-libopus.md` per the troubleshooting-doc rule.
+   `doc/troubleshooting/opus-symphonia-libopus.md` per the troubleshooting-doc rule.
 
 ## Verified API facts (researched this session; do not re-research)
 

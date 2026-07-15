@@ -75,7 +75,7 @@ use super::constants::TROUBLESHOOT_REF;
 //           `(?:(?!X)){m,n}aaa` long-trail shapes) was tightened
 //           after the user flagged that production rules might
 //           legitimately use those shapes. See
-//           docs/handover/forbidden-strings-fuzzing.md.
+//           doc/handover/forbidden-strings-fuzzing.md.
 // Why:      `nested_lookahead_in_quantified_group` only catches the
 //           DOUBLE-quantified nesting (`(?:(?:(?!X)){m,n}){p,q}`). The
 //           SINGLE-quantified-with-1-or-2-trailing shape reaches the
@@ -137,7 +137,7 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
     //           tweak doesn't drift across call sites.
     fn fire_reason() -> String {
         format!(
-            "quantified lookahead-bearing group with variable bound `{{m,n}}` and 1-2 trailing atoms at parent depth (e.g. `(?:(?!X)){{m,n}}<atom>` or `(?:(?!X)){{m,n}}<atom><atom>`) triggers a resharp 0.5.x through 0.6.x `attempt to add with overflow` panic at `resharp-algebra/src/lib.rs:2479` (see docs/troubleshooting/resharp.md Bug F). The lookahead-chain `rel` saturates to u32::MAX and the next add overflows under debug assertions; production builds without debug-assertions silently wrap to 0 (likely producing wrong matches). Reproducer: `(?:(?!abc)){{4,12}}a`. Workarounds: (a) extend the trailing content to 3 or more atoms (`...{{4,12}}aaa`), (b) use an EXACT quantifier `(?:(?!X)){{n}}<atom>` (single-bound), or (c) split the regex. {}",
+            "quantified lookahead-bearing group with variable bound `{{m,n}}` and 1-2 trailing atoms at parent depth (e.g. `(?:(?!X)){{m,n}}<atom>` or `(?:(?!X)){{m,n}}<atom><atom>`) triggers a resharp 0.5.x through 0.6.x `attempt to add with overflow` panic at `resharp-algebra/src/lib.rs:2479` (see doc/troubleshooting/resharp.md Bug F). The lookahead-chain `rel` saturates to u32::MAX and the next add overflows under debug assertions; production builds without debug-assertions silently wrap to 0 (likely producing wrong matches). Reproducer: `(?:(?!abc)){{4,12}}a`. Workarounds: (a) extend the trailing content to 3 or more atoms (`...{{4,12}}aaa`), (b) use an EXACT quantifier `(?:(?!X)){{n}}<atom>` (single-bound), or (c) split the regex. {}",
             TROUBLESHOOT_REF
         )
     }

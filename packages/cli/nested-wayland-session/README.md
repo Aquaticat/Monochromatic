@@ -11,9 +11,9 @@ and no system-wide changes.
 
 The full rationale, the on-hardware measurements, and the source review of every
 alternative considered are recorded in
-[`docs/decisions/nested-wayland-session.md`](../../../docs/decisions/nested-wayland-session.md)
+[`doc/decision/nested-wayland-session.md`](../../../doc/decisions/nested-wayland-session.md)
 (issue #272). A plain-language overview is in
-[`docs/planning/nested-wayland-session.md`](../../../docs/planning/nested-wayland-session.md).
+[`doc/planning/nested-wayland-session.md`](../../../doc/planning/nested-wayland-session.md).
 
 ## What it does
 

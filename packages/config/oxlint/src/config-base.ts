@@ -58,7 +58,7 @@ export const base: OxlintConfig = {
   ignorePatterns: [
     '**/dist',
     // Committed Claude Code plugin bundles (tsdown output moved out of dist;
-    // see docs/decisions/gitignore-negations.md).
+    // see doc/decision/gitignore-negations.md).
     '**/bundle',
     '**/node_modules',
     '**/logs',
@@ -70,7 +70,7 @@ export const base: OxlintConfig = {
     '**/deprecated/**',
     // Paused and deprecated package trees are out of the lint/format scope; one
     // file in packages-paused also has a two-rule autofix oscillation that
-    // stalls `task-oxlint --fix` (see docs/troubleshooting/oxlint-multi-fix-convergence.md).
+    // stalls `task-oxlint --fix` (see doc/troubleshooting/oxlint-multi-fix-convergence.md).
     '**/packages-paused/**',
     '**/packages-deprecated/**',
     '**/fixture/**',

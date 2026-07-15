@@ -9,7 +9,7 @@ import { nodeConfig,
  * in the tracked `bundle/node/` directory, not gitignored `dist/`: Claude
  * Code's marketplace install copies the package as-is with no build step, so
  * the bundle must be committed at the path `plugin.json` hooks reference. See
- * `docs/decisions/gitignore-negations.md`.
+ * `doc/decision/gitignore-negations.md`.
  */
 const config: NodeFlavorConfig = nodeConfig({ outputDir: 'bundle/node', },);
 

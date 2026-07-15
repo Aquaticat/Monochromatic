@@ -77,7 +77,7 @@ const svgContent = await readFile(
 const cells = parseSvg(svgContent,);
 console.log(`Parsed ${cells.length} glyph cells`,);
 
-/* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md */
+/* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see doc/troubleshooting/opentype-js-cjs-esm-interop.md */
 /**
  * Required .notdef glyph (empty placeholder for missing characters).
  */
@@ -89,7 +89,7 @@ const notdefGlyph = new opentype.Glyph({
 },);
 /* oxlint-enable import/no-named-as-default-member */
 
-/* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md */
+/* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see doc/troubleshooting/opentype-js-cjs-esm-interop.md */
 /**
  * Space character glyph (no visible path, just advance width).
  */
@@ -139,7 +139,7 @@ const letterGlyphs = cells.flatMap(
      */
     const advanceWidth = (maxX - minX) + (2 * SIDE_BEARING);
 
-    /* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md */
+    /* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see doc/troubleshooting/opentype-js-cjs-esm-interop.md */
     /**
      * OpenType path that collects every contour from this cell's SVG paths.
      */
@@ -175,7 +175,7 @@ const letterGlyphs = cells.flatMap(
         .length}`,
     );
 
-    // oxlint-disable-next-line import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md
+    // oxlint-disable-next-line import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see doc/troubleshooting/opentype-js-cjs-esm-interop.md
     return [new opentype.Glyph({
       name: letterName,
       unicode,
@@ -185,7 +185,7 @@ const letterGlyphs = cells.flatMap(
   },
 );
 
-/* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see docs/troubleshooting/opentype-js-cjs-esm-interop.md */
+/* oxlint-disable import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection under Node's CJS/ESM interop, so the default import's .Glyph/.Path/.Font members are the only ones that resolve at runtime; see doc/troubleshooting/opentype-js-cjs-esm-interop.md */
 /**
  * Assembled OpenType font with all glyphs.
  */

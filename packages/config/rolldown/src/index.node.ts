@@ -77,7 +77,7 @@ export async function nodeExternal({ alwaysBundle, }: {
  * Selects Oxc declaration generation explicitly;
  * the tsgo backend cannot emit declarations for workspace source inlined from
  * outside the entry package's tsconfig project
- * (see `docs/troubleshooting/rolldown-plugin-dts-typescript-7-generator.md`).
+ * (see `doc/troubleshooting/rolldown-plugin-dts-typescript-7-generator.md`).
  */
 const baseOptions: RolldownOptions = {
   platform: 'node',
@@ -131,7 +131,7 @@ function isInputList(
  * @param input - Source input paths; defaults to the package index.
  *
  * @param outputDir - Output directory; committed Claude Code plugin bundles
- *   override this to `bundle/node` (see `docs/decisions/gitignore-negations.md`).
+ *   override this to `bundle/node` (see `doc/decision/gitignore-negations.md`).
  *
  * @param outputOverrides - Shallow output-option overrides for consumers
  *   needing e.g. `minify: false` or `codeSplitting: false`.

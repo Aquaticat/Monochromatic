@@ -90,7 +90,7 @@ The standard tsdown build inlines the source-package contents into the shim
 via `alwaysBundle: [/^@monochromatic-dev\//]`,
 producing a self-contained `bundle/node/index.mjs`
 (committed;
- see `docs/decisions/gitignore-negations.md`)
+ see `doc/decision/gitignore-negations.md`)
 that Claude Code's marketplace install can execute directly.
 
 ## Running the CLI

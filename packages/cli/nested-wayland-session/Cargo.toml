@@ -71,7 +71,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # not a caret range: Smithay is pre-1.0, its git HEAD is far ahead of 0.7.0 with
 # breaking changes, and its `## Unreleased` changelog already lists many. The
 # `anvil`/`smallvil` examples track git, so we copy their approach but write
-# against the stable 0.7.0 API surface (see docs/decisions/nested-wayland-session.md).
+# against the stable 0.7.0 API surface (see doc/decision/nested-wayland-session.md).
 # Features, all needed for the nested-winit GPU path, none of the udev/DRM/libseat
 # stack a real hardware compositor would pull:
 #   backend_winit   nested winit window + its EGL/GLES renderer (pulls backend_egl,
@@ -107,5 +107,5 @@ overflow-checks = true
 strip = true
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
-# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+# Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [workspace]

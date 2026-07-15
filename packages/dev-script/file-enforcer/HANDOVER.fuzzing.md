@@ -160,7 +160,7 @@ decision doc,
    env-budgeted) added;
    smoke-run at 500ms per
   property is green.
-- Decision doc `docs/decisions/file-enforcer-fuzzing.md` written (no
+- Decision doc `doc/decision/file-enforcer-fuzzing.md` written (no
   AGENTS.
   md pointer,
    per user).
@@ -207,7 +207,7 @@ Created:
 - `src/pipeline/xml.property.unit.test.ts`
 - `src/jetbrains/options-dir.property.unit.test.ts`
 - `HANDOVER.fuzzing.md` (this file)
-- `docs/decisions/file-enforcer-fuzzing.md` (repo-level)
+- `doc/decision/file-enforcer-fuzzing.md` (repo-level)
 
 Modified:
 

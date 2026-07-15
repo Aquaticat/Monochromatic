@@ -81,7 +81,7 @@ Imports the page's own `dialogue/generator.ts` from Bun and calls OpenRouter dir
 
 ### Why both Bun and browser
 
-The Bun smoke validates the prompt-to-parsed-chapters pipeline without the cost of spinning up a headless browser, which makes it a good pre-commit check while developing prompts. The Playwright e2e suite is the only thing that actually verifies the page works end-to-end in the runtime users target; the prompt-build step inside the browser hit a [`typesafe-i18n` regex bug](../../../docs/troubleshooting/typesafe-i18n-regex-redos.md) that didn't reproduce under Bun, and the kind of bug that only shows up in the browser is the kind only the browser tests will catch.
+The Bun smoke validates the prompt-to-parsed-chapters pipeline without the cost of spinning up a headless browser, which makes it a good pre-commit check while developing prompts. The Playwright e2e suite is the only thing that actually verifies the page works end-to-end in the runtime users target; the prompt-build step inside the browser hit a [`typesafe-i18n` regex bug](../../../doc/troubleshooting/typesafe-i18n-regex-redos.md) that didn't reproduce under Bun, and the kind of bug that only shows up in the browser is the kind only the browser tests will catch.
 
 ### LLM providers and CORS
 

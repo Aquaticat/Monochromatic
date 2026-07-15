@@ -6,11 +6,11 @@ Its `index.cjs` re-exports `node:stream` with the same end-state shape upstream'
  and the `lib/_stream_*.js` files re-export the matching class from `node:stream` so deep imports such as `require('readable-stream/lib/_stream_writable.js')` from `winston-transport`'s `modern.js` continue to resolve.
 The shim uses `Object.defineProperty` instead of upstream's `Object.assign` because Node 22+'s `Stream.Readable` inherits a getter-only `promises` accessor from the legacy `Stream` prototype,
  which makes the upstream pattern throw `TypeError: Attempted to assign to readonly property` at module load;
- see `docs/decisions/readable-stream-shim.md` for the full diagnosis.
+ see `doc/decision/readable-stream-shim.md` for the full diagnosis.
 
 `pnpm-workspace.yaml` substitutes both upstream versions with this shim via `overrides: { 'readable-stream': 'link:packages/shim/readable-stream' }`.
 The substitution removes 3,005 LOC of duplicate stream machinery from `node_modules` while keeping winston,
  winston-transport,
  and isomorphic-git working unchanged on Node 22+.
 
-See `TROUBLESHOOTING.dependencies.md` for the audit trail and `docs/dependency-blocklist.md` for when to reach for a shim package versus a generic stub or removal.
+See `TROUBLESHOOTING.dependencies.md` for the audit trail and `doc/dependency-blocklist.md` for when to reach for a shim package versus a generic stub or removal.

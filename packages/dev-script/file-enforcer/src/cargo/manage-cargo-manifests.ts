@@ -5,7 +5,7 @@
  * and rewrites each in place to match a {@link CargoManifestSpec}. There is no
  * Cargo workspace here (deliberately), so this generator is the single source of
  * truth for the properties the spec owns. See
- * `docs/planning/cargo-toml-file-enforcer.md`.
+ * `doc/planning/cargo-toml-file-enforcer.md`.
  *
  * @module
  */

@@ -64,7 +64,7 @@ async function ensureDir(dirPath: string,): Promise<void> {
  * Uses `node:fs/promises` glob to find matching paths and removes them
  * recursively. The `bundle/` family exists because Claude Code plugin hook
  * commands execute from `bundle/node/` (see
- * `docs/decisions/gitignore-negations.md`), so leaks land there the same way
+ * `doc/decision/gitignore-negations.md`), so leaks land there the same way
  * they landed in `dist/final/` when hooks lived under `dist/`.
  *
  * @param workspaceRoot - absolute path to the monorepo root

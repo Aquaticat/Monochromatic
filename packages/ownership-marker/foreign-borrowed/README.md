@@ -39,7 +39,7 @@ no runtime code,
 and no runtime dependencies.
 
 See
-the [foreign-provenance guide](../../../docs/troubleshooting/oxlint-prefer-readonly-foreign-provenance.md)
+the [foreign-provenance guide](../../../doc/troubleshooting/oxlint-prefer-readonly-foreign-provenance.md)
 for the analyzer model,
 negative mixed-origin case,
 and migration verification.

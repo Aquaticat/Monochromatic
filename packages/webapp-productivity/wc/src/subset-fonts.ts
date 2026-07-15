@@ -251,7 +251,7 @@ async function subsetInter(
    * the table anyway. STAT is style-mapping metadata no browser renders
    * from (fvar/gvar carry the variable axes), so shipping without it
    * changes nothing but the noise. Full trace and alternatives:
-   * docs/troubleshooting/hb-subset-stat-dangling-nameids.md.
+   * doc/troubleshooting/hb-subset-stat-dangling-nameids.md.
    */
   const sfntSubset = await subset(
     sfntInput,

@@ -8,4 +8,4 @@ mountpoint = "/"
 minsize = "40 GiB"
 
 # TODO: Evaluate ZFS native encryption parameters once bootc-image-builder
-# ZFS support is confirmed. See docs/todo/vm-dev-environment.md (Phase 1, Full-disk encryption).
+# ZFS support is confirmed. See doc/todo/vm-dev-environment.md (Phase 1, Full-disk encryption).

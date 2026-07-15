@@ -40,5 +40,5 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 cxx-qt-build = { version = "0.9.1", features = ["link_qt_object_files"] }
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
-# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+# Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [workspace]

@@ -12,7 +12,7 @@ formatter.
 locally and on demand only.
  The rationale and rejected
 alternatives are recorded in
-[`docs/decisions/forbidden-strings-fuzzing.md`](../../../docs/decisions/forbidden-strings-fuzzing.md).
+[`doc/decision/forbidden-strings-fuzzing.md`](../../../doc/decisions/forbidden-strings-fuzzing.md).
 
 ## Prerequisites
 
@@ -41,7 +41,7 @@ alternatives are recorded in
 - `resharp = "0.6"` is the pinned engine version (was 0.5.2).
    Replays of every
   0.5.2-era crash are recorded in
-  [`docs/decisions/forbidden-strings-fuzzing.md`](../../../docs/decisions/forbidden-strings-fuzzing.md).
+  [`doc/decision/forbidden-strings-fuzzing.md`](../../../doc/decisions/forbidden-strings-fuzzing.md).
 
 ## Target list
 
@@ -246,7 +246,7 @@ crash.
 process.
  See `fuzz_targets/fuzz_extract_gate_soundness.rs:147-192` for the
 implementation and
-[`docs/decisions/forbidden-strings-fuzzing.md`](../../../docs/decisions/forbidden-strings-fuzzing.md)
+[`doc/decision/forbidden-strings-fuzzing.md`](../../../doc/decisions/forbidden-strings-fuzzing.md)
 for the full bug list.
 
 The pre-validators added on top of resharp catch most of these shapes before

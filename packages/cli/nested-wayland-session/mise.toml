@@ -1,6 +1,6 @@
 # Cargo work runs on the HOST when the native dev libraries are present, and falls
 # back to the Fedora build container otherwise (see Containerfile and
-# docs/decisions/desktop-app-podman-build.md). Unlike the desktop apps this package
+# doc/decision/desktop-app-podman-build.md). Unlike the desktop apps this package
 # is Linux-only: it is a Wayland compositor, so there is no macOS/Windows branch.
 #
 # The built binary always RUNS on the host (it is a nested winit client of the host

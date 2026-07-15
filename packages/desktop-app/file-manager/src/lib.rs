@@ -1,8 +1,8 @@
 //! Library entry point for the Monochromatic file manager.
 //!
 //! The product is a Niri-like infinite horizontal strip of columns, each column stacking panes
-//! vertically (see docs/planning/file-manager.md for the full interaction model, and
-//! docs/handover/file-manager-gtk-build.md for build state). `run` installs non-blocking
+//! vertically (see doc/planning/file-manager.md for the full interaction model, and
+//! doc/handover/file-manager-gtk-build.md for build state). `run` installs non-blocking
 //! logging, creates the GTK `Application`, and drives its event loop; `main.rs` is a thin bin
 //! over it so the plain-Rust domain modules stay unit-testable without spinning up GTK.
 
@@ -109,7 +109,7 @@ pub fn run() -> glib::ExitCode {
 /// What: on Windows, opt into DirectComposition so GTK's GL renderer runs on the GPU.
 /// Why: gvsbuild patches DirectComposition to opt-in and GTK's GL renderer hard-requires a
 ///      DComp device; without it GTK falls back to the Cairo software renderer at 3-6 fps (see
-///      docs/troubleshooting/gtk4-windows-gvsbuild-directcomposition.md). Set before GDK init,
+///      doc/troubleshooting/gtk4-windows-gvsbuild-directcomposition.md). Set before GDK init,
 ///      and only when unset so an explicit `GDK_DEBUG` from the environment still wins.
 #[cfg(windows)]
 fn enable_windows_gpu_rendering() {

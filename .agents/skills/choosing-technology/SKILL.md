@@ -382,7 +382,7 @@ Use:
 
 ```text
 # .agents/skills/choosing-technology/SKILL.md
-docs/audit/<subject>-vet-YYYY-MM-DD.md
+doc/audit/<subject>-vet-YYYY-MM-DD.md
 ```
 
 Build `<subject>` by scanning the Unicode NFC subject:
@@ -1145,7 +1145,7 @@ configuration,
 or decision records.
 
 After a separate action request adopts a candidate,
-write or update `docs/decisions/<project>.md` or a package-local decision document with:
+write or update `doc/decision/<project>.md` or a package-local decision document with:
 
 - adopted candidate,
   version,

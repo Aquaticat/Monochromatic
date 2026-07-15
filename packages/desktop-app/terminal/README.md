@@ -116,7 +116,7 @@ It supplies safe shell spawn,
  reader,
  writer,
  and resize operations without hand-written `forkpty` setup.
-The decision and rejected alternatives are recorded in `docs/decisions/terminal.md`.
+The decision and rejected alternatives are recorded in `doc/decision/terminal.md`.
 
 ## Ghostty debug logging
 

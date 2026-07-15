@@ -17,7 +17,7 @@ FROM registry.fedoraproject.org/fedora:41
 #                          (Ninja generator); the host gets cmake from mise, but
 #                          the container does not see host mise tools, so install
 #                          it here. See
-#                          docs/troubleshooting/audiopus-cmake4-libopus-min-version.md
+#                          doc/troubleshooting/audiopus-cmake4-libopus-min-version.md
 #   clang, clang-devel     libclang for bindgen used by pipewire's libspa-sys
 #   pkgconf-pkg-config     pkg-config used to locate libpipewire (no longer opus:
 #                          opusic-sys vendors and statically links libopus)

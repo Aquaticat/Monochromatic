@@ -13,7 +13,7 @@ rewrite against a rougher BETA API,
  so we leave it.
  Written so a future session does not re-run this
 investigation.
- Companion to the manifest-level audit at `docs/audit/turso-cargo-toml-0.6.1.md`.
+ Companion to the manifest-level audit at `doc/audit/turso-cargo-toml-0.6.1.md`.
 
 ## Decision
 

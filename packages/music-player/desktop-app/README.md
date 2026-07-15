@@ -381,7 +381,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   explicit width breakpoint,
    because the
   breakpointless wrapping `FlexboxLayout` root created a Slint `Flickable` layout-info loop on Slint 1.17;
-   see `../../../docs/troubleshooting/slint-flickable-flexbox-layout-loop.md`.
+   see `../../../doc/troubleshooting/slint-flickable-flexbox-layout-loop.md`.
    The full page grid remains
   visible,
    so late-alphabet artists stay discoverable.
@@ -400,7 +400,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   short duration rather than snapping.
    The wheel animation is why the app depends on Slint 1.17 or newer (it is absent from
   the 1.16 releases);
-   see `../../../docs/troubleshooting/slint-flickable-smooth-scroll.md`.
+   see `../../../doc/troubleshooting/slint-flickable-smooth-scroll.md`.
    Rows show each track's path
   relative to the loaded root (so deeper nesting stays
   visible).
@@ -535,7 +535,7 @@ tool on the host and from rustup (current stable) in the container,
  not Fedora's `rust` package,
  because Slint 1.17.0 needs rustc 1.92 or newer;
  see the `slint`
-dependency comment in `Cargo.toml` and `../../../docs/troubleshooting/slint-flickable-smooth-scroll.md`.
+dependency comment in `Cargo.toml` and `../../../doc/troubleshooting/slint-flickable-smooth-scroll.md`.
 
 The `*:container` tasks force the podman path regardless of host libraries,
  so the container build stays
@@ -628,7 +628,7 @@ Prerequisites on a bare machine:
    Note that
   `rustup run <toolchain> cargo build` does NOT work here (rustup looks for `rustc` in the uncreated
   `~/.cargo/bin`);
-   see `../../../docs/troubleshooting/homebrew-rustup-keg-only-proxies.md`.
+   see `../../../doc/troubleshooting/homebrew-rustup-keg-only-proxies.md`.
 - `cmake` plus the Command Line Tools C compiler.
    The `opus` crate is pinned to the opusic-sys backend,
    which
@@ -826,7 +826,7 @@ identity when they are unset,
 the real credentials is a one-time human task documented in `HANDOVER.macos-signing-credentials.md` and
 `HANDOVER.windows-signing-credentials.md`.
  The design and the rejected alternatives are recorded in
-`../../../docs/decisions/desktop-app-code-signing.md`.
+`../../../doc/decisions/desktop-app-code-signing.md`.
 
 ## Session
 

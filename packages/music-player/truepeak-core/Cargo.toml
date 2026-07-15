@@ -3,8 +3,8 @@
 # and the versioned policy identity that keys the cache. Desktop and Android are being
 # migrated onto this crate one at a time (neither depends on it yet) so a track will be
 # normalized under one shared policy on either flavor. See README.md, the integration
-# handover ../../../docs/handover/music-player-truepeak-core-integration.md, and the plan
-# ../../../docs/planning/music-player-shared-truepeak-core.md.
+# handover ../../../doc/handover/music-player-truepeak-core-integration.md, and the plan
+# ../../../doc/planning/music-player-shared-truepeak-core.md.
 [package]
 name = "truepeak-core"
 version = "0.1.0"

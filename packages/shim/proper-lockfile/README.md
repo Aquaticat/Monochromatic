@@ -45,5 +45,5 @@ both paths invoke the shim's sync and async surfaces.
  matching upstream's contract for the async callsite at `auth-storage.js:88`.
 
 See `TROUBLESHOOTING.dependencies.md` for the audit trail,
- `docs/decisions/proper-lockfile-removal.md` for the decision rationale,
- and `docs/dependency-blocklist.md` for when to reach for a shim package versus a generic stub or removal.
+ `doc/decision/proper-lockfile-removal.md` for the decision rationale,
+ and `doc/dependency-blocklist.md` for when to reach for a shim package versus a generic stub or removal.

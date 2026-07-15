@@ -11,7 +11,7 @@
 # call containerCargo directly to force the podman path regardless of host
 # libraries; verify:container is the umbrella assertion.
 # Why podman and not mise-managed deps (conda route rejected):
-# see ../../../docs/decisions/desktop-app-podman-build.md
+# see ../../../doc/decisions/desktop-app-podman-build.md
 
 [env]
 # Slint's experimental language surface used by the UI must be compiled
@@ -156,7 +156,7 @@ runCargo(['nextest', 'run', '--release'])
 [tasks.mcp]
 description = "Build --features slint/mcp (debug), stage libs, and run HEADLESS with the embedded Slint MCP server on SLINT_MCP_PORT (default 9316) so an agent can drive/inspect the terminal UI"
 # Same embedded-MCP path as packages/music-player/desktop-app:mcp (see its comment
-# and docs/runbook Slint testing). `mcp` is command-line only (never in Cargo.toml
+# and doc/runbook Slint testing). `mcp` is command-line only (never in Cargo.toml
 # [features]); SLINT_EMIT_DEBUG_INFO=1 makes element ids survive; SLINT_BACKEND=headless
 # renders offscreen. install_backend() early-returns when SLINT_MCP_PORT is set, so
 # Slint creates the backend itself and starts the MCP server. State is isolated under

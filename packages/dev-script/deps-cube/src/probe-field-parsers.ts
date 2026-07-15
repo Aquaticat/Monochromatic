@@ -371,7 +371,7 @@ export const VERSION_UNRESOLVED: unique symbol = Symbol('deps-cube version range
  *
  * Heuristic: pinned versions (no leading operator) are used as-is; otherwise
  * `dist-tags.latest` is used. Acceptable for an audit overview; documented
- * limitation in `docs/decisions/deps-cube.md`.
+ * limitation in `doc/decision/deps-cube.md`.
  *
  * @param range - Range string from catalog.
  *

@@ -6,7 +6,7 @@ shares this language,
  with the platform deltas noted below).
 This file is a glossary of the product's language,
  not a spec and not an implementation record;
- decisions live in `docs/adr/`.
+ decisions live in `doc/adr/`.
 
 ## Language
 

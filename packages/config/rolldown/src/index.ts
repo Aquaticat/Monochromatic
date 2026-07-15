@@ -29,7 +29,7 @@ export const NEUTRAL_ALWAYS_BUNDLE: readonly string[] = ['@monochromatic-dev/**'
  * satisfies `isolatedDeclarations`;
  * the tsgo backend cannot emit declarations for workspace source inlined from
  * outside the entry package's tsconfig project
- * (see `docs/troubleshooting/rolldown-plugin-dts-typescript-7-generator.md`).
+ * (see `doc/troubleshooting/rolldown-plugin-dts-typescript-7-generator.md`).
  *
  * `entryFileNames`/`chunkFileNames` force `.mjs` because raw rolldown has no
  * `fixedExtension`; `rolldown-plugin-dts` derives `.d.mts` from that template.

@@ -548,7 +548,7 @@ Done:
     gl + math.
     gl + probe.
     gl.
-     Worth recording in `docs/decisions/deps-cube.md` under "implementation notes" when task 11 lands.
+     Worth recording in `doc/decision/deps-cube.md` under "implementation notes" when task 11 lands.
 - ~~Task 7 (deck.
   gl config + layer factories)~~:
    split across current layer modules:
@@ -647,7 +647,7 @@ Done:
 Done (continued):
 
 - ~~Task 11 (decision doc)~~:
-   repo-root `docs/decisions/deps-cube.md` follows the pattern of the existing decision docs (`font-subsetting.md`,
+   repo-root `doc/decision/deps-cube.md` follows the pattern of the existing decision docs (`font-subsetting.md`,
    `readable-stream-shim.md`):
    Context,
    Decision with the TS-ratio exception (attributed to the user's screenshot-confirmed authorization,
@@ -1039,7 +1039,7 @@ The first two pass cleanly now.
    sided borders use longhand `border-block-start-width` / `-style` / `-color` (and the equivalent for `border-inline-*`).
    `outline` is similar;
    write `outline-width: 2px; outline-style: solid; outline-color: var(...); outline-offset: 2px;`.
-- **Plan deviation worth recording in `docs/decisions/deps-cube.md`**:
+- **Plan deviation worth recording in `doc/decision/deps-cube.md`**:
    the chosen visual distinction for the "shape" channel is filled vs stroked (not circle vs diamond).
    Reason:
    ScatterplotLayer renders circles only;
@@ -1082,7 +1082,7 @@ The first two pass cleanly now.
 Plan,
  README,
  this handover,
- and the repo-root audit doc (`docs/decisions/deps-cube.md`,
+ and the repo-root audit doc (`doc/decision/deps-cube.md`,
  task 11) are the source of truth.
  The README documents external behaviour;
  this handover documents in-progress state;

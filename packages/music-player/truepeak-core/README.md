@@ -45,10 +45,10 @@ adaptive classifier are the stages that follow.
 The integration work,
  its staging,
  and its current status live in
-[the integration handover](../../../docs/handover/music-player-truepeak-core-integration.md).
+[the integration handover](../../../doc/handover/music-player-truepeak-core-integration.md).
 
 This is Stage one of the migration described in
-[the shared true-peak plan](../../../docs/planning/music-player-shared-truepeak-core.md):
+[the shared true-peak plan](../../../doc/planning/music-player-shared-truepeak-core.md):
 the meter,
  the gain math,
  the decoded-audio source contract,

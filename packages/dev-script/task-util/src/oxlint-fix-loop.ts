@@ -7,7 +7,7 @@
  * multiple `--fix` runs to fully converge. ESLint loops up to ten times for the
  * same reason; oxlint tracks the gap at oxc#16118 but has not shipped
  * fix-iteration. Full analysis:
- * {@link file://../../../../docs/troubleshooting/oxlint-multi-fix-convergence.md}.
+ * {@link file://../../../../doc/troubleshooting/oxlint-multi-fix-convergence.md}.
  *
  * Detecting convergence is the hard part. `oxlint --fix` reports neither through
  * its exit code nor its stdout whether a pass actually changed any file: a pass

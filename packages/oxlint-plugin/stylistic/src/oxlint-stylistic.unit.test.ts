@@ -585,7 +585,7 @@ await describe({
         it({
           name: 'flattens a very long chain without stack overflow',
           fn: async () => {
-            // docs/audit/chain-flatten-skewed-tree.md: the prior recursive flatteners
+            // doc/audit/chain-flatten-skewed-tree.md: the prior recursive flatteners
             // overflowed near member n=12000 and binary n=8000 because a member or
             // left-associative operator chain is a left-nested spine whose depth equals
             // its length. The iterative walk has O(1) extra stack depth, so flattening a

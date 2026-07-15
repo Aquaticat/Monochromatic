@@ -9,14 +9,14 @@ Where `toml-edit` wraps a third-party parser and offers byte-identical splice, `
 keeps a hand-written parser whose distinctive value is a normalized comment model:
 every object key and every value carries at most one comment, and stacked `//` or `//region`
 lines merge into a single comment.
-See `docs/decisions/jsonc-edit-parser-foundation.md` for why no off-the-shelf parser fits.
+See `doc/decision/jsonc-edit-parser-foundation.md` for why no off-the-shelf parser fits.
 
 ## Status
 
 Implemented: parser, canonical serializer, immutable edit API, and comment-as-data API,
 with unit tests co-located in this package and property, conformance, benchmark, and
 coverage-gate tooling in sidecar packages (see below).
-See `docs/handover/jsonc-edit.md` for the build history.
+See `doc/handover/jsonc-edit.md` for the build history.
 
 ## Tooling sidecars
 
@@ -50,8 +50,8 @@ The branch-level unit suite drives the whole-package score to 95.76% (474 killed
 can distinguish it, for example a loop bound guarded by an `undefined` check or a log-only string)
 and every timeout is an infinite-loop mutant that Stryker's default scoring counts as killed. So
 every non-equivalent mutant is killed. The equivalents and timeouts are enumerated with their
-proofs in `docs/handover/jsonc-edit.md`, and a survivor-triage pitfall (per-operand mutants that
-look like a harness bug) is written up in `docs/troubleshooting/stryker-survivor-triage.md`.
+proofs in `doc/handover/jsonc-edit.md`, and a survivor-triage pitfall (per-operand mutants that
+look like a harness bug) is written up in `doc/troubleshooting/stryker-survivor-triage.md`.
 
 ## Why JSONC, and why canonical
 

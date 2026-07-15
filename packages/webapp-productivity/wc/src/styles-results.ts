@@ -27,7 +27,7 @@
  * pseudo-elements, `::-webkit-progress-value` and
  * `::-moz-progress-bar`, which style exactly that fallback, and
  * Firefox's tinted fallback border is removed. Catalogued in
- * docs/troubleshooting/progress-element-fill-styling.md; verified in
+ * doc/troubleshooting/progress-element-fill-styling.md; verified in
  * containerized Firefox and Chromium by ./page.browser.test.ts.
  */
 import {
@@ -289,7 +289,7 @@ export function renderResultsStyles(): string {
         // author-styled progress (neither tested engine does today);
         // no `appearance` reset is needed because the author
         // background already disables native theming. See
-        // docs/troubleshooting/progress-element-fill-styling.md.
+        // doc/troubleshooting/progress-element-fill-styling.md.
         rule: '.freq-bar',
         decls: {
           display: 'block',

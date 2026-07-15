@@ -124,7 +124,7 @@ no shared source of truth,
  and the
 two copies quietly diverge between those moments.
 
-The original Android port decision (`../../docs/decisions/music-player-android-port.md`,
+The original Android port decision (`../../doc/decisions/music-player-android-port.md`,
  2026-06-12)
 already planned the fix:
  ship the whole engine,

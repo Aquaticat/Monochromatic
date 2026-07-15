@@ -121,7 +121,7 @@ Create comprehensive documentation to improve maintainability,
 ### 3.3 Documentation Structure
 
 ```txt
-docs/
+doc/
 ├── api/                # API documentation
 ├── architecture/       # System architecture
 ├── guides/            # User and deployment guides

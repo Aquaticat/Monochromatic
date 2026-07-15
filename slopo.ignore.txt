@@ -263,7 +263,7 @@ f53e01c91ffe
 71452b9e6249
 # .js transpiled output of its .ts sibling (handover)
 888bf10f6eeb
-# compiled .js mirrors its .ts source (docs/handover)
+# compiled .js mirrors its .ts source (doc/handover)
 985eba85bf7c
 # roundtrip test cases with intentional repeated setup
 4b5e22a51795

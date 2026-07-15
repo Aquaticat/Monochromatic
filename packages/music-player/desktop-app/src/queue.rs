@@ -18,7 +18,7 @@
 //! chosen one pick at a time, then starts a fresh cycle. `order` doubles as the
 //! play history, so `prev` steps back through it and a `next` after `prev`
 //! retraces forward before drawing a new random pick. See
-//! `docs/decisions/music-player-jit-shuffle.md`.
+//! `doc/decision/music-player-jit-shuffle.md`.
 //!
 //! "Repeat track" is independent: when on, a track that ends NATURALLY replays
 //! itself; a manual Next/Prev still moves within the scope.

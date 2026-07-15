@@ -39,7 +39,7 @@ description = "Start editord server with file-watch auto-restart"
 # with an in-process content-hash cache (so external editors' byte-identical
 # format-on-save writes do not trigger a restart), spawning the node child
 # directly via node:child_process so SIGTERM reaches it through one process
-# layer. See docs/troubleshooting/mise-watch.md for the failure modes that
+# layer. See doc/troubleshooting/mise-watch.md for the failure modes that
 # motivated this migration.
 run = "watch-restart -w src/server -- node src/server/index.ts"
 

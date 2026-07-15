@@ -51,7 +51,7 @@ function readSourceTextOrEmpty(sourcePath: string,): string {
   if (cached !== undefined)
     return cached;
   try {
-    /* oxlint-disable no-restricted-syntax/no-sync -- sync oxlint visitor; classification must finish before report; see docs/troubleshooting/oxlint-js-plugin-sync-visitors.md. */
+    /* oxlint-disable no-restricted-syntax/no-sync -- sync oxlint visitor; classification must finish before report; see doc/troubleshooting/oxlint-js-plugin-sync-visitors.md. */
     /**
      * Source text read from the imported file.
      */

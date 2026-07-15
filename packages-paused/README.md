@@ -6,7 +6,7 @@ but they are not part of the active workspace.
 
 This differs from `packages-deprecated/`, which is for packages that stay
 installable for outside consumers but are no longer maintained
-(see `docs/howto/deprecate-package.md`).
+(see `doc/howto/deprecate-package.md`).
 Paused means the team intends to come back to it; deprecated means it is done.
 
 ## What "paused" means operationally

@@ -13,7 +13,7 @@
     "**/deprecated/**",
     "${configDir}/**/deprecated/**",
     // tsgo's LSP panics on files with unrecognized extensions
-    // during project loading. See docs/troubleshooting/typescript.md
+    // during project loading. See doc/troubleshooting/typescript.md
     // "tsgo LSP panics on non-source files".
     "${configDir}/**/*.svg",
     "${configDir}/**/*.png",

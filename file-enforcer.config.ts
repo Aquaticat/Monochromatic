@@ -30,7 +30,7 @@ import type browserslist from 'browserslist';
 
 /**
  * Root-level context summary path that must remain absent. The repo relies on
- * source reads plus docs/agents/domain.md instead of cached context files.
+ * source reads plus doc/agent/domain.md instead of cached context files.
  *
  * @example
  * ```ts
@@ -215,7 +215,7 @@ class ForbiddenRootContextFileError extends Error {
     super([
       `${filePath} is forbidden.`,
       'Do not create cached context files;',
-      'read source code directly and use docs/agents/domain.md for this repo policy.',
+      'read source code directly and use doc/agent/domain.md for this repo policy.',
     ].join(' ',),);
     this.name = ForbiddenRootContextFileError.name;
   }
@@ -646,7 +646,7 @@ SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 # build time. Required for the ElementHandle/MCP introspection APIs
 # (find_elements_by_id, get_element_tree) the desktop-app test harnesses rely
 # on; without it those calls panic at runtime (see
-# docs/handover/slint-app-testing.md, docs/troubleshooting/slint-embedded-mcp-server.md).
+# doc/handover/slint-app-testing.md, doc/troubleshooting/slint-embedded-mcp-server.md).
 # Setting it at the repo root covers every cargo/slint invocation mise
 # launches, not just the packages that previously set it per-task.
 SLINT_EMIT_DEBUG_INFO = "1"
@@ -655,7 +655,7 @@ SLINT_EMIT_DEBUG_INFO = "1"
 # policy adapter, which reads the same variable) at the file-enforcer
 # generated rules file under the gitignored .cache/ scratch dir; rules no
 # longer materialize at the repository root
-# (docs/decisions/gitignore-negations.md). {{config_root}} makes the path
+# (doc/decision/gitignore-negations.md). {{config_root}} makes the path
 # absolute so scans started from any subdirectory resolve the same file.
 FORBIDDEN_STRINGS_RULES = "{{config_root}}/.cache/forbidden-strings.rules.txt"
 `;
@@ -682,7 +682,7 @@ ${envSection}`,
  *
  * The betterleaks baseline no longer materializes here: it ships inside the
  * scanner binary and repo invocations activate it with `--builtin-rules`
- * (see `docs/decisions/gitignore-negations.md`). The generated root
+ * (see `doc/decision/gitignore-negations.md`). The generated root
  * `mise.toml` points `FORBIDDEN_STRINGS_RULES` at the scratch file, so no
  * rules file exists at the repository root at all. The retired root outputs
  * (`forbidden-strings.local.txt`, previously generated here) are removed
@@ -1301,7 +1301,7 @@ const CARGO_README_FILENAME = 'README.md';
  * console.log(CARGO_LINTS_BLOCK);
  * ```
  */
-const CARGO_LINTS_BLOCK = `# Canonical lint policy, enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+const CARGO_LINTS_BLOCK = `# Canonical lint policy, enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [lints.clippy]
 disallowed_methods = "deny"
 implicit_return = "deny"
@@ -1318,7 +1318,7 @@ needless_return = "allow"
  * ```
  */
 const CARGO_WORKSPACE_BLOCK = `# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
-# Enforced by file-enforcer (docs/planning/cargo-toml-file-enforcer.md).
+# Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [workspace]
 `;
 
@@ -1664,7 +1664,7 @@ you cannot enumerate how many subagents are running,
 and SendMessage steering is unreliable,
 so fan out general-purpose subagents only in interactive sessions where the user watches and steers them in the Claude Code UI.
 Rationale:
-\`docs/decisions/general-purpose-subagent-ban.md\`.
+\`doc/decision/general-purpose-subagent-ban.md\`.
 
 Use \`spawn-claude\` outside sandbox to launch a steerable child Claude Code session in a visible terminal window.
 The child runs independently,

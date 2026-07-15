@@ -532,7 +532,7 @@ function logStartupError({ error, }: { readonly error: unknown; },): void {
  *
  * Electron emits `ready` after the main module finishes evaluating, so a
  * top-level `await app.whenReady()` deadlocks startup under Electron's ESM
- * loader (see docs/troubleshooting on the Electron ESM ready deadlock).
+ * loader (see doc/troubleshooting on the Electron ESM ready deadlock).
  *
  * @example
  * ```ts

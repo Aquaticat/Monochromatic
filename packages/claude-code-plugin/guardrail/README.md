@@ -21,7 +21,7 @@ which looks like a broken run when every test passed.
 General-purpose Agent calls are no longer blocked here.
  The ban was lifted once
 the Claude Code UI let a human observe and message subagent sessions directly;
-see `docs/decisions/general-purpose-subagent-ban.md`.
+see `doc/decision/general-purpose-subagent-ban.md`.
 
 ## Solution
 

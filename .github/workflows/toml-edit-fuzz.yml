@@ -6,7 +6,7 @@ name: toml-edit-fuzz
 # doc. The same *.property.unit.test.ts files run bounded in test:unit and as a
 # short per-property campaign through the package fuzz task. See
 # packages/module/toml-edit/HANDOVER.fuzzing.md and
-# docs/decisions/toml-edit-fuzzing.md.
+# doc/decision/toml-edit-fuzzing.md.
 #
 # push and pull_request are path-filtered to toml-edit. merge_group cannot be
 # path-filtered (a GitHub limitation), so the Scope step below skips the heavy
@@ -19,7 +19,7 @@ on:
     paths:
     - 'packages/module/toml-edit/**'
     - 'packages/test-fixture/toml-edit/**'
-    - 'docs/decisions/toml-edit-fuzzing.md'
+    - 'doc/decision/toml-edit-fuzzing.md'
     - '.github/workflows/toml-edit-fuzz.yml'
   merge_group:
     branches: ['main']
@@ -28,7 +28,7 @@ on:
     paths:
     - 'packages/module/toml-edit/**'
     - 'packages/test-fixture/toml-edit/**'
-    - 'docs/decisions/toml-edit-fuzzing.md'
+    - 'doc/decision/toml-edit-fuzzing.md'
     - '.github/workflows/toml-edit-fuzz.yml'
 
 permissions:
@@ -62,7 +62,7 @@ jobs:
         run=true
         if [ "${{ github.event_name }}" = 'merge_group' ]; then
           changed=$(git diff --name-only --diff-filter=ACMRT origin/main...HEAD || true)
-          if ! printf '%s\n' "$changed" | grep -qE '^(packages/(module|test-fixture)/toml-edit/|docs/decisions/toml-edit-fuzzing\.md|\.github/workflows/toml-edit-fuzz\.yml)'; then
+          if ! printf '%s\n' "$changed" | grep -qE '^(packages/(module|test-fixture)/toml-edit/|doc/decision/toml-edit-fuzzing\.md|\.github/workflows/toml-edit-fuzz\.yml)'; then
             run=false
             echo 'No toml-edit files in the merge group; skipping the fuzz steps.'
           fi

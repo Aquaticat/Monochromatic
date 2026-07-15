@@ -114,7 +114,7 @@ cargo-binstall = "latest"
 # instead, since the container filesystem does not see host mise tools. A CMake
 # generator is also required: the host and macOS fall back to system `make` (Unix
 # Makefiles), Windows uses the Visual Studio generator, and the containers install
-# ninja. See docs/troubleshooting/audiopus-cmake4-libopus-min-version.md.
+# ninja. See doc/troubleshooting/audiopus-cmake4-libopus-min-version.md.
 cmake = "latest"
 
 # rcodesign (the `apple-codesign` crate) signs, notarizes, and staples the
@@ -126,14 +126,14 @@ cmake = "latest"
 # way `cargo:timeout-cli` ships a `timeout` binary. The crate ships no
 # cargo-binstall metadata, so cargo-binstall falls back to a from-source build
 # here rather than fetching a prebuilt archive. See
-# docs/decisions/desktop-app-code-signing.md and the package's sign:macos task.
+# doc/decision/desktop-app-code-signing.md and the package's sign:macos task.
 "cargo:apple-codesign" = "latest"
 
 # Zig toolchain for packages/desktop-app/terminal: its libghostty-vt-sys
 # build-dependency compiles vendored Ghostty with Zig and requires Zig 0.15.x
 # (Fedora packages an older 0.14). Pinned to 0.15.2 to match the version the
 # terminal Containerfile fetches (ENV ZIG_VERSION=0.15.2) and
-# docs/decisions/desktop-app-podman-build.md, so a host-native build links the
+# doc/decision/desktop-app-podman-build.md, so a host-native build links the
 # same Ghostty core as the container build. Bump both together.
 zig = "0.15.2"
 
@@ -308,7 +308,7 @@ if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.jo
 # node -e cross-package fanout: the JS replacement for the native `mise
 # '//packages/...:<task>'` monorepo glob, which is unreliable (aborts the
 # aggregate while child fanout work is still in flight; see
-# docs/handover/lint-fix-2026-06.md). Mirrors the intra-package `fanout` var
+# doc/handover/lint-fix-2026-06.md). Mirrors the intra-package `fanout` var
 # above, but selects every PACKAGE task whose suffix matches, rather than the
 # current task's direct children. The target suffix is `FANOUT_TASK` when set
 # (used by wrapper tasks whose own name differs from the fanned-out suffix),
@@ -1223,7 +1223,7 @@ SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 # build time. Required for the ElementHandle/MCP introspection APIs
 # (find_elements_by_id, get_element_tree) the desktop-app test harnesses rely
 # on; without it those calls panic at runtime (see
-# docs/handover/slint-app-testing.md, docs/troubleshooting/slint-embedded-mcp-server.md).
+# doc/handover/slint-app-testing.md, doc/troubleshooting/slint-embedded-mcp-server.md).
 # Setting it at the repo root covers every cargo/slint invocation mise
 # launches, not just the packages that previously set it per-task.
 SLINT_EMIT_DEBUG_INFO = "1"
@@ -1232,6 +1232,6 @@ SLINT_EMIT_DEBUG_INFO = "1"
 # policy adapter, which reads the same variable) at the file-enforcer
 # generated rules file under the gitignored .cache/ scratch dir; rules no
 # longer materialize at the repository root
-# (docs/decisions/gitignore-negations.md). {{config_root}} makes the path
+# (doc/decision/gitignore-negations.md). {{config_root}} makes the path
 # absolute so scans started from any subdirectory resolve the same file.
 FORBIDDEN_STRINGS_RULES = "{{config_root}}/.cache/forbidden-strings.rules.txt"

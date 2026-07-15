@@ -5,9 +5,9 @@ Status:
  Supersedes
 [`TODO.generalize-ssg.md`](./TODO.generalize-ssg.md),
  whose defects are catalogued in
-[`docs/audit/generalize-ssg-plan.md`](../../../docs/audit/generalize-ssg-plan.md).
+[`doc/audit/generalize-ssg-plan.md`](../../../doc/audit/generalize-ssg-plan.md).
 This rewrite is built on the decided i18n architecture
-([`docs/planning/module-i18n-compose.md`](../../../docs/planning/module-i18n-compose.md))
+([`doc/planning/module-i18n-compose.md`](../../../doc/planning/module-i18n-compose.md))
 and the real path-model and publishability constraints.
 
 Goal:
@@ -31,7 +31,7 @@ That contradicts the chosen i18n architecture and is removed here.
   A site selects a subset of these.
    Adding a new language is not a config option;
   it requires adding a locale renderer to `module-i18n-compose` first
-  (`docs/planning/module-i18n-compose.md:1104`,
+  (`doc/planning/module-i18n-compose.md:1104`,
    `:322-328`).
 - UI label keys are SSG-owned (the site chrome:
    language chooser,
@@ -53,7 +53,7 @@ That contradicts the chosen i18n architecture and is removed here.
 
 ## Prerequisite: complete the i18n migration first
 
-Phase 6 of `docs/planning/module-i18n-compose.md` (migrate `ssg-test` off `typesafe-i18n` onto
+Phase 6 of `doc/planning/module-i18n-compose.md` (migrate `ssg-test` off `typesafe-i18n` onto
 `@monochromatic-dev/module-i18n-compose`) is a hard prerequisite,
  not part of this plan.
 The config and i18n design below assume it is done:
@@ -77,7 +77,7 @@ The SSG looks for `site.config.ts` in the current working directory by conventio
        see `src/lib/content.ts:21`
       and the `config-schemas.ts` convention in `packages/pi-plugin/advisor` and `packages/pi-plugin/auto-mode`).
       Do not use zod;
-       it is not a dependency and was migrated away (`docs/migration/zod-to-valibot.md`).
+       it is not a dependency and was migrated away (`doc/migration/zod-to-valibot.md`).
 - [ ] Export `SupportedLocale` (`'ca' | 'en' | 'zh'`) and the UI label key union from the package.
 - [ ] Create `src/config/load.ts` that resolves and imports `site.config.ts` from `process.cwd()`
       and validates it with the schema.
@@ -182,7 +182,7 @@ consumer's cwd,
       if introduced later.
 - [ ] Confirm the cache invalidates on i18n changes.
        The current glob omits `src/i18n/`
-      (`docs/planning/module-i18n-compose.md:139`);
+      (`doc/planning/module-i18n-compose.md:139`);
        after the migration the SSG's i18n is package-internal,
       so the SSG-version input covers it.
        Verify this holds rather than assuming it.

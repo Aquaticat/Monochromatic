@@ -4,7 +4,7 @@
 //! repeat). The Queue itself is NOT stored: on restore the Source Root is
 //! re-scanned to rebuild a fresh Queue, and the Selected Track is re-selected by
 //! path if it is still present. See
-//! `docs/decisions/music-player-session-source-root.md`.
+//! `doc/decision/music-player-session-source-root.md`.
 
 /// What:     `use std::path::PathBuf;` imports the OWNED path type (sibling: borrowed
 ///           `&Path`).

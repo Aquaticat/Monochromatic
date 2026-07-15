@@ -42,7 +42,7 @@ import { Button, CheckBox, Slider, HorizontalBox, VerticalBox, Palette } from "s
 // `Typography.body-rem * 1rem`, because rem cannot be resolved inside a `global`
 // (the window default-font-size is unknown there; slint-viewer --check rejects a
 // rem-typed global length). The 1rem is applied at the element, where the window
-// context exists. Full rationale: docs/troubleshooting/slint-widget-font-size-rem.md.
+// context exists. Full rationale: doc/troubleshooting/slint-widget-font-size-rem.md.
 global Typography {
     out property <float> body-rem: 14 * 0.0769;
 }
@@ -202,7 +202,7 @@ export component AppWindow inherits Window {
     // `changed os-font-size` hands the real value to Rust, which applies the 0.9 a
     // single time (guarded). A relative `default-font-size: 0.9rem` is a binding loop
     // (rem resolves against this very property), which is why the scale is applied
-    // from Rust. See docs/troubleshooting/slint-rem-binding-loop.md.
+    // from Rust. See doc/troubleshooting/slint-rem-binding-loop.md.
     in property <length> base-font-size;
     default-font-size: root.base-font-size;
     out property <length> os-font-size: 1rem;
@@ -240,7 +240,7 @@ export component AppWindow inherits Window {
     // Two-way (`in-out`) for the same reason as `volume`/`position`: the native
     // CheckBox flips its own `checked` with an imperative assignment on click
     // (widgets/fluent/checkbox.slint), which would break a one-way binding (see
-    // docs/troubleshooting/slint-slider-binding-breaks-on-input.md); a two-way
+    // doc/troubleshooting/slint-slider-binding-breaks-on-input.md); a two-way
     // `<=>` alias survives that, so engine updates keep moving the checkbox.
     in-out property <bool> repeat-track: false;
     in property <int> current-index: -1;

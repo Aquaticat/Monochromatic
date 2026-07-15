@@ -21,4 +21,4 @@ The upstream is a ponyfill that exists for environments without native `structur
  named exports (`serialize`,
  `deserialize`) are intentionally omitted and can be added if a future transitive dep reaches in.
 
-See `TROUBLESHOOTING.dependencies.md` for the audit trail and `docs/dependency-blocklist.md` for when to reach for a shim package versus a generic stub or removal.
+See `TROUBLESHOOTING.dependencies.md` for the audit trail and `doc/dependency-blocklist.md` for when to reach for a shim package versus a generic stub or removal.

@@ -4,7 +4,7 @@
 //! modules this crate reuses verbatim), with the original's 400-plus-line lane engine and
 //! collision solver replaced by the pure `band` module: one stateless clamp per pane, the rule
 //! CSS `position: sticky` applies. The derivation and behavioral deltas are recorded in
-//! `docs/audit/file-manager-sticky-flow.md`.
+//! `doc/audit/file-manager-sticky-flow.md`.
 
 /// What: the shared-constants module (application id, geometry, env var names).
 /// Why: one source of truth for magic values used across the shell modules.

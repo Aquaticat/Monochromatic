@@ -8,7 +8,7 @@
  * the worker branch. The self-referential `new Worker(new URL(import.meta.url))`
  * dispatch stays in `compress.ts`, whose URL is the file with both branches.
  *
- * @see docs/decisions/zstd-cli-to-node-zlib.md for the engine, level, and threading evidence.
+ * @see doc/decision/zstd-cli-to-node-zlib.md for the engine, level, and threading evidence.
  */
 import {
   readFileSync,
@@ -61,7 +61,7 @@ const zstdConstants = zlib.constants;
 
 /**
  * zstd compression level for precompressed static assets. Level 19 is the best
- * practical ratio; see docs/decisions/zstd-cli-to-node-zlib.md for the curve.
+ * practical ratio; see doc/decision/zstd-cli-to-node-zlib.md for the curve.
  */
 const COMPRESSION_LEVEL = 19;
 
@@ -82,7 +82,7 @@ const ZSTD_OPTIONS = {
  * Extensions skipped without being read: formats a level-19 zstd pass cannot
  * shrink, established by benchmark on real content (a 1080p cartoon's frames,
  * audio, and video, plus this site's own assets; see
- * docs/decisions/zstd-cli-to-node-zlib.md).
+ * doc/decision/zstd-cli-to-node-zlib.md).
  *
  * Each kept entry gains roughly 0% under zstd: avif, webp (lossy and lossless),
  * gif, jxl (lossy and lossless), woff/woff2 (font tables are already deflate /
@@ -459,7 +459,7 @@ export function compressBucket(
        * Companion output path for this source.
        */
       const zstPath = `${file}.zst`;
-      // oxlint-disable-next-line no-restricted-syntax/no-sync -- structurally sync: co-located in the zstd worker-thread compression loop; see docs/decisions/zstd-cli-to-node-zlib.md
+      // oxlint-disable-next-line no-restricted-syntax/no-sync -- structurally sync: co-located in the zstd worker-thread compression loop; see doc/decision/zstd-cli-to-node-zlib.md
       rmSync(
         zstPath,
         { force: true, },
@@ -476,7 +476,7 @@ export function compressBucket(
           skipped: acc.skipped + 1,
           savedBytes: acc.savedBytes,
         };
-      /* oxlint-disable no-restricted-syntax/no-sync -- structurally sync: zstd worker-thread compression loop, async zstdCompress ~6x slower; see docs/decisions/zstd-cli-to-node-zlib.md */
+      /* oxlint-disable no-restricted-syntax/no-sync -- structurally sync: zstd worker-thread compression loop, async zstdCompress ~6x slower; see doc/decision/zstd-cli-to-node-zlib.md */
       /**
        * Source bytes read once for compression and the size comparison.
        */
@@ -495,7 +495,7 @@ export function compressBucket(
           skipped: acc.skipped + 1,
           savedBytes: acc.savedBytes,
         };
-      // oxlint-disable-next-line no-restricted-syntax/no-sync -- structurally sync: co-located in the zstd worker-thread compression loop; see docs/decisions/zstd-cli-to-node-zlib.md
+      // oxlint-disable-next-line no-restricted-syntax/no-sync -- structurally sync: co-located in the zstd worker-thread compression loop; see doc/decision/zstd-cli-to-node-zlib.md
       writeFileSync(
         zstPath,
         compressed,

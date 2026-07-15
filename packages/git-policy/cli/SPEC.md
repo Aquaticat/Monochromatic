@@ -3,7 +3,7 @@
 ## Status and authority
 
 This file is the canonical implementation interface for
-`docs/decisions/cli-git-policies-platform.md`.
+`doc/decision/cli-git-policies-platform.md`.
 Runtime code,
 public declarations,
 tests,
