@@ -55,6 +55,8 @@ export function mtypeToExtension(mtype: string,): string {
  *
  * @param value - JSON-serializable value
  *
+ * @mutates value through `JSON.stringify` serialization hooks
+ *
  * @example
  * ```ts
  * addJson({ zip, path: 'manifest.json', value: doc.manifest, });
@@ -91,6 +93,8 @@ function addJson(
  * @param pageId - page whose shapes are written
  *
  * @param pageDir - archive directory prefix for the page
+ *
+ * @mutates doc through shape serialization hooks
  *
  * @example
  * ```ts
@@ -141,6 +145,8 @@ function addPageShapes(
  * @param doc - converted {@link PenpotDocument}
  *
  * @returns ZIP archive bytes
+ *
+ * @mutates doc through manifest, file, page, shape, media, and color serialization hooks
  *
  * @example
  * ```ts
