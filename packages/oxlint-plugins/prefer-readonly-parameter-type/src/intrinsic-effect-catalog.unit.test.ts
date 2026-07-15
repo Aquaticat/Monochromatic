@@ -1402,6 +1402,18 @@ await describe({
       },
     },),
     it({
+      name: 'resolves every audited entry through exact indexed identity',
+      fn: async () => {
+        expect(INTRINSIC_EFFECTS.every(function resolvesIndexedEntry(entry,): boolean {
+          return intrinsicEffect({
+            provenance: entry.provenance,
+            ownerType: entry.ownerType,
+            member: entry.member,
+          },) === entry;
+        },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'records authoritative evidence for every audited host entry',
       fn: async () => {
         expect(INTRINSIC_EFFECTS.every(function hasEvidence(entry,): boolean {
