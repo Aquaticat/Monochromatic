@@ -8,7 +8,7 @@
   "dependencies": {
     "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
-    "@monochromatic-dev/module-llm-types": "workspace:*",
+    "@monochromatic-dev/module-llm-type": "workspace:*",
     "nano-spawn": "catalog:"
   },
   "devDependencies": {

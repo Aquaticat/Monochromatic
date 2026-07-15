@@ -3,7 +3,7 @@ import type {
   ChatCompletionResponse,
   CompletionUsage,
   ContentPart,
-} from '@monochromatic-dev/module-llm-types/ts';
+} from '@monochromatic-dev/module-llm-type/ts';
 
 import type { CaptureSet, } from './analyze/memory.ts';
 
