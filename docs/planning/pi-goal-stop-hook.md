@@ -101,16 +101,24 @@ The plan is based on these inspected sources:
 Pi `0.80.6` exposes the lifecycle and control primitives this design needs:
 
 - `agent_end` reports low-level run messages.
-- `agent_settled` fires only after Pi-owned retries,
-  overflow compaction,
-  and queued messages have settled.
+- The `AgentSettledEvent` declaration in Pi `0.80.6` states that `agent_settled` fires after the run has fully settled
+  and no automatic retry,
+  compaction,
+  or queued continuation will run.
 - `ctx.isIdle()` and `ctx.hasPendingMessages()` gate continuation.
 - `session_start`,
   `session_compact`,
   and `session_tree` expose the reconstruction points needed here.
 - `pi.appendEntry()` stores branch-aware custom state outside model context.
 - `pi.sendMessage()` can add visible extension-authored context and trigger a turn.
+- Pi `0.80.6` passes the current `ExtensionContext` as the final `ToolDefinition.execute` parameter,
+  so `goal_complete` can read the current branch,
+  model registry,
+  mode,
+  and UI without a `tool_call` capture hook.
 - `executionMode: 'sequential'` on one tool makes its complete assistant tool batch execute in source order.
+- `ctx.ui.custom()` can host a combined selector and editor in TUI mode;
+  Pi's bundled `questionnaire.ts` example demonstrates that composition.
 
 ## Product contract
 
@@ -436,9 +444,6 @@ Continue after output-length exhaustion.
 Pi `0.80.6` rejects possibly truncated tool calls rather than executing them,
 so the next goal turn can safely resume from the persisted transcript.
 
-Continue after another terminating custom tool leaves this goal active.
-A terminating tool other than an approved `goal_complete` does not complete the objective.
-
 ### Errors and compaction
 
 A model error normally lets Pi perform its own provider retry or overflow compaction before `agent_settled`.
@@ -516,12 +521,11 @@ The crash-regression integration test must exercise ordinary built-in and custom
 Register `goal_complete` with `executionMode: 'sequential'`.
 Pi then executes the complete assistant tool batch in source order.
 
-Require `goal_complete` to be the sole tool call in its assistant message.
-If sibling calls exist,
-reject completion before reviewer invocation and instruct the model to finish those calls,
-observe their results,
-and submit completion in a later final action.
-This prevents approval from racing work whose results are not yet present in reviewer context.
+Require `goal_complete` to be the final tool call in its assistant message.
+Earlier sibling calls finish first and their finalized results become reviewer evidence.
+If a later sibling call exists,
+reject completion before reviewer invocation and instruct the model to submit completion only after every remaining action.
+This prevents approval from racing work scheduled after the completion request without forbidding already ordered evidence-producing calls.
 
 ### Local preflight
 
@@ -607,8 +611,23 @@ Resolve the effective Pi model scope through
 `@monochromatic-dev/pi-shared-model-selection`.
 
 Exclude the active primary model by exact `provider/id` identity.
-The initial reviewer is the eligible scoped model with the highest expected call cost for its model-specific serialized input estimate and configured reviewer output budget.
+The initial reviewer is the eligible scoped model with the highest expected call cost for its model-specific serialized input estimate and fixed reviewer output reserve.
 This is the same default-selection principle used by Advisor.
+
+Goal review has no configuration file.
+Use these repository precedents as fixed review constants:
+
+- 10,000 milliseconds for each complete model attempt,
+  matching auto-mode's default judge timeout.
+- 16,384 output tokens for request budgeting and cost ranking,
+  matching Advisor's default maximum secondary-review output.
+- 256 reserved framing tokens and four estimated characters per token,
+  matching Advisor's context-budget calculation.
+
+The 16,384-token value is a reviewer request reserve,
+not the removed goal-work token budget.
+Derive each model's maximum serialized-context characters from its context window after these reserves.
+Do not add global or project goal configuration for these values in this implementation.
 
 If no distinct authenticated model is eligible,
 treat model review as exhausted and enter the manual or non-interactive fallback.
@@ -660,9 +679,13 @@ Preserve these behaviors:
 5. After the initial reviewer exhausts its complete attempt,
    resolve up to two distinct authenticated fallback reviewers before sending fallback requests.
 6. Run selected fallback attempts concurrently.
-7. The first successfully parsed valid verdict wins,
+7. The first fallback promise fulfilled with a successfully parsed valid verdict wins,
    whether approval or denial.
-8. A failed fallback does not settle the race while another fallback can still return a verdict.
+8. A fallback rejected by transport or contract failure does not settle the race while another fallback can still return a verdict.
+   In auto-mode's current source,
+   a valid denial is a fulfilled verdict and therefore can win;
+   `rejected contender` refers to a rejected promise,
+   not a denial verdict.
 9. If no fallback exists or every fallback attempt fails,
    enter the manual or non-interactive fallback.
 
@@ -725,7 +748,8 @@ Reject [optional reason]
 ```
 
 The interface has two semantic outcomes only.
-Escape or cancellation maps to `Reject` with an empty reason rather than creating a third state.
+Escape does not close or settle the custom dialog.
+The user must explicitly activate `Accept` or `Reject`.
 
 `Accept` manually approves completion after stale revalidation.
 Persist the terminal completion with approval source `manual` and the normalized model-failure diagnostic.
@@ -749,6 +773,7 @@ reviewer exhaustion:
 
 - rejects completion
 - appends terminal `review_unavailable`
+- appends a renderable terminal custom entry so the diagnostic remains visible after footer clearing
 - records attempted reviewers and normalized diagnostics
 - invalidates continuation latches
 - clears the footer
@@ -759,6 +784,11 @@ reviewer exhaustion:
 Starting `/goal <objective>` later replaces this terminal record with a fresh run.
 
 ## Shared model-review module
+
+This section is the implementation architecture selected by repository analysis,
+not an additional grilled product behavior.
+It may change internally if implementation proves a deeper existing seam,
+but it must preserve the settled auto-mode transport and fallback behavior without duplication.
 
 ### Why a shared module is required
 
@@ -1061,7 +1091,6 @@ Cover every settlement branch:
 
 - ordinary model stop continues
 - output-length exhaustion continues
-- active run after another terminating tool continues
 - user abort does nothing
 - provider retry does not create a competing continuation
 - overflow compaction does not create a competing continuation
@@ -1091,8 +1120,8 @@ Cover:
 - empty summary
 - each bounded contradiction phrase
 - non-contradictory evidence
-- sibling tool-call rejection
-- sole final tool-call acceptance
+- later sibling tool-call rejection
+- earlier sibling calls allowed before final completion
 - reviewer not called for local rejection
 
 ### Reviewer context tests
@@ -1161,7 +1190,7 @@ Cover:
 - manual accept completes
 - manual reject without reason keeps active
 - manual reject with reason keeps active and returns exact reason
-- Escape maps to rejection without reason
+- Escape leaves the custom dialog open
 - RPC reviewer exhaustion becomes `review_unavailable`
 - JSON reviewer exhaustion becomes `review_unavailable`
 - print reviewer exhaustion becomes `review_unavailable`
