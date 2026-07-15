@@ -164,23 +164,32 @@ export async function materializeCandidates(
       },);
     },
   );
-  await Promise.all(lanes.map(async function writeLane(
-    lane: readonly IndexedCandidate[],
-  ): Promise<void> {
-    /* oxlint-disable no-await-in-loop -- Each bounded lane deliberately sequences process-backed reads and temporary writes to cap process and file-descriptor pressure. */
-    for (const entry of lane) {
-      /**
-       * Exact candidate bytes loaded only when current bounded lane reaches entry.
-       */
-      const bytes = await entry.candidate
-        .bytes();
-      await writeFile(
-        entry.path,
-        bytes,
-      );
+  /**
+   * Concurrent lane jobs built at the marked candidate ownership boundary.
+   */
+  const laneWrites: Promise<void>[] = [];
+  for (const lane of lanes) {
+    /**
+     * Processes one bounded lane while retaining inherited candidate ownership.
+     */
+    async function writeLane(): Promise<void> {
+      /* oxlint-disable no-await-in-loop -- Each bounded lane deliberately sequences process-backed reads and temporary writes to cap process and file-descriptor pressure. */
+      for (const entry of lane) {
+        /**
+         * Exact candidate bytes loaded only when current bounded lane reaches entry.
+         */
+        const bytes = await entry.candidate
+          .bytes();
+        await writeFile(
+          entry.path,
+          bytes,
+        );
+      }
+      /* oxlint-enable no-await-in-loop */
     }
-    /* oxlint-enable no-await-in-loop */
-  },),);
+    laneWrites.push(writeLane(),);
+  }
+  await Promise.all(laneWrites,);
   return {
     paths,
     candidatesByPath: new Map(paths.map(function mapCandidate(
