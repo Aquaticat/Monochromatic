@@ -27,7 +27,13 @@ export const CLIENT_ALWAYS_BUNDLE: readonly string[] = [
 ];
 
 /**
- * Shared raw-rolldown configuration for browser client bundles.
+ * Externals shared by every client bundle produced from the consuming
+ * package's manifest at import time.
+ */
+const clientExternal = await packageExternals({ alwaysBundle: CLIENT_ALWAYS_BUNDLE, },);
+
+/**
+ * Build one client bundle config with overridable inputs.
  *
  * Bundles everything reachable (including undeclared transitives) into
  * self-contained browser scripts served as `<script type="module">` tags.
@@ -35,48 +41,56 @@ export const CLIENT_ALWAYS_BUNDLE: readonly string[] = [
  * existing HTML references. No declarations: client bundles have no type
  * consumers.
  *
+ * @param input - Client entry paths; defaults to the package client index.
+ *
+ * @returns Client flavor rolldown config producing self-contained scripts.
+ *
  * @example
  * ```ts
  * // rolldown.client.config.ts
- * import base from '\@monochromatic-dev/config-rolldown/.client.ts';
- * import { defineConfig, } from 'rolldown';
- *
- * export default defineConfig({
- *   ...base,
- *   input: ['./src/client/inbox.ts', './src/client/search.ts',],
- * },);
+ * import { clientConfig, } from '\@monochromatic-dev/config-rolldown/.client.ts';
+ * export default clientConfig({ input: ['./src/client/main.ts',], },);
  * ```
  */
-const _default_1: RolldownOptions = defineConfig({
-  input: ['./src/client.ts',],
-  platform: 'neutral',
-  resolve: {
-    mainFields: [
-      'module',
-      'main',
-    ],
-    alias: {
-      canvg: join(
-        import.meta.dirname,
-        'stubs',
-        'canvg.ts',
-      ),
+export function clientConfig({ input = ['./src/client.ts',], }: {
+  readonly input?: readonly string[];
+} = {},): RolldownOptions {
+  return defineConfig({
+    input: [...input,],
+    platform: 'neutral',
+    resolve: {
+      mainFields: [
+        'module',
+        'main',
+      ],
+      alias: {
+        canvg: join(
+          import.meta.dirname,
+          'stubs',
+          'canvg.ts',
+        ),
+      },
     },
-  },
-  external: await packageExternals({ alwaysBundle: CLIENT_ALWAYS_BUNDLE, },),
-  transform: { target: [...target,], },
-  output: {
-    dir: 'dist/client',
-    format: 'es',
-    entryFileNames: '[name].js',
-    chunkFileNames: '[name]-[hash].js',
-    cleanDir: true,
-    minify: {
-      compress: true,
-      // Mangle breaks func.name and makes output difficult for users to audit.
-      mangle: false,
-      codegen: true,
+    external: clientExternal,
+    transform: { target: [...target,], },
+    output: {
+      dir: 'dist/client',
+      format: 'es',
+      entryFileNames: '[name].js',
+      chunkFileNames: '[name]-[hash].js',
+      cleanDir: true,
+      minify: {
+        compress: true,
+        // Mangle breaks func.name and makes output difficult for users to audit.
+        mangle: false,
+        codegen: true,
+      },
     },
-  },
-},);
+  },);
+}
+
+/**
+ * Default single-input client bundle config via {@link clientConfig}.
+ */
+const _default_1: RolldownOptions = clientConfig();
 export default _default_1;
