@@ -291,6 +291,20 @@ await describe({
           },
         },),
         it({
+          name: 'retains supplied binary view until archive build',
+          fn: async () => {
+            const zip = new ZipWriter();
+            const data = new Uint8Array([1,],);
+            zip.add('retained.bin', data,);
+            data[0] = 9;
+            const extracted = await extractFromZip({
+              bytes: zip.build(),
+              path: 'retained.bin',
+            },);
+            expect(extracted[0],).toBe(9,);
+          },
+        },),
+        it({
           name: 'round-trips UTF-8 file names',
           fn: async () => {
             const zip = new ZipWriter();

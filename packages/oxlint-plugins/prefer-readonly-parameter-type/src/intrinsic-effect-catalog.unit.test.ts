@@ -444,6 +444,60 @@ await describe({
       },
     },),
     it({
+      name: 'preserves Buffer.from copy, sharing, and conversion-hook distinctions',
+      fn: async () => {
+        /**
+         * Typed-array source whose bytes must be copied.
+         */
+        const typedArray = new Uint8Array([1,],);
+        /**
+         * Buffer copy isolated from later source writes.
+         */
+        const copied = Buffer.from(typedArray,);
+        typedArray[0] = 2;
+        expect(copied[0],).toBe(1,);
+        copied[0] = 3;
+        expect(typedArray[0],).toBe(2,);
+
+        /**
+         * ArrayBuffer source whose storage is shared with Buffer view.
+         */
+        const arrayBuffer = new ArrayBuffer(1,);
+        /**
+         * Mutable byte view proving shared storage.
+         */
+        const arrayBufferView = new Uint8Array(arrayBuffer,);
+        /**
+         * Buffer view over supplied ArrayBuffer storage.
+         */
+        const shared = Buffer.from(arrayBuffer,);
+        shared[0] = 4;
+        expect(arrayBufferView[0],).toBe(4,);
+
+        /**
+         * Number of caller-defined typed-array conversion hooks invoked.
+         */
+        let valueOfCalls = 0;
+        /**
+         * Typed-array input carrying caller-defined value conversion.
+         */
+        const hooked = new Uint8Array([5,],);
+        Object.defineProperty(
+          hooked,
+          'valueOf',
+          {
+            configurable: true,
+            value: function hookedValueOf(): Uint8Array {
+              valueOfCalls++;
+              return hooked;
+            },
+          },
+        );
+        expect(Buffer.from(hooked,)[0],).toBe(5,);
+        expect(valueOfCalls,).toBe(1,);
+      },
+    },),
+    it({
       name: 'records exact Object hooks and Array copy or callback effects',
       fn: async () => {
         expect([
