@@ -194,6 +194,8 @@ export async function runTransactionGit({
  *
  * @param ordinal - stable patch ordinal
  *
+ * @mutates patch through writeFile native-boundary access to patch.bytes
+ *
  * @throws CommitTransactionGitError for invalid or conflicting patch
  *
  * @example

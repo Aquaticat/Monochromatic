@@ -334,7 +334,7 @@ export async function assertSafeRegistryDirectory({
     return lstat(path,);
   },),);
   metadataEntries.forEach(function validateMetadata(
-    metadata,
+    metadata: Readonly<Awaited<ReturnType<typeof lstat>>>,
     index,
   ) {
     /**
@@ -362,6 +362,8 @@ export async function assertSafeRegistryDirectory({
  * @param path - destination path
  *
  * @param bytes - exact file bytes
+ *
+ * @mutates bytes through handle.writeFile native-boundary access
  *
  * @example
  * ```ts
