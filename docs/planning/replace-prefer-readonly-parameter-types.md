@@ -519,7 +519,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   with encounter-ordered grouping,
   and expose DOM,
   crypto,
-  and logger retention effects in Aquati.cat;
+  and logger retention effects in `Aquati.cat`;
   the package passes type lint,
   Oxlint,
   build,
