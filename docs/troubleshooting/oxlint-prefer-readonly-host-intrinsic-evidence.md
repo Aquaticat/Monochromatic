@@ -133,6 +133,9 @@ The rule uses that private path only as fail-closed evidence:
   `Buffer.toString`,
   `readInt32LE`,
   and `readUInt16LE` observe receiver bytes;
+  `Buffer.copyBytesFrom` reads typed-array internal slots through primordials and copies bytes;
+  `Buffer.from` receives a type-qualified effect only for definite `Uint8Array` inputs,
+  where bytes are copied but ordinary conversion-property reads can invoke caller behavior;
   the internal buffer source digest is
   `ce1f2b80ecaf7f4d8ef3ff5d40e77e48c4413760e1a743c8c1b24cabfc1c25d8`;
 - `child_process.spawn` copies its argument array before modification;
@@ -159,9 +162,11 @@ but that source cannot prove the native boundary never affects supplied storage.
 typed arrays are copied,
 ArrayBuffer inputs can share memory,
 and object inputs can invoke conversion hooks.
-A generic observational entry would erase those distinctions,
-so typed-array call sites retain local conversion and byte-access contracts.
-Such calls retain local boundary contracts.
+A generic observational entry would erase those distinctions.
+The catalog therefore accepts the definite `Uint8Array` case as copied storage with proven conversion-property
+invocation,
+while other static input types remain fail-closed.
+Kiwi no longer needs coarse uncertainty contracts around its typed-array calls.
 Node APIs without audited embedded JavaScript evidence remain opaque.
 
 ## Resolution
@@ -176,22 +181,26 @@ without that guard,
    and member.
 2. `IntrinsicEffectEntry.authority` records pinned standard source plus algorithm or exact Node source plus
    callable-definition identity.
-3. `intrinsicEffect()` rejects every non-package entry without available authority.
-4. Node entries additionally gate on declaration major,
+3. Catalog targets and whole entries can require semantic argument-type conditions;
+   unknown,
+   union,
+   or mismatched types fail closed rather than inheriting another overload's effects.
+4. `intrinsicEffect()` rejects every non-package entry without available authority.
+5. Node entries additionally gate on declaration major,
    runtime version,
    source module,
    and source digest.
-5. Callback invocation remains separate from referent effects.
+6. Callback invocation remains separate from referent effects.
    For example,
    `setTimeout` records handler invocation and an unresolved relation to forwarded arguments;
    it does not claim those arguments are proven mutated.
-6. Retention,
+7. Retention,
    option inspection,
    and host-maintained dependency relations use opaque targets rather than referent mutation.
    `AbortController.abort(reason)`,
    `AbortSignal.any(signals)`,
    and EventTarget listener registration therefore require uncertainty documentation without claiming direct mutation.
-7. Unlisted,
+8. Unlisted,
    native,
    dynamic,
    or unsupported host calls retain uncertainty and require complete `@mutates` documentation.

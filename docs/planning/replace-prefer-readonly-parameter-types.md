@@ -547,6 +547,52 @@ The semantic-rule implementation and shared-configuration migration are complete
   response,
   and runtime boundaries belong to residual task 34;
   package-level host-provider migration continues before the next root sweep;
+- residual task 34 is complete;
+  commits from `afd5c7ba0` through `e21bac927` add exact effects for Canvas,
+  DataView,
+  regular expressions,
+  reflection,
+  `ignore`,
+  workspace archive and file-enforcer calls,
+  and Node buffer or process APIs;
+  `20216fd16` applies arity conditions to imported and global calls as well as receiver methods;
+- residual package migrations now cover Git policy CLI,
+  repository and forbidden-string scanning,
+  Git clone sizing,
+  terminal execution,
+  MVM,
+  task utilities,
+  TOML editing,
+  watcher restart,
+  dependency-cube rendering,
+  Electron infrastructure,
+  hall monitor,
+  import-attribute transformation,
+  Penpot,
+  and Kiwi;
+  their focused Oxlint and type tasks pass after the final source changes;
+- root process `proc_191` reduced the replacement rule from 40 diagnostics in `proc_117` to 4:
+  one root file-enforcer dishonest declaration,
+  one Pi spawn readonly preference plus its stale contract,
+  and one Git wrapper uncertainty;
+  `518cdfb95`,
+  `5f0151d13`,
+  and the overload-sensitive catalog work resolve those measured cases;
+  the next root sweep is the final zero-baseline gate;
+- commits `238887716` through `5efde8492` add semantic argument-type conditions and behavioral tests;
+  `Buffer.from(Uint8Array)` copies bytes while exposing proven conversion-property hooks,
+  `Buffer.from(ArrayBuffer)` sharing remains fail-closed,
+  `ZipWriter.add` distinguishes owned string encoding from retained byte views,
+  and `overwriteEach` distinguishes eager file arrays from lazy callable builders;
+- Kiwi no longer carries coarse `Buffer.from(Uint8Array)` uncertainty contracts;
+  Penpot retains archive uncertainty only where caller-owned storage-object bytes are actually retained;
+  two-argument and three-argument `child_process.spawn` behavior is covered by the semantic fixture;
+- `3e1851bc7` and `a52f7ea13` remove the reverse development dependency from
+  `module-caught-value` to `module-test`;
+  caught-value consumer tests now live in `packages/module/test` and the caught-value package task delegates to those
+  exact tests;
+- commits `c3a01aa05` through `f815b434b` make `prefer-caught-value-text` resolve global `Error` and `String`
+  bindings before reporting and cover block-bodied arrow formatters without exceeding the source-line limit;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,
@@ -580,9 +626,9 @@ The semantic-rule implementation and shared-configuration migration are complete
   `packages/cli/terminal-exec`,
   and `packages/webapp-productivity/wc` now pass package Oxlint under replacement rule with one JavaScript-plugin worker.
 
-Remaining gates are complete opaque-effect resolution,
+Remaining gates are final root semantic baseline,
 migrated consumer acceptance,
-and final publication and workspace verification.
+and publication and workspace verification.
 
 Verified package tasks:
 
@@ -623,9 +669,12 @@ Verified package tasks:
 - `OXLINT_THREADS=1 mise run lint:oxlint` in stable root processes `proc_21` and `proc_26`.
 
 Next action:
-resolve host-provider effects,
-then residual package effects;
-rerun the repository sweep after those measured phases and complete consumer acceptance.
+run the final repository semantic sweep,
+then complete root tests,
+consumer acceptance,
+browser verification,
+performance checks,
+and working-tree review.
 
 ## Continuity contract
 
