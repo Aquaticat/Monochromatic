@@ -182,6 +182,39 @@ async function* estimateLocal(
 }
 
 /**
+ * Combines a probe-budget signal with an optional caller cancellation signal.
+ *
+ * @param budgetSignal - Owned timeout signal for probe budget.
+ *
+ * @param callerSignal - Optional caller cancellation capability.
+ *
+ * @returns Budget signal alone or combined dependent signal.
+ *
+ * @mutates budgetSignal through `AbortSignal.any` dependent-signal registration
+ *
+ * @mutates callerSignal through `AbortSignal.any` dependent-signal registration
+ *
+ * @example
+ * ```ts
+ * combineProbeSignals({ budgetSignal: AbortSignal.timeout(1), callerSignal: undefined });
+ * ```
+ */
+function combineProbeSignals({
+  budgetSignal,
+  callerSignal,
+}: {
+  readonly budgetSignal: AbortSignal;
+  readonly callerSignal: AbortSignal | undefined;
+},): AbortSignal {
+  return callerSignal === undefined
+    ? budgetSignal
+    : AbortSignal.any([
+      budgetSignal,
+      callerSignal,
+    ],);
+}
+
+/**
  * Estimates a remote repository: launches every cheap probe concurrently, folds
  * each signal in as it lands (fastest first), and yields a refined snapshot per
  * arrival, ending with the tightest fused snapshot. Temp clones live in
@@ -241,12 +274,10 @@ async function* estimateRemote(
    * Effective abort signal: the budget alone, or merged with the caller's
    * signal (SIGINT) so either source can abort the probes.
    */
-  const signal = options.signal === undefined
-    ? budgetSignal
-    : AbortSignal.any([
-      budgetSignal,
-      options.signal,
-    ],);
+  const signal = combineProbeSignals({
+    budgetSignal,
+    callerSignal: options.signal,
+  },);
   /**
    * Single shallow clone, shared by the shallow and deepen tasks.
    */
