@@ -11,9 +11,9 @@ Observed in this workspace:
 # /var/home/user/Monochromatic
 pnpm why --recursive @oxlint/plugins
 @oxlint/plugins@1.71.0
-├── @monochromatic-dev/config-oxlint-no-restricted-syntax@0.0.1 (dependencies)
-├── @monochromatic-dev/config-oxlint-stylistic@0.0.1 (dependencies)
-├── @monochromatic-dev/config-oxlint-tsdoc@0.0.1 (dependencies)
+├── @monochromatic-dev/oxlint-plugin-no-restricted-syntax@0.0.1 (dependencies)
+├── @monochromatic-dev/oxlint-plugin-stylistic@0.0.1 (dependencies)
+├── @monochromatic-dev/oxlint-plugin-tsdoc@0.0.1 (dependencies)
 └── monochromatic (devDependencies)
 
 Found 1 version of @oxlint/plugins

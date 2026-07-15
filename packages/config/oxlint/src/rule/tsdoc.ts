@@ -2,7 +2,7 @@
  * TSDoc jsPlugin rule configuration.
  *
  * Configures severity for rules provided by the `tsdoc` JS plugin
- * (`\@monochromatic-dev/config-oxlint-tsdoc`). The plugin itself defines
+ * (`\@monochromatic-dev/oxlint-plugin-tsdoc`). The plugin itself defines
  * the rule implementations; this module only sets their severity levels.
  *
  * @example

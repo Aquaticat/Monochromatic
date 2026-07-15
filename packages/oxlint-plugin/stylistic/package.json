@@ -1,0 +1,54 @@
+{
+  "name": "@monochromatic-dev/oxlint-plugin-stylistic",
+  "version": "0.0.1",
+  "private": false,
+  "keywords": [
+    "oxlint",
+    "stylistic",
+    "config",
+    "monochromatic"
+  ],
+  "dependencies": {
+    "@monochromatic-dev/oxlint-plugin-shared": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "@monochromatic-dev/module-or-throw": "workspace:*",
+    "@oxlint/plugins": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/oxlint-plugin-test-support": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:"
+  },
+  "type": "module",
+  "files": [
+    "src",
+    "dist/final",
+    "LICENSES"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/oxlint-plugin/stylistic"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "description": "Oxlint JS plugin enforcing TypeScript layout rules for per-line constructs, semicolons, and expression structure.",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

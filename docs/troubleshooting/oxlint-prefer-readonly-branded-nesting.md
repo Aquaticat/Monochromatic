@@ -100,9 +100,9 @@ uncertain inputs remain enforced.
 Focused semantic-rule verification uses:
 
 ```sh
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:types
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 ```
 
 The type task,

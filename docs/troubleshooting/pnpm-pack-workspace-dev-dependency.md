@@ -2,7 +2,7 @@
 
 ## Symptom
 
-Packing `@monochromatic-dev/config-oxlint-no-restricted-syntax` directly emitted:
+Packing `@monochromatic-dev/oxlint-plugin-no-restricted-syntax` directly emitted:
 
 ```text
 [ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL] Cannot resolve workspace protocol of dependency
@@ -13,7 +13,7 @@ The package's production artifact is bundled and does not load this development-
 but `pnpm pack` still validates and transforms the development dependency.
 
 The semantic rule later moved to
-`@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type`.
+`@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type`.
 Its moved external-consumer test retains the same staged production-manifest workaround;
 the original package name remains here because it identifies the artifact used for this diagnosis.
 
@@ -67,7 +67,7 @@ The earlier idea that a production-only filter would skip development dependency
 
 The behavior was reproduced with pnpm `11.11.0` against this package after
 `mise run prepare:pnpm:install`.
-`packages/oxlint-plugins/no-restricted-syntax/node_modules/@monochromatic-dev/config-typescript` was absent while the
+`packages/oxlint-plugin/no-restricted-syntax/node_modules/@monochromatic-dev/config-typescript` was absent while the
 workspace-root link existed.
 
 ### Commands that fail
@@ -75,7 +75,7 @@ workspace-root link existed.
 ```sh
 pnpm pack --pack-destination /tmp/consumer
 pnpm pack --filter-prod . --pack-destination /tmp/consumer
-pnpm --filter '@monochromatic-dev/config-oxlint-no-restricted-syntax...' pack --recursive
+pnpm --filter '@monochromatic-dev/oxlint-plugin-no-restricted-syntax...' pack --recursive
 ```
 
 All three commands report `ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL` for
@@ -86,7 +86,7 @@ An `npm pack` tarball installs unsuccessfully outside the workspace because its 
 
 ### Path that works
 
-`packages/oxlint-plugins/no-restricted-syntax/src/external-consumer.unit.test.ts` creates a disposable publication
+`packages/oxlint-plugin/no-restricted-syntax/src/external-consumer.unit.test.ts` creates a disposable publication
 workspace containing:
 
 - built `dist/final` artifacts;

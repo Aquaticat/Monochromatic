@@ -174,7 +174,7 @@ export const restrictionRules: DummyRuleMap = {
   // shape, repetition, and a few grammar hooks) gates it; no Shannon entropy, no
   // global compression, no vocabulary lists. Initial severity 'warn' until the
   // remaining repo descriptions are remediated; see
-  // packages/oxlint-plugins/no-restricted-syntax/README.md.
+  // packages/oxlint-plugin/no-restricted-syntax/README.md.
   'no-restricted-syntax/no-low-information-symbol-description': 'warn',
 
   //region no-disable -- prevent inline oxlint-disable for rules with no legitimate exceptions

@@ -21,15 +21,15 @@ Tsdown then failed with one error for each plugin sidecar source:
 ```text
 [plugin rolldown-plugin-dts:generate]
 Error: tsgo did not generate dts file for
-.../packages/oxlint-plugins/stylistic/src/index.ts, please check your tsconfig.
+.../packages/oxlint-plugin/stylistic/src/index.ts, please check your tsconfig.
 
 [plugin rolldown-plugin-dts:generate]
 Error: tsgo did not generate dts file for
-.../packages/oxlint-plugins/tsdoc/src/index.ts, please check your tsconfig.
+.../packages/oxlint-plugin/tsdoc/src/index.ts, please check your tsconfig.
 
 [plugin rolldown-plugin-dts:generate]
 Error: tsgo did not generate dts file for
-.../packages/oxlint-plugins/no-restricted-syntax/src/index.ts, please check your tsconfig.
+.../packages/oxlint-plugin/no-restricted-syntax/src/index.ts, please check your tsconfig.
 ```
 
 The failing declaration catalog is specific:

@@ -7,10 +7,10 @@
     "monochromatic"
   ],
   "dependencies": {
-    "@monochromatic-dev/config-oxlint-no-restricted-syntax": "workspace:*",
-    "@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type": "workspace:*",
-    "@monochromatic-dev/config-oxlint-stylistic": "workspace:*",
-    "@monochromatic-dev/config-oxlint-tsdoc": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-no-restricted-syntax": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-stylistic": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-tsdoc": "workspace:*",
     "oxlint": "catalog:",
     "typescript": "catalog:"
   },

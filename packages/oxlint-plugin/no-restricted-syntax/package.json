@@ -1,0 +1,60 @@
+{
+  "name": "@monochromatic-dev/oxlint-plugin-no-restricted-syntax",
+  "version": "0.0.1",
+  "private": false,
+  "keywords": [
+    "oxlint",
+    "no-restricted-syntax",
+    "config",
+    "monochromatic"
+  ],
+  "dependencies": {
+    "@oxlint/plugins": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/oxlint-plugin-shared": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-test-support": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "nano-spawn": "catalog:"
+  },
+  "type": "module",
+  "files": [
+    "dist/final",
+    "LICENSES"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/oxlint-plugin/no-restricted-syntax"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "description": "Oxlint JS plugin implementing no-restricted-syntax rules that oxlint does not support natively.",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/final/node/index.d.mts",
+        "default": "./dist/final/node/index.mjs"
+      }
+    }
+  }
+}

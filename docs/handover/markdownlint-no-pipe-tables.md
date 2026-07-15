@@ -36,7 +36,7 @@ changed).
 - Housed under `packages/markdownlint-plugins/` (a lint rule is a plugin,
    not config;
    precedent
-  `packages/oxlint-plugins/*`).
+  `packages/oxlint-plugin/*`).
 - AGENTS.
   md line 529 ("No tables;
    use headings or lists instead") stays UNCHANGED on purpose;

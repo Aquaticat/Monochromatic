@@ -875,7 +875,7 @@ STB:
 TSD:
  Comprehensive TSDoc on all declarations (exported or not,
  locals too),
- per `@monochromatic-dev/config-oxlint-tsdoc`.
+ per `@monochromatic-dev/oxlint-plugin-tsdoc`.
 `{@inheritDoc originalFn}` for non-async wrappers.
 
 TD1:

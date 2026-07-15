@@ -1,6 +1,6 @@
 # test-fixture-oxlint-stylistic
 
-Test fixture for validating the `@monochromatic-dev/config-oxlint-stylistic` rule set.
+Test fixture for validating the `@monochromatic-dev/oxlint-plugin-stylistic` rule set.
 
 The fixture has valid and invalid TypeScript source trees.
 

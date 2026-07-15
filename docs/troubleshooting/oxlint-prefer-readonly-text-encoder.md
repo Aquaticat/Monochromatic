@@ -39,7 +39,7 @@ while a decoder received from a caller is an affected capability.
 
 ## Verified resolution
 
-`packages/oxlint-plugins/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/intrinsic-effect-catalog.ts`
+`packages/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/intrinsic-effect-catalog.ts`
 now records exact DOM provenance:
 
 - Owner:
@@ -85,9 +85,9 @@ The installed TypeScript declaration source is TypeScript `7.0.2`.
 The focused verification commands are:
 
 ```sh
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:types
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 mise run //packages/module/toml-edit:lint:oxlint
 ```
 

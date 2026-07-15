@@ -60,7 +60,7 @@ Recovering every enclosing variable name is also wrong.
 fixture types.
 Changing their owner identity would break existing package catalog matches and couple the catalog to implementation
 names.
-`packages/oxlint-plugins/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/intrinsic-effect-owner.ts`
+`packages/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/intrinsic-effect-owner.ts`
 therefore recovers only named type aliases and ambient `var` declarations.
 
 The WHATWG DOM Standard commit `5796f716c857f0a563d11d32e0ca6b49232191be` defines
@@ -116,8 +116,8 @@ The external sources under test are:
 Run the focused checks:
 
 ```sh
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:build:js:node
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 mise run //packages/cli/git-clone-size:lint:oxlint
 ```
 

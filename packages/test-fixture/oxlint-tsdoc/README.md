@@ -1,6 +1,6 @@
 # test-fixture-oxlint-tsdoc
 
-Test fixture for validating the `@monochromatic-dev/config-oxlint-tsdoc` rule set.
+Test fixture for validating the `@monochromatic-dev/oxlint-plugin-tsdoc` rule set.
 
 The fixture has valid and invalid TypeScript source trees.
 

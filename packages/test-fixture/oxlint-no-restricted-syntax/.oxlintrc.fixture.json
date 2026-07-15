@@ -4,7 +4,7 @@
   // no ignorePatterns that would skip invalid/ or test-fixture/ paths.
   // Used by the lint-fixture mise task and the oxlint-no-restricted-syntax unit tests.
   "jsPlugins": [
-    "../../oxlint-plugins/no-restricted-syntax/src/index.ts"
+    "../../oxlint-plugin/no-restricted-syntax/src/index.ts"
   ],
   "ignorePatterns": [
     "**/dist",

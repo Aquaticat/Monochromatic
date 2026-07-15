@@ -74,22 +74,22 @@ Custom rule implementation is present and targeted verification passed.
 
 Changed files:
 
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-sync.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-sync.constants.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-sync.syntax.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-sync.provenance.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-sync.node-builtin-source.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-sync.node-sync-binding.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-sync.node-sync-member.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.constants.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.syntax.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.provenance.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.node-builtin-source.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.node-sync-binding.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.node-sync-member.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/index.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
 - `packages/test-fixture/oxlint-no-restricted-syntax/.oxlintrc.fixture.json`
 - `packages/test-fixture/oxlint-no-restricted-syntax/src/invalid/no-sync.ts`
 - `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-sync.ts`
 - `packages/config/oxlint/src/rule/restriction.ts`
 - `packages/config/oxlint/src/overrides.ts`
 - `packages/config/oxlint/src/rule/prefer-readonly-parameter-types.allow-pkg.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/README.md`
+- `packages/oxlint-plugin/no-restricted-syntax/README.md`
 
 Policy shape:
 
@@ -112,11 +112,11 @@ Policy shape:
 Passed:
 
 ```bash
-mise run //packages/oxlint-plugins/no-restricted-syntax:format:oxlint
-mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint
-mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types
-mise run //packages/oxlint-plugins/no-restricted-syntax:build
-mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit
+mise run //packages/oxlint-plugin/no-restricted-syntax:format:oxlint
+mise run //packages/oxlint-plugin/no-restricted-syntax:lint:oxlint
+mise run //packages/oxlint-plugin/no-restricted-syntax:lint:types
+mise run //packages/oxlint-plugin/no-restricted-syntax:build
+mise run //packages/oxlint-plugin/no-restricted-syntax:test:unit
 mise run //packages/config/oxlint:lint:oxlint
 mise run //packages/config/oxlint:lint:types
 ```
@@ -133,7 +133,7 @@ It still fails on two unrelated existing `catch-binding` errors in `packages/git
 Dirty unrelated files left for caller awareness:
 
 - `mise.lock` has a CMake `4.3.3` to `4.3.4` update from mise tool resolution.
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`,
-  `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.ts`,
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`,
+  `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.ts`,
   and `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-immediate-mutation.ts`
   are modified by concurrent work and were not touched for this task.

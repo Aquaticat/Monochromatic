@@ -360,7 +360,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   host acceptance,
   publication acceptance,
   namespace,
-  and shared-config sidecar under `packages/oxlint-plugins/prefer-readonly-parameter-type`;
+  and shared-config sidecar under `packages/oxlint-plugin/prefer-readonly-parameter-type`;
 - the same commit satisfies the user's narrow ubiquitous-dependency requirement through
   `packages/ownership-marker/foreign-borrowed`,
   which contains one type declaration,
@@ -665,10 +665,10 @@ The semantic-rule implementation and shared-configuration migration are complete
 - commits `c3a01aa05` through `f815b434b` make `prefer-caught-value-text` resolve global `Error` and `String`
   bindings before reporting and cover block-bodied arrow formatters without exceeding the source-line limit;
 - `packages/dev-script/task-util`,
-  `packages/oxlint-plugins/no-restricted-syntax`,
-  `packages/oxlint-plugins/prefer-readonly-parameter-type`,
-  `packages/oxlint-plugins/tsdoc`,
-  `packages/oxlint-plugins/stylistic`,
+  `packages/oxlint-plugin/no-restricted-syntax`,
+  `packages/oxlint-plugin/prefer-readonly-parameter-type`,
+  `packages/oxlint-plugin/tsdoc`,
+  `packages/oxlint-plugin/stylistic`,
   `packages/module/or-throw`,
   `packages/dev-script/page-weight`,
   `packages/module/image-diff`,
@@ -709,22 +709,22 @@ Verified package tasks:
 - `mise run buildAndTest --` with TSDoc parser,
   cache,
   and integration tests;
-- `mise run //packages/oxlint-plugins/tsdoc:lint:types`;
-- `mise run //packages/oxlint-plugins/tsdoc:lint:oxlint`;
+- `mise run //packages/oxlint-plugin/tsdoc:lint:types`;
+- `mise run //packages/oxlint-plugin/tsdoc:lint:oxlint`;
 - `mise run //packages/config/oxlint:lint:types`;
 - `mise run //packages/config/oxlint:lint:oxlint`;
 - `mise run //packages/dev-script/task-util:lint:oxlint`;
-- `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types`;
-- `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint`;
-- `mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit`;
+- `mise run //packages/oxlint-plugin/no-restricted-syntax:lint:types`;
+- `mise run //packages/oxlint-plugin/no-restricted-syntax:lint:oxlint`;
+- `mise run //packages/oxlint-plugin/no-restricted-syntax:test:unit`;
 - `mise run //packages/module/caught-value:buildAndTest`;
 - built-package consumer import and calls from `packages/dev-script/page-weight`;
-- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:build:js:node`;
-- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:types`;
-- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint`;
-- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit`;
-- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:semantic-bridge-host`;
-- `mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:external-consumer-host`;
+- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node`;
+- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types`;
+- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint`;
+- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit`;
+- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host`;
+- `mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host`;
 - `mise run //packages/pi-shared/model-selection:lint:oxlint`;
 - `mise run //packages/pi-shared/model-selection:test:unit`;
 - `mise run //packages/pi-plugins/advisor:lint:oxlint`;
@@ -799,7 +799,7 @@ Ask only when alternatives encode genuinely different policy or correctness outc
 
 Retire Oxlint's type-aware `typescript/prefer-readonly-parameter-types` rule and replace its useful policy with a
 project-owned JavaScript rule in dedicated
-`@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type`.
+`@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type`.
 
 The replacement must reduce false positives and configuration maintenance without claiming guarantees that its chosen
 analysis pipeline has not proved.
@@ -861,16 +861,16 @@ The complete technology vet and remaining implementation acceptance gates are re
 The implementation is split at its runtime and policy boundaries:
 
 - semantic rule implementation and tests:
-  `packages/oxlint-plugins/prefer-readonly-parameter-type/`;
+  `packages/oxlint-plugin/prefer-readonly-parameter-type/`;
 - shared parser and mutation-contract model:
-  `packages/oxlint-plugins/shared/`;
+  `packages/oxlint-plugin/shared/`;
 - exact ownership marker:
   `packages/ownership-marker/foreign-borrowed/`;
 - shared-config sidecar and error-level policy:
   `packages/config/oxlint/src/plugin-prefer-readonly-parameter-type.ts` and
   `packages/config/oxlint/src/rule/restriction.ts`;
 - bypass-prevention rule and fixtures:
-  `packages/oxlint-plugins/no-restricted-syntax/` and
+  `packages/oxlint-plugin/no-restricted-syntax/` and
   `packages/test-fixture/oxlint-no-restricted-syntax/`;
 - user-facing contracts:
   the dedicated plugin README,
@@ -1197,11 +1197,11 @@ and mutation that reaches an undeclared parameter through aliases or callees.
 The repository's TSDoc plugin currently hardcodes standard tags and carries only `@yields` as a custom tag.
 Supporting `@mutates` therefore requires coordinated changes rather than a one-line allow-list edit:
 
-- `packages/oxlint-plugins/tsdoc/src/rule/tag-names.ts`:
+- `packages/oxlint-plugin/tsdoc/src/rule/tag-names.ts`:
   recognize the custom tag and correct its standard-only documentation;
-- `packages/oxlint-plugins/tsdoc/src/tsdoc-blocks.ts`:
+- `packages/oxlint-plugin/tsdoc/src/tsdoc-blocks.ts`:
   terminate preceding blocks at `@mutates` and parse mutation blocks;
-- `packages/oxlint-plugins/tsdoc/src/tsdoc-doc-model.ts`:
+- `packages/oxlint-plugin/tsdoc/src/tsdoc-doc-model.ts`:
   represent target names and descriptions;
 - TSDoc parameter extraction:
   validate mutation targets against plain,
@@ -1213,7 +1213,7 @@ Supporting `@mutates` therefore requires coordinated changes rather than a one-l
   unknown names,
   duplicate targets,
   and missing descriptions independently of semantic mutation analysis;
-- `packages/oxlint-plugins/tsdoc/src/index.ts` and
+- `packages/oxlint-plugin/tsdoc/src/index.ts` and
   `packages/config/oxlint/src/rule/tsdoc.ts`:
   register and enable the new validation rules;
 - `packages/test-fixture/oxlint-tsdoc/` and TSDoc unit tests:
@@ -1223,7 +1223,7 @@ Supporting `@mutates` therefore requires coordinated changes rather than a one-l
   destructured,
   fenced-example,
   and unknown-tag cases;
-- `packages/oxlint-plugins/tsdoc/README.md` and shared config documentation:
+- `packages/oxlint-plugin/tsdoc/README.md` and shared config documentation:
   disclose the project-specific TSDoc extension and its grammar;
 - the readonly rule:
   consume the same parsed mutation blocks rather than implementing a second comment scanner.
@@ -1234,7 +1234,7 @@ body writes,
 aliases,
 and callee summaries.
 Shared parsing primitives must move behind one dependency seam,
-likely `@monochromatic-dev/config-oxlint-shared`,
+likely `@monochromatic-dev/oxlint-plugin-shared`,
 so the sibling plugins cannot drift.
 
 `tsdoc/tag-lines` already applies to every leading tag,

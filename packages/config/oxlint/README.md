@@ -78,19 +78,19 @@ The `--type-aware` flag is passed via the CLI in the mise task template
 
 ## Related packages
 
-- **@monochromatic-dev/config-oxlint-tsdoc**:
+- **@monochromatic-dev/oxlint-plugin-tsdoc**:
    jsPlugin providing TSDoc validation rules
-- **@monochromatic-dev/config-oxlint-no-restricted-syntax**:
+- **@monochromatic-dev/oxlint-plugin-no-restricted-syntax**:
    jsPlugin for banned syntax patterns
-- **@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type**:
+- **@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type**:
    jsPlugin for semantic readonly types and mutation contracts
-- **@monochromatic-dev/config-oxlint-stylistic**:
+- **@monochromatic-dev/oxlint-plugin-stylistic**:
    jsPlugin for one-item-per-line,
    semicolon,
    and expression-structure formatting
-- **@monochromatic-dev/config-oxlint-shared**:
+- **@monochromatic-dev/oxlint-plugin-shared**:
    shipped runtime helpers imported by plugin rules
-- **@monochromatic-dev/config-oxlint-test-support**:
+- **@monochromatic-dev/oxlint-plugin-test-support**:
    private fixture-test helpers for plugin unit tests
 
 The first four packages are JS plugins (`jsPlugins`),

@@ -34,7 +34,7 @@ Fix all lint issues across active packages so `mise run lint` exits 0.
 
 - Formatting:
    `chain-per-line` autofix and `mise run format` converged (style commits).
-- Two new custom oxlint rules in `packages/oxlint-plugins/no-restricted-syntax`,
+- Two new custom oxlint rules in `packages/oxlint-plugin/no-restricted-syntax`,
    both enabled at `error` in `packages/config/oxlint/src/rule/restriction.ts`:
     - `no-nullish-union`:
        bans `T | undefined` and `T | null` (commit 5954a771).
@@ -209,7 +209,7 @@ Leaf packages still to fix:
    but no `focusOutline` or `CssValue` finding.
    See the branded-nesting troubleshooting document for the resolved native-rule false positive.
 - `pi/advisor` (33e)
-- `oxlint-plugins/tsdoc` (28w 37e):
+- `oxlint-plugin/tsdoc` (28w 37e):
    a config package;
    child was launched but PAUSED by the user.
    The "no config edits while `webapp-productivity/done` is uncommitted" constraint is now LIFTED (done is committed);
@@ -228,8 +228,8 @@ Leaf packages still to fix:
    `cli/fy` (3e)
 - `mcp/stdio` (12w 6e),
    `mcp/mvm` (2w)
-- `oxlint-plugins/stylistic` (12e),
-   `oxlint-plugins/no-restricted-syntax` (5w,
+- `oxlint-plugin/stylistic` (12e),
+   `oxlint-plugin/no-restricted-syntax` (5w,
    pre-existing require-unicode-regexp in prefer-describe-function-ref-name.
   ts)
 - `dev-script/file-enforcer` (10e),
@@ -397,9 +397,9 @@ After all leaves:
    confirm the guard still rejects `git add -A` in a throwaway `git init` repo before launching more children);
    a regression there breaks every later child's scoped commit and stalls the sweep.
 - Do NOT fix shared oxlint config packages concurrently with anything else.
-   `oxlint-plugins/tsdoc`,
-   `oxlint-plugins/stylistic`,
-   `oxlint-plugins/no-restricted-syntax`,
+   `oxlint-plugin/tsdoc`,
+   `oxlint-plugin/stylistic`,
+   `oxlint-plugin/no-restricted-syntax`,
    and `config/oxlint` define the rules every other package lints against;
    editing them mid-flight shifts the lint baseline under every concurrent child (they end up working on unstable ground).
    Fix these SERIALLY,
@@ -427,7 +427,7 @@ After all leaves:
 ## References
 
 - Optionality rules:
-   `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-nullish-union.ts`,
+   `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-nullish-union.ts`,
    `no-optional-escape.ts`.
 - Research:
    `docs/research/optionality-enforcement.md`.

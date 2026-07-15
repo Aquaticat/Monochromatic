@@ -16,7 +16,7 @@ iterating up to 10 times internally;
  oxlint plans to but has not.
 
 This document records the failure case we hit in
-`@monochromatic-dev/config-oxlint-stylistic`,
+`@monochromatic-dev/oxlint-plugin-stylistic`,
  the source-level call
 chain that produces it,
  the workarounds we considered,
@@ -67,7 +67,7 @@ const r = a + (b * obj.d
 
 and the file is clean.
  The convergence test in
-`packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts`
+`packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`
 loops `oxlint --fix` twice for exactly this reason
 (`oxlint-stylistic.unit.test.ts:586-606`):
 
@@ -169,7 +169,7 @@ let mut fix = Fix::new(output, Span::new(start, end));
 ```
 
 For `no-mixed-operators` on `b * obj.d.e.f`
-(`packages/oxlint-plugins/stylistic/src/rule/no-mixed-operators.ts:93-114`),
+(`packages/oxlint-plugin/stylistic/src/rule/no-mixed-operators.ts:93-114`),
 the rule emits
 
 ```ts
@@ -231,7 +231,7 @@ After `no-mixed-operators` applies with span `[b_start, f_end]`,
  `chain-per-line`'s merged fix for `obj.d.e.f` has
 span `[e_dot, f_dot]` (the bounding box of the two `\n + indent`
 insertions,
- see `packages/oxlint-plugins/stylistic/src/rule/chain-per-line.ts:259-267`).
+ see `packages/oxlint-plugin/stylistic/src/rule/chain-per-line.ts:259-267`).
 Its `start = e_dot` satisfies `last_pos >= start` (since `f_end >
 e_dot`),
  so the chain-per-line message is pushed into
@@ -360,7 +360,7 @@ combined fixture,
 combined cases need a second `--fix` run.
 
 ```ts
-// packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts:586-606
+// packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts:586-606
 for (const _pass of [0, 1]) {
   try {
     // oxlint-disable-next-line eslint/no-await-in-loop -- second pass must read the first pass's output from disk
@@ -845,10 +845,10 @@ Re-evaluate this decision when:
 - ESLint's behaviour we are diverging from:
   [ESLint custom-rules docs][eslint-iter].
 - Our rules and tests:
-  - `packages/oxlint-plugins/stylistic/src/rule/no-mixed-operators.ts:93-114`
-  - `packages/oxlint-plugins/stylistic/src/rule/chain-per-line.ts:251-268`
+  - `packages/oxlint-plugin/stylistic/src/rule/no-mixed-operators.ts:93-114`
+  - `packages/oxlint-plugin/stylistic/src/rule/chain-per-line.ts:251-268`
   - `packages/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts`
-  - `packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts:566-617`
+  - `packages/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts:566-617`
 - Issue this implementation closed:
    [Aquaticat/Monochromatic#209][issue-209].
 

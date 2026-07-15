@@ -133,7 +133,7 @@ Strengths:
    nested mixin expansion,
    apply expansion,
    and output writing.
-- `packages/oxlint-plugins/no-restricted-syntax/src/index.ts` encodes repository
+- `packages/oxlint-plugin/no-restricted-syntax/src/index.ts` encodes repository
   conventions as custom Oxlint plugin rules rather than relying only on prose.
 - `packages/git-policy/cli/src/index.ts` uses an explicit rule pipeline for wrapper behavior:
   root requirement,

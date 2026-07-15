@@ -461,7 +461,7 @@ rename,
 nested-project,
 and parser-recovery cases continue to verify that inputs requiring a new snapshot do not take the reuse path.
 Warm one-thread package timing is verified with three sequential unchanged invocations of
-`mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint`.
+`mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint`.
 The final measured runs completed in 6,610 ms,
 6,476 ms,
 and 6,668 ms.
@@ -684,6 +684,6 @@ I verified the result through an Oxlint JavaScript plugin using snapshot updates
 This investigation and draft used AI assistance and was reviewed against the installed package and current Go source.
 ~~~
 
-[adapter-reuse]: ../../packages/oxlint-plugins/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/typescript-sync-adapter.ts#L282-L308
+[adapter-reuse]: ../../packages/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/typescript-sync-adapter.ts#L282-L308
 [readonly-issue]: https://github.com/microsoft/typescript-go/issues/4080
 [typescript-7-announcement]: https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/

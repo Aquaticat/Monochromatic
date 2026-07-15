@@ -145,7 +145,7 @@ The package unit test command exercised both catalogs:
 
 ```sh
 # /var/home/user/Monochromatic
-mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit
+mise run //packages/oxlint-plugin/no-restricted-syntax:test:unit
 ```
 
 Observed passing suites included:
@@ -159,8 +159,8 @@ The implementation also passed the package oxlint and type checks:
 
 ```sh
 # /var/home/user/Monochromatic
-mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint
-mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types
+mise run //packages/oxlint-plugin/no-restricted-syntax:lint:oxlint
+mise run //packages/oxlint-plugin/no-restricted-syntax:lint:types
 ```
 
 Both completed with zero reported lint and type errors.

@@ -40,7 +40,7 @@ The current task graph is:
 1. `packages/pi-plugins/auto-mode/mise.toml` extends the root `lint:oxlint` task template.
 2. The template in `mise.toml` calls `ensureOxlintConfig()` before invoking the oxlint wrapper.
 3. `ensureOxlintConfig()` considers source and configuration files from `packages/config/oxlint` and every package under
-   `packages/oxlint-plugins`.
+   `packages/oxlint-plugin`.
 4. A missing or stale output triggers
    `mise run //packages/config/oxlint:build:js:node`.
 5. `packages/config/oxlint/tsdown.node.config.ts` builds one config entry and three plugin sidecar entries.
@@ -364,7 +364,7 @@ not against the main checkout's ignored build outputs.
 4. Exercise one direct Node consumer and one direct neutral consumer:
 
    ```sh
-   mise run //packages/oxlint-plugins/stylistic:build:js:node
+   mise run //packages/oxlint-plugin/stylistic:build:js:node
    mise run //packages/module/const:build:js:browser
    ```
 

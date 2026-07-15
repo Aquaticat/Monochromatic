@@ -119,7 +119,7 @@ These methods therefore have different exact effects even though none reassigns 
 
 ## Resolution
 
-`packages/oxlint-plugins/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/pi-package-effect-catalog.ts`
+`packages/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/pi-package-effect-catalog.ts`
 now records exact receiver effects for:
 
 - package `@earendil-works/pi-coding-agent`;
@@ -189,10 +189,10 @@ The diagnostic lists every supported remediation:
 The following checks passed:
 
 ```text
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:types
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:build:js:node
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 mise run //packages/pi-plugins/current-time-context:lint:oxlint
 mise run //packages/pi-plugins/current-time-context:test:unit
 mise run //packages/pi-plugins/current-time-context:verify:extension
@@ -208,7 +208,7 @@ mise run //packages/pi-plugins/auto-mode:test:unit
 ```
 
 The intrinsic test resolves `appendEntry` and `registerTool` through real Pi declaration provenance.
-`packages/oxlint-plugins/prefer-readonly-parameter-type/src/pi-package-effect-catalog.unit.test.ts`
+`packages/oxlint-plugin/prefer-readonly-parameter-type/src/pi-package-effect-catalog.unit.test.ts`
 opens real Advisor sources through the TypeScript bridge and verifies exact package provenance,
 owner,
 member,

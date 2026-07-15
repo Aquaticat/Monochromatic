@@ -54,7 +54,7 @@ the decision state section gives each one a status and a first action.
    extract a core first,
    then move paths.
 - Build a `packages/oxlint/*` subsystem cluster from `config/oxlint`,
-   `oxlint-plugins/*`,
+   `oxlint-plugin/*`,
    and the oxlint fixture packages.
 - Build a `packages/done/*` product cluster (`app` plus `variant-postcss`),
    keeping `done-postcss`.
@@ -352,7 +352,7 @@ Artifact-type and utility categories:
 - `linter`:
   linters authored here for non-TypeScript languages,
    currently Rust.
-- `oxlint-plugins`:
+- `oxlint-plugin`:
   custom oxlint plugins;
   moves into the new `oxlint` subsystem cluster per this plan.
 - `rolldown-plugin`:
@@ -518,7 +518,7 @@ Less good when the host grows:
 
 ```text
 packages/config/oxlint/
-packages/oxlint-plugins/tsdoc/
+packages/oxlint-plugin/tsdoc/
 packages/test-fixture/oxlint-tsdoc/
 ```
 
@@ -1056,9 +1056,9 @@ Current active roots:
 
 ```text
 packages/config/oxlint/
-packages/oxlint-plugins/no-restricted-syntax/
-packages/oxlint-plugins/stylistic/
-packages/oxlint-plugins/tsdoc/
+packages/oxlint-plugin/no-restricted-syntax/
+packages/oxlint-plugin/stylistic/
+packages/oxlint-plugin/tsdoc/
 packages/test-fixture/oxlint-no-restricted-syntax/
 packages/test-fixture/oxlint-stylistic/
 packages/test-fixture/oxlint-tsdoc/
@@ -1071,7 +1071,7 @@ The plugin READMEs point at matching fixture packages.
 This is a subsystem cluster split across three first-level categories.
 The split is understandable historically:
 config packages under `config`,
- plugins under `oxlint-plugins`,
+ plugins under `oxlint-plugin`,
  fixtures under `test-fixture`.
 But ownership is now oxlint-specific.
 
@@ -1102,7 +1102,7 @@ Long-term names could become:
 - `@monochromatic-dev/oxlint-fixture-tsdoc`
 
 Package-name migration is optional and should be staged separately.
-The current names under `@monochromatic-dev/config-oxlint-*` may be worth keeping if publication compatibility matters.
+The current names under `@monochromatic-dev/oxlint-plugin-*` may be worth keeping if publication compatibility matters.
 
 #### Fixture strategy: keep them as packages
 
@@ -1137,8 +1137,8 @@ Minimum checks after each plugin move:
 ```sh
 mise run //packages/config/oxlint:build
 mise run //packages/config/oxlint:lint
-mise run //packages/oxlint-plugins/tsdoc:test:unit
-mise run //packages/oxlint-plugins/tsdoc:lint
+mise run //packages/oxlint-plugin/tsdoc:test:unit
+mise run //packages/oxlint-plugin/tsdoc:lint
 ```
 
 `config/oxlint` has no test task today;

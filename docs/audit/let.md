@@ -532,7 +532,7 @@ The codebase has 19 custom no-restricted-syntax rules already
 Adding more fits the established pattern;
 the cost is per-rule plugin code,
  which is mechanical given the existing examples
-(see `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-variable-function-expression.ts`).
+(see `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-variable-function-expression.ts`).
 
 ### `no-disable-*` companion rule
 
@@ -611,7 +611,7 @@ deciding on the permanent rule is easier with the refactored codebase as the sta
 ## Implementation status
 
 2026-05-10:
- Option B (function-body-root) and Option C (module-level) shipped as two separate oxlint rules in `packages/oxlint-plugins/no-restricted-syntax/`:
+ Option B (function-body-root) and Option C (module-level) shipped as two separate oxlint rules in `packages/oxlint-plugin/no-restricted-syntax/`:
 
 - `no-function-root-let` (`src/rules/no-function-root-let.ts`):
    visits `FunctionDeclaration` and `FunctionExpression`;
@@ -636,7 +636,7 @@ deciding on the permanent rule is easier with the refactored codebase as the sta
 
 Both rules:
 
-- Registered in `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`.
+- Registered in `packages/oxlint-plugin/no-restricted-syntax/src/index.ts`.
 - Enabled at `'error'` in `packages/config/oxlint/src/rule/restriction.ts` (shipped at `'warn'`;
    flipped to `'error'` 2026-06-01 after the migration reached zero reports across the linted tree).
 - Have no corresponding `no-disable-*` companion rule;

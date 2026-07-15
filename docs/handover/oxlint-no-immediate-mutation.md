@@ -105,8 +105,8 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1162 filtered out; f
 
 Main custom rule files were implemented and verified:
 
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
 
 The custom rule currently:
 
@@ -134,17 +134,17 @@ The custom rule currently:
 
 The custom rule was wired into:
 
-- `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/index.ts`
 - `packages/test-fixture/oxlint-no-restricted-syntax/.oxlintrc.fixture.json`
 - `packages/config/oxlint/src/rule/restriction.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
 - `packages/test-fixture/oxlint-no-restricted-syntax/src/invalid/no-immediate-mutation.ts`
 - `packages/test-fixture/oxlint-no-restricted-syntax/src/valid/no-immediate-mutation.ts`
 
 Implementation was split across:
 
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
-- `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.ts`
+- `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-immediate-mutation.syntax.ts`
 
 Repo commit `079cef1aa` records this checkpoint.
 
@@ -155,11 +155,11 @@ Repo commit `079cef1aa` records this checkpoint.
     locally-shadowed Set/Map fixture coverage,
     and an exact `seenWith` fixture shape.
 2. Latest focused verification passed:
-   `mise run //packages/oxlint-plugins/no-restricted-syntax:format:oxlint`,
-   `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:types`,
-   `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint`,
+   `mise run //packages/oxlint-plugin/no-restricted-syntax:format:oxlint`,
+   `mise run //packages/oxlint-plugin/no-restricted-syntax:lint:types`,
+   `mise run //packages/oxlint-plugin/no-restricted-syntax:lint:oxlint`,
     and
-   `mise run //packages/oxlint-plugins/no-restricted-syntax:test:unit`.
+   `mise run //packages/oxlint-plugin/no-restricted-syntax:test:unit`.
 3. Config package verification also passed after the config changes:
    `mise run //packages/config/oxlint:lint:types` and
    `mise run //packages/config/oxlint:lint:oxlint`.

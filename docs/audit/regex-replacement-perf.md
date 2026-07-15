@@ -244,9 +244,9 @@ spec),
    `src/comments.ts` (leave
   `src/resolve.ts`,
    it is AST recursion)
-- `oxlint-plugins/tsdoc`:
+- `oxlint-plugin/tsdoc`:
    `src/rules/{empty-tags,structural-tags,tag-escaping,tag-names,tag-validation,type-annotations}.ts`
-- `oxlint-plugins/stylistic`:
+- `oxlint-plugin/stylistic`:
    `src/utility/chain.ts`,
   `src/utility/indent.ts`
 - `rolldown-plugin/import-attributes`:

@@ -3,7 +3,7 @@
 Post-mortem of commit `797d71ae` (`feat(oxlint-stylistic): rewrite
 chain-per-line on AST spans and tokens`).
  The rewrite introduced
-`packages/oxlint-plugins/stylistic/src/utility/chain-flatten.ts`,
+`packages/oxlint-plugin/stylistic/src/utility/chain-flatten.ts`,
  whose
 recursive spread-based flatteners are O(n^2) in time and O(n) in stack
 depth on long chains.
@@ -137,7 +137,7 @@ recursion depth is bounded by structure depth,
 correct qualifier,
  same "AST" bait.
  That audit even lists
-`oxlint-plugins/stylistic` (`chain.ts`,
+`oxlint-plugin/stylistic` (`chain.ts`,
  `indent.ts`) as fix targets,
  but
 `chain-flatten.ts` did not exist yet,

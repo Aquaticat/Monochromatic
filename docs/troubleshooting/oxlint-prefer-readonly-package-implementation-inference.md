@@ -33,7 +33,7 @@ Package exports add another mapping layer:
 ## Verified resolution
 
 The rule resolves only invoked package callables on demand.
-`packages/oxlint-plugins/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/external-callable-effect.ts`
+`packages/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/external-callable-effect.ts`
 coordinates the following checks:
 
 1.  The selected declaration resolves to an exact installed package name and version.
@@ -92,10 +92,10 @@ soundly across project snapshots.
 Run:
 
 ```sh
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:types
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:build:js:node
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 ```
 
 `src/effect-summaries.unit.test.ts` creates a disposable locked package and verifies:

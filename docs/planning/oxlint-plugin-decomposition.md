@@ -3,7 +3,7 @@
 ## Purpose
 
 This proposal records a maintainable decomposition for
-`packages/oxlint-plugins/no-restricted-syntax/`.
+`packages/oxlint-plugin/no-restricted-syntax/`.
 It does not select a new public namespace or authorize an implementation.
 
 ## Current shape

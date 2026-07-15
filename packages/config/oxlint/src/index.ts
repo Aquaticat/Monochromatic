@@ -37,18 +37,18 @@ const config: OxlintConfig = defineConfig({
   // Waiting for upstream: https://github.com/oxc-project/oxc/issues/14402 https://github.com/oxc-project/oxc/issues/14826
   jsPlugins: [
     // TSDoc validation rules adapted from eslint-plugin-jsdoc recommended config.
-    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-tsdoc/ts',),).pathname,
+    new URL(import.meta.resolve('@monochromatic-dev/oxlint-plugin-tsdoc/ts',),).pathname,
 
     // Banned syntax patterns that oxlint's built-in rules can't express.
-    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-no-restricted-syntax/ts',),)
+    new URL(import.meta.resolve('@monochromatic-dev/oxlint-plugin-no-restricted-syntax/ts',),)
       .pathname,
 
     // TypeScript semantic readonly types and caller-observable mutation contracts.
-    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type/ts',),)
+    new URL(import.meta.resolve('@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type/ts',),)
       .pathname,
 
     // TypeScript layout enforcement for per-line constructs, semicolons, and expression structure.
-    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-stylistic/ts',),).pathname,
+    new URL(import.meta.resolve('@monochromatic-dev/oxlint-plugin-stylistic/ts',),).pathname,
   ],
 },);
 

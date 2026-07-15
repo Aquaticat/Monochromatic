@@ -62,7 +62,7 @@ Facts below come from reading the tree on 2026-05-25,
   `noUncheckedIndexedAccess: true` are all set in
   `packages/config/typescript/tsconfig.options.json:45` to `:52`.
 - `no-nullish-union` exists and is registered:
-  `packages/oxlint-plugins/no-restricted-syntax/src/rule/no-nullish-union.ts`,
+  `packages/oxlint-plugin/no-restricted-syntax/src/rule/no-nullish-union.ts`,
    wired in `index.ts:38`
   and `:89`.
    It bans `null` or `undefined` as a member of any `TSUnionType`,

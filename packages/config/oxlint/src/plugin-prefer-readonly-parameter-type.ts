@@ -5,4 +5,4 @@
  * co-located built configuration sidecar.
  */
 
-export { default, } from '@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type/ts';
+export { default, } from '@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type/ts';

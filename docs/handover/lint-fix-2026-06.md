@@ -99,9 +99,9 @@ A full root lint was started after the toml-edit split as process
 It failed.
 Visible failures in that run included:
 
-- `//packages/oxlint-plugins/tsdoc:lint`:
+- `//packages/oxlint-plugin/tsdoc:lint`:
   `method-signature-style` and `unicorn/prefer-export-from` warnings.
-- `//packages/oxlint-plugins/stylistic:lint`:
+- `//packages/oxlint-plugin/stylistic:lint`:
   one `method-signature-style` warning and seven `catch-binding` errors in
   `src/oxlint-stylistic.unit.test.ts`.
 - `//packages/pi-plugins/linkup:lint`:
@@ -126,10 +126,10 @@ The aggregate failed package list from that run was:
 ```txt
 //packages/config/tofu:lint
 //packages/figma/kiwi:lint
-//packages/oxlint-plugins/tsdoc:lint
+//packages/oxlint-plugin/tsdoc:lint
 //packages/pi-shared/model-selection:lint
 //packages/pi-plugins/current-time-context:lint
-//packages/oxlint-plugins/stylistic:lint
+//packages/oxlint-plugin/stylistic:lint
 //packages/pi-plugins/morph-compact:lint
 //packages/pi-plugins/auto-mode:lint
 //packages/pi-plugins/terminal-title:lint

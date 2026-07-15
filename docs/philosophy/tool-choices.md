@@ -77,9 +77,9 @@ Rejected alternatives:
    insufficient rules
 - **ESLint**:
    removed 2026-03-13 and not an adoption candidate.
-   Oxlint covers the rules we relied on (gaps were filled by writing `@monochromatic-dev/config-oxlint-tsdoc`,
-   `@monochromatic-dev/config-oxlint-no-restricted-syntax`,
-   and `@monochromatic-dev/config-oxlint-prefer-readonly-parameter-type`),
+   Oxlint covers the rules we relied on (gaps were filled by writing `@monochromatic-dev/oxlint-plugin-tsdoc`,
+   `@monochromatic-dev/oxlint-plugin-no-restricted-syntax`,
+   and `@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type`),
    and oxlint runs orders of magnitude faster.
 
 ## Testing: Node + module-test + Playwright

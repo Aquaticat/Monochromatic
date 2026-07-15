@@ -6,4 +6,4 @@
  * `index.node.ts` references by relative `file://` URL.
  */
 
-export { default, } from '@monochromatic-dev/config-oxlint-no-restricted-syntax/ts';
+export { default, } from '@monochromatic-dev/oxlint-plugin-no-restricted-syntax/ts';

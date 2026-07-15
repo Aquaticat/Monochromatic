@@ -109,8 +109,8 @@ The installed `dist/h3.mjs` SHA-256 digest was
 Run the focused verification:
 
 ```sh
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:build
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 OXLINT_THREADS=1 mise run //packages/webapp-productivity/done:lint:oxlint
 OXLINT_THREADS=1 mise run //packages/webapp-productivity/done-postcss:lint:oxlint
 ```
@@ -158,7 +158,7 @@ When TypeScript substitutes an adjacent declaration for a relative JavaScript im
 The runtime bytes remain effect authority.
 
 The disposable package fixture in
-`packages/oxlint-plugins/prefer-readonly-parameter-type/src/effect-summaries.unit.test.ts`
+`packages/oxlint-plugin/prefer-readonly-parameter-type/src/effect-summaries.unit.test.ts`
 uses top-level `types`,
 separate runtime conditions,
 a runtime barrel,

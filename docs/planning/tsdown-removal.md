@@ -110,7 +110,7 @@ Read from `packages/config/tsdown/src/` on 2026-07-15:
    create `packages/config/rolldown`,
    migrate six representative packages,
    verify each at the user boundary (VUB):
-   - `oxlint-plugins/tsdoc`: node flavor, published, dist types consumed by `oxlint.config.ts`.
+   - `oxlint-plugin/tsdoc`: node flavor, published, dist types consumed by `oxlint.config.ts`.
    - `claude-code-plugins/correction-reminder`: committed `bundle/node` output, exercised through Claude Code.
    - `git-policies/cli`: bin with shebang, run a real command.
    - `module/toml-edit`: neutral flavor, inlined workspace deps, tests green.
@@ -141,7 +141,7 @@ All six representative cells pass on raw rolldown 1.1.5 with
 
 - `module/toml-edit` (neutral): built, dist smoke-verified (parse plus
   byte-exact roundtrip), unit tests green.
-- `oxlint-plugins/tsdoc` (node): plugin dist shape valid (22 rules),
+- `oxlint-plugin/tsdoc` (node): plugin dist shape valid (22 rules),
   unit tests green, repo oxlint chain clean end to end.
 - `claude-code-plugins/correction-reminder` (committed bundle):
   output byte- and mode-identical to the tsdown artifact,

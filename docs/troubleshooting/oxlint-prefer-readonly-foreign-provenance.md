@@ -110,10 +110,10 @@ Focused fixture coverage includes:
 The current plugin commands are:
 
 ```sh
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:types
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:lint:oxlint
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:build:js:node
-mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:types
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
+mise run //packages/oxlint-plugin/prefer-readonly-parameter-type:test:unit
 ```
 
 Type lint,
