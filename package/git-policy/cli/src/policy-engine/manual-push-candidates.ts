@@ -18,6 +18,17 @@ import {
 import { ManualPushProbeError, } from './manual-push-probe.ts';
 
 /**
+ * Creates manual-push-domain error for failed or malformed Git output.
+ *
+ * @param message - safe failure explanation
+ *
+ * @returns probe failure
+ */
+function probeError(message: string,): Error {
+  return new ManualPushProbeError(message,);
+}
+
+/**
  * Resolves object type, peeling annotated tags.
  *
  * @param gitPath - resolved real Git executable
@@ -225,9 +236,7 @@ export async function createManualPushCandidates({
         === 'blob' ? [descriptor.content
           .oid,] : [];
     },),
-    createError: function toProbeError(message,): Error {
-      return new ManualPushProbeError(message,);
-    },
+    createError: probeError,
   },);
   return descriptors.map(
     /**

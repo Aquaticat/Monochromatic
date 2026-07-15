@@ -12,7 +12,13 @@ import type {
   CandidateFileMode,
   GitObjectId,
 } from '../api/policy-types.ts';
-import { mapBounded, } from './map-bounded.ts';
+import { loadBlobBatch, } from './blob-batch.ts';
+import {
+  type HeadTreeEntry,
+  type IndexEntry,
+  loadHeadTreeEntries,
+  loadIndexEntries,
+} from './commit-transaction-candidate-batch.ts';
 import {
   CommitTransactionGitError,
   runTransactionGit,
@@ -30,10 +36,6 @@ const DECODER = new TextDecoder(
  */
 const ENCODER = new TextEncoder();
 /**
- * Maximum simultaneous process-backed private candidate loads.
- */
-const CANDIDATE_LOAD_CONCURRENCY = 64;
-/**
  * Git index mode mapping.
  */
 const INDEX_MODES: Readonly<Record<string, CandidateFileMode>> = {
@@ -43,22 +45,15 @@ const INDEX_MODES: Readonly<Record<string, CandidateFileMode>> = {
   '160000': 'submodule',
 };
 /**
- * HEAD tree does not contain requested candidate path.
+ * Creates transaction-domain error for failed or malformed Git output.
+ *
+ * @param message - safe failure explanation
+ *
+ * @returns private-state failure
  */
-const HEAD_ENTRY_ABSENT: unique symbol = Symbol('requested HEAD tree entry was absent',);
-/**
- * Parsed HEAD tree entry.
- */
-type HeadEntry = Readonly<{
-  /**
-   * Git object ID.
-   */
-  oid: GitObjectId;
-  /**
-   * Policy candidate mode.
-   */
-  mode: CandidateFileMode;
-}>;
+function transactionGitError(message: string,): Error {
+  return new CommitTransactionGitError(message,);
+}
 
 /**
  * Returns absent landed commit before commit execution.
@@ -88,78 +83,134 @@ function deletedBytes(): Promise<Uint8Array> {
 }
 
 /**
- * Loads optional HEAD entry for classification and deletion facts.
+ * HEAD tree does not contain requested candidate path.
+ */
+const HEAD_MODE_ABSENT: unique symbol = Symbol('requested HEAD tree entry was absent',);
+
+/**
+ * Maps one HEAD tree mode, rejecting modes no candidate can carry.
  *
- * @param gitPath - resolved Git executable
+ * Resolved for every path present in HEAD, including paths the index also
+ * holds, so a directory standing where a file is staged is rejected exactly as
+ * a per-path HEAD read rejected it.
  *
- * @param cwd - repository directory
+ * @param headEntries - HEAD tree records for complete path set
  *
  * @param path - repository path
  *
- * @returns parsed entry or absence sentinel
+ * @returns policy mode, or absence sentinel when HEAD lacks path
+ *
+ * @throws CommitTransactionGitError when HEAD mode maps to no candidate mode
  */
-async function loadHeadEntry({
-  gitPath,
-  cwd,
+function headCandidateMode({
+  headEntries,
   path,
 }: Readonly<{
-  gitPath: string;
-  cwd: string;
+  headEntries: ReadonlyMap<string, HeadTreeEntry>;
   path: string;
-}>,): Promise<HeadEntry | typeof HEAD_ENTRY_ABSENT> {
+}>,): CandidateFileMode | typeof HEAD_MODE_ABSENT {
   /**
-   * Optional exact HEAD tree record.
+   * Optional baseline record.
    */
-  const output = await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'ls-tree',
-      '-z',
-      'HEAD',
-      '--',
-      path,
-    ],
-    allowFailure: true,
-  },);
-  /**
-   * Decoded sole tree record.
-   */
-  const record = DECODER.decode(output.stdout,)
-    .replaceAll(
-      '\0',
-      '',
-    )
-    .trim();
-  if ((output.exitCode !== 0) || (record.length === 0))
-    return HEAD_ENTRY_ABSENT;
-  /**
-   * Metadata/path boundary.
-   */
-  const tab = record.indexOf('\t',);
-  /**
-   * Mode, type, and object identity.
-   */
-  const [modeText, _type, oid,] = (tab === (-1) ? record : record.slice(
-    0,
-    tab,
-  )).split(' ',);
-  if ((modeText === undefined) || (oid === undefined))
-    throw new CommitTransactionGitError(`HEAD tree metadata is incomplete for ${path}`,);
+  const headEntry = headEntries.get(path,);
+  if (headEntry === undefined)
+    return HEAD_MODE_ABSENT;
   /**
    * Policy mode mapped from Git mode.
    */
-  const mode = INDEX_MODES[modeText];
+  const mode = INDEX_MODES[headEntry.modeText];
   if (mode === undefined)
-    throw new CommitTransactionGitError(`Unsupported HEAD tree mode ${modeText} for ${path}`,);
+    throw new CommitTransactionGitError(`Unsupported HEAD tree mode ${headEntry.modeText} for ${path}`,);
+  return mode;
+}
+
+/**
+ * Builds one candidate from batched index, HEAD, and blob facts.
+ *
+ * @param path - repository path
+ *
+ * @param indexEntries - private index records for complete path set
+ *
+ * @param headEntries - HEAD tree records for complete path set
+ *
+ * @param blobBytes - exact blob views loaded by one batch subprocess
+ *
+ * @returns immutable candidate over batch-owned bytes
+ *
+ * @throws CommitTransactionGitError when index state cannot back one candidate
+ */
+function buildCandidate({
+  path,
+  indexEntries,
+  headEntries,
+  blobBytes,
+}: Readonly<{
+  path: string;
+  indexEntries: ReadonlyMap<string, IndexEntry>;
+  headEntries: ReadonlyMap<string, HeadTreeEntry>;
+  blobBytes: ReadonlyMap<string, Uint8Array>;
+}>,): CandidateFile {
+  /**
+   * Validated baseline mode, or absence sentinel when HEAD lacks path.
+   */
+  const headMode = headCandidateMode({
+    headEntries,
+    path,
+  },);
+  /**
+   * Optional staged record.
+   */
+  const indexEntry = indexEntries.get(path,);
+  if (indexEntry === undefined) {
+    if ((typeof headMode) === 'symbol')
+      throw new CommitTransactionGitError(`Deleted candidate lacks HEAD entry: ${path}`,);
+    return {
+      targetId: `pre-commit:absent:${path}`,
+      path,
+      revision: ABSENT_GIT_VALUE,
+      mode: headMode,
+      change: 'deleted',
+      bytes: deletedBytes,
+    };
+  }
+  if (indexEntry.stage !== '0')
+    throw new CommitTransactionGitError(`Private index entry is unavailable for ${path}`,);
+  /**
+   * Policy mode.
+   */
+  const mode = INDEX_MODES[indexEntry.modeText];
+  if (mode === undefined)
+    throw new CommitTransactionGitError(`Unsupported private index mode ${indexEntry.modeText} for ${path}`,);
+  /**
+   * Exact staged identity.
+   */
+  const { oid, } = indexEntry;
   return {
-    oid,
+    targetId: `pre-commit:${oid}:${path}`,
+    path,
+    revision: oid,
     mode,
+    change: ((typeof headMode) === 'symbol') ? 'added' : 'modified',
+    bytes: function loadIndexBytes(): Promise<Uint8Array> {
+      if (mode === 'submodule')
+        return Promise.resolve(ENCODER.encode(oid,),);
+      /**
+       * Exact shared blob view loaded by the single batch subprocess.
+       */
+      const bytes = blobBytes.get(oid,);
+      if (bytes === undefined)
+        throw new CommitTransactionGitError(`Git blob batch omitted requested object ${oid}.`,);
+      return Promise.resolve(bytes,);
+    },
   };
 }
 
 /**
- * Loads one index candidate.
+ * Loads every candidate through batched index, HEAD, and blob reads.
+ *
+ * Replaces two spawns per path plus one `git show` per byte read with three
+ * invocation groups for the complete path set. Staged blobs are read by object
+ * ID rather than `:path`, which names the same stage-zero object.
  *
  * @param gitPath - resolved Git executable
  *
@@ -167,104 +218,77 @@ async function loadHeadEntry({
  *
  * @param indexPath - private index
  *
- * @param path - repository path
+ * @param paths - candidate repository paths
  *
- * @returns immutable lazy candidate
+ * @returns candidates in requested path order
+ *
+ * @throws CommitTransactionGitError when private state cannot back candidates
  */
-async function loadIndexCandidate({
+async function loadPrivateIndexCandidates({
   gitPath,
   cwd,
   indexPath,
-  path,
+  paths,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   indexPath: string;
-  path: string;
-}>,): Promise<CandidateFile> {
+  paths: readonly string[];
+}>,): Promise<readonly CandidateFile[]> {
   /**
-   * Stage-zero index metadata.
+   * Independent staged and baseline reads for complete path set.
    */
-  const metadata = DECODER.decode((await runTransactionGit({
+  const [indexEntries, headEntries,] = await Promise.all([
+    loadIndexEntries({
+      gitPath,
+      cwd,
+      indexPath,
+      paths,
+    },),
+    loadHeadTreeEntries({
+      gitPath,
+      cwd,
+      paths,
+    },),
+  ],);
+  /**
+   * One batched read for every content-bearing staged blob. Submodules publish
+   * their commit identity and deleted paths publish no bytes, so neither
+   * requests a blob.
+   */
+  const blobBytes = await loadBlobBatch({
     gitPath,
     cwd,
-    indexPath,
-    args: [
-      'ls-files',
-      '--stage',
-      '--',
-      path,
-    ],
-  },)).stdout,)
-    .trim();
-  /**
-   * Optional baseline entry.
-   */
-  const headEntry = await loadHeadEntry({
-    gitPath,
-    cwd,
-    path,
+    oids: paths.flatMap(function contentOid(path,): readonly GitObjectId[] {
+      /**
+       * Staged record for one path.
+       */
+      const entry = indexEntries.get(path,);
+      if (entry === undefined)
+        return [];
+      return INDEX_MODES[entry.modeText] === 'submodule'
+        ? []
+        : [entry.oid,];
+    },),
+    createError: transactionGitError,
   },);
-  if (metadata.length === 0) {
-    if ((typeof headEntry) === 'symbol')
-      throw new CommitTransactionGitError(`Deleted candidate lacks HEAD entry: ${path}`,);
-    return {
-      targetId: `pre-commit:absent:${path}`,
+  return paths.map(function toCandidate(path,): CandidateFile {
+    return buildCandidate({
       path,
-      revision: ABSENT_GIT_VALUE,
-      mode: headEntry.mode,
-      change: 'deleted',
-      bytes: deletedBytes,
-    };
-  }
-  /**
-   * Metadata/path separator.
-   */
-  const tab = metadata.indexOf('\t',);
-  /**
-   * Metadata fields before path.
-   */
-  const parts = (tab === (-1) ? metadata : metadata.slice(
-    0,
-    tab,
-  )).split(' ',);
-  /**
-   * Git mode and object ID.
-   */
-  const [modeText, oid, stage,] = parts;
-  if ((modeText === undefined) || (oid === undefined)
-    || (stage !== '0'))
-    throw new CommitTransactionGitError(`Private index entry is unavailable for ${path}`,);
-  /**
-   * Policy mode.
-   */
-  const mode = INDEX_MODES[modeText];
-  if (mode === undefined)
-    throw new CommitTransactionGitError(`Unsupported private index mode ${modeText} for ${path}`,);
-  return {
-    targetId: `pre-commit:${oid}:${path}`,
-    path,
-    revision: oid,
-    mode,
-    change: (typeof headEntry) === 'symbol' ? 'added' : 'modified',
-    bytes: async function loadIndexBytes(): Promise<Uint8Array> {
-      if (mode === 'submodule')
-        return ENCODER.encode(oid,);
-      return (await runTransactionGit({
-        gitPath,
-        cwd,
-        indexPath,
-        args: [
-          'show',
-          `:${path}`,
-        ],
-      },)).stdout;
-    },
-  };
+      indexEntries,
+      headEntries,
+      blobBytes,
+    },);
+  },);
 }
 
 /**
  * Creates lazy facts backed by current private index bytes.
+ *
+ * Every call reads current state, and is never memoized: one facts object
+ * outlives the patches applied through it, and callers deliberately re-read it
+ * to observe them. `direct-fix-install.ts` writes back what the last call
+ * returns, so a cached first read would reinstall the unfixed bytes.
  *
  * @param gitPath - resolved Git executable
  *
@@ -294,17 +318,11 @@ export function createPrivateIndexFacts({
 }>,): LazyPolicyGitFacts {
   return {
     candidates: function candidates(): Promise<readonly CandidateFile[]> {
-      return mapBounded({
-        values: paths,
-        concurrency: CANDIDATE_LOAD_CONCURRENCY,
-        map: function loadPath({ value: path, }) {
-          return loadIndexCandidate({
-            gitPath,
-            cwd,
-            indexPath,
-            path,
-          },);
-        },
+      return loadPrivateIndexCandidates({
+        gitPath,
+        cwd,
+        indexPath,
+        paths,
       },);
     },
     headOid: async function headOid(): Promise<GitObjectId> {

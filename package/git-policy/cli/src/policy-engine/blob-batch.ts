@@ -63,10 +63,10 @@ type BatchHeader = Readonly<{
 function parseBatchHeader({
   header,
   createError,
-}: Readonly<{
-  header: string;
-  createError: (message: string) => Error;
-}>,): BatchHeader {
+}: {
+  readonly header: string;
+  readonly createError: (message: string) => Error;
+},): BatchHeader {
   /**
    * Space-delimited default batch fields.
    */
@@ -118,11 +118,11 @@ function parseBatchOutput({
   output,
   requestedOids,
   createError,
-}: Readonly<{
-  output: Uint8Array;
-  requestedOids: readonly string[];
-  createError: (message: string) => Error;
-}>,): ReadonlyMap<string, Uint8Array> {
+}: {
+  readonly output: Uint8Array;
+  readonly requestedOids: readonly string[];
+  readonly createError: (message: string) => Error;
+},): ReadonlyMap<string, Uint8Array> {
   /**
    * Parsed bytes retaining views into complete batch output.
    */
@@ -205,12 +205,12 @@ export async function loadBlobBatch({
   cwd,
   oids,
   createError,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  oids: readonly string[];
-  createError: (message: string) => Error;
-}>,): Promise<ReadonlyMap<string, Uint8Array>> {
+}: {
+  readonly gitPath: string;
+  readonly cwd: string;
+  readonly oids: readonly string[];
+  readonly createError: (message: string) => Error;
+},): Promise<ReadonlyMap<string, Uint8Array>> {
   /**
    * Unique request order avoids re-reading unchanged blobs across commit trees.
    */
