@@ -22,10 +22,10 @@ The migration-specific acceptance gate is complete.
   `SemanticBridgeError`,
   the omitted-owned-callable failure,
   or `context canceled`.
-- Final root processes `proc_323` and `proc_324` ran `mise run test:unit` successfully from each test's nearest package
+- Final root processes `proc_331` and `proc_332` ran `mise run test:unit` successfully from each test's nearest package
   task root.
-  Default discovery selects 507 active non-expensive tests.
-  `--all` selects 511 active tests,
+  Default discovery selects 508 active non-expensive tests.
+  `--all` selects 512 active tests,
   including 4 expensive tests.
   The 64 inactive-tree tests leak into neither selection.
 - Package type fanout checked 122 supported package tasks with no failures.
