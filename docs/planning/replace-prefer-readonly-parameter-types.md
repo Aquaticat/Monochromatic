@@ -22,31 +22,42 @@ The migration-specific acceptance gate is complete.
   `SemanticBridgeError`,
   the omitted-owned-callable failure,
   or `context canceled`.
-- Root process `proc_288` ran `mise run test:unit` successfully from each test's nearest package task root.
-  Default discovery selected 506 tests,
-  found 64 inactive-tree tests available only to explicit discovery,
-  and leaked zero deprecated or paused tests into the default selection.
+- Final root processes `proc_323` and `proc_324` ran `mise run test:unit` successfully from each test's nearest package
+  task root.
+  Default discovery selects 507 active non-expensive tests.
+  `--all` selects 511 active tests,
+  including 4 expensive tests.
+  The 64 inactive-tree tests leak into neither selection.
 - Package type fanout checked 122 supported package tasks with no failures.
   The semantic-host and disposable external-consumer tasks passed in `proc_274` and `proc_273`.
 - The semantic plugin's final type,
   unit,
-  and Oxlint tasks passed in `proc_283` to `proc_285`.
+  and Oxlint tasks passed again in `proc_320` to `proc_322`.
   An unchanged single-worker package run in `proc_297` completed in 6.3 seconds with zero findings.
+  Commit `c0b403dc6` isolates the independent-process persistent-cache test from concurrently changing fixture projects.
 - TypeScript synchronous API shutdown now guards both the main semantic client and demand-driven external-project
   clients.
   The final root sweep and package tests contain no native-child cancellation output.
+  GitHub Actions run `29394108524` passed native lifecycle,
+  platform path,
+  and external-consumer verification on Ubuntu,
+  macOS 15,
+  and Windows.
 - Done's self-contained browser bundle passed create and search flows against `DB_PATH=:memory:` with no console or page
   errors.
 - File-enforcer now stages lock-owner metadata privately and publishes it by same-directory rename.
   Commit `d2240c4c5` adds a deterministic pause at the stage-to-publish boundary,
   where contenders observe no owner before publication and a live complete owner afterward.
+  Commits `965d4cf32` and `b8a649536` use one-shot release operations and prevent a vanished predecessor observation from
+  deleting its successor.
+  Commit `4e28505f8` releases 8 writers together against one manifest lock.
 - Commit `764a3a766` guards the intended generated-policy boundary:
   canonical repository and forbidden-string policies retain the lazy-provider contract,
   while generated Git CLI mirrors omit the stale inlined contract.
   Final file-enforcer build,
   type,
   unit,
-  and Oxlint tasks passed in `proc_290` and `proc_294` to `proc_296`.
+  and Oxlint tasks passed in `proc_313` to `proc_316`.
 - Generated files are synchronized and idempotent.
   `git diff --check` passed,
   and working-tree review preserved unrelated desktop,
@@ -725,8 +736,7 @@ Verified package tasks:
 - `OXLINT_THREADS=1 mise run lint:oxlint` in stable root processes `proc_21` and `proc_26`.
 
 Next action:
-keep unrelated workspace lint baselines and inactive-tree `--all` dependency restoration outside this completed
-migration.
+keep unrelated workspace lint baselines outside this completed migration.
 
 ## Continuity contract
 

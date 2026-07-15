@@ -450,6 +450,9 @@ Final root process `proc_287` ran the single-worker workspace Oxlint task after 
 Its stdout and stderr contain zero occurrences of `context canceled`,
 `SemanticBridgeError`,
 or the omitted-owned-callable failure.
+GitHub Actions run `29394108524` passed the native lifecycle and disposable external-consumer tasks on Ubuntu,
+macOS 15,
+and Windows after the shutdown change.
 
 A regression opens the same unchanged source twice and requires both sessions to expose the same decoded
 `SourceFile` object.
