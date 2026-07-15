@@ -9,7 +9,7 @@
  * import {
  *   CHAT_ROLES,
  *   type ChatRole,
- * } from '@monochromatic-dev/module-llm-types';
+ * } from '@monochromatic-dev/module-llm-type';
  *
  * const role: ChatRole = 'user';
  * const isRole = CHAT_ROLES.includes(role,);

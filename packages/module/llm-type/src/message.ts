@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import type { ChatMessage } from '@monochromatic-dev/module-llm-types';
+ * import type { ChatMessage } from '@monochromatic-dev/module-llm-type';
  *
  * const messages: readonly ChatMessage[] = [
  *   { role: 'system', content: 'You are concise.', },

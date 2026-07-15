@@ -71,7 +71,7 @@ The long tail is short:
 `forbidden-strings/src/mise.port-betterleaks.ts` with 19,
 `messages-demo/src/lib/seed.ts` with 13,
 `messages-demo/src/client/composer.worker.ts` with 13,
-`test-fixture/data-sequences/src/generator.0to999.ts` with 18) account for 82 occurrences,
+`test-fixture/data-sequence/src/generator.0to999.ts` with 18) account for 82 occurrences,
 about 10% of the total.
 
 ### Per-package distribution

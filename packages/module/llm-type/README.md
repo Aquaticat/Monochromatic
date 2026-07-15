@@ -1,4 +1,4 @@
-## module-llm-types
+## module-llm-type
 
 Ready to publish.
 
@@ -34,7 +34,7 @@ so the `role` / `content` envelope and the response shape are defined once and c
 import type {
   ChatCompletionResponse,
   ChatMessage,
-} from '@monochromatic-dev/module-llm-types';
+} from '@monochromatic-dev/module-llm-type';
 
 const messages: readonly ChatMessage[] = [
   { role: 'system', content: 'You are concise.', },
@@ -50,7 +50,7 @@ const text = data.choices[0]?.message.content ?? '';
 import type {
   ChatRole,
   ContentPart,
-} from '@monochromatic-dev/module-llm-types';
+} from '@monochromatic-dev/module-llm-type';
 
 type VisionMessage = {
   readonly role: Extract<ChatRole, 'user'>;
@@ -63,7 +63,7 @@ type VisionMessage = {
 import type {
   ChatCompletionResponse,
   CompletionUsage,
-} from '@monochromatic-dev/module-llm-types';
+} from '@monochromatic-dev/module-llm-type';
 
 type CompletionResponse = ChatCompletionResponse & { readonly usage: CompletionUsage; };
 ```

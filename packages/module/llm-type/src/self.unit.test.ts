@@ -1,5 +1,5 @@
 /**
- * Self-test entry point for `@monochromatic-dev/module-llm-types`.
+ * Self-test entry point for `@monochromatic-dev/module-llm-type`.
  *
  * Imports each per-type test file so they all execute in sequence when the
  * package's `mise run test` task fires.

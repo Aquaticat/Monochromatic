@@ -633,7 +633,7 @@ Each represents an OpenAI-compatible message envelope with `role` and `content`.
 implementations track to four different LLM client patterns.
 
 Suggested resolution:
- a `packages/module/llm-types/` package or a section in
+ a `packages/module/llm-type/` package or a section in
 `packages/module/es/src/types/`.
  Useful given the recurring openai/anthropic/openrouter
 client pattern.

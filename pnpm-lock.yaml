@@ -1346,9 +1346,9 @@ importers:
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
-      '@monochromatic-dev/module-llm-types':
+      '@monochromatic-dev/module-llm-type':
         specifier: workspace:*
-        version: link:../../module/llm-types
+        version: link:../../module/llm-type
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2174,9 +2174,9 @@ importers:
 
   packages/module/image-diff:
     dependencies:
-      '@monochromatic-dev/module-llm-types':
+      '@monochromatic-dev/module-llm-type':
         specifier: workspace:*
-        version: link:../llm-types
+        version: link:../llm-type
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -2334,7 +2334,7 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  packages/module/llm-types:
+  packages/module/llm-type:
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -3548,7 +3548,7 @@ importers:
         specifier: workspace:*
         version: link:../css-imported-no-exports
 
-  packages/test-fixture/data-sequences: {}
+  packages/test-fixture/data-sequence: {}
 
   packages/test-fixture/file-enforcer-perf:
     dependencies:
@@ -3619,9 +3619,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
-      '@monochromatic-dev/module-llm-types':
+      '@monochromatic-dev/module-llm-type':
         specifier: workspace:*
-        version: link:../../module/llm-types
+        version: link:../../module/llm-type
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -3659,9 +3659,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
-      '@monochromatic-dev/module-llm-types':
+      '@monochromatic-dev/module-llm-type':
         specifier: workspace:*
-        version: link:../../module/llm-types
+        version: link:../../module/llm-type
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger

@@ -21,7 +21,7 @@
  * @example
  * Basic usage for testing array operations:
  * ```ts
- * import { array0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { array0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * // Test array filtering
  * const evenNumbers = array0to999.filter(n => n % 2 === 0);
@@ -35,7 +35,7 @@
  * @example
  * Using for truthiness testing:
  * ```ts
- * import { array0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { array0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * // Test all-truthy predicate (adds 1 to make 0 truthy)
  * const allTruthy = array0to999.every(n => n + 1);
@@ -49,7 +49,7 @@
  * @example
  * Performance testing scenarios:
  * ```ts
- * import { array0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { array0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * // Benchmark different sorting implementations
  * const testData = [...array0to999].reverse();

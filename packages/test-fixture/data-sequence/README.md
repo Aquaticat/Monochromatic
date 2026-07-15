@@ -1,4 +1,4 @@
-# test-fixture-data-sequences
+# test-fixture-data-sequence
 
 Reusable numeric test data sequences for benchmarking,
  async pattern testing,

@@ -257,7 +257,7 @@ aa306f4ec14f
 464e0412bceb
 # bench harness closures (truepeak-core.bench)
 7fe737370a47
-# promise-sequence arrows in test-fixture data-sequences
+# promise-sequence arrows in test-fixture data-sequence
 f53e01c91ffe
 # fuzz arbitrary build() generators (fuzz/ dir)
 71452b9e6249

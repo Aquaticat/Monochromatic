@@ -11,7 +11,7 @@
  *
  * @example
  * ```ts
- * import type { ChatCompletionResponse } from '@monochromatic-dev/module-llm-types';
+ * import type { ChatCompletionResponse } from '@monochromatic-dev/module-llm-type';
  *
  * const data = (await response.json()) as ChatCompletionResponse;
  * const text = data.choices[0]?.message.content ?? '';

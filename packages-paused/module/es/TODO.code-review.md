@@ -100,4 +100,4 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
   This appears to be a deliberate architectural choice for the namespace-based API design (`types.boolean.is.string.sync.positional.$`).
   Best-effort idea: the tradeoff may be acceptable, but consider whether function names could be more descriptive in stack traces.
 
-- ~~82 files in `src/deprecated/` remain in the codebase.~~ **Resolved**: deprecated directory deleted; modules migrated to `module-dom`, `test-fixture-data-sequences`, and proper locations within the types tree.
+- ~~82 files in `src/deprecated/` remain in the codebase.~~ **Resolved**: deprecated directory deleted; modules migrated to `module-dom`, `test-fixture-data-sequence`, and proper locations within the types tree.

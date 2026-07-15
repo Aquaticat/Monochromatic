@@ -16,7 +16,7 @@
  * @example
  * Basic iteration with for-of loop:
  * ```ts
- * import { gen0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * for (const value of gen0to999()) {
  *   console.log(value); // 0, 1, 2, ..., 999
@@ -27,7 +27,7 @@
  * @example
  * Manual iteration with next():
  * ```ts
- * import { gen0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * const iterator = gen0to999();
  * const first = iterator.next(); // { value: 0, done: false }
@@ -44,7 +44,7 @@
  * @example
  * Converting to array for testing:
  * ```ts
- * import { gen0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * const allValues = [...gen0to999()];
  * console.log(allValues.length); // 1000
@@ -71,7 +71,7 @@
  * @example
  * Testing error handling with try-catch:
  * ```ts
- * import { gen0to999error } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999error } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * let count = 0;
  * try {
@@ -88,7 +88,7 @@
  * @example
  * Manual iteration with error detection:
  * ```ts
- * import { gen0to999error } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999error } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * const iterator = gen0to999error();
  * const values: number[] = [];
@@ -123,7 +123,7 @@
  * @example
  * Basic async iteration with for-await-of:
  * ```ts
- * import { gen0to999Async } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999Async } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function processValues(): Promise<void> {
  *   for await (const value of gen0to999Async()) {
@@ -136,7 +136,7 @@
  * @example
  * Manual async iteration:
  * ```ts
- * import { gen0to999Async } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999Async } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function manualIteration(): Promise<void> {
  *   const iterator = gen0to999Async();
@@ -155,7 +155,7 @@
  * @example
  * Converting to array with Promise.all:
  * ```ts
- * import { gen0to999Async } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999Async } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function collectAll(): Promise<number[]> {
  *   const values: number[] = [];
@@ -187,7 +187,7 @@
  * @example
  * Testing async error handling:
  * ```ts
- * import { gen0to999errorAsync } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999errorAsync } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testAsyncError(): Promise<void> {
  *   let count = 0;
@@ -206,7 +206,7 @@
  * @example
  * Error handling with manual async iteration:
  * ```ts
- * import { gen0to999errorAsync } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999errorAsync } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function manualAsyncWithError(): Promise<void> {
  *   const iterator = gen0to999errorAsync();
@@ -246,7 +246,7 @@
  * @example
  * Testing with progressive timing:
  * ```ts
- * import { gen0to999AsyncSlow } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999AsyncSlow } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testSlowIteration(): Promise<void> {
  *   const start = Date.now();
@@ -266,7 +266,7 @@
  * @example
  * Testing timeout scenarios:
  * ```ts
- * import { gen0to999AsyncSlow } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999AsyncSlow } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testWithTimeout(): Promise<void> {
  *   const iterator = gen0to999AsyncSlow();
@@ -295,7 +295,7 @@
  * @example
  * Performance testing different async patterns:
  * ```ts
- * import { gen0to999AsyncSlow } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999AsyncSlow } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function performanceComparison(): Promise<void> {
  *   const iterator = gen0to999AsyncSlow();
@@ -338,7 +338,7 @@
  * @example
  * Testing async error handling with realistic timing:
  * ```ts
- * import { gen0to999errorAsyncSlow } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999errorAsyncSlow } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testSlowErrorHandling(): Promise<void> {
  *   let count = 0;
@@ -360,7 +360,7 @@
  * @example
  * Timeout testing with slow error generator:
  * ```ts
- * import { gen0to999errorAsyncSlow } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999errorAsyncSlow } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testTimeoutWithSlowError(): Promise<void> {
  *   const iterator = gen0to999errorAsyncSlow();
@@ -390,7 +390,7 @@
  * @example
  * Performance analysis of slow failing operations:
  * ```ts
- * import { gen0to999errorAsyncSlow } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { gen0to999errorAsyncSlow } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function analyzeSlowFailure(): Promise<void> {
  *   const iterator = gen0to999errorAsyncSlow();

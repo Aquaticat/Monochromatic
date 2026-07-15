@@ -1,6 +1,6 @@
 {
   "license": "LGPL-3.0-or-later",
-  "name": "@monochromatic-dev/test-fixture-data-sequences",
+  "name": "@monochromatic-dev/test-fixture-data-sequence",
   "description": "Reusable numeric test data: 0-999 arrays, sync/async generators, progressive-delay promises for benchmarking and async pattern tests.",
   "version": "0.0.1",
   "private": true,

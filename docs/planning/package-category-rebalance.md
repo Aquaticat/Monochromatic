@@ -1422,7 +1422,7 @@ Likely owner-specific fixture candidates:
 - `test-fixture/file-enforcer-perf`:
   owned by `dev-script/file-enforcer`,
    unless it must stay package-like for benchmark isolation.
-- `test-fixture/data-sequences`:
+- `test-fixture/data-sequence`:
   owner not yet identified;
   confirm its consumer before moving it.
 

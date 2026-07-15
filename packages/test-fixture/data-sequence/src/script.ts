@@ -19,7 +19,7 @@
  * @example
  * Using the array generation logic:
  * ```ts
- * import { generateConsecutiveArray } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { generateConsecutiveArray } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * // Generate smaller array for quick tests
  * const smallArray = generateConsecutiveArray(100); // [0, 1, 2, ..., 99]
@@ -34,7 +34,7 @@
  * @example
  * Using the promise generation logic:
  * ```ts
- * import { generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testCustomPromises(): Promise<void> {
  *   // Generate fewer promises for faster tests
@@ -52,7 +52,7 @@
  * @example
  * Creating custom fixture variations:
  * ```ts
- * import { generateConsecutiveArray, generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { generateConsecutiveArray, generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * // Custom fixtures for specific test scenarios
  * const mediumArray = generateConsecutiveArray(500); // Mid-size for balanced tests
@@ -88,7 +88,7 @@
  * @example
  * Generating arrays of different sizes:
  * ```ts
- * import { generateConsecutiveArray } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { generateConsecutiveArray } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * const tiny = generateConsecutiveArray(5);     // [0, 1, 2, 3, 4]
  * const small = generateConsecutiveArray(10);   // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -102,7 +102,7 @@
  * @example
  * Using for test parameterization:
  * ```ts
- * import { generateConsecutiveArray } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { generateConsecutiveArray } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * function testArrayProcessing(size: number): void {
  *   const testData = generateConsecutiveArray(size);
@@ -142,7 +142,7 @@ export function generateConsecutiveArray(
  * @example
  * Generating promise arrays of different sizes:
  * ```ts
- * import { generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testDifferentSizes(): Promise<void> {
  *   // Quick test with 10 promises (0-9ms delays)
@@ -162,7 +162,7 @@ export function generateConsecutiveArray(
  * @example
  * Testing async concurrency patterns:
  * ```ts
- * import { generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testConcurrencyPatterns(): Promise<void> {
  *   const promises = generateProgressivePromises(20);
@@ -188,7 +188,7 @@ export function generateConsecutiveArray(
  * @example
  * Creating custom timeout scenarios:
  * ```ts
- * import { generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { generateProgressivePromises } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testWithCustomTimeout(timeoutMs: number): Promise<void> {
  *   const promises = generateProgressivePromises(100);

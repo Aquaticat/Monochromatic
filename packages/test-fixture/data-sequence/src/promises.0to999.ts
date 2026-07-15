@@ -23,7 +23,7 @@
  * @example
  * Testing concurrent promise execution with Promise.all:
  * ```ts
- * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testConcurrentExecution(): Promise<void> {
  *   const start = Date.now();
@@ -41,7 +41,7 @@
  * @example
  * Testing sequential promise execution:
  * ```ts
- * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testSequentialExecution(): Promise<void> {
  *   const start = Date.now();
@@ -62,7 +62,7 @@
  * @example
  * Testing timeout scenarios with Promise.race:
  * ```ts
- * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testWithTimeout(): Promise<void> {
  *   const timeout = 50; // 50ms timeout
@@ -88,7 +88,7 @@
  * @example
  * Testing Promise.allSettled for handling mixed results:
  * ```ts
- * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testAllSettled(): Promise<void> {
  *   // Combine some fast promises with timeout racing
@@ -117,7 +117,7 @@
  * @example
  * Performance testing and benchmarking:
  * ```ts
- * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function benchmarkDifferentStrategies(): Promise<void> {
  *   const testPromises = promises0to999.slice(0, 50);
@@ -142,7 +142,7 @@
  * @example
  * Testing promise resolution order and timing:
  * ```ts
- * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequences';
+ * import { promises0to999 } from '@monochromatic-dev/test-fixture-data-sequence';
  *
  * async function testResolutionOrder(): Promise<void> {
  *   const resolutionOrder: number[] = [];

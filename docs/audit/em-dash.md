@@ -3835,12 +3835,12 @@ Replace with proper punctuation or restructure sentence.
    /** Number of mebibytes per allocation chunk -- large enough to exhaust memory in a few iterations.
    */
 
-### packages/test-fixture/data-sequences/src/array.0to999.ts
+### packages/test-fixture/data-sequence/src/array.0to999.ts
 
 - Line 1:
    /* v8 ignore file -- @preserve */
 
-### packages/test-fixture/data-sequences/src/generator.0to999.ts
+### packages/test-fixture/data-sequence/src/generator.0to999.ts
 
 - Line 1:
    /* v8 ignore file -- @preserve */
@@ -3850,7 +3850,7 @@ Replace with proper punctuation or restructure sentence.
    error handling,
    and p
 
-### packages/test-fixture/data-sequences/src/promises.0to999.ts
+### packages/test-fixture/data-sequence/src/promises.0to999.ts
 
 - Line 1:
    /* v8 ignore file -- @preserve */
@@ -3859,7 +3859,7 @@ Replace with proper punctuation or restructure sentence.
    concurrent processing,
    and performance char
 
-### packages/test-fixture/data-sequences/src/script.ts
+### packages/test-fixture/data-sequence/src/script.ts
 
 - Line 3:
    //region Fixture Data Generation Utility -- Provides manual generation logic for creating fixture data arrays and promises used in testing scenarios

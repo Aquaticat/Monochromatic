@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import type { ContentPart } from '@monochromatic-dev/module-llm-types';
+ * import type { ContentPart } from '@monochromatic-dev/module-llm-type';
  *
  * const parts: readonly ContentPart[] = [
  *   { type: 'text', text: 'Describe this image.', },

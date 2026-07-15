@@ -22,7 +22,7 @@
  *   type ChatCompletionResponse,
  *   type ChatMessage,
  *   type ContentPart,
- * } from '@monochromatic-dev/module-llm-types';
+ * } from '@monochromatic-dev/module-llm-type';
  * ```
  *
  * @packageDocumentation

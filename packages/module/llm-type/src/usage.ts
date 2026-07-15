@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import type { CompletionUsage } from '@monochromatic-dev/module-llm-types';
+ * import type { CompletionUsage } from '@monochromatic-dev/module-llm-type';
  *
  * const usage: CompletionUsage = { prompt_tokens: 12, completion_tokens: 34, };
  * ```
