@@ -182,10 +182,12 @@ rather than one entry per package name.
 - `package-paused/` internals keep their plural dirs: the tree is
   workspace-inert and frozen; only stale renamed-package references were swept.
 - Forbidden-strings entries for retired identifiers were skipped by user decision.
-- The `dev-script-file-enforcer` generated-policy-contracts test fails for a
+- The `dev-script-file-enforcer` generated-policy-contracts test failed for a
   preexisting reason unrelated to the renames:
   commit b979593d5 (readonly-rule findings sweep, earlier the same day)
   removed the lazy-provider mutation contract from canonical policy sources
-  while the test still asserts it; verified via git log -S.
+  while the test still asserted it.
+  Fixed in f35655481: the dead generator strip is gone and the test now
+  asserts both canonical and generated sources stay contract-free.
 - User-global configs updated: `~/.pi/agent/settings.json` plugin paths and
   `~/.claude/settings.json` statusline path point at `package/...`.
