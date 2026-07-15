@@ -21,6 +21,11 @@ export type JsonValue =
 export type JsonObject = Record<string, JsonValue>;
 
 /**
+ * Readonly JSON object view accepted by nonmutating helpers.
+ */
+export type ReadonlyJsonObject = Readonly<Record<string, JsonValue>>;
+
+/**
  * Checks whether a value is a non-array JSON object.
  *
  * @param value - Value to test.
@@ -159,7 +164,7 @@ export function omitJsonKey(
     key,
   }: {
     readonly key: string;
-    readonly object: JsonObject
+    readonly object: ReadonlyJsonObject;
   },
 ): JsonObject {
   /**
@@ -204,9 +209,9 @@ export function mergeFlatJson(
     set,
     arrayUnion,
   }: {
-    readonly arrayUnion?: Record<string, readonly string[]>;
-    readonly base: JsonObject;
-    readonly set?: Record<string, JsonValue>;
+    readonly arrayUnion?: Readonly<Record<string, readonly string[]>>;
+    readonly base: ReadonlyJsonObject;
+    readonly set?: ReadonlyJsonObject;
   },
 ): JsonObject {
   /**
@@ -275,8 +280,8 @@ export function mergeObjectDefaults(
     base,
     defaults,
   }: {
-    readonly base: JsonObject;
-    readonly defaults: Record<string, JsonValue>
+    readonly base: ReadonlyJsonObject;
+    readonly defaults: ReadonlyJsonObject;
   },
 ): JsonObject {
   /**

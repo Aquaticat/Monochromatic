@@ -127,19 +127,18 @@ export async function manageCargoManifests(
   },
 ): Promise<void> {
   /**
-   * First-party manifest paths gathered across every discovery glob.
+   * First-party manifest paths gathered concurrently across every discovery glob.
    */
-  const manifestPaths: string[] = [];
-  for (const manifestGlob of manifestGlobs) {
-    for await (const manifestPath of glob(manifestGlob,)) {
-      if (isFirstPartyManifest(manifestPath,))
-        manifestPaths.push(manifestPath,);
-    }
-  }
+  const manifestPaths = (await Promise.all(manifestGlobs.map(
+    async function collectGlob(manifestGlob,): Promise<readonly string[]> {
+      return (await Array.fromAsync(glob(manifestGlob,),))
+        .filter(isFirstPartyManifest,);
+    },
+  ),)).flat();
   /**
    * Unique paths, sorted for deterministic logging and safe from overlapping globs.
    */
-  const uniqueManifestPaths = [...new Set(manifestPaths,),].sort();
+  const uniqueManifestPaths = [...new Set(manifestPaths,),].toSorted();
   addWatchedPaths(uniqueManifestPaths,);
 
   await Promise.all(uniqueManifestPaths.map(async function enforceOne(manifestPath,): Promise<void> {
