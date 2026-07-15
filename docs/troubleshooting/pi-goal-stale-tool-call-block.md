@@ -509,48 +509,48 @@ The reproduction and current-release source trace would be additive to that thre
 
 ### Constraint check
 
-1.  **Is it really upstream's fault?**
+#### Constraint 1: Is it really upstream's fault?
 
-    Yes for the observed global block.
-    The extension installs an unscoped `tool_call` handler and returns the block before unrelated tools execute.
+Yes for the observed global block.
+The extension installs an unscoped `tool_call` handler and returns the block before unrelated tools execute.
 
-2.  **Can upstream fix it?**
+#### Constraint 2: Can upstream fix it?
 
-    Yes.
-    Upstream could remove the stopped-goal tool handler or scope stale rejection to goal-owned completion behavior.
-    Pi itself does not require the global latch.
+Yes.
+Upstream could remove the stopped-goal tool handler or scope stale rejection to goal-owned completion behavior.
+Pi itself does not require the global latch.
 
-3.  **Are they supporting this use case?**
+#### Constraint 3: Are they supporting this use case?
 
-    No.
-    The `v0.15.1` README explicitly advertises blocking stale tool calls after paused,
-    blocked,
-    or usage-limited transitions.
-    The desired rule that unrelated recovery tools always remain available conflicts with that documented policy.
+No.
+The `v0.15.1` README explicitly advertises blocking stale tool calls after paused,
+blocked,
+or usage-limited transitions.
+The desired rule that unrelated recovery tools always remain available conflicts with that documented policy.
 
-4.  **Would the repository welcome a contribution?**
+#### Constraint 4: Would the repository welcome a contribution?
 
-    Soft yes.
-    Issues are enabled,
-    the root README documents local development,
-    and PR #125 changed this path with tests.
-    No `CONTRIBUTING.md`,
-    issue template,
-    pull-request template,
-    or AI-assistance ban was found in the inspected repository.
+Soft yes.
+Issues are enabled,
+the root README documents local development,
+and PR #125 changed this path with tests.
+No `CONTRIBUTING.md`,
+issue template,
+pull-request template,
+or AI-assistance ban was found in the inspected repository.
 
-5.  **Will they likely fix it?**
+#### Constraint 5: Will they likely fix it?
 
-    No current positive signal.
-    The latest inspected release still documents the block as intended behavior and tests the stopped-goal policy.
-    There is no maintainer statement accepting the broader unrelated-tool requirement.
+No current positive signal.
+The latest inspected release still documents the block as intended behavior and tests the stopped-goal policy.
+There is no maintainer statement accepting the broader unrelated-tool requirement.
 
-6.  **Have we prototyped a minimal upstream-compatible fix?**
+#### Constraint 6: Have we prototyped a minimal upstream-compatible fix?
 
-    No.
-    Constraints three and five do not hold,
-    so the troubleshooting policy's automatic upstream prototype requirement does not trigger.
-    The planned repository-owned replacement intentionally chooses different product semantics rather than patching the third-party package in place.
+No.
+Constraints three and five do not hold,
+so the troubleshooting policy's automatic upstream prototype requirement does not trigger.
+The planned repository-owned replacement intentionally chooses different product semantics rather than patching the third-party package in place.
 
 The upstream contribution gate does not pass.
 Do not post the draft as-is.
