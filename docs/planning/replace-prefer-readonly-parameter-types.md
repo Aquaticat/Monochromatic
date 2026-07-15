@@ -51,13 +51,16 @@ The migration-specific acceptance gate is complete.
   Commits `965d4cf32` and `b8a649536` use one-shot release operations and prevent a vanished predecessor observation from
   deleting its successor.
   Commit `4e28505f8` releases 8 writers together against one manifest lock.
+  Commit `920bc0439` starts a real competing `acquireManifestLock()` while owner metadata remains privately staged,
+  proves that acquisition stays pending,
+  then proves it succeeds only after publication and predecessor release.
 - Commit `764a3a766` guards the intended generated-policy boundary:
   canonical repository and forbidden-string policies retain the lazy-provider contract,
   while generated Git CLI mirrors omit the stale inlined contract.
   Final file-enforcer build,
   type,
   unit,
-  and Oxlint tasks passed in `proc_313` to `proc_316`.
+  and Oxlint tasks passed in `proc_327` to `proc_330`.
 - Generated files are synchronized and idempotent.
   `git diff --check` passed,
   and working-tree review preserved unrelated desktop,
