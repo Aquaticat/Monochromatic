@@ -108,6 +108,24 @@ const baseOutput = {
 };
 
 /**
+ * Narrow a flavor input union to its list form.
+ *
+ * @param value - Input paths as a list or a named-entry record.
+ *
+ * @returns Whether value is the list form.
+ *
+ * @example
+ * ```ts
+ * isInputList(['./src/index.ts']);
+ * ```
+ */
+function isInputList(
+  value: readonly string[] | Readonly<Record<string, string>>,
+): value is readonly string[] {
+  return Array.isArray(value,);
+}
+
+/**
  * Build one Node flavor config with overridable input and output directory.
  *
  * @param input - Source input paths; defaults to the package index.
@@ -146,7 +164,7 @@ export function nodeConfig(
   return defineConfig({
     ...baseOptions,
     ...external === undefined ? {} : { external: [...external,], },
-    input: Array.isArray(input,) ? [...input as readonly string[],] : { ...input as Readonly<Record<string, string>>, },
+    input: isInputList(input,) ? [...input,] : { ...input, },
     output: {
       ...baseOutput,
       dir: outputDir,

@@ -41,7 +41,7 @@ export const CLIENT_ALWAYS_BUNDLE: readonly string[] = [
 export async function clientExternalFor({ alwaysBundle, }: {
   readonly alwaysBundle: readonly string[];
 },): Promise<RegExp[]> {
-  return packageExternals({ alwaysBundle, },);
+  return await packageExternals({ alwaysBundle, },);
 }
 
 /**
