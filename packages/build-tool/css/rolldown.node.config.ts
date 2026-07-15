@@ -1,11 +1,7 @@
-import base from '@monochromatic-dev/config-tsdown/.node.ts';
-import {
-  defineConfig,
-  type UserConfig,
-} from 'tsdown';
+import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- * Node-side tsdown build for `build-tool-css`.
+ * Node-side rolldown build for `build-tool-css`.
  *
  * Two entries: the library (`src/index.ts`, emitted as `index.mjs`, the `.`
  * export) and the CLI (`src/cli.ts`, emitted as `cli.mjs`, the `build-css`
@@ -15,12 +11,11 @@ import {
  * `build-css` shim.
  * node-only (postcss, optique, node fs via module-fs-path).
  */
-const config: UserConfig = defineConfig({
-  ...base,
-  entry: [
-    './src/index.ts',
-    './src/cli.ts',
-  ],
+const config = nodeConfig({
+  input: [
+      './src/index.ts',
+      './src/cli.ts',
+    ],
 },);
 
 export default config;

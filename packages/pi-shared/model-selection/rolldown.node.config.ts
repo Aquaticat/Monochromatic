@@ -1,8 +1,4 @@
-import base from '@monochromatic-dev/config-tsdown/.node.ts';
-import {
-  defineConfig,
-  type UserConfig,
-} from 'tsdown';
+import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
  * Node build configuration: a single `src/index.ts` entry that re-exports
@@ -12,11 +8,10 @@ import {
  * (no consumer imports a feature subpath). pi peer deps stay external via the
  * base config's `neverBundle`.
  */
-const config: UserConfig = defineConfig({
-  ...base,
-  entry: [
-    './src/index.ts',
-  ],
+const config = nodeConfig({
+  input: [
+      './src/index.ts',
+    ],
 },);
 
 export default config;

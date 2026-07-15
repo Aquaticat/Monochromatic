@@ -1,11 +1,7 @@
-import base from '@monochromatic-dev/config-tsdown/.node.ts';
-import {
-  defineConfig,
-  type UserConfig,
-} from 'tsdown';
+import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- * Node-side tsdown build for `dev-script-vm-builder`.
+ * Node-side rolldown build for `dev-script-vm-builder`.
  *
  * The package has no `src/index.ts`; its declared `bin` is
  * `src/build-and-import.ts`, so the entry is overridden to that file. It
@@ -14,11 +10,10 @@ import {
  * the bundle is node-only. The auxiliary `import.ts`/`sign-and-push.ts`
  * dev scripts are not bins and stay source-run via their mise tasks.
  */
-const config: UserConfig = defineConfig({
-  ...base,
-  entry: [
-    './src/build-and-import.ts',
-  ],
+const config = nodeConfig({
+  input: [
+      './src/build-and-import.ts',
+    ],
 },);
 
 export default config;

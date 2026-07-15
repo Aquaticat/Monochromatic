@@ -42,6 +42,32 @@ export const NODE_ALWAYS_EXTERNAL: readonly string[] = [
 ];
 
 /**
+ * Build the Node flavor external list for a custom bundle-inclusion set.
+ *
+ * Combines manifest-derived externals with the pi runtime peers kept
+ * external even when undeclared.
+ *
+ * @param alwaysBundle - Patterns whose matching dependencies must stay inline.
+ *
+ * @returns Regex list for rolldown's `external` input option.
+ *
+ * @example
+ * ```ts
+ * external: await nodeExternal({ alwaysBundle: ['\@monochromatic-dev/**', '\@optique/**',], },),
+ * ```
+ */
+export async function nodeExternal({ alwaysBundle, }: {
+  readonly alwaysBundle: readonly string[];
+},): Promise<RegExp[]> {
+  return [
+    ...await packageExternals({ alwaysBundle, },),
+    ...NODE_ALWAYS_EXTERNAL.map(function toMatcher(name: string,): RegExp {
+      return anchoredExternal(name,);
+    },),
+  ];
+}
+
+/**
  * Shared raw-rolldown options for Node platform builds, without an input.
  *
  * Bundles workspace dependencies (`@monochromatic-dev/*`) into the output
@@ -55,12 +81,7 @@ export const NODE_ALWAYS_EXTERNAL: readonly string[] = [
  */
 const baseOptions: RolldownOptions = {
   platform: 'node',
-  external: [
-    ...await packageExternals({ alwaysBundle: NODE_ALWAYS_BUNDLE, },),
-    ...NODE_ALWAYS_EXTERNAL.map(function toMatcher(name: string,): RegExp {
-      return anchoredExternal(name,);
-    },),
-  ],
+  external: await nodeExternal({ alwaysBundle: NODE_ALWAYS_BUNDLE, },),
   transform: { target: [...target,], },
   plugins: [
     dts({ generator: 'oxc', },),
@@ -97,6 +118,9 @@ const baseOutput = {
  * @param outputOverrides - Shallow output-option overrides for consumers
  *   needing e.g. `minify: false` or `codeSplitting: false`.
  *
+ * @param external - Replacement external list from {@link nodeExternal} for
+ *   consumers with custom bundle-inclusion patterns.
+ *
  * @returns Node flavor rolldown config for one self-contained build.
  *
  * @example
@@ -111,15 +135,18 @@ export function nodeConfig(
     input = ['./src/index.ts',],
     outputDir = 'dist/final/node',
     outputOverrides = {},
+    external,
   }: {
-    readonly input?: readonly string[];
+    readonly input?: readonly string[] | Readonly<Record<string, string>>;
     readonly outputDir?: string;
     readonly outputOverrides?: OutputOptions;
+    readonly external?: readonly RegExp[];
   } = {},
 ): RolldownOptions {
   return defineConfig({
     ...baseOptions,
-    input: [...input,],
+    ...external === undefined ? {} : { external: [...external,], },
+    input: Array.isArray(input,) ? [...input as readonly string[],] : { ...input as Readonly<Record<string, string>>, },
     output: {
       ...baseOutput,
       dir: outputDir,

@@ -8,7 +8,7 @@
     "build-and-import": "dist/final/node/build-and-import.mjs"
   },
   "devDependencies": {
-    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/node": "catalog:"
   },
