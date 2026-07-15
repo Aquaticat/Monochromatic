@@ -12,7 +12,7 @@ Wrapping callback-bearing option objects in `Readonly` also produced dishonest r
 
 ## Source audit
 
-The audit used Node.js `v26.5.0` embedded sources.
+The audit used `Node.js` `v26.5.0` embedded sources.
 
 Audited modules:
 

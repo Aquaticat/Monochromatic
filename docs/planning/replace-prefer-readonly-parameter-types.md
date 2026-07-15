@@ -513,8 +513,9 @@ The semantic-rule implementation and shared-configuration migration are complete
   and unit tests;
 - commits `728fdfbde`,
   `43401eb56`,
-  and `68a0e2f71` audit locale date formatting and Buffer concatenation,
-  replace unsupported `Map.groupBy` calls with encounter-ordered grouping,
+  and `68a0e2f71` audit locale date formatting and `Buffer` concatenation,
+  replace unsupported `Map.groupBy` calls
+  with encounter-ordered grouping,
   and expose DOM,
   crypto,
   and logger retention effects in Aquati.cat;

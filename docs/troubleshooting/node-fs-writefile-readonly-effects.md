@@ -10,7 +10,7 @@ That observation is insufficient to classify the calls as observational.
 
 ## Source audit
 
-The audit used Node.js `v26.5.0` embedded module `internal/fs/promises`.
+The audit used `Node.js` `v26.5.0` embedded module `internal/fs/promises`.
 The embedded source digest is
 `783a0f44a0689f4d4773f7202e3d0425defe9fe8b900ee125174ceba7fbb0bdf`.
 
