@@ -1,5 +1,6 @@
 import {
   defineConfig,
+  type OutputOptions,
   type RolldownOptions,
 } from 'rolldown';
 import { dts, } from 'rolldown-plugin-dts';
@@ -91,6 +92,8 @@ const baseOutput = {
  * @param input - Source input paths; defaults to the package index.
  * @param outputDir - Output directory; committed Claude Code plugin bundles
  *   override this to `bundle/node` (see `docs/decisions/gitignore-negations.md`).
+ * @param outputOverrides - Shallow output-option overrides for consumers
+ *   needing e.g. `minify: false` or `codeSplitting: false`.
  *
  * @returns Node flavor rolldown config for one self-contained build.
  *
@@ -101,10 +104,13 @@ const baseOutput = {
  * export default nodeConfig({ outputDir: 'bundle/node', },);
  * ```
  */
-export function nodeConfig({ input = ['./src/index.ts',], outputDir = 'dist/final/node', }: {
-  readonly input?: readonly string[];
-  readonly outputDir?: string;
-} = {},): RolldownOptions {
+export function nodeConfig(
+  { input = ['./src/index.ts',], outputDir = 'dist/final/node', outputOverrides = {}, }: {
+    readonly input?: readonly string[];
+    readonly outputDir?: string;
+    readonly outputOverrides?: OutputOptions;
+  } = {},
+): RolldownOptions {
   return defineConfig({
     ...baseOptions,
     input: [...input,],
@@ -112,6 +118,7 @@ export function nodeConfig({ input = ['./src/index.ts',], outputDir = 'dist/fina
       ...baseOutput,
       dir: outputDir,
       cleanDir: true,
+      ...outputOverrides,
     },
   },);
 }
