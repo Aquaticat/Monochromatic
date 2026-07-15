@@ -161,7 +161,10 @@ Node APIs without audited embedded JavaScript evidence remain opaque.
 
 ## Resolution
 
-Host intrinsic resolution now separates identity from authority:
+Host intrinsic resolution now separates identity from authority.
+Imported and global callable application honors the same exact call-arity guards as receiver-method application;
+without that guard,
+`spawn(command, args, options)` incorrectly inherited the two-argument options effect for `args`.
 
 1. TypeScript 7 resolves exact declaration provenance,
    owner,
