@@ -65,19 +65,31 @@ await describe({
           ownerText,
         },);
 
-        expect(await lockOwnerState(lockPath,),).toBe('absent',);
-        expect(JSON.parse(await readFile(
+        /**
+         * Parsed complete owner expected at each publication stage.
+         */
+        const expectedOwner: unknown = JSON.parse(ownerText,);
+        /**
+         * Private staged owner visible only by its private path.
+         */
+        const stagedOwner: unknown = JSON.parse(await readFile(
           join(lockPath, 'owner.pending.json',),
           'utf8',
-        ),),).toEqual(JSON.parse(ownerText,),);
+        ),);
+        expect(await lockOwnerState(lockPath,),).toBe('absent',);
+        expect(stagedOwner,).toEqual(expectedOwner,);
 
         await publishLockOwnerPublication(lockPath,);
 
-        expect(await lockOwnerState(lockPath,),).toBe('live',);
-        expect(JSON.parse(await readFile(
+        /**
+         * Owner visible to contenders only after atomic rename.
+         */
+        const publishedOwner: unknown = JSON.parse(await readFile(
           join(lockPath, 'owner.json',),
           'utf8',
-        ),),).toEqual(JSON.parse(ownerText,),);
+        ),);
+        expect(await lockOwnerState(lockPath,),).toBe('live',);
+        expect(publishedOwner,).toEqual(expectedOwner,);
       },
     },),
 
