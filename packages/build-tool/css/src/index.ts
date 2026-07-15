@@ -6,7 +6,7 @@ import {
   dirname,
   resolve,
 } from '@monochromatic-dev/module-fs-path/ts';
-import postcss, { parse, } from 'postcss';
+import postcss from 'postcss';
 import { readCssFile, } from './fs.ts';
 import { postcssInlineImport, } from './import.ts';
 import {
@@ -36,6 +36,7 @@ export type BuildOptions = {
 
 //region Re-exports: public API surface for consumers importing from build.ts
 
+export { applyMixins, } from './apply-mixins.ts';
 export {
   collectMixins,
   expandApplyRules,
@@ -44,60 +45,6 @@ export {
 } from './mixin.ts';
 
 //endregion Re-exports
-
-/**
- * Expands \@apply references in a CSS string using mixin definitions
- * from a separate CSS source string.
- *
- * This is the high-level string-to-string API for consumers that already
- * have CSS text in memory (e.g. web component Shadow DOM styles). It
- * encapsulates the full postcss parse → {@link collectMixins} →
- * {@link expandApplyRules} → serialize pipeline so callers never touch
- * postcss directly.
- *
- * @param cssText - CSS string containing \@apply references to expand
- *
- * @param mixinCssText - CSS string containing \@mixin definitions
- *
- * @returns Expanded CSS with all \@apply rules replaced by mixin bodies
- *
- * @throws When an \@apply references an unknown mixin
- *
- * @example
- * ```ts
- * const expanded = applyMixins({
- *   cssText: '.btn { \@apply --card; }',
- *   mixinCssText: '\@mixin --card { padding: 1rem; }',
- * });
- * ```
- */
-export function applyMixins({
-  cssText,
-  mixinCssText,
-}: {
-  readonly cssText: string;
-  readonly mixinCssText: string;
-},): string {
-  mixins.clear();
-
-  /**
-   * PostCSS AST of mixin definitions, parsed to extract \@mixin rules.
-   */
-  const mixinRoot = parse(
-    mixinCssText,
-    { from: 'mixins.css', },
-  );
-  collectMixins(mixinRoot,);
-  expandMixinBodies();
-
-  /**
-   * PostCSS AST of the consumer CSS, parsed for \@apply expansion.
-   */
-  const root = parse(cssText,);
-  expandApplyRules(root,);
-
-  return root.toString();
-}
 
 /**
  * Builds CSS by inlining \@import rules and processing \@mixin/\@apply.

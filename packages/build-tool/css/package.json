@@ -11,7 +11,7 @@
       "default": "./dist/final/node/index.mjs"
     },
     "./ts": "./src/index.ts",
-    "./ts/*": "./src/*"
+    "./ts/*": "./src/*.ts"
   },
   "bin": {
     "build-css": "dist/final/node/cli.mjs"
