@@ -151,6 +151,8 @@ function buildMjsRecord({
  *
  * @param authorizingRoots - explicit and inherited provenance
  *
+ * @mutates candidate through handle.writeFile native-boundary access to candidate.bytes
+ *
  * @returns disposable candidate with explicit commit operation
  *
  * @example

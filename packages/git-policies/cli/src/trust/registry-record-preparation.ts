@@ -235,15 +235,26 @@ export async function prepareTrustRecord({
       path: snapshotDirectory,
       directory: true,
     },);
-    await Promise.all([...snapshots.entries(),].map(async function writeSnapshot([relativePath, bytes,],) {
-      await writePrivateFile({
-        path: join(
-          temporaryDirectory,
-          relativePath,
-        ),
-        bytes,
-      },);
-    },),);
+    await Promise.all([...snapshots.entries(),].map(
+      /**
+       * Writes one generated snapshot.
+       *
+       * @param relativePath - record-relative destination
+       *
+       * @param bytes - generated snapshot bytes
+       *
+       * @mutates bytes through handle.writeFile native-boundary access
+       */
+      async function writeSnapshot([relativePath, bytes,],) {
+        await writePrivateFile({
+          path: join(
+            temporaryDirectory,
+            relativePath,
+          ),
+          bytes,
+        },);
+      },
+    ),);
     await writePrivateFile({
       path: join(
         temporaryDirectory,
