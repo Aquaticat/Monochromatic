@@ -31,15 +31,12 @@ export type RenderResult = {
 /**
  * Builds the full task-detail Shadow DOM content.
  *
- * @param shadow - Shadow root to render into
- *
- * @param task - Task data to display
- *
- * @param mode - "create" or "edit" display mode
- *
- * @param host - Host element for dispatching custom events
+ * @param options - Shadow root, task data, display mode, and host element.
  *
  * @returns References to title and description inputs
+ *
+ * @mutates options - Documents uncertainty propagated from
+ * `DOM commit 5796f716 dispatchEvent invokes listeners with event` and `shadow.addEventListener`.
  *
  * @example
  * ```ts
@@ -47,18 +44,22 @@ export type RenderResult = {
  * ```
  */
 export function renderTaskDetail(
-  {
-    shadow,
-    task,
-    mode,
-    host,
-  }: {
+  options: {
     readonly shadow: ShadowRoot;
     readonly task: Task;
     readonly mode: TaskDetailMode;
     readonly host: HTMLElement;
   },
 ): RenderResult {
+  /**
+   * Render inputs separated after boundary contract attaches to their containing input.
+   */
+  const {
+    shadow,
+    task,
+    mode,
+    host,
+  } = options;
   /**
    * Branches header label, button class, and button text between create and edit.
    */

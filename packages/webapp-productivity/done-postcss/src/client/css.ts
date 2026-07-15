@@ -8,10 +8,9 @@
  * The mixin definitions are imported as a text string (bundled inline
  * by tsdown) so no filesystem access is needed at runtime.
  */
-// Importing applyMixins from the build-css index also installs the
-// `globalThis.process` PostCSS/node:path shim: the index's first statement is
-// `import './process-shim.ts'`, so the shim exists before postcss evaluates.
-import { applyMixins, } from '@monochromatic-dev/build-tool-css/ts';
+// Importing the browser-compatible boundary also installs its minimal
+// `globalThis.process` shim before PostCSS evaluates.
+import { applyMixins, } from '@monochromatic-dev/build-tool-css/ts/apply-mixins';
 // tsdown inlines the CSS file content as a string at bundle time
 import mixinSource from './mixins.css' with { type: 'text', };
 

@@ -3701,9 +3701,6 @@ importers:
       h3:
         specifier: 'catalog:'
         version: 2.0.1-rc.24
-      postcss:
-        specifier: '>=8.5.16'
-        version: 8.5.16
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*

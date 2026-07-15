@@ -105,6 +105,17 @@ export function buildActionButtonRow(
  *
  * @param descInput - Description textarea whose value is included in the event detail
  *
+ * @mutates shadow - `shadow.addEventListener` changes listener state and retains callback.
+ *
+ * @mutates host - `shadow.addEventListener` retains callback that calls
+ * `DOM commit 5796f716 dispatchEvent invokes listeners with event` on host.
+ *
+ * @mutates titleInput - `shadow.addEventListener` retains callback that reads titleInput before
+ * `DOM commit 5796f716 dispatchEvent invokes listeners with event`.
+ *
+ * @mutates descInput - `shadow.addEventListener` retains callback that reads descInput before
+ * `DOM commit 5796f716 dispatchEvent invokes listeners with event`.
+ *
  * @example
  * ```ts
  * attachActionHandler({ shadow, host, titleInput, descInput });

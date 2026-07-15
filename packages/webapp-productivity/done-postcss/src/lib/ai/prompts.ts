@@ -25,6 +25,7 @@ import type { ChatMessage, } from './client.ts';
  * @returns Chat messages ready for {@link chatCompletion}
  *
  * @mutates existingTags - `JSON.stringify` may invoke array accessors or proxy traps.
+ *
  * @mutates existingLocations - `JSON.stringify` may invoke array accessors or proxy traps.
  *
  * @example

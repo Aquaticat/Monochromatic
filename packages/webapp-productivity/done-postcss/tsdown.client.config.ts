@@ -15,6 +15,14 @@ import {
  */
 const config: UserConfig = defineConfig({
   ...base,
+  deps: {
+    ...base.deps,
+    onlyBundle: [
+      'nanoid',
+      'picocolors',
+      'postcss',
+    ],
+  },
   entry: [
     './src/client/inbox.ts',
     './src/client/in-progress.ts',
@@ -22,6 +30,7 @@ const config: UserConfig = defineConfig({
     './src/client/search.ts',
     './src/client/settings.ts',
   ],
+  platform: 'browser',
   plugins: [importAttributesPlugin(),],
 },);
 export default config;

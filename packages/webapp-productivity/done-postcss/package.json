@@ -12,8 +12,7 @@
     "@monochromatic-dev/module-llm-types": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@tursodatabase/database": "catalog:",
-    "h3": "catalog:",
-    "postcss": "catalog:"
+    "h3": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

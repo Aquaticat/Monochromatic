@@ -625,3 +625,106 @@ check that the package is listed in your production dependencies.
 See [Dependencies](../options/dependencies.md) for fine-grained control
 over which packages are bundled or externalized.
 ```
+
+## Browser client bundle leaves package imports unresolved
+
+### Symptom
+
+The Done PostCSS page served its client module successfully,
+but Chromium rejected bare imports before hydration:
+
+```text
+TypeError: Failed to resolve module specifier "postcss".
+Relative references must start with either "/", "./", or "../".
+```
+
+Forcing only `postcss` into the bundle exposed a second bare import:
+
+```text
+TypeError: Failed to resolve module specifier
+"@monochromatic-dev/module-hyperscript/ts".
+```
+
+The failed artifact was `packages/webapp-productivity/done-postcss/dist/client/inbox.js`.
+
+### Root cause
+
+The behavior was the composition of package metadata and tsdown's documented dependency policy,
+not a Rolldown resolution failure.
+
+`packages/webapp-productivity/done-postcss/package.json` listed `postcss` as a production dependency,
+even though its source imported PostCSS only through `@monochromatic-dev/build-tool-css`.
+tsdown `0.22.5` collects root production dependencies in `getProductionDeps()`
+and `externalStrategy()` externalizes an exact package name or its subpaths.
+The implementation is in [`src/features/deps.ts`][tsdown-deps] at revision
+`940f65248715316b4087bb79e6bf05c77d101c10`.
+Its source digest is
+`403f204c5183ce8c264cae3d317a212bddbc06924d09286d3c7b215b93e6e6da`.
+
+A config override that replaced `base.deps.alwaysBundle` with only `postcss`
+also discarded the shared `@monochromatic-dev/**` rule.
+That caused the subsequent workspace-package import failure.
+
+PostCSS `8.5.16` publishes browser substitutions for `fs`,
+`path`,
+`url`,
+`source-map-js`,
+and its terminal highlighter.
+Rolldown `1.1.5` enables package `browser` alias fields only for `platform: 'browser'`.
+The resolver branch is in [`resolver_config.rs`][rolldown-resolver] at revision
+`f09947ab017d6df74299f691853dcfc4f4f0f86e`.
+Its source digest is
+`30cde9f3fffb37c8b79180382a57b0819250d492ad135469a72b8abf883aafd1`.
+
+### Verified repair
+
+The repair keeps each ownership boundary explicit:
+
+- Removed the redundant root `postcss` dependency from
+  `packages/webapp-productivity/done-postcss/package.json`.
+  `@monochromatic-dev/build-tool-css` remains the package that owns PostCSS.
+- Added `packages/build-tool/css/src/apply-mixins.ts` as a browser-compatible entry
+  that excludes file-system and package-resolution code from the client graph.
+- Changed `packages/webapp-productivity/done-postcss/src/client/css.ts`
+  to import `@monochromatic-dev/build-tool-css/ts/apply-mixins`.
+- Set `platform: 'browser'` in
+  `packages/webapp-productivity/done-postcss/tsdown.client.config.ts`
+  so PostCSS's published browser substitutions apply.
+- Preserved `base.deps.alwaysBundle` and set `deps.onlyBundle`
+  to `nanoid`,
+  `picocolors`,
+  and `postcss`,
+  the dependencies observed in the generated bundle.
+
+`mise run //packages/webapp-productivity/done-postcss:build` then completed
+without unresolved imports or dependency hints.
+A text scan found no remaining bare package imports in `dist/client`.
+
+Browser verification used an in-memory database and exercised the generated page entries:
+
+```text
+DB_PATH=:memory: mise run //packages/webapp-productivity/done-postcss:serve:site
+```
+
+Chromium loaded Inbox,
+In Progress,
+Settings,
+Search,
+and task detail pages.
+The run created and found a task,
+started and stopped its timer,
+and saved an updated title.
+The final browser console contained application lifecycle logs only;
+the page-error collection was empty.
+
+### Why we do not file this upstream
+
+No upstream issue is warranted.
+tsdown behaved according to its production-dependency rules,
+and Rolldown applied browser aliases once the config selected the browser platform.
+The defects were the app's redundant dependency declaration,
+a config override that replaced inherited bundling policy,
+and a package entry that mixed browser and Node concerns.
+
+[tsdown-deps]: https://github.com/rolldown/tsdown/blob/940f65248715316b4087bb79e6bf05c77d101c10/src/features/deps.ts
+[rolldown-resolver]: https://github.com/rolldown/rolldown/blob/f09947ab017d6df74299f691853dcfc4f4f0f86e/crates/rolldown_resolver/src/resolver_config.rs

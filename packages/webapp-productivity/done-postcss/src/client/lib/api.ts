@@ -85,7 +85,8 @@ export async function api<TResponse = unknown,>(
   const response = await fetch(
     path,
     {
-      ...options,
+      method: options?.method ?? 'GET',
+      body: options?.body ?? null,
       headers: mergedHeaders,
     },
   );
