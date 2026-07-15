@@ -22,6 +22,7 @@ The audited outcomes are:
 - TypedArray identity searches and indexed reads are observational;
   TypedArray callback methods propagate receiver-reachable values,
   and `subarray` preserves receiver provenance through its shared view;
+- `DataView.prototype.getUint16` and `getUint32` read viewed bytes without changing them;
 - `Array.prototype.with` allocates a copy and is observational;
 - `Array.prototype.reduce` exposes accumulator,
   element,
@@ -75,6 +76,10 @@ Array and collection callback operations do not mutate their receiver directly,
 but they call user code with receiver-reachable values.
 The catalog therefore records callback argument positions separately from direct mutation targets.
 A zero-target callback operation is not complete until call analysis propagates callback mutation and opacity.
+
+`DataView.prototype.getUint16` and `getUint32` delegate to `GetViewValue`,
+which validates the receiver and reads bytes from its viewed buffer.
+Neither operation writes receiver or buffer state.
 
 The same distinction applies to `%TypedArray%` algorithms.
 The pinned clauses for `at`,

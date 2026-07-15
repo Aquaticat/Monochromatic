@@ -8,6 +8,8 @@
  * Exact source-derived supplemental algorithm identity keys.
  */
 export const HOST_STANDARD_SUPPLEMENTAL_ALGORITHM_IDS = [
+  "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-dataview.prototype.getuint16",
+  "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-dataview.prototype.getuint32",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-%typedarray%.prototype.at",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-%typedarray%.prototype.every",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-%typedarray%.prototype.findlastindex",

@@ -5,6 +5,7 @@
  */
 
 import { BROWSER_HOST_EFFECTS, } from './browser-host-effect-catalog.ts';
+import { ECMASCRIPT_DATA_VIEW_EFFECTS, } from './ecmascript-data-view-effect-catalog.ts';
 import { ECMASCRIPT_EFFECTS, } from './ecmascript-effect-catalog.ts';
 import { ECMASCRIPT_TYPED_ARRAY_EFFECTS, } from './ecmascript-typed-array-effect-catalog.ts';
 import {
@@ -203,6 +204,7 @@ export const NO_INTRINSIC_EFFECT: unique symbol = Symbol('no IntrinsicEffect ent
  * Complete audited intrinsic effect catalog.
  */
 export const INTRINSIC_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  ...ECMASCRIPT_DATA_VIEW_EFFECTS,
   ...ECMASCRIPT_EFFECTS,
   ...ECMASCRIPT_TYPED_ARRAY_EFFECTS,
   ...BROWSER_HOST_EFFECTS,

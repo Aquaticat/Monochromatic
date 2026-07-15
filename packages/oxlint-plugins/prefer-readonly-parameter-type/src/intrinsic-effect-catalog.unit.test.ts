@@ -185,6 +185,25 @@ await describe({
       },
     },),
     it({
+      name: 'records DataView integer observations',
+      fn: async () => {
+        [
+          'getUint16',
+          'getUint32',
+        ].forEach(function dataViewEffect(member,) {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'ecmascript', },
+            ownerType: 'DataView',
+            member,
+          },);
+          expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
+          if (effect === NO_INTRINSIC_EFFECT)
+            throw new Error(`Expected DataView.${member} effect.`,);
+          expect(effect.targets,).toEqual([],);
+        },);
+      },
+    },),
+    it({
       name: 'records TypedArray observation and callback effects',
       fn: async () => {
         const subarray = intrinsicEffect({
