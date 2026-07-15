@@ -1,18 +1,8 @@
-import { object, } from '@optique/core/constructs';
-import {
-  multiple,
-  optional,
-} from '@optique/core/modifiers';
-import { parseSync, } from '@optique/core/parser';
-import {
-  argument,
-  flag,
-  option,
-  passThrough,
-} from '@optique/core/primitives';
-import { string, } from '@optique/core/valueparser';
-
 import { PATHSPEC_SEPARATOR, } from '../escape-hatch.ts';
+import {
+  type ArgvSpec,
+  parseArgv,
+} from './argv.ts';
 import {
   DRY_RUN_COMMIT_ALIASES,
   INCLUDE_ALIASES,
@@ -36,117 +26,88 @@ export const COMMIT_ESCAPE_HATCH = '--no-enforce-only';
 
 //endregion Commit escape hatch
 
-//region Commit post-subcommand optique parser
+//region Commit post-subcommand region parser
 
 /**
- * Optique parser for the post-`commit` argv region.
+ * Declared option surface of the post-`commit` argv region.
  *
- * Declares the flags and value-taking options the commit-only rule needs to
- * decide whether to inject `-o`. Pathspec presence is detected separately by
- * {@link hasCommitPathspec}'s arity-aware scanner because Optique passthrough
- * cannot know whether unknown no-value flags such as `-q` consume the
- * following token.
+ * Declares the flags the commit-only rule reads, plus every value-taking option
+ * git accepts here. Most declared values are never read: declaring them is what
+ * stops a value such as the `-m` message from being counted as a pathspec.
+ * Pathspec presence is still detected separately by {@link hasCommitPathspec}'s
+ * arity-aware scanner, because an undeclared option's arity is unknowable and no
+ * region parser can decide whether `-q` consumes the following token.
  */
-const commitRegionParser = object({
-  allFlags: multiple(flag(
-    '-a',
-    '--all',
-  ),),
-  explicitOnlyFlags: multiple(flag(
-    '-o',
-    '--only',
-  ),),
-  noOnlyFlags: multiple(flag('--no-only',),),
-  includeFlags: multiple(flag(
-    '-i',
-    ...INCLUDE_ALIASES,
-  ),),
-  interactiveFlags: multiple(flag('--interactive',),),
-  patchFlags: multiple(flag(
-    '-p',
-    '--patch',
-  ),),
-  amendFlags: multiple(flag('--amend',),),
-  allowEmptyFlags: multiple(flag('--allow-empty',),),
-  dryRunFlags: multiple(flag(...DRY_RUN_COMMIT_ALIASES,),),
-  shortFlags: multiple(flag(...SHORT_ALIASES,),),
-  porcelainFlags: multiple(flag(...PORCELAIN_ALIASES,),),
-  longFlags: multiple(flag(...LONG_ALIASES,),),
-  nullFlags: multiple(flag(
-    '-z',
-    ...NULL_ALIASES,
-  ),),
-  message: optional(option(
-    '-m',
-    '--message',
-    string(),
-  ),),
-  file: optional(option(
-    '-F',
-    '--file',
-    string(),
-  ),),
-  reuseMessage: optional(option(
-    '-C',
-    '--reuse-message',
-    string(),
-  ),),
-  reeditMessage: optional(option(
-    '-c',
-    '--reedit-message',
-    string(),
-  ),),
-  squash: optional(option(
-    '--squash',
-    string(),
-  ),),
-  fixup: optional(option(
-    '--fixup',
-    string(),
-  ),),
-  author: optional(option(
-    '--author',
-    string(),
-  ),),
-  date: optional(option(
-    '--date',
-    string(),
-  ),),
-  cleanup: optional(option(
-    '--cleanup',
-    string(),
-  ),),
-  trailer: multiple(option(
-    '--trailer',
-    string(),
-  ),),
-  template: optional(option(
-    '-t',
-    '--template',
-    string(),
-  ),),
-  unified: optional(option(
-    '-U',
-    '--unified',
-    string(),
-  ),),
-  interHunkContext: optional(option(
-    '--inter-hunk-context',
-    string(),
-  ),),
-  pathspecFromFile: optional(option(
-    '--pathspec-from-file',
-    string(),
-  ),),
-  pathspecFileNulFlags: multiple(flag('--pathspec-file-nul',),),
-  escape: multiple(flag(COMMIT_ESCAPE_HATCH,),),
-  positionals: multiple(
-    argument(string(),),
-  ),
-  unknownOptions: passThrough({ format: 'nextToken', },),
-},);
+const commitRegionSpec: ArgvSpec = {
+  flags: {
+    allFlags: { names: [
+      '-a',
+      '--all',
+    ], },
+    explicitOnlyFlags: { names: [
+      '-o',
+      '--only',
+    ], },
+    noOnlyFlags: { names: ['--no-only',], },
+    includeFlags: { names: [
+      '-i',
+      ...INCLUDE_ALIASES,
+    ], },
+    interactiveFlags: { names: ['--interactive',], },
+    patchFlags: { names: [
+      '-p',
+      '--patch',
+    ], },
+    amendFlags: { names: ['--amend',], },
+    allowEmptyFlags: { names: ['--allow-empty',], },
+    dryRunFlags: { names: [...DRY_RUN_COMMIT_ALIASES,], },
+    shortFlags: { names: [...SHORT_ALIASES,], },
+    porcelainFlags: { names: [...PORCELAIN_ALIASES,], },
+    longFlags: { names: [...LONG_ALIASES,], },
+    nullFlags: { names: [
+      '-z',
+      ...NULL_ALIASES,
+    ], },
+    pathspecFileNulFlags: { names: ['--pathspec-file-nul',], },
+    escape: { names: [COMMIT_ESCAPE_HATCH,], },
+  },
+  valueOptions: {
+    message: { names: [
+      '-m',
+      '--message',
+    ], },
+    file: { names: [
+      '-F',
+      '--file',
+    ], },
+    reuseMessage: { names: [
+      '-C',
+      '--reuse-message',
+    ], },
+    reeditMessage: { names: [
+      '-c',
+      '--reedit-message',
+    ], },
+    squash: { names: ['--squash',], },
+    fixup: { names: ['--fixup',], },
+    author: { names: ['--author',], },
+    date: { names: ['--date',], },
+    cleanup: { names: ['--cleanup',], },
+    trailer: { names: ['--trailer',], },
+    template: { names: [
+      '-t',
+      '--template',
+    ], },
+    unified: { names: [
+      '-U',
+      '--unified',
+    ], },
+    interHunkContext: { names: ['--inter-hunk-context',], },
+    pathspecFromFile: { names: ['--pathspec-from-file',], },
+  },
+};
 
-//endregion Commit post-subcommand optique parser
+//endregion Commit post-subcommand region parser
 
 //region Commit region facts
 
@@ -226,15 +187,21 @@ export type CommitRegion = {
 /**
  * Parses the post-`commit` argv region into a structured fact set used by
  * the commit-only rule. Inline short-cluster values are normalised by
- * {@link normaliseCommitArgs} before optique parsing so `-mhello` and
+ * {@link normaliseCommitArgs} before region parsing so `-mhello` and
  * `-mhello file.ts` are interpreted the same way real git would. Pathspec
  * presence is detected by {@link hasCommitPathspec} over the same normalised
  * argv because pass-through unknown options may otherwise consume no-value
  * flag pathspecs.
  *
+ * A region this parser refuses to read raises rather than degrading to an
+ * empty fact set: every fact here decides whether the commit-only rule injects
+ * `-o`, so guessing from a misread region weakens the guard it feeds.
+ *
  * @param postSubcommandArgs - Arguments strictly after `commit` subcommand.
  *
  * @returns Fact record consumed by commit-only policy.
+ *
+ * @throws ArgvParseError when region names a token no reading can settle.
  *
  * @example
  * ```ts
@@ -254,7 +221,7 @@ export function parseCommitRegion(
    */
   const separatorIndex = normalised.indexOf(PATHSPEC_SEPARATOR,);
   /**
-   * Argv slice handed to optique; pathspec region is excluded.
+   * Argv slice handed to region parser; pathspec region is excluded.
    */
   const region = separatorIndex === (-1)
     ? normalised
@@ -268,107 +235,55 @@ export function parseCommitRegion(
   const hasPathspec = hasCommitPathspec(normalised,);
 
   /**
-   * Optique parse result over the cleaned option region.
+   * Parsed facts over the cleaned option region.
    */
-  const parseResult = parseSync(
-    commitRegionParser,
-    region,
-  );
-
-  if (!parseResult.success) {
-    return {
-      hasAllFlag: false,
-      hasExplicitOnlyFlag: false,
-      hasNoOnlyFlag: false,
-      hasIncludeFlag: false,
-      hasInteractiveFlag: false,
-      hasPatchFlag: false,
-      isDryRun: false,
-      hasPathlessAllowedFlag: false,
-      hasAmendFlag: false,
-      hasAllowEmptyFlag: false,
-      hasPathspecFromFile: false,
-      hasPathspecFileNul: false,
-      hasPathspec: false,
-      hasEscapeHatch: false,
-      pathspecs: [],
-    };
-  }
-
+  const {
+    flagCounts,
+    optionValues,
+  } = parseArgv({
+    args: region,
+    spec: commitRegionSpec,
+  },);
   /**
-   * Successful parse value with optique-inferred shape.
+   * Exact pathspec source spelling, taking git's last-wins order.
    */
-  const { value, } = parseResult;
+  const pathspecFile = (optionValues.pathspecFromFile ?? []).at(-1,);
   /**
    * Sum of explicit only-mode flag occurrences (`-o`, `--only`, `--no-only`).
    */
-  const explicitOnlyCount = value.explicitOnlyFlags
-    .length
-    + value
-    .noOnlyFlags
-    .length;
+  const explicitOnlyCount = (flagCounts.explicitOnlyFlags ?? 0)
+    + (flagCounts.noOnlyFlags ?? 0);
   /**
    * Sum of pathless-allowed flag occurrences (`--amend`, `--allow-empty`).
    */
-  const pathlessAllowedCount = value.amendFlags
-    .length
-    + value
-    .allowEmptyFlags
-    .length;
+  const pathlessAllowedCount = (flagCounts.amendFlags ?? 0)
+    + (flagCounts.allowEmptyFlags ?? 0);
   /**
    * Sum of dry-run flag occurrences, counting the output-format flags git
    * documents as implying `--dry-run`.
    */
-  const dryRunCount = value.dryRunFlags
-    .length
-    + value
-    .shortFlags
-    .length
-    + value
-    .porcelainFlags
-    .length
-    + value
-    .longFlags
-    .length
-    + value
-    .nullFlags
-    .length;
+  const dryRunCount = (flagCounts.dryRunFlags ?? 0)
+    + (flagCounts.shortFlags ?? 0)
+    + (flagCounts.porcelainFlags ?? 0)
+    + (flagCounts.longFlags ?? 0)
+    + (flagCounts.nullFlags ?? 0);
 
   return {
-    hasAllFlag: value.allFlags
-      .length
-      > 0,
+    hasAllFlag: (flagCounts.allFlags ?? 0) > 0,
     hasExplicitOnlyFlag: explicitOnlyCount > 0,
-    hasNoOnlyFlag: value.noOnlyFlags
-      .length
-      > 0,
-    hasIncludeFlag: value.includeFlags
-      .length
-      > 0,
-    hasInteractiveFlag: value.interactiveFlags
-      .length
-      > 0,
-    hasPatchFlag: value.patchFlags
-      .length
-      > 0,
+    hasNoOnlyFlag: (flagCounts.noOnlyFlags ?? 0) > 0,
+    hasIncludeFlag: (flagCounts.includeFlags ?? 0) > 0,
+    hasInteractiveFlag: (flagCounts.interactiveFlags ?? 0) > 0,
+    hasPatchFlag: (flagCounts.patchFlags ?? 0) > 0,
     isDryRun: dryRunCount > 0,
     hasPathlessAllowedFlag: pathlessAllowedCount > 0,
-    hasAmendFlag: value.amendFlags
-      .length
-      > 0,
-    hasAllowEmptyFlag: value.allowEmptyFlags
-      .length
-      > 0,
-    hasPathspecFromFile: value.pathspecFromFile
-      !== undefined,
-    ...(value.pathspecFromFile === undefined ? {} : { pathspecFile: value.pathspecFromFile, }),
-    hasPathspecFileNul: value.pathspecFileNulFlags
-      .length
-      > 0,
+    hasAmendFlag: (flagCounts.amendFlags ?? 0) > 0,
+    hasAllowEmptyFlag: (flagCounts.allowEmptyFlags ?? 0) > 0,
+    hasPathspecFromFile: pathspecFile !== undefined,
+    ...(pathspecFile === undefined ? {} : { pathspecFile, }),
+    hasPathspecFileNul: (flagCounts.pathspecFileNulFlags ?? 0) > 0,
     hasPathspec,
-    hasEscapeHatch: value.escape
-      .length
-      > 0,
+    hasEscapeHatch: (flagCounts.escape ?? 0) > 0,
     pathspecs: extractCommitPathspecs(normalised,),
   };
 }
