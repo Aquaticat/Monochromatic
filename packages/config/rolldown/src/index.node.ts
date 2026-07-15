@@ -9,6 +9,7 @@ import {
   anchoredExternal,
   packageExternals,
 } from './package-externals.ts';
+import { shebangExecutablePlugin, } from './shebang-executable.ts';
 
 /**
  * Resolved Browserslist targets shared by Node builds, via
@@ -60,24 +61,63 @@ const baseOptions: RolldownOptions = {
     },),
   ],
   transform: { target: [...target,], },
-  plugins: [dts({ generator: 'oxc', },),],
-  output: {
-    dir: 'dist/final/node',
-    format: 'es',
-    entryFileNames: '[name].mjs',
-    chunkFileNames: '[name]-[hash].mjs',
-    cleanDir: true,
-    minify: {
-      compress: true,
-      // Mangle breaks func.name and makes output difficult for users to audit.
-      mangle: false,
-      codegen: true,
-    },
+  plugins: [
+    dts({ generator: 'oxc', },),
+    shebangExecutablePlugin(),
+  ],
+};
+
+/**
+ * Shared output options for Node builds, without a directory.
+ *
+ * `entryFileNames`/`chunkFileNames` force `.mjs` because raw rolldown has no
+ * `fixedExtension`; `rolldown-plugin-dts` derives `.d.mts` from the template.
+ */
+const baseOutput = {
+  format: 'es' as const,
+  entryFileNames: '[name].mjs',
+  chunkFileNames: '[name]-[hash].mjs',
+  minify: {
+    compress: true,
+    // Mangle breaks func.name and makes output difficult for users to audit.
+    mangle: false,
+    codegen: true,
   },
 };
 
 /**
- * Default single-input Node build config.
+ * Build one Node flavor config with overridable input and output directory.
+ *
+ * @param input - Source input paths; defaults to the package index.
+ * @param outputDir - Output directory; committed Claude Code plugin bundles
+ *   override this to `bundle/node` (see `docs/decisions/gitignore-negations.md`).
+ *
+ * @returns Node flavor rolldown config for one self-contained build.
+ *
+ * @example
+ * ```ts
+ * // rolldown.node.config.ts
+ * import { nodeConfig, } from '\@monochromatic-dev/config-rolldown/.node.ts';
+ * export default nodeConfig({ outputDir: 'bundle/node', },);
+ * ```
+ */
+export function nodeConfig({ input = ['./src/index.ts',], outputDir = 'dist/final/node', }: {
+  readonly input?: readonly string[];
+  readonly outputDir?: string;
+} = {},): RolldownOptions {
+  return defineConfig({
+    ...baseOptions,
+    input: [...input,],
+    output: {
+      ...baseOutput,
+      dir: outputDir,
+      cleanDir: true,
+    },
+  },);
+}
+
+/**
+ * Default single-input Node build config via {@link nodeConfig}.
  *
  * Single-input builds are already self-contained: with one input there is
  * nothing to hoist into a shared chunk. Multi-entry plugins must use
@@ -89,10 +129,7 @@ const baseOptions: RolldownOptions = {
  * export { default, } from '\@monochromatic-dev/config-rolldown/.node.ts';
  * ```
  */
-const _default_1: RolldownOptions = defineConfig({
-  ...baseOptions,
-  input: ['./src/index.ts',],
-},);
+const _default_1: RolldownOptions = nodeConfig();
 export default _default_1;
 
 /**
@@ -128,7 +165,8 @@ export function perEntryNodeConfig(entries: readonly string[],): RolldownOptions
       ...baseOptions,
       input: [entry,],
       output: {
-        ...baseOptions.output,
+        ...baseOutput,
+        dir: 'dist/final/node',
         cleanDir: false,
       },
     };
