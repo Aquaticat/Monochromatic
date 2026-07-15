@@ -216,6 +216,8 @@ async function waitBeforeWatcherRestart(
  *
  * @param restartDelayMs - Delay between restart attempts.
  *
+ * @mutates signal through wait abort-listener registration and retention
+ *
  * @throws {@link watcherRestartLimitError} When watcher failures exceed the restart limit.
  *
  * @example

@@ -91,6 +91,8 @@ export function isGlobResultsBuilder(files: OverwriteEachFiles,): files is GlobR
  *
  * @param writeIfChanged - Reconciliation function from `write.ts`.
  *
+ * @mutates content through sourceCaptureStorage.run callback invocation
+ *
  * @example
  * ```ts
  * await writeLazyIfChanged({ manifestPath, dest, content: build, writeIfChanged });
@@ -163,6 +165,8 @@ export async function writeLazyIfChanged(
  * @param manifestPath - Resolved staleness manifest path.
  *
  * @param writeIfChanged - Reconciliation function from `write.ts`.
+ *
+ * @mutates files through sourceCaptureStorage.run callback invocation
  *
  * @example
  * ```ts

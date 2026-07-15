@@ -47,8 +47,12 @@ export function globResults(
     readonly results: readonly GlobResult[];
   },
 ): GlobResults {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- branded array gains required property immediately after construction
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- branded array gains required property immediately after construction */
+  /**
+   * Fresh result array receiving required source identity.
+   */
   const brandedResults = [...results,] as unknown as GlobResult[] & { sourceGlob: string; };
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   brandedResults.sourceGlob = sourceGlob;
   return brandedResults;
 }
