@@ -4,56 +4,20 @@
  * @module
  */
 
-import type {
-  IntrinsicEffectEntry,
-  IntrinsicProvenance,
-} from './intrinsic-effect-catalog.ts';
+import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
+import { receiverEffect, } from './package-receiver-effect.ts';
 import { PI_PACKAGE_EFFECTS, } from './pi-package-effect-catalog.ts';
+import { POSTCSS_PACKAGE_EFFECTS, } from './postcss-package-effect-catalog.ts';
+import { TURSO_PACKAGE_EFFECTS, } from './turso-package-effect-catalog.ts';
 import { WORKSPACE_PACKAGE_EFFECTS, } from './workspace-package-effect-catalog.ts';
-
-/**
- * Shared receiver mutation target.
- */
-const RECEIVER = { kind: 'receiver', } as const;
-
-/**
- * Creates package receiver mutation entry.
- *
- * @param provenance - Exact package and major identity.
- *
- * @param ownerType - Declaring receiver type.
- *
- * @param member - Mutating member name.
- *
- * @param evidence - Audited declaration evidence.
- *
- * @returns package receiver effect.
- */
-function receiverEffect({
-  provenance,
-  ownerType,
-  member,
-  evidence,
-}: {
-  readonly provenance: IntrinsicProvenance;
-  readonly ownerType: string;
-  readonly member: string;
-  readonly evidence: string;
-},): IntrinsicEffectEntry {
-  return {
-    provenance,
-    ownerType,
-    member,
-    targets: [RECEIVER,],
-    evidence,
-  };
-}
 
 /**
  * Package effects audited by exact current-lock major.
  */
 export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...PI_PACKAGE_EFFECTS,
+  ...POSTCSS_PACKAGE_EFFECTS,
+  ...TURSO_PACKAGE_EFFECTS,
   receiverEffect({
     provenance: {
       kind: 'package',
@@ -149,6 +113,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'isConstructorTypeNode',
     'isDeleteExpression',
     'isElementAccessExpression',
+    'isExportDeclaration',
     'isFunctionLikeDeclaration',
     'isFunctionTypeNode',
     'isForOfStatement',
@@ -159,6 +124,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'isImportSpecifier',
     'isMethodDeclaration',
     'isMethodSignatureDeclaration',
+    'isNamedExports',
     'isNamedImports',
     'isNamespaceImport',
     'isObjectLiteralExpression',
@@ -172,6 +138,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'isShorthandPropertyAssignment',
     'isSpreadAssignment',
     'isSpreadElement',
+    'isSourceFile',
     'isStringLiteral',
     'isTypeReferenceNode',
     'isVariableDeclaration',

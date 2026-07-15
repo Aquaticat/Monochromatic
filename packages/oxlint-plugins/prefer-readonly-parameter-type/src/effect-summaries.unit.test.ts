@@ -584,7 +584,7 @@ await describe({
         );
         writeFileSync(
           join(packageRoot, 'package.json',),
-          '{"name":"effect-probe","version":"1.2.3","type":"module","exports":{".":{"types":"./index.d.ts","node":"./node.js","import":"./index.js"},"./typed":{"types":"./typed.d.ts","import":"./typed.ts"},"./missing":{"types":"./missing.d.ts","import":"./missing.js"}}}\n',
+          '{"name":"effect-probe","version":"1.2.3","type":"module","types":"./index.d.ts","exports":{".":{"node":"./node.js","import":"./index.js"},"./barrel":{"types":"./barrel.d.ts","node":"./barrel.js"},"./typed":{"types":"./typed.d.ts","import":"./typed.ts"},"./missing":{"types":"./missing.d.ts","import":"./missing.js"}}}\n',
         );
         writeFileSync(
           join(packageRoot, 'index.d.ts',),
@@ -611,6 +611,22 @@ await describe({
           "export function observe(value) { return value.text; }\nexport function mutate(value) { value.text = 'changed'; return value.text; }\nexport const toolkit = { mutate(value) { value.text = 'object'; return value.text; } };\nexport class Toolkit { static mutate(value) { value.text = 'static'; return value.text; } mutate(value) { value.text = 'instance'; return value.text; } }\nexport function visit(value, callback) { callback(value); }\n",
         );
         writeFileSync(
+          join(packageRoot, 'barrel.d.ts',),
+          'export declare function barrelMutate(value: { text: string; }): string;\n',
+        );
+        writeFileSync(
+          join(packageRoot, 'barrel.js',),
+          "import { barrelMutate, } from './barrel-internal.js';\nexport { barrelMutate, };\n",
+        );
+        writeFileSync(
+          join(packageRoot, 'barrel-internal.d.ts',),
+          'export declare function barrelMutate(value: { text: string; }): string;\n',
+        );
+        writeFileSync(
+          join(packageRoot, 'barrel-internal.js',),
+          "export function barrelMutate(value) { value.text = 'barrel'; return value.text; }\n",
+        );
+        writeFileSync(
           join(packageRoot, 'typed.d.ts',),
           'export declare function typedMutate(value: { text: string; }): string;\n',
         );
@@ -623,7 +639,7 @@ await describe({
           'export declare function missing(value: { text: string; }): string;\n',
         );
         /** Consumer wrappers covering re-exported JS, overloads, shipped TS, and missing implementation. */
-        const inputSource = "import { mutate, observe, Toolkit, toolkit, visit, } from 'effect-probe';\nimport { missing, } from 'effect-probe/missing';\nimport { typedMutate, } from 'effect-probe/typed';\nexport function observed(value: { text: string; }): string { return observe(value); }\nexport function mutated(value: { text: string; }): string { return mutate(value); }\nexport function objectMutated(value: { text: string; }): string { return toolkit.mutate(value); }\nconst toolkitInstance = new Toolkit();\nexport function staticMutated(value: { text: string; }): string { return Toolkit.mutate(value); }\nexport function instanceMutated(value: { text: string; }): string { return toolkitInstance.mutate(value); }\nexport function typedMutated(value: { text: string; }): string { return typedMutate(value); }\nexport function visited(value: { text: string; }, callback: (value: { text: string; }) => void): void { visit(value, callback); }\nexport function unresolved(value: { text: string; }): string { return missing(value); }\n";
+        const inputSource = "import { mutate, observe, Toolkit, toolkit, visit, } from 'effect-probe';\nimport { barrelMutate, } from 'effect-probe/barrel';\nimport { missing, } from 'effect-probe/missing';\nimport { typedMutate, } from 'effect-probe/typed';\nexport function observed(value: { text: string; }): string { return observe(value); }\nexport function mutated(value: { text: string; }): string { return mutate(value); }\nexport function barrelMutated(value: { text: string; }): string { return barrelMutate(value); }\nexport function objectMutated(value: { text: string; }): string { return toolkit.mutate(value); }\nconst toolkitInstance = new Toolkit();\nexport function staticMutated(value: { text: string; }): string { return Toolkit.mutate(value); }\nexport function instanceMutated(value: { text: string; }): string { return toolkitInstance.mutate(value); }\nexport function typedMutated(value: { text: string; }): string { return typedMutate(value); }\nexport function visited(value: { text: string; }, callback: (value: { text: string; }) => void): void { visit(value, callback); }\nexport function unresolved(value: { text: string; }): string { return missing(value); }\n";
         /** Consumer source path. */
         const inputPath = join(projectRoot.path, 'input.ts',);
         writeFileSync(inputPath, inputSource,);
@@ -641,6 +657,7 @@ await describe({
         const effects = [
           'observed',
           'mutated',
+          'barrelMutated',
           'objectMutated',
           'staticMutated',
           'instanceMutated',
@@ -668,6 +685,11 @@ await describe({
           },
           {
             functionName: 'mutated',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'barrelMutated',
             mutated: [0,],
             opaque: [],
           },

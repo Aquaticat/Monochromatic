@@ -85,6 +85,15 @@ The File API audit keeps immutable byte observation separate from host retention
 The Fetch audit records `Body.json` and `Body.text` as receiver effects.
 Both fully read the body and disturb its stream before parsing or decoding the bytes.
 The returned JSON or text does not preserve caller-owned input provenance.
+Global `fetch` retains request body and signal relations through asynchronous request processing,
+while `Response.json` can invoke serialization hooks on its data.
+`Headers.get` and `Headers.has` observe receiver header state,
+while `Headers.set` changes it.
+Fresh primitive method and body fields remain observational after type narrowing.
+
+The DOM and HTML audits also record `Element.closest` as ancestor observation and `HTMLElement.hidePopover` as a
+receiver-state effect.
+The URL Standard audit records `URLSearchParams.get` as tuple observation.
 
 ### Node
 
@@ -168,6 +177,7 @@ or Node.
 - [CSSOM View Module][cssom-view]
 - [File API][file-api]
 - [Fetch Standard][fetch-standard]
+- [URL Standard][url-standard]
 - [Node `BuiltinLoader` source for v26.5.0][node-builtins]
 - [Node deprecation `DEP0111`][node-dep0111]
 
@@ -178,5 +188,6 @@ or Node.
 [cssom-view]: https://drafts.csswg.org/cssom-view/
 [file-api]: https://w3c.github.io/FileAPI/
 [fetch-standard]: https://fetch.spec.whatwg.org/
+[url-standard]: https://url.spec.whatwg.org/
 [node-builtins]: https://github.com/nodejs/node/blob/v26.5.0/src/node_builtins.h
 [node-dep0111]: https://nodejs.org/docs/latest-v26.x/api/deprecations.html#dep0111-processbinding

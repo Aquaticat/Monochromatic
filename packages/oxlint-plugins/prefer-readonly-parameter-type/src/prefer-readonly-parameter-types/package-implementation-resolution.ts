@@ -304,6 +304,21 @@ export function packageModuleSpecifierForDeclaration({
    */
   const declarationPath = resolve(declarationFileName,);
   /**
+   * Root declaration target supplied separately from conditional runtime exports.
+   */
+  const rootDeclarationTarget = (typeof identity.manifest
+    .types) === 'string'
+    ? identity.manifest
+      .types
+    : identity.manifest
+      .typings;
+  if (((typeof rootDeclarationTarget) === 'string')
+    && (resolve(
+      identity.root,
+      rootDeclarationTarget,
+    ) === declarationPath))
+    return identity.name;
+  /**
    * Package exports field containing declaration conditions.
    */
   const exportsField = identity.manifest

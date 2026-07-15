@@ -81,6 +81,18 @@ export function addIntrinsicCallbackEffects({
     return;
   callbackEffects.forEach(function intrinsicCallbackEffect(callbackEffect,): void {
     /**
+     * Exact call arity selecting this callback relation when present.
+     */
+    const { callArgumentCount, } = callbackEffect;
+    if (callArgumentCount !== undefined) {
+      /**
+       * Actual call arity used to select overloaded callback position.
+       */
+      const { length: actualArgumentCount, } = call.arguments;
+      if (callArgumentCount !== actualArgumentCount)
+        return;
+    }
+    /**
      * Callback expression at audited intrinsic argument position.
      */
     const callbackArgument = call.arguments[callbackEffect.argumentIndex];

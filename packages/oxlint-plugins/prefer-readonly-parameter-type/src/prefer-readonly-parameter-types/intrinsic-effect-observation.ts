@@ -24,5 +24,7 @@ export function intrinsicEffectIsObservational(
     && (effect.callbacks === undefined)
     && (effect.forwardedCallbacks === undefined)
     && (effect.invokedArgumentIndexes === undefined)
+    && (effect.invokedArguments === undefined)
+    && (effect.invokedArgumentProperties === undefined)
     && (effect.opaqueTargets === undefined);
 }

@@ -23,6 +23,10 @@ import {
 } from 'typescript/unstable/sync';
 
 import { callableDeclaration, } from './effect-call-resolution.ts';
+import {
+  RUNTIME_FORWARD_UNAVAILABLE,
+  runtimeForwardedExport,
+} from './external-runtime-forward.ts';
 
 /**
  * Sentinel when runtime export cannot resolve to callable source.
@@ -145,20 +149,62 @@ export function exportedCallable({
   exportName,
   memberPath,
   packageRoot,
+  visitedSourceNames = new Set(),
 }: {
   readonly project: Project;
   readonly sourceNode: Node;
   readonly exportName: string;
   readonly memberPath: readonly string[];
   readonly packageRoot: string;
+  readonly visitedSourceNames?: ReadonlySet<string>;
 }): ReturnType<typeof callableDeclaration> | typeof EXPORTED_CALLABLE_UNAVAILABLE {
+  /**
+   * Exact runtime forwarding available independently of TypeScript alias substitution.
+   */
+  const forwarded = runtimeForwardedExport({
+    project,
+    sourceNode,
+    exportName,
+    packageRoot,
+  },);
+  /**
+   * Resolves precomputed runtime forwarding with cycle protection.
+   *
+   * @returns forwarded callable or unavailable sentinel.
+   */
+  function resolveForwardedCallable(): ReturnType<typeof callableDeclaration>
+    | typeof EXPORTED_CALLABLE_UNAVAILABLE {
+    if (forwarded === RUNTIME_FORWARD_UNAVAILABLE)
+      return EXPORTED_CALLABLE_UNAVAILABLE;
+    /**
+     * Runtime source selected by authored forwarding syntax.
+     */
+    const forwardedSource = forwarded.source;
+    /**
+     * Canonical forwarded source identity used for cycle protection.
+     */
+    const forwardedSourceName = forwardedSource.fileName;
+    if (visitedSourceNames.has(forwardedSourceName,))
+      return EXPORTED_CALLABLE_UNAVAILABLE;
+    return exportedCallable({
+      project,
+      sourceNode: forwardedSource,
+      exportName: forwarded.exportName,
+      memberPath,
+      packageRoot,
+      visitedSourceNames: new Set([
+        ...visitedSourceNames,
+        forwardedSourceName,
+      ],),
+    },);
+  }
   /**
    * Module symbol exposing runtime exports.
    */
   const moduleSymbol = project.checker
     .getSymbolAtLocation(sourceNode,);
   if (moduleSymbol === undefined)
-    return EXPORTED_CALLABLE_UNAVAILABLE;
+    return resolveForwardedCallable();
   /**
    * Exact exported symbol by authored package binding name.
    */
@@ -168,7 +214,7 @@ export function exportedCallable({
       return symbol.name === exportName;
     },);
   if (exported === undefined)
-    return EXPORTED_CALLABLE_UNAVAILABLE;
+    return resolveForwardedCallable();
   /**
    * Export alias followed to implementation declaration.
    */
@@ -187,8 +233,11 @@ export function exportedCallable({
    */
   const declaration = handle?.resolve(project,);
   if (declaration === undefined)
-    return EXPORTED_CALLABLE_UNAVAILABLE;
-  return memberPath.length === 0
+    return resolveForwardedCallable();
+  /**
+   * Callable resolved through TypeScript's ordinary alias graph.
+   */
+  const callable = memberPath.length === 0
     ? callableDeclaration({
       project,
       node: declaration,
@@ -200,4 +249,13 @@ export function exportedCallable({
       path: memberPath,
       packageRoot,
     },);
+  if ((typeof callable) !== 'symbol')
+    return callable;
+  /**
+   * Runtime forwarding result when declaration substitution hid implementation.
+   */
+  const forwardedResult = resolveForwardedCallable();
+  return forwardedResult === EXPORTED_CALLABLE_UNAVAILABLE
+    ? callable
+    : forwardedResult;
 }

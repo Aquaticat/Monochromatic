@@ -43,7 +43,7 @@ export type IntrinsicProvenance =
  * const firstArgument: IntrinsicEffectTarget = { kind: 'argument', index: 0 };
  * ```
  */
-export type IntrinsicEffectTarget =
+export type IntrinsicEffectTarget = (
   | { readonly kind: 'receiver'; }
   | {
     readonly kind: 'argument';
@@ -56,7 +56,13 @@ export type IntrinsicEffectTarget =
     readonly startIndex: number;
     readonly propertyNames?: readonly string[];
     readonly freshContainerShieldsContents?: boolean;
-  };
+  }
+) & {
+  /**
+   * Exact call arity selecting an overloaded target position.
+   */
+  readonly callArgumentCount?: number;
+};
 
 /**
  * Callback argument whose selected parameters expose receiver-reachable values.
@@ -72,6 +78,10 @@ export type IntrinsicEffectTarget =
 export type IntrinsicCallbackEffect = {
   readonly argumentIndex: number;
   readonly receiverParameterIndexes: readonly number[];
+  /**
+   * Exact call arity selecting an overloaded callback position.
+   */
+  readonly callArgumentCount?: number;
 };
 
 /**
@@ -107,6 +117,22 @@ export type IntrinsicArgumentPropertyInvocation = {
 };
 
 /**
+ * Callable argument invoked at one optionally arity-qualified position.
+ *
+ * @example
+ * ```ts
+ * const effect: IntrinsicInvokedArgumentEffect = {
+ *   argumentIndex: 1,
+ *   callArgumentCount: 2,
+ * };
+ * ```
+ */
+export type IntrinsicInvokedArgumentEffect = {
+  readonly argumentIndex: number;
+  readonly callArgumentCount?: number;
+};
+
+/**
  * One audited callable effect keyed by owner symbol and exact declaration provenance.
  *
  * @example
@@ -133,6 +159,7 @@ export type IntrinsicEffectEntry = {
   readonly callbacks?: readonly IntrinsicCallbackEffect[];
   readonly forwardedCallbacks?: readonly IntrinsicForwardedCallbackEffect[];
   readonly invokedArgumentIndexes?: readonly number[];
+  readonly invokedArguments?: readonly IntrinsicInvokedArgumentEffect[];
   readonly invokedArgumentProperties?: readonly IntrinsicArgumentPropertyInvocation[];
   readonly opaqueTargets?: readonly IntrinsicEffectTarget[];
   /**

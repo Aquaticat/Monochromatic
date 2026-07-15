@@ -249,7 +249,7 @@ await describe({
       },
     },),
     it({
-      name: 'records audited Fetch body receiver effects',
+      name: 'records audited Fetch effects',
       fn: async () => {
         expect([
           'json',
@@ -266,6 +266,38 @@ await describe({
             return false;
           return effect.targets[0]?.kind === 'receiver';
         },),).toBe(true,);
+        expect([
+          { ownerType: 'globalThis', member: 'fetch', },
+          { ownerType: 'Response', member: 'json', },
+        ].every(function fetchBoundary(query,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'dom', },
+            ...query,
+          },);
+          if (effect === NO_INTRINSIC_EFFECT)
+            return false;
+          return effect.opaqueTargets?.length === 2;
+        },),).toBe(true,);
+        expect([
+          'get',
+          'has',
+        ].every(function headersObservation(member,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'dom', },
+            ownerType: 'Headers',
+            member,
+          },);
+          return (effect !== NO_INTRINSIC_EFFECT)
+            && (effect.targets.length === 0);
+        },),).toBe(true,);
+        const headersSet = intrinsicEffect({
+          provenance: { kind: 'dom', },
+          ownerType: 'Headers',
+          member: 'set',
+        },);
+        if (headersSet === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Headers.set intrinsic effect.',);
+        expect(headersSet.targets,).toEqual([{ kind: 'receiver', },],);
       },
     },),
     it({
@@ -308,9 +340,11 @@ await describe({
           { kind: 'arguments-from', startIndex: 0, },
         ],);
         expect([
+          { ownerType: 'Element', member: 'closest', },
           { ownerType: 'ParentNode', member: 'querySelector', },
           { ownerType: 'ParentNode', member: 'querySelectorAll', },
           { ownerType: 'Element', member: 'getBoundingClientRect', },
+          { ownerType: 'URLSearchParams', member: 'get', },
         ].every(function elementObservation(query,): boolean {
           const effect = intrinsicEffect({
             provenance: { kind: 'dom', },
@@ -323,6 +357,7 @@ await describe({
         expect([
           { ownerType: 'Element', member: 'setAttribute', },
           { ownerType: 'DOMTokenList', member: 'toggle', },
+          { ownerType: 'HTMLElement', member: 'hidePopover', },
         ].every(function elementMutation(query,): boolean {
           const effect = intrinsicEffect({
             provenance: { kind: 'dom', },

@@ -21,6 +21,7 @@ import {
 } from 'typescript/unstable/sync';
 
 import { effectProjectFingerprint, } from './effect-project-fingerprint.ts';
+import { externalImplementationFiles, } from './external-implementation-files.ts';
 import {
   contentDigest,
   effectCacheRoot,
@@ -29,7 +30,7 @@ import {
 /**
  * Generated external configured-project schema.
  */
-const EXTERNAL_PROJECT_SCHEMA = 1;
+const EXTERNAL_PROJECT_SCHEMA = 2;
 
 /**
  * Sentinel when external implementation project cannot be opened.
@@ -147,7 +148,10 @@ function externalConfigPath({
       target: 'ESNext',
       resolveJsonModule: true,
     },
-    files: [implementationPath,],
+    files: externalImplementationFiles({
+      packageRoot,
+      implementationPath,
+    },),
   },
     null,
     2,

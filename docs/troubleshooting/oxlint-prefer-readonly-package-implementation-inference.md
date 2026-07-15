@@ -71,6 +71,7 @@ and analyzer implementation.
 
 The current resolver covers:
 
+- root declarations named by top-level `types` or `typings` alongside conditional runtime exports;
 - named and default imported functions;
 - namespace member calls;
 - exported object methods;
@@ -102,6 +103,7 @@ mise run //packages/oxlint-plugins/prefer-readonly-parameter-type:test:unit
 - observational and mutating runtime exports;
 - bundled declarations and overload selection;
 - JavaScript re-exports;
+- top-level root declarations with separate `node` and `import` runtime conditions;
 - shipped TypeScript subpaths;
 - source-map evidence;
 - object,
@@ -162,14 +164,21 @@ and implementation source or retains uncertainty.
 
 ## Upstream filing decision
 
-1.  **Is it upstream's fault?** No. TypeScript declarations are not an effect system,
+1.  **Upstream fault**
+    No.
+    TypeScript declarations are not an effect system,
     and package export layouts are package-authored contracts.
-2.  **Can upstream fix it?** No single TypeScript or Oxlint change can infer arbitrary package runtime effects.
-3.  **Is the use case supported?** TypeScript supports package and symbol resolution,
+2.  **Upstream fixability**
+    No single TypeScript or Oxlint change can infer arbitrary package runtime effects.
+3.  **Supported use case**
+    TypeScript supports package and symbol resolution,
     which the project combines with its own effect engine.
-4.  **Would an upstream contribution be welcome?** No generally applicable defect or patch was identified.
-5.  **Will upstream likely fix it?** Not applicable because no upstream defect is claimed.
-6.  **Was a compatible project-side fix prototyped?** Yes.
+4.  **Contribution policy**
+    No generally applicable defect or patch was identified.
+5.  **Fix likelihood**
+    Not applicable because no upstream defect is claimed.
+6.  **Compatible project-side prototype**
+    Yes.
     Demand-driven implementation resolution and transitive analysis pass disposable package fixtures.
 
 Nothing should be filed upstream.

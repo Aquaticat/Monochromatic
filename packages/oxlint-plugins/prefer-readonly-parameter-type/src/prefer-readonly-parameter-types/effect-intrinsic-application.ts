@@ -28,7 +28,10 @@ import {
   type MutableEffectSummary,
   type PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
-import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
+import type {
+  IntrinsicEffectEntry,
+  IntrinsicEffectTarget,
+} from './intrinsic-effect-catalog.ts';
 import { intrinsicTargetArguments, } from './intrinsic-target-arguments.ts';
 
 /**
@@ -82,6 +85,40 @@ function typeDefinitelyCallable({
     SignatureKind.Call,
   );
   return signatures.length > 0;
+}
+
+/**
+ * Tests whether an effect target applies to current overloaded call arity.
+ *
+ * @param target - Audited receiver or argument target
+ *
+ * @param call - Exact intrinsic call
+ *
+ * @returns Whether target has no arity guard or matches current call
+ *
+ * @example
+ * ```ts
+ * targetMatchesCallArity({ target, call });
+ * ```
+ */
+function targetMatchesCallArity({
+  target,
+  call,
+}: {
+  readonly target: IntrinsicEffectTarget;
+  readonly call: CallExpression;
+}): boolean {
+  /**
+   * Optional exact arity attached to target.
+   */
+  const { callArgumentCount, } = target;
+  if (callArgumentCount === undefined)
+    return true;
+  /**
+   * Actual number of arguments supplied by current call.
+   */
+  const { length: actualArgumentCount, } = call.arguments;
+  return callArgumentCount === actualArgumentCount;
 }
 
 /**
@@ -157,6 +194,11 @@ export function applyIntrinsicEffect({
     return false;
   effect.targets
     .forEach(function intrinsicTarget(target,): void {
+    if (!targetMatchesCallArity({
+      target,
+      call,
+    },))
+      return;
     if (target.kind === 'receiver') {
       addEffectIndex({
         target: summary.directMutated,
@@ -187,6 +229,11 @@ export function applyIntrinsicEffect({
   },);
   effect.opaqueTargets
     ?.forEach(function opaqueIntrinsicTarget(target,): void {
+      if (!targetMatchesCallArity({
+        target,
+        call,
+      },))
+        return;
       if (target.kind === 'receiver') {
         addOpaqueEffect({
           summary,
@@ -259,6 +306,34 @@ export function applyIntrinsicEffect({
       bindingOriginBySymbolId,
       call,
       argumentIndexes: effect.invokedArgumentIndexes,
+      summary,
+    },);
+  }
+  if (effect.invokedArguments !== undefined) {
+    /**
+     * Actual number of arguments supplied by current call.
+     */
+    const { length: actualArgumentCount, } = call.arguments;
+    /**
+     * Argument positions invoked by overload matching current call arity.
+     */
+    const argumentIndexes = effect.invokedArguments
+      .filter(function matchingInvocationArity(invocation,): boolean {
+        /**
+         * Optional exact arity selecting invocation relation.
+         */
+        const { callArgumentCount, } = invocation;
+        return (callArgumentCount === undefined)
+          || (callArgumentCount === actualArgumentCount);
+      },)
+      .map(function invokedArgumentIndex(invocation,): number {
+        return invocation.argumentIndex;
+      },);
+    addIntrinsicInvocations({
+      checker,
+      bindingOriginBySymbolId,
+      call,
+      argumentIndexes,
       summary,
     },);
   }
