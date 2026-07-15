@@ -130,6 +130,13 @@ The rule uses that private path only as fail-closed evidence:
   and `readUInt16LE` observe receiver bytes;
   the internal buffer source digest is
   `ce1f2b80ecaf7f4d8ef3ff5d40e77e48c4413760e1a743c8c1b24cabfc1c25d8`;
+- `child_process.spawn` copies its argument array before modification;
+  options can still expose object hooks,
+  environment objects,
+  abort signals,
+  and standard-I/O capabilities;
+  the exact embedded source digest is
+  `fc85eea664a8db6e5492850961f9b2b84d553dde0217978ec60f304a0cd23585`;
 - `fs.StatsBase` file-type predicates are accepted only through their exact `internal/fs/utils` definitions and
   public `fs.Stats` binding chain;
 - missing binding,

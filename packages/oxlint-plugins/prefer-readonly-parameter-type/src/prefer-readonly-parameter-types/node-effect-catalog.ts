@@ -22,6 +22,11 @@ const NODE_SOURCES = {
     module: 'buffer',
     sourceDigest: '1b15446290915577350455b136d69041b6b9900f72946ec3ef8340240c9e706b',
   },
+  childProcess: {
+    nodeVersion: '26.5.0',
+    module: 'child_process',
+    sourceDigest: 'fc85eea664a8db6e5492850961f9b2b84d553dde0217978ec60f304a0cd23585',
+  },
   internalBuffer: {
     nodeVersion: '26.5.0',
     module: 'internal/buffer',
@@ -117,6 +122,65 @@ function nodeSourceAuthority({
  * and callable-definition identities.
  */
 export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  {
+    provenance: NODE_PROVENANCE,
+    ownerType: 'node:child_process',
+    member: 'spawn',
+    targets: [],
+    opaqueTargets: [
+      {
+        kind: 'argument',
+        index: 1,
+        callArgumentCount: 2,
+        freshContainerShieldsContents: true,
+      },
+      {
+        kind: 'argument',
+        index: 1,
+        callArgumentCount: 2,
+        propertyNames: [
+          'cwd',
+          'env',
+          'signal',
+          'stdio',
+        ],
+      },
+      {
+        kind: 'argument',
+        index: 2,
+        callArgumentCount: 3,
+        freshContainerShieldsContents: true,
+      },
+      {
+        kind: 'argument',
+        index: 2,
+        callArgumentCount: 3,
+        propertyNames: [
+          'cwd',
+          'env',
+          'signal',
+          'stdio',
+        ],
+      },
+    ],
+    evidence: 'Node 26.5.0 child_process.spawn copies the command arguments while options can expose hooks, environment, signals, and stdio capabilities',
+    authority: nodeSourceAuthority({
+      source: NODE_SOURCES.childProcess,
+      definitionMarker: '\nfunction spawn(file, args, options) {',
+      occurrenceCount: 1,
+      bindingMarkers: [
+        {
+          text: '\nmodule.exports = {',
+          occurrenceCount: 1,
+        },
+        {
+          text: '\n  spawn,\n',
+          occurrenceCount: 1,
+        },
+      ],
+      relatedSources: [],
+    },),
+  },
   {
     provenance: NODE_PROVENANCE,
     ownerType: 'BufferConstructor',

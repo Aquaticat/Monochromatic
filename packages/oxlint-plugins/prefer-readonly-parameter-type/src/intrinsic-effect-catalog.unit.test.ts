@@ -300,6 +300,56 @@ await describe({
       },
     },),
     it({
+      name: 'records Node spawn argument-copy and option effects',
+      fn: async () => {
+        const effect = intrinsicEffect({
+          provenance: { kind: 'node', declarationMajor: 26, },
+          ownerType: 'node:child_process',
+          member: 'spawn',
+        },);
+        expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (effect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected child_process.spawn effect.',);
+        expect(effect.targets,).toEqual([],);
+        expect(effect.opaqueTargets,).toEqual([
+          {
+            kind: 'argument',
+            index: 1,
+            callArgumentCount: 2,
+            freshContainerShieldsContents: true,
+          },
+          {
+            kind: 'argument',
+            index: 1,
+            callArgumentCount: 2,
+            propertyNames: [
+              'cwd',
+              'env',
+              'signal',
+              'stdio',
+            ],
+          },
+          {
+            kind: 'argument',
+            index: 2,
+            callArgumentCount: 3,
+            freshContainerShieldsContents: true,
+          },
+          {
+            kind: 'argument',
+            index: 2,
+            callArgumentCount: 3,
+            propertyNames: [
+              'cwd',
+              'env',
+              'signal',
+              'stdio',
+            ],
+          },
+        ],);
+      },
+    },),
+    it({
       name: 'records Node buffer and Stats observations',
       fn: async () => {
         const concat = intrinsicEffect({
