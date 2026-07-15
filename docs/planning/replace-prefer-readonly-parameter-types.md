@@ -514,8 +514,7 @@ The semantic-rule implementation and shared-configuration migration are complete
 - commits `728fdfbde`,
   `43401eb56`,
   and `68a0e2f71` audit locale date formatting
-  and `Buffer`
-  concatenation,
+  and byte concatenation,
   replace unsupported standard grouping calls
   with encounter-ordered grouping,
   and expose DOM,
