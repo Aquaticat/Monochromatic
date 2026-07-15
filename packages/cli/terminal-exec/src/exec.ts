@@ -40,8 +40,6 @@ const EXIT_NOT_FOUND = 127;
  *
  * @throws Error when the command array is empty.
  *
- * @mutates command through `child_process.spawn` process launch
- *
  * @example
  * ```ts
  * execvp(\{ command: ['/usr/bin/ghostty', '--gtk-single-instance=true', '-e', 'bash'] \})
@@ -66,12 +64,16 @@ export function execvp({ command, }: { readonly command: readonly string[]; },):
   l.debug(`exec: ${executable} ${args.join(' ',)}`,);
 
   /**
+   * Owned spawn options isolated from command provenance.
+   */
+  const spawnOptions = { stdio: 'inherit', } as const;
+  /**
    * Spawned-process handle; its lifecycle events propagate the exit code.
    */
   const proc = spawn(
     executable,
     args,
-    { stdio: 'inherit', },
+    spawnOptions,
   );
 
   proc.on(
