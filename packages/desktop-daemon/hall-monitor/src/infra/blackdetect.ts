@@ -10,7 +10,7 @@ import { once, } from 'node:events';
  *
  * @returns `true` when the frame is considered black
  *
- * @mutates jpegBuf through the child-process writable-stream boundary
+ * @mutates jpegBuf through proc.stdin.end child-process writable-stream access
  *
  * @example
  * ```ts

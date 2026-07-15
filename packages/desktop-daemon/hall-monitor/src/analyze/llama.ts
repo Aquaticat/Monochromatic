@@ -158,7 +158,7 @@ export async function stop(): Promise<void> {
      *
      * @returns Nothing; child exit invokes settlement later.
      *
-     * @mutates resolve through child-process listener retention and invocation
+     * @mutates resolve through currentServer.on listener retention and invocation
      */
     function awaitExit(resolve,): void {
       currentServer.on(
