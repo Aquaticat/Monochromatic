@@ -44,24 +44,36 @@ export const ECMASCRIPT_DATE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       authority: ecma262Authority({ algorithm: `Date.prototype.${member}`, },),
     };
   },),
-  {
-    provenance: { kind: 'ecmascript', },
-    ownerType: 'Date',
-    member: 'toLocaleString',
-    targets: [],
-    opaqueTargets: [
-      {
-        kind: 'argument',
-        index: 0,
-      },
-      {
-        kind: 'argument',
-        index: 1,
-      },
-    ],
-    evidence: 'ECMA-402 commit 5273ed81 Date.toLocaleString reads DateValue and delegates locales and options to CreateDateTimeFormat',
-    authority: ecma402Authority({
+  ...[
+    {
+      member: 'toLocaleString',
       algorithm: 'sha256:0b2ffb5786b37094c13c77a2d7ee13e439522fe457a95fe44b4b7ef5fa6ad659',
-    },),
-  },
+    },
+    {
+      member: 'toLocaleDateString',
+      algorithm: 'sha256:427041594b4e89f86680311d42472efc2aea9786d3f4b9cd2327197e3d1c1120',
+    },
+  ].map(function localeDateObservation({
+    member,
+    algorithm,
+  },): IntrinsicEffectEntry {
+    return {
+      provenance: { kind: 'ecmascript', },
+      ownerType: 'Date',
+      member,
+      targets: [],
+      opaqueTargets: [
+        {
+          kind: 'argument',
+          index: 0,
+        },
+        {
+          kind: 'argument',
+          index: 1,
+        },
+      ],
+      evidence: `ECMA-402 commit 5273ed81 Date.${member} reads DateValue and delegates locales and options to CreateDateTimeFormat`,
+      authority: ecma402Authority({ algorithm, },),
+    };
+  },),
 ];

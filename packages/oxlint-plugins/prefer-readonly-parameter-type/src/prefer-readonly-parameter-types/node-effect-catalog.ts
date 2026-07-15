@@ -114,6 +114,29 @@ function nodeSourceAuthority({
 export const NODE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   {
     provenance: NODE_PROVENANCE,
+    ownerType: 'BufferConstructor',
+    member: 'concat',
+    targets: [],
+    evidence: 'Node 26.5.0 embedded buffer JavaScript copies validated Uint8Array values into a new Buffer',
+    authority: nodeSourceAuthority({
+      source: NODE_SOURCES.buffer,
+      definitionMarker: '\nBuffer.concat = function concat(list, length) {',
+      occurrenceCount: 1,
+      bindingMarkers: [
+        {
+          text: '\n  Buffer,\n',
+          occurrenceCount: 1,
+        },
+        {
+          text: '\nmodule.exports = {',
+          occurrenceCount: 1,
+        },
+      ],
+      relatedSources: [],
+    },),
+  },
+  {
+    provenance: NODE_PROVENANCE,
     ownerType: 'node:buffer',
     member: 'isUtf8',
     targets: [],

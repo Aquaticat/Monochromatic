@@ -219,14 +219,21 @@ await describe({
     it({
       name: 'records Node buffer and Stats observations',
       fn: async () => {
+        const concat = intrinsicEffect({
+          provenance: { kind: 'node', declarationMajor: 26, },
+          ownerType: 'BufferConstructor',
+          member: 'concat',
+        },);
         const isUtf8 = intrinsicEffect({
           provenance: { kind: 'node', declarationMajor: 26, },
           ownerType: 'node:buffer',
           member: 'isUtf8',
         },);
+        expect(concat,).not.toBe(NO_INTRINSIC_EFFECT,);
         expect(isUtf8,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if (isUtf8 === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected node:buffer.isUtf8 intrinsic effect.',);
+        if ((concat === NO_INTRINSIC_EFFECT) || (isUtf8 === NO_INTRINSIC_EFFECT))
+          throw new Error('Expected Node Buffer observation effects.',);
+        expect(concat.targets,).toEqual([],);
         expect(isUtf8.targets,).toEqual([],);
         const isDirectory = intrinsicEffect({
           provenance: { kind: 'node', declarationMajor: 26, },
@@ -488,19 +495,24 @@ await describe({
         if (arrayCheck === NO_INTRINSIC_EFFECT)
           throw new Error('Expected Array.isArray observational effect.',);
         expect(arrayCheck.targets,).toEqual([],);
-        const localizedDate = intrinsicEffect({
-          provenance: { kind: 'ecmascript', },
-          ownerType: 'Date',
-          member: 'toLocaleString',
+        [
+          'toLocaleDateString',
+          'toLocaleString',
+        ].forEach(function localeDateEffect(member,) {
+          const localizedDate = intrinsicEffect({
+            provenance: { kind: 'ecmascript', },
+            ownerType: 'Date',
+            member,
+          },);
+          expect(localizedDate,).not.toBe(NO_INTRINSIC_EFFECT,);
+          if (localizedDate === NO_INTRINSIC_EFFECT)
+            throw new Error(`Expected Date.${member} observational effect.`,);
+          expect(localizedDate.targets,).toEqual([],);
+          expect(localizedDate.opaqueTargets,).toEqual([
+            { kind: 'argument', index: 0, },
+            { kind: 'argument', index: 1, },
+          ],);
         },);
-        expect(localizedDate,).not.toBe(NO_INTRINSIC_EFFECT,);
-        if (localizedDate === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected Date.toLocaleString observational effect.',);
-        expect(localizedDate.targets,).toEqual([],);
-        expect(localizedDate.opaqueTargets,).toEqual([
-          { kind: 'argument', index: 0, },
-          { kind: 'argument', index: 1, },
-        ],);
         const textDecoder = intrinsicEffect({
           provenance: { kind: 'dom', },
           ownerType: 'TextDecoder',

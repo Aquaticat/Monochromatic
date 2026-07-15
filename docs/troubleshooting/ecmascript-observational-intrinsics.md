@@ -30,7 +30,8 @@ The audited outcomes are:
 - `Array.prototype.join` is observational only when every reachable element is primitive;
 - `Error.isError(value)` is observational;
 - Error construction with an options object can invoke `cause` proxy or getter behavior;
-- `Date.prototype.toLocaleString()` observes the receiver's `[[DateValue]]`;
+- `Date.prototype.toLocaleString()` and `Date.prototype.toLocaleDateString()` observe the receiver's
+  `[[DateValue]]`;
   supplied locales and options remain opaque;
 - `JSON.stringify(value)` remains opaque because it can invoke `toJSON`,
    accessors,
@@ -143,14 +144,16 @@ defines `Date.prototype.toLocaleString` in
 [`spec/locale-sensitive-functions.html`][ecma402-date-locale].
 The source digest is
 `744cb1e2a095414799a94d33f1b0caaef6561769d95bf5387716668cd93d52cd`.
-The exact algorithm fragment digest is
+The exact `toLocaleString` algorithm fragment digest is
 `0b2ffb5786b37094c13c77a2d7ee13e439522fe457a95fe44b4b7ef5fa6ad659`.
+The exact source-clause digest for `toLocaleDateString` is
+`427041594b4e89f86680311d42472efc2aea9786d3f4b9cd2327197e3d1c1120`.
 
-The algorithm requires the receiver's `[[DateValue]]` slot,
-reads that number,
-creates an `Intl.DateTimeFormat`,
-and formats the number.
-It does not change receiver state.
+Both algorithms require the receiver's `[[DateValue]]` slot,
+read that number,
+create an `Intl.DateTimeFormat`,
+and format the number.
+They do not change receiver state.
 `CreateDateTimeFormat` receives optional locales and options,
 which can expose caller-owned iteration,
 property access,

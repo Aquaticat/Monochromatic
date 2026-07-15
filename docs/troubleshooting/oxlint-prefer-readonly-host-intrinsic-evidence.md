@@ -55,6 +55,8 @@ Unknown browser APIs remain opaque rather than inheriting behavior from a same-n
 
 The element-method audit distinguishes mutation from layout or selector observation:
 
+- DOM `Document.createTreeWalker` creates a walker retaining its supplied root and optional filter without mutating the
+  root;
 - DOM `ParentNode.append` changes its receiver and can move supplied nodes from an existing parent;
 - DOM `Element.setAttribute` and `DOMTokenList.toggle` change receiver state;
 - DOM `ParentNode.querySelector` and `ParentNode.querySelectorAll` only select descendants;
@@ -113,8 +115,9 @@ The rule uses that private path only as fail-closed evidence:
 - marker occurrence count must equal the audited source-to-callable mapping;
 - public `node:fs` and `node:url` source digests plus import/export markers must map internal definitions back to
   declaration-facing exports;
-- `node:buffer.isUtf8` is accepted only for the exact embedded `buffer` implementation,
+- `node:buffer.isUtf8` and `Buffer.concat` are accepted only for the exact embedded `buffer` implementation,
   whose digest is `1b15446290915577350455b136d69041b6b9900f72946ec3ef8340240c9e706b`;
+  `Buffer.concat` validates each `Uint8Array` and copies bytes into a newly allocated buffer;
 - `fs.StatsBase` file-type predicates are accepted only through their exact `internal/fs/utils` definitions and
   public `fs.Stats` binding chain;
 - missing binding,

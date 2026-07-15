@@ -4,7 +4,7 @@
  * @module
  */
 
-import { HOST_STANDARD_TYPED_ARRAY_ALGORITHM_IDS, } from './host-standard-typed-array-algorithm-ids.ts';
+import { HOST_STANDARD_SUPPLEMENTAL_ALGORITHM_IDS, } from './host-standard-supplemental-algorithm-ids.ts';
 
 /**
  * Exact standard source and algorithm identity keys.
@@ -98,7 +98,7 @@ export const HOST_STANDARD_ALGORITHM_IDS: ReadonlySet<string> = new Set([
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-array.prototype.unshift",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-array.prototype.values",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-array.prototype.with",
-  ...HOST_STANDARD_TYPED_ARRAY_ALGORITHM_IDS,
+  ...HOST_STANDARD_SUPPLEMENTAL_ALGORITHM_IDS,
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-date.now",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-date.parse",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-date.prototype",
@@ -281,7 +281,6 @@ export const HOST_STANDARD_ALGORITHM_IDS: ReadonlySet<string> = new Set([
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-weakset.prototype.constructor",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-weakset.prototype.delete",
   "ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1#sec-weakset.prototype.has",
-  "ECMA-402@5273ed81c1a81cd87aaaaf87df48e7084d38259c#sha256:0b2ffb5786b37094c13c77a2d7ee13e439522fe457a95fe44b4b7ef5fa6ad659",
   "Encoding@a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a#sha256:48b2dcbcfc71d04f33bb6b0086c4a9b4a73dbb6372be52a28978b92a3594d57e",
   "Encoding@a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a#sha256:e19cea57bbca13d5041d7ca6caa7c7d7b9c8dc6bd958e51db8980fe5d7378db9",
   "Encoding@a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a#sha256:f61da30fc3fd309597028e8ee0fb0ff77da618859b5238a66cafc505756a786a",
