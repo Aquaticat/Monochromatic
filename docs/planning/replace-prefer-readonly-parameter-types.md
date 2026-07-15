@@ -462,6 +462,43 @@ The semantic-rule implementation and shared-configuration migration are complete
   `packages/git-policies/cli` in 4,261 ms and 4,231 ms,
   and file-manager Electron in 6,887 ms and 6,896 ms;
   cold runs after analyzer or project source changes still rebuild content-addressed effect summaries;
+- commits `1622488ad` and `619e0682d` audit ECMA-402 date formatting,
+  migrate Feedsmith type names,
+  and document RSS iterable scheduling effects;
+  the RSS package passes build,
+  type lint,
+  and Oxlint;
+- commits `3651f7eb0`,
+  `f31f31953`,
+  and `a045c0377` add pinned TypedArray and Node observation evidence,
+  preserve callback `thisArg` uncertainty,
+  and distinguish PostCSS mutation from observation or callback uncertainty;
+- commit `9f2aa1660` audits Optique `1.1.1` parsing against authored and shipped source;
+  readonly argument buffers are observational,
+  while parser and option capabilities remain opaque;
+- commits `f309c615c`,
+  `0db781e4a`,
+  `09da4a903`,
+  `3f159cb1e`,
+  `3fa5be6e1`,
+  and `218da9e1e` complete Git policy CLI grouping,
+  promise assimilation,
+  Valibot validation,
+  Error cause,
+  and VFS or native write boundaries;
+  the package passes type lint,
+  Oxlint,
+  build,
+  and unit tests;
+- commits `d9ae420f3` and `3cebfa881` propagate sound PostCSS clone,
+  error,
+  and stringifier uncertainty through the CSS mixin implementation;
+  the CSS package passes type lint,
+  Oxlint,
+  build,
+  and unit tests;
+- no post-change root count exists yet because processes `proc_52` and `proc_53` were terminated without output;
+  package-level host-provider migration continues before the next root sweep;
 - `packages/dev-script/task-util`,
   `packages/oxlint-plugins/no-restricted-syntax`,
   `packages/oxlint-plugins/prefer-readonly-parameter-type`,
