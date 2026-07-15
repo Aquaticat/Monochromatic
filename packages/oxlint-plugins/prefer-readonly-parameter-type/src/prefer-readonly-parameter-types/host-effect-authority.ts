@@ -91,6 +91,32 @@ export function ecma262Authority({
 }
 
 /**
+ * Creates pinned ECMA-402 authority for locale-sensitive algorithms.
+ *
+ * @param algorithm - Source-derived algorithm fragment identity
+ *
+ * @returns Exact pinned ECMA-402 algorithm authority
+ *
+ * @example
+ * ```ts
+ * const authority = ecma402Authority({ algorithm: 'sha256:fragment' });
+ * ```
+ */
+export function ecma402Authority({
+  algorithm,
+}: {
+  readonly algorithm: string;
+}): StandardEffectAuthority {
+  return {
+    kind: 'standard-algorithm',
+    standard: 'ECMA-402',
+    revision: '5273ed81c1a81cd87aaaaf87df48e7084d38259c',
+    sourceDigest: '744cb1e2a095414799a94d33f1b0caaef6561769d95bf5387716668cd93d52cd',
+    algorithm,
+  };
+}
+
+/**
  * Pinned authoring-source digests accepted for standard evidence.
  */
 const STANDARD_SOURCE_DIGESTS: Readonly<Record<string, string>> = {
@@ -98,6 +124,7 @@ const STANDARD_SOURCE_DIGESTS: Readonly<Record<string, string>> = {
   'CSSOM@0222af95924db44c8e10d993b614596cd6f35cbb': '5a0b6a2f116ad450c22a202241c997c4a64d9c13bb9e011c5a0bcc4345f89668',
   'DOM@5796f716c857f0a563d11d32e0ca6b49232191be': 'f977c54983bdd54104e3860d5ef62f973ec9907ea8226858f5270fea502ebe52',
   'ECMA-262@1355a23e48aaf2b1d7b6cbfad0fb98bce999cfd1': '313826a4ff419145470a9d688b8da21e326374afb2a9c73aa9183fbc57162845',
+  'ECMA-402@5273ed81c1a81cd87aaaaf87df48e7084d38259c': '744cb1e2a095414799a94d33f1b0caaef6561769d95bf5387716668cd93d52cd',
   'Encoding@a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a': '90bd4f43b965186afd34661d5ad0f45d35f9a178da895dcc9f08f610cc031c55',
   'Fetch@586cd2a44c2a865b37c166dc0740f3fb8bb220d6': '2099e5170175b36f61ab3234849c429702552d3587d50b87149269336977eb98',
   'File API@cd1d1da9a5375af0622af4b36e76c6e6bd9d130b': '64953b2ad6f187e21ad316d4a5f40b050023b75f4ff4d7e18ccf763558eb99ab',

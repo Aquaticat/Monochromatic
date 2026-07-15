@@ -399,6 +399,19 @@ await describe({
         if (arrayCheck === NO_INTRINSIC_EFFECT)
           throw new Error('Expected Array.isArray observational effect.',);
         expect(arrayCheck.targets,).toEqual([],);
+        const localizedDate = intrinsicEffect({
+          provenance: { kind: 'ecmascript', },
+          ownerType: 'Date',
+          member: 'toLocaleString',
+        },);
+        expect(localizedDate,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (localizedDate === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Date.toLocaleString observational effect.',);
+        expect(localizedDate.targets,).toEqual([],);
+        expect(localizedDate.opaqueTargets,).toEqual([
+          { kind: 'argument', index: 0, },
+          { kind: 'argument', index: 1, },
+        ],);
         const textDecoder = intrinsicEffect({
           provenance: { kind: 'dom', },
           ownerType: 'TextDecoder',

@@ -1,4 +1,4 @@
-# ECMA-262 2026 object observation calls can hide user-code effects from readonly analysis
+# ECMAScript observation calls can hide user-code effects from readonly analysis
 
 ## Symptom
 
@@ -26,6 +26,8 @@ The audited outcomes are:
   and receiver-reachable values through its callback relation;
 - `Array.prototype.join` is observational only when every reachable element is primitive;
 - `Error.isError(value)` is observational;
+- `Date.prototype.toLocaleString()` observes the receiver's `[[DateValue]]`;
+  supplied locales and options remain opaque;
 - `JSON.stringify(value)` remains opaque because it can invoke `toJSON`,
    accessors,
    proxy behavior,
@@ -105,6 +107,25 @@ Primitive arguments take direct conversion branches and cannot expose caller-own
 The earlier idea that serialization and reflection calls could share one observational catalog class was wrong.
 The algorithms differ at the exact user-code dispatch boundary,
  so each callable requires its own audit.
+
+ECMA-402 commit `5273ed81c1a81cd87aaaaf87df48e7084d38259c`
+defines `Date.prototype.toLocaleString` in
+[`spec/locale-sensitive-functions.html`][ecma402-date-locale].
+The source digest is
+`744cb1e2a095414799a94d33f1b0caaef6561769d95bf5387716668cd93d52cd`.
+The exact algorithm fragment digest is
+`0b2ffb5786b37094c13c77a2d7ee13e439522fe457a95fe44b4b7ef5fa6ad659`.
+
+The algorithm requires the receiver's `[[DateValue]]` slot,
+reads that number,
+creates an `Intl.DateTimeFormat`,
+and formats the number.
+It does not change receiver state.
+`CreateDateTimeFormat` receives optional locales and options,
+which can expose caller-owned iteration,
+property access,
+and coercion hooks.
+The catalog therefore keeps argument positions opaque while accepting calls with no supplied arguments as observational.
 
 ## Verification
 
@@ -325,3 +346,5 @@ Its contract must name `JSON.stringify` and every parameter whose reachable hook
    consumer-side exact intrinsic catalog is the verified remedy.
 
 Nothing should be filed upstream.
+
+[ecma402-date-locale]: https://github.com/tc39/ecma402/blob/5273ed81c1a81cd87aaaaf87df48e7084d38259c/spec/locale-sensitive-functions.html
