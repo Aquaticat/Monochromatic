@@ -204,7 +204,7 @@ function combineProbeSignals({
   callerSignal,
 }: {
   readonly budgetSignal: AbortSignal;
-  readonly callerSignal: AbortSignal | undefined;
+  readonly callerSignal?: AbortSignal;
 },): AbortSignal {
   return callerSignal === undefined
     ? budgetSignal
