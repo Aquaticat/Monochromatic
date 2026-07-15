@@ -6,7 +6,7 @@
     // across `extends`, so `node` (from tsconfig.options.json) must be repeated.
     "types": [
       "node",
-      "mdx"
-    ]
-  }
+      "mdx",
+    ],
+  },
 }

@@ -4,39 +4,39 @@ source_dir: .
 
 # Paths to exclude from indexing, as a YAML list of .gitignore-style patterns
 source_dir_exclude:
-  - "**/test/**"
-  - "*.test.ts"
-  - "*_test.rs"
-  - "*_tests.rs"
-  - "*Test.kt"
-  - "dist"
-  - "node_modules"
-  - "*.local.*"
-  - "*.local"
-  - "*.auto.tfvars"
-  - "*.tfstate"
-  - "*.tfstate.*"
-  - "*.lock"
-  - "target"
-  - "cache"
-  - ".cache"
-  - "*.log.jsonl"
-  - "output"
-  - "packages-paused"
-  - "packages-deprecated"
-  - ".claude"
-  - ".factory"
-  - ".serena"
-  - ".*cache"
-  - "*~"
-  - ".idea"
-  - "out"
-  - "data"
-  - "build"
-  - "corpus"
-  - "*.out"
-  - "*.old"
-  - "done-*"
+- '**/test/**'
+- '*.test.ts'
+- '*_test.rs'
+- '*_tests.rs'
+- '*Test.kt'
+- 'dist'
+- 'node_modules'
+- '*.local.*'
+- '*.local'
+- '*.auto.tfvars'
+- '*.tfstate'
+- '*.tfstate.*'
+- '*.lock'
+- 'target'
+- 'cache'
+- '.cache'
+- '*.log.jsonl'
+- 'output'
+- 'packages-paused'
+- 'packages-deprecated'
+- '.claude'
+- '.factory'
+- '.serena'
+- '.*cache'
+- '*~'
+- '.idea'
+- 'out'
+- 'data'
+- 'build'
+- 'corpus'
+- '*.out'
+- '*.old'
+- 'done-*'
 
 # Embedding model in LiteLLM format, e.g. "voyage/voyage-code-3"
 # For all supported providers see

@@ -1,149 +1,584 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>File manager sticky flow: live companion</title>
-<style>
-  /* Self-contained: no external requests of any kind. */
-  :root {
-    --bg: #0d0f0e; --panel: #161a18; --ink: #e6e6e6; --dim: #9aa39e;
-    --accent: #28ff78; --rail: rgba(40, 255, 120, 0.10); --pane: #101418;
-    --pane-border: #2a2f2c; --active: #4a90d9;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 24px; background: var(--bg); color: var(--ink);
-    font: 15px/1.5 system-ui, sans-serif; max-width: 1000px; margin-inline: auto;
-  }
-  h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; margin-top: 2rem; }
-  h1, h2 { font-weight: 600; }
-  p { max-width: 72ch; } .dim { color: var(--dim); }
-  code { background: var(--panel); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
-  svg text { font: 12px system-ui, sans-serif; fill: var(--ink); }
-  svg .dimtext { fill: var(--dim); }
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8'>
+    <meta
+      name='viewport'
+      content='width=device-width, initial-scale=1'>
+    <title>File manager sticky flow: live companion</title>
+    <style>
+    /* Self-contained: no external requests of any kind. */
+    :root {
+      --bg: #0d0f0e;
+      --panel: #161a18;
+      --ink: #e6e6e6;
+      --dim: #9aa39e;
+      --accent: #28ff78;
+      --rail: rgb(40 255 120 / 10%);
+      --pane: #101418;
+      --pane-border: #2a2f2c;
+      --active: #4a90d9;
+    }
 
-  /* The live demo: the real layout at miniature scale.
-     Exactly the shipped architecture: one scroller, columns as flow stacks of
-     rail wrappers, each pane position: sticky inside its rail. */
-  .demo-shell { border: 1px solid var(--pane-border); border-radius: 10px; background: var(--panel); padding: 12px; }
-  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
-  .controls button {
-    background: var(--pane); color: var(--ink); border: 1px solid var(--pane-border);
-    border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit;
-  }
-  .controls button:hover { border-color: var(--accent); }
-  .controls label { user-select: none; cursor: pointer; }
-  #readout { font-family: monospace; font-size: 12.5px; color: var(--dim); }
-  #readout .on { color: var(--accent); }
+    * {
+      box-sizing: border-box;
+    }
 
-  #strip {
-    display: flex; gap: 8px; align-items: flex-start;
-    overflow: auto; height: 300px; background: #000; border-radius: 6px; padding: 0;
-  }
-  .column { flex: none; width: 150px; display: block; }
-  .rail { position: relative; }
-  .show-rails .rail { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 8px; background: var(--rail); }
-  .pane {
-    position: sticky; top: 0; height: 120px; width: 150px;
-    background: var(--pane); border: 1px solid var(--pane-border); border-radius: 6px;
-    padding: 6px 8px; font-size: 12px; overflow: hidden;
-  }
-  .pane .kids { color: var(--dim); font-size: 11px; }
-  .pane.root-pane { border-color: var(--active); }
-</style>
-</head>
-<body>
-<h1>File manager sticky flow: live companion</h1>
-<p>
-  Interactive companion to <code>file-manager-sticky-flow.md</code> (the full audit; this page
-  only demonstrates). The demo below is the shipped architecture at miniature scale:
-  one <code>overflow:&nbsp;auto</code> scroller, each column a normal-flow stack of rail
-  wrappers, each pane <code>position:&nbsp;sticky;&nbsp;top:&nbsp;0</code> inside its rail.
-  No script positions anything while you scroll.
-</p>
+    body {
+      margin: 0;
 
-<h2>Live demo</h2>
-<div class="demo-shell">
-  <div class="controls">
-    <label><input type="checkbox" id="rails-toggle" checked> show rails (the sticky bands)</label>
-    <button id="add-sibling" type="button">spawn another child of root</button>
-    <button id="reset" type="button">reset</button>
-    <span id="readout" aria-live="polite"></span>
-  </div>
-  <div id="strip" aria-label="pane strip demo"></div>
-</div>
-<p class="dim">
-  Scroll the black area vertically. The root pane (blue border) pins to the top and rides the
-  scroll while any of its direct children is on screen, then releases at its rail's end;
-  every pane with children does the same inside its own rail. The readout mirrors the two
-  facts the real boundary tests assert: <code>rootPinned</code> and <code>overlapCount</code>.
-</p>
+      padding: 24px;
 
-<h2>The grid, drawn to scale</h2>
-<p>Columns are lineage depth; rows come from the tidy tree (parent aligns with first child, a later sibling starts below the previous sibling's whole subtree).</p>
-<svg viewBox="0 0 640 250" width="640" height="250" role="img" aria-label="grid diagram">
-  <text x="8"  y="16">browse tree</text>
-  <text x="8"  y="44">root ─┬─ alpha ── nested</text>
-  <text x="46" y="64">├─ beta</text>
-  <text x="46" y="84">└─ gamma</text>
-  <text x="300" y="16" class="dimtext">column 0</text>
-  <text x="410" y="16" class="dimtext">column 1</text>
-  <text x="520" y="16" class="dimtext">column 2</text>
-  <g fill="none" stroke="#4a5a52">
-    <rect x="300" y="26"  width="90" height="56" rx="6" fill="#101418"/>
-    <rect x="410" y="26"  width="90" height="56" rx="6" fill="#101418"/>
-    <rect x="520" y="26"  width="90" height="56" rx="6" fill="#101418"/>
-    <rect x="410" y="94"  width="90" height="56" rx="6" fill="#101418"/>
-    <rect x="410" y="162" width="90" height="56" rx="6" fill="#101418"/>
-  </g>
-  <text x="310" y="58">root</text>
-  <text x="420" y="58">alpha</text>
-  <text x="530" y="58">nested</text>
-  <text x="420" y="126">beta</text>
-  <text x="420" y="194">gamma</text>
-  <text x="248" y="58"  class="dimtext">row 0</text>
-  <text x="248" y="126" class="dimtext">row 1</text>
-  <text x="248" y="194" class="dimtext">row 2</text>
-</svg>
+      background: var(--bg);
 
-<h2>One pane's band</h2>
-<p>A band spans from the pane's own row to its deepest direct child's bottom edge. Leaves get a band exactly their own size (zero travel).</p>
-<svg viewBox="0 0 640 240" width="640" height="240" role="img" aria-label="band diagram">
-  <rect x="60" y="20" width="110" height="200" rx="10" fill="rgba(40,255,120,0.10)" stroke="#28ff78" stroke-dasharray="6 4"/>
-  <rect x="70" y="30" width="90" height="56" rx="6" fill="#101418" stroke="#4a90d9"/>
-  <text x="80" y="62">root</text>
-  <text x="72" y="140" class="dimtext">root's band:</text>
-  <text x="72" y="158" class="dimtext">rows 0..1</text>
-  <rect x="220" y="30"  width="90" height="56" rx="6" fill="#101418" stroke="#4a5a52"/>
-  <rect x="220" y="152" width="90" height="56" rx="6" fill="#101418" stroke="#4a5a52"/>
-  <text x="230" y="62">alpha</text>
-  <text x="230" y="184">beta</text>
-  <text x="330" y="62"  class="dimtext">&#8592; direct children define</text>
-  <text x="330" y="80"  class="dimtext">   how far the band reaches</text>
-  <text x="330" y="196" class="dimtext">&#8592; deepest direct child:</text>
-  <text x="330" y="214" class="dimtext">   band bottom = its bottom edge</text>
-</svg>
+      color: var(--ink);
 
-<h2>Release point: original vs sticky</h2>
-<p>
-  For a band 2116px tall in a 600px viewport: the original stops following when the band's
-  bottom reaches the viewport bottom (scroll 1516); sticky follows until the pane itself hits
-  the band's end (scroll 1596). Sticky's release point does not depend on viewport height.
-</p>
-<svg viewBox="0 0 640 130" width="640" height="130" role="img" aria-label="release comparison">
-  <line x1="40" y1="60" x2="600" y2="60" stroke="#4a5a52"/>
-  <g stroke="#9aa39e"><line x1="40"  y1="52" x2="40"  y2="68"/><line x1="600" y1="52" x2="600" y2="68"/></g>
-  <text x="30"  y="86" class="dimtext">0</text>
-  <text x="560" y="86" class="dimtext">scroll</text>
-  <line x1="440" y1="46" x2="440" y2="74" stroke="#e0b050"/>
-  <text x="330" y="40" fill="#e0b050">original releases: 1516</text>
-  <line x1="470" y1="46" x2="470" y2="74" stroke="#28ff78"/>
-  <text x="474" y="110" fill="#28ff78">sticky releases: 1596</text>
-</svg>
+      font: 15px/1.5 system-ui, sans-serif;
 
-<script>
-  'use strict';
+      max-width: 1000px;
+
+      margin-inline: auto;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+
+      margin-top: 2rem;
+    }
+
+    h1,
+    h2 {
+      font-weight: 600;
+    }
+
+    p {
+      max-width: 72ch;
+    }
+
+    .dim {
+      color: var(--dim);
+    }
+
+    code {
+      background: var(--panel);
+
+      padding: 1px 5px;
+
+      border-radius: 4px;
+
+      font-size: 0.92em;
+    }
+
+    svg text {
+      font: 12px system-ui, sans-serif;
+
+      fill: var(--ink);
+    }
+
+    svg .dimtext {
+      fill: var(--dim);
+    }
+
+    /* The live demo: the real layout at miniature scale.
+       Exactly the shipped architecture: one scroller, columns as flow stacks of
+       rail wrappers, each pane position: sticky inside its rail. */
+    .demo-shell {
+      border: 1px solid var(--pane-border);
+
+      border-radius: 10px;
+
+      background: var(--panel);
+
+      padding: 12px;
+    }
+
+    .controls {
+      display: flex;
+
+      gap: 12px;
+
+      align-items: center;
+
+      flex-wrap: wrap;
+
+      margin-bottom: 10px;
+    }
+
+    .controls button {
+      background: var(--pane);
+
+      color: var(--ink);
+
+      border: 1px solid var(--pane-border);
+
+      border-radius: 6px;
+
+      padding: 4px 10px;
+
+      cursor: pointer;
+
+      font: inherit;
+    }
+
+    .controls button:hover {
+      border-color: var(--accent);
+    }
+
+    .controls label {
+      user-select: none;
+
+      cursor: pointer;
+    }
+
+    #readout {
+      font-family: monospace;
+
+      font-size: 12.5px;
+
+      color: var(--dim);
+    }
+
+    #readout .on {
+      color: var(--accent);
+    }
+
+    #strip {
+      display: flex;
+
+      gap: 8px;
+
+      align-items: flex-start;
+
+      overflow: auto;
+
+      height: 300px;
+
+      background: #000;
+
+      border-radius: 6px;
+
+      padding: 0;
+    }
+
+    .column {
+      flex: none;
+
+      width: 150px;
+
+      display: block;
+    }
+
+    .rail {
+      position: relative;
+    }
+
+    .show-rails .rail {
+      outline: 2px solid var(--accent);
+
+      outline-offset: -2px;
+
+      border-radius: 8px;
+
+      background: var(--rail);
+    }
+
+    .pane {
+      position: sticky;
+
+      top: 0;
+
+      height: 120px;
+
+      width: 150px;
+
+      background: var(--pane);
+
+      border: 1px solid var(--pane-border);
+
+      border-radius: 6px;
+
+      padding: 6px 8px;
+
+      font-size: 12px;
+
+      overflow: hidden;
+    }
+
+    .pane .kids {
+      color: var(--dim);
+
+      font-size: 11px;
+    }
+
+    .pane.root-pane {
+      border-color: var(--active);
+    }
+    </style>
+  </head>
+  <body>
+    <h1>File manager sticky flow: live companion</h1>
+    <p>
+      Interactive companion to <code>file-manager-sticky-flow.md</code> (the full audit;
+      this page only demonstrates). The demo below is the shipped architecture at
+      miniature scale: one <code>overflow:&nbsp;auto</code> scroller, each column a
+      normal-flow stack of rail wrappers, each pane <code
+      >position:&nbsp;sticky;&nbsp;top:&nbsp;0</code> inside its rail. No script positions
+      anything while you scroll.
+    </p>
+
+    <h2>Live demo</h2>
+    <div class='demo-shell'>
+      <div class='controls'>
+        <label><input
+            type='checkbox'
+            id='rails-toggle'
+            checked> show rails (the sticky bands)</label>
+        <button
+          id='add-sibling'
+          type='button'>
+          spawn another child of root
+        </button>
+        <button
+          id='reset'
+          type='button'>
+          reset
+        </button>
+        <span
+          id='readout'
+          aria-live='polite'></span>
+      </div>
+      <div
+        id='strip'
+        aria-label='pane strip demo'>
+      </div>
+    </div>
+    <p class='dim'>
+      Scroll the black area vertically. The root pane (blue border) pins to the top and
+      rides the scroll while any of its direct children is on screen, then releases at its
+      rail's end; every pane with children does the same inside its own rail. The readout
+      mirrors the two facts the real boundary tests assert: <code>rootPinned</code> and
+      <code>overlapCount</code>.
+    </p>
+
+    <h2>The grid, drawn to scale</h2>
+    <p>
+      Columns are lineage depth; rows come from the tidy tree (parent aligns with first
+      child, a later sibling starts below the previous sibling's whole subtree).
+    </p>
+    <svg
+      viewBox='0 0 640 250'
+      width='640'
+      height='250'
+      role='img'
+      aria-label='grid diagram'>
+      <text
+        x='8'
+        y='16'>
+        browse tree
+      </text>
+      <text
+        x='8'
+        y='44'>
+        root ─┬─ alpha ── nested
+      </text>
+      <text
+        x='46'
+        y='64'>
+        ├─ beta
+      </text>
+      <text
+        x='46'
+        y='84'>
+        └─ gamma
+      </text>
+      <text
+        x='300'
+        y='16'
+        class='dimtext'>
+        column 0
+      </text>
+      <text
+        x='410'
+        y='16'
+        class='dimtext'>
+        column 1
+      </text>
+      <text
+        x='520'
+        y='16'
+        class='dimtext'>
+        column 2
+      </text>
+      <g
+        fill='none'
+        stroke='#4a5a52'>
+        <rect
+          x='300'
+          y='26'
+          width='90'
+          height='56'
+          rx='6'
+          fill='#101418'
+        />
+        <rect
+          x='410'
+          y='26'
+          width='90'
+          height='56'
+          rx='6'
+          fill='#101418'
+        />
+        <rect
+          x='520'
+          y='26'
+          width='90'
+          height='56'
+          rx='6'
+          fill='#101418'
+        />
+        <rect
+          x='410'
+          y='94'
+          width='90'
+          height='56'
+          rx='6'
+          fill='#101418'
+        />
+        <rect
+          x='410'
+          y='162'
+          width='90'
+          height='56'
+          rx='6'
+          fill='#101418'
+        />
+      </g>
+      <text
+        x='310'
+        y='58'>
+        root
+      </text>
+      <text
+        x='420'
+        y='58'>
+        alpha
+      </text>
+      <text
+        x='530'
+        y='58'>
+        nested
+      </text>
+      <text
+        x='420'
+        y='126'>
+        beta
+      </text>
+      <text
+        x='420'
+        y='194'>
+        gamma
+      </text>
+      <text
+        x='248'
+        y='58'
+        class='dimtext'>
+        row 0
+      </text>
+      <text
+        x='248'
+        y='126'
+        class='dimtext'>
+        row 1
+      </text>
+      <text
+        x='248'
+        y='194'
+        class='dimtext'>
+        row 2
+      </text>
+    </svg>
+
+    <h2>One pane's band</h2>
+    <p>
+      A band spans from the pane's own row to its deepest direct child's bottom edge.
+      Leaves get a band exactly their own size (zero travel).
+    </p>
+    <svg
+      viewBox='0 0 640 240'
+      width='640'
+      height='240'
+      role='img'
+      aria-label='band diagram'>
+      <rect
+        x='60'
+        y='20'
+        width='110'
+        height='200'
+        rx='10'
+        fill='rgba(40,255,120,0.10)'
+        stroke='#28ff78'
+        stroke-dasharray='6 4'
+      />
+      <rect
+        x='70'
+        y='30'
+        width='90'
+        height='56'
+        rx='6'
+        fill='#101418'
+        stroke='#4a90d9'
+      />
+      <text
+        x='80'
+        y='62'>
+        root
+      </text>
+      <text
+        x='72'
+        y='140'
+        class='dimtext'>
+        root's band:
+      </text>
+      <text
+        x='72'
+        y='158'
+        class='dimtext'>
+        rows 0..1
+      </text>
+      <rect
+        x='220'
+        y='30'
+        width='90'
+        height='56'
+        rx='6'
+        fill='#101418'
+        stroke='#4a5a52'
+      />
+      <rect
+        x='220'
+        y='152'
+        width='90'
+        height='56'
+        rx='6'
+        fill='#101418'
+        stroke='#4a5a52'
+      />
+      <text
+        x='230'
+        y='62'>
+        alpha
+      </text>
+      <text
+        x='230'
+        y='184'>
+        beta
+      </text>
+      <text
+        x='330'
+        y='62'
+        class='dimtext'>
+        &#8592; direct children define
+      </text>
+      <text
+        x='330'
+        y='80'
+        class='dimtext'>
+        how far the band reaches
+      </text>
+      <text
+        x='330'
+        y='196'
+        class='dimtext'>
+        &#8592; deepest direct child:
+      </text>
+      <text
+        x='330'
+        y='214'
+        class='dimtext'>
+        band bottom = its bottom edge
+      </text>
+    </svg>
+
+    <h2>Release point: original vs sticky</h2>
+    <p>
+      For a band 2116px tall in a 600px viewport: the original stops following when the
+      band's bottom reaches the viewport bottom (scroll 1516); sticky follows until the
+      pane itself hits the band's end (scroll 1596). Sticky's release point does not
+      depend on viewport height.
+    </p>
+    <svg
+      viewBox='0 0 640 130'
+      width='640'
+      height='130'
+      role='img'
+      aria-label='release comparison'>
+      <line
+        x1='40'
+        y1='60'
+        x2='600'
+        y2='60'
+        stroke='#4a5a52'
+      />
+      <g stroke='#9aa39e'>
+        <line
+          x1='40'
+          y1='52'
+          x2='40'
+          y2='68'
+        />
+        <line
+          x1='600'
+          y1='52'
+          x2='600'
+          y2='68'
+        />
+      </g>
+      <text
+        x='30'
+        y='86'
+        class='dimtext'>
+        0
+      </text>
+      <text
+        x='560'
+        y='86'
+        class='dimtext'>
+        scroll
+      </text>
+      <line
+        x1='440'
+        y1='46'
+        x2='440'
+        y2='74'
+        stroke='#e0b050'
+      />
+      <text
+        x='330'
+        y='40'
+        fill='#e0b050'>
+        original releases: 1516
+      </text>
+      <line
+        x1='470'
+        y1='46'
+        x2='470'
+        y2='74'
+        stroke='#28ff78'
+      />
+      <text
+        x='474'
+        y='110'
+        fill='#28ff78'>
+        sticky releases: 1596
+      </text>
+    </svg>
+
+    <script>
+    'use strict';
   (function () {
     const PANE_H = 120;
     const GAP = 8;
@@ -292,6 +727,6 @@
     reset();
     render();
   })();
-</script>
-</body>
+    </script>
+  </body>
 </html>

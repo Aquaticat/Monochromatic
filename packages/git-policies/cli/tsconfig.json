@@ -3,6 +3,6 @@
   "include": [
     "src/**/*.ts",
     "perf/**/*.ts",
-    "*.config.ts"
-  ]
+    "*.config.ts",
+  ],
 }
