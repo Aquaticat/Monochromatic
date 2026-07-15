@@ -1,5 +1,5 @@
 /**
- * Batched Git blob loading for manual-push candidates.
+ * Batched Git blob loading shared by landed and pushed candidates.
  *
  * @module
  */
@@ -9,7 +9,6 @@ import {
   arrayBuffer,
   text,
 } from 'node:stream/consumers';
-import { ManualPushProbeError, } from './manual-push-probe.ts';
 
 /**
  * Byte terminating Git batch protocol records.
@@ -50,14 +49,24 @@ type BatchHeader = Readonly<{
  *
  * @param header - decoded header without newline
  *
+ * @param createError - domain error factory for malformed output
+ *
  * @returns canonical object identity and size
+ *
+ * @throws caller-domain error when header is malformed or names a non-blob
  *
  * @example
  * ```ts
- * parseBatchHeader('abc blob 3');
+ * parseBatchHeader({ header: 'abc blob 3', createError: function toError(message,) { return new Error(message,); } });
  * ```
  */
-function parseBatchHeader(header: string,): BatchHeader {
+function parseBatchHeader({
+  header,
+  createError,
+}: Readonly<{
+  header: string;
+  createError: (message: string) => Error;
+}>,): BatchHeader {
   /**
    * Space-delimited default batch fields.
    */
@@ -71,16 +80,16 @@ function parseBatchHeader(header: string,): BatchHeader {
   if ((oid === undefined) || (objectType === undefined)
     || (sizeText === undefined)
     || (fields.length !== BATCH_HEADER_FIELD_COUNT))
-    throw new ManualPushProbeError(`Git blob batch returned malformed header: ${header}`,);
+    throw createError(`Git blob batch returned malformed header: ${header}`,);
   if (objectType !== 'blob')
-    throw new ManualPushProbeError(`Git blob batch returned ${objectType} for ${oid}.`,);
+    throw createError(`Git blob batch returned ${objectType} for ${oid}.`,);
   /**
    * Parsed uncompressed byte length.
    */
   const size = Number(sizeText,);
   if ((!Number.isSafeInteger(size,)) || (size < 0)
     || (String(size,) !== sizeText))
-    throw new ManualPushProbeError(`Git blob batch returned invalid size for ${oid}: ${sizeText}`,);
+    throw createError(`Git blob batch returned invalid size for ${oid}: ${sizeText}`,);
   return {
     oid,
     size,
@@ -94,19 +103,25 @@ function parseBatchHeader(header: string,): BatchHeader {
  *
  * @param requestedOids - unique requested object IDs in protocol order
  *
+ * @param createError - domain error factory for malformed output
+ *
  * @returns exact blob bytes keyed by requested object ID
+ *
+ * @throws caller-domain error when output is malformed, misordered, or truncated
  *
  * @example
  * ```ts
- * parseBatchOutput({ output, requestedOids: ['abc'] });
+ * parseBatchOutput({ output, requestedOids: ['abc'], createError: function toError(message,) { return new Error(message,); } });
  * ```
  */
 function parseBatchOutput({
   output,
   requestedOids,
+  createError,
 }: Readonly<{
   output: Uint8Array;
   requestedOids: readonly string[];
+  createError: (message: string) => Error;
 }>,): ReadonlyMap<string, Uint8Array> {
   /**
    * Parsed bytes retaining views into complete batch output.
@@ -125,18 +140,19 @@ function parseBatchOutput({
       offset,
     );
     if (headerEnd === (-1))
-      throw new ManualPushProbeError(`Git blob batch omitted header for ${requestedOid}.`,);
+      throw createError(`Git blob batch omitted header for ${requestedOid}.`,);
     /**
      * Parsed successful batch header.
      */
-    const header = parseBatchHeader(
-      HEADER_DECODER.decode(output.subarray(
-      offset,
-      headerEnd,
-    ),),
-    );
+    const header = parseBatchHeader({
+      header: HEADER_DECODER.decode(output.subarray(
+        offset,
+        headerEnd,
+      ),),
+      createError,
+    },);
     if (header.oid !== requestedOid)
-      throw new ManualPushProbeError(`Git blob batch returned ${header.oid} while ${requestedOid} was requested.`,);
+      throw createError(`Git blob batch returned ${header.oid} while ${requestedOid} was requested.`,);
     /**
      * Exact content start after header newline.
      */
@@ -146,7 +162,7 @@ function parseBatchOutput({
      */
     const contentEnd = contentStart + header.size;
     if ((contentEnd >= output.length) || (output[contentEnd] !== NEWLINE_BYTE))
-      throw new ManualPushProbeError(`Git blob batch returned truncated content for ${requestedOid}.`,);
+      throw createError(`Git blob batch returned truncated content for ${requestedOid}.`,);
     blobs.set(
       requestedOid,
       output.subarray(
@@ -157,12 +173,15 @@ function parseBatchOutput({
     offset = contentEnd + 1;
   },);
   if (offset !== output.length)
-    throw new ManualPushProbeError('Git blob batch returned unexpected trailing bytes.',);
+    throw createError('Git blob batch returned unexpected trailing bytes.',);
   return blobs;
 }
 
 /**
  * Loads every unique requested blob through one Git batch subprocess.
+ *
+ * One persistent reader replaces per-candidate `cat-file blob` spawns, whose
+ * fork and exec cost dominates mechanical commits touching thousands of paths.
  *
  * @param gitPath - resolved real Git executable
  *
@@ -170,21 +189,27 @@ function parseBatchOutput({
  *
  * @param oids - blob IDs in candidate encounter order
  *
+ * @param createError - domain error factory for batch failure and malformed output
+ *
  * @returns exact blob bytes keyed by object ID
+ *
+ * @throws caller-domain error when Git exits nonzero or output is malformed
  *
  * @example
  * ```ts
- * await loadManualPushBlobs({ gitPath: '/usr/bin/git', cwd: '/repo', oids: [] });
+ * await loadBlobBatch({ gitPath: '/usr/bin/git', cwd: '/repo', oids: [], createError: function toError(message,) { return new Error(message,); } });
  * ```
  */
-export async function loadManualPushBlobs({
+export async function loadBlobBatch({
   gitPath,
   cwd,
   oids,
+  createError,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   oids: readonly string[];
+  createError: (message: string) => Error;
 }>,): Promise<ReadonlyMap<string, Uint8Array>> {
   /**
    * Unique request order avoids re-reading unchanged blobs across commit trees.
@@ -228,9 +253,10 @@ export async function loadManualPushBlobs({
    */
   const [stdout, stderr,] = await output;
   if (child.exitCode !== 0)
-    throw new ManualPushProbeError(`git cat-file --batch failed: ${stderr.trim()}`,);
+    throw createError(`git cat-file --batch failed: ${stderr.trim()}`,);
   return parseBatchOutput({
     output: new Uint8Array(stdout,),
     requestedOids,
+    createError,
   },);
 }

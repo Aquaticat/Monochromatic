@@ -18,6 +18,7 @@ import type {
   CandidateFile,
   GitObjectId,
 } from '../api/policy-types.ts';
+import { loadBlobBatch, } from './blob-batch.ts';
 import { parseRawDiffRecords, } from './raw-diff-records.ts';
 
 /**
@@ -105,13 +106,13 @@ async function runGitBytes({
 }
 
 /**
- * Creates landed-domain error for malformed raw diff output.
+ * Creates landed-domain error for malformed or failed Git output.
  *
  * @param message - safe failure explanation
  *
  * @returns landed-state failure
  */
-function landedDiffError(message: string,): Error {
+function landedGitError(message: string,): Error {
   return new PostCommitGitError(message,);
 }
 
@@ -156,7 +157,23 @@ async function loadLandedCandidates({
    */
   const records = parseRawDiffRecords({
     text: UTF8_DECODER.decode(deltaBytes,),
-    createError: landedDiffError,
+    createError: landedGitError,
+  },);
+  /**
+   * One batched read for every content-bearing landed blob. Submodule records
+   * publish their commit identity rather than tree content, so they request no
+   * blob; every remaining candidate is materialized by post-commit policies,
+   * so nothing is read that a lazy per-candidate spawn would have skipped.
+   */
+  const blobBytes = await loadBlobBatch({
+    gitPath,
+    cwd,
+    oids: records.flatMap(function contentOid(record,): readonly GitObjectId[] {
+      return record.mode === 'submodule'
+        ? []
+        : [record.oid,];
+    },),
+    createError: landedGitError,
   },);
   return records.map(function toCandidate(record,): CandidateFile {
     return {
@@ -168,15 +185,13 @@ async function loadLandedCandidates({
       bytes: function loadCommittedBytes(): Promise<Uint8Array> {
         if (record.mode === 'submodule')
           return Promise.resolve(new TextEncoder().encode(record.oid,),);
-        return runGitBytes({
-          gitPath,
-          cwd,
-          args: [
-            'cat-file',
-            'blob',
-            record.oid,
-          ],
-        },);
+        /**
+         * Exact shared blob view loaded by the single batch subprocess.
+         */
+        const bytes = blobBytes.get(record.oid,);
+        if (bytes === undefined)
+          throw new PostCommitGitError(`Git blob batch omitted requested object ${record.oid}.`,);
+        return Promise.resolve(bytes,);
       },
     };
   },);

@@ -9,7 +9,7 @@ import {
   type PushUpdate,
 } from '../api/context-types.ts';
 import type { CandidateFile, } from '../api/policy-types.ts';
-import { loadManualPushBlobs, } from './manual-push-blob-batch.ts';
+import { loadBlobBatch, } from './blob-batch.ts';
 import {
   commitDeltaCandidates,
   type ManualPushCandidateDescriptor,
@@ -216,7 +216,7 @@ export async function createManualPushCandidates({
   /**
    * One batched read for every unique blob across every pushed state.
    */
-  const blobBytes = await loadManualPushBlobs({
+  const blobBytes = await loadBlobBatch({
     gitPath,
     cwd,
     oids: descriptors.flatMap(function blobOid(descriptor,) {
@@ -225,6 +225,9 @@ export async function createManualPushCandidates({
         === 'blob' ? [descriptor.content
           .oid,] : [];
     },),
+    createError: function toProbeError(message,): Error {
+      return new ManualPushProbeError(message,);
+    },
   },);
   return descriptors.map(
     /**
