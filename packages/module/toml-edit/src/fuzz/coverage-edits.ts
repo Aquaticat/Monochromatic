@@ -166,10 +166,23 @@ function applyStep({
  */
 export function exerciseEditSequence({ base, }: { readonly base: TomlEditState; },): void {
   EDIT_SEQUENCE.reduce(
+    /**
+     * Applies one deterministic sequence step.
+     *
+     * @param current - Edit state from prior step.
+     *
+     * @param editStep - Current deterministic edit operation.
+     *
+     * @returns Edit state after current operation.
+     *
+     * @mutates current through module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-set.ts sha256 ff0a3c732c17a64769744646c0e7ee2436b5cb698dce1f4586709eef90c4edf3 returns fresh state while value traversal can invoke caller hooks; moduleTomlEdit.tomlSet
+     *
+     * @mutates editStep through module-toml-edit commit 7a7124af929b6bb98615d515ff40e91df99c2a6c toml-set.ts sha256 ff0a3c732c17a64769744646c0e7ee2436b5cb698dce1f4586709eef90c4edf3 returns fresh state while value traversal can invoke caller hooks; moduleTomlEdit.tomlSet
+     */
     function step(
       current,
       editStep,
-    ) {
+    ): TomlEditState {
       return applyStep({
         edit: current,
         step: editStep,
