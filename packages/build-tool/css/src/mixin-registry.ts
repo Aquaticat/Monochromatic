@@ -164,9 +164,7 @@ function runSingleMixinPass(): boolean {
      *
      * @returns whether current or prior entry changed
      *
-     * @mutates entry through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
-     *
-     * @mutates entry through https://github.com/postcss/postcss toString stringifier and property effects
+     * @mutates entry through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects and toString stringifier or property effects
      */
     function detectAnyChange(
       changedSoFar: boolean,

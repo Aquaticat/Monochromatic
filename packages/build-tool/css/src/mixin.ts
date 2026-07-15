@@ -38,6 +38,8 @@ export function collectMixins(root: Root,): void {
      *
      * @param node - mixin at-rule
      *
+     * @returns no traversal override
+     *
      * @mutates node through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
      */
     function processMixin(node: AtRule,) {
@@ -84,9 +86,7 @@ export function collectMixins(root: Root,): void {
  *
  * @param root - PostCSS root node
  *
- * @mutates root through https://github.com/postcss/postcss error source, option, getter, or proxy effects
- *
- * @mutates root through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+ * @mutates root through https://github.com/postcss/postcss error source, option, getter, or proxy effects and clone constructor or accessor effects
  *
  * @throws When an \@apply references an unknown mixin
  *
@@ -103,6 +103,8 @@ export function expandApplyRules(root: Root,): void {
      * Expands one apply at-rule.
      *
      * @param node - apply at-rule
+     *
+     * @returns no traversal override
      *
      * @mutates node through https://github.com/postcss/postcss error source, option, getter, or proxy effects
      */
