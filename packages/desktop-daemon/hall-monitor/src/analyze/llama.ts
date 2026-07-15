@@ -150,12 +150,23 @@ export async function stop(): Promise<void> {
   const currentServer = state.server;
   currentServer.kill();
   // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js event-based ChildProcess API
-  await new Promise<void>(function awaitExit(resolve,) {
-    currentServer.on(
-      'exit',
-      resolve,
-    );
-  },);
+  await new Promise<void>(
+    /**
+     * Registers promise settlement with the child exit capability.
+     *
+     * @param resolve - Promise settlement callback.
+     *
+     * @returns Nothing; child exit invokes settlement later.
+     *
+     * @mutates resolve through child-process listener retention and invocation
+     */
+    function awaitExit(resolve,): void {
+      currentServer.on(
+        'exit',
+        resolve,
+      );
+    },
+  );
   delete state.server;
 
   // Wait briefly for port to free up
