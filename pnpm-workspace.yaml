@@ -6,7 +6,7 @@ allowBuilds:
 
 autoInstallPeers: false
 # Prune stale project-local virtual-store entries on every install. Benchmarks in
-# docs/troubleshooting/pnpm-modules-cache.md showed negligible branch-switch
+# doc/troubleshooting/pnpm-modules-cache.md showed negligible branch-switch
 # benefit from the default seven-day orphan retention in this Btrfs workspace,
 # while stale .pnpm paths create confusing inspection and TypeScript-cache risk.
 modulesCacheMaxAge: 0
@@ -173,7 +173,7 @@ overrides:
   # `packages/pi-plugin/{morph-compact,terminal-title}` use pi-coding-agent type-only
   # and re-implement the runtime helpers locally in
   # `packages/pi-plugin/morph-compact/src/pi-utils.ts`.
-  # See docs/troubleshooting/dependencies.md for the audit.
+  # See doc/troubleshooting/dependencies.md for the audit.
   '@earendil-works/pi-ai>@aws-sdk/client-bedrock-runtime': '-'
   '@earendil-works/pi-ai>@google/genai': '-'
   '@earendil-works/pi-ai>@mistralai/mistralai': '-'
@@ -203,7 +203,7 @@ overrides:
   # deserialize are intentionally omitted and can be added if a future
   # transitive dep reaches in.
   # See packages/shim/ungap-structured-clone/README.md and
-  # docs/troubleshooting/dependencies.md for the audit trail.
+  # doc/troubleshooting/dependencies.md for the audit trail.
   '@ungap/structured-clone': 'link:packages/shim/ungap-structured-clone'
   # Remove abort-controller globally. It is a polyfill of the WHATWG
   # AbortController for Node < 15. Our supported runtimes (Node 22+, Bun)
@@ -215,7 +215,7 @@ overrides:
   # native constructor before the require evaluates. Removing the package
   # also drops the sole importer of event-target-shim (1739 LOC,
   # last commit 2021-01, abandoned), reducing supply-chain surface.
-  # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
+  # See doc/troubleshooting/dependencies.md and doc/dependency-blocklist.md.
   'abort-controller': '-'
   # Remove argparse globally. It is shipped solely for the CLI entry point of
   # wawoff2 (bin/woff2_{compress,decompress}.js, pulled in directly by
@@ -229,7 +229,7 @@ overrides:
   # packages/ssg/aquati.cat/src/lib/content.ts). Removing argparse
   # leaves the library APIs intact and drops 4214 LOC of supply-chain surface
   # (last commit 2022-05).
-  # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
+  # See doc/troubleshooting/dependencies.md and doc/dependency-blocklist.md.
   'argparse': '-'
   # Remove dprint globally. The npm distribution is a Node wrapper that re-execs
   # the native binary; each invocation pays the Node startup cost (multiple
@@ -240,7 +240,7 @@ overrides:
   # current tree; the override exists to keep it that way. If a future change
   # adds `dprint` to a package.json, pnpm silently drops it and the binary
   # never reaches node_modules, surfacing as a clear `Cannot find package`
-  # error at the call site. See docs/troubleshooting/dprint.md (Bug 1) and
+  # error at the call site. See doc/troubleshooting/dprint.md (Bug 1) and
   # packages/config/dprint/README.md for the policy and VSCode-extension
   # workaround. Refs #163.
   'dprint': '-'
@@ -266,7 +266,7 @@ overrides:
   # constructor, so removal would crash node-fetch at module load. The shim
   # is API-identical-by-construction, eliminating pnpm's install-time
   # deprecation warning without altering runtime behaviour.
-  # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
+  # See doc/troubleshooting/dependencies.md and doc/dependency-blocklist.md.
   'node-domexception': 'link:packages/shim/node-domexception'
   'postcss': 'catalog:'
   # Substitute proper-lockfile@4.1.2 with a workspace shim that implements
@@ -281,8 +281,8 @@ overrides:
   # would crash pi at module load and the workspace silent stub would hang
   # on `await release` because the stub's Proxy treats every property access
   # (including .then) as a self-return.
-  # See docs/decisions/proper-lockfile-removal.md and
-  # docs/troubleshooting/dependencies.md.
+  # See doc/decision/proper-lockfile-removal.md and
+  # doc/troubleshooting/dependencies.md.
   'proper-lockfile': 'link:packages/shim/proper-lockfile'
   # Substitute readable-stream@3 (winston, winston-transport) and
   # readable-stream@4 (isomorphic-git) with a single workspace shim that
@@ -302,7 +302,7 @@ overrides:
   # abort-controller fallback guards inside readable-stream@4's pipeline.js,
   # duplexify.js, and operators.js unreachable, formally closing the loop on
   # the 'abort-controller': '-' override above.
-  # See docs/decisions/readable-stream-shim.md for the full audit, including
+  # See doc/decision/readable-stream-shim.md for the full audit, including
   # the enumerated consumer surface and the verification plan.
   'readable-stream': 'link:packages/shim/readable-stream'
   # Patch [ERR_PNPM_TRUST_DOWNGRADE]: semver@6.3.1 failed verification with possible package takeover.
@@ -359,7 +359,7 @@ strictPeerDependencies: true
 # environments we actually have. Tradeoff: the pnpm virtual store
 # (~1.2 GB) includes unused platform binaries.
 #
-# See docs/decisions/pnpm-supported-architectures.md for full rationale.
+# See doc/decision/pnpm-supported-architectures.md for full rationale.
 supportedArchitectures:
   cpu:
     - x64
