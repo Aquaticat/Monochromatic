@@ -70,7 +70,7 @@ async function resolveRemoteGroup({
   cwd: string;
   remoteLocation: string;
   updates: readonly ProbedPushUpdate[];
-}>,): Promise<readonly PushUpdate[]> {
+}>,): Promise<PushUpdate[]> {
   /**
    * Authoritative remote reference query.
    */
@@ -131,7 +131,7 @@ async function resolveRemoteOids({
   gitPath: string;
   cwd: string;
   updates: readonly ProbedPushUpdate[];
-}>,): Promise<readonly PushUpdate[]> {
+}>,): Promise<PushUpdate[]> {
   /**
    * Updates grouped by exact destination location.
    */
@@ -189,7 +189,7 @@ export async function probeManualPushUpdates({
   gitPath: string;
   cwd: string;
   args: readonly string[];
-}>,): Promise<readonly PushUpdate[]> {
+}>,): Promise<PushUpdate[]> {
   /**
    * Git-resolved mappings from private dry-run hook.
    */
