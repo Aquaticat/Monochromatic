@@ -1691,10 +1691,6 @@ ${await cat(['./AGENTS.md',],)}`,
       .replace(
         '@monochromatic-dev/git-policy-api/ts',
         '../api/index.ts',
-      )
-      .replace(
-        '\n   * @mutates context through context.git.candidates lazy provider invocation\n',
-        '\n',
       )}`,
   },),
 
@@ -1713,10 +1709,6 @@ ${await cat(['./AGENTS.md',],)}`,
         .replace(
           '@monochromatic-dev/git-policy-api/ts',
           '../../api/index.ts',
-        )
-        .replace(
-          '\n   * @mutates context through context.git.candidates lazy provider invocation\n',
-          '\n',
         )}`,
     },);
   },),),

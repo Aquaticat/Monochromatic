@@ -18,12 +18,16 @@ const REPOSITORY_ROOT = resolve(
 );
 
 /**
- * Contract retained at canonical lazy-provider ownership boundaries.
+ * Contract retired from lazy-provider ownership boundaries.
+ * Commit b979593d5 removed traversal-only `@mutates` contracts repo-wide
+ * under narrowed readonly-rule semantics, and the mirror generator's strip
+ * step was removed with it, so reintroducing this contract anywhere must be
+ * a conscious decision that also reshapes this test.
  */
 const LAZY_PROVIDER_MUTATION_CONTRACT = '@mutates context through context.git.candidates lazy provider invocation';
 
 /**
- * Canonical source and generated mirror expected to differ at ownership boundary.
+ * Canonical source and generated mirror expected to stay contract-free.
  */
 type PolicyMirrorContractFixture = Readonly<{
   /**
@@ -57,14 +61,14 @@ await describe({
   name: 'generated Git policy mutation contracts',
   children: POLICY_MIRROR_CONTRACT_FIXTURES.map(function createPolicyMirrorContractTest(fixture,) {
     return it({
-      name: `retains canonical contract and omits generated contract for ${fixture.generatedPath}`,
-      fn: async function verifiesGeneratedPolicyContractBoundary(): Promise<void> {
+      name: `keeps the retired lazy-provider contract out of ${fixture.generatedPath}`,
+      fn: async function verifiesRetiredPolicyContractBoundary(): Promise<void> {
         const [canonicalSource, generatedSource,] = await Promise.all([
           readFile(resolve(REPOSITORY_ROOT, fixture.canonicalPath,), 'utf8',),
           readFile(resolve(REPOSITORY_ROOT, fixture.generatedPath,), 'utf8',),
         ],);
 
-        expect(canonicalSource.includes(LAZY_PROVIDER_MUTATION_CONTRACT,),).toBe(true,);
+        expect(canonicalSource.includes(LAZY_PROVIDER_MUTATION_CONTRACT,),).toBe(false,);
         expect(generatedSource.includes(LAZY_PROVIDER_MUTATION_CONTRACT,),).toBe(false,);
       },
     },);
