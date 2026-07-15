@@ -257,6 +257,40 @@ export const INTRINSIC_EFFECTS: readonly IntrinsicEffectEntry[] = [
 ];
 
 /**
+ * Audited effects indexed by owner and member before exact provenance checks.
+ */
+const INTRINSIC_EFFECTS_BY_OWNER_MEMBER: ReadonlyMap<
+  string,
+  ReadonlyMap<string, readonly IntrinsicEffectEntry[]>
+> = INTRINSIC_EFFECTS.reduce(function indexIntrinsicEffect(
+  byOwner: Map<string, Map<string, readonly IntrinsicEffectEntry[]>>,
+  entry: IntrinsicEffectEntry,
+): Map<string, Map<string, readonly IntrinsicEffectEntry[]>> {
+  /**
+   * Existing or newly allocated member index for owner.
+   */
+  const byMember = byOwner.get(entry.ownerType,)
+    ?? new Map<string, readonly IntrinsicEffectEntry[]>();
+  /**
+   * Provenance-qualified entries sharing owner and member.
+   */
+  const entries = byMember.get(entry.member,)
+    ?? [];
+  byMember.set(
+    entry.member,
+    [
+      ...entries,
+      entry,
+    ],
+  );
+  byOwner.set(
+    entry.ownerType,
+    byMember,
+  );
+  return byOwner;
+}, new Map<string, Map<string, readonly IntrinsicEffectEntry[]>>(),);
+
+/**
  * Tests exact provenance identity including package and Node declaration majors.
  *
  * @param left - Catalog provenance.
@@ -305,14 +339,15 @@ export function intrinsicEffect(
   /**
    * Exact catalog entry for query when one was audited.
    */
-  const matched = INTRINSIC_EFFECTS.find(function matches(entry,): boolean {
-    return sameProvenance({
-      left: entry.provenance,
-      right: query.provenance,
-    },)
-      && (entry.ownerType === query.ownerType)
-      && (entry.member === query.member);
-  },);
+  const matched = INTRINSIC_EFFECTS_BY_OWNER_MEMBER
+    .get(query.ownerType,)
+    ?.get(query.member,)
+    ?.find(function matchesProvenance(entry,): boolean {
+      return sameProvenance({
+        left: entry.provenance,
+        right: query.provenance,
+      },);
+    },);
   if (matched === undefined)
     return NO_INTRINSIC_EFFECT;
   /**
