@@ -198,7 +198,7 @@ function recomputeVisibility(
  *
  * @param probes - Source probes.
  *
- * @mutates session through the live Deck renderer capability
+ * @mutates session through session.deck.setProps renderer capability
  */
 function rerenderLayers(
   {
