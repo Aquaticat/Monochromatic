@@ -33,6 +33,7 @@ export const ECMASCRIPT_OBJECT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       targets: [{
         kind: 'argument',
         index: 0,
+        traversalHookOnly: true,
       },],
       evidence: 'ECMA-262 commit 1355a23e Object operation can invoke caller-owned proxy or accessor hooks',
       authority: ecma262Authority({ algorithm: `Object.${member}`, },),
@@ -46,11 +47,13 @@ export const ECMASCRIPT_OBJECT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       {
         kind: 'argument',
         index: 0,
+        traversalHookOnly: true,
       },
       {
         kind: 'argument',
         index: 2,
         callArgumentCount: 3,
+        traversalHookOnly: true,
       },
     ],
     evidence: 'ECMA-262 commit 1355a23e Reflect.get invokes target get semantics and optional receiver accessors',
@@ -63,6 +66,7 @@ export const ECMASCRIPT_OBJECT_EFFECTS: readonly IntrinsicEffectEntry[] = [
     targets: [{
       kind: 'argument',
       index: 0,
+      traversalHookOnly: true,
     },],
     evidence: 'ECMA-262 commit 1355a23e Reflect.ownKeys invokes target own-property-key semantics',
     authority: ecma262Authority({ algorithm: 'Reflect.ownKeys', },),

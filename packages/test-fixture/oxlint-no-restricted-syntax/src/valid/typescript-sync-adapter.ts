@@ -459,15 +459,34 @@ export function objectArraySortCallbackEffect(
 }
 
 /**
- * Keeps default object-element sorting opaque because coercion hooks may run.
+ * Observes default plain-element sorting because plain data carries no coercion hooks.
  *
- * @param values - Object values exposed to default string coercion.
+ * @param values - Plain object values whose default coercion is statically hook-free.
  *
  * @returns sorted object copy.
  */
-export function objectArrayDefaultSortOpaqueEffect(
+export function plainArrayDefaultSortObservationEffect(
   values: { readonly value: string; }[],
 ): readonly { readonly value: string; }[] {
+  return values.toSorted();
+}
+
+/**
+ * Keeps default hook-capable-element sorting opaque because coercion hooks may run.
+ *
+ * @param values - Values whose function-typed toString keeps coercion hook-capable.
+ *
+ * @returns sorted object copy.
+ */
+export function hookedArrayDefaultSortOpaqueEffect(
+  values: {
+    readonly value: string;
+    readonly toString: () => string;
+  }[],
+): readonly {
+  readonly value: string;
+  readonly toString: () => string;
+}[] {
   return values.toSorted();
 }
 
@@ -485,15 +504,15 @@ export function objectArrayUndefinedSortOpaqueEffect(
 }
 
 /**
- * Keeps maybe-undefined comparator sorting opaque because default coercion may run.
+ * Observes maybe-undefined comparator sorting because plain elements coerce hook-free.
  *
- * @param values - Object values exposed to optional comparator.
+ * @param values - Plain object values whose default coercion is statically hook-free.
  *
  * @param compare - Comparator that may be absent at runtime.
  *
  * @returns sorted object copy.
  */
-export function objectArrayOptionalSortOpaqueEffect({
+export function plainArrayOptionalSortObservationEffect({
   values,
   compare,
 }: {

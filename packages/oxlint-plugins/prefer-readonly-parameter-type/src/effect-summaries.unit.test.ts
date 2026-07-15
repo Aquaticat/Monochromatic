@@ -150,9 +150,10 @@ await describe({
           'primitiveArraySortObservationEffect',
           'textEncoderObservationEffect',
           'objectArraySortCallbackEffect',
-          'objectArrayDefaultSortOpaqueEffect',
+          'plainArrayDefaultSortObservationEffect',
+          'hookedArrayDefaultSortOpaqueEffect',
           'objectArrayUndefinedSortOpaqueEffect',
-          'objectArrayOptionalSortOpaqueEffect',
+          'plainArrayOptionalSortObservationEffect',
           'observationalValueEffects',
           'pathObservationEffect',
           'dateObservationEffect',
@@ -307,7 +308,12 @@ await describe({
             opaque: [],
           },
           {
-            functionName: 'objectArrayDefaultSortOpaqueEffect',
+            functionName: 'plainArrayDefaultSortObservationEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'hookedArrayDefaultSortOpaqueEffect',
             mutated: [],
             opaque: [0,],
           },
@@ -317,9 +323,9 @@ await describe({
             opaque: [0,],
           },
           {
-            functionName: 'objectArrayOptionalSortOpaqueEffect',
+            functionName: 'plainArrayOptionalSortObservationEffect',
             mutated: [],
-            opaque: [0,],
+            opaque: [],
           },
           {
             functionName: 'observationalValueEffects',

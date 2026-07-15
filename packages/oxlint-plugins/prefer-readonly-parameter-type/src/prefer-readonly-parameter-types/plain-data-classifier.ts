@@ -218,6 +218,45 @@ export function typeIsPlainData({
 }
 
 /**
+ * Tests whether every indexed value reachable from receiver is plain data.
+ *
+ * @param checker - TypeScript checker resolving index value types.
+ *
+ * @param project - TypeScript project resolving property declarations.
+ *
+ * @param type - Semantic receiver type.
+ *
+ * @returns whether receiver exposes at least one index and every value is plain data.
+ *
+ * @example
+ * ```ts
+ * receiverElementsArePlainData({ checker, project, type });
+ * ```
+ */
+export function receiverElementsArePlainData({
+  checker,
+  project,
+  type,
+}: {
+  readonly checker: Checker;
+  readonly project: Project;
+  readonly type: Type;
+},): boolean {
+  /**
+   * Indexed value types exposed by receiver.
+   */
+  const indexes = checker.getIndexInfosOfType(type,);
+  return (indexes.length > 0)
+    && indexes.every(function indexValueIsPlain(index,): boolean {
+      return typeIsPlainData({
+        checker,
+        project,
+        type: index.valueType,
+      },);
+    },);
+}
+
+/**
  * Tests whether expression's semantic type is strict structural plain data.
  *
  * Unclassifiable syntax fails closed as hook-capable.

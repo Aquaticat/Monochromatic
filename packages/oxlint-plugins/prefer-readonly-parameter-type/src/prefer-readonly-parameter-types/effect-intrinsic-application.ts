@@ -5,13 +5,13 @@
  */
 
 import type { CallExpression, } from 'typescript/unstable/ast';
-import {
-  type Checker,
-  type Project,
-  SignatureKind,
-  type Type,
-  TypeFlags,
+import type {
+  Checker,
+  Project,
+  Type,
 } from 'typescript/unstable/sync';
+
+import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
 
 import {
   addOpaqueEffect,
@@ -22,9 +22,9 @@ import { addIntrinsicCallbackEffects, } from './effect-intrinsic-callback.ts';
 import { addIntrinsicForwardedCallbackEffects, } from './effect-intrinsic-forwarded-callback.ts';
 import { addIntrinsicInvocations, } from './effect-intrinsic-invocation.ts';
 import { addIntrinsicPropertyInvocations, } from './effect-intrinsic-property-invocation.ts';
-import { receiverElementsArePrimitive, } from './effect-primitive-origin.ts';
 import {
   expressionIsPlainData,
+  receiverElementsArePlainData,
   typeIsPlainData,
 } from './plain-data-classifier.ts';
 import {
@@ -39,59 +39,6 @@ import {
   intrinsicCallMatchesTypeConditions,
   intrinsicExpressionMatchesTypeCondition,
 } from './effect-intrinsic-type-condition.ts';
-
-/**
- * Tests whether semantic type is definitely callable at runtime.
- *
- * @param checker - TypeScript checker resolving constraints and signatures.
- *
- * @param type - Candidate callback type.
- *
- * @returns whether every runtime constituent is callable.
- *
- * @example
- * ```ts
- * typeDefinitelyCallable({ checker, type });
- * ```
- */
-function typeDefinitelyCallable({
-  checker,
-  type,
-}: {
-  readonly checker: Checker;
-  readonly type: Type;
-}): boolean {
-  if ((type.flags & TypeFlags.AnyOrUnknown) !== 0)
-    return false;
-  if (type.isUnionType()) {
-    return type.getTypes()
-      .every(function unionConstituentCallable(constituent,): boolean {
-        return typeDefinitelyCallable({
-          checker,
-          type: constituent,
-        },);
-      },);
-  }
-  if (type.isTypeParameter()) {
-    /**
-     * Constraint proving callable shape when present.
-     */
-    const constraint = checker.getBaseConstraintOfType(type,);
-    return (constraint !== undefined)
-      && typeDefinitelyCallable({
-        checker,
-        type: constraint,
-      },);
-  }
-  /**
-   * Callable signatures exposed by nonunion candidate type.
-   */
-  const signatures = checker.getSignaturesOfType(
-    type,
-    SignatureKind.Call,
-  );
-  return signatures.length > 0;
-}
 
 /**
  * Applies one exact receiver intrinsic effect to current summary.
@@ -165,9 +112,10 @@ export function applyIntrinsicEffect({
       conditions: effect.argumentTypeConditions,
     })))
     return false;
-  if ((effect.requiresPrimitiveReceiverElements === true)
-    && (!receiverElementsArePrimitive({
+  if ((effect.requiresPlainReceiverElements === true)
+    && (!receiverElementsArePlainData({
       checker,
+      project,
       type: receiverType,
     })))
     return false;
@@ -179,6 +127,15 @@ export function applyIntrinsicEffect({
     },))
       return;
     if (target.kind === 'receiver') {
+      /* Hook-only targets record traversal-invoked accessor uncertainty,
+       * not proven mutation; statically plain data carries no hooks. */
+      if ((target.traversalHookOnly === true)
+        && typeIsPlainData({
+          checker,
+          project,
+          type: receiverType,
+        },))
+        return;
       addEffectIndex({
         target: summary.directMutated,
         value: receiverParameterIndex,
@@ -199,6 +156,13 @@ export function applyIntrinsicEffect({
               : { propertyNames: target.propertyNames, },
             condition: target.typeCondition,
           })))
+          return;
+        if ((target.traversalHookOnly === true)
+          && expressionIsPlainData({
+            checker,
+            project,
+            node: argument,
+          },))
           return;
         parameterIndexes({
           checker,
@@ -281,7 +245,7 @@ export function applyIntrinsicEffect({
    * Comparator position whose absence or nullable type permits default coercion.
    */
   const coercionGuardArgumentIndex =
-    effect.opaqueReceiverUnlessCallableArgumentOrPrimitiveElements;
+    effect.opaqueReceiverUnlessCallableArgumentOrPlainElements;
   if (coercionGuardArgumentIndex !== undefined) {
     /**
      * Comparator expression when supplied.
@@ -302,8 +266,9 @@ export function applyIntrinsicEffect({
         type: comparatorType,
       },);
     if ((!comparatorIsDefinitelyCallable)
-      && (!receiverElementsArePrimitive({
+      && (!receiverElementsArePlainData({
         checker,
+        project,
         type: receiverType,
       }))) {
       addOpaqueEffect({

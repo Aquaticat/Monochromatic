@@ -514,7 +514,8 @@ await describe({
           return (effect !== NO_INTRINSIC_EFFECT)
             && (effect.targets.length === 1)
             && (effect.targets[0]?.kind === 'argument')
-            && (effect.targets[0].index === 0);
+            && (effect.targets[0].index === 0)
+            && (effect.targets[0].traversalHookOnly === true);
         },),).toBe(true,);
         const reflectGet = intrinsicEffect({
           provenance: { kind: 'ecmascript', },
@@ -531,10 +532,12 @@ await describe({
         if ((reflectGet === NO_INTRINSIC_EFFECT) || (reflectOwnKeys === NO_INTRINSIC_EFFECT))
           throw new Error('Expected Reflect hook effects.',);
         expect(reflectGet.targets,).toEqual([
-          { kind: 'argument', index: 0, },
-          { kind: 'argument', index: 2, callArgumentCount: 3, },
+          { kind: 'argument', index: 0, traversalHookOnly: true, },
+          { kind: 'argument', index: 2, callArgumentCount: 3, traversalHookOnly: true, },
         ],);
-        expect(reflectOwnKeys.targets,).toEqual([{ kind: 'argument', index: 0, },],);
+        expect(reflectOwnKeys.targets,).toEqual([
+          { kind: 'argument', index: 0, traversalHookOnly: true, },
+        ],);
         const arrayWith = intrinsicEffect({
           provenance: { kind: 'ecmascript', },
           ownerType: 'ReadonlyArray',

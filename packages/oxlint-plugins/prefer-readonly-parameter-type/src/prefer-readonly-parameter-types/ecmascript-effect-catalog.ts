@@ -85,18 +85,18 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       };
     },);
     /**
-     * Array operations safe when every reachable element is primitive.
+     * Array operations safe when every reachable element is plain data.
      */
-    const primitiveElementObservations = [
+    const plainElementObservations = [
       'join',
-    ].map(function primitiveArrayObservation(member,): IntrinsicEffectEntry {
+    ].map(function plainArrayObservation(member,): IntrinsicEffectEntry {
       return {
         provenance: { kind: 'ecmascript', },
         ownerType,
         member,
         targets: [],
-        requiresPrimitiveReceiverElements: true,
-        evidence: 'ECMA-262 commit 1355a23e array operations with primitive-only coercion and callback inputs',
+        requiresPlainReceiverElements: true,
+        evidence: 'ECMA-262 commit 1355a23e array operations with hook-free coercion and callback inputs',
         authority: ecma262Authority({ algorithm: `Array.prototype.${member}`, },),
       };
     },);
@@ -145,7 +145,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType,
       member: 'toSorted',
       targets: [],
-      opaqueReceiverUnlessCallableArgumentOrPrimitiveElements: 0,
+      opaqueReceiverUnlessCallableArgumentOrPlainElements: 0,
       callbacks: [{
         argumentIndex: 0,
         receiverParameterIndexes: [
@@ -177,7 +177,7 @@ export const ECMASCRIPT_EFFECTS: readonly IntrinsicEffectEntry[] = [
     };
     return [
       ...observations,
-      ...primitiveElementObservations,
+      ...plainElementObservations,
       ...callbackObservations,
       sortedCopyObservation,
       reduceObservation,

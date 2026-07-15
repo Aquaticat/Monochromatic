@@ -107,6 +107,15 @@ export function applyAuditedCallableEffect({
               condition: target.typeCondition,
             })))
             return;
+          /* Hook-only targets record traversal-invoked accessor uncertainty,
+           * not proven mutation; statically plain data carries no hooks. */
+          if ((target.traversalHookOnly === true)
+            && expressionIsPlainData({
+              checker,
+              project,
+              node: argument,
+            },))
+            return;
           parameterIndexes({
             checker,
             bindingOriginBySymbolId,

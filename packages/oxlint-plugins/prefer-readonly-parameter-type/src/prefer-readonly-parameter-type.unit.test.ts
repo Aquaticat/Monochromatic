@@ -124,6 +124,37 @@ children: [
     },
   },),
   it({
+    name: 'skips traversal-hook effects for statically plain data',
+    fn: async () => {
+      expect(await lintReadonly('readonly-plain-data-valid.ts',),).toEqual([],);
+    },
+  },),
+  it({
+    name: 'keeps hook-capable inputs and descriptor mutation fail-closed',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-plain-data-invalid.ts',);
+      expect(diagnostics.length,).toBe(3,);
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      expect(messages.some(function unknownCoercionStaysClosed(message,): boolean {
+        return message.startsWith(
+          'The function input named "value" is passed to global String while it may be an object.',
+        );
+      },),).toBe(true,);
+      expect(messages.some(function frozenPlainDataStaysMutation(message,): boolean {
+        return message.startsWith(
+          'Parameter "value" claims readonly semantics dishonestly',
+        );
+      },),).toBe(true,);
+      expect(messages.some(function nonPlainEnumerationStaysClosed(message,): boolean {
+        return message.startsWith(
+          'Parameter "entriesSource" claims readonly semantics dishonestly',
+        );
+      },),).toBe(true,);
+    },
+  },),
+  it({
     name: 'keeps owned call paths separate from propagated foreign provenance',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-foreign-provenance-invalid.ts',);

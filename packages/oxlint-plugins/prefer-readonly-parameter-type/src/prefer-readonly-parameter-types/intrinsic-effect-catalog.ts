@@ -68,6 +68,13 @@ export type IntrinsicEffectTarget = (
    * Semantic type condition selecting overloaded target behavior.
    */
   readonly typeCondition?: IntrinsicTypeCondition;
+  /**
+   * Whether target's only effect is traversal-invoked accessor,
+   * proxy,
+   * or coercion hooks;
+   * statically plain data escapes such targets.
+   */
+  readonly traversalHookOnly?: boolean;
 };
 
 /**
@@ -209,10 +216,16 @@ export type IntrinsicEffectEntry = {
   readonly invokedArgumentProperties?: readonly IntrinsicArgumentPropertyInvocation[];
   readonly opaqueTargets?: readonly IntrinsicEffectTarget[];
   /**
-   * Comparator argument that must be definitely callable to avoid opaque receiver coercion.
+   * Comparator argument that must be definitely callable to avoid opaque
+   * receiver coercion;
+   * plain-data elements also escape default-comparison hooks.
    */
-  readonly opaqueReceiverUnlessCallableArgumentOrPrimitiveElements?: number;
-  readonly requiresPrimitiveReceiverElements?: boolean;
+  readonly opaqueReceiverUnlessCallableArgumentOrPlainElements?: number;
+  /**
+   * Whether entry applies only when receiver elements are plain data,
+   * because element coercion hooks are the only possible effect.
+   */
+  readonly requiresPlainReceiverElements?: boolean;
   /**
    * Whether call result retains values reachable from receiver.
    */
