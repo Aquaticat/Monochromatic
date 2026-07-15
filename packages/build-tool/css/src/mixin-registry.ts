@@ -49,10 +49,23 @@ const MAX_PASSES = 10;
  *
  * @returns Processed nodes with \@apply expanded
  *
+ * @mutates nodes through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+ *
  * @throws When an \@apply references an unknown mixin name
  */
 function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
   return nodes.reduce<ChildNode[]>(
+    /**
+     * Expands one source node into accumulator.
+     *
+     * @param result - expanded nodes accumulated so far
+     *
+     * @param node - current source node
+     *
+     * @returns updated accumulator
+     *
+     * @mutates node through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+     */
     function accumulateExpandedNode(
       result,
       node,
@@ -79,9 +92,20 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
            * Recursively expanded clones of the mixin body
            */
           const expanded = expandApplyInNodes(
-            mixinNodes.map(function cloneChild(childNode,) {
-              return childNode.clone();
-            },),
+            mixinNodes.map(
+              /**
+               * Clones one stored mixin child.
+               *
+               * @param childNode - stored child
+               *
+               * @returns isolated clone
+               *
+               * @mutates childNode through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+               */
+              function cloneChild(childNode,) {
+                return childNode.clone();
+              },
+            ),
           );
           result.push(...expanded,);
         }
@@ -93,9 +117,20 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
          */
         const cloned = node.clone();
         cloned.nodes = expandApplyInNodes(node.nodes
-          .map(function cloneChild(childNode,) {
-          return childNode.clone();
-        },),);
+          .map(
+            /**
+             * Clones one nested child.
+             *
+             * @param childNode - nested child
+             *
+             * @returns isolated clone
+             *
+             * @mutates childNode through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+             */
+            function cloneChild(childNode,) {
+              return childNode.clone();
+            },
+          ),);
         result.push(cloned,);
       }
       else {
@@ -120,10 +155,30 @@ function runSingleMixinPass(): boolean {
   // mixin and writes back any that changed; the reduce aggregates the
   // per-entry change flag without a function-root `let`.
   return [...mixins,].reduce(
+    /**
+     * Expands and compares one registered mixin.
+     *
+     * @param changedSoFar - whether prior entry changed
+     *
+     * @param entry - mixin name and body nodes
+     *
+     * @returns whether current or prior entry changed
+     *
+     * @mutates entry through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+     *
+     * @mutates entry through https://github.com/postcss/postcss toString stringifier and property effects
+     */
     function detectAnyChange(
       changedSoFar: boolean,
-      [mixinName, nodes,],
+      entry: readonly [
+        string,
+        ChildNode[],
+      ],
     ) {
+      /**
+       * Mixin name and body nodes from current registry entry.
+       */
+      const [mixinName, nodes,] = entry;
       /**
        * Result of recursively expanding any nested \@apply in this mixin's body.
        */
@@ -132,17 +187,39 @@ function runSingleMixinPass(): boolean {
        * Serialized original body for change detection
        */
       const originalStr = nodes
-        .map(function nodeToString(node,) {
-          return node.toString();
-        },)
+        .map(
+          /**
+           * Serializes one original node.
+           *
+           * @param node - original node
+           *
+           * @returns CSS text
+           *
+           * @mutates node through https://github.com/postcss/postcss toString stringifier and property effects
+           */
+          function nodeToString(node,) {
+            return node.toString();
+          },
+        )
         .join('',);
       /**
        * Serialized expanded body for change detection
        */
       const expandedStr = expanded
-        .map(function nodeToString(node,) {
-          return node.toString();
-        },)
+        .map(
+          /**
+           * Serializes one expanded node.
+           *
+           * @param node - expanded node
+           *
+           * @returns CSS text
+           *
+           * @mutates node through https://github.com/postcss/postcss toString stringifier and property effects
+           */
+          function nodeToString(node,) {
+            return node.toString();
+          },
+        )
         .join('',);
 
       if (originalStr !== expandedStr) {

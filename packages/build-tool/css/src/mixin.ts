@@ -20,6 +20,8 @@ export {
  *
  * @param root - PostCSS root node
  *
+ * @mutates root through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+ *
  * @throws When a \@mixin has no body (definitions require content)
  *
  * @example
@@ -31,6 +33,13 @@ export {
 export function collectMixins(root: Root,): void {
   root.walkAtRules(
     'mixin',
+    /**
+     * Stores and removes one mixin definition.
+     *
+     * @param node - mixin at-rule
+     *
+     * @mutates node through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+     */
     function processMixin(node: AtRule,) {
       /**
        * Trimmed at-rule parameter used as the mixin identifier
@@ -49,9 +58,20 @@ export function collectMixins(root: Root,): void {
         mixins.set(
           mixinName,
           node.nodes
-            .map(function cloneChild(child,) {
-            return child.clone();
-          },),
+            .map(
+              /**
+               * Clones one definition child.
+               *
+               * @param child - definition child
+               *
+               * @returns isolated clone
+               *
+               * @mutates child through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+               */
+              function cloneChild(child,) {
+                return child.clone();
+              },
+            ),
         );
         node.remove();
       }
@@ -64,6 +84,10 @@ export function collectMixins(root: Root,): void {
  *
  * @param root - PostCSS root node
  *
+ * @mutates root through https://github.com/postcss/postcss error source, option, getter, or proxy effects
+ *
+ * @mutates root through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
+ *
  * @throws When an \@apply references an unknown mixin
  *
  * @example
@@ -75,6 +99,13 @@ export function collectMixins(root: Root,): void {
 export function expandApplyRules(root: Root,): void {
   root.walkAtRules(
     'apply',
+    /**
+     * Expands one apply at-rule.
+     *
+     * @param node - apply at-rule
+     *
+     * @mutates node through https://github.com/postcss/postcss error source, option, getter, or proxy effects
+     */
     function processApply(node: AtRule,) {
       /**
        * Trimmed at-rule parameter identifying which mixin to inline
@@ -113,14 +144,25 @@ export function expandApplyRules(root: Root,): void {
       /**
        * Cloned mixin body with source locations pointing back to the \@apply site.
        */
-      const clonedNodes = mixinNodes.map(function cloneWithSource(child,) {
+      const clonedNodes = mixinNodes.map(
         /**
-         * Cloning isolates the registry's body from per-call source rewrites.
+         * Clones one stored node with apply-site source.
+         *
+         * @param child - stored body node
+         *
+         * @returns isolated source-adjusted clone
+         *
+         * @mutates child through https://github.com/postcss/postcss clone constructor, accessor, or proxy effects
          */
-        const cloned = child.clone();
-        cloned.source = source;
-        return cloned;
-      },);
+        function cloneWithSource(child,) {
+          /**
+           * Cloning isolates the registry's body from per-call source rewrites.
+           */
+          const cloned = child.clone();
+          cloned.source = source;
+          return cloned;
+        },
+      );
 
       node.replaceWith(...clonedNodes,);
     },
