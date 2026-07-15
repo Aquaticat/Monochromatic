@@ -77,23 +77,6 @@ type WrapperRuntimeResolution =
   | Readonly<{ error: unknown; }>;
 
 /**
- * Resolves trusted config while retaining failures for stable JSONL rendering.
- *
- * @param args - exact wrapper arguments
- *
- * @returns loaded config or captured failure
- *
- */
-async function resolveWrapperRuntime(args: readonly string[],): Promise<WrapperRuntimeResolution> {
-  try {
-    return { loaded: await resolveRuntimeConfig({ args, },), };
-  }
-  catch (error: unknown) {
-    return { error, };
-  }
-}
-
-/**
  * Expected non-zero policy decision after buffered events were emitted.
  */
 class PolicyDecisionError extends Error {
@@ -131,6 +114,26 @@ export async function runCliGit(): Promise<void> {
    */
   const rawArgs: readonly string[] = process.argv
     .slice(2,);
+
+  /**
+   * Resolves trusted config from process-owned wrapper arguments while retaining failures.
+   *
+   * @returns loaded config or captured failure.
+   *
+   * @example
+   * ```ts
+   * await resolveCurrentWrapperRuntime();
+   * ```
+   */
+  async function resolveCurrentWrapperRuntime(): Promise<WrapperRuntimeResolution> {
+    try {
+      return { loaded: await resolveRuntimeConfig({ args: rawArgs, },), };
+    }
+    catch (error: unknown) {
+      return { error, };
+    }
+  }
+
   /**
    * Layout used to intercept namespaced management command before Git forwarding.
    */
@@ -191,7 +194,7 @@ try {
    */
   const runtimeResolution: WrapperRuntimeResolution = willShortCircuit
     ? { loaded: RUNTIME_CONFIG_ABSENT, }
-    : await resolveWrapperRuntime(rawArgs,);
+    : await resolveCurrentWrapperRuntime();
   if ('error' in runtimeResolution) {
     /**
      * Stable trust failure code.
