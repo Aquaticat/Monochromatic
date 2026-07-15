@@ -185,6 +185,25 @@ await describe({
       },
     },),
     it({
+      name: 'records workspace ZIP writer storage effects',
+      fn: async () => {
+        const effect = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@monochromatic-dev/module-zip-writer',
+            major: 0,
+          },
+          ownerType: 'ZipWriter',
+          member: 'add',
+        },);
+        expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (effect === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected ZipWriter.add effect.',);
+        expect(effect.targets,).toEqual([{ kind: 'receiver', },],);
+        expect(effect.opaqueTargets,).toEqual([{ kind: 'argument', index: 1, },],);
+      },
+    },),
+    it({
       name: 'records DataView integer reads and writes',
       fn: async () => {
         [

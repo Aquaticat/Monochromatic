@@ -188,6 +188,21 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   {
     provenance: {
       kind: 'package',
+      packageName: '@monochromatic-dev/module-zip-writer',
+      major: 0,
+    },
+    ownerType: 'ZipWriter',
+    member: 'add',
+    targets: [{ kind: 'receiver', },],
+    opaqueTargets: [{
+      kind: 'argument',
+      index: 1,
+    },],
+    evidence: 'module-zip-writer 0.0.1 index.ts sha256 8f8368a6425fa203195cc48ec66396d1a47684f3fdd1ef4103583febfa2e1dff mutates receiver entries and retains Uint8Array content',
+  },
+  {
+    provenance: {
+      kind: 'package',
       packageName: '@monochromatic-dev/module-current-time-context',
       major: 0,
     },
