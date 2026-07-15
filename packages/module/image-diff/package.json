@@ -23,7 +23,7 @@
   ],
   "dependencies": {
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
-    "@monochromatic-dev/module-llm-types": "workspace:*",
+    "@monochromatic-dev/module-llm-type": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"

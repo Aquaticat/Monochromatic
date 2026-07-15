@@ -3,7 +3,7 @@ import type {
   ChatCompletionResponse,
   ChatRole,
   ContentPart,
-} from '@monochromatic-dev/module-llm-types/ts';
+} from '@monochromatic-dev/module-llm-type/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { ABSENT, } from './describe.absent.ts';
