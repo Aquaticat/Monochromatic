@@ -262,33 +262,36 @@ export const INTRINSIC_EFFECTS: readonly IntrinsicEffectEntry[] = [
 const INTRINSIC_EFFECTS_BY_OWNER_MEMBER: ReadonlyMap<
   string,
   ReadonlyMap<string, readonly IntrinsicEffectEntry[]>
-> = INTRINSIC_EFFECTS.reduce(function indexIntrinsicEffect(
-  byOwner: Map<string, Map<string, readonly IntrinsicEffectEntry[]>>,
-  entry: IntrinsicEffectEntry,
-): Map<string, Map<string, readonly IntrinsicEffectEntry[]>> {
-  /**
-   * Existing or newly allocated member index for owner.
-   */
-  const byMember = byOwner.get(entry.ownerType,)
-    ?? new Map<string, readonly IntrinsicEffectEntry[]>();
-  /**
-   * Provenance-qualified entries sharing owner and member.
-   */
-  const entries = byMember.get(entry.member,)
-    ?? [];
-  byMember.set(
-    entry.member,
-    [
-      ...entries,
-      entry,
-    ],
-  );
-  byOwner.set(
-    entry.ownerType,
-    byMember,
-  );
-  return byOwner;
-}, new Map<string, Map<string, readonly IntrinsicEffectEntry[]>>(),);
+> = INTRINSIC_EFFECTS.reduce(
+  function indexIntrinsicEffect(
+    byOwner: Map<string, Map<string, readonly IntrinsicEffectEntry[]>>,
+    entry: IntrinsicEffectEntry,
+  ): Map<string, Map<string, readonly IntrinsicEffectEntry[]>> {
+    /**
+     * Existing or newly allocated member index for owner.
+     */
+    const byMember = byOwner.get(entry.ownerType,)
+      ?? new Map<string, readonly IntrinsicEffectEntry[]>();
+    /**
+     * Provenance-qualified entries sharing owner and member.
+     */
+    const entries = byMember.get(entry.member,)
+      ?? [];
+    byMember.set(
+      entry.member,
+      [
+        ...entries,
+        entry,
+      ],
+    );
+    byOwner.set(
+      entry.ownerType,
+      byMember,
+    );
+    return byOwner;
+  },
+  new Map<string, Map<string, readonly IntrinsicEffectEntry[]>>(),
+);
 
 /**
  * Tests exact provenance identity including package and Node declaration majors.
