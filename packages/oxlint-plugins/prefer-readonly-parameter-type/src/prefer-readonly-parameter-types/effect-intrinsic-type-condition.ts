@@ -132,12 +132,14 @@ function typeMayBeCallable({
         type: constraint,
       },);
   }
-  return checker
-    .getSignaturesOfType(
-      type,
-      SignatureKind.Call,
-    )
-    .length > 0;
+  /**
+   * Call signatures directly exposed by candidate type.
+   */
+  const signatures = checker.getSignaturesOfType(
+    type,
+    SignatureKind.Call,
+  );
+  return signatures.length > 0;
 }
 
 /**
