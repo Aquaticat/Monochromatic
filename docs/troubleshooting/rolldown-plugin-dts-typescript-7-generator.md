@@ -184,6 +184,30 @@ if (!generator) {
 This restores the generator that the repository's `isolatedDeclarations: true` policy used before 0.27.2,
 and the explicit option lets the shared tsdown presets preserve that choice across future TypeScript upgrades.
 
+### tsgo stays project-bounded through 0.27.9
+
+The explicit `generator` option changes which backend runs,
+not how the tsgo backend scopes its emission.
+Source was read from `sxzz/rolldown-plugin-dts` `main`,
+grafted commit `7a08c944f7527cebc5a89439d006528ca64acd78` (version 0.27.9),
+and matches the installed artifact
+(`dist/index.mjs:961` in `rolldown-plugin-dts@0.27.9_rolldown@1.1.5_typescript@7.0.2`).
+
+`src/generate.ts:114` still derives one declaration root from the selected tsconfig,
+`src/generate.ts:121` still launches a whole-project tsgo emission at `buildStart`,
+and `src/generate.ts:257` still throws for any traversed module the project pass did not emit:
+
+```typescript
+`tsgo did not generate dts file for ${id}, please check your tsconfig.`,
+```
+
+Selecting `generator: 'tsgo'` explicitly therefore fails any build that inlines
+workspace source from outside the entry package's tsconfig project,
+exactly as the implicit 0.27.2 selection did.
+This is the project-boundary model upstream recorded in
+[rolldown-plugin-dts #189](https://github.com/sxzz/rolldown-plugin-dts/issues/189):
+tsgo build mode stays unsupported without an official API.
+
 ## Verification
 
 Versions and source revisions:
@@ -255,6 +279,78 @@ isolatedErrors: []
 This verifies custom-tag preservation for the installed versions and tested declaration forms.
 It does not replace package-build and external-consumer publication tests.
 
+### Explicit-generator backend bench on raw rolldown (2026-07-15)
+
+A later disposable-worktree bench compared the `oxc` and `tsgo` backends
+selected explicitly through `generator`,
+driven by raw `rolldown` (no tsdown),
+ahead of the planned tsdown removal.
+TypeScript 6 and the `tsc` backend were excluded as deprecated for this repository.
+
+Versions:
+
+- Node `26.5.0`.
+- Rolldown `1.1.5` from the workspace catalog.
+  Rolldown `1.2.0` (published 2026-07-15T11:08Z) was blocked by the workspace's
+  `minimumReleaseAge` supply-chain policy at bench time;
+  the backends under test live in rolldown-plugin-dts,
+  so the comparison is unaffected.
+- rolldown-plugin-dts `0.27.9`,
+  installed as `rolldown-plugin-dts@0.27.9_rolldown@1.1.5_typescript@7.0.2`.
+- TypeScript `7.0.2`.
+
+The harness was one config factory per bench cell replicating the shared tsdown flavor settings:
+externals built from `package.json` `dependencies` plus `peerDependencies`
+minus `@monochromatic-dev/**` (kept inline),
+`transform.target` from the repository `browserslistTargets` helper,
+`minify: { compress: true, mangle: false, codegen: true }`,
+`entryFileNames: '[name].mjs'`,
+`output.cleanDir: true`,
+and `dts({ generator, tsconfig })` selected by a `BENCH_DTS` env var
+(`off` | `oxc` | `tsgo`).
+Timing ran through hyperfine 1.20.0 with one warmup and five measured runs per cell:
+
+```sh
+hyperfine --warmup 1 --runs 5 --parameter-list gen off,oxc,tsgo \
+  'BENCH_DTS={gen} node_modules/.bin/rolldown --config bench/or-throw.config.ts'
+```
+
+Process wall-time means over five runs:
+
+- `module/or-throw` (31 source files, zero runtime deps, neutral flavor):
+  `off` 170.1 ms ± 4.7,
+  `oxc` 195.1 ms ± 8.8,
+  `tsgo` 275.5 ms ± 6.2.
+  Declaration increment over the `off` control:
+  25.0 ms for `oxc`,
+  105.4 ms for `tsgo` (roughly four times `oxc`).
+- `module/toml-edit` (75 source files, four inlined workspace deps, neutral flavor):
+  `off` 150.9 ms ± 5.6,
+  `oxc` 196.5 ms ± 6.5 (increment 45.6 ms).
+  `tsgo`: build failure,
+  no timing possible.
+- `config/oxlint` (five entries, four inlined workspace plugin packages, node flavor):
+  `off` 164.5 ms ± 4.7,
+  `oxc` 269.2 ms ± 7.5 (increment 104.7 ms).
+  `tsgo`: build failure,
+  no timing possible.
+
+The `tsgo` failure on both cross-package cells was:
+
+```text
+Error: tsgo did not generate dts file for
+<worktree>/packages/ownership-markers/foreign-borrowed/src/index.ts,
+please check your tsconfig.
+```
+
+Output quality on the one cell where both backends built (`module/or-throw`):
+the `oxc` and `tsgo` `index.d.mts` differ by 46 diff lines,
+all either string-literal quote style (`""` versus `''`)
+or file-level `@module` TSDoc blocks that `tsgo` preserves and `oxc` drops.
+No exported type surface differs.
+All three `oxc` declaration bundles pass
+`tsc --noEmit --strict --skipLibCheck --ignoreConfig` under TypeScript 7.0.2.
+
 ### Passing catalog
 
 - rolldown-plugin-dts 0.27.1 with the original shared `dts: true` configuration:
@@ -298,6 +394,11 @@ matching those three groups.
 
   The source check at `src/options.ts:295` rejects disabled tsgo whenever TypeScript 7 is installed,
   even when Oxc was explicitly requested.
+- rolldown-plugin-dts 0.27.9 with explicit `generator: 'tsgo'` on raw rolldown 1.1.5:
+  any build inlining workspace source from outside the entry package's tsconfig project fails with the same
+  `tsgo did not generate dts file` error
+  (verified 2026-07-15 on `module/toml-edit` and `config/oxlint`;
+  a zero-dependency single-package build passes).
 
 ## Verified workarounds
 
@@ -430,6 +531,18 @@ A local maintenance issue tracks eventual removal of the compatibility pin:
    type-checked,
    linted,
    and compared by SHA-256 against every main-checkout output that survived the failed 0.27.2 build.
+
+### Re-check on 2026-07-15 (explicit tsgo at 0.27.9)
+
+The backend bench re-confirmed the tsgo project-boundary failure with the explicit `generator: 'tsgo'` selector
+at 0.27.9 on raw rolldown.
+Nothing about this is additive upstream:
+[rolldown-plugin-dts #189](https://github.com/sxzz/rolldown-plugin-dts/issues/189)
+already records the project-boundary limitation and the maintainer's decision
+not to support tsgo build mode without an official API,
+which fails constraint 5 for a new filing on the same mechanism.
+No new issue and no comment;
+the repository's remedy remains `generator: 'oxc'`.
 
 ### Upstream filing artifact
 
