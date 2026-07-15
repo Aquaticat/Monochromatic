@@ -270,6 +270,8 @@ function parseExitEvent(
  *
  * @param child - Process to observe.
  *
+ * @mutates child through timeout termination and exit-listener registration
+ *
  * @example
  * ```ts
  * await waitForSuccessfulExit({ child });
