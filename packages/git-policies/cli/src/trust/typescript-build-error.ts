@@ -14,10 +14,12 @@ export class TypeScriptBuildError extends Error {
    * @param message - safe failure explanation
    *
    * @param options - optional cause
+   *
+   * @mutates options through global Error options cause access
    */
   public constructor(
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ErrorOptions,
   ) {
     super(
       message,

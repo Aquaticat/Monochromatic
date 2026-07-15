@@ -43,11 +43,13 @@ export class TrustedConfigError extends Error {
    * @param message - safe failure explanation
    *
    * @param options - optional underlying cause
+   *
+   * @mutates options through global Error options cause access
    */
   public constructor(
     code: TrustedConfigFailureCode,
     message: string,
-    options?: Readonly<ErrorOptions>,
+    options?: ErrorOptions,
   ) {
     super(
       message,
