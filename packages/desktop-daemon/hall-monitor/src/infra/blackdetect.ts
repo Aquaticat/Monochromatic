@@ -10,6 +10,8 @@ import { once, } from 'node:events';
  *
  * @returns `true` when the frame is considered black
  *
+ * @mutates jpegBuf through the child-process writable-stream boundary
+ *
  * @example
  * ```ts
  * if (await isBlackFrame(webcamBuffer)) {
