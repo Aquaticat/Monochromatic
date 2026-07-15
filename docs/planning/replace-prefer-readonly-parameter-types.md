@@ -511,10 +511,10 @@ The semantic-rule implementation and shared-configuration migration are complete
   Oxlint,
   build,
   and unit tests;
-- commits `728fdfbde`,
+- host audits in commits `728fdfbde`,
   `43401eb56`,
-  and `68a0e2f71` audit locale date formatting
-  and byte concatenation,
+  and `68a0e2f71`:
+  cover locale date formatting and byte concatenation,
   replace unsupported standard grouping calls
   with encounter-ordered grouping,
   and expose DOM,
