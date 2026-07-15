@@ -133,6 +133,8 @@ function createPolicyContext({
  *
  * @param policyOptions - runtime-validated outputs by effective policy ID
  *
+ * @mutates config through valibot@1.4.2 . safeParse schema property access, getter or proxy hooks, and schema callbacks
+ *
  * @returns policy decision and forwardable arguments
  *
  * @example
