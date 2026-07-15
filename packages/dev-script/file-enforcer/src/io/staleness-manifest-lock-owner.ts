@@ -1,8 +1,4 @@
-import {
-  readFile,
-  rename,
-  writeFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -10,6 +6,10 @@ import {
   caughtErrorMessage,
   StalenessManifestPersistenceError,
 } from './staleness-manifest-error.ts';
+import {
+  publishLockOwnerPublication,
+  stageLockOwnerPublication,
+} from './staleness-manifest-lock-owner-publish.ts';
 
 //region Lock owner constants and types
 
@@ -17,11 +17,6 @@ import {
  * Metadata file written inside each acquired lock directory.
  */
 const LOCK_OWNER_FILE_NAME = 'owner.json';
-
-/**
- * Private staging file renamed atomically after complete owner serialization.
- */
-const LOCK_OWNER_PENDING_FILE_NAME = 'owner.pending.json';
 
 /**
  * Minimum valid operating-system process id.
@@ -144,25 +139,15 @@ export async function writeLockOwner(lockPath: string,): Promise<void> {
     pid: process.pid,
     createdAt: new Date().toISOString(),
   };
-  /**
-   * Private staging path prevents contenders from reading partial JSON.
-   */
-  const pendingOwnerPath = join(
+  await stageLockOwnerPublication({
     lockPath,
-    LOCK_OWNER_PENDING_FILE_NAME,
-  );
-  await writeFile(
-    pendingOwnerPath,
-    `${JSON.stringify(
+    ownerText: `${JSON.stringify(
       owner,
       null,
       2,
     )}\n`,
-  );
-  await rename(
-    pendingOwnerPath,
-    lockOwnerPath(lockPath,),
-  );
+  },);
+  await publishLockOwnerPublication(lockPath,);
 }
 
 /**

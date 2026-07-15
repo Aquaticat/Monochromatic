@@ -15,6 +15,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { lockOwnerState, } from './io/staleness-manifest-lock-owner.ts';
+import {
+  publishLockOwnerPublication,
+  stageLockOwnerPublication,
+} from './io/staleness-manifest-lock-owner-publish.ts';
 import {
   DEAD_OWNER_PROCESS_ID,
   runConfigExpectingError,
@@ -29,6 +34,53 @@ await describe({
   name: 'file-enforcer stale-lock owner regressions',
   concurrency: 1,
   children: [
+    it({
+      name: 'keeps contenders from observing owner metadata before atomic publication',
+      fn: async function hidesStagedOwnerMetadata(): Promise<void> {
+        const tempDir = await setupStalenessLockFixture();
+        await using _cleanup = {
+          [Symbol.asyncDispose](): Promise<void> {
+            return teardownStalenessLockFixture(tempDir,);
+          },
+        };
+        const lockPath = join(
+          tempDir,
+          'atomic-publication.lock',
+        );
+        await mkdir(lockPath,);
+        /**
+         * Complete owner metadata staged before publication.
+         */
+        const ownerText = `${JSON.stringify(
+          {
+            pid: process.pid,
+            createdAt: new Date().toISOString(),
+          },
+          null,
+          2,
+        )}\n`;
+
+        await stageLockOwnerPublication({
+          lockPath,
+          ownerText,
+        },);
+
+        expect(await lockOwnerState(lockPath,),).toBe('absent',);
+        expect(JSON.parse(await readFile(
+          join(lockPath, 'owner.pending.json',),
+          'utf8',
+        ),),).toEqual(JSON.parse(ownerText,),);
+
+        await publishLockOwnerPublication(lockPath,);
+
+        expect(await lockOwnerState(lockPath,),).toBe('live',);
+        expect(JSON.parse(await readFile(
+          join(lockPath, 'owner.json',),
+          'utf8',
+        ),),).toEqual(JSON.parse(ownerText,),);
+      },
+    },),
+
     it({
       name: 'recovers fresh manifest lock directories owned by dead process',
       timeout: 10_000,
