@@ -2,9 +2,16 @@
 
 ## Status
 
-Decided 2026-07-15 after a grilled interview and a backend bench.
-Pilot phase next,
-in a fresh worktree off `main`.
+Completed 2026-07-15.
+Decided after a grilled interview and a backend bench,
+piloted and swept on the `tsdown-removal` branch,
+merged to `main` (merge commit `3a5fe22e6`).
+tsdown is absent from the catalog,
+lockfile,
+mise files,
+and every active package;
+`packages/config/tsdown` is deleted.
+Outstanding follow-ups live under "Open items".
 
 ## Driver
 
