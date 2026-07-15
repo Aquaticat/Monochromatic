@@ -226,7 +226,17 @@ export async function createManualPushCandidates({
           .oid,] : [];
     },),
   },);
-  return descriptors.map(function materializeDescriptor(descriptor,): CandidateFile {
+  return descriptors.map(
+    /**
+     * Materializes one lazy candidate over batch-owned bytes.
+     *
+     * @param descriptor - candidate descriptor
+     *
+     * @returns candidate with lazy byte provider
+     *
+     * @mutates descriptor through Promise.resolve thenable assimilation of descriptor content bytes
+     */
+    function materializeDescriptor(descriptor,): CandidateFile {
     /**
      * Narrowed content source captured by lazy candidate callback.
      */
@@ -237,16 +247,16 @@ export async function createManualPushCandidates({
       revision: descriptor.revision,
       mode: descriptor.mode,
       change: descriptor.change,
-      async bytes(): Promise<Uint8Array> {
+      bytes(): Promise<Uint8Array> {
         if (content.kind === 'inline')
-          return content.bytes;
+          return Promise.resolve(content.bytes,);
         /**
          * Exact shared blob view loaded by the single batch subprocess.
          */
         const bytes = blobBytes.get(content.oid,);
         if (bytes === undefined)
           throw new ManualPushProbeError(`Git blob batch omitted requested object ${content.oid}.`,);
-        return bytes;
+        return Promise.resolve(bytes,);
       },
     };
   },);

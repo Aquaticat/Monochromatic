@@ -43,6 +43,8 @@ function absentOid(): Promise<typeof ABSENT_GIT_VALUE> {
  *
  * @param updates - authoritative push updates
  *
+ * @mutates updates through Promise.resolve thenable assimilation
+ *
  * @returns lazy lifecycle facts
  */
 function createManualPushFacts({
@@ -69,8 +71,8 @@ function createManualPushFacts({
     },
     headOid: absentOid,
     landedCommitOid: absentOid,
-    pushUpdates: async function pushUpdates() {
-      return updates;
+    pushUpdates: function pushUpdates() {
+      return Promise.resolve(updates,);
     },
   };
 }
