@@ -40,7 +40,7 @@ const EXIT_NOT_FOUND = 127;
  *
  * @throws Error when the command array is empty.
  *
- * @mutates command through the native process-launch boundary
+ * @mutates command through `child_process.spawn` process launch
  *
  * @example
  * ```ts
@@ -89,8 +89,6 @@ export function execvp({ command, }: { readonly command: readonly string[]; },):
      * @param err - Failure emitted by Node.
      *
      * @mutates err - `caughtValueText` may invoke string-conversion hooks.
-     *
-     * @returns Nothing; event handler reports through stderr and exit code.
      */
     function onError(err: unknown,): void {
       /**
