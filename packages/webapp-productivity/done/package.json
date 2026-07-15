@@ -8,7 +8,7 @@
     "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
-    "@monochromatic-dev/module-llm-types": "workspace:*",
+    "@monochromatic-dev/module-llm-type": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@tursodatabase/database": "catalog:",
     "h3": "catalog:"

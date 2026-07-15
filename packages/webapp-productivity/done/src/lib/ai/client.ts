@@ -10,9 +10,9 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type {
   ChatCompletionResponse,
   ChatMessage,
-} from '@monochromatic-dev/module-llm-types/ts';
+} from '@monochromatic-dev/module-llm-type/ts';
 
-export type { ChatMessage, } from '@monochromatic-dev/module-llm-types/ts';
+export type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 //region Configuration
 
