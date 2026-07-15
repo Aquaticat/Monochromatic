@@ -64,6 +64,45 @@ export type IntrinsicEffectTarget = (
    * Exact call arity selecting an overloaded target position.
    */
   readonly callArgumentCount?: number;
+  /**
+   * Semantic type condition selecting overloaded target behavior.
+   */
+  readonly typeCondition?: IntrinsicTypeCondition;
+};
+
+/**
+ * Semantic call-argument type conditions for overload-sensitive effects.
+ *
+ * @example
+ * ```ts
+ * const condition: IntrinsicTypeCondition = {
+ *   kind: 'definitely-owner',
+ *   ownerName: 'Uint8Array',
+ * };
+ * ```
+ */
+export type IntrinsicTypeCondition =
+  | { readonly kind: 'may-be-callable'; }
+  | { readonly kind: 'not-definitely-string'; }
+  | {
+    readonly kind: 'definitely-owner';
+    readonly ownerName: string;
+  };
+
+/**
+ * One call argument required to satisfy semantic type condition.
+ *
+ * @example
+ * ```ts
+ * const condition: IntrinsicArgumentTypeCondition = {
+ *   argumentIndex: 0,
+ *   condition: { kind: 'definitely-owner', ownerName: 'Uint8Array' },
+ * };
+ * ```
+ */
+export type IntrinsicArgumentTypeCondition = {
+  readonly argumentIndex: number;
+  readonly condition: IntrinsicTypeCondition;
 };
 
 /**
@@ -116,6 +155,10 @@ export type IntrinsicForwardedCallbackEffect = {
 export type IntrinsicArgumentPropertyInvocation = {
   readonly argumentIndex: number;
   readonly propertyNames: readonly string[];
+  /**
+   * Semantic property-type condition selecting invocation behavior.
+   */
+  readonly typeCondition?: IntrinsicTypeCondition;
 };
 
 /**
@@ -158,6 +201,7 @@ export type IntrinsicEffectEntry = {
   readonly ownerType: string;
   readonly member: string;
   readonly targets: readonly IntrinsicEffectTarget[];
+  readonly argumentTypeConditions?: readonly IntrinsicArgumentTypeCondition[];
   readonly callbacks?: readonly IntrinsicCallbackEffect[];
   readonly forwardedCallbacks?: readonly IntrinsicForwardedCallbackEffect[];
   readonly invokedArgumentIndexes?: readonly number[];

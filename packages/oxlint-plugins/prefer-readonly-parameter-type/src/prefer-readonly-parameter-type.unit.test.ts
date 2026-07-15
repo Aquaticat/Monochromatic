@@ -118,7 +118,7 @@ name: 'prefer-readonly-parameter-types diagnostics',
 concurrency: 1,
 children: [
   it({
-    name: 'accepts readonly inputs, proven effects without contracts, documented uncertainty, and bodyless contracts',
+    name: 'accepts readonly inputs, overload-sensitive Node effects, documented uncertainty, and bodyless contracts',
     fn: async () => {
       expect(await lintReadonly('readonly-valid.ts',),).toEqual([],);
     },

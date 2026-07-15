@@ -40,6 +40,69 @@ export const NODE_BUFFER_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },
   {
     provenance: NODE_PROVENANCE,
+    ownerType: 'BufferConstructor',
+    member: 'from',
+    targets: [],
+    argumentTypeConditions: [{
+      argumentIndex: 0,
+      condition: {
+        kind: 'definitely-owner',
+        ownerName: 'Uint8Array',
+      },
+    },],
+    invokedArgumentProperties: [{
+      argumentIndex: 0,
+      propertyNames: [
+        'valueOf',
+        'length',
+        'buffer',
+        'type',
+        'data',
+      ],
+    },],
+    evidence: 'Node 26.5.0 Buffer.from copies Uint8Array bytes but can invoke caller-defined valueOf, length, buffer, or Symbol.toPrimitive hooks',
+    authority: nodeSourceAuthority({
+      source: NODE_SOURCES.buffer,
+      definitionMarker: '\nBuffer.from = function from(value, encodingOrOffset, length) {',
+      occurrenceCount: 1,
+      bindingMarkers: [
+        {
+          text: '\n  Buffer,\n',
+          occurrenceCount: 1,
+        },
+        {
+          text: '\nmodule.exports = {',
+          occurrenceCount: 1,
+        },
+      ],
+      relatedSources: [],
+    },),
+  },
+  {
+    provenance: NODE_PROVENANCE,
+    ownerType: 'BufferConstructor',
+    member: 'copyBytesFrom',
+    targets: [],
+    evidence: 'Node 26.5.0 Buffer.copyBytesFrom reads typed-array internal slots through primordials and copies selected bytes',
+    authority: nodeSourceAuthority({
+      source: NODE_SOURCES.buffer,
+      definitionMarker: '\nBuffer.copyBytesFrom = function copyBytesFrom(view, offset, length) {',
+      occurrenceCount: 1,
+      bindingMarkers: [
+        {
+          text: '\n  Buffer,\n',
+          occurrenceCount: 1,
+        },
+        {
+          text: '\nmodule.exports = {',
+          occurrenceCount: 1,
+        },
+      ],
+      relatedSources: [],
+    },),
+  },
+  {
+    provenance: NODE_PROVENANCE,
     ownerType: 'Buffer',
     member: 'copy',
     targets: [{

@@ -31,6 +31,10 @@ import {
 import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 import { intrinsicTargetArguments, } from './intrinsic-target-arguments.ts';
 import { targetMatchesCallArity, } from './effect-intrinsic-target-arity.ts';
+import {
+  intrinsicCallMatchesTypeConditions,
+  intrinsicExpressionMatchesTypeCondition,
+} from './effect-intrinsic-type-condition.ts';
 
 /**
  * Tests whether semantic type is definitely callable at runtime.
@@ -150,6 +154,13 @@ export function applyIntrinsicEffect({
   readonly summary: MutableEffectSummary;
   readonly foreignInbound: boolean;
 }): boolean {
+  if ((effect.argumentTypeConditions !== undefined)
+    && (!intrinsicCallMatchesTypeConditions({
+      checker,
+      call,
+      conditions: effect.argumentTypeConditions,
+    })))
+    return false;
   if ((effect.requiresPrimitiveReceiverElements === true)
     && (!receiverElementsArePrimitive({
       checker,
@@ -175,6 +186,16 @@ export function applyIntrinsicEffect({
       target,
     },)
       .forEach(function intrinsicArgument(argument,): void {
+        if ((target.typeCondition !== undefined)
+          && (!intrinsicExpressionMatchesTypeCondition({
+            checker,
+            expression: argument,
+            ...(target.propertyNames === undefined)
+              ? {}
+              : { propertyNames: target.propertyNames, },
+            condition: target.typeCondition,
+          })))
+          return;
         parameterIndexes({
           checker,
           bindingOriginBySymbolId,
@@ -211,6 +232,16 @@ export function applyIntrinsicEffect({
         target,
       },)
         .forEach(function opaqueIntrinsicArgument(argument,): void {
+          if ((target.typeCondition !== undefined)
+            && (!intrinsicExpressionMatchesTypeCondition({
+              checker,
+              expression: argument,
+              ...(target.propertyNames === undefined)
+                ? {}
+                : { propertyNames: target.propertyNames, },
+              condition: target.typeCondition,
+            })))
+            return;
           parameterIndexes({
             checker,
             bindingOriginBySymbolId,

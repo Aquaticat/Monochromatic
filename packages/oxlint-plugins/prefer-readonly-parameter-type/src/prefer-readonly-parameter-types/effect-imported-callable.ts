@@ -26,6 +26,10 @@ import { addIntrinsicInvocations, } from './effect-intrinsic-invocation.ts';
 import { addIntrinsicPropertyInvocations, } from './effect-intrinsic-property-invocation.ts';
 import { intrinsicTargetArguments, } from './intrinsic-target-arguments.ts';
 import { targetMatchesCallArity, } from './effect-intrinsic-target-arity.ts';
+import {
+  intrinsicCallMatchesTypeConditions,
+  intrinsicExpressionMatchesTypeCondition,
+} from './effect-intrinsic-type-condition.ts';
 
 /**
  * Applies exact non-method callable effect when cataloged.
@@ -72,6 +76,13 @@ export function applyAuditedCallableEffect({
   },);
   if (callableEffect === NO_INTRINSIC_EFFECT)
     return false;
+  if ((callableEffect.argumentTypeConditions !== undefined)
+    && (!intrinsicCallMatchesTypeConditions({
+      checker,
+      call,
+      conditions: callableEffect.argumentTypeConditions,
+    })))
+    return false;
   callableEffect.targets
     .forEach(function callableTarget(target,): void {
       if (!targetMatchesCallArity({
@@ -84,6 +95,16 @@ export function applyAuditedCallableEffect({
         target,
       },)
         .forEach(function callableArgument(argument,): void {
+          if ((target.typeCondition !== undefined)
+            && (!intrinsicExpressionMatchesTypeCondition({
+              checker,
+              expression: argument,
+              ...(target.propertyNames === undefined)
+                ? {}
+                : { propertyNames: target.propertyNames, },
+              condition: target.typeCondition,
+            })))
+            return;
           parameterIndexes({
             checker,
             bindingOriginBySymbolId,
@@ -113,6 +134,16 @@ export function applyAuditedCallableEffect({
         target,
       },)
         .forEach(function opaqueCallableArgument(argument,): void {
+          if ((target.typeCondition !== undefined)
+            && (!intrinsicExpressionMatchesTypeCondition({
+              checker,
+              expression: argument,
+              ...(target.propertyNames === undefined)
+                ? {}
+                : { propertyNames: target.propertyNames, },
+              condition: target.typeCondition,
+            })))
+            return;
           parameterIndexes({
             checker,
             bindingOriginBySymbolId,

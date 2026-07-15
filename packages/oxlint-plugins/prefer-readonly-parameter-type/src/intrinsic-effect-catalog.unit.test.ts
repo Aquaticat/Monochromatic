@@ -200,7 +200,11 @@ await describe({
         if (effect === NO_INTRINSIC_EFFECT)
           throw new Error('Expected ZipWriter.add effect.',);
         expect(effect.targets,).toEqual([{ kind: 'receiver', },],);
-        expect(effect.opaqueTargets,).toEqual([{ kind: 'argument', index: 1, },],);
+        expect(effect.opaqueTargets,).toEqual([{
+          kind: 'argument',
+          index: 1,
+          typeCondition: { kind: 'not-definitely-string', },
+        },],);
         const overwriteEach = intrinsicEffect({
           provenance: {
             kind: 'package',
@@ -213,10 +217,11 @@ await describe({
         expect(overwriteEach,).not.toBe(NO_INTRINSIC_EFFECT,);
         if (overwriteEach === NO_INTRINSIC_EFFECT)
           throw new Error('Expected overwriteEach effect.',);
-        expect(overwriteEach.targets,).toEqual([{
-          kind: 'argument',
-          index: 0,
+        expect(overwriteEach.targets,).toEqual([],);
+        expect(overwriteEach.invokedArgumentProperties,).toEqual([{
+          argumentIndex: 0,
           propertyNames: ['files',],
+          typeCondition: { kind: 'may-be-callable', },
         },],);
       },
     },),
@@ -368,6 +373,43 @@ await describe({
           throw new Error('Expected Node Buffer observation effects.',);
         expect(concat.targets,).toEqual([],);
         expect(isUtf8.targets,).toEqual([],);
+        expect([
+          'copyBytesFrom',
+          'concat',
+        ].every(function bufferConstructorObservation(member,): boolean {
+          const effect = intrinsicEffect({
+            provenance: { kind: 'node', declarationMajor: 26, },
+            ownerType: 'BufferConstructor',
+            member,
+          },);
+          return (effect !== NO_INTRINSIC_EFFECT)
+            && (effect.targets.length === 0);
+        },),).toBe(true,);
+        const from = intrinsicEffect({
+          provenance: { kind: 'node', declarationMajor: 26, },
+          ownerType: 'BufferConstructor',
+          member: 'from',
+        },);
+        expect(from,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (from === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Buffer.from intrinsic effect.',);
+        expect(from.argumentTypeConditions,).toEqual([{
+          argumentIndex: 0,
+          condition: {
+            kind: 'definitely-owner',
+            ownerName: 'Uint8Array',
+          },
+        },],);
+        expect(from.invokedArgumentProperties,).toEqual([{
+          argumentIndex: 0,
+          propertyNames: [
+            'valueOf',
+            'length',
+            'buffer',
+            'type',
+            'data',
+          ],
+        },],);
         expect([
           'readInt32LE',
           'readUInt16LE',

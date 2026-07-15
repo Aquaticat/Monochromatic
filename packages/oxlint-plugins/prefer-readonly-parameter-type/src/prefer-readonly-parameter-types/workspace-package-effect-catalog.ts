@@ -193,12 +193,13 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     },
     ownerType: 'globalThis',
     member: 'overwriteEach',
-    targets: [{
-      kind: 'argument',
-      index: 0,
+    targets: [],
+    invokedArgumentProperties: [{
+      argumentIndex: 0,
       propertyNames: ['files',],
+      typeCondition: { kind: 'may-be-callable', },
     },],
-    evidence: 'dev-script-file-enforcer 0.0.1 io/write.ts sha256 4a01fcd2e1ac1a43365c3591b3d477f6fd2d4be0d2fe8798c10df4046c353842 invokes source capture and stores mirrored file state',
+    evidence: 'dev-script-file-enforcer 0.0.1 io/write.ts sha256 4a01fcd2e1ac1a43365c3591b3d477f6fd2d4be0d2fe8798c10df4046c353842 observes eager file arrays and invokes lazy files builders',
   },
   {
     provenance: {
@@ -212,8 +213,9 @@ export const WORKSPACE_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     opaqueTargets: [{
       kind: 'argument',
       index: 1,
+      typeCondition: { kind: 'not-definitely-string', },
     },],
-    evidence: 'module-zip-writer 0.0.1 index.ts sha256 8f8368a6425fa203195cc48ec66396d1a47684f3fdd1ef4103583febfa2e1dff mutates receiver entries and retains Uint8Array content',
+    evidence: 'module-zip-writer 0.0.1 index.ts sha256 8f8368a6425fa203195cc48ec66396d1a47684f3fdd1ef4103583febfa2e1dff mutates receiver entries, owns encoded string bytes, and retains supplied Uint8Array content',
   },
   {
     provenance: {

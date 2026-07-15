@@ -1,4 +1,7 @@
-import { spawn, } from 'node:child_process';
+import {
+  spawn,
+  type SpawnOptions,
+} from 'node:child_process';
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -85,6 +88,31 @@ export function launchReadonlyArguments(args: readonly string[],): void {
     args,
     { stdio: 'ignore', },
   );
+}
+
+/**
+ * Launches a process through two-argument options overload.
+ *
+ * @param options - Caller-owned launch options exposed to native process creation.
+ *
+ * @mutates options - Node 26.5.0 child_process.spawn may observe option getters, environment state, signals, and stdio capabilities.
+ */
+export function launchReadonlyOptions(options: SpawnOptions,): void {
+  void spawn(
+    'printf',
+    options,
+  );
+}
+
+/**
+ * Copies typed-array bytes while exposing audited conversion-property hooks.
+ *
+ * @param bytes - Caller byte view copied into owned Buffer storage.
+ *
+ * @returns owned Buffer copy.
+ */
+export function copyBufferBytes(bytes: Uint8Array,): Buffer {
+  return Buffer.from(bytes,);
 }
 
 /**

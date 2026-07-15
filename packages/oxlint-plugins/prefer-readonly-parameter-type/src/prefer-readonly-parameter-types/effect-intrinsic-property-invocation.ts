@@ -13,6 +13,7 @@ import {
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 import type { IntrinsicArgumentPropertyInvocation, } from './intrinsic-effect-catalog.ts';
+import { intrinsicExpressionMatchesTypeCondition, } from './effect-intrinsic-type-condition.ts';
 
 /**
  * Records source parameters exposing callback properties invoked by an audited callable.
@@ -53,6 +54,14 @@ export function addIntrinsicPropertyInvocations({
      */
     const argument = call.arguments[effect.argumentIndex];
     if (argument === undefined)
+      return;
+    if ((effect.typeCondition !== undefined)
+      && (!intrinsicExpressionMatchesTypeCondition({
+        checker,
+        expression: argument,
+        propertyNames: effect.propertyNames,
+        condition: effect.typeCondition,
+      })))
       return;
     parameterIndexes({
       checker,
