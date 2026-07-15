@@ -14,6 +14,7 @@ import {
   NO_INTRINSIC_QUERY,
   openSemanticFile,
 } from '../dist/final/node/index.mjs';
+import { isIdentifier, } from 'typescript/unstable/ast/is';
 
 /**
  * Call sites covering both audited Optique entry points.
@@ -55,6 +56,8 @@ await describe({
           const identifier = session.nodeAtOffset(
             sourceText.indexOf(`${callSite.member}(`,) + 1,
           );
+          if (!isIdentifier(identifier,))
+            throw new Error(`Expected identifier for ${callSite.member}.`,);
           const symbol = session.checker.getResolvedSymbol(identifier,);
           const query = symbol === undefined
             ? NO_INTRINSIC_QUERY
