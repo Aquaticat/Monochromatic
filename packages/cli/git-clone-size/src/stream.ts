@@ -190,9 +190,9 @@ async function* estimateLocal(
  *
  * @returns Budget signal alone or combined dependent signal.
  *
- * @mutates budgetSignal through `AbortSignal.any` dependent-signal registration
+ * @mutates budgetSignal through DOM commit 5796f716 AbortSignal.any dependent-signal relations.
  *
- * @mutates callerSignal through `AbortSignal.any` dependent-signal registration
+ * @mutates callerSignal through DOM commit 5796f716 AbortSignal.any dependent-signal relations.
  *
  * @example
  * ```ts
@@ -226,7 +226,7 @@ function combineProbeSignals({
  *
  * @returns async generator of snapshots
  *
- * @mutates options - `AbortSignal.any` stores a dependent-signal relation on `options.signal` when provided
+ * @mutates options - DOM commit 5796f716 AbortSignal.any dependent-signal relations.
  */
 async function* estimateRemote(
   {
@@ -347,7 +347,7 @@ async function* estimateRemote(
  *
  * @returns async generator of progressive snapshots
  *
- * @mutates options - `estimateRemote` can make `AbortSignal.any` store a dependent relation on `options.signal`
+ * @mutates options - DOM commit 5796f716 AbortSignal.any dependent-signal relations.
  *
  * @example
  * ```ts
