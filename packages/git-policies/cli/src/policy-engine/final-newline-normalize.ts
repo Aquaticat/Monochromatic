@@ -70,8 +70,8 @@ const UNCHANGED: UnchangedFinalNewline = { kind: 'unchanged', };
  * ```
  */
 export function isFinalNewlineExcluded(path: string,): boolean {
-  if (path.startsWith('packages/fuzz/forbidden-strings/seeds/',)
-    || path.startsWith('packages/rust-module/forbidden-regex.fuzz/seeds/',)
+  if (path.startsWith('packages/fuzz/forbidden-strings/seed/',)
+    || path.startsWith('packages/rust-module/forbidden-regex.fuzz/seed/',)
     || path.startsWith('packages/test-fixture/toml-edit/src/',))
     return true;
   /**

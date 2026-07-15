@@ -18,7 +18,7 @@ import {
 /**
  * Fuzz seed path excluded from every final-newline lifecycle.
  */
-const FUZZ_PATH = 'packages/fuzz/forbidden-strings/seeds/newline-fixture';
+const FUZZ_PATH = 'packages/fuzz/forbidden-strings/seed/newline-fixture';
 /**
  * TOML parser fixture path excluded from every final-newline lifecycle.
  */
