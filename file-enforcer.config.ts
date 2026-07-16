@@ -1675,6 +1675,15 @@ the child then will not read the repo \`CLAUDE.md\`,
 and Claude Code's cwd handling is unreliable.
 
 Use \`pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<your question>"\` for a strong model's opinion.
+Launch it in the background and continue other work;
+the completion notification arrives on its own.
+Runs take several minutes and the output file stays completely empty until the answer lands in one final flush,
+so an empty file means still thinking,
+not hung.
+Never poll or sleep-wait on the output file.
+Never stop a running pi call without an explicit cancellation request;
+"don't wait for it" or "let's move on" means keep working while it runs,
+not kill it.
 
 ${await cat(['./AGENTS.md',],)}`,
   },),
