@@ -75,7 +75,7 @@ The proposed successful result is:
 
 ```ts
 {
-  command: 'compare',
+  commandPath: ['compare'],
   trailingArguments: ['a.png', 'b.png'],
   provider: 'voyage',
   tags: ['release', 'nightly'],
@@ -87,7 +87,7 @@ The proposed static shape is:
 
 ```ts
 type CompareArgs = Readonly<{
-  command: 'compare';
+  commandPath: readonly ['compare'];
   trailingArguments: readonly [string, string, ...string[]];
   provider?: 'voyage' | 'gemini';
   json?: true;
@@ -109,7 +109,7 @@ const trailingArgumentsSchema = v.tupleWithRest(
 
 This proposal deliberately avoids assigning semantic field names to tail positions.
 The parser should preserve tail order and accept dash-led values after `--` verbatim.
-The command alias `cmp` should canonicalize to `command: 'compare'` and remain absent from generated help.
+The command alias `cmp` should canonicalize to `commandPath: ['compare']` and remain absent from generated help.
 
 ## Settled result-shape decisions
 
@@ -158,11 +158,15 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
   as in `cat calico meow --loud`.
 - Intermediate command nodes are routing-only.
   Only the innermost leaf command may declare options or a trailing-argument tail.
+- Command-bearing results flatten canonical command tokens into a readonly non-empty `commandPath` tuple.
+  Leaf options and `trailingArguments` remain top-level properties.
+  A single-level command uses `commandPath: readonly ['compare']`;
+  nested syntax can use `commandPath: readonly ['calico', 'meow']`.
+- Hidden aliases canonicalize their own path segment before output.
 
 ## Unresolved result-shape decisions
 
-- Decide how a nested routing path and its leaf result appear in the syntax result.
-
+No known result-shape decision remains open.
 Other grammar and diagnostic decisions remain open.
 
 ## Architecture discussion deferred
@@ -189,7 +193,7 @@ Current consumers exercise:
 - generated help;
 - integer conversion and picklists;
 - command-tail forwarding through `--`;
-- mapping parser output into discriminated command unions.
+- mapping parser output into discriminated command-path unions.
 
 Current unseparated positional syntax will not survive unchanged.
 The repository controls these contracts and rejects named positionals as a parser design.
@@ -238,12 +242,14 @@ and output shape.
   named positionals and optional-separator compatibility paths are forbidden.
 - Tail metavars are presentation-only metadata.
   Parser output remains `trailingArguments` regardless of displayed role names.
-- Hidden aliases parse to canonical command discriminants and do not render in help.
+- Hidden aliases parse to canonical command-path segments and do not render in help.
 - Intermediate subcommands own no options or arguments;
   only the innermost command is a leaf parser.
-- Root leaves omit `command`;
-  command discriminants exist only for command tokens supplied in argv.
+- Root leaves omit `commandPath`;
+  command paths exist only for command tokens supplied in argv.
 - Nested subcommand grammar is required and cannot have a fixed depth limit.
+- Command results are flat:
+  `commandPath` preserves routing syntax while leaf options and trailing arguments stay at the result root.
 
 ## Communication-rule commits
 
@@ -262,10 +268,10 @@ or include them in this migration's commits.
 
 ## Next action
 
-Re-evaluate nested-command result shapes without assigning options to intermediate commands.
-Compare recursive routing wrappers,
-a canonical command-path tuple with leaf options,
-and an innermost-command-only result.
-Demonstrate aliases,
-reused leaf names,
-and single-level compatibility.
+Decide help-control placement in a nested command tree.
+Compare `--help` at every routing level,
+leaf-only help,
+and a help subcommand.
+Demonstrate root,
+intermediate,
+and leaf help outcomes without treating help as a result option.
