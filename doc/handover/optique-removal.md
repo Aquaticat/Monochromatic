@@ -163,6 +163,16 @@ The command alias `cmp` should canonicalize to `commandPath: ['compare']` and re
   A single-level command uses `commandPath: readonly ['compare']`;
   nested syntax can use `commandPath: readonly ['calico', 'meow']`.
 - Hidden aliases canonicalize their own path segment before output.
+- Each leaf may apply a whole-result Valibot schema after field parsing to validate relationships across supplied options and trailing arguments.
+  This schema may transform values while preserving declared field layout,
+  but may not rename,
+  nest,
+  remove,
+  merge,
+  add,
+  or default result fields.
+  It may not consult external state.
+  Failed relationship checks are parser failures with status 2.
 - `--help` and `-h` produce contextual help at the root,
   every intermediate route,
   and every leaf.
@@ -259,6 +269,8 @@ and output shape.
   changing nesting,
   or otherwise reorganizing the parser result.
   Routine value conversion does not require a second parse.
+- Leaf-level whole-result validation may enforce CLI-contract relationships before application dispatch.
+  It preserves syntax-derived shape and cannot perform external-state or business-policy checks.
 - The owned parser exposes no Optique-compatible parser-state generic surface.
 - Consumer and parser tests cross the same public interface.
 - Unknown options are rejected before `--` and preserved after `--`.
@@ -311,8 +323,8 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide whether the parser may validate relationships across supplied options and trailing arguments with a leaf-level Valibot schema.
-Compare syntax-level cross-field checks,
-per-field-only validation,
-and representing incompatible forms as separate leaf commands.
-Keep result-shape transformation in the consumer layer.
+Decide whether syntax parsing supports synchronous Valibot schemas only or also async schemas.
+Compare a synchronous parser boundary,
+an always-async parser,
+and separate sync/async interfaces.
+Respect the settled ban on external-state checks inside parsing.
