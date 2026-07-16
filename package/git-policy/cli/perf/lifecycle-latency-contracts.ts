@@ -17,7 +17,8 @@ export type LifecycleScenarioId =
   | 'scanner'
   | 'normalizer'
   | 'normalizer-change'
-  | 'post-commit';
+  | 'post-commit'
+  | 'wide-commit';
 
 /**
  * Metric compared with measured scenario budget.
@@ -182,6 +183,26 @@ export const BENCHMARK_FILE = 'benchmark.txt';
  */
 export const TREE_FILE_COUNT = 2_048;
 /**
+ * Decimal width for deterministic tree names.
+ */
+export const TREE_NAME_WIDTH = 5;
+/**
+ * Directory holding repository-scale tracked files.
+ */
+export const TREE_DIRECTORY = 'tree';
+/**
+ * Paths changed by one wide commit.
+ *
+ * Every other scenario changes {@link BENCHMARK_FILE} alone, so cost that
+ * scales with paths touched stays invisible: {@link TREE_FILE_COUNT} exposes
+ * fan-out across the tree, not across a commit's own delta. A mechanical rename
+ * sweep in this repository lands thousands of paths, and per-path work at that
+ * width once cost 26.15 seconds against 0.84 after batching. This width is far
+ * enough above one to make per-path work exceed the budget while keeping the
+ * matrix runnable inside the bounded container.
+ */
+export const WIDE_COMMIT_FILE_COUNT = 256;
+/**
  * Files written concurrently in one bounded setup batch.
  */
 export const TREE_WRITE_BATCH_SIZE = 64;
@@ -194,6 +215,15 @@ export const MAXIMUM_BUDGET_MS = 2_000;
  * Scenario budgets derived from `perf/lifecycle-latency-2026-07-11.json`.
  * Each ceiling is twice measured maximum rounded up to next 25 milliseconds;
  * every result remains below user-required 2,000-millisecond ceiling.
+ *
+ * `wide-commit` carries no measured ceiling yet. Its baseline cannot be
+ * recorded while the benchmark cannot reach its first scenario: fixture setup
+ * fails at `cli-git trust`, rejecting the fixture config as not self-contained.
+ * That baseline was last recorded at `0fac57108`, before `ece5b7553` renamed
+ * `packages/` to `package/`, and the benchmark fails identically with this
+ * scenario removed. Capture a ceiling with
+ * `CLI_GIT_CAPTURE_LATENCY_BASELINE=1` once the benchmark runs again, and note
+ * that a zero ceiling fails the scenario until then.
  */
 export const SCENARIO_BUDGETS: Readonly<Record<LifecycleScenarioId, number>> = {
   'no-config': 275,
@@ -206,4 +236,5 @@ export const SCENARIO_BUDGETS: Readonly<Record<LifecycleScenarioId, number>> = {
   'normalizer': 300,
   'normalizer-change': 275,
   'post-commit': 1_150,
+  'wide-commit': 0,
 };

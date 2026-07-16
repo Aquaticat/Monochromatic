@@ -18,7 +18,9 @@ import {
   PACKAGE_BIN,
   REAL_GIT,
   SCANNER_PATH,
+  TREE_DIRECTORY,
   TREE_FILE_COUNT,
+  TREE_NAME_WIDTH,
   TREE_WRITE_BATCH_SIZE,
   TYPESCRIPT_REPOSITORY,
 } from './lifecycle-latency-contracts.ts';
@@ -28,11 +30,6 @@ import { prepareCommitRemotes, } from './lifecycle-latency-remotes.ts';
  * Executable mode for synthetic scanner.
  */
 const EXECUTABLE_MODE = 0o755;
-/**
- * Decimal width for deterministic tree names.
- */
-const TREE_NAME_WIDTH = 5;
-
 /**
  * Prepared environment needed by measured scenarios.
  */
@@ -97,7 +94,7 @@ async function writeTrackedTree(repository: string,): Promise<void> {
    */
   const treeRoot = join(
     repository,
-    'tree',
+    TREE_DIRECTORY,
   );
   await mkdir(
     treeRoot,
