@@ -163,6 +163,16 @@ The command alias `cmp` should canonicalize to `commandPath: ['compare']` and re
   A single-level command uses `commandPath: readonly ['compare']`;
   nested syntax can use `commandPath: readonly ['calico', 'meow']`.
 - Hidden aliases canonicalize their own path segment before output.
+- `--help` produces contextual help at the root,
+  every intermediate route,
+  and every leaf.
+  It is parser control and never appears in an application success value or reaches the application handler.
+- A control-position `--help` is exclusive:
+  combining it with an option,
+  another command token after it,
+  or a trailing-argument separator is a usage error.
+  Command tokens before it select the help context and do not count as a combination.
+- A literal `--help` after the trailing-argument separator remains data under the settled separator rule.
 
 ## Unresolved result-shape decisions
 
@@ -250,6 +260,10 @@ and output shape.
 - Nested subcommand grammar is required and cannot have a fixed depth limit.
 - Command results are flat:
   `commandPath` preserves routing syntax while leaf options and trailing arguments stay at the result root.
+- Help is handled before application dispatch.
+  The application receives neither a help flag nor a help outcome as business input.
+- `--help` is valid at every route only when no other control-position syntax accompanies it.
+  After `--`, the same token is ordinary trailing data.
 
 ## Communication-rule commits
 
@@ -268,10 +282,9 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide help-control placement in a nested command tree.
-Compare `--help` at every routing level,
-leaf-only help,
-and a help subcommand.
-Demonstrate root,
+Decide whether contextual help has only the exact `--help` spelling or also reserves `-h`.
+Demonstrate both spellings at root,
 intermediate,
-and leaf help outcomes without treating help as a result option.
+leaf,
+and after the trailing separator.
+Preserve help exclusivity and application opacity.
