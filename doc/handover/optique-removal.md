@@ -173,6 +173,9 @@ The command alias `cmp` should canonicalize to `commandPath: ['compare']` and re
   or default result fields.
   It may not consult external state.
   Failed relationship checks are parser failures with status 2.
+- Syntax schemas are synchronous only.
+  Async Valibot schemas are rejected during definition validation;
+  async work begins after successful parsing.
 - `--help` and `-h` produce contextual help at the root,
   every intermediate route,
   and every leaf.
@@ -199,7 +202,7 @@ The command alias `cmp` should canonicalize to `commandPath: ['compare']` and re
 No known result-shape decision remains open.
 Other grammar and diagnostic decisions remain open.
 
-## Architecture discussion deferred
+## Architecture discussion
 
 Three implementation models were demonstrated but not selected:
 
@@ -207,8 +210,31 @@ Three implementation models were demonstrated but not selected:
 - A Valibot result schema plus separate token bindings.
 - CLI metadata attached to Valibot schemas.
 
-The user correctly deferred this choice until the grammar and successful result interface are settled.
-Do not resume the architecture comparison before resolving the result-shape decisions.
+The grammar and successful result interface are now sufficiently settled to revisit the module seam.
+A thin wrapper that merely calls `v.parse` has no reason to exist.
+The owned module must earn its keep by compiling and enforcing argv grammar around Valibot validation.
+
+Candidate owned responsibilities are:
+
+- validate and compile command-tree definitions once;
+- route exact canonical commands and aliases into a `commandPath`;
+- enforce routing-only intermediate nodes and leaf-only options;
+- scan exact option tokens,
+  separate values,
+  variadic option values,
+  duplicate occurrences,
+  and the required trailing separator;
+- assemble syntax-preserving result cardinality and omission;
+- invoke synchronous Valibot schemas at the correct token boundaries;
+- map Valibot issues to argv indices,
+  spellings,
+  metavars,
+  and deterministic aggregated diagnostics;
+- generate contextual help for every route;
+- gate application dispatch and implement stdout/status 0 help plus stderr/status 2 failures.
+
+Valibot remains the value and relationship validation engine behind this grammar seam.
+It is not the whole parser.
 
 ## Existing consumer constraints
 
@@ -245,7 +271,14 @@ and output shape.
 - Process argv access,
   stream writes,
   and exit-code policy sit at an entrypoint adapter.
-- Valibot owns runtime validation and output typing.
+- Valibot owns runtime value and relationship validation plus output typing.
+- The module owns command-tree compilation,
+  argv token grammar,
+  syntax-result assembly,
+  contextual help,
+  diagnostic projection,
+  and application dispatch gating.
+  Merely forwarding a value to `v.parse` is explicitly insufficient.
 - Syntax-level Valibot schemas may transform values and change their runtime representation.
   For example,
   `cpus: '4'` may become `cpus: 4` while retaining the same field in the syntax result.
@@ -299,6 +332,8 @@ and output shape.
   parser failures use stderr and status 2.
   Every parser failure appends full contextual help after the diagnostic rather than printing a separate help-command hint.
   Application status 1 remains distinguishable from invalid invocation.
+- Syntax parsing accepts synchronous Valibot schemas only.
+  Async schemas fail definition validation.
 - Parser failures aggregate all independently provable issues.
   Diagnostics have deterministic argv order,
   full help renders once,
@@ -323,8 +358,9 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide whether syntax parsing supports synchronous Valibot schemas only or also async schemas.
-Compare a synchronous parser boundary,
-an always-async parser,
-and separate sync/async interfaces.
-Respect the settled ban on external-state checks inside parsing.
+Answer the module-value challenge concretely.
+Demonstrate a compiled grammar interface and identify behavior that Valibot alone does not supply.
+Ask whether grammar compilation,
+help,
+diagnostics,
+and dispatch gating are the intended deep-module seam before choosing descriptor versus metadata representation.
