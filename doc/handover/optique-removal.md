@@ -620,8 +620,10 @@ and output shape.
   Diagnostics have deterministic argv order,
   full help renders once,
   and recovery-safe scanning must not create secondary interpretations.
-- `--help` and `-h` are valid at every route only when no other control-position syntax accompanies them.
-  After `--`, the same tokens are ordinary trailing data.
+- `--help` and `-h` are valid at every route
+  only when no other control-position syntax accompanies them.
+  After `--`,
+  the same tokens are ordinary trailing data.
 
 ## Communication-rule commits
 
