@@ -174,7 +174,9 @@ The command alias `cmp` should canonicalize to `commandPath: ['compare']` and re
   Command tokens before it select the help context and do not count as a combination.
 - Literal `--help` and `-h` tokens after the trailing-argument separator remain data under the settled separator rule.
 - Contextual help writes to stdout and settles with status 0.
-  Parser usage and validation failures write to stderr and settle with status 2.
+  Parser usage and validation failures write a diagnostic followed by full contextual help to stderr and settle with status 2.
+  Failure help uses the deepest canonically resolved command route,
+  even when argv used aliases.
   Neither path invokes the application handler.
   Application failures retain their own status and output policy.
 
@@ -268,6 +270,7 @@ and output shape.
   The application receives neither controls nor parser-failure outcomes as business input.
 - Parser controls use stdout and status 0;
   parser failures use stderr and status 2.
+  Every parser failure appends full contextual help after the diagnostic rather than printing a separate help-command hint.
   Application status 1 remains distinguishable from invalid invocation.
 - `--help` and `-h` are valid at every route only when no other control-position syntax accompanies them.
   After `--`, the same tokens are ordinary trailing data.
@@ -289,8 +292,8 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide how much contextual help accompanies a parser failure.
-Compare a diagnostic plus a command-specific help hint,
-a diagnostic plus full contextual help,
-and a diagnostic alone.
-Preserve stderr-only status 2 behavior.
+Decide whether parser failures report only the first issue or aggregate independent issues before full contextual help.
+Demonstrate missing option values,
+duplicate options,
+unknown options,
+and multiple Valibot issues without inventing cascaded diagnostics.
