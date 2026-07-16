@@ -60,13 +60,20 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFile, spawn } = await import('node:child_process')
 const { once } = await import('node:events')
-const { mkdir } = await import('node:fs/promises')
+const { mkdir, readFile } = await import('node:fs/promises')
 const { join } = await import('node:path')
 const { promisify } = await import('node:util')
 const packageRoot = process.cwd()
 const evidenceRoot = join(packageRoot, 'dist/perf')
 await mkdir(evidenceRoot, { recursive: true })
 const execute = promisify(execFile)
+// Derived, never spelled out: a stale tarball under the previous package name
+// outlives a rename in dist/pack, so a literal path keeps mounting it and the
+// benchmark measures the package it replaced.
+const manifest = JSON.parse(await readFile(join(packageRoot, 'package.json'), 'utf8'))
+const tarballName = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
+const tarballPath = join(packageRoot, 'dist/pack', tarballName)
+await readFile(tarballPath)
 const { stdout: revisionOutput } = await execute('/usr/bin/git', ['rev-parse', 'HEAD'], { cwd: packageRoot })
 const revision = revisionOutput.trim()
 const bootstrap = `
@@ -94,7 +101,7 @@ const child = spawn('podman', [
   '--env',
   'CLI_GIT_BENCHMARK_OUTPUT=/evidence/lifecycle-latency.json',
   '--volume',
-  `${join(packageRoot, 'dist/pack/monochromatic-dev-cli-git-0.0.1.tgz')}:/fixture/cli.tgz:ro,Z`,
+  `${tarballPath}:/fixture/cli.tgz:ro,Z`,
   '--volume',
   `${evidenceRoot}:/evidence:rw,Z`,
   '--volume',
