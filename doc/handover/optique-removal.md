@@ -64,7 +64,7 @@ Every token after the separator is captured without option interpretation:
 ```text
 image-tool compare
   [-p, --provider voyage|gemini]
-  [-t, --tag TAG]...
+  [-t, --tag <TAG-COLLECTION>]
   [--json]
   -- <1> <2> [<3> ...]
 
@@ -123,10 +123,12 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
   Commands without arguments require no separator.
 - Each command's syntax-level Valibot schema defines its tail cardinality.
 - Presence flags use absent-or-`true` rather than always-present booleans.
-- Zero-or-many options use an optional non-empty tuple.
+- Collection-valued option output uses an optional non-empty tuple.
   For example,
   absent `--tag` omits `tags`,
-  while one or more occurrences produce `tags?: readonly [string, ...string[]]`.
+  while one valid occurrence can produce `tags?: readonly [string, ...string[]]`.
+- Repeating `--tag` is invalid.
+  Output cardinality does not imply repeated option occurrences.
 - Result cardinality preserves syntax:
   zero-or-one uses `value?: T`,
   zero-or-many uses `values?: readonly [T, ...T[]]`,
@@ -137,7 +139,8 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
 ## Unresolved result-shape decisions
 
 No known result-shape decision remains open.
-Grammar and diagnostic decisions remain open.
+The token encoding for multiple values in one `--tag` occurrence is unsettled.
+Other grammar and diagnostic decisions remain open.
 
 ## Architecture discussion deferred
 
@@ -211,6 +214,7 @@ and output shape.
 
 - `82d90270c` added `ODM` so option examples must demonstrate every compared concept.
 - `ad0153c2a` removed wording that could excuse an omitted sketch.
+- `53903e603` added `OCG` so result cardinality cannot silently determine option occurrence grammar.
 
 ## Concurrent worktree state
 
@@ -223,9 +227,9 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide how zero-or-one options and presence flags handle duplicate occurrences.
-Compare rejection,
-last-wins,
-and first-wins semantics with concrete argv,
-results,
-and diagnostics.
+Correct the rejected assumption that `tags?: readonly [string, ...string[]]` permits repeated `--tag` occurrences.
+Compare concrete single-occurrence encodings for multiple tag values,
+including variadic tokens,
+one delimited token,
+and one structured token.
+Keep the syntax-level result identical and ask one decision question.
