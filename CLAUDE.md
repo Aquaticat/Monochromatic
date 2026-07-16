@@ -344,6 +344,12 @@ OPI:
 ODM:
  Option examples must demonstrate every concept the question asks the user to compare.
 
+OCG:
+ Output cardinality never determines option occurrence grammar.
+Sketch token encoding before asserting repeated,
+delimited,
+or variadic forms.
+
 ### Exhaust evidence layers when assessing system usage
 
 EVL:
