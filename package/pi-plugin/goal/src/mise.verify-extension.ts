@@ -1,0 +1,206 @@
+/**
+ * Verifies repository-owned goal extension at built-artifact registration boundary.
+ *
+ * @module
+ */
+
+import type {
+  ExtensionAPI,
+  ExtensionFactory,
+} from '@earendil-works/pi-coding-agent';
+
+//region Contracts
+
+/** Built artifact loaded by Pi package manifest. */
+const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
+
+/** Exact lifecycle events installed by goal default factory. */
+const EXPECTED_EVENTS: readonly string[] = [
+  'agent_end',
+  'agent_settled',
+  'before_agent_start',
+  'message_end',
+  'session_compact',
+  'session_shutdown',
+  'session_start',
+  'session_tree',
+];
+
+/** Public built module shape required by consumers and deterministic verifiers. */
+type GoalBuiltModule = {
+  readonly default: ExtensionFactory;
+  readonly parseGoalCommand: (raw: string) => unknown;
+  readonly registerGoalCompletion: (...inputs: readonly unknown[]) => unknown;
+  readonly registerGoalLifecycle: (...inputs: readonly unknown[]) => unknown;
+};
+
+/** Captured registration inventory from fake Pi API. */
+type RegistrationHarness = {
+  readonly api: ExtensionAPI;
+  readonly events: ReadonlyMap<string, readonly unknown[]>;
+  readonly commands: readonly string[];
+  readonly tools: readonly string[];
+  readonly entryRenderers: readonly string[];
+};
+
+//endregion Contracts
+
+//region Harness
+
+/**
+ * Narrow dynamic built-module namespace to required public surface.
+ *
+ * @param value - imported module namespace
+ *
+ * @returns whether required extension exports are present
+ *
+ * @example
+ * ```ts
+ * isGoalBuiltModule(await import('../dist/final/node/index.mjs'));
+ * ```
+ */
+function isGoalBuiltModule(value: unknown,): value is GoalBuiltModule {
+  if ((value === null) || ((typeof value) !== 'object'))
+    return false;
+  return ('default' in value)
+    && ((typeof value.default) === 'function')
+    && ('parseGoalCommand' in value)
+    && ((typeof value.parseGoalCommand) === 'function')
+    && ('registerGoalCompletion' in value)
+    && ((typeof value.registerGoalCompletion) === 'function')
+    && ('registerGoalLifecycle' in value)
+    && ((typeof value.registerGoalLifecycle) === 'function');
+}
+
+/**
+ * Capture default-factory registration without invoking runtime effects.
+ *
+ * @returns focused fake API and registration inventory
+ *
+ * @example
+ * ```ts
+ * const harness = createRegistrationHarness();
+ * ```
+ */
+function createRegistrationHarness(): RegistrationHarness {
+  /** Event handlers grouped by Pi lifecycle event. */
+  const events = new Map<string, unknown[]>();
+  /** Slash commands in registration order. */
+  const commands: string[] = [];
+  /** Model tools in registration order. */
+  const tools: string[] = [];
+  /** Session-entry renderers in registration order. */
+  const entryRenderers: string[] = [];
+  /** Minimal registration-only Pi API. */
+  const api = {
+    on(event: string, handler: unknown,) {
+      events.set(event, [...events.get(event,) ?? [], handler,],);
+    },
+    registerCommand(name: string,) {
+      commands.push(name,);
+    },
+    registerTool(tool: { readonly name: string; },) {
+      tools.push(tool.name,);
+    },
+    registerEntryRenderer(customType: string,) {
+      entryRenderers.push(customType,);
+    },
+  } as unknown as ExtensionAPI;
+  return {
+    api,
+    events,
+    commands,
+    tools,
+    entryRenderers,
+  };
+}
+
+/**
+ * Require exact one-element string registration.
+ *
+ * @param actual - captured names
+ *
+ * @param expected - sole expected name
+ *
+ * @param kind - diagnostic registration kind
+ *
+ * @throws when captured inventory differs
+ *
+ * @example
+ * ```ts
+ * requireOnlyRegistration({ actual: ['goal'], expected: 'goal', kind: 'command' });
+ * ```
+ */
+function requireOnlyRegistration(
+  {
+    actual,
+    expected,
+    kind,
+  }: {
+    readonly actual: readonly string[];
+    readonly expected: string;
+    readonly kind: string;
+  },
+): void {
+  if ((actual.length !== 1) || (actual[0] !== expected))
+    throw new Error(`expected one ${kind} ${expected}; received ${actual.join(', ') || '<none>'}`,);
+}
+
+//endregion Harness
+
+//region Verification
+
+/**
+ * Import built package and validate default extension inventory.
+ *
+ * @returns verification result text
+ *
+ * @throws when export shape or registration inventory violates contract
+ *
+ * @example
+ * ```ts
+ * console.log(await verifyBuiltGoalExtension());
+ * ```
+ */
+async function verifyBuiltGoalExtension(): Promise<string> {
+  /** Side-effect-free namespace import of exact built artifact. */
+  const imported: unknown = await import(BUILT_EXTENSION_PATH);
+  if (!isGoalBuiltModule(imported,))
+    throw new Error('built goal extension has unexpected named or default exports',);
+  /** Registration inventory populated only after explicit default invocation. */
+  const harness = createRegistrationHarness();
+  await imported.default(harness.api,);
+  requireOnlyRegistration({
+    actual: harness.commands,
+    expected: 'goal',
+    kind: 'command',
+  },);
+  requireOnlyRegistration({
+    actual: harness.tools,
+    expected: 'goal_complete',
+    kind: 'tool',
+  },);
+  requireOnlyRegistration({
+    actual: harness.entryRenderers,
+    expected: 'goal:review-unavailable',
+    kind: 'entry renderer',
+  },);
+  if (harness.events.has('tool_call',))
+    throw new Error('goal extension registered forbidden goal-state tool_call blocker',);
+  /** Sorted actual lifecycle inventory for exact comparison. */
+  const actualEvents = [...harness.events.keys(),]
+    .toSorted();
+  if (JSON.stringify(actualEvents,) !== JSON.stringify(EXPECTED_EVENTS,))
+    throw new Error(`unexpected lifecycle inventory: ${actualEvents.join(', ')}`,);
+  /** Events required to have exactly one handler each. */
+  const duplicateEvent = actualEvents.find(function hasWrongCount(event,) {
+    return harness.events.get(event,)?.length !== 1;
+  },);
+  if (duplicateEvent !== undefined)
+    throw new Error(`expected one ${duplicateEvent} handler`,);
+  return 'pi-goal built extension verified: one command, one completion tool, exact lifecycle handlers, no tool_call blocker';
+}
+
+//endregion Verification
+
+console.log(await verifyBuiltGoalExtension(),);
