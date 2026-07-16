@@ -2,8 +2,8 @@
 
 Status:
 milestone one in progress.
-Tasks 1 (scaffold) and 2 (document core) landed;
-task 3 (issue model and span validation) is next.
+Tasks 1 (scaffold), 2 (document core), and 3 (issue model and span validation) landed;
+task 4 (Synthetic model client) is next.
 Update this document at every task completion or design pivot;
 it exists so auto-compaction cannot lose session state.
 
@@ -29,7 +29,9 @@ consumers and deployment are deliberately out of scope for now.
 - Commits on branch:
   `16864f509` scaffold,
   `70aaaf557` catalog remark/MDX parser stack,
-  `da689f628` document model and segmentation core.
+  `da689f628` document model and segmentation core,
+  `401aa7db8` this handover,
+  `411931d21` issue model and deterministic anchor validation.
 - Task list lives in the session task tool;
   mirror of current state is in "Task state" below.
 
@@ -150,6 +152,15 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 - Parser deps all from the pnpm catalog: `unified`, `remark-parse`, `remark-mdx`, `remark-gfm`,
   `yaml`, `@types/mdast`.
   `remark-math` is not in the catalog; math survives as text nodes (accepted milestone-one gap).
+- `no-mixed-operators` idioms: parenthesize comparisons under `&&`/`||`,
+  `(typeof value) !== 'string'`, and `index === (-1)` for indexOf non-existence
+  (`unicorn/consistent-existence-index-check` simultaneously demands `=== -1`).
+- `chain-per-line`: chains of two or more member steps plus a call split one step per
+  line (`claim` / `.spans` / `.map(...)`); extract consts for chained conditions.
+- `typescript/no-unsafe-type-assertion` bans narrowing casts:
+  replace with `find` over the closed list plus `nonNullishOrThrow`.
+- `isolatedDeclarations`: exported consts need explicit type annotations;
+  `as const satisfies ...` alone fails TS9010.
 
 ## Task state
 
@@ -157,12 +168,20 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 2. Document model and segmentation core: done
    (`parse-document.ts`, `document-node.ts`, `footnote-graph.ts`, `footnote-model.ts`,
    `front-matter.ts`, `parse-mdx.ts`; 20 tests; zero lint findings).
-3. Issue model and span/anchor validation: next.
-   MQM-derived categories plus extension states and the `policy` family;
-   severities; source/target spans anchored to node IDs, offsets, and content hashes;
-   zero-width insertion anchors for omissions; multi-span issues;
-   deterministic validation rejecting misquotes and stale hashes; adversarial tests.
-4. Synthetic model client: injected, typed via `@monochromatic-dev/module-llm-type/ts`;
+3. Issue model and span/anchor validation: done
+   (`issue-taxonomy.ts`: closed MQM-derived category union with `policy` and
+   `extension` families, severities including `neutral`, runtime guards;
+   `issue-model.ts`: `SpanAnchor` with side/nodeId/nodeHash/absolute offsets/exact
+   quote, zero-width insertion anchors, atomic multi-span `IssueClaim`,
+   deterministic `computeIssueClaimId` over canonical serialization;
+   `validate-issue.ts`: rejection-as-data `validateIssueClaim` with kinds
+   anchorless-issue, malformed-offset, inverted-span, unknown-node,
+   stale-node-hash, span-outside-node, quote-mismatch;
+   fail-fast per span, all spans reported independently;
+   adversarial tests over parsed cat-themed fixtures).
+   Claims carry no proposer provenance; the shell tracks that outside the claim.
+4. Synthetic model client: next.
+   Injected, typed via `@monochromatic-dev/module-llm-type/ts`;
    schema validation, refusal detection, per-model semaphore(1), price-weighted budget,
    `/quotas` polling, `AbortSignal` on every call.
 5. Seeded-error benchmark harness and scorecard (exit criterion of milestone one).
