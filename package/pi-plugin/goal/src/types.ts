@@ -155,6 +155,17 @@ type GoalReviewDeniedEvent = {
 };
 
 /**
+ * Visible continuation issuance event retaining auditable sequence.
+ */
+type GoalContinuationIssuedEvent = {
+  readonly kind: 'continuation_issued';
+  readonly runId: GoalRunId;
+  readonly generationId: GoalGenerationId;
+  readonly continuationSequence: number;
+  readonly transitionedAt: string;
+};
+
+/**
  * Model-approved completion event.
  */
 type GoalModelCompletedEvent = {
@@ -209,6 +220,7 @@ type GoalEvent =
   | GoalRunStartedEvent
   | GoalGenerationRotatedEvent
   | GoalReviewDeniedEvent
+  | GoalContinuationIssuedEvent
   | GoalModelCompletedEvent
   | GoalManualCompletedEvent
   | GoalReviewUnavailableEvent
@@ -317,6 +329,7 @@ type GoalControllerTransition = {
 export type {
   AbsentGoalState,
   ActiveGoalState,
+  GoalContinuationIssuedEvent,
   GoalControllerState,
   GoalControllerTransition,
   GoalEffect,

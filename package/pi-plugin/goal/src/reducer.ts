@@ -79,6 +79,18 @@ function reduceGoalEvent(
       reviewerFeedback: event.feedback,
     };
   }
+  if (event.kind === 'continuation_issued') {
+    if ((state.phase !== 'active')
+      || (state.runId !== event.runId)
+      || (state.generationId !== event.generationId)) {
+      return state;
+    }
+    return {
+      ...state,
+      continuationSequence: event.continuationSequence,
+      transitionedAt: event.transitionedAt,
+    };
+  }
   if (event.kind === 'run_completed_model') {
     if ((state.phase !== 'active')
       || (state.runId !== event.runId)

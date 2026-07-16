@@ -17,7 +17,9 @@ import {
   clearGoal,
   createGoalController,
   formatGoalFooter,
+  goalEventsFromBranch,
   GOAL_USAGE,
+  isGoalEvent,
   MAX_OBJECTIVE_LENGTH,
   objectivePreview,
   parseGoalCommand,
@@ -25,6 +27,8 @@ import {
   reduceGoalEvents,
   restoreGoalController,
   rotateGoalGeneration,
+  settleGoal,
+  shutdownGoalController,
   startGoal,
   type ActiveGoalState,
   type GoalEvent,
@@ -467,6 +471,133 @@ await describe({
         },);
         expect(rotated.controller.goal,).toEqual(completed,);
         expect(rotated.effects,).toHaveLength(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: settleGoal.name,
+  children: [
+    it({
+      name: 'emits deferred kickoff once after matching busy generation settles',
+      fn: async () => {
+        /** Busy start retaining kickoff intent. */
+        const started = startGoal({
+          controller: createGoalController(RUNTIME_EPOCH,),
+          objective: 'Deferred goal',
+          runId: 'run-1',
+          generationId: 'generation-1',
+          startBoundary: 'boundary-1',
+          marker: 'kickoff-marker',
+          timestamp: STARTED_AT,
+          isIdle: false,
+          hasPendingMessages: false,
+        },);
+        /** First final settlement drains matching kickoff. */
+        const settled = settleGoal({
+          controller: started.controller,
+          marker: 'unused-marker',
+          timestamp: LATER_AT,
+          hasPendingMessages: false,
+        },);
+        expect(settled.effects,).toHaveLength(1,);
+        /** Sole kickoff effect. */
+        const [effect,] = settled.effects;
+        if (effect?.type !== 'send_message')
+          throw new Error('expected deferred kickoff message',);
+        expect(effect.message.details.kind,).toBe('kickoff',);
+        expect(effect.message.details.marker,).toBe('kickoff-marker',);
+        expect(settled.controller.pendingKickoff,).toBeUndefined();
+      },
+    },),
+    it({
+      name: 'persists one continuation and one visible message per eligible settlement',
+      fn: async () => {
+        /** Active controller fixture. */
+        const restored = restoreGoalController({
+          controller: createGoalController(RUNTIME_EPOCH,),
+          goal: activeGoal(),
+        },);
+        /** Final settlement continuation transition. */
+        const settled = settleGoal({
+          controller: restored.controller,
+          marker: 'continuation-marker',
+          timestamp: LATER_AT,
+          hasPendingMessages: false,
+        },);
+        expect(settled.effects.filter(effect => effect.type === 'persist'),).toHaveLength(1,);
+        expect(settled.effects.filter(effect => effect.type === 'send_message'),).toHaveLength(1,);
+        expect(settled.controller.goal,).toMatchObject({
+          phase: 'active',
+          continuationSequence: 1,
+        },);
+      },
+    },),
+    it({
+      name: 'does not overwrite queued human turn or act after shutdown',
+      fn: async () => {
+        /** Active controller fixture. */
+        const restored = restoreGoalController({
+          controller: createGoalController(RUNTIME_EPOCH,),
+          goal: activeGoal(),
+        },);
+        /** Settlement while human message owns next turn. */
+        const queued = settleGoal({
+          controller: restored.controller,
+          marker: 'marker-queued',
+          timestamp: LATER_AT,
+          hasPendingMessages: true,
+        },);
+        expect(queued.effects,).toHaveLength(0,);
+        /** Runtime shutdown transition. */
+        const stopped = shutdownGoalController(restored.controller,);
+        expect(stopped.effects,).toEqual([{ type: 'clear_footer', },],);
+        /** Settlement callback arriving after shutdown. */
+        const stale = settleGoal({
+          controller: stopped.controller,
+          marker: 'marker-stale',
+          timestamp: LATER_AT,
+          hasPendingMessages: false,
+        },);
+        expect(stale.effects,).toHaveLength(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: goalEventsFromBranch.name,
+  children: [
+    it({
+      name: 'extracts only valid goal events from supplied active branch',
+      fn: async () => {
+        /** Valid continuation event payload. */
+        const continuation = {
+          kind: 'continuation_issued',
+          runId: 'run-1',
+          generationId: 'generation-1',
+          continuationSequence: 1,
+          transitionedAt: LATER_AT,
+        } as const;
+        expect(isGoalEvent(continuation,),).toBe(true,);
+        expect(goalEventsFromBranch([
+          {
+            type: 'custom',
+            customType: 'goal:state',
+            data: continuation,
+          },
+          {
+            type: 'custom',
+            customType: 'other-extension',
+            data: continuation,
+          },
+          {
+            type: 'custom',
+            customType: 'goal:state',
+            data: { kind: 'continuation_issued', },
+          },
+        ],),).toEqual([continuation,],);
       },
     },),
   ],

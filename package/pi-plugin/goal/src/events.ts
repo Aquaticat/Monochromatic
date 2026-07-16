@@ -138,6 +138,17 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
     },)
       && ((typeof value.continuationSequence) === 'number');
   }
+  if (kind === 'continuation_issued') {
+    return hasStringProperties({
+      record: value,
+      names: [
+        'runId',
+        'generationId',
+        'transitionedAt',
+      ],
+    },)
+      && ((typeof value.continuationSequence) === 'number');
+  }
   if (kind === 'run_completed_model') {
     return hasStringProperties({
       record: value,
