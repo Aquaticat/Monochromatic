@@ -55,6 +55,7 @@ export {
   hasForbiddenRootContext,
   repositoryPolicyPlugin,
 } from './optional/repository-policy.ts';
+export { resolveGit, } from './resolve-git.ts';
 export type {
   ActivePolicySeverity,
   CandidateChange,

@@ -60,7 +60,17 @@ export {
   MalformedCompletionError,
   SyntheticHttpError,
 } from './completion-shape.ts';
-export { isJsonRecord, } from './json-guard.ts';
+export {
+  CORPUS_COMMIT_SHA,
+  type CorpusPin,
+  CorpusReadError,
+  listCorpusPeople,
+  readCorpusFile,
+} from './corpus-source.ts';
+export {
+  isJsonArray,
+  isJsonRecord,
+} from './json-guard.ts';
 export {
   detectRefusalShape,
   REFUSAL_MARKERS,
