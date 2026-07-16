@@ -88,10 +88,10 @@ The proposed static shape is:
 ```ts
 type CompareArgs = {
   readonly command: 'compare';
-  readonly trailingArguments: [string, string, ...string[]];
-  readonly provider: 'voyage' | 'gemini';
+  readonly trailingArguments: readonly [string, string, ...string[]];
+  readonly provider?: 'voyage' | 'gemini';
   readonly json?: true;
-  readonly tags: string[];
+  readonly tags: readonly string[];
 };
 ```
 
@@ -111,23 +111,23 @@ This proposal deliberately avoids assigning semantic field names to tail positio
 The parser should preserve tail order and accept dash-led values after `--` verbatim.
 The command alias `cmp` should canonicalize to `command: 'compare'` and remain absent from generated help.
 
+## Settled result-shape decisions
+
+- `provider` is omitted when `--provider` is absent.
+  The parser does not choose a provider or implement the command's business policy.
+- `trailingArguments` preserves a schema-constrained tail after `--`.
+- Presence flags use absent-or-`true` rather than always-present booleans.
+
 ## Unresolved result-shape decisions
 
-- The grammar marks `--provider` optional,
-  but the proposed type requires `provider`.
-  Decide whether absence is legal and,
-  if so,
-  whether the property is omitted or receives a default.
 - Decide whether `--` is mandatory for every command with trailing arguments or only for commands that declare a separated tail.
 - Decide whether named positionals remain supported for consumers whose positional values have distinct domain roles.
 - Decide whether every separated tail has a schema-defined minimum length,
   with the example requiring two,
   rather than a parser-wide minimum.
 - Decide whether repeated options always produce arrays,
-  including `tags: []` when absent.
-- Decide whether presence flags use absent-or-`true`,
-  as proposed by `json?: true`,
-  rather than always-present booleans.
+  including `tags: []` when absent,
+  or use an optional non-empty tuple such as `tags?: readonly [string, ...string[]]`.
 - Decide how help names tail positions when the result intentionally has only `trailingArguments`.
 
 ## Architecture discussion deferred
@@ -175,6 +175,8 @@ and output shape.
   stream writes,
   and exit-code policy sit at an entrypoint adapter.
 - Valibot owns runtime validation and output typing.
+- The parser reports supplied values and structural absence.
+  It does not choose domain defaults or perform business logic.
 - The owned parser exposes no Optique-compatible parser-state generic surface.
 - Consumer and parser tests cross the same public interface.
 - Unknown options are rejected before `--` and preserved after `--`.
@@ -196,7 +198,7 @@ or include them in this migration's commits.
 
 ## Next action
 
-Evaluate the proposed separated-tail result on its merits.
-Recommend a precise grammar and output invariant,
-identify contradictions in the current sketch,
-and ask the next result-shape decision as one question.
+Compare repeated-option result shapes:
+`tags: readonly string[]` with an empty-array absence sentinel versus
+`tags?: readonly [string, ...string[]]` with property absence.
+Recommend one shape and ask the user to settle it before resuming other grammar decisions.
