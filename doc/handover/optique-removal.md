@@ -152,6 +152,10 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
   and one-or-many uses `values: readonly [T, ...T[]]`.
 - Generated help uses display-only metavars for tail positions and rest values.
   Metavars improve usage and missing-value diagnostics but never become result keys.
+- A commandless CLI is a root leaf and has no `command` property.
+  The parser never invents a program-name discriminant absent from argv.
+- Subcommands may nest to arbitrary declared depth,
+  as in `cat calico meow --loud`.
 
 ## Unresolved result-shape decisions
 
@@ -232,6 +236,9 @@ and output shape.
 - Tail metavars are presentation-only metadata.
   Parser output remains `trailingArguments` regardless of displayed role names.
 - Hidden aliases parse to canonical command discriminants and do not render in help.
+- Root leaves omit `command`;
+  command discriminants exist only for command tokens supplied in argv.
+- Nested subcommand grammar is required and cannot have a fixed depth limit.
 
 ## Communication-rule commits
 
@@ -250,8 +257,10 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide how commandless CLIs fit the syntax result.
-Compare root leaf commands with no `command` property,
-synthetic command discriminants not present in argv,
-and mandatory explicit subcommands for every program.
-Demonstrate current simple-CLI migrations and their result shapes.
+Decide how nested subcommand scopes appear in the syntax result.
+Compare recursive nested results,
+a flattened command-path tuple,
+and fixed command/subcommand fields.
+Demonstrate command-local options,
+canonical aliases,
+and arbitrary depth.
