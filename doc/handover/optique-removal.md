@@ -163,16 +163,16 @@ The command alias `cmp` should canonicalize to `commandPath: ['compare']` and re
   A single-level command uses `commandPath: readonly ['compare']`;
   nested syntax can use `commandPath: readonly ['calico', 'meow']`.
 - Hidden aliases canonicalize their own path segment before output.
-- `--help` produces contextual help at the root,
+- `--help` and `-h` produce contextual help at the root,
   every intermediate route,
   and every leaf.
-  It is parser control and never appears in an application success value or reaches the application handler.
-- A control-position `--help` is exclusive:
+  They are exact reserved parser controls and never appear in an application success value or reach the application handler.
+- A control-position help spelling is exclusive:
   combining it with an option,
   another command token after it,
   or a trailing-argument separator is a usage error.
   Command tokens before it select the help context and do not count as a combination.
-- A literal `--help` after the trailing-argument separator remains data under the settled separator rule.
+- Literal `--help` and `-h` tokens after the trailing-argument separator remain data under the settled separator rule.
 
 ## Unresolved result-shape decisions
 
@@ -262,8 +262,8 @@ and output shape.
   `commandPath` preserves routing syntax while leaf options and trailing arguments stay at the result root.
 - Help is handled before application dispatch.
   The application receives neither a help flag nor a help outcome as business input.
-- `--help` is valid at every route only when no other control-position syntax accompanies it.
-  After `--`, the same token is ordinary trailing data.
+- `--help` and `-h` are valid at every route only when no other control-position syntax accompanies them.
+  After `--`, the same tokens are ordinary trailing data.
 
 ## Communication-rule commits
 
@@ -282,9 +282,6 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide whether contextual help has only the exact `--help` spelling or also reserves `-h`.
-Demonstrate both spellings at root,
-intermediate,
-leaf,
-and after the trailing separator.
-Preserve help exclusivity and application opacity.
+Decide process-level parser output and status conventions.
+Compare help on stdout with status 0 and usage failures on stderr with status 2 against alternative channels and codes.
+Demonstrate that the application handler is not called for either control outcome.
