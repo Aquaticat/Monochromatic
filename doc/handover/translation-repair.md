@@ -231,7 +231,24 @@ Deterministic core plus model stages, revised after an adversarial second-model 
    `synthetic-client.ts` `createSyntheticClient` with per-model `p-limit(1)`,
    mandatory `AbortSignal`, outcome-as-data `chatJson`;
    boundary-verified against the live API twice).
-5. Seeded-error benchmark harness and scorecard (exit criterion of milestone one): next.
+5. Seeded-error benchmark harness and scorecard (exit criterion of milestone one):
+   code landed (`4cd25ae95`), first real run in progress.
+   `seeded-error.ts` (deterministic planting, region tracking, hit tolerance 30),
+   `derive-seeds.ts` (runtime omission derivation from longest unique sentences,
+   min 40 chars, so no UNLICENSED content is committed),
+   `critic-wire.ts` (quote-based wire format, `CRITIC_RESPONSE_FORMAT` JSON schema,
+   quote-to-anchor resolution failing closed on absent/ambiguous/cross-block
+   quotes, final `validateIssueClaim` gate),
+   `critic-prompt.ts` (strict system prompt with closed vocabularies),
+   `scorecard.ts` (pure aggregation; per-model schema-ok, refusal, effective
+   seeded recall; `ensembleRecall` over the entry+seed universe is the go/no-go
+   number; precision is deliberately not graded against seeded truth because the
+   MT-seeded corpus carries genuine errors),
+   `benchmark.ts` (`runCriticBenchmark`: entries sequential, models parallel,
+   HTTP failures as attempt data, aborts propagate).
+   First real run: entries Huasheng and DarlinChit, 2 derived omission seeds each,
+   all 7 models; driver script `run-benchmark.ts` in the session scratchpad;
+   results land in `benchmark-result.json` there and must be copied into this doc.
 6. Pinned-SHA corpus reads from the user's local clone: done (`corpus-source.ts`;
    see corpus facts).
 
