@@ -55,6 +55,50 @@ export {
   type RepairDocument,
 } from './parse-document.ts';
 export {
+  extractCompletion,
+  type ExtractedCompletion,
+  MalformedCompletionError,
+  SyntheticHttpError,
+} from './completion-shape.ts';
+export { isJsonRecord, } from './json-guard.ts';
+export {
+  detectRefusalShape,
+  REFUSAL_MARKERS,
+  REFUSAL_SCAN_WINDOW,
+  type RefusalScan,
+} from './refusal.ts';
+export {
+  estimateRequestWeight,
+  SYNTHETIC_BASELINE_MODEL_ID,
+  SYNTHETIC_CHAT_BASE_URL,
+  SYNTHETIC_MODELS,
+  SYNTHETIC_QUOTAS_URL,
+  type SyntheticModelId,
+  type SyntheticModelInfo,
+  type SyntheticVendorFamily,
+} from './synthetic-catalog.ts';
+export {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type ChatTextReply,
+  type ChatTextRequest,
+  createSyntheticClient,
+  type JsonSchemaResponseFormat,
+  stripCodeFence,
+  type SyntheticClient,
+} from './synthetic-client.ts';
+export {
+  parseQuotaSnapshot,
+  QuotaShapeError,
+  type QuotaSnapshot,
+} from './synthetic-quota.ts';
+export {
+  fetchTransport,
+  type ModelTransport,
+  type TransportExchange,
+  type TransportReply,
+} from './synthetic-transport.ts';
+export {
   type AnchorRejection,
   type AnchorRejectionKind,
   type AnchorTarget,

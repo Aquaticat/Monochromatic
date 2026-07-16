@@ -2712,6 +2712,9 @@ importers:
 
   package/module/translation-repair:
     dependencies:
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../async-time
       '@monochromatic-dev/module-llm-type':
         specifier: workspace:*
         version: link:../llm-type
@@ -2724,6 +2727,9 @@ importers:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed
+      p-limit:
+        specifier: 'catalog:'
+        version: 7.3.0
       remark-gfm:
         specifier: 'catalog:'
         version: 4.0.1
