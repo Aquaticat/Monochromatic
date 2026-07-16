@@ -178,27 +178,50 @@ await describe({
       },
     },),
     it({
-      name: 'refuses an undeclared joined token rather than reading it as a path',
+      name: 'treats an undeclared joined token as an undeclared option, never a path',
       fn: async function testJoinedUndeclared() {
-        expect(function parseJoinedUndeclared() {
-          parse([
-            '--unknown=v',
-            'a.txt',
-          ],);
-        },).toThrow(ArgvParseError,);
+        // Reading this as a path is what hands `--untracked-files=no` to the
+        // commit-only rule as a pathspec.
+        expect(parse([
+          '--unknown=v',
+          'a.txt',
+        ],),).toEqual({
+          a: 0,
+          m: [],
+          pos: ['a.txt',],
+          unk: ['--unknown=v',],
+        },);
+      },
+    },),
+    it({
+      name: 'keeps an ordinary undeclared joined git option working',
+      fn: async function testOrdinaryJoinedOption() {
+        // `git commit -m msg --untracked-files=no a.txt` is valid git; these
+        // specs declare a subset of git's options, so it arrives undeclared.
+        expect(parse([
+          '-m',
+          'msg',
+          '--untracked-files=no',
+          'a.txt',
+        ],),).toEqual({
+          a: 0,
+          m: ['msg',],
+          pos: ['a.txt',],
+          unk: ['--untracked-files=no',],
+        },);
       },
     },),
     it({
       name: 'names the offending token and region when refusing',
       fn: async function testRefusalDetail() {
         /**
-         * Refusal captured from an undeclared joined token.
+         * Refusal captured from a value option missing its value.
          */
         const caught = (function captureRefusal() {
           try {
             parse([
               '-a',
-              '--unknown=v',
+              '-m',
             ],);
             return NO_REFUSAL;
           }
@@ -208,13 +231,13 @@ await describe({
         })();
         expect(caught,).toBeInstanceOf(ArgvParseError,);
         if (caught instanceof ArgvParseError) {
-          expect(caught.token,).toBe('--unknown=v',);
+          expect(caught.token,).toBe('-m',);
           expect(caught.index,).toBe(1,);
           expect(caught.region,).toEqual([
             '-a',
-            '--unknown=v',
+            '-m',
           ],);
-          expect(caught.message,).toContain('--unknown',);
+          expect(caught.message,).toContain('-m',);
         }
       },
     },),

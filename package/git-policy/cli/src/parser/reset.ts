@@ -1,22 +1,13 @@
-import { object, } from '@optique/core/constructs';
-import {
-  multiple,
-  optional,
-} from '@optique/core/modifiers';
-import { parseSync, } from '@optique/core/parser';
-import {
-  argument,
-  flag,
-  option,
-  passThrough,
-} from '@optique/core/primitives';
-import { string, } from '@optique/core/valueparser';
-
 import { expandAbbreviations, } from '../abbrev.ts';
 import {
   PATHSPEC_SEPARATOR,
   WORKTREE_ENFORCEMENT_ESCAPE_HATCH,
 } from '../escape-hatch.ts';
+import {
+  ARGV_REFUSED,
+  type ArgvSpec,
+  tryParseArgv,
+} from './argv.ts';
 
 //region Reset abbreviation tables (git accepts unambiguous prefixes)
 
@@ -46,27 +37,22 @@ const KEEP_ALIASES = expandAbbreviations({ longOption: '--keep', },);
 //region Reset post-subcommand optique parser
 
 /**
- * Optique parser for the post-`reset` argv region.
+ * Declared option surface of the post-`reset` argv region.
  *
  * Models destructive reset modes plus the value-taking
  * `--pathspec-from-file <file>` so the wrapper-only escape hatch cannot be
- * misread when it appears in the value position. Other reset options are
- * captured by passthrough since they do not influence destructiveness.
+ * misread when it appears in the value position. Other reset options stay
+ * undeclared since they do not influence destructiveness.
  */
-const resetRegionParser = object({
-  hardFlags: multiple(flag(...HARD_ALIASES,),),
-  mergeFlags: multiple(flag(...MERGE_ALIASES,),),
-  keepFlags: multiple(flag(...KEEP_ALIASES,),),
-  pathspecFromFile: optional(option(
-    '--pathspec-from-file',
-    string(),
-  ),),
-  escape: multiple(flag(WORKTREE_ENFORCEMENT_ESCAPE_HATCH,),),
-  positionals: multiple(
-    argument(string(),),
-  ),
-  unknownOptions: passThrough({ format: 'nextToken', },),
-},);
+const resetRegionSpec: ArgvSpec = {
+  flags: {
+    hardFlags: { names: [...HARD_ALIASES,], },
+    mergeFlags: { names: [...MERGE_ALIASES,], },
+    keepFlags: { names: [...KEEP_ALIASES,], },
+    escape: { names: [WORKTREE_ENFORCEMENT_ESCAPE_HATCH,], },
+  },
+  valueOptions: { pathspecFromFile: { names: ['--pathspec-from-file',], }, },
+};
 
 //endregion Reset post-subcommand optique parser
 
@@ -147,14 +133,14 @@ export function parseResetRegion(
   const region = optionRegion(postSubcommandArgs,);
 
   /**
-   * Optique parse result over the cleaned option region.
+   * Parsed facts over the cleaned option region, or refusal.
    */
-  const parseResult = parseSync(
-    resetRegionParser,
-    region,
-  );
+  const parsed = tryParseArgv({
+    args: region,
+    spec: resetRegionSpec,
+  },);
 
-  if (!parseResult.success) {
+  if (parsed === ARGV_REFUSED) {
     return {
       hasDestructiveMode: false,
       hasEscapeHatch: false,
@@ -163,26 +149,19 @@ export function parseResetRegion(
   }
 
   /**
-   * Successful parse value with optique-inferred shape.
+   * Occurrence count per declared flag group.
    */
-  const { value, } = parseResult;
+  const { flagCounts, } = parsed;
   /**
    * Sum of destructive-mode flag occurrences (`--hard` + `--merge` + `--keep`, any abbreviation).
    */
-  const destructiveModeCount = value.hardFlags
-    .length
-    + value
-    .mergeFlags
-    .length
-    + value
-    .keepFlags
-    .length;
+  const destructiveModeCount = (flagCounts.hardFlags ?? 0)
+    + (flagCounts.mergeFlags ?? 0)
+    + (flagCounts.keepFlags ?? 0);
 
   return {
     hasDestructiveMode: destructiveModeCount > 0,
-    hasEscapeHatch: value.escape
-      .length
-      > 0,
+    hasEscapeHatch: (flagCounts.escape ?? 0) > 0,
     parseFailed: false,
   };
 }

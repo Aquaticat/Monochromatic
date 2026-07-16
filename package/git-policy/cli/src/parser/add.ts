@@ -1,18 +1,9 @@
-import { object, } from '@optique/core/constructs';
-import {
-  multiple,
-  optional,
-} from '@optique/core/modifiers';
-import { parseSync, } from '@optique/core/parser';
-import {
-  argument,
-  flag,
-  option,
-  passThrough,
-} from '@optique/core/primitives';
-import { string, } from '@optique/core/valueparser';
-
 import { PATHSPEC_SEPARATOR, } from '../escape-hatch.ts';
+import {
+  ARGV_REFUSED,
+  type ArgvSpec,
+  tryParseArgv,
+} from './argv.ts';
 
 //region Add escape hatch constants
 
@@ -51,26 +42,18 @@ const BULK_PATHSPEC_TOKENS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Optique parser for the post-`add` argv region.
+ * Declared option surface of the post-`add` argv region.
  *
  * Models the value-taking `--pathspec-from-file <file>` and the wrapper-only
  * escape hatch so the bulk-pattern walk that follows can safely skip the
- * value position. Plain pathspecs are captured by `argument()` so the
- * positional list mirrors what real git would see.
+ * value position.
  */
-const addRegionParser = object({
-  pathspecFromFile: optional(option(
-    '--pathspec-from-file',
-    string(),
-  ),),
-  escape: multiple(flag(ADD_ESCAPE_HATCH,),),
-  positionals: multiple(
-    argument(string(),),
-  ),
-  unknownOptions: passThrough({ format: 'nextToken', },),
-},);
+const addRegionSpec: ArgvSpec = {
+  flags: { escape: { names: [ADD_ESCAPE_HATCH,], }, },
+  valueOptions: { pathspecFromFile: { names: ['--pathspec-from-file',], }, },
+};
 
-//endregion Add post-subcommand optique parser
+//endregion Add post-subcommand region parser
 
 //region Add region facts
 
@@ -285,19 +268,20 @@ export function parseAddRegion(
   const pathspecArgs = pathspecRegion(postSubcommandArgs,);
 
   /**
-   * Optique parse result over the option region; the only fact taken from optique is the escape-hatch presence.
+   * Parsed facts over the option region, or refusal; the only fact taken is the escape-hatch presence.
    */
-  const parseResult = parseSync(
-    addRegionParser,
-    optionArgs,
-  );
+  const parsed = tryParseArgv({
+    args: optionArgs,
+    spec: addRegionSpec,
+  },);
   /**
-   * Whether wrapper-only escape hatch appears in flag position.
+   * Whether wrapper-only escape hatch appears in flag position. A refused
+   * region keeps enforcement on, never granting the hatch by default.
    */
-  const hasEscapeHatch = (parseResult.success)
-    && (parseResult.value
+  const hasEscapeHatch = (parsed !== ARGV_REFUSED)
+    && ((parsed.flagCounts
       .escape
-      .length
+      ?? 0)
       > 0);
 
   /**

@@ -1,40 +1,34 @@
-import { object, } from '@optique/core/constructs';
-import { multiple, } from '@optique/core/modifiers';
-import { parseSync, } from '@optique/core/parser';
 import {
-  argument,
-  flag,
-  passThrough,
-} from '@optique/core/primitives';
-import { string, } from '@optique/core/valueparser';
+  type ArgvSpec,
+  parseArgv,
+} from './argv.ts';
 
-//region Push post-subcommand optique parser
+//region Push post-subcommand region parser
 
 /**
- * Optique parser for the post-`push` argv region.
+ * Declared option surface of the post-`push` argv region.
  *
  * Models the user-toggled atomicity flags so the wrapper can inject
  * `--atomic` only when the caller has not chosen explicitly. Pathspecs and
  * other tokens are captured generically; the wrapper does not transform
  * them.
  */
-const pushRegionParser = object({
-  atomicFlags: multiple(flag(
-    '--atomic',
-    '--no-atomic',
-  ),),
-  dryRunFlags: multiple(flag(
-    '-n',
-    '--dry-run',
-  ),),
-  noDryRunFlags: multiple(flag('--no-dry-run',),),
-  positionals: multiple(
-    argument(string(),),
-  ),
-  unknownOptions: passThrough({ format: 'nextToken', },),
-},);
+const pushRegionSpec: ArgvSpec = {
+  flags: {
+    atomicFlags: { names: [
+      '--atomic',
+      '--no-atomic',
+    ], },
+    dryRunFlags: { names: [
+      '-n',
+      '--dry-run',
+    ], },
+    noDryRunFlags: { names: ['--no-dry-run',], },
+  },
+  valueOptions: {},
+};
 
-//endregion Push post-subcommand optique parser
+//endregion Push post-subcommand region parser
 
 //region Push region facts
 
@@ -71,19 +65,12 @@ export function parsePushRegion(
   postSubcommandArgs: readonly string[],
 ): PushRegion {
   /**
-   * Optique parse result over the post-subcommand region.
+   * Parsed facts over the post-subcommand region.
    */
-  const parseResult = parseSync(
-    pushRegionParser,
-    postSubcommandArgs,
-  );
-
-  if (!parseResult.success) {
-    return {
-      hasAtomicChoice: false,
-      isDryRun: false,
-    };
-  }
+  const { flagCounts, } = parseArgv({
+    args: postSubcommandArgs,
+    spec: pushRegionSpec,
+  },);
   /**
    * Final exact dry-run toggle, matching Git's last-option-wins behavior.
    */
@@ -101,10 +88,7 @@ export function parsePushRegion(
     false,
   );
   return {
-    hasAtomicChoice: parseResult.value
-      .atomicFlags
-      .length
-      > 0,
+    hasAtomicChoice: (flagCounts.atomicFlags ?? 0) > 0,
     isDryRun,
   };
 }

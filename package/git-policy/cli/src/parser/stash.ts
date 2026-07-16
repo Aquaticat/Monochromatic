@@ -1,51 +1,36 @@
-import { object, } from '@optique/core/constructs';
-import {
-  multiple,
-  optional,
-} from '@optique/core/modifiers';
-import { parseSync, } from '@optique/core/parser';
-import {
-  argument,
-  flag,
-  option,
-  passThrough,
-} from '@optique/core/primitives';
-import { string, } from '@optique/core/valueparser';
-
 import {
   PATHSPEC_SEPARATOR,
   WORKTREE_ENFORCEMENT_ESCAPE_HATCH,
 } from '../escape-hatch.ts';
+import {
+  ARGV_REFUSED,
+  type ArgvSpec,
+  tryParseArgv,
+} from './argv.ts';
 
-//region Stash post-subcommand optique parser
+//region Stash post-subcommand region parser
 
 /**
- * Optique parser for the post-`stash` argv region.
+ * Declared option surface of the post-`stash` argv region.
  *
  * Models the value-taking options `-m`/`--message` and `--pathspec-from-file`
  * so the wrapper-only escape-hatch token cannot be misread when it appears in
- * the value position. Every other stash option is captured by passthrough
- * because the policy treats every stash form as worktree-changing regardless
- * of the other flags.
+ * the value position. Every other stash option stays undeclared because the
+ * policy treats every stash form as worktree-changing regardless of the other
+ * flags.
  */
-const stashRegionParser = object({
-  message: optional(option(
-    '-m',
-    '--message',
-    string(),
-  ),),
-  pathspecFromFile: optional(option(
-    '--pathspec-from-file',
-    string(),
-  ),),
-  escape: multiple(flag(WORKTREE_ENFORCEMENT_ESCAPE_HATCH,),),
-  positionals: multiple(
-    argument(string(),),
-  ),
-  unknownOptions: passThrough({ format: 'nextToken', },),
-},);
+const stashRegionSpec: ArgvSpec = {
+  flags: { escape: { names: [WORKTREE_ENFORCEMENT_ESCAPE_HATCH,], }, },
+  valueOptions: {
+    message: { names: [
+      '-m',
+      '--message',
+    ], },
+    pathspecFromFile: { names: ['--pathspec-from-file',], },
+  },
+};
 
-//endregion Stash post-subcommand optique parser
+//endregion Stash post-subcommand region parser
 
 //region Stash region facts derived from optique parse
 
@@ -117,28 +102,24 @@ export function parseStashRegion(
   const region = optionRegion(postSubcommandArgs,);
 
   /**
-   * Optique parse result over the cleaned option region.
+   * Parsed facts over the cleaned option region, or refusal.
    */
-  const parseResult = parseSync(
-    stashRegionParser,
-    region,
-  );
+  const parsed = tryParseArgv({
+    args: region,
+    spec: stashRegionSpec,
+  },);
 
-  if (!parseResult.success) {
+  if (parsed === ARGV_REFUSED) {
     return {
       hasEscapeHatch: false,
       parseFailed: true,
     };
   }
 
-  /**
-   * Successful parse value with optique-inferred shape.
-   */
-  const { value, } = parseResult;
-
   return {
-    hasEscapeHatch: value.escape
-      .length
+    hasEscapeHatch: (parsed.flagCounts
+      .escape
+      ?? 0)
       > 0,
     parseFailed: false,
   };

@@ -10,12 +10,14 @@
  * caller's formatter. A commit naming a thousand paths spent 2.56s of 4.24s
  * there.
  *
- * Where optique quietly reinterpreted a malformed region, this parser throws
- * {@link ArgvParseError} instead. Optique turned a value option missing its
- * value into an unknown option, and an undeclared `--name=value` token into a
- * positional, which reaches the commit-only rule as a pathspec. Both are
- * decidable mistakes, and a guard reading facts derived from a misread region
- * is worse than one refusing to read it.
+ * Two readings from optique are corrected here. A value option missing its
+ * value was demoted to an unknown option; it now throws {@link ArgvParseError},
+ * since a stated option with no value is a decidable mistake and Git rejects it
+ * too. An undeclared `--name=value` token became a positional, reaching the
+ * commit-only rule as a pathspec; it is now an undeclared option. That one
+ * cannot throw: these specs declare a subset of what Git accepts, so ordinary
+ * spellings like `--untracked-files=no` are undeclared here and must keep
+ * working.
  *
  * @module
  */
@@ -33,6 +35,10 @@ const OPTION_TERMINATOR = '--';
  * No declared group owns the inspected spelling.
  */
 const GROUP_ABSENT: unique symbol = Symbol('Git argv spelling matched no declared flag or option group',);
+/**
+ * Git argv region was refused, and its facts must not be guessed.
+ */
+export const ARGV_REFUSED: unique symbol = Symbol('Git argv region was refused and yielded no facts',);
 
 /**
  * One declared option group and its accepted spellings.
@@ -210,7 +216,8 @@ function assertSpec(spec: ArgvSpec,): void {
  *
  * Undeclared options keep Git's own ambiguity: their arity is unknowable, so an
  * undeclared option consumes a following token only when that token is not
- * itself dash-led. Callers needing the real answer scan arity separately. A
+ * itself dash-led. Callers needing the real answer scan arity separately. An
+ * undeclared `--name=value` token carries its own value and consumes nothing. A
  * declared value option takes its next token even when dash-led, and every
  * token after `--` is positional, both matching Git.
  *
@@ -304,14 +311,15 @@ export function parseArgv({
           groups: spec.valueOptions,
           name: joinedName,
         },);
-        if ((typeof joinedKey) === 'symbol')
-          throw new ArgvParseError({
-            message:
-              `Undeclared joined option ${joinedName} names no known option, and cannot be read as a path either.`,
-            token,
-            index,
-            region: args,
-          },);
+        if ((typeof joinedKey) === 'symbol') {
+          // An undeclared joined token is an undeclared option carrying its own
+          // value, never a positional. Git accepts far more options here than
+          // these specs declare, so `--untracked-files=no` is ordinary usage;
+          // reading it as a path would hand it to the commit-only rule as a
+          // pathspec, which is the reading this parser exists to prevent.
+          unknownOptions.push(token,);
+          continue;
+        }
         (optionValues[joinedKey] ??= []).push(token.slice(equals + 1,),);
         continue;
       }
@@ -362,4 +370,46 @@ export function parseArgv({
       unknownOptions,
     };
   })();
+}
+
+/**
+ * Parses one region, reporting refusal instead of raising.
+ *
+ * For callers whose rule already defaults to the safe answer when a region
+ * cannot be read: they turn {@link ARGV_REFUSED} into their own
+ * fail-closed fact rather than propagating a failure their policy has no way
+ * to report.
+ *
+ * @param args - exact argv region
+ *
+ * @param spec - declared option surface
+ *
+ * @returns parsed region facts, or refusal sentinel
+ *
+ * @throws ValiError when a declared spelling cannot introduce an option
+ *
+ * @example
+ * ```ts
+ * tryParseArgv({ args: ['-m'], spec: { flags: {}, valueOptions: { message: { names: ['-m'] } } } });
+ * // => ARGV_REFUSED
+ * ```
+ */
+export function tryParseArgv({
+  args,
+  spec,
+}: Readonly<{
+  args: readonly string[];
+  spec: ArgvSpec;
+}>,): ArgvParse | typeof ARGV_REFUSED {
+  try {
+    return parseArgv({
+      args,
+      spec,
+    },);
+  }
+  catch (error: unknown) {
+    if (error instanceof ArgvParseError)
+      return ARGV_REFUSED;
+    throw error;
+  }
 }

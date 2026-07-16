@@ -1,18 +1,12 @@
-import { object, } from '@optique/core/constructs';
-import { multiple, } from '@optique/core/modifiers';
-import { parseSync, } from '@optique/core/parser';
-import {
-  argument,
-  flag,
-  option,
-  passThrough,
-} from '@optique/core/primitives';
-import { string, } from '@optique/core/valueparser';
-
 import {
   PATHSPEC_SEPARATOR,
   WORKTREE_ENFORCEMENT_ESCAPE_HATCH,
 } from '../escape-hatch.ts';
+import {
+  ARGV_REFUSED,
+  type ArgvSpec,
+  tryParseArgv,
+} from './argv.ts';
 import { scanCleanOptionOrder, } from './clean-option-order.ts';
 import {
   DRY_RUN_ALIASES,
@@ -22,10 +16,10 @@ import {
   NO_INTERACTIVE_ALIASES,
 } from './clean-options.ts';
 
-//region Clean post-subcommand optique parser
+//region Clean post-subcommand region parser
 
 /**
- * Optique parser for the post-`clean` argv region.
+ * Declared option surface of the post-`clean` argv region.
  *
  * Declares every long option that influences destructiveness with all
  * accepted abbreviations, so git's unambiguous long-option prefix matching
@@ -33,30 +27,27 @@ import {
  * modelled with arity so the escape-hatch token cannot be misread when it
  * appears in the value position.
  */
-const cleanRegionParser = object({
-  dryRunFlags: multiple(flag(
-    ...DRY_RUN_ALIASES,
-    '-n',
-  ),),
-  noDryRunFlags: multiple(flag(...NO_DRY_RUN_ALIASES,),),
-  interactiveFlags: multiple(flag(
-    ...INTERACTIVE_ALIASES,
-    '-i',
-  ),),
-  noInteractiveFlags: multiple(flag(...NO_INTERACTIVE_ALIASES,),),
-  excludeValues: multiple(option(
+const cleanRegionSpec: ArgvSpec = {
+  flags: {
+    dryRunFlags: { names: [
+      ...DRY_RUN_ALIASES,
+      '-n',
+    ], },
+    noDryRunFlags: { names: [...NO_DRY_RUN_ALIASES,], },
+    interactiveFlags: { names: [
+      ...INTERACTIVE_ALIASES,
+      '-i',
+    ], },
+    noInteractiveFlags: { names: [...NO_INTERACTIVE_ALIASES,], },
+    escape: { names: [WORKTREE_ENFORCEMENT_ESCAPE_HATCH,], },
+  },
+  valueOptions: { excludeValues: { names: [
     ...EXCLUDE_ALIASES,
     '-e',
-    string(),
-  ),),
-  escape: multiple(flag(WORKTREE_ENFORCEMENT_ESCAPE_HATCH,),),
-  positionals: multiple(
-    argument(string(),),
-  ),
-  unknownOptions: passThrough({ format: 'nextToken', },),
-},);
+  ], }, },
+};
 
-//endregion Clean post-subcommand optique parser
+//endregion Clean post-subcommand region parser
 
 //region Clean region facts derived from optique parse
 
@@ -159,14 +150,14 @@ export function parseCleanRegion(
   const region = optionRegion(postSubcommandArgs,);
 
   /**
-   * Optique parse result over the cleaned option region.
+   * Parsed facts over the cleaned option region, or refusal.
    */
-  const parseResult = parseSync(
-    cleanRegionParser,
-    region,
-  );
+  const parsed = tryParseArgv({
+    args: region,
+    spec: cleanRegionSpec,
+  },);
 
-  if (!parseResult.success) {
+  if (parsed === ARGV_REFUSED) {
     return {
       dryRunCount: 0,
       noDryRunCount: 0,
@@ -180,28 +171,26 @@ export function parseCleanRegion(
   }
 
   /**
-   * Successful parse value with optique-inferred shape.
+   * Occurrence count per declared flag group.
    */
-  const { value, } = parseResult;
+  const { flagCounts, } = parsed;
   /**
    * Ordered dry-run and interactive state matching Git's last-option-wins behavior.
    */
   const orderedState = scanCleanOptionOrder(region,);
 
   return {
-    dryRunCount: value.dryRunFlags
-      .length,
-    noDryRunCount: value.noDryRunFlags
-      .length,
-    interactiveCount: value.interactiveFlags
-      .length,
-    noInteractiveCount: value.noInteractiveFlags
-      .length,
+    dryRunCount: flagCounts.dryRunFlags
+      ?? 0,
+    noDryRunCount: flagCounts.noDryRunFlags
+      ?? 0,
+    interactiveCount: flagCounts.interactiveFlags
+      ?? 0,
+    noInteractiveCount: flagCounts.noInteractiveFlags
+      ?? 0,
     dryRunActive: orderedState.dryRunActive,
     interactiveActive: orderedState.interactiveActive,
-    hasEscapeHatch: value.escape
-      .length
-      > 0,
+    hasEscapeHatch: (flagCounts.escape ?? 0) > 0,
     parseFailed: false,
   };
 }

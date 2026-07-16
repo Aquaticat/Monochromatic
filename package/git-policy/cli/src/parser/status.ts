@@ -1,13 +1,7 @@
-import { object, } from '@optique/core/constructs';
-import { multiple, } from '@optique/core/modifiers';
-import { parseSync, } from '@optique/core/parser';
 import {
-  argument,
-  flag,
-  option,
-  passThrough,
-} from '@optique/core/primitives';
-import { string, } from '@optique/core/valueparser';
+  type ArgvSpec,
+  parseArgv,
+} from './argv.ts';
 
 //region Status pre-subcommand and post-subcommand parsers
 
@@ -24,36 +18,29 @@ const ADVICE_KEY = 'advice.statushints';
 const ADVICE_KEY_PREFIX = `${ADVICE_KEY}=`;
 
 /**
- * Pre-subcommand option parser scoped to the facts the status-hints rule needs.
+ * Pre-subcommand declared surface scoped to the facts the status-hints rule needs.
  */
-const statusPreParser = object({
-  configValues: multiple(option(
-    '-c',
-    string(),
-  ),),
-  positionals: multiple(
-    argument(string(),),
-  ),
-  unknownOptions: passThrough({ format: 'nextToken', },),
-},);
+const statusPreSpec: ArgvSpec = {
+  flags: {},
+  valueOptions: { configValues: { names: ['-c',], }, },
+};
 
 /**
- * Post-subcommand option parser for `git status` machine-readable detection.
+ * Post-subcommand declared surface for `git status` machine-readable detection.
  */
-const statusPostParser = object({
-  porcelainFlags: multiple(flag(
-    '--porcelain',
-    '-z',
-  ),),
-  shortFlags: multiple(flag(
-    '-s',
-    '--short',
-  ),),
-  positionals: multiple(
-    argument(string(),),
-  ),
-  unknownOptions: passThrough({ format: 'nextToken', },),
-},);
+const statusPostSpec: ArgvSpec = {
+  flags: {
+    porcelainFlags: { names: [
+      '--porcelain',
+      '-z',
+    ], },
+    shortFlags: { names: [
+      '-s',
+      '--short',
+    ], },
+  },
+  valueOptions: {},
+};
 
 //endregion Status pre-subcommand and post-subcommand parsers
 
@@ -97,24 +84,20 @@ export function parseStatusPreRegion(
   preSubcommandArgs: readonly string[],
 ): StatusPreRegion {
   /**
-   * Optique parse result over the pre-subcommand region.
+   * Parsed facts over the pre-subcommand region.
    */
-  const parseResult = parseSync(
-    statusPreParser,
-    preSubcommandArgs,
-  );
-
-  if (!parseResult.success)
-    return { hasStatusHintsOverride: false, };
+  const { optionValues, } = parseArgv({
+    args: preSubcommandArgs,
+    spec: statusPreSpec,
+  },);
 
   return {
-    hasStatusHintsOverride: parseResult.value
-      .configValues
-      .some(function isAdviceKey(v,) {
+    hasStatusHintsOverride: (optionValues.configValues ?? [])
+      .some(function isAdviceKey(configValue: string,) {
       /**
        * Config token lowered for git's case-insensitive key matching.
        */
-      const lowered = v.toLowerCase();
+      const lowered = configValue.toLowerCase();
       // The bare form `-c advice.statusHints` (no `=`) is git's boolean-true
       // spelling and is just as much an explicit user choice as the valued form.
       return lowered.startsWith(ADVICE_KEY_PREFIX,)
@@ -153,26 +136,18 @@ export function parseStatusPostRegion(
     return { isMachineReadable: true, };
 
   /**
-   * Optique parse result over the post-subcommand region.
+   * Parsed facts over the post-subcommand region.
    */
-  const parseResult = parseSync(
-    statusPostParser,
-    postSubcommandArgs,
-  );
-
-  if (!parseResult.success)
-    return { isMachineReadable: false, };
+  const { flagCounts, } = parseArgv({
+    args: postSubcommandArgs,
+    spec: statusPostSpec,
+  },);
 
   /**
    * Sum of machine-readable status flag occurrences (`--porcelain`/`-z` + `-s`/`--short`).
    */
-  const machineReadableCount = parseResult.value
-    .porcelainFlags
-    .length
-    + parseResult
-    .value
-    .shortFlags
-    .length;
+  const machineReadableCount = (flagCounts.porcelainFlags ?? 0)
+    + (flagCounts.shortFlags ?? 0);
 
   return {
     isMachineReadable: machineReadableCount > 0,
