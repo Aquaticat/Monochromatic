@@ -61,12 +61,30 @@ export {
   SyntheticHttpError,
 } from './completion-shape.ts';
 export {
+  type BenchmarkEntry,
+  type CriticBenchmarkResult,
+  runCriticBenchmark,
+} from './benchmark.ts';
+export {
   CORPUS_COMMIT_SHA,
   type CorpusPin,
   CorpusReadError,
   listCorpusPeople,
   readCorpusFile,
 } from './corpus-source.ts';
+export { buildCriticMessages, } from './critic-prompt.ts';
+export {
+  CRITIC_RESPONSE_FORMAT,
+  type CriticIssueResolution,
+  type CriticIssueWire,
+  type CriticReportWire,
+  isCriticReportWire,
+  resolveCriticIssue,
+} from './critic-wire.ts';
+export {
+  deriveOmissionSeeds,
+  splitSentences,
+} from './derive-seeds.ts';
 export {
   isJsonArray,
   isJsonRecord,
@@ -102,6 +120,23 @@ export {
   stripThinkBlock,
 } from './model-content.ts';
 export { createSyntheticClient, } from './synthetic-client.ts';
+export {
+  type BenchmarkScorecard,
+  computeScorecard,
+  type CriticAttemptOutcomeKind,
+  type CriticAttemptRecord,
+  type ModelScorecardRow,
+} from './scorecard.ts';
+export {
+  applySeededErrors,
+  SEED_MATCH_TOLERANCE,
+  SeedApplicationError,
+  type SeededDocumentResult,
+  type SeededErrorApplication,
+  type SeededErrorKind,
+  type SeededErrorSpec,
+  seedHitByRegion,
+} from './seeded-error.ts';
 export {
   parseQuotaSnapshot,
   QuotaShapeError,
