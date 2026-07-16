@@ -64,7 +64,7 @@ Every token after the separator is captured without option interpretation:
 ```text
 image-tool compare
   [-p, --provider voyage|gemini]
-  [-t, --tag <TAG-COLLECTION>]
+  [-t, --tag <TAG> [<TAG> ...]]
   [--json]
   -- <1> <2> [<3> ...]
 
@@ -129,6 +129,9 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
   while one valid occurrence can produce `tags?: readonly [string, ...string[]]`.
 - Repeating `--tag` is invalid.
   Output cardinality does not imply repeated option occurrences.
+- One `--tag` occurrence consumes one or more plain argv tokens until the next option or final `--`.
+  A dash-led token ends the collection and is interpreted as an option.
+  Dash-led tag values are not supported by this syntax.
 - Result cardinality preserves syntax:
   zero-or-one uses `value?: T`,
   zero-or-many uses `values?: readonly [T, ...T[]]`,
@@ -139,8 +142,7 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
 ## Unresolved result-shape decisions
 
 No known result-shape decision remains open.
-The token encoding for multiple values in one `--tag` occurrence is unsettled.
-Other grammar and diagnostic decisions remain open.
+Grammar and diagnostic decisions remain open.
 
 ## Architecture discussion deferred
 
@@ -204,6 +206,7 @@ and output shape.
 - The owned parser exposes no Optique-compatible parser-state generic surface.
 - Consumer and parser tests cross the same public interface.
 - Unknown options are rejected before `--` and preserved after `--`.
+- Plain tokens before `--` are valid only while a declared variadic option is consuming values.
 - Every argument-bearing command uses a required separated tail;
   named positionals and optional-separator compatibility paths are forbidden.
 - Tail metavars are presentation-only metadata.
@@ -227,9 +230,10 @@ or include them in this migration's commits.
 
 ## Next action
 
-Correct the rejected assumption that `tags?: readonly [string, ...string[]]` permits repeated `--tag` occurrences.
-Compare concrete single-occurrence encodings for multiple tag values,
-including variadic tokens,
-one delimited token,
-and one structured token.
-Keep the syntax-level result identical and ask one decision question.
+Return to duplicate occurrence semantics for zero-or-one options and presence flags.
+Compare rejection,
+last-wins,
+and first-wins behavior with concrete argv,
+results,
+and diagnostics.
+Do not imply that collection-valued output permits repeating its option.
