@@ -129,7 +129,16 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   `page.en.md` (translation under repair), `page.zh_hant.md` (script conversion, out of scope).
 - The data repo is `UNLICENSED` (its `package.json`), explicitly all rights reserved:
   corpus content must never be committed to this repository.
-  Fixture strategy: fetch selected entries at a pinned commit SHA into a gitignored cache (task 6).
+- Fixture strategy (task 6, done): the user cloned the repo to `~/one-among-us/data`;
+  `corpus-source.ts` reads it via `git show` at pinned `CORPUS_COMMIT_SHA`
+  (`a41fc607ea5a70d8a7625cc67d5ed8c444f53379`, upstream `main` on 2026-07-16;
+  92 zh/en page pairs, footnoted entries include Huasheng and DarlinChit).
+  Blob reads use byte-exact `execFile` capture (nano-spawn strips the final newline);
+  git resolves through `resolveGit` from `@monochromatic-dev/git-policy-cli/ts`
+  (newly exported), because PATH exposes the policy shim
+  (`node_modules/.bin/git` rejects bulk staging even in throwaway repos).
+  Boundary-verified against the real clone: listing plus two entries parsed
+  cleanly through `parseDocument` with resolved footnote graphs.
 - Pages are MDX: upstream `scripts/mdx.ts` compiles with `@mdx-js/mdx`
   (Vue pragma, `remarkMath` only, no `remark-gfm`).
   `[^1]` renders quasi-literally on the live site;
@@ -222,8 +231,9 @@ Deterministic core plus model stages, revised after an adversarial second-model 
    `synthetic-client.ts` `createSyntheticClient` with per-model `p-limit(1)`,
    mandatory `AbortSignal`, outcome-as-data `chatJson`;
    boundary-verified against the live API twice).
-5. Seeded-error benchmark harness and scorecard (exit criterion of milestone one).
-6. Pinned-SHA corpus fixture fetching into gitignored cache.
+5. Seeded-error benchmark harness and scorecard (exit criterion of milestone one): next.
+6. Pinned-SHA corpus reads from the user's local clone: done (`corpus-source.ts`;
+   see corpus facts).
 
 ## Deliberately open
 
