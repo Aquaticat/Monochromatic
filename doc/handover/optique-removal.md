@@ -174,7 +174,11 @@ The command alias `cmp` should canonicalize to `commandPath: ['compare']` and re
   Command tokens before it select the help context and do not count as a combination.
 - Literal `--help` and `-h` tokens after the trailing-argument separator remain data under the settled separator rule.
 - Contextual help writes to stdout and settles with status 0.
-  Parser usage and validation failures write a diagnostic followed by full contextual help to stderr and settle with status 2.
+  Parser usage and validation failures write every independently recoverable diagnostic followed by full contextual help to stderr and settle with status 2.
+  Grammar issues are ordered by argv token index,
+  tail issues follow option-region issues,
+  and independent Valibot issues preserve schema order.
+  Recovery proceeds only from known token boundaries and never reinterprets input to manufacture cascades.
   Failure help uses the deepest canonically resolved command route,
   even when argv used aliases.
   Neither path invokes the application handler.
@@ -272,6 +276,10 @@ and output shape.
   parser failures use stderr and status 2.
   Every parser failure appends full contextual help after the diagnostic rather than printing a separate help-command hint.
   Application status 1 remains distinguishable from invalid invocation.
+- Parser failures aggregate all independently provable issues.
+  Diagnostics have deterministic argv order,
+  full help renders once,
+  and recovery-safe scanning must not create secondary interpretations.
 - `--help` and `-h` are valid at every route only when no other control-position syntax accompanies them.
   After `--`, the same tokens are ordinary trailing data.
 
@@ -292,8 +300,7 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide whether parser failures report only the first issue or aggregate independent issues before full contextual help.
-Demonstrate missing option values,
-duplicate options,
-unknown options,
-and multiple Valibot issues without inventing cascaded diagnostics.
+Decide whether syntax-level Valibot schemas may transform argv strings or only validate and narrow them without changing representation.
+Compare numeric conversion in the parser,
+raw validated strings with consumer conversion,
+and deferring all value validation to the consumer.
