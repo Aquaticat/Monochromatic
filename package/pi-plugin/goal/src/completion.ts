@@ -294,6 +294,15 @@ async function executeGoalCompletion(
       };
     }
     catch (error) {
+      if (signal?.aborted === true) {
+        return {
+          available: false as const,
+          result: completionResult({
+            text: 'Completion review was cancelled. The active goal remains unchanged.',
+            details: { outcome: 'rejected', },
+          },),
+        };
+      }
       return {
         available: false as const,
         result: await handleReviewerUnavailable({

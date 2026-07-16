@@ -13,7 +13,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { Type, } from 'typebox';
 
 import {
-  defaultUnavailableHandler,
   executeGoalCompletion,
   type GoalCompletionParams,
   type GoalReviewerUnavailableHandler,
@@ -26,6 +25,7 @@ import {
   type GoalLifecycleHandle,
 } from './lifecycle.ts';
 import { reviewGoalCompletion, } from './review-runner.ts';
+import { createGoalReviewerUnavailableHandler, } from './review-unavailable.ts';
 
 /**
  * Finalized message event shape omitted from Pi root type exports.
@@ -71,7 +71,7 @@ function registerGoalCompletion(
     pi,
     lifecycle,
     reviewer = reviewGoalCompletion,
-    handleReviewerUnavailable = defaultUnavailableHandler,
+    handleReviewerUnavailable,
     now = defaultNow,
   }: GoalCompletionRegistration,
 ): void {
@@ -79,6 +79,14 @@ function registerGoalCompletion(
    * Final-tool status keyed by finalized assistant tool-call identity.
    */
   const finality = new Map<string, boolean>();
+  /**
+   * Explicit caller override or production mode-specific exhaustion handler.
+   */
+  const unavailableHandler = handleReviewerUnavailable
+    ?? createGoalReviewerUnavailableHandler({
+      lifecycle,
+      now,
+    },);
   pi.on(
     'message_end',
     function captureCompletionFinality(event: ForeignBorrowed<GoalMessageEndEvent>,) {
@@ -129,7 +137,7 @@ function registerGoalCompletion(
         finality,
         lifecycle,
         reviewer,
-        handleReviewerUnavailable,
+        handleReviewerUnavailable: unavailableHandler,
         now,
       },);
     },

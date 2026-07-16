@@ -10,6 +10,11 @@
 const GOAL_STATE_ENTRY_TYPE = 'goal:state';
 
 /**
+ * Terminal diagnostic custom entry type for reviewer exhaustion.
+ */
+const GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE = 'goal:review-unavailable';
+
+/**
  * Custom message type for visible kickoff and continuation context.
  */
 const GOAL_MESSAGE_TYPE = 'goal';
@@ -68,6 +73,7 @@ export {
   ESTIMATED_CHARACTERS_PER_TOKEN,
   GOAL_COMPLETE_TOOL_NAME,
   GOAL_MESSAGE_TYPE,
+  GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE,
   GOAL_STATE_ENTRY_TYPE,
   GOAL_STATUS_KEY,
   GOAL_USAGE,

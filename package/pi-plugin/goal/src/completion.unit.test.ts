@@ -34,6 +34,7 @@ import {
   registerGoalCompletion,
   resolveGoalReviewerPool,
   ReviewerContextTooLargeError,
+  runGoalReviewerPool,
   summaryContradictsCompletion,
   truncateTranscript,
   type ActiveGoalState,
@@ -136,6 +137,23 @@ function reviewerModel(
     },
     contextWindow: 128_000,
     maxTokens: 16_384,
+  };
+}
+
+/**
+ * Build authenticated reviewer candidate fixture.
+ *
+ * @param model - reviewer model
+ *
+ * @returns candidate with deterministic prompt and auth
+ */
+function reviewerCandidate(model: Model<Api>,): GoalReviewerCandidate {
+  return {
+    model,
+    auth: { apiKey: 'key', },
+    systemPrompt: 'Review independently.',
+    userContent: 'Evidence.',
+    transcriptTruncated: false,
   };
 }
 
@@ -541,6 +559,77 @@ await describe({
 },);
 
 await describe({
+  name: runGoalReviewerPool.name,
+  children: [
+    it({
+      name: 'uses valid denial without fallback and starts distinct concurrent fallbacks after initial failure',
+      fn: async () => {
+        /** Expected-cost reviewer order. */
+        const candidates = [
+          reviewerCandidate(reviewerModel({
+            provider: 'review',
+            id: 'first',
+            inputCost: 3,
+            outputCost: 3,
+          },),),
+          reviewerCandidate(reviewerModel({
+            provider: 'review',
+            id: 'fallback-deny',
+            inputCost: 2,
+            outputCost: 2,
+          },),),
+          reviewerCandidate(reviewerModel({
+            provider: 'other',
+            id: 'fallback-fail',
+            inputCost: 1,
+            outputCost: 1,
+          },),),
+        ];
+        /** Initial valid denial transport starts only first candidate. */
+        const directStarts: string[] = [];
+        const direct = await runGoalReviewerPool({
+          pool: { candidates, diagnostics: [], },
+          async attempt({ candidate, },) {
+            directStarts.push(candidate.model.id,);
+            return { approved: false, feedback: 'More evidence required.', };
+          },
+        },);
+        expect(direct.verdict.approved,).toBe(false,);
+        expect(directStarts,).toEqual(['first',],);
+        /** Failed initial then two selected fallback transports. */
+        const fallbackStarts: string[] = [];
+        const fallback = await runGoalReviewerPool({
+          pool: { candidates, diagnostics: [], },
+          async attempt({ candidate, },) {
+            fallbackStarts.push(candidate.model.id,);
+            if (candidate.model.id === 'first')
+              throw new Error('initial transport failed',);
+            if (candidate.model.id === 'fallback-deny')
+              return { approved: false, feedback: 'Integration evidence missing.', };
+            throw new Error('fallback transport failed',);
+          },
+        },);
+        expect(fallback.verdict,).toEqual({
+          approved: false,
+          feedback: 'Integration evidence missing.',
+        },);
+        expect(fallback.reviewerIdentity,).toBe('review/fallback-deny',);
+        expect(fallbackStarts,).toEqual([
+          'first',
+          'fallback-deny',
+          'fallback-fail',
+        ],);
+        expect(fallback.attemptedReviewerIdentities,).toEqual([
+          'review/first',
+          'review/fallback-deny',
+          'other/fallback-fail',
+        ],);
+      },
+    },),
+  ],
+},);
+
+await describe({
   name: registerGoalCompletion.name,
   children: [
     it({
@@ -782,6 +871,60 @@ await describe({
           approvalSource: 'model',
           reviewerIdentity: 'review/model',
         },);
+      },
+    },),
+    it({
+      name: 'keeps goal unchanged when user cancellation aborts reviewer',
+      fn: async () => {
+        /** Active controller unchanged by cancellation. */
+        const state = { value: completionController(), };
+        /** Exhaustion fallback invocation count. */
+        const fallbacks = { value: 0, };
+        /** Fake lifecycle boundary. */
+        const lifecycle: GoalLifecycleHandle = {
+          currentController() {
+            return state.value;
+          },
+          applyTransition({ transition, },) {
+            state.value = transition.controller;
+          },
+        };
+        /** Focused current branch context. */
+        const context = {
+          sessionManager: {
+            getLeafId() {
+              return 'leaf-current';
+            },
+          },
+        } as unknown as ExtensionContext;
+        /** Already-aborted user cancellation signal. */
+        const controller = new AbortController();
+        controller.abort();
+        /** Cancelled completion result. */
+        const result = await executeGoalCompletion({
+          toolCallId: 'completion-call',
+          params: {
+            goal_id: 'generation-1',
+            summary: 'Implemented and verified.',
+          },
+          signal: controller.signal,
+          context,
+          finality: new Map([['completion-call', true,],]),
+          lifecycle,
+          async reviewer() {
+            throw new Error('aborted reviewer',);
+          },
+          async handleReviewerUnavailable() {
+            fallbacks.value += 1;
+            throw new Error('unexpected unavailable fallback',);
+          },
+          now() {
+            return COMPLETED_AT;
+          },
+        },);
+        expect(result.details.outcome,).toBe('rejected',);
+        expect(fallbacks.value,).toBe(0,);
+        expect(state.value.goal.phase,).toBe('active',);
       },
     },),
     it({

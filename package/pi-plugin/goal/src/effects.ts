@@ -15,6 +15,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE,
   GOAL_STATE_ENTRY_TYPE,
   GOAL_STATUS_KEY,
 } from './constants.ts';
@@ -82,6 +83,13 @@ function applyGoalEffects(
       pi.sendMessage(
         effect.message,
         { triggerTurn: effect.triggerTurn, },
+      );
+      continue;
+    }
+    if (effect.type === 'persist_review_unavailable_diagnostic') {
+      pi.appendEntry(
+        GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE,
+        effect.diagnostic,
       );
       continue;
     }

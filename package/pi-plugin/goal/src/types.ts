@@ -276,6 +276,17 @@ type PendingGoalKickoff = {
 };
 
 /**
+ * Renderable terminal reviewer-exhaustion diagnostic.
+ */
+type GoalReviewUnavailableDiagnostic = {
+  readonly runId: GoalRunId;
+  readonly generationId: GoalGenerationId;
+  readonly attemptedReviewerIdentities: readonly string[];
+  readonly diagnostic: string;
+  readonly terminalAt: string;
+};
+
+/**
  * Immutable controller state held by Pi adapter.
  */
 type GoalControllerState = {
@@ -304,6 +315,10 @@ type GoalEffect =
     readonly type: 'send_message';
     readonly message: GoalMessage;
     readonly triggerTurn: true
+  }
+  | {
+    readonly type: 'persist_review_unavailable_diagnostic';
+    readonly diagnostic: GoalReviewUnavailableDiagnostic
   }
   | {
     readonly type: 'notify';
@@ -342,6 +357,7 @@ export type {
   GoalMessageMarker,
   GoalModelCompletedEvent,
   GoalReviewDeniedEvent,
+  GoalReviewUnavailableDiagnostic,
   GoalReviewUnavailableEvent,
   GoalRunClearedEvent,
   GoalRunId,
