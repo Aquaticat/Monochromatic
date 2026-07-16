@@ -16,12 +16,18 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-llm-type": "workspace:*",
-    "@monochromatic-dev/module-logger": "workspace:*"
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "remark-gfm": "catalog:",
+    "remark-mdx": "catalog:",
+    "remark-parse": "catalog:",
+    "unified": "catalog:",
+    "yaml": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
+    "@types/mdast": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
