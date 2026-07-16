@@ -155,7 +155,7 @@ hoistWorkspacePackages: false
 lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
-  - '@earendil-works/pi-*'
+- '@earendil-works/pi-*'
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 nodeLinker: isolated
@@ -338,7 +338,7 @@ packageExtensions:
       '@mitata/counters': 'catalog:'
 packageImportMethod: clone-or-copy
 packages:
-  - 'package/*/*'
+- 'package/*/*'
 peerDependencyRules: {}
 pmOnFail: ignore
 preferWorkspacePackages: true
@@ -362,15 +362,15 @@ strictPeerDependencies: true
 # See doc/decision/pnpm-supported-architectures.md for full rationale.
 supportedArchitectures:
   cpu:
-    - x64
-    - arm64
-    - current
+  - x64
+  - arm64
+  - current
   libc:
-    - glibc
-    - musl
-    - current
+  - glibc
+  - musl
+  - current
   os:
-    - darwin
-    - linux
-    - current
+  - darwin
+  - linux
+  - current
 trustPolicy: no-downgrade

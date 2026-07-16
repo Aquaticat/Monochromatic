@@ -2,9 +2,8 @@
 export default {
   extends: '@monochromatic-dev/config-stylelint',
   ignoreFiles: [
-    'packages/test-fixture/**',
-    'packages/audit/**',
-    'packages-paused/**',
-    'packages-deprecated/**',
+    'package/test-fixture/**',
+    'package-paused/**',
+    'package-deprecated/**',
   ],
 };
