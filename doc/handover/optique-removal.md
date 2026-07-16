@@ -132,6 +132,12 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
 - One `--tag` occurrence consumes one or more plain argv tokens until the next option or final `--`.
   A dash-led token ends the collection and is interpreted as an option.
   Dash-led tag values are not supported by this syntax.
+- Every declared option may occur at most once,
+  regardless of whether repeated occurrences use the same spelling or different aliases.
+  Duplicate scalar,
+  presence,
+  and collection-valued options are usage errors;
+  no occurrence silently overrides or merges another.
 - Result cardinality preserves syntax:
   zero-or-one uses `value?: T`,
   zero-or-many uses `values?: readonly [T, ...T[]]`,
@@ -207,6 +213,8 @@ and output shape.
 - Consumer and parser tests cross the same public interface.
 - Unknown options are rejected before `--` and preserved after `--`.
 - Plain tokens before `--` are valid only while a declared variadic option is consuming values.
+- Option occurrence identity is canonical across aliases,
+  so `-p` followed by `--provider` is a duplicate.
 - Every argument-bearing command uses a required separated tail;
   named positionals and optional-separator compatibility paths are forbidden.
 - Tail metavars are presentation-only metadata.
@@ -230,10 +238,10 @@ or include them in this migration's commits.
 
 ## Next action
 
-Return to duplicate occurrence semantics for zero-or-one options and presence flags.
-Compare rejection,
-last-wins,
-and first-wins behavior with concrete argv,
+Decide valued-option token forms.
+Compare separated-only values,
+joined long-option values,
+and attached short-option values with concrete grammar,
 results,
 and diagnostics.
-Do not imply that collection-valued output permits repeating its option.
+Keep short-flag clustering as a separate later decision unless a compared form requires it.
