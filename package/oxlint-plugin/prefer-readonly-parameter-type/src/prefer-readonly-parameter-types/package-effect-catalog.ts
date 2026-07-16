@@ -207,6 +207,17 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       packageName: 'typescript',
       major: 7,
     },
+    ownerType: 'Type',
+    member: 'getTarget',
+    targets: [],
+    evidence: 'typescript 7.0.2 dist/api/sync/api.js TypeObject.getTarget reads target through ObjectRegistry.fetchType; only library-internal identity cache changes',
+  },
+  {
+    provenance: {
+      kind: 'package',
+      packageName: 'typescript',
+      major: 7,
+    },
     ownerType: 'UnionOrIntersectionType',
     member: 'getTypes',
     targets: [],
