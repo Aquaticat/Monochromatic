@@ -30,6 +30,23 @@ export {
   type SplitMdxDocument,
 } from './front-matter.ts';
 export {
+  computeIssueClaimId,
+  type DocumentSide,
+  type IssueClaim,
+  type SpanAnchor,
+} from './issue-model.ts';
+export {
+  categoryFamily,
+  ISSUE_CATEGORIES,
+  ISSUE_CATEGORY_FAMILIES,
+  ISSUE_SEVERITIES,
+  type IssueCategory,
+  type IssueCategoryFamily,
+  isIssueCategory,
+  isIssueSeverity,
+  type IssueSeverity,
+} from './issue-taxonomy.ts';
+export {
   MdxParseError,
   parseMdxBody,
 } from './parse-mdx.ts';
@@ -37,5 +54,11 @@ export {
   parseDocument,
   type RepairDocument,
 } from './parse-document.ts';
+export {
+  type AnchorRejection,
+  type AnchorRejectionKind,
+  type AnchorTarget,
+  validateIssueClaim,
+} from './validate-issue.ts';
 
 //endregion Public barrel
