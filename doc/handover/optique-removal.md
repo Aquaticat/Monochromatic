@@ -138,6 +138,9 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
   presence,
   and collection-valued options are usage errors;
   no occurrence silently overrides or merges another.
+- Valued options accept only separate value tokens.
+  Joined long values such as `--provider=voyage` and attached short values such as `-pvoyage` are unknown options.
+  Scalar and variadic options use the same separation rule.
 - Result cardinality preserves syntax:
   zero-or-one uses `value?: T`,
   zero-or-many uses `values?: readonly [T, ...T[]]`,
@@ -215,6 +218,8 @@ and output shape.
 - Plain tokens before `--` are valid only while a declared variadic option is consuming values.
 - Option occurrence identity is canonical across aliases,
   so `-p` followed by `--provider` is a duplicate.
+- Option tokens contain spellings only;
+  values always occupy following argv tokens.
 - Every argument-bearing command uses a required separated tail;
   named positionals and optional-separator compatibility paths are forbidden.
 - Tail metavars are presentation-only metadata.
@@ -238,10 +243,9 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide valued-option token forms.
-Compare separated-only values,
-joined long-option values,
-and attached short-option values with concrete grammar,
+Decide whether short aliases must be exact argv tokens or may form clusters.
+Compare no clustering,
+presence-flag-only clusters,
+and clusters ending in a valued option with concrete argv,
 results,
 and diagnostics.
-Keep short-flag clustering as a separate later decision unless a compared form requires it.
