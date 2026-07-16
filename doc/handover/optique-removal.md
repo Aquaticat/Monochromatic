@@ -86,13 +86,13 @@ The proposed successful result is:
 The proposed static shape is:
 
 ```ts
-type CompareArgs = {
-  readonly command: 'compare';
-  readonly trailingArguments: readonly [string, string, ...string[]];
-  readonly provider?: 'voyage' | 'gemini';
-  readonly json?: true;
-  readonly tags: readonly string[];
-};
+type CompareArgs = Readonly<{
+  command: 'compare';
+  trailingArguments: readonly [string, string, ...string[]];
+  provider?: 'voyage' | 'gemini';
+  json?: true;
+  tags?: readonly [string, ...string[]];
+}>;
 ```
 
 Valibot `1.4.2` can represent the non-empty tuple tail directly:
@@ -117,6 +117,14 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
   The parser does not choose a provider or implement the command's business policy.
 - `trailingArguments` preserves a schema-constrained tail after `--`.
 - Presence flags use absent-or-`true` rather than always-present booleans.
+- Zero-or-many options use an optional non-empty tuple.
+  For example,
+  absent `--tag` omits `tags`,
+  while one or more occurrences produce `tags?: readonly [string, ...string[]]`.
+- Result cardinality preserves syntax:
+  zero-or-one uses `value?: T`,
+  zero-or-many uses `values?: readonly [T, ...T[]]`,
+  and one-or-many uses `values: readonly [T, ...T[]]`.
 
 ## Unresolved result-shape decisions
 
@@ -125,9 +133,6 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
 - Decide whether every separated tail has a schema-defined minimum length,
   with the example requiring two,
   rather than a parser-wide minimum.
-- Decide whether repeated options always produce arrays,
-  including `tags: []` when absent,
-  or use an optional non-empty tuple such as `tags?: readonly [string, ...string[]]`.
 - Decide how help names tail positions when the result intentionally has only `trailingArguments`.
 
 ## Architecture discussion deferred
@@ -177,6 +182,16 @@ and output shape.
 - Valibot owns runtime validation and output typing.
 - The parser reports supplied values and structural absence.
   It does not choose domain defaults or perform business logic.
+- Canonical business-shape conversion uses a consumer-owned Valibot schema to parse the syntax result again:
+
+  ```ts
+  const options = v.parse(commandOptionsSchema, parsed.value,);
+  ```
+
+  Defaults,
+  semantic renaming,
+  cross-field policy,
+  and domain transformations belong in that second parse.
 - The owned parser exposes no Optique-compatible parser-state generic surface.
 - Consumer and parser tests cross the same public interface.
 - Unknown options are rejected before `--` and preserved after `--`.
@@ -198,7 +213,7 @@ or include them in this migration's commits.
 
 ## Next action
 
-Compare repeated-option result shapes:
-`tags: readonly string[]` with an empty-array absence sentinel versus
-`tags?: readonly [string, ...string[]]` with property absence.
-Recommend one shape and ask the user to settle it before resuming other grammar decisions.
+Decide the scope of the mandatory `--` separator:
+whether every command with arguments uses a separated `trailingArguments` tail,
+or whether named positionals remain a separate grammar feature.
+Demonstrate both result contracts and ask one decision question.
