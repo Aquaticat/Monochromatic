@@ -152,8 +152,8 @@ The command alias `cmp` should canonicalize to `commandPath: ['compare']` and re
   and one-or-many uses `values: readonly [T, ...T[]]`.
 - Generated help uses display-only metavars for tail positions and rest values.
   Metavars improve usage and missing-value diagnostics but never become result keys.
-- A commandless CLI is a root leaf and has no `command` property.
-  The parser never invents a program-name discriminant absent from argv.
+- A commandless CLI is a root leaf and has no `commandPath` property.
+  The parser never invents a program-name path absent from argv.
 - Subcommands may nest to arbitrary declared depth,
   as in `cat calico meow --loud`.
 - Intermediate command nodes are routing-only.
@@ -173,6 +173,10 @@ The command alias `cmp` should canonicalize to `commandPath: ['compare']` and re
   or a trailing-argument separator is a usage error.
   Command tokens before it select the help context and do not count as a combination.
 - Literal `--help` and `-h` tokens after the trailing-argument separator remain data under the settled separator rule.
+- Contextual help writes to stdout and settles with status 0.
+  Parser usage and validation failures write to stderr and settle with status 2.
+  Neither path invokes the application handler.
+  Application failures retain their own status and output policy.
 
 ## Unresolved result-shape decisions
 
@@ -260,8 +264,11 @@ and output shape.
 - Nested subcommand grammar is required and cannot have a fixed depth limit.
 - Command results are flat:
   `commandPath` preserves routing syntax while leaf options and trailing arguments stay at the result root.
-- Help is handled before application dispatch.
-  The application receives neither a help flag nor a help outcome as business input.
+- Help and parser failures are handled before application dispatch.
+  The application receives neither controls nor parser-failure outcomes as business input.
+- Parser controls use stdout and status 0;
+  parser failures use stderr and status 2.
+  Application status 1 remains distinguishable from invalid invocation.
 - `--help` and `-h` are valid at every route only when no other control-position syntax accompanies them.
   After `--`, the same tokens are ordinary trailing data.
 
@@ -282,6 +289,8 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide process-level parser output and status conventions.
-Compare help on stdout with status 0 and usage failures on stderr with status 2 against alternative channels and codes.
-Demonstrate that the application handler is not called for either control outcome.
+Decide how much contextual help accompanies a parser failure.
+Compare a diagnostic plus a command-specific help hint,
+a diagnostic plus full contextual help,
+and a diagnostic alone.
+Preserve stderr-only status 2 behavior.
