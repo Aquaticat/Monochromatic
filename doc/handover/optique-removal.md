@@ -131,10 +131,13 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
   zero-or-one uses `value?: T`,
   zero-or-many uses `values?: readonly [T, ...T[]]`,
   and one-or-many uses `values: readonly [T, ...T[]]`.
+- Generated help uses display-only metavars for tail positions and rest values.
+  Metavars improve usage and missing-value diagnostics but never become result keys.
 
 ## Unresolved result-shape decisions
 
-- Decide how help names tail positions when the result intentionally has only `trailingArguments`.
+No known result-shape decision remains open.
+Grammar and diagnostic decisions remain open.
 
 ## Architecture discussion deferred
 
@@ -200,6 +203,8 @@ and output shape.
 - Unknown options are rejected before `--` and preserved after `--`.
 - Every argument-bearing command uses a required separated tail;
   named positionals and optional-separator compatibility paths are forbidden.
+- Tail metavars are presentation-only metadata.
+  Parser output remains `trailingArguments` regardless of displayed role names.
 - Hidden aliases parse to canonical command discriminants and do not render in help.
 
 ## Communication-rule commits
@@ -218,7 +223,9 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide how generated help describes a schema-constrained tail without introducing named positional output.
-Compare ordinal placeholders,
-schema-supplied display metavars,
-and an undifferentiated tail label with concrete help and result sketches.
+Decide how zero-or-one options and presence flags handle duplicate occurrences.
+Compare rejection,
+last-wins,
+and first-wins semantics with concrete argv,
+results,
+and diagnostics.
