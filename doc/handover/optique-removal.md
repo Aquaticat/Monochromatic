@@ -156,11 +156,14 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
   The parser never invents a program-name discriminant absent from argv.
 - Subcommands may nest to arbitrary declared depth,
   as in `cat calico meow --loud`.
+- Intermediate command nodes are routing-only.
+  Only the innermost leaf command may declare options or a trailing-argument tail.
 
 ## Unresolved result-shape decisions
 
-No known result-shape decision remains open.
-Grammar and diagnostic decisions remain open.
+- Decide how a nested routing path and its leaf result appear in the syntax result.
+
+Other grammar and diagnostic decisions remain open.
 
 ## Architecture discussion deferred
 
@@ -236,6 +239,8 @@ and output shape.
 - Tail metavars are presentation-only metadata.
   Parser output remains `trailingArguments` regardless of displayed role names.
 - Hidden aliases parse to canonical command discriminants and do not render in help.
+- Intermediate subcommands own no options or arguments;
+  only the innermost command is a leaf parser.
 - Root leaves omit `command`;
   command discriminants exist only for command tokens supplied in argv.
 - Nested subcommand grammar is required and cannot have a fixed depth limit.
@@ -257,10 +262,10 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide how nested subcommand scopes appear in the syntax result.
-Compare recursive nested results,
-a flattened command-path tuple,
-and fixed command/subcommand fields.
-Demonstrate command-local options,
-canonical aliases,
-and arbitrary depth.
+Re-evaluate nested-command result shapes without assigning options to intermediate commands.
+Compare recursive routing wrappers,
+a canonical command-path tuple with leaf options,
+and an innermost-command-only result.
+Demonstrate aliases,
+reused leaf names,
+and single-level compatibility.
