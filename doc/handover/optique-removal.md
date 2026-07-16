@@ -236,6 +236,14 @@ Candidate owned responsibilities are:
 Valibot remains the value and relationship validation engine behind this grammar seam.
 It is not the whole parser.
 
+The user accepted this value proposition and module seam.
+`compileCli(definition)` is the deep core:
+it validates and compiles grammar,
+precomputes routing and help,
+and returns pure parsing and rendering behavior.
+A process adapter such as `runCli` owns argv and stream integration plus application dispatch gating.
+The application callback receives only successful syntax results.
+
 ## Existing consumer constraints
 
 Current consumers exercise:
@@ -279,6 +287,10 @@ and output shape.
   diagnostic projection,
   and application dispatch gating.
   Merely forwarding a value to `v.parse` is explicitly insufficient.
+- `compileCli` is the core seam.
+  It compiles definitions once and returns pure grammar behavior.
+  `runCli` is a process adapter,
+  not the parser core.
 - Syntax-level Valibot schemas may transform values and change their runtime representation.
   For example,
   `cpus: '4'` may become `cpus: 4` while retaining the same field in the syntax result.
@@ -358,9 +370,14 @@ or include them in this migration's commits.
 
 ## Next action
 
-Answer the module-value challenge concretely.
-Demonstrate a compiled grammar interface and identify behavior that Valibot alone does not supply.
-Ask whether grammar compilation,
-help,
-diagnostics,
-and dispatch gating are the intended deep-module seam before choosing descriptor versus metadata representation.
+Choose the representation accepted by `compileCli`.
+Compare descriptor-first grammar with embedded Valibot schemas,
+a whole-result Valibot schema plus separate token bindings,
+and CLI metadata attached to Valibot schemas.
+Demonstrate the settled nested routing,
+leaf-only options,
+variadic values,
+required tail,
+help metadata,
+transforms,
+and output typing in every design.
