@@ -1,0 +1,178 @@
+/**
+ * Tests for document parsing over both corpus shapes:
+ * memorial-shaped MDX with GFM footnotes and JSX,
+ * and archive-shaped text with full-width bracket markers.
+ *
+ * @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import { hashContent, } from './document-node.ts';
+import { parseDocument, } from './parse-document.ts';
+
+/**
+ * Memorial-shaped fixture mirroring corpus structure with cat-themed invention:
+ * front matter, section heading, paragraph with GFM footnote reference,
+ * inline-code marker look-alike, self-closing JSX element,
+ * blockquote, and link-wrapped footnote definition mirroring corpus style.
+ */
+const MEMORIAL_FIXTURE = `---
+name: whiskers
+---
+
+## 简介
+
+这只猫很喜欢晒太阳[^1]，行内代码 \`[^2]\` 不算引用。
+
+<MailTo template="info" />
+
+> 「猫说：喵。」
+
+[^1]:[关于猫晒太阳习性的背景说明。](https://example.org/archived)
+`;
+
+/**
+ * Archive-shaped fixture with cat-themed invention:
+ * heading with marker reference, body reference, indented definitions,
+ * one resolving pair, one unresolved reference, one orphan, one duplicated pair.
+ */
+const ARCHIVE_FIXTURE = `## 猫须考〔1〕
+
+　　猫的胡须很长〔3〕，猫的尾巴更长〔5〕。
+
+　　〔3〕　「胡须很长」　语见《猫经》第一回。
+
+　　〔5〕　「尾巴更长」　语见《尾巴谱》。
+
+　　〔5〕　重复的定义条目。
+
+　　〔9〕　从未被引用的孤儿定义。
+`;
+
+await describe({
+  name: 'parseDocument (memorial shape)',
+  children: [
+    it({
+      name: 'classifies node kinds and zones from MDX structure',
+      fn: async () => {
+        /** Parsed memorial-shaped fixture. */
+        const doc = parseDocument({ text: MEMORIAL_FIXTURE, },);
+        expect(doc.nodes.map(function toKind(node,): string {
+          return node.kind;
+        },),).toEqual(
+          ['heading', 'paragraph', 'mdxJsxFlowElement', 'blockquote', 'footnoteDefinition',],
+        );
+        expect(doc.nodes.map(function toZone(node,): string {
+          return node.zone;
+        },),).toEqual(
+          ['body', 'body', 'body', 'body', 'footnote-definition',],
+        );
+      },
+    },),
+
+    it({
+      name: 'anchors every node so text equals offset-sliced source',
+      fn: async () => {
+        /** Parsed memorial-shaped fixture. */
+        const doc = parseDocument({ text: MEMORIAL_FIXTURE, },);
+        for (const node of doc.nodes) {
+          expect(node.text,).toBe(doc.text.slice(node.startOffset, node.endOffset,),);
+          expect(node.contentHash,).toBe(hashContent({ content: node.text, },),);
+        }
+      },
+    },),
+
+    it({
+      name: 'parses deterministically: same source, same hashes and ids',
+      fn: async () => {
+        /** First parse of fixture. */
+        const first = parseDocument({ text: MEMORIAL_FIXTURE, },);
+        /** Second parse of identical fixture. */
+        const second = parseDocument({ text: MEMORIAL_FIXTURE, },);
+        expect(first.documentHash,).toBe(second.documentHash,);
+        expect(first.nodes,).toStrictEqual(second.nodes,);
+      },
+    },),
+
+    it({
+      name: 'resolves GFM footnote graph and ignores marker look-alikes in inline code',
+      fn: async () => {
+        /** Parsed memorial-shaped fixture. */
+        const doc = parseDocument({ text: MEMORIAL_FIXTURE, },);
+        expect(doc.footnoteGraph.references,).toHaveLength(1,);
+        expect(doc.footnoteGraph.references[0]?.identifier,).toBe('1',);
+        expect(doc.footnoteGraph.references[0]?.convention,).toBe('gfm',);
+        expect(doc.footnoteGraph.definitions,).toHaveLength(1,);
+        expect(doc.footnoteGraph.findings,).toHaveLength(0,);
+      },
+    },),
+
+    it({
+      name: 'reports unresolved GFM references as findings',
+      fn: async () => {
+        /** Parsed source referencing an undefined footnote. */
+        const doc = parseDocument({ text: '正文引用[^7]没有定义。\n', },);
+        expect(doc.footnoteGraph.findings,).toEqual([
+          {
+            kind: 'unresolved-reference',
+            convention: 'gfm',
+            identifier: '7',
+            nodeId: 'block/0',
+          },
+        ],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'parseDocument (archive shape)',
+  children: [
+    it({
+      name: 'classifies block-opening markers as definitions and mid-text markers as references',
+      fn: async () => {
+        /** Parsed archive-shaped fixture. */
+        const doc = parseDocument({ text: ARCHIVE_FIXTURE, },);
+        expect(doc.footnoteGraph.references.map(function toId(reference,): string {
+          return reference.identifier;
+        },),).toEqual(['1', '3', '5',],);
+        expect(doc.footnoteGraph.definitions.map(function toId(definition,): string {
+          return definition.identifier;
+        },),).toEqual(['3', '5', '5', '9',],);
+      },
+    },),
+
+    it({
+      name: 'reports unresolved, orphan, and duplicate findings across the graph',
+      fn: async () => {
+        /** Parsed archive-shaped fixture. */
+        const doc = parseDocument({ text: ARCHIVE_FIXTURE, },);
+        /** Finding kinds keyed by identifier for order-free assertions. */
+        const kinds = doc.footnoteGraph.findings.map(function toPair(finding,): string {
+          return `${finding.kind} ${finding.identifier}`;
+        },);
+        expect(kinds,).toContain('unresolved-reference 1',);
+        expect(kinds,).toContain('orphan-definition 9',);
+        expect(kinds,).toContain('duplicate-definition 5',);
+      },
+    },),
+
+    it({
+      name: 'anchors reference offsets onto full source text',
+      fn: async () => {
+        /** Parsed archive-shaped fixture. */
+        const doc = parseDocument({ text: ARCHIVE_FIXTURE, },);
+        for (const reference of doc.footnoteGraph.references) {
+          expect(
+            doc.text.slice(reference.offset, reference.offset + 1,),
+          ).toBe('〔',);
+        }
+      },
+    },),
+  ],
+},);
