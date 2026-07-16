@@ -116,6 +116,12 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
 - `provider` is omitted when `--provider` is absent.
   The parser does not choose a provider or implement the command's business policy.
 - `trailingArguments` preserves a schema-constrained tail after `--`.
+- Commands accept arguments only through a required `--` separator.
+  Options occur before it;
+  every later token is preserved as tail data without option interpretation.
+- The shared parser has no named-positional feature.
+  Commands without arguments require no separator.
+- Each command's syntax-level Valibot schema defines its tail cardinality.
 - Presence flags use absent-or-`true` rather than always-present booleans.
 - Zero-or-many options use an optional non-empty tuple.
   For example,
@@ -128,11 +134,6 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
 
 ## Unresolved result-shape decisions
 
-- Decide whether `--` is mandatory for every command with trailing arguments or only for commands that declare a separated tail.
-- Decide whether named positionals remain supported for consumers whose positional values have distinct domain roles.
-- Decide whether every separated tail has a schema-defined minimum length,
-  with the example requiring two,
-  rather than a parser-wide minimum.
 - Decide how help names tail positions when the result intentionally has only `trailingArguments`.
 
 ## Architecture discussion deferred
@@ -161,8 +162,10 @@ Current consumers exercise:
 - command-tail forwarding through `--`;
 - mapping parser output into discriminated command unions.
 
-Not every existing behavior must survive unchanged.
-The plan must distinguish intentional interface changes from accidental parser regressions.
+Current unseparated positional syntax will not survive unchanged.
+The repository controls these contracts and rejects named positionals as a parser design.
+Do not add compatibility shims for existing positional forms.
+The plan must distinguish this intentional interface change from accidental parser regressions.
 Before migration,
 each in-scope CLI needs executable grammar fixtures for accepted input,
 rejected input,
@@ -195,6 +198,8 @@ and output shape.
 - The owned parser exposes no Optique-compatible parser-state generic surface.
 - Consumer and parser tests cross the same public interface.
 - Unknown options are rejected before `--` and preserved after `--`.
+- Every argument-bearing command uses a required separated tail;
+  named positionals and optional-separator compatibility paths are forbidden.
 - Hidden aliases parse to canonical command discriminants and do not render in help.
 
 ## Communication-rule commits
@@ -213,7 +218,7 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide the scope of the mandatory `--` separator:
-whether every command with arguments uses a separated `trailingArguments` tail,
-or whether named positionals remain a separate grammar feature.
-Demonstrate both result contracts and ask one decision question.
+Decide how generated help describes a schema-constrained tail without introducing named positional output.
+Compare ordinal placeholders,
+schema-supplied display metavars,
+and an undifferentiated tail label with concrete help and result sketches.
