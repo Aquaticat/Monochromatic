@@ -241,7 +241,13 @@ and output shape.
   `cpus: '4'` may become `cpus: 4` while retaining the same field in the syntax result.
   Invalid transformed values remain parser failures with status 2.
 - The parser reports schema outputs and structural absence.
-  It does not choose domain defaults or perform business logic.
+  Every absent option is omitted from the syntax result.
+  CLI-layer schemas may not supply defaults,
+  and the parser may not add `undefined`,
+  empty collections,
+  or false sentinels for absence.
+  Effective defaults belong to consumer-owned shape conversion or application logic.
+  The parser does not choose domain defaults or perform business logic.
 - Canonical business-shape conversion uses a consumer-owned Valibot schema to parse the syntax result again:
 
   ```ts
@@ -305,8 +311,8 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide whether syntax-level Valibot schemas may supply defaults for absent options.
-Compare omitted properties,
-schema defaults that make properties required,
-and parser-owned structural sentinels.
-Distinguish value transformation from absence policy and business defaults.
+Decide whether the parser may validate relationships across supplied options and trailing arguments with a leaf-level Valibot schema.
+Compare syntax-level cross-field checks,
+per-field-only validation,
+and representing incompatible forms as separate leaf commands.
+Keep result-shape transformation in the consumer layer.
