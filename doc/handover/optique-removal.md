@@ -143,6 +143,9 @@ The command alias `cmp` should canonicalize to `command: 'compare'` and remain a
   Scalar and variadic options use the same separation rule.
 - Short aliases must occupy exact argv tokens.
   Clusters such as `-jq` and `-jqp` are unknown options even when each character names a declared alias.
+- Long options match exact declared aliases only.
+  Unambiguous prefixes and fuzzy corrections are not accepted syntax;
+  they may appear only as non-executing diagnostic suggestions.
 - Result cardinality preserves syntax:
   zero-or-one uses `value?: T`,
   zero-or-many uses `values?: readonly [T, ...T[]]`,
@@ -220,9 +223,10 @@ and output shape.
 - Plain tokens before `--` are valid only while a declared variadic option is consuming values.
 - Option occurrence identity is canonical across aliases,
   so `-p` followed by `--provider` is a duplicate.
-- Option tokens contain one exact spelling only;
+- Option tokens contain one exact declared spelling only;
   values always occupy following argv tokens,
-  and short aliases never cluster.
+  short aliases never cluster,
+  and long aliases never abbreviate or autocorrect.
 - Every argument-bearing command uses a required separated tail;
   named positionals and optional-separator compatibility paths are forbidden.
 - Tail metavars are presentation-only metadata.
@@ -246,10 +250,8 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide whether long options match exact declared aliases only or accept unambiguous prefixes.
-Compare exact matching,
-prefix matching,
-and fuzzy correction with concrete argv,
-results,
-and diagnostics.
-Keep suggestions separate from accepted syntax.
+Decide how commandless CLIs fit the syntax result.
+Compare root leaf commands with no `command` property,
+synthetic command discriminants not present in argv,
+and mandatory explicit subcommands for every program.
+Demonstrate current simple-CLI migrations and their result shapes.
