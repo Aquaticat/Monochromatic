@@ -390,7 +390,7 @@ await describe({
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'no fallback judge model is available',
+          'no distinct fallback reviewer is available',
         );
         expect(attemptedSlugs,).toEqual(['test-provider/first',],);
       },
@@ -415,7 +415,7 @@ await describe({
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'Fallback judge resolver selected an excluded model: test-provider/first',
+          'Fallback reviewer resolver selected excluded candidate: test-provider/first',
         );
         expect((caught as Error).cause,).toBeInstanceOf(Error,);
       },
@@ -446,16 +446,13 @@ await describe({
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'Judge model test-provider/first failed all retries: test-provider/first exhausted retries',
+          'test-provider/first: test-provider/first exhausted retries',
         );
         expect((caught as Error).message,).toContain(
-          'fallback judge race models test-provider/fallback-one, test-provider/fallback-two also failed all retries',
+          'test-provider/fallback-one: test-provider/fallback-one exhausted retries',
         );
         expect((caught as Error).message,).toContain(
-          'fallback judge model test-provider/fallback-one failed all retries',
-        );
-        expect((caught as Error).message,).toContain(
-          'fallback judge model test-provider/fallback-two failed all retries',
+          'test-provider/fallback-two: test-provider/fallback-two exhausted retries',
         );
         expect((caught as Error).cause,).toBeInstanceOf(AggregateError,);
       },

@@ -3008,6 +3008,9 @@ importers:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/pi-shared-model-review':
+        specifier: workspace:*
+        version: link:../../pi-shared/model-review
       '@monochromatic-dev/pi-shared-model-selection':
         specifier: workspace:*
         version: link:../../pi-shared/model-selection

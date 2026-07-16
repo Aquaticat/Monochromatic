@@ -32,6 +32,7 @@
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@monochromatic-dev/agent-harness-shared-shell-command-analyzer": "workspace:*",
+    "@monochromatic-dev/pi-shared-model-review": "workspace:*",
     "@monochromatic-dev/pi-shared-model-selection": "workspace:*",
     "nano-spawn": "catalog:",
     "valibot": "catalog:"

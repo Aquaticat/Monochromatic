@@ -9,7 +9,7 @@ Three-stage pipeline:
 
 ```text
 tool_call -> flagger (signals.ts, wide-net boolean predicates)
-          -> judge (judge.ts, LLM call via tool-calling with forced tool_choice)
+          -> judge (judge.ts adapter over @monochromatic-dev/pi-shared-model-review)
           -> approve (silent)
           -> deny (block + reason + guidance)
           -> ask (user decides; user-denied blocks include reason)
@@ -75,16 +75,31 @@ For bash tool results,
  the context line includes the execution outcome and the
 full final non-empty line of bash output.
 
+### Shared review infrastructure
+
+Auto-mode owns its action prompt,
+trust directives,
+batch context,
+`approve`/`deny`/`ask` interpretation,
+and tool-call policy.
+`@monochromatic-dev/pi-shared-model-review` owns provider dispatch,
+forced structured-tool transport,
+direct-JSON retries,
+balanced JSON extraction,
+timeout propagation,
+and the distinct fallback race.
+This keeps transport behavior shared with other Pi plugins without coupling their user-facing policy to auto-mode.
+
 ### Verdict extraction
 
 Primary path:
- the judge is invoked with forced `tool_choice` (`render_verdict`).
+ the judge is invoked through the shared package with forced `tool_choice` (`render_verdict`).
 The pi-ai event stream's `toolcall_end` event carries the parsed `arguments`,
 which are translated to a `Verdict` by `parseVerdict`.
 
 Retry path:
  if the model finishes without calling `render_verdict`,
-`callJudge` retries without tools and asks for direct JSON.
+the shared structured-attempt runner retries without tools and asks for direct JSON.
  If that direct JSON
 attempt returns no text,
  it makes one final direct JSON attempt.
@@ -108,18 +123,12 @@ but automatic selection supplies the fallback contenders after that override fai
  If no fallback model can be selected or all complete attempts fail,
 auto-mode asks the user as before.
 
-Compatibility fallback:
- `collectToolCall` can still parse first-pass text
-for tests and direct helper usage.
- The parser first tries `JSON.parse(text)`
-for the whole-text case,
- then falls back to a balanced-brace scan that
-respects string-literal escapes (so a `"reason"` field containing `{` or `}`
-does not skew the boundaries).
+The shared parser first tries `JSON.parse(text)` for whole-text output,
+then falls back to a balanced-brace scan that respects string-literal escapes.
+A `"reason"` field containing `{` or `}` therefore does not skew object boundaries.
 
-When either fallback path fires,
- the judge logs an error so an operator can
-see the contract violation.
+When a transport fallback fires,
+ the shared review logger records the contract violation so an operator can see it.
  The primary contract remains "MUST call the
 tool";
  the retry exists so an unexpected provider response degrades

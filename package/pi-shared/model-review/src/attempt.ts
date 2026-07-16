@@ -8,6 +8,7 @@ import type {
   AssistantMessageEventStream,
   Context,
   SimpleStreamOptions,
+  Tool,
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -115,30 +116,34 @@ function buildAttemptStreamOptions(
 /**
  * Build one-message provider context from caller prompt.
  *
- * @param systemPrompt - reviewer system instructions
+ * @param prompt - reviewer system and user content
  *
- * @param userContent - reviewer evidence body
+ * @param tool - optional structured tool for initial attempt
  *
  * @returns Pi AI provider context
  *
  * @example
  * ```ts
- * contextForPrompt({ systemPrompt: 'Judge.', userContent: 'Evidence' });
+ * contextForPrompt({ prompt: { systemPrompt: 'Judge.', userContent: 'Evidence' } });
  * ```
  */
 function contextForPrompt(
   {
-    systemPrompt,
-    userContent,
-  }: StructuredReviewPrompt,
+    prompt,
+    tool,
+  }: {
+    readonly prompt: StructuredReviewPrompt;
+    readonly tool?: Readonly<Tool>;
+  },
 ): Context {
   return {
-    systemPrompt,
+    systemPrompt: prompt.systemPrompt,
     messages: [{
       role: 'user',
-      content: userContent,
+      content: prompt.userContent,
       timestamp: Date.now(),
     },],
+    ...(tool === undefined ? {} : { tools: [tool,], }),
   };
 }
 
@@ -215,6 +220,8 @@ async function runStructuredReviewAttempt<TVerdict,>(
    *
    * @param streamOptions - provider options
    *
+   * @param tool - optional forced structured tool
+   *
    * @returns reviewer event stream
    *
    * @mutates prompt - provider consumes caller prompt data
@@ -230,15 +237,20 @@ async function runStructuredReviewAttempt<TVerdict,>(
     {
       prompt,
       streamOptions,
+      tool,
     }: ForeignBorrowed<Readonly<{
       readonly prompt: ForeignBorrowed<StructuredReviewPrompt>;
       readonly streamOptions: ForeignBorrowed<SimpleStreamOptions>;
+      readonly tool?: ForeignBorrowed<Tool>;
     }>>,
   ): AssistantMessageEventStream {
     /**
      * Provider context for selected prompt.
      */
-    const context = contextForPrompt(prompt,);
+    const context = contextForPrompt({
+      prompt,
+      ...(tool === undefined ? {} : { tool, }),
+    },);
     return streamStructuredReview({
       ...(stream === undefined ? {} : { stream, }),
       model,
@@ -252,6 +264,7 @@ async function runStructuredReviewAttempt<TVerdict,>(
    */
   const toolCallStream = dispatch({
     prompt: reviewPrompt,
+    tool: contract.tool,
     streamOptions: buildAttemptStreamOptions({
       auth,
       signal,

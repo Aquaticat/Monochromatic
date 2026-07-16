@@ -14,6 +14,7 @@ import {
   type Tool,
   type TSchema,
 } from '@earendil-works/pi-ai';
+import { toolChoiceForApi as sharedToolChoiceForApi, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
 /**
  * Verdict values for the judge tool.
@@ -89,22 +90,11 @@ const VERDICT_TOOL: Tool = {
  */
 function toolChoiceForApi(
   api: string,
-): Record<string, string> | string {
-  if (api === 'anthropic-messages') {
-    return {
-      type: 'tool',
-      name: 'render_verdict',
-    };
-  }
-  if (
-    (api === 'openai-completions')
-    || (api === 'openai-responses')
-      || (api === 'azure-openai-responses')
-      || (api === 'openai-codex-responses')
-  ) {
-    return 'required';
-  }
-  return 'any';
+): Readonly<Record<string, string>> | string {
+  return sharedToolChoiceForApi({
+    api,
+    toolName: VERDICT_TOOL.name,
+  },);
 }
 
 export {

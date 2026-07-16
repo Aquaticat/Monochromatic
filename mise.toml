@@ -1202,6 +1202,7 @@ _.path = [
   "package/pi-plugin/statusline/node_modules/.bin",
   "package/pi-plugin/terminal-title/node_modules/.bin",
   "package/pi-plugin/thinking-default/node_modules/.bin",
+  "package/pi-shared/model-review/node_modules/.bin",
   "package/pi-shared/model-selection/node_modules/.bin",
   "package/ssg/aquati.cat/node_modules/.bin",
   "package/typeface/aquaticat/node_modules/.bin",

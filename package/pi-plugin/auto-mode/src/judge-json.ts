@@ -1,212 +1,105 @@
 /**
- * JSON extraction and verdict parsing helpers for judge responses.
+ * Auto-mode verdict parser over shared balanced JSON extraction.
  *
  * @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { extractStructuredJson, } from '@monochromatic-dev/pi-shared-model-review/ts';
+
 import type { Verdict, } from './types.ts';
 
 /**
- * Logger root for auto-mode after removing the package log shim.
+ * Narrow unknown JSON value to property record.
+ *
+ * @param value - parsed reviewer value
+ *
+ * @returns whether value supports string property lookup
  *
  * @example
  * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ * isRecord({ verdict: 'approve' });
  * ```
  */
-const parentLogger = tagged({ tag: 'auto-mode', },);
-
-/**
- * Tagged logger for the judge-json module.
- */
-const moduleLogger = tagged({
-  tag: 'judge-json',
-  l: parentLogger,
-},);
-
-/**
- * Maximum characters of judge text to include in error messages.
- */
-const JUDGE_TEXT_ERROR_LIMIT = 200;
-
-/**
- * Extract a JSON verdict from free-text model output.
- *
- * Tries `JSON.parse(text)` first, then falls back to
- * {@link findBalancedJsonObject} scanning for the first balanced `{...}`
- * block. Balanced scanning ignores braces inside
- * string literals so a `"reason"` field containing `{` does not skew the
- * boundaries.
- *
- * @param text - model's text output
- *
- * @returns parsed verdict arguments
- *
- * @throws when no parseable JSON object is found in the text
- *
- * @example
- * ```typescript
- * extractJsonVerdict('{"verdict":"approve"}');
- * extractJsonVerdict('preface {"verdict":"deny"} suffix');
- * ```
- */
-function extractJsonVerdict(
-  text: string,
-): Record<string, string> {
-  try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown.
-    return JSON.parse(text,) as Record<string, string>;
-  }
-  catch (error) {
-    /**
-     * Sub-logger tagged with this function name for the handled parse failure before the balanced-brace fallback.
-     */
-    const innerL = tagged({
-      tag: extractJsonVerdict.name,
-      l: moduleLogger,
-    },);
-    innerL.debug(`direct JSON parse failed; scanning for balanced brace block: ${String(error,)}`,);
-  }
-
-  /**
-   * First balanced `{...}` block found in the free-text output, or empty when none exists.
-   */
-  const block = findBalancedJsonObject(text,);
-  if (block === '') {
-    throw new Error(
-      `Judge returned text without JSON verdict: ${
-        text.slice(
-          0,
-          JUDGE_TEXT_ERROR_LIMIT,
-        )
-      }`,
-    );
-  }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown.
-  return JSON.parse(block,) as Record<string, string>;
+function isRecord(value: unknown,): value is Record<string, unknown> {
+  return (value !== null)
+    && ((typeof value) === 'object');
 }
 
 /**
- * Find the first balanced `{...}` block in a string, ignoring braces
- * inside string literals.
+ * Extract JSON reviewer arguments using shared balanced-object scanner.
  *
- * Tracks string state and escapes so a `"text with } inside"` field
- * does not terminate the scan early.
+ * @param text - direct reviewer output
  *
- * @param text - string to scan
+ * @returns parsed reviewer property record
  *
- * @returns matched block including delimiters, or empty string when no
- *   balanced object is found
+ * @throws when output contains no object
  *
  * @example
- * ```typescript
- * findBalancedJsonObject('x {"ok":true} y');
+ * ```ts
+ * extractJsonVerdict('prefix {"verdict":"approve"} suffix');
  * ```
  */
-function findBalancedJsonObject(text: string,): string {
+function extractJsonVerdict(text: string,): Record<string, unknown> {
   /**
-   * Index of the first `{` in the text; the scan starts here.
+   * Shared whole-text or balanced-object parse result.
    */
-  const start = text.indexOf('{',);
-  if (start === (-1))
-    return '';
-
-  /* oxlint-disable no-restricted-syntax/no-function-root-let -- balanced-brace scanner state machine mutated across the character loop (depth counter, string-mode latch, escape latch) */
-  /**
-   * Brace nesting depth; the slice is taken when this returns to 0.
-   */
-  let depth = 0;
-  /**
-   * True while the scan is inside a double-quoted string literal so braces are ignored.
-   */
-  let inString = false;
-  /**
-   * True after a backslash inside a string so the next character is treated as literal.
-   */
-  let escape = false;
-  /* oxlint-enable no-restricted-syntax/no-function-root-let */
-
-  for (let loopIndex = start; loopIndex < text
-    .length; loopIndex++) {
-    /**
-     * Character at the current scan position, used by the state machine below.
-     */
-    const ch = text[loopIndex];
-
-    if (escape) {
-      escape = false;
-      continue;
-    }
-    if (inString) {
-      if (ch === '\\')
-        escape = true;
-      else if (ch === '"')
-        inString = false;
-      continue;
-    }
-    if (ch === '"') {
-      inString = true;
-      continue;
-    }
-    if (ch === '{')
-      depth++;
-    else if (ch === '}') {
-      depth--;
-      if (depth === 0) {
-        return text.slice(
-          start,
-          loopIndex + 1,
-        );
-      }
-    }
-  }
-  return '';
+  const value = extractStructuredJson(text,);
+  if (!isRecord(value,))
+    throw new Error('Judge JSON verdict must be an object',);
+  return value;
 }
 
 /**
- * Parse raw tool call or JSON retry arguments into a Verdict.
+ * Parse unknown structured reviewer value into auto-mode verdict.
  *
- * @param args - raw verdict arguments
+ * Missing fields retain historical defaults.
+ * Unknown string verdicts degrade to `ask` with diagnostic reason.
+ * Mistyped fields reject candidate attempt so shared availability fallback can run.
  *
- * @returns structured verdict
+ * @param value - unknown tool arguments or direct JSON value
+ *
+ * @returns normalized auto-mode verdict
+ *
+ * @throws when value or fields have malformed types
  *
  * @example
- * ```typescript
- * parseVerdict({ verdict: 'deny', reason: 'dangerous', guidance: 'Use propose_trust' });
+ * ```ts
+ * parseVerdict({ verdict: 'deny', reason: 'unsafe', guidance: 'Use dry run.' });
  * ```
  */
-function parseVerdict(
-  args: Readonly<Record<string, string>>,
-): Verdict {
+function parseVerdict(value: unknown,): Verdict {
+  if (!isRecord(value,))
+    throw new Error('Judge verdict must be an object',);
   /**
-   * Raw verdict string, defaulted to `ask` when missing so the union check below decides.
+   * Verdict discriminator with historical missing-field default.
    */
-  const verdict = args.verdict
+  const verdict = value.verdict
     ?? 'ask';
   /**
-   * Free-text rationale captured from the judge response.
+   * Judge rationale with historical missing-field default.
    */
-  const reason = args.reason
+  const reason = value.reason
     ?? '';
   /**
-   * Guidance string to surface back to the agent; empty for approvals.
+   * Agent guidance with historical missing-field default.
    */
-  const guidance = args.guidance
+  const guidance = value.guidance
     ?? '';
-
-  if (
-    (verdict !== 'approve')
+  if ((typeof verdict) !== 'string')
+    throw new Error('Judge verdict field must be a string',);
+  if ((typeof reason) !== 'string')
+    throw new Error('Judge reason field must be a string',);
+  if ((typeof guidance) !== 'string')
+    throw new Error('Judge guidance field must be a string',);
+  if ((verdict !== 'approve')
     && (verdict !== 'deny')
-      && (verdict !== 'ask')
-  ) {
+    && (verdict !== 'ask')) {
     return {
       verdict: 'ask',
       reason: `Judge returned unexpected verdict: "${verdict}". ${reason}`,
       guidance: '',
     };
   }
-
   return {
     verdict,
     reason,
