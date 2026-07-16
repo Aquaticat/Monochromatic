@@ -1,17 +1,12 @@
 /**
- * Optique management-command parser and dispatcher. @module
+ * Management-command parser and dispatcher. @module
  */
-import {
-  command,
-  constant,
-  flag,
-  object,
-  optional,
-  or,
-  runParserSync,
-} from '@optique/core';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import { DIRECT_MANAGEMENT_PARSER, } from './management-direct-parser.ts';
+import {
+  MANAGEMENT_REFUSED,
+  MANAGEMENT_USAGE,
+  parseManagementArgs,
+} from './management-parser.ts';
 import {
   createEngineFailureEvent,
   renderPolicyEvents,
@@ -25,48 +20,6 @@ import {
   resolveRuntimeConfig,
   RUNTIME_CONFIG_ABSENT,
 } from './trust/runtime-config.ts';
-
-/**
- * Sentinel returned when Optique renders help or a usage failure.
- */
-const PARSE_STOPPED = Symbol('Optique management parsing stopped',);
-/**
- * Trust command parser.
- */
-const TRUST_PARSER = command(
-  'trust',
-  object({
-    command: constant('trust' as const,),
-    yes: optional(flag('--yes',),),
-  },),
-);
-/**
- * Untrust command parser.
- */
-const UNTRUST_PARSER = command(
-  'untrust',
-  object({
-    command: constant('untrust' as const,),
-  },),
-);
-/**
- * Status command parser.
- */
-const STATUS_PARSER = command(
-  'status',
-  object({
-  command: constant('status' as const,),
-},),
-);
-/**
- * First management grammar slice.
- */
-const MANAGEMENT_PARSER = or(
-  TRUST_PARSER,
-  UNTRUST_PARSER,
-  STATUS_PARSER,
-  DIRECT_MANAGEMENT_PARSER,
-);
 
 /**
  * Detects positional input before explicit pathspec separator.
@@ -188,41 +141,27 @@ export async function runManagementCommand({
   registryRoot?: string;
 }>,): Promise<0 | 1 | 2> {
   /**
-   * Parsed management action or parse-stop sentinel.
+   * Resolved management action, or refusal.
    */
-  const parsed: unknown = runParserSync(
-    MANAGEMENT_PARSER,
-    'git cli-git',
-    args,
-    {
-      onError: function stopAfterUsageError() { return PARSE_STOPPED; },
-    },
-  );
-  if (parsed === PARSE_STOPPED)
+  const parsed = parseManagementArgs(args,);
+  if (parsed === MANAGEMENT_REFUSED) {
+    console.error(MANAGEMENT_USAGE,);
     return 2;
+  }
 
-  if (((typeof parsed) !== 'object') || (parsed === null)
-    || (!('command' in parsed)))
-    return 2;
   if ((parsed.command === 'trust')
     || (parsed.command === 'untrust')
     || (parsed.command === 'status')) {
     return await runTrustManagement({
       action: {
         command: parsed.command,
-        ...(('yes' in parsed) && (parsed.yes === true) ? { yes: true, } : {}),
+        ...(('yes' in parsed) && parsed.yes ? { yes: true, } : {}),
       },
       gitGlobalArgs,
       ...(registryRoot === undefined ? {} : { registryRoot, }),
     },);
   }
 
-  if (((parsed.command !== 'check') && (parsed.command !== 'fix'))
-    || (!('pathspecs' in parsed))
-    || (!Array.isArray(parsed.pathspecs,))
-    || (!('policies' in parsed))
-    || (!Array.isArray(parsed.policies,)))
-    return 2;
   if (hasPreSeparatorPositional(args,)) {
     console.error(`git cli-git ${parsed.command} pathspecs must follow --.`,);
     return 2;
@@ -240,7 +179,7 @@ export async function runManagementCommand({
   /**
    * Whether invocation selected complete repository scope.
    */
-  const hasAllScope = ('all' in parsed) && (parsed.all === true);
+  const hasAllScope = parsed.all;
   if (hasAllScope === hasPathspecScope) {
     console.error(`git cli-git ${parsed.command} requires exactly one scope: --all or non-empty pathspecs after --.`,);
     return 2;
@@ -255,10 +194,7 @@ export async function runManagementCommand({
   /**
    * Deduplicated direct-check filter preserving first occurrence order.
    */
-  const selectedPolicyIds = [...new Set(parsed.policies
-    .filter(function isString(value,): value is string {
-      return (typeof value) === 'string';
-    },),),];
+  const selectedPolicyIds = parsed.policies;
   /**
    * Trusted direct-check config resolution.
    */
@@ -291,10 +227,7 @@ export async function runManagementCommand({
    */
   const directPathspecs: readonly string[] = hasAllScope
     ? [':/',]
-    : parsed.pathspecs
-      .filter(function stringPathspec(value,): value is string {
-      return (typeof value) === 'string';
-    },);
+    : parsed.pathspecs;
   if (parsed.command === 'fix') {
     /**
      * Converged direct-fix operation.

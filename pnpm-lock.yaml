@@ -1770,9 +1770,6 @@ importers:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed
-      '@optique/core':
-        specifier: 'catalog:'
-        version: 1.1.1
       acorn:
         specifier: 'catalog:'
         version: 8.17.0
