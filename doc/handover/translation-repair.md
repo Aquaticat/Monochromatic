@@ -2,8 +2,9 @@
 
 Status:
 milestone one in progress.
-Tasks 1 (scaffold), 2 (document core), and 3 (issue model and span validation) landed;
-task 4 (Synthetic model client) is next.
+Tasks 1 (scaffold), 2 (document core), 3 (issue model and span validation),
+and 4 (Synthetic model client) landed;
+task 5 (seeded-error benchmark harness and scorecard) is next.
 Update this document at every task completion or design pivot;
 it exists so auto-compaction cannot lose session state.
 
@@ -31,7 +32,9 @@ consumers and deployment are deliberately out of scope for now.
   `70aaaf557` catalog remark/MDX parser stack,
   `da689f628` document model and segmentation core,
   `401aa7db8` this handover,
-  `411931d21` issue model and deterministic anchor validation.
+  `411931d21` issue model and deterministic anchor validation,
+  `c38ffd823` injected-transport Synthetic model client,
+  `96eb1f68a` thinking-dominated output and API refusal field handling.
 - Task list lives in the session task tool;
   mirror of current state is in "Task state" below.
 
@@ -82,15 +85,42 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 
 - Per pack ($30/mo): 500 price-weighted requests per 5 hours, regenerating 5% per 15 minutes;
   $24/week credits regenerating 2% per ~3.4 hours;
-  1 concurrent request per model, different models fully parallel.
+  1 concurrent request per model, different models fully parallel
+  (same-model excess queues server-side, it does not error).
   Up to 5 packs (user willing).
-- Request cost scales by model price; `GLM-4.7-Flash` documented at ~0.1 units.
-- `response_format` (JSON schema) supported at API level;
-  per-model strictness unverified, so client-side validation and retry stays regardless.
-- `/quotas` endpoint exists (response shape unverified); free embedding model does not count against quota.
+  The user's live account shows 750 requests and $36/week, 1.5-pack-scaled limits.
+- Request weight = model input price / baseline input price (baseline is the provider
+  default model, currently GLM-5.2 at exactly 1).
+  Verified empirically: one GLM-4.7-Flash call deducted exactly 0.0714 (1/14) from
+  `/quotas` remaining, matching `estimateRequestWeight` in `synthetic-catalog.ts`.
+- `GET /openai/v1/models` carries per-model pricing, context length, max output
+  (65536 for all), and feature flags; every catalog model advertises `json_mode` and
+  `structured_outputs`.
+  Per-model strictness still unverified, so client-side validation stays.
+- `GET https://api.synthetic.new/v2/quotas` (free, does not count against limits);
+  live shape verified 2026-07-16:
+  `rollingFiveHourLimit {remaining,max,limited,nextTickAt,tickPercent}`,
+  `weeklyTokenLimit {percentRemaining,maxCredits,remainingCredits,nextRegenAt,...}`,
+  plus `subscription`, `search`, `freeToolCalls` (unmodeled).
 - Models: GLM-5.2 (512k), GLM-4.7-Flash, Qwen3.6-27B, Kimi-K2.7-Code, MiniMax-M3,
   Nemotron-3-Super-120B, gpt-oss-120b; six vendor families.
-- Orchestrator needs per-model semaphore(1) and price-aware role routing.
+- Chat base URL `https://api.synthetic.new/openai/v1`.
+- The client (task 4) provides per-model semaphore(1) via `p-limit`;
+  price-aware role routing belongs to the orchestrator.
+- End-to-end boundary check passed: real GLM-4.7-Flash `chatJson` round trip returned
+  guard-validated JSON and the quota delta matched the estimate.
+- These models think heavily: expect 90%+ of output tokens to be thinking tokens
+  (user guidance; live probe confirmed 35 completion tokens for a 1-token answer).
+  Consequences already built into the client:
+  reasoning arrives in separate `reasoning`/`reasoning_content` message fields with
+  clean `content` (verified live on GLM-4.7-Flash);
+  the message carries a first-class `refusal` field which outranks heuristics
+  (marker `api-refusal-field`);
+  embedded `<think>` blocks are split off before parsing and refusal scanning;
+  truncation inside thinking is a distinct schema-mismatch detail;
+  `maxTokens` must be generous or omitted;
+  budget spend estimates must use thinking-inflated completion counts
+  (usage is carried on every `chatJson` outcome for the scorecard).
 
 ## Corpus facts (verified)
 
@@ -180,10 +210,18 @@ Deterministic core plus model stages, revised after an adversarial second-model 
    fail-fast per span, all spans reported independently;
    adversarial tests over parsed cat-themed fixtures).
    Claims carry no proposer provenance; the shell tracks that outside the claim.
-4. Synthetic model client: next.
-   Injected, typed via `@monochromatic-dev/module-llm-type/ts`;
-   schema validation, refusal detection, per-model semaphore(1), price-weighted budget,
-   `/quotas` polling, `AbortSignal` on every call.
+4. Synthetic model client: done
+   (`synthetic-catalog.ts` verified catalog and request-weight estimator;
+   `synthetic-transport.ts` injectable transport seam, fetch receives only
+   locally owned values plus a dependent signal;
+   `synthetic-quota.ts` typed `/v2/quotas` snapshots;
+   `completion-shape.ts` protocol parsing with first-class `refusal` field;
+   `refusal.ts` deterministic opening-window marker scan;
+   `chat-contract.ts` request/outcome types;
+   `model-content.ts` fence and think-block handling, tolerant JSON parse;
+   `synthetic-client.ts` `createSyntheticClient` with per-model `p-limit(1)`,
+   mandatory `AbortSignal`, outcome-as-data `chatJson`;
+   boundary-verified against the live API twice).
 5. Seeded-error benchmark harness and scorecard (exit criterion of milestone one).
 6. Pinned-SHA corpus fixture fetching into gitignored cache.
 
