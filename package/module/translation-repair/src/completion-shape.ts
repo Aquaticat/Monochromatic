@@ -125,12 +125,23 @@ export class MalformedCompletionError extends Error {
  */
 export type ExtractedCompletion = {
   /**
-   * Verbatim `message.content` of the first choice.
+   * Verbatim `message.content` of the first choice;
+   * empty when the API refused and returned no content.
+   * Reasoning arrives in separate `reasoning_content` fields (verified live),
+   * so content is the answer channel.
    */
   readonly text: string;
 
   /**
+   * First-class refusal from the message `refusal` field;
+   * a stronger signal than any heuristic over content.
+   */
+  readonly refusal?: string;
+
+  /**
    * Token usage when the server reported it; feeds budget observability.
+   * Completion counts include thinking tokens,
+   * which dominate output on these models.
    */
   readonly usage?: CompletionUsage;
 };
@@ -248,14 +259,39 @@ export function extractCompletion(
     throw new MalformedCompletionError({ detail: 'choices[0].message is not an object', },);
 
   /**
-   * Content the model wrote.
+   * Answer channel plus first-class refusal field as delivered.
    */
-  const { content, } = message;
-  if ((typeof content) !== 'string')
+  const {
+    content,
+    refusal,
+  } = message;
+
+  /**
+   * Non-empty refusal string when the API refused explicitly.
+   */
+  const refusalText = (((typeof refusal) === 'string') && (refusal !== ''))
+    ? refusal
+    : undefined;
+
+  if ((typeof content) !== 'string') {
+    // A refused completion may carry null content; that is a valid refusal
+    // reply, not a contract violation.
+    if (refusalText !== undefined) {
+      return {
+        text: '',
+        refusal: refusalText,
+        ...readUsage({ parsed, },),
+      };
+    }
     throw new MalformedCompletionError({ detail: 'choices[0].message.content is not a string', },);
+  }
 
   return {
     text: content,
+    // Conditional spread keeps refusal absent when the API did not refuse.
+    ...(refusalText === undefined
+      ? {}
+      : { refusal: refusalText, }),
     ...readUsage({ parsed, },),
   };
 }

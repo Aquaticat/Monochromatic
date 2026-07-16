@@ -77,16 +77,21 @@ export {
   type SyntheticModelInfo,
   type SyntheticVendorFamily,
 } from './synthetic-catalog.ts';
+export type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  ChatTextReply,
+  ChatTextRequest,
+  JsonSchemaResponseFormat,
+  SyntheticClient,
+} from './chat-contract.ts';
 export {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type ChatTextReply,
-  type ChatTextRequest,
-  createSyntheticClient,
-  type JsonSchemaResponseFormat,
+  formatUsageNote,
+  parseModelJson,
   stripCodeFence,
-  type SyntheticClient,
-} from './synthetic-client.ts';
+  stripThinkBlock,
+} from './model-content.ts';
+export { createSyntheticClient, } from './synthetic-client.ts';
 export {
   parseQuotaSnapshot,
   QuotaShapeError,
