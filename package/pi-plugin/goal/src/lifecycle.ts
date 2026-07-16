@@ -7,6 +7,7 @@
 import { randomUUID, } from 'node:crypto';
 
 import type {
+  AgentEndEvent,
   AgentSettledEvent,
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
@@ -142,6 +143,11 @@ function registerGoalLifecycle(
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Pi lifecycle handlers share one runtime-owned immutable-state cursor.
   let controller = createGoalController(runtimeEpoch,);
+  /**
+   * Whether most recent run ended by explicit user abort.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Agent end records abort; later final settlement consumes this runtime-owned marker.
+  let settledRunWasAborted = false;
 
   /**
    * Store next immutable controller and execute its ordered effects.
@@ -412,11 +418,30 @@ function registerGoalLifecycle(
     },
   );
   pi.on(
+    'agent_end',
+    function recordAbortedRun(
+      event: ForeignBorrowed<AgentEndEvent>,
+    ) {
+      /**
+       * Latest assistant message determines final run stop reason.
+       */
+      const finalAssistant = event.messages
+        .findLast(function isAssistant(message,) {
+          return message.role === 'assistant';
+        },);
+      settledRunWasAborted = finalAssistant?.stopReason === 'aborted';
+    },
+  );
+  pi.on(
     'agent_settled',
     function continueActiveGoal(
       _event: ForeignBorrowed<AgentSettledEvent>,
       context: ForeignBorrowed<ExtensionContext>,
     ) {
+      if (settledRunWasAborted) {
+        settledRunWasAborted = false;
+        return;
+      }
       settleCurrentGoal(context,);
     },
   );

@@ -257,6 +257,40 @@ await describe({
       },
     },),
     it({
+      name: 'leaves active goal unchanged after abort and resumes on later ordinary settlement',
+      fn: async () => {
+        /** Active goal runtime under abort. */
+        const harness = lifecycleHarness([],);
+        await harness.command('Survive explicit abort', harness.context,);
+        await requiredHandler(harness, 'agent_end',)(
+          {
+            type: 'agent_end',
+            messages: [{ role: 'assistant', stopReason: 'aborted', },],
+          },
+          harness.context,
+        );
+        await requiredHandler(harness, 'agent_settled',)(
+          { type: 'agent_settled', },
+          harness.context,
+        );
+        expect(harness.appended,).toHaveLength(1,);
+        expect(harness.messages,).toHaveLength(1,);
+        await requiredHandler(harness, 'agent_end',)(
+          {
+            type: 'agent_end',
+            messages: [{ role: 'assistant', stopReason: 'stop', },],
+          },
+          harness.context,
+        );
+        await requiredHandler(harness, 'agent_settled',)(
+          { type: 'agent_settled', },
+          harness.context,
+        );
+        expect(harness.appended,).toHaveLength(2,);
+        expect(harness.messages,).toHaveLength(2,);
+      },
+    },),
+    it({
       name: 'reconstructs branch on tree and compaction and suppresses post-shutdown settlement',
       fn: async () => {
         /** Empty selected branch harness. */
