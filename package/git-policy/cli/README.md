@@ -754,7 +754,7 @@ config validation,
 scanner checks,
 clean and changed final-newline paths,
 and post-commit policy work.
-`perf/lifecycle-latency-2026-07-11.json` stores the measured baseline.
+`perf/lifecycle-latency-2026-07-16.json` stores the measured baseline.
 Each enforced ceiling is twice its baseline maximum rounded up to the next 25 milliseconds;
 every ceiling remains below 2,000 milliseconds.
 

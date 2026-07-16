@@ -38,15 +38,15 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/git-policy-repository": "workspace:*",
     "@monochromatic-dev/module-async-time": "workspace:*",
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-fs-id": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@types/node": "catalog:"
   },
   "dependencies": {
-    "@monochromatic-dev/module-caught-value": "workspace:*",
-    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "acorn": "catalog:",
     "nano-spawn": "catalog:",
     "rolldown": "catalog:",
@@ -59,6 +59,5 @@
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "package/git-policy/cli"
-  },
-  "sideEffects": false
+  }
 }

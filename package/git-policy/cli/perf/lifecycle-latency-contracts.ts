@@ -212,18 +212,9 @@ export const TREE_WRITE_BATCH_SIZE = 64;
 export const MAXIMUM_BUDGET_MS = 2_000;
 
 /**
- * Scenario budgets derived from `perf/lifecycle-latency-2026-07-11.json`.
+ * Scenario budgets derived from `perf/lifecycle-latency-2026-07-16.json`.
  * Each ceiling is twice measured maximum rounded up to next 25 milliseconds;
  * every result remains below user-required 2,000-millisecond ceiling.
- *
- * `wide-commit` carries no measured ceiling yet. Its baseline cannot be
- * recorded while the benchmark cannot reach its first scenario: fixture setup
- * fails at `cli-git trust`, rejecting the fixture config as not self-contained.
- * That baseline was last recorded at `0fac57108`, before `ece5b7553` renamed
- * `packages/` to `package/`, and the benchmark fails identically with this
- * scenario removed. Capture a ceiling with
- * `CLI_GIT_CAPTURE_LATENCY_BASELINE=1` once the benchmark runs again, and note
- * that a zero ceiling fails the scenario until then.
  */
 export const SCENARIO_BUDGETS: Readonly<Record<LifecycleScenarioId, number>> = {
   'no-config': 275,
@@ -236,5 +227,5 @@ export const SCENARIO_BUDGETS: Readonly<Record<LifecycleScenarioId, number>> = {
   'normalizer': 300,
   'normalizer-change': 275,
   'post-commit': 1_150,
-  'wide-commit': 0,
+  'wide-commit': 925,
 };

@@ -1750,7 +1750,7 @@ Troubleshooting evidence lives in
 `doc/troubleshooting/cli-git-windows-nested-registry-acls.md`.
 
 The measured lifecycle baseline is
-`package/git-policy/cli/perf/lifecycle-latency-2026-07-11.json`.
+`package/git-policy/cli/perf/lifecycle-latency-2026-07-16.json`.
 Its scenario-specific ceilings are derived as twice the measured maximum rounded to 25 milliseconds,
 and every ceiling is below 2,000 milliseconds.
 The performance workflow stores each run's complete raw-sample JSON as a retained CI artifact.

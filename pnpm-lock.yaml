@@ -1764,12 +1764,6 @@ importers:
 
   package/git-policy/cli:
     dependencies:
-      '@monochromatic-dev/module-caught-value':
-        specifier: workspace:*
-        version: link:../../module/caught-value
-      '@monochromatic-dev/ownership-marker-foreign-borrowed':
-        specifier: workspace:*
-        version: link:../../ownership-marker/foreign-borrowed
       acorn:
         specifier: 'catalog:'
         version: 8.17.0
@@ -1801,6 +1795,9 @@ importers:
       '@monochromatic-dev/module-async-time':
         specifier: workspace:*
         version: link:../../module/async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-fs-id':
         specifier: workspace:*
         version: link:../../module/fs-id
@@ -1813,6 +1810,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
