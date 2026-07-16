@@ -244,6 +244,276 @@ and returns pure parsing and rendering behavior.
 A process adapter such as `runCli` owns argv and stream integration plus application dispatch gating.
 The application callback receives only successful syntax results.
 
+## Speculative representations beyond the first three
+
+The user suspects a materially better definition model than all three demonstrated options.
+That suspicion is credible.
+The first comparison treated a handwritten whole-result schema as inevitable,
+which created duplication that the compiler may be able to eliminate.
+No representation below is accepted yet.
+
+### Leading speculation: grammar algebra with derived schema
+
+Make an owned grammar algebra the only source of argv structure.
+Each field constructor contributes:
+
+- token grammar;
+- help metadata;
+- occurrence cardinality;
+- a synchronous Valibot value schema;
+- its inferred output field type.
+
+`compileCli` derives the leaf result type and synthesizes whole-result Valibot validation.
+The user never repeats the assembled object shape.
+
+```ts
+const meow = leaf({
+  options: {
+    volume: valueOption({
+      names: ['--volume'],
+      metavar: 'LEVEL',
+      description: 'Volume from 0 to 10.',
+      schema: v.pipe(
+        v.string(),
+        v.transform(Number,),
+        v.number(),
+        v.minValue(0,),
+        v.maxValue(10,),
+      ),
+    },),
+    tags: variadicOption({
+      names: ['--tag'],
+      metavar: 'TAG',
+      description: 'One or more tags.',
+      itemSchema: v.string(),
+    },),
+    loud: presenceOption({
+      names: ['--loud'],
+      description: 'Use loud output.',
+    },),
+  },
+  trailingArguments: trailing({
+    items: [
+      {
+        metavar: 'FIRST-SOUND',
+        schema: v.string(),
+      },
+      {
+        metavar: 'SECOND-SOUND',
+        schema: v.string(),
+      },
+    ],
+    rest: {
+      metavar: 'ADDITIONAL-SOUND',
+      schema: v.string(),
+    },
+  },),
+},).check(
+  v.check(
+    function loudHasVolume(result,) {
+      return result.loud !== true
+        || result.volume !== undefined;
+    },
+    '--loud requires --volume.',
+  ),
+);
+
+const catGrammar = program({
+  name: 'cat',
+  commands: {
+    calico: route({
+      aliases: [
+        {
+          name: 'c',
+          hidden: true,
+        },
+      ],
+      commands: {
+        meow,
+      },
+    },),
+  },
+},);
+
+export type CatCliResult = CliOutput<typeof catGrammar>;
+
+export const catCli: CompiledCli<CatCliResult> = compileCli(catGrammar,);
+```
+
+The intended derived leaf member is:
+
+```ts
+type MeowCliResult = Readonly<{
+  commandPath: readonly ['calico', 'meow'];
+  volume?: number;
+  tags?: readonly [string, ...string[]];
+  loud?: true;
+  trailingArguments: readonly [string, string, ...string[]];
+}>;
+```
+
+The compiler can synthesize a Valibot object schema internally from public constructors:
+
+- scalar value option becomes an optional entry whose output is `v.InferOutput` of its value schema;
+- presence option becomes an optional literal-`true` entry;
+- variadic option maps its item schema over a grammar-enforced non-empty tuple;
+- trailing items and rest schemas derive the exact output tuple;
+- canonical route nodes derive the literal `commandPath` tuple;
+- `.check(...)` contributes shape-preserving whole-result validation without a duplicate object schema.
+
+This is not arbitrary parser-combinator composition.
+It is a closed owned algebra that compiles into one immutable grammar AST.
+The internal AST may resemble descriptor-first design,
+but callers no longer maintain a parallel whole-result schema.
+
+Why it may beat the first three designs:
+
+- unlike descriptor plus `resultSchema`,
+  it does not repeat field layout;
+- unlike schema plus bindings,
+  grammar cardinality and output cardinality come from one field node;
+- unlike Valibot metadata,
+  it does not inspect arbitrary schema wrappers or depend on beta metadata;
+- unlike an Optique-compatible algebra,
+  it exposes only repository-approved grammar forms.
+
+### Variant: result-first grammar field wrappers
+
+Another possibility is to make owned field wrappers feel schema-first without attaching metadata to arbitrary schemas:
+
+```ts
+const meow = cliLeaf({
+  volume: cliValue({
+    names: ['--volume'],
+    schema: volumeSchema,
+    metavar: 'LEVEL',
+  },),
+  tags: cliVariadic({
+    names: ['--tag'],
+    itemSchema: v.string(),
+    metavar: 'TAG',
+  },),
+  loud: cliPresence({
+    names: ['--loud'],
+  },),
+  trailingArguments: cliTrailing({
+    items: [firstSound, secondSound],
+    rest: additionalSound,
+  },),
+},);
+```
+
+Each wrapper is an owned grammar node containing a Valibot schema,
+not itself a Valibot `BaseSchema`.
+`compileCli` recognizes only these owned nodes.
+
+Do not implement grammar nodes as custom Valibot schemas without a source prototype.
+The installed Valibot `1.4.2` `BaseSchema` protocol exposes `~run` and `~standard` as internal members.
+Depending on that protocol would recreate the coupling rejected in the metadata design.
+
+This variant may simply be a naming and layout form of the leading grammar algebra.
+Its value is worth testing through real declarations before treating it as a separate architecture.
+
+### Variant: compiled argv codec
+
+The compiled result could expose a schema-like codec from argv to syntax output:
+
+```ts
+const catCli = compileCli(catGrammar,);
+
+const parsed = catCli.parse(argv,);
+
+// Speculative only:
+const argvSchema: StandardSchemaV1<readonly string[], CatCliResult> = catCli.schema;
+```
+
+This would make the entire grammar composable as a schema from `readonly string[]` to the inferred result.
+It could support consumer pipelines after syntax parsing.
+
+Risks:
+
+- help requests and aggregated provenance diagnostics are not ordinary value-validation failures;
+- a Valibot-compatible implementation may require internal schema protocol members;
+- schema composition could bypass the process adapter's help and status contracts;
+- exposing both `.parse` and `.schema` may create two public seams.
+
+Treat the codec as an optional adapter only if a prototype can use public Standard Schema contracts without weakening parser controls.
+It is not the leading core representation.
+
+### Variant: event grammar as an internal implementation
+
+The scanner could emit a provenance-preserving event stream before result assembly:
+
+```ts
+type CliEvent =
+  | Readonly<{ kind: 'command'; tokenIndex: number; canonical: string; }>
+  | Readonly<{ kind: 'option'; tokenIndex: number; key: string; spelling: string; }>
+  | Readonly<{ kind: 'value'; tokenIndex: number; optionKey: string; value: string; }>
+  | Readonly<{ kind: 'separator'; tokenIndex: number; }>
+  | Readonly<{ kind: 'trailing'; tokenIndex: number; value: string; }>;
+```
+
+A reducer would apply field schemas,
+assemble the syntax result,
+and aggregate diagnostics using original token provenance.
+This may simplify deterministic recovery and error ordering.
+
+It is probably an internal representation,
+not a user-facing definition model.
+Users should declare grammar roles,
+not construct parser events.
+
+### Variant: handler-first leaf modules
+
+A leaf could optionally bundle its application handler:
+
+```ts
+const meowModule = leafModule({
+  grammar: meow,
+  run: async function runMeow(value,) {
+    // Application work.
+  },
+},);
+```
+
+This can remove external dispatch boilerplate,
+but it must remain a layer above independently parseable grammar.
+Making handlers the grammar source would couple application work to parser tests and weaken the accepted seam.
+Do not use this as the core representation.
+
+### Prototype gates before selecting a representation
+
+The leading grammar-algebra idea needs evidence before becoming the public interface.
+A future prototype should prove:
+
+- nested canonical paths infer literal readonly tuples;
+- scalar transforms infer transformed optional values;
+- presence options infer absent-or-`true`;
+- variadic options infer optional non-empty readonly tuples;
+- trailing item and rest schemas infer required readonly tuples;
+- hidden aliases do not widen canonical path literals;
+- cross-field checks receive the synthesized leaf type without annotations;
+- shape-changing checks or defaults cannot enter syntax declarations;
+- async schemas fail definition validation;
+- exported grammars compile under `--isolatedDeclarations` with explicit `CompiledCli<Result>` annotations;
+- implementation uses public Valibot constructors and parsing methods only;
+- no user-written whole-result object schema is required;
+- scanner events retain token provenance for aggregated diagnostics;
+- root leaf,
+  nested command,
+  variadic option,
+  and required-tail fixtures all exercise the same interface.
+
+Representative prototype consumers should include:
+
+- a root leaf such as `package/module/token-count/`;
+- a subcommand CLI such as `package/cli/mvm/` or `package/cli/vmsync/`;
+- a variadic forwarding CLI such as `package/dev-script/watch-restart/` or `package/cli/fy/`.
+
+The prototype is a design probe,
+not authorization to implement or migrate packages.
+Do not finalize package names or exported interfaces before these gates pass.
+
 ## Existing consumer constraints
 
 Current consumers exercise:
@@ -370,14 +640,9 @@ or include them in this migration's commits.
 
 ## Next action
 
-Choose the representation accepted by `compileCli`.
-Compare descriptor-first grammar with embedded Valibot schemas,
-a whole-result Valibot schema plus separate token bindings,
-and CLI metadata attached to Valibot schemas.
-Demonstrate the settled nested routing,
-leaf-only options,
-variadic values,
-required tail,
-help metadata,
-transforms,
-and output typing in every design.
+When the user returns,
+start from the speculative grammar-algebra section rather than re-presenting the first three designs.
+Ask whether grammar-derived schema synthesis is closer to the missing fourth direction.
+If the user authorizes a design probe,
+build a throwaway compile-only prototype against Valibot `1.4.2` and the listed type gates before choosing a public interface.
+Continue updating this handover as hypotheses are accepted or rejected.
