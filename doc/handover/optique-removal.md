@@ -236,7 +236,11 @@ and output shape.
   stream writes,
   and exit-code policy sit at an entrypoint adapter.
 - Valibot owns runtime validation and output typing.
-- The parser reports supplied values and structural absence.
+- Syntax-level Valibot schemas may transform values and change their runtime representation.
+  For example,
+  `cpus: '4'` may become `cpus: 4` while retaining the same field in the syntax result.
+  Invalid transformed values remain parser failures with status 2.
+- The parser reports schema outputs and structural absence.
   It does not choose domain defaults or perform business logic.
 - Canonical business-shape conversion uses a consumer-owned Valibot schema to parse the syntax result again:
 
@@ -244,10 +248,11 @@ and output shape.
   const options = v.parse(commandOptionsSchema, parsed.value,);
   ```
 
-  Defaults,
-  semantic renaming,
-  cross-field policy,
-  and domain transformations belong in that second parse.
+  The second parse is for invasive shape changes such as semantic renaming,
+  rearranging tuple elements into named fields,
+  changing nesting,
+  or otherwise reorganizing the parser result.
+  Routine value conversion does not require a second parse.
 - The owned parser exposes no Optique-compatible parser-state generic surface.
 - Consumer and parser tests cross the same public interface.
 - Unknown options are rejected before `--` and preserved after `--`.
@@ -300,7 +305,8 @@ or include them in this migration's commits.
 
 ## Next action
 
-Decide whether syntax-level Valibot schemas may transform argv strings or only validate and narrow them without changing representation.
-Compare numeric conversion in the parser,
-raw validated strings with consumer conversion,
-and deferring all value validation to the consumer.
+Decide whether syntax-level Valibot schemas may supply defaults for absent options.
+Compare omitted properties,
+schema defaults that make properties required,
+and parser-owned structural sentinels.
+Distinguish value transformation from absence policy and business defaults.
