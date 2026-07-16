@@ -1,16 +1,24 @@
-import type {
-  ChatMessage,
-  CompletionUsage,
-} from '@monochromatic-dev/module-llm-type/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import pLimit, { type LimitFunction, } from 'p-limit';
 
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  ChatTextReply,
+  ChatTextRequest,
+  SyntheticClient,
+} from './chat-contract.ts';
 import {
   extractCompletion,
-  type ExtractedCompletion,
   SyntheticHttpError,
 } from './completion-shape.ts';
+import {
+  formatUsageNote,
+  parseModelJson,
+  stripCodeFence,
+  stripThinkBlock,
+} from './model-content.ts';
 import { detectRefusalShape, } from './refusal.ts';
 import {
   SYNTHETIC_CHAT_BASE_URL,
@@ -48,322 +56,6 @@ const HTTP_SUCCESS_MAX_EXCLUSIVE = 300;
  * Logger root for this package's model-facing shell.
  */
 const l = tagged({ tag: 'translation-repair', },);
-
-/**
- * OpenAI-style structured-output constraint;
- * every catalog model advertises `structured_outputs`,
- * but client-side validation stays because per-model strictness is unverified.
- *
- * @example
- * ```ts
- * const format: JsonSchemaResponseFormat = {
- *   type: 'json_schema',
- *   json_schema: { name: 'issue_claims', schema: { type: 'object', }, },
- * };
- * ```
- */
-export type JsonSchemaResponseFormat = {
-  /**
-   * Discriminator the OpenAI-compatible API expects.
-   */
-  readonly type: 'json_schema';
-
-  /**
-   * Schema envelope: name, optional strictness, JSON schema body.
-   */
-  readonly json_schema: {
-    /**
-     * Identifier the API requires per schema.
-     */
-    readonly name: string;
-
-    /**
-     * Whether the server should enforce the schema strictly.
-     */
-    readonly strict?: boolean;
-
-    /**
-     * JSON schema constraining the completion.
-     */
-    readonly schema: Record<string, unknown>;
-  };
-};
-
-/**
- * One chat exchange request.
- *
- * @example
- * ```ts
- * const request: ChatTextRequest = {
- *   modelId: 'hf:zai-org/GLM-4.7-Flash',
- *   messages: [{ role: 'user', content: '喵？', },],
- *   signal: AbortSignal.timeout(120_000,),
- * };
- * ```
- */
-export type ChatTextRequest = {
-  /**
-   * Catalog model receiving the exchange.
-   */
-  readonly modelId: SyntheticModelId;
-
-  /**
-   * Conversation sent as-is.
-   */
-  readonly messages: readonly ChatMessage[];
-
-  /**
-   * Abort signal honored for the whole exchange, wait included.
-   */
-  readonly signal: AbortSignal;
-
-  /**
-   * Completion token cap when the caller bounds output.
-   */
-  readonly maxTokens?: number;
-
-  /**
-   * Sampling temperature when the caller pins it.
-   */
-  readonly temperature?: number;
-
-  /**
-   * Structured-output constraint when the caller expects JSON.
-   */
-  readonly responseFormat?: JsonSchemaResponseFormat;
-};
-
-/**
- * Raw text outcome of one chat exchange.
- *
- * @example
- * ```ts
- * const reply: ChatTextReply = { text: '喵。', };
- * ```
- */
-export type ChatTextReply = {
-  /**
-   * Verbatim content of the first choice.
-   */
-  readonly text: string;
-
-  /**
-   * Token usage when the server reported it.
-   */
-  readonly usage?: CompletionUsage;
-};
-
-/**
- * One schema-validated chat request:
- * text request plus the guard that admits parsed content.
- *
- * @example
- * ```ts
- * const request: ChatJsonRequest<Verdict> = { ...textRequest, validate: isVerdict, };
- * ```
- */
-export type ChatJsonRequest<ValueT,> = ChatTextRequest & {
-  /**
-   * Guard admitting parsed model JSON into the typed pipeline.
-   */
-  readonly validate: (value: unknown,) => value is ValueT;
-};
-
-/**
- * Outcome of one schema-validated chat exchange.
- * Refusals and mismatches are data (reroute and scorecard), never exceptions.
- *
- * @example
- * ```ts
- * const outcome: ChatJsonOutcome<Verdict> = { kind: 'ok', value, rawText, };
- * ```
- */
-export type ChatJsonOutcome<ValueT,> =
-  | {
-    /**
-     * Content parsed and validated.
-     */
-    readonly kind: 'ok';
-
-    /**
-     * Typed content admitted by the caller's guard.
-     */
-    readonly value: ValueT;
-
-    /**
-     * Verbatim model text for audit trails.
-     */
-    readonly rawText: string;
-  }
-  | {
-    /**
-     * Opening reads as a refusal; reroute cross-family.
-     */
-    readonly kind: 'refusal-shaped';
-
-    /**
-     * Verbatim model text for audit trails.
-     */
-    readonly rawText: string;
-
-    /**
-     * Refusal marker that fired; feeds the scorecard.
-     */
-    readonly marker: string;
-  }
-  | {
-    /**
-     * Content is not valid JSON or failed the caller's guard.
-     */
-    readonly kind: 'schema-mismatch';
-
-    /**
-     * Verbatim model text for audit trails.
-     */
-    readonly rawText: string;
-
-    /**
-     * What failed: parse step or guard.
-     */
-    readonly detail: string;
-  };
-
-/**
- * Injected-transport client surface drivers consume.
- *
- * @example
- * ```ts
- * const client: SyntheticClient = createSyntheticClient({ apiKey, },);
- * ```
- */
-export type SyntheticClient = {
-  /**
-   * Free-text chat exchange.
-   */
-  readonly chatText: (request: ForeignBorrowed<ChatTextRequest>,) => Promise<ChatTextReply>;
-
-  /**
-   * Schema-validated chat exchange returning outcomes as data.
-   */
-  readonly chatJson: <ValueT,>(
-    request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
-  ) => Promise<ChatJsonOutcome<ValueT>>;
-
-  /**
-   * Current quota snapshot; free per provider docs.
-   */
-  readonly quotas: (args: { readonly signal: AbortSignal; },) => Promise<QuotaSnapshot>;
-};
-
-/**
- * Strips one wrapping markdown code fence when present,
- * because models wrap JSON in fences despite instructions.
- * Single linear pass over fence positions; inner text is returned trimmed.
- *
- * @param text - model content possibly wrapped in a fence
- *
- * @returns Inner text when fenced, trimmed input otherwise
- *
- * @example
- * ```ts
- * stripCodeFence({ text: '```json\n{"a":1}\n```', },);
- * ```
- */
-export function stripCodeFence({ text, }: { readonly text: string; },): string {
-  /**
-   * Input without surrounding whitespace so fence detection sees column zero.
-   */
-  const trimmed = text.trim();
-  if (!trimmed.startsWith('```',))
-    return trimmed;
-
-  /**
-   * End of the opening fence line (language tag included).
-   */
-  const openingEnd = trimmed.indexOf('\n',);
-  if (openingEnd === (-1))
-    return trimmed;
-
-  /**
-   * Start of the closing fence; must sit after the opening line.
-   */
-  const closingStart = trimmed.lastIndexOf('```',);
-  if (closingStart <= openingEnd)
-    return trimmed;
-
-  return trimmed
-    .slice(
-      openingEnd + 1,
-      closingStart,
-    )
-    .trim();
-}
-
-/**
- * Parse attempt over model-written JSON;
- * failure is data because model content defects are ordinary.
- *
- * @param text - fence-stripped model content
- *
- * @returns Parsed value, or failure detail
- *
- * @example
- * ```ts
- * const attempt = parseModelJson({ text: stripped, },);
- * ```
- */
-function parseModelJson({ text, }: { readonly text: string; },):
-  | {
-    readonly parsed: true;
-    readonly value: unknown;
-  }
-  | {
-    readonly parsed: false;
-    readonly detail: string;
-  }
-{
-  try {
-    return {
-      parsed: true,
-      value: JSON.parse(text,),
-    };
-  }
-  catch (error) {
-    return {
-      parsed: false,
-      detail: String(error,),
-    };
-  }
-}
-
-/**
- * Formats the token-usage suffix of a completion log line.
- *
- * @param extracted - completion whose usage the log line reports
- *
- * @returns Usage suffix, empty when the server reported none
- *
- * @example
- * ```ts
- * rl.debug(`done${formatUsageNote({ extracted, },)}`,);
- * ```
- */
-function formatUsageNote(
-  { extracted, }: { readonly extracted: ExtractedCompletion; },
-): string {
-  if (extracted.usage === undefined)
-    return '';
-
-  /**
-   * Component token counts pulled out for the log line.
-   */
-  const {
-    prompt_tokens: promptTokens,
-    completion_tokens: completionTokens,
-  } = extracted.usage;
-
-  return `, ${String(promptTokens,)}+${String(completionTokens,)} tokens`;
-}
 
 /**
  * Builds one client over injected transport.
@@ -581,21 +273,63 @@ export function createSyntheticClient(
     },);
 
     /**
-     * Parse attempt over fence-stripped content.
+     * Usage spread carried onto every outcome for budget observability.
      */
-    const attempt = parseModelJson({ text: stripCodeFence({ text: reply.text, },), },);
+    const usageSpread = reply.usage === undefined
+      ? {}
+      : { usage: reply.usage, };
+
+    // The API's own refusal field outranks every content heuristic.
+    if (reply.refusal !== undefined) {
+      rl.debug(`${request.modelId}: refusal-shaped (api-refusal-field)`,);
+      return {
+        kind: 'refusal-shaped',
+        rawText: reply.text === ''
+          ? reply.refusal
+          : reply.text,
+        marker: 'api-refusal-field',
+        ...usageSpread,
+      };
+    }
+
+    /**
+     * Answer channel with any embedded thinking block split off;
+     * refusal scanning and parsing judge the answer,
+     * never the deliberation (which harmlessly contains refusal-like phrasing).
+     */
+    const {
+      answer,
+      truncatedThinking,
+    } = stripThinkBlock({ text: reply.text, },);
+
+    if (truncatedThinking) {
+      rl.debug(`${request.modelId}: schema-mismatch (truncated thinking)`,);
+      return {
+        kind: 'schema-mismatch',
+        rawText: reply.text,
+        detail: 'output was truncated inside its thinking block;'
+          + ' raise or omit maxTokens (thinking tokens count against it)',
+        ...usageSpread,
+      };
+    }
+
+    /**
+     * Parse attempt over fence-stripped answer.
+     */
+    const attempt = parseModelJson({ text: stripCodeFence({ text: answer, },), },);
 
     if (!attempt.parsed) {
       /**
-       * Refusal classification of the unparseable reply.
+       * Refusal classification of the unparseable answer.
        */
-      const scan = detectRefusalShape({ text: reply.text, },);
+      const scan = detectRefusalShape({ text: answer, },);
       if (scan.refusalShaped) {
         rl.debug(`${request.modelId}: refusal-shaped (${scan.marker})`,);
         return {
           kind: 'refusal-shaped',
           rawText: reply.text,
           marker: scan.marker,
+          ...usageSpread,
         };
       }
       rl.debug(`${request.modelId}: schema-mismatch (unparseable)`,);
@@ -603,6 +337,7 @@ export function createSyntheticClient(
         kind: 'schema-mismatch',
         rawText: reply.text,
         detail: `content is not valid JSON: ${attempt.detail}`,
+        ...usageSpread,
       };
     }
 
@@ -616,6 +351,7 @@ export function createSyntheticClient(
         kind: 'schema-mismatch',
         rawText: reply.text,
         detail: 'content parsed as JSON but failed the caller schema guard',
+        ...usageSpread,
       };
     }
 
@@ -623,6 +359,7 @@ export function createSyntheticClient(
       kind: 'ok',
       value: candidate,
       rawText: reply.text,
+      ...usageSpread,
     };
   }
 

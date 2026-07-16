@@ -19,9 +19,10 @@ import {
 } from './completion-shape.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import {
-  createSyntheticClient,
   stripCodeFence,
-} from './synthetic-client.ts';
+  stripThinkBlock,
+} from './model-content.ts';
+import { createSyntheticClient, } from './synthetic-client.ts';
 import type {
   ModelTransport,
   TransportExchange,
@@ -129,6 +130,35 @@ await describe({
       fn: async () => {
         expect(stripCodeFence({ text: '  {"a":1}\n', },),).toBe('{"a":1}',);
         expect(stripCodeFence({ text: '```json\n{"a":1}', },),).toBe('```json\n{"a":1}',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: stripThinkBlock.name,
+  children: [
+    it({
+      name: 'splits the answer off an embedded thinking block',
+      fn: async () => {
+        expect(stripThinkBlock({ text: '<think>猫喜欢晒太阳吗？是的。</think>\n{"a":1}', },),)
+          .toEqual({ answer: '\n{"a":1}', truncatedThinking: false, },);
+      },
+    },),
+
+    it({
+      name: 'passes content without a thinking block through untouched',
+      fn: async () => {
+        expect(stripThinkBlock({ text: '{"a":1}', },),)
+          .toEqual({ answer: '{"a":1}', truncatedThinking: false, },);
+      },
+    },),
+
+    it({
+      name: 'reports truncation when thinking never closes',
+      fn: async () => {
+        expect(stripThinkBlock({ text: '<think>还在想猫的事情', },),)
+          .toEqual({ answer: '', truncatedThinking: true, },);
       },
     },),
   ],
@@ -392,6 +422,107 @@ await describe({
             ? outcome.value.verdict
             : '',
         ).toBe('pass',);
+      },
+    },),
+
+    it({
+      name: 'admits think-wrapped JSON and ignores refusal phrasing inside thinking',
+      fn: async () => {
+        /** Body whose content deliberates about refusing, then answers validly. */
+        const deliberated = JSON.stringify({
+          choices: [{
+            message: {
+              content:
+                '<think>Should I say i cannot help? No, the request is benign.</think>\n```json\n{"verdict":"pass"}\n```',
+            },
+          },],
+          usage: { prompt_tokens: 40, completion_tokens: 900, },
+        },);
+        /** Transport replaying the deliberated completion. */
+        const { transport, } = recordedTransport({
+          replies: [{ status: 200, bodyText: deliberated, },],
+        },);
+        /** Client under test. */
+        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /** Outcome of the deliberated exchange. */
+        const outcome = await client.chatJson({
+          modelId: 'hf:zai-org/GLM-5.2',
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+          validate: isCatVerdict,
+        },);
+        expect(outcome.kind,).toBe('ok',);
+        expect(
+          outcome.kind === 'ok'
+            ? outcome.value.verdict
+            : '',
+        ).toBe('pass',);
+        expect(outcome.usage,).toEqual({ prompt_tokens: 40, completion_tokens: 900, },);
+      },
+    },),
+
+    it({
+      name: 'reports truncated thinking as schema-mismatch naming the cause',
+      fn: async () => {
+        /** Body whose content died inside its thinking block. */
+        const truncated = JSON.stringify({
+          choices: [{ message: { content: '<think>猫的翻译问题很复杂，首先', }, },],
+        },);
+        /** Transport replaying the truncated completion. */
+        const { transport, } = recordedTransport({
+          replies: [{ status: 200, bodyText: truncated, },],
+        },);
+        /** Client under test. */
+        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /** Outcome of the truncated exchange. */
+        const outcome = await client.chatJson({
+          modelId: 'hf:zai-org/GLM-5.2',
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+          validate: isCatVerdict,
+        },);
+        expect(outcome.kind,).toBe('schema-mismatch',);
+        expect(
+          outcome.kind === 'schema-mismatch'
+            ? outcome.detail
+            : '',
+        ).toContain('thinking',);
+      },
+    },),
+
+    it({
+      name: 'treats the API refusal field as first-class refusal',
+      fn: async () => {
+        /** Body whose message refused with null content. */
+        const refusedByApi = JSON.stringify({
+          choices: [{
+            message: { content: null, refusal: 'Request declined by policy.', },
+          },],
+        },);
+        /** Transport replaying the API-refused completion. */
+        const { transport, } = recordedTransport({
+          replies: [{ status: 200, bodyText: refusedByApi, },],
+        },);
+        /** Client under test. */
+        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /** Outcome of the API-refused exchange. */
+        const outcome = await client.chatJson({
+          modelId: 'hf:Qwen/Qwen3.6-27B',
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+          validate: isCatVerdict,
+        },);
+        expect(outcome.kind,).toBe('refusal-shaped',);
+        expect(
+          outcome.kind === 'refusal-shaped'
+            ? outcome.marker
+            : '',
+        ).toBe('api-refusal-field',);
+        expect(
+          outcome.kind === 'refusal-shaped'
+            ? outcome.rawText
+            : '',
+        ).toBe('Request declined by policy.',);
       },
     },),
 
