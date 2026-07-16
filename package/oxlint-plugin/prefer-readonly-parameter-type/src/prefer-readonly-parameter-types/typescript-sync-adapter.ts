@@ -189,6 +189,22 @@ function getApi(): API {
 }
 
 /**
+ * Starts semantic child before Oxlint allocates one fixed AST buffer per worker.
+ *
+ * Oxlint reserves a multi-gigabyte virtual buffer for every Rust worker when a
+ * JavaScript plugin is active. Starting TypeScript after those reservations can
+ * make `child_process.spawn` fail with `ENOMEM` on high-core hosts.
+ *
+ * @example
+ * ```ts
+ * initializeSemanticBridge();
+ * ```
+ */
+export function initializeSemanticBridge(): void {
+  getApi();
+}
+
+/**
  * Restores source text exactly as TypeScript sees it.
  *
  * @param sourceText - Oxlint source text.

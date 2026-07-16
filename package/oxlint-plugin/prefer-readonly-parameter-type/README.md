@@ -47,7 +47,9 @@ The rule combines TypeScript 7 semantic types with whole-project mutation summar
 - inline suppression is prohibited by the companion no-restricted-syntax rule.
 
 CLI diagnostics are authoritative because Oxlint's language server does not execute JavaScript plugins.
-Semantic-plugin lint and fix tasks use one Oxlint worker because TypeScript bridge state is process-local.
+Semantic-plugin state is process-local because Oxlint serializes JavaScript-plugin callbacks on its main JavaScript thread.
+Package lint and fix tasks leave Rust worker count at Oxlint's default so native work remains parallel.
+Repository-wide package fanout pins each child to one worker to avoid cross-package oversubscription.
 Process-local final-index reuse assumes Oxlint's input snapshot stays stable for one bridge lifecycle.
 `closeSemanticBridge()` clears every process cache;
 persistent cache entries use complete content fingerprints across later Oxlint processes.

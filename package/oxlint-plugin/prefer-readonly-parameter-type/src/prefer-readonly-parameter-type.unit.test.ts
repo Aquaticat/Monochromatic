@@ -60,6 +60,28 @@ async function lintReadonly(fixturePath: string,): Promise<readonly OxlintDiagno
 }
 
 /**
+ * Runs semantic rule after Oxlint creates high-count fixed allocator pool.
+ *
+ * @param fixturePath - Relative fixture path under source root.
+ *
+ * @returns readonly-rule diagnostics.
+ */
+async function lintReadonlyWithHighWorkerCount(
+  fixturePath: string,
+): Promise<readonly OxlintDiagnostic[]> {
+  return runOxlintFixture({
+    codePrefix: 'prefer-readonly-parameter-type(',
+    configFlag: '-c',
+    fixtureConfig: READONLY_FIXTURE_CONFIG,
+    target: resolveFixtureTarget({
+      fixtureSourceRoot: FIXTURES,
+      fixturePath,
+    },),
+    threads: 16,
+  },);
+}
+
+/**
  * Applies readonly semantic fixes to disposable source inside fixture project.
  *
  * @param source - Source text to lint and optionally suggest-fix.
@@ -121,6 +143,12 @@ children: [
     name: 'accepts readonly inputs, overload-sensitive Node effects, documented uncertainty, and bodyless contracts',
     fn: async () => {
       expect(await lintReadonly('readonly-valid.ts',),).toEqual([],);
+    },
+  },),
+  it({
+    name: 'starts semantic child before high-worker fixed allocator reservations',
+    fn: async () => {
+      expect(await lintReadonlyWithHighWorkerCount('readonly-valid.ts',),).toEqual([],);
     },
   },),
   it({

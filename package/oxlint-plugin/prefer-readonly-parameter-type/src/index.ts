@@ -4,6 +4,7 @@ import {
 } from '@oxlint/plugins';
 
 import { preferReadonlyParameterTypes, } from './prefer-readonly-parameter-types.ts';
+import { initializeSemanticBridge, } from './prefer-readonly-parameter-types/typescript-sync-adapter.ts';
 
 export {
   classifyReadonlyType,
@@ -18,6 +19,7 @@ export {
 
 export {
   closeSemanticBridge,
+  initializeSemanticBridge,
   openSemanticFile,
   semanticBridgeCacheStats,
   type SemanticBridgeCacheStats,
@@ -71,6 +73,8 @@ export {
   findNodeAtOffset,
   typescriptOffset,
 } from './prefer-readonly-parameter-types/typescript-node-map.ts';
+
+initializeSemanticBridge();
 
 /**
  * Oxlint plugin enforcing honest readonly parameter and mutation contracts.
