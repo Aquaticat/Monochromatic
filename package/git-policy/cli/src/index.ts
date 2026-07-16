@@ -8,6 +8,7 @@
 import { runCliGit, } from './bin.ts';
 
 export * from './authoring.ts';
+export { resolveGit, } from './resolve-git.ts';
 
 // Direct execution runs the wrapper; module import remains inert.
 if (import.meta.main)

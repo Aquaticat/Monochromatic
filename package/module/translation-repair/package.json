@@ -15,11 +15,13 @@
     "./ts/*": "./src/*"
   },
   "dependencies": {
+    "@monochromatic-dev/git-policy-cli": "workspace:*",
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-llm-type": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "nano-spawn": "catalog:",
     "p-limit": "catalog:",
     "remark-gfm": "catalog:",
     "remark-mdx": "catalog:",
