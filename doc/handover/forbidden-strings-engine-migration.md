@@ -446,6 +446,11 @@ Updated:
     namespaced ids yes/no;
     baseline names vs hashes vs full source;
     local index vs keyed hash.
+    FULL design analysis preserved durably at
+    `doc/planning/forbidden-strings-rule-identity-ux.md`
+    (problem, redaction scope, the runtime-identity constraint,
+    the hash membership-oracle assessment, four options, recommendation);
+    read it to resume this decision, this handover only summarizes it.
 - #390 DONE and CLOSED (sonnet hygiene pass):
   #158,
    #240,
