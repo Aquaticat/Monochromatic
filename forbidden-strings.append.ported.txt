@@ -1,0 +1,18 @@
+# forbidden-strings shared appendix (checked into version control).
+# Non-sensitive deny-list rules that apply to every clone of this repo.
+# Add literal substrings or /PATTERN/FLAGS regex rules below; one per line.
+# This file is concatenated onto forbidden-strings.append.local.txt by
+# file-enforcer to produce the runtime .cache/forbidden-strings.rules.txt
+# (the betterleaks baseline ships inside the scanner binary; repo scans pass
+# --builtin-rules). Keep sensitive rules (codenames, customer names, partner
+# identifiers, politically-charged literals) out of this file; put those in
+# the gitignored forbidden-strings.append.local.txt instead.
+
+# AGENTS.md shortcode labels reserved against the NCD rule: common acronyms,
+# abbreviations, country codes, networking and tech identifiers, and medical terms
+# whose first reading would mislead a future reader. Each is forbidden as a `^CODE:`
+# label at the start of a line. Combined into two rules (the three-letter codes, and
+# the two-letter-plus-digit codes like PR0:, TS1:); see git history for the per-code
+# rationale.
+/^(?:(?:INF)|(?:PRO)|(?:MEA)|(?:ADJ)|(?:CAN)|(?:DNF)|(?:SYR)|(?:PRC)|(?:FDP)|(?:SRS)|(?:ISO)|(?:EXC)|(?:VFR)|(?:TSA)|(?:TSB)|(?:TSC)|(?:TSE)|(?:PPA)|(?:TCP)|(?:UDP)|(?:DNS)|(?:VPN)|(?:SSH)|(?:MAC)|(?:USB)|(?:PCI)|(?:CPU)|(?:GPU)|(?:AWS)|(?:GCP)|(?:SQL)|(?:IBM)|(?:NPM)|(?:RPG)|(?:NPC)|(?:GTA)|(?:USA)|(?:CHN)|(?:RUS)|(?:PRK)|(?:IRN)|(?:ISR)|(?:ESP)|(?:UKR)|(?:WIP)|(?:TBD)|(?:POC)|(?:MVP)|(?:ETA)|(?:KPI)|(?:SAM)|(?:BOB)|(?:MAX)|(?:IAN)|(?:HIV)|(?:STD)|(?:STI)|(?:UTI)|(?:ALS)|(?:OCD)|(?:ADD)|(?:DID)|(?:IBS)|(?:IBD)|(?:CAD)|(?:CHF)|(?:DVT)|(?:TIA)|(?:PAD)|(?:HPV)|(?:HBV)|(?:HCV)|(?:HSV)|(?:RSV)|(?:CMV)|(?:SLE)|(?:PID)|(?:ASD)|(?:CKD)|(?:FLU)|(?:GAD)|(?:BPD)|(?:MRI)|(?:ECG)|(?:EKG)|(?:EEG)|(?:EMG)|(?:CPR)|(?:IVF)|(?:CAT)|(?:PET)|(?:IUD)|(?:ECT)|(?:DNR)|(?:HRT)|(?:ART)|(?:PAP)|(?:ICU)):/
+/^(?:(?:PR)|(?:TS)|(?:TX)|(?:RE)|(?:PS)|(?:DP)|(?:AS)|(?:CS)|(?:SA)|(?:CA)|(?:FF))[0-9]:/
