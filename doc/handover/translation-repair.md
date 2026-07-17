@@ -85,12 +85,14 @@ Polish loop findings and fixes (Xu_Yushu, two full passes):
   pass 1 (13k and 33k tokens) and blew the 65_536 ceiling on BOTH in
   passes 2 and 3 at temperature 0 on identical input; Flash and
   Nemotron flip between completion and ceiling blowout per pass.
-  The bounded one-retry on truncated output is DONE (commit
-  `b65d3069f`): `truncated-attempt.ts` detects truncation-shaped schema
-  mismatches (truncated-thinking detail, cut-off-JSON parser messages,
-  or completion tokens at the 65_536 ceiling), and `runCriticBenchmark`
-  grants exactly one fresh-deadline retry, keeping the discarded first
-  detail in `truncatedFirstAttemptDetail`.
+  The bounded second attempt is DONE (commits `b65d3069f`, `eb32173bf`):
+  `attempt-retry.ts` (renamed from its truncation-only predecessor, whose
+  retired name sits in the forbidden-strings appendix) detects
+  truncation-shaped schema mismatches (truncated-thinking detail,
+  cut-off-JSON parser messages, or completion tokens at the 65_536
+  ceiling) plus http-error records, and `runCriticBenchmark` grants
+  exactly one fresh-deadline second attempt, keeping the discarded first
+  detail in `retriedFirstAttemptDetail`.
   Live pass 4 through `runCriticBenchmark` (seeded Xu_Yushu, all seven
   models, 308 s wall): every model completed `ok` on its FIRST attempt,
   zero truncations, so the retry path stayed idle live; trigger and cap
@@ -237,6 +239,14 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 - Never set reasoning effort on Synthetic calls (user directive 2026-07-16):
   non-default values sometimes error, sometimes produce low-quality or worse
   output. Default only; there is no safe latency knob there.
+- Run five concurrent streams per model and absorb burst weather with
+  retries, not gentle dispatch (user directive 2026-07-16). Implemented in
+  `transient-retry.ts` (commit `eb32173bf`): four transport retries on an
+  equal-jitter ladder (half fixed, half random, doubling from 1 s),
+  retryable statuses 408/429/500/502/503/504, thrown transport failures
+  (mid-stream connection resets) retried too, caller aborts always
+  propagate untouched, and the policy is injectable
+  (`retryPolicy: { limit, baseMs }`) so tests run on tiny backoffs.
 - Never set temperature either (user directive 2026-07-16): per the user,
   this is less a Synthetic API issue and more their upstream GPU providers
   plus inference pipelines plus the models' inherent issues; either way the
@@ -439,8 +449,8 @@ Deterministic core plus model stages, revised after an adversarial second-model 
    MT-seeded corpus carries genuine errors),
    `benchmark.ts` (`runCriticBenchmark`: entries and models parallel,
    HTTP failures as attempt data, aborts propagate, and one
-   fresh-deadline retry per truncation-shaped mismatch via
-   `truncated-attempt.ts`).
+   fresh-deadline second attempt per transient-shaped failure via
+   `attempt-retry.ts`).
    First real run: entries Huasheng and DarlinChit, 2 derived omission seeds each,
    all 7 models; driver script `run-benchmark.ts` in the session scratchpad;
    results land in `benchmark-result.json` there and must be copied into this doc.
