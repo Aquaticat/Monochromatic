@@ -176,3 +176,120 @@ await describe({
     },),
   ],
 },);
+
+/**
+ * Comment-bearing fixture with cat-themed invention:
+ * front matter, a standalone comment hiding a footnote-marker look-alike,
+ * and a real resolving footnote pair.
+ */
+const COMMENTED_FIXTURE = `---
+name: whiskers
+---
+
+## 简介
+
+猫猫喜欢晒太阳[^1]。
+
+<!-- 编辑备注：[^9] 这个被注释掉的引用不能进入脚注图 -->
+
+猫猫也喜欢追蝴蝶。
+
+[^1]:[关于猫晒太阳的注释。](https://example.org/a)
+`;
+
+/**
+ * Fixture whose body carries an unclosed MDX brace expression,
+ * failing the strict grammar without any HTML comment involved.
+ */
+const BROKEN_EXPRESSION_FIXTURE = `## 简介
+
+猫猫的表达式 {'没有关闭
+
+猫猫继续晒太阳。
+`;
+
+await describe({
+  name: 'parseDocument (tolerant parsing)',
+  children: [
+    it({
+      name: 'keeps parseFindings empty for strictly parsing documents',
+      fn: async () => {
+        expect(parseDocument({ text: MEMORIAL_FIXTURE, },).parseFindings,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'parses comment-bearing documents, reporting each skipped comment',
+      fn: async () => {
+        /** Parsed comment-bearing fixture. */
+        const doc = parseDocument({ text: COMMENTED_FIXTURE, },);
+
+        expect(doc.parseFindings,).toEqual([{
+          kind: 'html-comment-skipped',
+          startOffset: COMMENTED_FIXTURE.indexOf('<!--',),
+          endOffset: COMMENTED_FIXTURE.indexOf('-->',) + '-->'.length,
+          detail: 'HTML comment masked to whitespace before parsing',
+        },],);
+        // Prose on both sides of the comment still parses into nodes.
+        expect(doc.nodes.map(function toKind(node,): string {
+          return node.kind;
+        },),).toEqual(
+          ['heading', 'paragraph', 'paragraph', 'footnoteDefinition',],
+        );
+        // Nodes still anchor byte-for-byte onto the ORIGINAL text.
+        for (const node of doc.nodes) {
+          expect(node.text,).toBe(doc.text.slice(node.startOffset, node.endOffset,),);
+          expect(node.text,).not.toContain('编辑备注',);
+        }
+      },
+    },),
+
+    it({
+      name: 'keeps commented-out marker look-alikes out of the footnote graph',
+      fn: async () => {
+        /** Parsed comment-bearing fixture. */
+        const doc = parseDocument({ text: COMMENTED_FIXTURE, },);
+        // The real reference resolves; the commented-out [^9] never appears.
+        expect(doc.footnoteGraph.findings,).toEqual([],);
+        expect(
+          doc
+            .footnoteGraph
+            .references
+            .map(function toIdentifier(reference,): string {
+              return reference.identifier;
+            },),
+        ).toEqual(['1',],);
+      },
+    },),
+
+    it({
+      name: 'reports an unterminated comment as its own finding kind',
+      fn: async () => {
+        /** Body whose comment swallows the tail of the document. */
+        const doc = parseDocument({
+          text: '## 简介\n\n猫猫晒太阳。\n\n<!-- 没有结束的备注\n尾巴',
+        },);
+        expect(doc.parseFindings.map(function toKind(finding,): string {
+          return finding.kind;
+        },),).toEqual(['unterminated-html-comment',],);
+      },
+    },),
+
+    it({
+      name: 'downgrades strict-grammar failures to markdown with a finding',
+      fn: async () => {
+        /** Parsed broken-expression fixture. */
+        const doc = parseDocument({ text: BROKEN_EXPRESSION_FIXTURE, },);
+
+        expect(doc.parseFindings,).toHaveLength(1,);
+        expect(doc.parseFindings[0]?.kind,).toBe('mdx-downgraded',);
+        expect(doc.parseFindings[0]?.detail,).toContain('fell back to plain markdown',);
+        // The fallback grammar still yields anchored nodes over the whole body.
+        expect(doc.nodes.length,).toBeGreaterThan(1,);
+        for (const node of doc.nodes) {
+          expect(node.text,).toBe(doc.text.slice(node.startOffset, node.endOffset,),);
+        }
+      },
+    },),
+  ],
+},);

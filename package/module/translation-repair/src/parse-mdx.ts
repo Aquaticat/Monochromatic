@@ -70,4 +70,26 @@ export function parseMdxBody({ body, }: { readonly body: string; },): Root {
   }
 }
 
+/**
+ * Parses body text as plain markdown (GFM, no MDX extensions).
+ * Tolerant fallback grammar: markdown parsing is total,
+ * so constructs the MDX grammar rejects (raw HTML, brace expressions)
+ * survive as literal `html` and text nodes instead of failing the document.
+ *
+ * @param body - markdown source with front matter already split away
+ *
+ * @returns mdast root whose node positions are body-relative character offsets
+ *
+ * @example
+ * ```ts
+ * const root = parseMarkdownBody({ body: '<!-- note -->\n\nParagraph.\n', },);
+ * ```
+ */
+export function parseMarkdownBody({ body, }: { readonly body: string; },): Root {
+  return unified()
+    .use(remarkParse,)
+    .use(remarkGfm,)
+    .parse(body,);
+}
+
 //endregion MDX parsing

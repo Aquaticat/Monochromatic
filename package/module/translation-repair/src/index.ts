@@ -47,11 +47,17 @@ export {
   type IssueSeverity,
 } from './issue-taxonomy.ts';
 export {
+  type MaskedCommentRegion,
+  maskHtmlComments,
+} from './mask-html-comments.ts';
+export {
   MdxParseError,
+  parseMarkdownBody,
   parseMdxBody,
 } from './parse-mdx.ts';
 export {
   parseDocument,
+  type ParseFinding,
   type RepairDocument,
 } from './parse-document.ts';
 export {
