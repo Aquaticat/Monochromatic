@@ -60,16 +60,19 @@ export {
   type EnvelopePlan,
 } from './patch-model.ts';
 export {
-  computeRepairScorecard,
   contentWords,
   measureSeedRestoration,
+  RESTORATION_WORD_THRESHOLD,
+  type SeedRestoration,
+} from './lexical-restoration.ts';
+export {
+  computeRepairScorecard,
+  DEFAULT_JUDGE_MODEL_IDS,
   MIN_REPAIR_DISPATCH_BUDGET_MS,
   type RepairAttemptRecord,
   type RepairBenchmarkResult,
   type RepairScorecard,
-  RESTORATION_WORD_THRESHOLD,
   runRepairBenchmark,
-  type SeedRestoration,
 } from './repair-benchmark.ts';
 export {
   type ChunkRepairOutcome,
@@ -95,6 +98,23 @@ export {
   repairTranslation,
   type RepairTranslationResult,
 } from './repair-translation.ts';
+export {
+  buildRestorationJudgeMessages,
+  isRestorationJudgeWire,
+  isRestorationVerdict,
+  type JudgeReference,
+  RESTORATION_JUDGE_RESPONSE_FORMAT,
+  RESTORATION_JUDGE_VERDICTS,
+  type RestorationJudgePlan,
+  type RestorationJudgeWire,
+  type RestorationJudgmentWire,
+  type RestorationVerdict,
+  resolveRestorationJudgment,
+} from './restoration-judge-wire.ts';
+export {
+  runRestorationJudge,
+  type SeedJudgment,
+} from './restoration-judge.ts';
 export { gradeSeedDetection, } from './seed-detection.ts';
 export {
   attemptStageCall,
