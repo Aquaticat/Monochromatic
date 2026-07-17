@@ -109,6 +109,16 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   price-aware role routing belongs to the orchestrator.
 - End-to-end boundary check passed: real GLM-4.7-Flash `chatJson` round trip returned
   guard-validated JSON and the quota delta matched the estimate.
+- Chat calls must stream (user directive: the provider is finicky without streaming;
+  and the first real benchmark died on fetch's five-minute headers timeout while a
+  model was thinking).
+  The client always sends `stream: true` with `stream_options.include_usage`;
+  the transport drains the whole SSE body to text and `stream-completion.ts`
+  reassembles it, requiring the `[DONE]` terminator (cut-off streams throw instead
+  of returning truncated content) and folding `delta.refusal` into the first-class
+  refusal field.
+  Do not add an undici dependency for timeout control (user directive);
+  streaming makes plain platform fetch sufficient.
 - These models think heavily: expect 90%+ of output tokens to be thinking tokens
   (user guidance; live probe confirmed 35 completion tokens for a 1-token answer).
   Consequences already built into the client:
