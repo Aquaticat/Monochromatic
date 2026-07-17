@@ -85,6 +85,22 @@ pub mod fuzz_api;
 /// ```
 pub const BUILTIN_RULES: &str = include_str!("../data/builtin-rules.txt");
 
+/// Re-exports the stage-one forbidden-regex rule compiler's public surface.
+// What:     `pub use rule::frx::{...}` lifts the new engine's rule-compiler
+//           entry points to the crate root so they are reachable crate-public
+//           API. Stage two (#384) wires them into the scan path; for now they
+//           are built and unit-tested only.
+// Why:      A private, not-yet-called module would otherwise trip the dead-code
+//           lint under the crate's `-D warnings` clippy gate. Exposing the API
+//           is not "wiring into the scan path": `run_cli_from_env` and the
+//           loader still use the resharp/regex pipeline unchanged.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export { compileFromText, loadPrecompiled, LoadError } from "./rule/frx";
+// ```
+pub use rule::frx::{compile_from_text, load_precompiled, LoadError};
+
 /// Imports dependencies used by this module.
 // What:     `use anyhow::Result;` imports `anyhow`'s one-parameter application
 //           result alias. Sibling typed results name their exact error type.

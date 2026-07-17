@@ -21,6 +21,15 @@ mod atom;
 mod compile;
 /// Registers the `engine` child module.
 mod engine;
+/// Registers the `frx` child module: the forbidden-regex rule compiler.
+// What:     `pub mod frx;` registers the stage-one (#383) rule compiler that
+//           targets the in-house forbidden-regex engine. It is `pub` (not the
+//           default private `mod`) so `lib.rs` can re-export its entry points,
+//           making them reachable crate-public API; without that reach the
+//           not-yet-wired compiler would trip the dead-code lint.
+// Why:      Built and unit-tested alongside the resharp/regex pipeline but not
+//           wired into the scan path until stage two (#384).
+pub mod frx;
 /// Registers the `extract` child module.
 mod extract;
 /// Registers the `nesting` child module.
