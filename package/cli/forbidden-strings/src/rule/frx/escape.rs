@@ -38,7 +38,11 @@ fn needs_escape(ch: char) -> bool {
 /// character, all of which are non-ASCII and never in the escape set) is emitted
 /// unchanged. Only ASCII backslashes are inserted, always before an ASCII byte,
 /// so the result stays valid UTF-8 without a fallible reassembly step.
-pub(super) fn escape_literal(literal: &str) -> String {
+///
+/// Declared `pub` (not `pub(super)`) so the frx module can re-export it under the
+/// `fuzzing` feature for the `fuzz_literal_roundtrip` target; the `rule` module is
+/// private, so this never widens the production public surface.
+pub fn escape_literal(literal: &str) -> String {
     // Reserve a little slack for the backslashes escapable characters add.
     let mut out = String::with_capacity(literal.len() + literal.len() / 4);
     for ch in literal.chars() {

@@ -107,6 +107,21 @@ pub fn load(
     return Ok(LoadedRules { sets })
 }
 
+/// Builds a single-set `LoadedRules` from in-memory rule text, for the fuzz targets.
+///
+/// Compiles `text` through the same strict two-form loader the runtime path uses
+/// (`compile_from_text`: escape literals, drop `m`/`x`, fail closed on any other
+/// flag), then wraps the one resulting set at rule-id base 0. It skips the file read
+/// and the precompiled builtin baseline so a target can drive the loader and scan path
+/// from an in-memory source. The redacted `LoadError` is returned verbatim so a target
+/// can assert the strict-loader contract. Gated on `fuzzing`; the production loader is
+/// [`load`].
+#[cfg(feature = "fuzzing")]
+pub fn load_from_text(text: &str) -> std::result::Result<LoadedRules, crate::LoadError> {
+    let set = compile_from_text(text)?;
+    return Ok(LoadedRules { sets: vec![ScanSet { set, base: 0 }] })
+}
+
 /// Registers the loader precedence and offset tests (sidecar, lint-exempt).
 #[cfg(test)]
 #[path = "frx_load_tests.rs"]

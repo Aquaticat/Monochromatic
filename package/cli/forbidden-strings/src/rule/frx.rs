@@ -26,6 +26,15 @@ mod format;
 /// Re-exports the redacted load-error type as this module's public failure.
 pub use error::LoadError;
 
+/// Re-exports the literal-to-verbose-dialect escaper for the scanner's fuzz targets.
+///
+/// The `fuzz_literal_roundtrip` target drives this escaper directly (not through the
+/// two-form format layer, whose `.trim()`, comment, and regex classification would
+/// eat the adversarial cases it must exercise: leading `#`, embedded newlines, a
+/// leading `/`). Gated on `fuzzing` so the production surface stays unchanged.
+#[cfg(feature = "fuzzing")]
+pub use escape::escape_literal;
+
 /// Compiles a rule source (two-form text) into a combined `RegexSet`.
 ///
 /// Parses the two-form format (escaping literals, applying the flag policy,

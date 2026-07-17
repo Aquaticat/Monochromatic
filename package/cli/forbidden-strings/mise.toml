@@ -14,6 +14,14 @@ run = "node src/mise.port-betterleaks.ts"
 description = "cargo check (no codegen)"
 run = "cargo check"
 
+[tasks."lint:fuzzing"]
+description = "cargo check with the fuzzing feature (type-checks the fuzz_api surface the sidecar consumes)"
+# The production `lint`/`lint:clippy` tasks build with `fuzzing` off, so the
+# `#[cfg(feature = \"fuzzing\")]` re-exports in `src/fuzz_api.rs` (and the helpers they
+# reach: `escape_literal`, `load_from_text`) go untype-checked there. This task is the
+# fast local check for that surface; the fuzz sidecar's `build` is the full integration.
+run = "cargo check --features fuzzing"
+
 [tasks."lint:clippy"]
 description = "Run clippy over the lib, bins, tests, and benches"
 run = "cargo clippy --release --all-targets -- -D warnings"
