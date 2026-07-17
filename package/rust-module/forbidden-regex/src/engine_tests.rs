@@ -27,8 +27,8 @@ use crate::parse::parse;
 // ```
 fn table_engine(pattern: &str, seeds: &[&[u8]]) -> Engine {
     let dfa = minimize(&build_dfa_within(parse(pattern).expect("parses"), 10_000).expect("builds"));
-    let seeds = seeds.iter().map(|s| s.to_vec()).collect();
-    Engine::new(EngineKind::Table(dfa), seeds)
+    let seeds = seeds.iter().map(|s| return s.to_vec()).collect();
+    return Engine::new(EngineKind::Table(dfa), seeds)
 }
 
 #[test]

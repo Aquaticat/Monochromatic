@@ -122,7 +122,7 @@ impl Prefilter {
     /// ```
     #[cfg(test)]
     pub(crate) fn len(&self) -> usize {
-        self.finders.len()
+        return self.finders.len()
     }
 }
 

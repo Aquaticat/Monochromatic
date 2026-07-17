@@ -28,7 +28,7 @@ use crate::parse::parse;
 // ```
 fn search_dfa(pattern: &str) -> Dfa {
     let node = concat(vec![Node::Top, parse(pattern).expect("pattern parses")]);
-    minimize(&build_dfa_within(node, 10_000).expect("builds under cap"))
+    return minimize(&build_dfa_within(node, 10_000).expect("builds under cap"))
 }
 
 // What:    Asserts every kernel agrees with the per-line scalar oracle on `lines`.
@@ -43,7 +43,7 @@ fn search_dfa(pattern: &str) -> Dfa {
 // ```
 fn kernels_agree(pattern: &str, lines: &[&[u8]]) {
     let dfa = search_dfa(pattern);
-    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return dfa.is_match(line)).collect();
 
     let mut scalar = vec![false; lines.len()];
     dfa.is_match_batch_scalar(lines, &mut scalar);
@@ -165,7 +165,7 @@ fn tight_kernel_matches_oracle_on_equal_length_lines() {
         b"AKIA2345", b"nomatch1", b"AKIAZ7Q9", b"xxxxxxxx", b"AKIA0000",
         b"abcdefgh", b"AKIA6QZ7", b"zzzzzzzz", b"AKIA9999", b"plain---",
     ];
-    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return dfa.is_match(line)).collect();
     let mut out = vec![false; lines.len()];
     dfa.is_match_batch_tight_w::<8>(lines, &mut out);
     assert_eq!(out, oracle);
@@ -187,7 +187,7 @@ fn end_of_input_acceptance_fires_on_a_line_end_anchor() {
     // ```
     let dfa = search_dfa("cat$");
     let lines: &[&[u8]] = &[b"cat", b"dog", b"cat", b"act", b"cat", b"tac", b"cat", b"xyz", b"cat"];
-    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return dfa.is_match(line)).collect();
     let mut out = vec![false; lines.len()];
     dfa.is_match_batch_tight_w::<8>(lines, &mut out);
     assert_eq!(out, oracle, "the end-of-input check must use the line-end accept bit");
@@ -206,7 +206,7 @@ fn interleaved_width_hook_fills_every_lane() {
     // ```
     let dfa = search_dfa("AKIA[A-Z2-7]{4}");
     let lines: &[&[u8]] = &[b"AKIA2345", b"miss", b"x AKIAZ7Q9", b"", b"AKIA9999", b"nope", b"AKIA0000"];
-    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return dfa.is_match(line)).collect();
     let mut out = vec![false; lines.len()];
     dfa.is_match_batch_interleaved_w::<16>(lines, &mut out);
     assert_eq!(out, oracle, "the width hook must fill every verdict");
@@ -228,7 +228,7 @@ fn tight_kernel_accumulates_a_match_that_ends_before_the_line() {
     // ```
     let dfa = search_dfa("cat");
     let lines: &[&[u8]] = &[b"catx", b"dogx", b"caty", b"zzzz", b"acat", b"catz"];
-    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return dfa.is_match(line)).collect();
     let mut out = vec![false; lines.len()];
     dfa.is_match_batch_tight_w::<4>(lines, &mut out);
     assert_eq!(out, oracle, "a mid-line match must be accumulated, not only the end boundary");

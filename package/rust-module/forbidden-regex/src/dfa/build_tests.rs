@@ -25,7 +25,7 @@ use crate::error::CompileError;
 // }
 // ```
 fn wide_concat(count: usize) -> Node {
-    Node::Concat((0..count).map(|_| Node::Class(singleton(b'a'))).collect())
+    return Node::Concat((0..count).map(|_| return Node::Class(singleton(b'a'))).collect())
 }
 
 #[test]

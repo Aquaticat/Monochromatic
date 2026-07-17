@@ -24,7 +24,7 @@ use crate::charset::singleton;
 // }
 // ```
 fn lit(b: u8) -> Node {
-    Node::Class(singleton(b))
+    return Node::Class(singleton(b))
 }
 
 #[test]

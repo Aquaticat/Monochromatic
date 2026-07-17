@@ -22,7 +22,7 @@ use crate::{RegexSet, compile};
 // }
 // ```
 fn sample_lines() -> Vec<&'static [u8]> {
-    vec![
+    return vec![
         b"AKIA2345",
         b"nothing to see",
         b"prefix AKIAZ7Q9 suffix",
@@ -41,7 +41,7 @@ fn sample_lines() -> Vec<&'static [u8]> {
 fn regex_batch_equals_per_line_is_match() {
     let re = compile("AKIA[A-Z2-7]{4}").expect("compiles");
     let lines = sample_lines();
-    let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return re.is_match(line)).collect();
     assert_eq!(re.is_match_batch(&lines), oracle);
 }
 
@@ -58,7 +58,7 @@ fn regex_batch_kernels_all_agree() {
     // ```
     let re = compile(r"[A-Za-z0-9]{6}").expect("compiles");
     let lines = sample_lines();
-    let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return re.is_match(line)).collect();
     assert_eq!(re.is_match_batch_scalar(&lines), oracle, "scalar");
     assert_eq!(re.is_match_batch_interleaved(&lines), oracle, "interleaved");
     assert_eq!(re.is_match_batch(&lines), oracle, "default");
@@ -68,7 +68,7 @@ fn regex_batch_kernels_all_agree() {
 fn regexset_batch_equals_per_line_is_match() {
     let set = RegexSet::new(&["AKIA[A-Z2-7]{4}", "secret", "^#deny"]).expect("compiles");
     let lines = sample_lines();
-    let oracle: Vec<bool> = lines.iter().map(|line| set.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return set.is_match(line)).collect();
     assert_eq!(set.is_match_batch(&lines), oracle);
 }
 
@@ -96,7 +96,7 @@ fn default_batch_routes_large_seedless_batch_through_sheng() {
     let re = compile("[0-9a-f]{8}").expect("compiles");
     let base: Vec<&[u8]> = vec![b"deadbeef", b"not hex here", b"cafef00d", b"xyz", b"0123abcd", b""];
     let lines: Vec<&[u8]> = base.iter().cycle().take(700).copied().collect();
-    let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return re.is_match(line)).collect();
     assert_eq!(re.is_match_batch(&lines), oracle);
 }
 
@@ -115,7 +115,7 @@ fn bucketed_batch_equals_per_line_across_lengths() {
     for pattern in ["[0-9a-f]{8}", "AKIA[A-Z2-7]{4}", r"\bcat\b"] {
         let re = compile(pattern).expect("compiles");
         let lines = sample_lines();
-        let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
+        let oracle: Vec<bool> = lines.iter().map(|line| return re.is_match(line)).collect();
         assert_eq!(re.is_match_batch_bucketed(&lines), oracle, "bucketed disagrees for {pattern}");
     }
 }
@@ -142,7 +142,7 @@ fn concat_batch_sweep_equals_per_line_is_match() {
         b"AKIA2345", b"nothing to flag", b"prefix AKIAZ7Q9 suffix", b"#deny this row",
         b"#nope just a hash", b"a secret value", b"plain text", b"", b"AKIA0000", b"x",
     ];
-    let oracle: Vec<bool> = lines.iter().map(|line| set.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return set.is_match(line)).collect();
     assert_eq!(set.is_match_batch_concat(&lines), oracle);
 }
 
@@ -178,11 +178,11 @@ fn bucketed_batch_groups_only_equal_lengths() {
             if len >= 3 {
                 line[len - 3..].copy_from_slice(b"123");
             }
-            line
+            return line
         })
         .collect();
     let lines: Vec<&[u8]> = owned.iter().map(Vec::as_slice).collect();
-    let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return re.is_match(line)).collect();
     assert_eq!(re.is_match_batch_bucketed(&lines), oracle, "unequal lengths must not share a bucket");
 }
 
@@ -204,7 +204,7 @@ fn doc_hidden_kernel_hooks_agree_with_per_line() {
     let seeded = compile("AKIA[A-Z2-7]{16}").expect("compiles");
     assert!(!seeded.is_table(), "a seeded counted rule uses the counting back-end");
     let lines = sample_lines();
-    let oracle: Vec<bool> = lines.iter().map(|line| re.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return re.is_match(line)).collect();
     assert_eq!(re.batch_inter_w::<8>(&lines), oracle, "inter_w hook");
     assert_eq!(re.batch_sheng(&lines), oracle, "sheng hook");
     assert_eq!(re.batch_sheng2(&lines), oracle, "sheng2 hook");
@@ -217,7 +217,7 @@ fn doc_hidden_kernel_hooks_agree_with_per_line() {
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
     let equal: &[&[u8]] = &[b"abcdef", b"ABC123", b"!!!!!!", b"xy z 1", b"qwerty", b"0]0]0]", b"AaBbCc", b"......"];
-    let teq: Vec<bool> = equal.iter().map(|line| re.is_match(line)).collect();
+    let teq: Vec<bool> = equal.iter().map(|line| return re.is_match(line)).collect();
     assert_eq!(re.batch_tight_w::<8>(equal), teq, "tight_w hook");
 }
 
@@ -243,7 +243,7 @@ fn buffer_with_starts(lines: &[&[u8]], sep: &[u8]) -> (Vec<u8>, Vec<usize>) {
             buf.extend_from_slice(sep);
         }
     }
-    (buf, starts)
+    return (buf, starts)
 }
 
 // What:    The (line index, rule index) pairs a per-line matches() yields over the
@@ -267,7 +267,7 @@ fn expected_pairs(set: &RegexSet, lines: &[&[u8]]) -> Vec<(usize, usize)> {
             pairs.push((index, rule));
         }
     }
-    pairs
+    return pairs
 }
 
 #[test]

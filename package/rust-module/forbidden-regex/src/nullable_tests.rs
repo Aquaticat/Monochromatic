@@ -26,11 +26,11 @@ use crate::context::Ctx;
 // }
 // ```
 fn off() -> Ctx {
-    Ctx { line_start: false, line_end: false, word_before: false, word_after: false }
+    return Ctx { line_start: false, line_end: false, word_before: false, word_after: false }
 }
 
 fn lit(b: u8) -> Node {
-    Node::Class(singleton(b))
+    return Node::Class(singleton(b))
 }
 
 #[test]

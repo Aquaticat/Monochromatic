@@ -28,7 +28,7 @@ use crate::parse::parse;
 // ```
 fn anchored_dfa(pattern: &str) -> Dfa {
     let node = parse(pattern).expect("test pattern parses");
-    minimize(&build_dfa_within(node, 10_000).expect("builds under cap"))
+    return minimize(&build_dfa_within(node, 10_000).expect("builds under cap"))
 }
 
 #[test]
@@ -209,7 +209,7 @@ fn validate_rejects_a_forged_dead_state() {
 // ```
 fn uniform_dfa(nclasses: u32) -> Dfa {
     let nc = nclasses as usize;
-    Dfa::from_parts(
+    return Dfa::from_parts(
         nclasses,
         // What:    every byte maps to class 0.
         // Why:     The nearby assertion or value needs this note so the test records the

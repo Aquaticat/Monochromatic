@@ -29,7 +29,7 @@ use crate::parse::parse;
 fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
     let node = parse(pattern).expect("oracle pattern parses");
     let dfa = build_dfa_within(concat(vec![Node::Top, node]), 200_000).expect("oracle dfa builds");
-    move |line: &[u8]| dfa.is_match(line)
+    return move |line: &[u8]| return dfa.is_match(line)
 }
 
 // What:    Builds the counting NFA for a pattern, asserting it takes the counting back-end.
@@ -44,7 +44,7 @@ fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
 // ```
 fn linear(pattern: &str) -> CountingNfa {
     let node = parse(pattern).expect("pattern parses");
-    build_nfa(&node).expect("pattern builds an nfa")
+    return build_nfa(&node).expect("pattern builds an nfa")
 }
 
 // What:    Every counting-NFA pattern must agree with the eager DFA on every probe input.

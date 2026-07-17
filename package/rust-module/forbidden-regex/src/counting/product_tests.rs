@@ -29,7 +29,7 @@ use crate::parse::parse;
 fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
     let node = parse(pattern).expect("oracle pattern parses");
     let dfa = build_dfa_within(concat(vec![Node::Top, node]), 200_000).expect("oracle dfa builds");
-    move |line: &[u8]| dfa.is_match(line)
+    return move |line: &[u8]| return dfa.is_match(line)
 }
 
 // What:    Builds the product program, asserting the pattern takes the `&`/`~` back-end.
@@ -44,7 +44,7 @@ fn oracle(pattern: &str) -> impl Fn(&[u8]) -> bool {
 // ```
 fn product(pattern: &str) -> ProductProgram {
     let node = parse(pattern).expect("pattern parses");
-    build_product(&node).expect("pattern is a product")
+    return build_product(&node).expect("pattern is a product")
 }
 
 // What:    Every linear `&`/`~` pattern must agree with the eager DFA on every probe input.

@@ -26,7 +26,7 @@ use crate::parse::parse;
 // }
 // ```
 fn node(pattern: &str) -> crate::ast::node::Node {
-    parse(pattern).expect("test pattern parses")
+    return parse(pattern).expect("test pattern parses")
 }
 
 #[test]

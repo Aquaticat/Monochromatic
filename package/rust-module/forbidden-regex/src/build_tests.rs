@@ -14,7 +14,7 @@ use super::{build_rule, build_seedless_union, route_rule, starts_with_line_ancho
 use crate::parse::parse;
 
 fn node(pattern: &str) -> crate::ast::node::Node {
-    parse(pattern).expect("test pattern parses")
+    return parse(pattern).expect("test pattern parses")
 }
 
 #[test]

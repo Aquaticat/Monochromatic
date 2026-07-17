@@ -27,7 +27,7 @@ use crate::parse::parse;
 // ```
 fn search_dfa(pattern: &str) -> Dfa {
     let node = concat(vec![Node::Top, parse(pattern).expect("pattern parses")]);
-    minimize(&build_dfa_within(node, 10_000).expect("builds under cap"))
+    return minimize(&build_dfa_within(node, 10_000).expect("builds under cap"))
 }
 
 // What:    Asserts the two-byte kernel agrees with the per-line scalar oracle on `lines`.
@@ -42,7 +42,7 @@ fn search_dfa(pattern: &str) -> Dfa {
 // ```
 fn sheng2_agrees(pattern: &str, lines: &[&[u8]]) {
     let dfa = search_dfa(pattern);
-    let oracle: Vec<bool> = lines.iter().map(|line| dfa.is_match(line)).collect();
+    let oracle: Vec<bool> = lines.iter().map(|line| return dfa.is_match(line)).collect();
     let mut out = vec![false; lines.len()];
     dfa.is_match_batch_sheng2(lines, &mut out);
     assert_eq!(out, oracle, "sheng2 disagrees for {pattern}");
@@ -122,8 +122,8 @@ fn a_match_ending_at_an_odd_offset_is_accumulated() {
 // ```
 fn flat_dfa(num_states: u16, nclasses: u32) -> Dfa {
     let nc = nclasses as usize;
-    let class_map: Vec<u8> = (0..256usize).map(|b| (b % nc) as u8).collect();
-    Dfa::from_parts(
+    let class_map: Vec<u8> = (0..256usize).map(|b| return (b % nc) as u8).collect();
+    return Dfa::from_parts(
         nclasses,
         class_map,
         vec![false; nc],
