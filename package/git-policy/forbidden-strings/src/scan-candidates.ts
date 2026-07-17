@@ -23,12 +23,9 @@ import { parseScannerOutput, } from './scanner-output.ts';
  * Repository paths skipped by scanner `--all` to prevent canonical source self-matches.
  */
 const SCANNER_SELF_MATCH_PATHS: ReadonlySet<string> = new Set([
-  'forbidden-strings.append.ported.txt',
   'package/cli/forbidden-strings/data/betterleaks-default-config.toml',
-  'package/cli/forbidden-strings/data/builtin-rules.ported.txt',
   'package/cli/forbidden-strings/data/builtin-rules.txt',
   'package/cli/forbidden-strings/src/port-betterleaks-relaxations.ts',
-  'package/cli/forbidden-strings/src/rule/algebra_tests.rs',
 ],);
 /**
  * Domain sentinel for configured rules path outside candidate repository.
