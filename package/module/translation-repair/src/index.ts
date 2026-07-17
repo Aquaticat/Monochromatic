@@ -58,8 +58,10 @@ export {
   extractCompletion,
   type ExtractedCompletion,
   MalformedCompletionError,
+  readUsage,
   SyntheticHttpError,
 } from './completion-shape.ts';
+export { extractStreamedCompletion, } from './stream-completion.ts';
 export {
   type BenchmarkEntry,
   type CriticBenchmarkResult,

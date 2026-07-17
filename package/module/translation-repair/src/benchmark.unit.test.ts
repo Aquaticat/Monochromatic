@@ -203,5 +203,57 @@ await describe({
         expect(result.scorecard.ensembleRecall,).toBe(1,);
       },
     },),
+
+    it({
+      name: 'records non-abort transport failures and rethrows after abort',
+      fn: async () => {
+        /**
+         * Fake client whose only behavior is throwing a transport failure.
+         */
+        const failingClient: SyntheticClient = {
+          ...fakeClient,
+          chatJson: async function throwingChatJson() {
+            throw new TypeError('fetch failed',);
+          },
+        };
+        /** Result with a live signal: failure becomes attempt data. */
+        const survived = await runCriticBenchmark({
+          client: failingClient,
+          entries: [{
+            entryId: 'whiskers',
+            sourceText: SOURCE_TEXT,
+            targetText: TARGET_TEXT,
+            seeds: [BUTTERFLY_SEED,],
+          },],
+          modelIds: ['hf:zai-org/GLM-5.2',],
+          signal: new AbortController().signal,
+        },);
+        expect(survived.attempts[0]?.outcomeKind,).toBe('http-error',);
+        expect(survived.attempts[0]?.detail,).toContain('transport:',);
+
+        /** Aborted controller: the same failure must propagate. */
+        const aborted = new AbortController();
+        aborted.abort();
+        /** Value caught from the aborted run. */
+        let caught: unknown;
+        try {
+          await runCriticBenchmark({
+            client: failingClient,
+            entries: [{
+              entryId: 'whiskers',
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+              seeds: [BUTTERFLY_SEED,],
+            },],
+            modelIds: ['hf:zai-org/GLM-5.2',],
+            signal: aborted.signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof TypeError,).toBe(true,);
+      },
+    },),
   ],
 },);

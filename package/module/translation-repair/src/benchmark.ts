@@ -327,8 +327,6 @@ export async function runCriticBenchmark(
           };
         }
         catch (error) {
-          // Provider protocol failures are attempt data; anything else
-          // (abort included) must propagate so steering always wins.
           if (error instanceof SyntheticHttpError) {
             return {
               modelId,
@@ -341,7 +339,20 @@ export async function runCriticBenchmark(
               plantedSeedIds,
             };
           }
-          throw error;
+          // Aborts must always win so user steering can stop a fan-out;
+          // any other transport failure is attempt data for the scorecard.
+          if (signal.aborted)
+            throw error;
+          return {
+            modelId,
+            entryId: entry.entryId,
+            outcomeKind: 'http-error',
+            detail: `transport: ${String(error,)}`,
+            resolvedClaimCount: 0,
+            unresolvedReasons: [],
+            seededHitIds: [],
+            plantedSeedIds,
+          };
         }
       },),
     );

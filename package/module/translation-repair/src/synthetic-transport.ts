@@ -88,7 +88,7 @@ export type ModelTransport = (
  *
  * @param exchange - request to perform
  *
- * @mutates exchange - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain the exchange signal.
+ * @mutates exchange - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain the exchange signal, and undiciFetch retains the derived signal and may invoke abort listeners through it for the request lifetime.
  *
  * @returns Status and body text, whatever the status was
  *
@@ -125,6 +125,9 @@ export async function fetchTransport(
 
   /**
    * Raw fetch response; body is read as text so callers decide how to parse.
+   * Chat exchanges stream (the provider is finicky without streaming, and
+   * headers on a stream arrive before fetch's default headers timeout);
+   * reading to text drains the whole event stream.
    */
   const response = await fetch(
     url,
