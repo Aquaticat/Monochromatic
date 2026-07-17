@@ -316,10 +316,10 @@ await describe({
     },),
 
     it({
-      name: 'throws SyntheticHttpError carrying the status on non-success replies',
+      name: 'throws SyntheticHttpError once transient retries exhaust',
       fn: async () => {
-        /** Transport replaying a throttle response. */
-        const { transport, } = recordedTransport({
+        /** Transport replaying an endless throttle; retries then throws. */
+        const { transport, exchanges, } = recordedTransport({
           replies: [{ status: 429, bodyText: '{"error":"slow down"}', },],
         },);
         /** Client under test. */
@@ -342,6 +342,61 @@ await describe({
             ? caught.status
             : 0,
         ).toBe(429,);
+        // First attempt plus two transient retries.
+        expect(exchanges,).toHaveLength(3,);
+      },
+    },),
+
+    it({
+      name: 'retries transient 502s and succeeds on a later attempt',
+      fn: async () => {
+        /** Transport failing once with 502, then succeeding. */
+        const { transport, exchanges, } = recordedTransport({
+          replies: [
+            { status: 502, bodyText: 'bad gateway', },
+            { status: 200, bodyText: COMPLETION_BODY, },
+          ],
+        },);
+        /** Client under test. */
+        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /** Reply that survived one transient failure. */
+        const reply = await client.chatText({
+          modelId: 'hf:zai-org/GLM-5.2',
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+        },);
+        expect(reply.text,).toBe('{"verdict":"pass"}',);
+        expect(exchanges,).toHaveLength(2,);
+      },
+    },),
+
+    it({
+      name: 'does not retry non-transient failures',
+      fn: async () => {
+        /** Transport replaying a permanent client error. */
+        const { transport, exchanges, } = recordedTransport({
+          replies: [{ status: 400, bodyText: '{"error":"bad request"}', },],
+        },);
+        /** Client under test. */
+        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /** Value caught from the rejected exchange. */
+        let caught: unknown;
+        try {
+          await client.chatText({
+            modelId: 'hf:zai-org/GLM-5.2',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(
+          caught instanceof SyntheticHttpError
+            ? caught.status
+            : 0,
+        ).toBe(400,);
+        expect(exchanges,).toHaveLength(1,);
       },
     },),
 
