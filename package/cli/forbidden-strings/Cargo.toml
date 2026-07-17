@@ -55,6 +55,13 @@ anyhow = "1"
 # `forbidden-strings` binary. The derive feature lets `src/cli.rs` declare the
 # command shape as a typed struct instead of maintaining a handwritten argv loop.
 clap = { version = "4", features = ["derive"] }
+# The in-house engine that the scanner is migrating onto. Stage one (#383) adds the
+# rule-compiler module (`src/rule/frx`) that targets this engine and is built and
+# unit-tested here, but is NOT yet wired into the scan path; the crate keeps
+# scanning on resharp + the `regex` crate until stage two (#384). Depended on by
+# path (the same crate the bench sidecar drives) plus the published version so
+# `cargo publish` resolves it from crates.io; the path wins for local builds.
+forbidden-regex = { path = "../../rust-module/forbidden-regex", version = "0.1.0" }
 gix-hash = { version = "0.25", default-features = false, features = ["sha1", "sha256"] }
 gix-index = { version = "0.51", default-features = false, features = ["sha1"] }
 ignore = "0.4"
