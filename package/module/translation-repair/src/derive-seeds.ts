@@ -18,6 +18,19 @@ const SENTENCE_TERMINATORS = '。．.!?！？';
 const MIN_SENTENCE_LENGTH = 40;
 
 /**
+ * Characters opening or closing MDX expressions and JSX tags.
+ * A sentence carrying one may hold half of a paired construct;
+ * deleting it would leave the seeded document unparseable as MDX,
+ * so such sentences never become needles.
+ */
+const MDX_DELIMITERS = [
+  '{',
+  '}',
+  '<',
+  '>',
+] as const;
+
+/**
  * Splits text into sentences by terminator scan.
  * Single linear pass; a sentence is the slice from the previous terminator
  * (exclusive) through its own terminator.
@@ -68,7 +81,9 @@ export function splitSentences({ text, }: { readonly text: string; },): readonly
 
 /**
  * Derives deletion seeds from the longest sentences of one target body.
- * Sentences that occur more than once are skipped (ambiguous needles);
+ * Sentences that occur more than once are skipped (ambiguous needles),
+ * as are sentences carrying MDX expression or JSX delimiters
+ * (deleting half of a paired construct breaks the seeded parse);
  * results are deterministic for a given text.
  *
  * @param text - target body text (front matter excluded by the caller)
@@ -98,6 +113,11 @@ export function deriveOmissionSeeds(
   const candidates = splitSentences({ text, },)
     .filter(function longEnough(sentence,) {
       return sentence.length >= MIN_SENTENCE_LENGTH;
+    },)
+    .filter(function freeOfMdxDelimiters(sentence,) {
+      return MDX_DELIMITERS.every(function absent(delimiter,) {
+        return !sentence.includes(delimiter,);
+      },);
     },)
     .toSorted(function byLengthDescending(
       a,
