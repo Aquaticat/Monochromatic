@@ -259,7 +259,8 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   Aggregate concurrency beyond one-per-model collapses throughput on
   this plan, at least during this window; pack count does not translate
   into usable same-model parallelism. Milestone runs use
-  `perModelConcurrency: 1`.
+  `perModelConcurrency: 1`. Full fact base for the provider report:
+  `doc/troubleshooting/synthetic-aggregate-concurrency-stall.md`.
 - Deadline placement is load-bearing (commit `7c0e41532`): the first
   concurrency-5 run armed every fan-out call's deadline at dispatch while
   the limiter ran five per model, so queued calls burned their whole budget
