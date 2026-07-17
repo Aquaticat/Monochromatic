@@ -187,11 +187,33 @@ Updated:
   which means the gate scan DOES load a local rules file first and
   offsets the builtin baseline;
   the local file exists and is live in the gate path.
-- IN FLIGHT: #385 teardown (opus, scanner crate);
-  its main deletion commit `a85bf020f` already on main,
-  README/version/gate work presumably continuing.
-  After it: #386/#387 parallel, then #389 cutover (ready-for-agent),
-  #390 hygiene, #381 decision.
+- #385 DONE and CLOSED (opus; spot-checked: 0.2.0 in manifest,
+  binary self-reports 0.2.0):
+  `a85bf020f` (27-file teardown, deps dropped, unreferenced-ness
+  verified per deletion, `catch_unwind` and release hardening kept),
+  `063f61fd7` (clippy gate widened to `--all-targets` and green;
+  33 surviving implicit_return fixes),
+  `aea61186a` (README + CLI-help rewrite for the new dialect,
+  0.2.0 bump unpublished, troubleshooting pointer notes).
+  Its flag about the stale `algebra_tests.rs` entry in git-policy's
+  skip list is parked on #390 as a comment
+  (with the trusted-snapshot activation chain reminder).
+- SEQUENCING CHANGE: #386 and #387 run SEQUENTIALLY, not parallel:
+  both touch the scanner package (fuzz sidecar and `fuzz_api.rs` versus
+  `PERF.md` and report), and #387's perf re-measure needs a quiet
+  machine that a concurrent fuzz smoke pass would poison.
+- IN FLIGHT: #386 fuzz retarget (opus, scanner fuzz sidecar;
+  prompt carries the deleted-machinery list, adversarial verbose-mode
+  escaping cases for the literal-roundtrip target,
+  bounded smoke sizing per the engine sidecar's precedent,
+  and the release-binary caution).
+  On its completion dispatch #387
+  (differential cutover gate plus perf;
+  pin rules explicitly so gitignored local files stay out of both runs;
+  deltas explained against the CURRENT review doc,
+  which now includes three-casing and the 518 reshape,
+  not just the issue body's older list).
+  Then #389 cutover (ready-for-agent), #390 hygiene, #381 decision.
 - RESOLVED plan open question:
   startup compilation is NOT viable
   (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
