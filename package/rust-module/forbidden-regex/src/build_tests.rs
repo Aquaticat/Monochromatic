@@ -65,7 +65,7 @@ fn weak_inner_literal_folds_to_an_unanchored_seed() {
 
 #[test]
 fn build_rule_flags_seedless_and_reference_nodes() {
-    let akia = build_rule(node("AKIA[A-Z2-7]{16}")).unwrap();
+    let akia = build_rule(node("AKIA[A-Z2-7]{16}")).expect("build a rule for a leading-literal pattern");
     assert!(!akia.seedless);
     // What:    had a leading seed.
     // Why:     The nearby assertion or value needs this note so the test records the exact
@@ -77,7 +77,7 @@ fn build_rule_flags_seedless_and_reference_nodes() {
     // ```
     assert!(akia.reference_node.is_none());
 
-    let inner = build_rule(node("[a-z]{3}adafruit[a-z]{3}")).unwrap();
+    let inner = build_rule(node("[a-z]{3}adafruit[a-z]{3}")).expect("build a rule for an inner-literal pattern");
     assert!(!inner.seedless);
     // What:    had an inner seed (not seedless).
     // Why:     The nearby assertion or value needs this note so the test records the exact
@@ -89,7 +89,7 @@ fn build_rule_flags_seedless_and_reference_nodes() {
     // ```
     assert!(inner.reference_node.is_none());
 
-    let bare = build_rule(node("[a-z]{20}")).unwrap();
+    let bare = build_rule(node("[a-z]{20}")).expect("build a rule for a seedless pattern");
     assert!(bare.seedless);
     // What:    truly literal-free.
     // Why:     The nearby assertion or value needs this note so the test records the exact

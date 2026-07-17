@@ -20,7 +20,7 @@ const AKIA_KEY: &str = "AKIAABCDEFGHIJKLMNO\x50";
 
 #[test]
 fn literal_and_search() {
-    let re = compile("AKIA[A-Z2-7]{16}").unwrap();
+    let re = compile("AKIA[A-Z2-7]{16}").expect("compile a leading-literal AKIA pattern");
     assert!(re.is_match(b"key=AKIAABCDEFGHIJKLMNO\x50;"));
     assert!(!re.is_match(b"no key here"));
     // What:    Wrong alphabet: '0' and '1' are not in [A-Z2-7].
@@ -36,36 +36,36 @@ fn literal_and_search() {
 
 #[test]
 fn anchors_and_word_boundary() {
-    let start = compile("^abc").unwrap();
+    let start = compile("^abc").expect("compile a start-anchored pattern");
     assert!(start.is_match(b"abcdef"));
     assert!(!start.is_match(b"xabcdef"));
 
-    let end = compile("abc$").unwrap();
+    let end = compile("abc$").expect("compile an end-anchored pattern");
     assert!(end.is_match(b"xxabc"));
     assert!(!end.is_match(b"abcd"));
 
-    let word = compile("\\bcat\\b").unwrap();
+    let word = compile("\\bcat\\b").expect("compile a word-boundary pattern");
     assert!(word.is_match(b"a cat sat"));
     assert!(!word.is_match(b"category"));
 }
 
 #[test]
 fn classes_and_shorthands() {
-    let re = compile("[a-z]\\d[^0-9]").unwrap();
+    let re = compile("[a-z]\\d[^0-9]").expect("compile a class-and-shorthand pattern");
     assert!(re.is_match(b"x5!"));
     assert!(!re.is_match(b"x55"));
-    let neg = compile("a[^bc]d").unwrap();
+    let neg = compile("a[^bc]d").expect("compile a negated-class pattern");
     assert!(neg.is_match(b"axd"));
     assert!(!neg.is_match(b"abd"));
 }
 
 #[test]
 fn repetition_bounds() {
-    let re = compile("a{2,4}").unwrap();
+    let re = compile("a{2,4}").expect("compile a bounded-repetition pattern");
     assert!(!re.is_match(b"bab"));
     assert!(re.is_match(b"baab"));
     assert!(re.is_match(b"aaaa"));
-    let exact = compile("x{3}").unwrap();
+    let exact = compile("x{3}").expect("compile an exact-repetition pattern");
     assert!(exact.is_match(b"xxx"));
     assert!(!exact.is_match(b"yxxy"));
 }
@@ -98,7 +98,7 @@ fn alternation_intersection_complement() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let alt = compile("(?:(?:cat)|(?:dog))").unwrap();
+    let alt = compile("(?:(?:cat)|(?:dog))").expect("compile an alternation pattern");
     assert!(alt.is_match(b"a dog"));
     assert!(!alt.is_match(b"a bird"));
     // What:    The unwrapped form is rejected by the grammar.
@@ -123,7 +123,7 @@ fn alternation_intersection_complement() {
     let aws = compile(
         "(?:\\b(?:(?:A3T[A-Z0-9])|(?:AKIA)|(?:ASIA))[A-Z2-7]{16}\\b)&~(AKIA2{16})",
     )
-    .unwrap();
+    .expect("compile the AWS set-algebra pattern");
     assert!(aws.is_match(AKIA_KEY.as_bytes()));
     assert!(aws.is_match(format!("prefix {AKIA_KEY} suffix").as_bytes()));
     assert!(!aws.is_match(b"AKIA222222222222222\x32"));
@@ -137,14 +137,15 @@ fn empty_matchable_rejected() {
 
 #[test]
 fn regexset_matches_and_roundtrip() {
-    let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"]).unwrap();
+    let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"])
+        .expect("build a regex set with two anchored rules");
     let ghp = format!("token ghp_{} end", "a".repeat(36));
     assert!(set.is_match(format!("... {AKIA_KEY} ...").as_bytes()));
     let hits: Vec<usize> = set.matches(ghp.as_bytes()).collect();
     assert_eq!(hits, vec![1]);
 
-    let bytes = set.to_bytes().unwrap();
-    let reloaded = RegexSet::from_bytes(&bytes).unwrap();
+    let bytes = set.to_bytes().expect("serialize the regex set to bytes");
+    let reloaded = RegexSet::from_bytes(&bytes).expect("deserialize the regex set from bytes");
     assert!(reloaded.is_match(format!("x {AKIA_KEY} x").as_bytes()));
     assert!(!reloaded.is_match(b"nothing to see"));
 }
@@ -164,9 +165,9 @@ fn product_rule_survives_roundtrip() {
         "(?:\\b(?:(?:A3T[A-Z0-9])|(?:AKIA)|(?:ASIA))[A-Z2-7]{16}\\b)&~(AKIA2{16})",
         "ghp_[A-Za-z0-9]{36}",
     ])
-    .unwrap();
-    let bytes = set.to_bytes().unwrap();
-    let reloaded = RegexSet::from_bytes(&bytes).unwrap();
+    .expect("build a regex set for the product-rule pattern");
+    let bytes = set.to_bytes().expect("serialize the product-rule set to bytes");
+    let reloaded = RegexSet::from_bytes(&bytes).expect("deserialize the product-rule set from bytes");
     assert!(reloaded.is_match(format!("key {AKIA_KEY} end").as_bytes()));
     // What:    The all-2s placeholder is vetoed by the complement, even after a round-trip.
     // Why:     The test uses this setup or assertion to pin the behavior named by the test
@@ -184,7 +185,7 @@ fn product_rule_survives_roundtrip() {
 #[test]
 fn from_ruleset_splits_on_delimiter() {
     let text = "AKIA[A-Z2-7]{16}\n---\nghp_[A-Za-z0-9]{36}\n";
-    let set = RegexSet::from_ruleset(text, "---").unwrap();
+    let set = RegexSet::from_ruleset(text, "---").expect("build a regex set from ruleset text");
     assert_eq!(set.len(), 2);
     assert!(set.is_match(AKIA_KEY.as_bytes()));
 }
@@ -250,7 +251,8 @@ fn line_start_marker_rule_matches_only_at_line_start() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let set = RegexSet::new(&["^(?:(?:PR)|(?:TS))[0-9]:"]).unwrap();
+    let set = RegexSet::new(&["^(?:(?:PR)|(?:TS))[0-9]:"])
+        .expect("build a regex set from the line-start marker pattern");
     assert!(set.is_match(b"PR5: a note"));
     assert!(set.is_match(b"TS0:"));
     // What:    not at line start.
@@ -279,7 +281,8 @@ fn input_is_one_line_so_caret_is_position_zero() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let set = RegexSet::new(&["^(?:(?:PR)|(?:TS))[0-9]:"]).unwrap();
+    let set = RegexSet::new(&["^(?:(?:PR)|(?:TS))[0-9]:"])
+        .expect("build a regex set from the line-start marker pattern");
     assert!(set.is_match(b"PR9: at the start"));
     // What:    Mid-input occurrence (no real line break in one-line input) does not match.
     // Why:     The test uses this setup or assertion to pin the behavior named by the test
@@ -303,7 +306,8 @@ fn weak_inner_seed_rule_matches_on_its_short_literal() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let set = RegexSet::new(&["[a-z]{3}Q\\~[a-z]{3}"]).unwrap();
+    let set = RegexSet::new(&["[a-z]{3}Q\\~[a-z]{3}"])
+        .expect("build a regex set from the weak-inner-seed pattern");
     assert!(set.is_match(b"junk abcQ~def junk"));
     assert!(!set.is_match(b"abcXdef"));
     assert!(!set.is_match(b"no marker here"));
@@ -325,7 +329,7 @@ fn mixed_ruleset_routes_each_rule_correctly() {
         "AKIA[A-Z2-7]{16}",
         "[a-z]{3}Q\\~[a-z]{3}",
     ])
-    .unwrap();
+    .expect("build a regex set from a mixed ruleset");
     assert_eq!(set.len(), 3);
     assert_eq!(set.matches(b"PR1:").collect::<Vec<_>>(), vec![0]);
     assert_eq!(set.matches(AKIA_KEY.as_bytes()).collect::<Vec<_>>(), vec![1]);
@@ -343,7 +347,7 @@ fn dialect_constructs_have_their_semantics() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let dot = compile(".").unwrap();
+    let dot = compile(".").expect("compile the dot pattern");
     assert!(dot.is_match(b"x"));
     assert!(dot.is_match(b"\t"));
     assert!(!dot.is_match(b"\n"));
@@ -357,7 +361,7 @@ fn dialect_constructs_have_their_semantics() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let three = compile("a{3}").unwrap();
+    let three = compile("a{3}").expect("compile an exact-count pattern");
     assert!(three.is_match(b"aaa"));
     // What:    contains a 3-run.
     // Why:     The nearby assertion or value needs this note so the test records the exact
@@ -379,7 +383,7 @@ fn dialect_constructs_have_their_semantics() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let range = compile("xa{2,3}").unwrap();
+    let range = compile("xa{2,3}").expect("compile a bounded-range pattern");
     assert!(range.is_match(b"xaa"));
     assert!(range.is_match(b"xaaa"));
     assert!(!range.is_match(b"xa"));
@@ -392,7 +396,7 @@ fn dialect_constructs_have_their_semantics() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let opt = compile("xa?b").unwrap();
+    let opt = compile("xa?b").expect("compile an optional-atom pattern");
     assert!(opt.is_match(b"xb"));
     assert!(opt.is_match(b"xab"));
     assert!(!opt.is_match(b"xaab"));
@@ -400,10 +404,10 @@ fn dialect_constructs_have_their_semantics() {
 
 #[test]
 fn single_regex_round_trips_through_bytes() {
-    let regex = compile("AKIA[A-Z2-7]{16}").unwrap();
-    let bytes = regex.to_bytes().unwrap();
+    let regex = compile("AKIA[A-Z2-7]{16}").expect("compile a leading-literal AKIA pattern");
+    let bytes = regex.to_bytes().expect("serialize the regex to bytes");
     assert!(!bytes.is_empty());
-    let reloaded = forbidden_regex::Regex::from_bytes(&bytes).unwrap();
+    let reloaded = forbidden_regex::Regex::from_bytes(&bytes).expect("deserialize the regex from bytes");
     assert_eq!(regex.is_match(AKIA_KEY.as_bytes()), reloaded.is_match(AKIA_KEY.as_bytes()));
     assert!(reloaded.is_match(AKIA_KEY.as_bytes()));
     assert!(!reloaded.is_match(b"not a key"));
@@ -419,7 +423,8 @@ fn diagnostic_accessors_report_structure() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let anchored = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"]).unwrap();
+    let anchored = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"])
+        .expect("build a regex set with two anchored rules");
     assert_eq!(anchored.len(), 2);
     assert!(!anchored.is_empty());
     assert_eq!(anchored.anchored_count(), 2);
@@ -437,7 +442,8 @@ fn diagnostic_accessors_report_structure() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let seedless = RegexSet::new(&["[a-z]{20}", "[0-9]{18}"]).unwrap();
+    let seedless = RegexSet::new(&["[a-z]{20}", "[0-9]{18}"])
+        .expect("build a regex set with two seedless rules");
     assert_eq!(seedless.seedless_count(), 2);
     assert!(seedless.seedless_group_count() >= 1);
     assert!(seedless.seedless_union_size() >= 2);
@@ -450,15 +456,17 @@ fn diagnostic_accessors_report_structure() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let marker = RegexSet::new(&["^(?:(?:PR)|(?:TS))[0-9]:"]).unwrap();
+    let marker = RegexSet::new(&["^(?:(?:PR)|(?:TS))[0-9]:"])
+        .expect("build a regex set from the line-start marker pattern");
     assert_eq!(marker.line_start_count(), 1);
 
-    assert!(RegexSet::new::<&str>(&[]).unwrap().is_empty());
+    assert!(RegexSet::new::<&str>(&[]).expect("build an empty regex set").is_empty());
 }
 
 #[test]
 fn profiling_hooks_track_their_components() {
-    let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "[a-z]{20}"]).unwrap();
+    let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "[a-z]{20}"])
+        .expect("build a regex set with an anchored and a seedless rule");
     let key = AKIA_KEY.as_bytes();
     let twenty = b"abcdefghijklmnopqrst";
 
@@ -522,10 +530,10 @@ fn nested_group_repetition_compiles_and_matches() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let triple = compile("(?:ab){3}").unwrap();
+    let triple = compile("(?:ab){3}").expect("compile a repeated-group pattern");
     assert!(triple.is_match(b"ababab"));
     assert!(!triple.is_match(b"abab"));
-    let nested = compile("(?:[a-z]{2}){2}").unwrap();
+    let nested = compile("(?:[a-z]{2}){2}").expect("compile a nested-repeated-group pattern");
     assert!(nested.is_match(b"abcd"));
     assert!(!nested.is_match(b"ab1d"));
 }
@@ -555,8 +563,10 @@ fn pathological_nested_repetition_terminates_without_oom() {
 
 #[test]
 fn from_bytes_roundtrips_a_built_set() {
-    let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"]).unwrap();
-    let reloaded = RegexSet::from_bytes(&set.to_bytes().unwrap()).unwrap();
+    let set = RegexSet::new(&["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"])
+        .expect("build a regex set with two anchored rules");
+    let reloaded = RegexSet::from_bytes(&set.to_bytes().expect("serialize the regex set to bytes"))
+        .expect("deserialize the regex set from bytes");
     assert!(reloaded.is_match(AKIA_KEY.as_bytes()));
     assert!(!reloaded.is_match(b"nothing here"));
 }

@@ -83,7 +83,7 @@ fn build_succeeds_on_a_normal_pattern() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let dfa = build_dfa_within(crate::parse::parse("AKIA[A-Z2-7]{4}").unwrap(), 10_000);
+    let dfa = build_dfa_within(crate::parse::parse("AKIA[A-Z2-7]{4}").expect("parses"), 10_000);
     assert!(dfa.is_ok());
 }
 

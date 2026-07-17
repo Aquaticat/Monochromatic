@@ -253,11 +253,11 @@ fn verbose_mode_ignores_unescaped_whitespace() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let base = parse("abc").unwrap();
-    assert_eq!(parse("a b c").unwrap(), base);
-    assert_eq!(parse("a\tb\tc").unwrap(), base);
-    assert_eq!(parse("a\nb\nc").unwrap(), base);
-    assert_eq!(parse("  abc  ").unwrap(), base);
+    let base = parse("abc").expect("parse the baseline pattern");
+    assert_eq!(parse("a b c").expect("parse with spaces between literals"), base);
+    assert_eq!(parse("a\tb\tc").expect("parse with tabs between literals"), base);
+    assert_eq!(parse("a\nb\nc").expect("parse with newlines between literals"), base);
+    assert_eq!(parse("  abc  ").expect("parse with leading and trailing whitespace"), base);
 }
 
 #[test]
@@ -270,8 +270,14 @@ fn first_column_hash_is_a_comment_to_end_of_line() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    assert_eq!(parse("# a header comment\nabc").unwrap(), parse("abc").unwrap());
-    assert_eq!(parse("abc\n# trailing comment line\n").unwrap(), parse("abc").unwrap());
+    assert_eq!(
+        parse("# a header comment\nabc").expect("parse a pattern with a leading comment"),
+        parse("abc").expect("parse the baseline pattern"),
+    );
+    assert_eq!(
+        parse("abc\n# trailing comment line\n").expect("parse a pattern with a trailing comment"),
+        parse("abc").expect("parse the baseline pattern"),
+    );
 }
 
 #[test]
@@ -284,8 +290,14 @@ fn escaped_and_class_whitespace_stays_literal() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    assert_ne!(parse("a\\ b").unwrap(), parse("ab").unwrap());
-    assert_ne!(parse("[ ]x").unwrap(), parse("x").unwrap());
+    assert_ne!(
+        parse("a\\ b").expect("parse a pattern with an escaped space"),
+        parse("ab").expect("parse a pattern without the escaped space"),
+    );
+    assert_ne!(
+        parse("[ ]x").expect("parse a pattern with a space inside a class"),
+        parse("x").expect("parse a pattern without the class space"),
+    );
 }
 
 // What:    Asserts a pattern is a syntax error reported at exactly `pos`.
@@ -382,7 +394,10 @@ fn class_range_endpoints_and_lookahead() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    assert_eq!(parse("[a-]").unwrap(), parse("[-a]").unwrap());
+    assert_eq!(
+        parse("[a-]").expect("parse a trailing-dash class"),
+        parse("[-a]").expect("parse a leading-dash class"),
+    );
 }
 
 #[test]
@@ -475,7 +490,7 @@ fn mid_line_hash_is_a_literal_not_a_comment() {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let with_hash = parse("a#b").unwrap();
+    let with_hash = parse("a#b").expect("parse a pattern with a mid-line hash");
     // What:    identical to the explicitly-escaped form.
     // Why:     The nearby assertion or value needs this note so the test records the exact
     //          behavior being pinned.
@@ -484,7 +499,7 @@ fn mid_line_hash_is_a_literal_not_a_comment() {
     // ```ts
     // // Same assertion or value, with the important expectation named above.
     // ```
-    assert_eq!(with_hash, parse("a\\#b").unwrap());
+    assert_eq!(with_hash, parse("a\\#b").expect("parse a pattern with an escaped hash"));
     // What:    the `#b` was NOT comment-stripped away.
     // Why:     The nearby assertion or value needs this note so the test records the exact
     //          behavior being pinned.
@@ -493,5 +508,5 @@ fn mid_line_hash_is_a_literal_not_a_comment() {
     // ```ts
     // // Same assertion or value, with the important expectation named above.
     // ```
-    assert_ne!(with_hash, parse("a").unwrap());
+    assert_ne!(with_hash, parse("a").expect("parse a pattern without the hash"));
 }
