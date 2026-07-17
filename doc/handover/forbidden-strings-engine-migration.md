@@ -1,26 +1,45 @@
 # Handover: forbidden-strings engine migration orchestration
 
 Updated:
- 2026-07-16, after #376 returned. COMPACTION IMMINENT; read this fully.
+ 2026-07-17, post-compact session resumed; subagent freeze lifted by the user.
 
 ## URGENT context for the post-compact session
 
-- USER DIRECTIVE:
-  do not launch any subagents until the user compacts and says to resume;
-  current mode is discussing next steps with the user.
+- Subagent freeze LIFTED:
+  the user compacted and said continue;
+  the port-rerun agent dispatch is authorized.
 - #376 state RESOLVED into:
   `e8763d56c` IS pushed (a later auto-push carried it;
-  the gate blocks at commit time, not push time;
-  measured `origin/main..main` = 0).
+  the gate blocks at commit time, not push time).
   Its `Closes #376` fired;
   the orchestrator REOPENED #376 with a comment listing the open items
   (518 reshape, three-casing expansion, skip-list gate fix).
   The user had AUTHORIZED the agent's raw-git commit bypass
   (not real secrets, preserve trace, return ASAP).
-  STILL TODO: add both ported file paths to `SCANNER_SELF_MATCH_PATHS`
-  (`package/git-policy/cli/src/optional/forbidden-strings/scan-candidates.ts`
-  line 26) and rebuild the git-policy CLI dist so future commits touching
-  those files pass the gate without bypass.
+- Skip-list gate fix DONE (`37286df18`, pushed):
+  both ported file paths added to `SCANNER_SELF_MATCH_PATHS`
+  (canonical source `package/git-policy/forbidden-strings/src/scan-candidates.ts`;
+  the CLI copy is file-enforcer-generated),
+  dist rebuilt,
+  verified end-to-end on a throwaway worktree:
+  a commit touching `forbidden-strings.append.ported.txt` passes the gate
+  without bypass,
+  and a secret-shaped canary control in the same worktree was blocked
+  (rule 187),
+  proving the pass was not vacuous.
+- NEW wrapper feature `--no-worktree-copy` (`99806c0c6`, pushed;
+  user authorized mid-task):
+  wrapper-only flag skipping the ignored-state worktree copy
+  (the copy feature landed concurrently as the user's `7b63241b3`)
+  for one invocation;
+  parameterized the escape-hatch stripper for reuse;
+  unit tests cover flag-position strip and value-position preservation;
+  README + SPEC updated.
+  Operational findings for opted-out throwaway worktrees:
+  the commit gate there needs the scanner binary copied to
+  `package/cli/forbidden-strings/target/release/`,
+  a `node_modules` symlink to the main worktree,
+  and `git cli-git trust --yes` (trust records are per-worktree).
 - #376 port results:
   261 regex rules ported, 260 compile;
   182 semantic changes:
@@ -67,12 +86,16 @@ Updated:
   interpolated hosts like `${MONGO_HOST}` now covered).
   Fallback if noisy: append one plausible host-introducer byte
   `(?:[A-Za-z0-9]|\[|%)`.
-  Full pi answer preserved at `scratchpad/pi-mongodb-518.txt`
-  (session scratchpad; copy into the review doc update, scratchpads die).
-- QUEUED single post-compact port task (one dialectport rerun covers both):
+  Full pi answer preserved durably at
+  `doc/planning/forbidden-strings-rule-518-pi-advice.md`.
+- IN FLIGHT single port task (one dialectport rerun covers both):
   (a) three-casing expansion for the 172 inline-`(?i)` rules,
   (b) rule 518 credential-core reshape;
   then 261/261 strict compile, review doc update, reproducibility kept.
+  Dispatched to an opus agent 2026-07-17;
+  occupies the bench sidecar,
+  so #380 stays blocked until it returns.
+  Its final commit closes #376 once all acceptance criteria verify.
 - RESOLVED plan open question:
   startup compilation is NOT viable
   (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
