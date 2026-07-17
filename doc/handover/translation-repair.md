@@ -419,6 +419,14 @@ consumers and deployment are deliberately out of scope for now.
   cuts both ways at the editor too).
   Accumulated: 37/63 repair (0.59); post-remedy 18/28 (0.64);
   detection 40/46 (0.87).
+  run 15 (2026-07-17, 2217 s): repair 3/4, detection 4/4; the
+  EDITOR retry fired for the first time and recovered a lost editor
+  voice (pre-quorum that chunk would have shipped unchanged).
+  Uekawakuyuurei's 9-word seed missed at exactly 3/9 in two
+  independent runs (12 and 15): a third stable repeat offender,
+  editor-layer.
+  Accumulated: 40/67 repair (0.60); post-remedy 21/32 (0.66);
+  detection 44/50 (0.88).
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
