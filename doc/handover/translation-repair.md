@@ -492,6 +492,17 @@ consumers and deployment are deliberately out of scope for now.
   `judgeModelIds` roster. All prior run numbers (0.60 repair) were
   LEXICAL; the judge rate supersedes them from the next live run and
   the two rates print side by side so the gap is visible.
+  JUDGE LIVE BOUNDARY CHECK (2026-07-17, `judge-boundary.ts`): on the
+  saved DarlinChit repaired text, 3/3 judges heard, quorum met, both
+  seeds ruled `restored` in 15 s for ~2 quota units. The live judge
+  works; the overnight loop resumes on it from run 22.
+  run 21 (2026-07-17, 2413 s, LAST lexical-only run): lexical repair
+  2/4, detection 4/4; a2581911655's 18-worder missed a FIFTH time
+  (5/18) and Acheron's 9-worder at 1/9, exactly the terse-faithful
+  cases the judge is expected to re-credit, so run 21 is the natural
+  before/after datum.
+  FINAL LEXICAL ACCUMULATED: 57/97 (0.59) over 21 runs; detection
+  72/78 (0.92). The judge rate starts fresh at run 22.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
