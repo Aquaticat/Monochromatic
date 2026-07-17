@@ -14,8 +14,23 @@ entries whose bodies contain HTML comments (see "Corpus facts").
 The user bought 5 additional packs (live five-hour ceiling now 2750,
 5.5 packs); the client's `perModelConcurrency` option and parallel
 benchmark entries exploit them.
-Run 4 (four parseable entries, all seven models, pack-scaled concurrency)
-was in flight at last handover update; copy its scorecard here when done.
+Run 4 (four entries including 8 to 21 KB translations, all seven models):
+ensembleRecall 0 over a seed universe of 8, but mechanically explained,
+27 of 28 attempts hit the 8-minute per-call deadline and the single
+completion (GLM-5.2 on Huasheng) burned exactly 65_536 completion tokens
+(the hard output ceiling) and truncated its JSON; only ~1.07 weighted
+units billed, so starved calls cost nothing.
+Post-run probes settled the diagnosis (see "Provider facts"):
+same-model concurrency is real, and DarlinChit-scale entries (~1.4 KB)
+complete in ~30 s with quality output.
+Conclusion: the work unit must be small; chunking is mandatory for the
+pipeline, and the benchmark uses small whole entries as stand-in chunks.
+The parse phase is now tolerant per user directive (HTML comments masked,
+plain-markdown fallback, findings not throws, commit `5762f4748`):
+the whole pinned corpus parses (92 pairs: 69 clean, 23 comment-masked,
+zero fallbacks, zero throws).
+Run 5 (small entries only) was in flight at last handover update;
+copy its scorecard here when done.
 Update this document at every task completion or design pivot;
 it exists so auto-compaction cannot lose session state.
 
@@ -132,10 +147,25 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 
 - Per pack ($30/mo): 500 price-weighted requests per 5 hours, regenerating 5% per 15 minutes;
   $24/week credits regenerating 2% per ~3.4 hours;
-  1 concurrent request per model, different models fully parallel
+  1 concurrent request per model per pack, different models fully parallel
   (same-model excess queues server-side, it does not error).
-  Up to 5 packs (user willing).
-  The user's live account shows 750 requests and $36/week, 1.5-pack-scaled limits.
+  The user bought 5 more packs on 2026-07-16;
+  the live account now shows a 2750-request five-hour ceiling (5.5 packs).
+- Never set reasoning effort on Synthetic calls (user directive 2026-07-16):
+  non-default values sometimes error, sometimes produce low-quality or worse
+  output. Default only; there is no safe latency knob there.
+- Live probe results (2026-07-16, after run 4):
+  three concurrent tiny GLM-4.7-Flash calls all completed in 2.0 to 2.4 s,
+  fully overlapped (no server-side serialization of dispatched requests);
+  a real critic call on the smallest entry (DarlinChit, 1.4 KB translation)
+  completed in 28.6 s on GLM-5.2 (6_621 completion tokens, 9 issues) and in
+  35.4 s on gpt-oss-120b (2_246 tokens, 6 issues).
+  Contrast run 4: an 8 KB translation drove GLM-5.2 to the 65_536-token
+  output ceiling without finishing its JSON, and every other call starved
+  behind long-running ones.
+  Work-unit conclusion: critic calls must stay near DarlinChit scale
+  (roughly 1 to 4 KB of translation); document chunking is mandatory for
+  the full pipeline.
 - Request weight = model input price / baseline input price (baseline is the provider
   default model, currently GLM-5.2 at exactly 1).
   Verified empirically: one GLM-4.7-Flash call deducted exactly 0.0714 (1/14) from
@@ -152,7 +182,8 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 - Models: GLM-5.2 (512k), GLM-4.7-Flash, Qwen3.6-27B, Kimi-K2.7-Code, MiniMax-M3,
   Nemotron-3-Super-120B, gpt-oss-120b; six vendor families.
 - Chat base URL `https://api.synthetic.new/openai/v1`.
-- The client (task 4) provides per-model semaphore(1) via `p-limit`;
+- The client (task 4) provides a per-model `p-limit` semaphore sized by
+  `perModelConcurrency` (default 1; pass the pack count);
   price-aware role routing belongs to the orchestrator.
 - End-to-end boundary check passed: real GLM-4.7-Flash `chatJson` round trip returned
   guard-validated JSON and the quota delta matched the estimate.
