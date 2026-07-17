@@ -441,6 +441,12 @@ consumers and deployment are deliberately out of scope for now.
   18-word class still sits under threshold.
   Accumulated: 46/75 repair (0.61); post-remedy 27/40 (0.68);
   detection 52/58 (0.90).
+  run 18 (2026-07-17, 1858 s): repair 3/6, detection 6/6; TLL1122's
+  classification settles: both seeds DETECTED yet under-restored
+  (6/15 and 5/12), so it is editor-side, not a detection hole;
+  Katerina 2/2 again; the checker retry recovered two lost voices.
+  Accumulated: 49/81 repair (0.60); post-remedy 30/46 (0.65);
+  detection 58/64 (0.91).
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
