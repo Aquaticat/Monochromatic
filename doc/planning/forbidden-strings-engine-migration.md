@@ -269,6 +269,30 @@ This is an engine API work item that lands before the scanner rewrite.
   resharp exposure is replaced by own-engine maturity
   (fuzz coverage in `forbidden-regex.fuzz`, its own 0.x version discipline).
 
+## Issue breakdown
+
+Published 2026-07-16 as sixteen tracker issues,
+sliced small enough for one bounded subagent context each
+(the engine API and the scanner rewrite are staged into
+independently compilable, independently verifiable sub-slices):
+
+- #375 engine clippy sweep plus crate metadata (no blockers)
+- #376 rule-file port, staged unwired (no blockers)
+- #377 batch API contract plus reference implementation (after #375)
+- #378 batch API single-sweep fast path (after #377)
+- #379 batch API differential fuzz target (after #377)
+- #380 batch API bench coverage and numbers (after #378)
+- #381 seedless and line-start batch routing, bench-gated (after #380)
+- #382 publish forbidden-regex 0.1.0 plus workflow lane (after #375, #377, #378)
+- #383 scanner rule-compiler module, strict loader, redaction tests (after #377, #376)
+- #384 scanner line-based scan path, columnless output (after #383)
+- #385 scanner teardown, README, version 0.2.0 (after #384)
+- #386 scanner fuzz retargeting (after #385)
+- #387 differential cutover validation plus perf re-measure (after #376, #385, #380)
+- #388 git-policy columnless output parser (after #384)
+- #389 cutover, runbook, scanner publish; ready-for-human (after #382, #385, #386, #387, #388)
+- #390 post-migration hygiene (after #389)
+
 ## Rollout sequence
 
  1. Publish-readiness sweep on `forbidden-regex`:
