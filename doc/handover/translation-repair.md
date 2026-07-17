@@ -549,8 +549,17 @@ source (done). No open questions currently block the loop.
     detection-yet-unrepaired is real and the judge exposes it.
   The judge discriminates (credits faithful rewording, fails genuine
   misses) rather than inflating; that is the whole point.
-  JUDGE ACCUMULATED: 2/4 (0.50) over 1 run. Detection 76/82 (0.93).
-  Panel needed two retry rounds (6 then 4 lost) and recovered.
+  run 23 (2026-07-17, 2069 s): judge 4/4 (1.0), lexical also 4/4;
+  noname3031 and MioCardMeow both fully restored, both graders
+  agreeing this run (agreement is common; disagreement appears on the
+  terse-rewording cases like run 22's ttttsuuukikoo_).
+  JUDGE ACCUMULATED: 6/8 (0.75) over 2 runs (22 to 23). Lexical over
+  the same 2 runs 4/8 (0.50): the judge sits ~25 points above lexical
+  early, consistent with the under-crediting the switch was meant to
+  fix, but the judge sample is still small; keep accumulating.
+  Detection 80/86 (0.93).
+  NEXT: continue the RESUME PROCEDURE loop (run 24 onward). This point
+  (after run 23) is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
