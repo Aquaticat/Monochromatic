@@ -136,7 +136,7 @@ await describe({
     },),
 
     it({
-      name: 'fails absent, ambiguous, and block-crossing quotes',
+      name: 'fails absent, ambiguous, and outside-block quotes',
       fn: async () => {
         /**
          * Reads the failure reason of one corrupted wire.
@@ -165,10 +165,84 @@ await describe({
           .toBe('quote-not-found (target)',);
         expect(reasonOf({ ...VALID_WIRE, targetQuote: 'The cat', },),)
           .toBe('ambiguous-quote (target)',);
+        // Front matter text locates uniquely but belongs to no block node.
         expect(reasonOf({
           ...VALID_WIRE,
-          targetQuote: 'in the sun.\n\nThe cat purrs.',
-        },),).toBe('quote-crosses-blocks (target)',);
+          targetQuote: 'name: 小猫-whiskers',
+        },),).toBe('quote-outside-blocks (target)',);
+      },
+    },),
+
+    it({
+      name: 'splits block-crossing quotes into per-node spans',
+      fn: async () => {
+        /** Resolution of a quote spanning two paragraphs. */
+        const resolution = resolveCriticIssue({
+          wire: {
+            category: VALID_WIRE.category,
+            severity: VALID_WIRE.severity,
+            summary: VALID_WIRE.summary,
+            targetQuote: 'in the sun.\n\nThe cat purrs.',
+          },
+          documents: DOCUMENTS,
+        },);
+
+        expect(resolution.resolved,).toBe(true,);
+        if (resolution.resolved) {
+          expect(resolution.claim.spans,).toHaveLength(2,);
+          expect(resolution.claim.spans[0]?.quotedText,).toBe('in the sun.',);
+          expect(resolution.claim.spans[1]?.quotedText,).toBe('The cat purrs.',);
+          expect(resolution.claim.spans[0]?.nodeId,)
+            .not
+            .toBe(resolution.claim.spans[1]?.nodeId,);
+        }
+      },
+    },),
+
+    it({
+      name: 'rescues punctuation-variant quotes with canonical document bytes',
+      fn: async () => {
+        /** Pair whose translation uses curly punctuation. */
+        const documents = {
+          source: DOCUMENTS.source,
+          target: parseDocument({
+            text: '## Introduction\n\nThe cat’s sunbeam is “warm” today.\n',
+          },),
+        } as const;
+        /** Resolution of an ASCII-punctuation quote. */
+        const resolution = resolveCriticIssue({
+          wire: {
+            category: VALID_WIRE.category,
+            severity: VALID_WIRE.severity,
+            summary: VALID_WIRE.summary,
+            targetQuote: 'The cat\'s sunbeam is "warm" today.',
+          },
+          documents,
+        },);
+
+        expect(resolution.resolved,).toBe(true,);
+        if (resolution.resolved) {
+          // The anchor carries the document's canonical curly bytes.
+          expect(resolution.claim.spans[0]?.quotedText,)
+            .toBe('The cat’s sunbeam is “warm” today.',);
+        }
+      },
+    },),
+
+    it({
+      name: 'remaps known leaves reported under the wrong family',
+      fn: async () => {
+        /** Resolution of a family-slipped category. */
+        const resolution = resolveCriticIssue({
+          wire: {
+            ...VALID_WIRE,
+            category: 'fluency/awkward-phrasing',
+          },
+          documents: DOCUMENTS,
+        },);
+        expect(resolution.resolved,).toBe(true,);
+        if (resolution.resolved)
+          expect(resolution.claim.category,).toBe('style/awkward-phrasing',);
       },
     },),
   ],

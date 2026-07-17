@@ -7,11 +7,13 @@ import type {
 import {
   isIssueCategory,
   isIssueSeverity,
+  remapCategoryLeaf,
 } from './issue-taxonomy.ts';
 import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import { locateQuote, } from './locate-quote.ts';
 import {
   type AnchorTarget,
   validateIssueClaim,
@@ -20,9 +22,10 @@ import {
 //region Critic wire format
 // What critics actually emit: category, severity, one-sentence summary, and exact
 // quotes. Models cannot know node ids or hashes, so anchoring is deterministic
-// resolution work done here: locate each quote, reject absence and ambiguity, bind
-// to the containing block, and gate the result through span validation. Resolution
-// failures are data for the scorecard, never exceptions.
+// resolution work done in locate-quote.ts: find each quote, reject absence and
+// ambiguity, bind the region to blocks, and gate the result through span
+// validation here. Resolution failures are data for the scorecard, never
+// exceptions.
 
 /**
  * One issue as a critic reports it on the wire.
@@ -203,107 +206,6 @@ export type CriticIssueResolution =
   };
 
 /**
- * Locates one exact quote inside one document and binds it to its block.
- *
- * @param document - side being searched
- *
- * @param side - which side the anchor belongs to
- *
- * @param quote - exact substring the critic claims
- *
- * @returns Anchor, or the failure reason
- *
- * @example
- * ```ts
- * const located = locateQuote({ document, side: 'target', quote, },);
- * ```
- */
-function locateQuote(
-  {
-    document,
-    side,
-    quote,
-  }: {
-    readonly document: AnchorTarget;
-    readonly side: DocumentSide;
-    readonly quote: string;
-  },
-):
-  | {
-    readonly located: true;
-    readonly anchor: SpanAnchor;
-  }
-  | {
-    readonly located: false;
-    readonly reason: string;
-  }
-{
-  if (quote === '') {
-    return {
-      located: false,
-      reason: `empty-quote (${side})`,
-    };
-  }
-
-  /**
-   * First occurrence of the quote.
-   */
-  const at = document
-    .text
-    .indexOf(quote,);
-  if (at === (-1)) {
-    return {
-      located: false,
-      reason: `quote-not-found (${side})`,
-    };
-  }
-  if (document
-    .text
-    .includes(
-      quote,
-      at + 1,
-    ))
-  {
-    return {
-      located: false,
-      reason: `ambiguous-quote (${side})`,
-    };
-  }
-
-  /**
-   * End of the quoted region.
-   */
-  const end = at + quote.length;
-
-  /**
-   * Block containing the whole quote, when the quote does not cross blocks.
-   */
-  const node = document
-    .nodes
-    .find(function containing(candidate,) {
-      return (at >= candidate.startOffset) && (end <= candidate.endOffset);
-    },);
-  if (node === undefined) {
-    return {
-      located: false,
-      reason: `quote-crosses-blocks (${side})`,
-    };
-  }
-
-  return {
-    located: true,
-    anchor: {
-      side,
-      nodeId: node.id,
-      nodeHash: node.contentHash,
-      startOffset: at,
-      endOffset: end,
-      quotedText: quote,
-    },
-  };
-}
-
-/**
  * Resolves one wire issue into an anchored, validated claim.
  * Category and severity must belong to the closed vocabularies;
  * each present quote must locate uniquely inside one block;
@@ -330,7 +232,19 @@ export function resolveCriticIssue(
     readonly documents: Readonly<Record<DocumentSide, AnchorTarget>>;
   },
 ): CriticIssueResolution {
-  if (!isIssueCategory(wire.category,)) {
+  /**
+   * Category after tolerant family remap:
+   * models slip families on known leaves (fluency/awkward-phrasing for
+   * style/awkward-phrasing), and a leaf owned by exactly one family maps
+   * onto its owner; unknown or ambiguous leaves stay rejected.
+   */
+  const remap = isIssueCategory(wire.category,)
+    ? {
+      remapped: true as const,
+      category: wire.category,
+    }
+    : remapCategoryLeaf({ category: wire.category, },);
+  if (!remap.remapped) {
     return {
       resolved: false,
       reason: `unknown-category (${wire.category})`,
@@ -394,14 +308,14 @@ export function resolveCriticIssue(
         reason: located.reason,
       };
     }
-    anchors.push(located.anchor,);
+    anchors.push(...located.anchors,);
   }
 
   /**
    * Assembled claim awaiting the deterministic gate.
    */
   const claim: IssueClaim = {
-    category: wire.category,
+    category: remap.category,
     severity: wire.severity,
     summary: wire.summary,
     spans: anchors,

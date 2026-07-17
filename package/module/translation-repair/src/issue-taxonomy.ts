@@ -121,6 +121,78 @@ export function isIssueCategory(value: unknown,): value is IssueCategory {
 }
 
 /**
+ * Category remap outcome as data:
+ * the unique owning category, or the refusal to guess.
+ *
+ * @example
+ * ```ts
+ * const remap: CategoryRemap = { remapped: false, };
+ * ```
+ */
+export type CategoryRemap =
+  | {
+    readonly remapped: true;
+
+    /**
+     * Listed category uniquely owning the reported leaf.
+     */
+    readonly category: IssueCategory;
+  }
+  | {
+    readonly remapped: false;
+  };
+
+/**
+ * Remaps a category whose leaf landed under the wrong family.
+ * Models slip families on known leaves
+ * (live: `fluency/awkward-phrasing` for `style/awkward-phrasing`);
+ * a leaf owned by exactly one listed category maps onto that category,
+ * while unknown and ambiguous leaves stay unmapped for rejection.
+ *
+ * @param category - slug that failed the closed-vocabulary guard
+ *
+ * @returns Remap outcome as data; never a guess between owners
+ *
+ * @example
+ * ```ts
+ * remapCategoryLeaf({ category: 'fluency/awkward-phrasing', },);
+ * ```
+ */
+export function remapCategoryLeaf(
+  { category, }: { readonly category: string; },
+): CategoryRemap {
+  /**
+   * Separator between family and leaf; absent means no leaf to match.
+   */
+  const separator = category.indexOf('/',);
+  if (separator === (-1))
+    return { remapped: false, };
+
+  /**
+   * Leaf segment after the reported family.
+   */
+  const leaf = category.slice(separator + 1,);
+
+  /**
+   * Listed categories owning this exact leaf.
+   */
+  const owners = ISSUE_CATEGORIES.filter(function ownsLeaf(candidate,) {
+    return candidate.endsWith(`/${leaf}`,);
+  },);
+
+  /**
+   * Sole owner when the leaf is unambiguous.
+   */
+  const [owner,] = owners;
+  if ((owners.length !== 1) || (owner === undefined))
+    return { remapped: false, };
+  return {
+    remapped: true,
+    category: owner,
+  };
+}
+
+/**
  * Guards untrusted severity strings from model JSON before they enter typed claims.
  *
  * @param value - candidate from unvalidated model output
