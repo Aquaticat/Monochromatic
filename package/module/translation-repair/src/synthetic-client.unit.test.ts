@@ -45,11 +45,72 @@ const MESSAGES = [
 ];
 
 /**
- * Recorded completion body carrying JSON content and usage.
+ * Builds a drained SSE body from content deltas plus optional refusal deltas
+ * and usage, terminated like the provider terminates streams.
+ *
+ * @param deltas - content deltas in arrival order
+ *
+ * @param refusalDeltas - refusal deltas in arrival order
+ *
+ * @param usage - usage block delivered as the final data event
+ *
+ * @returns Whole `text/event-stream` body as the transport drains it
+ *
+ * @example
+ * ```ts
+ * const body = sseBody({ deltas: ['{"a":', '1}',], },);
+ * ```
  */
-const COMPLETION_BODY = JSON.stringify({
-  choices: [{ message: { role: 'assistant', content: '{"verdict":"pass"}', }, },],
-  usage: { prompt_tokens: 12, completion_tokens: 3, },
+function sseBody(
+  {
+    deltas,
+    refusalDeltas = [],
+    usage,
+  }: {
+    readonly deltas: readonly string[];
+    readonly refusalDeltas?: readonly string[];
+    readonly usage?: {
+      readonly prompt_tokens: number;
+      readonly completion_tokens: number;
+    };
+  },
+): string {
+  /**
+   * Serialized data events in stream order.
+   */
+  const events = [
+    ...deltas.map(function toContentEvent(delta,) {
+      return JSON.stringify({ choices: [{ delta: { content: delta, }, },], },);
+    },),
+    ...refusalDeltas.map(function toRefusalEvent(delta,) {
+      return JSON.stringify({ choices: [{ delta: { refusal: delta, }, },], },);
+    },),
+    ...(usage === undefined
+      ? []
+      : [JSON.stringify({ choices: [], usage, },),]),
+  ];
+  return [
+    ...events.map(function toDataLine(event,) {
+      return `data: ${event}`;
+    },),
+    'data: [DONE]',
+    '',
+  ].join('\n\n',);
+}
+
+/**
+ * Recorded streamed completion carrying JSON content split across deltas
+ * plus usage.
+ */
+const COMPLETION_BODY = sseBody({
+  deltas: [
+    '{"verdict":',
+    '"pass"}',
+  ],
+  usage: {
+    prompt_tokens: 12,
+    completion_tokens: 3,
+  },
 },);
 
 /**
@@ -202,6 +263,7 @@ await describe({
         /** Request body decoded for knob assertions. */
         const body: unknown = JSON.parse(exchanges[0]?.bodyJson ?? '{}',);
         expect(isJsonRecord(body,) ? body.model : '',).toBe('hf:zai-org/GLM-4.7-Flash',);
+        expect(isJsonRecord(body,) ? body.stream : false,).toBe(true,);
         expect(isJsonRecord(body,) ? body.max_tokens : 0,).toBe(2_048,);
         expect(isJsonRecord(body,) ? body.temperature : 1,).toBe(0,);
 
@@ -220,13 +282,12 @@ await describe({
     it({
       name: 'omits usage when the server omits or mistypes it',
       fn: async () => {
-        /** Body without a usage block. */
-        const bare = JSON.stringify({ choices: [{ message: { content: '喵', }, },], },);
-        /** Body whose usage counts are strings. */
-        const mistyped = JSON.stringify({
-          choices: [{ message: { content: '喵', }, },],
-          usage: { prompt_tokens: '12', completion_tokens: '3', },
-        },);
+        /** Streamed body without a usage event. */
+        const bare = sseBody({ deltas: ['喵',], },);
+        /** Streamed body whose usage counts are strings. */
+        const mistyped = 'data: {"choices":[{"delta":{"content":"喵"}}]}\n\n'
+          + 'data: {"choices":[],"usage":{"prompt_tokens":"12","completion_tokens":"3"}}\n\n'
+          + 'data: [DONE]\n';
         /** Transport replaying both defective-usage bodies. */
         const { transport, } = recordedTransport({
           replies: [
@@ -399,10 +460,8 @@ await describe({
     it({
       name: 'returns ok with typed value for fenced schema-valid content',
       fn: async () => {
-        /** Body whose content wraps valid JSON in a code fence. */
-        const fenced = JSON.stringify({
-          choices: [{ message: { content: '```json\n{"verdict":"pass"}\n```', }, },],
-        },);
+        /** Streamed body whose content wraps valid JSON in a code fence. */
+        const fenced = sseBody({ deltas: ['```json\n{"verdict":"pass"}\n```',], },);
         /** Transport replaying the fenced completion. */
         const { transport, } = recordedTransport({
           replies: [{ status: 200, bodyText: fenced, },],
@@ -428,15 +487,16 @@ await describe({
     it({
       name: 'admits think-wrapped JSON and ignores refusal phrasing inside thinking',
       fn: async () => {
-        /** Body whose content deliberates about refusing, then answers validly. */
-        const deliberated = JSON.stringify({
-          choices: [{
-            message: {
-              content:
-                '<think>Should I say i cannot help? No, the request is benign.</think>\n```json\n{"verdict":"pass"}\n```',
-            },
-          },],
-          usage: { prompt_tokens: 40, completion_tokens: 900, },
+        /** Streamed body deliberating about refusing, then answering validly. */
+        const deliberated = sseBody({
+          deltas: [
+            '<think>Should I say i cannot help? No, the request is benign.</think>\n',
+            '```json\n{"verdict":"pass"}\n```',
+          ],
+          usage: {
+            prompt_tokens: 40,
+            completion_tokens: 900,
+          },
         },);
         /** Transport replaying the deliberated completion. */
         const { transport, } = recordedTransport({
@@ -464,10 +524,8 @@ await describe({
     it({
       name: 'reports truncated thinking as schema-mismatch naming the cause',
       fn: async () => {
-        /** Body whose content died inside its thinking block. */
-        const truncated = JSON.stringify({
-          choices: [{ message: { content: '<think>猫的翻译问题很复杂，首先', }, },],
-        },);
+        /** Streamed body whose content died inside its thinking block. */
+        const truncated = sseBody({ deltas: ['<think>猫的翻译问题很复杂，首先',], },);
         /** Transport replaying the truncated completion. */
         const { transport, } = recordedTransport({
           replies: [{ status: 200, bodyText: truncated, },],
@@ -493,11 +551,10 @@ await describe({
     it({
       name: 'treats the API refusal field as first-class refusal',
       fn: async () => {
-        /** Body whose message refused with null content. */
-        const refusedByApi = JSON.stringify({
-          choices: [{
-            message: { content: null, refusal: 'Request declined by policy.', },
-          },],
+        /** Streamed body refusing through refusal deltas with no content. */
+        const refusedByApi = sseBody({
+          deltas: [],
+          refusalDeltas: ['Request declined ', 'by policy.',],
         },);
         /** Transport replaying the API-refused completion. */
         const { transport, } = recordedTransport({
@@ -529,11 +586,9 @@ await describe({
     it({
       name: 'returns refusal-shaped for unparseable apologetic content',
       fn: async () => {
-        /** Body whose content is a prose refusal. */
-        const refusal = JSON.stringify({
-          choices: [{
-            message: { content: "I'm sorry, but I can't assist with that request.", },
-          },],
+        /** Streamed body whose content is a prose refusal. */
+        const refusal = sseBody({
+          deltas: ["I'm sorry, but I can't assist with that request.",],
         },);
         /** Transport replaying the refusal completion. */
         const { transport, } = recordedTransport({
@@ -562,10 +617,8 @@ await describe({
     it({
       name: 'returns schema-mismatch for valid JSON the guard rejects',
       fn: async () => {
-        /** Body whose content is valid JSON of the wrong shape. */
-        const wrongShape = JSON.stringify({
-          choices: [{ message: { content: '{"verdicts":["pass"]}', }, },],
-        },);
+        /** Streamed body whose content is valid JSON of the wrong shape. */
+        const wrongShape = sseBody({ deltas: ['{"verdicts":["pass"]}',], },);
         /** Transport replaying the wrong-shape completion. */
         const { transport, } = recordedTransport({
           replies: [{ status: 200, bodyText: wrongShape, },],
@@ -586,10 +639,8 @@ await describe({
     it({
       name: 'returns schema-mismatch for unparseable non-refusal content',
       fn: async () => {
-        /** Body whose content is confident prose, not JSON and not refusal. */
-        const prose = JSON.stringify({
-          choices: [{ message: { content: 'The translation is excellent overall.', }, },],
-        },);
+        /** Streamed body whose content is confident prose, not JSON and not refusal. */
+        const prose = sseBody({ deltas: ['The translation is excellent overall.',], },);
         /** Transport replaying the prose completion. */
         const { transport, } = recordedTransport({
           replies: [{ status: 200, bodyText: prose, },],

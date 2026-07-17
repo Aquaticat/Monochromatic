@@ -158,7 +158,7 @@ export type ExtractedCompletion = {
  * const usage = readUsage({ parsed, },);
  * ```
  */
-function readUsage({ parsed, }: { readonly parsed: Readonly<Record<string, unknown>>; },): {
+export function readUsage({ parsed, }: { readonly parsed: Readonly<Record<string, unknown>>; },): {
   readonly usage?: CompletionUsage;
 } {
   /**

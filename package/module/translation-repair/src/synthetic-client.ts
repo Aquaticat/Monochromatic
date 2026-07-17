@@ -9,10 +9,7 @@ import type {
   ChatTextRequest,
   SyntheticClient,
 } from './chat-contract.ts';
-import {
-  extractCompletion,
-  SyntheticHttpError,
-} from './completion-shape.ts';
+import { SyntheticHttpError, } from './completion-shape.ts';
 import {
   formatUsageNote,
   parseModelJson,
@@ -25,6 +22,7 @@ import {
   SYNTHETIC_QUOTAS_URL,
   type SyntheticModelId,
 } from './synthetic-catalog.ts';
+import { extractStreamedCompletion, } from './stream-completion.ts';
 import {
   parseQuotaSnapshot,
   type QuotaSnapshot,
@@ -184,6 +182,10 @@ export function createSyntheticClient(
         bodyJson: JSON.stringify({
           model: request.modelId,
           messages: request.messages,
+          // The provider is finicky without streaming, and streamed headers
+          // arrive before fetch's default headers timeout can fire.
+          stream: true,
+          stream_options: { include_usage: true, },
           // Conditional spreads keep optional knobs absent instead of undefined.
           ...(request.maxTokens === undefined
             ? {}
@@ -207,9 +209,9 @@ export function createSyntheticClient(
       }
 
       /**
-       * Content and usage validated against the completion contract.
+       * Content and usage reassembled from the drained event stream.
        */
-      const extracted = extractCompletion({ bodyText: reply.bodyText, },);
+      const extracted = extractStreamedCompletion({ bodyText: reply.bodyText, },);
 
       /**
        * Content length for the completion log line.
