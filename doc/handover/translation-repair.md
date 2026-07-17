@@ -293,10 +293,14 @@ consumers and deployment are deliberately out of scope for now.
   (a2581911655 chunk 1) lost SIX of seven critics to 4-minute
   deadlines while GLM-5.2 completed and chunk 0 of the same entry had
   completed 7/7 four minutes earlier; the pipeline finished the chunk
-  on the surviving voice. CAUSE UNVERIFIED: aggregate-load weather
-  and a content-conditional thinking spiral (BI4PBV precedent) both
-  fit; task 19 probes it by re-running the exact seeded chunk in a
-  fresh window. Net quota over the whole run POSITIVE
+  on the surviving voice. PROBE VERDICT (task 19, 2026-07-17): the
+  exact seeded chunk re-run in a fresh window completed on ALL SEVEN
+  models (44 to 205 s, six substantive reports plus MiniMax's known
+  near-empty quirk), so the forfeit was provider weather, not
+  content-hard input; retry-to-quorum is the right remedy. gpt-oss
+  and Nemotron ran 200+ s even in the calm window: they are the
+  systematic slow tail on this plan, not occasionally unlucky.
+  Net quota over the whole run POSITIVE
   (2740.5 -> 2745.6 of 2750).
   The repair-phase exports live in `pipeline-barrel.ts` (root barrel
   hit max-lines).
