@@ -358,3 +358,17 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 - Output consumer (wiki PRs, files, UI): deferred until after the pure fn proves itself.
 - User possesses the policy files; the system must function without them.
 - Benchmark focuses on memorial texts first (user decision).
+- Model-driven input fixing (user: parse phase may "optionally" use LLMs to
+  fix source and translations before continuing): deferred by evidence, not
+  rejected. Deterministic tolerance (comment masking + markdown fallback)
+  covers every document in the pinned corpus with zero fallbacks needed;
+  `RepairDocument.parseFindings` is the designed trigger seam. Build the
+  LLM fixer only when a corpus commit produces a document whose findings
+  show real damage (an `mdx-downgraded` finding is the signal to watch),
+  and gate any fixed text on a strict re-parse plus a content-preservation
+  check before it replaces the input.
+- Document chunking (zh-to-en aligned sections) is now the critical path
+  for the pipeline: run 4 proved whole large documents exceed the
+  65_536-token output ceiling on thinking models, and small units complete
+  in ~30 s. The `##` section structure of memorial pages is the natural
+  chunk boundary; alignment findings already have an issue state.
