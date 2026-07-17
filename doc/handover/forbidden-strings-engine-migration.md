@@ -129,13 +129,31 @@ Updated:
   Note for #384: the settled decision to use the batch API stands;
   the delta versus a hand-rolled per-line loop is 8% on a corpus far
   larger than any commit delta.
-- IN FLIGHT: #383 rule-compiler module (opus, scanner crate;
-  spec includes the `from_bytes` precompiled-load path per the resolved
-  embed decision, the sentinel redaction test,
-  and a read-#217-then-decide instruction on closing #217).
-  Its dependency commit `57a811aeb` is already on main.
-  After #383: #384 (scan path), then #385 (teardown), sequential,
-  scanner crate.
+- #383 DONE and CLOSED (opus; spot-checked):
+  `57a811aeb` (engine dependency),
+  `c35ce7c19` (the `src/rule/frx/` module: `compile_from_text`,
+  `load_precompiled`, redacted `LoadError`; four test files;
+  208 tests pass).
+  #217 correctly left OPEN with a comment:
+  the leaking sites live in the still-active old load path,
+  so #217 closes with #384 when the binary stops reaching them.
+  Findings recorded by the agent:
+  the scanner crate's `lint:clippy` was already red before its work
+  (117 pre-existing implicit_return findings in old-pipeline files;
+  #385 owns the gate during teardown),
+  and `builtin_ported_all_compile` takes ~21s
+  (continuously verifies the ported baseline compiles;
+  candidate for `#[ignore]` if suite runtime matters).
+- IN FLIGHT: #384 scan-path swap (opus, scanner crate).
+  Prompt adds the resolved embed decision the issue body predates
+  (build-time precompiled `RegexSet` via `to_bytes`/`include_bytes`/
+  `load_precompiled`; only local rules compile at startup),
+  instructs `Closes #217` plus `Closes #384` after a reachability check,
+  bounds the clippy debt (modified files clean, no wholesale sweep),
+  and warns that the release binary under construction is the same
+  binary the repo's commit gate executes.
+  After #384: #385 (teardown, includes widening the crate clippy task
+  and the gate going green), then #386/#387 parallel, #388 after #384.
 - RESOLVED plan open question:
   startup compilation is NOT viable
   (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
@@ -376,6 +394,10 @@ Filed, not started:
   diagnosed the skip-list gap correctly to within one layer,
   honored the no-bypass and no-git-policy constraints,
   stopped cleanly at the wall with an actionable handoff).
+  #383 up to par (77 tool calls; leak-safe error type by construction,
+  tracing-subscriber redaction test beyond the letter of the spec,
+  correct #217 partial-coverage judgment, disciplined scope on the
+  pre-existing clippy debt).
 - No escalations recorded yet.
 
 ## Sequencing refinement discovered en route
