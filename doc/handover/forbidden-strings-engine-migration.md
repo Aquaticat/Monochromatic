@@ -1,7 +1,9 @@
 # Handover: forbidden-strings engine migration orchestration
 
 Updated:
- 2026-07-17, post-compact session resumed; subagent freeze lifted by the user.
+ 2026-07-17,
+ post-compact session resumed;
+ subagent freeze lifted by the user.
 
 ## URGENT context for the post-compact session
 
@@ -10,13 +12,19 @@ Updated:
   the port-rerun agent dispatch is authorized.
 - #376 state RESOLVED into:
   `e8763d56c` IS pushed (a later auto-push carried it;
-  the gate blocks at commit time, not push time).
+  the gate blocks at commit time,
+   not push time).
   Its `Closes #376` fired;
   the orchestrator REOPENED #376 with a comment listing the open items
-  (518 reshape, three-casing expansion, skip-list gate fix).
+  (518 reshape,
+   three-casing expansion,
+   skip-list gate fix).
   The user had AUTHORIZED the agent's raw-git commit bypass
-  (not real secrets, preserve trace, return ASAP).
-- Skip-list gate fix DONE (`37286df18` plus a trust refresh; pushed):
+  (not real secrets,
+   preserve trace,
+   return ASAP).
+- Skip-list gate fix DONE (`37286df18` plus a trust refresh;
+   pushed):
   both ported file paths added to `SCANNER_SELF_MATCH_PATHS`
   (canonical source `package/git-policy/forbidden-strings/src/scan-candidates.ts`;
   the CLI copy is file-enforcer-generated).
@@ -24,7 +32,8 @@ Updated:
   the first throwaway-worktree verification was weaker than recorded;
   the append file has no self-matching line,
   so its gate pass was vacuous
-  (the canary only proved scanning was live, not that skipping worked),
+  (the canary only proved scanning was live,
+   not that skipping worked),
   and the dist rebuild was never the operative step:
   the gate executes policy code from the frozen trusted snapshot under
   `~/.local/state/cli-git/trust/v1/records/...`,
@@ -36,7 +45,8 @@ Updated:
   a non-vacuous verification.
   Durable write-up:
   `doc/troubleshooting/cli-git-trusted-snapshot-stale-policy-code.md`.
-- NEW wrapper feature `--no-worktree-copy` (`99806c0c6`, pushed;
+- NEW wrapper feature `--no-worktree-copy` (`99806c0c6`,
+   pushed;
   user authorized mid-task):
   wrapper-only flag skipping the ignored-state worktree copy
   (the copy feature landed concurrently as the user's `7b63241b3`)
@@ -50,17 +60,23 @@ Updated:
   a `node_modules` symlink to the main worktree,
   and `git cli-git trust --yes` (trust records are per-worktree).
 - #376 port results:
-  261 regex rules ported, 260 compile;
+  261 regex rules ported,
+   260 compile;
   182 semantic changes:
   172 inline `(?i)` strips,
   16 quantifier bounds,
   1 reshape (rule 172).
-  Review doc: `doc/planning/forbidden-strings-rule-port-review.md`.
-- DECIDED by user 2026-07-16 (corrected phrasing, supersedes an earlier
+  Review doc:
+   `doc/planning/forbidden-strings-rule-port-review.md`.
+- DECIDED by user 2026-07-16 (corrected phrasing,
+   supersedes an earlier
   blanket-strip reading):
   inline `(?i)` spans are NOT simply stripped.
   Keyword literals under `(?i)` scope expand to a three-casing
-  non-capturing alternation: lowercase, Capitalized, UPPERCASE
+  non-capturing alternation:
+   lowercase,
+   Capitalized,
+   UPPERCASE
   (e.g. `(?:adobe|Adobe|ADOBE)`),
   because people write those three shapes and never mixed-case `AdOBe_`.
   Character classes under `(?i)` scope widen to both cases
@@ -68,71 +84,105 @@ Updated:
   Multi-run tokens capitalize per alphabetic run
   (`api_key` yields `api_key|Api_Key|API_KEY`).
   Applies to the 172 affected rules;
-  implement inside `dialectport.rs`, rerun, update the review doc
+  implement inside `dialectport.rs`,
+   rerun,
+   update the review doc
   (these rules reclassify from semantically-changed to
   approximately-preserving).
-- STANDING PREFERENCE (user, 2026-07-16):
-  lossiness in the over-matching direction is wanted, not tolerated;
+- STANDING PREFERENCE (user,
+   2026-07-16):
+  lossiness in the over-matching direction is wanted,
+   not tolerated;
   a false positive on a base64 blob that happens to embed a secret shape
   is acceptable ("I'd deserve it").
   This ratifies aggressive context simplification generally and weighs
   toward strip-after-@ for the mongodb rule (pi verdict pending).
   The planning doc's earlier "case-insensitivity is a non-issue" claim was
-  WRONG: it measured only trailing `/i` flags and missed pervasive inline
-  `(?i)` groups; the plan doc needs this correction.
-  Recommendation: ratify the strip (issue instruction said follow
-  normalize.rs precedent, which strips case flags; user hinted the answer
-  is in what is already written), gate a possible class-expansion
+  WRONG:
+   it measured only trailing `/i` flags and missed pervasive inline
+  `(?i)` groups;
+   the plan doc needs this correction.
+  Recommendation:
+   ratify the strip (issue instruction said follow
+  `normalize.rs` precedent,
+   which strips case flags;
+   user hinted the answer
+  is in what is already written),
+   gate a possible class-expansion
   follow-up on #387's differential results.
-- DECIDED (pi advisor B > D > A > C; aligns with user lossiness
-  preference): rule 518 becomes the credential-bearing core only,
+- DECIDED (pi advisor B > D > A > C;
+   aligns with user lossiness
+  preference):
+   rule 518 becomes the credential-bearing core only,
   `\bmongodb(?:\+srv)?://[!-9;-~]{3,50}:[!-?A-~]{3,88}@`.
   Rationale to quote in the review doc:
   preserve the original credential payload but omit non-secret URI suffix
-  validation, avoiding determinization blow-up and covering templated and
+  validation,
+   avoiding determinization blow-up and covering templated and
   partially constructed connection strings
   (delimiter-excluding classes make the phases deterministic;
   interpolated hosts like `${MONGO_HOST}` now covered).
-  Fallback if noisy: append one plausible host-introducer byte
+  Fallback if noisy:
+   append one plausible host-introducer byte
   `(?:[A-Za-z0-9]|\[|%)`.
   Full pi answer preserved durably at
   `doc/planning/forbidden-strings-rule-518-pi-advice.md`.
-- Port rerun DONE, #376 CLOSED (legitimately; all criteria met):
+- Port rerun DONE,
+   #376 CLOSED (legitimately;
+   all criteria met):
   opus agent delivered `366b3cafa`
   (new `caseexpand.rs` three-casing module wired into `dialectport.rs`,
   rule 518 credential-core special case)
   and `3333f3e63` (review doc restructured;
   172 case rules reclassified approximately-preserving;
-  518 rationale quoted; verification 261/261).
+  518 rationale quoted;
+   verification 261/261).
   Orchestrator landed the regenerated data file as `57cd6b3fd`
-  (169 builtin rules changed bytes: 168 case rules three-cased,
-  4 case rules byte-identical for lack of letters, plus 518;
+  (169 builtin rules changed bytes:
+   168 case rules three-cased,
+  4 case rules byte-identical for lack of letters,
+   plus 518;
   append file unchanged)
-  with `Closes #376`, through the gate, NO bypass.
+  with `Closes #376`,
+   through the gate,
+   NO bypass.
   The agent correctly refused to bypass and correctly stopped at the wall;
-  the wall was the orchestrator's stale-trust gap, not agent error.
-- #380 DONE and CLOSED (sonnet; spot-checked):
+  the wall was the orchestrator's stale-trust gap,
+   not agent error.
+- #380 DONE and CLOSED (sonnet;
+   spot-checked):
   `e24e0ac72` (pre-existing bench-crate implicit_return debt,
   isolated and fixed separately),
   `d949cb8c4` (bench with per-line oracle agreement check),
   `90683cabc` (README numbers).
-  Measured (Ryzen 7 8700F, single-threaded, 1.16M lines, 261 rules):
+  Measured (Ryzen 7 8700F,
+   single-threaded,
+   1.16M lines,
+   261 rules):
   per-line `matches()` loop 8.25M lines/s,
   concat hook 5.86M lines/s,
   `line_matches` 7.59M lines/s;
   so `line_matches` is 0.92x the per-line loop and 1.29x the concat hook.
-  Reading for #381: the seedless and line-start groups still resolve
-  per-line, which is exactly the headroom #381 would target;
+  Reading for #381:
+   the seedless and line-start groups still resolve
+  per-line,
+   which is exactly the headroom #381 would target;
   the absolute scanner workload (a few staged files per commit) makes
-  either path sub-millisecond, so #381 remains a judgment call for the
+  either path sub-millisecond,
+   so #381 remains a judgment call for the
   user at its queue position.
-  Note for #384: the settled decision to use the batch API stands;
+  Note for #384:
+   the settled decision to use the batch API stands;
   the delta versus a hand-rolled per-line loop is 8% on a corpus far
   larger than any commit delta.
-- #383 DONE and CLOSED (opus; spot-checked):
+- #383 DONE and CLOSED (opus;
+   spot-checked):
   `57a811aeb` (engine dependency),
-  `c35ce7c19` (the `src/rule/frx/` module: `compile_from_text`,
-  `load_precompiled`, redacted `LoadError`; four test files;
+  `c35ce7c19` (the `src/rule/frx/` module:
+   `compile_from_text`,
+  `load_precompiled`,
+   redacted `LoadError`;
+   four test files;
   208 tests pass).
   #217 correctly left OPEN with a comment:
   the leaking sites live in the still-active old load path,
@@ -144,118 +194,175 @@ Updated:
   and `builtin_ported_all_compile` takes ~21s
   (continuously verifies the ported baseline compiles;
   candidate for `#[ignore]` if suite runtime matters).
-- #384 DONE and CLOSED, #217 CLOSED with it (opus; spot-checked):
+- #384 DONE and CLOSED,
+   #217 CLOSED with it (opus;
+   spot-checked):
   `df1e9e006` (build-time precompiled baseline:
   `build.rs` shares the stage-one parser by `#[path]` include,
   serializes via `to_bytes` into `OUT_DIR`,
   `lib.rs` embeds via `include_bytes!`,
-  runtime always `load_precompiled`, never recompiles the baseline)
+  runtime always `load_precompiled`,
+   never recompiles the baseline)
   and `0a15c5c5a` (line-based scan path on `line_matches`,
   columnless `PATH:LINE rule=N` on stderr,
-  `catch_unwind` fail-closed kept, 226/226 tests).
-  Rule-id scheme changed: runtime rules `0..user_len`,
-  builtin offset above; gate runs builtin alone so offset 0.
+  `catch_unwind` fail-closed kept,
+   226/226 tests).
+  Rule-id scheme changed:
+   runtime rules `0..user_len`,
+  builtin offset above;
+   gate runs builtin alone so offset 0.
   Reachability check for #217 verified
   (12 disclosure sites only in the now-dead resharp chain).
   Agent stopped once mid-build awaiting its child;
   one SendMessage nudge resumed it cleanly.
-- LIVE-GATE FINDING (orchestrator canary, post-#384):
+- LIVE-GATE FINDING (orchestrator canary,
+   post-#384):
   the gate's finding path is format-broken until #388 lands:
   a real finding now surfaces as `plugin-threw`
   "Malformed forbidden-strings scanner output" instead of a redacted
   finding.
   FAIL-CLOSED holds (finding-bearing commits still blocked),
-  so no security hole, but #388 became urgent and was dispatched
+  so no security hole,
+   but #388 became urgent and was dispatched
   immediately.
-- #388 DONE and CLOSED (opus; orchestrator canary re-verified):
-  `b9b43ee60` (parser: `ScannerHit` drops columns,
+- #388 DONE and CLOSED (opus;
+   orchestrator canary re-verified):
+  `b9b43ee60` (parser:
+   `ScannerHit` drops columns,
   `lastIndexOf`-based split so colon-bearing paths stay safe,
   malformed lines fail closed redacted),
   `215957fba` (file-enforcer regen),
   `68cf30c98` (empty marker commit with `Closes #388` after
   trust-refresh and live verification;
-  `--no-enforce-only` used correctly, the sanctioned empty-commit case).
+  `--no-enforce-only` used correctly,
+   the sanctioned empty-commit case).
   Agent followed the trusted-snapshot activation steps and verified
   non-vacuously;
   orchestrator canary confirms
   `Forbidden string matched at line 1 (rule 58).`
   Real-binary integration test committed
-  (spawns the release scanner, runtime-built token, no leak).
+  (spawns the release scanner,
+   runtime-built token,
+   no leak).
   NOTE for #389's local-appendix port:
   rule indexes are environment-dependent
   (canary rule=58 under repo env versus rule=20 embedded-baseline-only),
   which means the gate scan DOES load a local rules file first and
   offsets the builtin baseline;
   the local file exists and is live in the gate path.
-- #385 DONE and CLOSED (opus; spot-checked: 0.2.0 in manifest,
+- #385 DONE and CLOSED (opus;
+   spot-checked:
+   0.2.0 in manifest,
   binary self-reports 0.2.0):
-  `a85bf020f` (27-file teardown, deps dropped, unreferenced-ness
-  verified per deletion, `catch_unwind` and release hardening kept),
+  `a85bf020f` (27-file teardown,
+   deps dropped,
+   unreferenced-ness
+  verified per deletion,
+   `catch_unwind` and release hardening kept),
   `063f61fd7` (clippy gate widened to `--all-targets` and green;
   33 surviving implicit_return fixes),
   `aea61186a` (README + CLI-help rewrite for the new dialect,
-  0.2.0 bump unpublished, troubleshooting pointer notes).
+  0.2.0 bump unpublished,
+   troubleshooting pointer notes).
   Its flag about the stale `algebra_tests.rs` entry in git-policy's
   skip list is parked on #390 as a comment
   (with the trusted-snapshot activation chain reminder).
-- SEQUENCING CHANGE: #386 and #387 run SEQUENTIALLY, not parallel:
+- SEQUENCING CHANGE:
+   #386 and #387 run SEQUENTIALLY,
+   not parallel:
   both touch the scanner package (fuzz sidecar and `fuzz_api.rs` versus
-  `PERF.md` and report), and #387's perf re-measure needs a quiet
+  `PERF.md` and report),
+   and #387's perf re-measure needs a quiet
   machine that a concurrent fuzz smoke pass would poison.
-- #386 DONE and CLOSED (opus; spot-checked):
+- #386 DONE and CLOSED (opus;
+   spot-checked):
   `1c5f3f51d` (fuzzing-gated API surface),
-  `e60a8cbfe` (three retargeted targets, two-form generator replacing
-  the 1636-line resharp generator, 3374 dead seeds pruned,
-  40 fresh seeds, dictionary rewritten, `.gitattributes` binary marks),
-  `aa4d3ac27` (docs plus lockfile, `Closes #386`).
-  Smoke passes: 24585/9790/5767 runs in 31s each, zero artifacts.
+  `e60a8cbfe` (three retargeted targets,
+   two-form generator replacing
+  the 1636-line resharp generator,
+   3374 dead seeds pruned,
+  40 fresh seeds,
+   dictionary rewritten,
+   `.gitattributes` binary marks),
+  `aa4d3ac27` (docs plus lockfile,
+   `Closes #386`).
+  Smoke passes:
+   24585/9790/5767 runs in 31s each,
+   zero artifacts.
   PROCESS LESSON (now baked into prompts):
   a subagent's backgrounded processes are KILLED when it stops,
   so background-build-and-wait loops both stall the agent and lose the
-  build; instruct agents to run long commands synchronously.
+  build;
+   instruct agents to run long commands synchronously.
   This agent stalled twice on Monitor waits before a firm
   "synchronous only" steer finished it.
-- #387 DONE and CLOSED (opus, 44 tool calls; the cutover gate PASSED):
-  `3200c64f0` (differential report), `ca420697e` (PERF.md).
+- #387 DONE and CLOSED (opus,
+   44 tool calls;
+   the cutover gate PASSED):
+  `3200c64f0` (differential report),
+   `ca420697e` (`PERF.md`).
   Zero lost findings on all corpora;
-  gains all attributed (518 mongodb 4+2, 172 curl 2);
+  gains all attributed (518 mongodb 4+2,
+   172 curl 2);
   rich rule-exercising corpus byte-identical after normalization;
-  numbering calibrated (old 1-based source line, new 0-based compiled
+  numbering calibrated (old 1-based source line,
+   new 0-based compiled
   index) and cross-checked;
-  perf within every budget (cold 13.7ms, `--all` 131.9ms, 0.78x old).
+  perf within every budget (cold 13.7ms,
+   `--all` 131.9ms,
+   0.78x old).
 - DISCOVERED post-#387 (orchestrator measurements):
-  forbidden-strings 0.2.0 ALREADY LIVE on crates.io AND as GitHub
+  forbidden-strings 0.2.0 ALREADY LIVE on `crates.io` AND as GitHub
   release `forbidden-strings-v0.2.0`
   (the `aea61186a` version bump auto-triggered the publish lanes;
-  benign, #387 validated exactly that binary, but it voided the
+  benign,
+   #387 validated exactly that binary,
+   but it voided the
   "unpublished until cutover" intent).
-  Separately, CI workflow `forbidden-strings.yml` has been RED since
-  2026-07-12: it still copies `forbidden-strings.local.example.txt`,
+  Separately,
+   CI workflow `forbidden-strings.yml` has been RED since
+  2026-07-12:
+   it still copies `forbidden-strings.local.example.txt`,
   deleted by the user's de-root commit `58995afff`
   (file-enforcer now composes appendixes into
-  `.cache/forbidden-strings.rules.txt`, `FORBIDDEN_STRINGS_RULES` env,
+  `.cache/forbidden-strings.rules.txt`,
+   `FORBIDDEN_STRINGS_RULES` env,
   `builtinRules` policy option).
-  Zero green runs in the last 40; predates the engine swap.
+  Zero green runs in the last 40;
+   predates the engine swap.
 - MAINTAINER LEG OF #389 DONE by orchestrator (user-authorized):
   verified the gitignored local appendix loads clean under the 0.2.0
-  strict loader (exit 0; no port needed, dialect-compatible),
+  strict loader (exit 0;
+   no port needed,
+   dialect-compatible),
   then refreshed the stale `FORBIDDEN_STRINGS_LIST` repo secret from it
   via a straight pipe (contents never displayed;
   `gh secret list` stamps 2026-07-17T11:40Z).
-- #389 DONE and CLOSED (opus; the CUTOVER IS COMPLETE):
+- #389 DONE and CLOSED (opus;
+   the CUTOVER IS COMPLETE):
   `570c267aa` (ported files promoted to live names;
   append diff was exactly two no-op `/m` flags),
-  `2d3d1d8b0` (skip-list pruned to three entries, activation chain run,
+  `2d3d1d8b0` (skip-list pruned to three entries,
+   activation chain run,
   non-vacuous gate canary),
   `3ce0cffd9` (CI materialize rewritten per de-root design),
-  `a74cb9df7` (runbook, `Closes #389`).
-  Verification PRs: #394 no-op GREEN, #395 API-committed red case RED
-  with fully redacted output; both closed unmerged, branches deleted.
-  0.2.0 publish criterion was already satisfied; nothing re-published.
+  `a74cb9df7` (runbook,
+   `Closes #389`).
+  Verification PRs:
+   #394 no-op GREEN,
+   #395 API-committed red case RED
+  with fully redacted output;
+   both closed unmerged,
+   branches deleted.
+  0.2.0 publish criterion was already satisfied;
+   nothing re-published.
 - OPEN DECISIONS FOR THE USER after #389 (recorded 2026-07-17):
   1. Push-to-main full-tree CI scan is legitimately RED with 7 redacted
-     findings: the 6 accepted over-matches documented by #387
-     (two planning docs, one troubleshooting doc, one package README)
+     findings:
+      the 6 accepted over-matches documented by #387
+     (two planning docs,
+      one troubleshooting doc,
+      one package README)
      plus ONE secret-ruleset match at
      `package-deprecated/audit/oph-common-look-and-feel/src/index.html`
      line 2657 (local rule compiled index 4;
@@ -272,23 +379,52 @@ Updated:
      A extend a skip/exclusion surface,
      D scanner allowlist feature (plan rejected),
      C accept red.
-  3. #381 seedless-routing: orchestrator recommends close-wontfix on
+  3. #381 seedless-routing:
+      orchestrator recommends close-wontfix on
      the #380 numbers (batch path 0.92x of naive loop;
-     absolute gate scans sub-millisecond; budgets met with 7x headroom);
+     absolute gate scans sub-millisecond;
+      budgets met with 7x headroom);
      awaiting user word.
-- IN FLIGHT: #390 hygiene (sonnet):
-  mooted-issue closures #158/#240/#226 with specific comments,
-  #224 update, 1.0-checklist reshape, em-dash doc annotation,
-  port-bin deletion (dialectport.rs plus caseexpand.rs) with bench
-  build+clippy verification.
-  The migration's issue chain #375-#389 is otherwise COMPLETE.
+- #390 DONE and CLOSED (sonnet hygiene pass):
+  #158,
+   #240,
+   and #226 closed as mooted by the engine swap
+  (issue comments only,
+   no commits:
+  resharp,
+   the `regex` crate,
+   and `aho-corasick` are gone from the scanner
+  as of 0.2.0);
+  #224 commented,
+   not closed:
+  items 14,
+   16,
+   and 17 are now fixed structurally by the strict loader
+  (unsupported-flag hard error,
+  empty-matchable-pattern rejection,
+  BOM stripping),
+  items 15 and 18 remain open.
+  `64e4a7c06` reshapes the 1.0 checklist's dependency-exposure item
+  (resharp exposure becomes own-engine maturity) and annotates the em-dash
+  planning doc with the new dialect's implications
+  (bounded complements no longer need the literal-space workaround,
+  but unbounded `.*` must become bounded repetition).
+  `5a5b9e3b7` removes `dialectport.rs` and `caseexpand.rs` from the bench
+  sidecar and updates the runbook's pending-#390 phrasing to past tense,
+  verified via `cargo build --release`,
+  `cargo check`,
+  `cargo clippy --release -D warnings`,
+  and the max-lines/require-rustdoc linter,
+  all green through `mise run`.
+  The migration's issue chain #375-#390 is now COMPLETE.
 - RESOLVED plan open question:
   startup compilation is NOT viable
-  (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
+  (worst rule 123s pre-strip;
+   49 rules over 1s even after fixes);
   the loader (#383) MUST embed a precompiled serialized `RegexSet`
   (`to_bytes`/`from_bytes`);
   update the planning doc's open-questions section.
-- The working tree is clean (agent removed its probe.rs debris before
+- The working tree is clean (agent removed its `probe.rs` debris before
   committing).
 
 Fresh milestones (details in State of play):
@@ -297,7 +433,7 @@ Fresh milestones (details in State of play):
   `260823a4a` unwrap-to-expect);
   the engine's all-targets clippy gate is GREEN again.
 - #382 done:
-  `forbidden-regex` 0.1.0 is LIVE on crates.io
+  `forbidden-regex` 0.1.0 is LIVE on `crates.io`
   (manual bootstrap publish from the authorized session),
   the maintainer configured trusted publishing,
   and commit `4b502af20` adds the fr- workflow lane.
@@ -308,7 +444,8 @@ Fresh milestones (details in State of play):
   the agent to clean up and commit ASAP;
   it reports back imminently with a design decision to resolve,
   which the user believes is answerable from what is already written
-  (resolve by citation, do not reopen).
+  (resolve by citation,
+   do not reopen).
   Engine crate and workflow are free;
   bench sidecar still occupied by #376.
 Assume nothing else survived compaction;
@@ -318,7 +455,10 @@ Assume nothing else survived compaction;
 
 - Decisions and rationale:
   `doc/planning/forbidden-strings-engine-migration.md`
-  (all grilled decisions, adopted defaults, measured facts, issue map).
+  (all grilled decisions,
+   adopted defaults,
+   measured facts,
+   issue map).
 - Port review (lands with #376):
   `doc/planning/forbidden-strings-rule-port-review.md`.
 - Issues #375 through #390 are the migration;
@@ -326,7 +466,8 @@ Assume nothing else survived compaction;
 
 ## User-issued orchestration policies (verbatim intent)
 
-- Subagents get tiny, well-defined tasks;
+- Subagents get tiny,
+   well-defined tasks;
   the main session stays orchestrator and never implements large slices itself.
 - Model class per task difficulty:
   sonnet for mechanical sweeps,
@@ -336,21 +477,29 @@ Assume nothing else survived compaction;
   if a class's output is not up to par,
   bump the class for future similar tasks.
   Persistence of this policy is tracked in #391 (needs-triage);
-  do not add it to `AGENTS.md` (user vetoed, too specific).
-- The user is authenticated on crates.io and authorized publishing
+  do not add it to `AGENTS.md` (user vetoed,
+   too specific).
+- The user is authenticated on `crates.io` and authorized publishing
   `forbidden-regex` from this machine;
   the orchestrator (not a subagent) runs the actual `cargo publish`.
   Trusted publishing config comes after the first version exists.
 - Handover duty:
-  update this file at every milestone (agent completion, publish, escalation).
-- pi advisor policy (user, 2026-07-16):
+  update this file at every milestone (agent completion,
+   publish,
+   escalation).
+- pi advisor policy (user,
+   2026-07-16):
   call `pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills
   --no-themes --thinking xhigh` freely as an explicit-context advisor tool
-  (background, several minutes, one-flush output);
+  (background,
+   several minutes,
+   one-flush output);
   the native advisor tool is disabled as too slow.
 - Bench-porter clarification (answers a user question):
   the bench crate's port is deliberately lossy
-  (regex lines only, compile-filter drops failures, context stripped),
+  (regex lines only,
+   compile-filter drops failures,
+   context stripped),
   so #376 rightly built a faithful porter;
   but wholesale context-stripping remains a live v2-port option
   if pi and the #387 differential favor it.
@@ -367,17 +516,20 @@ Assume nothing else survived compaction;
   `TaskList`/`TaskOutput` inspect status.
 - Prompt-embedded stop conditions are the only per-task budget mechanism.
   Prompts so far include scoped ones
-  (stop-and-report on max-lines, report-not-fix on new lint families)
+  (stop-and-report on max-lines,
+   report-not-fix on new lint families)
   but no overall effort budget.
 - Policy for every future launch:
   include a soft budget line in the prompt,
   for example "if this exceeds roughly five hundred tool calls or you hit a
-  wall, stop and report state instead of pushing on".
+  wall,
+   stop and report state instead of pushing on".
   The user set the calibration:
   forty is extremely low;
   five hundred is about right.
 - If an agent looks stalled (no completion notification for an unreasonable
-  span), inspect via `TaskList` and stop it with `TaskStop` rather than
+  span),
+   inspect via `TaskList` and stop it with `TaskStop` rather than
   launching a duplicate into the same crate.
 
 ## Hard sequencing constraints
@@ -389,14 +541,16 @@ Assume nothing else survived compaction;
   and put `Closes #N` in the final commit body once acceptance criteria verified;
   auto-push closes the issue.
 - On push race:
-  `git pull --rebase`, push again.
+  `git pull --rebase`,
+   push again.
 
 ## State of play
 
 Done:
 
 - #375 engine clippy sweep plus metadata.
-  Commit `4106b66a0`, pushed.
+  Commit `4106b66a0`,
+   pushed.
   All 367 lib errors fixed mechanically;
   221 tests pass;
   `cargo package` verified.
@@ -405,11 +559,15 @@ Done:
   (lib-only mise clippy task misses them);
   now covered by #392.
 - #377 batch API contract.
-  Commit `b69611f78`, pushed, spot-checked.
-  API: `RegexSet::line_matches(buf, starts) -> Vec<(usize, usize)>`
+  Commit `b69611f78`,
+   pushed,
+   spot-checked.
+  API:
+   `RegexSet::line_matches(buf, starts) -> Vec<(usize, usize)>`
   in `src/regex/batch.rs`;
   naive per-line `matches()` loop;
-  output ordering line-ascending, `matches()` order within a line;
+  output ordering line-ascending,
+   `matches()` order within a line;
   preconditions documented not validated;
   5 new tests (226 total).
   Deviation note:
@@ -418,42 +576,56 @@ Done:
   (`\x50` final byte);
   no git-policy files touched.
 - #378 single-sweep fast path.
-  Commit `4575442f3`, pushed.
+  Commit `4575442f3`,
+   pushed.
   `line_matches` now calls `sweep_candidates(buf, starts)` once on the
   caller's buffer (zero copy);
   private `resolve_matches(line, has_seed)` gates only the seeded group;
   line-start and seedless groups untouched (deferred to #381);
   ordering contract preserved;
   new test proves a seed spanning a line boundary does not match;
-  227 tests pass, all gates clean.
+  227 tests pass,
+   all gates clean.
 - #379 differential fuzz target.
-  Commit `72e830f3d`, pushed.
+  Commit `72e830f3d`,
+   pushed.
   Target `fuzz_line_matches` plus `RulesetAndBuffer` generator
-  (mixed `\n`/`\r\n`, forced empty lines, optional unterminated final line,
+  (mixed `\n`/`\r\n`,
+   forced empty lines,
+   optional unterminated final line,
   `starts` built in lockstep);
   independent naive recomputation as the oracle;
-  33k bounded runs clean, no artifacts;
+  33k bounded runs clean,
+   no artifacts;
   no engine-crate files touched.
 
 Running (completion notifications arrive automatically):
 
-- #376 rule-file port, opus. RETURNED; see URGENT section above.
+- #376 rule-file port,
+   opus.
+   RETURNED;
+   see URGENT section above.
   Bench sidecar plus data files plus repo-root append file plus review doc.
   Settled semantics in the issue:
   512 quantifier caps,
   `/m` drops,
   rule 172 curl-anchor drop,
   line-number alignment preserved,
-  strict compile, zero drops,
+  strict compile,
+   zero drops,
   gitignored local files untouchable.
   CURRENT STATUS:
   scope drift observed by the user (extra probe bin beside the port bin),
   grace timer fired,
   user directly told the agent to clean up and commit ASAP;
   its report arrives imminently and carries a design decision to resolve.
-  User guidance: the decision is likely answerable from what is already
-  written (planning doc, engine README, port review conventions);
-  resolve by citation, do not reopen settled decisions.
+  User guidance:
+   the decision is likely answerable from what is already
+  written (planning doc,
+   engine README,
+   port review conventions);
+  resolve by citation,
+   do not reopen settled decisions.
   Lesson recorded on #391:
   soft budgets and precise prompts are the only bounding mechanism.
 
@@ -466,24 +638,33 @@ Also done (session spin-offs):
   and `260823a4a` (60 test `Result::unwrap()` to `.expect()` conversions;
   gate green).
   Triage decision came from root `clippy.toml` reason text plus
-  sibling-crate precedent (expect, never suppress).
+  sibling-crate precedent (expect,
+   never suppress).
   Scope note posted to #385:
   widen the scanner crate's lib-only clippy task during the teardown.
 - #382:
-  0.1.0 live on crates.io, trusted publishing configured by the maintainer,
+  0.1.0 live on `crates.io`,
+   trusted publishing configured by the maintainer,
   workflow lane in `4b502af20`.
 
-Filed, not started:
+Filed,
+ not started:
 
-- #391 escalation-policy persistence decision (needs-triage, human).
+- #391 escalation-policy persistence decision (needs-triage,
+   human).
 
 ## Planned launch order
 
 1. On #377 completion:
-   launch #378 (fast path, opus, engine crate)
-   and #379 (differential fuzz target, sonnet, fuzz sidecar) in parallel.
+   launch #378 (fast path,
+    opus,
+    engine crate)
+   and #379 (differential fuzz target,
+    sonnet,
+    fuzz sidecar) in parallel.
 2. On #378 completion:
-   launch #392 (sonnet, engine crate;
+   launch #392 (sonnet,
+    engine crate;
    its widened gate then also covers test code added by #377/#378).
 3. After #378 and #392:
    orchestrator publishes `forbidden-regex` 0.1.0 and extends
@@ -491,12 +672,18 @@ Filed, not started:
    Publish is authorized;
    run it from this session.
 4. On #376 plus #377 completion:
-   launch #383 (scanner rule-compiler module, opus).
-   Then #384 (scan path), then #385 (teardown), sequential, same crate.
+   launch #383 (scanner rule-compiler module,
+    opus).
+   Then #384 (scan path),
+    then #385 (teardown),
+    sequential,
+    same crate.
 5. After #385:
    #386 (fuzz retarget) and #387 (differential validation plus perf)
-   and #388 (git-policy parser, after #384 in fact) as crates free up.
-6. #389 cutover reclassified ready-for-agent (user, 2026-07-17):
+   and #388 (git-policy parser,
+    after #384 in fact) as crates free up.
+6. #389 cutover reclassified ready-for-agent (user,
+    2026-07-17):
    full AFK plan in the issue comment
    (API-side commit for the red-case PR,
    0.2.0 via the existing cargo-publish lane,
@@ -506,12 +693,18 @@ Filed, not started:
    the gitignored local rules file is authoritative,
    so the cutover overwrites the secret from the ported local file
    without preserving the old value.
-   AUTHORIZATION (user, 2026-07-17, supersedes the earlier no-read rule):
+   AUTHORIZATION (user,
+    2026-07-17,
+    supersedes the earlier no-read rule):
    the agent may freely read and manipulate the gitignored local
    ruleset files;
-   the constraint is human exposure, not agent context.
+   the constraint is human exposure,
+    not agent context.
    Contents must still never reach any human other than the maintainer:
-   no tracked files, no commit messages, no issue text, no pushed logs,
+   no tracked files,
+    no commit messages,
+    no issue text,
+    no pushed logs,
    no CI output (scanner redaction invariant unchanged).
 7. #390 hygiene last.
 8. #380 (bench numbers) after #378;
@@ -520,43 +713,70 @@ Filed, not started:
 ## Model-class ledger (for the escalation policy)
 
 - sonnet:
-  #375 up to par (clean sweep, good scope note; 35 tool calls).
-  #379 up to par (fuzz target, clean scope discipline; 34 tool calls).
-  #380 up to par (104 tool calls; oracle check before timing,
+  #375 up to par (clean sweep,
+   good scope note;
+   35 tool calls).
+  #379 up to par (fuzz target,
+   clean scope discipline;
+   34 tool calls).
+  #380 up to par (104 tool calls;
+   oracle check before timing,
   correctly isolated and separately committed pre-existing clippy debt,
   honored the dialectport/caseexpand exclusion).
 - opus:
-  #377 up to par (contract exactly as specced, spot-checked; 53 tool calls).
-  #378 up to par (correctness argument articulated, boundary test added;
+  #377 up to par (contract exactly as specced,
+   spot-checked;
+   53 tool calls).
+  #378 up to par (correctness argument articulated,
+   boundary test added;
   30 tool calls).
-  #376 initial port: up to par on output, scope drift on process
-  (extra probe bin; user-managed return).
-  #376 rerun: up to par and then some
-  (80 tool calls; caught the orchestrator's vacuous verification,
+  #376 initial port:
+   up to par on output,
+   scope drift on process
+  (extra probe bin;
+   user-managed return).
+  #376 rerun:
+   up to par and then some
+  (80 tool calls;
+   caught the orchestrator's vacuous verification,
   diagnosed the skip-list gap correctly to within one layer,
   honored the no-bypass and no-git-policy constraints,
   stopped cleanly at the wall with an actionable handoff).
-  #383 up to par (77 tool calls; leak-safe error type by construction,
+  #383 up to par (77 tool calls;
+   leak-safe error type by construction,
   tracing-subscriber redaction test beyond the letter of the spec,
-  correct #217 partial-coverage judgment, disciplined scope on the
+  correct #217 partial-coverage judgment,
+   disciplined scope on the
   pre-existing clippy debt).
-  #384 up to par (129 calls; one mid-build stall, nudged once).
-  #385 up to par (103 calls; per-file unreferenced-ness verification).
-  #386 up to par on output, stalled twice on background-wait
-  (the process lesson above; work itself excellent).
-  #387 exemplary (44 calls; calibrated numbering before trusting it,
-  pin proven positively, zero unexplained deltas).
+  #384 up to par (129 calls;
+   one mid-build stall,
+   nudged once).
+  #385 up to par (103 calls;
+   per-file unreferenced-ness verification).
+  #386 up to par on output,
+   stalled twice on background-wait
+  (the process lesson above;
+   work itself excellent).
+  #387 exemplary (44 calls;
+   calibrated numbering before trusting it,
+  pin proven positively,
+   zero unexplained deltas).
   #389 up to par and then some (92 calls;
-  isolated the index.html finding to the secret ruleset without
-  reading content, refused unilateral skip-list expansion,
+  isolated the `index.html` finding to the secret ruleset without
+  reading content,
+   refused unilateral skip-list expansion,
   flagged the review-doc friction instead of working around it).
-- Standing conclusion: no escalations needed anywhere in the
-  migration; sonnet for mechanical, opus for bounded judgment held.
+- Standing conclusion:
+   no escalations needed anywhere in the
+  migration;
+   sonnet for mechanical,
+   opus for bounded judgment held.
 - No escalations recorded yet.
 
 ## Sequencing refinement discovered en route
 
-#380 (bench coverage) is blocked in practice by #376, not only by #378:
+#380 (bench coverage) is blocked in practice by #376,
+ not only by #378:
 the bench sidecar crate is where #376's port bin lives,
 so #380 launches only after #376 completes.
 
