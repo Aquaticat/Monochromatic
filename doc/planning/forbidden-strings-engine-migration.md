@@ -109,6 +109,50 @@ Rejected:
  unpublishing the scanner (abandons the 1.0 roadmap)
  and vendoring the engine source (diverging copies of a living codebase).
 
+Publish-readiness audit (measured 2026-07-16):
+
+- Tests pass:
+  221 run, 221 passed, 1 skipped
+  (`mise run //package/rust-module/forbidden-regex:test`).
+- `lint:rust` (max-lines, require-rustdoc) passes.
+- Clippy fails:
+  367 errors,
+  every one the crate's own `implicit_return = "deny"` gate
+  (missing `return` statement);
+  a mechanical sweep is a publish prerequisite (PKG, LN8).
+- `cargo package --list` bundles README,
+  `Cargo.lock`,
+  and both `LICENSES/*.txt` files correctly.
+- Metadata gaps:
+  no `authors` or `documentation` fields;
+  fill at publish time
+  (same nit as 1.0 checklist item 11 for the scanner).
+
+Verdict:
+ not publish-ready today;
+ the gap is the clippy sweep plus metadata,
+ both bounded and mechanical.
+
+### Scan path uses the engine's batch face
+
+The scanner scans a file by handing every line to the set at once
+instead of looping `is_match` per line.
+`RegexSet::is_match_batch` is the plain per-line map;
+the real throughput shape is the `#[doc(hidden)]` benchmark hook
+`is_match_batch_concat`:
+ one full-width SIMD prefilter sweep over a concatenated buffer,
+ then per-line resolution
+ (short lines starve Teddy at per-line width).
+The scanner already owns the whole file buffer with newlines in place,
+so the migration adds a public scanner-facing engine API
+that productionizes the concat path without the copy:
+ take the caller's buffer plus line-start offsets
+ (the internal `sweep_candidates(&buf, &starts)` primitive),
+ and return per-line rule indices
+ (the batch hooks return only booleans today;
+ findings need `rule=N` attribution).
+This is an engine API work item that lands before the scanner rewrite.
+
 ## Adopted defaults (stated for veto, not asked)
 
 - Version:
@@ -200,6 +244,11 @@ Rejected:
   in `src/rule/compile.rs`,
   all deleted by this migration.
 - `cargo-publish.yml` currently publishes only `forbidden-strings`.
+- The engine itself depends on `aho-corasick`,
+  `memchr`,
+  and `regex-automata` internally for its prefilters,
+  so the scanner's direct aho-corasick dependency disappears
+  but the machinery stays as a transitive dependency.
 
 ## Issue impacts
 
@@ -222,17 +271,22 @@ Rejected:
 
 ## Rollout sequence
 
- 1. Publish `forbidden-regex` 0.1.0 (workflow extension first).
- 2. Port rule files with the bench-sidecar script;
+ 1. Publish-readiness sweep on `forbidden-regex`:
+    fix the 367 clippy implicit-return errors,
+    fill `authors` and `documentation` metadata.
+ 2. Add the public buffer-plus-line-starts batch API
+    returning per-line rule indices.
+ 3. Publish `forbidden-regex` 0.1.0 (workflow extension first).
+ 4. Port rule files with the bench-sidecar script;
     review the semantic diff (quantifier bounds, rule 172, `/m` drops).
- 3. Rewrite loader and scan path;
+ 5. Rewrite loader and scan path against the batch API;
     delete resharp machinery;
     add the sentinel redaction test;
     retarget scanner fuzz targets.
- 4. Differential validation run, old binary against new.
- 5. Re-measure `PERF.md`.
- 6. Lockstep update of the git-policy scanner-output parser.
- 7. Atomic cutover commit;
+ 6. Differential validation run, old binary against new.
+ 7. Re-measure `PERF.md`.
+ 8. Lockstep update of the git-policy scanner-output parser.
+ 9. Atomic cutover commit;
     execute the runbook for the CI secret and contributor local files.
- 8. Close and annotate issues;
+10. Close and annotate issues;
     update the 1.0 checklist and the em-dash planning doc.
