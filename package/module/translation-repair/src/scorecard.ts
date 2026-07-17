@@ -19,7 +19,13 @@ export type CriticAttemptOutcomeKind =
   | 'ok'
   | 'refusal-shaped'
   | 'schema-mismatch'
-  | 'http-error';
+  | 'http-error'
+  /*
+   * Never dispatched: the run budget ran out first. Excluded from every
+   * rate and recall denominator; surfaces only through skipped counts and
+   * coverage, so a time-boxed run cannot masquerade as a full one.
+   */
+  | 'skipped';
 
 /**
  * One critic call graded against the seeds planted for its entry.
@@ -116,9 +122,14 @@ export type ModelScorecardRow = {
   readonly modelId: SyntheticModelId;
 
   /**
-   * Attempt count behind the rates.
+   * Dispatched attempt count behind the rates; skipped records excluded.
    */
   readonly attempts: number;
+
+  /**
+   * Records never dispatched because the run budget ran out.
+   */
+  readonly skipped: number;
 
   /**
    * Fraction of attempts ending `ok`.
@@ -172,6 +183,12 @@ export type BenchmarkScorecard = {
    * the recall ceiling of the whole ensemble, the milestone go/no-go number.
    */
   readonly ensembleRecall: number;
+
+  /**
+   * Dispatched records over all records:
+   * 1 when the run budget never cut anything, lower on time-boxed runs.
+   */
+  readonly coverage: number;
 };
 
 /**
@@ -341,18 +358,35 @@ export function computeScorecard(
 
   /**
    * Per-model rows computed from each bucket.
+   * Skipped records back only the skipped count;
+   * every rate divides by dispatched attempts.
    */
   const rows = [...byModel.entries(),].map(function toRow([modelId, bucket,],) {
     /**
-     * Attempt count backing every rate in this row.
+     * Records actually dispatched to the model.
      */
-    const attemptCount = bucket.length;
+    const dispatched = bucket.filter(function wasDispatched(record,) {
+      return record.outcomeKind !== 'skipped';
+    },);
 
     /**
-     * Seeds planted across this model's attempts.
+     * Dispatched attempt count backing every rate in this row.
+     */
+    const attemptCount = dispatched.length;
+
+    /**
+     * Divisor guarding fully skipped buckets against division by zero.
+     */
+    const rateDivisor = Math.max(
+      attemptCount,
+      1,
+    );
+
+    /**
+     * Seeds planted across this model's dispatched attempts.
      */
     const seededTotal = sumOver({
-      bucket,
+      bucket: dispatched,
       pick: plantedCountOf,
     },);
 
@@ -360,39 +394,49 @@ export function computeScorecard(
      * Seeds this model detected.
      */
     const seededHits = sumOver({
-      bucket,
+      bucket: dispatched,
       pick: hitCountOf,
     },);
 
     return {
       modelId,
       attempts: attemptCount,
+      skipped: bucket.length - attemptCount,
       schemaOkRate: countOutcomeKind({
-        bucket,
+        bucket: dispatched,
         kind: 'ok',
-      },) / attemptCount,
+      },) / rateDivisor,
       refusalRate: countOutcomeKind({
-        bucket,
+        bucket: dispatched,
         kind: 'refusal-shaped',
-      },) / attemptCount,
+      },) / rateDivisor,
       seededRecall: seededTotal === 0
         ? 0
         : seededHits / seededTotal,
       resolvedClaimsPerAttempt: sumOver({
-        bucket,
+        bucket: dispatched,
         pick: claimCountOf,
-      },) / attemptCount,
+      },) / rateDivisor,
       unresolvedPerAttempt: sumOver({
-        bucket,
+        bucket: dispatched,
         pick: unresolvedCountOf,
-      },) / attemptCount,
+      },) / rateDivisor,
     };
+  },);
+
+  /**
+   * Records actually dispatched across all models;
+   * seeds of never-dispatched records were never examined,
+   * so they stay out of the recall universe.
+   */
+  const dispatchedAttempts = attempts.filter(function wasDispatched(record,) {
+    return record.outcomeKind !== 'skipped';
   },);
 
   /**
    * Distinct planted seeds keyed by entry and seed id.
    */
-  const seedUniverse = new Set(attempts.flatMap(function seedKeys(attempt,) {
+  const seedUniverse = new Set(dispatchedAttempts.flatMap(function seedKeys(attempt,) {
     return attempt
       .plantedSeedIds
       .map(function toKey(seedId,) {
@@ -403,7 +447,7 @@ export function computeScorecard(
   /**
    * Seeds any model detected, keyed by entry and seed id.
    */
-  const ensembleHits = new Set(attempts.flatMap(function hitKeys(attempt,) {
+  const ensembleHits = new Set(dispatchedAttempts.flatMap(function hitKeys(attempt,) {
     return attempt
       .seededHitIds
       .map(function toKey(seedId,) {
@@ -417,6 +461,9 @@ export function computeScorecard(
     ensembleRecall: seedUniverse.size === 0
       ? 0
       : ensembleHits.size / seedUniverse.size,
+    coverage: attempts.length === 0
+      ? 0
+      : dispatchedAttempts.length / attempts.length,
   };
 }
 

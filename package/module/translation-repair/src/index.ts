@@ -141,6 +141,10 @@ export {
   armCallDeadline,
   type CallDeadline,
 } from './call-deadline.ts';
+export {
+  prepareBenchmarkEntry,
+  type PreparedEntry,
+} from './prepare-entry.ts';
 export { createSyntheticClient, } from './synthetic-client.ts';
 export {
   DEFAULT_RETRY_POLICY,
