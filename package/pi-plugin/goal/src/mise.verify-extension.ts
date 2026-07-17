@@ -11,10 +11,14 @@ import type {
 
 //region Contracts
 
-/** Built artifact loaded by Pi package manifest. */
+/**
+ * Built artifact loaded by Pi package manifest.
+ */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
-/** Exact lifecycle events installed by goal default factory. */
+/**
+ * Exact lifecycle events installed by goal default factory.
+ */
 const EXPECTED_EVENTS: readonly string[] = [
   'agent_end',
   'agent_settled',
@@ -26,7 +30,9 @@ const EXPECTED_EVENTS: readonly string[] = [
   'session_tree',
 ];
 
-/** Public built module shape required by consumers and deterministic verifiers. */
+/**
+ * Public built module shape required by consumers and deterministic verifiers.
+ */
 type GoalBuiltModule = {
   readonly default: ExtensionFactory;
   readonly parseGoalCommand: (raw: string) => unknown;
@@ -34,7 +40,9 @@ type GoalBuiltModule = {
   readonly registerGoalLifecycle: (...inputs: readonly unknown[]) => unknown;
 };
 
-/** Captured registration inventory from fake Pi API. */
+/**
+ * Captured registration inventory from fake Pi API.
+ */
 type RegistrationHarness = {
   readonly api: ExtensionAPI;
   readonly events: ReadonlyMap<string, readonly unknown[]>;
@@ -83,18 +91,38 @@ function isGoalBuiltModule(value: unknown,): value is GoalBuiltModule {
  * ```
  */
 function createRegistrationHarness(): RegistrationHarness {
-  /** Event handlers grouped by Pi lifecycle event. */
+  /**
+   * Event handlers grouped by Pi lifecycle event.
+   */
   const events = new Map<string, unknown[]>();
-  /** Slash commands in registration order. */
+  /**
+   * Slash commands in registration order.
+   */
   const commands: string[] = [];
-  /** Model tools in registration order. */
+  /**
+   * Model tools in registration order.
+   */
   const tools: string[] = [];
-  /** Session-entry renderers in registration order. */
+  /**
+   * Session-entry renderers in registration order.
+   */
   const entryRenderers: string[] = [];
-  /** Minimal registration-only Pi API. */
+  /**
+   * Minimal registration-only Pi API.
+   */
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Registration verifier implements only API methods invoked during factory loading.
   const api = {
-    on(event: string, handler: unknown,) {
-      events.set(event, [...events.get(event,) ?? [], handler,],);
+    on(
+      event: string,
+      handler: unknown,
+    ) {
+      events.set(
+        event,
+        [
+          ...events.get(event,) ?? [],
+          handler,
+        ],
+      );
     },
     registerCommand(name: string,) {
       commands.push(name,);
@@ -163,11 +191,15 @@ function requireOnlyRegistration(
  * ```
  */
 async function verifyBuiltGoalExtension(): Promise<string> {
-  /** Side-effect-free namespace import of exact built artifact. */
+  /**
+   * Side-effect-free namespace import of exact built artifact.
+   */
   const imported: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isGoalBuiltModule(imported,))
     throw new Error('built goal extension has unexpected named or default exports',);
-  /** Registration inventory populated only after explicit default invocation. */
+  /**
+   * Registration inventory populated only after explicit default invocation.
+   */
   const harness = createRegistrationHarness();
   await imported.default(harness.api,);
   requireOnlyRegistration({
@@ -185,16 +217,25 @@ async function verifyBuiltGoalExtension(): Promise<string> {
     expected: 'goal:review-unavailable',
     kind: 'entry renderer',
   },);
-  if (harness.events.has('tool_call',))
+  if (harness.events
+    .has('tool_call',))
     throw new Error('goal extension registered forbidden goal-state tool_call blocker',);
-  /** Sorted actual lifecycle inventory for exact comparison. */
-  const actualEvents = [...harness.events.keys(),]
+  /**
+   * Sorted actual lifecycle inventory for exact comparison.
+   */
+  const actualEvents = [...harness.events
+    .keys(),]
     .toSorted();
   if (JSON.stringify(actualEvents,) !== JSON.stringify(EXPECTED_EVENTS,))
     throw new Error(`unexpected lifecycle inventory: ${actualEvents.join(', ')}`,);
-  /** Events required to have exactly one handler each. */
+  /**
+   * Events required to have exactly one handler each.
+   */
   const duplicateEvent = actualEvents.find(function hasWrongCount(event,) {
-    return harness.events.get(event,)?.length !== 1;
+    return harness.events
+      .get(event,)
+      ?.length
+      !== 1;
   },);
   if (duplicateEvent !== undefined)
     throw new Error(`expected one ${duplicateEvent} handler`,);

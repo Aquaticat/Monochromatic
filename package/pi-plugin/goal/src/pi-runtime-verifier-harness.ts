@@ -13,42 +13,51 @@ import {
   type ExtensionRuntime,
   SessionManager,
 } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
+import type { GoalCompletionResult, } from '../dist/final/node/index.mjs';
+import {
+  bindRuntimeActions,
+  type CapturedRuntimeMessage,
+} from './pi-runtime-verifier-actions.ts';
 
 //region Types
 
-/** Generic loaded lifecycle callback driven by verifier. */
+/**
+ * Generic loaded lifecycle callback driven by verifier.
+ */
 type RuntimeHandler = (
-  event: unknown,
-  context: ExtensionContext,
-) => Promise<unknown> | unknown;
+  input: ForeignBorrowed<{
+    readonly event: Readonly<Record<string, unknown>>;
+    readonly context: ExtensionContext;
+  }>,
+) => unknown;
 
-/** Generic loaded slash-command callback driven by verifier. */
+/**
+ * Generic loaded slash-command callback driven by verifier.
+ */
 type RuntimeCommand = (
-  args: string,
-  context: ExtensionCommandContext,
-) => Promise<void> | void;
+  input: ForeignBorrowed<{
+    readonly args: string;
+    readonly context: ExtensionCommandContext;
+  }>,
+) => Promise<void>;
 
-/** Generic loaded tool callback including Pi extension context. */
+/**
+ * Generic loaded tool callback including Pi extension context.
+ */
 type RuntimeTool = (
-  toolCallId: string,
-  params: Readonly<Record<string, unknown>>,
-  signal: AbortSignal | undefined,
-  onUpdate: undefined,
-  context: ExtensionContext,
-) => Promise<{
-  readonly content: readonly unknown[];
-  readonly details: Readonly<Record<string, unknown>>;
-  readonly terminate?: boolean;
-}>;
+  input: {
+    readonly toolCallId: ForeignBorrowed<string>;
+    readonly params: ForeignBorrowed<Readonly<Record<string, unknown>>>;
+    readonly context: ForeignBorrowed<ExtensionContext>;
+    readonly signal?: ForeignBorrowed<AbortSignal>;
+  },
+) => Promise<GoalCompletionResult>;
 
-/** Custom message and delivery metadata observed through real loader runtime. */
-type CapturedRuntimeMessage = {
-  readonly customType: string;
-  readonly content: unknown;
-  readonly triggerTurn: boolean;
-};
-
-/** Disposable package discovery result and stateful Pi boundaries. */
+/**
+ * Disposable package discovery result and stateful Pi boundaries.
+ */
 type GoalRuntimeHarness = {
   readonly extension: Extension;
   readonly runtime: ExtensionRuntime;
@@ -62,55 +71,6 @@ type GoalRuntimeHarness = {
 //endregion Types
 
 //region Loader
-
-/**
- * Bind stateful actions used by built goal extension after package discovery.
- *
- * @param runtime - real Pi extension runtime returned by package loader
- *
- * @param sessionManager - disposable persisted session owner
- *
- * @param messages - custom-message capture
- *
- * @mutates runtime - replaces uninitialized action stubs with disposable fixture adapters
- *
- * @mutates sessionManager - bound actions append custom state and visible messages
- *
- * @mutates messages - bound send action records delivery metadata
- *
- * @example
- * ```ts
- * bindRuntimeActions({ runtime, sessionManager, messages: [] });
- * ```
- */
-function bindRuntimeActions(
-  {
-    runtime,
-    sessionManager,
-    messages,
-  }: {
-    readonly runtime: ExtensionRuntime;
-    readonly sessionManager: SessionManager;
-    readonly messages: CapturedRuntimeMessage[];
-  },
-): void {
-  runtime.appendEntry = function appendDisposableEntry(customType, data,) {
-    sessionManager.appendCustomEntry(customType, data,);
-  };
-  runtime.sendMessage = function sendDisposableMessage(message, options,) {
-    messages.push({
-      customType: message.customType,
-      content: message.content,
-      triggerTurn: options?.triggerTurn === true,
-    },);
-    sessionManager.appendCustomMessageEntry(
-      message.customType,
-      message.content,
-      message.display,
-      message.details,
-    );
-  };
-}
 
 /**
  * Discover package manifest through real Pi loader with disposable global state.
@@ -141,49 +101,75 @@ async function createGoalRuntimeHarness(
     readonly sessionDirectory: string;
   },
 ): Promise<GoalRuntimeHarness> {
-  /** Pi package discovery result using exact package directory. */
+  /**
+   * Pi package discovery result using exact package directory.
+   */
   const result = await discoverAndLoadExtensions(
     [packageDirectory,],
     packageDirectory,
     agentDirectory,
     createEventBus(),
   );
-  if (result.errors.length > 0) {
+  if (result.errors
+    .length
+    > 0) {
     throw new Error(`Pi goal discovery failed: ${result.errors
-      .map(function discoveryError(error,) {
+      .map(function discoveryError(
+        error: Readonly<(typeof result.errors)[number]>,
+      ) {
         return error.error;
       },)
       .join('; ')}`,);
   }
-  if (result.extensions.length !== 1)
-    throw new Error(`expected one discovered goal extension, received ${result.extensions.length}`,);
-  /** Sole package extension discovered from manifest. */
+  if (result.extensions
+    .length
+    !== 1)
+    throw new Error(`expected one discovered goal extension, received ${result.extensions
+      .length}`,);
+  /**
+   * Sole package extension discovered from manifest.
+   */
   const [extension,] = result.extensions;
   if (extension === undefined)
     throw new Error('Pi discovery returned no goal extension',);
-  /** Real persisted session confined to disposable directory. */
+  /**
+   * Real persisted session confined to disposable directory.
+   */
   const sessionManager = SessionManager.create(
     packageDirectory,
     sessionDirectory,
   );
-  /** Runtime-visible custom messages. */
+  /**
+   * Runtime-visible custom messages.
+   */
   const messages: CapturedRuntimeMessage[] = [];
-  /** Footer values in update order. */
+  /**
+   * Footer values in update order.
+   */
   const statuses: string[] = [];
-  /** UI notifications in update order. */
+  /**
+   * UI notifications in update order.
+   */
   const notifications: string[] = [];
   bindRuntimeActions({
     runtime: result.runtime,
     sessionManager,
     messages,
   },);
-  /** Focused context for loaded command, lifecycle, and tool callbacks. */
+  /**
+   * Focused context for loaded command, lifecycle, and tool callbacks.
+   */
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Disposable verifier implements only context members exercised by loaded goal callbacks.
   const context = {
     cwd: packageDirectory,
     mode: 'rpc',
     hasUI: false,
     ui: {
-      setStatus(_key: string, text: string | undefined,) {
+      setStatus(
+        _key: string,
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Mirrors external ExtensionUIContext.setStatus clear sentinel.
+        text: string | undefined,
+      ) {
         statuses.push(text ?? 'CLEARED',);
       },
       notify(message: string,) {

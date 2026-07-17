@@ -1,5 +1,5 @@
 /**
- * Real AgentSession ordinary-tool regression for Pi goal extension.
+ * Real AgentSession interruption and ordinary-tool regression.
  *
  * @module
  */
@@ -11,103 +11,181 @@ import {
 import { join, } from 'node:path';
 
 import {
+  type AgentToolResult,
   createAgentSession,
   DefaultResourceLoader,
-  defineTool,
+  type ExtensionAPI,
+  type ExtensionFactory,
   ModelRuntime,
   SessionManager,
   SettingsManager,
 } from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { Type, } from 'typebox';
 
-/** Agent-bound tool surface required by regression driver. */
-type ExecutableTool = {
-  readonly execute: (
-    callId: string,
-    params: Readonly<Record<string, unknown>>,
-    signal?: AbortSignal,
-  ) => Promise<{
-    readonly content: readonly unknown[];
-  }>;
-};
+import { registerInterruptionProvider, } from './pi-runtime-verifier-provider.ts';
 
-/** Agent session surface required to retrieve wrapped tools. */
-type ToolSession = {
-  readonly agent: {
-    readonly state: {
-      readonly tools: readonly ({ readonly name: string; } & ExecutableTool)[];
-    };
-  };
+/**
+ * Expected provider calls before post-clear tool round.
+ */
+const EXPECTED_PRE_CLEAR_PROVIDER_CALLS = 5;
+
+/**
+ * Expected provider calls through post-clear tools and final abort.
+ */
+const EXPECTED_PROVIDER_CALLS = 7;
+
+/**
+ * Verification echo details proving custom callback execution.
+ */
+type VerificationEchoDetails = {
+  readonly verified: true;
 };
 
 /**
- * Retrieve wrapped tool by runtime name.
+ * Register custom echo tool used by real AgentSession regression.
  *
- * @param session - real Pi agent session
+ * @param pi - Pi extension registration API
  *
- * @param name - selected built-in or custom tool
+ * @param observedValues - caller-owned output capture
  *
- * @returns executable wrapped tool
+ * @mutates pi - pi.registerTool installs verification_echo in disposable runtime
  *
- * @throws when selected tool is absent
- *
- * @example
- * ```ts
- * requiredTool(session, 'read');
- * ```
- */
-function requiredTool(
-  session: ToolSession,
-  name: string,
-): ExecutableTool {
-  /** Tool selected from real AgentSession state after extension binding. */
-  const tool = session.agent.state.tools.find(function matchesName(candidate,) {
-    return candidate.name === name;
-  },);
-  if (tool === undefined)
-    throw new Error(`real AgentSession lacks tool: ${name}`,);
-  return tool;
-}
-
-/**
- * Execute one wrapped tool with fresh call identity.
- *
- * @param session - real AgentSession containing wrapped tool
- *
- * @param name - selected tool name
- *
- * @param params - tool-specific arguments
- *
- * @returns final tool result
+ * @mutates observedValues - tool callback appends each executed phase value
  *
  * @example
  * ```ts
- * await executeTool({ session, name: 'bash', params: { command: 'pwd' } });
+ * registerVerificationEcho({ pi, observedValues: [] });
  * ```
  */
-async function executeTool(
+function registerVerificationEcho(
   {
-    session,
-    name,
-    params,
+    pi,
+    observedValues,
   }: {
-    readonly session: ToolSession;
-    readonly name: string;
-    readonly params: Readonly<Record<string, unknown>>;
+    readonly pi: ForeignBorrowed<ExtensionAPI>;
+    readonly observedValues: string[];
   },
-): Promise<{ readonly content: readonly unknown[]; }> {
-  return await requiredTool(
-    session,
-    name,
-  ).execute(
-    `verify-${name}`,
-    params,
-    new AbortController().signal,
-  );
+): void {
+  pi.registerTool({
+    name: 'verification_echo',
+    label: 'Verification Echo',
+    description: 'Return supplied disposable verification value',
+    parameters: Type.Object({ value: Type.String(), }),
+    // oxlint-disable-next-line typescript/require-await, eslint/require-await -- Pi tool contract is asynchronous while fixture computation is synchronous.
+    async execute(
+      _callId,
+      params: Readonly<{ value: string; }>,
+    ): Promise<AgentToolResult<VerificationEchoDetails>> {
+      observedValues.push(params.value,);
+      return {
+        content: [{
+          type: 'text',
+          text: params.value,
+        },],
+        details: { verified: true, },
+      };
+    },
+  },);
 }
 
 /**
- * Exercise built-in and custom tools after abort boundary with goal extension loaded.
+ * Create extension factory capturing custom echo executions.
+ *
+ * @param observedValues - caller-owned output capture
+ *
+ * @returns Pi extension factory
+ *
+ * @mutates observedValues - returned factory's tool callback appends phase values
+ *
+ * @example
+ * ```ts
+ * createVerificationEchoFactory([]);
+ * ```
+ */
+function createVerificationEchoFactory(
+  observedValues: string[],
+): ExtensionFactory {
+  return function registerVerificationEchoFactory(pi,): void {
+    registerVerificationEcho({
+      pi,
+      observedValues,
+    },);
+  };
+}
+
+/**
+ * Count persisted goal events of selected kind.
+ *
+ * @param sessionManager - real disposable session manager
+ *
+ * @param kind - goal event kind under test
+ *
+ * @returns number of matching selected-branch events
+ *
+ * @example
+ * ```ts
+ * goalEventCount({ sessionManager, kind: 'run_cleared' });
+ * ```
+ */
+function goalEventCount(
+  {
+    sessionManager,
+    kind,
+  }: {
+    readonly sessionManager: SessionManager;
+    readonly kind: string;
+  },
+): number {
+  return sessionManager
+    .getBranch()
+    .filter(function matchesGoalEvent(
+      entry: ForeignBorrowed<ReturnType<SessionManager['getBranch']>[number]>,
+    ): boolean {
+      if ((entry.type !== 'custom') || (entry.customType !== 'goal:state'))
+        return false;
+      return (entry.data !== null)
+        && ((typeof entry.data) === 'object')
+        && ('kind' in entry.data)
+        && (entry.data
+          .kind
+          === kind);
+    },)
+    .length;
+}
+
+/**
+ * Count extension-authored continuation messages in selected branch.
+ *
+ * @param sessionManager - real disposable session manager
+ *
+ * @returns number of persisted continuation messages
+ *
+ * @example
+ * ```ts
+ * goalContinuationMessageCount(sessionManager);
+ * ```
+ */
+function goalContinuationMessageCount(sessionManager: SessionManager,): number {
+  return sessionManager
+    .getBranch()
+    .filter(function matchesContinuation(
+      entry: ForeignBorrowed<ReturnType<SessionManager['getBranch']>[number]>,
+    ): boolean {
+      if ((entry.type !== 'custom_message') || (entry.customType !== 'goal'))
+        return false;
+      return (entry.details !== null)
+        && ((typeof entry.details) === 'object')
+        && ('kind' in entry.details)
+        && (entry.details
+          .kind
+          === 'continuation');
+    },)
+    .length;
+}
+
+/**
+ * Exercise ordinary tools through real AgentSession after aborted and errored goal turns.
  *
  * @param packageDirectory - repository-owned goal package directory
  *
@@ -117,9 +195,9 @@ async function executeTool(
  *
  * @param sessionDirectory - disposable persisted sessions
  *
- * @returns successful tool names in execution order
+ * @returns successful tool names and interruption phases
  *
- * @throws when extension loading, tool execution, or filesystem effects differ
+ * @throws when real provider, lifecycle, tool execution, or filesystem effects differ
  *
  * @example
  * ```ts
@@ -140,90 +218,224 @@ async function verifyOrdinaryToolsAfterAbort(
   },
 ): Promise<readonly string[]> {
   await Promise.all([
-    writeFile(join(workspaceDirectory, 'read.txt',), 'readable fixture',),
-    writeFile(join(workspaceDirectory, 'edit.txt',), 'before edit',),
+    writeFile(
+      join(
+        workspaceDirectory,
+        'read.txt',
+      ),
+      'readable fixture',
+    ),
+    writeFile(
+      join(
+        workspaceDirectory,
+        'edit.txt',
+      ),
+      'before edit',
+    ),
   ],);
-  /** In-memory settings exclude real global and project configuration. */
+  /**
+   * Custom-tool values captured after each interruption.
+   */
+  const observedEchoes: string[] = [];
+  /**
+   * In-memory settings exclude real global and project configuration.
+   */
   const settingsManager = SettingsManager.inMemory({
     compaction: { enabled: false, },
+    retry: {
+      enabled: false,
+      provider: { maxRetries: 0, },
+    },
   },);
-  /** Loader uses built extension artifact plus harmless custom tool. */
+  /**
+   * Loader uses built goal artifact plus harmless custom tool.
+   */
   const resourceLoader = new DefaultResourceLoader({
     cwd: workspaceDirectory,
     agentDir: agentDirectory,
     settingsManager,
-    additionalExtensionPaths: [join(packageDirectory, 'dist/final/node/index.mjs',),],
-    extensionFactories: [
-      function registerVerificationEcho(pi,) {
-        pi.registerTool({
-          name: 'verification_echo',
-          label: 'Verification Echo',
-          description: 'Return supplied disposable verification value',
-          parameters: Type.Object({ value: Type.String(), }),
-          // oxlint-disable-next-line typescript/require-await -- Pi tool contract is asynchronous while fixture computation is synchronous.
-          async execute(_callId, params,) {
-            return {
-              content: [{ type: 'text' as const, text: params.value, },],
-              details: {},
-            };
-          },
-        },);
-      },
-    ],
+    additionalExtensionPaths: [join(
+      packageDirectory,
+      'dist/final/node/index.mjs',
+    ),],
+    extensionFactories: [createVerificationEchoFactory(observedEchoes,),],
   },);
   await resourceLoader.reload();
-  /** Model registry isolated from real credentials and custom model files. */
+  /**
+   * Model registry isolated from real credentials and custom model files.
+   */
   const modelRuntime = await ModelRuntime.create({
-    authPath: join(agentDirectory, 'auth.json',),
-    modelsPath: join(agentDirectory, 'models.json',),
+    authPath: join(
+      agentDirectory,
+      'auth.json',
+    ),
+    modelsPath: join(
+      agentDirectory,
+      'models.json',
+    ),
   },);
-  /** Real AgentSession owns wrapped built-in and custom tools. */
-  const { session, extensionsResult, } = await createAgentSession({
+  /**
+   * Scripted provider stages used by real AgentSession agent loop.
+   */
+  const provider = registerInterruptionProvider(modelRuntime,);
+  /**
+   * Real session state persisted only in disposable directory.
+   */
+  const sessionManager = SessionManager.create(
+    workspaceDirectory,
+    sessionDirectory,
+  );
+  /**
+   * Real AgentSession owns extension lifecycle and wrapped tools.
+   */
+  const {
+    session,
+    extensionsResult,
+  } = await createAgentSession({
     cwd: workspaceDirectory,
     agentDir: agentDirectory,
-    tools: ['read', 'bash', 'edit', 'write', 'verification_echo',],
+    model: provider.model,
+    tools: [
+      'read',
+      'bash',
+      'edit',
+      'write',
+      'verification_echo',
+    ],
     resourceLoader,
     modelRuntime,
     settingsManager,
-    sessionManager: SessionManager.create(workspaceDirectory, sessionDirectory,),
+    sessionManager,
   },);
-  if (extensionsResult.errors.length > 0)
-    throw new Error(`AgentSession extension errors: ${JSON.stringify(extensionsResult.errors,)}`,);
-  await session.abort();
-  await executeTool({ session, name: 'read', params: { path: 'read.txt', }, },);
-  await executeTool({ session, name: 'bash', params: { command: 'pwd', }, },);
-  await executeTool({
-    session,
-    name: 'edit',
-    params: {
-      path: 'edit.txt',
-      edits: [{
-        oldText: 'before edit',
-        newText: 'after edit',
-      },],
+  /**
+   * Session cleanup owner covering every assertion failure.
+   */
+  using sessionOwner = {
+    [Symbol.dispose](): void {
+      session.dispose();
     },
+  };
+  void sessionOwner;
+  if (extensionsResult.errors
+    .length
+    > 0)
+    throw new Error(`AgentSession extension errors: ${JSON.stringify(extensionsResult.errors,)}`,);
+
+  /**
+   * Command promise whose kickoff enters first scripted provider turn.
+   */
+  const goalStart = session.prompt('/goal Verify interruption recovery',);
+  await provider.firstTurnStarted;
+  await session.abort();
+  await goalStart;
+  if (provider.invocationCount() !== 1)
+    throw new Error('aborted goal turn emitted automatic continuation',);
+  if (goalEventCount({
+    sessionManager,
+    kind: 'run_started',
+  },) !== 1)
+    throw new Error('real AgentSession goal start count differed before replacement',);
+  if ((goalEventCount({
+    sessionManager,
+    kind: 'continuation_issued',
+  },) !== 0)
+    || (goalContinuationMessageCount(sessionManager,) !== 0))
+    throw new Error('aborted goal turn persisted continuation effect',);
+
+  /**
+   * Replacement kickoff drives post-abort tools, error continuation, and post-error tools.
+   */
+  const recoveryRun = session.prompt('/goal Replacement interruption recovery',);
+  await provider.finalTurnStarted;
+  if (goalEventCount({
+    sessionManager,
+    kind: 'run_started',
+  },) !== 2)
+    throw new Error('real AgentSession replacement did not persist both run starts',);
+  /**
+   * Persisted continuation event count after settled model error.
+   */
+  const postErrorContinuationEvents = goalEventCount({
+    sessionManager,
+    kind: 'continuation_issued',
   },);
-  await executeTool({
-    session,
-    name: 'write',
-    params: { path: 'write.txt', content: 'write completed', },
-  },);
-  /** Custom-tool output verifies extension tool wrapper remained executable. */
-  const customResult = await executeTool({
-    session,
-    name: 'verification_echo',
-    params: { value: 'custom completed', },
-  },);
-  if (!JSON.stringify(customResult.content,).includes('custom completed',))
-    throw new Error('custom tool result did not cross AgentSession wrapper',);
-  /** Final edited fixture content. */
-  const edited = await readFile(join(workspaceDirectory, 'edit.txt',), 'utf8',);
-  /** Final written fixture content. */
-  const written = await readFile(join(workspaceDirectory, 'write.txt',), 'utf8',);
-  session.dispose();
-  if ((edited !== 'after edit') || (written !== 'write completed'))
-    throw new Error('edit or write tool did not mutate disposable fixture as expected',);
-  return ['read', 'bash', 'edit', 'write', 'verification_echo',];
+  /**
+   * Persisted continuation message count after settled model error.
+   */
+  const postErrorContinuationMessages = goalContinuationMessageCount(sessionManager,);
+  if ((postErrorContinuationEvents !== 1)
+    || (postErrorContinuationMessages !== 1)) {
+    throw new Error(`settled model error continuation differed: events ${postErrorContinuationEvents}, messages ${postErrorContinuationMessages}`,);
+  }
+  await session.abort();
+  await recoveryRun;
+  await session.waitForIdle();
+  if (provider.invocationCount() !== EXPECTED_PRE_CLEAR_PROVIDER_CALLS)
+    throw new Error(`unexpected pre-clear provider calls: ${provider.invocationCount()}`,);
+  if ((goalEventCount({
+    sessionManager,
+    kind: 'continuation_issued',
+  },) !== 1)
+    || (goalContinuationMessageCount(sessionManager,) !== 1))
+    throw new Error('final abort persisted another goal continuation',);
+
+  await session.prompt('/goal clear',);
+  if (goalEventCount({
+    sessionManager,
+    kind: 'run_cleared',
+  },) !== 1)
+    throw new Error('real AgentSession goal clear did not persist',);
+  /**
+   * User turn driving ordinary tools after clear.
+   */
+  const postClearRun = session.prompt('Exercise tools after clear.',);
+  await provider.clearFinalTurnStarted;
+  await session.abort();
+  await postClearRun;
+  await session.waitForIdle();
+  if (provider.invocationCount() !== EXPECTED_PROVIDER_CALLS)
+    throw new Error(`unexpected scripted provider calls: ${provider.invocationCount()}`,);
+  if ((goalEventCount({
+    sessionManager,
+    kind: 'continuation_issued',
+  },) !== 1)
+    || (goalContinuationMessageCount(sessionManager,) !== 1))
+    throw new Error('cleared goal emitted continuation during ordinary tools',);
+  /**
+   * Final edited fixture after post-error tool round.
+   */
+  const edited = await readFile(
+    join(
+      workspaceDirectory,
+      'edit.txt',
+    ),
+    'utf8',
+  );
+  /**
+   * Final written fixture after post-error tool round.
+   */
+  const written = await readFile(
+    join(
+      workspaceDirectory,
+      'write.txt',
+    ),
+    'utf8',
+  );
+  if ((edited !== 'after clear edit') || (written !== 'after clear write'))
+    throw new Error('real AgentSession edit or write tools missed post-clear execution',);
+  if (JSON.stringify(observedEchoes,) !== JSON.stringify([
+    'abort',
+    'error',
+    'clear',
+  ],))
+    throw new Error(`custom tool phases differ: ${JSON.stringify(observedEchoes,)}`,);
+  return [
+    'read-after-abort-error-clear',
+    'bash-after-abort-error-clear',
+    'edit-after-abort-error-clear',
+    'write-after-abort-error-clear',
+    'verification_echo-after-abort-error-clear',
+  ];
 }
 
 export { verifyOrdinaryToolsAfterAbort, };

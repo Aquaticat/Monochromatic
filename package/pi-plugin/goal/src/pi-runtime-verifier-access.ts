@@ -4,8 +4,14 @@
  * @module
  */
 
-import type { SessionManager, } from '@earendil-works/pi-coding-agent';
+import type {
+  ExtensionCommandContext,
+  ExtensionContext,
+  SessionManager,
+} from '@earendil-works/pi-coding-agent';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import type { GoalCompletionResult, } from '../dist/final/node/index.mjs';
 import type {
   GoalRuntimeHarness,
   RuntimeCommand,
@@ -32,21 +38,56 @@ import type {
 function getRuntimeHandler(
   {
     harness,
-    event,
+    event: eventName,
   }: {
     readonly harness: GoalRuntimeHarness;
     readonly event: string;
   },
 ): RuntimeHandler {
-  /** Handlers captured by real extension loader. */
-  const handlers = harness.extension.handlers.get(event,);
+  /**
+   * Handlers captured by real extension loader.
+   */
+  const handlers = harness.extension
+    .handlers
+    .get(eventName,);
   if (handlers?.length !== 1)
-    throw new Error(`expected one ${event} handler, received ${handlers?.length ?? 0}`,);
-  /** Sole handler after count validation. */
+    throw new Error(`expected one ${eventName} handler, received ${handlers?.length ?? 0}`,);
+  /**
+   * Sole handler after count validation.
+   */
   const [handler,] = handlers;
   if (handler === undefined)
-    throw new Error(`missing ${event} handler`,);
-  return handler as RuntimeHandler;
+    throw new Error(`missing ${eventName} handler`,);
+  /**
+   * Narrowed handler retained across nested declaration boundary.
+   */
+  const loadedHandler: NonNullable<typeof handler> = handler;
+  /**
+   * Invoke foreign lifecycle callback selected from loaded extension.
+   *
+   * @param input - externally owned lifecycle payload and Pi context
+   *
+   * @returns loaded handler result
+   *
+   * @mutates input - loadedHandler may mutate or retain event and context references
+   *
+   * @example
+   * ```ts
+   * await invokeLoadedHandler({ event: { type: 'agent_settled' }, context });
+   * ```
+   */
+  async function invokeLoadedHandler(
+    input: ForeignBorrowed<{
+      readonly event: Readonly<Record<string, unknown>>;
+      readonly context: ExtensionContext;
+    }>,
+  ): Promise<unknown> {
+    return await loadedHandler(
+      input.event,
+      input.context,
+    );
+  }
+  return invokeLoadedHandler;
 }
 
 /**
@@ -60,15 +101,78 @@ function getRuntimeHandler(
  *
  * @example
  * ```ts
- * getGoalCommand(harness)('objective', harness.context);
+ * getGoalCommand(harness)({ args: 'objective', context: harness.context });
  * ```
  */
 function getGoalCommand(harness: GoalRuntimeHarness,): RuntimeCommand {
-  /** Goal command discovered from package default factory. */
-  const command = harness.extension.commands.get('goal',);
+  /**
+   * Goal command discovered from package default factory.
+   */
+  const command = harness.extension
+    .commands
+    .get('goal',);
   if (command === undefined)
     throw new Error('discovered goal command is absent',);
-  return command.handler;
+  /**
+   * Narrowed command retained across nested declaration boundary.
+   */
+  const loadedCommand: NonNullable<typeof command> = command;
+  /**
+   * Invoke foreign goal command selected from loaded extension.
+   *
+   * @param input - exact arguments and externally owned Pi command context
+   *
+   * @mutates input - loadedCommand.handler may invoke or retain context capabilities
+   *
+   * @example
+   * ```ts
+   * await invokeLoadedCommand({ args: 'objective', context });
+   * ```
+   */
+  async function invokeLoadedCommand(
+    input: ForeignBorrowed<{
+      readonly args: string;
+      readonly context: ExtensionCommandContext;
+    }>,
+  ): Promise<void> {
+    await loadedCommand.handler(
+      input.args,
+      input.context,
+    );
+  }
+  return invokeLoadedCommand;
+}
+
+/**
+ * Narrow unknown loaded tool result to goal completion contract.
+ *
+ * @param value - loaded extension tool result
+ *
+ * @returns whether value carries recognized goal completion outcome
+ *
+ * @example
+ * ```ts
+ * isGoalCompletionResult({ content: [], details: { outcome: 'approved' } });
+ * ```
+ */
+function isGoalCompletionResult(value: unknown,): value is GoalCompletionResult {
+  if ((value === null) || ((typeof value) !== 'object'))
+    return false;
+  if (!(('content' in value) && Array.isArray(value.content,)
+    && ('details' in value)
+    && (value.details !== null)
+    && ((typeof value.details) === 'object')
+    && ('outcome' in value.details)))
+    return false;
+  /**
+   * Unknown outcome value after structural details validation.
+   */
+  const { outcome, } = value.details;
+  return (outcome === 'approved')
+    || (outcome === 'denied')
+    || (outcome === 'rejected')
+    || (outcome === 'stale')
+    || (outcome === 'review_unavailable');
 }
 
 /**
@@ -82,15 +186,74 @@ function getGoalCommand(harness: GoalRuntimeHarness,): RuntimeCommand {
  *
  * @example
  * ```ts
- * getGoalCompletionTool(harness)('call', {}, undefined, undefined, harness.context);
+ * getGoalCompletionTool(harness)({ toolCallId: 'call', params: {}, context: harness.context });
  * ```
  */
 function getGoalCompletionTool(harness: GoalRuntimeHarness,): RuntimeTool {
-  /** Completion tool discovered from package default factory. */
-  const tool = harness.extension.tools.get('goal_complete',);
+  /**
+   * Completion tool discovered from package default factory.
+   */
+  const tool = harness.extension
+    .tools
+    .get('goal_complete',);
   if (tool === undefined)
     throw new Error('discovered goal_complete tool is absent',);
-  return tool.definition.execute as RuntimeTool;
+  /**
+   * Narrowed tool retained across nested declaration boundary.
+   */
+  const loadedTool: NonNullable<typeof tool> = tool;
+  /**
+   * Invoke foreign completion tool selected from loaded extension.
+   *
+   * @param input - externally owned completion callback values
+   *
+   * @returns validated goal completion result
+   *
+   * @mutates input - definition.execute may mutate or retain params, context, or signal references
+   *
+   * @throws when loaded completion result violates goal contract
+   *
+   * @example
+   * ```ts
+   * await invokeLoadedCompletion({ toolCallId: 'call', params: {}, context });
+   * ```
+   */
+  async function invokeLoadedCompletion(
+    input: ForeignBorrowed<{
+      readonly toolCallId: string;
+      readonly params: Readonly<Record<string, unknown>>;
+      readonly context: ExtensionContext;
+      readonly signal?: AbortSignal;
+    }>,
+  ): ReturnType<RuntimeTool> {
+    /**
+     * Borrowed callback values retained through object-boundary destructuring.
+     */
+    const {
+      toolCallId,
+      params,
+      context,
+      signal,
+    } = input;
+    /**
+     * Generic definition crossing loaded-tool registry boundary.
+     */
+    const { definition, } = loadedTool;
+    /**
+     * Result crossing generic loaded-tool registry boundary.
+     */
+    const result: unknown = await definition.execute(
+      toolCallId,
+      params,
+      signal,
+      undefined,
+      context,
+    );
+    if (!isGoalCompletionResult(result,))
+      throw new Error('loaded goal_complete returned invalid result details',);
+    return result;
+  }
+  return invokeLoadedCompletion;
 }
 
 /**
@@ -108,23 +271,33 @@ function getGoalCompletionTool(harness: GoalRuntimeHarness,): RuntimeTool {
  * ```
  */
 function activeGoalGeneration(sessionManager: SessionManager,): string {
-  /** Latest state entry carrying generation identity. */
+  /**
+   * Latest state entry carrying generation identity.
+   */
   const entry = sessionManager
     .getBranch()
     .toReversed()
-    .find(function hasGeneration(candidate,) {
+    .find(function hasGeneration(
+      candidate: ForeignBorrowed<ReturnType<SessionManager['getBranch']>[number]>,
+    ) {
       if ((candidate.type !== 'custom') || (candidate.customType !== 'goal:state'))
         return false;
       return (candidate.data !== null)
         && ((typeof candidate.data) === 'object')
         && ('generationId' in candidate.data)
-        && ((typeof candidate.data.generationId) === 'string');
+        && ((typeof candidate.data
+          .generationId) === 'string');
     },);
   if ((entry === undefined) || (entry.type !== 'custom'))
     throw new Error('active goal generation is absent from disposable session',);
-  /** Validated event payload carrying generation identity. */
-  const data = entry.data as Readonly<Record<string, unknown>>;
-  if ((typeof data.generationId) !== 'string')
+  /**
+   * Revalidated event payload after array predicate boundary.
+   */
+  const { data, } = entry;
+  if ((data === null)
+    || ((typeof data) !== 'object')
+    || (!('generationId' in data))
+    || ((typeof data.generationId) !== 'string'))
     throw new Error('active goal generation has invalid payload',);
   return data.generationId;
 }
@@ -140,13 +313,18 @@ function activeGoalGeneration(sessionManager: SessionManager,): string {
  *
  * @example
  * ```ts
- * requireCondition(true, 'must pass');
+ * requireCondition({ condition: true, message: 'must pass' });
  * ```
  */
 function requireCondition(
-  condition: boolean,
-  message: string,
-): asserts condition {
+  {
+    condition,
+    message,
+  }: {
+    readonly condition: boolean;
+    readonly message: string;
+  },
+): void {
   if (!condition)
     throw new Error(message,);
 }
@@ -164,13 +342,19 @@ function requireCondition(
  *
  * @example
  * ```ts
- * requireCount(1, 1, 'one event');
+ * requireCount({ actual: 1, expected: 1, message: 'one event' });
  * ```
  */
 function requireCount(
-  actual: number,
-  expected: number,
-  message: string,
+  {
+    actual,
+    expected,
+    message,
+  }: {
+    readonly actual: number;
+    readonly expected: number;
+    readonly message: string;
+  },
 ): void {
   if (actual !== expected)
     throw new Error(`${message}: expected ${expected}, received ${actual}`,);
@@ -201,10 +385,13 @@ async function emitGoalEvent(
     readonly event: Readonly<Record<string, unknown>>;
   },
 ): Promise<void> {
-  await getRuntimeHandler({ harness, event: type, })(
+  await getRuntimeHandler({
+    harness,
+    event: type,
+  })({
     event,
-    harness.context,
-  );
+    context: harness.context,
+  },);
 }
 
 /**
@@ -233,7 +420,10 @@ async function settleGoalRun(
     type: 'agent_end',
     event: {
       type: 'agent_end',
-      messages: [{ role: 'assistant', stopReason, },],
+      messages: [{
+        role: 'assistant',
+        stopReason,
+      },],
     },
   },);
   await emitGoalEvent({
