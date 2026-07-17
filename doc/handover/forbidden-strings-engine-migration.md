@@ -14,7 +14,13 @@ Fresh milestones (details in State of play):
   the maintainer configured trusted publishing,
   and commit `4b502af20` adds the fr- workflow lane.
 - Remaining in flight:
-  #376 only (grace timer running).
+  #376 only.
+  Grace timer FIRED;
+  orchestrator stop procedure was aborted because the user directly told
+  the agent to clean up and commit ASAP;
+  it reports back imminently with a design decision to resolve,
+  which the user believes is answerable from what is already written
+  (resolve by citation, do not reopen).
   Engine crate and workflow are free;
   bench sidecar still occupied by #376.
 Assume nothing else survived compaction;
