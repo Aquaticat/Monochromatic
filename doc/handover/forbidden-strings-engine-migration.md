@@ -16,17 +16,26 @@ Updated:
   (518 reshape, three-casing expansion, skip-list gate fix).
   The user had AUTHORIZED the agent's raw-git commit bypass
   (not real secrets, preserve trace, return ASAP).
-- Skip-list gate fix DONE (`37286df18`, pushed):
+- Skip-list gate fix DONE (`37286df18` plus a trust refresh; pushed):
   both ported file paths added to `SCANNER_SELF_MATCH_PATHS`
   (canonical source `package/git-policy/forbidden-strings/src/scan-candidates.ts`;
-  the CLI copy is file-enforcer-generated),
-  dist rebuilt,
-  verified end-to-end on a throwaway worktree:
-  a commit touching `forbidden-strings.append.ported.txt` passes the gate
-  without bypass,
-  and a secret-shaped canary control in the same worktree was blocked
-  (rule 187),
-  proving the pass was not vacuous.
+  the CLI copy is file-enforcer-generated).
+  CORRECTION (caught by the port-rerun agent):
+  the first throwaway-worktree verification was weaker than recorded;
+  the append file has no self-matching line,
+  so its gate pass was vacuous
+  (the canary only proved scanning was live, not that skipping worked),
+  and the dist rebuild was never the operative step:
+  the gate executes policy code from the frozen trusted snapshot under
+  `~/.local/state/cli-git/trust/v1/records/...`,
+  which predated the fix.
+  `git cli-git trust --yes` in the main worktree activated the fix;
+  afterwards `git cli-git check` on the modified
+  `builtin-rules.ported.txt` went from flagging line 111 (rule 193)
+  to clean while a canary still flagged,
+  a non-vacuous verification.
+  Durable write-up:
+  `doc/troubleshooting/cli-git-trusted-snapshot-stale-policy-code.md`.
 - NEW wrapper feature `--no-worktree-copy` (`99806c0c6`, pushed;
   user authorized mid-task):
   wrapper-only flag skipping the ignored-state worktree copy
@@ -88,14 +97,22 @@ Updated:
   `(?:[A-Za-z0-9]|\[|%)`.
   Full pi answer preserved durably at
   `doc/planning/forbidden-strings-rule-518-pi-advice.md`.
-- IN FLIGHT single port task (one dialectport rerun covers both):
-  (a) three-casing expansion for the 172 inline-`(?i)` rules,
-  (b) rule 518 credential-core reshape;
-  then 261/261 strict compile, review doc update, reproducibility kept.
-  Dispatched to an opus agent 2026-07-17;
-  occupies the bench sidecar,
-  so #380 stays blocked until it returns.
-  Its final commit closes #376 once all acceptance criteria verify.
+- Port rerun DONE, #376 CLOSED (legitimately; all criteria met):
+  opus agent delivered `366b3cafa`
+  (new `caseexpand.rs` three-casing module wired into `dialectport.rs`,
+  rule 518 credential-core special case)
+  and `3333f3e63` (review doc restructured;
+  172 case rules reclassified approximately-preserving;
+  518 rationale quoted; verification 261/261).
+  Orchestrator landed the regenerated data file as `57cd6b3fd`
+  (169 builtin rules changed bytes: 168 case rules three-cased,
+  4 case rules byte-identical for lack of letters, plus 518;
+  append file unchanged)
+  with `Closes #376`, through the gate, NO bypass.
+  The agent correctly refused to bypass and correctly stopped at the wall;
+  the wall was the orchestrator's stale-trust gap, not agent error.
+  Bench sidecar is FREE;
+  next queue: #380 (bench), then #383 loader chain.
 - RESOLVED plan open question:
   startup compilation is NOT viable
   (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
@@ -326,7 +343,13 @@ Filed, not started:
   #377 up to par (contract exactly as specced, spot-checked; 53 tool calls).
   #378 up to par (correctness argument articulated, boundary test added;
   30 tool calls).
-  #376 pending verdict.
+  #376 initial port: up to par on output, scope drift on process
+  (extra probe bin; user-managed return).
+  #376 rerun: up to par and then some
+  (80 tool calls; caught the orchestrator's vacuous verification,
+  diagnosed the skip-list gap correctly to within one layer,
+  honored the no-bypass and no-git-policy constraints,
+  stopped cleanly at the wall with an actionable handoff).
 - No escalations recorded yet.
 
 ## Sequencing refinement discovered en route
