@@ -249,5 +249,27 @@ await describe({
         },),).toEqual([],);
       },
     },),
+
+    it({
+      name: 'skips sentences carrying MDX expression or JSX delimiters',
+      fn: async () => {
+        /**
+         * Body whose longest sentences each hold half of a paired MDX
+         * construct; deleting any of them would break the seeded parse.
+         */
+        const body = "The cat opened {'a very long quoted expression about sunbeams. "
+          + "It kept purring until the quoted expression finally closed here'} today. "
+          + 'The cat also stared at <em>the fancy butterfly emphasis tag construct</em> daily. '
+          + 'The plain sentence about the cat napping on the windowsill survives selection.';
+        /** Derived seeds; only the delimiter-free sentence qualifies. */
+        const seeds = deriveOmissionSeeds({
+          text: body,
+          maxSeeds: 3,
+        },);
+        expect(seeds,).toHaveLength(1,);
+        expect(seeds[0]?.needle,)
+          .toBe('The plain sentence about the cat napping on the windowsill survives selection.',);
+      },
+    },),
   ],
 },);
