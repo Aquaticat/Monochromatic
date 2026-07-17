@@ -407,6 +407,12 @@ consumers and deployment are deliberately out of scope for now.
   (0.17) for completeness, as designed.
   Accumulated: 31/55 repair (0.56); post-remedy 12/20 (0.60);
   detection 32/38 (0.84).
+  run 13 (2026-07-17, 1573 s): repair 3/4, detection 4/4:
+  SU5ZI2MO1's 20-word needle, the longest graded yet, restored
+  11/20 (a class that reliably failed pre-remedy); xixi_yuexi's
+  11-worder missed just under threshold at 5/11.
+  Accumulated: 34/59 repair (0.58); post-remedy 15/24 (0.63);
+  detection 36/42 (0.86).
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
