@@ -246,7 +246,6 @@ await describe({
           messages: MESSAGES,
           signal: new AbortController().signal,
           maxTokens: 2_048,
-          temperature: 0,
           responseFormat: {
             type: 'json_schema',
             json_schema: { name: 'cat_verdict', schema: { type: 'object', }, },
@@ -265,7 +264,8 @@ await describe({
         expect(isJsonRecord(body,) ? body.model : '',).toBe('hf:zai-org/GLM-4.7-Flash',);
         expect(isJsonRecord(body,) ? body.stream : false,).toBe(true,);
         expect(isJsonRecord(body,) ? body.max_tokens : 0,).toBe(2_048,);
-        expect(isJsonRecord(body,) ? body.temperature : 1,).toBe(0,);
+        // The provider mishandles sampling knobs; no call may carry one.
+        expect(isJsonRecord(body,) && ('temperature' in body),).toBe(false,);
 
         /** Structured-output block decoded from the request body. */
         const responseFormat = isJsonRecord(body,)

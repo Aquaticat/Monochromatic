@@ -11,6 +11,9 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
 // Request and outcome shapes of the model-facing client. Outcomes are data:
 // refusals and schema mismatches are ordinary results of calling unreliable models,
 // never exceptions; only provider protocol failures throw.
+// Sampling knobs are absent by design: the provider mishandles temperature
+// and reasoning effort (errors, degraded or truncated output), so every call
+// runs on provider defaults. Do not add a temperature or effort field.
 
 /**
  * OpenAI-style structured-output constraint;
@@ -87,11 +90,6 @@ export type ChatTextRequest = {
    * a tight cap truncates mid-thinking and destroys the answer.
    */
   readonly maxTokens?: number;
-
-  /**
-   * Sampling temperature when the caller pins it.
-   */
-  readonly temperature?: number;
 
   /**
    * Structured-output constraint when the caller expects JSON.

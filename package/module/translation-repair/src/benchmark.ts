@@ -357,7 +357,6 @@ export async function runCriticBenchmark(
             modelId,
             messages,
             signal: deadline.callSignal,
-            temperature: 0,
             responseFormat: CRITIC_RESPONSE_FORMAT,
             validate: isCriticReportWire,
           },);
