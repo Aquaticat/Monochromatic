@@ -380,9 +380,8 @@ dependencies = [
 
 [[package]]
 name = "forbidden-strings"
-version = "0.1.9"
+version = "0.2.0"
 dependencies = [
- "aho-corasick",
  "anyhow",
  "clap",
  "forbidden-regex",
@@ -391,8 +390,6 @@ dependencies = [
  "ignore",
  "memchr",
  "rayon",
- "regex",
- "resharp",
  "tracing",
  "tracing-subscriber",
 ]
@@ -1024,42 +1021,6 @@ name = "regex-syntax"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
-
-[[package]]
-name = "resharp"
-version = "0.6.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c158c6fd3c6e3ee8d1d4c2b8831f548f0576d18e2aacab28ca4baa41b8f195bc"
-dependencies = [
- "resharp-algebra",
- "resharp-parser",
- "rustc-hash",
-]
-
-[[package]]
-name = "resharp-algebra"
-version = "0.6.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd166f9a949b734d184e21f60f6f9f48358dc227b7a3a98f0fbc2e2990b59201"
-dependencies = [
- "rustc-hash",
-]
-
-[[package]]
-name = "resharp-parser"
-version = "0.6.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66276f79dbe556f387c0ccf48f2ac462983cf292faee5831299622cd37a39e80"
-dependencies = [
- "regex-syntax",
- "resharp-algebra",
-]
-
-[[package]]
-name = "rustc-hash"
-version = "2.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b1e7f9a428571be2dc5bc0505c13fb6bf936822b894ec87abf8a08a4e51742d"
 
 [[package]]
 name = "rustix"

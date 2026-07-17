@@ -16,11 +16,14 @@ Three layers feed the scanner,
   and every scan activates it with the `--builtin-rules` flag.
   There is no baseline file to place on disk.
 - The committed shared appendix `forbidden-strings.append.txt` at the
-  repository root holds non-sensitive, repo-wide rules that every clone and
+  repository root holds non-sensitive,
+   repo-wide rules that every clone and
   CI run share.
 - The gitignored per-repo appendix `forbidden-strings.append.local.txt` at the
   repository root holds sensitive literals that must never enter version
-  control (codenames, customer or partner identifiers, politically charged
+  control (codenames,
+   customer or partner identifiers,
+   politically charged
   strings).
 
 There is no rules file at the repository root anymore.
@@ -83,20 +86,32 @@ Both appendixes and the secret must obey it:
   if the trailing flag run is not all ASCII-lowercase the whole line is
   treated as a literal instead.
 - `FLAGS` accepts only `m` and `x`,
-  which the always-multiline, always-verbose engine treats as no-ops and
+  which the always-multiline,
+   always-verbose engine treats as no-ops and
   drops.
-  Any other flag letter (for example `i` or `s`) is a hard, fail-closed load
+  Any other flag letter (for example `i` or `s`) is a hard,
+   fail-closed load
   error;
   the loader rejects the whole ruleset rather than silently change match
   semantics.
-  For case-insensitivity, spell the alternatives (`[Aa][Bb][Cc]`) or use the
+  For case-insensitivity,
+   spell the alternatives (`[Aa][Bb][Cc]`) or use the
   three-casing form the baseline port uses.
 - The loader is strict and fail-closed.
-  Unbounded quantifiers (`*`, `+`, `{n,}`), capturing groups, lookaround,
-  inline-flag groups, backreferences, and `\xNN` byte escapes are compile
-  errors that name only an opaque rule index, never the rule text.
+  Unbounded quantifiers (`*`,
+   `+`,
+   `{n,}`),
+   capturing groups,
+   lookaround,
+  inline-flag groups,
+   backreferences,
+   and `\xNN` byte escapes are compile
+  errors that name only an opaque rule index,
+   never the rule text.
   A pattern that can match the empty string is rejected.
-- Empty lines, whitespace-only lines, and lines whose first non-whitespace
+- Empty lines,
+   whitespace-only lines,
+   and lines whose first non-whitespace
   byte is `#` are ignored.
 
 The full construct list is in `package/cli/forbidden-strings/README.md`
@@ -105,28 +120,38 @@ The full construct list is in `package/cli/forbidden-strings/README.md`
 
 ## Porting existing out-of-band rules to the new dialect
 
-Rules written for the old resharp dialect (trailing `/i` flags, inline
- `(?i)` groups, unbounded quantifiers) do not load under the strict `0.2.0`
+Rules written for the old resharp dialect (trailing `/i` flags,
+ inline
+ `(?i)` groups,
+ unbounded quantifiers) do not load under the strict `0.2.0`
  loader and must be ported once.
 The transitional porter that performed the committed-file port,
  `dialectport`,
- lives in the benchmark sidecar at
+ lived in the benchmark sidecar at
  `package/rust-module/forbidden-regex.bench/src/bin/dialectport.rs`.
-Issue #390 removes it after the cutover settles;
- git history preserves it for anyone who needs to port a fresh out-of-band
- ruleset later.
-The per-rule semantics the port applies (quantifier bounding, three-casing
- expansion of inline case-insensitivity, the two reshapes) are documented in
+Issue #390 removed it (and its `caseexpand` support module) after the cutover
+ settled;
+ git history preserves both for anyone who needs to port a fresh
+ out-of-band ruleset later.
+The per-rule semantics the port applies (quantifier bounding,
+ three-casing
+ expansion of inline case-insensitivity,
+ the two reshapes) are documented in
  `doc/planning/forbidden-strings-rule-port-review.md`.
 
 ## Verify
 
 After changing either appendix or the secret:
 
-- Local: rerun `mise run file-enforcer`,
+- Local:
+   rerun `mise run file-enforcer`,
   then make a throwaway commit or run `git cli-git check` on a scratch file
   to confirm the cache loads and the gate still fires on a canary.
-- CI: the `forbidden-strings` workflow scans changed files on every pull
+- CI:
+   the `forbidden-strings` workflow scans changed files on every pull
   request and the full tree on every push to `main`;
-  a green run confirms the composed ruleset loaded, and its output stays
-  redacted to path, line, and rule index.
+  a green run confirms the composed ruleset loaded,
+   and its output stays
+  redacted to path,
+   line,
+   and rule index.
