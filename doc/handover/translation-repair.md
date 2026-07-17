@@ -252,6 +252,14 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   `bench-dispatch.ts` in the session scratchpad sweeps per-model
   concurrency 1/2/3/5 over identical small-entry critic calls and reports
   ok-per-minute plus forfeits per level; the milestone run uses the winner.
+- Bench verdict (2026-07-17): one stream per model wins by a factor of
+  six. Level 1: 7/7 ok, 71 s wall, 5.9 ok/min (median call 39 s).
+  Levels 2/3/5: 0.8/1.0/0.6 ok/min, with every vendor except zai-org
+  stalling to a 5-minute cap while both GLMs completed (slowed 2-4x).
+  Aggregate concurrency beyond one-per-model collapses throughput on
+  this plan, at least during this window; pack count does not translate
+  into usable same-model parallelism. Milestone runs use
+  `perModelConcurrency: 1`.
 - Deadline placement is load-bearing (commit `7c0e41532`): the first
   concurrency-5 run armed every fan-out call's deadline at dispatch while
   the limiter ran five per model, so queued calls burned their whole budget
