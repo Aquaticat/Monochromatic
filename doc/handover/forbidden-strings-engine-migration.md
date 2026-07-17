@@ -58,19 +58,23 @@ Updated:
   normalize.rs precedent, which strips case flags; user hinted the answer
   is in what is already written), gate a possible class-expansion
   follow-up on #387's differential results.
-- OPEN DECISION, pi advisor consulted (answer pending):
-  user finds the bounds recommendation fair but suspects a better option;
-  pi (gpt-5.6-sol, xhigh) is ranking bounds vs strip-after-@ vs split;
-  output lands in one flush at
-  `scratchpad/pi-mongodb-518.txt` (session scratchpad);
-  an empty file means still thinking, never poll or kill it.
-  rule 518 (mongodb) trips the engine StateCap because blanket 512 caps
-  compound (hostname `{1,512}` nested in replica-list `{0,512}`).
-  Recommendation: context-appropriate bounds, replica hosts `{0,8}`,
-  hostname repeat `{1,128}`, trailing `[\w-]{1,128}`;
-  credential operand untouched;
-  implement inside `dialectport.rs` so the port stays reproducible,
-  rerun, require 261/261 compile, update review doc.
+- DECIDED (pi advisor B > D > A > C; aligns with user lossiness
+  preference): rule 518 becomes the credential-bearing core only,
+  `\bmongodb(?:\+srv)?://[!-9;-~]{3,50}:[!-?A-~]{3,88}@`.
+  Rationale to quote in the review doc:
+  preserve the original credential payload but omit non-secret URI suffix
+  validation, avoiding determinization blow-up and covering templated and
+  partially constructed connection strings
+  (delimiter-excluding classes make the phases deterministic;
+  interpolated hosts like `${MONGO_HOST}` now covered).
+  Fallback if noisy: append one plausible host-introducer byte
+  `(?:[A-Za-z0-9]|\[|%)`.
+  Full pi answer preserved at `scratchpad/pi-mongodb-518.txt`
+  (session scratchpad; copy into the review doc update, scratchpads die).
+- QUEUED single post-compact port task (one dialectport rerun covers both):
+  (a) three-casing expansion for the 172 inline-`(?i)` rules,
+  (b) rule 518 credential-core reshape;
+  then 261/261 strict compile, review doc update, reproducibility kept.
 - RESOLVED plan open question:
   startup compilation is NOT viable
   (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
