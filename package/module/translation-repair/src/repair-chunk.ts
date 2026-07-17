@@ -1,0 +1,456 @@
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
+import type {
+  AdjudicatedIssue,
+  AdjudicationConfig,
+} from './adjudicate-model.ts';
+import { aggregateClaims, } from './aggregate-claims.ts';
+import type { SyntheticClient, } from './chat-contract.ts';
+import { deriveEditableEnvelopes, } from './patch-model.ts';
+import {
+  parseDocument,
+  type RepairDocument,
+} from './parse-document.ts';
+import {
+  runCheckerStage,
+  runEditorStage,
+} from './repair-edit-stages.ts';
+import {
+  runCriticStage,
+  runPanelStage,
+} from './repair-stages.ts';
+import {
+  selectRepairCandidate,
+  UNCHANGED_CANDIDATE_ID,
+  UNCHANGED_MEASUREMENTS,
+} from './select-candidate.ts';
+import type { SyntheticModelId, } from './synthetic-catalog.ts';
+
+//region Chunk repair
+// One chunk pair through the whole loop: critics, aggregation, panel,
+// envelopes, editor, apply gate, checkers, measurement, selection. Every
+// early exit returns the chunk unchanged with whatever issues were decided;
+// the unchanged text always competes and wins by default.
+
+/**
+ * Model roster for one repair run, by role.
+ *
+ * @example
+ * ```ts
+ * const models: RepairModels = {
+ *   criticModelIds: allSeven,
+ *   panelModelIds: allSeven,
+ *   editorModelId: 'hf:zai-org/GLM-5.2',
+ *   checkerModelIds: strongestThree,
+ * };
+ * ```
+ */
+export type RepairModels = {
+  /**
+   * Critic fan-out electorate.
+   */
+  readonly criticModelIds: readonly SyntheticModelId[];
+
+  /**
+   * Fixed adjudication panel.
+   */
+  readonly panelModelIds: readonly SyntheticModelId[];
+
+  /**
+   * Editor voice producing the repaired candidate.
+   */
+  readonly editorModelId: SyntheticModelId;
+
+  /**
+   * Resolution checkers proving the repair.
+   */
+  readonly checkerModelIds: readonly SyntheticModelId[];
+};
+
+/**
+ * Everything one chunk's repair decided.
+ *
+ * @example
+ * ```ts
+ * const outcome = await repairChunk({ ... },);
+ * if (outcome.changed) splice(outcome.repairedText,);
+ * ```
+ */
+export type ChunkRepairOutcome = {
+  /**
+   * Chunk position within the document.
+   */
+  readonly chunkIndex: number;
+
+  /**
+   * Winning chunk text; equals the input when unchanged won.
+   */
+  readonly repairedText: string;
+
+  /**
+   * Whether the repaired candidate demonstrably beat unchanged.
+   */
+  readonly changed: boolean;
+
+  /**
+   * Adjudicated issues of this chunk.
+   */
+  readonly issues: readonly AdjudicatedIssue[];
+
+  /**
+   * Accepted issues the checkers confirmed fixed in the winning text;
+   * empty when unchanged won.
+   */
+  readonly resolvedIssueIds: readonly string[];
+
+  /**
+   * Critics reporting critical non-translation at wire level.
+   */
+  readonly nonTranslationVotes: number;
+
+  /**
+   * Critics heard, for the caller's degradation accounting.
+   */
+  readonly heardCritics: number;
+
+  /**
+   * Stage findings in scorecard-stable wording.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ * Count of `mdx-downgraded` findings, the integrity signal:
+ * a patch that forces markdown fallback broke document grammar.
+ *
+ * @param document - parsed document under inspection
+ *
+ * @returns Downgrade finding count
+ *
+ * @example
+ * ```ts
+ * downgradeCount({ document, },);
+ * ```
+ */
+function downgradeCount(
+  { document, }: { readonly document: RepairDocument; },
+): number {
+  return document
+    .parseFindings
+    .filter(function isDowngrade(finding,) {
+      return finding.kind === 'mdx-downgraded';
+    },)
+    .length;
+}
+
+/**
+ * Runs one chunk pair through the whole repair loop.
+ *
+ * @param client - injected model client
+ *
+ * @param chunkIndex - chunk position carried onto the outcome
+ *
+ * @param sourceText - original chunk text
+ *
+ * @param targetText - translation chunk text
+ *
+ * @param models - role roster
+ *
+ * @param adjudicationConfig - tally thresholds and weights
+ *
+ * @param signal - caller abort honored by every exchange
+ *
+ * @param perCallTimeoutMs - deadline per exchange
+ *
+ * @param l - pipeline logger
+ *
+ * @returns Chunk outcome with the winning text
+ *
+ * @example
+ * ```ts
+ * const outcome = await repairChunk({ ... },);
+ * ```
+ */
+export async function repairChunk(
+  {
+    client,
+    chunkIndex,
+    sourceText,
+    targetText,
+    models,
+    adjudicationConfig,
+    signal,
+    perCallTimeoutMs,
+    l,
+  }: ForeignBorrowed<{
+    readonly client: SyntheticClient;
+    readonly chunkIndex: number;
+    readonly sourceText: string;
+    readonly targetText: string;
+    readonly models: RepairModels;
+    readonly adjudicationConfig?: AdjudicationConfig;
+    readonly signal: AbortSignal;
+    readonly perCallTimeoutMs: number;
+    readonly l: Logger;
+  }>,
+): Promise<ChunkRepairOutcome> {
+  /**
+   * Parsed chunk pair claims anchor against.
+   */
+  const documents = {
+    source: parseDocument({ text: sourceText, },),
+    target: parseDocument({ text: targetText, },),
+  };
+
+  /**
+   * Critic fan-out result.
+   */
+  const critic = await runCriticStage({
+    client,
+    criticModelIds: models.criticModelIds,
+    sourceText,
+    targetText,
+    documents,
+    signal,
+    perCallTimeoutMs,
+    l,
+  },);
+
+  /**
+   * Unchanged outcome shared by every early exit.
+   */
+  const unchangedOutcome = {
+    chunkIndex,
+    repairedText: targetText,
+    changed: false,
+    resolvedIssueIds: [],
+    nonTranslationVotes: critic.nonTranslationVotes,
+    heardCritics: critic.heardCritics,
+  };
+  if (critic.claims
+    .length
+    === 0) {
+    l.info(`chunk ${String(chunkIndex,)}: no validated claims, unchanged`,);
+    return {
+      ...unchangedOutcome,
+      issues: [],
+      findings: critic.findings,
+    };
+  }
+
+  /**
+   * Merge-proposal clusters over the validated claims.
+   */
+  const { clusters, } = aggregateClaims({ claims: critic.claims, },);
+
+  /**
+   * Panel decision over the clusters.
+   */
+  const panel = await runPanelStage({
+    client,
+    panelModelIds: models.panelModelIds,
+    sourceText,
+    targetText,
+    clusters,
+    ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
+    signal,
+    perCallTimeoutMs,
+    l,
+  },);
+
+  /**
+   * Findings across the stages so far.
+   */
+  const stageFindings = [
+    ...critic.findings,
+    ...panel.findings,
+  ];
+
+  /**
+   * Envelopes cut from accepted issues.
+   */
+  const {
+    envelopes,
+    unenveloped,
+  } = deriveEditableEnvelopes({
+    issues: panel.issues,
+    targetText,
+  },);
+  if (envelopes.length === 0) {
+    l.info(`chunk ${String(chunkIndex,)}: nothing to edit, unchanged`,);
+    return {
+      ...unchangedOutcome,
+      issues: panel.issues,
+      findings: stageFindings,
+    };
+  }
+
+  /**
+   * Accepted issues, the editor's and checkers' work list.
+   */
+  const acceptedIssues = panel.issues
+    .filter(function isAccepted(issue,) {
+    return issue.status === 'accepted';
+  },);
+
+  /**
+   * Editor result through the apply gate.
+   */
+  const editor = await runEditorStage({
+    client,
+    editorModelId: models.editorModelId,
+    sourceText,
+    targetText,
+    envelopes,
+    issues: panel.issues,
+    signal,
+    perCallTimeoutMs,
+    l,
+  },);
+  if (editor.patch
+    .applied
+    .length
+    === 0) {
+    l.info(`chunk ${String(chunkIndex,)}: no operation survived the gate, unchanged`,);
+    return {
+      ...unchangedOutcome,
+      issues: panel.issues,
+      findings: [
+        ...stageFindings,
+        ...editor.findings,
+      ],
+    };
+  }
+
+  /**
+   * Checker proof over the patched candidate.
+   */
+  const checker = await runCheckerStage({
+    client,
+    checkerModelIds: models.checkerModelIds,
+    sourceText,
+    patchedText: editor.patch
+      .patchedText,
+    issues: acceptedIssues,
+    signal,
+    perCallTimeoutMs,
+    l,
+  },);
+
+  /**
+   * Issue ids the checker majority confirmed fixed.
+   */
+  const resolvedIssueIds = acceptedIssues
+    .filter(function isResolved(issue,) {
+      return checker.tallies[issue.issueId]
+        ?.resolved
+        === true;
+    },)
+    .map(function toId(issue,) {
+      return issue.issueId;
+    },);
+
+  /**
+   * High-severity subset of the resolved issues.
+   */
+  const resolvedHighSeverity = acceptedIssues.filter(function isResolvedHigh(issue,) {
+    if (checker.tallies[issue.issueId]
+      ?.resolved
+      !== true)
+      return false;
+    return (issue.severity === 'major') || (issue.severity === 'critical');
+  },)
+    .length;
+
+  /**
+   * Parsed patched candidate for the integrity measurement.
+   */
+  const patchedDocument = parseDocument({ text: editor.patch
+    .patchedText, },);
+
+  /**
+   * Selection between unchanged and the patched candidate.
+   */
+  const selection = selectRepairCandidate({
+    candidates: [
+      {
+        candidateId: UNCHANGED_CANDIDATE_ID,
+        text: targetText,
+        measurements: UNCHANGED_MEASUREMENTS,
+      },
+      {
+        candidateId: `candidate/chunk-${String(chunkIndex,)}`,
+        text: editor.patch
+          .patchedText,
+        measurements: {
+          integrityOk: downgradeCount({ document: patchedDocument, },)
+            <= downgradeCount({ document: documents.target, },),
+          resolvedHighSeverity,
+          resolvedTotal: resolvedIssueIds.length,
+          regressionCount: acceptedIssues.filter(function isRegressed(issue,) {
+            return checker.tallies[issue.issueId]
+              ?.regressed
+              === true;
+          },)
+            .length,
+          changedCharCount: editor.patch
+            .applied
+            .reduce(
+            function addChange(
+              sum,
+              operation,
+            ): number {
+              /**
+               * Envelope of this operation for its base length.
+               */
+              const envelope = envelopes.find(function matches(candidate,) {
+                return candidate.envelopeId === operation.envelopeId;
+              },);
+              return sum + Math.max(
+                envelope?.baseText
+                  .length
+                  ?? 0,
+                operation.newText
+                  .length,
+              );
+            },
+            0,
+          ),
+        },
+      },
+    ],
+  },);
+
+  /**
+   * Whether the repaired candidate demonstrably won.
+   */
+  const changed = selection.winner
+    .candidateId
+    !== UNCHANGED_CANDIDATE_ID;
+  l.info(
+    `chunk ${String(chunkIndex,)}: ${changed ? 'repaired' : 'unchanged'}, ${
+      String(resolvedIssueIds.length,)
+    }/${String(acceptedIssues.length,)} accepted issues resolved, ${
+      String(unenveloped.length,)
+    } unenveloped`,
+  );
+
+  return {
+    chunkIndex,
+    repairedText: selection.winner
+      .text,
+    changed,
+    issues: panel.issues,
+    resolvedIssueIds: changed ? resolvedIssueIds : [],
+    nonTranslationVotes: critic.nonTranslationVotes,
+    heardCritics: critic.heardCritics,
+    findings: [
+      ...stageFindings,
+      ...editor.findings,
+      ...checker.findings,
+    ],
+  };
+}
+
+//endregion Chunk repair

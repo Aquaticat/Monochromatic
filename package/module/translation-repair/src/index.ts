@@ -85,6 +85,34 @@ export {
   type EnvelopePlan,
 } from './patch-model.ts';
 export {
+  type ChunkRepairOutcome,
+  repairChunk,
+  type RepairModels,
+} from './repair-chunk.ts';
+export {
+  type CheckerStageResult,
+  type EditorStageResult,
+  runCheckerStage,
+  runEditorStage,
+} from './repair-edit-stages.ts';
+export {
+  type CriticStageResult,
+  type PanelStageResult,
+  runCriticStage,
+  runPanelStage,
+} from './repair-stages.ts';
+export {
+  NON_TRANSLATION_BLOCK_VOTES,
+  type RepairIssueRecord,
+  type RepairStatus,
+  repairTranslation,
+  type RepairTranslationResult,
+} from './repair-translation.ts';
+export {
+  attemptStageCall,
+  type StageVoice,
+} from './stage-call.ts';
+export {
   buildResolutionMessages,
   isResolutionReportWire,
   isResolutionVerdict,
