@@ -319,7 +319,12 @@ consumers and deployment are deliberately out of scope for now.
   Hangmster (34/34 issues resolved, 1 of 2 seeds) and Everythings99
   (27/29, 2 of 2); one panel round lost four voices and retry round
   one recovered them.
-  Accumulated: 6/8 seeds restored (0.75).
+  run 3 (2026-07-17, 1872 s): 0.5 (3/6), THREE entries fit the same
+  budget (retries keep stages complete instead of limping): DarlinChit
+  2/2, s5ehfr9 1/2, TLL1122 0/2 while still shipping a 29/31-resolved
+  repair; critic and panel each lost four voices once and retry round
+  one recovered both fully.
+  Accumulated: 9/14 seeds restored (0.64).
   PATTERN: every missed seed so far is the LONGEST needle of its
   entry, restored only partially (5/18 and 5/14 words returned);
   long omissions come back compressed. Calibration candidates when
