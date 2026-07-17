@@ -97,6 +97,14 @@ Done:
   resolved with the byte-escape convention integration tests already use
   (`\x50` final byte);
   no git-policy files touched.
+- #379 differential fuzz target.
+  Commit `72e830f3d`, pushed.
+  Target `fuzz_line_matches` plus `RulesetAndBuffer` generator
+  (mixed `\n`/`\r\n`, forced empty lines, optional unterminated final line,
+  `starts` built in lockstep);
+  independent naive recomputation as the oracle;
+  33k bounded runs clean, no artifacts;
+  no engine-crate files touched.
 
 Running (completion notifications arrive automatically):
 
@@ -113,9 +121,7 @@ Running (completion notifications arrive automatically):
   Contract and ordering must not change;
   seeded group only (seedless and line-start stay per-line, #381's call);
   soft budget five hundred tool calls in prompt.
-- #379 differential fuzz target for `line_matches`, sonnet, fuzz sidecar.
-  Explicitly forbidden from editing the engine crate (occupied by #378);
-  soft budget in prompt.
+(#379 moved to Done, see below.)
 
 Filed, not started:
 
@@ -154,7 +160,7 @@ Filed, not started:
 
 - sonnet:
   #375 up to par (clean sweep, good scope note; 35 tool calls).
-  #379 pending verdict.
+  #379 up to par (fuzz target, clean scope discipline; 34 tool calls).
 - opus:
   #377 up to par (contract exactly as specced, spot-checked; 53 tool calls).
   #376, #378 pending verdicts.
