@@ -61,6 +61,18 @@ export {
   CLUSTER_ANCHOR_TOLERANCE,
 } from './aggregate-claims.ts';
 export {
+  applyPatchOperations,
+  EnvelopeOverlapError,
+  type PatchOperation,
+  type PatchOutcome,
+  type PatchRejection,
+} from './apply-patch.ts';
+export {
+  deriveEditableEnvelopes,
+  type EditableEnvelope,
+  type EnvelopePlan,
+} from './patch-model.ts';
+export {
   type AdjudicationResult,
   tallyVotes,
 } from './tally-votes.ts';
