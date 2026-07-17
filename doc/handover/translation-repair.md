@@ -250,7 +250,16 @@ consumers and deployment are deliberately out of scope for now.
   through replacement envelopes, not zero-width insertions; zero-width
   machinery stays for other producers.
   15 resolution check plus no-regression gate plus lexicographic
-  candidate selection (unchanged translation always competes),
+  candidate selection, DONE (commit `015b67b89`: checkers vote
+  fixed/not-fixed/worse per issue, strict fixed majority resolves,
+  worse majority counts as regression; selection order integrity >
+  high-severity resolution > regressions > total resolution >
+  preservation, unchanged candidate always competes and wins perfect
+  ties). Live check (2026-07-17): 3 checkers, 39/39 verdicts each,
+  zero findings, 25 s; 38/39 resolved (13 high-severity), 0
+  regressed, patched candidate parsed clean, selection picked the
+  repaired candidate over unchanged. Note checker leniency mirrors
+  panel leniency; canary calibration remains the designed control,
   16 `repairTranslation` end-to-end pure fn (chunk via
   `alignDocumentSections`, ensemble-agreed critical non-translation
   returns input unchanged),
