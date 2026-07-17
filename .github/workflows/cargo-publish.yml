@@ -9,6 +9,7 @@ on:
         options:
         - forbidden-strings
         - monochromatic-nested-wayland-session
+        - forbidden-regex
         default: forbidden-strings
       dry-run:
         description: 'Dry run (package + verify, no crates.io upload, no GH release, no attestation)'
@@ -19,6 +20,7 @@ on:
     paths:
     - 'package/cli/forbidden-strings/Cargo.toml'
     - 'package/cli/nested-wayland-session/Cargo.toml'
+    - 'package/rust-module/forbidden-regex/Cargo.toml'
 
 permissions:
   contents: read
@@ -531,3 +533,127 @@ jobs:
           --title "nested-wayland-session v${VERSION}" \
           --notes "monochromatic-nested-wayland-session v${VERSION}. crates.io: https://crates.io/crates/monochromatic-nested-wayland-session/${VERSION}. Linux only (x86_64 and aarch64 gnu)." \
           --target "$SHA"
+
+  # forbidden-regex: the regex engine LIBRARY powering forbidden-strings.
+  # No [[bin]], so no binary matrix and no GitHub release; just the crate
+  # publish with provenance attestation. Its jobs are gated identically to
+  # the other crates' but on the forbidden-regex Cargo.toml and the matching
+  # dispatch crate.
+
+  fr-detect:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.detect.outputs.should_publish }}
+      version: ${{ steps.detect.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 2
+
+    - name: Detect version bump
+      id: detect
+      env:
+        BEFORE_SHA: ${{ github.event.before }}
+        EVENT_NAME: ${{ github.event_name }}
+        INPUT_CRATE: ${{ github.event.inputs.crate }}
+      run: |
+        set -euo pipefail
+        cargo_toml='package/rust-module/forbidden-regex/Cargo.toml'
+        after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
+        before=''
+        if [ -n "${BEFORE_SHA:-}" ] \
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ] \
+          && git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
+          before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+        fi
+        printf 'before=%s\nafter=%s\n' "$before" "$after"
+        if [ -z "$after" ]; then
+          echo 'No version found in Cargo.toml; refusing to publish.' >&2
+          exit 1
+        fi
+        publish=false
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ] && [ "$INPUT_CRATE" = 'forbidden-regex' ]; then
+          publish=true
+        elif [ "$EVENT_NAME" = 'push' ] && [ "$before" != "$after" ]; then
+          publish=true
+        fi
+        if [ "$publish" = 'true' ]; then
+          {
+            echo "should_publish=true"
+            echo "version=$after"
+          } >> "$GITHUB_OUTPUT"
+        else
+          echo "should_publish=false" >> "$GITHUB_OUTPUT"
+        fi
+
+  fr-publish-crate:
+    needs: fr-detect
+    if: ${{ needs.fr-detect.outputs.should_publish == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Set up mise (skip auto-install of all tools)
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      with:
+        install: false
+        cache: true
+
+    - name: Install only the tools this workflow needs
+      run: mise install rust
+
+    - name: Cache cargo registry + build
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          package/rust-module/forbidden-regex/target
+        key: cargo-publish-fr-${{ runner.os }}-${{ hashFiles('package/rust-module/forbidden-regex/Cargo.lock') }}
+
+    - name: Build .crate package (verifies by compile)
+      working-directory: package/rust-module/forbidden-regex
+      run: mise exec rust -- cargo package
+
+    - name: Attest .crate provenance
+      if: ${{ !inputs.dry-run }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: 'package/rust-module/forbidden-regex/target/package/forbidden-regex-${{ needs.fr-detect.outputs.version }}.crate'
+
+    - name: Authenticate with crates.io (Trusted Publishing)
+      if: ${{ !inputs.dry-run }}
+      id: auth
+      uses: rust-lang/crates-io-auth-action@bbd81622f20ce9e2dd9622e3218b975523e45bbe
+
+    - name: Publish (dry run)
+      if: ${{ inputs.dry-run }}
+      working-directory: package/rust-module/forbidden-regex
+      run: mise exec rust -- cargo publish --dry-run --no-verify
+
+    - name: Publish (skips if this version is already on crates.io)
+      # v0.1.0 was published manually to bootstrap the crate (crates.io Trusted
+      # Publishing cannot be configured until the crate exists), mirroring the
+      # nested-wayland-session bootstrap. Idempotent: skips when the version is
+      # already present, so re-runs never fail on a duplicate upload.
+      if: ${{ !inputs.dry-run }}
+      working-directory: package/rust-module/forbidden-regex
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        VERSION: ${{ needs.fr-detect.outputs.version }}
+      run: |
+        set -euo pipefail
+        if curl -sSf -H 'User-Agent: monochromatic-ci' \
+          "https://crates.io/api/v1/crates/forbidden-regex/${VERSION}" >/dev/null 2>&1; then
+          echo "::notice::forbidden-regex ${VERSION} already on crates.io; skipping publish."
+        else
+          mise exec rust -- cargo publish --no-verify
+        fi
