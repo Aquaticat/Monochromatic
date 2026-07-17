@@ -1,11 +1,11 @@
 //! Rule compiler targeting the in-house `forbidden-regex` engine.
 //!
-//! Stage one of the scanner engine swap (#383). This module owns the two-form
-//! rule-file format, the flag policy, UTF-8 BOM stripping, redacted load-error
-//! reporting, and both construction paths (from rule text and from a serialized
-//! precompiled `RegexSet`). It is built and unit-tested alongside the existing
-//! resharp and `regex`-crate pipeline but is NOT wired into the scan path; the
-//! scanner keeps loading and scanning on the old engines until stage two (#384).
+//! This module owns the two-form rule-file format, the flag policy, UTF-8 BOM
+//! stripping, redacted load-error reporting, and both construction paths (from
+//! rule text and from a serialized precompiled `RegexSet`). It is the live load
+//! path: `crate::frx_load` builds the scan's rule sets through these entry points,
+//! and `crate::frx_scan` runs them. The resharp/`regex`-crate pipeline it once sat
+//! beside was deleted in the engine-swap teardown (#385).
 //!
 //! The engine is always in verbose, multiline mode, so this compiler never calls
 //! `forbidden_regex::compile` (its single-pattern path logs the pattern via

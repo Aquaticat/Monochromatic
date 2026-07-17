@@ -1,120 +1,30 @@
-//! fuzz_api support for the forbidden-strings scanner.
-// What:     `crate::fuzz_api` is a curated re-export module that
-//           appears ONLY when the crate is built with the `fuzzing`
-//           Cargo feature on. It pulls together the helpers
-//           `fuzz/fuzz_targets/*.rs` need without widening any
-//           production public API: the bin target builds with
-//           `fuzzing` off and sees the same surface as before.
-// Why:      The plan requires fuzz internals to live behind a
-//           feature gate, not be merged into the production `pub use`
-//           block in `rule.rs`. This module is the single import
-//           surface every fuzz target points at; if we need to
-//           expose a new helper, it gets re-exported here once and
-//           every target picks it up.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Conditional re-export module (no direct TS analogue).
-// export {
-//   compileRuleSrc, loadRulesetFromSource, extractGatingSubstrings,
-//   requiresResharp, lookaroundInComplement, buildResidualShards,
-//   walkLiteralBytes, skipAtomWithExtract,
-//   groupBodyStart, findMatchingCloseParen, skipAnyQuantifier,
-//   quantifierIsRequired, skipClassBody,
-//   AcMeta, CompiledRegex, RegexRule, ResidualShard, RuleSet,
-//   isWordByte, SUBSTRING_THRESHOLD, ParsedRule, parseRuleSource,
-// } from "./rules";
-// export { scanContent } from "./scan";
-// export {
-//   buildLineIndex, lineAndColIndexed, endInLineIndexed,
-//   formatHit, emitHit,
-// } from "./scan_format";
-// ```
+//! Curated internal surface for the scanner's fuzz targets.
+//!
+//! This module appears only when the crate is built with the `fuzzing` Cargo
+//! feature; the bin target and the integration tests build with it off and see
+//! the unchanged public surface. It gathers the entry points a fuzz target drives
+//! into one import path (`forbidden_strings::fuzz_api::*`).
+//!
+//! The engine-swap teardown (#385) deleted the old resharp/`regex`/aho-corasick
+//! internals this module used to re-export; what survives is the forbidden-regex
+//! load and scan path. The scanner-level fuzz targets in
+//! `package/fuzz/forbidden-strings` are retargeted onto that path by #386.
 
-/// Imports dependencies used by this module.
-// What:     `pub use crate::rule::{...};` re-exports the rules-
-//           module symbols the fuzz targets need. Every name is
-//           already public-or-pub(crate) inside `crate::rules`;
-//           re-exporting them here narrows fuzz target imports to
-//           a single path (`forbidden_strings::fuzz_api::*`).
-// Why:      Single import surface. If a target needs a new
-//           helper, add the name here once.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export {
-//   compileRuleSrc, loadRulesetFromSource, extractGatingSubstrings,
-//   requiresResharp, lookaroundInComplement, buildResidualShards,
-//   walkLiteralBytes, skipAtomWithExtract,
-//   groupBodyStart, findMatchingCloseParen, skipAnyQuantifier,
-//   quantifierIsRequired, skipClassBody,
-//   AcMeta, CompiledRegex, RegexRule, ResidualShard, RuleSet,
-//   isWordByte, SUBSTRING_THRESHOLD, ParsedRule, parseRuleSource,
-// } from "./rules";
-// ```
-pub use crate::rule::{
-    build_residual_shards,
-    complement_intersection_quantified_group,
-    compile_rule_src,
-    extract_gating_substrings,
-    find_matching_close_paren,
-    group_body_start,
-    is_word_byte,
-    load_ruleset_from_source,
-    lookaround_in_alternation_with_sibling,
-    lookaround_in_complement,
-    nested_grouped_quantifier,
-    nested_lookahead_in_quantified_group,
-    parse_rule_source,
-    quantified_lookahead_with_sibling_content,
-    quantifier_is_required,
-    requires_resharp,
-    skip_any_quantifier,
-    skip_atom_with_extract,
-    skip_class_body,
-    stacked_quantifier,
-    walk_literal_bytes,
-    AcMeta,
-    CompiledRegex,
-    ParsedRule,
-    RegexRule,
-    ResidualShard,
-    RuleSet,
-    SUBSTRING_THRESHOLD,
-};
+/// Re-exports the frx rule-compiler entry points and the redacted load error.
+///
+/// `compile_from_text` builds a `RegexSet` from two-form rule text (the path a
+/// literal-to-dialect escaping target exercises), `load_precompiled` decodes a
+/// serialized set, and `LoadError` is the redacted failure both return.
+pub use crate::{compile_from_text, load_precompiled, LoadError};
 
-/// Imports dependencies used by this module.
-// What:     `pub use crate::scan::scan_content;`. The main scanner
-//           entry point; takes a path label, file content, and a
-//           ruleset, and returns the hit-formatted `Vec<String>`.
-// Why:      Several fuzz targets exercise the full scan pipeline,
-//           not just sub-components. They need this entry point.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export { scanContent } from "./scan";
-// ```
-pub use crate::scan::scan_content;
+/// Re-exports the runtime rule loader and its loaded-set handle.
+///
+/// `load` resolves and compiles the runtime rules file (and, under the flag, the
+/// precompiled baseline) into a `LoadedRules` the scan path consumes.
+pub use crate::frx_load::{load, LoadedRules};
 
-/// Imports dependencies used by this module.
-// What:     `pub use crate::scan_format::{...};` re-exports the
-//           hit-formatting helpers `fuzz_scan_format` exercises.
-// Why:      The format target asserts byte-to-line/column conversion
-//           and hit redaction invariants -- it needs direct access
-//           to the four helpers and the higher-level `format_hit` /
-//           `emit_hit` entry points.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export {
-//   buildLineIndex, lineAndColIndexed, endInLineIndexed,
-//   formatHit, emitHit,
-// } from "./scan_format";
-// ```
-pub use crate::scan_format::{
-    build_line_index,
-    emit_hit,
-    end_in_line_indexed,
-    format_hit,
-    line_and_col_indexed,
-};
+/// Re-exports the per-file line scan entry point.
+///
+/// `scan_file` splits a file's bytes into lines and runs each loaded set under the
+/// fail-closed unwind boundary, returning redacted `PATH:LINE rule=N` findings.
+pub use crate::frx_scan::scan_file;

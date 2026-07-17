@@ -54,47 +54,26 @@ fuzzing = []
 [dependencies]
 # `anyhow` carries application-level errors while preserving their display text for
 # CLI stderr output and tests.
-aho-corasick = "1"
 anyhow = "1"
 # `clap` owns argv parsing, generated help/version output, and validation for the
 # `forbidden-strings` binary. The derive feature lets `src/cli.rs` declare the
 # command shape as a typed struct instead of maintaining a handwritten argv loop.
 clap = { version = "4", features = ["derive"] }
-# The in-house engine that the scanner is migrating onto. Stage one (#383) adds the
-# rule-compiler module (`src/rule/frx`) that targets this engine and is built and
-# unit-tested here, but is NOT yet wired into the scan path; the crate keeps
-# scanning on resharp + the `regex` crate until stage two (#384). Depended on by
-# path (the same crate the bench sidecar drives) plus the published version so
-# `cargo publish` resolves it from crates.io; the path wins for local builds.
+# The in-house engine the scanner runs on. It owns the restricted dialect, the
+# `RegexSet` compile/serialize/reload paths, and the buffer-batch `line_matches`
+# API the scan path calls; its own `Cargo.toml` documents that it expects the
+# caller (this crate) to provide the `catch_unwind` fail-closed boundary. Its
+# internal prefilters pull in aho-corasick, memchr, and regex-automata, so the
+# literal-gating machinery this crate once owned directly stays present as a
+# transitive dependency. Depended on by path (the same crate the bench sidecar
+# drives) plus the published version so `cargo publish` resolves it from
+# crates.io; the path wins for local builds.
 forbidden-regex = { path = "../../rust-module/forbidden-regex", version = "0.1.0" }
 gix-hash = { version = "0.25", default-features = false, features = ["sha1", "sha256"] }
 gix-index = { version = "0.51", default-features = false, features = ["sha1"] }
 ignore = "0.4"
 memchr = "2"
 rayon = "1"
-regex = "1"
-# Floor raised to 0.6.13. 0.6.11 landed three further upstream fixes filed by
-# this project against the 2026-06-04 fuzz campaign
-# (doc/audit/resharp-fuzz-2026-06-04/), all merged to ieviev/resharp main:
-#   - PR #15 (bug-07): the parser negates the byte class for ASCII `\D`/`\S`/
-#     `\W`, so a negated Perl class is no longer spuriously nullable;
-#   - PR #14 (regression-01): `find_all` registers each null position once,
-#     killing duplicate zero-width spans on negative-lookahead shapes;
-#   - PR #16 (bug-04): `find_all` no longer aborts or leaks on a NO_MATCH
-#     sentinel candidate.
-# Assorted engine edge-case and stack-overflow hardening also landed between
-# 0.6.9 and 0.6.11. The complement-of-lookaround reject (Bug A) is untouched
-# by the 0.6.10/0.6.11 delta (the reverse-pass `Kind::Compl` arm did not
-# change), so it stays the single live restriction, held by the consumer-side
-# `lookaround_in_complement` guard; last behaviourally verified at 0.6.9.
-#
-# History: 0.6.9 merged PR #13 (`DEFAULT_MAX_DEPTH = 1_000` for the Bug G
-# deep-nesting stack-overflow, the `rw_active` re-entrancy guard, and the
-# `find_all` boundary zero-width fix) and re-admitted the `\A`/`\z`-inside-
-# complement workaround; the Bug B/C/E/F fixes landed in 0.6.4 and remain.
-# See doc/troubleshooting/resharp.md. Caret semantics keep this within
-# 0.6.x (`>=0.6.13, <0.7`).
-resharp = "0.6.13"
 # The logging facade and its subscriber. tracing routes the compiler's rule-rejection
 # warnings and the CLI's top-level errors as structured events to stderr via
 # tracing-subscriber (RUST_LOG, default info); the scan findings stay on stdout, and the
@@ -113,65 +92,44 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 forbidden-regex = { path = "../../rust-module/forbidden-regex", version = "0.1.0" }
 
 # Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
-# "abort" + default-off overflow checks:
+# "abort" plus default-off overflow checks:
 #
-# `src/rule/engine.rs` and `src/rule.rs` use `std::panic::catch_unwind`
-# to intercept panics inside the resharp algebra / engine. The specific
-# fuzzer-discovered shapes that motivated this combo are all resolved
-# upstream as of resharp 0.6.9 (behaviourally re-verified 2026-06-04;
-# see doc/troubleshooting/resharp.md, "Fixed upstream, now spent"):
-#   - `attempt to add with overflow` in `attempt_rw_concat_2`
-#     (`resharp-algebra`) on shapes like `(?:\w|$)(?:(?![1g]\_X)& a)`
-#     (intersection + `\w` + end-anchor) and the nested-lookahead-in-
-#     quantified-group shapes: 0.6.9 uses `saturating_add`, so these now
-#     compile cleanly (intersection case) or are rejected at compile with
-#     `Algebra(UnsupportedPattern)` (nested-lookahead case), no overflow;
-#   - `should not contain lookbehind` in `strip_lb` (`resharp-algebra`) on
-#     `(?:(?=a)&(?<=_))` (intersection + lookbehind): through 0.6.3 this
-#     corrupted matches in release (62 spurious on a 64-byte input) and
-#     tripped a `debug_assert!` in debug; 0.6.9 fails closed at
-#     `Regex::new` with `Algebra(UnsupportedPattern)`, so it never reaches
-#     find_all.
+# `src/frx_scan.rs` (`scan_one_set`) wraps every `RegexSet::line_matches` call in
+# `std::panic::catch_unwind`. The forbidden-regex engine's own `Cargo.toml`
+# documents that it deliberately does not install an internal panic guard and
+# expects the caller to provide this `catch_unwind` boundary; this crate is that
+# caller. On a caught panic the scanner emits a redacted `PATH: engine error`
+# synthetic finding, so a matcher fault reports the file and exits non-zero
+# instead of aborting or exiting clean.
 #
-# The combo is kept regardless, as defense-in-depth for UNKNOWN shapes:
-# resharp's algebra is large and the fuzz targets in
-# package/fuzz/forbidden-strings keep finding new edge cases; a future
-# overflow or panic shape should fail closed, not corrupt CI.
+# The combo is defense-in-depth against UNKNOWN engine faults: the dialect is
+# restricted and every rule is validated at compile time, but a future matcher
+# bug should fail closed, not corrupt CI.
 #
 # 1. `panic = "unwind"`: `catch_unwind` only intercepts when the process
 #    unwinds. Under `panic = "abort"` the process dies before the unwind
-#    barrier runs, and the scanner (a CI gate) aborts instead of
-#    surfacing the bad rule. This does not help against a stack-overflow
-#    SIGABRT (Bug G, deeply nested complement/lookaround); resharp 0.6.9
-#    fixed that upstream with a parser depth cap
-#    (`DEFAULT_MAX_DEPTH = 1_000`, rejecting over-deep rules with a clean
-#    `Parse` error instead of overflowing), and the consumer-side depth
-#    pre-validator (`src/rule/nesting.rs`, same 1_000 cap) stays as
-#    belt-and-suspenders. Neither relies on this profile.
+#    barrier runs, and the scanner (a CI gate) aborts instead of surfacing the
+#    bad file. (A stack-overflow SIGABRT is not caught by either setting; the
+#    engine caps recursion internally at compile time instead.)
 #
-# 2. `overflow-checks = true`: an algebra overflow is Rust's standard
+# 2. `overflow-checks = true`: an arithmetic overflow is Rust's standard
 #    checked-arithmetic panic from a `+`. Cargo's default release profile
 #    disables overflow checks for speed; without this setting an unknown
-#    overflowing add would silently wrap, resharp would build the wrong
-#    DFA, and the rule would fail open (zero hits on content that should
-#    match). That is the worst case for a secret scanner: a corrupt rule
-#    silently passes CI. With this setting the wrap becomes a real panic
-#    that catch_unwind converts to "rule=N engine error", which `scan.rs`
-#    emits as a fail-closed synthetic hit.
+#    overflowing add inside the matcher would silently wrap, the engine would
+#    resolve the wrong verdict, and the rule would fail open (zero hits on
+#    content that should match). That is the worst case for a secret scanner: a
+#    corrupt rule silently passes CI. With this setting the wrap becomes a real
+#    panic that `catch_unwind` converts to the `PATH: engine error` synthetic
+#    finding.
 #
-# Note about `debug-assertions`: deliberately left at the release default
-# of OFF. Some resharp postcondition checks live behind `debug_assert!`
-# (the historical `strip_lb` assertion was one), so with debug-assertions
-# OFF a future such shape returns wrong matches rather than panicking, and
-# catch_unwind cannot help. The pre-validators in `src/rule/engine.rs`
-# (and the fuzz targets, which run with debug-assertions ON) are the
-# durable cover for that class. We do not turn debug-assertions on in
-# release because the `regex`, `ignore`, and `rayon` deps have hot-path
-# debug_asserts and the perf cost was not measured to be acceptable on the
-# CI gate.
-#
-# See doc/troubleshooting/resharp.md for the full per-bug status at 0.6.9
-# and the pre-validator coverage in `src/rule.rs` / `src/rule/engine.rs`.
+# Note about `debug-assertions`: deliberately left at the release default of
+# OFF. With debug-assertions OFF a matcher postcondition guarded by
+# `debug_assert!` would return a wrong verdict rather than panicking, and
+# `catch_unwind` cannot help there; the engine's own fuzz suite (run with
+# debug-assertions ON) is the durable cover for that class. We do not turn
+# debug-assertions on in release because the `forbidden-regex`, `ignore`, and
+# `rayon` deps have hot-path debug_asserts whose cost was not measured to be
+# acceptable on the CI gate.
 [profile.release]
 lto = true
 codegen-units = 1

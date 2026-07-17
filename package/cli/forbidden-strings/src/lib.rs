@@ -1,12 +1,4 @@
 //! lib support for the forbidden-strings scanner.
-// TODO: deferred perf work. See /home/user/.claude/plans/dapper-coalescing-horizon.md.
-// TODO:   - L2: line-start index for `line_and_col` -- only matters on the
-// TODO:     violation path; revisit if a single file with many hits ever becomes
-// TODO:     a real workload.
-// TODO:   - Z1: serialize the regex-bucket combined DFA. Resharp 0.5 has no
-// TODO:     serialization API; would require swapping that gate to the `regex`
-// TODO:     crate (`regex-automata::dfa::dense::DFA::to_bytes`). Trigger: when
-// TODO:     startup-only time goes back over ~100ms after P1+P2 land.
 
 /// Registers the `cli` child module.
 // What:     `mod cli;` declares a child module whose source lives in `cli.rs`.
@@ -37,17 +29,11 @@ mod cli;
 // // in `include` paths; Rust requires explicit `mod` declarations.
 // ```
 mod rule;
-/// Registers the `scan` child module (stage-one legacy pipeline, unreferenced by the
-/// binary since #384; deleted in stage three #385).
-mod scan;
-/// Registers the `scan_format` child module (legacy pipeline, unreferenced by the
-/// binary since #384; deleted in stage three #385).
-mod scan_format;
 /// Registers the `walk` child module.
 mod walk;
-/// Registers the `frx_load` child module: the engine-based rule loader (stage two).
+/// Registers the `frx_load` child module: the forbidden-regex rule loader.
 mod frx_load;
-/// Registers the `frx_scan` child module: the engine-based line scan (stage two).
+/// Registers the `frx_scan` child module: the forbidden-regex line scan.
 mod frx_scan;
 
 /// Registers the `fuzz_api` child module.
@@ -109,15 +95,14 @@ pub const BUILTIN_RULES: &str = include_str!("../data/builtin-rules.txt");
 pub const BUILTIN_PRECOMPILED: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/builtin-rules-precompiled.bin"));
 
-/// Re-exports the stage-one forbidden-regex rule compiler's public surface.
-// What:     `pub use rule::frx::{...}` lifts the new engine's rule-compiler
-//           entry points to the crate root so they are reachable crate-public
-//           API. Stage two (#384) wires them into the scan path; for now they
-//           are built and unit-tested only.
-// Why:      A private, not-yet-called module would otherwise trip the dead-code
-//           lint under the crate's `-D warnings` clippy gate. Exposing the API
-//           is not "wiring into the scan path": `run_cli_from_env` and the
-//           loader still use the resharp/regex pipeline unchanged.
+/// Re-exports the forbidden-regex rule compiler's public surface.
+// What:     `pub use rule::frx::{...}` lifts the engine's rule-compiler entry
+//           points to the crate root so they are reachable crate-public API.
+//           `frx_load::load` calls `compile_from_text` and `load_precompiled`;
+//           `frx_scan::scan_file` runs the resulting sets against each file.
+// Why:      These are the live load-path construction functions and the redacted
+//           error they return. Exposing them at the crate root lets the loader,
+//           the build script's sibling parser, and the fuzz surface share one API.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -253,11 +238,10 @@ use crate::walk::list_files;
 //             - The actual rules file (whatever the user passed via
 //               `--rules` or `FORBIDDEN_STRINGS_RULES`; falls back to
 //               the default `forbidden-strings.local.txt` in cwd).
-//             - Four canonical self-match paths at their expected
-//               locations relative to repo root. Each file contains
-//               literal copies of rule bodies (generated source) or
-//               documented example matches (rules-engine test
-//               fixtures); scanning them in --all mode produces noise.
+//             - Three canonical self-match paths at their expected
+//               locations relative to repo root. Each is generated
+//               source containing literal copies of rule bodies;
+//               scanning them in --all mode produces noise.
 //               If running from a different cwd they fail to
 //               canonicalize and are silently dropped from the set;
 //               matching is still correct for the rules file alone.
@@ -307,12 +291,11 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
         set.insert(p);
     }
     // What:     Canonical self-match paths relative to the repo root.
-    //           Each is a file we know contains literal copies of rule
-    //           bodies (generated source) or documented example match
-    //           strings (rules-engine test fixtures); scanning them in
-    //           --all mode would produce self-matches. Pinned by their
-    //           expected location so the matcher does not fire on
-    //           unrelated files of the same name elsewhere in the tree.
+    //           Each is generated source containing literal copies of
+    //           rule bodies; scanning them in --all mode would produce
+    //           self-matches. Pinned by their expected location so the
+    //           matcher does not fire on unrelated files of the same
+    //           name elsewhere in the tree.
     // Why:      Same anti-self-match guard as the previous basename
     //           list, but anchored to specific paths. If the binary is
     //           run from outside the monorepo or these files have been
@@ -323,13 +306,12 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const CANONICAL_SELF_MATCH_PATHS = [ "...", "...", "...", "..." ];
+    // const CANONICAL_SELF_MATCH_PATHS = [ "...", "...", "..." ];
     // ```
     let canonical_self_match_paths = [
         "package/cli/forbidden-strings/data/betterleaks-default-config.toml",
         "package/cli/forbidden-strings/data/builtin-rules.txt",
         "package/cli/forbidden-strings/src/port-betterleaks-relaxations.ts",
-        "package/cli/forbidden-strings/src/rule/algebra_tests.rs",
     ];
     for k in canonical_self_match_paths {
         if let Ok(p) = std::fs::canonicalize(k) {
