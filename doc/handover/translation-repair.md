@@ -329,7 +329,21 @@ consumers and deployment are deliberately out of scope for now.
   entry, same misses as run 3: reproducible entry-specific failure),
   luxuanwen3 near-zero restoration (1/13 and 2/8 words) despite a
   23/26-resolved repair.
-  Accumulated: 11/20 seeds restored (0.55).
+  run 5 (2026-07-17, 1655 s, detection grading active): repair 1/5,
+  detection 2/6; the split works immediately:
+  SevenBird both seeds DETECTED, one restored 8/11, one editor
+  under-restoration 6/14 (just under threshold);
+  wangzihao980 both seeds UNDETECTED, the same entry as milestone
+  one's single ensemble miss, confirming interior omissions as the
+  critics' weak class at the detection layer;
+  XIEPT2 returned `blocked-non-translation` and a structural probe
+  proved the block CORRECT (7365-char zh prose vs 1218-char en
+  heading skeleton, a third still CJK): the guard works on real
+  corpus data, and XIEPT2 joins BI4PBV in benchmark quarantine.
+  Accumulated: 12/25 seeds restored (0.48); the rate is settling
+  lower as samples diversify, and the misses now have named classes:
+  editor compression on long needles, critic detection on interior
+  omissions, and one correctly blocked non-translation.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
