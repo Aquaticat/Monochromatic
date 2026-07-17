@@ -456,6 +456,12 @@ consumers and deployment are deliberately out of scope for now.
   property (for the next design pass to identify).
   Accumulated: 53/87 repair (0.61); post-remedy 34/52 (0.65);
   detection 64/70 (0.91).
+  run 20 (2026-07-17, 2272 s): repair 2/4, detection 4/4;
+  a2581911655's 18-worder missed a fourth time at exactly 7/18 while
+  its 16-worder restored a third time; new entry ttttsuuukikoo_
+  (81 issues, the largest issue count yet) split 1/1.
+  Accumulated: 55/91 repair (0.60); post-remedy 36/56 (0.64);
+  detection 68/74 (0.92).
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
