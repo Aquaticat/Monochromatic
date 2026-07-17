@@ -29,11 +29,30 @@ slow".
 need is coverage-guided fuzzing that walks structural branches in the
 extractor and engine dispatcher.
 
+Update (#386, engine swap):
+ the extractor,
+ Aho-Corasick gates,
+ and hybrid dispatcher above were deleted in the #385 teardown;
+ the scanner now runs on the in-house `forbidden-regex` engine.
+ The scanner-level fuzz suite was retargeted onto the surviving surfaces:
+ the literal-to-verbose-dialect escaper (`fuzz_literal_roundtrip`),
+ the strict two-form rule loader (`fuzz_ruleset_scan_invariants`),
+ and the columnless `PATH:LINE rule=N` scan output (`fuzz_scan_format`).
+ The three removed-machinery targets (aho-corasick gate soundness,
+ residual shards,
+ engine dispatch) and the regex-syntax-walker target were removed with the
+code they fuzzed,
+ as was the test-literal seeder.
+ Engine-level fuzzing (the `RegexSet` compile, serialize, and `line_matches`
+paths) moved to the engine's own sidecar at
+`package/rust-module/forbidden-regex.fuzz` and is not duplicated here.
+
 ## Decision
 
 Use `cargo-fuzz` (libFuzzer backend) as the primary fuzzer for this
 package.
- Pin `cargo-fuzz = 0.13.1` and a nightly Rust toolchain via mise.
+ Pin `cargo-fuzz` and a nightly Rust toolchain via mise (root
+`mise.no-env.toml`).
 Express the fuzz surface through a `fuzz_api` module behind a Cargo
 `fuzzing` feature;
  do not widen the production `pub` surface.
@@ -90,19 +109,23 @@ Fuzz reproducers and panic messages never echo raw bytes from the
 content slice or the rule source.
  Every reproducer field is one of:
 
-- pattern source (rule string the fuzzer constructed;
-   never derived
-  from the local deny-list);
-- content length in bytes;
-- a SHA-256 hex digest of the content slice;
+- input length in bytes;
+- a SHA-256 hex digest of the input (the `redacted_fingerprint` helper);
 - a one-line label naming the invariant that failed.
 
-Seeders read test sources only (`package/cli/forbidden-strings/src/rule/extract_tests.rs`
-and siblings).
- They never read `forbidden-strings.local.txt` or any
-other deny-list file;
- the seeder verifies this at runtime via
-`git check-ignore` on each candidate input path before reading it.
+The columnless output contract makes redaction structural:
+ a finding is exactly `PATH:LINE rule=N`,
+ interpolating only the fixed path and two integers,
+ so no rule byte or content byte can reach it.
+
+Seed corpora are hand-curated (there is no automated seeder anymore).
+ Contents must never contain a raw secret-shaped string,
+ because the tracked `seed/` files are scanned by the repo commit gate;
+ use the crate's byte-escape convention if a fixture ever needs one.
+ The local deny-list (`forbidden-strings.local.txt` and its append sibling)
+must never enter a seed,
+ the dictionary,
+ or a reproducer.
 
 ## CI integration
 
