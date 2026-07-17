@@ -220,3 +220,197 @@ fn doc_hidden_kernel_hooks_agree_with_per_line() {
     let teq: Vec<bool> = equal.iter().map(|line| re.is_match(line)).collect();
     assert_eq!(re.batch_tight_w::<8>(equal), teq, "tight_w hook");
 }
+
+// What:    Joins line contents with `sep` between them (no trailing separator) and
+//          records the byte offset each line begins at: the (buffer, line starts)
+//          shape the scanner-facing line_matches consumes.
+// Why:     The tests know each line's content directly, so the expected pairs come
+//          from that content, not from re-slicing the buffer under test.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function buffer_with_starts(lines: Uint8Array[], sep: Uint8Array): [Uint8Array, number[]] {
+//   // Rust body below is the implementation.
+// }
+// ```
+fn buffer_with_starts(lines: &[&[u8]], sep: &[u8]) -> (Vec<u8>, Vec<usize>) {
+    let mut buf: Vec<u8> = Vec::new();
+    let mut starts: Vec<usize> = Vec::new();
+    for (index, line) in lines.iter().enumerate() {
+        starts.push(buf.len());
+        buf.extend_from_slice(line);
+        if index + 1 < lines.len() {
+            buf.extend_from_slice(sep);
+        }
+    }
+    (buf, starts)
+}
+
+// What:    The (line index, rule index) pairs a per-line matches() yields over the
+//          known line contents, skipping empty lines.
+// Why:     The independent oracle line_matches must equal, built straight from the
+//          line contents rather than from the buffer under test.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function expected_pairs(set: RegexSet, lines: Uint8Array[]): [number, number][] {
+//   // Rust body below is the implementation.
+// }
+// ```
+fn expected_pairs(set: &RegexSet, lines: &[&[u8]]) -> Vec<(usize, usize)> {
+    let mut pairs: Vec<(usize, usize)> = Vec::new();
+    for (index, line) in lines.iter().enumerate() {
+        if line.is_empty() {
+            continue;
+        }
+        for rule in set.matches(line) {
+            pairs.push((index, rule));
+        }
+    }
+    pairs
+}
+
+#[test]
+fn line_matches_recovers_crlf_lines() {
+    // What:    CRLF-terminated lines: line_matches must drop both the `\n` and the
+    //          `\r` so the matcher sees the same content a plain-`\n` file would; a
+    //          match on the leading and the final line pins the boundary handling at
+    //          both ends of the buffer.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the
+    //          test function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
+    let set = RegexSet::new(&["AKIA[A-Z2-7]{4}", "secret"]).expect("compiles");
+    let lines: &[&[u8]] = &[b"AKIA2345", b"nothing here", b"a secret value"];
+    let (buf, starts) = buffer_with_starts(lines, b"\r\n");
+    assert_eq!(set.line_matches(&buf, &starts), vec![(0, 0), (2, 1)]);
+    assert_eq!(set.line_matches(&buf, &starts), expected_pairs(&set, lines));
+}
+
+#[test]
+fn line_matches_reads_final_line_with_and_without_trailing_newline() {
+    // What:    The final line runs to the buffer end whether or not a terminator
+    //          follows it; a trailing newline on that last line is stripped like any
+    //          other, so both buffers report the same pair.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the
+    //          test function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
+    let set = RegexSet::new(&["secret"]).expect("compiles");
+    let lines: &[&[u8]] = &[b"clean line", b"the secret tail"];
+    let (buf, starts) = buffer_with_starts(lines, b"\n");
+    assert_eq!(set.line_matches(&buf, &starts), vec![(1, 0)]);
+    // What:    Same content, now with a terminator after the final line.
+    // Why:     The nearby assertion needs this note so the test records the exact
+    //          behavior being pinned.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    let mut with_newline = buf.clone();
+    with_newline.push(b'\n');
+    assert_eq!(set.line_matches(&with_newline, &starts), vec![(1, 0)]);
+}
+
+#[test]
+fn line_matches_skips_empty_lines() {
+    // What:    Empty lines (both bare `\n\n` runs and CRLF `\r\n\r\n` runs) contribute
+    //          no pairs and are never handed to the matcher; only the one populated
+    //          line reports.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the
+    //          test function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
+    let set = RegexSet::new(&["secret"]).expect("compiles");
+    let lines: &[&[u8]] = &[b"", b"a secret here", b"", b"", b"plain"];
+    let (buf, starts) = buffer_with_starts(lines, b"\n");
+    assert_eq!(set.line_matches(&buf, &starts), vec![(1, 0)]);
+    let (crlf_buf, crlf_starts) = buffer_with_starts(lines, b"\r\n");
+    assert_eq!(set.line_matches(&crlf_buf, &crlf_starts), vec![(1, 0)]);
+}
+
+#[test]
+fn line_matches_reports_every_rule_on_a_line() {
+    // What:    A line holding three distinct secrets yields one pair per matching
+    //          rule, in ascending rule order (the matches() order).
+    // Why:     The test uses this setup or assertion to pin the behavior named by the
+    //          test function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
+    let set =
+        RegexSet::new(&["AKIA[A-Z2-7]{4}", "secret", "ghp_[A-Za-z0-9]{4}"]).expect("compiles");
+    let lines: &[&[u8]] = &[b"AKIA2345 and a secret and ghp_ab12", b"clean"];
+    let (buf, starts) = buffer_with_starts(lines, b"\n");
+    assert_eq!(set.line_matches(&buf, &starts), vec![(0, 0), (0, 1), (0, 2)]);
+    assert_eq!(set.line_matches(&buf, &starts), expected_pairs(&set, lines));
+}
+
+#[test]
+fn line_matches_equals_per_line_matches_across_rulesets() {
+    // What:    Across the rulesets integration.rs exercises (leading-literal, a
+    //          line-start marker, a weak inner seed, seedless class runs, and a
+    //          multi-rule set) and both `\n` and CRLF terminators, line_matches equals
+    //          the per-line matches() oracle built from the known line contents.
+    // Why:     The test uses this setup or assertion to pin the behavior named by the
+    //          test function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
+    // What:    The final byte is escaped `\x50` ('P') so the source text carries no
+    //          contiguous AKIA-key literal, matching integration.rs and keeping the
+    //          repo's own forbidden-strings pre-commit gate clean; the runtime bytes
+    //          are the valid 20-byte key.
+    // Why:     The nearby value needs this note so the test records the exact bytes
+    //          being matched.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same assertion or value, with the important expectation named above.
+    // ```
+    let key: &[u8] = b"AKIAABCDEFGHIJKLMNO\x50";
+    let rulesets: &[&[&str]] = &[
+        &["AKIA[A-Z2-7]{16}", "ghp_[A-Za-z0-9]{36}"],
+        &["^(?:(?:PR)|(?:TS))[0-9]:", "AKIA[A-Z2-7]{16}", "[a-z]{3}Q\\~[a-z]{3}"],
+        &["[a-z]{20}", "[0-9]{18}"],
+        &["AKIA[A-Z2-7]{4}", "secret"],
+    ];
+    let lines: &[&[u8]] = &[
+        b"PR5: a ticket note",
+        key,
+        b"",
+        b"prefix abcQ~def suffix",
+        b"abcdefghijklmnopqrst",
+        b"123456789012345678",
+        b"nothing to flag here",
+        b"a secret and AKIA2345 together",
+        b"",
+        b"trailing content",
+    ];
+    let seps: [&[u8]; 2] = [b"\n", b"\r\n"];
+    for sep in seps {
+        for &rules in rulesets {
+            let set = RegexSet::new(rules).expect("compiles");
+            let (buf, starts) = buffer_with_starts(lines, sep);
+            assert_eq!(
+                set.line_matches(&buf, &starts),
+                expected_pairs(&set, lines),
+                "line_matches disagrees for rules {rules:?} sep {sep:?}",
+            );
+        }
+    }
+}

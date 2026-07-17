@@ -314,6 +314,79 @@ impl RegexSet {
         return lines.iter().map(|line| return self.is_match(line)).collect()
     }
 
+    /// Returns the `(line index, rule index)` pairs the lines in `buf` match.
+    ///
+    /// What: for each line, the byte range from its `starts` offset to the next
+    /// offset (or `buf`'s end for the last line), with the trailing newline and one
+    /// trailing carriage return excluded, runs [`RegexSet::matches`]; every matching
+    /// rule id becomes a pair, and an empty line (after that exclusion) yields none.
+    /// The line index is the 0-based position in `starts`, which the scanner maps to
+    /// its own 1-based output. Why: the scanner owns the whole file buffer with
+    /// newlines in place plus precomputed line starts, and findings need per-line
+    /// `rule=N` attribution; this deliberately naive per-line delegation is the
+    /// reference the single-sweep fast path is validated against.
+    ///
+    /// # Preconditions
+    ///
+    /// `starts` ascends, its first offset is 0, and every offset indexes within
+    /// `buf`. The caller guarantees this, so it is not checked at runtime.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function line_matches(buf: Uint8Array, starts: number[]): [number, number][] {
+    ///   // Rust body below is the implementation.
+    /// }
+    /// ```
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let set = forbidden_regex::RegexSet::new(&["AKIA[A-Z2-7]{4}", "secret"]).unwrap();
+    /// let buf = b"AKIA2345\nall clear\na secret here";
+    /// let starts = [0usize, 9, 19];
+    /// assert_eq!(set.line_matches(buf, &starts), vec![(0, 0), (2, 1)]);
+    /// ```
+    pub fn line_matches(&self, buf: &[u8], starts: &[usize]) -> Vec<(usize, usize)> {
+        let mut hits: Vec<(usize, usize)> = Vec::new();
+        for index in 0..starts.len() {
+            let start = starts[index];
+            // What:    Raw end is the next line's start, or the buffer end for the
+            //          last line; dropping one trailing `\n` then one trailing `\r`
+            //          recovers the line content, mirroring the scanner's split-on-`\n`
+            //          plus strip-one-`\r`.
+            // Why:     The terminator (and a CRLF carriage return) is not part of the
+            //          line the matcher sees.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+            // ```
+            let mut end = starts.get(index + 1).copied().unwrap_or(buf.len());
+            if end > start && buf[end - 1] == b'\n' {
+                end -= 1;
+            }
+            if end > start && buf[end - 1] == b'\r' {
+                end -= 1;
+            }
+            // What:    An empty line (after terminator exclusion) contributes no pairs
+            //          and is never handed to the matcher.
+            // Why:     The contract skips empty lines, and the engine expects a
+            //          non-empty line.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+            // ```
+            if end == start {
+                continue;
+            }
+            for rule in self.matches(&buf[start..end]) {
+                hits.push((index, rule));
+            }
+        }
+        return hits
+    }
+
     /// Benchmark hook: batch via one concatenated-buffer gate sweep.
     ///
     /// What: joins the lines with `\n` separators, sweeps the SIMD prefilter once over
