@@ -502,20 +502,35 @@ or,
 ## Tier 5: dependency and soundness stability
 
 24. Resolve the pre-1.0 dependency exposure.
-     `resharp = "0.6"`,
-     `gix-hash = "0.25"`,
+     `gix-hash = "0.25"` and `gix-index = "0.51"`
+    are `0.x` crates that break on minor bumps,
+     and the `gix` family churns frequently.
+    A 1.0 inherits their instability.
+     The former resharp exposure this item used to
+    track is retired:
+     the engine migration (issues #375 through #389) replaced
+    resharp with the in-house `forbidden-regex` engine
+    (`package/rust-module/forbidden-regex`),
+     removing the dependency entirely rather
+    than pinning around its panic shapes.
+     What replaces it is not an upstream
+    dependency risk but own-engine maturity:
+     `forbidden-regex` is itself a young,
+    actively developed `0.x` crate (published at `0.1.0`),
+     so the open question is
+    whether its compile-time soundness guarantees,
+     its fuzz coverage (#386),
      and
-    `gix-index = "0.51"` are all `0.x` crates that break on minor bumps,
-     and the `gix` family
-    churns frequently.
-     A 1.0 inherits their instability and the known resharp panic shapes
-    documented in `Cargo.toml`.
+    its differential validation against the old engine (#387) are enough to anchor
+    a `forbidden-strings` 1.0,
+     or whether `forbidden-regex` should reach its own
+    stability milestone first.
      Decide an explicit policy:
      pin tightly,
-     keep `Cargo.lock`
-    committed for the binary (already done),
-     and decide whether 1.0 should wait on the upstream
-    resharp fix tracked in issue #158.
+     keep
+    `Cargo.lock` committed for the binary (already done),
+     and decide whether
+    `forbidden-strings` 1.0 should wait on `forbidden-regex` maturing further.
 25. Close the open-endedness of the resharp pre-validators.
      `src/rules.rs:931` notes shapes "the
     pre-validator does not yet know,

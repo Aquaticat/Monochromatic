@@ -354,6 +354,72 @@ that rewrites flagged spans to the recommended punctuation
 before re-running the lint.
 Out of scope for the current investigation.
 
+## Post-migration note: forbidden-regex dialect
+
+Date:
+ 2026-07-17.
+ The engine migration (issues #375 through #389) replaced resharp with the
+in-house `forbidden-regex` engine (`package/rust-module/forbidden-regex`) after this
+investigation was written.
+ Two of the blockers documented above have different answers under
+the new dialect.
+
+### Bounded complements no longer need the literal-space workaround
+
+The "Resharp HIR limits inside `~(...)` complement bodies" section found that resharp's HIR
+translator rejected `\b`,
+ `\B`,
+ `^`,
+ and `$` whenever they appeared inside a `~(...)`
+complement body,
+ which forced the literal-space workaround (`~(.* npm .*)` instead of
+`~(.*\bnpm\b.*)`) and left tokens at the start or end of a line uncovered.
+ `forbidden-regex`
+carries no such restriction:
+ its supported-constructs list treats `^`,
+ `$`,
+ and `\b` as
+ordinary anchors usable anywhere the dialect allows one,
+ and its rejected-at-compile-time list
+(`package/rust-module/forbidden-regex/README.md`) does not single out complements.
+ A rule
+ported to the new dialect can use `~(.*\bnpm\b.*)` directly,
+ once its quantifiers are bounded
+(see the next point),
+ retiring both the literal-space workaround and the line-edge coverage
+gap it left.
+
+### Unbounded quantifiers must become bounded ones
+
+The rules recorded above (`/^.*[a-z] -- [a-z].*$&~(.*npm.*)&~(.*git.*)/` and similar) rely on
+unbounded `.*`.
+ `forbidden-regex` rejects `*`,
+ `+`,
+ and unbounded `{n,}` outright at compile
+time;
+ only bounded repetition (`a?`,
+ `a{3}`,
+ `a{3,6}`) is supported,
+ and a pattern that can
+match the empty string is also rejected,
+ so `~(Y)` alone still needs a concrete positive
+operand alongside it.
+ Porting any exclusion rule from this document to the new dialect means
+rewriting each `.*` as a bounded form such as `.{0,200}`,
+ sized to the longest line worth
+scanning,
+ not a mechanical find-and-replace of the operator syntax alone.
+
+Together,
+ these two points mean the "Exclusion list expansion" work above is worth
+revisiting under the new dialect:
+ the anchor restriction that motivated the literal-space
+workaround is gone,
+ but the unbounded-quantifier restriction is new (resharp allowed
+unbounded `.*`),
+ so any concrete rule text drafted from this document needs bounded
+repetition rather than the resharp-era shapes quoted verbatim.
+
 ## Reference
 
 - Resharp engine:
