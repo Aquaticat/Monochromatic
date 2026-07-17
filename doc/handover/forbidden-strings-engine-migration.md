@@ -8,21 +8,19 @@ Updated:
 - USER DIRECTIVE:
   do not launch any subagents until the user compacts and says to resume;
   current mode is discussing next steps with the user.
-- #376 state:
-  commit `e8763d56c` exists on LOCAL main only (1 ahead of origin).
-  The push is blocked by the repo's forbidden-strings commit/push gate:
-  the two ported rule files are not in `SCANNER_SELF_MATCH_PATHS`
+- #376 state RESOLVED into:
+  `e8763d56c` IS pushed (a later auto-push carried it;
+  the gate blocks at commit time, not push time;
+  measured `origin/main..main` = 0).
+  Its `Closes #376` fired;
+  the orchestrator REOPENED #376 with a comment listing the open items
+  (518 reshape, three-casing expansion, skip-list gate fix).
+  The user had AUTHORIZED the agent's raw-git commit bypass
+  (not real secrets, preserve trace, return ASAP).
+  STILL TODO: add both ported file paths to `SCANNER_SELF_MATCH_PATHS`
   (`package/git-policy/cli/src/optional/forbidden-strings/scan-candidates.ts`
-  line 26, canonical source; the running hook uses the BUILT dist bundle,
-  so after editing, rebuild the git-policy CLI).
-  The user AUTHORIZED the agent's raw-git guard bypass for the commit
-  (reasons: not real secrets, preserve trace, return ASAP).
-- Issue #376 is OPEN (verified), but the unpushed commit body carries
-  `Closes #376`, so pushing will auto-close it erroneously
-  (open items remain).
-  Agreed handling per GCA (never amend):
-  fix skip list, rebuild dist, push, let it auto-close, immediately REOPEN
-  with a comment naming the open items.
+  line 26) and rebuild the git-policy CLI dist so future commits touching
+  those files pass the gate without bypass.
 - #376 port results:
   261 regex rules ported, 260 compile;
   182 semantic changes:
