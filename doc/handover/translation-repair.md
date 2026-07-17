@@ -472,12 +472,26 @@ consumers and deployment are deliberately out of scope for now.
   is that the editor consistently produces a faithful-but-terse
   re-translation of a compact zh sentence, and vocabulary overlap
   against the wordier ORIGINAL EN under-credits it.
-  CONSEQUENCE: seededRepairRate is a LOWER BOUND on true repair
-  quality. OPEN METRIC QUESTION FOR THE USER: should restoration be
-  graded against the zh source's content (e.g. a bilingual checker
-  verdict or zh-anchored reference) instead of the deleted EN
-  wording's vocabulary? That is a definition-of-success choice, not
-  a measurement bug, so it waits for the user.
+  CONSEQUENCE: the lexical seededRepairRate is a LOWER BOUND on true
+  repair quality.
+  USER DECISION (2026-07-17): grade restoration against the Chinese
+  source. DONE (commit `81271a63d`): the headline seededRepairRate is
+  now a bilingual ensemble JUDGE anchored on zh (`restoration-judge.ts`,
+  `restoration-judge-wire.ts`). Judges read the original Chinese, the
+  deleted sentence as a content pointer, and the repaired text, then
+  rule restored/partial/absent, tolerating terse-but-faithful
+  rewording and requiring zh grounding. No single judge decides:
+  the roster (GLM-5.2, Qwen, Kimi by default) fans out with
+  retry-to-quorum and each seed's verdict is the conservative lower
+  median (an even split rounds toward the less-credited verdict).
+  Scorecard now reports judgedSeeds, restoredSeeds, partialSeeds,
+  seededRepairRate (strict, zh-anchored), seededRepairRateLenient
+  (restored+partial), plus the lexical* fields for comparison.
+  The lexical grader moved to `lexical-restoration.ts`; the benchmark
+  takes an injectable `judge` seam (tests stub it) and a
+  `judgeModelIds` roster. All prior run numbers (0.60 repair) were
+  LEXICAL; the judge rate supersedes them from the next live run and
+  the two rates print side by side so the gap is visible.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
