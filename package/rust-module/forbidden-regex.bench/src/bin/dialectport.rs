@@ -26,6 +26,11 @@ mod normalize;
 #[path = "../port.rs"]
 mod port;
 
+/// Registers the case-expansion module: the three-casing expander that rewrites inline `(?i)`
+/// scopes into case-sensitive dialect before normalization runs.
+#[path = "../caseexpand.rs"]
+mod caseexpand;
+
 /// Imports the strict ruleset compiler used as the fail-closed verifier.
 use forbidden_regex::RegexSet;
 
@@ -37,6 +42,9 @@ use std::process::ExitCode;
 
 /// Imports the dialect normalizer applied before wrapping.
 use crate::normalize::normalize;
+
+/// Imports the inline `(?i)` three-casing expander applied before normalization.
+use crate::caseexpand::expand_case;
 
 /// Imports the character-class span helper shared with the porter.
 use crate::port::class_end;
@@ -369,12 +377,15 @@ fn split_top_level(s: &str, delim: u8) -> Vec<String> {
 
 /// Normalizes and escape-fixes one operand into a dialect body, before branch wrapping.
 ///
-/// What: protects escaped backslashes, runs the shared normalizer (POSIX classes, inline
-/// case flags, capturing groups, quantifier bounding), restores backslashes, then fixes the
-/// remaining escapes and verbose whitespace. Why: `normalize`'s naive `\_` replacement would
-/// otherwise corrupt an escaped backslash that precedes an underscore.
+/// What: three-casing-expands inline `(?i)` scopes, protects escaped backslashes, runs the
+/// shared normalizer (POSIX classes, capturing groups, quantifier bounding; its case-flag
+/// strip is now a no-op because `expand_case` already consumed every `(?i)`), restores
+/// backslashes, then fixes the remaining escapes and verbose whitespace. Why: `expand_case`
+/// must see the raw case flags before normalization, and `normalize`'s naive `\_` replacement
+/// would otherwise corrupt an escaped backslash that precedes an underscore.
 fn dialect_body(operand: &str) -> String {
-    let protected = operand.replace("\\\\", SENTINEL);
+    let expanded = expand_case(operand);
+    let protected = expanded.replace("\\\\", SENTINEL);
     let normalized = normalize(&protected);
     let restored = normalized.replace(SENTINEL, "\\\\");
     return fix_escapes(&restored);
@@ -467,17 +478,31 @@ const CURL_PREFIX: &str = "\\bcurl\\b";
 /// Substring at which the curl rule's kept credential shape begins.
 const CURL_CREDENTIAL_MARKER: &str = "(?:-u|--user)";
 
-/// Ports one rule pattern, reshaping the curl rule per the settled decision.
+/// Source-pattern prefix identifying the single mongodb connection-string builtin rule.
+const MONGODB_PREFIX: &str = "\\b(mongodb";
+
+/// Credential-bearing core the mongodb rule is reshaped to: the scheme, bounded user and
+/// password phases, and the `@` delimiter. The delimiter-excluding user and password classes
+/// keep the phases deterministic, and dropping the non-secret host, port, replica-set, and path
+/// suffix removes the nested counters that determinized past the engine's DFA state cap.
+const MONGODB_CORE: &str = "\\bmongodb(?:\\+srv)?://[!-9;-~]{3,50}:[!-?A-~]{3,88}@";
+
+/// Ports one rule pattern, reshaping the curl and mongodb rules per the settled decisions.
 ///
-/// What: for the curl rule, drops the leading `\bcurl\b` context and the cross-line window
-/// and ports only the `(?:-u|--user)` credential shape onward; every other rule is ported
-/// whole. Why: rule 172 is the only cross-line rule, and the credential pair is the payload.
+/// What: for the curl rule, drops the leading `\bcurl\b` context and the cross-line window and
+/// ports only the `(?:-u|--user)` credential shape onward; for the mongodb rule, emits the
+/// credential-bearing core directly; every other rule is ported whole. Why: rule 172 is the
+/// only cross-line rule and its credential pair is the payload, and rule 518 otherwise
+/// determinizes past the state cap while its non-secret URI suffix carries no leak.
 fn port_pattern(pattern: &str) -> (String, bool) {
     if pattern.starts_with(CURL_PREFIX) {
         let idx = pattern
             .find(CURL_CREDENTIAL_MARKER)
             .expect("curl rule contains the -u/--user credential marker");
         return (faithful_port(&pattern[idx..]), true);
+    }
+    if pattern.starts_with(MONGODB_PREFIX) {
+        return (MONGODB_CORE.to_string(), true);
     }
     return (faithful_port(pattern), false);
 }
@@ -573,7 +598,7 @@ struct Ported {
     ported: String,
     /// Flags slot dropped from the source line (`m`/`x` no-ops).
     flags: String,
-    /// Inline case flag (`(?i)`, `(?i:`, `(?-i:`) stripped (case-sensitivity lost).
+    /// Inline case flag (`(?i)`, `(?i:`, `(?-i:`) three-casing-expanded (approximately preserved).
     case: bool,
     /// Unbounded quantifier bounded to the cap.
     quant: bool,
@@ -599,7 +624,9 @@ fn classify(line_no: usize, pattern: &str, flags: &str) -> Ported {
         ported,
         flags: flags.to_string(),
         case: pattern.contains("(?i)") || pattern.contains("(?i:") || pattern.contains("(?-i:"),
-        quant: has_unbounded_quant(pattern),
+        // The mongodb reshape drops (does not bound) its unbounded repeats, so it leaves the
+        // quantifier-bounding category even though its source carries `*`/`+`.
+        quant: has_unbounded_quant(pattern) && !pattern.starts_with(MONGODB_PREFIX),
         reshape,
         crlf: has_crlf_escape(pattern),
         zanchor: pattern.contains("\\z"),

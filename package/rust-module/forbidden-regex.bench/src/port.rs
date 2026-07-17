@@ -251,8 +251,8 @@ pub(crate) fn class_end(b: &[u8], open: usize) -> usize {
 /// Returns the index of the `)` matching the `(` at `open`.
 ///
 /// What: tracks paren depth while skipping escapes and classes. Why: recursion into
-/// a group needs its exact extent.
-fn matching_close(b: &[u8], open: usize) -> usize {
+/// a group needs its exact extent; shared with the case-expansion module.
+pub(crate) fn matching_close(b: &[u8], open: usize) -> usize {
     let mut depth = 0i32;
     let mut i = open;
     let mut in_class = false;
