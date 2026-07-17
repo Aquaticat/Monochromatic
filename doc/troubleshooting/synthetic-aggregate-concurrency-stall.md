@@ -30,9 +30,13 @@ how the documented per-pack concurrency is intended to be used.
 
 ## Account and plan context
 
-- Subscription: 5.5 packs at observation time.
-  5 additional packs were purchased on 2026-07-16;
-  the live `/v2/quotas` five-hour ceiling moved from 750 to 2750.
+- Subscription: 5.5 pack-equivalents throughout the observation window
+  (2026-07-16 through 2026-07-17 04:15 UTC):
+  one founder's pack (worth 1.5 normal packs)
+  plus 4 normal packs purchased on 2026-07-16.
+  The live `/v2/quotas` five-hour ceiling moved from 750 to 2750 with
+  that purchase,
+  consistent with 1.5 plus 4 pack-equivalents at 500 each.
 - Quota pressure is not a factor:
   immediately before the largest test the five-hour block read
   2748.5 of 2750 remaining,
@@ -42,8 +46,8 @@ how the documented per-pack concurrency is intended to be used.
   one concurrent request per model per subscribed pack,
   different models fully parallel,
   same-model excess queued server-side.
-  With 5.5 packs we expected about 5 concurrent requests per model
-  to be servable.
+  With 5.5 pack-equivalents we expected about 5 concurrent requests per
+  model to be servable.
 
 ## Client environment
 
