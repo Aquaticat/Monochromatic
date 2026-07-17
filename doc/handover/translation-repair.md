@@ -373,6 +373,14 @@ consumers and deployment are deliberately out of scope for now.
   a repeat offender worth an entry-specific look.
   Accumulated: 24/41 repair (0.59); post-remedy sample is one run,
   keep accumulating before crediting the rule.
+  run 9 (2026-07-17, 2068 s): repair 3/4, detection 4/4:
+  Rentable_A 2/2 with one PERFECT 7/7 restoration, a2581911655's
+  16-word needle passed 9/16 while its 18-word needle missed again
+  (6/18; 5/18 in run 1).
+  POST-REMEDY TALLY: 8/10 (0.80) across runs 8 and 9 versus 16/31
+  (0.52) pre-remedy; the anti-compression rule is holding.
+  Accumulated: 27/45 repair (0.60); detection 24/28 (0.86) over
+  graded runs.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
