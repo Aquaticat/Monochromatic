@@ -242,19 +242,46 @@ Updated:
   then refreshed the stale `FORBIDDEN_STRINGS_LIST` repo secret from it
   via a straight pipe (contents never displayed;
   `gh secret list` stamps 2026-07-17T11:40Z).
-- IN FLIGHT: #389 repo-side cutover (opus):
-  Leg A wire ported builtin as live `builtin-rules.txt`
-  (rename, build.rs, append.ported fold-or-delete,
-  git-policy skip-list including the stale algebra_tests entry,
-  full trusted-snapshot activation chain, gate canary after rebuild),
-  Leg B rewrite the CI materialize step per the de-root design
-  (no example file, `--builtin-rules` plus composed appendix+secret),
-  Leg C no-op-green and API-commit-red PR verifications with redaction
-  check,
-  Leg D runbook `doc/runbook/forbidden-strings-out-of-band-rules.md`,
-  `Closes #389` only after CI legs verify;
-  publish criterion already satisfied, noted not re-run.
-  Then #390 hygiene (minus the folded skip-list item), #381 decision.
+- #389 DONE and CLOSED (opus; the CUTOVER IS COMPLETE):
+  `570c267aa` (ported files promoted to live names;
+  append diff was exactly two no-op `/m` flags),
+  `2d3d1d8b0` (skip-list pruned to three entries, activation chain run,
+  non-vacuous gate canary),
+  `3ce0cffd9` (CI materialize rewritten per de-root design),
+  `a74cb9df7` (runbook, `Closes #389`).
+  Verification PRs: #394 no-op GREEN, #395 API-committed red case RED
+  with fully redacted output; both closed unmerged, branches deleted.
+  0.2.0 publish criterion was already satisfied; nothing re-published.
+- OPEN DECISIONS FOR THE USER after #389 (recorded 2026-07-17):
+  1. Push-to-main full-tree CI scan is legitimately RED with 7 redacted
+     findings: the 6 accepted over-matches documented by #387
+     (two planning docs, one troubleshooting doc, one package README)
+     plus ONE secret-ruleset match at
+     `package-deprecated/audit/oph-common-look-and-feel/src/index.html`
+     line 2657 (local rule compiled index 4;
+     fires only with the sensitive ruleset;
+     content deliberately not read by agents;
+     maintainer must inspect).
+  2. Same mechanism blocks committing any edit to
+     `doc/planning/forbidden-strings-rule-port-review.md`
+     (its rule 518 example strings self-match);
+     the #389 agent could not land its pointer note there.
+     Remediation options presented to the user,
+     ranking B > A > D > C:
+     B reshape doc examples to not match,
+     A extend a skip/exclusion surface,
+     D scanner allowlist feature (plan rejected),
+     C accept red.
+  3. #381 seedless-routing: orchestrator recommends close-wontfix on
+     the #380 numbers (batch path 0.92x of naive loop;
+     absolute gate scans sub-millisecond; budgets met with 7x headroom);
+     awaiting user word.
+- IN FLIGHT: #390 hygiene (sonnet):
+  mooted-issue closures #158/#240/#226 with specific comments,
+  #224 update, 1.0-checklist reshape, em-dash doc annotation,
+  port-bin deletion (dialectport.rs plus caseexpand.rs) with bench
+  build+clippy verification.
+  The migration's issue chain #375-#389 is otherwise COMPLETE.
 - RESOLVED plan open question:
   startup compilation is NOT viable
   (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
@@ -513,6 +540,18 @@ Filed, not started:
   tracing-subscriber redaction test beyond the letter of the spec,
   correct #217 partial-coverage judgment, disciplined scope on the
   pre-existing clippy debt).
+  #384 up to par (129 calls; one mid-build stall, nudged once).
+  #385 up to par (103 calls; per-file unreferenced-ness verification).
+  #386 up to par on output, stalled twice on background-wait
+  (the process lesson above; work itself excellent).
+  #387 exemplary (44 calls; calibrated numbering before trusting it,
+  pin proven positively, zero unexplained deltas).
+  #389 up to par and then some (92 calls;
+  isolated the index.html finding to the secret ruleset without
+  reading content, refused unilateral skip-list expansion,
+  flagged the review-doc friction instead of working around it).
+- Standing conclusion: no escalations needed anywhere in the
+  migration; sonnet for mechanical, opus for bounded judgment held.
 - No escalations recorded yet.
 
 ## Sequencing refinement discovered en route
