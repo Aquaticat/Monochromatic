@@ -29,8 +29,25 @@ The parse phase is now tolerant per user directive (HTML comments masked,
 plain-markdown fallback, findings not throws, commit `5762f4748`):
 the whole pinned corpus parses (92 pairs: 69 clean, 23 comment-masked,
 zero fallbacks, zero throws).
-Run 5 (small entries only) was in flight at last handover update;
-copy its scorecard here when done.
+Run 5 (six small entries, 0.7 to 2.5 KB translations, 12 seeds, 42 calls):
+ensembleRecall 0.5, but the decomposition is the real result.
+On every entry where at least one model completed, ensemble recall was
+100% (6 of 6 seed hits); the misses were entries where NO model produced
+output. Failure causes: a burst-502 storm (27 instant gateway rejections
+when 42 streams dispatched simultaneously; identical calls succeeded
+minutes earlier), one entry (BI4PBV) where all seven models hit the
+8-minute deadline, and one Nemotron 65_536-token blowout on a 1.6 KB
+entry. Per-model seededRecall where completions happened:
+Qwen3.6-27B 3/3 entries with 2/2 hits each, Kimi-K2.7-Code 2/2 entries
+perfect, GLM-5.2 1/1 perfect (9 claims, zero unresolved),
+GLM-4.7-Flash 1 completion with 0 hits (weak),
+MiniMax-M3 1 "completion" of 5 tokens (an empty-but-valid report,
+a precision pathology to watch). Net quota cost of the run: zero
+(regeneration covered it).
+Remediation landed as commit `1c7d22fd7`: the client retries transient
+429/502/503/504 up to twice with jittered exponential backoff.
+Run 6 (same entries, retries active, perModelConcurrency 2) was in
+flight at last handover update; copy its scorecard here when done.
 Update this document at every task completion or design pivot;
 it exists so auto-compaction cannot lose session state.
 
