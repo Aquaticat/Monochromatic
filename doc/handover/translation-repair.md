@@ -233,10 +233,22 @@ consumers and deployment are deliberately out of scope for now.
   chatJson success discriminant is `kind === 'ok'` (a first driver
   run wasted 5.6 quota units checking `'value'`),
   13 patch-operation model plus editable envelopes plus deterministic
-  apply guards (base node hashes, out-of-envelope and stale-hash
-  rejection, byte-exact footnote conventions),
-  14 editor stage (prompt and wire emitting patch ops, fail-closed
-  validation, omission repairs translate the missing zh),
+  apply guards, DONE (commit `15450a437`: envelopes merge overlapping
+  and touching accepted target spans, editors replace whole envelope
+  contents against echoed base hashes, gate rejects unknown/duplicate/
+  stale/drifted/unchanged as data, overlap throws),
+  14 editor stage, DONE (commit `249dafad1`: numbered regions with
+  current text and context, integer-referenced wire, resolver binds
+  numbers to envelopes so models never echo hashes). Live editor check
+  on the saved DarlinChit adjudication (2026-07-17): 39 accepted
+  issues merged to 10 envelopes, GLM-5.2 answered in 7 s, 10/10 edits
+  resolved and applied with zero findings and zero rejections; both
+  deleted needles restored at about two-thirds content-word overlap
+  (editor re-translates from zh, so byte-exact restoration is not
+  expected). DESIGN FACT: the quote-based critic wire anchors
+  omissions via the adjacent sentence, so omission repairs flow
+  through replacement envelopes, not zero-width insertions; zero-width
+  machinery stays for other producers.
   15 resolution check plus no-regression gate plus lexicographic
   candidate selection (unchanged translation always competes),
   16 `repairTranslation` end-to-end pure fn (chunk via
