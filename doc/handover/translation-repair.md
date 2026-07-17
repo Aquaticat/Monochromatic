@@ -364,6 +364,15 @@ consumers and deployment are deliberately out of scope for now.
   needles but not exclusive to them.
   Accumulated: 19/35 repair (0.54); detection 16/20 (0.80) over
   graded runs.
+  run 8 (2026-07-17, 1826 s, FIRST with the anti-compression rule):
+  repair 5/6 (0.83), detection 6/6, best multi-entry pass yet.
+  Long needles went 3/4 this run versus 6/16 pre-remedy:
+  chunchun_yudong's 17-word needle (longest graded) restored 12/17,
+  SevenBird's 14-word needle that failed 6/14 in run 5 passed 8/14.
+  The miss is s5ehfr9's 13-word needle again (2/13; 3/13 in run 3),
+  a repeat offender worth an entry-specific look.
+  Accumulated: 24/41 repair (0.59); post-remedy sample is one run,
+  keep accumulating before crediting the rule.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
