@@ -247,6 +247,26 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   (mid-stream connection resets) retried too, caller aborts always
   propagate untouched, and the policy is injectable
   (`retryPolicy: { limit, baseMs }`) so tests run on tiny backoffs.
+- Refined directive (2026-07-16, after the first concurrency-5 run failed):
+  probe/bench the fastest dispatch strategy for this plan and use that.
+  `bench-dispatch.ts` in the session scratchpad sweeps per-model
+  concurrency 1/2/3/5 over identical small-entry critic calls and reports
+  ok-per-minute plus forfeits per level; the milestone run uses the winner.
+- Deadline placement is load-bearing (commit `7c0e41532`): the first
+  concurrency-5 run armed every fan-out call's deadline at dispatch while
+  the limiter ran five per model, so queued calls burned their whole budget
+  waiting and 124 of 126 expired in one synchronized wall; the mass abort
+  then crashed Node via an orphaned HTTP/2 stream error
+  (`ERR_HTTP2_STREAM_ERROR`; Node 26 fetch speaks h2 to this origin).
+  Deadlines now arm inside the client's per-model slot
+  (`exchangeTimeoutMs` on `ChatTextRequest`, `call-deadline.ts`), so only
+  the exchange counts. Drivers keep a scoped `uncaughtException` guard
+  that swallows only `ERR_HTTP2_STREAM_ERROR`.
+- 35-stream probe (5 per model, tiny prompts): the dispatch burst drew 27
+  instant 502s that the transport retries fully absorbed, but service
+  under 35 streams is heavily stalled: one-character answers took
+  78 to 119 s and 14 of 35 calls missed a 120 s cap. Aggregate stream
+  count, not just per-model entitlement, governs real throughput.
 - Never set temperature either (user directive 2026-07-16): per the user,
   this is less a Synthetic API issue and more their upstream GPU providers
   plus inference pipelines plus the models' inherent issues; either way the
