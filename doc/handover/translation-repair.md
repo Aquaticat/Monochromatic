@@ -324,7 +324,15 @@ consumers and deployment are deliberately out of scope for now.
   2/2, s5ehfr9 1/2, TLL1122 0/2 while still shipping a 29/31-resolved
   repair; critic and panel each lost four voices once and retry round
   one recovered both fully.
-  Accumulated: 9/14 seeds restored (0.64).
+  run 4 (2026-07-17, 1679 s, no retries needed): 0.33 (2/6):
+  Katerina 2/2 (40/40 issues resolved), TLL1122 0/2 AGAIN (same
+  entry, same misses as run 3: reproducible entry-specific failure),
+  luxuanwen3 near-zero restoration (1/13 and 2/8 words) despite a
+  23/26-resolved repair.
+  Accumulated: 11/20 seeds restored (0.55).
+  Seed-detection grading (commit `a5c368a8a`) is active from run 5:
+  it splits panel detection misses from editor under-restoration
+  per seed, which TLL1122 and luxuanwen3 need.
   PATTERN: every missed seed so far is the LONGEST needle of its
   entry, restored only partially (5/18 and 5/14 words returned);
   long omissions come back compressed. Calibration candidates when
