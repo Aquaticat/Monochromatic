@@ -11,9 +11,11 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
 // Request and outcome shapes of the model-facing client. Outcomes are data:
 // refusals and schema mismatches are ordinary results of calling unreliable models,
 // never exceptions; only provider protocol failures throw.
-// Sampling knobs are absent by design: the provider mishandles temperature
-// and reasoning effort (errors, degraded or truncated output), so every call
-// runs on provider defaults. Do not add a temperature or effort field.
+// Sampling knobs are absent by design: the serving stack (upstream GPU
+// providers, inference pipelines, and the models themselves) does not honor
+// temperature or reasoning effort reliably (errors, degraded or truncated
+// output), so every call runs on defaults. Do not add a temperature or
+// effort field.
 
 /**
  * OpenAI-style structured-output constraint;

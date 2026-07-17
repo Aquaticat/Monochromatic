@@ -264,7 +264,8 @@ await describe({
         expect(isJsonRecord(body,) ? body.model : '',).toBe('hf:zai-org/GLM-4.7-Flash',);
         expect(isJsonRecord(body,) ? body.stream : false,).toBe(true,);
         expect(isJsonRecord(body,) ? body.max_tokens : 0,).toBe(2_048,);
-        // The provider mishandles sampling knobs; no call may carry one.
+        // The serving stack does not honor sampling knobs reliably;
+        // no call may carry one.
         expect(isJsonRecord(body,) && ('temperature' in body),).toBe(false,);
 
         /** Structured-output block decoded from the request body. */
