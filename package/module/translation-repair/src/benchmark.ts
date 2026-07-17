@@ -1,4 +1,5 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
@@ -144,9 +145,105 @@ function gradeHits(
 }
 
 /**
+ * Deadline handle armed for one model call.
+ */
+type CallDeadline = Disposable & {
+  /**
+   * Signal the call must honor;
+   * aborts on caller abort or deadline expiry, whichever fires first.
+   */
+  readonly callSignal: AbortSignal;
+};
+
+/**
+ * Arms one per-call deadline:
+ * a locally owned controller aborted by a plain timer or by the caller's
+ * signal, whichever fires first.
+ * `AbortSignal.any` with an `AbortSignal.timeout` source never aborts on
+ * Node 26.5.0, and a bare `Promise.race` deadline would orphan the hung
+ * exchange on its per-model limiter slot,
+ * so a plain timer aborts the controller and tears the stream down.
+ * Disposal clears the timer and detaches the caller-abort listener.
+ *
+ * @param signal - caller signal whose abort forwards into the call
+ *
+ * @param timeoutMs - deadline granted to this call
+ *
+ * @param label - names the call in the deadline's abort reason
+ *
+ * @mutates signal - one abort listener registers via
+ * signal.addEventListener and detaches on dispose via
+ * signal.removeEventListener, and forwarding an abort into the call
+ * controller retains the caller's reason per
+ * DOM commit 5796f716 AbortController abort steps retain reason
+ *
+ * @returns Call signal plus disposal of timer and listener
+ *
+ * @example
+ * ```ts
+ * using deadline = armCallDeadline({ signal, timeoutMs: 600_000, label: modelId, },);
+ * ```
+ */
+function armCallDeadline(
+  {
+    signal,
+    timeoutMs,
+    label,
+  }: ForeignBorrowed<{
+    readonly signal: AbortSignal;
+    readonly timeoutMs: number;
+    readonly label: string;
+  }>,
+): CallDeadline {
+  /**
+   * Controller owning this call's teardown.
+   */
+  const callController = new AbortController();
+
+  /**
+   * Forwards the caller's abort into this call so user steering always
+   * wins over an in-flight exchange.
+   */
+  function forwardCallerAbort(): void {
+    callController.abort(signal.reason,);
+  }
+  if (signal.aborted)
+    forwardCallerAbort();
+  signal.addEventListener(
+    'abort',
+    forwardCallerAbort,
+    { once: true, },
+  );
+
+  /**
+   * Timer forfeiting the call at its deadline.
+   */
+  const deadline = setTimeout(
+    function onDeadline() {
+      callController.abort(new Error(
+        `Timeout: ${label} exceeded its ${String(timeoutMs,)}ms deadline`,
+      ),);
+    },
+    timeoutMs,
+  );
+
+  return {
+    callSignal: callController.signal,
+    [Symbol.dispose](): void {
+      clearTimeout(deadline,);
+      signal.removeEventListener(
+        'abort',
+        forwardCallerAbort,
+      );
+    },
+  };
+}
+
+/**
  * Runs the critic benchmark: every model reviews every seeded entry.
- * Models run in parallel per entry (the client serializes per model);
- * entries run sequentially so quota pressure stays observable.
+ * Entries and models all run in parallel;
+ * the client's per-model limiter is the only concurrency bound,
+ * so wall time approaches the slowest single call.
  *
  * @param client - injected model client; tests pass recorded transports
  *
@@ -176,13 +273,13 @@ export async function runCriticBenchmark(
     modelIds,
     signal,
     perCallTimeoutMs = DEFAULT_PER_CALL_TIMEOUT_MS,
-  }: {
+  }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entries: readonly BenchmarkEntry[];
     readonly modelIds: readonly SyntheticModelId[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
-  },
+  }>,
 ): Promise<CriticBenchmarkResult> {
   /**
    * Logger pre-tagged with this function's name.
@@ -193,76 +290,73 @@ export async function runCriticBenchmark(
   },);
 
   /**
-   * Graded attempts accumulated entry by entry.
+   * Graded attempt groups, one per entry, resolved in parallel;
+   * flattening keeps records entry-major then model order.
    */
-  const attempts: CriticAttemptRecord[] = [];
+  const entryGroups = await Promise.all(entries.map(
+    async function attemptEntry(entry,): Promise<readonly CriticAttemptRecord[]> {
+      /**
+       * Seeded translation and its planted regions.
+       */
+      const {
+        seededText,
+        applications,
+      } = applySeededErrors({
+        text: entry.targetText,
+        specs: entry.seeds,
+      },);
 
-  for (const entry of entries) {
-    /**
-     * Seeded translation and its planted regions.
-     */
-    const {
-      seededText,
-      applications,
-    } = applySeededErrors({
-      text: entry.targetText,
-      specs: entry.seeds,
-    },);
+      /**
+       * Parsed pair every claim of this entry anchors against.
+       */
+      const documents = {
+        source: parseDocument({ text: entry.sourceText, },),
+        target: parseDocument({ text: seededText, },),
+      } as const;
 
-    /**
-     * Parsed pair every claim of this entry anchors against.
-     */
-    const documents = {
-      source: parseDocument({ text: entry.sourceText, },),
-      target: parseDocument({ text: seededText, },),
-    } as const;
+      /**
+       * Prompt shared by every model for this entry.
+       */
+      const messages = buildCriticMessages({
+        sourceText: entry.sourceText,
+        targetText: seededText,
+      },);
 
-    /**
-     * Prompt shared by every model for this entry.
-     */
-    const messages = buildCriticMessages({
-      sourceText: entry.sourceText,
-      targetText: seededText,
-    },);
+      /**
+       * Planted ids repeated on every record of this entry.
+       */
+      const plantedSeedIds = applications.map(function toId(application,) {
+        return application
+          .spec
+          .id;
+      },);
 
-    /**
-     * Planted ids repeated on every record of this entry.
-     */
-    const plantedSeedIds = applications.map(function toId(application,) {
-      return application
-        .spec
-        .id;
-    },);
+      rl.debug(
+        `${entry.entryId}: ${String(plantedSeedIds.length,)} seeds, ${
+          String(modelIds.length,)
+        } models`,
+      );
 
-    rl.debug(
-      `${entry.entryId}: ${String(plantedSeedIds.length,)} seeds, ${
-        String(modelIds.length,)
-      } models`,
-    );
+      return await Promise.all(
+        modelIds.map(async function attemptOne(modelId,): Promise<CriticAttemptRecord> {
+          /**
+           * Per-call deadline whose disposal clears its timer and listener
+           * once this attempt settles.
+           */
+          using deadline = armCallDeadline({
+            signal,
+            timeoutMs: perCallTimeoutMs,
+            label: modelId,
+          },);
 
-    /**
-     * One graded record per model, resolved in parallel.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- entries run sequentially by design so quota pressure stays observable
-    const entryRecords = await Promise.all(
-      modelIds.map(async function attemptOne(modelId,): Promise<CriticAttemptRecord> {
-        /**
-         * Per-call deadline joined with the caller's signal;
-         * expiry aborts only this attempt.
-         */
-        const callSignal = AbortSignal.any([
-          signal,
-          AbortSignal.timeout(perCallTimeoutMs,),
-        ],);
-
-        try {
+          try {
           /**
            * Outcome of this model's review.
            */
           const outcome = await client.chatJson({
             modelId,
             messages,
-            signal: callSignal,
+            signal: deadline.callSignal,
             temperature: 0,
             responseFormat: CRITIC_RESPONSE_FORMAT,
             validate: isCriticReportWire,
@@ -377,9 +471,14 @@ export async function runCriticBenchmark(
           };
         }
       },),
-    );
-    attempts.push(...entryRecords,);
-  }
+      );
+    },
+  ),);
+
+  /**
+   * Every graded attempt in entry-major then model order.
+   */
+  const attempts = entryGroups.flat();
 
   return {
     attempts,
