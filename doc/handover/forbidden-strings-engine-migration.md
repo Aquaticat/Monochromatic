@@ -368,9 +368,23 @@ Filed, not started:
 5. After #385:
    #386 (fuzz retarget) and #387 (differential validation plus perf)
    and #388 (git-policy parser, after #384 in fact) as crates free up.
-6. #389 cutover is ready-for-human:
-   CI secret and contributor local appendix are maintainer-only;
-   coordinate with the user, write the runbook via the runbook skill.
+6. #389 cutover reclassified ready-for-agent (user, 2026-07-17):
+   full AFK plan in the issue comment
+   (API-side commit for the red-case PR,
+   0.2.0 via the existing cargo-publish lane,
+   runbook still authored under `doc/runbook/`).
+   RESOLVED by user 2026-07-17:
+   the current gh secret is STALE;
+   the gitignored local rules file is authoritative,
+   so the cutover overwrites the secret from the ported local file
+   without preserving the old value.
+   AUTHORIZATION (user, 2026-07-17, supersedes the earlier no-read rule):
+   the agent may freely read and manipulate the gitignored local
+   ruleset files;
+   the constraint is human exposure, not agent context.
+   Contents must still never reach any human other than the maintainer:
+   no tracked files, no commit messages, no issue text, no pushed logs,
+   no CI output (scanner redaction invariant unchanged).
 7. #390 hygiene last.
 8. #380 (bench numbers) after #378;
    #381 (seedless routing) is bench-gated by #380 and may close wontfix.
