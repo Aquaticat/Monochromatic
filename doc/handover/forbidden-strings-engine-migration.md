@@ -111,13 +111,29 @@ Updated:
   with `Closes #376`, through the gate, NO bypass.
   The agent correctly refused to bypass and correctly stopped at the wall;
   the wall was the orchestrator's stale-trust gap, not agent error.
-- IN FLIGHT (dispatched 2026-07-17, parallel, disjoint crates):
-  #380 bench numbers (sonnet, bench sidecar;
-  instructed not to touch `dialectport.rs`/`caseexpand.rs`)
-  and #383 rule-compiler module (opus, scanner crate;
+- #380 DONE and CLOSED (sonnet; spot-checked):
+  `e24e0ac72` (pre-existing bench-crate implicit_return debt,
+  isolated and fixed separately),
+  `d949cb8c4` (bench with per-line oracle agreement check),
+  `90683cabc` (README numbers).
+  Measured (Ryzen 7 8700F, single-threaded, 1.16M lines, 261 rules):
+  per-line `matches()` loop 8.25M lines/s,
+  concat hook 5.86M lines/s,
+  `line_matches` 7.59M lines/s;
+  so `line_matches` is 0.92x the per-line loop and 1.29x the concat hook.
+  Reading for #381: the seedless and line-start groups still resolve
+  per-line, which is exactly the headroom #381 would target;
+  the absolute scanner workload (a few staged files per commit) makes
+  either path sub-millisecond, so #381 remains a judgment call for the
+  user at its queue position.
+  Note for #384: the settled decision to use the batch API stands;
+  the delta versus a hand-rolled per-line loop is 8% on a corpus far
+  larger than any commit delta.
+- IN FLIGHT: #383 rule-compiler module (opus, scanner crate;
   spec includes the `from_bytes` precompiled-load path per the resolved
   embed decision, the sentinel redaction test,
   and a read-#217-then-decide instruction on closing #217).
+  Its dependency commit `57a811aeb` is already on main.
   After #383: #384 (scan path), then #385 (teardown), sequential,
   scanner crate.
 - RESOLVED plan open question:
@@ -346,6 +362,9 @@ Filed, not started:
 - sonnet:
   #375 up to par (clean sweep, good scope note; 35 tool calls).
   #379 up to par (fuzz target, clean scope discipline; 34 tool calls).
+  #380 up to par (104 tool calls; oracle check before timing,
+  correctly isolated and separately committed pre-existing clippy debt,
+  honored the dialectport/caseexpand exclusion).
 - opus:
   #377 up to par (contract exactly as specced, spot-checked; 53 tool calls).
   #378 up to par (correctness argument articulated, boundary test added;
