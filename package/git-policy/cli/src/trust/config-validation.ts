@@ -252,47 +252,101 @@ function validatePolicy({
 }
 
 /**
+ * Mutable view at Valibot callback boundary.
+ */
+type MutablePolicySchema = {
+  -readonly [Key in keyof v.GenericSchema]: v.GenericSchema[Key]
+};
+
+/**
+ * Invokes plugin-defined schema at mutable validation boundary.
+ *
+ * @param optionsSchema - plugin-defined Valibot schema
+ *
+ * @param rawOptions - unvalidated plugin option value
+ *
+ * @mutates optionsSchema - v.safeParse plugin callback may mutate retained schema state
+ *
+ * @mutates rawOptions - v.safeParse plugin callback may mutate supplied option value
+ *
+ * @returns Valibot safe parse result
+ *
+ * @example
+ * ```ts
+ * parsePolicyOptions({ optionsSchema: v.unknown(), rawOptions: 'value' });
+ * ```
+ */
+function parsePolicyOptions({
+  optionsSchema,
+  rawOptions,
+}: {
+  optionsSchema: MutablePolicySchema;
+  rawOptions: unknown;
+},): v.SafeParseResult<MutablePolicySchema> {
+  return v.safeParse(
+    optionsSchema,
+    rawOptions,
+  );
+}
+
+/**
  * Parses one policy setting and options through declared schema.
  *
- * @param policy - registered policy
+ * @param policyName - effective registered policy ID
+ *
+ * @param defaultSeverity - severity used when setting is absent
+ *
+ * @param optionsSchema - optional plugin-defined Valibot schema
  *
  * @param setting - explicit setting or declaration default
+ *
+ * @mutates optionsSchema - v.safeParse plugin callback may mutate retained schema state
+ *
+ * @mutates setting - v.safeParse plugin callback may mutate supplied option value
  *
  * @returns active severity and parsed options
  */
 function parsePolicySetting({
-  policy,
+  policyName,
+  defaultSeverity,
+  optionsSchema,
   setting,
-}: Readonly<{
-  policy: RuntimePolicyDefinition;
+}: {
+  policyName: string;
+  defaultSeverity: PolicySeverity;
+  optionsSchema?: MutablePolicySchema;
   setting: unknown;
-}>,): Readonly<{
+},): Readonly<{
   severity: PolicySeverity;
   options: unknown
 }> {
   /**
+   * Effective explicit setting or declaration default.
+   */
+  const effectiveSetting = setting ?? defaultSeverity;
+  /**
    * Whether setting uses severity-plus-options tuple.
    */
-  const tupleSetting = isUnknownArray(setting,);
+  const tupleSetting = isUnknownArray(effectiveSetting,);
   /**
    * Safely narrowed tuple values.
    */
-  const settingValues: readonly unknown[] = tupleSetting ? setting : [];
+  const settingValues: readonly unknown[] = tupleSetting ? effectiveSetting : [];
   /**
    * Candidate severity value.
    */
-  const severity: unknown = tupleSetting ? settingValues[0] : setting;
+  const severity: unknown = tupleSetting ? settingValues[0] : effectiveSetting;
   /**
    * Candidate policy options.
    */
   const rawOptions: unknown = tupleSetting ? settingValues[1] : undefined;
   if (!isPolicySeverity(severity,))
-    throw new ConfigValidationError(`Policy ${policy.name} has an invalid severity.`,);
+    throw new ConfigValidationError(`Policy ${policyName} has an invalid severity.`,);
   if (tupleSetting && (settingValues.length !== 2))
-    throw new ConfigValidationError(`Policy ${policy.name} setting tuple must contain severity and options.`,);
-  if (policy.options === undefined) {
+    throw new ConfigValidationError(`Policy ${policyName} setting tuple must contain severity and options.`,);
+  if (optionsSchema === undefined) {
     if (tupleSetting)
-      throw new ConfigValidationError(`Policy ${policy.name} does not accept options.`,);
+      throw new ConfigValidationError(`Policy ${policyName} does not accept options.`,);
     return {
       severity,
       options: undefined,
@@ -301,12 +355,12 @@ function parsePolicySetting({
   /**
    * Valibot runtime options result.
    */
-  const parsed = v.safeParse(
-    policy.options,
+  const parsed = parsePolicyOptions({
+    optionsSchema,
     rawOptions,
-  );
+  },);
   if (!parsed.success)
-    throw new ConfigValidationError(`Policy ${policy.name} options failed Valibot validation.`,);
+    throw new ConfigValidationError(`Policy ${policyName} options failed Valibot validation.`,);
   return {
     severity,
     options: parsed.output,
@@ -317,6 +371,8 @@ function parsePolicySetting({
  * Validates imported default export and prepares policy runtime values.
  *
  * @param value - imported default export
+ *
+ * @mutates value - plugin-defined Valibot schemas may mutate their schema or option state
  *
  * @returns validated config plus ordered policy registry and parsed settings
  *
@@ -409,23 +465,25 @@ export function validateConfig(value: unknown,): ValidatedConfig {
   /**
    * Effective severity map prepared alongside options.
    */
-  const policySeverities = Object.fromEntries(registeredPolicies.map(function preparePolicy(policy,) {
+  const policySeverities: Record<string, PolicySeverity> = {};
+  for (const policy of registeredPolicies) {
     /**
      * Parsed setting for current policy.
      */
     const parsed = parsePolicySetting({
-      policy,
-      setting: settingsValue[policy.name] ?? policy.defaultSeverity,
+      policyName: policy.name,
+      defaultSeverity: policy.defaultSeverity,
+      ...(policy.options === undefined
+        ? {}
+        : { optionsSchema: policy.options, }),
+      setting: settingsValue[policy.name],
     },);
     policyOptions.set(
       policy.name,
       parsed.options,
     );
-    return [
-      policy.name,
-      parsed.severity,
-    ] as const;
-  },),);
+    policySeverities[policy.name] = parsed.severity;
+  }
 
   if (value.trust !== undefined) {
     assertRecord(value.trust,);

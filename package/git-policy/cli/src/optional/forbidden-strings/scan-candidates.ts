@@ -118,6 +118,73 @@ function scannerEligibleCandidates({
 }
 
 /**
+ * Mutable view at EventTarget listener boundary.
+ */
+type MutableAbortSignal = {
+  -readonly [Key in keyof AbortSignal]: AbortSignal[Key]
+};
+
+/**
+ * Owned cancellation signal and listener cleanup for scanner subprocess.
+ */
+type ScannerAbortRelay = Readonly<{
+  /**
+   * Owned signal safe to pass into external subprocess adapter.
+   */
+  signal: AbortSignal;
+  /**
+   * Removes forwarding listener from borrowed engine signal.
+   */
+  [Symbol.dispose]: () => void;
+}>;
+
+/**
+ * Relays borrowed engine cancellation into owned scanner signal.
+ *
+ * @param signal - borrowed engine cancellation signal
+ *
+ * @mutates signal - signal.addEventListener installs and signal.removeEventListener removes one abort listener
+ *
+ * @returns owned scanner signal with deterministic listener cleanup
+ *
+ * @example
+ * ```ts
+ * using relay = createScannerAbortRelay(new AbortController().signal);
+ * ```
+ */
+function createScannerAbortRelay(
+  signal: MutableAbortSignal,
+): ScannerAbortRelay {
+  /**
+   * Scanner-owned cancellation controller.
+   */
+  const controller = new AbortController();
+  /**
+   * One-way cancellation callback retaining no borrowed abort reason.
+   */
+  function forwardAbort(): void {
+    controller.abort();
+  }
+  if (signal.aborted)
+    controller.abort();
+  else
+    signal.addEventListener(
+      'abort',
+      forwardAbort,
+      { once: true, },
+    );
+  return {
+    signal: controller.signal,
+    [Symbol.dispose](): void {
+      signal.removeEventListener(
+        'abort',
+        forwardAbort,
+      );
+    },
+  };
+}
+
+/**
  * Runs external scanner over exact candidate bytes.
  *
  * @param executable - PATH-resolved command or configured executable path
@@ -132,6 +199,8 @@ function scannerEligibleCandidates({
  * @param candidates - exact Git candidates
  *
  * @param signal - engine cancellation signal
+ *
+ * @mutates signal - signal.addEventListener installs and signal.removeEventListener removes abort relay listener
  *
  * @returns redacted policy findings
  *
@@ -153,8 +222,12 @@ export async function scanCandidates({
   repositoryRoot: string;
   environment?: NodeJS.ProcessEnv;
   candidates: readonly CandidateFile[];
-  signal: AbortSignal;
+  signal: MutableAbortSignal;
 }>): Promise<readonly PolicyFinding[]> {
+  /**
+   * Scanner-owned cancellation signal detached from borrowed engine signal.
+   */
+  using abortRelay = createScannerAbortRelay(signal,);
   /**
    * Disposable exact scanner inputs.
    */
@@ -180,10 +253,10 @@ export async function scanCandidates({
   try {
     await nanoSpawn(
       executable,
-      scannerArguments,
+      [...scannerArguments,],
       {
         cwd: repositoryRoot,
-        signal,
+        signal: abortRelay.signal,
       },
     );
     return [];
