@@ -462,6 +462,22 @@ consumers and deployment are deliberately out of scope for now.
   (81 issues, the largest issue count yet) split 1/1.
   Accumulated: 55/91 repair (0.60); post-remedy 36/56 (0.64);
   detection 68/74 (0.92).
+  NEEDLE-PROPERTY ANALYSIS (2026-07-17, offline, structural only):
+  no single structural feature (quote marks, footnote refs,
+  parentheticals, digits, comma density, paragraph position,
+  document position) separates the stubborn misses from reliable
+  restorations; both classes span the same ranges. Combined with
+  the near-constant per-seed return ratios across independent runs
+  (3/13 four times, 7/18 twice, 4/15 twice), the leading hypothesis
+  is that the editor consistently produces a faithful-but-terse
+  re-translation of a compact zh sentence, and vocabulary overlap
+  against the wordier ORIGINAL EN under-credits it.
+  CONSEQUENCE: seededRepairRate is a LOWER BOUND on true repair
+  quality. OPEN METRIC QUESTION FOR THE USER: should restoration be
+  graded against the zh source's content (e.g. a bilingual checker
+  verdict or zh-anchored reference) instead of the deleted EN
+  wording's vocabulary? That is a definition-of-success choice, not
+  a measurement bug, so it waits for the user.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
