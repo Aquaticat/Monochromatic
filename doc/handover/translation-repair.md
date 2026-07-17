@@ -156,6 +156,37 @@ consumers and deployment are deliberately out of scope for now.
 
 ## Immediate next steps
 
+RESUME PROCEDURE (post-compaction, autonomous overnight loop).
+The user is running an unattended milestone-two accumulation loop and
+said "spare no expense, only stop when genuinely blocked; back in a few
+hours" (2026-07-17). Standing procedure, one run at a time (never
+concurrent; one stream per model is the fastest dispatch on this plan):
+1. Launch a budgeted benchmark pass:
+   `cd <worktree> && mise exec -- node <scratchpad>/repair-benchmark-run.ts`
+   where `<scratchpad>` is this session's scratchpad dir. The driver
+   uses a 25-minute run budget, 4-minute per-call deadlines, a 45-minute
+   outer safety net, oversamples 6 shuffled small entries (700 to 2500
+   chars, XIEPT2 and BI4PBV quarantined), and grades with the
+   zh-anchored judge as headline plus the lexical grader for comparison.
+2. On completion (task notification re-invokes you): read the run's
+   output file, extract SCORECARD and the per-entry `judgments`
+   (headline), `detection`, and `lexical` lines.
+3. Append the run to the milestone-two run log below, update the
+   JUDGE ACCUMULATED and detection tallies, commit with
+   `/usr/bin/git` (docs(*) message), push (auto-push on).
+4. Relaunch the next pass. Repeat until the user returns or a genuine
+   blocker appears.
+Artifacts persist in this session's scratchpad across compaction:
+`repair-benchmark-run.ts` (driver), `repair-benchmark-accumulator.jsonl`
+(one line per run with judge+detection+lexical per seed),
+`repair-benchmark-result-<ts>.json` (full per-run dumps).
+THE HEADLINE NUMBER is judge `seededRepairRate` (zh-anchored, strict
+restored/judged); `seededRepairRateLenient` adds partial;
+`lexicalRepairRate` is the retired vocabulary grader kept for contrast.
+Do NOT set temperature or reasoning effort; chat calls MUST stream.
+Open question already answered by the user: grade against the Chinese
+source (done). No open questions currently block the loop.
+
 1. MILESTONE ONE NUMBER IS IN (2026-07-17, 93-minute reference run,
    pre-budget code): `ensembleRecall` 0.981 (53 of 54 seeds) over 18
    entries spanning 714 to 5_826 chars, all seven models, one stream per
