@@ -11,8 +11,9 @@ run 2 died on the driver's single global 20-minute abort signal
 (fixed by per-call deadlines via `armCallDeadline`, commit `18a8e95ca`),
 run 3 aborted before any model call on `MdxParseError` from two corpus
 entries whose bodies contain HTML comments (see "Corpus facts").
-The user bought 5 additional packs (live five-hour ceiling now 2750,
-5.5 packs); the client's `perModelConcurrency` option and parallel
+The user bought 4 additional packs on 2026-07-16, joining a founder's
+pack worth 1.5 normal packs (live five-hour ceiling now 2750,
+5.5 pack-equivalents); the client's `perModelConcurrency` option and parallel
 benchmark entries exploit them.
 Run 4 (four entries including 8 to 21 KB translations, all seven models):
 ensembleRecall 0 over a seed universe of 8, but mechanically explained,
@@ -168,7 +169,8 @@ consumers and deployment are deliberately out of scope for now.
 3. Pack-scaled concurrency is DONE: `createSyntheticClient` takes
    `perModelConcurrency` (default 1; provider grants one concurrent request
    per model per subscribed pack), and benchmark entries run in parallel.
-   The user bought 5 more packs; live quota ceiling is 2750 (5.5 packs),
+   The user bought 4 more packs (joining a 1.5-pack-equivalent founder's
+   pack); live quota ceiling is 2750 (5.5 pack-equivalents),
    the driver floors to `perModelConcurrency: 5`.
 4. Driver env: the API key resolves only through mise sops, so run the
    scratchpad driver as
@@ -234,8 +236,10 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   $24/week credits regenerating 2% per ~3.4 hours;
   1 concurrent request per model per pack, different models fully parallel
   (same-model excess queues server-side, it does not error).
-  The user bought 5 more packs on 2026-07-16;
-  the live account now shows a 2750-request five-hour ceiling (5.5 packs).
+  The user bought 4 more packs on 2026-07-16, joining a founder's pack
+  worth 1.5 normal packs;
+  the live account now shows a 2750-request five-hour ceiling
+  (5.5 pack-equivalents at 500 each).
 - Never set reasoning effort on Synthetic calls (user directive 2026-07-16):
   non-default values sometimes error, sometimes produce low-quality or worse
   output. Default only; there is no safe latency knob there.
