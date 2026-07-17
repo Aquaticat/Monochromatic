@@ -1,7 +1,7 @@
 /**
  * Tests for the injected-transport Synthetic client:
  * request construction, contract enforcement, outcome-as-data JSON handling,
- * and per-model serialization.
+ * and per-model concurrency bounds.
  *
  * @module
  */
@@ -450,6 +450,71 @@ await describe({
           'hf:zai-org/GLM-4.7-Flash',
           'hf:zai-org/GLM-5.2',
         ],);
+
+        gate.resolve();
+        await Promise.all(inFlight,);
+        expect(entered,).toHaveLength(3,);
+      },
+    },),
+
+    it({
+      name: 'widens same-model concurrency to perModelConcurrency slots',
+      fn: async () => {
+        /** Gate holding every transport call open until released. */
+        const gate = Promise.withResolvers<void>();
+        /** Count of calls observed entering the transport. */
+        const entered: string[] = [];
+
+        /**
+         * Transport that records entry then waits for the gate.
+         *
+         * @param exchange - request whose model gets recorded
+         *
+         * @returns Recorded completion once the gate opens
+         *
+         * @example
+         * ```ts
+         * const client = createSyntheticClient({ apiKey: 'test-key', transport: gatedTransport, },);
+         * ```
+         */
+        async function gatedTransport(
+          exchange: TransportExchange,
+        ): Promise<TransportReply> {
+          /** Request body decoded to name the entering model. */
+          const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
+          entered.push(String(isJsonRecord(body,) ? body.model : 'unknown',),);
+          await gate.promise;
+          return { status: 200, bodyText: COMPLETION_BODY, };
+        }
+        /** Client granted two slots per model, like a two-pack account. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport: gatedTransport,
+          perModelConcurrency: 2,
+        },);
+
+        /** Three same-model calls in flight against two slots. */
+        const inFlight = [
+          client.chatText({
+            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+          },),
+          client.chatText({
+            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+          },),
+          client.chatText({
+            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+          },),
+        ];
+        await wait(SETTLE_MS,);
+
+        // Two slots admit two calls at once; the third queues until release.
+        expect(entered,).toHaveLength(2,);
 
         gate.resolve();
         await Promise.all(inFlight,);

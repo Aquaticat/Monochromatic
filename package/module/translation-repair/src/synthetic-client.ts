@@ -37,8 +37,9 @@ import {
 // model-content defects (refusal-shaped replies, schema mismatches) flow as data
 // because unreliable model output is an ordinary input to this pipeline. Every call
 // requires an AbortSignal so user steering can always abort in-flight fan-outs, and
-// requests to one model serialize locally (provider grants 1 concurrent request per
-// model; local serialization keeps queues short and aborts responsive).
+// requests to one model are bounded locally (provider grants 1 concurrent request
+// per model per subscribed pack and queues the excess server-side; a local bound
+// matching the pack count keeps queues short and aborts responsive).
 
 /**
  * Lowest HTTP status treated as success.
@@ -57,7 +58,8 @@ const l = tagged({ tag: 'translation-repair', },);
 
 /**
  * Builds one client over injected transport.
- * Requests to the same model serialize through a local single-slot limiter;
+ * Requests to the same model flow through a local limiter whose slot count
+ * matches the account's subscribed pack count;
  * different models run fully parallel, matching provider concurrency rules.
  *
  * @param apiKey - bearer token; never logged
@@ -67,6 +69,10 @@ const l = tagged({ tag: 'translation-repair', },);
  * @param chatBaseUrl - OpenAI-compatible base, overridable for tests
  *
  * @param quotasUrl - quota endpoint, overridable for tests
+ *
+ * @param perModelConcurrency - concurrent requests granted to each model;
+ * the provider serves one request per model per subscribed pack at full
+ * speed and queues the excess server-side, so match this to the pack count
  *
  * @returns Client surface with chatText, chatJson, and quotas
  *
@@ -81,15 +87,17 @@ export function createSyntheticClient(
     transport = fetchTransport,
     chatBaseUrl = SYNTHETIC_CHAT_BASE_URL,
     quotasUrl = SYNTHETIC_QUOTAS_URL,
+    perModelConcurrency = 1,
   }: {
     readonly apiKey: string;
     readonly transport?: ModelTransport;
     readonly chatBaseUrl?: string;
     readonly quotasUrl?: string;
+    readonly perModelConcurrency?: number;
   },
 ): SyntheticClient {
   /**
-   * Single-slot limiters keyed by model, created lazily;
+   * Per-model limiters keyed by model, created lazily;
    * bounded by catalog size.
    */
   const limiters = new Map<SyntheticModelId, LimitFunction>();
@@ -103,11 +111,11 @@ export function createSyntheticClient(
   };
 
   /**
-   * Returns the model's limiter, creating its single slot on first use.
+   * Returns the model's limiter, creating its slots on first use.
    *
    * @param modelId - model whose slot the exchange needs
    *
-   * @returns Single-slot limiter for the model
+   * @returns Limiter granting the model `perModelConcurrency` slots
    *
    * @example
    * ```ts
@@ -123,9 +131,9 @@ export function createSyntheticClient(
       return existing;
 
     /**
-     * Fresh single-slot limiter for first use of this model.
+     * Fresh limiter for first use of this model.
      */
-    const created = pLimit(1,);
+    const created = pLimit(perModelConcurrency,);
     limiters.set(
       modelId,
       created,
@@ -134,7 +142,7 @@ export function createSyntheticClient(
   }
 
   /**
-   * Free-text chat exchange; serialized per model.
+   * Free-text chat exchange; bounded per model.
    *
    * @param request - exchange to perform
    *
