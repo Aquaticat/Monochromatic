@@ -18,9 +18,9 @@ typescript(TS2322): Type 'number' is not assignable to type 'string'.
 The `typescript(TS...)` label makes the command look like ordinary type-aware linting has started replacing
 `tsc`.
 That reading is incomplete.
-The repository has separately enabled Oxlint's experimental type-check mode,
- and that mode only reports compiler
-errors for files Oxlint selected for linting.
+The repository has separately enabled Oxlint's experimental type-check mode.
+Its per-file syntactic and semantic diagnostics are restricted to files Oxlint selected for linting,
+while configuration and program-creation diagnostics follow a separate path.
 
 ## Root cause
 
@@ -141,9 +141,20 @@ for _, sf := range program.SourceFiles() {
 ```
 
 Oxlint therefore uses the full TypeScript program for resolution,
- but reports syntactic and semantic diagnostics
-for the lint-selected files.
+but reports per-file syntactic and semantic diagnostics for the lint-selected files.
 It does not automatically turn every file matched by `tsconfig.json` into a lint target.
+
+This selected-file boundary does not cover every diagnostic category.
+`internal/utils/create_program.go:57-116` separately returns configuration and program-creation diagnostics:
+
+```go
+if len(configParseResult.Errors) > 0 && !suppressProgramDiagnostics {
+```
+
+```go
+program_diagnostics := program.GetProgramDiagnostics()
+if len(program_diagnostics) > 0 && !suppressProgramDiagnostics {
+```
 
 That distinction matters in this repository.
 The TypeScript config includes `src/**/*.ts` at
@@ -162,6 +173,23 @@ The TypeScript config includes `src/**/*.ts` at
 
 A compiler error in one of those ignored `.ts` files can still be found by `lint:types` and missed by
 `lint:oxlint`.
+
+The existing TypeScript task also has a different execution contract from upstream's `tsc --noEmit` replacement
+example.
+`mise.toml:597-603` invokes the repository wrapper in build mode:
+
+```toml
+[task_templates."lint:types"]
+description = "TypeScript"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'tsc-filter', ['--build'])
+"""
+```
+
+Replacing that task requires checking build-mode and wrapper-policy parity,
+not only ordinary semantic diagnostic parity.
 
 ## Verification
 
@@ -276,10 +304,11 @@ mise run //package/<category>/<package>:lint:types
 ```
 
 after TypeScript edits,
- even when `lint:oxlint` already reported TypeScript diagnostics.
+even when `lint:oxlint` already reported TypeScript diagnostics.
 This preserves checks over every input selected by `tsconfig.json`,
- including inputs excluded by Oxlint's ignore
-patterns.
+including inputs excluded by Oxlint's ignore patterns.
+It also retains the repository's established `--build` wrapper behavior while Oxlint type checking remains
+experimental.
 
 Tradeoff:
  ordinary lint-selected `.ts` files are checked twice,
@@ -289,18 +318,22 @@ Tradeoff:
 
 Treat `typescript(TS...)` findings from `lint:oxlint` as real compiler errors and fix them immediately.
 For an ordinary lint-selected `.ts` file,
- Oxlint's type-check mode covers the syntactic and semantic checks that
-would otherwise appear in a `tsc --noEmit` pass.
+Oxlint's type-check mode provides compiler-style syntactic and semantic diagnostics using its bundled
+TypeScript Go backend.
+This is useful early feedback,
+not proof of complete parity with the repository's installed `tsc` executable.
 
 Tradeoff:
- a clean result is only evidence for the files Oxlint selected.
-It is not evidence that every `tsconfig.json` input was selected.
+a clean result is only evidence for the files Oxlint selected and the diagnostics that backend emitted.
+It is not evidence that every `tsconfig.json` input was selected or that `tsc --build` would pass.
 
 ### Retire `lint:types` only after proving scope parity
 
-A future consolidation can remove the separate task if all package configurations satisfy both conditions:
+A future consolidation can remove the separate task if all package configurations satisfy these conditions:
 
 - Oxlint selects every TypeScript input that `tsc` is expected to check.
+- Differential fixtures show diagnostic parity for the repository's compiler options and project layouts.
+- The migration preserves or deliberately retires the current wrapper's build-mode behavior.
 - No workflow relies on TypeScript emit or build-mode artifacts.
 
 The [Oxlint type-aware guide][oxlint type-aware guide]
@@ -310,9 +343,13 @@ a separate `tsc` run is unnecessary when Oxlint performs the same checks,
 but remains necessary when a monorepo relies on emitted output.
 
 Tradeoff:
- proving parity requires a repository-wide configuration audit and regression fixtures for ignored and
-nonstandard inputs.
-The present ignore mismatch fails that gate.
+proving parity requires a repository-wide configuration audit and differential regression fixtures for ignored
+inputs,
+nonstandard inputs,
+compiler options,
+project references,
+and build-mode behavior.
+The present ignore mismatch already fails that gate.
 
 ## What does not work
 
