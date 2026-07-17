@@ -340,10 +340,15 @@ consumers and deployment are deliberately out of scope for now.
   proved the block CORRECT (7365-char zh prose vs 1218-char en
   heading skeleton, a third still CJK): the guard works on real
   corpus data, and XIEPT2 joins BI4PBV in benchmark quarantine.
-  Accumulated: 12/25 seeds restored (0.48); the rate is settling
-  lower as samples diversify, and the misses now have named classes:
-  editor compression on long needles, critic detection on interior
-  omissions, and one correctly blocked non-translation.
+  run 6 (2026-07-17, 1813 s): repair 3/4, detection 4/4:
+  qiqi233345 2/2; SS3B_0016 both detected, the 12-word needle came
+  back 3/12 (editor compression on the longest needle again) while
+  the 11-word one restored 6/11.
+  Accumulated: 15/29 seeds restored (0.52); detection 6/10 over the
+  graded runs. The misses have named classes:
+  editor compression on long needles (detection fine), critic
+  detection on interior omissions (wangzihao980), and one correctly
+  blocked non-translation (XIEPT2, quarantined).
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
