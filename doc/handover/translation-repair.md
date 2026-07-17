@@ -154,12 +154,26 @@ consumers and deployment are deliberately out of scope for now.
 
 ## Immediate next steps
 
-1. Broadened scorecard run for the milestone go/no-go number: the loop is
-   polished (task 9) and the truncation retry landed (task 10, live
-   verification via `verify-truncation-retry.ts` in the scratchpad),
-   so the remaining step is rerunning the seeded benchmark across more
-   corpus entries and judging `ensembleRecall`. The user paused
-   broadening once before; confirm scale-up with them first.
+1. MILESTONE ONE NUMBER IS IN (2026-07-17, 93-minute reference run,
+   pre-budget code): `ensembleRecall` 0.981 (53 of 54 seeds) over 18
+   entries spanning 714 to 5_826 chars, all seven models, one stream per
+   model. Every one of the 126 calls ended `ok` (schemaOkRate 1.0 for
+   every model, zero refusals); the retry layer recovered all four
+   deadline forfeits (GLM-5.2, Flash, Qwen, MiniMax each once).
+   Per-model seeded recall: GLM-5.2 0.889, Qwen 0.889, Kimi 0.815,
+   gpt-oss 0.741, Nemotron 0.722, Flash 0.426, MiniMax 0.407;
+   the ensemble union is the design working as intended.
+   The single ensemble miss: one seed on one entry that every model
+   missed while all seven found that entry's other seeds; worth a look
+   during repair-phase design. Quota after the whole run: 2747.5/2750
+   (regeneration outpaced consumption).
+   MiniMax quirk: on 7 of 18 entries it returned near-empty reports
+   (5-6 completion tokens, zero claims) yet valid JSON; on others it
+   produced 10-19 resolved claims. Ensemble absorbs it; noted for
+   scheduler weighting later.
+   Future runs are 25-minute-budget runs via the updated
+   `broadened-benchmark.ts` (shuffled samples, coverage-reporting
+   scorecard).
 2. Per-call deadlines are DONE (commit `18a8e95ca`): `armCallDeadline` in
    `benchmark.ts` arms a plain-timer-driven `AbortController` per call and
    forwards caller aborts through a listener; disposal (`using`) clears both.
