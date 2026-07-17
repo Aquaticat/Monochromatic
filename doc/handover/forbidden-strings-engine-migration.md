@@ -84,6 +84,19 @@ Done:
   roughly 80 more implicit_return hits in test modules
   (lib-only mise clippy task misses them);
   now covered by #392.
+- #377 batch API contract.
+  Commit `b69611f78`, pushed, spot-checked.
+  API: `RegexSet::line_matches(buf, starts) -> Vec<(usize, usize)>`
+  in `src/regex/batch.rs`;
+  naive per-line `matches()` loop;
+  output ordering line-ascending, `matches()` order within a line;
+  preconditions documented not validated;
+  5 new tests (226 total).
+  Deviation note:
+  an AWS-shaped test literal tripped the forbidden-strings commit gate;
+  resolved with the byte-escape convention integration tests already use
+  (`\x50` final byte);
+  no git-policy files touched.
 
 Running (completion notifications arrive automatically):
 
@@ -96,19 +109,19 @@ Running (completion notifications arrive automatically):
   line-number alignment preserved,
   strict compile, zero drops,
   gitignored local files untouchable.
-- #377 batch API contract, opus.
-  Engine crate.
-  Contract pinned in the issue:
-  (buffer, ascending line starts) to (0-based line index, rule index) pairs,
-  CRLF exclusion,
-  final line unterminated,
-  naive `matches()` delegation as the future oracle.
+- #378 single-sweep fast path for `line_matches`, opus, engine crate.
+  Contract and ordering must not change;
+  seeded group only (seedless and line-start stay per-line, #381's call);
+  soft budget five hundred tool calls in prompt.
+- #379 differential fuzz target for `line_matches`, sonnet, fuzz sidecar.
+  Explicitly forbidden from editing the engine crate (occupied by #378);
+  soft budget in prompt.
 
 Filed, not started:
 
 - #392 test-module implicit_return sweep plus widening mise clippy to
   `--all-targets`;
-  blocked by #377 (same crate).
+  launch after #378 vacates the engine crate.
 - #391 escalation-policy persistence decision (needs-triage, human).
 
 ## Planned launch order
@@ -140,10 +153,12 @@ Filed, not started:
 ## Model-class ledger (for the escalation policy)
 
 - sonnet:
-  #375 up to par (clean sweep, good scope note).
-  No escalations recorded yet.
+  #375 up to par (clean sweep, good scope note; 35 tool calls).
+  #379 pending verdict.
 - opus:
-  #376, #377 pending verdicts.
+  #377 up to par (contract exactly as specced, spot-checked; 53 tool calls).
+  #376, #378 pending verdicts.
+- No escalations recorded yet.
 
 ## Verification duties that stay with the orchestrator
 
