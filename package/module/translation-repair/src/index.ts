@@ -45,7 +45,9 @@ export {
   isIssueCategory,
   isIssueSeverity,
   type IssueSeverity,
+  remapCategoryLeaf,
 } from './issue-taxonomy.ts';
+export { normalizePunctuation, } from './quote-normalize.ts';
 export {
   type AlignmentFinding,
   alignDocumentSections,
