@@ -577,12 +577,17 @@ source (done). No open questions currently block the loop.
   faithful-rewording under-credit pattern run 22 first exposed.
   Mizuki_Yuuki seed 0 (18 words) restored fully, a second long
   needle credited since the anti-compression prompt.
-  JUDGE ACCUMULATED: 21/24 (0.88) over 5 runs (22 to 26). Lexical
-  over the same 5 runs 17/24 (0.71): the judge sits ~17 points above
-  lexical, consistent with the under-crediting the switch was meant
-  to fix; sample growing, keep accumulating.
-  Detection 96/102 (0.94).
-  NEXT: continue the RESUME PROCEDURE loop (run 27 onward). The point
+  run 27 (2026-07-17, 2414 s): judge 5/6 (0.83, one partial),
+  lexical 3/6, detection 6/6; CuspariaKLSY, Hangmster,
+  CutOceanHeyFis1 all repaired (three dispatched, three
+  budget-skipped). Three more unanimous judge=restored on low overlap
+  (1/7, 6/14, 3/11 words). FIRST INVERSION: CuspariaKLSY seed 1 is
+  lexical=restored (4/8 words) but judge=partial against the zh
+  source; the judge discriminates in BOTH directions, catching a
+  half-restoration the word counter credited. Lenient rate still 1.0.
+  JUDGE ACCUMULATED: 26/30 (0.87) over 6 runs (22 to 27). Lexical
+  over the same 6 runs 20/30 (0.67). Detection 102/108 (0.94).
+  NEXT: continue the RESUME PROCEDURE loop (run 28 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
