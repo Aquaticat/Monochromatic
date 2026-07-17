@@ -1,7 +1,9 @@
 # Translation repair session handover
 
 Status:
-milestone one in progress.
+milestone one COMPLETE (ensembleRecall 0.981, 2026-07-17);
+repair phase (milestone two) started 2026-07-17, tasks 11 to 17.
+Milestone-one history below is kept for its evidence value.
 Tasks 1 (scaffold), 2 (document core), 3 (issue model and span validation),
 4 (Synthetic model client, streaming), and 6 (corpus reads) landed;
 task 5 (benchmark) code is complete and fully gated (lint 0/0, types clean,
@@ -163,9 +165,23 @@ consumers and deployment are deliberately out of scope for now.
    Per-model seeded recall: GLM-5.2 0.889, Qwen 0.889, Kimi 0.815,
    gpt-oss 0.741, Nemotron 0.722, Flash 0.426, MiniMax 0.407;
    the ensemble union is the design working as intended.
-   The single ensemble miss: one seed on one entry that every model
-   missed while all seven found that entry's other seeds; worth a look
-   during repair-phase design. Quota after the whole run: 2747.5/2750
+   The single ensemble miss, analyzed at repair-phase kickoff
+   (2026-07-17): wangzihao980 `seed/omission-1`, found by nobody.
+   Sharper than first recorded: on that entry six models found ONLY
+   `omission-2` and gpt-oss-120b found ONLY `omission-0` (its sole hit).
+   Structural facts (no content): the missed needle is a 73-char
+   interior sentence deleted from MID-paragraph (64 chars into its
+   line); both found seeds were list items whose deletion left a
+   countable zh/en structure asymmetry. Two consequences adopted:
+   interior-sentence omissions are the critic's weak class (future
+   prompt polish), and a real defect can arrive with exactly ONE
+   proposer, so adjudication judges claims on evidence and never gates
+   on corroboration count (confirms the settled panel design).
+   Unresolved-reason distribution across the run (233 rejected claims):
+   quote-outside-blocks source 90, quote-not-found source 39 / target
+   33, ambiguous-quote 39, empty-quote 27, two model category typos;
+   source-side anchoring is future critic polish, not a repair blocker.
+   Quota after the whole run: 2747.5/2750
    (regeneration outpaced consumption).
    MiniMax quirk: on 7 of 18 entries it returned near-empty reports
    (5-6 completion tokens, zero claims) yet valid JSON; on others it
@@ -198,6 +214,30 @@ consumers and deployment are deliberately out of scope for now.
    and the parameter must be `ForeignBorrowed`-marked (the
    `fetchTransport`/`chatJson` pattern); callers inherit the documented
    uncertainty without re-documenting.
+- REPAIR PHASE PLAN (tasks 11 to 17, dependency-ordered; user confirmed
+  repair phase as the next scope 2026-07-17):
+  11 claim aggregation (cross-model dedupe proposing clusters,
+  deterministic span-overlap plus category-family compatibility,
+  merges only PROPOSED),
+  12 adjudication panel (provenance-blind, vote states
+  supported/unsupported/ambiguous/source-defect/abstain, quorum,
+  evidence-based never corroboration-gated, disposes proposed merges),
+  13 patch-operation model plus editable envelopes plus deterministic
+  apply guards (base node hashes, out-of-envelope and stale-hash
+  rejection, byte-exact footnote conventions),
+  14 editor stage (prompt and wire emitting patch ops, fail-closed
+  validation, omission repairs translate the missing zh),
+  15 resolution check plus no-regression gate plus lexicographic
+  candidate selection (unchanged translation always competes),
+  16 `repairTranslation` end-to-end pure fn (chunk via
+  `alignDocumentSections`, ensemble-agreed critical non-translation
+  returns input unchanged),
+  17 milestone-two benchmark. MILESTONE-TWO GO/NO-GO NUMBER: seeded
+  repair rate, the fraction of seeded omissions whose repaired
+  candidate restores content matching the known deleted needle
+  (normalized similarity; we planted it, so ground truth is exact)
+  with ZERO out-of-envelope diffs. Reuses the seeded harness and the
+  25-minute budget discipline.
 - Task list lives in the session task tool;
   mirror of current state is in "Task state" below.
 
@@ -514,6 +554,18 @@ Deterministic core plus model stages, revised after an adversarial second-model 
    results land in `benchmark-result.json` there and must be copied into this doc.
 6. Pinned-SHA corpus reads from the user's local clone: done (`corpus-source.ts`;
    see corpus facts).
+7. Section chunking with total automatic alignment: done
+   (`chunk-document.ts`, commit `2f9b2c8af`).
+8. Tolerant parsing: done (commit `5762f4748`).
+9. Xu_Yushu polish loop: done (see status narrative).
+10. Truncation-shaped retry: done (`attempt-retry.ts`).
+11. Claim aggregation into merge-proposal clusters: repair phase, next.
+12. Adjudication panel with vote states and quorum: blocked by 11.
+13. Patch-operation model, envelopes, deterministic apply: parallel-ready.
+14. Editor stage (patch-op wire): blocked by 12 and 13.
+15. Resolution check, no-regression gate, candidate selection: blocked by 14.
+16. `repairTranslation` end-to-end: blocked by 15.
+17. Milestone-two benchmark (seeded repair rate): blocked by 16.
 
 ## Deliberately open
 
@@ -539,8 +591,9 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   show real damage (an `mdx-downgraded` finding is the signal to watch),
   and gate any fixed text on a strict re-parse plus a content-preservation
   check before it replaces the input.
-- Document chunking (zh-to-en aligned sections) is now the critical path
-  for the pipeline: run 4 proved whole large documents exceed the
-  65_536-token output ceiling on thinking models, and small units complete
-  in ~30 s. The `##` section structure of memorial pages is the natural
-  chunk boundary; alignment findings already have an issue state.
+- Document chunking (zh-to-en aligned sections) LANDED
+  (commit `2f9b2c8af`: `chunk-document.ts`, `alignDocumentSections`
+  pairing mirrored structures by index, degrading to proportional
+  monotone merging with findings, never refusing). Motivation stands:
+  run 4 proved whole large documents exceed the 65_536-token output
+  ceiling on thinking models, and small units complete in ~30 s.
