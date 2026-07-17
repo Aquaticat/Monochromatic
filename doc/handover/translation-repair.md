@@ -559,7 +559,14 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 8. Tolerant parsing: done (commit `5762f4748`).
 9. Xu_Yushu polish loop: done (see status narrative).
 10. Truncation-shaped retry: done (`attempt-retry.ts`).
-11. Claim aggregation into merge-proposal clusters: repair phase, next.
+11. Claim aggregation into merge-proposal clusters: done
+    (`aggregate-claims.ts`, commit `8818f27fd`: dedupe by
+    `computeIssueClaimId`, transitive same-family span-overlap clustering
+    via work-stack walk, zero-width anchors expand by
+    `CLUSTER_ANCHOR_TOLERANCE` 30, deterministic cluster ids over sorted
+    member ids, clusters in document order; nine unit tests, lint 0/0.
+    `format:oxlint` is the auto-fixer for the vertical stylistic rules;
+    run it instead of hand-splitting arguments).
 12. Adjudication panel with vote states and quorum: blocked by 11.
 13. Patch-operation model, envelopes, deterministic apply: parallel-ready.
 14. Editor stage (patch-op wire): blocked by 12 and 13.
