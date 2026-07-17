@@ -1,7 +1,7 @@
 # Handover: forbidden-strings engine migration orchestration
 
 Updated:
- 2026-07-16, after launching #377 and filing #391/#392.
+ 2026-07-16, after #378 landed and #392 launched.
 Assume nothing else survived compaction;
  this file plus the planning doc are the resume points.
 
@@ -97,6 +97,15 @@ Done:
   resolved with the byte-escape convention integration tests already use
   (`\x50` final byte);
   no git-policy files touched.
+- #378 single-sweep fast path.
+  Commit `4575442f3`, pushed.
+  `line_matches` now calls `sweep_candidates(buf, starts)` once on the
+  caller's buffer (zero copy);
+  private `resolve_matches(line, has_seed)` gates only the seeded group;
+  line-start and seedless groups untouched (deferred to #381);
+  ordering contract preserved;
+  new test proves a seed spanning a line boundary does not match;
+  227 tests pass, all gates clean.
 - #379 differential fuzz target.
   Commit `72e830f3d`, pushed.
   Target `fuzz_line_matches` plus `RulesetAndBuffer` generator
@@ -117,11 +126,10 @@ Running (completion notifications arrive automatically):
   line-number alignment preserved,
   strict compile, zero drops,
   gitignored local files untouchable.
-- #378 single-sweep fast path for `line_matches`, opus, engine crate.
-  Contract and ordering must not change;
-  seeded group only (seedless and line-start stay per-line, #381's call);
-  soft budget five hundred tool calls in prompt.
-(#379 moved to Done, see below.)
+- #392 test-module implicit_return sweep plus `--all-targets` clippy gate,
+  sonnet, engine crate.
+  Instructed to report (not fix or suppress) foreign lint families,
+  and to omit the `Closes` line if the widened gate cannot exit clean.
 
 Filed, not started:
 
@@ -163,8 +171,16 @@ Filed, not started:
   #379 up to par (fuzz target, clean scope discipline; 34 tool calls).
 - opus:
   #377 up to par (contract exactly as specced, spot-checked; 53 tool calls).
-  #376, #378 pending verdicts.
+  #378 up to par (correctness argument articulated, boundary test added;
+  30 tool calls).
+  #376 pending verdict.
 - No escalations recorded yet.
+
+## Sequencing refinement discovered en route
+
+#380 (bench coverage) is blocked in practice by #376, not only by #378:
+the bench sidecar crate is where #376's port bin lives,
+so #380 launches only after #376 completes.
 
 ## Verification duties that stay with the orchestrator
 
