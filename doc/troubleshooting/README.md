@@ -84,6 +84,14 @@ Security guardrail false positives and judge model selection:
    NixOS)
 - pi-budget-model fails to find a judge model when the active model is the latest major version
 
+### [Pi goal stale global blocker](pi-goal-stale-global-blocker.md)
+
+Retired `@narumitw/pi-goal` behavior and migration:
+
+- paused or interrupted goals block unrelated built-in and custom tools
+- cached package files are not active configuration
+- migrate globally to repository-owned `@monochromatic-dev/pi-goal`
+
 ### [C-Like Comment Syntax](c-like-comments.md)
 
 Issues with C-style comment syntax that affect multiple programming languages:
@@ -181,6 +189,8 @@ For common issues:
   ** → [Missing shebang](cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)
 - **pi-safeguard blocks every file?
   ** → [pathSignals false positive on /var/home](pi-safeguard.md#pi-safeguard-flags-every-file-under-varhome-as-a-system-path)
+- **Unrelated Pi tools blocked after `/goal` interruption?
+  ** → [Retired goal package blocker](pi-goal-stale-global-blocker.md)
 - **Touch gestures broken on iPhone?
   ** → [iOS Safari touch-action betrayal](ios-safari-touch.md)
 - **dprint exec plugin not running?

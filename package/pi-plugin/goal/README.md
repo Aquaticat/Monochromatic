@@ -1,6 +1,7 @@
 # @monochromatic-dev/pi-goal
 
-Private repository-owned Pi extension that keeps one explicit objective active until an independent reviewer approves completion.
+Private repository-owned Pi extension that keeps one explicit objective active
+until an independent reviewer approves completion.
 It is a stop hook,
 not a task list,
 background worker,
@@ -71,7 +72,8 @@ Pi-owned retries and overflow compaction finish before this decision.
 ## Independent completion review
 
 The primary model cannot approve its own completion claim.
-The extension selects the highest expected-cost authenticated model in effective Pi scope after excluding the active primary model.
+The extension selects the highest expected-cost authenticated model in effective Pi scope
+after excluding the active primary model.
 A complete reviewer attempt uses forced structured output,
 bounded direct-JSON retries,
 and a ten-second timeout.
@@ -111,34 +113,67 @@ mise run //package/pi-plugin/goal:verify:extension
 mise run //package/pi-plugin/goal:verify:pi-runtime
 ```
 
+Inspect global package settings before migration:
+
+```bash
+pi list
+```
+
+The retired source was already absent from the observed global settings on 2026-07-17.
+For that confirmed state,
+skip removal and install only the repository package.
+An unreferenced package directory can remain under Pi's global npm directory without being active.
+Do not delete installed-package directories by hand.
+
+If `npm:@narumitw/pi-goal` is listed on another machine,
+close running Pi processes and back up `~/.pi/agent/settings.json` before replacement.
+Remove only that source while Pi is stopped:
+
+```bash
+pi remove npm:@narumitw/pi-goal
+```
+
 Install globally from this checkout:
 
 ```bash
 pi install /var/home/user/Monochromatic/package/pi-plugin/goal
 ```
 
-Remove the retired package if it remains configured:
+Run `pi list` again.
+The repository path must appear once,
+`npm:@narumitw/pi-goal` must be absent,
+and every unrelated package entry must remain unchanged.
+Restart Pi after package settings change so no previous extension runtime remains loaded.
 
-```bash
-pi remove npm:@narumitw/pi-goal
-```
-
-Do not install the package in project-local `.pi/settings.json`.
+Do not use `pi install -l` or edit project-local `.pi/settings.json`.
 All state-mutating verification uses disposable agent directories and session files.
+See [the stale global blocker diagnosis](../../../doc/troubleshooting/pi-goal-stale-global-blocker.md)
+for the retired package's exact failure path and temporary recovery options.
 
 ## Rollback
 
-Remove the local package:
+Remove only the repository package:
 
 ```bash
 pi remove /var/home/user/Monochromatic/package/pi-plugin/goal
+pi list
 ```
 
-Reinstalling the retired npm package restores its stale global tool blocker and is not recommended.
-If rollback is required for diagnosis only:
+Restart Pi after removal.
+For the confirmed pre-migration state,
+this restores a package-free goal configuration while preserving unrelated global entries.
+It does not restore the retired command behavior.
+If another machine replaced a configured legacy package,
+restore its backed-up package list only while Pi is stopped and inspect every unrelated entry.
+
+Reinstalling `npm:@narumitw/pi-goal` restores a package with a goal-owned `tool_call` blocker
+and is not the supported rollback.
+For isolated diagnosis only,
+install it explicitly,
+reproduce in a disposable session,
+then remove it again:
 
 ```bash
 pi install npm:@narumitw/pi-goal
+pi remove npm:@narumitw/pi-goal
 ```
-
-Then run `pi list` and inspect the global package list.
