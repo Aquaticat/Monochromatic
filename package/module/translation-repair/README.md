@@ -8,31 +8,43 @@ and a repaired candidate translation.
 
 ## Contract
 
-The core export is a pure async function composed from pure stage functions:
+The core export is the batch driver over pure stage functions:
 
 ```ts
 import { repairTranslation, } from '@monochromatic-dev/module-translation-repair';
 
 const result = await repairTranslation({
-  original,
-  translated,
-  sourceLocale: 'zh',
-  targetLocale: 'en',
   client,
+  sourceText,
+  targetText,
+  models: {
+    criticModelIds,
+    panelModelIds,
+    editorModelId,
+    checkerModelIds,
+  },
+  signal,
 },);
 ```
 
-- `client` is an injected OpenAI-compatible model client;
+- `client` is an injected model client (`createSyntheticClient` or any
+  `SyntheticClient` implementation);
   the library performs no IO of its own.
-- `policy` is optional prose describing output conventions
-  (register, terminology, tense discipline);
-  the system functions without it using conservative defaults.
+- `models` names the role roster:
+  critic fan-out, provenance-blind adjudication panel,
+  editor, and resolution checkers.
+  A stage that loses voices retries exactly the lost ones until over
+  half its roster is heard.
 - The result is never an unqualified "corrected translation":
-  it carries a repaired candidate,
-  accepted, rejected, and unresolved issues,
-  and a completion status.
+  `repairedText` ships with a completion status
+  (`repaired`, `unchanged`, or `blocked-non-translation`),
+  every adjudicated issue with its resolution fate,
+  and degradation findings.
   When no candidate demonstrably beats the input,
-  the input is returned unchanged with unresolved issues.
+  the input is returned unchanged with its unresolved issues.
+- Translation policy files (register, terminology, tense discipline)
+  are deliberately open;
+  the system functions without them using conservative defaults.
 
 ## Design commitments
 
@@ -59,8 +71,17 @@ const result = await repairTranslation({
 
 ## Status
 
-Milestone one:
-deterministic core (document model, segmentation, footnote graph, span validation),
-injected model client,
-and the seeded-error benchmark harness whose scorecard
-gates all consensus-pipeline decisions.
+Milestone one (detection) is complete:
+the seven-critic ensemble reached 0.981 recall on seeded errors
+over the reference corpus,
+gated by the seeded-error benchmark harness.
+
+Milestone two (repair) is in progress:
+the full loop
+(critics, claim aggregation, adjudication panel, editable envelopes,
+editor through a deterministic apply gate, resolution checkers,
+lexicographic candidate selection)
+runs end to end live,
+and budgeted benchmark runs are accumulating the seeded repair rate
+(fraction of planted omissions whose distinctive vocabulary the
+repaired candidate restores).
