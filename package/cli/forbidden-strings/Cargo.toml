@@ -9,6 +9,11 @@ include = [
   # The embedded baseline: lib.rs include_str!s it at compile time, so the
   # published crate cannot build without it.
   "data/builtin-rules.txt",
+  # The ported baseline: build.rs compiles it into a serialized RegexSet embedded
+  # via include_bytes!, so the published crate cannot build without it either.
+  "data/builtin-rules.ported.txt",
+  # The build script precompiles the ported baseline at build time.
+  "build.rs",
   "Cargo.toml",
   "Cargo.lock",
   "README.md",
@@ -96,6 +101,16 @@ resharp = "0.6.13"
 # env-gated FORBIDDEN_STRINGS_DEBUG_* developer report dumps stay as direct stderr output.
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# The build script (`build.rs`) precompiles the ported builtin baseline into a
+# serialized `RegexSet` (`to_bytes`) at build time, embedded via `include_bytes!`
+# and reloaded at runtime through the validating `from_bytes` path. Compiling the
+# baseline at each startup is not viable (the migration measured tens of seconds),
+# so the cost is paid once here. Path plus published version, same as the runtime
+# dependency: the path wins for local builds, the version lets `cargo publish`
+# resolve it from crates.io.
+[build-dependencies]
+forbidden-regex = { path = "../../rust-module/forbidden-regex", version = "0.1.0" }
 
 # Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
 # "abort" + default-off overflow checks:
