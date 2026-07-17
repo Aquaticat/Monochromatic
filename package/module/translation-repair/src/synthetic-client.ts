@@ -332,9 +332,6 @@ export function createSyntheticClient(
           ...(request.maxTokens === undefined
             ? {}
             : { max_tokens: request.maxTokens, }),
-          ...(request.temperature === undefined
-            ? {}
-            : { temperature: request.temperature, }),
           ...(request.responseFormat === undefined
             ? {}
             : { response_format: request.responseFormat, }),
@@ -409,9 +406,6 @@ export function createSyntheticClient(
       ...(request.maxTokens === undefined
         ? {}
         : { maxTokens: request.maxTokens, }),
-      ...(request.temperature === undefined
-        ? {}
-        : { temperature: request.temperature, }),
       ...(request.responseFormat === undefined
         ? {}
         : { responseFormat: request.responseFormat, }),

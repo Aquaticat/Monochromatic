@@ -218,6 +218,13 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 - Never set reasoning effort on Synthetic calls (user directive 2026-07-16):
   non-default values sometimes error, sometimes produce low-quality or worse
   output. Default only; there is no safe latency knob there.
+- Never set temperature either (user directive 2026-07-16): the provider
+  does not handle temperature correctly. The knob was removed from
+  `ChatTextRequest` entirely so nothing can set it; a unit test asserts the
+  wire body carries no `temperature` key. All calls run on provider
+  defaults, which also means past temperature-0 runs never had the
+  determinism the setting promised (consistent with the observed
+  completion-vs-ceiling flips on identical input).
 - Live probe results (2026-07-16, after run 4):
   three concurrent tiny GLM-4.7-Flash calls all completed in 2.0 to 2.4 s,
   fully overlapped (no server-side serialization of dispatched requests);
