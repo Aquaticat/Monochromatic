@@ -265,6 +265,17 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   into usable same-model parallelism. Milestone runs use
   `perModelConcurrency: 1`. Full fact base for the provider report:
   `doc/troubleshooting/synthetic-aggregate-concurrency-stall.md`.
+- Benchmarks are time-boxed (user directive 2026-07-17: about 30 minutes
+  each, or they run too rarely to be useful; commit `275f7b6ab`).
+  `runCriticBenchmark` takes `runBudgetMs`: models work entry queues
+  sequentially, every attempt and retry is budget-gated, exchange
+  deadlines cap to the remaining budget, and cut attempts record as
+  `skipped`. The scorecard excludes skipped records from all rates and
+  recall denominators and reports `coverage`; drivers use
+  `runBudgetMs: 25 min` + `perCallTimeoutMs: 5 min` + a 45-minute outer
+  signal as safety net only (an outer abort throws away every in-memory
+  record), and shuffle their entry sample per run so repeated
+  budget-bound runs accumulate coverage.
 - Deadline placement is load-bearing (commit `7c0e41532`): the first
   concurrency-5 run armed every fan-out call's deadline at dispatch while
   the limiter ran five per model, so queued calls burned their whole budget
