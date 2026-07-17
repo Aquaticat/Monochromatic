@@ -144,16 +144,41 @@ Updated:
   and `builtin_ported_all_compile` takes ~21s
   (continuously verifies the ported baseline compiles;
   candidate for `#[ignore]` if suite runtime matters).
-- IN FLIGHT: #384 scan-path swap (opus, scanner crate).
-  Prompt adds the resolved embed decision the issue body predates
-  (build-time precompiled `RegexSet` via `to_bytes`/`include_bytes`/
-  `load_precompiled`; only local rules compile at startup),
-  instructs `Closes #217` plus `Closes #384` after a reachability check,
-  bounds the clippy debt (modified files clean, no wholesale sweep),
-  and warns that the release binary under construction is the same
-  binary the repo's commit gate executes.
-  After #384: #385 (teardown, includes widening the crate clippy task
-  and the gate going green), then #386/#387 parallel, #388 after #384.
+- #384 DONE and CLOSED, #217 CLOSED with it (opus; spot-checked):
+  `df1e9e006` (build-time precompiled baseline:
+  `build.rs` shares the stage-one parser by `#[path]` include,
+  serializes via `to_bytes` into `OUT_DIR`,
+  `lib.rs` embeds via `include_bytes!`,
+  runtime always `load_precompiled`, never recompiles the baseline)
+  and `0a15c5c5a` (line-based scan path on `line_matches`,
+  columnless `PATH:LINE rule=N` on stderr,
+  `catch_unwind` fail-closed kept, 226/226 tests).
+  Rule-id scheme changed: runtime rules `0..user_len`,
+  builtin offset above; gate runs builtin alone so offset 0.
+  Reachability check for #217 verified
+  (12 disclosure sites only in the now-dead resharp chain).
+  Agent stopped once mid-build awaiting its child;
+  one SendMessage nudge resumed it cleanly.
+- LIVE-GATE FINDING (orchestrator canary, post-#384):
+  the gate's finding path is format-broken until #388 lands:
+  a real finding now surfaces as `plugin-threw`
+  "Malformed forbidden-strings scanner output" instead of a redacted
+  finding.
+  FAIL-CLOSED holds (finding-bearing commits still blocked),
+  so no security hole, but #388 became urgent and was dispatched
+  immediately.
+- IN FLIGHT (parallel, disjoint areas):
+  #385 teardown (opus, scanner crate;
+  includes the issue-comment scope note to widen the clippy task and
+  green the gate, the release-binary caution,
+  and a warning that a plugin-threw block on its own commit means a
+  REAL finding, not gate breakage)
+  and #388 parser lockstep (opus, git-policy plugin package;
+  prompt carries the trusted-snapshot activation steps from the
+  troubleshooting doc, real-binary fixture generation,
+  and non-vacuous canary verification).
+  After both: #386/#387 parallel, then #389 cutover (ready-for-agent),
+  #390 hygiene, #381 decision.
 - RESOLVED plan open question:
   startup compilation is NOT viable
   (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
