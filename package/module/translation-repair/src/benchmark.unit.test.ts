@@ -36,8 +36,11 @@ import type {
 /**
  * Delay of the deliberately slow budget-test clients;
  * one call sinks the remaining budget under the dispatch floor.
+ * Deliberately long: the first dispatch must fit inside the budget
+ * headroom (half of this) even when a loaded full-suite run slows entry
+ * preparation, or the test flakes all-skipped.
  */
-const BUDGET_CALL_DELAY_MS = 60;
+const BUDGET_CALL_DELAY_MS = 2_000;
 
 /**
  * Invented zh source with a butterfly sentence the seed will delete from the
