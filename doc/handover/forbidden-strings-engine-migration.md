@@ -51,8 +51,11 @@ Assume nothing else survived compaction;
   but no overall effort budget.
 - Policy for every future launch:
   include a soft budget line in the prompt,
-  for example "if this exceeds roughly forty tool calls or you hit a wall,
-  stop and report state instead of pushing on".
+  for example "if this exceeds roughly five hundred tool calls or you hit a
+  wall, stop and report state instead of pushing on".
+  The user set the calibration:
+  forty is extremely low;
+  five hundred is about right.
 - If an agent looks stalled (no completion notification for an unreasonable
   span), inspect via `TaskList` and stop it with `TaskStop` rather than
   launching a duplicate into the same crate.
