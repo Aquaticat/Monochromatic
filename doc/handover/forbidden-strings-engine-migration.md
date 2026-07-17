@@ -30,13 +30,27 @@ Updated:
   16 quantifier bounds,
   1 reshape (rule 172).
   Review doc: `doc/planning/forbidden-strings-rule-port-review.md`.
-- DECIDED by user 2026-07-16:
-  case-insensitivity loss is okay and encouraged
-  (real credentials are case-exact;
-  a case-variant of a secret prefix is not a live credential).
-  No class-expansion follow-up unless #387's differential surprises.
-  Historical note on the superseded framing:
-  the 172-rule case-insensitivity loss.
+- DECIDED by user 2026-07-16 (corrected phrasing, supersedes an earlier
+  blanket-strip reading):
+  inline `(?i)` spans are NOT simply stripped.
+  Keyword literals under `(?i)` scope expand to a three-casing
+  non-capturing alternation: lowercase, Capitalized, UPPERCASE
+  (e.g. `(?:adobe|Adobe|ADOBE)`),
+  because people write those three shapes and never mixed-case `AdOBe_`.
+  Character classes under `(?i)` scope widen to both cases
+  (`[a-z]` to `[a-zA-Z]`).
+  Multi-run tokens capitalize per alphabetic run
+  (`api_key` yields `api_key|Api_Key|API_KEY`).
+  Applies to the 172 affected rules;
+  implement inside `dialectport.rs`, rerun, update the review doc
+  (these rules reclassify from semantically-changed to
+  approximately-preserving).
+- STANDING PREFERENCE (user, 2026-07-16):
+  lossiness in the over-matching direction is wanted, not tolerated;
+  a false positive on a base64 blob that happens to embed a secret shape
+  is acceptable ("I'd deserve it").
+  This ratifies aggressive context simplification generally and weighs
+  toward strip-after-@ for the mongodb rule (pi verdict pending).
   The planning doc's earlier "case-insensitivity is a non-issue" claim was
   WRONG: it measured only trailing `/i` flags and missed pervasive inline
   `(?i)` groups; the plan doc needs this correction.

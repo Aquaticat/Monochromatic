@@ -242,10 +242,17 @@ This is an engine API work item that lands before the scanner rewrite.
   the original claim here, that case-insensitivity was a non-issue,
   measured only trailing `/i` flags and missed pervasive inline `(?i)`
   groups: 172 of 259 builtin regex rules carry them.
-  The user ratified stripping them as okay and encouraged
-  (real credentials are case-exact),
-  so the port drops them;
+  The user's decision (corrected 2026-07-16, supersedes a brief
+  blanket-strip reading):
+  keyword literals under `(?i)` scope expand to a three-casing
+  alternation (lowercase, Capitalized, UPPERCASE),
+  classes under `(?i)` widen to both cases,
+  mixed-case shapes like `AdOBe_` deliberately unmatched;
   the #387 differential is the empirical check.
+  Companion standing preference:
+  over-matching lossiness is wanted
+  (a false positive inside a base64 blob is acceptable),
+  which licenses aggressive context simplification in the port.
 - `RegexSet::from_ruleset` is a delimiter-split convenience over `RegexSet::new`;
   the scanner's loader keeps owning the file format.
 - The eleven load-path leak sites of #217 are
