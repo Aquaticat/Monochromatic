@@ -4,11 +4,18 @@ Status:
 milestone one in progress.
 Tasks 1 (scaffold), 2 (document core), 3 (issue model and span validation),
 4 (Synthetic model client, streaming), and 6 (corpus reads) landed;
-task 5 (benchmark) has all code landed but its first real scorecard is still
-pending: run 1 died on fetch's headers timeout (fixed by streaming),
+task 5 (benchmark) code is complete and fully gated (lint 0/0, types clean,
+all unit tests pass, including the hang-forfeiture test):
+run 1 died on fetch's headers timeout (fixed by streaming),
 run 2 died on the driver's single global 20-minute abort signal
-(no per-call deadline existed; per-call deadlines are now built but blocked,
-see "Immediate next steps").
+(fixed by per-call deadlines via `armCallDeadline`, commit `18a8e95ca`),
+run 3 aborted before any model call on `MdxParseError` from two corpus
+entries whose bodies contain HTML comments (see "Corpus facts").
+The user bought 5 additional packs (live five-hour ceiling now 2750,
+5.5 packs); the client's `perModelConcurrency` option and parallel
+benchmark entries exploit them.
+Run 4 (four parseable entries, all seven models, pack-scaled concurrency)
+was in flight at last handover update; copy its scorecard here when done.
 Update this document at every task completion or design pivot;
 it exists so auto-compaction cannot lose session state.
 
@@ -42,32 +49,39 @@ consumers and deployment are deliberately out of scope for now.
   `7347a73f7` pinned local corpus reads (plus `resolveGit` barrel export),
   `4cd25ae95` seeded-error benchmark harness and scorecard,
   `8f209692a` streamed chat completions,
+  `2c90224ba` per-call deadlines (first, broken attempt via `AbortSignal.any`),
+  `18a8e95ca` pack-scaled concurrency plus working timer-driven deadlines,
+  `735e1b34e` seed derivation skips MDX/JSX delimiter-bearing sentences,
   plus docs commits after each task.
 
 ## Immediate next steps
 
-1. Per-call benchmark deadlines are written (`perCallTimeoutMs` on
-   `runCriticBenchmark`, default 600s, expiry forfeits one attempt as data,
-   caller aborts still rethrow; hang test included) but BLOCKED:
-   on Node 26.5.0 an abort listener on
-   `AbortSignal.any([controllerSignal, AbortSignal.timeout(ms),],)` never fires
-   (verified with a five-line isolated repro; the composite never aborts, so the
-   test hangs with "unsettled top-level await").
-   Fix directions: race the call against `withTimeout` from
-   `@monochromatic-dev/module-async-time` (UTL-preferred), or a per-call
-   `AbortController` aborted by a plain timer; do not use `AbortSignal.any`
-   with a timeout source on this Node.
-2. Rerun the real benchmark (driver `run-benchmark.ts` in the session scratchpad:
-   Huasheng + DarlinChit, 2 derived omission seeds each, all 7 models,
-   45-minute global signal, 8-minute per-call deadline) and copy the scorecard
-   (per-model rows plus `ensembleRecall`) into this document.
-3. Wall-time expectations: with 1.5-pack concurrency (1 request per model at
-   full speed per pack) and entries sequential, worst case is roughly
-   entries × per-call deadline.
-   If the user buys 5 packs, per-model concurrency rises to 5:
-   make the client's per-model `pLimit` limit configurable (currently
-   hard-coded 1) and run entries concurrently in the benchmark;
-   wall time then approaches the slowest single call instead of the sum.
+1. Copy the run-4 scorecard (per-model rows plus `ensembleRecall`) into this
+   document when the in-flight benchmark finishes, then judge the milestone
+   go/no-go number.
+2. Per-call deadlines are DONE (commit `18a8e95ca`): `armCallDeadline` in
+   `benchmark.ts` arms a plain-timer-driven `AbortController` per call and
+   forwards caller aborts through a listener; disposal (`using`) clears both.
+   Never compose `AbortSignal.any` with an `AbortSignal.timeout` source on
+   Node 26.5.0: the dependent signal never aborts (isolated repro confirmed;
+   single-source `AbortSignal.any([signal,],)` works fine, verified by probe).
+3. Pack-scaled concurrency is DONE: `createSyntheticClient` takes
+   `perModelConcurrency` (default 1; provider grants one concurrent request
+   per model per subscribed pack), and benchmark entries run in parallel.
+   The user bought 5 more packs; live quota ceiling is 2750 (5.5 packs),
+   the driver floors to `perModelConcurrency: 5`.
+4. Driver env: the API key resolves only through mise sops, so run the
+   scratchpad driver as
+   `cd <worktree> && mise exec -- node <scratchpad>/run-benchmark.ts`;
+   a bare `node` invocation dies on the missing env var.
+5. The `prefer-readonly-parameter-types` idiom learned for opaque DOM calls:
+   the `@mutates` contract must sit on the function DIRECTLY containing the
+   calls, name every flagged boundary verbatim on an unbroken line
+   (`signal.addEventListener`, `signal.removeEventListener`,
+   `DOM commit 5796f716 AbortController abort steps retain reason`),
+   and the parameter must be `ForeignBorrowed`-marked (the
+   `fetchTransport`/`chatJson` pattern); callers inherit the documented
+   uncertainty without re-documenting.
 - Task list lives in the session task tool;
   mirror of current state is in "Task state" below.
 
@@ -186,6 +200,19 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   (Vue pragma, `remarkMath` only, no `remark-gfm`).
   `[^1]` renders quasi-literally on the live site;
   emitted repairs must preserve the exact textual footnote convention byte-for-byte.
+- NOT every entry parses as MDX: of twelve sampled zh/en pairs, four failed
+  `parseDocument` (`interrgned`, `windward0032`, `XingZ60`, `mikaela_khara`),
+  at least one on an HTML comment (`<!--`, illegal in MDX) at body start.
+  Open question how upstream renders those; the pipeline needs a skip-or-
+  preprocess decision before corpus-wide runs.
+  Parse-clean large pairs besides Huasheng/DarlinChit:
+  `shihai4h`, `aiyysk`, `hulicaijia`, `NIGHT81473140`, `Xu_Yushu`, `zhangyubaka`.
+- Deletion seeds can break the seeded MDX parse when the deleted sentence
+  holds half of a paired construct (seen live: acorn "Unterminated string
+  constant" after a seed removed the closing half of an `{'...'}` expression).
+  `deriveOmissionSeeds` therefore skips delimiter-bearing sentences
+  (commit `735e1b34e`), and the driver preflights `parseDocument` over the
+  seeded text before spending quota.
 - `page.en.md` files are plausibly Google-Translate seeded
   (`google-translate-api-x` plus a `translate` script upstream) with uneven human editing.
 - Some memorial texts carry footnotes (`[^1]`, definitions `[^1]:[text](url)` link-wrapped);
