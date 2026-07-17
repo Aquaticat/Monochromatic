@@ -137,6 +137,10 @@ export {
   stripCodeFence,
   stripThinkBlock,
 } from './model-content.ts';
+export {
+  armCallDeadline,
+  type CallDeadline,
+} from './call-deadline.ts';
 export { createSyntheticClient, } from './synthetic-client.ts';
 export {
   DEFAULT_RETRY_POLICY,
