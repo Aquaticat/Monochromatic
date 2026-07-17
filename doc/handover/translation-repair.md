@@ -306,12 +306,28 @@ consumers and deployment are deliberately out of scope for now.
   hit max-lines).
   MILESTONE TWO IS NOT DONE (user directive 2026-07-17): a stage that
   loses voices must retry the lost ones until over half its roster is
-  heard (task 18); quota regenerates faster than every run spends, so
-  forfeiting voices cheaply leaves Synthetic capacity unused. After
-  retries land, budgeted runs accumulate the real seededRepairRate
-  (task 20). Follow-ups beyond that, none yet requested: canary
-  calibration feeding panel weights, per-model editor comparison in
-  candidate slates, PKG completeness (README, tests currency). MILESTONE-TWO GO/NO-GO NUMBER: seeded
+  heard, DONE (task 18, commit `46d716ffa`: `stage-quorum.ts`
+  `gatherStageVoices`, retries stop at quorum, unmet quorum proceeds
+  with a finding; wired through critic, panel, checker, and the
+  one-model editor roster). Budgeted runs now accumulate the real
+  seededRepairRate (task 20); per-run accumulator JSONL sits in the
+  session scratchpad.
+  Run log (25-minute budget each, retries active from run 2 on):
+  run 1 (2026-07-17, pre-retry): 0.75 (3/4 seeds), 2 entries
+  dispatched, both repaired.
+  run 2 (2026-07-17, retries active, 1964 s): 0.75 (3/4), entries
+  Hangmster (34/34 issues resolved, 1 of 2 seeds) and Everythings99
+  (27/29, 2 of 2); one panel round lost four voices and retry round
+  one recovered them.
+  Accumulated: 6/8 seeds restored (0.75).
+  PATTERN: every missed seed so far is the LONGEST needle of its
+  entry, restored only partially (5/18 and 5/14 words returned);
+  long omissions come back compressed. Calibration candidates when
+  data accumulates: widen omission envelopes, or grade long needles
+  by clause.
+  Follow-ups beyond that, none yet requested: canary calibration
+  feeding panel weights, per-model editor comparison in candidate
+  slates. MILESTONE-TWO GO/NO-GO NUMBER: seeded
   repair rate, the fraction of seeded omissions whose repaired
   candidate restores content matching the known deleted needle
   (normalized similarity; we planted it, so ground truth is exact)
