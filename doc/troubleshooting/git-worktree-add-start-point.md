@@ -178,6 +178,28 @@ if (!ret && opts->checkout && !opts->orphan) {
 
 A cli-git copy phase that runs after real Git returns therefore observes hook-created ignored files.
 
+### Git aliases can hide worktree creation from literal argv classification
+
+Git receives the alias name as its initial command and expands it internally.
+`git.c:368-455` looks up the first argument,
+splits a non-shell alias,
+and replaces that argument with the expansion:
+
+```c
+alias_command = args->v[0];
+alias_string = alias_lookup(alias_command);
+/* ... */
+count = split_cmdline(alias_string, &new_argv);
+/* ... */
+/* Replace the alias with the new arguments. */
+strvec_splice(args, 0, 1, new_argv, count);
+```
+
+A wrapper that checks only whether its raw subcommand is literally `worktree` cannot detect every worktree created by
+real Git.
+Shell aliases are broader still because Git executes their command through a shell.
+Outcome-based detection must compare the effective repository's registered worktrees before and after forwarding.
+
 ## Verification
 
 The installed executable reported:
@@ -253,6 +275,26 @@ The destination and source still had the same tracked commit.
 The differing ignored entry came from the hook,
 not from target-branch history.
 
+### Alias-created worktree catalog
+
+A fixture configured this ordinary Git alias:
+
+```console
+/usr/bin/git -C "$repo" config alias.newwt 'worktree add -b aliased'
+```
+
+The raw invocation contained no literal `worktree` token:
+
+```console
+/usr/bin/git -C "$repo" newwt "$wt"
+```
+
+Git created the linked worktree and `symbolic-ref --short HEAD` printed:
+
+```text
+aliased
+```
+
 ## Verified workarounds
 
 ### Restrict guaranteed same-tree copying to no-start-point branch creation
@@ -312,6 +354,12 @@ It is safe only after classifying the accepted argv shape.
 Matching tracked trees remove the target-history collision,
 but the verified `post-checkout` fixture still creates a differing ignored destination file.
 A concurrent process can do the same between checkout and copying.
+
+### Trigger only on a literal `worktree add` argv sequence
+
+The verified `newwt` alias creates the same worktree without exposing `worktree add` to a wrapper's initial argument
+parser.
+Literal classification misses aliases and any other forwarded command that creates a linked worktree as a side effect.
 
 ### Copy before Git creates the worktree
 
