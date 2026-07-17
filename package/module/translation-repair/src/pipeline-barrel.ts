@@ -100,6 +100,12 @@ export {
   type StageVoice,
 } from './stage-call.ts';
 export {
+  gatherStageVoices,
+  type HeardVoice,
+  STAGE_RETRY_ROUNDS,
+  type StageGather,
+} from './stage-quorum.ts';
+export {
   buildResolutionMessages,
   isResolutionReportWire,
   isResolutionVerdict,
