@@ -1,4 +1,5 @@
 import {
+  readdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
@@ -12,6 +13,7 @@ import {
 
 import {
   commitPaths,
+  copySummaryLines,
   createTempDirectory,
   initializeRepository,
   requireSuccess,
@@ -171,6 +173,80 @@ await describe({
           expect(await readFile(join(form.destinationRoot, 'state.txt',), 'utf8',),)
             .toBe('all forms\n',);
         }
+      },
+    },),
+
+    it({
+      name: 'skips synchronization under --no-worktree-copy and keeps value-position bytes',
+      fn: async () => {
+        await using fixture = await createTempDirectory();
+        /**
+         * Invoking source repository.
+         */
+        const repositoryRoot = join(fixture.path, 'repository',);
+        await initializeRepository(repositoryRoot,);
+        await writeFile(join(repositoryRoot, '.gitignore',), 'state.txt\n',);
+        await commitPaths({
+          repositoryRoot,
+          message: 'ignore worktree state',
+          paths: ['.gitignore',],
+        },);
+        await writeFile(join(repositoryRoot, 'state.txt',), 'opt out\n',);
+        /**
+         * Destination created with synchronization opted out.
+         */
+        const optedOutRoot = join(fixture.path, 'opted-out',);
+        /**
+         * Built-wrapper creation with the wrapper-only opt-out in flag position.
+         */
+        const optedOut = requireSuccess(await captureWrapper({
+          cwd: repositoryRoot,
+          args: [
+            'worktree',
+            'add',
+            '--no-worktree-copy',
+            '-b',
+            'opted-out',
+            optedOutRoot,
+          ],
+        },),);
+        expect(await readFile(join(optedOutRoot, '.gitignore',), 'utf8',),).toBe('state.txt\n',);
+        expect(await readdir(optedOutRoot,),).not.toContain('state.txt',);
+        expect(copySummaryLines(optedOut.stderr,),).toHaveLength(0,);
+        /**
+         * Destination whose lock reason carries the opt-out bytes in value position.
+         */
+        const valuePositionRoot = join(fixture.path, 'value-position',);
+        /**
+         * Built-wrapper creation where the opt-out bytes sit in a value position.
+         */
+        const valuePosition = requireSuccess(await captureWrapper({
+          cwd: repositoryRoot,
+          args: [
+            'worktree',
+            'add',
+            '--lock',
+            '--reason',
+            '--no-worktree-copy',
+            '-b',
+            'value-position',
+            valuePositionRoot,
+          ],
+        },),);
+        expect(await readFile(join(valuePositionRoot, 'state.txt',), 'utf8',),).toBe('opt out\n',);
+        expect(copySummaryLines(valuePosition.stderr,),).toHaveLength(1,);
+        /**
+         * Porcelain listing proving the lock reason retained the opt-out bytes.
+         */
+        const listing = await runRealGit({
+          cwd: repositoryRoot,
+          args: [
+            'worktree',
+            'list',
+            '--porcelain',
+          ],
+        },);
+        expect(listing.stdout,).toContain('locked --no-worktree-copy',);
       },
     },),
   ],

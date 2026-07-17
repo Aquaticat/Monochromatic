@@ -2,6 +2,11 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 
 import {
+  stripEscapeHatch,
+  WORKTREE_COPY_ESCAPE_HATCH,
+} from '../escape-hatch.ts';
+import { parseGlobalOptions, } from '../parse-global-options.ts';
+import {
   ForwardedGitWorktreeCopyError,
   WorktreeCopyError,
 } from './errors.ts';
@@ -28,6 +33,18 @@ import {
  * Logger root for real-Git worktree-copy lifecycle.
  */
 const l = tagged({ tag: 'cli-git', },);
+
+/**
+ * `git worktree add` options that consume the next argv token, so a
+ * value-position token spelled like the opt-out flag stays forwarded verbatim.
+ * `--orphan` is absent because current Git takes the orphan branch through
+ * `-b`/`-B` or the destination path, never as a separate `--orphan` value.
+ */
+const WORKTREE_COPY_VALUE_OPTIONS: ReadonlySet<string> = new Set([
+  '-b',
+  '-B',
+  '--reason',
+],);
 
 /**
  * Executes real Git while retaining nonzero subprocess result for post-processing.
@@ -141,6 +158,10 @@ function asWorktreeCopyError(error: unknown,): WorktreeCopyError {
  * Outcome-based administrative identity comparison covers ordinary aliases and
  * commands that register linked worktrees before returning nonzero.
  *
+ * Wrapper-only `--no-worktree-copy` in flag position after the subcommand and
+ * before Git's `--` pathspec separator skips synchronization for one
+ * invocation; the flag is stripped before real Git runs.
+ *
  * @param args - final transformed Git argv
  *
  * @param gitPath - absolute real-Git executable
@@ -168,6 +189,36 @@ export async function runGitWithWorktreeCopy({
     tag: runGitWithWorktreeCopy.name,
     l,
   },);
+  /**
+   * Subcommand layout consulted so the opt-out flag is recognized only in flag position.
+   */
+  const { subcommandIndex, } = parseGlobalOptions(args,);
+  /**
+   * Argv with flag-position opt-out tokens removed; identical when absent.
+   */
+  const optOutStrippedArgs = args[subcommandIndex] === undefined
+    ? args
+    : stripEscapeHatch({
+      args,
+      subcommandIndex,
+      separateValueOptions: WORKTREE_COPY_VALUE_OPTIONS,
+      escapeHatchToken: WORKTREE_COPY_ESCAPE_HATCH,
+    },);
+  if (optOutStrippedArgs.length !== args.length) {
+    rl.debug(
+      '--no-worktree-copy present in flag position, stripping and skipping ignored-state synchronization',
+    );
+    /**
+     * Real-Git execution with synchronization opted out.
+     */
+    const execution = await executeRealGit({
+      args: optOutStrippedArgs,
+      gitPath,
+    },);
+    if ('failure' in execution)
+      throw execution.failure;
+    return;
+  }
   /**
    * Effective repository observation before real Git.
    */

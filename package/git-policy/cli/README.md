@@ -40,6 +40,10 @@ settle,
 then installs that state into every new worktree.
 A bare repository has an empty source set.
 No repository-specific copy configuration exists.
+Pass wrapper-only `--no-worktree-copy` after the subcommand and before any `--` pathspec separator to skip
+synchronization for one invocation;
+the wrapper strips the flag before forwarding to real git.
+Throwaway worktrees on small or quota-bound filesystems are the intended use.
 
 The snapshot preserves regular files,
 directories,

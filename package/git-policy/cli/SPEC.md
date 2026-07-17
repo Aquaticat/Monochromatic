@@ -631,6 +631,12 @@ FIFOs,
 and device nodes are selected only to produce a copy failure without opening them.
 A bare repository has no source root and synchronizes an empty set.
 There is no repository configuration for this behavior.
+The wrapper-only flag `--no-worktree-copy` skips synchronization for one invocation.
+It is recognized only in flag position after the subcommand and before Git's `--` pathspec separator,
+is stripped before real Git runs,
+and leaves value-position tokens with the same bytes untouched.
+An opted-out invocation performs no journal recovery;
+pending journals wait for the next repository invocation without the flag.
 
 Before staging,
 exclude every registered worktree root strictly nested under the source.

@@ -8,6 +8,13 @@
 export const WORKTREE_ENFORCEMENT_ESCAPE_HATCH = '--no-enforce-worktree';
 
 /**
+ * Wrapper-only flag that skips ignored-state synchronization into worktrees
+ * created by one invocation. Stripped before forwarding to real git, which
+ * would otherwise reject it.
+ */
+export const WORKTREE_COPY_ESCAPE_HATCH = '--no-worktree-copy';
+
+/**
  * Pathspec separator after which git treats every remaining token as a path.
  * Wrapper-only options are not recognised past this token.
  */
@@ -33,6 +40,10 @@ type StripEscapeHatchOptions = {
    * Options that consume next argv token as value.
    */
   readonly separateValueOptions: ReadonlySet<string>;
+  /**
+   * Wrapper-only token removed from flag positions.
+   */
+  readonly escapeHatchToken: string;
 };
 
 /**
@@ -52,6 +63,8 @@ type StripEscapeHatchOptions = {
  *
  * @param separateValueOptions - Options whose next argv token is value.
  *
+ * @param escapeHatchToken - Wrapper-only token removed from flag positions.
+ *
  * @returns Git argv with flag-position escape-hatch tokens removed.
  *
  * @example
@@ -60,6 +73,7 @@ type StripEscapeHatchOptions = {
  *   args: ['stash', '--no-enforce-worktree', 'list'],
  *   subcommandIndex: 0,
  *   separateValueOptions: new Set(),
+ *   escapeHatchToken: '--no-enforce-worktree',
  * });
  * // => ['stash', 'list']
  * ```
@@ -68,6 +82,7 @@ export function stripEscapeHatch({
   args,
   subcommandIndex,
   separateValueOptions,
+  escapeHatchToken,
 }: StripEscapeHatchOptions,): readonly string[] {
   /**
    * Pre-subcommand region and subcommand kept verbatim so global options survive the strip.
@@ -91,6 +106,7 @@ export function stripEscapeHatch({
       ...filterFlagEscapeHatch({
         args: postSubcommandArgs,
         separateValueOptions,
+        escapeHatchToken,
       },),
     ];
   }
@@ -112,6 +128,7 @@ export function stripEscapeHatch({
     ...filterFlagEscapeHatch({
       args: wrapperArgs,
       separateValueOptions,
+      escapeHatchToken,
     },),
     ...pathspecArgs,
   ];
@@ -129,6 +146,10 @@ type FilterFlagEscapeHatchOptions = {
    * Options whose next argv token is value.
    */
   readonly separateValueOptions: ReadonlySet<string>;
+  /**
+   * Wrapper-only token removed from flag positions.
+   */
+  readonly escapeHatchToken: string;
 };
 
 /**
@@ -140,6 +161,8 @@ type FilterFlagEscapeHatchOptions = {
  *
  * @param separateValueOptions - Options whose next argv token is value.
  *
+ * @param escapeHatchToken - Wrapper-only token removed from flag positions.
+ *
  * @returns Argv slice with flag-position escape-hatch tokens removed.
  *
  * @example
@@ -147,6 +170,7 @@ type FilterFlagEscapeHatchOptions = {
  * filterFlagEscapeHatch({
  *   args: ['-m', '--no-enforce-worktree', '--no-enforce-worktree'],
  *   separateValueOptions: new Set(['-m']),
+ *   escapeHatchToken: '--no-enforce-worktree',
  * });
  * // => ['-m', '--no-enforce-worktree']
  * ```
@@ -154,6 +178,7 @@ type FilterFlagEscapeHatchOptions = {
 function filterFlagEscapeHatch({
   args,
   separateValueOptions,
+  escapeHatchToken,
 }: FilterFlagEscapeHatchOptions,): readonly string[] {
   /**
    * Current token at the head of args.
@@ -178,14 +203,16 @@ function filterFlagEscapeHatch({
       ...filterFlagEscapeHatch({
         args: afterValue,
         separateValueOptions,
+        escapeHatchToken,
       },),
     ];
   }
 
-  if (arg === WORKTREE_ENFORCEMENT_ESCAPE_HATCH) {
+  if (arg === escapeHatchToken) {
     return filterFlagEscapeHatch({
       args: remaining,
       separateValueOptions,
+      escapeHatchToken,
     },);
   }
 
@@ -194,6 +221,7 @@ function filterFlagEscapeHatch({
     ...filterFlagEscapeHatch({
       args: remaining,
       separateValueOptions,
+      escapeHatchToken,
     },),
   ];
 }

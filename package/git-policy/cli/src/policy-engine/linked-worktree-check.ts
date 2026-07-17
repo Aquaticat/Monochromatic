@@ -4,7 +4,10 @@ import {
   classifyEffectiveTarget,
   type EffectiveTarget,
 } from '../effective-target.ts';
-import { stripEscapeHatch, } from '../escape-hatch.ts';
+import {
+  stripEscapeHatch,
+  WORKTREE_ENFORCEMENT_ESCAPE_HATCH,
+} from '../escape-hatch.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
   cleanChangesWorktree,
@@ -280,6 +283,7 @@ export async function checkLinkedWorktree(
       args,
       subcommandIndex,
       separateValueOptions: region.separateValueOptions,
+      escapeHatchToken: WORKTREE_ENFORCEMENT_ESCAPE_HATCH,
     },);
   }
 
