@@ -35,6 +35,9 @@ Quote rules, strictly enforced by a machine:
 - A quote must stay inside one paragraph or block; never span a blank line.
 - For omitted content: sourceQuote is the untranslated original text, targetQuote is the translated sentence adjacent to where the content should have appeared.
 
+If the TRANSLATION is not a translation of the ORIGINAL at all (unrelated content, gibberish, a different document), report exactly one issue: category accuracy/non-translation, severity critical, targetQuote copied from the start of the TRANSLATION body. Do not enumerate further issues for such a pair.
+If only one section is unrelated while the rest translates the original, report accuracy/non-translation for that section alone, anchored by its quotes, alongside any other issues.
+
 Reply with ONLY a JSON object of shape {"issues": [...]}. No prose, no code fences.
 An empty issues array is a valid answer when the translation is faithful.`;
 
