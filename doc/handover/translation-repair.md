@@ -46,8 +46,29 @@ a precision pathology to watch). Net quota cost of the run: zero
 (regeneration covered it).
 Remediation landed as commit `1c7d22fd7`: the client retries transient
 429/502/503/504 up to twice with jittered exponential backoff.
-Run 6 (same entries, retries active, perModelConcurrency 2) was in
-flight at last handover update; copy its scorecard here when done.
+Run 6 (same entries, retries active, perModelConcurrency 2):
+zero gateway errors, ensembleRecall 0.667 (8 of 12 seeds), best single
+model gpt-oss-120b (7 of 12, schemaOk 0.667); BI4PBV timed out on all
+seven models for the second consecutive run (content-conditional thinking
+spiral, quarantined as data); `quote-crosses-blocks (source)` polluted
+nearly every attempt's unresolved reasons.
+USER PIVOT (2026-07-17): stop broadening; polish the whole loop
+end-to-end on `people/Xu_Yushu` first (task 9). Full-document Xu_Yushu is
+feasible live: GLM-5.2 64 s / 16_572 tokens / 30 issues, gpt-oss-120b
+23 s / 8_493 tokens / 11 issues, refuting document size as the run-4
+wall (spirals are content-conditional, see BI4PBV and Acheron).
+USER DIRECTIVE: the system must handle malformed or mismatched texts on
+its own, automatically; landed as tolerant parsing (commit `5762f4748`)
+plus total automatic section alignment (commit `2f9b2c8af`:
+`alignDocumentSections` pairs mirrored structures by index and degrades
+to proportional monotone merging with findings, never refusing).
+Xu_Yushu structural fact: both sides mirror exactly (48 nodes, identical
+kind sequences, 9 sections).
+Polish loop next: inspect per-model wire issues and resolution failures
+on Xu_Yushu (seeded + clean variants, material in the session scratchpad
+`polish-xu-result.json`), fix `quote-crosses-blocks` (candidate: split
+located multi-block regions into per-node spans; IssueClaim already
+supports multi-span), watch MiniMax-M3 empty-report pathology.
 Update this document at every task completion or design pivot;
 it exists so auto-compaction cannot lose session state.
 
