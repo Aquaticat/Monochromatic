@@ -1404,6 +1404,34 @@ Commit each stage before starting the next.
 
 Earlier commits must not close issue #360 while acceptance criteria remain incomplete.
 
+## Implementation result
+
+Implementation and global migration completed on 2026-07-17.
+The global Pi package list contains exactly one repository goal source:
+
+```text
+/var/home/user/Monochromatic/package/pi-plugin/goal
+```
+
+It contains no `npm:@narumitw/pi-goal` entry.
+A fresh global resource load found one `/goal` command,
+one `goal_complete` tool,
+and no goal-owned `tool_call` handler.
+Project-local `.pi/settings.json` remained unchanged at SHA-256
+`18e283b90ecb233a9f35bfa23febd572f16586323dfaf4000b39121e1e2fca89`.
+
+The targeted build,
+type lint,
+Oxlint,
+unit test,
+built-extension verification,
+disposable Pi-runtime verification,
+and Markdown lint tasks passed for the changed packages and documentation.
+The real `AgentSession` regression exercised built-in and custom tools after abort,
+settled error,
+replacement,
+and clear.
+
 ## Explicit non-goals
 
 Do not add:
