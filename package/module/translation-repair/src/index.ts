@@ -30,12 +30,40 @@ export {
   type SplitMdxDocument,
 } from './front-matter.ts';
 export {
+  type AdjudicatedIssue,
+  type AdjudicationConfig,
+  type AdjudicationStatus,
+  type BallotVerdict,
+  DEFAULT_ADJUDICATION_CONFIG,
+  isPanelVoteState,
+  PANEL_VOTE_STATES,
+  type PanelBallot,
+  type PanelVoteState,
+  type VoteTally,
+} from './adjudicate-model.ts';
+export {
+  type AdjudicationPromptPlan,
+  buildAdjudicationMessages,
+} from './adjudicate-prompt.ts';
+export {
+  ADJUDICATION_RESPONSE_FORMAT,
+  isPanelBallotWire,
+  type PanelBallotWire,
+  type PanelGroupWire,
+  type PanelVerdictWire,
+  resolvePanelBallot,
+} from './adjudicate-wire.ts';
+export {
   type AggregatedClaim,
   aggregateClaims,
   type ClaimAggregation,
   type ClaimCluster,
   CLUSTER_ANCHOR_TOLERANCE,
 } from './aggregate-claims.ts';
+export {
+  type AdjudicationResult,
+  tallyVotes,
+} from './tally-votes.ts';
 export {
   computeIssueClaimId,
   type DocumentSide,
