@@ -167,17 +167,30 @@ Updated:
   FAIL-CLOSED holds (finding-bearing commits still blocked),
   so no security hole, but #388 became urgent and was dispatched
   immediately.
-- IN FLIGHT (parallel, disjoint areas):
-  #385 teardown (opus, scanner crate;
-  includes the issue-comment scope note to widen the clippy task and
-  green the gate, the release-binary caution,
-  and a warning that a plugin-threw block on its own commit means a
-  REAL finding, not gate breakage)
-  and #388 parser lockstep (opus, git-policy plugin package;
-  prompt carries the trusted-snapshot activation steps from the
-  troubleshooting doc, real-binary fixture generation,
-  and non-vacuous canary verification).
-  After both: #386/#387 parallel, then #389 cutover (ready-for-agent),
+- #388 DONE and CLOSED (opus; orchestrator canary re-verified):
+  `b9b43ee60` (parser: `ScannerHit` drops columns,
+  `lastIndexOf`-based split so colon-bearing paths stay safe,
+  malformed lines fail closed redacted),
+  `215957fba` (file-enforcer regen),
+  `68cf30c98` (empty marker commit with `Closes #388` after
+  trust-refresh and live verification;
+  `--no-enforce-only` used correctly, the sanctioned empty-commit case).
+  Agent followed the trusted-snapshot activation steps and verified
+  non-vacuously;
+  orchestrator canary confirms
+  `Forbidden string matched at line 1 (rule 58).`
+  Real-binary integration test committed
+  (spawns the release scanner, runtime-built token, no leak).
+  NOTE for #389's local-appendix port:
+  rule indexes are environment-dependent
+  (canary rule=58 under repo env versus rule=20 embedded-baseline-only),
+  which means the gate scan DOES load a local rules file first and
+  offsets the builtin baseline;
+  the local file exists and is live in the gate path.
+- IN FLIGHT: #385 teardown (opus, scanner crate);
+  its main deletion commit `a85bf020f` already on main,
+  README/version/gate work presumably continuing.
+  After it: #386/#387 parallel, then #389 cutover (ready-for-agent),
   #390 hygiene, #381 decision.
 - RESOLVED plan open question:
   startup compilation is NOT viable
