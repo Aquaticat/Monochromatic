@@ -349,6 +349,14 @@ consumers and deployment are deliberately out of scope for now.
   editor compression on long needles (detection fine), critic
   detection on interior omissions (wangzihao980), and one correctly
   blocked non-translation (XIEPT2, quarantined).
+  QUANTIFIED (over all 29 graded seeds): needles over eleven
+  distinctive words restore at 6/16 versus 9/13 for shorter ones;
+  missed seeds average a 0.25 return ratio versus 0.67 for restored
+  ones, so misses are real failures, not threshold noise.
+  REMEDY SHIPPED (commit `a69cfdbe1`): the editor prompt now forbids
+  summarizing or compressing omitted content ('a short paraphrase of
+  a long omission is not a fix'); run 7 predates it, run 8 onward
+  measures it.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
