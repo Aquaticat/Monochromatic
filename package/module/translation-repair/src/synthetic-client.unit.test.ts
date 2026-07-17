@@ -12,6 +12,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
   MalformedCompletionError,
@@ -33,6 +34,17 @@ import type {
  * Milliseconds granted for queued microtasks and limiter slots to settle.
  */
 const SETTLE_MS = 10;
+
+/**
+ * Delay of the deliberately slow test transport.
+ */
+const SLOW_TRANSPORT_MS = 150;
+
+/**
+ * Headroom granted past one slow-transport delay:
+ * enough for one exchange, far short of queue wait plus exchange.
+ */
+const DEADLINE_MARGIN_MS = 70;
 
 /**
  * Single user message reused across exchanges.
@@ -406,6 +418,112 @@ await describe({
             : 0,
         ).toBe(400,);
         expect(exchanges,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'arms the exchange deadline inside the slot, not at dispatch',
+      fn: async () => {
+        /**
+         * Transport answering after a fixed delay.
+         *
+         * @param exchange - request under attempt
+         *
+         * @returns Success reply after the delay
+         *
+         * @example
+         * ```ts
+         * await slowReply(exchange,);
+         * ```
+         */
+        async function slowReply(
+          exchange: ForeignBorrowed<TransportExchange>,
+        ): Promise<TransportReply> {
+          // The exchange signal is unused: this transport never hangs.
+          void exchange;
+          await wait(SLOW_TRANSPORT_MS,);
+          return { status: 200, bodyText: COMPLETION_BODY, };
+        }
+
+        /** Client with one slot so the second call queues locally. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport: slowReply,
+          perModelConcurrency: 1,
+        },);
+        /**
+         * Two same-model calls race for one slot; the second waits a full
+         * transport delay in the queue, then needs another full delay for
+         * its own exchange. Its deadline covers one delay but not two, so
+         * it only survives when the deadline excludes queue wait.
+         */
+        const replies = await Promise.all([
+          client.chatText({
+            modelId: 'hf:zai-org/GLM-5.2',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+          },),
+          client.chatText({
+            modelId: 'hf:zai-org/GLM-5.2',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+            exchangeTimeoutMs: SLOW_TRANSPORT_MS + DEADLINE_MARGIN_MS,
+          },),
+        ],);
+        expect(replies[0]?.text,).toBe('{"verdict":"pass"}',);
+        expect(replies[1]?.text,).toBe('{"verdict":"pass"}',);
+      },
+    },),
+
+    it({
+      name: 'forfeits a hung exchange to its deadline',
+      fn: async () => {
+        /**
+         * Transport that never answers, rejecting only on abort.
+         *
+         * @param exchange - request left hanging
+         *
+         * @returns Never resolves; rejects with the abort reason
+         *
+         * @example
+         * ```ts
+         * await hangForever(exchange,);
+         * ```
+         */
+        async function hangForever(
+          exchange: ForeignBorrowed<TransportExchange>,
+        ): Promise<TransportReply> {
+          /** Gate rejected by the exchange signal's abort reason. */
+          const gate = Promise.withResolvers<TransportReply>();
+          exchange.signal.addEventListener(
+            'abort',
+            function onAbort() {
+              gate.reject(exchange.signal.reason,);
+            },
+          );
+          return gate.promise;
+        }
+
+        /** Client under test. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport: hangForever,
+        },);
+        /** Value caught from the forfeited exchange. */
+        let caught: unknown;
+        try {
+          await client.chatText({
+            modelId: 'hf:zai-org/GLM-5.2',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+            exchangeTimeoutMs: 50,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(String(caught,),).toContain('Timeout',);
+        expect(String(caught,),).toContain('hf:zai-org/GLM-5.2',);
       },
     },),
 

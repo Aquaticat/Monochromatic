@@ -23,6 +23,11 @@ import type {
 import { SyntheticHttpError, } from './completion-shape.ts';
 import type { SeededErrorSpec, } from './seeded-error.ts';
 import { COMPLETION_TOKEN_CEILING, } from './attempt-retry.ts';
+import { createSyntheticClient, } from './synthetic-client.ts';
+import type {
+  TransportExchange,
+  TransportReply,
+} from './synthetic-transport.ts';
 
 /**
  * Invented zh source with a butterfly sentence the seed will delete from the
@@ -409,25 +414,39 @@ await describe({
       name: 'forfeits a hung call to its per-call deadline as attempt data',
       fn: async () => {
         /**
-         * Fake client that never answers, rejecting only when its call
+         * Transport that never answers, rejecting only when its exchange
          * signal aborts, like a stuck streamed exchange.
+         * Exercises the real client so the deadline the client arms
+         * inside its per-model slot is the thing under test.
+         *
+         * @param exchange - request left hanging
+         *
+         * @returns Never resolves; rejects with the abort reason
+         *
+         * @example
+         * ```ts
+         * await hangingTransport(exchange,);
+         * ```
          */
-        const hangingClient: SyntheticClient = {
-          ...fakeClient,
-          chatJson: async function hangingChatJson<ValueT,>(
-            request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
-          ): Promise<ChatJsonOutcome<ValueT>> {
-            /** Gate rejected by the call signal's abort reason. */
-            const gate = Promise.withResolvers<ChatJsonOutcome<ValueT>>();
-            request.signal.addEventListener(
-              'abort',
-              function onAbort() {
-                gate.reject(request.signal.reason,);
-              },
-            );
-            return gate.promise;
-          },
-        };
+        async function hangingTransport(
+          exchange: ForeignBorrowed<TransportExchange>,
+        ): Promise<TransportReply> {
+          /** Gate rejected by the exchange signal's abort reason. */
+          const gate = Promise.withResolvers<TransportReply>();
+          exchange.signal.addEventListener(
+            'abort',
+            function onAbort() {
+              gate.reject(exchange.signal.reason,);
+            },
+          );
+          return gate.promise;
+        }
+
+        /** Real client over the hanging transport. */
+        const hangingClient = createSyntheticClient({
+          apiKey: 'test-key',
+          transport: hangingTransport,
+        },);
         /** Result with a short per-call deadline and a live caller signal. */
         const result = await runCriticBenchmark({
           client: hangingClient,
@@ -443,6 +462,9 @@ await describe({
         },);
         expect(result.attempts[0]?.outcomeKind,).toBe('http-error',);
         expect(result.attempts[0]?.detail,).toContain('Timeout',);
+        // The hung first attempt earned the single second attempt.
+        expect(result.attempts[0]?.retriedFirstAttemptDetail,)
+          .toContain('Timeout',);
       },
     },),
   ],

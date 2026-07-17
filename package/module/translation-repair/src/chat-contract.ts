@@ -86,6 +86,15 @@ export type ChatTextRequest = {
   readonly signal: AbortSignal;
 
   /**
+   * Deadline bounding the exchange itself, armed only after the
+   * per-model slot is acquired, so local queue wait behind concurrent
+   * same-model calls never counts against it.
+   * Fan-outs need this: a dispatch-time deadline starves every queued
+   * call simultaneously.
+   */
+  readonly exchangeTimeoutMs?: number;
+
+  /**
    * Completion token cap when the caller bounds output.
    * Thinking tokens count against it and dominate output on these models
    * (expect 90%+), so set it generously or omit it;

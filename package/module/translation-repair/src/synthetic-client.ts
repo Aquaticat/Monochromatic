@@ -23,6 +23,7 @@ import {
   type SyntheticModelId,
 } from './synthetic-catalog.ts';
 import { extractStreamedCompletion, } from './stream-completion.ts';
+import { armCallDeadline, } from './call-deadline.ts';
 import {
   parseQuotaSnapshot,
   type QuotaSnapshot,
@@ -190,6 +191,26 @@ export function createSyntheticClient(
       );
 
       /**
+       * Per-exchange deadline armed inside the slot so local queue wait
+       * behind concurrent same-model calls never counts against it;
+       * absent when the caller set no deadline.
+       */
+      using deadline = request.exchangeTimeoutMs === undefined
+        ? undefined
+        : armCallDeadline({
+          signal: request.signal,
+          timeoutMs: request.exchangeTimeoutMs,
+          label: request.modelId,
+        },);
+
+      /**
+       * Signal the exchange honors: deadline-joined when armed.
+       */
+      const exchangeSignal = deadline === undefined
+        ? request.signal
+        : deadline.callSignal;
+
+      /**
        * Raw reply from the transport seam, retried on transient statuses.
        */
       const reply = await exchangeWithRetry({
@@ -213,7 +234,7 @@ export function createSyntheticClient(
             ? {}
             : { response_format: request.responseFormat, }),
           },),
-          signal: request.signal,
+          signal: exchangeSignal,
         },
         policy: retryPolicy,
       },);
@@ -281,6 +302,9 @@ export function createSyntheticClient(
       messages: request.messages,
       signal: request.signal,
       // Conditional spreads keep optional knobs absent instead of undefined.
+      ...(request.exchangeTimeoutMs === undefined
+        ? {}
+        : { exchangeTimeoutMs: request.exchangeTimeoutMs, }),
       ...(request.maxTokens === undefined
         ? {}
         : { maxTokens: request.maxTokens, }),
