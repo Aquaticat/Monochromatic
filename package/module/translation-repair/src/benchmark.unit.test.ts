@@ -22,7 +22,7 @@ import type {
 } from './chat-contract.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
 import type { SeededErrorSpec, } from './seeded-error.ts';
-import { COMPLETION_TOKEN_CEILING, } from './truncated-attempt.ts';
+import { COMPLETION_TOKEN_CEILING, } from './attempt-retry.ts';
 
 /**
  * Invented zh source with a butterfly sentence the seed will delete from the
@@ -186,6 +186,13 @@ await describe({
         expect(kinds,).toContain('schema-mismatch',);
         expect(kinds,).toContain('http-error',);
 
+        /** Record of the model whose 429s exhausted both attempts. */
+        const throttled = nonNullishOrThrow(result.attempts.find(function byModel(attempt,) {
+          return attempt.modelId === 'hf:MiniMaxAI/MiniMax-M3';
+        },),);
+        // HTTP failures earn the single second attempt too.
+        expect(throttled.retriedFirstAttemptDetail,).toBe('HTTP 429',);
+
         /** Scorecard row of the hitting model. */
         const hitRow = nonNullishOrThrow(result.scorecard.rows.find(function byModel(row,) {
           return row.modelId === 'hf:zai-org/GLM-5.2';
@@ -305,8 +312,55 @@ await describe({
         expect(result.attempts,).toHaveLength(1,);
         expect(result.attempts[0]?.outcomeKind,).toBe('ok',);
         expect(result.attempts[0]?.seededHitIds,).toEqual(['seed/omission-0',],);
-        expect(result.attempts[0]?.truncatedFirstAttemptDetail,)
+        expect(result.attempts[0]?.retriedFirstAttemptDetail,)
           .toContain('truncated inside its thinking block',);
+      },
+    },),
+
+    it({
+      name: 'retries an http-error attempt once and keeps the recovery',
+      fn: async () => {
+        /** Outcome log, one entry per exchange the fake client served. */
+        const served: string[] = [];
+        /**
+         * Fake client that sheds the first exchange as a gateway failure
+         * and answers cleanly on the second, like a burst-gate 502 that
+         * outlived the transport-level retries.
+         */
+        const sheddingClient: SyntheticClient = {
+          ...fakeClient,
+          chatJson: async function sheddingChatJson<ValueT,>(
+            request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
+          ): Promise<ChatJsonOutcome<ValueT>> {
+            if (served.length === 0) {
+              served.push('shed',);
+              throw new SyntheticHttpError({
+                status: 502,
+                bodyText: 'bad gateway',
+              },);
+            }
+            served.push('ok',);
+            return await fakeClient.chatJson(request,);
+          },
+        };
+        /** Result whose single attempt recovered on the retry. */
+        const result = await runCriticBenchmark({
+          client: sheddingClient,
+          entries: [{
+            entryId: 'whiskers',
+            sourceText: SOURCE_TEXT,
+            targetText: TARGET_TEXT,
+            seeds: [BUTTERFLY_SEED,],
+          },],
+          modelIds: ['hf:zai-org/GLM-5.2',],
+          signal: new AbortController().signal,
+        },);
+
+        expect(served,).toEqual(['shed', 'ok',],);
+        expect(result.attempts,).toHaveLength(1,);
+        expect(result.attempts[0]?.outcomeKind,).toBe('ok',);
+        expect(result.attempts[0]?.seededHitIds,).toEqual(['seed/omission-0',],);
+        expect(result.attempts[0]?.retriedFirstAttemptDetail,).toBe('HTTP 502',);
       },
     },),
 
@@ -346,7 +400,7 @@ await describe({
         expect(served,).toEqual(['truncated', 'truncated',],);
         expect(result.attempts,).toHaveLength(1,);
         expect(result.attempts[0]?.outcomeKind,).toBe('schema-mismatch',);
-        expect(result.attempts[0]?.truncatedFirstAttemptDetail,)
+        expect(result.attempts[0]?.retriedFirstAttemptDetail,)
           .toContain('Unexpected end of JSON input',);
       },
     },),

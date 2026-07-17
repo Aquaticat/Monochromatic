@@ -1,5 +1,5 @@
 /**
- * Tests for truncated-attempt detection.
+ * Tests for the benchmark's attempt-retry policy predicates.
  * Fixtures are cat-themed invention only.
  *
  * @module
@@ -14,8 +14,9 @@ import {
 import type { CriticAttemptRecord, } from './scorecard.ts';
 import {
   COMPLETION_TOKEN_CEILING,
+  isRetryableAttempt,
   isTruncatedAttempt,
-} from './truncated-attempt.ts';
+} from './attempt-retry.ts';
 
 /**
  * Baseline schema-mismatch record corruptions derive from.
@@ -97,6 +98,59 @@ await describe({
             detail: '',
           },
         },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isRetryableAttempt.name,
+  children: [
+    it({
+      name: 'retries every http-error shape and truncated mismatches',
+      fn: async () => {
+        expect(isRetryableAttempt({
+          record: {
+            ...MISMATCH_RECORD,
+            outcomeKind: 'http-error',
+            detail: 'HTTP 502',
+          },
+        },),).toBe(true,);
+        expect(isRetryableAttempt({
+          record: {
+            ...MISMATCH_RECORD,
+            outcomeKind: 'http-error',
+            detail: 'transport: Error: Timeout: hf:MiniMaxAI/MiniMax-M3'
+              + ' exceeded its 480000ms deadline',
+          },
+        },),).toBe(true,);
+        expect(isRetryableAttempt({
+          record: {
+            ...MISMATCH_RECORD,
+            completionTokens: COMPLETION_TOKEN_CEILING,
+          },
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'never retries refusals, clean records, or well-formed garbage',
+      fn: async () => {
+        expect(isRetryableAttempt({
+          record: {
+            ...MISMATCH_RECORD,
+            outcomeKind: 'refusal-shaped',
+            detail: 'api-refusal-field',
+          },
+        },),).toBe(false,);
+        expect(isRetryableAttempt({
+          record: {
+            ...MISMATCH_RECORD,
+            outcomeKind: 'ok',
+            detail: '',
+          },
+        },),).toBe(false,);
+        expect(isRetryableAttempt({ record: MISMATCH_RECORD, },),).toBe(false,);
       },
     },),
   ],

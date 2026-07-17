@@ -16,3 +16,8 @@
 # rationale.
 /^(?:(?:INF)|(?:PRO)|(?:MEA)|(?:ADJ)|(?:CAN)|(?:DNF)|(?:SYR)|(?:PRC)|(?:FDP)|(?:SRS)|(?:ISO)|(?:EXC)|(?:VFR)|(?:TSA)|(?:TSB)|(?:TSC)|(?:TSE)|(?:PPA)|(?:TCP)|(?:UDP)|(?:DNS)|(?:VPN)|(?:SSH)|(?:MAC)|(?:USB)|(?:PCI)|(?:CPU)|(?:GPU)|(?:AWS)|(?:GCP)|(?:SQL)|(?:IBM)|(?:NPM)|(?:RPG)|(?:NPC)|(?:GTA)|(?:USA)|(?:CHN)|(?:RUS)|(?:PRK)|(?:IRN)|(?:ISR)|(?:ESP)|(?:UKR)|(?:WIP)|(?:TBD)|(?:POC)|(?:MVP)|(?:ETA)|(?:KPI)|(?:SAM)|(?:BOB)|(?:MAX)|(?:IAN)|(?:HIV)|(?:STD)|(?:STI)|(?:UTI)|(?:ALS)|(?:OCD)|(?:ADD)|(?:DID)|(?:IBS)|(?:IBD)|(?:CAD)|(?:CHF)|(?:DVT)|(?:TIA)|(?:PAD)|(?:HPV)|(?:HBV)|(?:HCV)|(?:HSV)|(?:RSV)|(?:CMV)|(?:SLE)|(?:PID)|(?:ASD)|(?:CKD)|(?:FLU)|(?:GAD)|(?:BPD)|(?:MRI)|(?:ECG)|(?:EKG)|(?:EEG)|(?:EMG)|(?:CPR)|(?:IVF)|(?:CAT)|(?:PET)|(?:IUD)|(?:ECT)|(?:DNR)|(?:HRT)|(?:ART)|(?:PAP)|(?:ICU)):/m
 /^(?:(?:PR)|(?:TS)|(?:TX)|(?:RE)|(?:PS)|(?:DP)|(?:AS)|(?:CS)|(?:SA)|(?:CA)|(?:FF))[0-9]:/m
+
+# `truncated-attempt` was renamed to `attempt-retry` when the benchmark's
+# second-attempt trigger broadened beyond truncation; the retired module
+# name must not come back.
+truncated-attempt
