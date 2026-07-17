@@ -166,8 +166,9 @@ concurrent; one stream per model is the fastest dispatch on this plan):
    where `<scratchpad>` is this session's scratchpad dir. The driver
    uses a 25-minute run budget, 4-minute per-call deadlines, a 45-minute
    outer safety net, oversamples 6 shuffled small entries (700 to 2500
-   chars, XIEPT2 and BI4PBV quarantined), and grades with the
-   zh-anchored judge as headline plus the lexical grader for comparison.
+   chars; XIEPT2, BI4PBV, and shi_Yumiaoya quarantined), and grades
+   with the zh-anchored judge as headline plus the lexical grader for
+   comparison.
 2. On completion (task notification re-invokes you): read the run's
    output file, extract SCORECARD and the per-entry `judgments`
    (headline), `detection`, and `lexical` lines.
@@ -585,9 +586,30 @@ source (done). No open questions currently block the loop.
   lexical=restored (4/8 words) but judge=partial against the zh
   source; the judge discriminates in BOTH directions, catching a
   half-restoration the word counter credited. Lenient rate still 1.0.
-  JUDGE ACCUMULATED: 26/30 (0.87) over 6 runs (22 to 27). Lexical
-  over the same 6 runs 20/30 (0.67). Detection 102/108 (0.94).
-  NEXT: continue the RESUME PROCEDURE loop (run 28 onward). The point
+  run 28 (2026-07-17, 1462 s): raw scorecard judge 2/4, detection
+  2/4; but shi_Yumiaoya came back status=blocked-non-translation.
+  Probe confirmed the block is CORRECT: its en page holds a genuinely
+  untranslated CJK region (six lines at 33 to 83 percent CJK; zh 3935
+  chars vs en 1458), 4/7 critics voted non-translation on that chunk,
+  whole entry returned unchanged by design. Like XIEPT2, seeding it
+  grades nothing about repair, so shi_Yumiaoya is now QUARANTINED in
+  the driver (third entry). Its two run-28 seeds are excluded from
+  the accumulated tallies below.
+  JUDGE CAVEAT found: on the unchanged blocked text the judges
+  unanimously called the 231-char seed 0 "restored" though the needle
+  occurs 0 times; only 2 of its content words uniquely disappeared,
+  so near-duplicate needles (vocabulary still present elsewhere) can
+  fool the judge. Rare (first in 28 runs), quarantine prevents this
+  instance; benchmark-side fix (exclude blocked entries from the
+  judge universe) noted as a calibration follow-up.
+  The repairable entry CuspariaKLSY, a repeat draw from run 27,
+  reproduced its run 27 judgments exactly (seed 0 restored on 0/7
+  lexical words, seed 1 partial): judge verdicts are stable across
+  independent runs. Detection 2/2 there.
+  JUDGE ACCUMULATED (repairable universe): 27/32 (0.84) over 7 runs
+  (22 to 28). Lexical over the same runs 20/32 (0.63). Detection
+  104/110 (0.95).
+  NEXT: continue the RESUME PROCEDURE loop (run 29 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
