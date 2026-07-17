@@ -126,6 +126,18 @@ Running (completion notifications arrive automatically):
   line-number alignment preserved,
   strict compile, zero drops,
   gitignored local files untouchable.
+  ATTENTION:
+  the user observed this agent doing more than instructed
+  (adjacent legitimate work, so tolerated)
+  and granted a 20-minute grace window from that observation;
+  a background sleep timer fires at expiry.
+  At expiry, if no completion notification has arrived:
+  inspect via `TaskList`,
+  stop via `TaskStop`,
+  evaluate whatever it committed,
+  and relaunch the remainder with a narrower prompt.
+  Lesson recorded on #391:
+  soft budgets and precise prompts are the only bounding mechanism.
 - #392 follow-up sweep, sonnet, engine crate:
   convert 60 test-code `Result::unwrap()` sites to `.expect()` with messages.
   First #392 agent landed `25fd8b9c6`
