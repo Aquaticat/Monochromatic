@@ -6,6 +6,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
@@ -14,7 +15,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import { runCriticBenchmark, } from './benchmark.ts';
+import {
+  MIN_DISPATCH_BUDGET_MS,
+  runCriticBenchmark,
+} from './benchmark.ts';
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
@@ -28,6 +32,12 @@ import type {
   TransportExchange,
   TransportReply,
 } from './synthetic-transport.ts';
+
+/**
+ * Delay of the deliberately slow budget-test clients;
+ * one call sinks the remaining budget under the dispatch floor.
+ */
+const BUDGET_CALL_DELAY_MS = 60;
 
 /**
  * Invented zh source with a butterfly sentence the seed will delete from the
@@ -407,6 +417,101 @@ await describe({
         expect(result.attempts[0]?.outcomeKind,).toBe('schema-mismatch',);
         expect(result.attempts[0]?.retriedFirstAttemptDetail,)
           .toContain('Unexpected end of JSON input',);
+      },
+    },),
+
+    it({
+      name: 'skips what the run budget cannot fit and reports coverage',
+      fn: async () => {
+        /**
+         * Fake client whose calls take one measurable delay each.
+         */
+        const slowClient: SyntheticClient = {
+          ...fakeClient,
+          chatJson: async function slowChatJson<ValueT,>(
+            request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
+          ): Promise<ChatJsonOutcome<ValueT>> {
+            await wait(BUDGET_CALL_DELAY_MS,);
+            return await fakeClient.chatJson(request,);
+          },
+        };
+        /**
+         * Three entries against a budget that fits exactly one call:
+         * after the first call the remaining budget sinks under the
+         * dispatch floor and the rest must record as skipped.
+         */
+        const result = await runCriticBenchmark({
+          client: slowClient,
+          entries: ['one', 'two', 'three',].map(function toEntry(suffix,) {
+            return {
+              entryId: `whiskers-${suffix}`,
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+              seeds: [BUTTERFLY_SEED,],
+            };
+          },),
+          modelIds: ['hf:zai-org/GLM-5.2',],
+          signal: new AbortController().signal,
+          runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
+        },);
+
+        expect(result.attempts.map(function toKind(attempt,) {
+          return attempt.outcomeKind;
+        },),).toEqual(['ok', 'skipped', 'skipped',],);
+        expect(result.attempts[1]?.detail,).toBe('run-budget-exhausted',);
+
+        /** Row of the only model; rates cover dispatched attempts only. */
+        const row = nonNullishOrThrow(result.scorecard.rows[0],);
+        expect(row.attempts,).toBe(1,);
+        expect(row.skipped,).toBe(2,);
+        expect(row.schemaOkRate,).toBe(1,);
+        expect(row.seededRecall,).toBe(1,);
+        // Only the dispatched entry's seed enters the recall universe.
+        expect(result.scorecard.seedUniverse,).toBe(1,);
+        expect(result.scorecard.ensembleRecall,).toBe(1,);
+        expect(result.scorecard.coverage,).toBeCloseTo(1 / 3,);
+      },
+    },),
+
+    it({
+      name: 'keeps a dispatched failure when the budget kills its retry',
+      fn: async () => {
+        /**
+         * Fake client that burns delay and returns a truncated mismatch,
+         * so the single retry is earned but the budget cannot fit it.
+         */
+        const truncatingSlowClient: SyntheticClient = {
+          ...fakeClient,
+          chatJson: async function truncatingSlowChatJson<ValueT,>(): Promise<
+            ChatJsonOutcome<ValueT>
+          > {
+            await wait(BUDGET_CALL_DELAY_MS,);
+            return {
+              kind: 'schema-mismatch',
+              rawText: '<think>still thinking about cats',
+              detail: 'output was truncated inside its thinking block;'
+                + ' raise or omit maxTokens (thinking tokens count against it)',
+            };
+          },
+        };
+        /** Result whose first attempt stands because the retry was cut. */
+        const result = await runCriticBenchmark({
+          client: truncatingSlowClient,
+          entries: [{
+            entryId: 'whiskers',
+            sourceText: SOURCE_TEXT,
+            targetText: TARGET_TEXT,
+            seeds: [BUTTERFLY_SEED,],
+          },],
+          modelIds: ['hf:zai-org/GLM-5.2',],
+          signal: new AbortController().signal,
+          runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
+        },);
+
+        expect(result.attempts,).toHaveLength(1,);
+        // The dispatched mismatch stands; skipping would erase real data.
+        expect(result.attempts[0]?.outcomeKind,).toBe('schema-mismatch',);
+        expect(result.attempts[0]?.retriedFirstAttemptDetail,).toBe(undefined,);
       },
     },),
 
