@@ -398,6 +398,15 @@ consumers and deployment are deliberately out of scope for now.
   detection hole.
   Accumulated: 30/53 repair (0.57); post-remedy 11/18 (0.61) versus
   0.52 pre-remedy; detection 30/36 (0.83).
+  run 12 (2026-07-17, 1488 s): the retry ladder's sternest live
+  test: one chunk lost ALL SEVEN critics in a round, six again on
+  retry round one, and five panelists in another round; the ladder
+  recovered quorum every time (zero quorum-unmet findings) and the
+  single entry that fit the budget completed with 51/51 issues
+  resolved, detection 2/2, repair 1/2. Retries traded coverage
+  (0.17) for completeness, as designed.
+  Accumulated: 31/55 repair (0.56); post-remedy 12/20 (0.60);
+  detection 32/38 (0.84).
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
