@@ -64,11 +64,28 @@ plus total automatic section alignment (commit `2f9b2c8af`:
 to proportional monotone merging with findings, never refusing).
 Xu_Yushu structural fact: both sides mirror exactly (48 nodes, identical
 kind sequences, 9 sections).
-Polish loop next: inspect per-model wire issues and resolution failures
-on Xu_Yushu (seeded + clean variants, material in the session scratchpad
-`polish-xu-result.json`), fix `quote-crosses-blocks` (candidate: split
-located multi-block regions into per-node spans; IssueClaim already
-supports multi-span), watch MiniMax-M3 empty-report pathology.
+Polish loop findings and fixes (Xu_Yushu, two full passes):
+- Claim quality is real: clean-variant issues are specific verifiable
+  defects (dropped 光辉璀璨的, 初高中 narrowed to high school, fabricated
+  "2023" on dates, 动漫周边 mistranslated), and models CONVERGE on the
+  same defects independently, validating ensemble adjudication.
+- Pass 1: seeds 3/3 for four of six completing models; dominant failure
+  was quote-not-found on punctuation variants (corpus curly, models
+  ASCII).
+- Fixes landed (`1c6b9fe2e`, `b6a0033cb`): length-preserving
+  punctuation-normalized quote fallback (anchors keep document bytes),
+  block-crossing quotes split into per-node spans, family-slip category
+  remap, CJK corner brackets (「」『』) joined to the quote classes.
+- Pass 2 (after first fixes): EVERY completing model (five) found all
+  three seeds; resolution rates Qwen 30/31, Kimi 50/53, MiniMax 74/83,
+  gpt-oss 26/31 (was 16/24), Nemotron 36/47. Remaining rejections are
+  CORRECT: model typos in evidence (噪 for 噩), ambiguous short
+  fragments (遗书), paraphrases, one typo category (accuracy/omition).
+- Provider nondeterminism is large: GLM-5.2 completed both variants in
+  pass 1 (13k and 33k tokens) and blew the 65_536 ceiling on BOTH in
+  pass 2 at temperature 0 on identical input; Flash similar. Pipeline
+  needs a bounded one-retry on truncated output. MiniMax-M3 timed out on
+  the clean variant in both passes (entry-conditional).
 Update this document at every task completion or design pivot;
 it exists so auto-compaction cannot lose session state.
 
