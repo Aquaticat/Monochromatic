@@ -503,6 +503,23 @@ consumers and deployment are deliberately out of scope for now.
   before/after datum.
   FINAL LEXICAL ACCUMULATED: 57/97 (0.59) over 21 runs; detection
   72/78 (0.92). The judge rate starts fresh at run 22.
+  run 22 (2026-07-17, 2271 s, FIRST judge-graded run): judge repair
+  2/4 (0.50) versus lexical 0/4 on the SAME seeds, and the split is
+  the validation, not noise:
+  - ttttsuuukikoo_ both seeds JUDGE=restored but LEXICAL=absent
+    (2/6 and 2/7 words): the editor faithfully re-translated the zh
+    with different English wording, vocabulary overlap missed it, the
+    bilingual judge caught it. This is the under-crediting the user
+    predicted, now corrected.
+  - wangzihao980 both seeds JUDGE=absent AND LEXICAL=absent while the
+    run still resolved 37/37 OTHER issues: a genuine repair failure
+    the judge agrees on. Detection was true (issue accepted at the
+    region) but the editor did not actually restore the content, so
+    detection-yet-unrepaired is real and the judge exposes it.
+  The judge discriminates (credits faithful rewording, fails genuine
+  misses) rather than inflating; that is the whole point.
+  JUDGE ACCUMULATED: 2/4 (0.50) over 1 run. Detection 76/82 (0.93).
+  Panel needed two retry rounds (6 then 4 lost) and recovered.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
