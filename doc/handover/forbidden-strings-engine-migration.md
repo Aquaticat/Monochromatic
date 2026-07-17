@@ -380,11 +380,72 @@ Updated:
      D scanner allowlist feature (plan rejected),
      C accept red.
   3. #381 seedless-routing:
-      orchestrator recommends close-wontfix on
-     the #380 numbers (batch path 0.92x of naive loop;
-     absolute gate scans sub-millisecond;
-      budgets met with 7x headroom);
-     awaiting user word.
+      CLOSED wontfix 2026-07-17 by user directive
+     ("Close #381 based on #380"),
+      with the #380-numbers rationale in the close comment.
+- POST-CUTOVER FOLLOW-UPS (2026-07-17, after the migration chain closed):
+  - #391 got a brainstorm comment (user asked for ideas):
+    migration evidence (no escalations fired across the dispatches),
+    the recurring background-wait stall as a stronger persistence
+    candidate than escalation,
+    options ranked orchestration-doc > wontfix > `AGENTS.md`.
+    Still undecided by user.
+  - The index.html finding (open decision 1) was diagnosed:
+    it is a three-byte bare-literal local appendix rule (term redacted),
+    coincidentally embedded in a ~49KB base64 asset on line 2657
+    between word bytes.
+    Not a real leak;
+    a base64 substring collision.
+    This finding is exactly what the word-boundary directive below fixes:
+    once live, the three-byte literal gates to whole-token matches and
+    stops firing inside the base64 blob.
+  - USER DIRECTIVE 2026-07-17:
+    "Bare literals under eight bytes should always require word
+    boundaries around them."
+    IMPLEMENTED (`296c5169c`, pushed, code-complete):
+    `literal_pattern` in `src/rule/frx/escape.rs` wraps a sub-8-byte bare
+    literal with `\b` at each end whose adjacent byte is an ASCII word
+    byte (per-end conditional, so CJK and punctuation ends stay plain,
+    since a `\b` beside a non-word byte asserts an ASCII edge CJK text
+    never provides).
+    Applied in `format.rs` at the literal call site;
+    `escape_literal` kept a pure exact-match transformer (fuzz target
+    intact).
+    Tests updated (four cases encoded old substring semantics);
+    example terms neutralized to `ABC`/`Ab Cd` so the test source does
+    not self-match the deny-list.
+    ACTIVATION DEFERRED: the local release binary and CI both still run
+    0.2.0 (old escaping);
+    making this live in CI needs a 0.2.1 release
+    (CI downloads the version-matched release binary),
+    bundled with the rule-identity decision below so one release covers
+    both.
+  - OPEN DECISION, rule-identity UX (user asked "how does one know which
+    rule is the trigger?"):
+    the finding `PATH:LINE rule=N` is opaque and the index DRIFTS
+    (same builtin rule is `rule=20` alone, `rule=58` with the ~38 local
+    rules loaded, because local rules take `0..k` and builtin is offset
+    above).
+    KEY CONSTRAINT found: the binary embeds only the compiled baseline
+    automaton and the port stripped all betterleaks descriptions,
+    so a baseline match cannot be mapped to a name/text at runtime;
+    `explain`/names/hashes for the baseline all need a build-time
+    identity sidecar from `build.rs` (which already parses the source).
+    Local rules are resolvable at runtime (read at scan time).
+    Orchestrator recommendation put to user:
+    namespace findings `rule=builtin:N`/`rule=local:N` (kills the drift,
+    one more #388-style parser update),
+    embed baseline NAMES at build time (betterleaks porter has them),
+    keep `local:N` a bare per-file index (zero disclosure),
+    `explain` thin over both.
+    User floated a rule HASH;
+    assessed: stable across baseline versions but a membership oracle for
+    low-entropy sensitive local rules (needs keyed/HMAC),
+    and names dominate it for the public baseline.
+    Forks awaiting user:
+    namespaced ids yes/no;
+    baseline names vs hashes vs full source;
+    local index vs keyed hash.
 - #390 DONE and CLOSED (sonnet hygiene pass):
   #158,
    #240,
