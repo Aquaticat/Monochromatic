@@ -202,17 +202,29 @@ Updated:
   both touch the scanner package (fuzz sidecar and `fuzz_api.rs` versus
   `PERF.md` and report), and #387's perf re-measure needs a quiet
   machine that a concurrent fuzz smoke pass would poison.
-- IN FLIGHT: #386 fuzz retarget (opus, scanner fuzz sidecar;
-  prompt carries the deleted-machinery list, adversarial verbose-mode
-  escaping cases for the literal-roundtrip target,
-  bounded smoke sizing per the engine sidecar's precedent,
-  and the release-binary caution).
-  On its completion dispatch #387
-  (differential cutover gate plus perf;
-  pin rules explicitly so gitignored local files stay out of both runs;
-  deltas explained against the CURRENT review doc,
-  which now includes three-casing and the 518 reshape,
-  not just the issue body's older list).
+- #386 DONE and CLOSED (opus; spot-checked):
+  `1c5f3f51d` (fuzzing-gated API surface),
+  `e60a8cbfe` (three retargeted targets, two-form generator replacing
+  the 1636-line resharp generator, 3374 dead seeds pruned,
+  40 fresh seeds, dictionary rewritten, `.gitattributes` binary marks),
+  `aa4d3ac27` (docs plus lockfile, `Closes #386`).
+  Smoke passes: 24585/9790/5767 runs in 31s each, zero artifacts.
+  PROCESS LESSON (now baked into prompts):
+  a subagent's backgrounded processes are KILLED when it stops,
+  so background-build-and-wait loops both stall the agent and lose the
+  build; instruct agents to run long commands synchronously.
+  This agent stalled twice on Monitor waits before a firm
+  "synchronous only" steer finished it.
+- IN FLIGHT: #387 differential cutover gate plus perf re-measure
+  (opus; no production code changes;
+  report to `doc/planning/forbidden-strings-cutover-differential.md`,
+  perf to the scanner `PERF.md`;
+  0.1.9 installed to a temp root, current release binary used as-is;
+  rules precedence pinned so local files are absent from both sides;
+  rule-number mapping derived from the line-aligned files and verified
+  on a controlled fixture;
+  unexplained delta = verbatim stop condition;
+  redacted report, rule indexes only).
   Then #389 cutover (ready-for-agent), #390 hygiene, #381 decision.
 - RESOLVED plan open question:
   startup compilation is NOT viable
