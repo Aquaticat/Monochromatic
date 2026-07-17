@@ -162,3 +162,83 @@ impl<'a> Arbitrary<'a> for PatternAndContent {
         Ok(PatternAndContent { pattern, content })
     }
 }
+
+// Bounds for the ruleset-plus-buffer generator: kept small so a compiled `RegexSet`
+// and its generated multi-line buffer stay cheap per fuzz iteration.
+const MAX_RULES: u32 = 4;
+const MAX_LINES: u32 = 8;
+
+// What:  how one generated line is terminated when joined into a multi-line buffer.
+// Why:   `RegexSet::line_matches`'s contract strips a trailing `\n` then one trailing
+//        `\r`, so the generated buffer must mix CRLF and LF terminators, plus a final
+//        line with no terminator at all (the common EOF-without-newline shape).
+enum Terminator {
+    // A line ending in a lone `\n`.
+    Lf,
+    // A line ending in `\r\n`.
+    CrLf,
+    // A line with no terminator, only valid for the buffer's last line.
+    None,
+}
+
+// What:  a generated ruleset (full dialect, algebra included) paired with a generated
+//        multi-line buffer and the `starts` array a scanner would compute for it.
+// Why:   `line_matches` needs a compiled multi-rule `RegexSet`, not a single pattern,
+//        and a buffer/starts pair exercising mixed terminators and empty lines; Debug
+//        is required so the libFuzzer macro can print the input on a crash.
+#[derive(Debug)]
+pub struct RulesetAndBuffer {
+    // Pattern texts fed to `RegexSet::compile_lenient`; some may fail to compile and
+    // get dropped, mirroring how the real scanner builds its ruleset.
+    pub patterns: Vec<String>,
+    // The joined multi-line buffer, newlines and carriage returns in place.
+    pub buf: Vec<u8>,
+    // Ascending line-start offsets into `buf`, first entry always `0`.
+    pub starts: Vec<usize>,
+}
+
+impl<'a> Arbitrary<'a> for RulesetAndBuffer {
+    fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
+        let mut builder = Builder { uses_algebra: false };
+        let rule_count = u.int_in_range(1u32..=MAX_RULES)?;
+        let mut patterns = Vec::new();
+        for _ in 0..rule_count {
+            patterns.push(builder.seq(u, MAX_DEPTH)?);
+        }
+
+        let line_count = u.int_in_range(1u32..=MAX_LINES)?;
+        let mut buf: Vec<u8> = Vec::new();
+        let mut starts: Vec<usize> = Vec::new();
+        for index in 0..line_count {
+            // What:  record this line's start BEFORE appending its content, the same
+            //        moment a scanner would note it while reading forward.
+            // Why:   keeps `starts` and `buf` built in lockstep, so no separate scan
+            //        or off-by-one fixup is needed afterward.
+            starts.push(buf.len());
+            // What:  bias toward an empty line now and then instead of relying on a
+            //        rare arbitrary-length-zero draw from `content`.
+            // Why:   the acceptance criteria calls out empty-line coverage explicitly.
+            let line = if u.ratio(1, 5)? { Vec::new() } else { content(u)? };
+            buf.extend_from_slice(&line);
+
+            let last = index + 1 == line_count;
+            // What:  the last line sometimes gets no terminator at all (EOF without a
+            //        trailing newline); every earlier line always gets one, or the
+            //        `starts` entries recorded above would not line up with `buf`.
+            let terminator = if last && u.ratio(1, 2)? {
+                Terminator::None
+            } else if u.ratio(1, 2)? {
+                Terminator::Lf
+            } else {
+                Terminator::CrLf
+            };
+            match terminator {
+                Terminator::Lf => buf.push(b'\n'),
+                Terminator::CrLf => buf.extend_from_slice(b"\r\n"),
+                Terminator::None => {}
+            }
+        }
+
+        Ok(RulesetAndBuffer { patterns, buf, starts })
+    }
+}

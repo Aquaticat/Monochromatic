@@ -75,3 +75,10 @@ path = "fuzz_targets/fuzz_differential.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "fuzz_line_matches"
+path = "fuzz_targets/fuzz_line_matches.rs"
+test = false
+doc = false
+bench = false

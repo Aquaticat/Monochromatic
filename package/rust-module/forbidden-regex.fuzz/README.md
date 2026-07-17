@@ -32,12 +32,25 @@ mise tools;
    byte mode) on single-line content.
    Byte
   verdicts must agree.
+- `fuzz_line_matches`:
+   a generated ruleset and a generated multi-line buffer
+  (lines joined with a mix of `\n`,
+   `\r\n`,
+   and an unterminated final
+  line) compared against per-line `matches()` sliced out by hand per the
+  documented contract.
+   `RegexSet::line_matches` must agree with that naive
+  per-line delegation on every line,
+   including empty ones.
 
 The structured pattern/content generator is `src/generators.rs`
 (`PatternAndContent`,
  bounded depth and repetition;
  records `uses_algebra` so the
 differential target skips set algebra `regex` cannot express).
+ The same file's
+`RulesetAndBuffer` generates a small compiled ruleset plus a matching
+multi-line buffer and `starts` array for `fuzz_line_matches`.
 
 ## Commands
 
