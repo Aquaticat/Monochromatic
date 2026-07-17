@@ -48,7 +48,7 @@ fn unique_tmp(label: &str) -> PathBuf {
     ));
     let _ = fs::remove_dir_all(&dir);
     fs::create_dir_all(&dir).expect("create tmp dir");
-    dir
+    return dir
 }
 
 // What:     `#[test] fn read_error_surfaces_as_hit_and_nonzero_exit()`.
@@ -257,7 +257,7 @@ fn output_is_columnless_with_correct_line_number() {
     assert!(!output.status.success(), "must exit non-zero on a hit; stderr: {}", stderr);
     let hit_line = stderr
         .lines()
-        .find(|line| line.contains("rule="))
+        .find(|line| return line.contains("rule="))
         .expect("a rule= finding line");
     // Exact columnless shape: the path, a colon, the line number, then ` rule=`.
     assert!(
@@ -617,7 +617,7 @@ fn version_long_flag_exits_zero_and_prints_version_line() {
     // major version). Avoids hardcoding the current version here, which
     // would force this test to update on every release.
     assert!(
-        stdout.chars().any(|c| c.is_ascii_digit()),
+        stdout.chars().any(|c| return c.is_ascii_digit()),
         "version output must contain at least one digit; got: {}",
         stdout,
     );
@@ -1021,7 +1021,7 @@ fn fake_github_oauth_token() -> String {
     // ```ts
     // return `gho_${'a'.repeat(36)}`;
     // ```
-    format!("gho_{}", "a".repeat(36))
+    return format!("gho_{}", "a".repeat(36))
 }
 
 // What:     `--builtin-rules` with NO rules file anywhere (empty cwd, no
@@ -1119,7 +1119,7 @@ fn builtin_rules_flag_appends_after_user_rules() {
     // ```ts
     // const hits = stderr.split('\n').filter((l) => l.includes('rule=')).length;
     // ```
-    let hits = stderr.lines().filter(|line| line.contains("rule=")).count();
+    let hits = stderr.lines().filter(|line| return line.contains("rule=")).count();
     assert!(
         hits >= 2,
         "expected hits from both the user rule and the baseline; got {} in: {}",

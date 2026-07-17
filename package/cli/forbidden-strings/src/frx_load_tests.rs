@@ -8,7 +8,7 @@ fn temp_dir(label: &str) -> std::path::PathBuf {
     let dir = std::env::temp_dir().join(format!("frx-load-{}-{}", label, std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).expect("create temp dir");
-    dir
+    return dir
 }
 
 // Writes a rules file into a temp dir and returns its path (dir leaks per-test).
@@ -16,12 +16,12 @@ fn rules_file(label: &str, body: &str) -> std::path::PathBuf {
     let dir = temp_dir(label);
     let path = dir.join("rules.txt");
     std::fs::write(&path, body).expect("write rules");
-    path
+    return path
 }
 
 // Serializes a compiled set into precompiled bytes for the builtin-baseline slot.
 fn precompiled(body: &str) -> Vec<u8> {
-    crate::compile_from_text(body)
+    return crate::compile_from_text(body)
         .expect("compile precompiled fixture")
         .to_bytes()
         .expect("serialize precompiled fixture")

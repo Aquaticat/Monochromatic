@@ -8,7 +8,7 @@ fn temp_dir(label: &str) -> std::path::PathBuf {
     let dir = std::env::temp_dir().join(format!("frx-scan-{}-{}", label, std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).expect("create temp dir");
-    dir
+    return dir
 }
 
 // Builds LoadedRules from an in-repo temp rules file with no builtin baseline.
@@ -19,7 +19,7 @@ fn load_runtime(rules: &str) -> crate::frx_load::LoadedRules {
     let loaded = crate::frx_load::load(path.to_str().expect("utf8 path"), false, true, b"")
         .expect("load runtime rules");
     let _ = std::fs::remove_dir_all(&dir);
-    loaded
+    return loaded
 }
 
 #[test]

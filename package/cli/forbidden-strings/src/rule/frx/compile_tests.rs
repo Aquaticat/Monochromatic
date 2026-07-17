@@ -15,7 +15,7 @@ const SENTINEL: &str = "frx_redaction_canary_do_not_leak_Zq9";
 
 // Builds one rule string per load-error path, each carrying the sentinel.
 fn error_rules() -> [String; 4] {
-    [
+    return [
         format!("/{SENTINEL}/i"),        // bad flag: policy rejects 'i'
         format!("/{SENTINEL}*/"),        // dialect rejection: '*' unsupported
         format!("/(?:{SENTINEL})?/"),    // empty-matchable: whole pattern nullable
@@ -34,7 +34,7 @@ fn builtin_ported_all_compile() {
         .par_iter()
         .enumerate()
         .filter_map(|(index, pattern)| {
-            RegexSet::new(std::slice::from_ref(pattern)).err().map(|_| index)
+            return RegexSet::new(std::slice::from_ref(pattern)).err().map(|_| return index)
         })
         .collect();
     assert!(failures.is_empty(), "builtin ported rules failed at indices {failures:?}");
@@ -79,17 +79,17 @@ struct BufSink(std::sync::Arc<std::sync::Mutex<Vec<u8>>>);
 impl std::io::Write for BufSink {
     fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
         self.0.lock().expect("sink lock").extend_from_slice(data);
-        Ok(data.len())
+        return Ok(data.len())
     }
     fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
+        return Ok(())
     }
 }
 
 impl<'a> tracing_subscriber::fmt::MakeWriter<'a> for BufSink {
     type Writer = BufSink;
     fn make_writer(&'a self) -> BufSink {
-        self.clone()
+        return self.clone()
     }
 }
 

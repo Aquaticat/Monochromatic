@@ -143,7 +143,7 @@ fn detect_index_hash_kind(repo_root: &std::path::Path) -> gix_hash::Kind {
             return gix_hash::Kind::Sha256;
         }
     }
-    gix_hash::Kind::Sha1
+    return gix_hash::Kind::Sha1
 }
 
 /// Implements `list_files`.
@@ -230,7 +230,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>> {
             // ```ts
             // return path.basename(p) !== ".git" && path.basename(p) !== ".jj";
             // ```
-            e.file_name() != ".git" && e.file_name() != ".jj"
+            return e.file_name() != ".git" && e.file_name() != ".jj"
         })
         .build_parallel();
 
@@ -274,7 +274,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>> {
         // const filesRef = files;
         // ```
         let files = Arc::clone(&files);
-        Box::new(move |entry| {
+        return Box::new(move |entry| {
             // What:     `let Ok(e) = entry else { return ...; };`
             //           is a `let-else` pattern: if `entry` (a
             //           `Result<DirEntry, ignore::Error>`) is the
@@ -312,7 +312,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>> {
             // ```ts
             // const isFile = e.fileType?.isFile ?? false;
             // ```
-            let is_file = e.file_type().map(|t| t.is_file()).unwrap_or(false);
+            let is_file = e.file_type().map(|t| return t.is_file()).unwrap_or(false);
             if !is_file {
                 return WalkState::Continue;
             }
@@ -355,7 +355,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>> {
                 // ```
                 files.lock().expect("walk-results mutex poisoned by a panicking walker thread").push(s.to_string());
             }
-            WalkState::Continue
+            return WalkState::Continue
         })
     });
 
@@ -454,7 +454,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>> {
         // ```
         let mut seen: std::collections::HashSet<String> = files
             .iter()
-            .map(|p| p.trim_start_matches("./").to_string())
+            .map(|p| return p.trim_start_matches("./").to_string())
             .collect();
         for entry in index.entries() {
             // What:     Filter index entries by `Mode`. Only regular
@@ -511,7 +511,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>> {
         }
     }
 
-    Ok(files)
+    return Ok(files)
 }
 
 /// Registers the `tests` child module.

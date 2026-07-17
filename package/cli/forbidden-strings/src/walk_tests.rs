@@ -41,7 +41,7 @@ fn unique_tmp(label: &str) -> PathBuf {
     ));
     let _ = fs::remove_dir_all(&dir);
     fs::create_dir_all(&dir).expect("create tmp dir");
-    dir
+    return dir
 }
 
 // What:     `fn run_git(dir, args)` runs `git <args>` in `dir` and
@@ -136,19 +136,19 @@ fn list_files_includes_force_added_gitignored_file() {
     let basenames: Vec<String> = files
         .iter()
         .filter_map(|p| {
-            std::path::Path::new(p)
+            return std::path::Path::new(p)
                 .file_name()
-                .and_then(|n| n.to_str())
-                .map(|s| s.to_string())
+                .and_then(|n| return n.to_str())
+                .map(|s| return s.to_string())
         })
         .collect();
     assert!(
-        basenames.iter().any(|b| b == "normal.txt"),
+        basenames.iter().any(|b| return b == "normal.txt"),
         "normal tracked file must be listed; got {:?}",
         basenames
     );
     assert!(
-        basenames.iter().any(|b| b == "tracked.ignored"),
+        basenames.iter().any(|b| return b == "tracked.ignored"),
         "BUG 3: force-added gitignored file must be listed; got {:?}",
         basenames
     );
@@ -207,15 +207,15 @@ fn list_files_excludes_submodule_gitlink_entries() {
     let files = list_files(dir.to_str().expect("dir utf8")).expect("list_files");
     let normalized: Vec<String> = files
         .iter()
-        .map(|p| p.trim_start_matches("./").to_string())
+        .map(|p| return p.trim_start_matches("./").to_string())
         .collect();
     assert!(
-        normalized.iter().any(|p| p.ends_with("real.txt")),
+        normalized.iter().any(|p| return p.ends_with("real.txt")),
         "regular tracked file must still be listed; got {:?}",
         normalized
     );
     assert!(
-        !normalized.iter().any(|p| p.ends_with("vendor/sub")),
+        !normalized.iter().any(|p| return p.ends_with("vendor/sub")),
         "submodule gitlink (Mode::COMMIT) must NOT be listed; got {:?}",
         normalized
     );
@@ -340,19 +340,19 @@ fn list_files_handles_sha256_repo_force_added_gitignored() {
     let basenames: Vec<String> = files
         .iter()
         .filter_map(|p| {
-            std::path::Path::new(p)
+            return std::path::Path::new(p)
                 .file_name()
-                .and_then(|n| n.to_str())
-                .map(|s| s.to_string())
+                .and_then(|n| return n.to_str())
+                .map(|s| return s.to_string())
         })
         .collect();
     assert!(
-        basenames.iter().any(|b| b == "normal.txt"),
+        basenames.iter().any(|b| return b == "normal.txt"),
         "sha256 repo: normal tracked file must be listed; got {:?}",
         basenames
     );
     assert!(
-        basenames.iter().any(|b| b == "tracked.ignored"),
+        basenames.iter().any(|b| return b == "tracked.ignored"),
         "sha256 repo: force-added gitignored file must be listed via \
          gix-index path; got {:?}",
         basenames

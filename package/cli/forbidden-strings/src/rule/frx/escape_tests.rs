@@ -6,7 +6,7 @@ use forbidden_regex::RegexSet;
 // Compiles one escaped literal into a single-rule set.
 fn compiled(literal: &str) -> RegexSet {
     let pattern = escape_literal(literal);
-    RegexSet::new(std::slice::from_ref(&pattern)).expect("escaped literal must compile")
+    return RegexSet::new(std::slice::from_ref(&pattern)).expect("escaped literal must compile")
 }
 
 // Asserts the escaped literal matches itself and the same bytes embedded in noise.
