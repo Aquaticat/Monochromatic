@@ -85,6 +85,32 @@ export {
   type EnvelopePlan,
 } from './patch-model.ts';
 export {
+  buildResolutionMessages,
+  isResolutionReportWire,
+  isResolutionVerdict,
+  RESOLUTION_RESPONSE_FORMAT,
+  RESOLUTION_VERDICTS,
+  type ResolutionCheckWire,
+  type ResolutionPromptPlan,
+  type ResolutionReportWire,
+  type ResolutionVerdict,
+} from './resolution-wire.ts';
+export {
+  type CandidateMeasurements,
+  type CandidateSelection,
+  compareCandidates,
+  type RepairCandidate,
+  selectRepairCandidate,
+  UNCHANGED_CANDIDATE_ID,
+  UNCHANGED_MEASUREMENTS,
+} from './select-candidate.ts';
+export {
+  type IssueResolutionTally,
+  resolveResolutionChecks,
+  type ResolutionBallot,
+  tallyResolutionChecks,
+} from './tally-resolution.ts';
+export {
   type AdjudicationResult,
   tallyVotes,
 } from './tally-votes.ts';
