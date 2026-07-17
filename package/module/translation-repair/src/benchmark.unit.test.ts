@@ -255,5 +255,46 @@ await describe({
         expect(caught instanceof TypeError,).toBe(true,);
       },
     },),
+
+    it({
+      name: 'forfeits a hung call to its per-call deadline as attempt data',
+      fn: async () => {
+        /**
+         * Fake client that never answers, rejecting only when its call
+         * signal aborts, like a stuck streamed exchange.
+         */
+        const hangingClient: SyntheticClient = {
+          ...fakeClient,
+          chatJson: async function hangingChatJson<ValueT,>(
+            request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
+          ): Promise<ChatJsonOutcome<ValueT>> {
+            /** Gate rejected by the call signal's abort reason. */
+            const gate = Promise.withResolvers<ChatJsonOutcome<ValueT>>();
+            request.signal.addEventListener(
+              'abort',
+              function onAbort() {
+                gate.reject(request.signal.reason,);
+              },
+            );
+            return gate.promise;
+          },
+        };
+        /** Result with a short per-call deadline and a live caller signal. */
+        const result = await runCriticBenchmark({
+          client: hangingClient,
+          entries: [{
+            entryId: 'whiskers',
+            sourceText: SOURCE_TEXT,
+            targetText: TARGET_TEXT,
+            seeds: [BUTTERFLY_SEED,],
+          },],
+          modelIds: ['hf:zai-org/GLM-5.2',],
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 50,
+        },);
+        expect(result.attempts[0]?.outcomeKind,).toBe('http-error',);
+        expect(result.attempts[0]?.detail,).toContain('Timeout',);
+      },
+    },),
   ],
 },);

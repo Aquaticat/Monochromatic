@@ -35,6 +35,14 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 const l = tagged({ tag: 'translation-repair-benchmark', },);
 
 /**
+ * Default per-call deadline.
+ * Provider inference speed varies wildly per model and calls can hang
+ * midway, so every call carries its own deadline;
+ * a stuck model forfeits one attempt instead of stalling the whole run.
+ */
+const DEFAULT_PER_CALL_TIMEOUT_MS = 600_000;
+
+/**
  * One corpus entry prepared for benchmarking.
  *
  * @example
@@ -148,6 +156,9 @@ function gradeHits(
  *
  * @param signal - abort signal honored by every exchange
  *
+ * @param perCallTimeoutMs - deadline joined onto every single call;
+ * expiry forfeits that attempt as data while caller aborts still propagate
+ *
  * @returns Graded attempts plus the aggregate scorecard
  *
  * @throws {@link import('./seeded-error.ts').SeedApplicationError} when a seed spec is misconfigured
@@ -164,11 +175,13 @@ export async function runCriticBenchmark(
     entries,
     modelIds,
     signal,
+    perCallTimeoutMs = DEFAULT_PER_CALL_TIMEOUT_MS,
   }: {
     readonly client: SyntheticClient;
     readonly entries: readonly BenchmarkEntry[];
     readonly modelIds: readonly SyntheticModelId[];
     readonly signal: AbortSignal;
+    readonly perCallTimeoutMs?: number;
   },
 ): Promise<CriticBenchmarkResult> {
   /**
@@ -233,6 +246,15 @@ export async function runCriticBenchmark(
     // oxlint-disable-next-line no-await-in-loop -- entries run sequentially by design so quota pressure stays observable
     const entryRecords = await Promise.all(
       modelIds.map(async function attemptOne(modelId,): Promise<CriticAttemptRecord> {
+        /**
+         * Per-call deadline joined with the caller's signal;
+         * expiry aborts only this attempt.
+         */
+        const callSignal = AbortSignal.any([
+          signal,
+          AbortSignal.timeout(perCallTimeoutMs,),
+        ],);
+
         try {
           /**
            * Outcome of this model's review.
@@ -240,7 +262,7 @@ export async function runCriticBenchmark(
           const outcome = await client.chatJson({
             modelId,
             messages,
-            signal,
+            signal: callSignal,
             temperature: 0,
             responseFormat: CRITIC_RESPONSE_FORMAT,
             validate: isCriticReportWire,

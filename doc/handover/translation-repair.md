@@ -3,8 +3,12 @@
 Status:
 milestone one in progress.
 Tasks 1 (scaffold), 2 (document core), 3 (issue model and span validation),
-and 4 (Synthetic model client) landed;
-task 5 (seeded-error benchmark harness and scorecard) is next.
+4 (Synthetic model client, streaming), and 6 (corpus reads) landed;
+task 5 (benchmark) has all code landed but its first real scorecard is still
+pending: run 1 died on fetch's headers timeout (fixed by streaming),
+run 2 died on the driver's single global 20-minute abort signal
+(no per-call deadline existed; per-call deadlines are now built but blocked,
+see "Immediate next steps").
 Update this document at every task completion or design pivot;
 it exists so auto-compaction cannot lose session state.
 
@@ -34,7 +38,36 @@ consumers and deployment are deliberately out of scope for now.
   `401aa7db8` this handover,
   `411931d21` issue model and deterministic anchor validation,
   `c38ffd823` injected-transport Synthetic model client,
-  `96eb1f68a` thinking-dominated output and API refusal field handling.
+  `96eb1f68a` thinking-dominated output and API refusal field handling,
+  `7347a73f7` pinned local corpus reads (plus `resolveGit` barrel export),
+  `4cd25ae95` seeded-error benchmark harness and scorecard,
+  `8f209692a` streamed chat completions,
+  plus docs commits after each task.
+
+## Immediate next steps
+
+1. Per-call benchmark deadlines are written (`perCallTimeoutMs` on
+   `runCriticBenchmark`, default 600s, expiry forfeits one attempt as data,
+   caller aborts still rethrow; hang test included) but BLOCKED:
+   on Node 26.5.0 an abort listener on
+   `AbortSignal.any([controllerSignal, AbortSignal.timeout(ms),],)` never fires
+   (verified with a five-line isolated repro; the composite never aborts, so the
+   test hangs with "unsettled top-level await").
+   Fix directions: race the call against `withTimeout` from
+   `@monochromatic-dev/module-async-time` (UTL-preferred), or a per-call
+   `AbortController` aborted by a plain timer; do not use `AbortSignal.any`
+   with a timeout source on this Node.
+2. Rerun the real benchmark (driver `run-benchmark.ts` in the session scratchpad:
+   Huasheng + DarlinChit, 2 derived omission seeds each, all 7 models,
+   45-minute global signal, 8-minute per-call deadline) and copy the scorecard
+   (per-model rows plus `ensembleRecall`) into this document.
+3. Wall-time expectations: with 1.5-pack concurrency (1 request per model at
+   full speed per pack) and entries sequential, worst case is roughly
+   entries × per-call deadline.
+   If the user buys 5 packs, per-model concurrency rises to 5:
+   make the client's per-model `pLimit` limit configurable (currently
+   hard-coded 1) and run entries concurrently in the benchmark;
+   wall time then approaches the slowest single call instead of the sum.
 - Task list lives in the session task tool;
   mirror of current state is in "Task state" below.
 
