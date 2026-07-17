@@ -126,10 +126,17 @@ Running (completion notifications arrive automatically):
   line-number alignment preserved,
   strict compile, zero drops,
   gitignored local files untouchable.
-- #392 test-module implicit_return sweep plus `--all-targets` clippy gate,
-  sonnet, engine crate.
-  Instructed to report (not fix or suppress) foreign lint families,
-  and to omit the `Closes` line if the widened gate cannot exit clean.
+- #392 follow-up sweep, sonnet, engine crate:
+  convert 60 test-code `Result::unwrap()` sites to `.expect()` with messages.
+  First #392 agent landed `25fd8b9c6`
+  (60 implicit_return fixes, gate widened to `--all-targets`)
+  and correctly stopped on the foreign `disallowed_methods` family;
+  triage decision posted to #392 from root `clippy.toml` reason text plus
+  sibling-crate precedent (expect, never suppress).
+  CAUTION: the widened engine `lint:clippy` gate is RED on main until this
+  agent lands.
+  Scope note posted to #385:
+  widen the scanner crate's lib-only clippy task during the teardown.
 
 Filed, not started:
 
