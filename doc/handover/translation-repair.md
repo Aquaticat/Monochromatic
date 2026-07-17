@@ -357,6 +357,13 @@ consumers and deployment are deliberately out of scope for now.
   summarizing or compressing omitted content ('a short paraphrase of
   a long omission is not a fix'); run 7 predates it, run 8 onward
   measures it.
+  run 7 (2026-07-17, 1422 s, last pre-remedy baseline): repair 4/6,
+  detection 6/6, all three entries repaired; misses are keyword233's
+  15-word needle (4/15) and CuspariaKLSY's 7-word needle (1/7), the
+  first SHORT-needle editor miss, so compression is dominant on long
+  needles but not exclusive to them.
+  Accumulated: 19/35 repair (0.54); detection 16/20 (0.80) over
+  graded runs.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
