@@ -47,6 +47,14 @@ export {
   type IssueSeverity,
 } from './issue-taxonomy.ts';
 export {
+  type AlignmentFinding,
+  alignDocumentSections,
+  type ChunkPair,
+  chunkByHeadings,
+  type DocumentChunk,
+  type SectionAlignment,
+} from './chunk-document.ts';
+export {
   type MaskedCommentRegion,
   maskHtmlComments,
 } from './mask-html-comments.ts';
