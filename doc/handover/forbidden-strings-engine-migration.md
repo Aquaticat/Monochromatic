@@ -1,7 +1,22 @@
 # Handover: forbidden-strings engine migration orchestration
 
 Updated:
- 2026-07-16, after #378 landed and #392 launched.
+ 2026-07-16, after #392 closed and #382 (publish) completed.
+
+Fresh milestones (details in State of play):
+
+- #392 done in two commits (`25fd8b9c6` sweep plus gate widening,
+  `260823a4a` unwrap-to-expect);
+  the engine's all-targets clippy gate is GREEN again.
+- #382 done:
+  `forbidden-regex` 0.1.0 is LIVE on crates.io
+  (manual bootstrap publish from the authorized session),
+  the maintainer configured trusted publishing,
+  and commit `4b502af20` adds the fr- workflow lane.
+- Remaining in flight:
+  #376 only (grace timer running).
+  Engine crate and workflow are free;
+  bench sidecar still occupied by #376.
 Assume nothing else survived compaction;
  this file plus the planning doc are the resume points.
 
