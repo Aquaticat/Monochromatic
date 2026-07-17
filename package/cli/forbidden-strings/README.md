@@ -688,7 +688,7 @@ commands,
    Each set runs under a `catch_unwind`
   boundary so a matcher fault fails closed as a synthetic finding.
 - **Build-time precompilation.
-  ** `build.rs` compiles `data/builtin-rules.ported.txt`
+  ** `build.rs` compiles `data/builtin-rules.txt`
   through the engine once at build time and serializes it (`to_bytes`);
    `lib.rs` embeds the
   blob with `include_bytes!` and the loader rebuilds it via the validating `from_bytes`,

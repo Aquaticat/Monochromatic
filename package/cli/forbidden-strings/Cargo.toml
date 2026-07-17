@@ -6,13 +6,11 @@ edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/cli/forbidden-strings"
 include = [
   "src/**/*.rs",
-  # The embedded baseline: lib.rs include_str!s it at compile time, so the
+  # The embedded baseline: lib.rs include_str!s it at compile time and build.rs
+  # compiles it into a serialized RegexSet embedded via include_bytes!, so the
   # published crate cannot build without it.
   "data/builtin-rules.txt",
-  # The ported baseline: build.rs compiles it into a serialized RegexSet embedded
-  # via include_bytes!, so the published crate cannot build without it either.
-  "data/builtin-rules.ported.txt",
-  # The build script precompiles the ported baseline at build time.
+  # The build script precompiles the baseline at build time.
   "build.rs",
   "Cargo.toml",
   "Cargo.lock",

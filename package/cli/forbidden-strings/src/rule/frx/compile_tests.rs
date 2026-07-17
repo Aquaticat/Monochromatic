@@ -5,9 +5,9 @@ use super::{compile_from_text, load_precompiled, LoadError};
 use forbidden_regex::{CompileError, RegexSet};
 use rayon::prelude::*;
 
-// The staged ported builtin baseline (crate data) and the repo-root append file.
-const BUILTIN_PORTED: &str = include_str!("../../../data/builtin-rules.ported.txt");
-const APPEND_PORTED: &str = include_str!("../../../../../../forbidden-strings.append.ported.txt");
+// The staged builtin baseline (crate data) and the repo-root append file.
+const BUILTIN_PORTED: &str = include_str!("../../../data/builtin-rules.txt");
+const APPEND_PORTED: &str = include_str!("../../../../../../forbidden-strings.append.txt");
 
 // A distinctive, non-secret canary fed through every load-error path; it must
 // never surface in any diagnostic or on the tracing/stderr path.

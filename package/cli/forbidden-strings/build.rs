@@ -45,7 +45,7 @@ mod format;
 
 /// Compiles the ported baseline once and writes its serialized bytes into `OUT_DIR`.
 ///
-/// Parses the committed, generated `data/builtin-rules.ported.txt` through the shared
+/// Parses the committed, generated `data/builtin-rules.txt` through the shared
 /// two-form parser, compiles the whole set through the engine, serializes it, and
 /// writes the blob for `include_bytes!`. A parse or compile failure fails the build,
 /// which is the correct fail-closed response to a corrupt or un-ported baseline; the
@@ -53,7 +53,7 @@ mod format;
 fn main() {
     // Rerun only when the baseline data or the shared parser sources change; the
     // build script's own edits are tracked by cargo automatically.
-    println!("cargo:rerun-if-changed=data/builtin-rules.ported.txt");
+    println!("cargo:rerun-if-changed=data/builtin-rules.txt");
     println!("cargo:rerun-if-changed=src/rule/frx/format.rs");
     println!("cargo:rerun-if-changed=src/rule/frx/escape.rs");
     println!("cargo:rerun-if-changed=src/rule/frx/error.rs");
@@ -62,7 +62,7 @@ fn main() {
         env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR set by cargo");
 
-    let ported_path = Path::new(&manifest_dir).join("data/builtin-rules.ported.txt");
+    let ported_path = Path::new(&manifest_dir).join("data/builtin-rules.txt");
     let ported = fs::read_to_string(&ported_path)
         .unwrap_or_else(|error| panic!("read {}: {error}", ported_path.display()));
 

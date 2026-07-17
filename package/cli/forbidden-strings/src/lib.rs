@@ -81,7 +81,7 @@ pub const BUILTIN_RULES: &str = include_str!("../data/builtin-rules.txt");
 /// time.
 ///
 /// What:     `include_bytes!(concat!(env!("OUT_DIR"), "/builtin-rules-precompiled.bin"))`
-///           bakes the byte blob `build.rs` produced from `data/builtin-rules.ported.txt`
+///           bakes the byte blob `build.rs` produced from `data/builtin-rules.txt`
 ///           into the binary. `&[u8]` is a read-only view of those bytes; the runtime
 ///           loader hands them to `load_precompiled`, which the engine's validating
 ///           `from_bytes` decodes without recompiling.
@@ -89,9 +89,9 @@ pub const BUILTIN_RULES: &str = include_str!("../data/builtin-rules.txt");
 ///           measured tens of seconds), so the baseline is compiled once at build time
 ///           and only decoded at runtime. Only the small runtime rules files still
 ///           compile from text.
-/// Gotcha:   The blob is regenerated whenever `data/builtin-rules.ported.txt` or the
+/// Gotcha:   The blob is regenerated whenever `data/builtin-rules.txt` or the
 ///           shared frx parser sources change (`build.rs` `rerun-if-changed`); editing
-///           the ported file changes nothing until the crate is rebuilt.
+///           the baseline file changes nothing until the crate is rebuilt.
 pub const BUILTIN_PRECOMPILED: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/builtin-rules-precompiled.bin"));
 
