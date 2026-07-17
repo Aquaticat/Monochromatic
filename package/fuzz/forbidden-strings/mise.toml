@@ -103,7 +103,3 @@ if (replays.length === 0) {
 const inputs = replays.length === 0 ? corpusDirs : replays
 execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', ...inputs, '--', '-dict=dictionary/forbidden-strings.dict', ...flags], { stdio: 'inherit' })
 """
-
-[tasks.seed]
-description = "Regenerate the curated corpus from forbidden-strings rule/<area>_tests.rs"
-run = "cargo run --release --bin seed-from-tests"

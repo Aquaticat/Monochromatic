@@ -1,1 +1,0 @@
-compile_rule_src on bug-f trailing shape took {elapsed:?}; expected <100ms

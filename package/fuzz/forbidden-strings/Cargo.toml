@@ -13,11 +13,11 @@ needless_return = "allow"
 cargo-fuzz = true
 
 [dependencies]
-# `anyhow` carries errors in the developer-only seed corpus helper binary.
-anyhow = "1"
+# `arbitrary` drives the structured generator; the derive feature powers the small
+# closed enums (BadFlag). `libfuzzer-sys` is the harness. `sha2` fingerprints content
+# into redacted crash messages (length + SHA-256, never raw bytes).
 arbitrary = { version = "1", features = ["derive"] }
 libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
-rayon = "1"
 sha2 = "0.10"
 
 [dependencies.forbidden-strings]
@@ -36,14 +36,12 @@ members = ["."]
 name = "forbidden_strings_fuzz"
 path = "src/lib.rs"
 
-# Inherit `panic = "unwind"` from the parent crate so libFuzzer can capture
-# and minimize crashes via unwinding. The parent currently also uses `unwind`
-# (load-bearing for the resharp-panic safety wrapper, see
-# ../../cli/forbidden-strings/Cargo.toml:49-97),
-# so these settings do not currently change the panic strategy. They are spelled
-# out anyway so the fuzz harness keeps working if the parent's setting changes
-# again — under `panic = "abort"`, panics would abort the process before
-# libFuzzer gets a chance to record a reproducer.
+# Spell out `panic = "unwind"` so libFuzzer can capture and minimize crashes by
+# unwinding. The scanner crate under fuzz also uses `unwind` (load-bearing for its
+# `catch_unwind` fail-closed scan boundary, see ../../cli/forbidden-strings/Cargo.toml),
+# so this does not change the effective strategy today. It is pinned anyway so the
+# harness keeps working if the scanner's setting ever changes to `abort`, under which a
+# panic would kill the process before libFuzzer records a reproducer.
 [profile.release]
 panic = "unwind"
 
@@ -51,29 +49,8 @@ panic = "unwind"
 panic = "unwind"
 
 [[bin]]
-name = "fuzz_extract_gate_soundness"
-path = "fuzz_targets/fuzz_extract_gate_soundness.rs"
-test = false
-doc = false
-bench = false
-
-[[bin]]
-name = "fuzz_ruleset_scan_invariants"
-path = "fuzz_targets/fuzz_ruleset_scan_invariants.rs"
-test = false
-doc = false
-bench = false
-
-[[bin]]
-name = "fuzz_regex_engine_dispatch"
-path = "fuzz_targets/fuzz_regex_engine_dispatch.rs"
-test = false
-doc = false
-bench = false
-
-[[bin]]
-name = "fuzz_regex_syntax_walkers"
-path = "fuzz_targets/fuzz_regex_syntax_walkers.rs"
+name = "fuzz_literal_roundtrip"
+path = "fuzz_targets/fuzz_literal_roundtrip.rs"
 test = false
 doc = false
 bench = false
@@ -86,15 +63,8 @@ doc = false
 bench = false
 
 [[bin]]
-name = "fuzz_residual_shards"
-path = "fuzz_targets/fuzz_residual_shards.rs"
-test = false
-doc = false
-bench = false
-
-[[bin]]
-name = "fuzz_literal_roundtrip"
-path = "fuzz_targets/fuzz_literal_roundtrip.rs"
+name = "fuzz_ruleset_scan_invariants"
+path = "fuzz_targets/fuzz_ruleset_scan_invariants.rs"
 test = false
 doc = false
 bench = false

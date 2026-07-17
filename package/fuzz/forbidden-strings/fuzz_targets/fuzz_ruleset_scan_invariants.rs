@@ -1,257 +1,121 @@
-// What:     `fuzz_ruleset_scan_invariants` exercises the full
-//           `scan_content` pipeline end-to-end and asserts
-//           properties that hold REGARDLESS of regex routing, AC
-//           gating, or rayon scheduling. The plan §7.2 invariant
-//           set: (1) hit format matches the
-//           `path:line:col_start..col_end rule=N` shape and never
-//           echoes matched bytes, (2) column counters land on
-//           UTF-8 start bytes, (3) hit positions index inside the
-//           content, (4) hit set is invariant to rayon thread count,
-//           (5) hit set (modulo `rule=` numbering) is invariant to
-//           rule order.
-// Why:      The plan rejects a slow reference scanner ("two
-//           implementations drift and produce false positives").
-//           Invariant-style testing is the cheaper, more durable
-//           alternative.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// fuzzTarget((input: RulesetAndContent) => {
-//   const file = fileSource(input);
-//   const rs = loadRulesetFromSource(file, "fuzz");
-//   const hits = scanContent("fuzz.txt", input.content, rs);
-//   // walk invariants...
-// });
-// ```
+// What:  drive the strict two-form loader (`load_from_text`) and the columnless scan
+//        (`scan_file`) over a generated ruleset and buffer, asserting loader-contract and
+//        scan invariants that hold regardless of which rules match: a rejected flag fails
+//        the load closed, `m`/`x` are no-ops, a file with no rule line loads nothing, and
+//        reversing the rule order renumbers ids but never changes which positions match.
+// Why:   the engine swap (#384/#385) replaced the resharp/aho-corasick loader with the
+//        strict two-form frx loader and the columnless output. Invariant-style testing
+//        (rather than a slow reference scanner that would drift) pins those properties;
+//        a fixed loader-contract battery pins the strict-flag policy on every process.
 
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
 
-use forbidden_strings::fuzz_api::*;
-use forbidden_strings_fuzz::generators::RulesetAndContent;
-use sha2::{Digest, Sha256};
+use forbidden_strings::fuzz_api::{load_from_text, scan_file};
+use forbidden_strings_fuzz::generators::{redacted_fingerprint, RuleFileAndContent};
 
-// What:     `fn parse_hit(line: &str) -> Option<(usize, usize, usize, usize)>`.
-//           Parses the formatted hit line into its four numeric
-//           fields `(line, col_start, col_end, rule_idx)`. Returns
-//           `None` on shape mismatch so we can assert the format
-//           shape via the option chain.
-// Why:      The format is documented in `scan_format::format_hit`
-//           as `path:line:col_start..col_end rule=N`. The
-//           invariant target needs to extract those numbers to
-//           bound-check them; a regex would be heavier here.
-fn parse_hit(line: &str) -> Option<(usize, usize, usize, usize)> {
-    // Shape: <path>:<line>:<col_start>..<col_end> rule=<N>
-    let rule_idx_pos = line.rfind(" rule=")?;
-    let rule_idx_s = &line[rule_idx_pos + " rule=".len()..];
-    let rule_idx: usize = rule_idx_s.parse().ok()?;
+// The fixed path handed to `scan_file`.
+const PATH: &str = "fuzz.txt";
 
-    let prefix = &line[..rule_idx_pos];
-    let cols_pos = prefix.rfind("..")?;
-    let col_end_s = &prefix[cols_pos + 2..];
-    let col_end: usize = col_end_s.parse().ok()?;
-
-    let before_dots = &prefix[..cols_pos];
-    let col_start_pos = before_dots.rfind(':')?;
-    let col_start_s = &before_dots[col_start_pos + 1..];
-    let col_start: usize = col_start_s.parse().ok()?;
-
-    let before_col_start = &before_dots[..col_start_pos];
-    let line_pos = before_col_start.rfind(':')?;
-    let line_s = &before_col_start[line_pos + 1..];
-    let line_num: usize = line_s.parse().ok()?;
-
-    Some((line_num, col_start, col_end, rule_idx))
+// What:  pin the strict-loader flag policy once per process.
+// Why:   the two-form contract is: bare literal and `/PATTERN/FLAGS` load, `m`/`x` are
+//        no-ops, every other flag letter is a hard error, and a source with no rule line
+//        is `NoRules`. A fixed battery exercises each branch on every campaign, including
+//        a bounded smoke pass, independent of what the fuzzer happens to generate.
+fn run_loader_contract_battery() {
+    static ONCE: std::sync::Once = std::sync::Once::new();
+    ONCE.call_once(|| {
+        // Accepted forms.
+        assert!(load_from_text("abc").is_ok(), "a bare literal must load");
+        assert!(load_from_text("/abc/").is_ok(), "an empty flag run must load");
+        assert!(load_from_text("/abc/m").is_ok(), "'m' must be an accepted no-op");
+        assert!(load_from_text("/abc/x").is_ok(), "'x' must be an accepted no-op");
+        assert!(load_from_text("/abc/mx").is_ok(), "'m' and 'x' must be accepted no-ops");
+        // Rejected forms: any other flag letter is a hard, fail-closed load error.
+        assert!(load_from_text("/abc/i").is_err(), "'i' must be a hard load error");
+        assert!(load_from_text("/abc/s").is_err(), "'s' must be a hard load error");
+        assert!(load_from_text("/abc/g").is_err(), "'g' must be a hard load error");
+        // No-rule forms.
+        assert!(load_from_text("").is_err(), "an empty source loads no rules");
+        assert!(load_from_text("# comment").is_err(), "a comment-only source loads no rules");
+        assert!(load_from_text("   ").is_err(), "a whitespace-only source loads no rules");
+    });
 }
 
-// What:     `fn position_key(hit: &str) -> Option<String>`. Strips
-//           the trailing ` rule=N` so position-only comparisons
-//           ignore rule-index renumbering when we shuffle rule
-//           order.
-// Why:      Plan §7.2 rule-order invariant: hits without their
-//           rule= suffix must match across orderings.
+// What:  the position-only key of a finding: `PATH:LINE`, dropping the `rule=N` suffix.
+// Why:   rule-order invariance renumbers rule ids but not positions, so positions (as a
+//        multiset) must match across orderings. The fail-closed `engine error` line has
+//        no position and is dropped.
 fn position_key(hit: &str) -> Option<String> {
-    hit.rfind(" rule=").map(|p| hit[..p].to_string())
+    return hit.rfind(" rule=").map(|pos| return hit[..pos].to_string())
 }
 
-fuzz_target!(|input: RulesetAndContent| {
-    // What:     `let source = input.file_source();`. Renders the
-    //           bounded rules into a multi-line file-form source
-    //           that `load_ruleset_from_source` consumes.
-    // Why:      Drive the production loader exactly the same way
-    //           the CLI does.
-    let source = input.file_source();
-    if source.trim().is_empty() {
-        return;
+fuzz_target!(|input: RuleFileAndContent| {
+    run_loader_contract_battery();
+
+    let source = input.rules.render();
+    let load_result = load_from_text(&source);
+
+    // Strict-loader prediction: a file carrying a rejected flag must fail closed, no
+    // matter where in the file that line sits.
+    if input.rules.has_bad_flag() {
+        assert!(
+            load_result.is_err(),
+            "a ruleset with a rejected flag must fail closed",
+        );
     }
 
-    // What:     `let rs = match load_ruleset_from_source(&source, "fuzz") { ... };`.
-    //           Compile-failure rejection: invalid rule combinations
-    //           the loader rejects don't exercise the scan path.
-    // Why:      Skip uninteresting load failures.
-    let rs = match load_ruleset_from_source(&source, "fuzz") {
-        Ok(r) => r,
+    let loaded = match load_result {
+        Ok(loaded) => loaded,
         Err(_) => return,
     };
 
     let content: &[u8] = &input.content;
+    let hits = scan_file(PATH, content, &loaded);
 
-    // What:     `let hits_default = scan_content("fuzz.txt", content, &rs);`.
-    //           Run the production scan on the default rayon pool.
-    //           Returns owned `Vec<String>`.
-    // Why:      Establish the baseline hit set for invariant checks.
-    let hits_default = scan_content("fuzz.txt", content, &rs);
-
-    //region Invariant 1+2+3: format + UTF-8 boundary + position-in-content
-
-    // What:     `let mut content_digest = Sha256::new();` so we
-    //           can fingerprint a hit-format violation without
-    //           dumping bytes.
-    // Why:      Redacted reproducer.
-    for hit in &hits_default {
-        // What:     `let parsed = parse_hit(hit);`. Asserts the
-        //           hit string matches the documented shape; if
-        //           not, the panic message redacts content.
-        // Why:      Invariant 1.
-        let Some((line_num, col_start, col_end, _rule_idx)) = parse_hit(hit) else {
-            let mut hasher = Sha256::new();
-            hasher.update(content);
-            let digest = hasher.finalize();
-            panic!(
-                "hit shape violation: hit = {:?} content_len = {} content_sha256 = {:x}",
-                hit,
-                content.len(),
-                digest,
-            );
-        };
-
-        // What:     `if !hits_default[i].contains(" rule=")`. The
-        //           literal token "rule=" must appear; format_hit
-        //           always emits it. Already covered by parse_hit
-        //           but a separate assertion makes the failure
-        //           message simpler.
-        // Why:      Defensive.
-        assert!(hit.contains(" rule="), "hit missing rule=: {:?}", hit);
-
-        // What:     Bounds checks. `line_num` is 1-indexed; line
-        //           count is the number of newline-delimited lines
-        //           in content. col_start / col_end are 1-indexed
-        //           byte offsets within the line.
-        // Why:      Invariant 3: positions must point inside the
-        //           content's actual structure.
-        let line_count_plus_one = content.iter().filter(|&&b| b == b'\n').count() + 1;
-        assert!(
-            line_num >= 1 && line_num <= line_count_plus_one,
-            "line out of range: {} for {} lines",
-            line_num,
-            line_count_plus_one,
-        );
-        assert!(
-            col_start >= 1 && col_end >= 1,
-            "cols must be 1-indexed: ({}, {})",
-            col_start,
-            col_end,
-        );
-        assert!(col_start <= col_end, "col_start > col_end: ({}, {})", col_start, col_end);
-
-        // Invariant 2 (match positions land on UTF-8 char boundaries) was
-        // removed: it is unsound for this scanner. The scanner reports
-        // 1-based BYTE columns (`line_and_col_indexed`: offset - line_start
-        // + 1), like ripgrep, and its matchers are byte-oriented, so on
-        // arbitrary content a rule can match a sub-char byte range (e.g.
-        // only the lead byte of `©` = C2 A9, or only the trailing
-        // continuation byte). The reported byte columns then legitimately
-        // fall mid-char, so asserting char-boundary alignment produces
-        // false failures; and the only sound refinement (gate the check on
-        // the reconstructed matched range being valid UTF-8) is tautological
-        // because valid UTF-8 already implies the boundaries it would
-        // assert. The original motivation, the walk_literal_bytes u8->char
-        // mojibake regression, is covered directly by the
-        // fuzz_literal_roundtrip target, the char-by-char walk in atom.rs,
-        // and the escaped_underscore_gate_round_trips_through_aho_corasick
-        // unit test. The remaining invariants here (line/col in range, col
-        // ordering, format shape, thread-count invariance) still hold.
-    }
-
-    //endregion
-
-    //region Invariant 4: thread-count invariance
-
-    // What:     `let pool = rayon::ThreadPoolBuilder::new().num_threads(1).build()`.
-    //           Builds a single-thread rayon pool. `pool.install(|| ... )`
-    //           runs the closure on that pool instead of the global one.
-    // Why:      Plan §7.2 thread-count invariance.
-    let single_threaded_hits = match rayon::ThreadPoolBuilder::new().num_threads(1).build() {
-        Ok(pool) => pool.install(|| scan_content("fuzz.txt", content, &rs)),
-        Err(_) => return,
-    };
-
-    // What:     Compare as bags. Hit order within a file isn't
-    //           contractually specified (rayon merges in arbitrary
-    //           order), so sort both before comparing.
-    // Why:      Bag equality is the right level: thread count must
-    //           not change WHICH hits we report.
-    let mut sorted_default = hits_default.clone();
-    let mut sorted_single = single_threaded_hits;
-    sorted_default.sort();
-    sorted_single.sort();
-    if sorted_default != sorted_single {
-        let mut hasher = Sha256::new();
-        hasher.update(content);
-        let digest = hasher.finalize();
-        panic!(
-            "thread-count invariance violated:\n\
-             default_hits = {}\n\
-             single_thread_hits = {}\n\
-             content_len = {}\n\
-             content_sha256 = {:x}",
-            sorted_default.len(),
-            sorted_single.len(),
-            content.len(),
-            digest,
-        );
-    }
-
-    //endregion
-
-    //region Invariant 5: rule-order invariance
-
-    // What:     `let mut reversed = source.lines().collect::<Vec<_>>();`
-    //           reverses the rule order, rebuilds the ruleset,
-    //           re-runs the scan, then compares position-only hit
-    //           sets (rule indices renumber).
-    // Why:      Plan §7.2 rule-order invariance.
-    let mut reversed: Vec<&str> = source.lines().collect();
-    reversed.reverse();
-    let reversed_source = reversed.join("\n");
-    if let Ok(rs_rev) = load_ruleset_from_source(&reversed_source, "fuzz") {
-        let hits_rev = scan_content("fuzz.txt", content, &rs_rev);
-
-        // Position-only bag (drop the rule= suffix).
-        let mut keys_default: Vec<String> =
-            hits_default.iter().filter_map(|h| position_key(h)).collect();
-        let mut keys_rev: Vec<String> =
-            hits_rev.iter().filter_map(|h| position_key(h)).collect();
-        keys_default.sort();
-        keys_rev.sort();
-        if keys_default != keys_rev {
-            let mut hasher = Sha256::new();
-            hasher.update(content);
-            let digest = hasher.finalize();
-            panic!(
-                "rule-order invariance violated:\n\
-                 default_position_keys = {}\n\
-                 reversed_position_keys = {}\n\
-                 content_len = {}\n\
-                 content_sha256 = {:x}",
-                keys_default.len(),
-                keys_rev.len(),
-                content.len(),
-                digest,
-            );
+    // Every finding's line index stays within the buffer; the format itself is pinned in
+    // detail by `fuzz_scan_format`, so here we only bound the line index.
+    let max_line = content.iter().filter(|&&byte| byte == b'\n').count() + 1;
+    let engine_error = format!("{PATH}: engine error");
+    for hit in &hits {
+        if hit == &engine_error {
+            continue;
         }
+        let Some(key) = position_key(hit) else {
+            panic!("finding missing ' rule=' ({})", redacted_fingerprint(content));
+        };
+        let Some(colon_pos) = key.rfind(':') else {
+            panic!("finding missing ':' ({})", redacted_fingerprint(content));
+        };
+        let Ok(line) = key[colon_pos + 1..].parse::<usize>() else {
+            panic!("finding line not numeric ({})", redacted_fingerprint(content));
+        };
+        assert!(
+            line >= 1 && line <= max_line,
+            "line index {} out of range 1..={} ({})",
+            line,
+            max_line,
+            redacted_fingerprint(content),
+        );
     }
 
-    //endregion
+    // Rule-order invariance: reversing the rule lines gives every rule a new id but leaves
+    // the set of patterns unchanged, so the multiset of matched positions is invariant.
+    // The forward load succeeded, so no rejected flag is present and the reverse loads too.
+    let reversed_source = input.rules.render_reversed();
+    if let Ok(loaded_rev) = load_from_text(&reversed_source) {
+        let hits_rev = scan_file(PATH, content, &loaded_rev);
+        let mut keys: Vec<String> = hits.iter().filter_map(|hit| return position_key(hit)).collect();
+        let mut keys_rev: Vec<String> =
+            hits_rev.iter().filter_map(|hit| return position_key(hit)).collect();
+        keys.sort();
+        keys_rev.sort();
+        assert_eq!(
+            keys,
+            keys_rev,
+            "rule-order invariance violated ({})",
+            redacted_fingerprint(content),
+        );
+    }
 });
