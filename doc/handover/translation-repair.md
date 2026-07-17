@@ -222,6 +222,16 @@ consumers and deployment are deliberately out of scope for now.
   12 adjudication panel (provenance-blind, vote states
   supported/unsupported/ambiguous/source-defect/abstain, quorum,
   evidence-based never corroboration-gated, disposes proposed merges),
+  DONE (commit `ebfe447a2`) with live boundary check on seeded
+  DarlinChit (2026-07-17): 7 critics -> 58 validated claims -> 15
+  clusters (one 28-member hot-region mega-cluster, a refinement
+  candidate) -> 5 of 7 panelists returned complete 58-verdict ballots
+  with ZERO wire findings (integer-reference ballots work; Nemotron
+  and gpt-oss forfeited the 5-minute deadline, driver had no retry)
+  -> tally 42 issues (39 accepted, 2 rejected, 1 needs-human), BOTH
+  planted seeds inside accepted issues, net quota cost ~0.
+  chatJson success discriminant is `kind === 'ok'` (a first driver
+  run wasted 5.6 quota units checking `'value'`),
   13 patch-operation model plus editable envelopes plus deterministic
   apply guards (base node hashes, out-of-envelope and stale-hash
   rejection, byte-exact footnote conventions),
