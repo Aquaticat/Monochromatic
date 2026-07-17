@@ -390,6 +390,14 @@ consumers and deployment are deliberately out of scope for now.
   established, keep accumulating.
   Accumulated: 27/49 repair (0.55); detection 26/32 (0.81) over
   graded runs.
+  run 11 (2026-07-17, 1717 s): repair 3/4, detection 4/4:
+  MioCardMeow 2/2 with one PERFECT 8/8 and a 13-worder at 7/13;
+  s5ehfr9's 13-word needle missed for the THIRD straight time
+  (3/13, 2/13, 3/13): a stable editor-side repeat offender with
+  detection fine, the editor-layer counterpart to wangzihao980's
+  detection hole.
+  Accumulated: 30/53 repair (0.57); post-remedy 11/18 (0.61) versus
+  0.52 pre-remedy; detection 30/36 (0.83).
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
