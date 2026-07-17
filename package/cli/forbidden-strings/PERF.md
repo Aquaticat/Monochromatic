@@ -7,23 +7,27 @@ against the binary built from this package's `src/`.
 
 ## Headline numbers
 
-Post-emit-hit-consolidation,
- 2026-05-16.
+Cutover re-measure for the `forbidden-regex` engine,
+ 2026-07-17,
+ issue #387.
  On AMD Ryzen 7 8700F (16 threads),
-hyperfine 1.20.0:
+hyperfine 1.20.0,
+ embedded ported baseline only (`--builtin-rules`, no user rules file):
 
-- This repo cold start:
-   **9.4 ms ± 0.8 ms**
+- This repo cold start (one small file):
+   **13.7 ms ± 0.4 ms**
 - This repo full `--all`:
-   **56.6 ms ± 3.1 ms**
-- Linux kernel full `--all`:
-   **1.989 s ± 0.246 s**
+   **131.9 ms ± 11.6 ms**
+   (6407 tracked files, 74.7 MiB, at `HEAD` `c8eb46466`)
 
-These are the same numbers quoted in README.
-md.
- If you change them,
- change README.
-md too.
+These supersede the pre-0.2.0 resharp / `regex`-crate headline figures
+ (cold start 9.4 ms, `--all` 56.6 ms, measured 2026-05-16 on a smaller corpus),
+ which are preserved in the dated history below.
+The Linux kernel `--all` was not part of this cutover re-measure;
+ its pre-0.2.0 figure of 1.989 s stands in the history.
+Full methodology, the apples-to-apples engine A/B on the current corpus,
+ and the budget comparison are in the `2026-07-17` block under "Last benched".
+README defers to this file for the 0.2.0 numbers and quotes none directly.
 
 ## Cli-git integration baseline
 
@@ -139,6 +143,71 @@ implementation — that wording is preserved deliberately as the regression
 history is the file's reason for existing.
 
 ## Last benched
+
+**2026-07-17 (`forbidden-regex` engine cutover, 0.2.0)**,
+ hyperfine 1.20.0,
+ AMD Ryzen 7 8700F (16 threads),
+ quiet machine.
+ Issue #387, the engine-swap cutover re-measure.
+ Both binaries measured against the same working tree at `HEAD` `c8eb46466`
+ (6407 tracked files, 74.7 MiB tracked content):
+
+- New binary:
+ the live release `0.2.0` at
+ `package/cli/forbidden-strings/target/release/forbidden-strings`,
+ loading the embedded ported baseline via `--builtin-rules`
+ with no user rules file (env `FORBIDDEN_STRINGS_RULES` removed).
+- Old binary:
+ the published `0.1.9` installed from crates.io into a disposable temp root,
+ loading `data/builtin-rules.txt` via `--rules`.
+
+Cold start scanned one small clean file
+ (`package/cli/forbidden-strings/tsconfig.json`, 100 bytes, no findings);
+ `--all` scanned the whole tree with `--ignore-failure`
+ (findings on both sides make the exit non-zero).
+Each measurement is 30 runs after 3 warm-up runs.
+
+```text
+                    old 0.1.9 (resharp)   new 0.2.0 (forbidden-regex)
+cold start          12.1 ms ± 0.5 ms      13.7 ms ± 0.4 ms
+full --all          168.8 ms ± 3.3 ms     131.9 ms ± 11.6 ms
+```
+
+Reading:
+
+- Cold start rises about 1.6 ms new versus old,
+ near the combined sigma.
+ The new binary loads a precompiled serialized `RegexSet` (`from_bytes`)
+ instead of compiling 259 rules at startup,
+ so its startup CPU is far lower
+ (user 8.2 ms new versus 65.5 ms old)
+ even though wall time is close.
+- Full `--all` is about 0.78x on the new engine
+ (131.9 ms versus 168.8 ms on the identical corpus),
+ so the engine is faster on the full scan, not slower.
+- The rise from the pre-0.2.0 headline `--all` of 56.6 ms is corpus growth,
+ not the engine:
+ tracked files grew from 3471 to 6407 and content from 57 MiB to 74.7 MiB
+ since that measurement, and the old engine on this larger corpus is 168.8 ms.
+ The `~5000 tracked files` re-bench trigger in "When to re-bench" is now met,
+ which is itself why the absolute number moved.
+
+Budget comparison:
+
+- Pre-commit budget.
+ The README states a sub-100 ms pre-commit budget for the native-binary startup;
+ the "When to re-bench" trigger sets a 30 ms startup ceiling.
+ New cold start 13.7 ms is within both, with margin.
+- Pre-push and full-scan budget.
+ The README states no separate numeric pre-push figure;
+ the operative ceilings are the "When to re-bench" 180 ms `--all` trigger
+ and the cli-git manual-push ceiling of strictly less than 2000 ms
+ (see "Cli-git repository-scale manual push").
+ New full `--all` 131.9 ms is within both, with wide margin.
+- No budget is exceeded;
+ there is no blocking finding.
+
+---
 
 **2026-06-19 (abandoned resharp-only serialize-cache experiment)**,
 hyperfine 1.20.0.
