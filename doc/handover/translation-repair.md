@@ -289,18 +289,23 @@ consumers and deployment are deliberately out of scope for now.
   honestly), both dispatched entries status `repaired`
   (a2581911655 25/29 issues resolved, homoyamakaze 33/34).
   The one missed seed (a2581911655 omission-0, 5/18 words returned)
-  is the first repair-quality calibration datum. Weather note: one
-  chunk lost SIX of seven critics to deadlines and the pipeline still
-  completed it on the surviving GLM-5.2 voice (7 claims, panel 7/7,
-  editor 6/6, checkers confirmed): graceful degradation held under
-  the worst observed burst. Net quota over the whole run POSITIVE
-  (2740.5 -> 2745.6 of 2750). Small sample by design; repeated
-  shuffled budget runs accumulate the real rate.
+  is the first repair-quality calibration datum. One chunk
+  (a2581911655 chunk 1) lost SIX of seven critics to 4-minute
+  deadlines while GLM-5.2 completed and chunk 0 of the same entry had
+  completed 7/7 four minutes earlier; the pipeline finished the chunk
+  on the surviving voice. CAUSE UNVERIFIED: aggregate-load weather
+  and a content-conditional thinking spiral (BI4PBV precedent) both
+  fit; task 19 probes it by re-running the exact seeded chunk in a
+  fresh window. Net quota over the whole run POSITIVE
+  (2740.5 -> 2745.6 of 2750).
   The repair-phase exports live in `pipeline-barrel.ts` (root barrel
   hit max-lines).
-  REPAIR PHASE COMPLETE: tasks 11 through 17 all landed with live
-  verification at every stage. Natural follow-ups, none yet
-  requested: accumulate milestone-two runs for a stable rate, canary
+  MILESTONE TWO IS NOT DONE (user directive 2026-07-17): a stage that
+  loses voices must retry the lost ones until over half its roster is
+  heard (task 18); quota regenerates faster than every run spends, so
+  forfeiting voices cheaply leaves Synthetic capacity unused. After
+  retries land, budgeted runs accumulate the real seededRepairRate
+  (task 20). Follow-ups beyond that, none yet requested: canary
   calibration feeding panel weights, per-model editor comparison in
   candidate slates, PKG completeness (README, tests currency). MILESTONE-TWO GO/NO-GO NUMBER: seeded
   repair rate, the fraction of seeded omissions whose repaired
