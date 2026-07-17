@@ -71,24 +71,27 @@ jobs:
         "$bin_dir/forbidden-strings" --version
 
     - name: Materialize deny-list
-      # Mirror the local file-enforcer composition: seed from the committed
-      # baseline (betterleaks port, not sensitive), append the committed
-      # shared appendix (forbidden-strings.append.txt, non-sensitive repo-
-      # wide rules), then append the per-repo secret if one is configured.
-      # This keeps the baseline credential scan running even when no secret
-      # exists, while still honoring the design that puts sensitive repo-
-      # specific literals out-of-band: the gitignored append.local.txt is
-      # absent in CI, so its sensitive equivalent is the
-      # FORBIDDEN_STRINGS_LIST secret. Use printenv (not shell
-      # interpolation) so the secret bytes are never expanded into a logged
-      # command line.
+      # De-root design (commit 58995afff): no root example file and no root
+      # rules file exist anymore. Compose the runtime rules file from the
+      # committed shared appendix (forbidden-strings.append.txt, non-sensitive
+      # repo-wide rules) plus the per-repo secret when one is configured. The
+      # embedded betterleaks-ported baseline is NOT a file here: the scan steps
+      # activate it with --builtin-rules, which reads it from inside the
+      # 0.2.0 binary. This keeps the baseline credential scan running even when
+      # no secret exists, while the sensitive repo-specific literals stay
+      # out-of-band: the gitignored forbidden-strings.append.local.txt is
+      # absent in CI, so its sensitive equivalent is the FORBIDDEN_STRINGS_LIST
+      # secret. Compose under RUNNER_TEMP so the secret-bearing file never
+      # enters the working tree, and use printenv (not shell interpolation) so
+      # the secret bytes are never expanded into a logged command line.
       env:
         FORBIDDEN_STRINGS_LIST: ${{ secrets.FORBIDDEN_STRINGS_LIST }}
       run: |
-        cp forbidden-strings.local.example.txt forbidden-strings.local.txt
-        cat forbidden-strings.append.txt >> forbidden-strings.local.txt
+        set -euo pipefail
+        rules="$RUNNER_TEMP/forbidden-strings.rules.txt"
+        cp forbidden-strings.append.txt "$rules"
         if [ -n "$FORBIDDEN_STRINGS_LIST" ]; then
-          printenv FORBIDDEN_STRINGS_LIST >> forbidden-strings.local.txt
+          printenv FORBIDDEN_STRINGS_LIST >> "$rules"
         else
           echo "::notice::FORBIDDEN_STRINGS_LIST secret not set; baseline + shared appendix scan."
         fi
@@ -110,8 +113,8 @@ jobs:
         fi
         printf 'Scanning %d changed file(s):\n' "${#changed[@]}"
         printf '  %s\n' "${changed[@]}"
-        forbidden-strings --rules forbidden-strings.local.txt "${changed[@]}"
+        forbidden-strings --builtin-rules --rules "$RUNNER_TEMP/forbidden-strings.rules.txt" "${changed[@]}"
 
     - name: Scan full tree (push to main only)
       if: github.event_name == 'push'
-      run: forbidden-strings --rules forbidden-strings.local.txt --all
+      run: forbidden-strings --builtin-rules --rules "$RUNNER_TEMP/forbidden-strings.rules.txt" --all
