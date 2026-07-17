@@ -85,8 +85,14 @@ Polish loop findings and fixes (Xu_Yushu, two full passes):
   pass 1 (13k and 33k tokens) and blew the 65_536 ceiling on BOTH in
   passes 2 and 3 at temperature 0 on identical input; Flash and
   Nemotron flip between completion and ceiling blowout per pass.
-  Pipeline needs a bounded one-retry on truncated output (queued as its
-  own task). MiniMax-M3 flips which variant times out per pass.
+  The bounded one-retry on truncated output is DONE (commit
+  `b65d3069f`): `truncated-attempt.ts` detects truncation-shaped schema
+  mismatches (truncated-thinking detail, cut-off-JSON parser messages,
+  or completion tokens at the 65_536 ceiling), and `runCriticBenchmark`
+  grants exactly one fresh-deadline retry, keeping the discarded first
+  detail in `truncatedFirstAttemptDetail`.
+  MiniMax-M3 flips which variant times out per pass.
+  (Temperature is no longer sent at all; see provider facts.)
 - Pass 3 (after corner-bracket fix): Qwen 29/29 resolved (100%),
   gpt-oss seeded 18/18, MiniMax clean 110/117, Nemotron clean 12/13;
   all three completing seeded models hit 3/3 seeds again.
@@ -135,9 +141,12 @@ consumers and deployment are deliberately out of scope for now.
 
 ## Immediate next steps
 
-1. Copy the run-4 scorecard (per-model rows plus `ensembleRecall`) into this
-   document when the in-flight benchmark finishes, then judge the milestone
-   go/no-go number.
+1. Broadened scorecard run for the milestone go/no-go number: the loop is
+   polished (task 9) and the truncation retry landed (task 10, live
+   verification via `verify-truncation-retry.ts` in the scratchpad),
+   so the remaining step is rerunning the seeded benchmark across more
+   corpus entries and judging `ensembleRecall`. The user paused
+   broadening once before; confirm scale-up with them first.
 2. Per-call deadlines are DONE (commit `18a8e95ca`): `armCallDeadline` in
    `benchmark.ts` arms a plain-timer-driven `AbortController` per call and
    forwards caller aborts through a listener; disposal (`using`) clears both.
@@ -418,8 +427,10 @@ Deterministic core plus model stages, revised after an adversarial second-model 
    seeded recall; `ensembleRecall` over the entry+seed universe is the go/no-go
    number; precision is deliberately not graded against seeded truth because the
    MT-seeded corpus carries genuine errors),
-   `benchmark.ts` (`runCriticBenchmark`: entries sequential, models parallel,
-   HTTP failures as attempt data, aborts propagate).
+   `benchmark.ts` (`runCriticBenchmark`: entries and models parallel,
+   HTTP failures as attempt data, aborts propagate, and one
+   fresh-deadline retry per truncation-shaped mismatch via
+   `truncated-attempt.ts`).
    First real run: entries Huasheng and DarlinChit, 2 derived omission seeds each,
    all 7 models; driver script `run-benchmark.ts` in the session scratchpad;
    results land in `benchmark-result.json` there and must be copied into this doc.
