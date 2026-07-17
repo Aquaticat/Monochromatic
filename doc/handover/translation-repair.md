@@ -377,9 +377,18 @@ consumers and deployment are deliberately out of scope for now.
   Rentable_A 2/2 with one PERFECT 7/7 restoration, a2581911655's
   16-word needle passed 9/16 while its 18-word needle missed again
   (6/18; 5/18 in run 1).
-  POST-REMEDY TALLY: 8/10 (0.80) across runs 8 and 9 versus 16/31
-  (0.52) pre-remedy; the anti-compression rule is holding.
-  Accumulated: 27/45 repair (0.60); detection 24/28 (0.86) over
+  POST-REMEDY TALLY after runs 8 and 9: 8/10 (0.80) versus 16/31
+  (0.52) pre-remedy.
+  run 10 (2026-07-17, 1778 s): repair 0/4, detection 2/4, the
+  hardest pass yet: Anilovr both seeds detected but under-restored
+  (2/7 and 2/8, SHORT needles, post-remedy), and wangzihao980
+  reproduced its both-seeds-undetected failure from run 5, making it
+  a STABLE detection hole (interior omissions defeat the critics on
+  this entry across independent runs).
+  Post-remedy tally corrected: 8/14 (0.57) versus 0.52 pre-remedy;
+  the anti-compression rule's benefit is no longer clearly
+  established, keep accumulating.
+  Accumulated: 27/49 repair (0.55); detection 26/32 (0.81) over
   graded runs.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
