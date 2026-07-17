@@ -810,22 +810,22 @@ fn env_var_supplies_rules_when_no_flag() {
     let _ = fs::remove_dir_all(&dir);
 }
 
-// What:     A bare literal rule matches by plain substring. Rule "ACR"
-//           must hit both a standalone "see ACR here" AND a glued
-//           "ACRYLIC" occurrence.
-// Why:      The engine swap (#384) replaces the old length-conditional
-//           word-boundary heuristic with the forbidden-regex engine's
-//           plain substring match. Over-matching in this direction is a
-//           ratified standing preference (a false positive inside a
-//           longer token is acceptable), so a short literal now fires
-//           wherever its bytes occur.
+// What:     A short bare literal rule matches only at word boundaries.
+//           Rule "ACR" must hit a standalone "see ACR here" but must NOT
+//           hit a glued "ACRYLIC" occurrence.
+// Why:      Bare literals under eight bytes are gated behind word
+//           boundaries (so "ACR" compiles to \bACR\b), confining a short
+//           run to whole-token matches instead of firing inside a longer
+//           token or a base64 blob. The over-matching preference still
+//           holds for longer literals and regex rules; this narrowing is
+//           specific to short bare literals.
 #[test]
-fn short_literal_matches_as_substring() {
-    let dir = unique_tmp("short-substring");
+fn short_literal_matches_whole_word_not_substring() {
+    let dir = unique_tmp("short-word-boundary");
     let rules = dir.join("rules.txt");
     fs::write(&rules, "ACR\n").expect("write rules");
 
-    // (1) Standalone occurrence: must match.
+    // (1) Standalone occurrence: must match (word boundaries on both sides).
     let hit_file = dir.join("hit.txt");
     fs::write(&hit_file, "see ACR here\n").expect("write hit file");
     let hit_output = Command::new(BIN)
@@ -842,7 +842,7 @@ fn short_literal_matches_as_substring() {
         String::from_utf8_lossy(&hit_output.stderr),
     );
 
-    // (2) Glued occurrence: now also matches (plain substring, no boundary).
+    // (2) Glued occurrence: must NOT match (no trailing word boundary).
     let glued_file = dir.join("glued.txt");
     fs::write(&glued_file, "see ACRYLIC here\n").expect("write glued file");
     let glued_output = Command::new(BIN)
@@ -852,8 +852,8 @@ fn short_literal_matches_as_substring() {
         .output()
         .expect("spawn binary");
     assert!(
-        !glued_output.status.success(),
-        "literal `ACR` must match inside `ACRYLIC` under plain substring semantics.\n\
+        glued_output.status.success(),
+        "literal `ACR` must NOT match inside `ACRYLIC` under word-boundary gating.\n\
          stdout: {}\nstderr: {}",
         String::from_utf8_lossy(&glued_output.stdout),
         String::from_utf8_lossy(&glued_output.stderr),

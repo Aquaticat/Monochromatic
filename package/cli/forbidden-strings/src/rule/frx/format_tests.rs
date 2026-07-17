@@ -6,8 +6,11 @@ use crate::rule::frx::LoadError;
 
 #[test]
 fn literal_line_is_escaped() {
+    // A short bare literal is escaped (the dot becomes a literal byte) and gated
+    // behind word boundaries so it matches whole tokens, not substrings of longer
+    // runs.
     let patterns = parse_patterns("a.b").expect("one literal");
-    assert_eq!(patterns, vec!["a\\.b".to_string()]);
+    assert_eq!(patterns, vec!["\\ba\\.b\\b".to_string()]);
 }
 
 #[test]
@@ -34,8 +37,10 @@ fn bad_flag_fails_closed_with_index() {
 
 #[test]
 fn blanks_and_comments_are_skipped() {
-    let patterns = parse_patterns("# comment\n\n  \nreal").expect("one rule");
-    assert_eq!(patterns, vec!["real".to_string()]);
+    // The surviving literal is eight bytes, so boundary gating does not apply and
+    // this stays a test of skip behavior alone.
+    let patterns = parse_patterns("# comment\n\n  \nsurvivor").expect("one rule");
+    assert_eq!(patterns, vec!["survivor".to_string()]);
 }
 
 #[test]
@@ -49,9 +54,10 @@ fn empty_or_comment_only_source_is_no_rules() {
 
 #[test]
 fn leading_bom_is_stripped() {
-    // A BOM before the first rule must not become part of it.
-    let patterns = parse_patterns("\u{FEFF}abc").expect("bom rule");
-    assert_eq!(patterns, vec!["abc".to_string()]);
+    // A BOM before the first rule must not become part of it. The literal is eight
+    // bytes so boundary gating does not obscure the BOM-strip assertion.
+    let patterns = parse_patterns("\u{FEFF}abcdefgh").expect("bom rule");
+    assert_eq!(patterns, vec!["abcdefgh".to_string()]);
 
     assert_eq!(strip_bom("plain"), "plain");
     assert_eq!(strip_bom("\u{FEFF}x"), "x");

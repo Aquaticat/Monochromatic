@@ -1,12 +1,18 @@
 // Round-trip and adversarial tests for literal escaping into the verbose dialect.
 
-use super::escape_literal;
+use super::{escape_literal, literal_pattern};
 use forbidden_regex::RegexSet;
 
 // Compiles one escaped literal into a single-rule set.
 fn compiled(literal: &str) -> RegexSet {
     let pattern = escape_literal(literal);
     return RegexSet::new(std::slice::from_ref(&pattern)).expect("escaped literal must compile")
+}
+
+// Compiles one boundary-gated literal into a single-rule set.
+fn compiled_bounded(literal: &str) -> RegexSet {
+    let pattern = literal_pattern(literal);
+    return RegexSet::new(std::slice::from_ref(&pattern)).expect("bounded literal must compile")
 }
 
 // Asserts the escaped literal matches itself and the same bytes embedded in noise.
@@ -126,4 +132,58 @@ fn secret_shaped_literal_round_trips() {
     let set = compiled(secret);
     assert!(set.is_match(secret.as_bytes()));
     assert!(!set.is_match(b"AKIA"));
+}
+
+#[test]
+fn short_word_literal_gains_boundaries() {
+    assert_eq!(literal_pattern("ABC"), "\\bABC\\b");
+}
+
+#[test]
+fn short_literal_matches_whole_word_not_embedded() {
+    let set = compiled_bounded("ABC");
+    assert!(set.is_match(b"the ABC list"));
+    assert!(set.is_match(b"ABC"));
+    // A short run inside a longer token no longer matches.
+    assert!(!set.is_match(b"preABCpost"));
+    assert!(!set.is_match(b"unABCed"));
+}
+
+#[test]
+fn non_word_ends_take_no_boundary() {
+    // Each CJK byte is non-word, so a boundary there would assert an ASCII boundary
+    // CJK text never provides; the literal stays a plain substring rule. The
+    // characters are written as escapes so no deny-listed term enters this source.
+    let cjk = "\u{4e2d}\u{5171}"; // two 3-byte characters, 6 bytes total
+    assert_eq!(literal_pattern(cjk), escape_literal(cjk));
+    let set = compiled_bounded(cjk);
+    assert!(set.is_match(cjk.as_bytes()));
+    let embedded = format!("x{cjk}y");
+    assert!(set.is_match(embedded.as_bytes()));
+}
+
+#[test]
+fn boundary_is_applied_per_end() {
+    // A non-word leading byte omits its boundary; a word trailing byte keeps one.
+    assert_eq!(literal_pattern(".env"), "\\.env\\b");
+    assert_eq!(literal_pattern("v1."), "\\bv1\\.");
+}
+
+#[test]
+fn literal_at_ceiling_is_unbounded() {
+    // Exactly eight bytes is not under the ceiling, so no boundaries are added.
+    let eight = "Longword";
+    assert_eq!(eight.len(), 8);
+    assert_eq!(literal_pattern(eight), escape_literal(eight));
+}
+
+#[test]
+fn short_literal_with_internal_space_is_bounded() {
+    // A multi-word short literal is bounded at its outer word-byte ends; the
+    // internal space is still escaped for verbose mode.
+    assert_eq!(literal_pattern("Ab Cd"), "\\bAb\\ Cd\\b");
+    let set = compiled_bounded("Ab Cd");
+    assert!(set.is_match(b"in Ab Cd now"));
+    assert!(!set.is_match(b"xAb Cd"));
+    assert!(!set.is_match(b"Ab Cde"));
 }

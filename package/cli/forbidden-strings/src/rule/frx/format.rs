@@ -5,10 +5,13 @@
 //! a regex rule passed to the engine strict, with `m`/`x` accepted as no-ops
 //! (the engine is always multiline and verbose) and any other flag letter a hard
 //! fail-closed load error. Every other non-blank line is a bare literal escaped
-//! into the verbose dialect. A leading UTF-8 BOM is stripped once up front.
+//! into the verbose dialect, with a short one gated behind word boundaries so it
+//! matches whole tokens rather than substrings of longer runs. A leading UTF-8 BOM
+//! is stripped once up front.
 
-/// Imports the literal-to-dialect escaper for bare literal lines.
-use super::escape::escape_literal;
+/// Imports the literal-to-dialect compiler (escaping plus short-literal boundary
+/// gating) for bare literal lines.
+use super::escape::literal_pattern;
 
 /// Imports the redacted load-error type reported on a bad flag or empty source.
 use super::error::LoadError;
@@ -19,7 +22,7 @@ enum LineClass {
     Skip,
     /// A bare literal line, carrying its trimmed text for escaping.
     Literal(
-        /// Trimmed literal text, escaped into the verbose dialect by the caller.
+        /// Trimmed literal text, escaped and short-literal boundary-gated by the caller.
         String,
     ),
     /// A `/PATTERN/FLAGS` regex line, split into its pattern and flag run.
@@ -95,7 +98,7 @@ pub(super) fn parse_patterns(text: &str) -> Result<Vec<String>, LoadError> {
         // count, so a bad flag reports the offending rule's opaque index.
         match classify_line(line) {
             LineClass::Skip => {}
-            LineClass::Literal(literal) => patterns.push(escape_literal(&literal)),
+            LineClass::Literal(literal) => patterns.push(literal_pattern(&literal)),
             LineClass::Regex { body, flags } => {
                 if let Some(flag) = first_bad_flag(&flags) {
                     return Err(LoadError::UnsupportedFlag {
