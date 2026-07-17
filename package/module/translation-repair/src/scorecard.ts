@@ -83,6 +83,13 @@ export type CriticAttemptRecord = {
    * Completion tokens when reported; thinking-inflated on these models.
    */
   readonly completionTokens?: number;
+
+  /**
+   * Mismatch detail of the discarded first attempt when this record came
+   * out of the single truncation retry; absent when the first attempt
+   * stood on its own.
+   */
+  readonly truncatedFirstAttemptDetail?: string;
 };
 
 /**

@@ -16,6 +16,7 @@ import {
   type BenchmarkScorecard,
   type CriticAttemptRecord,
 } from './scorecard.ts';
+import { isTruncatedAttempt, } from './truncated-attempt.ts';
 import {
   applySeededErrors,
   seedHitByRegion,
@@ -28,7 +29,10 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // Milestone-one exit harness: plant seeds into real translations, fan the seeded
 // pair out to every critic model, grade findings mechanically, and aggregate the
 // scorecard whose ensemble recall is the go/no-go number. HTTP failures are
-// attempt data; abort errors propagate so user steering always wins.
+// attempt data; abort errors propagate so user steering always wins. A
+// truncated attempt (token-ceiling blowout mid-thinking or mid-JSON) earns
+// exactly one fresh retry because the serving stack flips between completion
+// and blowout on identical input.
 
 /**
  * Logger root for the benchmark shell.
@@ -244,6 +248,9 @@ function armCallDeadline(
  * Entries and models all run in parallel;
  * the client's per-model limiter is the only concurrency bound,
  * so wall time approaches the slowest single call.
+ * A truncation-shaped mismatch earns one retry with a fresh deadline;
+ * the final record keeps the discarded first detail in
+ * `truncatedFirstAttemptDetail`.
  *
  * @param client - injected model client; tests pass recorded transports
  *
@@ -339,6 +346,20 @@ export async function runCriticBenchmark(
 
       return await Promise.all(
         modelIds.map(async function attemptOne(modelId,): Promise<CriticAttemptRecord> {
+          /**
+           * Runs one deadline-guarded exchange and grades it;
+           * declared first so the truncation retry below reads top-down.
+           * Each invocation arms its own deadline,
+           * so a retry gets the full per-call budget.
+           *
+           * @returns Graded record of one exchange
+           *
+           * @example
+           * ```ts
+           * const first = await attemptOnce();
+           * ```
+           */
+          async function attemptOnce(): Promise<CriticAttemptRecord> {
           /**
            * Per-call deadline whose disposal clears its timer and listener
            * once this attempt settles.
@@ -469,6 +490,31 @@ export async function runCriticBenchmark(
             plantedSeedIds,
           };
         }
+        }
+
+          /**
+           * First graded attempt.
+           */
+          const first = await attemptOnce();
+          if (!isTruncatedAttempt({ record: first, },))
+            return first;
+
+          // Truncation is transient serving-stack behavior: identical input
+          // flips between completion and ceiling blowout per pass, so one
+          // fresh attempt recovers most of them; strictly one, since a
+          // second truncation means this pair spirals this model today.
+          rl.warn(
+            `${modelId} on ${entry.entryId}: truncated output, retrying once`,
+          );
+
+          /**
+           * Second and final attempt; its outcome stands either way.
+           */
+          const second = await attemptOnce();
+          return {
+            ...second,
+            truncatedFirstAttemptDetail: first.detail,
+          };
       },),
       );
     },

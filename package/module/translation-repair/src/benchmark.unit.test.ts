@@ -22,6 +22,7 @@ import type {
 } from './chat-contract.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
 import type { SeededErrorSpec, } from './seeded-error.ts';
+import { COMPLETION_TOKEN_CEILING, } from './truncated-attempt.ts';
 
 /**
  * Invented zh source with a butterfly sentence the seed will delete from the
@@ -253,6 +254,100 @@ await describe({
           caught = error;
         }
         expect(caught instanceof TypeError,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'retries a truncated attempt once and keeps the recovery',
+      fn: async () => {
+        /** Outcome log, one entry per exchange the fake client served. */
+        const served: string[] = [];
+        /**
+         * Fake client that truncates on the first exchange and answers
+         * cleanly on the second, like a ceiling blowout that recovers.
+         */
+        const flippingClient: SyntheticClient = {
+          ...fakeClient,
+          chatJson: async function flippingChatJson<ValueT,>(
+            request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
+          ): Promise<ChatJsonOutcome<ValueT>> {
+            if (served.length === 0) {
+              served.push('truncated',);
+              return {
+                kind: 'schema-mismatch',
+                rawText: '<think>still thinking about cats',
+                detail: 'output was truncated inside its thinking block;'
+                  + ' raise or omit maxTokens (thinking tokens count against it)',
+                usage: {
+                  prompt_tokens: 100,
+                  completion_tokens: COMPLETION_TOKEN_CEILING,
+                },
+              };
+            }
+            served.push('ok',);
+            return await fakeClient.chatJson(request,);
+          },
+        };
+        /** Result whose single attempt recovered on the retry. */
+        const result = await runCriticBenchmark({
+          client: flippingClient,
+          entries: [{
+            entryId: 'whiskers',
+            sourceText: SOURCE_TEXT,
+            targetText: TARGET_TEXT,
+            seeds: [BUTTERFLY_SEED,],
+          },],
+          modelIds: ['hf:zai-org/GLM-5.2',],
+          signal: new AbortController().signal,
+        },);
+
+        expect(served,).toEqual(['truncated', 'ok',],);
+        expect(result.attempts,).toHaveLength(1,);
+        expect(result.attempts[0]?.outcomeKind,).toBe('ok',);
+        expect(result.attempts[0]?.seededHitIds,).toEqual(['seed/omission-0',],);
+        expect(result.attempts[0]?.truncatedFirstAttemptDetail,)
+          .toContain('truncated inside its thinking block',);
+      },
+    },),
+
+    it({
+      name: 'caps truncation retries at exactly one',
+      fn: async () => {
+        /** Outcome log, one entry per exchange the fake client served. */
+        const served: string[] = [];
+        /**
+         * Fake client that truncates every exchange, like a pair spiraling
+         * a model's thinking on every pass.
+         */
+        const spiralingClient: SyntheticClient = {
+          ...fakeClient,
+          chatJson: async function spiralingChatJson() {
+            served.push('truncated',);
+            return {
+              kind: 'schema-mismatch',
+              rawText: '{"issues":[{"category":"accu',
+              detail: 'content is not valid JSON: Unexpected end of JSON input',
+            };
+          },
+        };
+        /** Result whose single attempt stayed truncated after the retry. */
+        const result = await runCriticBenchmark({
+          client: spiralingClient,
+          entries: [{
+            entryId: 'whiskers',
+            sourceText: SOURCE_TEXT,
+            targetText: TARGET_TEXT,
+            seeds: [BUTTERFLY_SEED,],
+          },],
+          modelIds: ['hf:zai-org/GLM-5.2',],
+          signal: new AbortController().signal,
+        },);
+
+        expect(served,).toEqual(['truncated', 'truncated',],);
+        expect(result.attempts,).toHaveLength(1,);
+        expect(result.attempts[0]?.outcomeKind,).toBe('schema-mismatch',);
+        expect(result.attempts[0]?.truncatedFirstAttemptDetail,)
+          .toContain('Unexpected end of JSON input',);
       },
     },),
 

@@ -146,6 +146,10 @@ export {
   type ModelScorecardRow,
 } from './scorecard.ts';
 export {
+  COMPLETION_TOKEN_CEILING,
+  isTruncatedAttempt,
+} from './truncated-attempt.ts';
+export {
   applySeededErrors,
   SEED_MATCH_TOLERANCE,
   SeedApplicationError,
