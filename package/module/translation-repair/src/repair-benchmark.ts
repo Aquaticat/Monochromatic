@@ -5,39 +5,37 @@ import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { BenchmarkEntry, } from './prepare-entry.ts';
 import type { RepairModels, } from './repair-chunk.ts';
+import {
+  measureSeedRestoration,
+  type SeedRestoration,
+} from './lexical-restoration.ts';
 import { gradeSeedDetection, } from './seed-detection.ts';
 import {
   repairTranslation,
   type RepairStatus,
   type RepairTranslationResult,
 } from './repair-translation.ts';
+import {
+  runRestorationJudge,
+  type SeedJudgment,
+} from './restoration-judge.ts';
 import { applySeededErrors, } from './seeded-error.ts';
+import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Repair benchmark
 // Milestone-two exit harness: plant omission seeds into real translations,
-// run the whole repair loop, and measure how much of the deleted content
-// came back. Ground truth is exact because we planted the deletion; the
-// editor re-translates from the original, so restoration is graded on the
-// distinctive vocabulary the deletion removed, never on byte equality.
+// run the whole repair loop, and grade how much of the deleted content came
+// back. The PRIMARY grade is a bilingual ensemble judge anchored on the
+// Chinese source (user directive): it rules whether each deleted sentence's
+// meaning is present in the repaired translation and grounded in the
+// original, tolerating terse-but-faithful rewording that a vocabulary-overlap
+// grader under-credited. The lexical overlap grade is kept alongside as a
+// cheap lower-bound signal, never the headline rate.
 
 /**
  * Logger root for the repair benchmark shell.
  */
 const l = tagged({ tag: 'translation-repair-repair-benchmark', },);
-
-/**
- * Minimum content-word length that counts as distinctive vocabulary;
- * shorter words recur everywhere and prove nothing about restoration.
- */
-const CONTENT_WORD_MIN_CHARS = 4;
-
-/**
- * Fraction of disappeared content words that must return for a seed to
- * grade as restored. Editors re-translate rather than recall the original
- * wording, so half of the distinctive vocabulary returning marks the
- * sentence as back; calibratable once repair runs accumulate.
- */
-export const RESTORATION_WORD_THRESHOLD: number = 1 / 2;
 
 /**
  * Budget floor under which no new entry dispatches;
@@ -46,175 +44,20 @@ export const RESTORATION_WORD_THRESHOLD: number = 1 / 2;
 export const MIN_REPAIR_DISPATCH_BUDGET_MS = 120_000;
 
 /**
- * Distinct lowercase content words of one text,
- * by linear scan over alphanumeric runs; no regex needed.
- *
- * @param text - text whose vocabulary is collected
- *
- * @returns Distinct words at least {@link CONTENT_WORD_MIN_CHARS} long
- *
- * @example
- * ```ts
- * contentWords({ text: 'The cat naps.', },);
- * ```
+ * Default restoration-judge roster: the three vendor families that complete
+ * most reliably on this plan, kept distinct so no single family decides.
  */
-export function contentWords(
-  { text, }: { readonly text: string; },
-): ReadonlySet<string> {
-  /**
-   * Lowercased input for case-free comparison.
-   */
-  const lowered = text.toLowerCase();
-
-  /**
-   * Distinct words collected by the scan.
-   */
-  const words = new Set<string>();
-
-  /**
-   * Start of the run currently being scanned; -1 outside a run.
-   */
-  let runStart = -1;
-  // Code-unit scan: every word character tested below is ASCII, so
-  // surrogate halves and combining marks simply read as non-word
-  // separators, which is exactly what vocabulary collection wants.
-  for (let index = 0; index < lowered.length; index += 1) {
-    /**
-     * Code unit under the cursor.
-     */
-    const character = lowered.charAt(index,);
-
-    /**
-     * Whether this character continues a word run.
-     */
-    const isWordChar = ((character >= 'a') && (character <= 'z'))
-      || ((character >= '0') && (character <= '9'))
-      || (character === '\'');
-    if (isWordChar && (runStart === (-1))) {
-      runStart = index;
-      continue;
-    }
-    if ((!isWordChar) && (runStart !== (-1))) {
-      if ((index - runStart) >= CONTENT_WORD_MIN_CHARS)
-        words.add(lowered.slice(
-          runStart,
-          index,
-        ),);
-      runStart = -1;
-    }
-  }
-  if ((runStart !== (-1)) && ((lowered.length - runStart) >= CONTENT_WORD_MIN_CHARS))
-    words.add(lowered.slice(runStart,),);
-
-  return words;
-}
+export const DEFAULT_JUDGE_MODEL_IDS: readonly SyntheticModelId[] = [
+  'hf:zai-org/GLM-5.2',
+  'hf:Qwen/Qwen3.6-27B',
+  'hf:moonshotai/Kimi-K2.7-Code',
+];
 
 /**
- * Restoration grade of one planted deletion.
- *
- * @example
- * ```ts
- * const grade: SeedRestoration = {
- *   measurable: true,
- *   disappearedWords: 8,
- *   returnedWords: 6,
- *   restored: true,
- * };
- * ```
+ * Judge exchange deadline when the benchmark sets no per-call timeout;
+ * grading is a shorter task than repair, so four minutes is generous.
  */
-export type SeedRestoration = {
-  /**
-   * Whether the deletion removed any distinctive vocabulary at all;
-   * a needle whose every word survives elsewhere cannot be graded.
-   */
-  readonly measurable: boolean;
-
-  /**
-   * Content words the deletion removed from the seeded text.
-   */
-  readonly disappearedWords: number;
-
-  /**
-   * Disappeared words present again in the repaired text.
-   */
-  readonly returnedWords: number;
-
-  /**
-   * Whether returned reaches {@link RESTORATION_WORD_THRESHOLD} of
-   * disappeared; always false for unmeasurable seeds.
-   */
-  readonly restored: boolean;
-};
-
-/**
- * Grades one planted deletion against the repaired text.
- * Only vocabulary the deletion actually removed counts:
- * a word surviving elsewhere in the seeded text proves nothing.
- *
- * @param needle - deleted sentence exactly as planted
- *
- * @param seededText - translation after planting, before repair
- *
- * @param repairedText - pipeline output under grading
- *
- * @returns Restoration grade as data
- *
- * @example
- * ```ts
- * const grade = measureSeedRestoration({ needle, seededText, repairedText, },);
- * ```
- */
-export function measureSeedRestoration(
-  {
-    needle,
-    seededText,
-    repairedText,
-  }: {
-    readonly needle: string;
-    readonly seededText: string;
-    readonly repairedText: string;
-  },
-): SeedRestoration {
-  /**
-   * Vocabulary surviving in the seeded text.
-   */
-  const seededWords = contentWords({ text: seededText, },);
-
-  /**
-   * Needle vocabulary the deletion actually removed.
-   */
-  const disappeared = [...contentWords({ text: needle, },),]
-    .filter(function isGone(word,) {
-      return !seededWords.has(word,);
-    },);
-  if (disappeared.length === 0) {
-    return {
-      measurable: false,
-      disappearedWords: 0,
-      returnedWords: 0,
-      restored: false,
-    };
-  }
-
-  /**
-   * Vocabulary of the repaired text.
-   */
-  const repairedWords = contentWords({ text: repairedText, },);
-
-  /**
-   * Disappeared words the repair brought back.
-   */
-  const returned = disappeared.filter(function cameBack(word,) {
-    return repairedWords.has(word,);
-  },);
-
-  return {
-    measurable: true,
-    disappearedWords: disappeared.length,
-    returnedWords: returned.length,
-    restored: (returned.length / disappeared.length) >= RESTORATION_WORD_THRESHOLD,
-  };
-}
+const DEFAULT_JUDGE_TIMEOUT_MS = 240_000;
 
 /**
  * One graded repair attempt over one entry.
@@ -248,7 +91,14 @@ export type RepairAttemptRecord = {
   readonly status?: RepairStatus;
 
   /**
-   * Restoration grade per planted seed id.
+   * Primary zh-anchored verdict per planted seed id from the bilingual
+   * judge ensemble.
+   */
+  readonly seedJudgments: Readonly<Record<string, SeedJudgment>>;
+
+  /**
+   * Lexical overlap grade per planted seed id;
+   * a lower-bound signal kept for comparison, never the headline rate.
    */
   readonly seedGrades: Readonly<Record<string, SeedRestoration>>;
 
@@ -294,21 +144,6 @@ export type RepairScorecard = {
   readonly coverage: number;
 
   /**
-   * Measurable seeds across dispatched entries.
-   */
-  readonly seedUniverse: number;
-
-  /**
-   * Measurable seeds graded restored.
-   */
-  readonly restoredSeeds: number;
-
-  /**
-   * THE go/no-go number: restored over measurable seeds.
-   */
-  readonly seededRepairRate: number;
-
-  /**
    * Planted seeds across dispatched entries, detection's denominator.
    */
   readonly plantedSeeds: number;
@@ -324,6 +159,49 @@ export type RepairScorecard = {
    * every miss.
    */
   readonly seedDetectionRate: number;
+
+  /**
+   * Seeds the bilingual judge ensemble reached a quorum verdict on,
+   * the zh-anchored rate's denominator.
+   */
+  readonly judgedSeeds: number;
+
+  /**
+   * Judged seeds ruled fully restored.
+   */
+  readonly restoredSeeds: number;
+
+  /**
+   * Judged seeds ruled partially restored.
+   */
+  readonly partialSeeds: number;
+
+  /**
+   * THE go/no-go number: judge-restored over judged seeds,
+   * anchored on the Chinese source.
+   */
+  readonly seededRepairRate: number;
+
+  /**
+   * Judge-restored-or-partial over judged seeds;
+   * the lenient companion to the strict rate.
+   */
+  readonly seededRepairRateLenient: number;
+
+  /**
+   * Lexical-overlap grade's measurable-seed denominator, for comparison.
+   */
+  readonly lexicalUniverse: number;
+
+  /**
+   * Lexical-overlap seeds graded restored.
+   */
+  readonly lexicalRestoredSeeds: number;
+
+  /**
+   * Lexical-overlap repair rate, the retired grader kept for comparison.
+   */
+  readonly lexicalRepairRate: number;
 
   /**
    * Runs per completion status.
@@ -386,6 +264,31 @@ export function computeRepairScorecard(
   },);
 
   /**
+   * Judge verdicts with a quorum ruling across dispatched attempts.
+   */
+  const judgments = dispatched.flatMap(function toJudgments(record,) {
+    return Object
+      .values(record.seedJudgments,)
+      .filter(function isJudged(judgment,) {
+        return judgment.judged;
+      },);
+  },);
+
+  /**
+   * Judged seeds ruled fully restored.
+   */
+  const judgeRestored = judgments.filter(function isRestored(judgment,) {
+    return judgment.verdict === 'restored';
+  },);
+
+  /**
+   * Judged seeds ruled restored or partial.
+   */
+  const judgeLenient = judgments.filter(function isLenient(judgment,) {
+    return (judgment.verdict === 'restored') || (judgment.verdict === 'partial');
+  },);
+
+  /**
    * Runs per completion status.
    */
   const statusCounts: Record<string, number> = {};
@@ -398,12 +301,17 @@ export function computeRepairScorecard(
   return {
     dispatchedEntries: dispatched.length,
     coverage: records.length === 0 ? 1 : dispatched.length / records.length,
-    seedUniverse: grades.length,
-    restoredSeeds: restored.length,
-    seededRepairRate: grades.length === 0 ? 0 : restored.length / grades.length,
     plantedSeeds: detections.length,
     detectedSeeds: detected.length,
     seedDetectionRate: detections.length === 0 ? 0 : detected.length / detections.length,
+    judgedSeeds: judgments.length,
+    restoredSeeds: judgeRestored.length,
+    partialSeeds: judgeLenient.length - judgeRestored.length,
+    seededRepairRate: judgments.length === 0 ? 0 : judgeRestored.length / judgments.length,
+    seededRepairRateLenient: judgments.length === 0 ? 0 : judgeLenient.length / judgments.length,
+    lexicalUniverse: grades.length,
+    lexicalRestoredSeeds: restored.length,
+    lexicalRepairRate: grades.length === 0 ? 0 : restored.length / grades.length,
     statusCounts,
   };
 }
@@ -451,6 +359,11 @@ export type RepairBenchmarkResult = {
  *
  * @param repair - repair driver seam; tests inject a scripted one
  *
+ * @param judge - restoration-judge seam; tests inject a scripted one
+ *
+ * @param judgeModelIds - bilingual judge roster;
+ * defaults to {@link DEFAULT_JUDGE_MODEL_IDS}
+ *
  * @returns Graded attempts plus the aggregate scorecard
  *
  * @example
@@ -469,6 +382,8 @@ export async function runRepairBenchmark(
     perCallTimeoutMs,
     runBudgetMs,
     repair = repairTranslation,
+    judge = runRestorationJudge,
+    judgeModelIds = DEFAULT_JUDGE_MODEL_IDS,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entries: readonly BenchmarkEntry[];
@@ -478,6 +393,8 @@ export async function runRepairBenchmark(
     readonly perCallTimeoutMs?: number;
     readonly runBudgetMs?: number;
     readonly repair?: typeof repairTranslation;
+    readonly judge?: typeof runRestorationJudge;
+    readonly judgeModelIds?: readonly SyntheticModelId[];
   }>,
 ): Promise<RepairBenchmarkResult> {
   /**
@@ -509,6 +426,7 @@ export async function runRepairBenchmark(
       records.push({
         entryId: entry.entryId,
         outcomeKind: 'skipped',
+        seedJudgments: {},
         seedGrades: {},
         seedDetection: {},
         issueCount: 0,
@@ -543,11 +461,31 @@ export async function runRepairBenchmark(
         signal,
         ...(perCallTimeoutMs === undefined ? {} : { perCallTimeoutMs, }),
       },);
+      /**
+       * Zh-anchored judge verdicts over this entry's restored seeds.
+       */
+      const seedJudgments = await judge({
+        client,
+        judgeModelIds,
+        sourceText: entry.sourceText,
+        repairedText: result.repairedText,
+        references: entry.seeds
+          .map(function toReference(seed,) {
+          return {
+            seedId: seed.id,
+            deletedText: seed.needle,
+          };
+        },),
+        signal,
+        perCallTimeoutMs: perCallTimeoutMs ?? DEFAULT_JUDGE_TIMEOUT_MS,
+        l: rl,
+      },);
       /* oxlint-enable no-await-in-loop */
       records.push({
         entryId: entry.entryId,
         outcomeKind: 'ok',
         status: result.status,
+        seedJudgments,
         seedGrades: Object.fromEntries(entry.seeds
           .map(function gradeSeed(seed,) {
           return [
@@ -583,6 +521,7 @@ export async function runRepairBenchmark(
       records.push({
         entryId: entry.entryId,
         outcomeKind: 'error',
+        seedJudgments: {},
         seedGrades: {},
         seedDetection: {},
         issueCount: 0,

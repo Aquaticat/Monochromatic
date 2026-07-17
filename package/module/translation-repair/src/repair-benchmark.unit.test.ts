@@ -13,14 +13,17 @@ import {
 
 import { hashContent, } from './document-node.ts';
 import {
-  computeRepairScorecard,
   contentWords,
   measureSeedRestoration,
+} from './lexical-restoration.ts';
+import {
+  computeRepairScorecard,
   type RepairAttemptRecord,
   runRepairBenchmark,
 } from './repair-benchmark.ts';
 import type { RepairModels, } from './repair-chunk.ts';
 import type { repairTranslation, } from './repair-translation.ts';
+import type { runRestorationJudge, } from './restoration-judge.ts';
 import { gradeSeedDetection, } from './seed-detection.ts';
 import {
   applySeededErrors,
@@ -156,6 +159,18 @@ await describe({
             entryId: 'whiskers',
             outcomeKind: 'ok',
             status: 'repaired',
+            seedJudgments: {
+              'seed/omission-0': {
+                verdict: 'restored',
+                judged: true,
+                votes: 3,
+              },
+              'seed/omission-1': {
+                verdict: 'partial',
+                judged: true,
+                votes: 3,
+              },
+            },
             seedGrades: {
               'seed/omission-0': {
                 measurable: true,
@@ -182,6 +197,19 @@ await describe({
             entryId: 'mittens',
             outcomeKind: 'ok',
             status: 'unchanged',
+            seedJudgments: {
+              // One judged absent, one that never reached quorum.
+              'seed/omission-0': {
+                verdict: 'absent',
+                judged: true,
+                votes: 3,
+              },
+              'seed/omission-1': {
+                verdict: 'absent',
+                judged: false,
+                votes: 0,
+              },
+            },
             seedGrades: {
               'seed/omission-0': {
                 measurable: true,
@@ -198,6 +226,7 @@ await describe({
           {
             entryId: 'shadow',
             outcomeKind: 'skipped',
+            seedJudgments: {},
             seedGrades: {},
             seedDetection: {},
             issueCount: 0,
@@ -209,9 +238,16 @@ await describe({
         const scorecard = computeRepairScorecard({ records, },);
         expect(scorecard.dispatchedEntries,).toBe(2,);
         expect(scorecard.coverage,).toBe(2 / 3,);
-        expect(scorecard.seedUniverse,).toBe(2,);
+        // Judge denominator excludes the unjudged (no-quorum) seed: 3 judged.
+        expect(scorecard.judgedSeeds,).toBe(3,);
         expect(scorecard.restoredSeeds,).toBe(1,);
-        expect(scorecard.seededRepairRate,).toBe(1 / 2,);
+        expect(scorecard.partialSeeds,).toBe(1,);
+        expect(scorecard.seededRepairRate,).toBe(1 / 3,);
+        expect(scorecard.seededRepairRateLenient,).toBe(2 / 3,);
+        // Lexical grade kept for comparison: 2 measurable, 1 restored.
+        expect(scorecard.lexicalUniverse,).toBe(2,);
+        expect(scorecard.lexicalRestoredSeeds,).toBe(1,);
+        expect(scorecard.lexicalRepairRate,).toBe(1 / 2,);
         expect(scorecard.plantedSeeds,).toBe(3,);
         expect(scorecard.detectedSeeds,).toBe(2,);
         expect(scorecard.seedDetectionRate,).toBe(2 / 3,);
@@ -305,6 +341,22 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
   ],
 },);
 
+/**
+ * Judge stub ruling every reference restored through the seam.
+ */
+const restoringJudge: typeof runRestorationJudge = async ({ references, },) => 
+  Object.fromEntries(references.map(function toVerdict(reference,) {
+    return [
+      reference.seedId,
+      {
+        verdict: 'restored' as const,
+        judged: true,
+        votes: 3,
+      },
+    ];
+  },),)
+;
+
 await describe({
   name: runRepairBenchmark.name,
   children: [
@@ -334,8 +386,10 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           repair: restoringRepair,
+          judge: restoringJudge,
         },);
         expect(records[0]?.outcomeKind,).toBe('ok',);
+        expect(records[0]?.seedJudgments['seed/omission-0']?.verdict,).toBe('restored',);
         expect(records[0]?.seedGrades['seed/omission-0']?.restored,).toBe(true,);
         expect(scorecard.seededRepairRate,).toBe(1,);
         expect(scorecard.coverage,).toBe(1,);
@@ -364,6 +418,7 @@ await describe({
           signal: new AbortController().signal,
           runBudgetMs: 0,
           repair: throwingRepair,
+          judge: restoringJudge,
         },);
         expect(skipped.records[0]?.outcomeKind,).toBe('skipped',);
         expect(skipped.scorecard.coverage,).toBe(0,);
@@ -381,6 +436,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           repair: throwingRepair,
+          judge: restoringJudge,
         },);
         expect(errored.records[0]?.outcomeKind,).toBe('error',);
         expect(errored.records[0]?.detail,).toContain('scripted transport collapse',);
