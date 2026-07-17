@@ -54,6 +54,10 @@ export const ISSUE_CATEGORIES = [
   'accuracy/omission',
   'accuracy/addition',
   'accuracy/untranslated',
+  // MQM non-translation: target content that is not a translation of the
+  // source at all (unrelated text, gibberish, wrong document). Anchored to
+  // the affected region; whole-pair unrelatedness anchors the opening block.
+  'accuracy/non-translation',
   'fluency/grammar',
   'fluency/spelling',
   'fluency/punctuation',
