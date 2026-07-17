@@ -553,13 +553,22 @@ source (done). No open questions currently block the loop.
   noname3031 and MioCardMeow both fully restored, both graders
   agreeing this run (agreement is common; disagreement appears on the
   terse-rewording cases like run 22's ttttsuuukikoo_).
-  JUDGE ACCUMULATED: 6/8 (0.75) over 2 runs (22 to 23). Lexical over
-  the same 2 runs 4/8 (0.50): the judge sits ~25 points above lexical
-  early, consistent with the under-crediting the switch was meant to
+  run 24 (2026-07-17, 2469 s, first post-compaction run): judge 3/4
+  (0.75), lexical also 3/4; detection 4/4. Acheron seed 0 (9 words)
+  JUDGE=partial with 2/9 lexical words returned; its sibling seed 1
+  (10 words) fully restored. MioCardMeow both restored again (repeat
+  draw from run 23). Four entries budget-skipped including
+  luxuanwen3, so the anti-compression prompt retest did not draw.
+  PATTERN NOTE: Acheron breaks the "missed seed is always the LONGEST
+  needle of its entry" streak; the partial (9 words) is shorter than
+  its fully restored sibling (10 words).
+  JUDGE ACCUMULATED: 9/12 (0.75) over 3 runs (22 to 24). Lexical over
+  the same 3 runs 7/12 (0.58): the judge sits above lexical,
+  consistent with the under-crediting the switch was meant to
   fix, but the judge sample is still small; keep accumulating.
-  Detection 80/86 (0.93).
-  NEXT: continue the RESUME PROCEDURE loop (run 24 onward). This point
-  (after run 23) is where the user chose to compact.
+  Detection 84/90 (0.93).
+  NEXT: continue the RESUME PROCEDURE loop (run 25 onward). The point
+  after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
