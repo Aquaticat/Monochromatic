@@ -427,6 +427,13 @@ consumers and deployment are deliberately out of scope for now.
   editor-layer.
   Accumulated: 40/67 repair (0.60); post-remedy 21/32 (0.66);
   detection 44/50 (0.88).
+  run 16 (2026-07-17, 2042 s): repair 3/4, detection 4/4 through a
+  second whole-roster critic wipeout recovered in two retry rounds;
+  lxy's 16-word needle near-missed at 7/16, SevenBird 2/2 again.
+  Accumulated: 43/71 repair (0.61); post-remedy 24/36 (0.67);
+  detection 48/54 (0.89). The rates have stabilized: repair around
+  0.6 overall and about two thirds post-remedy, detection just
+  under 0.9.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
