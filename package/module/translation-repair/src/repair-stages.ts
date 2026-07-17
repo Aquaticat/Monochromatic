@@ -24,7 +24,7 @@ import type {
   DocumentSide,
   IssueClaim,
 } from './issue-model.ts';
-import { attemptStageCall, } from './stage-call.ts';
+import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import { tallyVotes, } from './tally-votes.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
@@ -123,27 +123,26 @@ export async function runCriticStage(
   },);
 
   /**
-   * One voice per critic, lost voices included.
+   * Heard critics after retry-to-quorum.
    */
-  const voices = await Promise.all(criticModelIds.map(function askCritic(modelId,) {
-    return attemptStageCall({
-      client,
-      modelId,
-      messages,
-      signal,
-      exchangeTimeoutMs: perCallTimeoutMs,
-      responseFormat: CRITIC_RESPONSE_FORMAT,
-      validate: isCriticReportWire,
-      stage: 'critic',
-      l,
-    },);
-  },),);
+  const gather = await gatherStageVoices({
+    client,
+    modelIds: criticModelIds,
+    messages,
+    signal,
+    exchangeTimeoutMs: perCallTimeoutMs,
+    responseFormat: CRITIC_RESPONSE_FORMAT,
+    validate: isCriticReportWire,
+    stage: 'critic',
+    l,
+  },);
 
   /**
    * Reports that actually arrived.
    */
-  const reports = voices.flatMap(function toReport(voice,) {
-    return voice.heard ? [voice.value,] : [];
+  const reports = gather.voices
+    .map(function toReport(voice,) {
+    return voice.value;
   },);
 
   /**
@@ -160,9 +159,10 @@ export async function runCriticStage(
     .length;
 
   /**
-   * Findings accumulated across resolutions.
+   * Findings accumulated across resolutions, seeded with quorum
+   * degradation findings from the gather.
    */
-  const findings: string[] = [];
+  const findings: string[] = [...gather.findings,];
 
   /**
    * Validated claims across every report.
@@ -285,53 +285,51 @@ export async function runPanelStage(
   },);
 
   /**
-   * Zero-or-one ballot entries per panelist; lost voices contribute none.
+   * Heard panelists after retry-to-quorum.
    */
-  const ballotEntries = await Promise.all(panelModelIds.map(
-    async function askPanelist(modelId,): Promise<readonly (readonly [
-      string,
-      PanelBallot,
-    ])[]> {
-      /**
-       * This panelist's wire ballot, when heard.
-       */
-      const voice = await attemptStageCall({
-        client,
-        modelId,
-        messages: plan.messages,
-        signal,
-        exchangeTimeoutMs: perCallTimeoutMs,
-        responseFormat: ADJUDICATION_RESPONSE_FORMAT,
-        validate: isPanelBallotWire,
-        stage: 'panel',
-        l,
-      },);
-      if (!voice.heard)
-        return [];
-      return [[
-        modelId,
+  const gather = await gatherStageVoices({
+    client,
+    modelIds: panelModelIds,
+    messages: plan.messages,
+    signal,
+    exchangeTimeoutMs: perCallTimeoutMs,
+    responseFormat: ADJUDICATION_RESPONSE_FORMAT,
+    validate: isPanelBallotWire,
+    stage: 'panel',
+    l,
+  },);
+
+  /**
+   * Resolved ballots keyed by panelist id.
+   */
+  const ballots: Record<string, PanelBallot> = Object.fromEntries(
+    gather.voices
+      .map(function toEntry(voice,): readonly [
+        string,
+        PanelBallot,
+      ] {
+      return [
+        voice.modelId,
         resolvePanelBallot({
           wire: voice.value,
           claimIds: plan.claimIds,
           clusterIds: plan.clusterIds,
         },),
-      ],];
-    },
-  ),);
+      ];
+    },),
+  );
 
   /**
-   * Resolved ballots keyed by panelist id.
+   * Quorum degradation plus ballot irregularities across heard panelists.
    */
-  const ballots: Record<string, PanelBallot> = Object.fromEntries(ballotEntries.flat(),);
-
-  /**
-   * Ballot irregularities across every heard panelist.
-   */
-  const findings = Object
-    .values(ballots,)
-    .flatMap(function toFindings(ballot,) {
-      return ballot.findings;
-    },);
+  const findings = [
+    ...gather.findings,
+    ...Object
+      .values(ballots,)
+      .flatMap(function toFindings(ballot,) {
+        return ballot.findings;
+      },),
+  ];
 
   /**
    * Panel decision over the clusters.

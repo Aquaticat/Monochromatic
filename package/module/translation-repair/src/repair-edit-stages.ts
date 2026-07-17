@@ -19,7 +19,7 @@ import {
   isResolutionReportWire,
   RESOLUTION_RESPONSE_FORMAT,
 } from './resolution-wire.ts';
-import { attemptStageCall, } from './stage-call.ts';
+import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import {
   type IssueResolutionTally,
@@ -122,11 +122,13 @@ export async function runEditorStage(
   },);
 
   /**
-   * Editor's reply, when heard.
+   * Editor's reply after retry-to-quorum;
+   * a one-model roster means retries continue until the voice is heard
+   * or the rounds are spent.
    */
-  const voice = await attemptStageCall({
+  const gather = await gatherStageVoices({
     client,
-    modelId: editorModelId,
+    modelIds: [editorModelId,],
     messages: plan.messages,
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,
@@ -135,7 +137,12 @@ export async function runEditorStage(
     stage: 'editor',
     l,
   },);
-  if (!voice.heard) {
+
+  /**
+   * Sole editor voice, when heard.
+   */
+  const [voice,] = gather.voices;
+  if (voice === undefined) {
     return {
       patch: {
         patchedText: targetText,
@@ -143,7 +150,7 @@ export async function runEditorStage(
         rejected: [],
       },
       editorHeard: false,
-      findings: [],
+      findings: gather.findings,
     };
   }
 
@@ -264,52 +271,50 @@ export async function runCheckerStage(
   },);
 
   /**
-   * Zero-or-one ballot entries per checker; lost voices contribute none.
+   * Heard checkers after retry-to-quorum.
    */
-  const ballotEntries = await Promise.all(checkerModelIds.map(
-    async function askChecker(modelId,): Promise<readonly (readonly [
-      string,
-      ResolutionBallot,
-    ])[]> {
-      /**
-       * This checker's wire report, when heard.
-       */
-      const voice = await attemptStageCall({
-        client,
-        modelId,
-        messages: plan.messages,
-        signal,
-        exchangeTimeoutMs: perCallTimeoutMs,
-        responseFormat: RESOLUTION_RESPONSE_FORMAT,
-        validate: isResolutionReportWire,
-        stage: 'checker',
-        l,
-      },);
-      if (!voice.heard)
-        return [];
-      return [[
-        modelId,
-        resolveResolutionChecks({
-          wire: voice.value,
-          issueIds: plan.issueIds,
-        },),
-      ],];
-    },
-  ),);
+  const gather = await gatherStageVoices({
+    client,
+    modelIds: checkerModelIds,
+    messages: plan.messages,
+    signal,
+    exchangeTimeoutMs: perCallTimeoutMs,
+    responseFormat: RESOLUTION_RESPONSE_FORMAT,
+    validate: isResolutionReportWire,
+    stage: 'checker',
+    l,
+  },);
 
   /**
    * Resolved ballots keyed by checker id.
    */
-  const ballots: Record<string, ResolutionBallot> = Object.fromEntries(ballotEntries.flat(),);
+  const ballots: Record<string, ResolutionBallot> = Object.fromEntries(
+    gather.voices
+      .map(function toEntry(voice,): readonly [
+        string,
+        ResolutionBallot,
+      ] {
+      return [
+        voice.modelId,
+        resolveResolutionChecks({
+          wire: voice.value,
+          issueIds: plan.issueIds,
+        },),
+      ];
+    },),
+  );
 
   /**
-   * Ballot irregularities across every heard checker.
+   * Quorum degradation plus ballot irregularities across heard checkers.
    */
-  const findings = Object
-    .values(ballots,)
-    .flatMap(function toFindings(ballot,) {
-      return ballot.findings;
-    },);
+  const findings = [
+    ...gather.findings,
+    ...Object
+      .values(ballots,)
+      .flatMap(function toFindings(ballot,) {
+        return ballot.findings;
+      },),
+  ];
 
   /**
    * Majority tallies per issue.
