@@ -447,6 +447,15 @@ consumers and deployment are deliberately out of scope for now.
   Katerina 2/2 again; the checker retry recovered two lost voices.
   Accumulated: 49/81 repair (0.60); post-remedy 30/46 (0.65);
   detection 58/64 (0.91).
+  run 19 (2026-07-17, 1729 s): repair 4/6, detection 6/6;
+  chunchun_yudong's 17-worder restored 12/17 a second time, while
+  s5ehfr9's 13-worder missed a FOURTH time at a near-constant 3/13
+  and keyword233's 15-worder repeated its exact 4/15: the specific
+  editor misses look entry-deterministic despite editor
+  nondeterminism, suggesting the failing needles share a content
+  property (for the next design pass to identify).
+  Accumulated: 53/87 repair (0.61); post-remedy 34/52 (0.65);
+  detection 64/70 (0.91).
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
