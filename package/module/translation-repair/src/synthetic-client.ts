@@ -1,4 +1,3 @@
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import pLimit, { type LimitFunction, } from 'p-limit';
@@ -29,6 +28,11 @@ import {
   type QuotaSnapshot,
 } from './synthetic-quota.ts';
 import {
+  DEFAULT_RETRY_POLICY,
+  exchangeWithRetry,
+  type RetryPolicy,
+} from './transient-retry.ts';
+import {
   fetchTransport,
   type ModelTransport,
 } from './synthetic-transport.ts';
@@ -53,140 +57,9 @@ const HTTP_SUCCESS_MIN = 200;
 const HTTP_SUCCESS_MAX_EXCLUSIVE = 300;
 
 /**
- * Too Many Requests: the provider throttled the call.
- */
-const HTTP_TOO_MANY_REQUESTS = 429;
-
-/**
- * Bad Gateway: observed live when a 42-stream burst hit the provider.
- */
-const HTTP_BAD_GATEWAY = 502;
-
-/**
- * Service Unavailable.
- */
-const HTTP_SERVICE_UNAVAILABLE = 503;
-
-/**
- * Gateway Timeout.
- */
-const HTTP_GATEWAY_TIMEOUT = 504;
-
-/**
- * Statuses worth one more try:
- * throttles and gateway hiccups.
- * A live 42-stream burst drew instant 502s on most calls while identical
- * calls succeeded moments later, so these are transient by observation.
- */
-const RETRYABLE_STATUSES: ReadonlySet<number> = new Set([
-  HTTP_TOO_MANY_REQUESTS,
-  HTTP_BAD_GATEWAY,
-  HTTP_SERVICE_UNAVAILABLE,
-  HTTP_GATEWAY_TIMEOUT,
-],);
-
-/**
- * Retries granted past the first attempt for retryable statuses.
- */
-const TRANSIENT_RETRY_LIMIT = 2;
-
-/**
- * Base backoff before the first retry; doubles per retry, plus jitter.
- */
-const RETRY_BACKOFF_BASE_MS = 1_000;
-
-/**
- * Upper bound of the random jitter added to each backoff.
- */
-const RETRY_JITTER_MS = 500;
-
-/**
  * Logger root for this package's model-facing shell.
  */
 const l = tagged({ tag: 'translation-repair', },);
-
-/**
- * Performs one exchange with bounded retry on transient statuses.
- * Success and non-retryable failures return immediately;
- * a caller abort stops retrying at the next boundary.
- *
- * @param transport - HTTP seam performing each attempt
- *
- * @param exchange - request repeated verbatim on every attempt
- *
- * @mutates exchange - delegated transport attempts may invoke getters while
- * serializing, and the exchange's `signal` rides into each attempt;
- * see the transport's own contract
- *
- * @returns First success or first non-retryable reply
- *
- * @throws {@link SyntheticHttpError} when retries exhaust on a retryable status
- *
- * @example
- * ```ts
- * const reply = await exchangeWithRetry({ transport, exchange, },);
- * ```
- */
-async function exchangeWithRetry(
-  {
-    transport,
-    exchange,
-  }: {
-    readonly transport: ModelTransport;
-    readonly exchange: ForeignBorrowed<Parameters<ModelTransport>[0]>;
-  },
-): Promise<Awaited<ReturnType<ModelTransport>>> {
-  /**
-   * Logger pre-tagged with this function's name.
-   */
-  const rl = tagged({
-    tag: exchangeWithRetry.name,
-    l,
-  },);
-
-  for (
-    let attempt = 0;
-    attempt <= TRANSIENT_RETRY_LIMIT;
-    attempt += 1
-  ) {
-    /**
-     * Reply of this attempt.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- attempts are inherently sequential; each retry depends on the previous failure
-    const reply = await transport(exchange,);
-
-    /**
-     * Whether this reply's status merits another attempt.
-     */
-    const retryable = RETRYABLE_STATUSES.has(reply.status,)
-      && (attempt < TRANSIENT_RETRY_LIMIT);
-    if (!retryable)
-      return reply;
-
-    /**
-     * Exponential backoff for the coming retry, jittered so a burst of
-     * failing calls does not retry in lockstep and re-trigger the burst gate.
-     */
-    const backoffMs = (RETRY_BACKOFF_BASE_MS * (2 ** attempt))
-      + Math.floor(Math.random() * RETRY_JITTER_MS,);
-    rl.warn(
-      `HTTP ${String(reply.status,)}; retrying in ${String(backoffMs,)}ms (attempt ${
-        String(attempt + 1,)
-      } of ${String(TRANSIENT_RETRY_LIMIT + 1,)})`,
-    );
-    // oxlint-disable-next-line no-await-in-loop -- backoff must complete before the dependent retry
-    await wait(backoffMs,);
-    // A caller abort during backoff stops the retry loop here; the aborted
-    // signal would otherwise burn an attempt on a guaranteed rejection.
-    if (exchange.signal
-      .aborted)
-      throw new SyntheticHttpError({
-        status: reply.status,
-        bodyText: reply.bodyText,
-      },);
-  }
-  throw new Error('unreachable: retry loop returns or throws on its final attempt',);
-}
 
 /**
  * Builds one client over injected transport.
@@ -206,6 +79,8 @@ async function exchangeWithRetry(
  * the provider serves one request per model per subscribed pack at full
  * speed and queues the excess server-side, so match this to the pack count
  *
+ * @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
+ *
  * @returns Client surface with chatText, chatJson, and quotas
  *
  * @example
@@ -220,12 +95,14 @@ export function createSyntheticClient(
     chatBaseUrl = SYNTHETIC_CHAT_BASE_URL,
     quotasUrl = SYNTHETIC_QUOTAS_URL,
     perModelConcurrency = 1,
+    retryPolicy = DEFAULT_RETRY_POLICY,
   }: {
     readonly apiKey: string;
     readonly transport?: ModelTransport;
     readonly chatBaseUrl?: string;
     readonly quotasUrl?: string;
     readonly perModelConcurrency?: number;
+    readonly retryPolicy?: RetryPolicy;
   },
 ): SyntheticClient {
   /**
@@ -338,6 +215,7 @@ export function createSyntheticClient(
           },),
           signal: request.signal,
         },
+        policy: retryPolicy,
       },);
 
       if ((reply.status < HTTP_SUCCESS_MIN) || (reply.status >= HTTP_SUCCESS_MAX_EXCLUSIVE)) {
@@ -540,6 +418,7 @@ export function createSyntheticClient(
         headers,
         signal,
       },
+      policy: retryPolicy,
     },);
 
     if ((reply.status < HTTP_SUCCESS_MIN) || (reply.status >= HTTP_SUCCESS_MAX_EXCLUSIVE)) {

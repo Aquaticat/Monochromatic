@@ -323,8 +323,12 @@ await describe({
         const { transport, exchanges, } = recordedTransport({
           replies: [{ status: 429, bodyText: '{"error":"slow down"}', },],
         },);
-        /** Client under test. */
-        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /** Client under test, on a tiny test backoff. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport,
+          retryPolicy: { limit: 2, baseMs: 20, },
+        },);
         /** Value caught from the throttled exchange. */
         let caught: unknown;
         try {
@@ -358,8 +362,12 @@ await describe({
             { status: 200, bodyText: COMPLETION_BODY, },
           ],
         },);
-        /** Client under test. */
-        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /** Client under test, on a tiny test backoff. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport,
+          retryPolicy: { limit: 2, baseMs: 20, },
+        },);
         /** Reply that survived one transient failure. */
         const reply = await client.chatText({
           modelId: 'hf:zai-org/GLM-5.2',
@@ -397,6 +405,149 @@ await describe({
             ? caught.status
             : 0,
         ).toBe(400,);
+        expect(exchanges,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'retries thrown transport failures and succeeds later',
+      fn: async () => {
+        /** Every exchange the client attempted, in order. */
+        const exchanges: TransportExchange[] = [];
+
+        /**
+         * Transport dropping its first exchange like a mid-stream reset.
+         *
+         * @param exchange - request under attempt
+         *
+         * @returns Success reply from the second attempt on
+         *
+         * @example
+         * ```ts
+         * await dropOnce(exchange,);
+         * ```
+         */
+        async function dropOnce(exchange: TransportExchange,): Promise<TransportReply> {
+          exchanges.push(exchange,);
+          if (exchanges.length === 1)
+            throw new TypeError('fetch failed: connection reset',);
+          return { status: 200, bodyText: COMPLETION_BODY, };
+        }
+
+        /** Client under test, on a tiny test backoff. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport: dropOnce,
+          retryPolicy: { limit: 2, baseMs: 20, },
+        },);
+        /** Reply that survived one dropped connection. */
+        const reply = await client.chatText({
+          modelId: 'hf:zai-org/GLM-5.2',
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+        },);
+        expect(reply.text,).toBe('{"verdict":"pass"}',);
+        expect(exchanges,).toHaveLength(2,);
+      },
+    },),
+
+    it({
+      name: 'rethrows thrown transport failures once retries exhaust',
+      fn: async () => {
+        /** Every exchange the client attempted, in order. */
+        const exchanges: TransportExchange[] = [];
+        /** Failure thrown on every attempt; identity must survive. */
+        const failure = new TypeError('fetch failed: connection reset',);
+
+        /**
+         * Transport dropping every exchange.
+         *
+         * @param exchange - request under attempt
+         *
+         * @returns Never; every attempt throws
+         *
+         * @example
+         * ```ts
+         * await dropAlways(exchange,);
+         * ```
+         */
+        async function dropAlways(exchange: TransportExchange,): Promise<TransportReply> {
+          exchanges.push(exchange,);
+          throw failure;
+        }
+
+        /** Client under test, on a tiny test backoff. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport: dropAlways,
+          retryPolicy: { limit: 2, baseMs: 20, },
+        },);
+        /** Value caught once retries exhausted. */
+        let caught: unknown;
+        try {
+          await client.chatText({
+            modelId: 'hf:zai-org/GLM-5.2',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBe(failure,);
+        // First attempt plus two transient retries.
+        expect(exchanges,).toHaveLength(3,);
+      },
+    },),
+
+    it({
+      name: 'propagates thrown failures untouched after caller abort',
+      fn: async () => {
+        /** Every exchange the client attempted, in order. */
+        const exchanges: TransportExchange[] = [];
+        /** Failure the aborted stream throws; identity must survive. */
+        const failure = new Error('stream torn down by abort',);
+
+        /**
+         * Transport whose exchange dies under an aborted signal.
+         *
+         * @param exchange - request under attempt
+         *
+         * @returns Never; the aborted stream always throws
+         *
+         * @example
+         * ```ts
+         * await tornDown(exchange,);
+         * ```
+         */
+        async function tornDown(exchange: TransportExchange,): Promise<TransportReply> {
+          exchanges.push(exchange,);
+          throw failure;
+        }
+
+        /** Client under test. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport: tornDown,
+          retryPolicy: { limit: 2, baseMs: 20, },
+        },);
+        /** Controller aborted before the exchange settles. */
+        const aborted = new AbortController();
+        aborted.abort(new Error('user stop',),);
+        /** Value caught from the aborted exchange. */
+        let caught: unknown;
+        try {
+          await client.chatText({
+            modelId: 'hf:zai-org/GLM-5.2',
+            messages: MESSAGES,
+            signal: aborted.signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBe(failure,);
+        // Abort means steering: no retry may follow.
         expect(exchanges,).toHaveLength(1,);
       },
     },),

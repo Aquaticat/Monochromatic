@@ -1,11 +1,13 @@
 import type { CriticAttemptRecord, } from './scorecard.ts';
 
-//region Truncated attempt detection
-// The serving stack nondeterministically blows through its completion-token
-// ceiling on identical input (observed runs land on 65_536 exactly),
-// truncating output mid-thinking or mid-JSON. Truncation is transient, so
-// the benchmark grants exactly one retry; the detection predicate lives here
-// so the trigger stays testable in isolation.
+//region Attempt retry policy
+// The serving stack is transiently unreliable in two ways: it
+// nondeterministically blows through its completion-token ceiling on
+// identical input (observed runs land on 65_536 exactly), truncating output
+// mid-thinking or mid-JSON, and under pack-count concurrency it sheds bursts
+// as 5xx storms or hung streams. Both are weather, not request defects, so
+// the benchmark grants exactly one second attempt; the trigger predicates
+// live here so they stay testable in isolation.
 
 /**
  * Completion-token ceiling that blowout runs land on exactly;
@@ -59,4 +61,31 @@ export function isTruncatedAttempt(
   },);
 }
 
-//endregion Truncated attempt detection
+/**
+ * Decides whether one graded attempt deserves the benchmark's single
+ * second attempt.
+ * Two transient shapes qualify:
+ * truncated output, and HTTP-failure records
+ * (exhausted transient statuses, dropped transports, forfeited deadlines),
+ * each already backed by the client's own transport-level retries.
+ * Refusals reroute cross-family and well-formed-garbage mismatches are
+ * model behavior the ensemble absorbs; retrying either buys nothing.
+ *
+ * @param record - graded attempt under inspection
+ *
+ * @returns Whether the attempt deserves the single second attempt
+ *
+ * @example
+ * ```ts
+ * if (isRetryableAttempt({ record: first, },)) retryOnce();
+ * ```
+ */
+export function isRetryableAttempt(
+  { record, }: { readonly record: CriticAttemptRecord; },
+): boolean {
+  if (record.outcomeKind === 'http-error')
+    return true;
+  return isTruncatedAttempt({ record, },);
+}
+
+//endregion Attempt retry policy

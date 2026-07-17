@@ -16,7 +16,7 @@ import {
   type BenchmarkScorecard,
   type CriticAttemptRecord,
 } from './scorecard.ts';
-import { isTruncatedAttempt, } from './truncated-attempt.ts';
+import { isRetryableAttempt, } from './attempt-retry.ts';
 import {
   applySeededErrors,
   seedHitByRegion,
@@ -30,9 +30,10 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // pair out to every critic model, grade findings mechanically, and aggregate the
 // scorecard whose ensemble recall is the go/no-go number. HTTP failures are
 // attempt data; abort errors propagate so user steering always wins. A
-// truncated attempt (token-ceiling blowout mid-thinking or mid-JSON) earns
-// exactly one fresh retry because the serving stack flips between completion
-// and blowout on identical input.
+// transient-shaped attempt (token-ceiling truncation, exhausted HTTP
+// retries, dropped transport, forfeited deadline) earns exactly one fresh
+// second attempt because the serving stack flips between completion and
+// failure on identical input.
 
 /**
  * Logger root for the benchmark shell.
@@ -248,9 +249,10 @@ function armCallDeadline(
  * Entries and models all run in parallel;
  * the client's per-model limiter is the only concurrency bound,
  * so wall time approaches the slowest single call.
- * A truncation-shaped mismatch earns one retry with a fresh deadline;
+ * A transient-shaped failure (truncation or HTTP-failure record) earns one
+ * retry with a fresh deadline;
  * the final record keeps the discarded first detail in
- * `truncatedFirstAttemptDetail`.
+ * `retriedFirstAttemptDetail`.
  *
  * @param client - injected model client; tests pass recorded transports
  *
@@ -496,15 +498,16 @@ export async function runCriticBenchmark(
            * First graded attempt.
            */
           const first = await attemptOnce();
-          if (!isTruncatedAttempt({ record: first, },))
+          if (!isRetryableAttempt({ record: first, },))
             return first;
 
-          // Truncation is transient serving-stack behavior: identical input
-          // flips between completion and ceiling blowout per pass, so one
+          // Truncation and HTTP failure are serving-stack weather: identical
+          // input flips between completion and ceiling blowout per pass, and
+          // bursts shed 5xx past the client's own transport retries. One
           // fresh attempt recovers most of them; strictly one, since a
-          // second truncation means this pair spirals this model today.
+          // second failure means this pair defeats this model today.
           rl.warn(
-            `${modelId} on ${entry.entryId}: truncated output, retrying once`,
+            `${modelId} on ${entry.entryId}: ${first.outcomeKind} (${first.detail}), retrying once`,
           );
 
           /**
@@ -513,7 +516,7 @@ export async function runCriticBenchmark(
           const second = await attemptOnce();
           return {
             ...second,
-            truncatedFirstAttemptDetail: first.detail,
+            retriedFirstAttemptDetail: first.detail,
           };
       },),
       );

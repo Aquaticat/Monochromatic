@@ -85,11 +85,12 @@ export type CriticAttemptRecord = {
   readonly completionTokens?: number;
 
   /**
-   * Mismatch detail of the discarded first attempt when this record came
-   * out of the single truncation retry; absent when the first attempt
+   * Failure detail of the discarded first attempt when this record came
+   * out of the single transient retry (truncation, HTTP failure, dropped
+   * transport, or forfeited deadline); absent when the first attempt
    * stood on its own.
    */
-  readonly truncatedFirstAttemptDetail?: string;
+  readonly retriedFirstAttemptDetail?: string;
 };
 
 /**

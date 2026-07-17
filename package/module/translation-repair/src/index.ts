@@ -139,6 +139,11 @@ export {
 } from './model-content.ts';
 export { createSyntheticClient, } from './synthetic-client.ts';
 export {
+  DEFAULT_RETRY_POLICY,
+  exchangeWithRetry,
+  type RetryPolicy,
+} from './transient-retry.ts';
+export {
   type BenchmarkScorecard,
   computeScorecard,
   type CriticAttemptOutcomeKind,
@@ -147,8 +152,9 @@ export {
 } from './scorecard.ts';
 export {
   COMPLETION_TOKEN_CEILING,
+  isRetryableAttempt,
   isTruncatedAttempt,
-} from './truncated-attempt.ts';
+} from './attempt-retry.ts';
 export {
   applySeededErrors,
   SEED_MATCH_TOLERANCE,
