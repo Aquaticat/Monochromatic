@@ -9,12 +9,20 @@
 
 /**
  * Punctuation variants mapped onto canonical ASCII, one UTF-16 unit each.
+ * CJK corner brackets join the quote classes:
+ * models paraphrase 「」 as curly or ASCII quotes when quoting zh sources
+ * (live: a model closing 「...。」 as ...。”), and every bracket here is a
+ * single UTF-16 unit, so the length guarantee holds.
  */
 const PUNCTUATION_CANON: Readonly<Record<string, string>> = {
   '‘': "'",
   '’': "'",
   '“': '"',
   '”': '"',
+  '「': '"',
+  '」': '"',
+  '『': "'",
+  '』': "'",
   ' ': ' ',
 };
 

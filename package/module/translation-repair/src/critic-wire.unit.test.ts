@@ -230,6 +230,33 @@ await describe({
     },),
 
     it({
+      name: 'rescues corner-bracket variants on the source side',
+      fn: async () => {
+        /** Resolution of a zh quote closed with a curly quote instead of 」. */
+        const resolution = resolveCriticIssue({
+          wire: {
+            category: VALID_WIRE.category,
+            severity: VALID_WIRE.severity,
+            summary: VALID_WIRE.summary,
+            sourceQuote: '猫猫会打呼噜。”',
+          },
+          documents: {
+            source: parseDocument({
+              text: '## 简介\n\n她说：「猫猫会打呼噜。」\n\n猫猫也追蝴蝶。\n',
+            },),
+            target: DOCUMENTS.target,
+          },
+        },);
+
+        expect(resolution.resolved,).toBe(true,);
+        if (resolution.resolved) {
+          // The anchor carries the document's corner-bracket bytes.
+          expect(resolution.claim.spans[0]?.quotedText,).toBe('猫猫会打呼噜。」',);
+        }
+      },
+    },),
+
+    it({
       name: 'remaps known leaves reported under the wrong family',
       fn: async () => {
         /** Resolution of a family-slipped category. */
