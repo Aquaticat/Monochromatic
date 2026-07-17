@@ -159,7 +159,7 @@ await describe({
         /** Exact materialized scanner path. */
         const scannerPath = '/tmp/plugin-owned/candidate-0';
         expect(parseScannerOutput({
-          stderr: `${scannerPath}:2:1..6 rule=4`,
+          stderr: `${scannerPath}:2 rule=4`,
           candidateForPath: function candidateForPath(path,): CandidateFile {
             if (path !== scannerPath)
               throw new Error(`Unexpected scanner path: ${path}`,);
@@ -167,7 +167,7 @@ await describe({
           },
         },),).toEqual([{
           code: 'forbidden-string',
-          message: 'Forbidden string matched at line 2, columns 1 to 6 (rule 4).',
+          message: 'Forbidden string matched at line 2 (rule 4).',
           path: 'src/value.ts',
         },],);
       },
@@ -198,7 +198,7 @@ await describe({
         await using directory = await createTestDirectory();
         const scanner = await writeScanner({
           directory: directory.path,
-          body: `process.stderr.write(process.argv[2] + ':2:1..6 rule=1\\n'); process.exitCode = 1;`,
+          body: `process.stderr.write(process.argv[2] + ':2 rule=1\\n'); process.exitCode = 1;`,
         },);
         const findings = await scanCandidates({
           executable: scanner,
@@ -209,7 +209,7 @@ await describe({
         },);
         expect(findings,).toEqual([{
           code: 'forbidden-string',
-          message: 'Forbidden string matched at line 2, columns 1 to 6 (rule 1).',
+          message: 'Forbidden string matched at line 2 (rule 1).',
           path: 'name;not-a-command',
         },],);
       },

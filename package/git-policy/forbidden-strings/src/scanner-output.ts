@@ -14,14 +14,6 @@ import { ForbiddenStringsPluginError, } from './errors.ts';
  */
 type ScannerHit = Readonly<{
   /**
-   * Inclusive byte column within reported line.
-   */
-  columnEnd: number;
-  /**
-   * Inclusive byte column within reported line.
-   */
-  columnStart: number;
-  /**
    * One-based line number.
    */
   line: number;
@@ -73,35 +65,17 @@ function parseHit(line: string,): ScannerHit {
    * Rule suffix separator.
    */
   const ruleSeparator = line.lastIndexOf(' rule=',);
+  if (ruleSeparator === (-1))
+    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
   /**
-   * Column range separator.
-   */
-  const columnSeparator = line.lastIndexOf(
-    ':',
-    ruleSeparator,
-  );
-  /**
-   * Line-number separator.
+   * Line-number separator; the last colon before the rule suffix keeps
+   * candidate paths that themselves embed colons out of the numeric field.
    */
   const lineSeparator = line.lastIndexOf(
     ':',
-    columnSeparator - 1,
-  );
-  if ((ruleSeparator === (-1)) || (columnSeparator === (-1))
-    || (lineSeparator === (-1)))
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
-  /**
-   * Column range text.
-   */
-  const columnRange = line.slice(
-    columnSeparator + 1,
     ruleSeparator,
   );
-  /**
-   * Inclusive range delimiter.
-   */
-  const rangeSeparator = columnRange.indexOf('..',);
-  if (rangeSeparator === (-1))
+  if (lineSeparator === (-1))
     throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
   /**
    * Complete parsed hit.
@@ -114,19 +88,8 @@ function parseHit(line: string,): ScannerHit {
     line: parsePositiveInteger({
       value: line.slice(
         lineSeparator + 1,
-        columnSeparator,
+        ruleSeparator,
       ),
-      line,
-    },),
-    columnStart: parsePositiveInteger({
-      value: columnRange.slice(
-        0,
-        rangeSeparator,
-      ),
-      line,
-    },),
-    columnEnd: parsePositiveInteger({
-      value: columnRange.slice(rangeSeparator + 2,),
       line,
     },),
     rule: parsePositiveInteger({
@@ -134,8 +97,6 @@ function parseHit(line: string,): ScannerHit {
       line,
     },),
   };
-  if (hit.columnEnd < hit.columnStart)
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
   return hit;
 }
 
@@ -150,7 +111,7 @@ function parseHit(line: string,): ScannerHit {
  *
  * @example
  * ```ts
- * parseScannerOutput({ stderr: '/tmp/candidate:1:1..2 rule=3', candidateForPath: () => candidate });
+ * parseScannerOutput({ stderr: '/tmp/candidate:1 rule=3', candidateForPath: () => candidate });
  * ```
  */
 export function parseScannerOutput({
@@ -177,7 +138,7 @@ export function parseScannerOutput({
       const candidate = candidateForPath(hit.scannerPath,);
       return {
         code: 'forbidden-string',
-        message: `Forbidden string matched at line ${String(hit.line)}, columns ${String(hit.columnStart)} to ${String(hit.columnEnd)} (rule ${String(hit.rule)}).`,
+        message: `Forbidden string matched at line ${String(hit.line)} (rule ${String(hit.rule)}).`,
         path: candidate.path,
       };
     },);
