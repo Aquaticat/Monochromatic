@@ -30,7 +30,12 @@ Updated:
   16 quantifier bounds,
   1 reshape (rule 172).
   Review doc: `doc/planning/forbidden-strings-rule-port-review.md`.
-- OPEN DECISION (present to user, recommendation ready):
+- DECIDED by user 2026-07-16:
+  case-insensitivity loss is okay and encouraged
+  (real credentials are case-exact;
+  a case-variant of a secret prefix is not a live credential).
+  No class-expansion follow-up unless #387's differential surprises.
+  Historical note on the superseded framing:
   the 172-rule case-insensitivity loss.
   The planning doc's earlier "case-insensitivity is a non-issue" claim was
   WRONG: it measured only trailing `/i` flags and missed pervasive inline
@@ -39,7 +44,12 @@ Updated:
   normalize.rs precedent, which strips case flags; user hinted the answer
   is in what is already written), gate a possible class-expansion
   follow-up on #387's differential results.
-- OPEN DECISION (recommendation ready):
+- OPEN DECISION, pi advisor consulted (answer pending):
+  user finds the bounds recommendation fair but suspects a better option;
+  pi (gpt-5.6-sol, xhigh) is ranking bounds vs strip-after-@ vs split;
+  output lands in one flush at
+  `scratchpad/pi-mongodb-518.txt` (session scratchpad);
+  an empty file means still thinking, never poll or kill it.
   rule 518 (mongodb) trips the engine StateCap because blanket 512 caps
   compound (hostname `{1,512}` nested in replica-list `{0,512}`).
   Recommendation: context-appropriate bounds, replica hosts `{0,8}`,
@@ -108,6 +118,17 @@ Assume nothing else survived compaction;
   Trusted publishing config comes after the first version exists.
 - Handover duty:
   update this file at every milestone (agent completion, publish, escalation).
+- pi advisor policy (user, 2026-07-16):
+  call `pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills
+  --no-themes --thinking xhigh` freely as an explicit-context advisor tool
+  (background, several minutes, one-flush output);
+  the native advisor tool is disabled as too slow.
+- Bench-porter clarification (answers a user question):
+  the bench crate's port is deliberately lossy
+  (regex lines only, compile-filter drops failures, context stripped),
+  so #376 rightly built a faithful porter;
+  but wholesale context-stripping remains a live v2-port option
+  if pi and the #387 differential favor it.
 
 ## Subagent supervision (no timeouts exist)
 

@@ -212,10 +212,13 @@ This is an engine API work item that lands before the scanner rewrite.
 
 ## Open implementation questions (measure during implementation)
 
-- Embed a precompiled serialized `RegexSet` (`to_bytes`/`from_bytes`)
-  for the builtin ruleset at build time,
-  or keep `include_str!` text compiled at startup:
-  decide from measured cold-start numbers after the port.
+- RESOLVED (2026-07-16, measured during the port):
+  startup compilation is not viable
+  (worst faithful rule took 123 seconds to compile;
+  49 rules exceed one second even after the leading-strip fix),
+  so the loader embeds a precompiled serialized `RegexSet`
+  (`to_bytes`/`from_bytes`) for the builtin ruleset at build time;
+  the small local appendix still compiles at runtime.
 - Whether any ported rule trips the engine's `EmptyMatchable` or
   state-cap rejections:
   surfaced mechanically by the strict compile during the port review.
@@ -235,8 +238,14 @@ This is an engine API work item that lands before the scanner rewrite.
   2 regex-form rules;
   no unbounded quantifiers;
   no flags.
-- No `/i` rule exists in any inspected rule file,
-  so case-insensitivity expansion is a non-issue for the current corpus.
+- CORRECTION (2026-07-16, found during the port):
+  the original claim here, that case-insensitivity was a non-issue,
+  measured only trailing `/i` flags and missed pervasive inline `(?i)`
+  groups: 172 of 259 builtin regex rules carry them.
+  The user ratified stripping them as okay and encouraged
+  (real credentials are case-exact),
+  so the port drops them;
+  the #387 differential is the empirical check.
 - `RegexSet::from_ruleset` is a delimiter-split convenience over `RegexSet::new`;
   the scanner's loader keeps owning the file format.
 - The eleven load-path leak sites of #217 are
