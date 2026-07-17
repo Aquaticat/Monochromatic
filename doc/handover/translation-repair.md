@@ -83,9 +83,18 @@ Polish loop findings and fixes (Xu_Yushu, two full passes):
   fragments (遗书), paraphrases, one typo category (accuracy/omition).
 - Provider nondeterminism is large: GLM-5.2 completed both variants in
   pass 1 (13k and 33k tokens) and blew the 65_536 ceiling on BOTH in
-  pass 2 at temperature 0 on identical input; Flash similar. Pipeline
-  needs a bounded one-retry on truncated output. MiniMax-M3 timed out on
-  the clean variant in both passes (entry-conditional).
+  passes 2 and 3 at temperature 0 on identical input; Flash and
+  Nemotron flip between completion and ceiling blowout per pass.
+  Pipeline needs a bounded one-retry on truncated output (queued as its
+  own task). MiniMax-M3 flips which variant times out per pass.
+- Pass 3 (after corner-bracket fix): Qwen 29/29 resolved (100%),
+  gpt-oss seeded 18/18, MiniMax clean 110/117, Nemotron clean 12/13;
+  all three completing seeded models hit 3/3 seeds again.
+  Source-side quote-not-found dropped from about nine (pass 2) to three
+  (pass 3), all remaining ones genuine paraphrases or typos.
+  Task 9 (Xu_Yushu polish) is COMPLETE: quality claims, perfect seed
+  recall from every completing model across three passes, and the
+  resolution gate now rejects only actual fabrication.
 Update this document at every task completion or design pivot;
 it exists so auto-compaction cannot lose session state.
 
