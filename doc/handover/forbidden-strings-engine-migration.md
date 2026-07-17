@@ -111,8 +111,15 @@ Updated:
   with `Closes #376`, through the gate, NO bypass.
   The agent correctly refused to bypass and correctly stopped at the wall;
   the wall was the orchestrator's stale-trust gap, not agent error.
-  Bench sidecar is FREE;
-  next queue: #380 (bench), then #383 loader chain.
+- IN FLIGHT (dispatched 2026-07-17, parallel, disjoint crates):
+  #380 bench numbers (sonnet, bench sidecar;
+  instructed not to touch `dialectport.rs`/`caseexpand.rs`)
+  and #383 rule-compiler module (opus, scanner crate;
+  spec includes the `from_bytes` precompiled-load path per the resolved
+  embed decision, the sentinel redaction test,
+  and a read-#217-then-decide instruction on closing #217).
+  After #383: #384 (scan path), then #385 (teardown), sequential,
+  scanner crate.
 - RESOLVED plan open question:
   startup compilation is NOT viable
   (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
