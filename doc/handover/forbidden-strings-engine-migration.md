@@ -1,7 +1,60 @@
 # Handover: forbidden-strings engine migration orchestration
 
 Updated:
- 2026-07-16, after #392 closed and #382 (publish) completed.
+ 2026-07-16, after #376 returned. COMPACTION IMMINENT; read this fully.
+
+## URGENT context for the post-compact session
+
+- USER DIRECTIVE:
+  do not launch any subagents until the user compacts and says to resume;
+  current mode is discussing next steps with the user.
+- #376 state:
+  commit `e8763d56c` exists on LOCAL main only (1 ahead of origin).
+  The push is blocked by the repo's forbidden-strings commit/push gate:
+  the two ported rule files are not in `SCANNER_SELF_MATCH_PATHS`
+  (`package/git-policy/cli/src/optional/forbidden-strings/scan-candidates.ts`
+  line 26, canonical source; the running hook uses the BUILT dist bundle,
+  so after editing, rebuild the git-policy CLI).
+  The user AUTHORIZED the agent's raw-git guard bypass for the commit
+  (reasons: not real secrets, preserve trace, return ASAP).
+- Issue #376 is OPEN (verified), but the unpushed commit body carries
+  `Closes #376`, so pushing will auto-close it erroneously
+  (open items remain).
+  Agreed handling per GCA (never amend):
+  fix skip list, rebuild dist, push, let it auto-close, immediately REOPEN
+  with a comment naming the open items.
+- #376 port results:
+  261 regex rules ported, 260 compile;
+  182 semantic changes:
+  172 inline `(?i)` strips,
+  16 quantifier bounds,
+  1 reshape (rule 172).
+  Review doc: `doc/planning/forbidden-strings-rule-port-review.md`.
+- OPEN DECISION (present to user, recommendation ready):
+  the 172-rule case-insensitivity loss.
+  The planning doc's earlier "case-insensitivity is a non-issue" claim was
+  WRONG: it measured only trailing `/i` flags and missed pervasive inline
+  `(?i)` groups; the plan doc needs this correction.
+  Recommendation: ratify the strip (issue instruction said follow
+  normalize.rs precedent, which strips case flags; user hinted the answer
+  is in what is already written), gate a possible class-expansion
+  follow-up on #387's differential results.
+- OPEN DECISION (recommendation ready):
+  rule 518 (mongodb) trips the engine StateCap because blanket 512 caps
+  compound (hostname `{1,512}` nested in replica-list `{0,512}`).
+  Recommendation: context-appropriate bounds, replica hosts `{0,8}`,
+  hostname repeat `{1,128}`, trailing `[\w-]{1,128}`;
+  credential operand untouched;
+  implement inside `dialectport.rs` so the port stays reproducible,
+  rerun, require 261/261 compile, update review doc.
+- RESOLVED plan open question:
+  startup compilation is NOT viable
+  (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
+  the loader (#383) MUST embed a precompiled serialized `RegexSet`
+  (`to_bytes`/`from_bytes`);
+  update the planning doc's open-questions section.
+- The working tree is clean (agent removed its probe.rs debris before
+  committing).
 
 Fresh milestones (details in State of play):
 
@@ -138,7 +191,7 @@ Done:
 
 Running (completion notifications arrive automatically):
 
-- #376 rule-file port, opus.
+- #376 rule-file port, opus. RETURNED; see URGENT section above.
   Bench sidecar plus data files plus repo-root append file plus review doc.
   Settled semantics in the issue:
   512 quantifier caps,
