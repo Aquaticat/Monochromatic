@@ -95,6 +95,7 @@ export {
   repairTranslation,
   type RepairTranslationResult,
 } from './repair-translation.ts';
+export { gradeSeedDetection, } from './seed-detection.ts';
 export {
   attemptStageCall,
   type StageVoice,
