@@ -33,6 +33,7 @@ Rules, strictly enforced by a machine:
 - For each region you fix, return its number and the full replacement text for exactly that region.
 - Change as little as possible; keep the surrounding wording untouched.
 - An empty CURRENT TEXT marks omitted content: write the missing translation there, matching the surrounding style, and include any spacing the insertion needs.
+- When an issue reports omitted content, translate ALL of the missing content in full sentences; never summarize, compress, or drop clauses. A short paraphrase of a long omission is not a fix.
 - Preserve footnote markers like [^1] character for character.
 - Never introduce content the ORIGINAL does not support.
 - Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.
