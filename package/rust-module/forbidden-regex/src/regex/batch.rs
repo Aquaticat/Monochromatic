@@ -316,15 +316,23 @@ impl RegexSet {
 
     /// Returns the `(line index, rule index)` pairs the lines in `buf` match.
     ///
-    /// What: for each line, the byte range from its `starts` offset to the next
-    /// offset (or `buf`'s end for the last line), with the trailing newline and one
-    /// trailing carriage return excluded, runs [`RegexSet::matches`]; every matching
-    /// rule id becomes a pair, and an empty line (after that exclusion) yields none.
-    /// The line index is the 0-based position in `starts`, which the scanner maps to
-    /// its own 1-based output. Why: the scanner owns the whole file buffer with
-    /// newlines in place plus precomputed line starts, and findings need per-line
-    /// `rule=N` attribution; this deliberately naive per-line delegation is the
-    /// reference the single-sweep fast path is validated against.
+    /// What: one full-width SIMD prefilter sweep over `buf` marks which lines
+    /// hold a seeded literal, then each line's byte range from its `starts`
+    /// offset to the next offset (or `buf`'s end for the last line), with the
+    /// trailing newline and one trailing carriage return excluded, is resolved:
+    /// the seeded-rule gate runs only on a swept-candidate line, while the
+    /// line-start-anchored and literal-free rules run on every non-empty line,
+    /// giving the same ids [`RegexSet::matches`] would. Every matching rule id
+    /// becomes a pair, an empty line (after that exclusion) yields none, and
+    /// pairs are emitted in ascending line index with each line's ids in
+    /// `matches()` order. The line index is the 0-based position in `starts`,
+    /// which the scanner maps to its own 1-based output. Why: the negative-line
+    /// cost is the per-line gate scan, and short lines starve the SIMD prefilter;
+    /// one long-buffer sweep runs it at full width and skips the gate on every
+    /// line with no seed. The newline separators sitting in `buf` between lines
+    /// keep a seed from matching across a line boundary, so the sweep never
+    /// attributes a cross-line hit. The reference oracle is a per-line `matches()`
+    /// loop, kept in the batch tests.
     ///
     /// # Preconditions
     ///
@@ -347,6 +355,18 @@ impl RegexSet {
     /// assert_eq!(set.line_matches(buf, &starts), vec![(0, 0), (2, 1)]);
     /// ```
     pub fn line_matches(&self, buf: &[u8], starts: &[usize]) -> Vec<(usize, usize)> {
+        // What:    One SIMD prefilter sweep over the whole buffer marks which
+        //          lines hold a seeded literal, so the per-line loop runs the
+        //          seeded-rule gate only where a seed is actually present.
+        // Why:     Sweeping the long buffer at full SIMD width replaces the
+        //          per-line gate scan that short lines would starve; the newlines
+        //          left in `buf` stop a seed from spanning two lines.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+        // ```
+        let candidate = self.sweep_candidates(buf, starts);
         let mut hits: Vec<(usize, usize)> = Vec::new();
         for index in 0..starts.len() {
             let start = starts[index];
@@ -380,7 +400,7 @@ impl RegexSet {
             if end == start {
                 continue;
             }
-            for rule in self.matches(&buf[start..end]) {
+            for rule in self.resolve_matches(&buf[start..end], candidate[index]) {
                 hits.push((index, rule));
             }
         }
@@ -479,6 +499,49 @@ impl RegexSet {
             return true;
         }
         return self.seedless_groups.iter().any(|group| return group.is_match(line))
+    }
+
+    /// Collects one line's matching rule ids given whether the sweep found a seed
+    /// in it.
+    ///
+    /// What: runs the seeded-rule gate only when a seed is present, then the
+    /// line-start rules and the literal-free rules, returning each matching rule
+    /// id in ascending, deduplicated order; equal to [`RegexSet::matches`] line
+    /// for line, and the attribution twin of the boolean `resolve_line`. Why:
+    /// skipping the gate on a seedless line is exactly what the prefilter would
+    /// have done per line, so the rule ids are unchanged.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function resolve_matches(line: Uint8Array, has_seed: boolean): number[] {
+    ///   // Rust body below is the implementation.
+    /// }
+    /// ```
+    fn resolve_matches(&self, line: &[u8], has_seed: bool) -> Vec<usize> {
+        let mut hits: Vec<usize> = Vec::new();
+        let mut checked = CheckedFull::new();
+        if has_seed {
+            self.gate.for_each_candidate(line, |rule, pos| {
+                if self.matches_rule(line, rule, pos, &mut checked) {
+                    hits.push(rule);
+                }
+            });
+        }
+        if self.line_start_candidate(line) {
+            for (engine, &id) in self.line_start.iter().zip(&self.line_start_ids) {
+                if line_start_match(engine, line) {
+                    hits.push(id);
+                }
+            }
+        }
+        for &id in &self.seedless_ids {
+            if self.rules[id].is_match(line) {
+                hits.push(id);
+            }
+        }
+        hits.sort_unstable();
+        hits.dedup();
+        return hits
     }
 }
 

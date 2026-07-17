@@ -359,6 +359,37 @@ fn line_matches_reports_every_rule_on_a_line() {
 }
 
 #[test]
+fn line_matches_does_not_match_a_seed_spanning_a_line_boundary() {
+    // What:    Line 0 ends in `sec` and line 1 begins with `ret`, so the two
+    //          contents concatenated WITHOUT their separator would spell the
+    //          seed literal `secret`. The single sweep runs over the raw buffer
+    //          whose terminator (bare `\n` or CRLF `\r\n`) sits between them, so
+    //          the seed cannot match across the boundary; only the genuine
+    //          within-line `secret` on the final line reports. The fast path must
+    //          equal the per-line matches() oracle, which likewise sees no
+    //          cross-line match.
+    // Why:     The test uses this setup or assertion to pin the behavior named by
+    //          the test function.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // Same step as the Rust statement below, written with ordinary TS objects/functions.
+    // ```
+    let set = RegexSet::new(&["secret"]).expect("compiles");
+    let lines: &[&[u8]] = &[b"abcsec", b"retdef", b"a secret value"];
+    let seps: [&[u8]; 2] = [b"\n", b"\r\n"];
+    for sep in seps {
+        let (buf, starts) = buffer_with_starts(lines, sep);
+        assert_eq!(set.line_matches(&buf, &starts), vec![(2, 0)], "sep {sep:?}");
+        assert_eq!(
+            set.line_matches(&buf, &starts),
+            expected_pairs(&set, lines),
+            "sep {sep:?}",
+        );
+    }
+}
+
+#[test]
 fn line_matches_equals_per_line_matches_across_rulesets() {
     // What:    Across the rulesets integration.rs exercises (leading-literal, a
     //          line-start marker, a weak inner seed, seedless class runs, and a
