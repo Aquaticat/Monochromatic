@@ -260,10 +260,30 @@ consumers and deployment are deliberately out of scope for now.
   regressed, patched candidate parsed clean, selection picked the
   repaired candidate over unchanged. Note checker leniency mirrors
   panel leniency; canary calibration remains the designed control,
-  16 `repairTranslation` end-to-end pure fn (chunk via
-  `alignDocumentSections`, ensemble-agreed critical non-translation
-  returns input unchanged),
-  17 milestone-two benchmark. MILESTONE-TWO GO/NO-GO NUMBER: seeded
+  16 `repairTranslation` end-to-end, DONE (commit `a4d384dcb`:
+  `repair-translation.ts` batch driver over `repair-chunk.ts` and the
+  stage runners in `repair-stages.ts`/`repair-edit-stages.ts`;
+  `stage-call.ts` turns lost voices into ensemble degradation, caller
+  aborts always propagate; two wire-level critical non-translation
+  votes block repair; changed chunks splice back descending;
+  unit-tested end to end over a stub client scripted per
+  response-format schema name). LIVE end-to-end on seeded DarlinChit
+  (2026-07-17, 523 s, ~8.5 quota units): status `repaired`, critics
+  5/7 heard (Nemotron and gpt-oss forfeited 4-minute deadlines,
+  gracefully absorbed), 41 claims -> 31 issues (29 accepted, 2
+  rejected), editor 10/10 applied zero rejections, checkers 3/3 with
+  29/29 accepted issues resolved, BOTH deleted needles restored
+  (11/18 and 10/15 distinctive words returned),
+  17 milestone-two benchmark: code DONE (commit `765e3059c`,
+  `repair-benchmark.ts`): restoration grades on the distinctive
+  vocabulary the deletion removed (words surviving elsewhere in the
+  seeded text prove nothing; half returning marks restored,
+  `RESTORATION_WORD_THRESHOLD`); `runRepairBenchmark` budget-gates
+  entries sequentially with an injectable repair seam for tests;
+  `computeRepairScorecard` reports `seededRepairRate` over measurable
+  seeds plus coverage. First live budgeted run in progress.
+  The repair-phase exports live in `pipeline-barrel.ts` (root barrel
+  hit max-lines). MILESTONE-TWO GO/NO-GO NUMBER: seeded
   repair rate, the fraction of seeded omissions whose repaired
   candidate restores content matching the known deleted needle
   (normalized similarity; we planted it, so ground truth is exact)
