@@ -189,39 +189,23 @@ fn explicit_arg_with_skip_basename_is_still_scanned() {
     let _ = fs::remove_dir_all(&dir);
 }
 
-// What:     `#[test] fn unicode_shorthand_matches_nbsp_under_ci()`.
-//           BUG 8 regression test. Rule `(?i)adafruit[\s]+=` is
-//           compiled by `regex::bytes::RegexBuilder`. The pre-fix
-//           path tried `unicode(false)` first and silently
-//           succeeded -- but the resulting matcher's `\s` is
-//           ASCII-only (`[ \t\n\v\f\r]`), so a non-breaking space
-//           (U+00A0, UTF-8 `\xc2\xa0`) between `adafruit` and `=`
-//           is invisible to the matcher and the file exits clean
-//           even though it carries the deny-listed pattern.
-//           Post-fix the compile path detects unicode-aware
-//           shorthand (`\s/\w/\d/\b` and their negations) in the
-//           rule source, skips the `unicode(false)` fast path for
-//           those rules, and compiles with `unicode(true)` so
-//           `\s` matches the full Unicode whitespace class --
-//           including NBSP.
-// Why:      Secret-scanning CI must catch every form of separator
-//           between a label and its value. An attacker (or careless
-//           commit) can swap a regular space for NBSP to hide a
-//           leak from a naive grep; the scanner had a matching
-//           blind spot pre-fix.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// test("(?i)\\s+ matches NBSP", () => { ... });
-// ```
+// What:     A user regex rule in the engine dialect
+//           (`/AKIA[A-Z2-7]{4}/`, a bounded class + bounded
+//           repetition) compiles at startup via `compile_from_text`
+//           and matches a line containing the shape, emitting a
+//           `PATH:LINE rule=N` finding.
+// Why:      Replaces the old BUG-8 test, whose rule `/(?i)adafruit[\s]+=/`
+//           the new dialect rejects (inline `(?i)` and unbounded `+`
+//           are both unsupported). This pins the migration's actual
+//           contract: a supported regex rule compiles and fires
+//           through the engine line scan.
 #[test]
-fn unicode_shorthand_matches_nbsp_under_ci() {
-    let dir = unique_tmp("bug8");
+fn user_regex_rule_matches_bounded_pattern() {
+    let dir = unique_tmp("user-regex");
     let rules = dir.join("rules.txt");
-    fs::write(&rules, "/(?i)adafruit[\\s]+=/\n").expect("write rules");
-    let target = dir.join("nbsp.txt");
-    // Literal `const adafruit<NBSP>= "x"` -- the NBSP is `\xc2\xa0`.
-    fs::write(&target, b"const adafruit\xc2\xa0= \"x\"\n").expect("write target");
+    fs::write(&rules, "/AKIA[A-Z2-7]{4}/\n").expect("write rules");
+    let target = dir.join("key.txt");
+    fs::write(&target, b"prefix AKIA2345 suffix\n").expect("write target");
 
     let output = Command::new(BIN)
         .args(["--rules"])
@@ -230,18 +214,62 @@ fn unicode_shorthand_matches_nbsp_under_ci() {
         .output()
         .expect("spawn binary");
 
-    assert!(
-        !output.status.success(),
-        "BUG 8: rule with \\s must match NBSP under unicode(true); got success.\n\
-         stdout: {}\nstderr: {}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr),
-    );
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("nbsp.txt"),
-        "BUG 8: stderr must reference the target file; got: {}",
+        !output.status.success(),
+        "user regex rule must match the AKIA shape; got success.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        stderr,
+    );
+    assert!(
+        stderr.contains("key.txt:1 rule=0"),
+        "stderr must carry the columnless finding for line 1 rule 0; got: {}",
         stderr
+    );
+
+    let _ = fs::remove_dir_all(&dir);
+}
+
+// What:     A finding on the third line of a file emits exactly
+//           `PATH:LINE rule=N` with no column segment, and reports the
+//           correct 1-based line number.
+// Why:      The migration drops columns (`PATH:LINE:COL_START..COL_END`
+//           becomes `PATH:LINE rule=N`); this pins the new columnless
+//           shape and the line-number mapping at the binary boundary.
+#[test]
+fn output_is_columnless_with_correct_line_number() {
+    let dir = unique_tmp("columnless");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "NEEDLE_LITERAL_LONG_ENOUGH\n").expect("write rules");
+    let target = dir.join("multi.txt");
+    fs::write(&target, "clean one\nclean two\nNEEDLE_LITERAL_LONG_ENOUGH\n")
+        .expect("write target");
+
+    let output = Command::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .output()
+        .expect("spawn binary");
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(!output.status.success(), "must exit non-zero on a hit; stderr: {}", stderr);
+    let hit_line = stderr
+        .lines()
+        .find(|line| line.contains("rule="))
+        .expect("a rule= finding line");
+    // Exact columnless shape: the path, a colon, the line number, then ` rule=`.
+    assert!(
+        hit_line.ends_with("multi.txt:3 rule=0"),
+        "finding must be columnless `PATH:3 rule=0`; got: {}",
+        hit_line,
+    );
+    // No column-range segment survives the migration.
+    assert!(
+        !hit_line.contains(".."),
+        "finding must not carry a column range; got: {}",
+        hit_line,
     );
 
     let _ = fs::remove_dir_all(&dir);
@@ -782,18 +810,18 @@ fn env_var_supplies_rules_when_no_flag() {
     let _ = fs::remove_dir_all(&dir);
 }
 
-// What:     A short (<7-byte) bare literal rule matches a standalone
-//           occurrence but NOT a glued substring. Rule "ACR" must hit
-//           "see ACR here" but miss "ACRYLIC" (trailing 'Y' is a word
-//           char, no boundary).
-// Why:      README "Match semantics depend on length" + `SUBSTRING_
-//           THRESHOLD` in `src/rule/types.rs`. A regression that drops
-//           the conditional word-boundary check would suddenly fire on
-//           every short acronym occurring inside any longer
-//           identifier -- silent flood of false positives.
+// What:     A bare literal rule matches by plain substring. Rule "ACR"
+//           must hit both a standalone "see ACR here" AND a glued
+//           "ACRYLIC" occurrence.
+// Why:      The engine swap (#384) replaces the old length-conditional
+//           word-boundary heuristic with the forbidden-regex engine's
+//           plain substring match. Over-matching in this direction is a
+//           ratified standing preference (a false positive inside a
+//           longer token is acceptable), so a short literal now fires
+//           wherever its bytes occur.
 #[test]
-fn short_literal_respects_word_boundary() {
-    let dir = unique_tmp("short-boundary");
+fn short_literal_matches_as_substring() {
+    let dir = unique_tmp("short-substring");
     let rules = dir.join("rules.txt");
     fs::write(&rules, "ACR\n").expect("write rules");
 
@@ -808,27 +836,27 @@ fn short_literal_respects_word_boundary() {
         .expect("spawn binary");
     assert!(
         !hit_output.status.success(),
-        "short literal `ACR` must match standalone occurrence; exit was success.\n\
+        "literal `ACR` must match standalone occurrence; exit was success.\n\
          stdout: {}\nstderr: {}",
         String::from_utf8_lossy(&hit_output.stdout),
         String::from_utf8_lossy(&hit_output.stderr),
     );
 
-    // (2) Glued occurrence: must miss. ACRYL has trailing word char `Y`.
-    let miss_file = dir.join("miss.txt");
-    fs::write(&miss_file, "see ACRYLIC here\n").expect("write miss file");
-    let miss_output = Command::new(BIN)
+    // (2) Glued occurrence: now also matches (plain substring, no boundary).
+    let glued_file = dir.join("glued.txt");
+    fs::write(&glued_file, "see ACRYLIC here\n").expect("write glued file");
+    let glued_output = Command::new(BIN)
         .args(["--rules"])
         .arg(&rules)
-        .arg(&miss_file)
+        .arg(&glued_file)
         .output()
         .expect("spawn binary");
     assert!(
-        miss_output.status.success(),
-        "short literal `ACR` must NOT match inside `ACRYLIC` (no right-side boundary).\n\
+        !glued_output.status.success(),
+        "literal `ACR` must match inside `ACRYLIC` under plain substring semantics.\n\
          stdout: {}\nstderr: {}",
-        String::from_utf8_lossy(&miss_output.stdout),
-        String::from_utf8_lossy(&miss_output.stderr),
+        String::from_utf8_lossy(&glued_output.stdout),
+        String::from_utf8_lossy(&glued_output.stderr),
     );
 
     let _ = fs::remove_dir_all(&dir);
@@ -1040,12 +1068,14 @@ fn builtin_rules_flag_scans_with_baseline_alone_when_default_absent() {
 }
 
 // What:     `--builtin-rules` combined with a user rules file must fire
-//           BOTH rule sources, and the user's rule keeps its original
-//           line number (`rule=1`) because the baseline is appended
-//           after the file.
+//           BOTH rule sources, and the user's first rule keeps id 0
+//           (`rule=0`) because the runtime set takes ids `0..user_len`
+//           and the baseline is offset past it.
 // Why:      Stable `rule=N` output is part of the scanner's contract;
-//           shifting user numbering when the flag is on would break
-//           suppression workflows keyed on rule numbers.
+//           the migration moves from source line numbers to 0-based
+//           engine rule ids, but user rules stay independent of the
+//           baseline so suppression workflows keyed on the user's own
+//           numbering do not shift when the flag is on.
 #[test]
 fn builtin_rules_flag_appends_after_user_rules() {
     let dir = unique_tmp("builtin-append");
@@ -1072,8 +1102,8 @@ fn builtin_rules_flag_appends_after_user_rules() {
         code, stderr,
     );
     assert!(
-        stderr.contains("rule=1"),
-        "user rule must keep line number 1; got: {}",
+        stderr.contains("rule=0"),
+        "user rule must keep engine id 0; got: {}",
         stderr,
     );
     // What:     `stderr.lines().filter(|line| line.contains("rule=")).count()`

@@ -94,7 +94,7 @@ RESHARP LIMITATIONS (0.5.x through 0.6.x):\n\
     failing shape with a named-trigger error. See doc/troubleshooting/resharp.md.\n\
 \n\
 OUTPUT:\n\
-    PATH:LINE:COL_START..COL_END rule=N    (matched substring is NEVER printed)\n\
+    PATH:LINE rule=N    (matched substring is NEVER printed)\n\
 \n\
 See README.md for set-algebra rule examples and CI integration.\n\
 ";

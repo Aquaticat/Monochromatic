@@ -37,12 +37,18 @@ mod cli;
 // // in `include` paths; Rust requires explicit `mod` declarations.
 // ```
 mod rule;
-/// Registers the `scan` child module.
+/// Registers the `scan` child module (stage-one legacy pipeline, unreferenced by the
+/// binary since #384; deleted in stage three #385).
 mod scan;
-/// Registers the `scan_format` child module.
+/// Registers the `scan_format` child module (legacy pipeline, unreferenced by the
+/// binary since #384; deleted in stage three #385).
 mod scan_format;
 /// Registers the `walk` child module.
 mod walk;
+/// Registers the `frx_load` child module: the engine-based rule loader (stage two).
+mod frx_load;
+/// Registers the `frx_scan` child module: the engine-based line scan (stage two).
+mod frx_scan;
 
 /// Registers the `fuzz_api` child module.
 // What:     `#[cfg(feature = "fuzzing")] pub mod fuzz_api;` registers
@@ -84,6 +90,24 @@ pub mod fuzz_api;
 /// export { BUILTIN_RULES };
 /// ```
 pub const BUILTIN_RULES: &str = include_str!("../data/builtin-rules.txt");
+
+/// The builtin baseline precompiled into a serialized `RegexSet`, embedded at build
+/// time.
+///
+/// What:     `include_bytes!(concat!(env!("OUT_DIR"), "/builtin-rules-precompiled.bin"))`
+///           bakes the byte blob `build.rs` produced from `data/builtin-rules.ported.txt`
+///           into the binary. `&[u8]` is a read-only view of those bytes; the runtime
+///           loader hands them to `load_precompiled`, which the engine's validating
+///           `from_bytes` decodes without recompiling.
+/// Why:      Compiling the full baseline at startup is not viable (the migration
+///           measured tens of seconds), so the baseline is compiled once at build time
+///           and only decoded at runtime. Only the small runtime rules files still
+///           compile from text.
+/// Gotcha:   The blob is regenerated whenever `data/builtin-rules.ported.txt` or the
+///           shared frx parser sources change (`build.rs` `rerun-if-changed`); editing
+///           the ported file changes nothing until the crate is rebuilt.
+pub const BUILTIN_PRECOMPILED: &[u8] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/builtin-rules-precompiled.bin"));
 
 /// Re-exports the stage-one forbidden-regex rule compiler's public surface.
 // What:     `pub use rule::frx::{...}` lifts the new engine's rule-compiler
@@ -197,23 +221,16 @@ use rayon::prelude::*;
 use crate::cli::Cli;
 
 /// Imports dependencies used by this module.
-// What:     `use crate::walk::list_files;` imports named functions from sibling
-//           modules under short aliases for local use. `crate::` is the absolute
-//           root of this crate.
-// Why:      We load rules, scan file contents, and enumerate files for `--all`.
+// What:     `use crate::walk::list_files;` imports the working-tree walker used for
+//           `--all` mode. Rule loading and file scanning now route through
+//           `frx_load::load` and `frx_scan::scan_file` (the stage-two engine path),
+//           referenced by their full module paths at the call sites below.
+// Why:      Enumerate git-tracked files for `--all`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { loadRuleset, loadRulesetWithBuiltin } from "./rules";
-// import { scanContent } from "./scan";
 // import { listFiles } from "./walk";
 // ```
-use crate::rule::load_ruleset;
-/// Imports dependencies used by this module.
-use crate::rule::load_ruleset_with_builtin;
-/// Imports dependencies used by this module.
-use crate::scan::scan_content;
-/// Imports dependencies used by this module.
 use crate::walk::list_files;
 
 /// Implements `build_skip_set`.
@@ -319,7 +336,7 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
             set.insert(p);
         }
     }
-    set
+    return set
 }
 
 /// Implements `is_walker_skipped`.
@@ -365,7 +382,7 @@ fn is_walker_skipped(
     if let Ok(canonical) = std::fs::canonicalize(path) {
         return skip_set.contains(&canonical);
     }
-    false
+    return false
 }
 
 /// Implements `is_config_file_at_cwd`.
@@ -394,9 +411,9 @@ fn is_config_file_at_cwd(
 ) -> bool {
     let name_matches = std::path::Path::new(path)
         .file_name()
-        .and_then(|n| n.to_str())
+        .and_then(|n| return n.to_str())
         .is_some_and(|name| {
-            name.starts_with("forbidden-strings.") && name.ends_with(".txt")
+            return name.starts_with("forbidden-strings.") && name.ends_with(".txt")
         });
     if !name_matches {
         return false;
@@ -407,7 +424,7 @@ fn is_config_file_at_cwd(
     let Ok(canonical) = std::fs::canonicalize(path) else {
         return false;
     };
-    canonical.parent() == Some(cwd)
+    return canonical.parent() == Some(cwd)
 }
 
 /// Defines the `BIN_PROBE_SIZE` constant.
@@ -484,7 +501,7 @@ fn read_with_binary_check(path: &str) -> Result<Vec<u8>, std::io::Error> {
     }
 
     file.read_to_end(&mut buf)?;
-    Ok(buf)
+    return Ok(buf)
 }
 
 /// Run the scanner from real process arguments and environment values.
@@ -609,8 +626,8 @@ pub fn run_cli_from_env() -> Result<i32> {
     // ```
     let rules_path = cli
         .rules_path
-        .or_else(|| env::var("FORBIDDEN_STRINGS_RULES").ok())
-        .unwrap_or_else(|| "forbidden-strings.local.txt".to_string());
+        .or_else(|| return env::var("FORBIDDEN_STRINGS_RULES").ok())
+        .unwrap_or_else(|| return "forbidden-strings.local.txt".to_string());
 
     // What:     `let all = cli.all;` copies the parsed boolean flag. `bool` is a
     //           tiny copy type, unlike owned `String` or `Vec<String>`.
@@ -668,34 +685,42 @@ pub fn run_cli_from_env() -> Result<i32> {
     //   ? loadRulesetWithBuiltin(rulesPath, explicitRulesSource)
     //   : loadRuleset(rulesPath);
     // ```
-    let (ruleset_result, listed_result): (Result<_>, Option<Result<Vec<String>>>) =
-        rayon::join(
-            || if builtin_rules {
-                load_ruleset_with_builtin(&rules_path, explicit_rules_source)
-            } else {
-                load_ruleset(&rules_path)
-            },
-            || if all { Some(list_files(".")) } else { None },
-        );
-
-    // What:     `let ruleset = match ruleset_result { Ok(r) => r, Err(e) => { ...; return ... } };`
-    //           is a `match` expression destructuring a `Result<RuleSet>`.
-    //           `Ok(r)` binds the success payload to local `r` and
-    //           "evaluates" the arm to that value; `Err(e)` binds the
-    //           failure payload, prints it, and early-returns from
-    //           `main`. The match expression as a whole evaluates to
-    //           the `Ok` arm's value; assigning it to `ruleset` gives us
-    //           a plain `RuleSet` to use below (no more wrapper).
-    // Why:      Unwrap the `Result` while presenting a friendly error to
-    //           the user instead of a panic.
+    // What:     `frx_load::load(rules_path, builtin_rules, explicit, BUILTIN_PRECOMPILED)`
+    //           is the stage-two engine loader. It compiles the resolved runtime rules
+    //           file from text and, under `--builtin-rules`, appends the embedded
+    //           precompiled baseline; it returns a `LoadedRules` holding the ordered
+    //           sets with their rule-id offsets. Errors are redacted (an I/O error
+    //           names only the path; a compile error carries only an opaque index).
+    // Why:      Replaces the resharp/`regex`/aho-corasick `load_ruleset` pipeline with
+    //           the in-house engine while keeping this coordination point unchanged.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // let ruleset: RuleSet;
-    // try { ruleset = rulesetResult; }
+    // const rulesResult = frxLoad(rulesPath, builtinRules, explicitRulesSource, BUILTIN_PRECOMPILED);
+    // ```
+    let (rules_result, listed_result): (Result<_>, Option<Result<Vec<String>>>) =
+        rayon::join(
+            || return frx_load::load(
+                &rules_path,
+                builtin_rules,
+                explicit_rules_source,
+                crate::BUILTIN_PRECOMPILED,
+            ),
+            || if all { return Some(list_files(".")) } else { return None },
+        );
+
+    // What:     `let loaded = match rules_result { Ok(r) => r, Err(e) => { ...; return ... } };`
+    //           destructures the `Result<LoadedRules>`. `Ok(r)` binds the loaded sets;
+    //           `Err(e)` prints the redacted error and early-returns exit 2.
+    // Why:      Unwrap the `Result` while presenting a friendly error instead of a panic.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let loaded: LoadedRules;
+    // try { loaded = rulesResult; }
     // catch (e) { console.error(`forbidden-strings: ${e}`); process.exit(2); }
     // ```
-    let ruleset = match ruleset_result {
+    let loaded = match rules_result {
         Ok(r) => r,
         Err(e) => {
             // eprintln, not tracing: the user-facing CLI error contract is "forbidden-strings:
@@ -705,38 +730,6 @@ pub fn run_cli_from_env() -> Result<i32> {
             return Ok(2);
         }
     };
-
-    if env::var("FORBIDDEN_STRINGS_DEBUG_BUCKETS").is_ok() {
-        let ac_cs_pat = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rule::AcMeta::RegexPrefix { .. })).count();
-        let ac_cs_lit = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rule::AcMeta::Literal { .. })).count();
-        let ac_ci_pat = ruleset.ac_meta_ci.len();
-        let residual_count: usize = ruleset.residual_shards.iter().map(|s| match s {
-            crate::rule::ResidualShard::Single { .. } => 1,
-            crate::rule::ResidualShard::Combined { positions, .. } => positions.len(),
-        }).sum();
-        let single_shard_count = ruleset.residual_shards.iter().filter(|s| matches!(s, crate::rule::ResidualShard::Single { .. })).count();
-        let combined_shard_count = ruleset.residual_shards.len() - single_shard_count;
-        // eprintln, not tracing: an opt-in developer bucket report gated by
-        // FORBIDDEN_STRINGS_DEBUG_BUCKETS; kept as one cohesive direct-stderr dump rather than
-        // fragmented tracing events double-gated by RUST_LOG.
-        eprintln!(
-            "forbidden-strings buckets: ac_cs_lit={} ac_cs_regex_prefix={} ac_ci_regex_prefix={} residual={} (in {} single + {} combined shards) regex_rules_total={}",
-            ac_cs_lit, ac_cs_pat, ac_ci_pat, residual_count, single_shard_count, combined_shard_count, ruleset.regex_rules.len(),
-        );
-        if env::var("FORBIDDEN_STRINGS_DEBUG_RESIDUAL_LIST").is_ok() {
-            for shard in &ruleset.residual_shards {
-                let positions: Vec<usize> = match shard {
-                    crate::rule::ResidualShard::Single { rule_pos } => vec![*rule_pos],
-                    crate::rule::ResidualShard::Combined { positions, .. } => positions.clone(),
-                };
-                for pos in positions {
-                    let r = &ruleset.regex_rules[pos];
-                    // eprintln, not tracing: part of the same env-gated developer bucket report.
-                    eprintln!("residual rule line={}", r.idx);
-                }
-            }
-        }
-    }
 
     // What:     `if let Some(listed) = listed_result { match listed { ... } }`.
     //           One-arm pattern match: enter the block ONLY when
@@ -903,21 +896,20 @@ pub fn run_cli_from_env() -> Result<i32> {
                     return vec![format!("{}: read error: {}", p, e)];
                 }
             };
-            // What:     `scan_content(p, &content, &ruleset)` is a function
-            //           call. `&content` and `&ruleset` are BORROW
-            //           expressions: we lend the vec and ruleset to the
-            //           callee read-only. The callee returns a fresh
-            //           `Vec<String>` of hits which becomes this closure's
-            //           tail expression (no `;` -> implicit return).
-            // Why:      Hand the just-read bytes to the scanner; the
-            //           returned hits become this closure's contribution
-            //           to the parallel-flat_map output.
+            // What:     `frx_scan::scan_file(p, &content, &loaded)` splits the file
+            //           into lines and runs each loaded set's `line_matches` under a
+            //           fail-closed unwind boundary, returning `PATH:LINE rule=N`
+            //           findings. `&content` and `&loaded` are read-only borrows; the
+            //           returned `Vec<String>` is this closure's tail expression.
+            // Why:      Hand the just-read bytes to the engine line scan; the returned
+            //           findings become this closure's contribution to the parallel
+            //           flat_map output.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // return scanContent(p, content, ruleset);
+            // return scanFile(p, content, loaded);
             // ```
-            scan_content(p, &content, &ruleset)
+            return frx_scan::scan_file(p, &content, &loaded)
         })
         .collect();
 
@@ -950,8 +942,8 @@ pub fn run_cli_from_env() -> Result<i32> {
     // return hits.length === 0 ? 0 : 1;
     // ```
     if hits.is_empty() {
-        Ok(0)
+        return Ok(0)
     } else {
-        Ok(1)
+        return Ok(1)
     }
 }
