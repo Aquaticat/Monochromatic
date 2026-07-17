@@ -35,6 +35,28 @@ Assume nothing else survived compaction;
 - Handover duty:
   update this file at every milestone (agent completion, publish, escalation).
 
+## Subagent supervision (no timeouts exist)
+
+- The Agent tool has NO timeout parameter (verified against the tool schema
+  2026-07-16);
+  the #376 and #377 agents were launched unbounded.
+  The user is aware and chose not to kill or relaunch them.
+- Available levers:
+  completion notifications fire automatically when an agent stops;
+  `TaskStop` terminates a running agent manually;
+  `TaskList`/`TaskOutput` inspect status.
+- Prompt-embedded stop conditions are the only per-task budget mechanism.
+  Prompts so far include scoped ones
+  (stop-and-report on max-lines, report-not-fix on new lint families)
+  but no overall effort budget.
+- Policy for every future launch:
+  include a soft budget line in the prompt,
+  for example "if this exceeds roughly forty tool calls or you hit a wall,
+  stop and report state instead of pushing on".
+- If an agent looks stalled (no completion notification for an unreasonable
+  span), inspect via `TaskList` and stop it with `TaskStop` rather than
+  launching a duplicate into the same crate.
+
 ## Hard sequencing constraints
 
 - Never two agents concurrently in the same crate
