@@ -30,6 +30,13 @@ export {
   type SplitMdxDocument,
 } from './front-matter.ts';
 export {
+  type AggregatedClaim,
+  aggregateClaims,
+  type ClaimAggregation,
+  type ClaimCluster,
+  CLUSTER_ANCHOR_TOLERANCE,
+} from './aggregate-claims.ts';
+export {
   computeIssueClaimId,
   type DocumentSide,
   type IssueClaim,
