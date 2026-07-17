@@ -606,10 +606,19 @@ source (done). No open questions currently block the loop.
   reproduced its run 27 judgments exactly (seed 0 restored on 0/7
   lexical words, seed 1 partial): judge verdicts are stable across
   independent runs. Detection 2/2 there.
-  JUDGE ACCUMULATED (repairable universe): 27/32 (0.84) over 7 runs
-  (22 to 28). Lexical over the same runs 20/32 (0.63). Detection
-  104/110 (0.95).
-  NEXT: continue the RESUME PROCEDURE loop (run 29 onward). The point
+  run 29 (2026-07-17, 2405 s): judge 2/4 (0.50, two partials),
+  lexical 2/4, detection 4/4; Anilovr and Acheron repaired (two
+  dispatched, four budget-skipped). Acheron is a repeat draw from run
+  24 and its seed 0 judged PARTIAL both times (independent runs):
+  second reproducibility case; that specific needle consistently
+  comes back half-restored from the editor. Anilovr seed 0 is a
+  second inversion (lexical=restored on 4/7 words, judge=partial
+  against the zh source). Lenient rate stays 1.0: every judged seed
+  in the repairable universe is at least partial.
+  JUDGE ACCUMULATED (repairable universe): 29/36 (0.81) over 8 runs
+  (22 to 29). Lexical over the same runs 22/36 (0.61). Detection
+  108/114 (0.95).
+  NEXT: continue the RESUME PROCEDURE loop (run 30 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
