@@ -396,6 +396,16 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 - Output consumer (wiki PRs, files, UI): deferred until after the pure fn proves itself.
 - User possesses the policy files; the system must function without them.
 - Benchmark focuses on memorial texts first (user decision).
+- Unrelated text pairs (user probe: zh cat story vs "Meow meow meow"):
+  `accuracy/non-translation` is in the taxonomy (commit `d4dabc283`) and
+  the critic prompt reports one critical instance for wholly unrelated
+  pairs. Verified live on the invented pair: GLM-5.2, gpt-oss-120b, and
+  Qwen3.6-27B each emitted exactly one accuracy/non-translation/critical
+  issue. Qwen's failed to ANCHOR (degenerate repetitive gibberish makes
+  every short quote ambiguous), so the future rollup must treat
+  non-translation as a document-level verdict where wire-level ensemble
+  agreement suffices and anchoring is best-effort; ensemble-agreed
+  critical non-translation blocks repair and returns the input unchanged.
 - Model-driven input fixing (user: parse phase may "optionally" use LLMs to
   fix source and translations before continuing): deferred by evidence, not
   rejected. Deterministic tolerance (comment masking + markdown fallback)
