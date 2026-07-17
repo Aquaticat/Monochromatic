@@ -11,6 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { hashContent, } from './document-node.ts';
 import {
   computeRepairScorecard,
   contentWords,
@@ -20,7 +21,11 @@ import {
 } from './repair-benchmark.ts';
 import type { RepairModels, } from './repair-chunk.ts';
 import type { repairTranslation, } from './repair-translation.ts';
-import type { SeededErrorSpec, } from './seeded-error.ts';
+import { gradeSeedDetection, } from './seed-detection.ts';
+import {
+  applySeededErrors,
+  type SeededErrorSpec,
+} from './seeded-error.ts';
 
 /**
  * Clean fixture translation the seed deletes from.
@@ -165,6 +170,10 @@ await describe({
                 restored: false,
               },
             },
+            seedDetection: {
+              'seed/omission-0': true,
+              'seed/omission-1': true,
+            },
             issueCount: 3,
             resolvedIssueCount: 2,
             detail: '',
@@ -181,6 +190,7 @@ await describe({
                 restored: false,
               },
             },
+            seedDetection: { 'seed/omission-0': false, },
             issueCount: 1,
             resolvedIssueCount: 0,
             detail: '',
@@ -189,6 +199,7 @@ await describe({
             entryId: 'shadow',
             outcomeKind: 'skipped',
             seedGrades: {},
+            seedDetection: {},
             issueCount: 0,
             resolvedIssueCount: 0,
             detail: 'run-budget-exhausted',
@@ -201,8 +212,94 @@ await describe({
         expect(scorecard.seedUniverse,).toBe(2,);
         expect(scorecard.restoredSeeds,).toBe(1,);
         expect(scorecard.seededRepairRate,).toBe(1 / 2,);
+        expect(scorecard.plantedSeeds,).toBe(3,);
+        expect(scorecard.detectedSeeds,).toBe(2,);
+        expect(scorecard.seedDetectionRate,).toBe(2 / 3,);
         expect(scorecard.statusCounts.repaired,).toBe(1,);
         expect(scorecard.statusCounts.unchanged,).toBe(1,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: gradeSeedDetection.name,
+  children: [
+    it({
+      name: 'marks seeds with accepted issues at their region and only those',
+      fn: async () => {
+        /** Sectioned fixture translation the seed deletes from. */
+        const sectionedTarget = `## Introduction
+
+The cat naps in the sun. The cat also chases crimson butterflies across the meadow. The bowl stays full.
+`;
+        /** Deletion planted into the sectioned fixture. */
+        const { seededText, applications, } = applySeededErrors({
+          text: sectionedTarget,
+          specs: [BUTTERFLY_SEED,],
+        },);
+        /** Application region of the planted seed. */
+        const [application,] = applications;
+        if (application === undefined)
+          throw new Error('fixture planting failed',);
+        /** Accepted issue anchored at the deletion point. */
+        const nearIssue = {
+          chunkIndex: 0,
+          resolved: false,
+          issue: {
+            issueId: 'adjudicated/near',
+            status: 'accepted' as const,
+            severity: 'major' as const,
+            claims: [
+              {
+                claimId: 'issue/near',
+                claim: {
+                  category: 'accuracy/omission' as const,
+                  severity: 'major' as const,
+                  summary: 'The butterfly sentence is missing.',
+                  spans: [
+                    {
+                      side: 'target' as const,
+                      nodeId: 'block/1',
+                      nodeHash: hashContent({ content: 'invented', },),
+                      startOffset: application.startOffset,
+                      endOffset: application.startOffset + 10,
+                      quotedText: seededText.slice(
+                        application.startOffset,
+                        application.startOffset + 10,
+                      ),
+                    },
+                  ],
+                },
+              },
+            ],
+            tallies: {},
+          },
+        };
+        /** Detection with the accepted near issue. */
+        const detected = gradeSeedDetection({
+          sourceText: '## 简介\n\n猫猫在太阳下打盹。猫猫也追蝴蝶。碗是满的。\n',
+          seededText,
+          applications,
+          issues: [nearIssue,],
+        },);
+        expect(detected[BUTTERFLY_SEED.id],).toBe(true,);
+        /** Detection when the same issue is rejected. */
+        const rejected = gradeSeedDetection({
+          sourceText: '## 简介\n\n猫猫在太阳下打盹。猫猫也追蝴蝶。碗是满的。\n',
+          seededText,
+          applications,
+          issues: [
+            {
+              ...nearIssue,
+              issue: {
+                ...nearIssue.issue,
+                status: 'rejected' as const,
+              },
+            },
+          ],
+        },);
+        expect(rejected[BUTTERFLY_SEED.id],).toBe(false,);
       },
     },),
   ],

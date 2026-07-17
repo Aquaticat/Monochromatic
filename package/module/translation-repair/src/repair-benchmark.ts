@@ -5,6 +5,7 @@ import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { BenchmarkEntry, } from './prepare-entry.ts';
 import type { RepairModels, } from './repair-chunk.ts';
+import { gradeSeedDetection, } from './seed-detection.ts';
 import {
   repairTranslation,
   type RepairStatus,
@@ -252,6 +253,12 @@ export type RepairAttemptRecord = {
   readonly seedGrades: Readonly<Record<string, SeedRestoration>>;
 
   /**
+   * Whether an ACCEPTED issue anchored at each planted seed's region,
+   * separating detection failures from repair failures.
+   */
+  readonly seedDetection: Readonly<Record<string, boolean>>;
+
+  /**
    * Adjudicated issues the run reported.
    */
   readonly issueCount: number;
@@ -302,6 +309,23 @@ export type RepairScorecard = {
   readonly seededRepairRate: number;
 
   /**
+   * Planted seeds across dispatched entries, detection's denominator.
+   */
+  readonly plantedSeeds: number;
+
+  /**
+   * Planted seeds with an accepted issue anchored at their region.
+   */
+  readonly detectedSeeds: number;
+
+  /**
+   * Detection rate: detected over planted;
+   * the gap between this and the repair rate is the editor's share of
+   * every miss.
+   */
+  readonly seedDetectionRate: number;
+
+  /**
    * Runs per completion status.
    */
   readonly statusCounts: Readonly<Record<string, number>>;
@@ -348,6 +372,20 @@ export function computeRepairScorecard(
   },);
 
   /**
+   * Detection verdicts across dispatched attempts.
+   */
+  const detections = dispatched.flatMap(function toDetections(record,) {
+    return Object.values(record.seedDetection,);
+  },);
+
+  /**
+   * Seeds whose region carried an accepted issue.
+   */
+  const detected = detections.filter(function isDetected(verdict,) {
+    return verdict;
+  },);
+
+  /**
    * Runs per completion status.
    */
   const statusCounts: Record<string, number> = {};
@@ -363,6 +401,9 @@ export function computeRepairScorecard(
     seedUniverse: grades.length,
     restoredSeeds: restored.length,
     seededRepairRate: grades.length === 0 ? 0 : restored.length / grades.length,
+    plantedSeeds: detections.length,
+    detectedSeeds: detected.length,
+    seedDetectionRate: detections.length === 0 ? 0 : detected.length / detections.length,
     statusCounts,
   };
 }
@@ -469,6 +510,7 @@ export async function runRepairBenchmark(
         entryId: entry.entryId,
         outcomeKind: 'skipped',
         seedGrades: {},
+        seedDetection: {},
         issueCount: 0,
         resolvedIssueCount: 0,
         detail: 'run-budget-exhausted',
@@ -477,9 +519,13 @@ export async function runRepairBenchmark(
     }
 
     /**
-     * Seeded pair for this entry.
+     * Seeded pair for this entry, with planted regions for detection
+     * grading.
      */
-    const { seededText, } = applySeededErrors({
+    const {
+      seededText,
+      applications,
+    } = applySeededErrors({
       text: entry.targetText,
       specs: entry.seeds,
     },);
@@ -513,6 +559,12 @@ export async function runRepairBenchmark(
             },),
           ];
         },),),
+        seedDetection: gradeSeedDetection({
+          sourceText: entry.sourceText,
+          seededText,
+          applications,
+          issues: result.issues,
+        },),
         issueCount: result.issues
           .length,
         resolvedIssueCount: result.issues
@@ -532,6 +584,7 @@ export async function runRepairBenchmark(
         entryId: entry.entryId,
         outcomeKind: 'error',
         seedGrades: {},
+        seedDetection: {},
         issueCount: 0,
         resolvedIssueCount: 0,
         detail: String(error,),
