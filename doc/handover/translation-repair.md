@@ -91,6 +91,16 @@ Polish loop findings and fixes (Xu_Yushu, two full passes):
   or completion tokens at the 65_536 ceiling), and `runCriticBenchmark`
   grants exactly one fresh-deadline retry, keeping the discarded first
   detail in `truncatedFirstAttemptDetail`.
+  Live pass 4 through `runCriticBenchmark` (seeded Xu_Yushu, all seven
+  models, 308 s wall): every model completed `ok` on its FIRST attempt,
+  zero truncations, so the retry path stayed idle live; trigger and cap
+  are unit-tested and detection strings come from recorded real
+  failures. Pass 4 is the best pass yet: 7/7 ok, ensemble recall 1.0,
+  four models found all three seeds (GLM-5.2, Qwen, Kimi, Nemotron),
+  GLM-5.2 completed at 10_690 tokens after three straight
+  ceiling-blowout passes, Nemotron squeaked under the ceiling at
+  45_977. Same input, fourth different behavior pattern:
+  the nondeterminism cuts both ways.
   MiniMax-M3 flips which variant times out per pass.
   (Temperature is no longer sent at all; see provider facts.)
 - Pass 3 (after corner-bracket fix): Qwen 29/29 resolved (100%),
