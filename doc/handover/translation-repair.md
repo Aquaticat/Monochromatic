@@ -434,6 +434,13 @@ consumers and deployment are deliberately out of scope for now.
   detection 48/54 (0.89). The rates have stabilized: repair around
   0.6 overall and about two thirds post-remedy, detection just
   under 0.9.
+  run 17 (2026-07-17, 2302 s, calm weather, zero retries): repair
+  3/4, detection 4/4; Everythings99 restored both 14-worders;
+  a2581911655's 18-word needle missed a third time (7/18 after 5/18
+  and 6/18): the longest needles trend upward post-remedy but the
+  18-word class still sits under threshold.
+  Accumulated: 46/75 repair (0.61); post-remedy 27/40 (0.68);
+  detection 52/58 (0.90).
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
