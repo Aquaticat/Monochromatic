@@ -147,35 +147,35 @@ Running (completion notifications arrive automatically):
   line-number alignment preserved,
   strict compile, zero drops,
   gitignored local files untouchable.
-  ATTENTION:
-  the user observed this agent doing more than instructed
-  (adjacent legitimate work, so tolerated)
-  and granted a 20-minute grace window from that observation;
-  a background sleep timer fires at expiry.
-  At expiry, if no completion notification has arrived:
-  inspect via `TaskList`,
-  stop via `TaskStop`,
-  evaluate whatever it committed,
-  and relaunch the remainder with a narrower prompt.
+  CURRENT STATUS:
+  scope drift observed by the user (extra probe bin beside the port bin),
+  grace timer fired,
+  user directly told the agent to clean up and commit ASAP;
+  its report arrives imminently and carries a design decision to resolve.
+  User guidance: the decision is likely answerable from what is already
+  written (planning doc, engine README, port review conventions);
+  resolve by citation, do not reopen settled decisions.
   Lesson recorded on #391:
   soft budgets and precise prompts are the only bounding mechanism.
-- #392 follow-up sweep, sonnet, engine crate:
-  convert 60 test-code `Result::unwrap()` sites to `.expect()` with messages.
-  First #392 agent landed `25fd8b9c6`
-  (60 implicit_return fixes, gate widened to `--all-targets`)
-  and correctly stopped on the foreign `disallowed_methods` family;
-  triage decision posted to #392 from root `clippy.toml` reason text plus
+
+Also done (session spin-offs):
+
+- #392 in two commits:
+  `25fd8b9c6` (60 test-module implicit_return fixes plus clippy gate widened
+  to `--all-targets`;
+  agent correctly stopped on the foreign `disallowed_methods` family)
+  and `260823a4a` (60 test `Result::unwrap()` to `.expect()` conversions;
+  gate green).
+  Triage decision came from root `clippy.toml` reason text plus
   sibling-crate precedent (expect, never suppress).
-  CAUTION: the widened engine `lint:clippy` gate is RED on main until this
-  agent lands.
   Scope note posted to #385:
   widen the scanner crate's lib-only clippy task during the teardown.
+- #382:
+  0.1.0 live on crates.io, trusted publishing configured by the maintainer,
+  workflow lane in `4b502af20`.
 
 Filed, not started:
 
-- #392 test-module implicit_return sweep plus widening mise clippy to
-  `--all-targets`;
-  launch after #378 vacates the engine crate.
 - #391 escalation-policy persistence decision (needs-triage, human).
 
 ## Planned launch order
