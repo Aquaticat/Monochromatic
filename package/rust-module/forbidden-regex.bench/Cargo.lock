@@ -385,6 +385,7 @@ dependencies = [
  "aho-corasick",
  "anyhow",
  "clap",
+ "forbidden-regex",
  "gix-hash",
  "gix-index",
  "ignore",

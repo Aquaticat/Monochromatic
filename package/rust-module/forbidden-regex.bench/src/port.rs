@@ -29,7 +29,7 @@ pub fn port(inner: &str) -> (String, String) {
         let normalized = normalize(operand);
         ours_ops.push(wrap_operand(&normalized));
     }
-    (ours_ops.join("&"), bare)
+    return (ours_ops.join("&"), bare)
 }
 
 /// Strips the leading and trailing context that surrounds a secret.
@@ -69,7 +69,7 @@ fn strip_leading(s: &str) -> String {
     {
         return format!("(?:{after}");
     }
-    s.to_string()
+    return s.to_string()
 }
 
 /// Strips a leading nullable class-repeat such as `[\w.-]{0,50}`.
@@ -86,7 +86,7 @@ fn strip_leading_class_repeat(s: &str) -> Option<&str> {
         let brace = rest.find('}')?;
         return Some(&rest[brace + 1..]);
     }
-    None
+    return None
 }
 
 /// Returns the index just past a class starting at index 0.
@@ -104,7 +104,7 @@ fn class_span_end(b: &[u8]) -> Option<usize> {
     while i < b.len() && b[i] != b']' {
         i += if b[i] == b'\\' { 2 } else { 1 };
     }
-    if i < b.len() { Some(i + 1) } else { None }
+    if i < b.len() { return Some(i + 1) } else { return None }
 }
 
 /// Strips one trailing context element.
@@ -119,8 +119,8 @@ fn strip_trailing(s: &str) -> String {
         return s[..s.len() - 1].to_string();
     }
     match trailing_context_group(s) {
-        Some(open) => s[..open].to_string(),
-        None => s.to_string(),
+        Some(open) => return s[..open].to_string(),
+        None => return s.to_string(),
     }
 }
 
@@ -162,7 +162,7 @@ fn trailing_context_group(s: &str) -> Option<usize> {
         }
         i += 1;
     }
-    None
+    return None
 }
 
 /// Wraps one `&` operand so it is a single atom.
@@ -171,9 +171,9 @@ fn trailing_context_group(s: &str) -> Option<usize> {
 /// after its branches are wrapped. Why: the grammar requires single-atom operands.
 fn wrap_operand(operand: &str) -> String {
     if operand.trim_start().starts_with('~') {
-        wrap_branches(operand)
+        return wrap_branches(operand)
     } else {
-        format!("(?:{})", wrap_branches(operand))
+        return format!("(?:{})", wrap_branches(operand))
     }
 }
 
@@ -186,7 +186,7 @@ fn wrap_branches(s: &str) -> String {
     if branches.len() == 1 {
         return process_seq(&branches[0]);
     }
-    branches
+    return branches
         .iter()
         .map(|branch| format!("(?:{})", process_seq(branch)))
         .collect::<Vec<_>>()
@@ -232,7 +232,7 @@ fn process_seq(s: &str) -> String {
             i += 1;
         }
     }
-    out
+    return out
 }
 
 /// Returns the index just past a class that starts at `open`.
@@ -245,7 +245,7 @@ pub(crate) fn class_end(b: &[u8], open: usize) -> usize {
     while i < b.len() && b[i] != b']' {
         i += if b[i] == b'\\' { 2 } else { 1 };
     }
-    (i + 1).min(b.len())
+    return (i + 1).min(b.len())
 }
 
 /// Returns the index of the `)` matching the `(` at `open`.
@@ -282,7 +282,7 @@ pub(crate) fn matching_close(b: &[u8], open: usize) -> usize {
         }
         i += 1;
     }
-    b.len().saturating_sub(1)
+    return b.len().saturating_sub(1)
 }
 
 /// Returns the index where a group's inner content starts after its prefix.
@@ -291,9 +291,9 @@ pub(crate) fn matching_close(b: &[u8], open: usize) -> usize {
 /// rewrapped; the prefix is copied as-is.
 fn group_inner_start(b: &[u8], open: usize) -> usize {
     if open + 2 < b.len() && b[open + 1] == b'?' && b[open + 2] == b':' {
-        open + 3
+        return open + 3
     } else {
-        open + 1
+        return open + 1
     }
 }
 
@@ -334,5 +334,5 @@ fn split_top_level(s: &str, delim: u8) -> Vec<String> {
         i += 1;
     }
     parts.push(s[start..].to_string());
-    parts
+    return parts
 }

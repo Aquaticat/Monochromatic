@@ -42,14 +42,14 @@ fn repo_root() -> PathBuf {
 /// `hidden(false)` includes tracked dotfiles, `ignore(false)` leaves `.ignore`
 /// re-exclusions out so `.gitignore` alone decides the set, exactly as the scanner does.
 fn non_ignored_files(root: &PathBuf) -> Vec<PathBuf> {
-    WalkBuilder::new(root)
+    return WalkBuilder::new(root)
         .hidden(false)
         .ignore(false)
-        .filter_entry(|entry| entry.file_name() != ".git" && entry.file_name() != ".jj")
+        .filter_entry(|entry| return entry.file_name() != ".git" && entry.file_name() != ".jj")
         .build()
         .filter_map(Result::ok)
-        .filter(|entry| entry.file_type().is_some_and(|kind| kind.is_file()))
-        .map(|entry| entry.into_path())
+        .filter(|entry| return entry.file_type().is_some_and(|kind| return kind.is_file()))
+        .map(|entry| return entry.into_path())
         .collect()
 }
 
@@ -64,7 +64,7 @@ fn gather_file(path: &PathBuf, lines: &mut Vec<Vec<u8>>) {
     if bytes.contains(&0) {
         return;
     }
-    for raw in bytes.split(|&b| b == b'\n') {
+    for raw in bytes.split(|&b| return b == b'\n') {
         let line = raw.strip_suffix(b"\r").unwrap_or(raw);
         if line.is_empty() || line.len() > MAX_LINE_LEN {
             continue;
@@ -90,5 +90,5 @@ pub fn build_corpus() -> Vec<Vec<u8>> {
     if lines.is_empty() {
         panic!("gathered no corpus lines from the repo");
     }
-    lines
+    return lines
 }

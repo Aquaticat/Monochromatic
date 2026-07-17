@@ -35,7 +35,7 @@ pub(crate) fn normalize(inner: &str) -> String {
     s = s.replace("(?i)", "");
     s = s.replace("\\_", "_");
     s = s.replace("\\x60", "`");
-    scan_rewrite(&s)
+    return scan_rewrite(&s)
 }
 
 /// Rewrites capturing groups and unbounded quantifiers in one escape-aware pass.
@@ -65,7 +65,7 @@ fn scan_rewrite(s: &str) -> String {
         }
         i = rewrite_token(s, b, i, &mut out);
     }
-    out
+    return out
 }
 
 /// Rewrites one non-class, non-escape token, returning the next index.
@@ -76,20 +76,20 @@ fn rewrite_token(s: &str, b: &[u8], i: usize, out: &mut String) -> usize {
     match b[i] {
         b'(' if open_is_capturing(b, i) => {
             out.push_str("(?:");
-            i + 1
+            return i + 1
         }
         b'*' => {
             out.push_str(&format!("{{0,{QUANT_CAP}}}"));
-            i + 1
+            return i + 1
         }
         b'+' => {
             out.push_str(&format!("{{1,{QUANT_CAP}}}"));
-            i + 1
+            return i + 1
         }
-        b'{' => rewrite_brace(s, b, i, out),
+        b'{' => return rewrite_brace(s, b, i, out),
         other => {
             out.push(other as char);
-            i + 1
+            return i + 1
         }
     }
 }
@@ -101,7 +101,7 @@ fn rewrite_token(s: &str, b: &[u8], i: usize, out: &mut String) -> usize {
 fn open_is_capturing(b: &[u8], i: usize) -> bool {
     let is_flagged = i + 1 < b.len() && b[i + 1] == b'?';
     let is_complement = i > 0 && b[i - 1] == b'~' && (i < 2 || b[i - 2] != b'\\');
-    !is_flagged && !is_complement
+    return !is_flagged && !is_complement
 }
 
 /// Rewrites a `{...}` token, bounding `{n,}`, returning the next index.
@@ -109,15 +109,15 @@ fn open_is_capturing(b: &[u8], i: usize) -> bool {
 /// What: copies `{n}`/`{n,m}` as-is and turns `{n,}` into `{n,CAP}`. Why: the engine
 /// rejects an open-ended upper bound.
 fn rewrite_brace(s: &str, b: &[u8], i: usize, out: &mut String) -> usize {
-    let Some(close) = b[i..].iter().position(|&x| x == b'}').map(|p| i + p) else {
+    let Some(close) = b[i..].iter().position(|&x| return x == b'}').map(|p| return i + p) else {
         out.push('{');
         return i + 1;
     };
     let body = &s[i + 1..close];
-    if body.len() >= 2 && body.ends_with(',') && body[..body.len() - 1].bytes().all(|x| x.is_ascii_digit()) {
+    if body.len() >= 2 && body.ends_with(',') && body[..body.len() - 1].bytes().all(|x| return x.is_ascii_digit()) {
         out.push_str(&format!("{{{},{QUANT_CAP}}}", &body[..body.len() - 1]));
     } else {
         out.push_str(&s[i..=close]);
     }
-    close + 1
+    return close + 1
 }
