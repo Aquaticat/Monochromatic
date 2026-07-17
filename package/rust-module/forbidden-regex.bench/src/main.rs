@@ -50,7 +50,7 @@ fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+                .unwrap_or_else(|_| return tracing_subscriber::EnvFilter::new("info")),
         )
         .with_writer(std::io::stderr)
         .init();
@@ -61,7 +61,7 @@ fn main() {
     let regex_filter = Instant::now();
     let usable: Vec<&(String, String)> = pairs
         .iter()
-        .filter(|(_, bare)| regex::bytes::Regex::new(bare).is_ok())
+        .filter(|(_, bare)| return regex::bytes::Regex::new(bare).is_ok())
         .collect();
     tracing::info!(
         kept = usable.len(),
@@ -70,7 +70,7 @@ fn main() {
     );
 
     // Build ours once, leniently: rules this dialect cannot express are dropped.
-    let ours_all: Vec<&str> = usable.iter().map(|(our, _)| our.as_str()).collect();
+    let ours_all: Vec<&str> = usable.iter().map(|(our, _)| return our.as_str()).collect();
     let build_ours = Instant::now();
     let (fset, kept) = forbidden_regex::RegexSet::compile_lenient(&ours_all);
     let serialized = fset.to_bytes().expect("forbidden-regex serializes");
@@ -91,7 +91,7 @@ fn main() {
     // Diagnostic: probe the "all-rules combined automaton" idea -- can a single DFA over
     // every kept rule even build, or does it state-explode (which is why the architecture
     // is per-rule gate-plus-fold)?
-    let ours_kept: Vec<&str> = kept.iter().map(|&i| ours_all[i]).collect();
+    let ours_kept: Vec<&str> = kept.iter().map(|&i| return ours_all[i]).collect();
     let combined_start = Instant::now();
     match forbidden_regex::try_combined_dfa(&ours_kept) {
         Ok(states) => tracing::debug!(
@@ -109,7 +109,7 @@ fn main() {
     // Build regex over exactly the rules ours kept, so both race the same set. The
     // size limits are raised because the stripped generic-shape rules compile to a
     // large automaton; serialized/compiled size is not a constraint here.
-    let bare_kept: Vec<&str> = kept.iter().map(|&i| usable[i].1.as_str()).collect();
+    let bare_kept: Vec<&str> = kept.iter().map(|&i| return usable[i].1.as_str()).collect();
     let build_regex = Instant::now();
     let rset = regex::bytes::RegexSetBuilder::new(&bare_kept)
         .size_limit(1 << 30)
@@ -125,8 +125,8 @@ fn main() {
     // Parity on a bounded sample: a systematic porter mismatch shows up here without
     // an unbounded full-corpus pass.
     let sample = &corpus[..corpus.len().min(PARITY_SAMPLE)];
-    let fhits = sample.iter().filter(|line| fset.is_match(line.as_slice())).count();
-    let rhits = sample.iter().filter(|line| rset.is_match(line.as_slice())).count();
+    let fhits = sample.iter().filter(|line| return fset.is_match(line.as_slice())).count();
+    let rhits = sample.iter().filter(|line| return rset.is_match(line.as_slice())).count();
     println!("parity ({} lines): forbidden-regex={fhits}, regex={rhits}", sample.len());
     if fhits != rhits {
         tracing::warn!("engines disagree on the sample; comparison is not apples to apples");
@@ -143,7 +143,7 @@ fn main() {
     );
     let missed = corpus
         .iter()
-        .filter(|l| fset.csa_only_is_match(l) && !fset.is_match(l))
+        .filter(|l| return fset.csa_only_is_match(l) && !fset.is_match(l))
         .count();
     if missed == 0 {
         tracing::info!(lines, "fold misses no literal-free match");
@@ -151,28 +151,28 @@ fn main() {
         tracing::warn!(missed, lines, "fold misses literal-free matches (false negatives)");
     }
 
-    let prefilter_hits = corpus.iter().filter(|l| fset.prefilter_only_is_match(l)).count();
+    let prefilter_hits = corpus.iter().filter(|l| return fset.prefilter_only_is_match(l)).count();
     tracing::debug!(prefilter_hits, lines, "prefilter flags lines (each triggers the per-rule fallback)");
     let seeded = fset.len() - fset.seedless_count();
     tracing::debug!(anchored = fset.anchored_count(), seeded, "anchored seeded rules (rest fall back to counting)");
 
     let avg_len = bytes as f64 / lines as f64;
-    let threads = std::thread::available_parallelism().map_or(1, |n| n.get());
+    let threads = std::thread::available_parallelism().map_or(1, |n| return n.get());
     println!("scanning {threads} threads per engine, {BUDGET_SECS:.0}s each");
     // forbidden-regex is immutable, so all threads share the one instance (no
     // per-thread state). regex needs a mutable lazy-DFA cache, so each thread clones
     // it (the program is Arc-shared, so this is the cheap idiomatic parallel form and
     // lets regex scale instead of contending on a shared cache).
-    let frate = throughput(&corpus, || (), |_, line| fset.is_match(line), threads);
-    let rrate = throughput(&corpus, || rset.clone(), |r, line| r.is_match(line), threads);
+    let frate = throughput(&corpus, || (), |_, line| return fset.is_match(line), threads);
+    let rrate = throughput(&corpus, || return rset.clone(), |r, line| return r.is_match(line), threads);
     // Profiling split: prefilter-only vs gate-only vs seedless-only, to locate the
     // per-line bottleneck (prefilter cost vs per-rule fallback vs literal-free scans).
-    let prefilter_rate = throughput(&corpus, || (), |_, line| fset.prefilter_only_is_match(line), threads);
-    let candidates_rate = throughput(&corpus, || (), |_, line| fset.candidates_only_is_match(line), threads);
-    let anchored_rate = throughput(&corpus, || (), |_, line| fset.gate_anchored_only_is_match(line), threads);
-    let gate_rate = throughput(&corpus, || (), |_, line| fset.gate_only_is_match(line), threads);
-    let seedless_rate = throughput(&corpus, || (), |_, line| fset.seedless_only_is_match(line), threads);
-    let csa_rate = throughput(&corpus, || (), |_, line| fset.csa_only_is_match(line), threads);
+    let prefilter_rate = throughput(&corpus, || (), |_, line| return fset.prefilter_only_is_match(line), threads);
+    let candidates_rate = throughput(&corpus, || (), |_, line| return fset.candidates_only_is_match(line), threads);
+    let anchored_rate = throughput(&corpus, || (), |_, line| return fset.gate_anchored_only_is_match(line), threads);
+    let gate_rate = throughput(&corpus, || (), |_, line| return fset.gate_only_is_match(line), threads);
+    let seedless_rate = throughput(&corpus, || (), |_, line| return fset.seedless_only_is_match(line), threads);
+    let csa_rate = throughput(&corpus, || (), |_, line| return fset.csa_only_is_match(line), threads);
     report("forbidden-regex", frate, avg_len);
     report("  prefilter-only", prefilter_rate, avg_len);
     report("  candidates    ", candidates_rate, avg_len);
@@ -191,6 +191,12 @@ fn main() {
     // Set-level batch experiment: one concatenated-buffer prefilter sweep over the whole
     // corpus versus the per-line loop, on the real ruleset.
     kernels::bench_set_batch(&fset, &corpus);
+
+    // Line-indexed batch experiment: the attribution-carrying buffer-batch path
+    // (line_matches, #377/#378) versus the naive per-line matches() loop and the
+    // boolean-only concat-sweep hook, on the real ruleset. Feeds the #381 decision on
+    // batching the seedless and line-start rule groups.
+    kernels::bench_line_matches(&fset, &corpus);
 }
 
 /// Scans the corpus on repeat for `BUDGET_SECS` across `threads`, returning total
@@ -210,7 +216,7 @@ where
     let total: u64 = std::thread::scope(|scope| {
         let workers: Vec<_> = (0..threads)
             .map(|_| {
-                scope.spawn(|| {
+                return scope.spawn(|| {
                     let matcher = make();
                     let mut scanned = 0u64;
                     let mut acc = 0u64;
@@ -223,15 +229,15 @@ where
                         scanned += corpus.len() as u64;
                     }
                     black_box(acc);
-                    scanned
+                    return scanned
                 })
             })
             .collect();
         // expect, not unwrap: the repo's clippy.toml bans Result::unwrap; a worker join only
         // fails if that benchmark thread panicked, which is a bug we want to surface.
-        workers.into_iter().map(|w| w.join().expect("benchmark worker thread panicked")).sum()
+        return workers.into_iter().map(|w| return w.join().expect("benchmark worker thread panicked")).sum()
     });
-    total as f64 / start.elapsed().as_secs_f64()
+    return total as f64 / start.elapsed().as_secs_f64()
 }
 
 /// Prints one engine's throughput line.
