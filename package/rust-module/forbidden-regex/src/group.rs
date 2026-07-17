@@ -76,7 +76,7 @@ const GROUP_DFA_CAP: usize = 6_000;
 /// }
 /// ```
 fn search_wrap(node: Node) -> Node {
-    concat(vec![Node::Top, node])
+    return concat(vec![Node::Top, node])
 }
 
 /// Builds a node into a seedless Table engine, or `None` past the cap.
@@ -91,9 +91,9 @@ fn search_wrap(node: Node) -> Node {
 /// }
 /// ```
 fn group_engine(node: Node) -> Option<Engine> {
-    build_dfa_within(search_wrap(node), GROUP_DFA_CAP)
+    return build_dfa_within(search_wrap(node), GROUP_DFA_CAP)
         .ok()
-        .map(|dfa| Engine::new(EngineKind::Table(minimize(&dfa)), Vec::new()))
+        .map(|dfa| return Engine::new(EngineKind::Table(minimize(&dfa)), Vec::new()))
 }
 
 /// Folds each rule into the first group whose grown union still fits the cap.
@@ -121,7 +121,7 @@ fn grow_groups(nodes: Vec<Node>) -> Vec<Node> {
         }
         groups.push(node);
     }
-    groups
+    return groups
 }
 
 /// Combines literal-free rule nodes into as few union DFAs as the cap allows.
@@ -143,7 +143,7 @@ fn grow_groups(nodes: Vec<Node>) -> Vec<Node> {
 /// assert_eq!(engines.len(), 1);
 /// ```
 pub(crate) fn group_seedless(nodes: Vec<Node>) -> Vec<Engine> {
-    grow_groups(nodes).into_iter().filter_map(group_engine).collect()
+    return grow_groups(nodes).into_iter().filter_map(group_engine).collect()
 }
 
 /// What:    Unit tests for seedless-rule grouping, in a sidecar (max-lines exempt).

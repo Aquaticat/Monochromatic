@@ -197,7 +197,7 @@ impl Dfa {
         }
         let mut accept = [0u8; SHENG_MAX_STATES];
         accept[..states].copy_from_slice(&self.accept[..states]);
-        Some(ShengTables {
+        return Some(ShengTables {
             trans,
             accept,
             ctx,

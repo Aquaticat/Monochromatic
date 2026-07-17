@@ -205,7 +205,7 @@ impl Dfa {
         if states > SHENG2_MAX_STATES || nc > SHENG2_MAX_CLASSES {
             return None;
         }
-        if self.accept[..states].iter().any(|&mask| mask != 0 && mask != ACCEPT_ALL) {
+        if self.accept[..states].iter().any(|&mask| return mask != 0 && mask != ACCEPT_ALL) {
             return None;
         }
         let mut trans1 = vec![[0u8; SHENG2_MAX_STATES]; nc];
@@ -233,7 +233,7 @@ impl Dfa {
         }
         let mut class_map = [0u8; 256];
         class_map.copy_from_slice(&self.class_map);
-        Some(Sheng2Tables { t2, a2, trans1, accept, class_map, nc, start: self.start as u8 })
+        return Some(Sheng2Tables { t2, a2, trans1, accept, class_map, nc, start: self.start as u8 })
     }
 
     /// Fills `out[i]` with whether the DFA matches `lines[i]`, via the two-byte kernel.

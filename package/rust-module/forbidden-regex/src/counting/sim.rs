@@ -110,7 +110,7 @@ impl State {
     /// }
     /// ```
     pub(crate) fn new(elements: &[Element]) -> State {
-        State {
+        return State {
             active: vec![false; elements.len() + 1],
             counts: elements.iter().map(count_set_for).collect(),
         }
@@ -161,7 +161,7 @@ impl State {
     /// }
     /// ```
     pub(crate) fn accepts(&self) -> bool {
-        self.active.last().copied().unwrap_or(false)
+        return self.active.last().copied().unwrap_or(false)
     }
 
     /// Reports whether the state can never reach acceptance again.
@@ -177,7 +177,7 @@ impl State {
     /// }
     /// ```
     pub(crate) fn is_dead(&self) -> bool {
-        self.active.iter().all(|&on| !on) && self.counts.iter().all(CountSet::is_empty)
+        return self.active.iter().all(|&on| return !on) && self.counts.iter().all(CountSet::is_empty)
     }
 }
 
@@ -195,8 +195,8 @@ impl State {
 /// ```
 fn count_set_for(element: &Element) -> CountSet {
     match element {
-        Element::Counted { max, .. } => CountSet::new(*max),
-        _ => CountSet::new(0),
+        Element::Counted { max, .. } => return CountSet::new(*max),
+        _ => return CountSet::new(0),
     }
 }
 
@@ -214,7 +214,7 @@ fn count_set_for(element: &Element) -> CountSet {
 /// ```
 pub(crate) fn boundary_ctx(line: &[u8], i: usize) -> Ctx {
     let len = line.len();
-    Ctx {
+    return Ctx {
         line_start: i == 0 || line[i - 1] == b'\n',
         line_end: i == len || line[i] == b'\n',
         word_before: i > 0 && is_word_byte(line[i - 1]),
@@ -268,11 +268,11 @@ fn zero_width_move(
     ctx: Ctx,
 ) -> bool {
     match element {
-        Element::Class(_) => false,
-        Element::Counted { min, .. } => counted_move(p, *min, follow, state),
-        Element::LineStart => anchor_move(p, ctx.line_start, follow, state),
-        Element::LineEnd => anchor_move(p, ctx.line_end, follow, state),
-        Element::WordBoundary => anchor_move(p, ctx.word_before != ctx.word_after, follow, state),
+        Element::Class(_) => return false,
+        Element::Counted { min, .. } => return counted_move(p, *min, follow, state),
+        Element::LineStart => return anchor_move(p, ctx.line_start, follow, state),
+        Element::LineEnd => return anchor_move(p, ctx.line_end, follow, state),
+        Element::WordBoundary => return anchor_move(p, ctx.word_before != ctx.word_after, follow, state),
     }
 }
 
@@ -296,7 +296,7 @@ fn counted_move(p: usize, min: usize, follow: &[Vec<u32>], state: &mut State) ->
     if state.counts[p].has_at_least(min) && activate(&follow[p], &mut state.active) {
         changed = true;
     }
-    changed
+    return changed
 }
 
 /// Follows a reached anchor when its boundary condition holds.
@@ -312,9 +312,9 @@ fn counted_move(p: usize, min: usize, follow: &[Vec<u32>], state: &mut State) ->
 /// ```
 fn anchor_move(p: usize, cond: bool, follow: &[Vec<u32>], state: &mut State) -> bool {
     if state.active[p] && cond {
-        activate(&follow[p], &mut state.active)
+        return activate(&follow[p], &mut state.active)
     } else {
-        false
+        return false
     }
 }
 
@@ -337,7 +337,7 @@ fn activate(targets: &[u32], active: &mut [bool]) -> bool {
             changed = true;
         }
     }
-    changed
+    return changed
 }
 
 /// Consumes one byte, writing the next state into a reused destination buffer.

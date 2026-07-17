@@ -144,7 +144,7 @@ pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, Co
         message: "trailing backslash".to_string(),
     })?;
     match e {
-        b't' => Ok(EscapeResult::Byte(b'\t')),
+        b't' => return Ok(EscapeResult::Byte(b'\t')),
         b'b' => {
             // What: `\b` is the boundary assertion, illegal inside `[...]`.
             // Why: inside a class `\b` would mean backspace, which is unsupported.
@@ -154,22 +154,22 @@ pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, Co
             // // Same step as the Rust statement below, written with ordinary TS objects/functions.
             // ```
             if in_class {
-                Err(CompileError::Syntax {
+                return Err(CompileError::Syntax {
                     pos,
                     message: "\\b (word boundary) is not allowed inside a character class".to_string(),
                 })
             } else {
-                Ok(EscapeResult::Boundary)
+                return Ok(EscapeResult::Boundary)
             }
         }
-        b'd' => Ok(EscapeResult::Set(digit_set())),
-        b'D' => Ok(EscapeResult::Set(digit_set().negate())),
-        b'w' => Ok(EscapeResult::Set(word_set())),
-        b'W' => Ok(EscapeResult::Set(word_set().negate())),
-        b's' => Ok(EscapeResult::Set(space_set())),
-        b'S' => Ok(EscapeResult::Set(space_set().negate())),
+        b'd' => return Ok(EscapeResult::Set(digit_set())),
+        b'D' => return Ok(EscapeResult::Set(digit_set().negate())),
+        b'w' => return Ok(EscapeResult::Set(word_set())),
+        b'W' => return Ok(EscapeResult::Set(word_set().negate())),
+        b's' => return Ok(EscapeResult::Set(space_set())),
+        b'S' => return Ok(EscapeResult::Set(space_set().negate())),
         b'.' | b'[' | b']' | b'(' | b')' | b'{' | b'}' | b'?' | b'|' | b'&' | b'~' | b'^'
-        | b'$' | b'\\' | b'#' | b'-' | b'/' | b'*' | b'+' => Ok(EscapeResult::Byte(e)),
+        | b'$' | b'\\' | b'#' | b'-' | b'/' | b'*' | b'+' => return Ok(EscapeResult::Byte(e)),
         // What: a backslash before whitespace yields that literal whitespace byte.
         // Why: in always-on verbose mode this is how a literal space is written.
         //
@@ -177,8 +177,8 @@ pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, Co
         // ```ts
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
-        e if e.is_ascii_whitespace() => Ok(EscapeResult::Byte(e)),
-        _ => Err(CompileError::Syntax {
+        e if e.is_ascii_whitespace() => return Ok(EscapeResult::Byte(e)),
+        _ => return Err(CompileError::Syntax {
             pos,
             message: format!("unsupported escape \\{}", e as char),
         }),
@@ -205,8 +205,8 @@ pub fn parse_escape_atom(cur: &mut Cursor) -> Result<Node, CompileError> {
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
     match parse_escape(cur, false)? {
-        EscapeResult::Byte(b) => Ok(crate::ast::smart::class(singleton(b))),
-        EscapeResult::Set(set) => Ok(crate::ast::smart::class(set)),
-        EscapeResult::Boundary => Ok(Node::WordBoundary),
+        EscapeResult::Byte(b) => return Ok(crate::ast::smart::class(singleton(b))),
+        EscapeResult::Set(set) => return Ok(crate::ast::smart::class(set)),
+        EscapeResult::Boundary => return Ok(Node::WordBoundary),
     }
 }

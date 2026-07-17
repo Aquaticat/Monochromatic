@@ -178,7 +178,7 @@ pub fn parse_class(cur: &mut Cursor) -> Result<Node, CompileError> {
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
     let final_set = if negated { set.negate() } else { set };
-    Ok(class(final_set))
+    return Ok(class(final_set))
 }
 
 /// Reads one element (member or range) and folds it into `set`.
@@ -239,7 +239,7 @@ fn read_class_element(cur: &mut Cursor, pos: usize, set: &mut ByteSet) -> Result
     } else {
         set.insert(lo_b);
     }
-    Ok(())
+    return Ok(())
 }
 
 /// Parses one class atom: an escape or a literal byte.
@@ -268,15 +268,15 @@ fn parse_class_atom(cur: &mut Cursor) -> Result<ClassAtom, CompileError> {
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
         match parse_escape(cur, true)? {
-            EscapeResult::Byte(b) => Ok(ClassAtom::Byte(b)),
-            EscapeResult::Set(s) => Ok(ClassAtom::Set(s)),
-            EscapeResult::Boundary => Err(CompileError::Syntax {
+            EscapeResult::Byte(b) => return Ok(ClassAtom::Byte(b)),
+            EscapeResult::Set(s) => return Ok(ClassAtom::Set(s)),
+            EscapeResult::Boundary => return Err(CompileError::Syntax {
                 pos: cur.pos(),
                 message: "\\b is not valid in a character class".to_string(),
             }),
         }
     } else {
         cur.bump();
-        Ok(ClassAtom::Byte(p))
+        return Ok(ClassAtom::Byte(p))
     }
 }

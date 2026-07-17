@@ -81,7 +81,7 @@ impl ByteSet {
     /// }
     /// ```
     pub fn empty() -> Self {
-        ByteSet { words: [0; WORDS] }
+        return ByteSet { words: [0; WORDS] }
     }
 
     /// Builds the full set of every byte value.
@@ -96,7 +96,7 @@ impl ByteSet {
     /// }
     /// ```
     pub fn all_bytes() -> Self {
-        ByteSet::empty().negate()
+        return ByteSet::empty().negate()
     }
 
     /// Adds a single byte to the set.
@@ -190,7 +190,7 @@ impl ByteSet {
         for i in 0..WORDS {
             out.words[i] = !self.words[i];
         }
-        out
+        return out
     }
 
     /// Reports whether a byte is a member.
@@ -205,7 +205,7 @@ impl ByteSet {
     /// ```
     pub fn contains(&self, b: u8) -> bool {
         let idx = b as usize;
-        (self.words[idx / BITS_PER_WORD] >> (idx % BITS_PER_WORD)) & 1 == 1
+        return (self.words[idx / BITS_PER_WORD] >> (idx % BITS_PER_WORD)) & 1 == 1
     }
 
     /// Reports whether the set has no members.
@@ -219,7 +219,7 @@ impl ByteSet {
     /// }
     /// ```
     pub fn is_empty(&self) -> bool {
-        self.words.iter().all(|w| *w == 0)
+        return self.words.iter().all(|w| return *w == 0)
     }
 
     /// Returns the sole member byte when the set holds exactly one.
@@ -235,7 +235,7 @@ impl ByteSet {
     /// }
     /// ```
     pub fn as_singleton(&self) -> Option<u8> {
-        let total: u32 = self.words.iter().map(|w| w.count_ones()).sum();
+        let total: u32 = self.words.iter().map(|w| return w.count_ones()).sum();
         if total != 1 {
             return None;
         }
@@ -250,7 +250,7 @@ impl ByteSet {
                 return Some((i * BITS_PER_WORD + w.trailing_zeros() as usize) as u8);
             }
         }
-        None
+        return None
     }
 }
 
@@ -267,7 +267,7 @@ impl ByteSet {
 /// }
 /// ```
 pub fn is_word_byte(b: u8) -> bool {
-    b.is_ascii_alphanumeric() || b == b'_'
+    return b.is_ascii_alphanumeric() || b == b'_'
 }
 
 /// Builds the set matched by `.`: every byte except the newline.
@@ -293,7 +293,7 @@ pub fn dot_set() -> ByteSet {
     let mut nl = ByteSet::empty();
     nl.insert(b'\n');
     set = intersect_complement(&set, &nl);
-    set
+    return set
 }
 
 /// Returns `a` with every member of `b` removed.
@@ -311,7 +311,7 @@ fn intersect_complement(a: &ByteSet, b: &ByteSet) -> ByteSet {
     for i in 0..WORDS {
         out.words[i] = a.words[i] & !b.words[i];
     }
-    out
+    return out
 }
 
 /// Builds the `\d` set, ASCII digits `[0-9]`.
@@ -327,7 +327,7 @@ fn intersect_complement(a: &ByteSet, b: &ByteSet) -> ByteSet {
 pub fn digit_set() -> ByteSet {
     let mut set = ByteSet::empty();
     set.insert_range(b'0', b'9');
-    set
+    return set
 }
 
 /// Builds the `\w` set, ASCII word characters `[A-Za-z0-9_]`.
@@ -347,7 +347,7 @@ pub fn word_set() -> ByteSet {
     set.insert_range(b'a', b'z');
     set.insert_range(b'0', b'9');
     set.insert(b'_');
-    set
+    return set
 }
 
 /// Builds the `\s` set, ASCII whitespace `[ \t\n\r\x0c\x0b]`.
@@ -369,7 +369,7 @@ pub fn space_set() -> ByteSet {
     set.insert(b'\r');
     set.insert(0x0c);
     set.insert(0x0b);
-    set
+    return set
 }
 
 /// Builds a singleton set holding exactly one byte.
@@ -385,7 +385,7 @@ pub fn space_set() -> ByteSet {
 pub fn singleton(b: u8) -> ByteSet {
     let mut set = ByteSet::empty();
     set.insert(b);
-    set
+    return set
 }
 
 /// What:    Unit tests for the byte-set primitives, in a sidecar (max-lines exempt).

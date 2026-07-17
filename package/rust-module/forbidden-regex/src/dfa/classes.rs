@@ -160,7 +160,7 @@ pub fn compute_classes(root: &Node) -> Classes {
         class_map[b as usize] = id;
     }
 
-    Classes {
+    return Classes {
         nclasses: reps.len(),
         class_map,
         reps,
@@ -194,7 +194,7 @@ fn byte_signature(b: u8, sets: &[ByteSet]) -> Vec<bool> {
     for set in sets {
         signature.push(set.contains(b));
     }
-    signature
+    return signature
 }
 
 /// Walks a node collecting its distinct `Class` byte sets.

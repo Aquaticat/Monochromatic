@@ -86,13 +86,13 @@ pub fn parse_repeat(cur: &mut Cursor, atom: Node) -> Result<Node, CompileError> 
         Some(b'}') => {
             cur.bump();
             check_cap(n, pos)?;
-            Ok(repeat(atom, n, n))
+            return Ok(repeat(atom, n, n))
         }
         Some(b',') => {
             cur.bump();
-            parse_repeat_upper(cur, atom, n, pos)
+            return parse_repeat_upper(cur, atom, n, pos)
         }
-        _ => Err(CompileError::Syntax {
+        _ => return Err(CompileError::Syntax {
             pos,
             message: "malformed repetition; expected '}' or ','".to_string(),
         }),
@@ -140,7 +140,7 @@ fn parse_repeat_upper(cur: &mut Cursor, atom: Node, n: usize, pos: usize) -> Res
         });
     }
     check_cap(m, pos)?;
-    Ok(repeat(atom, n, m))
+    return Ok(repeat(atom, n, m))
 }
 
 /// Reads a run of ASCII digits as a `usize`, failing on overflow or none.
@@ -171,7 +171,7 @@ fn parse_number(cur: &mut Cursor, pos: usize) -> Result<usize, CompileError> {
         any = true;
         value = value
             .checked_mul(10)
-            .and_then(|v| v.checked_add((c - b'0') as usize))
+            .and_then(|v| return v.checked_add((c - b'0') as usize))
             .ok_or(CompileError::Syntax {
                 pos,
                 message: "repetition count is too large".to_string(),
@@ -184,7 +184,7 @@ fn parse_number(cur: &mut Cursor, pos: usize) -> Result<usize, CompileError> {
             message: "expected a number inside {...}".to_string(),
         });
     }
-    Ok(value)
+    return Ok(value)
 }
 
 /// Rejects a count above the cap.
@@ -199,11 +199,11 @@ fn parse_number(cur: &mut Cursor, pos: usize) -> Result<usize, CompileError> {
 /// ```
 fn check_cap(count: usize, pos: usize) -> Result<(), CompileError> {
     if count > REPEAT_CAP {
-        Err(CompileError::Syntax {
+        return Err(CompileError::Syntax {
             pos,
             message: format!("repetition count {count} exceeds the cap of {REPEAT_CAP}"),
         })
     } else {
-        Ok(())
+        return Ok(())
     }
 }

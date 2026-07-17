@@ -59,7 +59,7 @@ impl CountSet {
     /// }
     /// ```
     pub(crate) fn new(max: usize) -> CountSet {
-        CountSet {
+        return CountSet {
             words: vec![0u64; nwords(max)],
         }
     }
@@ -93,7 +93,7 @@ impl CountSet {
     pub(crate) fn insert_zero(&mut self) -> bool {
         let changed = self.words[0] & 1 == 0;
         self.words[0] |= 1;
-        changed
+        return changed
     }
 
     /// Reports whether any live count is at least `min`.
@@ -115,7 +115,7 @@ impl CountSet {
         if self.words[wi] >> (min % 64) != 0 {
             return true;
         }
-        self.words[wi + 1..].iter().any(|&word| word != 0)
+        return self.words[wi + 1..].iter().any(|&word| return word != 0)
     }
 
     /// Reports whether no count is live.
@@ -130,7 +130,7 @@ impl CountSet {
     /// }
     /// ```
     pub(crate) fn is_empty(&self) -> bool {
-        self.words.iter().all(|&word| word == 0)
+        return self.words.iter().all(|&word| return word == 0)
     }
 
     /// Sets this set to `src` with every count advanced by one, capped at `max`.
@@ -186,7 +186,7 @@ impl CountSet {
 /// }
 /// ```
 fn nwords(max: usize) -> usize {
-    (max + 1) / 64 + 1
+    return (max + 1) / 64 + 1
 }
 
 /// What:    Unit tests for the bounded-count bitset, in a sidecar (max-lines exempt).

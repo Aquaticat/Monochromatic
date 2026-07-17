@@ -194,9 +194,9 @@ pub fn debug_seedless(pattern: &str) -> Option<String> {
     let leading = crate::counting::leading_seeds(&node);
     let seeds = crate::counting::seeds_from_node(&node);
     if leading.is_empty() && seeds.is_empty() {
-        Some(format!("{node:?}"))
+        return Some(format!("{node:?}"))
     } else {
-        None
+        return None
     }
 }
 
@@ -217,8 +217,8 @@ pub fn debug_seedless(pattern: &str) -> Option<String> {
 #[doc(hidden)]
 pub fn try_combined_dfa(patterns: &[&str]) -> Result<usize, CompileError> {
     let roots: Vec<crate::ast::node::Node> =
-        patterns.iter().filter_map(|pattern| crate::parse::parse(pattern).ok()).collect();
+        patterns.iter().filter_map(|pattern| return crate::parse::parse(pattern).ok()).collect();
     let union = crate::ast::smart::alt(roots);
     let combined = crate::ast::smart::concat(vec![crate::ast::node::Node::Top, union]);
-    Ok(crate::dfa::build_dfa_within(combined, 65_534)?.num_states as usize)
+    return Ok(crate::dfa::build_dfa_within(combined, 65_534)?.num_states as usize)
 }

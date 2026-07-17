@@ -76,7 +76,7 @@ impl Regex {
     pub fn is_match_batch(&self, lines: &[&[u8]]) -> Vec<bool> {
         let mut out = vec![false; lines.len()];
         self.engine.is_match_batch(lines, &mut out);
-        out
+        return out
     }
 
     /// Reports per line, grouping equal-length lines so the DFA advances many at once.
@@ -113,7 +113,7 @@ impl Regex {
             return out;
         };
         let mut order: Vec<usize> = (0..lines.len()).collect();
-        order.sort_by_key(|&index| lines[index].len());
+        order.sort_by_key(|&index| return lines[index].len());
         let mut start = 0;
         while start < order.len() {
             let len = lines[order[start]].len();
@@ -121,7 +121,7 @@ impl Regex {
             while end < order.len() && lines[order[end]].len() == len {
                 end += 1;
             }
-            let bucket: Vec<&[u8]> = order[start..end].iter().map(|&index| lines[index]).collect();
+            let bucket: Vec<&[u8]> = order[start..end].iter().map(|&index| return lines[index]).collect();
             let mut verdicts = vec![false; bucket.len()];
             dfa.is_match_batch_tight_w::<BATCH_BUCKET>(&bucket, &mut verdicts);
             for (slot, &index) in order[start..end].iter().enumerate() {
@@ -129,7 +129,7 @@ impl Regex {
             }
             start = end;
         }
-        out
+        return out
     }
 
     /// Benchmark hook: forces the scalar per-line kernel.
@@ -150,7 +150,7 @@ impl Regex {
             Some(dfa) => dfa.is_match_batch_scalar(lines, &mut out),
             None => self.engine.is_match_batch(lines, &mut out),
         }
-        out
+        return out
     }
 
     /// Benchmark hook: forces the interleaved-scalar kernel.
@@ -172,7 +172,7 @@ impl Regex {
             Some(dfa) => dfa.is_match_batch_interleaved(lines, &mut out),
             None => self.engine.is_match_batch(lines, &mut out),
         }
-        out
+        return out
     }
 
     /// Benchmark hook: reports whether this pattern compiled to the table DFA back-end.
@@ -189,7 +189,7 @@ impl Regex {
     /// ```
     #[doc(hidden)]
     pub fn is_table(&self) -> bool {
-        self.engine.table_dfa().is_some()
+        return self.engine.table_dfa().is_some()
     }
 
     /// Benchmark hook: interleaved-scalar kernel at an explicit bucket width `N`.
@@ -211,7 +211,7 @@ impl Regex {
             Some(dfa) => dfa.is_match_batch_interleaved_w::<N>(lines, &mut out),
             None => self.engine.is_match_batch(lines, &mut out),
         }
-        out
+        return out
     }
 
     /// Benchmark hook: branchless equal-length kernel at bucket width `N`.
@@ -233,7 +233,7 @@ impl Regex {
             Some(dfa) => dfa.is_match_batch_tight_w::<N>(lines, &mut out),
             None => self.engine.is_match_batch(lines, &mut out),
         }
-        out
+        return out
     }
 
     /// Benchmark hook: Sheng in-register transition kernel (no bucketing needed).
@@ -255,7 +255,7 @@ impl Regex {
             Some(dfa) => dfa.is_match_batch_sheng(lines, &mut out),
             None => self.engine.is_match_batch(lines, &mut out),
         }
-        out
+        return out
     }
 
     /// Benchmark hook: two-byte composed Sheng kernel.
@@ -277,7 +277,7 @@ impl Regex {
             Some(dfa) => dfa.is_match_batch_sheng2(lines, &mut out),
             None => self.engine.is_match_batch(lines, &mut out),
         }
-        out
+        return out
     }
 }
 
@@ -311,7 +311,7 @@ impl RegexSet {
     /// assert_eq!(set.is_match_batch(lines), vec![true, false, true]);
     /// ```
     pub fn is_match_batch(&self, lines: &[&[u8]]) -> Vec<bool> {
-        lines.iter().map(|line| self.is_match(line)).collect()
+        return lines.iter().map(|line| return self.is_match(line)).collect()
     }
 
     /// Benchmark hook: batch via one concatenated-buffer gate sweep.
@@ -334,7 +334,7 @@ impl RegexSet {
         if count == 0 {
             return Vec::new();
         }
-        let total: usize = lines.iter().map(|line| line.len() + 1).sum();
+        let total: usize = lines.iter().map(|line| return line.len() + 1).sum();
         let mut buf = Vec::with_capacity(total);
         let mut starts = Vec::with_capacity(count);
         for line in lines {
@@ -343,10 +343,10 @@ impl RegexSet {
             buf.push(b'\n');
         }
         let candidate = self.sweep_candidates(&buf, &starts);
-        (0..count)
+        return (0..count)
             .map(|index| {
                 let end = starts.get(index + 1).copied().unwrap_or(buf.len()) - 1;
-                self.resolve_line(&buf[starts[index]..end], candidate[index])
+                return self.resolve_line(&buf[starts[index]..end], candidate[index])
             })
             .collect()
     }
@@ -367,14 +367,14 @@ impl RegexSet {
         let mut candidate = vec![false; starts.len()];
         let mut at = 0;
         while let Some(hit) = self.gate.prefilter_find_from(buf, at) {
-            let line = starts.partition_point(|&start| start <= hit) - 1;
+            let line = starts.partition_point(|&start| return start <= hit) - 1;
             candidate[line] = true;
             at = starts.get(line + 1).copied().unwrap_or(buf.len());
             if at >= buf.len() {
                 break;
             }
         }
-        candidate
+        return candidate
     }
 
     /// Resolves one line's verdict given whether the sweep found a seed in it.
@@ -395,17 +395,17 @@ impl RegexSet {
             let mut checked = CheckedFull::new();
             if self
                 .gate
-                .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos, &mut checked))
+                .any_candidate(line, |rule, pos| return self.matches_rule(line, rule, pos, &mut checked))
             {
                 return true;
             }
         }
         if self.line_start_candidate(line)
-            && self.line_start.iter().any(|engine| line_start_match(engine, line))
+            && self.line_start.iter().any(|engine| return line_start_match(engine, line))
         {
             return true;
         }
-        self.seedless_groups.iter().any(|group| group.is_match(line))
+        return self.seedless_groups.iter().any(|group| return group.is_match(line))
     }
 }
 

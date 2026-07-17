@@ -153,7 +153,7 @@ impl SetGate {
                     .ok(),
             )
         };
-        SetGate {
+        return SetGate {
             prefilter,
             matcher,
             literal_rule,
@@ -197,7 +197,7 @@ impl SetGate {
                 return true;
             }
         }
-        false
+        return false
     }
 
     /// Profiling hook: reports whether the SIMD prefilter alone flags a seed.
@@ -213,8 +213,8 @@ impl SetGate {
     /// ```
     pub fn prefilter_present(&self, line: &[u8]) -> bool {
         match &self.prefilter {
-            Some(prefilter) => prefilter.find(line, Span::from(0..line.len())).is_some(),
-            None => false,
+            Some(prefilter) => return prefilter.find(line, Span::from(0..line.len())).is_some(),
+            None => return false,
         }
     }
 
@@ -234,7 +234,7 @@ impl SetGate {
     /// ```
     pub fn prefilter_find_from(&self, buf: &[u8], at: usize) -> Option<usize> {
         let prefilter = self.prefilter.as_ref()?;
-        prefilter.find(buf, Span::from(at..buf.len())).map(|span| span.start)
+        return prefilter.find(buf, Span::from(at..buf.len())).map(|span| return span.start)
     }
 
     /// Calls `visit` for each seeded rule whose literal occurs in `line`.

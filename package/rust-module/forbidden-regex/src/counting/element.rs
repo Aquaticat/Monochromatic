@@ -163,7 +163,7 @@ pub enum Element {
 /// ```
 pub(crate) fn validate_element(element: &Element) -> Result<(), CompileError> {
     if let Element::Counted { set, min, max } = element {
-        let invalid = |message: &str| CompileError::Invalid {
+        let invalid = |message: &str| return CompileError::Invalid {
             message: message.to_string(),
         };
         if set.is_empty() {
@@ -176,7 +176,7 @@ pub(crate) fn validate_element(element: &Element) -> Result<(), CompileError> {
             return Err(invalid("counted element bound exceeds the decode cap"));
         }
     }
-    Ok(())
+    return Ok(())
 }
 
 /// What:    Unit tests for element decode validation, in a sidecar (max-lines exempt).

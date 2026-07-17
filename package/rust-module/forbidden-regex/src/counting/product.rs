@@ -147,7 +147,7 @@ impl ProductProgram {
     /// }
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
-        run_product(self, line)
+        return run_product(self, line)
     }
 
     /// Checks that a decoded product program is safe to run on untrusted input.
@@ -171,7 +171,7 @@ impl ProductProgram {
         for operand in self.positives.iter().chain(&self.negatives) {
             operand.validate()?;
         }
-        Ok(())
+        return Ok(())
     }
 }
 
@@ -210,7 +210,7 @@ pub fn build_product(node: &Node) -> Option<ProductProgram> {
     if positives.is_empty() {
         return None;
     }
-    Some(ProductProgram { positives, negatives })
+    return Some(ProductProgram { positives, negatives })
 }
 
 /// The per-operand simulation states for one side of a thread at one instant.
@@ -303,16 +303,16 @@ fn run_product(prog: &ProductProgram, line: &[u8]) -> bool {
         for thread in &mut threads {
             close_operands(prog, &mut thread.cur, ctx);
         }
-        if threads.iter().any(|thread| accepts(&thread.cur)) {
+        if threads.iter().any(|thread| return accepts(&thread.cur)) {
             return true;
         }
         if i == line.len() {
             break;
         }
         let b = line[i];
-        threads.retain_mut(|thread| advance_thread(prog, thread, b));
+        threads.retain_mut(|thread| return advance_thread(prog, thread, b));
     }
-    false
+    return false
 }
 
 /// Builds a thread seeded for a start at the current boundary.
@@ -327,7 +327,7 @@ fn run_product(prog: &ProductProgram, line: &[u8]) -> bool {
 /// }
 /// ```
 fn new_thread(prog: &ProductProgram) -> Thread {
-    Thread {
+    return Thread {
         cur: Operands {
             positives: seeded_states(&prog.positives),
             negatives: seeded_states(&prog.negatives),
@@ -351,12 +351,12 @@ fn new_thread(prog: &ProductProgram) -> Thread {
 /// }
 /// ```
 fn seeded_states(operands: &[CountingNfa]) -> Vec<State> {
-    operands
+    return operands
         .iter()
         .map(|nfa| {
             let mut state = State::new(&nfa.elements);
             state.seed(&nfa.start);
-            state
+            return state
         })
         .collect()
 }
@@ -373,7 +373,7 @@ fn seeded_states(operands: &[CountingNfa]) -> Vec<State> {
 /// }
 /// ```
 fn empty_states(operands: &[CountingNfa]) -> Vec<State> {
-    operands.iter().map(|nfa| State::new(&nfa.elements)).collect()
+    return operands.iter().map(|nfa| return State::new(&nfa.elements)).collect()
 }
 
 /// Takes the zero-width closure of every operand in one side.
@@ -408,7 +408,7 @@ fn close_operands(prog: &ProductProgram, ops: &mut Operands, ctx: Ctx) {
 /// }
 /// ```
 fn accepts(ops: &Operands) -> bool {
-    ops.positives.iter().all(State::accepts) && ops.negatives.iter().all(|state| !state.accepts())
+    return ops.positives.iter().all(State::accepts) && ops.negatives.iter().all(|state| return !state.accepts())
 }
 
 /// Advances one thread by a byte, reporting whether it stays alive.
@@ -431,7 +431,7 @@ fn advance_thread(prog: &ProductProgram, thread: &mut Thread, b: u8) -> bool {
     }
     step_states(&prog.negatives, &thread.cur.negatives, &mut thread.next.negatives, b);
     std::mem::swap(&mut thread.cur, &mut thread.next);
-    true
+    return true
 }
 
 /// Steps every operand state of one side from `src` into `dst`.

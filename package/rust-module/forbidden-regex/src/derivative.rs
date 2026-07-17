@@ -78,9 +78,9 @@ pub fn derivative(node: &Node, byte: u8, ctx: Ctx) -> Node {
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
     match node {
-        Node::Empty | Node::Fail => Node::Fail,
-        Node::Top => Node::Top,
-        Node::LineStart | Node::LineEnd | Node::WordBoundary => Node::Fail,
+        Node::Empty | Node::Fail => return Node::Fail,
+        Node::Top => return Node::Top,
+        Node::LineStart | Node::LineEnd | Node::WordBoundary => return Node::Fail,
         Node::Class(set) => {
             // What: a class consumes `b` iff `b` is a member. Why: after
             // consuming the matched byte nothing remains, hence `Empty`.
@@ -90,16 +90,16 @@ pub fn derivative(node: &Node, byte: u8, ctx: Ctx) -> Node {
             // // Same step as the Rust statement below, written with ordinary TS objects/functions.
             // ```
             if set.contains(byte) {
-                Node::Empty
+                return Node::Empty
             } else {
-                Node::Fail
+                return Node::Fail
             }
         }
-        Node::Alt(parts) => alt(parts.iter().map(|p| derivative(p, byte, ctx)).collect()),
-        Node::Inter(parts) => inter(parts.iter().map(|p| derivative(p, byte, ctx)).collect()),
-        Node::Comp(inner) => comp(derivative(inner, byte, ctx)),
-        Node::Concat(parts) => derivative_concat(parts, byte, ctx),
-        Node::Repeat { node, min, max } => derivative_repeat(node, *min, *max, byte, ctx),
+        Node::Alt(parts) => return alt(parts.iter().map(|p| return derivative(p, byte, ctx)).collect()),
+        Node::Inter(parts) => return inter(parts.iter().map(|p| return derivative(p, byte, ctx)).collect()),
+        Node::Comp(inner) => return comp(derivative(inner, byte, ctx)),
+        Node::Concat(parts) => return derivative_concat(parts, byte, ctx),
+        Node::Repeat { node, min, max } => return derivative_repeat(node, *min, *max, byte, ctx),
     }
 }
 
@@ -153,9 +153,9 @@ fn derivative_repeat(node: &Node, min: usize, max: usize, byte: u8, ctx: Ctx) ->
         // ```ts
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
-        alt(vec![main, derivative(&dec, byte, ctx)])
+        return alt(vec![main, derivative(&dec, byte, ctx)])
     } else {
-        main
+        return main
     }
 }
 
@@ -207,7 +207,7 @@ fn derivative_concat(parts: &[Node], byte: u8, ctx: Ctx) -> Node {
             break;
         }
     }
-    alt(branches)
+    return alt(branches)
 }
 
 /// What:    Unit tests for byte derivatives, in a sidecar (max-lines exempt).

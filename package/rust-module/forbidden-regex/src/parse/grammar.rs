@@ -120,8 +120,8 @@ pub fn parse_setexpr(cur: &mut Cursor, close: Option<u8>) -> Result<Node, Compil
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
     match cur.peek() {
-        Some(op @ (b'|' | b'&')) => parse_set_algebra(cur, close, units, op),
-        _ => Ok(concat(units)),
+        Some(op @ (b'|' | b'&')) => return parse_set_algebra(cur, close, units, op),
+        _ => return Ok(concat(units)),
     }
 }
 
@@ -175,9 +175,9 @@ fn parse_set_algebra(
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
     if op == b'|' {
-        Ok(alt(operands))
+        return Ok(alt(operands))
     } else {
-        Ok(inter(operands))
+        return Ok(inter(operands))
     }
 }
 
@@ -194,9 +194,9 @@ fn parse_set_algebra(
 /// ```
 fn single_atom(units: Vec<Node>, pos: usize) -> Result<Node, CompileError> {
     if units.len() == 1 {
-        Ok(units.into_iter().next().unwrap())
+        return Ok(units.into_iter().next().unwrap())
     } else {
-        Err(CompileError::Syntax {
+        return Err(CompileError::Syntax {
             pos,
             message: "operand of '&' or '|' must be a single atom; wrap it in (?:...)".to_string(),
         })
@@ -226,7 +226,7 @@ fn parse_concat_units(cur: &mut Cursor, close: Option<u8>) -> Result<Vec<Node>, 
             Some(_) => units.push(parse_postfix(cur)?),
         }
     }
-    Ok(units)
+    return Ok(units)
 }
 
 /// Parses one atom and an optional single quantifier.
@@ -271,7 +271,7 @@ fn parse_postfix(cur: &mut Cursor) -> Result<Node, CompileError> {
         _ => return Ok(atom),
     };
     reject_stacked(cur)?;
-    Ok(quantified)
+    return Ok(quantified)
 }
 
 /// Rejects a second quantifier directly following the first.
@@ -288,11 +288,11 @@ fn parse_postfix(cur: &mut Cursor) -> Result<Node, CompileError> {
 fn reject_stacked(cur: &mut Cursor) -> Result<(), CompileError> {
     cur.skip_ignorable();
     match cur.peek() {
-        Some(b'?') | Some(b'{') | Some(b'*') | Some(b'+') => Err(CompileError::Syntax {
+        Some(b'?') | Some(b'{') | Some(b'*') | Some(b'+') => return Err(CompileError::Syntax {
             pos: cur.pos(),
             message: "stacked quantifiers are unsupported; wrap in (?:...)".to_string(),
         }),
-        _ => Ok(()),
+        _ => return Ok(()),
     }
 }
 
@@ -316,41 +316,41 @@ fn parse_atom(cur: &mut Cursor) -> Result<Node, CompileError> {
         message: "expected an expression".to_string(),
     })?;
     match b {
-        b'(' => parse_group(cur),
-        b'~' => parse_complement(cur),
-        b'[' => parse_class(cur),
+        b'(' => return parse_group(cur),
+        b'~' => return parse_complement(cur),
+        b'[' => return parse_class(cur),
         b'.' => {
             cur.bump();
-            Ok(class(dot_set()))
+            return Ok(class(dot_set()))
         }
         b'^' => {
             cur.bump();
-            Ok(Node::LineStart)
+            return Ok(Node::LineStart)
         }
         b'$' => {
             cur.bump();
-            Ok(Node::LineEnd)
+            return Ok(Node::LineEnd)
         }
-        b'\\' => parse_escape_atom(cur),
-        b')' | b']' | b'}' => Err(CompileError::Syntax {
+        b'\\' => return parse_escape_atom(cur),
+        b')' | b']' | b'}' => return Err(CompileError::Syntax {
             pos,
             message: format!("unmatched '{}'", b as char),
         }),
-        b'{' => Err(CompileError::Syntax {
+        b'{' => return Err(CompileError::Syntax {
             pos,
             message: "'{' quantifier without a preceding atom".to_string(),
         }),
-        b'*' | b'+' => Err(CompileError::Syntax {
+        b'*' | b'+' => return Err(CompileError::Syntax {
             pos,
             message: format!("'{}' is unsupported", b as char),
         }),
-        b'|' | b'&' => Err(CompileError::Syntax {
+        b'|' | b'&' => return Err(CompileError::Syntax {
             pos,
             message: format!("'{}' has no left operand", b as char),
         }),
         _ => {
             cur.bump();
-            Ok(class(singleton(b)))
+            return Ok(class(singleton(b)))
         }
     }
 }
@@ -392,7 +392,7 @@ fn parse_group(cur: &mut Cursor) -> Result<Node, CompileError> {
     cur.bump();
     let inner = parse_setexpr(cur, Some(b')'))?;
     expect_close(cur, pos)?;
-    Ok(inner)
+    return Ok(inner)
 }
 
 /// Parses a `~(...)` complement.
@@ -419,7 +419,7 @@ fn parse_complement(cur: &mut Cursor) -> Result<Node, CompileError> {
     cur.bump();
     let inner = parse_setexpr(cur, Some(b')'))?;
     expect_close(cur, pos)?;
-    Ok(comp(inner))
+    return Ok(comp(inner))
 }
 
 /// Consumes the closing `)` of a group or complement.
@@ -437,9 +437,9 @@ fn expect_close(cur: &mut Cursor, open_pos: usize) -> Result<(), CompileError> {
     cur.skip_ignorable();
     if cur.peek() == Some(b')') {
         cur.bump();
-        Ok(())
+        return Ok(())
     } else {
-        Err(CompileError::Syntax {
+        return Err(CompileError::Syntax {
             pos: open_pos,
             message: "missing closing ')'".to_string(),
         })

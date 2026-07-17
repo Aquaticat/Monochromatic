@@ -1,7 +1,9 @@
 [package]
 name = "forbidden-regex"
 version = "0.1.0"
+authors = ["Aquaticat"]
 categories = ["text-processing", "development-tools"]
+documentation = "https://docs.rs/forbidden-regex"
 edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/rust-module/forbidden-regex"
 include = [

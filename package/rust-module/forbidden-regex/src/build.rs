@@ -140,7 +140,7 @@ const WEAK_INNER_SEED_LEN: usize = 1;
 /// }
 /// ```
 fn search_root(node: Node) -> Node {
-    concat(vec![Node::Top, node])
+    return concat(vec![Node::Top, node])
 }
 
 /// Builds a bare anchored DFA engine for a rule, or `None` past the cap.
@@ -157,9 +157,9 @@ fn search_root(node: Node) -> Node {
 /// }
 /// ```
 fn anchored_engine(node: &Node) -> Option<Engine> {
-    build_dfa_within(node.clone(), ENGINE_DFA_CAP)
+    return build_dfa_within(node.clone(), ENGINE_DFA_CAP)
         .ok()
-        .map(|dfa| Engine::new(EngineKind::Table(minimize(&dfa)), Vec::new()))
+        .map(|dfa| return Engine::new(EngineKind::Table(minimize(&dfa)), Vec::new()))
 }
 
 /// Builds the eager-DFA back-end for a seedless node, or counting on overrun.
@@ -175,9 +175,9 @@ fn anchored_engine(node: &Node) -> Option<Engine> {
 /// ```
 fn build_table_kind(node: Node) -> Result<EngineKind, CompileError> {
     match build_dfa_within(search_root(node.clone()), ENGINE_DFA_CAP) {
-        Ok(dfa) => Ok(EngineKind::Table(minimize(&dfa))),
-        Err(CompileError::StateCap { .. }) => build_counting_kind(node),
-        Err(other) => Err(other),
+        Ok(dfa) => return Ok(EngineKind::Table(minimize(&dfa))),
+        Err(CompileError::StateCap { .. }) => return build_counting_kind(node),
+        Err(other) => return Err(other),
     }
 }
 
@@ -207,7 +207,7 @@ fn build_counting_kind(node: Node) -> Result<EngineKind, CompileError> {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    Ok(EngineKind::Table(minimize(&build_dfa_within(
+    return Ok(EngineKind::Table(minimize(&build_dfa_within(
         search_root(node),
         ENGINE_DFA_CAP,
     )?)))
@@ -232,7 +232,7 @@ pub(crate) fn build_engine(node: Node) -> Result<Engine, CompileError> {
     } else {
         build_counting_kind(node)?
     };
-    Ok(Engine::new(kind, seeds))
+    return Ok(Engine::new(kind, seeds))
 }
 
 /// How a rule is matched after the fold: gated, anchored at the hit, or line-start.
@@ -359,7 +359,7 @@ pub(crate) struct BuiltRule {
 /// }
 /// ```
 fn starts_with_line_anchor(node: &Node) -> bool {
-    matches!(node, Node::Concat(parts) if parts.first() == Some(&Node::LineStart))
+    return matches!(node, Node::Concat(parts) if parts.first() == Some(&Node::LineStart))
 }
 
 /// Routes a rule seedless at the default floor onto a weak seed.
@@ -384,7 +384,7 @@ fn fold_seedless(node: &Node) -> Routing {
             line_start: None,
         };
     }
-    Routing {
+    return Routing {
         seeds: seeds_from_node_min(node, WEAK_INNER_SEED_LEN),
         anchored: None,
         line_start: None,
@@ -430,7 +430,7 @@ fn route_rule(node: &Node) -> Routing {
             line_start: None,
         };
     }
-    fold_seedless(node)
+    return fold_seedless(node)
 }
 
 /// Compiles one parsed node into a rule, folding literal-free rules into the gate.
@@ -469,7 +469,7 @@ pub(crate) fn build_rule(node: Node) -> Result<BuiltRule, CompileError> {
     } else {
         build_table_kind(node.clone())?
     };
-    Ok(BuiltRule {
+    return Ok(BuiltRule {
         engine: Engine::new(kind, routing.seeds.clone()),
         routing,
         seedless,
@@ -494,7 +494,7 @@ pub(crate) fn build_seedless_union(nodes: &[Node]) -> Option<CountingNfa> {
     if nodes.is_empty() {
         return None;
     }
-    build_nfa(&alt(nodes.to_vec()))
+    return build_nfa(&alt(nodes.to_vec()))
 }
 
 /// Reports whether a `^`-anchored engine matches at the start of `line`.
@@ -511,7 +511,7 @@ pub(crate) fn build_seedless_union(nodes: &[Node]) -> Option<CountingNfa> {
 /// }
 /// ```
 pub(crate) fn line_start_match(engine: &Engine, line: &[u8]) -> bool {
-    engine.is_match(line)
+    return engine.is_match(line)
 }
 
 /// What:    Unit tests for rule routing, in a sidecar (max-lines exempt).

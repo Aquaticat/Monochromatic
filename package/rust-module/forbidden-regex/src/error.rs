@@ -175,19 +175,19 @@ impl fmt::Display for CompileError {
         // ```
         match self {
             CompileError::Syntax { pos, message } => {
-                write!(f, "syntax error at byte {pos}: {message}")
+                return write!(f, "syntax error at byte {pos}: {message}")
             }
             CompileError::EmptyMatchable => {
-                write!(f, "pattern can match the empty string, which would match every input")
+                return write!(f, "pattern can match the empty string, which would match every input")
             }
             CompileError::StateCap { limit } => {
-                write!(f, "pattern exceeded the DFA state cap of {limit}")
+                return write!(f, "pattern exceeded the DFA state cap of {limit}")
             }
             CompileError::Serialize { message } => {
-                write!(f, "failed to serialize automaton: {message}")
+                return write!(f, "failed to serialize automaton: {message}")
             }
             CompileError::Invalid { message } => {
-                write!(f, "invalid serialized automaton: {message}")
+                return write!(f, "invalid serialized automaton: {message}")
             }
         }
     }

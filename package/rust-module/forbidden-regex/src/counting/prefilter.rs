@@ -88,8 +88,8 @@ impl Prefilter {
     /// }
     /// ```
     pub(crate) fn from_seeds(seeds: &[Vec<u8>]) -> Prefilter {
-        Prefilter {
-            finders: seeds.iter().map(|seed| Finder::new(seed).into_owned()).collect(),
+        return Prefilter {
+            finders: seeds.iter().map(|seed| return Finder::new(seed).into_owned()).collect(),
         }
     }
 
@@ -105,7 +105,7 @@ impl Prefilter {
     /// }
     /// ```
     pub(crate) fn allows(&self, line: &[u8]) -> bool {
-        self.finders.is_empty() || self.finders.iter().any(|finder| finder.find(line).is_some())
+        return self.finders.is_empty() || self.finders.iter().any(|finder| return finder.find(line).is_some())
     }
 
     /// Returns how many seed searchers are prepared.
@@ -140,9 +140,9 @@ impl Prefilter {
 /// ```
 fn filter_min(seeds: Vec<Vec<u8>>, min: usize) -> Vec<Vec<u8>> {
     if seeds.is_empty() || min_len(&seeds) < min {
-        Vec::new()
+        return Vec::new()
     } else {
-        seeds
+        return seeds
     }
 }
 
@@ -159,7 +159,7 @@ fn filter_min(seeds: Vec<Vec<u8>>, min: usize) -> Vec<Vec<u8>> {
 /// }
 /// ```
 pub(crate) fn seeds_from_node(node: &Node) -> Vec<Vec<u8>> {
-    seeds_from_node_min(node, MIN_SEED_LEN)
+    return seeds_from_node_min(node, MIN_SEED_LEN)
 }
 
 /// Derives required-literal seeds with a caller-chosen minimum length.
@@ -176,7 +176,7 @@ pub(crate) fn seeds_from_node(node: &Node) -> Vec<Vec<u8>> {
 /// }
 /// ```
 pub(crate) fn seeds_from_node_min(node: &Node, min: usize) -> Vec<Vec<u8>> {
-    filter_min(required_literal(node), min)
+    return filter_min(required_literal(node), min)
 }
 
 /// Returns a set of literals such that every match of `node` contains one.
@@ -195,11 +195,11 @@ pub(crate) fn seeds_from_node_min(node: &Node, min: usize) -> Vec<Vec<u8>> {
 /// ```
 fn required_literal(node: &Node) -> Vec<Vec<u8>> {
     match node {
-        Node::Class(set) => set.as_singleton().map(|b| vec![vec![b]]).unwrap_or_default(),
-        Node::Concat(parts) => concat_literal(parts),
-        Node::Alt(branches) => alt_literal(branches),
-        Node::Inter(operands) => inter_literal(operands),
-        _ => Vec::new(),
+        Node::Class(set) => return set.as_singleton().map(|b| vec![vec![b]]).unwrap_or_default(),
+        Node::Concat(parts) => return concat_literal(parts),
+        Node::Alt(branches) => return alt_literal(branches),
+        Node::Inter(operands) => return inter_literal(operands),
+        _ => return Vec::new(),
     }
 }
 
@@ -227,7 +227,7 @@ fn alt_literal(branches: &[Node]) -> Vec<Vec<u8>> {
             }
         }
     }
-    all
+    return all
 }
 
 /// Returns the required literals of the first positive operand of an intersection.
@@ -250,7 +250,7 @@ fn inter_literal(operands: &[Node]) -> Vec<Vec<u8>> {
             }
         }
     }
-    Vec::new()
+    return Vec::new()
 }
 
 /// Returns the literals every match of `node` must begin with, or empty when a match
@@ -269,11 +269,11 @@ fn inter_literal(operands: &[Node]) -> Vec<Vec<u8>> {
 /// ```
 pub(crate) fn leading_literals(node: &Node) -> Vec<Vec<u8>> {
     match node {
-        Node::Class(set) => set.as_singleton().map(|b| vec![vec![b]]).unwrap_or_default(),
-        Node::Concat(parts) => concat_leading(parts),
-        Node::Alt(branches) => alt_leading(branches),
-        Node::Inter(operands) => inter_leading(operands),
-        _ => Vec::new(),
+        Node::Class(set) => return set.as_singleton().map(|b| vec![vec![b]]).unwrap_or_default(),
+        Node::Concat(parts) => return concat_leading(parts),
+        Node::Alt(branches) => return alt_leading(branches),
+        Node::Inter(operands) => return inter_leading(operands),
+        _ => return Vec::new(),
     }
 }
 
@@ -291,7 +291,7 @@ pub(crate) fn leading_literals(node: &Node) -> Vec<Vec<u8>> {
 /// }
 /// ```
 pub(crate) fn leading_seeds(node: &Node) -> Vec<Vec<u8>> {
-    leading_seeds_min(node, MIN_SEED_LEN)
+    return leading_seeds_min(node, MIN_SEED_LEN)
 }
 
 /// Returns the leading literals with a caller-chosen minimum length.
@@ -307,7 +307,7 @@ pub(crate) fn leading_seeds(node: &Node) -> Vec<Vec<u8>> {
 /// }
 /// ```
 pub(crate) fn leading_seeds_min(node: &Node, min: usize) -> Vec<Vec<u8>> {
-    filter_min(leading_literals(node), min)
+    return filter_min(leading_literals(node), min)
 }
 
 /// Returns the leading literals of a concatenation, extended by the following run.
@@ -343,7 +343,7 @@ fn concat_leading(parts: &[Node]) -> Vec<Vec<u8>> {
             prefix.push(b);
         }
     }
-    prefixes
+    return prefixes
 }
 
 /// Unions the leading literals of every alternation branch.
@@ -371,7 +371,7 @@ fn alt_leading(branches: &[Node]) -> Vec<Vec<u8>> {
             }
         }
     }
-    all
+    return all
 }
 
 /// Returns the leading literal of the first positive operand of an intersection.
@@ -394,7 +394,7 @@ fn inter_leading(operands: &[Node]) -> Vec<Vec<u8>> {
             }
         }
     }
-    Vec::new()
+    return Vec::new()
 }
 
 /// Returns the most selective mandatory literal anywhere in a concatenation.
@@ -424,7 +424,7 @@ fn concat_literal(parts: &[Node]) -> Vec<Vec<u8>> {
         run.clear();
         best = better_seed(best, required_literal(part));
     }
-    better_seed(best, vec![run])
+    return better_seed(best, vec![run])
 }
 
 /// Picks the more selective of two candidate seed sets.
@@ -441,9 +441,9 @@ fn concat_literal(parts: &[Node]) -> Vec<Vec<u8>> {
 /// ```
 fn better_seed(best: Vec<Vec<u8>>, candidate: Vec<Vec<u8>>) -> Vec<Vec<u8>> {
     if !candidate.is_empty() && min_len(&candidate) > min_len(&best) {
-        candidate
+        return candidate
     } else {
-        best
+        return best
     }
 }
 
@@ -459,7 +459,7 @@ fn better_seed(best: Vec<Vec<u8>>, candidate: Vec<Vec<u8>>) -> Vec<Vec<u8>> {
 /// }
 /// ```
 fn min_len(seeds: &[Vec<u8>]) -> usize {
-    seeds.iter().map(Vec::len).min().unwrap_or(0)
+    return seeds.iter().map(Vec::len).min().unwrap_or(0)
 }
 
 /// What:    Unit tests for seed extraction and the prefilter, in a sidecar (max-lines exempt).

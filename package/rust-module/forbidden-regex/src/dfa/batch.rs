@@ -49,7 +49,7 @@ pub const LANES: usize = 8;
 /// }
 /// ```
 fn end_bit() -> u8 {
-    accept_bit(false, true)
+    return accept_bit(false, true)
 }
 
 /// One chunk's per-lane cursors, generic over the lane count.
@@ -116,7 +116,7 @@ impl<const N: usize> Lanes<N> {
     /// }
     /// ```
     fn new(start: usize) -> Lanes<N> {
-        Lanes {
+        return Lanes {
             state: [start; N],
             done: [false; N],
             hit: [false; N],
@@ -170,7 +170,7 @@ impl Dfa {
             lanes.hit[lane] = true;
             lanes.done[lane] = true;
         }
-        class
+        return class
     }
 
     /// Applies the end-of-input acceptance test to every unfinished lane.
@@ -215,7 +215,7 @@ impl Dfa {
         let (chunks, remainder) = lines.as_chunks::<N>();
         let mut base = 0;
         for chunk in chunks {
-            let lens: [usize; N] = std::array::from_fn(|lane| chunk[lane].len());
+            let lens: [usize; N] = std::array::from_fn(|lane| return chunk[lane].len());
             let max_len = lens.iter().copied().max().unwrap_or(0);
             let mut lanes = Lanes::<N>::new(start);
             // What:    Column-major scan: `pos` indexes each lane's own line
@@ -341,7 +341,7 @@ impl Dfa {
     /// }
     /// ```
     pub fn is_match_batch_tight_w<const N: usize>(&self, lines: &[&[u8]], out: &mut [bool]) {
-        let len = lines.first().map_or(0, |line| line.len());
+        let len = lines.first().map_or(0, |line| return line.len());
         let (chunks, remainder) = lines.as_chunks::<N>();
         let mut base = 0;
         for chunk in chunks {

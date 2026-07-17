@@ -112,7 +112,7 @@ impl CountingNfa {
     /// assert!(nfa.is_match(b"xxAKIAB2C7"));
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
-        crate::counting::run::run(self, line)
+        return crate::counting::run::run(self, line)
     }
 
     /// Checks that a decoded NFA is safe to run against untrusted input.
@@ -150,7 +150,7 @@ impl CountingNfa {
                 });
             }
         }
-        Ok(())
+        return Ok(())
     }
 }
 

@@ -51,7 +51,7 @@ use crate::charset::ByteSet;
 /// ```
 pub fn accept_bit(word_after: bool, line_end: bool) -> u8 {
     let index = ((line_end as u8) << 1) | (word_after as u8);
-    1u8 << index
+    return 1u8 << index
 }
 
 /// A compiled, table-driven deterministic automaton over byte classes.
@@ -207,7 +207,7 @@ impl Dfa {
         num_states: u16,
     ) -> Self {
         let dead = find_dead(&trans, &accept, nclasses, num_states);
-        Dfa {
+        return Dfa {
             nclasses,
             class_map,
             class_word,
@@ -270,7 +270,7 @@ impl Dfa {
         // ```ts
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
-        self.accept[state] & accept_bit(false, true) != 0
+        return self.accept[state] & accept_bit(false, true) != 0
     }
 
     /// Adds to `set` every byte that could begin a match from the start state.
@@ -318,7 +318,7 @@ impl Dfa {
         // ```ts
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
-        let invalid = |message: &str| CompileError::Invalid {
+        let invalid = |message: &str| return CompileError::Invalid {
             message: message.to_string(),
         };
         let nc = self.nclasses as usize;
@@ -332,7 +332,7 @@ impl Dfa {
         if self.class_word.len() != nc || self.class_newline.len() != nc {
             return Err(invalid("class flag length mismatch"));
         }
-        if self.class_map.iter().any(|&c| c as usize >= nc) {
+        if self.class_map.iter().any(|&c| return c as usize >= nc) {
             return Err(invalid("class id out of range"));
         }
         if ns == 0 || self.accept.len() != ns || self.start as usize >= ns {
@@ -340,11 +340,11 @@ impl Dfa {
         }
         let expected = ns
             .checked_mul(nc)
-            .ok_or_else(|| invalid("transition table size overflow"))?;
+            .ok_or_else(|| return invalid("transition table size overflow"))?;
         if self.trans.len() != expected {
             return Err(invalid("transition table length mismatch"));
         }
-        if self.trans.iter().any(|&t| t as usize >= ns) {
+        if self.trans.iter().any(|&t| return t as usize >= ns) {
             return Err(invalid("transition target out of range"));
         }
         // What: the dead id is either `num_states` (disabled) or a genuine sink. Why:
@@ -361,11 +361,11 @@ impl Dfa {
             if dead > ns {
                 return Err(invalid("dead state out of range"));
             }
-            if self.accept[dead] != 0 || (0..nc).any(|c| self.trans[dead * nc + c] as usize != dead) {
+            if self.accept[dead] != 0 || (0..nc).any(|c| return self.trans[dead * nc + c] as usize != dead) {
                 return Err(invalid("dead state is not a non-accepting sink"));
             }
         }
-        Ok(())
+        return Ok(())
     }
 }
 
@@ -397,9 +397,9 @@ mod tests;
 fn find_dead(trans: &[u16], accept: &[u8], nclasses: u32, num_states: u16) -> u16 {
     let nc = nclasses as usize;
     for state in 0..num_states as usize {
-        if accept[state] == 0 && (0..nc).all(|c| trans[state * nc + c] as usize == state) {
+        if accept[state] == 0 && (0..nc).all(|c| return trans[state * nc + c] as usize == state) {
             return state as u16;
         }
     }
-    num_states
+    return num_states
 }

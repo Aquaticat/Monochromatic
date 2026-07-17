@@ -170,15 +170,15 @@ fn residual_too_large(node: &Node) -> bool {
         *budget -= 1;
         match node {
             Node::Concat(parts) | Node::Alt(parts) | Node::Inter(parts) => {
-                parts.iter().any(|child| spend(child, budget))
+                return parts.iter().any(|child| return spend(child, budget))
             }
-            Node::Comp(inner) => spend(inner, budget),
-            Node::Repeat { node, .. } => spend(node, budget),
-            _ => false,
+            Node::Comp(inner) => return spend(inner, budget),
+            Node::Repeat { node, .. } => return spend(node, budget),
+            _ => return false,
         }
     }
     let mut budget = RESIDUAL_NODE_CAP;
-    spend(node, &mut budget)
+    return spend(node, &mut budget)
 }
 
 /// What:    Unit tests for the DFA build and its residual guard, in a sidecar (max-lines
@@ -306,8 +306,8 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let trans: Vec<u16> = trans.into_iter().map(|target| target as u16).collect();
-    Ok(Dfa::from_parts(
+    let trans: Vec<u16> = trans.into_iter().map(|target| return target as u16).collect();
+    return Ok(Dfa::from_parts(
         nc as u32,
         classes.class_map,
         classes.class_word,
@@ -337,7 +337,7 @@ fn intern(index: &mut HashMap<StateKey, u32>, states: &mut Vec<StateKey>, key: S
     let id = states.len() as u32;
     index.insert(key.clone(), id);
     states.push(key);
-    id
+    return id
 }
 
 /// Computes the 4-bit acceptance mask of a state.
@@ -374,5 +374,5 @@ fn compute_accept(node: &Node, at_line_start: bool, prev_word: bool) -> u8 {
             }
         }
     }
-    mask
+    return mask
 }

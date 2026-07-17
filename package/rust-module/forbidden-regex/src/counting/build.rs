@@ -154,7 +154,7 @@ impl Builder {
         let id = self.elements.len() as u32;
         self.elements.push(element);
         self.follow.push(Vec::new());
-        Frag {
+        return Frag {
             nullable,
             first: vec![id],
             last: vec![id],
@@ -195,15 +195,15 @@ impl Builder {
     /// ```
     fn build(&mut self, node: &Node) -> Option<Frag> {
         match node {
-            Node::Class(set) => Some(self.leaf(Element::Class(*set), false)),
-            Node::LineStart => Some(self.leaf(Element::LineStart, false)),
-            Node::LineEnd => Some(self.leaf(Element::LineEnd, false)),
-            Node::WordBoundary => Some(self.leaf(Element::WordBoundary, false)),
-            Node::Repeat { node, min, max } => self.build_repeat(node, *min, *max),
-            Node::Concat(parts) => self.build_concat(parts),
-            Node::Alt(parts) => self.build_alt(parts),
-            Node::Empty => Some(empty_frag()),
-            Node::Fail | Node::Top | Node::Inter(_) | Node::Comp(_) => None,
+            Node::Class(set) => return Some(self.leaf(Element::Class(*set), false)),
+            Node::LineStart => return Some(self.leaf(Element::LineStart, false)),
+            Node::LineEnd => return Some(self.leaf(Element::LineEnd, false)),
+            Node::WordBoundary => return Some(self.leaf(Element::WordBoundary, false)),
+            Node::Repeat { node, min, max } => return self.build_repeat(node, *min, *max),
+            Node::Concat(parts) => return self.build_concat(parts),
+            Node::Alt(parts) => return self.build_alt(parts),
+            Node::Empty => return Some(empty_frag()),
+            Node::Fail | Node::Top | Node::Inter(_) | Node::Comp(_) => return None,
         }
     }
 
@@ -246,7 +246,7 @@ impl Builder {
             }
             acc = self.link_frags(acc, copy);
         }
-        Some(acc)
+        return Some(acc)
     }
 
     /// Builds a concatenation, wiring each part's ends to the next part's starts.
@@ -266,7 +266,7 @@ impl Builder {
             let next = self.build(part)?;
             acc = self.link_frags(acc, next);
         }
-        Some(acc)
+        return Some(acc)
     }
 
     /// Links two fragments in sequence by the Glushkov concatenation rule.
@@ -284,7 +284,7 @@ impl Builder {
         self.link(&acc.last, &next.first);
         let first = extend_if(acc.nullable, &acc.first, &next.first);
         let last = extend_if(next.nullable, &next.last, &acc.last);
-        Frag {
+        return Frag {
             nullable: acc.nullable && next.nullable,
             first,
             last,
@@ -314,7 +314,7 @@ impl Builder {
             push_unique(&mut frag.first, &branch.first);
             push_unique(&mut frag.last, &branch.last);
         }
-        Some(frag)
+        return Some(frag)
     }
 }
 
@@ -346,7 +346,7 @@ pub fn build_nfa(node: &Node) -> Option<CountingNfa> {
     if root.nullable {
         start.push(accept);
     }
-    Some(CountingNfa {
+    return Some(CountingNfa {
         elements: builder.elements,
         follow: builder.follow,
         start,
@@ -364,7 +364,7 @@ pub fn build_nfa(node: &Node) -> Option<CountingNfa> {
 /// }
 /// ```
 fn empty_frag() -> Frag {
-    Frag {
+    return Frag {
         nullable: true,
         first: Vec::new(),
         last: Vec::new(),
@@ -387,7 +387,7 @@ fn extend_if(cond: bool, base: &[u32], extra: &[u32]) -> Vec<u32> {
     if cond {
         push_unique(&mut out, extra);
     }
-    out
+    return out
 }
 
 /// Appends each id of `extra` to `out` if not already present.

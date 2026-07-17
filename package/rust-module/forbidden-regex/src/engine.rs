@@ -220,7 +220,7 @@ impl Engine {
     /// ```
     pub fn new(kind: EngineKind, seeds: Vec<Vec<u8>>) -> Engine {
         let prefilter = Prefilter::from_seeds(&seeds);
-        Engine {
+        return Engine {
             kind,
             seeds,
             prefilter,
@@ -239,7 +239,7 @@ impl Engine {
     /// }
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
-        self.prefilter.allows(line) && self.matches(line)
+        return self.prefilter.allows(line) && self.matches(line)
     }
 
     /// Runs the back-end matcher on `line`, skipping the prefilter.
@@ -255,7 +255,7 @@ impl Engine {
     /// }
     /// ```
     pub fn matches_only(&self, line: &[u8]) -> bool {
-        self.matches(line)
+        return self.matches(line)
     }
 
     /// Runs the back-end matcher on `line`.
@@ -271,9 +271,9 @@ impl Engine {
     /// ```
     fn matches(&self, line: &[u8]) -> bool {
         match &self.kind {
-            EngineKind::Table(dfa) => dfa.is_match(line),
-            EngineKind::Nfa(nfa) => nfa.is_match(line),
-            EngineKind::Product(program) => program.is_match(line),
+            EngineKind::Table(dfa) => return dfa.is_match(line),
+            EngineKind::Nfa(nfa) => return nfa.is_match(line),
+            EngineKind::Product(program) => return program.is_match(line),
         }
     }
 
@@ -291,8 +291,8 @@ impl Engine {
     /// ```
     pub fn table_dfa(&self) -> Option<&Dfa> {
         match &self.kind {
-            EngineKind::Table(dfa) => Some(dfa),
-            _ => None,
+            EngineKind::Table(dfa) => return Some(dfa),
+            _ => return None,
         }
     }
 
@@ -340,9 +340,9 @@ impl Engine {
     /// ```
     pub fn seeds(&self) -> Option<Vec<Vec<u8>>> {
         if self.seeds.is_empty() {
-            None
+            return None
         } else {
-            Some(self.seeds.clone())
+            return Some(self.seeds.clone())
         }
     }
 
@@ -359,9 +359,9 @@ impl Engine {
     /// ```
     pub fn validate(&self) -> Result<(), CompileError> {
         match &self.kind {
-            EngineKind::Table(dfa) => dfa.validate(),
-            EngineKind::Nfa(nfa) => nfa.validate(),
-            EngineKind::Product(program) => program.validate(),
+            EngineKind::Table(dfa) => return dfa.validate(),
+            EngineKind::Nfa(nfa) => return nfa.validate(),
+            EngineKind::Product(program) => return program.validate(),
         }
     }
 

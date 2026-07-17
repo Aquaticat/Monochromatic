@@ -170,7 +170,7 @@ impl Regex {
     /// }
     /// ```
     pub fn is_match(&self, line: &[u8]) -> bool {
-        self.engine.is_match(line)
+        return self.engine.is_match(line)
     }
 
     /// Serializes the compiled pattern to bytes.
@@ -185,7 +185,7 @@ impl Regex {
     /// }
     /// ```
     pub fn to_bytes(&self) -> Result<Vec<u8>, CompileError> {
-        bincode::serialize(self).map_err(|e| CompileError::Serialize {
+        return bincode::serialize(self).map_err(|e| return CompileError::Serialize {
             message: e.to_string(),
         })
     }
@@ -202,7 +202,7 @@ impl Regex {
     /// }
     /// ```
     pub fn from_bytes(bytes: &[u8]) -> Result<Regex, CompileError> {
-        let mut regex: Regex = bincode::deserialize(bytes).map_err(|e| CompileError::Invalid {
+        let mut regex: Regex = bincode::deserialize(bytes).map_err(|e| return CompileError::Invalid {
             message: e.to_string(),
         })?;
         regex.engine.validate()?;
@@ -214,7 +214,7 @@ impl Regex {
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
         regex.engine.prepare();
-        Ok(regex)
+        return Ok(regex)
     }
 }
 
@@ -237,7 +237,7 @@ pub fn compile(pattern: &str) -> Result<Regex, CompileError> {
         .inspect_err(|error| tracing::warn!(pattern, cause = %error, "regex parse failed"))?;
     let engine =
         build_engine(node).inspect_err(|error| tracing::warn!(pattern, cause = %error, "regex build failed"))?;
-    Ok(Regex { engine })
+    return Ok(Regex { engine })
 }
 
 /// What:     `pub struct RegexSet { ... }` declares an exported Rust record type.
@@ -518,7 +518,7 @@ impl RuleSink {
             line_start_first: ByteSet::empty(),
         };
         set.prepare();
-        set
+        return set
     }
 }
 
@@ -567,7 +567,7 @@ impl CheckedFull {
     /// }
     /// ```
     fn new() -> CheckedFull {
-        CheckedFull { bits: [0; 4] }
+        return CheckedFull { bits: [0; 4] }
     }
 
     /// Reports whether `rule` is seen for the first time, recording it.
@@ -589,7 +589,7 @@ impl CheckedFull {
         let (word, bit) = (rule / 64, 1u64 << (rule % 64));
         let fresh = self.bits[word] & bit == 0;
         self.bits[word] |= bit;
-        fresh
+        return fresh
     }
 }
 
@@ -618,7 +618,7 @@ impl RegexSet {
         for pattern in patterns {
             sink.push(parse(pattern.as_ref()).and_then(build_rule)?);
         }
-        Ok(sink.assemble())
+        return Ok(sink.assemble())
     }
 
     /// Rebuilds the combined gate and the line-start first-byte set.
@@ -664,7 +664,7 @@ impl RegexSet {
                 kept.push(index);
             }
         }
-        (sink.assemble(), kept)
+        return (sink.assemble(), kept)
     }
 
     /// Compiles a ruleset from one text, split on a delimiter.
@@ -682,10 +682,10 @@ impl RegexSet {
     pub fn from_ruleset(text: &str, delimiter: &str) -> Result<RegexSet, CompileError> {
         let parts: Vec<&str> = text
             .split(delimiter)
-            .map(|s| s.trim())
-            .filter(|s| !s.is_empty())
+            .map(|s| return s.trim())
+            .filter(|s| return !s.is_empty())
             .collect();
-        RegexSet::new(&parts)
+        return RegexSet::new(&parts)
     }
 
     /// Reports whether any rule matches a substring of `line`.
@@ -705,16 +705,16 @@ impl RegexSet {
         let mut checked = CheckedFull::new();
         if self
             .gate
-            .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos, &mut checked))
+            .any_candidate(line, |rule, pos| return self.matches_rule(line, rule, pos, &mut checked))
         {
             return true;
         }
         if self.line_start_candidate(line)
-            && self.line_start.iter().any(|engine| line_start_match(engine, line))
+            && self.line_start.iter().any(|engine| return line_start_match(engine, line))
         {
             return true;
         }
-        self.seedless_groups.iter().any(|group| group.is_match(line))
+        return self.seedless_groups.iter().any(|group| return group.is_match(line))
     }
 
     /// Reports whether `line` could begin a line-start rule match.
@@ -730,7 +730,7 @@ impl RegexSet {
     /// }
     /// ```
     fn line_start_candidate(&self, line: &[u8]) -> bool {
-        line.first().is_some_and(|&b| self.line_start_first.contains(b))
+        return line.first().is_some_and(|&b| return self.line_start_first.contains(b))
     }
 
     /// Checks one seeded rule against `line`, anchored at `pos` when possible.
@@ -749,8 +749,8 @@ impl RegexSet {
     /// ```
     fn matches_rule(&self, line: &[u8], rule: usize, pos: usize, checked: &mut CheckedFull) -> bool {
         match &self.anchored[rule] {
-            Some(engine) => engine.is_match(&line[pos..]),
-            None => checked.first_time(rule) && self.rules[rule].matches_only(line),
+            Some(engine) => return engine.is_match(&line[pos..]),
+            None => return checked.first_time(rule) && self.rules[rule].matches_only(line),
         }
     }
 
@@ -787,7 +787,7 @@ impl RegexSet {
         }
         hits.sort_unstable();
         hits.dedup();
-        hits.into_iter()
+        return hits.into_iter()
     }
 
     /// Profiling hook: runs only the seeded-rule gate path.
@@ -803,8 +803,8 @@ impl RegexSet {
     /// ```
     pub fn gate_only_is_match(&self, line: &[u8]) -> bool {
         let mut checked = CheckedFull::new();
-        self.gate
-            .any_candidate(line, |rule, pos| self.matches_rule(line, rule, pos, &mut checked))
+        return self.gate
+            .any_candidate(line, |rule, pos| return self.matches_rule(line, rule, pos, &mut checked))
     }
 
     /// Profiling hook: runs only the seeded-literal prefilter, no fallback.
@@ -819,7 +819,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn prefilter_only_is_match(&self, line: &[u8]) -> bool {
-        self.gate.prefilter_present(line)
+        return self.gate.prefilter_present(line)
     }
 
     /// Profiling hook: prefilter plus aho-corasick enumeration, no per-rule check.
@@ -834,7 +834,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn candidates_only_is_match(&self, line: &[u8]) -> bool {
-        self.gate.any_candidate(line, |_rule, _pos| false)
+        return self.gate.any_candidate(line, |_rule, _pos| return false)
     }
 
     /// Profiling hook: the gate path but skipping rules without an anchored DFA.
@@ -850,9 +850,9 @@ impl RegexSet {
     /// }
     /// ```
     pub fn gate_anchored_only_is_match(&self, line: &[u8]) -> bool {
-        self.gate.any_candidate(line, |rule, pos| match &self.anchored[rule] {
-            Some(engine) => engine.is_match(&line[pos..]),
-            None => false,
+        return self.gate.any_candidate(line, |rule, pos| match &self.anchored[rule] {
+            Some(engine) => return engine.is_match(&line[pos..]),
+            None => return false,
         })
     }
 
@@ -868,7 +868,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn seedless_only_is_match(&self, line: &[u8]) -> bool {
-        self.seedless_groups.iter().any(|group| group.is_match(line))
+        return self.seedless_groups.iter().any(|group| return group.is_match(line))
     }
 
     /// Profiling hook: runs only the single counting-union automaton.
@@ -884,7 +884,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn csa_only_is_match(&self, line: &[u8]) -> bool {
-        self.seedless_union.as_ref().is_some_and(|nfa| nfa.is_match(line))
+        return self.seedless_union.as_ref().is_some_and(|nfa| return nfa.is_match(line))
     }
 
     /// Returns the position count of the seedless counting union, or zero when absent.
@@ -899,7 +899,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn seedless_union_size(&self) -> usize {
-        self.seedless_union.as_ref().map_or(0, |nfa| nfa.elements.len())
+        return self.seedless_union.as_ref().map_or(0, |nfa| return nfa.elements.len())
     }
 
     /// Returns how many seeded rules have an anchored DFA fast-check.
@@ -914,7 +914,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn anchored_count(&self) -> usize {
-        self.anchored.iter().filter(|engine| engine.is_some()).count()
+        return self.anchored.iter().filter(|engine| return engine.is_some()).count()
     }
 
     /// Returns how many union DFAs the seedless rules collapsed into.
@@ -929,7 +929,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn seedless_group_count(&self) -> usize {
-        self.seedless_groups.len()
+        return self.seedless_groups.len()
     }
 
     /// Returns how many `^`-anchored rules are checked at line starts.
@@ -944,7 +944,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn line_start_count(&self) -> usize {
-        self.line_start.len()
+        return self.line_start.len()
     }
 
     /// Returns how many rules have no required-literal prefilter.
@@ -959,7 +959,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn seedless_count(&self) -> usize {
-        self.rules.iter().filter(|engine| engine.seeds().is_none()).count()
+        return self.rules.iter().filter(|engine| return engine.seeds().is_none()).count()
     }
 
     /// Returns the number of rules.
@@ -973,7 +973,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn len(&self) -> usize {
-        self.rules.len()
+        return self.rules.len()
     }
 
     /// Reports whether the set has no rules.
@@ -987,7 +987,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn is_empty(&self) -> bool {
-        self.rules.is_empty()
+        return self.rules.is_empty()
     }
 
     /// Checks the decoded set's parallel-vector indices are mutually consistent.
@@ -1005,7 +1005,7 @@ impl RegexSet {
     /// }
     /// ```
     fn validate_structure(&self) -> Result<(), CompileError> {
-        let invalid = |message: &str| CompileError::Invalid {
+        let invalid = |message: &str| return CompileError::Invalid {
             message: message.to_string(),
         };
         let rules = self.rules.len();
@@ -1015,10 +1015,10 @@ impl RegexSet {
         if self.line_start.len() != self.line_start_ids.len() {
             return Err(invalid("line-start engines and ids length mismatch"));
         }
-        if self.seedless_ids.iter().chain(&self.line_start_ids).any(|&id| id >= rules) {
+        if self.seedless_ids.iter().chain(&self.line_start_ids).any(|&id| return id >= rules) {
             return Err(invalid("attribution id out of range"));
         }
-        Ok(())
+        return Ok(())
     }
 
     /// Serializes the compiled ruleset to bytes.
@@ -1033,7 +1033,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn to_bytes(&self) -> Result<Vec<u8>, CompileError> {
-        bincode::serialize(self).map_err(|e| CompileError::Serialize {
+        return bincode::serialize(self).map_err(|e| return CompileError::Serialize {
             message: e.to_string(),
         })
     }
@@ -1050,7 +1050,7 @@ impl RegexSet {
     /// }
     /// ```
     pub fn from_bytes(bytes: &[u8]) -> Result<RegexSet, CompileError> {
-        let mut set: RegexSet = bincode::deserialize(bytes).map_err(|e| CompileError::Invalid {
+        let mut set: RegexSet = bincode::deserialize(bytes).map_err(|e| return CompileError::Invalid {
             message: e.to_string(),
         })?;
         // What: prove the cross-vector indices are consistent before anything indexes
@@ -1098,7 +1098,7 @@ impl RegexSet {
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
         set.prepare();
-        Ok(set)
+        return Ok(set)
     }
 }
 

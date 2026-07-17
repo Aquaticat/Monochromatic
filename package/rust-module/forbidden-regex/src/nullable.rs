@@ -52,15 +52,15 @@ pub fn nullable(node: &Node, ctx: Ctx) -> bool {
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
     match node {
-        Node::Empty | Node::Top => true,
-        Node::Fail | Node::Class(_) => false,
-        Node::Concat(parts) | Node::Inter(parts) => parts.iter().all(|p| nullable(p, ctx)),
-        Node::Alt(parts) => parts.iter().any(|p| nullable(p, ctx)),
-        Node::Comp(inner) => !nullable(inner, ctx),
-        Node::Repeat { node, min, .. } => *min == 0 || nullable(node, ctx),
-        Node::LineStart => ctx.line_start,
-        Node::LineEnd => ctx.line_end,
-        Node::WordBoundary => ctx.word_before != ctx.word_after,
+        Node::Empty | Node::Top => return true,
+        Node::Fail | Node::Class(_) => return false,
+        Node::Concat(parts) | Node::Inter(parts) => return parts.iter().all(|p| return nullable(p, ctx)),
+        Node::Alt(parts) => return parts.iter().any(|p| return nullable(p, ctx)),
+        Node::Comp(inner) => return !nullable(inner, ctx),
+        Node::Repeat { node, min, .. } => return *min == 0 || nullable(node, ctx),
+        Node::LineStart => return ctx.line_start,
+        Node::LineEnd => return ctx.line_end,
+        Node::WordBoundary => return ctx.word_before != ctx.word_after,
     }
 }
 

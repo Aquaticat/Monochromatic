@@ -71,7 +71,7 @@ pub fn minimize(dfa: &Dfa) -> Dfa {
         color = next_color;
         count = next_count;
     }
-    rebuild(dfa, &color, count, nc)
+    return rebuild(dfa, &color, count, nc)
 }
 
 /// Assigns each state an initial color from its acceptance mask.
@@ -92,7 +92,7 @@ fn initial_colors(dfa: &Dfa, n: usize) -> Vec<u32> {
         let next = map.len() as u32;
         *slot = *map.entry(dfa.accept[state]).or_insert(next);
     }
-    color
+    return color
 }
 
 /// Refines a coloring once, splitting groups by transition signature.
@@ -127,7 +127,7 @@ fn refine(dfa: &Dfa, color: &[u32], n: usize, nc: usize) -> (Vec<u32>, usize) {
         *slot = *map.entry(signature).or_insert(id);
     }
     let count = map.len();
-    (next, count)
+    return (next, count)
 }
 
 /// Counts the distinct colors in a coloring.
@@ -145,7 +145,7 @@ fn distinct_count(color: &[u32]) -> usize {
     let mut seen: Vec<u32> = color.to_vec();
     seen.sort_unstable();
     seen.dedup();
-    seen.len()
+    return seen.len()
 }
 
 /// What:    Unit tests for minimization helpers, in a sidecar (max-lines exempt).
@@ -204,7 +204,7 @@ fn rebuild(dfa: &Dfa, color: &[u32], count: usize, nc: usize) -> Dfa {
             trans[c * nc + class] = color[target] as u16;
         }
     }
-    Dfa::from_parts(
+    return Dfa::from_parts(
         nc as u32,
         dfa.class_map.clone(),
         dfa.class_word.clone(),

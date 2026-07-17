@@ -70,7 +70,7 @@ pub(crate) fn run(nfa: &CountingNfa, line: &[u8]) -> bool {
         step_into(&nfa.elements, &nfa.follow, &cur, line[i], &mut next);
         std::mem::swap(&mut cur, &mut next);
     }
-    false
+    return false
 }
 
 /// Differential tests against the eager DFA plus a serialized-size proof.
