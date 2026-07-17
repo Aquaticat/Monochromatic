@@ -68,6 +68,18 @@ export {
   type PatchRejection,
 } from './apply-patch.ts';
 export {
+  buildEditorMessages,
+  type EditorPromptPlan,
+} from './edit-prompt.ts';
+export {
+  EDITOR_RESPONSE_FORMAT,
+  type EditorEditResolution,
+  type EditorEditWire,
+  type EditorReportWire,
+  isEditorReportWire,
+  resolveEditorEdits,
+} from './edit-wire.ts';
+export {
   deriveEditableEnvelopes,
   type EditableEnvelope,
   type EnvelopePlan,
