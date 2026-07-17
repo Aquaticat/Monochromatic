@@ -1,77 +1,62 @@
 # forbidden-strings
 
-Linear-time deny-list scanner for Git repos.
- ~9 ms cold start,
- ~1 GiB/s wall throughput,
-~20x faster per byte than betterleaks v1.1.2 on the same content.
- Sub-10 ms startup fits
-inside a pre-commit budget;
- ~57 ms full `--all` on this repo (3,471 files,
- 57 MiB) fits
-inside a pre-push budget.
+Linear-time deny-list scanner for Git repos,
+ built on the in-house `forbidden-regex` engine
+(`package/rust-module/forbidden-regex`).
+ A native Rust binary with a sub-commit-budget
+startup,
+ it scans working-tree files line by line against a deny list of literals and
+restricted-dialect regexes and reports each match as an opaque,
+ redacted finding.
 
 Rules split into a baseline embedded in the binary
 (`data/builtin-rules.txt`,
- activated by `--builtin-rules`) and a
-per-repo appendix (`forbidden-strings.append.local.txt`,
- gitignored) or CI-only secret
-(`FORBIDDEN_STRINGS_LIST`).
- The runtime rules file is concatenated from the appendixes by
-file-enforcer.
- Matched substrings,
+ activated by `--builtin-rules`),
+ a committed shared appendix
+(`forbidden-strings.append.txt`),
+ a per-repo gitignored appendix
+(`forbidden-strings.append.local.txt`),
+ or a CI-only secret (`FORBIDDEN_STRINGS_LIST`).
+The matched substring,
  the surrounding line,
- and the rule pattern are never
-printed in failure output,
- so a rule body that would itself leak if committed (a customer
-name,
- an unreleased project codename,
- a pre-disclosure partner ID) can live as an appendix
-or CI secret without exposure on public CI logs.
+ and the rule pattern are never printed in
+failure output,
+ so a rule body that would itself leak if committed (a customer name,
+ an
+unreleased project codename,
+ a pre-disclosure partner ID) can live as an appendix or CI
+secret without exposure on public CI logs.
 
 ## What's different
 
-- **Sub-10 ms startup,
-   ~1 GiB/s wall.
-  ** Single dated block (2026-05-16
-  post-emit-hit-consolidation,
-   hyperfine 1.20.0,
-   AMD Ryzen 7 8700F,
-   16 threads):
-   9.4 ms cold
-  start on this repo,
-   9.8 ms on the Linux kernel corpus,
-   56.6 ms full `--all` on this repo,
-  1.989 s full `--all` on the kernel.
-   Native Rust binary with `lto = true`,
-  `codegen-units = 1`,
+- **Native binary startup.
+  ** Rust with `lto = true`,
+   `codegen-units = 1`,
    `opt-level = 3`,
-   `panic = "unwind"`,
+  `panic = "unwind"`,
    `overflow-checks = true`,
-  `strip = true`;
-   no Node startup,
-   no WASM init,
-   no per-invocation TOML parse.
-   On clean
-  files the dual Aho-Corasick gate short-circuits before the regex engine runs.
-   Betterleaks
-  starts in ~174 ms.
+   `strip = true`.
+   No Node startup,
+   no WASM
+  init,
+   no per-invocation config parse,
+   which is what a sub-100 ms pre-commit budget needs.
 - **Linear-time matching.
-  ** Resharp is derivative-based with no backtracking;
-   Aho-Corasick
-  gates the regex engine via extracted literal prefixes.
-   A pathological rule combination
-  cannot exhibit catastrophic-backtracking behaviour.
-- **Resharp set-algebra rules.
-  ** `A&B` (intersection) and `~(A)` (complement) are
-  first-class.
-   Express "match X but not Y" without lookaround.
+  ** The engine is derivative and product based with no
+  backtracking,
+   so no rule combination can exhibit catastrophic-backtracking behaviour.
+  A set-level SIMD prefilter lets clean lines skip per-rule work.
+- **Set-algebra rules.
+  ** Intersection `A & B` and complement `~(A)` are first-class in
+  the dialect,
+   so "match X but not Y" needs no lookaround.
    PCRE-family engines
   (gitleaks,
    trufflehog,
    secretlint,
    plain RE2) cannot do this;
-   the workaround in those
-  tools is per-rule allowlists,
+   their workaround is
+  per-rule allowlists,
    which scale badly.
 - **Sensitive rules can live out-of-band.
   ** The committed baseline holds non-sensitive
@@ -79,8 +64,9 @@ or CI secret without exposure on public CI logs.
    the gitignored appendix and the CI-only `FORBIDDEN_STRINGS_LIST` secret hold
   sensitive rules.
    Failure output never prints the matched substring,
-   the surrounding line,
-  or the rule pattern,
+   the surrounding
+  line,
+   or the rule pattern,
    so a rule body itself can be a secret.
 
 ## When to pick something else
@@ -93,42 +79,31 @@ or CI secret without exposure on public CI logs.
   predicates,
    file-path globs,
    string allowlists).
-   Helps cut false positives when the rule
-  corpus is broad.
    No equivalent here.
 - **Async HTTP validation**.
-   No way to call a provider API to confirm a detected secret is
-  live.
-   The scanner reports literal matches;
+   No way to call a provider API to confirm a detected secret
+  is live;
    staleness review is on you.
 - **Git history scanning**.
    The walker enumerates working-tree files only.
-   No equivalent of
-  `gitleaks git` or `betterleaks git` that scans every diff in every commit.
+   No equivalent
+  of `gitleaks git` that scans every diff in every commit.
 - **SARIF / JSON / CSV output**.
-   Hits go to stderr as plain text.
-   No machine-readable
+   Hits go to stderr as plain text;
+   no machine-readable
   format for GitHub code-scanning upload or CI dashboards.
 - **Per-rule path scoping**.
-   Every rule runs against every (non-skipped) file.
-   The scanner
+   Every rule runs against every non-skipped file;
+   the scanner
   cannot apply rule X only to YAML files.
 - **Per-rule allowlists**.
-   No way to say "rule X but skip when it matches in path Y.
-  "
+   No way to say "rule X but skip when it matches in path Y".
 - **No streaming or stdin input.
-  ** Files only.
-   The walker enumerates from disk;
-   there is
-  no `--stdin` mode.
+  ** Files only;
+   the walker enumerates from disk.
 
 If you need any of those,
  betterleaks or gitleaks is the right tool.
- Otherwise
-`forbidden-strings` is faster and more expressive (set-algebra,
- out-of-band rules,
-redacted output,
- native binary startup).
 
 ## Prerequisites
 
@@ -160,53 +135,53 @@ Put one rule per line in a file named `forbidden-strings.local.txt` at the repo 
 pass `--rules <PATH>` / set `FORBIDDEN_STRINGS_RULES=<PATH>` to point at any other path.
 That is the whole setup.
  For a zero-file start,
- pass `--builtin-rules` to scan with the embedded betterleaks-ported baseline
- (see "Built-in baseline" below).
- Add the file to `.gitignore` if the rules themselves are
-sensitive;
+ pass `--builtin-rules` to scan with the
+embedded betterleaks-ported baseline (see "Built-in baseline" below).
+ Add the file to
+`.gitignore` if the rules themselves are sensitive;
  otherwise commit it.
- The "Rule file format" section below describes the line
-syntax.
+ The "Rule file
+format" section describes the line syntax.
  In CI,
- materialise the file from a secret (see "GitHub Actions" below) so the
-rule bodies never enter version control.
+ materialise the file from a secret (see
+"GitHub Actions" below) so the rule bodies never enter version control.
 
 ### With file-enforcer (this monorepo's workflow)
 
 Inside the Monochromatic monorepo,
  no rules file exists at the repository root
 (see `doc/decision/gitignore-negations.md`).
-The pieces:
+ The pieces:
 
 - The betterleaks baseline ships inside the scanner binary
   (`data/builtin-rules.txt`,
    regenerated by
   `package/cli/forbidden-strings/src/mise.port-betterleaks.ts`);
-  repo invocations activate it with `--builtin-rules`
-  (the cli-git policy sets `builtinRules: true`).
-- `forbidden-strings.append.txt` — committed shared appendix of
-  non-sensitive repo-wide rules.
-- `forbidden-strings.append.local.txt` — per-repo additions.
+   repo invocations activate
+  it with `--builtin-rules` (the cli-git policy sets `builtinRules: true`).
+- `forbidden-strings.append.txt` is the committed shared appendix of non-sensitive
+  repo-wide rules.
+- `forbidden-strings.append.local.txt` is the per-repo additions.
    Gitignored,
    free-form,
-   edited by hand.
+  edited by hand.
    Place sensitive literals (codenames,
    customer names,
    partner IDs) here.
-- `.cache/forbidden-strings.rules.txt` — runtime file consumed by the scanner.
-   Generated by file-enforcer concatenating the two appendixes into the
-  gitignored `.cache/` scratch dir.
-   The generated root `mise.toml` `[env]` points `FORBIDDEN_STRINGS_RULES`
-  at it (absolute via `{{config_root}}`).
+- `.cache/forbidden-strings.rules.txt` is the runtime file consumed by the scanner.
+  Generated by file-enforcer concatenating the two appendixes into the gitignored
+  `.cache/` scratch dir.
+   The generated root `mise.toml` `[env]` points
+  `FORBIDDEN_STRINGS_RULES` at it (absolute via `{{config_root}}`).
    Do not edit directly.
 
-Run `mise run file-enforcer` after editing either appendix to regenerate the
-runtime file.
+Run `mise run file-enforcer` after editing either appendix to regenerate the runtime
+file.
  The generator is `generateForbiddenStringsRules` in `file-enforcer.config.ts`.
- If you fork this scanner into a
-project that doesn't use file-enforcer,
- drop the appendix split and follow the
-single-file workflow above.
+ If you
+fork this scanner into a project that does not use file-enforcer,
+ drop the appendix split
+and follow the single-file workflow above.
 
 ## Usage
 
@@ -238,28 +213,35 @@ forbidden-strings --version    # or -V
 
 ### Built-in baseline (`--builtin-rules`)
 
-The binary embeds the betterleaks-ported baseline ruleset
-(`data/builtin-rules.txt`,
- compiled in via `include_str!` and exported as the library constant
-`forbidden_strings::BUILTIN_RULES`).
-It is pure opt-in:
- without the flag the scanner never reads it,
+The binary embeds the betterleaks-ported baseline ruleset.
+ The text form
+(`data/builtin-rules.txt`) is exported as the library constant
+`forbidden_strings::BUILTIN_RULES`;
+ the scan path loads the baseline from a serialized
+`RegexSet` precompiled at build time (compiling the full baseline at each startup is not
+viable,
+ so the cost is paid once during the build).
+ It is pure opt-in:
+ without the flag the
+scanner never reads it,
  so existing invocations behave exactly as before the flag existed.
 
 With `--builtin-rules`:
 
-- The baseline is appended AFTER the resolved rules file,
-  so `rule=N` numbers for your own rules do not shift.
+- The baseline is appended after the resolved rules file,
+  so `rule=N` numbers for your own rules do not shift:
+   your rules keep ids `0..user_len`
+  and the baseline takes `user_len..`.
 - When no rules file resolves at all
   (no `--rules`,
    no env var,
    and no `./forbidden-strings.local.txt` in cwd),
   the baseline alone is the ruleset;
-  passing the flag is itself the configuration.
+   passing the flag is itself the configuration.
 - An explicitly named missing file
   (`--rules <path>` or the env var pointing at a path that does not exist)
   still exits 2:
-  silently scanning without your rules would be a false-clean result.
+   silently scanning without your rules would be a false-clean result.
 
 ```sh
 # zero-file quick start: scan the tree with the embedded baseline only
@@ -280,423 +262,226 @@ walker output silently overwrites the positional list.
 One rule per line.
  Two shapes:
 
-- A bare line is a case-sensitive literal.
-   Match semantics depend on length:
-  - **Length below 7 bytes**:
-     conditional word-boundary check (`grep -w` semantics).
-    A boundary is required at any end whose edge byte is a word character (`[A-Za-z0-9_]`);
-    the file context on that side must be either start/end of file or a non-word byte.
-    A short alpha-only acronym matches a standalone occurrence in normal prose but
-    does **not** match coincidentally as a substring of a longer identifier or inside
-    random base64 noise.
-     Path-shaped literals like `/etc/passwd` still match inside
-    `cat /etc/passwd` because the leading `/` is non-word so no left-side boundary
-    is enforced.
-  - **Length 7 bytes or more**:
-     pure case-sensitive substring match,
-     no boundary check.
-    A long literal matches anywhere it appears,
-     including glued mid-identifier.
-    Distinctiveness from sheer length makes coincidental substring match negligible.
-    If a phrase exists in two written forms (with and without internal whitespace),
-    add both as separate rules so each matches its respective form.
-- A line of the shape `/PATTERN/FLAGS` is a regex.
-   The first `/` and last `/` delimit the
-  pattern;
-   `FLAGS` is zero or more lowercase letters and is rewritten to a resharp
-  inline-flag prefix (e.g. `/foo/i` becomes `(?i)foo`).
-   Use this form to opt into
-  substring-anywhere semantics for short literals (write the literal between the slashes),
-  or to ban literals matching `^/.+/[a-z]*$` (escape the slashes,
-   e.g. ban the literal
-  `/etc/passwd` as `/\/etc\/passwd/`).
+- A bare line is a **case-sensitive literal**.
+   It is escaped into the engine's verbose
+  dialect and matched as a plain substring:
+   it fires wherever its exact bytes appear,
+  including glued mid-identifier (`ACR` matches inside `ACRYLIC`).
+   There is no
+  length threshold and no word-boundary heuristic;
+   over-matching in this direction is a
+  ratified preference (a false positive inside a longer token is acceptable).
+   If a short
+  literal must match only as a whole word,
+   write it as a regex with explicit boundaries
+  (`/\bACR\b/`).
+- A line of the shape `/PATTERN/FLAGS` is a **regex** in the `forbidden-regex` dialect.
+  The first `/` and the last `/` delimit the pattern.
+   `FLAGS` is a trailing run of
+  ASCII-lowercase letters;
+   if the trailing run is not all-lowercase,
+   the whole line is
+  treated as a literal instead (so `/foo/I` is a literal scan for the seven bytes `/foo/I`,
+  not a case-insensitive regex).
 
-Empty lines are ignored.
- Lines starting with `#` are comments.
+Empty and whitespace-only lines are ignored.
+ A line whose first non-whitespace byte is `#`
+is a comment.
+ One leading UTF-8 BOM is stripped from the source.
+ An empty source (no
+non-blank,
+ non-comment line) is a rule-file error.
 
-The 7-byte threshold has a coincidence-rate justification;
- see Architecture below
-for the derivation and `SUBSTRING_THRESHOLD` in `src/rule/types.rs` for the constant.
+### Flags policy
 
-**One known regression** under these semantics:
- a short literal rule will not match a
-plural or suffixed form (a 3-letter acronym does not match the same acronym followed
-immediately by `s`,
- because the trailing `s` is a word char and the boundary fails).
- If
-plural matching is needed,
- express the rule as a regex with an optional trailing class:
-`/ACRONYMs?/`.
+The engine is always in multiline and verbose mode,
+ so the only accepted flags are the
+ones those two modes already imply:
 
-### Rule-file quirks
+- `m` (multiline) and `x` (verbose) are accepted as no-ops and dropped.
+- **Any other flag letter is a hard, fail-closed load error.
+  ** Silently dropping an `i` or
+  an `s` would change match semantics (case folding,
+   dot-matches-newline),
+   so the loader
+  rejects the whole ruleset rather than weaken a rule.
+   Need one of those locally?
+   Restructure
+  the pattern (for case-insensitivity,
+   spell the alternatives:
+   `[Aa][Bb][Cc]`).
 
-- **Whitespace and comments.
-  ** Lines are `trim()`'d before parsing
-  (`src/rule/parse.rs:64`).
-   A line containing only whitespace is ignored.
-   A line whose
-  first non-whitespace byte is `#` is a comment (`:78`).
-   A `#` mid-line is part of the
-  rule.
-- **No deduplication.
-  ** Two identical rules both load and both fire;
-   you see two hits with
-  two different `rule=N` indices.
-- **Uppercase-flag fallthrough (silent foot-gun).
-  ** `/foo/i` is a regex with the `i` flag.
-  `/foo/I` is a *literal rule* that matches the exact substring `/foo/I`.
-   The classifier
-  rejects flag strings containing any non-`[a-z]` character (`parse.rs:150`) and silently
-  falls through to literal handling (`:209`).
-   A rule author who writes `/PAT/I` thinking
-  they got case-insensitive matching has not — they now have a literal scan for the
-  seven-byte string `/PAT/I`.
-   The same applies to any uppercase or non-`[a-z]` flag
-  character.
-   There is no error or warning at load time.
-- **Empty regex.
-  ** `//` parses as the regex `(?-flags:)`,
-   which matches the empty string
-  at every position.
-   Foot-gun;
-   do not write a bare `//` as a rule.
-- **Missing or empty rules file.
-  ** `--rules /no/such/file` exits 2 with a read error.
-   An
-  empty rules file (or one that is all comments) exits 2 with `no rules loaded`.
-- **UTF-8 BOM.
-  ** Not stripped.
-   If a rules file begins with a BOM,
-   the first rule line
-  begins with `\u{FEFF}` and the rule body contains those bytes.
+### Supported constructs
+
+The dialect is a deliberately restricted subset (see
+`package/rust-module/forbidden-regex/README.md` for the full engine spec):
+
+- Literals and the escapes `\t`,
+   `\b` (word boundary),
+   backslash-escaped metacharacters,
+  and backslash-escaped whitespace.
+- Character classes:
+   `[abc]`,
+   `[a-z]`,
+   `[a-zA-Z]`,
+   negated `[^...]`,
+   and the shorthands
+  `\d \w \s \D \W \S` (usable inside classes too).
+- `.` matches any byte except a newline.
+- Grouping and alternation:
+   `(?:a|b)`.
+   Groups are **non-capturing only**.
+- Bounded repetition:
+   `a?`,
+   `a{3}`,
+   `a{3,6}`.
+- Anchors:
+   `^`,
+   `$`,
+   `\b`.
+   The word set is ASCII `[A-Za-z0-9_]`;
+   `^` and `$` anchor at
+  line boundaries.
+- Set algebra:
+   intersection `&`,
+   complement `~(...)`.
+
+Matching is an unanchored search over a single line's raw bytes:
+ a pattern matches if it
+matches any substring.
+ Because verbose mode is always on,
+ unescaped whitespace outside
+character classes is ignored,
+ so a rule may be written across several physical characters
+for readability;
+ to match a literal space use `\ `,
+ `\t`,
+ or `[ ]`.
 
 ### Set-algebra operators
 
-Resharp extends standard regex with two top-level set operators that pure-PCRE engines lack:
+Two top-level set operators that pure-PCRE engines lack:
 
-- `A&B`:
-   intersection.
-   Matches strings matched by both `A` and `B`.
-- `~(A)`:
-   complement.
-   Matches strings that do NOT match `A`.
+- `A & B` (intersection):
+   matches strings matched by both `A` and `B`.
+- `~(A)` (complement):
+   matches strings that do NOT match `A`.
 
-Combined,
- these express "match X but not Y" without lookaround.
+Operators `&` and `|` take single-atom operands:
+ a literal,
+ a class,
+ `.`,
+ an anchor,
+ a
+`(?:...)` group,
+ or a `~(...)`.
+ A concatenation or a quantified atom must be wrapped in
+`(?:...)` to be an operand,
+ so there is no operator precedence to remember.
+ `~(...)` is
+always parenthesized.
+ A pattern that can match the empty string is rejected (unanchored,
+ it
+would match everything),
+ so `~(Y)` alone is rejected while `(?:X) & ~(Y)` with a concrete
+`X` compiles.
  Example:
- ban any
-five-digit key except the all-zeros placeholder:
+ ban any five-digit key except the all-zeros placeholder:
 
 ```text
-/key_[0-9]{5}&~(key_0{5})/
+/(?:key_[0-9]{5}) & ~(key_00000)/
 ```
 
-This flags `key_12345` and `key_99999` but lets `key_00000` through.
- Class-level forms
-`[A&&B]` (intersection) and `[A~~B]` (symmetric difference) are also available inside
-character classes.
+### Rejected at compile time (fail-closed)
 
-Underscore is a resharp meta character.
- Unescaped `_` is the top pattern,
- which matches
-any single codepoint.
- Escape a literal underscore as `\_`,
- including inside algebra
-operands such as `ghp\_...&~(ghp\_0{36})`.
+Anything outside the supported set is a hard compile error naming the offending rule's
+opaque index,
+ and the whole load fails closed (a bad ruleset never degrades to a partial
+scan):
+ `*`,
+ `+`,
+ unbounded `{n,}`,
+ `\xNN` byte escapes,
+ capturing `(`,
+ lookaround and
+inline-flag groups (`(?` not followed by `:`),
+ backreferences,
+ unknown escapes,
+ unbalanced
+brackets,
+ stacked quantifiers,
+ `{n,m}` with `n` greater than `m`,
+ repetition whose
+expansion exceeds the engine's cap,
+ and any pattern that can match the empty string.
 
-The scanner extracts required literal bytes from regex rules and folds them into a
-shared Aho-Corasick gate so the regex engine only runs on files that contain a required
-substring.
- For set-algebra rules,
- intersection `&` is a transparent separator and
-complement `~(...)` bodies never contribute gates because they describe excluded strings,
-not required bytes.
- A pattern that starts with literal bytes (`key_[0-9]{5}&~(...)`
-extracts `key_`) stays on the fast path.
- A pattern that starts with `~(...)` or another
-metacharacter falls into a smaller residual gate,
- still correct,
- just slower per file.
-Extracted prefixes preserve the regex source's original UTF-8 bytes verbatim,
- so a rule
-whose leading literal contains non-ASCII characters (em-dash `—`,
- smart quotes,
- ellipsis,
-emoji) gates correctly against file content holding the same bytes;
- a walker that
-mojibake'd those bytes during extraction would silently disable the rule by registering
-a pattern AC could never match.
-
-#### Complement-body limitations (resharp 0.5.x through 0.6.x)
-
-Resharp 0.5.
-x through 0.6.
-x cannot reverse a complement whose body contains a
-lookaround.
- The parser rewrites several surface atoms to internal lookarounds,
-so the following shapes fail at compile time:
-
-- `\b` inside a `~(...)` body.
-   Rewritten to negative-lookahead /
-  negative-lookbehind by the parser,
-   then refused.
-   Workaround:
-   replace `\b` with
-  `\W` (consumes a character on each side) or with literal whitespace,
-   or move
-  the boundary check outside the complement.
-- `\B` inside a `~(...)` body.
-   Refused at parse time when the neighbours are
-  unclassifiable.
-   No in-place rewrite;
-   restructure the rule.
-- Unescaped `^` or `$` inside a `~(...)` body.
-   Rewritten to lookbehind /
-  lookahead in default-multiline mode and then refused.
-   Workaround:
-   use `\A` /
-  `\z` for whole-content anchors,
-   or move the anchor outside the complement.
-  Inline `(?-m)` and group-scoped `(?-m:^foo$)` do NOT propagate into the
-  complement body,
-   so neither works as a workaround.
-- User-explicit lookarounds (`(?=`,
-   `(?!`,
-   `(?<=`,
-   `(?<!`) inside a `~(...)`
-  body.
-   Refused for the same reason as the rewritten cases.
-   Lift the lookaround
-  outside the complement.
-
-`forbidden-strings` detects every shape above at rule load time and reports the
-specific trigger:
-
-```text
-forbidden-strings: rule on line 42 (resharp): complement body contains \b;
-resharp 0.5.x through 0.6.x rewrites it to an internal lookaround which the
-reverse pass refuses. Replace with \W ... See TROUBLESHOOTING.resharp.md
-for workarounds.
-```
-
-The doc at `TROUBLESHOOTING.resharp.md` in the repository root has the full
-trace,
- more workarounds,
- and the upstream-issue draft.
-
-#### Additional pre-validators (May 2026)
-
-A handful of resharp shapes provoke compile-time blowups or release-build
-soundness bugs rather than clean parser refusals.
- The scanner rejects each one
-at rule load with an explicit error naming the source line and the upstream
-issue:
-
-- **Nested complements `~(~(...))`.
-  ** Rejected pre-compile;
-   the reverse pass
-  cannot reverse-engineer two nested complements without exponential blowup.
-- **Stacked quantifiers `(a+)+`,
-   `(a*)*`,
-   etc.** Rejected pre-compile.
-- **Algebra hang shapes.
-  ** Intersection of a quantifier and a complement
-  (`a+&~(...)`) and alt-lookaround sibling shapes (`(a|b(?=c))`) are rejected
-  with explicit error messages naming the source line and the resharp issue.
-- **Nested-lookahead overflow.
-  ** Specific shape `(?=...(?=...(?=...)))` rejected;
-  resharp's reverse pass overflows past three nesting levels.
-- **Intersection plus lookbehind.
-  ** Rejected by `intersection_with_lookbehind` in
-  `src/rule/engine.rs`.
-   The underlying resharp shape silently returns wrong
-  matches in release builds (the debug-asserted bound is OFF in release),
-   so
-  the pre-validator is load-bearing for correctness,
-   not just performance.
-
-Even when a pre-validator misses a new known-bad shape,
- `compile_rule_src`
-catches the resharp panic via `std::panic::catch_unwind` and emits
-`PATH: rule=N engine error` to stderr instead of aborting;
- the file still scans
-against every other rule.
- This is what the `panic = "unwind"` and
-`overflow-checks = true` release-profile settings buy.
- See `Cargo.toml:49-97`
-for the full rationale.
-
-### Perl-class shorthand semantics
-
-The scanner compiles rules in byte mode for speed (`regex::bytes` with
-`unicode(false)`),
- which would normally make every Perl-class shorthand
-ASCII-only.
- Two semantics survive that mode:
-
-- **`\s`:
-   Unicode-aware.
-  ** Matches every Unicode whitespace code point's
-  UTF-8 bytes:
-   ASCII whitespace (`\t \n \v \f \r` ),
-   NBSP (U+00A0),
-  ogham space (U+1680),
-   Mongolian vowel separator (U+180E),
-   en-quad
-  through hair space (U+2000..U+200A),
-   line/paragraph separator
-  (U+2028..U+2029),
-   narrow NBSP (U+202F),
-   medium math space (U+205F),
-  ideographic space (U+3000),
-   zero-width NBSP (U+FEFF).
-   Realised by
-  expanding the rule source so each `\s` becomes a non-capturing
-  alternation of ASCII whitespace and the multi-byte UTF-8 sequences.
-  A rule like `(?i)adafruit[\s]+=` correctly matches
-  `adafruit<NBSP>=` in JS/TS files.
-- **`\S`,
-   `\w`,
-   `\W`,
-   `\d`,
-   `\D`,
-   `\b`,
-   `\B`:
-   byte-level (ASCII).
-  **
-  Match the PCRE default (ASCII subset).
-   For secret patterns these
-  semantics match author intent:
-   `\d{16}` for a credit card means
-  ASCII digits,
-   `\b(pat_...)` boundaries against literal prefixes
-  fire on ASCII context,
-   `[\w.-]{0,N}` optional prefixes never
-  block a match.
-   Authors who need genuinely Unicode-aware behaviour
-  for these atoms can opt in with the `(?u)` flag,
-   which routes the
-  rule to the slower full-Unicode compile path.
-
-The asymmetry between `\s` and the rest is pragmatic:
- `\s` has a
-real bug repro (NBSP in JS/TS files) with a tractable byte-alternation
-expansion,
- while `\W`/`\D`/`\B` have zero uses in the betterleaks
-corpus and `\S`/`\w`/`\d`/`\b` are all used in shapes where
-byte-level semantics produce no silent miss.
- See PERF.
-md for the
-per-atom analysis.
-
-### Supported regex flags
-
-The flag string accepts these lowercase letters,
- applied via resharp's inline-flag group:
-
-- `i`:
-   case-insensitive.
-- `m`:
-   multiline (`^`/`$` match at line boundaries).
-- `s`:
-   dot-matches-newline.
-- `u`:
-   toggle Unicode `\w`/`\d` semantics.
-- `x`:
-   ignore whitespace and `#` comments inside the pattern.
-
-Resharp's parser also recognises `U` (swap greed) and `R` (CRLF line terminators),
-but the validator deliberately rejects uppercase flags.
- Both are useless in this scanner:
-`U` only affects match span length (not whether something matched),
- and the rare pattern
-that needs CRLF-aware anchors can write `\r?$` directly.
- If you ever need them locally
-inside one pattern,
- use the inline form:
- `(?U)foo` or `(?R)bar`.
-
-## Integration
-
-### Local cli-git policy
-
-Root `cli-git.config.ts` enables `security/forbidden-strings` at error severity.
-The PATH-shadowed cli-git wrapper evaluates selected would-be-committed bytes before commit,
-landed commit bytes before automatic push,
-and Git-native outgoing ranges before manual push.
-Native `--no-verify` skips Git hooks but does not skip this policy.
-
-Run an explicit read-only check through the built shim with:
-
-```sh
-git cli-git check --policy security/forbidden-strings --all
-```
-
-The policy invokes the repository-built scanner directly.
-Scanner infrastructure failures remain distinct exit-2 engine failures;
-findings exit `1`.
-
-### GitHub Actions
-
-`.github/workflows/forbidden-strings.yml` remains independent of cli-git trust and local wrapper state.
-It downloads the release matching the scanner crate version,
-verifies the archive's GitHub build-provenance attestation,
-materializes the committed baseline plus shared appendix and optional repository secret,
-then invokes the scanner binary directly.
-Pull-request and merge-queue jobs scan changed files relative to `origin/main`;
-pushes to `main` scan the complete tracked tree.
-
-Pipe secrets through `printenv` rather than interpolating them into a workflow command;
-shell expansion can leak values even when log masking is enabled.
-The same precedence applies locally and in CI:
-`--rules` > `FORBIDDEN_STRINGS_RULES` > `./forbidden-strings.local.txt`.
+Load errors are redacted:
+ they carry only the opaque rule index (0-based position in the
+compiled set,
+ never a source line number) and the engine's own static reason,
+ never the
+rule text.
+ The redacted error type is `LoadError` in `src/rule/frx/error.rs`.
 
 ## Output
 
 For each violation:
 
 ```text
-PATH:LINE:COL_START..COL_END rule=N
+PATH:LINE rule=N
 ```
 
-Columns are 1-based byte offsets within the matched line.
-**The matched substring is never printed.
-** Only the path,
- line number,
- column range,
-and the opaque rule index appear in failure output;
- otherwise a failing CI log
-becomes a leak surface.
- A contributor wanting to know which rule fired looks up the
-index against their local rule file.
+- `LINE` is the 1-based line number.
+- `rule=N` is the 0-based engine rule id.
+   Your runtime rules take ids `0..user_len`;
+  under `--builtin-rules` the baseline is offset past them.
+   The index is columnless:
+   the
+  engine reports per-line rule indices,
+   not spans,
+   so no `COL_START..COL_END` segment
+  appears.
+- One finding is emitted per `(line, rule)` pair.
+- **The matched substring,
+   the line content,
+   and the rule pattern are never printed.
+  **
+  Only the path,
+   line number,
+   and opaque rule index appear,
+   so a failing CI log never
+  becomes a leak surface.
+   A contributor looks the index up against their local rule file.
 
-- **Hits go to stderr,
-   not stdout.
-  ** Redirecting `2>/dev/null` silently loses the report.
-- **Read errors are synthetic hits.
+Two synthetic findings keep the scan fail-closed:
+
+- **Read errors.
   ** A file that cannot be opened (broken symlink,
-  permission denied,
-   deleted during scan) produces a single line
-  `PATH: read error: <reason>` on stderr and contributes to the exit-1 count
-  (`src/lib.rs:907-910`).
-- **Engine errors are synthetic hits.
-  ** A rule that panics inside resharp at scan time
-  produces `PATH: rule=N engine error` on stderr and contributes to the exit-1 count.
-  Three emission points,
-   one per phase:
-   AC-prefix-matched par_iter,
-   residual Single shard,
-  residual Combined par_iter (`src/scan.rs:332`,
-   `:383`,
-   `:424`).
-- **Ordering.
-  ** Within a file,
-   hits are emitted in match order.
-   Across files,
-   ordering is
-  rayon-scheduler-determined and stable on a given input but not alphabetic.
-  Callers that need deterministic cross-file reports should pipe the diagnostic output
-  into `sort` in their own wrapper instead of expecting a tool-level sorted-output mode.
+   permission denied,
+   deleted
+  during scan) produces `PATH: read error: <reason>` on stderr and counts toward the
+  exit-1 total.
+   A secret-scanning gate must not pass silently on a file it could not inspect.
+- **Engine errors.
+  ** If the matcher panics on a file,
+   the `catch_unwind` boundary in
+  `scan_one_set` (`src/frx_scan.rs`) catches it and emits `PATH: engine error`,
+   again
+  counting toward exit 1 rather than aborting or exiting clean.
+
+Hits go to **stderr**,
+ not stdout;
+ redirecting `2>/dev/null` silently loses the report.
+Within a file,
+ findings are emitted in set order (runtime rules before the baseline),
+ then
+by line;
+ across files,
+ ordering is rayon-scheduler-determined,
+ stable on a given input but
+not alphabetic.
+ Callers that need deterministic cross-file reports should pipe the output
+into `sort`.
 
 Exit codes:
 
@@ -707,276 +492,224 @@ Exit codes:
    read errors,
    or engine errors).
 - `2`:
-   usage error or rules-file error.
+   usage error or rule-file error.
+
+## Security model
+
+The redaction guarantee is what lets a rule body itself be a secret.
+ Two boundaries carry
+it:
+
+- **Load path.
+  ** Rule compilation reports only `LoadError` (`src/rule/frx/error.rs`),
+   whose
+  every variant is an opaque index plus the engine's static reason;
+   no pattern bytes reach
+  a diagnostic.
+   The compiler builds through `RegexSet::new` / `RegexSet::from_bytes`,
+  neither of which logs the pattern.
+- **Scan path.
+  ** Findings are formatted as `PATH:LINE rule=N` in `src/frx_scan.rs`;
+   the
+  matched bytes and the line content are never included.
+   The fail-closed `catch_unwind`
+  boundary emits only `PATH: engine error`.
+
+Keep sensitive rule bodies out of tracked files:
+ use the gitignored
+`forbidden-strings.append.local.txt` or the CI-only `FORBIDDEN_STRINGS_LIST` secret,
+ never
+the committed baseline or appendix.
+ In CI,
+ pipe secrets through `printenv` rather than
+interpolating them into a workflow command;
+ shell expansion can leak values even when log
+masking is enabled.
+
+## Integration
+
+### Local cli-git policy
+
+Root `cli-git.config.ts` enables `security/forbidden-strings` at error severity.
+ The
+PATH-shadowed cli-git wrapper evaluates selected would-be-committed bytes before commit,
+landed commit bytes before automatic push,
+ and Git-native outgoing ranges before manual
+push.
+ Native `--no-verify` skips Git hooks but does not skip this policy.
+
+Run an explicit read-only check through the built shim with:
+
+```sh
+git cli-git check --policy security/forbidden-strings --all
+```
+
+The policy invokes the repository-built scanner directly.
+ Scanner infrastructure failures
+remain distinct exit-2 engine failures;
+ findings exit `1`.
+
+### GitHub Actions
+
+`.github/workflows/forbidden-strings.yml` remains independent of cli-git trust and local
+wrapper state.
+ It downloads the release matching the scanner crate version,
+ verifies the
+archive's GitHub build-provenance attestation,
+ materializes the committed baseline plus
+shared appendix and optional repository secret,
+ then invokes the scanner binary directly.
+Pull-request and merge-queue jobs scan changed files relative to `origin/main`;
+ pushes to
+`main` scan the complete tracked tree.
+ The same precedence applies locally and in CI:
+`--rules` > `FORBIDDEN_STRINGS_RULES` > `./forbidden-strings.local.txt`.
 
 ## Walker behaviour
 
 - **`--all` semantics.
-  ** Walks the working tree via `ignore::WalkBuilder`
-  (`src/walk.rs:217-220`):
-   `.hidden(false)` (dotfiles like `.github/`,
-   `.npmrc` ARE
-  scanned),
-   `.ignore(false)` (the `.ignore` file is NOT consulted).
-   The `.gitignore` file
-  remains enabled — `ignore(false)` only disables the `.ignore` source;
-   `git_ignore` is a
-  separate setting.
-   Files force-added past `.gitignore` (`git add -f`) are recovered via an
-  in-process `gix-index` read of `.git/index` (`walk.rs:394-518`);
+  ** Walks the working tree via `ignore::WalkBuilder` in `src/walk.rs`:
+  `.hidden(false)` (dotfiles like `.github/`,
+   `.npmrc` ARE scanned),
+   `.ignore(false)` (the
+  `.ignore` file is NOT consulted;
+   `.gitignore` stays enabled).
+   Files force-added past
+  `.gitignore` (`git add -f`) are recovered via an in-process `gix-index` read of
+  `.git/index`;
    no git subprocess.
 - **`.git/` and `.jj/` skipped.
-  ** Internal VCS state is never scanned (filter at
-  `walk.rs:220`).
+  ** Internal VCS state is never scanned.
 - **Symlinks NOT followed.
-  ** `WalkBuilder`'s default `follow_links` is false and the
-  project does not override it.
-   Symlinked directories are not descended;
-   symlinked files
-  are visited but,
-   on a broken target,
-   surface as a read-error synthetic hit.
+  ** `WalkBuilder`'s default `follow_links` is false;
+   symlinked
+  directories are not descended,
+   symlinked files surface as a read-error synthetic hit on a
+  broken target.
 - **Non-UTF-8 paths silently dropped.
-  ** Index entries that are not valid UTF-8 are
-  excluded from the walk (`walk.rs:518`);
-   no error or warning.
-- **Per-entry walker errors silently skipped.
-  ** A directory the walker cannot enter does
-  not surface;
-   only file-read errors after the walker hands off the path get reported via
-  the read-error synthetic-hit path.
+  ** Index entries that are not valid UTF-8 are excluded
+  from the walk.
 - **Binary-file 8 KiB tail cap.
   ** Files whose first 8 KiB contains a NUL byte are scanned
   only in the first 8 KiB.
-   The leading window always runs;
-   secrets there fire.
-   The tail
-  past 8 KiB is skipped (recovers binary-scan cost from BUG 5's full-scan fix while
-  preserving leading-window soundness).
-   Constant `BIN_PROBE_SIZE = 8192` at
-  `src/lib.rs:291`;
-   logic at `:332-352`.
-- **Read errors as hits.
-  ** As above (cross-reference).
+   The leading window always runs,
+   so secrets there fire;
+   the tail
+  past 8 KiB is skipped.
+   Constant `BIN_PROBE_SIZE` and `read_with_binary_check` in
+  `src/lib.rs`.
 - **Self-skip set.
   ** During `--all`,
-   canonical paths are auto-skipped so rule bodies
-  do not self-match:
-  - the materialised rules file (whatever `--rules` / env var / default resolves to)
+   canonical paths are auto-skipped so rule bodies do not
+  self-match:
+   the materialised rules file (whatever `--rules` / env var / default resolves
+  to),
+   plus three generated-source paths:
   - `package/cli/forbidden-strings/data/betterleaks-default-config.toml`
   - `package/cli/forbidden-strings/data/builtin-rules.txt`
   - `package/cli/forbidden-strings/src/port-betterleaks-relaxations.ts`
-  - `package/cli/forbidden-strings/src/rule/algebra_tests.rs`
 
-  The generated-source paths are package-anchored (NOT root-anchored).
-   Skip is via
-  `std::fs::canonicalize`;
-   paths that fail to canonicalize from the current cwd are
-  silently dropped from the set.
-   Explicit positional arguments bypass the skip entirely —
-  though note that passing `--all` overwrites positional arguments,
-   so the bypass only
-  applies to the no-`--all` invocation.
+  Skip is path-anchored via `std::fs::canonicalize`,
+   not basename-anchored,
+   so an
+  unrelated file named `forbidden-strings.local.txt` in a subdirectory is still scanned.
+  Paths that fail to canonicalize from the current cwd are silently dropped from the set.
+  Explicit positional arguments bypass the `--all` skip;
+   the scanner's own
+  `forbidden-strings.*.txt` config files at cwd are skipped in both modes
+  (`is_config_file_at_cwd` in `src/lib.rs`).
 
 ## Performance
 
-Measured on an AMD Ryzen 7 8700F (16 threads).
- Full bench methodology and per-version
-regression history are in `PERF.md`.
- If you change these,
- change `PERF.md` too.
+The scanner is a native Rust binary tuned for a sub-commit-budget startup and linear-time
+matching;
+ the release profile (`Cargo.toml`) sets `lto`,
+ `codegen-units = 1`,
+ `opt-level = 3`,
+`panic = "unwind"`,
+ `overflow-checks = true`,
+ and `strip`.
+ `panic = "unwind"` and
+`overflow-checks = true` are load-bearing for the fail-closed `catch_unwind` boundary,
+ not
+speed:
+ the forbidden-regex engine documents that it expects the caller's unwind boundary,
+and a wrapped overflow would otherwise let a corrupt rule fail open.
 
-Post-emit-hit-consolidation,
- 2026-05-16,
- hyperfine 1.20.0.
-
-### Cold startup
-
-```text
-this repo (3,471 files, 57 MiB)         9.4 ms ± 0.8 ms
-Linux kernel (93,696 files, 2.0 GiB)    9.8 ms ± 0.4 ms
-```
-
-### Full `--all`
-
-```text
-this repo                               56.6 ms ± 3.1 ms   (~6.3x parallelism)
-Linux kernel                            1.989 s ± 0.246 s  (~12.2x parallelism, ~1.05 GiB/s wall)
-```
-
-### vs betterleaks v1.1.2 (same content, `--all` vs `dir`; 2026-05-03)
-
-```text
-startup ratio                           ~24x
-this repo, same content                 ~20x (28 ms vs 557 ms)
-Linux kernel                            ~3.3x (1.6 s vs 5.3 s)
-```
-
-### vs betterleaks v1.1.2 (full tree, default modes; 2026-05-03)
-
-```text
-this repo                               ~2000x (43 ms vs 86.5 s)
-                                        dominated by .gitignore respect:
-                                        21 MiB scanned vs 4.28 GB scanned
-```
-
-Three architectural choices account for most of the per-byte gap:
-
-1. **Dual Aho-Corasick gate with lazy regex dispatch.
-   ** On clean files,
-    both AC passes
-   short-circuit before any regex engine runs.
-    RE2 (betterleaks' engine) also
-   keyword-prefilters,
-    but its hit path verifies against the full DFA;
-   `forbidden-strings` only queues `find_all` when an AC prefix is seen.
-2. **Hybrid engine dispatch.
-   ** 257 of 259 ported rules compile via the `regex` crate,
-   which applies memchr / Teddy literal-prefix acceleration per-rule.
-    RE2 compiles all
-   rules into a shared DFA that cannot apply per-rule fast paths.
-3. **Native binary startup.
-   ** Rust LTO + `codegen-units = 1` + `opt-level = 3` +
-   `panic = "unwind"` + `overflow-checks = true` + `strip = true`.
-    Binary starts in
-   ~9 ms. Go binary starts in ~174 ms (GC init,
-    goroutine scheduler,
-    config parse).
-    For
-   pre-commit hooks with sub-100 ms budgets,
-    the startup gap alone disqualifies
-   betterleaks.
-    The unwind + overflow-checks pair is required for the resharp-panic
-   safety wrapper to fail closed on engine corruption (Rust default release profile uses
-   `panic = "abort"` and disables overflow checks;
-    either flip leaves the scanner with a
-   silent fail-open against a corrupt rule).
-    See `Cargo.toml:49-97`.
-
-The speed gap is not free;
- see "When to pick something else" for the capabilities
-betterleaks ships that `forbidden-strings` deliberately omits.
-
-## Debug
-
-Three env vars print phase / bucket diagnostics to stderr;
- none affect output correctness,
-so they are safe to enable in CI when investigating slow scans.
-
-- `FORBIDDEN_STRINGS_DEBUG_TIMING=1`
-  Per-phase wall time:
-   `read_rules_file`,
-   `classify+regex_compile`,
-  `extract_gating_substrings`,
-   `ac_build`,
-   `residual_shards`.
-- `FORBIDDEN_STRINGS_DEBUG_BUCKETS=1`
-  Counts of literal rules,
-   case-sensitive regex prefixes,
-   case-insensitive regex
-  prefixes,
-   and residual rules (rules without an extractable literal prefix).
-   Useful
-  when tuning rule patterns to land more rules on the AC fast path.
-- `FORBIDDEN_STRINGS_DEBUG_RESIDUAL_LIST=1`
-  Implies `BUCKETS`.
-   Adds the line number of every residual rule so you can look up
-  which rules are paying the slower per-file scan.
+Full bench methodology and per-version regression history are in `PERF.md`.
+ The headline
+figures there were measured against the pre-0.2.0 resharp/`regex`-crate engine;
+ the 0.2.0
+figures for the `forbidden-regex` engine are re-measured as part of the cutover
+differential validation.
 
 ## Fuzzing
 
-Coverage-guided fuzzing for the scanner's regex routing,
- AC-gate extractor,
-walker helpers,
- residual-shard partitioner,
- and hit formatter lives in its own
-package,
- [`package/fuzz/forbidden-strings`](../../fuzz/forbidden-strings/),
+Coverage-guided fuzzing lives in its own package,
+ `package/fuzz/forbidden-strings`,
  so a
 scoped nightly toolchain does not force this published crate onto nightly.
-Targets are exercised locally and on demand only;
- CI integration is deferred.
-See that package's [README](../../fuzz/forbidden-strings/README.md) for
-prerequisites,
- the seven-target invariant list,
- mise commands,
- the
-bounded-container wrapper,
- corpus and artifact policy,
- crash reproduction
-guidance,
- and the soundness-by-revert validation step.
+ The scanner
+exposes a curated internal surface (`fuzz_api`,
+ behind the `fuzzing` Cargo feature) for the
+targets to drive.
+ The teardown that removed the old engine also retired the gate,
+ shard,
+ and
+routing targets that fuzzed it;
+ the surviving targets are retargeted onto the
+`forbidden-regex` load and scan path.
+ See that package's README for prerequisites,
+ mise
+commands,
+ the bounded-container wrapper,
+ and crash-reproduction guidance.
 
 ## Architecture
 
-- **Two-phase pipeline.
-  ** Rule loading (regex compile + AC build) and file walking
-  (gitignore-aware enumeration) run concurrently via `rayon::join` since they share no
-  state.
-   After both complete,
-   files fan out across the rayon thread pool for parallel
-  scan.
-- **Aho-Corasick literal gate.
-  ** Every literal rule and every regex rule's extracted
-  literal prefix joins a single AC automaton.
-   Per file,
-   the AC pass either finds zero
-  hits (regex engine skipped entirely) or queues a follow-up regex evaluation for each
-  prefix hit.
-- **Residual-shard regex fallback.
-  ** Regex rules without an extractable literal prefix
-  (those starting with `~(...)`,
-   a metacharacter,
-   or a class) fall into a smaller
-  residual gate that runs unconditionally.
-   Slower per file than the AC path but still
-  linear-time.
-- **Self-skip for own rule files.
-  ** `--all` walks skip a small set of paths
-  unconditionally so rule bodies that match their own literal text do not
-  self-flag:
-   the materialized rules file plus four canonical
-  self-match paths
-  (`package/cli/forbidden-strings/data/betterleaks-default-config.toml`,
-  `package/cli/forbidden-strings/data/builtin-rules.txt`,
-  `package/cli/forbidden-strings/src/port-betterleaks-relaxations.ts`,
-  and the rules-engine test-fixture file
-  `package/cli/forbidden-strings/src/rule/algebra_tests.rs` which
-  documents an example match for the bundled set-algebra demo rule).
-  Skip is path-anchored via `std::fs::canonicalize`,
-   not basename-anchored,
-  so an unrelated file named `forbidden-strings.local.txt` in a subdirectory
-  is still scanned.
-   Explicit positional arguments bypass the skip entirely.
-  See `build_skip_set` / `is_walker_skipped` in `src/lib.rs`.
+- **Two-form loader.
+  ** `src/rule/frx` owns the rule-file format:
+   bare literals escape into
+  the verbose dialect,
+   `/PATTERN/FLAGS` lines pass through under the flags policy,
+   and each
+  rule is validated individually so the redacted error can name the first offender's index.
+  `src/frx_load.rs` resolves the runtime rules file (compiled from text) and,
+   under
+  `--builtin-rules`,
+   the precompiled baseline,
+   into ordered `RegexSet`s with disjoint
+  rule-id ranges.
+- **Line-based batch scan.
+  ** `src/frx_scan.rs` splits each file's bytes into lines once and
+  hands the buffer plus line-start offsets to `RegexSet::line_matches`,
+   which resolves
+  per-line rule ids in one SIMD prefilter sweep.
+   Each set runs under a `catch_unwind`
+  boundary so a matcher fault fails closed as a synthetic finding.
+- **Build-time precompilation.
+  ** `build.rs` compiles `data/builtin-rules.ported.txt`
+  through the engine once at build time and serializes it (`to_bytes`);
+   `lib.rs` embeds the
+  blob with `include_bytes!` and the loader rebuilds it via the validating `from_bytes`,
+  never recompiling.
+   Only the small runtime rules file compiles from text at startup.
+- **Concurrent load and walk.
+  ** Rule loading and `--all` file walking run concurrently via
+  `rayon::join` (they share no state);
+   files then fan out across the rayon thread pool for
+  the parallel scan.
 - **`ignore` crate walker + in-process gix-index union.
-  ** `--all` uses
-  `ignore::WalkBuilder` (which honours `.gitignore`,
+  ** `--all` uses `ignore::WalkBuilder`
+  (honouring `.gitignore`,
    `.git/info/exclude`,
-   and
-  global excludes) and then unions the result with an in-process
-  `gix_index::File` read of `.git/index` (no git subprocess) so files that
-  were force-added past `.gitignore` (`git add -f`) are still discovered.
-  See `src/walk.rs:394-518`.
+   and global excludes) and unions the result
+  with an in-process `gix_index::File` read of `.git/index` so `git add -f` files are still
+  discovered.
+   See `src/walk.rs`.
 - **Bundled `data/betterleaks-default-config.toml`.
-  ** Upstream-vendored provenance for
-  the betterleaks port.
-   The embedded `data/builtin-rules.txt` baseline is derived
-  from it;
-   `port-betterleaks-relaxations.ts` records the lossy translations applied during
-  the port.
-- **The 7-byte coincidence-rate threshold.
-  ** A length-L literal in a case-sensitive
-  alphabet of size A scanned over N random bytes has expected coincidence count
-  ~= N * A^(-L).
-   At L = 7,
-   in 1 GB of dense base64 (A = 64) or random alphanumeric
-  (A = 62) noise,
-   the expected coincidence per rule is ~2.3e-4 and ~3.0e-4 respectively,
-  comfortably under 1 across realistic repo sizes and noise types.
-   At L = 6 the same
-  calculation gives ~0.015 / ~0.019,
-   which becomes borderline once a repo has multiple
-  GB of dense content or 100+ deny-list rules.
-   The constant `SUBSTRING_THRESHOLD` lives
-  in `src/rule/types.rs`.
+  ** Upstream-vendored provenance for the
+  betterleaks port;
+   the embedded baseline is derived from it,
+   and
+  `port-betterleaks-relaxations.ts` records the lossy translations applied during the port.

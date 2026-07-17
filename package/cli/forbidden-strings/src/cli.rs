@@ -50,7 +50,7 @@ USAGE:\n\
 //           sibling `String` is unnecessary because the text never changes.
 // Why:      Clap owns syntax help, while this block carries domain notes that are
 //           not attached to one flag: environment fallback, exit codes, rule
-//           grammar, resharp limitations, and output format.
+//           grammar, the dialect's flag policy, and output format.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -82,21 +82,23 @@ EXAMPLES:\n\
 \n\
 RULE FORMAT:\n\
     Bare line              -> case-sensitive literal substring\n\
-    /PATTERN/FLAGS         -> regex (resharp; supports A&B, ~(A), (?=...), (?<=...))\n\
+    /PATTERN/FLAGS         -> regex in the forbidden-regex dialect\n\
     # ...                  -> comment\n\
     Empty line             -> skipped\n\
 \n\
-RESHARP LIMITATIONS (0.5.x through 0.6.x):\n\
-    A `~(...)` complement body cannot contain `\\b`, `\\B`, `^`, `$`,\n\
-    or any user-explicit lookaround. Use `\\W` or literal whitespace for\n\
-    `\\b`; `\\A`/`\\z` for `^`/`$` when whole-content semantics fit; or\n\
-    lift the boundary check outside the complement. Loader rejects every\n\
-    failing shape with a named-trigger error. See doc/troubleshooting/resharp.md.\n\
+DIALECT:\n\
+    Supported: literals, classes [a-z] and \\d \\w \\s, '.', (?:a|b),\n\
+    bounded repetition a{3,6}, anchors ^ $ \\b, and set algebra A & B\n\
+    and ~(A). Flags 'm' and 'x' are accepted no-ops (multiline and\n\
+    verbose are always on); any other flag letter is a hard load error.\n\
+    Rejected at compile time (fail-closed): '*', '+', unbounded {n,},\n\
+    capturing '(', lookaround and inline flags, backreferences, and any\n\
+    pattern matching the empty string.\n\
 \n\
 OUTPUT:\n\
-    PATH:LINE rule=N    (matched substring is NEVER printed)\n\
+    PATH:LINE rule=N    (columnless; matched substring is NEVER printed)\n\
 \n\
-See README.md for set-algebra rule examples and CI integration.\n\
+See README.md for the full dialect, set-algebra examples, and CI integration.\n\
 ";
 
 /// Parsed command-line options for `forbidden-strings`.

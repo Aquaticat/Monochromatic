@@ -1,5 +1,12 @@
 # resharp 0.6.13: find_all, find_anchored, and is_match wrong on end-anchor shapes
 
+Status note (forbidden-strings 0.2.0):
+ the `resharp` dependency is gone.
+ The engine swap replaced resharp with the in-house `forbidden-regex` engine
+(`package/rust-module/forbidden-regex`),
+ so the scanner no longer exercises the resharp APIs described here.
+ This document stays as a durable record of the upstream bugs found and filed.
+
 Three soundness bugs in `ieviev/resharp` 0.6.13 (== repo HEAD `f0ce60a`,
 behaviorally identical to the published 0.6.13 commit `d89964b`),
  all on the

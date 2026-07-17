@@ -1,5 +1,15 @@
 # Resharp: upstream bugs and forbidden-strings workarounds
 
+Status note (forbidden-strings 0.2.0):
+ the `resharp` dependency is gone.
+ The engine swap replaced resharp and the `regex` crate with the in-house
+`forbidden-regex` engine (`package/rust-module/forbidden-regex`),
+ so the consumer-side guards and pre-validators this document describes no longer
+exist in the scanner (`src/rule/compile.rs`,
+ `src/rule/engine.rs`,
+ and `src/rule/nesting.rs` were deleted).
+ This document stays as a durable record of the upstream bugs found and filed.
+
 This document tracks the upstream resharp bugs that `forbidden-strings`
 defends against,
  the consumer-side guards that block each,
