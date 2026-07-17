@@ -4,9 +4,9 @@ Date:
  2026-07-16.
 
 Status:
- decisions grilled and recorded;
- awaiting final user confirmation;
- not yet enacted.
+ shared understanding confirmed by the user on 2026-07-16;
+ not yet enacted;
+ implementation starts on explicit request.
 
 Migrate `package/cli/forbidden-strings` off resharp and the `regex` crate
 onto the in-house engine at `package/rust-module/forbidden-regex`.
