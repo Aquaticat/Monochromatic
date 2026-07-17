@@ -569,12 +569,20 @@ source (done). No open questions currently block the loop.
   longest needle restored to date, evidence the anti-compression
   editor prompt (edit-prompt.ts) is working on exactly the long-needle
   compression failure it was written for.
-  JUDGE ACCUMULATED: 15/18 (0.83) over 4 runs (22 to 25). Lexical
-  over the same 4 runs 13/18 (0.72): the judge sits above lexical,
-  consistent with the under-crediting the switch was meant to
-  fix; sample still modest, keep accumulating.
-  Detection 90/96 (0.94).
-  NEXT: continue the RESUME PROCEDURE loop (run 26 onward). The point
+  run 26 (2026-07-17, 1608 s): judge 6/6 (1.0), lexical 4/6,
+  detection 6/6; coin, Mizuki_Yuuki, AkiraComplex all fully repaired
+  (three dispatched, three budget-skipped). Two more judge-vs-lexical
+  disagreements, both unanimous judge=restored on low word overlap
+  (coin seed 0: 3/11 words; AkiraComplex seed 0: 4/10): the
+  faithful-rewording under-credit pattern run 22 first exposed.
+  Mizuki_Yuuki seed 0 (18 words) restored fully, a second long
+  needle credited since the anti-compression prompt.
+  JUDGE ACCUMULATED: 21/24 (0.88) over 5 runs (22 to 26). Lexical
+  over the same 5 runs 17/24 (0.71): the judge sits ~17 points above
+  lexical, consistent with the under-crediting the switch was meant
+  to fix; sample growing, keep accumulating.
+  Detection 96/102 (0.94).
+  NEXT: continue the RESUME PROCEDURE loop (run 27 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
