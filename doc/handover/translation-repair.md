@@ -562,12 +562,19 @@ source (done). No open questions currently block the loop.
   PATTERN NOTE: Acheron breaks the "missed seed is always the LONGEST
   needle of its entry" streak; the partial (9 words) is shorter than
   its fully restored sibling (10 words).
-  JUDGE ACCUMULATED: 9/12 (0.75) over 3 runs (22 to 24). Lexical over
-  the same 3 runs 7/12 (0.58): the judge sits above lexical,
+  run 25 (2026-07-17, 1795 s): judge 6/6 (1.0), lexical 6/6,
+  detection 6/6; yingying, lxy, SU5ZI2MO1 all fully repaired (three
+  dispatched, three budget-skipped). SU5ZI2MO1 seed 0 was a 20-word
+  needle restored fully (11/20 lexical words, judge unanimous): the
+  longest needle restored to date, evidence the anti-compression
+  editor prompt (edit-prompt.ts) is working on exactly the long-needle
+  compression failure it was written for.
+  JUDGE ACCUMULATED: 15/18 (0.83) over 4 runs (22 to 25). Lexical
+  over the same 4 runs 13/18 (0.72): the judge sits above lexical,
   consistent with the under-crediting the switch was meant to
-  fix, but the judge sample is still small; keep accumulating.
-  Detection 84/90 (0.93).
-  NEXT: continue the RESUME PROCEDURE loop (run 25 onward). The point
+  fix; sample still modest, keep accumulating.
+  Detection 90/96 (0.94).
+  NEXT: continue the RESUME PROCEDURE loop (run 26 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
