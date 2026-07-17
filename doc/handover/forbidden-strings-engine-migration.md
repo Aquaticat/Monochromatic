@@ -215,17 +215,46 @@ Updated:
   build; instruct agents to run long commands synchronously.
   This agent stalled twice on Monitor waits before a firm
   "synchronous only" steer finished it.
-- IN FLIGHT: #387 differential cutover gate plus perf re-measure
-  (opus; no production code changes;
-  report to `doc/planning/forbidden-strings-cutover-differential.md`,
-  perf to the scanner `PERF.md`;
-  0.1.9 installed to a temp root, current release binary used as-is;
-  rules precedence pinned so local files are absent from both sides;
-  rule-number mapping derived from the line-aligned files and verified
-  on a controlled fixture;
-  unexplained delta = verbatim stop condition;
-  redacted report, rule indexes only).
-  Then #389 cutover (ready-for-agent), #390 hygiene, #381 decision.
+- #387 DONE and CLOSED (opus, 44 tool calls; the cutover gate PASSED):
+  `3200c64f0` (differential report), `ca420697e` (PERF.md).
+  Zero lost findings on all corpora;
+  gains all attributed (518 mongodb 4+2, 172 curl 2);
+  rich rule-exercising corpus byte-identical after normalization;
+  numbering calibrated (old 1-based source line, new 0-based compiled
+  index) and cross-checked;
+  perf within every budget (cold 13.7ms, `--all` 131.9ms, 0.78x old).
+- DISCOVERED post-#387 (orchestrator measurements):
+  forbidden-strings 0.2.0 ALREADY LIVE on crates.io AND as GitHub
+  release `forbidden-strings-v0.2.0`
+  (the `aea61186a` version bump auto-triggered the publish lanes;
+  benign, #387 validated exactly that binary, but it voided the
+  "unpublished until cutover" intent).
+  Separately, CI workflow `forbidden-strings.yml` has been RED since
+  2026-07-12: it still copies `forbidden-strings.local.example.txt`,
+  deleted by the user's de-root commit `58995afff`
+  (file-enforcer now composes appendixes into
+  `.cache/forbidden-strings.rules.txt`, `FORBIDDEN_STRINGS_RULES` env,
+  `builtinRules` policy option).
+  Zero green runs in the last 40; predates the engine swap.
+- MAINTAINER LEG OF #389 DONE by orchestrator (user-authorized):
+  verified the gitignored local appendix loads clean under the 0.2.0
+  strict loader (exit 0; no port needed, dialect-compatible),
+  then refreshed the stale `FORBIDDEN_STRINGS_LIST` repo secret from it
+  via a straight pipe (contents never displayed;
+  `gh secret list` stamps 2026-07-17T11:40Z).
+- IN FLIGHT: #389 repo-side cutover (opus):
+  Leg A wire ported builtin as live `builtin-rules.txt`
+  (rename, build.rs, append.ported fold-or-delete,
+  git-policy skip-list including the stale algebra_tests entry,
+  full trusted-snapshot activation chain, gate canary after rebuild),
+  Leg B rewrite the CI materialize step per the de-root design
+  (no example file, `--builtin-rules` plus composed appendix+secret),
+  Leg C no-op-green and API-commit-red PR verifications with redaction
+  check,
+  Leg D runbook `doc/runbook/forbidden-strings-out-of-band-rules.md`,
+  `Closes #389` only after CI legs verify;
+  publish criterion already satisfied, noted not re-run.
+  Then #390 hygiene (minus the folded skip-list item), #381 decision.
 - RESOLVED plan open question:
   startup compilation is NOT viable
   (worst rule 123s pre-strip; 49 rules over 1s even after fixes);
