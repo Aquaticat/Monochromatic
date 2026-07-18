@@ -622,10 +622,17 @@ source (done). No open questions currently block the loop.
   (including its 18-word needle): reproducibility now shown on the
   restored side as well as the partial side. mone adds two more
   unanimous judge=restored on low overlap (5/12, 3/11 words).
-  JUDGE ACCUMULATED (repairable universe): 35/42 (0.83) over 9 runs
-  (22 to 30). Lexical over the same runs 26/42 (0.62). Detection
-  114/120 (0.95).
-  NEXT: continue the RESUME PROCEDURE loop (run 31 onward). The point
+  run 31 (2026-07-18, 1818 s): judge 3/4 (0.75, one partial),
+  lexical 4/4, detection 4/4; Anilovr and yingying repaired (two
+  dispatched, four budget-skipped). Anilovr seed 0 judged PARTIAL
+  again (runs 29 and 31, lexical over-crediting it both times): the
+  inversion reproduces, third stable-partial seed alongside Acheron
+  seed 0 and CuspariaKLSY seed 1. yingying reproduced run 25's
+  double-restored.
+  JUDGE ACCUMULATED (repairable universe): 38/46 (0.83) over 10 runs
+  (22 to 31). Lexical over the same runs 30/46 (0.65). Detection
+  118/124 (0.95).
+  NEXT: continue the RESUME PROCEDURE loop (run 32 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
