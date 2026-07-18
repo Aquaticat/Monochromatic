@@ -43,6 +43,19 @@ export {
   type PatchRejection,
 } from './apply-patch.ts';
 export {
+  runDerivabilityProbe,
+  type SeedDerivability,
+} from './derivability-probe.ts';
+export {
+  buildDerivabilityMessages,
+  DERIVABILITY_RESPONSE_FORMAT,
+  DERIVABILITY_VERDICTS,
+  type DerivabilityPlan,
+  type DerivabilityVerdict,
+  isDerivabilityVerdict,
+  resolveDerivabilityJudgment,
+} from './derivability-wire.ts';
+export {
   buildEditorMessages,
   type EditorPromptPlan,
 } from './edit-prompt.ts';
