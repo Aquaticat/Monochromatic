@@ -826,8 +826,19 @@ source (done). No open questions currently block the loop.
   (commit `b6967cbc9`; the editorRuleAddendum plumbing stays for
   future calibration experiments), and MILESTONE TWO IS DECLARED
   COMPLETE with the final numbers recorded at the top of the resume
-  block. Run 42, launched before the promotion, runs the old baseline
-  and closes the baseline era when recorded; no run 43.
+  block. Run 42, launched before the promotion, ran the old baseline
+  and closes the baseline era; no run 43.
+  run 42, CLOSING RUN (2026-07-18, 1523 s, pre-promotion prompt):
+  judge 2/4, lexical 2/4, detection 4/4; chunchun_yudong (first
+  draw) both restored; SS3B_0016 (first draw) both partial, and an
+  immediate derivability probe ruled both seeds PARTIALLY-DERIVABLE
+  (unanimous, 19 s): embellishment-capped, misses attributed, the
+  dominant pattern to the end.
+  WHOLE-ACCUMULATION TOTALS including the closing run, 21 runs (22
+  to 42), exactly 100 seed-results: judge strict 82/100 (0.82);
+  PROBE-ADJUSTED EFFECTIVE 98/100 (0.98); lenient 96/100 (0.96);
+  detection 170/178 (0.96); retired lexical 61/100 (0.61). LOOP
+  CLOSED.
   NEXT AFTER CLOSURE: package completeness per PKG (README, exported
   API surface review, test coverage over every exported path) awaits
   user direction, as does any milestone-three scoping.
