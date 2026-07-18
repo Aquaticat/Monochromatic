@@ -639,12 +639,17 @@ source (done). No open questions currently block the loop.
   three-for-three across independent draws; SU5ZI2MO1's 20-word
   needle restored again on repeat; a2581911655 seed 0 is another
   under-credit (8/18 words, unanimous judge=restored).
-  JUDGE ACCUMULATED (repairable universe): 44/52 (0.85) over 11 runs
-  (22 to 32). Lexical over the same runs 35/52 (0.67). Detection
-  124/130 (0.95).
-  NEXT: continue the RESUME PROCEDURE loop (run 33 onward, first run
-  whose artifact carries repairedText). The point after run 23 is
-  where the user chose to compact.
+  run 33 (2026-07-18, 1444 s): judge 4/4 (1.0), lexical 3/4,
+  detection 4/4; MioCardMeow and AkiraComplex repaired (two
+  dispatched, four budget-skipped). MioCardMeow three-for-three
+  across draws; AkiraComplex reproduced run 26 exactly including the
+  same 4/10 lexical under-credit on seed 0. First enriched artifact
+  (carries repairedText) but no partial verdicts to analyze this run.
+  JUDGE ACCUMULATED (repairable universe): 48/56 (0.86) over 12 runs
+  (22 to 33). Lexical over the same runs 38/56 (0.68). Detection
+  128/134 (0.96).
+  NEXT: continue the RESUME PROCEDURE loop (run 34 onward). The point
+  after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
