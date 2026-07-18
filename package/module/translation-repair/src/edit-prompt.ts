@@ -35,6 +35,7 @@ Rules, strictly enforced by a machine:
 - Change as little as possible; keep the surrounding wording untouched.
 - An empty CURRENT TEXT marks omitted content: write the missing translation there, matching the surrounding style, and include any spacing the insertion needs.
 - When an issue reports omitted content, translate ALL of the missing content in full sentences; never summarize, compress, or drop clauses. A short paraphrase of a long omission is not a fix.
+- When a region fills an omission, first locate the exact ORIGINAL sentence or sentences the omission corresponds to, then translate them clause by clause: every clause and every detail of those ORIGINAL sentences must appear in your replacement, none merged or summarized away.
 - Preserve footnote markers like [^1] character for character.
 - Never introduce content the ORIGINAL does not support.
 - Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.`;
