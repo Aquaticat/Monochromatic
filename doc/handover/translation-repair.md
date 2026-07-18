@@ -633,11 +633,18 @@ source (done). No open questions currently block the loop.
   inversion reproduces, third stable-partial seed alongside Acheron
   seed 0 and CuspariaKLSY seed 1. yingying reproduced run 25's
   double-restored.
-  JUDGE ACCUMULATED (repairable universe): 38/46 (0.83) over 10 runs
-  (22 to 31). Lexical over the same runs 30/46 (0.65). Detection
-  118/124 (0.95).
-  NEXT: continue the RESUME PROCEDURE loop (run 32 onward). The point
-  after run 23 is where the user chose to compact.
+  run 32 (2026-07-18, 2044 s): judge 6/6 (1.0), lexical 5/6,
+  detection 6/6; Mizuki_Yuuki, SU5ZI2MO1, a2581911655 all fully
+  repaired (three dispatched, three budget-skipped). Mizuki_Yuuki is
+  three-for-three across independent draws; SU5ZI2MO1's 20-word
+  needle restored again on repeat; a2581911655 seed 0 is another
+  under-credit (8/18 words, unanimous judge=restored).
+  JUDGE ACCUMULATED (repairable universe): 44/52 (0.85) over 11 runs
+  (22 to 32). Lexical over the same runs 35/52 (0.67). Detection
+  124/130 (0.95).
+  NEXT: continue the RESUME PROCEDURE loop (run 33 onward, first run
+  whose artifact carries repairedText). The point after run 23 is
+  where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
