@@ -615,10 +615,17 @@ source (done). No open questions currently block the loop.
   second inversion (lexical=restored on 4/7 words, judge=partial
   against the zh source). Lenient rate stays 1.0: every judged seed
   in the repairable universe is at least partial.
-  JUDGE ACCUMULATED (repairable universe): 29/36 (0.81) over 8 runs
-  (22 to 29). Lexical over the same runs 22/36 (0.61). Detection
-  108/114 (0.95).
-  NEXT: continue the RESUME PROCEDURE loop (run 30 onward). The point
+  run 30 (2026-07-18, 1598 s): judge 6/6 (1.0), lexical 4/6,
+  detection 6/6; Mizuki_Yuuki, Barron12312, mone all fully repaired
+  (three dispatched, three budget-skipped). Mizuki_Yuuki is a repeat
+  draw from run 26 and both seeds judged restored BOTH times
+  (including its 18-word needle): reproducibility now shown on the
+  restored side as well as the partial side. mone adds two more
+  unanimous judge=restored on low overlap (5/12, 3/11 words).
+  JUDGE ACCUMULATED (repairable universe): 35/42 (0.83) over 9 runs
+  (22 to 30). Lexical over the same runs 26/42 (0.62). Detection
+  114/120 (0.95).
+  NEXT: continue the RESUME PROCEDURE loop (run 31 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
