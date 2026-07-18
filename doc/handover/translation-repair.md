@@ -716,10 +716,34 @@ source (done). No open questions currently block the loop.
   JUDGE ACCUMULATED (repairable universe): 62/76 (0.82) over 16 runs
   (22 to 37). Lexical over the same runs 48/76 (0.63). Detection
   148/154 (0.96).
-  NEXT: derivability probe NOW (driver targets all six stable-partial
-  entries including TLL1122, restored siblings as controls), then
-  resume the loop at run 38. The point after run 23 is where the user
-  chose to compact.
+  DERIVABILITY PROBE RESULTS (2026-07-18, 144 s total, ~14 quota
+  units, every quorum 3/3, every vote unanimous):
+  - Six of eight stable-partial seeds are PARTIALLY-DERIVABLE
+    (Acheron 0, CuspariaKLSY 1, Anilovr 0, keyword233 0, akasa_musha
+    0 and 1): the original EN translation embellished beyond the zh
+    source, so partial restoration is those seeds' correct CEILING.
+  - TLL1122 seeds 0 and 1 are DERIVABLE yet only partially restored:
+    the only genuine editor shortfall; the A/B target.
+  - wangzihao980's two ABSENT seeds (run 22) are NOT-DERIVABLE: the
+    deleted sentences have no zh support, so the editor rule "Never
+    introduce content the ORIGINAL does not support" makes refusal
+    CORRECT; run 22's "genuine repair failure" reading is retracted.
+  - All four restored-sibling controls probed derivable: the probe
+    discriminates rather than excuses.
+  MISS ATTRIBUTION through run 37 (76 judged seed-results): 62
+  restored; 10 partials on partially-derivable seeds (ceiling met);
+  2 partials on derivable TLL1122 seeds (real shortfall); 2 absents
+  on not-derivable wangzihao980 seeds (correct refusal).
+  PROBE-ADJUSTED EFFECTIVE RATE: 74/76 (0.97). Strict rate over
+  winnable (derivable) seeds: 62/64 (0.97).
+  ERRATUM: run 29 to 37 notes said accumulated lenient stayed 1.0;
+  wrong, run 22's two wangzihao980 absents make lenient through run
+  37 74/76 (0.97). Per-run lenient scorecards were correct; only the
+  accumulated claim in these notes was wrong.
+  NEXT: editor calibration A/B on TLL1122 (baseline = run 37, both
+  seeds partial; variant = clause-enumeration editorRuleAddendum),
+  then resume the loop at run 38. The point after run 23 is where the
+  user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
