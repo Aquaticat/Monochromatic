@@ -661,10 +661,16 @@ source (done). No open questions currently block the loop.
   editor cannot restore those words and "partial" is the correct
   ceiling for that seed; testable later by asking the judge ensemble
   whether each needle is fully derivable from zh.
-  JUDGE ACCUMULATED (repairable universe): 53/62 (0.85) over 13 runs
-  (22 to 34). Lexical over the same runs 41/62 (0.66). Detection
-  134/140 (0.96).
-  NEXT: continue the RESUME PROCEDURE loop (run 35 onward). The point
+  run 35 (2026-07-18, 2404 s): judge 4/4 (1.0), lexical 2/4,
+  detection 4/4; ttttsuuukikoo_ and CutOceanHeyFis1 repaired (two
+  dispatched, four budget-skipped). Both are repeats reproducing
+  earlier verdicts: ttttsuuukikoo_ (run 22's original under-credit
+  case) restored again; CutOceanHeyFis1 matched run 27 including the
+  same judge=restored-lexical=absent split on seed 0.
+  JUDGE ACCUMULATED (repairable universe): 57/66 (0.86) over 14 runs
+  (22 to 35). Lexical over the same runs 43/66 (0.65). Detection
+  138/144 (0.96).
+  NEXT: continue the RESUME PROCEDURE loop (run 36 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
