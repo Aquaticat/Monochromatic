@@ -645,10 +645,26 @@ source (done). No open questions currently block the loop.
   across draws; AkiraComplex reproduced run 26 exactly including the
   same 4/10 lexical under-credit on seed 0. First enriched artifact
   (carries repairedText) but no partial verdicts to analyze this run.
-  JUDGE ACCUMULATED (repairable universe): 48/56 (0.86) over 12 runs
-  (22 to 33). Lexical over the same runs 38/56 (0.68). Detection
-  128/134 (0.96).
-  NEXT: continue the RESUME PROCEDURE loop (run 34 onward). The point
+  run 34 (2026-07-18, 1542 s): judge 5/6 (0.83, one partial),
+  lexical 3/6, detection 6/6; keyword233, mone, Mizuki_Yuuki repaired
+  (three dispatched, three budget-skipped). mone reproduced run 30's
+  double-restored double-under-credit; Mizuki_Yuuki restored on its
+  FOURTH draw. New partial: keyword233 seed 0, 15 content words,
+  6 returned.
+  FIRST ENRICHED-ARTIFACT ANALYSIS (partial-needle-analysis.ts, zero
+  quota): keyword233's partial needle is a SINGLE sentence; its
+  ordered coverage bitmap is 000100101110001, scattered mid-sentence
+  coverage, so the residual failure mode is within-sentence
+  paraphrase of one long sentence, NOT head-truncation and NOT
+  dropped trailing sentences. OPEN HYPOTHESIS: if the deleted EN
+  sentence embellished beyond the zh source, a faithful zh-anchored
+  editor cannot restore those words and "partial" is the correct
+  ceiling for that seed; testable later by asking the judge ensemble
+  whether each needle is fully derivable from zh.
+  JUDGE ACCUMULATED (repairable universe): 53/62 (0.85) over 13 runs
+  (22 to 34). Lexical over the same runs 41/62 (0.66). Detection
+  134/140 (0.96).
+  NEXT: continue the RESUME PROCEDURE loop (run 35 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
