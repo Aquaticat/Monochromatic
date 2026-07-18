@@ -701,9 +701,25 @@ source (done). No open questions currently block the loop.
     string surgery). A/B plan: baseline vs clause-enumeration rule on
     the stable-partial entries, judge verdicts on target seeds
     compared; only meaningful for seeds the probe rules derivable.
-  NEXT: record run 37, then run the derivability probe in the gap
-  before run 38. The point after run 23 is where the user chose to
-  compact.
+  run 37 (2026-07-18, 1531 s): judge 3/6 (0.50, three partials),
+  lexical 3/6, detection 6/6; TLL1122, DarlinChit, keyword233
+  repaired (three dispatched, three budget-skipped). TLL1122 (one of
+  the two original long-needle miss entries) re-drew at last: BOTH
+  seeds judged partial. keyword233 seed 0 reproduced its run 34
+  partial (0.40 then 0.47 coverage across independent runs).
+  DarlinChit fully restored. Stable-partial set now SIX seeds over
+  five entries: Acheron 0, CuspariaKLSY 1, Anilovr 0, keyword233 0,
+  TLL1122 0 and 1 (akasa_musha's two included makes eight probe
+  targets). Enriched analysis over all six shows the one signature:
+  scattered within-sentence paraphrase, 0.40 to 0.69 coverage, no
+  sentence dropped whole.
+  JUDGE ACCUMULATED (repairable universe): 62/76 (0.82) over 16 runs
+  (22 to 37). Lexical over the same runs 48/76 (0.63). Detection
+  148/154 (0.96).
+  NEXT: derivability probe NOW (driver targets all six stable-partial
+  entries including TLL1122, restored siblings as controls), then
+  resume the loop at run 38. The point after run 23 is where the user
+  chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
